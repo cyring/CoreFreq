@@ -11,6 +11,7 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <asm/msr.h>
+#include <stdatomic.h>
 
 #include "intelfreq.h"
 
@@ -147,7 +148,7 @@ void Core_Nehalem(unsigned int cpu, int T)
 			Proc->Core[cpu].Cycles.TSC[T].r64 - Cx	\
 			: 0;
 }
-
+/*
 void Core_Temp(unsigned int cpu)
 {
 	RDMSR(	Proc->Core[cpu].TjMax.Lo,
@@ -157,13 +158,15 @@ void Core_Temp(unsigned int cpu)
 		Proc->Core[cpu].ThermStat.Hi,
 		MSR_IA32_THERM_STATUS)
 }
-
-int Core_Cycle(void *data)
+*/
+int Core_Cycle(void *arg)
 {
-	if(data != NULL)
+	if(arg != NULL)
 	{
-		CORE *Core=(CORE *) data;
-		unsigned int cpu=Core->cpu;
+		CORE *Core=(CORE *) arg;
+		unsigned int cpu=Core->Bind;
+
+		Core_Nehalem(cpu, 0);
 
 		while(!kthread_should_stop())
 		{
@@ -235,17 +238,19 @@ int Core_Cycle(void *data)
 				Proc->Core[cpu].Cycles.C7[1];
 			Proc->Core[cpu].Cycles.C1[0]=		\
 				Proc->Core[cpu].Cycles.C1[1];
+
+			atomic_store(&Proc->Core[cpu].Sync, 0x1);
 		}
 	}
 	return(0);
 }
 
-int Core_Start(void *data)
+int Counter_Start(void *arg)
 {
-	if(data != NULL)
+	if(arg != NULL)
 	{
-		CORE *Core=(CORE *) data;
-		unsigned int cpu=Core->cpu;
+		CORE *Core=(CORE *) arg;
+		unsigned int cpu=Core->Bind;
 
 		GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
 		FIXED_PERF_COUNTER FixedPerfCounter={0};
@@ -303,18 +308,16 @@ int Core_Start(void *data)
 			| Overflow.Overflow_CTR2)
 				WRMSR(	OvfControl.Lo, OvfControl.Hi,
 					MSR_CORE_PERF_GLOBAL_OVF_CTRL);
-
-		Core_Nehalem(cpu, 0);
 	}
 	return(0);
 }
 
-int Core_Stop(void *data)
+int Counter_Stop(void *arg)
 {
-	if(data != NULL)
+	if(arg != NULL)
 	{
-		CORE *Core=(CORE *) data;
-		unsigned int cpu=Core->cpu;
+		CORE *Core=(CORE *) arg;
+		unsigned int cpu=Core->Bind;
 
 		WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter.Lo,
 			Proc->Core[cpu].SaveArea.FixedPerfCounter.Hi,
@@ -331,60 +334,95 @@ void Arch_Nehalem(unsigned int stage)
 {
 	unsigned int cpu=0;
 
-	if(stage != STOP)
+	switch(stage)
 	{
-		PLATFORM_INFO Platform={0};
-		TURBO_RATIO Turbo={0};
-
-		RDMSR(Platform.Lo, Platform.Hi, MSR_NHM_PLATFORM_INFO);
-		RDMSR(Turbo.Lo, Turbo.Hi, MSR_NHM_TURBO_RATIO_LIMIT);
-
-		Proc->Boost[0]=Platform.MinimumRatio;
-		Proc->Boost[1]=Platform.MaxNonTurboRatio;
-		Proc->Boost[2]=Turbo.MaxRatio_8C;
-		Proc->Boost[3]=Turbo.MaxRatio_7C;
-		Proc->Boost[4]=Turbo.MaxRatio_6C;
-		Proc->Boost[5]=Turbo.MaxRatio_5C;
-		Proc->Boost[6]=Turbo.MaxRatio_4C;
-		Proc->Boost[7]=Turbo.MaxRatio_3C;
-		Proc->Boost[8]=Turbo.MaxRatio_2C;
-		Proc->Boost[9]=Turbo.MaxRatio_1C;
-
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		case END:
 		{
-			Proc->Core[cpu].TID= \
-				kthread_create(	Core_Start,
-						&Proc->Core[cpu],
-						"kintelstart%02d",
-						Proc->Core[cpu].cpu);
-
-			kthread_bind(Proc->Core[cpu].TID, cpu);
-			wake_up_process(Proc->Core[cpu].TID);
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			{
+				Proc->Core[cpu].TID[COUNTER]= \
+					kthread_create(	Counter_Stop,
+							&Proc->Core[cpu],
+							"kintelstop%02d",
+							Proc->Core[cpu].Bind);
+				kthread_bind(Proc->Core[cpu].TID[COUNTER], cpu);
+				wake_up_process(Proc->Core[cpu].TID[COUNTER]);
+			}
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(Proc->Core[cpu].TID[COUNTER])
+					kthread_stop(Proc->Core[cpu].TID[COUNTER]);
 		}
-	}
-	else
-	{
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		break;
+		case INIT:
 		{
-			Proc->Core[cpu].TID= \
-				kthread_create(	Core_Stop,
-						&Proc->Core[cpu],
-						"kintelstop%02d",
-						Proc->Core[cpu].cpu);
+			PLATFORM_INFO Platform={0};
+			TURBO_RATIO Turbo={0};
+//			TURBO_RATIO_64 Turbo={0};
 
-			kthread_bind(Proc->Core[cpu].TID, cpu);
-			wake_up_process(Proc->Core[cpu].TID);
+			RDMSR(Platform.Lo, Platform.Hi, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Turbo.Lo, Turbo.Hi, MSR_NHM_TURBO_RATIO_LIMIT);
+//			RDMSR64(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+
+			Proc->Boost[0]=Platform.MinimumRatio;
+			Proc->Boost[1]=Platform.MaxNonTurboRatio;
+			Proc->Boost[2]=Turbo.MaxRatio_8C;
+			Proc->Boost[3]=Turbo.MaxRatio_7C;
+			Proc->Boost[4]=Turbo.MaxRatio_6C;
+			Proc->Boost[5]=Turbo.MaxRatio_5C;
+			Proc->Boost[6]=Turbo.MaxRatio_4C;
+			Proc->Boost[7]=Turbo.MaxRatio_3C;
+			Proc->Boost[8]=Turbo.MaxRatio_2C;
+			Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			{
+				Proc->Core[cpu].Bind=cpu;
+				Proc->Core[cpu].TID[COUNTER]= \
+					kthread_create(	Counter_Start,
+							&Proc->Core[cpu],
+							"kintelstart%02d",
+							Proc->Core[cpu].Bind);
+
+				kthread_bind(Proc->Core[cpu].TID[COUNTER], cpu);
+				wake_up_process(Proc->Core[cpu].TID[COUNTER]);
+			}
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(Proc->Core[cpu].TID[COUNTER])
+					kthread_stop(Proc->Core[cpu].TID[COUNTER]);
 		}
+		break;
+		case STOP:
+		{
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(Proc->Core[cpu].TID[CYCLE])
+					kthread_stop(Proc->Core[cpu].TID[CYCLE]);
+		}
+		break;
+		case START:
+		{
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			{
+				Proc->Core[cpu].TID[CYCLE]=	\
+					kthread_create(
+						Core_Cycle,
+						&Proc->Core[cpu],
+						"kintelfreq%02d",
+						Proc->Core[cpu].Bind);
+				kthread_bind(Proc->Core[cpu].TID[CYCLE], cpu);
+			}
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(Proc->Core[cpu].TID[CYCLE])
+					wake_up_process(Proc->Core[cpu].TID[CYCLE]);
+		}
+		break;
 	}
 }
 
 static int IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
 {
-	if(Proc && !remap_vmalloc_range(vma, Proc, 0))
+	if(Proc)
 	{
-		unsigned int cpu=0;
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			wake_up_process(Proc->Core[cpu].TID);
+		remap_vmalloc_range(vma, Proc, 0);
 	}
 	return(0);
 }
@@ -406,6 +444,8 @@ static struct file_operations IntelFreq_fops=
 static int __init IntelFreq_init(void)
 {
 	Proc=vmalloc_user(sizeof(PROC));
+	Proc->msleep=LOOP_DEF_MS;
+	Proc->PerCore=0;
 
 	IntelFreq.kcdev=cdev_alloc();
 	IntelFreq.kcdev->ops=&IntelFreq_fops;
@@ -426,19 +466,20 @@ static int __init IntelFreq_init(void)
 						 IntelFreq.mkdev, NULL,
 						 SHM_DEVNAME)) != NULL)
 			{
-				unsigned int cpu=0, Count=0;
+				unsigned int count=0;
 
-				Count=Core_Count();
-				Proc->CPU.Count=(!Count) ? 1 : Count;
+				count=Core_Count();
+				Proc->CPU.Count=(!count) ? 1 : count;
 				Proc->CPU.OnLine=Proc->CPU.Count;
-				Proc->PerCore=0;
+
+				for(count=0; count < Proc->CPU.Count; count++)
+					atomic_init(&Proc->Core[count].Sync, 0x0);
 
 				Proc_Brand();
 
-				Arch_Nehalem(START);
+				Arch_Nehalem(INIT);
 
 				Proc->Clock=Proc_Clock(Proc->Boost[1]);
-				Proc->msleep=LOOP_DEF_MS;
 
 				printk(	"IntelFreq [%s] [%d x CPU]\n"	\
 					"[Clock @ %d MHz]  Ratio="	\
@@ -456,18 +497,7 @@ static int __init IntelFreq_init(void)
 					Proc->Boost[8],
 					Proc->Boost[9]);
 
-				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				{
-					Proc->Core[cpu].cpu=cpu;
-					Proc->Core[cpu].TID=	\
-						kthread_create(
-							Core_Cycle,
-							&Proc->Core[cpu],
-							"kintelfreq%02d",
-							Proc->Core[cpu].cpu);
-
-					kthread_bind(Proc->Core[cpu].TID, cpu);
-				}
+				Arch_Nehalem(START);
 			}
 			else
 			{
@@ -498,11 +528,8 @@ static void __exit IntelFreq_cleanup(void)
 
 	if(Proc)
 	{
-		unsigned int cpu;
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			kthread_stop(Proc->Core[cpu].TID);
-
 		Arch_Nehalem(STOP);
+		Arch_Nehalem(END);
 
 		vfree(Proc);
 	}

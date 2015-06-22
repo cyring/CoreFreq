@@ -3,16 +3,15 @@
  * Licenses: GPL2
  */
 
-#define	_MAX_CPU_ 64
+#define	_MAX_CPU_ 	64
+#define	TASK_COMM_LEN	16
 
 #define	SHM_DEVNAME "intelfreq"
 #define	SHM_FILENAME "/dev/"SHM_DEVNAME
 
-#define	LOOP_MIN_MS	10
-#define LOOP_MAX_MS	500
-#define	LOOP_DEF_MS	100
-
-enum { STOP=0, START=1 };
+#define	LOOP_MIN_MS	100
+#define LOOP_MAX_MS	5000
+#define	LOOP_DEF_MS	1000
 
 #define RDMSR(_lo, _hi,  _reg)	\
 	__asm__ volatile	\
@@ -21,7 +20,7 @@ enum { STOP=0, START=1 };
                 : "=a" (_lo),	\
 		  "=d" (_hi)	\
 		: "c" (_reg)	\
-	);			\
+	);
 
 #define WRMSR(_lo, _hi,  _reg)	\
 	__asm__ volatile	\
@@ -31,7 +30,21 @@ enum { STOP=0, START=1 };
 		: "c" (_reg),	\
 		  "a" (_lo),	\
 		  "d" (_hi)	\
+	);
+
+#define RDMSR64(_val, _reg)	\
+({				\
+	unsigned int _lo=(unsigned int) _val;		\
+	unsigned int _hi=_val >> 32;	\
+				\
+	__asm__ volatile	\
+	(			\
+		"rdmsr ;"	\
+                : "=a" (_lo),	\
+		  "=d" (_hi)	\
+		: "c" (_reg)	\
 	);			\
+})
 
 typedef struct
 {
@@ -157,6 +170,18 @@ typedef struct
 			unsigned int Hi		: 32-0;
 	};
 } TURBO_RATIO;
+typedef struct
+{
+	unsigned long long int
+		MaxRatio_1C	:  8-0,
+		MaxRatio_2C	: 16-8,
+		MaxRatio_3C	: 24-16,
+		MaxRatio_4C	: 32-24,
+		MaxRatio_5C	: 40-32,
+		MaxRatio_6C	: 48-40,
+		MaxRatio_7C	: 56-48,
+		MaxRatio_8C	: 64-56;
+} TURBO_RATIO_64;
 /*
 typedef	struct
 {
@@ -362,11 +387,14 @@ typedef struct
 			unsigned int Hi		: 32-0;
 } TJMAX;
 
+enum { CYCLE=0, COUNTER=1 };
 
 typedef struct
 {
-	unsigned int		cpu;
-	struct task_struct	*TID;
+	atomic_ullong		Sync;
+
+	unsigned int		Bind;
+	struct task_struct	*TID[2];
 
 	struct SAVEAREA
 	{
@@ -445,3 +473,5 @@ typedef struct
 
 	CORE			Core[_MAX_CPU_];
 } PROC;
+
+enum { END=0, INIT=1, STOP=2, START=3 };

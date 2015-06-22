@@ -9,6 +9,6 @@ clean:
 	rm corefreqd
 
 corefreqd:	corefreqd.o
-	cc -lpthread -o corefreqd corefreqd.c
+	cc -g -lpthread -o corefreqd corefreqd.c
 corefreqd.o:	corefreqd.c
-	cc -c corefreqd.c -o corefreqd.o
+	cc -g -c corefreqd.c -o corefreqd.o

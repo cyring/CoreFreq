@@ -14,11 +14,19 @@
 #include <signal.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include "intelfreq.h"
 
 unsigned int Shutdown=0x0;
 
+typedef struct {
+	PROC		*Proc;
+	unsigned int	Bind;
+	pthread_t	TID;
+} ARG;
+
+/*
 static void *Core_Temp(void *arg)
 {
 	PROC *P=(PROC *) arg;
@@ -33,64 +41,76 @@ static void *Core_Temp(void *arg)
 
 			printf("\tCore(%02d) @ %d°C\n", cpu, P->Core[cpu].Temp);
 		}	printf("\n");
-		usleep(P->msleep * 10000);
+		usleep(P->msleep * 1000);
 	}
 	return(NULL);
 }
-
-static void *Core_Freq(void *arg)
+*/
+static void *Core_Cycle(void *arg)
 {
-	PROC *P=(PROC *) arg;
-	unsigned int cpu;
+	ARG *A=(ARG *) arg;
+	PROC *P=A->Proc;
+	unsigned int cpu=A->Bind;
+
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	CPU_SET(cpu, &cpuset);
+
+	pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+
+	char comm[TASK_COMM_LEN];
+	sprintf(comm, "corefreqd-%03d", cpu);
+	pthread_setname_np(A->TID, comm);
 
 	while(!Shutdown)
 	{
-	  for(cpu=0; cpu < P->CPU.Count; cpu++)
-	  {
-	// Compute IPS=Instructions per TSC
-	double IPS=	(double) (P->Core[cpu].Delta.INST)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
+		while(!atomic_load(&P->Core[cpu].Sync))
+			usleep(P->msleep * 100);
+		atomic_store(&P->Core[cpu].Sync, 0x0);
 
-	// Compute IPC=Instructions per non-halted reference cycle.
-	// (Protect against a division by zero)
-	double IPC=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
-				(double) (P->Core[cpu].Delta.INST)	\
-				/ (double) P->Core[cpu].Delta.C0.URC	\
-					: 0.0f;
+		// Compute IPS=Instructions per TSC
+		double IPS=	(double) (P->Core[cpu].Delta.INST)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
 
-	// Compute CPI=Non-halted reference cycles per instruction.
-	// (Protect against a division by zero)
-	double CPI=	(double) (P->Core[cpu].Delta.INST != 0) ?	\
-				(double) P->Core[cpu].Delta.C0.URC	\
-				/ (double) (P->Core[cpu].Delta.INST)	\
-					: 0.0f;
+		// Compute IPC=Instructions per non-halted reference cycle.
+		// (Protect against a division by zero)
+		double IPC=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
+					(double) (P->Core[cpu].Delta.INST)	\
+					/ (double) P->Core[cpu].Delta.C0.URC	\
+						: 0.0f;
 
-	// Compute Turbo State per Cycles Delta.
-	// (Protect against a division by zero)
-	double Turbo=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
-				(double) (P->Core[cpu].Delta.C0.UCC)	\
-				/ (double) P->Core[cpu].Delta.C0.URC	\
-					: 0.0f;
+		// Compute CPI=Non-halted reference cycles per instruction.
+		// (Protect against a division by zero)
+		double CPI=	(double) (P->Core[cpu].Delta.INST != 0) ?	\
+					(double) P->Core[cpu].Delta.C0.URC	\
+					/ (double) (P->Core[cpu].Delta.INST)	\
+						: 0.0f;
 
-	// Compute C-States.
-	double C0=(double) (P->Core[cpu].Delta.C0.URC)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
-	double C3=(double) (P->Core[cpu].Delta.C3)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
-	double C6=(double) (P->Core[cpu].Delta.C6)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
-	double C7=(double) (P->Core[cpu].Delta.C7)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
-	double C1=(double) (P->Core[cpu].Delta.C1)	\
-			/ (double) (P->Core[cpu].Delta.TSC);
+		// Compute Turbo State per Cycles Delta.
+		// (Protect against a division by zero)
+		double Turbo=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
+					(double) (P->Core[cpu].Delta.C0.UCC)	\
+					/ (double) P->Core[cpu].Delta.C0.URC	\
+						: 0.0f;
 
-	// Relative Frequency = Relative Ratio x Bus Clock Frequency
-	double RelativeRatio=Turbo * C0 * (double) P->Boost[1];
-	double RelativeFreq=RelativeRatio * P->Clock;
+		// Compute C-States.
+		double C0=(double) (P->Core[cpu].Delta.C0.URC)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
+		double C3=(double) (P->Core[cpu].Delta.C3)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
+		double C6=(double) (P->Core[cpu].Delta.C6)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
+		double C7=(double) (P->Core[cpu].Delta.C7)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
+		double C1=(double) (P->Core[cpu].Delta.C1)	\
+				/ (double) (P->Core[cpu].Delta.TSC);
+
+		// Relative Frequency = Relative Ratio x Bus Clock Frequency
+		double RelativeRatio=Turbo * C0 * (double) P->Boost[1];
+		double RelativeFreq=RelativeRatio * P->Clock;
 
 		printf("\tCore(%02d) @ %7.2f MHz\n", cpu, RelativeFreq);
-	  }	printf("\n");
-	  usleep(P->msleep * 10000);
+
 	}
 	return(NULL);
 }
@@ -99,15 +119,15 @@ typedef struct {
 	sigset_t Signal;
 	pthread_t TID;
 	int Started;
-} ARG;
+} SIG;
 
 static void *Emergency(void *arg)
 {
 	int caught=0;
-	ARG *A=(ARG *) arg;
-	pthread_setname_np(A->TID, "corefreqd-kill");
+	SIG *S=(SIG *) arg;
+	pthread_setname_np(S->TID, "corefreqd-kill");
 
-	while(!Shutdown && !sigwait(&A->Signal, &caught))
+	while(!Shutdown && !sigwait(&S->Signal, &caught))
 		switch(caught)
 		{
 			case SIGINT:
@@ -119,7 +139,7 @@ static void *Emergency(void *arg)
 		}
 	return(NULL);
 }
-
+/*
 void	abstimespec(useconds_t usec, struct timespec *tsec)
 {
 	tsec->tv_sec=usec / 1000000L;
@@ -143,12 +163,11 @@ int	addtimespec(struct timespec *asec, const struct timespec *tsec)
 	else
 		return(errno);
 }
-
+*/
 int main(void)
 {
 	PROC *P=NULL;
-	pthread_t TID;
-	ARG A={.Signal={0}, .TID=0, .Started=0};
+	SIG S={.Signal={0}, .TID=0, .Started=0};
 	uid_t UID=geteuid();
 
 	if(UID == 0)
@@ -162,38 +181,54 @@ int main(void)
 
 			if(P != NULL)
 			{
-				sigemptyset(&A.Signal);
-				sigaddset(&A.Signal, SIGINT);
-				sigaddset(&A.Signal, SIGQUIT);
-				sigaddset(&A.Signal, SIGUSR1);
-				sigaddset(&A.Signal, SIGTERM);
-				if(!pthread_sigmask(SIG_BLOCK, &A.Signal, NULL)
-				&& !pthread_create(&A.TID, NULL, Emergency, &A))
-					A.Started=1;
+				unsigned int cpu=0;
+				ARG *A=calloc(P->CPU.Count, sizeof(ARG));
 
-				if(!pthread_create(&TID, NULL, Core_Freq, P))
+				sigemptyset(&S.Signal);
+				sigaddset(&S.Signal, SIGINT);
+				sigaddset(&S.Signal, SIGQUIT);
+				sigaddset(&S.Signal, SIGUSR1);
+				sigaddset(&S.Signal, SIGTERM);
+				if(!pthread_sigmask(SIG_BLOCK, &S.Signal, NULL)
+				&& !pthread_create(&S.TID, NULL, Emergency, &S))
+					S.Started=1;
+
+				for(cpu=0; cpu < P->CPU.Count; cpu++)
 				{
-					while(!Shutdown)
-					{
-						usleep(10000);
-					}
-					// shutting down
-					struct timespec absoluteTime={.tv_sec=0, .tv_nsec=0},
-							gracePeriod={.tv_sec=0, .tv_nsec=0};
-					abstimespec(4000000, &absoluteTime);
-					if(!addtimespec(&gracePeriod, &absoluteTime)
-					&& pthread_timedjoin_np(TID, NULL, &gracePeriod))
-					{
-						pthread_kill(TID, SIGKILL);
-						pthread_join(TID, NULL);
-					}
+					A[cpu].Proc=P;
+					A[cpu].Bind=cpu;
+					pthread_create(	&A[cpu].TID,
+							NULL,
+							Core_Cycle,
+							&A[cpu]);
 				}
+				while(!Shutdown)
+				{
+					usleep(10000);
+				}
+
+				// shutting down
+/*
+				struct timespec absoluteTime={.tv_sec=0, .tv_nsec=0},
+						gracePeriod={.tv_sec=0, .tv_nsec=0};
+				abstimespec(4000000, &absoluteTime);
+				if(!addtimespec(&gracePeriod, &absoluteTime)
+				&& pthread_timedjoin_np(TID, NULL, &gracePeriod))
+				{
+					pthread_kill(TID, SIGKILL);
+					pthread_join(TID, NULL);
+				}
+*/
+				for(cpu=0; cpu < P->CPU.Count; cpu++)
+					pthread_join(A[cpu].TID, NULL);
+
+				free(A);
 				munmap(P, sizeof(PROC));
 
-				if(A.Started)
+				if(S.Started)
 				{
-					pthread_kill(A.TID, SIGUSR1);
-					pthread_join(A.TID, NULL);
+					pthread_kill(S.TID, SIGUSR1);
+					pthread_join(S.TID, NULL);
 				}
 			}
 			else
