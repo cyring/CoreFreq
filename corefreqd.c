@@ -4,6 +4,7 @@
  */
 
 #define _GNU_SOURCE
+#include <linux/types.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -18,11 +19,13 @@
 
 #include "intelfreq.h"
 
-unsigned int Shutdown=0x0;
+__u32 Shutdown=0x0;
+
+double RelativeFreq[_MAX_CPU_];
 
 typedef struct {
 	PROC		*Proc;
-	unsigned int	Bind;
+	__u32	Bind;
 	pthread_t	TID;
 } ARG;
 
@@ -30,7 +33,7 @@ typedef struct {
 static void *Core_Temp(void *arg)
 {
 	PROC *P=(PROC *) arg;
-	unsigned int cpu;
+	__u32 cpu;
 
 	while(!Shutdown)
 	{
@@ -50,7 +53,7 @@ static void *Core_Cycle(void *arg)
 {
 	ARG *A=(ARG *) arg;
 	PROC *P=A->Proc;
-	unsigned int cpu=A->Bind;
+	__u32 cpu=A->Bind;
 
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -107,9 +110,7 @@ static void *Core_Cycle(void *arg)
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		double RelativeRatio=Turbo * C0 * (double) P->Boost[1];
-		double RelativeFreq=RelativeRatio * P->Clock;
-
-		printf("\tCore(%02d) @ %7.2f MHz\n", cpu, RelativeFreq);
+		RelativeFreq[cpu]=RelativeRatio * P->Clock;
 
 	}
 	return(NULL);
@@ -118,12 +119,12 @@ static void *Core_Cycle(void *arg)
 typedef struct {
 	sigset_t Signal;
 	pthread_t TID;
-	int Started;
+	__s32 Started;
 } SIG;
 
 static void *Emergency(void *arg)
 {
-	int caught=0;
+	__s32 caught=0;
 	SIG *S=(SIG *) arg;
 	pthread_setname_np(S->TID, "corefreqd-kill");
 
@@ -146,9 +147,9 @@ void	abstimespec(useconds_t usec, struct timespec *tsec)
 	tsec->tv_nsec=(usec % 1000000L) * 1000;
 }
 
-int	addtimespec(struct timespec *asec, const struct timespec *tsec)
+__s32	addtimespec(struct timespec *asec, const struct timespec *tsec)
 {
-	int rc=0;
+	__s32 rc=0;
 	if((rc=clock_gettime(CLOCK_REALTIME, asec)) != -1)
 	{
 		if((asec->tv_nsec += tsec->tv_nsec) >= 1000000000L)
@@ -164,7 +165,7 @@ int	addtimespec(struct timespec *asec, const struct timespec *tsec)
 		return(errno);
 }
 */
-int main(void)
+__s32 main(void)
 {
 	PROC *P=NULL;
 	SIG S={.Signal={0}, .TID=0, .Started=0};
@@ -172,7 +173,7 @@ int main(void)
 
 	if(UID == 0)
 	{
-		int  fd=open(SHM_FILENAME, O_RDWR);
+		__s32  fd=open(SHM_FILENAME, O_RDWR);
 		if(fd != -1)
 		{
 			P=mmap(	NULL, sizeof(PROC),
@@ -181,8 +182,9 @@ int main(void)
 
 			if(P != NULL)
 			{
-				unsigned int cpu=0;
+				__u32 cpu=0;
 				ARG *A=calloc(P->CPU.Count, sizeof(ARG));
+				const char CLS[6+1]={27,'[','H',27,'[','J',0};
 
 				sigemptyset(&S.Signal);
 				sigaddset(&S.Signal, SIGINT);
@@ -204,7 +206,12 @@ int main(void)
 				}
 				while(!Shutdown)
 				{
-					usleep(10000);
+					usleep(P->msleep * 100);
+
+					printf("%s", CLS);
+					for(cpu=0; cpu < P->CPU.Count; cpu++)
+						printf(	"\tCore(%02d) @ %7.2f MHz\n",
+							cpu, RelativeFreq[cpu]);
 				}
 
 				// shutting down

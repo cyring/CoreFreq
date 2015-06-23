@@ -3,6 +3,7 @@
  * Licenses: GPL2
  */
 
+#include <linux/types.h>
 #include <linux/module.h>
 #include <linux/kthread.h>
 #include <linux/fs.h>
@@ -22,7 +23,7 @@ MODULE_LICENSE ("GPL");
 
 static struct
 {
-	int Major;
+	s32 Major;
 	struct cdev *kcdev;
 	dev_t nmdev, mkdev;
 	struct class *clsdev;
@@ -30,9 +31,9 @@ static struct
 
 static PROC *Proc=NULL;
 
-unsigned int Core_Count(void)
+__u32 Core_Count(void)
 {
-	unsigned int Count=0;
+	__u32 Count=0;
 
 	__asm__ volatile
 	(
@@ -50,7 +51,7 @@ unsigned int Core_Count(void)
 void Proc_Brand(void)
 {
 	char tmpString[48+1]={0x20};
-	int ix=0, jx=0, px=0;
+	__u32 ix=0, jx=0, px=0;
 	BRAND Brand;
 
 	for(ix=0; ix<3; ix++)
@@ -78,10 +79,10 @@ void Proc_Brand(void)
 			Proc->Brand[ix++]=tmpString[jx];
 }
 
-unsigned int Proc_Clock(unsigned int ratio)
+__u32 Proc_Clock(__u32 ratio)
 {
-	unsigned long long int TSC[2];
-	unsigned int Lo, Hi, Clock;
+	__u64 TSC[2];
+	__u32 Lo, Hi, Clock;
 
 	__asm__ volatile
 	(
@@ -89,8 +90,8 @@ unsigned int Proc_Clock(unsigned int ratio)
 		:"=a" (Lo),
 		 "=d" (Hi)
 	);
-	TSC[0]=((unsigned long long int) Lo)		\
-		| (((unsigned long long int) Hi) << 32);
+	TSC[0]=((__u64) Lo)		\
+		| (((__u64) Hi) << 32);
 
 	ssleep(1);
 
@@ -100,74 +101,59 @@ unsigned int Proc_Clock(unsigned int ratio)
 		:"=a" (Lo),
 		 "=d" (Hi)
 	);
-	TSC[1]=((unsigned long long int) Lo)		\
-		| (((unsigned long long int) Hi) << 32);
+	TSC[1]=((__u64) Lo)		\
+		| (((__u64) Hi) << 32);
 	TSC[1]-=TSC[0];
 
 	Clock=TSC[1] / (ratio * 1000000);
 	return(Clock);
 }
 
-void Core_Nehalem(unsigned int cpu, int T)
+void Core_Nehalem(__u32 cpu, __u32 T)
 {
-	register unsigned long long int Cx=0;
+	register __u64 Cx=0;
 
 	// Instructions Retired
-	RDMSR(	Proc->Core[cpu].Cycles.INST[T].Lo,
-		Proc->Core[cpu].Cycles.INST[T].Hi,
-		MSR_CORE_PERF_FIXED_CTR0);
+	RDMSR(Proc->Core[cpu].Cycles.INST[T], MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDMSR(	Proc->Core[cpu].Cycles.C0[T].UCC.Lo,
-		Proc->Core[cpu].Cycles.C0[T].UCC.Hi,
-		MSR_CORE_PERF_FIXED_CTR1);
-	RDMSR(	Proc->Core[cpu].Cycles.C0[T].URC.Lo,
-		Proc->Core[cpu].Cycles.C0[T].URC.Hi,
-		MSR_CORE_PERF_FIXED_CTR2);
+	RDMSR(Proc->Core[cpu].Cycles.C0[T].UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDMSR(Proc->Core[cpu].Cycles.C0[T].URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDMSR(	Proc->Core[cpu].Cycles.TSC[T].Lo,
-		Proc->Core[cpu].Cycles.TSC[T].Hi,
-		MSR_IA32_TSC);
+	RDMSR(Proc->Core[cpu].Cycles.TSC[T], MSR_IA32_TSC);
 
 	// C-States.
-	RDMSR(	Proc->Core[cpu].Cycles.C3[T].Lo,
-		Proc->Core[cpu].Cycles.C3[T].Hi,
-		MSR_CORE_C3_RESIDENCY);
-	RDMSR(	Proc->Core[cpu].Cycles.C6[T].Lo,
-		Proc->Core[cpu].Cycles.C6[T].Hi,
-		MSR_CORE_C6_RESIDENCY);
+	RDMSR(Proc->Core[cpu].Cycles.C3[T], MSR_CORE_C3_RESIDENCY);
+	RDMSR(Proc->Core[cpu].Cycles.C6[T], MSR_CORE_C6_RESIDENCY);
 
 	// Derive C1
-	Cx=	Proc->Core[cpu].Cycles.C6[T].r64	\
-		+ Proc->Core[cpu].Cycles.C3[T].r64	\
-		+ Proc->Core[cpu].Cycles.C0[T].URC.r64;
+	Cx=	Proc->Core[cpu].Cycles.C6[T].qword	\
+		+ Proc->Core[cpu].Cycles.C3[T].qword	\
+		+ Proc->Core[cpu].Cycles.C0[T].URC.qword;
 
-	Proc->Core[cpu].Cycles.C1[T]=				\
-		(Proc->Core[cpu].Cycles.TSC[T].r64 > Cx) ?	\
-			Proc->Core[cpu].Cycles.TSC[T].r64 - Cx	\
+	Proc->Core[cpu].Cycles.C1[T]=					\
+		(Proc->Core[cpu].Cycles.TSC[T].qword > Cx) ?		\
+			Proc->Core[cpu].Cycles.TSC[T].qword - Cx	\
 			: 0;
 }
 /*
-void Core_Temp(unsigned int cpu)
+void Core_Temp(__u32 cpu)
 {
-	RDMSR(	Proc->Core[cpu].TjMax.Lo,
-		Proc->Core[cpu].TjMax.Hi,
-		MSR_IA32_TEMPERATURE_TARGET)
-	RDMSR(	Proc->Core[cpu].ThermStat.Lo,
-		Proc->Core[cpu].ThermStat.Hi,
-		MSR_IA32_THERM_STATUS)
+	RDMSR(Proc->Core[cpu].TjMax, MSR_IA32_TEMPERATURE_TARGET)
+	RDMSR(Proc->Core[cpu].ThermStat, MSR_IA32_THERM_STATUS)
 }
 */
-int Core_Cycle(void *arg)
+s32 Core_Cycle(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+		__u32 cpu=Core->Bind;
 
 		Core_Nehalem(cpu, 0);
 
+		printk(">>> Core_Cycle(%u)\n", cpu);
 		while(!kthread_should_stop())
 		{
 			msleep(Proc->msleep);
@@ -176,35 +162,35 @@ int Core_Cycle(void *arg)
 
 			// Delta of Instructions Retired
 			Proc->Core[cpu].Delta.INST=			\
-				Proc->Core[cpu].Cycles.INST[1].r64	\
-				- Proc->Core[cpu].Cycles.INST[0].r64;
+				Proc->Core[cpu].Cycles.INST[1].qword	\
+				- Proc->Core[cpu].Cycles.INST[0].qword;
 
 			// Absolute Delta of Unhalted (Core & Ref) C0 Cycles.
-			Proc->Core[cpu].Delta.C0.UCC=                         \
-				(Proc->Core[cpu].Cycles.C0[0].UCC.r64 >       \
-				Proc->Core[cpu].Cycles.C0[1].UCC.r64) ?       \
-					Proc->Core[cpu].Cycles.C0[0].UCC.r64  \
-					- Proc->Core[cpu].Cycles.C0[1].UCC.r64\
-					: Proc->Core[cpu].Cycles.C0[1].UCC.r64\
-					- Proc->Core[cpu].Cycles.C0[0].UCC.r64;
+			Proc->Core[cpu].Delta.C0.UCC=				\
+				(Proc->Core[cpu].Cycles.C0[0].UCC.qword >	\
+				Proc->Core[cpu].Cycles.C0[1].UCC.qword) ?	\
+					Proc->Core[cpu].Cycles.C0[0].UCC.qword	\
+					- Proc->Core[cpu].Cycles.C0[1].UCC.qword\
+					: Proc->Core[cpu].Cycles.C0[1].UCC.qword\
+					- Proc->Core[cpu].Cycles.C0[0].UCC.qword;
 
 			Proc->Core[cpu].Delta.C0.URC=			\
-				Proc->Core[cpu].Cycles.C0[1].URC.r64	\
-				- Proc->Core[cpu].Cycles.C0[0].URC.r64;
+				Proc->Core[cpu].Cycles.C0[1].URC.qword	\
+				- Proc->Core[cpu].Cycles.C0[0].URC.qword;
 
 			Proc->Core[cpu].Delta.C3=			\
-				Proc->Core[cpu].Cycles.C3[1].r64	\
-				- Proc->Core[cpu].Cycles.C3[0].r64;
+				Proc->Core[cpu].Cycles.C3[1].qword	\
+				- Proc->Core[cpu].Cycles.C3[0].qword;
 			Proc->Core[cpu].Delta.C6=			\
-				Proc->Core[cpu].Cycles.C6[1].r64	\
-				- Proc->Core[cpu].Cycles.C6[0].r64;
+				Proc->Core[cpu].Cycles.C6[1].qword	\
+				- Proc->Core[cpu].Cycles.C6[0].qword;
 			Proc->Core[cpu].Delta.C7=			\
-				Proc->Core[cpu].Cycles.C7[1].r64	\
-				- Proc->Core[cpu].Cycles.C7[0].r64;
+				Proc->Core[cpu].Cycles.C7[1].qword	\
+				- Proc->Core[cpu].Cycles.C7[0].qword;
 
 			Proc->Core[cpu].Delta.TSC=			\
-				Proc->Core[cpu].Cycles.TSC[1].r64	\
-				- Proc->Core[cpu].Cycles.TSC[0].r64;
+				Proc->Core[cpu].Cycles.TSC[1].qword	\
+				- Proc->Core[cpu].Cycles.TSC[0].qword;
 
 			Proc->Core[cpu].Delta.C1=			\
 				(Proc->Core[cpu].Cycles.C1[0] >		\
@@ -241,24 +227,27 @@ int Core_Cycle(void *arg)
 
 			atomic_store(&Proc->Core[cpu].Sync, 0x1);
 		}
+		printk("<<< Core_Cycle(%u)\n", cpu);
 	}
 	return(0);
 }
 
-int Counter_Start(void *arg)
+s32 Counter_Set(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+		__u32 cpu=Core->Bind;
 
 		GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
 		FIXED_PERF_COUNTER FixedPerfCounter={0};
 		GLOBAL_PERF_STATUS Overflow={0};
 		GLOBAL_PERF_OVF_CTRL OvfControl={0};
 
-		RDMSR(	GlobalPerfCounter.Lo, GlobalPerfCounter.Hi,
-			MSR_CORE_PERF_GLOBAL_CTRL);
+		printk("Counter_Set(%u)\n", cpu);
+		while(!kthread_should_stop()) msleep(250);
+
+		RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
 		Proc->Core[cpu].SaveArea.GlobalPerfCounter=	\
 						GlobalPerfCounter;
@@ -266,11 +255,9 @@ int Counter_Start(void *arg)
 		GlobalPerfCounter.EN_FIXED_CTR1=1;
 		GlobalPerfCounter.EN_FIXED_CTR2=1;
 
-		WRMSR(	GlobalPerfCounter.Lo, GlobalPerfCounter.Hi,
-			MSR_CORE_PERF_GLOBAL_CTRL);
+		WRMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
-		RDMSR(	FixedPerfCounter.Lo, FixedPerfCounter.Hi,
-			MSR_CORE_PERF_FIXED_CTR_CTRL);
+		RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
 		Proc->Core[cpu].SaveArea.FixedPerfCounter=	\
 						FixedPerfCounter;
@@ -292,76 +279,75 @@ int Counter_Start(void *arg)
 			FixedPerfCounter.AnyThread_EN1=0;
 			FixedPerfCounter.AnyThread_EN2=0;
 		}
-		WRMSR(	FixedPerfCounter.Lo, FixedPerfCounter.Hi,
-			MSR_CORE_PERF_FIXED_CTR_CTRL);
+		WRMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
-		RDMSR(	Overflow.Lo, Overflow.Hi,
-			MSR_CORE_PERF_GLOBAL_STATUS);
+		RDMSR(Overflow, MSR_CORE_PERF_GLOBAL_STATUS);
 		if(Overflow.Overflow_CTR0)
 			OvfControl.Clear_Ovf_CTR0=1;
 		if(Overflow.Overflow_CTR1)
 			OvfControl.Clear_Ovf_CTR1=1;
 		if(Overflow.Overflow_CTR2)
 			OvfControl.Clear_Ovf_CTR2=1;
-		if(Overflow.Overflow_CTR0	\
+		if(Overflow.Overflow_CTR0		\
 			| Overflow.Overflow_CTR1	\
 			| Overflow.Overflow_CTR2)
-				WRMSR(	OvfControl.Lo, OvfControl.Hi,
+				WRMSR(	OvfControl,
 					MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 	}
 	return(0);
 }
 
-int Counter_Stop(void *arg)
+s32 Counter_Clear(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+		__u32 cpu=Core->Bind;
 
-		WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter.Lo,
-			Proc->Core[cpu].SaveArea.FixedPerfCounter.Hi,
+		printk("Counter_Clear(%u)\n", cpu);
+		while(!kthread_should_stop()) msleep(250);
+
+		WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter,
 			MSR_CORE_PERF_FIXED_CTR_CTRL);
 
-		WRMSR(	Proc->Core[cpu].SaveArea.GlobalPerfCounter.Lo,
-			Proc->Core[cpu].SaveArea.GlobalPerfCounter.Hi,
+		WRMSR(	Proc->Core[cpu].SaveArea.GlobalPerfCounter,
 			MSR_CORE_PERF_GLOBAL_CTRL);
 	}
 	return(0);
 }
 
-void Arch_Nehalem(unsigned int stage)
+void Arch_Nehalem(__u32 stage)
 {
-	unsigned int cpu=0;
+	__u32 cpu=0;
 
 	switch(stage)
 	{
 		case END:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-				Proc->Core[cpu].TID[COUNTER]= \
-					kthread_create(	Counter_Stop,
-							&Proc->Core[cpu],
-							"kintelstop%02d",
-							Proc->Core[cpu].Bind);
-				kthread_bind(Proc->Core[cpu].TID[COUNTER], cpu);
-				wake_up_process(Proc->Core[cpu].TID[COUNTER]);
-			}
+			    if((Proc->Core[cpu].TID[END]= \
+				kthread_create(	Counter_Clear,
+						&Proc->Core[cpu],
+						"kintelstop%02d",
+						Proc->Core[cpu].Bind)) !=0)
+				kthread_bind(Proc->Core[cpu].TID[END], cpu);
+
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(Proc->Core[cpu].TID[COUNTER])
-					kthread_stop(Proc->Core[cpu].TID[COUNTER]);
+			    if(Proc->Core[cpu].TID[END])
+				wake_up_process(Proc->Core[cpu].TID[END]);
+
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(Proc->Core[cpu].TID[END])
+				kthread_stop(Proc->Core[cpu].TID[END]);
 		}
 		break;
 		case INIT:
 		{
 			PLATFORM_INFO Platform={0};
 			TURBO_RATIO Turbo={0};
-//			TURBO_RATIO_64 Turbo={0};
 
-			RDMSR(Platform.Lo, Platform.Hi, MSR_NHM_PLATFORM_INFO);
-			RDMSR(Turbo.Lo, Turbo.Hi, MSR_NHM_TURBO_RATIO_LIMIT);
-//			RDMSR64(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			Proc->Boost[0]=Platform.MinimumRatio;
 			Proc->Boost[1]=Platform.MaxNonTurboRatio;
@@ -375,20 +361,20 @@ void Arch_Nehalem(unsigned int stage)
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
 
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-				Proc->Core[cpu].Bind=cpu;
-				Proc->Core[cpu].TID[COUNTER]= \
-					kthread_create(	Counter_Start,
-							&Proc->Core[cpu],
-							"kintelstart%02d",
-							Proc->Core[cpu].Bind);
+			    if((Proc->Core[cpu].TID[INIT]= \
+				kthread_create(	Counter_Set,
+						&Proc->Core[cpu],
+						"kintelstart%02d",
+						Proc->Core[cpu].Bind)) != 0)
+				kthread_bind(Proc->Core[cpu].TID[INIT], cpu);
 
-				kthread_bind(Proc->Core[cpu].TID[COUNTER], cpu);
-				wake_up_process(Proc->Core[cpu].TID[COUNTER]);
-			}
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(Proc->Core[cpu].TID[COUNTER])
-					kthread_stop(Proc->Core[cpu].TID[COUNTER]);
+			    if(Proc->Core[cpu].TID[INIT])
+				wake_up_process(Proc->Core[cpu].TID[INIT]);
+
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(Proc->Core[cpu].TID[INIT])
+				kthread_stop(Proc->Core[cpu].TID[INIT]);
 		}
 		break;
 		case STOP:
@@ -401,24 +387,22 @@ void Arch_Nehalem(unsigned int stage)
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-				Proc->Core[cpu].TID[CYCLE]=	\
-					kthread_create(
-						Core_Cycle,
+			    if((Proc->Core[cpu].TID[CYCLE]= \
+				kthread_create(	Core_Cycle,
 						&Proc->Core[cpu],
 						"kintelfreq%02d",
-						Proc->Core[cpu].Bind);
+						Proc->Core[cpu].Bind)) !=0)
 				kthread_bind(Proc->Core[cpu].TID[CYCLE], cpu);
-			}
+
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(Proc->Core[cpu].TID[CYCLE])
-					wake_up_process(Proc->Core[cpu].TID[CYCLE]);
+			    if(Proc->Core[cpu].TID[CYCLE])
+				wake_up_process(Proc->Core[cpu].TID[CYCLE]);
 		}
 		break;
 	}
 }
 
-static int IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
+static s32 IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	if(Proc)
 	{
@@ -427,7 +411,7 @@ static int IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
 	return(0);
 }
 
-static int IntelFreq_release(struct inode *inode, struct file *file)
+static s32 IntelFreq_release(struct inode *inode, struct file *file)
 {
 	if(Proc)
 		Proc->msleep=LOOP_DEF_MS;
@@ -441,7 +425,7 @@ static struct file_operations IntelFreq_fops=
 	.release= IntelFreq_release
 };
 
-static int __init IntelFreq_init(void)
+static s32 __init IntelFreq_init(void)
 {
 	Proc=vmalloc_user(sizeof(PROC));
 	Proc->msleep=LOOP_DEF_MS;
@@ -466,15 +450,17 @@ static int __init IntelFreq_init(void)
 						 IntelFreq.mkdev, NULL,
 						 SHM_DEVNAME)) != NULL)
 			{
-				unsigned int count=0;
+				__u32 count=0;
 
 				count=Core_Count();
 				Proc->CPU.Count=(!count) ? 1 : count;
 				Proc->CPU.OnLine=Proc->CPU.Count;
 
 				for(count=0; count < Proc->CPU.Count; count++)
+				{
+					Proc->Core[count].Bind=count;
 					atomic_init(&Proc->Core[count].Sync, 0x0);
-
+				}
 				Proc_Brand();
 
 				Arch_Nehalem(INIT);
@@ -530,7 +516,7 @@ static void __exit IntelFreq_cleanup(void)
 	{
 		Arch_Nehalem(STOP);
 		Arch_Nehalem(END);
-
+		msleep(250);
 		vfree(Proc);
 	}
 }
