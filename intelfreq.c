@@ -150,13 +150,20 @@ s32 Core_Cycle(void *arg)
 	{
 		CORE *Core=(CORE *) arg;
 		__u32 cpu=Core->Bind;
+		__u32 leave=0, down=0, steps=Proc->msleep / 100;
 
 		Core_Nehalem(cpu, 0);
 
-		printk(">>> Core_Cycle(%u)\n", cpu);
-		while(!kthread_should_stop())
+//		printk(">>> Core_Cycle(%u)\n", cpu);
+		while(!leave)
 		{
-			msleep(Proc->msleep);
+			down=steps;
+			do {
+				if(!kthread_should_stop())
+					msleep(100);
+				else
+					leave=1;
+			} while(--down && !leave);
 
 			Core_Nehalem(cpu, 1);
 
@@ -227,9 +234,9 @@ s32 Core_Cycle(void *arg)
 
 			atomic_store(&Proc->Core[cpu].Sync, 0x1);
 		}
-		printk("<<< Core_Cycle(%u)\n", cpu);
+//		printk("<<< Core_Cycle(%u)\n", cpu);
 	}
-	return(0);
+	do_exit(0);
 }
 
 s32 Counter_Set(void *arg)
@@ -244,8 +251,9 @@ s32 Counter_Set(void *arg)
 		GLOBAL_PERF_STATUS Overflow={0};
 		GLOBAL_PERF_OVF_CTRL OvfControl={0};
 
-		printk("Counter_Set(%u)\n", cpu);
-		while(!kthread_should_stop()) msleep(250);
+//		printk("Counter_Set(%u)\n", cpu);
+		while(!kthread_should_stop())
+			msleep(50);
 
 		RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
@@ -294,7 +302,7 @@ s32 Counter_Set(void *arg)
 				WRMSR(	OvfControl,
 					MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 	}
-	return(0);
+	do_exit(0);
 }
 
 s32 Counter_Clear(void *arg)
@@ -304,8 +312,9 @@ s32 Counter_Clear(void *arg)
 		CORE *Core=(CORE *) arg;
 		__u32 cpu=Core->Bind;
 
-		printk("Counter_Clear(%u)\n", cpu);
-		while(!kthread_should_stop()) msleep(250);
+//		printk("Counter_Clear(%u)\n", cpu);
+		while(!kthread_should_stop())
+			msleep(50);
 
 		WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter,
 			MSR_CORE_PERF_FIXED_CTR_CTRL);
@@ -313,7 +322,7 @@ s32 Counter_Clear(void *arg)
 		WRMSR(	Proc->Core[cpu].SaveArea.GlobalPerfCounter,
 			MSR_CORE_PERF_GLOBAL_CTRL);
 	}
-	return(0);
+	do_exit(0);
 }
 
 void Arch_Nehalem(__u32 stage)
@@ -325,20 +334,28 @@ void Arch_Nehalem(__u32 stage)
 		case END:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if((Proc->Core[cpu].TID[END]= \
+			{
+				Proc->Core[cpu].TID[END]= \
 				kthread_create(	Counter_Clear,
 						&Proc->Core[cpu],
 						"kintelstop%02d",
-						Proc->Core[cpu].Bind)) !=0)
-				kthread_bind(Proc->Core[cpu].TID[END], cpu);
+						Proc->Core[cpu].Bind);
 
+				if(!IS_ERR(Proc->Core[cpu].TID[END]))
+				{
+					kthread_bind(Proc->Core[cpu].TID[END], cpu);
+					wake_up_process(Proc->Core[cpu].TID[END]);
+				}
+/*				else
+					printk("END: kthread_create(%d)\n",
+					       Proc->Core[cpu].Bind);	*/
+			}
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(Proc->Core[cpu].TID[END])
-				wake_up_process(Proc->Core[cpu].TID[END]);
-
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(Proc->Core[cpu].TID[END])
-				kthread_stop(Proc->Core[cpu].TID[END]);
+				if(!IS_ERR(Proc->Core[cpu].TID[END]))
+					kthread_stop(Proc->Core[cpu].TID[END]);
+/*				else
+					printk("END: kthread_stop(%d)\n",
+					       Proc->Core[cpu].Bind);	*/
 		}
 		break;
 		case INIT:
@@ -361,41 +378,51 @@ void Arch_Nehalem(__u32 stage)
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
 
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if((Proc->Core[cpu].TID[INIT]= \
+			{
+			    	Proc->Core[cpu].TID[INIT]= \
 				kthread_create(	Counter_Set,
 						&Proc->Core[cpu],
 						"kintelstart%02d",
-						Proc->Core[cpu].Bind)) != 0)
-				kthread_bind(Proc->Core[cpu].TID[INIT], cpu);
+						Proc->Core[cpu].Bind);
 
+				if(!IS_ERR(Proc->Core[cpu].TID[INIT]))
+				{
+					kthread_bind(Proc->Core[cpu].TID[INIT], cpu);
+					wake_up_process(Proc->Core[cpu].TID[INIT]);
+				}
+/*				else
+					printk("INIT: kthread_create(%d)\n",
+					       Proc->Core[cpu].Bind);	*/
+			}
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(Proc->Core[cpu].TID[INIT])
-				wake_up_process(Proc->Core[cpu].TID[INIT]);
-
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(Proc->Core[cpu].TID[INIT])
-				kthread_stop(Proc->Core[cpu].TID[INIT]);
+				if(!IS_ERR(Proc->Core[cpu].TID[INIT]))
+					kthread_stop(Proc->Core[cpu].TID[INIT]);
+/*				else
+					printk("INIT: kthread_stop(%d)\n",
+					       Proc->Core[cpu].Bind);	*/
 		}
 		break;
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(Proc->Core[cpu].TID[CYCLE])
-					kthread_stop(Proc->Core[cpu].TID[CYCLE]);
+			    if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
+				kthread_stop(Proc->Core[cpu].TID[CYCLE]);
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if((Proc->Core[cpu].TID[CYCLE]= \
+			{
+				Proc->Core[cpu].TID[CYCLE]= \
 				kthread_create(	Core_Cycle,
 						&Proc->Core[cpu],
 						"kintelfreq%02d",
-						Proc->Core[cpu].Bind)) !=0)
-				kthread_bind(Proc->Core[cpu].TID[CYCLE], cpu);
-
+						Proc->Core[cpu].Bind);
+				if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
+				    kthread_bind(Proc->Core[cpu].TID[CYCLE], cpu);
+			}
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(Proc->Core[cpu].TID[CYCLE])
+			    if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
 				wake_up_process(Proc->Core[cpu].TID[CYCLE]);
 		}
 		break;
@@ -516,7 +543,6 @@ static void __exit IntelFreq_cleanup(void)
 	{
 		Arch_Nehalem(STOP);
 		Arch_Nehalem(END);
-		msleep(250);
 		vfree(Proc);
 	}
 }
