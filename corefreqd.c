@@ -21,7 +21,24 @@
 
 __u32 Shutdown=0x0;
 
-double RelativeFreq[_MAX_CPU_];
+struct {
+	double	IPS,
+		IPC,
+		CPI,
+		Turbo,
+		C0,
+		C3,
+		C6,
+		C7,
+		C1;
+
+	struct {
+	double	Ratio,
+		Freq;
+	} Relative;
+
+	__u64 Temperature;
+} C[_MAX_CPU_];
 
 typedef struct {
 	PROC		*Proc;
@@ -29,26 +46,7 @@ typedef struct {
 	pthread_t	TID;
 } ARG;
 
-/*
-static void *Core_Temp(void *arg)
-{
-	PROC *P=(PROC *) arg;
-	__u32 cpu;
 
-	while(!Shutdown)
-	{
-		for(cpu=0; cpu < P->CPU.Count; cpu++)
-		{
-			P->Core[cpu].Temp=P->Core[cpu].TjMax.Target	\
-						- P->Core[cpu].ThermStat.DTS;
-
-			printf("\tCore(%02d) @ %d°C\n", cpu, P->Core[cpu].Temp);
-		}	printf("\n");
-		usleep(P->msleep * 1000);
-	}
-	return(NULL);
-}
-*/
 static void *Core_Cycle(void *arg)
 {
 	ARG *A=(ARG *) arg;
@@ -72,46 +70,52 @@ static void *Core_Cycle(void *arg)
 		atomic_store(&P->Core[cpu].Sync, 0x0);
 
 		// Compute IPS=Instructions per TSC
-		double IPS=	(double) (P->Core[cpu].Delta.INST)	\
+		C[cpu].IPS=	(double) (P->Core[cpu].Delta.INST)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		double IPC=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
+		C[cpu].IPC=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
 					(double) (P->Core[cpu].Delta.INST)	\
 					/ (double) P->Core[cpu].Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		double CPI=	(double) (P->Core[cpu].Delta.INST != 0) ?	\
+		C[cpu].CPI=	(double) (P->Core[cpu].Delta.INST != 0) ?	\
 					(double) P->Core[cpu].Delta.C0.URC	\
 					/ (double) (P->Core[cpu].Delta.INST)	\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		double Turbo=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
+		C[cpu].Turbo=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
 					(double) (P->Core[cpu].Delta.C0.UCC)	\
 					/ (double) P->Core[cpu].Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-		double C0=(double) (P->Core[cpu].Delta.C0.URC)	\
+		C[cpu].C0=(double) (P->Core[cpu].Delta.C0.URC)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
-		double C3=(double) (P->Core[cpu].Delta.C3)	\
+		C[cpu].C3=(double) (P->Core[cpu].Delta.C3)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
-		double C6=(double) (P->Core[cpu].Delta.C6)	\
+		C[cpu].C6=(double) (P->Core[cpu].Delta.C6)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
-		double C7=(double) (P->Core[cpu].Delta.C7)	\
+		C[cpu].C7=(double) (P->Core[cpu].Delta.C7)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
-		double C1=(double) (P->Core[cpu].Delta.C1)	\
+		C[cpu].C1=(double) (P->Core[cpu].Delta.C1)	\
 				/ (double) (P->Core[cpu].Delta.TSC);
+
+		C[cpu].Relative.Ratio=	C[cpu].Turbo		\
+					* C[cpu].C0		\
+					* (double) P->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-		double RelativeRatio=Turbo * C0 * (double) P->Boost[1];
-		RelativeFreq[cpu]=RelativeRatio * P->Clock;
+		C[cpu].Relative.Freq=C[cpu].Relative.Ratio * P->Clock.Q;
+		C[cpu].Relative.Freq+=(C[cpu].Relative.Ratio / P->Clock.R) / 1000000L;
 
+		C[cpu].Temperature=P->Core[cpu].TjMax.Target		\
+					- P->Core[cpu].ThermStat.DTS;
 	}
 	return(NULL);
 }
@@ -210,10 +214,12 @@ __s32 main(void)
 
 					printf("%s", CLS);
 					for(cpu=0; cpu < P->CPU.Count; cpu++)
-						printf(	"\tCore(%02d) @ %7.2f MHz\n",
-							cpu, RelativeFreq[cpu]);
+						printf("Core[%02d]%8.2f (%12.6f) MHz @ %llu°C\n",
+							cpu,
+							C[cpu].Relative.Freq,
+							C[cpu].Relative.Ratio,
+							C[cpu].Temperature);
 				}
-
 				// shutting down
 /*
 				struct timespec absoluteTime={.tv_sec=0, .tv_nsec=0},

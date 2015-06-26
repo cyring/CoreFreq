@@ -12,29 +12,34 @@
 #define	LOOP_MIN_MS	100
 #define LOOP_MAX_MS	5000
 #define	LOOP_DEF_MS	1000
-/*
-#define RDMSR(_lo, _hi,  _reg)	\
-	__asm__ volatile	\
-	(			\
-		"rdmsr ;"	\
-                : "=a" (_lo),	\
-		  "=d" (_hi)	\
-		: "c" (_reg)	\
+
+#define RDCNT(_val,  _cnt)		\
+({					\
+	__u32 _lo, _hi;			\
+					\
+	__asm__ volatile		\
+	(				\
+		"rdmsr ;"		\
+                : "=a" (_lo),		\
+		  "=d" (_hi)		\
+		: "c" (_cnt)		\
+	);				\
+	_val=_lo | ((__u64) _hi << 32);	\
+})
+
+#define WRCNT(_val,  _cnt)		\
+	__asm__ volatile		\
+	(				\
+		"wrmsr ;"		\
+		:			\
+		: "c" (_cnt),		\
+		  "a" ((__u32) _val & 0xFFFFFFFF),	\
+		  "d" ((__u32) (_val >> 32))	\
 	);
 
-#define WRMSR(_lo, _hi,  _reg)	\
-	__asm__ volatile	\
-	(			\
-		"wrmsr ;"	\
-		:		\
-		: "c" (_reg),	\
-		  "a" (_lo),	\
-		  "d" (_hi)	\
-	);
-*/
 #define RDMSR(_val, _reg)	\
 ({				\
-	__u32 _lo, _hi;	\
+	__u32 _lo, _hi;		\
 				\
 	__asm__ volatile	\
 	(			\
@@ -336,31 +341,20 @@ typedef struct
 
 	struct
 	{
-		union
-		{
-			__u64 qword;
-		}
-				INST[2];
+		__u64 		INST;
 		struct
 		{
-			union
-			{
-				__u64 qword;
-			}
-				UCC,
+			__u64	UCC,
 				URC;
-		}		C0[2];
-		union
-		{
-			__u64 qword;
-		}
-				C3[2],
-				C6[2],
-				C7[2],
-				TSC[2];
+		}		C0;
+			__u64
+				C3,
+				C6,
+				C7,
+				TSC;
 
-		__u64		C1[2];
-	} Cycles;
+		__u64		C1;
+	} Counter[2];
 
 	struct
 	{
@@ -380,11 +374,16 @@ typedef struct
 				C1;
 	} Delta;
 
-	int			Temp;
+	__s32			Temp;
 	TJMAX			TjMax;
 	THERM_STATUS		ThermStat;
 } CORE;
 
+typedef struct
+{
+	__u32	Q;
+	__u64	R;
+} CLOCK;
 
 typedef struct
 {
@@ -397,8 +396,9 @@ typedef struct
 
 	char			Brand[48+1];
 	__u32			Boost[1+1+8],
-				PerCore,
-				Clock;
+				PerCore;
+
+	CLOCK			Clock;
 
 	CORE			Core[_MAX_CPU_];
 } PROC;
