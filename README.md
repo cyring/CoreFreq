@@ -46,8 +46,10 @@ rmmod intelfreq.ko
 ## Screenshots
  * Use ```dmesg``` to check if the driver is started
 ```
-IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] [8 x CPU]
-[Clock @ 146 MHz]  Ratio={12,20,0,0,0,0,21,21,21,22}
+kernel: IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+        Signature [06_1A] Architecture [Nehalem/Bloomfield]
+        8/8 CPU Online Clock @ {146/2939676106} MHz
+        Ratio={12,20,0,0,0,0,21,21,21,22}
 ```
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
