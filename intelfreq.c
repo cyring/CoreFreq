@@ -3,7 +3,6 @@
  * Licenses: GPL2
  */
 
-#include <linux/types.h>
 #include <linux/module.h>
 #include <linux/kthread.h>
 #include <linux/fs.h>
@@ -23,7 +22,7 @@ MODULE_LICENSE ("GPL");
 
 static struct
 {
-	__s32 Major;
+	signed int Major;
 	struct cdev *kcdev;
 	dev_t nmdev, mkdev;
 	struct class *clsdev;
@@ -31,9 +30,42 @@ static struct
 
 static PROC *Proc=NULL;
 
-__u32 Core_Count(void)
+static ARCH Arch[ARCHITECTURES]=
 {
-	__u32 Count=0;
+	{ _GenuineIntel,       Arch_Genuine,     "Genuine" },
+	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah" },
+	{ _Core_Conroe,        Arch_Genuine,     "Core2/Conroe" },
+	{ _Core_Kentsfield,    Arch_Genuine,     "Core2/Kentsfield" },
+	{ _Core_Yorkfield,     Arch_Genuine,     "Core2/Yorkfield" },
+	{ _Core_Dunnington,    Arch_Genuine,     "Xeon/Dunnington" },
+	{ _Atom_Bonnell,       Arch_Genuine,     "Atom/Bonnell" },
+	{ _Atom_Silvermont,    Arch_Genuine,     "Atom/Silvermont" },
+	{ _Atom_Lincroft,      Arch_Genuine,     "Atom/Lincroft" },
+	{ _Atom_Clovertrail,   Arch_Genuine,     "Atom/Clovertrail" },
+	{ _Atom_Saltwell,      Arch_Genuine,     "Atom/Saltwell" },
+	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont" },
+	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont" },
+	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield" },
+	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield" },
+	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile" },
+	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP" },
+	{ _Westmere,           Arch_Nehalem,     "Westmere" },
+	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP" },
+	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme" },
+	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge" },
+	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP" },
+	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge" },
+	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP" },
+	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop" },
+	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile" },
+	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP" },
+	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme" },
+};
+
+
+unsigned int Core_Count(void)
+{
+	unsigned int count=0;
 
 	__asm__ volatile
 	(
@@ -43,15 +75,15 @@ __u32 Core_Count(void)
 		"shr	$26, %%rax;"
 		"and	$0x3f, %%rax;"
 		"add	$1, %%rax;"
-		: "=a"	(Count)
+		: "=a"	(count)
 	);
-	return(Count);
+	return((!count) ? 1 : count);
 }
 
-void Proc_Brand(void)
+void Proc_Brand(char *pBrand)
 {
 	char tmpString[48+1]={0x20};
-	__u32 ix=0, jx=0, px=0;
+	unsigned int ix=0, jx=0, px=0;
 	BRAND Brand;
 
 	for(ix=0; ix<3; ix++)
@@ -76,13 +108,113 @@ void Proc_Brand(void)
 	}
 	for(ix=jx=0; jx < px; jx++)
 		if(!(tmpString[jx] == 0x20 && tmpString[jx+1] == 0x20))
-			Proc->Brand[ix++]=tmpString[jx];
+			pBrand[ix++]=tmpString[jx];
 }
 
-CLOCK Proc_Clock(__u32 ratio)
+// Retreive the Processor features through calls to the CPUID instruction.
+void	Proc_Features(FEATURES *features)
 {
-	__u64 TSC[2];
-	__u32 Lo, Hi;
+	int BX=0, DX=0, CX=0;
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=b"	(BX),
+		  "=d"	(DX),
+		  "=c"	(CX)
+                : "a" (0x0)
+	);
+	features->VendorID[ 0]=BX;
+	features->VendorID[ 1]=(BX >> 8);
+	features->VendorID[ 2]=(BX >> 16);
+	features->VendorID[ 3]=(BX >> 24);
+	features->VendorID[ 4]=DX;
+	features->VendorID[ 5]=(DX >> 8);
+	features->VendorID[ 6]=(DX >> 16);
+	features->VendorID[ 7]=(DX >> 24);
+	features->VendorID[ 8]=CX;
+	features->VendorID[ 9]=(CX >> 8);
+	features->VendorID[10]=(CX >> 16);
+	features->VendorID[11]=(CX >> 24);
+
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=a"	(features->Std.AX),
+		  "=b"	(features->Std.BX),
+		  "=c"	(features->Std.CX),
+		  "=d"	(features->Std.DX)
+                : "a" (0x1)
+	);
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=a"	(features->MONITOR_MWAIT_Leaf.AX),
+		  "=b"	(features->MONITOR_MWAIT_Leaf.BX),
+		  "=c"	(features->MONITOR_MWAIT_Leaf.CX),
+		  "=d"	(features->MONITOR_MWAIT_Leaf.DX)
+                : "a" (0x5)
+	);
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=a"	(features->Thermal_Power_Leaf.AX),
+		  "=b"	(features->Thermal_Power_Leaf.BX),
+		  "=c"	(features->Thermal_Power_Leaf.CX),
+		  "=d"	(features->Thermal_Power_Leaf.DX)
+                : "a" (0x6)
+	);
+	__asm__ volatile
+	(
+		"xorq	%%rbx, %%rbx    \n\t"
+		"xorq	%%rcx, %%rcx    \n\t"
+		"xorq	%%rdx, %%rdx    \n\t"
+		"cpuid"
+		: "=a"	(features->ExtFeature.AX),
+		  "=b"	(features->ExtFeature.BX),
+		  "=c"	(features->ExtFeature.CX),
+		  "=d"	(features->ExtFeature.DX)
+                : "a" (0x7)
+	);
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=a"	(features->Perf_Monitoring_Leaf.AX),
+		  "=b"	(features->Perf_Monitoring_Leaf.BX),
+		  "=c"	(features->Perf_Monitoring_Leaf.CX),
+		  "=d"	(features->Perf_Monitoring_Leaf.DX)
+                : "a" (0xa)
+	);
+	__asm__ volatile
+	(
+		"cpuid"
+		: "=a"	(features->LargestExtFunc)
+                : "a" (0x80000000)
+	);
+	if(features->LargestExtFunc >= 0x80000004 && features->LargestExtFunc <= 0x80000008)
+	{
+		__asm__ volatile
+		(
+			"cpuid                   \n\t"
+			"and	$0x100, %%rdx    \n\t"
+			"shr	$8, %%rdx"
+			: "=d"	(features->InvariantTSC)
+			: "a" (0x80000007)
+		);
+		__asm__ volatile
+		(
+			"cpuid"
+			: "=c"	(features->ExtFunc.CX),
+			  "=d"	(features->ExtFunc.DX)
+			: "a" (0x80000001)
+		);
+	}
+	Proc_Brand(features->Brand);
+}
+
+CLOCK Proc_Clock(unsigned int ratio)
+{
+	unsigned long long TSC[2];
+	unsigned int Lo, Hi;
 	CLOCK clock;
 
 	__asm__ volatile
@@ -91,8 +223,8 @@ CLOCK Proc_Clock(__u32 ratio)
 		:"=a" (Lo),
 		 "=d" (Hi)
 	);
-	TSC[0]=((__u64) Lo)		\
-		| (((__u64) Hi) << 32);
+	TSC[0]=((unsigned long long) Lo)		\
+		| (((unsigned long long) Hi) << 32);
 
 	ssleep(1);
 
@@ -102,7 +234,7 @@ CLOCK Proc_Clock(__u32 ratio)
 		:"=a" (Lo),
 		 "=d" (Hi)
 	);
-	TSC[1]=((__u64) Lo) | (((__u64) Hi) << 32);
+	TSC[1]=((unsigned long long) Lo) | (((unsigned long long) Hi) << 32);
 	TSC[1]-=TSC[0];
 
 	clock.Q=TSC[1] / (ratio * 1000000L);
@@ -110,100 +242,186 @@ CLOCK Proc_Clock(__u32 ratio)
 
 	return(clock);
 }
-/*
-__s32 Counter_Set(void *arg)
+
+// Enumerate the Processor's Cores and Threads topology.
+signed int Read_APIC(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		__u32 cpu=Core->Bind;
-*/
-void Counters_Set(__u32 cpu)
-{
-		GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
-		FIXED_PERF_COUNTER FixedPerfCounter={0};
-		GLOBAL_PERF_STATUS Overflow={0};
-		GLOBAL_PERF_OVF_CTRL OvfControl={0};
 
-		printk("Counters_Set(%u)\n", cpu);
-/*		while(!kthread_should_stop())
-			msleep(50);	*/
+		signed int	InputLevel=0, NoMoreLevels=0,
+			SMT_Mask_Width=0, SMT_Select_Mask=0,
+			CorePlus_Mask_Width=0, CoreOnly_Select_Mask=0;
 
-		RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
-
-		Proc->Core[cpu].SaveArea.GlobalPerfCounter=	\
-						GlobalPerfCounter;
-		GlobalPerfCounter.EN_FIXED_CTR0=1;
-		GlobalPerfCounter.EN_FIXED_CTR1=1;
-		GlobalPerfCounter.EN_FIXED_CTR2=1;
-
-		WRMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
-
-		RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
-
-		Proc->Core[cpu].SaveArea.FixedPerfCounter=	\
-						FixedPerfCounter;
-		FixedPerfCounter.EN0_OS=1;
-		FixedPerfCounter.EN1_OS=1;
-		FixedPerfCounter.EN2_OS=1;
-		FixedPerfCounter.EN0_Usr=1;
-		FixedPerfCounter.EN1_Usr=1;
-		FixedPerfCounter.EN2_Usr=1;
-		if(Proc->PerCore)
+		CPUID_TOPOLOGY_LEAF ExtTopology=
 		{
-			FixedPerfCounter.AnyThread_EN0=1;
-			FixedPerfCounter.AnyThread_EN1=1;
-			FixedPerfCounter.AnyThread_EN2=1;
-		}
-		else	// Per Thread
+			.AX.Register=0,
+			.BX.Register=0,
+			.CX.Register=0,
+			.DX.Register=0
+		};
+		do
 		{
-			FixedPerfCounter.AnyThread_EN0=0;
-			FixedPerfCounter.AnyThread_EN1=0;
-			FixedPerfCounter.AnyThread_EN2=0;
-		}
-		WRMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+			__asm__ volatile
+			(
+				"cpuid"
+				: "=a"	(ExtTopology.AX),
+				  "=b"	(ExtTopology.BX),
+				  "=c"	(ExtTopology.CX),
+				  "=d"	(ExtTopology.DX)
+				:  "a"	(0xb),
+				   "c"	(InputLevel)
+			);
+			// Exit from the loop if the BX register equals 0;
+			// or if the requested level exceeds the level of a Core.
+			if(!ExtTopology.BX.Register || (InputLevel > LEVEL_CORE))
+				NoMoreLevels=1;
+			else
+			{
+			    switch(ExtTopology.CX.Type)
+			    {
+			    case LEVEL_THREAD:
+				{
+				SMT_Mask_Width = ExtTopology.AX.SHRbits;
+				SMT_Select_Mask= ~((-1) << SMT_Mask_Width );
+				Core->T.ThreadID=ExtTopology.DX.x2ApicID\
+						& SMT_Select_Mask;
 
-		RDMSR(Overflow, MSR_CORE_PERF_GLOBAL_STATUS);
-		if(Overflow.Overflow_CTR0)
-			OvfControl.Clear_Ovf_CTR0=1;
-		if(Overflow.Overflow_CTR1)
-			OvfControl.Clear_Ovf_CTR1=1;
-		if(Overflow.Overflow_CTR2)
-			OvfControl.Clear_Ovf_CTR2=1;
-		if(Overflow.Overflow_CTR0		\
-			| Overflow.Overflow_CTR1	\
-			| Overflow.Overflow_CTR2)
-				WRMSR(	OvfControl,
-					MSR_CORE_PERF_GLOBAL_OVF_CTRL);
-/*	}
-	do_exit(0);	*/
+				if((Core->T.ThreadID > 0)
+				&& !Proc->Features.HTT_enabled)
+					Proc->Features.HTT_enabled=1;
+				}
+				break;
+			    case LEVEL_CORE:
+				{
+				CorePlus_Mask_Width=ExtTopology.AX.SHRbits;
+				CoreOnly_Select_Mask=				\
+					(~((-1) << CorePlus_Mask_Width ) )	\
+					^ SMT_Select_Mask;
+				Core->T.CoreID=					\
+				(ExtTopology.DX.x2ApicID & CoreOnly_Select_Mask)\
+					>> SMT_Mask_Width;
+				}
+				break;
+			    }
+			}
+			InputLevel++;
+		}
+		while(!NoMoreLevels);
+
+		Core->T.ApicID=ExtTopology.DX.x2ApicID;
+	}
+	while(!kthread_should_stop())
+		msleep(50);
+	do_exit(0);
 }
-/*
-__s32 Counter_Clear(void *arg)
+
+unsigned int Proc_Topology(void)
 {
-	if(arg != NULL)
+	unsigned int cpu=0, CountEnabledCPU=0;
+
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
-		CORE *Core=(CORE *) arg;
-		__u32 cpu=Core->Bind;
-*/
-void Counters_Clear(__u32 cpu)
-{
-		printk("Counters_Clear(%u)\n", cpu);
-/*		while(!kthread_should_stop())
-			msleep(50);	*/
+		if(!Proc->Core[cpu].OffLine)
+		{
+			Proc->Core[cpu].TID[APIC_TID]= \
+				kthread_create(	Read_APIC,
+						&Proc->Core[cpu],
+						"kintelapic-%03d",
+						Proc->Core[cpu].Bind);
 
-		WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter,
-			MSR_CORE_PERF_FIXED_CTR_CTRL);
-
-		WRMSR(	Proc->Core[cpu].SaveArea.GlobalPerfCounter,
-			MSR_CORE_PERF_GLOBAL_CTRL);
-/*	}
-	do_exit(0);	*/
+			if(!IS_ERR(Proc->Core[cpu].TID[APIC_TID]))
+			{
+				kthread_bind(Proc->Core[cpu].TID[APIC_TID], cpu);
+				wake_up_process(Proc->Core[cpu].TID[APIC_TID]);
+			}
+			CountEnabledCPU++;
+		}
+		else
+		{
+			Proc->Core[cpu].T.ApicID=-1;
+			Proc->Core[cpu].T.CoreID=-1;
+			Proc->Core[cpu].T.ThreadID=-1;
+		}
+	}
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		if(!Proc->Core[cpu].OffLine
+		&& !IS_ERR(Proc->Core[cpu].TID[APIC_TID]))
+		{
+			kthread_stop(Proc->Core[cpu].TID[APIC_TID]);
+		}
+	return(CountEnabledCPU);
 }
 
-void Core_Nehalem(__u32 cpu, __u32 T)
+
+void Counters_Set(unsigned int cpu)
 {
-	register __u64 Cx=0;
+	GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
+	FIXED_PERF_COUNTER FixedPerfCounter={0};
+	GLOBAL_PERF_STATUS Overflow={0};
+	GLOBAL_PERF_OVF_CTRL OvfControl={0};
+
+	RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
+
+	Proc->Core[cpu].SaveArea.GlobalPerfCounter=	\
+					GlobalPerfCounter;
+	GlobalPerfCounter.EN_FIXED_CTR0=1;
+	GlobalPerfCounter.EN_FIXED_CTR1=1;
+	GlobalPerfCounter.EN_FIXED_CTR2=1;
+
+	WRMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
+
+	RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+
+	Proc->Core[cpu].SaveArea.FixedPerfCounter=	\
+					FixedPerfCounter;
+	FixedPerfCounter.EN0_OS=1;
+	FixedPerfCounter.EN1_OS=1;
+	FixedPerfCounter.EN2_OS=1;
+	FixedPerfCounter.EN0_Usr=1;
+	FixedPerfCounter.EN1_Usr=1;
+	FixedPerfCounter.EN2_Usr=1;
+	if(Proc->PerCore)
+	{
+		FixedPerfCounter.AnyThread_EN0=1;
+		FixedPerfCounter.AnyThread_EN1=1;
+		FixedPerfCounter.AnyThread_EN2=1;
+	}
+	else	// Per Thread
+	{
+		FixedPerfCounter.AnyThread_EN0=0;
+		FixedPerfCounter.AnyThread_EN1=0;
+		FixedPerfCounter.AnyThread_EN2=0;
+	}
+	WRMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+
+	RDMSR(Overflow, MSR_CORE_PERF_GLOBAL_STATUS);
+	if(Overflow.Overflow_CTR0)
+		OvfControl.Clear_Ovf_CTR0=1;
+	if(Overflow.Overflow_CTR1)
+		OvfControl.Clear_Ovf_CTR1=1;
+	if(Overflow.Overflow_CTR2)
+		OvfControl.Clear_Ovf_CTR2=1;
+	if(Overflow.Overflow_CTR0		\
+		| Overflow.Overflow_CTR1	\
+		| Overflow.Overflow_CTR2)
+			WRMSR(	OvfControl,
+				MSR_CORE_PERF_GLOBAL_OVF_CTRL);
+}
+
+void Counters_Clear(unsigned int cpu)
+{
+	WRMSR(	Proc->Core[cpu].SaveArea.FixedPerfCounter,
+		MSR_CORE_PERF_FIXED_CTR_CTRL);
+
+	WRMSR(	Proc->Core[cpu].SaveArea.GlobalPerfCounter,
+		MSR_CORE_PERF_GLOBAL_CTRL);
+}
+
+void Core_Nehalem(unsigned int cpu, unsigned int T)
+{
+	register unsigned long long Cx=0;
 
 	// Instructions Retired
 	RDCNT(Proc->Core[cpu].Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
@@ -230,19 +448,19 @@ void Core_Nehalem(__u32 cpu, __u32 T)
 			: 0;
 }
 
-void Core_Temp(__u32 cpu)
+void Core_Temp(unsigned int cpu)
 {
 	RDMSR(Proc->Core[cpu].TjMax, MSR_IA32_TEMPERATURE_TARGET);
 	RDMSR(Proc->Core[cpu].ThermStat, MSR_IA32_THERM_STATUS);
 }
 
-__s32 Core_Cycle(void *arg)
+signed int Core_Cycle(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		__u32 cpu=Core->Bind;
-		__u32 leave=0, down=0, steps=Proc->msleep / 100;
+		unsigned int cpu=Core->Bind;
+		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(cpu);
 		Core_Nehalem(cpu, 0);
@@ -332,37 +550,19 @@ __s32 Core_Cycle(void *arg)
 	do_exit(0);
 }
 
-void Arch_Nehalem(__u32 stage)
+void Arch_Genuine(unsigned int stage)
 {
-	__u32 cpu=0;
+	Arch_Nehalem(stage);
+}
+
+void Arch_Nehalem(unsigned int stage)
+{
+	unsigned int cpu=0;
 
 	switch(stage)
 	{
 		case END:
 		{
-/*			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-				Proc->Core[cpu].TID[END]= \
-				kthread_create(	Counter_Clear,
-						&Proc->Core[cpu],
-						"kintelstop%02d",
-						Proc->Core[cpu].Bind);
-
-				if(!IS_ERR(Proc->Core[cpu].TID[END]))
-				{
-					kthread_bind(Proc->Core[cpu].TID[END], cpu);
-					wake_up_process(Proc->Core[cpu].TID[END]);
-				}
-				else
-					printk("END: kthread_create(%d)\n",
-					       Proc->Core[cpu].Bind);
-			}
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!IS_ERR(Proc->Core[cpu].TID[END]))
-					kthread_stop(Proc->Core[cpu].TID[END]);
-				else
-					printk("END: kthread_stop(%d)\n",
-					       Proc->Core[cpu].Bind);	*/
 		}
 		break;
 		case INIT:
@@ -383,60 +583,44 @@ void Arch_Nehalem(__u32 stage)
 			Proc->Boost[7]=Turbo.MaxRatio_3C;
 			Proc->Boost[8]=Turbo.MaxRatio_2C;
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
-
-/*			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-			    	Proc->Core[cpu].TID[INIT]= \
-				kthread_create(	Counter_Set,
-						&Proc->Core[cpu],
-						"kintelstart%02d",
-						Proc->Core[cpu].Bind);
-
-				if(!IS_ERR(Proc->Core[cpu].TID[INIT]))
-				{
-					kthread_bind(Proc->Core[cpu].TID[INIT], cpu);
-					wake_up_process(Proc->Core[cpu].TID[INIT]);
-				}
-				else
-					printk("INIT: kthread_create(%d)\n",
-					       Proc->Core[cpu].Bind);
-			}
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!IS_ERR(Proc->Core[cpu].TID[INIT]))
-					kthread_stop(Proc->Core[cpu].TID[INIT]);
-				else
-					printk("INIT: kthread_stop(%d)\n",
-					       Proc->Core[cpu].Bind);	*/
 		}
 		break;
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
-				kthread_stop(Proc->Core[cpu].TID[CYCLE]);
+			    if(!Proc->Core[cpu].OffLine
+			    && !IS_ERR(Proc->Core[cpu].TID[CYCLE_TID]))
+				kthread_stop(Proc->Core[cpu].TID[CYCLE_TID]);
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			{
-				Proc->Core[cpu].TID[CYCLE]= \
+			    if(!Proc->Core[cpu].OffLine)
+			    {
+				Proc->Core[cpu].TID[CYCLE_TID]= \
 				kthread_create(	Core_Cycle,
 						&Proc->Core[cpu],
 						"kintelfreq-%03d",
 						Proc->Core[cpu].Bind);
-				if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
-				    kthread_bind(Proc->Core[cpu].TID[CYCLE], cpu);
-			}
+				if(!IS_ERR(Proc->Core[cpu].TID[CYCLE_TID]))
+				    kthread_bind(Proc->Core[cpu].TID[CYCLE_TID], cpu);
+			    }
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!IS_ERR(Proc->Core[cpu].TID[CYCLE]))
-				wake_up_process(Proc->Core[cpu].TID[CYCLE]);
+			    if(!Proc->Core[cpu].OffLine
+			    && !IS_ERR(Proc->Core[cpu].TID[CYCLE_TID]))
+				wake_up_process(Proc->Core[cpu].TID[CYCLE_TID]);
 		}
 		break;
 	}
 }
 
-static __s32 IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
+void Arch_SandyBridge(unsigned int stage)
+{
+	Arch_Nehalem(stage);
+}
+
+static signed int IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
 {
 	if(Proc)
 	{
@@ -445,7 +629,7 @@ static __s32 IntelFreq_mmap(struct file *filp, struct vm_area_struct *vma)
 	return(0);
 }
 
-static __s32 IntelFreq_release(struct inode *inode, struct file *file)
+static signed int IntelFreq_release(struct inode *inode, struct file *file)
 {
 	if(Proc)
 		Proc->msleep=LOOP_DEF_MS;
@@ -459,7 +643,7 @@ static struct file_operations IntelFreq_fops=
 	.release= IntelFreq_release
 };
 
-static __s32 __init IntelFreq_init(void)
+static signed int __init IntelFreq_init(void)
 {
 	Proc=vmalloc_user(sizeof(PROC));
 	Proc->msleep=LOOP_DEF_MS;
@@ -484,27 +668,53 @@ static __s32 __init IntelFreq_init(void)
 						 IntelFreq.mkdev, NULL,
 						 SHM_DEVNAME)) != NULL)
 			{
-				__u32 count=0;
+				unsigned int cpu=0;
 
-				count=Core_Count();
-				Proc->CPU.Count=(!count) ? 1 : count;
-				Proc->CPU.OnLine=Proc->CPU.Count;
+				Proc->CPU.Count=Core_Count();
 
-				for(count=0; count < Proc->CPU.Count; count++)
+				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				{
-					Proc->Core[count].Bind=count;
-					atomic_init(&Proc->Core[count].Sync, 0x0);
+					atomic_init(&Proc->Core[cpu].Sync, 0x0);
+					Proc->Core[cpu].Bind=cpu;
+					if(!cpu_online(cpu) || !cpu_active(cpu))
+						Proc->Core[cpu].OffLine=1;
+					else
+						Proc->Core[cpu].OffLine=0;
 				}
-				Proc_Brand();
+				Proc_Features(&Proc->Features);
 
-				Arch_Nehalem(INIT);
+				for(Proc->ArchID=ARCHITECTURES - 1;
+					Proc->ArchID >0;
+						Proc->ArchID--)
+					if(!(Arch[Proc->ArchID].Signature.ExtFamily
+					^ Proc->Features.Std.AX.ExtFamily)
+					&& !(Arch[Proc->ArchID].Signature.Family
+					^ Proc->Features.Std.AX.Family)
+					&& !(Arch[Proc->ArchID].Signature.ExtModel
+					^ Proc->Features.Std.AX.ExtModel)
+					&& !(Arch[Proc->ArchID].Signature.Model
+					^ Proc->Features.Std.AX.Model))
+						break;
 
+				Arch[Proc->ArchID].Arch_Controller(INIT);
+
+				Proc->CPU.OnLine=Proc_Topology();
 				Proc->Clock=Proc_Clock(Proc->Boost[1]);
 
-				printk(	"IntelFreq [%s] [%d x CPU]\n"	\
-					"Clock @ {%u/%llu} MHz Ratio="	\
-					"{%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}\n",
-					Proc->Brand, Proc->CPU.Count,
+				printk(	"IntelFreq [%s]\n" \
+					"Signature [%1X%1X_%1X%1X]" \
+					" Architecture [%s]\n" \
+					"%u/%u CPU Online" \
+					" , Clock @ {%u/%llu} MHz\n" \
+					"Ratio={%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}\n",
+					Proc->Features.Brand,
+					Arch[Proc->ArchID].Signature.ExtFamily,
+					Arch[Proc->ArchID].Signature.Family,
+					Arch[Proc->ArchID].Signature.ExtModel,
+					Arch[Proc->ArchID].Signature.Model,
+					Arch[Proc->ArchID].Architecture,
+					Proc->CPU.OnLine,
+					Proc->CPU.Count,
 					Proc->Clock.Q,
 					Proc->Clock.R,
 					Proc->Boost[0],
@@ -518,7 +728,17 @@ static __s32 __init IntelFreq_init(void)
 					Proc->Boost[8],
 					Proc->Boost[9]);
 
-				Arch_Nehalem(START);
+				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+					printk(	"Topology(%u)"	\
+						" Apic[%3d]"	\
+						" Core[%3d]"	\
+						" Thread[%3d]\n",
+						cpu,
+						Proc->Core[cpu].T.ApicID,
+						Proc->Core[cpu].T.CoreID,
+						Proc->Core[cpu].T.ThreadID);
+
+				Arch[Proc->ArchID].Arch_Controller(START);
 			}
 			else
 			{
@@ -549,8 +769,8 @@ static void __exit IntelFreq_cleanup(void)
 
 	if(Proc)
 	{
-		Arch_Nehalem(STOP);
-//		Arch_Nehalem(END);
+		Arch[Proc->ArchID].Arch_Controller(STOP);
+//		Arch[Proc->ArchID].Arch_Controller(END);
 		vfree(Proc);
 	}
 }
