@@ -60,6 +60,9 @@
 		  "d" ((unsigned int) (_val.qword >> 32))	\
 	);
 
+#define MAXCNT(M, m)	((M) > (m) ? (M) : (m))
+#define MINCNT(m, M)	((m) < (M) ? (m) : (M))
+
 typedef struct
 {
 	struct
@@ -801,5 +804,6 @@ typedef struct
 } PROC;
 
 extern void Arch_Genuine(unsigned int stage) ;
+extern void Arch_Core2(unsigned int stage) ;
 extern void Arch_Nehalem(unsigned int stage) ;
 extern void Arch_SandyBridge(unsigned int stage) ;
