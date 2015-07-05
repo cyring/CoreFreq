@@ -3,63 +3,75 @@
  * Licenses: GPL2
  */
 
-#define	_MAX_CPU_ 	64
+#define	_MAX_CPU_ 	8
 #define	TASK_COMM_LEN	16
 
-#define	SHM_DEVNAME "intelfreq"
-#define	SHM_FILENAME "/dev/"SHM_DEVNAME
+#define	DRV_DEVNAME "intelfreq"
+#define	DRV_FILENAME "/dev/"DRV_DEVNAME
 
 #define	LOOP_MIN_MS	100
 #define LOOP_MAX_MS	5000
 #define	LOOP_DEF_MS	1000
 
-#define RDCNT(_val,  _cnt)		\
-({					\
-	unsigned int _lo, _hi;		\
-					\
-	__asm__ volatile		\
-	(				\
-		"rdmsr ;"		\
-                : "=a" (_lo),		\
-		  "=d" (_hi)		\
-		: "c" (_cnt)		\
-	);				\
-	_val=_lo | ((unsigned long long) _hi << 32);	\
+#define RDCNT(_val,  _cnt)					\
+({								\
+	unsigned int _lo, _hi;					\
+								\
+	__asm__ volatile					\
+	(							\
+		"rdmsr"						\
+                : "=a" (_lo),					\
+		  "=d" (_hi)					\
+		: "c" (_cnt)					\
+	);							\
+	_val=_lo | ((unsigned long long) _hi << 32);		\
 })
 
-#define WRCNT(_val,  _cnt)		\
-	__asm__ volatile		\
-	(				\
-		"wrmsr ;"		\
-		:			\
-		: "c" (_cnt),		\
+#define WRCNT(_val,  _cnt)					\
+	__asm__ volatile					\
+	(							\
+		"wrmsr"						\
+		:						\
+		: "c" (_cnt),					\
 		  "a" ((unsigned int) _val & 0xFFFFFFFF),	\
 		  "d" ((unsigned int) (_val >> 32))		\
 	);
 
-#define RDMSR(_val, _reg)	\
-({				\
-	unsigned int _lo, _hi;	\
-				\
-	__asm__ volatile	\
-	(			\
-		"rdmsr ;"	\
-                : "=a" (_lo),	\
-		  "=d" (_hi)	\
-		: "c" (_reg)	\
-	);			\
+#define RDMSR(_val, _reg)					\
+({								\
+	unsigned int _lo, _hi;					\
+								\
+	__asm__ volatile					\
+	(							\
+		"rdmsr"						\
+                : "=a" (_lo),					\
+		  "=d" (_hi)					\
+		: "c" (_reg)					\
+	);							\
 	_val.qword=_lo | ((unsigned long long) _hi << 32);	\
 })
-#define WRMSR(_val,  _reg)	\
-	__asm__ volatile	\
-	(			\
-		"wrmsr ;"	\
-		:		\
-		: "c" (_reg),	\
+
+#define WRMSR(_val,  _reg)					\
+	__asm__ volatile					\
+	(							\
+		"wrmsr"						\
+		:						\
+		: "c" (_reg),					\
 		  "a" ((unsigned int) _val.qword & 0xFFFFFFFF),	\
 		  "d" ((unsigned int) (_val.qword >> 32))	\
 	);
-
+/*
+#define	MOVSB(_dest, _src, _count)				\
+	__asm__ volatile					\
+	(							\
+		"cld		\n\t"				\
+		"rep movsb"					\
+		:						\
+                : "D" (_dest),					\
+		  "S" (_src),					\
+		  "c" (_count)					\
+	);
+*/
 #define MAXCNT(M, m)	((M) > (m) ? (M) : (m))
 #define MINCNT(m, M)	((m) < (M) ? (m) : (M))
 
@@ -300,7 +312,6 @@ typedef struct
 			unsigned int
 		CX			: 32-0,
 		DX			: 32-0;
-
 	} ExtFeature;
 	unsigned int	LargestExtFunc;
 	struct
@@ -333,43 +344,49 @@ typedef struct
 } FEATURES;
 
 //	[GenuineIntel]
-#define	_GenuineIntel			{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 //	[Core]		06_0EH (32 bits)
-#define	_Core_Yonah			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
+#define	_Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
 //	[Core2]		06_0FH, 06_15H, 06_17H, 06_1D
-#define	_Core_Conroe			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
-#define	_Core_Kentsfield		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
-#define	_Core_Yorkfield			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
-#define	_Core_Dunnington		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
+#define	_Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
+#define	_Core_Kentsfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
+#define	_Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
+#define	_Core_Dunnington \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
 //	[Atom]		06_1CH, 06_26H, 06_27H (32 bits), 06_35H (32 bits), 06_36H
-#define	_Atom_Bonnell			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
-#define	_Atom_Silvermont		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
-#define	_Atom_Lincroft			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x7}
-#define	_Atom_Clovertrail		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
-#define	_Atom_Saltwell			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
+#define	_Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
+#define	_Atom_Silvermont \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
+#define	_Atom_Lincroft	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x7}
+#define	_Atom_Clovertrail \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
+#define	_Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
 //	[Silvermont]	06_37H, 06_4DH
-#define	_Silvermont_637			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
-#define	_Silvermont_64D			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
+#define	_Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
+#define	_Silvermont_64D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
 //	[Nehalem]	06_1AH, 06_1EH, 06_1FH, 06_2EH
-#define	_Nehalem_Bloomfield		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
-#define	_Nehalem_Lynnfield		{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xE}
-#define	_Nehalem_MB			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
-#define	_Nehalem_EX			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
+#define	_Nehalem_Bloomfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
+#define	_Nehalem_Lynnfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xE}
+#define	_Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
+#define	_Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
 //	[Westmere]	06_25H, 06_2CH, 06_2FH
-#define	_Westmere			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
-#define	_Westmere_EP			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
-#define	_Westmere_EX			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
+#define	_Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
+#define	_Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
+#define	_Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
 //	[Sandy Bridge]	06_2AH, 06_2DH
-#define	_SandyBridge			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
-#define	_SandyBridge_EP			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
+#define	_SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
+#define	_SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
 //	[Ivy Bridge]	06_3AH, 06_3EH
-#define	_IvyBridge			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
-#define	_IvyBridge_EP			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
+#define	_IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
+#define	_IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
 //	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
-#define	_Haswell_DT			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
-#define	_Haswell_MB			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
-#define	_Haswell_ULT			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
-#define	_Haswell_ULX			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
+#define	_Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
+#define	_Haswell_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
+#define	_Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
+#define	_Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -800,7 +817,8 @@ typedef struct
 
 	CLOCK			Clock;
 
-	CORE			Core[_MAX_CPU_];
+	struct kmem_cache	*Cache;
+	CORE			*Core[];
 } PROC;
 
 extern void Arch_Genuine(unsigned int stage) ;

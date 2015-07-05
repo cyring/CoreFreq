@@ -5,6 +5,7 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -17,30 +18,13 @@
 #include <stdatomic.h>
 
 #include "intelfreq.h"
+#include "corefreq.h"
 
 unsigned int Shutdown=0x0;
 
-struct {
-	double	IPS,
-		IPC,
-		CPI,
-		Turbo,
-		C0,
-		C3,
-		C6,
-		C7,
-		C1;
-
-	struct {
-	double	Ratio,
-		Freq;
-	} Relative;
-
-	unsigned long long Temperature;
-} C[_MAX_CPU_];
-
 typedef struct {
 	PROC		*Proc;
+	SHM_STRUCT	*SHM;
 	unsigned int	Bind;
 	pthread_t	TID;
 } ARG;
@@ -48,9 +32,10 @@ typedef struct {
 
 static void *Core_Cycle(void *arg)
 {
-	ARG *A=(ARG *) arg;
-	PROC *P=A->Proc;
-	unsigned int cpu=A->Bind;
+	ARG *Arg=(ARG *) arg;
+	PROC *Proc=Arg->Proc;
+	SHM_STRUCT *SHM=Arg->SHM;
+	unsigned int cpu=Arg->Bind;
 
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -60,61 +45,63 @@ static void *Core_Cycle(void *arg)
 
 	char comm[TASK_COMM_LEN];
 	sprintf(comm, "corefreqd-%03d", cpu);
-	pthread_setname_np(A->TID, comm);
+	pthread_setname_np(Arg->TID, comm);
 
 	while(!Shutdown)
 	{
-		while(!atomic_load(&P->Core[cpu].Sync))
-			usleep(P->msleep * 100);
-		atomic_store(&P->Core[cpu].Sync, 0x0);
+		while(!atomic_load(&Proc->Core[cpu]->Sync))
+			usleep(Proc->msleep * 100);
+		atomic_store(&Proc->Core[cpu]->Sync, 0x0);
 
 		// Compute IPS=Instructions per TSC
-		C[cpu].IPS=	(double) (P->Core[cpu].Delta.INST)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
+		SHM->CPU[cpu].IPS=	(double) (Proc->Core[cpu]->Delta.INST)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		C[cpu].IPC=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
-					(double) (P->Core[cpu].Delta.INST)	\
-					/ (double) P->Core[cpu].Delta.C0.URC	\
+		SHM->CPU[cpu].IPC=	(double) (Proc->Core[cpu]->Delta.C0.URC != 0) ?	\
+					(double) (Proc->Core[cpu]->Delta.INST)	\
+					/ (double) Proc->Core[cpu]->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		C[cpu].CPI=	(double) (P->Core[cpu].Delta.INST != 0) ?	\
-					(double) P->Core[cpu].Delta.C0.URC	\
-					/ (double) (P->Core[cpu].Delta.INST)	\
+		SHM->CPU[cpu].CPI=	(double) (Proc->Core[cpu]->Delta.INST != 0) ?	\
+					(double) Proc->Core[cpu]->Delta.C0.URC	\
+					/ (double) (Proc->Core[cpu]->Delta.INST)	\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		C[cpu].Turbo=	(double) (P->Core[cpu].Delta.C0.URC != 0) ?	\
-					(double) (P->Core[cpu].Delta.C0.UCC)	\
-					/ (double) P->Core[cpu].Delta.C0.URC	\
+		SHM->CPU[cpu].Turbo=	(double) (Proc->Core[cpu]->Delta.C0.URC != 0) ?	\
+					(double) (Proc->Core[cpu]->Delta.C0.UCC)	\
+					/ (double) Proc->Core[cpu]->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-		C[cpu].C0=(double) (P->Core[cpu].Delta.C0.URC)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
-		C[cpu].C3=(double) (P->Core[cpu].Delta.C3)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
-		C[cpu].C6=(double) (P->Core[cpu].Delta.C6)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
-		C[cpu].C7=(double) (P->Core[cpu].Delta.C7)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
-		C[cpu].C1=(double) (P->Core[cpu].Delta.C1)	\
-				/ (double) (P->Core[cpu].Delta.TSC);
+		SHM->CPU[cpu].C0=(double) (Proc->Core[cpu]->Delta.C0.URC)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].C3=(double) (Proc->Core[cpu]->Delta.C3)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].C6=(double) (Proc->Core[cpu]->Delta.C6)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].C7=(double) (Proc->Core[cpu]->Delta.C7)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].C1=(double) (Proc->Core[cpu]->Delta.C1)	\
+				/ (double) (Proc->Core[cpu]->Delta.TSC);
 
-		C[cpu].Relative.Ratio=	C[cpu].Turbo		\
-					* C[cpu].C0		\
-					* (double) P->Boost[1];
+		SHM->CPU[cpu].Relative.Ratio=SHM->CPU[cpu].Turbo		\
+					* SHM->CPU[cpu].C0		\
+					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-		C[cpu].Relative.Freq=C[cpu].Relative.Ratio * P->Clock.Q;
-		C[cpu].Relative.Freq+=(C[cpu].Relative.Ratio / P->Clock.R) / 1000000L;
+		SHM->CPU[cpu].Relative.Freq=SHM->CPU[cpu].Relative.Ratio * Proc->Clock.Q;
+		SHM->CPU[cpu].Relative.Freq+=(SHM->CPU[cpu].Relative.Ratio / Proc->Clock.R) / 1000000L;
 
-		C[cpu].Temperature=P->Core[cpu].TjMax.Target		\
-					- P->Core[cpu].ThermStat.DTS;
+		SHM->CPU[cpu].Temperature=Proc->Core[cpu]->TjMax.Target	\
+					- Proc->Core[cpu]->ThermStat.DTS;
+
+		atomic_store(&SHM->CPU[cpu].Sync, 0x1);
 	}
 	return(NULL);
 }
@@ -122,141 +109,141 @@ static void *Core_Cycle(void *arg)
 typedef struct {
 	sigset_t Signal;
 	pthread_t TID;
-	signed int Started;
+	int Started;
 } SIG;
 
 static void *Emergency(void *arg)
 {
-	signed int caught=0;
-	SIG *S=(SIG *) arg;
-	pthread_setname_np(S->TID, "corefreqd-kill");
+	int caught=0;
+	SIG *Sig=(SIG *) arg;
+	pthread_setname_np(Sig->TID, "corefreqd-kill");
 
-	while(!Shutdown && !sigwait(&S->Signal, &caught))
+	while(!Shutdown && !sigwait(&Sig->Signal, &caught))
 		switch(caught)
 		{
 			case SIGINT:
 			case SIGQUIT:
 			case SIGUSR1:
 			case SIGTERM:
-				Shutdown=1;
+				Shutdown=0x1;
 			break;
 		}
 	return(NULL);
 }
-/*
-void	abstimespec(useconds_t usec, struct timespec *tsec)
-{
-	tsec->tv_sec=usec / 1000000L;
-	tsec->tv_nsec=(usec % 1000000L) * 1000;
-}
 
-signed int	addtimespec(struct timespec *asec, const struct timespec *tsec)
+int main(void)
 {
-	signed int rc=0;
-	if((rc=clock_gettime(CLOCK_REALTIME, asec)) != -1)
+	struct
 	{
-		if((asec->tv_nsec += tsec->tv_nsec) >= 1000000000L)
-		{
-			asec->tv_nsec -= 1000000000L;
-			asec->tv_sec += 1;
-		}
-		asec->tv_sec += tsec->tv_sec;
+		int	Drv,
+			Svr;
+	} FD;
 
-		return(0);
-	}
-	else
-		return(errno);
-}
-*/
-signed int main(void)
-{
-	PROC *P=NULL;
-	SIG S={.Signal={0}, .TID=0, .Started=0};
+	PROC		*Proc=NULL;
+	SHM_STRUCT	*SHM;
+
+	SIG Sig={.Signal={0}, .TID=0, .Started=0};
 	uid_t UID=geteuid();
 
 	if(UID == 0)
 	{
-		signed int  fd=open(SHM_FILENAME, O_RDWR);
-		if(fd != -1)
+		if((FD.Drv=open(DRV_FILENAME, O_RDWR)) != -1)
 		{
-			P=mmap(	NULL, sizeof(PROC),
-				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd, 0x0);
-
-			if(P != NULL)
+			if((Proc=mmap(	NULL, sizeof(PROC),
+					PROT_READ|PROT_WRITE, MAP_SHARED,
+					FD.Drv, 0x0)) != NULL)
 			{
 				unsigned int cpu=0;
-				ARG *A=calloc(P->CPU.Count, sizeof(ARG));
-				const char CLS[6+1]={27,'[','H',27,'[','J',0};
+				size_t ShmSize, ShmCpuSize;
+				ShmCpuSize=sizeof(CPU_STRUCT) * Proc->CPU.Count;
+				ShmSize=sizeof(SHM_STRUCT) + ShmCpuSize;
+				ShmSize=PAGE_SIZE * ((ShmSize / PAGE_SIZE)
+					+ ((ShmSize % PAGE_SIZE) ? 1 : 0));
 
-				sigemptyset(&S.Signal);
-				sigaddset(&S.Signal, SIGINT);
-				sigaddset(&S.Signal, SIGQUIT);
-				sigaddset(&S.Signal, SIGUSR1);
-				sigaddset(&S.Signal, SIGTERM);
-				if(!pthread_sigmask(SIG_BLOCK, &S.Signal, NULL)
-				&& !pthread_create(&S.TID, NULL, Emergency, &S))
-					S.Started=1;
+				umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
-				for(cpu=0; cpu < P->CPU.Count; cpu++)
-				    if(!P->Core[cpu].OffLine)
-				    {
-					A[cpu].Proc=P;
-					A[cpu].Bind=cpu;
-					pthread_create(	&A[cpu].TID,
-							NULL,
-							Core_Cycle,
-							&A[cpu]);
-				    }
-				while(!Shutdown)
+				if(((FD.Svr=shm_open(SHM_FILENAME,
+					O_CREAT|O_TRUNC|O_RDWR,
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) != -1)
+				&& (ftruncate(FD.Svr, ShmSize) != -1)
+				&& ((SHM=mmap(0, ShmSize, PROT_READ|PROT_WRITE, MAP_SHARED, FD.Svr, 0))
+					!= MAP_FAILED))
 				{
-					usleep(P->msleep * 100);
+					sigemptyset(&Sig.Signal);
+					sigaddset(&Sig.Signal, SIGINT);
+					sigaddset(&Sig.Signal, SIGQUIT);
+					sigaddset(&Sig.Signal, SIGUSR1);
+					sigaddset(&Sig.Signal, SIGTERM);
+					if(!pthread_sigmask(SIG_BLOCK, &Sig.Signal, NULL)
+					&& !pthread_create(&Sig.TID, NULL, Emergency, &Sig))
+						Sig.Started=1;
 
-					printf("%s", CLS);
-					for(cpu=0; cpu < P->CPU.Count; cpu++)
-					    if(!P->Core[cpu].OffLine)
-						printf("Core[%02d]%8.2f (%12.6f) MHz @ %llu°C\n",
-							cpu,
-							C[cpu].Relative.Freq,
-							C[cpu].Relative.Ratio,
-							C[cpu].Temperature);
-					    else
-						printf("Core[%02d] OffLine\n",
-							cpu);
-				}
-				// shutting down
-/*
-				struct timespec absoluteTime={.tv_sec=0, .tv_nsec=0},
-						gracePeriod={.tv_sec=0, .tv_nsec=0};
-				abstimespec(4000000, &absoluteTime);
-				if(!addtimespec(&gracePeriod, &absoluteTime)
-				&& pthread_timedjoin_np(TID, NULL, &gracePeriod))
-				{
-					pthread_kill(TID, SIGKILL);
-					pthread_join(TID, NULL);
-				}
-*/
-				for(cpu=0; cpu < P->CPU.Count; cpu++)
-					if(!P->Core[cpu].OffLine)
-						pthread_join(A[cpu].TID, NULL);
+					strncpy(SHM->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
-				free(A);
-				munmap(P, sizeof(PROC));
+					ARG *Arg=calloc(Proc->CPU.Count, sizeof(ARG));
+					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+					{
+						atomic_init(&SHM->CPU[cpu].Sync, 0x0);
 
-				if(S.Started)
-				{
-					pthread_kill(S.TID, SIGUSR1);
-					pthread_join(S.TID, NULL);
+						if(!Proc->Core[cpu]->OffLine)
+						{
+							Arg[cpu].Proc=Proc;
+							Arg[cpu].SHM=SHM;
+							Arg[cpu].Bind=cpu;
+							pthread_create(	&Arg[cpu].TID,
+									NULL,
+									Core_Cycle,
+									&Arg[cpu]);
+						}
+					}
+					free(Arg);
+
+					while(!Shutdown)
+					{
+						usleep(Proc->msleep * 100);
+
+						for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+						if(!Proc->Core[cpu]->OffLine
+						&& atomic_load(&SHM->CPU[cpu].Sync))
+						{
+							atomic_store(&SHM->CPU[cpu].Sync, 0x0);
+
+							printf("Core[%02d]%8.2f (%12.6f) MHz @ %llu°C\n",
+								cpu,
+								SHM->CPU[cpu].Relative.Freq,
+								SHM->CPU[cpu].Relative.Ratio,
+								SHM->CPU[cpu].Temperature);
+						}
+	/*					    else
+							printf("Core[%02d] OffLine\n",
+								cpu);	*/
+					}
+					// shutting down
+					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+						if(!Proc->Core[cpu]->OffLine)
+							pthread_join(Arg[cpu].TID, NULL);
+
+					if(Sig.Started)
+					{
+						pthread_kill(Sig.TID, SIGUSR1);
+						pthread_join(Sig.TID, NULL);
+					}
+					munmap(SHM, ShmSize);
+					shm_unlink(SHM_FILENAME);
 				}
+				else
+					printf("Error: creating the shared memory");
+
+				munmap(Proc, sizeof(PROC));
 			}
 			else
-				printf("Error: mmap(fd:%d):KO\n", fd);
+				printf("Error: mmap(fd:%d):KO\n", FD.Drv);
 
-			close(fd);
+			close(FD.Drv);
 		}
 		else
 			printf("Error: open('%s', O_RDWR):%d\n",
-				SHM_FILENAME, errno);
+				DRV_FILENAME, errno);
 	}
 	return(0);
 }
