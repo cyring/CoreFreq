@@ -195,12 +195,13 @@ void Proc_Features(FEATURES *features)
 	{
 		__asm__ volatile
 		(
-			"cpuid                   \n\t"
-			"and	$0x100, %%rdx    \n\t"
-			"shr	$8, %%rdx"
+			"cpuid"
 			: "=d"	(features->InvariantTSC)
 			: "a" (0x80000007)
 		);
+		features->InvariantTSC &= 0x100;
+		features->InvariantTSC >>= 8;
+
 		__asm__ volatile
 		(
 			"cpuid"
@@ -211,38 +212,7 @@ void Proc_Features(FEATURES *features)
 	}
 	Proc_Brand(features->Brand);
 }
-/*
-void Copy_Features(FEATURES *dest, FEATURES *src)
-{
-	dest->Std.AX=src->Std.AX;
-	dest->Std.BX=src->Std.BX;
-	dest->Std.CX=src->Std.CX;
-	dest->Std.DX=src->Std.DX;
-	dest->MONITOR_MWAIT_Leaf.AX=src->MONITOR_MWAIT_Leaf.AX;
-	dest->MONITOR_MWAIT_Leaf.BX=src->MONITOR_MWAIT_Leaf.BX;
-	dest->MONITOR_MWAIT_Leaf.CX=src->MONITOR_MWAIT_Leaf.CX;
-	dest->MONITOR_MWAIT_Leaf.DX=src->MONITOR_MWAIT_Leaf.DX;
-	dest->Thermal_Power_Leaf.AX=src->Thermal_Power_Leaf.AX;
-	dest->Thermal_Power_Leaf.BX=src->Thermal_Power_Leaf.BX;
-	dest->Thermal_Power_Leaf.CX=src->Thermal_Power_Leaf.CX;
-	dest->Thermal_Power_Leaf.DX=src->Thermal_Power_Leaf.DX;
-	dest->Perf_Monitoring_Leaf.AX=src->Perf_Monitoring_Leaf.AX;
-	dest->Perf_Monitoring_Leaf.BX=src->Perf_Monitoring_Leaf.BX;
-	dest->Perf_Monitoring_Leaf.CX=src->Perf_Monitoring_Leaf.CX;
-	dest->Perf_Monitoring_Leaf.DX=src->Perf_Monitoring_Leaf.DX;
-	dest->ExtFeature.AX=src->ExtFeature.AX;
-	dest->ExtFeature.BX=src->ExtFeature.BX;
-	dest->ExtFeature.CX=src->ExtFeature.CX;
-	dest->ExtFeature.DX=src->ExtFeature.DX;
-	dest->LargestExtFunc=src->LargestExtFunc;
-	dest->ExtFunc.CX=src->ExtFunc.CX;
-	dest->ExtFunc.DX=src->ExtFunc.DX;
-	dest->InvariantTSC=src->InvariantTSC;
-	dest->HTT_enabled=src->HTT_enabled;
-//	MOVSB(dest->VendorID, src->VendorID, 16);
-//	MOVSB(dest->Brand, src->Brand, 48+1);
-}
-*/
+
 CLOCK Proc_Clock(unsigned int ratio)
 {
 	unsigned long long TSC[2];
@@ -319,10 +289,6 @@ signed int Read_APIC(void *arg)
 				SMT_Select_Mask = ~((-1) << SMT_Mask_Width);
 				Core->T.ThreadID= ExtTopology.DX.x2ApicID \
 						& SMT_Select_Mask;
-
-				if((Core->T.ThreadID > 0)
-				&& !Proc->Features.HTT_enabled)
-					Proc->Features.HTT_enabled=1;
 				}
 				break;
 			    case LEVEL_CORE:
@@ -355,6 +321,9 @@ unsigned int Proc_Topology(void)
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
+		Proc->Core[cpu]->T.ApicID=-1;
+		Proc->Core[cpu]->T.CoreID=-1;
+		Proc->Core[cpu]->T.ThreadID=-1;
 		if(!Proc->Core[cpu]->OffLine)
 		{
 			Proc->Core[cpu]->TID[APIC_TID]= \
@@ -370,24 +339,22 @@ unsigned int Proc_Topology(void)
 			}
 			CountEnabledCPU++;
 		}
-		else
-		{
-			Proc->Core[cpu]->T.ApicID=-1;
-			Proc->Core[cpu]->T.CoreID=-1;
-			Proc->Core[cpu]->T.ThreadID=-1;
-		}
 	}
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		if(!Proc->Core[cpu]->OffLine
 		&& !IS_ERR(Proc->Core[cpu]->TID[APIC_TID]))
 		{
 			kthread_stop(Proc->Core[cpu]->TID[APIC_TID]);
+
+			if(!Proc->Features.HTT_enabled
+			&& (Proc->Core[cpu]->T.ThreadID > 0))
+				Proc->Features.HTT_enabled=1;
 		}
 	return(CountEnabledCPU);
 }
 
 
-void Counters_Set(unsigned int cpu)
+void Counters_Set(CORE *Core)
 {
 	GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
 	FIXED_PERF_COUNTER FixedPerfCounter={0};
@@ -396,7 +363,7 @@ void Counters_Set(unsigned int cpu)
 
 	RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
-	Proc->Core[cpu]->SaveArea.GlobalPerfCounter=GlobalPerfCounter;
+	Core->SaveArea.GlobalPerfCounter=GlobalPerfCounter;
 	GlobalPerfCounter.EN_FIXED_CTR0=1;
 	GlobalPerfCounter.EN_FIXED_CTR1=1;
 	GlobalPerfCounter.EN_FIXED_CTR2=1;
@@ -405,7 +372,7 @@ void Counters_Set(unsigned int cpu)
 
 	RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
-	Proc->Core[cpu]->SaveArea.FixedPerfCounter=FixedPerfCounter;
+	Core->SaveArea.FixedPerfCounter=FixedPerfCounter;
 	FixedPerfCounter.EN0_OS=1;
 	FixedPerfCounter.EN1_OS=1;
 	FixedPerfCounter.EN2_OS=1;
@@ -439,114 +406,114 @@ void Counters_Set(unsigned int cpu)
 		WRMSR(OvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 }
 
-void Counters_Clear(unsigned int cpu)
+void Counters_Clear(CORE *Core)
 {
-	WRMSR(	Proc->Core[cpu]->SaveArea.FixedPerfCounter,
+	WRMSR(	Core->SaveArea.FixedPerfCounter,
 		MSR_CORE_PERF_FIXED_CTR_CTRL);
 
-	WRMSR(	Proc->Core[cpu]->SaveArea.GlobalPerfCounter,
+	WRMSR(	Core->SaveArea.GlobalPerfCounter,
 		MSR_CORE_PERF_GLOBAL_CTRL);
 }
 
-void Counters_Genuine(unsigned int cpu, unsigned int T)
+void Counters_Genuine(CORE *Core, unsigned int T)
 {
 	// Actual & Maximum Performance Frequency Clock counters.
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.UCC, MSR_IA32_APERF);
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.URC, MSR_IA32_MPERF);
+	RDCNT(Core->Counter[T].C0.UCC, MSR_IA32_APERF);
+	RDCNT(Core->Counter[T].C0.URC, MSR_IA32_MPERF);
 
 	// TSC in relation to the Core.
-	RDCNT(Proc->Core[cpu]->Counter[T].TSC, MSR_IA32_TSC);
+	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// Derive C1
-	Proc->Core[cpu]->Counter[T].C1=	\
-	  (Proc->Core[cpu]->Counter[T].TSC > Proc->Core[cpu]->Counter[T].C0.URC)?\
-	    Proc->Core[cpu]->Counter[T].TSC - Proc->Core[cpu]->Counter[T].C0.URC \
+	Core->Counter[T].C1=	\
+	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC)?\
+	    Core->Counter[T].TSC - Core->Counter[T].C0.URC \
 	    : 0;
 }
 
-void Counters_Core2(unsigned int cpu, unsigned int T)
+void Counters_Core2(CORE *Core, unsigned int T)
 {
 	// Instructions Retired
-	RDCNT(Proc->Core[cpu]->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Proc->Core[cpu]->Counter[T].TSC, MSR_IA32_TSC);
+	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// Derive C1
-	Proc->Core[cpu]->Counter[T].C1=	\
-	  (Proc->Core[cpu]->Counter[T].TSC > Proc->Core[cpu]->Counter[T].C0.URC)?\
-	    Proc->Core[cpu]->Counter[T].TSC - Proc->Core[cpu]->Counter[T].C0.URC \
+	Core->Counter[T].C1=	\
+	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC)?\
+	    Core->Counter[T].TSC - Core->Counter[T].C0.URC \
 	    : 0;
 }
 
-void Counters_Nehalem(unsigned int cpu, unsigned int T)
+void Counters_Nehalem(CORE *Core, unsigned int T)
 {
 	register unsigned long long Cx=0;
 
 	// Instructions Retired
-	RDCNT(Proc->Core[cpu]->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Proc->Core[cpu]->Counter[T].TSC, MSR_IA32_TSC);
+	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// C-States.
-	RDCNT(Proc->Core[cpu]->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCNT(Proc->Core[cpu]->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
+	RDCNT(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
+	RDCNT(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
 
 	// Derive C1
-	Cx=	Proc->Core[cpu]->Counter[T].C6		\
-		+ Proc->Core[cpu]->Counter[T].C3		\
-		+ Proc->Core[cpu]->Counter[T].C0.URC;
+	Cx=	Core->Counter[T].C6		\
+		+ Core->Counter[T].C3		\
+		+ Core->Counter[T].C0.URC;
 
-	Proc->Core[cpu]->Counter[T].C1=				\
-		(Proc->Core[cpu]->Counter[T].TSC > Cx) ?		\
-			Proc->Core[cpu]->Counter[T].TSC - Cx	\
+	Core->Counter[T].C1=				\
+		(Core->Counter[T].TSC > Cx) ?		\
+			Core->Counter[T].TSC - Cx	\
 			: 0;
 }
 
-void Counters_SandyBridge(unsigned int cpu, unsigned int T)
+void Counters_SandyBridge(CORE *Core, unsigned int T)
 {
 	register unsigned long long Cx=0;
 
 	// Instructions Retired
-	RDCNT(Proc->Core[cpu]->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Proc->Core[cpu]->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Proc->Core[cpu]->Counter[T].TSC, MSR_IA32_TSC);
+	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// C-States.
-	RDCNT(Proc->Core[cpu]->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCNT(Proc->Core[cpu]->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
-	RDCNT(Proc->Core[cpu]->Counter[T].C7, MSR_CORE_C7_RESIDENCY);
+	RDCNT(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
+	RDCNT(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
+	RDCNT(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);
 
 	// Derive C1
-	Cx=	Proc->Core[cpu]->Counter[T].C7		\
-		+ Proc->Core[cpu]->Counter[T].C6		\
-		+ Proc->Core[cpu]->Counter[T].C3		\
-		+ Proc->Core[cpu]->Counter[T].C0.URC;
+	Cx=	Core->Counter[T].C7		\
+		+ Core->Counter[T].C6		\
+		+ Core->Counter[T].C3		\
+		+ Core->Counter[T].C0.URC;
 
-	Proc->Core[cpu]->Counter[T].C1=				\
-		(Proc->Core[cpu]->Counter[T].TSC > Cx) ?		\
-			Proc->Core[cpu]->Counter[T].TSC - Cx	\
+	Core->Counter[T].C1=				\
+		(Core->Counter[T].TSC > Cx) ?		\
+			Core->Counter[T].TSC - Cx	\
 			: 0;
 }
 
-void Core_Temp(unsigned int cpu)
+void Core_Temp(CORE *Core)
 {
-	RDMSR(Proc->Core[cpu]->TjMax, MSR_IA32_TEMPERATURE_TARGET);
-	RDMSR(Proc->Core[cpu]->ThermStat, MSR_IA32_THERM_STATUS);
+	RDMSR(Core->TjMax, MSR_IA32_TEMPERATURE_TARGET);
+	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS);
 }
 
 int Cycle_Genuine(void *arg)
@@ -554,10 +521,10 @@ int Cycle_Genuine(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
-		Counters_Genuine(cpu, 0);
+		Counters_Genuine(Core, 0);
 
 		while(!leave)
 		{
@@ -569,49 +536,49 @@ int Cycle_Genuine(void *arg)
 					leave=1;
 			} while(--down && !leave);
 
-			Counters_Genuine(cpu, 1);
-			Core_Temp(cpu);
+			Counters_Genuine(Core, 1);
+			Core_Temp(Core);
 
 			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Proc->Core[cpu]->Delta.C0.UCC=			    \
-				(Proc->Core[cpu]->Counter[0].C0.UCC >	    \
-				Proc->Core[cpu]->Counter[1].C0.UCC) ?	    \
-					Proc->Core[cpu]->Counter[0].C0.UCC   \
-					- Proc->Core[cpu]->Counter[1].C0.UCC \
-					: Proc->Core[cpu]->Counter[1].C0.UCC \
-					- Proc->Core[cpu]->Counter[0].C0.UCC;
+			Core->Delta.C0.UCC=			    \
+				(Core->Counter[0].C0.UCC >	    \
+				Core->Counter[1].C0.UCC) ?	    \
+					Core->Counter[0].C0.UCC   \
+					- Core->Counter[1].C0.UCC \
+					: Core->Counter[1].C0.UCC \
+					- Core->Counter[0].C0.UCC;
 
-			Proc->Core[cpu]->Delta.C0.URC=			\
-				Proc->Core[cpu]->Counter[1].C0.URC	\
-				- Proc->Core[cpu]->Counter[0].C0.URC;
+			Core->Delta.C0.URC=			\
+				Core->Counter[1].C0.URC	\
+				- Core->Counter[0].C0.URC;
 
-			Proc->Core[cpu]->Delta.TSC=			\
-				Proc->Core[cpu]->Counter[1].TSC		\
-				- Proc->Core[cpu]->Counter[0].TSC;
+			Core->Delta.TSC=			\
+				Core->Counter[1].TSC		\
+				- Core->Counter[0].TSC;
 
-			Proc->Core[cpu]->Delta.C1=			\
-				(Proc->Core[cpu]->Counter[0].C1 >	\
-				 Proc->Core[cpu]->Counter[1].C1) ?	\
-					Proc->Core[cpu]->Counter[0].C1	\
-					- Proc->Core[cpu]->Counter[1].C1	\
-					: Proc->Core[cpu]->Counter[1].C1	\
-					- Proc->Core[cpu]->Counter[0].C1;
+			Core->Delta.C1=			\
+				(Core->Counter[0].C1 >	\
+				 Core->Counter[1].C1) ?	\
+					Core->Counter[0].C1	\
+					- Core->Counter[1].C1	\
+					: Core->Counter[1].C1	\
+					- Core->Counter[0].C1;
 
 			// Save TSC.
-			Proc->Core[cpu]->Counter[0].TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC;
+			Core->Counter[0].TSC=		\
+				Core->Counter[1].TSC;
 
 			// Save the Unhalted Core & Reference Counter
 			// for next iteration.
-			Proc->Core[cpu]->Counter[0].C0.UCC=	\
-				Proc->Core[cpu]->Counter[1].C0.UCC;
-			Proc->Core[cpu]->Counter[1].C0.URC=	\
-				Proc->Core[cpu]->Counter[1].C0.URC;
+			Core->Counter[0].C0.UCC=	\
+				Core->Counter[1].C0.UCC;
+			Core->Counter[1].C0.URC=	\
+				Core->Counter[1].C0.URC;
 
-			Proc->Core[cpu]->Counter[0].C1=		\
-				Proc->Core[cpu]->Counter[1].C1;
+			Core->Counter[0].C1=		\
+				Core->Counter[1].C1;
 
-			atomic_store(&Proc->Core[cpu]->Sync, 0x1);
+			atomic_store(&Core->Sync, 0x1);
 		}
 	}
 	do_exit(0);
@@ -635,14 +602,14 @@ void Arch_Genuine(unsigned int stage)
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
-			if(Platform.qword != 0)
+			if(Platform.value != 0)
 			{
 			  Proc->Boost[0]=MINCNT(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			  Proc->Boost[1]=MAXCNT(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
-			if(Turbo.qword != 0)
+			if(Turbo.value != 0)
 			{
 				Proc->Boost[2]=Turbo.MaxRatio_8C;
 				Proc->Boost[3]=Turbo.MaxRatio_7C;
@@ -693,11 +660,11 @@ int Cycle_Core2(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
-		Counters_Set(cpu);
-		Counters_Core2(cpu, 0);
+		Counters_Set(Core);
+		Counters_Core2(Core, 0);
 
 		while(!leave)
 		{
@@ -709,60 +676,60 @@ int Cycle_Core2(void *arg)
 					leave=1;
 			} while(--down && !leave);
 
-			Counters_Core2(cpu, 1);
-			Core_Temp(cpu);
+			Counters_Core2(Core, 1);
+			Core_Temp(Core);
 
 			// Delta of Instructions Retired
-			Proc->Core[cpu]->Delta.INST=			\
-				Proc->Core[cpu]->Counter[1].INST		\
-				- Proc->Core[cpu]->Counter[0].INST;
+			Core->Delta.INST=			\
+				Core->Counter[1].INST		\
+				- Core->Counter[0].INST;
 
 			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Proc->Core[cpu]->Delta.C0.UCC=			    \
-				(Proc->Core[cpu]->Counter[0].C0.UCC >	    \
-				Proc->Core[cpu]->Counter[1].C0.UCC) ?	    \
-					Proc->Core[cpu]->Counter[0].C0.UCC   \
-					- Proc->Core[cpu]->Counter[1].C0.UCC \
-					: Proc->Core[cpu]->Counter[1].C0.UCC \
-					- Proc->Core[cpu]->Counter[0].C0.UCC;
+			Core->Delta.C0.UCC=			    \
+				(Core->Counter[0].C0.UCC >	    \
+				Core->Counter[1].C0.UCC) ?	    \
+					Core->Counter[0].C0.UCC   \
+					- Core->Counter[1].C0.UCC \
+					: Core->Counter[1].C0.UCC \
+					- Core->Counter[0].C0.UCC;
 
-			Proc->Core[cpu]->Delta.C0.URC=			\
-				Proc->Core[cpu]->Counter[1].C0.URC	\
-				- Proc->Core[cpu]->Counter[0].C0.URC;
+			Core->Delta.C0.URC=			\
+				Core->Counter[1].C0.URC	\
+				- Core->Counter[0].C0.URC;
 
-			Proc->Core[cpu]->Delta.TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC	\
-				- Proc->Core[cpu]->Counter[0].TSC;
+			Core->Delta.TSC=		\
+				Core->Counter[1].TSC	\
+				- Core->Counter[0].TSC;
 
-			Proc->Core[cpu]->Delta.C1=			\
-				(Proc->Core[cpu]->Counter[0].C1 >	\
-				 Proc->Core[cpu]->Counter[1].C1) ?	\
-					Proc->Core[cpu]->Counter[0].C1	\
-					- Proc->Core[cpu]->Counter[1].C1	\
-					: Proc->Core[cpu]->Counter[1].C1	\
-					- Proc->Core[cpu]->Counter[0].C1;
+			Core->Delta.C1=			\
+				(Core->Counter[0].C1 >	\
+				 Core->Counter[1].C1) ?	\
+					Core->Counter[0].C1	\
+					- Core->Counter[1].C1	\
+					: Core->Counter[1].C1	\
+					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
-			Proc->Core[cpu]->Counter[0].INST=	\
-				Proc->Core[cpu]->Counter[1].INST;
+			Core->Counter[0].INST=	\
+				Core->Counter[1].INST;
 
 			// Save TSC.
-			Proc->Core[cpu]->Counter[0].TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC;
+			Core->Counter[0].TSC=		\
+				Core->Counter[1].TSC;
 
 			// Save the Unhalted Core & Reference Counter
 			// for next iteration.
-			Proc->Core[cpu]->Counter[0].C0.UCC=	\
-				Proc->Core[cpu]->Counter[1].C0.UCC;
-			Proc->Core[cpu]->Counter[1].C0.URC=	\
-				Proc->Core[cpu]->Counter[1].C0.URC;
+			Core->Counter[0].C0.UCC=	\
+				Core->Counter[1].C0.UCC;
+			Core->Counter[1].C0.URC=	\
+				Core->Counter[1].C0.URC;
 
-			Proc->Core[cpu]->Counter[0].C1=		\
-				Proc->Core[cpu]->Counter[1].C1;
+			Core->Counter[0].C1=		\
+				Core->Counter[1].C1;
 
-			atomic_store(&Proc->Core[cpu]->Sync, 0x1);
+			atomic_store(&Core->Sync, 0x1);
 		}
-		Counters_Clear(cpu);
+		Counters_Clear(Core);
 	}
 	do_exit(0);
 }
@@ -785,14 +752,14 @@ void Arch_Core2(unsigned int stage)
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
-			if(Platform.qword != 0)
+			if(Platform.value != 0)
 			{
 			  Proc->Boost[0]=MINCNT(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			  Proc->Boost[1]=MAXCNT(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
-			if(Turbo.qword != 0)
+			if(Turbo.value != 0)
 			{
 				Proc->Boost[2]=Turbo.MaxRatio_8C;
 				Proc->Boost[3]=Turbo.MaxRatio_7C;
@@ -843,11 +810,11 @@ int Cycle_Nehalem(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
-		Counters_Set(cpu);
-		Counters_Nehalem(cpu, 0);
+		Counters_Set(Core);
+		Counters_Nehalem(Core, 0);
 
 		while(!leave)
 		{
@@ -859,72 +826,72 @@ int Cycle_Nehalem(void *arg)
 					leave=1;
 			} while(--down && !leave);
 
-			Counters_Nehalem(cpu, 1);
-			Core_Temp(cpu);
+			Counters_Nehalem(Core, 1);
+			Core_Temp(Core);
 
 			// Delta of Instructions Retired
-			Proc->Core[cpu]->Delta.INST=			\
-				Proc->Core[cpu]->Counter[1].INST		\
-				- Proc->Core[cpu]->Counter[0].INST;
+			Core->Delta.INST=			\
+				Core->Counter[1].INST		\
+				- Core->Counter[0].INST;
 
 			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Proc->Core[cpu]->Delta.C0.UCC=			    \
-				(Proc->Core[cpu]->Counter[0].C0.UCC >	    \
-				Proc->Core[cpu]->Counter[1].C0.UCC) ?	    \
-					Proc->Core[cpu]->Counter[0].C0.UCC   \
-					- Proc->Core[cpu]->Counter[1].C0.UCC \
-					: Proc->Core[cpu]->Counter[1].C0.UCC \
-					- Proc->Core[cpu]->Counter[0].C0.UCC;
+			Core->Delta.C0.UCC=			    \
+				(Core->Counter[0].C0.UCC >	    \
+				Core->Counter[1].C0.UCC) ?	    \
+					Core->Counter[0].C0.UCC   \
+					- Core->Counter[1].C0.UCC \
+					: Core->Counter[1].C0.UCC \
+					- Core->Counter[0].C0.UCC;
 
-			Proc->Core[cpu]->Delta.C0.URC=			\
-				Proc->Core[cpu]->Counter[1].C0.URC	\
-				- Proc->Core[cpu]->Counter[0].C0.URC;
+			Core->Delta.C0.URC=			\
+				Core->Counter[1].C0.URC	\
+				- Core->Counter[0].C0.URC;
 
-			Proc->Core[cpu]->Delta.C3=		\
-				Proc->Core[cpu]->Counter[1].C3	\
-				- Proc->Core[cpu]->Counter[0].C3;
-			Proc->Core[cpu]->Delta.C6=		\
-				Proc->Core[cpu]->Counter[1].C6	\
-				- Proc->Core[cpu]->Counter[0].C6;
+			Core->Delta.C3=		\
+				Core->Counter[1].C3	\
+				- Core->Counter[0].C3;
+			Core->Delta.C6=		\
+				Core->Counter[1].C6	\
+				- Core->Counter[0].C6;
 
-			Proc->Core[cpu]->Delta.TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC	\
-				- Proc->Core[cpu]->Counter[0].TSC;
+			Core->Delta.TSC=		\
+				Core->Counter[1].TSC	\
+				- Core->Counter[0].TSC;
 
-			Proc->Core[cpu]->Delta.C1=			\
-				(Proc->Core[cpu]->Counter[0].C1 >	\
-				 Proc->Core[cpu]->Counter[1].C1) ?	\
-					Proc->Core[cpu]->Counter[0].C1	\
-					- Proc->Core[cpu]->Counter[1].C1	\
-					: Proc->Core[cpu]->Counter[1].C1	\
-					- Proc->Core[cpu]->Counter[0].C1;
+			Core->Delta.C1=			\
+				(Core->Counter[0].C1 >	\
+				 Core->Counter[1].C1) ?	\
+					Core->Counter[0].C1	\
+					- Core->Counter[1].C1	\
+					: Core->Counter[1].C1	\
+					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
-			Proc->Core[cpu]->Counter[0].INST=	\
-				Proc->Core[cpu]->Counter[1].INST;
+			Core->Counter[0].INST=	\
+				Core->Counter[1].INST;
 
 			// Save TSC.
-			Proc->Core[cpu]->Counter[0].TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC;
+			Core->Counter[0].TSC=		\
+				Core->Counter[1].TSC;
 
 			// Save the Unhalted Core & Reference Counter
 			// for next iteration.
-			Proc->Core[cpu]->Counter[0].C0.UCC=	\
-				Proc->Core[cpu]->Counter[1].C0.UCC;
-			Proc->Core[cpu]->Counter[1].C0.URC=	\
-				Proc->Core[cpu]->Counter[1].C0.URC;
+			Core->Counter[0].C0.UCC=	\
+				Core->Counter[1].C0.UCC;
+			Core->Counter[1].C0.URC=	\
+				Core->Counter[1].C0.URC;
 
 			// Save also the C-State Reference Counter.
-			Proc->Core[cpu]->Counter[0].C3=		\
-				Proc->Core[cpu]->Counter[1].C3;
-			Proc->Core[cpu]->Counter[0].C6=		\
-				Proc->Core[cpu]->Counter[1].C6;
-			Proc->Core[cpu]->Counter[0].C1=		\
-				Proc->Core[cpu]->Counter[1].C1;
+			Core->Counter[0].C3=		\
+				Core->Counter[1].C3;
+			Core->Counter[0].C6=		\
+				Core->Counter[1].C6;
+			Core->Counter[0].C1=		\
+				Core->Counter[1].C1;
 
-			atomic_store(&Proc->Core[cpu]->Sync, 0x1);
+			atomic_store(&Core->Sync, 0x1);
 		}
-		Counters_Clear(cpu);
+		Counters_Clear(Core);
 	}
 	do_exit(0);
 }
@@ -995,11 +962,11 @@ int Cycle_SandyBridge(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int cpu=Core->Bind;
+//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
-		Counters_Set(cpu);
-		Counters_SandyBridge(cpu, 0);
+		Counters_Set(Core);
+		Counters_SandyBridge(Core, 0);
 
 		while(!leave)
 		{
@@ -1011,77 +978,77 @@ int Cycle_SandyBridge(void *arg)
 					leave=1;
 			} while(--down && !leave);
 
-			Counters_SandyBridge(cpu, 1);
-			Core_Temp(cpu);
+			Counters_SandyBridge(Core, 1);
+			Core_Temp(Core);
 
 			// Delta of Instructions Retired
-			Proc->Core[cpu]->Delta.INST=			\
-				Proc->Core[cpu]->Counter[1].INST		\
-				- Proc->Core[cpu]->Counter[0].INST;
+			Core->Delta.INST=			\
+				Core->Counter[1].INST		\
+				- Core->Counter[0].INST;
 
 			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Proc->Core[cpu]->Delta.C0.UCC=			    \
-				(Proc->Core[cpu]->Counter[0].C0.UCC >	    \
-				Proc->Core[cpu]->Counter[1].C0.UCC) ?	    \
-					Proc->Core[cpu]->Counter[0].C0.UCC   \
-					- Proc->Core[cpu]->Counter[1].C0.UCC \
-					: Proc->Core[cpu]->Counter[1].C0.UCC \
-					- Proc->Core[cpu]->Counter[0].C0.UCC;
+			Core->Delta.C0.UCC=			    \
+				(Core->Counter[0].C0.UCC >	    \
+				Core->Counter[1].C0.UCC) ?	    \
+					Core->Counter[0].C0.UCC   \
+					- Core->Counter[1].C0.UCC \
+					: Core->Counter[1].C0.UCC \
+					- Core->Counter[0].C0.UCC;
 
-			Proc->Core[cpu]->Delta.C0.URC=			\
-				Proc->Core[cpu]->Counter[1].C0.URC	\
-				- Proc->Core[cpu]->Counter[0].C0.URC;
+			Core->Delta.C0.URC=			\
+				Core->Counter[1].C0.URC	\
+				- Core->Counter[0].C0.URC;
 
-			Proc->Core[cpu]->Delta.C3=		\
-				Proc->Core[cpu]->Counter[1].C3	\
-				- Proc->Core[cpu]->Counter[0].C3;
-			Proc->Core[cpu]->Delta.C6=		\
-				Proc->Core[cpu]->Counter[1].C6	\
-				- Proc->Core[cpu]->Counter[0].C6;
-			Proc->Core[cpu]->Delta.C7=		\
-				Proc->Core[cpu]->Counter[1].C7	\
-				- Proc->Core[cpu]->Counter[0].C7;
+			Core->Delta.C3=		\
+				Core->Counter[1].C3	\
+				- Core->Counter[0].C3;
+			Core->Delta.C6=		\
+				Core->Counter[1].C6	\
+				- Core->Counter[0].C6;
+			Core->Delta.C7=		\
+				Core->Counter[1].C7	\
+				- Core->Counter[0].C7;
 
-			Proc->Core[cpu]->Delta.TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC	\
-				- Proc->Core[cpu]->Counter[0].TSC;
+			Core->Delta.TSC=		\
+				Core->Counter[1].TSC	\
+				- Core->Counter[0].TSC;
 
-			Proc->Core[cpu]->Delta.C1=			\
-				(Proc->Core[cpu]->Counter[0].C1 >	\
-				 Proc->Core[cpu]->Counter[1].C1) ?	\
-					Proc->Core[cpu]->Counter[0].C1	\
-					- Proc->Core[cpu]->Counter[1].C1	\
-					: Proc->Core[cpu]->Counter[1].C1	\
-					- Proc->Core[cpu]->Counter[0].C1;
+			Core->Delta.C1=			\
+				(Core->Counter[0].C1 >	\
+				 Core->Counter[1].C1) ?	\
+					Core->Counter[0].C1	\
+					- Core->Counter[1].C1	\
+					: Core->Counter[1].C1	\
+					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
-			Proc->Core[cpu]->Counter[0].INST=	\
-				Proc->Core[cpu]->Counter[1].INST;
+			Core->Counter[0].INST=	\
+				Core->Counter[1].INST;
 
 			// Save TSC.
-			Proc->Core[cpu]->Counter[0].TSC=		\
-				Proc->Core[cpu]->Counter[1].TSC;
+			Core->Counter[0].TSC=		\
+				Core->Counter[1].TSC;
 
 			// Save the Unhalted Core & Reference Counter
 			// for next iteration.
-			Proc->Core[cpu]->Counter[0].C0.UCC=	\
-				Proc->Core[cpu]->Counter[1].C0.UCC;
-			Proc->Core[cpu]->Counter[1].C0.URC=	\
-				Proc->Core[cpu]->Counter[1].C0.URC;
+			Core->Counter[0].C0.UCC=	\
+				Core->Counter[1].C0.UCC;
+			Core->Counter[1].C0.URC=	\
+				Core->Counter[1].C0.URC;
 
 			// Save also the C-State Reference Counter.
-			Proc->Core[cpu]->Counter[0].C3=		\
-				Proc->Core[cpu]->Counter[1].C3;
-			Proc->Core[cpu]->Counter[0].C6=		\
-				Proc->Core[cpu]->Counter[1].C6;
-			Proc->Core[cpu]->Counter[0].C7=		\
-				Proc->Core[cpu]->Counter[1].C7;
-			Proc->Core[cpu]->Counter[0].C1=		\
-				Proc->Core[cpu]->Counter[1].C1;
+			Core->Counter[0].C3=		\
+				Core->Counter[1].C3;
+			Core->Counter[0].C6=		\
+				Core->Counter[1].C6;
+			Core->Counter[0].C7=		\
+				Core->Counter[1].C7;
+			Core->Counter[0].C1=		\
+				Core->Counter[1].C1;
 
-			atomic_store(&Proc->Core[cpu]->Sync, 0x1);
+			atomic_store(&Core->Sync, 0x1);
 		}
-		Counters_Clear(cpu);
+		Counters_Clear(Core);
 	}
 	do_exit(0);
 }
@@ -1196,8 +1163,9 @@ printk("Stage 0: Welcome\n");
 						 IntelFreq.mkdev, NULL,
 						 DRV_DEVNAME)) != NULL)
 			{
-				unsigned int cpu=0;
-				unsigned long vmSize=sizeof(PROC);
+				unsigned int cpu=0, count=Core_Count();
+				unsigned long vmSize=sizeof(PROC)
+						+ sizeof(void *) * count;
 
 printk("Stage 1: Requesting %lu Bytes\n", vmSize);
 				if((Proc=kmalloc(vmSize, GFP_KERNEL)) == NULL)
@@ -1205,10 +1173,9 @@ printk("Stage 1: Requesting %lu Bytes\n", vmSize);
 				else {
 					vmSize=ksize(Proc);
 
-printk("Stage 2: Proc at %p w/ Kernel mem size of %zd Bytes\n", Proc, vmSize);
+printk("Stage 2: Proc at %p allocated %zd Bytes\n", Proc, vmSize);
 
-					cpu=Core_Count();
-					Proc->CPU.Count=cpu;
+					Proc->CPU.Count=count;
 					Proc->msleep=LOOP_DEF_MS;
 					Proc->PerCore=0;
 					Proc_Features(&Proc->Features);
@@ -1216,10 +1183,10 @@ printk("Stage 2: Proc at %p w/ Kernel mem size of %zd Bytes\n", Proc, vmSize);
 printk("Stage 3: CPU Count=%u\n", Proc->CPU.Count);
 
 				vmSize=sizeof(CORE);
-				vmSize=PAGE_SIZE * ((vmSize / PAGE_SIZE) + ((vmSize % PAGE_SIZE)? 1:0));
+//				vmSize=PAGE_SIZE * ((vmSize / PAGE_SIZE) + ((vmSize % PAGE_SIZE)? 1:0));
 printk("Stage 4: Requesting KMem Cache of %lu Bytes\n", vmSize);
 
-				if((Proc->Cache=kmem_cache_create("intelfreq_cache",
+				if((Proc->Cache=kmem_cache_create("intelfreq-cache",
 								vmSize, 0,
 								SLAB_HWCACHE_ALIGN, NULL)) == NULL)
 					return(-ENOMEM);
@@ -1342,7 +1309,7 @@ printk("Stage 2: KMem Cache destroyed at %p\n", Proc->Cache);
 		kmem_cache_destroy(Proc->Cache);
 	}
 	if(Proc != NULL) {
-printk("Stage 3: Releasing %zd Bytes of Kernel memory\n", ksize(Proc));
+printk("Stage 3: Releasing %zd allocated Bytes\n", ksize(Proc));
 		kfree(Proc);
 	}
 	device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);

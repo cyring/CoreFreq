@@ -37,7 +37,7 @@
 		  "d" ((unsigned int) (_val >> 32))		\
 	);
 
-#define RDMSR(_val, _reg)					\
+#define RDMSR(_data, _reg)					\
 ({								\
 	unsigned int _lo, _hi;					\
 								\
@@ -48,17 +48,17 @@
 		  "=d" (_hi)					\
 		: "c" (_reg)					\
 	);							\
-	_val.qword=_lo | ((unsigned long long) _hi << 32);	\
+	_data.value=_lo | ((unsigned long long) _hi << 32);	\
 })
 
-#define WRMSR(_val,  _reg)					\
+#define WRMSR(_data,  _reg)					\
 	__asm__ volatile					\
 	(							\
 		"wrmsr"						\
 		:						\
 		: "c" (_reg),					\
-		  "a" ((unsigned int) _val.qword & 0xFFFFFFFF),	\
-		  "d" ((unsigned int) (_val.qword >> 32))	\
+		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),\
+		  "d" ((unsigned int) (_data.value >> 32))	\
 	);
 /*
 #define	MOVSB(_dest, _src, _count)				\
@@ -461,7 +461,7 @@ typedef	struct
 */
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -499,7 +499,7 @@ typedef struct
 */
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -555,7 +555,7 @@ typedef struct
 */
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -573,7 +573,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -595,7 +595,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -616,7 +616,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -637,7 +637,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
@@ -665,7 +665,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long	qword;
+	unsigned long long	value;
 	struct
 	{
 		unsigned long long
