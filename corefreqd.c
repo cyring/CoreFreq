@@ -149,10 +149,13 @@ int main(void)
 	{
 		if((FD.Drv=open(DRV_FILENAME, O_RDWR)) != -1)
 		{
-			if((Proc=mmap(	NULL, sizeof(PROC),
+			if((Proc=mmap(	NULL, 4096, /*sizeof(PROC),*/
 					PROT_READ|PROT_WRITE, MAP_SHARED,
 					FD.Drv, 0x0)) != NULL)
 			{
+				printf("Stage 1: Proc at %p\n", Proc);
+				printf("CoreFreqd [%s]\n", Proc->Features.Brand);
+
 				unsigned int cpu=0;
 				size_t ShmSize, ShmCpuSize;
 				ShmCpuSize=sizeof(CPU_STRUCT) * Proc->CPU.Count;

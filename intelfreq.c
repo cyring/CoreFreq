@@ -510,21 +510,25 @@ void Counters_SandyBridge(CORE *Core, unsigned int T)
 			: 0;
 }
 
-void Core_Temp(CORE *Core)
-{
-	RDMSR(Core->TjMax, MSR_IA32_TEMPERATURE_TARGET);
-	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS);
-}
+#define Core_Thermal(Core)				\
+(							\
+	RDMSR(Core->TjMax, MSR_IA32_TEMPERATURE_TARGET)	\
+)
+
+#define Core_Temp(Core)					\
+(							\
+	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)	\
+)
 
 int Cycle_Genuine(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Genuine(Core, 0);
+		Core_Thermal(Core);
 
 		while(!leave)
 		{
@@ -660,11 +664,11 @@ int Cycle_Core2(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(Core);
 		Counters_Core2(Core, 0);
+		Core_Thermal(Core);
 
 		while(!leave)
 		{
@@ -810,11 +814,11 @@ int Cycle_Nehalem(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(Core);
 		Counters_Nehalem(Core, 0);
+		Core_Thermal(Core);
 
 		while(!leave)
 		{
@@ -962,11 +966,11 @@ int Cycle_SandyBridge(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-//		unsigned int cpu=Core->Bind;
 		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(Core);
 		Counters_SandyBridge(Core, 0);
+		Core_Thermal(Core);
 
 		while(!leave)
 		{
@@ -1164,16 +1168,18 @@ printk("Stage 0: Welcome\n");
 						 DRV_DEVNAME)) != NULL)
 			{
 				unsigned int cpu=0, count=Core_Count();
-				unsigned long vmSize=sizeof(PROC)
+				unsigned long kmSize=sizeof(PROC)
 						+ sizeof(void *) * count;
+					kmSize=PAGE_SIZE * ((kmSize / PAGE_SIZE) \
+						+ ((kmSize % PAGE_SIZE)? 1:0));
 
-printk("Stage 1: Requesting %lu Bytes\n", vmSize);
-				if((Proc=kmalloc(vmSize, GFP_KERNEL)) == NULL)
+printk("Stage 1: Requesting %lu Bytes\n", kmSize);
+				if((Proc=kmalloc(kmSize, GFP_KERNEL)) == NULL)
 					return(-ENOMEM);
 				else {
-					vmSize=ksize(Proc);
+					kmSize=ksize(Proc);
 
-printk("Stage 2: Proc at %p allocated %zd Bytes\n", Proc, vmSize);
+printk("Stage 2: Proc at %p allocated %zd Bytes\n", Proc, kmSize);
 
 					Proc->CPU.Count=count;
 					Proc->msleep=LOOP_DEF_MS;
@@ -1182,12 +1188,11 @@ printk("Stage 2: Proc at %p allocated %zd Bytes\n", Proc, vmSize);
 				}
 printk("Stage 3: CPU Count=%u\n", Proc->CPU.Count);
 
-				vmSize=sizeof(CORE);
-//				vmSize=PAGE_SIZE * ((vmSize / PAGE_SIZE) + ((vmSize % PAGE_SIZE)? 1:0));
-printk("Stage 4: Requesting KMem Cache of %lu Bytes\n", vmSize);
+				kmSize=sizeof(CORE);
+printk("Stage 4: Requesting KMem Cache of %lu Bytes\n", kmSize);
 
 				if((Proc->Cache=kmem_cache_create("intelfreq-cache",
-								vmSize, 0,
+								kmSize, 0,
 								SLAB_HWCACHE_ALIGN, NULL)) == NULL)
 					return(-ENOMEM);
 				else {
