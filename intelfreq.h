@@ -75,6 +75,8 @@
 #define MAXCNT(M, m)	((M) > (m) ? (M) : (m))
 #define MINCNT(m, M)	((m) < (M) ? (m) : (M))
 
+#define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) \
+				+ ((Size % PAGE_SIZE)? 1:0));
 typedef struct
 {
 	struct
@@ -816,10 +818,13 @@ typedef struct
 				PerCore;
 
 	CLOCK			Clock;
+} PROC;
 
+typedef struct
+{
 	struct kmem_cache	*Cache;
 	CORE			*Core[];
-} PROC;
+} KMEM;
 
 extern void Arch_Genuine(unsigned int stage) ;
 extern void Arch_Core2(unsigned int stage) ;

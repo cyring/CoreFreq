@@ -24,6 +24,7 @@ unsigned int Shutdown=0x0;
 
 typedef struct {
 	PROC		*Proc;
+	CORE		*Core;
 	SHM_STRUCT	*SHM;
 	unsigned int	Bind;
 	pthread_t	TID;
@@ -34,6 +35,7 @@ static void *Core_Cycle(void *arg)
 {
 	ARG *Arg=(ARG *) arg;
 	PROC *Proc=Arg->Proc;
+	CORE *Core=Arg->Core;
 	SHM_STRUCT *SHM=Arg->SHM;
 	unsigned int cpu=Arg->Bind;
 
@@ -49,46 +51,46 @@ static void *Core_Cycle(void *arg)
 
 	while(!Shutdown)
 	{
-		while(!atomic_load(&Proc->Core[cpu]->Sync))
+		while(!atomic_load(&Core->Sync))
 			usleep(Proc->msleep * 100);
-		atomic_store(&Proc->Core[cpu]->Sync, 0x0);
+		atomic_store(&Core->Sync, 0x0);
 
 		// Compute IPS=Instructions per TSC
-		SHM->CPU[cpu].IPS=	(double) (Proc->Core[cpu]->Delta.INST)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].IPS=	(double) (Core->Delta.INST)	\
+				/ (double) (Core->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].IPC=	(double) (Proc->Core[cpu]->Delta.C0.URC != 0) ?	\
-					(double) (Proc->Core[cpu]->Delta.INST)	\
-					/ (double) Proc->Core[cpu]->Delta.C0.URC	\
+		SHM->CPU[cpu].IPC=	(double) (Core->Delta.C0.URC != 0) ?	\
+					(double) (Core->Delta.INST)	\
+					/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].CPI=	(double) (Proc->Core[cpu]->Delta.INST != 0) ?	\
-					(double) Proc->Core[cpu]->Delta.C0.URC	\
-					/ (double) (Proc->Core[cpu]->Delta.INST)	\
+		SHM->CPU[cpu].CPI=	(double) (Core->Delta.INST != 0) ?	\
+					(double) Core->Delta.C0.URC	\
+					/ (double) (Core->Delta.INST)	\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].Turbo=	(double) (Proc->Core[cpu]->Delta.C0.URC != 0) ?	\
-					(double) (Proc->Core[cpu]->Delta.C0.UCC)	\
-					/ (double) Proc->Core[cpu]->Delta.C0.URC	\
+		SHM->CPU[cpu].Turbo=	(double) (Core->Delta.C0.URC != 0) ?	\
+					(double) (Core->Delta.C0.UCC)	\
+					/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-		SHM->CPU[cpu].C0=(double) (Proc->Core[cpu]->Delta.C0.URC)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
-		SHM->CPU[cpu].C3=(double) (Proc->Core[cpu]->Delta.C3)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
-		SHM->CPU[cpu].C6=(double) (Proc->Core[cpu]->Delta.C6)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
-		SHM->CPU[cpu].C7=(double) (Proc->Core[cpu]->Delta.C7)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
-		SHM->CPU[cpu].C1=(double) (Proc->Core[cpu]->Delta.C1)	\
-				/ (double) (Proc->Core[cpu]->Delta.TSC);
+		SHM->CPU[cpu].C0=(double) (Core->Delta.C0.URC)	\
+				/ (double) (Core->Delta.TSC);
+		SHM->CPU[cpu].C3=(double) (Core->Delta.C3)	\
+				/ (double) (Core->Delta.TSC);
+		SHM->CPU[cpu].C6=(double) (Core->Delta.C6)	\
+				/ (double) (Core->Delta.TSC);
+		SHM->CPU[cpu].C7=(double) (Core->Delta.C7)	\
+				/ (double) (Core->Delta.TSC);
+		SHM->CPU[cpu].C1=(double) (Core->Delta.C1)	\
+				/ (double) (Core->Delta.TSC);
 
 		SHM->CPU[cpu].Relative.Ratio=SHM->CPU[cpu].Turbo		\
 					* SHM->CPU[cpu].C0		\
@@ -98,8 +100,8 @@ static void *Core_Cycle(void *arg)
 		SHM->CPU[cpu].Relative.Freq=SHM->CPU[cpu].Relative.Ratio * Proc->Clock.Q;
 		SHM->CPU[cpu].Relative.Freq+=(SHM->CPU[cpu].Relative.Ratio / Proc->Clock.R) / 1000000L;
 
-		SHM->CPU[cpu].Temperature=Proc->Core[cpu]->TjMax.Target	\
-					- Proc->Core[cpu]->ThermStat.DTS;
+		SHM->CPU[cpu].Temperature=Core->TjMax.Target	\
+					- Core->ThermStat.DTS;
 
 		atomic_store(&SHM->CPU[cpu].Sync, 0x1);
 	}
@@ -140,6 +142,7 @@ int main(void)
 	} FD;
 
 	PROC		*Proc=NULL;
+	CORE		**Core;
 	SHM_STRUCT	*SHM;
 
 	SIG Sig={.Signal={0}, .TID=0, .Started=0};
@@ -147,16 +150,26 @@ int main(void)
 
 	if(UID == 0)
 	{
-		if((FD.Drv=open(DRV_FILENAME, O_RDWR)) != -1)
+		if((FD.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 		{
-			if((Proc=mmap(	NULL, 4096, /*sizeof(PROC),*/
+			unsigned int cpu=0;
+			if((Proc=mmap(	NULL, sysconf(_SC_PAGESIZE),
 					PROT_READ|PROT_WRITE, MAP_SHARED,
-					FD.Drv, 0x0)) != NULL)
+					FD.Drv, 0)) != NULL)
 			{
-				printf("Stage 1: Proc at %p\n", Proc);
+				printf("mmap: Proc at %p\n", Proc);
 				printf("CoreFreqd [%s]\n", Proc->Features.Brand);
 
-				unsigned int cpu=0;
+				Core=calloc(Proc->CPU.Count, sizeof(Core));
+				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				{
+					off_t offset=(1 + cpu) * sysconf(_SC_PAGESIZE);
+					if((Core[cpu]=mmap(NULL, sysconf(_SC_PAGESIZE),
+							PROT_READ|PROT_WRITE, MAP_SHARED,
+							FD.Drv, offset)) != NULL)
+						printf("mmap: CPU(%u) map at %p\n", cpu, Core[cpu]);
+				}
+				
 				size_t ShmSize, ShmCpuSize;
 				ShmCpuSize=sizeof(CPU_STRUCT) * Proc->CPU.Count;
 				ShmSize=sizeof(SHM_STRUCT) + ShmCpuSize;
@@ -188,9 +201,10 @@ int main(void)
 					{
 						atomic_init(&SHM->CPU[cpu].Sync, 0x0);
 
-						if(!Proc->Core[cpu]->OffLine)
+						if(!Core[cpu]->OffLine)
 						{
 							Arg[cpu].Proc=Proc;
+							Arg[cpu].Core=Core[cpu];
 							Arg[cpu].SHM=SHM;
 							Arg[cpu].Bind=cpu;
 							pthread_create(	&Arg[cpu].TID,
@@ -206,7 +220,7 @@ int main(void)
 						usleep(Proc->msleep * 100);
 
 						for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-						if(!Proc->Core[cpu]->OffLine
+						if(!Core[cpu]->OffLine
 						&& atomic_load(&SHM->CPU[cpu].Sync))
 						{
 							atomic_store(&SHM->CPU[cpu].Sync, 0x0);
@@ -217,13 +231,13 @@ int main(void)
 								SHM->CPU[cpu].Relative.Ratio,
 								SHM->CPU[cpu].Temperature);
 						}
-	/*					    else
-							printf("Core[%02d] OffLine\n",
-								cpu);	*/
+//					    else
+//							printf("Core[%02d] OffLine\n",
+//								cpu);
 					}
 					// shutting down
 					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-						if(!Proc->Core[cpu]->OffLine)
+						if(!Core[cpu]->OffLine)
 							pthread_join(Arg[cpu].TID, NULL);
 
 					if(Sig.Started)
@@ -237,7 +251,18 @@ int main(void)
 				else
 					printf("Error: creating the shared memory");
 
-				munmap(Proc, sizeof(PROC));
+				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+					if(Core[cpu])
+					{
+						printf("unmap: CPU(%u) at %p\n", cpu, Core[cpu]);
+						munmap(Core[cpu], sysconf(_SC_PAGESIZE));
+					}
+				free(Core);
+				if(Proc)
+				{
+					printf("unmap: Proc at %p\n", Proc);
+					munmap(Proc, sysconf(_SC_PAGESIZE));
+				}
 			}
 			else
 				printf("Error: mmap(fd:%d):KO\n", FD.Drv);
