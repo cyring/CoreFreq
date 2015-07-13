@@ -17,15 +17,16 @@
 #include <pthread.h>
 #include <stdatomic.h>
 
-#include "intelfreq.h"
 #include "corefreq.h"
+#include "intelfreq.h"
+#define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 unsigned int Shutdown=0x0;
 
 typedef struct {
-	PROC		*Proc;
+	PROC_STRUCT	*Proc;
+	CPU_STRUCT	*Cpu;
 	CORE		*Core;
-	SHM_STRUCT	*SHM;
 	unsigned int	Bind;
 	pthread_t	TID;
 } ARG;
@@ -34,9 +35,9 @@ typedef struct {
 static void *Core_Cycle(void *arg)
 {
 	ARG *Arg=(ARG *) arg;
-	PROC *Proc=Arg->Proc;
+	PROC_STRUCT *Proc=Arg->Proc;
+	CPU_STRUCT *Cpu=Arg->Cpu;
 	CORE *Core=Arg->Core;
-	SHM_STRUCT *SHM=Arg->SHM;
 	unsigned int cpu=Arg->Bind;
 
 	cpu_set_t cpuset;
@@ -56,54 +57,54 @@ static void *Core_Cycle(void *arg)
 		atomic_store(&Core->Sync, 0x0);
 
 		// Compute IPS=Instructions per TSC
-		SHM->CPU[cpu].IPS=	(double) (Core->Delta.INST)	\
+		Cpu->IPS=	(double) (Core->Delta.INST)	\
 				/ (double) (Core->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].IPC=	(double) (Core->Delta.C0.URC != 0) ?	\
+		Cpu->IPC=	(double) (Core->Delta.C0.URC != 0) ?	\
 					(double) (Core->Delta.INST)	\
 					/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].CPI=	(double) (Core->Delta.INST != 0) ?	\
+		Cpu->CPI=	(double) (Core->Delta.INST != 0) ?	\
 					(double) Core->Delta.C0.URC	\
 					/ (double) (Core->Delta.INST)	\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		SHM->CPU[cpu].Turbo=	(double) (Core->Delta.C0.URC != 0) ?	\
+		Cpu->Turbo=	(double) (Core->Delta.C0.URC != 0) ?	\
 					(double) (Core->Delta.C0.UCC)	\
 					/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-		SHM->CPU[cpu].C0=(double) (Core->Delta.C0.URC)	\
+		Cpu->C0=(double) (Core->Delta.C0.URC)	\
 				/ (double) (Core->Delta.TSC);
-		SHM->CPU[cpu].C3=(double) (Core->Delta.C3)	\
+		Cpu->C3=(double) (Core->Delta.C3)	\
 				/ (double) (Core->Delta.TSC);
-		SHM->CPU[cpu].C6=(double) (Core->Delta.C6)	\
+		Cpu->C6=(double) (Core->Delta.C6)	\
 				/ (double) (Core->Delta.TSC);
-		SHM->CPU[cpu].C7=(double) (Core->Delta.C7)	\
+		Cpu->C7=(double) (Core->Delta.C7)	\
 				/ (double) (Core->Delta.TSC);
-		SHM->CPU[cpu].C1=(double) (Core->Delta.C1)	\
+		Cpu->C1=(double) (Core->Delta.C1)	\
 				/ (double) (Core->Delta.TSC);
 
-		SHM->CPU[cpu].Relative.Ratio=SHM->CPU[cpu].Turbo		\
-					* SHM->CPU[cpu].C0		\
+		Cpu->Relative.Ratio=Cpu->Turbo		\
+					* Cpu->C0		\
 					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-		SHM->CPU[cpu].Relative.Freq=SHM->CPU[cpu].Relative.Ratio * Proc->Clock.Q;
-		SHM->CPU[cpu].Relative.Freq+=(SHM->CPU[cpu].Relative.Ratio / Proc->Clock.R) / 1000000L;
+		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
+		Cpu->Relative.Freq+=(Cpu->Relative.Ratio / Proc->Clock.R) / 1000000L;
 
-		SHM->CPU[cpu].Temperature=Core->TjMax.Target	\
+		Cpu->Temperature=Core->TjMax.Target	\
 					- Core->ThermStat.DTS;
 
-		atomic_store(&SHM->CPU[cpu].Sync, 0x1);
+		atomic_store(&Cpu->Sync, 0x1);
 	}
 	return(NULL);
 }
@@ -143,7 +144,7 @@ int main(void)
 
 	PROC		*Proc=NULL;
 	CORE		**Core;
-	SHM_STRUCT	*SHM;
+	SHM_STRUCT	*Shm;
 
 	SIG Sig={.Signal={0}, .TID=0, .Started=0};
 	uid_t UID=geteuid();
@@ -153,21 +154,17 @@ int main(void)
 		if((FD.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 		{
 			unsigned int cpu=0;
-			if((Proc=mmap(	NULL, sysconf(_SC_PAGESIZE),
+			if((Proc=mmap(	NULL, PAGE_SIZE,
 					PROT_READ|PROT_WRITE, MAP_SHARED,
 					FD.Drv, 0)) != NULL)
 			{
-				printf("mmap: Proc at %p\n", Proc);
-				printf("CoreFreqd [%s]\n", Proc->Features.Brand);
-
 				Core=calloc(Proc->CPU.Count, sizeof(Core));
 				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				{
-					off_t offset=(1 + cpu) * sysconf(_SC_PAGESIZE);
-					if((Core[cpu]=mmap(NULL, sysconf(_SC_PAGESIZE),
+					off_t offset=(1 + cpu) * PAGE_SIZE;
+					Core[cpu]=mmap(NULL, PAGE_SIZE,
 							PROT_READ|PROT_WRITE, MAP_SHARED,
-							FD.Drv, offset)) != NULL)
-						printf("mmap: CPU(%u) map at %p\n", cpu, Core[cpu]);
+							FD.Drv, offset);
 				}
 				
 				size_t ShmSize, ShmCpuSize;
@@ -182,9 +179,21 @@ int main(void)
 					O_CREAT|O_TRUNC|O_RDWR,
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) != -1)
 				&& (ftruncate(FD.Svr, ShmSize) != -1)
-				&& ((SHM=mmap(0, ShmSize, PROT_READ|PROT_WRITE, MAP_SHARED, FD.Svr, 0))
-					!= MAP_FAILED))
+				&& ((Shm=mmap(0, ShmSize,
+					      PROT_READ|PROT_WRITE, MAP_SHARED, FD.Svr, 0)) != MAP_FAILED))
 				{
+					Shm->Proc.msleep=Proc->msleep;
+					Shm->Proc.CPU.Count=Proc->CPU.Count;
+					Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
+					memcpy(Shm->Proc.Boost, Proc->Boost,
+					       (1+1+8) * sizeof(unsigned int));
+					Shm->Proc.PerCore=Proc->PerCore;
+					Shm->Proc.Clock.Q=Proc->Clock.Q;
+					Shm->Proc.Clock.R=Proc->Clock.R;
+					strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
+					
+					printf("CoreFreqd [%s]\n", Shm->Proc.Brand);
+
 					sigemptyset(&Sig.Signal);
 					sigaddset(&Sig.Signal, SIGINT);
 					sigaddset(&Sig.Signal, SIGQUIT);
@@ -194,18 +203,18 @@ int main(void)
 					&& !pthread_create(&Sig.TID, NULL, Emergency, &Sig))
 						Sig.Started=1;
 
-					strncpy(SHM->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
+					strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
-					ARG *Arg=calloc(Proc->CPU.Count, sizeof(ARG));
-					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+					ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+					for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 					{
-						atomic_init(&SHM->CPU[cpu].Sync, 0x0);
+						atomic_init(&Shm->Cpu[cpu].Sync, 0x0);
 
-						if(!Core[cpu]->OffLine)
+						if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
 						{
-							Arg[cpu].Proc=Proc;
+							Arg[cpu].Proc=&Shm->Proc;
 							Arg[cpu].Core=Core[cpu];
-							Arg[cpu].SHM=SHM;
+							Arg[cpu].Cpu=&Shm->Cpu[cpu];
 							Arg[cpu].Bind=cpu;
 							pthread_create(	&Arg[cpu].TID,
 									NULL,
@@ -216,28 +225,11 @@ int main(void)
 					free(Arg);
 
 					while(!Shutdown)
-					{
-						usleep(Proc->msleep * 100);
+						usleep(Shm->Proc.msleep * 1000);
 
-						for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-						if(!Core[cpu]->OffLine
-						&& atomic_load(&SHM->CPU[cpu].Sync))
-						{
-							atomic_store(&SHM->CPU[cpu].Sync, 0x0);
-
-							printf("Core[%02d]%8.2f (%12.6f) MHz @ %llu°C\n",
-								cpu,
-								SHM->CPU[cpu].Relative.Freq,
-								SHM->CPU[cpu].Relative.Ratio,
-								SHM->CPU[cpu].Temperature);
-						}
-//					    else
-//							printf("Core[%02d] OffLine\n",
-//								cpu);
-					}
 					// shutting down
-					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-						if(!Core[cpu]->OffLine)
+					for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+						if(!Shm->Cpu[cpu].OffLine)
 							pthread_join(Arg[cpu].TID, NULL);
 
 					if(Sig.Started)
@@ -245,7 +237,7 @@ int main(void)
 						pthread_kill(Sig.TID, SIGUSR1);
 						pthread_join(Sig.TID, NULL);
 					}
-					munmap(SHM, ShmSize);
+					munmap(Shm, ShmSize);
 					shm_unlink(SHM_FILENAME);
 				}
 				else
@@ -253,16 +245,10 @@ int main(void)
 
 				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 					if(Core[cpu])
-					{
-						printf("unmap: CPU(%u) at %p\n", cpu, Core[cpu]);
-						munmap(Core[cpu], sysconf(_SC_PAGESIZE));
-					}
+						munmap(Core[cpu], PAGE_SIZE);
 				free(Core);
 				if(Proc)
-				{
-					printf("unmap: Proc at %p\n", Proc);
-					munmap(Proc, sysconf(_SC_PAGESIZE));
-				}
+					munmap(Proc, PAGE_SIZE);
 			}
 			else
 				printf("Error: mmap(fd:%d):KO\n", FD.Drv);

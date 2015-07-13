@@ -11,16 +11,18 @@ make
 ```
 
 ```
-cc -c corefreqd.c -o corefreqd.o
-cc -lpthread -o corefreqd corefreqd.c
-make -C /lib/modules/4.0.5-1-ARCH/build M=/home/anyuser/src/CoreFreq modules
-make[1]: Entering directory '/usr/lib/modules/4.0.5-1-ARCH/build'
-  CC [M]  /home/anyuser/src/CoreFreq/intelfreq.o
+cc -g -c corefreqd.c -o corefreqd.o
+cc -g -lpthread -lrt -o corefreqd corefreqd.c
+cc -g -c corefreq-cli.c -o corefreq-cli.o
+cc -g -lrt -o corefreq-cli corefreq-cli.c
+make -C /lib/modules/4.0.7-2-ARCH/build M=/workdir/CoreFreq modules
+make[1]: Entering directory '/usr/lib/modules/4.0.7-2-ARCH/build'
+  CC [M]  /workdir/CoreFreq/intelfreq.o
   Building modules, stage 2.
   MODPOST 1 modules
-  CC      /home/anyuser/src/CoreFreq/intelfreq.mod.o
-  LD [M]  /home/anyuser/src/CoreFreq/intelfreq.ko
-make[1]: Leaving directory '/usr/lib/modules/4.0.5-1-ARCH/build'
+  CC      /workdir/CoreFreq/intelfreq.mod.o
+  LD [M]  /workdir/CoreFreq/intelfreq.ko
+make[1]: Leaving directory '/usr/lib/modules/4.0.7-2-ARCH/build'
 ```
 
 ### Start
@@ -33,12 +35,16 @@ insmod intelfreq.ko
 ```
 ./corefreqd
 ```
+ 5- Start the client, as user.
+```
+./corefreq-cli
+```
 
 ### Stop
 
- 5- Press [CTRL]+[C] to stop the daemon.
-
- 6- Unload the kernel module with command
+ 6- Press [CTRL]+[C] to stop the client.
+ 7- Press [CTRL]+[C] to stop the daemon.
+ 8- Unload the kernel module with the rmmod command
 ```
 rmmod intelfreq.ko
 ```

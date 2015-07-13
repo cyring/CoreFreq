@@ -14,6 +14,7 @@
 #include <asm/msr.h>
 #include <stdatomic.h>
 
+#include "corefreq.h"
 #include "intelfreq.h"
 
 MODULE_AUTHOR ("CyrIng");
@@ -1130,8 +1131,6 @@ static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
 				vma->vm_end - vma->vm_start,
 				vma->vm_page_prot) < 0)
 			return(-EIO);
-		else
-			printk("remap: Proc at %p\n", Proc);
 	}
 	else
 	{
@@ -1144,29 +1143,26 @@ static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
 				vma->vm_end - vma->vm_start,
 				vma->vm_page_prot) < 0)
 			return(-EIO);
-		else
-			printk("remap: Core(%u) at %p\n", cpu, KMem->Core[cpu]);
 	}
 	return(0);
 }
 
+static DEFINE_MUTEX(IntelFreq_mutex);
+
 static int IntelFreq_open(struct inode *inode, struct file *pfile)
 {
-	return(0);
+	if(!mutex_trylock(&IntelFreq_mutex))
+		return(-EBUSY);
+	else
+		return(0);
 }
 
 static int IntelFreq_release(struct inode *inode, struct file *pfile)
 {
+	mutex_unlock(&IntelFreq_mutex);
 	return(0);
 }
-/*
-static struct file_operations IntelFreq_fops=
-{
-	.mmap	= IntelFreq_mmap,
-	.open	= nonseekable_open,
-	.release= IntelFreq_release
-};
-*/
+
 static struct file_operations IntelFreq_fops=
 {
 	.open	= IntelFreq_open,
@@ -1177,8 +1173,7 @@ static struct file_operations IntelFreq_fops=
 
 static int __init IntelFreq_init(void)
 {
-printk("Stage 0: Welcome\n");
-
+	int rc=0;
 	IntelFreq.kcdev=cdev_alloc();
 	IntelFreq.kcdev->ops=&IntelFreq_fops;
 	IntelFreq.kcdev->owner=THIS_MODULE;
@@ -1201,164 +1196,180 @@ printk("Stage 0: Welcome\n");
 				unsigned int cpu=0, count=Core_Count();
 				unsigned long kmSize=0;
 				
-printk("Stage 1: Requesting %lu Bytes\n", sizeof(PROC));
-
-				kmSize=ROUND_TO_PAGES(sizeof(PROC));
-				if((Proc=kmalloc(kmSize, GFP_KERNEL)) == NULL)
-					return(-ENOMEM);
-				else {
-
-printk("Stage 2: Proc at %p allocated %zd Bytes\n", Proc, ksize(Proc));
-
-					Proc->CPU.Count=count;
-					Proc->msleep=LOOP_DEF_MS;
-					Proc->PerCore=0;
-					Proc_Features(&Proc->Features);
-				}
-printk("Stage 3: CPU Count=%u\n", Proc->CPU.Count);
-
 				kmSize=sizeof(KMEM) + sizeof(void *) * count;
-				if((KMem=kmalloc(kmSize, GFP_KERNEL)) == NULL)
-					return(-ENOMEM);
-
-				kmSize=ROUND_TO_PAGES(sizeof(CORE));
-printk("Stage 4: Requesting KMem at %p Cache of %lu Bytes\n", KMem, kmSize);
-
-				if((KMem->Cache=kmem_cache_create("intelfreq-cache",
-								kmSize, 0,
-								SLAB_HWCACHE_ALIGN, NULL)) == NULL)
-					return(-ENOMEM);
-				else {
-printk("Stage 5: KMem Cache created at %p\n", KMem->Cache);
-
-					for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if((KMem=kmalloc(kmSize, GFP_KERNEL)) != NULL)
+				{
+					kmSize=ROUND_TO_PAGES(sizeof(PROC));
+					if((Proc=kmalloc(kmSize, GFP_KERNEL)) != NULL)
 					{
-					  void *kcache=kmem_cache_alloc(
-						       KMem->Cache, GFP_KERNEL);
-printk("Stage 6: CPU(%u) Cache allocated at %p\n", cpu, kcache);
+						Proc->CPU.Count=count;
+						Proc->msleep=LOOP_DEF_MS;
+						Proc->PerCore=0;
+						Proc_Features(&Proc->Features);
 
-						if(kcache == NULL)
-							return(-ENOMEM);
+						kmSize=ROUND_TO_PAGES(sizeof(CORE));
+
+						if((KMem->Cache=kmem_cache_create("intelfreq-cache",
+										kmSize, 0,
+										SLAB_HWCACHE_ALIGN, NULL)) != NULL)
+						{
+							for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+							{
+								void *kcache=kmem_cache_alloc(
+										KMem->Cache, GFP_KERNEL);
+
+								KMem->Core[cpu]=kcache;
+
+								atomic_init(&KMem->Core[cpu]->Sync, 0x0);
+								KMem->Core[cpu]->Bind=cpu;
+								if(!cpu_online(cpu) || !cpu_active(cpu))
+									KMem->Core[cpu]->OffLine=1;
+								else
+									KMem->Core[cpu]->OffLine=0;
+							}
+							for(Proc->ArchID=ARCHITECTURES - 1;
+								Proc->ArchID >0;
+									Proc->ArchID--)
+							if(!(Arch[Proc->ArchID].Signature.ExtFamily
+							^ Proc->Features.Std.AX.ExtFamily)
+							&& !(Arch[Proc->ArchID].Signature.Family
+							^ Proc->Features.Std.AX.Family)
+							&& !(Arch[Proc->ArchID].Signature.ExtModel
+							^ Proc->Features.Std.AX.ExtModel)
+							&& !(Arch[Proc->ArchID].Signature.Model
+							^ Proc->Features.Std.AX.Model))
+									break;
+
+							Arch[Proc->ArchID].Arch_Controller(INIT);
+
+							Proc->CPU.OnLine=Proc_Topology();
+							Proc->PerCore=(Proc->Features.HTT_enabled)? 0:1;
+							Proc->Clock=Proc_Clock(Proc->Boost[1]);
+
+							printk(	"IntelFreq [%s]\n" \
+							"Signature [%1X%1X_%1X%1X]" \
+							" Architecture [%s]\n" \
+							"%u/%u CPU Online" \
+							" , Clock @ {%u/%llu} MHz\n" \
+							"Ratio={%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}\n",
+								Proc->Features.Brand,
+								Arch[Proc->ArchID].Signature.ExtFamily,
+								Arch[Proc->ArchID].Signature.Family,
+								Arch[Proc->ArchID].Signature.ExtModel,
+								Arch[Proc->ArchID].Signature.Model,
+								Arch[Proc->ArchID].Architecture,
+								Proc->CPU.OnLine,
+								Proc->CPU.Count,
+								Proc->Clock.Q,
+								Proc->Clock.R,
+								Proc->Boost[0],
+								Proc->Boost[1],
+								Proc->Boost[2],
+								Proc->Boost[3],
+								Proc->Boost[4],
+								Proc->Boost[5],
+								Proc->Boost[6],
+								Proc->Boost[7],
+								Proc->Boost[8],
+								Proc->Boost[9]);
+
+							for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+								printk(	"Topology(%u)"	\
+									" Apic[%3d]"	\
+									" Core[%3d]"	\
+									" Thread[%3d]\n",
+									cpu,
+									KMem->Core[cpu]->T.ApicID,
+									KMem->Core[cpu]->T.CoreID,
+									KMem->Core[cpu]->T.ThreadID);
+
+							Arch[Proc->ArchID].Arch_Controller(START);
+						}
 						else
-							KMem->Core[cpu]=kcache;
+						{
+							kfree(Proc);
+							kfree(KMem);
+
+							device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
+							class_destroy(IntelFreq.clsdev);
+							cdev_del(IntelFreq.kcdev);
+							unregister_chrdev_region(IntelFreq.mkdev, 1);
+
+							rc=-ENOMEM;
+						}
+					}
+					else
+					{
+						kfree(KMem);
+
+						device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
+						class_destroy(IntelFreq.clsdev);
+						cdev_del(IntelFreq.kcdev);
+						unregister_chrdev_region(IntelFreq.mkdev, 1);
+
+						rc=-ENOMEM;
 					}
 				}
-				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				else
 				{
-					atomic_init(&KMem->Core[cpu]->Sync, 0x0);
-					KMem->Core[cpu]->Bind=cpu;
-					if(!cpu_online(cpu) || !cpu_active(cpu))
-						KMem->Core[cpu]->OffLine=1;
-					else
-						KMem->Core[cpu]->OffLine=0;
+					device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
+					class_destroy(IntelFreq.clsdev);
+					cdev_del(IntelFreq.kcdev);
+					unregister_chrdev_region(IntelFreq.mkdev, 1);
+
+					rc=-ENOMEM;
 				}
-				for(Proc->ArchID=ARCHITECTURES - 1;
-					Proc->ArchID >0;
-						Proc->ArchID--)
-				  if(!(Arch[Proc->ArchID].Signature.ExtFamily
-				     ^ Proc->Features.Std.AX.ExtFamily)
-				  && !(Arch[Proc->ArchID].Signature.Family
-				     ^ Proc->Features.Std.AX.Family)
-				  && !(Arch[Proc->ArchID].Signature.ExtModel
-				     ^ Proc->Features.Std.AX.ExtModel)
-				  && !(Arch[Proc->ArchID].Signature.Model
-				     ^ Proc->Features.Std.AX.Model))
-						break;
-
-				Arch[Proc->ArchID].Arch_Controller(INIT);
-printk("Stage 7: INIT\n");
-				Proc->CPU.OnLine=Proc_Topology();
-				Proc->PerCore=(Proc->Features.HTT_enabled)? 0:1;
-				Proc->Clock=Proc_Clock(Proc->Boost[1]);
-
-				printk(	"IntelFreq [%s]\n" \
-				  "Signature [%1X%1X_%1X%1X]" \
-				  " Architecture [%s]\n" \
-				  "%u/%u CPU Online" \
-				  " , Clock @ {%u/%llu} MHz\n" \
-				  "Ratio={%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}\n",
-					Proc->Features.Brand,
-					Arch[Proc->ArchID].Signature.ExtFamily,
-					Arch[Proc->ArchID].Signature.Family,
-					Arch[Proc->ArchID].Signature.ExtModel,
-					Arch[Proc->ArchID].Signature.Model,
-					Arch[Proc->ArchID].Architecture,
-					Proc->CPU.OnLine,
-					Proc->CPU.Count,
-					Proc->Clock.Q,
-					Proc->Clock.R,
-					Proc->Boost[0],
-					Proc->Boost[1],
-					Proc->Boost[2],
-					Proc->Boost[3],
-					Proc->Boost[4],
-					Proc->Boost[5],
-					Proc->Boost[6],
-					Proc->Boost[7],
-					Proc->Boost[8],
-					Proc->Boost[9]);
-
-				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-					printk(	"Topology(%u)"	\
-						" Apic[%3d]"	\
-						" Core[%3d]"	\
-						" Thread[%3d]\n",
-						cpu,
-						KMem->Core[cpu]->T.ApicID,
-						KMem->Core[cpu]->T.CoreID,
-						KMem->Core[cpu]->T.ThreadID);
-
-				Arch[Proc->ArchID].Arch_Controller(START);
 			}
 			else
 			{
-				printk("IntelFreq_init():device_create():KO\n");
-				return(-EBUSY);
+				class_destroy(IntelFreq.clsdev);
+				cdev_del(IntelFreq.kcdev);
+				unregister_chrdev_region(IntelFreq.mkdev, 1);
+
+				rc=-EBUSY;
 			}
 		}
 		else
 		{
-			printk("IntelFreq_init():cdev_add():KO\n");
-			return(-EBUSY);
+			cdev_del(IntelFreq.kcdev);
+			unregister_chrdev_region(IntelFreq.mkdev, 1);
+
+			rc=-EBUSY;
 		}
 	}
 	else
 	{
-		printk("IntelFreq_init():alloc_chrdev_region():KO\n");
-		return(-EBUSY);
+		cdev_del(IntelFreq.kcdev);
+
+		rc=-EBUSY;
 	}
-	return(0);
+	return(rc);
 }
 
 static void __exit IntelFreq_cleanup(void)
 {
 	unsigned int cpu=0;
-printk("Stage 0: Shutdown.\n");
+
 	Arch[Proc->ArchID].Arch_Controller(STOP);
 	Arch[Proc->ArchID].Arch_Controller(END);
 
 	for(cpu=0; (KMem->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
 		if(KMem->Core[cpu] != NULL) {
-printk("Stage 1: CPU(%u) Cache deallocated at %p\n", cpu, KMem->Core[cpu]);
 			kmem_cache_free(KMem->Cache, KMem->Core[cpu]);
 		}
 	if(KMem->Cache != NULL) {
-printk("Stage 2: KMem Cache destroyed at %p\n", KMem->Cache);
 		kmem_cache_destroy(KMem->Cache);
 	}
 	if(Proc != NULL) {
-printk("Stage 3: Releasing Proc at %p\n", Proc);
 		kfree(Proc);
 	}
 	if(KMem != NULL) {
-printk("Stage 4: Releasing KMem at %p\n", KMem);
 		kfree(KMem);
 	}
 	device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
 	class_destroy(IntelFreq.clsdev);
 	cdev_del(IntelFreq.kcdev);
 	unregister_chrdev_region(IntelFreq.mkdev, 1);
-printk("Stage 5: Cleanup\n");
 }
 
 module_init(IntelFreq_init);

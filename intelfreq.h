@@ -4,7 +4,6 @@
  */
 
 #define	_MAX_CPU_ 	8
-#define	TASK_COMM_LEN	16
 
 #define	DRV_DEVNAME "intelfreq"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
@@ -788,12 +787,6 @@ typedef struct
 	TJMAX				TjMax;
 	THERM_STATUS			ThermStat;
 } CORE;
-
-typedef struct
-{
-	unsigned int		Q;
-	unsigned long long	R;
-} CLOCK;
 
 typedef	struct
 {
