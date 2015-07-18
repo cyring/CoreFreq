@@ -17,10 +17,10 @@
 #include "corefreq.h"
 #include "intelfreq.h"
 
-MODULE_AUTHOR ("CyrIng");
-MODULE_DESCRIPTION ("IntelFreq");
-MODULE_SUPPORTED_DEVICE ("all");
-MODULE_LICENSE ("GPL");
+MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
+MODULE_DESCRIPTION ("Intel Processor Frequency Driver");
+MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon");
+MODULE_LICENSE ("GPL v2");
 
 static struct
 {
@@ -30,12 +30,16 @@ static struct
 	struct class *clsdev;
 } IntelFreq;
 
+static signed int ArchID=-1;
+module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(ArchID, "Force an Architecture ID");
+
 static PROC *Proc=NULL;
 static KMEM *KMem=NULL;
 
 static ARCH Arch[ARCHITECTURES]=
 {
-	{ _GenuineIntel,       Arch_Genuine,     "Genuine" },
+	{ _GenuineIntel,       Arch_Genuine,     NULL },
 	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah" },
 	{ _Core_Conroe,        Arch_Core2,       "Core2/Conroe" },
 	{ _Core_Kentsfield,    Arch_Core2,       "Core2/Kentsfield" },
@@ -84,11 +88,11 @@ unsigned int Core_Count(void)
 
 void Proc_Brand(char *pBrand)
 {
-	char tmpString[48+1]={0x20};
+	char tmpString[64]={0x20};
 	unsigned int ix=0, jx=0, px=0;
 	BRAND Brand;
 
-	for(ix=0; ix<3; ix++)
+	for(ix=0; ix < 3; ix++)
 	{
 		__asm__ volatile
 		(
@@ -108,7 +112,7 @@ void Proc_Brand(char *pBrand)
 		for(jx=0; jx<4; jx++, px++)
 			tmpString[px]=Brand.DX.Chr[jx];
 	}
-	for(ix=jx=0; jx < px; jx++)
+	for(ix=jx=0; jx < 48; jx++)
 		if(!(tmpString[jx] == 0x20 && tmpString[jx+1] == 0x20))
 			pBrand[ix++]=tmpString[jx];
 }
@@ -221,23 +225,54 @@ CLOCK Proc_Clock(unsigned int ratio)
 	unsigned int Lo, Hi;
 	CLOCK clock;
 
-	__asm__ volatile
-	(
-		"rdtsc"
-		:"=a" (Lo),
-		 "=d" (Hi)
-	);
-	TSC[0]=((unsigned long long) Lo) | (((unsigned long long) Hi) << 32);
+	if(Proc->Features.InvariantTSC
+	&& Proc->Features.ExtFunc.DX.RDTSCP)
+	{
+		unsigned int Aux;
+		__asm__ volatile
+		(
+			"rdtscp"
+			:"=a" (Lo),
+			 "=d" (Hi),
+			 "=c" (Aux)
+		);
+		TSC[0]=((unsigned long long) Lo)
+			| (((unsigned long long) Hi) << 32);
 
-	ssleep(1);
+		ssleep(1);
 
-	__asm__ volatile
-	(
-		"rdtsc"
-		:"=a" (Lo),
-		 "=d" (Hi)
-	);
-	TSC[1]=((unsigned long long) Lo) | (((unsigned long long) Hi) << 32);
+		__asm__ volatile
+		(
+			"rdtscp"
+			:"=a" (Lo),
+			 "=d" (Hi),
+			 "=c" (Aux)
+		);
+		TSC[1]=((unsigned long long) Lo)
+			| (((unsigned long long) Hi) << 32);
+	}
+	else
+	{
+		__asm__ volatile
+		(
+			"rdtsc"
+			:"=a" (Lo),
+			 "=d" (Hi)
+		);
+		TSC[0]=((unsigned long long) Lo)
+			| (((unsigned long long) Hi) << 32);
+
+		ssleep(1);
+
+		__asm__ volatile
+		(
+			"rdtsc"
+			:"=a" (Lo),
+			 "=d" (Hi)
+		);
+		TSC[1]=((unsigned long long) Lo)
+			| (((unsigned long long) Hi) << 32);
+	}
 	TSC[1]-=TSC[0];
 
 	clock.Q=TSC[1] / (ratio * 1000000L);
@@ -339,7 +374,6 @@ unsigned int Proc_Topology(void)
 				kthread_bind(KMem->Core[cpu]->TID[APIC_TID],cpu);
 				wake_up_process(KMem->Core[cpu]->TID[APIC_TID]);
 			}
-			CountEnabledCPU++;
 		}
 	}
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
@@ -347,6 +381,9 @@ unsigned int Proc_Topology(void)
 		&& !IS_ERR(KMem->Core[cpu]->TID[APIC_TID]))
 		{
 			kthread_stop(KMem->Core[cpu]->TID[APIC_TID]);
+
+			if(KMem->Core[cpu]->T.ApicID >= 0)
+				CountEnabledCPU++;
 
 			if(!Proc->Features.HTT_enabled
 			&& (KMem->Core[cpu]->T.ThreadID > 0))
@@ -358,10 +395,10 @@ unsigned int Proc_Topology(void)
 
 void Counters_Set(CORE *Core)
 {
-	GLOBAL_PERF_COUNTER GlobalPerfCounter={0};
-	FIXED_PERF_COUNTER FixedPerfCounter={0};
-	GLOBAL_PERF_STATUS Overflow={0};
-	GLOBAL_PERF_OVF_CTRL OvfControl={0};
+	GLOBAL_PERF_COUNTER GlobalPerfCounter={.value=0};
+	FIXED_PERF_COUNTER FixedPerfCounter={.value=0};
+	GLOBAL_PERF_STATUS Overflow={.value=0};
+	GLOBAL_PERF_OVF_CTRL OvfControl={.value=0};
 
 	RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
@@ -420,11 +457,11 @@ void Counters_Clear(CORE *Core)
 void Counters_Genuine(CORE *Core, unsigned int T)
 {
 	// Actual & Maximum Performance Frequency Clock counters.
-	RDCNT(Core->Counter[T].C0.UCC, MSR_IA32_APERF);
-	RDCNT(Core->Counter[T].C0.URC, MSR_IA32_MPERF);
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_IA32_APERF);
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_IA32_MPERF);
 
 	// TSC in relation to the Core.
-	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// Derive C1
 	Core->Counter[T].C1=	\
@@ -436,14 +473,14 @@ void Counters_Genuine(CORE *Core, unsigned int T)
 void Counters_Core2(CORE *Core, unsigned int T)
 {
 	// Instructions Retired
-	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// Derive C1
 	Core->Counter[T].C1=	\
@@ -457,18 +494,18 @@ void Counters_Nehalem(CORE *Core, unsigned int T)
 	register unsigned long long Cx=0;
 
 	// Instructions Retired
-	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// C-States.
-	RDCNT(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCNT(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
+	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
+	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
 
 	// Derive C1
 	Cx=	Core->Counter[T].C6		\
@@ -486,19 +523,19 @@ void Counters_SandyBridge(CORE *Core, unsigned int T)
 	register unsigned long long Cx=0;
 
 	// Instructions Retired
-	RDCNT(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
 
 	// Unhalted Core & Reference Cycles.
-	RDCNT(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCNT(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
 
 	// TSC in relation to the Logical Core.
-	RDCNT(Core->Counter[T].TSC, MSR_IA32_TSC);
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
 
 	// C-States.
-	RDCNT(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCNT(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
-	RDCNT(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);
+	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
+	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
+	RDCOUNTER(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);
 
 	// Derive C1
 	Cx=	Core->Counter[T].C7		\
@@ -578,7 +615,7 @@ int Cycle_Genuine(void *arg)
 			// for next iteration.
 			Core->Counter[0].C0.UCC=	\
 				Core->Counter[1].C0.UCC;
-			Core->Counter[1].C0.URC=	\
+			Core->Counter[0].C0.URC=	\
 				Core->Counter[1].C0.URC;
 
 			Core->Counter[0].C1=		\
@@ -602,17 +639,17 @@ void Arch_Genuine(unsigned int stage)
 		break;
 		case INIT:
 		{
-			PLATFORM_INFO Platform={0};
-			TURBO_RATIO Turbo={0};
+			PLATFORM_INFO Platform={.value=0};
+			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			if(Platform.value != 0)
 			{
-			  Proc->Boost[0]=MINCNT(Platform.MinimumRatio,	\
+			  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
-			  Proc->Boost[1]=MAXCNT(Platform.MinimumRatio,	\
+			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
 			if(Turbo.value != 0)
@@ -727,7 +764,7 @@ int Cycle_Core2(void *arg)
 			// for next iteration.
 			Core->Counter[0].C0.UCC=	\
 				Core->Counter[1].C0.UCC;
-			Core->Counter[1].C0.URC=	\
+			Core->Counter[0].C0.URC=	\
 				Core->Counter[1].C0.URC;
 
 			Core->Counter[0].C1=		\
@@ -752,17 +789,17 @@ void Arch_Core2(unsigned int stage)
 		break;
 		case INIT:
 		{
-			PLATFORM_INFO Platform={0};
-			TURBO_RATIO Turbo={0};
+			PLATFORM_INFO Platform={.value=0};
+			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			if(Platform.value != 0)
 			{
-			  Proc->Boost[0]=MINCNT(Platform.MinimumRatio,	\
+			  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
-			  Proc->Boost[1]=MAXCNT(Platform.MinimumRatio,	\
+			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
 			if(Turbo.value != 0)
@@ -884,7 +921,7 @@ int Cycle_Nehalem(void *arg)
 			// for next iteration.
 			Core->Counter[0].C0.UCC=	\
 				Core->Counter[1].C0.UCC;
-			Core->Counter[1].C0.URC=	\
+			Core->Counter[0].C0.URC=	\
 				Core->Counter[1].C0.URC;
 
 			// Save also the C-State Reference Counter.
@@ -914,8 +951,8 @@ void Arch_Nehalem(unsigned int stage)
 		break;
 		case INIT:
 		{
-			PLATFORM_INFO Platform={0};
-			TURBO_RATIO Turbo={0};
+			PLATFORM_INFO Platform={.value=0};
+			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
@@ -1039,7 +1076,7 @@ int Cycle_SandyBridge(void *arg)
 			// for next iteration.
 			Core->Counter[0].C0.UCC=	\
 				Core->Counter[1].C0.UCC;
-			Core->Counter[1].C0.URC=	\
+			Core->Counter[0].C0.URC=	\
 				Core->Counter[1].C0.URC;
 
 			// Save also the C-State Reference Counter.
@@ -1071,8 +1108,8 @@ void Arch_SandyBridge(unsigned int stage)
 		break;
 		case INIT:
 		{
-			PLATFORM_INFO Platform={0};
-			TURBO_RATIO Turbo={0};
+			PLATFORM_INFO Platform={.value=0};
+			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
@@ -1202,10 +1239,12 @@ static int __init IntelFreq_init(void)
 					kmSize=ROUND_TO_PAGES(sizeof(PROC));
 					if((Proc=kmalloc(kmSize, GFP_KERNEL)) != NULL)
 					{
+						memset(Proc, 0, kmSize);
 						Proc->CPU.Count=count;
 						Proc->msleep=LOOP_DEF_MS;
 						Proc->PerCore=0;
 						Proc_Features(&Proc->Features);
+						Arch[0].Architecture=Proc->Features.VendorID;
 
 						kmSize=ROUND_TO_PAGES(sizeof(CORE));
 
@@ -1217,7 +1256,7 @@ static int __init IntelFreq_init(void)
 							{
 								void *kcache=kmem_cache_alloc(
 										KMem->Cache, GFP_KERNEL);
-
+								memset(kcache, 0, kmSize);
 								KMem->Core[cpu]=kcache;
 
 								atomic_init(&KMem->Core[cpu]->Sync, 0x0);
@@ -1227,19 +1266,25 @@ static int __init IntelFreq_init(void)
 								else
 									KMem->Core[cpu]->OffLine=0;
 							}
-							for(Proc->ArchID=ARCHITECTURES - 1;
+							if((ArchID != -1)
+							&& (ArchID >= 0)
+							&& (ArchID < ARCHITECTURES))
+								Proc->ArchID=ArchID;
+							else
+							{
+								for(Proc->ArchID=ARCHITECTURES - 1;
 								Proc->ArchID >0;
 									Proc->ArchID--)
-							if(!(Arch[Proc->ArchID].Signature.ExtFamily
-							^ Proc->Features.Std.AX.ExtFamily)
-							&& !(Arch[Proc->ArchID].Signature.Family
-							^ Proc->Features.Std.AX.Family)
-							&& !(Arch[Proc->ArchID].Signature.ExtModel
-							^ Proc->Features.Std.AX.ExtModel)
-							&& !(Arch[Proc->ArchID].Signature.Model
-							^ Proc->Features.Std.AX.Model))
-									break;
-
+									if(!(Arch[Proc->ArchID].Signature.ExtFamily
+										^ Proc->Features.Std.AX.ExtFamily)
+									&& !(Arch[Proc->ArchID].Signature.Family
+										^ Proc->Features.Std.AX.Family)
+									&& !(Arch[Proc->ArchID].Signature.ExtModel
+										^ Proc->Features.Std.AX.ExtModel)
+									&& !(Arch[Proc->ArchID].Signature.Model
+										^ Proc->Features.Std.AX.Model))
+										break;
+							}
 							Arch[Proc->ArchID].Arch_Controller(INIT);
 
 							Proc->CPU.OnLine=Proc_Topology();

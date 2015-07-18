@@ -9,10 +9,13 @@
 
 typedef struct
 {
-	atomic_ullong	Sync;
+	unsigned long long Temperature;
+
 	unsigned int	OffLine;
 
-	double		IPS,
+	unsigned int	FlipFlop;
+	struct {
+		double	IPS,
 			IPC,
 			CPI,
 			Turbo,
@@ -21,13 +24,12 @@ typedef struct
 			C6,
 			C7,
 			C1;
+	} State[2];
 
 	struct {
 		double	Ratio,
 			Freq;
 	} Relative;
-
-	unsigned long long Temperature;
 } CPU_STRUCT;
 
 typedef struct
@@ -38,6 +40,9 @@ typedef struct
 
 typedef struct
 {
+	atomic_ullong		Sync,
+				Room;
+
 	unsigned int		msleep;
 
 	struct {
@@ -50,7 +55,16 @@ typedef struct
 
 	CLOCK			Clock;
 
-	char			Brand[48+1];
+	char			Brand[64];
+
+	struct {
+		double	Turbo,
+			C0,
+			C3,
+			C6,
+			C7,
+			C1;
+	} Avg;
 } PROC_STRUCT;
 
 

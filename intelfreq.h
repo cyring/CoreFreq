@@ -8,11 +8,17 @@
 #define	DRV_DEVNAME "intelfreq"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
 
+#define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) \
+				+ ((Size % PAGE_SIZE)? 1:0));
+
 #define	LOOP_MIN_MS	100
 #define LOOP_MAX_MS	5000
 #define	LOOP_DEF_MS	1000
 
-#define RDCNT(_val,  _cnt)					\
+#define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
+#define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
+
+#define RDCOUNTER(_val,  _cnt)					\
 ({								\
 	unsigned int _lo, _hi;					\
 								\
@@ -26,7 +32,7 @@
 	_val=_lo | ((unsigned long long) _hi << 32);		\
 })
 
-#define WRCNT(_val,  _cnt)					\
+#define WRCOUNTER(_val,  _cnt)					\
 	__asm__ volatile					\
 	(							\
 		"wrmsr"						\
@@ -59,23 +65,8 @@
 		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),\
 		  "d" ((unsigned int) (_data.value >> 32))	\
 	);
-/*
-#define	MOVSB(_dest, _src, _count)				\
-	__asm__ volatile					\
-	(							\
-		"cld		\n\t"				\
-		"rep movsb"					\
-		:						\
-                : "D" (_dest),					\
-		  "S" (_src),					\
-		  "c" (_count)					\
-	);
-*/
-#define MAXCNT(M, m)	((M) > (m) ? (M) : (m))
-#define MINCNT(m, M)	((m) < (M) ? (m) : (M))
 
-#define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) \
-				+ ((Size % PAGE_SIZE)? 1:0));
+
 typedef struct
 {
 	struct
@@ -86,7 +77,6 @@ typedef struct
 
 typedef struct
 {
-	char		VendorID[16];
 	struct
 	{
 		struct SIGNATURE
@@ -341,7 +331,13 @@ typedef struct
 	unsigned int	InvariantTSC,
                         HTT_enabled;
 
-	char		Brand[48+1];
+	struct
+	{
+		char	Brand[48],
+			_pad48[2],
+			VendorID[12],
+			_pad62[2];
+	};
 } FEATURES;
 
 //	[GenuineIntel]
@@ -733,20 +729,6 @@ enum { APIC_TID, CYCLE_TID, LAST_TID };
 
 typedef struct
 {
-	atomic_ullong			Sync;
-	struct task_struct		*TID[LAST_TID];
-
-	unsigned int			Bind,
-					OffLine;
-
-	TOPOLOGY			T;
-
-	struct SAVEAREA
-	{
-		GLOBAL_PERF_COUNTER	GlobalPerfCounter;
-		FIXED_PERF_COUNTER	FixedPerfCounter;
-	} SaveArea;
-
 	struct
 	{
 		unsigned long long 	INST;
@@ -783,9 +765,22 @@ typedef struct
 					C1;
 	} Delta;
 
-	signed int			Temp;
-	TJMAX				TjMax;
 	THERM_STATUS			ThermStat;
+	TJMAX				TjMax;
+
+	struct SAVEAREA
+	{
+		GLOBAL_PERF_COUNTER	GlobalPerfCounter;
+		FIXED_PERF_COUNTER	FixedPerfCounter;
+	} SaveArea;
+
+	TOPOLOGY			T;
+
+	unsigned int			Bind,
+					OffLine;
+
+	atomic_ullong			Sync;
+	struct task_struct		*TID[LAST_TID];
 } CORE;
 
 typedef	struct

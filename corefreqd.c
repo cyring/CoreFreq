@@ -38,7 +38,7 @@ static void *Core_Cycle(void *arg)
 	PROC_STRUCT *Proc=Arg->Proc;
 	CPU_STRUCT *Cpu=Arg->Cpu;
 	CORE *Core=Arg->Core;
-	unsigned int cpu=Arg->Bind;
+	unsigned int cpu=Arg->Bind, roomBit=1 << cpu, roomCmp=~roomBit;
 
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -56,55 +56,58 @@ static void *Core_Cycle(void *arg)
 			usleep(Proc->msleep * 100);
 		atomic_store(&Core->Sync, 0x0);
 
+		if(atomic_load(&Proc->Room) & roomBit)
+		{
+			Cpu->FlipFlop=!Cpu->FlipFlop;
+			atomic_fetch_and(&Proc->Room, roomCmp);
+		}
+
 		// Compute IPS=Instructions per TSC
-		Cpu->IPS=	(double) (Core->Delta.INST)	\
+		Cpu->State[Cpu->FlipFlop].IPS=(double) (Core->Delta.INST)	\
 				/ (double) (Core->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		Cpu->IPC=	(double) (Core->Delta.C0.URC != 0) ?	\
-					(double) (Core->Delta.INST)	\
-					/ (double) Core->Delta.C0.URC	\
+		Cpu->State[Cpu->FlipFlop].IPC=(double) (Core->Delta.C0.URC != 0) ?\
+					(double) (Core->Delta.INST)		\
+					/ (double) Core->Delta.C0.URC		\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		Cpu->CPI=	(double) (Core->Delta.INST != 0) ?	\
-					(double) Core->Delta.C0.URC	\
-					/ (double) (Core->Delta.INST)	\
+		Cpu->State[Cpu->FlipFlop].CPI=(double) (Core->Delta.INST != 0) ?\
+					(double) Core->Delta.C0.URC		\
+					/ (double) (Core->Delta.INST)		\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		Cpu->Turbo=	(double) (Core->Delta.C0.URC != 0) ?	\
+		Cpu->State[Cpu->FlipFlop].Turbo=(double) (Core->Delta.C0.URC != 0) ?	\
 					(double) (Core->Delta.C0.UCC)	\
 					/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-		Cpu->C0=(double) (Core->Delta.C0.URC)	\
+		Cpu->State[Cpu->FlipFlop].C0=(double) (Core->Delta.C0.URC)	\
 				/ (double) (Core->Delta.TSC);
-		Cpu->C3=(double) (Core->Delta.C3)	\
+		Cpu->State[Cpu->FlipFlop].C3=(double) (Core->Delta.C3)		\
 				/ (double) (Core->Delta.TSC);
-		Cpu->C6=(double) (Core->Delta.C6)	\
+		Cpu->State[Cpu->FlipFlop].C6=(double) (Core->Delta.C6)		\
 				/ (double) (Core->Delta.TSC);
-		Cpu->C7=(double) (Core->Delta.C7)	\
+		Cpu->State[Cpu->FlipFlop].C7=(double) (Core->Delta.C7)		\
 				/ (double) (Core->Delta.TSC);
-		Cpu->C1=(double) (Core->Delta.C1)	\
+		Cpu->State[Cpu->FlipFlop].C1=(double) (Core->Delta.C1)		\
 				/ (double) (Core->Delta.TSC);
 
-		Cpu->Relative.Ratio=Cpu->Turbo		\
-					* Cpu->C0		\
+		Cpu->Relative.Ratio=Cpu->State[Cpu->FlipFlop].Turbo		\
+					* Cpu->State[Cpu->FlipFlop].C0		\
 					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
 		Cpu->Relative.Freq+=(Cpu->Relative.Ratio / Proc->Clock.R) / 1000000L;
 
-		Cpu->Temperature=Core->TjMax.Target	\
-					- Core->ThermStat.DTS;
-
-		atomic_store(&Cpu->Sync, 0x1);
+		Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 	}
 	return(NULL);
 }
@@ -182,6 +185,7 @@ int main(void)
 				&& ((Shm=mmap(0, ShmSize,
 					      PROT_READ|PROT_WRITE, MAP_SHARED, FD.Svr, 0)) != MAP_FAILED))
 				{
+					memset(Shm, 0, ShmSize);
 					Shm->Proc.msleep=Proc->msleep;
 					Shm->Proc.CPU.Count=Proc->CPU.Count;
 					Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
@@ -205,12 +209,20 @@ int main(void)
 
 					strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
+					atomic_init(&Shm->Proc.Sync, 0x0);
+
+					unsigned long long roomSeed=0x0;
+					for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+						if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
+						{
+							unsigned int roomBit=1 << cpu;
+							roomSeed|=roomBit;
+						}
+					atomic_init(&Shm->Proc.Room, roomSeed);
+
 					ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 					for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
-					{
-						atomic_init(&Shm->Cpu[cpu].Sync, 0x0);
-
-						if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
+						if(!Shm->Cpu[cpu].OffLine)
 						{
 							Arg[cpu].Proc=&Shm->Proc;
 							Arg[cpu].Core=Core[cpu];
@@ -221,12 +233,43 @@ int main(void)
 									Core_Cycle,
 									&Arg[cpu]);
 						}
-					}
 					free(Arg);
 
 					while(!Shutdown)
-						usleep(Shm->Proc.msleep * 1000);
+					{
+						while(atomic_load(&Shm->Proc.Room))
+							usleep(Shm->Proc.msleep * 100);
 
+						Shm->Proc.Avg.Turbo=0;
+						Shm->Proc.Avg.C0=0;
+						Shm->Proc.Avg.C3=0;
+						Shm->Proc.Avg.C6=0;
+						Shm->Proc.Avg.C7=0;
+						Shm->Proc.Avg.C1=0;
+
+						for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+							if(!Shm->Cpu[cpu].OffLine)
+							{
+								unsigned int roomBit=1 << cpu, NOT=!Shm->Cpu[cpu].FlipFlop;
+
+								Shm->Proc.Avg.Turbo+=Shm->Cpu[cpu].State[NOT].Turbo;
+								Shm->Proc.Avg.C0+=Shm->Cpu[cpu].State[NOT].C0;
+								Shm->Proc.Avg.C3+=Shm->Cpu[cpu].State[NOT].C3;
+								Shm->Proc.Avg.C6+=Shm->Cpu[cpu].State[NOT].C6;
+								Shm->Proc.Avg.C7+=Shm->Cpu[cpu].State[NOT].C7;
+								Shm->Proc.Avg.C1+=Shm->Cpu[cpu].State[NOT].C1;
+
+								atomic_fetch_or(&Shm->Proc.Room, roomBit);
+							}
+						Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;
+						Shm->Proc.Avg.C0/=Shm->Proc.CPU.OnLine;
+						Shm->Proc.Avg.C3/=Shm->Proc.CPU.OnLine;
+						Shm->Proc.Avg.C6/=Shm->Proc.CPU.OnLine;
+						Shm->Proc.Avg.C7/=Shm->Proc.CPU.OnLine;
+						Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
+
+						atomic_store(&Shm->Proc.Sync, 0x1);
+					}
 					// shutting down
 					for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 						if(!Shm->Cpu[cpu].OffLine)
