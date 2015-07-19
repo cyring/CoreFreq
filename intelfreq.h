@@ -351,7 +351,7 @@ typedef struct
 #define	_Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
 #define	_Core_Dunnington \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
-//	[Atom]		06_1CH, 06_26H, 06_27H (32 bits), 06_35H (32 bits), 06_36H
+//	[Atom]		06_1CH, 06_26H, 06_27H (32bits), 06_35H (32bits), 06_36H
 #define	_Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
 #define	_Atom_Silvermont \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
@@ -426,14 +426,18 @@ typedef	struct
 		PlatformId	: 53-50,
 		ReservedBits3	: 64-53;
 } PLATFORM_ID;
-
-typedef	struct
+*/
+typedef union
 {
-	unsigned long long
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Bus_Speed	:  3-0,
 		ReservedBits	: 64-3;
+	};
 } FSB_FREQ;
-
+/*
 typedef	struct
 {
 	unsigned long long
