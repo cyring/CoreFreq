@@ -29,7 +29,7 @@ void Emergency(int caught)
 
 int main(int argc, char *argv[])
 {
-	struct stat shmStat={0}, smbStat={0};
+	struct stat shmStat={0};
 	SHM_STRUCT *Shm;
 	unsigned int cpu=0;
 	int fd=-1, rc=0;
@@ -40,7 +40,12 @@ int main(int argc, char *argv[])
 	&& ((Shm=mmap(0, shmStat.st_size,
 		      PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
 	{
-		printf("CoreFreq-Cli [%s]\n\n", Shm->Proc.Brand);
+		double Clock=Shm->Proc.Clock.Q				\
+				+ ((double) Shm->Proc.Clock.R		\
+				/ (Shm->Proc.Boost[1] * 1000000L));
+
+		printf("CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
+		       Shm->Proc.Brand, Clock);
 
 		signal(SIGINT, Emergency);
 		signal(SIGQUIT, Emergency);
@@ -55,20 +60,19 @@ int main(int argc, char *argv[])
 			for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 			    if(!Shm->Cpu[cpu].OffLine)
 			    {
-				unsigned int NOT=!Shm->Cpu[cpu].FlipFlop;
-				printf(	"Cpu[%02d] %05.2f x %u = %7.2f MHz" \
+				unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
+				printf(	"Cpu#%02d %7.2fMHz (%5.2f)" \
 					" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%" \
-					"  @ %llu°C\n",
+					" @ %llu°C\n",
 					cpu,
-					Shm->Cpu[cpu].Relative.Ratio,
-					Shm->Proc.Clock.Q,
 					Shm->Cpu[cpu].Relative.Freq,
-					100.f * Shm->Cpu[cpu].State[NOT].Turbo,
-					100.f * Shm->Cpu[cpu].State[NOT].C0,
-					100.f * Shm->Cpu[cpu].State[NOT].C1,
-					100.f * Shm->Cpu[cpu].State[NOT].C3,
-					100.f * Shm->Cpu[cpu].State[NOT].C6,
-					100.f * Shm->Cpu[cpu].State[NOT].C7,
+					Shm->Cpu[cpu].Relative.Ratio,
+					100.f * Shm->Cpu[cpu].State[flop].Turbo,
+					100.f * Shm->Cpu[cpu].State[flop].C0,
+					100.f * Shm->Cpu[cpu].State[flop].C1,
+					100.f * Shm->Cpu[cpu].State[flop].C3,
+					100.f * Shm->Cpu[cpu].State[flop].C6,
+					100.f * Shm->Cpu[cpu].State[flop].C7,
 					Shm->Cpu[cpu].Temperature);
 			    }
 			printf(	"\nAverage C-states\n" \

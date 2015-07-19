@@ -276,7 +276,7 @@ CLOCK Proc_Clock(unsigned int ratio)
 	TSC[1]-=TSC[0];
 
 	clock.Q=TSC[1] / (ratio * 1000000L);
-	clock.R=TSC[1] - (clock.Q * ratio);
+	clock.R=TSC[1] - (clock.Q * ratio * 1000000L);
 
 	return(clock);
 }
@@ -640,10 +640,8 @@ void Arch_Genuine(unsigned int stage)
 		case INIT:
 		{
 			PLATFORM_INFO Platform={.value=0};
-			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
-			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			if(Platform.value != 0)
 			{
@@ -652,19 +650,9 @@ void Arch_Genuine(unsigned int stage)
 			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
-			if(Turbo.value != 0)
-			{
-				Proc->Boost[2]=Turbo.MaxRatio_8C;
-				Proc->Boost[3]=Turbo.MaxRatio_7C;
-				Proc->Boost[4]=Turbo.MaxRatio_6C;
-				Proc->Boost[5]=Turbo.MaxRatio_5C;
-				Proc->Boost[6]=Turbo.MaxRatio_4C;
-				Proc->Boost[7]=Turbo.MaxRatio_3C;
-				Proc->Boost[8]=Turbo.MaxRatio_2C;
-				Proc->Boost[9]=Turbo.MaxRatio_1C;
-			}
-			else
-				Proc->Boost[9]=Proc->Boost[1];
+			Proc->Boost[9]=Proc->Boost[1];
+
+			Proc->Clock=Proc_Clock(Platform.MaxNonTurboRatio);
 		}
 		break;
 		case STOP:
@@ -790,10 +778,8 @@ void Arch_Core2(unsigned int stage)
 		case INIT:
 		{
 			PLATFORM_INFO Platform={.value=0};
-			TURBO_RATIO Turbo={.value=0};
 
 			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
-			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			if(Platform.value != 0)
 			{
@@ -802,19 +788,9 @@ void Arch_Core2(unsigned int stage)
 			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,	\
 						Platform.MaxNonTurboRatio);
 			}
-			if(Turbo.value != 0)
-			{
-				Proc->Boost[2]=Turbo.MaxRatio_8C;
-				Proc->Boost[3]=Turbo.MaxRatio_7C;
-				Proc->Boost[4]=Turbo.MaxRatio_6C;
-				Proc->Boost[5]=Turbo.MaxRatio_5C;
-				Proc->Boost[6]=Turbo.MaxRatio_4C;
-				Proc->Boost[7]=Turbo.MaxRatio_3C;
-				Proc->Boost[8]=Turbo.MaxRatio_2C;
-				Proc->Boost[9]=Turbo.MaxRatio_1C;
-			}
-			else
-				Proc->Boost[9]=Proc->Boost[1];
+			Proc->Boost[9]=Proc->Boost[1];
+
+			Proc->Clock=Proc_Clock(Platform.MaxNonTurboRatio);
 		}
 		break;
 		case STOP:
@@ -967,6 +943,8 @@ void Arch_Nehalem(unsigned int stage)
 			Proc->Boost[7]=Turbo.MaxRatio_3C;
 			Proc->Boost[8]=Turbo.MaxRatio_2C;
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+			Proc->Clock=Proc_Clock(Platform.MaxNonTurboRatio);
 		}
 		break;
 		case STOP:
@@ -1124,6 +1102,8 @@ void Arch_SandyBridge(unsigned int stage)
 			Proc->Boost[7]=Turbo.MaxRatio_3C;
 			Proc->Boost[8]=Turbo.MaxRatio_2C;
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+			Proc->Clock=Proc_Clock(Platform.MaxNonTurboRatio);
 		}
 		break;
 		case STOP:
@@ -1289,7 +1269,6 @@ static int __init IntelFreq_init(void)
 
 							Proc->CPU.OnLine=Proc_Topology();
 							Proc->PerCore=(Proc->Features.HTT_enabled)? 0:1;
-							Proc->Clock=Proc_Clock(Proc->Boost[1]);
 
 							printk(	"IntelFreq [%s]\n" \
 							"Signature [%1X%1X_%1X%1X]" \

@@ -105,7 +105,8 @@ static void *Core_Cycle(void *arg)
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
-		Cpu->Relative.Freq+=(Cpu->Relative.Ratio / Proc->Clock.R) / 1000000L;
+		Cpu->Relative.Freq+=(Cpu->Relative.Ratio * Proc->Clock.R)
+					/ ((double) Proc->Boost[1] * 1000000L);
 
 		Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 	}
@@ -195,8 +196,13 @@ int main(void)
 					Shm->Proc.Clock.Q=Proc->Clock.Q;
 					Shm->Proc.Clock.R=Proc->Clock.R;
 					strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
-					
-					printf("CoreFreqd [%s]\n", Shm->Proc.Brand);
+
+					double Clock=Shm->Proc.Clock.Q			\
+						+ ((double) Shm->Proc.Clock.R		\
+						/ (Shm->Proc.Boost[1] * 1000000L));
+
+					printf(	"CoreFreqd [%s] , Clock @ %.2f MHz\n",
+						Shm->Proc.Brand, Clock);
 
 					sigemptyset(&Sig.Signal);
 					sigaddset(&Sig.Signal, SIGINT);
@@ -250,14 +256,14 @@ int main(void)
 						for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 							if(!Shm->Cpu[cpu].OffLine)
 							{
-								unsigned int roomBit=1 << cpu, NOT=!Shm->Cpu[cpu].FlipFlop;
+								unsigned int roomBit=1 << cpu, flop=!Shm->Cpu[cpu].FlipFlop;
 
-								Shm->Proc.Avg.Turbo+=Shm->Cpu[cpu].State[NOT].Turbo;
-								Shm->Proc.Avg.C0+=Shm->Cpu[cpu].State[NOT].C0;
-								Shm->Proc.Avg.C3+=Shm->Cpu[cpu].State[NOT].C3;
-								Shm->Proc.Avg.C6+=Shm->Cpu[cpu].State[NOT].C6;
-								Shm->Proc.Avg.C7+=Shm->Cpu[cpu].State[NOT].C7;
-								Shm->Proc.Avg.C1+=Shm->Cpu[cpu].State[NOT].C1;
+								Shm->Proc.Avg.Turbo+=Shm->Cpu[cpu].State[flop].Turbo;
+								Shm->Proc.Avg.C0+=Shm->Cpu[cpu].State[flop].C0;
+								Shm->Proc.Avg.C3+=Shm->Cpu[cpu].State[flop].C3;
+								Shm->Proc.Avg.C6+=Shm->Cpu[cpu].State[flop].C6;
+								Shm->Proc.Avg.C7+=Shm->Cpu[cpu].State[flop].C7;
+								Shm->Proc.Avg.C1+=Shm->Cpu[cpu].State[flop].C1;
 
 								atomic_fetch_or(&Shm->Proc.Room, roomBit);
 							}

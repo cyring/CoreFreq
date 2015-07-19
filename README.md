@@ -52,7 +52,7 @@ rmmod intelfreq.ko
 ```
 
 ## Screenshots
- * Use ```dmesg``` or ```journalctl -kf``` to check if the driver is started
+ * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
 ```
 kernel: IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
         Signature [06_1A] Architecture [Nehalem/Bloomfield]
