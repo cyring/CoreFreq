@@ -54,6 +54,7 @@ static void *Core_Cycle(void *arg)
 	{
 	    while(!atomic_load(&Core->Sync))
 		usleep(Proc->msleep * 100);
+
 	    atomic_store(&Core->Sync, 0x0);
 
 	    if(atomic_load(&Proc->Room) & roomBit)

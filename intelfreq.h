@@ -416,17 +416,21 @@ enum {	GenuineIntel,		\
 	ARCHITECTURES
 };
 
-/*
-typedef	struct
+
+typedef	union
 {
-	unsigned long long
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
 		ReservedBits1	:  8-0,
 		MaxBusRatio	: 13-8,
 		ReservedBits2	: 50-13,
 		PlatformId	: 53-50,
 		ReservedBits3	: 64-53;
+	};
 } PLATFORM_ID;
-*/
+
 typedef union
 {
 	unsigned long long	value;
@@ -437,10 +441,13 @@ typedef union
 		ReservedBits	: 64-3;
 	};
 } FSB_FREQ;
-/*
-typedef	struct
+
+typedef	union
 {
-	unsigned long long
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
 		CurrentRatio	: 16-0,
 		ReservedBits1	: 31-16,
 		XE		: 32-31,
@@ -449,8 +456,9 @@ typedef	struct
 		ReservedBits3	: 46-45,
 		NonInt_BusRatio	: 47-46,
 		ReservedBits4	: 64-47;
+	};
 } PERF_STATUS;
-
+/*
 typedef	struct
 {
 	unsigned long long
@@ -726,10 +734,7 @@ typedef	struct
 			ThreadID;
 } TOPOLOGY;
 
-
 enum { INIT, END, START, STOP };
-
-enum { APIC_TID, CYCLE_TID, LAST_TID };
 
 typedef struct
 {
@@ -784,7 +789,7 @@ typedef struct
 					OffLine;
 
 	atomic_ullong			Sync;
-	struct task_struct		*TID[LAST_TID];
+	struct task_struct		*TID;
 } CORE;
 
 typedef	struct

@@ -43,34 +43,34 @@ static KMEM *KMem=NULL;
 
 static ARCH Arch[ARCHITECTURES]=
 {
-	{ _GenuineIntel,       Arch_Genuine,     NULL                         },
-	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah"                 },
-	{ _Core_Conroe,        Arch_Core2,       "Core2/Conroe"               },
-	{ _Core_Kentsfield,    Arch_Core2,       "Core2/Kentsfield"           },
-	{ _Core_Yorkfield,     Arch_Core2,       "Core2/Yorkfield"            },
-	{ _Core_Dunnington,    Arch_Core2,       "Xeon/Dunnington"            },
-	{ _Atom_Bonnell,       Arch_Core2,       "Atom/Bonnell"               },
-	{ _Atom_Silvermont,    Arch_Core2,       "Atom/Silvermont"            },
-	{ _Atom_Lincroft,      Arch_Core2,       "Atom/Lincroft"              },
-	{ _Atom_Clovertrail,   Arch_Core2,       "Atom/Clovertrail"           },
-	{ _Atom_Saltwell,      Arch_Core2,       "Atom/Saltwell"              },
-	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont"                 },
-	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont"                 },
-	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield"         },
-	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield"          },
-	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile"             },
-	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP"         },
-	{ _Westmere,           Arch_Nehalem,     "Westmere"                   },
-	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP"                },
-	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme"           },
-	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge"                },
-	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP"     },
-	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge"                  },
-	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP"               },
-	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop"            },
-	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile"             },
-	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP"      },
-	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme"  },
+/*  0*/	{ _GenuineIntel,       Arch_Genuine,     NULL                         },
+/*  1*/	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah"                 },
+/*  2*/	{ _Core_Conroe,        Arch_Core2,       "Core2/Conroe"               },
+/*  3*/	{ _Core_Kentsfield,    Arch_Core2,       "Core2/Kentsfield"           },
+/*  4*/	{ _Core_Yorkfield,     Arch_Core2,       "Core2/Yorkfield"            },
+/*  5*/	{ _Core_Dunnington,    Arch_Core2,       "Xeon/Dunnington"            },
+/*  6*/	{ _Atom_Bonnell,       Arch_Core2,       "Atom/Bonnell"               },
+/*  7*/	{ _Atom_Silvermont,    Arch_Core2,       "Atom/Silvermont"            },
+/*  8*/	{ _Atom_Lincroft,      Arch_Core2,       "Atom/Lincroft"              },
+/*  9*/	{ _Atom_Clovertrail,   Arch_Core2,       "Atom/Clovertrail"           },
+/* 10*/	{ _Atom_Saltwell,      Arch_Core2,       "Atom/Saltwell"              },
+/* 11*/	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont"                 },
+/* 12*/	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont"                 },
+/* 13*/	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield"         },
+/* 14*/	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield"          },
+/* 15*/	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile"             },
+/* 16*/	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP"         },
+/* 17*/	{ _Westmere,           Arch_Nehalem,     "Westmere"                   },
+/* 18*/	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP"                },
+/* 19*/	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme"           },
+/* 20*/	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge"                },
+/* 21*/	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP"     },
+/* 22*/	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge"                  },
+/* 23*/	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP"               },
+/* 24*/	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop"            },
+/* 25*/	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile"             },
+/* 26*/	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP"      },
+/* 27*/	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme"  },
 };
 
 
@@ -223,16 +223,20 @@ void Proc_Features(FEATURES *features)
 	Proc_Brand(features->Brand);
 }
 
-CLOCK Proc_Clock(unsigned int ratio)
+DECLARE_COMPLETION(bclk_job_complete);
+
+signed int Compute_Clock(void *arg)
 {
+	CLOCK *clock=(CLOCK *) arg;
+	unsigned int ratio=clock->Q;
 	unsigned long long TSC[2];
 	unsigned int Lo, Hi;
-	CLOCK clock;
 
 	if(Proc->Features.InvariantTSC
 	&& Proc->Features.ExtFunc.DX.RDTSCP)
 	{
 		unsigned int Aux;
+
 		__asm__ volatile
 		(
 			"rdtscp"
@@ -243,7 +247,7 @@ CLOCK Proc_Clock(unsigned int ratio)
 		TSC[0]=((unsigned long long) Lo)
 			| (((unsigned long long) Hi) << 32);
 
-		ssleep(1);
+		mdelay(LOOP_DEF_MS);
 
 		__asm__ volatile
 		(
@@ -266,7 +270,7 @@ CLOCK Proc_Clock(unsigned int ratio)
 		TSC[0]=((unsigned long long) Lo)
 			| (((unsigned long long) Hi) << 32);
 
-		ssleep(1);
+		mdelay(LOOP_DEF_MS);
 
 		__asm__ volatile
 		(
@@ -279,8 +283,25 @@ CLOCK Proc_Clock(unsigned int ratio)
 	}
 	TSC[1]-=TSC[0];
 
-	clock.Q=TSC[1] / (ratio * 1000000L);
-	clock.R=TSC[1] - (clock.Q * ratio * 1000000L);
+	clock->Q=TSC[1] / (ratio * 1000000L);
+	clock->R=TSC[1] % (ratio * 1000000L);
+
+	complete_and_exit(&bclk_job_complete, 0);
+}
+
+CLOCK Base_Clock(unsigned int ratio)
+{
+	CLOCK clock={.Q=ratio, .R=0};
+	struct task_struct *tid=kthread_create(	Compute_Clock,
+						&clock,
+						"kintelbclk-%03d",
+						0);
+	if(!IS_ERR(tid))
+	{
+		kthread_bind(tid, 0);
+		wake_up_process(tid);
+		wait_for_completion(&bclk_job_complete);
+	}
 	return(clock);
 }
 
@@ -446,7 +467,7 @@ CLOCK Clock_Silvermont(void)
 // [Nehalem]
 CLOCK Clock_Nehalem(void)
 {
-	CLOCK clock={.Q=133, .R=33};
+	CLOCK clock={.Q=133, .R=6666666L};
 	return(clock);
 };
 
@@ -477,6 +498,8 @@ CLOCK Clock_Haswell(void)
 	CLOCK clock={.Q=100, .R=0};
 	return(clock);
 };
+
+DECLARE_COMPLETION(apic_job_complete);
 
 // Enumerate the Processor's Cores and Threads topology.
 signed int Read_APIC(void *arg)
@@ -543,15 +566,17 @@ signed int Read_APIC(void *arg)
 		while(!NoMoreLevels);
 
 		Core->T.ApicID=ExtTopology.DX.x2ApicID;
+
+		complete_and_exit(&apic_job_complete, 0);
 	}
-	while(!kthread_should_stop())
-		msleep(50);
-	do_exit(0);
+	else
+		complete_and_exit(&apic_job_complete, -1);
 }
 
 unsigned int Proc_Topology(void)
 {
 	unsigned int cpu=0, CountEnabledCPU=0;
+	struct task_struct *tid;
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
@@ -560,32 +585,27 @@ unsigned int Proc_Topology(void)
 		KMem->Core[cpu]->T.ThreadID=-1;
 		if(!KMem->Core[cpu]->OffLine)
 		{
-			KMem->Core[cpu]->TID[APIC_TID]= \
-				kthread_create(	Read_APIC,
-						KMem->Core[cpu],
-						"kintelapic-%03d",
-						KMem->Core[cpu]->Bind);
-
-			if(!IS_ERR(KMem->Core[cpu]->TID[APIC_TID]))
+			tid=kthread_create(Read_APIC,
+					KMem->Core[cpu],
+					"kintelapic-%03d",
+					KMem->Core[cpu]->Bind);
+			if(!IS_ERR(tid))
 			{
-			    kthread_bind(KMem->Core[cpu]->TID[APIC_TID],cpu);
-			    wake_up_process(KMem->Core[cpu]->TID[APIC_TID]);
+				kthread_bind(tid ,cpu);
+				wake_up_process(tid);
+				wait_for_completion(&apic_job_complete);
+
+				if(KMem->Core[cpu]->T.ApicID >= 0)
+					CountEnabledCPU++;
+
+				if(!Proc->Features.HTT_enabled
+				&& (KMem->Core[cpu]->T.ThreadID > 0))
+					Proc->Features.HTT_enabled=1;
+
+				reinit_completion(&apic_job_complete);
 			}
 		}
 	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		if(!KMem->Core[cpu]->OffLine
-		&& !IS_ERR(KMem->Core[cpu]->TID[APIC_TID]))
-		{
-			kthread_stop(KMem->Core[cpu]->TID[APIC_TID]);
-
-			if(KMem->Core[cpu]->T.ApicID >= 0)
-				CountEnabledCPU++;
-
-			if(!Proc->Features.HTT_enabled
-			&& (KMem->Core[cpu]->T.ThreadID > 0))
-				Proc->Features.HTT_enabled=1;
-		}
 	return(CountEnabledCPU);
 }
 
@@ -831,7 +851,7 @@ void Arch_Genuine(unsigned int stage)
 		{
 			PLATFORM_INFO Platform={.value=0};
 
-			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Platform, MSR_PLATFORM_INFO);
 
 			if(Platform.value != 0)
 			{
@@ -843,7 +863,7 @@ void Arch_Genuine(unsigned int stage)
 			Proc->Boost[9]=Proc->Boost[1];
 
 			if(AutoClock)
-				Proc->Clock=Proc_Clock(Proc->Boost[1]);
+				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
 				switch(Proc->ArchID)
 				{
@@ -859,28 +879,28 @@ void Arch_Genuine(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine
-			    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-				kthread_stop(KMem->Core[cpu]->TID[CYCLE_TID]);
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					kthread_stop(KMem->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine)
-		    {
-			KMem->Core[cpu]->TID[CYCLE_TID]= \
-				kthread_create(	Cycle_Genuine,
-						KMem->Core[cpu],
-						"kintelfreq-%03d",
-						KMem->Core[cpu]->Bind);
-			if(!IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			    kthread_bind(KMem->Core[cpu]->TID[CYCLE_TID], cpu);
-		    }
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine
-		    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			wake_up_process(KMem->Core[cpu]->TID[CYCLE_TID]);
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(!KMem->Core[cpu]->OffLine)
+			    {
+				KMem->Core[cpu]->TID= \
+					kthread_create(	Cycle_Genuine,
+							KMem->Core[cpu],
+							"kintelfreq-%03d",
+							KMem->Core[cpu]->Bind);
+				if(!IS_ERR(KMem->Core[cpu]->TID))
+					kthread_bind(KMem->Core[cpu]->TID, cpu);
+			   }
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					wake_up_process(KMem->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -971,7 +991,7 @@ void Arch_Core2(unsigned int stage)
 		{
 			PLATFORM_INFO Platform={.value=0};
 
-			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Platform, MSR_PLATFORM_INFO);
 
 			if(Platform.value != 0)
 			{
@@ -983,7 +1003,7 @@ void Arch_Core2(unsigned int stage)
 			Proc->Boost[9]=Proc->Boost[1];
 
 			if(AutoClock)
-				Proc->Clock=Proc_Clock(Proc->Boost[1]);
+				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
 				switch(Proc->ArchID)
 				{
@@ -1008,28 +1028,28 @@ void Arch_Core2(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine
-			    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-				kthread_stop(KMem->Core[cpu]->TID[CYCLE_TID]);
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					kthread_stop(KMem->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine)
-		    {
-			KMem->Core[cpu]->TID[CYCLE_TID]= \
-				kthread_create(	Cycle_Core2,
-						KMem->Core[cpu],
-						"kintelfreq-%03d",
-						KMem->Core[cpu]->Bind);
-			if(!IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			    kthread_bind(KMem->Core[cpu]->TID[CYCLE_TID], cpu);
-		    }
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine
-		    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			wake_up_process(KMem->Core[cpu]->TID[CYCLE_TID]);
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(!KMem->Core[cpu]->OffLine)
+			    {
+				KMem->Core[cpu]->TID= \
+					kthread_create(	Cycle_Core2,
+							KMem->Core[cpu],
+							"kintelfreq-%03d",
+							KMem->Core[cpu]->Bind);
+				if(!IS_ERR(KMem->Core[cpu]->TID))
+					kthread_bind(KMem->Core[cpu]->TID, cpu);
+			    }
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					wake_up_process(KMem->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1144,7 +1164,7 @@ void Arch_Nehalem(unsigned int stage)
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
 
 			if(AutoClock)
-				Proc->Clock=Proc_Clock(Proc->Boost[1]);
+				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
 				switch(Proc->ArchID)
 				{
@@ -1172,28 +1192,28 @@ void Arch_Nehalem(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine
-			    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-				kthread_stop(KMem->Core[cpu]->TID[CYCLE_TID]);
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					kthread_stop(KMem->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine)
-		    {
-			KMem->Core[cpu]->TID[CYCLE_TID]= \
-				kthread_create(	Cycle_Nehalem,
-						KMem->Core[cpu],
-						"kintelfreq-%03d",
-						KMem->Core[cpu]->Bind);
-			if(!IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			    kthread_bind(KMem->Core[cpu]->TID[CYCLE_TID], cpu);
-		    }
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine
-		    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			wake_up_process(KMem->Core[cpu]->TID[CYCLE_TID]);
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(!KMem->Core[cpu]->OffLine)
+			    {
+				KMem->Core[cpu]->TID= \
+					kthread_create(	Cycle_Nehalem,
+							KMem->Core[cpu],
+							"kintelfreq-%03d",
+							KMem->Core[cpu]->Bind);
+				if(!IS_ERR(KMem->Core[cpu]->TID))
+					kthread_bind(KMem->Core[cpu]->TID, cpu);
+			    }
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					wake_up_process(KMem->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1311,7 +1331,7 @@ void Arch_SandyBridge(unsigned int stage)
 			Proc->Boost[9]=Turbo.MaxRatio_1C;
 
 			if(AutoClock)
-				Proc->Clock=Proc_Clock(Proc->Boost[1]);
+				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
 				switch(Proc->ArchID)
 				{
@@ -1338,28 +1358,28 @@ void Arch_SandyBridge(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine
-			    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-				kthread_stop(KMem->Core[cpu]->TID[CYCLE_TID]);
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					kthread_stop(KMem->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine)
-		    {
-			KMem->Core[cpu]->TID[CYCLE_TID]= \
-				kthread_create(	Cycle_SandyBridge,
-						KMem->Core[cpu],
-						"kintelfreq-%03d",
-						KMem->Core[cpu]->Bind);
-			if(!IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			    kthread_bind(KMem->Core[cpu]->TID[CYCLE_TID], cpu);
-		    }
-		  for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KMem->Core[cpu]->OffLine
-		    && !IS_ERR(KMem->Core[cpu]->TID[CYCLE_TID]))
-			wake_up_process(KMem->Core[cpu]->TID[CYCLE_TID]);
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			    if(!KMem->Core[cpu]->OffLine)
+			    {
+				KMem->Core[cpu]->TID= \
+					kthread_create(	Cycle_SandyBridge,
+							KMem->Core[cpu],
+							"kintelfreq-%03d",
+							KMem->Core[cpu]->Bind);
+				if(!IS_ERR(KMem->Core[cpu]->TID))
+					kthread_bind(KMem->Core[cpu]->TID, cpu);
+			    }
+			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+				if(!KMem->Core[cpu]->OffLine
+				&& !IS_ERR(KMem->Core[cpu]->TID))
+					wake_up_process(KMem->Core[cpu]->TID);
 		}
 		break;
 	}

@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 	SHM_STRUCT *Shm;
 	unsigned int cpu=0;
 	int fd=-1, rc=0;
+	char option=(argc == 2) && (argv[1][0] == '-') ? argv[1][1] : 'c';
 
 	if(((fd=shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
@@ -57,12 +58,38 @@ int main(int argc, char *argv[])
 			usleep(Shm->Proc.msleep * 100);
 		atomic_store(&Shm->Proc.Sync, 0x0);
 
-		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
-		    if(!Shm->Cpu[cpu].OffLine)
+		switch(option)
+		{
+		case 'i':
 		    {
+		    printf("CPU     IPS            IPC            CPI\n");
+		    for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+		        if(!Shm->Cpu[cpu].OffLine)
+		        {
 			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
-			printf("Cpu#%02d %7.2fMHz (%5.2f)"		      \
-			    " %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
+
+			printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
+				cpu,
+				Shm->Cpu[cpu].State[flop].IPS,
+				Shm->Cpu[cpu].State[flop].IPC,
+				Shm->Cpu[cpu].State[flop].CPI);
+			}
+		    printf("\n");
+		    }
+		break;
+		case 'c':
+		default:
+		    {
+		    printf(	"CPU  Frequency  Ratio   Turbo"			\
+				"    C0      C1      C3      C6      C7"	\
+				"    Temps\n");
+		    for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+		        if(!Shm->Cpu[cpu].OffLine)
+		        {
+			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
+
+			printf("#%02u %7.2fMHz (%5.2f)"				\
+			    " %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"	\
 			    " @ %llu°C\n",
 				cpu,
 				Shm->Cpu[cpu].Relative.Freq,
@@ -74,9 +101,9 @@ int main(int argc, char *argv[])
 				100.f * Shm->Cpu[cpu].State[flop].C6,
 				100.f * Shm->Cpu[cpu].State[flop].C7,
 				Shm->Cpu[cpu].Temperature);
-		    }
-		printf("\nAverage C-states\n"				      \
-		       "Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"		      \
+			}
+		    printf("\nAverage C-states\n"				\
+		       "Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
 		       "%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f\t%6.2f%%\t%6.2f%%\n\n",
 				100.f * Shm->Proc.Avg.Turbo,
 				100.f * Shm->Proc.Avg.C0,
@@ -84,6 +111,9 @@ int main(int argc, char *argv[])
 				100.f * Shm->Proc.Avg.C3,
 				100.f * Shm->Proc.Avg.C6,
 				100.f * Shm->Proc.Avg.C7);
+		    }
+		break;
+		}
 	    }
 	    if(munmap(Shm, shmStat.st_size) == -1)
 		printf("Error: unmapping the shared memory");
