@@ -12,7 +12,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <asm/msr.h>
-#include <stdatomic.h>
+//#include <stdatomic.h>
 
 #include "corefreq.h"
 #include "intelfreq.h"
@@ -20,7 +20,7 @@
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("Intel Processor Frequency Driver");
 MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i7");
-MODULE_LICENSE ("GPL v2");
+MODULE_LICENSE ("GPL");
 
 static struct
 {
@@ -90,10 +90,11 @@ unsigned int Core_Count(void)
 	return(count);
 }
 
-void Proc_Brand(char *pBrand)
+unsigned int Proc_Brand(char *pBrand)
 {
-	char tmpString[64]={0x20};
+	char idString[64]={0x20};
 	unsigned int ix=0, jx=0, px=0;
+	unsigned int frequency=0, multiplier=0;
 	BRAND Brand;
 
 	for(ix=0; ix < 3; ix++)
@@ -108,17 +109,53 @@ void Proc_Brand(char *pBrand)
 			: "a"   (0x80000002 + ix)
 		);
 		for(jx=0; jx < 4; jx++, px++)
-			tmpString[px]=Brand.AX.Chr[jx];
+			idString[px]=Brand.AX.Chr[jx];
 		for(jx=0; jx < 4; jx++, px++)
-			tmpString[px]=Brand.BX.Chr[jx];
+			idString[px]=Brand.BX.Chr[jx];
 		for(jx=0; jx < 4; jx++, px++)
-			tmpString[px]=Brand.CX.Chr[jx];
+			idString[px]=Brand.CX.Chr[jx];
 		for(jx=0; jx < 4; jx++, px++)
-			tmpString[px]=Brand.DX.Chr[jx];
+			idString[px]=Brand.DX.Chr[jx];
+	}
+	for(ix=0; ix < 46; ix++)
+		if((idString[ix+1] == 'H') && (idString[ix+2] == 'z'))
+		{
+			switch(idString[ix])
+			{
+				case 'M':
+					multiplier=1;
+				break;
+				case 'G':
+					multiplier=1000;
+				break;
+				case 'T':
+					multiplier=1000000;
+				break;
+			}
+			break;
+		}
+	if(multiplier > 0)
+	{
+	    if(idString[ix-3] == '.')
+	    {
+		frequency  = (int) (idString[ix-4] - '0') * multiplier;
+		frequency += (int) (idString[ix-2] - '0') * (multiplier / 10);
+		frequency += (int) (idString[ix-1] - '0') * (multiplier / 100);
+	    }
+	    else
+	    {
+		frequency  = (int) (idString[ix-4] - '0') * 1000;
+		frequency += (int) (idString[ix-3] - '0') * 100;
+		frequency += (int) (idString[ix-2] - '0') * 10;
+		frequency += (int) (idString[ix-1] - '0');
+		frequency *= frequency;
+	    }
 	}
 	for(ix=jx=0; jx < 48; jx++)
-		if(!(tmpString[jx] == 0x20 && tmpString[jx+1] == 0x20))
-			pBrand[ix++]=tmpString[jx];
+		if(!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
+			pBrand[ix++]=idString[jx];
+
+	return(frequency);
 }
 
 // Retreive the Processor features through calls to the CPUID instruction.
@@ -220,7 +257,6 @@ void Proc_Features(FEATURES *features)
 			: "a" (0x80000001)
 		);
 	}
-	Proc_Brand(features->Brand);
 }
 
 DECLARE_COMPLETION(bclk_job_complete);
@@ -306,14 +342,20 @@ CLOCK Base_Clock(unsigned int ratio)
 }
 
 // [Genuine Intel]
-CLOCK Clock_GenuineIntel(void)
+CLOCK Clock_GenuineIntel(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+
+	if(Proc->Features.FactoryFreq > 0)
+	{
+		clock.Q=Proc->Features.FactoryFreq / ratio;
+		clock.R=(Proc->Features.FactoryFreq % ratio) * 1000000L;
+	}
 	return(clock);
 };
 
 // [Core]
-CLOCK Clock_Core(void)
+CLOCK Clock_Core(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
 	FSB_FREQ FSB={.value=0};
@@ -328,20 +370,21 @@ CLOCK Clock_Core(void)
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=33;
+			clock.R=333333L;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=67;
+			clock.R=666666L;
 		}
 		break;
 	}
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Core2]
-CLOCK Clock_Core2(void)
+CLOCK Clock_Core2(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
 	FSB_FREQ FSB={.value=0};
@@ -356,12 +399,12 @@ CLOCK Clock_Core2(void)
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=33;
+			clock.R=333333L;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=67;
+			clock.R=666666L;
 		}
 		break;
 		case 0b010: {
@@ -371,12 +414,12 @@ CLOCK Clock_Core2(void)
 		break;
 		case 0b000: {
 			clock.Q=266;
-			clock.R=67;
+			clock.R=666666L;
 		}
 		break;
 		case 0b100: {
 			clock.Q=333;
-			clock.R=33;
+			clock.R=333333L;
 		}
 		break;
 		case 0b110: {
@@ -385,11 +428,12 @@ CLOCK Clock_Core2(void)
 		}
 		break;
 	}
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Atom]
-CLOCK Clock_Atom(void)
+CLOCK Clock_Atom(unsigned int ratio)
 {
 	CLOCK clock={.Q=83, .R=0};
 	FSB_FREQ FSB={.value=0};
@@ -399,35 +443,36 @@ CLOCK Clock_Atom(void)
 	{
 		case 0b111: {
 			clock.Q=83;
-			clock.R=20;
+			clock.R=200000L;
 		}
 		break;
 		case 0b101: {
 			clock.Q=99;
-			clock.R=84;
+			clock.R=840000L;
 		}
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=20;
+			clock.R=200000L;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=40;
+			clock.R=400000L;
 		}
 		break;
 		default: {
 			clock.Q=83;
-			clock.R=20;
+			clock.R=200000L;
 		}
 		break;
 	}
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Silvermont]
-CLOCK Clock_Silvermont(void)
+CLOCK Clock_Silvermont(unsigned int ratio)
 {
 	CLOCK clock={.Q=83, .R=3};
 	FSB_FREQ FSB={.value=0};
@@ -442,7 +487,7 @@ CLOCK Clock_Silvermont(void)
 		break;
 		case 0b000: {
 			clock.Q=83;
-			clock.R=3;
+			clock.R=300000L;
 		}
 		break;
 		case 0b001: {
@@ -452,50 +497,56 @@ CLOCK Clock_Silvermont(void)
 		break;
 		case 0b010: {
 			clock.Q=133;
-			clock.R=33;
+			clock.R=333333L;
 		}
 		break;
 		case 0b011: {
 			clock.Q=116;
-			clock.R=7;
+			clock.R=700000L;
 		}
 		break;
 	}
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Nehalem]
-CLOCK Clock_Nehalem(void)
+CLOCK Clock_Nehalem(unsigned int ratio)
 {
-	CLOCK clock={.Q=133, .R=6666666L};
+	CLOCK clock={.Q=133, .R=333333L};
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Westmere]
-CLOCK Clock_Westmere(void)
+CLOCK Clock_Westmere(unsigned int ratio)
 {
-	CLOCK clock={.Q=133, .R=33};
+	CLOCK clock={.Q=133, .R=333333L};
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [SandyBridge]
-CLOCK Clock_SandyBridge(void)
+CLOCK Clock_SandyBridge(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [IvyBridge]
-CLOCK Clock_IvyBridge(void)
+CLOCK Clock_IvyBridge(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	clock.R *= ratio;
 	return(clock);
 };
 
 // [Haswell]
-CLOCK Clock_Haswell(void)
+CLOCK Clock_Haswell(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	clock.R *= ratio;
 	return(clock);
 };
 
@@ -831,7 +882,8 @@ int Cycle_Genuine(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			atomic_store(&Core->Sync, 0x1);
+//			atomic_store(&Core->Sync, 0x1);
+			Core->Sync=0x1;
 		}
 	}
 	do_exit(0);
@@ -865,15 +917,15 @@ void Arch_Genuine(unsigned int stage)
 			if(AutoClock)
 				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
-				switch(Proc->ArchID)
-				{
-				case Core_Yonah:
-					Proc->Clock=Clock_Core();
-				break;
-				default:
-					Proc->Clock=Clock_GenuineIntel();
-				break;
-				}
+			    switch(Proc->ArchID)
+			    {
+			    case Core_Yonah:
+				Proc->Clock=Clock_Core(Proc->Boost[1]);
+			    break;
+			    default:
+				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
+			    break;
+			    }
 		}
 		break;
 		case STOP:
@@ -970,7 +1022,8 @@ int Cycle_Core2(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			atomic_store(&Core->Sync, 0x1);
+//			atomic_store(&Core->Sync, 0x1);
+			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
 	}
@@ -1005,24 +1058,24 @@ void Arch_Core2(unsigned int stage)
 			if(AutoClock)
 				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
-				switch(Proc->ArchID)
-				{
-				case Core_Conroe:
-				case Core_Kentsfield:
-				case Core_Yorkfield:
-				case Core_Dunnington:
-					Proc->Clock=Clock_Core2();
-				break;
-				case Atom_Bonnell:
-				case Atom_Silvermont:
-				case Atom_Lincroft:
-				case Atom_Clovertrail:
-				case Atom_Saltwell:
-					Proc->Clock=Clock_Atom();
-				default:
-					Proc->Clock=Clock_Core2();
-				break;
-				}
+			    switch(Proc->ArchID)
+			    {
+			    case Core_Conroe:
+			    case Core_Kentsfield:
+			    case Core_Yorkfield:
+			    case Core_Dunnington:
+				Proc->Clock=Clock_Core2(Proc->Boost[1]);
+			    break;
+			    case Atom_Bonnell:
+			    case Atom_Silvermont:
+			    case Atom_Lincroft:
+			    case Atom_Clovertrail:
+			    case Atom_Saltwell:
+				Proc->Clock=Clock_Atom(Proc->Boost[1]);
+			    default:
+				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
+			    break;
+			}
 		}
 		break;
 		case STOP:
@@ -1127,7 +1180,8 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C6=Core->Counter[1].C6;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			atomic_store(&Core->Sync, 0x1);
+//			atomic_store(&Core->Sync, 0x1);
+			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
 	}
@@ -1166,27 +1220,27 @@ void Arch_Nehalem(unsigned int stage)
 			if(AutoClock)
 				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
-				switch(Proc->ArchID)
-				{
-				case Silvermont_637:
-				case Silvermont_64D:
-					Proc->Clock=Clock_Silvermont();
-				break;
-				case Nehalem_Bloomfield:
-				case Nehalem_Lynnfield:
-				case Nehalem_MB:
-				case Nehalem_EX:
-					Proc->Clock=Clock_Nehalem();
-				break;
-				case Westmere:
-				case Westmere_EP:
-				case Westmere_EX:
-					Proc->Clock=Clock_Westmere();
-				break;
-				default:
-					Proc->Clock=Clock_Nehalem();
-				break;
-				}
+			    switch(Proc->ArchID)
+			    {
+			    case Silvermont_637:
+			    case Silvermont_64D:
+				Proc->Clock=Clock_Silvermont(Proc->Boost[1]);
+			    break;
+			    case Nehalem_Bloomfield:
+			    case Nehalem_Lynnfield:
+			    case Nehalem_MB:
+			    case Nehalem_EX:
+				Proc->Clock=Clock_Nehalem(Proc->Boost[1]);
+			    break;
+			    case Westmere:
+			    case Westmere_EP:
+			    case Westmere_EX:
+				Proc->Clock=Clock_Westmere(Proc->Boost[1]);
+			    break;
+			    default:
+				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
+			    break;
+			}
 		}
 		break;
 		case STOP:
@@ -1294,7 +1348,8 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C7=Core->Counter[1].C7;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			atomic_store(&Core->Sync, 0x1);
+//			atomic_store(&Core->Sync, 0x1);
+			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
 	}
@@ -1333,26 +1388,26 @@ void Arch_SandyBridge(unsigned int stage)
 			if(AutoClock)
 				Proc->Clock=Base_Clock(Proc->Boost[1]);
 			else
-				switch(Proc->ArchID)
-				{
-				case SandyBridge:
-				case SandyBridge_EP:
-					Proc->Clock=Clock_SandyBridge();
-				break;
-				case IvyBridge:
-				case IvyBridge_EP:
-					Proc->Clock=Clock_IvyBridge();
-				break;
-				case Haswell_DT:
-				case Haswell_MB:
-				case Haswell_ULT:
-				case Haswell_ULX:
-					Proc->Clock=Clock_Haswell();
-				break;
-				default:
-					Proc->Clock=Clock_SandyBridge();
-				break;
-				}
+			    switch(Proc->ArchID)
+			    {
+			    case SandyBridge:
+			    case SandyBridge_EP:
+				Proc->Clock=Clock_SandyBridge(Proc->Boost[1]);
+			    break;
+			    case IvyBridge:
+			    case IvyBridge_EP:
+				Proc->Clock=Clock_IvyBridge(Proc->Boost[1]);
+			    break;
+			    case Haswell_DT:
+			    case Haswell_MB:
+			    case Haswell_ULT:
+			    case Haswell_ULX:
+				Proc->Clock=Clock_Haswell(Proc->Boost[1]);
+			    break;
+			    default:
+				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
+			    break;
+			}
 		}
 		break;
 		case STOP:
@@ -1472,6 +1527,9 @@ static int __init IntelFreq_init(void)
 			    Proc->msleep=LOOP_DEF_MS;
 			    Proc->PerCore=0;
 			    Proc_Features(&Proc->Features);
+			    Proc->Features.FactoryFreq=			\
+					Proc_Brand(Proc->Features.Brand);
+
 			    Arch[0].Architecture=Proc->Features.VendorID;
 
 			    kmSize=ROUND_TO_PAGES(sizeof(CORE));
@@ -1487,7 +1545,9 @@ static int __init IntelFreq_init(void)
 				    memset(kcache, 0, kmSize);
 				    KMem->Core[cpu]=kcache;
 
-				    atomic_init(&KMem->Core[cpu]->Sync, 0x0);
+//				    atomic_init(&KMem->Core[cpu]->Sync, 0x0);
+				    KMem->Core[cpu]->Sync=0x0;
+
 				    KMem->Core[cpu]->Bind=cpu;
 				    if(!cpu_online(cpu) || !cpu_active(cpu))
 					KMem->Core[cpu]->OffLine=1;

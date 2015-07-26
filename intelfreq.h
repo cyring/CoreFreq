@@ -329,7 +329,8 @@ typedef struct
 		} DX;
 	} ExtFunc;
 	unsigned int	InvariantTSC,
-                        HTT_enabled;
+                        HTT_enabled,
+			FactoryFreq;
 
 	struct
 	{
@@ -738,6 +739,7 @@ enum { INIT, END, START, STOP };
 
 typedef struct
 {
+	unsigned long long		Sync;
 	struct
 	{
 		unsigned long long 	INST;
@@ -788,7 +790,7 @@ typedef struct
 	unsigned int			Bind,
 					OffLine;
 
-	atomic_ullong			Sync;
+//	atomic_ullong			Sync;
 	struct task_struct		*TID;
 } CORE;
 

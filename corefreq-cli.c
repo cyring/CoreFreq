@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
-#include <stdatomic.h>
+//#include <stdatomic.h>
 
 #include "corefreq.h"
 
@@ -54,9 +54,13 @@ int main(int argc, char *argv[])
 
 	    while(!Shutdown)
 	    {
-		while(!atomic_load(&Shm->Proc.Sync))
+/*		while(!atomic_load(&Shm->Proc.Sync))
 			usleep(Shm->Proc.msleep * 100);
 		atomic_store(&Shm->Proc.Sync, 0x0);
+*/
+		while(!Shm->Proc.Sync)
+			usleep(Shm->Proc.msleep * 100);
+		Shm->Proc.Sync=0x0;
 
 		switch(option)
 		{
