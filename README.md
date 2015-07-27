@@ -56,7 +56,7 @@ rmmod intelfreq.ko
 ```
 kernel: IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
         Signature [06_1A] Architecture [Nehalem/Bloomfield]
-        8/8 CPU Online , Clock @ {146/2939877074} MHz
+        8/8 CPU Online , Clock @ {147/10368880} MHz
         Ratio={12,20,0,0,0,0,21,21,21,22}
 kernel: Topology(0) Apic[  0] Core[  0] Thread[  0]
 kernel: Topology(1) Apic[  2] Core[  1] Thread[  0]
@@ -66,6 +66,9 @@ kernel: Topology(4) Apic[  1] Core[  0] Thread[  1]
 kernel: Topology(5) Apic[  3] Core[  1] Thread[  1]
 kernel: Topology(6) Apic[  5] Core[  2] Thread[  1]
 kernel: Topology(7) Apic[  7] Core[  3] Thread[  1]
+```
+```
+CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] , Clock @ 147.52 MHz
 ```
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
