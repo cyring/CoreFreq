@@ -3,8 +3,6 @@
  * Licenses: GPL2
  */
 
-#define	_MAX_CPU_ 	8
-
 #define	DRV_DEVNAME "intelfreq"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
 
@@ -740,6 +738,7 @@ enum { INIT, END, START, STOP };
 typedef struct
 {
 	unsigned long long		Sync;
+
 	struct
 	{
 		unsigned long long 	INST;
@@ -790,7 +789,6 @@ typedef struct
 	unsigned int			Bind,
 					OffLine;
 
-//	atomic_ullong			Sync;
 	struct task_struct		*TID;
 } CORE;
 

@@ -15,10 +15,10 @@
 #include <signal.h>
 #include <errno.h>
 #include <pthread.h>
-//#include <stdatomic.h>
 
 #include "corefreq.h"
 #include "intelfreq.h"
+
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 unsigned int Shutdown=0x0;
@@ -52,18 +52,6 @@ static void *Core_Cycle(void *arg)
 
 	do
 	{
-/*
-	    while(!atomic_load(&Core->Sync))
-		usleep(Proc->msleep * 100);
-
-	    atomic_store(&Core->Sync, 0x0);
-
-	    if(atomic_load(&Proc->Room) & roomBit)
-	    {
-		Cpu->FlipFlop=!Cpu->FlipFlop;
-		atomic_fetch_and(&Proc->Room, roomCmp);
-	    }
-*/
 	    while(!Core->Sync && !Shutdown)
 		usleep(Proc->msleep * 100);
 	    Core->Sync=0x0;
@@ -230,8 +218,7 @@ int main(void)
 					/ (Shm->Proc.Boost[1]		\
 					* 1000000L));
 
-				printf(	"CoreFreqd [%s] ,"		\
-					" Clock @ %.2f MHz\n",
+				printf("CoreFreqd [%s] , Clock @ %.2f MHz\n",
 					Shm->Proc.Brand, Clock);
 
 				sigemptyset(&Sig.Signal);
@@ -250,7 +237,6 @@ int main(void)
 					SHM_FILENAME,
 					TASK_COMM_LEN - 1);
 
-//				atomic_init(&Shm->Proc.Sync, 0x0);
 				Shm->Proc.Sync=0x0;
 
 				unsigned long long roomSeed=0x0;
@@ -263,7 +249,6 @@ int main(void)
 					unsigned int roomBit=1 << cpu;
 					roomSeed|=roomBit;
 				    }
-//				atomic_init(&Shm->Proc.Room, roomSeed);
 				Shm->Proc.Room=roomSeed;
 
 				ARG *Arg=calloc(Shm->Proc.CPU.Count,
@@ -282,9 +267,6 @@ int main(void)
 					}
 				while(!Shutdown)
 				{
-/*				    while(atomic_load(&Shm->Proc.Room))
-					usleep(Shm->Proc.msleep * 100);
-*/
 				    while(Shm->Proc.Room && !Shutdown)
 					usleep(Shm->Proc.msleep * 100);
 
@@ -315,10 +297,7 @@ int main(void)
 						Shm->Cpu[cpu].State[flop].C7;
 					Shm->Proc.Avg.C1+=		      \
 						Shm->Cpu[cpu].State[flop].C1;
-/*
-					atomic_fetch_or(&Shm->Proc.Room,
-							roomBit);
-*/
+
 					Shm->Proc.Room|=roomBit;
 				    }
 				    Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;
@@ -328,7 +307,6 @@ int main(void)
 				    Shm->Proc.Avg.C7/=Shm->Proc.CPU.OnLine;
 				    Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
 
-//				    atomic_store(&Shm->Proc.Sync, 0x1);
 				    Shm->Proc.Sync=0x1;
 				}
 				for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)

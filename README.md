@@ -46,7 +46,7 @@ insmod intelfreq.ko
 
  7- Press [CTRL]+[C] to stop the daemon.
 
- 8- Unload the kernel module with the rmmod command
+ 8- Unload the kernel module with the ```rmmod``` command
 ```
 rmmod intelfreq.ko
 ```

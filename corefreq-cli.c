@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
-//#include <stdatomic.h>
 
 #include "corefreq.h"
 
@@ -41,8 +40,8 @@ int main(int argc, char *argv[])
 	&& ((Shm=mmap(0, shmStat.st_size,
 		      PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
 	{
-	    double Clock=Shm->Proc.Clock.Q			\
-			+ ((double) Shm->Proc.Clock.R		\
+	    double Clock=Shm->Proc.Clock.Q				\
+			+ ((double) Shm->Proc.Clock.R			\
 			/ (Shm->Proc.Boost[1] * 1000000L));
 
 	    printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
@@ -54,10 +53,6 @@ int main(int argc, char *argv[])
 
 	    while(!Shutdown)
 	    {
-/*		while(!atomic_load(&Shm->Proc.Sync))
-			usleep(Shm->Proc.msleep * 100);
-		atomic_store(&Shm->Proc.Sync, 0x0);
-*/
 		while(!Shm->Proc.Sync && !Shutdown)
 			usleep(Shm->Proc.msleep * 100);
 		Shm->Proc.Sync=0x0;

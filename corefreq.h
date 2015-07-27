@@ -40,9 +40,6 @@ typedef struct
 
 typedef struct
 {
-/*	atomic_ullong		Sync,
-				Room;
-*/
 	unsigned long long	Sync,
 				Room;
 

@@ -12,7 +12,6 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <asm/msr.h>
-//#include <stdatomic.h>
 
 #include "corefreq.h"
 #include "intelfreq.h"
@@ -602,11 +601,11 @@ signed int Read_APIC(void *arg)
 			    case LEVEL_CORE:
 				{
 				CorePlus_Mask_Width=ExtTopology.AX.SHRbits;
-				CoreOnly_Select_Mask=			   \
-					(~((-1) << CorePlus_Mask_Width))   \
+				CoreOnly_Select_Mask=			\
+					(~((-1) << CorePlus_Mask_Width))\
 					^ SMT_Select_Mask;
-				Core->T.CoreID=			\
-				    (ExtTopology.DX.x2ApicID	\
+				Core->T.CoreID=				\
+				    (ExtTopology.DX.x2ApicID		\
 				    & CoreOnly_Select_Mask) >> SMT_Mask_Width;
 				}
 			    break;
@@ -707,8 +706,8 @@ void Counters_Set(CORE *Core)
 		OvfControl.Clear_Ovf_CTR1=1;
 	if(Overflow.Overflow_CTR2)
 		OvfControl.Clear_Ovf_CTR2=1;
-	if(Overflow.Overflow_CTR0	\
-	| Overflow.Overflow_CTR1	\
+	if(Overflow.Overflow_CTR0					\
+	| Overflow.Overflow_CTR1					\
 	| Overflow.Overflow_CTR2)
 		WRMSR(OvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 }
@@ -719,100 +718,100 @@ void Counters_Clear(CORE *Core)
 	WRMSR(	Core->SaveArea.GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 }
 
-void Counters_Genuine(CORE *Core, unsigned int T)
-{
-	// Actual & Maximum Performance Frequency Clock counters.
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_IA32_APERF);
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_IA32_MPERF);
+#define Counters_Genuine(Core, T)					\
+({									\
+	/* Actual & Maximum Performance Frequency Clock counters. */	\
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_IA32_APERF);		\
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_IA32_MPERF);		\
+									\
+	/* TSC in relation to the Core.	*/				\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
+	/* Derive C1 */							\
+	Core->Counter[T].C1=						\
+	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
+	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
+	    : 0;							\
+})
 
-	// TSC in relation to the Core.
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
+#define Counters_Core2(Core, T)						\
+({									\
+	/* Instructions Retired. */					\
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
+									\
+	/* Unhalted Core & Reference Cycles. */				\
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
+									\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
+	/* Derive C1 */							\
+	Core->Counter[T].C1=						\
+	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
+	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
+	    : 0;							\
+})
 
-	// Derive C1
-	Core->Counter[T].C1=					\
-	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?	\
-	    Core->Counter[T].TSC - Core->Counter[T].C0.URC	\
-	    : 0;
-}
+#define Counters_Nehalem(Core, T)					\
+({									\
+	register unsigned long long Cx=0;				\
+									\
+	/* Instructions Retired. */					\
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
+									\
+	/* Unhalted Core & Reference Cycles. */				\
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
+									\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
+	/* C-States. */							\
+	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
+	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
+									\
+	/* Derive C1 */							\
+	Cx=	Core->Counter[T].C6					\
+		+ Core->Counter[T].C3					\
+		+ Core->Counter[T].C0.URC;				\
+									\
+	Core->Counter[T].C1=						\
+		(Core->Counter[T].TSC > Cx) ?				\
+			Core->Counter[T].TSC - Cx			\
+			: 0;						\
+})
 
-void Counters_Core2(CORE *Core, unsigned int T)
-{
-	// Instructions Retired
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
-
-	// Unhalted Core & Reference Cycles.
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
-
-	// TSC in relation to the Logical Core.
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
-
-	// Derive C1
-	Core->Counter[T].C1=					\
-	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?	\
-	    Core->Counter[T].TSC - Core->Counter[T].C0.URC	\
-	    : 0;
-}
-
-void Counters_Nehalem(CORE *Core, unsigned int T)
-{
-	register unsigned long long Cx=0;
-
-	// Instructions Retired
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
-
-	// Unhalted Core & Reference Cycles.
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
-
-	// TSC in relation to the Logical Core.
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
-
-	// C-States.
-	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
-
-	// Derive C1
-	Cx=	Core->Counter[T].C6		\
-		+ Core->Counter[T].C3		\
-		+ Core->Counter[T].C0.URC;
-
-	Core->Counter[T].C1=				\
-		(Core->Counter[T].TSC > Cx) ?		\
-			Core->Counter[T].TSC - Cx	\
-			: 0;
-}
-
-void Counters_SandyBridge(CORE *Core, unsigned int T)
-{
-	register unsigned long long Cx=0;
-
-	// Instructions Retired
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);
-
-	// Unhalted Core & Reference Cycles.
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);
-
-	// TSC in relation to the Logical Core.
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);
-
-	// C-States.
-	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);
-	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);
-	RDCOUNTER(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);
-
-	// Derive C1
-	Cx=	Core->Counter[T].C7		\
-		+ Core->Counter[T].C6		\
-		+ Core->Counter[T].C3		\
-		+ Core->Counter[T].C0.URC;
-
-	Core->Counter[T].C1=				\
-		(Core->Counter[T].TSC > Cx) ?		\
-			Core->Counter[T].TSC - Cx	\
-			: 0;
-}
+#define Counters_SandyBridge(Core, T)					\
+({									\
+	register unsigned long long Cx=0;				\
+									\
+	/* Instructions Retired. */					\
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
+									\
+	/* Unhalted Core & Reference Cycles. */				\
+	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
+	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
+									\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
+	/* C-States. */							\
+	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
+	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
+	RDCOUNTER(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);		\
+									\
+	/* Derive C1 */							\
+	Cx=	Core->Counter[T].C7					\
+		+ Core->Counter[T].C6					\
+		+ Core->Counter[T].C3					\
+		+ Core->Counter[T].C0.URC;				\
+									\
+	Core->Counter[T].C1=						\
+		(Core->Counter[T].TSC > Cx) ?				\
+			Core->Counter[T].TSC - Cx			\
+			: 0;						\
+})
 
 void Core_Thermal(CORE *Core)
 {
@@ -821,9 +820,9 @@ void Core_Thermal(CORE *Core)
 		Core->TjMax.Target=100;
 }
 
-#define Core_Temp(Core)					\
-(							\
-	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)	\
+#define Core_Temp(Core)							\
+(									\
+	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
 )
 
 int Cycle_Genuine(void *arg)
@@ -864,12 +863,12 @@ int Cycle_Genuine(void *arg)
 			Core->Delta.TSC = Core->Counter[1].TSC		\
 					- Core->Counter[0].TSC;
 
-			Core->Delta.C1=				\
-				(Core->Counter[0].C1 >		\
-				 Core->Counter[1].C1) ?		\
-					Core->Counter[0].C1	\
-					- Core->Counter[1].C1	\
-					: Core->Counter[1].C1	\
+			Core->Delta.C1=					\
+				(Core->Counter[0].C1 >			\
+				 Core->Counter[1].C1) ?			\
+					Core->Counter[0].C1		\
+					- Core->Counter[1].C1		\
+					: Core->Counter[1].C1		\
 					- Core->Counter[0].C1;
 
 			// Save TSC.
@@ -882,7 +881,6 @@ int Cycle_Genuine(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			atomic_store(&Core->Sync, 0x1);
 			Core->Sync=0x1;
 		}
 	}
@@ -1001,12 +999,12 @@ int Cycle_Core2(void *arg)
 			Core->Delta.TSC = Core->Counter[1].TSC		\
 					- Core->Counter[0].TSC;
 
-			Core->Delta.C1=				\
-				(Core->Counter[0].C1 >		\
-				 Core->Counter[1].C1) ?		\
-					Core->Counter[0].C1	\
-					- Core->Counter[1].C1	\
-					: Core->Counter[1].C1	\
+			Core->Delta.C1=					\
+				(Core->Counter[0].C1 >			\
+				 Core->Counter[1].C1) ?			\
+					Core->Counter[0].C1		\
+					- Core->Counter[1].C1		\
+					: Core->Counter[1].C1		\
 					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
@@ -1022,7 +1020,6 @@ int Cycle_Core2(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			atomic_store(&Core->Sync, 0x1);
 			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
@@ -1148,20 +1145,20 @@ int Cycle_Nehalem(void *arg)
 			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
 					  - Core->Counter[0].C0.URC;
 
-			Core->Delta.C3  = Core->Counter[1].C3	\
+			Core->Delta.C3  = Core->Counter[1].C3		\
 					- Core->Counter[0].C3;
-			Core->Delta.C6  = Core->Counter[1].C6	\
+			Core->Delta.C6  = Core->Counter[1].C6		\
 					- Core->Counter[0].C6;
 
-			Core->Delta.TSC = Core->Counter[1].TSC	\
+			Core->Delta.TSC = Core->Counter[1].TSC		\
 					- Core->Counter[0].TSC;
 
-			Core->Delta.C1=				\
-				(Core->Counter[0].C1 >		\
-				 Core->Counter[1].C1) ?		\
-					Core->Counter[0].C1	\
-					- Core->Counter[1].C1	\
-					: Core->Counter[1].C1	\
+			Core->Delta.C1=					\
+				(Core->Counter[0].C1 >			\
+				 Core->Counter[1].C1) ?			\
+					Core->Counter[0].C1		\
+					- Core->Counter[1].C1		\
+					: Core->Counter[1].C1		\
 					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
@@ -1180,7 +1177,6 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C6=Core->Counter[1].C6;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			atomic_store(&Core->Sync, 0x1);
 			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
@@ -1313,22 +1309,22 @@ int Cycle_SandyBridge(void *arg)
 			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
 					  - Core->Counter[0].C0.URC;
 
-			Core->Delta.C3  = Core->Counter[1].C3	\
+			Core->Delta.C3  = Core->Counter[1].C3		\
 					- Core->Counter[0].C3;
-			Core->Delta.C6  = Core->Counter[1].C6	\
+			Core->Delta.C6  = Core->Counter[1].C6		\
 					- Core->Counter[0].C6;
-			Core->Delta.C7  = Core->Counter[1].C7	\
+			Core->Delta.C7  = Core->Counter[1].C7		\
 					- Core->Counter[0].C7;
 
-			Core->Delta.TSC = Core->Counter[1].TSC	\
+			Core->Delta.TSC = Core->Counter[1].TSC		\
 					- Core->Counter[0].TSC;
 
-			Core->Delta.C1=				\
-				(Core->Counter[0].C1 >		\
-				 Core->Counter[1].C1) ?		\
-					Core->Counter[0].C1	\
-					- Core->Counter[1].C1	\
-					: Core->Counter[1].C1	\
+			Core->Delta.C1=					\
+				(Core->Counter[0].C1 >			\
+				 Core->Counter[1].C1) ?			\
+					Core->Counter[0].C1		\
+					- Core->Counter[1].C1		\
+					: Core->Counter[1].C1		\
 					- Core->Counter[0].C1;
 
 			// Save the Instructions counter.
@@ -1348,7 +1344,6 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C7=Core->Counter[1].C7;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			atomic_store(&Core->Sync, 0x1);
 			Core->Sync=0x1;
 		}
 		Counters_Clear(Core);
@@ -1545,7 +1540,6 @@ static int __init IntelFreq_init(void)
 				    memset(kcache, 0, kmSize);
 				    KMem->Core[cpu]=kcache;
 
-//				    atomic_init(&KMem->Core[cpu]->Sync, 0x0);
 				    KMem->Core[cpu]->Sync=0x0;
 
 				    KMem->Core[cpu]->Bind=cpu;
@@ -1582,8 +1576,7 @@ static int __init IntelFreq_init(void)
 				      "Signature [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s]\n"		\
 				      "%u/%u CPU Online"		\
-				      " , Clock @ {%u/%llu} MHz\n"	\
-				      "Ratio={%d,%d,%d,%d,%d,%d,%d,%d,%d,%d}\n",
+				      " , Clock @ {%u/%llu} MHz\n",
 					Proc->Features.Brand,
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
@@ -1593,27 +1586,7 @@ static int __init IntelFreq_init(void)
 					Proc->CPU.OnLine,
 					Proc->CPU.Count,
 					Proc->Clock.Q,
-					Proc->Clock.R,
-					Proc->Boost[0],
-					Proc->Boost[1],
-					Proc->Boost[2],
-					Proc->Boost[3],
-					Proc->Boost[4],
-					Proc->Boost[5],
-					Proc->Boost[6],
-					Proc->Boost[7],
-					Proc->Boost[8],
-					Proc->Boost[9]);
-
-				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-					printk(	"Topology(%u)"	\
-						" Apic[%3d]"	\
-						" Core[%3d]"	\
-						" Thread[%3d]\n",
-						cpu,
-						KMem->Core[cpu]->T.ApicID,
-						KMem->Core[cpu]->T.CoreID,
-						KMem->Core[cpu]->T.ThreadID);
+					Proc->Clock.R);
 
 				Arch[Proc->ArchID].Arch_Controller(START);
 			    }
