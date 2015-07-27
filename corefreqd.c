@@ -50,9 +50,8 @@ static void *Core_Cycle(void *arg)
 	sprintf(comm, "corefreqd-%03d", cpu);
 	pthread_setname_np(Arg->TID, comm);
 
-	while(!Shutdown)
+	do
 	{
-
 /*
 	    while(!atomic_load(&Core->Sync))
 		usleep(Proc->msleep * 100);
@@ -65,64 +64,68 @@ static void *Core_Cycle(void *arg)
 		atomic_fetch_and(&Proc->Room, roomCmp);
 	    }
 */
-	    while(!Core->Sync)
+	    while(!Core->Sync && !Shutdown)
 		usleep(Proc->msleep * 100);
 	    Core->Sync=0x0;
 
-	    if(Proc->Room & roomBit)
+	    if(!Shutdown)
 	    {
-		Cpu->FlipFlop=!Cpu->FlipFlop;
-		Proc->Room&=roomCmp;
-	    }
+		if(Proc->Room & roomBit)
+		{
+			Cpu->FlipFlop=!Cpu->FlipFlop;
+			Proc->Room&=roomCmp;
+		}
 
 		// Compute IPS=Instructions per TSC
-	    Cpu->State[Cpu->FlipFlop].IPS=(double) (Core->Delta.INST)	\
-					/ (double) (Core->Delta.TSC);
+		Cpu->State[Cpu->FlipFlop].IPS=(double) (Core->Delta.INST)	\
+						/ (double) (Core->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-	    Cpu->State[Cpu->FlipFlop].IPC=(double)(Core->Delta.C0.URC != 0) ? \
-						(double) (Core->Delta.INST)   \
-						/ (double) Core->Delta.C0.URC \
+		Cpu->State[Cpu->FlipFlop].IPC=(double)(Core->Delta.C0.URC != 0)?\
+						(double) (Core->Delta.INST)	\
+						/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-	    Cpu->State[Cpu->FlipFlop].CPI=(double) (Core->Delta.INST != 0) ?  \
-						(double) Core->Delta.C0.URC   \
-						/ (double) (Core->Delta.INST) \
+		Cpu->State[Cpu->FlipFlop].CPI=(double) (Core->Delta.INST != 0) ?\
+						(double) Core->Delta.C0.URC	\
+						/ (double) (Core->Delta.INST)	\
 						: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-	    Cpu->State[Cpu->FlipFlop].Turbo=(double)(Core->Delta.C0.URC!=0) ? \
-						(double) (Core->Delta.C0.UCC) \
-						/ (double) Core->Delta.C0.URC \
+		Cpu->State[Cpu->FlipFlop].Turbo=(double)(Core->Delta.C0.URC!=0)?\
+						(double) (Core->Delta.C0.UCC)	\
+						/ (double) Core->Delta.C0.URC	\
 						: 0.0f;
 
 		// Compute C-States.
-	    Cpu->State[Cpu->FlipFlop].C0=(double) (Core->Delta.C0.URC)	      \
+		Cpu->State[Cpu->FlipFlop].C0=(double) (Core->Delta.C0.URC)	\
 						/ (double) (Core->Delta.TSC);
-	    Cpu->State[Cpu->FlipFlop].C3=(double) (Core->Delta.C3)	      \
+		Cpu->State[Cpu->FlipFlop].C3=(double) (Core->Delta.C3)		\
 						/ (double) (Core->Delta.TSC);
-	    Cpu->State[Cpu->FlipFlop].C6=(double) (Core->Delta.C6)	      \
+		Cpu->State[Cpu->FlipFlop].C6=(double) (Core->Delta.C6)		\
 						/ (double) (Core->Delta.TSC);
-	    Cpu->State[Cpu->FlipFlop].C7=(double) (Core->Delta.C7)        \
+		Cpu->State[Cpu->FlipFlop].C7=(double) (Core->Delta.C7)		\
 						/ (double) (Core->Delta.TSC);
-	    Cpu->State[Cpu->FlipFlop].C1=(double) (Core->Delta.C1)	      \
+		Cpu->State[Cpu->FlipFlop].C1=(double) (Core->Delta.C1)		\
 						/ (double) (Core->Delta.TSC);
 
-	    Cpu->Relative.Ratio=Cpu->State[Cpu->FlipFlop].Turbo		      \
-				* Cpu->State[Cpu->FlipFlop].C0		      \
-				* (double) Proc->Boost[1];
+		Cpu->Relative.Ratio=Cpu->State[Cpu->FlipFlop].Turbo		\
+					* Cpu->State[Cpu->FlipFlop].C0		\
+					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-	    Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
-	    Cpu->Relative.Freq+=(Cpu->Relative.Ratio * Proc->Clock.R)	      \
+		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
+		Cpu->Relative.Freq+=(Cpu->Relative.Ratio * Proc->Clock.R)	\
 				/ ((double) Proc->Boost[1] * 1000000L);
 
-	    Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
-	}
+		Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
+	    }
+	} while(!Shutdown) ;
+
 	return(NULL);
 }
 
@@ -134,16 +137,18 @@ typedef struct {
 
 static void *Emergency(void *arg)
 {
-	int caught=0;
+	int caught=0, leave=0;
 	SIG *Sig=(SIG *) arg;
 	pthread_setname_np(Sig->TID, "corefreqd-kill");
 
-	while(!Shutdown && !sigwait(&Sig->Signal, &caught))
+	while(!leave && !sigwait(&Sig->Signal, &caught))
 		switch(caught)
 		{
+			case SIGUSR1:
+				leave=0x1;
+			break;
 			case SIGINT:
 			case SIGQUIT:
-			case SIGUSR1:
 			case SIGTERM:
 				Shutdown=0x1;
 			break;
@@ -153,6 +158,7 @@ static void *Emergency(void *arg)
 
 int main(void)
 {
+	int rc=0;
 	struct
 	{
 		int	Drv,
@@ -229,15 +235,16 @@ int main(void)
 					Shm->Proc.Brand, Clock);
 
 				sigemptyset(&Sig.Signal);
-				sigaddset(&Sig.Signal, SIGINT);
-				sigaddset(&Sig.Signal, SIGQUIT);
 				sigaddset(&Sig.Signal, SIGUSR1);
+				sigaddset(&Sig.Signal, SIGINT);	// [CTRL] + [C]
+				sigaddset(&Sig.Signal, SIGQUIT);
 				sigaddset(&Sig.Signal, SIGTERM);
-				if(!pthread_sigmask(	SIG_BLOCK,
+
+				if(!pthread_sigmask(SIG_BLOCK,
 							&Sig.Signal, NULL)
-				&& !pthread_create(	&Sig.TID, NULL,
-							   Emergency, &Sig))
-						Sig.Started=1;
+				&& !pthread_create(&Sig.TID, NULL,
+							Emergency, &Sig))
+					Sig.Started=1;
 
 				strncpy(Shm->AppName,
 					SHM_FILENAME,
@@ -261,28 +268,24 @@ int main(void)
 
 				ARG *Arg=calloc(Shm->Proc.CPU.Count,
 						sizeof(ARG));
-				for(cpu=0;
-				    cpu < Shm->Proc.CPU.Count;
-				    cpu++)
-				    if(!Shm->Cpu[cpu].OffLine)
-				    {
-					Arg[cpu].Proc=&Shm->Proc;
-					Arg[cpu].Core=Core[cpu];
-					Arg[cpu].Cpu=&Shm->Cpu[cpu];
-					Arg[cpu].Bind=cpu;
-					pthread_create(	&Arg[cpu].TID,
-							NULL,
-							Core_Cycle,
-							&Arg[cpu]);
-				    }
-				free(Arg);
-
+				for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+					if(!Shm->Cpu[cpu].OffLine)
+					{
+						Arg[cpu].Proc=&Shm->Proc;
+						Arg[cpu].Core=Core[cpu];
+						Arg[cpu].Cpu=&Shm->Cpu[cpu];
+						Arg[cpu].Bind=cpu;
+						pthread_create(	&Arg[cpu].TID,
+								NULL,
+								Core_Cycle,
+								&Arg[cpu]);
+					}
 				while(!Shutdown)
 				{
 /*				    while(atomic_load(&Shm->Proc.Room))
 					usleep(Shm->Proc.msleep * 100);
 */
-				    while(Shm->Proc.Room)
+				    while(Shm->Proc.Room && !Shutdown)
 					usleep(Shm->Proc.msleep * 100);
 
 				    Shm->Proc.Avg.Turbo=0;
@@ -293,7 +296,7 @@ int main(void)
 				    Shm->Proc.Avg.C1=0;
 
 				    for(cpu=0;
-					cpu < Shm->Proc.CPU.Count;
+				       (cpu < Shm->Proc.CPU.Count) && !Shutdown;
 					cpu++)
 					if(!Shm->Cpu[cpu].OffLine)
 				    {
@@ -328,12 +331,10 @@ int main(void)
 //				    atomic_store(&Shm->Proc.Sync, 0x1);
 				    Shm->Proc.Sync=0x1;
 				}
-				// shutting down
-				for(cpu=0;
-				    cpu < Shm->Proc.CPU.Count;
-				    cpu++)
-				    if(!Shm->Cpu[cpu].OffLine)
+				for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+				    if(Arg[cpu].TID)
 					pthread_join(Arg[cpu].TID, NULL);
+				free(Arg);
 
 				if(Sig.Started)
 				{
@@ -343,8 +344,7 @@ int main(void)
 				munmap(Shm, ShmSize);
 				shm_unlink(SHM_FILENAME);
 			}
-			else
-				printf("Error: create SHM\n");
+			else rc=4;
 
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				if(Core[cpu])
@@ -353,14 +353,11 @@ int main(void)
 			if(Proc)
 				munmap(Proc, PAGE_SIZE);
 		}
-		else
-			printf("Error: mmap(fd:%d):KO\n", FD.Drv);
+		else rc=3;
 
-			close(FD.Drv);
+		close(FD.Drv);
 	    }
-	    else
-		printf("Error: open('%s', O_RDWR):%d\n",
-			DRV_FILENAME, errno);
-	}
-	return(0);
+	    else rc=2;
+	} else rc=1;
+	return(rc);
 }

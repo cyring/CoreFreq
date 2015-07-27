@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 			usleep(Shm->Proc.msleep * 100);
 		atomic_store(&Shm->Proc.Sync, 0x0);
 */
-		while(!Shm->Proc.Sync)
+		while(!Shm->Proc.Sync && !Shutdown)
 			usleep(Shm->Proc.msleep * 100);
 		Shm->Proc.Sync=0x0;
 
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		case 'i':
 		    {
 		    printf("CPU     IPS            IPC            CPI\n");
-		    for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+		    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 		        if(!Shm->Cpu[cpu].OffLine)
 		        {
 			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
@@ -84,16 +84,16 @@ int main(int argc, char *argv[])
 		case 'c':
 		default:
 		    {
-		    printf(	"CPU  Frequency  Ratio   Turbo"			\
-				"    C0      C1      C3      C6      C7"	\
-				"    Temps\n");
-		    for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+		    printf("CPU  Frequency  Ratio   Turbo"		\
+			   "    C0      C1      C3      C6      C7"	\
+			   "    Temps\n");
+		    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 		        if(!Shm->Cpu[cpu].OffLine)
 		        {
 			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
 
-			printf("#%02u %7.2fMHz (%5.2f)"				\
-			    " %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"	\
+			printf("#%02u %7.2fMHz (%5.2f)"			\
+			    " %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
 			    " @ %llu°C\n",
 				cpu,
 				Shm->Cpu[cpu].Relative.Freq,
@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
 				100.f * Shm->Cpu[cpu].State[flop].C7,
 				Shm->Cpu[cpu].Temperature);
 			}
-		    printf("\nAverage C-states\n"				\
-		       "Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
+		    printf("\nAverage C-states\n"			\
+		       "Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"		\
 		       "%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f\t%6.2f%%\t%6.2f%%\n\n",
 				100.f * Shm->Proc.Avg.Turbo,
 				100.f * Shm->Proc.Avg.C0,
@@ -119,12 +119,9 @@ int main(int argc, char *argv[])
 		break;
 		}
 	    }
-	    if(munmap(Shm, shmStat.st_size) == -1)
-		printf("Error: unmapping the shared memory");
-	    if(close(fd) == -1)
-		printf("Error: closing the shared memory");
+	    munmap(Shm, shmStat.st_size);
+	    close(fd);
 	}
-	else
-		rc=-1;
+	else rc=1;
 	return(rc);
 }
