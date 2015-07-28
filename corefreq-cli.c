@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	{
 	    double Clock=Shm->Proc.Clock.Q				\
 			+ ((double) Shm->Proc.Clock.R			\
-			/ (Shm->Proc.Boost[1] * 1000000L));
+			/ (Shm->Proc.Boost[1] * 100000L));
 
 	    printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
 			Shm->Proc.Brand, Clock);

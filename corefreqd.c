@@ -108,7 +108,7 @@ static void *Core_Cycle(void *arg)
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
 		Cpu->Relative.Freq+=(Cpu->Relative.Ratio * Proc->Clock.R)	\
-				/ ((double) Proc->Boost[1] * 1000000L);
+				/ ((double) Proc->Boost[1] * 100000L);
 
 		Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 	    }
@@ -216,9 +216,9 @@ int main(void)
 				double Clock=Shm->Proc.Clock.Q		\
 					+ ((double) Shm->Proc.Clock.R	\
 					/ (Shm->Proc.Boost[1]		\
-					* 1000000L));
+					* 100000L));
 
-				printf("CoreFreqd [%s] , Clock @ %.2f MHz\n",
+				printf("CoreFreqd [%s] , Clock @ %f MHz\n",
 					Shm->Proc.Brand, Clock);
 
 				sigemptyset(&Sig.Signal);
