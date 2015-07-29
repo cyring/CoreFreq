@@ -65,13 +65,14 @@ int main(int argc, char *argv[])
 		    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 		        if(!Shm->Cpu[cpu].OffLine)
 		        {
-			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
+			struct FLIP_FLOP *Flop=				      \
+				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 			printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
 				cpu,
-				Shm->Cpu[cpu].State[flop].IPS,
-				Shm->Cpu[cpu].State[flop].IPC,
-				Shm->Cpu[cpu].State[flop].CPI);
+				Flop->State.IPS,
+				Flop->State.IPC,
+				Flop->State.CPI);
 			}
 		    printf("\n");
 		    }
@@ -85,21 +86,22 @@ int main(int argc, char *argv[])
 		    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 		        if(!Shm->Cpu[cpu].OffLine)
 		        {
-			unsigned int flop=!Shm->Cpu[cpu].FlipFlop;
+			struct FLIP_FLOP *Flop=				      \
+				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 			printf("#%02u %7.2fMHz (%5.2f)"			\
 			    " %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
 			    " @ %llu°C\n",
 				cpu,
-				Shm->Cpu[cpu].Relative.Freq,
-				Shm->Cpu[cpu].Relative.Ratio,
-				100.f * Shm->Cpu[cpu].State[flop].Turbo,
-				100.f * Shm->Cpu[cpu].State[flop].C0,
-				100.f * Shm->Cpu[cpu].State[flop].C1,
-				100.f * Shm->Cpu[cpu].State[flop].C3,
-				100.f * Shm->Cpu[cpu].State[flop].C6,
-				100.f * Shm->Cpu[cpu].State[flop].C7,
-				Shm->Cpu[cpu].Temperature);
+				Flop->Relative.Freq,
+				Flop->Relative.Ratio,
+				100.f * Flop->State.Turbo,
+				100.f * Flop->State.C0,
+				100.f * Flop->State.C1,
+				100.f * Flop->State.C3,
+				100.f * Flop->State.C6,
+				100.f * Flop->State.C7,
+				Flop->Temperature);
 			}
 		    printf("\nAverage C-states\n"			\
 		       "Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"		\

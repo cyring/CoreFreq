@@ -60,57 +60,58 @@ static void *Core_Cycle(void *arg)
 	    {
 		if(Proc->Room & roomBit)
 		{
-			Cpu->FlipFlop=!Cpu->FlipFlop;
-			Proc->Room&=roomCmp;
+			Cpu->Toggle =! Cpu->Toggle;
+			Proc->Room  &= roomCmp;
 		}
+		struct FLIP_FLOP *Flip=Flip=&Cpu->FlipFlop[Cpu->Toggle];
 
 		// Compute IPS=Instructions per TSC
-		Cpu->State[Cpu->FlipFlop].IPS=(double) (Core->Delta.INST)	\
-						/ (double) (Core->Delta.TSC);
+		Flip->State.IPS	= (double) (Core->Delta.INST)		\
+				/ (double) (Core->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		Cpu->State[Cpu->FlipFlop].IPC=(double)(Core->Delta.C0.URC != 0)?\
-						(double) (Core->Delta.INST)	\
-						/ (double) Core->Delta.C0.URC	\
-						: 0.0f;
+		Flip->State.IPC	= (double) (Core->Delta.C0.URC != 0) ?	\
+				  (double) (Core->Delta.INST)		\
+					/ (double) Core->Delta.C0.URC	\
+				: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		Cpu->State[Cpu->FlipFlop].CPI=(double) (Core->Delta.INST != 0) ?\
-						(double) Core->Delta.C0.URC	\
-						/ (double) (Core->Delta.INST)	\
-						: 0.0f;
+		Flip->State.CPI	= (double) (Core->Delta.INST != 0) ?	\
+				  (double) Core->Delta.C0.URC		\
+					/ (double) (Core->Delta.INST)	\
+				: 0.0f;
 
 		// Compute Turbo State per Cycles Delta.
 		// (Protect against a division by zero)
-		Cpu->State[Cpu->FlipFlop].Turbo=(double)(Core->Delta.C0.URC!=0)?\
-						(double) (Core->Delta.C0.UCC)	\
-						/ (double) Core->Delta.C0.URC	\
-						: 0.0f;
+		Flip->State.Turbo=(double) (Core->Delta.C0.URC!=0) ?	\
+				  (double) (Core->Delta.C0.UCC)		\
+					/ (double) Core->Delta.C0.URC	\
+				: 0.0f;
 
 		// Compute C-States.
-		Cpu->State[Cpu->FlipFlop].C0=(double) (Core->Delta.C0.URC)	\
-						/ (double) (Core->Delta.TSC);
-		Cpu->State[Cpu->FlipFlop].C3=(double) (Core->Delta.C3)		\
-						/ (double) (Core->Delta.TSC);
-		Cpu->State[Cpu->FlipFlop].C6=(double) (Core->Delta.C6)		\
-						/ (double) (Core->Delta.TSC);
-		Cpu->State[Cpu->FlipFlop].C7=(double) (Core->Delta.C7)		\
-						/ (double) (Core->Delta.TSC);
-		Cpu->State[Cpu->FlipFlop].C1=(double) (Core->Delta.C1)		\
-						/ (double) (Core->Delta.TSC);
+		Flip->State.C0	= (double) (Core->Delta.C0.URC)		\
+				/ (double) (Core->Delta.TSC);
+		Flip->State.C3	= (double) (Core->Delta.C3)		\
+				/ (double) (Core->Delta.TSC);
+		Flip->State.C6	= (double) (Core->Delta.C6)		\
+				/ (double) (Core->Delta.TSC);
+		Flip->State.C7	= (double) (Core->Delta.C7)		\
+				/ (double) (Core->Delta.TSC);
+		Flip->State.C1	= (double) (Core->Delta.C1)		\
+				/ (double) (Core->Delta.TSC);
 
-		Cpu->Relative.Ratio=Cpu->State[Cpu->FlipFlop].Turbo		\
-					* Cpu->State[Cpu->FlipFlop].C0		\
+		Flip->Relative.Ratio	= Flip->State.Turbo		\
+					* Flip->State.C0		\
 					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-		Cpu->Relative.Freq=Cpu->Relative.Ratio * Proc->Clock.Q;
-		Cpu->Relative.Freq+=(Cpu->Relative.Ratio * Proc->Clock.R)	\
-				/ ((double) Proc->Boost[1] * 100000L);
+		Flip->Relative.Freq = Flip->Relative.Ratio * Proc->Clock.Q;
+		Flip->Relative.Freq +=(Flip->Relative.Ratio * Proc->Clock.R) \
+					/ ((double) Proc->Boost[1] * 100000L);
 
-		Cpu->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
+		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 	    }
 	} while(!Shutdown) ;
 
@@ -184,16 +185,16 @@ int main(void)
 			ShmSize=PAGE_SIZE * ((ShmSize / PAGE_SIZE)
 				+ ((ShmSize % PAGE_SIZE) ? 1 : 0));
 
-			umask(	 !S_IRUSR	\
-				|!S_IWUSR	\
-				|!S_IRGRP	\
-				|!S_IWGRP	\
-				|!S_IROTH	\
+			umask(	 !S_IRUSR				\
+				|!S_IWUSR				\
+				|!S_IRGRP				\
+				|!S_IWGRP				\
+				|!S_IROTH				\
 				|!S_IWOTH);
 
 			if(((FD.Svr=shm_open(SHM_FILENAME,
 						O_CREAT|O_TRUNC|O_RDWR,
-						S_IRUSR|S_IWUSR	\
+						S_IRUSR|S_IWUSR		\
 						|S_IRGRP|S_IWGRP	\
 						|S_IROTH|S_IWOTH)) != -1)
 			&& (ftruncate(FD.Svr, ShmSize) != -1)
@@ -282,21 +283,18 @@ int main(void)
 					cpu++)
 					if(!Shm->Cpu[cpu].OffLine)
 				    {
-					unsigned int roomBit=1 << cpu,	\
-						 flop=!Shm->Cpu[cpu].FlipFlop;
+					unsigned int roomBit=1 << cpu;
+					struct FLIP_FLOP *Flop=		      \
+						&Shm->Cpu[cpu].FlipFlop[      \
+							!Shm->Cpu[cpu].Toggle \
+						];
 
-					Shm->Proc.Avg.Turbo+=		      \
-						Shm->Cpu[cpu].State[flop].Turbo;
-					Shm->Proc.Avg.C0+=		      \
-						Shm->Cpu[cpu].State[flop].C0;
-					Shm->Proc.Avg.C3+=		      \
-						Shm->Cpu[cpu].State[flop].C3;
-					Shm->Proc.Avg.C6+=		      \
-						Shm->Cpu[cpu].State[flop].C6;
-					Shm->Proc.Avg.C7+=		      \
-						Shm->Cpu[cpu].State[flop].C7;
-					Shm->Proc.Avg.C1+=		      \
-						Shm->Cpu[cpu].State[flop].C1;
+					Shm->Proc.Avg.Turbo+=Flop->State.Turbo;
+					Shm->Proc.Avg.C0+=Flop->State.C0;
+					Shm->Proc.Avg.C3+=Flop->State.C3;
+					Shm->Proc.Avg.C6+=Flop->State.C6;
+					Shm->Proc.Avg.C7+=Flop->State.C7;
+					Shm->Proc.Avg.C1+=Flop->State.C1;
 
 					Shm->Proc.Room|=roomBit;
 				    }

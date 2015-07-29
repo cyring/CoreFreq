@@ -9,27 +9,30 @@
 
 typedef struct
 {
-	unsigned long long Temperature;
-
 	unsigned int	OffLine;
 
-	unsigned int	FlipFlop;
-	struct {
-		double	IPS,
-			IPC,
-			CPI,
-			Turbo,
-			C0,
-			C3,
-			C6,
-			C7,
-			C1;
-	} State[2];
+	unsigned int	Toggle;
 
-	struct {
-		double	Ratio,
-			Freq;
-	} Relative;
+	struct FLIP_FLOP {
+	    unsigned long long	Temperature;
+
+		struct {
+			double	IPS,
+				IPC,
+				CPI,
+				Turbo,
+				C0,
+				C3,
+				C6,
+				C7,
+				C1;
+		} State;
+
+		struct {
+			double	Ratio,
+				Freq;
+		} Relative;
+	} FlipFlop[2];
 } CPU_STRUCT;
 
 typedef struct
