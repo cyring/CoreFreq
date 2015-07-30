@@ -64,5 +64,8 @@ CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] , Clock @ 146.513772 MHz
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
 
+## Algorithm
+![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
+
 # Regards
 _`CyrIng`_

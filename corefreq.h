@@ -7,6 +7,55 @@
 
 #define	SHM_FILENAME	"corefreq-shm"
 
+#define	BITSET(_base, _offset)			\
+({						\
+	asm volatile				\
+	(					\
+		"lock rex bts %1, %0"		\
+		: "=m" (_base)			\
+		: "Ir" (_offset)		\
+		: "memory"			\
+	);					\
+})
+
+#define	BITCLR(_base, _offset)			\
+({						\
+	asm volatile				\
+	(					\
+		"lock rex btr %1, %0"		\
+		: "=m" (_base)			\
+		: "Ir" (_offset)		\
+		: "memory"			\
+	);					\
+})
+
+#define	BITCMP(_base, _offset)			\
+({						\
+	unsigned int _ret;			\
+	asm volatile				\
+	(					\
+		"rex bt %2, %0	\n\t"		\
+		"rcl $1, %1"			\
+		: "=m" (_base), "+r" (_ret)	\
+		: "Ir" (_offset)		\
+		: "memory"			\
+	);					\
+	_ret;					\
+})
+
+#define	BITWISEAND(_opl, _opr)			\
+({						\
+	volatile unsigned long long _ret=_opl;	\
+	asm volatile				\
+	(					\
+		"lock rex and %1, %0"		\
+		: "=m" (_ret)			\
+		: "Ir" (_opr)			\
+		: "memory"			\
+	);					\
+	_ret;					\
+})
+
 typedef struct
 {
 	unsigned int	OffLine;
@@ -43,22 +92,22 @@ typedef struct
 
 typedef struct
 {
-	unsigned long long	Sync,
-				Room;
+	volatile unsigned long long	Sync,
+					Room;
 
-	unsigned int		msleep;
+	unsigned int			msleep;
 
 	struct {
-		unsigned int	Count,
-				OnLine;
+		unsigned int		Count,
+					OnLine;
 	} CPU;
 
-	unsigned int		Boost[1+1+8],
-				PerCore;
+	CLOCK				Clock;
 
-	CLOCK			Clock;
+	unsigned int			Boost[1+1+8],
+					PerCore;
 
-	char			Brand[64];
+	char				Brand[64];
 
 	struct {
 		double	Turbo,

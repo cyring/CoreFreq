@@ -53,9 +53,13 @@ int main(int argc, char *argv[])
 
 	    while(!Shutdown)
 	    {
-		while(!Shm->Proc.Sync && !Shutdown)
+/*		while(!Shm->Proc.Sync && !Shutdown)
 			usleep(Shm->Proc.msleep * 100);
 		Shm->Proc.Sync=0x0;
+*/
+		while(!BITCMP(Shm->Proc.Sync, 0) && !Shutdown)
+			usleep(Shm->Proc.msleep * 100);
+		BITCLR(Shm->Proc.Sync, 0);
 
 		switch(option)
 		{

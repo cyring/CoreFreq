@@ -737,7 +737,7 @@ enum { INIT, END, START, STOP };
 
 typedef struct
 {
-	unsigned long long		Sync;
+	volatile unsigned long long	Sync;
 
 	struct
 	{

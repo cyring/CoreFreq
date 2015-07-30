@@ -887,7 +887,8 @@ int Cycle_Genuine(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			Core->Sync=0x1;
+//			Core->Sync=0x1;
+			BITSET(Core->Sync, 0);
 		}
 	}
 	do_exit(0);
@@ -1026,7 +1027,8 @@ int Cycle_Core2(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			Core->Sync=0x1;
+//			Core->Sync=0x1;
+			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1183,7 +1185,8 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C6=Core->Counter[1].C6;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			Core->Sync=0x1;
+//			Core->Sync=0x1;
+			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1350,7 +1353,8 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C7=Core->Counter[1].C7;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			Core->Sync=0x1;
+//			Core->Sync=0x1;
+			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1546,7 +1550,8 @@ static int __init IntelFreq_init(void)
 				    memset(kcache, 0, kmSize);
 				    KMem->Core[cpu]=kcache;
 
-				    KMem->Core[cpu]->Sync=0x0;
+//				    KMem->Core[cpu]->Sync=0x0;
+				    BITCLR(KMem->Core[cpu]->Sync, 0);
 
 				    KMem->Core[cpu]->Bind=cpu;
 				    if(!cpu_online(cpu) || !cpu_active(cpu))

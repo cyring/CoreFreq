@@ -38,7 +38,7 @@ static void *Core_Cycle(void *arg)
 	PROC_STRUCT *Proc=Arg->Proc;
 	CPU_STRUCT *Cpu=Arg->Cpu;
 	CORE *Core=Arg->Core;
-	unsigned int cpu=Arg->Bind, roomBit=1 << cpu, roomCmp=~roomBit;
+	unsigned int cpu=Arg->Bind/*, roomBit=1 << cpu, roomCmp=~roomBit*/;
 
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
@@ -52,18 +52,28 @@ static void *Core_Cycle(void *arg)
 
 	do
 	{
-	    while(!Core->Sync && !Shutdown)
+/*	    while(!Core->Sync && !Shutdown)
 		usleep(Proc->msleep * 100);
 	    Core->Sync=0x0;
+*/
+	    while(!BITCMP(Core->Sync, 0) && !Shutdown)
+		usleep(Proc->msleep * 100);
+	    BITCLR(Core->Sync, 0);
 
 	    if(!Shutdown)
 	    {
-		if(Proc->Room & roomBit)
+/*		if(Proc->Room & roomBit)
 		{
 			Cpu->Toggle =! Cpu->Toggle;
 			Proc->Room  &= roomCmp;
 		}
-		struct FLIP_FLOP *Flip=Flip=&Cpu->FlipFlop[Cpu->Toggle];
+*/
+		if(BITCMP(Proc->Room, cpu))
+		{
+			Cpu->Toggle =! Cpu->Toggle;
+			BITCLR(Proc->Room, cpu);
+		}
+		struct FLIP_FLOP *Flip=&Cpu->FlipFlop[Cpu->Toggle];
 
 		// Compute IPS=Instructions per TSC
 		Flip->State.IPS	= (double) (Core->Delta.INST)		\
@@ -238,7 +248,7 @@ int main(void)
 					SHM_FILENAME,
 					TASK_COMM_LEN - 1);
 
-				Shm->Proc.Sync=0x0;
+				BITCLR(Shm->Proc.Sync, 0);
 
 				unsigned long long roomSeed=0x0;
 				for(cpu=0;
@@ -247,10 +257,13 @@ int main(void)
 				    if(!(Shm->Cpu[cpu].OffLine=\
 					Core[cpu]->OffLine))
 				    {
-					unsigned int roomBit=1 << cpu;
+/*					unsigned int roomBit=1 << cpu;
 					roomSeed|=roomBit;
+*/
+					BITSET(Shm->Proc.Room, cpu);
+					BITSET(roomSeed, cpu);
 				    }
-				Shm->Proc.Room=roomSeed;
+//				Shm->Proc.Room=roomSeed;
 
 				ARG *Arg=calloc(Shm->Proc.CPU.Count,
 						sizeof(ARG));
@@ -268,8 +281,12 @@ int main(void)
 					}
 				while(!Shutdown)
 				{
-				    while(Shm->Proc.Room && !Shutdown)
+/*				    while(Shm->Proc.Room && !Shutdown)
 					usleep(Shm->Proc.msleep * 100);
+*/
+				    while(!Shutdown
+					&& BITWISEAND(Shm->Proc.Room,roomSeed))
+						usleep(Shm->Proc.msleep * 100);
 
 				    Shm->Proc.Avg.Turbo=0;
 				    Shm->Proc.Avg.C0=0;
@@ -283,7 +300,7 @@ int main(void)
 					cpu++)
 					if(!Shm->Cpu[cpu].OffLine)
 				    {
-					unsigned int roomBit=1 << cpu;
+//					unsigned int roomBit=1 << cpu;
 					struct FLIP_FLOP *Flop=		      \
 						&Shm->Cpu[cpu].FlipFlop[      \
 							!Shm->Cpu[cpu].Toggle \
@@ -296,7 +313,8 @@ int main(void)
 					Shm->Proc.Avg.C7+=Flop->State.C7;
 					Shm->Proc.Avg.C1+=Flop->State.C1;
 
-					Shm->Proc.Room|=roomBit;
+//					Shm->Proc.Room|=roomBit;
+					BITSET(Shm->Proc.Room, cpu);
 				    }
 				    Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;
 				    Shm->Proc.Avg.C0/=Shm->Proc.CPU.OnLine;
@@ -305,7 +323,7 @@ int main(void)
 				    Shm->Proc.Avg.C7/=Shm->Proc.CPU.OnLine;
 				    Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
 
-				    Shm->Proc.Sync=0x1;
+				    BITSET(Shm->Proc.Sync, 0);
 				}
 				for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 				    if(Arg[cpu].TID)
