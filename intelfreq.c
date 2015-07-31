@@ -77,7 +77,7 @@ unsigned int Core_Count(void)
 {
 	unsigned int count=0;
 
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(count)
@@ -98,7 +98,7 @@ unsigned int Proc_Brand(char *pBrand)
 
 	for(ix=0; ix < 3; ix++)
 	{
-		__asm__ volatile
+		asm volatile
 		(
 			"cpuid"
 			: "=a"  (Brand.AX),
@@ -161,7 +161,7 @@ unsigned int Proc_Brand(char *pBrand)
 void Proc_Features(FEATURES *features)
 {
 	int BX=0, DX=0, CX=0;
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=b"	(BX),
@@ -182,7 +182,7 @@ void Proc_Features(FEATURES *features)
 	features->VendorID[10]=(CX >> 16);
 	features->VendorID[11]=(CX >> 24);
 
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(features->Std.AX),
@@ -191,7 +191,7 @@ void Proc_Features(FEATURES *features)
 		  "=d"	(features->Std.DX)
                 : "a" (0x1)
 	);
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(features->MONITOR_MWAIT_Leaf.AX),
@@ -200,7 +200,7 @@ void Proc_Features(FEATURES *features)
 		  "=d"	(features->MONITOR_MWAIT_Leaf.DX)
                 : "a" (0x5)
 	);
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(features->Thermal_Power_Leaf.AX),
@@ -209,7 +209,7 @@ void Proc_Features(FEATURES *features)
 		  "=d"	(features->Thermal_Power_Leaf.DX)
                 : "a" (0x6)
 	);
-	__asm__ volatile
+	asm volatile
 	(
 		"xorq	%%rbx, %%rbx    \n\t"
 		"xorq	%%rcx, %%rcx    \n\t"
@@ -221,7 +221,7 @@ void Proc_Features(FEATURES *features)
 		  "=d"	(features->ExtFeature.DX)
                 : "a" (0x7)
 	);
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(features->Perf_Monitoring_Leaf.AX),
@@ -230,7 +230,7 @@ void Proc_Features(FEATURES *features)
 		  "=d"	(features->Perf_Monitoring_Leaf.DX)
                 : "a" (0xa)
 	);
-	__asm__ volatile
+	asm volatile
 	(
 		"cpuid"
 		: "=a"	(features->LargestExtFunc)
@@ -239,7 +239,7 @@ void Proc_Features(FEATURES *features)
 	if(features->LargestExtFunc >= 0x80000004 \
 	&& features->LargestExtFunc <= 0x80000008)
 	{
-		__asm__ volatile
+		asm volatile
 		(
 			"cpuid"
 			: "=d"	(features->InvariantTSC)
@@ -248,7 +248,7 @@ void Proc_Features(FEATURES *features)
 		features->InvariantTSC &= 0x100;
 		features->InvariantTSC >>= 8;
 
-		__asm__ volatile
+		asm volatile
 		(
 			"cpuid"
 			: "=c"	(features->ExtFunc.CX),
@@ -260,68 +260,101 @@ void Proc_Features(FEATURES *features)
 
 DECLARE_COMPLETION(bclk_job_complete);
 
+#define	TSC_FIRST(_lo, _hi)						\
+	asm volatile							\
+	(								\
+		"movq $0, %%rax	\n\t	"				\
+		"cpuid			\n\t	"			\
+		"rdtsc			\n\t	"			\
+		"movq %%rax, %0		\n\t	"			\
+		"movq %%rdx, %1			"			\
+		:"=r" (_lo),						\
+		 "=r" (_hi)						\
+		:							\
+		:"%rax", "%rbx", "%rcx", "%rdx"				\
+	);
+
+#define	TSCP_LAST(_lo, _hi)						\
+	asm volatile							\
+	(								\
+		"rdtscp			\n\t	"			\
+		"movq %%rax, %0		\n\t	"			\
+		"movq %%rdx, %1		\n\t	"			\
+		"movq $0, %%rax		\n\t	"			\
+		"cpuid				"			\
+		:"=r" (_lo),						\
+		 "=r" (_hi)						\
+		:							\
+		:"%rax", "%rbx", "%rcx", "%rdx"				\
+	);
+
+#define	TSC_LAST(_lo, _hi)						\
+	asm volatile							\
+	(								\
+		"rdtsc			\n\t	"			\
+		"movq %%rax, %0		\n\t	"			\
+		"movq %%rdx, %1		\n\t	"			\
+		"movq $0, %%rax		\n\t	"			\
+		"cpuid				"			\
+		:"=r" (_lo),						\
+		 "=r" (_hi)						\
+		:							\
+		:"%rax", "%rbx", "%rcx", "%rdx"				\
+	);
+
 signed int Compute_Clock(void *arg)
 {
 	CLOCK *clock=(CLOCK *) arg;
 	unsigned int ratio=clock->Q;
-	register unsigned long long TSC[2];
-	register unsigned int lo, hi, loop=10;
+	register unsigned long long TSC[2]={0, 0};
+	register unsigned long long lo=0, hi=0, loop=0;
+
+	unsigned long flags;
+	preempt_disable();
+	raw_local_irq_save(flags);
 
 	if(Proc->Features.InvariantTSC
 	&& Proc->Features.ExtFunc.DX.RDTSCP)
-	{
-		register unsigned int aux;
-
-		while(--loop)
+	{	// Warm-up
+		TSC_FIRST(lo, hi);
+		TSCP_LAST(lo, hi);
+		TSC_FIRST(lo, hi);
+		TSCP_LAST(lo, hi);
+		for(loop=10; loop; loop--)
 		{
-			__asm__ volatile
-			(
-				"rdtscp"
-				:"=a" (lo),
-				 "=d" (hi),
-				 "=c" (aux)
-			);
+			TSC_FIRST(lo, hi);
 			TSC[0]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 
 			mdelay(100);
 
-			__asm__ volatile
-			(
-				"rdtscp"
-				:"=a" (lo),
-				 "=d" (hi),
-				 "=c" (aux)
-			);
+			TSCP_LAST(lo, hi);
 			TSC[1]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 		}
 	}
 	else
-	{
-		while(--loop)
+	{	// Warm-up
+		TSC_FIRST(lo, hi);
+		TSC_LAST(lo, hi);
+		TSC_FIRST(lo, hi);
+		TSC_LAST(lo, hi);
+		for(loop=10; loop; loop--)
 		{
-			__asm__ volatile
-			(
-				"rdtsc"
-				:"=a" (lo),
-				 "=d" (hi)
-			);
+			TSC_FIRST(lo, hi);
 			TSC[0]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 
 			mdelay(100);
 
-			__asm__ volatile
-			(
-				"rdtsc"
-				:"=a" (lo),
-				 "=d" (hi)
-			);
+			TSC_LAST(lo, hi);
 			TSC[1]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 		}
 	}
+	raw_local_irq_restore(flags);
+	preempt_enable();
+
 	TSC[1]-=TSC[0];
 
 	clock->Q=TSC[1] / (ratio * 100000L);
@@ -577,7 +610,7 @@ signed int Read_APIC(void *arg)
 		};
 		do
 		{
-			__asm__ volatile
+			asm volatile
 			(
 				"cpuid"
 				: "=a"	(ExtTopology.AX),
@@ -770,12 +803,21 @@ void Counters_Clear(CORE *Core)
 	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
 	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
 									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
-									\
 	/* C-States. */							\
 	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
 	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
+									\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
+	asm volatile							\
+	(								\
+		"movq $0, %%rax	\n\t	"				\
+		"cpuid			"				\
+		:							\
+		:							\
+		:"%rax", "%rbx", "%rcx", "%rdx"				\
+	);								\
 									\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C6					\

@@ -20,7 +20,7 @@
 ({								\
 	unsigned int _lo, _hi;					\
 								\
-	__asm__ volatile					\
+	asm volatile						\
 	(							\
 		"rdmsr"						\
                 : "=a" (_lo),					\
@@ -31,7 +31,7 @@
 })
 
 #define WRCOUNTER(_val,  _cnt)					\
-	__asm__ volatile					\
+	asm volatile						\
 	(							\
 		"wrmsr"						\
 		:						\
@@ -44,7 +44,7 @@
 ({								\
 	unsigned int _lo, _hi;					\
 								\
-	__asm__ volatile					\
+	asm volatile						\
 	(							\
 		"rdmsr"						\
                 : "=a" (_lo),					\
@@ -55,7 +55,7 @@
 })
 
 #define WRMSR(_data,  _reg)					\
-	__asm__ volatile					\
+	asm volatile						\
 	(							\
 		"wrmsr"						\
 		:						\
