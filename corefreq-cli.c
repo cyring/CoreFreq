@@ -57,7 +57,8 @@ int main(int argc, char *argv[])
 			usleep(Shm->Proc.msleep * 100);
 		Shm->Proc.Sync=0x0;
 */
-		while(!BITCMP(Shm->Proc.Sync, 0) && !Shutdown)
+
+		while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
 			usleep(Shm->Proc.msleep * 100);
 		BITCLR(Shm->Proc.Sync, 0);
 

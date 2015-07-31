@@ -29,20 +29,6 @@
 	);					\
 })
 
-#define	BITCMP(_base, _offset)			\
-({						\
-	unsigned int _ret;			\
-	asm volatile				\
-	(					\
-		"rex bt %2, %0	\n\t"		\
-		"rcl $1, %1"			\
-		: "=m" (_base), "+r" (_ret)	\
-		: "Ir" (_offset)		\
-		: "memory"			\
-	);					\
-	_ret;					\
-})
-
 #define	BITWISEAND(_opl, _opr)			\
 ({						\
 	volatile unsigned long long _ret=_opl;	\

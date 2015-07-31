@@ -56,7 +56,7 @@ static void *Core_Cycle(void *arg)
 		usleep(Proc->msleep * 100);
 	    Core->Sync=0x0;
 */
-	    while(!BITCMP(Core->Sync, 0) && !Shutdown)
+	    while(!BITWISEAND(Core->Sync, 0x1) && !Shutdown)
 		usleep(Proc->msleep * 100);
 	    BITCLR(Core->Sync, 0);
 
@@ -68,7 +68,7 @@ static void *Core_Cycle(void *arg)
 			Proc->Room  &= roomCmp;
 		}
 */
-		if(BITCMP(Proc->Room, cpu))
+		if(BITWISEAND(Proc->Room, 1 << cpu))
 		{
 			Cpu->Toggle =! Cpu->Toggle;
 			BITCLR(Proc->Room, cpu);
