@@ -263,86 +263,43 @@ DECLARE_COMPLETION(bclk_job_complete);
 signed int Compute_Clock(void *arg)
 {
 	CLOCK *clock=(CLOCK *) arg;
-	unsigned int ratio=clock->Q;
-	register unsigned long long TSC[2]={0, 0};
-	register unsigned long long lo=0, hi=0, loop=0;
+	unsigned int ratio=clock->Q, loop=0;
+	unsigned long long TSC[2]={0, 0}, D[10], BCLK=0;
 
 	// No preemption, no interrupt.
 	unsigned long flags;
 	preempt_disable();
 	raw_local_irq_save(flags);
 
-	if(Proc->Features.InvariantTSC
-	&& Proc->Features.ExtFunc.DX.RdTSCP)
-	{	// Warm-up
-		register unsigned int aux;
+	// Warm-up
+	RDCOUNTER(BCLK, MSR_IA32_TSC);
+	BARRIER();
+	RDCOUNTER(BCLK, MSR_IA32_TSC);
+	BARRIER();
 
-		BARRIER();
-		RDTSC(lo, hi);
-		RDTSCP(lo, hi, aux);
-		BARRIER();
-
-		BARRIER()
-		RDTSC(lo, hi);
-		RDTSCP(lo, hi, aux);
+	// Pick-up
+	for(loop=9; loop; loop--)
+	{
+		RDCOUNTER(TSC[0], MSR_IA32_TSC);
 		BARRIER();
 
-		// Pick-up
-		for(loop=5; loop; loop--)
-		{
-			BARRIER();
-			RDTSC(lo, hi);
+		udelay(PRECISION);
 
-			TSC[0]=((unsigned long long) lo)
-				| (((unsigned long long) hi) << 32);
+		RDCOUNTER(TSC[1], MSR_IA32_TSC);
+		BARRIER();
 
-			mdelay(100);
-
-			RDTSCP(lo, hi, aux);
-			BARRIER();
-
-			TSC[1]=((unsigned long long) lo)
-				| (((unsigned long long) hi) << 32);
-		}
+		D[loop]=TSC[1] - TSC[0];
 	}
-	else
-	{	// Warm-up
-		BARRIER();
-		RDTSC(lo, hi);
-		RDTSC(lo, hi);
-		BARRIER();
 
-		BARRIER();
-		RDTSC(lo, hi);
-		RDTSC(lo, hi);
-		BARRIER();
-
-		// Pick-up
-		for(loop=5; loop; loop--)
-		{
-			BARRIER();
-			RDTSC(lo, hi);
-
-			TSC[0]=((unsigned long long) lo)
-				| (((unsigned long long) hi) << 32);
-
-			mdelay(100);
-
-			BARRIER();
-			RDTSC(lo, hi);
-
-			TSC[1]=((unsigned long long) lo)
-				| (((unsigned long long) hi) << 32);
-		}
-	}
-	// Any preemption and interrupt.
+	// Restore preemption and interrupt.
 	raw_local_irq_restore(flags);
 	preempt_enable();
 
-	TSC[1]-=TSC[0];
+	for(loop=9; loop; loop--)
+		BCLK=MIN(BCLK, D[loop]);
 
-	clock->Q=TSC[1] / (ratio * 100000L);
-	clock->R=TSC[1] % (ratio * 100000L);
+	clock->Q=BCLK / (ratio * PRECISION);
+	clock->R=BCLK % (ratio * PRECISION);
 
 	complete_and_exit(&bclk_job_complete, 0);
 }
@@ -371,7 +328,7 @@ CLOCK Clock_GenuineIntel(unsigned int ratio)
 	if(Proc->Features.FactoryFreq > 0)
 	{
 		clock.Q=Proc->Features.FactoryFreq / ratio;
-		clock.R=(Proc->Features.FactoryFreq % ratio) * 100000L;
+		clock.R=(Proc->Features.FactoryFreq % ratio) * PRECISION;
 	}
 	return(clock);
 };
@@ -392,12 +349,12 @@ CLOCK Clock_Core(unsigned int ratio)
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=33333L;
+			clock.R=3333;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=66666L;
+			clock.R=6666;
 		}
 		break;
 	}
@@ -421,12 +378,12 @@ CLOCK Clock_Core2(unsigned int ratio)
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=33333L;
+			clock.R=3333;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=66666L;
+			clock.R=6666;
 		}
 		break;
 		case 0b010: {
@@ -436,12 +393,12 @@ CLOCK Clock_Core2(unsigned int ratio)
 		break;
 		case 0b000: {
 			clock.Q=266;
-			clock.R=66666L;
+			clock.R=6666;
 		}
 		break;
 		case 0b100: {
 			clock.Q=333;
-			clock.R=33333L;
+			clock.R=3333;
 		}
 		break;
 		case 0b110: {
@@ -465,27 +422,27 @@ CLOCK Clock_Atom(unsigned int ratio)
 	{
 		case 0b111: {
 			clock.Q=83;
-			clock.R=20000L;
+			clock.R=2000;
 		}
 		break;
 		case 0b101: {
 			clock.Q=99;
-			clock.R=84000L;
+			clock.R=8400;
 		}
 		break;
 		case 0b001: {
 			clock.Q=133;
-			clock.R=20000L;
+			clock.R=2000;
 		}
 		break;
 		case 0b011: {
 			clock.Q=166;
-			clock.R=40000L;
+			clock.R=4000;
 		}
 		break;
 		default: {
 			clock.Q=83;
-			clock.R=20000L;
+			clock.R=2000;
 		}
 		break;
 	}
@@ -509,7 +466,7 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 		break;
 		case 0b000: {
 			clock.Q=83;
-			clock.R=30000L;
+			clock.R=3000;
 		}
 		break;
 		case 0b001: {
@@ -519,12 +476,12 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 		break;
 		case 0b010: {
 			clock.Q=133;
-			clock.R=33333L;
+			clock.R=3333;
 		}
 		break;
 		case 0b011: {
 			clock.Q=116;
-			clock.R=70000L;
+			clock.R=7000;
 		}
 		break;
 	}
@@ -535,7 +492,7 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 // [Nehalem]
 CLOCK Clock_Nehalem(unsigned int ratio)
 {
-	CLOCK clock={.Q=133, .R=33333L};
+	CLOCK clock={.Q=133, .R=3333};
 	clock.R *= ratio;
 	return(clock);
 };
@@ -543,7 +500,7 @@ CLOCK Clock_Nehalem(unsigned int ratio)
 // [Westmere]
 CLOCK Clock_Westmere(unsigned int ratio)
 {
-	CLOCK clock={.Q=133, .R=33333L};
+	CLOCK clock={.Q=133, .R=3333};
 	clock.R *= ratio;
 	return(clock);
 };

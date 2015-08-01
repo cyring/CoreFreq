@@ -109,7 +109,7 @@ static void *Core_Cycle(void *arg)
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		Flip->Relative.Freq = Flip->Relative.Ratio * Proc->Clock.Q;
 		Flip->Relative.Freq +=(Flip->Relative.Ratio * Proc->Clock.R) \
-					/ ((double) Proc->Boost[1] * 100000L);
+					/ ((double) Proc->Boost[1] * PRECISION);
 
 		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 	    }
@@ -181,7 +181,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		double Clock=Shm->Proc.Clock.Q				\
 			+ ((double) Shm->Proc.Clock.R			\
 			/ (Shm->Proc.Boost[1]				\
-			* 100000L));
+			* PRECISION));
 
 		printf("CoreFreqd [%s] , Clock @ %f MHz\n",
 			Shm->Proc.Brand, Clock);
@@ -287,7 +287,7 @@ int Proc_Topology(FD *fd, PROC *Proc)
 	if(!rc)
 	{
 		double Clock=Proc->Clock.Q + ((double) Proc->Clock.R	\
-				/ (Proc->Boost[1] * 100000L));
+				/ (Proc->Boost[1] * PRECISION));
 
 		printf(	"CoreFreqd [%s]\n"				\
 			"Signature [%1X%1X_%1X%1X]"			\
