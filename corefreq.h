@@ -90,6 +90,7 @@ typedef struct
 
 	CLOCK				Clock;
 
+	unsigned char			Architecture[32];
 	unsigned int			Boost[1+1+8],
 					PerCore;
 

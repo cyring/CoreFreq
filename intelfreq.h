@@ -6,7 +6,7 @@
 #define	DRV_DEVNAME "intelfreq"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
 
-#define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) \
+#define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0));
 
 #define	LOOP_MIN_MS	100
@@ -16,53 +16,80 @@
 #define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
 #define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
 
-#define RDCOUNTER(_val,  _cnt)					\
-({								\
-	unsigned int _lo, _hi;					\
-								\
-	asm volatile						\
-	(							\
-		"rdmsr"						\
-                : "=a" (_lo),					\
-		  "=d" (_hi)					\
-		: "c" (_cnt)					\
-	);							\
-	_val=_lo | ((unsigned long long) _hi << 32);		\
+#define RDCOUNTER(_val,  _cnt)						\
+({									\
+	unsigned int _lo, _hi;						\
+									\
+	asm volatile							\
+	(								\
+		"rdmsr"							\
+                : "=a" (_lo),						\
+		  "=d" (_hi)						\
+		: "c" (_cnt)						\
+	);								\
+	_val=_lo | ((unsigned long long) _hi << 32);			\
 })
 
-#define WRCOUNTER(_val,  _cnt)					\
-	asm volatile						\
-	(							\
-		"wrmsr"						\
-		:						\
-		: "c" (_cnt),					\
-		  "a" ((unsigned int) _val & 0xFFFFFFFF),	\
-		  "d" ((unsigned int) (_val >> 32))		\
+#define WRCOUNTER(_val,  _cnt)						\
+	asm volatile							\
+	(								\
+		"wrmsr"							\
+		:							\
+		: "c" (_cnt),						\
+		  "a" ((unsigned int) _val & 0xFFFFFFFF),		\
+		  "d" ((unsigned int) (_val >> 32))			\
 	);
 
-#define RDMSR(_data, _reg)					\
-({								\
-	unsigned int _lo, _hi;					\
-								\
-	asm volatile						\
-	(							\
-		"rdmsr"						\
-                : "=a" (_lo),					\
-		  "=d" (_hi)					\
-		: "c" (_reg)					\
-	);							\
-	_data.value=_lo | ((unsigned long long) _hi << 32);	\
+#define RDMSR(_data, _reg)						\
+({									\
+	unsigned int _lo, _hi;						\
+									\
+	asm volatile							\
+	(								\
+		"rdmsr"							\
+                : "=a" (_lo),						\
+		  "=d" (_hi)						\
+		: "c" (_reg)						\
+	);								\
+	_data.value=_lo | ((unsigned long long) _hi << 32);		\
 })
 
-#define WRMSR(_data,  _reg)					\
-	asm volatile						\
-	(							\
-		"wrmsr"						\
-		:						\
-		: "c" (_reg),					\
-		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),\
-		  "d" ((unsigned int) (_data.value >> 32))	\
+#define WRMSR(_data,  _reg)						\
+	asm volatile							\
+	(								\
+		"wrmsr"							\
+		:							\
+		: "c" (_reg),						\
+		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),	\
+		  "d" ((unsigned int) (_data.value >> 32))		\
 	);
+
+#define	RDTSC(_lo, _hi)							\
+	asm volatile							\
+	(								\
+		"rdtsc"							\
+		:"=a" (_lo),						\
+		 "=d" (_hi)						\
+	);
+
+#define	RDTSCP(_lo, _hi, aux)						\
+	asm volatile							\
+	(								\
+		"rdtscp"						\
+		:"=a" (_lo),						\
+		 "=d" (_hi),						\
+		 "=c" (aux)						\
+	);
+
+#define	BARRIER()							\
+	asm volatile							\
+	(								\
+		"movq $0, %%rax	\n\t	"				\
+		"cpuid			"				\
+		:							\
+		:							\
+		:"%rax", "%rbx", "%rcx", "%rdx"				\
+	);								\
 
 
 typedef struct
@@ -320,7 +347,7 @@ typedef struct
 			XD_Bit	: 21-20,
 			Unused3	: 26-21,
 			PG_1GB	: 27-26,
-			RDTSCP	: 28-27,
+			RdTSCP	: 28-27,
 			Unused4	: 29-28,
 			IA64	: 30-29,
 			Unused5	: 32-30;
@@ -683,6 +710,21 @@ typedef union
 	};
 } TJMAX;
 
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ReservedBits1	:  8-0,
+		BSP		:  9-8,
+		ReservedBits2	: 10-9,
+		EXTD		: 11-10,
+		EN		: 12-11,
+		Addr		: 64-12;
+	};
+} LOCAL_APIC;
+
 #define	LEVEL_INVALID	0
 #define	LEVEL_THREAD	1
 #define	LEVEL_CORE	2
@@ -728,6 +770,7 @@ typedef	struct {
 
 typedef	struct
 {
+	LOCAL_APIC	Base;
 	signed int	ApicID,
 			CoreID,
 			ThreadID;
@@ -810,6 +853,7 @@ typedef struct
 				OnLine;
 	} CPU;
 
+	unsigned char		Architecture[32];
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8],
 				PerCore;

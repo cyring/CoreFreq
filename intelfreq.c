@@ -260,48 +260,6 @@ void Proc_Features(FEATURES *features)
 
 DECLARE_COMPLETION(bclk_job_complete);
 
-#define	TSC_FIRST(_lo, _hi)						\
-	asm volatile							\
-	(								\
-		"movq $0, %%rax	\n\t	"				\
-		"cpuid			\n\t	"			\
-		"rdtsc			\n\t	"			\
-		"movq %%rax, %0		\n\t	"			\
-		"movq %%rdx, %1			"			\
-		:"=r" (_lo),						\
-		 "=r" (_hi)						\
-		:							\
-		:"%rax", "%rbx", "%rcx", "%rdx"				\
-	);
-
-#define	TSCP_LAST(_lo, _hi)						\
-	asm volatile							\
-	(								\
-		"rdtscp			\n\t	"			\
-		"movq %%rax, %0		\n\t	"			\
-		"movq %%rdx, %1		\n\t	"			\
-		"movq $0, %%rax		\n\t	"			\
-		"cpuid				"			\
-		:"=r" (_lo),						\
-		 "=r" (_hi)						\
-		:							\
-		:"%rax", "%rbx", "%rcx", "%rdx"				\
-	);
-
-#define	TSC_LAST(_lo, _hi)						\
-	asm volatile							\
-	(								\
-		"rdtsc			\n\t	"			\
-		"movq %%rax, %0		\n\t	"			\
-		"movq %%rdx, %1		\n\t	"			\
-		"movq $0, %%rax		\n\t	"			\
-		"cpuid				"			\
-		:"=r" (_lo),						\
-		 "=r" (_hi)						\
-		:							\
-		:"%rax", "%rbx", "%rcx", "%rdx"				\
-	);
-
 signed int Compute_Clock(void *arg)
 {
 	CLOCK *clock=(CLOCK *) arg;
@@ -309,49 +267,75 @@ signed int Compute_Clock(void *arg)
 	register unsigned long long TSC[2]={0, 0};
 	register unsigned long long lo=0, hi=0, loop=0;
 
+	// No preemption, no interrupt.
 	unsigned long flags;
 	preempt_disable();
 	raw_local_irq_save(flags);
 
 	if(Proc->Features.InvariantTSC
-	&& Proc->Features.ExtFunc.DX.RDTSCP)
+	&& Proc->Features.ExtFunc.DX.RdTSCP)
 	{	// Warm-up
-		TSC_FIRST(lo, hi);
-		TSCP_LAST(lo, hi);
-		TSC_FIRST(lo, hi);
-		TSCP_LAST(lo, hi);
-		for(loop=10; loop; loop--)
+		register unsigned int aux;
+
+		BARRIER();
+		RDTSC(lo, hi);
+		RDTSCP(lo, hi, aux);
+		BARRIER();
+
+		BARRIER()
+		RDTSC(lo, hi);
+		RDTSCP(lo, hi, aux);
+		BARRIER();
+
+		// Pick-up
+		for(loop=5; loop; loop--)
 		{
-			TSC_FIRST(lo, hi);
+			BARRIER();
+			RDTSC(lo, hi);
+
 			TSC[0]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 
 			mdelay(100);
 
-			TSCP_LAST(lo, hi);
+			RDTSCP(lo, hi, aux);
+			BARRIER();
+
 			TSC[1]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 		}
 	}
 	else
 	{	// Warm-up
-		TSC_FIRST(lo, hi);
-		TSC_LAST(lo, hi);
-		TSC_FIRST(lo, hi);
-		TSC_LAST(lo, hi);
-		for(loop=10; loop; loop--)
+		BARRIER();
+		RDTSC(lo, hi);
+		RDTSC(lo, hi);
+		BARRIER();
+
+		BARRIER();
+		RDTSC(lo, hi);
+		RDTSC(lo, hi);
+		BARRIER();
+
+		// Pick-up
+		for(loop=5; loop; loop--)
 		{
-			TSC_FIRST(lo, hi);
+			BARRIER();
+			RDTSC(lo, hi);
+
 			TSC[0]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 
 			mdelay(100);
 
-			TSC_LAST(lo, hi);
+			BARRIER();
+			RDTSC(lo, hi);
+
 			TSC[1]=((unsigned long long) lo)
 				| (((unsigned long long) hi) << 32);
 		}
 	}
+	// Any preemption and interrupt.
 	raw_local_irq_restore(flags);
 	preempt_enable();
 
@@ -608,6 +592,9 @@ signed int Read_APIC(void *arg)
 			.CX.Register=0,
 			.DX.Register=0
 		};
+
+		RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+
 		do
 		{
 			asm volatile
@@ -669,6 +656,7 @@ unsigned int Proc_Topology(void)
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
+		KMem->Core[cpu]->T.Base.value=0;
 		KMem->Core[cpu]->T.ApicID=-1;
 		KMem->Core[cpu]->T.CoreID=-1;
 		KMem->Core[cpu]->T.ThreadID=-1;
@@ -810,15 +798,6 @@ void Counters_Clear(CORE *Core)
 	/* TSC in relation to the Logical Core. */			\
 	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
 									\
-	asm volatile							\
-	(								\
-		"movq $0, %%rax	\n\t	"				\
-		"cpuid			"				\
-		:							\
-		:							\
-		:"%rax", "%rbx", "%rcx", "%rdx"				\
-	);								\
-									\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C6					\
 		+ Core->Counter[T].C3					\
@@ -929,7 +908,6 @@ int Cycle_Genuine(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			Core->Sync=0x1;
 			BITSET(Core->Sync, 0);
 		}
 	}
@@ -1069,7 +1047,6 @@ int Cycle_Core2(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			Core->Sync=0x1;
 			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
@@ -1227,7 +1204,6 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C6=Core->Counter[1].C6;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			Core->Sync=0x1;
 			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
@@ -1395,7 +1371,6 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C7=Core->Counter[1].C7;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-//			Core->Sync=0x1;
 			BITSET(Core->Sync, 0);
 		}
 		Counters_Clear(Core);
@@ -1592,7 +1567,6 @@ static int __init IntelFreq_init(void)
 				    memset(kcache, 0, kmSize);
 				    KMem->Core[cpu]=kcache;
 
-//				    KMem->Core[cpu]->Sync=0x0;
 				    BITCLR(KMem->Core[cpu]->Sync, 0);
 
 				    KMem->Core[cpu]->Bind=cpu;
@@ -1620,10 +1594,13 @@ static int __init IntelFreq_init(void)
 				    ^ Proc->Features.Std.AX.Model))
 					break;
 				}
+				strncpy(Proc->Architecture,
+					Arch[Proc->ArchID].Architecture, 32);
+
 				Arch[Proc->ArchID].Arch_Controller(INIT);
 
 				Proc->CPU.OnLine=Proc_Topology();
-				Proc->PerCore=(Proc->Features.HTT_enabled)? 0:1;
+				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
 				printk("IntelFreq [%s]\n"		\
 				      "Signature [%1X%1X_%1X%1X]"	\
