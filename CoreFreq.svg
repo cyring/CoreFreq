@@ -16,7 +16,7 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="CoreFreq.svg"
-   inkscape:export-filename="/home/cyril/src/CoreFreq.png"
+   inkscape:export-filename="/home/cyril/src/CoreFreq-algorithm.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <title
@@ -31,7 +31,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="513.48237"
+     inkscape:cx="751.48237"
      inkscape:cy="361.07922"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -255,19 +255,15 @@
          y="475.26962">Core #N</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
        x="736.45776"
        y="1362.1254"
        id="text4140-3-2-0"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan6600"
-         x="736.45776"
-         y="1362.1254">CoreFreq 2015-07-31</tspan><tspan
+         id="tspan4394">CoreFreq 2015-08-27</tspan><tspan
          sodipodi:role="line"
-         id="tspan6602"
-         x="736.45776"
-         y="1376.1879">(GPL) CYRIL INGÉNIERIE</tspan></text>
+         id="tspan4396">(GPL) CYRIL INGÉNIERIE</tspan></text>
     <g
        id="g5502"
        transform="translate(0,14.000028)"
@@ -622,19 +618,15 @@
          y="887.37756">sleep 100 ms and loop</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
        x="281.86536"
        y="583.88623"
        id="text4140-9-8"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan5972"
-         x="281.86536"
-         y="583.88623">compute delta</tspan><tspan
+         id="tspan4390">compute delta</tspan><tspan
          sodipodi:role="line"
-         id="tspan5974"
-         x="281.86536"
-         y="601.07373">[prev] - [current]</tspan></text>
+         id="tspan4392">[current] - [prev]</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
