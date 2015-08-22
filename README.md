@@ -55,14 +55,31 @@ rmmod intelfreq.ko
  * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
 ```
 kernel: IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-        Signature [06_1A] Architecture [Nehalem/Bloomfield]
-        8/8 CPU Online , Clock @ {146/1027545} MHz
+	Signature [06_1A] Architecture [Nehalem/Bloomfield]
+	8/8 CPU Online , Clock @ {146/1200} MHz
 ```
 ```
-CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] , Clock @ 146.513772 MHz
+CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] , Clock @ 146.600000 MHz
 ```
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
+
+ * Run the CoreFreq daemon with the option '-t' to display the Processor topology
+```
+CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+Signature [06_1A] Architecture [Nehalem/Bloomfield]
+8/8 CPU Online , Clock @ 146.600000 MHz
+
+CPU       ApicID CoreID ThreadID x2APIC Enable Caches L1 L2 L3
+#00(BSP)       0      0        0    OFF    Y    32768 4626 262144
+#01(AP)        2      1        0    OFF    Y    32768 4626 262144
+#02(AP)        4      2        0    OFF    Y    32768 4626 262144
+#03(AP)        6      3        0    OFF    Y    32768 4626 262144
+#04(AP)        1      0        1    OFF    Y    32768 4626 262144
+#05(AP)        3      1        1    OFF    Y    32768 4626 262144
+#06(AP)        5      2        1    OFF    Y    32768 4626 262144
+#07(AP)        7      3        1    OFF    Y    32768 4626 262144
+```
 
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
