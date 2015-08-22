@@ -164,7 +164,8 @@ void Proc_Features(FEATURES *features)
 	asm volatile
 	(
 		"cpuid"
-		: "=b"	(BX),
+		: "=a"	(features->LargestStdFunc),
+		  "=b"	(BX),
 		  "=d"	(DX),
 		  "=c"	(CX)
                 : "a" (0x0)
@@ -211,15 +212,21 @@ void Proc_Features(FEATURES *features)
 	);
 	asm volatile
 	(
+		"movq	$0x7, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx    \n\t"
 		"xorq	%%rcx, %%rcx    \n\t"
 		"xorq	%%rdx, %%rdx    \n\t"
-		"cpuid"
-		: "=a"	(features->ExtFeature.AX),
-		  "=b"	(features->ExtFeature.BX),
-		  "=c"	(features->ExtFeature.CX),
-		  "=d"	(features->ExtFeature.DX)
-                : "a" (0x7)
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r"	(features->ExtFeature.AX),
+		  "=r"	(features->ExtFeature.BX),
+		  "=r"	(features->ExtFeature.CX),
+		  "=r"	(features->ExtFeature.DX)
+                : 
+		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	asm volatile
 	(
@@ -260,11 +267,26 @@ void Proc_Features(FEATURES *features)
 
 DECLARE_COMPLETION(bclk_job_complete);
 
+typedef	struct {
+	unsigned long long V[2];
+} TSC_STRUCT;
+
+#define	OCCURRENCES 4
+
 signed int Compute_Clock(void *arg)
 {
 	CLOCK *clock=(CLOCK *) arg;
-	unsigned int ratio=clock->Q, loop=0;
-	unsigned long long TSC[2]={0, 0}, D[10], BCLK=0;
+	unsigned int ratio=clock->Q;
+	struct kmem_cache *hardwareCache=kmem_cache_create(
+				"IntelClockCache",
+				OCCURRENCES * sizeof(TSC_STRUCT), 0,
+				SLAB_HWCACHE_ALIGN, NULL);
+	TSC_STRUCT *TSC[2]={
+		kmem_cache_alloc(hardwareCache, GFP_KERNEL),
+		kmem_cache_alloc(hardwareCache, GFP_KERNEL)
+	};
+	unsigned long long D[2][OCCURRENCES];
+	unsigned int loop=0, what=0, best[2]={0, 0}, top[2]={0, 0};
 
 	// No preemption, no interrupt.
 	unsigned long flags;
@@ -272,34 +294,66 @@ signed int Compute_Clock(void *arg)
 	raw_local_irq_save(flags);
 
 	// Warm-up
-	RDCOUNTER(BCLK, MSR_IA32_TSC);
-	BARRIER();
-	RDCOUNTER(BCLK, MSR_IA32_TSC);
-	BARRIER();
-
+	RDTSC64(TSC[0][0].V[0]);
+	RDTSC64(TSC[0][0].V[1]);
+	RDTSC64(TSC[0][1].V[0]);
+	RDTSC64(TSC[0][1].V[1]);
+	RDTSC64(TSC[0][2].V[0]);
+	RDTSC64(TSC[0][2].V[1]);
+	RDTSC64(TSC[0][3].V[0]);
+	RDTSC64(TSC[0][3].V[1]);
+	// Overhead
+	RDTSC64(TSC[0][0].V[0]);
+	RDTSC64(TSC[0][0].V[1]);
+	RDTSC64(TSC[0][1].V[0]);
+	RDTSC64(TSC[0][1].V[1]);
+	RDTSC64(TSC[0][2].V[0]);
+	RDTSC64(TSC[0][2].V[1]);
+	RDTSC64(TSC[0][3].V[0]);
+	RDTSC64(TSC[0][3].V[1]);
 	// Pick-up
-	for(loop=9; loop; loop--)
+	for(loop=0; loop < OCCURRENCES; loop++)
 	{
-		RDCOUNTER(TSC[0], MSR_IA32_TSC);
-		BARRIER();
-
-		udelay(PRECISION);
-
-		RDCOUNTER(TSC[1], MSR_IA32_TSC);
-		BARRIER();
-
-		D[loop]=TSC[1] - TSC[0];
+		RDTSC64(TSC[1][loop].V[0]);
+		udelay(100);
+		RDTSC64(TSC[1][loop].V[1]);
 	}
 
 	// Restore preemption and interrupt.
 	raw_local_irq_restore(flags);
 	preempt_enable();
 
-	for(loop=9; loop; loop--)
-		BCLK=MIN(BCLK, D[loop]);
+	memset(D, 0, 2 * OCCURRENCES);
+	for(loop=0; loop < OCCURRENCES; loop++)
+		for(what=0; what < 2; what++)
+			D[what][loop] 	= TSC[what][loop].V[1]
+					- TSC[what][loop].V[0];
 
-	clock->Q=BCLK / (ratio * PRECISION);
-	clock->R=BCLK % (ratio * PRECISION);
+	for(loop=0; loop < OCCURRENCES; loop++) {
+		unsigned int inner=0, count[2]={0, 0};
+		for(inner=loop; inner < OCCURRENCES; inner++) {
+			for(what=0; what < 2; what++) {
+				if(D[what][loop] == D[what][inner])
+					count[what]++;
+			}
+		}
+		for(what=0; what < 2; what++) {
+			if((count[what] > top[what])
+			||((count[what] == top[what])
+			&& (D[what][loop] < D[what][best[what]]))) {
+				top[what]=count[what];
+				best[what]=loop;
+
+			}
+		}
+	}
+	D[1][best[1]] -= D[0][best[0]];
+	clock->Q=D[1][best[1]] / (ratio * PRECISION);
+	clock->R=D[1][best[1]] % (ratio * PRECISION);
+
+	kmem_cache_free(hardwareCache, TSC[1]);
+	kmem_cache_free(hardwareCache, TSC[0]);
+	kmem_cache_destroy(hardwareCache);
 
 	complete_and_exit(&bclk_job_complete, 0);
 }
@@ -529,10 +583,56 @@ CLOCK Clock_Haswell(unsigned int ratio)
 	return(clock);
 };
 
-DECLARE_COMPLETION(apic_job_complete);
+void Cache_Topology(CORE *Core)
+{
+	unsigned int level=0x0;
+	for(level=0; level < CACHE_MAX_LEVEL; level++)
+	{
+		asm volatile
+		(
+			"cpuid"
+			: "=b"	(Core->T.Cache[level].Register),
+			  "=c"	(Core->T.Cache[level].Sets)
+			: "a"	(0x4),
+			  "c"	(level)
+		);
+		Core->T.Cache[level].Size=(Core->T.Cache[level].Sets + 1)
+				*  (Core->T.Cache[level].Linez + 1)
+				*  (Core->T.Cache[level].Parts + 1)
+				*  (Core->T.Cache[level].Ways + 1);
+	}
+}
+
+DECLARE_COMPLETION(topology_job_complete);
 
 // Enumerate the Processor's Cores and Threads topology.
-signed int Read_APIC(void *arg)
+signed int Map_Topology(void *arg)
+{
+	if(arg != NULL)
+	{
+		CORE *Core=(CORE *) arg;
+		FEATURES features;
+
+		RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+
+		asm volatile
+		(
+			"cpuid"
+			: "=b"	(features.Std.BX)
+			: "a"	(0x1)
+		);
+		Core->T.ApicID=features.Std.BX.Apic_ID;
+		Core->T.CoreID=Core_Count();
+		Core->T.ThreadID=features.Std.BX.MaxThread;
+		Cache_Topology(Core);
+
+		complete_and_exit(&topology_job_complete, 0);
+	}
+	else
+		complete_and_exit(&topology_job_complete, -1);
+}
+
+signed int Map_Extended_Topology(void *arg)
 {
 	if(arg != NULL)
 	{
@@ -599,11 +699,12 @@ signed int Read_APIC(void *arg)
 		while(!NoMoreLevels);
 
 		Core->T.ApicID=ExtTopology.DX.x2ApicID;
+		Cache_Topology(Core);
 
-		complete_and_exit(&apic_job_complete, 0);
+		complete_and_exit(&topology_job_complete, 0);
 	}
 	else
-		complete_and_exit(&apic_job_complete, -1);
+		complete_and_exit(&topology_job_complete, -1);
 }
 
 unsigned int Proc_Topology(void)
@@ -619,15 +720,17 @@ unsigned int Proc_Topology(void)
 		KMem->Core[cpu]->T.ThreadID=-1;
 		if(!KMem->Core[cpu]->OffLine)
 		{
-			tid=kthread_create(Read_APIC,
-					KMem->Core[cpu],
-					"kintelapic-%03d",
-					KMem->Core[cpu]->Bind);
+		  	tid=kthread_create(
+				(Proc->Features.LargestStdFunc >= 0xb) ?
+					Map_Extended_Topology : Map_Topology,
+				KMem->Core[cpu],
+				"kintelapic-%03d",
+				KMem->Core[cpu]->Bind);
 			if(!IS_ERR(tid))
 			{
 				kthread_bind(tid ,cpu);
 				wake_up_process(tid);
-				wait_for_completion(&apic_job_complete);
+				wait_for_completion(&topology_job_complete);
 
 				if(KMem->Core[cpu]->T.ApicID >= 0)
 					CountEnabledCPU++;
@@ -636,7 +739,7 @@ unsigned int Proc_Topology(void)
 				&& (KMem->Core[cpu]->T.ThreadID > 0))
 					Proc->Features.HTT_enabled=1;
 
-				reinit_completion(&apic_job_complete);
+				reinit_completion(&topology_job_complete);
 			}
 		}
 	}
@@ -865,7 +968,7 @@ int Cycle_Genuine(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			BITSET(Core->Sync, 0);
+			BITSET(Core->Sync.V, 0);
 		}
 	}
 	do_exit(0);
@@ -1004,7 +1107,7 @@ int Cycle_Core2(void *arg)
 
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			BITSET(Core->Sync, 0);
+			BITSET(Core->Sync.V, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1161,7 +1264,7 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C6=Core->Counter[1].C6;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			BITSET(Core->Sync, 0);
+			BITSET(Core->Sync.V, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1328,7 +1431,7 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C7=Core->Counter[1].C7;
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
-			BITSET(Core->Sync, 0);
+			BITSET(Core->Sync.V, 0);
 		}
 		Counters_Clear(Core);
 	}
@@ -1480,7 +1583,7 @@ static int __init IntelFreq_init(void)
         if(alloc_chrdev_region(&IntelFreq.nmdev, 0, 1, DRV_FILENAME) >= 0)
 	{
 	    IntelFreq.Major=MAJOR(IntelFreq.nmdev);
-	    IntelFreq.mkdev=MKDEV(IntelFreq.Major,0);
+	    IntelFreq.mkdev=MKDEV(IntelFreq.Major, 0);
 
 	    if(cdev_add(IntelFreq.kcdev, IntelFreq.mkdev, 1) >= 0)
 	    {
@@ -1524,7 +1627,7 @@ static int __init IntelFreq_init(void)
 				    memset(kcache, 0, kmSize);
 				    KMem->Core[cpu]=kcache;
 
-				    BITCLR(KMem->Core[cpu]->Sync, 0);
+				    BITCLR(KMem->Core[cpu]->Sync.V, 0);
 
 				    KMem->Core[cpu]->Bind=cpu;
 				    if(!cpu_online(cpu) || !cpu_active(cpu))

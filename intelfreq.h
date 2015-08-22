@@ -9,11 +9,10 @@
 #define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0));
 
-#define	PRECISION	10000
-
 #define MAX(M, m)	((M) > (m) ? (M) : (m))
 #define MIN(m, M)	((m) < (M) ? (m) : (M))
 
+#define	PRECISION	100
 #define	LOOP_MIN_MS	100
 #define LOOP_MAX_MS	5000
 #define	LOOP_DEF_MS	1000
@@ -85,17 +84,7 @@
 		 "=d" (_hi),						\
 		 "=c" (aux)						\
 	);
-/*
-#define	BARRIER()							\
-	asm volatile							\
-	(								\
-		"movq $0, %%rax	\n\t	"				\
-		"cpuid			"				\
-		:							\
-		:							\
-		:"%rax", "%rbx", "%rcx", "%rdx"				\
-	);								\
-*/
+
 #define	BARRIER()							\
 	asm volatile							\
 	(								\
@@ -103,7 +92,25 @@
 		:							\
 		:							\
 		:							\
-	);								\
+	);
+
+#define	RDTSC64(_val64)							\
+	asm volatile							\
+	(								\
+		"mfence			\n\t"				\
+		"rdtsc			\n\t"				\
+		"mfence			\n\t"				\
+		"movq	%%rax,	%%rsi	\n\t"				\
+		"movq	%%rdx,	%%rdi	\n\t"				\
+		"movq	$0x4,	%%rax	\n\t"				\
+		"cpuid			\n\t"				\
+		"shlq	$32,	%%rdi	\n\t"				\
+		"orq	%%rdi,	%%rsi	\n\t"				\
+		"movq	%%rsi,	%0"					\
+		:"=m" (_val64)						\
+		:							\
+		:"%rax","%rbx","%rcx","%rdx","%rsi","%rdi","memory"	\
+	);
 
 
 typedef struct
@@ -116,6 +123,14 @@ typedef struct
 
 typedef struct
 {
+	unsigned int	LargestStdFunc;
+	struct
+	{
+		char	Brand[48],
+			_pad48[2],
+			VendorID[12],
+			_pad62[2];
+	};
 	struct
 	{
 		struct SIGNATURE
@@ -370,14 +385,6 @@ typedef struct
 	unsigned int	InvariantTSC,
                         HTT_enabled,
 			FactoryFreq;
-
-	struct
-	{
-		char	Brand[48],
-			_pad48[2],
-			VendorID[12],
-			_pad62[2];
-	};
 } FEATURES;
 
 //	[GenuineIntel]
@@ -782,19 +789,41 @@ typedef	struct {
 	} DX;
 } CPUID_TOPOLOGY_LEAF;
 
+#define	CACHE_MAX_LEVEL	3
+
 typedef	struct
 {
 	LOCAL_APIC	Base;
 	signed int	ApicID,
 			CoreID,
 			ThreadID;
+	struct
+	{
+		union
+		{
+			struct
+			{
+				unsigned int
+				Linez:	12-0,
+				Parts:	22-12,
+				Ways:	32-22;
+			};
+			unsigned int Register;
+		};
+		unsigned int	Sets,
+				Size;
+	} Cache[CACHE_MAX_LEVEL];
 } TOPOLOGY;
 
 enum { INIT, END, START, STOP };
 
 typedef struct
 {
-	volatile unsigned long long	Sync;
+	volatile struct
+	{	// Cache line size aligned structure.
+		unsigned long long	V,
+					_pad64[7];
+	} Sync;
 
 	struct
 	{

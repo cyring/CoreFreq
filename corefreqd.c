@@ -52,9 +52,9 @@ static void *Core_Cycle(void *arg)
 
 	do
 	{
-	    while(!BITWISEAND(Core->Sync, 0x1) && !Shutdown)
+	    while(!BITWISEAND(Core->Sync.V, 0x1) && !Shutdown)
 		usleep(Proc->msleep * 100);
-	    BITCLR(Core->Sync, 0);
+	    BITCLR(Core->Sync.V, 0);
 
 	    if(!Shutdown)
 	    {
@@ -179,9 +179,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
 
 		double Clock=Shm->Proc.Clock.Q				\
-			+ ((double) Shm->Proc.Clock.R			\
-			/ (Shm->Proc.Boost[1]				\
-			* PRECISION));
+				+ ((double) Shm->Proc.Clock.R		\
+				/ (Shm->Proc.Boost[1] * PRECISION));
 
 		printf("CoreFreqd [%s] , Clock @ %f MHz\n",
 			Shm->Proc.Brand, Clock);
@@ -270,7 +269,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 int Proc_Topology(FD *fd, PROC *Proc)
 {
-	unsigned int	cpu=0;
+	unsigned int	cpu=0, level=0x0;
 	CORE		**Core;
 	int		rc=0;
 
@@ -286,7 +285,8 @@ int Proc_Topology(FD *fd, PROC *Proc)
 	}
 	if(!rc)
 	{
-		double Clock=Proc->Clock.Q + ((double) Proc->Clock.R	\
+		double Clock=Proc->Clock.Q				\
+				+ ((double)Proc->Clock.R		\
 				/ (Proc->Boost[1] * PRECISION));
 
 		printf(	"CoreFreqd [%s]\n"				\
@@ -295,7 +295,7 @@ int Proc_Topology(FD *fd, PROC *Proc)
 			"%u/%u CPU Online"				\
 			" , Clock @ %f MHz\n\n"				\
 			"CPU       ApicID CoreID ThreadID"		\
-			" x2APIC Enable      Address\n",
+			" x2APIC Enable Caches L1 L2 L3\n",
 			Proc->Features.Brand,
 			Proc->Features.Std.AX.ExtFamily,
 			Proc->Features.Std.AX.Family,
@@ -309,15 +309,17 @@ int Proc_Topology(FD *fd, PROC *Proc)
 		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		{
 			printf(	"#%02u%-5s  %6d %6d   %6d"		\
-				"    %3s    %c   %016llx\n",
+				"    %3s    %c   ",
 				cpu,
 				(Core[cpu]->T.Base.BSP) ? "(BSP)" : "(AP)",
 				Core[cpu]->T.ApicID,
 				Core[cpu]->T.CoreID,
 				Core[cpu]->T.ThreadID,
 				(Core[cpu]->T.Base.EXTD) ? "ON" : "OFF",
-				(Core[cpu]->T.Base.EN) ? 'Y' : 'N',
-				Core[cpu]->T.Base.Addr);
+				(Core[cpu]->T.Base.EN) ? 'Y' : 'N');
+			for(level=0; level < CACHE_MAX_LEVEL; level++)
+				printf(" %-u", Core[cpu]->T.Cache[level].Size);
+			printf("\n");
 		}
 	}
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)

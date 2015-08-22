@@ -12,6 +12,8 @@
 
 #include "corefreq.h"
 
+#define	PRECISION 100
+
 unsigned int Shutdown=0x0;
 
 void Emergency(int caught)
@@ -40,9 +42,9 @@ int main(int argc, char *argv[])
 	&& ((Shm=mmap(0, shmStat.st_size,
 		      PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
 	{
-	    double Clock=Shm->Proc.Clock.Q				\
-			+ ((double) Shm->Proc.Clock.R			\
-			/ (Shm->Proc.Boost[1] * 10000));
+	    double Clock=Shm->Proc.Clock.Q			\
+			+ ((double) Shm->Proc.Clock.R		\
+			/ (Shm->Proc.Boost[1] * PRECISION));
 
 	    printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
 			Shm->Proc.Brand, Clock);
