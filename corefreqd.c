@@ -21,7 +21,7 @@
 
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int Shutdown=0x0;
+unsigned int Shutdown=0x0, Debug=0x0;
 
 typedef struct {
 	PROC_STRUCT	*Proc;
@@ -47,7 +47,7 @@ static void *Core_Cycle(void *arg)
 	pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
 
 	char comm[TASK_COMM_LEN];
-	sprintf(comm, "corefreqd-%03d", cpu);
+	sprintf(comm, "corefreqd/%-3d", cpu);
 	pthread_setname_np(Arg->TID, comm);
 
 	do
@@ -112,6 +112,11 @@ static void *Core_Cycle(void *arg)
 					/ ((double) Proc->Boost[1] * PRECISION);
 
 		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
+
+		if(Debug)
+			printf("#%03u %7.2fMHz (%5.2f)\n", cpu,
+					Flip->Relative.Freq,
+					Flip->Relative.Ratio);
 	    }
 	} while(!Shutdown) ;
 
@@ -239,8 +244,10 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 					Shm->Proc.Avg.C7+=Flop->State.C7;
 					Shm->Proc.Avg.C1+=Flop->State.C1;
 
-					BITSET(Shm->Proc.Room, cpu);
+//					BITSET(Shm->Proc.Room, cpu);
 				}
+			Shm->Proc.Room=~(1 << Shm->Proc.CPU.Count);
+
 			Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;
 			Shm->Proc.Avg.C0/=Shm->Proc.CPU.OnLine;
 			Shm->Proc.Avg.C3/=Shm->Proc.CPU.OnLine;
@@ -378,6 +385,8 @@ int main(int argc, char *argv[])
 		    case 't':
 			rc=Proc_Topology(&fd, Proc);
 		    break;
+		    case 'd':
+			Debug=0x1;
 		    default:
 		    {
 			SIG Sig={.Signal={0}, .TID=0, .Started=0};

@@ -225,7 +225,7 @@ void Proc_Features(FEATURES *features)
 		  "=r"	(features->ExtFeature.BX),
 		  "=r"	(features->ExtFeature.CX),
 		  "=r"	(features->ExtFeature.DX)
-                : 
+                :
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	asm volatile
@@ -363,7 +363,7 @@ CLOCK Base_Clock(unsigned int ratio)
 	CLOCK clock={.Q=ratio, .R=0};
 	struct task_struct *tid=kthread_create(	Compute_Clock,
 						&clock,
-						"kintelbclk-%03d",
+						"kintelbclk/%-3d",
 						0);
 	if(!IS_ERR(tid))
 	{
@@ -724,7 +724,7 @@ unsigned int Proc_Topology(void)
 				(Proc->Features.LargestStdFunc >= 0xb) ?
 					Map_Extended_Topology : Map_Topology,
 				KMem->Core[cpu],
-				"kintelapic-%03d",
+				"kintelapic/%-3d",
 				KMem->Core[cpu]->Bind);
 			if(!IS_ERR(tid))
 			{
@@ -911,26 +911,23 @@ void Core_Thermal(CORE *Core)
 (									\
 	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
 )
-
+/*
+DECLARE_COMPLETION(timer_elapsed);
+*/
 int Cycle_Genuine(void *arg)
 {
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Genuine(Core, 0);
 		Core_Thermal(Core);
 
-		while(!leave)
+		while(!kthread_should_stop())
 		{
-			down=steps;
-			do {
-				if(!kthread_should_stop())
-					msleep(100);
-				else
-					leave=1;
-			} while(--down && !leave);
+		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    {
+			BITCLR(Core->Sync, 1);
 
 			Counters_Genuine(Core, 1);
 			Core_Temp(Core);
@@ -969,6 +966,9 @@ int Cycle_Genuine(void *arg)
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
 			BITSET(Core->Sync.V, 0);
+		    }
+		else
+			msleep(10);
 		}
 	}
 	do_exit(0);
@@ -1029,7 +1029,7 @@ void Arch_Genuine(unsigned int stage)
 				KMem->Core[cpu]->TID= \
 					kthread_create(	Cycle_Genuine,
 							KMem->Core[cpu],
-							"kintelfreq-%03d",
+							"kintelfreq/%-3d",
 							KMem->Core[cpu]->Bind);
 				if(!IS_ERR(KMem->Core[cpu]->TID))
 					kthread_bind(KMem->Core[cpu]->TID, cpu);
@@ -1048,21 +1048,16 @@ int Cycle_Core2(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(Core);
 		Counters_Core2(Core, 0);
 		Core_Thermal(Core);
 
-		while(!leave)
+		while(!kthread_should_stop())
 		{
-			down=steps;
-			do {
-				if(!kthread_should_stop())
-					msleep(100);
-				else
-					leave=1;
-			} while(--down && !leave);
+		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    {
+			BITCLR(Core->Sync, 1);
 
 			Counters_Core2(Core, 1);
 			Core_Temp(Core);
@@ -1108,6 +1103,9 @@ int Cycle_Core2(void *arg)
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
 			BITSET(Core->Sync.V, 0);
+		    }
+		else
+			msleep(10);
 		}
 		Counters_Clear(Core);
 	}
@@ -1178,7 +1176,7 @@ void Arch_Core2(unsigned int stage)
 				KMem->Core[cpu]->TID= \
 					kthread_create(	Cycle_Core2,
 							KMem->Core[cpu],
-							"kintelfreq-%03d",
+							"kintelfreq/%-3d",
 							KMem->Core[cpu]->Bind);
 				if(!IS_ERR(KMem->Core[cpu]->TID))
 					kthread_bind(KMem->Core[cpu]->TID, cpu);
@@ -1197,22 +1195,22 @@ int Cycle_Nehalem(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
-
+/*
+		unsigned int timeout=msecs_to_jiffies(Proc->msleep+9);
+*/
 		Counters_Set(Core);
 		Counters_Nehalem(Core, 0);
 		Core_Thermal(Core);
 
-		while(!leave)
+		while(!kthread_should_stop())
 		{
-			down=steps;
-			do {
-				if(!kthread_should_stop())
-					msleep(100);
-				else
-					leave=1;
-			} while(--down && !leave);
-
+		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    {
+			BITCLR(Core->Sync, 1);
+/*
+		    if(wait_for_completion_timeout(&timer_elapsed, timeout))
+		    {
+*/
 			Counters_Nehalem(Core, 1);
 			Core_Temp(Core);
 
@@ -1265,6 +1263,9 @@ int Cycle_Nehalem(void *arg)
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
 			BITSET(Core->Sync.V, 0);
+		    }
+		else
+			msleep(10);
 		}
 		Counters_Clear(Core);
 	}
@@ -1342,7 +1343,7 @@ void Arch_Nehalem(unsigned int stage)
 				KMem->Core[cpu]->TID= \
 					kthread_create(	Cycle_Nehalem,
 							KMem->Core[cpu],
-							"kintelfreq-%03d",
+							"kintelfreq/%-3d",
 							KMem->Core[cpu]->Bind);
 				if(!IS_ERR(KMem->Core[cpu]->TID))
 					kthread_bind(KMem->Core[cpu]->TID, cpu);
@@ -1361,21 +1362,16 @@ int Cycle_SandyBridge(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-		unsigned int leave=0, down=0, steps=Proc->msleep / 100;
 
 		Counters_Set(Core);
 		Counters_SandyBridge(Core, 0);
 		Core_Thermal(Core);
 
-		while(!leave)
+		while(!kthread_should_stop())
 		{
-			down=steps;
-			do {
-				if(!kthread_should_stop())
-					msleep(100);
-				else
-					leave=1;
-			} while(--down && !leave);
+		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    {
+			BITCLR(Core->Sync, 1);
 
 			Counters_SandyBridge(Core, 1);
 			Core_Temp(Core);
@@ -1432,6 +1428,9 @@ int Cycle_SandyBridge(void *arg)
 			Core->Counter[0].C1=Core->Counter[1].C1;
 
 			BITSET(Core->Sync.V, 0);
+		    }
+		else
+			msleep(10);
 		}
 		Counters_Clear(Core);
 	}
@@ -1440,6 +1439,7 @@ int Cycle_SandyBridge(void *arg)
 
 void Arch_SandyBridge(unsigned int stage)
 {
+
 	unsigned int cpu=0;
 
 	switch(stage)
@@ -1508,7 +1508,7 @@ void Arch_SandyBridge(unsigned int stage)
 				KMem->Core[cpu]->TID= \
 					kthread_create(	Cycle_SandyBridge,
 							KMem->Core[cpu],
-							"kintelfreq-%03d",
+							"kintelfreq/%-3d",
 							KMem->Core[cpu]->Bind);
 				if(!IS_ERR(KMem->Core[cpu]->TID))
 					kthread_bind(KMem->Core[cpu]->TID, cpu);
@@ -1520,6 +1520,44 @@ void Arch_SandyBridge(unsigned int stage)
 		}
 		break;
 	}
+}
+
+static struct hrtimer Timer;
+static ktime_t RearmTheTimer;
+
+static enum hrtimer_restart Cycle_Timer(struct hrtimer *pTimer)
+{
+
+	unsigned int cpu=0;
+
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		BITSET(KMem->Core[cpu]->Sync.V, 1);
+/*
+
+	complete_all(&timer_elapsed);
+*/
+	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
+/*
+	reinit_completion(&timer_elapsed);
+*/
+	return(HRTIMER_RESTART);
+}
+
+void InitTimer(void)
+{
+	RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
+	hrtimer_init(&Timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	Timer.function=&Cycle_Timer;
+}
+
+void StartTimer(void)
+{
+	hrtimer_start(&Timer, RearmTheTimer, HRTIMER_MODE_REL);
+}
+
+void StopTimer(void)
+{
+	hrtimer_cancel(&Timer);
 }
 
 static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
@@ -1659,6 +1697,8 @@ static int __init IntelFreq_init(void)
 
 				Arch[Proc->ArchID].Arch_Controller(INIT);
 
+				InitTimer();
+
 				Proc->CPU.OnLine=Proc_Topology();
 				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
@@ -1679,6 +1719,8 @@ static int __init IntelFreq_init(void)
 					Proc->Clock.R);
 
 				Arch[Proc->ArchID].Arch_Controller(START);
+
+				StartTimer();
 			    }
 			    else
 			    {
@@ -1746,6 +1788,8 @@ static int __init IntelFreq_init(void)
 static void __exit IntelFreq_cleanup(void)
 {
 	unsigned int cpu=0;
+
+	StopTimer();
 
 	Arch[Proc->ArchID].Arch_Controller(STOP);
 	Arch[Proc->ArchID].Arch_Controller(END);

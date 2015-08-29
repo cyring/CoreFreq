@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="804.57959"
-   height="920.39783"
-   viewBox="0 0 804.57959 920.39777"
+   width="798.67957"
+   height="955.55884"
+   viewBox="0 0 798.67957 955.55879"
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
@@ -31,23 +31,24 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="751.48237"
-     inkscape:cy="361.07922"
+     inkscape:cx="602.43333"
+     inkscape:cy="440.67938"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     showguides="false"
+     showguides="true"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:showpageshadow="false">
+     inkscape:showpageshadow="false"
+     showborder="false">
     <inkscape:grid
        type="xygrid"
        id="grid4804"
-       originx="-18.213544"
-       originy="325.80881" />
+       originx="-18.213546"
+       originy="365.40894" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -82,28 +83,28 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-18.213543,-457.77325)">
+     transform="translate(-18.213545,-462.21221)">
     <rect
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:4.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:3.65517592;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        id="rect4642-1-9"
-       width="749.38202"
-       height="841.67786"
-       x="71.16111"
-       y="460.02322" />
+       width="744.32684"
+       height="559.08368"
+       x="70.738708"
+       y="464.03976" />
     <rect
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:4.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:3.68649507;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        id="rect4642-1"
-       width="761.57593"
-       height="838.57599"
-       x="39.712009"
-       y="482.07419" />
+       width="758.88953"
+       height="564.78064"
+       x="39.30529"
+       y="484.2764" />
     <rect
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:4.5;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:3.7061348;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        id="rect4642"
-       width="761.07275"
-       height="838.07275"
-       x="20.463543"
-       y="505.82578" />
+       width="761.86664"
+       height="567.86664"
+       x="20.066612"
+       y="505.42883" />
     <rect
        style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#410040;stroke-width:1.47130108;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        id="rect5111-12-6-3-6-2"
@@ -112,7 +113,7 @@
        x="631.54224"
        y="566.10333" />
     <circle
-       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:3.69701266;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:3.5;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
        id="path3336"
        cx="193.0769"
        cy="644.13062"
@@ -120,77 +121,77 @@
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:110.00000238%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;opacity:0.66000001;fill:#ff0040;fill-opacity:1;stroke:#ff0040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="115.69946"
-       y="782.19006"
+       x="349.69946"
+       y="526.19006"
        id="text4140-3"
        sodipodi:linespacing="110%"><tspan
          sodipodi:role="line"
          id="tspan5256"
-         x="115.69946"
-         y="782.19006">&quot; kernel thread</tspan><tspan
+         x="349.69946"
+         y="526.19006">&quot; kernel thread</tspan><tspan
          sodipodi:role="line"
          id="tspan5258"
-         x="115.69946"
-         y="797.31506">bind to the cpu # &quot;</tspan></text>
+         x="349.69946"
+         y="541.31506">bind to the cpu # &quot;</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:110.00000238%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;opacity:0.66000001;fill:#ff0000;fill-opacity:1;stroke:#0000ff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="510.69946"
-       y="728.19019"
+       y="774.19019"
        id="text4140-3-0"
        sodipodi:linespacing="110%"><tspan
          sodipodi:role="line"
          id="tspan5250"
          x="510.69946"
-         y="728.19019">&quot; user-space</tspan><tspan
+         y="774.19019">&quot; user-space</tspan><tspan
          sodipodi:role="line"
          id="tspan5252"
          x="510.69946"
-         y="743.31519">thread bind to</tspan><tspan
+         y="789.31519">thread bind to</tspan><tspan
          sodipodi:role="line"
          id="tspan5254"
          x="510.69946"
-         y="758.44019">the same cpu # &quot;</tspan></text>
+         y="804.44019">the same cpu # &quot;</tspan></text>
     <ellipse
-       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:3.69700599;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:3.5;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
        id="path3336-3"
        cx="431.92307"
-       cy="885.28528"
+       cy="931.28528"
        rx="121.22841"
        ry="121.22842" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="343.00696"
-       y="944.85657"
+       x="337.00696"
+       y="1004.8566"
        id="text4140-9-1-6"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan6534"
-         x="343.00696"
-         y="944.85657">store ratio in the</tspan><tspan
+         id="tspan4614"
+         x="337.00696"
+         y="1004.8566">store ratios in the</tspan><tspan
          sodipodi:role="line"
-         id="tspan6536"
-         x="343.00696"
-         y="962.04407">Flip memory struct</tspan></text>
+         id="tspan4616"
+         x="337.00696"
+         y="1022.0441">mem struct @ index</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="506.74194"
-       y="973.19019"
+       x="544.74194"
+       y="987.19019"
        id="text4140-9-8-3"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan4483"
-         x="506.74194"
-         y="973.19019">compute ratio</tspan><tspan
+         id="tspan3630"
+         x="544.74194"
+         y="987.19019">compute perf ratios</tspan><tspan
          sodipodi:role="line"
-         id="tspan4485"
-         x="506.74194"
-         y="990.37769">from delta</tspan></text>
+         id="tspan3632"
+         x="544.74194"
+         y="1004.3777">from delta</tspan></text>
     <g
        id="g5240"
-       transform="matrix(0.78818597,0,0,1.0006172,-39.11823,52.520246)">
+       transform="matrix(0.78295072,0,0,1.4071361,-37.084654,-230.91072)">
       <rect
          y="697.53735"
          x="386.67429"
@@ -235,35 +236,39 @@
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="80.036621"
-       y="498.3685"
+       y="500.0686"
        id="text4140-3-2-4"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan5698"
          x="80.036621"
-         y="498.3685">Core #1</tspan></text>
+         y="500.0686">Core #1</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="111.79468"
-       y="475.26962"
+       y="478.16962"
        id="text4140-3-2-4-0"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan5700"
          x="111.79468"
-         y="475.26962">Core #N</tspan></text>
+         y="478.16962">Core #N</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
-       x="736.45776"
-       y="1362.1254"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="745.95782"
+       y="1401.7253"
        id="text4140-3-2-0"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan4394">CoreFreq 2015-08-27</tspan><tspan
+         id="tspan4709"
+         x="745.95782"
+         y="1401.7253">CoreFreq 2015-08-29</tspan><tspan
          sodipodi:role="line"
-         id="tspan4396">(GPL) CYRIL INGÉNIERIE</tspan></text>
+         id="tspan4711"
+         x="745.95782"
+         y="1415.7878">(C) CYRIL INGÉNIERIE</tspan></text>
     <g
        id="g5502"
        transform="translate(0,14.000028)"
@@ -428,18 +433,18 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7"
-       y="535.49188"
+       y="533.49188"
        x="682"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
-         id="tspan5568"
+         id="tspan4624"
          x="682"
-         y="535.49188">SLAB kernel</tspan><tspan
+         y="533.49188">SLAB memory</tspan><tspan
          sodipodi:role="line"
-         id="tspan5570"
+         id="tspan4626"
          x="682"
-         y="552.67938">memory</tspan></text>
+         y="549.11688">(kernel-space)</tspan></text>
     <g
        id="g5467"
        transform="translate(0,-41.63608)"
@@ -593,40 +598,44 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="357.86536"
-       y="813.88623"
+       x="367.86536"
+       y="843.88623"
        id="text4140-9-1"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan5692"
-         x="357.86536"
-         y="813.88623">clear Sync [var]</tspan></text>
+         id="tspan3612"
+         x="367.86536"
+         y="843.88623">clear Sync bit</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:0.99425288;stroke:#00c440;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="293.69946"
-       y="870.19006"
+       x="295.69946"
+       y="916.19006"
        id="text4140-0"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan5688"
-         x="293.69946"
-         y="870.19006">while(sync [var] is not set)</tspan><tspan
+         id="tspan3608"
+         x="295.69946"
+         y="916.19006">test and wait</tspan><tspan
          sodipodi:role="line"
-         id="tspan5690"
-         x="293.69946"
-         y="887.37756">sleep 100 ms and loop</tspan></text>
+         id="tspan3610"
+         x="295.69946"
+         y="933.37756"> until Sync bit is set</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
-       x="281.86536"
-       y="583.88623"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="285.86536"
+       y="591.88623"
        id="text4140-9-8"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan4390">compute delta</tspan><tspan
+         id="tspan3626"
+         x="285.86536"
+         y="591.88623">compute counters delta</tspan><tspan
          sodipodi:role="line"
-         id="tspan4392">[current] - [prev]</tspan></text>
+         id="tspan3628"
+         x="285.86536"
+         y="609.07373">[current] - [prev]</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -635,20 +644,20 @@
        id="text4140-9-86"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan5686"
+         id="tspan3606"
          x="255.86536"
-         y="742.88623">set Sync [var]</tspan></text>
+         y="742.88623">set Sync bit</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="132.10327"
-       y="552.88623"
+       x="136.10327"
+       y="548.88623"
        id="text4140-9-9"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan5630"
-         x="132.10327"
-         y="552.88623">store counters</tspan></text>
+         x="136.10327"
+         y="548.88623">store counters</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -664,13 +673,13 @@
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#0000ff;fill-opacity:0.99425288;stroke:#00c440;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="35"
-       y="666.36218"
+       y="674.36218"
        id="text4140"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan4229"
+         id="tspan4622"
          x="35"
-         y="666.36218">sleep 1000 ms</tspan></text>
+         y="674.36218">Timer elapsed</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -702,11 +711,11 @@
        id="rect5111-12-6-3-6-2-2"
        width="135.13498"
        height="181.93587"
-       x="631.4325"
-       y="1012.9937" />
+       x="71.432503"
+       y="850.99371" />
     <g
        id="g5502-9"
-       transform="translate(1e-6,414.00006)"
+       transform="translate(-560,252.00006)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="569.11804"
@@ -729,7 +738,7 @@
     </g>
     <g
        id="g5497-8"
-       transform="translate(1e-6,427.90912)"
+       transform="translate(-560,265.90912)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="599.13623"
@@ -752,7 +761,7 @@
     </g>
     <g
        id="g5492-7"
-       transform="translate(1e-6,419.81817)"
+       transform="translate(-560,257.81817)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="629.15436"
@@ -775,7 +784,7 @@
     </g>
     <g
        id="g5487-2"
-       transform="translate(1e-6,411.72717)"
+       transform="translate(-560,249.72717)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="659.17255"
@@ -798,7 +807,7 @@
     </g>
     <g
        id="g5482-8"
-       transform="translate(1e-6,403.63623)"
+       transform="translate(-560,241.63623)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="689.19067"
@@ -821,7 +830,7 @@
     </g>
     <g
        id="g5477-8"
-       transform="translate(1e-6,395.54522)"
+       transform="translate(-560,233.54522)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="719.20886"
@@ -844,7 +853,7 @@
     </g>
     <g
        id="g5472-3"
-       transform="translate(1e-6,387.45428)"
+       transform="translate(-560,225.45428)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="749.22699"
@@ -868,21 +877,25 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-5"
-       y="951.49188"
-       x="682"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       y="775.49188"
+       x="122"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
-         id="tspan6424"
-         x="682"
-         y="951.49188">user-space cpu</tspan><tspan
+         id="tspan4525"
+         x="122"
+         y="775.49188">per cpu</tspan><tspan
          sodipodi:role="line"
-         id="tspan6426"
-         x="682"
-         y="968.67938">memory struct</tspan></text>
+         id="tspan4527"
+         x="122"
+         y="791.11688">memory struct</tspan><tspan
+         sodipodi:role="line"
+         id="tspan4529"
+         x="122"
+         y="806.74188">(user-space)</tspan></text>
     <g
        id="g5467-4"
-       transform="translate(1e-6,380.36395)"
+       transform="translate(-560,218.36395)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="778.24451"
@@ -905,7 +918,7 @@
     </g>
     <g
        id="g5462-6"
-       transform="translate(1e-6,372.27301)"
+       transform="translate(-560,210.27301)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="808.26263"
@@ -928,7 +941,7 @@
     </g>
     <g
        id="g5457-3"
-       transform="translate(1e-6,364.182)"
+       transform="translate(-560,202.182)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="838.28082"
@@ -952,38 +965,38 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9-6-4"
-       y="604.87817"
-       x="-1178.6302"
+       y="44.878166"
+       x="-1016.6302"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"
        transform="matrix(0,-1,1,0,0,0)"><tspan
          sodipodi:role="line"
          id="tspan5996"
-         x="-1178.6302"
-         y="604.87817">Flip</tspan></text>
+         x="-1016.6302"
+         y="44.878166">Flip</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9-6-5-8"
-       y="761.87817"
-       x="-1040.6301"
+       y="201.87817"
+       x="-878.63013"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"
        transform="matrix(0,-1,1,0,0,0)"><tspan
          sodipodi:role="line"
          id="tspan5998"
-         x="-1040.6301"
-         y="761.87817">Flop</tspan></text>
+         x="-878.63013"
+         y="201.87817">Flop</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9-7-9"
-       y="981.49194"
-       x="724"
+       y="819.49188"
+       x="164"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
          id="tspan5720-5"
-         x="724"
-         y="981.49194">x #Cores</tspan></text>
+         x="164"
+         y="819.49188">x #Cores</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -996,31 +1009,8 @@
          x="191.45776"
          y="651.12537">PMU</tspan></text>
     <g
-       id="g5497-8-7"
-       transform="translate(-239,493.90912)"
-       style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
-      <rect
-         y="599.13623"
-         x="609.75604"
-         height="22.28878"
-         width="138.4879"
-         id="rect5111-1-2-6"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:1.51210582;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text5113-5-2-9"
-         y="615.36194"
-         x="615.97601"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           sodipodi:role="line"
-           id="tspan6062"
-           x="615.97601"
-           y="615.36194">Sync atomic [int]</tspan></text>
-    </g>
-    <g
        id="g5492-7-1"
-       transform="translate(-239,485.81817)"
+       transform="translate(37,503.81817)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="629.15436"
@@ -1044,43 +1034,43 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9-7-9-7"
-       y="1152.4919"
-       x="440"
+       y="1170.4919"
+       x="716"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
          id="tspan6351"
-         x="440"
-         y="1152.4919">00000000 ... 10110011</tspan></text>
+         x="716"
+         y="1170.4919">00000000 ... 10110011</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="563.00696"
+       x="549.00696"
        y="892.85663"
        id="text4140-9-1-6-2"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan6594"
-         x="563.00696"
-         y="892.85663">is Room bit [@ cpu#] set ?</tspan><tspan
+         id="tspan4608"
+         x="549.00696"
+         y="892.85663">is Room bit @ cpu# set ?</tspan><tspan
          sodipodi:role="line"
-         id="tspan6596"
-         x="563.00696"
-         y="910.04413">then inverse Toggle (Flip)</tspan><tspan
+         id="tspan4610"
+         x="549.00696"
+         y="910.04413">then toggle index (Flip)</tspan><tspan
          sodipodi:role="line"
-         id="tspan6598"
-         x="563.00696"
+         id="tspan4612"
+         x="549.00696"
          y="927.23163">and clear that bit</tspan></text>
     <ellipse
-       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:3.69700599;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#0000ff;stroke-width:3.5;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
        id="path3336-3-6"
-       cx="187.92307"
-       cy="1105.2853"
+       cx="431.92307"
+       cy="1247.2853"
        rx="121.22841"
        ry="121.22842" />
     <g
        id="g5497-8-5"
-       transform="translate(-240,605.90912)"
+       transform="translate(36,623.90912)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="599.13623"
@@ -1103,7 +1093,7 @@
     </g>
     <g
        id="g5492-7-2"
-       transform="translate(-240,597.81817)"
+       transform="translate(36,615.81817)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="629.15436"
@@ -1126,7 +1116,7 @@
     </g>
     <g
        id="g5482-8-1"
-       transform="translate(-240,581.63623)"
+       transform="translate(36,599.63623)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="689.19067"
@@ -1149,7 +1139,7 @@
     </g>
     <g
        id="g5477-8-8"
-       transform="translate(-240,573.54522)"
+       transform="translate(36,591.54522)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="719.20886"
@@ -1172,7 +1162,7 @@
     </g>
     <g
        id="g5472-3-2"
-       transform="translate(-240,565.45428)"
+       transform="translate(36,583.45428)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="749.22699"
@@ -1195,7 +1185,7 @@
     </g>
     <g
        id="g5467-4-5"
-       transform="translate(-240,404.36395)"
+       transform="translate(36,422.36395)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="778.24451"
@@ -1218,7 +1208,7 @@
     </g>
     <g
        id="g5487-2-1"
-       transform="translate(-240,589.72717)"
+       transform="translate(36,607.72717)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="659.17255"
@@ -1241,7 +1231,7 @@
     </g>
     <g
        id="g5467-4-5-7"
-       transform="translate(-240,380.36395)"
+       transform="translate(36,398.36395)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="778.24451"
@@ -1265,89 +1255,176 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-5-7"
-       y="1050.4918"
-       x="443"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       y="1106.4918"
+       x="719"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
-         id="tspan6418"
-         x="443"
-         y="1050.4918">user-space</tspan><tspan
+         id="tspan4566"
+         x="719"
+         y="1106.4918">average values</tspan><tspan
          sodipodi:role="line"
-         id="tspan6420"
-         x="443"
-         y="1067.6793">processor</tspan><tspan
-         sodipodi:role="line"
-         id="tspan6422"
-         x="443"
-         y="1084.8668">average values</tspan></text>
+         id="tspan4568"
+         x="719"
+         y="1122.1168">(user-space)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="240.00696"
-       y="1023.8567"
+       x="542.00696"
+       y="1191.8567"
        id="text4140-9-1-6-2-0"
        sodipodi:linespacing="121%"><tspan
          sodipodi:role="line"
-         id="tspan6582"
-         x="240.00696"
-         y="1023.8567">store average values</tspan><tspan
+         id="tspan4642"
+         x="542.00696"
+         y="1191.8567">divide sum by</tspan><tspan
          sodipodi:role="line"
-         id="tspan6584"
-         x="240.00696"
-         y="1040.4941">in the Flop mem struct</tspan></text>
+         id="tspan4644"
+         x="542.00696"
+         y="1208.4941"> cores count</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="98.741943"
-       y="1068.1902"
+       x="332.74194"
+       y="1166.1902"
        id="text4140-9-8-3-9"
        sodipodi:linespacing="121%"><tspan
          sodipodi:role="line"
-         id="tspan6566"
-         x="98.741943"
-         y="1068.1902">for each cpu</tspan><tspan
+         id="tspan4652"
+         x="332.74194"
+         y="1166.1902">read perf ratios</tspan><tspan
          sodipodi:role="line"
-         id="tspan6568"
-         x="98.741943"
-         y="1084.8276">compute</tspan><tspan
+         id="tspan4654"
+         x="332.74194"
+         y="1182.8276"> from cores</tspan><tspan
          sodipodi:role="line"
-         id="tspan6570"
-         x="98.741943"
-         y="1101.4652">average ratio</tspan></text>
+         id="tspan4656"
+         x="332.74194"
+         y="1199.4652"> (Flop mem struct)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:0.99425288;stroke:#00c440;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="151.69946"
-       y="1183.1901"
+       x="327.69946"
+       y="1251.1902"
        id="text4140-0-5"
        sodipodi:linespacing="121%"><tspan
          sodipodi:role="line"
-         id="tspan6528"
-         x="151.69946"
-         y="1183.1901">while(Room integer does not = 0)</tspan><tspan
+         id="tspan3713"
+         x="327.69946"
+         y="1251.1902">test and wait</tspan><tspan
          sodipodi:role="line"
-         id="tspan6530"
-         x="151.69946"
-         y="1199.8275">sleep 100 ms and loop</tspan></text>
+         id="tspan3715"
+         x="327.69946"
+         y="1267.8276"> until Room integer</tspan><tspan
+         sodipodi:role="line"
+         id="tspan3717"
+         x="327.69946"
+         y="1284.4652"> is cleared</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="288.74194"
-       y="1105.1902"
+       x="400.74194"
+       y="1345.1902"
        id="text4140-9-8-3-9-4"
        sodipodi:linespacing="121%"><tspan
          sodipodi:role="line"
-         id="tspan6588"
-         x="288.74194"
-         y="1105.1902">set Room bit</tspan><tspan
+         id="tspan3709"
+         x="400.74194"
+         y="1345.1902">set all Room</tspan><tspan
          sodipodi:role="line"
-         id="tspan6590"
-         x="288.74194"
-         y="1121.8276">[@ cpu#]</tspan><tspan
+         id="tspan3711"
+         x="400.74194"
+         y="1361.8276"> bits to 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="442.20685"
+       y="1122.6456"
+       id="text4140-9-8-3-9-8"
+       sodipodi:linespacing="121%"><tspan
          sodipodi:role="line"
-         id="tspan6592"
-         x="288.74194"
-         y="1138.4652">to 1</tspan></text>
+         id="tspan3689"
+         x="442.20685"
+         y="1122.6456">sum perf ratios</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:121.00000381%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:0.99425288;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="523.20685"
+       y="1288.6456"
+       id="text4140-9-8-3-9-2"
+       sodipodi:linespacing="121%"><tspan
+         sodipodi:role="line"
+         id="tspan3701"
+         x="523.20685"
+         y="1288.6456">store average ratios in</tspan><tspan
+         sodipodi:role="line"
+         id="tspan3703"
+         x="523.20685"
+         y="1305.2831"> processor mem struct</tspan></text>
+    <rect
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:none;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:2.67404056;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       id="rect4642-1-1"
+       width="763.40186"
+       height="295.40195"
+       x="37.512592"
+       y="1086.97" />
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:15px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ff0000;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="85.279465"
+       y="1109.6312"
+       id="text4140-3-2-2"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4564"
+         x="85.279465"
+         y="1109.6312">Processor</tspan></text>
+    <circle
+       style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:3;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
+       id="path3336-6"
+       cx="132.46356"
+       cy="1195.922"
+       r="49.571121" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#0000ff;fill-opacity:0.99425288;stroke:#00c440;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="131.93675"
+       y="1191.7032"
+       id="text4140-4"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4618"
+         x="131.93675"
+         y="1191.7032">Timer</tspan><tspan
+         sodipodi:role="line"
+         id="tspan4620"
+         x="131.93675"
+         y="1208.8907">1000 ms</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:110.00000238%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;opacity:0.66000001;fill:#ff0000;fill-opacity:1;stroke:#0000ff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="567.44177"
+       y="1130.6278"
+       id="text4140-3-0-4"
+       sodipodi:linespacing="110%"><tspan
+         sodipodi:role="line"
+         id="tspan4682"
+         x="567.44177"
+         y="1130.6278">&quot; user-space</tspan><tspan
+         sodipodi:role="line"
+         id="tspan4684"
+         x="567.44177"
+         y="1145.7528">any thread &quot;</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:110.00000238%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;opacity:0.66000001;fill:#ff0040;fill-opacity:1;stroke:#ff0040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="130.63316"
+       y="1269.4019"
+       id="text4140-3-5"
+       sodipodi:linespacing="110%"><tspan
+         sodipodi:role="line"
+         id="tspan4707"
+         x="130.63316"
+         y="1269.4019">&quot; kernel soft interrupt &quot;</tspan></text>
   </g>
 </svg>

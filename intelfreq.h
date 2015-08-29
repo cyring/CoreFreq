@@ -875,6 +875,7 @@ typedef struct
 	unsigned int			Bind,
 					OffLine;
 
+
 	struct task_struct		*TID;
 } CORE;
 
