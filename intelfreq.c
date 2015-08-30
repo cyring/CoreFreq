@@ -911,9 +911,10 @@ void Core_Thermal(CORE *Core)
 (									\
 	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
 )
-/*
-DECLARE_COMPLETION(timer_elapsed);
-*/
+
+
+struct completion timer_elapsed[8];
+
 int Cycle_Genuine(void *arg)
 {
 	if(arg != NULL)
@@ -1195,22 +1196,25 @@ int Cycle_Nehalem(void *arg)
 	if(arg != NULL)
 	{
 		CORE *Core=(CORE *) arg;
-/*
-		unsigned int timeout=msecs_to_jiffies(Proc->msleep+9);
-*/
+
+		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
+
 		Counters_Set(Core);
 		Counters_Nehalem(Core, 0);
 		Core_Thermal(Core);
 
 		while(!kthread_should_stop())
 		{
+/*
 		    if(BITWISEAND(Core->Sync.V, 0x2))
 		    {
 			BITCLR(Core->Sync, 1);
-/*
-		    if(wait_for_completion_timeout(&timer_elapsed, timeout))
-		    {
 */
+		    if(wait_for_completion_timeout(&timer_elapsed[Core->Bind],
+								timeout))
+		    {
+			reinit_completion(&timer_elapsed[Core->Bind]);
+
 			Counters_Nehalem(Core, 1);
 			Core_Temp(Core);
 
@@ -1264,8 +1268,10 @@ int Cycle_Nehalem(void *arg)
 
 			BITSET(Core->Sync.V, 0);
 		    }
+/*
 		else
 			msleep(10);
+*/
 		}
 		Counters_Clear(Core);
 	}
@@ -1332,7 +1338,10 @@ void Arch_Nehalem(unsigned int stage)
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				if(!KMem->Core[cpu]->OffLine
 				&& !IS_ERR(KMem->Core[cpu]->TID))
+				{
+					complete(&timer_elapsed[cpu]);
 					kthread_stop(KMem->Core[cpu]->TID);
+				}
 		}
 		break;
 		case START:
@@ -1527,37 +1536,50 @@ static ktime_t RearmTheTimer;
 
 static enum hrtimer_restart Cycle_Timer(struct hrtimer *pTimer)
 {
-
 	unsigned int cpu=0;
-
+/*
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		BITSET(KMem->Core[cpu]->Sync.V, 1);
-/*
+*/
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		complete(&timer_elapsed[cpu]);
 
-	complete_all(&timer_elapsed);
-*/
 	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
-/*
-	reinit_completion(&timer_elapsed);
-*/
+
 	return(HRTIMER_RESTART);
 }
 
 void InitTimer(void)
 {
+	unsigned int cpu=0;
+
+	printk(	"IntelFreq Init Completion\n{");
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++) {
+		init_completion(&timer_elapsed[cpu]);
+		printk(" %p", &timer_elapsed[cpu]);
+	} printk("}\n");
+
 	RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
 	hrtimer_init(&Timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	Timer.function=&Cycle_Timer;
+
+	printk(	"IntelFreq Init Timer[%p]\n"	\
+		"Rearm every %lldms / HZ [%d]\n",
+		&Timer, ktime_to_ms(RearmTheTimer), HZ);
 }
 
 void StartTimer(void)
 {
 	hrtimer_start(&Timer, RearmTheTimer, HRTIMER_MODE_REL);
+
+	printk(	"IntelFreq Start Timer[%p]\n", &Timer);
 }
 
 void StopTimer(void)
 {
 	hrtimer_cancel(&Timer);
+
+	printk(	"IntelFreq Stop Timer [%p]\n", &Timer);
 }
 
 static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
