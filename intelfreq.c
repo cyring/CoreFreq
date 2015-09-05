@@ -1553,33 +1553,22 @@ void InitTimer(void)
 {
 	unsigned int cpu=0;
 
-	printk(	"IntelFreq Init Completion\n{");
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++) {
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		init_completion(&KPrivate->Join[cpu]->Elapsed);
-		printk(" %p", &KPrivate->Join[cpu]->Elapsed);
-	} printk("}\n");
 
 	RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
 	hrtimer_init(&Timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	Timer.function=&Cycle_Timer;
-
-	printk(	"IntelFreq Init Timer[%p]\n"	\
-		"Rearm every %lldms / HZ [%d]\n",
-		&Timer, ktime_to_ms(RearmTheTimer), HZ);
 }
 
 void StartTimer(void)
 {
 	hrtimer_start(&Timer, RearmTheTimer, HRTIMER_MODE_REL);
-
-	printk(	"IntelFreq Start Timer[%p]\n", &Timer);
 }
 
 void StopTimer(void)
 {
 	hrtimer_cancel(&Timer);
-
-	printk(	"IntelFreq Stop Timer [%p]\n", &Timer);
 }
 
 static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
