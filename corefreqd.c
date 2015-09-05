@@ -16,8 +16,11 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include "coretypes.h"
 #include "corefreq.h"
-#include "intelfreq.h"
+#include "intelasm.h"
+#include "intelmsr.h"
+#include "intelapi.h"
 
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 

@@ -13,18 +13,10 @@
 #include <linux/slab.h>
 #include <asm/msr.h>
 
-typedef struct
-{
-	struct completion	Elapsed;
-} JOIN;
-
-typedef struct
-{
-	struct kmem_cache	*Cache;
-	JOIN			*Join[];
-} KPRIVATE;
-
-#include "corefreq.h"
+#include "coretypes.h"
+#include "intelasm.h"
+#include "intelmsr.h"
+#include "intelapi.h"
 #include "intelfreq.h"
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
@@ -930,14 +922,17 @@ int Cycle_Genuine(void *arg)
 	{
 		CORE *Core=(CORE *) arg;
 
+		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
+		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
+
 		Counters_Genuine(Core, 0);
 		Core_Thermal(Core);
 
 		while(!kthread_should_stop())
 		{
-		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    if(wait_for_completion_timeout(elapsed, timeout))
 		    {
-			BITCLR(Core->Sync, 1);
+			reinit_completion(elapsed);
 
 			Counters_Genuine(Core, 1);
 			Core_Temp(Core);
@@ -977,8 +972,6 @@ int Cycle_Genuine(void *arg)
 
 			BITSET(Core->Sync.V, 0);
 		    }
-		else
-			msleep(10);
 		}
 	}
 	do_exit(0);
@@ -1026,9 +1019,12 @@ void Arch_Genuine(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_stop(KPublic->Core[cpu]->TID);
+			    if(!KPublic->Core[cpu]->OffLine
+			    && !IS_ERR(KPublic->Core[cpu]->TID))
+			    {
+				complete(&KPrivate->Join[cpu]->Elapsed);
+				kthread_stop(KPublic->Core[cpu]->TID);
+			    }
 		}
 		break;
 		case START:
@@ -1059,15 +1055,18 @@ int Cycle_Core2(void *arg)
 	{
 		CORE *Core=(CORE *) arg;
 
+		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
+		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
+
 		Counters_Set(Core);
 		Counters_Core2(Core, 0);
 		Core_Thermal(Core);
 
 		while(!kthread_should_stop())
 		{
-		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    if(wait_for_completion_timeout(elapsed, timeout))
 		    {
-			BITCLR(Core->Sync, 1);
+			reinit_completion(elapsed);
 
 			Counters_Core2(Core, 1);
 			Core_Temp(Core);
@@ -1114,8 +1113,6 @@ int Cycle_Core2(void *arg)
 
 			BITSET(Core->Sync.V, 0);
 		    }
-		else
-			msleep(10);
 		}
 		Counters_Clear(Core);
 	}
@@ -1173,9 +1170,12 @@ void Arch_Core2(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_stop(KPublic->Core[cpu]->TID);
+			    if(!KPublic->Core[cpu]->OffLine
+			    && !IS_ERR(KPublic->Core[cpu]->TID))
+			    {
+				complete(&KPrivate->Join[cpu]->Elapsed);
+				kthread_stop(KPublic->Core[cpu]->TID);
+			    }
 		}
 		break;
 		case START:
@@ -1372,15 +1372,18 @@ int Cycle_SandyBridge(void *arg)
 	{
 		CORE *Core=(CORE *) arg;
 
+		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
+		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
+
 		Counters_Set(Core);
 		Counters_SandyBridge(Core, 0);
 		Core_Thermal(Core);
 
 		while(!kthread_should_stop())
 		{
-		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    if(wait_for_completion_timeout(elapsed, timeout))
 		    {
-			BITCLR(Core->Sync, 1);
+			reinit_completion(elapsed);
 
 			Counters_SandyBridge(Core, 1);
 			Core_Temp(Core);
@@ -1438,8 +1441,6 @@ int Cycle_SandyBridge(void *arg)
 
 			BITSET(Core->Sync.V, 0);
 		    }
-		else
-			msleep(10);
 		}
 		Counters_Clear(Core);
 	}
@@ -1504,9 +1505,12 @@ void Arch_SandyBridge(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_stop(KPublic->Core[cpu]->TID);
+			    if(!KPublic->Core[cpu]->OffLine
+			    && !IS_ERR(KPublic->Core[cpu]->TID))
+			    {
+				complete(&KPrivate->Join[cpu]->Elapsed);
+				kthread_stop(KPublic->Core[cpu]->TID);
+			    }
 		}
 		break;
 		case START:
@@ -1654,12 +1658,17 @@ static int __init IntelFreq_init(void)
 		    unsigned int cpu=0, count=Core_Count();
 		    unsigned long publicSize=0, privateSize=0, packageSize=0;
 
-		    publicSize=sizeof(KPUBLIC) + sizeof(void *) * count;
+		    publicSize=sizeof(KPUBLIC) + sizeof(CORE *) * count;
+
 		    privateSize=sizeof(KPRIVATE)
 				+ sizeof(struct completion) * count;
+
 		    if(((KPublic=kmalloc(publicSize, GFP_KERNEL)) != NULL)
 		    && ((KPrivate=kmalloc(privateSize, GFP_KERNEL)) != NULL))
 		    {
+			memset(KPublic, 0, publicSize);
+			memset(KPrivate, 0, privateSize);
+
 			packageSize=ROUND_TO_PAGES(sizeof(PROC));
 			if((Proc=kmalloc(packageSize, GFP_KERNEL)) != NULL)
 			{
@@ -1754,6 +1763,11 @@ static int __init IntelFreq_init(void)
 			    }
 			    else
 			    {
+				if(KPublic->Cache != NULL)
+					kmem_cache_destroy(KPublic->Cache);
+				if(KPrivate->Cache != NULL)
+					kmem_cache_destroy(KPrivate->Cache);
+
 				kfree(Proc);
 				kfree(KPublic);
 				kfree(KPrivate);

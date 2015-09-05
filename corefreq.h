@@ -7,41 +7,6 @@
 
 #define	SHM_FILENAME	"corefreq-shm"
 
-#define	BITSET(_base, _offset)			\
-({						\
-	asm volatile				\
-	(					\
-		"lock rex bts %1, %0"		\
-		: "=m" (_base)			\
-		: "Ir" (_offset)		\
-		: "memory"			\
-	);					\
-})
-
-#define	BITCLR(_base, _offset)			\
-({						\
-	asm volatile				\
-	(					\
-		"lock rex btr %1, %0"		\
-		: "=m" (_base)			\
-		: "Ir" (_offset)		\
-		: "memory"			\
-	);					\
-})
-
-#define	BITWISEAND(_opl, _opr)			\
-({						\
-	volatile unsigned long long _ret=_opl;	\
-	asm volatile				\
-	(					\
-		"lock rex and %1, %0"		\
-		: "=m" (_ret)			\
-		: "Ir" (_opr)			\
-		: "memory"			\
-	);					\
-	_ret;					\
-})
-
 typedef struct
 {
 	unsigned int	OffLine;
@@ -69,12 +34,6 @@ typedef struct
 		} Relative;
 	} FlipFlop[2];
 } CPU_STRUCT;
-
-typedef struct
-{
-	unsigned int		Q;
-	unsigned long long	R;
-} CLOCK;
 
 typedef struct
 {

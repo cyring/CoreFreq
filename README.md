@@ -15,14 +15,14 @@ cc -c corefreqd.c -o corefreqd.o
 cc -lpthread -lrt -o corefreqd corefreqd.c
 cc -c corefreq-cli.c -o corefreq-cli.o
 cc -lrt -o corefreq-cli corefreq-cli.c
-make -C /lib/modules/4.1.2-2-ARCH/build M=/workdir/CoreFreq modules
-make[1]: Entering directory '/usr/lib/modules/4.1.2-2-ARCH/build'
+make -C /lib/modules/4.1.6-1-ARCH/build M=/workdir/CoreFreq modules
+make[1]: Entering directory '/usr/lib/modules/4.1.6-1-ARCH/build'
   CC [M]  /workdir/CoreFreq/intelfreq.o
   Building modules, stage 2.
   MODPOST 1 modules
   CC      /workdir/CoreFreq/intelfreq.mod.o
   LD [M]  /workdir/CoreFreq/intelfreq.ko
-make[1]: Leaving directory '/usr/lib/modules/4.1.2-2-ARCH/build'
+make[1]: Leaving directory '/usr/lib/modules/4.1.6-1-ARCH/build'
 ```
 
 ### Start

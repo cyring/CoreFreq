@@ -10,9 +10,9 @@
 #include <signal.h>
 #include <stdio.h>
 
+#include "intelasm.h"
+#include "coretypes.h"
 #include "corefreq.h"
-
-#define	PRECISION 100
 
 unsigned int Shutdown=0x0;
 
