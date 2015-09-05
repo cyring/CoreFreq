@@ -35,7 +35,7 @@ insmod intelfreq.ko
 ```
 ./corefreqd
 ```
- 5- Start the client, as user.
+ 5- Start the client, as a user.
 ```
 ./corefreq-cli
 ```
