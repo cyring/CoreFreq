@@ -1,4 +1,5 @@
 /*
+ * CoreFreq
  * Copyright (C) 2015 CYRIL INGENIERIE
  * Licenses: GPL2
  */
