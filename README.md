@@ -86,3 +86,4 @@ CPU       ApicID CoreID ThreadID x2APIC Enable Caches L1 L2 L3
 
 # Regards
 _`CyrIng`_
+ -------
