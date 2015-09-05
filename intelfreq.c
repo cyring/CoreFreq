@@ -13,6 +13,17 @@
 #include <linux/slab.h>
 #include <asm/msr.h>
 
+typedef struct
+{
+	struct completion	Elapsed;
+} JOIN;
+
+typedef struct
+{
+	struct kmem_cache	*Cache;
+	JOIN			*Join[];
+} KPRIVATE;
+
 #include "corefreq.h"
 #include "intelfreq.h"
 
@@ -38,7 +49,8 @@ module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto Estimate Clock Frequency");
 
 static PROC *Proc=NULL;
-static KMEM *KMem=NULL;
+static KPUBLIC *KPublic=NULL;
+static KPRIVATE *KPrivate=NULL;
 
 static ARCH Arch[ARCHITECTURES]=
 {
@@ -714,29 +726,29 @@ unsigned int Proc_Topology(void)
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
-		KMem->Core[cpu]->T.Base.value=0;
-		KMem->Core[cpu]->T.ApicID=-1;
-		KMem->Core[cpu]->T.CoreID=-1;
-		KMem->Core[cpu]->T.ThreadID=-1;
-		if(!KMem->Core[cpu]->OffLine)
+		KPublic->Core[cpu]->T.Base.value=0;
+		KPublic->Core[cpu]->T.ApicID=-1;
+		KPublic->Core[cpu]->T.CoreID=-1;
+		KPublic->Core[cpu]->T.ThreadID=-1;
+		if(!KPublic->Core[cpu]->OffLine)
 		{
 		  	tid=kthread_create(
 				(Proc->Features.LargestStdFunc >= 0xb) ?
 					Map_Extended_Topology : Map_Topology,
-				KMem->Core[cpu],
+				KPublic->Core[cpu],
 				"kintelapic/%-3d",
-				KMem->Core[cpu]->Bind);
+				KPublic->Core[cpu]->Bind);
 			if(!IS_ERR(tid))
 			{
 				kthread_bind(tid ,cpu);
 				wake_up_process(tid);
 				wait_for_completion(&topology_job_complete);
 
-				if(KMem->Core[cpu]->T.ApicID >= 0)
+				if(KPublic->Core[cpu]->T.ApicID >= 0)
 					CountEnabledCPU++;
 
 				if(!Proc->Features.HTT_enabled
-				&& (KMem->Core[cpu]->T.ThreadID > 0))
+				&& (KPublic->Core[cpu]->T.ThreadID > 0))
 					Proc->Features.HTT_enabled=1;
 
 				reinit_completion(&topology_job_complete);
@@ -912,9 +924,6 @@ void Core_Thermal(CORE *Core)
 	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
 )
 
-
-struct completion timer_elapsed[8];
-
 int Cycle_Genuine(void *arg)
 {
 	if(arg != NULL)
@@ -1017,28 +1026,28 @@ void Arch_Genuine(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					kthread_stop(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_stop(KPublic->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine)
+			    if(!KPublic->Core[cpu]->OffLine)
 			    {
-				KMem->Core[cpu]->TID= \
+				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Genuine,
-							KMem->Core[cpu],
+							KPublic->Core[cpu],
 							"kintelfreq/%-3d",
-							KMem->Core[cpu]->Bind);
-				if(!IS_ERR(KMem->Core[cpu]->TID))
-					kthread_bind(KMem->Core[cpu]->TID, cpu);
+							KPublic->Core[cpu]->Bind);
+				if(!IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_bind(KPublic->Core[cpu]->TID, cpu);
 			   }
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					wake_up_process(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					wake_up_process(KPublic->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1164,28 +1173,28 @@ void Arch_Core2(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					kthread_stop(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_stop(KPublic->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine)
+			    if(!KPublic->Core[cpu]->OffLine)
 			    {
-				KMem->Core[cpu]->TID= \
+				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Core2,
-							KMem->Core[cpu],
+							KPublic->Core[cpu],
 							"kintelfreq/%-3d",
-							KMem->Core[cpu]->Bind);
-				if(!IS_ERR(KMem->Core[cpu]->TID))
-					kthread_bind(KMem->Core[cpu]->TID, cpu);
+							KPublic->Core[cpu]->Bind);
+				if(!IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_bind(KPublic->Core[cpu]->TID, cpu);
 			    }
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					wake_up_process(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					wake_up_process(KPublic->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1197,6 +1206,7 @@ int Cycle_Nehalem(void *arg)
 	{
 		CORE *Core=(CORE *) arg;
 
+		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
 		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
 
 		Counters_Set(Core);
@@ -1205,15 +1215,9 @@ int Cycle_Nehalem(void *arg)
 
 		while(!kthread_should_stop())
 		{
-/*
-		    if(BITWISEAND(Core->Sync.V, 0x2))
+		    if(wait_for_completion_timeout(elapsed, timeout))
 		    {
-			BITCLR(Core->Sync, 1);
-*/
-		    if(wait_for_completion_timeout(&timer_elapsed[Core->Bind],
-								timeout))
-		    {
-			reinit_completion(&timer_elapsed[Core->Bind]);
+			reinit_completion(elapsed);
 
 			Counters_Nehalem(Core, 1);
 			Core_Temp(Core);
@@ -1268,10 +1272,6 @@ int Cycle_Nehalem(void *arg)
 
 			BITSET(Core->Sync.V, 0);
 		    }
-/*
-		else
-			msleep(10);
-*/
 		}
 		Counters_Clear(Core);
 	}
@@ -1336,31 +1336,31 @@ void Arch_Nehalem(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-				{
-					complete(&timer_elapsed[cpu]);
-					kthread_stop(KMem->Core[cpu]->TID);
-				}
+			    if(!KPublic->Core[cpu]->OffLine
+			    && !IS_ERR(KPublic->Core[cpu]->TID))
+			    {
+				complete(&KPrivate->Join[cpu]->Elapsed);
+				kthread_stop(KPublic->Core[cpu]->TID);
+			    }
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine)
+			    if(!KPublic->Core[cpu]->OffLine)
 			    {
-				KMem->Core[cpu]->TID= \
+				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Nehalem,
-							KMem->Core[cpu],
+							KPublic->Core[cpu],
 							"kintelfreq/%-3d",
-							KMem->Core[cpu]->Bind);
-				if(!IS_ERR(KMem->Core[cpu]->TID))
-					kthread_bind(KMem->Core[cpu]->TID, cpu);
+							KPublic->Core[cpu]->Bind);
+				if(!IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_bind(KPublic->Core[cpu]->TID, cpu);
 			    }
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					wake_up_process(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					wake_up_process(KPublic->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1504,28 +1504,28 @@ void Arch_SandyBridge(unsigned int stage)
 		case STOP:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					kthread_stop(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_stop(KPublic->Core[cpu]->TID);
 		}
 		break;
 		case START:
 		{
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KMem->Core[cpu]->OffLine)
+			    if(!KPublic->Core[cpu]->OffLine)
 			    {
-				KMem->Core[cpu]->TID= \
+				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_SandyBridge,
-							KMem->Core[cpu],
+							KPublic->Core[cpu],
 							"kintelfreq/%-3d",
-							KMem->Core[cpu]->Bind);
-				if(!IS_ERR(KMem->Core[cpu]->TID))
-					kthread_bind(KMem->Core[cpu]->TID, cpu);
+							KPublic->Core[cpu]->Bind);
+				if(!IS_ERR(KPublic->Core[cpu]->TID))
+					kthread_bind(KPublic->Core[cpu]->TID, cpu);
 			    }
 			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KMem->Core[cpu]->OffLine
-				&& !IS_ERR(KMem->Core[cpu]->TID))
-					wake_up_process(KMem->Core[cpu]->TID);
+				if(!KPublic->Core[cpu]->OffLine
+				&& !IS_ERR(KPublic->Core[cpu]->TID))
+					wake_up_process(KPublic->Core[cpu]->TID);
 		}
 		break;
 	}
@@ -1537,12 +1537,8 @@ static ktime_t RearmTheTimer;
 static enum hrtimer_restart Cycle_Timer(struct hrtimer *pTimer)
 {
 	unsigned int cpu=0;
-/*
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		BITSET(KMem->Core[cpu]->Sync.V, 1);
-*/
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		complete(&timer_elapsed[cpu]);
+		complete(&KPrivate->Join[cpu]->Elapsed);
 
 	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
 
@@ -1555,8 +1551,8 @@ void InitTimer(void)
 
 	printk(	"IntelFreq Init Completion\n{");
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++) {
-		init_completion(&timer_elapsed[cpu]);
-		printk(" %p", &timer_elapsed[cpu]);
+		init_completion(&KPrivate->Join[cpu]->Elapsed);
+		printk(" %p", &KPrivate->Join[cpu]->Elapsed);
 	} printk("}\n");
 
 	RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
@@ -1598,10 +1594,10 @@ static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
 	{
 	    unsigned int cpu=vma->vm_pgoff - 1;
 	    if((cpu < Proc->CPU.Count) && (cpu >= 0)
-	    && (KMem->Core[cpu] != NULL)
+	    && (KPublic->Core[cpu] != NULL)
 	    && remap_pfn_range(vma,
 			vma->vm_start,
-			virt_to_phys((void *) KMem->Core[cpu]) >> PAGE_SHIFT,
+			virt_to_phys((void *) KPublic->Core[cpu]) >> PAGE_SHIFT,
 			vma->vm_end - vma->vm_start,
 			vma->vm_page_prot) < 0)
 		return(-EIO);
@@ -1656,15 +1652,18 @@ static int __init IntelFreq_init(void)
 					 DRV_DEVNAME)) != NULL)
 		{
 		    unsigned int cpu=0, count=Core_Count();
-		    unsigned long kmSize=0;
+		    unsigned long publicSize=0, privateSize=0, packageSize=0;
 
-		    kmSize=sizeof(KMEM) + sizeof(void *) * count;
-		    if((KMem=kmalloc(kmSize, GFP_KERNEL)) != NULL)
+		    publicSize=sizeof(KPUBLIC) + sizeof(void *) * count;
+		    privateSize=sizeof(KPRIVATE)
+				+ sizeof(struct completion) * count;
+		    if(((KPublic=kmalloc(publicSize, GFP_KERNEL)) != NULL)
+		    && ((KPrivate=kmalloc(privateSize, GFP_KERNEL)) != NULL))
 		    {
-			kmSize=ROUND_TO_PAGES(sizeof(PROC));
-			if((Proc=kmalloc(kmSize, GFP_KERNEL)) != NULL)
+			packageSize=ROUND_TO_PAGES(sizeof(PROC));
+			if((Proc=kmalloc(packageSize, GFP_KERNEL)) != NULL)
 			{
-			    memset(Proc, 0, kmSize);
+			    memset(Proc, 0, packageSize);
 			    Proc->CPU.Count=count;
 			    Proc->msleep=LOOP_DEF_MS;
 			    Proc->PerCore=0;
@@ -1674,26 +1673,35 @@ static int __init IntelFreq_init(void)
 
 			    Arch[0].Architecture=Proc->Features.VendorID;
 
-			    kmSize=ROUND_TO_PAGES(sizeof(CORE));
-			    if((KMem->Cache=kmem_cache_create(
-					"intelfreq-cache",
-					kmSize, 0,
+			    publicSize=ROUND_TO_PAGES(sizeof(CORE));
+			    privateSize=ROUND_TO_PAGES(sizeof(JOIN));
+			    if(((KPublic->Cache=kmem_cache_create(
+					"intelfreq-pub",
+					publicSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL)
+			    && ((KPrivate->Cache=kmem_cache_create(
+					"intelfreq-priv",
+					privateSize, 0,
+					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
 				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				{
 				    void *kcache=kmem_cache_alloc(
-						KMem->Cache, GFP_KERNEL);
-				    memset(kcache, 0, kmSize);
-				    KMem->Core[cpu]=kcache;
+						KPublic->Cache, GFP_KERNEL);
+				    memset(kcache, 0, publicSize);
+				    KPublic->Core[cpu]=kcache;
 
-				    BITCLR(KMem->Core[cpu]->Sync.V, 0);
+				    kcache=kmem_cache_alloc(
+						KPrivate->Cache, GFP_KERNEL);
+				    KPrivate->Join[cpu]=kcache;
 
-				    KMem->Core[cpu]->Bind=cpu;
+				    BITCLR(KPublic->Core[cpu]->Sync.V, 0);
+
+				    KPublic->Core[cpu]->Bind=cpu;
 				    if(!cpu_online(cpu) || !cpu_active(cpu))
-					KMem->Core[cpu]->OffLine=1;
+					KPublic->Core[cpu]->OffLine=1;
 				    else
-					KMem->Core[cpu]->OffLine=0;
+					KPublic->Core[cpu]->OffLine=0;
 				}
 				if((ArchID != -1)
 				&& (ArchID >= 0)
@@ -1747,7 +1755,8 @@ static int __init IntelFreq_init(void)
 			    else
 			    {
 				kfree(Proc);
-				kfree(KMem);
+				kfree(KPublic);
+				kfree(KPrivate);
 
 				device_destroy(IntelFreq.clsdev,
 					       IntelFreq.mkdev);
@@ -1760,7 +1769,8 @@ static int __init IntelFreq_init(void)
 			}
 			else
 			{
-			    kfree(KMem);
+			    kfree(KPublic);
+			    kfree(KPrivate);
 
 			    device_destroy(IntelFreq.clsdev,
 					   IntelFreq.mkdev);
@@ -1773,6 +1783,11 @@ static int __init IntelFreq_init(void)
 		    }
 		    else
 		    {
+			if(KPublic != NULL)
+				kfree(KPublic);
+			if(KPrivate != NULL)
+				kfree(KPrivate);
+
 			device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
 			class_destroy(IntelFreq.clsdev);
 			cdev_del(IntelFreq.kcdev);
@@ -1811,24 +1826,29 @@ static void __exit IntelFreq_cleanup(void)
 {
 	unsigned int cpu=0;
 
-	StopTimer();
-
 	Arch[Proc->ArchID].Arch_Controller(STOP);
 	Arch[Proc->ArchID].Arch_Controller(END);
 
-	for(cpu=0; (KMem->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
-		if(KMem->Core[cpu] != NULL) {
-			kmem_cache_free(KMem->Cache, KMem->Core[cpu]);
-		}
-	if(KMem->Cache != NULL) {
-		kmem_cache_destroy(KMem->Cache);
+	StopTimer();
+
+	for(cpu=0; (KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
+	{
+		if(KPublic->Core[cpu] != NULL)
+			kmem_cache_free(KPublic->Cache,	KPublic->Core[cpu]);
+		if(KPrivate->Join[cpu] != NULL)
+			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
 	}
-	if(Proc != NULL) {
+	if(KPublic->Cache != NULL)
+		kmem_cache_destroy(KPublic->Cache);
+	if(KPrivate->Cache != NULL)
+		kmem_cache_destroy(KPrivate->Cache);
+	if(Proc != NULL)
 		kfree(Proc);
-	}
-	if(KMem != NULL) {
-		kfree(KMem);
-	}
+	if(KPublic != NULL)
+		kfree(KPublic);
+	if(KPrivate != NULL)
+		kfree(KPrivate);
+
 	device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
 	class_destroy(IntelFreq.clsdev);
 	cdev_del(IntelFreq.kcdev);

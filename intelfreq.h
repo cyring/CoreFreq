@@ -909,7 +909,7 @@ typedef struct
 {
 	struct kmem_cache	*Cache;
 	CORE			*Core[];
-} KMEM;
+} KPUBLIC;
 
 extern void Arch_Genuine(unsigned int stage) ;
 extern void Arch_Core2(unsigned int stage) ;
