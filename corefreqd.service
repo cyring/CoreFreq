@@ -1,0 +1,12 @@
+[Unit]
+Description=CoreFreq Daemon
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/corefreqd
+ExecStop=/bin/kill -QUIT $MAINPID
+RemainAfterExit=no
+SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
+
+[Install]
+WantedBy=multi-user.target
