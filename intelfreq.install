@@ -1,5 +1,5 @@
 post_install() {
-	dkms install CoreFreq/${1%%-*}
+	dkms install corefreq/${1%%-*}
 }
 
 pre_upgrade() {
@@ -11,5 +11,5 @@ post_upgrade() {
 }
 
 pre_remove() {
-	dkms remove CoreFreq/${1%%-*} --all
+	dkms remove corefreq/${1%%-*} --all
 }
