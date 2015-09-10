@@ -1,4 +1,0 @@
-post_install() {
-	echo 'modprobe or insmod the kernel module intelfreq.ko prior to start corefreqd.service and'
-	echo 'use systemd to start corefreqd.service prior to running corefreq-cli'
-}
