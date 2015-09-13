@@ -159,7 +159,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
 	if(!rc)
-	{
+	{	// Initialize shared memory.
 	    if(((fd->Svr=shm_open(SHM_FILENAME,
 				O_CREAT|O_TRUNC|O_RDWR,
 				S_IRUSR|S_IWUSR				\
@@ -170,42 +170,65 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd->Svr, 0)) != MAP_FAILED))
 	    {
+		// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-
+		// Copy global attributes.
 		Shm->Proc.msleep=Proc->msleep;
 
 		Shm->Proc.CPU.Count=Proc->CPU.Count;
 		Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
-
+		// Copy the Base Clock.
 		Shm->Proc.Clock.Q=Proc->Clock.Q;
 		Shm->Proc.Clock.R=Proc->Clock.R;
-
+		// Copy the Architecture name.
 		strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 		memcpy(Shm->Proc.Boost, Proc->Boost,
 			(1+1+8) * sizeof(unsigned int));
-
+		// Copy the operational mode.
 		Shm->Proc.PerCore=Proc->PerCore;
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
 
+		// Welcomes with brand and bclk.
 		double Clock=Shm->Proc.Clock.Q				\
 				+ ((double) Shm->Proc.Clock.R		\
 				/ (Shm->Proc.Boost[1] * PRECISION));
 
 		printf("CoreFreqd [%s] , Clock @ %f MHz\n",
 			Shm->Proc.Brand, Clock);
-
+		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
+		// Initialize notification.
 		BITCLR(Shm->Proc.Sync, 0);
 
+		// Copy per CPU data from Kernel to Userspace.
 		unsigned long long roomSeed=0x0;
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+		{	// Copy Core topology.
+			Shm->Cpu[cpu].Topology.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
+			Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
+			Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
+			Shm->Cpu[cpu].Topology.ThreadID=Core[cpu]->T.ThreadID;
+			Shm->Cpu[cpu].Topology.x2APIC=(Core[cpu]->T.Base.EXTD) ? 1 : 0;
+			Shm->Cpu[cpu].Topology.Enable=(Core[cpu]->T.Base.EN) ? 1 : 0;
+			// Compute Caches size.
+			unsigned int level=0x0;
+			for(level=0; level < CACHE_MAX_LEVEL; level++)
+			{
+				Shm->Cpu[cpu].Topology.Cache[level].Size=
+				  (Core[cpu]->T.Cache[level].Sets + 1)
+				* (Core[cpu]->T.Cache[level].Linez + 1)
+				* (Core[cpu]->T.Cache[level].Parts + 1)
+				* (Core[cpu]->T.Cache[level].Ways + 1);
+			}
+			// Define the Clients room mask.
 			if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
 			{
 				BITSET(Shm->Proc.Room, cpu);
 				BITSET(roomSeed, cpu);
 			}
-
+		}
+		// Launch one Server thread per online CPU.
 		ARG *Arg=calloc(Shm->Proc.CPU.Count,
 				sizeof(ARG));
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
@@ -220,8 +243,9 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 						Core_Cycle,
 						&Arg[cpu]);
 			}
+		// Aggregate ratios.
 		while(!Shutdown)
-		{
+		{	// Wait until all the rooms & mask are cleared.
 			while(!Shutdown && BITWISEAND(Shm->Proc.Room,roomSeed))
 				usleep(Shm->Proc.msleep * 100);
 
@@ -235,7 +259,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			for(cpu=0;
 			   (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 				if(!Shm->Cpu[cpu].OffLine)
-				{
+				{ // For each cpu,
+				  // store into the alternated memory structure.
 					struct FLIP_FLOP *Flop=		      \
 						&Shm->Cpu[cpu].FlipFlop[      \
 							!Shm->Cpu[cpu].Toggle \
@@ -248,8 +273,9 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 					Shm->Proc.Avg.C7+=Flop->State.C7;
 					Shm->Proc.Avg.C1+=Flop->State.C1;
 
-//					BITSET(Shm->Proc.Room, cpu);
+// Solution 1 is atomic			BITSET(Shm->Proc.Room, cpu);
 				}
+// Solution 2 might be atomic b/c op is a 64bits mov ?
 			Shm->Proc.Room=~(1 << Shm->Proc.CPU.Count);
 
 			Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;
@@ -258,9 +284,10 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			Shm->Proc.Avg.C6/=Shm->Proc.CPU.OnLine;
 			Shm->Proc.Avg.C7/=Shm->Proc.CPU.OnLine;
 			Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
-
+			// Notify.
 			BITSET(Shm->Proc.Sync, 0);
 		}
+		// Synchronize threads for shutdown.
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 			if(Arg[cpu].TID)
 				pthread_join(Arg[cpu].TID, NULL);
@@ -270,68 +297,6 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		shm_unlink(SHM_FILENAME);
 	    }
 	    else rc=5;
-	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		if(Core[cpu] != NULL)
-			munmap(Core[cpu], PAGE_SIZE);
-	free(Core);
-	return(rc);
-}
-
-int Proc_Topology(FD *fd, PROC *Proc)
-{
-	unsigned int	cpu=0, level=0x0;
-	CORE		**Core;
-	int		rc=0;
-
-	Core=calloc(Proc->CPU.Count, sizeof(Core));
-	for(cpu=0; !rc && (cpu < Proc->CPU.Count); cpu++)
-	{
-		off_t offset=(1 + cpu) * PAGE_SIZE;
-		if((Core[cpu]=mmap(	NULL, PAGE_SIZE,
-				PROT_READ|PROT_WRITE,
-				MAP_SHARED,
-				fd->Drv, offset)) == NULL)
-			rc=4;
-	}
-	if(!rc)
-	{
-		double Clock=Proc->Clock.Q				\
-				+ ((double)Proc->Clock.R		\
-				/ (Proc->Boost[1] * PRECISION));
-
-		printf(	"CoreFreqd [%s]\n"				\
-			"Signature [%1X%1X_%1X%1X]"			\
-			" Architecture [%s]\n"				\
-			"%u/%u CPU Online"				\
-			" , Clock @ %f MHz\n\n"				\
-			"CPU       ApicID CoreID ThreadID"		\
-			" x2APIC Enable Caches L1 L2 L3\n",
-			Proc->Features.Brand,
-			Proc->Features.Std.AX.ExtFamily,
-			Proc->Features.Std.AX.Family,
-			Proc->Features.Std.AX.ExtModel,
-			Proc->Features.Std.AX.Model,
-			Proc->Architecture,
-			Proc->CPU.OnLine,
-			Proc->CPU.Count,
-			Clock);
-
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		{
-			printf(	"#%02u%-5s  %6d %6d   %6d"		\
-				"    %3s    %c   ",
-				cpu,
-				(Core[cpu]->T.Base.BSP) ? "(BSP)" : "(AP)",
-				Core[cpu]->T.ApicID,
-				Core[cpu]->T.CoreID,
-				Core[cpu]->T.ThreadID,
-				(Core[cpu]->T.Base.EXTD) ? "ON" : "OFF",
-				(Core[cpu]->T.Base.EN) ? 'Y' : 'N');
-			for(level=0; level < CACHE_MAX_LEVEL; level++)
-				printf(" %-u", Core[cpu]->T.Cache[level].Size);
-			printf("\n");
-		}
 	}
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		if(Core[cpu] != NULL)
@@ -372,11 +337,18 @@ int main(int argc, char *argv[])
 	FD		fd={0, 0};
 	PROC		*Proc=NULL;
 	int		rc=0;
-	char option=(argc == 2) && (argv[1][0] == '-') ? argv[1][1] : 'h';
+	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
+	if(option == 'h')
+		printf(	"usage:\t%s [-option]\n"		\
+			"\t-d\tDebug\n"				\
+			"\t-h\tPrint out this message\n"	\
+			"\nExit status:\n"			\
+				"0\tif OK,\n"			\
+				"1\tif problems,\n"		\
+				">1\tif serious trouble.\n"	\
+			"\nReport bugs to labs[at]cyring.fr\n", argv[0]);
 
-	uid_t UID=geteuid();
-
-	if(UID == 0)
+	else if(geteuid() == 0)
 	{
 	    if((fd.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 	    {
@@ -386,9 +358,6 @@ int main(int argc, char *argv[])
 		{
 		  switch(option)
 		  {
-		    case 't':
-			rc=Proc_Topology(&fd, Proc);
-		    break;
 		    case 'd':
 			Debug=0x1;
 		    default:

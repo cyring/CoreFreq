@@ -10,9 +10,21 @@
 
 typedef struct
 {
-	unsigned int	OffLine;
+	unsigned int		OffLine;
 
-	unsigned int	Toggle;
+	unsigned int		Toggle;
+
+	struct {
+		int		BSP,
+				ApicID,
+				CoreID,
+				ThreadID,
+				x2APIC,
+				Enable;
+		struct {
+		unsigned int	Size;
+		} Cache[CACHE_MAX_LEVEL];
+	} Topology;
 
 	struct FLIP_FLOP {
 	    unsigned long long	Temperature;

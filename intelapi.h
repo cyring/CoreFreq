@@ -271,12 +271,10 @@ typedef struct
 } FEATURES;
 
 
-#define	CACHE_MAX_LEVEL	3
-
 typedef	struct
 {
 	LOCAL_APIC	Base;
-	signed int	ApicID,
+	int		ApicID,
 			CoreID,
 			ThreadID;
 	struct

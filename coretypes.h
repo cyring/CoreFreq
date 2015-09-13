@@ -9,6 +9,8 @@
 
 #define	PRECISION	100
 
+#define	CACHE_MAX_LEVEL	3
+
 typedef struct
 {
 	unsigned int		Q;

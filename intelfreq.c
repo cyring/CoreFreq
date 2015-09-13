@@ -48,33 +48,57 @@ static KPRIVATE *KPrivate=NULL;
 static ARCH Arch[ARCHITECTURES]=
 {
 /*  0*/	{ _GenuineIntel,       Arch_Genuine,     NULL                         },
+
 /*  1*/	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah"                 },
 /*  2*/	{ _Core_Conroe,        Arch_Core2,       "Core2/Conroe"               },
 /*  3*/	{ _Core_Kentsfield,    Arch_Core2,       "Core2/Kentsfield"           },
-/*  4*/	{ _Core_Yorkfield,     Arch_Core2,       "Core2/Yorkfield"            },
-/*  5*/	{ _Core_Dunnington,    Arch_Core2,       "Xeon/Dunnington"            },
-/*  6*/	{ _Atom_Bonnell,       Arch_Core2,       "Atom/Bonnell"               },
-/*  7*/	{ _Atom_Silvermont,    Arch_Core2,       "Atom/Silvermont"            },
-/*  8*/	{ _Atom_Lincroft,      Arch_Core2,       "Atom/Lincroft"              },
-/*  9*/	{ _Atom_Clovertrail,   Arch_Core2,       "Atom/Clovertrail"           },
-/* 10*/	{ _Atom_Saltwell,      Arch_Core2,       "Atom/Saltwell"              },
-/* 11*/	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont"                 },
-/* 12*/	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont"                 },
-/* 13*/	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield"         },
-/* 14*/	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield"          },
-/* 15*/	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile"             },
-/* 16*/	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP"         },
-/* 17*/	{ _Westmere,           Arch_Nehalem,     "Westmere"                   },
-/* 18*/	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP"                },
-/* 19*/	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme"           },
-/* 20*/	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge"                },
-/* 21*/	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP"     },
-/* 22*/	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge"                  },
-/* 23*/	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP"               },
-/* 24*/	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop"            },
-/* 25*/	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile"             },
-/* 26*/	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP"      },
-/* 27*/	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme"  },
+/*  4*/	{ _Core_Conroe_616,    Arch_Core2,       "Core2/Conroe/Yonah"         },
+/*  5*/	{ _Core_Yorkfield,     Arch_Core2,       "Core2/Yorkfield"            },
+/*  6*/	{ _Core_Dunnington,    Arch_Core2,       "Xeon/Dunnington"            },
+
+/*  7*/	{ _Atom_Bonnell,       Arch_Core2,       "Atom/Bonnell"               },
+/*  8*/	{ _Atom_Silvermont,    Arch_Core2,       "Atom/Silvermont"            },
+/*  9*/	{ _Atom_Lincroft,      Arch_Core2,       "Atom/Lincroft"              },
+/* 10*/	{ _Atom_Clovertrail,   Arch_Core2,       "Atom/Clovertrail"           },
+/* 11*/	{ _Atom_Saltwell,      Arch_Core2,       "Atom/Saltwell"              },
+
+/* 12*/	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont"                 },
+/* 13*/	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont"                 },
+
+/* 14*/	{ _Atom_Airmont,       Arch_Core2,       "Atom/Airmont"               },
+/* 15*/	{ _Atom_Goldmont,      Arch_Core2,       "Atom/Goldmont"              },
+/* 16*/	{ _Atom_Sofia,         Arch_Core2,       "Atom/Sofia"                 },
+/* 17*/	{ _Atom_Merrifield,    Arch_Core2,       "Atom/Merrifield"            },
+/* 18*/	{ _Atom_Moorefield,    Arch_Core2,       "Atom/Moorefield"            },
+
+/* 19*/	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield"         },
+/* 20*/	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield"          },
+/* 21*/	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile"             },
+/* 22*/	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP"         },
+
+/* 23*/	{ _Westmere,           Arch_Nehalem,     "Westmere"                   },
+/* 24*/	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP"                },
+/* 25*/	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme"           },
+
+/* 26*/	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge"                },
+/* 27*/	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP"     },
+
+/* 28*/	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge"                  },
+/* 29*/	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP"               },
+
+/* 30*/	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop"            },
+/* 31*/	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile"             },
+/* 32*/	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP"      },
+/* 33*/	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme"  },
+
+/* 34*/	{ _Broadwell,          Arch_SandyBridge, "Broadwell/Mobile"           },
+/* 35*/	{ _Broadwell_EP,       Arch_SandyBridge, "Broadwell/EP"               },
+/* 36*/	{ _Broadwell_H,        Arch_SandyBridge, "Broadwell/H"                },
+/* 37*/	{ _Broadwell_EX,       Arch_SandyBridge, "Broadwell/EX"               },
+
+/* 38*/	{ _Skylake_UY,         Arch_SandyBridge, "Skylake/UY"                 },
+/* 39*/	{ _Skylake_S,          Arch_SandyBridge, "Skylake/S"                  },
+/* 40*/	{ _Skylake_E,          Arch_SandyBridge, "Skylake/E"                  }
 };
 
 
@@ -601,10 +625,6 @@ void Cache_Topology(CORE *Core)
 			: "a"	(0x4),
 			  "c"	(level)
 		);
-		Core->T.Cache[level].Size=(Core->T.Cache[level].Sets + 1)
-				*  (Core->T.Cache[level].Linez + 1)
-				*  (Core->T.Cache[level].Parts + 1)
-				*  (Core->T.Cache[level].Ways + 1);
 	}
 }
 
@@ -1161,6 +1181,11 @@ void Arch_Core2(unsigned int stage)
 			    case Atom_Lincroft:
 			    case Atom_Clovertrail:
 			    case Atom_Saltwell:
+			    case Atom_Airmont:
+			    case Atom_Goldmont:
+			    case Atom_Sofia:
+			    case Atom_Merrifield:
+			    case Atom_Moorefield:
 				Proc->Clock=Clock_Atom(Proc->Boost[1]);
 			    default:
 				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
@@ -1495,6 +1520,13 @@ void Arch_SandyBridge(unsigned int stage)
 			    case Haswell_MB:
 			    case Haswell_ULT:
 			    case Haswell_ULX:
+			    case Broadwell:
+			    case Broadwell_EP:
+			    case Broadwell_H:
+			    case Broadwell_EX:
+			    case Skylake_UY:
+			    case Skylake_S:
+			    case Skylake_E:
 				Proc->Clock=Clock_Haswell(Proc->Boost[1]);
 			    break;
 			    default:
@@ -1709,8 +1741,9 @@ static int __init IntelFreq_init(void)
 				else
 				{
 				  for(	Proc->ArchID=ARCHITECTURES - 1;
-					Proc->ArchID >0;
+					Proc->ArchID > 0;
 					Proc->ArchID--)
+				  // Search for an architecture signature.
 				    if(!(Arch[Proc->ArchID].Signature.ExtFamily
 				    ^ Proc->Features.Std.AX.ExtFamily)
 				    && !(Arch[Proc->ArchID].Signature.Family

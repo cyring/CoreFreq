@@ -120,15 +120,20 @@ typedef struct
 
 //	[GenuineIntel]
 #define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+
 //	[Core]		06_0EH (32 bits)
 #define	_Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
-//	[Core2]		06_0FH, 06_15H, 06_17H, 06_1D
+
+//	[Core2]		06_0FH, 06_15H, 06_16H, 06_17H, 06_1D
 #define	_Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
 #define	_Core_Kentsfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
+#define	_Core_Conroe_616 \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x6}
 #define	_Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
 #define	_Core_Dunnington \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
+
 //	[Atom]		06_1CH, 06_26H, 06_27H (32bits), 06_35H (32bits), 06_36H
 #define	_Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
 #define	_Atom_Silvermont \
@@ -137,9 +142,24 @@ typedef struct
 #define	_Atom_Clovertrail \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
 #define	_Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
+
 //	[Silvermont]	06_37H, 06_4DH
 #define	_Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
 #define	_Silvermont_64D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
+
+//	[Airmont]	06_4CH
+#define	_Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
+//	[Goldmont]	06_5CH
+#define	_Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
+//	[SoFIA]		06_5DH
+#define	_Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
+//	[Merrifield]	06_4AH
+#define	_Atom_Merrifield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xA}
+//	[Moorefield]	06_5AH
+#define	_Atom_Moorefield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
+
 //	[Nehalem]	06_1AH, 06_1EH, 06_1FH, 06_2EH
 #define	_Nehalem_Bloomfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
@@ -147,26 +167,42 @@ typedef struct
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xE}
 #define	_Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
 #define	_Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
+
 //	[Westmere]	06_25H, 06_2CH, 06_2FH
 #define	_Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
 #define	_Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
 #define	_Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
+
 //	[Sandy Bridge]	06_2AH, 06_2DH
 #define	_SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
 #define	_SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
+
 //	[Ivy Bridge]	06_3AH, 06_3EH
 #define	_IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
 #define	_IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
+
 //	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
 #define	_Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
 #define	_Haswell_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
 #define	_Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
 #define	_Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
 
+//	[Broadwell]	06_3DH, 06_56H, 06_47H, 06_4FH
+#define	_Broadwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xD}
+#define	_Broadwell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x6}
+#define	_Broadwell_H	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x7}
+#define	_Broadwell_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xF}
+
+//	[Skylake]	06_4EH, 06_5EH, 06_55H
+#define	_Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
+#define	_Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
+#define	_Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
+
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
 	Core_Conroe,		\
 	Core_Kentsfield,	\
+	Core_Conroe_616,	\
 	Core_Yorkfield,		\
 	Core_Dunnington,	\
 	Atom_Bonnell,		\
@@ -176,6 +212,11 @@ enum {	GenuineIntel,		\
 	Atom_Saltwell,		\
 	Silvermont_637,		\
 	Silvermont_64D,		\
+	Atom_Airmont,		\
+	Atom_Goldmont,		\
+	Atom_Sofia,		\
+	Atom_Merrifield,	\
+	Atom_Moorefield,	\
 	Nehalem_Bloomfield,	\
 	Nehalem_Lynnfield,	\
 	Nehalem_MB,		\
@@ -191,6 +232,13 @@ enum {	GenuineIntel,		\
 	Haswell_MB,		\
 	Haswell_ULT,		\
 	Haswell_ULX,		\
+	Broadwell,		\
+	Broadwell_EP,		\
+	Broadwell_H,		\
+	Broadwell_EX,		\
+	Skylake_UY,		\
+	Skylake_S,		\
+	Skylake_E,		\
 	ARCHITECTURES
 };
 
