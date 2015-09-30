@@ -1,6 +1,15 @@
 # CoreFreq
 ## Purpose
-CoreFreq is made for the Intel 64-bits Processor, architectures Atom, Core2, Nehalem, SandyBridge and above.
+CoreFreq is made for the Intel 64-bits Processor, architectures Atom, Core2, Nehalem, SandyBridge and above.  
+
+CoreFreq is designed around a Linux Kernel Module which implementes : 
+* per CPU data 
+* slab memory
+* per Core thread
+* completion based synchronization
+* software timer 
+* atomic operations 
+
 
 ## Build & Run
  1- Download or clone the source code into a working directory.
@@ -83,6 +92,9 @@ CPU       ApicID CoreID ThreadID x2APIC Enable Caches L1 L2 L3
 
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
+
+## ArchLinux
+[corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 # Regards
 _`CyrIng`_
