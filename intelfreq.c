@@ -300,7 +300,7 @@ typedef	struct {
 	unsigned long long V[2];
 } TSC_STRUCT;
 
-#define	OCCURRENCES 4
+#define	OCCURRENCES 8
 
 signed int Compute_Clock(void *arg)
 {
@@ -323,6 +323,7 @@ signed int Compute_Clock(void *arg)
 	raw_local_irq_save(flags);
 
 	// Warm-up
+/*
 	RDTSC64(TSC[0][0].V[0]);
 	RDTSC64(TSC[0][0].V[1]);
 	RDTSC64(TSC[0][1].V[0]);
@@ -340,24 +341,48 @@ signed int Compute_Clock(void *arg)
 	RDTSC64(TSC[0][2].V[1]);
 	RDTSC64(TSC[0][3].V[0]);
 	RDTSC64(TSC[0][3].V[1]);
+*/
+	for(loop=0; loop < OCCURRENCES; loop++)
+	{
+		RDTSC64(TSC[0][loop].V[0]);
+		RDTSC64(TSC[0][loop].V[1]);
+	}
 	// Pick-up
 	for(loop=0; loop < OCCURRENCES; loop++)
 	{
 		RDTSC64(TSC[1][loop].V[0]);
-		udelay(100);
+		udelay(1000);
 		RDTSC64(TSC[1][loop].V[1]);
 	}
-
+/*
+	// #1
+	RDTSC64(TSC[1][0].V[0]);
+	udelay(1000);
+	RDTSC64(TSC[1][0].V[1]);
+	// #2
+	RDTSC64(TSC[1][1].V[0]);
+	udelay(1000);
+	RDTSC64(TSC[1][1].V[1]);
+	// #3
+	RDTSC64(TSC[1][2].V[0]);
+	udelay(1000);
+	RDTSC64(TSC[1][2].V[1]);
+	// #4
+	RDTSC64(TSC[1][3].V[0]);
+	udelay(1000);
+	RDTSC64(TSC[1][3].V[1]);
+*/
 	// Restore preemption and interrupt.
 	raw_local_irq_restore(flags);
 	preempt_enable();
 
 	memset(D, 0, 2 * OCCURRENCES);
 	for(loop=0; loop < OCCURRENCES; loop++)
-		for(what=0; what < 2; what++)
+		for(what=0; what < 2; what++) {
 			D[what][loop] 	= TSC[what][loop].V[1]
 					- TSC[what][loop].V[0];
-
+//			printk("D[%u][%u]= %llu\n", what, loop, D[what][loop]);
+		}
 	for(loop=0; loop < OCCURRENCES; loop++) {
 		unsigned int inner=0, count[2]={0, 0};
 		for(inner=loop; inner < OCCURRENCES; inner++) {
@@ -377,8 +402,13 @@ signed int Compute_Clock(void *arg)
 		}
 	}
 	D[1][best[1]] -= D[0][best[0]];
-	clock->Q=D[1][best[1]] / (ratio * PRECISION);
-	clock->R=D[1][best[1]] % (ratio * PRECISION);
+	D[1][best[1]] *= 1000;
+
+	clock->Q=D[1][best[1]] / (1000000L * ratio);
+	clock->R=D[1][best[1]] % (1000000L * ratio);
+
+	clock->Hz=D[1][best[1]] / ratio;
+	clock->Hz+=D[1][best[1]] % ratio;
 
 	kmem_cache_free(hardwareCache, TSC[1]);
 	kmem_cache_free(hardwareCache, TSC[0]);
@@ -1768,7 +1798,7 @@ static int __init IntelFreq_init(void)
 				      "Signature [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s]\n"		\
 				      "%u/%u CPU Online"		\
-				      " , Clock @ {%u/%llu} MHz\n",
+				      ", External Clock @ %llu Hz\n",
 					Proc->Features.Brand,
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
@@ -1777,8 +1807,7 @@ static int __init IntelFreq_init(void)
 					Arch[Proc->ArchID].Architecture,
 					Proc->CPU.OnLine,
 					Proc->CPU.Count,
-					Proc->Clock.Q,
-					Proc->Clock.R);
+					Proc->Clock.Hz);
 
 				Arch[Proc->ArchID].Arch_Controller(START);
 

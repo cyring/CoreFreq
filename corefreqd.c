@@ -111,14 +111,19 @@ static void *Core_Cycle(void *arg)
 					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
+/*
 		Flip->Relative.Freq = Flip->Relative.Ratio * Proc->Clock.Q;
 		Flip->Relative.Freq +=(Flip->Relative.Ratio * Proc->Clock.R) \
 					/ ((double) Proc->Boost[1] * PRECISION);
+*/
+		Flip->Relative.Freq=(double) REL_FREQ(	Proc->Boost[1], \
+							Flip->Relative.Ratio, \
+							Proc->Clock) / 1000000L;
 
 		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 
 		if(Debug)
-			printf("#%03u %7.2fMHz (%5.2f)\n", cpu,
+			printf("#%03u %.2f Hz (%5.2f)\n", cpu,
 					Flip->Relative.Freq,
 					Flip->Relative.Ratio);
 	    }
@@ -180,6 +185,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		// Copy the Base Clock.
 		Shm->Proc.Clock.Q=Proc->Clock.Q;
 		Shm->Proc.Clock.R=Proc->Clock.R;
+		Shm->Proc.Clock.Hz=Proc->Clock.Hz;
 		// Copy the Architecture name.
 		strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 		memcpy(Shm->Proc.Boost, Proc->Boost,
@@ -189,12 +195,19 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
 
 		// Welcomes with brand and bclk.
+/*
 		double Clock=Shm->Proc.Clock.Q				\
 				+ ((double) Shm->Proc.Clock.R		\
 				/ (Shm->Proc.Boost[1] * PRECISION));
 
 		printf("CoreFreqd [%s] , Clock @ %f MHz\n",
 			Shm->Proc.Brand, Clock);
+*/
+		printf("CoreFreqd [%s] , Clock @ %llu Hz\n", Shm->Proc.Brand,
+			REL_FREQ(	Shm->Proc.Boost[1],	\
+					Shm->Proc.Boost[1],	\
+					Shm->Proc.Clock));
+
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 

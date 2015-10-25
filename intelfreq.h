@@ -94,16 +94,10 @@
 #define	RDTSC64(_val64)							\
 	asm volatile							\
 	(								\
-		"mfence			\n\t"				\
-		"rdtsc			\n\t"				\
-		"mfence			\n\t"				\
-		"movq	%%rax,	%%rsi	\n\t"				\
-		"movq	%%rdx,	%%rdi	\n\t"				\
-		"movq	$0x4,	%%rax	\n\t"				\
-		"cpuid			\n\t"				\
-		"shlq	$32,	%%rdi	\n\t"				\
-		"orq	%%rdi,	%%rsi	\n\t"				\
-		"movq	%%rsi,	%0"					\
+		"rdtscp			\n\t"				\
+		"shlq	$32,	%%rdx	\n\t"				\
+		"orq	%%rdx,	%%rax	\n\t"				\
+		"movq	%%rax,	%0"					\
 		:"=m" (_val64)						\
 		:							\
 		:"%rax","%rbx","%rcx","%rdx","%rsi","%rdi","memory"	\

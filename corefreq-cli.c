@@ -61,8 +61,8 @@ void Cycles(SHM_STRUCT *Shm)
 			100.f * Flop->State.C7,
 			Flop->Temperature);
 		}
-		printf("\nAverage C-states\n"			\
-		"Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"		\
+		printf("\nAverage C-states\n"				\
+		"Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
 		"%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f\t%6.2f%%\t%6.2f%%\n\n",
 			100.f * Shm->Proc.Avg.Turbo,
 			100.f * Shm->Proc.Avg.C0,
@@ -157,12 +157,19 @@ int main(int argc, char *argv[])
 		&& ((Shm=mmap(0, shmStat.st_size,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
 		{
+/*
 			double Clock=Shm->Proc.Clock.Q				\
 					+ ((double) Shm->Proc.Clock.R		\
 					/ (Shm->Proc.Boost[1] * PRECISION));
 
 			printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
 					Shm->Proc.Brand, Clock);
+*/
+			printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
+				Shm->Proc.Brand,
+				(double)REL_FREQ(Shm->Proc.Boost[1],		\
+						Shm->Proc.Boost[1],		\
+						Shm->Proc.Clock) / 1000000L);
 
 			signal(SIGINT, Emergency);
 			signal(SIGQUIT, Emergency);
