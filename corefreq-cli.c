@@ -108,11 +108,11 @@ void Topology(SHM_STRUCT *Shm)
 	BITCLR(Shm->Proc.Sync, 0);
 
 	printf(	"CPU       ApicID CoreID ThreadID"		\
-		" x2APIC Enable Caches L1 L2 L3\n");
+		" x2APIC Enable Caches Inst Data Unified\n");
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 	    printf(	"#%02u%-5s  %6d %6d   %6d"		\
-			"    %3s    %c   ",
+			"    %3s    %c     |  ",
 		cpu,
 		(Shm->Cpu[cpu].Topology.BSP) ? "(BSP)" : "(AP)",
 		Shm->Cpu[cpu].Topology.ApicID,
