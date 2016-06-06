@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -1349,7 +1349,7 @@ void Arch_Nehalem(unsigned int stage)
 			PLATFORM_INFO Platform={.value=0};
 			TURBO_RATIO Turbo={.value=0};
 
-			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Platform, MSR_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			Proc->Boost[0]=Platform.MinimumRatio;
@@ -1519,7 +1519,7 @@ void Arch_SandyBridge(unsigned int stage)
 			PLATFORM_INFO Platform={.value=0};
 			TURBO_RATIO Turbo={.value=0};
 
-			RDMSR(Platform, MSR_NHM_PLATFORM_INFO);
+			RDMSR(Platform, MSR_PLATFORM_INFO);
 			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
 
 			Proc->Boost[0]=Platform.MinimumRatio;
