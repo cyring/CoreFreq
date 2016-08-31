@@ -17,11 +17,11 @@
 #include "coretypes.h"
 #include "intelasm.h"
 #include "intelmsr.h"
-#include "intelapi.h"
-#include "intelfreq.h"
+#include "corefreq-api.h"
+#include "corefreqk.h"
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
-MODULE_DESCRIPTION ("Intel Processor Frequency Driver");
+MODULE_DESCRIPTION ("Core Processor Frequency Driver");
 MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i7");
 MODULE_LICENSE ("GPL");
 
@@ -31,7 +31,7 @@ static struct
 	struct cdev *kcdev;
 	dev_t nmdev, mkdev;
 	struct class *clsdev;
-} IntelFreq;
+} CoreFreqK;
 
 static signed int ArchID=-1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -307,7 +307,7 @@ signed int Compute_Clock(void *arg)
 	CLOCK *clock=(CLOCK *) arg;
 	unsigned int ratio=clock->Q;
 	struct kmem_cache *hardwareCache=kmem_cache_create(
-				"IntelClockCache",
+				"CoreFreqCache",
 				OCCURRENCES * sizeof(TSC_STRUCT), 0,
 				SLAB_HWCACHE_ALIGN, NULL);
 	TSC_STRUCT *TSC[2]={
@@ -323,25 +323,6 @@ signed int Compute_Clock(void *arg)
 	raw_local_irq_save(flags);
 
 	// Warm-up
-/*
-	RDTSC64(TSC[0][0].V[0]);
-	RDTSC64(TSC[0][0].V[1]);
-	RDTSC64(TSC[0][1].V[0]);
-	RDTSC64(TSC[0][1].V[1]);
-	RDTSC64(TSC[0][2].V[0]);
-	RDTSC64(TSC[0][2].V[1]);
-	RDTSC64(TSC[0][3].V[0]);
-	RDTSC64(TSC[0][3].V[1]);
-	// Overhead
-	RDTSC64(TSC[0][0].V[0]);
-	RDTSC64(TSC[0][0].V[1]);
-	RDTSC64(TSC[0][1].V[0]);
-	RDTSC64(TSC[0][1].V[1]);
-	RDTSC64(TSC[0][2].V[0]);
-	RDTSC64(TSC[0][2].V[1]);
-	RDTSC64(TSC[0][3].V[0]);
-	RDTSC64(TSC[0][3].V[1]);
-*/
 	for(loop=0; loop < OCCURRENCES; loop++)
 	{
 		RDTSC64(TSC[0][loop].V[0]);
@@ -354,24 +335,6 @@ signed int Compute_Clock(void *arg)
 		udelay(1000);
 		RDTSC64(TSC[1][loop].V[1]);
 	}
-/*
-	// #1
-	RDTSC64(TSC[1][0].V[0]);
-	udelay(1000);
-	RDTSC64(TSC[1][0].V[1]);
-	// #2
-	RDTSC64(TSC[1][1].V[0]);
-	udelay(1000);
-	RDTSC64(TSC[1][1].V[1]);
-	// #3
-	RDTSC64(TSC[1][2].V[0]);
-	udelay(1000);
-	RDTSC64(TSC[1][2].V[1]);
-	// #4
-	RDTSC64(TSC[1][3].V[0]);
-	udelay(1000);
-	RDTSC64(TSC[1][3].V[1]);
-*/
 	// Restore preemption and interrupt.
 	raw_local_irq_restore(flags);
 	preempt_enable();
@@ -381,7 +344,6 @@ signed int Compute_Clock(void *arg)
 		for(what=0; what < 2; what++) {
 			D[what][loop] 	= TSC[what][loop].V[1]
 					- TSC[what][loop].V[0];
-//			printk("D[%u][%u]= %llu\n", what, loop, D[what][loop]);
 		}
 	for(loop=0; loop < OCCURRENCES; loop++) {
 		unsigned int inner=0, count[2]={0, 0};
@@ -422,7 +384,7 @@ CLOCK Base_Clock(unsigned int ratio)
 	CLOCK clock={.Q=ratio, .R=0};
 	struct task_struct *tid=kthread_create(	Compute_Clock,
 						&clock,
-						"kintelbclk/%-3d",
+						"baseclock/%-3d",
 						0);
 	if(!IS_ERR(tid))
 	{
@@ -779,7 +741,7 @@ unsigned int Proc_Topology(void)
 				(Proc->Features.LargestStdFunc >= 0xb) ?
 					Map_Extended_Topology : Map_Topology,
 				KPublic->Core[cpu],
-				"kintelapic/%-3d",
+				"coreapic/%-3d",
 				KPublic->Core[cpu]->Bind);
 			if(!IS_ERR(tid))
 			{
@@ -1086,7 +1048,7 @@ void Arch_Genuine(unsigned int stage)
 				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Genuine,
 							KPublic->Core[cpu],
-							"kintelfreq/%-3d",
+							"corefreqk/%-3d",
 							KPublic->Core[cpu]->Bind);
 				if(!IS_ERR(KPublic->Core[cpu]->TID))
 					kthread_bind(KPublic->Core[cpu]->TID, cpu);
@@ -1242,7 +1204,7 @@ void Arch_Core2(unsigned int stage)
 				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Core2,
 							KPublic->Core[cpu],
-							"kintelfreq/%-3d",
+							"corefreqk/%-3d",
 							KPublic->Core[cpu]->Bind);
 				if(!IS_ERR(KPublic->Core[cpu]->TID))
 					kthread_bind(KPublic->Core[cpu]->TID, cpu);
@@ -1408,7 +1370,7 @@ void Arch_Nehalem(unsigned int stage)
 				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_Nehalem,
 							KPublic->Core[cpu],
-							"kintelfreq/%-3d",
+							"corefreqk/%-3d",
 							KPublic->Core[cpu]->Bind);
 				if(!IS_ERR(KPublic->Core[cpu]->TID))
 					kthread_bind(KPublic->Core[cpu]->TID, cpu);
@@ -1584,7 +1546,7 @@ void Arch_SandyBridge(unsigned int stage)
 				KPublic->Core[cpu]->TID= \
 					kthread_create(	Cycle_SandyBridge,
 							KPublic->Core[cpu],
-							"kintelfreq/%-3d",
+							"corefreqk/%-3d",
 							KPublic->Core[cpu]->Bind);
 				if(!IS_ERR(KPublic->Core[cpu]->TID))
 					kthread_bind(KPublic->Core[cpu]->TID, cpu);
@@ -1634,7 +1596,7 @@ void StopTimer(void)
 	hrtimer_cancel(&Timer);
 }
 
-static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
+static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	if(vma->vm_pgoff == 0)
 	{
@@ -1661,50 +1623,50 @@ static int IntelFreq_mmap(struct file *pfile, struct vm_area_struct *vma)
 	return(0);
 }
 
-static DEFINE_MUTEX(IntelFreq_mutex);
+static DEFINE_MUTEX(CoreFreqK_mutex);
 
-static int IntelFreq_open(struct inode *inode, struct file *pfile)
+static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {
-	if(!mutex_trylock(&IntelFreq_mutex))
+	if(!mutex_trylock(&CoreFreqK_mutex))
 		return(-EBUSY);
 	else
 		return(0);
 }
 
-static int IntelFreq_release(struct inode *inode, struct file *pfile)
+static int CoreFreqK_release(struct inode *inode, struct file *pfile)
 {
-	mutex_unlock(&IntelFreq_mutex);
+	mutex_unlock(&CoreFreqK_mutex);
 	return(0);
 }
 
-static struct file_operations IntelFreq_fops=
+static struct file_operations CoreFreqK_fops=
 {
-	.open	= IntelFreq_open,
-	.release= IntelFreq_release,
-	.mmap	= IntelFreq_mmap,
+	.open	= CoreFreqK_open,
+	.release= CoreFreqK_release,
+	.mmap	= CoreFreqK_mmap,
 	.owner  = THIS_MODULE,
 };
 
-static int __init IntelFreq_init(void)
+static int __init CoreFreqK_init(void)
 {
 	int rc=0;
-	IntelFreq.kcdev=cdev_alloc();
-	IntelFreq.kcdev->ops=&IntelFreq_fops;
-	IntelFreq.kcdev->owner=THIS_MODULE;
+	CoreFreqK.kcdev=cdev_alloc();
+	CoreFreqK.kcdev->ops=&CoreFreqK_fops;
+	CoreFreqK.kcdev->owner=THIS_MODULE;
 
-        if(alloc_chrdev_region(&IntelFreq.nmdev, 0, 1, DRV_FILENAME) >= 0)
+        if(alloc_chrdev_region(&CoreFreqK.nmdev, 0, 1, DRV_FILENAME) >= 0)
 	{
-	    IntelFreq.Major=MAJOR(IntelFreq.nmdev);
-	    IntelFreq.mkdev=MKDEV(IntelFreq.Major, 0);
+	    CoreFreqK.Major=MAJOR(CoreFreqK.nmdev);
+	    CoreFreqK.mkdev=MKDEV(CoreFreqK.Major, 0);
 
-	    if(cdev_add(IntelFreq.kcdev, IntelFreq.mkdev, 1) >= 0)
+	    if(cdev_add(CoreFreqK.kcdev, CoreFreqK.mkdev, 1) >= 0)
 	    {
 		struct device *tmpDev;
 
-		IntelFreq.clsdev=class_create(THIS_MODULE, DRV_DEVNAME);
+		CoreFreqK.clsdev=class_create(THIS_MODULE, DRV_DEVNAME);
 
-		if((tmpDev=device_create(IntelFreq.clsdev, NULL,
-					 IntelFreq.mkdev, NULL,
+		if((tmpDev=device_create(CoreFreqK.clsdev, NULL,
+					 CoreFreqK.mkdev, NULL,
 					 DRV_DEVNAME)) != NULL)
 		{
 		    unsigned int cpu=0, count=Core_Count();
@@ -1737,11 +1699,11 @@ static int __init IntelFreq_init(void)
 			    publicSize=ROUND_TO_PAGES(sizeof(CORE));
 			    privateSize=ROUND_TO_PAGES(sizeof(JOIN));
 			    if(((KPublic->Cache=kmem_cache_create(
-					"intelfreq-pub",
+					"corefreqk-pub",
 					publicSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL)
 			    && ((KPrivate->Cache=kmem_cache_create(
-					"intelfreq-priv",
+					"corefreqk-priv",
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
@@ -1794,11 +1756,11 @@ static int __init IntelFreq_init(void)
 				Proc->CPU.OnLine=Proc_Topology();
 				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
-				printk("IntelFreq [%s]\n"		\
+				printk("CoreFreq Kernel [%s]\n"		\
 				      "Signature [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s]\n"		\
 				      "%u/%u CPU Online"		\
-				      ", External Clock @ %llu Hz\n",
+				      ", Base Clock @ %llu Hz\n",
 					Proc->Features.Brand,
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
@@ -1824,11 +1786,11 @@ static int __init IntelFreq_init(void)
 				kfree(KPublic);
 				kfree(KPrivate);
 
-				device_destroy(IntelFreq.clsdev,
-					       IntelFreq.mkdev);
-				class_destroy(IntelFreq.clsdev);
-				cdev_del(IntelFreq.kcdev);
-				unregister_chrdev_region(IntelFreq.mkdev, 1);
+				device_destroy(CoreFreqK.clsdev,
+					       CoreFreqK.mkdev);
+				class_destroy(CoreFreqK.clsdev);
+				cdev_del(CoreFreqK.kcdev);
+				unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 				rc=-ENOMEM;
 			    }
@@ -1838,11 +1800,11 @@ static int __init IntelFreq_init(void)
 			    kfree(KPublic);
 			    kfree(KPrivate);
 
-			    device_destroy(IntelFreq.clsdev,
-					   IntelFreq.mkdev);
-			    class_destroy(IntelFreq.clsdev);
-			    cdev_del(IntelFreq.kcdev);
-			    unregister_chrdev_region(IntelFreq.mkdev, 1);
+			    device_destroy(CoreFreqK.clsdev,
+					   CoreFreqK.mkdev);
+			    class_destroy(CoreFreqK.clsdev);
+			    cdev_del(CoreFreqK.kcdev);
+			    unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 			    rc=-ENOMEM;
 			}
@@ -1854,41 +1816,41 @@ static int __init IntelFreq_init(void)
 			if(KPrivate != NULL)
 				kfree(KPrivate);
 
-			device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
-			class_destroy(IntelFreq.clsdev);
-			cdev_del(IntelFreq.kcdev);
-			unregister_chrdev_region(IntelFreq.mkdev, 1);
+			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
+			class_destroy(CoreFreqK.clsdev);
+			cdev_del(CoreFreqK.kcdev);
+			unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 			rc=-ENOMEM;
 		    }
 		}
 		else
 		{
-		    class_destroy(IntelFreq.clsdev);
-		    cdev_del(IntelFreq.kcdev);
-		    unregister_chrdev_region(IntelFreq.mkdev, 1);
+		    class_destroy(CoreFreqK.clsdev);
+		    cdev_del(CoreFreqK.kcdev);
+		    unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 		    rc=-EBUSY;
 		}
 	    }
 	    else
 	    {
-		cdev_del(IntelFreq.kcdev);
-		unregister_chrdev_region(IntelFreq.mkdev, 1);
+		cdev_del(CoreFreqK.kcdev);
+		unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 		rc=-EBUSY;
 	    }
 	}
 	else
 	{
-	    cdev_del(IntelFreq.kcdev);
+	    cdev_del(CoreFreqK.kcdev);
 
 	    rc=-EBUSY;
 	}
 	return(rc);
 }
 
-static void __exit IntelFreq_cleanup(void)
+static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu=0;
 
@@ -1915,11 +1877,11 @@ static void __exit IntelFreq_cleanup(void)
 	if(KPrivate != NULL)
 		kfree(KPrivate);
 
-	device_destroy(IntelFreq.clsdev, IntelFreq.mkdev);
-	class_destroy(IntelFreq.clsdev);
-	cdev_del(IntelFreq.kcdev);
-	unregister_chrdev_region(IntelFreq.mkdev, 1);
+	device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
+	class_destroy(CoreFreqK.clsdev);
+	cdev_del(CoreFreqK.kcdev);
+	unregister_chrdev_region(CoreFreqK.mkdev, 1);
 }
 
-module_init(IntelFreq_init);
-module_exit(IntelFreq_cleanup);
+module_init(CoreFreqK_init);
+module_exit(CoreFreqK_cleanup);

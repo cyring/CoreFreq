@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -21,7 +21,7 @@
 #include "corefreq.h"
 #include "intelasm.h"
 #include "intelmsr.h"
-#include "intelapi.h"
+#include "corefreq-api.h"
 
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
@@ -111,11 +111,6 @@ static void *Core_Cycle(void *arg)
 					* (double) Proc->Boost[1];
 
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-/*
-		Flip->Relative.Freq = Flip->Relative.Ratio * Proc->Clock.Q;
-		Flip->Relative.Freq +=(Flip->Relative.Ratio * Proc->Clock.R) \
-					/ ((double) Proc->Boost[1] * PRECISION);
-*/
 		Flip->Relative.Freq=(double) REL_FREQ(	Proc->Boost[1], \
 							Flip->Relative.Ratio, \
 							Proc->Clock) / 1000000L;
@@ -149,7 +144,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	for(cpu=0; !rc && (cpu < Proc->CPU.Count); cpu++)
 	{
 		off_t offset=(1 + cpu) * PAGE_SIZE;
-		if((Core[cpu]=mmap(	NULL, PAGE_SIZE,
+		if((Core[cpu]=mmap(NULL, PAGE_SIZE,
 				PROT_READ|PROT_WRITE,
 				MAP_SHARED,
 				fd->Drv, offset)) == NULL)
@@ -171,7 +166,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 				|S_IRGRP|S_IWGRP			\
 				|S_IROTH|S_IWOTH)) != -1)
 	    && (ftruncate(fd->Svr, ShmSize) != -1)
-	    && ((Shm=mmap(	0, ShmSize,
+	    && ((Shm=mmap(0, ShmSize,
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd->Svr, 0)) != MAP_FAILED))
 	    {
@@ -195,17 +190,10 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
 
 		// Welcomes with brand and bclk.
-/*
-		double Clock=Shm->Proc.Clock.Q				\
-				+ ((double) Shm->Proc.Clock.R		\
-				/ (Shm->Proc.Boost[1] * PRECISION));
-
-		printf("CoreFreqd [%s] , Clock @ %f MHz\n",
-			Shm->Proc.Brand, Clock);
-*/
-		printf("CoreFreqd [%s] , Clock @ %llu Hz\n", Shm->Proc.Brand,
-			REL_FREQ(	Shm->Proc.Boost[1],	\
-					Shm->Proc.Boost[1],	\
+		printf("CoreFreq Daemon [%s] Frequency @ %llu Hz\n",	\
+					Shm->Proc.Brand,		\
+			REL_FREQ(	Shm->Proc.Boost[1],		\
+					Shm->Proc.Boost[1],		\
 					Shm->Proc.Clock));
 
 		// Store the application name.
@@ -256,7 +244,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 						Core_Cycle,
 						&Arg[cpu]);
 			}
-		// Aggregate ratios.
+		// Main loop : aggregate the ratios.
 		while(!Shutdown)
 		{	// Wait until all the rooms & mask are cleared.
 			while(!Shutdown && BITWISEAND(Shm->Proc.Room,roomSeed))
@@ -285,10 +273,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 					Shm->Proc.Avg.C6+=Flop->State.C6;
 					Shm->Proc.Avg.C7+=Flop->State.C7;
 					Shm->Proc.Avg.C1+=Flop->State.C1;
-
-// Solution 1 is atomic			BITSET(Shm->Proc.Room, cpu);
 				}
-// Solution 2 might be atomic b/c op is a 64bits mov ?
 			Shm->Proc.Room=~(1 << Shm->Proc.CPU.Count);
 
 			Shm->Proc.Avg.Turbo/=Shm->Proc.CPU.OnLine;

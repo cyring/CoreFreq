@@ -7,7 +7,7 @@ CoreFreq is designed around a Linux Kernel Module which implementes :
 * slab memory
 * per Core thread
 * completion based synchronization
-* software timer 
+* high resolution timer 
 * atomic operations 
 
 
@@ -24,21 +24,21 @@ cc -c corefreqd.c -o corefreqd.o
 cc -lpthread -lrt -o corefreqd corefreqd.c
 cc -c corefreq-cli.c -o corefreq-cli.o
 cc -lrt -o corefreq-cli corefreq-cli.c
-make -C /lib/modules/4.1.6-1-ARCH/build M=/workdir/CoreFreq modules
-make[1]: Entering directory '/usr/lib/modules/4.1.6-1-ARCH/build'
-  CC [M]  /workdir/CoreFreq/intelfreq.o
+make -C /lib/modules/4.7.2-1-ARCH/build M=/workdir/CoreFreq modules
+make[1]: Entering directory '/usr/lib/modules/4.7.2-1-ARCH/build'
+  CC [M]  /workdir/CoreFreq/corefreqk.o
   Building modules, stage 2.
   MODPOST 1 modules
-  CC      /workdir/CoreFreq/intelfreq.mod.o
-  LD [M]  /workdir/CoreFreq/intelfreq.ko
-make[1]: Leaving directory '/usr/lib/modules/4.1.6-1-ARCH/build'
+  CC      /workdir/CoreFreq/corefreqk.mod.o
+  LD [M]  /workdir/CoreFreq/corefreqk.ko
+make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
 ```
 
 ### Start
 
  3- Load the Kernel module, as root.
 ```
-insmod intelfreq.ko
+insmod corefreqk.ko
 ```
  4- Start the daemon, as root.
 ```
@@ -57,37 +57,50 @@ insmod intelfreq.ko
 
  8- Unload the kernel module with the ```rmmod``` command
 ```
-rmmod intelfreq.ko
+rmmod corefreqk.ko
 ```
 
 ## Screenshots
  * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
 ```
-kernel: IntelFreq [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-	Signature [06_1A] Architecture [Nehalem/Bloomfield]
-	8/8 CPU Online , Clock @ {146/1200} MHz
+CoreFreq Kernel [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+Signature [06_1A] Architecture [Nehalem/Bloomfield]
+8/8 CPU Online, Base Clock @ 146509300 Hz
 ```
 ```
-CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] , Clock @ 146.600000 MHz
+CoreFreq Daemon [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930186000 Hz
 ```
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
 
- * Run the CoreFreq daemon with the option '-t' to display the Processor topology
+ * Run the CoreFreq client with the option '-t' to display the Processor topology
 ```
-CoreFreqd [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-Signature [06_1A] Architecture [Nehalem/Bloomfield]
-8/8 CPU Online , Clock @ 146.600000 MHz
+CoreFreq Client [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930.19 MHz
 
-CPU       ApicID CoreID ThreadID x2APIC Enable Caches L1 L2 L3
-#00(BSP)       0      0        0    OFF    Y    32768 4626 262144
-#01(AP)        2      1        0    OFF    Y    32768 4626 262144
-#02(AP)        4      2        0    OFF    Y    32768 4626 262144
-#03(AP)        6      3        0    OFF    Y    32768 4626 262144
-#04(AP)        1      0        1    OFF    Y    32768 4626 262144
-#05(AP)        3      1        1    OFF    Y    32768 4626 262144
-#06(AP)        5      2        1    OFF    Y    32768 4626 262144
-#07(AP)        7      3        1    OFF    Y    32768 4626 262144
+CPU       ApicID CoreID ThreadID x2APIC Enable Caches Inst Data Unified
+#00(BSP)       0      0        0    OFF    Y     |   32768 4626 262144
+#01(AP)        2      1        0    OFF    Y     |   32768 4626 262144
+#02(AP)        4      2        0    OFF    Y     |   32768 4626 262144
+#03(AP)        6      3        0    OFF    Y     |   32768 4626 262144
+#04(AP)        1      0        1    OFF    Y     |   32768 4626 262144
+#05(AP)        3      1        1    OFF    Y     |   32768 4626 262144
+#06(AP)        5      2        1    OFF    Y     |   32768 4626 262144
+#07(AP)        7      3        1    OFF    Y     |   32768 4626 262144
+```
+
+ * Run the CoreFreq client with the option '-i' to display the # of instructions per second / cycle
+```
+CoreFreq Client [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930.19 MHz
+
+CPU     IPS            IPC            CPI
+#00     0.000579/s     0.059728/c    16.742698/i
+#01     0.000334/s     0.150569/c     6.641471/i
+#02     0.000598/s     0.161326/c     6.198641/i
+#03     0.000294/s     0.233535/c     4.282013/i
+#04     0.000240/s     0.042931/c    23.293141/i
+#05     0.000284/s     0.158661/c     6.302765/i
+#06     0.000128/s     0.128031/c     7.810631/i
+#07     0.000088/s     0.150406/c     6.648674/i
 ```
 
 ## Algorithm

@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -157,15 +157,7 @@ int main(int argc, char *argv[])
 		&& ((Shm=mmap(0, shmStat.st_size,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
 		{
-/*
-			double Clock=Shm->Proc.Clock.Q				\
-					+ ((double) Shm->Proc.Clock.R		\
-					/ (Shm->Proc.Boost[1] * PRECISION));
-
-			printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
-					Shm->Proc.Brand, Clock);
-*/
-			printf(	"CoreFreq-Cli [%s] , Clock @ %.2f MHz\n\n",
+			printf(	"CoreFreq Client [%s] Frequency @ %.2f MHz\n\n",
 				Shm->Proc.Brand,
 				(double)REL_FREQ(Shm->Proc.Boost[1],		\
 						Shm->Proc.Boost[1],		\

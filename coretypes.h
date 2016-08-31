@@ -1,10 +1,10 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
-#define	DRV_DEVNAME "intelfreq"
+#define	DRV_DEVNAME "corefreqk"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
 
 #define	PRECISION	100
