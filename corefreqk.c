@@ -21,8 +21,8 @@
 #include "corefreqk.h"
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
-MODULE_DESCRIPTION ("Core Processor Frequency Driver");
-MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i7");
+MODULE_DESCRIPTION ("CoreFreq Processor Driver");
+MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7");
 MODULE_LICENSE ("GPL");
 
 static struct
@@ -1577,7 +1577,6 @@ static enum hrtimer_restart Cycle_Timer(struct hrtimer *pTimer)
 void InitTimer(void)
 {
 	unsigned int cpu=0;
-
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 		init_completion(&KPrivate->Join[cpu]->Elapsed);
 
@@ -1647,6 +1646,34 @@ static struct file_operations CoreFreqK_fops=
 	.owner  = THIS_MODULE,
 };
 
+#ifdef CONFIG_PM_SLEEP
+static int CoreFreqK_suspend(struct device *dev)
+{
+        Arch[Proc->ArchID].Arch_Controller(STOP);
+
+        StopTimer();
+
+        printk(KERN_INFO "CoreFreq: Suspend\n");
+        return(0);
+}
+
+static int CoreFreqK_resume(struct device *dev)
+{
+        Arch[Proc->ArchID].Arch_Controller(START);
+
+        StartTimer();
+
+        printk(KERN_INFO "CoreFreq: Resume\n");
+        return(0);
+}
+
+static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
+#define COREFREQ_PM_OPS (&CoreFreqK_pm_ops)
+#else
+#define COREFREQ_PM_OPS NULL
+#endif
+
+
 static int __init CoreFreqK_init(void)
 {
 	int rc=0;
@@ -1664,6 +1691,7 @@ static int __init CoreFreqK_init(void)
 		struct device *tmpDev;
 
 		CoreFreqK.clsdev=class_create(THIS_MODULE, DRV_DEVNAME);
+		CoreFreqK.clsdev->pm=COREFREQ_PM_OPS;
 
 		if((tmpDev=device_create(CoreFreqK.clsdev, NULL,
 					 CoreFreqK.mkdev, NULL,
@@ -1756,17 +1784,17 @@ static int __init CoreFreqK_init(void)
 				Proc->CPU.OnLine=Proc_Topology();
 				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
-				printk("CoreFreq Kernel [%s]\n"		\
-				      "Signature [%1X%1X_%1X%1X]"	\
-				      " Architecture [%s]\n"		\
-				      "%u/%u CPU Online"		\
-				      ", Base Clock @ %llu Hz\n",
-					Proc->Features.Brand,
+				printk(KERN_INFO "CoreFreq:"			\
+				      " Processor [%1X%1X_%1X%1X]"		\
+				      " Architecture [%s]\n",
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
 					Arch[Proc->ArchID].Signature.ExtModel,
 					Arch[Proc->ArchID].Signature.Model,
-					Arch[Proc->ArchID].Architecture,
+					Arch[Proc->ArchID].Architecture);
+				printk(KERN_INFO "CoreFreq:"			\
+					" %u/%u CPU Online."			\
+					" Base Clock @ %llu Hz\n",
 					Proc->CPU.OnLine,
 					Proc->CPU.Count,
 					Proc->Clock.Hz);
@@ -1881,6 +1909,8 @@ static void __exit CoreFreqK_cleanup(void)
 	class_destroy(CoreFreqK.clsdev);
 	cdev_del(CoreFreqK.kcdev);
 	unregister_chrdev_region(CoreFreqK.mkdev, 1);
+
+	printk(KERN_INFO "CoreFreq: Exit\n");
 }
 
 module_init(CoreFreqK_init);

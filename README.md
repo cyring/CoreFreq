@@ -1,14 +1,28 @@
 # CoreFreq
 ## Purpose
-CoreFreq is made for the Intel 64-bits Processor, architectures Atom, Core2, Nehalem, SandyBridge and above.  
+CoreFreq is a CPU monitoring software designed for the Intel 64-bits Processors w/ architectures Atom, Core2, Nehalem, SandyBridge and above.
 
-CoreFreq is designed around a Linux Kernel Module which implementes : 
-* per CPU data 
-* slab memory
-* per Core thread
+CoreFreq provides a framework to retrieve CPU data with a high degree of precision:
+
+* Core Frequencies, Ratios, Turbo Boost, HTT and Base Clock
+* Performance counters including TSC, UCC, URC
+* Number of instructions per cycle or second, IPS, IPC, or CPI
+* CPU C-States C0 C1 C3 C6 C7
+* DTS Temperature including the Tjunction Max
+* Topology map w/ Caches for boostrap & application CPU
+* Processor features, brand & architecture strings
+
+
+To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
+
+* machine code to read & write the performance registers
+* per-CPU-slab data memory
+* per-CPU-kthread
 * completion based synchronization
-* high resolution timer 
-* atomic operations 
+* high-resolution timer
+* atomic operations
+* suspend & resume operations
+* clients/server shared memory
 
 
 ## Build & Run
@@ -63,9 +77,8 @@ rmmod corefreqk.ko
 ## Screenshots
  * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
 ```
-CoreFreq Kernel [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-Signature [06_1A] Architecture [Nehalem/Bloomfield]
-8/8 CPU Online, Base Clock @ 146509300 Hz
+CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield]
+CoreFreq: 8/8 CPU Online, Base Clock @ 146509300 Hz
 ```
 ```
 CoreFreq Daemon [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930186000 Hz
