@@ -2,6 +2,8 @@
 ## Purpose
 CoreFreq is a CPU monitoring software designed for the Intel 64-bits Processors w/ architectures Atom, Core2, Nehalem, SandyBridge and above.
 
+![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Client.")
+
 CoreFreq provides a framework to retrieve CPU data with a high degree of precision:
 
 * Core Frequencies, Ratios, Turbo Boost, HTT and Base Clock
@@ -15,13 +17,11 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
 
-* machine code to read & write the performance registers
-* per-CPU-slab data memory
-* per-CPU-kthread
-* completion based synchronization
-* high-resolution timer
-* atomic operations
-* suspend & resume operations
+* asm code to read & write the performance registers
+* per-CPU slab data memory & thread
+* per-CPU high-resolution timer
+* atomic synchronization
+* suspend & resume compliant
 * clients/server shared memory
 
 
@@ -77,11 +77,26 @@ rmmod corefreqk.ko
 ## Screenshots
  * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
 ```
-CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield]
-CoreFreq: 8/8 CPU Online, Base Clock @ 146509300 Hz
+CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] 8/8 CPU
 ```
+
 ```
-CoreFreq Daemon [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930186000 Hz
+
+CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
+
+  Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+  Architecture [Nehalem/Bloomfield]
+  8/8 CPU Online. Turbo[Y]
+
+    CPU #000 @ 2930.35 MHz
+    CPU #001 @ 2930.13 MHz
+    CPU #002 @ 2930.10 MHz
+    CPU #003 @ 2930.13 MHz
+    CPU #004 @ 2930.13 MHz
+    CPU #005 @ 2930.10 MHz
+    CPU #006 @ 2930.14 MHz
+    CPU #007 @ 2930.10 MHz
+
 ```
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
@@ -117,6 +132,7 @@ CPU     IPS            IPC            CPI
 ```
 
 ## Algorithm
+_old version_
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
 
 ## ArchLinux
