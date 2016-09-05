@@ -17,6 +17,7 @@
 #define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
 #define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
 
+
 #define RDCOUNTER(_val,  _cnt)						\
 ({									\
 	unsigned int _lo, _hi;						\
@@ -68,6 +69,7 @@
 #define	RDTSC(_lo, _hi)							\
 	asm volatile							\
 	(								\
+		"lfence			\n\t"				\
 		"rdtsc"							\
 		:"=a" (_lo),						\
 		 "=d" (_hi)						\
@@ -85,7 +87,7 @@
 #define	BARRIER()							\
 	asm volatile							\
 	(								\
-		"mfence"						\
+		"lfence"						\
 		:							\
 		:							\
 		:							\
@@ -111,131 +113,6 @@ typedef struct
 		unsigned char Chr[4];
 	} AX, BX, CX, DX;
 } BRAND;
-
-//	[GenuineIntel]
-#define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
-
-//	[Core]		06_0EH (32 bits)
-#define	_Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
-
-//	[Core2]		06_0FH, 06_15H, 06_16H, 06_17H, 06_1D
-#define	_Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
-#define	_Core_Kentsfield \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
-#define	_Core_Conroe_616 \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x6}
-#define	_Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
-#define	_Core_Dunnington \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
-
-//	[Atom]		06_1CH, 06_26H, 06_27H (32bits), 06_35H (32bits), 06_36H
-#define	_Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
-#define	_Atom_Silvermont \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
-#define	_Atom_Lincroft	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x7}
-#define	_Atom_Clovertrail \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
-#define	_Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
-
-//	[Silvermont]	06_37H, 06_4DH
-#define	_Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
-#define	_Silvermont_64D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
-
-//	[Airmont]	06_4CH
-#define	_Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
-//	[Goldmont]	06_5CH
-#define	_Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
-//	[SoFIA]		06_5DH
-#define	_Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
-//	[Merrifield]	06_4AH
-#define	_Atom_Merrifield \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xA}
-//	[Moorefield]	06_5AH
-#define	_Atom_Moorefield \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
-
-//	[Nehalem]	06_1AH, 06_1EH, 06_1FH, 06_2EH
-#define	_Nehalem_Bloomfield \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
-#define	_Nehalem_Lynnfield \
-			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xE}
-#define	_Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
-#define	_Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
-
-//	[Westmere]	06_25H, 06_2CH, 06_2FH
-#define	_Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
-#define	_Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
-#define	_Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
-
-//	[Sandy Bridge]	06_2AH, 06_2DH
-#define	_SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
-#define	_SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
-
-//	[Ivy Bridge]	06_3AH, 06_3EH
-#define	_IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
-#define	_IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
-
-//	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
-#define	_Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
-#define	_Haswell_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
-#define	_Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
-#define	_Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
-
-//	[Broadwell]	06_3DH, 06_56H, 06_47H, 06_4FH
-#define	_Broadwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xD}
-#define	_Broadwell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x6}
-#define	_Broadwell_H	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x7}
-#define	_Broadwell_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xF}
-
-//	[Skylake]	06_4EH, 06_5EH, 06_55H
-#define	_Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
-#define	_Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
-#define	_Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
-
-enum {	GenuineIntel,		\
-	Core_Yonah,		\
-	Core_Conroe,		\
-	Core_Kentsfield,	\
-	Core_Conroe_616,	\
-	Core_Yorkfield,		\
-	Core_Dunnington,	\
-	Atom_Bonnell,		\
-	Atom_Silvermont,	\
-	Atom_Lincroft,		\
-	Atom_Clovertrail,	\
-	Atom_Saltwell,		\
-	Silvermont_637,		\
-	Silvermont_64D,		\
-	Atom_Airmont,		\
-	Atom_Goldmont,		\
-	Atom_Sofia,		\
-	Atom_Merrifield,	\
-	Atom_Moorefield,	\
-	Nehalem_Bloomfield,	\
-	Nehalem_Lynnfield,	\
-	Nehalem_MB,		\
-	Nehalem_EX,		\
-	Westmere,		\
-	Westmere_EP,		\
-	Westmere_EX,		\
-	SandyBridge,		\
-	SandyBridge_EP,		\
-	IvyBridge,		\
-	IvyBridge_EP,		\
-	Haswell_DT,		\
-	Haswell_MB,		\
-	Haswell_ULT,		\
-	Haswell_ULX,		\
-	Broadwell,		\
-	Broadwell_EP,		\
-	Broadwell_H,		\
-	Broadwell_EX,		\
-	Skylake_UY,		\
-	Skylake_S,		\
-	Skylake_E,		\
-	ARCHITECTURES
-};
-
 
 typedef	union
 {
@@ -472,7 +349,10 @@ enum { INIT, END, START, STOP };
 typedef	struct
 {
 	struct	SIGNATURE	Signature;
-		void		(*Arch_Controller)(unsigned int stage);
+		void		(*Init)(void);
+		void		(*Start)(void *arg);
+		void		(*Stop)(void *arg);
+		void		(*Exit)(void);
 		char		*Architecture;
 } ARCH;
 
@@ -484,7 +364,7 @@ typedef struct
 
 typedef struct
 {
-	struct completion	Elapsed;
+	struct hrtimer		Timer;
 } JOIN;
 
 typedef struct
@@ -493,7 +373,483 @@ typedef struct
 	JOIN			*Join[];
 } KPRIVATE;
 
-extern void Arch_Genuine(unsigned int stage) ;
-extern void Arch_Core2(unsigned int stage) ;
-extern void Arch_Nehalem(unsigned int stage) ;
-extern void Arch_SandyBridge(unsigned int stage) ;
+
+extern void Init_Genuine(void) ;
+extern void Start_Genuine(void *arg) ;
+extern void Stop_Genuine(void *arg) ;
+extern void Init_Core2(void) ;
+extern void Start_Core2(void *arg) ;
+extern void Stop_Core2(void *arg) ;
+extern void Init_Nehalem(void) ;
+extern void Start_Nehalem(void *arg) ;
+extern void Stop_Nehalem(void *arg) ;
+extern void Init_SandyBridge(void) ;
+extern void Start_SandyBridge(void *arg) ;
+extern void Stop_SandyBridge(void *arg) ;
+
+//	[GenuineIntel]
+#define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+
+//	[Core]		06_0EH (32 bits)
+#define	_Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
+
+//	[Core2]		06_0FH, 06_15H, 06_16H, 06_17H, 06_1D
+#define	_Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
+#define	_Core_Kentsfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
+#define	_Core_Conroe_616 \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x6}
+#define	_Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
+#define	_Core_Dunnington \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
+
+//	[Atom]		06_1CH, 06_26H, 06_27H (32bits), 06_35H (32bits), 06_36H
+#define	_Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
+#define	_Atom_Silvermont \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
+#define	_Atom_Lincroft	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x7}
+#define	_Atom_Clovertrail \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
+#define	_Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
+
+//	[Silvermont]	06_37H, 06_4DH
+#define	_Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
+#define	_Silvermont_64D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
+
+//	[Airmont]	06_4CH
+#define	_Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
+//	[Goldmont]	06_5CH
+#define	_Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
+//	[SoFIA]		06_5DH
+#define	_Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
+//	[Merrifield]	06_4AH
+#define	_Atom_Merrifield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xA}
+//	[Moorefield]	06_5AH
+#define	_Atom_Moorefield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
+
+//	[Nehalem]	06_1AH, 06_1EH, 06_1FH, 06_2EH
+#define	_Nehalem_Bloomfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
+#define	_Nehalem_Lynnfield \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xE}
+#define	_Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
+#define	_Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
+
+//	[Westmere]	06_25H, 06_2CH, 06_2FH
+#define	_Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
+#define	_Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
+#define	_Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
+
+//	[Sandy Bridge]	06_2AH, 06_2DH
+#define	_SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
+#define	_SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
+
+//	[Ivy Bridge]	06_3AH, 06_3EH
+#define	_IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
+#define	_IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
+
+//	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
+#define	_Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
+#define	_Haswell_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
+#define	_Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
+#define	_Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
+
+//	[Broadwell]	06_3DH, 06_56H, 06_47H, 06_4FH
+#define	_Broadwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xD}
+#define	_Broadwell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x6}
+#define	_Broadwell_H	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x7}
+#define	_Broadwell_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xF}
+
+//	[Skylake]	06_4EH, 06_5EH, 06_55H
+#define	_Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
+#define	_Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
+#define	_Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
+
+enum {	GenuineIntel,		\
+	Core_Yonah,		\
+	Core_Conroe,		\
+	Core_Kentsfield,	\
+	Core_Conroe_616,	\
+	Core_Yorkfield,		\
+	Core_Dunnington,	\
+	Atom_Bonnell,		\
+	Atom_Silvermont,	\
+	Atom_Lincroft,		\
+	Atom_Clovertrail,	\
+	Atom_Saltwell,		\
+	Silvermont_637,		\
+	Silvermont_64D,		\
+	Atom_Airmont,		\
+	Atom_Goldmont,		\
+	Atom_Sofia,		\
+	Atom_Merrifield,	\
+	Atom_Moorefield,	\
+	Nehalem_Bloomfield,	\
+	Nehalem_Lynnfield,	\
+	Nehalem_MB,		\
+	Nehalem_EX,		\
+	Westmere,		\
+	Westmere_EP,		\
+	Westmere_EX,		\
+	SandyBridge,		\
+	SandyBridge_EP,		\
+	IvyBridge,		\
+	IvyBridge_EP,		\
+	Haswell_DT,		\
+	Haswell_MB,		\
+	Haswell_ULT,		\
+	Haswell_ULX,		\
+	Broadwell,		\
+	Broadwell_EP,		\
+	Broadwell_H,		\
+	Broadwell_EX,		\
+	Skylake_UY,		\
+	Skylake_S,		\
+	Skylake_E,		\
+	ARCHITECTURES
+};
+
+static ARCH Arch[ARCHITECTURES]=
+{
+/*  0*/	{
+	_GenuineIntel,
+	Init_Genuine,
+	Start_Genuine,
+	Stop_Genuine,
+	NULL,
+	NULL
+	},
+
+/*  1*/	{
+	_Core_Yonah,
+	Init_Genuine,
+	Start_Genuine,
+	Stop_Genuine,
+	NULL,
+	"Core/Yonah"
+	},
+/*  2*/	{
+	_Core_Conroe,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Core2/Conroe"
+	},
+/*  3*/	{
+	_Core_Kentsfield,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Core2/Kentsfield"
+	},
+/*  4*/	{
+	_Core_Conroe_616,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Core2/Conroe/Yonah"
+	},
+/*  5*/	{
+	_Core_Yorkfield,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Core2/Yorkfield"
+	},
+/*  6*/	{
+	_Core_Dunnington,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Xeon/Dunnington"
+	},
+
+/*  7*/	{
+	_Atom_Bonnell,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Bonnell"
+	},
+/*  8*/	{
+	_Atom_Silvermont,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Silvermont"
+	},
+/*  9*/	{
+	_Atom_Lincroft,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Lincroft"
+	},
+/* 10*/	{
+	_Atom_Clovertrail,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Clovertrail"
+	},
+/* 11*/	{
+	_Atom_Saltwell,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Saltwell"
+	},
+
+/* 12*/	{
+	_Silvermont_637,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Silvermont"
+	},
+/* 13*/	{
+	_Silvermont_64D,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Silvermont"
+	},
+
+/* 14*/	{
+	_Atom_Airmont,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Airmont"
+	},
+/* 15*/	{
+	_Atom_Goldmont,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Goldmont"
+	},
+/* 16*/	{
+	_Atom_Sofia,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Sofia"
+	},
+/* 17*/	{
+	_Atom_Merrifield,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Merrifield"
+	},
+/* 18*/	{
+	_Atom_Moorefield,
+	Init_Core2,
+	Start_Core2,
+	Stop_Core2,
+	NULL,
+	"Atom/Moorefield"
+	},
+
+/* 19*/	{
+	_Nehalem_Bloomfield,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Nehalem/Bloomfield"
+	},
+/* 20*/	{
+	_Nehalem_Lynnfield,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Nehalem/Lynnfield"
+	},
+/* 21*/	{
+	_Nehalem_MB,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Nehalem/Mobile"
+	},
+/* 22*/	{
+	_Nehalem_EX,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Nehalem/eXtreme.EP"
+	},
+
+/* 23*/	{
+	_Westmere,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Westmere"
+	},
+/* 24*/	{
+	_Westmere_EP,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Westmere/EP"
+	},
+/* 25*/	{
+	_Westmere_EX,
+	Init_Nehalem,
+	Start_Nehalem,
+	Stop_Nehalem,
+	NULL,
+	"Westmere/eXtreme"
+	},
+
+/* 26*/	{
+	_SandyBridge,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"SandyBridge"
+	},
+/* 27*/	{
+	_SandyBridge_EP,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"SandyBridge/eXtreme.EP"
+	},
+
+/* 28*/	{
+	_IvyBridge,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"IvyBridge"
+	},
+/* 29*/	{
+	_IvyBridge_EP,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"IvyBridge/EP"
+	},
+
+/* 30*/	{
+	_Haswell_DT,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Haswell/Desktop"
+	},
+/* 31*/	{
+	_Haswell_MB,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Haswell/Mobile"
+	},
+/* 32*/	{
+	_Haswell_ULT,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Haswell/Ultra Low TDP"
+	},
+/* 33*/	{
+	_Haswell_ULX,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Haswell/Ultra Low eXtreme"
+	},
+
+/* 34*/	{
+	_Broadwell,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Broadwell/Mobile"
+	},
+/* 35*/	{
+	_Broadwell_EP,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Broadwell/EP"
+	},
+/* 36*/	{
+	_Broadwell_H,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	NULL,
+	NULL,
+	"Broadwell/H"
+	},
+/* 37*/	{
+	_Broadwell_EX,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Broadwell/EX"
+	},
+
+/* 38*/	{
+	_Skylake_UY,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Skylake/UY"
+	},
+/* 39*/	{
+	_Skylake_S,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Skylake/S"
+	},
+/* 40*/	{
+	_Skylake_E,
+	Init_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	"Skylake/E"
+	}
+};

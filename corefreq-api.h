@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -309,9 +309,9 @@ typedef struct
 		struct
 		{
 			unsigned long long
-					UCC,
-					URC;
-			}		C0;
+				UCC,
+				URC;
+		}			C0;
 			unsigned long long
 					C3,
 					C6,
@@ -328,9 +328,9 @@ typedef struct
 		struct
 		{
 		unsigned long long
-					UCC,
-					URC;
-			}		C0;
+				UCC,
+				URC;
+		}			C0;
 		unsigned long long
 					C3,
 					C6,
@@ -353,8 +353,7 @@ typedef struct
 	unsigned int			Bind,
 					OffLine;
 
-
-	struct task_struct		*TID;
+	CLOCK				Clock;
 } CORE;
 
 typedef struct
@@ -372,6 +371,4 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8],
 				PerCore;
-
-	CLOCK			Clock;
 } PROC;

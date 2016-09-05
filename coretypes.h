@@ -4,6 +4,15 @@
  * Licenses: GPL2
  */
 
+#define	TRUE	1
+#define	FALSE	0
+
+typedef unsigned long long int	Bool64;
+typedef unsigned int		Bool32;
+
+#define		powered(bit) ((bit) ? 'Y' : 'N')
+#define		enabled(bit) ((bit) ? "ON" : "OFF")
+
 #define	DRV_DEVNAME "corefreqk"
 #define	DRV_FILENAME "/dev/"DRV_DEVNAME
 

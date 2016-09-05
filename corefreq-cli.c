@@ -47,7 +47,7 @@ void Cycles(SHM_STRUCT *Shm)
 		    struct FLIP_FLOP *Flop=				\
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		 printf("#%02u %7.2fMHz (%5.2f)"			\
+		printf("#%02u %7.2fMHz (%5.2f)"				\
 			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
 			" @ %llu°C\n",
 			cpu,
@@ -121,15 +121,23 @@ void Topology(SHM_STRUCT *Shm)
 		(Shm->Cpu[cpu].Topology.x2APIC) ? "ON" : "OFF",
 		(Shm->Cpu[cpu].Topology.Enable) ? 'Y' : 'N');
 	    for(level=0; level < CACHE_MAX_LEVEL; level++)
-		printf(	" %-u",
-			Shm->Cpu[cpu].Topology.Cache[level].Size);
+		if(Shm->Cpu[cpu].Topology.Enable)
+			printf(	" %-u",
+				Shm->Cpu[cpu].Topology.Cache[level].Size);
 	    printf("\n");
 	}
 }
 
 void SysInfo(SHM_STRUCT *Shm)
 {
-	printf("Not implemented yet.\n");
+	printf(	"  Processor [%s]\n"				\
+		"  Architecture [%s]\n"				\
+		"  %u/%u CPU Online. Turbo[%c]\n",
+		Shm->Proc.Brand,
+		Shm->Proc.Architecture,
+		Shm->Proc.CPU.OnLine,
+		Shm->Proc.CPU.Count,
+		powered(Shm->Proc.Turbo));
 }
 
 int main(int argc, char *argv[])
@@ -156,32 +164,29 @@ int main(int argc, char *argv[])
 		&& ((fstat(fd, &shmStat) != -1)
 		&& ((Shm=mmap(0, shmStat.st_size,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
+	   {
+		printf(	"CoreFreq Client."	\
+			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
+
+		signal(SIGINT, Emergency);
+		signal(SIGQUIT, Emergency);
+		signal(SIGTERM, Emergency);
+
+		switch(option)
 		{
-			printf(	"CoreFreq Client [%s] Frequency @ %.2f MHz\n\n",
-				Shm->Proc.Brand,
-				(double)REL_FREQ(Shm->Proc.Boost[1],		\
-						Shm->Proc.Boost[1],		\
-						Shm->Proc.Clock) / 1000000L);
-
-			signal(SIGINT, Emergency);
-			signal(SIGQUIT, Emergency);
-			signal(SIGTERM, Emergency);
-
-			switch(option)
-			{
-				case 's': SysInfo(Shm);
-				break;
-				case 't': Topology(Shm);
-				break;
-				case 'i': Instructions(Shm);
-				break;
-				case 'c':
-				default:  Cycles(Shm);
-				break;
-			}
-			munmap(Shm, shmStat.st_size);
-			close(fd);
+			case 's': SysInfo(Shm);
+			break;
+			case 't': Topology(Shm);
+			break;
+			case 'i': Instructions(Shm);
+			break;
+			case 'c':
+			default:  Cycles(Shm);
+			break;
 		}
+		munmap(Shm, shmStat.st_size);
+		close(fd);
+	    }
 		else rc=2;
 	return(rc);
 }

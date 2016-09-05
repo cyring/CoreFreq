@@ -77,23 +77,19 @@ static void *Core_Cycle(void *arg)
 		// (Protect against a division by zero)
 		Flip->State.IPC	= (double) (Core->Delta.C0.URC != 0) ?	\
 				  (double) (Core->Delta.INST)		\
-					/ (double) Core->Delta.C0.URC	\
+				/ (double) Core->Delta.C0.URC		\
 				: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
 		Flip->State.CPI	= (double) (Core->Delta.INST != 0) ?	\
 				  (double) Core->Delta.C0.URC		\
-					/ (double) (Core->Delta.INST)	\
+				/ (double) (Core->Delta.INST)		\
 				: 0.0f;
 
-		// Compute Turbo State per Cycles Delta.
-		// (Protect against a division by zero)
-		Flip->State.Turbo=(double) (Core->Delta.C0.URC!=0) ?	\
-				  (double) (Core->Delta.C0.UCC)		\
-					/ (double) Core->Delta.C0.URC	\
-				: 0.0f;
-
+		// Compute Turbo State.
+		Flip->State.Turbo=(double) (Core->Delta.C0.UCC)		\
+				/ (double) (Core->Delta.TSC);
 		// Compute C-States.
 		Flip->State.C0	= (double) (Core->Delta.C0.URC)		\
 				/ (double) (Core->Delta.TSC);
@@ -105,22 +101,36 @@ static void *Core_Cycle(void *arg)
 				/ (double) (Core->Delta.TSC);
 		Flip->State.C1	= (double) (Core->Delta.C1)		\
 				/ (double) (Core->Delta.TSC);
+		// Relative Ratio formula.
+		Flip->Relative.Ratio	= (double) (Core->Delta.C0.UCC	\
+						* Proc->Boost[1])	\
+					/ (double) (Core->Delta.TSC);
 
-		Flip->Relative.Ratio	= Flip->State.Turbo		\
-					* Flip->State.C0		\
-					* (double) Proc->Boost[1];
-
-		// Relative Frequency = Relative Ratio x Bus Clock Frequency
-		Flip->Relative.Freq=(double) REL_FREQ(	Proc->Boost[1], \
-							Flip->Relative.Ratio, \
-							Proc->Clock) / 1000000L;
-
+		if(Proc->Turbo == TRUE)
+		{// Relative Frequency equals UCC per second.
+			Flip->Relative.Freq=(double) (Core->Delta.C0.UCC)
+						/ 1000000L;
+		}
+		else
+		{// Relative Frequency = Relative Ratio x Bus Clock Frequency
+		Flip->Relative.Freq=
+			(double) REL_FREQ(Proc->Boost[1], \
+					Flip->Relative.Ratio, \
+					Core->Clock) / 1000000L;
+		}
 		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
 
 		if(Debug)
-			printf("#%03u %.2f Hz (%5.2f)\n", cpu,
-					Flip->Relative.Freq,
-					Flip->Relative.Ratio);
+		{
+			printf(	"#%03u %7.2f MHz (%5.2f)"		\
+				"  UCC[%12llu] URC[%12llu] TSC[%12llu]\n",
+				cpu,
+				Flip->Relative.Freq,
+				Flip->Relative.Ratio,
+				Core->Delta.C0.UCC,
+				Core->Delta.C0.URC,
+				Core->Delta.TSC);
+		}
 	    }
 	} while(!Shutdown) ;
 
@@ -172,15 +182,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	    {
 		// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-		// Copy global attributes.
+		// Copy the global sample delay.
 		Shm->Proc.msleep=Proc->msleep;
-
+		// Copy the number of online CPU.
 		Shm->Proc.CPU.Count=Proc->CPU.Count;
 		Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
-		// Copy the Base Clock.
-		Shm->Proc.Clock.Q=Proc->Clock.Q;
-		Shm->Proc.Clock.R=Proc->Clock.R;
-		Shm->Proc.Clock.Hz=Proc->Clock.Hz;
 		// Copy the Architecture name.
 		strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 		memcpy(Shm->Proc.Boost, Proc->Boost,
@@ -188,13 +194,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		// Copy the operational mode.
 		Shm->Proc.PerCore=Proc->PerCore;
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
-
-		// Welcomes with brand and bclk.
-		printf("CoreFreq Daemon [%s] Frequency @ %llu Hz\n",	\
-					Shm->Proc.Brand,		\
-			REL_FREQ(	Shm->Proc.Boost[1],		\
-					Shm->Proc.Boost[1],		\
-					Shm->Proc.Clock));
+		// Aggregate the Processor's features.
+		Shm->Proc.Turbo=Proc->Features.Thermal_Power_Leaf.AX.TurboIDA;
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
@@ -205,7 +206,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		// Copy per CPU data from Kernel to Userspace.
 		unsigned long long roomSeed=0x0;
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
-		{	// Copy Core topology.
+		{	// Copy per CPU base clock.
+			Shm->Cpu[cpu].Clock.Q=Core[cpu]->Clock.Q;
+			Shm->Cpu[cpu].Clock.R=Core[cpu]->Clock.R;
+			Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
+			// Copy Core topology.
 			Shm->Cpu[cpu].Topology.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
 			Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
 			Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
@@ -229,9 +234,20 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 				BITSET(roomSeed, cpu);
 			}
 		}
+		// Welcomes with brand and per CPU base clock.
+		printf(	"\nCoreFreq Daemon."				\
+			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n"\
+			"  Processor [%s]\n"				\
+			"  Architecture [%s]\n"				\
+			"  %u/%u CPU Online. Turbo[%c]\n\n",
+			Shm->Proc.Brand,
+			Shm->Proc.Architecture,
+			Shm->Proc.CPU.OnLine,
+			Shm->Proc.CPU.Count,
+			powered(Shm->Proc.Turbo));
+
 		// Launch one Server thread per online CPU.
-		ARG *Arg=calloc(Shm->Proc.CPU.Count,
-				sizeof(ARG));
+		ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 			if(!Shm->Cpu[cpu].OffLine)
 			{
@@ -243,7 +259,13 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 						NULL,
 						Core_Cycle,
 						&Arg[cpu]);
+				printf("    CPU #%03u @ %.2f MHz\n", cpu,
+				(double) REL_FREQ(Shm->Proc.Boost[1],
+						Shm->Proc.Boost[1],
+						Shm->Cpu[cpu].Clock)
+					/ 1000000L);
 			}
+		fflush(stdout);
 		// Main loop : aggregate the ratios.
 		while(!Shutdown)
 		{	// Wait until all the rooms & mask are cleared.

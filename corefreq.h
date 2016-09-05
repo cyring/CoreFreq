@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -11,6 +11,8 @@
 typedef struct
 {
 	unsigned int		OffLine;
+
+	CLOCK			Clock;
 
 	unsigned int		Toggle;
 
@@ -60,13 +62,13 @@ typedef struct
 					OnLine;
 	} CPU;
 
-	CLOCK				Clock;
-
 	unsigned char			Architecture[32];
 	unsigned int			Boost[1+1+8],
 					PerCore;
 
 	char				Brand[64];
+
+	Bool32				Turbo;
 
 	struct {
 		double	Turbo,

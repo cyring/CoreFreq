@@ -44,62 +44,55 @@ MODULE_PARM_DESC(AutoClock, "Auto Estimate Clock Frequency");
 static PROC *Proc=NULL;
 static KPUBLIC *KPublic=NULL;
 static KPRIVATE *KPrivate=NULL;
+static ktime_t RearmTheTimer;
 
-static ARCH Arch[ARCHITECTURES]=
+void InitTimer(void *Cycle_Function)
 {
-/*  0*/	{ _GenuineIntel,       Arch_Genuine,     NULL                         },
+	unsigned int cpu=smp_processor_id();
 
-/*  1*/	{ _Core_Yonah,         Arch_Genuine,     "Core/Yonah"                 },
-/*  2*/	{ _Core_Conroe,        Arch_Core2,       "Core2/Conroe"               },
-/*  3*/	{ _Core_Kentsfield,    Arch_Core2,       "Core2/Kentsfield"           },
-/*  4*/	{ _Core_Conroe_616,    Arch_Core2,       "Core2/Conroe/Yonah"         },
-/*  5*/	{ _Core_Yorkfield,     Arch_Core2,       "Core2/Yorkfield"            },
-/*  6*/	{ _Core_Dunnington,    Arch_Core2,       "Xeon/Dunnington"            },
+	hrtimer_init(	&KPrivate->Join[cpu]->Timer,
+			CLOCK_MONOTONIC,
+			HRTIMER_MODE_REL_PINNED);
+	KPrivate->Join[cpu]->Timer.function=Cycle_Function;
+}
 
-/*  7*/	{ _Atom_Bonnell,       Arch_Core2,       "Atom/Bonnell"               },
-/*  8*/	{ _Atom_Silvermont,    Arch_Core2,       "Atom/Silvermont"            },
-/*  9*/	{ _Atom_Lincroft,      Arch_Core2,       "Atom/Lincroft"              },
-/* 10*/	{ _Atom_Clovertrail,   Arch_Core2,       "Atom/Clovertrail"           },
-/* 11*/	{ _Atom_Saltwell,      Arch_Core2,       "Atom/Saltwell"              },
+void Controller_Init(void)
+{
+	if(Arch[Proc->ArchID].Init != NULL)
+		Arch[Proc->ArchID].Init();
+}
 
-/* 12*/	{ _Silvermont_637,     Arch_Nehalem,     "Silvermont"                 },
-/* 13*/	{ _Silvermont_64D,     Arch_Nehalem,     "Silvermont"                 },
+void Controller_Start(void)
+{
+	if(Arch[Proc->ArchID].Start != NULL)
+	{
+		unsigned int cpu=0;
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		    if(!KPublic->Core[cpu]->OffLine)
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Start,
+						NULL, 0);
+	}
+}
 
-/* 14*/	{ _Atom_Airmont,       Arch_Core2,       "Atom/Airmont"               },
-/* 15*/	{ _Atom_Goldmont,      Arch_Core2,       "Atom/Goldmont"              },
-/* 16*/	{ _Atom_Sofia,         Arch_Core2,       "Atom/Sofia"                 },
-/* 17*/	{ _Atom_Merrifield,    Arch_Core2,       "Atom/Merrifield"            },
-/* 18*/	{ _Atom_Moorefield,    Arch_Core2,       "Atom/Moorefield"            },
+void Controller_Stop(void)
+{
+	if(Arch[Proc->ArchID].Stop != NULL)
+	{
+		unsigned int cpu=0;
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		    if(!KPublic->Core[cpu]->OffLine)
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Stop,
+						NULL, 1);
+	}
+}
 
-/* 19*/	{ _Nehalem_Bloomfield, Arch_Nehalem,     "Nehalem/Bloomfield"         },
-/* 20*/	{ _Nehalem_Lynnfield,  Arch_Nehalem,     "Nehalem/Lynnfield"          },
-/* 21*/	{ _Nehalem_MB,         Arch_Nehalem,     "Nehalem/Mobile"             },
-/* 22*/	{ _Nehalem_EX,         Arch_Nehalem,     "Nehalem/eXtreme.EP"         },
-
-/* 23*/	{ _Westmere,           Arch_Nehalem,     "Westmere"                   },
-/* 24*/	{ _Westmere_EP,        Arch_Nehalem,     "Westmere/EP"                },
-/* 25*/	{ _Westmere_EX,        Arch_Nehalem,     "Westmere/eXtreme"           },
-
-/* 26*/	{ _SandyBridge,        Arch_SandyBridge, "SandyBridge"                },
-/* 27*/	{ _SandyBridge_EP,     Arch_SandyBridge, "SandyBridge/eXtreme.EP"     },
-
-/* 28*/	{ _IvyBridge,          Arch_SandyBridge, "IvyBridge"                  },
-/* 29*/	{ _IvyBridge_EP,       Arch_SandyBridge, "IvyBridge/EP"               },
-
-/* 30*/	{ _Haswell_DT,         Arch_SandyBridge, "Haswell/Desktop"            },
-/* 31*/	{ _Haswell_MB,         Arch_SandyBridge, "Haswell/Mobile"             },
-/* 32*/	{ _Haswell_ULT,        Arch_SandyBridge, "Haswell/Ultra Low TDP"      },
-/* 33*/	{ _Haswell_ULX,        Arch_SandyBridge, "Haswell/Ultra Low eXtreme"  },
-
-/* 34*/	{ _Broadwell,          Arch_SandyBridge, "Broadwell/Mobile"           },
-/* 35*/	{ _Broadwell_EP,       Arch_SandyBridge, "Broadwell/EP"               },
-/* 36*/	{ _Broadwell_H,        Arch_SandyBridge, "Broadwell/H"                },
-/* 37*/	{ _Broadwell_EX,       Arch_SandyBridge, "Broadwell/EX"               },
-
-/* 38*/	{ _Skylake_UY,         Arch_SandyBridge, "Skylake/UY"                 },
-/* 39*/	{ _Skylake_S,          Arch_SandyBridge, "Skylake/S"                  },
-/* 40*/	{ _Skylake_E,          Arch_SandyBridge, "Skylake/E"                  }
-};
+void Controller_Exit(void)
+{
+	if(Arch[Proc->ArchID].Exit != NULL)
+		Arch[Proc->ArchID].Exit();
+}
 
 
 unsigned int Core_Count(void)
@@ -332,7 +325,9 @@ signed int Compute_Clock(void *arg)
 	for(loop=0; loop < OCCURRENCES; loop++)
 	{
 		RDTSC64(TSC[1][loop].V[0]);
+
 		udelay(1000);
+
 		RDTSC64(TSC[1][loop].V[1]);
 	}
 	// Restore preemption and interrupt.
@@ -362,7 +357,7 @@ signed int Compute_Clock(void *arg)
 
 			}
 		}
-	}
+	}	// Select the best clock.
 	D[1][best[1]] -= D[0][best[0]];
 	D[1][best[1]] *= 1000;
 
@@ -379,18 +374,22 @@ signed int Compute_Clock(void *arg)
 	complete_and_exit(&bclk_job_complete, 0);
 }
 
-CLOCK Base_Clock(unsigned int ratio)
+CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
 {
-	CLOCK clock={.Q=ratio, .R=0};
+	CLOCK clock={.Q=ratio, .R=0, .Hz=0};
+
 	struct task_struct *tid=kthread_create(	Compute_Clock,
 						&clock,
 						"baseclock/%-3d",
-						0);
+						cpu);
 	if(!IS_ERR(tid))
 	{
-		kthread_bind(tid, 0);
+		kthread_bind(tid, cpu);
 		wake_up_process(tid);
 		wait_for_completion(&bclk_job_complete);
+		printk(KERN_INFO "CoreFreq:"		\
+				" CPU #%-3d Base Clock @ %llu\n",
+				cpu, clock.Hz);
 	}
 	return(clock);
 }
@@ -824,12 +823,12 @@ void Counters_Clear(CORE *Core)
 
 #define Counters_Genuine(Core, T)					\
 ({									\
+	/* TSC in relation to the Core. */				\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+									\
 	/* Actual & Maximum Performance Frequency Clock counters. */	\
 	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_IA32_APERF);		\
 	RDCOUNTER(Core->Counter[T].C0.URC, MSR_IA32_MPERF);		\
-									\
-	/* TSC in relation to the Core.	*/				\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
 									\
 	/* Derive C1 */							\
 	Core->Counter[T].C1=						\
@@ -840,15 +839,15 @@ void Counters_Clear(CORE *Core)
 
 #define Counters_Core2(Core, T)						\
 ({									\
-	/* Instructions Retired. */					\
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
 									\
 	/* Unhalted Core & Reference Cycles. */				\
 	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
 	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
 									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
+	/* Instructions Retired. */					\
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
 									\
 	/* Derive C1 */							\
 	Core->Counter[T].C1=						\
@@ -861,19 +860,69 @@ void Counters_Clear(CORE *Core)
 ({									\
 	register unsigned long long Cx=0;				\
 									\
+	asm volatile							\
+	(								\
+		"# TSC in relation to the Logical Core.		\n\t"	\
+		"rdtscp						\n\t"	\
+		"movq	%%rdx,	%%rdi				\n\t"	\
+		"movq	%%rax,	%%rsi				\n\t"	\
+									\
+		"# Unhalted Core & Reference Cycles.		\n\t"	\
+		"movq	%8,	%%rcx				\n\t"	\
+		"rdmsr						\n\t"	\
+		"movq	%%rdx,	%%r9				\n\t"	\
+		"movq	%%rax,	%%r8				\n\t"	\
+									\
+		"movq	%7,	%%rcx				\n\t"	\
+		"rdmsr						\n\t"	\
+		"movq	%%rdx,	%%r11				\n\t"	\
+		"movq	%%rax,	%%r10				\n\t"	\
+									\
+		"# C-States.					\n\t"	\
+		"movq	%6,	%%rcx				\n\t"	\
+		"rdmsr						\n\t"	\
+		"movq	%%rdx,	%%r13				\n\t"	\
+		"movq	%%rax,	%%r12				\n\t"	\
+									\
+		"movq	%5,	%%rcx				\n\t"	\
+		"rdmsr						\n\t"	\
+									\
+		"shlq	$32,	%%rdx				\n\t"	\
+		"orq	%%rdx,	%%rax				\n\t"	\
+		"movq	%%rax,	%0				\n\t"	\
+									\
+		"shlq	$32,	%%r13				\n\t"	\
+		"orq	%%r13,	%%r12				\n\t"	\
+		"movq	%%r12,	%1				\n\t"	\
+									\
+		"shlq	$32,	%%r11				\n\t"	\
+		"orq	%%r11,	%%r10				\n\t"	\
+		"movq	%%r10,	%2				\n\t"	\
+									\
+		"shlq	$32,	%%r9				\n\t"	\
+		"orq	%%r9,	%%r8				\n\t"	\
+		"movq	%%r8,	%3				\n\t"	\
+									\
+		"shlq	$32,	%%rdi				\n\t"	\
+		"orq	%%rdi,	%%rsi				\n\t"	\
+		"movq	%%rsi,	%4				"	\
+									\
+		:"=m" (Core->Counter[T].C6),				\
+		 "=m" (Core->Counter[T].C3),				\
+		 "=m" (Core->Counter[T].C0.URC),			\
+		 "=m" (Core->Counter[T].C0.UCC),			\
+		 "=m" (Core->Counter[T].TSC)				\
+		:"i" (MSR_CORE_C6_RESIDENCY),				\
+		 "i" (MSR_CORE_C3_RESIDENCY),				\
+		 "i" (MSR_CORE_PERF_FIXED_CTR2),			\
+		 "i" (MSR_CORE_PERF_FIXED_CTR1)				\
+		:"%rax", "%rcx", "%rdx", "%rsi", "%rdi",		\
+		 "%r8" , "%r9" , "%r10", "%r11", "%r12", "%r13",	\
+		 "memory"						\
+	);								\
+									\
 	/* Instructions Retired. */					\
 	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
-									\
-	/* Unhalted Core & Reference Cycles. */				\
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
-									\
-	/* C-States. */							\
-	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
-	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
-									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
 									\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C6					\
@@ -890,20 +939,20 @@ void Counters_Clear(CORE *Core)
 ({									\
 	register unsigned long long Cx=0;				\
 									\
-	/* Instructions Retired. */					\
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
+	/* TSC in relation to the Logical Core. */			\
+	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
 									\
 	/* Unhalted Core & Reference Cycles. */				\
 	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
 	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
 									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
-									\
 	/* C-States. */							\
 	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
 	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
 	RDCOUNTER(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);		\
+									\
+	/* Instructions Retired. */					\
+	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
 									\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C7					\
@@ -915,6 +964,97 @@ void Counters_Clear(CORE *Core)
 		(Core->Counter[T].TSC > Cx) ?				\
 			Core->Counter[T].TSC - Cx			\
 			: 0;						\
+})
+
+#define Delta_TSC(Core)							\
+({									\
+	Core->Delta.TSC = Core->Counter[1].TSC				\
+			- Core->Counter[0].TSC;				\
+})
+
+#define Delta_C0(Core)							\
+({	/* Absolute Delta of Unhalted (Core & Ref) C0 Counter. */	\
+	Core->Delta.C0.UCC=						\
+		(Core->Counter[0].C0.UCC >				\
+		Core->Counter[1].C0.UCC) ?				\
+			Core->Counter[0].C0.UCC				\
+			- Core->Counter[1].C0.UCC			\
+			: Core->Counter[1].C0.UCC			\
+			- Core->Counter[0].C0.UCC;			\
+									\
+	Core->Delta.C0.URC= Core->Counter[1].C0.URC			\
+			  - Core->Counter[0].C0.URC;			\
+})
+
+#define Delta_C1(Core)							\
+({									\
+	Core->Delta.C1=							\
+		(Core->Counter[0].C1 >					\
+		 Core->Counter[1].C1) ?					\
+			Core->Counter[0].C1				\
+			- Core->Counter[1].C1				\
+			: Core->Counter[1].C1				\
+			- Core->Counter[0].C1;				\
+})
+
+#define Delta_C3(Core)							\
+({									\
+	Core->Delta.C3  = Core->Counter[1].C3				\
+			- Core->Counter[0].C3;				\
+})
+
+#define Delta_C6(Core)							\
+({									\
+	Core->Delta.C6  = Core->Counter[1].C6				\
+			- Core->Counter[0].C6;				\
+})
+
+#define Delta_C7(Core)							\
+({									\
+	Core->Delta.C7  = Core->Counter[1].C7				\
+			- Core->Counter[0].C7;				\
+})
+
+#define Delta_INST(Core)						\
+({	/* Delta of Instructions Retired */				\
+	Core->Delta.INST= Core->Counter[1].INST				\
+			- Core->Counter[0].INST;			\
+})
+
+#define Save_TSC(Core)							\
+({	/* Save Time Stamp Counter. */					\
+	Core->Counter[0].TSC=Core->Counter[1].TSC;			\
+})
+
+#define Save_C0(Core)							\
+({	/* Save the Unhalted Core & Reference Counter */		\
+	Core->Counter[0].C0.UCC=Core->Counter[1].C0.UCC;		\
+	Core->Counter[0].C0.URC=Core->Counter[1].C0.URC;		\
+})
+
+#define Save_C1(Core)							\
+({									\
+	Core->Counter[0].C1=Core->Counter[1].C1;			\
+})
+
+#define Save_C3(Core)							\
+({									\
+	Core->Counter[0].C3=Core->Counter[1].C3;			\
+})
+
+#define Save_C6(Core)							\
+({									\
+	Core->Counter[0].C6=Core->Counter[1].C6;			\
+})
+
+#define Save_C7(Core)							\
+({									\
+	Core->Counter[0].C7=Core->Counter[1].C7;			\
+})
+
+#define Save_INST(Core)							\
+({	/* Save the Instructions counter. */				\
+	Core->Counter[0].INST=Core->Counter[1].INST;			\
 })
 
 void Core_Thermal(CORE *Core)
@@ -929,671 +1069,474 @@ void Core_Thermal(CORE *Core)
 	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
 )
 
-int Cycle_Genuine(void *arg)
+
+static enum hrtimer_restart Cycle_Genuine(struct hrtimer *pTimer)
 {
-	if(arg != NULL)
-	{
-		CORE *Core=(CORE *) arg;
-
-		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
-		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
-
-		Counters_Genuine(Core, 0);
-		Core_Thermal(Core);
-
-		while(!kthread_should_stop())
-		{
-		    if(wait_for_completion_timeout(elapsed, timeout))
-		    {
-			reinit_completion(elapsed);
-
-			Counters_Genuine(Core, 1);
-			Core_Temp(Core);
-
-			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Core->Delta.C0.UCC=				\
-				(Core->Counter[0].C0.UCC >		\
-				Core->Counter[1].C0.UCC) ?		\
-					Core->Counter[0].C0.UCC		\
-					- Core->Counter[1].C0.UCC	\
-					: Core->Counter[1].C0.UCC	\
-					- Core->Counter[0].C0.UCC;
-
-			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
-					  - Core->Counter[0].C0.URC;
-
-			Core->Delta.TSC = Core->Counter[1].TSC		\
-					- Core->Counter[0].TSC;
-
-			Core->Delta.C1=					\
-				(Core->Counter[0].C1 >			\
-				 Core->Counter[1].C1) ?			\
-					Core->Counter[0].C1		\
-					- Core->Counter[1].C1		\
-					: Core->Counter[1].C1		\
-					- Core->Counter[0].C1;
-
-			// Save TSC.
-			Core->Counter[0].TSC=Core->Counter[1].TSC;
-
-			// Save the Unhalted Core & Reference Counter
-			// for next iteration.
-			Core->Counter[0].C0.UCC=Core->Counter[1].C0.UCC;
-			Core->Counter[0].C0.URC=Core->Counter[1].C0.URC;
-
-			Core->Counter[0].C1=Core->Counter[1].C1;
-
-			BITSET(Core->Sync.V, 0);
-		    }
-		}
-	}
-	do_exit(0);
-}
-
-void Arch_Genuine(unsigned int stage)
-{
-	unsigned int cpu=0;
-
-	switch(stage)
-	{
-		case END:
-		{
-		}
-		break;
-		case INIT:
-		{
-			PLATFORM_INFO Platform={.value=0};
-
-			RDMSR(Platform, MSR_PLATFORM_INFO);
-
-			if(Platform.value != 0)
-			{
-			  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-						Platform.MaxNonTurboRatio);
-			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-						Platform.MaxNonTurboRatio);
-			}
-			Proc->Boost[9]=Proc->Boost[1];
-
-			if(AutoClock)
-				Proc->Clock=Base_Clock(Proc->Boost[1]);
-			else
-			    switch(Proc->ArchID)
-			    {
-			    case Core_Yonah:
-				Proc->Clock=Clock_Core(Proc->Boost[1]);
-			    break;
-			    default:
-				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
-			    break;
-			    }
-		}
-		break;
-		case STOP:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine
-			    && !IS_ERR(KPublic->Core[cpu]->TID))
-			    {
-				complete(&KPrivate->Join[cpu]->Elapsed);
-				kthread_stop(KPublic->Core[cpu]->TID);
-			    }
-		}
-		break;
-		case START:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine)
-			    {
-				KPublic->Core[cpu]->TID= \
-					kthread_create(	Cycle_Genuine,
-							KPublic->Core[cpu],
-							"corefreqk/%-3d",
-							KPublic->Core[cpu]->Bind);
-				if(!IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_bind(KPublic->Core[cpu]->TID, cpu);
-			   }
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					wake_up_process(KPublic->Core[cpu]->TID);
-		}
-		break;
-	}
-}
-
-int Cycle_Core2(void *arg)
-{
-	if(arg != NULL)
-	{
-		CORE *Core=(CORE *) arg;
-
-		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
-		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
-
-		Counters_Set(Core);
-		Counters_Core2(Core, 0);
-		Core_Thermal(Core);
-
-		while(!kthread_should_stop())
-		{
-		    if(wait_for_completion_timeout(elapsed, timeout))
-		    {
-			reinit_completion(elapsed);
-
-			Counters_Core2(Core, 1);
-			Core_Temp(Core);
-
-			// Delta of Instructions Retired
-			Core->Delta.INST= Core->Counter[1].INST		\
-					- Core->Counter[0].INST;
-
-			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Core->Delta.C0.UCC=				\
-				(Core->Counter[0].C0.UCC >		\
-				Core->Counter[1].C0.UCC) ?		\
-					Core->Counter[0].C0.UCC		\
-					- Core->Counter[1].C0.UCC	\
-					: Core->Counter[1].C0.UCC	\
-					- Core->Counter[0].C0.UCC;
-
-			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
-					  - Core->Counter[0].C0.URC;
-
-			Core->Delta.TSC = Core->Counter[1].TSC		\
-					- Core->Counter[0].TSC;
-
-			Core->Delta.C1=					\
-				(Core->Counter[0].C1 >			\
-				 Core->Counter[1].C1) ?			\
-					Core->Counter[0].C1		\
-					- Core->Counter[1].C1		\
-					: Core->Counter[1].C1		\
-					- Core->Counter[0].C1;
-
-			// Save the Instructions counter.
-			Core->Counter[0].INST=Core->Counter[1].INST;
-
-			// Save TSC.
-			Core->Counter[0].TSC=Core->Counter[1].TSC;
-
-			// Save the Unhalted Core & Reference Counter
-			// for next iteration.
-			Core->Counter[0].C0.UCC=Core->Counter[1].C0.UCC;
-			Core->Counter[0].C0.URC=Core->Counter[1].C0.URC;
-
-			Core->Counter[0].C1=Core->Counter[1].C1;
-
-			BITSET(Core->Sync.V, 0);
-		    }
-		}
-		Counters_Clear(Core);
-	}
-	do_exit(0);
-}
-
-void Arch_Core2(unsigned int stage)
-{
-	unsigned int cpu=0;
-
-	switch(stage)
-	{
-		case END:
-		{
-		}
-		break;
-		case INIT:
-		{
-			PLATFORM_INFO Platform={.value=0};
-
-			RDMSR(Platform, MSR_PLATFORM_INFO);
-
-			if(Platform.value != 0)
-			{
-			  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-						Platform.MaxNonTurboRatio);
-			  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-						Platform.MaxNonTurboRatio);
-			}
-			Proc->Boost[9]=Proc->Boost[1];
-
-			if(AutoClock)
-				Proc->Clock=Base_Clock(Proc->Boost[1]);
-			else
-			    switch(Proc->ArchID)
-			    {
-			    case Core_Conroe:
-			    case Core_Kentsfield:
-			    case Core_Yorkfield:
-			    case Core_Dunnington:
-				Proc->Clock=Clock_Core2(Proc->Boost[1]);
-			    break;
-			    case Atom_Bonnell:
-			    case Atom_Silvermont:
-			    case Atom_Lincroft:
-			    case Atom_Clovertrail:
-			    case Atom_Saltwell:
-			    case Atom_Airmont:
-			    case Atom_Goldmont:
-			    case Atom_Sofia:
-			    case Atom_Merrifield:
-			    case Atom_Moorefield:
-				Proc->Clock=Clock_Atom(Proc->Boost[1]);
-			    default:
-				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
-			    break;
-			}
-		}
-		break;
-		case STOP:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine
-			    && !IS_ERR(KPublic->Core[cpu]->TID))
-			    {
-				complete(&KPrivate->Join[cpu]->Elapsed);
-				kthread_stop(KPublic->Core[cpu]->TID);
-			    }
-		}
-		break;
-		case START:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine)
-			    {
-				KPublic->Core[cpu]->TID= \
-					kthread_create(	Cycle_Core2,
-							KPublic->Core[cpu],
-							"corefreqk/%-3d",
-							KPublic->Core[cpu]->Bind);
-				if(!IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_bind(KPublic->Core[cpu]->TID, cpu);
-			    }
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					wake_up_process(KPublic->Core[cpu]->TID);
-		}
-		break;
-	}
-}
-
-int Cycle_Nehalem(void *arg)
-{
-	if(arg != NULL)
-	{
-		CORE *Core=(CORE *) arg;
-
-		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
-		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
-
-		Counters_Set(Core);
-		Counters_Nehalem(Core, 0);
-		Core_Thermal(Core);
-
-		while(!kthread_should_stop())
-		{
-		    if(wait_for_completion_timeout(elapsed, timeout))
-		    {
-			reinit_completion(elapsed);
-
-			Counters_Nehalem(Core, 1);
-			Core_Temp(Core);
-
-			// Delta of Instructions Retired
-			Core->Delta.INST= Core->Counter[1].INST		\
-					- Core->Counter[0].INST;
-
-			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Core->Delta.C0.UCC=				\
-				(Core->Counter[0].C0.UCC >		\
-				Core->Counter[1].C0.UCC) ?		\
-					Core->Counter[0].C0.UCC		\
-					- Core->Counter[1].C0.UCC	\
-					: Core->Counter[1].C0.UCC	\
-					- Core->Counter[0].C0.UCC;
-
-			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
-					  - Core->Counter[0].C0.URC;
-
-			Core->Delta.C3  = Core->Counter[1].C3		\
-					- Core->Counter[0].C3;
-			Core->Delta.C6  = Core->Counter[1].C6		\
-					- Core->Counter[0].C6;
-
-			Core->Delta.TSC = Core->Counter[1].TSC		\
-					- Core->Counter[0].TSC;
-
-			Core->Delta.C1=					\
-				(Core->Counter[0].C1 >			\
-				 Core->Counter[1].C1) ?			\
-					Core->Counter[0].C1		\
-					- Core->Counter[1].C1		\
-					: Core->Counter[1].C1		\
-					- Core->Counter[0].C1;
-
-			// Save the Instructions counter.
-			Core->Counter[0].INST=Core->Counter[1].INST;
-
-			// Save TSC.
-			Core->Counter[0].TSC=Core->Counter[1].TSC;
-
-			// Save the Unhalted Core & Reference Counter
-			// for next iteration.
-			Core->Counter[0].C0.UCC=Core->Counter[1].C0.UCC;
-			Core->Counter[0].C0.URC=Core->Counter[1].C0.URC;
-
-			// Save also the C-State Reference Counter.
-			Core->Counter[0].C3=Core->Counter[1].C3;
-			Core->Counter[0].C6=Core->Counter[1].C6;
-			Core->Counter[0].C1=Core->Counter[1].C1;
-
-			BITSET(Core->Sync.V, 0);
-		    }
-		}
-		Counters_Clear(Core);
-	}
-	do_exit(0);
-}
-
-void Arch_Nehalem(unsigned int stage)
-{
-	unsigned int cpu=0;
-
-	switch(stage)
-	{
-		case END:
-		{
-		}
-		break;
-		case INIT:
-		{
-			PLATFORM_INFO Platform={.value=0};
-			TURBO_RATIO Turbo={.value=0};
-
-			RDMSR(Platform, MSR_PLATFORM_INFO);
-			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
-
-			Proc->Boost[0]=Platform.MinimumRatio;
-			Proc->Boost[1]=Platform.MaxNonTurboRatio;
-			Proc->Boost[2]=Turbo.MaxRatio_8C;
-			Proc->Boost[3]=Turbo.MaxRatio_7C;
-			Proc->Boost[4]=Turbo.MaxRatio_6C;
-			Proc->Boost[5]=Turbo.MaxRatio_5C;
-			Proc->Boost[6]=Turbo.MaxRatio_4C;
-			Proc->Boost[7]=Turbo.MaxRatio_3C;
-			Proc->Boost[8]=Turbo.MaxRatio_2C;
-			Proc->Boost[9]=Turbo.MaxRatio_1C;
-
-			if(AutoClock)
-				Proc->Clock=Base_Clock(Proc->Boost[1]);
-			else
-			    switch(Proc->ArchID)
-			    {
-			    case Silvermont_637:
-			    case Silvermont_64D:
-				Proc->Clock=Clock_Silvermont(Proc->Boost[1]);
-			    break;
-			    case Nehalem_Bloomfield:
-			    case Nehalem_Lynnfield:
-			    case Nehalem_MB:
-			    case Nehalem_EX:
-				Proc->Clock=Clock_Nehalem(Proc->Boost[1]);
-			    break;
-			    case Westmere:
-			    case Westmere_EP:
-			    case Westmere_EX:
-				Proc->Clock=Clock_Westmere(Proc->Boost[1]);
-			    break;
-			    default:
-				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
-			    break;
-			}
-		}
-		break;
-		case STOP:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine
-			    && !IS_ERR(KPublic->Core[cpu]->TID))
-			    {
-				complete(&KPrivate->Join[cpu]->Elapsed);
-				kthread_stop(KPublic->Core[cpu]->TID);
-			    }
-		}
-		break;
-		case START:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine)
-			    {
-				KPublic->Core[cpu]->TID= \
-					kthread_create(	Cycle_Nehalem,
-							KPublic->Core[cpu],
-							"corefreqk/%-3d",
-							KPublic->Core[cpu]->Bind);
-				if(!IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_bind(KPublic->Core[cpu]->TID, cpu);
-			    }
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					wake_up_process(KPublic->Core[cpu]->TID);
-		}
-		break;
-	}
-}
-
-int Cycle_SandyBridge(void *arg)
-{
-	if(arg != NULL)
-	{
-		CORE *Core=(CORE *) arg;
-
-		struct completion *elapsed=&KPrivate->Join[Core->Bind]->Elapsed;
-		unsigned int timeout=msecs_to_jiffies(Proc->msleep + 9);
-
-		Counters_Set(Core);
-		Counters_SandyBridge(Core, 0);
-		Core_Thermal(Core);
-
-		while(!kthread_should_stop())
-		{
-		    if(wait_for_completion_timeout(elapsed, timeout))
-		    {
-			reinit_completion(elapsed);
-
-			Counters_SandyBridge(Core, 1);
-			Core_Temp(Core);
-
-			// Delta of Instructions Retired
-			Core->Delta.INST= Core->Counter[1].INST		\
-					- Core->Counter[0].INST;
-
-			// Absolute Delta of Unhalted (Core & Ref) C0 Counter.
-			Core->Delta.C0.UCC=				\
-				(Core->Counter[0].C0.UCC >		\
-				Core->Counter[1].C0.UCC) ?		\
-					Core->Counter[0].C0.UCC		\
-					- Core->Counter[1].C0.UCC	\
-					: Core->Counter[1].C0.UCC	\
-					- Core->Counter[0].C0.UCC;
-
-			Core->Delta.C0.URC= Core->Counter[1].C0.URC	\
-					  - Core->Counter[0].C0.URC;
-
-			Core->Delta.C3  = Core->Counter[1].C3		\
-					- Core->Counter[0].C3;
-			Core->Delta.C6  = Core->Counter[1].C6		\
-					- Core->Counter[0].C6;
-			Core->Delta.C7  = Core->Counter[1].C7		\
-					- Core->Counter[0].C7;
-
-			Core->Delta.TSC = Core->Counter[1].TSC		\
-					- Core->Counter[0].TSC;
-
-			Core->Delta.C1=					\
-				(Core->Counter[0].C1 >			\
-				 Core->Counter[1].C1) ?			\
-					Core->Counter[0].C1		\
-					- Core->Counter[1].C1		\
-					: Core->Counter[1].C1		\
-					- Core->Counter[0].C1;
-
-			// Save the Instructions counter.
-			Core->Counter[0].INST=Core->Counter[1].INST;
-
-			// Save TSC.
-			Core->Counter[0].TSC=Core->Counter[1].TSC;
-
-			// Save the Unhalted Core & Reference Counter
-			// for next iteration.
-			Core->Counter[0].C0.UCC=Core->Counter[1].C0.UCC;
-			Core->Counter[0].C0.URC=Core->Counter[1].C0.URC;
-
-			// Save also the C-State Reference Counter.
-			Core->Counter[0].C3=Core->Counter[1].C3;
-			Core->Counter[0].C6=Core->Counter[1].C6;
-			Core->Counter[0].C7=Core->Counter[1].C7;
-			Core->Counter[0].C1=Core->Counter[1].C1;
-
-			BITSET(Core->Sync.V, 0);
-		    }
-		}
-		Counters_Clear(Core);
-	}
-	do_exit(0);
-}
-
-void Arch_SandyBridge(unsigned int stage)
-{
-
-	unsigned int cpu=0;
-
-	switch(stage)
-	{
-		case END:
-		{
-		}
-		break;
-		case INIT:
-		{
-			PLATFORM_INFO Platform={.value=0};
-			TURBO_RATIO Turbo={.value=0};
-
-			RDMSR(Platform, MSR_PLATFORM_INFO);
-			RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
-
-			Proc->Boost[0]=Platform.MinimumRatio;
-			Proc->Boost[1]=Platform.MaxNonTurboRatio;
-			Proc->Boost[2]=Turbo.MaxRatio_8C;
-			Proc->Boost[3]=Turbo.MaxRatio_7C;
-			Proc->Boost[4]=Turbo.MaxRatio_6C;
-			Proc->Boost[5]=Turbo.MaxRatio_5C;
-			Proc->Boost[6]=Turbo.MaxRatio_4C;
-			Proc->Boost[7]=Turbo.MaxRatio_3C;
-			Proc->Boost[8]=Turbo.MaxRatio_2C;
-			Proc->Boost[9]=Turbo.MaxRatio_1C;
-
-			if(AutoClock)
-				Proc->Clock=Base_Clock(Proc->Boost[1]);
-			else
-			    switch(Proc->ArchID)
-			    {
-			    case SandyBridge:
-			    case SandyBridge_EP:
-				Proc->Clock=Clock_SandyBridge(Proc->Boost[1]);
-			    break;
-			    case IvyBridge:
-			    case IvyBridge_EP:
-				Proc->Clock=Clock_IvyBridge(Proc->Boost[1]);
-			    break;
-			    case Haswell_DT:
-			    case Haswell_MB:
-			    case Haswell_ULT:
-			    case Haswell_ULX:
-			    case Broadwell:
-			    case Broadwell_EP:
-			    case Broadwell_H:
-			    case Broadwell_EX:
-			    case Skylake_UY:
-			    case Skylake_S:
-			    case Skylake_E:
-				Proc->Clock=Clock_Haswell(Proc->Boost[1]);
-			    break;
-			    default:
-				Proc->Clock=Clock_GenuineIntel(Proc->Boost[1]);
-			    break;
-			}
-		}
-		break;
-		case STOP:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine
-			    && !IS_ERR(KPublic->Core[cpu]->TID))
-			    {
-				complete(&KPrivate->Join[cpu]->Elapsed);
-				kthread_stop(KPublic->Core[cpu]->TID);
-			    }
-		}
-		break;
-		case START:
-		{
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			    if(!KPublic->Core[cpu]->OffLine)
-			    {
-				KPublic->Core[cpu]->TID= \
-					kthread_create(	Cycle_SandyBridge,
-							KPublic->Core[cpu],
-							"corefreqk/%-3d",
-							KPublic->Core[cpu]->Bind);
-				if(!IS_ERR(KPublic->Core[cpu]->TID))
-					kthread_bind(KPublic->Core[cpu]->TID, cpu);
-			    }
-			for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				if(!KPublic->Core[cpu]->OffLine
-				&& !IS_ERR(KPublic->Core[cpu]->TID))
-					wake_up_process(KPublic->Core[cpu]->TID);
-		}
-		break;
-	}
-}
-
-static struct hrtimer Timer;
-static ktime_t RearmTheTimer;
-
-static enum hrtimer_restart Cycle_Timer(struct hrtimer *pTimer)
-{
-	unsigned int cpu=0;
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		complete(&KPrivate->Join[cpu]->Elapsed);
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
 
 	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
+
+	Counters_Genuine(Core, 1);
+	Core_Temp(Core);
+
+	Delta_C0(Core);
+
+	Delta_TSC(Core);
+
+	Delta_C1(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+	BITSET(Core->Sync.V, 0);
 
 	return(HRTIMER_RESTART);
 }
 
-void InitTimer(void)
+
+void Init_Genuine(void)
 {
+	CLOCK clock;
 	unsigned int cpu=0;
+
+	PLATFORM_INFO Platform={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+
+	if(Platform.value != 0)
+	{
+	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	}
+	Proc->Boost[9]=Proc->Boost[1];
+
+	if(AutoClock)	// from last AP to BSP
+	{
+		cpu=Proc->CPU.Count;
+		do {
+			cpu--;
+			clock=Base_Clock(cpu, Proc->Boost[1]);
+			KPublic->Core[cpu]->Clock=clock;
+		} while(cpu != 0) ;
+	}
+	else
+	{
+		switch(Proc->ArchID)
+		{
+		case Core_Yonah:
+			clock=Clock_Core(Proc->Boost[1]);
+		break;
+		default:
+			clock=Clock_GenuineIntel(Proc->Boost[1]);
+		break;
+		}
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			KPublic->Core[cpu]->Clock=clock;
+	}
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		init_completion(&KPrivate->Join[cpu]->Elapsed);
-
-	RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
-	hrtimer_init(&Timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	Timer.function=&Cycle_Timer;
+	    if(!KPublic->Core[cpu]->OffLine)
+		smp_call_function_single(cpu, InitTimer, Cycle_Genuine, 1);
 }
 
-void StartTimer(void)
+void Start_Genuine(void *arg)
 {
-	hrtimer_start(&Timer, RearmTheTimer, HRTIMER_MODE_REL);
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	Core_Thermal(Core);
+	Counters_Genuine(Core, 0);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
 }
 
-void StopTimer(void)
+void Stop_Genuine(void *arg)
 {
-	hrtimer_cancel(&Timer);
+	unsigned int cpu=smp_processor_id();
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 }
+
+static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
+
+	Counters_Core2(Core, 1);
+	Core_Temp(Core);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_TSC(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+	BITSET(Core->Sync.V, 0);
+
+	return(HRTIMER_RESTART);
+}
+
+void Init_Core2(void)
+{
+	CLOCK clock;
+	unsigned int cpu=0;
+
+	PLATFORM_INFO Platform={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+
+	if(Platform.value != 0)
+	{
+	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	}
+	Proc->Boost[9]=Proc->Boost[1];
+
+	if(AutoClock)	// from last AP to BSP
+	{
+		cpu=Proc->CPU.Count;
+		do {
+			cpu--;
+			clock=Base_Clock(cpu, Proc->Boost[1]);
+			KPublic->Core[cpu]->Clock=clock;
+		} while(cpu != 0) ;
+	}
+	else
+	{
+		switch(Proc->ArchID)
+		{
+		case Core_Conroe:
+		case Core_Kentsfield:
+		case Core_Yorkfield:
+		case Core_Dunnington:
+			clock=Clock_Core2(Proc->Boost[1]);
+		break;
+		case Atom_Bonnell:
+		case Atom_Silvermont:
+		case Atom_Lincroft:
+		case Atom_Clovertrail:
+		case Atom_Saltwell:
+		case Atom_Airmont:
+		case Atom_Goldmont:
+		case Atom_Sofia:
+		case Atom_Merrifield:
+		case Atom_Moorefield:
+			clock=Clock_Atom(Proc->Boost[1]);
+		default:
+			clock=Clock_GenuineIntel(Proc->Boost[1]);
+		break;
+		}
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			KPublic->Core[cpu]->Clock=clock;
+	}
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+	    if(!KPublic->Core[cpu]->OffLine)
+		smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
+}
+
+void Start_Core2(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	Counters_Set(Core);
+	Core_Thermal(Core);
+	Counters_Core2(Core, 0);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+}
+
+void Stop_Core2(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Counters_Clear(Core);
+}
+
+static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
+
+	Counters_Nehalem(Core, 1);
+	Core_Temp(Core);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_C3(Core);
+
+	Delta_C6(Core);
+
+	Delta_TSC(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C3(Core);
+	Save_C6(Core);
+
+	Save_C1(Core);
+
+	BITSET(Core->Sync.V, 0);
+
+	return(HRTIMER_RESTART);
+}
+
+void Init_Nehalem(void)
+{
+	CLOCK clock;
+	unsigned int cpu=0;
+
+	PLATFORM_INFO Platform={.value=0};
+	TURBO_RATIO Turbo={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+
+	Proc->Boost[0]=Platform.MinimumRatio;
+	Proc->Boost[1]=Platform.MaxNonTurboRatio;
+	Proc->Boost[2]=Turbo.MaxRatio_8C;
+	Proc->Boost[3]=Turbo.MaxRatio_7C;
+	Proc->Boost[4]=Turbo.MaxRatio_6C;
+	Proc->Boost[5]=Turbo.MaxRatio_5C;
+	Proc->Boost[6]=Turbo.MaxRatio_4C;
+	Proc->Boost[7]=Turbo.MaxRatio_3C;
+	Proc->Boost[8]=Turbo.MaxRatio_2C;
+	Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+	if(AutoClock)	// from last AP to BSP
+	{
+		cpu=Proc->CPU.Count;
+		do {
+			cpu--;
+			clock=Base_Clock(cpu, Proc->Boost[1]);
+			KPublic->Core[cpu]->Clock=clock;
+		} while(cpu != 0) ;
+	}
+	else
+	{
+		switch(Proc->ArchID)
+		{
+		case Silvermont_637:
+		case Silvermont_64D:
+			clock=Clock_Silvermont(Proc->Boost[1]);
+		break;
+		case Nehalem_Bloomfield:
+		case Nehalem_Lynnfield:
+		case Nehalem_MB:
+		case Nehalem_EX:
+			clock=Clock_Nehalem(Proc->Boost[1]);
+		break;
+		case Westmere:
+		case Westmere_EP:
+		case Westmere_EX:
+			clock=Clock_Westmere(Proc->Boost[1]);
+		break;
+		default:
+			clock=Clock_GenuineIntel(Proc->Boost[1]);
+		break;
+		}
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			KPublic->Core[cpu]->Clock=clock;
+	}
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+	    if(!KPublic->Core[cpu]->OffLine)
+		smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
+}
+
+void Start_Nehalem(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	Counters_Set(Core);
+	Core_Thermal(Core);
+	Counters_Nehalem(Core, 0);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+}
+
+void Stop_Nehalem(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Counters_Clear(Core);
+}
+
+
+static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
+
+	Counters_SandyBridge(Core, 1);
+	Core_Temp(Core);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_C3(Core);
+
+	Delta_C6(Core);
+
+	Delta_C7(Core);
+
+	Delta_TSC(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C3(Core);
+	Save_C6(Core);
+	Save_C7(Core);
+
+	Save_C1(Core);
+
+	BITSET(Core->Sync.V, 0);
+
+	return(HRTIMER_RESTART);
+}
+
+void Init_SandyBridge(void)
+{
+	CLOCK clock;
+	unsigned int cpu=0;
+
+	PLATFORM_INFO Platform={.value=0};
+	TURBO_RATIO Turbo={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+
+	Proc->Boost[0]=Platform.MinimumRatio;
+	Proc->Boost[1]=Platform.MaxNonTurboRatio;
+	Proc->Boost[2]=Turbo.MaxRatio_8C;
+	Proc->Boost[3]=Turbo.MaxRatio_7C;
+	Proc->Boost[4]=Turbo.MaxRatio_6C;
+	Proc->Boost[5]=Turbo.MaxRatio_5C;
+	Proc->Boost[6]=Turbo.MaxRatio_4C;
+	Proc->Boost[7]=Turbo.MaxRatio_3C;
+	Proc->Boost[8]=Turbo.MaxRatio_2C;
+	Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+	if(AutoClock)	// from last AP to BSP
+	{
+		cpu=Proc->CPU.Count;
+		do {
+			cpu--;
+			clock=Base_Clock(cpu, Proc->Boost[1]);
+			KPublic->Core[cpu]->Clock=clock;
+		} while(cpu != 0) ;
+	}
+	else
+	{
+		switch(Proc->ArchID)
+		{
+		case SandyBridge:
+		case SandyBridge_EP:
+			clock=Clock_SandyBridge(Proc->Boost[1]);
+		break;
+		case IvyBridge:
+		case IvyBridge_EP:
+			clock=Clock_IvyBridge(Proc->Boost[1]);
+		break;
+		case Haswell_DT:
+		case Haswell_MB:
+		case Haswell_ULT:
+		case Haswell_ULX:
+		case Broadwell:
+		case Broadwell_EP:
+		case Broadwell_H:
+		case Broadwell_EX:
+		case Skylake_UY:
+		case Skylake_S:
+		case Skylake_E:
+			clock=Clock_Haswell(Proc->Boost[1]);
+		break;
+		default:
+			clock=Clock_GenuineIntel(Proc->Boost[1]);
+		break;
+		}
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			KPublic->Core[cpu]->Clock=clock;
+	}
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+	    if(!KPublic->Core[cpu]->OffLine)
+		smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
+}
+
+void Start_SandyBridge(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	Counters_Set(Core);
+	Core_Thermal(Core);
+	Counters_SandyBridge(Core, 0);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+}
+
+void Stop_SandyBridge(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Counters_Clear(Core);
+}
+
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
@@ -1649,22 +1592,18 @@ static struct file_operations CoreFreqK_fops=
 #ifdef CONFIG_PM_SLEEP
 static int CoreFreqK_suspend(struct device *dev)
 {
-        Arch[Proc->ArchID].Arch_Controller(STOP);
+	Controller_Stop();
 
-        StopTimer();
-
-        printk(KERN_INFO "CoreFreq: Suspend\n");
-        return(0);
+	printk(KERN_INFO "CoreFreq: Suspend\n");
+	return(0);
 }
 
 static int CoreFreqK_resume(struct device *dev)
 {
-        Arch[Proc->ArchID].Arch_Controller(START);
+	Controller_Start();
 
-        StartTimer();
-
-        printk(KERN_INFO "CoreFreq: Resume\n");
-        return(0);
+	printk(KERN_INFO "CoreFreq: Resume\n");
+	return(0);
 }
 
 static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
@@ -1702,8 +1641,7 @@ static int __init CoreFreqK_init(void)
 
 		    publicSize=sizeof(KPUBLIC) + sizeof(CORE *) * count;
 
-		    privateSize=sizeof(KPRIVATE)
-				+ sizeof(struct completion) * count;
+		    privateSize=sizeof(KPRIVATE) + sizeof(JOIN *) * count;
 
 		    if(((KPublic=kmalloc(publicSize, GFP_KERNEL)) != NULL)
 		    && ((KPrivate=kmalloc(privateSize, GFP_KERNEL)) != NULL))
@@ -1723,6 +1661,7 @@ static int __init CoreFreqK_init(void)
 					Proc_Brand(Proc->Features.Brand);
 
 			    Arch[0].Architecture=Proc->Features.VendorID;
+			    RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
 
 			    publicSize=ROUND_TO_PAGES(sizeof(CORE));
 			    privateSize=ROUND_TO_PAGES(sizeof(JOIN));
@@ -1777,31 +1716,23 @@ static int __init CoreFreqK_init(void)
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
-				Arch[Proc->ArchID].Arch_Controller(INIT);
-
-				InitTimer();
+				Controller_Init();
 
 				Proc->CPU.OnLine=Proc_Topology();
 				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
-				printk(KERN_INFO "CoreFreq:"			\
-				      " Processor [%1X%1X_%1X%1X]"		\
-				      " Architecture [%s]\n",
+				printk(KERN_INFO "CoreFreq:"		\
+				      " Processor [%1X%1X_%1X%1X]"	\
+				      " Architecture [%s] %u/%u CPU\n",
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
 					Arch[Proc->ArchID].Signature.ExtModel,
 					Arch[Proc->ArchID].Signature.Model,
-					Arch[Proc->ArchID].Architecture);
-				printk(KERN_INFO "CoreFreq:"			\
-					" %u/%u CPU Online."			\
-					" Base Clock @ %llu Hz\n",
+					Arch[Proc->ArchID].Architecture,
 					Proc->CPU.OnLine,
-					Proc->CPU.Count,
-					Proc->Clock.Hz);
+					Proc->CPU.Count);
 
-				Arch[Proc->ArchID].Arch_Controller(START);
-
-				StartTimer();
+				Controller_Start();
 			    }
 			    else
 			    {
@@ -1882,10 +1813,8 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu=0;
 
-	Arch[Proc->ArchID].Arch_Controller(STOP);
-	Arch[Proc->ArchID].Arch_Controller(END);
-
-	StopTimer();
+	Controller_Stop();
+	Controller_Exit();
 
 	for(cpu=0; (KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
 	{
