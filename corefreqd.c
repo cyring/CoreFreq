@@ -106,7 +106,7 @@ static void *Core_Cycle(void *arg)
 						* Proc->Boost[1])	\
 					/ (double) (Core->Delta.TSC);
 
-		if(Proc->Turbo == TRUE)
+		if(Proc->TurboBoost == TRUE)
 		{// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq=(double) (Core->Delta.C0.UCC)
 						/ 1000000L;
@@ -182,7 +182,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	    {
 		// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-		// Copy the global sample delay.
+		// Copy the global interval delay.
 		Shm->Proc.msleep=Proc->msleep;
 		// Copy the number of online CPU.
 		Shm->Proc.CPU.Count=Proc->CPU.Count;
@@ -191,11 +191,15 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 		memcpy(Shm->Proc.Boost, Proc->Boost,
 			(1+1+8) * sizeof(unsigned int));
-		// Copy the operational mode.
-		Shm->Proc.PerCore=Proc->PerCore;
 		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
-		// Aggregate the Processor's features.
-		Shm->Proc.Turbo=Proc->Features.Thermal_Power_Leaf.AX.TurboIDA;
+
+		// Aggregate some Processor's features.
+		Shm->Proc.PM_version=					\
+			Proc->Features.Perf_Monitoring_Leaf.AX.Version;
+		Shm->Proc.InvariantTSC=Proc->Features.InvariantTSC;
+		Shm->Proc.HyperThreading=Proc->Features.HTT_enabled;
+		Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
+		Shm->Proc.TurboBoost=Proc->Features.Turbo_enabled;
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
@@ -235,16 +239,25 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			}
 		}
 		// Welcomes with brand and per CPU base clock.
-		printf(	"\nCoreFreq Daemon."				\
+		printf(	"CoreFreq Daemon."				\
 			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n"\
 			"  Processor [%s]\n"				\
 			"  Architecture [%s]\n"				\
-			"  %u/%u CPU Online. Turbo[%c]\n\n",
+			"  %u/%u CPU Online."				\
+			" [TSC:%c-%c] [HTT:%d-%d] [IDA:%d-%d] [EIST:%d-%d]\n\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count,
-			powered(Shm->Proc.Turbo));
+			Proc->Features.ExtFunc.DX.RdTSCP ? 'P'
+			: Proc->Features.Std.DX.TSC ? '1' : '0',
+				Shm->Proc.InvariantTSC ? 'I' : 'V',
+			Proc->Features.Std.DX.HTT,
+				Shm->Proc.HyperThreading,
+			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
+				Shm->Proc.TurboBoost,
+			Proc->Features.Std.CX.EIST,
+				Shm->Proc.SpeedStep	);
 
 		// Launch one Server thread per online CPU.
 		ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));

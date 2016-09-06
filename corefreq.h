@@ -64,11 +64,14 @@ typedef struct
 
 	unsigned char			Architecture[32];
 	unsigned int			Boost[1+1+8],
-					PerCore;
+					PM_version;
 
 	char				Brand[64];
 
-	Bool32				Turbo;
+	Bool32				InvariantTSC,
+					HyperThreading,
+					SpeedStep,
+					TurboBoost;
 
 	struct {
 		double	Turbo,

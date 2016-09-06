@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -96,13 +96,26 @@
 #define	RDTSC64(_val64)							\
 	asm volatile							\
 	(								\
+		"lfence			\n\t"				\
+		"rdtsc			\n\t"				\
+		"shlq	$32,	%%rdx	\n\t"				\
+		"orq	%%rdx,	%%rax	\n\t"				\
+		"movq	%%rax,	%0"					\
+		:"=m" (_val64)						\
+		:							\
+		:"%rax","%rcx","%rdx","memory"				\
+	);
+
+#define	RDTSCP64(_val64)						\
+	asm volatile							\
+	(								\
 		"rdtscp			\n\t"				\
 		"shlq	$32,	%%rdx	\n\t"				\
 		"orq	%%rdx,	%%rax	\n\t"				\
 		"movq	%%rax,	%0"					\
 		:"=m" (_val64)						\
 		:							\
-		:"%rax","%rbx","%rcx","%rdx","%rsi","%rdi","memory"	\
+		:"%rax","%rcx","%rdx","memory"				\
 	);
 
 
@@ -155,16 +168,20 @@ typedef	union
 		ReservedBits4	: 64-47;
 	};
 } PERF_STATUS;
-/*
-typedef	struct
+
+typedef	union
 {
-	unsigned long long
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
 		EIST_Target	: 16-0,
 		ReservedBits1	: 32-16,
 		Turbo_IDA	: 33-32,
 		ReservedBits2	: 64-33;
+	};
 } PERF_CONTROL;
-*/
+
 typedef union
 {
 	unsigned long long	value;
@@ -220,10 +237,12 @@ typedef union
 	};
 } TURBO_RATIO;
 
-/*
-typedef	struct
+typedef union
 {
-	unsigned long long
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		FastStrings	:  1-0,
 		ReservedBits1	:  3-1,
 		TCC		:  4-3,
@@ -247,8 +266,9 @@ typedef	struct
 		Turbo_IDA	: 39-38,
 		IP_Prefetcher	: 40-39,
 		ReservedBits9	: 64-40;
+	};
 } MISC_PROC_FEATURES;
-
+/*
 typedef struct
 {
 	unsigned long long

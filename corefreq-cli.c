@@ -130,14 +130,33 @@ void Topology(SHM_STRUCT *Shm)
 
 void SysInfo(SHM_STRUCT *Shm)
 {
-	printf(	"  Processor [%s]\n"				\
-		"  Architecture [%s]\n"				\
-		"  %u/%u CPU Online. Turbo[%c]\n",
+	int i=0;
+	printf(	"  Processor [%s]\n"					\
+		"  Architecture [%s]\n"					\
+		"  %u/%u CPU Online.\n"					\
+		"  Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"\
+		"                   ",
 		Shm->Proc.Brand,
 		Shm->Proc.Architecture,
 		Shm->Proc.CPU.OnLine,
-		Shm->Proc.CPU.Count,
-		powered(Shm->Proc.Turbo));
+		Shm->Proc.CPU.Count	);
+	for(i=0; i < 1+1+8; i++)
+		if(Shm->Proc.Boost[i] != 0)
+			printf("%3d ", Shm->Proc.Boost[i]);
+		else
+			printf("  - ");
+	printf(	"\n"							\
+		"  Technologies:\n"					\
+		"  |- Time Stamp Counter                    TSC [%9s]\n"\
+		"  |- Hyper-Threading                       HTT       [%3s]\n"\
+		"  |- Turbo Boost                           IDA       [%3s]\n"\
+		"  |- SpeedStep                            EIST       [%3s]\n"\
+		"  |- Performance Monitoring                 PM       [%3d]\n",
+		Shm->Proc.InvariantTSC ? "Invariant" : "Variant",
+		enabled(Shm->Proc.HyperThreading),
+		enabled(Shm->Proc.TurboBoost),
+		enabled(Shm->Proc.SpeedStep),
+		Shm->Proc.PM_version	);
 }
 
 int main(int argc, char *argv[])

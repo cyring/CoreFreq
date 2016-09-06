@@ -267,6 +267,8 @@ typedef struct
 	} ExtFunc;
 	unsigned int	InvariantTSC,
                         HTT_enabled,
+			EIST_enabled,
+			Turbo_enabled,
 			FactoryFreq;
 } FEATURES;
 
@@ -369,6 +371,5 @@ typedef struct
 
 	unsigned char		Architecture[32];
 	signed int		ArchID;
-	unsigned int		Boost[1+1+8],
-				PerCore;
+	unsigned int		Boost[1+1+8];
 } PROC;

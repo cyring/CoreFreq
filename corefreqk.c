@@ -310,29 +310,65 @@ signed int Compute_Clock(void *arg)
 	unsigned long long D[2][OCCURRENCES];
 	unsigned int loop=0, what=0, best[2]={0, 0}, top[2]={0, 0};
 
-	// No preemption, no interrupt.
-	unsigned long flags;
-	preempt_disable();
-	raw_local_irq_save(flags);
-
-	// Warm-up
-	for(loop=0; loop < OCCURRENCES; loop++)
+	void ComputeWithInvariantTSC(void)
 	{
-		RDTSC64(TSC[0][loop].V[0]);
-		RDTSC64(TSC[0][loop].V[1]);
+		// No preemption, no interrupt.
+		unsigned long flags;
+		preempt_disable();
+		raw_local_irq_save(flags);
+
+		// Warm-up
+		for(loop=0; loop < OCCURRENCES; loop++)
+		{
+			RDTSCP64(TSC[0][loop].V[0]);
+			RDTSCP64(TSC[0][loop].V[1]);
+		}
+		// Pick-up
+		for(loop=0; loop < OCCURRENCES; loop++)
+		{
+			RDTSCP64(TSC[1][loop].V[0]);
+
+			udelay(1000);
+
+			RDTSCP64(TSC[1][loop].V[1]);
+		}
+		// Restore preemption and interrupt.
+		raw_local_irq_restore(flags);
+		preempt_enable();
 	}
-	// Pick-up
-	for(loop=0; loop < OCCURRENCES; loop++)
+
+	void ComputeWithVariantTSC(void)
 	{
-		RDTSC64(TSC[1][loop].V[0]);
+		// No preemption, no interrupt.
+		unsigned long flags;
+		preempt_disable();
+		raw_local_irq_save(flags);
 
-		udelay(1000);
+		// Warm-up
+		for(loop=0; loop < OCCURRENCES; loop++)
+		{
+			RDTSC64(TSC[0][loop].V[0]);
+			RDTSC64(TSC[0][loop].V[1]);
+		}
+		// Pick-up
+		for(loop=0; loop < OCCURRENCES; loop++)
+		{
+			RDTSC64(TSC[1][loop].V[0]);
 
-		RDTSC64(TSC[1][loop].V[1]);
+			udelay(1000);
+
+			RDTSC64(TSC[1][loop].V[1]);
+		}
+		// Restore preemption and interrupt.
+		raw_local_irq_restore(flags);
+		preempt_enable();
 	}
-	// Restore preemption and interrupt.
-	raw_local_irq_restore(flags);
-	preempt_enable();
+
+	if(Proc->Features.InvariantTSC)
+		ComputeWithInvariantTSC();
+	else
+		ComputeWithVariantTSC();
+
 
 	memset(D, 0, 2 * OCCURRENCES);
 	for(loop=0; loop < OCCURRENCES; loop++)
@@ -387,8 +423,8 @@ CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
 		kthread_bind(tid, cpu);
 		wake_up_process(tid);
 		wait_for_completion(&bclk_job_complete);
-		printk(KERN_INFO "CoreFreq:"		\
-				" CPU #%-3d Base Clock @ %llu\n",
+		printk(KERN_DEBUG "CoreFreq:"				\
+				" CPU #%-3d Base Clock @ %llu Hz\n",
 				cpu, clock.Hz);
 	}
 	return(clock);
@@ -762,6 +798,87 @@ unsigned int Proc_Topology(void)
 	return(CountEnabledCPU);
 }
 
+void HyperThreading_Technology(void)
+{
+	unsigned int CountEnabledCPU=Proc_Topology();
+
+	if(Proc->Features.Std.DX.HTT)
+		Proc->CPU.OnLine=CountEnabledCPU;
+	else
+		Proc->CPU.OnLine=Proc->CPU.Count;
+}
+
+void SpeedStep_Technology(void)
+{
+	if(Proc->Features.Std.CX.EIST)
+	{
+		MISC_PROC_FEATURES MiscFeatures={.value=0};
+
+		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+
+		Proc->Features.EIST_enabled=MiscFeatures.EIST;
+	}
+}
+
+void TurboBoost_Technology(void)
+{
+	PLATFORM_INFO Platform={.value=0};
+	TURBO_RATIO Turbo={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+
+	Proc->Boost[0]=Platform.MinimumRatio;
+	Proc->Boost[1]=Platform.MaxNonTurboRatio;
+	Proc->Boost[2]=Turbo.MaxRatio_8C;
+	Proc->Boost[3]=Turbo.MaxRatio_7C;
+	Proc->Boost[4]=Turbo.MaxRatio_6C;
+	Proc->Boost[5]=Turbo.MaxRatio_5C;
+	Proc->Boost[6]=Turbo.MaxRatio_4C;
+	Proc->Boost[7]=Turbo.MaxRatio_3C;
+	Proc->Boost[8]=Turbo.MaxRatio_2C;
+	Proc->Boost[9]=Turbo.MaxRatio_1C;
+
+	if(Proc->Features.Thermal_Power_Leaf.AX.TurboIDA)
+	{
+		PERF_CONTROL PerfControl={.value=0};
+
+		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
+
+		Proc->Features.Turbo_enabled=!PerfControl.Turbo_IDA;
+	}
+}
+
+void Genuine_Technology(void)
+{
+	PLATFORM_INFO Platform={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+
+	if(Platform.value != 0)
+	{
+	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	}
+	Proc->Boost[9]=Proc->Boost[1];
+
+	HyperThreading_Technology();
+}
+
+void Core2_Technology(void)
+{
+	Genuine_Technology();
+	SpeedStep_Technology();
+}
+
+void Nehalem_Technology(void)
+{
+	TurboBoost_Technology();
+	SpeedStep_Technology();
+	HyperThreading_Technology();
+}
 
 void Counters_Set(CORE *Core)
 {
@@ -788,7 +905,8 @@ void Counters_Set(CORE *Core)
 	FixedPerfCounter.EN0_Usr=1;
 	FixedPerfCounter.EN1_Usr=1;
 	FixedPerfCounter.EN2_Usr=1;
-	if(Proc->PerCore)
+
+	if(!Proc->Features.HTT_enabled)
 	{
 		FixedPerfCounter.AnyThread_EN0=1;
 		FixedPerfCounter.AnyThread_EN1=1;
@@ -1103,26 +1221,18 @@ void Init_Genuine(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	PLATFORM_INFO Platform={.value=0};
-
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-
-	if(Platform.value != 0)
-	{
-	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	}
-	Proc->Boost[9]=Proc->Boost[1];
+	Genuine_Technology();
 
 	if(AutoClock)	// from last AP to BSP
 	{
 		cpu=Proc->CPU.Count;
 		do {
 			cpu--;
-			clock=Base_Clock(cpu, Proc->Boost[1]);
-			KPublic->Core[cpu]->Clock=clock;
+			if(!KPublic->Core[cpu]->OffLine)
+			{
+				clock=Base_Clock(cpu, Proc->Boost[1]);
+				KPublic->Core[cpu]->Clock=clock;
+			}
 		} while(cpu != 0) ;
 	}
 	else
@@ -1200,26 +1310,18 @@ void Init_Core2(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	PLATFORM_INFO Platform={.value=0};
-
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-
-	if(Platform.value != 0)
-	{
-	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	}
-	Proc->Boost[9]=Proc->Boost[1];
+	Core2_Technology();
 
 	if(AutoClock)	// from last AP to BSP
 	{
 		cpu=Proc->CPU.Count;
 		do {
 			cpu--;
-			clock=Base_Clock(cpu, Proc->Boost[1]);
-			KPublic->Core[cpu]->Clock=clock;
+			if(!KPublic->Core[cpu]->OffLine)
+			{
+				clock=Base_Clock(cpu, Proc->Boost[1]);
+				KPublic->Core[cpu]->Clock=clock;
+			}
 		} while(cpu != 0) ;
 	}
 	else
@@ -1322,30 +1424,18 @@ void Init_Nehalem(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	PLATFORM_INFO Platform={.value=0};
-	TURBO_RATIO Turbo={.value=0};
-
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
-
-	Proc->Boost[0]=Platform.MinimumRatio;
-	Proc->Boost[1]=Platform.MaxNonTurboRatio;
-	Proc->Boost[2]=Turbo.MaxRatio_8C;
-	Proc->Boost[3]=Turbo.MaxRatio_7C;
-	Proc->Boost[4]=Turbo.MaxRatio_6C;
-	Proc->Boost[5]=Turbo.MaxRatio_5C;
-	Proc->Boost[6]=Turbo.MaxRatio_4C;
-	Proc->Boost[7]=Turbo.MaxRatio_3C;
-	Proc->Boost[8]=Turbo.MaxRatio_2C;
-	Proc->Boost[9]=Turbo.MaxRatio_1C;
+	Nehalem_Technology();
 
 	if(AutoClock)	// from last AP to BSP
 	{
 		cpu=Proc->CPU.Count;
 		do {
 			cpu--;
-			clock=Base_Clock(cpu, Proc->Boost[1]);
-			KPublic->Core[cpu]->Clock=clock;
+			if(!KPublic->Core[cpu]->OffLine)
+			{
+				clock=Base_Clock(cpu, Proc->Boost[1]);
+				KPublic->Core[cpu]->Clock=clock;
+			}
 		} while(cpu != 0) ;
 	}
 	else
@@ -1450,30 +1540,18 @@ void Init_SandyBridge(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	PLATFORM_INFO Platform={.value=0};
-	TURBO_RATIO Turbo={.value=0};
-
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
-
-	Proc->Boost[0]=Platform.MinimumRatio;
-	Proc->Boost[1]=Platform.MaxNonTurboRatio;
-	Proc->Boost[2]=Turbo.MaxRatio_8C;
-	Proc->Boost[3]=Turbo.MaxRatio_7C;
-	Proc->Boost[4]=Turbo.MaxRatio_6C;
-	Proc->Boost[5]=Turbo.MaxRatio_5C;
-	Proc->Boost[6]=Turbo.MaxRatio_4C;
-	Proc->Boost[7]=Turbo.MaxRatio_3C;
-	Proc->Boost[8]=Turbo.MaxRatio_2C;
-	Proc->Boost[9]=Turbo.MaxRatio_1C;
+	Nehalem_Technology();
 
 	if(AutoClock)	// from last AP to BSP
 	{
 		cpu=Proc->CPU.Count;
 		do {
 			cpu--;
-			clock=Base_Clock(cpu, Proc->Boost[1]);
-			KPublic->Core[cpu]->Clock=clock;
+			if(!KPublic->Core[cpu]->OffLine)
+			{
+				clock=Base_Clock(cpu, Proc->Boost[1]);
+				KPublic->Core[cpu]->Clock=clock;
+			}
 		} while(cpu != 0) ;
 	}
 	else
@@ -1594,7 +1672,7 @@ static int CoreFreqK_suspend(struct device *dev)
 {
 	Controller_Stop();
 
-	printk(KERN_INFO "CoreFreq: Suspend\n");
+	printk(KERN_DEBUG "CoreFreq: Suspend\n");
 	return(0);
 }
 
@@ -1602,7 +1680,7 @@ static int CoreFreqK_resume(struct device *dev)
 {
 	Controller_Start();
 
-	printk(KERN_INFO "CoreFreq: Resume\n");
+	printk(KERN_DEBUG "CoreFreq: Resume\n");
 	return(0);
 }
 
@@ -1655,7 +1733,7 @@ static int __init CoreFreqK_init(void)
 			    memset(Proc, 0, packageSize);
 			    Proc->CPU.Count=count;
 			    Proc->msleep=LOOP_DEF_MS;
-			    Proc->PerCore=0;
+
 			    Proc_Features(&Proc->Features);
 			    Proc->Features.FactoryFreq=			\
 					Proc_Brand(Proc->Features.Brand);
@@ -1717,9 +1795,6 @@ static int __init CoreFreqK_init(void)
 					Arch[Proc->ArchID].Architecture, 32);
 
 				Controller_Init();
-
-				Proc->CPU.OnLine=Proc_Topology();
-				Proc->PerCore=(Proc->Features.HTT_enabled)?0:1;
 
 				printk(KERN_INFO "CoreFreq:"		\
 				      " Processor [%1X%1X_%1X%1X]"	\
@@ -1839,7 +1914,7 @@ static void __exit CoreFreqK_cleanup(void)
 	cdev_del(CoreFreqK.kcdev);
 	unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
-	printk(KERN_INFO "CoreFreq: Exit\n");
+	printk(KERN_NOTICE "CoreFreq: Unload\n");
 }
 
 module_init(CoreFreqK_init);
