@@ -2,7 +2,7 @@
 ## Purpose
 CoreFreq is a CPU monitoring software designed for the Intel 64-bits Processors w/ architectures Atom, Core2, Nehalem, SandyBridge and above.
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Client.")
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
 CoreFreq provides a framework to retrieve CPU data with a high degree of precision:
 
@@ -22,7 +22,7 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 * per-CPU high-resolution timer
 * atomic synchronization
 * suspend & resume compliant
-* clients/server shared memory
+* client/server shared memory
 
 
 ## Build & Run
@@ -50,7 +50,11 @@ make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
 
 ### Start
 
- 3- Load the Kernel module, as root.
+ 3- Load the kernel module, as root.
+```
+modprobe corefreqk
+```
+ _or_
 ```
 insmod corefreqk.ko
 ```
@@ -64,6 +68,7 @@ insmod corefreqk.ko
 ```
 
 ### Stop
+(_in the reverse order_)
 
  6- Press [CTRL]+[C] to stop the client.
 
@@ -75,18 +80,20 @@ rmmod corefreqk.ko
 ```
 
 ## Screenshots
- * Use ```dmesg``` or ```journalctl -k``` to check if the driver is started
+### Linux kernel module
+Use ```dmesg``` or ```journalctl -k``` to check if the module is started
 ```
 CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] 8/8 CPU
 ```
 
+### Daemon
 ```
 
 CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield]
-  8/8 CPU Online. Turbo[Y]
+  8/8 CPU Online. [TSC:P-I] [HTT:1-1] [IDA:1-1] [EIST:1-1]
 
     CPU #000 @ 2930.35 MHz
     CPU #001 @ 2930.13 MHz
@@ -99,12 +106,14 @@ CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 
 ```
 
-![alt text](http://blog.cyring.free.fr/images/CoreFreq.png "CoreFreq")
+### Client
+Without arguments, the corefreq-cli program displays Top Monitoring
 
- * Run the CoreFreq client with the option '-t' to display the Processor topology
+ * With the option '-t', the client traces counters.
+![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Counters")
+
+ * Using option '-t' corefreq-cli shows the CPU topology
 ```
-CoreFreq Client [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930.19 MHz
-
 CPU       ApicID CoreID ThreadID x2APIC Enable Caches Inst Data Unified
 #00(BSP)       0      0        0    OFF    Y     |   32768 4626 262144
 #01(AP)        2      1        0    OFF    Y     |   32768 4626 262144
@@ -116,10 +125,8 @@ CPU       ApicID CoreID ThreadID x2APIC Enable Caches Inst Data Unified
 #07(AP)        7      3        1    OFF    Y     |   32768 4626 262144
 ```
 
- * Run the CoreFreq client with the option '-i' to display the # of instructions per second / cycle
+ * With the option '-i' corefreq-cli traces the number of instructions per second / cycle
 ```
-CoreFreq Client [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz] Frequency @ 2930.19 MHz
-
 CPU     IPS            IPC            CPI
 #00     0.000579/s     0.059728/c    16.742698/i
 #01     0.000334/s     0.150569/c     6.641471/i
@@ -131,8 +138,23 @@ CPU     IPS            IPC            CPI
 #07     0.000088/s     0.150406/c     6.648674/i
 ```
 
+ * Use option '-s' to show Processor information (BSP)
+```
+  Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+  Architecture [Nehalem/Bloomfield]
+  8/8 CPU Online.
+  Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C
+                    12  20   -   -   -   -  21  21  21  22 
+  Technologies:
+  |- Time Stamp Counter                    TSC [Invariant]
+  |- Hyper-Threading                       HTT       [ ON]
+  |- Turbo Boost                           IDA       [ ON]
+  |- SpeedStep                            EIST       [ ON]
+  |- Performance Monitoring                 PM       [  3]
+```
+
 ## Algorithm
-_old version_
+(_old version_)
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
 
 ## ArchLinux
