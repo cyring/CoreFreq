@@ -57,7 +57,7 @@ static void *Core_Cycle(void *arg)
 	do
 	{
 	    while(!BITWISEAND(Core->Sync.V, 0x1) && !Shutdown)
-		usleep(Proc->msleep * 100);
+		usleep(Proc->msleep * 50);
 	    BITCLR(Core->Sync.V, 0);
 
 	    if(!Shutdown)
@@ -215,12 +215,15 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			Shm->Cpu[cpu].Clock.R=Core[cpu]->Clock.R;
 			Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
 			// Copy Core topology.
-			Shm->Cpu[cpu].Topology.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
+			Shm->Cpu[cpu].Topology.BSP=			\
+				(Core[cpu]->T.Base.BSP) ? 1 : 0;
 			Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
 			Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
 			Shm->Cpu[cpu].Topology.ThreadID=Core[cpu]->T.ThreadID;
-			Shm->Cpu[cpu].Topology.x2APIC=(Core[cpu]->T.Base.EXTD) ? 1 : 0;
-			Shm->Cpu[cpu].Topology.Enable=(Core[cpu]->T.Base.EN) ? 1 : 0;
+			Shm->Cpu[cpu].Topology.x2APIC=			\
+				(Core[cpu]->T.Base.EXTD) ? 1 : 0;
+			Shm->Cpu[cpu].Topology.Enable=			\
+				(Core[cpu]->T.Base.EN) ? 1 : 0;
 			// Compute Caches size.
 			unsigned int level=0x0;
 			for(level=0; level < CACHE_MAX_LEVEL; level++)
@@ -283,7 +286,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		while(!Shutdown)
 		{	// Wait until all the rooms & mask are cleared.
 			while(!Shutdown && BITWISEAND(Shm->Proc.Room,roomSeed))
-				usleep(Shm->Proc.msleep * 100);
+				usleep(Shm->Proc.msleep * 50);
 
 			Shm->Proc.Avg.Turbo=0;
 			Shm->Proc.Avg.C0=0;

@@ -15,6 +15,17 @@
 #include "coretypes.h"
 #include "corefreq.h"
 
+#define WIDTH 76
+#define CLS "\033[H\033[J"
+#define DoK "\x1B[1;30;40m"
+#define RoK "\x1B[1;31;40m"
+#define GoK "\x1B[1;32;40m"
+#define YoK "\x1B[1;33;40m"
+#define BoK "\x1B[1;34;40m"
+#define PoK "\x1B[1;35;40m"
+#define CoK "\x1B[1;36;40m"
+#define WoK "\x1B[1;37;40m"
+
 unsigned int Shutdown=0x0;
 
 void Emergency(int caught)
@@ -29,7 +40,114 @@ void Emergency(int caught)
 	}
 }
 
-void Cycles(SHM_STRUCT *Shm)
+void Top(SHM_STRUCT *Shm)
+{
+    char hBar[]="||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||"	\
+		"||||||||";
+    unsigned int cpu=0, iclk=0, i;
+    while(!Shutdown)
+    {
+	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
+		usleep(Shm->Proc.msleep * 50);
+	BITCLR(Shm->Proc.Sync, 0);
+
+	printf(WoK CLS							\
+	  DoK"   Processor ["CoK"%s"DoK"] "WoK"%2u/%-2u"DoK" CPU Online\n"\
+	  DoK"   Architecture ["CoK"%s"WoK"] "DoK"[%s] [%s] [%s] [%s]"	\
+	     " PM["WoK"%d"DoK"]\n"					\
+	  DoK"   Ratio Boost  x   Min Max  8C  7C  6C  5C  4C  3C  2C  1C"\
+	     "         Base Clock~\n"					\
+	     "                    ",
+		Shm->Proc.Brand,
+		Shm->Proc.CPU.OnLine,
+		Shm->Proc.CPU.Count,
+		Shm->Proc.Architecture,
+		Shm->Proc.InvariantTSC ? GoK"TSC"DoK : "TSC",
+		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
+		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
+		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
+		Shm->Proc.PM_version);
+	for(i=0; i < 10; i++)
+		if(Shm->Proc.Boost[i] != 0)
+			printf(WoK"%3d ", Shm->Proc.Boost[i]);
+		else
+			printf(DoK"  - ");
+
+	printf(DoK	"       "PoK"%7.2f"DoK" MHz"			\
+			"\n"						\
+			"-------------------------------------- C"	\
+			"PU -------------------------------------\n",
+			(double) (Shm->Cpu[iclk].Clock.Hz / 1000000.0));
+
+	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	    if(!Shm->Cpu[cpu].OffLine)
+	    {
+		struct FLIP_FLOP *Flop=				\
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+		double MediumRatio=(Shm->Proc.Boost[0] + Shm->Proc.Boost[9])/2;
+
+		int hPos=Flop->Relative.Ratio * WIDTH / Shm->Proc.Boost[9];
+		printf(	"%s#%02u %.*s\n",
+			Flop->Relative.Ratio > MediumRatio ?
+			RoK : Flop->Relative.Ratio > Shm->Proc.Boost[0] ?
+			YoK : GoK,
+			cpu, hPos, hBar);
+	    }
+	printf(DoK	"---- Frequency - Ratio - Turbo"		\
+			" -- C0 ---- C1 ---- C3 ---- C6 ---- C7"	\
+			" -- Temps --\n");
+	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	    if(!Shm->Cpu[cpu].OffLine)
+	    {
+		struct FLIP_FLOP *Flop=				\
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+		printf(DoK"#%02u%c"WoK"%7.2f MHz (%5.2f)"		\
+			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
+			"   %llu°C\n",
+			cpu,
+			cpu == iclk ? '~' : ' ',
+			Flop->Relative.Freq,
+			Flop->Relative.Ratio,
+			100.f * Flop->State.Turbo,
+			100.f * Flop->State.C0,
+			100.f * Flop->State.C1,
+			100.f * Flop->State.C3,
+			100.f * Flop->State.C6,
+			100.f * Flop->State.C7,
+			Flop->Temperature);
+	    }
+	printf(DoK	"---- Averages ---------- Turbo"		\
+			" -- C0 ---- C1 ---- C3 ---- C6 ---- C7"	\
+			" -----------\n"				\
+			"                        "WoK			\
+			"%6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"DoK,
+			100.f * Shm->Proc.Avg.Turbo,
+			100.f * Shm->Proc.Avg.C0,
+			100.f * Shm->Proc.Avg.C1,
+			100.f * Shm->Proc.Avg.C3,
+			100.f * Shm->Proc.Avg.C6,
+			100.f * Shm->Proc.Avg.C7);
+	fflush(stdout);
+
+	iclk++;
+	if(iclk == Shm->Proc.CPU.Count)
+		iclk=0;
+    }
+    printf(CLS);
+    fflush(stdout);
+}
+
+void Counters(SHM_STRUCT *Shm)
 {
 	unsigned int cpu=0;
 	while(!Shutdown)
@@ -49,7 +167,7 @@ void Cycles(SHM_STRUCT *Shm)
 
 		printf("#%02u %7.2fMHz (%5.2f)"				\
 			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
-			" @ %llu°C\n",
+			"   %llu°C\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -63,7 +181,7 @@ void Cycles(SHM_STRUCT *Shm)
 		}
 		printf("\nAverage C-states\n"				\
 		"Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
-		"%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f\t%6.2f%%\t%6.2f%%\n\n",
+		"%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\n\n",
 			100.f * Shm->Proc.Avg.Turbo,
 			100.f * Shm->Proc.Avg.C0,
 			100.f * Shm->Proc.Avg.C1,
@@ -140,7 +258,7 @@ void SysInfo(SHM_STRUCT *Shm)
 		Shm->Proc.Architecture,
 		Shm->Proc.CPU.OnLine,
 		Shm->Proc.CPU.Count	);
-	for(i=0; i < 1+1+8; i++)
+	for(i=0; i < 10; i++)
 		if(Shm->Proc.Boost[i] != 0)
 			printf("%3d ", Shm->Proc.Boost[i]);
 		else
@@ -166,41 +284,48 @@ int main(int argc, char *argv[])
 	int fd=-1, rc=0;
 	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
 	if(option == 'h')
-		printf(	"usage:\t%s [-option]\n"		\
-			"\t-c\tMonitor Cycles\n"		\
-			"\t-i\tMonitor Instructions\n"		\
-			"\t-s\tPrint System Information\n"	\
-			"\t-t\tPrint Topology\n"		\
-			"\t-h\tPrint out this message\n"	\
-			"\nExit status:\n"			\
-				"0\tif OK,\n"			\
-				"1\tif problems,\n"		\
+	{
+		printf(	"CoreFreq."					\
+			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
+		printf(	"usage:\t%s [-option]\n"			\
+			"\t-c\tMonitor Counters\n"			\
+			"\t-i\tMonitor Instructions\n"			\
+			"\t-s\tPrint System Information\n"		\
+			"\t-t\tPrint Topology\n"			\
+			"\t-h\tPrint out this message\n"		\
+			"\nExit status:\n"				\
+				"0\tif OK,\n"				\
+				"1\tif problems,\n"			\
 				">1\tif serious trouble.\n"	\
 			"\nReport bugs to labs[at]cyring.fr\n", argv[0]);
+	}
 
 	else if(((fd=shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
 		&& ((fstat(fd, &shmStat) != -1)
 		&& ((Shm=mmap(0, shmStat.st_size,
-			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0)) != MAP_FAILED)))
+			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0))!=MAP_FAILED)))
 	   {
-		printf(	"CoreFreq Client."	\
-			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
-
 		signal(SIGINT, Emergency);
 		signal(SIGQUIT, Emergency);
 		signal(SIGTERM, Emergency);
 
 		switch(option)
 		{
-			case 's': SysInfo(Shm);
+			case 's':
+				SysInfo(Shm);
 			break;
-			case 't': Topology(Shm);
+			case 't':
+				Topology(Shm);
 			break;
-			case 'i': Instructions(Shm);
+			case 'i':
+				Instructions(Shm);
 			break;
 			case 'c':
-			default:  Cycles(Shm);
+				Counters(Shm);
+			break;
+			default:
+				Top(Shm);
 			break;
 		}
 		munmap(Shm, shmStat.st_size);
