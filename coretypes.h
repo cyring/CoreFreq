@@ -10,11 +10,14 @@
 typedef unsigned long long int	Bool64;
 typedef unsigned int		Bool32;
 
-#define		powered(bit) ((bit) ? 'Y' : 'N')
-#define		enabled(bit) ((bit) ? "ON" : "OFF")
+#define MAX(M, m)	((M) > (m) ? (M) : (m))
+#define MIN(m, M)	((m) < (M) ? (m) : (M))
 
-#define	DRV_DEVNAME "corefreqk"
-#define	DRV_FILENAME "/dev/"DRV_DEVNAME
+#define	powered(bit)	((bit) ? 'Y' : 'N')
+#define	enabled(bit)	((bit) ? "ON" : "OFF")
+
+#define	DRV_DEVNAME	"corefreqk"
+#define	DRV_FILENAME	"/dev/"DRV_DEVNAME
 
 #define	PRECISION	100
 
