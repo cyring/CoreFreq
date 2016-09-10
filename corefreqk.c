@@ -647,8 +647,10 @@ void Cache_Topology(CORE *Core)
 		asm volatile
 		(
 			"cpuid"
-			: "=b"	(Core->T.Cache[level].Register),
-			  "=c"	(Core->T.Cache[level].Sets)
+			: "=a"	(Core->T.Cache[level].AX),
+			  "=b"	(Core->T.Cache[level].BX),
+			  "=c"	(Core->T.Cache[level].Sets),
+			  "=d"	(Core->T.Cache[level].DX)
 			: "a"	(0x4),
 			  "c"	(level)
 		);
@@ -674,8 +676,7 @@ signed int Map_Topology(void *arg)
 			: "a"	(0x1)
 		);
 		Core->T.ApicID=features.Std.BX.Apic_ID;
-		Core->T.CoreID=Core_Count();
-		Core->T.ThreadID=features.Std.BX.MaxThread;
+
 		Cache_Topology(Core);
 
 		complete_and_exit(&topology_job_complete, 0);
@@ -751,6 +752,7 @@ signed int Map_Extended_Topology(void *arg)
 		while(!NoMoreLevels);
 
 		Core->T.ApicID=ExtTopology.DX.x2ApicID;
+
 		Cache_Topology(Core);
 
 		complete_and_exit(&topology_job_complete, 0);
@@ -876,8 +878,8 @@ void Core2_Technology(void)
 void Nehalem_Technology(void)
 {
 	TurboBoost_Technology();
-	SpeedStep_Technology();
 	HyperThreading_Technology();
+	SpeedStep_Technology();
 }
 
 void Counters_Set(CORE *Core)

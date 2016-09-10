@@ -286,14 +286,41 @@ typedef	struct
 			struct
 			{
 				unsigned int
+				Type:	 5-0,
+				Level:	 8-5,
+				Init:	 9-8,
+				Assoc:	10-9,
+				Unused:	14-10,
+				MaxID:	26-14,
+				PerPkg:	32-26;
+			};
+			unsigned int AX;
+		};
+		union
+		{
+			struct
+			{
+				unsigned int
 				Linez:	12-0,
 				Parts:	22-12,
 				Ways:	32-22;
 			};
-			unsigned int Register;
+			unsigned int BX;
 		};
-		unsigned int	Sets,
-				Size;
+		unsigned int	Sets;
+		union
+		{
+			struct
+			{
+				unsigned int
+				WrBack:	 1-0,
+				Inclus:	 2-1,
+				Direct:	 3-2,
+				Resrvd: 32-3;
+			};
+			unsigned int DX;
+		};
+		unsigned int	Size;
 	} Cache[CACHE_MAX_LEVEL];
 } TOPOLOGY;
 

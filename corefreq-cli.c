@@ -102,6 +102,18 @@ char lcd[10][3][3]=
 	}
 };
 
+char hSpace[]=	"        ""        ""        ""        ""        "\
+		"        ""        ""        ""        ""        "\
+		"        ""        ""        ""        ""        "\
+		"        ""    ";
+char hBar[]=	"||||||||""||||||||""||||||||""||||||||""||||||||"\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"\
+		"||||||||""||||";
+char hLine[]=	"--------""--------""--------""--------""--------"\
+		"--------""--------""--------""--------""--------"\
+		"--------""--------""--------""--------""--------"\
+		"--------""----";
 
 int getScreenWidth(void)
 {
@@ -135,9 +147,9 @@ void lcdDraw(	unsigned int X,
 		unsigned int thisDigit[] )
 {
     char *lcdBuf=malloc(32);
-    unsigned int j=dec2Digit(thisNumber, thisDigit);
-
     thisView[0]='\0';
+
+    unsigned int j=dec2Digit(thisNumber, thisDigit);
     j=4;
     do
     {
@@ -183,17 +195,9 @@ void Top(SHM_STRUCT *Shm)
 
     #define MAX_WIDTH	132
     #define DEF_WIDTH	80
-    #define LEADING		2
+    #define LEADING	2
     #define TRAILING	4
 
-    char hSpace[]=	"        ""        ""        ""        ""        "\
-			"        ""        ""        ""        ""        "\
-			"        ""        ""        ""        ""        "\
-			"        ""    ";
-    char hBar[]=	"||||||||""||||||||""||||||||""||||||||""||||||||"\
-			"||||||||""||||||||""||||||||""||||||||""||||||||"\
-			"||||||||""||||||||""||||||||""||||||||""||||||||"\
-			"||||||||""||||";
     char hLoad[]=	"--------""----- CP""U Ratio ""--------""--------"\
 			"--------""--------""--------""--------""--------"\
 			"--------""--------""--------""--------""--------"\
@@ -275,7 +279,7 @@ void Top(SHM_STRUCT *Shm)
 
 	sprintf(hArch,
 	    DoK	"%.*sArchitecture ["CoK"%s"DoK"] "			\
-	    WoK	"%2u/%-2u"DoK"CPU Online",
+	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online",
 		12, hSpace,
 		Shm->Proc.Architecture,
 		Shm->Proc.CPU.OnLine,
@@ -382,9 +386,10 @@ void Top(SHM_STRUCT *Shm)
 		strcat(loadView, hCore);
 
 		sprintf(hCore,
-		    DoK	"#%-2u"YoK"%c"WoK"%7.2f MHz (%5.2f)"		\
-			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
-			"   %llu°C\n",
+		    DoK	"#%-2u"YoK"%c"WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "\
+		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
+		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%   "\
+		    WoK	"%llu"DoK"°C\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -398,8 +403,9 @@ void Top(SHM_STRUCT *Shm)
 			Flop->Temperature);
 		strcat(monitorView, hCore);
 	    }
-	sprintf(footerView,
-		"%s"WoK"%6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"DoK,
+	sprintf(footerView, "%s"					\
+	    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "	\
+	    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%",
 		hFeat,
 		100.f * Shm->Proc.Avg.Turbo,
 		100.f * Shm->Proc.Avg.C0,
@@ -429,17 +435,17 @@ void Top(SHM_STRUCT *Shm)
 	if(iclk == Shm->Proc.CPU.Count)
 		iclk=0;
     }
-    printf(CLS);
+    printf(WoK CLS);
     fflush(stdout);
 
     freeAll();
 }
 
 
+#define LEADING_LEFT	2
 #define LEADING_TOP	1
-#define LEADING_LEFT	1
 #define MARGIN_WIDTH	2
-#define MARGIN_HEIGHT	0
+#define MARGIN_HEIGHT	1
 
 void Dashboard(	SHM_STRUCT *Shm,
 		unsigned int leadingLeft,
@@ -448,31 +454,38 @@ void Dashboard(	SHM_STRUCT *Shm,
 		unsigned int marginHeight)
 {
     char *boardView=NULL,
-	 *lcdView=NULL;
+	 *lcdView=NULL,
+	 *cpuView=NULL;
 
     double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[9];
     double medianRatio=(minRatio + maxRatio) / 2;
 
     void freeAll(void)
     {
+	free(cpuView);
 	free(lcdView);
 	free(boardView);
     }
 
     void allocAll()
     {
-	const size_t allocSize	= (9 * 3 * 3)
+	// Up to 9 digits x 3 cols x 3 lines per digit
+	const size_t lcdSize	= (9 * 3 * 3)
 				+ (9 * 3 * sizeof("\033[000;000H")) + 1;
-	lcdView=malloc(allocSize);
-	boardView=malloc(Shm->Proc.CPU.Count * allocSize);
+	lcdView=malloc(lcdSize);
+	const size_t cpuSize	= (9 * 3) + sizeof("\033[000;000H")
+				+ (3 * sizeof(DoK)) + 1;
+	cpuView=malloc(cpuSize);
+	// All LCD views x total number of CPU
+	boardView=malloc(Shm->Proc.CPU.Count * (lcdSize + cpuSize));
     }
 
     allocAll();
 
     printf(HIDE);
 
-    marginWidth+=12;
-    marginHeight+=3;
+    marginWidth+=12;	// shifted by lcd width
+    marginHeight+=3+1;	// shifted by lcd height + cpu frame
     unsigned int cpu=0;
     while(!Shutdown)
     {
@@ -494,14 +507,15 @@ void Dashboard(	SHM_STRUCT *Shm,
 		struct FLIP_FLOP *Flop=					\
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		lcdDraw(X,
-			Y,
-			lcdView,
-			cursor,
-			(unsigned int) Flop->Relative.Freq,
-			digit);
+		lcdDraw(X, Y, lcdView, cursor,
+			(unsigned int) Flop->Relative.Freq, digit);
+
+		cursorXY(X+1, Y+3, cursor);
+		sprintf(cpuView, "%s"DoK"µ%-2u"WoK"%5llu"DoK"°C",
+				cursor, cpu, Flop->Temperature);
+
 		X+=marginWidth;
-		if(X - 3 > getScreenWidth() - marginWidth)
+		if(X - 3 >= getScreenWidth() - marginWidth)
 		{
 			X=leadingLeft;
 			Y+=marginHeight;
@@ -512,13 +526,15 @@ void Dashboard(	SHM_STRUCT *Shm,
 			strcat(boardView, YoK);
 		else
 			strcat(boardView, GoK);
+
 		strcat(boardView, lcdView);
+		strcat(boardView, cpuView);
 	    }
 	printf( CLS"%s", boardView);
 
 	fflush(stdout);
     }
-    printf(CLS SHOW);
+    printf(WoK CLS SHOW);
     fflush(stdout);
 
     freeAll();
@@ -664,8 +680,8 @@ int help(char *appName)
 	printf(	"CoreFreq."						\
 		"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
 	printf(	"usage:\t%s [-option <arguments>]\n"			\
-		"\t-o\tShow Top (default)\n"				\
-		"\t-b\tShow Dashboard\n"				\
+		"\t-t\tShow Top (default)\n"				\
+		"\t-d\tShow Dashboard\n"				\
 		"\t\t  arguments:"					\
 			" <left>"					\
 			" <top>"					\
@@ -675,7 +691,7 @@ int help(char *appName)
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
-		"\t-t\tPrint Topology\n"				\
+		"\t-m\tPrint Topology\n"				\
 		"\t-h\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
@@ -692,7 +708,7 @@ int main(int argc, char *argv[])
 	int fd=-1, rc=0;
 
 	char *program=strdup(argv[0]), *appName=basename(program);
-	char option='o';
+	char option='t';
 	if((argc >= 2) && (argv[1][0] == '-'))
 		option=argv[1][1];
 	if(option == 'h')
@@ -712,7 +728,7 @@ int main(int argc, char *argv[])
 			case 's':
 				SysInfo(Shm);
 			break;
-			case 't':
+			case 'm':
 				Topology(Shm);
 			break;
 			case 'i':
@@ -721,7 +737,7 @@ int main(int argc, char *argv[])
 			case 'c':
 				Counters(Shm);
 			break;
-			case 'b':
+			case 'd':
 				if(argc == 6)
 					Dashboard(Shm,	atoi(argv[2]),
 							atoi(argv[3]),
@@ -735,7 +751,7 @@ int main(int argc, char *argv[])
 				else
 					rc=help(appName);
 			break;
-			case 'o':
+			case 't':
 				Top(Shm);
 			break;
 			default:

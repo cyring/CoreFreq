@@ -112,7 +112,7 @@ Without arguments, the corefreq-cli program displays Top Monitoring
  * With the option '-c', the client traces counters.
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Counters")
 
- * Using option '-t' corefreq-cli shows the CPU topology
+ * Using option '-m' corefreq-cli shows the CPU topology
 ```
 CPU       ApicID CoreID ThreadID x2APIC Enable Caches Inst Data Unified
 #00(BSP)       0      0        0    OFF    Y     |   32768 4626 262144
