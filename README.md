@@ -109,7 +109,7 @@ CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 ### Client
 Without arguments, the corefreq-cli program displays Top Monitoring
 
- * With the option '-t', the client traces counters.
+ * With the option '-c', the client traces counters.
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Counters")
 
  * Using option '-t' corefreq-cli shows the CPU topology

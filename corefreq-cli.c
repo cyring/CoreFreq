@@ -13,50 +13,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <libgen.h>
 
 #include "intelasm.h"
 #include "coretypes.h"
 #include "corefreq.h"
-
-/*
-           SCREEN
-.--------------------------.
-|                       T  |
-|  L       HEADER          |
-|                       R  |
-|--E ----------------------|
-|                       A  |
-|  A        LOAD           |
-|                       I  |
-|--D ----------------------|
-|                       L  |
-|  I       MONITOR         |
-|                       I  |
-|--N ----------------------|
-|                       N  |
-|  G       FOOTER          |
-|                       G  |
-'--------------------------'
-*/
-
-
-#define MAX_WIDTH	132
-#define DEF_WIDTH	80
-#define LEADING		2
-#define TRAILING	4
-
-// VT100 requirements.
-#define DECSC	"\033[s"
-#define DECRC	"\033[u"
-#define CLS	"\033[H\033[J"
-#define DoK	"\033[1;30;40m"
-#define RoK	"\033[1;31;40m"
-#define GoK	"\033[1;32;40m"
-#define YoK	"\033[1;33;40m"
-#define BoK	"\033[1;34;40m"
-#define MoK	"\033[1;35;40m"
-#define CoK	"\033[1;36;40m"
-#define WoK	"\033[1;37;40m"
 
 unsigned int Shutdown=0x0;
 
@@ -72,10 +33,23 @@ void Emergency(int caught)
 	}
 }
 
-void Top(SHM_STRUCT *Shm)
+// VT100 requirements.
+#define SCP	"\033[s"
+#define RCP	"\033[u"
+#define HIDE	"\033[?25l"
+#define SHOW	"\033[?25h"
+#define CLS	"\033[H\033[J"
+#define DoK	"\033[1;30;40m"
+#define RoK	"\033[1;31;40m"
+#define GoK	"\033[1;32;40m"
+#define YoK	"\033[1;33;40m"
+#define BoK	"\033[1;34;40m"
+#define MoK	"\033[1;35;40m"
+#define CoK	"\033[1;36;40m"
+#define WoK	"\033[1;37;40m"
+
+char lcd[10][3][3]=
 {
-    char lcd[10][3][3]=
-    {
 	{// 0
 		" _ ",
 		"| |",
@@ -126,7 +100,92 @@ void Top(SHM_STRUCT *Shm)
 		"|_|",
 		" _|"
 	}
-    };
+};
+
+
+int getScreenWidth(void)
+{
+	struct winsize ts;
+	ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
+	return(ts.ws_col);
+}
+
+unsigned int dec2Digit(unsigned int decimal, unsigned int thisDigit[])
+{
+	memset(thisDigit, 0, 9 * sizeof(unsigned int));
+	unsigned int j=9;
+	while(decimal > 0)
+	{
+		thisDigit[--j]=decimal % 10;
+		decimal/=10;
+	}
+	return(9 - j);
+}
+
+void cursorXY(unsigned int X, unsigned int Y, char *thisCursor)
+{
+	sprintf(thisCursor, "\033[%d;%dH", Y, X);
+}
+
+void lcdDraw(	unsigned int X,
+		unsigned int Y,
+		char *thisView,
+		char *thisCursor,
+		unsigned int thisNumber,
+		unsigned int thisDigit[] )
+{
+    char *lcdBuf=malloc(32);
+    unsigned int j=dec2Digit(thisNumber, thisDigit);
+
+    thisView[0]='\0';
+    j=4;
+    do
+    {
+	int offset=X + (4 - j) * 3;
+	cursorXY(offset, Y, thisCursor);
+	sprintf(lcdBuf, "%s%.*s", thisCursor, 3, lcd[thisDigit[9 - j]][0]);
+	strcat(thisView, lcdBuf);
+	cursorXY(offset, Y + 1, thisCursor);
+	sprintf(lcdBuf, "%s%.*s", thisCursor, 3, lcd[thisDigit[9 - j]][1]);
+	strcat(thisView, lcdBuf);
+	cursorXY(offset, Y + 2, thisCursor);
+	sprintf(lcdBuf, "%s%.*s", thisCursor, 3, lcd[thisDigit[9 - j]][2]);
+	strcat(thisView, lcdBuf);
+
+	j--;
+    } while(j > 0) ;
+    free(lcdBuf);
+}
+
+
+void Top(SHM_STRUCT *Shm)
+{
+/*
+           SCREEN
+.--------------------------.
+|                       T  |
+|  L       HEADER          |
+|                       R  |
+|--E ----------------------|
+|                       A  |
+|  A        LOAD           |
+|                       I  |
+|--D ----------------------|
+|                       L  |
+|  I       MONITOR         |
+|                       I  |
+|--N ----------------------|
+|                       N  |
+|  G       FOOTER          |
+|                       G  |
+'--------------------------'
+*/
+
+    #define MAX_WIDTH	132
+    #define DEF_WIDTH	80
+    #define LEADING		2
+    #define TRAILING	4
+
     char hSpace[]=	"        ""        ""        ""        ""        "\
 			"        ""        ""        ""        ""        "\
 			"        ""        ""        ""        ""        "\
@@ -187,7 +246,13 @@ void Top(SHM_STRUCT *Shm)
     void layout(int width)
     {
 	char *hString=malloc(32);
-	screenWidth=((width > DEF_WIDTH)&&(width <= MAX_WIDTH))?width:DEF_WIDTH;
+
+	if(width < DEF_WIDTH)
+		screenWidth=DEF_WIDTH;
+	else if(width > MAX_WIDTH)
+		screenWidth=MAX_WIDTH;
+	else
+		screenWidth=width;
 	headerWidth=screenWidth - LEADING - TRAILING;
 	loadWidth=screenWidth - TRAILING;
 
@@ -264,13 +329,6 @@ void Top(SHM_STRUCT *Shm)
 	lcdView=malloc((9 * 3 * 3) + (9 * 3 * sizeof("\033[000;000H")) + 1);
     }
 
-    int getScreenWidth(void)
-    {
-	struct winsize ts;
-	ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
-	return(ts.ws_col);
-    }
-
     allocAll();
 
     layout(getScreenWidth());
@@ -279,48 +337,7 @@ void Top(SHM_STRUCT *Shm)
     {
     	unsigned int maxRelFreq=0, digit[9];
 
-	unsigned int dec2Digit(unsigned int decimal)
-	{
-		memset(digit, 0, 9 * sizeof(unsigned int));
-		unsigned int j=9;
-		while(decimal > 0)
-		{
-			digit[--j]=decimal % 10;
-			decimal/=10;
-		}
-		return(9 - j);
-	}
-
 	char cursor[]="\033[000;000H";
-
-	void cursorXY(unsigned int X, unsigned int Y)
-	{
-		sprintf(cursor, "\033[%d;%dH", Y, X);
-	}
-
-	void lcdDraw(unsigned int X, unsigned int Y)
-	{
-	    lcdView[0]='\0';
-	    char *lcdBuf=malloc(32);
-	    unsigned int j=dec2Digit(maxRelFreq);
-	    j=4;
-	    do
-	    {
-		int offset=X + (4 - j) * 3;
-		cursorXY(offset, Y);
-		sprintf(lcdBuf, "%s%.*s", cursor, 3, lcd[digit[9 - j]][0]);
-		strcat(lcdView, lcdBuf);
-		cursorXY(offset, Y + 1);
-		sprintf(lcdBuf, "%s%.*s", cursor, 3, lcd[digit[9 - j]][1]);
-		strcat(lcdView, lcdBuf);
-		cursorXY(offset, Y + 2);
-		sprintf(lcdBuf, "%s%.*s", cursor, 3, lcd[digit[9 - j]][2]);
-		strcat(lcdView, lcdBuf);
-
-		j--;
-	    } while(j > 0) ;
-	    free(lcdBuf);
-	}
 
 	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
 		usleep(Shm->Proc.msleep * 50);
@@ -330,7 +347,7 @@ void Top(SHM_STRUCT *Shm)
 	if(baseWidth != screenWidth)
     		layout(baseWidth);
 
-	i=dec2Digit(Shm->Cpu[iclk].Clock.Hz);
+	i=dec2Digit(Shm->Cpu[iclk].Clock.Hz, digit);
 	sprintf(hBClk,
 		"%.*sBase Clock ~ "YoK"%u %u%u%u%u %u%u%u%u"DoK" Hz",
 		12, hSpace,
@@ -391,15 +408,15 @@ void Top(SHM_STRUCT *Shm)
 		100.f * Shm->Proc.Avg.C6,
 		100.f * Shm->Proc.Avg.C7);
 
-	lcdDraw(2, 1);
+	lcdDraw(2, 1, lcdView, cursor, maxRelFreq, digit);
 
 	printf(	WoK CLS							\
 		"%s"							\
 		"%s"							\
 		"%s"							\
-		"%s"DECSC						\
+		"%s"SCP							\
 	    MoK	"%s"							\
-		"\033[1;1H"DECRC,
+		"\033[1;1H"RCP,
 		headerView,
 		loadView,
 		monitorView,
@@ -418,13 +435,103 @@ void Top(SHM_STRUCT *Shm)
     freeAll();
 }
 
+
+#define LEADING_TOP	1
+#define LEADING_LEFT	1
+#define MARGIN_WIDTH	2
+#define MARGIN_HEIGHT	0
+
+void Dashboard(	SHM_STRUCT *Shm,
+		unsigned int leadingLeft,
+		unsigned int leadingTop,
+		unsigned int marginWidth,
+		unsigned int marginHeight)
+{
+    char *boardView=NULL,
+	 *lcdView=NULL;
+
+    double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[9];
+    double medianRatio=(minRatio + maxRatio) / 2;
+
+    void freeAll(void)
+    {
+	free(lcdView);
+	free(boardView);
+    }
+
+    void allocAll()
+    {
+	const size_t allocSize	= (9 * 3 * 3)
+				+ (9 * 3 * sizeof("\033[000;000H")) + 1;
+	lcdView=malloc(allocSize);
+	boardView=malloc(Shm->Proc.CPU.Count * allocSize);
+    }
+
+    allocAll();
+
+    printf(HIDE);
+
+    marginWidth+=12;
+    marginHeight+=3;
+    unsigned int cpu=0;
+    while(!Shutdown)
+    {
+    	unsigned int digit[9];
+	unsigned int X, Y;
+
+	char cursor[]="\033[000;000H";
+
+	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
+		usleep(Shm->Proc.msleep * 50);
+	BITCLR(Shm->Proc.Sync, 0);
+
+	X=leadingLeft;
+	Y=leadingTop;
+	boardView[0]='\0';
+	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	    if(!Shm->Cpu[cpu].OffLine)
+	    {
+		struct FLIP_FLOP *Flop=					\
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+		lcdDraw(X,
+			Y,
+			lcdView,
+			cursor,
+			(unsigned int) Flop->Relative.Freq,
+			digit);
+		X+=marginWidth;
+		if(X - 3 > getScreenWidth() - marginWidth)
+		{
+			X=leadingLeft;
+			Y+=marginHeight;
+		}
+		if(Flop->Relative.Ratio > medianRatio)
+			strcat(boardView, RoK);
+		else if(Flop->Relative.Ratio > minRatio)
+			strcat(boardView, YoK);
+		else
+			strcat(boardView, GoK);
+		strcat(boardView, lcdView);
+	    }
+	printf( CLS"%s", boardView);
+
+	fflush(stdout);
+    }
+    printf(CLS SHOW);
+    fflush(stdout);
+
+    freeAll();
+}
+
+
 void Counters(SHM_STRUCT *Shm)
 {
 	unsigned int cpu=0;
 	while(!Shutdown)
 	{
 		while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
-			usleep(Shm->Proc.msleep * 100);
+			usleep(Shm->Proc.msleep * 50);
 		BITCLR(Shm->Proc.Sync, 0);
 
 		printf("CPU  Frequency  Ratio   Turbo"			\
@@ -462,13 +569,14 @@ void Counters(SHM_STRUCT *Shm)
 	}
 }
 
+
 void Instructions(SHM_STRUCT *Shm)
 {
 	unsigned int cpu=0;
 	while(!Shutdown)
 	{
 		while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
-			usleep(Shm->Proc.msleep * 100);
+			usleep(Shm->Proc.msleep * 50);
 		BITCLR(Shm->Proc.Sync, 0);
 
 		printf("CPU     IPS            IPC            CPI\n");
@@ -488,12 +596,13 @@ void Instructions(SHM_STRUCT *Shm)
 	}
 }
 
+
 void Topology(SHM_STRUCT *Shm)
 {
 	unsigned int cpu=0, level=0x0;
 
 	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
-		usleep(Shm->Proc.msleep * 100);
+		usleep(Shm->Proc.msleep * 50);
 	BITCLR(Shm->Proc.Sync, 0);
 
 	printf(	"CPU       ApicID CoreID ThreadID"		\
@@ -516,6 +625,7 @@ void Topology(SHM_STRUCT *Shm)
 	    printf("\n");
 	}
 }
+
 
 void SysInfo(SHM_STRUCT *Shm)
 {
@@ -548,29 +658,45 @@ void SysInfo(SHM_STRUCT *Shm)
 		Shm->Proc.PM_version	);
 }
 
+
+int help(char *appName)
+{
+	printf(	"CoreFreq."						\
+		"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
+	printf(	"usage:\t%s [-option <arguments>]\n"			\
+		"\t-o\tShow Top (default)\n"				\
+		"\t-b\tShow Dashboard\n"				\
+		"\t\t  arguments:"					\
+			" <left>"					\
+			" <top>"					\
+			" <marginWidth>"				\
+			" <marginHeight>"				\
+		"\n"							\
+		"\t-c\tMonitor Counters\n"				\
+		"\t-i\tMonitor Instructions\n"				\
+		"\t-s\tPrint System Information\n"			\
+		"\t-t\tPrint Topology\n"				\
+		"\t-h\tPrint out this message\n"			\
+		"\nExit status:\n"					\
+			"0\tif OK,\n"					\
+			"1\tif problems,\n"				\
+			">1\tif serious trouble.\n"			\
+		"\nReport bugs to labs[at]cyring.fr\n", appName);
+	return(1);
+}
+
 int main(int argc, char *argv[])
 {
 	struct stat shmStat={0};
 	SHM_STRUCT *Shm;
 	int fd=-1, rc=0;
-	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
-	if(option == 'h')
-	{
-		printf(	"CoreFreq."					\
-			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n");
-		printf(	"usage:\t%s [-option]\n"			\
-			"\t-c\tMonitor Counters\n"			\
-			"\t-i\tMonitor Instructions\n"			\
-			"\t-s\tPrint System Information\n"		\
-			"\t-t\tPrint Topology\n"			\
-			"\t-h\tPrint out this message\n"		\
-			"\nExit status:\n"				\
-				"0\tif OK,\n"				\
-				"1\tif problems,\n"			\
-				">1\tif serious trouble.\n"	\
-			"\nReport bugs to labs[at]cyring.fr\n", argv[0]);
-	}
 
+	char *program=strdup(argv[0]), *appName=basename(program);
+	char option='o';
+	if((argc >= 2) && (argv[1][0] == '-'))
+		option=argv[1][1];
+	if(option == 'h')
+		help(appName);
 	else if(((fd=shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
 		&& ((fstat(fd, &shmStat) != -1)
@@ -595,13 +721,31 @@ int main(int argc, char *argv[])
 			case 'c':
 				Counters(Shm);
 			break;
-			default:
+			case 'b':
+				if(argc == 6)
+					Dashboard(Shm,	atoi(argv[2]),
+							atoi(argv[3]),
+							atoi(argv[4]),
+							atoi(argv[5])	);
+				else if(argc == 2)
+					Dashboard(Shm,	LEADING_LEFT,
+							LEADING_TOP,
+							MARGIN_WIDTH,
+							MARGIN_HEIGHT);
+				else
+					rc=help(appName);
+			break;
+			case 'o':
 				Top(Shm);
+			break;
+			default:
+				rc=help(appName);
 			break;
 		}
 		munmap(Shm, shmStat.st_size);
 		close(fd);
 	    }
 		else rc=2;
+	free(program);
 	return(rc);
 }
