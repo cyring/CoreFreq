@@ -25,7 +25,7 @@
 
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int Shutdown=0x0, Debug=0x0;
+unsigned int Shutdown=0x0, Quiet=0x0;
 
 typedef struct {
 	PROC_STRUCT	*Proc;
@@ -119,18 +119,6 @@ static void *Core_Cycle(void *arg)
 					Core->Clock) / 1000000L;
 		}
 		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
-
-		if(Debug)
-		{
-			printf(	"#%03u %7.2f MHz (%5.2f)"		\
-				"  UCC[%12llu] URC[%12llu] TSC[%12llu]\n",
-				cpu,
-				Flip->Relative.Freq,
-				Flip->Relative.Ratio,
-				Core->Delta.C0.UCC,
-				Core->Delta.C0.URC,
-				Core->Delta.TSC);
-		}
 	    }
 	} while(!Shutdown) ;
 
@@ -242,7 +230,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			}
 		}
 		// Welcomes with brand and per CPU base clock.
-		printf(	"CoreFreq Daemon."				\
+		if(!Quiet)
+		 printf("CoreFreq Daemon."				\
 			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n"\
 			"  Processor [%s]\n"				\
 			"  Architecture [%s]\n"				\
@@ -275,11 +264,12 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 						NULL,
 						Core_Cycle,
 						&Arg[cpu]);
-				printf("    CPU #%03u @ %.2f MHz\n", cpu,
-				(double) REL_FREQ(Shm->Proc.Boost[1],
+				if(!Quiet)
+				    printf("    CPU #%03u @ %.2f MHz\n", cpu,
+					(double) REL_FREQ(Shm->Proc.Boost[1],
 						Shm->Proc.Boost[1],
 						Shm->Cpu[cpu].Clock)
-					/ 1000000L);
+						/ 1000000L);
 			}
 		fflush(stdout);
 		// Main loop : aggregate the ratios.
@@ -376,7 +366,7 @@ int main(int argc, char *argv[])
 	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
 	if(option == 'h')
 		printf(	"usage:\t%s [-option]\n"		\
-			"\t-d\tDebug\n"				\
+			"\t-q\tQuiet\n"				\
 			"\t-h\tPrint out this message\n"	\
 			"\nExit status:\n"			\
 				"0\tif OK,\n"			\
@@ -394,8 +384,8 @@ int main(int argc, char *argv[])
 		{
 		  switch(option)
 		  {
-		    case 'd':
-			Debug=0x1;
+		    case 'q':
+			Quiet=0x1;
 		    default:
 		    {
 			SIG Sig={.Signal={0}, .TID=0, .Started=0};

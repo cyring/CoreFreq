@@ -115,11 +115,20 @@ char hLine[]=	"--------""--------""--------""--------""--------"\
 		"--------""--------""--------""--------""--------"\
 		"--------""----";
 
-int getScreenWidth(void)
+typedef struct
 {
+	int	width,
+		height;
+} SCREEN_SIZE;
+
+SCREEN_SIZE getScreenSize(void)
+{
+	SCREEN_SIZE _screenSize={.width=0, .height=0};
 	struct winsize ts;
 	ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
-	return(ts.ws_col);
+	_screenSize.width=(int) ts.ws_col;
+	_screenSize.height=(int) ts.ws_row;
+	return(_screenSize);
 }
 
 unsigned int dec2Digit(unsigned int decimal, unsigned int thisDigit[])
@@ -193,11 +202,6 @@ void Top(SHM_STRUCT *Shm)
 '--------------------------'
 */
 
-    #define MAX_WIDTH	132
-    #define DEF_WIDTH	80
-    #define LEADING	2
-    #define TRAILING	4
-
     char hLoad[]=	"--------""----- CP""U Ratio ""--------""--------"\
 			"--------""--------""--------""--------""--------"\
 			"--------""--------""--------""--------""--------"\
@@ -206,10 +210,7 @@ void Top(SHM_STRUCT *Shm)
 			"- C1 ---""- C3 ---""- C6 ---""- C7 -- ""Temps --"\
 			"--------""--------""--------""--------""--------"\
 			"--------""----";
-    char hAvg[]=	"---- Tec""hnology ""--------"" Turbo -""- C0 ---"\
-			"- C1 ---""- C3 ---""- C6 ---""- C7 ---""--------"\
-			"--------""--------""--------""--------""--------"\
-			"--------""----";
+    char hAvg[]=	"--------""----- Av""erages [";
 
     char *hRatio=NULL,
 	 *hProc=NULL,
@@ -242,26 +243,23 @@ void Top(SHM_STRUCT *Shm)
 	}
     ratioCount++;
 
-    int screenWidth=DEF_WIDTH;
-    int headerWidth=DEF_WIDTH;
-    int loadWidth=DEF_WIDTH;
-    int allocSize=DEF_WIDTH;
+    #define MAX_WIDTH	132
+    #define MIN_WIDTH	80
+    #define LOAD_LEAD	4
 
-    void layout(int width)
+    SCREEN_SIZE drawSize={.width=0, .height=0};
+    int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count) + 7;
+    int loadWidth=0;
+    int drawFlag=0x0;
+
+    void layout(void)
     {
 	char *hString=malloc(32);
 
-	if(width < DEF_WIDTH)
-		screenWidth=DEF_WIDTH;
-	else if(width > MAX_WIDTH)
-		screenWidth=MAX_WIDTH;
-	else
-		screenWidth=width;
-	headerWidth=screenWidth - LEADING - TRAILING;
-	loadWidth=screenWidth - TRAILING;
+	loadWidth=drawSize.width - LOAD_LEAD;
 
 	sprintf(hRatio, "%.*s",
-		screenWidth,
+		drawSize.width,
 		hLoad);
 	for(i=0; i < ratioCount; i++)
 	{
@@ -273,17 +271,23 @@ void Top(SHM_STRUCT *Shm)
 	}
 
 	sprintf(hProc,
-	    DoK	"%.*sProcessor ["CoK"%s"DoK"]",
-		12, hSpace,
-		Shm->Proc.Brand);
+	    DoK	"%.*sProcessor ["CoK"%s"DoK"]%.*s",
+		14, hSpace,
+		Shm->Proc.Brand,
+		drawSize.width - 26
+		- strlen(Shm->Proc.Brand),
+		hSpace);
 
 	sprintf(hArch,
 	    DoK	"%.*sArchitecture ["CoK"%s"DoK"] "			\
-	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online",
-		12, hSpace,
+	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online%.*s",
+		14, hSpace,
 		Shm->Proc.Architecture,
 		Shm->Proc.CPU.OnLine,
-		Shm->Proc.CPU.Count);
+		Shm->Proc.CPU.Count,
+		drawSize.width - 45
+		- strlen(Shm->Proc.Architecture),
+		hSpace);
 
 	if(Shm->Proc.PM_version == 0)
 		strcpy(hString, " PM");
@@ -291,14 +295,14 @@ void Top(SHM_STRUCT *Shm)
 		sprintf(hString, GoK"PM%1d"DoK, Shm->Proc.PM_version);
 
 	sprintf(hFeat,
-	    DoK	"%.*s\n"						\
-		"[%s,%s,%s,%s,%s]",
-		screenWidth, hAvg,
+	    DoK	"Tech [%s,%s,%s,%s,%s]%.*s",
 		Shm->Proc.InvariantTSC ? GoK"TSC"DoK : "TSC",
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
 		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
-		hString);
+		hString,
+		drawSize.width - 29,
+		hSpace);
 	free(hString);
     }
 
@@ -335,8 +339,6 @@ void Top(SHM_STRUCT *Shm)
 
     allocAll();
 
-    layout(getScreenWidth());
-
     while(!Shutdown)
     {
     	unsigned int maxRelFreq=0, digit[9];
@@ -347,26 +349,60 @@ void Top(SHM_STRUCT *Shm)
 		usleep(Shm->Proc.msleep * 50);
 	BITCLR(Shm->Proc.Sync, 0);
 
-	int baseWidth=getScreenWidth();
-	if(baseWidth != screenWidth)
-    		layout(baseWidth);
+	SCREEN_SIZE currentSize=getScreenSize();
+	if(currentSize.height != drawSize.height)
+	{
+		drawSize.height=currentSize.height;
+		if(drawSize.height < MIN_HEIGHT)
+			drawFlag &= 0x0001;
+		else
+			drawFlag |= 0x1110;
+	}
+	if(currentSize.width != drawSize.width)
+	{
+		if(currentSize.width > MAX_WIDTH)
+			drawSize.width=MAX_WIDTH;
+		else
+			drawSize.width=currentSize.width;
+
+		if(drawSize.width < MIN_WIDTH)
+			drawFlag &= 0x0010;
+		else
+			drawFlag |= 0x1001;
+	}
+      if((drawFlag & 0x0011) == 0x0011)			// .... LCHW
+      {
+	if((drawFlag & 0x0100) == 0x0100)
+	{
+		drawFlag &= 0x1011;
+		printf(CLS);
+	}
+	if((drawFlag & 0x1000) == 0x1000)
+	{
+		drawFlag &= 0x0111;
+    		layout();
+	}
 
 	i=dec2Digit(Shm->Cpu[iclk].Clock.Hz, digit);
 	sprintf(hBClk,
-		"%.*sBase Clock ~ "YoK"%u %u%u%u%u %u%u%u%u"DoK" Hz",
-		12, hSpace,
-		digit[0],	digit[1], digit[2], digit[3], digit[4],
-				digit[5], digit[6], digit[7], digit[8]);
+		"%.*sBase Clock ~ "YoK"%u%u%u %u%u%u %u%u%u"DoK" Hz%.*s",
+		14, hSpace,
+		digit[0], digit[1], digit[2],
+		digit[3], digit[4], digit[5],
+		digit[6], digit[7], digit[8],
+		drawSize.width - 41,
+		hSpace);
 
 	sprintf(headerView,
-		"%.*s%s\n"						\
-		"%.*s%s\n"						\
-		"%.*s%s\n",
-		LEADING, hSpace, hProc,
-		LEADING, hSpace, hArch,
-		LEADING, hSpace, hBClk);
-	sprintf(loadView, "%.*s\n", screenWidth, hRatio);
-	sprintf(monitorView, DoK"%.*s\n", screenWidth, hMon);
+		"%s\n"							\
+		"%s\n"							\
+		"%s\n",
+		hProc,
+		hArch,
+		hBClk);
+
+	sprintf(loadView, "%.*s\n", drawSize.width, hRatio);
+	sprintf(monitorView, DoK"%.*s\n", drawSize.width, hMon);
 
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	    if(!Shm->Cpu[cpu].OffLine)
@@ -378,18 +414,21 @@ void Top(SHM_STRUCT *Shm)
 
 		int hPos=Flop->Relative.Ratio * loadWidth / maxRatio;
 		sprintf(hCore,
-			"%s#%-2u %.*s\n",
+			"%s#%-2u %.*s%.*s\n",
 			Flop->Relative.Ratio > medianRatio ?
 			RoK : Flop->Relative.Ratio > minRatio ?
 			YoK : GoK,
-			cpu, hPos, hBar);
+			cpu, hPos, hBar,
+			loadWidth - hPos,
+			hSpace);
 		strcat(loadView, hCore);
 
 		sprintf(hCore,
-		    DoK	"#%-2u"YoK"%c"WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "\
+		    DoK	"#"WoK"%-2u"YoK"%c"				\
+		    WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%   "\
-		    WoK	"%llu"DoK"°C\n",
+		    WoK	"%llu"DoK"°C%.*s\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -400,13 +439,14 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
-			Flop->Temperature);
+			Flop->Temperature,
+			drawSize.width - 78,
+			hSpace);
 		strcat(monitorView, hCore);
 	    }
-	sprintf(footerView, "%s"					\
-	    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "	\
-	    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%",
-		hFeat,
+	sprintf(hCore,
+	    	"%6.2f""%% ""%6.2f""%% ""%6.2f""%% "			\
+	    	"%6.2f""%% ""%6.2f""%% ""%6.2f""%%",
 		100.f * Shm->Proc.Avg.Turbo,
 		100.f * Shm->Proc.Avg.C0,
 		100.f * Shm->Proc.Avg.C1,
@@ -414,15 +454,22 @@ void Top(SHM_STRUCT *Shm)
 		100.f * Shm->Proc.Avg.C6,
 		100.f * Shm->Proc.Avg.C7);
 
+	sprintf(footerView,
+		"%s""%s"" ] %.*s\n"					\
+		"%s",
+		hAvg, hCore,
+		drawSize.width - (1 + sizeof(hAvg) + (6 * 8)), hLine,
+		hFeat);
+
 	lcdDraw(2, 1, lcdView, cursor, maxRelFreq, digit);
 
-	printf(	WoK CLS							\
+	printf(	WoK "\033[1;1H"						\
 		"%s"							\
 		"%s"							\
 		"%s"							\
-		"%s"SCP							\
+	    SCP	"%s"							\
 	    MoK	"%s"							\
-		"\033[1;1H"RCP,
+	    RCP,
 		headerView,
 		loadView,
 		monitorView,
@@ -434,8 +481,8 @@ void Top(SHM_STRUCT *Shm)
 	iclk++;
 	if(iclk == Shm->Proc.CPU.Count)
 		iclk=0;
+      }
     }
-    printf(WoK CLS);
     fflush(stdout);
 
     freeAll();
@@ -482,8 +529,6 @@ void Dashboard(	SHM_STRUCT *Shm,
 
     allocAll();
 
-    printf(HIDE);
-
     marginWidth+=12;	// shifted by lcd width
     marginHeight+=3+1;	// shifted by lcd height + cpu frame
     unsigned int cpu=0;
@@ -501,6 +546,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 	X=leadingLeft;
 	Y=leadingTop;
 	boardView[0]='\0';
+
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	    if(!Shm->Cpu[cpu].OffLine)
 	    {
@@ -510,12 +556,12 @@ void Dashboard(	SHM_STRUCT *Shm,
 		lcdDraw(X, Y, lcdView, cursor,
 			(unsigned int) Flop->Relative.Freq, digit);
 
-		cursorXY(X+1, Y+3, cursor);
-		sprintf(cpuView, "%s"DoK"µ%-2u"WoK"%5llu"DoK"°C",
+		cursorXY(X, Y + 3, cursor);
+		sprintf(cpuView, "%s"DoK"[ µ%-2u"WoK"%3llu"DoK"°C ]",
 				cursor, cpu, Flop->Temperature);
 
 		X+=marginWidth;
-		if(X - 3 >= getScreenWidth() - marginWidth)
+		if(X - 3 >= getScreenSize().width - marginWidth)
 		{
 			X=leadingLeft;
 			Y+=marginHeight;
@@ -530,11 +576,10 @@ void Dashboard(	SHM_STRUCT *Shm,
 		strcat(boardView, lcdView);
 		strcat(boardView, cpuView);
 	    }
-	printf( CLS"%s", boardView);
+	printf( CLS "%s", boardView);
 
 	fflush(stdout);
     }
-    printf(WoK CLS SHOW);
     fflush(stdout);
 
     freeAll();
@@ -739,20 +784,32 @@ int main(int argc, char *argv[])
 			break;
 			case 'd':
 				if(argc == 6)
+				{
+					printf(HIDE);
 					Dashboard(Shm,	atoi(argv[2]),
 							atoi(argv[3]),
 							atoi(argv[4]),
 							atoi(argv[5])	);
+					printf(SHOW);
+				}
 				else if(argc == 2)
+				{
+					printf(HIDE);
 					Dashboard(Shm,	LEADING_LEFT,
 							LEADING_TOP,
 							MARGIN_WIDTH,
 							MARGIN_HEIGHT);
+					printf(SHOW);
+				}
 				else
 					rc=help(appName);
 			break;
 			case 't':
+			{
+				printf(CLS HIDE);
 				Top(Shm);
+				printf(CLS SHOW);
+			}
 			break;
 			default:
 				rc=help(appName);
