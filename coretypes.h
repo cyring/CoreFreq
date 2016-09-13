@@ -7,8 +7,8 @@
 #define	TRUE	1
 #define	FALSE	0
 
-typedef unsigned long long int	Bool64;
-typedef unsigned int		Bool32;
+typedef unsigned long long int	Bit64;
+typedef unsigned int		Bit32;
 
 #define MAX(M, m)	((M) > (m) ? (M) : (m))
 #define MIN(m, M)	((m) < (M) ? (m) : (M))

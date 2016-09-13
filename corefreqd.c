@@ -125,6 +125,72 @@ static void *Core_Cycle(void *arg)
 	return(NULL);
 }
 
+void Architecture(SHM_STRUCT *Shm, PROC *Proc)
+{	// Copy the numbers of total & online CPU.
+	Shm->Proc.CPU.Count=Proc->CPU.Count;
+	Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
+	// Copy the Architecture name.
+	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
+	// Copy the base clock ratios.
+	memcpy(Shm->Proc.Boost, Proc->Boost, (1+1+8) * sizeof(unsigned int));
+	// Copy the processor's brand string.
+	strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
+}
+
+void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.InvariantTSC=(Proc->Features.Std.DX.TSC
+				<< Proc->Features.InvariantTSC);
+}
+
+void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.PM_version=Proc->Features.Perf_Monitoring_Leaf.AX.Version;
+}
+
+void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.HyperThreading=Proc->Features.HTT_enabled;
+}
+
+void SpeedStep(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
+}
+
+void TurboBoost(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.TurboBoost=Proc->Features.Turbo_enabled;
+}
+
+void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{	// Copy per CPU base clock.
+	Shm->Cpu[cpu].Clock.Q=Core[cpu]->Clock.Q;
+	Shm->Cpu[cpu].Clock.R=Core[cpu]->Clock.R;
+	Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
+}
+
+void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{	// Copy Core topology.
+	Shm->Cpu[cpu].Topology.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
+	Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
+	Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
+	Shm->Cpu[cpu].Topology.ThreadID=Core[cpu]->T.ThreadID;
+	Shm->Cpu[cpu].Topology.x2APIC=((Proc->Features.Std.CX.x2APIC
+					& Core[cpu]->T.Base.EN)
+					<< Core[cpu]->T.Base.EXTD);
+	// Compute Caches size.
+	unsigned int level=0x0;
+	for(level=0; level < CACHE_MAX_LEVEL; level++)
+	{
+		Shm->Cpu[cpu].Topology.Cache[level].Size=
+		  (Core[cpu]->T.Cache[level].Sets + 1)
+		* (Core[cpu]->T.Cache[level].Linez + 1)
+		* (Core[cpu]->T.Cache[level].Parts + 1)
+		* (Core[cpu]->T.Cache[level].Ways + 1);
+	}
+}
+
 typedef	struct
 {
 	int	Drv,
@@ -170,24 +236,22 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	    {
 		// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-		// Copy the global interval delay.
+		// Copy the high-resolution timer delay.
 		Shm->Proc.msleep=Proc->msleep;
-		// Copy the number of online CPU.
-		Shm->Proc.CPU.Count=Proc->CPU.Count;
-		Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
-		// Copy the Architecture name.
-		strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
-		memcpy(Shm->Proc.Boost, Proc->Boost,
-			(1+1+8) * sizeof(unsigned int));
-		strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
 
-		// Aggregate some Processor's features.
-		Shm->Proc.PM_version=					\
-			Proc->Features.Perf_Monitoring_Leaf.AX.Version;
-		Shm->Proc.InvariantTSC=Proc->Features.InvariantTSC;
-		Shm->Proc.HyperThreading=Proc->Features.HTT_enabled;
-		Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
-		Shm->Proc.TurboBoost=Proc->Features.Turbo_enabled;
+		Architecture(Shm, Proc);
+
+		// Technologies aggregation.
+
+		PerformanceMonitoring(Shm, Proc);
+
+		InvariantTSC(Shm, Proc);
+
+		HyperThreading(Shm, Proc);
+
+		SpeedStep(Shm, Proc);
+
+		TurboBoost(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
@@ -198,30 +262,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		// Copy per CPU data from Kernel to Userspace.
 		unsigned long long roomSeed=0x0;
 		for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
-		{	// Copy per CPU base clock.
-			Shm->Cpu[cpu].Clock.Q=Core[cpu]->Clock.Q;
-			Shm->Cpu[cpu].Clock.R=Core[cpu]->Clock.R;
-			Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
-			// Copy Core topology.
-			Shm->Cpu[cpu].Topology.BSP=			\
-				(Core[cpu]->T.Base.BSP) ? 1 : 0;
-			Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
-			Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
-			Shm->Cpu[cpu].Topology.ThreadID=Core[cpu]->T.ThreadID;
-			Shm->Cpu[cpu].Topology.x2APIC=			\
-				(Core[cpu]->T.Base.EXTD) ? 1 : 0;
-			Shm->Cpu[cpu].Topology.Enable=			\
-				(Core[cpu]->T.Base.EN) ? 1 : 0;
-			// Compute Caches size.
-			unsigned int level=0x0;
-			for(level=0; level < CACHE_MAX_LEVEL; level++)
-			{
-				Shm->Cpu[cpu].Topology.Cache[level].Size=
-				  (Core[cpu]->T.Cache[level].Sets + 1)
-				* (Core[cpu]->T.Cache[level].Linez + 1)
-				* (Core[cpu]->T.Cache[level].Parts + 1)
-				* (Core[cpu]->T.Cache[level].Ways + 1);
-			}
+		{
+			BaseClock(Shm, Core, cpu);
+
+			Topology(Shm, Proc, Core, cpu);
+
 			// Define the Clients room mask.
 			if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
 			{
@@ -360,9 +405,9 @@ static void *Emergency(void *arg)
 
 int main(int argc, char *argv[])
 {
-	FD		fd={0, 0};
-	PROC		*Proc=NULL;
-	int		rc=0;
+	FD	fd={0, 0};
+	PROC	*Proc=NULL;	// Kernel module anchor point.
+	int	rc=0;
 	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
 	if(option == 'h')
 		printf(	"usage:\t%s [-option]\n"		\

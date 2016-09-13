@@ -17,12 +17,11 @@ typedef struct
 	unsigned int		Toggle;
 
 	struct {
-		int		BSP,
+		Bit32		BSP,
 				ApicID,
 				CoreID,
 				ThreadID,
-				x2APIC,
-				Enable;
+				x2APIC;
 		struct {
 		unsigned int	Size;
 		} Cache[CACHE_MAX_LEVEL];
@@ -68,7 +67,7 @@ typedef struct
 
 	char				Brand[64];
 
-	Bool32				InvariantTSC,
+	Bit32				InvariantTSC,
 					HyperThreading,
 					SpeedStep,
 					TurboBoost;

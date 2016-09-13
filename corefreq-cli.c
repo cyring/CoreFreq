@@ -210,7 +210,7 @@ void Top(SHM_STRUCT *Shm)
 			"- C1 ---""- C3 ---""- C6 ---""- C7 -- ""Temps --"\
 			"--------""--------""--------""--------""--------"\
 			"--------""----";
-    char hAvg[]=	"--------""----- Av""erages [";
+    char hAvg[]=	"--------""---- Ave""rages [ ";
 
     char *hRatio=NULL,
 	 *hProc=NULL,
@@ -294,14 +294,20 @@ void Top(SHM_STRUCT *Shm)
 	else
 		sprintf(hString, GoK"PM%1d"DoK, Shm->Proc.PM_version);
 
+	const char *TSC[]=
+	{
+		"  TSC  ",
+	    GoK	"TSC-VAR" DoK,
+	    GoK	"TSC-INV" DoK
+	};
 	sprintf(hFeat,
 	    DoK	"Tech [%s,%s,%s,%s,%s]%.*s",
-		Shm->Proc.InvariantTSC ? GoK"TSC"DoK : "TSC",
+		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
 		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
 		hString,
-		drawSize.width - 29,
+		drawSize.width - 33,
 		hSpace);
 	free(hString);
     }
@@ -428,7 +434,7 @@ void Top(SHM_STRUCT *Shm)
 		    WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%   "\
-		    WoK	"%llu"DoK"°C%.*s\n",
+		    WoK	"%llu"DoK"C%.*s\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -440,7 +446,7 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
 			Flop->Temperature,
-			drawSize.width - 78,
+			drawSize.width - 77,
 			hSpace);
 		strcat(monitorView, hCore);
 	    }
@@ -660,29 +666,32 @@ void Instructions(SHM_STRUCT *Shm)
 
 void Topology(SHM_STRUCT *Shm)
 {
+	const char *x2APIC[]=
+	{
+		"  OFF ",
+	    GoK	" xAPIC" DoK,
+	    GoK	"x2APIC" DoK
+	};
 	unsigned int cpu=0, level=0x0;
 
 	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
 		usleep(Shm->Proc.msleep * 50);
 	BITCLR(Shm->Proc.Sync, 0);
 
-	printf(	"CPU       ApicID CoreID ThreadID"		\
-		" x2APIC Enable Caches Inst Data Unified\n");
+	printf(		"CPU       ApicID CoreID ThreadID x2APIC "	\
+			"Caches Inst Data Unified\n");
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-	    printf(	"#%02u%-5s  %6d %6d   %6d"		\
-			"    %3s    %c     |  ",
-		cpu,
-		(Shm->Cpu[cpu].Topology.BSP) ? "(BSP)" : "(AP)",
-		Shm->Cpu[cpu].Topology.ApicID,
-		Shm->Cpu[cpu].Topology.CoreID,
-		Shm->Cpu[cpu].Topology.ThreadID,
-		(Shm->Cpu[cpu].Topology.x2APIC) ? "ON" : "OFF",
-		(Shm->Cpu[cpu].Topology.Enable) ? 'Y' : 'N');
+		printf(	"#%02u%-5s  %6d %6d   %6d %s    |  ",
+			cpu,
+			(Shm->Cpu[cpu].Topology.BSP) ? "(BSP)" : "(AP)",
+			Shm->Cpu[cpu].Topology.ApicID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID,
+			x2APIC[Shm->Cpu[cpu].Topology.x2APIC]);
 	    for(level=0; level < CACHE_MAX_LEVEL; level++)
-		if(Shm->Cpu[cpu].Topology.Enable)
-			printf(	" %-u",
-				Shm->Cpu[cpu].Topology.Cache[level].Size);
+		printf(	" %-u",
+			Shm->Cpu[cpu].Topology.Cache[level].Size);
 	    printf("\n");
 	}
 }
@@ -705,6 +714,13 @@ void SysInfo(SHM_STRUCT *Shm)
 			printf("%3d ", Shm->Proc.Boost[i]);
 		else
 			printf("  - ");
+
+	const char *TSC[]=
+	{
+		"Missing",
+		"Variant",
+		"Invariant"
+	};
 	printf(	"\n"							\
 		"  Technologies:\n"					\
 		"  |- Time Stamp Counter                    TSC [%9s]\n"\
@@ -712,7 +728,7 @@ void SysInfo(SHM_STRUCT *Shm)
 		"  |- Turbo Boost                           IDA       [%3s]\n"\
 		"  |- SpeedStep                            EIST       [%3s]\n"\
 		"  |- Performance Monitoring                 PM       [%3d]\n",
-		Shm->Proc.InvariantTSC ? "Invariant" : "Variant",
+		TSC[Shm->Proc.InvariantTSC],
 		enabled(Shm->Proc.HyperThreading),
 		enabled(Shm->Proc.TurboBoost),
 		enabled(Shm->Proc.SpeedStep),
