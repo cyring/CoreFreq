@@ -21,7 +21,7 @@ typedef unsigned int		Bit32;
 
 #define	PRECISION	100
 
-#define	CACHE_MAX_LEVEL	3
+#define	CACHE_MAX_LEVEL	(3 + 1)
 
 typedef struct
 {

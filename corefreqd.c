@@ -279,22 +279,25 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		 printf("CoreFreq Daemon."				\
 			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n"\
 			"  Processor [%s]\n"				\
-			"  Architecture [%s]\n"				\
-			"  %u/%u CPU Online."				\
-			" [TSC:%c-%c] [HTT:%d-%d] [IDA:%d-%d] [EIST:%d-%d]\n\n",
+			"  Architecture [%s] %u/%u CPU Online.\n"	\
+			"  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
+			" [HTT:%d-%d] [IDA:%d-%d] [EIST:%d-%d]\n\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count,
-			Proc->Features.ExtFunc.DX.RdTSCP ? 'P'
-			: Proc->Features.Std.DX.TSC ? '1' : '0',
-				Shm->Proc.InvariantTSC ? 'I' : 'V',
+			Proc->Features.Std.CX.x2APIC,
+			Core[0]->T.Base.EN,
+			Core[0]->T.Base.EXTD,
+			Proc->Features.Std.DX.TSC ?
+				Proc->Features.ExtFunc.DX.RdTSCP ? 'P':'1':'0',
+			Proc->Features.InvariantTSC ? 'I':'V',
 			Proc->Features.Std.DX.HTT,
-				Shm->Proc.HyperThreading,
+				Proc->Features.HTT_enabled,
 			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
-				Shm->Proc.TurboBoost,
+				Proc->Features.Turbo_enabled,
 			Proc->Features.Std.CX.EIST,
-				Shm->Proc.SpeedStep	);
+				Proc->Features.EIST_enabled );
 
 		// Launch one Server thread per online CPU.
 		ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));

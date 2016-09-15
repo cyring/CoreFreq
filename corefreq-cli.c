@@ -271,23 +271,36 @@ void Top(SHM_STRUCT *Shm)
 	}
 
 	sprintf(hProc,
-	    DoK	"%.*sProcessor ["CoK"%s"DoK"]%.*s",
+	    DoK	"%.*sProcessor ["CoK"%s"DoK"]"				\
+		"%.*s"							\
+	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online ",
 		14, hSpace,
 		Shm->Proc.Brand,
-		drawSize.width - 26
-		- strlen(Shm->Proc.Brand),
-		hSpace);
+		drawSize.width - 42 - strlen(Shm->Proc.Brand), hSpace,
+		Shm->Proc.CPU.OnLine,
+		Shm->Proc.CPU.Count);
 
 	sprintf(hArch,
-	    DoK	"%.*sArchitecture ["CoK"%s"DoK"] "			\
-	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online%.*s",
+	    DoK	"%.*sArchitecture ["CoK"%s"DoK"]",
 		14, hSpace,
-		Shm->Proc.Architecture,
-		Shm->Proc.CPU.OnLine,
-		Shm->Proc.CPU.Count,
-		drawSize.width - 45
-		- strlen(Shm->Proc.Architecture),
-		hSpace);
+		Shm->Proc.Architecture);
+
+	sprintf(headerView,
+		"%s\n"							\
+		"%s%.*s"						\
+		"Caches "						\
+		"L1 Inst="WoK"%-3u"DoK"Data="WoK"%-3u"DoK"KB\n"		\
+		"%.*sBase Clock ~ 000 000 000 Hz%.*s"			\
+		"L2="WoK"%-4u"DoK"L3="WoK"%-5u"DoK"KB\n",
+		hProc,
+		hArch,
+		drawSize.width - 57 - strlen(Shm->Proc.Architecture), hSpace,
+		Shm->Cpu[0].Topology.Cache[0].Size / 1024,
+		Shm->Cpu[0].Topology.Cache[1].Size / 1024,
+		14, hSpace,
+		drawSize.width - 58, hSpace,
+		Shm->Cpu[0].Topology.Cache[2].Size / 1024,
+		Shm->Cpu[0].Topology.Cache[3].Size / 1024);
 
 	if(Shm->Proc.PM_version == 0)
 		strcpy(hString, " PM");
@@ -333,7 +346,7 @@ void Top(SHM_STRUCT *Shm)
 	hRatio=malloc(allocSize);
 	hProc=malloc(allocSize);
 	hArch=malloc(allocSize);
-	hBClk=malloc(allocSize);
+	hBClk=malloc(64);
 	hCore=malloc(allocSize);
 	hFeat=malloc(allocSize);
 	headerView=malloc(3 * allocSize);
@@ -347,9 +360,10 @@ void Top(SHM_STRUCT *Shm)
 
     while(!Shutdown)
     {
-    	unsigned int maxRelFreq=0, digit[9];
+	double maxRelFreq;
+    	unsigned int topRatio, digit[9];
 
-	char cursor[]="\033[000;000H";
+	char cursor[]="\033[000;000H", lcdColor[]="\033[1;000;000m";
 
 	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
 		usleep(Shm->Proc.msleep * 50);
@@ -375,8 +389,17 @@ void Top(SHM_STRUCT *Shm)
 			drawFlag &= 0x0010;
 		else
 			drawFlag |= 0x1001;
-	}
-      if((drawFlag & 0x0011) == 0x0011)			// .... LCHW
+	}					
+/*
+			.Bit flags.
+   0x....L C H W
+         | | | |
+ Layout--' | | |	Redraw layout
+ Clear-----' | |	Clear screen
+ Height----' | |	Valid height
+ Width---------'	Valid width
+*/
+      if((drawFlag & 0x0011) == 0x0011)
       {
 	if((drawFlag & 0x0100) == 0x0100)
 	{
@@ -391,36 +414,36 @@ void Top(SHM_STRUCT *Shm)
 
 	i=dec2Digit(Shm->Cpu[iclk].Clock.Hz, digit);
 	sprintf(hBClk,
-		"%.*sBase Clock ~ "YoK"%u%u%u %u%u%u %u%u%u"DoK" Hz%.*s",
-		14, hSpace,
+	    YoK	"%u%u%u %u%u%u %u%u%u"DoK,
 		digit[0], digit[1], digit[2],
 		digit[3], digit[4], digit[5],
-		digit[6], digit[7], digit[8],
-		drawSize.width - 41,
-		hSpace);
-
-	sprintf(headerView,
-		"%s\n"							\
-		"%s\n"							\
-		"%s\n",
-		hProc,
-		hArch,
-		hBClk);
+		digit[6], digit[7], digit[8]);
 
 	sprintf(loadView, "%.*s\n", drawSize.width, hRatio);
 	sprintf(monitorView, DoK"%.*s\n", drawSize.width, hMon);
 
+	maxRelFreq=0.0;
+    	topRatio=0;
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	    if(!Shm->Cpu[cpu].OffLine)
 	    {
 		struct FLIP_FLOP *Flop=					\
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		maxRelFreq=MAX(maxRelFreq, (unsigned int) Flop->Relative.Freq);
-
+		if(Flop->Relative.Freq > maxRelFreq)
+		{
+			maxRelFreq=Flop->Relative.Freq;
+			topRatio=Flop->Relative.Ratio;
+			if(topRatio > medianRatio)
+				strcpy(lcdColor, RoK);
+			else if(topRatio > minRatio)
+				strcpy(lcdColor, YoK);
+			else
+				strcpy(lcdColor, GoK);
+		}
 		int hPos=Flop->Relative.Ratio * loadWidth / maxRatio;
 		sprintf(hCore,
-			"%s#%-2u %.*s%.*s\n",
+		    DoK	"#%s%-2u %.*s%.*s\n",
 			Flop->Relative.Ratio > medianRatio ?
 			RoK : Flop->Relative.Ratio > minRatio ?
 			YoK : GoK,
@@ -467,20 +490,23 @@ void Top(SHM_STRUCT *Shm)
 		drawSize.width - (1 + sizeof(hAvg) + (6 * 8)), hLine,
 		hFeat);
 
-	lcdDraw(2, 1, lcdView, cursor, maxRelFreq, digit);
+	lcdDraw(2, 1, lcdView, cursor, (unsigned int) maxRelFreq, digit);
+
+	cursorXY(28, 3, cursor);
 
 	printf(	WoK "\033[1;1H"						\
 		"%s"							\
 		"%s"							\
 		"%s"							\
 	    SCP	"%s"							\
-	    MoK	"%s"							\
-	    RCP,
+	    "%s""%s"							\
+		"%s%s" RCP,
 		headerView,
 		loadView,
 		monitorView,
 		footerView,
-		lcdView);
+		lcdColor, lcdView,
+		cursor, hBClk);
 
 	fflush(stdout);
 
@@ -563,7 +589,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 			(unsigned int) Flop->Relative.Freq, digit);
 
 		cursorXY(X, Y + 3, cursor);
-		sprintf(cpuView, "%s"DoK"[ µ%-2u"WoK"%3llu"DoK"°C ]",
+		sprintf(cpuView, "%s"DoK"[ µ%-2u"WoK"%4llu"DoK"C ]",
 				cursor, cpu, Flop->Temperature);
 
 		X+=marginWidth;
@@ -679,7 +705,7 @@ void Topology(SHM_STRUCT *Shm)
 	BITCLR(Shm->Proc.Sync, 0);
 
 	printf(		"CPU       ApicID CoreID ThreadID x2APIC "	\
-			"Caches Inst Data Unified\n");
+			"Caches L1-Inst L1-Data      L2      L3\n");
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 		printf(	"#%02u%-5s  %6d %6d   %6d %s    |  ",
@@ -690,7 +716,7 @@ void Topology(SHM_STRUCT *Shm)
 			Shm->Cpu[cpu].Topology.ThreadID,
 			x2APIC[Shm->Cpu[cpu].Topology.x2APIC]);
 	    for(level=0; level < CACHE_MAX_LEVEL; level++)
-		printf(	" %-u",
+		printf(	" %7u",
 			Shm->Cpu[cpu].Topology.Cache[level].Size);
 	    printf("\n");
 	}
