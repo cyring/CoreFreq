@@ -118,7 +118,10 @@ static void *Core_Cycle(void *arg)
 					Flip->Relative.Ratio, \
 					Core->Clock) / 1000000L;
 		}
-		Flip->Temperature=Core->TjMax.Target - Core->ThermStat.DTS;
+		Flip->Thermal.Target=Core->TjMax.Target;
+		Flip->Thermal.Sensor=Core->ThermStat.DTS;
+		Flip->Thermal.Temperature=Flip->Thermal.Target
+					- Flip->Thermal.Sensor;
 	    }
 	} while(!Shutdown) ;
 
@@ -129,6 +132,8 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 {	// Copy the numbers of total & online CPU.
 	Shm->Proc.CPU.Count=Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
+	// Copy signature.
+	Shm->Proc.Signature=Proc->Features.Std.Signature;
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
@@ -179,15 +184,39 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.x2APIC=((Proc->Features.Std.CX.x2APIC
 					& Core[cpu]->T.Base.EN)
 					<< Core[cpu]->T.Base.EXTD);
-	// Compute Caches size.
-	unsigned int level=0x0;
-	for(level=0; level < CACHE_MAX_LEVEL; level++)
+	/* Compute Caches size.
+		Bits 04-00: Cache Type Field
+			0 = Null - No more caches
+			1 = Data Cache
+			2 = Instruction Cache
+			3 = Unified Cache
+			4-31 = Reserved
+		Bits 07-05: Cache Level (starts at 1)
+	*/
+	unsigned int loop=0;
+	for(loop=0; loop < CACHE_MAX_LEVEL; loop++)
 	{
-		Shm->Cpu[cpu].Topology.Cache[level].Size=
-		  (Core[cpu]->T.Cache[level].Sets + 1)
-		* (Core[cpu]->T.Cache[level].Linez + 1)
-		* (Core[cpu]->T.Cache[level].Parts + 1)
-		* (Core[cpu]->T.Cache[level].Ways + 1);
+		if(Core[cpu]->T.Cache[loop].Type > 0)
+		{
+			unsigned int level=Core[cpu]->T.Cache[loop].Level;
+			if(Core[cpu]->T.Cache[loop].Type == 2) // Instruction
+				level=0;
+
+			Shm->Cpu[cpu].Topology.Cache[level].Set=
+				Core[cpu]->T.Cache[loop].Set + 1;
+			Shm->Cpu[cpu].Topology.Cache[level].LineSz=
+				Core[cpu]->T.Cache[loop].LineSz + 1;
+			Shm->Cpu[cpu].Topology.Cache[level].Part=
+				Core[cpu]->T.Cache[loop].Part + 1;
+			Shm->Cpu[cpu].Topology.Cache[level].Way=
+				Core[cpu]->T.Cache[loop].Way + 1;
+
+			Shm->Cpu[cpu].Topology.Cache[level].Size=
+			  Shm->Cpu[cpu].Topology.Cache[level].Set
+			* Shm->Cpu[cpu].Topology.Cache[level].LineSz
+			* Shm->Cpu[cpu].Topology.Cache[level].Part
+			* Shm->Cpu[cpu].Topology.Cache[level].Way;
+		}
 	}
 }
 

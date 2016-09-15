@@ -649,11 +649,13 @@ void Cache_Topology(CORE *Core)
 			"cpuid"
 			: "=a"	(Core->T.Cache[level].AX),
 			  "=b"	(Core->T.Cache[level].BX),
-			  "=c"	(Core->T.Cache[level].Sets),
+			  "=c"	(Core->T.Cache[level].Set),
 			  "=d"	(Core->T.Cache[level].DX)
 			: "a"	(0x4),
 			  "c"	(level)
 		);
+		if(!Core->T.Cache[level].Type)
+			break;
 	}
 }
 

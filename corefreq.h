@@ -10,41 +10,49 @@
 
 typedef struct
 {
-	unsigned int		OffLine;
+	unsigned int			OffLine;
 
-	CLOCK			Clock;
+	CLOCK				Clock;
 
-	unsigned int		Toggle;
+	unsigned int			Toggle;
 
 	struct {
-		Bit32		BSP,
-				ApicID,
-				CoreID,
-				ThreadID,
-				x2APIC;
+		Bit32			BSP,
+					ApicID,
+					CoreID,
+					ThreadID,
+					x2APIC;
 		struct {
-		unsigned int	Size;
+		unsigned short int	LineSz,
+					Part,
+					Way;
+		unsigned int		Set,
+					Size;
 		} Cache[CACHE_MAX_LEVEL];
 	} Topology;
 
 	struct FLIP_FLOP {
-	    unsigned long long	Temperature;
+		struct {
+	    	unsigned long long	Temperature,
+					Target,
+					Sensor;
+		} Thermal;
 
 		struct {
-			double	IPS,
-				IPC,
-				CPI,
-				Turbo,
-				C0,
-				C3,
-				C6,
-				C7,
-				C1;
+			double		IPS,
+					IPC,
+					CPI,
+					Turbo,
+					C0,
+					C3,
+					C6,
+					C7,
+					C1;
 		} State;
 
 		struct {
-			double	Ratio,
-				Freq;
+			double		Ratio,
+					Freq;
 		} Relative;
 	} FlipFlop[2];
 } CPU_STRUCT;
@@ -61,6 +69,21 @@ typedef struct
 					OnLine;
 	} CPU;
 
+	union
+	{
+		struct {
+			unsigned int
+					Stepping	:  4-0,
+					Model		:  8-4,
+					Family		: 12-8,
+					ProcType	: 14-12,
+					Unused1		: 16-14,
+					ExtModel	: 20-16,
+					ExtFamily	: 28-20,
+					Unused2		: 32-28;
+		};
+		unsigned int Signature;
+	};
 	unsigned char			Architecture[32];
 	unsigned int			Boost[1+1+8],
 					PM_version;
@@ -73,12 +96,12 @@ typedef struct
 					TurboBoost;
 
 	struct {
-		double	Turbo,
-			C0,
-			C3,
-			C6,
-			C7,
-			C1;
+		double			Turbo,
+					C0,
+					C3,
+					C6,
+					C7,
+					C1;
 	} Avg;
 } PROC_STRUCT;
 

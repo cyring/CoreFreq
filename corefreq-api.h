@@ -16,8 +16,10 @@ typedef struct
 	};
 	struct
 	{
-		struct SIGNATURE
+		union
 		{
+		    struct SIGNATURE
+		    {
 			unsigned int
 			Stepping	:  4-0,
 			Model		:  8-4,
@@ -27,7 +29,9 @@ typedef struct
 			ExtModel	: 20-16,
 			ExtFamily	: 28-20,
 			Unused2		: 32-28;
-		} AX;
+		    } AX;
+			unsigned int Signature;
+		};
 		struct
 		{
 			unsigned int
@@ -301,13 +305,13 @@ typedef	struct
 			struct
 			{
 				unsigned int
-				Linez:	12-0,
-				Parts:	22-12,
-				Ways:	32-22;
+				LineSz:	12-0,
+				Part:	22-12,
+				Way:	32-22;
 			};
 			unsigned int BX;
 		};
-		unsigned int	Sets;
+		unsigned int	Set;
 		union
 		{
 			struct

@@ -207,7 +207,7 @@ void Top(SHM_STRUCT *Shm)
 			"--------""--------""--------""--------""--------"\
 			"--------""----";
     char hMon[]=	"---- Fre""quency -"" Ratio -"" Turbo -""- C0 ---"\
-			"- C1 ---""- C3 ---""- C6 ---""- C7 -- ""Temps --"\
+			"- C1 ---""- C3 ---""- C6 ---""- C7 ---"" Temps -"\
 			"--------""--------""--------""--------""--------"\
 			"--------""----";
     char hAvg[]=	"--------""---- Ave""rages [ ";
@@ -291,14 +291,14 @@ void Top(SHM_STRUCT *Shm)
 		"Caches "						\
 		"L1 Inst="WoK"%-3u"DoK"Data="WoK"%-3u"DoK"KB\n"		\
 		"%.*sBase Clock ~ 000 000 000 Hz%.*s"			\
-		"L2="WoK"%-4u"DoK"L3="WoK"%-5u"DoK"KB\n",
+		"L2="WoK"%-4u"DoK" L3="WoK"%-5u"DoK"KB\n",
 		hProc,
 		hArch,
 		drawSize.width - 57 - strlen(Shm->Proc.Architecture), hSpace,
 		Shm->Cpu[0].Topology.Cache[0].Size / 1024,
 		Shm->Cpu[0].Topology.Cache[1].Size / 1024,
 		14, hSpace,
-		drawSize.width - 58, hSpace,
+		drawSize.width - 59, hSpace,
 		Shm->Cpu[0].Topology.Cache[2].Size / 1024,
 		Shm->Cpu[0].Topology.Cache[3].Size / 1024);
 
@@ -456,8 +456,8 @@ void Top(SHM_STRUCT *Shm)
 		    DoK	"#"WoK"%-2u"YoK"%c"				\
 		    WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
-		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%   "\
-		    WoK	"%llu"DoK"C%.*s\n",
+		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
+		    WoK	"%3llu"DoK":"WoK"%-3llu"DoK"C%.*s\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -468,8 +468,9 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
-			Flop->Temperature,
-			drawSize.width - 77,
+			Flop->Thermal.Temperature,
+			Flop->Thermal.Sensor,
+			drawSize.width - 80,
 			hSpace);
 		strcat(monitorView, hCore);
 	    }
@@ -590,7 +591,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 
 		cursorXY(X, Y + 3, cursor);
 		sprintf(cpuView, "%s"DoK"[ µ%-2u"WoK"%4llu"DoK"C ]",
-				cursor, cpu, Flop->Temperature);
+				cursor, cpu, Flop->Thermal.Temperature);
 
 		X+=marginWidth;
 		if(X - 3 >= getScreenSize().width - marginWidth)
@@ -629,7 +630,7 @@ void Counters(SHM_STRUCT *Shm)
 
 		printf("CPU  Frequency  Ratio   Turbo"			\
 			"    C0      C1      C3      C6      C7"	\
-			"    Temps\n");
+			"     Temps\n");
 		for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 		if(!Shm->Cpu[cpu].OffLine)
 		{
@@ -638,7 +639,7 @@ void Counters(SHM_STRUCT *Shm)
 
 		printf("#%02u %7.2fMHz (%5.2f)"				\
 			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
-			"   %llu°C\n",
+			" %3llu:%-3lluC\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -648,7 +649,8 @@ void Counters(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
-			Flop->Temperature);
+			Flop->Thermal.Temperature,
+			Flop->Thermal.Sensor);
 		}
 		printf("\nAverage C-states\n"				\
 		"Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
@@ -705,7 +707,7 @@ void Topology(SHM_STRUCT *Shm)
 	BITCLR(Shm->Proc.Sync, 0);
 
 	printf(		"CPU       ApicID CoreID ThreadID x2APIC "	\
-			"Caches L1-Inst L1-Data      L2      L3\n");
+			"Caches L1-Inst Way L1-Data Way      L2 Way      L3 Way\n");
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 		printf(	"#%02u%-5s  %6d %6d   %6d %s    |  ",
@@ -716,8 +718,9 @@ void Topology(SHM_STRUCT *Shm)
 			Shm->Cpu[cpu].Topology.ThreadID,
 			x2APIC[Shm->Cpu[cpu].Topology.x2APIC]);
 	    for(level=0; level < CACHE_MAX_LEVEL; level++)
-		printf(	" %7u",
-			Shm->Cpu[cpu].Topology.Cache[level].Size);
+		printf(	"%8u%4u",
+			Shm->Cpu[cpu].Topology.Cache[level].Size,
+			Shm->Cpu[cpu].Topology.Cache[level].Way);
 	    printf("\n");
 	}
 }
@@ -727,11 +730,18 @@ void SysInfo(SHM_STRUCT *Shm)
 {
 	int i=0;
 	printf(	"  Processor [%s]\n"					\
+		"  Signature [%1X%1X_%1X%1X]\n"				\
+		"  Stepping  [%u]\n"					\
 		"  Architecture [%s]\n"					\
 		"  %u/%u CPU Online.\n"					\
 		"  Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"\
 		"                   ",
 		Shm->Proc.Brand,
+		Shm->Proc.ExtFamily,
+		Shm->Proc.Family,
+		Shm->Proc.ExtModel,
+		Shm->Proc.Model,
+		Shm->Proc.Stepping,
 		Shm->Proc.Architecture,
 		Shm->Proc.CPU.OnLine,
 		Shm->Proc.CPU.Count	);
