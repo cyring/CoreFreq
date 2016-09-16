@@ -814,13 +814,18 @@ void HyperThreading_Technology(void)
 
 void SpeedStep_Technology(void)
 {
-	if(Proc->Features.Std.CX.EIST)
+	if(Proc->Features.Std.CX.EIST)		// Per Package
 	{
 		MISC_PROC_FEATURES MiscFeatures={.value=0};
+		POWER_CONTROL PowerCtrl={.value=0};
 
 		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 		Proc->Features.EIST_enabled=MiscFeatures.EIST;
+
+		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+
+		Proc->Features.C1E_enabled=PowerCtrl.C1E;
 	}
 }
 
@@ -843,13 +848,41 @@ void TurboBoost_Technology(void)
 	Proc->Boost[8]=Turbo.MaxRatio_2C;
 	Proc->Boost[9]=Turbo.MaxRatio_1C;
 
-	if(Proc->Features.Thermal_Power_Leaf.AX.TurboIDA)
+	if(Proc->Features.Thermal_Power_Leaf.AX.TurboIDA)	// Per Thread !
 	{
 		PERF_CONTROL PerfControl={.value=0};
 
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
 		Proc->Features.Turbo_enabled=!PerfControl.Turbo_IDA;
+	}
+}
+
+void Nehalem_CStates(CORE *Core)
+{
+	if(Core->T.ThreadID == 0)				// Per Core
+	{
+		CSTATE_CONFIG CStateConfig={.value=0};
+
+		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
+
+		Core->C3A=CStateConfig.C3autoDemotion;
+		Core->C1A=CStateConfig.C1autoDemotion;
+	}
+}
+
+void SandyBridge_CStates(CORE *Core)
+{
+	if(Core->T.ThreadID == 0)				// Per Core
+	{
+		CSTATE_CONFIG CStateConfig={.value=0};
+
+		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
+
+		Core->C3A=CStateConfig.C3autoDemotion;
+		Core->C1A=CStateConfig.C1autoDemotion;
+		Core->C3U=CStateConfig.C3undemotion;
+		Core->C1U=CStateConfig.C1undemotion;
 	}
 }
 
@@ -1478,6 +1511,7 @@ void Start_Nehalem(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	Nehalem_CStates(Core);
 	Counters_Set(Core);
 	Core_Thermal(Core);
 	Counters_Nehalem(Core, 0);
@@ -1600,6 +1634,7 @@ void Start_SandyBridge(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	SandyBridge_CStates(Core);
 	Counters_Set(Core);
 	Core_Thermal(Core);
 	Counters_SandyBridge(Core, 0);

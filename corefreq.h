@@ -31,6 +31,11 @@ typedef struct
 		} Cache[CACHE_MAX_LEVEL];
 	} Topology;
 
+	unsigned int			C3A,		// Nehalem
+					C1A,		// Nehalem
+					C3U,		// Sandy Bridge
+					C1U;		// Sandy Bridge
+
 	struct FLIP_FLOP {
 		struct {
 	    	unsigned long long	Temperature,
@@ -93,6 +98,7 @@ typedef struct
 	Bit32				InvariantTSC,
 					HyperThreading,
 					SpeedStep,
+					C1E,
 					TurboBoost;
 
 	struct {

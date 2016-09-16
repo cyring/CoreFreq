@@ -314,13 +314,18 @@ void Top(SHM_STRUCT *Shm)
 	    GoK	"TSC-INV" DoK
 	};
 	sprintf(hFeat,
-	    DoK	"Tech [%s,%s,%s,%s,%s]%.*s",
+	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
 		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
+		Shm->Proc.C1E ? GoK"C1E"DoK : "C1E",
 		hString,
-		drawSize.width - 33,
+		Shm->Cpu[0].C3A ? GoK"C3A"DoK : "C3A",
+		Shm->Cpu[0].C1A ? GoK"C1A"DoK : "C1A",
+		Shm->Cpu[0].C3U ? GoK"C3U"DoK : "C3U",
+		Shm->Cpu[0].C1U ? GoK"C1U"DoK : "C1U",
+		drawSize.width - 53,
 		hSpace);
 	free(hString);
     }
@@ -456,8 +461,8 @@ void Top(SHM_STRUCT *Shm)
 		    DoK	"#"WoK"%-2u"YoK"%c"				\
 		    WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
-		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
-		    WoK	"%3llu"DoK":"WoK"%-3llu"DoK"C%.*s\n",
+		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%  "\
+		    WoK	"%3llu"DoK" C%.*s\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -469,8 +474,7 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
 			Flop->Thermal.Temperature,
-			Flop->Thermal.Sensor,
-			drawSize.width - 80,
+			drawSize.width - 78,
 			hSpace);
 		strcat(monitorView, hCore);
 	    }
@@ -763,12 +767,22 @@ void SysInfo(SHM_STRUCT *Shm)
 		"  |- Hyper-Threading                       HTT       [%3s]\n"\
 		"  |- Turbo Boost                           IDA       [%3s]\n"\
 		"  |- SpeedStep                            EIST       [%3s]\n"\
-		"  |- Performance Monitoring                 PM       [%3d]\n",
+		"  |- Performance Monitoring                 PM       [%3d]\n"\
+		"  |- Enhanced Halt State                   C1E       [%3s]\n"\
+		"  |- C1 Auto Demotion                      C1A       [%3s]\n"\
+		"  |- C3 Auto Demotion                      C3A       [%3s]\n"\
+		"  |- C1 UnDemotion                         C1U       [%3s]\n"\
+		"  |- C3 UnDemotion                         C3U       [%3s]\n",
 		TSC[Shm->Proc.InvariantTSC],
 		enabled(Shm->Proc.HyperThreading),
 		enabled(Shm->Proc.TurboBoost),
 		enabled(Shm->Proc.SpeedStep),
-		Shm->Proc.PM_version	);
+		Shm->Proc.PM_version,
+		enabled(Shm->Proc.C1E),
+		enabled(Shm->Cpu[0].C3A),
+		enabled(Shm->Cpu[0].C1A),
+		enabled(Shm->Cpu[0].C3U),
+		enabled(Shm->Cpu[0].C1U));
 }
 
 

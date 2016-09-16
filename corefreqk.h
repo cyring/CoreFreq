@@ -199,10 +199,13 @@ typedef union
 		ReservedBits5	: 64-56;
 	};
 } PLATFORM_INFO;
-/*
-typedef struct
+
+typedef union
 {
-	unsigned long long
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
 		Pkg_CST_Limit	:  3-0,
 		ReservedBits1	: 10-3,
 		IO_MWAIT_Redir	: 11-10,
@@ -215,8 +218,9 @@ typedef struct
 		C3undemotion	: 28-27,	// Sandy Bridge
 		C1undemotion	: 29-28,	// Sandy Bridge
 		ReservedBits4	: 64-29;
+	};
 } CSTATE_CONFIG;
-*/
+
 typedef union
 {
 	unsigned long long	value;
@@ -317,6 +321,18 @@ typedef union
 		Clear_CondChg	: 64-63;
 	};
 } GLOBAL_PERF_OVF_CTRL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long int
+		ReservedBits1	:  1-0,
+		C1E		:  2-1,
+		ReservedBits2	: 64-2;
+	};
+} POWER_CONTROL;
 
 #define	LEVEL_INVALID	0
 #define	LEVEL_THREAD	1

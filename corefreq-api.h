@@ -271,8 +271,9 @@ typedef struct
 	} ExtFunc;
 	unsigned int	InvariantTSC,
                         HTT_enabled,
-			EIST_enabled,
-			Turbo_enabled,
+			EIST_enabled,			// Package
+			C1E_enabled,			// Package
+			Turbo_enabled,			// Thread !
 			FactoryFreq;
 } FEATURES;
 
@@ -387,6 +388,11 @@ typedef struct
 					OffLine;
 
 	CLOCK				Clock;
+
+	unsigned int			C3A,		// Core
+					C1A,		// Core
+					C3U,		// Sandy Bridge
+					C1U;		// Sandy Bridge
 } CORE;
 
 typedef struct

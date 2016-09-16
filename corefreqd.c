@@ -161,6 +161,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 void SpeedStep(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
+	Shm->Proc.C1E=Proc->Features.C1E_enabled;
 }
 
 void TurboBoost(SHM_STRUCT *Shm, PROC *Proc)
@@ -218,6 +219,14 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
 	}
+}
+
+void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{
+	Shm->Cpu[cpu].C3A=Core[cpu]->C3A;
+	Shm->Cpu[cpu].C1A=Core[cpu]->C1A;
+	Shm->Cpu[cpu].C3U=Core[cpu]->C3U;
+	Shm->Cpu[cpu].C1U=Core[cpu]->C1U;
 }
 
 typedef	struct
@@ -295,6 +304,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			BaseClock(Shm, Core, cpu);
 
 			Topology(Shm, Proc, Core, cpu);
+
+			CStates(Shm, Core, cpu);
 
 			// Define the Clients room mask.
 			if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
