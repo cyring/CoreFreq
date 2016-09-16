@@ -802,6 +802,23 @@ unsigned int Proc_Topology(void)
 	return(CountEnabledCPU);
 }
 
+
+void Genuine_Platform_Info(void)
+{
+	PLATFORM_INFO Platform={.value=0};
+
+	RDMSR(Platform, MSR_PLATFORM_INFO);
+
+	if(Platform.value != 0)
+	{
+	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
+				Platform.MaxNonTurboRatio);
+	}
+	Proc->Boost[9]=Proc->Boost[1];
+}
+
 void HyperThreading_Technology(void)
 {
 	unsigned int CountEnabledCPU=Proc_Topology();
@@ -814,18 +831,13 @@ void HyperThreading_Technology(void)
 
 void SpeedStep_Technology(void)
 {
-	if(Proc->Features.Std.CX.EIST)		// Per Package
+	if(Proc->Features.Std.CX.EIST)				// Per Package
 	{
 		MISC_PROC_FEATURES MiscFeatures={.value=0};
-		POWER_CONTROL PowerCtrl={.value=0};
 
 		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 		Proc->Features.EIST_enabled=MiscFeatures.EIST;
-
-		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
-
-		Proc->Features.C1E_enabled=PowerCtrl.C1E;
 	}
 }
 
@@ -858,7 +870,45 @@ void TurboBoost_Technology(void)
 	}
 }
 
-void Nehalem_CStates(CORE *Core)
+void Enhanced_Halt_State(void)
+{
+	POWER_CONTROL PowerCtrl={.value=0};
+
+	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
+
+	Proc->Features.C1E_enabled=PowerCtrl.C1E;		// Per Package
+}
+
+#define Genuine_Query()							\
+({									\
+	Genuine_Platform_Info();					\
+	HyperThreading_Technology();					\
+})
+
+#define Core2_Query()							\
+({									\
+	Genuine_Platform_Info();					\
+	HyperThreading_Technology();					\
+	SpeedStep_Technology();						\
+})
+
+#define Nehalem_Query()							\
+({									\
+	TurboBoost_Technology();					\
+	HyperThreading_Technology();					\
+	SpeedStep_Technology();						\
+	Enhanced_Halt_State();						\
+})
+
+#define SandyBridge_Query()						\
+({									\
+	TurboBoost_Technology();					\
+	HyperThreading_Technology();					\
+	SpeedStep_Technology();						\
+	Enhanced_Halt_State();						\
+})
+
+void PerCore_Nehalem_Query(CORE *Core)
 {
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
@@ -871,7 +921,7 @@ void Nehalem_CStates(CORE *Core)
 	}
 }
 
-void SandyBridge_CStates(CORE *Core)
+void PerCore_SandyBridge_Query(CORE *Core)
 {
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
@@ -886,36 +936,6 @@ void SandyBridge_CStates(CORE *Core)
 	}
 }
 
-void Genuine_Technology(void)
-{
-	PLATFORM_INFO Platform={.value=0};
-
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-
-	if(Platform.value != 0)
-	{
-	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	}
-	Proc->Boost[9]=Proc->Boost[1];
-
-	HyperThreading_Technology();
-}
-
-void Core2_Technology(void)
-{
-	Genuine_Technology();
-	SpeedStep_Technology();
-}
-
-void Nehalem_Technology(void)
-{
-	TurboBoost_Technology();
-	HyperThreading_Technology();
-	SpeedStep_Technology();
-}
 
 void Counters_Set(CORE *Core)
 {
@@ -1258,7 +1278,7 @@ void Init_Genuine(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	Genuine_Technology();
+	Genuine_Query();
 
 	if(AutoClock)	// from last AP to BSP
 	{
@@ -1347,7 +1367,7 @@ void Init_Core2(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	Core2_Technology();
+	Core2_Query();
 
 	if(AutoClock)	// from last AP to BSP
 	{
@@ -1461,7 +1481,7 @@ void Init_Nehalem(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	Nehalem_Technology();
+	Nehalem_Query();
 
 	if(AutoClock)	// from last AP to BSP
 	{
@@ -1511,7 +1531,8 @@ void Start_Nehalem(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	Nehalem_CStates(Core);
+	PerCore_Nehalem_Query(Core);
+
 	Counters_Set(Core);
 	Core_Thermal(Core);
 	Counters_Nehalem(Core, 0);
@@ -1578,7 +1599,7 @@ void Init_SandyBridge(void)
 	CLOCK clock;
 	unsigned int cpu=0;
 
-	Nehalem_Technology();
+	SandyBridge_Query();
 
 	if(AutoClock)	// from last AP to BSP
 	{
@@ -1634,7 +1655,8 @@ void Start_SandyBridge(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	SandyBridge_CStates(Core);
+	PerCore_SandyBridge_Query(Core);
+
 	Counters_Set(Core);
 	Core_Thermal(Core);
 	Counters_SandyBridge(Core, 0);
