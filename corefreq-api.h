@@ -157,7 +157,14 @@ typedef struct
 			PLN	:  5-4,
 			ECMD	:  6-5,
 			PTM	:  7-6,
-			Unused2	: 32-7;
+			HWP_Reg	:  8-7,	// Hardware Performance registers
+			HWP_Int	:  9-8,	// IA32_HWP_INTERRUPT HWP_Notification.
+			HWP_Act	: 10-9,	// IA32_HWP_REQUEST Activity_Window
+			HWP_Prf	: 11-10,// IA32_HWP_REQUEST Performance_Pref.
+			HWP_Lvl	: 12-11,// IA32_HWP_REQUEST_PKG
+			Unused2	: 13-12,
+			HDC_Reg	: 15-13,// Hardware Duty Cycling registers
+			Unused3	: 32-15;
 		} AX;
 		struct
 		{

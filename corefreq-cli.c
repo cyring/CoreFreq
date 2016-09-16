@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+#include <sys/utsname.h>
+#include <sys/sysinfo.h>
 
 #include "intelasm.h"
 #include "coretypes.h"
@@ -217,7 +219,9 @@ void Top(SHM_STRUCT *Shm)
 	 *hArch=NULL,
 	 *hBClk=NULL,
 	 *hCore=NULL,
-	 *hFeat=NULL,
+	 *hTech=NULL,
+	 *hSys=NULL,
+	 *hMem=NULL,
 	 *headerView=NULL,
 	 *footerView=NULL,
 	 *loadView=NULL,
@@ -248,7 +252,7 @@ void Top(SHM_STRUCT *Shm)
     #define LOAD_LEAD	4
 
     SCREEN_SIZE drawSize={.width=0, .height=0};
-    int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count) + 7;
+    int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count) + 8; // incl. header, footer lines
     int loadWidth=0;
     int drawFlag=0x0;
 
@@ -313,7 +317,7 @@ void Top(SHM_STRUCT *Shm)
 	    GoK	"TSC-VAR" DoK,
 	    GoK	"TSC-INV" DoK
 	};
-	sprintf(hFeat,
+	sprintf(hTech,
 	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
@@ -327,6 +331,15 @@ void Top(SHM_STRUCT *Shm)
 		Shm->Cpu[0].C1U ? GoK"C1U"DoK : "C1U",
 		drawSize.width - 53,
 		hSpace);
+
+	struct utsname OSinfo={{0}};
+	uname(&OSinfo);
+
+	sprintf(hSys,
+	    CoK	"%s"DoK" ["WoK"%s"DoK"] Tasks [",
+		OSinfo.sysname,
+		OSinfo.release);
+
 	free(hString);
     }
 
@@ -337,7 +350,9 @@ void Top(SHM_STRUCT *Shm)
 	free(hArch);
 	free(hBClk);
 	free(hCore);
-	free(hFeat);
+	free(hTech);
+	free(hSys);
+	free(hMem);
 	free(headerView);
 	free(footerView);
 	free(loadView);
@@ -353,7 +368,9 @@ void Top(SHM_STRUCT *Shm)
 	hArch=malloc(allocSize);
 	hBClk=malloc(64);
 	hCore=malloc(allocSize);
-	hFeat=malloc(allocSize);
+	hTech=malloc(allocSize);
+	hSys=malloc(64);
+	hMem=malloc(allocSize);
 	headerView=malloc(3 * allocSize);
 	footerView=malloc(2 * allocSize);
 	loadView=malloc((1 + Shm->Proc.CPU.Count) * allocSize);
@@ -488,24 +505,41 @@ void Top(SHM_STRUCT *Shm)
 		100.f * Shm->Proc.Avg.C6,
 		100.f * Shm->Proc.Avg.C7);
 
+	struct sysinfo sysLinux=
+	{
+		.totalram=0,
+		.freeram=0,
+		.procs=0
+	};
+	sysinfo(&sysLinux);
+	sprintf(hMem,
+		"%s"WoK"%u"DoK"]"					\
+		" Mem ["WoK"%8lu"DoK" total "WoK"%8lu"DoK" free KB]",
+		hSys,
+		sysLinux.procs,
+		sysLinux.totalram  / 1024,
+		sysLinux.freeram   / 1024);
+
 	sprintf(footerView,
 		"%s""%s"" ] %.*s\n"					\
+		"%s\n"							\
 		"%s",
 		hAvg, hCore,
 		drawSize.width - (1 + sizeof(hAvg) + (6 * 8)), hLine,
-		hFeat);
+		hTech,
+		hMem);
 
 	lcdDraw(2, 1, lcdView, cursor, (unsigned int) maxRelFreq, digit);
 
 	cursorXY(28, 3, cursor);
 
 	printf(	WoK "\033[1;1H"						\
-		"%s"							\
-		"%s"							\
-		"%s"							\
-	    SCP	"%s"							\
-	    "%s""%s"							\
-		"%s%s" RCP,
+/*header*/	"%s"							\
+/*load*/	"%s"							\
+/*monitor*/	"%s"							\
+/*footer*/ SCP	"%s"							\
+/*LCD*/		"%s""%s"						\
+/*clock*/	"%s%s" RCP,
 		headerView,
 		loadView,
 		monitorView,
@@ -710,8 +744,8 @@ void Topology(SHM_STRUCT *Shm)
 		usleep(Shm->Proc.msleep * 50);
 	BITCLR(Shm->Proc.Sync, 0);
 
-	printf(		"CPU       ApicID CoreID ThreadID x2APIC "	\
-			"Caches L1-Inst Way L1-Data Way      L2 Way      L3 Way\n");
+	printf(	"CPU       ApicID CoreID ThreadID x2APIC "	\
+		"Caches L1-Inst Way L1-Data Way      L2 Way      L3 Way\n");
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 		printf(	"#%02u%-5s  %6d %6d   %6d %s    |  ",
