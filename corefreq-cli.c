@@ -336,9 +336,13 @@ void Top(SHM_STRUCT *Shm)
 	uname(&OSinfo);
 
 	sprintf(hSys,
-	    CoK	"%s"DoK" ["WoK"%s"DoK"] Tasks [",
+	    CoK	"%s"DoK" ["WoK"%s"DoK"]%.*sTasks [",
 		OSinfo.sysname,
-		OSinfo.release);
+		OSinfo.release,
+		drawSize.width - 57
+		- strlen(OSinfo.sysname)
+		- strlen(OSinfo.release),
+		hSpace);
 
 	free(hString);
     }
@@ -366,10 +370,10 @@ void Top(SHM_STRUCT *Shm)
 	hRatio=malloc(allocSize);
 	hProc=malloc(allocSize);
 	hArch=malloc(allocSize);
-	hBClk=malloc(64);
+	hBClk=malloc(128);
 	hCore=malloc(allocSize);
 	hTech=malloc(allocSize);
-	hSys=malloc(64);
+	hSys=malloc(128);
 	hMem=malloc(allocSize);
 	headerView=malloc(3 * allocSize);
 	footerView=malloc(2 * allocSize);
@@ -513,8 +517,8 @@ void Top(SHM_STRUCT *Shm)
 	};
 	sysinfo(&sysLinux);
 	sprintf(hMem,
-		"%s"WoK"%u"DoK"]"					\
-		" Mem ["WoK"%8lu"DoK" total "WoK"%8lu"DoK" free KB]",
+		"%s"WoK"%6u"DoK"]"					\
+		"   Mem ["WoK"%8lu"DoK" total "WoK"%8lu"DoK" free KB]",
 		hSys,
 		sysLinux.procs,
 		sysLinux.totalram  / 1024,
@@ -553,6 +557,9 @@ void Top(SHM_STRUCT *Shm)
 	if(iclk == Shm->Proc.CPU.Count)
 		iclk=0;
       }
+      else
+	printf(	CLS "Term(%u x %u) < View(%u x %u)\n",
+		drawSize.width, drawSize.height, MIN_WIDTH, MIN_HEIGHT);
     }
     fflush(stdout);
 
