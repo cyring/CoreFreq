@@ -511,7 +511,7 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
 			Flop->Thermal.Temp,
-			Flop->Thermal.Trip ? RoK"*"DoK : "",
+			Flop->Thermal.Trip ? RoK"*"DoK : " ",
 			drawSize.width - 79,
 			hSpace);
 		strcat(monitorView, hCore);
