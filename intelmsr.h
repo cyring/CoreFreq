@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -60,16 +60,31 @@ typedef union
 		Threshold1Log   :  8-7,
 		Threshold2      :  9-8,
 		Threshold2Log   : 10-9,
-		PowerLimit      : 11-10,
-		PowerLimitLog   : 12-11,
-		ReservedBits1   : 16-12,
+		PwrLimitStatus	: 11-10,
+		PwrLimitLog	: 12-11,
+		CurLimitStatus	: 13-12,
+		CurLimitLog	: 14-13,
+		CrDomLimitStatus: 15-14,
+		CrDomLimitLog	: 16-15,
 		DTS             : 23-16,
-		ReservedBits2   : 27-23,
+		ReservedBits1   : 27-23,
 		Resolution      : 31-27,
 		ReadingValid    : 32-31,
-		ReservedBits3   : 64-32;
+		ReservedBits2   : 64-32;
 	};
 } THERM_STATUS;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ReservedBits1	: 16-0,
+		TM_SELECT	: 17-16, // Unique(Core2), Shared(Xeon, Atom)
+		ReservedBits2	: 64-17;
+	};
+} THERM2_CONTROL;
 
 typedef union
 {

@@ -338,6 +338,20 @@ typedef	struct
 
 typedef struct
 {
+	unsigned int		Sensor,
+				Target;
+	struct {
+		unsigned int
+				TCC_Enable:  1-0,
+				TM2_Enable:  2-1,
+				TM_Select :  3-2,
+				Trip      :  4-3,
+				Unused    : 32-4;
+	};
+} THERMAL;
+
+typedef struct
+{
 	volatile struct
 	{	// Cache line size aligned structure.
 		unsigned long long	V,
@@ -380,8 +394,7 @@ typedef struct
 					C1;
 	} Delta;
 
-	THERM_STATUS			ThermStat;
-	TJMAX				TjMax;
+	THERMAL				Thermal;
 
 	struct SAVEAREA
 	{

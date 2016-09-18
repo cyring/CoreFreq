@@ -118,10 +118,10 @@ static void *Core_Cycle(void *arg)
 					Flip->Relative.Ratio, \
 					Core->Clock) / 1000000L;
 		}
-		Flip->Thermal.Target=Core->TjMax.Target;
-		Flip->Thermal.Sensor=Core->ThermStat.DTS;
-		Flip->Thermal.Temperature=Flip->Thermal.Target
-					- Flip->Thermal.Sensor;
+		Flip->Thermal.Target=Core->Thermal.Target;
+		Flip->Thermal.Sensor=Core->Thermal.Sensor;
+		Flip->Thermal.Temp=Flip->Thermal.Target - Flip->Thermal.Sensor;
+		Flip->Thermal.Trip=Core->Thermal.Trip;
 	    }
 	} while(!Shutdown) ;
 
@@ -229,6 +229,15 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].C1U=Core[cpu]->C1U;
 }
 
+void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
+{
+	Shm->Cpu[cpu].Thermal.TM1 =Proc->Features.Std.DX.TM1;		//0001
+	Shm->Cpu[cpu].Thermal.TM1|=(Core[cpu]->Thermal.TCC_Enable << 1);//0010
+	Shm->Cpu[cpu].Thermal.TM1^=(Core[cpu]->Thermal.TM_Select << 1);	//0010
+	Shm->Cpu[cpu].Thermal.TM2 =Proc->Features.Std.CX.TM2;		//0001
+	Shm->Cpu[cpu].Thermal.TM2|=(Core[cpu]->Thermal.TM2_Enable << 1);//0010
+}
+
 typedef	struct
 {
 	int	Drv,
@@ -307,6 +316,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 			CStates(Shm, Core, cpu);
 
+			ThermalMonitoring(Shm, Proc, Core, cpu);
+
 			// Define the Clients room mask.
 			if(!(Shm->Cpu[cpu].OffLine=Core[cpu]->OffLine))
 			{
@@ -321,7 +332,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			"  Processor [%s]\n"				\
 			"  Architecture [%s] %u/%u CPU Online.\n"	\
 			"  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
-			" [HTT:%d-%d] [IDA:%d-%d] [EIST:%d-%d]\n\n",
+			" [HTT:%u-%u] [IDA:%u-%u] [EIST:%u-%u]"		\
+			" [TM:%u-%u-%u-%u-%u]\n\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
@@ -337,7 +349,12 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
 				Proc->Features.Turbo_enabled,
 			Proc->Features.Std.CX.EIST,
-				Proc->Features.EIST_enabled );
+				Proc->Features.EIST_enabled,
+			Proc->Features.Std.DX.TM1,
+			Proc->Features.Std.CX.TM2,
+			Core[0]->Thermal.TCC_Enable,
+			Core[0]->Thermal.TM2_Enable,
+			Core[0]->Thermal.TM_Select );
 
 		// Launch one Server thread per online CPU.
 		ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));

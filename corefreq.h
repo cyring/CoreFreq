@@ -36,11 +36,17 @@ typedef struct
 					C3U,		// Sandy Bridge
 					C1U;		// Sandy Bridge
 
+	struct {
+	    	unsigned int		TM1,
+					TM2;
+	} Thermal;
+
 	struct FLIP_FLOP {
 		struct {
-	    	unsigned long long	Temperature,
-					Target,
-					Sensor;
+	    	unsigned int		Target,
+					Sensor,
+					Temp,
+					Trip;
 		} Thermal;
 
 		struct {

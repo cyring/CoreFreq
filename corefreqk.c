@@ -829,16 +829,14 @@ void HyperThreading_Technology(void)
 		Proc->CPU.OnLine=Proc->CPU.Count;
 }
 
-void SpeedStep_Technology(void)
+void SpeedStep_Technology(void)					// Per Package
 {
-	if(Proc->Features.Std.CX.EIST)				// Per Package
-	{
-		MISC_PROC_FEATURES MiscFeatures={.value=0};
+	MISC_PROC_FEATURES MiscFeatures={.value=0};
 
-		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-		Proc->Features.EIST_enabled=MiscFeatures.EIST;
-	}
+	Proc->Features.EIST_enabled =	Proc->Features.Std.CX.EIST
+				    &&	MiscFeatures.EIST;
 }
 
 void TurboBoost_Technology(void)
@@ -908,6 +906,38 @@ void Enhanced_Halt_State(void)
 	Enhanced_Halt_State();						\
 })
 
+void ThermalMonitor_Set(CORE *Core)
+{
+	TJMAX TjMax={.value=0};
+	MISC_PROC_FEATURES MiscFeatures={.value=0};
+	THERM2_CONTROL Therm2Control={.value=0};
+
+	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
+
+	Core->Thermal.Target=TjMax.Target;
+	if(!Core->Thermal.Target)
+		Core->Thermal.Target=100;
+
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+
+	Core->Thermal.TCC_Enable = MiscFeatures.TCC;
+	Core->Thermal.TM2_Enable = MiscFeatures.TM2_Enable;
+
+	RDMSR(Therm2Control, MSR_THERM2_CTL);
+
+	Core->Thermal.TM2_Enable = Therm2Control.TM_SELECT;
+}
+
+#define PerCore_Genuine_Query(Core)					\
+({									\
+	ThermalMonitor_Set(Core);					\
+})
+
+#define PerCore_Core2_Query(Core)					\
+({									\
+	ThermalMonitor_Set(Core);					\
+})
+
 void PerCore_Nehalem_Query(CORE *Core)
 {
 	if(Core->T.ThreadID == 0)				// Per Core
@@ -919,6 +949,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 		Core->C3A=CStateConfig.C3autoDemotion;
 		Core->C1A=CStateConfig.C1autoDemotion;
 	}
+	ThermalMonitor_Set(Core);
 }
 
 void PerCore_SandyBridge_Query(CORE *Core)
@@ -934,6 +965,7 @@ void PerCore_SandyBridge_Query(CORE *Core)
 		Core->C3U=CStateConfig.C3undemotion;
 		Core->C1U=CStateConfig.C1undemotion;
 	}
+	ThermalMonitor_Set(Core);
 }
 
 
@@ -1232,17 +1264,14 @@ void Counters_Clear(CORE *Core)
 	Core->Counter[0].INST=Core->Counter[1].INST;			\
 })
 
-void Core_Thermal(CORE *Core)
+void Core_Temp(CORE *Core)
 {
-	RDMSR(Core->TjMax, MSR_IA32_TEMPERATURE_TARGET);
-	if(!Core->TjMax.Target)
-		Core->TjMax.Target=100;
-}
+	THERM_STATUS ThermStatus={.value=0};
+	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 
-#define Core_Temp(Core)							\
-(									\
-	RDMSR(Core->ThermStat, MSR_IA32_THERM_STATUS)			\
-)
+	Core->Thermal.Sensor=ThermStatus.DTS;
+	Core->Thermal.Trip=ThermStatus.StatusBit | ThermStatus.StatusLog;
+}
 
 
 static enum hrtimer_restart Cycle_Genuine(struct hrtimer *pTimer)
@@ -1316,7 +1345,8 @@ void Start_Genuine(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	Core_Thermal(Core);
+	PerCore_Genuine_Query(Core);
+
 	Counters_Genuine(Core, 0);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
@@ -1419,8 +1449,9 @@ void Start_Core2(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	PerCore_Core2_Query(Core);
+
 	Counters_Set(Core);
-	Core_Thermal(Core);
 	Counters_Core2(Core, 0);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
@@ -1534,7 +1565,6 @@ void Start_Nehalem(void *arg)
 	PerCore_Nehalem_Query(Core);
 
 	Counters_Set(Core);
-	Core_Thermal(Core);
 	Counters_Nehalem(Core, 0);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
@@ -1658,7 +1688,6 @@ void Start_SandyBridge(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Counters_Set(Core);
-	Core_Thermal(Core);
 	Counters_SandyBridge(Core, 0);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,

@@ -254,7 +254,7 @@ void Top(SHM_STRUCT *Shm)
     SCREEN_SIZE drawSize={.width=0, .height=0};
     int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count) + 8; // incl. header, footer lines
     int loadWidth=0;
-    int drawFlag=0x0;
+    int drawFlag=0b0000;
 
     void layout(void)
     {
@@ -317,8 +317,22 @@ void Top(SHM_STRUCT *Shm)
 	    GoK	"TSC-VAR" DoK,
 	    GoK	"TSC-INV" DoK
 	};
+	const char *TM1[]=
+	{
+		"TM1",
+	    BoK	"TM1" DoK,
+	    WoK	"TM1" DoK,
+	    GoK	"TM1" DoK,
+	};
+	const char *TM2[]=
+	{
+		"TM2",
+	    BoK	"TM2" DoK,
+	    WoK	"TM2" DoK,
+	    GoK	"TM2" DoK,
+	};
 	sprintf(hTech,
-	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
+	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
@@ -329,7 +343,9 @@ void Top(SHM_STRUCT *Shm)
 		Shm->Cpu[0].C1A ? GoK"C1A"DoK : "C1A",
 		Shm->Cpu[0].C3U ? GoK"C3U"DoK : "C3U",
 		Shm->Cpu[0].C1U ? GoK"C1U"DoK : "C1U",
-		drawSize.width - 53,
+		TM1[Shm->Cpu[0].Thermal.TM1],
+		TM2[Shm->Cpu[0].Thermal.TM2],
+		drawSize.width - 61,
 		hSpace);
 
 	struct utsname OSinfo={{0}};
@@ -400,9 +416,9 @@ void Top(SHM_STRUCT *Shm)
 	{
 		drawSize.height=currentSize.height;
 		if(drawSize.height < MIN_HEIGHT)
-			drawFlag &= 0x0001;
+			drawFlag &= 0b0001;
 		else
-			drawFlag |= 0x1110;
+			drawFlag |= 0b1110;
 	}
 	if(currentSize.width != drawSize.width)
 	{
@@ -412,29 +428,29 @@ void Top(SHM_STRUCT *Shm)
 			drawSize.width=currentSize.width;
 
 		if(drawSize.width < MIN_WIDTH)
-			drawFlag &= 0x0010;
+			drawFlag &= 0b0010;
 		else
-			drawFlag |= 0x1001;
+			drawFlag |= 0b1001;
 	}					
 /*
 			.Bit flags.
-   0x....L C H W
+  0b0000 L C H W
          | | | |
  Layout--' | | |	Redraw layout
  Clear-----' | |	Clear screen
  Height----' | |	Valid height
  Width---------'	Valid width
 */
-      if((drawFlag & 0x0011) == 0x0011)
+      if((drawFlag & 0b0011) == 0b0011)
       {
-	if((drawFlag & 0x0100) == 0x0100)
+	if((drawFlag & 0b0100) == 0b0100)
 	{
-		drawFlag &= 0x1011;
+		drawFlag &= 0b1011;
 		printf(CLS);
 	}
-	if((drawFlag & 0x1000) == 0x1000)
+	if((drawFlag & 0b1000) == 0b1000)
 	{
-		drawFlag &= 0x0111;
+		drawFlag &= 0b0111;
     		layout();
 	}
 
@@ -480,10 +496,10 @@ void Top(SHM_STRUCT *Shm)
 
 		sprintf(hCore,
 		    DoK	"#"WoK"%-2u"YoK"%c"				\
-		    WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
+		    WoK	"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "\
 		    WoK	"%6.2f"DoK"%% "WoK"%6.2f"DoK"%% "WoK"%6.2f"DoK"%%  "\
-		    WoK	"%3llu"DoK" C%.*s\n",
+		    WoK	"%3llu"DoK" C%s%.*s\n",
 			cpu,
 			cpu == iclk ? '~' : ' ',
 			Flop->Relative.Freq,
@@ -494,8 +510,9 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
-			Flop->Thermal.Temperature,
-			drawSize.width - 78,
+			Flop->Thermal.Temp,
+			Flop->Thermal.Trip ? RoK"*"DoK : "",
+			drawSize.width - 79,
 			hSpace);
 		strcat(monitorView, hCore);
 	    }
@@ -636,7 +653,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 
 		cursorXY(X, Y + 3, cursor);
 		sprintf(cpuView, "%s"DoK"[ µ%-2u"WoK"%4llu"DoK"C ]",
-				cursor, cpu, Flop->Thermal.Temperature);
+				cursor, cpu, Flop->Thermal.Temp);
 
 		X+=marginWidth;
 		if(X - 3 >= getScreenSize().width - marginWidth)
@@ -694,7 +711,7 @@ void Counters(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
-			Flop->Thermal.Temperature,
+			Flop->Thermal.Temp,
 			Flop->Thermal.Sensor);
 		}
 		printf("\nAverage C-states\n"				\
@@ -745,7 +762,7 @@ void Topology(SHM_STRUCT *Shm)
 	    GoK	" xAPIC" DoK,
 	    GoK	"x2APIC" DoK
 	};
-	unsigned int cpu=0, level=0x0;
+	unsigned int cpu=0, level=0;
 
 	while(!BITWISEAND(Shm->Proc.Sync, 0x1) && !Shutdown)
 		usleep(Shm->Proc.msleep * 50);

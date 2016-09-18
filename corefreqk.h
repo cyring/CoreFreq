@@ -245,28 +245,35 @@ typedef union
 	{
 		unsigned long long
 		FastStrings	:  1-0,
-		ReservedBits1	:  3-1,
+		ReservedBits1	:  2-1,
+		x87Compat_Enable:  3-2,		// Pentium4, Xeon
 		TCC		:  4-3,
-		ReservedBits2	:  7-4,
+		SplitLockDisable:  5-4,		// Pentium4, Xeon
+		ReservedBits2	:  6-5,
+		L3Cache_Disable	:  7-6,		// Pentium4, Xeon
 		PerfMonitoring	:  8-7,
-		ReservedBits3	: 11-8,
+		SupprLock_Enable:  9-8,		// Pentium4, Xeon
+		PrefetchQueueDis: 10-9,		// Pentium4, Xeon
+		Int_FERR_Enable	: 11-10,	// Pentium4, Xeon
 		BTS		: 12-11,
 		PEBS		: 13-12,
 		TM2_Enable	: 14-13,
-		ReservedBits4	: 16-14,
+		ReservedBits3	: 16-14,
 		EIST		: 17-16,
-		ReservedBits5	: 18-17,
+		ReservedBits4	: 18-17,
 		FSM		: 19-18,
-		ReservedBits6	: 22-19,
+		PrefetchCacheDis: 20-19,	// Pentium4, Xeon
+		ReservedBits5	: 22-20,
 		CPUID_MaxVal	: 23-22,
 		xTPR		: 24-23,
-		ReservedBits7	: 34-24,
-		XD_Bit		: 35-34,
-		ReservedBits8	: 37-35,
+		L1DataCacheMode	: 25-24,	// Pentium4, Xeon
+		ReservedBits6	: 34-25,
+		XD_Bit_Disable	: 35-34,
+		ReservedBits7	: 37-35,
 		DCU_Prefetcher	: 38-37,
 		Turbo_IDA	: 39-38,
 		IP_Prefetcher	: 40-39,
-		ReservedBits9	: 64-40;
+		ReservedBits8	: 64-40;
 	};
 } MISC_PROC_FEATURES;
 /*
