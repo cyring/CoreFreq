@@ -1030,13 +1030,9 @@ void Counters_Clear(CORE *Core)
 
 #define Counters_Genuine(Core, T)					\
 ({									\
-	/* TSC in relation to the Core. */				\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
-									\
-	/* Actual & Maximum Performance Frequency Clock counters. */	\
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_IA32_APERF);		\
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_IA32_MPERF);		\
-									\
+	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
+			MSR_IA32_APERF, Core->Counter[T].C0.UCC,	\
+			MSR_IA32_MPERF, Core->Counter[T].C0.URC);	\
 	/* Derive C1 */							\
 	Core->Counter[T].C1=						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -1046,16 +1042,20 @@ void Counters_Clear(CORE *Core)
 
 #define Counters_Core2(Core, T)						\
 ({									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
-									\
-	/* Unhalted Core & Reference Cycles. */				\
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
-									\
-	/* Instructions Retired. */					\
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
-									\
+    if(!Proc->Features.InvariantTSC)					\
+ 	{								\
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
+			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
+	}								\
+    else								\
+	{								\
+	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
+			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
+	}								\
 	/* Derive C1 */							\
 	Core->Counter[T].C1=						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -1067,70 +1067,12 @@ void Counters_Clear(CORE *Core)
 ({									\
 	register unsigned long long Cx=0;				\
 									\
-	asm volatile							\
-	(								\
-		"# TSC in relation to the Logical Core.		\n\t"	\
-		"rdtscp						\n\t"	\
-		"movq	%%rdx,	%%rdi				\n\t"	\
-		"movq	%%rax,	%%rsi				\n\t"	\
-									\
-		"# Unhalted Core & Reference Cycles.		\n\t"	\
-		"movq	%8,	%%rcx				\n\t"	\
-		"rdmsr						\n\t"	\
-		"movq	%%rdx,	%%r9				\n\t"	\
-		"movq	%%rax,	%%r8				\n\t"	\
-									\
-		"movq	%7,	%%rcx				\n\t"	\
-		"rdmsr						\n\t"	\
-		"movq	%%rdx,	%%r11				\n\t"	\
-		"movq	%%rax,	%%r10				\n\t"	\
-									\
-		"# C-States.					\n\t"	\
-		"movq	%6,	%%rcx				\n\t"	\
-		"rdmsr						\n\t"	\
-		"movq	%%rdx,	%%r13				\n\t"	\
-		"movq	%%rax,	%%r12				\n\t"	\
-									\
-		"movq	%5,	%%rcx				\n\t"	\
-		"rdmsr						\n\t"	\
-									\
-		"shlq	$32,	%%rdx				\n\t"	\
-		"orq	%%rdx,	%%rax				\n\t"	\
-		"movq	%%rax,	%0				\n\t"	\
-									\
-		"shlq	$32,	%%r13				\n\t"	\
-		"orq	%%r13,	%%r12				\n\t"	\
-		"movq	%%r12,	%1				\n\t"	\
-									\
-		"shlq	$32,	%%r11				\n\t"	\
-		"orq	%%r11,	%%r10				\n\t"	\
-		"movq	%%r10,	%2				\n\t"	\
-									\
-		"shlq	$32,	%%r9				\n\t"	\
-		"orq	%%r9,	%%r8				\n\t"	\
-		"movq	%%r8,	%3				\n\t"	\
-									\
-		"shlq	$32,	%%rdi				\n\t"	\
-		"orq	%%rdi,	%%rsi				\n\t"	\
-		"movq	%%rsi,	%4				"	\
-									\
-		:"=m" (Core->Counter[T].C6),				\
-		 "=m" (Core->Counter[T].C3),				\
-		 "=m" (Core->Counter[T].C0.URC),			\
-		 "=m" (Core->Counter[T].C0.UCC),			\
-		 "=m" (Core->Counter[T].TSC)				\
-		:"i" (MSR_CORE_C6_RESIDENCY),				\
-		 "i" (MSR_CORE_C3_RESIDENCY),				\
-		 "i" (MSR_CORE_PERF_FIXED_CTR2),			\
-		 "i" (MSR_CORE_PERF_FIXED_CTR1)				\
-		:"%rax", "%rcx", "%rdx", "%rsi", "%rdi",		\
-		 "%r8" , "%r9" , "%r10", "%r11", "%r12", "%r13",	\
-		 "memory"						\
-	);								\
-									\
-	/* Instructions Retired. */					\
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
-									\
+	RDTSCP_COUNTERx5(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
+			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_C3_RESIDENCY,Core->Counter[T].C3,	\
+			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C6					\
 		+ Core->Counter[T].C3					\
@@ -1146,21 +1088,13 @@ void Counters_Clear(CORE *Core)
 ({									\
 	register unsigned long long Cx=0;				\
 									\
-	/* TSC in relation to the Logical Core. */			\
-	RDCOUNTER(Core->Counter[T].TSC, MSR_IA32_TSC);			\
-									\
-	/* Unhalted Core & Reference Cycles. */				\
-	RDCOUNTER(Core->Counter[T].C0.UCC, MSR_CORE_PERF_FIXED_CTR1);	\
-	RDCOUNTER(Core->Counter[T].C0.URC, MSR_CORE_PERF_FIXED_CTR2);	\
-									\
-	/* C-States. */							\
-	RDCOUNTER(Core->Counter[T].C3, MSR_CORE_C3_RESIDENCY);		\
-	RDCOUNTER(Core->Counter[T].C6, MSR_CORE_C6_RESIDENCY);		\
-	RDCOUNTER(Core->Counter[T].C7, MSR_CORE_C7_RESIDENCY);		\
-									\
-	/* Instructions Retired. */					\
-	RDCOUNTER(Core->Counter[T].INST, MSR_CORE_PERF_FIXED_CTR0);	\
-									\
+	RDTSCP_COUNTERx6(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
+			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_C3_RESIDENCY,Core->Counter[T].C3,	\
+			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
+			MSR_CORE_C7_RESIDENCY,Core->Counter[T].C7,	\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 	/* Derive C1 */							\
 	Cx=	Core->Counter[T].C7					\
 		+ Core->Counter[T].C6					\
