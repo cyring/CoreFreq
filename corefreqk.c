@@ -839,7 +839,7 @@ void SpeedStep_Technology(void)					// Per Package
 				    &&	MiscFeatures.EIST;
 }
 
-void TurboBoost_Technology(void)
+void Nehalem_Platform_Info(void)
 {
 	PLATFORM_INFO Platform={.value=0};
 	TURBO_RATIO Turbo={.value=0};
@@ -857,15 +857,6 @@ void TurboBoost_Technology(void)
 	Proc->Boost[7]=Turbo.MaxRatio_3C;
 	Proc->Boost[8]=Turbo.MaxRatio_2C;
 	Proc->Boost[9]=Turbo.MaxRatio_1C;
-
-	if(Proc->Features.Thermal_Power_Leaf.AX.TurboIDA)	// Per Thread !
-	{
-		PERF_CONTROL PerfControl={.value=0};
-
-		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
-
-		Proc->Features.Turbo_enabled=!PerfControl.Turbo_IDA;
-	}
 }
 
 void Enhanced_Halt_State(void)
@@ -892,7 +883,7 @@ void Enhanced_Halt_State(void)
 
 #define Nehalem_Query()							\
 ({									\
-	TurboBoost_Technology();					\
+	Nehalem_Platform_Info();					\
 	HyperThreading_Technology();					\
 	SpeedStep_Technology();						\
 	Enhanced_Halt_State();						\
@@ -900,11 +891,36 @@ void Enhanced_Halt_State(void)
 
 #define SandyBridge_Query()						\
 ({									\
-	TurboBoost_Technology();					\
+	Nehalem_Platform_Info();					\
 	HyperThreading_Technology();					\
 	SpeedStep_Technology();						\
 	Enhanced_Halt_State();						\
 })
+
+void TurboBoost_Technology(CORE *Core)
+{
+	struct THERMAL_POWER_LEAF thermal_Power_Leaf={
+		.AX={0}, .BX={0}, .CX={0}, .DX={0}
+	};
+	asm volatile
+	(
+		"cpuid"
+		: "=a"	(thermal_Power_Leaf.AX),
+		  "=b"	(thermal_Power_Leaf.BX),
+		  "=c"	(thermal_Power_Leaf.CX),
+		  "=d"	(thermal_Power_Leaf.DX)
+                : "a" (0x6)
+	);
+
+	if(thermal_Power_Leaf.AX.TurboIDA)			// Per Thread
+	{
+		PERF_CONTROL PerfControl={.value=0};
+
+		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
+
+		Core->Turbo_enabled = !PerfControl.Turbo_IDA;
+	}
+}
 
 void ThermalMonitor_Set(CORE *Core)
 {
@@ -940,6 +956,8 @@ void ThermalMonitor_Set(CORE *Core)
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
+	TurboBoost_Technology(Core);
+
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
 		CSTATE_CONFIG CStateConfig={.value=0};
@@ -954,6 +972,8 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 void PerCore_SandyBridge_Query(CORE *Core)
 {
+	TurboBoost_Technology(Core);
+
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
 		CSTATE_CONFIG CStateConfig={.value=0};

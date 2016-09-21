@@ -145,7 +145,7 @@ typedef struct
 			ReservedBits	: 32-20;
 		} DX;
 	} MONITOR_MWAIT_Leaf;
-	struct
+	struct THERMAL_POWER_LEAF
 	{
 		struct
 		{
@@ -280,7 +280,6 @@ typedef struct
                         HTT_enabled,
 			EIST_enabled,			// Package
 			C1E_enabled,			// Package
-			Turbo_enabled,			// Thread !
 			FactoryFreq;
 } FEATURES;
 
@@ -409,7 +408,8 @@ typedef struct
 
 	CLOCK				Clock;
 
-	unsigned int			C3A,		// Core
+	unsigned int			Turbo_enabled,	// Thread
+					C3A,		// Core
 					C1A,		// Core
 					C3U,		// Sandy Bridge
 					C1U;		// Sandy Bridge

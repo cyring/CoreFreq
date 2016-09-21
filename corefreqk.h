@@ -7,7 +7,7 @@
 #define	ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0));
 
-#define	LOOP_MIN_MS	100
+#define	LOOP_MIN_MS	500
 #define LOOP_MAX_MS	5000
 #define	LOOP_DEF_MS	1000
 

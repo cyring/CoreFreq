@@ -335,7 +335,8 @@ void Top(SHM_STRUCT *Shm)
 	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
-		Shm->Proc.TurboBoost ? GoK"TURBO"DoK : "TURBO",
+		Shm->Proc.TurboBoost == Shm->Proc.CPU.OnLine ?
+			GoK"TURBO"DoK : "TURBO",
 		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
 		Shm->Proc.C1E ? GoK"C1E"DoK : "C1E",
 		hString,
@@ -431,7 +432,7 @@ void Top(SHM_STRUCT *Shm)
 			drawFlag &= 0b0010;
 		else
 			drawFlag |= 0b1001;
-	}					
+	}
 /*
 			.Bit flags.
   0b0000 L C H W
@@ -571,7 +572,7 @@ void Top(SHM_STRUCT *Shm)
 	fflush(stdout);
 
 	iclk++;
-	if(iclk == Shm->Proc.CPU.Count)
+	if(iclk == Shm->Proc.CPU.OnLine)
 		iclk=0;
       }
       else
@@ -833,7 +834,7 @@ void SysInfo(SHM_STRUCT *Shm)
 		"  |- C3 UnDemotion                         C3U       [%3s]\n",
 		TSC[Shm->Proc.InvariantTSC],
 		enabled(Shm->Proc.HyperThreading),
-		enabled(Shm->Proc.TurboBoost),
+		enabled(Shm->Proc.TurboBoost == Shm->Proc.CPU.OnLine),
 		enabled(Shm->Proc.SpeedStep),
 		Shm->Proc.PM_version,
 		enabled(Shm->Proc.C1E),

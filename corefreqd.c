@@ -106,17 +106,17 @@ static void *Core_Cycle(void *arg)
 						* Proc->Boost[1])	\
 					/ (double) (Core->Delta.TSC);
 
-		if(Proc->TurboBoost == TRUE)
+		if(Core->Turbo_enabled)
 		{// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq=(double) (Core->Delta.C0.UCC)
-						/ 1000000L;
+						/ (Proc->msleep * 1000);
 		}
 		else
 		{// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		Flip->Relative.Freq=
 			(double) REL_FREQ(Proc->Boost[1], \
 					Flip->Relative.Ratio, \
-					Core->Clock) / 1000000L;
+					Core->Clock) / (Proc->msleep * 1000);
 		}
 		Flip->Thermal.Target=Core->Thermal.Target;
 		Flip->Thermal.Sensor=Core->Thermal.Sensor;
@@ -162,11 +162,6 @@ void SpeedStep(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
 	Shm->Proc.C1E=Proc->Features.C1E_enabled;
-}
-
-void TurboBoost(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Shm->Proc.TurboBoost=Proc->Features.Turbo_enabled;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -219,6 +214,11 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
 	}
+}
+
+void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{
+	Shm->Proc.TurboBoost += Core[cpu]->Turbo_enabled;
 }
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -298,8 +298,6 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 		SpeedStep(Shm, Proc);
 
-		TurboBoost(Shm, Proc);
-
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
@@ -313,6 +311,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			BaseClock(Shm, Core, cpu);
 
 			Topology(Shm, Proc, Core, cpu);
+
+			TurboBoost(Shm, Core, cpu);
 
 			CStates(Shm, Core, cpu);
 
@@ -347,7 +347,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			Proc->Features.Std.DX.HTT,
 				Proc->Features.HTT_enabled,
 			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
-				Proc->Features.Turbo_enabled,
+				Shm->Proc.TurboBoost,
 			Proc->Features.Std.CX.EIST,
 				Proc->Features.EIST_enabled,
 			Proc->Features.Std.DX.TM1,
