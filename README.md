@@ -6,23 +6,22 @@ CoreFreq is a CPU monitoring software designed for the Intel 64-bits Processors 
 
 CoreFreq provides a framework to retrieve CPU data with a high degree of precision:
 
-* Core Frequencies, Ratios, Turbo Boost, HTT and Base Clock
-* Performance counters including TSC, UCC, URC
+* Core frequencies & ratios; SpeedStep (EIST), Turbo Boost, Hyper-Threading (HTT) and Base Clock
+* Performance counters including Time Stamp Counter (TSC), Unhalted Core Cycles (UCC), Unhalted Reference Cycles (URC)
 * Number of instructions per cycle or second, IPS, IPC, or CPI
 * CPU C-States C0 C1 C3 C6 C7 - C1E - Auto/UnDemotion of C1 C3
-* DTS Temperature including the Tjunction Max
-* Topology map w/ Caches for boostrap & application CPU
+* DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
+* Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
 
-* asm code to read & write the performance registers
-* per-CPU slab data memory & thread
-* per-CPU high-resolution timer
-* atomic synchronization
-* suspend & resume compliant
-* client/server shared memory
+* asm code to keep as near as possible the read of counters
+* per-CPU slab data memory and per-CPU high-resolution timer
+* compliant with suspend & resume to save and restore the Performance register bits
+* a shared memory to protect kernel & user-space parts of the software
+* atomic synchronization of threads to avoid mutexes and deadlock
 
 
 ## Build & Run
@@ -68,7 +67,6 @@ insmod corefreqk.ko
 ```
 
 ### Stop
-(_in the reverse order_)
 
  6- Press [CTRL]+[C] to stop the client.
 
@@ -83,17 +81,16 @@ rmmod corefreqk.ko
 ### Linux kernel module
 Use ```dmesg``` or ```journalctl -k``` to check if the module is started
 ```
-CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] 8/8 CPU
+CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 ```
 
 ### Daemon
 ```
-
 CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-  Architecture [Nehalem/Bloomfield]
-  8/8 CPU Online. [TSC:P-I] [HTT:1-1] [IDA:1-1] [EIST:1-1]
+  Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
+  BSP: x2APIC[0:1:0] [TSC:P-I] [HTT:1-1] [EIST:1-ff] [IDA:1-ff] [TM:1-1-1-0-0]
 
     CPU #000 @ 2930.35 MHz
     CPU #001 @ 2930.13 MHz
@@ -142,6 +139,8 @@ CPU     IPS            IPC            CPI
  * Use option '-s' to show Processor information (BSP)
 ```
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
+  Signature [06_1A]
+  Stepping  [4]
   Architecture [Nehalem/Bloomfield]
   8/8 CPU Online.
   Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C
@@ -152,6 +151,13 @@ CPU     IPS            IPC            CPI
   |- Turbo Boost                           IDA       [ ON]
   |- SpeedStep                            EIST       [ ON]
   |- Performance Monitoring                 PM       [  3]
+  |- Enhanced Halt State                   C1E       [ ON]
+  |- C1 Auto Demotion                      C1A       [ ON]
+  |- C3 Auto Demotion                      C3A       [ ON]
+  |- C1 UnDemotion                         C1U       [OFF]
+  |- C3 UnDemotion                         C3U       [OFF]
+  |- Thermal Monitoring                    TM1   [ Enable]
+                                           TM2   [Present]
 ```
 
 ## Algorithm
@@ -160,6 +166,27 @@ CPU     IPS            IPC            CPI
 
 ## ArchLinux
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
+
+## Debian
+ * Install the prerequisite packages.
+```
+apt-get install dkms git
+```
+ * As a user, clone and build CoreFreq.
+```
+git clone https://github.com/cyring/CoreFreq.git
+cd CoreFreq
+make
+```
+ * As root, change to the build directory then start the module followed by the daemon.
+```
+insmod corefreqk.ko
+./corefreqd
+```
+ * As a user, start the client.
+```
+./corefreq-cli
+```
 
 # Regards
 _`CyrIng`_
