@@ -120,6 +120,9 @@ typedef struct
 typedef	struct
 {
 	char		AppName[TASK_COMM_LEN];
+	struct {
+		char	Name[TASK_COMM_LEN];
+	} IdleDriver;
 	PROC_STRUCT	Proc;
 	CPU_STRUCT	Cpu[];
 } SHM_STRUCT;

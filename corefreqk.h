@@ -328,6 +328,10 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define RDTSCP_COUNTERx6(mem_tsc, ...) \
 ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
 
+typedef struct
+{
+	unsigned int EAX, EBX, ECX, EDX;	// DWORD Only!
+} CPUID_REG;
 
 typedef struct
 {

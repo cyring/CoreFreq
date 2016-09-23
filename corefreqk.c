@@ -13,6 +13,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <asm/msr.h>
+#include <linux/cpuidle.h>
 
 #include "coretypes.h"
 #include "intelasm.h"
@@ -95,20 +96,29 @@ void Controller_Exit(void)
 }
 
 
-unsigned int Core_Count(void)
+void smp_call_cpuid_single(void *pReg)
 {
-	unsigned int count=0;
-
+	CPUID_REG *reg=pReg;
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(count)
-		: "a"	(0x4),
-		  "c"	(0x0)
+		: "=a"	(reg->EAX),
+		  "=b"	(reg->EBX),
+		  "=c"	(reg->ECX),
+		  "=d"	(reg->EDX)
+		: "a"	(reg->EAX),
+		  "c"	(reg->ECX)
 	);
-	count=(count >> 26) & 0x3f;
-	count++;
-	return(count);
+}
+
+unsigned int Core_Count(void)
+{
+	CPUID_REG reg={.EAX=0x4, .EBX=0x0, .ECX=0x0, .EDX=0x0};
+	smp_call_function_single(0, smp_call_cpuid_single, &reg, 1);
+
+	reg.EAX=(reg.EAX >> 26) & 0x3f;
+	reg.EAX++;
+	return(reg.EAX);
 }
 
 unsigned int Proc_Brand(char *pBrand)
@@ -180,8 +190,10 @@ unsigned int Proc_Brand(char *pBrand)
 }
 
 // Retreive the Processor features through calls to the CPUID instruction.
-void Proc_Features(FEATURES *features)
+void Proc_Features(void *pFeatures)
 {
+	FEATURES *features=pFeatures;
+
 	int BX=0, DX=0, CX=0;
 	asm volatile
 	(
@@ -285,6 +297,7 @@ void Proc_Features(FEATURES *features)
 			: "a" (0x80000001)
 		);
 	}
+	Proc->Features.FactoryFreq=Proc_Brand(Proc->Features.Brand);
 }
 
 DECLARE_COMPLETION(bclk_job_complete);
@@ -1777,9 +1790,11 @@ static int __init CoreFreqK_init(void)
 			    Proc->CPU.Count=count;
 			    Proc->msleep=LOOP_DEF_MS;
 
-			    Proc_Features(&Proc->Features);
-			    Proc->Features.FactoryFreq=			\
-					Proc_Brand(Proc->Features.Brand);
+			    // Query features on the presumed BSP processor.
+			    smp_call_function_single(	0,
+							Proc_Features,
+							&Proc->Features,
+							1);
 
 			    Arch[0].Architecture=Proc->Features.VendorID;
 			    RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
@@ -1795,6 +1810,8 @@ static int __init CoreFreqK_init(void)
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
+				struct cpuidle_driver *idleDriver;
+
 				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				{
 				    void *kcache=kmem_cache_alloc(
@@ -1836,6 +1853,14 @@ static int __init CoreFreqK_init(void)
 				}
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
+
+				if((idleDriver=cpuidle_get_driver()) != NULL)
+				{
+					strncpy(Proc->IdleDriver.Name,
+					    idleDriver->name, TASK_COMM_LEN-1);
+				}
+				else
+				  memset(Proc->IdleDriver.Name,0,TASK_COMM_LEN);
 
 				Controller_Init();
 

@@ -434,4 +434,8 @@ typedef struct
 	unsigned char		Architecture[32];
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
+
+	struct {
+		char		Name[TASK_COMM_LEN];
+	} IdleDriver;
 } PROC;

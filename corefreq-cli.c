@@ -355,12 +355,14 @@ void Top(SHM_STRUCT *Shm)
 	uname(&OSinfo);
 
 	sprintf(hSys,
-	    CoK	"%s"DoK" ["WoK"%s"DoK"]%.*sTasks [",
+	    CoK	"%s"DoK" ["WoK"%s"DoK"/"WoK"%s"DoK"]%.*sTasks [",
 		OSinfo.sysname,
 		OSinfo.release,
-		drawSize.width - 57
+		Shm->IdleDriver.Name,
+		drawSize.width - 45
 		- strlen(OSinfo.sysname)
-		- strlen(OSinfo.release),
+		- strlen(OSinfo.release)
+		- strlen(Shm->IdleDriver.Name),
 		hSpace);
 
 	free(hString);
@@ -392,7 +394,7 @@ void Top(SHM_STRUCT *Shm)
 	hBClk=malloc(128);
 	hCore=malloc(allocSize);
 	hTech=malloc(allocSize);
-	hSys=malloc(128);
+	hSys=malloc(allocSize);
 	hMem=malloc(allocSize);
 	headerView=malloc(3 * allocSize);
 	footerView=malloc(2 * allocSize);
@@ -538,11 +540,11 @@ void Top(SHM_STRUCT *Shm)
 	sysinfo(&sysLinux);
 	sprintf(hMem,
 		"%s"WoK"%6u"DoK"]"					\
-		"   Mem ["WoK"%8lu"DoK" total "WoK"%8lu"DoK" free KB]",
+		" Mem ["WoK"%8lu"DoK"/"WoK"%8lu"DoK" KB]",
 		hSys,
 		sysLinux.procs,
-		sysLinux.totalram  / 1024,
-		sysLinux.freeram   / 1024);
+		sysLinux.freeram  / 1024,
+		sysLinux.totalram / 1024);
 
 	sprintf(footerView,
 		"%s""%s"" ] %.*s\n"					\

@@ -302,8 +302,10 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 		HyperThreading(Shm, Proc);
 
-		// Store the application name.
+		// Store the application & the cpuidle driver names.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
+		strncpy(Shm->IdleDriver.Name,
+			Proc->IdleDriver.Name, TASK_COMM_LEN - 1);
 
 		// Initialize notification.
 		BITCLR(Shm->Proc.Sync, 0);
