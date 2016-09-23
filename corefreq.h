@@ -31,7 +31,8 @@ typedef struct
 		} Cache[CACHE_MAX_LEVEL];
 	} Topology;
 
-	unsigned int			C3A,		// Nehalem
+	unsigned int			C1E,
+					C3A,		// Nehalem
 					C1A,		// Nehalem
 					C3U,		// Sandy Bridge
 					C1U;		// Sandy Bridge
@@ -102,11 +103,9 @@ typedef struct
 	char				Brand[64];
 
 	Bit32				InvariantTSC,
-					HyperThreading,
-					SpeedStep,
-					C1E,
+					HyperThreading;
+	Bit64				SpeedStep,
 					TurboBoost;
-
 	struct {
 		double			Turbo,
 					C0,

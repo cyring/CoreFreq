@@ -106,7 +106,7 @@ static void *Core_Cycle(void *arg)
 						* Proc->Boost[1])	\
 					/ (double) (Core->Delta.TSC);
 
-		if(Core->Turbo_enabled)
+		if(Core->Query.Turbo)
 		{// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq=(double) (Core->Delta.C0.UCC)
 						/ (Proc->msleep * 1000);
@@ -156,12 +156,6 @@ void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Shm->Proc.HyperThreading=Proc->Features.HTT_enabled;
-}
-
-void SpeedStep(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Shm->Proc.SpeedStep=Proc->Features.EIST_enabled;
-	Shm->Proc.C1E=Proc->Features.C1E_enabled;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -216,17 +210,29 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	}
 }
 
+void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{
+	if(Core[cpu]->Query.EIST)
+		BITSET(Shm->Proc.SpeedStep, cpu);
+	else
+		BITCLR(Shm->Proc.SpeedStep, cpu);
+}
+
 void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	Shm->Proc.TurboBoost += Core[cpu]->Turbo_enabled;
+	if(Core[cpu]->Query.Turbo)
+		BITSET(Shm->Proc.TurboBoost, cpu);
+	else
+		BITCLR(Shm->Proc.TurboBoost, cpu);
 }
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	Shm->Cpu[cpu].C3A=Core[cpu]->C3A;
-	Shm->Cpu[cpu].C1A=Core[cpu]->C1A;
-	Shm->Cpu[cpu].C3U=Core[cpu]->C3U;
-	Shm->Cpu[cpu].C1U=Core[cpu]->C1U;
+	Shm->Cpu[cpu].C1E=Core[cpu]->Query.C1E;
+	Shm->Cpu[cpu].C3A=Core[cpu]->Query.C3A;
+	Shm->Cpu[cpu].C1A=Core[cpu]->Query.C1A;
+	Shm->Cpu[cpu].C3U=Core[cpu]->Query.C3U;
+	Shm->Cpu[cpu].C1U=Core[cpu]->Query.C1U;
 }
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
@@ -296,8 +302,6 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 		HyperThreading(Shm, Proc);
 
-		SpeedStep(Shm, Proc);
-
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
@@ -311,6 +315,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			BaseClock(Shm, Core, cpu);
 
 			Topology(Shm, Proc, Core, cpu);
+
+			SpeedStep(Shm, Proc, Core, cpu);
 
 			TurboBoost(Shm, Core, cpu);
 
@@ -332,7 +338,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			"  Processor [%s]\n"				\
 			"  Architecture [%s] %u/%u CPU Online.\n"	\
 			"  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
-			" [HTT:%u-%u] [IDA:%u-%u] [EIST:%u-%u]"		\
+			" [HTT:%u-%u] [EIST:%u-%x] [IDA:%u-%x]"		\
 			" [TM:%u-%u-%u-%u-%u]\n\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
@@ -346,10 +352,10 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			Proc->Features.InvariantTSC ? 'I':'V',
 			Proc->Features.Std.DX.HTT,
 				Proc->Features.HTT_enabled,
+			Proc->Features.Std.CX.EIST,
+				Shm->Proc.SpeedStep,
 			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
 				Shm->Proc.TurboBoost,
-			Proc->Features.Std.CX.EIST,
-				Proc->Features.EIST_enabled,
 			Proc->Features.Std.DX.TM1,
 			Proc->Features.Std.CX.TM2,
 			Core[0]->Thermal.TCC_Enable,

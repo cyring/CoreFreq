@@ -232,6 +232,9 @@ void Top(SHM_STRUCT *Shm)
     double medianRatio=(minRatio + maxRatio) / 2;
     double availRatio[10]={minRatio};
     unsigned int cpu=0, iclk=0, i, ratioCount=0;
+    const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
+    	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
+	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
 
     for(i=1; i < 10; i++)
 	if(Shm->Proc.Boost[i] != 0)
@@ -335,10 +338,9 @@ void Top(SHM_STRUCT *Shm)
 	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
-		Shm->Proc.TurboBoost == Shm->Proc.CPU.OnLine ?
-			GoK"TURBO"DoK : "TURBO",
-		Shm->Proc.SpeedStep ? GoK"EIST"DoK : "EIST",
-		Shm->Proc.C1E ? GoK"C1E"DoK : "C1E",
+		isTurboBoost ? GoK"TURBO"DoK : "TURBO",
+		isSpeedStep ? GoK"EIST"DoK : "EIST",
+		Shm->Cpu[0].C1E ? GoK"C1E"DoK : "C1E",
 		hString,
 		Shm->Cpu[0].C3A ? GoK"C3A"DoK : "C3A",
 		Shm->Cpu[0].C1A ? GoK"C1A"DoK : "C1A",
@@ -791,6 +793,9 @@ void Topology(SHM_STRUCT *Shm)
 
 void SysInfo(SHM_STRUCT *Shm)
 {
+	const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
+    	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
+	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
 	int i=0;
 	printf(	"  Processor [%s]\n"					\
 		"  Signature [%1X%1X_%1X%1X]\n"				\
@@ -820,6 +825,13 @@ void SysInfo(SHM_STRUCT *Shm)
 		"Variant",
 		"Invariant"
 	};
+	const char *TM[]=
+	{
+		"Missing",
+	    	"Present",
+	    	"Disable",
+	    	" Enable",
+	};
 	printf(	"\n"							\
 		"  Technologies:\n"					\
 		"  |- Time Stamp Counter                    TSC [%9s]\n"\
@@ -831,17 +843,21 @@ void SysInfo(SHM_STRUCT *Shm)
 		"  |- C1 Auto Demotion                      C1A       [%3s]\n"\
 		"  |- C3 Auto Demotion                      C3A       [%3s]\n"\
 		"  |- C1 UnDemotion                         C1U       [%3s]\n"\
-		"  |- C3 UnDemotion                         C3U       [%3s]\n",
+		"  |- C3 UnDemotion                         C3U       [%3s]\n"\
+		"  |- Thermal Monitoring                    TM1   [%7s]\n"\
+		"                                           TM2   [%7s]\n",
 		TSC[Shm->Proc.InvariantTSC],
 		enabled(Shm->Proc.HyperThreading),
-		enabled(Shm->Proc.TurboBoost == Shm->Proc.CPU.OnLine),
-		enabled(Shm->Proc.SpeedStep),
+		enabled(isTurboBoost),
+		enabled(isSpeedStep),
 		Shm->Proc.PM_version,
-		enabled(Shm->Proc.C1E),
+		enabled(Shm->Cpu[0].C1E),
 		enabled(Shm->Cpu[0].C3A),
 		enabled(Shm->Cpu[0].C1A),
 		enabled(Shm->Cpu[0].C3U),
-		enabled(Shm->Cpu[0].C1U));
+		enabled(Shm->Cpu[0].C1U),
+		TM[Shm->Cpu[0].Thermal.TM1],
+		TM[Shm->Cpu[0].Thermal.TM2]);
 }
 
 

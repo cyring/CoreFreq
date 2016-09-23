@@ -803,6 +803,16 @@ unsigned int Proc_Topology(void)
 }
 
 
+void HyperThreading_Technology(void)
+{
+	unsigned int CountEnabledCPU=Proc_Topology();
+
+	if(Proc->Features.Std.DX.HTT)
+		Proc->CPU.OnLine=CountEnabledCPU;
+	else
+		Proc->CPU.OnLine=Proc->CPU.Count;
+}
+
 void Genuine_Platform_Info(void)
 {
 	PLATFORM_INFO Platform={.value=0};
@@ -817,26 +827,6 @@ void Genuine_Platform_Info(void)
 				Platform.MaxNonTurboRatio);
 	}
 	Proc->Boost[9]=Proc->Boost[1];
-}
-
-void HyperThreading_Technology(void)
-{
-	unsigned int CountEnabledCPU=Proc_Topology();
-
-	if(Proc->Features.Std.DX.HTT)
-		Proc->CPU.OnLine=CountEnabledCPU;
-	else
-		Proc->CPU.OnLine=Proc->CPU.Count;
-}
-
-void SpeedStep_Technology(void)					// Per Package
-{
-	MISC_PROC_FEATURES MiscFeatures={.value=0};
-
-	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-
-	Proc->Features.EIST_enabled =	Proc->Features.Std.CX.EIST
-				    &&	MiscFeatures.EIST;
 }
 
 void Nehalem_Platform_Info(void)
@@ -859,15 +849,6 @@ void Nehalem_Platform_Info(void)
 	Proc->Boost[9]=Turbo.MaxRatio_1C;
 }
 
-void Enhanced_Halt_State(void)
-{
-	POWER_CONTROL PowerCtrl={.value=0};
-
-	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
-
-	Proc->Features.C1E_enabled=PowerCtrl.C1E;		// Per Package
-}
-
 #define Genuine_Query()							\
 ({									\
 	Genuine_Platform_Info();					\
@@ -878,24 +859,28 @@ void Enhanced_Halt_State(void)
 ({									\
 	Genuine_Platform_Info();					\
 	HyperThreading_Technology();					\
-	SpeedStep_Technology();						\
 })
 
 #define Nehalem_Query()							\
 ({									\
 	Nehalem_Platform_Info();					\
 	HyperThreading_Technology();					\
-	SpeedStep_Technology();						\
-	Enhanced_Halt_State();						\
 })
 
 #define SandyBridge_Query()						\
 ({									\
 	Nehalem_Platform_Info();					\
 	HyperThreading_Technology();					\
-	SpeedStep_Technology();						\
-	Enhanced_Halt_State();						\
 })
+
+void SpeedStep_Technology(CORE *Core)				// Per Package!
+{
+	MISC_PROC_FEATURES MiscFeatures={.value=0};
+
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+
+	Core->Query.EIST=Proc->Features.Std.CX.EIST & MiscFeatures.EIST;
+}
 
 void TurboBoost_Technology(CORE *Core)
 {
@@ -918,8 +903,17 @@ void TurboBoost_Technology(CORE *Core)
 
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
-		Core->Turbo_enabled = !PerfControl.Turbo_IDA;
+		Core->Query.Turbo= !PerfControl.Turbo_IDA;
 	}
+}
+
+void Enhanced_Halt_State(CORE *Core)
+{
+	POWER_CONTROL PowerCtrl={.value=0};
+
+	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
+
+	Core->Query.C1E=PowerCtrl.C1E;				// Per Package!
 }
 
 void ThermalMonitor_Set(CORE *Core)
@@ -951,12 +945,15 @@ void ThermalMonitor_Set(CORE *Core)
 
 #define PerCore_Core2_Query(Core)					\
 ({									\
+	SpeedStep_Technology(Core);					\
 	ThermalMonitor_Set(Core);					\
 })
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
+	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
+	Enhanced_Halt_State(Core);
 
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
@@ -964,15 +961,17 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
 
-		Core->C3A=CStateConfig.C3autoDemotion;
-		Core->C1A=CStateConfig.C1autoDemotion;
+		Core->Query.C3A=CStateConfig.C3autoDemotion;
+		Core->Query.C1A=CStateConfig.C1autoDemotion;
 	}
 	ThermalMonitor_Set(Core);
 }
 
 void PerCore_SandyBridge_Query(CORE *Core)
 {
+	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
+	Enhanced_Halt_State(Core);
 
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
@@ -980,10 +979,10 @@ void PerCore_SandyBridge_Query(CORE *Core)
 
 		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
 
-		Core->C3A=CStateConfig.C3autoDemotion;
-		Core->C1A=CStateConfig.C1autoDemotion;
-		Core->C3U=CStateConfig.C3undemotion;
-		Core->C1U=CStateConfig.C1undemotion;
+		Core->Query.C3A=CStateConfig.C3autoDemotion;
+		Core->Query.C1A=CStateConfig.C1autoDemotion;
+		Core->Query.C3U=CStateConfig.C3undemotion;
+		Core->Query.C1U=CStateConfig.C1undemotion;
 	}
 	ThermalMonitor_Set(Core);
 }
@@ -1842,7 +1841,7 @@ static int __init CoreFreqK_init(void)
 
 				printk(KERN_INFO "CoreFreq:"		\
 				      " Processor [%1X%1X_%1X%1X]"	\
-				      " Architecture [%s] %u/%u CPU\n",
+				      " Architecture [%s] CPU [%u/%u]\n",
 					Arch[Proc->ArchID].Signature.ExtFamily,
 					Arch[Proc->ArchID].Signature.Family,
 					Arch[Proc->ArchID].Signature.ExtModel,

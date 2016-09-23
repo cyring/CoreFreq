@@ -278,8 +278,6 @@ typedef struct
 	} ExtFunc;
 	unsigned int	InvariantTSC,
                         HTT_enabled,
-			EIST_enabled,			// Package
-			C1E_enabled,			// Package
 			FactoryFreq;
 } FEATURES;
 
@@ -408,11 +406,18 @@ typedef struct
 
 	CLOCK				Clock;
 
-	unsigned int			Turbo_enabled,	// Thread
-					C3A,		// Core
-					C1A,		// Core
-					C3U,		// Sandy Bridge
-					C1U;		// Sandy Bridge
+	struct
+	{
+		unsigned long long
+					EIST	:  1-0,	// Package
+					C1E	:  2-1,	// Package
+					Turbo	:  3-2,	// Thread
+					C3A	:  4-3,	// Core
+					C1A	:  5-4,	// Core
+					C3U	:  6-5,	// Sandy Bridge
+					C1U	:  7-6,	// Sandy Bridge
+					Unused	: 64-7;
+	} Query;
 } CORE;
 
 typedef struct
