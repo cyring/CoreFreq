@@ -12,8 +12,8 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
-#include <asm/msr.h>
 #include <linux/cpuidle.h>
+#include <asm/msr.h>
 
 #include "coretypes.h"
 #include "intelasm.h"
@@ -1671,6 +1671,40 @@ void Stop_SandyBridge(void *arg)
 	Counters_Clear(Core);
 }
 
+void IdleDriver_Query(void *arg)
+{
+	struct cpuidle_driver *idleDriver;
+
+	if((idleDriver=cpuidle_get_driver()) != NULL)
+	{
+		int i=0;
+
+		strncpy(Proc->IdleDriver.Name,
+			idleDriver->name,
+			CPUIDLE_NAME_LEN - 1);
+
+		if(idleDriver->state_count < CPUIDLE_STATE_MAX)
+			Proc->IdleDriver.stateCount=idleDriver->state_count;
+		else	// No overflow check.
+			Proc->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
+
+		for(i=0; i < Proc->IdleDriver.stateCount; i++)
+		{
+			strncpy(Proc->IdleDriver.State[i].Name,
+				idleDriver->states[i].name,
+				CPUIDLE_NAME_LEN - 1);
+
+			Proc->IdleDriver.State[i].exitLatency=
+				idleDriver->states[i].exit_latency;
+			Proc->IdleDriver.State[i].powerUsage=
+				idleDriver->states[i].power_usage;
+			Proc->IdleDriver.State[i].targetResidency=
+				idleDriver->states[i].target_residency;
+		}
+	}
+	else
+		memset(&Proc->IdleDriver, 0, sizeof(struct IDLEDRIVER));
+}
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
@@ -1810,8 +1844,6 @@ static int __init CoreFreqK_init(void)
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
-				struct cpuidle_driver *idleDriver;
-
 				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 				{
 				    void *kcache=kmem_cache_alloc(
@@ -1854,14 +1886,10 @@ static int __init CoreFreqK_init(void)
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
-				if((idleDriver=cpuidle_get_driver()) != NULL)
-				{
-					strncpy(Proc->IdleDriver.Name,
-					    idleDriver->name, TASK_COMM_LEN-1);
-				}
-				else
-				  memset(Proc->IdleDriver.Name,0,TASK_COMM_LEN);
-
+				smp_call_function_single(0,
+							IdleDriver_Query,
+							NULL,
+							0);
 				Controller_Init();
 
 				printk(KERN_INFO "CoreFreq:"		\

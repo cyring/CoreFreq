@@ -799,22 +799,27 @@ void SysInfo(SHM_STRUCT *Shm)
     	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
 	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
 	int i=0;
-	printf(	"  Processor [%s]\n"					\
-		"  Signature [%1X%1X_%1X%1X]\n"				\
-		"  Stepping  [%u]\n"					\
-		"  Architecture [%s]\n"					\
-		"  %u/%u CPU Online.\n"					\
-		"  Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"\
-		"                   ",
-		Shm->Proc.Brand,
+	printf(	"  Processor%.*s[%s]\n"					\
+		"  |- Signature%.*s[%1X%1X_%1X%1X]\n"			\
+		"  |- Stepping%.*s[%u]\n"				\
+		"  |- Architecture%.*s[%s]\n"				\
+		"  |- Online CPU%.*s[%u/%u]\n"				\
+		"  |- Base Clock%.*s[%llu]\n"	 \
+		"  |- Ratio Boost:%.*s"					\
+			"Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"	\
+		"%.*s",
+		67-strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand,
+		59, hSpace,
 		Shm->Proc.ExtFamily,
 		Shm->Proc.Family,
 		Shm->Proc.ExtModel,
 		Shm->Proc.Model,
-		Shm->Proc.Stepping,
-		Shm->Proc.Architecture,
-		Shm->Proc.CPU.OnLine,
-		Shm->Proc.CPU.Count	);
+		64, hSpace, Shm->Proc.Stepping,
+		61-strlen(Shm->Proc.Architecture),hSpace,Shm->Proc.Architecture,
+		60, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count,
+		60, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L,
+		7, hSpace,
+		24, hSpace);
 	for(i=0; i < 10; i++)
 		if(Shm->Proc.Boost[i] != 0)
 			printf("%3d ", Shm->Proc.Boost[i]);
@@ -835,31 +840,64 @@ void SysInfo(SHM_STRUCT *Shm)
 	    	" Enable",
 	};
 	printf(	"\n"							\
+		"  Features:\n"						\
+		"  |- Time Stamp Counter%.*sTSC [%9s]\n"		\
 		"  Technologies:\n"					\
-		"  |- Time Stamp Counter                    TSC [%9s]\n"\
-		"  |- Hyper-Threading                       HTT       [%3s]\n"\
-		"  |- Turbo Boost                           IDA       [%3s]\n"\
-		"  |- SpeedStep                            EIST       [%3s]\n"\
-		"  |- Performance Monitoring                 PM       [%3d]\n"\
-		"  |- Enhanced Halt State                   C1E       [%3s]\n"\
-		"  |- C1 Auto Demotion                      C1A       [%3s]\n"\
-		"  |- C3 Auto Demotion                      C3A       [%3s]\n"\
-		"  |- C1 UnDemotion                         C1U       [%3s]\n"\
-		"  |- C3 UnDemotion                         C3U       [%3s]\n"\
-		"  |- Thermal Monitoring                    TM1   [%7s]\n"\
-		"                                           TM2   [%7s]\n",
-		TSC[Shm->Proc.InvariantTSC],
-		enabled(Shm->Proc.HyperThreading),
-		enabled(isTurboBoost),
-		enabled(isSpeedStep),
-		Shm->Proc.PM_version,
-		enabled(Shm->Cpu[0].C1E),
-		enabled(Shm->Cpu[0].C3A),
-		enabled(Shm->Cpu[0].C1A),
-		enabled(Shm->Cpu[0].C3U),
-		enabled(Shm->Cpu[0].C1U),
-		TM[Shm->Cpu[0].Thermal.TM1],
-		TM[Shm->Cpu[0].Thermal.TM2]);
+		"  |- Hyper-Threading%.*sHTT       [%3s]\n"		\
+		"  |- Turbo Boost%.*sIDA       [%3s]\n"			\
+		"  |- SpeedStep%.*sEIST       [%3s]\n"			\
+		"  Performance Monitoring:\n"				\
+		"  |- Version%.*sPM       [%3d]\n"			\
+		"  |- Enhanced Halt State%.*sC1E       [%3s]\n"		\
+		"  |- C1 Auto Demotion%.*sC1A       [%3s]\n"		\
+		"  |- C3 Auto Demotion%.*sC3A       [%3s]\n"		\
+		"  |- C1 UnDemotion%.*sC1U       [%3s]\n"		\
+		"  |- C3 UnDemotion%.*sC3U       [%3s]\n"		\
+		"  Thermal Monitoring:\n"				\
+		"  |- Thermal Monitor 1%.*sTM1   [%7s]\n"		\
+		"  |- Thermal Monitor 2%.*sTM2   [%7s]\n",
+		42, hSpace, TSC[Shm->Proc.InvariantTSC],
+		45, hSpace, enabled(Shm->Proc.HyperThreading),
+		49, hSpace, enabled(isTurboBoost),
+		50, hSpace, enabled(isSpeedStep),
+		54, hSpace, Shm->Proc.PM_version,
+		41, hSpace, enabled(Shm->Cpu[0].C1E),
+		44, hSpace, enabled(Shm->Cpu[0].C3A),
+		44, hSpace, enabled(Shm->Cpu[0].C1A),
+		47, hSpace, enabled(Shm->Cpu[0].C3U),
+		47, hSpace, enabled(Shm->Cpu[0].C1U),
+		43, hSpace, TM[Shm->Cpu[0].Thermal.TM1],
+		43, hSpace, TM[Shm->Cpu[0].Thermal.TM2]);
+
+	struct utsname OSinfo={{0}};
+	uname(&OSinfo);
+
+	printf(	"  %s:\n"						\
+		"  |- Release%.*s[%s]\n"				\
+		"  |- Idle driver%.*s[%s]\n"				\
+		"     |- States:%.*s",
+		OSinfo.sysname,
+		66-strlen(OSinfo.release), hSpace, OSinfo.release,
+		62-strlen(Shm->IdleDriver.Name), hSpace, Shm->IdleDriver.Name,
+		9, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printf("%-8s", Shm->IdleDriver.State[i].Name);
+	printf(	"\n"							\
+		"     |- Power:%.*s",
+		10, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printf("%-8d", Shm->IdleDriver.State[i].powerUsage);
+	printf(	"\n"							\
+		"     |- Latency:%.*s",
+		8, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printf("%-8u", Shm->IdleDriver.State[i].exitLatency);
+	printf(	"\n"							\
+		"     |- Residency:%.*s",
+		6, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printf("%-8u", Shm->IdleDriver.State[i].targetResidency);
+	printf(	"\n");
 }
 
 

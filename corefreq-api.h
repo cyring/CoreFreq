@@ -435,7 +435,14 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
-	struct {
-		char		Name[TASK_COMM_LEN];
+	struct IDLEDRIVER {	// source: include/linux/cpuidle.h
+		char		Name[CPUIDLE_NAME_LEN];
+		int		stateCount;
+	  	struct {
+			char	Name[CPUIDLE_NAME_LEN];
+		unsigned int	exitLatency;		/* in US */
+			int	powerUsage;		/* in mW */
+		unsigned int	targetResidency;	/* in US */
+		} State[CPUIDLE_STATE_MAX];
 	} IdleDriver;
 } PROC;

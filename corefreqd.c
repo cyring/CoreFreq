@@ -244,6 +244,29 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 	Shm->Cpu[cpu].Thermal.TM2|=(Core[cpu]->Thermal.TM2_Enable << 1);//0010
 }
 
+void IdleDriver(SHM_STRUCT *Shm,PROC *Proc)
+{
+	int i=0;
+
+	strncpy(Shm->IdleDriver.Name,
+		Proc->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+
+	Shm->IdleDriver.stateCount=Proc->IdleDriver.stateCount;
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+	{
+		strncpy(Shm->IdleDriver.State[i].Name,
+			Proc->IdleDriver.State[i].Name,
+			CPUIDLE_NAME_LEN - 1);
+
+		Shm->IdleDriver.State[i].exitLatency=
+			Proc->IdleDriver.State[i].exitLatency;
+		Shm->IdleDriver.State[i].powerUsage=
+			Proc->IdleDriver.State[i].powerUsage;
+		Shm->IdleDriver.State[i].targetResidency=
+			Proc->IdleDriver.State[i].targetResidency;
+	}
+}
+
 typedef	struct
 {
 	int	Drv,
@@ -302,10 +325,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 
 		HyperThreading(Shm, Proc);
 
-		// Store the application & the cpuidle driver names.
+		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
-		strncpy(Shm->IdleDriver.Name,
-			Proc->IdleDriver.Name, TASK_COMM_LEN - 1);
+
+		// Aggregate the OS idle driver data.
+		IdleDriver(Shm, Proc);
 
 		// Initialize notification.
 		BITCLR(Shm->Proc.Sync, 0);

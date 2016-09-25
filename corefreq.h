@@ -4,7 +4,9 @@
  * Licenses: GPL2
  */
 
-#define	TASK_COMM_LEN	16
+#define	TASK_COMM_LEN		16
+#define CPUIDLE_STATE_MAX       10
+#define CPUIDLE_NAME_LEN        16
 
 #define	SHM_FILENAME	"corefreq-shm"
 
@@ -121,7 +123,14 @@ typedef	struct
 {
 	char		AppName[TASK_COMM_LEN];
 	struct {
-		char	Name[TASK_COMM_LEN];
+		char	Name[CPUIDLE_NAME_LEN];
+		int	stateCount;
+	  	struct {
+			char	Name[CPUIDLE_NAME_LEN];
+		unsigned int	exitLatency;		/* in US */
+			int	powerUsage;		/* in mW */
+		unsigned int	targetResidency;	/* in US */
+		} State[CPUIDLE_STATE_MAX];
 	} IdleDriver;
 	PROC_STRUCT	Proc;
 	CPU_STRUCT	Cpu[];
