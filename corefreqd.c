@@ -25,7 +25,7 @@
 
 #define	PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int Shutdown=0x0, Quiet=0x0;
+unsigned int Shutdown=0x0, Quiet=0x001;
 
 typedef struct {
 	PROC_STRUCT	*Proc;
@@ -129,7 +129,10 @@ static void *Core_Cycle(void *arg)
 }
 
 void Architecture(SHM_STRUCT *Shm, PROC *Proc)
-{	// Copy the numbers of total & online CPU.
+{
+	// Copy all BSP features.
+	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
+	// Copy the numbers of total & online CPU.
 	Shm->Proc.CPU.Count=Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
 	// Copy signature.
@@ -155,7 +158,7 @@ void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 {
-	Shm->Proc.HyperThreading=Proc->Features.HTT_enabled;
+	Shm->Proc.HyperThreading=Proc->Features.HTT_Enable;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -246,24 +249,27 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 
 void IdleDriver(SHM_STRUCT *Shm,PROC *Proc)
 {
-	int i=0;
-
-	strncpy(Shm->IdleDriver.Name,
-		Proc->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
-
-	Shm->IdleDriver.stateCount=Proc->IdleDriver.stateCount;
-	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+	if(strlen(Proc->IdleDriver.Name) > 0)
 	{
-		strncpy(Shm->IdleDriver.State[i].Name,
-			Proc->IdleDriver.State[i].Name,
-			CPUIDLE_NAME_LEN - 1);
+		int i=0;
 
-		Shm->IdleDriver.State[i].exitLatency=
-			Proc->IdleDriver.State[i].exitLatency;
-		Shm->IdleDriver.State[i].powerUsage=
-			Proc->IdleDriver.State[i].powerUsage;
-		Shm->IdleDriver.State[i].targetResidency=
-			Proc->IdleDriver.State[i].targetResidency;
+		strncpy(Shm->IdleDriver.Name,
+			Proc->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+
+		Shm->IdleDriver.stateCount=Proc->IdleDriver.stateCount;
+		for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		{
+			strncpy(Shm->IdleDriver.State[i].Name,
+				Proc->IdleDriver.State[i].Name,
+				CPUIDLE_NAME_LEN - 1);
+
+			Shm->IdleDriver.State[i].exitLatency=
+				Proc->IdleDriver.State[i].exitLatency;
+			Shm->IdleDriver.State[i].powerUsage=
+				Proc->IdleDriver.State[i].powerUsage;
+			Shm->IdleDriver.State[i].targetResidency=
+				Proc->IdleDriver.State[i].targetResidency;
+		}
 	}
 }
 
@@ -312,10 +318,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 	    {
 		// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-		// Copy the high-resolution timer delay.
-		Shm->Proc.msleep=Proc->msleep;
 
 		Architecture(Shm, Proc);
+
+		// Copy the high-resolution timer delay.
+		Shm->Proc.msleep=Proc->msleep;
 
 		// Technologies aggregation.
 
@@ -358,18 +365,21 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 			}
 		}
 		// Welcomes with brand and per CPU base clock.
-		if(!Quiet)
+		if(Quiet & 0x001)
 		 printf("CoreFreq Daemon."				\
-			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n\n"\
+			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n");
+		if(Quiet & 0x010)
+		 printf("\n"						\
 			"  Processor [%s]\n"				\
-			"  Architecture [%s] %u/%u CPU Online.\n"	\
-			"  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
-			" [HTT:%u-%u] [EIST:%u-%x] [IDA:%u-%x]"		\
-			" [TM:%u-%u-%u-%u-%u]\n\n",
+			"  Architecture [%s] %u/%u CPU Online.\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
-			Shm->Proc.CPU.Count,
+			Shm->Proc.CPU.Count );
+		if(Quiet & 0x100)
+		 printf("  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
+			" [HTT:%u-%u] [EIST:%u-%x] [IDA:%u-%x]"		\
+			" [TM:%u-%u-%u-%u-%u]\n\n",
 			Proc->Features.Std.CX.x2APIC,
 			Core[0]->T.Base.EN,
 			Core[0]->T.Base.EXTD,
@@ -377,7 +387,7 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 				Proc->Features.ExtFunc.DX.RdTSCP ? 'P':'1':'0',
 			Proc->Features.InvariantTSC ? 'I':'V',
 			Proc->Features.Std.DX.HTT,
-				Proc->Features.HTT_enabled,
+				Proc->Features.HTT_Enable,
 			Proc->Features.Std.CX.EIST,
 				Shm->Proc.SpeedStep,
 			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
@@ -401,12 +411,11 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 						NULL,
 						Core_Cycle,
 						&Arg[cpu]);
-				if(!Quiet)
+				if(Quiet & 0x100)
 				    printf("    CPU #%03u @ %.2f MHz\n", cpu,
-					(double) REL_FREQ(Shm->Proc.Boost[1],
-						Shm->Proc.Boost[1],
-						Shm->Cpu[cpu].Clock)
-						/ 1000000L);
+					(double)( Shm->Cpu[cpu].Clock.Hz
+						* Shm->Proc.Boost[1])
+						/ 1000000L );
 			}
 		fflush(stdout);
 		// Main loop : aggregate the ratios.
@@ -504,6 +513,8 @@ int main(int argc, char *argv[])
 	if(option == 'h')
 		printf(	"usage:\t%s [-option]\n"		\
 			"\t-q\tQuiet\n"				\
+			"\t-i\tInfo\n"				\
+			"\t-d\tDebug\n"				\
 			"\t-h\tPrint out this message\n"	\
 			"\nExit status:\n"			\
 				"0\tif OK,\n"			\
@@ -519,12 +530,21 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, 0)) != NULL)
 		{
-		  switch(option)
-		  {
-		    case 'q':
-			Quiet=0x1;
-		    default:
-		    {
+			switch(option)
+			{
+			case 'q':
+				Quiet=0x000;
+			break;
+			case 'i':
+				Quiet=0x011;
+			break;
+			case 'd':
+				Quiet=0x111;
+			break;
+			default:
+				Quiet=0x001;
+			break;
+			}
 			SIG Sig={.Signal={0}, .TID=0, .Started=0};
 			sigemptyset(&Sig.Signal);
 			sigaddset(&Sig.Signal, SIGUSR1);
@@ -543,10 +563,7 @@ int main(int argc, char *argv[])
 				pthread_kill(Sig.TID, SIGUSR1);
 				pthread_join(Sig.TID, NULL);
 			}
-		    }
-		    break;
-		  }
-		  munmap(Proc, PAGE_SIZE);
+			munmap(Proc, PAGE_SIZE);
 		}
 		else rc=3;
 

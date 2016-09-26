@@ -42,6 +42,10 @@ static signed int AutoClock=1;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto Estimate Clock Frequency");
 
+static signed int IdleDriverQuery=0;
+module_param(IdleDriverQuery, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(IdleDriverQuery, "Query information from idle driver");
+
 static PROC *Proc=NULL;
 static KPUBLIC *KPublic=NULL;
 static KPRIVATE *KPrivate=NULL;
@@ -446,10 +450,11 @@ CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
 // [Genuine Intel]
 CLOCK Clock_GenuineIntel(unsigned int ratio)
 {
-	CLOCK clock={.Q=100, .R=0};
+	CLOCK clock={.Q=100, .R=0, .Hz=100000000L};
 
 	if(Proc->Features.FactoryFreq > 0)
 	{
+		clock.Hz=(Proc->Features.FactoryFreq * 1000000L) / ratio;
 		clock.Q=Proc->Features.FactoryFreq / ratio;
 		clock.R=(Proc->Features.FactoryFreq % ratio) * PRECISION;
 	}
@@ -616,6 +621,8 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 CLOCK Clock_Nehalem(unsigned int ratio)
 {
 	CLOCK clock={.Q=133, .R=3333};
+	clock.Hz =clock.Q * 1000000L;
+	clock.Hz+=clock.R * PRECISION;
 	clock.R *= ratio;
 	return(clock);
 };
@@ -804,9 +811,9 @@ unsigned int Proc_Topology(void)
 				if(KPublic->Core[cpu]->T.ApicID >= 0)
 					CountEnabledCPU++;
 
-				if(!Proc->Features.HTT_enabled
+				if(!Proc->Features.HTT_Enable
 				&& (KPublic->Core[cpu]->T.ThreadID > 0))
-					Proc->Features.HTT_enabled=1;
+					Proc->Features.HTT_Enable=1;
 
 				reinit_completion(&topology_job_complete);
 			}
@@ -1027,7 +1034,7 @@ void Counters_Set(CORE *Core)
 	FixedPerfCounter.EN1_Usr=1;
 	FixedPerfCounter.EN2_Usr=1;
 
-	if(!Proc->Features.HTT_enabled)
+	if(!Proc->Features.HTT_Enable)
 	{
 		FixedPerfCounter.AnyThread_EN0=1;
 		FixedPerfCounter.AnyThread_EN1=1;
@@ -1703,7 +1710,7 @@ void IdleDriver_Query(void *arg)
 		}
 	}
 	else
-		memset(&Proc->IdleDriver, 0, sizeof(struct IDLEDRIVER));
+		memset(&Proc->IdleDriver, 0, sizeof(IDLEDRIVER));
 }
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
@@ -1886,7 +1893,8 @@ static int __init CoreFreqK_init(void)
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
-				smp_call_function_single(0,
+				if(IdleDriverQuery)
+				    smp_call_function_single(0, /* BSP */
 							IdleDriver_Query,
 							NULL,
 							0);
