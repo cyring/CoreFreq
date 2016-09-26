@@ -111,17 +111,7 @@ _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Counters")
 
  * Using option '-m' corefreq-cli shows the CPU topology
-```
-CPU       ApicID CoreID ThreadID x2APIC Enable Caches Inst Data Unified
-#00(BSP)       0      0        0    OFF    Y     |   32768 4626 262144
-#01(AP)        2      1        0    OFF    Y     |   32768 4626 262144
-#02(AP)        4      2        0    OFF    Y     |   32768 4626 262144
-#03(AP)        6      3        0    OFF    Y     |   32768 4626 262144
-#04(AP)        1      0        1    OFF    Y     |   32768 4626 262144
-#05(AP)        3      1        1    OFF    Y     |   32768 4626 262144
-#06(AP)        5      2        1    OFF    Y     |   32768 4626 262144
-#07(AP)        7      3        1    OFF    Y     |   32768 4626 262144
-```
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
 
  * With the option '-i' corefreq-cli traces the number of instructions per second / cycle
 ```
@@ -137,28 +127,7 @@ CPU     IPS            IPC            CPI
 ```
 
  * Use option '-s' to show Processor information (BSP)
-```
-  Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
-  Signature [06_1A]
-  Stepping  [4]
-  Architecture [Nehalem/Bloomfield]
-  8/8 CPU Online.
-  Ratio Boost:     Min Max  8C  7C  6C  5C  4C  3C  2C  1C
-                    12  20   -   -   -   -  21  21  21  22 
-  Technologies:
-  |- Time Stamp Counter                    TSC [Invariant]
-  |- Hyper-Threading                       HTT       [ ON]
-  |- Turbo Boost                           IDA       [ ON]
-  |- SpeedStep                            EIST       [ ON]
-  |- Performance Monitoring                 PM       [  3]
-  |- Enhanced Halt State                   C1E       [ ON]
-  |- C1 Auto Demotion                      C1A       [ ON]
-  |- C3 Auto Demotion                      C3A       [ ON]
-  |- C1 UnDemotion                         C1U       [OFF]
-  |- C3 UnDemotion                         C3U       [OFF]
-  |- Thermal Monitoring                    TM1   [ Enable]
-                                           TM2   [Present]
-```
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
 ## Algorithm
 (_old version_)
