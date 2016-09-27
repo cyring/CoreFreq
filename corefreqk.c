@@ -36,15 +36,19 @@ static struct
 
 static signed int ArchID=-1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(ArchID, "Force an Architecture ID");
+MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
 static signed int AutoClock=1;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(AutoClock, "Auto Estimate Clock Frequency");
+MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
+
+static signed int SleepInterval=0;
+module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
 
 static signed int IdleDriverQuery=0;
 module_param(IdleDriverQuery, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(IdleDriverQuery, "Query information from idle driver");
+MODULE_PARM_DESC(IdleDriverQuery, "Query information from the idle driver");
 
 static PROC *Proc=NULL;
 static KPUBLIC *KPublic=NULL;
@@ -1829,7 +1833,12 @@ static int __init CoreFreqK_init(void)
 			{
 			    memset(Proc, 0, packageSize);
 			    Proc->CPU.Count=count;
-			    Proc->msleep=LOOP_DEF_MS;
+
+			    if((SleepInterval >= LOOP_MIN_MS)
+			    && (SleepInterval <= LOOP_MAX_MS))
+				Proc->msleep=SleepInterval;
+			    else
+				Proc->msleep=LOOP_DEF_MS;
 
 			    // Query features on the presumed BSP processor.
 			    smp_call_function_single(	0,

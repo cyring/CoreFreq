@@ -368,6 +368,8 @@ int Proc_Cycle(FD *fd, PROC *Proc)
 		if(Quiet & 0x001)
 		 printf("CoreFreq Daemon."				\
 			"  Copyright (C) 2015-2016 CYRIL INGENIERIE\n");
+		if(Quiet & 0x100)
+		 printf("\n  Loop(%u)\n", Shm->Proc.msleep);
 		if(Quiet & 0x010)
 		 printf("\n"						\
 			"  Processor [%s]\n"				\
