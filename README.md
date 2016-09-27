@@ -90,17 +90,6 @@ CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
-  BSP: x2APIC[0:1:0] [TSC:P-I] [HTT:1-1] [EIST:1-ff] [IDA:1-ff] [TM:1-1-1-0-0]
-
-    CPU #000 @ 2930.35 MHz
-    CPU #001 @ 2930.13 MHz
-    CPU #002 @ 2930.10 MHz
-    CPU #003 @ 2930.13 MHz
-    CPU #004 @ 2930.13 MHz
-    CPU #005 @ 2930.10 MHz
-    CPU #006 @ 2930.14 MHz
-    CPU #007 @ 2930.10 MHz
-
 ```
 
 ### Client
@@ -108,7 +97,7 @@ Without arguments, the corefreq-cli program displays Top Monitoring
 _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
 
  * With the option '-c', the client traces counters.
-![alt text](http://blog.cyring.free.fr/images/CoreFreq.gif "CoreFreq Counters")
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Counters.gif "CoreFreq Counters")
 
  * Using option '-m' corefreq-cli shows the CPU topology
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
@@ -128,10 +117,6 @@ CPU     IPS            IPC            CPI
 
  * Use option '-s' to show Processor information (BSP)
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
-
-## Algorithm
-(_old version_)
-![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
 
 ## ArchLinux
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
@@ -157,6 +142,9 @@ insmod corefreqk.ko
 ./corefreq-cli
 ```
 
-# Regards
-_`CyrIng`_
+## Algorithm
+![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
+
+# About
+[CyrIng](https://github.com/cyring)
  -------
