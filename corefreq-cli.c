@@ -31,6 +31,8 @@ void Emergency(int caught)
 		case SIGQUIT:
 		case SIGTERM:
 			Shutdown=0x1;
+			/* fputs("\033[A\033[2K\033[A\033[2K",stdout); */
+
 		break;
 	}
 }
@@ -986,6 +988,7 @@ int main(int argc, char *argv[])
 	struct stat shmStat={0};
 	SHM_STRUCT *Shm;
 	int fd=-1, rc=0;
+	char reset[] = {0x1b, 0x63, 0x00};
 
 	char *program=strdup(argv[0]), *appName=basename(program);
 	char option='t';
@@ -1055,5 +1058,6 @@ int main(int argc, char *argv[])
 	    }
 		else rc=2;
 	free(program);
+	puts(reset);
 	return(rc);
 }

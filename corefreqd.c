@@ -526,7 +526,12 @@ int main(int argc, char *argv[])
 			"\nReport bugs to labs[at]cyring.fr\n", argv[0]);
 		return 0;
 	}
-	else if(geteuid() == 0)
+	else if(geteuid() != 0)
+	{
+		printf("You must be root, or use sudo to run this program\n");
+		rc=1;
+	}
+	else 
 	{
 	    if((fd.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 	    {
@@ -574,7 +579,6 @@ int main(int argc, char *argv[])
 		close(fd.Drv);
 	    }
 	    else rc=2;
-	} else rc=1;
-	printf("You must be root or use sudo to launch this daemon\n");
+	}
 	return(rc);
 }
