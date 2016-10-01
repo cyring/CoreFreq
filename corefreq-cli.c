@@ -21,6 +21,12 @@
 #include "coretypes.h"
 #include "corefreq.h"
 
+/* Terminal Management, create a new buf for eye candy display
+ * when needed and restore the buffer at exit of function
+*/
+#define CREATE_NEW_BUFF printf("\033[?1049h\033[H");
+#define SWITCH_TO_OLD_BUFF printf("\033[?1049l");
+
 unsigned int Shutdown=0x0;
 
 void Emergency(int caught)
@@ -31,8 +37,6 @@ void Emergency(int caught)
 		case SIGQUIT:
 		case SIGTERM:
 			Shutdown=0x1;
-			/* fputs("\033[A\033[2K\033[A\033[2K",stdout); */
-
 		break;
 	}
 }
@@ -238,6 +242,7 @@ void Top(SHM_STRUCT *Shm)
     	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
 	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
 
+    CREATE_NEW_BUFF
     for(i=1; i < 10; i++)
 	if(Shm->Proc.Boost[i] != 0)
 	{
@@ -362,7 +367,6 @@ void Top(SHM_STRUCT *Shm)
 		sprintf(hString, "/"WoK"%s"DoK"]", Shm->IdleDriver.Name);
 	else
 		strcpy(hString, "]");
-	
 	sprintf(hSys,
 	    CoK	"%s"DoK" ["WoK"%s"DoK"%s%.*sTasks [",
 		OSinfo.sysname,
@@ -596,6 +600,7 @@ void Top(SHM_STRUCT *Shm)
     fflush(stdout);
 
     freeAll();
+    SWITCH_TO_OLD_BUFF
 }
 
 
@@ -638,7 +643,7 @@ void Dashboard(	SHM_STRUCT *Shm,
     }
 
     allocAll();
-
+    CREATE_NEW_BUFF
     marginWidth+=12;	// shifted by lcd width
     marginHeight+=3+1;	// shifted by lcd height + cpu frame
     unsigned int cpu=0;
@@ -691,7 +696,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 	fflush(stdout);
     }
     fflush(stdout);
-
+    SWITCH_TO_OLD_BUFF
     freeAll();
 }
 
@@ -1023,30 +1028,28 @@ int main(int argc, char *argv[])
 			case 'd':
 				if(argc == 6)
 				{
+					CREATE_NEW_BUFF
 					printf(HIDE);
 					Dashboard(Shm,	atoi(argv[2]),
 							atoi(argv[3]),
 							atoi(argv[4]),
 							atoi(argv[5])	);
 					printf(SHOW);
+					SWITCH_TO_OLD_BUFF
 				}
 				else if(argc == 2)
 				{
-					printf(HIDE);
 					Dashboard(Shm,	LEADING_LEFT,
 							LEADING_TOP,
 							MARGIN_WIDTH,
 							MARGIN_HEIGHT);
-					printf(SHOW);
 				}
 				else
 					rc=help(appName);
 			break;
 			case 't':
 			{
-				printf(CLS HIDE);
 				Top(Shm);
-				printf(CLS SHOW);
 			}
 			break;
 			default:
@@ -1058,6 +1061,5 @@ int main(int argc, char *argv[])
 	    }
 		else rc=2;
 	free(program);
-	puts(reset);
 	return(rc);
 }
