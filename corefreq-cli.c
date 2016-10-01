@@ -1028,14 +1028,12 @@ int main(int argc, char *argv[])
 			case 'd':
 				if(argc == 6)
 				{
-					CREATE_NEW_BUFF
 					printf(HIDE);
 					Dashboard(Shm,	atoi(argv[2]),
 							atoi(argv[3]),
 							atoi(argv[4]),
 							atoi(argv[5])	);
 					printf(SHOW);
-					SWITCH_TO_OLD_BUFF
 				}
 				else if(argc == 2)
 				{
