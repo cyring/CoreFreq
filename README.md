@@ -142,6 +142,42 @@ insmod corefreqk.ko
 ./corefreq-cli
 ```
 
+## Q&A
+
+* Q: Turbo Technology is activated however CPUs don't reach those frequencies ?
+  A: In the kernel command argument line, disable nmi_watchdog, if suitable with your setup.
+  ```nmi_watchdog=0```
+
+* Q: The CPU ratio does not go above its minimum value ?
+  A: Disable nmi_watchdog and check what is the current idle driver by starting the CoreFreq module with the following argument.
+  ```insmod corefreqk.ko IdleDriverQuery=1```
+     In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.
+
+* Q: The deep sleep states do not produce any value ?
+  A: Check if the intel_idle module is running.
+     Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.
+  ```intel_idle.max_cstate=value```
+
+* Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?
+  A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:
+  ```insmod corefreqk.ko SleepInterval=value```
+     where value is supplied in milliseconds between a minimum of 500 ms and a maximum of 5000 ms. 1000 ms is the default value.
+
+* Q: The base clock reports a wrong frequency value ?
+  A: CoreFreq uses various algorithms to estimate the base clock.
+     1- The delta of two TimeStampCounter reads in the interval of 1000 ms
+     2- The value provided in the Processor brand string divided by the maximum ratio (without Turbo)
+     3- A static value advertised by the manufacturer specs.
+     4- The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures
+     The algorithms # 2, 3 and 4 will not return any under/over-clock frequency.
+     The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):
+  ```insmod corefreqk.ko AutoClock=0```
+
+* Q: The CPU temperature is wrong ?
+  A: CoreFreq employs two msr to calculate the temperature.
+  ```MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]```
+     If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.
+
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")
 
