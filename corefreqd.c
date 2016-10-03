@@ -513,6 +513,7 @@ int main(int argc, char *argv[])
 	int	rc=0;
 	char option=(argc == 2) ? ((argv[1][0] == '-') ? argv[1][1] : 'h'):'\0';
 	if(option == 'h')
+	{
 		printf(	"usage:\t%s [-option]\n"		\
 			"\t-q\tQuiet\n"				\
 			"\t-i\tInfo\n"				\
@@ -523,8 +524,14 @@ int main(int argc, char *argv[])
 				"1\tif problems,\n"		\
 				">1\tif serious trouble.\n"	\
 			"\nReport bugs to labs[at]cyring.fr\n", argv[0]);
-
-	else if(geteuid() == 0)
+		return 0;
+	}
+	else if(geteuid() != 0)
+	{
+		printf("You must be root, or use sudo to run this program\n");
+		rc=1;
+	}
+	else 
 	{
 	    if((fd.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
 	    {
@@ -572,6 +579,6 @@ int main(int argc, char *argv[])
 		close(fd.Drv);
 	    }
 	    else rc=2;
-	} else rc=1;
+	}
 	return(rc);
 }
