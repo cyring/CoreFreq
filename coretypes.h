@@ -25,13 +25,20 @@ typedef unsigned int		Bit32;
 
 typedef struct
 {
+	unsigned long long	HW,
+				OS,
+				_pad[2];
+} OFFLINE;
+
+typedef struct
+{
 	unsigned int		Q;
 	unsigned long long	R;
 	unsigned long long	Hz;
 } CLOCK;
 
-#define	REL_FREQ(max_ratio, this_ratio, clock)		\
-		( ((this_ratio * clock.Q) * 1000000L)	\
+#define	REL_FREQ(max_ratio, this_ratio, clock, interval)	\
+		( ((this_ratio * clock.Q) * 1000L * interval)	\
 		+ ((this_ratio * clock.R) / max_ratio))
 
 

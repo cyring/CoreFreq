@@ -6,6 +6,7 @@
 
 #include <linux/module.h>
 #include <linux/kthread.h>
+#include <linux/cpu.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/cdev.h>
@@ -55,56 +56,7 @@ static KPUBLIC *KPublic=NULL;
 static KPRIVATE *KPrivate=NULL;
 static ktime_t RearmTheTimer;
 
-void InitTimer(void *Cycle_Function)
-{
-	unsigned int cpu=smp_processor_id();
-
-	hrtimer_init(	&KPrivate->Join[cpu]->Timer,
-			CLOCK_MONOTONIC,
-			HRTIMER_MODE_REL_PINNED);
-	KPrivate->Join[cpu]->Timer.function=Cycle_Function;
-}
-
-void Controller_Init(void)
-{
-	if(Arch[Proc->ArchID].Init != NULL)
-		Arch[Proc->ArchID].Init();
-}
-
-void Controller_Start(void)
-{
-	if(Arch[Proc->ArchID].Start != NULL)
-	{
-		unsigned int cpu=0;
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KPublic->Core[cpu]->OffLine)
-			smp_call_function_single(cpu,
-						Arch[Proc->ArchID].Start,
-						NULL, 0);
-	}
-}
-
-void Controller_Stop(void)
-{
-	if(Arch[Proc->ArchID].Stop != NULL)
-	{
-		unsigned int cpu=0;
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(!KPublic->Core[cpu]->OffLine)
-			smp_call_function_single(cpu,
-						Arch[Proc->ArchID].Stop,
-						NULL, 1);
-	}
-}
-
-void Controller_Exit(void)
-{
-	if(Arch[Proc->ArchID].Exit != NULL)
-		Arch[Proc->ArchID].Exit();
-}
-
-
-void smp_call_cpuid_single(void *pReg)
+void Call_CPUID(void *pReg)
 {
 	CPUID_REG *reg=pReg;
 	asm volatile
@@ -122,7 +74,7 @@ void smp_call_cpuid_single(void *pReg)
 unsigned int Core_Count(void)
 {
 	CPUID_REG reg={.EAX=0x4, .EBX=0x0, .ECX=0x0, .EDX=0x0};
-	smp_call_function_single(0, smp_call_cpuid_single, &reg, 1);
+	smp_call_function_single(0, Call_CPUID, &reg, 1);
 
 	reg.EAX=(reg.EAX >> 26) & 0x3f;
 	reg.EAX++;
@@ -451,6 +403,12 @@ CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
 	return(clock);
 }
 
+void ClockToHz(CLOCK *clock)
+{
+	clock->Hz =clock->Q * 1000000L;
+	clock->Hz+=clock->R * PRECISION;
+}
+
 // [Genuine Intel]
 CLOCK Clock_GenuineIntel(unsigned int ratio)
 {
@@ -490,6 +448,7 @@ CLOCK Clock_Core(unsigned int ratio)
 		}
 		break;
 	}
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -539,6 +498,7 @@ CLOCK Clock_Core2(unsigned int ratio)
 		}
 		break;
 	}
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -578,6 +538,7 @@ CLOCK Clock_Atom(unsigned int ratio)
 		}
 		break;
 	}
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -617,6 +578,7 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 		}
 		break;
 	}
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -625,8 +587,7 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 CLOCK Clock_Nehalem(unsigned int ratio)
 {
 	CLOCK clock={.Q=133, .R=3333};
-	clock.Hz =clock.Q * 1000000L;
-	clock.Hz+=clock.R * PRECISION;
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -635,6 +596,7 @@ CLOCK Clock_Nehalem(unsigned int ratio)
 CLOCK Clock_Westmere(unsigned int ratio)
 {
 	CLOCK clock={.Q=133, .R=3333};
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -643,6 +605,7 @@ CLOCK Clock_Westmere(unsigned int ratio)
 CLOCK Clock_SandyBridge(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -651,6 +614,7 @@ CLOCK Clock_SandyBridge(unsigned int ratio)
 CLOCK Clock_IvyBridge(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -659,6 +623,7 @@ CLOCK Clock_IvyBridge(unsigned int ratio)
 CLOCK Clock_Haswell(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
 };
@@ -683,10 +648,8 @@ void Cache_Topology(CORE *Core)
 	}
 }
 
-DECLARE_COMPLETION(topology_job_complete);
-
 // Enumerate the Processor's Cores and Threads topology.
-signed int Map_Topology(void *arg)
+void Map_Topology(void *arg)
 {
 	if(arg != NULL)
 	{
@@ -704,14 +667,10 @@ signed int Map_Topology(void *arg)
 		Core->T.ApicID=features.Std.BX.Apic_ID;
 
 		Cache_Topology(Core);
-
-		complete_and_exit(&topology_job_complete, 0);
 	}
-	else
-		complete_and_exit(&topology_job_complete, -1);
 }
 
-signed int Map_Extended_Topology(void *arg)
+void Map_Extended_Topology(void *arg)
 {
 	if(arg != NULL)
 	{
@@ -780,17 +739,28 @@ signed int Map_Extended_Topology(void *arg)
 		Core->T.ApicID=ExtTopology.DX.x2ApicID;
 
 		Cache_Topology(Core);
-
-		complete_and_exit(&topology_job_complete, 0);
 	}
-	else
-		complete_and_exit(&topology_job_complete, -1);
+}
+
+int Core_Topology(unsigned int cpu)
+{
+	int rc=smp_call_function_single(cpu,
+				(Proc->Features.LargestStdFunc >= 0xb) ?
+				Map_Extended_Topology : Map_Topology,
+				KPublic->Core[cpu],
+				1); // Synchronous call.
+
+	if(!rc
+	&& !Proc->Features.HTT_Enable
+	&& (KPublic->Core[cpu]->T.ThreadID > 0))
+		Proc->Features.HTT_Enable=1;
+
+	return(rc);
 }
 
 unsigned int Proc_Topology(void)
 {
 	unsigned int cpu=0, CountEnabledCPU=0;
-	struct task_struct *tid;
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 	{
@@ -798,34 +768,26 @@ unsigned int Proc_Topology(void)
 		KPublic->Core[cpu]->T.ApicID=-1;
 		KPublic->Core[cpu]->T.CoreID=-1;
 		KPublic->Core[cpu]->T.ThreadID=-1;
-		if(!KPublic->Core[cpu]->OffLine)
+
+		// CPU state based on the OS
+		if( !(KPublic->Core[cpu]->OffLine.OS = !cpu_online(cpu)
+						   || !cpu_active(cpu)) )
 		{
-		  	tid=kthread_create(
-				(Proc->Features.LargestStdFunc >= 0xb) ?
-					Map_Extended_Topology : Map_Topology,
-				KPublic->Core[cpu],
-				"coreapic/%-3d",
-				KPublic->Core[cpu]->Bind);
-			if(!IS_ERR(tid))
+			if(!Core_Topology(cpu))
 			{
-				kthread_bind(tid ,cpu);
-				wake_up_process(tid);
-				wait_for_completion(&topology_job_complete);
-
+				// CPU state based on the harware
 				if(KPublic->Core[cpu]->T.ApicID >= 0)
+				{
+					KPublic->Core[cpu]->OffLine.HW=0;
 					CountEnabledCPU++;
-
-				if(!Proc->Features.HTT_Enable
-				&& (KPublic->Core[cpu]->T.ThreadID > 0))
-					Proc->Features.HTT_Enable=1;
-
-				reinit_completion(&topology_job_complete);
+				}
+				else
+					KPublic->Core[cpu]->OffLine.HW=1;
 			}
 		}
 	}
 	return(CountEnabledCPU);
 }
-
 
 void HyperThreading_Technology(void)
 {
@@ -896,6 +858,30 @@ void Nehalem_Platform_Info(void)
 	Nehalem_Platform_Info();					\
 	HyperThreading_Technology();					\
 })
+
+void Query_Genuine(void)
+{
+	Genuine_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Core2(void)
+{
+	Genuine_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Nehalem(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_SandyBridge(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+}
 
 void SpeedStep_Technology(CORE *Core)				// Per Package!
 {
@@ -1011,6 +997,86 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
+void InitTimer(void *Cycle_Function)
+{
+	unsigned int cpu=smp_processor_id();
+
+	if(KPrivate->Join[cpu]->FSM.created == 0)
+	{
+		hrtimer_init(	&KPrivate->Join[cpu]->Timer,
+				CLOCK_MONOTONIC,
+				HRTIMER_MODE_REL_PINNED);
+		KPrivate->Join[cpu]->Timer.function=Cycle_Function;
+
+		KPrivate->Join[cpu]->FSM.created=1;
+
+		printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Init Timer\n", cpu);
+	}
+}
+
+void Controller_Init(void)
+{
+	CLOCK clock;
+	unsigned int cpu=Proc->CPU.Count;
+
+	if(Arch[Proc->ArchID].Query != NULL)
+		Arch[Proc->ArchID].Query();
+
+	do {	// from last AP to BSP
+		cpu--;
+		if(!KPublic->Core[cpu]->OffLine.OS)
+		{
+			if(AutoClock)
+				clock=Base_Clock(cpu, Proc->Boost[1]);
+			else if(Arch[Proc->ArchID].Clock != NULL)
+				clock=Arch[Proc->ArchID].Clock(Proc->Boost[1]);
+
+			KPublic->Core[cpu]->Clock=clock;
+
+			if(Arch[Proc->ArchID].Timer != NULL)
+				Arch[Proc->ArchID].Timer(cpu);
+		}
+	} while(cpu != 0) ;
+}
+
+void Controller_Start(void)
+{
+	if(Arch[Proc->ArchID].Start != NULL)
+	{
+		unsigned int cpu=0;
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
+		    &&	(KPrivate->Join[cpu]->FSM.started == 0))
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Start,
+						NULL, 0);
+	}
+}
+
+void Controller_Stop(void)
+{
+	if(Arch[Proc->ArchID].Stop != NULL)
+	{
+		unsigned int cpu=0;
+		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
+		    &&	(KPrivate->Join[cpu]->FSM.started == 1))
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Stop,
+						NULL, 1);
+	}
+}
+
+void Controller_Exit(void)
+{
+	unsigned int cpu=0;
+
+	if(Arch[Proc->ArchID].Exit != NULL)
+		Arch[Proc->ArchID].Exit();
+
+	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+		KPrivate->Join[cpu]->FSM.created=0;
+}
 
 void Counters_Set(CORE *Core)
 {
@@ -1256,65 +1322,38 @@ static enum hrtimer_restart Cycle_Genuine(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
-
-	Counters_Genuine(Core, 1);
-	Core_Temp(Core);
-
-	Delta_C0(Core);
-
-	Delta_TSC(Core);
-
-	Delta_C1(Core);
-
-	Save_TSC(Core);
-
-	Save_C0(Core);
-
-	Save_C1(Core);
-
-	BITSET(Core->Sync.V, 0);
-
-	return(HRTIMER_RESTART);
-}
-
-
-void Init_Genuine(void)
-{
-	CLOCK clock;
-	unsigned int cpu=0;
-
-	Genuine_Query();
-
-	if(AutoClock)	// from last AP to BSP
+	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
 	{
-		cpu=Proc->CPU.Count;
-		do {
-			cpu--;
-			if(!KPublic->Core[cpu]->OffLine)
-			{
-				clock=Base_Clock(cpu, Proc->Boost[1]);
-				KPublic->Core[cpu]->Clock=clock;
-			}
-		} while(cpu != 0) ;
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Genuine(Core, 1);
+		Core_Temp(Core);
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
 	}
 	else
-	{
-		switch(Proc->ArchID)
-		{
-		case Core_Yonah:
-			clock=Clock_Core(Proc->Boost[1]);
-		break;
-		default:
-			clock=Clock_GenuineIntel(Proc->Boost[1]);
-		break;
-		}
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			KPublic->Core[cpu]->Clock=clock;
-	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-	    if(!KPublic->Core[cpu]->OffLine)
-		smp_call_function_single(cpu, InitTimer, Cycle_Genuine, 1);
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Genuine(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Genuine, 1);
 }
 
 void Start_Genuine(void *arg)
@@ -1326,16 +1365,28 @@ void Start_Genuine(void *arg)
 
 	Counters_Genuine(Core, 0);
 
+	KPrivate->Join[cpu]->FSM.mustFwd=1;
+
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->FSM.started=1;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_Genuine(void *arg)
 {
 	unsigned int cpu=smp_processor_id();
 
+	KPrivate->Join[cpu]->FSM.mustFwd=0;
+
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	KPrivate->Join[cpu]->FSM.started=0;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
@@ -1343,82 +1394,42 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
-
-	Counters_Core2(Core, 1);
-	Core_Temp(Core);
-
-	Delta_INST(Core);
-
-	Delta_C0(Core);
-
-	Delta_TSC(Core);
-
-	Delta_C1(Core);
-
-	Save_INST(Core);
-
-	Save_TSC(Core);
-
-	Save_C0(Core);
-
-	Save_C1(Core);
-
-	BITSET(Core->Sync.V, 0);
-
-	return(HRTIMER_RESTART);
-}
-
-void Init_Core2(void)
-{
-	CLOCK clock;
-	unsigned int cpu=0;
-
-	Core2_Query();
-
-	if(AutoClock)	// from last AP to BSP
+	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
 	{
-		cpu=Proc->CPU.Count;
-		do {
-			cpu--;
-			if(!KPublic->Core[cpu]->OffLine)
-			{
-				clock=Base_Clock(cpu, Proc->Boost[1]);
-				KPublic->Core[cpu]->Clock=clock;
-			}
-		} while(cpu != 0) ;
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Core2(Core, 1);
+		Core_Temp(Core);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
 	}
 	else
-	{
-		switch(Proc->ArchID)
-		{
-		case Core_Conroe:
-		case Core_Kentsfield:
-		case Core_Yorkfield:
-		case Core_Dunnington:
-			clock=Clock_Core2(Proc->Boost[1]);
-		break;
-		case Atom_Bonnell:
-		case Atom_Silvermont:
-		case Atom_Lincroft:
-		case Atom_Clovertrail:
-		case Atom_Saltwell:
-		case Atom_Airmont:
-		case Atom_Goldmont:
-		case Atom_Sofia:
-		case Atom_Merrifield:
-		case Atom_Moorefield:
-			clock=Clock_Atom(Proc->Boost[1]);
-		default:
-			clock=Clock_GenuineIntel(Proc->Boost[1]);
-		break;
-		}
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			KPublic->Core[cpu]->Clock=clock;
-	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-	    if(!KPublic->Core[cpu]->OffLine)
-		smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Core2(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
 }
 
 void Start_Core2(void *arg)
@@ -1431,9 +1442,15 @@ void Start_Core2(void *arg)
 	Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
+	KPrivate->Join[cpu]->FSM.mustFwd=1;
+
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->FSM.started=1;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_Core2(void *arg)
@@ -1441,9 +1458,15 @@ void Stop_Core2(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	KPrivate->Join[cpu]->FSM.mustFwd=0;
+
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
+
+	KPrivate->Join[cpu]->FSM.started=0;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
@@ -1451,87 +1474,49 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
-
-	Counters_Nehalem(Core, 1);
-	Core_Temp(Core);
-
-	Delta_INST(Core);
-
-	Delta_C0(Core);
-
-	Delta_C3(Core);
-
-	Delta_C6(Core);
-
-	Delta_TSC(Core);
-
-	Delta_C1(Core);
-
-	Save_INST(Core);
-
-	Save_TSC(Core);
-
-	Save_C0(Core);
-
-	Save_C3(Core);
-	Save_C6(Core);
-
-	Save_C1(Core);
-
-	BITSET(Core->Sync.V, 0);
-
-	return(HRTIMER_RESTART);
-}
-
-void Init_Nehalem(void)
-{
-	CLOCK clock;
-	unsigned int cpu=0;
-
-	Nehalem_Query();
-
-	if(AutoClock)	// from last AP to BSP
+	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
 	{
-		cpu=Proc->CPU.Count;
-		do {
-			cpu--;
-			if(!KPublic->Core[cpu]->OffLine)
-			{
-				clock=Base_Clock(cpu, Proc->Boost[1]);
-				KPublic->Core[cpu]->Clock=clock;
-			}
-		} while(cpu != 0) ;
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Nehalem(Core, 1);
+		Core_Temp(Core);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+		Save_C6(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
 	}
 	else
-	{
-		switch(Proc->ArchID)
-		{
-		case Silvermont_637:
-		case Silvermont_64D:
-			clock=Clock_Silvermont(Proc->Boost[1]);
-		break;
-		case Nehalem_Bloomfield:
-		case Nehalem_Lynnfield:
-		case Nehalem_MB:
-		case Nehalem_EX:
-			clock=Clock_Nehalem(Proc->Boost[1]);
-		break;
-		case Westmere:
-		case Westmere_EP:
-		case Westmere_EX:
-			clock=Clock_Westmere(Proc->Boost[1]);
-		break;
-		default:
-			clock=Clock_GenuineIntel(Proc->Boost[1]);
-		break;
-		}
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			KPublic->Core[cpu]->Clock=clock;
-	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-	    if(!KPublic->Core[cpu]->OffLine)
-		smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Nehalem(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
 }
 
 void Start_Nehalem(void *arg)
@@ -1544,9 +1529,15 @@ void Start_Nehalem(void *arg)
 	Counters_Set(Core);
 	Counters_Nehalem(Core, 0);
 
+	KPrivate->Join[cpu]->FSM.mustFwd=1;
+
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->FSM.started=1;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_Nehalem(void *arg)
@@ -1554,9 +1545,15 @@ void Stop_Nehalem(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	KPrivate->Join[cpu]->FSM.mustFwd=0;
+
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
+
+	KPrivate->Join[cpu]->FSM.started=0;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 
@@ -1565,96 +1562,52 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	hrtimer_forward(pTimer, hrtimer_cb_get_time(pTimer), RearmTheTimer);
-
-	Counters_SandyBridge(Core, 1);
-	Core_Temp(Core);
-
-	Delta_INST(Core);
-
-	Delta_C0(Core);
-
-	Delta_C3(Core);
-
-	Delta_C6(Core);
-
-	Delta_C7(Core);
-
-	Delta_TSC(Core);
-
-	Delta_C1(Core);
-
-	Save_INST(Core);
-
-	Save_TSC(Core);
-
-	Save_C0(Core);
-
-	Save_C3(Core);
-	Save_C6(Core);
-	Save_C7(Core);
-
-	Save_C1(Core);
-
-	BITSET(Core->Sync.V, 0);
-
-	return(HRTIMER_RESTART);
-}
-
-void Init_SandyBridge(void)
-{
-	CLOCK clock;
-	unsigned int cpu=0;
-
-	SandyBridge_Query();
-
-	if(AutoClock)	// from last AP to BSP
+	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
 	{
-		cpu=Proc->CPU.Count;
-		do {
-			cpu--;
-			if(!KPublic->Core[cpu]->OffLine)
-			{
-				clock=Base_Clock(cpu, Proc->Boost[1]);
-				KPublic->Core[cpu]->Clock=clock;
-			}
-		} while(cpu != 0) ;
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_SandyBridge(Core, 1);
+		Core_Temp(Core);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_C7(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+		Save_C6(Core);
+		Save_C7(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
 	}
 	else
-	{
-		switch(Proc->ArchID)
-		{
-		case SandyBridge:
-		case SandyBridge_EP:
-			clock=Clock_SandyBridge(Proc->Boost[1]);
-		break;
-		case IvyBridge:
-		case IvyBridge_EP:
-			clock=Clock_IvyBridge(Proc->Boost[1]);
-		break;
-		case Haswell_DT:
-		case Haswell_MB:
-		case Haswell_ULT:
-		case Haswell_ULX:
-		case Broadwell:
-		case Broadwell_EP:
-		case Broadwell_H:
-		case Broadwell_EX:
-		case Skylake_UY:
-		case Skylake_S:
-		case Skylake_E:
-			clock=Clock_Haswell(Proc->Boost[1]);
-		break;
-		default:
-			clock=Clock_GenuineIntel(Proc->Boost[1]);
-		break;
-		}
-		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-			KPublic->Core[cpu]->Clock=clock;
-	}
-	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-	    if(!KPublic->Core[cpu]->OffLine)
-		smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_SandyBridge(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
 }
 
 void Start_SandyBridge(void *arg)
@@ -1667,9 +1620,15 @@ void Start_SandyBridge(void *arg)
 	Counters_Set(Core);
 	Counters_SandyBridge(Core, 0);
 
+	KPrivate->Join[cpu]->FSM.mustFwd=1;
+
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->FSM.started=1;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_SandyBridge(void *arg)
@@ -1677,9 +1636,15 @@ void Stop_SandyBridge(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
+	KPrivate->Join[cpu]->FSM.mustFwd=0;
+
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
+
+	KPrivate->Join[cpu]->FSM.started=0;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 void IdleDriver_Query(void *arg)
@@ -1792,6 +1757,71 @@ static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
 #endif
 
 
+static int CoreFreqK_hotplug(	struct notifier_block *nfb,
+				unsigned long action,
+				void *hcpu)
+{
+	unsigned int cpu = (unsigned long) hcpu;
+	    switch(action)
+	    {
+		case CPU_ONLINE:
+		case CPU_DOWN_FAILED:
+//-		case CPU_ONLINE_FROZEN:
+		if((cpu >=0) && (cpu < Proc->CPU.Count))
+		{
+		    if((KPublic->Core[cpu]->T.ApicID == -1)
+		    && !KPublic->Core[cpu]->OffLine.HW)
+		    {
+			if(!Core_Topology(cpu))
+			{
+				if(KPublic->Core[cpu]->T.ApicID >= 0)
+					KPublic->Core[cpu]->OffLine.HW=0;
+				else
+					KPublic->Core[cpu]->OffLine.HW=1;
+			}
+			memcpy(	&KPublic->Core[cpu]->Clock,
+				&KPublic->Core[0]->Clock,
+				sizeof(CLOCK) );
+		    }
+		    if(Arch[Proc->ArchID].Timer != NULL)
+			Arch[Proc->ArchID].Timer(cpu);
+
+		    if(	(KPrivate->Join[cpu]->FSM.started == 0)
+		    &&	(Arch[Proc->ArchID].Start != NULL) )
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Start,
+						NULL, 0);
+
+		    Proc->CPU.OnLine++;
+		    KPublic->Core[cpu]->OffLine.OS=0;
+		}
+		break;
+		case CPU_DOWN_PREPARE:
+//-		case CPU_DOWN_PREPARE_FROZEN:
+		if((cpu >=0) && (cpu < Proc->CPU.Count))
+		{
+		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
+		    &&	(KPrivate->Join[cpu]->FSM.started == 1)
+		    &&	(Arch[Proc->ArchID].Stop != NULL) )
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Stop,
+						NULL, 1);
+
+		    Proc->CPU.OnLine--;
+		    KPublic->Core[cpu]->OffLine.OS=1;
+		}
+		break;
+		default:
+		break;
+	    }
+	return(NOTIFY_OK);
+}
+
+static struct notifier_block CoreFreqK_notifier_block=
+{
+	.notifier_call=CoreFreqK_hotplug,
+};
+
 static int __init CoreFreqK_init(void)
 {
 	int rc=0;
@@ -1836,9 +1866,9 @@ static int __init CoreFreqK_init(void)
 
 			    if((SleepInterval >= LOOP_MIN_MS)
 			    && (SleepInterval <= LOOP_MAX_MS))
-				Proc->msleep=SleepInterval;
+				Proc->SleepInterval=SleepInterval;
 			    else
-				Proc->msleep=LOOP_DEF_MS;
+				Proc->SleepInterval=LOOP_DEF_MS;
 
 			    // Query features on the presumed BSP processor.
 			    smp_call_function_single(	0,
@@ -1847,7 +1877,9 @@ static int __init CoreFreqK_init(void)
 							1);
 
 			    Arch[0].Architecture=Proc->Features.VendorID;
-			    RearmTheTimer=ktime_set(0, Proc->msleep * 1000000L);
+
+			    RearmTheTimer=
+				ktime_set(0, Proc->SleepInterval * 1000000L);
 
 			    publicSize=ROUND_TO_PAGES(sizeof(CORE));
 			    privateSize=ROUND_TO_PAGES(sizeof(JOIN));
@@ -1869,15 +1901,12 @@ static int __init CoreFreqK_init(void)
 
 				    kcache=kmem_cache_alloc(
 						KPrivate->Cache, GFP_KERNEL);
+				    memset(kcache, 0, privateSize);
 				    KPrivate->Join[cpu]=kcache;
 
 				    BITCLR(KPublic->Core[cpu]->Sync.V, 0);
 
 				    KPublic->Core[cpu]->Bind=cpu;
-				    if(!cpu_online(cpu) || !cpu_active(cpu))
-					KPublic->Core[cpu]->OffLine=1;
-				    else
-					KPublic->Core[cpu]->OffLine=0;
 				}
 				if((ArchID != -1)
 				&& (ArchID >= 0)
@@ -1921,6 +1950,8 @@ static int __init CoreFreqK_init(void)
 					Proc->CPU.Count);
 
 				Controller_Start();
+
+			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
 			    }
 			    else
 			    {
@@ -2000,6 +2031,8 @@ static int __init CoreFreqK_init(void)
 static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu=0;
+
+	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
 
 	Controller_Stop();
 	Controller_Exit();

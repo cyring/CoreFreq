@@ -601,18 +601,6 @@ typedef	struct {
 	} DX;
 } CPUID_TOPOLOGY_LEAF;
 
-enum { INIT, END, START, STOP };
-
-typedef	struct
-{
-	struct	SIGNATURE	Signature;
-		void		(*Init)(void);
-		void		(*Start)(void *arg);
-		void		(*Stop)(void *arg);
-		void		(*Exit)(void);
-		char		*Architecture;
-} ARCH;
-
 typedef struct
 {
 	struct kmem_cache	*Cache;
@@ -622,6 +610,14 @@ typedef struct
 typedef struct
 {
 	struct hrtimer		Timer;
+	struct
+	{
+		unsigned long long
+			created	:  1-0,	// hrtimer_init() || ?()
+			started	:  2-1,	// hrtimer_start() || hrtimer_cancel()
+			mustFwd	:  3-2,	// hrtimer_forward()
+			_pad64	: 64-3;
+	} FSM;
 } JOIN;
 
 typedef struct
@@ -631,18 +627,48 @@ typedef struct
 } KPRIVATE;
 
 
-extern void Init_Genuine(void) ;
+typedef	struct
+{
+	struct	SIGNATURE	Signature;
+	void			(*Query)(void);
+	void			(*Start)(void *arg);
+	void			(*Stop)(void *arg);
+	void			(*Exit)(void);
+	void			(*Timer)(unsigned int cpu);
+	CLOCK			(*Clock)(unsigned int ratio);
+	char			*Architecture;
+} ARCH;
+
+extern CLOCK Clock_GenuineIntel(unsigned int ratio) ;
+extern CLOCK Clock_Core(unsigned int ratio) ;
+extern CLOCK Clock_Core2(unsigned int ratio) ;
+extern CLOCK Clock_Atom(unsigned int ratio) ;
+extern CLOCK Clock_Silvermont(unsigned int ratio) ;
+extern CLOCK Clock_Nehalem(unsigned int ratio) ;
+extern CLOCK Clock_Westmere(unsigned int ratio) ;
+extern CLOCK Clock_SandyBridge(unsigned int ratio) ;
+extern CLOCK Clock_IvyBridge(unsigned int ratio) ;
+extern CLOCK Clock_Haswell(unsigned int ratio) ;
+
+extern void Query_Genuine(void) ;
 extern void Start_Genuine(void *arg) ;
 extern void Stop_Genuine(void *arg) ;
-extern void Init_Core2(void) ;
+extern void InitTimer_Genuine(unsigned int cpu) ;
+
+extern void Query_Core2(void) ;
 extern void Start_Core2(void *arg) ;
 extern void Stop_Core2(void *arg) ;
-extern void Init_Nehalem(void) ;
+extern void InitTimer_Core2(unsigned int cpu) ;
+
+extern void Query_Nehalem(void) ;
 extern void Start_Nehalem(void *arg) ;
 extern void Stop_Nehalem(void *arg) ;
-extern void Init_SandyBridge(void) ;
+extern void InitTimer_Nehalem(unsigned int cpu) ;
+
+extern void Query_SandyBridge(void) ;
 extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
+extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
 //	[GenuineIntel]
 #define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -772,341 +798,423 @@ static ARCH Arch[ARCHITECTURES]=
 {
 /*  0*/	{
 	_GenuineIntel,
-	Init_Genuine,
+	Query_Genuine,
 	Start_Genuine,
 	Stop_Genuine,
 	NULL,
-	NULL
+	InitTimer_Genuine,
+	Clock_GenuineIntel,
+	NULL,
 	},
 
 /*  1*/	{
 	_Core_Yonah,
-	Init_Genuine,
+	Query_Genuine,
 	Start_Genuine,
 	Stop_Genuine,
 	NULL,
+	InitTimer_Genuine,
+	Clock_Core,
 	"Core/Yonah"
 	},
 /*  2*/	{
 	_Core_Conroe,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Core2,
 	"Core2/Conroe"
 	},
 /*  3*/	{
 	_Core_Kentsfield,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Core2,
 	"Core2/Kentsfield"
 	},
 /*  4*/	{
 	_Core_Conroe_616,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Core2,
 	"Core2/Conroe/Yonah"
 	},
 /*  5*/	{
 	_Core_Yorkfield,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Core2,
 	"Core2/Yorkfield"
 	},
 /*  6*/	{
 	_Core_Dunnington,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Core2,
 	"Xeon/Dunnington"
 	},
 
 /*  7*/	{
 	_Atom_Bonnell,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Bonnell"
 	},
 /*  8*/	{
 	_Atom_Silvermont,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Silvermont"
 	},
 /*  9*/	{
 	_Atom_Lincroft,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Lincroft"
 	},
 /* 10*/	{
 	_Atom_Clovertrail,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Clovertrail"
 	},
 /* 11*/	{
 	_Atom_Saltwell,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Saltwell"
 	},
 
 /* 12*/	{
 	_Silvermont_637,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Silvermont,
 	"Silvermont"
 	},
 /* 13*/	{
 	_Silvermont_64D,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Silvermont,
 	"Silvermont"
 	},
 
 /* 14*/	{
 	_Atom_Airmont,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Airmont"
 	},
 /* 15*/	{
 	_Atom_Goldmont,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Goldmont"
 	},
 /* 16*/	{
 	_Atom_Sofia,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Sofia"
 	},
 /* 17*/	{
 	_Atom_Merrifield,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Merrifield"
 	},
 /* 18*/	{
 	_Atom_Moorefield,
-	Init_Core2,
+	Query_Core2,
 	Start_Core2,
 	Stop_Core2,
 	NULL,
+	InitTimer_Core2,
+	Clock_Atom,
 	"Atom/Moorefield"
 	},
 
 /* 19*/	{
 	_Nehalem_Bloomfield,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Nehalem,
 	"Nehalem/Bloomfield"
 	},
 /* 20*/	{
 	_Nehalem_Lynnfield,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Nehalem,
 	"Nehalem/Lynnfield"
 	},
 /* 21*/	{
 	_Nehalem_MB,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Nehalem,
 	"Nehalem/Mobile"
 	},
 /* 22*/	{
 	_Nehalem_EX,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Nehalem,
 	"Nehalem/eXtreme.EP"
 	},
 
 /* 23*/	{
 	_Westmere,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Westmere,
 	"Westmere"
 	},
 /* 24*/	{
 	_Westmere_EP,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Westmere,
 	"Westmere/EP"
 	},
 /* 25*/	{
 	_Westmere_EX,
-	Init_Nehalem,
+	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
+	InitTimer_Nehalem,
+	Clock_Westmere,
 	"Westmere/eXtreme"
 	},
 
 /* 26*/	{
 	_SandyBridge,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_SandyBridge,
 	"SandyBridge"
 	},
 /* 27*/	{
 	_SandyBridge_EP,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_SandyBridge,
 	"SandyBridge/eXtreme.EP"
 	},
 
 /* 28*/	{
 	_IvyBridge,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_IvyBridge,
 	"IvyBridge"
 	},
 /* 29*/	{
 	_IvyBridge_EP,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_IvyBridge,
 	"IvyBridge/EP"
 	},
 
 /* 30*/	{
 	_Haswell_DT,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Haswell/Desktop"
 	},
 /* 31*/	{
 	_Haswell_MB,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Haswell/Mobile"
 	},
 /* 32*/	{
 	_Haswell_ULT,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Haswell/Ultra Low TDP"
 	},
 /* 33*/	{
 	_Haswell_ULX,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Haswell/Ultra Low eXtreme"
 	},
 
 /* 34*/	{
 	_Broadwell,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Broadwell/Mobile"
 	},
 /* 35*/	{
 	_Broadwell_EP,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Broadwell/EP"
 	},
 /* 36*/	{
 	_Broadwell_H,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
+	Stop_SandyBridge,
 	NULL,
-	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Broadwell/H"
 	},
 /* 37*/	{
 	_Broadwell_EX,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Broadwell/EX"
 	},
 
 /* 38*/	{
 	_Skylake_UY,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Skylake/UY"
 	},
 /* 39*/	{
 	_Skylake_S,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Skylake/S"
 	},
 /* 40*/	{
 	_Skylake_E,
-	Init_SandyBridge,
+	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
+	InitTimer_SandyBridge,
+	Clock_Haswell,
 	"Skylake/E"
 	}
 };

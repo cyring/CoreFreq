@@ -17,11 +17,11 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
 
-* asm code to keep as near as possible the read of counters
-* per-CPU slab data memory and per-CPU high-resolution timer
-* compliant with suspend & resume to save and restore the Performance register bits
-* a shared memory to protect kernel & user-space parts of the software
-* atomic synchronization of threads to avoid mutexes and deadlock
+* asm code to keep as near as possible the readings of the performance counters;
+* per-CPU, implements slab data memory and high-resolution timer;
+* compliant with suspend / resume and CPU Hot-Plug;
+* a shared memory to protect kernel from the user-space part of the software;
+* atomic synchronization of threads to avoid mutexes and deadlock.
 
 
 ## Build & Run

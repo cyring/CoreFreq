@@ -10,6 +10,45 @@ typedef	struct
 	int		ApicID,
 			CoreID,
 			ThreadID;
+
+/* Cache Parameters Leaf.
+EAX Bits
+04-00: Cache Type Field
+	0 = Null - No more caches
+	1 = Data Cache
+	2 = Instruction Cache
+	3 = Unified Cache
+	4-31 = Reserved
+07-05: Cache Level (starts at 1)
+08   : Self Initializing cache level (does not need SW initialization)
+09   : Fully Associative cache
+13-10: Reserved
+25-14: Maximum # of addressable IDs for logical processors sharing this cache
+31-26: Maximum # of addressable IDs for processor cores in the physical package
+
+EBX Bits
+11-00: L = System Coherency Line Size
+21-12: P = Physical Line partitions
+31-22: W = Ways of associativity
+
+ECX Bits
+31-00: S = Number of Sets
+
+EDX Bits
+0: Write-Back Invalidate/Invalidate
+	0 = WBINVD/INVD from threads sharing this cache
+		acts upon lower level caches for threads sharing this cache.
+	1 = WBINVD/INVD is not guaranteed to act upon lower level caches
+		of non-originating threads sharing this cache.
+1: Cache Inclusiveness
+	0 = Cache is not inclusive of lower cache levels.
+	1 = Cache is inclusive of lower cache levels.
+2: Complex Cache Indexing
+	0 = Direct mapped cache.
+	1 = A complex function is used to index the cache,
+		potentially using all address bits.
+31-03: Reserved = 0
+*/
 	struct
 	{
 		union
@@ -70,12 +109,13 @@ typedef struct
 } THERMAL;
 
 typedef struct
-{
+{	// Cache line size aligned structures.
 	volatile struct
-	{	// Cache line size aligned structure.
+	{
 		unsigned long long	V,
-					_pad64[7];
+					_pad[3];
 	} Sync;
+	volatile OFFLINE		OffLine;
 
 	struct
 	{
@@ -123,8 +163,7 @@ typedef struct
 
 	TOPOLOGY			T;
 
-	unsigned int			Bind,
-					OffLine;
+	unsigned int			Bind;
 
 	CLOCK				Clock;
 
@@ -146,7 +185,7 @@ typedef struct
 {
 	FEATURES		Features;
 
-	unsigned int		msleep;
+	unsigned int		SleepInterval;
 
 	struct {
 		unsigned int	Count,

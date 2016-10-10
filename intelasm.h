@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -8,7 +8,7 @@
 ({						\
 	asm volatile				\
 	(					\
-		"lock rex bts %1, %0"		\
+		"lock rex.w bts %1, %0"		\
 		: "=m" (_base)			\
 		: "Ir" (_offset)		\
 		: "memory"			\
@@ -19,7 +19,7 @@
 ({						\
 	asm volatile				\
 	(					\
-		"lock rex btr %1, %0"		\
+		"lock rex.w btr %1, %0"		\
 		: "=m" (_base)			\
 		: "Ir" (_offset)		\
 		: "memory"			\
@@ -31,7 +31,20 @@
 	volatile unsigned long long _ret=_opl;	\
 	asm volatile				\
 	(					\
-		"lock rex and %1, %0"		\
+		"lock rex andq %1, %0"		\
+		: "=m" (_ret)			\
+		: "Ir" (_opr)			\
+		: "memory"			\
+	);					\
+	_ret;					\
+})
+
+#define	BITWISEOR(_opl, _opr)			\
+({						\
+	volatile unsigned long long _ret=_opl;	\
+	asm volatile				\
+	(					\
+		"lock rex orq %1, %0"		\
 		: "=m" (_ret)			\
 		: "Ir" (_opr)			\
 		: "memory"			\

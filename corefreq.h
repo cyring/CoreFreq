@@ -10,24 +10,31 @@
 
 typedef struct
 {
-	unsigned int			OffLine;
+	OFFLINE				OffLine;
 
 	CLOCK				Clock;
 
 	unsigned int			Toggle;
 
 	struct {
-		Bit32			BSP,
-					ApicID,
+		unsigned int		ApicID,
 					CoreID,
-					ThreadID,
-					x2APIC;
+					ThreadID;
 		struct {
+			Bit32		BSP,
+					x2APIC;
+		} MP;
+		struct {
+		unsigned int		Set,
+					Size;
 		unsigned short int	LineSz,
 					Part,
 					Way;
-		unsigned int		Set,
-					Size;
+		    struct {
+		    unsigned short int	WriteBack: 1-0,
+					Inclusive: 2-1,
+					_pad16	: 16-2;
+		    } Feature;
 		} Cache[CACHE_MAX_LEVEL];
 	} Topology;
 
@@ -76,7 +83,7 @@ typedef struct
 
 	FEATURES			Features;
 
-	unsigned int			msleep;
+	unsigned int			SleepInterval;
 
 	struct {
 		unsigned int		Count,
