@@ -886,13 +886,16 @@ void DynamicAcceleration(void)
 		Proc->Boost[9]=Proc->Boost[1] + 1;
 }
 
+#ifndef MSR_TURBO_RATIO_LIMIT
+#define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
+#endif
 void Nehalem_Platform_Info(void)
 {
 	PLATFORM_INFO Platform={.value=0};
 	TURBO_RATIO Turbo={.value=0};
 
 	RDMSR(Platform, MSR_PLATFORM_INFO);
-	RDMSR(Turbo, MSR_NHM_TURBO_RATIO_LIMIT);
+	RDMSR(Turbo, MSR_TURBO_RATIO_LIMIT);
 
 	Proc->Boost[0]=Platform.MinimumRatio;
 	Proc->Boost[1]=Platform.MaxNonTurboRatio;

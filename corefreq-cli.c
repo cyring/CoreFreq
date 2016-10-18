@@ -280,7 +280,7 @@ void Top(SHM_STRUCT *Shm)
 	}
 
 	sprintf(hProc,
-	    DoK	"%.*sProcessor["CoK"%48s"DoK"]"				\
+	    DoK	"%.*sProcessor["CoK"%-48s"DoK"]"			\
 	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU",
 		13, hSpace,
 		Shm->Proc.Brand,
