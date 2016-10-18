@@ -10,14 +10,14 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMC0		:  1-0,
-		EN_PMC1		:  2-1,
-		EN_PMC2		:  3-2,
-		EN_PMC3		:  4-3,
-		EN_PMCn		: 32-4,
-		EN_FIXED_CTR0	: 33-32,
-		EN_FIXED_CTR1	: 34-33,
-		EN_FIXED_CTR2	: 35-34,
+		EN_PMC0		:  1-0,		// PM2
+		EN_PMC1		:  2-1,		// PM2
+		EN_PMC2		:  3-2,		// PM3
+		EN_PMC3		:  4-3,		// PM3
+		EN_PMCn		: 32-4,		// PM3
+		EN_FIXED_CTR0	: 33-32,	// PM2
+		EN_FIXED_CTR1	: 34-33,	// PM2
+		EN_FIXED_CTR2	: 35-34,	// PM2
 		ReservedBits2	: 64-35;
 	};
 } GLOBAL_PERF_COUNTER;
@@ -28,18 +28,18 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN0_OS		:  1-0,
-		EN0_Usr		:  2-1,
-		AnyThread_EN0	:  3-2,
-		EN0_PMI		:  4-3,
-		EN1_OS		:  5-4,
-		EN1_Usr		:  6-5,
-		AnyThread_EN1	:  7-6,
-		EN1_PMI		:  8-7,
-		EN2_OS		:  9-8,
-		EN2_Usr		: 10-9,
-		AnyThread_EN2	: 11-10,
-		EN2_PMI		: 12-11,
+		EN0_OS		:  1-0,		// PM2
+		EN0_Usr		:  2-1,		// PM2
+		AnyThread_EN0	:  3-2,		// PM3
+		EN0_PMI		:  4-3,		// PM2
+		EN1_OS		:  5-4,		// PM2
+		EN1_Usr		:  6-5,		// PM2
+		AnyThread_EN1	:  7-6,		// PM3
+		EN1_PMI		:  8-7,		// PM2
+		EN2_OS		:  9-8,		// PM2
+		EN2_Usr		: 10-9,		// PM2
+		AnyThread_EN2	: 11-10,	// PM3
+		EN2_PMI		: 12-11,	// PM2
 		ReservedBits	: 64-12;
 	};
 } FIXED_PERF_COUNTER;

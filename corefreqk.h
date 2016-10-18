@@ -330,11 +330,6 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
 
 typedef struct
 {
-	unsigned int EAX, EBX, ECX, EDX;	// DWORD Only!
-} CPUID_REG;
-
-typedef struct
-{
 	struct
 	{
 		unsigned char Chr[4];
@@ -412,7 +407,7 @@ typedef union
 		ConfigTDPlevels	: 35-33,
 		ReservedBits4	: 40-35,
 		MinimumRatio	: 48-40,
-		MinOpeRatio	: 56-48,
+		MinOperatRatio	: 56-48,	// Ivy Bridge, Haswell(-E)
 		ReservedBits5	: 64-56;
 	};
 } PLATFORM_INFO;
@@ -510,18 +505,23 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Overflow_PMC0	:  1-0,
-		Overflow_PMC1	:  2-1,
-		Overflow_PMC2	:  3-2,
-		Overflow_PMC3	:  4-3,
-		Overflow_PMCn	: 32-4,
-		Overflow_CTR0	: 33-32,
-		Overflow_CTR1	: 34-33,
-		Overflow_CTR2	: 35-34,
-		ReservedBits2	: 61-35,
-		Overflow_UNC	: 62-61,
-		Overflow_Buf	: 63-62,
-		Ovf_CondChg	: 64-63;
+		Overflow_PMC0	:  1-0,		// PM2
+		Overflow_PMC1	:  2-1,		// PM2
+		Overflow_PMC2	:  3-2,		// PM3
+		Overflow_PMC3	:  4-3,		// PM3
+		Overflow_PMCn	: 32-4,		// PM3
+		Overflow_CTR0	: 33-32,	// PM2
+		Overflow_CTR1	: 34-33,	// PM2
+		Overflow_CTR2	: 35-34,	// PM2
+		ReservedBits2	: 55-35,
+		TraceToPAPMI	: 56-55,	// PM4, PM3(Broadwell)
+		ReservedBits3	: 58-56,
+		LBR_Frz		: 59-58,	// PM4
+		CTR_Frz		: 60-59,	// PM4
+		ASCI		: 61-60,	// PM4
+		Overflow_UNC	: 62-61,	// PM3
+		Overflow_Buf	: 63-62,	// PM2
+		Ovf_CondChg	: 64-63;	// PM2
 	};
 } GLOBAL_PERF_STATUS;
 
@@ -531,20 +531,30 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Clear_Ovf_PMC0	:  1-0,
-		Clear_Ovf_PMC1	:  2-1,
-		Clear_Ovf_PMC2	:  3-2,
-		Clear_Ovf_PMC3	:  4-3,
-		Clear_Ovf_PMCn	: 32-2,
-		Clear_Ovf_CTR0 	: 33-32,
-		Clear_Ovf_CTR1	: 34-33,
-		Clear_Ovf_CTR2	: 35-34,
-		ReservedBits2	: 61-35,
-		Clear_Ovf_UNC	: 62-61,
-		Clear_Ovf_Buf	: 63-62,
-		Clear_CondChg	: 64-63;
+		Clear_Ovf_PMC0	:  1-0,		// PM2
+		Clear_Ovf_PMC1	:  2-1,		// PM2
+		Clear_Ovf_PMC2	:  3-2,		// PM3
+		Clear_Ovf_PMC3	:  4-3,		// PM3
+		Clear_Ovf_PMCn	: 32-2,		// PM3
+		Clear_Ovf_CTR0 	: 33-32,	// PM2
+		Clear_Ovf_CTR1	: 34-33,	// PM2
+		Clear_Ovf_CTR2	: 35-34,	// PM2
+		ReservedBits2	: 55-35,
+		ClrTraceToPA_PMI: 56-55,	// PM4, PM3(Broadwell)
+		ReservedBits3	: 61-56,
+		Clear_Ovf_UNC	: 62-61,	// PM3
+		Clear_Ovf_Buf	: 63-62,	// PM2
+		Clear_CondChg	: 64-63;	// PM2
 	};
 } GLOBAL_PERF_OVF_CTRL;
+
+/* ToDo
+	§18.2.4 PM4
+
+	IA32_PERF_GLOBAL_STATUS_RESET
+	IA32_PERF_GLOBAL_STATUS_SET
+	IA32_PERF_GLOBAL_INUSE
+*/
 
 typedef union
 {
@@ -610,14 +620,14 @@ typedef struct
 typedef struct
 {
 	struct hrtimer		Timer;
-	struct
+	struct				// Timer State Machine.
 	{
 		unsigned long long
 			created	:  1-0,	// hrtimer_init() || ?()
 			started	:  2-1,	// hrtimer_start() || hrtimer_cancel()
 			mustFwd	:  3-2,	// hrtimer_forward()
 			_pad64	: 64-3;
-	} FSM;
+	} tsm;
 } JOIN;
 
 typedef struct
@@ -640,6 +650,7 @@ typedef	struct
 } ARCH;
 
 extern CLOCK Clock_GenuineIntel(unsigned int ratio) ;
+extern CLOCK Clock_AuthenticAMD(unsigned int ratio) ;
 extern CLOCK Clock_Core(unsigned int ratio) ;
 extern CLOCK Clock_Core2(unsigned int ratio) ;
 extern CLOCK Clock_Atom(unsigned int ratio) ;
@@ -650,10 +661,15 @@ extern CLOCK Clock_SandyBridge(unsigned int ratio) ;
 extern CLOCK Clock_IvyBridge(unsigned int ratio) ;
 extern CLOCK Clock_Haswell(unsigned int ratio) ;
 
-extern void Query_Genuine(void) ;
-extern void Start_Genuine(void *arg) ;
-extern void Stop_Genuine(void *arg) ;
-extern void InitTimer_Genuine(unsigned int cpu) ;
+extern void Query_GenuineIntel(void) ;
+extern void Start_GenuineIntel(void *arg) ;
+extern void Stop_GenuineIntel(void *arg) ;
+extern void InitTimer_GenuineIntel(unsigned int cpu) ;
+
+extern void Query_AuthenticAMD(void) ;
+extern void Start_AuthenticAMD(void *arg) ;
+extern void Stop_AuthenticAMD(void *arg) ;
+extern void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
 extern void Query_Core2(void) ;
 extern void Start_Core2(void *arg) ;
@@ -670,8 +686,11 @@ extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
-//	[GenuineIntel]
-#define	_GenuineIntel	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define VENDOR_INTEL	"GenuineIntel"
+#define VENDOR_AMD	"AuthenticAMD"
+
+//	[Void]
+#define	_Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
 //	[Core]		06_0EH (32 bits)
 #define	_Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
@@ -797,23 +816,22 @@ enum {	GenuineIntel,		\
 static ARCH Arch[ARCHITECTURES]=
 {
 /*  0*/	{
-	_GenuineIntel,
-	Query_Genuine,
-	Start_Genuine,
-	Stop_Genuine,
+	_Void_Signature,
 	NULL,
-	InitTimer_Genuine,
-	Clock_GenuineIntel,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
 	NULL,
 	},
-
 /*  1*/	{
 	_Core_Yonah,
-	Query_Genuine,
-	Start_Genuine,
-	Stop_Genuine,
+	Query_GenuineIntel,
+	Start_GenuineIntel,
+	Stop_GenuineIntel,
 	NULL,
-	InitTimer_Genuine,
+	InitTimer_GenuineIntel,
 	Clock_Core,
 	"Core/Yonah"
 	},

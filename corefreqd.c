@@ -171,7 +171,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy the base clock ratios.
 	memcpy(Shm->Proc.Boost, Proc->Boost, (1+1+8) * sizeof(unsigned int));
 	// Copy the processor's brand string.
-	strncpy(Shm->Proc.Brand, Proc->Features.Brand, 48);
+	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
 }
 
 void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
@@ -182,7 +182,7 @@ void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 {
-	Shm->Proc.PM_version=Proc->Features.Perf_Monitoring_Leaf.AX.Version;
+	Shm->Proc.PM_version=Proc->Features.PerfMon.AX.Version;
 }
 
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
@@ -508,13 +508,13 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Core[0]->T.Base.EN,
 			Core[0]->T.Base.EXTD,
 			Proc->Features.Std.DX.TSC ?
-				Proc->Features.ExtFunc.DX.RdTSCP ? 'P':'1':'0',
+				Proc->Features.ExtInfo.DX.RdTSCP ? 'P':'1':'0',
 			Proc->Features.InvariantTSC ? 'I':'V',
 			Proc->Features.Std.DX.HTT,
 				Proc->Features.HTT_Enable,
 			Proc->Features.Std.CX.EIST,
 				Shm->Proc.SpeedStep,
-			Proc->Features.Thermal_Power_Leaf.AX.TurboIDA,
+			Proc->Features.Power.AX.TurboIDA,
 				Shm->Proc.TurboBoost,
 			Proc->Features.Std.DX.TM1,
 			Proc->Features.Std.CX.TM2,

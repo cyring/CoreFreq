@@ -280,17 +280,15 @@ void Top(SHM_STRUCT *Shm)
 	}
 
 	sprintf(hProc,
-	    DoK	"%.*sProcessor ["CoK"%s"DoK"]"				\
-		"%.*s"							\
-	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU Online ",
-		14, hSpace,
+	    DoK	"%.*sProcessor["CoK"%48s"DoK"]"				\
+	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU",
+		13, hSpace,
 		Shm->Proc.Brand,
-		drawSize.width - 42 - strlen(Shm->Proc.Brand), hSpace,
 		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
 	sprintf(hArch,
-	    DoK	"%.*sArchitecture ["CoK"%s"DoK"]",
-		14, hSpace,
+	    DoK	"%.*sArchitecture["CoK"%s"DoK"]",
+		13, hSpace,
 		Shm->Proc.Architecture);
 
 	sprintf(headerView,
@@ -302,11 +300,11 @@ void Top(SHM_STRUCT *Shm)
 		"L2="WoK"%-4u"DoK" L3="WoK"%-5u"DoK"KB\n",
 		hProc,
 		hArch,
-		drawSize.width - 57 - strlen(Shm->Proc.Architecture), hSpace,
+		drawSize.width - 55 - strlen(Shm->Proc.Architecture), hSpace,
 		Shm->Cpu[0].Topology.Cache[0].Size / 1024,
 		Shm->Cpu[0].Topology.Cache[1].Size / 1024,
-		14, hSpace,
-		drawSize.width - 59, hSpace,
+		13, hSpace,
+		drawSize.width - 58, hSpace,
 		Shm->Cpu[0].Topology.Cache[2].Size / 1024,
 		Shm->Cpu[0].Topology.Cache[3].Size / 1024);
 
@@ -595,9 +593,9 @@ void Top(SHM_STRUCT *Shm)
 		hTech,
 		hMem);
 
-	lcdDraw(2, 1, lcdView, cursor, (unsigned int) maxRelFreq, digit);
+	lcdDraw(1, 1, lcdView, cursor, (unsigned int) maxRelFreq, digit);
 
-	cursorXY(28, 3, cursor);
+	cursorXY(27, 3, cursor);
 
 	sprintf(viewMask,
 		WoK "\033[1;1H"						\
@@ -872,7 +870,7 @@ void SysInfo(SHM_STRUCT *Shm)
 	int i=0;
 	printf(	"  Processor%.*s[%s]\n"					\
 		"  |- Signature%.*s[%1X%1X_%1X%1X]\n"			\
-		"  |- Stepping%.*s[%u]\n"				\
+		"  |- Stepping%.*s[%3u]\n"				\
 		"  |- Architecture%.*s[%s]\n"				\
 		"  |- Online CPU%.*s[%u/%u]\n"				\
 		"  |- Base Clock%.*s[%llu]\n"				\
@@ -885,7 +883,7 @@ void SysInfo(SHM_STRUCT *Shm)
 		Shm->Proc.Family,
 		Shm->Proc.ExtModel,
 		Shm->Proc.Model,
-		64, hSpace, Shm->Proc.Stepping,
+		62, hSpace, Shm->Proc.Stepping,
 		61-strlen(Shm->Proc.Architecture),hSpace,Shm->Proc.Architecture,
 		60, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count,
 		60, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L,
@@ -951,19 +949,19 @@ void SysInfo(SHM_STRUCT *Shm)
 	42, hSpace, TSC[Shm->Proc.InvariantTSC],
 	37, hSpace, x2APIC[Shm->Cpu[0].Topology.MP.x2APIC],
 	55, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.CoreCycles),
+	    powered(!Shm->Proc.Features.PerfMon.BX.CoreCycles),
 	46, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.InstrRetired),
+	    powered(!Shm->Proc.Features.PerfMon.BX.InstrRetired),
 	50, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.RefCycles),
+	    powered(!Shm->Proc.Features.PerfMon.BX.RefCycles),
 	39, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.LLC_Ref),
+	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Ref),
 	43, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.LLC_Misses),
+	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Misses),
 	39, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.BranchRetired),
+	    powered(!Shm->Proc.Features.PerfMon.BX.BranchRetired),
 	40, hSpace,
-	    powered(!Shm->Proc.Features.Perf_Monitoring_Leaf.BX.BranchMispred),
+	    powered(!Shm->Proc.Features.PerfMon.BX.BranchMispred),
 	45, hSpace, enabled(Shm->Proc.HyperThreading),
 	49, hSpace, enabled(isTurboBoost),
 	50, hSpace, enabled(isSpeedStep),
@@ -975,16 +973,16 @@ void SysInfo(SHM_STRUCT *Shm)
 	47, hSpace, enabled(Shm->Cpu[0].C1U),
 	06, hSpace,
 	21, hSpace,
-		Shm->Proc.Features.MONITOR_MWAIT_Leaf.DX.Num_C0_MWAIT,
-		Shm->Proc.Features.MONITOR_MWAIT_Leaf.DX.Num_C1_MWAIT,
-		Shm->Proc.Features.MONITOR_MWAIT_Leaf.DX.Num_C2_MWAIT,
-		Shm->Proc.Features.MONITOR_MWAIT_Leaf.DX.Num_C3_MWAIT,
-		Shm->Proc.Features.MONITOR_MWAIT_Leaf.DX.Num_C4_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C0_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C1_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C2_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C3_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C4_MWAIT,
 	10, hSpace, 17, hSpace,
-	22, hSpace,	Shm->Proc.Features.Perf_Monitoring_Leaf.AX.MonCtrs,
-			Shm->Proc.Features.Perf_Monitoring_Leaf.AX.MonWidth,
-	11, hSpace,	Shm->Proc.Features.Perf_Monitoring_Leaf.DX.FixCtrs,
-			Shm->Proc.Features.Perf_Monitoring_Leaf.DX.FixWidth,
+	22, hSpace,	Shm->Proc.Features.PerfMon.AX.MonCtrs,
+			Shm->Proc.Features.PerfMon.AX.MonWidth,
+	11, hSpace,	Shm->Proc.Features.PerfMon.DX.FixCtrs,
+			Shm->Proc.Features.PerfMon.DX.FixWidth,
 	43, hSpace, TM[Shm->Cpu[0].Thermal.TM1],
 	43, hSpace, TM[Shm->Cpu[0].Thermal.TM2]);
 

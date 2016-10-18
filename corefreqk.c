@@ -27,12 +27,17 @@ MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7");
 MODULE_LICENSE ("GPL");
 
+typedef struct {
+	FEATURES	features;
+	unsigned int	count;
+} ARG;
+
 static struct
 {
-	signed int Major;
-	struct cdev *kcdev;
-	dev_t nmdev, mkdev;
-	struct class *clsdev;
+	signed int	Major;
+	struct cdev	*kcdev;
+	dev_t		nmdev, mkdev;
+	struct class	*clsdev;
 } CoreFreqK;
 
 static signed int ArchID=-1;
@@ -56,32 +61,8 @@ static KPUBLIC *KPublic=NULL;
 static KPRIVATE *KPrivate=NULL;
 static ktime_t RearmTheTimer;
 
-void Call_CPUID(void *pReg)
-{
-	CPUID_REG *reg=pReg;
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(reg->EAX),
-		  "=b"	(reg->EBX),
-		  "=c"	(reg->ECX),
-		  "=d"	(reg->EDX)
-		: "a"	(reg->EAX),
-		  "c"	(reg->ECX)
-	);
-}
 
-unsigned int Core_Count(void)
-{
-	CPUID_REG reg={.EAX=0x4, .EBX=0x0, .ECX=0x0, .EDX=0x0};
-	smp_call_function_single(0, Call_CPUID, &reg, 1);
-
-	reg.EAX=(reg.EAX >> 26) & 0x3f;
-	reg.EAX++;
-	return(reg.EAX);
-}
-
-unsigned int Proc_Brand(char *pBrand)
+unsigned int Intel_Brand(char *pBrand)
 {
 	char idString[64]={0x20};
 	unsigned int ix=0, jx=0, px=0;
@@ -149,59 +130,94 @@ unsigned int Proc_Brand(char *pBrand)
 	return(frequency);
 }
 
-// Retreive the Processor features through calls to the CPUID instruction.
-void Proc_Features(void *pFeatures)
+void AMD_Brand(char *pBrand)
 {
-	FEATURES *features=pFeatures;
+	char idString[64]={0x20};
+	unsigned int ix=0, jx=0, px=0;
+	BRAND Brand;
 
-	int BX=0, DX=0, CX=0;
+	for(ix=0; ix < 3; ix++)
+	{
+		asm volatile
+		(
+			"cpuid"
+			: "=a"  (Brand.AX),
+			  "=b"  (Brand.BX),
+			  "=c"  (Brand.CX),
+			  "=d"  (Brand.DX)
+			: "a"   (0x80000002 + ix)
+		);
+		for(jx=0; jx < 4; jx++, px++)
+			idString[px]=Brand.AX.Chr[jx];
+		for(jx=0; jx < 4; jx++, px++)
+			idString[px]=Brand.BX.Chr[jx];
+		for(jx=0; jx < 4; jx++, px++)
+			idString[px]=Brand.CX.Chr[jx];
+		for(jx=0; jx < 4; jx++, px++)
+			idString[px]=Brand.DX.Chr[jx];
+	}
+	for(ix=jx=0; jx < 48; jx++)
+		if(!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
+			pBrand[ix++]=idString[jx];
+}
+
+// Retreive the Processor features through calls to the CPUID instruction.
+void Query_Features(void *pArg)
+{
+	ARG *arg=(ARG *) pArg;
+
+	// Extended Function CPUID Information. CPUID 0x80000000
+	unsigned int LargestExtFunc;
+	unsigned int AX=0x0, BX=0x0, CX=0x0, DX=0x0;	// DWORD Only!
+
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(features->LargestStdFunc),
+		: "=a"	(arg->features.Info.LargestStdFunc),
 		  "=b"	(BX),
 		  "=d"	(DX),
 		  "=c"	(CX)
                 : "a" (0x0)
 	);
-	features->VendorID[ 0]=BX;
-	features->VendorID[ 1]=(BX >> 8);
-	features->VendorID[ 2]=(BX >> 16);
-	features->VendorID[ 3]=(BX >> 24);
-	features->VendorID[ 4]=DX;
-	features->VendorID[ 5]=(DX >> 8);
-	features->VendorID[ 6]=(DX >> 16);
-	features->VendorID[ 7]=(DX >> 24);
-	features->VendorID[ 8]=CX;
-	features->VendorID[ 9]=(CX >> 8);
-	features->VendorID[10]=(CX >> 16);
-	features->VendorID[11]=(CX >> 24);
+	arg->features.Info.VendorID[ 0]=BX;
+	arg->features.Info.VendorID[ 1]=(BX >> 8);
+	arg->features.Info.VendorID[ 2]=(BX >> 16);
+	arg->features.Info.VendorID[ 3]=(BX >> 24);
+	arg->features.Info.VendorID[ 4]=DX;
+	arg->features.Info.VendorID[ 5]=(DX >> 8);
+	arg->features.Info.VendorID[ 6]=(DX >> 16);
+	arg->features.Info.VendorID[ 7]=(DX >> 24);
+	arg->features.Info.VendorID[ 8]=CX;
+	arg->features.Info.VendorID[ 9]=(CX >> 8);
+	arg->features.Info.VendorID[10]=(CX >> 16);
+	arg->features.Info.VendorID[11]=(CX >> 24);
+	arg->features.Info.VendorID[12]='\0';
 
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(features->Std.AX),
-		  "=b"	(features->Std.BX),
-		  "=c"	(features->Std.CX),
-		  "=d"	(features->Std.DX)
+		: "=a"	(arg->features.Std.AX),
+		  "=b"	(arg->features.Std.BX),
+		  "=c"	(arg->features.Std.CX),
+		  "=d"	(arg->features.Std.DX)
                 : "a" (0x1)
 	);
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(features->MONITOR_MWAIT_Leaf.AX),
-		  "=b"	(features->MONITOR_MWAIT_Leaf.BX),
-		  "=c"	(features->MONITOR_MWAIT_Leaf.CX),
-		  "=d"	(features->MONITOR_MWAIT_Leaf.DX)
+		: "=a"	(arg->features.MWait.AX),
+		  "=b"	(arg->features.MWait.BX),
+		  "=c"	(arg->features.MWait.CX),
+		  "=d"	(arg->features.MWait.DX)
                 : "a" (0x5)
 	);
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(features->Thermal_Power_Leaf.AX),
-		  "=b"	(features->Thermal_Power_Leaf.BX),
-		  "=c"	(features->Thermal_Power_Leaf.CX),
-		  "=d"	(features->Thermal_Power_Leaf.DX)
+		: "=a"	(arg->features.Power.AX),
+		  "=b"	(arg->features.Power.BX),
+		  "=c"	(arg->features.Power.CX),
+		  "=d"	(arg->features.Power.DX)
                 : "a" (0x6)
 	);
 	asm volatile
@@ -215,50 +231,79 @@ void Proc_Features(void *pFeatures)
 		"mov	%%ebx, %1	\n\t"
 		"mov	%%ecx, %2	\n\t"
 		"mov	%%edx, %3"
-		: "=r"	(features->ExtFeature.AX),
-		  "=r"	(features->ExtFeature.BX),
-		  "=r"	(features->ExtFeature.CX),
-		  "=r"	(features->ExtFeature.DX)
+		: "=r"	(arg->features.ExtFeature.AX),
+		  "=r"	(arg->features.ExtFeature.BX),
+		  "=r"	(arg->features.ExtFeature.CX),
+		  "=r"	(arg->features.ExtFeature.DX)
                 :
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(features->Perf_Monitoring_Leaf.AX),
-		  "=b"	(features->Perf_Monitoring_Leaf.BX),
-		  "=c"	(features->Perf_Monitoring_Leaf.CX),
-		  "=d"	(features->Perf_Monitoring_Leaf.DX)
-                : "a" (0xa)
+		: "=a"	(AX),
+		  "=b"	(BX),
+		  "=c"	(CX),
+		  "=d"	(DX)
+		: "a"	(0x4),
+		  "c"	(0x0)
 	);
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(features->LargestExtFunc)
-                : "a" (0x80000000)
-	);
-	if(features->LargestExtFunc >= 0x80000004 \
-	&& features->LargestExtFunc <= 0x80000008)
+	if(!strncmp(arg->features.Info.VendorID, VENDOR_INTEL, 12))
 	{
-		asm volatile
-		(
-			"cpuid"
-			: "=d"	(features->InvariantTSC)
-			: "a" (0x80000007)
-		);
-		features->InvariantTSC &= 0x100;
-		features->InvariantTSC >>= 8;
+		arg->count=(AX >> 26) & 0x3f;
+		arg->count++;
 
 		asm volatile
 		(
 			"cpuid"
-			: "=c"	(features->ExtFunc.CX),
-			  "=d"	(features->ExtFunc.DX)
+			: "=a"	(arg->features.PerfMon.AX),
+			  "=b"	(arg->features.PerfMon.BX),
+			  "=c"	(arg->features.PerfMon.CX),
+			  "=d"	(arg->features.PerfMon.DX)
+	                : "a" (0xa)
+		);
+
+		arg->features.FactoryFreq=Intel_Brand(arg->features.Info.Brand);
+	}
+	else if(!strncmp(arg->features.Info.VendorID, VENDOR_AMD, 12))
+	{
+		if(arg->features.Std.DX.HTT)
+			arg->count=arg->features.Std.BX.MaxThread;
+		else
+			arg->count=(BX >> 16) & 0x0ff;
+
+		AMD_Brand(arg->features.Info.Brand);
+
+		arg->features.FactoryFreq=0;
+	}
+	// Common x86
+	asm volatile
+	(
+		"cpuid"
+		: "=a"	(LargestExtFunc)
+                : "a" (0x80000000)
+	);
+	if(LargestExtFunc >= 0x80000004 && LargestExtFunc <= 0x80000008)
+	{
+		asm volatile
+		(
+			"cpuid"
+			: "=d"	(arg->features.InvariantTSC)
+			: "a" (0x80000007)
+		);
+		arg->features.InvariantTSC &= 0x100;
+		arg->features.InvariantTSC >>= 8;
+
+		asm volatile
+		(
+			"cpuid"
+			: "=c"	(arg->features.ExtInfo.CX),
+			  "=d"	(arg->features.ExtInfo.DX)
 			: "a" (0x80000001)
 		);
 	}
-	Proc->Features.FactoryFreq=Proc_Brand(Proc->Features.Brand);
 }
+
 
 DECLARE_COMPLETION(bclk_job_complete);
 
@@ -420,6 +465,13 @@ CLOCK Clock_GenuineIntel(unsigned int ratio)
 		clock.Q=Proc->Features.FactoryFreq / ratio;
 		clock.R=(Proc->Features.FactoryFreq % ratio) * PRECISION;
 	}
+	return(clock);
+};
+
+// [Authentic AMD]
+CLOCK Clock_AuthenticAMD(unsigned int ratio)
+{
+	CLOCK clock={.Q=100, .R=0, .Hz=100000000L};
 	return(clock);
 };
 
@@ -745,7 +797,7 @@ void Map_Extended_Topology(void *arg)
 int Core_Topology(unsigned int cpu)
 {
 	int rc=smp_call_function_single(cpu,
-				(Proc->Features.LargestStdFunc >= 0xb) ?
+				(Proc->Features.Info.LargestStdFunc >= 0xb) ?
 				Map_Extended_Topology : Map_Topology,
 				KPublic->Core[cpu],
 				1); // Synchronous call.
@@ -799,7 +851,7 @@ void HyperThreading_Technology(void)
 		Proc->CPU.OnLine=Proc->CPU.Count;
 }
 
-void Genuine_Platform_Info(void)
+void Intel_Platform_Info(void)
 {
 	PLATFORM_INFO Platform={.value=0};
 
@@ -813,6 +865,25 @@ void Genuine_Platform_Info(void)
 				Platform.MaxNonTurboRatio);
 	}
 	Proc->Boost[9]=Proc->Boost[1];
+}
+
+void DynamicAcceleration(void)
+{
+	struct THERMAL_POWER_LEAF thermal_Power_Leaf={
+		.AX={0}, .BX={0}, .CX={0}, .DX={0}
+	};
+	asm volatile
+	(
+		"cpuid"
+		: "=a"	(thermal_Power_Leaf.AX),
+		  "=b"	(thermal_Power_Leaf.BX),
+		  "=c"	(thermal_Power_Leaf.CX),
+		  "=d"	(thermal_Power_Leaf.DX)
+                : "a" (0x6)
+	);
+
+	if(thermal_Power_Leaf.AX.TurboIDA == 1)
+		Proc->Boost[9]=Proc->Boost[1] + 1;
 }
 
 void Nehalem_Platform_Info(void)
@@ -835,39 +906,25 @@ void Nehalem_Platform_Info(void)
 	Proc->Boost[9]=Turbo.MaxRatio_1C;
 }
 
-#define Genuine_Query()							\
-({									\
-	Genuine_Platform_Info();					\
-	HyperThreading_Technology();					\
-})
-
-#define Core2_Query()							\
-({									\
-	Genuine_Platform_Info();					\
-	HyperThreading_Technology();					\
-})
-
-#define Nehalem_Query()							\
-({									\
-	Nehalem_Platform_Info();					\
-	HyperThreading_Technology();					\
-})
-
-#define SandyBridge_Query()						\
-({									\
-	Nehalem_Platform_Info();					\
-	HyperThreading_Technology();					\
-})
-
-void Query_Genuine(void)
+void Query_GenuineIntel(void)
 {
-	Genuine_Platform_Info();
+	Intel_Platform_Info();
 	HyperThreading_Technology();
+}
+
+void Query_AuthenticAMD(void)
+{
+	Proc->CPU.OnLine=Proc->CPU.Count;
+
+	Proc->Boost[0]=1;
+	Proc->Boost[1]=10;
+	Proc->Boost[9]=10;
 }
 
 void Query_Core2(void)
 {
-	Genuine_Platform_Info();
+	Intel_Platform_Info();
+	DynamicAcceleration();
 	HyperThreading_Technology();
 }
 
@@ -948,16 +1005,16 @@ void ThermalMonitor_Set(CORE *Core)
 	Core->Thermal.TM2_Enable = Therm2Control.TM_SELECT;
 }
 
-#define PerCore_Genuine_Query(Core)					\
+#define PerCore_Intel_Query(Core)					\
 ({									\
 	ThermalMonitor_Set(Core);					\
 })
 
-#define PerCore_Core2_Query(Core)					\
-({									\
-	SpeedStep_Technology(Core);					\
-	ThermalMonitor_Set(Core);					\
-})
+void PerCore_Core2_Query(CORE *Core)
+{
+	SpeedStep_Technology(Core);
+	ThermalMonitor_Set(Core);
+}
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
@@ -1001,14 +1058,14 @@ void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu=smp_processor_id();
 
-	if(KPrivate->Join[cpu]->FSM.created == 0)
+	if(KPrivate->Join[cpu]->tsm.created == 0)
 	{
 		hrtimer_init(	&KPrivate->Join[cpu]->Timer,
 				CLOCK_MONOTONIC,
 				HRTIMER_MODE_REL_PINNED);
 		KPrivate->Join[cpu]->Timer.function=Cycle_Function;
 
-		KPrivate->Join[cpu]->FSM.created=1;
+		KPrivate->Join[cpu]->tsm.created=1;
 
 		printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Init Timer\n", cpu);
 	}
@@ -1045,8 +1102,8 @@ void Controller_Start(void)
 	{
 		unsigned int cpu=0;
 		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
-		    &&	(KPrivate->Join[cpu]->FSM.started == 0))
+		    if(	(KPrivate->Join[cpu]->tsm.created == 1)
+		    &&	(KPrivate->Join[cpu]->tsm.started == 0))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, 0);
@@ -1059,8 +1116,8 @@ void Controller_Stop(void)
 	{
 		unsigned int cpu=0;
 		for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
-		    &&	(KPrivate->Join[cpu]->FSM.started == 1))
+		    if(	(KPrivate->Join[cpu]->tsm.created == 1)
+		    &&	(KPrivate->Join[cpu]->tsm.started == 1))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, 1);
@@ -1075,27 +1132,27 @@ void Controller_Exit(void)
 		Arch[Proc->ArchID].Exit();
 
 	for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-		KPrivate->Join[cpu]->FSM.created=0;
+		KPrivate->Join[cpu]->tsm.created=0;
 }
 
 void Counters_Set(CORE *Core)
 {
+    if(Proc->Features.PerfMon.AX.Version >= 2)
+    {
 	GLOBAL_PERF_COUNTER GlobalPerfCounter={.value=0};
 	FIXED_PERF_COUNTER FixedPerfCounter={.value=0};
 	GLOBAL_PERF_STATUS Overflow={.value=0};
 	GLOBAL_PERF_OVF_CTRL OvfControl={.value=0};
 
 	RDMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
-
 	Core->SaveArea.GlobalPerfCounter=GlobalPerfCounter;
 	GlobalPerfCounter.EN_FIXED_CTR0=1;
 	GlobalPerfCounter.EN_FIXED_CTR1=1;
 	GlobalPerfCounter.EN_FIXED_CTR2=1;
-
 	WRMSR(GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
 
-	RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
+	RDMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
 	Core->SaveArea.FixedPerfCounter=FixedPerfCounter;
 	FixedPerfCounter.EN0_OS=1;
 	FixedPerfCounter.EN1_OS=1;
@@ -1104,19 +1161,23 @@ void Counters_Set(CORE *Core)
 	FixedPerfCounter.EN1_Usr=1;
 	FixedPerfCounter.EN2_Usr=1;
 
-	if(!Proc->Features.HTT_Enable)
+	if(Proc->Features.PerfMon.AX.Version >= 3)
 	{
-		FixedPerfCounter.AnyThread_EN0=1;
-		FixedPerfCounter.AnyThread_EN1=1;
-		FixedPerfCounter.AnyThread_EN2=1;
-	}
-	else	// Per Thread
-	{
-		FixedPerfCounter.AnyThread_EN0=0;
-		FixedPerfCounter.AnyThread_EN1=0;
-		FixedPerfCounter.AnyThread_EN2=0;
+		if(!Proc->Features.HTT_Enable)
+		{
+			FixedPerfCounter.AnyThread_EN0=1;
+			FixedPerfCounter.AnyThread_EN1=1;
+			FixedPerfCounter.AnyThread_EN2=1;
+		}
+		else	// Per Thread
+		{
+			FixedPerfCounter.AnyThread_EN0=0;
+			FixedPerfCounter.AnyThread_EN1=0;
+			FixedPerfCounter.AnyThread_EN2=0;
+		}
 	}
 	WRMSR(FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+
 
 	RDMSR(Overflow, MSR_CORE_PERF_GLOBAL_STATUS);
 	if(Overflow.Overflow_CTR0)
@@ -1129,6 +1190,7 @@ void Counters_Set(CORE *Core)
 	| Overflow.Overflow_CTR1					\
 	| Overflow.Overflow_CTR2)
 		WRMSR(OvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
+    }
 }
 
 void Counters_Clear(CORE *Core)
@@ -1317,12 +1379,12 @@ void Core_Temp(CORE *Core)
 }
 
 
-static enum hrtimer_restart Cycle_Genuine(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -1351,40 +1413,108 @@ static enum hrtimer_restart Cycle_Genuine(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
-void InitTimer_Genuine(unsigned int cpu)
+void InitTimer_GenuineIntel(unsigned int cpu)
 {
-	smp_call_function_single(cpu, InitTimer, Cycle_Genuine, 1);
+	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
 }
 
-void Start_Genuine(void *arg)
+void Start_GenuineIntel(void *arg)
 {
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	PerCore_Genuine_Query(Core);
+	PerCore_Intel_Query(Core);
 
 	Counters_Genuine(Core, 0);
 
-	KPrivate->Join[cpu]->FSM.mustFwd=1;
+	KPrivate->Join[cpu]->tsm.mustFwd=1;
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->FSM.started=1;
+	KPrivate->Join[cpu]->tsm.started=1;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
-void Stop_Genuine(void *arg)
+void Stop_GenuineIntel(void *arg)
 {
 	unsigned int cpu=smp_processor_id();
 
-	KPrivate->Join[cpu]->FSM.mustFwd=0;
+	KPrivate->Join[cpu]->tsm.mustFwd=0;
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	KPrivate->Join[cpu]->FSM.started=0;
+	KPrivate->Join[cpu]->tsm.started=0;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
+}
+
+static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
+	{
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		if(Proc->Features.Power.CX.HCF_Cap == 1) // MPERF & APERF ?
+			Counters_Genuine(Core, 1);
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
+	}
+	else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_AuthenticAMD(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
+}
+
+void Start_AuthenticAMD(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+//!	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	KPrivate->Join[cpu]->tsm.mustFwd=1;
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->tsm.started=1;
+
+	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
+}
+
+void Stop_AuthenticAMD(void *arg)
+{
+	unsigned int cpu=smp_processor_id();
+
+	KPrivate->Join[cpu]->tsm.mustFwd=0;
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	KPrivate->Join[cpu]->tsm.started=0;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
@@ -1394,7 +1524,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -1442,13 +1572,13 @@ void Start_Core2(void *arg)
 	Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
-	KPrivate->Join[cpu]->FSM.mustFwd=1;
+	KPrivate->Join[cpu]->tsm.mustFwd=1;
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->FSM.started=1;
+	KPrivate->Join[cpu]->tsm.started=1;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
@@ -1458,13 +1588,13 @@ void Stop_Core2(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->FSM.mustFwd=0;
+	KPrivate->Join[cpu]->tsm.mustFwd=0;
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
 
-	KPrivate->Join[cpu]->FSM.started=0;
+	KPrivate->Join[cpu]->tsm.started=0;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
@@ -1474,7 +1604,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -1529,13 +1659,13 @@ void Start_Nehalem(void *arg)
 	Counters_Set(Core);
 	Counters_Nehalem(Core, 0);
 
-	KPrivate->Join[cpu]->FSM.mustFwd=1;
+	KPrivate->Join[cpu]->tsm.mustFwd=1;
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->FSM.started=1;
+	KPrivate->Join[cpu]->tsm.started=1;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
@@ -1545,13 +1675,13 @@ void Stop_Nehalem(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->FSM.mustFwd=0;
+	KPrivate->Join[cpu]->tsm.mustFwd=0;
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
 
-	KPrivate->Join[cpu]->FSM.started=0;
+	KPrivate->Join[cpu]->tsm.started=0;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
@@ -1562,7 +1692,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if(KPrivate->Join[cpu]->FSM.mustFwd == 1)
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
 	{
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
@@ -1620,13 +1750,13 @@ void Start_SandyBridge(void *arg)
 	Counters_Set(Core);
 	Counters_SandyBridge(Core, 0);
 
-	KPrivate->Join[cpu]->FSM.mustFwd=1;
+	KPrivate->Join[cpu]->tsm.mustFwd=1;
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->FSM.started=1;
+	KPrivate->Join[cpu]->tsm.started=1;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
@@ -1636,13 +1766,13 @@ void Stop_SandyBridge(void *arg)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->FSM.mustFwd=0;
+	KPrivate->Join[cpu]->tsm.mustFwd=0;
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Counters_Clear(Core);
 
-	KPrivate->Join[cpu]->FSM.started=0;
+	KPrivate->Join[cpu]->tsm.started=0;
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
@@ -1786,7 +1916,7 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 		    if(Arch[Proc->ArchID].Timer != NULL)
 			Arch[Proc->ArchID].Timer(cpu);
 
-		    if(	(KPrivate->Join[cpu]->FSM.started == 0)
+		    if(	(KPrivate->Join[cpu]->tsm.started == 0)
 		    &&	(Arch[Proc->ArchID].Start != NULL) )
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
@@ -1800,8 +1930,8 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 //-		case CPU_DOWN_PREPARE_FROZEN:
 		if((cpu >=0) && (cpu < Proc->CPU.Count))
 		{
-		    if(	(KPrivate->Join[cpu]->FSM.created == 1)
-		    &&	(KPrivate->Join[cpu]->FSM.started == 1)
+		    if(	(KPrivate->Join[cpu]->tsm.created == 1)
+		    &&	(KPrivate->Join[cpu]->tsm.started == 1)
 		    &&	(Arch[Proc->ArchID].Stop != NULL) )
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
@@ -1825,12 +1955,19 @@ static struct notifier_block CoreFreqK_notifier_block=
 static int __init CoreFreqK_init(void)
 {
 	int rc=0;
-	CoreFreqK.kcdev=cdev_alloc();
-	CoreFreqK.kcdev->ops=&CoreFreqK_fops;
-	CoreFreqK.kcdev->owner=THIS_MODULE;
-
-        if(alloc_chrdev_region(&CoreFreqK.nmdev, 0, 1, DRV_FILENAME) >= 0)
+	ARG Arg={.count=0};
+	// Query features on the presumed BSP processor.
+	memset(&Arg.features, 0, sizeof(FEATURES));
+	rc=smp_call_function_single(0, Query_Features, &Arg, 1);
+	rc = (rc == 0) ? ((Arg.count > 0) ? 0 : -ENXIO) : rc;
+	if(rc == 0)
 	{
+	  CoreFreqK.kcdev=cdev_alloc();
+	  CoreFreqK.kcdev->ops=&CoreFreqK_fops;
+	  CoreFreqK.kcdev->owner=THIS_MODULE;
+
+	  if(alloc_chrdev_region(&CoreFreqK.nmdev, 0, 1, DRV_FILENAME) >= 0)
+	  {
 	    CoreFreqK.Major=MAJOR(CoreFreqK.nmdev);
 	    CoreFreqK.mkdev=MKDEV(CoreFreqK.Major, 0);
 
@@ -1845,12 +1982,12 @@ static int __init CoreFreqK_init(void)
 					 CoreFreqK.mkdev, NULL,
 					 DRV_DEVNAME)) != NULL)
 		{
-		    unsigned int cpu=0, count=Core_Count();
+		    unsigned int cpu=0;
 		    unsigned long publicSize=0, privateSize=0, packageSize=0;
 
-		    publicSize=sizeof(KPUBLIC) + sizeof(CORE *) * count;
+		    publicSize=sizeof(KPUBLIC) + sizeof(CORE *) * Arg.count;
 
-		    privateSize=sizeof(KPRIVATE) + sizeof(JOIN *) * count;
+		    privateSize=sizeof(KPRIVATE) + sizeof(JOIN *) * Arg.count;
 
 		    if(((KPublic=kmalloc(publicSize, GFP_KERNEL)) != NULL)
 		    && ((KPrivate=kmalloc(privateSize, GFP_KERNEL)) != NULL))
@@ -1862,7 +1999,7 @@ static int __init CoreFreqK_init(void)
 			if((Proc=kmalloc(packageSize, GFP_KERNEL)) != NULL)
 			{
 			    memset(Proc, 0, packageSize);
-			    Proc->CPU.Count=count;
+			    Proc->CPU.Count=Arg.count;
 
 			    if((SleepInterval >= LOOP_MIN_MS)
 			    && (SleepInterval <= LOOP_MAX_MS))
@@ -1870,13 +2007,11 @@ static int __init CoreFreqK_init(void)
 			    else
 				Proc->SleepInterval=LOOP_DEF_MS;
 
-			    // Query features on the presumed BSP processor.
-			    smp_call_function_single(	0,
-							Proc_Features,
-							&Proc->Features,
-							1);
+			    memcpy(	&Proc->Features,
+					&Arg.features,
+					sizeof(FEATURES) );
 
-			    Arch[0].Architecture=Proc->Features.VendorID;
+			    Arch[0].Architecture=Proc->Features.Info.VendorID;
 
 			    RearmTheTimer=
 				ktime_set(0, Proc->SleepInterval * 1000000L);
@@ -1908,6 +2043,24 @@ static int __init CoreFreqK_init(void)
 
 				    KPublic->Core[cpu]->Bind=cpu;
 				}
+				if(!strncmp(Arch[0].Architecture,
+						VENDOR_INTEL, 12))
+				{
+					Arch[0].Query=Query_GenuineIntel;
+					Arch[0].Start=Start_GenuineIntel;
+					Arch[0].Stop=Stop_GenuineIntel;
+					Arch[0].Timer=InitTimer_GenuineIntel;
+					Arch[0].Clock=Clock_GenuineIntel;
+				}
+				else if(!strncmp(Arch[0].Architecture,
+						VENDOR_AMD, 12))
+				{
+					Arch[0].Query=Query_AuthenticAMD;
+					Arch[0].Start=Start_AuthenticAMD;
+					Arch[0].Stop=Stop_AuthenticAMD;
+					Arch[0].Timer=InitTimer_AuthenticAMD;
+					Arch[0].Clock=Clock_AuthenticAMD;
+				}
 				if((ArchID != -1)
 				&& (ArchID >= 0)
 				&& (ArchID < ARCHITECTURES))
@@ -1928,6 +2081,7 @@ static int __init CoreFreqK_init(void)
 				    ^ Proc->Features.Std.AX.Model))
 					break;
 				}
+
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
@@ -1941,10 +2095,10 @@ static int __init CoreFreqK_init(void)
 				printk(KERN_INFO "CoreFreq:"		\
 				      " Processor [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s] CPU [%u/%u]\n",
-					Arch[Proc->ArchID].Signature.ExtFamily,
-					Arch[Proc->ArchID].Signature.Family,
-					Arch[Proc->ArchID].Signature.ExtModel,
-					Arch[Proc->ArchID].Signature.Model,
+					Proc->Features.Std.AX.ExtFamily,
+					Proc->Features.Std.AX.Family,
+					Proc->Features.Std.AX.ExtModel,
+					Proc->Features.Std.AX.Model,
 					Arch[Proc->ArchID].Architecture,
 					Proc->CPU.OnLine,
 					Proc->CPU.Count);
@@ -2018,12 +2172,13 @@ static int __init CoreFreqK_init(void)
 
 		rc=-EBUSY;
 	    }
-	}
-	else
-	{
+	  }
+	  else
+	  {
 	    cdev_del(CoreFreqK.kcdev);
 
 	    rc=-EBUSY;
+	  }
 	}
 	return(rc);
 }
