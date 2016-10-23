@@ -873,7 +873,7 @@ void SysInfo(SHM_STRUCT *Shm)
 		"  |- Stepping%.*s[%3u]\n"				\
 		"  |- Architecture%.*s[%s]\n"				\
 		"  |- Online CPU%.*s[%u/%u]\n"				\
-		"  |- Base Clock%.*s[%llu]\n"				\
+		"  |- Base Clock%.*s[%3llu]\n"				\
 		"  |- Ratio Boost:%.*s"					\
 			"Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"	\
 		"%.*s",

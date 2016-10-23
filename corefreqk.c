@@ -19,6 +19,7 @@
 #include "coretypes.h"
 #include "intelasm.h"
 #include "intelmsr.h"
+#include "amdmsr.h"
 #include "corefreq-api.h"
 #include "corefreqk.h"
 
@@ -270,11 +271,11 @@ void Query_Features(void *pArg)
 		if(arg->features.Std.DX.HTT)
 			arg->count=arg->features.Std.BX.MaxThread;
 		else
-			arg->count=(BX >> 16) & 0x0ff;
+			arg->count=(BX >> 16) & 0x0ff; // ToDo
 
 		AMD_Brand(arg->features.Info.Brand);
 
-		arg->features.FactoryFreq=0;
+		arg->features.FactoryFreq=2000;	// ToDo
 	}
 	// Common x86
 	asm volatile
@@ -283,17 +284,17 @@ void Query_Features(void *pArg)
 		: "=a"	(LargestExtFunc)
                 : "a" (0x80000000)
 	);
-	if(LargestExtFunc >= 0x80000004 && LargestExtFunc <= 0x80000008)
+	if(LargestExtFunc >= 0x80000001)
 	{
 		asm volatile
 		(
 			"cpuid"
-			: "=d"	(arg->features.InvariantTSC)
+			: "=a"	(arg->features.AdvPower.AX),
+			  "=b"	(arg->features.AdvPower.BX),
+			  "=c"	(arg->features.AdvPower.CX),
+			  "=d"	(arg->features.AdvPower.DX)
 			: "a" (0x80000007)
 		);
-		arg->features.InvariantTSC &= 0x100;
-		arg->features.InvariantTSC >>= 8;
-
 		asm volatile
 		(
 			"cpuid"
@@ -346,7 +347,7 @@ signed int Compute_Clock(void *arg)
 		{
 			RDTSCP64(TSC[1][loop].V[0]);
 
-			udelay(1000);
+			udelay(1000);	// ToDo: compute udelay() overhead.
 
 			RDTSCP64(TSC[1][loop].V[1]);
 		}
@@ -373,7 +374,7 @@ signed int Compute_Clock(void *arg)
 		{
 			RDTSC64(TSC[1][loop].V[0]);
 
-			udelay(1000);
+			udelay(1000);	// ToDo: compute udelay() overhead.
 
 			RDTSC64(TSC[1][loop].V[1]);
 		}
@@ -382,7 +383,8 @@ signed int Compute_Clock(void *arg)
 		preempt_enable();
 	}
 
-	if(Proc->Features.InvariantTSC)
+	if((Proc->Features.AdvPower.DX.Inv_TSC)
+	|| (Proc->Features.ExtInfo.DX.RDTSCP))
 		ComputeWithInvariantTSC();
 	else
 		ComputeWithVariantTSC();
@@ -471,7 +473,7 @@ CLOCK Clock_GenuineIntel(unsigned int ratio)
 // [Authentic AMD]
 CLOCK Clock_AuthenticAMD(unsigned int ratio)
 {
-	CLOCK clock={.Q=100, .R=0, .Hz=100000000L};
+	CLOCK clock={.Q=100, .R=0, .Hz=100000000L};	// Turion testing.
 	return(clock);
 };
 
@@ -716,7 +718,7 @@ void Map_Topology(void *arg)
 			: "=b"	(features.Std.BX)
 			: "a"	(0x1)
 		);
-		Core->T.ApicID=features.Std.BX.Apic_ID;
+		Core->T.ApicID=features.Std.BX.Apic_ID;	// ToDo
 
 		Cache_Topology(Core);
 	}
@@ -827,7 +829,7 @@ unsigned int Proc_Topology(void)
 		{
 			if(!Core_Topology(cpu))
 			{
-				// CPU state based on the harware
+				// CPU state based on the hardware
 				if(KPublic->Core[cpu]->T.ApicID >= 0)
 				{
 					KPublic->Core[cpu]->OffLine.HW=0;
@@ -869,9 +871,7 @@ void Intel_Platform_Info(void)
 
 void DynamicAcceleration(void)
 {
-	struct THERMAL_POWER_LEAF thermal_Power_Leaf={
-		.AX={0}, .BX={0}, .CX={0}, .DX={0}
-	};
+	struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
 	asm volatile
 	(
 		"cpuid"
@@ -919,9 +919,31 @@ void Query_AuthenticAMD(void)
 {
 	Proc->CPU.OnLine=Proc->CPU.Count;
 
-	Proc->Boost[0]=1;
-	Proc->Boost[1]=10;
-	Proc->Boost[9]=10;
+	if(Proc->Features.AdvPower.DX.FID == 1)
+	{	// PowerNow!
+		FIDVID_STATUS FidVidStatus={.value=0};
+
+		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+
+		Proc->Boost[0]=8 + FidVidStatus.StartFID;
+		Proc->Boost[1]=8 + FidVidStatus.MaxFID;
+		Proc->Boost[9]=Proc->Boost[1];
+	}
+	else
+	{
+		HWCR HwCfgRegister={.value=0};
+
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+		Proc->Boost[0]=8 + HwCfgRegister.Family_0Fh.StartFID;
+		Proc->Boost[1]=Proc->Boost[0];
+		Proc->Boost[9]=Proc->Boost[0];
+	}
+/*
+	else if(Proc->Features.AdvPower.DX.HwPstate == 1)
+		CoreCOF = 100 * (MSRC001_00[6B:64][CpuFid] + 10h)
+			/ (2^MSRC001_00[6B:64][CpuDid])
+*/
 }
 
 void Query_Core2(void)
@@ -954,9 +976,7 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 
 void TurboBoost_Technology(CORE *Core)
 {
-	struct THERMAL_POWER_LEAF thermal_Power_Leaf={
-		.AX={0}, .BX={0}, .CX={0}, .DX={0}
-	};
+	struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
 	asm volatile
 	(
 		"cpuid"
@@ -1190,16 +1210,19 @@ void Counters_Set(CORE *Core)
 	if(Overflow.Overflow_CTR2)
 		OvfControl.Clear_Ovf_CTR2=1;
 	if(Overflow.Overflow_CTR0					\
-	| Overflow.Overflow_CTR1					\
-	| Overflow.Overflow_CTR2)
+	 | Overflow.Overflow_CTR1					\
+	 | Overflow.Overflow_CTR2)
 		WRMSR(OvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
     }
 }
 
 void Counters_Clear(CORE *Core)
 {
-	WRMSR(	Core->SaveArea.FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
-	WRMSR(	Core->SaveArea.GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
+    if(Proc->Features.PerfMon.AX.Version >= 2)
+    {
+	WRMSR(Core->SaveArea.FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+	WRMSR(Core->SaveArea.GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
+    }
 }
 
 #define Counters_Genuine(Core, T)					\
@@ -1216,7 +1239,7 @@ void Counters_Clear(CORE *Core)
 
 #define Counters_Core2(Core, T)						\
 ({									\
-    if(!Proc->Features.InvariantTSC)					\
+    if(!Proc->Features.AdvPower.DX.Inv_TSC)				\
  	{								\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
@@ -1416,6 +1439,8 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
+#define Cycle_AuthenticAMD	Cycle_GenuineIntel
+
 void InitTimer_GenuineIntel(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
@@ -1453,8 +1478,8 @@ void Stop_GenuineIntel(void *arg)
 
 	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
-
-static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
+/*
+static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 {
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
@@ -1465,8 +1490,64 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		if(Proc->Features.Power.CX.HCF_Cap == 1) // MPERF & APERF ?
-			Counters_Genuine(Core, 1);
+		// Core Performance Boost instructions here
+
+		// Derive C1
+		Core->Counter[1].C1=					\
+		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?	\
+		    Core->Counter[1].TSC - Core->Counter[1].C0.URC	\
+		    : 0;
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(Core->Sync.V, 0);
+
+		return(HRTIMER_RESTART);
+	}
+	else
+		return(HRTIMER_NORESTART);
+}
+*/
+static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
+{
+	unsigned int cpu=smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	if(KPrivate->Join[cpu]->tsm.mustFwd == 1)
+	{
+		FIDVID_STATUS FidVidStatus={.value=0};
+
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+
+		// ToDo: C-state workaround
+		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC	\
+					+ (8 + FidVidStatus.CurrFID)	\
+					* Core->Clock.Hz;
+
+		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
+
+		Core->Counter[1].TSC	= Core->Counter[0].TSC		\
+					+ (Proc->Boost[1] * Core->Clock.Hz);
+
+		/* Derive C1 */
+		Core->Counter[1].C1=					\
+		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?	\
+		    Core->Counter[1].TSC - Core->Counter[1].C0.URC	\
+		    : 0;
 
 		Delta_C0(Core);
 
@@ -1490,7 +1571,15 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 
 void InitTimer_AuthenticAMD(unsigned int cpu)
 {
-	smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
+/*
+	if(Proc->Features.AdvPower.DX.CPB == 1)	// Core Performance Boost.
+	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
+	else
+*/
+	if(Proc->Features.Power.CX.EffFreq == 1) // MPERF & APERF ?
+	    smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
+	else
+	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_10h, 1);
 }
 
 void Start_AuthenticAMD(void *arg)
@@ -2063,6 +2152,8 @@ static int __init CoreFreqK_init(void)
 					Arch[0].Stop=Stop_AuthenticAMD;
 					Arch[0].Timer=InitTimer_AuthenticAMD;
 					Arch[0].Clock=Clock_AuthenticAMD;
+
+					AutoClock=0; // ToDo: correct clock
 				}
 				if((ArchID != -1)
 				&& (ArchID >= 0)

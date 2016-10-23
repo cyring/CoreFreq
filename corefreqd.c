@@ -177,7 +177,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Shm->Proc.InvariantTSC=(Proc->Features.Std.DX.TSC
-				<< Proc->Features.InvariantTSC);
+				<< Proc->Features.AdvPower.DX.Inv_TSC);
 }
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
@@ -509,7 +509,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Core[0]->T.Base.EXTD,
 			Proc->Features.Std.DX.TSC ?
 				Proc->Features.ExtInfo.DX.RdTSCP ? 'P':'1':'0',
-			Proc->Features.InvariantTSC ? 'I':'V',
+			Proc->Features.AdvPower.DX.Inv_TSC ? 'I':'V',
 			Proc->Features.Std.DX.HTT,
 				Proc->Features.HTT_Enable,
 			Proc->Features.Std.CX.EIST,

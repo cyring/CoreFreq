@@ -93,8 +93,8 @@
 #define	RDTSC64(_val64)							\
 	asm volatile							\
 	(								\
-		"lfence			\n\t"				\
 		"rdtsc			\n\t"				\
+		"lfence			\n\t"				\
 		"shlq	$32,	%%rdx	\n\t"				\
 		"orq	%%rdx,	%%rax	\n\t"				\
 		"movq	%%rax,	%0"					\

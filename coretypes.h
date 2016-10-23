@@ -216,15 +216,24 @@ typedef struct THERMAL_POWER_LEAF
 		Threshld:  4-0,
 		Unused1	: 32-4;
 	} BX;
+    union
+    {
 	struct
-	{	// Most Intel reserved.
+	{	// Intel reserved.
 		unsigned int
-		HCF_Cap	:  1-0, // Common x86. AMD: EffFreq support.
+		HCF_Cap	:  1-0, // MSR: IA32_MPERF (E7H) & IA32_APERF (E8H)
 		ACNT_Cap:  2-1,
 		Unused1	:  3-2,
 		PEB_Cap	:  4-3,
 		Unused2	: 32-4;
-	} CX;
+	};
+	struct
+	{	// AMD reserved.
+		unsigned int
+		EffFreq	:  1-0, // MSR0000_00E7 (MPERF) & MSR0000_00E8 (APERF)
+		NotUsed : 32-1;
+	};
+    } CX;
 	struct
 	{	// Intel reserved.
 		unsigned int
@@ -326,6 +335,7 @@ typedef	struct
 	};
 	struct	{ // AMD reserved.
 		unsigned int
+		// Family 0Fh :
 		LahfSahf:  1-0,
 		MP_Mode	:  2-1,  // Core multi-processing legacy mode.
 		SVM	:  3-2,  // Secure virtual machine.
@@ -335,6 +345,7 @@ typedef	struct
 		SSE4A	:  7-6,
 		AlignSSE:  8-7,  // Misaligned SSE mode.
 		PREFETCH:  9-8,  // PREFETCH, PREFETCHW instruction.
+		// Family 15h :
 		OSVW	: 10-9,  // OS-visible workaround support.
 		IBS	: 11-10, // Instruction based sampling.
 		XOP	: 12-11, // Extended operation support.
@@ -406,6 +417,43 @@ typedef	struct
     } DX;
 } CPUID_0x80000001;
 
+typedef struct	// Architectural Performance Monitoring Leaf.
+{
+	struct
+	{
+		unsigned int
+		Unused1	: 32-0;
+	} AX, BX, CX;
+    union
+    {
+	struct { // Intel reserved.
+		unsigned int
+		Unused1	:  8-0,
+		Inv_TSC	:  9-8, // Invariant TSC available if 1
+		Unused2	: 32-9;
+	};
+	struct { // AMD reserved.
+		unsigned int
+		// Family 0Fh :
+		TS	:  1-0,  // Temperature sensor
+		FID	:  2-1,  // Frequency ID control is supported.
+		VID	:  3-2,  // Voltage ID control is supported.
+		TTP	:  4-3,  // THERMTRIP is supported = 1.
+		TM	:  5-4,  // Hardware thermal control (HTC).
+		STC	:  6-5,  // K7-K8: Software thermal control (STC)
+		_100MHz	:  7-6,  // 100 MHz multiplier Control.
+		// Family 15h :
+		HwPstate:  8-7,  // Hardware P-state control msr exist ?
+		TscInv	:  9-8,  // Invariant TSC ?
+		CPB	: 10-9,  // Core performance boost.
+		EffFrqRO: 11-10, // Read-only effective frequency interf. msr ?
+		ProcFb	: 12-11, // Processor feedback interface available if 1
+		ProcPwr	: 13-12, // Core power reporting interface supported.
+		Reserved: 32-13;
+	};
+    } DX;
+} CPUID_0x80000007;
+
 typedef struct
 {
 	CPUID_0x00000000 Info;
@@ -415,8 +463,9 @@ typedef struct
 	CPUID_0x00000007 ExtFeature;
 	CPUID_0x0000000a PerfMon;
 	CPUID_0x80000001 ExtInfo;
+	CPUID_0x80000007 AdvPower;
 
-	unsigned int	InvariantTSC,
+	unsigned int/*	InvariantTSC,*/
                         HTT_Enable,
 			FactoryFreq;
 } FEATURES;
