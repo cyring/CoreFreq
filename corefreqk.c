@@ -274,8 +274,6 @@ void Query_Features(void *pArg)
 			arg->count=(BX >> 16) & 0x0ff; // ToDo
 
 		AMD_Brand(arg->features.Info.Brand);
-
-		arg->features.FactoryFreq=2000;	// ToDo
 	}
 	// Common x86
 	asm volatile
@@ -289,18 +287,18 @@ void Query_Features(void *pArg)
 		asm volatile
 		(
 			"cpuid"
+			: "=c"	(arg->features.ExtInfo.CX),
+			  "=d"	(arg->features.ExtInfo.DX)
+			: "a" (0x80000001)
+		);
+		asm volatile
+		(
+			"cpuid"
 			: "=a"	(arg->features.AdvPower.AX),
 			  "=b"	(arg->features.AdvPower.BX),
 			  "=c"	(arg->features.AdvPower.CX),
 			  "=d"	(arg->features.AdvPower.DX)
 			: "a" (0x80000007)
-		);
-		asm volatile
-		(
-			"cpuid"
-			: "=c"	(arg->features.ExtInfo.CX),
-			  "=d"	(arg->features.ExtInfo.DX)
-			: "a" (0x80000001)
 		);
 	}
 }
@@ -329,7 +327,7 @@ signed int Compute_Clock(void *arg)
 	unsigned long long D[2][OCCURRENCES];
 	unsigned int loop=0, what=0, best[2]={0, 0}, top[2]={0, 0};
 
-	void ComputeWithInvariantTSC(void)
+	void ComputeWithSerializedTSC(void)
 	{
 		// No preemption, no interrupt.
 		unsigned long flags;
@@ -356,7 +354,7 @@ signed int Compute_Clock(void *arg)
 		preempt_enable();
 	}
 
-	void ComputeWithVariantTSC(void)
+	void ComputeWithUnSerializedTSC(void)
 	{
 		// No preemption, no interrupt.
 		unsigned long flags;
@@ -385,9 +383,9 @@ signed int Compute_Clock(void *arg)
 
 	if((Proc->Features.AdvPower.DX.Inv_TSC)
 	|| (Proc->Features.ExtInfo.DX.RDTSCP))
-		ComputeWithInvariantTSC();
+		ComputeWithSerializedTSC();
 	else
-		ComputeWithVariantTSC();
+		ComputeWithUnSerializedTSC();
 
 
 	memset(D, 0, 2 * OCCURRENCES);
@@ -917,8 +915,6 @@ void Query_GenuineIntel(void)
 
 void Query_AuthenticAMD(void)
 {
-	Proc->CPU.OnLine=Proc->CPU.Count;
-
 	if(Proc->Features.AdvPower.DX.FID == 1)
 	{	// PowerNow!
 		FIDVID_STATUS FidVidStatus={.value=0};
@@ -944,6 +940,10 @@ void Query_AuthenticAMD(void)
 		CoreCOF = 100 * (MSRC001_00[6B:64][CpuFid] + 10h)
 			/ (2^MSRC001_00[6B:64][CpuDid])
 */
+
+	Proc->Features.FactoryFreq=Proc->Boost[1] * 1000;	// MHz
+
+	HyperThreading_Technology();
 }
 
 void Query_Core2(void)
@@ -1490,7 +1490,8 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		// Core Performance Boost instructions here
+		// Core Performance Boost instructions
+		// [ Here ]
 
 		// Derive C1
 		Core->Counter[1].C1=					\
@@ -1533,7 +1534,7 @@ static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
 
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		// ToDo: C-state workaround
+		// C-state workaround
 		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC	\
 					+ (8 + FidVidStatus.CurrFID)	\
 					* Core->Clock.Hz;

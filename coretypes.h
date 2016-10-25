@@ -465,8 +465,7 @@ typedef struct
 	CPUID_0x80000001 ExtInfo;
 	CPUID_0x80000007 AdvPower;
 
-	unsigned int/*	InvariantTSC,*/
-                        HTT_Enable,
+	unsigned int    HTT_Enable,
 			FactoryFreq;
 } FEATURES;
 
