@@ -209,12 +209,14 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	unsigned int loop=0;
 	for(loop=0; loop < CACHE_MAX_LEVEL; loop++)
 	{
-		if(Core[cpu]->T.Cache[loop].Type > 0)
-		{
-			unsigned int level=Core[cpu]->T.Cache[loop].Level;
-			if(Core[cpu]->T.Cache[loop].Type == 2) // Instruction
-				level=0;
+	    if(Core[cpu]->T.Cache[loop].Type > 0)
+	    {
+		unsigned int level=Core[cpu]->T.Cache[loop].Level;
+		if(Core[cpu]->T.Cache[loop].Type == 2) // Instruction
+			level=0;
 
+		if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
+		{
 			Shm->Cpu[cpu].Topology.Cache[level].Set=
 				Core[cpu]->T.Cache[loop].Set + 1;
 			Shm->Cpu[cpu].Topology.Cache[level].LineSz=
@@ -229,12 +231,17 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].LineSz
 			* Shm->Cpu[cpu].Topology.Cache[level].Part
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
-
+		}
+	  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+		{
+			Shm->Cpu[cpu].Topology.Cache[level].Size=
+				Core[cpu]->T.Cache[loop].Size;
+		}
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack=
 				Core[cpu]->T.Cache[loop].WrBack;
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive=
 				Core[cpu]->T.Cache[loop].Inclus;
-		}
+	    }
 	}
 }
 

@@ -23,6 +23,9 @@ typedef unsigned int		Bit32;
 
 #define	CACHE_MAX_LEVEL	(3 + 1)
 
+#define VENDOR_INTEL	"GenuineIntel"
+#define VENDOR_AMD	"AuthenticAMD"
+
 typedef struct
 {
 	unsigned long long	HW,

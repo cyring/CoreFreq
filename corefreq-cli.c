@@ -292,6 +292,21 @@ void Top(SHM_STRUCT *Shm)
 		13, hSpace,
 		Shm->Proc.Architecture);
 
+	unsigned int L1I_Size=0, L1D_Size=0, L2U_Size=0, L3U_Size=0;
+	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
+	{
+		L1I_Size=Shm->Cpu[0].Topology.Cache[0].Size / 1024;
+		L1D_Size=Shm->Cpu[0].Topology.Cache[1].Size / 1024;
+		L2U_Size=Shm->Cpu[0].Topology.Cache[2].Size / 1024;
+		L3U_Size=Shm->Cpu[0].Topology.Cache[3].Size / 1024;
+	}
+  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	{
+		L1I_Size=Shm->Cpu[0].Topology.Cache[0].Size;
+		L1D_Size=Shm->Cpu[0].Topology.Cache[1].Size;
+		L2U_Size=Shm->Cpu[0].Topology.Cache[2].Size;
+		L3U_Size=Shm->Cpu[0].Topology.Cache[3].Size;
+	}
 	sprintf(headerView,
 		"%s\n"							\
 		"%s%.*s"						\
@@ -302,12 +317,12 @@ void Top(SHM_STRUCT *Shm)
 		hProc,
 		hArch,
 		drawSize.width - 55 - strlen(Shm->Proc.Architecture), hSpace,
-		Shm->Cpu[0].Topology.Cache[0].Size / 1024,
-		Shm->Cpu[0].Topology.Cache[1].Size / 1024,
+		L1I_Size,
+		L1D_Size,
 		13, hSpace,
 		drawSize.width - 58, hSpace,
-		Shm->Cpu[0].Topology.Cache[2].Size / 1024,
-		Shm->Cpu[0].Topology.Cache[3].Size / 1024);
+		L2U_Size,
+		L3U_Size);
 
 	if(Shm->Proc.PM_version == 0)
 		strcpy(hString, " PM");

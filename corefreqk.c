@@ -381,8 +381,8 @@ signed int Compute_Clock(void *arg)
 		preempt_enable();
 	}
 
-	if((Proc->Features.AdvPower.DX.Inv_TSC)
-	|| (Proc->Features.ExtInfo.DX.RDTSCP))
+	if((Proc->Features.AdvPower.DX.Inv_TSC == 1)
+	|| (Proc->Features.ExtInfo.DX.RDTSCP == 1))
 		ComputeWithSerializedTSC();
 	else
 		ComputeWithUnSerializedTSC();
@@ -683,8 +683,10 @@ CLOCK Clock_Haswell(unsigned int ratio)
 void Cache_Topology(CORE *Core)
 {
 	unsigned int level=0x0;
-	for(level=0; level < CACHE_MAX_LEVEL; level++)
+	if(!strncmp(Proc->Features.Info.VendorID, VENDOR_INTEL, 12))
 	{
+	    for(level=0; level < CACHE_MAX_LEVEL; level++)
+	    {
 		asm volatile
 		(
 			"cpuid"
@@ -697,7 +699,53 @@ void Cache_Topology(CORE *Core)
 		);
 		if(!Core->T.Cache[level].Type)
 			break;
+	    }
 	}
+	else if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
+	{
+	    unsigned int AX=0x0, BX=0x0, CX=0x0, DX=0x0;
+
+		// Map to the Intel algorithm.
+		Core->T.Cache[0].Level=1;
+		Core->T.Cache[0].Type=2;		// Inst.
+		Core->T.Cache[1].Level=1;
+		Core->T.Cache[1].Type=1;		// Data
+
+		// Fn8000_0005 L1 Data and Inst. caches
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(AX),
+			  "=b"	(BX),
+			  "=c"	(CX),
+			  "=d"	(DX)
+			: "a"	(0x80000005)
+		);
+		Core->T.Cache[0].Size=(DX >> 24);	// Inst.
+		Core->T.Cache[1].Size=(CX >> 24);	// Data
+
+		Core->T.Cache[2].Level=2;
+		Core->T.Cache[2].Type=3;		// Unified!
+		Core->T.Cache[3].Level=3;
+		Core->T.Cache[3].Type=3;
+
+		// Fn8000_0006 L2 and L3 caches
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(AX),
+			  "=b"	(BX),
+			  "=c"	(CX),
+			  "=d"	(DX)
+			: "a"	(0x80000006)
+		);
+		Core->T.Cache[2].Size=(CX >> 16);
+
+		if(Proc->Features.Std.AX.Family >= 0x15)
+			Core->T.Cache[3].Size=(DX >> 18);
+		else
+			Core->T.Cache[3].Size=(DX >> 16);
+}
 }
 
 // Enumerate the Processor's Cores and Threads topology.
@@ -2154,7 +2202,8 @@ static int __init CoreFreqK_init(void)
 					Arch[0].Timer=InitTimer_AuthenticAMD;
 					Arch[0].Clock=Clock_AuthenticAMD;
 
-					AutoClock=0; // ToDo: correct clock
+					if(!Proc->Features.AdvPower.DX.Inv_TSC)
+						AutoClock=0;
 				}
 				if((ArchID != -1)
 				&& (ArchID >= 0)

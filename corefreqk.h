@@ -686,9 +686,6 @@ extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
-#define VENDOR_INTEL	"GenuineIntel"
-#define VENDOR_AMD	"AuthenticAMD"
-
 //	[Void]
 #define	_Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
