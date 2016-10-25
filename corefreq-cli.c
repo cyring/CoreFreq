@@ -40,6 +40,7 @@ void Emergency(int caught)
 #define RCP	"\033[u"
 #define HIDE	"\033[?25l"
 #define SHOW	"\033[?25h"
+#define RESET	"\033c"
 #define CLS	"\033[H\033[J"
 #define DoK	"\033[1;30;40m"
 #define RoK	"\033[1;31;40m"
@@ -1093,7 +1094,7 @@ int main(int argc, char *argv[])
 							atoi(argv[3]),
 							atoi(argv[4]),
 							atoi(argv[5])	);
-					printf(SHOW);
+					printf(SHOW RESET);
 				}
 				else if(argc == 2)
 				{
@@ -1102,7 +1103,7 @@ int main(int argc, char *argv[])
 							LEADING_TOP,
 							MARGIN_WIDTH,
 							MARGIN_HEIGHT);
-					printf(SHOW);
+					printf(SHOW RESET);
 				}
 				else
 					rc=help(appName);
@@ -1111,7 +1112,7 @@ int main(int argc, char *argv[])
 			{
 				printf(CLS HIDE);
 				Top(Shm);
-				printf(CLS SHOW);
+				printf(SHOW RESET);
 			}
 			break;
 			default:
