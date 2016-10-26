@@ -702,10 +702,9 @@ void Cache_Topology(CORE *Core)
 	    }
 	}
 	else if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
-	{
-	    unsigned int AX=0x0, BX=0x0, CX=0x0, DX=0x0;
-
-		// Map to the Intel algorithm.
+	{	// Employ the Intel algorithm.
+		struct CACHE_INFO CacheInfo;
+	
 		Core->T.Cache[0].Level=1;
 		Core->T.Cache[0].Type=2;		// Inst.
 		Core->T.Cache[1].Level=1;
@@ -715,14 +714,18 @@ void Cache_Topology(CORE *Core)
 		asm volatile
 		(
 			"cpuid"
-			: "=a"	(AX),
-			  "=b"	(BX),
-			  "=c"	(CX),
-			  "=d"	(DX)
+			: "=a"	(CacheInfo.AX),
+			  "=b"	(CacheInfo.BX),
+			  "=c"	(CacheInfo.CX),
+			  "=d"	(CacheInfo.DX)
 			: "a"	(0x80000005)
 		);
-		Core->T.Cache[0].Size=(DX >> 24);	// Inst.
-		Core->T.Cache[1].Size=(CX >> 24);	// Data
+		// L1 Inst.
+		Core->T.Cache[0].Way=CacheInfo.CPUID_0x80000005_L1I.Assoc;
+		Core->T.Cache[0].Size=CacheInfo.CPUID_0x80000005_L1I.Size;
+		// L1 Data
+		Core->T.Cache[1].Way=CacheInfo.CPUID_0x80000005_L1D.Assoc;
+		Core->T.Cache[1].Size=CacheInfo.CPUID_0x80000005_L1D.Size;
 
 		Core->T.Cache[2].Level=2;
 		Core->T.Cache[2].Type=3;		// Unified!
@@ -733,19 +736,19 @@ void Cache_Topology(CORE *Core)
 		asm volatile
 		(
 			"cpuid"
-			: "=a"	(AX),
-			  "=b"	(BX),
-			  "=c"	(CX),
-			  "=d"	(DX)
+			: "=a"	(CacheInfo.AX),
+			  "=b"	(CacheInfo.BX),
+			  "=c"	(CacheInfo.CX),
+			  "=d"	(CacheInfo.DX)
 			: "a"	(0x80000006)
 		);
-		Core->T.Cache[2].Size=(CX >> 16);
-
-		if(Proc->Features.Std.AX.Family >= 0x15)
-			Core->T.Cache[3].Size=(DX >> 18);
-		else
-			Core->T.Cache[3].Size=(DX >> 16);
-}
+		// L2
+		Core->T.Cache[2].Way=CacheInfo.CPUID_0x80000006_L2.Assoc;
+		Core->T.Cache[2].Size=CacheInfo.CPUID_0x80000006_L2.Size;
+		// L3
+		Core->T.Cache[3].Way=CacheInfo.CPUID_0x80000006_L3.Assoc;
+		Core->T.Cache[3].Size=CacheInfo.CPUID_0x80000006_L3.Size;
+	}
 }
 
 // Enumerate the Processor's Cores and Threads topology.

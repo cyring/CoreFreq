@@ -234,13 +234,40 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		}
 	  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
 		{
+			unsigned int Compute_Way(unsigned int value)
+			{
+				switch(value)
+				{
+				case 0x6:
+					return(8);
+				case 0x8:
+					return(16);
+				case 0xa:
+					return(32);
+				case 0xb:
+					return(48);
+				case 0xc:
+					return(64);
+				case 0xd:
+					return(96);
+				case 0xe:
+					return(128);
+				default:
+					return(value);
+				}
+			}
+			Shm->Cpu[cpu].Topology.Cache[level].Way=
+				(loop != 2) ?
+					Core[cpu]->T.Cache[loop].Way
+				: Compute_Way(Core[cpu]->T.Cache[loop].Way);
+
 			Shm->Cpu[cpu].Topology.Cache[level].Size=
 				Core[cpu]->T.Cache[loop].Size;
 		}
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack=
-				Core[cpu]->T.Cache[loop].WrBack;
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive=
-				Core[cpu]->T.Cache[loop].Inclus;
+		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack=
+			Core[cpu]->T.Cache[loop].WrBack;
+		Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive=
+			Core[cpu]->T.Cache[loop].Inclus;
 	    }
 	}
 }
