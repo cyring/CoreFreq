@@ -377,6 +377,7 @@ extern CLOCK Clock_Westmere(unsigned int ratio) ;
 extern CLOCK Clock_SandyBridge(unsigned int ratio) ;
 extern CLOCK Clock_IvyBridge(unsigned int ratio) ;
 extern CLOCK Clock_Haswell(unsigned int ratio) ;
+extern CLOCK Clock_Skylake(unsigned int ratio) ;
 
 extern void Query_GenuineIntel(void) ;
 extern void Start_GenuineIntel(void *arg) ;
@@ -483,6 +484,9 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 #define	_Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
 #define	_Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
+//	[Kabylake]	06_8E || 06_94 || 06_9E
+#define	_Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
+
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
 	Core_Conroe,		\
@@ -524,6 +528,7 @@ enum {	GenuineIntel,		\
 	Skylake_UY,		\
 	Skylake_S,		\
 	Skylake_E,		\
+	Kabylake,		\
 	ARCHITECTURES
 };
 
@@ -926,7 +931,7 @@ static ARCH Arch[ARCHITECTURES]=
 	Stop_SandyBridge,
 	NULL,
 	InitTimer_SandyBridge,
-	Clock_Haswell,
+	Clock_Skylake,
 	"Skylake/UY"
 	},
 /* 39*/	{
@@ -936,7 +941,7 @@ static ARCH Arch[ARCHITECTURES]=
 	Stop_SandyBridge,
 	NULL,
 	InitTimer_SandyBridge,
-	Clock_Haswell,
+	Clock_Skylake,
 	"Skylake/S"
 	},
 /* 40*/	{
@@ -946,7 +951,17 @@ static ARCH Arch[ARCHITECTURES]=
 	Stop_SandyBridge,
 	NULL,
 	InitTimer_SandyBridge,
-	Clock_Haswell,
+	Clock_Skylake,
 	"Skylake/E"
+	},
+/* 41*/	{
+	_Kabylake,
+	Query_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	InitTimer_SandyBridge,
+	Clock_Skylake,
+	"Kaby Lake"
 	}
 };

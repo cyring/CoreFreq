@@ -88,7 +88,7 @@ typedef struct
 	struct
 	{
 		unsigned int
-		SSE3	:  1-0,
+		SSE3	:  1-0,  // AMD Family 0Fh
 		PCLMULDQ:  2-1,
 		DTES64	:  3-2,
 		MONITOR	:  4-3,
@@ -97,7 +97,7 @@ typedef struct
 		SMX	:  7-6,
 		EIST	:  8-7,
 		TM2	:  9-8,
-		SSSE3	: 10-9,
+		SSSE3	: 10-9,  // AMD Family 0Fh
 		CNXT_ID	: 11-10,
 		Unused1	: 12-11,
 		FMA	: 13-12,
@@ -122,7 +122,7 @@ typedef struct
 		Unused3	: 32-31;
 	} CX;
 	struct
-	{
+	{	// Most common x86
 		unsigned int
 		FPU	:  1-0,
 		VME	:  2-1,
@@ -142,7 +142,7 @@ typedef struct
 		CMOV	: 16-15,
 		PAT	: 17-16,
 		PSE36	: 18-17,
-		PSN	: 19-18,
+		PSN	: 19-18, // Intel
 		CLFSH	: 20-19,
 		Unused2	: 21-20,
 		DS_PEBS	: 22-21,
@@ -151,11 +151,11 @@ typedef struct
 		FXSR	: 25-24, // FXSAVE and FXRSTOR instructions.
 		SSE	: 26-25,
 		SSE2	: 27-26,
-		SS	: 28-27,
+		SS	: 28-27, // Intel
 		HTT	: 29-28,
-		TM1	: 30-29,
+		TM1	: 30-29, // Intel
 		Unused3	: 31-30,
-		PBE	: 32-31;
+		PBE	: 32-31; // Intel
 	} DX;
 } CPUID_0x00000001;
 

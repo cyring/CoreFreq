@@ -176,8 +176,8 @@ void Query_Features(void *pArg)
 		"cpuid"
 		: "=a"	(arg->features.Info.LargestStdFunc),
 		  "=b"	(BX),
-		  "=d"	(DX),
-		  "=c"	(CX)
+		  "=c"	(CX),
+		  "=d"	(DX)
                 : "a" (0x0)
 	);
 	arg->features.Info.VendorID[ 0]=BX;
@@ -675,6 +675,29 @@ CLOCK Clock_IvyBridge(unsigned int ratio)
 CLOCK Clock_Haswell(unsigned int ratio)
 {
 	CLOCK clock={.Q=100, .R=0};
+	ClockToHz(&clock);
+	clock.R *= ratio;
+	return(clock);
+};
+
+// [Skylake]
+CLOCK Clock_Skylake(unsigned int ratio)
+{
+	CLOCK clock={.R=0};
+	unsigned int AX=0x0, BX=0x0, DX=0x0, FSB=0;
+	asm volatile
+	(
+		"cpuid"
+		: "=a"	(AX),
+		  "=b"	(BX),
+		  "=c"	(FSB),
+		  "=d"	(DX)
+                : "a" (0x16)
+	);
+	if(FSB > 0)
+		clock.Q=FSB;
+	else
+		clock.Q=100;
 	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
