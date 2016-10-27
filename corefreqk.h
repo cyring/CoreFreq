@@ -429,9 +429,11 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
 #define	_Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
 
-//	[Silvermont]	06_37H, 06_4DH
+//	[Silvermont]	06_37H
 #define	_Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
-#define	_Silvermont_64D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
+
+//	[Avoton]	06_4DH
+#define	_Atom_Avoton	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
 
 //	[Airmont]	06_4CH
 #define	_Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
@@ -500,7 +502,7 @@ enum {	GenuineIntel,		\
 	Atom_Clovertrail,	\
 	Atom_Saltwell,		\
 	Silvermont_637,		\
-	Silvermont_64D,		\
+	Atom_Avoton,		\
 	Atom_Airmont,		\
 	Atom_Goldmont,		\
 	Atom_Sofia,		\
@@ -667,14 +669,14 @@ static ARCH Arch[ARCHITECTURES]=
 	"Silvermont"
 	},
 /* 13*/	{
-	_Silvermont_64D,
+	_Atom_Avoton,
 	Query_Nehalem,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Silvermont,
-	"Silvermont"
+	"Atom/Avoton"
 	},
 
 /* 14*/	{
