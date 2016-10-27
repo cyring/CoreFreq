@@ -727,7 +727,7 @@ void Cache_Topology(CORE *Core)
 	else if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
 	{	// Employ the Intel algorithm.
 		struct CACHE_INFO CacheInfo;
-	
+
 		Core->T.Cache[0].Level=1;
 		Core->T.Cache[0].Type=2;		// Inst.
 		Core->T.Cache[1].Level=1;
@@ -933,10 +933,10 @@ void Intel_Platform_Info(void)
 
 	if(Platform.value != 0)
 	{
-	  Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
-	  Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,\
-				Platform.MaxNonTurboRatio);
+		Proc->Boost[0]=MINCOUNTER(Platform.MinimumRatio,	\
+					Platform.MaxNonTurboRatio);
+		Proc->Boost[1]=MAXCOUNTER(Platform.MinimumRatio,	\
+					Platform.MaxNonTurboRatio);
 	}
 	Proc->Boost[9]=Proc->Boost[1];
 }
@@ -993,11 +993,30 @@ void Query_AuthenticAMD(void)
 	{	// PowerNow!
 		FIDVID_STATUS FidVidStatus={.value=0};
 
+	/* FID */ const unsigned int VCO[0b1000][5]={
+	/* 000000b */	{ 0,  0, 16, 17, 18},
+	/* 000001b */	{16, 17, 18, 19, 20},
+	/* 000010b */	{18, 19, 20, 21, 22},
+	/* 000011b */	{20, 21, 22, 23, 24},
+	/* 000100b */	{22, 23, 24, 25, 26},
+	/* 000101b */	{24, 25, 26, 27, 28},
+	/* 000110b */	{26, 27, 28, 29, 30},
+	/* 000111b */	{28, 29, 30, 31, 32}
+		};
+
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
 		Proc->Boost[0]=8 + FidVidStatus.StartFID;
 		Proc->Boost[1]=8 + FidVidStatus.MaxFID;
-		Proc->Boost[9]=Proc->Boost[1];
+
+		if(FidVidStatus.StartFID < 0b1000)
+		{
+		    unsigned int t=0;
+		    for(t=0; t < 5; t++)
+			Proc->Boost[5 + t]=VCO[FidVidStatus.StartFID][t];
+		}
+		else
+			Proc->Boost[9]=8 + FidVidStatus.MaxFID;
 	}
 	else
 	{
