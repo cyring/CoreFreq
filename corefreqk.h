@@ -328,6 +328,44 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define RDTSCP_COUNTERx6(mem_tsc, ...) \
 ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
 
+
+#define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
+	(0x80000000 | (bus << 16) | (dev << 11) | (fn << 8) | (reg & ~3))
+
+#define RDPCI(_data, _reg)						\
+({									\
+	asm volatile							\
+	(								\
+		"movl	%1,	%%eax"	"\n\t"				\
+		"movl	$0xcf8,	%%edx"	"\n\t"				\
+		"outl	%%eax,	%%dx"	"\n\t"				\
+		"movl	$0xcfc,	%%edx"	"\n\t"				\
+		"inl	%%dx,	%%eax"	"\n\t"				\
+		"movl	%%eax,	%0"					\
+		: "=m"	(_data)						\
+		: "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define WRPCI(_data, _reg)						\
+({									\
+	asm volatile							\
+	(								\
+		"movl	%1,	%%eax"	"\n\t"				\
+		"movl	$0xcf8,	%%edx"	"\n\t"				\
+		"outl	%%eax,	%%dx"	"\n\t"				\
+		"movl	%0,	%%eax"	"\n\t"				\
+		"movl	$0xcfc,	%%edx"	"\n\t"				\
+		"outl	%%eax,	%%dx"					\
+		:							\
+		: "m"	(_data),					\
+		  "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+
 typedef struct
 {
 	struct kmem_cache	*Cache;

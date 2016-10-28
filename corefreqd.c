@@ -43,7 +43,10 @@ static void *Core_Cycle(void *arg)
 	PROC_STRUCT *Proc=Arg->Proc;
 	CPU_STRUCT *Cpu=Arg->Cpu;
 	CORE *Core=Arg->Core;
-	unsigned int cpu=Arg->Bind;
+	unsigned int cpu=Arg->Bind,
+	thermalFormula=!strncmp(Proc->Features.Info.VendorID, VENDOR_INTEL, 12)?
+	0x01 : !strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12) ?
+		0x10 : 0x0;
 	pthread_t tid=pthread_self();
 
 	cpu_set_t affinity;
@@ -140,10 +143,17 @@ static void *Core_Cycle(void *arg)
 				    Core->Clock, Proc->SleepInterval)
 					/ (Proc->SleepInterval * 1000);
 		}
+		Flip->Thermal.Trip=Core->Thermal.Trip;
 		Flip->Thermal.Target=Core->Thermal.Target;
 		Flip->Thermal.Sensor=Core->Thermal.Sensor;
-		Flip->Thermal.Temp=Flip->Thermal.Target - Flip->Thermal.Sensor;
-		Flip->Thermal.Trip=Core->Thermal.Trip;
+
+		if(thermalFormula == 0x01)
+			Flip->Thermal.Temp=Flip->Thermal.Target
+					- Flip->Thermal.Sensor;
+	    else
+		if(thermalFormula == 0x10)
+			Flip->Thermal.Temp=Flip->Thermal.Sensor
+					- (Flip->Thermal.Target * 2) - 49;
 	    }
 	} while(!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset));
 	BITCLR(Proc->Room, cpu);
@@ -550,8 +560,10 @@ int Shm_Manager(FD *fd, PROC *Proc)
 				Shm->Proc.SpeedStep,
 			Proc->Features.Power.AX.TurboIDA,
 				Shm->Proc.TurboBoost,
-			Proc->Features.Std.DX.TM1,
-			Proc->Features.Std.CX.TM2,
+			Proc->Features.Std.DX.TM1
+			| Proc->Features.AdvPower.DX.TS,
+			Proc->Features.Std.CX.TM2
+			| Proc->Features.AdvPower.DX.TTP,
 			Core[0]->Thermal.TCC_Enable,
 			Core[0]->Thermal.TM2_Enable,
 			Core[0]->Thermal.TM_Select );

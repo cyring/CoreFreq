@@ -1126,6 +1126,10 @@ void ThermalMonitor_Set(CORE *Core)
 	ThermalMonitor_Set(Core);					\
 })
 
+void PerCore_AMD_Query(CORE *Core)
+{
+}
+
 void PerCore_Core2_Query(CORE *Core)
 {
 	SpeedStep_Technology(Core);
@@ -1488,7 +1492,7 @@ void Counters_Clear(CORE *Core)
 	Core->Counter[0].INST=Core->Counter[1].INST;			\
 })
 
-void Core_Temp(CORE *Core)
+void Core_Intel_Temp(CORE *Core)
 {
 	THERM_STATUS ThermStatus={.value=0};
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
@@ -1497,6 +1501,30 @@ void Core_Temp(CORE *Core)
 	Core->Thermal.Trip=ThermStatus.StatusBit | ThermStatus.StatusLog;
 }
 
+void Core_AMD_Temp(CORE *Core)
+{
+	if(Proc->Features.AdvPower.DX.TTP == 1)
+	{
+		THERMTRIP_STATUS ThermTrip;
+
+		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+
+		// Select Core to read sensor from:
+		ThermTrip.SensorCoreSelect=Core->Bind;
+
+		WRPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+
+		// Formula is " CurTmp - (TjOffset * 2) - 49 "
+		Core->Thermal.Target=ThermTrip.TjOffset;
+		Core->Thermal.Sensor=ThermTrip.CurrentTemp;
+
+		Core->Thermal.Trip= ThermTrip.SensorTrip
+				| (!Core->Bind ?
+					ThermTrip.Sensor1Trip
+				:	ThermTrip.Sensor0Trip);
+	}
+}
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
@@ -1510,7 +1538,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Genuine(Core, 1);
-		Core_Temp(Core);
+		Core_Intel_Temp(Core);
 
 		Delta_C0(Core);
 
@@ -1604,6 +1632,8 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
+		Core_AMD_Temp(Core);
+
 		BITSET(Core->Sync.V, 0);
 
 		return(HRTIMER_RESTART);
@@ -1655,6 +1685,8 @@ static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
+		Core_AMD_Temp(Core);
+
 		BITSET(Core->Sync.V, 0);
 
 		return(HRTIMER_RESTART);
@@ -1679,7 +1711,9 @@ void InitTimer_AuthenticAMD(unsigned int cpu)
 void Start_AuthenticAMD(void *arg)
 {
 	unsigned int cpu=smp_processor_id();
-//!	CORE *Core=(CORE *) KPublic->Core[cpu];
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Query(Core);
 
 	KPrivate->Join[cpu]->tsm.mustFwd=1;
 
@@ -1717,7 +1751,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Core2(Core, 1);
-		Core_Temp(Core);
+		Core_Intel_Temp(Core);
 
 		Delta_INST(Core);
 
@@ -1797,7 +1831,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Nehalem(Core, 1);
-		Core_Temp(Core);
+		Core_Intel_Temp(Core);
 
 		Delta_INST(Core);
 
@@ -1885,7 +1919,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_SandyBridge(Core, 1);
-		Core_Temp(Core);
+		Core_Intel_Temp(Core);
 
 		Delta_INST(Core);
 

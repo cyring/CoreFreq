@@ -335,21 +335,23 @@ void Top(SHM_STRUCT *Shm)
 	    GoK	"TSC-VAR" DoK,
 	    GoK	"TSC-INV" DoK
 	};
-	const char *TM1[]=
+	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
 	{
-		"TM1",
-	    BoK	"TM1" DoK,
-	    WoK	"TM1" DoK,
-	    GoK	"TM1" DoK,
-	};
-	const char *TM2[]=
-	{
-		"TM2",
-	    BoK	"TM2" DoK,
-	    WoK	"TM2" DoK,
-	    GoK	"TM2" DoK,
-	};
-	sprintf(hTech,
+		const char *TM1[]=
+		{
+			"TM1",
+		    BoK	"TM1" DoK,
+		    WoK	"TM1" DoK,
+		    GoK	"TM1" DoK,
+		};
+		const char *TM2[]=
+		{
+			"TM2",
+		    BoK	"TM2" DoK,
+		    WoK	"TM2" DoK,
+		    GoK	"TM2" DoK,
+		};
+	  sprintf(hTech,
 	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
 		TSC[Shm->Proc.InvariantTSC],
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
@@ -365,7 +367,26 @@ void Top(SHM_STRUCT *Shm)
 		TM2[Shm->Cpu[0].Thermal.TM2],
 		drawSize.width - 61,
 		hSpace);
-
+	}
+  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	{
+	  sprintf(hTech,
+	    DoK	"Tech [%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s]%.*s",
+		TSC[Shm->Proc.InvariantTSC],
+		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
+		isTurboBoost ? GoK"TURBO"DoK : "TURBO",
+		isSpeedStep ? GoK"EIST"DoK : "EIST",
+		Shm->Cpu[0].C1E ? GoK"C1E"DoK : "C1E",
+		hString,
+		Shm->Cpu[0].C3A ? GoK"C3A"DoK : "C3A",
+		Shm->Cpu[0].C1A ? GoK"C1A"DoK : "C1A",
+		Shm->Cpu[0].C3U ? GoK"C3U"DoK : "C3U",
+		Shm->Cpu[0].C1U ? GoK"C1U"DoK : "C1U",
+		Shm->Proc.Features.AdvPower.DX.TS ? BoK"THS"DoK : "THS",
+		Shm->Proc.Features.AdvPower.DX.TTP ? BoK"TTP"DoK : "TTP",
+		drawSize.width - 61,
+		hSpace);
+	}
 	struct utsname OSinfo={{0}};
 	uname(&OSinfo);
 

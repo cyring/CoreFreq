@@ -96,3 +96,24 @@ typedef union
     };
 } FIDVID_STATUS;
 
+typedef union
+{
+    struct
+    {
+	unsigned int
+	Reserved1	:  1-0,
+	SensorTrip	:  2-1,  // 1 if temp. sensor trip occurs & was enabled
+	SensorCoreSelect:  3-2,  // 0b: CPU1 Therm Sensor. 1b: CPU0 Therm Sensor
+	Sensor0Trip	:  4-3,  // 1 if trip @ CPU0 (single), or @ CPU1 (dual)
+	Sensor1Trip	:  5-4,  // 1 if sensor trip occurs @ CPU0 (dual core)
+	SensorTripEnable:  6-5,  // a THERMTRIP High event causes a PLL shutdown
+	SelectSensorCPU	:  7-6,  // 0b: CPU[0,1] Sensor 0. 1b: CPU[0,1] Sensor 1
+	Reserved2	:  8-7,
+	DiodeOffset	: 14-8,  // offset should be added to the external temp.
+	Reserved3	: 16-14,
+	CurrentTemp	: 24-16, // 00h = -49C , 01h = -48C ... ffh = 206C 
+	TjOffset	: 29-24, // Tcontrol = CurTmp - TjOffset * 2 - 49
+	Reserved4	: 31-29,
+	SwThermTrip	: 32-31; // diagnostic bit, for testing purposes only.
+    };
+} THERMTRIP_STATUS;
