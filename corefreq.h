@@ -90,21 +90,6 @@ typedef struct
 					OnLine;
 	} CPU;
 
-	union
-	{
-		struct {
-			unsigned int
-					Stepping	:  4-0,
-					Model		:  8-4,
-					Family		: 12-8,
-					ProcType	: 14-12,
-					Unused1		: 16-14,
-					ExtModel	: 20-16,
-					ExtFamily	: 28-20,
-					Unused2		: 32-28;
-		};
-		unsigned int Signature;
-	};
 	unsigned char			Architecture[32];
 	unsigned int			Boost[1+1+8],
 					PM_version;
@@ -112,7 +97,8 @@ typedef struct
 	char				Brand[64];
 
 	Bit32				InvariantTSC,
-					HyperThreading;
+					HyperThreading,
+					PowerNow;
 	Bit64				SpeedStep,
 					TurboBoost;
 	struct {

@@ -174,8 +174,6 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy the numbers of total & online CPU.
 	Shm->Proc.CPU.Count=Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
-	// Copy signature.
-	Shm->Proc.Signature=Proc->Features.Std.Signature;
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
@@ -198,6 +196,24 @@ void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Shm->Proc.HyperThreading=Proc->Features.HTT_Enable;
+}
+
+void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
+{
+	if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
+	{
+		if(Proc->Features.AdvPower.DX.FID)
+			BITSET(Shm->Proc.PowerNow, 0);
+		else
+			BITCLR(Shm->Proc.PowerNow, 0);
+
+		if(Proc->Features.AdvPower.DX.VID)
+			BITSET(Shm->Proc.PowerNow, 1);
+		else
+			BITCLR(Shm->Proc.PowerNow, 1);
+	}
+	else
+		Shm->Proc.PowerNow=0;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -522,6 +538,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		InvariantTSC(Shm, Proc);
 
 		HyperThreading(Shm, Proc);
+
+		PowerNow(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);

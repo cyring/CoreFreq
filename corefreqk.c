@@ -270,9 +270,21 @@ void Query_Features(void *pArg)
 	{
 		if(arg->features.Std.DX.HTT)
 			arg->count=arg->features.Std.BX.MaxThread;
-		else
-			arg->count=(BX >> 16) & 0x0ff; // ToDo
-
+	  else	{
+			if(LargestExtFunc >= 0x80000008)
+			{
+				asm volatile
+				(
+					"cpuid"
+					: "=a"	(AX),
+					  "=b"	(BX),
+					  "=c"	(CX),
+					  "=d"	(DX)
+					: "a"	(0x80000008)
+				);
+				arg->count=(CX & 0xf) + 1;
+			}
+		}
 		AMD_Brand(arg->features.Info.Brand);
 	}
 	// Common x86
@@ -955,7 +967,7 @@ void DynamicAcceleration(void)
 	);
 
 	if(thermal_Power_Leaf.AX.TurboIDA == 1)
-		Proc->Boost[9]=Proc->Boost[1] + 1;
+		Proc->Boost[9]=Proc->Boost[1] + 1;	// ToDo: IDA Ratio
 }
 
 #ifndef MSR_TURBO_RATIO_LIMIT
@@ -990,7 +1002,7 @@ void Query_GenuineIntel(void)
 void Query_AuthenticAMD(void)
 {
 	if(Proc->Features.AdvPower.DX.FID == 1)
-	{	// PowerNow!
+	{	// Processor supports FID changes.
 		FIDVID_STATUS FidVidStatus={.value=0};
 
 	/* FID */ const unsigned int VCO[0b1000][5]={
@@ -1519,10 +1531,7 @@ void Core_AMD_Temp(CORE *Core)
 		Core->Thermal.Target=ThermTrip.TjOffset;
 		Core->Thermal.Sensor=ThermTrip.CurrentTemp;
 
-		Core->Thermal.Trip= ThermTrip.SensorTrip
-				| (!Core->Bind ?
-					ThermTrip.Sensor1Trip
-				:	ThermTrip.Sensor0Trip);
+		Core->Thermal.Trip=ThermTrip.SensorTrip;
 	}
 }
 

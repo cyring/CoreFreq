@@ -435,9 +435,10 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		Inv_TSC	:  9-8, // Invariant TSC available if 1
 		Unused2	: 32-9;
 	};
-	struct { // AMD reserved.
+      union
+      {		// AMD Family 0Fh
+	struct {
 		unsigned int
-		// Family 0Fh :
 		TS	:  1-0,  // Temperature sensor
 		FID	:  2-1,  // Frequency ID control is supported.
 		VID	:  3-2,  // Voltage ID control is supported.
@@ -445,7 +446,11 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		TM	:  5-4,  // Hardware thermal control (HTC).
 		STC	:  6-5,  // K7-K8: Software thermal control (STC)
 		_100MHz	:  7-6,  // 100 MHz multiplier Control.
-		// Family 15h :
+		NotUsed	: 32-7;
+	};
+	struct { // AMD Family 15h
+		unsigned int
+		Fam_0Fh	:  7-0,  // Family 0Fh features.
 		HwPstate:  8-7,  // Hardware P-state control msr exist ?
 		TscInv	:  9-8,  // Invariant TSC ?
 		CPB	: 10-9,  // Core performance boost.
@@ -454,6 +459,7 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		ProcPwr	: 13-12, // Core power reporting interface supported.
 		Reserved: 32-13;
 	};
+      };
     } DX;
 } CPUID_0x80000007;
 
