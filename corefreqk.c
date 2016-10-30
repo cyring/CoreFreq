@@ -249,6 +249,15 @@ void Query_Features(void *pArg)
 		: "a"	(0x4),
 		  "c"	(0x0)
 	);
+	// The performance features are present if bit is read as cleared.
+	arg->features.PerfMon.BX.CoreCycles=1;
+	arg->features.PerfMon.BX.InstrRetired=1;
+	arg->features.PerfMon.BX.RefCycles=1;
+	arg->features.PerfMon.BX.LLC_Ref=1;
+	arg->features.PerfMon.BX.LLC_Misses=1;
+	arg->features.PerfMon.BX.BranchRetired=1;
+	arg->features.PerfMon.BX.BranchMispred=1;
+
 	if(!strncmp(arg->features.Info.VendorID, VENDOR_INTEL, 12))
 	{
 		arg->count=(AX >> 26) & 0x3f;
