@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -899,34 +900,51 @@ void SysInfo(SHM_STRUCT *Shm)
 	const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
     	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
 	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
+	char *line=malloc(80 + 1 + 1), *view=calloc(24 * 5, 80 + 1 + 1);
 	size_t len=0;
 	int i=0;
-	printf(	"  Processor%.*s[%s]\n"					\
-		"  |- Signature%.*s[%1X%1X_%1X%1X]\n"			\
-		"  |- Stepping%.*s[%3u]\n"				\
-		"  |- Architecture%.*s[%s]\n"				\
-		"  |- Online CPU%.*s[%u/%u]\n"				\
-		"  |- Base Clock%.*s[%3llu]\n"				\
-		"  |- Ratio Boost:%.*s"					\
-			"Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n"	\
-		"%.*s",
-		67-strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand,
+
+	void printv(char *fmt, ...)
+	{
+		va_list ap;
+		va_start(ap, fmt);
+		vsprintf(line, fmt, ap);
+		strcat(view, line);
+		va_end(ap);
+	}
+
+	printv(	"  Processor%.*s[%s]\n",
+		67 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
+
+	printv(	"  |- Signature%.*s[%1X%1X_%1X%1X]\n",
 		59, hSpace,
 		Shm->Proc.Features.Std.AX.ExtFamily,
 		Shm->Proc.Features.Std.AX.Family,
 		Shm->Proc.Features.Std.AX.ExtModel,
-		Shm->Proc.Features.Std.AX.Model,
-		62, hSpace, Shm->Proc.Features.Std.AX.Stepping,
-		61-strlen(Shm->Proc.Architecture),hSpace,Shm->Proc.Architecture,
-		60, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count,
-		60, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L,
-		7, hSpace,
-		24, hSpace);
+		Shm->Proc.Features.Std.AX.Model);
+
+	printv(	"  |- Stepping%.*s[%3u]\n",
+		62, hSpace, Shm->Proc.Features.Std.AX.Stepping);
+
+	printv(	"  |- Architecture%.*s[%s]\n",
+		61 - strlen(Shm->Proc.Architecture), hSpace,
+		Shm->Proc.Architecture);
+
+	printv(	"  |- Online CPU%.*s[%u/%u]\n",
+		60, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+
+	printv(	"  |- Base Clock%.*s[%3llu]\n",
+		60, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L);
+
+	printv(	"  |- Ratio Boost:%.*s"					\
+		"Min Max  8C  7C  6C  5C  4C  3C  2C  1C\n", 7, hSpace);
+
+	printv(	"%.*s", 24, hSpace);
 	for(i=0; i < 10; i++)
 		if(Shm->Proc.Boost[i] != 0)
-			printf("%3d ", Shm->Proc.Boost[i]);
+			printv("%3d ", Shm->Proc.Boost[i]);
 		else
-			printf("  - ");
+			printv("  - ");
 
 	const char *TSC[]=
 	{
@@ -947,262 +965,533 @@ void SysInfo(SHM_STRUCT *Shm)
 	    	"Disable",
 	    	" Enable",
 	};
-	printf(	"\n"							\
-	"  Instruction set:\n"						\
-	"  |- FPU       [%c]          CMPXCH8 [%c]"			\
-		"             SEP [%c]             CMOV [%c]\n"		\
-	"  |- CLFSH     [%c]        MMX/Ext [%c/%c]"			\
-		"            FXSR [%c]              SSE [%c]\n"		\
-	"  |- SSE2      [%c]             SSE3 [%c]"			\
-		"           SSSE3 [%c]      SSE4.1/4A [%c/%c]\n"	\
-	"  |- SSE4.2    [%c]         PCLMULDQ [%c]"			\
-		"         MONITOR [%c]         CMPXCH16 [%c]\n"		\
-	"  |- MOVBE     [%c]           POPCNT [%c]"			\
-		"             AES [%c]       AVX/AVX2 [%c/%c]\n"	\
-	"  |- F16C      [%c]           RDRAND [%c]"			\
-		"          RDTSCP [%c]        LAHF/SAHF [%c]\n"		\
-	"  |- SYSCALL   [%c]      BMI1/BMI2 [%c/%c]"			\
-		"          3DNow! [%c]         3DNowExt [%c]\n"		\
+	printv(								\
 	"\n"								\
-	"  Features:\n"							\
-	"  |- Virtual Mode Extension%.*sVME   [%7s]\n"			\
-	"  |- Debugging Extension%.*sDE   [%7s]\n"			\
-	"  |- Page Size Extension%.*sPSE   [%7s]\n"			\
-	"  |- Time Stamp Counter%.*sTSC [%9s]\n"			\
-	"  |- Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]\n"	\
-	"  |- Model Specific Registers%.*sMSR   [%7s]\n"		\
-	"  |- Physical Address Extension%.*sPAE   [%7s]\n"		\
-	"  |- Advanced Programmable Interrupt Controller"		\
-						"%.*sAPIC   [%7s]\n"	\
-	"  |- Extended xAPIC Support%.*sx2APIC   [%7s]\n"		\
-	"  |- Memory Type Range Registers%.*sMTRR   [%7s]\n"		\
-	"  |- Page Global Enable%.*sPGE   [%7s]\n"			\
-	"  |- Machine-Check Architecture%.*sMCA   [%7s]\n"		\
-	"  |- Page Attribute Table%.*sPAT   [%7s]\n"			\
-	"  |- 36-bit Page Size Extension%.*sPSE36   [%7s]\n"		\
-	"  |- Processor Serial Number%.*sPSN   [%7s]\n"			\
-	"  |- Debug Store & Precise Event Based Sampling"		\
-					"%.*sDS, PEBS   [%7s]\n"	\
-	"  |- Advanced Configuration & Power Interface"			\
-					"%.*sACPI   [%7s]\n"		\
-	"  |- Self-Snoop%.*sSS   [%7s]\n"				\
-	"  |- Pending Break Enable%.*sPBE   [%7s]\n"			\
-	"  |- 64-Bit Debug Store%.*sDTES64   [%7s]\n"			\
-	"  |- CPL Qualified Debug Store%.*sDS-CPL   [%7s]\n"		\
-	"  |- Virtual Machine Extensions%.*sVMX   [%7s]\n"		\
-	"  |- Safer Mode Extensions%.*sSMX   [%7s]\n"			\
-	"  |- L1 Data Cache Context ID%.*sCNXT-ID   [%7s]\n"		\
-	"  |- Fused Multiply Add%.*sFMA|FMA4   [%7s]\n"			\
-	"  |- xTPR Update Control%.*sxTPR   [%7s]\n"			\
-	"  |- Perfmon and Debug Capability%.*sPDCM   [%7s]\n"		\
-	"  |- Process Context Identifiers%.*sPCID   [%7s]\n"		\
-	"  |- Direct Cache Access%.*sDCA   [%7s]\n"			\
-	"  |- XSAVE/XSTOR States%.*sXSAVE   [%7s]\n"			\
-	"  |- OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]\n"	\
-	"  |- Execution Disable Bit Support%.*sXD-Bit   [%7s]\n"	\
-	"  |- 1 GB Pages Support%.*s1GB-PAGES   [%7s]\n"		\
-	"  |- Hardware Lock Elision%.*sHLE   [%7s]\n"			\
-	"  |- Restricted Transactional Memory%.*sRTM   [%7s]\n"		\
-	"  |- Fast-String Operation%.*sFast-Strings   [%7s]\n"		\
-	"  |- Long Mode 64 bits%.*sIA64|LM   [%7s]\n"			\
-	"  |- Core Multi-Processing%.*sCMP Legacy   [%7s]\n"		\
-	"  |- LightWeight Profiling%.*sLWP   [%7s]\n"			\
-	"  |- 100 MHz multiplier Control%.*s100MHzSteps   [%7s]\n"	\
-	"\n"								\
-	"  Technologies:\n"						\
-	"  |- Hyper-Threading%.*sHTT       [%3s]\n"			\
-	"  |- SpeedStep%.*sEIST       [%3s]\n"				\
-	"  |- PowerNow!%.*sPowerNow       [%3s]\n"			\
-	"  |- Dynamic Acceleration%.*sIDA       [%3s]\n"		\
-	"  |- Turbo Boost%.*sTURBO|CPB       [%3s]\n"			\
-	"\n"								\
-	"  Performance Monitoring:\n"					\
-	"  |- Version%.*sPM       [%3d]\n"				\
-	"  |- Counters:%.*sGeneral%.*sFixed\n"				\
-	"  |%.*s%3u x%3u bits%.*s%3u x%3u bits\n"			\
-	"  |- Enhanced Halt State%.*sC1E       [%3s]\n"			\
-	"  |- C1 Auto Demotion%.*sC1A       [%3s]\n"			\
-	"  |- C3 Auto Demotion%.*sC3A       [%3s]\n"			\
-	"  |- C1 UnDemotion%.*sC1U       [%3s]\n"			\
-	"  |- C3 UnDemotion%.*sC3U       [%3s]\n"			\
-	"  |- Frequency ID control%.*sFID       [%3s]\n"		\
-	"  |- Voltage ID control%.*sVID       [%3s]\n"			\
-	"  |- P-State Hardware Coordination Feedback"			\
-			"%.*sMPERF/APERF       [%3s]\n"			\
-	"  |- Hardware Performance States%.*sHWP       [%3s]\n"		\
-	"  |- Hardware Duty Cycling%.*sHDC       [%3s]\n"		\
-	"  |- MWAIT States:%.*sC0      C1      C2      C3      C4\n"	\
-	"  |%.*s%2d      %2d      %2d      %2d      %2d\n"		\
-	"  |- Core Cycles%.*s[%7s]\n"					\
-	"  |- Instructions Retired%.*s[%7s]\n"				\
-	"  |- Reference Cycles%.*s[%7s]\n"				\
-	"  |- Last Level Cache References%.*s[%7s]\n"			\
-	"  |- Last Level Cache Misses%.*s[%7s]\n"			\
-	"  |- Branch Instructions Retired%.*s[%7s]\n"			\
-	"  |- Branch Mispredicts Retired%.*s[%7s]\n"			\
-	"\n"								\
-	"  Thermal Monitoring:\n"					\
-	"  |- Digital Thermal Sensor%.*sDTS   [%7s]\n"			\
-	"  |- Thermal Monitor 1%.*sTM1|TTP   [%7s]\n"			\
-	"  |- Thermal Monitor 2%.*sTM2|HTC   [%7s]\n",
-	Shm->Proc.Features.Std.DX.FPU ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.CMPXCH8 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.CMOV ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.CLFSH ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.MMX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.DX.MMX_Ext ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.FXSR ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.SSE ? 'Y' : 'N',
-	Shm->Proc.Features.Std.DX.SSE2 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.SSE3 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.SSE41 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.CX.SSE4A ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.SSE42 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.MONITOR ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.MOVBE ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.POPCNT ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.AES ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.AVX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.BX.AVX2 ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.F16C ? 'Y' : 'N',
-	Shm->Proc.Features.Std.CX.RDRAND ? 'Y' : 'N',
-	Shm->Proc.Features.ExtInfo.DX.RDTSCP ? 'Y' : 'N',
-	Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N',
-	Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N',
-	Shm->Proc.Features.ExtFeature.BX.BMI1 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.BX.BMI2 ? 'Y' : 'N',
+	"  Instruction set:\n");
+	printv(								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("3DNow!/Ext [%c,%c]",
 	Shm->Proc.Features.ExtInfo.DX._3DNow ? 'Y' : 'N',
-	Shm->Proc.Features.ExtInfo.DX._3DNowEx ? 'Y' : 'N',
-	38, hSpace, powered(Shm->Proc.Features.Std.DX.VME),
-	42, hSpace, powered(Shm->Proc.Features.Std.DX.DE),
-	41, hSpace, powered(Shm->Proc.Features.Std.DX.PSE),
-	42, hSpace, TSC[Shm->Proc.InvariantTSC],
-	24, hSpace, powered(Shm->Proc.Features.Std.CX.TSCDEAD),
-	36, hSpace, powered(Shm->Proc.Features.Std.DX.MSR),
-	34, hSpace, powered(Shm->Proc.Features.Std.DX.PAE),
-	17, hSpace, powered(Shm->Proc.Features.Std.DX.APIC),
-	35, hSpace, x2APIC[Shm->Cpu[0].Topology.MP.x2APIC],
-	32, hSpace, powered(Shm->Proc.Features.Std.DX.MTRR),
-	42, hSpace, powered(Shm->Proc.Features.Std.DX.PGE),
-	34, hSpace, powered(Shm->Proc.Features.Std.DX.MCA),
-	40, hSpace, powered(Shm->Proc.Features.Std.DX.PAT),
-	32, hSpace, powered(Shm->Proc.Features.Std.DX.PSE36),
-	37, hSpace, powered(Shm->Proc.Features.Std.DX.PSN),
-	13, hSpace, powered(Shm->Proc.Features.Std.DX.DS_PEBS),
-	19, hSpace, powered(Shm->Proc.Features.Std.DX.ACPI),
-	51, hSpace, powered(Shm->Proc.Features.Std.DX.SS),
-	40, hSpace, powered(Shm->Proc.Features.Std.DX.PBE),
-	39, hSpace, powered(Shm->Proc.Features.Std.CX.DTES64),
-	32, hSpace, powered(Shm->Proc.Features.Std.CX.DS_CPL),
-	34, hSpace, powered(Shm->Proc.Features.Std.CX.VMX),
-	39, hSpace, powered(Shm->Proc.Features.Std.CX.SMX),
-	32, hSpace, powered(Shm->Proc.Features.Std.CX.CNXT_ID),
+	Shm->Proc.Features.ExtInfo.DX._3DNowEx ? 'Y' : 'N');
+
+	printv("%.*s", 11, hSpace);
+
+	printv("AES [%c]",
+	Shm->Proc.Features.Std.CX.AES ? 'Y' : 'N');
+
+	printv("%.*s", 6, hSpace);
+
+	printv("AVX/AVX2 [%c/%c]",
+	Shm->Proc.Features.Std.CX.AVX ? 'Y' : 'N',
+		Shm->Proc.Features.ExtFeature.BX.AVX2 ? 'Y' : 'N');
+
+	printv("%.*s", 6, hSpace);
+
+	printv("BMI1/BMI2 [%c/%c]",
+	Shm->Proc.Features.ExtFeature.BX.BMI1 ? 'Y' : 'N',
+		Shm->Proc.Features.ExtFeature.BX.BMI2 ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("CLFSH        [%c]",
+	Shm->Proc.Features.Std.DX.CLFSH ? 'Y' : 'N');
+
+	printv("%.*s", 10, hSpace);
+
+	printv("CMOV [%c]",
+	Shm->Proc.Features.Std.DX.CMOV ? 'Y' : 'N');
+
+	printv("%.*s", 7, hSpace);
+
+	printv("CMPXCH8   [%c]",
+	Shm->Proc.Features.Std.DX.CMPXCH8 ? 'Y' : 'N');
+
+	printv("%.*s", 7, hSpace);
+
+	printv("CMPXCH16   [%c]",
+	Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("F16C         [%c]",
+	Shm->Proc.Features.Std.CX.F16C ? 'Y' : 'N');
+
+	printv("%.*s", 11, hSpace);
+
+	printv("FPU [%c]",
+	Shm->Proc.Features.Std.DX.FPU ? 'Y' : 'N');
+
+	printv("%.*s", 10, hSpace);
+
+	printv("FXSR   [%c]",
+	Shm->Proc.Features.Std.DX.FXSR ? 'Y' : 'N');
+
+	printv("%.*s", 6, hSpace);
+
+	printv("LAHF/SAHF   [%c]",
+	Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("MMX/Ext    [%c/%c]",
+	Shm->Proc.Features.Std.DX.MMX ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.DX.MMX_Ext ? 'Y' : 'N');
+
+	printv("%.*s", 7, hSpace);
+
+	printv("MONITOR [%c]",
+	Shm->Proc.Features.Std.CX.MONITOR ? 'Y' : 'N');
+
+	printv("%.*s", 9, hSpace);
+
+	printv("MOVBE   [%c]",
+	Shm->Proc.Features.Std.CX.MOVBE ? 'Y' : 'N');
+
+	printv("%.*s", 7, hSpace);
+
+	printv("PCLMULDQ   [%c]",
+	Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("POPCNT       [%c]",
+	Shm->Proc.Features.Std.CX.POPCNT ? 'Y' : 'N');
+
+	printv("%.*s", 8, hSpace);
+
+	printv("RDRAND [%c]",
+	Shm->Proc.Features.Std.CX.RDRAND ? 'Y' : 'N');
+
+	printv("%.*s", 8, hSpace);
+
+	printv("RDTSCP   [%c]",
+	Shm->Proc.Features.ExtInfo.DX.RDTSCP ? 'Y' : 'N');
+
+	printv("%.*s", 12, hSpace);
+
+	printv("SEP   [%c]",
+	Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("SSE          [%c]",
+	Shm->Proc.Features.Std.DX.SSE ? 'Y' : 'N');
+
+	printv("%.*s", 10, hSpace);
+
+	printv("SSE2 [%c]",
+	Shm->Proc.Features.Std.DX.SSE2 ? 'Y' : 'N');
+
+	printv("%.*s", 10, hSpace);
+
+	printv("SSE3   [%c]",
+	Shm->Proc.Features.Std.CX.SSE3 ? 'Y' : 'N');
+
+	printv("%.*s", 10, hSpace);
+
+	printv("SSSE3   [%c]",
+	Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N');
+
+	printv(								\
+	"\n"								\
+	"  |-");
+
+	printv("%.*s", 1, hSpace);
+
+	printv("SSE4.1/4A  [%c/%c]",
+	Shm->Proc.Features.Std.CX.SSE41 ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.CX.SSE4A ? 'Y' : 'N');
+
+	printv("%.*s", 8, hSpace);
+
+	printv("SSE4.2 [%c]",
+	Shm->Proc.Features.Std.CX.SSE42 ? 'Y' : 'N');
+
+	printv("%.*s", 7, hSpace);
+
+	printv("SYSCALL   [%c]",
+	Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N');
+
+	printv(								\
+	"\n\n"								\
+	"  Features:\n"	);
+
+	printv(								\
+	"  |- 1 GB Pages Support%.*s1GB-PAGES   [%7s]\n",
+	36, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.PG_1GB));
+
+	printv(								\
+	"  |- 100 MHz multiplier Control%.*s100MHzSteps   [%7s]\n",
+	26, hSpace, powered(Shm->Proc.Features.AdvPower.DX._100MHz));
+
+	printv(								\
+	"  |- Advanced Configuration & Power Interface"			\
+					"%.*sACPI   [%7s]\n",
+	19, hSpace, powered(Shm->Proc.Features.Std.DX.ACPI));
+
+	printv(								\
+	"  |- Advanced Programmable Interrupt Controller"		\
+						"%.*sAPIC   [%7s]\n",
+	17, hSpace, powered(Shm->Proc.Features.Std.DX.APIC));
+
+	printv(								\
+	"  |- Core Multi-Processing%.*sCMP Legacy   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.ExtInfo.CX.MP_Mode));
+
+	printv(								\
+	"  |- L1 Data Cache Context ID%.*sCNXT-ID   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.Std.CX.CNXT_ID));
+
+	printv(								\
+	"  |- Direct Cache Access%.*sDCA   [%7s]\n",
+	41, hSpace, powered(Shm->Proc.Features.Std.CX.DCA));
+
+	printv(								\
+	"  |- Debugging Extension%.*sDE   [%7s]\n",
+	42, hSpace, powered(Shm->Proc.Features.Std.DX.DE));
+
+	printv(								\
+	"  |- Debug Store & Precise Event Based Sampling"		\
+					"%.*sDS, PEBS   [%7s]\n",
+	13, hSpace, powered(Shm->Proc.Features.Std.DX.DS_PEBS));
+
+	printv(								\
+	"  |- CPL Qualified Debug Store%.*sDS-CPL   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.Std.CX.DS_CPL));
+
+	printv(								\
+	"  |- 64-Bit Debug Store%.*sDTES64   [%7s]\n",
+	39, hSpace, powered(Shm->Proc.Features.Std.CX.DTES64));
+
+	printv(								\
+	"  |- Fast-String Operation%.*sFast-Strings   [%7s]\n",
+	30, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.FastStrings));
+
+	printv(								\
+	"  |- Fused Multiply Add%.*sFMA|FMA4   [%7s]\n",
 	37, hSpace, powered(	  Shm->Proc.Features.Std.CX.FMA
-				| Shm->Proc.Features.ExtInfo.CX.FMA4 ),
-	40, hSpace, powered(Shm->Proc.Features.Std.CX.xTPR),
-	31, hSpace, powered(Shm->Proc.Features.Std.CX.PDCM),
-	32, hSpace, powered(Shm->Proc.Features.Std.CX.PCID),
-	41, hSpace, powered(Shm->Proc.Features.Std.CX.DCA),
-	40, hSpace, powered(Shm->Proc.Features.Std.CX.XSAVE),
-	24, hSpace, powered(Shm->Proc.Features.Std.CX.OSXSAVE),
-	28, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.XD_Bit),
-	36, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.PG_1GB),
-	39, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.HLE),
-	29, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.RTM),
-	30, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.FastStrings),
-	39, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.IA64),
-	32, hSpace, powered(Shm->Proc.Features.ExtInfo.CX.MP_Mode),
-	39, hSpace, powered(Shm->Proc.Features.ExtInfo.CX.LWP),
-	26, hSpace, powered(Shm->Proc.Features.AdvPower.DX._100MHz),
-	45, hSpace, enabled(Shm->Proc.HyperThreading),
-	50, hSpace, enabled(isSpeedStep),
-	46, hSpace, enabled(Shm->Proc.PowerNow == 0b11),
-	40, hSpace, enabled(Shm->Proc.Features.Power.AX.TurboIDA),
+				| Shm->Proc.Features.ExtInfo.CX.FMA4 ));
+
+	printv(								\
+	"  |- Hardware Lock Elision%.*sHLE   [%7s]\n",
+	39, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.HLE));
+
+	printv(								\
+	"  |- Long Mode 64 bits%.*sIA64|LM   [%7s]\n",
+	39, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.IA64));
+
+	printv(								\
+	"  |- LightWeight Profiling%.*sLWP   [%7s]\n",
+	39, hSpace, powered(Shm->Proc.Features.ExtInfo.CX.LWP));
+
+	printv(								\
+	"  |- Machine-Check Architecture%.*sMCA   [%7s]\n",
+	34, hSpace, powered(Shm->Proc.Features.Std.DX.MCA));
+
+	printv(								\
+	"  |- Model Specific Registers%.*sMSR   [%7s]\n",
+	36, hSpace, powered(Shm->Proc.Features.Std.DX.MSR));
+
+	printv(								\
+	"  |- Memory Type Range Registers%.*sMTRR   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.Std.DX.MTRR));
+
+	printv(								\
+	"  |- OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]\n",
+	24, hSpace, powered(Shm->Proc.Features.Std.CX.OSXSAVE));
+
+	printv(								\
+	"  |- Physical Address Extension%.*sPAE   [%7s]\n",
+	34, hSpace, powered(Shm->Proc.Features.Std.DX.PAE));
+
+	printv(								\
+	"  |- Page Attribute Table%.*sPAT   [%7s]\n",
+	40, hSpace, powered(Shm->Proc.Features.Std.DX.PAT));
+
+	printv(								\
+	"  |- Pending Break Enable%.*sPBE   [%7s]\n",
+	40, hSpace, powered(Shm->Proc.Features.Std.DX.PBE));
+
+	printv(								\
+	"  |- Process Context Identifiers%.*sPCID   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.Std.CX.PCID));
+
+	printv(								\
+	"  |- Perfmon and Debug Capability%.*sPDCM   [%7s]\n",
+	31, hSpace, powered(Shm->Proc.Features.Std.CX.PDCM));
+
+	printv(								\
+	"  |- Page Global Enable%.*sPGE   [%7s]\n",
+	42, hSpace, powered(Shm->Proc.Features.Std.DX.PGE));
+
+	printv(								\
+	"  |- Page Size Extension%.*sPSE   [%7s]\n",
+	41, hSpace, powered(Shm->Proc.Features.Std.DX.PSE));
+
+	printv(								\
+	"  |- 36-bit Page Size Extension%.*sPSE36   [%7s]\n",
+	32, hSpace, powered(Shm->Proc.Features.Std.DX.PSE36));
+
+	printv(								\
+	"  |- Processor Serial Number%.*sPSN   [%7s]\n",
+	37, hSpace, powered(Shm->Proc.Features.Std.DX.PSN));
+
+	printv(								\
+	"  |- Restricted Transactional Memory%.*sRTM   [%7s]\n",
+	29, hSpace, powered(Shm->Proc.Features.ExtFeature.BX.RTM));
+
+	printv(								\
+	"  |- Safer Mode Extensions%.*sSMX   [%7s]\n",
+	39, hSpace, powered(Shm->Proc.Features.Std.CX.SMX));
+
+	printv(								\
+	"  |- Self-Snoop%.*sSS   [%7s]\n",
+	51, hSpace, powered(Shm->Proc.Features.Std.DX.SS));
+
+	printv(								\
+	"  |- Time Stamp Counter%.*sTSC [%9s]\n",
+	42, hSpace, TSC[Shm->Proc.InvariantTSC]);
+
+	printv(								\
+	"  |- Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]\n",
+	24, hSpace, powered(Shm->Proc.Features.Std.CX.TSCDEAD));
+
+	printv(								\
+	"  |- Virtual Mode Extension%.*sVME   [%7s]\n",
+	38, hSpace, powered(Shm->Proc.Features.Std.DX.VME));
+
+	printv(								\
+	"  |- Virtual Machine Extensions%.*sVMX   [%7s]\n",
+	34, hSpace, powered(Shm->Proc.Features.Std.CX.VMX));
+
+	printv(								\
+	"  |- Extended xAPIC Support%.*sx2APIC   [%7s]\n",
+	35, hSpace, x2APIC[Shm->Cpu[0].Topology.MP.x2APIC]);
+
+	printv(								\
+	"  |- Execution Disable Bit Support%.*sXD-Bit   [%7s]\n",
+	28, hSpace, powered(Shm->Proc.Features.ExtInfo.DX.XD_Bit));
+
+	printv(								\
+	"  |- XSAVE/XSTOR States%.*sXSAVE   [%7s]\n",
+	40, hSpace, powered(Shm->Proc.Features.Std.CX.XSAVE));
+
+	printv(								\
+	"  |- xTPR Update Control%.*sxTPR   [%7s]\n",
+	40, hSpace, powered(Shm->Proc.Features.Std.CX.xTPR));
+
+	printv(								\
+	"\n"								\
+	"  Technologies:\n");
+
+	printv(								\
+	"  |- Hyper-Threading%.*sHTT       [%3s]\n",
+	45, hSpace, enabled(Shm->Proc.HyperThreading));
+
+	printv(								\
+	"  |- SpeedStep%.*sEIST       [%3s]\n",
+	50, hSpace, enabled(isSpeedStep));
+
+	printv(								\
+	"  |- PowerNow!%.*sPowerNow       [%3s]\n",
+	46, hSpace, enabled(Shm->Proc.PowerNow == 0b11));
+
+	printv(								\
+	"  |- Dynamic Acceleration%.*sIDA       [%3s]\n",
+	40, hSpace, enabled(Shm->Proc.Features.Power.AX.TurboIDA));
+
+	printv(								\
+	"  |- Turbo Boost%.*sTURBO|CPB       [%3s]\n",
 	43, hSpace, enabled(	  isTurboBoost
-				| Shm->Proc.Features.AdvPower.DX.CPB ),
-	54, hSpace, Shm->Proc.PM_version,
-	10, hSpace, 17, hSpace,
+				| Shm->Proc.Features.AdvPower.DX.CPB ));
+
+	printv(								\
+	"\n"								\
+	"  Performance Monitoring:\n");
+
+	printv(								\
+	"  |- Version%.*sPM       [%3d]\n",
+	54, hSpace, Shm->Proc.PM_version);
+
+	printv(								\
+	"  |- Counters:%.*sGeneral%.*sFixed\n",
+	10, hSpace, 17, hSpace);
+
+	printv(								\
+	"  |%.*s%3u x%3u bits%.*s%3u x%3u bits\n",
 	19, hSpace,	Shm->Proc.Features.PerfMon.AX.MonCtrs,
 			Shm->Proc.Features.PerfMon.AX.MonWidth,
 	11, hSpace,	Shm->Proc.Features.PerfMon.DX.FixCtrs,
-			Shm->Proc.Features.PerfMon.DX.FixWidth,
-	41, hSpace, enabled(Shm->Cpu[0].C1E),
-	44, hSpace, enabled(Shm->Cpu[0].C3A),
-	44, hSpace, enabled(Shm->Cpu[0].C1A),
-	47, hSpace, enabled(Shm->Cpu[0].C3U),
-	47, hSpace, enabled(Shm->Cpu[0].C1U),
-	40, hSpace, enabled(Shm->Proc.Features.AdvPower.DX.FID),
-	42, hSpace, enabled(Shm->Proc.Features.AdvPower.DX.VID),
-	14, hSpace, enabled(Shm->Proc.Features.Power.CX.HCF_Cap),
+			Shm->Proc.Features.PerfMon.DX.FixWidth);
+
+	printv(								\
+	"  |- Enhanced Halt State%.*sC1E       [%3s]\n",
+	41, hSpace, enabled(Shm->Cpu[0].C1E));
+
+	printv(								\
+	"  |- C1 Auto Demotion%.*sC1A       [%3s]\n",
+	44, hSpace, enabled(Shm->Cpu[0].C1A));
+
+	printv(								\
+	"  |- C3 Auto Demotion%.*sC3A       [%3s]\n",
+	44, hSpace, enabled(Shm->Cpu[0].C3A));
+
+	printv(								\
+	"  |- C1 UnDemotion%.*sC1U       [%3s]\n",
+	47, hSpace, enabled(Shm->Cpu[0].C1U));
+
+	printv(								\
+	"  |- C3 UnDemotion%.*sC3U       [%3s]\n",
+	47, hSpace, enabled(Shm->Cpu[0].C3U));
+
+	printv(								\
+	"  |- Frequency ID control%.*sFID       [%3s]\n",
+	40, hSpace, enabled(Shm->Proc.Features.AdvPower.DX.FID));
+
+	printv(								\
+	"  |- Voltage ID control%.*sVID       [%3s]\n",
+	42, hSpace, enabled(Shm->Proc.Features.AdvPower.DX.VID));
+
+	printv(								\
+	"  |- P-State Hardware Coordination Feedback"			\
+			"%.*sMPERF/APERF       [%3s]\n",
+	14, hSpace, enabled(Shm->Proc.Features.Power.CX.HCF_Cap));
+
+	printv(								\
+	"  |- Hardware Performance States%.*sHWP       [%3s]\n",
 	33, hSpace, enabled(	  Shm->Proc.Features.Power.AX.HWP_Reg
-				| Shm->Proc.Features.AdvPower.DX.HwPstate ),
-	39, hSpace, enabled(	  Shm->Proc.Features.Power.AX.HDC_Reg),
-	06, hSpace,
+				| Shm->Proc.Features.AdvPower.DX.HwPstate ));
+
+	printv(								\
+	"  |- Hardware Duty Cycling%.*sHDC       [%3s]\n",
+	39, hSpace, enabled(	  Shm->Proc.Features.Power.AX.HDC_Reg));
+
+	printv(								\
+	"  |- MWAIT States:%.*sC0      C1      C2      C3      C4\n",
+	06, hSpace);
+
+	printv(								\
+	"  |%.*s%2d      %2d      %2d      %2d      %2d\n",
 	21, hSpace,
 		Shm->Proc.Features.MWait.DX.Num_C0_MWAIT,
 		Shm->Proc.Features.MWait.DX.Num_C1_MWAIT,
 		Shm->Proc.Features.MWait.DX.Num_C2_MWAIT,
 		Shm->Proc.Features.MWait.DX.Num_C3_MWAIT,
-		Shm->Proc.Features.MWait.DX.Num_C4_MWAIT,
+		Shm->Proc.Features.MWait.DX.Num_C4_MWAIT);
+
+	printv(								\
+	"  |- Core Cycles%.*s[%7s]\n",
 	55, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.CoreCycles),
+	    powered(!Shm->Proc.Features.PerfMon.BX.CoreCycles));
+
+	printv(								\
+	"  |- Instructions Retired%.*s[%7s]\n",
 	46, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.InstrRetired),
+	    powered(!Shm->Proc.Features.PerfMon.BX.InstrRetired));
+
+	printv(								\
+	"  |- Reference Cycles%.*s[%7s]\n",
 	50, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.RefCycles),
+	    powered(!Shm->Proc.Features.PerfMon.BX.RefCycles));
+
+	printv(								\
+	"  |- Last Level Cache References%.*s[%7s]\n",
 	39, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Ref),
+	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Ref));
+
+	printv(								\
+	"  |- Last Level Cache Misses%.*s[%7s]\n",
 	43, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Misses),
+	    powered(!Shm->Proc.Features.PerfMon.BX.LLC_Misses));
+
+	printv(								\
+	"  |- Branch Instructions Retired%.*s[%7s]\n",
 	39, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.BranchRetired),
+	    powered(!Shm->Proc.Features.PerfMon.BX.BranchRetired));
+
+	printv(								\
+	"  |- Branch Mispredicts Retired%.*s[%7s]\n",
 	40, hSpace,
-	    powered(!Shm->Proc.Features.PerfMon.BX.BranchMispred),
+	    powered(!Shm->Proc.Features.PerfMon.BX.BranchMispred));
+
+	printv(								\
+	"\n"								\
+	"  Thermal Monitoring:\n");
+
+	printv(								\
+	"  |- Digital Thermal Sensor%.*sDTS   [%7s]\n",
 	38, hSpace, powered(	  Shm->Proc.Features.Power.AX.DTS
-				| Shm->Proc.Features.AdvPower.DX.TS ),
+				| Shm->Proc.Features.AdvPower.DX.TS ));
+	printv(								\
+	"  |- Thermal Monitor 1%.*sTM1|TTP   [%7s]\n",
 	39, hSpace, TM[   Shm->Cpu[0].Thermal.TM1
-			| Shm->Proc.Features.AdvPower.DX.TTP ],
+			| Shm->Proc.Features.AdvPower.DX.TTP ]);
+	printv(								\
+	"  |- Thermal Monitor 2%.*sTM2|HTC   [%7s]\n",
 	39, hSpace, TM[	  Shm->Cpu[0].Thermal.TM2
 			| Shm->Proc.Features.AdvPower.DX.TM ]);
 
 	struct utsname OSinfo={{0}};
 	uname(&OSinfo);
 
-	printf( "\n"							\
-		"  %s:\n"						\
-		"  |- Release%.*s[%s]\n",
-		OSinfo.sysname,
-		66-strlen(OSinfo.release), hSpace, OSinfo.release);
+	printv(	"\n"							\
+		"  %s:\n",
+		OSinfo.sysname);
+	printv(	"  |- Release%.*s[%s]\n",
+		66 - strlen(OSinfo.release), hSpace, OSinfo.release);
 
-	if((len=strlen(Shm->IdleDriver.Name)) > 0)
-	{
-		printf(	"  |- Idle driver%.*s[%s]\n"			\
-			"     |- States:%.*s",
-			62-len, hSpace, Shm->IdleDriver.Name,
-			9, hSpace);
-		for(i=0; i < Shm->IdleDriver.stateCount; i++)
-			printf("%-8s", Shm->IdleDriver.State[i].Name);
-		printf(	"\n"						\
-			"     |- Power:%.*s",
-			10, hSpace);
-		for(i=0; i < Shm->IdleDriver.stateCount; i++)
-			printf("%-8d", Shm->IdleDriver.State[i].powerUsage);
-		printf(	"\n"						\
-			"     |- Latency:%.*s",
-			8, hSpace);
-		for(i=0; i < Shm->IdleDriver.stateCount; i++)
-			printf("%-8u", Shm->IdleDriver.State[i].exitLatency);
-		printf(	"\n"						\
-			"     |- Residency:%.*s",
-			6, hSpace);
-		for(i=0; i < Shm->IdleDriver.stateCount; i++)
-			printf("%-8u",Shm->IdleDriver.State[i].targetResidency);
-		printf(	"\n");
-	}
+    if((len=strlen(Shm->IdleDriver.Name)) > 0)
+    {
+	printv(	"  |- Idle driver%.*s[%s]\n",
+		62 - len, hSpace, Shm->IdleDriver.Name);
+	printv(	"     |- States:%.*s",
+		9, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printv("%-8s", Shm->IdleDriver.State[i].Name);
+	printv(	"\n"							\
+		"     |- Power:%.*s",
+		10, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printv("%-8d", Shm->IdleDriver.State[i].powerUsage);
+	printv(	"\n"							\
+		"     |- Latency:%.*s",
+		8, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printv("%-8u", Shm->IdleDriver.State[i].exitLatency);
+	printv(	"\n"							\
+		"     |- Residency:%.*s",
+		6, hSpace);
+	for(i=0; i < Shm->IdleDriver.stateCount; i++)
+		printv("%-8u", Shm->IdleDriver.State[i].targetResidency);
+	printv("\n");
+    }
+	printf(view);
+	fflush(stdout);
+	free(view);
+	free(line);
 }
 
 
