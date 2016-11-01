@@ -159,10 +159,10 @@ void lcdDraw(	unsigned int X,
 		unsigned int thisNumber,
 		unsigned int thisDigit[] )
 {
-    char *lcdBuf=malloc(32);
-    thisView[0]='\0';
-
+    char lcdBuf[32];
     unsigned int j=dec2Digit(thisNumber, thisDigit);
+
+    thisView[0]='\0';
     j=4;
     do
     {
@@ -179,7 +179,6 @@ void lcdDraw(	unsigned int X,
 
 	j--;
     } while(j > 0) ;
-    free(lcdBuf);
 }
 
 
@@ -264,7 +263,7 @@ void Top(SHM_STRUCT *Shm)
 
     void layout(void)
     {
-	char *hString=malloc(32);
+	char *hString=malloc(48);
 	size_t	len=0;
 
 	loadWidth=drawSize.width - LOAD_LEAD;
@@ -900,15 +899,23 @@ void SysInfo(SHM_STRUCT *Shm)
 	const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
     	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
 	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
-	char *line=malloc(80 + 1 + 1), *view=calloc(24 * 5, 80 + 1 + 1);
+	char *line=malloc(80 + 1 + 1), *view=NULL;
 	size_t len=0;
 	int i=0;
 
 	void printv(char *fmt, ...)
 	{
+		size_t msize;
 		va_list ap;
 		va_start(ap, fmt);
 		vsprintf(line, fmt, ap);
+		if(view == NULL) {
+			msize=strlen(line) + 1;
+			view=calloc(msize, 1);
+		} else {
+			msize=strlen(line) + strlen(view) + 1;
+			view=realloc(view, msize);
+		}
 		strcat(view, line);
 		va_end(ap);
 	}
