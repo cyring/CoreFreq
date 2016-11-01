@@ -1111,13 +1111,22 @@ void TurboBoost_Technology(CORE *Core)
 	}
 }
 
-void Enhanced_Halt_State(CORE *Core)
+void Query_Intel_C1E(CORE *Core)
 {
 	POWER_CONTROL PowerCtrl={.value=0};
 
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
 
 	Core->Query.C1E=PowerCtrl.C1E;				// Per Package!
+}
+
+void Query_AMD_C1E(CORE *Core)
+{
+	INT_PENDING_MSG IntPendingMsg={.value=0};
+
+	RDMSR(IntPendingMsg, MSR_K8_INT_PENDING_MSG);
+
+	Core->Query.C1E=IntPendingMsg.C1eOnCmpHalt;
 }
 
 void ThermalMonitor_Set(CORE *Core)
@@ -1149,6 +1158,7 @@ void ThermalMonitor_Set(CORE *Core)
 
 void PerCore_AMD_Query(CORE *Core)
 {
+	Query_AMD_C1E(Core);
 }
 
 void PerCore_Core2_Query(CORE *Core)
@@ -1161,7 +1171,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 {
 	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
-	Enhanced_Halt_State(Core);
+	Query_Intel_C1E(Core);
 
 	if(Core->T.ThreadID == 0)				// Per Core
 	{
@@ -1179,7 +1189,7 @@ void PerCore_SandyBridge_Query(CORE *Core)
 {
 	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
-	Enhanced_Halt_State(Core);
+	Query_Intel_C1E(Core);
 
 	if(Core->T.ThreadID == 0)				// Per Core
 	{

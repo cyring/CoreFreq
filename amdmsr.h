@@ -98,6 +98,24 @@ typedef union
 
 typedef union
 {
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	IOMsgAddr	: 16-0,
+	IOMsgData	: 24-16,
+	IntrPndMsgDis	: 25-24,
+	IntrPndMsg	: 26-25,
+	IORd		: 27-26,
+	SmiOnCmpHalt	: 28-27, // SMI on Multi-core halt
+	C1eOnCmpHalt	: 29-28, // C1E on Multi-core halt
+	Reserved1	: 32-29,
+	Reserved2	: 64-32;
+    };
+} INT_PENDING_MSG;
+
+typedef union
+{
     struct
     {
 	unsigned int
