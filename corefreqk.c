@@ -167,10 +167,9 @@ void Query_Features(void *pArg)
 {
 	ARG *arg=(ARG *) pArg;
 
-	// Extended Function CPUID Information. CPUID 0x80000000
-	unsigned int LargestExtFunc;
 	unsigned int AX=0x0, BX=0x0, CX=0x0, DX=0x0;	// DWORD Only!
 
+	// Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4
 	asm volatile
 	(
 		"cpuid"
@@ -203,115 +202,67 @@ void Query_Features(void *pArg)
 		  "=d"	(arg->features.Std.DX)
                 : "a" (0x1)
 	);
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(arg->features.MWait.AX),
-		  "=b"	(arg->features.MWait.BX),
-		  "=c"	(arg->features.MWait.CX),
-		  "=d"	(arg->features.MWait.DX)
-                : "a" (0x5)
-	);
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(arg->features.Power.AX),
-		  "=b"	(arg->features.Power.BX),
-		  "=c"	(arg->features.Power.CX),
-		  "=d"	(arg->features.Power.DX)
-                : "a" (0x6)
-	);
-	asm volatile
-	(
-		"movq	$0x7, %%rax	\n\t"
-		"xorq	%%rbx, %%rbx    \n\t"
-		"xorq	%%rcx, %%rcx    \n\t"
-		"xorq	%%rdx, %%rdx    \n\t"
-		"cpuid			\n\t"
-		"mov	%%eax, %0	\n\t"
-		"mov	%%ebx, %1	\n\t"
-		"mov	%%ecx, %2	\n\t"
-		"mov	%%edx, %3"
-		: "=r"	(arg->features.ExtFeature.AX),
-		  "=r"	(arg->features.ExtFeature.BX),
-		  "=r"	(arg->features.ExtFeature.CX),
-		  "=r"	(arg->features.ExtFeature.DX)
-                :
-		: "%rax", "%rbx", "%rcx", "%rdx"
-	);
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(AX),
-		  "=b"	(BX),
-		  "=c"	(CX),
-		  "=d"	(DX)
-		: "a"	(0x4),
-		  "c"	(0x0)
-	);
-	// The performance features are present if bit is read as cleared.
-	arg->features.PerfMon.BX.CoreCycles=1;
-	arg->features.PerfMon.BX.InstrRetired=1;
-	arg->features.PerfMon.BX.RefCycles=1;
-	arg->features.PerfMon.BX.LLC_Ref=1;
-	arg->features.PerfMon.BX.LLC_Misses=1;
-	arg->features.PerfMon.BX.BranchRetired=1;
-	arg->features.PerfMon.BX.BranchMispred=1;
-
-	if(!strncmp(arg->features.Info.VendorID, VENDOR_INTEL, 12))
+	if(arg->features.Info.LargestStdFunc >= 0x5)
 	{
-		arg->count=(AX >> 26) & 0x3f;
-		arg->count++;
-
 		asm volatile
 		(
 			"cpuid"
-			: "=a"	(arg->features.PerfMon.AX),
-			  "=b"	(arg->features.PerfMon.BX),
-			  "=c"	(arg->features.PerfMon.CX),
-			  "=d"	(arg->features.PerfMon.DX)
-	                : "a" (0xa)
+			: "=a"	(arg->features.MWait.AX),
+			  "=b"	(arg->features.MWait.BX),
+			  "=c"	(arg->features.MWait.CX),
+			  "=d"	(arg->features.MWait.DX)
+	                : "a" (0x5)
 		);
-
-		arg->features.FactoryFreq=Intel_Brand(arg->features.Info.Brand);
 	}
-	else if(!strncmp(arg->features.Info.VendorID, VENDOR_AMD, 12))
+	if(arg->features.Info.LargestStdFunc >= 0x6)
 	{
-		if(arg->features.Std.DX.HTT)
-			arg->count=arg->features.Std.BX.MaxThread;
-	  else	{
-			if(LargestExtFunc >= 0x80000008)
-			{
-				asm volatile
-				(
-					"cpuid"
-					: "=a"	(AX),
-					  "=b"	(BX),
-					  "=c"	(CX),
-					  "=d"	(DX)
-					: "a"	(0x80000008)
-				);
-				arg->count=(CX & 0xf) + 1;
-			}
-		}
-		AMD_Brand(arg->features.Info.Brand);
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(arg->features.Power.AX),
+			  "=b"	(arg->features.Power.BX),
+			  "=c"	(arg->features.Power.CX),
+			  "=d"	(arg->features.Power.DX)
+	                : "a" (0x6)
+		);
 	}
-	// Common x86
+	if(arg->features.Info.LargestStdFunc >= 0x7)
+	{
+		asm volatile
+		(
+			"movq	$0x7, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx    \n\t"
+			"xorq	%%rcx, %%rcx    \n\t"
+			"xorq	%%rdx, %%rdx    \n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r"	(arg->features.ExtFeature.AX),
+			  "=r"	(arg->features.ExtFeature.BX),
+			  "=r"	(arg->features.ExtFeature.CX),
+			  "=r"	(arg->features.ExtFeature.DX)
+	                :
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	}
+	// Must have 0x80000000, 0x80000001, 0x80000002, 0x80000003, 0x80000004
 	asm volatile
 	(
 		"cpuid"
-		: "=a"	(LargestExtFunc)
+		: "=a"	(arg->features.Info.LargestExtFunc)
                 : "a" (0x80000000)
 	);
-	if(LargestExtFunc >= 0x80000001)
+	asm volatile
+	(
+		"cpuid"
+		: "=c"	(arg->features.ExtInfo.CX),
+		  "=d"	(arg->features.ExtInfo.DX)
+		: "a" (0x80000001)
+	);
+	if(arg->features.Info.LargestExtFunc >= 0x80000007)
 	{
-		asm volatile
-		(
-			"cpuid"
-			: "=c"	(arg->features.ExtInfo.CX),
-			  "=d"	(arg->features.ExtInfo.DX)
-			: "a" (0x80000001)
-		);
 		asm volatile
 		(
 			"cpuid"
@@ -321,6 +272,67 @@ void Query_Features(void *pArg)
 			  "=d"	(arg->features.AdvPower.DX)
 			: "a" (0x80000007)
 		);
+	}
+
+	// Reset the performance features bits (present is zero)
+	arg->features.PerfMon.BX.CoreCycles=1;
+	arg->features.PerfMon.BX.InstrRetired=1;
+	arg->features.PerfMon.BX.RefCycles=1;
+	arg->features.PerfMon.BX.LLC_Ref=1;
+	arg->features.PerfMon.BX.LLC_Misses=1;
+	arg->features.PerfMon.BX.BranchRetired=1;
+	arg->features.PerfMon.BX.BranchMispred=1;
+
+	// Per Vendor features
+	if(!strncmp(arg->features.Info.VendorID, VENDOR_INTEL, 12))
+	{
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(AX),
+			  "=b"	(BX),
+			  "=c"	(CX),
+			  "=d"	(DX)
+			: "a"	(0x4),
+			  "c"	(0x0)
+		);
+		arg->count=(AX >> 26) & 0x3f;
+		arg->count++;
+
+	    if(arg->features.Info.LargestStdFunc >= 0xa)
+	    {
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(arg->features.PerfMon.AX),
+			  "=b"	(arg->features.PerfMon.BX),
+			  "=c"	(arg->features.PerfMon.CX),
+			  "=d"	(arg->features.PerfMon.DX)
+	                : "a" (0xa)
+		);
+	    }
+	    arg->features.FactoryFreq=Intel_Brand(arg->features.Info.Brand);
+	}
+	else if(!strncmp(arg->features.Info.VendorID, VENDOR_AMD, 12))
+	{
+		if(arg->features.Std.DX.HTT)
+			arg->count=arg->features.Std.BX.MaxThread;
+	  else	{
+		    if(arg->features.Info.LargestExtFunc >= 0x80000008)
+		    {
+			asm volatile
+			(
+				"cpuid"
+				: "=a"	(AX),
+				  "=b"	(BX),
+				  "=c"	(CX),
+				  "=d"	(DX)
+				: "a"	(0x80000008)
+			);
+			arg->count=(CX & 0xf) + 1;
+		    }
+		}
+		AMD_Brand(arg->features.Info.Brand);
 	}
 }
 
@@ -704,21 +716,25 @@ CLOCK Clock_Haswell(unsigned int ratio)
 // [Skylake]
 CLOCK Clock_Skylake(unsigned int ratio)
 {
-	CLOCK clock={.R=0};
-	unsigned int AX=0x0, BX=0x0, DX=0x0, FSB=0;
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(AX),
-		  "=b"	(BX),
-		  "=c"	(FSB),
-		  "=d"	(DX)
-                : "a" (0x16)
-	);
-	if(FSB > 0)
-		clock.Q=FSB;
-	else
-		clock.Q=100;
+	CLOCK clock={.Q=100, .R=0};
+
+	if(Proc->Features.Info.LargestStdFunc >= 0x16)
+	{
+		unsigned int AX=0x0, BX=0x0, DX=0x0, FSB=0;
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(AX),
+			  "=b"	(BX),
+			  "=c"	(FSB),
+			  "=d"	(DX)
+	                : "a" (0x16)
+		);
+		if(FSB > 0)
+			clock.Q=FSB;
+		else
+			clock.Q=100;
+	}
 	ClockToHz(&clock);
 	clock.R *= ratio;
 	return(clock);
@@ -747,8 +763,10 @@ void Cache_Topology(CORE *Core)
 	}
 	else if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
 	{	// Employ the Intel algorithm.
-		struct CACHE_INFO CacheInfo;
+	    struct CACHE_INFO CacheInfo;
 
+	    if(Proc->Features.Info.LargestExtFunc >= 0x80000005)
+	    {
 		Core->T.Cache[0].Level=1;
 		Core->T.Cache[0].Type=2;		// Inst.
 		Core->T.Cache[1].Level=1;
@@ -770,7 +788,9 @@ void Cache_Topology(CORE *Core)
 		// L1 Data
 		Core->T.Cache[1].Way=CacheInfo.CPUID_0x80000005_L1D.Assoc;
 		Core->T.Cache[1].Size=CacheInfo.CPUID_0x80000005_L1D.Size;
-
+	    }
+	    if(Proc->Features.Info.LargestExtFunc >= 0x80000006)
+	    {
 		Core->T.Cache[2].Level=2;
 		Core->T.Cache[2].Type=3;		// Unified!
 		Core->T.Cache[3].Level=3;
@@ -792,6 +812,7 @@ void Cache_Topology(CORE *Core)
 		// L3
 		Core->T.Cache[3].Way=CacheInfo.CPUID_0x80000006_L3.Assoc;
 		Core->T.Cache[3].Size=CacheInfo.CPUID_0x80000006_L3.Size;
+	    }
 	}
 }
 
@@ -811,7 +832,7 @@ void Map_Topology(void *arg)
 			: "=b"	(features.Std.BX)
 			: "a"	(0x1)
 		);
-		Core->T.ApicID=features.Std.BX.Apic_ID;	// ToDo
+		Core->T.CoreID=Core->T.ApicID=features.Std.BX.Apic_ID;
 
 		Cache_Topology(Core);
 	}
@@ -964,19 +985,22 @@ void Intel_Platform_Info(void)
 
 void DynamicAcceleration(void)
 {
-	struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(thermal_Power_Leaf.AX),
-		  "=b"	(thermal_Power_Leaf.BX),
-		  "=c"	(thermal_Power_Leaf.CX),
-		  "=d"	(thermal_Power_Leaf.DX)
-                : "a" (0x6)
-	);
+	if(Proc->Features.Info.LargestStdFunc >= 0x6)
+	{
+		struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
+		asm volatile
+		(
+			"cpuid"
+			: "=a"	(thermal_Power_Leaf.AX),
+			  "=b"	(thermal_Power_Leaf.BX),
+			  "=c"	(thermal_Power_Leaf.CX),
+			  "=d"	(thermal_Power_Leaf.DX)
+	                : "a" (0x6)
+		);
 
-	if(thermal_Power_Leaf.AX.TurboIDA == 1)
-		Proc->Boost[9]=Proc->Boost[1] + 1;	// ToDo: IDA Ratio
+		if(thermal_Power_Leaf.AX.TurboIDA == 1)
+			Proc->Boost[9]=Proc->Boost[1] + 1; // ToDo: IDA Ratio
+	}
 }
 
 #ifndef MSR_TURBO_RATIO_LIMIT
@@ -1090,25 +1114,14 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 
 void TurboBoost_Technology(CORE *Core)
 {
-	struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
-	asm volatile
-	(
-		"cpuid"
-		: "=a"	(thermal_Power_Leaf.AX),
-		  "=b"	(thermal_Power_Leaf.BX),
-		  "=c"	(thermal_Power_Leaf.CX),
-		  "=d"	(thermal_Power_Leaf.DX)
-                : "a" (0x6)
-	);
+	MISC_PROC_FEATURES MiscFeatures={.value=0};
+	PERF_CONTROL PerfControl={.value=0};
 
-	if(thermal_Power_Leaf.AX.TurboIDA)			// Per Thread
-	{
-		PERF_CONTROL PerfControl={.value=0};
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+	RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
-		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
-
-		Core->Query.Turbo= !PerfControl.Turbo_IDA;
-	}
+	Core->Query.Turbo = (MiscFeatures.Turbo_IDA == 1) ? 0
+			: (PerfControl.Turbo_IDA == 1) ? 0 : 1;
 }
 
 void Query_Intel_C1E(CORE *Core)

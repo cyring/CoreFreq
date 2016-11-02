@@ -52,7 +52,8 @@ typedef struct
 
 typedef struct	// Basic CPUID Information.
 {		// Common x86
-	unsigned int	LargestStdFunc;
+	unsigned int	LargestStdFunc, // Largest CPUID Standard Function.
+			LargestExtFunc;	// Largest CPUID Extended Function.
 	char		Brand[48],
 			_pad48[2],
 			VendorID[13],
@@ -347,7 +348,7 @@ typedef	struct
 		ABM	:  6-5,  // LZCNT instruction support.
 		SSE4A	:  7-6,
 		AlignSSE:  8-7,  // Misaligned SSE mode.
-		PREFETCH:  9-8,  // PREFETCH, PREFETCHW instruction.
+		PREFETCH:  9-8,  // 3DNow PREFETCH, PREFETCHW instruction.
 		// Family 15h :
 		OSVW	: 10-9,  // OS-visible workaround support.
 		IBS	: 11-10, // Instruction based sampling.
@@ -357,15 +358,18 @@ typedef	struct
 		NotUsed1: 15-14,
 		LWP	: 16-15, // Lightweight profiling support.
 		FMA4	: 17-16, // Four-operand FMA instruction.
-		NotUsed2: 21-17,
+		TCE	: 18-17, // Translation Cache Extension.
+		NotUsed2: 21-18,
 		TBM	: 22-21, // Trailing bit manipulation.
-		Topology: 23-22, // Topology extensions support.
+		TopoExt	: 23-22, // Topology extensions support.
 		PerfCore: 24-23, // PerfCtrExtCore MSR.
 		PerfNB	: 25-24, // PerfCtrExtNB MSR.
 		NotUsed3: 26-25,
 		Data_BP	: 27-26, // Data access breakpoint extension.
 		PerfTSC	: 28-27, // Performance TSC MSR.
-		NotUsed4: 32-28;
+		PerfL2I	: 29-28, // L2I performance counter extensions support.
+		MWaitExt: 30-29, // MWAITX/MONITORX support.
+		NotUsed4: 32-30;
 	};
     } CX;
     union

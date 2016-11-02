@@ -38,12 +38,6 @@ typedef struct
 		} Cache[CACHE_MAX_LEVEL];
 	} Topology;
 
-	unsigned int			C1E,
-					C3A,		// Nehalem
-					C1A,		// Nehalem
-					C3U,		// Sandy Bridge
-					C1U;		// Sandy Bridge
-
 	struct {
 	    	unsigned int		TM1,
 					TM2;
@@ -99,8 +93,22 @@ typedef struct
 	Bit32				InvariantTSC,
 					HyperThreading,
 					PowerNow;
+
 	Bit64				SpeedStep,
-					TurboBoost;
+					SpeedStep_Mask,
+					TurboBoost,
+					TurboBoost_Mask,
+					C1E,
+					C1E_Mask,
+					C3A,		// Nehalem
+					C3A_Mask,
+					C1A,		// Nehalem
+					C1A_Mask,
+					C3U,		// Sandy Bridge
+					C3U_Mask,
+					C1U,		// Sandy Bridge;
+					C1U_Mask;
+
 	struct {
 		double			Turbo,
 					C0,

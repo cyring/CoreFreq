@@ -300,6 +300,12 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
+	if((Core[cpu]->T.ApicID >= 0)
+	&& (Core[cpu]->T.CoreID >= 0))
+		BITSET(Shm->Proc.SpeedStep_Mask, cpu);
+	else
+		BITCLR(Shm->Proc.SpeedStep_Mask, cpu);
+
 	if(Core[cpu]->Query.EIST)
 		BITSET(Shm->Proc.SpeedStep, cpu);
 	else
@@ -308,6 +314,12 @@ void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
+	if((Core[cpu]->T.ApicID >= 0)
+	&& (Core[cpu]->T.CoreID >= 0))
+		BITSET(Shm->Proc.TurboBoost_Mask, cpu);
+	else
+		BITCLR(Shm->Proc.TurboBoost_Mask, cpu);
+
 	if(Core[cpu]->Query.Turbo)
 		BITSET(Shm->Proc.TurboBoost, cpu);
 	else
@@ -316,11 +328,49 @@ void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	Shm->Cpu[cpu].C1E=Core[cpu]->Query.C1E;
-	Shm->Cpu[cpu].C3A=Core[cpu]->Query.C3A;
-	Shm->Cpu[cpu].C1A=Core[cpu]->Query.C1A;
-	Shm->Cpu[cpu].C3U=Core[cpu]->Query.C3U;
-	Shm->Cpu[cpu].C1U=Core[cpu]->Query.C1U;
+	if((Core[cpu]->T.ApicID >= 0)
+	&& (Core[cpu]->T.CoreID >= 0))
+	{
+		BITSET(Shm->Proc.C1E_Mask, cpu);
+
+	    if((Core[cpu]->T.ThreadID == 0) || (Core[cpu]->T.ThreadID == -1))
+	    {
+		BITSET(Shm->Proc.C3A_Mask, cpu);
+		BITSET(Shm->Proc.C1A_Mask, cpu);
+		BITSET(Shm->Proc.C3U_Mask, cpu);
+		BITSET(Shm->Proc.C1U_Mask, cpu);
+	    }
+	    else
+	    {
+		BITCLR(Shm->Proc.C3A_Mask, cpu);
+		BITCLR(Shm->Proc.C1A_Mask, cpu);
+		BITCLR(Shm->Proc.C3U_Mask, cpu);
+		BITCLR(Shm->Proc.C1U_Mask, cpu);
+	    }
+	}
+	else
+		BITCLR(Shm->Proc.C1E_Mask, cpu);
+
+	if(Core[cpu]->Query.C1E)
+		BITSET(Shm->Proc.C1E, cpu);
+	else
+		BITCLR(Shm->Proc.C1E, cpu);
+	if(Core[cpu]->Query.C3A)
+		BITSET(Shm->Proc.C3A, cpu);
+	else
+		BITCLR(Shm->Proc.C3A, cpu);
+	if(Core[cpu]->Query.C1A)
+		BITSET(Shm->Proc.C1A, cpu);
+	else
+		BITCLR(Shm->Proc.C1A, cpu);
+	if(Core[cpu]->Query.C3U)
+		BITSET(Shm->Proc.C3U, cpu);
+	else
+		BITCLR(Shm->Proc.C3U, cpu);
+	if(Core[cpu]->Query.C1U)
+		BITSET(Shm->Proc.C1U, cpu);
+	else
+		BITCLR(Shm->Proc.C1U, cpu);
 }
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
@@ -562,30 +612,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
-		if(Quiet & 0x100)
-		 printf("  BSP: x2APIC[%d:%d:%d] [TSC:%c-%c]"		\
-			" [HTT:%u-%u] [EIST:%u-%x] [IDA:%u-%x]"		\
-			" [TM:%u-%u-%u-%u-%u]\n\n",
-			Proc->Features.Std.CX.x2APIC,
-			Core[0]->T.Base.EN,
-			Core[0]->T.Base.EXTD,
-			Proc->Features.Std.DX.TSC ?
-				Proc->Features.ExtInfo.DX.RdTSCP ? 'P':'1':'0',
-			Proc->Features.AdvPower.DX.Inv_TSC ? 'I':'V',
-			Proc->Features.Std.DX.HTT,
-				Proc->Features.HTT_Enable,
-			Proc->Features.Std.CX.EIST,
-				Shm->Proc.SpeedStep,
-			Proc->Features.Power.AX.TurboIDA,
-				Shm->Proc.TurboBoost,
-			Proc->Features.Std.DX.TM1
-			| Proc->Features.AdvPower.DX.TS,
-			Proc->Features.Std.CX.TM2
-			| Proc->Features.AdvPower.DX.TTP,
-			Core[0]->Thermal.TCC_Enable,
-			Core[0]->Thermal.TM2_Enable,
-			Core[0]->Thermal.TM_Select );
-
 		if(Quiet & 0x100)
 		  printf("  SleepInterval(%u)\n\n", Shm->Proc.SleepInterval);
 		if(Quiet)

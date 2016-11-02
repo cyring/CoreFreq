@@ -54,7 +54,7 @@ typedef	union
 		unsigned long long
 		EIST_Target	: 16-0,
 		ReservedBits1	: 32-16,
-		Turbo_IDA	: 33-32,
+		Turbo_IDA	: 33-32, // IDA_Turbo DISENGAGE bit
 		ReservedBits2	: 64-33;
 	};
 } PERF_CONTROL;
@@ -124,34 +124,34 @@ typedef union
 	struct
 	{
 		unsigned long long
-		FastStrings	:  1-0,
+		FastStrings	:  1-0,  // Fast-Strings Enable
 		ReservedBits1	:  2-1,
-		x87Compat_Enable:  3-2,		// Pentium4, Xeon
-		TCC		:  4-3,
-		SplitLockDisable:  5-4,		// Pentium4, Xeon
+		x87Compat_Enable:  3-2,  // Pentium4, Xeon
+		TCC		:  4-3,  // Automatic Thermal Control Circuit
+		SplitLockDisable:  5-4,  // Pentium4, Xeon
 		ReservedBits2	:  6-5,
-		L3Cache_Disable	:  7-6,		// Pentium4, Xeon
-		PerfMonitoring	:  8-7,
-		SupprLock_Enable:  9-8,		// Pentium4, Xeon
-		PrefetchQueueDis: 10-9,		// Pentium4, Xeon
-		Int_FERR_Enable	: 11-10,	// Pentium4, Xeon
-		BTS		: 12-11,
-		PEBS		: 13-12,
+		L3Cache_Disable	:  7-6,  // Pentium4, Xeon
+		PerfMonitoring	:  8-7,  // Performance Monitoring Available
+		SupprLock_Enable:  9-8,  // Pentium4, Xeon
+		PrefetchQueueDis: 10-9,  // Pentium4, Xeon
+		Int_FERR_Enable	: 11-10, // Pentium4, Xeon
+		BTS		: 12-11, // Branch Trace Storage Unavailable
+		PEBS		: 13-12, // Precise Event Based Sampling Unavail
 		TM2_Enable	: 14-13,
 		ReservedBits3	: 16-14,
-		EIST		: 17-16,
+		EIST		: 17-16, // Enhanced Intel SpeedStep Technology
 		ReservedBits4	: 18-17,
 		FSM		: 19-18,
-		PrefetchCacheDis: 20-19,	// Pentium4, Xeon
+		PrefetchCacheDis: 20-19, // Pentium4, Xeon
 		ReservedBits5	: 22-20,
 		CPUID_MaxVal	: 23-22,
 		xTPR		: 24-23,
-		L1DataCacheMode	: 25-24,	// Pentium4, Xeon
+		L1DataCacheMode	: 25-24, // Pentium4, Xeon
 		ReservedBits6	: 34-25,
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
 		DCU_Prefetcher	: 38-37,
-		Turbo_IDA	: 39-38,
+		Turbo_IDA	: 39-38, // Disable=1 -> CPUID(0x6).IDA=0
 		IP_Prefetcher	: 40-39,
 		ReservedBits8	: 64-40;
 	};

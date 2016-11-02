@@ -234,9 +234,14 @@ void Top(SHM_STRUCT *Shm)
     double medianRatio=(minRatio + maxRatio) / 2;
     double availRatio[10]={minRatio};
     unsigned int cpu=0, iclk=0, i, ratioCount=0;
-    const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
-    	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
-	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
+    const unsigned int
+    	isTurboBoost=(Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask),
+	isSpeedStep=(Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask),
+	isEnhancedHaltState=(Shm->Proc.C1E == Shm->Proc.C1E_Mask),
+	isC3autoDemotion=(Shm->Proc.C3A == Shm->Proc.C3A_Mask),
+	isC1autoDemotion=(Shm->Proc.C1A == Shm->Proc.C1A_Mask),
+	isC3undemotion=(Shm->Proc.C3U == Shm->Proc.C3U_Mask),
+	isC1undemotion=(Shm->Proc.C1U == Shm->Proc.C1U_Mask);
 
     for(i=1; i < 10; i++)
 	if(Shm->Proc.Boost[i] != 0)
@@ -357,12 +362,12 @@ void Top(SHM_STRUCT *Shm)
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		isSpeedStep ? GoK"EIST"DoK : "EIST",
 		isTurboBoost ? GoK"TURBO"DoK : "TURBO",
-		Shm->Cpu[0].C1E ? GoK"C1E"DoK : "C1E",
+		isEnhancedHaltState ? GoK"C1E"DoK : "C1E",
 		hString,
-		Shm->Cpu[0].C3A ? GoK"C3A"DoK : "C3A",
-		Shm->Cpu[0].C1A ? GoK"C1A"DoK : "C1A",
-		Shm->Cpu[0].C3U ? GoK"C3U"DoK : "C3U",
-		Shm->Cpu[0].C1U ? GoK"C1U"DoK : "C1U",
+		isC3autoDemotion ? GoK"C3A"DoK : "C3A",
+		isC1autoDemotion ? GoK"C1A"DoK : "C1A",
+		isC3undemotion ? GoK"C3U"DoK : "C3U",
+		isC1undemotion ? GoK"C1U"DoK : "C1U",
 		TM1[Shm->Cpu[0].Thermal.TM1],
 		TM2[Shm->Cpu[0].Thermal.TM2],
 		drawSize.width - 61,
@@ -376,7 +381,7 @@ void Top(SHM_STRUCT *Shm)
 		Shm->Proc.HyperThreading ? GoK"HTT"DoK : "HTT",
 		Shm->Proc.PowerNow == 0b11 ? GoK"PowerNow"DoK : "PowerNow",
 		isTurboBoost ? GoK"TURBO"DoK : "TURBO",
-		Shm->Cpu[0].C1E ? GoK"C1E"DoK : "C1E",
+		isEnhancedHaltState ? GoK"C1E"DoK : "C1E",
 		hString,
 		Shm->Proc.Features.AdvPower.DX.TS ? BoK"DTS"DoK : "DTS",
 		Shm->Proc.Features.AdvPower.DX.TTP ? BoK"TTP"DoK : "TTP",
@@ -896,9 +901,15 @@ void Topology(SHM_STRUCT *Shm)
 
 void SysInfo(SHM_STRUCT *Shm)
 {
-	const unsigned int CPU_BitMask=(1 << Shm->Proc.CPU.OnLine) - 1,
-    	isTurboBoost=(Shm->Proc.TurboBoost & CPU_BitMask) == CPU_BitMask,
-	isSpeedStep=(Shm->Proc.SpeedStep & CPU_BitMask) == CPU_BitMask;
+	const unsigned int
+	    	isTurboBoost=(Shm->Proc.TurboBoost==Shm->Proc.TurboBoost_Mask),
+		isSpeedStep=(Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask),
+		isEnhancedHaltState=(Shm->Proc.C1E == Shm->Proc.C1E_Mask),
+		isC3autoDemotion=(Shm->Proc.C3A == Shm->Proc.C3A_Mask),
+		isC1autoDemotion=(Shm->Proc.C1A == Shm->Proc.C1A_Mask),
+		isC3undemotion=(Shm->Proc.C3U == Shm->Proc.C3U_Mask),
+		isC1undemotion=(Shm->Proc.C1U == Shm->Proc.C1U_Mask);
+
 	char *line=malloc(80 + 1 + 1), *view=NULL;
 	size_t len=0;
 	int i=0;
@@ -1324,7 +1335,7 @@ void SysInfo(SHM_STRUCT *Shm)
 
 	printv(								\
 	"  |- PowerNow!%.*sPowerNow       [%3s]\n",
-	46, hSpace, enabled(Shm->Proc.PowerNow == 0b11));
+	46, hSpace, enabled(Shm->Proc.PowerNow == 0b11));	// VID + FID
 
 	printv(								\
 	"  |- Dynamic Acceleration%.*sIDA       [%3s]\n",
@@ -1356,23 +1367,23 @@ void SysInfo(SHM_STRUCT *Shm)
 
 	printv(								\
 	"  |- Enhanced Halt State%.*sC1E       [%3s]\n",
-	41, hSpace, enabled(Shm->Cpu[0].C1E));
+	41, hSpace, enabled(isEnhancedHaltState));
 
 	printv(								\
 	"  |- C1 Auto Demotion%.*sC1A       [%3s]\n",
-	44, hSpace, enabled(Shm->Cpu[0].C1A));
+	44, hSpace, enabled(isC1autoDemotion));
 
 	printv(								\
 	"  |- C3 Auto Demotion%.*sC3A       [%3s]\n",
-	44, hSpace, enabled(Shm->Cpu[0].C3A));
+	44, hSpace, enabled(isC3autoDemotion));
 
 	printv(								\
 	"  |- C1 UnDemotion%.*sC1U       [%3s]\n",
-	47, hSpace, enabled(Shm->Cpu[0].C1U));
+	47, hSpace, enabled(isC1undemotion));
 
 	printv(								\
 	"  |- C3 UnDemotion%.*sC3U       [%3s]\n",
-	47, hSpace, enabled(Shm->Cpu[0].C3U));
+	47, hSpace, enabled(isC3undemotion));
 
 	printv(								\
 	"  |- Frequency ID control%.*sFID       [%3s]\n",
