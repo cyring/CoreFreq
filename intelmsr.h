@@ -37,9 +37,9 @@ typedef	union
 		unsigned long long
 		CurrentRatio	: 16-0,
 		ReservedBits1	: 31-16,
-		XE		: 32-31,
-		ReservedBits2	: 40-32,
-		MaxBusRatio	: 45-40,
+		XE		: 32-31, // Intel Core
+		ReservedBits2	: 40-32, // Sandy Bridge: 48-32 Core Voltage
+		MaxBusRatio	: 45-40, // Atom
 		ReservedBits3	: 46-45,
 		NonInt_BusRatio	: 47-46,
 		ReservedBits4	: 64-47;
@@ -54,7 +54,7 @@ typedef	union
 		unsigned long long
 		EIST_Target	: 16-0,
 		ReservedBits1	: 32-16,
-		Turbo_IDA	: 33-32, // IDA_Turbo DISENGAGE bit
+		Turbo_IDA	: 33-32, // IDA Disengage bit w/ Mobile [06_0F]
 		ReservedBits2	: 64-33;
 	};
 } PERF_CONTROL;
@@ -75,7 +75,7 @@ typedef union
 		ConfigTDPlevels	: 35-33,
 		ReservedBits4	: 40-35,
 		MinimumRatio	: 48-40,
-		MinOperatRatio	: 56-48,	// Ivy Bridge, Haswell(-E)
+		MinOperatRatio	: 56-48, // Ivy Bridge, Haswell(-E)
 		ReservedBits5	: 64-56;
 	};
 } PLATFORM_INFO;
@@ -92,11 +92,11 @@ typedef union
 		ReservedBits2	: 15-11,
 		CFG_Lock	: 16-15,
 		ReservedBits3	: 24-16,
-		Int_Filtering	: 25-24,	// Nehalem
+		Int_Filtering	: 25-24, // Nehalem
 		C3autoDemotion	: 26-25,
 		C1autoDemotion	: 27-26,
-		C3undemotion	: 28-27,	// Sandy Bridge
-		C1undemotion	: 29-28,	// Sandy Bridge
+		C3undemotion	: 28-27, // Sandy Bridge
+		C1undemotion	: 29-28, // Sandy Bridge
 		ReservedBits4	: 64-29;
 	};
 } CSTATE_CONFIG;
@@ -156,6 +156,44 @@ typedef union
 		ReservedBits8	: 64-40;
 	};
 } MISC_PROC_FEATURES;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ODCM_DutyCycle	:  4-0,  // OnDemand Clock Modulation Duty Cycle
+		ODCM_Enable	:  5-4,
+		ReservedBits	: 63-5,
+		ExtensionBit	: 64-63; // Workaround to store CPUID(0x6)AX.5
+	};
+} CLOCK_MODULATION;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		PowerPolicy	:  4-0, // 0=highest perf; 15=Max energy saving*
+		ReservedBits	: 64-4;
+	};
+} ENERGY_PERF_BIAS;
+/*
+	*IA32_ENERGY_PERF_BIAS
+	Package:	Westmere, Sandy Bridge,
+			Ivy Bridge[06_3AH],
+			Ivy Bridge-E v2[06_3EH],
+			Haswell[06_3CH][06_45H][06_46H],
+			Haswell-E[06_3F],
+			Broadwell[06_3DH][06_47H][06_4FH][06_56H],
+			Skylake[06_4EH][06_5EH]
+	Per Core:	Silvermont
+	Per Thread:	Nehalem, Knights Landing[06_57H]
+	Shared/Unique:	Core Solo, Core Duo, Dual-Core-Xeon-LV
+*/
+
 /*
 typedef struct
 {
@@ -167,6 +205,7 @@ typedef struct
 		ReservedBits2	: 64-12;
 } MTRR_DEF_TYPE;
 */
+
 typedef union
 {
 	unsigned long long	value;

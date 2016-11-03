@@ -41,7 +41,9 @@ typedef struct
 	struct {
 	    	unsigned int		TM1,
 					TM2;
-	} Thermal;
+		float			ODCM;
+		unsigned int		PowerPolicy;
+	} PowerThermal;
 
 	struct FLIP_FLOP {
 		struct {

@@ -987,18 +987,18 @@ void DynamicAcceleration(void)
 {
 	if(Proc->Features.Info.LargestStdFunc >= 0x6)
 	{
-		struct THERMAL_POWER_LEAF thermal_Power_Leaf={0};
+		struct THERMAL_POWER_LEAF Power={0};
 		asm volatile
 		(
 			"cpuid"
-			: "=a"	(thermal_Power_Leaf.AX),
-			  "=b"	(thermal_Power_Leaf.BX),
-			  "=c"	(thermal_Power_Leaf.CX),
-			  "=d"	(thermal_Power_Leaf.DX)
+			: "=a"	(Power.AX),
+			  "=b"	(Power.BX),
+			  "=c"	(Power.CX),
+			  "=d"	(Power.DX)
 	                : "a" (0x6)
 		);
 
-		if(thermal_Power_Leaf.AX.TurboIDA == 1)
+		if(Power.AX.TurboIDA == 1)
 			Proc->Boost[9]=Proc->Boost[1] + 1; // ToDo: IDA Ratio
 	}
 }
@@ -1148,26 +1148,56 @@ void ThermalMonitor_Set(CORE *Core)
 	MISC_PROC_FEATURES MiscFeatures={.value=0};
 	THERM2_CONTROL Therm2Control={.value=0};
 
+	//Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch.
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->Thermal.Target=TjMax.Target;
-	if(!Core->Thermal.Target)
-		Core->Thermal.Target=100;
+	Core->PowerThermal.Target=TjMax.Target;
+	if(Core->PowerThermal.Target == 0)
+		Core->PowerThermal.Target=100;	// ToDo: TjMax database.
 
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-	Core->Thermal.TCC_Enable = MiscFeatures.TCC;
-	Core->Thermal.TM2_Enable = MiscFeatures.TM2_Enable;
+	Core->PowerThermal.TCC_Enable = MiscFeatures.TCC;
+	Core->PowerThermal.TM2_Enable = MiscFeatures.TM2_Enable;
 
-	RDMSR(Therm2Control, MSR_THERM2_CTL);
+	RDMSR(Therm2Control, MSR_THERM2_CTL);		// All Intel families.
 
-	Core->Thermal.TM2_Enable = Therm2Control.TM_SELECT;
+	Core->PowerThermal.TM2_Enable = Therm2Control.TM_SELECT;
 }
 
-#define PerCore_Intel_Query(Core)					\
-({									\
-	ThermalMonitor_Set(Core);					\
-})
+void PowerThermal(CORE *Core)
+{
+    if(Proc->Features.Info.LargestStdFunc >= 0x6)
+    {
+	struct THERMAL_POWER_LEAF Power={0};
+
+	asm volatile
+	(
+		"cpuid"
+		: "=a"	(Power.AX),
+		  "=b"	(Power.BX),
+		  "=c"	(Power.CX),
+		  "=d"	(Power.DX)
+                : "a" (0x6)
+	);
+
+	if(Proc->Features.Std.DX.ACPI == 1)
+	{
+	    RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
+
+	    Core->PowerThermal.ClockModulation.ExtensionBit=Power.AX.ECMD;
+	}
+	if(Power.CX.SETBH == 1)
+	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+    }
+}
+
+void PerCore_Intel_Query(CORE *Core)
+{
+	PowerThermal(Core);
+
+	ThermalMonitor_Set(Core);
+}
 
 void PerCore_AMD_Query(CORE *Core)
 {
@@ -1177,6 +1207,9 @@ void PerCore_AMD_Query(CORE *Core)
 void PerCore_Core2_Query(CORE *Core)
 {
 	SpeedStep_Technology(Core);
+
+	PowerThermal(Core);				// Shared/Unique
+
 	ThermalMonitor_Set(Core);
 }
 
@@ -1195,6 +1228,8 @@ void PerCore_Nehalem_Query(CORE *Core)
 		Core->Query.C3A=CStateConfig.C3autoDemotion;
 		Core->Query.C1A=CStateConfig.C1autoDemotion;
 	}
+	PowerThermal(Core);
+
 	ThermalMonitor_Set(Core);
 }
 
@@ -1215,6 +1250,8 @@ void PerCore_SandyBridge_Query(CORE *Core)
 		Core->Query.C3U=CStateConfig.C3undemotion;
 		Core->Query.C1U=CStateConfig.C1undemotion;
 	}
+	PowerThermal(Core);
+
 	ThermalMonitor_Set(Core);
 }
 
@@ -1539,10 +1576,10 @@ void Counters_Clear(CORE *Core)
 void Core_Intel_Temp(CORE *Core)
 {
 	THERM_STATUS ThermStatus={.value=0};
-	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	// All Intel families.
 
-	Core->Thermal.Sensor=ThermStatus.DTS;
-	Core->Thermal.Trip=ThermStatus.StatusBit | ThermStatus.StatusLog;
+	Core->PowerThermal.Sensor=ThermStatus.DTS;
+	Core->PowerThermal.Trip=ThermStatus.StatusBit | ThermStatus.StatusLog;
 }
 
 void Core_AMD_Temp(CORE *Core)
@@ -1560,10 +1597,10 @@ void Core_AMD_Temp(CORE *Core)
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
 
 		// Formula is " CurTmp - (TjOffset * 2) - 49 "
-		Core->Thermal.Target=ThermTrip.TjOffset;
-		Core->Thermal.Sensor=ThermTrip.CurrentTemp;
+		Core->PowerThermal.Target=ThermTrip.TjOffset;
+		Core->PowerThermal.Sensor=ThermTrip.CurrentTemp;
 
-		Core->Thermal.Trip=ThermTrip.SensorTrip;
+		Core->PowerThermal.Trip=ThermTrip.SensorTrip;
 	}
 }
 

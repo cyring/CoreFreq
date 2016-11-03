@@ -368,8 +368,8 @@ void Top(SHM_STRUCT *Shm)
 		isC1autoDemotion ? GoK"C1A"DoK : "C1A",
 		isC3undemotion ? GoK"C3U"DoK : "C3U",
 		isC1undemotion ? GoK"C1U"DoK : "C1U",
-		TM1[Shm->Cpu[0].Thermal.TM1],
-		TM2[Shm->Cpu[0].Thermal.TM2],
+		TM1[Shm->Cpu[0].PowerThermal.TM1],
+		TM2[Shm->Cpu[0].PowerThermal.TM2],
 		drawSize.width - 61,
 		hSpace);
 	}
@@ -931,7 +931,22 @@ void SysInfo(SHM_STRUCT *Shm)
 		va_end(ap);
 	}
 
-	printv(	"  Processor%.*s[%s]\n",
+	printv(	"  CPUID:\n");
+
+	printv(	"  |- Largest Standard Function%.*s[%08X]\n",
+		40, hSpace,
+		Shm->Proc.Features.Info.LargestStdFunc);
+
+	printv(	"  |- Largest Extended Function%.*s[%08X]\n",
+		40, hSpace,
+		Shm->Proc.Features.Info.LargestExtFunc);
+
+	printv(	"  |- Vendor ID%.*s[%s]\n",
+		64 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
+		Shm->Proc.Features.Info.VendorID);
+
+	printv(	"\n"
+		"  Processor%.*s[%s]\n",
 		67 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
 
 	printv(	"  |- Signature%.*s[%1X%1X_%1X%1X]\n",
@@ -1168,7 +1183,8 @@ void SysInfo(SHM_STRUCT *Shm)
 	printv(								\
 	"  |- Advanced Configuration & Power Interface"			\
 					"%.*sACPI   [%7s]\n",
-	19, hSpace, powered(Shm->Proc.Features.Std.DX.ACPI));
+	19, hSpace, powered(Shm->Proc.Features.Std.DX.ACPI		// Intel
+			| Shm->Proc.Features.AdvPower.DX.HwPstate) );	// AMD
 
 	printv(								\
 	"  |- Advanced Programmable Interrupt Controller"		\
@@ -1457,7 +1473,7 @@ void SysInfo(SHM_STRUCT *Shm)
 
 	printv(								\
 	"\n"								\
-	"  Thermal Monitoring:\n");
+	"  Power & Thermal Monitoring:\n");
 
 	printv(								\
 	"  |- Digital Thermal Sensor%.*sDTS   [%7s]\n",
@@ -1465,12 +1481,20 @@ void SysInfo(SHM_STRUCT *Shm)
 				| Shm->Proc.Features.AdvPower.DX.TS ));
 	printv(								\
 	"  |- Thermal Monitor 1%.*sTM1|TTP   [%7s]\n",
-	39, hSpace, TM[   Shm->Cpu[0].Thermal.TM1
+	39, hSpace, TM[   Shm->Cpu[0].PowerThermal.TM1
 			| Shm->Proc.Features.AdvPower.DX.TTP ]);
 	printv(								\
 	"  |- Thermal Monitor 2%.*sTM2|HTC   [%7s]\n",
-	39, hSpace, TM[	  Shm->Cpu[0].Thermal.TM2
+	39, hSpace, TM[	  Shm->Cpu[0].PowerThermal.TM2
 			| Shm->Proc.Features.AdvPower.DX.TM ]);
+
+	printv(								\
+	"  |- Clock Modulation%.*sODCM   [%6.2f%%]\n",
+	43, hSpace, Shm->Cpu[0].PowerThermal.ODCM);
+
+	printv(								\
+	"  |- Energy Policy%.*sBias Hint   [%7u]\n",
+	41, hSpace, Shm->Cpu[0].PowerThermal.PowerPolicy);
 
 	struct utsname OSinfo={{0}};
 	uname(&OSinfo);

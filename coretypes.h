@@ -228,7 +228,7 @@ typedef struct THERMAL_POWER_LEAF
 		HCF_Cap	:  1-0, // MSR: IA32_MPERF (E7H) & IA32_APERF (E8H)
 		ACNT_Cap:  2-1,
 		Unused1	:  3-2,
-		PEB_Cap	:  4-3,
+		SETBH	:  4-3,
 		Unused2	: 32-4;
 	};
 	struct

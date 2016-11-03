@@ -143,9 +143,9 @@ static void *Core_Cycle(void *arg)
 				    Core->Clock, Proc->SleepInterval)
 					/ (Proc->SleepInterval * 1000);
 		}
-		Flip->Thermal.Trip=Core->Thermal.Trip;
-		Flip->Thermal.Target=Core->Thermal.Target;
-		Flip->Thermal.Sensor=Core->Thermal.Sensor;
+		Flip->Thermal.Trip=Core->PowerThermal.Trip;
+		Flip->Thermal.Target=Core->PowerThermal.Target;
+		Flip->Thermal.Sensor=Core->PowerThermal.Sensor;
 
 		if(thermalFormula == 0x01)
 			Flip->Thermal.Temp=Flip->Thermal.Target
@@ -375,11 +375,24 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 {
-	Shm->Cpu[cpu].Thermal.TM1 =Proc->Features.Std.DX.TM1;		//0001
-	Shm->Cpu[cpu].Thermal.TM1|=(Core[cpu]->Thermal.TCC_Enable << 1);//0010
-	Shm->Cpu[cpu].Thermal.TM1^=(Core[cpu]->Thermal.TM_Select << 1);	//0010
-	Shm->Cpu[cpu].Thermal.TM2 =Proc->Features.Std.CX.TM2;		//0001
-	Shm->Cpu[cpu].Thermal.TM2|=(Core[cpu]->Thermal.TM2_Enable << 1);//0010
+	Shm->Cpu[cpu].PowerThermal.TM1 =		\
+		Proc->Features.Std.DX.TM1;			//0001
+	Shm->Cpu[cpu].PowerThermal.TM1 |=		\
+		(Core[cpu]->PowerThermal.TCC_Enable << 1);	//0010
+	Shm->Cpu[cpu].PowerThermal.TM1 ^=		\
+		(Core[cpu]->PowerThermal.TM_Select << 1);	//0010
+	Shm->Cpu[cpu].PowerThermal.TM2 =		\
+		Proc->Features.Std.CX.TM2;			//0001
+	Shm->Cpu[cpu].PowerThermal.TM2 |=		\
+		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
+
+	Shm->Cpu[cpu].PowerThermal.ODCM =	\
+		Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle
+		* (Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1) ?
+			6.25f : 12.5f;
+
+	Shm->Cpu[cpu].PowerThermal.PowerPolicy =	\
+		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 }
 
 void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)

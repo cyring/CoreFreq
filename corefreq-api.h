@@ -245,7 +245,9 @@ typedef struct
 				Trip      :  4-3,
 				Unused    : 32-4;
 	};
-} THERMAL;
+	CLOCK_MODULATION	ClockModulation;
+	ENERGY_PERF_BIAS	PerfEnergyBias;
+} POWER_THERMAL;
 
 typedef struct
 {	// Cache line size aligned structures.
@@ -292,7 +294,7 @@ typedef struct
 					C1;
 	} Delta;
 
-	THERMAL				Thermal;
+	POWER_THERMAL			PowerThermal;
 
 	struct SAVEAREA
 	{
