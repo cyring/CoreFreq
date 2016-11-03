@@ -115,7 +115,8 @@ CPU     IPS            IPC            CPI
 #07     0.000088/s     0.150406/c     6.648674/i
 ```
 
- * Use option '-s' to show Processor information (BSP)
+ * Use option '-s' to show Processor information (BSP)   
+
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
 ## ArchLinux
