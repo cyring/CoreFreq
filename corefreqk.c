@@ -5,7 +5,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/kthread.h>
 #include <linux/cpu.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
@@ -200,7 +199,7 @@ void Query_Features(void *pArg)
 		  "=b"	(arg->features.Std.BX),
 		  "=c"	(arg->features.Std.CX),
 		  "=d"	(arg->features.Std.DX)
-                : "a" (0x1)
+		: "a" (0x1)
 	);
 	if(arg->features.Info.LargestStdFunc >= 0x5)
 	{
@@ -211,7 +210,7 @@ void Query_Features(void *pArg)
 			  "=b"	(arg->features.MWait.BX),
 			  "=c"	(arg->features.MWait.CX),
 			  "=d"	(arg->features.MWait.DX)
-	                : "a" (0x5)
+			: "a" (0x5)
 		);
 	}
 	if(arg->features.Info.LargestStdFunc >= 0x6)
@@ -223,7 +222,7 @@ void Query_Features(void *pArg)
 			  "=b"	(arg->features.Power.BX),
 			  "=c"	(arg->features.Power.CX),
 			  "=d"	(arg->features.Power.DX)
-	                : "a" (0x6)
+			: "a" (0x6)
 		);
 	}
 	if(arg->features.Info.LargestStdFunc >= 0x7)
@@ -243,7 +242,7 @@ void Query_Features(void *pArg)
 			  "=r"	(arg->features.ExtFeature.BX),
 			  "=r"	(arg->features.ExtFeature.CX),
 			  "=r"	(arg->features.ExtFeature.DX)
-	                :
+			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
@@ -252,7 +251,7 @@ void Query_Features(void *pArg)
 	(
 		"cpuid"
 		: "=a"	(arg->features.Info.LargestExtFunc)
-                : "a" (0x80000000)
+		: "a" (0x80000000)
 	);
 	asm volatile
 	(
@@ -308,7 +307,7 @@ void Query_Features(void *pArg)
 			  "=b"	(arg->features.PerfMon.BX),
 			  "=c"	(arg->features.PerfMon.CX),
 			  "=d"	(arg->features.PerfMon.DX)
-	                : "a" (0xa)
+			: "a" (0xa)
 		);
 	    }
 	    arg->features.FactoryFreq=Intel_Brand(arg->features.Info.Brand);
@@ -337,22 +336,27 @@ void Query_Features(void *pArg)
 }
 
 
-DECLARE_COMPLETION(bclk_job_complete);
-
-typedef	struct {
-	unsigned long long V[2];
+typedef	struct {			// V[0] stores previous TSC
+	unsigned long long V[2];	// V[1] stores current TSC
 } TSC_STRUCT;
 
-#define	OCCURRENCES 8
+#define	OCCURRENCES 4
+// OCCURRENCES x 2 (TSC values) needs a 64-byte cache line size.
+#define	STRUCT_SIZE (OCCURRENCES * sizeof(TSC_STRUCT))
 
-signed int Compute_Clock(void *arg)
+void Compute_Clock(void *arg)
 {
 	CLOCK *clock=(CLOCK *) arg;
 	unsigned int ratio=clock->Q;
+	// Allocate Cache aligned resources.
 	struct kmem_cache *hardwareCache=kmem_cache_create(
 				"CoreFreqCache",
-				OCCURRENCES * sizeof(TSC_STRUCT), 0,
+				STRUCT_SIZE, 0,
 				SLAB_HWCACHE_ALIGN, NULL);
+	/*
+		TSC[0] stores the overhead
+		TSC[1] stores the estimation
+	*/
 	TSC_STRUCT *TSC[2]={
 		kmem_cache_alloc(hardwareCache, GFP_KERNEL),
 		kmem_cache_alloc(hardwareCache, GFP_KERNEL)
@@ -367,18 +371,22 @@ signed int Compute_Clock(void *arg)
 		preempt_disable();
 		raw_local_irq_save(flags);
 
-		// Warm-up
+		// Warm-up & Overhead
 		for(loop=0; loop < OCCURRENCES; loop++)
 		{
 			RDTSCP64(TSC[0][loop].V[0]);
+
+			udelay(0);
+
 			RDTSCP64(TSC[0][loop].V[1]);
 		}
-		// Pick-up
+
+		// Estimation
 		for(loop=0; loop < OCCURRENCES; loop++)
 		{
 			RDTSCP64(TSC[1][loop].V[0]);
 
-			udelay(1000);	// ToDo: compute udelay() overhead.
+			udelay(1000);
 
 			RDTSCP64(TSC[1][loop].V[1]);
 		}
@@ -394,18 +402,21 @@ signed int Compute_Clock(void *arg)
 		preempt_disable();
 		raw_local_irq_save(flags);
 
-		// Warm-up
+		// Warm-up & Overhead
 		for(loop=0; loop < OCCURRENCES; loop++)
 		{
 			RDTSC64(TSC[0][loop].V[0]);
+
+			udelay(0);
+
 			RDTSC64(TSC[0][loop].V[1]);
 		}
-		// Pick-up
+		// Estimation
 		for(loop=0; loop < OCCURRENCES; loop++)
 		{
 			RDTSC64(TSC[1][loop].V[0]);
 
-			udelay(1000);	// ToDo: compute udelay() overhead.
+			udelay(1000);
 
 			RDTSC64(TSC[1][loop].V[1]);
 		}
@@ -413,14 +424,14 @@ signed int Compute_Clock(void *arg)
 		raw_local_irq_restore(flags);
 		preempt_enable();
 	}
-
+	// Is the TSC invariant or a serialized read instruction is available ?
 	if((Proc->Features.AdvPower.DX.Inv_TSC == 1)
 	|| (Proc->Features.ExtInfo.DX.RDTSCP == 1))
 		ComputeWithSerializedTSC();
 	else
 		ComputeWithUnSerializedTSC();
 
-
+	// Select the best clock.
 	memset(D, 0, 2 * OCCURRENCES);
 	for(loop=0; loop < OCCURRENCES; loop++)
 		for(what=0; what < 2; what++) {
@@ -444,40 +455,30 @@ signed int Compute_Clock(void *arg)
 
 			}
 		}
-	}	// Select the best clock.
+	}
+	// Substract the overhead.
 	D[1][best[1]] -= D[0][best[0]];
 	D[1][best[1]] *= 1000;
-
+	// Compute Divisor and Remainder.
 	clock->Q=D[1][best[1]] / (1000000L * ratio);
 	clock->R=D[1][best[1]] % (1000000L * ratio);
-
+	// Compute full Hertz.
 	clock->Hz=D[1][best[1]] / ratio;
 	clock->Hz+=D[1][best[1]] % ratio;
-
+	// Release resources.
 	kmem_cache_free(hardwareCache, TSC[1]);
 	kmem_cache_free(hardwareCache, TSC[0]);
 	kmem_cache_destroy(hardwareCache);
-
-	complete_and_exit(&bclk_job_complete, 0);
 }
 
 CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
 {
 	CLOCK clock={.Q=ratio, .R=0, .Hz=0};
 
-	struct task_struct *tid=kthread_create(	Compute_Clock,
-						&clock,
-						"baseclock/%-3d",
-						cpu);
-	if(!IS_ERR(tid))
-	{
-		kthread_bind(tid, cpu);
-		wake_up_process(tid);
-		wait_for_completion(&bclk_job_complete);
-		printk(KERN_DEBUG "CoreFreq:"				\
-				" CPU #%-3d Base Clock @ %llu Hz\n",
-				cpu, clock.Hz);
-	}
+	smp_call_function_single(cpu,
+				Compute_Clock,
+				&clock,
+				1); // Synchronous call.
 	return(clock);
 }
 
@@ -728,7 +729,7 @@ CLOCK Clock_Skylake(unsigned int ratio)
 			  "=b"	(BX),
 			  "=c"	(FSB),
 			  "=d"	(DX)
-	                : "a" (0x16)
+			: "a" (0x16)
 		);
 		if(FSB > 0)
 			clock.Q=FSB;
@@ -995,7 +996,7 @@ void DynamicAcceleration(void)
 			  "=b"	(Power.BX),
 			  "=c"	(Power.CX),
 			  "=d"	(Power.DX)
-	                : "a" (0x6)
+			: "a" (0x6)
 		);
 
 		if(Power.AX.TurboIDA == 1)
@@ -1178,7 +1179,7 @@ void PowerThermal(CORE *Core)
 		  "=b"	(Power.BX),
 		  "=c"	(Power.CX),
 		  "=d"	(Power.DX)
-                : "a" (0x6)
+		: "a" (0x6)
 	);
 
 	if(Proc->Features.Std.DX.ACPI == 1)
@@ -1267,8 +1268,6 @@ void InitTimer(void *Cycle_Function)
 		KPrivate->Join[cpu]->Timer.function=Cycle_Function;
 
 		KPrivate->Join[cpu]->tsm.created=1;
-
-		printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Init Timer\n", cpu);
 	}
 }
 
@@ -1630,7 +1629,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -1661,8 +1660,6 @@ void Start_GenuineIntel(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	KPrivate->Join[cpu]->tsm.started=1;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_GenuineIntel(void *arg)
@@ -1674,8 +1671,6 @@ void Stop_GenuineIntel(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	KPrivate->Join[cpu]->tsm.started=0;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 /*
 static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
@@ -1712,7 +1707,7 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 
 		Core_AMD_Temp(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -1765,7 +1760,7 @@ static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
 
 		Core_AMD_Temp(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -1800,8 +1795,6 @@ void Start_AuthenticAMD(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	KPrivate->Join[cpu]->tsm.started=1;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_AuthenticAMD(void *arg)
@@ -1813,8 +1806,6 @@ void Stop_AuthenticAMD(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	KPrivate->Join[cpu]->tsm.started=0;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
@@ -1847,7 +1838,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -1877,8 +1868,6 @@ void Start_Core2(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	KPrivate->Join[cpu]->tsm.started=1;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_Core2(void *arg)
@@ -1893,8 +1882,6 @@ void Stop_Core2(void *arg)
 	Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started=0;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
@@ -1934,7 +1921,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -1964,8 +1951,6 @@ void Start_Nehalem(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	KPrivate->Join[cpu]->tsm.started=1;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_Nehalem(void *arg)
@@ -1980,8 +1965,6 @@ void Stop_Nehalem(void *arg)
 	Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started=0;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 
@@ -2025,7 +2008,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(Core->Sync.V, 0);
+		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
 	}
@@ -2055,8 +2038,6 @@ void Start_SandyBridge(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	KPrivate->Join[cpu]->tsm.started=1;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Start Timer\n", cpu);
 }
 
 void Stop_SandyBridge(void *arg)
@@ -2071,8 +2052,6 @@ void Stop_SandyBridge(void *arg)
 	Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started=0;
-
-	printk(	KERN_DEBUG "CoreFreq: CPU #%-3d Stop Timer\n", cpu);
 }
 
 void IdleDriver_Query(void *arg)
@@ -2166,7 +2145,6 @@ static int CoreFreqK_suspend(struct device *dev)
 {
 	Controller_Stop();
 
-	printk(KERN_DEBUG "CoreFreq: Suspend\n");
 	return(0);
 }
 
@@ -2174,7 +2152,6 @@ static int CoreFreqK_resume(struct device *dev)
 {
 	Controller_Start();
 
-	printk(KERN_DEBUG "CoreFreq: Resume\n");
 	return(0);
 }
 
@@ -2325,52 +2302,52 @@ static int __init CoreFreqK_init(void)
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
-				for(cpu=0; cpu < Proc->CPU.Count; cpu++)
-				{
-				    void *kcache=kmem_cache_alloc(
-						KPublic->Cache, GFP_KERNEL);
-				    memset(kcache, 0, publicSize);
-				    KPublic->Core[cpu]=kcache;
+			      for(cpu=0; cpu < Proc->CPU.Count; cpu++)
+			      {
+				void *kcache=kmem_cache_alloc(KPublic->Cache,
+								GFP_KERNEL);
+				memset(kcache, 0, publicSize);
+				KPublic->Core[cpu]=kcache;
 
-				    kcache=kmem_cache_alloc(
-						KPrivate->Cache, GFP_KERNEL);
-				    memset(kcache, 0, privateSize);
-				    KPrivate->Join[cpu]=kcache;
+				kcache=kmem_cache_alloc(KPrivate->Cache,
+							GFP_KERNEL);
+				memset(kcache, 0, privateSize);
+				KPrivate->Join[cpu]=kcache;
 
-				    BITCLR(KPublic->Core[cpu]->Sync.V, 0);
+				BITCLR(BUS_LOCK,KPublic->Core[cpu]->Sync.V,63);
 
-				    KPublic->Core[cpu]->Bind=cpu;
-				}
-				if(!strncmp(Arch[0].Architecture,
-						VENDOR_INTEL, 12))
-				{
-					Arch[0].Query=Query_GenuineIntel;
-					Arch[0].Start=Start_GenuineIntel;
-					Arch[0].Stop=Stop_GenuineIntel;
-					Arch[0].Timer=InitTimer_GenuineIntel;
-					Arch[0].Clock=Clock_GenuineIntel;
-				}
-				else if(!strncmp(Arch[0].Architecture,
-						VENDOR_AMD, 12))
-				{
-					Arch[0].Query=Query_AuthenticAMD;
-					Arch[0].Start=Start_AuthenticAMD;
-					Arch[0].Stop=Stop_AuthenticAMD;
-					Arch[0].Timer=InitTimer_AuthenticAMD;
-					Arch[0].Clock=Clock_AuthenticAMD;
+				KPublic->Core[cpu]->Bind=cpu;
+			      }
+			      if(!strncmp( Arch[0].Architecture,
+						VENDOR_INTEL, 12) )
+			      {
+				Arch[0].Query=Query_GenuineIntel;
+				Arch[0].Start=Start_GenuineIntel;
+				Arch[0].Stop=Stop_GenuineIntel;
+				Arch[0].Timer=InitTimer_GenuineIntel;
+				Arch[0].Clock=Clock_GenuineIntel;
+			      }
+			      else if(!strncmp( Arch[0].Architecture,
+						VENDOR_AMD, 12) )
+			      {
+				Arch[0].Query=Query_AuthenticAMD;
+				Arch[0].Start=Start_AuthenticAMD;
+				Arch[0].Stop=Stop_AuthenticAMD;
+				Arch[0].Timer=InitTimer_AuthenticAMD;
+				Arch[0].Clock=Clock_AuthenticAMD;
 
-					if(!Proc->Features.AdvPower.DX.Inv_TSC)
-						AutoClock=0;
-				}
-				if((ArchID != -1)
-				&& (ArchID >= 0)
-				&& (ArchID < ARCHITECTURES))
+				if(!Proc->Features.AdvPower.DX.Inv_TSC)
+					AutoClock=0;
+			      }
+			      if((ArchID != -1)
+			      && (ArchID >= 0)
+			      && (ArchID < ARCHITECTURES))
 					Proc->ArchID=ArchID;
-				else
-				{
-				  for(	Proc->ArchID=ARCHITECTURES - 1;
+			      else
+			      {
+				for(	Proc->ArchID=ARCHITECTURES - 1;
 					Proc->ArchID > 0;
-					Proc->ArchID--)
+					Proc->ArchID-- )
 				  // Search for an architecture signature.
 				    if(!(Arch[Proc->ArchID].Signature.ExtFamily
 				    ^ Proc->Features.Std.AX.ExtFamily)
@@ -2381,7 +2358,7 @@ static int __init CoreFreqK_init(void)
 				    && !(Arch[Proc->ArchID].Signature.Model
 				    ^ Proc->Features.Std.AX.Model))
 					break;
-				}
+			      }
 
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);

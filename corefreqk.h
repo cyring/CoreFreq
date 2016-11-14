@@ -22,7 +22,7 @@
 	asm volatile							\
 	(								\
 		"rdmsr"							\
-                : "=a" (_lo),						\
+		: "=a" (_lo),						\
 		  "=d" (_hi)						\
 		: "c" (_cnt)						\
 	);								\
@@ -46,7 +46,7 @@
 	asm volatile							\
 	(								\
 		"rdmsr"							\
-                : "=a" (_lo),						\
+		: "=a" (_lo),						\
 		  "=d" (_hi)						\
 		: "c" (_reg)						\
 	);								\

@@ -250,13 +250,14 @@ typedef struct
 } POWER_THERMAL;
 
 typedef struct
-{	// Cache line size aligned structures.
-	volatile struct
+{
+	struct	// 64-byte cache line size.
 	{
 		unsigned long long	V,
-					_pad[3];
+					_pad[7];
 	} Sync;
-	volatile OFFLINE		OffLine;
+
+	OFFLINE				OffLine;
 
 	struct
 	{

@@ -67,11 +67,11 @@ static void *Core_Cycle(void *arg)
 		printf("    Thread [%p] Init CPU %03u\n", tid, cpu);
 		fflush(stdout);
 	}
-	BITSET(roomSeed, cpu);
-	BITSET(Proc->Room, cpu);
+	BITSET(BUS_LOCK, roomSeed, cpu);
+	BITSET(BUS_LOCK, Proc->Room, cpu);
 	do
 	{
-	    while( !BITWISEAND(Core->Sync.V, 0x1UL)
+	    while( !BITVAL(Core->Sync.V, 63)
 		&& !Shutdown
 		&& !Core->OffLine.OS )
 		{	// Exit function if the thread lost its cpu affinity.
@@ -82,14 +82,14 @@ static void *Core_Cycle(void *arg)
 		    else
 			break;
 		}
-	    BITCLR(Core->Sync.V, 0);
+	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
 	    if(!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset))
 	    {
-		if(BITWISEAND(Proc->Room, (1UL << cpu)))
+		if(BITVAL(Proc->Room, cpu))
 		{
 			Cpu->Toggle=!Cpu->Toggle;
-			BITCLR(Proc->Room, cpu);
+			BITCLR(BUS_LOCK, Proc->Room, cpu);
 		}
 		struct FLIP_FLOP *Flip=&Cpu->FlipFlop[Cpu->Toggle];
 
@@ -156,8 +156,8 @@ static void *Core_Cycle(void *arg)
 					- (Flip->Thermal.Target * 2) - 49;
 	    }
 	} while(!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset));
-	BITCLR(Proc->Room, cpu);
-	BITCLR(roomSeed, cpu);
+	BITCLR(BUS_LOCK, Proc->Room, cpu);
+	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if(Quiet & 0x100) {
 		printf("    Thread [%p] %s CPU %03u\n", tid,
@@ -203,14 +203,14 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 	if(!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12))
 	{
 		if(Proc->Features.AdvPower.DX.FID)
-			BITSET(Shm->Proc.PowerNow, 0);
+			BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 		else
-			BITCLR(Shm->Proc.PowerNow, 0);
+			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
 
 		if(Proc->Features.AdvPower.DX.VID)
-			BITSET(Shm->Proc.PowerNow, 1);
+			BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
 		else
-			BITCLR(Shm->Proc.PowerNow, 1);
+			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
 	}
 	else
 		Shm->Proc.PowerNow=0;
@@ -302,28 +302,28 @@ void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
 	if((Core[cpu]->T.ApicID >= 0)
 	&& (Core[cpu]->T.CoreID >= 0))
-		BITSET(Shm->Proc.SpeedStep_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.SpeedStep_Mask, cpu);
 	else
-		BITCLR(Shm->Proc.SpeedStep_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.SpeedStep_Mask, cpu);
 
 	if(Core[cpu]->Query.EIST)
-		BITSET(Shm->Proc.SpeedStep, cpu);
+		BITSET(LOCKLESS, Shm->Proc.SpeedStep, cpu);
 	else
-		BITCLR(Shm->Proc.SpeedStep, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.SpeedStep, cpu);
 }
 
 void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
 	if((Core[cpu]->T.ApicID >= 0)
 	&& (Core[cpu]->T.CoreID >= 0))
-		BITSET(Shm->Proc.TurboBoost_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.TurboBoost_Mask, cpu);
 	else
-		BITCLR(Shm->Proc.TurboBoost_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.TurboBoost_Mask, cpu);
 
 	if(Core[cpu]->Query.Turbo)
-		BITSET(Shm->Proc.TurboBoost, cpu);
+		BITSET(LOCKLESS, Shm->Proc.TurboBoost, cpu);
 	else
-		BITCLR(Shm->Proc.TurboBoost, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.TurboBoost, cpu);
 }
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -331,46 +331,46 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	if((Core[cpu]->T.ApicID >= 0)
 	&& (Core[cpu]->T.CoreID >= 0))
 	{
-		BITSET(Shm->Proc.C1E_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1E_Mask, cpu);
 
 	    if((Core[cpu]->T.ThreadID == 0) || (Core[cpu]->T.ThreadID == -1))
 	    {
-		BITSET(Shm->Proc.C3A_Mask, cpu);
-		BITSET(Shm->Proc.C1A_Mask, cpu);
-		BITSET(Shm->Proc.C3U_Mask, cpu);
-		BITSET(Shm->Proc.C1U_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C3A_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1A_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C3U_Mask, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1U_Mask, cpu);
 	    }
 	    else
 	    {
-		BITCLR(Shm->Proc.C3A_Mask, cpu);
-		BITCLR(Shm->Proc.C1A_Mask, cpu);
-		BITCLR(Shm->Proc.C3U_Mask, cpu);
-		BITCLR(Shm->Proc.C1U_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C3A_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1A_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C3U_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1U_Mask, cpu);
 	    }
 	}
 	else
-		BITCLR(Shm->Proc.C1E_Mask, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1E_Mask, cpu);
 
 	if(Core[cpu]->Query.C1E)
-		BITSET(Shm->Proc.C1E, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1E, cpu);
 	else
-		BITCLR(Shm->Proc.C1E, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1E, cpu);
 	if(Core[cpu]->Query.C3A)
-		BITSET(Shm->Proc.C3A, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C3A, cpu);
 	else
-		BITCLR(Shm->Proc.C3A, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C3A, cpu);
 	if(Core[cpu]->Query.C1A)
-		BITSET(Shm->Proc.C1A, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1A, cpu);
 	else
-		BITCLR(Shm->Proc.C1A, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1A, cpu);
 	if(Core[cpu]->Query.C3U)
-		BITSET(Shm->Proc.C3U, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C3U, cpu);
 	else
-		BITCLR(Shm->Proc.C3U, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C3U, cpu);
 	if(Core[cpu]->Query.C1U)
-		BITSET(Shm->Proc.C1U, cpu);
+		BITSET(LOCKLESS, Shm->Proc.C1U, cpu);
 	else
-		BITCLR(Shm->Proc.C1U, cpu);
+		BITCLR(LOCKLESS, Shm->Proc.C1U, cpu);
 }
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
@@ -440,64 +440,64 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 {
-	unsigned int cpu=0;
+    unsigned int cpu=0;
 
-	pthread_t tid=pthread_self();
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
+    pthread_t tid=pthread_self();
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(0, &cpuset);
 
-	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, "corefreqd-mgr");
+    pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+    pthread_setname_np(tid, "corefreqd-mgr");
 
-	ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));
-	while(!Shutdown)
-	{
-	    for(cpu=0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++)
-		if(Core[cpu]->OffLine.OS == 1)
-		{
-		    if(Arg[cpu].TID)
-		    {	// Remove this cpu.
-			pthread_join(Arg[cpu].TID, NULL);
-			Arg[cpu].TID=0;
-			// Raise this bit up to notify a platform change.
-			if(!BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-				BITSET(Shm->Proc.Sync, 63);
-		    }
-		    Shm->Cpu[cpu].OffLine.OS=1;
-		}
-		else
-		{
-		    if(!Arg[cpu].TID)
-		    {	// Add this cpu.
-			PerCore_Update(Shm, Proc, Core, cpu);
-			HyperThreading(Shm, Proc);
+    ARG *Arg=calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+    while(!Shutdown)
+    {
+	for(cpu=0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++)
+	  if(Core[cpu]->OffLine.OS == 1)
+	  {
+	    if(Arg[cpu].TID)
+	    {	// Remove this cpu.
+		pthread_join(Arg[cpu].TID, NULL);
+		Arg[cpu].TID=0;
+		// Raise this bit up to notify a platform change.
+		if(!BITVAL(Shm->Proc.Sync, 63))
+			BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+	    }
+	  Shm->Cpu[cpu].OffLine.OS=1;
+	  }
+	  else
+	  {
+	    if(!Arg[cpu].TID)
+	    {	// Add this cpu.
+		PerCore_Update(Shm, Proc, Core, cpu);
+		HyperThreading(Shm, Proc);
 
-			if(Quiet & 0x100)
-			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
-				(double)( Core[cpu]->Clock.Hz
-					* Proc->Boost[1])
-					/ 1000000L );
+		if(Quiet & 0x100)
+		    printf("    CPU #%03u @ %.2f MHz\n", cpu,
+			(double)( Core[cpu]->Clock.Hz
+				* Proc->Boost[1])
+				/ 1000000L );
 
-			Arg[cpu].Proc=&Shm->Proc;
-			Arg[cpu].Core=Core[cpu];
-			Arg[cpu].Cpu=&Shm->Cpu[cpu];
-			Arg[cpu].Bind=cpu;
-			pthread_create(	&Arg[cpu].TID,
-					NULL,
-					Core_Cycle,
-					&Arg[cpu]);
+		Arg[cpu].Proc=&Shm->Proc;
+		Arg[cpu].Core=Core[cpu];
+		Arg[cpu].Cpu=&Shm->Cpu[cpu];
+		Arg[cpu].Bind=cpu;
+		pthread_create(	&Arg[cpu].TID,
+				NULL,
+				Core_Cycle,
+				&Arg[cpu]);
 
-			if(!BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-				BITSET(Shm->Proc.Sync, 63);
-		    }
-		    Shm->Cpu[cpu].OffLine.OS=0;
-		}
-	    // Average counters if all the room bits are cleared.
-	    if(!Shutdown && BITWISEAND(Shm->Proc.Room, roomSeed))
+		if(!BITVAL(Shm->Proc.Sync, 63))
+			BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+	    }
+	    Shm->Cpu[cpu].OffLine.OS=0;
+	  }
+	  // Average counters if all the room bits are cleared.
+	  if(!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
 		usleep(Shm->Proc.SleepInterval * 50);
-	    else if(!Shutdown)
-	    {
+	  else if(!Shutdown)
+	  {
 		// Update the count of online CPU
 		Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
 
@@ -534,13 +534,13 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		Shm->Proc.Avg.C7/=Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
 		// Notify Client.
-		BITSET(Shm->Proc.Sync, 0);
-	    }
-	}
-	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
-		if(Arg[cpu].TID)
-			pthread_join(Arg[cpu].TID, NULL);
-	free(Arg);
+		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
+	  }
+    }
+    for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+	if(Arg[cpu].TID)
+		pthread_join(Arg[cpu].TID, NULL);
+    free(Arg);
 }
 
 typedef	struct
@@ -611,7 +611,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		IdleDriver(Shm, Proc);
 
 		// Initialize notification.
-		BITCLR(Shm->Proc.Sync, 0);
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 
 		// Welcomes with brand and per CPU base clock.
 		if(Quiet & 0x001)

@@ -4,50 +4,117 @@
  * Licenses: GPL2
  */
 
-#define	BITSET(_base, _offset)			\
+#define	LOCKLESS " "
+#define	BUS_LOCK "lock "
+
+#define	_BITSET_GPR(_lock, _base, _offset)	\
 ({						\
 	asm volatile				\
 	(					\
-		"lock rex.w bts %1, %0"		\
-		: "=m" (_base)			\
-		: "Ir" (_offset)		\
-		: "memory"			\
+	_lock	"btsq	%%rdx, %[base]"		\
+		: [base] "=m" (_base)		\
+		: "d" (_offset)			\
+		: "cc", "memory"		\
 	);					\
 })
 
-#define	BITCLR(_base, _offset)			\
+#define	_BITSET_IMM(_lock, _base, _imm8)	\
 ({						\
 	asm volatile				\
 	(					\
-		"lock rex.w btr %1, %0"		\
-		: "=m" (_base)			\
-		: "Ir" (_offset)		\
-		: "memory"			\
+	_lock	"btsq	%[imm8], %[base]"	\
+		: [base] "=m" (_base)		\
+		: [imm8] "i" (_imm8)		\
+		: "cc", "memory"		\
 	);					\
 })
 
-#define	BITWISEAND(_opl, _opr)			\
+#define	_BITCLR_GPR(_lock, _base, _offset)	\
+({						\
+	asm volatile				\
+	(					\
+	_lock	"btrq	%%rdx,	%[base]"	\
+		: [base] "=m" (_base)		\
+		: "d" (_offset)			\
+		: "cc", "memory"		\
+	);					\
+})
+
+#define	_BITCLR_IMM(_lock, _base, _imm8)	\
+({						\
+	asm volatile				\
+	(					\
+	_lock	"btrq	%[imm8], %[base]"	\
+		: [base] "=m" (_base)		\
+		: [imm8] "i" (_imm8)		\
+		: "cc", "memory"		\
+	);					\
+})
+
+#define	_BIT_TEST_GPR(_base, _offset)	\
+({						\
+	register unsigned char _ret;		\
+	asm volatile				\
+	(					\
+		"xor	%[ret], %[ret]"	"\n\t"	\
+		"btq	%%rdx,	%[base]""\n\t"	\
+		"setc	%[ret]"			\
+		: [ret]	"+r" (_ret)		\
+		: [base] "m" (_base),		\
+		  "d" (_offset)			\
+		: "cc", "memory"		\
+	);					\
+	_ret;					\
+})
+
+#define	_BIT_TEST_IMM(_base, _imm8)	\
+({						\
+	register unsigned char _ret;		\
+	asm volatile				\
+	(					\
+		"xor	%[ret], %[ret]"	"\n\t"	\
+		"btq	%[imm8], %[base]""\n\t"	\
+		"setc	%[ret]"			\
+		: [ret]	"+r" (_ret)		\
+		: [base] "m" (_base),		\
+		  [imm8] "i" (_imm8)		\
+		: "cc", "memory"		\
+	);					\
+	_ret;					\
+})
+
+#define	_BITWISEAND(_lock, _opl, _opr)		\
 ({						\
 	volatile unsigned long long _ret=_opl;	\
 	asm volatile				\
 	(					\
-		"lock rex andq %1, %0"		\
-		: "=m" (_ret)			\
-		: "Ir" (_opr)			\
+	_lock	"andq %[opr], %[ret]"		\
+		: [ret] "=m" (_ret)		\
+		: [opr] "Jr" (_opr)		\
 		: "memory"			\
 	);					\
 	_ret;					\
 })
 
-#define	BITWISEOR(_opl, _opr)			\
-({						\
-	volatile unsigned long long _ret=_opl;	\
-	asm volatile				\
-	(					\
-		"lock rex orq %1, %0"		\
-		: "=m" (_ret)			\
-		: "Ir" (_opr)			\
-		: "memory"			\
-	);					\
-	_ret;					\
-})
+#define	BITSET(_lock, _base, _offset)			\
+(							\
+	__builtin_constant_p(_offset) ?			\
+		_BITSET_IMM(_lock, _base, _offset)	\
+	: 	_BITSET_GPR(_lock, _base, _offset)	\
+)
+
+#define	BITCLR(_lock, _base, _offset)			\
+(							\
+	__builtin_constant_p(_offset) ?			\
+		_BITCLR_IMM(_lock, _base, _offset)	\
+	:	_BITCLR_GPR(_lock, _base, _offset)	\
+)
+
+#define	BITVAL(_base, _offset)				\
+(							\
+	__builtin_constant_p(_offset) ?			\
+		_BIT_TEST_IMM(_base, _offset)		\
+	:	_BIT_TEST_GPR(_base, _offset)		\
+)
+
+#define	BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)

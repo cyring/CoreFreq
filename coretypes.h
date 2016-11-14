@@ -29,8 +29,7 @@ typedef unsigned int		Bit32;
 typedef struct
 {
 	unsigned long long	HW,
-				OS,
-				_pad[2];
+				OS;
 } OFFLINE;
 
 typedef struct

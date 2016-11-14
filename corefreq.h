@@ -93,10 +93,10 @@ typedef struct
 	char				Brand[64];
 
 	Bit32				InvariantTSC,
-					HyperThreading,
-					PowerNow;
+					HyperThreading;
 
-	Bit64				SpeedStep,
+	Bit64				PowerNow,
+					SpeedStep,
 					SpeedStep_Mask,
 					TurboBoost,
 					TurboBoost_Mask,
