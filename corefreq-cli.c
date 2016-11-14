@@ -9,6 +9,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <poll.h>
+#include <ctype.h>
+#include <termios.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -36,21 +39,55 @@ void Emergency(int caught)
 	}
 }
 
+typedef union
+{
+	unsigned long long key;
+	unsigned char code[8];
+} SCANKEY;
+
+#define	SCANKEY_NULL	0x0
+#define	SCANKEY_ENTER	0xa
+#define	SCANKEY_ESC	0x1b
+#define	SCANKEY_LEFT	0x445b1b
+#define	SCANKEY_RIGHT	0x435b1b
+#define	SCANKEY_DOWN	0x425b1b
+#define	SCANKEY_UP	0x415b1b
+#define	SCANKEY_HOME	0x485b1b
+#define	SCANKEY_END	0x465b1b
+#define	SCANKEY_f	0x66
+#define	SCANKEY_i	0x69
+#define	SCANKEY_q	0x71
+
+int GetKey(SCANKEY *scan)
+{
+	struct pollfd fds={.fd=STDIN_FILENO, .events=POLLIN};
+	int rp=0, rz=0;
+
+	if((rp=poll(&fds, 1, 0)) > 0)
+	{
+		size_t lc=fread(&scan->key, 1, 8, stdin);
+		for(rz=lc; rz < 8; rz++)
+			scan->code[rz]=0;
+	}
+	return(rp);
+}
+
 // VT100 requirements.
-#define SCP	"\033[s"
-#define RCP	"\033[u"
-#define HIDE	"\033[?25l"
-#define SHOW	"\033[?25h"
-#define RESET	"\033c"
-#define CLS	"\033[H\033[J"
-#define DoK	"\033[1;30;40m"
-#define RoK	"\033[1;31;40m"
-#define GoK	"\033[1;32;40m"
-#define YoK	"\033[1;33;40m"
-#define BoK	"\033[1;34;40m"
-#define MoK	"\033[1;35;40m"
-#define CoK	"\033[1;36;40m"
-#define WoK	"\033[1;37;40m"
+#define	SCP	"\033[s"
+#define	RCP	"\033[u"
+#define	HIDE	"\033[?25l"
+#define	SHOW	"\033[?25h"
+#define	RESET	"\033c"
+#define	CLS	"\033[H\033[J"
+#define	DoK	"\033[1;30;40m"
+#define	RoK	"\033[1;31;40m"
+#define	GoK	"\033[1;32;40m"
+#define	YoK	"\033[1;33;40m"
+#define	BoK	"\033[1;34;40m"
+#define	MoK	"\033[1;35;40m"
+#define	CoK	"\033[1;36;40m"
+#define	WoK	"\033[1;37;40m"
+#define	KoC	"\033[0;30;46m"
 
 char lcd[10][3][3]=
 {
@@ -181,7 +218,6 @@ void lcdDraw(	unsigned int X,
     } while(j > 0) ;
 }
 
-
 void Top(SHM_STRUCT *Shm)
 {
 /*
@@ -201,9 +237,40 @@ void Top(SHM_STRUCT *Shm)
 |--N ----------------------|
 |                       N  |
 |  G       FOOTER          |
-|                       G  |
+|           MENU        G  |
 '--------------------------'
 */
+    #define MENU_TRUNKS 2
+    #define MENU_LEAVES 2
+    const struct
+    {
+	char *trunk;
+	struct
+	{
+		char *item;
+		SCANKEY quick;
+	} leaf[MENU_LEAVES];
+    } hMenu[MENU_TRUNKS]=
+    {
+      {
+	.trunk="      Help      ",
+	.leaf=
+	{
+	  {.item="      \033[4m""Q\033[24muit      ", .quick.key=SCANKEY_q},
+	  {.item="     Author     ", .quick.key=SCANKEY_NULL},
+	},
+      },
+      {
+	.trunk="      View      ",
+	.leaf=
+	{
+	  {.item="    \033[4mF\033[24mrequency   ", .quick.key=SCANKEY_f},
+	  {.item="     \033[4mI\033[24mnst/sec   ", .quick.key=SCANKEY_i},
+	},
+      },
+    };
+
+    int xMenu=0, yMenu=0, zMenu=0;
 
     char hLoad[]=	"--------""----- CP""U Ratio ""--------""--------"\
 			"--------""--------""--------""--------""--------"\
@@ -213,13 +280,16 @@ void Top(SHM_STRUCT *Shm)
 			"- C1 ---""- C3 ---""- C6 ---""- C7 ---"" Temps -"\
 			"--------""--------""--------""--------""--------"\
 			"--------""----";
+    char hInst[]=	"--------""---- IPS"" -------""------- ""IPC ----"\
+			"--------""-- CPI -""--------""--------""--------"\
+			"--------""--------""--------""--------""--------"\
+			"--------""----";
     char hAvg[]=	"--------""---- Ave""rages [ ";
 
     char *hRatio=NULL,
 	 *hProc=NULL,
 	 *hArch=NULL,
-	 *hBClk=NULL,
-	 *hCore=NULL,
+	 *hCore=NULL, *hTmp=NULL,
 	 *hTech=NULL,
 	 *hSys=NULL,
 	 *hMem=NULL,
@@ -229,6 +299,9 @@ void Top(SHM_STRUCT *Shm)
 	 *monitorView=NULL,
 	 *lcdView=NULL,
 	 *viewMask=NULL;
+
+    typedef char char64[64];
+    char64 *hBClk;
 
     double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[9];
     double medianRatio=(minRatio + maxRatio) / 2;
@@ -264,15 +337,133 @@ void Top(SHM_STRUCT *Shm)
     SCREEN_SIZE drawSize={.width=0, .height=0};
     int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count) + 8; // incl. header, footer lines
     int loadWidth=0;
-    int drawFlag=0b0000;
+
+    double maxRelFreq;
+    unsigned int topRatio, digit[9];
+
+    char cursor[]="\033[000;000H", lcdColor[]="\033[1;000;000m";
+
+    struct
+    {
+	unsigned long long
+		Layout	:  1-0,	 // Draw layout
+		Clear	:  2-1,	 // Clear screen
+		Height	:  3-2,	 // Valid height
+		Width	:  4-3,	 // Valid width
+		Menu	:  5-4,  // Draw menu
+		View	:  6-5,  // 0=Freq, 1=IPS
+		_pad1	: 32-5,
+		Daemon	: 33-32, // Draw dynamic
+		_pad2	: 64-33;
+    } drawFlag={0x0};
+
+    int motion(SCANKEY *scan)
+    {
+	switch(scan->key)
+	{
+	case SCANKEY_ESC:
+	    {
+		xMenu=0;
+		yMenu=0;
+		zMenu=0;
+		drawFlag.Menu=0;
+	    }
+	break;
+	case SCANKEY_LEFT:
+	    if(zMenu == 0)
+	    {
+		if(xMenu > 0)
+			xMenu-- ;
+		else
+			xMenu=MENU_TRUNKS - 1;
+		yMenu=0;
+	    }
+	    else
+	    {
+		if(yMenu > 0)
+			yMenu-- ;
+		else
+			yMenu=MENU_LEAVES - 1;
+	    }
+	break;
+	case SCANKEY_RIGHT:
+	    if(zMenu == 0)
+	    {
+		if(xMenu < MENU_TRUNKS - 1)
+			xMenu++ ;
+		else
+			xMenu=0;
+		yMenu=0;
+	    }
+	    else
+	    {
+		if(yMenu < MENU_LEAVES - 1)
+			yMenu++ ;
+		else
+			yMenu=0;
+	    }
+	break;
+	case SCANKEY_DOWN:
+		{ zMenu=(zMenu < 1) ? zMenu + 1 : 0; }
+	break;
+	case SCANKEY_UP:
+		{ zMenu=(zMenu > 0) ? zMenu - 1 : 1; }
+	break;
+	case SCANKEY_HOME:
+	    if(zMenu == 0)
+		xMenu=0;
+	    yMenu=0;
+	break;
+	case SCANKEY_END:
+	    if(zMenu == 0)
+	    {
+		xMenu=MENU_TRUNKS - 1;
+		yMenu=0;
+	    }
+	    else
+		yMenu=MENU_LEAVES - 1;
+	break;
+	case SCANKEY_ENTER:
+	    if(zMenu == 1)
+	    {
+		scan->key=hMenu[xMenu].leaf[yMenu].quick.key;
+		return(1);
+	    }
+	// fallthrough
+	default:
+	return(-1);
+	}
+	return(0);
+    }
+
+    int shortcut(SCANKEY *scan)
+    {
+	switch(scan->key)
+	{
+	case SCANKEY_f:
+		drawFlag.View=0;
+	break;
+	case SCANKEY_i:
+		drawFlag.View=1;
+	break;
+	case SCANKEY_q:
+		Shutdown=0x1;
+	break;
+	default:
+	return(-1);
+	}
+	return(0);
+    }
 
     void layout(void)
     {
 	char *hString=malloc(48);
-	size_t	len=0;
+	size_t len=0;
 
 	loadWidth=drawSize.width - LOAD_LEAD;
 
+      if(drawFlag.Daemon)
+      {
 	sprintf(hRatio, "%.*s",
 		drawSize.width,
 		hLoad);
@@ -284,7 +475,15 @@ void Top(SHM_STRUCT *Shm)
 		hRatio[hPos+2]=tabStop[0];
 		hRatio[hPos+3]=tabStop[1];
 	}
-
+	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+	{
+		i=dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
+		sprintf(hBClk[cpu],
+		    YoK	"%u%u%u %u%u%u %u%u%u"DoK,
+			digit[0], digit[1], digit[2],
+			digit[3], digit[4], digit[5],
+			digit[6], digit[7], digit[8]);
+	}
 	sprintf(hProc,
 	    DoK	"%.*sProcessor["CoK"%-48s"DoK"]"			\
 	    WoK	"%2u"DoK"/"WoK"%-2u"DoK"CPU",
@@ -408,7 +607,30 @@ void Top(SHM_STRUCT *Shm)
 		- strlen(OSinfo.release)
 		- len,
 		hSpace);
+      }
+      if(drawFlag.Menu)
+      {
+	footerView[0]='\0';
+	for(i=0, len=0; i < MENU_TRUNKS; i++)
+	{
+		sprintf(hTmp, "%s""%s"DoK,
+			(xMenu == i) && (zMenu == 0) ? KoC : WoK,
+			hMenu[i].trunk);
+		strcat(footerView, hTmp);
+	}
+	sprintf(hTmp, "%.*s""\n", drawSize.width - (MENU_TRUNKS * 16), hSpace);
+	strcat(footerView, hTmp);
 
+	for(i=0; i < MENU_LEAVES; i++)
+	{
+		sprintf(hTmp, "%s""%s"DoK,
+			(yMenu == i) && (zMenu == 1) ? KoC : WoK,
+			hMenu[xMenu].leaf[i].item);
+		strcat(footerView, hTmp);
+	}
+	sprintf(hTmp, "%.*s", drawSize.width - (MENU_LEAVES * 16), hSpace);
+	strcat(footerView, hTmp);
+      }
 	free(hString);
     }
 
@@ -434,9 +656,9 @@ void Top(SHM_STRUCT *Shm)
     {
 	const int allocSize=4 * MAX_WIDTH,
 		headerSize =3 * allocSize,
-		footerSize =3 * allocSize,
+		footerSize =2 * allocSize,
 		loadSize   =(1 + Shm->Proc.CPU.Count) * allocSize,
-		monitorSize=(1 + Shm->Proc.CPU.Count) * allocSize,
+		monitorSize=(2 + Shm->Proc.CPU.Count) * allocSize,
 		lcdSize    =(9 * 3 * 3) + (9 * 3 * sizeof("\033[000;000H")) + 1,
 		maskSize   = headerSize
 			   + footerSize
@@ -446,8 +668,7 @@ void Top(SHM_STRUCT *Shm)
 	hRatio=malloc(allocSize);
 	hProc=malloc(allocSize);
 	hArch=malloc(allocSize);
-	hBClk=malloc(64);
-	hCore=malloc(allocSize);
+	hCore=hTmp=malloc(allocSize);
 	hTech=malloc(allocSize);
 	hSys=malloc(allocSize);
 	hMem=malloc(allocSize);
@@ -457,33 +678,62 @@ void Top(SHM_STRUCT *Shm)
 	monitorView=malloc(monitorSize);
 	lcdView=malloc(lcdSize);
 	viewMask=malloc(maskSize);
+	hBClk=calloc(Shm->Proc.CPU.Count, sizeof(char64));
     }
 
     allocAll();
 
     while(!Shutdown)
     {
-	double maxRelFreq;
-    	unsigned int topRatio, digit[9];
+	do
+	{
+	    SCANKEY scan={.key=0};
 
-	char cursor[]="\033[000;000H", lcdColor[]="\033[1;000;000m";
+	    drawFlag.Daemon=BITVAL(Shm->Proc.Sync, 0);
 
-	while(!BITWISEAND(Shm->Proc.Sync, 0x1UL) && !Shutdown)
+	    if(GetKey(&scan) > 0)
+	    {
+		if(shortcut(&scan) == -1)
+		{
+			if(!drawFlag.Menu)
+				drawFlag.Menu=1;
+			else
+				if(motion(&scan) > 0)
+					shortcut(&scan);
+		}
+		drawFlag.Layout=1; 
+	    }
+	    else
 		usleep(Shm->Proc.SleepInterval * 50);
-	BITCLR(Shm->Proc.Sync, 0);
-	if(BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-	{	// Platform changed, redraw the layout.
-		drawFlag |= 0b1000;
-		BITCLR(Shm->Proc.Sync, 63);
+
+	} while(!drawFlag.Daemon && !Shutdown && !drawFlag.Layout) ;
+
+	if(drawFlag.Daemon)
+	{
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+		if(BITVAL(Shm->Proc.Sync, 63))
+		{	// Platform changed, redraw the layout.
+			drawFlag.Layout=1;
+			BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+		}
 	}
 	SCREEN_SIZE currentSize=getScreenSize();
 	if(currentSize.height != drawSize.height)
 	{
 		drawSize.height=currentSize.height;
 		if(drawSize.height < MIN_HEIGHT)
-			drawFlag &= 0b0001;
+		{
+			drawFlag.Layout=0;
+			drawFlag.Clear=0;
+			drawFlag.Height=0;
+			drawFlag.Width=1;
+		}
 		else
-			drawFlag |= 0b1110;
+		{
+			drawFlag.Layout=1;
+			drawFlag.Clear=1;
+			drawFlag.Height=1;
+		}
 	}
 	if(currentSize.width != drawSize.width)
 	{
@@ -493,47 +743,50 @@ void Top(SHM_STRUCT *Shm)
 			drawSize.width=currentSize.width;
 
 		if(drawSize.width < MIN_WIDTH)
-			drawFlag &= 0b0010;
+		{
+			drawFlag.Layout=0;
+			drawFlag.Clear=0;
+			drawFlag.Height=1;
+			drawFlag.Width=0;
+		}
 		else
-			drawFlag |= 0b1001;
+		{
+			drawFlag.Layout=1;
+			drawFlag.Width=1;
+		}
 	}
-/*
-			.Bit flags.
-  0b0000 L C H W
-         | | | |
- Layout--' | | |	Redraw layout
- Clear-----' | |	Clear screen
- Height----' | |	Valid height
- Width---------'	Valid width
-*/
-      if((drawFlag & 0b0011) == 0b0011)
+
+      if(drawFlag.Height & drawFlag.Width)
       {
-	if((drawFlag & 0b0100) == 0b0100)
+	if(drawFlag.Clear)
 	{
-		drawFlag &= 0b1011;
+		drawFlag.Layout=1;
+		drawFlag.Clear=0;
 		printf(CLS);
 	}
-	if((drawFlag & 0b1000) == 0b1000)
+	if(drawFlag.Layout)
 	{
-		drawFlag &= 0b0111;
+		drawFlag.Layout=0;
     		layout();
 	}
+	if(drawFlag.Daemon)
+	{
+		sprintf(loadView, "%.*s\n", drawSize.width, hRatio);
 
-	i=dec2Digit(Shm->Cpu[iclk].Clock.Hz, digit);
-	sprintf(hBClk,
-	    YoK	"%u%u%u %u%u%u %u%u%u"DoK,
-		digit[0], digit[1], digit[2],
-		digit[3], digit[4], digit[5],
-		digit[6], digit[7], digit[8]);
-
-	sprintf(loadView, "%.*s\n", drawSize.width, hRatio);
-	sprintf(monitorView, DoK"%.*s\n", drawSize.width, hMon);
-
-	maxRelFreq=0.0;
-    	topRatio=0;
-	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	    if(!Shm->Cpu[cpu].OffLine.HW)
+	    switch(drawFlag.View)
 	    {
+	    case 0:
+		sprintf(monitorView, DoK"%.*s\n", drawSize.width, hMon);
+	    break;
+	    case 1:
+		sprintf(monitorView, DoK"%.*s\n", drawSize.width, hInst);
+	    break;
+	    }
+		maxRelFreq=0.0;
+		topRatio=0;
+	    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	      if(!Shm->Cpu[cpu].OffLine.HW)
+	      {
 		struct FLIP_FLOP *Flop=
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
@@ -567,6 +820,10 @@ void Top(SHM_STRUCT *Shm)
 		strcat(loadView, hCore);
 
 		if(!Shm->Cpu[cpu].OffLine.OS)
+		{
+		  switch(drawFlag.View)
+		  {
+		  case 0:
 		    sprintf(hCore,
 			DoK"#"WoK"%-2u"YoK"%c"				\
 			WoK"%7.2f"DoK" MHz ("WoK"%5.2f"DoK") "		\
@@ -587,6 +844,27 @@ void Top(SHM_STRUCT *Shm)
 			Flop->Thermal.Trip ? RoK"*"DoK : " ",
 			drawSize.width - 78,
 			hSpace);
+		  break;
+		  case 1:
+		    sprintf(hCore,
+			DoK"#"WoK"%-2u"YoK"%c"				\
+			"%.*s"WoK"%12.6f"DoK"/s "			\
+			"%.*s"WoK"%12.6f"DoK"/c "			\
+			"%.*s"WoK"%12.6f"DoK"/i"			\
+			"%.*s\n",
+			cpu,
+			(cpu == iclk) ? '~' : ' ',
+			4, hSpace,
+			Flop->State.IPS,
+			4, hSpace,
+			Flop->State.IPC,
+			4, hSpace,
+			Flop->State.CPI,
+			drawSize.width - 60,
+			hSpace);
+		  break;
+		  }
+		}
 		else
 		    sprintf(hCore,
 			DoK"#""%-2u"YoK"%c"DoK"%.*s\n",
@@ -595,71 +873,83 @@ void Top(SHM_STRUCT *Shm)
 			drawSize.width - 4, hSpace);
 
 		strcat(monitorView, hCore);
+	      }
+	    switch(drawFlag.View)
+	    {
+	    case 0:
+		sprintf(hCore,
+			"%s"						\
+			"%6.2f""%%%% ""%6.2f""%%%% ""%6.2f""%%%% "	\
+			"%6.2f""%%%% ""%6.2f""%%%% ""%6.2f""%%%%"	\
+			" ] %.*s\n",
+			hAvg,
+			100.f * Shm->Proc.Avg.Turbo,
+			100.f * Shm->Proc.Avg.C0,
+			100.f * Shm->Proc.Avg.C1,
+			100.f * Shm->Proc.Avg.C3,
+			100.f * Shm->Proc.Avg.C6,
+			100.f * Shm->Proc.Avg.C7,
+			drawSize.width - (1 + sizeof(hAvg) + (6 * 8)), hLine);
+	    break;
+	    case 1:
+		sprintf(hCore, "%.*s\n", drawSize.width, hLine);
+	    break;
 	    }
+		strcat(monitorView, hCore);
 
-	sprintf(hCore,
-	    	"%6.2f""%%%% ""%6.2f""%%%% ""%6.2f""%%%% "		\
-	    	"%6.2f""%%%% ""%6.2f""%%%% ""%6.2f""%%%%",
-		100.f * Shm->Proc.Avg.Turbo,
-		100.f * Shm->Proc.Avg.C0,
-		100.f * Shm->Proc.Avg.C1,
-		100.f * Shm->Proc.Avg.C3,
-		100.f * Shm->Proc.Avg.C6,
-		100.f * Shm->Proc.Avg.C7);
+		lcdDraw(1, 1, lcdView, cursor, (unsigned int)maxRelFreq, digit);
 
-	struct sysinfo sysLinux=
-	{
-		.totalram=0,
-		.freeram=0,
-		.procs=0
-	};
-	sysinfo(&sysLinux);
-	sprintf(hMem,
-		"%s"WoK"%6u"DoK"]"					\
-		" Mem ["WoK"%8lu"DoK"/"WoK"%8lu"DoK" KB]",
-		hSys,
-		sysLinux.procs,
-		sysLinux.freeram  / 1024,
-		sysLinux.totalram / 1024);
+	    if(!drawFlag.Menu)
+	    {
+		struct sysinfo sysLinux=
+		{
+			.totalram=0,
+			.freeram=0,
+			.procs=0
+		};
+		sysinfo(&sysLinux);
 
-	sprintf(footerView,
-		"%s""%s"" ] %.*s\n"					\
-		"%s\n"							\
-		"%s",
-		hAvg, hCore,
-		drawSize.width - (1 + sizeof(hAvg) + (6 * 8)), hLine,
-		hTech,
-		hMem);
+		sprintf(hMem,
+			"%s"WoK"%6u"DoK"]"				\
+			" Mem ["WoK"%8lu"DoK"/"WoK"%8lu"DoK" KB]",
+			hSys,
+			sysLinux.procs,
+			sysLinux.freeram  / 1024,
+			sysLinux.totalram / 1024);
 
-	lcdDraw(1, 1, lcdView, cursor, (unsigned int) maxRelFreq, digit);
+		sprintf(footerView,
+			"%s\n"						\
+			"%s",
+			hTech,
+			hMem);
+	    }
+	    do
+	    {
+		iclk++;
+		if(iclk == Shm->Proc.CPU.Count)
+			iclk=0;
+	    } while(Shm->Cpu[iclk].OffLine.OS && iclk) ;
+	}
 
 	cursorXY(27, 3, cursor);
-
 	sprintf(viewMask,
 		WoK "\033[1;1H"						\
 /*header*/	"%s"							\
 /*load*/	"%s"							\
 /*monitor*/	"%s"							\
-/*footer*/ SCP	"%s"							\
+/*footer*/	"%s"							\
 /*LCD*/		"%s""%s"						\
-/*clock*/	"%s%s" RCP,
+/*clock*/	"%s%s",
 		headerView,
 		loadView,
 		monitorView,
 		footerView,
 		lcdColor, lcdView,
-		cursor, hBClk);
+		cursor, hBClk[iclk]);
 
 	printf(viewMask);
 
 	fflush(stdout);
-
-	do
-	{
-		iclk++;
-		if(iclk == Shm->Proc.CPU.Count)
-			iclk=0;
-	} while(Shm->Cpu[iclk].OffLine.OS && iclk) ;
       }
       else
 	printf(	CLS "Term(%u x %u) < View(%u x %u)\n",
@@ -721,11 +1011,11 @@ void Dashboard(	SHM_STRUCT *Shm,
 
 	char cursor[]="\033[000;000H";
 
-	while(!BITWISEAND(Shm->Proc.Sync, 0x1UL) && !Shutdown)
+	while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		usleep(Shm->Proc.SleepInterval * 50);
-	BITCLR(Shm->Proc.Sync, 0);
-	if(BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-		BITCLR(Shm->Proc.Sync, 63);
+	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	if(BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
 	X=leadingLeft;
 	Y=leadingTop;
@@ -784,11 +1074,11 @@ void Counters(SHM_STRUCT *Shm)
     unsigned int cpu=0;
     while(!Shutdown)
     {
-	while(!BITWISEAND(Shm->Proc.Sync, 0x1UL) && !Shutdown)
+	while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		usleep(Shm->Proc.SleepInterval * 50);
-	BITCLR(Shm->Proc.Sync, 0);
-	if(BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-		BITCLR(Shm->Proc.Sync, 63);
+	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	if(BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
 		printf("CPU  Frequency  Ratio   Turbo"			\
 			"    C0      C1      C3      C6      C7"	\
@@ -836,11 +1126,11 @@ void Instructions(SHM_STRUCT *Shm)
 	unsigned int cpu=0;
 	while(!Shutdown)
 	{
-	  while(!BITWISEAND(Shm->Proc.Sync, 0x1UL) && !Shutdown)
+	  while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		usleep(Shm->Proc.SleepInterval * 50);
-	  BITCLR(Shm->Proc.Sync, 0);
-	  if(BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-		BITCLR(Shm->Proc.Sync, 63);
+	  BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	  if(BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
 		    printf("CPU     IPS            IPC            CPI\n");
 
@@ -868,11 +1158,11 @@ void Topology(SHM_STRUCT *Shm)
 {
 	unsigned int cpu=0, level=0;
 
-	while(!BITWISEAND(Shm->Proc.Sync, 0x1UL) && !Shutdown)
+	while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		usleep(Shm->Proc.SleepInterval * 50);
-	BITCLR(Shm->Proc.Sync, 0);
-	if(BITWISEAND(Shm->Proc.Sync, 0x8000000000000000UL))
-		BITCLR(Shm->Proc.Sync, 63);
+	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	if(BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
 	printf(	"CPU   Apic Core Thread"				\
 		"| Caches    (w) Write-Back  (i) Inclusive\n"		\
@@ -1415,8 +1705,8 @@ void SysInfo(SHM_STRUCT *Shm)
 	14, hSpace, enabled(Shm->Proc.Features.Power.CX.HCF_Cap));
 
 	printv(								\
-	"  |- Hardware Performance States%.*sHWP       [%3s]\n",
-	33, hSpace, enabled(	  Shm->Proc.Features.Power.AX.HWP_Reg
+	"  |- Hardware-Controlled Performance States%.*sHWP       [%3s]\n",
+	22, hSpace, enabled(	  Shm->Proc.Features.Power.AX.HWP_Reg
 				| Shm->Proc.Features.AdvPower.DX.HwPstate ));
 
 	printv(								\
@@ -1479,6 +1769,15 @@ void SysInfo(SHM_STRUCT *Shm)
 	"  |- Digital Thermal Sensor%.*sDTS   [%7s]\n",
 	38, hSpace, powered(	  Shm->Proc.Features.Power.AX.DTS
 				| Shm->Proc.Features.AdvPower.DX.TS ));
+
+	printv(								\
+	"  |- Power Limit Notification%.*sPLN   [%7s]\n",
+	36, hSpace, powered(Shm->Proc.Features.Power.AX.PLN));
+
+	printv(								\
+	"  |- Package Thermal Management%.*sPTM   [%7s]\n",
+	34, hSpace, powered(Shm->Proc.Features.Power.AX.PTM));
+
 	printv(								\
 	"  |- Thermal Monitor 1%.*sTM1|TTP   [%7s]\n",
 	39, hSpace, TM[   Shm->Cpu[0].PowerThermal.TM1
@@ -1565,6 +1864,7 @@ int help(char *appName)
 
 int main(int argc, char *argv[])
 {
+	struct termios oldt, newt;
 	struct stat shmStat={0};
 	SHM_STRUCT *Shm;
 	int fd=-1, rc=0;
@@ -1624,7 +1924,18 @@ int main(int argc, char *argv[])
 			case 't':
 			{
 				printf(CLS HIDE);
+
+				tcgetattr ( STDIN_FILENO, &oldt );
+				newt = oldt;
+				newt.c_lflag &= ~( ICANON | ECHO );
+				newt.c_cc[VTIME] = 0;
+				newt.c_cc[VMIN] = 0;
+				tcsetattr ( STDIN_FILENO, TCSANOW, &newt );
+
 				Top(Shm);
+
+				tcsetattr ( STDIN_FILENO, TCSANOW, &oldt );
+
 				printf(SHOW RESET);
 			}
 			break;
