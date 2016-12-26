@@ -94,8 +94,8 @@ CoreFreq Daemon.  Copyright (C) 2015-2016 CYRIL INGENIERIE
 
 ### Client
 Without arguments, the corefreq-cli program displays Top Monitoring  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_UI.gif "CoreFreq UI")
-_Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_UI.gif "CoreFreq UI")  
+ * _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
 
  * With the option '-c', the client traces counters.
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Counters.gif "CoreFreq Counters")
