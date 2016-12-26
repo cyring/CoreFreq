@@ -14,6 +14,6 @@ corefreqd.o:	corefreqd.c
 	cc -c corefreqd.c -o corefreqd.o
 
 corefreq-cli:	corefreq-cli.o
-	cc -lrt -o corefreq-cli corefreq-cli.c
+	cc -lm -lrt -o corefreq-cli corefreq-cli.c
 corefreq-cli.o: corefreq-cli.c
 	cc -c corefreq-cli.c -o corefreq-cli.o
