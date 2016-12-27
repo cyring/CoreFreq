@@ -1329,13 +1329,17 @@ typedef union
 #define HGK	{.fg=GREEN,	.bg=BLACK,	.bf=1}
 #define HYK	{.fg=YELLOW,	.bg=BLACK,	.bf=1}
 #define HWK	{.fg=WHITE,	.bg=BLACK,	.bf=1}
+#define HKB	{.fg=BLACK,	.bg=BLUE,	.bf=1}
 #define HWB	{.fg=WHITE,	.bg=BLUE,	.bf=1}
+#define HKW	{.fg=BLACK,	.bg=WHITE,	.bf=1}
 #define _HWK	{.fg=WHITE,	.bg=BLACK,	.un=1,	.bf=1}
 #define _HWB	{.fg=WHITE,	.bg=BLUE,	.un=1,	.bf=1}
+#define LKW	{.fg=BLACK,	.bg=WHITE,	.bf=0}
 #define LYK	{.fg=YELLOW,	.bg=BLACK,	.bf=0}
 #define LWB	{.fg=WHITE,	.bg=BLUE}
 #define LBW	{.fg=BLUE,	.bg=WHITE,	.bf=0}
 #define LWK	{.fg=WHITE,	.bg=BLACK,	.bf=0}
+#define _LKW	{.fg=BLACK,	.bg=WHITE,	.un=1,	.bf=0}
 #define _LBW	{.fg=BLUE,	.bg=WHITE,	.un=1,	.bf=0}
 
 #define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
@@ -1893,11 +1897,10 @@ void MotionPgUp_Win(Window *win)
 
 void MotionPgDw_Win(Window *win)
 {
-	unsigned short lastPage=win->lazyComp.bottomRow - win->matrix.size.hth;
-	if(win->matrix.scroll.vert <= lastPage)
-		win->matrix.scroll.vert+=win->matrix.size.hth;
-    	else
-		win->matrix.scroll.vert=lastPage;
+    if(win->matrix.scroll.vert < win->lazyComp.bottomRow - win->matrix.size.hth)
+	win->matrix.scroll.vert+=win->matrix.size.hth;
+    else
+	win->matrix.scroll.vert=win->lazyComp.bottomRow;
 }
 
 int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
@@ -1962,17 +1965,6 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(-1);
 	}
 	return(0);
-}
-
-void MotionScroll_Menu(Window *win)
-{
-	if(win->matrix.select.row == 0)
-	{
-		if(win->matrix.select.col < (win->matrix.size.wth - 1))
-			win->matrix.scroll.vert=win->matrix.select.col;
-		else
-			win->matrix.scroll.vert=(win->matrix.size.wth - 1);
-	}
 }
 
 enum {L_STATIC, L_DYNAMIC, L_WINDOW, LAYERS};
@@ -2059,7 +2051,7 @@ void Top(SHM_STRUCT *Shm)
 	size_t len;
 
 	if(win->lazyComp.rowLen == 0)
-	  for(col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
+	  for(col=0; col < win->matrix.size.wth; col++)
 		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
 
 	if(win->matrix.origin.col > 0)
@@ -2069,13 +2061,14 @@ void Top(SHM_STRUCT *Shm)
 				win->matrix.origin.col, hSpace,
 				win->hook.color[0].title);
 
-	for(row=0; row < win->matrix.size.hth; row++)
-		for(col=0; col < win->matrix.size.wth; col++)
-			PrintContent(win, list, col, row);
+	for(col=0; col < win->matrix.size.wth; col++)
+		PrintContent(win, list, col, 0);
+	for(row=1; row < win->matrix.size.hth; row++)
+		PrintContent(win, list, win->matrix.select.col, row);
 
 	if((len=drawSize.width - win->lazyComp.rowLen) > 0)
 		LayerFillAt(win->layer,
-				win->lazyComp.rowLen,
+				win->matrix.origin.col + win->lazyComp.rowLen,
 				win->matrix.origin.row,
 				len, hSpace,
 				win->hook.color[0].title);
@@ -2083,48 +2076,104 @@ void Top(SHM_STRUCT *Shm)
 
     int MotionEnter_Menu(SCANKEY *scan, Window *win)
     {
-	if((scan->key=TCellAt(
-		win,
-		win->matrix.select.col,
-		win->matrix.select.row).quick.key
-	) != SCANKEY_NULL)
+	if((scan->key=TCellAt(win,
+			win->matrix.select.col,
+			win->matrix.select.row).quick.key) != SCANKEY_NULL)
+	{
+		SCANKEY closeKey={.key=SCANKEY_ESC};
+		Motion_Trigger(&closeKey, win, &winList);
 		return(1);
+	}
 	else
 		return(0);
     }
 
+    #define ResetTCell_Menu(win)					\
+    (									\
+	{								\
+	    CoordShift shift={						\
+		.horz=win->matrix.scroll.horz + win->matrix.select.col,	\
+		.vert=win->matrix.scroll.vert + row			\
+	    };								\
+	    Coordinate cell={						\
+		.col=	(win->matrix.origin.col				\
+			+ (win->matrix.select.col			\
+			* TCellAt(win, shift.horz, shift.vert).length)), \
+			(win->matrix.origin.row + row),			\
+		.row=	win->matrix.origin.row + row			\
+	    };								\
+		memset(&LayerAt(win->layer, attr, cell.col, cell.row),	\
+			0,						\
+			TCellAt(win, shift.horz, shift.vert).length);	\
+		memset(&LayerAt(win->layer, code, cell.col, cell.row),	\
+			0,						\
+			TCellAt(win, shift.horz, shift.vert).length);	\
+	}								\
+    )
+
+    void MotionLeft_Menu(Window *win)
+    {
+	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+		ResetTCell_Menu(win);
+	MotionLeft_Win(win);
+    }
+
+    void MotionRight_Menu(Window *win)
+    {
+	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+		ResetTCell_Menu(win);
+	MotionRight_Win(win);
+    }
+
+    void MotionHome_Menu(Window *win)
+    {
+	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+		ResetTCell_Menu(win);
+	MotionHome_Win(win);
+    }
+
+    void MotionEnd_Menu(Window *win)
+    {
+	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+		ResetTCell_Menu(win);
+	MotionEnd_Win(win);
+    }
+
     Window *CreateMenu(unsigned long long id)
     {
-	Window *wMenu=CreateWindow(wLayer, id, 7, 1, 2, 0);
+	Window *wMenu=CreateWindow(wLayer, id, 3, 3, 3, 0);
 	if(wMenu != NULL)
 	{
-		Attribute sameAttr={.fg=WHITE, .bg=BLUE, .bf=1};
-		Attribute helpAttr[11]={
-		HWB,HWB,HWB,_HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB
-		},	freqAttr[11]={
-		HWB,_HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB
-		},	instAttr[11]={
-		HWB,_HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB
-		},
-			quitAttr[11]={
-		HWB,HWB,HWB,_HWB,HWB,HWB,HWB,HWB,HWB,HWB,HWB
+		Attribute sameAttr={.fg=BLACK, .bg=WHITE, .bf=0};
+		Attribute helpAttr[16]={
+		LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
+		},	skeyAttr[16]={
+		LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
 		};
 
-		StoreTCell(wMenu, SCANKEY_h,	"   Help    ", helpAttr);
-		StoreTCell(wMenu, SCANKEY_f,	" Frequency ", freqAttr);
-		StoreTCell(wMenu, SCANKEY_i,	" Inst/sec  ", instAttr);
-		StoreTCell(wMenu, SCANKEY_s,	"  System   ", sameAttr);
-		StoreTCell(wMenu, SCANKEY_m,	" Topology  ", sameAttr);
-		StoreTCell(wMenu, SCANKEY_a,	"   About   ", sameAttr);
-		StoreTCell(wMenu, SCANKEY_SHIFT_q,"   Quit    ", quitAttr);
+		StoreTCell(wMenu, SCANKEY_h,	"      Help      ", helpAttr);
+		StoreTCell(wMenu, SCANKEY_NULL,	"      Layer     ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_NULL,	"     Window     ", sameAttr);
+
+		StoreTCell(wMenu, SCANKEY_a,	" About      [a] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_f,	" Frequency  [f] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_s,	" System     [s] ", skeyAttr);
+
+		StoreTCell(wMenu,SCANKEY_SHIFT_q," Quit       [Q] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_i,	" Inst/sec   [i] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_m,	" Topology   [m] ", skeyAttr);
 
 		StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
 		StoreWindow(wMenu,	.key.Enter,	MotionEnter_Menu);
-		StoreWindow(wMenu,	.key.Left,	MotionLeft_Win);
-		StoreWindow(wMenu,	.key.Right,	MotionRight_Win);
+		StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
+		StoreWindow(wMenu,	.key.Right,	MotionRight_Menu);
 		StoreWindow(wMenu,	.key.Down,	MotionDown_Win);
 		StoreWindow(wMenu,	.key.Up,	MotionUp_Win);
-		StoreWindow(wMenu, .color[0].select,wMenu->hook.color[0].title);
+		StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
+		StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
+		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
+		StoreWindow(wMenu, .color[0].title, MakeAttr(BLACK,0,WHITE,0));
+		StoreWindow(wMenu, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
 	}
 	return(wMenu);
     }
@@ -2151,9 +2200,9 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wHelp, SCANKEY_NULL, "     [Down]      ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "                 ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "[Home]           ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "        Row begin", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       First cell", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "[End]            ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "          Row end", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "        Last cell", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "[Page-Up]        ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "    Previous page", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "[Page-Dw]        ", MAKE_PRINT_FOCUS);
@@ -2206,6 +2255,12 @@ void Top(SHM_STRUCT *Shm)
 	return(wAbout);
     }
 
+    void MotionEnd_SysInfo(Window *win)
+    {
+	win->matrix.scroll.vert=win->lazyComp.bottomRow;
+	win->matrix.select.row=win->matrix.size.hth - 1;
+    }
+
     Window *CreateSysInfo(unsigned long long id)
     {
 	Window *wSysInfo=CreateWindow(	wLayer,
@@ -2228,6 +2283,8 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wSysInfo,	.key.Up,	MotionUp_Win);
 		StoreWindow(wSysInfo,	.key.PgUp,	MotionPgUp_Win);
 		StoreWindow(wSysInfo,	.key.PgDw,	MotionPgDw_Win);
+		StoreWindow(wSysInfo,	.key.Home,	MotionReset_Win);
+		StoreWindow(wSysInfo,	.key.End,	MotionEnd_SysInfo);
 		StoreWindow(wSysInfo,	.title,	" System Information ");
 		SysInfo(Shm, 74, AddSysInfoCell);
 	}
@@ -2254,6 +2311,8 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);
 		StoreWindow(wTopology,	.key.Up,	MotionUp_Win);
+		StoreWindow(wTopology,	.key.Home,	MotionHome_Win);
+		StoreWindow(wTopology,	.key.End,	MotionEnd_Win);
 		StoreWindow(wTopology,	.title, " Topology ");
 		Topology(Shm, AddTopologyCell);
 	}
@@ -3081,11 +3140,11 @@ void Top(SHM_STRUCT *Shm)
 	}
 	if(drawFlag.daemon)
 	{
-	    maxRelFreq=0.0;
-	    topRatio=0;
-	    for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	      if(!Shm->Cpu[cpu].OffLine.HW)
-	      {
+	  maxRelFreq=0.0;
+	  topRatio=0;
+	  for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	    if(!Shm->Cpu[cpu].OffLine.HW)
+	    {
 		struct FLIP_FLOP *Flop=
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
@@ -3117,9 +3176,9 @@ void Top(SHM_STRUCT *Shm)
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 
-		  switch(drawFlag.view)
-		  {
-		  case 0:
+		    switch(drawFlag.view)
+		    {
+		    case 0:
 			sprintf(&LayerAt(dLayer, code,
 					LOAD_LEAD - 1,
 					(2 + TOP_HEADER_ROW
@@ -3141,8 +3200,8 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C7,
 			Flop->Thermal.Temp,
 			Flop->Thermal.Trip ? '*' : 0x20);
-		  break;
-		  case 1:
+		    break;
+		    case 1:
 			sprintf(&LayerAt(dLayer, code,
 					LOAD_LEAD - 1,
 					(2 + TOP_HEADER_ROW
@@ -3155,8 +3214,8 @@ void Top(SHM_STRUCT *Shm)
 			Flop->State.IPS,
 			Flop->State.IPC,
 			Flop->State.CPI);
-		  break;
-		  }
+		    break;
+		    }
 		}
 		else
 			sprintf(&LayerAt(dLayer, code,
@@ -3165,7 +3224,7 @@ void Top(SHM_STRUCT *Shm)
 					+ cpu + Shm->Proc.CPU.Count)),
 			"%c",
 			(cpu == iClock) ? '~' : 0x20);
-	      }
+	    }
 
 	    switch(drawFlag.view)
 	    {
@@ -3402,7 +3461,7 @@ int main(int argc, char *argv[])
 		&& ((fstat(fd, &shmStat) != -1)
 		&& ((Shm=mmap(0, shmStat.st_size,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0))!=MAP_FAILED)))
-	   {
+	    {
 		switch(option)
 		{
 			case 's':
