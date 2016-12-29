@@ -4,10 +4,10 @@
  * Licenses: GPL2
  */
 
-#define	LOCKLESS " "
-#define	BUS_LOCK "lock "
+#define LOCKLESS " "
+#define BUS_LOCK "lock "
 
-#define	_BITSET_GPR(_lock, _base, _offset)	\
+#define _BITSET_GPR(_lock, _base, _offset)	\
 ({						\
 	asm volatile				\
 	(					\
@@ -18,7 +18,7 @@
 	);					\
 })
 
-#define	_BITSET_IMM(_lock, _base, _imm8)	\
+#define _BITSET_IMM(_lock, _base, _imm8)	\
 ({						\
 	asm volatile				\
 	(					\
@@ -29,7 +29,7 @@
 	);					\
 })
 
-#define	_BITCLR_GPR(_lock, _base, _offset)	\
+#define _BITCLR_GPR(_lock, _base, _offset)	\
 ({						\
 	asm volatile				\
 	(					\
@@ -40,7 +40,7 @@
 	);					\
 })
 
-#define	_BITCLR_IMM(_lock, _base, _imm8)	\
+#define _BITCLR_IMM(_lock, _base, _imm8)	\
 ({						\
 	asm volatile				\
 	(					\
@@ -51,7 +51,7 @@
 	);					\
 })
 
-#define	_BIT_TEST_GPR(_base, _offset)	\
+#define _BIT_TEST_GPR(_base, _offset)	\
 ({						\
 	register unsigned char _ret;		\
 	asm volatile				\
@@ -67,7 +67,7 @@
 	_ret;					\
 })
 
-#define	_BIT_TEST_IMM(_base, _imm8)	\
+#define _BIT_TEST_IMM(_base, _imm8)	\
 ({						\
 	register unsigned char _ret;		\
 	asm volatile				\
@@ -83,7 +83,7 @@
 	_ret;					\
 })
 
-#define	_BITWISEAND(_lock, _opl, _opr)		\
+#define _BITWISEAND(_lock, _opl, _opr)		\
 ({						\
 	volatile unsigned long long _ret=_opl;	\
 	asm volatile				\
@@ -96,25 +96,25 @@
 	_ret;					\
 })
 
-#define	BITSET(_lock, _base, _offset)			\
+#define BITSET(_lock, _base, _offset)			\
 (							\
 	__builtin_constant_p(_offset) ?			\
 		_BITSET_IMM(_lock, _base, _offset)	\
 	: 	_BITSET_GPR(_lock, _base, _offset)	\
 )
 
-#define	BITCLR(_lock, _base, _offset)			\
+#define BITCLR(_lock, _base, _offset)			\
 (							\
 	__builtin_constant_p(_offset) ?			\
 		_BITCLR_IMM(_lock, _base, _offset)	\
 	:	_BITCLR_GPR(_lock, _base, _offset)	\
 )
 
-#define	BITVAL(_base, _offset)				\
+#define BITVAL(_base, _offset)				\
 (							\
 	__builtin_constant_p(_offset) ?			\
 		_BIT_TEST_IMM(_base, _offset)		\
 	:	_BIT_TEST_GPR(_base, _offset)		\
 )
 
-#define	BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
+#define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)

@@ -78,7 +78,7 @@ static void *Core_Cycle(void *arg)
 		    CPU_ZERO(&cpuset);
 		    if(!pthread_getaffinity_np(tid, sizeof(cpu_set_t), &cpuset)
 		    && CPU_EQUAL(&cpuset, &affinity))
-			usleep(Proc->SleepInterval * 50);
+			usleep(Proc->SleepInterval * BASE_SLEEP);
 		    else
 			break;
 		}
@@ -148,12 +148,17 @@ static void *Core_Cycle(void *arg)
 		Flip->Thermal.Sensor=Core->PowerThermal.Sensor;
 
 		if(thermalFormula == 0x01)
-			Flip->Thermal.Temp=Flip->Thermal.Target
+		    Flip->Thermal.Temp=Flip->Thermal.Target		\
 					- Flip->Thermal.Sensor;
 	    else
 		if(thermalFormula == 0x10)
-			Flip->Thermal.Temp=Flip->Thermal.Sensor
+		    Flip->Thermal.Temp=Flip->Thermal.Sensor		\
 					- (Flip->Thermal.Target * 2) - 49;
+
+	    if(Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
+		Cpu->PowerThermal.Limit[0]=Flip->Thermal.Temp;
+	    if(Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
+		Cpu->PowerThermal.Limit[1]=Flip->Thermal.Temp;
 	    }
 	} while(!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset));
 	BITCLR(BUS_LOCK, Proc->Room, cpu);
@@ -393,6 +398,9 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =	\
 		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
+
+	Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Target;
+	Shm->Cpu[cpu].PowerThermal.Limit[1]=0;
 }
 
 void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
@@ -495,7 +503,7 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 	  }
 	  // Average counters if all the room bits are cleared.
 	  if(!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
-		usleep(Shm->Proc.SleepInterval * 50);
+		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
 	  else if(!Shutdown)
 	  {
 		// Update the count of online CPU

@@ -39,15 +39,16 @@ typedef struct
 	} Topology;
 
 	struct {
-	    	unsigned int		TM1,
-					TM2;
+		unsigned int		TM1,
+					TM2,
+					Limit[2];
 		float			ODCM;
 		unsigned int		PowerPolicy;
 	} PowerThermal;
 
 	struct FLIP_FLOP {
 		struct {
-	    	unsigned int		Target,
+		unsigned int		Target,
 					Sensor,
 					Temp,
 					Trip;

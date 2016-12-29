@@ -12,11 +12,11 @@ typedef struct
 	} AX, BX, CX, DX;
 } BRAND;
 
-#define	LEVEL_INVALID	0
-#define	LEVEL_THREAD	1
-#define	LEVEL_CORE	2
+#define LEVEL_INVALID	0
+#define LEVEL_THREAD	1
+#define LEVEL_CORE	2
 
-typedef	struct {
+typedef struct {
 	union {
 		struct
 		{
@@ -55,7 +55,7 @@ typedef	struct {
 	} DX;
 } CPUID_TOPOLOGY_LEAF;
 
-typedef	struct
+typedef struct
 {
 	LOCAL_APIC	Base;
 	int		ApicID,

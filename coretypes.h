@@ -4,24 +4,22 @@
  * Licenses: GPL2
  */
 
-#define	TRUE	1
-#define	FALSE	0
-
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
 #define MAX(M, m)	((M) > (m) ? (M) : (m))
 #define MIN(m, M)	((m) < (M) ? (m) : (M))
 
-#define	powered(bit)	((bit) ? "Present" : "Missing")
-#define	enabled(bit)	((bit) ? "ON" : "OFF")
+#define powered(bit)	((bit) ? "Present" : "Missing")
+#define enabled(bit)	((bit) ? "ON" : "OFF")
 
-#define	DRV_DEVNAME	"corefreqk"
-#define	DRV_FILENAME	"/dev/"DRV_DEVNAME
+#define DRV_DEVNAME	"corefreqk"
+#define DRV_FILENAME	"/dev/"DRV_DEVNAME
 
-#define	PRECISION	100
+#define PRECISION	100
+#define BASE_SLEEP	100
 
-#define	CACHE_MAX_LEVEL	(3 + 1)
+#define CACHE_MAX_LEVEL	(3 + 1)
 
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
@@ -39,7 +37,7 @@ typedef struct
 	unsigned long long	Hz;
 } CLOCK;
 
-#define	REL_FREQ(max_ratio, this_ratio, clock, interval)	\
+#define REL_FREQ(max_ratio, this_ratio, clock, interval)	\
 		( ((this_ratio * clock.Q) * 1000L * interval)	\
 		+ ((this_ratio * clock.R) / max_ratio))
 
@@ -477,21 +475,21 @@ typedef struct
 	CPUID_0x80000001 ExtInfo;
 	CPUID_0x80000007 AdvPower;
 
-	unsigned int    HTT_Enable,
+	unsigned int	HTT_Enable,
 			FactoryFreq;
 } FEATURES;
 
 
 // Source: include/linux/cpuidle.h
 #ifndef _LINUX_CPUIDLE_H
-#define CPUIDLE_STATE_MAX       10
-#define CPUIDLE_NAME_LEN        16
+#define CPUIDLE_STATE_MAX	10
+#define CPUIDLE_NAME_LEN	16
 #endif
 
 typedef	struct {
 	char			Name[CPUIDLE_NAME_LEN];
 	int			stateCount;
-  	struct {
+	struct {
 			char	Name[CPUIDLE_NAME_LEN];
 		unsigned int	exitLatency;		/* in US */
 			int	powerUsage;		/* in mW */

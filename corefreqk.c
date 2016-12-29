@@ -176,7 +176,7 @@ void Query_Features(void *pArg)
 		  "=b"	(BX),
 		  "=c"	(CX),
 		  "=d"	(DX)
-                : "a" (0x0)
+		: "a" (0x0)
 	);
 	arg->features.Info.VendorID[ 0]=BX;
 	arg->features.Info.VendorID[ 1]=(BX >> 8);

@@ -1051,7 +1051,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 	unsigned short X, Y;
 
 	while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-		usleep(Shm->Proc.SleepInterval * 50);
+		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
 	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 	if(BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
@@ -1114,14 +1114,14 @@ void Counters(SHM_STRUCT *Shm)
     while(!Shutdown)
     {
 	while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-		usleep(Shm->Proc.SleepInterval * 50);
+		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
 	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 	if(BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
 		printf("CPU  Frequency  Ratio   Turbo"			\
-			"    C0      C1      C3      C6      C7"	\
-			"     T:dts\n");
+			"   %%C0    %%C1    %%C3    %%C6    %%C7"	\
+			"  Min/T°C:dts/Max\n");
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	  if(!Shm->Cpu[cpu].OffLine.HW)
 	  {
@@ -1130,8 +1130,8 @@ void Counters(SHM_STRUCT *Shm)
 
 	    if(!Shm->Cpu[cpu].OffLine.OS)
 		printf("#%02u %7.2fMHz (%5.2f)"				\
-			" %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%% %6.2f%%"\
-			" %3llu:%-3lluC\n",
+			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+			" %-3llu/%3llu:%-3llu/%3llu\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -1141,8 +1141,10 @@ void Counters(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
 			Flop->Thermal.Temp,
-			Flop->Thermal.Sensor);
+			Flop->Thermal.Sensor,
+			Shm->Cpu[cpu].PowerThermal.Limit[1]);
 	    else
 		printf("#%02u        OFF\n", cpu);
 
@@ -1166,7 +1168,7 @@ void Instructions(SHM_STRUCT *Shm)
 	while(!Shutdown)
 	{
 	  while(!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-		usleep(Shm->Proc.SleepInterval * 50);
+		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
 	  BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 	  if(BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
@@ -1273,16 +1275,12 @@ typedef union
 #define SCANKEY_m		0x6d
 #define SCANKEY_s		0x73
 
-int GetKey(SCANKEY *scan, unsigned long long timeout)
+int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
 	struct pollfd fds={.fd=STDIN_FILENO, .events=POLLIN};
-	struct timespec tsec={
-		.tv_sec=timeout / 1000000L,
-		.tv_nsec=(timeout % 1000000L) * 1000
-	};
 	int rp=0, rz=0;
 
-	if((rp=ppoll(&fds, 1, &tsec, NULL)) > 0)
+	if((rp=ppoll(&fds, 1, tsec, NULL)) > 0)
 		if(fds.revents == POLLIN)
 		{
 			size_t lc=fread(&scan->key, 1, 8, stdin);
@@ -2016,10 +2014,14 @@ void Top(SHM_STRUCT *Shm)
 
     SCREEN_SIZE drawSize={.width=0, .height=0};
 
-    unsigned long long timeout=Shm->Proc.SleepInterval * 500L;
+    unsigned int timeout=Shm->Proc.SleepInterval * BASE_SLEEP;
+    struct timespec tsec={
+	.tv_sec=timeout / 1000000L,
+	.tv_nsec=(timeout % 1000000L) * 1000
+    };
 
     unsigned int topRatio, digit[9], lcdColor, cpu=0, iClock=0, ratioCount=0, i,
-		mSteps=(timeout < 1000000L) ? (1000000L / timeout) : 1,
+		mSteps=(timeout < 100000L) ? (100000L / timeout) : 1,
 		tSteps=0;
 
     int MIN_HEIGHT=(2 * Shm->Proc.CPU.Count)
@@ -3096,7 +3098,7 @@ void Top(SHM_STRUCT *Shm)
 
 	  if((drawFlag.daemon=BITVAL(Shm->Proc.Sync, 0)) == 0)
 	  {
-	    if(GetKey(&scan, timeout) > 0)
+	    if(GetKey(&scan, &tsec) > 0)
 	    {
 		if(Shortcut(&scan) == -1)
 		{
