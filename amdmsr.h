@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2016 CYRIL INGENIERIE
+ * Copyright (C) 2015-2016 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
