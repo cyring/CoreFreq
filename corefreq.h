@@ -41,6 +41,7 @@ typedef struct
 	struct {
 		unsigned int		TM1,
 					TM2,
+					Target,
 					Limit[2];
 		float			ODCM;
 		unsigned int		PowerPolicy;
@@ -48,8 +49,7 @@ typedef struct
 
 	struct FLIP_FLOP {
 		struct {
-		unsigned int		Target,
-					Sensor,
+		unsigned int		Sensor,
 					Temp,
 					Trip;
 		} Thermal;

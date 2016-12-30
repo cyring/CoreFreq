@@ -138,22 +138,21 @@ static void *Core_Cycle(void *arg)
 		else
 		{// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		  Flip->Relative.Freq=
-		  (double) REL_FREQ(Proc->Boost[1], \
-				    Flip->Relative.Ratio, \
+		  (double) REL_FREQ(Proc->Boost[1],			\
+				    Flip->Relative.Ratio,		\
 				    Core->Clock, Proc->SleepInterval)
 					/ (Proc->SleepInterval * 1000);
 		}
 		Flip->Thermal.Trip=Core->PowerThermal.Trip;
-		Flip->Thermal.Target=Core->PowerThermal.Target;
 		Flip->Thermal.Sensor=Core->PowerThermal.Sensor;
 
 		if(thermalFormula == 0x01)
-		    Flip->Thermal.Temp=Flip->Thermal.Target		\
+		    Flip->Thermal.Temp=Cpu->PowerThermal.Target		\
 					- Flip->Thermal.Sensor;
 	    else
 		if(thermalFormula == 0x10)
 		    Flip->Thermal.Temp=Flip->Thermal.Sensor		\
-					- (Flip->Thermal.Target * 2) - 49;
+					- (Cpu->PowerThermal.Target * 2) - 49;
 
 	    if(Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 		Cpu->PowerThermal.Limit[0]=Flip->Thermal.Temp;
@@ -380,23 +379,25 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 {
-	Shm->Cpu[cpu].PowerThermal.TM1 =		\
+	Shm->Cpu[cpu].PowerThermal.TM1 =				\
 		Proc->Features.Std.DX.TM1;			//0001
-	Shm->Cpu[cpu].PowerThermal.TM1 |=		\
+	Shm->Cpu[cpu].PowerThermal.TM1 |=				\
 		(Core[cpu]->PowerThermal.TCC_Enable << 1);	//0010
-	Shm->Cpu[cpu].PowerThermal.TM1 ^=		\
+	Shm->Cpu[cpu].PowerThermal.TM1 ^=				\
 		(Core[cpu]->PowerThermal.TM_Select << 1);	//0010
-	Shm->Cpu[cpu].PowerThermal.TM2 =		\
+	Shm->Cpu[cpu].PowerThermal.TM2 =				\
 		Proc->Features.Std.CX.TM2;			//0001
-	Shm->Cpu[cpu].PowerThermal.TM2 |=		\
+	Shm->Cpu[cpu].PowerThermal.TM2 |=				\
 		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
 
-	Shm->Cpu[cpu].PowerThermal.ODCM =	\
+	Shm->Cpu[cpu].PowerThermal.ODCM =				\
 		Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle
 		* (Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1) ?
 			6.25f : 12.5f;
 
-	Shm->Cpu[cpu].PowerThermal.PowerPolicy =	\
+	Shm->Cpu[cpu].PowerThermal.Target=Core[cpu]->PowerThermal.Target;
+
+	Shm->Cpu[cpu].PowerThermal.PowerPolicy =			\
 		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 
 	Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Target;
@@ -688,16 +689,16 @@ static void *Emergency(void *arg)
 
 int help(char *appName)
 {
-	printf(	"usage:\t%s [-option]\n"		\
-		"\t-q\tQuiet\n"				\
-		"\t-i\tInfo\n"				\
-		"\t-d\tDebug\n"				\
-		"\t-m\tMath\n"				\
-		"\t-h\tPrint out this message\n"	\
-		"\nExit status:\n"			\
-			"0\tif OK,\n"			\
-			"1\tif problems,\n"		\
-			">1\tif serious trouble.\n"	\
+	printf(	"usage:\t%s [-option]\n"				\
+		"\t-q\tQuiet\n"						\
+		"\t-i\tInfo\n"						\
+		"\t-d\tDebug\n"						\
+		"\t-m\tMath\n"						\
+		"\t-h\tPrint out this message\n"			\
+		"\nExit status:\n"					\
+			"0\tif OK,\n"					\
+			"1\tif problems,\n"				\
+			">1\tif serious trouble.\n"			\
 		"\nReport bugs to labs[at]cyring.fr\n", appName);
 	return(1);
 }

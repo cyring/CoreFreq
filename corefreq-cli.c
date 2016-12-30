@@ -994,8 +994,8 @@ void LCD_Draw(	unsigned short col,
 	short offset=col + (4 - j) * 3;
 
 	sprintf(lcdBuf,
-		"\033[%hu;%hdH" "%.*s"				\
-		"\033[%hu;%hdH" "%.*s"				\
+		"\033[%hu;%hdH" "%.*s"					\
+		"\033[%hu;%hdH" "%.*s"					\
 		"\033[%hu;%hdH" "%.*s",
 		row	, offset, 3, lcd[thisDigit[9 - j]][0],
 		row + 1	, offset, 3, lcd[thisDigit[9 - j]][1],
@@ -1119,8 +1119,8 @@ void Counters(SHM_STRUCT *Shm)
 	if(BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
 
-		printf("CPU  Frequency  Ratio   Turbo"			\
-			"   %%C0    %%C1    %%C3    %%C6    %%C7"	\
+		printf("CPU Freq(MHz) Ratio  Turbo"			\
+			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 			"  Min/T°C:dts/Max\n");
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	  if(!Shm->Cpu[cpu].OffLine.HW)
@@ -1129,9 +1129,9 @@ void Counters(SHM_STRUCT *Shm)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if(!Shm->Cpu[cpu].OffLine.OS)
-		printf("#%02u %7.2fMHz (%5.2f)"				\
+		printf("#%02u %7.2f (%5.2f)"				\
 			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-			" %-3llu/%3llu:%-3llu/%3llu\n",
+			"  %-3llu/%3llu:%-3llu/%3llu\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -1149,15 +1149,24 @@ void Counters(SHM_STRUCT *Shm)
 		printf("#%02u        OFF\n", cpu);
 
 	  }
-		printf("\nAverage C-states\n"				\
-		"Turbo\t  C0\t  C1\t  C3\t  C6\t  C7\n"			\
-		"%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\t%6.2f%%\n\n",
+		printf("\n"						\
+		"%.*s" "Averages:"					\
+		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+		"%.*s" "TjMax:\n"					\
+		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+		"%.*s" "%3llu°C\n\n",
+			4, hSpace,
+			8, hSpace,
+			7, hSpace,
+			20, hSpace,
 			100.f * Shm->Proc.Avg.Turbo,
 			100.f * Shm->Proc.Avg.C0,
 			100.f * Shm->Proc.Avg.C1,
 			100.f * Shm->Proc.Avg.C3,
 			100.f * Shm->Proc.Avg.C6,
-			100.f * Shm->Proc.Avg.C7);
+			100.f * Shm->Proc.Avg.C7,
+			8, hSpace,
+			Shm->Cpu[0].PowerThermal.Target);
     }
 }
 
@@ -1323,6 +1332,7 @@ typedef union
 	({Attribute _attr={.fg=_fg,.un=_un,.bg=_bg,.bf=_bf}; _attr;})
 
 #define HDK	{.fg=BLACK,	.bg=BLACK,	.bf=1}
+#define HBK	{.fg=BLUE,	.bg=BLACK,	.bf=1}
 #define HRK	{.fg=RED,	.bg=BLACK,	.bf=1}
 #define HGK	{.fg=GREEN,	.bg=BLACK,	.bf=1}
 #define HYK	{.fg=YELLOW,	.bg=BLACK,	.bf=1}
@@ -1332,13 +1342,14 @@ typedef union
 #define HKW	{.fg=BLACK,	.bg=WHITE,	.bf=1}
 #define _HWK	{.fg=WHITE,	.bg=BLACK,	.un=1,	.bf=1}
 #define _HWB	{.fg=WHITE,	.bg=BLUE,	.un=1,	.bf=1}
-#define LKW	{.fg=BLACK,	.bg=WHITE,	.bf=0}
-#define LYK	{.fg=YELLOW,	.bg=BLACK,	.bf=0}
+#define LKW	{.fg=BLACK,	.bg=WHITE}
+#define LYK	{.fg=YELLOW,	.bg=BLACK}
+#define LBK	{.fg=BLUE,	.bg=BLACK}
+#define LBW	{.fg=BLUE,	.bg=WHITE}
+#define LWK	{.fg=WHITE,	.bg=BLACK}
 #define LWB	{.fg=WHITE,	.bg=BLUE}
-#define LBW	{.fg=BLUE,	.bg=WHITE,	.bf=0}
-#define LWK	{.fg=WHITE,	.bg=BLACK,	.bf=0}
-#define _LKW	{.fg=BLACK,	.bg=WHITE,	.un=1,	.bf=0}
-#define _LBW	{.fg=BLUE,	.bg=WHITE,	.un=1,	.bf=0}
+#define _LKW	{.fg=BLACK,	.bg=WHITE,	.un=1}
+#define _LBW	{.fg=BLUE,	.bg=WHITE,	.un=1}
 
 #define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
 #define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN, 1)
@@ -2698,30 +2709,36 @@ void Top(SHM_STRUCT *Shm)
 	{
 	  case 0:
 	  {
-	    LayerDeclare(75) hMon0=
+	    LayerDeclare(77) hMon0=
 	    {
 		.origin={.col=LOAD_LEAD - 1,
 			.row=(row + Shm->Proc.CPU.Count + 1)},
-			.length=75,
-		.attr={	HYK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK, \
-			HDK,LWK,LWK,LWK,LWK,LWK,HDK,			\
+			.length=77,
+		.attr={	HYK,						\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,HDK,HDK,HRK,
+			HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,		\
+			HBK,HBK,HBK,HDK,				\
+			LWK,LWK,LWK,HDK,				\
+			LYK,LYK,LYK					\
 		},
-		.code={	0x0,' ',' ',' ',' ',0x0,' ',' ',' ',0x0,0x0,0x0,' ', \
-			0x0,' ',' ',0x0,' ',' ',0x0,			\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',0x0,0x0,
+		.code={	0x0,						\
+			' ',' ',' ',' ',' ',' ',' ',' ',		\
+			0x0,' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',		\
+			' ',' ',' ',' ',' ',' ',0x0,' ',' ',		\
+			' ',' ',' ',0x0,				\
+			' ',' ',' ',0x0,				\
+			' ',' ',' '					\
 		},
 	    };
 	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
@@ -2785,25 +2802,25 @@ void Top(SHM_STRUCT *Shm)
 	  case 0:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
-		"---- Fre""quency -"" Ratio -"" Turbo -""- C0 ---"	\
-		"- C1 ---""- C3 ---""- C6 ---""- C7 ---"" Temps -"	\
-		"--------""--------""--------""--------""--------"	\
-		"--------""----",
+		"--- Freq(MHz) Ratio - Turbo --- "			\
+		"C0 ---- C1 ---- C3 ---- C6 ---- C7 -- "		\
+		"Temps(°C)"						\
+		"----------------------------------------------------",
 		MakeAttr(BLACK, 0, BLACK, 1));
 
-	    LayerDeclare(74) hAvg0=
+	    LayerDeclare(70) hAvg0=
 	    {
-		.origin={.col=0,.row=(row + Shm->Proc.CPU.Count +1)},.length=74,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		.origin={.col=0,.row=(row + Shm->Proc.CPU.Count +1)},.length=70,
+		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
 			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK
 		},
-		.code={	'-','-','-','-','-','-','-','-','-','-','-','-',\
+		.code={	'-','-','-','-','-','-','-','-',		\
 			' ','A','v','e','r','a','g','e','s',' ','[',	\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
@@ -3178,19 +3195,17 @@ void Top(SHM_STRUCT *Shm)
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 
+		    row=2 + TOP_HEADER_ROW + cpu + Shm->Proc.CPU.Count;
 		    switch(drawFlag.view)
 		    {
 		    case 0:
-			sprintf(&LayerAt(dLayer, code,
-					LOAD_LEAD - 1,
-					(2 + TOP_HEADER_ROW
-					+ cpu + Shm->Proc.CPU.Count)),
+		    {
+			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
 			"%c"						\
-			"%7.2f"" MHz (""%5.2f"") "			\
-			"%6.2f""%% ""%6.2f""%% ""%6.2f""%% "		\
-			"%6.2f""%% ""%6.2f""%% ""%6.2f""%% "		\
-			"%3llu"" C"					\
-			"%c",
+			"%7.2f" " (" "%5.2f" ") "			\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+			"%-3llu" "/" "%3llu" "/" "%3llu",
 			(cpu == iClock) ? '~' : 0x20,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -3200,14 +3215,28 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Flop->State.C3,
 			100.f * Flop->State.C6,
 			100.f * Flop->State.C7,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
 			Flop->Thermal.Temp,
-			Flop->Thermal.Trip ? '*' : 0x20);
+			Shm->Cpu[cpu].PowerThermal.Limit[1]);
+
+			Attribute warning={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+
+		  if(Flop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
+			warning=MakeAttr(BLUE, 0, BLACK, 1);
+
+		  if(Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
+			warning=MakeAttr(YELLOW, 0, BLACK, 1);
+
+		  if(Flop->Thermal.Trip)
+			warning=MakeAttr(RED, 0, BLACK, 1);
+
+			LayerAt(dLayer, attr, LOAD_LEAD + 69, row)=	\
+			LayerAt(dLayer, attr, LOAD_LEAD + 70, row)=	\
+			LayerAt(dLayer, attr, LOAD_LEAD + 71, row)=warning;
+		    }
 		    break;
 		    case 1:
-			sprintf(&LayerAt(dLayer, code,
-					LOAD_LEAD - 1,
-					(2 + TOP_HEADER_ROW
-					+ cpu + Shm->Proc.CPU.Count)),
+			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
 			"%c "						\
 			"    ""%12.6f""/s "				\
 			"    ""%12.6f""/c "				\
@@ -3232,11 +3261,11 @@ void Top(SHM_STRUCT *Shm)
 	    {
 	    case 0:
 		sprintf(&LayerAt(dLayer, code,
-					24,
+					20,
 					(2 + TOP_HEADER_ROW
 					+ 2 * Shm->Proc.CPU.Count)),
-			"%6.2f""%% ""%6.2f""%% ""%6.2f""%% "		\
-			"%6.2f""%% ""%6.2f""%% ""%6.2f""%%",
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 			100.f * Shm->Proc.Avg.Turbo,
 			100.f * Shm->Proc.Avg.C0,
 			100.f * Shm->Proc.Avg.C1,
