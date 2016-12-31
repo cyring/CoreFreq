@@ -93,46 +93,55 @@ static void *Core_Cycle(void *arg)
 		}
 		struct FLIP_FLOP *Flip=&Cpu->FlipFlop[Cpu->Toggle];
 
+		Flip->Delta.INST	= Core->Delta.INST;
+		Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
+		Flip->Delta.C0.URC	= Core->Delta.C0.URC;
+		Flip->Delta.C3		= Core->Delta.C3;
+		Flip->Delta.C6		= Core->Delta.C6;
+		Flip->Delta.C7		= Core->Delta.C7;
+		Flip->Delta.TSC		= Core->Delta.TSC;
+		Flip->Delta.C1		= Core->Delta.C1;
+
 		// Compute IPS=Instructions per TSC
-		Flip->State.IPS	= (double) (Core->Delta.INST)		\
-				/ (double) (Core->Delta.TSC);
+		Flip->State.IPS	= (double) (Flip->Delta.INST)		\
+				/ (double) (Flip->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		Flip->State.IPC	= (double) (Core->Delta.C0.URC != 0) ?	\
-				  (double) (Core->Delta.INST)		\
-				/ (double) Core->Delta.C0.URC		\
+		Flip->State.IPC	= (double) (Flip->Delta.C0.URC != 0) ?	\
+				  (double) (Flip->Delta.INST)		\
+				/ (double) Flip->Delta.C0.URC		\
 				: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		Flip->State.CPI	= (double) (Core->Delta.INST != 0) ?	\
-				  (double) Core->Delta.C0.URC		\
-				/ (double) (Core->Delta.INST)		\
+		Flip->State.CPI	= (double) (Flip->Delta.INST != 0) ?	\
+				  (double) Flip->Delta.C0.URC		\
+				/ (double) (Flip->Delta.INST)		\
 				: 0.0f;
 
 		// Compute Turbo State.
-		Flip->State.Turbo=(double) (Core->Delta.C0.UCC)		\
-				/ (double) (Core->Delta.TSC);
+		Flip->State.Turbo=(double) (Flip->Delta.C0.UCC)		\
+				/ (double) (Flip->Delta.TSC);
 		// Compute C-States.
-		Flip->State.C0	= (double) (Core->Delta.C0.URC)		\
-				/ (double) (Core->Delta.TSC);
-		Flip->State.C3	= (double) (Core->Delta.C3)		\
-				/ (double) (Core->Delta.TSC);
-		Flip->State.C6	= (double) (Core->Delta.C6)		\
-				/ (double) (Core->Delta.TSC);
-		Flip->State.C7	= (double) (Core->Delta.C7)		\
-				/ (double) (Core->Delta.TSC);
-		Flip->State.C1	= (double) (Core->Delta.C1)		\
-				/ (double) (Core->Delta.TSC);
+		Flip->State.C0	= (double) (Flip->Delta.C0.URC)		\
+				/ (double) (Flip->Delta.TSC);
+		Flip->State.C3	= (double) (Flip->Delta.C3)		\
+				/ (double) (Flip->Delta.TSC);
+		Flip->State.C6	= (double) (Flip->Delta.C6)		\
+				/ (double) (Flip->Delta.TSC);
+		Flip->State.C7	= (double) (Flip->Delta.C7)		\
+				/ (double) (Flip->Delta.TSC);
+		Flip->State.C1	= (double) (Flip->Delta.C1)		\
+				/ (double) (Flip->Delta.TSC);
 		// Relative Ratio formula.
-		Flip->Relative.Ratio	= (double) (Core->Delta.C0.UCC	\
+		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC	\
 						* Proc->Boost[1])	\
-					/ (double) (Core->Delta.TSC);
+					/ (double) (Flip->Delta.TSC);
 
 		if(!Math && Core->Query.Turbo)
 		{// Relative Frequency equals UCC per second.
-			Flip->Relative.Freq=(double) (Core->Delta.C0.UCC)
+			Flip->Relative.Freq=(double) (Flip->Delta.C0.UCC)
 						/ (Proc->SleepInterval * 1000);
 		}
 		else

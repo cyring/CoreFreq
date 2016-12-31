@@ -48,11 +48,23 @@ typedef struct
 	} PowerThermal;
 
 	struct FLIP_FLOP {
-		struct {
-		unsigned int		Sensor,
-					Temp,
-					Trip;
-		} Thermal;
+		struct
+		{
+		unsigned long long
+					INST;
+			struct
+			{
+		unsigned long long
+				UCC,
+				URC;
+			}		C0;
+		unsigned long long
+					C3,
+					C6,
+					C7,
+					TSC,
+					C1;
+		} Delta;
 
 		struct {
 			double		IPS,
@@ -70,6 +82,12 @@ typedef struct
 			double		Ratio,
 					Freq;
 		} Relative;
+
+		struct {
+		unsigned int		Sensor,
+					Temp,
+					Trip;
+		} Thermal;
 	} FlipFlop[2];
 } CPU_STRUCT;
 

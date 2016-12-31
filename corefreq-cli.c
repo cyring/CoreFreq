@@ -304,7 +304,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 	    	" Enable",
 	};
 	printv("Instruction set:" "%.*s", width-16, hSpace);
-/* Row Mark */	
+/* Row Mark */
 	len=sprintf(row, "|-" "%.*s", 1, hSpace);
 
 	len+=sprintf(str, "3DNow!/Ext [%c,%c]",
@@ -1121,7 +1121,7 @@ void Counters(SHM_STRUCT *Shm)
 
 		printf("CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-			"  Min/T°C:dts/Max\n");
+			"  Min TMP:TS  Max\n");
 	for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	  if(!Shm->Cpu[cpu].OffLine.HW)
 	  {
@@ -1154,7 +1154,7 @@ void Counters(SHM_STRUCT *Shm)
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:\n"					\
 		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-		"%.*s" "%3llu°C\n\n",
+		"%.*s" "%3llu C\n\n",
 			4, hSpace,
 			8, hSpace,
 			7, hSpace,
@@ -1248,9 +1248,9 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack?
-				'w' : '.',
+				'w' : 0x20,
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive?
-				'i' : '.');
+				'i' : 0x20);
 	    }
 	}
 	free(line);
@@ -1262,6 +1262,7 @@ typedef union
 	unsigned char code[8];
 } SCANKEY;
 
+#define SCANKEY_VOID		0xffffffffffffffff
 #define SCANKEY_NULL		0x0
 #define SCANKEY_TAB		0x9
 #define SCANKEY_ENTER		0xa
@@ -1278,9 +1279,11 @@ typedef union
 #define SCANKEY_PGDW		0x7e365b1b
 #define SCANKEY_SHIFT_q		0x51
 #define SCANKEY_a		0x61
+#define SCANKEY_c		0x63
 #define SCANKEY_f		0x66
 #define SCANKEY_h		0x68
 #define SCANKEY_i		0x69
+#define SCANKEY_l		0x6c
 #define SCANKEY_m		0x6d
 #define SCANKEY_s		0x73
 
@@ -1799,15 +1802,17 @@ void ForEachCellPrint(Window *win, WinList *list)
 	    if(win->lazyComp.titleLen == 0)
 	    	win->lazyComp.titleLen=strlen(win->hook.title);
 
-	    size_t halfLen=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
+	    size_t halfLeft=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
+	    size_t halfRight=halfLeft
+			+ (win->lazyComp.rowLen - win->lazyComp.titleLen) % 2;
 
 	    LayerFillAt(win->layer,
 			(win->matrix.origin.col - 1),
 			(win->matrix.origin.row - 1),
-			halfLen, hLine, border);
+			halfLeft, hLine, border);
 
 	    LayerFillAt(win->layer,
-			(halfLen + (win->matrix.origin.col - 1)),
+			(halfLeft + (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
 			win->lazyComp.titleLen, win->hook.title,
 			((GetFocus(list) == win) ?
@@ -1815,10 +1820,10 @@ void ForEachCellPrint(Window *win, WinList *list)
 			:	win->hook.color[0].title));
 
 	    LayerFillAt(win->layer,
-			(halfLen + win->lazyComp.titleLen
+			(halfLeft + win->lazyComp.titleLen
 			+ (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
-			halfLen, hLine, border);
+			halfRight, hLine, border);
 	}
 
 	for(row=0; row < win->matrix.size.hth; row++)
@@ -1985,7 +1990,7 @@ void Top(SHM_STRUCT *Shm)
 /*
            SCREEN
  __________________________
-|                          |
+|           MENU           |
 |                       T  |
 |  L       HEADER          |
 |                       R  |
@@ -2000,8 +2005,8 @@ void Top(SHM_STRUCT *Shm)
 |--N ----------------------|
 |                       N  |
 |  G       FOOTER          |
-|           MENU        G  |
-'__________________________'
+|                       G  |
+`__________________________'
 */
 
     Layer	*sLayer=NULL,
@@ -2017,8 +2022,8 @@ void Top(SHM_STRUCT *Shm)
 		clear	:  2-1,	 // Clear screen
 		height	:  3-2,	 // Valid height
 		width	:  4-3,	 // Valid width
-		view	:  5-4,  // 0=Freq, 1=IPS
-		_pad1	: 32-5,
+		view	:  6-4,  // 0=Freq, 1=IPS, 2=COUNTERS
+		_pad1	: 32-6,
 		daemon	: 33-32, // Draw dynamic
 		_pad2	: 64-33;
     } drawFlag={.layout=0,.clear=0,.height=0,.width=0,.view=0,.daemon=0};
@@ -2077,7 +2082,10 @@ void Top(SHM_STRUCT *Shm)
 	for(col=0; col < win->matrix.size.wth; col++)
 		PrintContent(win, list, col, 0);
 	for(row=1; row < win->matrix.size.hth; row++)
-		PrintContent(win, list, win->matrix.select.col, row);
+	    if(TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			PrintContent(win, list, win->matrix.select.col, row);
 
 	if((len=drawSize.width - win->lazyComp.rowLen) > 0)
 		LayerFillAt(win->layer,
@@ -2128,60 +2136,119 @@ void Top(SHM_STRUCT *Shm)
     {
 	for(unsigned short row=1; row < win->matrix.size.hth; row++)
 		ResetTCell_Menu(win);
-	MotionLeft_Win(win);
+
+	if(win->matrix.select.col > 0)
+		win->matrix.select.col-- ;
+	else
+		win->matrix.select.col=win->matrix.size.wth - 1;
+
+	win->matrix.select.row=0;
     }
 
     void MotionRight_Menu(Window *win)
     {
 	for(unsigned short row=1; row < win->matrix.size.hth; row++)
 		ResetTCell_Menu(win);
-	MotionRight_Win(win);
+
+	if(win->matrix.select.col < win->matrix.size.wth - 1)
+		win->matrix.select.col++ ;
+	else
+		win->matrix.select.col=0;
+
+	win->matrix.select.row=0;
+    }
+
+    void MotionUp_Menu(Window *win)
+    {
+	unsigned short row=win->matrix.select.row;
+
+	if(win->matrix.select.row > 0)
+		row-- ;
+
+	if(TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row=row;
+    }
+
+    void MotionDown_Menu(Window *win)
+    {
+	unsigned short row=win->matrix.select.row;
+
+	if(row < win->matrix.size.hth - 1)
+		row++ ;
+
+	if(TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row=row;
     }
 
     void MotionHome_Menu(Window *win)
     {
-	for(unsigned short row=1; row < win->matrix.size.hth; row++)
-		ResetTCell_Menu(win);
-	MotionHome_Win(win);
+	if(TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + 1)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row=1;
+	else
+			win->matrix.select.row=0;
     }
 
     void MotionEnd_Menu(Window *win)
     {
-	for(unsigned short row=1; row < win->matrix.size.hth; row++)
-		ResetTCell_Menu(win);
-	MotionEnd_Win(win);
+	unsigned short row=0;
+
+	for(row=win->matrix.size.hth - 1; row > 1; row--)
+	    if(TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			break;
+
+	win->matrix.select.row=row;
     }
 
     Window *CreateMenu(unsigned long long id)
     {
-	Window *wMenu=CreateWindow(wLayer, id, 3, 3, 3, 0);
+	Window *wMenu=CreateWindow(wLayer, id, 3, 5, 3, 0);
 	if(wMenu != NULL)
 	{
-		Attribute sameAttr={.fg=BLACK, .bg=WHITE, .bf=0};
-		Attribute helpAttr[16]={
-		LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
-		},	skeyAttr[16]={
-		LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
-		};
+		Attribute sameAttr={.fg=BLACK, .bg=WHITE, .bf=0},
+			voidAttr={.value=0},
+			helpAttr[18]={
+				LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
+			},
+			skeyAttr[18]={
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,
+				LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
+			};
 
-		StoreTCell(wMenu, SCANKEY_h,	"      Help      ", helpAttr);
-		StoreTCell(wMenu, SCANKEY_NULL,	"      Layer     ", sameAttr);
-		StoreTCell(wMenu, SCANKEY_NULL,	"     Window     ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_h,	"      Help        ", helpAttr);
+		StoreTCell(wMenu, SCANKEY_NULL,	"      Layer       ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_NULL,	"      Window      ", sameAttr);
 
-		StoreTCell(wMenu, SCANKEY_a,	" About      [a] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_f,	" Frequency  [f] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_s,	" System     [s] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_a,	" About        [a] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_f,	" Frequency    [f] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_s,	" System info  [s] ", skeyAttr);
 
-		StoreTCell(wMenu,SCANKEY_SHIFT_q," Quit       [Q] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_i,	" Inst/sec   [i] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_m,	" Topology   [m] ", skeyAttr);
+		StoreTCell(wMenu,SCANKEY_SHIFT_q," Quit         [Q] ",skeyAttr);
+		StoreTCell(wMenu, SCANKEY_i,	" Inst cycles  [i] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_m,	" Topology     [m] ", skeyAttr);
+
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_c,	" Core cycles  [c] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_l,	" Idle states  [l] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 
 		StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
 		StoreWindow(wMenu,	.key.Enter,	MotionEnter_Menu);
 		StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
 		StoreWindow(wMenu,	.key.Right,	MotionRight_Menu);
-		StoreWindow(wMenu,	.key.Down,	MotionDown_Win);
-		StoreWindow(wMenu,	.key.Up,	MotionUp_Win);
+		StoreWindow(wMenu,	.key.Down,	MotionDown_Menu);
+		StoreWindow(wMenu,	.key.Up,	MotionUp_Menu);
 		StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
 		StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
 		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
@@ -2193,33 +2260,37 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateHelp(unsigned long long id)
     {
-      Window *wHelp=CreateWindow(wLayer, id, 2, 12, 2, TOP_HEADER_ROW + 2);
+      Window *wHelp=CreateWindow(wLayer, id, 2, 14, 2, TOP_HEADER_ROW + 2);
       if(wHelp != NULL)
       {
-	StoreTCell(wHelp, SCANKEY_NULL, "[Escape]         ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "     Close window", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Shift]+[Tab]    ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "  Previous window", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Tab]            ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      Next window", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Enter]          ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "Trigger selection", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                 ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                 ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      [Up]       ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                 ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Left]    [Right]", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "   Move selection", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "     [Down]      ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                 ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Home]           ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       First cell", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[End]            ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "        Last cell", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Page-Up]        ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "    Previous page", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "[Page-Dw]        ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "        Next page", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [F1]             ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "             Menu ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Escape]         ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "     Close window ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Shift]+[Tab]    ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "  Previous window ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Tab]            ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "      Next window ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "Trigger selection ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       [Up]       ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Left]    [Right]", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "   Move selection ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "      [Down]      ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       First cell ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [End]            ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "        Last cell ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Up]        ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "    Previous page ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Dw]        ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "        Next page ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
 
 	StoreWindow(wHelp, .title, " Help ");
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
@@ -2299,7 +2370,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wSysInfo,	.key.Home,	MotionReset_Win);
 		StoreWindow(wSysInfo,	.key.End,	MotionEnd_SysInfo);
 		StoreWindow(wSysInfo,	.title,	" System Information ");
-		SysInfo(Shm, 74, AddSysInfoCell);
+		SysInfo(Shm, drawSize.width - 6, AddSysInfoCell);
 	}
 	return(wSysInfo);
     }
@@ -2435,6 +2506,12 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 	}
 	break;
+	case SCANKEY_c:
+	{
+		drawFlag.view=2;
+		drawFlag.clear=1;
+	}
+	break;
 	case SCANKEY_f:
 	{
 		drawFlag.view=0;
@@ -2453,6 +2530,12 @@ void Top(SHM_STRUCT *Shm)
 	case SCANKEY_i:
 	{
 		drawFlag.view=1;
+		drawFlag.clear=1;
+	}
+	break;
+	case SCANKEY_l:
+	{
+		drawFlag.view=3;
 		drawFlag.clear=1;
 	}
 	break;
@@ -2492,14 +2575,14 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(12) hProc0=
 	{
 		.origin={.col=12, .row=row}, .length=12,
-		.attr={HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+		.attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
 		.code={' ','P','r','o','c','e','s','s','o','r',' ','['},
 	};
 
 	LayerDeclare(9) hProc1=
 	{
 		.origin={.col=drawSize.width - 9, .row=row}, .length=9,
-		.attr={HDK,LWK,LWK,HDK,LWK,LWK,HDK,HDK,HDK},
+		.attr={HDK,HWK,HWK,HDK,HWK,HWK,LWK,LWK,LWK},
 		.code={']',' ',' ','/',' ',' ','C','P','U'},
 	};
 
@@ -2508,16 +2591,16 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(15) hArch0=
 	{
 	    .origin={.col=12, .row=row}, .length=15,
-	    .attr={HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+	    .attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
 	    .code={' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['},
 	};
 
 	LayerDeclare(30) hArch1=
 	{
 		.origin={.col=drawSize.width - 30, .row=row}, .length=30,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,LWK,LWK,	\
-			HDK,HDK,HDK,HDK,HDK,LWK,LWK,LWK,HDK,HDK
+		.attr={	HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
+			LWK,LWK,HDK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,	\
+			LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HDK,HDK
 		},
 		.code={	']',' ','C','a','c','h','e','s',' ',		\
 			'L','1',' ','I','n','s','t','=',' ',' ',' ',	\
@@ -2530,7 +2613,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(28) hBClk0=
 	{
 		.origin={.col=12, .row=row}, .length=28,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		.attr={	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
 			HDK,HDK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,\
 			HDK,HDK,HDK
 			},
@@ -2543,8 +2626,8 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(18) hBClk1=
 	{
 		.origin={.col=drawSize.width - 18, .row=row}, .length=18,
-		.attr={	HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,		\
-			HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK
+		.attr={	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,		\
+			LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HDK,HDK
 		},
 		.code={	'L','2','=',' ',' ',' ',' ',' ',		\
 			'L','3','=',' ',' ',' ',' ',' ','K','B'
@@ -2552,16 +2635,6 @@ void Top(SHM_STRUCT *Shm)
 	};
 
 	row++ ;
-
-	LayerDeclare(MAX_WIDTH) hLoad0=
-	{
-		.origin={.col=0, .row=row}, .length=drawSize.width,
-		.code={	"--------""----- CP""U Ratio ""--------""--------"\
-			"--------""--------""--------""--------""--------"\
-			"--------""--------""--------""--------""--------"\
-			"--------""----"
-		},
-	};
 
 	sprintf(buffer, "%2u" "%-2u",
 		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
@@ -2607,6 +2680,34 @@ void Top(SHM_STRUCT *Shm)
 	hBClk1.code[14]=buffer[7];
 	hBClk1.code[15]=buffer[8];
 
+	LayerDeclare(MAX_WIDTH) hLoad0=
+	{
+		.origin={.col=0, .row=row}, .length=drawSize.width,
+		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+			HDK,HDK,HDK,HDK
+		},
+		.code={	"------------- CPU Ratio ----------------"	\
+			"----------------------------------------"	\
+			"----------------------------------------"	\
+			"------------"
+		},
+	};
+
 	for(i=0; i < ratioCount; i++)
 	{
 		char tabStop[]="00";
@@ -2615,6 +2716,8 @@ void Top(SHM_STRUCT *Shm)
 
 		hLoad0.code[hPos + 2]=tabStop[0];
 		hLoad0.code[hPos + 3]=tabStop[1];
+		hLoad0.attr[hPos + 2]=					\
+		hLoad0.attr[hPos + 3]=MakeAttr(CYAN, 0, BLACK, 0);
 	}
 	len=strlen(Shm->Proc.Brand);
 
@@ -2663,9 +2766,8 @@ void Top(SHM_STRUCT *Shm)
 	LayerCopyAt(layer, hBClk1.origin.col, hBClk1.origin.row,
 			hBClk1.length, hBClk1.attr, hBClk1.code);
 
-	LayerFillAt(layer, hLoad0.origin.col, hLoad0.origin.row,
-			hLoad0.length, hLoad0.code,
-			MakeAttr(BLACK, 0, BLACK, 1));
+	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
+			hLoad0.length, hLoad0.attr, hLoad0.code);
 
     for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
@@ -2715,27 +2817,27 @@ void Top(SHM_STRUCT *Shm)
 			.row=(row + Shm->Proc.CPU.Count + 1)},
 			.length=77,
 		.attr={	HYK,						\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,		\
+			HDK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HDK,		\
 			HBK,HBK,HBK,HDK,				\
 			LWK,LWK,LWK,HDK,				\
 			LYK,LYK,LYK					\
 		},
 		.code={	0x0,						\
-			' ',' ',' ',' ',' ',' ',' ',' ',		\
-			0x0,' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',		\
-			' ',' ',' ',' ',' ',' ',0x0,' ',' ',		\
+			' ',' ',' ',' ',0x0,' ',' ',' ',		\
+			0x0,' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',		\
+			' ',' ',' ',0x0,' ',' ',0x0,' ',' ',		\
 			' ',' ',' ',0x0,				\
 			' ',' ',' ',0x0,				\
 			' ',' ',' '					\
@@ -2753,18 +2855,20 @@ void Top(SHM_STRUCT *Shm)
 	  break;
 	  case 1:
 	  {
-	    LayerDeclare(58) hMon0=
+	    LayerDeclare(76) hMon0=
 	    {
 		.origin={.col=LOAD_LEAD - 1,
 			.row=(row + Shm->Proc.CPU.Count + 1)},
-			.length=58,
+			.length=76,
 		.attr={	HYK,						\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
 		},
 		.code={	0x0,						\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,	\
@@ -2772,7 +2876,48 @@ void Top(SHM_STRUCT *Shm)
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,	\
 			' ',' ',' ',' ',' ',' ',0x0,0x0,		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,	\
-			' ',' ',' ',' ',' ',' ',0x0,0x0,
+			' ',' ',' ',' ',' ',' ',0x0,0x0,		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' '
+		},
+	    };
+	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+			hMon0.length, hMon0.attr, hMon0.code);
+
+	    LayerFillAt(layer, (hMon0.origin.col + hMon0.length),
+				hMon0.origin.row,
+				(drawSize.width - hMon0.length),
+				hSpace,
+				MakeAttr(BLACK, 0, BLACK, 1));
+	  }
+	  break;
+	  case 2:
+	  case 3:
+	  {
+	    LayerDeclare(73) hMon0=
+	    {
+		.origin={.col=LOAD_LEAD - 1,
+			.row=(row + Shm->Proc.CPU.Count + 1)},
+			.length=73,
+		.attr={	HYK,						\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
+		},
+		.code={	0x0,						\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' '
 		},
 	    };
 	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
@@ -2803,9 +2948,9 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"--- Freq(MHz) Ratio - Turbo --- "			\
-		"C0 ---- C1 ---- C3 ---- C6 ---- C7 -- "		\
-		"Temps(°C)"						\
-		"----------------------------------------------------",
+		"C0 ---- C1 ---- C3 ---- C6 ---- C7 --"			\
+		"Min TMP Max "						\
+		"---------------------------------------------------",
 		MakeAttr(BLACK, 0, BLACK, 1));
 
 	    LayerDeclare(70) hAvg0=
@@ -2842,15 +2987,41 @@ void Top(SHM_STRUCT *Shm)
 	  case 1:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
-		"--------""---- IPS"" -------""------- ""IPC ----"	\
-		"--------""-- CPI -""--------""--------""--------"	\
-		"--------""--------""--------""--------""--------"	\
-		"--------""----",
-		MakeAttr(BLACK, 0, BLACK, 1));
+		"------------ IPS -------------- IPC ----"		\
+		"---------- CPI ------------------ INST -"		\
+		"----------------------------------------"		\
+		"------------",
+			MakeAttr(BLACK, 0, BLACK, 1));
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine,
 			MakeAttr(BLACK, 0, BLACK, 1));
+	  }
+	  break;
+	  case 2:
+	  {
+	    LayerFillAt(layer, 0, row, drawSize.width,
+		"-------------- C0:UCC ---------- C0:URC "		\
+		"------------ C1 ------------- TSC ------"		\
+		"----------------------------------------"		\
+		"------------",
+			MakeAttr(BLACK, 0, BLACK, 1));
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine, MakeAttr(BLACK, 0, BLACK, 1));
+	  }
+	  break;
+	  case 3:
+	  {
+	    LayerFillAt(layer, 0, row, drawSize.width,
+		"---------------- C1 -------------- C3 --"		\
+		"------------ C6 -------------- C7 ------"		\
+		"----------------------------------------"		\
+		"------------",
+			MakeAttr(BLACK, 0, BLACK, 1));
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine, MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
 	}
@@ -2860,7 +3031,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(61) hTech0=
 	{
 		.origin={.col=0, .row=row}, .length=14,
-		.attr={HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+		.attr={LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
 	};
 
@@ -3077,9 +3248,9 @@ void Top(SHM_STRUCT *Shm)
 	{
 	    .origin={.col=(drawSize.width - 41), .row=row}, .length=41,
 	    .attr={
-		HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK, \
-		HDK,HDK,HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
-		HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK
+		LWK,LWK,LWK,LWK,LWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK, \
+		HDK,LWK,LWK,LWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
+		HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HDK
 		},
 	    .code={
 		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',0x0, \
@@ -3182,7 +3353,8 @@ void Top(SHM_STRUCT *Shm)
 		if(!Shm->Cpu[cpu].OffLine.OS)
 		{
 		unsigned short bar0=(Flop->Relative.Ratio * loadWidth)/maxRatio,
-				bar1=loadWidth - bar0, row=cpu + 4;
+				bar1=loadWidth - bar0,
+				row=1 + TOP_HEADER_ROW + cpu;
 
 		    LayerFillAt(dLayer, LOAD_LEAD, row,
 				bar0, hBar,
@@ -3198,34 +3370,34 @@ void Top(SHM_STRUCT *Shm)
 		    row=2 + TOP_HEADER_ROW + cpu + Shm->Proc.CPU.Count;
 		    switch(drawFlag.view)
 		    {
-		    case 0:
-		    {
+		      case 0:
+		      {
 			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
-			"%c"						\
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%-3llu" "/" "%3llu" "/" "%3llu",
-			(cpu == iClock) ? '~' : 0x20,
-			Flop->Relative.Freq,
-			Flop->Relative.Ratio,
-			100.f * Flop->State.Turbo,
-			100.f * Flop->State.C0,
-			100.f * Flop->State.C1,
-			100.f * Flop->State.C3,
-			100.f * Flop->State.C6,
-			100.f * Flop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			Flop->Thermal.Temp,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
+				"%c"					\
+				"%7.2f" " (" "%5.2f" ") "		\
+				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
+				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  " \
+				"%-3llu" "/" "%3llu" "/" "%3llu",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Relative.Freq,
+				Flop->Relative.Ratio,
+				100.f * Flop->State.Turbo,
+				100.f * Flop->State.C0,
+				100.f * Flop->State.C1,
+				100.f * Flop->State.C3,
+				100.f * Flop->State.C6,
+				100.f * Flop->State.C7,
+				Shm->Cpu[cpu].PowerThermal.Limit[0],
+				Flop->Thermal.Temp,
+				Shm->Cpu[cpu].PowerThermal.Limit[1]);
 
 			Attribute warning={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
 
 		  if(Flop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
 			warning=MakeAttr(BLUE, 0, BLACK, 1);
-
+		else
 		  if(Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
-			warning=MakeAttr(YELLOW, 0, BLACK, 1);
+			warning=MakeAttr(YELLOW, 0, BLACK, 0);
 
 		  if(Flop->Thermal.Trip)
 			warning=MakeAttr(RED, 0, BLACK, 1);
@@ -3233,37 +3405,66 @@ void Top(SHM_STRUCT *Shm)
 			LayerAt(dLayer, attr, LOAD_LEAD + 69, row)=	\
 			LayerAt(dLayer, attr, LOAD_LEAD + 70, row)=	\
 			LayerAt(dLayer, attr, LOAD_LEAD + 71, row)=warning;
-		    }
-		    break;
-		    case 1:
+		      }
+		      break;
+		      case 1:
+		      {
 			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
-			"%c "						\
-			"    ""%12.6f""/s "				\
-			"    ""%12.6f""/c "				\
-			"    ""%12.6f""/i",
-			(cpu == iClock) ? '~' : 0x20,
-			Flop->State.IPS,
-			Flop->State.IPC,
-			Flop->State.CPI);
-		    break;
+				"%c"					\
+				"%17.6f" "/s"				\
+				"%17.6f" "/c"				\
+				"%17.6f" "/i"				\
+				"%18llu",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->State.IPS,
+				Flop->State.IPC,
+				Flop->State.CPI,
+				Flop->Delta.INST);
+		      }
+		      break;
+		      case 2:
+		      {
+			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+				"%c"					\
+				"%18llu%18llu%18llu%18llu",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Delta.C0.UCC,
+				Flop->Delta.C0.URC,
+				Flop->Delta.C1,
+				Flop->Delta.TSC);
+		      }
+		      break;
+		      case 3:
+		      {
+			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+				"%c"					\
+				"%18llu%18llu%18llu%18llu",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Delta.C1,
+				Flop->Delta.C3,
+				Flop->Delta.C6,
+				Flop->Delta.C7);
+		      }
+		      break;
 		    }
 		}
 		else
-			sprintf(&LayerAt(dLayer, code,
-					LOAD_LEAD - 1,
-					(2 + TOP_HEADER_ROW
-					+ cpu + Shm->Proc.CPU.Count)),
-			"%c",
-			(cpu == iClock) ? '~' : 0x20);
+		{
+			unsigned short row=2 + TOP_HEADER_ROW
+					 + cpu + Shm->Proc.CPU.Count;
+
+			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+				"%c", (cpu == iClock) ? '~' : 0x20);
+		}
 	    }
 
 	    switch(drawFlag.view)
 	    {
 	    case 0:
-		sprintf(&LayerAt(dLayer, code,
-					20,
-					(2 + TOP_HEADER_ROW
-					+ 2 * Shm->Proc.CPU.Count)),
+		{
+		unsigned short row=2 + TOP_HEADER_ROW + 2 * Shm->Proc.CPU.Count;
+
+		sprintf(&LayerAt(dLayer, code, 20, row),
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 			100.f * Shm->Proc.Avg.Turbo,
@@ -3272,6 +3473,7 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C3,
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7);
+		}
 	    break;
 	    }
 
@@ -3285,10 +3487,10 @@ void Top(SHM_STRUCT *Shm)
 		};
 		sysinfo(&sysLinux);
 
-		sprintf(&LayerAt(dLayer, code,
-				(drawSize.width - 34),
-				(2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
-				+ 2 * Shm->Proc.CPU.Count)),
+		unsigned short row=2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
+					+ 2 * Shm->Proc.CPU.Count;
+
+		sprintf(&LayerAt(dLayer, code, (drawSize.width - 34), row),
 			"%6u""]"					\
 			" Mem [""%8lu""/""%8lu",
 			sysLinux.procs,
