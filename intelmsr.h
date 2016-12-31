@@ -194,7 +194,7 @@ typedef union
 	Shared/Unique:	Core Solo, Core Duo, Dual-Core-Xeon-LV
 */
 
-/*
+/* ToDo
 typedef struct
 {
 	unsigned long long
