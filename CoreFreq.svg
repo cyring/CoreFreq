@@ -113,12 +113,12 @@
        x="20.066612"
        y="505.42883" />
     <rect
-       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#410040;stroke-width:1.47130108;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#410040;stroke-width:1.31833887;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
        id="rect5111-12-6-3-6-2"
-       width="134.91556"
-       height="251.71645"
-       x="631.54224"
-       y="566.10333" />
+       width="135.06853"
+       height="201.86942"
+       x="631.46576"
+       y="566.02686" />
     <circle
        style="opacity:0.33000004;fill:none;fill-opacity:1;stroke:#ff0000;stroke-width:3.5;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-opacity:1"
        id="path3336"
@@ -150,11 +150,11 @@
          sodipodi:role="line"
          id="tspan5250"
          x="472.69946"
-         y="776.19019">&quot; In user-space</tspan><tspan
+         y="776.19019">&quot; In user-space,</tspan><tspan
          sodipodi:role="line"
          id="tspan5252"
          x="472.69946"
-         y="788.56519">thread loop pinned</tspan><tspan
+         y="788.56519">a thread loop pinned</tspan><tspan
          sodipodi:role="line"
          id="tspan5254"
          x="472.69946"
@@ -272,7 +272,7 @@
          id="tspan3603"
          x="118.95782"
          y="1111.7253"
-         style="font-size:12.5px">CoreFreq 2015-2016</tspan><tspan
+         style="font-size:12.5px">CoreFreq 2015-2017</tspan><tspan
          sodipodi:role="line"
          id="tspan3605"
          x="118.95782"
@@ -370,75 +370,6 @@
            x="619.97601"
            y="675.36194">TSC counter [int]</tspan></text>
     </g>
-    <g
-       id="g5482"
-       transform="translate(0,-18.363802)"
-       style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
-      <rect
-         y="689.19067"
-         x="609.75604"
-         height="22.28878"
-         width="138.4879"
-         id="rect5111-1-8"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:1.51210582;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text5113-5-0"
-         y="705.36194"
-         x="619.97601"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           sodipodi:role="line"
-           id="tspan5932"
-           x="619.97601"
-           y="705.36194">UCC delta [int]</tspan></text>
-    </g>
-    <g
-       id="g5477"
-       transform="translate(0,-26.454806)"
-       style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
-      <rect
-         y="719.20886"
-         x="609.75604"
-         height="22.28878"
-         width="138.4879"
-         id="rect5111-9-8"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:1.51210582;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text5113-6-0"
-         y="735.36194"
-         x="619.97601"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           sodipodi:role="line"
-           id="tspan5934"
-           x="619.97601"
-           y="735.36194">URC counter [int]</tspan></text>
-    </g>
-    <g
-       id="g5472"
-       transform="translate(0,-34.545748)"
-       style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
-      <rect
-         y="749.22699"
-         x="609.75604"
-         height="22.28878"
-         width="138.4879"
-         id="rect5111-12-6"
-         style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:#400040;stroke-width:1.51210582;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text5113-52-6"
-         y="765.36194"
-         x="619.97601"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.5px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           sodipodi:role="line"
-           id="tspan5936"
-           x="619.97601"
-           y="765.36194">TSC counter [int]</tspan></text>
-    </g>
     <text
        sodipodi:linespacing="125%"
        id="text5113-7"
@@ -456,7 +387,7 @@
          y="545.11688">(Public kernel space)</tspan></text>
     <g
        id="g5467"
-       transform="translate(0,-41.63608)"
+       transform="translate(0,-107.63608)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="778.24451"
@@ -479,7 +410,7 @@
     </g>
     <g
        id="g5462"
-       transform="translate(0,-49.727023)"
+       transform="translate(0,-115.72702)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="808.26263"
@@ -502,7 +433,7 @@
     </g>
     <g
        id="g5457"
-       transform="translate(0,-57.818026)"
+       transform="translate(0,-123.81803)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="838.28082"
@@ -525,7 +456,7 @@
     </g>
     <g
        id="g5452"
-       transform="translate(0,-65.908968)"
+       transform="translate(0,-131.90897)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="868.29895"
@@ -548,7 +479,7 @@
     </g>
     <g
        id="g5447"
-       transform="translate(0,-73.999972)"
+       transform="translate(0,-139.99997)"
        style="fill:#ffffff;fill-opacity:1;stroke:#400040;stroke-opacity:1">
       <rect
          y="898.31714"
@@ -572,25 +503,25 @@
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9"
-       y="861.49188"
+       y="803.49188"
        x="689"
        style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.25px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Italic';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          sodipodi:role="line"
          id="tspan5678"
          x="689"
-         y="861.49188">(cache aligned per cpu)</tspan></text>
+         y="803.49188">(cache aligned per cpu)</tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text5113-7-9-6"
        y="604.87817"
-       x="-756.63019"
+       x="-702.63019"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:13.75px;line-height:125%;font-family:Sans;-inkscape-font-specification:'Sans, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"
        transform="matrix(0,-1,1,0,0,0)"><tspan
          sodipodi:role="line"
          id="tspan5590"
-         x="-756.63019"
+         x="-702.63019"
          y="604.87817">counters structure</tspan></text>
     <text
        sodipodi:linespacing="125%"
@@ -1388,11 +1319,15 @@
          sodipodi:role="line"
          id="tspan4682"
          x="543.44177"
-         y="1138.6278">&quot; In user-space</tspan><tspan
+         y="1138.6278">&quot; In user-space,</tspan><tspan
          sodipodi:role="line"
-         id="tspan4684"
          x="543.44177"
-         y="1151.0028">one thread &quot;</tspan></text>
+         y="1151.0028"
+         id="tspan3611"> an aggregating</tspan><tspan
+         sodipodi:role="line"
+         x="543.44177"
+         y="1163.3778"
+         id="tspan3615"> thread&quot;</tspan></text>
     <g
        id="g5502-8"
        transform="translate(-164.88317,12.80951)"
