@@ -1349,6 +1349,7 @@ typedef union
 #define LYK	{.fg=YELLOW,	.bg=BLACK}
 #define LBK	{.fg=BLUE,	.bg=BLACK}
 #define LBW	{.fg=BLUE,	.bg=WHITE}
+#define LCK	{.fg=CYAN,	.bg=BLACK}
 #define LWK	{.fg=WHITE,	.bg=BLACK}
 #define LWB	{.fg=WHITE,	.bg=BLUE}
 #define _LKW	{.fg=BLACK,	.bg=WHITE,	.un=1}
@@ -1982,9 +1983,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
-enum {L_STATIC, L_DYNAMIC, L_WINDOW, LAYERS};
-
-enum {V_FREQ, V_INST, V_CYCLES, V_CSTATES};
+enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES};
 
 #define LOAD_LEAD	4
 
@@ -2020,16 +2019,17 @@ void Top(SHM_STRUCT *Shm)
 
     struct
     {
-	unsigned long long
+	struct {
+	unsigned int
 		layout	:  1-0,	 // Draw layout
 		clear	:  2-1,	 // Clear screen
 		height	:  3-2,	 // Valid height
 		width	:  4-3,	 // Valid width
-		view	:  6-4,  // V_FREQ, V_INST, V_CYCLES, V_CSTATES
-		_pad1	: 32-6,
-		daemon	: 33-32, // Draw dynamic
-		_pad2	: 64-33;
-    } drawFlag={.layout=0,.clear=0,.height=0,.width=0,.view=V_FREQ,.daemon=0};
+		daemon	:  5-4, // Draw dynamic
+		_pad	: 32-5;
+	};
+	enum VIEW view;
+    } drawFlag={.layout=0,.clear=0,.height=0,.width=0,.daemon=0,.view=V_FREQ};
 
     SCREEN_SIZE drawSize={.width=0, .height=0};
 
@@ -2579,14 +2579,14 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(12) hProc0=
 	{
 		.origin={.col=12, .row=row}, .length=12,
-		.attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
+		.attr={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
 		.code={' ','P','r','o','c','e','s','s','o','r',' ','['},
 	};
 
 	LayerDeclare(9) hProc1=
 	{
 		.origin={.col=drawSize.width - 9, .row=row}, .length=9,
-		.attr={HDK,HWK,HWK,HDK,HWK,HWK,LWK,LWK,LWK},
+		.attr={LWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK},
 		.code={']',' ',' ','/',' ',' ','C','P','U'},
 	};
 
@@ -2595,16 +2595,16 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(15) hArch0=
 	{
 	    .origin={.col=12, .row=row}, .length=15,
-	    .attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
+	    .attr={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
 	    .code={' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['},
 	};
 
 	LayerDeclare(30) hArch1=
 	{
 		.origin={.col=drawSize.width - 30, .row=row}, .length=30,
-		.attr={	HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			LWK,LWK,HDK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,	\
-			LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HDK,HDK
+		.attr={	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,	\
+			LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,LWK,LWK
 		},
 		.code={	']',' ','C','a','c','h','e','s',' ',		\
 			'L','1',' ','I','n','s','t','=',' ',' ',' ',	\
@@ -2617,9 +2617,9 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(28) hBClk0=
 	{
 		.origin={.col=12, .row=row}, .length=28,
-		.attr={	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
-			HDK,HDK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,\
-			HDK,HDK,HDK
+		.attr={	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,\
+			LWK,LWK,LWK
 			},
 		.code={	' ','B','a','s','e',' ','C','l','o','c','k',' ',\
 			'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',\
@@ -2630,8 +2630,8 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(18) hBClk1=
 	{
 		.origin={.col=drawSize.width - 18, .row=row}, .length=18,
-		.attr={	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,		\
-			LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HDK,HDK
+		.attr={	LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,		\
+			LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK
 		},
 		.code={	'L','2','=',' ',' ',' ',' ',' ',		\
 			'L','3','=',' ',' ',' ',' ',' ','K','B'
@@ -2690,23 +2690,23 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(MAX_WIDTH) hLoad0=
 	{
 		.origin={.col=0, .row=row}, .length=drawSize.width,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK
+		.attr={	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LCK,LCK,		\
+			LCK,LCK,LCK,LCK,LCK,LCK,LCK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK
 		},
 		.code={	"------------- CPU Ratio ----------------"	\
 			"----------------------------------------"	\
@@ -2783,7 +2783,7 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerAt(layer, attr, 0, row)=					\
 		LayerAt(layer, attr, 0, (1 + row + Shm->Proc.CPU.Count))= \
-			MakeAttr(BLACK, 0, BLACK, 1);
+			MakeAttr(WHITE, 0, BLACK, 0);
 	LayerAt(layer, code, 0, row)=					\
 		LayerAt(layer, code, 0, (1 + row + Shm->Proc.CPU.Count))='#';
 	LayerAt(layer, code, 1, row)=					\
@@ -2799,23 +2799,24 @@ void Top(SHM_STRUCT *Shm)
       {
 	LayerAt(layer, attr, 1, row)=					\
 		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count))= \
-			MakeAttr(WHITE, 0, BLACK, 0);
+			MakeAttr(CYAN, 0, BLACK, 0);
 	LayerAt(layer, attr, 2, row)=					\
 		LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count))= \
-			MakeAttr(WHITE, 0, BLACK, 0);
+			MakeAttr(CYAN, 0, BLACK, 0);
       }
       else
       {
 	LayerAt(layer, attr, 1, row)=					\
 		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count))= \
-			MakeAttr(BLACK, 0, BLACK, 1);
+			MakeAttr(BLUE, 0, BLACK, 0);
 	LayerAt(layer, attr, 2, row)=					\
 		LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count))= \
-			MakeAttr(BLACK, 0, BLACK, 1);
+			MakeAttr(BLUE, 0, BLACK, 0);
       }
 
 	switch(drawFlag.view)
 	{
+	  default:
 	  case V_FREQ:
 	  {
 	    LayerDeclare(77) hMon0=
@@ -2824,16 +2825,16 @@ void Top(SHM_STRUCT *Shm)
 			.row=(row + Shm->Proc.CPU.Count + 1)},
 			.length=77,
 		.attr={	HYK,						\
-			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,		\
-			HDK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HDK,		\
-			HBK,HBK,HBK,HDK,				\
-			LWK,LWK,LWK,HDK,				\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,		\
+			LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,		\
+			HBK,HBK,HBK,LWK,				\
+			LWK,LWK,LWK,LWK,				\
 			LYK,LYK,LYK					\
 		},
 		.code={	0x0,						\
@@ -2869,11 +2870,11 @@ void Top(SHM_STRUCT *Shm)
 			.length=76,
 		.attr={	HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
 		},
@@ -2951,6 +2952,7 @@ void Top(SHM_STRUCT *Shm)
 
 	switch(drawFlag.view)
 	{
+	  default:
 	  case V_FREQ:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
@@ -2958,19 +2960,19 @@ void Top(SHM_STRUCT *Shm)
 		"C0 ---- C1 ---- C3 ---- C6 ---- C7 --"			\
 		"Min TMP Max "						\
 		"---------------------------------------------------",
-		MakeAttr(BLACK, 0, BLACK, 1));
+		MakeAttr(WHITE, 0, BLACK, 0));
 
 	    LayerDeclare(70) hAvg0=
 	    {
 		.origin={.col=0,.row=(row + Shm->Proc.CPU.Count +1)},.length=70,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,		\
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK
+		.attr={	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
 		},
 		.code={	'-','-','-','-','-','-','-','-',		\
 			' ','A','v','e','r','a','g','e','s',' ','[',	\
@@ -2988,7 +2990,7 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, hAvg0.length, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width - hAvg0.length, hLine,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
 	  case V_INST:
@@ -2998,11 +3000,11 @@ void Top(SHM_STRUCT *Shm)
 		"---------- CPI ------------------ INST -"		\
 		"----------------------------------------"		\
 		"------------",
-			MakeAttr(BLACK, 0, BLACK, 1));
+			MakeAttr(WHITE, 0, BLACK, 0));
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
 	  case V_CYCLES:
@@ -3012,10 +3014,10 @@ void Top(SHM_STRUCT *Shm)
 		"------------ C1 ------------- TSC ------"		\
 		"----------------------------------------"		\
 		"------------",
-			MakeAttr(BLACK, 0, BLACK, 1));
+			MakeAttr(WHITE, 0, BLACK, 0));
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
-			drawSize.width, hLine, MakeAttr(BLACK, 0, BLACK, 1));
+			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
 	  case V_CSTATES:
@@ -3025,10 +3027,10 @@ void Top(SHM_STRUCT *Shm)
 		"------------ C6 -------------- C7 ------"		\
 		"----------------------------------------"		\
 		"------------",
-			MakeAttr(BLACK, 0, BLACK, 1));
+			MakeAttr(WHITE, 0, BLACK, 0));
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
-			drawSize.width, hLine, MakeAttr(BLACK, 0, BLACK, 1));
+			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
 	}
@@ -3038,7 +3040,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(61) hTech0=
 	{
 		.origin={.col=0, .row=row}, .length=14,
-		.attr={LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+		.attr={LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
 	};
 
@@ -3050,7 +3052,7 @@ void Top(SHM_STRUCT *Shm)
 	const struct { ASCII *code; Attribute attr; } TSC[]=
 	{
 		(ASCII *)"  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1),
-		(ASCII *)"TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 0),
+		(ASCII *)"TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1),
 		(ASCII *)"TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)
 	};
 
@@ -3074,11 +3076,11 @@ void Top(SHM_STRUCT *Shm)
 	    LayerDeclare(61) hTech1=
 	    {
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=47,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+		.attr={	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,		\
+			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK
 		},
 		.code={	'H','T','T',',','E','I','S','T',',',		\
 			'T','U','R','B','O',',','C','1','E',',',	\
@@ -3103,15 +3105,15 @@ void Top(SHM_STRUCT *Shm)
 		const Attribute TM1[]=
 		{
 			MakeAttr(BLACK, 0, BLACK, 1),
-			MakeAttr(BLUE,  0, BLACK, 0),
-			MakeAttr(WHITE, 0, BLACK, 0),
+			MakeAttr(BLUE,  0, BLACK, 1),
+			MakeAttr(WHITE, 0, BLACK, 1),
 			MakeAttr(GREEN, 0, BLACK, 1)
 		};
 		const Attribute TM2[]=
 		{
 			MakeAttr(BLACK, 0, BLACK, 1),
-			MakeAttr(BLUE,  0, BLACK, 0),
-			MakeAttr(WHITE, 0, BLACK, 0),
+			MakeAttr(BLUE,  0, BLACK, 1),
+			MakeAttr(WHITE, 0, BLACK, 1),
 			MakeAttr(GREEN, 0, BLACK, 1)
 		};
 
@@ -3158,9 +3160,9 @@ void Top(SHM_STRUCT *Shm)
 	    LayerDeclare(61) hTech1=
 	    {
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=35,
-		.attr={	HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+		.attr={	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
+			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK
 		},
 		.code={	'H','T','T',',','P','o','w','e','r','N','o','w',',',\
 			'T','U','R','B','O',',','C','1','E',',',	\
@@ -3214,16 +3216,16 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerFillAt(	layer, col, row,
 			len, OSinfo.sysname,
-			MakeAttr(CYAN, 0, BLACK, 1));
+			MakeAttr(CYAN, 0, BLACK, 0));
 
 	col += len;
 
-	LayerAt(layer, attr, col, row)=MakeAttr(BLACK, 0, BLACK, 1);
+	LayerAt(layer, attr, col, row)=MakeAttr(WHITE, 0, BLACK, 0);
 	LayerAt(layer, code, col, row)=0x20;
 
 	col++ ;
 
-	LayerAt(layer, attr, col, row)=MakeAttr(BLACK, 0, BLACK, 1);
+	LayerAt(layer, attr, col, row)=MakeAttr(WHITE, 0, BLACK, 0);
 	LayerAt(layer, code, col, row)='[';
 
 	col++ ;
@@ -3231,24 +3233,24 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerFillAt(	layer, col, row,
 			len, OSinfo.release,
-			MakeAttr(WHITE, 0, BLACK, 0));
+			MakeAttr(WHITE, 0, BLACK, 1));
 
 	col += len;
 	len=strlen(Shm->IdleDriver.Name);
 	if(len > 0)
 	{
-		LayerAt(layer, attr, col, row)=MakeAttr(BLACK, 0, BLACK, 1);
+		LayerAt(layer, attr, col, row)=MakeAttr(WHITE, 0, BLACK, 0);
 		LayerAt(layer, code, col, row)='/';
 
 		col++ ;
 
 		LayerFillAt(	layer, col, row,
 				len, Shm->IdleDriver.Name,
-				MakeAttr(WHITE, 0, BLACK, 0));
+				MakeAttr(WHITE, 0, BLACK, 1));
 
 		col += len;
 	}
-	LayerAt(layer, attr, col, row)=MakeAttr(BLACK, 0, BLACK, 1);
+	LayerAt(layer, attr, col, row)=MakeAttr(WHITE, 0, BLACK, 0);
 	LayerAt(layer, code, col, row)=']';
 
 	col++ ;
@@ -3257,9 +3259,9 @@ void Top(SHM_STRUCT *Shm)
 	{
 	    .origin={.col=(drawSize.width - 41), .row=row}, .length=41,
 	    .attr={
-		LWK,LWK,LWK,LWK,LWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK, \
-		HDK,LWK,LWK,LWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
-		HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HDK
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK, \
+		LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
+		LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK
 		},
 	    .code={
 		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',0x0, \
@@ -3380,6 +3382,7 @@ void Top(SHM_STRUCT *Shm)
 		    row=2 + TOP_HEADER_ROW + cpu + Shm->Proc.CPU.Count;
 		    switch(drawFlag.view)
 		    {
+		      default:
 		      case V_FREQ:
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
@@ -3485,6 +3488,8 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7);
 		}
+	    break;
+	    default:
 	    break;
 	  }
 
