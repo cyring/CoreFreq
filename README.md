@@ -128,6 +128,13 @@ CPU     IPS            IPC            CPI
 ```
 apt-get install dkms git libpthread-stubs0-dev
 ```
+
+## Red Hat, CentOS
+ * Install the prerequisite packages.
+```
+yum group install "Development Tools"
+```
+
  * As a user, clone and build CoreFreq.
 ```
 git clone https://github.com/cyring/CoreFreq.git
