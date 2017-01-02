@@ -123,10 +123,10 @@ CPU     IPS            IPC            CPI
 ## ArchLinux
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
-## Debian
+## Debian, Ubuntu
  * Install the prerequisite packages.
 ```
-apt-get install dkms git
+apt-get install dkms git libpthread-stubs0-dev
 ```
  * As a user, clone and build CoreFreq.
 ```
