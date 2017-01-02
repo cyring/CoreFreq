@@ -266,7 +266,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		22, hSpace);
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 
@@ -280,7 +280,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		strcat(row, str);
 	}
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 /* Section Mark */
@@ -337,7 +337,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 			Shm->Proc.Features.ExtFeature.BX.BMI2 ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -372,7 +372,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -407,7 +407,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -443,7 +443,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -478,7 +478,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -513,7 +513,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -544,7 +544,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N');
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 
 	strcat(row, str);
 	strcat(row, pad);
@@ -757,7 +757,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 	10, hSpace, width-61, hSpace);
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 
@@ -769,7 +769,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 			Shm->Proc.Features.PerfMon.DX.FixWidth);
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 
@@ -820,7 +820,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 	06, hSpace);
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 
@@ -834,7 +834,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		Shm->Proc.Features.MWait.DX.Num_C4_MWAIT);
 
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 
@@ -929,7 +929,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		strcat(row, str);
 	}
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 /* Row Mark */
@@ -940,7 +940,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		strcat(row, str);
 	}
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 /* Row Mark */
@@ -951,7 +951,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 		strcat(row, str);
 	}
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
 /* Row Mark */
@@ -962,7 +962,7 @@ void SysInfo(SHM_STRUCT *Shm,unsigned short width,void(*OutFunc)(char *output))
 	    strcat(row, str);
 	}
 	pad=realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", width-len, hSpace);
+	sprintf(pad, "%.*s", (int)(width-len), hSpace);
 	strcat(row, pad);
 	printv(row);
     }
@@ -1071,7 +1071,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 			LCD_Draw(X, Y, lcdView,
 				(unsigned int) Flop->Relative.Freq, digit);
 			sprintf(cpuView,
-				"\033[%hu;%huH"DoK"[ µ%-2u"WoK"%4llu"DoK"C ]",
+				"\033[%hu;%huH"DoK"[ µ%-2u"WoK"%4u"DoK"C ]",
 					Y + 3, X, cpu, Flop->Thermal.Temp);
 
 			if(Flop->Relative.Ratio > medianRatio)
@@ -1084,7 +1084,7 @@ void Dashboard(	SHM_STRUCT *Shm,
 		else
 		{
 			sprintf(lcdView, "\033[%hu;%huH" "_  _  _  _",
-				Y + 1, X + 1, 3);
+				Y + 1, X + 1);
 			sprintf(cpuView, "\033[%hu;%huH" "[ µ%-2u""  OFF ]",
 				Y + 3, X, cpu);
 		}
@@ -1131,7 +1131,7 @@ void Counters(SHM_STRUCT *Shm)
 	    if(!Shm->Cpu[cpu].OffLine.OS)
 		printf("#%02u %7.2f (%5.2f)"				\
 			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-			"  %-3llu/%3llu:%-3llu/%3llu\n",
+			"  %-3u/%3u:%-3u/%3u\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Relative.Ratio,
@@ -1154,7 +1154,7 @@ void Counters(SHM_STRUCT *Shm)
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:\n"					\
 		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-		"%.*s" "%3llu C\n\n",
+		"%.*s" "%3u C\n\n",
 			4, hSpace,
 			8, hSpace,
 			7, hSpace,
@@ -1579,7 +1579,7 @@ void AllocFillAttr(TCell *cell, Attribute attrib)
 void AllocCopyItem(TCell *cell, ASCII *item)
 {
 	if((cell->item=malloc(cell->length)) != NULL)
-		strncpy(cell->item, item, cell->length);
+		strncpy((char *)cell->item, (char *)item, cell->length);
 }
 
 #define StoreTCell(win, shortkey, item, attrib)				\
@@ -1593,7 +1593,7 @@ void AllocCopyItem(TCell *cell, ASCII *item)
       if((win->cell=realloc(win->cell,sizeof(TCell) * win->dim)) != NULL) \
       {									\
 	win->cell[win->dim - 1].quick.key=shortkey;			\
-	win->cell[win->dim - 1].length=strlen(item);			\
+	win->cell[win->dim - 1].length=strlen((char *)item);		\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		typeof(attrib), typeof(Attribute[])), AllocCopyAttr,	\
@@ -1602,7 +1602,7 @@ void AllocCopyItem(TCell *cell, ASCII *item)
 	(void)0))							\
 		(&(win->cell[win->dim - 1]), attrib);			\
 									\
-	AllocCopyItem(&win->cell[win->dim - 1], item);			\
+	AllocCopyItem(&win->cell[win->dim - 1], (ASCII *)item);		\
       }									\
     }									\
 })
@@ -1655,7 +1655,8 @@ Window *CreateWindow(	Layer *layer,
 				MAKE_TITLE_UNFOCUS,
 				MAKE_TITLE_FOCUS
 			};
-	    for(int i=0; i < 2; i++)
+	    int i;
+	    for(i=0; i < 2; i++)
 	    {
 		win->hook.color[i].select=select[i];
 		win->hook.color[i].border=border[i];
@@ -1983,6 +1984,8 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 
 enum {L_STATIC, L_DYNAMIC, L_WINDOW, LAYERS};
 
+enum {V_FREQ, V_INST, V_CYCLES, V_CSTATES};
+
 #define LOAD_LEAD	4
 
 void Top(SHM_STRUCT *Shm)
@@ -2022,11 +2025,11 @@ void Top(SHM_STRUCT *Shm)
 		clear	:  2-1,	 // Clear screen
 		height	:  3-2,	 // Valid height
 		width	:  4-3,	 // Valid width
-		view	:  6-4,  // 0=Freq, 1=IPS, 2=COUNTERS
+		view	:  6-4,  // V_FREQ, V_INST, V_CYCLES, V_CSTATES
 		_pad1	: 32-6,
 		daemon	: 33-32, // Draw dynamic
 		_pad2	: 64-33;
-    } drawFlag={.layout=0,.clear=0,.height=0,.width=0,.view=0,.daemon=0};
+    } drawFlag={.layout=0,.clear=0,.height=0,.width=0,.view=V_FREQ,.daemon=0};
 
     SCREEN_SIZE drawSize={.width=0, .height=0};
 
@@ -2134,7 +2137,8 @@ void Top(SHM_STRUCT *Shm)
 
     void MotionLeft_Menu(Window *win)
     {
-	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+	unsigned short row;
+	for(row=1; row < win->matrix.size.hth; row++)
 		ResetTCell_Menu(win);
 
 	if(win->matrix.select.col > 0)
@@ -2147,7 +2151,8 @@ void Top(SHM_STRUCT *Shm)
 
     void MotionRight_Menu(Window *win)
     {
-	for(unsigned short row=1; row < win->matrix.size.hth; row++)
+	unsigned short row;
+	for(row=1; row < win->matrix.size.hth; row++)
 		ResetTCell_Menu(win);
 
 	if(win->matrix.select.col < win->matrix.size.wth - 1)
@@ -2197,7 +2202,6 @@ void Top(SHM_STRUCT *Shm)
     void MotionEnd_Menu(Window *win)
     {
 	unsigned short row=0;
-
 	for(row=win->matrix.size.hth - 1; row > 1; row--)
 	    if(TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
@@ -2508,13 +2512,13 @@ void Top(SHM_STRUCT *Shm)
 	break;
 	case SCANKEY_c:
 	{
-		drawFlag.view=2;
+		drawFlag.view=V_CYCLES;
 		drawFlag.clear=1;
 	}
 	break;
 	case SCANKEY_f:
 	{
-		drawFlag.view=0;
+		drawFlag.view=V_FREQ;
 		drawFlag.clear=1;
 	}
 	break;
@@ -2529,13 +2533,13 @@ void Top(SHM_STRUCT *Shm)
 	break;
 	case SCANKEY_i:
 	{
-		drawFlag.view=1;
+		drawFlag.view=V_INST;
 		drawFlag.clear=1;
 	}
 	break;
 	case SCANKEY_l:
 	{
-		drawFlag.view=3;
+		drawFlag.view=V_CSTATES;
 		drawFlag.clear=1;
 	}
 	break;
@@ -2652,12 +2656,15 @@ void Top(SHM_STRUCT *Shm)
 		L2U_Size=Shm->Cpu[0].Topology.Cache[2].Size / 1024;
 		L3U_Size=Shm->Cpu[0].Topology.Cache[3].Size / 1024;
 	}
-  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	else
 	{
+	    if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	    {
 		L1I_Size=Shm->Cpu[0].Topology.Cache[0].Size;
 		L1D_Size=Shm->Cpu[0].Topology.Cache[1].Size;
 		L2U_Size=Shm->Cpu[0].Topology.Cache[2].Size;
 		L3U_Size=Shm->Cpu[0].Topology.Cache[3].Size;
+	    }
 	}
 	sprintf(buffer, "%-3u" "%-3u", L1I_Size, L1D_Size);
 
@@ -2809,7 +2816,7 @@ void Top(SHM_STRUCT *Shm)
 
 	switch(drawFlag.view)
 	{
-	  case 0:
+	  case V_FREQ:
 	  {
 	    LayerDeclare(77) hMon0=
 	    {
@@ -2853,7 +2860,7 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	  case 1:
+	  case V_INST:
 	  {
 	    LayerDeclare(76) hMon0=
 	    {
@@ -2891,8 +2898,8 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	  case 2:
-	  case 3:
+	  case V_CYCLES:
+	  case V_CSTATES:
 	  {
 	    LayerDeclare(73) hMon0=
 	    {
@@ -2944,7 +2951,7 @@ void Top(SHM_STRUCT *Shm)
 
 	switch(drawFlag.view)
 	{
-	  case 0:
+	  case V_FREQ:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"--- Freq(MHz) Ratio - Turbo --- "			\
@@ -2984,7 +2991,7 @@ void Top(SHM_STRUCT *Shm)
 			MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	  case 1:
+	  case V_INST:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"------------ IPS -------------- IPC ----"		\
@@ -2998,7 +3005,7 @@ void Top(SHM_STRUCT *Shm)
 			MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	  case 2:
+	  case V_CYCLES:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"-------------- C0:UCC ---------- C0:URC "		\
@@ -3011,7 +3018,7 @@ void Top(SHM_STRUCT *Shm)
 			drawSize.width, hLine, MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	  case 3:
+	  case V_CSTATES:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"---------------- C1 -------------- C3 --"		\
@@ -3042,9 +3049,9 @@ void Top(SHM_STRUCT *Shm)
 	};
 	const struct { ASCII *code; Attribute attr; } TSC[]=
 	{
-		"  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1),
-	    	"TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 0),
-	    	"TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)
+		(ASCII *)"  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1),
+		(ASCII *)"TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 0),
+		(ASCII *)"TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)
 	};
 
 	hTech0.code[ 6]=TSC[Shm->Proc.InvariantTSC].code[0];
@@ -3144,8 +3151,10 @@ void Top(SHM_STRUCT *Shm)
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	}
-  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	else
 	{
+	  if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+	  {
 	    LayerDeclare(61) hTech1=
 	    {
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=35,
@@ -3195,8 +3204,8 @@ void Top(SHM_STRUCT *Shm)
 				(drawSize.width-hTech0.length-hTech1.length),
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
+	  }
 	}
-
 	struct utsname OSinfo={{0}};
 	uname(&OSinfo);
 
@@ -3333,6 +3342,7 @@ void Top(SHM_STRUCT *Shm)
 	  maxRelFreq=0.0;
 	  topRatio=0;
 	  for(cpu=0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	  {
 	    if(!Shm->Cpu[cpu].OffLine.HW)
 	    {
 		struct FLIP_FLOP *Flop=
@@ -3370,14 +3380,14 @@ void Top(SHM_STRUCT *Shm)
 		    row=2 + TOP_HEADER_ROW + cpu + Shm->Proc.CPU.Count;
 		    switch(drawFlag.view)
 		    {
-		      case 0:
+		      case V_FREQ:
 		      {
-			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
 				"%7.2f" " (" "%5.2f" ") "		\
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  " \
-				"%-3llu" "/" "%3llu" "/" "%3llu",
+				"%-3u" "/" "%3u" "/" "%3u",
 				(cpu == iClock) ? '~' : 0x20,
 				Flop->Relative.Freq,
 				Flop->Relative.Ratio,
@@ -3395,10 +3405,11 @@ void Top(SHM_STRUCT *Shm)
 
 		  if(Flop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
 			warning=MakeAttr(BLUE, 0, BLACK, 1);
-		else
-		  if(Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
+		  else
+		  {
+		   if(Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
 			warning=MakeAttr(YELLOW, 0, BLACK, 0);
-
+		  }
 		  if(Flop->Thermal.Trip)
 			warning=MakeAttr(RED, 0, BLACK, 1);
 
@@ -3407,9 +3418,9 @@ void Top(SHM_STRUCT *Shm)
 			LayerAt(dLayer, attr, LOAD_LEAD + 71, row)=warning;
 		      }
 		      break;
-		      case 1:
+		      case V_INST:
 		      {
-			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
 				"%17.6f" "/s"				\
 				"%17.6f" "/c"				\
@@ -3422,9 +3433,9 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Delta.INST);
 		      }
 		      break;
-		      case 2:
+		      case V_CYCLES:
 		      {
-			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
 				"%18llu%18llu%18llu%18llu",
 				(cpu == iClock) ? '~' : 0x20,
@@ -3434,9 +3445,9 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Delta.TSC);
 		      }
 		      break;
-		      case 3:
+		      case V_CSTATES:
 		      {
-			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
 				"%18llu%18llu%18llu%18llu",
 				(cpu == iClock) ? '~' : 0x20,
@@ -3453,18 +3464,18 @@ void Top(SHM_STRUCT *Shm)
 			unsigned short row=2 + TOP_HEADER_ROW
 					 + cpu + Shm->Proc.CPU.Count;
 
-			sprintf(&LayerAt(dLayer, code, LOAD_LEAD - 1, row),
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c", (cpu == iClock) ? '~' : 0x20);
 		}
 	    }
-
-	    switch(drawFlag.view)
-	    {
-	    case 0:
+	  }
+	  switch(drawFlag.view)
+	  {
+	    case V_FREQ:
 		{
 		unsigned short row=2 + TOP_HEADER_ROW + 2 * Shm->Proc.CPU.Count;
 
-		sprintf(&LayerAt(dLayer, code, 20, row),
+		sprintf((char *)&LayerAt(dLayer, code, 20, row),
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 			100.f * Shm->Proc.Avg.Turbo,
@@ -3475,7 +3486,7 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C7);
 		}
 	    break;
-	    }
+	  }
 
 	    if(tSteps == 0)
 	    {
@@ -3490,7 +3501,7 @@ void Top(SHM_STRUCT *Shm)
 		unsigned short row=2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
 					+ 2 * Shm->Proc.CPU.Count;
 
-		sprintf(&LayerAt(dLayer, code, (drawSize.width - 34), row),
+		sprintf((char *)&LayerAt(dLayer,code,(drawSize.width - 34),row),
 			"%6u""]"					\
 			" Mem [""%8lu""/""%8lu",
 			sysLinux.procs,
@@ -3545,14 +3556,15 @@ void Top(SHM_STRUCT *Shm)
 		} while(!IsHead(&winList, walker)) ;
 	}
 	Attribute attr={.value=0};
+	unsigned short col, row;
 	i=0;
-	for(unsigned short row=0; row < drawSize.height; row++)
+	for(row=0; row < drawSize.height; row++)
 	{
 	  struct {
 		int cursor;
 	  } flag={0};
 	  int j=0, k;
-	  for(unsigned short col=0; col < drawSize.width; col++)
+	  for(col=0; col < drawSize.width; col++)
 	  {
 	  Attribute	*fa=&fuze->attr[col + (row * fuze->size.wth)],
 			*sa=&sLayer->attr[col + (row * fuze->size.wth)],

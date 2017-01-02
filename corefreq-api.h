@@ -334,9 +334,10 @@ typedef struct
 				OnLine;
 	} CPU;
 
-	unsigned char		Architecture[32];
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
 	IDLEDRIVER		IdleDriver;
+
+	char			Architecture[32];
 } PROC;

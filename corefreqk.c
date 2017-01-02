@@ -24,7 +24,7 @@
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
-MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7");
+MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD Family 0Fh");
 MODULE_LICENSE ("GPL");
 
 typedef struct {
@@ -988,7 +988,7 @@ void DynamicAcceleration(void)
 {
 	if(Proc->Features.Info.LargestStdFunc >= 0x6)
 	{
-		struct THERMAL_POWER_LEAF Power={0};
+		struct THERMAL_POWER_LEAF Power={{0}};
 		asm volatile
 		(
 			"cpuid"
@@ -1170,7 +1170,7 @@ void PowerThermal(CORE *Core)
 {
     if(Proc->Features.Info.LargestStdFunc >= 0x6)
     {
-	struct THERMAL_POWER_LEAF Power={0};
+	struct THERMAL_POWER_LEAF Power={{0}};
 
 	asm volatile
 	(

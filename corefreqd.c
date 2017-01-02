@@ -64,7 +64,7 @@ static void *Core_Cycle(void *arg)
 	pthread_setname_np(tid, comm);
 
 	if(Quiet & 0x100){
-		printf("    Thread [%p] Init CPU %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CPU %03u\n", tid, cpu);
 		fflush(stdout);
 	}
 	BITSET(BUS_LOCK, roomSeed, cpu);
@@ -173,7 +173,7 @@ static void *Core_Cycle(void *arg)
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if(Quiet & 0x100) {
-		printf("    Thread [%p] %s CPU %03u\n", tid,
+		printf("    Thread [%lx] %s CPU %03u\n", tid,
 			CPU_EQUAL(&affinity, &cpuset) ? "Exit" : "Lost", cpu);
 		fflush(stdout);
 	}
@@ -271,8 +271,10 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Part
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
-	  else	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+		else
 		{
+		  if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
+		  {
 			unsigned int Compute_Way(unsigned int value)
 			{
 				switch(value)
@@ -302,6 +304,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 			Shm->Cpu[cpu].Topology.Cache[level].Size=
 				Core[cpu]->T.Cache[loop].Size;
+		  }
 		}
 		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack=
 			Core[cpu]->T.Cache[loop].WrBack;
@@ -472,50 +475,52 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
     while(!Shutdown)
     {
 	for(cpu=0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++)
-	  if(Core[cpu]->OffLine.OS == 1)
-	  {
-	    if(Arg[cpu].TID)
-	    {	// Remove this cpu.
-		pthread_join(Arg[cpu].TID, NULL);
-		Arg[cpu].TID=0;
-		// Raise this bit up to notify a platform change.
-		if(!BITVAL(Shm->Proc.Sync, 63))
-			BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+	{
+	    if(Core[cpu]->OffLine.OS == 1)
+	    {
+		if(Arg[cpu].TID)
+		{	// Remove this cpu.
+			pthread_join(Arg[cpu].TID, NULL);
+			Arg[cpu].TID=0;
+			// Raise this bit up to notify a platform change.
+			if(!BITVAL(Shm->Proc.Sync, 63))
+				BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+		}
+		Shm->Cpu[cpu].OffLine.OS=1;
 	    }
-	  Shm->Cpu[cpu].OffLine.OS=1;
-	  }
-	  else
-	  {
-	    if(!Arg[cpu].TID)
-	    {	// Add this cpu.
-		PerCore_Update(Shm, Proc, Core, cpu);
-		HyperThreading(Shm, Proc);
+	    else
+	    {
+		if(!Arg[cpu].TID)
+		{	// Add this cpu.
+			PerCore_Update(Shm, Proc, Core, cpu);
+			HyperThreading(Shm, Proc);
 
-		if(Quiet & 0x100)
-		    printf("    CPU #%03u @ %.2f MHz\n", cpu,
-			(double)( Core[cpu]->Clock.Hz
-				* Proc->Boost[1])
-				/ 1000000L );
+			if(Quiet & 0x100)
+			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
+				(double)( Core[cpu]->Clock.Hz
+					* Proc->Boost[1])
+					/ 1000000L );
 
-		Arg[cpu].Proc=&Shm->Proc;
-		Arg[cpu].Core=Core[cpu];
-		Arg[cpu].Cpu=&Shm->Cpu[cpu];
-		Arg[cpu].Bind=cpu;
-		pthread_create(	&Arg[cpu].TID,
-				NULL,
-				Core_Cycle,
-				&Arg[cpu]);
+			Arg[cpu].Proc=&Shm->Proc;
+			Arg[cpu].Core=Core[cpu];
+			Arg[cpu].Cpu=&Shm->Cpu[cpu];
+			Arg[cpu].Bind=cpu;
+			pthread_create(	&Arg[cpu].TID,
+					NULL,
+					Core_Cycle,
+					&Arg[cpu]);
 
-		if(!BITVAL(Shm->Proc.Sync, 63))
-			BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+			if(!BITVAL(Shm->Proc.Sync, 63))
+				BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+		}
+		Shm->Cpu[cpu].OffLine.OS=0;
 	    }
-	    Shm->Cpu[cpu].OffLine.OS=0;
-	  }
-	  // Average counters if all the room bits are cleared.
-	  if(!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
+	}
+	// Average counters if all the room bits are cleared.
+	if(!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
 		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
-	  else if(!Shutdown)
-	  {
+	else if(!Shutdown)
+	{
 		// Update the count of online CPU
 		Shm->Proc.CPU.OnLine=Proc->CPU.OnLine;
 
@@ -553,7 +558,7 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		Shm->Proc.Avg.C1/=Shm->Proc.CPU.OnLine;
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
-	  }
+	}
     }
     for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	if(Arg[cpu].TID)
@@ -751,6 +756,7 @@ int main(int argc, char *argv[])
 	    else rc=help(appName);
 	}
 	if(!rc)
+	{
 	  if(geteuid() == 0)
 	  {
 	    if((fd.Drv=open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
@@ -759,7 +765,7 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, 0)) != NULL)
 		{
-			SIG Sig={.Signal={0}, .TID=0, .Started=0};
+			SIG Sig={.Signal={{0}}, .TID=0, .Started=0};
 			sigemptyset(&Sig.Signal);
 			sigaddset(&Sig.Signal, SIGUSR1);
 			sigaddset(&Sig.Signal, SIGINT);	// [CTRL] + [C]
@@ -790,6 +796,7 @@ int main(int argc, char *argv[])
 	    printf("Insufficient permissions. Need root to start daemon.\n");
 	    rc=2;
 	  }
+	}
 	free(program);
 	return(rc);
 }
