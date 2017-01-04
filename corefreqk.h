@@ -604,7 +604,7 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Core2/Conroe"
+	"Core2/Conroe/Merom"
 	},
 /*  3*/	{
 	_Core_Kentsfield,
