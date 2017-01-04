@@ -2854,9 +2854,11 @@ void Top(SHM_STRUCT *Shm)
 		int hPos=availRatio[i] * loadWidth / maxRatio;
 		sprintf(tabStop, "%2.0f", availRatio[i]);
 
-		hLoad0.code[hPos + 2]=tabStop[0];
+		if(tabStop[0] != 0x20) {
+			hLoad0.code[hPos + 2]=tabStop[0];
+			hLoad0.attr[hPos + 2]=MakeAttr(CYAN, 0, BLACK, 0);
+		}
 		hLoad0.code[hPos + 3]=tabStop[1];
-		hLoad0.attr[hPos + 2]=					\
 		hLoad0.attr[hPos + 3]=MakeAttr(CYAN, 0, BLACK, 0);
 	}
 	len=strlen(Shm->Proc.Brand);
@@ -3173,7 +3175,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(61) hTech0=
 	{
 		.origin={.col=0, .row=row}, .length=14,
-		.attr={LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+		.attr={LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK},
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
 	};
 
@@ -3206,16 +3208,16 @@ void Top(SHM_STRUCT *Shm)
 
 	if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
 	{
-	    LayerDeclare(61) hTech1=
+	    LayerDeclare(65) hTech1=
 	    {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=47,
-		.attr={	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,		\
+		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=51,
+		.attr={	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK, \
 			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK
 		},
-		.code={	'H','T','T',',','E','I','S','T',',',		\
+		.code={	'H','T','T',',','E','I','S','T',',','I','D','A',',', \
 			'T','U','R','B','O',',','C','1','E',',',	\
 			' ','P','M',',','C','3','A',',','C','1','A',',',\
 			'C','3','U',',','C','1','U',',',		\
@@ -3225,15 +3227,6 @@ void Top(SHM_STRUCT *Shm)
 
 	    hTech1.attr[0]=hTech1.attr[1]=hTech1.attr[2]=		\
 		Pwr[Shm->Proc.HyperThreading];
-
-	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
-
-	    hTech1.code[19]=buffer[0];
-	    hTech1.code[20]=buffer[1];
-	    hTech1.code[21]=buffer[2];
-
-	    hTech1.attr[19]=hTech1.attr[20]=hTech1.attr[21]=		\
-		Pwr[(Shm->Proc.PM_version > 0)];
 
 		const Attribute TM1[]=
 		{
@@ -3253,28 +3246,40 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.attr[4]=hTech1.attr[5]=hTech1.attr[6]=hTech1.attr[7]=\
 		Pwr[isSpeedStep];
 
-	    hTech1.attr[ 9]=hTech1.attr[10]=hTech1.attr[11]=		\
-	    hTech1.attr[12]=hTech1.attr[13]=Pwr[isTurboBoost];
+	    hTech1.attr[9]=hTech1.attr[10]=hTech1.attr[11]=		\
+		Pwr[Shm->Proc.Features.Power.AX.TurboIDA];
 
-	    hTech1.attr[15]=hTech1.attr[16]=hTech1.attr[17]=		\
+	    hTech1.attr[13]=hTech1.attr[14]=hTech1.attr[15]=		\
+	    hTech1.attr[16]=hTech1.attr[17]=Pwr[isTurboBoost];
+
+	    hTech1.attr[19]=hTech1.attr[20]=hTech1.attr[21]=		\
 		Pwr[isEnhancedHaltState];
 
+	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
+
+	    hTech1.code[23]=buffer[0];
+	    hTech1.code[24]=buffer[1];
+	    hTech1.code[25]=buffer[2];
+
 	    hTech1.attr[23]=hTech1.attr[24]=hTech1.attr[25]=		\
-		Pwr[isC3autoDemotion];
+		Pwr[(Shm->Proc.PM_version > 0)];
 
 	    hTech1.attr[27]=hTech1.attr[28]=hTech1.attr[29]=		\
-		Pwr[isC1autoDemotion];
+		Pwr[isC3autoDemotion];
 
 	    hTech1.attr[31]=hTech1.attr[32]=hTech1.attr[33]=		\
-		Pwr[isC3undemotion];
+		Pwr[isC1autoDemotion];
 
 	    hTech1.attr[35]=hTech1.attr[36]=hTech1.attr[37]=		\
-		Pwr[isC1undemotion];
+		Pwr[isC3undemotion];
 
 	    hTech1.attr[39]=hTech1.attr[40]=hTech1.attr[41]=		\
-		TM1[Shm->Cpu[0].PowerThermal.TM1];
+		Pwr[isC1undemotion];
 
 	    hTech1.attr[43]=hTech1.attr[44]=hTech1.attr[45]=		\
+		TM1[Shm->Cpu[0].PowerThermal.TM1];
+
+	    hTech1.attr[47]=hTech1.attr[48]=hTech1.attr[49]=		\
 		TM2[Shm->Cpu[0].PowerThermal.TM2];
 
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
