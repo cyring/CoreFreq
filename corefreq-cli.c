@@ -236,6 +236,63 @@ void SysInfoCPUID(SHM_STRUCT *Shm,
 	printv(OutFunc, width, 2, "Vendor ID%.*s[%s]",
 		width-14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
 		Shm->Proc.Features.Info.VendorID);
+
+	printv(OutFunc, width, 2, "BSP");
+
+	printv(OutFunc, width, 3, "00000001:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.Std.AX,
+		Shm->Proc.Features.Std.BX,
+		Shm->Proc.Features.Std.CX,
+		Shm->Proc.Features.Std.DX);
+
+	printv(OutFunc, width, 3, "00000005:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.MWait.AX,
+		Shm->Proc.Features.MWait.BX,
+		Shm->Proc.Features.MWait.CX,
+		Shm->Proc.Features.MWait.DX);
+
+	printv(OutFunc, width, 3, "00000006:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.Power.AX,
+		Shm->Proc.Features.Power.BX,
+		Shm->Proc.Features.Power.CX,
+		Shm->Proc.Features.Power.DX);
+
+	printv(OutFunc, width, 3, "00000007:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.ExtFeature.AX,
+		Shm->Proc.Features.ExtFeature.BX,
+		Shm->Proc.Features.ExtFeature.CX,
+		Shm->Proc.Features.ExtFeature.DX);
+
+	printv(OutFunc, width, 3, "0000000A:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.PerfMon.AX,
+		Shm->Proc.Features.PerfMon.BX,
+		Shm->Proc.Features.PerfMon.CX,
+		Shm->Proc.Features.PerfMon.DX);
+
+	printv(OutFunc, width, 3, "80000001:%.*s........-........-%08X-%08X",
+		4, hSpace,
+//?		Shm->Proc.Features.ExtInfo.AX,
+//?		Shm->Proc.Features.ExtInfo.BX,
+		Shm->Proc.Features.ExtInfo.CX,
+		Shm->Proc.Features.ExtInfo.DX);
+
+	printv(OutFunc, width, 3, "80000007:%.*s%08X-%08X-%08X-%08X",
+		4, hSpace,
+		Shm->Proc.Features.AdvPower.AX,
+		Shm->Proc.Features.AdvPower.BX,
+		Shm->Proc.Features.AdvPower.CX,
+		Shm->Proc.Features.AdvPower.DX);
+
+	printv(OutFunc, width, 0, "MSR:");
+	printv(OutFunc, width, 2, "BSP");
+
+  printv(OutFunc, width, 3, "........:%.*s........-........-........-........",
+		4, hSpace);
 }
 
 void SysInfoProc(SHM_STRUCT *Shm,
