@@ -230,14 +230,17 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
-{	// Copy per CPU base clock.
+{	// Copy the estimated base clock per CPU.
 	Shm->Cpu[cpu].Clock.Q=Core[cpu]->Clock.Q;
 	Shm->Cpu[cpu].Clock.R=Core[cpu]->Clock.R;
 	Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
 }
 
-void DumpCPUID(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
-{	// Dump the CPUID per Vendor, per Core.
+void CPUID_Dump(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{	// Copy the Vendor CPUID dump per Core.
+	Shm->Cpu[cpu].Query.StdFunc=Core[cpu]->Query.StdFunc;
+	Shm->Cpu[cpu].Query.ExtFunc=Core[cpu]->Query.ExtFunc;
+
 	int i=0;
 	for(i=0; i < CPUID_MAX_FUNC; i++)
 	{
@@ -251,7 +254,7 @@ void DumpCPUID(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 }
 
 void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{	// Copy Core topology.
+{	// Copy each Core topology.
 	Shm->Cpu[cpu].Topology.MP.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
 	Shm->Cpu[cpu].Topology.ApicID=Core[cpu]->T.ApicID;
 	Shm->Cpu[cpu].Topology.CoreID=Core[cpu]->T.CoreID;
@@ -460,7 +463,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].OffLine.HW=Core[cpu]->OffLine.HW;
 
-	DumpCPUID(Shm, Core, cpu);
+	CPUID_Dump(Shm, Core, cpu);
 
 	BaseClock(Shm, Core, cpu);
 

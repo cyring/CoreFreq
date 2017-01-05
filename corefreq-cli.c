@@ -223,41 +223,51 @@ void SysInfoCPUID(SHM_STRUCT *Shm,
 		unsigned short width,
 		void(*OutFunc)(char *output) )
 {
-	printv(OutFunc, width, 0, "CPUID:");
-
-	printv(OutFunc, width, 2, "Largest Standard Function%.*s[%08X]",
-		width-38, hSpace,
-		Shm->Proc.Features.Info.LargestStdFunc);
-
-	printv(OutFunc, width, 2, "Largest Extended Function%.*s[%08X]",
-		width-38, hSpace,
-		Shm->Proc.Features.Info.LargestExtFunc);
-
-	printv(OutFunc, width, 0, "");
-
+	char format[]="%08x:%08x%.*s%08x     %08x     %08x     %08x";
 	unsigned int cpu=0;
 	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 	    if(OutFunc == NULL) {
 		printv(	OutFunc, width, 0,
-			"Core %-2u  function"				\
-			"         EAX          EBX          ECX          EDX",
+			"CPU #%-2u function"				\
+			"          EAX          EBX          ECX          EDX",
 			cpu);
 	    } else {
-		printv(	OutFunc, width, 0, "Core %-2u", cpu);
+		printv(	OutFunc, width, 0, "CPU #%-2u", cpu);
 	    }
+		printv(OutFunc,width, 2, format,
+			0x00000000, 0x00000000,
+			4, hSpace,
+			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc,
+			Shm->Cpu[cpu].Query.StdFunc.BX,
+			Shm->Cpu[cpu].Query.StdFunc.CX,
+			Shm->Cpu[cpu].Query.StdFunc.DX);
+
+		printv(OutFunc, width, 3, "Largest Standard Function=%08x",
+			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc);
+
+		printv(OutFunc,width, 2, format,
+			0x80000000, 0x00000000,
+			4, hSpace,
+			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc,
+			Shm->Cpu[cpu].Query.ExtFunc.BX,
+			Shm->Cpu[cpu].Query.ExtFunc.CX,
+			Shm->Cpu[cpu].Query.ExtFunc.DX);
+
+		printv(OutFunc, width, 3, "Largest Extended Function=%08x",
+			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
+
 		int i=0;
 		for(i=0; i < CPUID_MAX_FUNC; i++)
 		{
-			printv(OutFunc,width, 2,
-				"%08x:%08x%.*s%08X     %08X     %08X     %08X",
-				Shm->Cpu[0].CpuID[i].func,
-				Shm->Cpu[0].CpuID[i].sub,
+			printv(OutFunc,width, 2, format,
+				Shm->Cpu[cpu].CpuID[i].func,
+				Shm->Cpu[cpu].CpuID[i].sub,
 				4, hSpace,
-				Shm->Cpu[0].CpuID[i].reg[0],
-				Shm->Cpu[0].CpuID[i].reg[1],
-				Shm->Cpu[0].CpuID[i].reg[2],
-				Shm->Cpu[0].CpuID[i].reg[3]);
+				Shm->Cpu[cpu].CpuID[i].reg[0],
+				Shm->Cpu[cpu].CpuID[i].reg[1],
+				Shm->Cpu[cpu].CpuID[i].reg[2],
+				Shm->Cpu[cpu].CpuID[i].reg[3]);
 		}
 	}
 }

@@ -303,14 +303,6 @@ typedef struct
 		FIXED_PERF_COUNTER	FixedPerfCounter;
 	} SaveArea;
 
-	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
-
-	CACHE_TOPOLOGY			T;
-
-	unsigned int			Bind;
-
-	CLOCK				Clock;
-
 	struct
 	{
 		unsigned long long
@@ -322,7 +314,18 @@ typedef struct
 					C3U	:  6-5,	// Sandy Bridge
 					C1U	:  7-6,	// Sandy Bridge
 					Unused	: 64-7;
+
+		CPUID_0x00000000	StdFunc;
+		CPUID_0x80000000	ExtFunc;
 	} Query;
+
+	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
+
+	CACHE_TOPOLOGY			T;
+
+	unsigned int			Bind;
+
+	CLOCK				Clock;
 } CORE;
 
 typedef struct

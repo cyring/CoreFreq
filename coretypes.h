@@ -55,7 +55,7 @@ typedef struct
 			reg[4];
 } CPUID_STRUCT;
 
-typedef struct	// Basic CPUID Information.
+typedef struct
 {		// Common x86
 	unsigned int	LargestStdFunc, // Largest CPUID Standard Function.
 			LargestExtFunc;	// Largest CPUID Extended Function.
@@ -63,6 +63,11 @@ typedef struct	// Basic CPUID Information.
 			_pad48[2],
 			VendorID[13],
 			_pad62[1];
+} CPUID_FUNCTION;
+
+typedef struct	// Basic CPUID Function.
+{
+		unsigned int LargestStdFunc, BX, CX, DX;
 } CPUID_0x00000000;
 
 typedef struct
@@ -333,6 +338,11 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 	} DX;
 } CPUID_0x0000000a;
 
+typedef struct	// Extended CPUID Function.
+{
+		unsigned int LargestExtFunc, BX, CX, DX;
+} CPUID_0x80000000;
+
 typedef	struct
 {
     union
@@ -472,9 +482,10 @@ typedef struct	// Architectural Performance Monitoring Leaf.
     } DX;
 } CPUID_0x80000007;
 
-typedef struct
+typedef struct	// BSP CPUID features.
 {
-	CPUID_0x00000000 Info;
+	CPUID_FUNCTION Info;
+
 	CPUID_0x00000001 Std;
 	CPUID_0x00000005 MWait;
 	CPUID_0x00000006 Power;

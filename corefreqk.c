@@ -161,7 +161,7 @@ void AMD_Brand(char *pBrand)
 			pBrand[ix++]=idString[jx];
 }
 
-// Retreive the Processor features through calls to the CPUID instruction.
+// Retreive the Processor(BSP) features through calls to the CPUID instruction.
 void Query_Features(void *pArg)
 {
 	ARG *arg=(ARG *) pArg;
@@ -1114,6 +1114,49 @@ void Query_SandyBridge(void)
 	HyperThreading_Technology();
 }
 
+void Dump_CPUID(CORE *Core)
+{
+	unsigned int i=0;
+
+	asm volatile
+	(
+		"cpuid"
+		: "=a" (Core->Query.StdFunc.LargestStdFunc),
+		  "=b" (Core->Query.StdFunc.BX),
+		  "=c" (Core->Query.StdFunc.CX),
+		  "=d" (Core->Query.StdFunc.DX)
+		: "a" (0x00000000),
+		  "c" (0x00000000)
+	);
+	asm volatile
+	(
+		"cpuid"
+		: "=a" (Core->Query.ExtFunc.LargestExtFunc),
+		  "=b" (Core->Query.ExtFunc.BX),
+		  "=c" (Core->Query.ExtFunc.CX),
+		  "=d" (Core->Query.ExtFunc.DX)
+		: "a" (0x80000000),
+		  "c" (0x00000000)
+	);
+	for(i=0; i < CPUID_MAX_FUNC; i++)
+	{
+		if(((Core->CpuID[i].func & 0x80000000)
+		&&  (Core->CpuID[i].func <= Core->Query.ExtFunc.LargestExtFunc))
+		|| (!(Core->CpuID[i].func & 0x80000000)
+		&& (Core->CpuID[i].func <= Core->Query.StdFunc.LargestStdFunc)))
+			asm volatile
+			(
+				"cpuid"
+				: "=a"	(Core->CpuID[i].reg[0]),
+				  "=b"	(Core->CpuID[i].reg[1]),
+				  "=c"	(Core->CpuID[i].reg[2]),
+				  "=d"	(Core->CpuID[i].reg[3])
+				: "a"	(Core->CpuID[i].func),
+				  "c"	(Core->CpuID[i].sub)
+			);
+	}
+}
+
 void SpeedStep_Technology(CORE *Core)				// Per Package!
 {
 	MISC_PROC_FEATURES MiscFeatures={.value=0};
@@ -1205,6 +1248,8 @@ void PowerThermal(CORE *Core)
 
 void PerCore_Intel_Query(CORE *Core)
 {
+	Dump_CPUID(Core);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -1212,11 +1257,15 @@ void PerCore_Intel_Query(CORE *Core)
 
 void PerCore_AMD_Query(CORE *Core)
 {
+	Dump_CPUID(Core);
+
 	Query_AMD_C1E(Core);
 }
 
 void PerCore_Core2_Query(CORE *Core)
 {
+	Dump_CPUID(Core);
+
 	SpeedStep_Technology(Core);
 
 	PowerThermal(Core);				// Shared/Unique
@@ -1226,6 +1275,8 @@ void PerCore_Core2_Query(CORE *Core)
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
+	Dump_CPUID(Core);
+
 	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
 	Query_Intel_C1E(Core);
@@ -1246,6 +1297,8 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 void PerCore_SandyBridge_Query(CORE *Core)
 {
+	Dump_CPUID(Core);
+
 	SpeedStep_Technology(Core);
 	TurboBoost_Technology(Core);
 	Query_Intel_C1E(Core);

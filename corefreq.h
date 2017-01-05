@@ -16,6 +16,12 @@ typedef struct
 
 	unsigned int			Toggle;
 
+	struct
+	{
+		CPUID_0x00000000	StdFunc;
+		CPUID_0x80000000	ExtFunc;
+	} Query;
+
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
 
 	struct {
