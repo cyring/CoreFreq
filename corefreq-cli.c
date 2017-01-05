@@ -1934,16 +1934,16 @@ void MotionUp_Win(Window *win)
 {
 	if(win->matrix.select.row > 0)
 		win->matrix.select.row-- ;
-	else
-		win->matrix.select.row=win->matrix.size.hth - 1;
+	else if(win->matrix.scroll.vert > 0)
+		win->matrix.scroll.vert-- ;
 }
 
 void MotionDown_Win(Window *win)
 {
 	if(win->matrix.select.row < win->matrix.size.hth - 1)
 		win->matrix.select.row++ ;
-	else
-		win->matrix.select.row=0;
+	else if(win->matrix.scroll.vert < win->lazyComp.bottomRow)
+		win->matrix.scroll.vert++ ;
 }
 
 void MotionHome_Win(Window *win)
