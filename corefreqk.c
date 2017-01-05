@@ -741,6 +741,16 @@ CLOCK Clock_Skylake(unsigned int ratio)
 	return(clock);
 };
 
+void Define_CPUID(CORE *Core, const CPUID_STRUCT CpuIDforVendor[])
+{	// Per vendor, define a CPUID dump table to query.
+	int i=0;
+	for(i=0; i < CPUID_MAX_FUNC; i++)
+	{
+		Core->CpuID[i].func=CpuIDforVendor[i].func;
+		Core->CpuID[i].sub=CpuIDforVendor[i].sub;
+	}
+}
+
 void Cache_Topology(CORE *Core)
 {
 	unsigned int level=0x0;
@@ -2293,6 +2303,7 @@ static int __init CoreFreqK_init(void)
 
 			    publicSize=ROUND_TO_PAGES(sizeof(CORE));
 			    privateSize=ROUND_TO_PAGES(sizeof(JOIN));
+
 			    if(((KPublic->Cache=kmem_cache_create(
 					"corefreqk-pub",
 					publicSize, 0,
@@ -2302,6 +2313,13 @@ static int __init CoreFreqK_init(void)
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
+				const CPUID_STRUCT *CpuIDforVendor=
+				!strncmp(Arch[0].Architecture,VENDOR_INTEL,12)?
+						CpuIDforIntel
+				: !strncmp( Arch[0].Architecture,VENDOR_AMD,12)?
+						CpuIDforAMD : CpuIDforIntel;
+
+			      // Begin Loop to initialize allocation per CPU
 			      for(cpu=0; cpu < Proc->CPU.Count; cpu++)
 			      {
 				void *kcache=kmem_cache_alloc(KPublic->Cache,
@@ -2317,7 +2335,11 @@ static int __init CoreFreqK_init(void)
 				BITCLR(BUS_LOCK,KPublic->Core[cpu]->Sync.V,63);
 
 				KPublic->Core[cpu]->Bind=cpu;
+
+				Define_CPUID(KPublic->Core[cpu],CpuIDforVendor);
 			      }
+			      // End Loop
+
 			      if(!strncmp( Arch[0].Architecture,
 						VENDOR_INTEL, 12) )
 			      {

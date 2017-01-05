@@ -19,6 +19,7 @@ typedef unsigned int		Bit32;
 #define PRECISION	100
 #define BASE_SLEEP	100
 
+#define CPUID_MAX_FUNC	27
 #define CACHE_MAX_LEVEL	(3 + 1)
 
 #define VENDOR_INTEL	"GenuineIntel"
@@ -46,6 +47,13 @@ typedef struct
  * Intel® 64 and IA-32 Architectures Software Developer’s Manual; Vol. 2A
  * AMD64 Architecture Programmer’s Manual; Vol. 3
 */
+
+typedef struct
+{
+	unsigned int	func,
+			sub,
+			reg[4];
+} CPUID_STRUCT;
 
 typedef struct	// Basic CPUID Information.
 {		// Common x86
@@ -478,7 +486,6 @@ typedef struct
 	unsigned int	HTT_Enable,
 			FactoryFreq;
 } FEATURES;
-
 
 // Source: include/linux/cpuidle.h
 #ifndef _LINUX_CPUIDLE_H

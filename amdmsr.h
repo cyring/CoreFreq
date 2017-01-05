@@ -4,6 +4,10 @@
  * Licenses: GPL2
  */
 
+static const CPUID_STRUCT CpuIDforAMD[CPUID_MAX_FUNC]={
+	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
+};
+
 typedef union
 {
 	unsigned long long value;

@@ -16,6 +16,8 @@ typedef struct
 
 	unsigned int			Toggle;
 
+	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
+
 	struct {
 		unsigned int		ApicID,
 					CoreID,

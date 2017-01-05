@@ -236,6 +236,20 @@ void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Clock.Hz=Core[cpu]->Clock.Hz;
 }
 
+void DumpCPUID(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{	// Dump the CPUID per Vendor, per Core.
+	int i=0;
+	for(i=0; i < CPUID_MAX_FUNC; i++)
+	{
+		Shm->Cpu[cpu].CpuID[i].func=Core[cpu]->CpuID[i].func;
+		Shm->Cpu[cpu].CpuID[i].sub=Core[cpu]->CpuID[i].sub;
+		Shm->Cpu[cpu].CpuID[i].reg[0]=Core[cpu]->CpuID[i].reg[0];
+		Shm->Cpu[cpu].CpuID[i].reg[1]=Core[cpu]->CpuID[i].reg[1];
+		Shm->Cpu[cpu].CpuID[i].reg[2]=Core[cpu]->CpuID[i].reg[2];
+		Shm->Cpu[cpu].CpuID[i].reg[3]=Core[cpu]->CpuID[i].reg[3];
+	}
+}
+
 void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {	// Copy Core topology.
 	Shm->Cpu[cpu].Topology.MP.BSP=(Core[cpu]->T.Base.BSP) ? 1 : 0;
@@ -445,6 +459,8 @@ void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].OffLine.HW=Core[cpu]->OffLine.HW;
+
+	DumpCPUID(Shm, Core, cpu);
 
 	BaseClock(Shm, Core, cpu);
 

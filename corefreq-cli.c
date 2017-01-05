@@ -233,66 +233,33 @@ void SysInfoCPUID(SHM_STRUCT *Shm,
 		width-38, hSpace,
 		Shm->Proc.Features.Info.LargestExtFunc);
 
-	printv(OutFunc, width, 2, "Vendor ID%.*s[%s]",
-		width-14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
-		Shm->Proc.Features.Info.VendorID);
+	printv(OutFunc, width, 0, "");
 
-	printv(OutFunc, width, 2, "BSP");
-
-	printv(OutFunc, width, 3, "00000001:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.Std.AX,
-		Shm->Proc.Features.Std.BX,
-		Shm->Proc.Features.Std.CX,
-		Shm->Proc.Features.Std.DX);
-
-	printv(OutFunc, width, 3, "00000005:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.MWait.AX,
-		Shm->Proc.Features.MWait.BX,
-		Shm->Proc.Features.MWait.CX,
-		Shm->Proc.Features.MWait.DX);
-
-	printv(OutFunc, width, 3, "00000006:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.Power.AX,
-		Shm->Proc.Features.Power.BX,
-		Shm->Proc.Features.Power.CX,
-		Shm->Proc.Features.Power.DX);
-
-	printv(OutFunc, width, 3, "00000007:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.ExtFeature.AX,
-		Shm->Proc.Features.ExtFeature.BX,
-		Shm->Proc.Features.ExtFeature.CX,
-		Shm->Proc.Features.ExtFeature.DX);
-
-	printv(OutFunc, width, 3, "0000000A:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.PerfMon.AX,
-		Shm->Proc.Features.PerfMon.BX,
-		Shm->Proc.Features.PerfMon.CX,
-		Shm->Proc.Features.PerfMon.DX);
-
-	printv(OutFunc, width, 3, "80000001:%.*s........-........-%08X-%08X",
-		4, hSpace,
-//?		Shm->Proc.Features.ExtInfo.AX,
-//?		Shm->Proc.Features.ExtInfo.BX,
-		Shm->Proc.Features.ExtInfo.CX,
-		Shm->Proc.Features.ExtInfo.DX);
-
-	printv(OutFunc, width, 3, "80000007:%.*s%08X-%08X-%08X-%08X",
-		4, hSpace,
-		Shm->Proc.Features.AdvPower.AX,
-		Shm->Proc.Features.AdvPower.BX,
-		Shm->Proc.Features.AdvPower.CX,
-		Shm->Proc.Features.AdvPower.DX);
-
-	printv(OutFunc, width, 0, "MSR:");
-	printv(OutFunc, width, 2, "BSP");
-
-  printv(OutFunc, width, 3, "........:%.*s........-........-........-........",
-		4, hSpace);
+	unsigned int cpu=0;
+	for(cpu=0; cpu < Shm->Proc.CPU.Count; cpu++)
+	{
+	    if(OutFunc == NULL) {
+		printv(	OutFunc, width, 0,
+			"Core %-2u  function"				\
+			"         EAX          EBX          ECX          EDX",
+			cpu);
+	    } else {
+		printv(	OutFunc, width, 0, "Core %-2u", cpu);
+	    }
+		int i=0;
+		for(i=0; i < CPUID_MAX_FUNC; i++)
+		{
+			printv(OutFunc,width, 2,
+				"%08x:%08x%.*s%08X     %08X     %08X     %08X",
+				Shm->Cpu[0].CpuID[i].func,
+				Shm->Cpu[0].CpuID[i].sub,
+				4, hSpace,
+				Shm->Cpu[0].CpuID[i].reg[0],
+				Shm->Cpu[0].CpuID[i].reg[1],
+				Shm->Cpu[0].CpuID[i].reg[2],
+				Shm->Cpu[0].CpuID[i].reg[3]);
+		}
+	}
 }
 
 void SysInfoProc(SHM_STRUCT *Shm,
@@ -308,6 +275,10 @@ void SysInfoProc(SHM_STRUCT *Shm,
 /* Section Mark */
 	printv(OutFunc, width, 0, "Processor%.*s[%s]",
 		width-11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
+
+	printv(OutFunc, width, 2, "Vendor ID%.*s[%s]",
+		width-14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
+		Shm->Proc.Features.Info.VendorID);
 
 	printv(OutFunc, width, 2, "Signature%.*s[%1X%1X_%1X%1X]",
 		width-19, hSpace,
@@ -2320,7 +2291,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_NULL,	" MSR Register [r] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -2329,7 +2300,7 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_u,	" CPUID & MSR  [u] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_u,	" CPUID        [u] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -2530,7 +2501,11 @@ void Top(SHM_STRUCT *Shm)
 	      break;
 	      case SCANKEY_u:
 	      {
-		StoreWindow(wSysInfo,	.title,	" CPUID & MSR ");
+		StoreWindow(wSysInfo, .title,
+				" function           "			\
+				"EAX          EBX          ECX          EDX ");
+		StoreWindow(wSysInfo,	.color[1].title,
+					wSysInfo->hook.color[1].border);
 		SysInfoCPUID(Shm, drawSize.width - 6, AddSysInfoCell);
 	      }
 	      break;

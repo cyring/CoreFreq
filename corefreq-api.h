@@ -303,6 +303,8 @@ typedef struct
 		FIXED_PERF_COUNTER	FixedPerfCounter;
 	} SaveArea;
 
+	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
+
 	CACHE_TOPOLOGY			T;
 
 	unsigned int			Bind;

@@ -4,6 +4,36 @@
  * Licenses: GPL2
  */
 
+static const CPUID_STRUCT CpuIDforIntel[CPUID_MAX_FUNC]={
+	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
+	{.func=0x00000002, .sub=0x00000000},	/* Cache & TLB		*/
+	{.func=0x00000003, .sub=0x00000000},
+	{.func=0x00000004, .sub=0x00000000},	/* Cache L1I		*/
+	{.func=0x00000004, .sub=0x00000001},	/* Cache L1D		*/
+	{.func=0x00000004, .sub=0x00000002},	/* Cache L2		*/
+	{.func=0x00000004, .sub=0x00000003},	/* Cache L3		*/
+	{.func=0x00000005, .sub=0x00000000},	/* MONITOR/MWAIT	*/
+	{.func=0x00000006, .sub=0x00000000},	/* Power & Thermal	*/
+	{.func=0x00000007, .sub=0x00000000},	/* Extended Feature	*/
+	{.func=0x00000009, .sub=0x00000000},	/* Direct Cache Access	*/
+	{.func=0x0000000a, .sub=0x00000000},	/* Perf. Monitoring	*/
+	{.func=0x0000000b, .sub=0x00000000},	/* Ext. Topology	*/
+	{.func=0x0000000d, .sub=0x00000000},	/* Ext. State Main leaf	*/
+	{.func=0x0000000d, .sub=0x00000001},	/* Ext. State Sub-leaf	*/
+	{.func=0x0000000f, .sub=0x00000000},	/* QoS Monitoring cap.	*/
+	{.func=0x0000000f, .sub=0x00000001},	/* L3 QoS Monitoring	*/
+	{.func=0x00000010, .sub=0x00000000},	/* QoS Enforcement cap.	*/
+	{.func=0x00000010, .sub=0x00000001},	/* L3 QoS Enforcement	*/
+	{.func=0x00000014, .sub=0x00000000},	/* Processor trace	*/
+	{.func=0x00000014, .sub=0x00000001},	/* Processor trace sub.	*/
+	{.func=0x00000015, .sub=0x00000000},	/* Time Stamp Counter	*/
+	{.func=0x00000016, .sub=0x00000000},	/* Processor frequency	*/
+	{.func=0x80000001, .sub=0x00000000},	/* Extended feature	*/
+	{.func=0x80000006, .sub=0x00000000},	/* Cache L2 Size & Way	*/
+	{.func=0x80000007, .sub=0x00000000},	/* Advanced Power	*/
+	{.func=0x80000008, .sub=0x00000000},	/* Address size		*/
+};
+
 typedef	union
 {
 	unsigned long long value;
