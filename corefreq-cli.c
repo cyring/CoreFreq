@@ -1846,12 +1846,20 @@ void ForEachCellPrint(Window *win, WinList *list)
 	if(win->lazyComp.rowLen == 0)
 	  for(col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
 		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
+	// Top, Left Border Corner
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row - 1))=border;
 
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row - 1))=0x20;
+	// Top Border Line
 	if(win->hook.title == NULL)
 	    LayerFillAt(win->layer,
-			(win->matrix.origin.col - 1),
+			win->matrix.origin.col,
 			(win->matrix.origin.row - 1),
-			win->lazyComp.rowLen, hLine, border);
+			(win->lazyComp.rowLen - 2), hLine, border);
 	else
 	{
 	    if(win->lazyComp.titleLen == 0)
@@ -1860,12 +1868,12 @@ void ForEachCellPrint(Window *win, WinList *list)
 	    size_t halfLeft=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
 	    size_t halfRight=halfLeft
 			+ (win->lazyComp.rowLen - win->lazyComp.titleLen) % 2;
-
+	    // Top, Half-Left Border Line
 	    LayerFillAt(win->layer,
-			(win->matrix.origin.col - 1),
+			win->matrix.origin.col,
 			(win->matrix.origin.row - 1),
 			halfLeft, hLine, border);
-
+	    // Top, Centered Border Title
 	    LayerFillAt(win->layer,
 			(halfLeft + (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
@@ -1873,16 +1881,25 @@ void ForEachCellPrint(Window *win, WinList *list)
 			((GetFocus(list) == win) ?
 				win->hook.color[1].title
 			:	win->hook.color[0].title));
-
+	    // Top, Half-Right Border Line
 	    LayerFillAt(win->layer,
 			(halfLeft + win->lazyComp.titleLen
 			+ (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
-			halfRight, hLine, border);
+			(halfRight - 1), hLine, border);
 	}
+	// Top, Right Border Corner
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+		(win->matrix.origin.row - 1))=border;
+
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+		(win->matrix.origin.row - 1))=0x20;
 
 	for(row=0; row < win->matrix.size.hth; row++)
 	{
+	    // Left Side Border Column
 	    LayerAt(	win->layer, attr,
 			(win->matrix.origin.col - 1),
 			(win->matrix.origin.row + row))=border;
@@ -1893,6 +1910,7 @@ void ForEachCellPrint(Window *win, WinList *list)
 	    for(col=0; col < win->matrix.size.wth; col++)
 		PrintContent(win, list, col, row);
 
+	    // Right Side Border Column
 	    LayerAt(	win->layer, attr,
 			(win->matrix.origin.col
 			+ col * TCellAt(win, 0, 0).length),
@@ -1902,10 +1920,27 @@ void ForEachCellPrint(Window *win, WinList *list)
 			+ col * TCellAt(win, 0, 0).length),
 			(win->matrix.origin.row + row))=0x20;
 	}
-	LayerFillAt(	win->layer,
-			(win->matrix.origin.col - 1),
-			(win->matrix.origin.row + win->matrix.size.hth),
-			win->lazyComp.rowLen, hLine, border);
+	// Bottom, Left Border Corner
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row + win->matrix.size.hth))=border;
+
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row + win->matrix.size.hth))=0x20;
+	// Bottom Border Line
+	LayerFillAt(win->layer,
+		win->matrix.origin.col,
+		(win->matrix.origin.row + win->matrix.size.hth),
+		(win->lazyComp.rowLen - 2), hLine, border);
+	// Bottom, Right Border Corner
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+		(win->matrix.origin.row + win->matrix.size.hth))=border;
+
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+		(win->matrix.origin.row + win->matrix.size.hth))=0x20;
 }
 
 void MotionReset_Win(Window *win)
@@ -2458,7 +2493,7 @@ void Top(SHM_STRUCT *Shm)
 					1,
 					18,
 					3,
-					TOP_HEADER_ROW);
+					TOP_HEADER_ROW + 1);
 
 	void AddSysInfoCell(char *input)
 	{
