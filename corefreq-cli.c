@@ -2486,14 +2486,75 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateSysInfo(unsigned long long id)
     {
+	CoordSize matrixSize={.wth=1, .hth=18};
+	Coordinate winOrigin={.col=3, .row=TOP_HEADER_ROW + 1};
+	void (*SysInfoFunc)(SHM_STRUCT*, unsigned short, void(*OutFunc)(char*));
+	char *title=NULL;
+
+	switch(id)
+	{
+	    case SCANKEY_p:
+	    {
+		SysInfoFunc=SysInfoProc;
+		title=" Processor ";
+	    }
+	    break;
+	    case SCANKEY_e:
+	    {
+		SysInfoFunc=SysInfoFeatures;
+		title=" Features ";
+	    }
+	    break;
+	    case SCANKEY_t:
+	    {
+		matrixSize.hth=5;
+		winOrigin.col=5;
+		winOrigin.row=TOP_HEADER_ROW + 12;
+		SysInfoFunc=SysInfoTech;
+		title=" Technologies ";
+	    }
+	    break;
+	    case SCANKEY_o:
+	    {
+		SysInfoFunc=SysInfoPerfMon;
+		title=" Performance Monitoring ";
+	    }
+	    break;
+	    case SCANKEY_w:
+	    {
+		matrixSize.hth=7;
+		winOrigin.col=2;
+		winOrigin.row=TOP_HEADER_ROW + 6;
+		SysInfoFunc=SysInfoPwrThermal;
+		title=" Power & Thermal ";
+	    }
+	    break;
+	    case SCANKEY_u:
+	    {
+		SysInfoFunc=SysInfoCPUID;
+		title=	" function           "				\
+			"EAX          EBX          ECX          EDX ";
+	    }
+	    break;
+	    case SCANKEY_k:
+	    {
+		matrixSize.hth=7;
+		winOrigin.col=4;
+		winOrigin.row=TOP_HEADER_ROW + 8;
+		SysInfoFunc=SysInfoKernel;
+		title=" Kernel ";
+	    }
+	    break;
+	}
+
 	int i=0;
 
 	Window *wSysInfo=CreateWindow(	wLayer,
 					id,
-					1,
-					18,
-					3,
-					TOP_HEADER_ROW + 1);
+					matrixSize.wth,
+					matrixSize.hth,
+					winOrigin.col,
+					winOrigin.row);
 
 	void AddSysInfoCell(char *input)
 	{
@@ -2511,64 +2572,25 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wSysInfo,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wSysInfo,	.key.Home,	MotionReset_Win);
 		StoreWindow(wSysInfo,	.key.End,	MotionEnd_SysInfo);
+		StoreWindow(wSysInfo,	.title,		title);
 
-	    switch(id)
-	    {
-	      case SCANKEY_p:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Processor ");
-		SysInfoProc(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	      case SCANKEY_e:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Features ");
-		SysInfoFeatures(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	      case SCANKEY_t:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Technologies ");
-		SysInfoTech(Shm, drawSize.width - 6, AddSysInfoCell);
-	        }
-	      break;
-	      case SCANKEY_o:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Performance Monitoring ");
-		SysInfoPerfMon(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	      case SCANKEY_w:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Power & Thermal ");
-		SysInfoPwrThermal(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	      case SCANKEY_u:
-	      {
-		StoreWindow(wSysInfo, .title,
-				" function           "			\
-				"EAX          EBX          ECX          EDX ");
-		StoreWindow(wSysInfo,	.color[1].title,
-					wSysInfo->hook.color[1].border);
-		SysInfoCPUID(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	      case SCANKEY_k:
-	      {
-		StoreWindow(wSysInfo,	.title,	" Kernel ");
-		SysInfoKernel(Shm, drawSize.width - 6, AddSysInfoCell);
-	      }
-	      break;
-	    }
+		SysInfoFunc(Shm, drawSize.width - 6, AddSysInfoCell);
 
-	    while(i < 18)
+	    while(i < matrixSize.hth)
 	    {
 		i++ ;
 		StoreTCell(wSysInfo,
 			SCANKEY_NULL,
 			&hSpace[MAX_WIDTH - drawSize.width + 6],
 			MAKE_PRINT_FOCUS);
+	    }
+
+	    switch(id)
+	    {
+	      case SCANKEY_u:
+		StoreWindow(wSysInfo,	.color[1].title,
+					wSysInfo->hook.color[1].border);
+	      break;
 	    }
 	}
 	return(wSysInfo);
