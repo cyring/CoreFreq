@@ -1142,7 +1142,7 @@ void Dump_CPUID(CORE *Core)
 	{
 		if(((Core->CpuID[i].func & 0x80000000)
 		&&  (Core->CpuID[i].func <= Core->Query.ExtFunc.LargestExtFunc))
-		|| (!(Core->CpuID[i].func & 0x80000000)
+		|| (Core->CpuID[i].func && !(Core->CpuID[i].func & 0x80000000)
 		&& (Core->CpuID[i].func <= Core->Query.StdFunc.LargestStdFunc)))
 			asm volatile
 			(

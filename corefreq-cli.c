@@ -259,7 +259,8 @@ void SysInfoCPUID(SHM_STRUCT *Shm,
 
 		int i=0;
 		for(i=0; i < CPUID_MAX_FUNC; i++)
-		{
+		    if(Shm->Cpu[cpu].CpuID[i].func)
+		    {
 			printv(OutFunc,width, 2, format,
 				Shm->Cpu[cpu].CpuID[i].func,
 				Shm->Cpu[cpu].CpuID[i].sub,
@@ -268,7 +269,7 @@ void SysInfoCPUID(SHM_STRUCT *Shm,
 				Shm->Cpu[cpu].CpuID[i].reg[1],
 				Shm->Cpu[cpu].CpuID[i].reg[2],
 				Shm->Cpu[cpu].CpuID[i].reg[3]);
-		}
+		    }
 	}
 }
 
