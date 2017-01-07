@@ -1321,12 +1321,22 @@ typedef union
 #define SCANKEY_HOME		0x485b1b
 #define SCANKEY_END		0x465b1b
 #define SCANKEY_F1		0x504f1b
+#define SCANKEY_F2		0x514f1b
+#define SCANKEY_F3		0x524f1b
+#define SCANKEY_F4		0x534f1b
+#define SCANKEY_F10		0x31325b1b
 #define SCANKEY_SHIFT_TAB	0x5a5b1b
 #define SCANKEY_PGUP		0x7e355b1b
 #define SCANKEY_PGDW		0x7e365b1b
+#define SCANKEY_SHIFT_a		0x41
+#define SCANKEY_SHIFT_d		0x44
 #define SCANKEY_SHIFT_q		0x51
+#define SCANKEY_SHIFT_s		0x53
+#define SCANKEY_SHIFT_w		0x57
+#define SCANKEY_SHIFT_z		0x5a
 #define SCANKEY_a		0x61
 #define SCANKEY_c		0x63
+#define SCANKEY_d		0x64
 #define SCANKEY_e		0x65
 #define SCANKEY_f		0x66
 #define SCANKEY_h		0x68
@@ -1336,10 +1346,21 @@ typedef union
 #define SCANKEY_m		0x6d
 #define SCANKEY_o		0x6f
 #define SCANKEY_p		0x70
+#define SCANKEY_q		0x71
 #define SCANKEY_t		0x74
 #define SCANKEY_s		0x73
 #define	SCANKEY_u		0x75
 #define SCANKEY_w		0x77
+#define SCANKEY_x		0x78
+#define SCANKEY_z		0x7a
+
+#define SCANCON_HOME		0x7e315b1b
+#define SCANCON_END		0x7e345b1b
+#define SCANCON_F1		0x415b5b1b
+#define SCANCON_F2		0x425b5b1b
+#define SCANCON_F3		0x435b5b1b
+#define SCANCON_F4		0x445b5b1b
+#define SCANCON_SHIFT_TAB	0x91b
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -1475,6 +1496,10 @@ typedef struct _Win
 		void	(*End)(struct _Win *win);
 		void	(*PgUp)(struct _Win *win);
 		void	(*PgDw)(struct _Win *win);
+		void	(*WinLeft)(struct _Win *win);
+		void	(*WinRight)(struct _Win *win);
+		void	(*WinDown)(struct _Win *win);
+		void	(*WinUp)(struct _Win *win);
 	    } key;
 
 	    struct
@@ -1944,6 +1969,22 @@ void ForEachCellPrint(Window *win, WinList *list)
 		(win->matrix.origin.row + win->matrix.size.hth))=0x20;
 }
 
+void EraseWindowWithBorder(Window *win)
+{	// Care about the four window side borders.
+	unsigned short row;
+	for(row=0; row < win->matrix.size.hth + 2; row++)
+	{
+		Coordinate origin={
+			.col=win->matrix.origin.col - 1,
+			.row=(win->matrix.origin.row - 1) + row
+		};
+		size_t len=win->lazyComp.rowLen + 1;
+
+		memset(&LayerAt(win->layer, attr, origin.col,origin.row),0,len);
+		memset(&LayerAt(win->layer, code, origin.col,origin.row),0,len);
+	}
+}
+
 void MotionReset_Win(Window *win)
 {
 	win->matrix.scroll.horz=win->matrix.select.col=0;
@@ -2008,66 +2049,130 @@ void MotionPgDw_Win(Window *win)
 	win->matrix.scroll.vert=win->lazyComp.bottomRow;
 }
 
+
+void MotionOriginLeft_Win(Window *win)
+{
+	if(win->matrix.origin.col > 1)
+	{
+		EraseWindowWithBorder(win);
+		win->matrix.origin.col-- ;
+	}
+}
+
+void MotionOriginRight_Win(Window *win)
+{	// Care about the right-side window border.
+	unsigned short maxVisibleCol=MIN(MAX_WIDTH, GetScreenSize().width)
+					- win->lazyComp.rowLen;
+
+	if(win->matrix.origin.col <= maxVisibleCol)
+	{
+		EraseWindowWithBorder(win);
+		win->matrix.origin.col++ ;
+	}
+}
+
+void MotionOriginUp_Win(Window *win)
+{
+	if(win->matrix.origin.row > 1)
+	{
+		EraseWindowWithBorder(win);
+		win->matrix.origin.row-- ;
+	}
+}
+
+void MotionOriginDown_Win(Window *win)
+{	// Care about the bottom window border.
+	unsigned short maxVisibleRow=MIN(MAX_HEIGHT, GetScreenSize().height)
+					- win->matrix.size.hth - 1;
+
+	if(win->matrix.origin.row < maxVisibleRow)
+	{
+		EraseWindowWithBorder(win);
+		win->matrix.origin.row++ ;
+	}
+}
+
 int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 {
 	switch(scan->key)
 	{
-	case SCANKEY_ESC:
-	{
-		Layer *thisLayer=win->layer;
+		case SCANKEY_ESC:
+		{
+			Layer *thisLayer=win->layer;
 
-		if(win->hook.key.Escape != NULL)
-			win->hook.key.Escape(win);
-		else
-			RemoveWindow(win, list);
+			if(win->hook.key.Escape != NULL)
+				win->hook.key.Escape(win);
+			else
+				RemoveWindow(win, list);
 
-		ResetLayer(thisLayer);
-	}
-	break;
-	case SCANKEY_TAB:
-		AnimateWindow(1, list);
-	break;
-	case SCANKEY_SHIFT_TAB:
-		AnimateWindow(0, list);
-	break;
-	case SCANKEY_LEFT:
-		if(win->hook.key.Left != NULL)
-			win->hook.key.Left(win);
-	break;
-	case SCANKEY_RIGHT:
-		if(win->hook.key.Right != NULL)
-			win->hook.key.Right(win);
-	break;
-	case SCANKEY_DOWN:
-		if(win->hook.key.Down != NULL)
-			win->hook.key.Down(win);
-	break;
-	case SCANKEY_UP:
-		if(win->hook.key.Up != NULL)
-			win->hook.key.Up(win);
-	break;
-	case SCANKEY_HOME:
-		if(win->hook.key.Home != NULL)
-			win->hook.key.Home(win);
-	break;
-	case SCANKEY_END:
-		if(win->hook.key.End != NULL)
-			win->hook.key.End(win);
-	break;
-	case SCANKEY_PGUP:
-		if(win->hook.key.PgUp != NULL)
-			win->hook.key.PgUp(win);
-	break;
-	case SCANKEY_PGDW:
-		if(win->hook.key.PgDw != NULL)
-		win->hook.key.PgDw(win);
-	break;
-	case SCANKEY_ENTER:
-		if(win->hook.key.Enter != NULL)
-			return(win->hook.key.Enter(scan, win));
-	// fallthrough
-	default:
-	return(-1);
+			ResetLayer(thisLayer);
+		}
+		break;
+		case SCANKEY_TAB:
+			AnimateWindow(1, list);
+		break;
+		case SCANKEY_SHIFT_TAB:
+		case SCANCON_SHIFT_TAB:
+			AnimateWindow(0, list);
+		break;
+		case SCANKEY_LEFT:
+			if(win->hook.key.Left != NULL)
+				win->hook.key.Left(win);
+		break;
+		case SCANKEY_RIGHT:
+			if(win->hook.key.Right != NULL)
+				win->hook.key.Right(win);
+		break;
+		case SCANKEY_DOWN:
+			if(win->hook.key.Down != NULL)
+				win->hook.key.Down(win);
+		break;
+		case SCANKEY_UP:
+			if(win->hook.key.Up != NULL)
+				win->hook.key.Up(win);
+		break;
+		case SCANKEY_HOME:
+		case SCANCON_HOME:
+			if(win->hook.key.Home != NULL)
+				win->hook.key.Home(win);
+		break;
+		case SCANKEY_END:
+		case SCANCON_END:
+			if(win->hook.key.End != NULL)
+				win->hook.key.End(win);
+		break;
+		case SCANKEY_PGUP:
+			if(win->hook.key.PgUp != NULL)
+				win->hook.key.PgUp(win);
+		break;
+		case SCANKEY_PGDW:
+			if(win->hook.key.PgDw != NULL)
+				win->hook.key.PgDw(win);
+		break;
+		case SCANKEY_SHIFT_d:
+			if(win->hook.key.WinRight != NULL)
+				win->hook.key.WinRight(win);
+		break;
+		case SCANKEY_SHIFT_a:
+		case SCANKEY_SHIFT_q:
+			if(win->hook.key.WinLeft != NULL)
+				win->hook.key.WinLeft(win);
+		break;
+		case SCANKEY_SHIFT_w:
+		case SCANKEY_SHIFT_z:
+			if(win->hook.key.WinUp != NULL)
+				win->hook.key.WinUp(win);
+		break;
+		case SCANKEY_SHIFT_s:
+			if(win->hook.key.WinDown != NULL)
+				win->hook.key.WinDown(win);
+		break;
+		case SCANKEY_ENTER:
+			if(win->hook.key.Enter != NULL)
+				return(win->hook.key.Enter(scan, win));
+		// fallthrough
+		default:
+		return(-1);
 	}
 	return(0);
 }
@@ -2179,7 +2284,7 @@ void Top(SHM_STRUCT *Shm)
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
 			PrintContent(win, list, win->matrix.select.col, row);
 
-	if((len=drawSize.width - win->lazyComp.rowLen) > 0)
+	if((len=drawSize.width-win->lazyComp.rowLen-win->matrix.origin.col) > 0)
 		LayerFillAt(win->layer,
 				win->matrix.origin.col + win->lazyComp.rowLen,
 				win->matrix.origin.row,
@@ -2201,7 +2306,7 @@ void Top(SHM_STRUCT *Shm)
 		return(0);
     }
 
-    #define ResetTCell_Menu(win)					\
+    #define EraseTCell_Menu(win)					\
     (									\
 	{								\
 	    CoordShift shift={						\
@@ -2228,7 +2333,7 @@ void Top(SHM_STRUCT *Shm)
     {
 	unsigned short row;
 	for(row=1; row < win->matrix.size.hth; row++)
-		ResetTCell_Menu(win);
+		EraseTCell_Menu(win);
 
 	if(win->matrix.select.col > 0)
 		win->matrix.select.col-- ;
@@ -2242,7 +2347,7 @@ void Top(SHM_STRUCT *Shm)
     {
 	unsigned short row;
 	for(row=1; row < win->matrix.size.hth; row++)
-		ResetTCell_Menu(win);
+		EraseTCell_Menu(win);
 
 	if(win->matrix.select.col < win->matrix.size.wth - 1)
 		win->matrix.select.col++ ;
@@ -2311,6 +2416,10 @@ void Top(SHM_STRUCT *Shm)
 				LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,
 				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
 			},
+			quitAttr[18]={
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,
+				LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW
+			},
 			skeyAttr[18]={
 				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,
 				LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
@@ -2328,7 +2437,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_i,	" Inst cycles  [i] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_m,	" Topology     [m] ", skeyAttr);
 
-		StoreTCell(wMenu,SCANKEY_SHIFT_q," Quit         [Q] ",skeyAttr);
+		StoreTCell(wMenu, SCANKEY_F4,	" Quit        [F4] ", quitAttr);
 		StoreTCell(wMenu, SCANKEY_c,	" Core cycles  [c] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_e,	" Features     [e] ", skeyAttr);
 
@@ -2352,6 +2461,10 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
 
+		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
+		StoreWindow(wMenu, .color[0].title, MakeAttr(BLACK,0,WHITE,0));
+		StoreWindow(wMenu, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
+
 		StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
 		StoreWindow(wMenu,	.key.Enter,	MotionEnter_Menu);
 		StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
@@ -2360,9 +2473,6 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wMenu,	.key.Up,	MotionUp_Menu);
 		StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
 		StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
-		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
-		StoreWindow(wMenu, .color[0].title, MakeAttr(BLACK,0,WHITE,0));
-		StoreWindow(wMenu, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
 	}
 	return(wMenu);
     }
@@ -2375,10 +2485,6 @@ void Top(SHM_STRUCT *Shm)
 	char intvStr[16];
 	int intvLen=sprintf(intvStr, "%15u", Shm->Proc.SleepInterval);
 	size_t appLen=strlen(Shm->AppName);
-
-	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wSet, .color[1].select, MAKE_PRINT_FOCUS);
-	StoreWindow(wSet, .title, " Settings ");
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -2394,18 +2500,27 @@ void Top(SHM_STRUCT *Shm)
 
 	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->AppName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intvLen], intvStr, intvLen);
+
+	StoreWindow(wSet, .title, " Settings ");
+	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
+	StoreWindow(wSet, .color[1].select, MAKE_PRINT_FOCUS);
+
+	StoreWindow(wSet,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wSet,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wSet,	.key.WinUp,	MotionOriginUp_Win);
       }
       return(wSet);
     }
 
     Window *CreateHelp(unsigned long long id)
     {
-      Window *wHelp=CreateWindow(wLayer, id, 2, 14, 2, TOP_HEADER_ROW + 2);
+      Window *wHelp=CreateWindow(wLayer, id, 2, 17, 2, TOP_HEADER_ROW + 2);
       if(wHelp != NULL)
       {
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [F1]             ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [F2]             ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "             Menu ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [Escape]         ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "     Close window ", MAKE_PRINT_FOCUS);
@@ -2413,18 +2528,24 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wHelp, SCANKEY_NULL, "  Previous window ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [Tab]            ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "      Next window ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "Trigger selection ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       [A|Z]      ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [W|Q]  [S]  [D]  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "      Move window ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "       [Up]       ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [Left]    [Right]", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "   Move selection ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "      [Down]      ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       First cell ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [End]            ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "        Last cell ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       First cell ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "Trigger selection ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Up]        ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "    Previous page ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Dw]        ", MAKE_PRINT_FOCUS);
@@ -2435,6 +2556,11 @@ void Top(SHM_STRUCT *Shm)
 	StoreWindow(wHelp, .title, " Help ");
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
 	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_FOCUS);
+
+	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
       }
       return(wHelp);
     }
@@ -2475,6 +2601,11 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wAbout, .title, " CoreFreq ");
 		StoreWindow(wAbout, .color[0].select, MAKE_PRINT_UNFOCUS);
 		StoreWindow(wAbout, .color[1].select, MAKE_PRINT_FOCUS);
+
+		StoreWindow(wAbout,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wAbout,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wAbout,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wAbout,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wAbout);
     }
@@ -2489,6 +2620,7 @@ void Top(SHM_STRUCT *Shm)
     {
 	CoordSize matrixSize={.wth=1, .hth=18};
 	Coordinate winOrigin={.col=3, .row=TOP_HEADER_ROW + 1};
+	unsigned short winWidth=74;
 	void (*SysInfoFunc)(SHM_STRUCT*, unsigned short, void(*OutFunc)(char*));
 	char *title=NULL;
 
@@ -2496,12 +2628,16 @@ void Top(SHM_STRUCT *Shm)
 	{
 	    case SCANKEY_p:
 	    {
+		winOrigin.col=2;
+		winWidth=76;
 		SysInfoFunc=SysInfoProc;
 		title=" Processor ";
 	    }
 	    break;
 	    case SCANKEY_e:
 	    {
+		winOrigin.col=4;
+		winWidth=72;
 		SysInfoFunc=SysInfoFeatures;
 		title=" Features ";
 	    }
@@ -2509,8 +2645,9 @@ void Top(SHM_STRUCT *Shm)
 	    case SCANKEY_t:
 	    {
 		matrixSize.hth=5;
-		winOrigin.col=5;
+		winOrigin.col=23;
 		winOrigin.row=TOP_HEADER_ROW + 12;
+		winWidth=50;
 		SysInfoFunc=SysInfoTech;
 		title=" Technologies ";
 	    }
@@ -2524,14 +2661,16 @@ void Top(SHM_STRUCT *Shm)
 	    case SCANKEY_w:
 	    {
 		matrixSize.hth=7;
-		winOrigin.col=2;
-		winOrigin.row=TOP_HEADER_ROW + 6;
+		winOrigin.col=23;
+		winOrigin.row=TOP_HEADER_ROW + 2;
+		winWidth=50;
 		SysInfoFunc=SysInfoPwrThermal;
 		title=" Power & Thermal ";
 	    }
 	    break;
 	    case SCANKEY_u:
 	    {
+		winWidth=74;
 		SysInfoFunc=SysInfoCPUID;
 		title=	" function           "				\
 			"EAX          EBX          ECX          EDX ";
@@ -2565,6 +2704,28 @@ void Top(SHM_STRUCT *Shm)
 
 	if(wSysInfo != NULL)
 	{
+		SysInfoFunc(Shm, winWidth, AddSysInfoCell);
+
+		while(i < matrixSize.hth)	// Window: blank rows pading.
+		{
+			i++ ;
+			StoreTCell(wSysInfo,
+				SCANKEY_NULL,
+				&hSpace[MAX_WIDTH - winWidth],
+				MAKE_PRINT_FOCUS);
+		}
+
+		switch(id)
+		{
+		    case SCANKEY_u:
+			StoreWindow(wSysInfo,	.color[1].title,
+						wSysInfo->hook.color[1].border);
+		    break;
+		    default:
+		    break;
+		}
+		StoreWindow(wSysInfo,	.title,		title);
+
 		StoreWindow(wSysInfo,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wSysInfo,	.key.Right,	MotionRight_Win);
 		StoreWindow(wSysInfo,	.key.Down,	MotionDown_Win);
@@ -2573,26 +2734,11 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wSysInfo,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wSysInfo,	.key.Home,	MotionReset_Win);
 		StoreWindow(wSysInfo,	.key.End,	MotionEnd_SysInfo);
-		StoreWindow(wSysInfo,	.title,		title);
 
-		SysInfoFunc(Shm, drawSize.width - 6, AddSysInfoCell);
-
-	    while(i < matrixSize.hth)
-	    {
-		i++ ;
-		StoreTCell(wSysInfo,
-			SCANKEY_NULL,
-			&hSpace[MAX_WIDTH - drawSize.width + 6],
-			MAKE_PRINT_FOCUS);
-	    }
-
-	    switch(id)
-	    {
-	      case SCANKEY_u:
-		StoreWindow(wSysInfo,	.color[1].title,
-					wSysInfo->hook.color[1].border);
-	      break;
-	    }
+		StoreWindow(wSysInfo,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wSysInfo,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wSysInfo,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wSysInfo,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wSysInfo);
     }
@@ -2613,14 +2759,20 @@ void Top(SHM_STRUCT *Shm)
 
 	if(wTopology != NULL)
 	{
+		Topology(Shm, AddTopologyCell);
+
+		StoreWindow(wTopology,	.title, " Topology ");
 		StoreWindow(wTopology,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);
 		StoreWindow(wTopology,	.key.Up,	MotionUp_Win);
 		StoreWindow(wTopology,	.key.Home,	MotionHome_Win);
 		StoreWindow(wTopology,	.key.End,	MotionEnd_Win);
-		StoreWindow(wTopology,	.title, " Topology ");
-		Topology(Shm, AddTopologyCell);
+
+		StoreWindow(wTopology,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wTopology,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wTopology,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wTopology,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wTopology);
     }
@@ -2710,14 +2862,19 @@ void Top(SHM_STRUCT *Shm)
     {
 	switch(scan->key)
 	{
-	case SCANKEY_F1:
+	case SCANKEY_F2:
+	case SCANCON_F2:
 	{
-		Window *win=SearchWinListById(scan->key, &winList);
+		Window *win=SearchWinListById(SCANKEY_F2, &winList);
 		if(win == NULL)
-			AppendWindow(CreateMenu(SCANKEY_F1), &winList);
+			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
 		else
 			SetHead(&winList, win);
 	}
+	break;
+	case SCANKEY_F4:
+	case SCANCON_F4:
+		Shutdown=0x1;
 	break;
 	case SCANKEY_a:
 	{
@@ -2778,9 +2935,6 @@ void Top(SHM_STRUCT *Shm)
 		else
 			SetHead(&winList, win);
 	}
-	break;
-	case SCANKEY_SHIFT_q:
-		Shutdown=0x1;
 	break;
 	case SCANKEY_e:
 	case SCANKEY_k:
@@ -3540,7 +3694,7 @@ void Top(SHM_STRUCT *Shm)
 		if(Shortcut(&scan) == -1)
 		{
 		    if(IsDead(&winList))
-			AppendWindow(CreateMenu(SCANKEY_F1), &winList);
+			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
 		    else
 			if(Motion_Trigger(&scan,GetFocus(&winList),&winList)>0)
 				Shortcut(&scan);
