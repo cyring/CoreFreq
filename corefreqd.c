@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -191,6 +192,9 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	memcpy(Shm->Proc.Boost, Proc->Boost, (1+1+8) * sizeof(unsigned int));
 	// Copy the processor's brand string.
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
+	// Copy the system and release names.
+	strncpy(Shm->SysGate.sysname, Proc->SysGate.sysname, MAX_UTS_LEN);
+	strncpy(Shm->SysGate.release, Proc->SysGate.release, MAX_UTS_LEN);
 }
 
 void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
@@ -431,29 +435,51 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 
 void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
 {
-	if (strlen(Proc->IdleDriver.Name) > 0) {
-		int i;
+    if (strlen(Proc->SysGate.IdleDriver.Name) > 0) {
+	int i;
 
-		strncpy(Shm->IdleDriver.Name,
-			Proc->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+	strncpy(Shm->SysGate.IdleDriver.Name,
+		Proc->SysGate.IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
 
-		Shm->IdleDriver.stateCount = Proc->IdleDriver.stateCount;
-		for (i = 0; i < Shm->IdleDriver.stateCount; i++)
-		{
-			strncpy(Shm->IdleDriver.State[i].Name,
-				Proc->IdleDriver.State[i].Name,
-				CPUIDLE_NAME_LEN - 1);
+	Shm->SysGate.IdleDriver.stateCount =Proc->SysGate.IdleDriver.stateCount;
+	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++)
+	{
+		strncpy(Shm->SysGate.IdleDriver.State[i].Name,
+			Proc->SysGate.IdleDriver.State[i].Name,
+			CPUIDLE_NAME_LEN - 1);
 
-			Shm->IdleDriver.State[i].exitLatency =
-				Proc->IdleDriver.State[i].exitLatency;
+		Shm->SysGate.IdleDriver.State[i].exitLatency =
+			Proc->SysGate.IdleDriver.State[i].exitLatency;
 
-			Shm->IdleDriver.State[i].powerUsage =
-				Proc->IdleDriver.State[i].powerUsage;
+		Shm->SysGate.IdleDriver.State[i].powerUsage =
+			Proc->SysGate.IdleDriver.State[i].powerUsage;
 
-			Shm->IdleDriver.State[i].targetResidency =
-				Proc->IdleDriver.State[i].targetResidency;
-		}
+		Shm->SysGate.IdleDriver.State[i].targetResidency =
+			Proc->SysGate.IdleDriver.State[i].targetResidency;
 	}
+    }
+}
+
+void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
+{
+	int cnt;
+	Shm->SysGate.taskCount = Proc->SysGate.taskCount;
+
+	for (cnt = 0; cnt < Shm->SysGate.taskCount; cnt++) {
+		Shm->SysGate.taskList[cnt].state =
+			Proc->SysGate.taskList[cnt].state;
+
+		Shm->SysGate.taskList[cnt].wake_cpu =
+			Proc->SysGate.taskList[cnt].wake_cpu;
+
+		Shm->SysGate.taskList[cnt].pid =
+			Proc->SysGate.taskList[cnt].pid;
+
+		memcpy(Shm->SysGate.taskList[cnt].comm,
+			Proc->SysGate.taskList[cnt].comm, TASK_COMM_LEN);
+	}
+	Shm->SysGate.memInfo.totalram = Proc->SysGate.memInfo.totalram;
+	Shm->SysGate.memInfo.freeram  = Proc->SysGate.memInfo.freeram;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
@@ -475,7 +501,13 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	ThermalMonitoring(Shm, Proc, Core, cpu);
 }
 
-void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
+typedef	struct
+{
+	int	Drv,
+		Svr;
+} FD;
+
+void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 {
     unsigned int cpu = 0;
 
@@ -567,6 +599,9 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		Shm->Proc.Avg.C6    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
+		// Update OS tasks and memory usage.
+		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSGATE, NULL) != -1)
+			SysGate_Update(Shm, Proc);
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
 	}
@@ -576,12 +611,6 @@ void Core_Manager(SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		pthread_join(Arg[cpu].TID, NULL);
     free(Arg);
 }
-
-typedef	struct
-{
-	int	Drv,
-		Svr;
-} FD;
 
 int Shm_Manager(FD *fd, PROC *Proc)
 {
@@ -603,8 +632,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	size_t ShmSize, ShmCpuSize;
 	ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count;
 	ShmSize    = sizeof(SHM_STRUCT) + ShmCpuSize;
-	ShmSize    = PAGE_SIZE * ((ShmSize / PAGE_SIZE)
-			+ ((ShmSize % PAGE_SIZE) ? 1 : 0));
+	ShmSize    = ROUND_TO_PAGES(ShmSize);
 
 	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
@@ -663,7 +691,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		if (Quiet)
 			fflush(stdout);
 
-		Core_Manager(Shm, Proc, Core);
+		Core_Manager(fd, Shm, Proc, Core);
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
@@ -766,7 +794,8 @@ int main(int argc, char *argv[])
 	if (!rc) {
 	  if (geteuid() == 0) {
 	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1) {
-		if ((Proc = mmap(NULL, PAGE_SIZE,
+		unsigned long packageSize = ROUND_TO_PAGES(sizeof(PROC));
+		if ((Proc = mmap(NULL, packageSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, 0)) != NULL) {
 			SIG Sig = {.Signal = {{0}}, .TID = 0, .Started = 0};
@@ -786,7 +815,7 @@ int main(int argc, char *argv[])
 				pthread_kill(Sig.TID, SIGUSR1);
 				pthread_join(Sig.TID, NULL);
 			}
-			munmap(Proc, PAGE_SIZE);
+			munmap(Proc, packageSize);
 		}
 		else
 			rc = 3;

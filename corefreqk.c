@@ -12,6 +12,7 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <linux/utsname.h>
 #include <linux/cpuidle.h>
 #include <asm/msr.h>
 
@@ -2058,32 +2059,84 @@ void IdleDriver_Query(void *arg)
 {
 	struct cpuidle_driver *idleDriver;
 
-	if ((idleDriver=cpuidle_get_driver()) != NULL) {
+	if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
 
-		strncpy(Proc->IdleDriver.Name,
+		strncpy(Proc->SysGate.IdleDriver.Name,
 			idleDriver->name,
 			CPUIDLE_NAME_LEN - 1);
 
 		if (idleDriver->state_count < CPUIDLE_STATE_MAX)
-			Proc->IdleDriver.stateCount=idleDriver->state_count;
+			Proc->SysGate.IdleDriver.stateCount =
+				idleDriver->state_count;
 		else	// No overflow check.
-			Proc->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
+			Proc->SysGate.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
 
-		for (i = 0; i < Proc->IdleDriver.stateCount; i++) {
-			strncpy(Proc->IdleDriver.State[i].Name,
+		for (i = 0; i < Proc->SysGate.IdleDriver.stateCount; i++) {
+			strncpy(Proc->SysGate.IdleDriver.State[i].Name,
 				idleDriver->states[i].name,
 				CPUIDLE_NAME_LEN - 1);
 
-			Proc->IdleDriver.State[i].exitLatency =
+			Proc->SysGate.IdleDriver.State[i].exitLatency =
 				idleDriver->states[i].exit_latency;
-			Proc->IdleDriver.State[i].powerUsage =
+			Proc->SysGate.IdleDriver.State[i].powerUsage =
 				idleDriver->states[i].power_usage;
-			Proc->IdleDriver.State[i].targetResidency =
+			Proc->SysGate.IdleDriver.State[i].targetResidency =
 				idleDriver->states[i].target_residency;
 		}
 	} else
-		memset(&Proc->IdleDriver, 0, sizeof(IDLEDRIVER));
+		memset(&Proc->SysGate.IdleDriver, 0, sizeof(IDLEDRIVER));
+}
+
+long Sys_DumpTask(void)
+{
+	struct task_struct *process, *thread;
+	int cnt = 0;
+
+	rcu_read_lock();
+	for_each_process_thread(process, thread) {
+		task_lock(thread);
+
+		Proc->SysGate.taskList[cnt].state    = thread->state;
+		Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
+		Proc->SysGate.taskList[cnt].pid      = thread->pid;
+		memcpy(Proc->SysGate.taskList[cnt].comm,
+			thread->comm, TASK_COMM_LEN);
+
+		task_unlock(thread);
+		cnt++;
+	}
+	rcu_read_unlock();
+	Proc->SysGate.taskCount = cnt;
+
+	return(0);
+}
+
+long Sys_MemInfo(void)
+{	// Source: /fs/proc/meminfo.c
+	struct sysinfo info;
+	si_meminfo(&info);
+
+	Proc->SysGate.memInfo.totalram = info.totalram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.freeram  = info.freeram << (PAGE_SHIFT - 10);
+
+	return(0);
+}
+
+static long CoreFreqK_ioctl(	struct file *filp,
+				unsigned int cmd,
+				unsigned long arg)
+{
+	long rc;
+
+	switch (cmd) {
+	case COREFREQ_IOCTL_SYSGATE:
+		rc = Sys_DumpTask() & Sys_MemInfo();
+		break;
+	default:
+		rc = 0;
+	}
+	return(rc);
 }
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
@@ -2128,10 +2181,11 @@ static int CoreFreqK_release(struct inode *inode, struct file *pfile)
 }
 
 static struct file_operations CoreFreqK_fops = {
-	.open	 = CoreFreqK_open,
-	.release = CoreFreqK_release,
-	.mmap	 = CoreFreqK_mmap,
-	.owner   = THIS_MODULE,
+	.open		= CoreFreqK_open,
+	.release	= CoreFreqK_release,
+	.mmap		= CoreFreqK_mmap,
+	.unlocked_ioctl = CoreFreqK_ioctl,
+	.owner		= THIS_MODULE,
 };
 
 #ifdef CONFIG_PM_SLEEP
@@ -2361,6 +2415,12 @@ static int __init CoreFreqK_init(void)
 
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
+
+				strncpy(Proc->SysGate.sysname,
+					utsname()->sysname, MAX_UTS_LEN);
+
+				strncpy(Proc->SysGate.release,
+					utsname()->release, MAX_UTS_LEN);
 
 				if (IdleDriverQuery)
 				    smp_call_function_single(0, /* BSP */

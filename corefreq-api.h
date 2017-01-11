@@ -342,7 +342,16 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
-	IDLEDRIVER		IdleDriver;
+	struct {
+		char		sysname[MAX_UTS_LEN + 1],
+				release[MAX_UTS_LEN + 1];
+
+		IDLEDRIVER	IdleDriver;
+
+		int		taskCount;
+		TASK_MCB	taskList[PID_MAX_DEFAULT];
+		MEM_MCB		memInfo;
+	} SysGate;
 
 	char			Architecture[32];
 } PROC;

@@ -4,8 +4,6 @@
  * Licenses: GPL2
  */
 
-#define	TASK_COMM_LEN		16
-
 #define	SHM_FILENAME	"corefreq-shm"
 
 typedef struct
@@ -151,8 +149,19 @@ typedef struct
 
 typedef	struct
 {
-	char		AppName[TASK_COMM_LEN];
-	IDLEDRIVER	IdleDriver;
-	PROC_STRUCT	Proc;
-	CPU_STRUCT	Cpu[];
+	char			AppName[TASK_COMM_LEN];
+
+	struct {	
+		char		sysname[MAX_UTS_LEN + 1],
+				release[MAX_UTS_LEN + 1];
+
+		IDLEDRIVER	IdleDriver;
+
+		int		taskCount;
+		TASK_MCB	taskList[PID_MAX_DEFAULT];
+		MEM_MCB		memInfo;
+	} SysGate;
+
+	PROC_STRUCT		Proc;
+	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;

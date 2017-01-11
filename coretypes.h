@@ -7,6 +7,9 @@
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
+#define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
+				+ ((Size % PAGE_SIZE)? 1:0));
+
 #define MAX(M, m)	((M) > (m) ? (M) : (m))
 #define MIN(m, M)	((m) < (M) ? (m) : (M))
 
@@ -498,7 +501,14 @@ typedef struct	// BSP CPUID features.
 			FactoryFreq;
 } FEATURES;
 
-// Source: include/linux/cpuidle.h
+// Source: /include/uapi/linux/utsname.h
+#ifdef __NEW_UTS_LEN
+#define MAX_UTS_LEN __NEW_UTS_LEN
+#else
+#define MAX_UTS_LEN 64
+#endif
+
+// Source: /include/linux/cpuidle.h
 #ifndef _LINUX_CPUIDLE_H
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
@@ -514,3 +524,26 @@ typedef	struct {
 		unsigned int	targetResidency;	/* in US */
 	} State[CPUIDLE_STATE_MAX];
 } IDLEDRIVER;
+
+#define COREFREQ_IOCTL_MAGIC 0xc3
+#define COREFREQ_IOCTL_SYSGATE _IO(COREFREQ_IOCTL_MAGIC, 0)
+
+#ifndef TASK_COMM_LEN
+#define	TASK_COMM_LEN 16
+#endif
+
+#ifndef PID_MAX_DEFAULT
+#define PID_MAX_DEFAULT (1<<15)
+#endif
+
+typedef struct {
+	long		state;
+	int		wake_cpu;
+	pid_t		pid;
+	char		comm[TASK_COMM_LEN];
+} TASK_MCB;
+
+typedef struct {
+	unsigned long	totalram,
+			freeram;
+} MEM_MCB;

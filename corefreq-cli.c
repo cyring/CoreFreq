@@ -19,8 +19,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
-#include <sys/utsname.h>
-#include <sys/sysinfo.h>
 
 #include "intelasm.h"
 #include "coretypes.h"
@@ -277,31 +275,31 @@ void SysInfoProc(SHM_STRUCT *Shm,
 
 /* Section Mark */
 	printv(OutFunc, width, 0, "Processor%.*s[%s]",
-		width-11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
+		width - 11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
 
 	printv(OutFunc, width, 2, "Vendor ID%.*s[%s]",
-		width-14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
+		width - 14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
 		Shm->Proc.Features.Info.VendorID);
 
 	printv(OutFunc, width, 2, "Signature%.*s[%1X%1X_%1X%1X]",
-		width-19, hSpace,
+		width - 19, hSpace,
 		Shm->Proc.Features.Std.AX.ExtFamily,
 		Shm->Proc.Features.Std.AX.Family,
 		Shm->Proc.Features.Std.AX.ExtModel,
 		Shm->Proc.Features.Std.AX.Model);
 
 	printv(OutFunc, width, 2, "Stepping%.*s[%3u]",
-		width-16, hSpace, Shm->Proc.Features.Std.AX.Stepping);
+		width - 16, hSpace, Shm->Proc.Features.Std.AX.Stepping);
 
 	printv(OutFunc, width, 2, "Architecture%.*s[%s]",
-		width-17 - strlen(Shm->Proc.Architecture), hSpace,
+		width - 17 - strlen(Shm->Proc.Architecture), hSpace,
 		Shm->Proc.Architecture);
 
 	printv(OutFunc, width, 2, "Online CPU%.*s[%u/%u]",
-		width-18, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+		width - 18, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
 	printv(OutFunc, width, 2, "Base Clock%.*s[%3llu]",
-		width-18, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L);
+		width - 18, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L);
 
 	printv(OutFunc, width, 2, "Ratio Boost:");
 
@@ -352,8 +350,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 			Shm->Proc.Features.ExtFeature.BX.BMI1 ? 'Y' : 'N',
 			Shm->Proc.Features.ExtFeature.BX.BMI2 ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -386,8 +384,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "CMPXCH16   [%c]",
 			Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -420,8 +418,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "LAHF/SAHF   [%c]",
 			Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -455,8 +453,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "PCLMULDQ   [%c]",
 			Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -489,8 +487,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "SEP   [%c]",
 			Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -523,8 +521,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "SSSE3   [%c]",
 			Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, pad);
 	strcat(row, str);
@@ -553,8 +551,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	len += sprintf(str, "SYSCALL   [%c]",
 			Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N');
 
-	pad = realloc(pad, (width-len) + 1);
-	sprintf(pad, "%.*s", (int)(width-len), hSpace);
+	pad = realloc(pad, (width - len) + 1);
+	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
 	strcat(row, str);
 	strcat(row, pad);
@@ -865,7 +863,7 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm,
 
 	printv(OutFunc, width, 2,
 		"Hardware-Controlled Performance States%.*sHWP       [%3s]",
-		width-56, hSpace,
+		width - 56, hSpace,
 		enabled(  Shm->Proc.Features.Power.AX.HWP_Reg
 			| Shm->Proc.Features.AdvPower.DX.HwPstate));
 
@@ -976,43 +974,45 @@ void SysInfoKernel(	SHM_STRUCT *Shm,
 	int	i = 0;
 
 /* Section Mark */
-	struct utsname OSinfo = {{0}};
-	uname(&OSinfo);
-
-	printv(OutFunc, width, 0, "%s:",OSinfo.sysname);
+	printv(OutFunc, width, 0, "%s:", Shm->SysGate.sysname);
 
 	printv(OutFunc, width, 2, "Release%.*s[%s]",
-		width - 12 - strlen(OSinfo.release), hSpace, OSinfo.release);
+		width - 12 - strlen(Shm->SysGate.release), hSpace,
+		Shm->SysGate.release);
 
-    if ((len = strlen(Shm->IdleDriver.Name)) > 0) {
+    if ((len = strlen(Shm->SysGate.IdleDriver.Name)) > 0) {
 	printv(OutFunc, width, 2, "Idle driver%.*s[%s]",
-		width - 16 - len, hSpace, Shm->IdleDriver.Name);
+		width - 16 - len, hSpace, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
 	len = sprintf(row, "States:%.*s", 9, hSpace);
-	for (i = 0; i < Shm->IdleDriver.stateCount; i++) {
-		len += sprintf(str, "%-8s", Shm->IdleDriver.State[i].Name);
+	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+		len += sprintf(str, "%-8s",
+			Shm->SysGate.IdleDriver.State[i].Name);
 		strcat(row, str);
 	}
 	printv(OutFunc, width, 3, row);
 /* Row Mark */
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
-	for (i = 0; i < Shm->IdleDriver.stateCount; i++) {
-		len += sprintf(str,"%-8d", Shm->IdleDriver.State[i].powerUsage);
+	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+		len += sprintf(str, "%-8d",
+			Shm->SysGate.IdleDriver.State[i].powerUsage);
 		strcat(row, str);
 	}
 	printv(OutFunc, width, 3, row);
 /* Row Mark */
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
-	for (i = 0; i < Shm->IdleDriver.stateCount; i++) {
-		len += sprintf(str,"%-8u",Shm->IdleDriver.State[i].exitLatency);
+	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+		len += sprintf(str, "%-8u",
+			Shm->SysGate.IdleDriver.State[i].exitLatency);
 		strcat(row, str);
 	}
 	printv(OutFunc, width, 3, row);
 /* Row Mark */
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
-	for (i = 0; i < Shm->IdleDriver.stateCount; i++) {
-	    len += sprintf(str,"%-8u",Shm->IdleDriver.State[i].targetResidency);
-	    strcat(row, str);
+	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+		len += sprintf(str, "%-8u",
+			Shm->SysGate.IdleDriver.State[i].targetResidency);
+		strcat(row, str);
 	}
 	printv(OutFunc, width, 3, row);
     }
@@ -2542,7 +2542,7 @@ void Top(SHM_STRUCT *Shm)
 
 		for (i = 0; i < c; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, C[i], MAKE_PRINT_FOCUS);
-		for(i = 0; i < f; i++)
+		for (i = 0; i < f; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, F[i], MAKE_PRINT_FOCUS);
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
@@ -3452,7 +3452,7 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 				hTech1.origin.row,
-				(drawSize.width-hTech0.length-hTech1.length),
+				(drawSize.width - hTech0.length-hTech1.length),
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
@@ -3502,19 +3502,16 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 				hTech1.origin.row,
-				(drawSize.width-hTech0.length-hTech1.length),
+				(drawSize.width - hTech0.length-hTech1.length),
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	}
-	struct utsname OSinfo = {{0}};
-	uname(&OSinfo);
-
 	row++;
-	len = strlen(OSinfo.sysname);
+	len = strlen(Shm->SysGate.sysname);
 
 	LayerFillAt(	layer, col, row,
-			len, OSinfo.sysname,
+			len, Shm->SysGate.sysname,
 			MakeAttr(CYAN, 0, BLACK, 0));
 
 	col += len;
@@ -3528,14 +3525,14 @@ void Top(SHM_STRUCT *Shm)
 	LayerAt(layer, code, col, row) = '[';
 
 	col++;
-	len = strlen(OSinfo.release);
+	len = strlen(Shm->SysGate.release);
 
 	LayerFillAt(	layer, col, row,
-			len, OSinfo.release,
+			len, Shm->SysGate.release,
 			MakeAttr(WHITE, 0, BLACK, 1));
 
 	col += len;
-	len = strlen(Shm->IdleDriver.Name);
+	len = strlen(Shm->SysGate.IdleDriver.Name);
 	if (len > 0) {
 		LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
 		LayerAt(layer, code, col, row) = '/';
@@ -3543,7 +3540,7 @@ void Top(SHM_STRUCT *Shm)
 		col++;
 
 		LayerFillAt(	layer, col, row,
-				len, Shm->IdleDriver.Name,
+				len, Shm->SysGate.IdleDriver.Name,
 				MakeAttr(WHITE, 0, BLACK, 1));
 
 		col += len;
@@ -3700,7 +3697,7 @@ void Top(SHM_STRUCT *Shm)
 				Shm->Cpu[cpu].PowerThermal.Limit[0])
 					warning = MakeAttr(BLUE, 0, BLACK, 1);
 			else {
-				if(Flop->Thermal.Temp >=
+				if (Flop->Thermal.Temp >=
 				    Shm->Cpu[cpu].PowerThermal.Limit[1])
 					warning = MakeAttr(YELLOW, 0, BLACK, 0);
 			}
@@ -3782,22 +3779,15 @@ void Top(SHM_STRUCT *Shm)
 	  }
 
 	    if (tSteps == 0) {
-		struct sysinfo sysLinux = {
-			.totalram = 0,
-			.freeram = 0,
-			.procs = 0
-		};
-		sysinfo(&sysLinux);
-
 		unsigned short row = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
 				   + 2 * Shm->Proc.CPU.Count;
 
 		sprintf((char *)&LayerAt(dLayer,code,(drawSize.width - 34),row),
 			"%6u""]"					\
 			" Mem [""%8lu""/""%8lu",
-			sysLinux.procs,
-			sysLinux.freeram  / 1024,
-			sysLinux.totalram / 1024);
+			Shm->SysGate.taskCount,
+			Shm->SysGate.memInfo.freeram,
+			Shm->SysGate.memInfo.totalram);
 	    }
 	    tSteps++;
 	    if (tSteps >= mSteps)
