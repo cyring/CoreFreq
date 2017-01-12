@@ -2185,9 +2185,7 @@ void Top(SHM_STRUCT *Shm)
 	.tv_nsec = (timeout % 1000000L) * 1000
     };
 
-    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i,
-		mSteps = (timeout < 100000L) ? (100000L / timeout) : 1,
-		tSteps = 0;
+    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i;
 
     int MIN_HEIGHT = (2 * Shm->Proc.CPU.Count)
 		 + TOP_HEADER_ROW + TOP_SEPARATOR + TOP_FOOTER_ROW,
@@ -3762,20 +3760,15 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  }
 
-	    if (tSteps == 0) {
-		unsigned short row = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
-				   + 2 * Shm->Proc.CPU.Count;
+	    unsigned short row = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
+				+ 2 * Shm->Proc.CPU.Count;
 
-		sprintf((char *)&LayerAt(dLayer,code,(drawSize.width - 34),row),
+	    sprintf((char *) &LayerAt(dLayer,code,(drawSize.width - 34), row),
 			"%6u""]"					\
 			" Mem [""%8lu""/""%8lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
 			Shm->SysGate.memInfo.totalram);
-	    }
-	    tSteps++;
-	    if (tSteps >= mSteps)
-		tSteps = 0;
 
 	    {
 	    struct FLIP_FLOP *Flop =
