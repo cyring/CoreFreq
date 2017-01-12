@@ -2185,7 +2185,7 @@ void Top(SHM_STRUCT *Shm)
 	.tv_nsec = (timeout % 1000000L) * 1000
     };
 
-    unsigned int topRatio, digit[9], lcdColor, cpu=0, iClock=0, ratioCount=0, i,
+    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i,
 		mSteps = (timeout < 100000L) ? (100000L / timeout) : 1,
 		tSteps = 0;
 
@@ -2194,8 +2194,7 @@ void Top(SHM_STRUCT *Shm)
 	loadWidth = 0;
 
     double minRatio = Shm->Proc.Boost[0], maxRatio = Shm->Proc.Boost[9],
-	medianRatio = (minRatio + maxRatio) / 2,
-	availRatio[10] = {minRatio}, maxRelFreq;
+	medianRatio = (minRatio + maxRatio) / 2, availRatio[10] = {minRatio};
 
     const unsigned int
 	isTurboBoost = (Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask),
@@ -3619,7 +3618,6 @@ void Top(SHM_STRUCT *Shm)
 
 		ResetLayer(dLayer);
 	}
-
 	if (drawFlag.layout) {
 		drawFlag.layout = 0;
 
@@ -3628,26 +3626,12 @@ void Top(SHM_STRUCT *Shm)
 	}
 	if (drawFlag.daemon)
 	{
-	  maxRelFreq = 0.0;
-	  topRatio = 0;
 	  for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
 	  {
 	    if (!Shm->Cpu[cpu].OffLine.HW)
 	    {
 		struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-		if (Flop->Relative.Freq > maxRelFreq) {
-			maxRelFreq = Flop->Relative.Freq;
-			topRatio = Flop->Relative.Ratio;
-
-			if (topRatio > medianRatio)
-				lcdColor = RED;
-			else if (topRatio > minRatio)
-				lcdColor = YELLOW;
-			else
-				lcdColor = GREEN;
-		}
 
 		if (!Shm->Cpu[cpu].OffLine.OS)
 		{
@@ -3794,8 +3778,20 @@ void Top(SHM_STRUCT *Shm)
 		tSteps = 0;
 
 	    {
+	    struct FLIP_FLOP *Flop =
+	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+
+		Dec2Digit((unsigned int) Flop->Relative.Freq, digit);
+
+		unsigned int lcdColor;
+		if (Flop->Relative.Ratio > medianRatio)
+			lcdColor = RED;
+		else if (Flop->Relative.Ratio > minRatio)
+			lcdColor = YELLOW;
+		else
+			lcdColor = GREEN;
+
 		unsigned short j = 4;
-		Dec2Digit((unsigned int) maxRelFreq, digit);
 		do {
 			short offset = (4 - j) * 3;
 
@@ -3812,7 +3808,7 @@ void Top(SHM_STRUCT *Shm)
 			j--;
 		} while (j > 0) ;
 	    }
-		memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
+	    memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
 
 	    do {
 		iClock++;

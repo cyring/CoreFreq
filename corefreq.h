@@ -133,6 +133,8 @@ typedef struct
 					C1U,		// Sandy Bridge;
 					C1U_Mask;
 
+	unsigned int			Top;
+
 	struct {
 		double			Turbo,
 					C0,

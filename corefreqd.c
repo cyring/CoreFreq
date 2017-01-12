@@ -565,6 +565,8 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
 
 	else if (!Shutdown) {
+		double maxRelFreq = 0.0;
+
 		// Update the count of online CPU
 		Shm->Proc.CPU.OnLine = Proc->CPU.OnLine;
 
@@ -578,11 +580,16 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 
 		for (cpu = 0; !Shutdown &&(cpu < Shm->Proc.CPU.Count); cpu++) {
 		    if (!Shm->Cpu[cpu].OffLine.OS) {
-			// For each cpu, sum counters values from
-			// the alternated memory structure.
 			struct FLIP_FLOP *Flop =
 				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
+			// Index cpu with the highest frequency.
+			if (Flop->Relative.Freq > maxRelFreq) {
+				maxRelFreq = Flop->Relative.Freq;
+				Shm->Proc.Top = cpu;
+			}
+			// For each cpu, sum counters values from
+			// the alternated memory structure.
 			Shm->Proc.Avg.Turbo += Flop->State.Turbo;
 			Shm->Proc.Avg.C0    += Flop->State.C0;
 			Shm->Proc.Avg.C3    += Flop->State.C3;
