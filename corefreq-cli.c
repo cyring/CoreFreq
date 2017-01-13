@@ -1340,9 +1340,11 @@ typedef union {
 #define SCANKEY_o		0x6f
 #define SCANKEY_p		0x70
 #define SCANKEY_q		0x71
-#define SCANKEY_t		0x74
+#define SCANKEY_r		0x72
 #define SCANKEY_s		0x73
+#define SCANKEY_t		0x74
 #define SCANKEY_u		0x75
+#define SCANKEY_v		0x76
 #define SCANKEY_w		0x77
 #define SCANKEY_x		0x78
 #define SCANKEY_z		0x7a
@@ -1354,6 +1356,10 @@ typedef union {
 #define SCANCON_F3		0x435b5b1b
 #define SCANCON_F4		0x445b5b1b
 #define SCANCON_SHIFT_TAB	0x91b
+
+#define SORTBY_TIME		0xfffffffffffffffe
+#define SORTBY_PID		0xfffffffffffffffd
+#define SORTBY_COMM		0xfffffffffffffffc
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -1408,7 +1414,9 @@ typedef union {
 #define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
+#define LDK	{.fg = BLACK,	.bg = BLACK}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
+#define LRK	{.fg = RED,	.bg = BLACK}
 #define LYK	{.fg = YELLOW,	.bg = BLACK}
 #define LBK	{.fg = BLUE,	.bg = BLACK}
 #define LBW	{.fg = BLUE,	.bg = WHITE}
@@ -1417,6 +1425,7 @@ typedef union {
 #define LWB	{.fg = WHITE,	.bg = BLUE}
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
+#define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
 
 #define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
 #define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN, 1)
@@ -2130,7 +2139,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
-enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES};
+enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS};
 
 #define LOAD_LEAD 4
 
@@ -2167,15 +2176,24 @@ void Top(SHM_STRUCT *Shm)
     struct {
 	struct {
 	unsigned int
-		layout	:  1-0,	 // Draw layout
-		clear	:  2-1,	 // Clear screen
-		height	:  3-2,	 // Valid height
-		width	:  4-3,	 // Valid width
-		daemon	:  5-4, // Draw dynamic
-		_pad	: 32-5;
+		layout	:  1-0,		// Draw layout
+		clear	:  2-1,		// Clear screen
+		height	:  3-2,		// Valid height
+		width	:  4-3,		// Valid width
+		daemon	:  5-4,		// Draw dynamic
+		taskVal	:  6-5,		// Display task's value
+		_pad	: 32-6;
 	};
 	enum VIEW view;
-    } drawFlag = {.layout=0,.clear=0,.height=0,.width=0,.daemon=0,.view=V_FREQ};
+    } drawFlag = {
+	.layout=0,
+	.clear=0,
+	.height=0,
+	.width=0,
+	.daemon=0,
+	.taskVal=0,
+	.view=V_FREQ
+    };
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
@@ -2393,19 +2411,19 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_x,	" Task / State [x] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SORTBY_TIME,	"   by Time        ", sameAttr);
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SORTBY_PID,	"   by PID         ", sameAttr);
 		StoreTCell(wMenu, SCANKEY_u,	" CPUID        [u] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SORTBY_COMM,	"   by Command     ", sameAttr);
 		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
 
 		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
@@ -2871,6 +2889,46 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 		}
 		break;
+	case SCANKEY_r:
+		if (drawFlag.view == V_TASKS) {
+			Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
+			drawFlag.layout = 1;
+		}
+		break;
+	case SCANKEY_v:
+		if (drawFlag.view == V_TASKS) {
+			drawFlag.taskVal = !drawFlag.taskVal;
+			drawFlag.layout = 1;
+		}
+		break;
+	case SCANKEY_x:
+		{
+		Shm->SysGate.sortByField = 0;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
+	case SORTBY_TIME:
+		{
+		Shm->SysGate.sortByField = 1;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
+	case SORTBY_PID:
+		{
+		Shm->SysGate.sortByField = 2;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
+	case SORTBY_COMM:
+		{
+		Shm->SysGate.sortByField = 3;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
 	case SCANKEY_e:
 	case SCANKEY_k:
 	case SCANKEY_o:
@@ -2901,13 +2959,13 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
 		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
-		.code = {' ','P','r','o','c','e','s','s','o','r',' ','['},
+		.code = {' ','P','r','o','c','e','s','s','o','r',' ','['}
 	};
 
 	LayerDeclare(9) hProc1 = {
 		.origin = {.col = drawSize.width - 9, .row = row}, .length = 9,
 		.attr = {LWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK},
-		.code = {']',' ',' ','/',' ',' ','C','P','U'},
+		.code = {']',' ',' ','/',' ',' ','C','P','U'}
 	};
 
 	row++;
@@ -2915,7 +2973,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(15) hArch0 = {
 	    .origin = {.col = 12, .row = row}, .length = 15,
 	    .attr={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
-	    .code={' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['},
+	    .code={' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['}
 	};
 
 	LayerDeclare(30) hArch1 = {
@@ -2927,7 +2985,7 @@ void Top(SHM_STRUCT *Shm)
 		.code ={']',' ','C','a','c','h','e','s',' ',		\
 			'L','1',' ','I','n','s','t','=',' ',' ',' ',	\
 			'D','a','t','a','=',' ',' ',' ','K','B'
-		},
+		}
 	};
 
 	row++;
@@ -2941,7 +2999,7 @@ void Top(SHM_STRUCT *Shm)
 		.code ={' ','B','a','s','e',' ','C','l','o','c','k',' ',\
 			'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',\
 			' ','H','z'
-		},
+		}
 	};
 
 	LayerDeclare(18) hBClk1 = {
@@ -2951,7 +3009,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.code ={'L','2','=',' ',' ',' ',' ',' ',		\
 			'L','3','=',' ',' ',' ',' ',' ','K','B'
-		},
+		}
 	};
 
 	row++;
@@ -3023,7 +3081,7 @@ void Top(SHM_STRUCT *Shm)
 			"----------------------------------------"	\
 			"----------------------------------------"	\
 			"------------"
-		},
+		}
 	};
 
 	for (i = 0; i < ratioCount; i++) {
@@ -3129,8 +3187,9 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    LayerDeclare(77) hMon0 = {
 		.origin = {	.col = LOAD_LEAD - 1,
-				.row = (row + Shm->Proc.CPU.Count + 1)},
-				.length = 77,
+				.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = 77,
 		.attr ={HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,		\
 			LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
@@ -3156,7 +3215,7 @@ void Top(SHM_STRUCT *Shm)
 			' ',' ',' ',0x0,				\
 			' ',' ',' ',0x0,				\
 			' ',' ',' '					\
-		},
+		}
 	    };
 	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
@@ -3172,8 +3231,9 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    LayerDeclare(76) hMon0 = {
 		.origin = {	.col = LOAD_LEAD - 1,
-				.row = (row + Shm->Proc.CPU.Count + 1)},
-				.length = 76,
+				.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = 76,
 		.attr ={HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
 			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
@@ -3193,7 +3253,7 @@ void Top(SHM_STRUCT *Shm)
 			' ',' ',' ',' ',' ',' ',0x0,0x0,		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' '
-		},
+		}
 	    };
 	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
@@ -3210,8 +3270,9 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    LayerDeclare(73) hMon0 = {
 		.origin = {	.col = LOAD_LEAD - 1,
-				.row = (row + Shm->Proc.CPU.Count + 1)},
-				.length = 73,
+				.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = 73,
 		.attr ={HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
@@ -3231,7 +3292,7 @@ void Top(SHM_STRUCT *Shm)
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' '
-		},
+		}
 	    };
 	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
@@ -3241,6 +3302,48 @@ void Top(SHM_STRUCT *Shm)
 				(drawSize.width - hMon0.length),
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
+	  }
+	  break;
+	case V_TASKS:
+	  {
+	    LayerDeclare(MAX_WIDTH - LOAD_LEAD + 1) hMon0 = {
+		.origin = {	.col = LOAD_LEAD - 1,
+				.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = MAX_WIDTH - LOAD_LEAD + 1,
+		.attr ={HYK,						\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,	\
+			LRK,LRK,LRK,LRK,LRK,LRK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK		\
+		},
+		.code ={0x0,						\
+			' ',' ',' ',' ',0x0,' ',' ',' ',		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
+		}
+	    };
+	    LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+			hMon0.length, hMon0.attr, hMon0.code);
 	  }
 	  break;
 	}
@@ -3285,7 +3388,7 @@ void Top(SHM_STRUCT *Shm)
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,' ',']',' '
-		},
+		}
 	    };
 
 	    LayerCopyAt(layer, hAvg0.origin.col, hAvg0.origin.row,
@@ -3334,6 +3437,179 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	  }
+	  break;
+	case V_TASKS:
+	  {
+	    LayerDeclare(MAX_WIDTH) hTask0 = {
+		.origin = {
+			.col = 0,
+			.row = row
+		},
+		.length = drawSize.width,
+		.attr = {
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK, \
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LDK, \
+			LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK, \
+			LDK,LDK,LDK,LDK,LDK,LDK,LDK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		.code = "--- Freq(MHz) --- Tasks                 "	\
+			"   -------------------------------------"	\
+			"----------------------------------------"	\
+			"------------",
+	    };
+
+	    LayerDeclare(20) hTask1 = {
+		.origin = {.col = 23, .row = row},
+		.length = 20,
+	    };
+
+	    struct {
+		Attribute attr[20];
+		ASCII code[20];
+	    } hSort[4] = {
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','S','t','a','t','e',')',' ','-','-'
+		  }
+		},
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','R','u','n','T','i','m','e',')',' '
+		  }
+		},
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','P','I','D',')',' ','-','-','-','-'
+		  }
+		},
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','C','o','m','m','a','n','d',')',' '
+		  }
+		}
+	    };
+
+	    memcpy(hTask1.attr, hSort[Shm->SysGate.sortByField].attr,
+			hTask1.length);
+	    memcpy(hTask1.code, hSort[Shm->SysGate.sortByField].code,
+			hTask1.length);
+
+	    LayerDeclare(15) hTask2 = {
+		.origin = {
+			.col = drawSize.width - 18,
+			.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = 15,
+	    };
+
+	    struct {
+		Attribute attr[15];
+		ASCII code[15];
+	    } hReverse[2] = {
+		{
+		  .attr = {
+		    LWK,_LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+		  },
+		  .code = {
+		    ' ', 'R','e','v','e','r','s','e',' ','[','O','F','F',']',' '
+		  }
+		},
+		{
+		  .attr = {
+		    LWK,_LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK
+		  },
+		  .code = {
+		    ' ', 'R','e','v','e','r','s','e',' ','[',' ','O','N',']',' '
+		  }
+		}
+	    };
+
+	    memcpy(hTask2.attr, hReverse[Shm->SysGate.reverseOrder].attr,
+			hTask2.length);
+	    memcpy(hTask2.code, hReverse[Shm->SysGate.reverseOrder].code,
+			hTask2.length);
+
+	    LayerDeclare(13) hTask3 = {
+		.origin = {
+			.col = drawSize.width - 34,
+			.row = (row + Shm->Proc.CPU.Count + 1)
+		},
+		.length = 13,
+		.attr = {
+		    LWK,_LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+		},
+		.code = {
+		    ' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '
+		}
+	    };
+
+	    struct {
+		Attribute attr[3];
+		ASCII code[3];
+	    } hTaskVal[2] = {
+		{
+		  .attr = {
+		    LWK,LWK,LWK
+		  },
+		  .code = {
+		    'O','F','F'
+		  }
+		},
+		{
+		  .attr = {
+		    LCK,LCK,LCK
+		  },
+		  .code = {
+		    ' ','O','N'
+		  }
+		}
+	    };
+
+	    memcpy(&hTask3.attr[8], hTaskVal[drawFlag.taskVal].attr, 3);
+	    memcpy(&hTask3.code[8], hTaskVal[drawFlag.taskVal].code, 3);
+
+	    LayerCopyAt(layer, hTask0.origin.col, hTask0.origin.row,
+			hTask0.length, hTask0.attr, hTask0.code);
+
+	    LayerCopyAt(layer, hTask1.origin.col, hTask1.origin.row,
+			hTask1.length, hTask1.attr, hTask1.code);
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    LayerCopyAt(layer, hTask2.origin.col, hTask2.origin.row,
+			hTask2.length, hTask2.attr, hTask2.code);
+
+	    LayerCopyAt(layer, hTask3.origin.col, hTask3.origin.row,
+			hTask3.length, hTask3.attr, hTask3.code);
 	  }
 	  break;
 	}
@@ -3730,6 +4006,15 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Delta.C7);
 		      }
 		      break;
+		    case V_TASKS:
+		      {
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
+				"%c"					\
+				"%7.2f",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Relative.Freq);
+		      }
+		      break;
 		    }
 		} else {
 			unsigned short row = 2 + TOP_HEADER_ROW
@@ -3742,7 +4027,7 @@ void Top(SHM_STRUCT *Shm)
 	  }
 	  switch (drawFlag.view) {
 	  case V_FREQ:
-		{
+	    {
 		unsigned short row=2 + TOP_HEADER_ROW + 2 * Shm->Proc.CPU.Count;
 
 		sprintf((char *)&LayerAt(dLayer, code, 20, row),
@@ -3754,7 +4039,113 @@ void Top(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C3,
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7);
+	    }
+	    break;
+	  case V_TASKS:
+	    {
+		unsigned long long first = 0xffffffffffffffff;
+		int len, vec;
+		char taskStruct[64], taskList[MAX_CPU_ROW][MAX_WIDTH];
+
+		memset(taskList, 0, MAX_CPU_ROW * MAX_WIDTH);
+		for (i = 0; i < Shm->SysGate.taskCount; i++) {
+
+		    if (first & (1 << Shm->SysGate.taskList[i].wake_cpu)) {
+			first ^= (1 << Shm->SysGate.taskList[i].wake_cpu);
+			vec = 1;
+		    } else
+			vec = 0;
+
+		    if (drawFlag.taskVal) {
+			switch (Shm->SysGate.sortByField) {
+			case 0:
+			  {
+			  char *fmt[2] = {"%s(%c)  ", "%16s(%c)  "};
+			  len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					Shm->SysGate.taskList[i].state == 0 ?
+					'R':Shm->SysGate.taskList[i].state > 0 ?
+					'S' : 'U');
+			  }
+			  break;
+			case 1:
+			  if (Shm->SysGate.taskList[i].runtime
+				> 1000000000000000000LLU) {
+			    char *fmt[2] = {"%s(%.2f as)  ", "%16s(%.2f as)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					(double)Shm->SysGate.taskList[i].runtime
+					/ 1000000000000000000LLU);
+			  } else if (Shm->SysGate.taskList[i].runtime
+				> 1000000000000000LLU) {
+			    char *fmt[2] = {"%s(%.2f fs)  ", "%16s(%.2f fs)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					(double)Shm->SysGate.taskList[i].runtime
+					/ 1000000000000000LLU);
+			  } else if (Shm->SysGate.taskList[i].runtime
+				> 1000000000000LLU) {
+			    char *fmt[2] = {"%s(%.2f ps)  ", "%16s(%.2f ps)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					(double)Shm->SysGate.taskList[i].runtime
+					/ 1000000000000LLU);
+			  } else if (Shm->SysGate.taskList[i].runtime
+				> 1000000000LLU) {
+			    char *fmt[16] = {"%s(%.2f ns)  ","%16s(%.2f ns)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					(double)Shm->SysGate.taskList[i].runtime
+					/ 1000000000LLU);
+			  } else {
+			    char *fmt[16] = {"%s(%.2f us)  ","%16s(%.2f us)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					(double)Shm->SysGate.taskList[i].runtime
+					/ 1000000LLU);
+			  }
+			  break;
+			case 2:
+			  /* fallthrough */
+			case 3:
+			  /* fallthrough */
+			default:
+			    {
+			    char *fmt[2] = {"%s(%d)  ", "%16s(%d)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					Shm->SysGate.taskList[i].pid);
+			    }
+			  break;
+			}
+		    } else {
+			char *fmt[2] = {"%s  ", "%16s  "};
+			len = sprintf(  taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm);
+		    }
+		    len = strlen(taskList[Shm->SysGate.taskList[i].wake_cpu])
+			+ len;
+
+		    if (len < (MAX_WIDTH - LOAD_LEAD - 8))
+			    strcat(taskList[Shm->SysGate.taskList[i].wake_cpu],
+					taskStruct);
 		}
+		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+			unsigned short row = 2 + TOP_HEADER_ROW
+					   + cpu + Shm->Proc.CPU.Count;
+
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD + 8,row),
+				"%s", taskList[cpu]);
+		}
+	    }
 	    break;
 	  default:
 	    break;

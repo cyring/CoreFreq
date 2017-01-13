@@ -159,7 +159,9 @@ typedef	struct
 
 		IDLEDRIVER	IdleDriver;
 
-		int		taskCount;
+		int		sortByField,
+				reverseOrder,
+				taskCount;
 		TASK_MCB	taskList[PID_MAX_DEFAULT];
 		MEM_MCB		memInfo;
 	} SysGate;

@@ -463,21 +463,60 @@ void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
 void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 {
 	int cnt;
+
 	Shm->SysGate.taskCount = Proc->SysGate.taskCount;
 
 	for (cnt = 0; cnt < Shm->SysGate.taskCount; cnt++) {
-		Shm->SysGate.taskList[cnt].state =
-			Proc->SysGate.taskList[cnt].state;
-
-		Shm->SysGate.taskList[cnt].wake_cpu =
-			Proc->SysGate.taskList[cnt].wake_cpu;
-
-		Shm->SysGate.taskList[cnt].pid =
-			Proc->SysGate.taskList[cnt].pid;
-
-		memcpy(Shm->SysGate.taskList[cnt].comm,
-			Proc->SysGate.taskList[cnt].comm, TASK_COMM_LEN);
+		memcpy( &Shm->SysGate.taskList[cnt],
+			&Proc->SysGate.taskList[cnt], sizeof(TASK_MCB));
 	}
+
+	int reverseSign[2] = {+1, -1};
+
+	int SortByState(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->state < task2->state ? -1 : 1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortByRuntime(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->runtime < task2->runtime ? 1 : -1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortByPID(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->pid < task2->pid ? -1 : 1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortByCommand(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = strcmp(task1->comm, task2->comm);
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	typedef int (*SORTBYFUNC)(const void *, const void *);
+
+	SORTBYFUNC SortByFunc[4] = {
+		SortByState,
+		SortByRuntime,
+		SortByPID,
+		SortByCommand
+	};
+
+	qsort(Shm->SysGate.taskList, Shm->SysGate.taskCount, sizeof(TASK_MCB),
+		SortByFunc[Shm->SysGate.sortByField]);
+
 	Shm->SysGate.memInfo.totalram = Proc->SysGate.memInfo.totalram;
 	Shm->SysGate.memInfo.freeram  = Proc->SysGate.memInfo.freeram;
 }

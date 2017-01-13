@@ -537,13 +537,14 @@ typedef	struct {
 #endif
 
 typedef struct {
-	long		state;
-	int		wake_cpu;
-	pid_t		pid;
-	char		comm[TASK_COMM_LEN];
+	unsigned long long	runtime;
+	long			state;
+	int			wake_cpu;
+	pid_t			pid;		// typeof: __kernel_pid_t = int
+	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 
 typedef struct {
-	unsigned long	totalram,
-			freeram;
+	unsigned long		totalram,
+				freeram;
 } MEM_MCB;
