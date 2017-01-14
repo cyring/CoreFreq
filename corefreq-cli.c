@@ -20,7 +20,7 @@
 #include <string.h>
 #include <libgen.h>
 
-#include "intelasm.h"
+#include "bitasm.h"
 #include "coretypes.h"
 #include "corefreq.h"
 

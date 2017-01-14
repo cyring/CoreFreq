@@ -17,7 +17,7 @@
 #include <asm/msr.h>
 
 #include "coretypes.h"
-#include "intelasm.h"
+#include "bitasm.h"
 #include "intelmsr.h"
 #include "amdmsr.h"
 #include "corefreq-api.h"

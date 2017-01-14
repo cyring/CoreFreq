@@ -51,13 +51,35 @@
 	);					\
 })
 
+#define _BITBTC_GPR(_lock,_base, _offset)	\
+({						\
+	asm volatile				\
+	(					\
+	_lock	"btcq	%%rdx,	%[base]"	\
+		: [base] "=m" (_base)		\
+		: "d" (_offset)			\
+		: "cc", "memory"		\
+	);					\
+})
+
+#define _BITBTC_IMM(_lock, _base, _imm8)	\
+({						\
+	asm volatile				\
+	(					\
+	_lock	"btcq	%[imm8], %[base]"	\
+		: [base] "=m" (_base)		\
+		: [imm8] "i" (_imm8)		\
+		: "cc", "memory"		\
+	);					\
+})
+
 #define _BIT_TEST_GPR(_base, _offset)	\
 ({						\
 	register unsigned char _ret;		\
 	asm volatile				\
 	(					\
 		"xor	%[ret], %[ret]"	"\n\t"	\
-		"btq	%%rdx,	%[base]""\n\t"	\
+		"btq	%%rdx, %[base]"	"\n\t"	\
 		"setc	%[ret]"			\
 		: [ret]	"+r" (_ret)		\
 		: [base] "m" (_base),		\
@@ -67,20 +89,20 @@
 	_ret;					\
 })
 
-#define _BIT_TEST_IMM(_base, _imm8)	\
-({						\
-	register unsigned char _ret;		\
-	asm volatile				\
-	(					\
-		"xor	%[ret], %[ret]"	"\n\t"	\
-		"btq	%[imm8], %[base]""\n\t"	\
-		"setc	%[ret]"			\
-		: [ret]	"+r" (_ret)		\
-		: [base] "m" (_base),		\
-		  [imm8] "i" (_imm8)		\
-		: "cc", "memory"		\
-	);					\
-	_ret;					\
+#define _BIT_TEST_IMM(_base, _imm8)			\
+({							\
+	register unsigned char _ret;			\
+	asm volatile					\
+	(						\
+		"xor	%[ret],  %[ret]"	"\n\t"	\
+		"btq	%[imm8], %[base]"	"\n\t"	\
+		"setc	%[ret]"				\
+		: [ret]	"+r" (_ret)			\
+		: [base] "m" (_base),			\
+		  [imm8] "i" (_imm8)			\
+		: "cc", "memory"			\
+	);						\
+	_ret;						\
 })
 
 #define _BITWISEAND(_lock, _opl, _opr)		\
@@ -94,6 +116,31 @@
 		: "memory"			\
 	);					\
 	_ret;					\
+})
+
+#define _BITWISEOR(_lock, _opl, _opr)		\
+({						\
+	volatile unsigned long long _ret=_opl;	\
+	asm volatile				\
+	(					\
+	_lock	"orq %[opr], %[ret]"		\
+		: [ret] "=m" (_ret)		\
+		: [opr] "Jr" (_opr)		\
+		: "memory"			\
+	);					\
+	_ret;					\
+})
+
+#define BITMSK(_lock, _base, _offset)				\
+({								\
+	asm volatile						\
+	(							\
+	_lock	"orq	$0xffffffffffffffff, %[base]"	"\n\t"	\
+	_lock	"btc	%[offset], %[base]"			\
+		: [base] "=m" (_base)				\
+		: [offset] "Jr" (_offset)			\
+		: "cc", "memory"				\
+	);							\
 })
 
 #define BITSET(_lock, _base, _offset)			\
@@ -110,6 +157,13 @@
 	:	_BITCLR_GPR(_lock, _base, _offset)	\
 )
 
+#define BITBTC(_lock, _base, _offset)			\
+(							\
+	__builtin_constant_p(_offset) ?			\
+		_BITBTC_IMM(_lock, _base, _offset)	\
+	:	_BITBTC_GPR(_lock, _base, _offset)	\
+)
+
 #define BITVAL(_base, _offset)				\
 (							\
 	__builtin_constant_p(_offset) ?			\
@@ -118,3 +172,4 @@
 )
 
 #define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
+#define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)

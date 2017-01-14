@@ -20,7 +20,7 @@
 
 #include "coretypes.h"
 #include "corefreq.h"
-#include "intelasm.h"
+#include "bitasm.h"
 #include "intelmsr.h"
 #include "corefreq-api.h"
 
@@ -48,20 +48,19 @@ static void *Core_Cycle(void *arg)
 	thermalFormula = !strncmp(Proc->Features.Info.VendorID,VENDOR_INTEL,12)?
 		0x01 : !strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12) ?
 			0x10 : 0x0;
-	pthread_t tid = pthread_self();
 
+	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
 	cpu_set_t cpuset;
 	CPU_ZERO(&affinity);
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-
 	if (!pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset)) {
 		CPU_OR(&affinity, &affinity, &cpuset);
 	}
 
 	char comm[TASK_COMM_LEN];
-	sprintf(comm, "corefreqd/%-3d", cpu);
+	sprintf(comm, "corefreqd/%d", cpu);
 	pthread_setname_np(tid, comm);
 
 	if (Quiet & 0x100) {
@@ -75,17 +74,11 @@ static void *Core_Cycle(void *arg)
 	    while (!BITVAL(Core->Sync.V, 63)
 		&& !Shutdown
 		&& !Core->OffLine.OS) {
-		    // Exit function if the thread lost its cpu affinity.
-		    CPU_ZERO(&cpuset);
-		    if (!pthread_getaffinity_np(tid, sizeof(cpu_set_t), &cpuset)
-		     && CPU_EQUAL(&cpuset, &affinity))
-				usleep(Proc->SleepInterval * BASE_SLEEP);
-		    else
-			break;
-		}
+			usleep(Proc->SleepInterval * BASE_SLEEP);
+	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
-	    if (!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset))
+	    if (!Shutdown && !Core->OffLine.OS)
 	    {
 		if (BITVAL(Proc->Room, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
@@ -166,14 +159,14 @@ static void *Core_Cycle(void *arg)
 	    if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
 		Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 	    }
-	} while(!Shutdown && !Core->OffLine.OS && CPU_EQUAL(&affinity,&cpuset));
+	} while (!Shutdown && !Core->OffLine.OS) ;
 
 	BITCLR(BUS_LOCK, Proc->Room, cpu);
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CPU %03u\n", tid,
-			CPU_EQUAL(&affinity, &cpuset) ? "Exit" : "Lost", cpu);
+			Core->OffLine.OS ? "Offline" : "Shutdown", cpu);
 		fflush(stdout);
 	}
 	return(NULL);
@@ -592,18 +585,21 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 					NULL,
 					Core_Cycle,
 					&Arg[cpu]);
-
+			// Notify
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
 		}
 		Shm->Cpu[cpu].OffLine.OS = 0;
 	    }
 	}
-	// Average counters if all the room bits are cleared.
-	if (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
+	// Loop while all the cpu room bits are not cleared.
+	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
 		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
+	}
+	// Reset the Room mask
+	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
 
-	else if (!Shutdown) {
+	if (!Shutdown) {
 		double maxRelFreq = 0.0;
 
 		// Update the count of online CPU
@@ -637,7 +633,6 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 			Shm->Proc.Avg.C1    += Flop->State.C1;
 		    }
 		}
-		Shm->Proc.Room = ~(1 << Shm->Proc.CPU.Count);
 		// Compute the counters averages.
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
