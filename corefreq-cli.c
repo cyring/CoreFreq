@@ -2200,6 +2200,8 @@ void Top(SHM_STRUCT *Shm)
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
+    struct FLIP_FLOP *Flop;
+
     unsigned int timeout = Shm->Proc.SleepInterval * BASE_SLEEP;
     struct timespec tsec = {
 	.tv_sec  = timeout / 1000000L,
@@ -2224,10 +2226,12 @@ void Top(SHM_STRUCT *Shm)
 	isC3undemotion = (Shm->Proc.C3U == Shm->Proc.C3U_Mask),
 	isC1undemotion = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
 
-    char *buffer = NULL, *viewMask = NULL;
-
     typedef char HBCLK[11 + 1];
     HBCLK *hBClk;
+
+    char *buffer = NULL, *viewMask = NULL;
+
+    Coordinate *cTask;
 
     void ForEachCellPrint_Menu(Window *win, void *plist)
     {
@@ -2779,6 +2783,7 @@ void Top(SHM_STRUCT *Shm)
 	free(hBClk);
 	free(buffer);
 	free(viewMask);
+	free(cTask);
 
 	DestroyLayer(sLayer);
 	DestroyLayer(dLayer);
@@ -2800,6 +2805,7 @@ void Top(SHM_STRUCT *Shm)
 		.wth = MAX_WIDTH,
 		.hth = MAX_HEIGHT
 	};
+	cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate));
 
 	sLayer = calloc(1, sizeof(Layer));
 	dLayer = calloc(1, sizeof(Layer));
@@ -3017,13 +3023,13 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
-		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
+		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
 		.code = {' ','P','r','o','c','e','s','s','o','r',' ','['}
 	};
 
 	LayerDeclare(9) hProc1 = {
 		.origin = {.col = drawSize.width - 9, .row = row}, .length = 9,
-		.attr = {LWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK},
+		.attr = {HDK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK},
 		.code = {']',' ',' ','/',' ',' ','C','P','U'}
 	};
 
@@ -3031,13 +3037,13 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerDeclare(15) hArch0 = {
 	    .origin = {.col = 12, .row = row}, .length = 15,
-	    .attr={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK},
+	    .attr={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
 	    .code={' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['}
 	};
 
 	LayerDeclare(30) hArch1 = {
 		.origin = {.col = drawSize.width - 30, .row = row},.length = 30,
-		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+		.attr ={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,	\
 			LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,LWK,LWK
 		},
@@ -3372,8 +3378,8 @@ void Top(SHM_STRUCT *Shm)
 		.length = MAX_WIDTH - LOAD_LEAD + 1,
 		.attr ={HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
-			LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,LRK,	\
-			LRK,LRK,LRK,LRK,LRK,LRK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
@@ -3431,13 +3437,13 @@ void Top(SHM_STRUCT *Shm)
 	    LayerDeclare(70) hAvg0 = {
 		.origin={.col=0,.row=(row + Shm->Proc.CPU.Count +1)},.length=70,
 		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,	\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK
 		},
 		.code ={'-','-','-','-','-','-','-','-',		\
 			' ','A','v','e','r','a','g','e','s',' ','[',	\
@@ -3697,7 +3703,7 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerDeclare(61) hTech0 = {
 		.origin = {.col = 0, .row = row}, .length = 14,
-		.attr={LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK},
+		.attr={LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK},
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
 	};
 
@@ -3734,7 +3740,7 @@ void Top(SHM_STRUCT *Shm)
 			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
 		},
 		.code ={'H','T','T',',','E','I','S','T',',','I','D','A',',', \
 			'T','U','R','B','O',',','C','1','E',',',	\
@@ -3813,7 +3819,7 @@ void Top(SHM_STRUCT *Shm)
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=35,
 		.attr ={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
 			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
 		},
 		.code ={'H','T','T',',','P','o','w','e','r','N','o','w',',',\
 			'T','U','R','B','O',',','C','1','E',',',	\
@@ -3873,7 +3879,7 @@ void Top(SHM_STRUCT *Shm)
 
 	col++;
 
-	LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
+	LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
 	LayerAt(layer, code, col, row) = '[';
 
 	col++;
@@ -3897,7 +3903,7 @@ void Top(SHM_STRUCT *Shm)
 
 		col += len;
 	}
-	LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
+	LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
 	LayerAt(layer, code, col, row) = ']';
 
 	col++;
@@ -3905,14 +3911,14 @@ void Top(SHM_STRUCT *Shm)
 	LayerDeclare(41) hSys1 = {
 	    .origin = {.col = (drawSize.width - 41), .row = row}, .length = 41,
 	    .attr = {
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK, \
-		LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
-		LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK
+		LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK, \
+		LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
+		LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK
 		},
 	    .code = {
-		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',0x0, \
-		' ',0x0,0x0,0x0,' ',0x0,' ',' ',' ',' ',' ',' ',' ',' ', \
-		0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']'
+		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']', \
+		' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ', \
+		'/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']'
 		},
 	};
 
@@ -3983,8 +3989,7 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    if (!Shm->Cpu[cpu].OffLine.HW)
 	    {
-		struct FLIP_FLOP *Flop =
-			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+		Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!Shm->Cpu[cpu].OffLine.OS)
 		{
@@ -4122,125 +4127,130 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  case V_TASKS:
 	    {
-		unsigned long long first = 0xffffffffffffffff;
-		int len, vec;
-		char taskStruct[64], taskList[MAX_CPU_ROW][MAX_WIDTH];
-
-		memset(taskList, 0, MAX_CPU_ROW * MAX_WIDTH);
+		char symbol;
+		Attribute runColor[] = {
+				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
+				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
+				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
+				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
+			}, sleepColor[] = {
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+			}, unknownColor[] = {
+				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
+				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
+				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
+				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK
+			}, *attr;
+		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+			cTask[cpu].col = LOAD_LEAD + 8;
+			cTask[cpu].row = 2 + TOP_HEADER_ROW
+					+ cpu + Shm->Proc.CPU.Count;
+			LayerFillAt(dLayer,
+				cTask[cpu].col,
+				cTask[cpu].row,
+				(MAX_WIDTH - LOAD_LEAD - 8),
+				hSpace,
+				MakeAttr(WHITE, 0, BLACK, 0));
+		}
+		size_t len;
 		for (i = 0; i < Shm->SysGate.taskCount; i++) {
-
-		    if (first & (1 << Shm->SysGate.taskList[i].wake_cpu)) {
-			first ^= (1 << Shm->SysGate.taskList[i].wake_cpu);
-			vec = 1;
-		    } else
-			vec = 0;
-
-		    if (drawFlag.taskVal) {
-			switch (Shm->SysGate.sortByField) {
-			case F_STATE:
-			  {
-			  char *fmt[2] = {"%s(%c)  ", "%16s(%c)  "};
-			  len = sprintf(taskStruct,
-					fmt[vec],
+			if (Shm->SysGate.taskList[i].state == 0) {
+				attr = runColor;
+				symbol = 'R';
+			} else if (Shm->SysGate.taskList[i].state > 0) {
+				attr = sleepColor;
+				symbol = 'S';
+			} else {
+				attr = unknownColor;
+				symbol = 'U';
+			}
+			if (!drawFlag.taskVal) {
+			    len = sprintf(buffer,
+					"%s" "\x20\x20",
+					Shm->SysGate.taskList[i].comm);
+			} else {
+			    switch (Shm->SysGate.sortByField) {
+			    case F_STATE:
+				len = sprintf(buffer,
+					"%s(%c)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
-					Shm->SysGate.taskList[i].state == 0 ?
-					'R':Shm->SysGate.taskList[i].state > 0 ?
-					'S' : 'U');
-			  }
-			  break;
-			case F_RTIME:
-			  if (Shm->SysGate.taskList[i].runtime
-				> 1000000000000000000LLU) {
-			    char *fmt[2] = {"%s(%.2f as)  ", "%16s(%.2f as)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+					symbol);
+				break;
+			    case F_RTIME:
+				if (Shm->SysGate.taskList[i].runtime
+					> 1000000000000000000LLU) {
+				  len = sprintf(buffer,
+					"%s(%.2f as)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					(double)Shm->SysGate.taskList[i].runtime
 					/ 1000000000000000000LLU);
-			  } else if (Shm->SysGate.taskList[i].runtime
-				> 1000000000000000LLU) {
-			    char *fmt[2] = {"%s(%.2f fs)  ", "%16s(%.2f fs)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				} else if (Shm->SysGate.taskList[i].runtime
+					> 1000000000000000LLU) {
+				  len = sprintf(buffer,
+					"%s(%.2f fs)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					(double)Shm->SysGate.taskList[i].runtime
 					/ 1000000000000000LLU);
-			  } else if (Shm->SysGate.taskList[i].runtime
-				> 1000000000000LLU) {
-			    char *fmt[2] = {"%s(%.2f ps)  ", "%16s(%.2f ps)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				} else if (Shm->SysGate.taskList[i].runtime
+					> 1000000000000LLU) {
+				  len = sprintf(buffer,
+					"%s(%.2f ps)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					(double)Shm->SysGate.taskList[i].runtime
 					/ 1000000000000LLU);
-			  } else if (Shm->SysGate.taskList[i].runtime
-				> 1000000000LLU) {
-			    char *fmt[16] = {"%s(%.2f ns)  ","%16s(%.2f ns)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				} else if (Shm->SysGate.taskList[i].runtime
+					> 1000000000LLU) {
+				  len = sprintf(buffer,
+					"%s(%.2f ns)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					(double)Shm->SysGate.taskList[i].runtime
 					/ 1000000000LLU);
-			  } else {
-			    char *fmt[16] = {"%s(%.2f us)  ","%16s(%.2f us)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				} else {
+				  len = sprintf(buffer,
+					"%s(%.2f us)  " "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					(double)Shm->SysGate.taskList[i].runtime
 					/ 1000000LLU);
-			  }
-			  break;
-			case F_UTIME:
-			    {
-			    char *fmt[2] = {"%s(%llu)  ", "%16s(%llu)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				}
+				break;
+			    case F_UTIME:
+				len = sprintf(buffer,
+					"%s(%llu)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					Shm->SysGate.taskList[i].usertime);
-			    }
-			  break;
-			case F_STIME:
-			    {
-			    char *fmt[2] = {"%s(%llu)  ", "%16s(%llu)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				break;
+			    case F_STIME:
+				len = sprintf(buffer,
+					"%s(%llu)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					Shm->SysGate.taskList[i].systime);
-			    }
-			  break;
-			case F_PID:
-			  /* fallthrough */
-			case F_COMM:
-			  /* fallthrough */
-			default:
-			    {
-			    char *fmt[2] = {"%s(%d)  ", "%16s(%d)  "};
-			    len = sprintf(taskStruct,
-					fmt[vec],
+				break;
+			    case F_PID:
+				// fallthrough 
+			    case F_COMM:
+				// fallthrough 
+			    default:
+				len = sprintf(buffer,
+					"%s(%d)" "\x20\x20",
 					Shm->SysGate.taskList[i].comm,
 					Shm->SysGate.taskList[i].pid);
+				break;
 			    }
-			  break;
 			}
-		    } else {
-			char *fmt[2] = {"%s  ", "%16s  "};
-			len = sprintf(  taskStruct,
-					fmt[vec],
-					Shm->SysGate.taskList[i].comm);
-		    }
-		    len = strlen(taskList[Shm->SysGate.taskList[i].wake_cpu])
-			+ len;
+			if (cTask[Shm->SysGate.taskList[i].wake_cpu].col
+			 <= (MAX_WIDTH - len)) {
+			    LayerCopyAt(dLayer,
+				cTask[Shm->SysGate.taskList[i].wake_cpu].col,
+				cTask[Shm->SysGate.taskList[i].wake_cpu].row,
+				len,
+				attr,
+				buffer);
 
-		    if (len < (MAX_WIDTH - LOAD_LEAD - 8))
-			    strcat(taskList[Shm->SysGate.taskList[i].wake_cpu],
-					taskStruct);
-		}
-		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-			unsigned short row = 2 + TOP_HEADER_ROW
-					   + cpu + Shm->Proc.CPU.Count;
-
-			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD + 8,row),
-				"%s", taskList[cpu]);
+			    cTask[Shm->SysGate.taskList[i].wake_cpu].col += len;
+			}
 		}
 	    }
 	    break;
@@ -4248,54 +4258,54 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  }
 
-	    unsigned short row = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
+	  unsigned short row = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
 				+ 2 * Shm->Proc.CPU.Count;
 
-	    sprintf((char *) &LayerAt(dLayer,code,(drawSize.width - 34), row),
-			"%6u""]"					\
-			" Mem [""%8lu""/""%8lu",
+	  sprintf(buffer, "%6u" "%8lu" "%8lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
 			Shm->SysGate.memInfo.totalram);
 
-	    {
-	    struct FLIP_FLOP *Flop =
-	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 34),row),&buffer[0], 6);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 21),row),&buffer[6], 8);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 12),row),&buffer[14],8);
 
-		Dec2Digit((unsigned int) Flop->Relative.Freq, digit);
+	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-		unsigned int lcdColor;
-		if (Flop->Relative.Ratio > medianRatio)
-			lcdColor = RED;
-		else if (Flop->Relative.Ratio > minRatio)
-			lcdColor = YELLOW;
-		else
-			lcdColor = GREEN;
+	  Dec2Digit((unsigned int) Flop->Relative.Freq, digit);
 
-		unsigned short j = 4;
-		do {
-			short offset = (4 - j) * 3;
+	  unsigned int lcdColor;
+	  if (Flop->Relative.Ratio > medianRatio)
+		lcdColor = RED;
+	  else if (Flop->Relative.Ratio > minRatio)
+		lcdColor = YELLOW;
+	  else
+		lcdColor = GREEN;
 
-			LayerFillAt(dLayer, offset, 0,
-					3, lcd[digit[9 - j]][0],
-					MakeAttr(lcdColor, 0, BLACK, 1));
-			LayerFillAt(dLayer, offset, 1,
-					3, lcd[digit[9 - j]][1],
-					MakeAttr(lcdColor, 0, BLACK, 1));
-			LayerFillAt(dLayer, offset, 2,
-					3, lcd[digit[9 - j]][2],
-					MakeAttr(lcdColor, 0, BLACK, 1));
+	  unsigned short j = 4;
+	  do {
+		short offset = (4 - j) * 3;
 
-			j--;
-		} while (j > 0) ;
-	    }
-	    memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
+		LayerFillAt(dLayer, offset, 0,
+				3, lcd[digit[9 - j]][0],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(dLayer, offset, 1,
+				3, lcd[digit[9 - j]][1],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(dLayer, offset, 2,
+				3, lcd[digit[9 - j]][2],
+				MakeAttr(lcdColor, 0, BLACK, 1));
 
-	    do {
+		j--;
+	  } while (j > 0) ;
+
+	  memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
+
+	  do {
 		iClock++;
 		if (iClock == Shm->Proc.CPU.Count)
 			iClock = 0;
-	    } while (Shm->Cpu[iClock].OffLine.OS && iClock) ;
+	  } while (Shm->Cpu[iClock].OffLine.OS && iClock) ;
 	}
 
 	Window *walker;
