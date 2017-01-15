@@ -466,18 +466,34 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 
 	int reverseSign[2] = {+1, -1};
 
-	int SortByState(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->state < task2->state ? -1 : 1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
 	int SortByRuntime(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 		int sort = task1->runtime < task2->runtime ? 1 : -1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortByUsertime(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->usertime < task2->usertime ? 1 : -1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortBySystime(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->systime < task2->systime ? 1 : -1;
+		sort *= reverseSign[Shm->SysGate.reverseOrder];
+		return(sort);
+	}
+
+	int SortByState(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+		int sort = task1->state < task2->state ? -1 : 1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -500,9 +516,11 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 
 	typedef int (*SORTBYFUNC)(const void *, const void *);
 
-	SORTBYFUNC SortByFunc[4] = {
+	SORTBYFUNC SortByFunc[SORTBYCOUNT] = {
 		SortByState,
 		SortByRuntime,
+		SortByUsertime,
+		SortBySystime,
 		SortByPID,
 		SortByCommand
 	};

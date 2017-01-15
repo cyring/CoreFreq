@@ -536,8 +536,12 @@ typedef	struct {
 #define PID_MAX_DEFAULT (1<<15)
 #endif
 
+enum {F_STATE,F_RTIME,F_UTIME,F_STIME,F_PID,F_COMM, SORTBYCOUNT} SORTBYFIELD;
+
 typedef struct {
-	unsigned long long	runtime;
+	unsigned long long	runtime,
+				usertime,
+				systime;
 	long			state;
 	int			wake_cpu;
 	pid_t			pid;		// typeof: __kernel_pid_t = int

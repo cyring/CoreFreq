@@ -1328,6 +1328,7 @@ typedef union {
 #define SCANKEY_SHIFT_w		0x57
 #define SCANKEY_SHIFT_z		0x5a
 #define SCANKEY_a		0x61
+#define SCANKEY_b		0x62
 #define SCANKEY_c		0x63
 #define SCANKEY_d		0x64
 #define SCANKEY_e		0x65
@@ -1357,9 +1358,11 @@ typedef union {
 #define SCANCON_F4		0x445b5b1b
 #define SCANCON_SHIFT_TAB	0x91b
 
-#define SORTBY_TIME		0xfffffffffffffffe
-#define SORTBY_PID		0xfffffffffffffffd
-#define SORTBY_COMM		0xfffffffffffffffc
+#define SORTBY_RTIME		0xfffffffffffffffe
+#define SORTBY_UTIME		0xfffffffffffffffd
+#define SORTBY_STIME		0xfffffffffffffffc
+#define SORTBY_PID		0xfffffffffffffffb
+#define SORTBY_COMM		0xfffffffffffffffa
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -2415,15 +2418,15 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SORTBY_TIME,	"   by Time        ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_b,	" Task by ...  [b] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SORTBY_PID,	"   by PID         ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_u,	" CPUID        [u] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SORTBY_COMM,	"   by Command     ", sameAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
 
 		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
@@ -2736,6 +2739,39 @@ void Top(SHM_STRUCT *Shm)
 	return(wTopology);
     }
 
+    Window *CreateSortByField(unsigned long long id)
+    {
+	Window *wSortBy = CreateWindow( wLayer,
+					id,
+					1,
+					SORTBYCOUNT,
+					42,
+					TOP_HEADER_ROW + 2);
+	if (wSortBy != NULL) {
+		StoreTCell(wSortBy,SCANKEY_x,   " State    ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SORTBY_RTIME," RunTime  ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SORTBY_UTIME," UserTime ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SORTBY_STIME," SysTime  ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SORTBY_PID,  " PID      ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SORTBY_COMM, " Command  ",MAKE_PRINT_FOCUS);
+
+		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
+
+		StoreWindow(wSortBy,	.key.Enter,	MotionEnter_Menu);
+		StoreWindow(wSortBy,	.key.Down,	MotionDown_Win);
+		StoreWindow(wSortBy,	.key.Up,	MotionUp_Win);
+		StoreWindow(wSortBy,	.key.Home,	MotionReset_Win);
+		StoreWindow(wSortBy,	.key.End,	MotionEnd_Menu);
+
+		StoreWindow(wSortBy,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wSortBy,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wSortBy,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wSortBy,	.key.WinUp,	MotionOriginUp_Win);
+	}
+	return(wSortBy);
+    }
+
+
     void FreeAll(void)
     {
 	DestroyAllWindows(&winList);
@@ -2838,6 +2874,15 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 		}
 		break;
+	case SCANKEY_b:
+		{
+		Window *win = SearchWinListById(scan->key, &winList);
+		if (win == NULL)
+			AppendWindow(CreateSortByField(scan->key), &winList);
+		else
+			SetHead(&winList, win);
+		}
+		break;
 	case SCANKEY_c:
 		{
 		drawFlag.view = V_CYCLES;
@@ -2903,28 +2948,42 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_x:
 		{
-		Shm->SysGate.sortByField = 0;
+		Shm->SysGate.sortByField = F_STATE;
 		drawFlag.view = V_TASKS;
 		drawFlag.clear = 1;
 		}
 		break;
-	case SORTBY_TIME:
+	case SORTBY_RTIME:
 		{
-		Shm->SysGate.sortByField = 1;
+		Shm->SysGate.sortByField = F_RTIME;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
+	case SORTBY_UTIME:
+		{
+		Shm->SysGate.sortByField = F_UTIME;
+		drawFlag.view = V_TASKS;
+		drawFlag.clear = 1;
+		}
+		break;
+	case SORTBY_STIME:
+		{
+		Shm->SysGate.sortByField = F_STIME;
 		drawFlag.view = V_TASKS;
 		drawFlag.clear = 1;
 		}
 		break;
 	case SORTBY_PID:
 		{
-		Shm->SysGate.sortByField = 2;
+		Shm->SysGate.sortByField = F_PID;
 		drawFlag.view = V_TASKS;
 		drawFlag.clear = 1;
 		}
 		break;
 	case SORTBY_COMM:
 		{
-		Shm->SysGate.sortByField = 3;
+		Shm->SysGate.sortByField = F_COMM;
 		drawFlag.view = V_TASKS;
 		drawFlag.clear = 1;
 		}
@@ -3466,53 +3525,73 @@ void Top(SHM_STRUCT *Shm)
 			"------------",
 	    };
 
-	    LayerDeclare(20) hTask1 = {
+	    LayerDeclare(21) hTask1 = {
 		.origin = {.col = 23, .row = row},
-		.length = 20,
+		.length = 21,
 	    };
 
 	    struct {
-		Attribute attr[20];
-		ASCII code[20];
-	    } hSort[4] = {
+		Attribute attr[21];
+		ASCII code[21];
+	    } hSort[SORTBYCOUNT] = {
 		{
 		  .attr = {
 			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK,LWK
+			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK
 		  },
 		  .code = {
 			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','S','t','a','t','e',')',' ','-','-'
+			' ','S','t','a','t','e',')',' ','-','-','-'
 		  }
 		},
 		{
 		  .attr = {
 			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
 		  },
 		  .code = {
 			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','R','u','n','T','i','m','e',')',' '
+			' ','R','u','n','T','i','m','e',')',' ','-'
 		  }
 		},
 		{
 		  .attr = {
 			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK,LWK
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
 		  },
 		  .code = {
 			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','P','I','D',')',' ','-','-','-','-'
+			' ','U','s','e','r','T','i','m','e',')',' '
 		  }
 		},
 		{
 		  .attr = {
 			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
 		  },
 		  .code = {
 			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','C','o','m','m','a','n','d',')',' '
+			' ','S','y','s','T','i','m','e',')',' ','-'
+		  }
+		},
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK,LWK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','P','I','D',')',' ','-','-','-','-','-'
+		  }
+		},
+		{
+		  .attr = {
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
+		  },
+		  .code = {
+			'(','s','o','r','t','e','d',' ','b','y',	\
+			' ','C','o','m','m','a','n','d',')',' ','-'
 		  }
 		}
 	    };
@@ -4058,7 +4137,7 @@ void Top(SHM_STRUCT *Shm)
 
 		    if (drawFlag.taskVal) {
 			switch (Shm->SysGate.sortByField) {
-			case 0:
+			case F_STATE:
 			  {
 			  char *fmt[2] = {"%s(%c)  ", "%16s(%c)  "};
 			  len = sprintf(taskStruct,
@@ -4069,7 +4148,7 @@ void Top(SHM_STRUCT *Shm)
 					'S' : 'U');
 			  }
 			  break;
-			case 1:
+			case F_RTIME:
 			  if (Shm->SysGate.taskList[i].runtime
 				> 1000000000000000000LLU) {
 			    char *fmt[2] = {"%s(%.2f as)  ", "%16s(%.2f as)  "};
@@ -4111,9 +4190,27 @@ void Top(SHM_STRUCT *Shm)
 					/ 1000000LLU);
 			  }
 			  break;
-			case 2:
+			case F_UTIME:
+			    {
+			    char *fmt[2] = {"%s(%llu)  ", "%16s(%llu)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					Shm->SysGate.taskList[i].usertime);
+			    }
+			  break;
+			case F_STIME:
+			    {
+			    char *fmt[2] = {"%s(%llu)  ", "%16s(%llu)  "};
+			    len = sprintf(taskStruct,
+					fmt[vec],
+					Shm->SysGate.taskList[i].comm,
+					Shm->SysGate.taskList[i].systime);
+			    }
+			  break;
+			case F_PID:
 			  /* fallthrough */
-			case 3:
+			case F_COMM:
 			  /* fallthrough */
 			default:
 			    {

@@ -2097,7 +2097,9 @@ long Sys_DumpTask(void)
 	for_each_process_thread(process, thread) {
 		task_lock(thread);
 
-		Proc->SysGate.taskList[cnt].runtime = thread->se.vruntime;
+		Proc->SysGate.taskList[cnt].runtime  = thread->se.vruntime;
+		Proc->SysGate.taskList[cnt].usertime = thread->utime;
+		Proc->SysGate.taskList[cnt].systime  = thread->stime;
 		Proc->SysGate.taskList[cnt].state    = thread->state;
 		Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
 		Proc->SysGate.taskList[cnt].pid      = thread->pid;
