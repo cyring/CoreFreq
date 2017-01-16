@@ -344,7 +344,9 @@ typedef struct
 
 	struct {
 		char		sysname[MAX_UTS_LEN + 1],
-				release[MAX_UTS_LEN + 1];
+				release[MAX_UTS_LEN + 1],
+				version[MAX_UTS_LEN + 1],
+				machine[MAX_UTS_LEN + 1];
 
 		IDLEDRIVER	IdleDriver;
 
@@ -355,3 +357,7 @@ typedef struct
 
 	char			Architecture[32];
 } PROC;
+
+#define COREFREQ_IOCTL_MAGIC 0xc3
+#define COREFREQ_IOCTL_SYSUPDT _IO(COREFREQ_IOCTL_MAGIC, 0)
+#define COREFREQ_IOCTL_SYSONCE _IO(COREFREQ_IOCTL_MAGIC, 1)

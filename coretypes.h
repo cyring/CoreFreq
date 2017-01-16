@@ -525,9 +525,6 @@ typedef	struct {
 	} State[CPUIDLE_STATE_MAX];
 } IDLEDRIVER;
 
-#define COREFREQ_IOCTL_MAGIC 0xc3
-#define COREFREQ_IOCTL_SYSGATE _IO(COREFREQ_IOCTL_MAGIC, 0)
-
 #ifndef TASK_COMM_LEN
 #define	TASK_COMM_LEN 16
 #endif
@@ -544,11 +541,15 @@ typedef struct {
 				systime;
 	long			state;
 	int			wake_cpu;
-	pid_t			pid;		// typeof: __kernel_pid_t = int
+	pid_t			pid;	// type of __kernel_pid_t = int
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 
 typedef struct {
 	unsigned long		totalram,
-				freeram;
+				sharedram,
+				freeram,
+				bufferram,
+				totalhigh,
+				freehigh;
 } MEM_MCB;

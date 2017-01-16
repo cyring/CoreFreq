@@ -185,9 +185,6 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	memcpy(Shm->Proc.Boost, Proc->Boost, (1+1+8) * sizeof(unsigned int));
 	// Copy the processor's brand string.
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
-	// Copy the system and release names.
-	strncpy(Shm->SysGate.sysname, Proc->SysGate.sysname, MAX_UTS_LEN);
-	strncpy(Shm->SysGate.release, Proc->SysGate.release, MAX_UTS_LEN);
 }
 
 void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
@@ -426,7 +423,7 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
 }
 
-void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
+void SysGate_IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
 {
     if (strlen(Proc->SysGate.IdleDriver.Name) > 0) {
 	int i;
@@ -451,6 +448,14 @@ void IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->SysGate.IdleDriver.State[i].targetResidency;
 	}
     }
+}
+
+void SysGate_Kernel(SHM_STRUCT *Shm, PROC *Proc)
+{
+	strncpy(Shm->SysGate.sysname, Proc->SysGate.sysname, MAX_UTS_LEN);
+	strncpy(Shm->SysGate.release, Proc->SysGate.release, MAX_UTS_LEN);
+	strncpy(Shm->SysGate.version, Proc->SysGate.version, MAX_UTS_LEN);
+	strncpy(Shm->SysGate.machine, Proc->SysGate.machine, MAX_UTS_LEN);
 }
 
 void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
@@ -528,8 +533,12 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	qsort(Shm->SysGate.taskList, Shm->SysGate.taskCount, sizeof(TASK_MCB),
 		SortByFunc[Shm->SysGate.sortByField]);
 
-	Shm->SysGate.memInfo.totalram = Proc->SysGate.memInfo.totalram;
-	Shm->SysGate.memInfo.freeram  = Proc->SysGate.memInfo.freeram;
+	Shm->SysGate.memInfo.totalram  = Proc->SysGate.memInfo.totalram;
+	Shm->SysGate.memInfo.sharedram = Proc->SysGate.memInfo.sharedram;
+	Shm->SysGate.memInfo.freeram   = Proc->SysGate.memInfo.freeram;
+	Shm->SysGate.memInfo.bufferram = Proc->SysGate.memInfo.bufferram;
+	Shm->SysGate.memInfo.totalhigh = Proc->SysGate.memInfo.totalhigh;
+	Shm->SysGate.memInfo.freehigh  = Proc->SysGate.memInfo.freehigh;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
@@ -659,7 +668,7 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
 		// Update OS tasks and memory usage.
-		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSGATE, NULL) != -1)
+		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSUPDT, NULL) != -1)
 			SysGate_Update(Shm, Proc);
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
@@ -727,9 +736,12 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
-		// Aggregate the OS idle driver data.
-		IdleDriver(Shm, Proc);
-
+		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSONCE, NULL) != -1) {
+			// Aggregate the OS idle driver data.
+			SysGate_IdleDriver(Shm, Proc);
+			// Copy system information.
+			SysGate_Kernel(Shm, Proc);
+		}
 		// Initialize notification.
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 

@@ -52,10 +52,6 @@ static signed int SleepInterval = 0;
 module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
 
-static signed int IdleDriverQuery = 0;
-module_param(IdleDriverQuery, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(IdleDriverQuery, "Query information from the idle driver");
-
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -2055,7 +2051,7 @@ void Stop_SandyBridge(void *arg)
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
 
-void IdleDriver_Query(void *arg)
+void Sys_IdleDriver_Query(void *arg)
 {
 	struct cpuidle_driver *idleDriver;
 
@@ -2088,8 +2084,18 @@ void IdleDriver_Query(void *arg)
 		memset(&Proc->SysGate.IdleDriver, 0, sizeof(IDLEDRIVER));
 }
 
+long Sys_Kernel(void)
+{	// Source: /include/uapi/linux/utsname.h
+	strncpy(Proc->SysGate.sysname, utsname()->sysname, MAX_UTS_LEN);
+	strncpy(Proc->SysGate.release, utsname()->release, MAX_UTS_LEN);
+	strncpy(Proc->SysGate.version, utsname()->version, MAX_UTS_LEN);
+	strncpy(Proc->SysGate.machine, utsname()->machine, MAX_UTS_LEN);
+
+	return(0);
+}
+
 long Sys_DumpTask(void)
-{
+{	/// Source: /include/linux/sched.h
 	struct task_struct *process, *thread;
 	int cnt = 0;
 
@@ -2116,12 +2122,16 @@ long Sys_DumpTask(void)
 }
 
 long Sys_MemInfo(void)
-{	// Source: /fs/proc/meminfo.c
+{	// Source: /include/uapi/linux/sysinfo.h
 	struct sysinfo info;
 	si_meminfo(&info);
 
-	Proc->SysGate.memInfo.totalram = info.totalram << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.freeram  = info.freeram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
+	Proc->SysGate.memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
 
 	return(0);
 }
@@ -2133,8 +2143,15 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	long rc;
 
 	switch (cmd) {
-	case COREFREQ_IOCTL_SYSGATE:
+	case COREFREQ_IOCTL_SYSUPDT:
 		rc = Sys_DumpTask() & Sys_MemInfo();
+		break;
+	case COREFREQ_IOCTL_SYSONCE:
+		rc = smp_call_function_single(	0, /* BSP */
+						Sys_IdleDriver_Query,
+						NULL,
+						1);
+		rc &= Sys_Kernel();
 		break;
 	default:
 		rc = 0;
@@ -2419,17 +2436,6 @@ static int __init CoreFreqK_init(void)
 				strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
-				strncpy(Proc->SysGate.sysname,
-					utsname()->sysname, MAX_UTS_LEN);
-
-				strncpy(Proc->SysGate.release,
-					utsname()->release, MAX_UTS_LEN);
-
-				if (IdleDriverQuery)
-				    smp_call_function_single(0, /* BSP */
-							IdleDriver_Query,
-							NULL,
-							0);
 				Controller_Init();
 
 				printk(KERN_INFO "CoreFreq:"		\

@@ -155,7 +155,9 @@ typedef	struct
 
 	struct {	
 		char		sysname[MAX_UTS_LEN + 1],
-				release[MAX_UTS_LEN + 1];
+				release[MAX_UTS_LEN + 1],
+				version[MAX_UTS_LEN + 1],
+				machine[MAX_UTS_LEN + 1];
 
 		IDLEDRIVER	IdleDriver;
 

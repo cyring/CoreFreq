@@ -980,9 +980,43 @@ void SysInfoKernel(	SHM_STRUCT *Shm,
 		width - 12 - strlen(Shm->SysGate.release), hSpace,
 		Shm->SysGate.release);
 
+	printv(OutFunc, width, 2, "Version%.*s[%s]",
+		width - 12 - strlen(Shm->SysGate.version), hSpace,
+		Shm->SysGate.version);
+
+	printv(OutFunc, width, 2, "Machine%.*s[%s]",
+		width - 12 - strlen(Shm->SysGate.machine), hSpace,
+		Shm->SysGate.machine);
+/* Section Mark */
+	printv(OutFunc, width, 0, "Memory:%.*s", width - 7, hSpace);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
+	printv(OutFunc, width, 2, "Total RAM" "%.*s" "%s KB",
+		width - 15 - len, hSpace, str);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
+	printv(OutFunc, width, 2, "Shared RAM" "%.*s" "%s KB",
+		width - 16 - len, hSpace, str);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
+	printv(OutFunc, width, 2, "Free RAM" "%.*s" "%s KB",
+		width - 14 - len, hSpace, str);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
+	printv(OutFunc, width, 2, "Buffer RAM" "%.*s" "%s KB",
+		width - 16 - len, hSpace, str);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
+	printv(OutFunc, width, 2, "Total High" "%.*s" "%s KB",
+		width - 16 - len, hSpace, str);
+
+	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
+	printv(OutFunc, width, 2, "Free High" "%.*s" "%s KB",
+		width - 15 - len, hSpace, str);
+/* Section Mark */
     if ((len = strlen(Shm->SysGate.IdleDriver.Name)) > 0) {
-	printv(OutFunc, width, 2, "Idle driver%.*s[%s]",
-		width - 16 - len, hSpace, Shm->SysGate.IdleDriver.Name);
+	printv(OutFunc, width, 0, "Idle driver%.*s[%s]",
+		width - 13 - len, hSpace, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
 	len = sprintf(row, "States:%.*s", 9, hSpace);
 	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
@@ -2648,7 +2682,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_k:
 		{
-		matrixSize.hth = 7;
+		matrixSize.hth = 11;
 		winOrigin.col = 4;
 		winOrigin.row = TOP_HEADER_ROW + 8;
 		SysInfoFunc = SysInfoKernel;
