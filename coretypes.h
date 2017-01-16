@@ -8,7 +8,7 @@ typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
-				+ ((Size % PAGE_SIZE)? 1:0));
+				+ ((Size % PAGE_SIZE)? 1:0))
 
 #define MAX(M, m)	((M) > (m) ? (M) : (m))
 #define MIN(m, M)	((m) < (M) ? (m) : (M))
@@ -20,7 +20,15 @@ typedef unsigned int		Bit32;
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
 
 #define PRECISION	100
-#define BASE_SLEEP	100
+
+#define TIMESPEC(nsec)							\
+({									\
+	struct timespec tsec = {					\
+		.tv_sec  = (time_t) 0,					\
+		.tv_nsec = nsec						\
+	};								\
+	tsec;								\
+})
 
 #define CPUID_MAX_FUNC	27
 #define CACHE_MAX_LEVEL	(3 + 1)
@@ -41,8 +49,8 @@ typedef struct
 	unsigned long long	Hz;
 } CLOCK;
 
-#define REL_FREQ(max_ratio, this_ratio, clock, interval)	\
-		( ((this_ratio * clock.Q) * 1000L * interval)	\
+#define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
+		( ((this_ratio * clock.Q) * 1000L * interval)		\
 		+ ((this_ratio * clock.R) / max_ratio))
 
 
@@ -503,9 +511,9 @@ typedef struct	// BSP CPUID features.
 
 // Source: /include/uapi/linux/utsname.h
 #ifdef __NEW_UTS_LEN
-#define MAX_UTS_LEN __NEW_UTS_LEN
+#define MAX_UTS_LEN		__NEW_UTS_LEN
 #else
-#define MAX_UTS_LEN 64
+#define MAX_UTS_LEN		64
 #endif
 
 // Source: /include/linux/cpuidle.h
@@ -526,11 +534,11 @@ typedef	struct {
 } IDLEDRIVER;
 
 #ifndef TASK_COMM_LEN
-#define	TASK_COMM_LEN 16
+#define	TASK_COMM_LEN		16
 #endif
 
 #ifndef PID_MAX_DEFAULT
-#define PID_MAX_DEFAULT (1<<15)
+#define PID_MAX_DEFAULT		(1<<15)
 #endif
 
 enum {F_STATE,F_RTIME,F_UTIME,F_STIME,F_PID,F_COMM, SORTBYCOUNT} SORTBYFIELD;

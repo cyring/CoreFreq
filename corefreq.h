@@ -105,6 +105,7 @@ typedef struct
 	FEATURES			Features;
 
 	unsigned int			SleepInterval;
+	struct timespec			BaseSleep;
 
 	struct {
 		unsigned int		Count,

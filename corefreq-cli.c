@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 #include <poll.h>
 #include <termios.h>
 #include <signal.h>
@@ -1130,7 +1131,7 @@ void Dashboard( SHM_STRUCT *Shm,
 	unsigned short X, Y;
 
 	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 
@@ -1190,7 +1191,7 @@ void Counters(SHM_STRUCT *Shm)
     unsigned int cpu = 0;
     while (!Shutdown) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 
@@ -1253,7 +1254,7 @@ void Instructions(SHM_STRUCT *Shm)
 	unsigned int cpu = 0;
 	while (!Shutdown) {
 	  while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
-			usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
+			nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	  BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
 
@@ -2236,12 +2237,6 @@ void Top(SHM_STRUCT *Shm)
 
     struct FLIP_FLOP *Flop;
 
-    unsigned int timeout = Shm->Proc.SleepInterval * BASE_SLEEP;
-    struct timespec tsec = {
-	.tv_sec  = timeout / 1000000L,
-	.tv_nsec = (timeout % 1000000L) * 1000
-    };
-
     unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i;
 
     int MIN_HEIGHT = (2 * Shm->Proc.CPU.Count)
@@ -2488,7 +2483,7 @@ void Top(SHM_STRUCT *Shm)
       Window *wSet = CreateWindow(wLayer, id, 2, 4, 8, TOP_HEADER_ROW + 3);
       if (wSet != NULL) {
 	char intvStr[16];
-	int intvLen = sprintf(intvStr, "%15u", Shm->Proc.SleepInterval);
+	int intvLen = sprintf(intvStr, "%13uE6", Shm->Proc.SleepInterval);
 	size_t appLen = strlen(Shm->AppName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -2497,7 +2492,7 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate    ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Interval(msec) ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -3981,7 +3976,7 @@ void Top(SHM_STRUCT *Shm)
 	  SCANKEY scan = {.key = 0};
 
 	  if ((drawFlag.daemon=BITVAL(Shm->Proc.Sync, 0)) == 0) {
-	    if (GetKey(&scan, &tsec) > 0) {
+	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
 		if (Shortcut(&scan) == -1) {
 		    if (IsDead(&winList))
 				AppendWindow(CreateMenu(SCANKEY_F2), &winList);
@@ -4166,13 +4161,16 @@ void Top(SHM_STRUCT *Shm)
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
+				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
 			}, sleepColor[] = {
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
 			}, unknownColor[] = {
+				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
@@ -4214,41 +4212,10 @@ void Top(SHM_STRUCT *Shm)
 					symbol);
 				break;
 			    case F_RTIME:
-				if (Shm->SysGate.taskList[i].runtime
-					> 1000000000000000000LLU) {
 				  len = sprintf(buffer,
-					"%s(%.2f as)" "\x20\x20",
+					"%s(%llu)" "\x20",
 					Shm->SysGate.taskList[i].comm,
-					(double)Shm->SysGate.taskList[i].runtime
-					/ 1000000000000000000LLU);
-				} else if (Shm->SysGate.taskList[i].runtime
-					> 1000000000000000LLU) {
-				  len = sprintf(buffer,
-					"%s(%.2f fs)" "\x20\x20",
-					Shm->SysGate.taskList[i].comm,
-					(double)Shm->SysGate.taskList[i].runtime
-					/ 1000000000000000LLU);
-				} else if (Shm->SysGate.taskList[i].runtime
-					> 1000000000000LLU) {
-				  len = sprintf(buffer,
-					"%s(%.2f ps)" "\x20\x20",
-					Shm->SysGate.taskList[i].comm,
-					(double)Shm->SysGate.taskList[i].runtime
-					/ 1000000000000LLU);
-				} else if (Shm->SysGate.taskList[i].runtime
-					> 1000000000LLU) {
-				  len = sprintf(buffer,
-					"%s(%.2f ns)" "\x20\x20",
-					Shm->SysGate.taskList[i].comm,
-					(double)Shm->SysGate.taskList[i].runtime
-					/ 1000000000LLU);
-				} else {
-				  len = sprintf(buffer,
-					"%s(%.2f us)  " "\x20\x20",
-					Shm->SysGate.taskList[i].comm,
-					(double)Shm->SysGate.taskList[i].runtime
-					/ 1000000LLU);
-				}
+					Shm->SysGate.taskList[i].runtime);
 				break;
 			    case F_UTIME:
 				len = sprintf(buffer,

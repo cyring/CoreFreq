@@ -48,7 +48,7 @@ static signed int AutoClock = 1;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
 
-static signed int SleepInterval = 0;
+static unsigned int SleepInterval = 0;
 module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
 
@@ -2101,19 +2101,18 @@ long Sys_DumpTask(void)
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
-		task_lock(thread);
+	    task_lock(thread);
 
-		Proc->SysGate.taskList[cnt].runtime  = thread->se.vruntime;
-		Proc->SysGate.taskList[cnt].usertime = thread->utime;
-		Proc->SysGate.taskList[cnt].systime  = thread->stime;
-		Proc->SysGate.taskList[cnt].state    = thread->state;
-		Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
-		Proc->SysGate.taskList[cnt].pid      = thread->pid;
-		memcpy(Proc->SysGate.taskList[cnt].comm,
-			thread->comm, TASK_COMM_LEN);
+	    Proc->SysGate.taskList[cnt].runtime  = thread->se.sum_exec_runtime;
+	    Proc->SysGate.taskList[cnt].usertime = thread->utime;
+	    Proc->SysGate.taskList[cnt].systime  = thread->stime;
+	    Proc->SysGate.taskList[cnt].state    = thread->state;
+	    Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
+	    Proc->SysGate.taskList[cnt].pid      = thread->pid;
+	    memcpy(Proc->SysGate.taskList[cnt].comm,thread->comm,TASK_COMM_LEN);
 
-		task_unlock(thread);
-		cnt++;
+	    task_unlock(thread);
+	    cnt++;
 	}
 	rcu_read_unlock();
 	Proc->SysGate.taskCount = cnt;
@@ -2341,7 +2340,7 @@ static int __init CoreFreqK_init(void)
 			    Proc->CPU.Count = Arg.count;
 
 			    if ( (SleepInterval >= LOOP_MIN_MS)
-			      && (SleepInterval <= LOOP_MAX_MS))
+			      && (SleepInterval < LOOP_MAX_MS))
 				Proc->SleepInterval = SleepInterval;
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
@@ -2353,7 +2352,7 @@ static int __init CoreFreqK_init(void)
 			    Arch[0].Architecture = Proc->Features.Info.VendorID;
 
 			    RearmTheTimer =
-				ktime_set(0, Proc->SleepInterval * 1000000L);
+				ktime_set(0, Proc->SleepInterval * 1000000LU);
 
 			    publicSize  = ROUND_TO_PAGES(sizeof(CORE));
 			    privateSize = ROUND_TO_PAGES(sizeof(JOIN));

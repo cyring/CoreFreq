@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 #include <stdio.h>
 #include <signal.h>
 #include <errno.h>
@@ -74,7 +75,7 @@ static void *Core_Cycle(void *arg)
 	    while (!BITVAL(Core->Sync.V, 63)
 		&& !Shutdown
 		&& !Core->OffLine.OS) {
-			usleep(Proc->SleepInterval * BASE_SLEEP);
+			nanosleep(&Proc->BaseSleep, NULL);
 	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
@@ -460,14 +461,10 @@ void SysGate_Kernel(SHM_STRUCT *Shm, PROC *Proc)
 
 void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 {
-	int cnt;
-
 	Shm->SysGate.taskCount = Proc->SysGate.taskCount;
 
-	for (cnt = 0; cnt < Shm->SysGate.taskCount; cnt++) {
-		memcpy( &Shm->SysGate.taskList[cnt],
-			&Proc->SysGate.taskList[cnt], sizeof(TASK_MCB));
-	}
+	memcpy( Shm->SysGate.taskList, Proc->SysGate.taskList,
+		Shm->SysGate.taskCount * sizeof(TASK_MCB));
 
 	int reverseSign[2] = {+1, -1};
 
@@ -621,7 +618,7 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 	}
 	// Loop while all the cpu room bits are not cleared.
 	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
-		usleep(Shm->Proc.SleepInterval * BASE_SLEEP);
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
 	// Reset the Room mask
 	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
@@ -714,17 +711,18 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	    && ((Shm = mmap(0, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED))
-	    {
-		// Copy Processor data from Kernel to Userspace.
+	    {	// Copy Processor data from Kernel to Userspace.
 		memset(Shm, 0, ShmSize);
-
-		Architecture(Shm, Proc);
 
 		// Copy the timer interval delay.
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
+		// Compute the polling rate based on the timer interval.
+		Shm->Proc.BaseSleep =
+			TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / 5);
+
+		Architecture(Shm, Proc);
 
 		// Technologies aggregation.
-
 		PerformanceMonitoring(Shm, Proc);
 
 		InvariantTSC(Shm, Proc);
