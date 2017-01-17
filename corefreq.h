@@ -162,6 +162,7 @@ typedef	struct
 
 		IDLEDRIVER	IdleDriver;
 
+		pid_t		trackTask;
 		int		sortByField,
 				reverseOrder,
 				taskCount;

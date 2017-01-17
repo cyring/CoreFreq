@@ -471,7 +471,7 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	int SortByRuntime(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->runtime < task2->runtime ? 1 : -1;
+		int sort = task1->runtime < task2->runtime ? +1 : -1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -479,7 +479,7 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	int SortByUsertime(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->usertime < task2->usertime ? 1 : -1;
+		int sort = task1->usertime < task2->usertime ? +1 : -1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -487,7 +487,7 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	int SortBySystime(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->systime < task2->systime ? 1 : -1;
+		int sort = task1->systime < task2->systime ? +1 : -1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -495,7 +495,7 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	int SortByState(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->state < task2->state ? -1 : 1;
+		int sort = task1->state < task2->state ? -1 : +1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -503,7 +503,7 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 	int SortByPID(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->pid < task2->pid ? -1 : 1;
+		int sort = task1->pid < task2->pid ? -1 : +1;
 		sort *= reverseSign[Shm->SysGate.reverseOrder];
 		return(sort);
 	}
@@ -527,8 +527,20 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 		SortByCommand
 	};
 
+	int SortByTracker(const void *p1, const void *p2)
+	{
+		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+
+		int sort = (task1->pid == Shm->SysGate.trackTask) ?
+			-1 : (task2->pid == Shm->SysGate.trackTask) ?
+			+1 :  SortByFunc[Shm->SysGate.sortByField](p1, p2);
+		return(sort);
+	}
+
 	qsort(Shm->SysGate.taskList, Shm->SysGate.taskCount, sizeof(TASK_MCB),
-		SortByFunc[Shm->SysGate.sortByField]);
+		Shm->SysGate.trackTask ?
+			  SortByTracker
+			: SortByFunc[Shm->SysGate.sortByField]);
 
 	Shm->SysGate.memInfo.totalram  = Proc->SysGate.memInfo.totalram;
 	Shm->SysGate.memInfo.sharedram = Proc->SysGate.memInfo.sharedram;
