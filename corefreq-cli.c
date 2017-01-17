@@ -1473,6 +1473,7 @@ typedef union {
 #define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN, 0)
 #define MAKE_PRINT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
 #define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
+#define MAKE_PRINT_DROP		MakeAttr(BLACK, 0, WHITE, 0)
 
 typedef unsigned char	ASCII;
 
@@ -2262,6 +2263,29 @@ void Top(SHM_STRUCT *Shm)
 
     Coordinate *cTask;
 
+    #define EraseTCell_Menu(win)					\
+    (									\
+	{								\
+	    CoordShift shift = {					\
+		.horz = win->matrix.scroll.horz + win->matrix.select.col,\
+		.vert = win->matrix.scroll.vert + row			\
+	    };								\
+	    Coordinate cell = {						\
+		.col =	(win->matrix.origin.col				\
+			+ (win->matrix.select.col			\
+			* TCellAt(win, shift.horz, shift.vert).length)), \
+			(win->matrix.origin.row + row),			\
+		.row =	win->matrix.origin.row + row			\
+	    };								\
+		memset(&LayerAt(win->layer, attr, cell.col, cell.row),	\
+			0,						\
+			TCellAt(win, shift.horz, shift.vert).length);	\
+		memset(&LayerAt(win->layer, code, cell.col, cell.row),	\
+			0,						\
+			TCellAt(win, shift.horz, shift.vert).length);	\
+	}								\
+    )
+
     void ForEachCellPrint_Menu(Window *win, void *plist)
     {
 	WinList *list = (WinList *) plist;
@@ -2295,6 +2319,22 @@ void Top(SHM_STRUCT *Shm)
 				win->hook.color[0].title);
     }
 
+    void ForEachCellPrint_Drop(Window *win, void *plist)
+    {
+	WinList *list = (WinList *) plist;
+	unsigned short col, row;
+
+	if (win->lazyComp.rowLen == 0)
+	  for (col = 0; col < win->matrix.size.wth; col++)
+		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
+
+	for (row = 0; row < win->matrix.size.hth; row++)
+	    if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			PrintContent(win, list, win->matrix.select.col, row);
+    }
+
     int MotionEnter_Menu(SCANKEY *scan, Window *win)
     {
 	if ((scan->key = TCellAt(win,
@@ -2307,29 +2347,6 @@ void Top(SHM_STRUCT *Shm)
 	} else
 		return(0);
     }
-
-    #define EraseTCell_Menu(win)					\
-    (									\
-	{								\
-	    CoordShift shift = {					\
-		.horz = win->matrix.scroll.horz + win->matrix.select.col,\
-		.vert = win->matrix.scroll.vert + row			\
-	    };								\
-	    Coordinate cell = {						\
-		.col =	(win->matrix.origin.col				\
-			+ (win->matrix.select.col			\
-			* TCellAt(win, shift.horz, shift.vert).length)), \
-			(win->matrix.origin.row + row),			\
-		.row =	win->matrix.origin.row + row			\
-	    };								\
-		memset(&LayerAt(win->layer, attr, cell.col, cell.row),	\
-			0,						\
-			TCellAt(win, shift.horz, shift.vert).length);	\
-		memset(&LayerAt(win->layer, code, cell.col, cell.row),	\
-			0,						\
-			TCellAt(win, shift.horz, shift.vert).length);	\
-	}								\
-    )
 
     void MotionLeft_Menu(Window *win)
     {
@@ -2447,11 +2464,11 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_x,	" Task / State [x] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_b,	" Task by ...  [b] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -2778,28 +2795,29 @@ void Top(SHM_STRUCT *Shm)
 					id,
 					1,
 					SORTBYCOUNT,
-					42,
-					TOP_HEADER_ROW + 2);
+					33,
+					TOP_HEADER_ROW +Shm->Proc.CPU.Count +2);
 	if (wSortBy != NULL) {
-		StoreTCell(wSortBy,SCANKEY_x,   " State    ",MAKE_PRINT_FOCUS);
-		StoreTCell(wSortBy,SORTBY_RTIME," RunTime  ",MAKE_PRINT_FOCUS);
-		StoreTCell(wSortBy,SORTBY_UTIME," UserTime ",MAKE_PRINT_FOCUS);
-		StoreTCell(wSortBy,SORTBY_STIME," SysTime  ",MAKE_PRINT_FOCUS);
-		StoreTCell(wSortBy,SORTBY_PID,  " PID      ",MAKE_PRINT_FOCUS);
-		StoreTCell(wSortBy,SORTBY_COMM, " Command  ",MAKE_PRINT_FOCUS);
+		StoreTCell(wSortBy,SCANKEY_x,   " State    ",MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_RTIME," RunTime  ",MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_UTIME," UserTime ",MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_STIME," SysTime  ",MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_PID,  " PID      ",MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_COMM, " Command  ",MAKE_PRINT_DROP);
 
 		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
+
+		StoreWindow(wSortBy, .color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wSortBy, .color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(wSortBy, .color[1].title,MakeAttr(BLACK,0,WHITE,1));
+
+		StoreWindow(wSortBy,	.Print,		ForEachCellPrint_Drop);
 
 		StoreWindow(wSortBy,	.key.Enter,	MotionEnter_Menu);
 		StoreWindow(wSortBy,	.key.Down,	MotionDown_Win);
 		StoreWindow(wSortBy,	.key.Up,	MotionUp_Win);
 		StoreWindow(wSortBy,	.key.Home,	MotionReset_Win);
 		StoreWindow(wSortBy,	.key.End,	MotionEnd_Menu);
-
-		StoreWindow(wSortBy,	.key.WinLeft,	MotionOriginLeft_Win);
-		StoreWindow(wSortBy,	.key.WinRight,	MotionOriginRight_Win);
-		StoreWindow(wSortBy,	.key.WinDown,	MotionOriginDown_Win);
-		StoreWindow(wSortBy,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wSortBy);
     }
@@ -2910,11 +2928,11 @@ void Top(SHM_STRUCT *Shm)
 		}
 		break;
 	case SCANKEY_b:
-		{
-		Window *win = SearchWinListById(scan->key, &winList);
-		if (win == NULL)
+		if (drawFlag.view == V_TASKS) {
+		    Window *win = SearchWinListById(scan->key, &winList);
+		    if (win == NULL)
 			AppendWindow(CreateSortByField(scan->key), &winList);
-		else
+		    else
 			SetHead(&winList, win);
 		}
 		break;
@@ -3571,62 +3589,62 @@ void Top(SHM_STRUCT *Shm)
 	    } hSort[SORTBYCOUNT] = {
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','S','t','a','t','e',')',' ','-','-','-'
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','S','t','a','t','e',')',' ', '-','-','-'
 		  }
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','R','u','n','T','i','m','e',')',' ','-'
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','R','u','n','T','i','m','e', ')',' ','-'
 		  }
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, LCK,HDK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','U','s','e','r','T','i','m','e',')',' '
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','U','s','e','r','T','i','m', 'e',')',' '
 		  }
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','S','y','s','T','i','m','e',')',' ','-'
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','S','y','s','T','i','m','e', ')',' ','-'
 		  }
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK,LWK,LWK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','P','I','D',')',' ','-','-','-','-','-'
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','P','I','D',')',' ','-','-', '-','-','-'
 		  }
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,HDK,LWK,LWK
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
-			'(','s','o','r','t','e','d',' ','b','y',	\
-			' ','C','o','m','m','a','n','d',')',' ','-'
+			'(','s','o','r','t','e','d',' ', 'b','y',	\
+			' ','C','o','m','m','a','n','d', ')',' ','-'
 		  }
 		}
 	    };
