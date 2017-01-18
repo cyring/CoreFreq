@@ -3697,7 +3697,7 @@ void Top(SHM_STRUCT *Shm)
 	    } hSort[SORTBYCOUNT] = {
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
@@ -3707,7 +3707,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -3717,7 +3717,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, LCK,HDK,LWK
 		  },
 		  .code = {
@@ -3727,7 +3727,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -3737,7 +3737,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
@@ -3747,7 +3747,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -3776,7 +3776,7 @@ void Top(SHM_STRUCT *Shm)
 	    } hReverse[2] = {
 		{
 		  .attr = {
-		    LWK,_LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+		    LWK,_HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
 		  },
 		  .code = {
 		    ' ', 'R','e','v','e','r','s','e',' ','[','O','F','F',']',' '
@@ -3784,7 +3784,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-		    LWK,_LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK
+		    LWK,_HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK
 		  },
 		  .code = {
 		    ' ', 'R','e','v','e','r','s','e',' ','[',' ','O','N',']',' '
@@ -3804,7 +3804,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.length = 13,
 		.attr = {
-			LWK,_LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+			LWK,_HWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
 		},
 		.code = {
 			' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '
@@ -3843,9 +3843,9 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.length = 22,
 		.attr = {
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,_LWK,LWK,		\
-			LWK,LWK,LWK,LWK,LWK,HDK,HWK, HWK,HWK,		\
-			HWK,HWK,HDK,LWK
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,HDK,LWK, LWK,LWK,		\
+			LWK,LWK,HDK,LWK
 		},
 		.code = {
 			' ','T','r','a','c','k','i', 'n','g',		\
@@ -4315,13 +4315,25 @@ void Top(SHM_STRUCT *Shm)
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
 				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
+			}, unintColor[] = {
+				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
+				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
+				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
+				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
+				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK
+			}, zombieColor[] = {
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
+				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
 			}, sleepColor[] = {
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
 				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-			}, unknownColor[] = {
+			}, otherColor[] = {
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
 				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
@@ -4348,15 +4360,37 @@ void Top(SHM_STRUCT *Shm)
 		}
 		size_t len;
 		for (i = 0; i < Shm->SysGate.taskCount; i++) {
-		    if (Shm->SysGate.taskList[i].state == 0) {
+		    switch (Shm->SysGate.taskList[i].state) {
+		    case 0: {	// TASK_RUNNING
 			attr = runColor;
 			symbol = 'R';
-		    } else if (Shm->SysGate.taskList[i].state > 0) {
+			}
+			break;
+		    case 1: {	// TASK_INTERRUPTIBLE
+			attr = sleepColor;
+			symbol = 'I';
+			}
+			break;
+		    case 2: {	// TASK_UNINTERRUPTIBLE
+			attr = unintColor;
+			symbol = 'U';
+			}
+			break;
+		    case 4: {	// TASK_ZOMBIE
+			attr = zombieColor;
+			symbol = 'Z';
+			}
+			break;
+		    case 8: {	// TASK_STOPPED
 			attr = sleepColor;
 			symbol = 'S';
-		    } else {
-			attr = unknownColor;
-			symbol = 'U';
+			}
+			break;
+		    default: {
+			attr = otherColor;
+			symbol = 'O';
+			}
+			break;
 		    }
 		    if(Shm->SysGate.taskList[i].pid == Shm->SysGate.trackTask)
 			attr = trackerColor;
