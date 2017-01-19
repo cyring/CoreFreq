@@ -2109,6 +2109,8 @@ long Sys_DumpTask(void)
 	    Proc->SysGate.taskList[cnt].state    = thread->state;
 	    Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
 	    Proc->SysGate.taskList[cnt].pid      = thread->pid;
+	    Proc->SysGate.taskList[cnt].tgid     = thread->tgid;
+	    Proc->SysGate.taskList[cnt].ppid     = thread->parent->pid;
 	    memcpy(Proc->SysGate.taskList[cnt].comm,thread->comm,TASK_COMM_LEN);
 
 	    task_unlock(thread);

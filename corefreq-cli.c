@@ -2835,34 +2835,68 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateTracking(unsigned long long id)
     {
-	int SortByCommand(const void *p1, const void *p2)
+	int SortByForest(const void *p1, const void *p2)
 	{
 		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		return(strcmp(task1->comm, task2->comm));
-	}
 
+		if (task1->ppid < task2->ppid)
+			return(-1);
+		else if (task1->ppid > task2->ppid)
+			return(1);
+		else if (task1->tgid < task2->tgid)
+			return(-1);
+		else if (task1->tgid > task2->tgid)
+			return(1);
+		else if (task1->pid == task1->tgid)
+			return(-1);
+		else if (task1->pid < task2->pid)
+			return(-1);
+		else
+			return(1);
+	}
+	const unsigned short margin = 12; // > "Freq(MHz)"
+	int padding = drawSize.width - margin -TASK_COMM_LEN-9;//"\x20\x20(%5d)"
+	unsigned int indent = 0;
 	Window *wTrack = CreateWindow( wLayer,
 					id,
 					1,
 					TOP_HEADER_ROW + Shm->Proc.CPU.Count *2,
-					45,
+					margin,
 					TOP_HEADER_ROW);
 	if (wTrack != NULL) {
 		size_t tc = Shm->SysGate.taskCount;
 		TASK_MCB *trackList = malloc(tc * sizeof(TASK_MCB));
+
 		memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
-		qsort(trackList, tc, sizeof(TASK_MCB), SortByCommand);
+		qsort(trackList, tc, sizeof(TASK_MCB), SortByForest);
 
 		unsigned int ti;
-		char item[32];
+		char *item = malloc(MAX_WIDTH),
+		     *fmt[2] = {
+			"%.*s" "\x20\x20%-16s" "%.*s" "(%5d)",
+			"%.*s" "%-16s\x20\x20" "%.*s" "(%5d)"
+		     };
+		pid_t previd = trackList[0].ppid;
 		for (ti = 0; ti < tc; ti++) {
+			if((trackList[ti].ppid != previd) && (indent < padding))
+				indent++;
+			previd = trackList[ti].ppid;
+
 			sprintf(item,
-				"%16s(%5d)",
+				fmt[(trackList[ti].pid == trackList[ti].tgid)],
+				indent,
+				hSpace,
 				trackList[ti].comm,
+				padding - indent,
+				hSpace,
 				trackList[ti].pid);
 
-			StoreTCell(wTrack, (TRACK_TASK | trackList[ti].pid),
-					item, MAKE_PRINT_DROP);
+			StoreTCell(wTrack,
+				(TRACK_TASK | trackList[ti].pid),
+				item,
+				(trackList[ti].pid == trackList[ti].tgid) ?
+					  MAKE_PRINT_DROP
+					: MakeAttr(BLACK, 0, WHITE, 1));
 		}
 		StoreWindow(wTrack, .color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wTrack, .color[0].title, MAKE_PRINT_DROP);
@@ -2877,6 +2911,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wTrack,	.key.Home,	MotionReset_Win);
 		StoreWindow(wTrack,	.key.End,	MotionEnd_Cell);
 
+		free(item);
 		free(trackList);
 	}
 	return(wTrack);
@@ -4368,7 +4403,7 @@ void Top(SHM_STRUCT *Shm)
 			break;
 		    case 1: {	// TASK_INTERRUPTIBLE
 			attr = sleepColor;
-			symbol = 'I';
+			symbol = 'S';
 			}
 			break;
 		    case 2: {	// TASK_UNINTERRUPTIBLE
@@ -4383,7 +4418,7 @@ void Top(SHM_STRUCT *Shm)
 			break;
 		    case 8: {	// TASK_STOPPED
 			attr = sleepColor;
-			symbol = 'S';
+			symbol = 'H';
 			}
 			break;
 		    default: {

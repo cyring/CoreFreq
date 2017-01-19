@@ -549,7 +549,9 @@ typedef struct {
 				systime;
 	long			state;
 	int			wake_cpu;
-	pid_t			pid;	// type of __kernel_pid_t = int
+	pid_t			pid,	// type of __kernel_pid_t = int
+				tgid,
+				ppid;
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 
