@@ -27,7 +27,7 @@
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int Shutdown = 0x0, Quiet = 0x001, Math = 0x0;
+unsigned int Shutdown = 0x0, Quiet = 0x001, Math = 0x0, SysGateStartUp = 1;
 static unsigned long long roomSeed = 0x0;
 
 typedef struct {
@@ -424,46 +424,46 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
 }
 
-void SysGate_IdleDriver(SHM_STRUCT *Shm, PROC *Proc)
+void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
 {
-    if (strlen(Proc->SysGate.IdleDriver.Name) > 0) {
+    if (strlen(SysGate->IdleDriver.Name) > 0) {
 	int i;
 
 	strncpy(Shm->SysGate.IdleDriver.Name,
-		Proc->SysGate.IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+		SysGate->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
 
-	Shm->SysGate.IdleDriver.stateCount =Proc->SysGate.IdleDriver.stateCount;
+	Shm->SysGate.IdleDriver.stateCount = SysGate->IdleDriver.stateCount;
 	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++)
 	{
 		strncpy(Shm->SysGate.IdleDriver.State[i].Name,
-			Proc->SysGate.IdleDriver.State[i].Name,
+			SysGate->IdleDriver.State[i].Name,
 			CPUIDLE_NAME_LEN - 1);
 
 		Shm->SysGate.IdleDriver.State[i].exitLatency =
-			Proc->SysGate.IdleDriver.State[i].exitLatency;
+			SysGate->IdleDriver.State[i].exitLatency;
 
 		Shm->SysGate.IdleDriver.State[i].powerUsage =
-			Proc->SysGate.IdleDriver.State[i].powerUsage;
+			SysGate->IdleDriver.State[i].powerUsage;
 
 		Shm->SysGate.IdleDriver.State[i].targetResidency =
-			Proc->SysGate.IdleDriver.State[i].targetResidency;
+			SysGate->IdleDriver.State[i].targetResidency;
 	}
     }
 }
 
-void SysGate_Kernel(SHM_STRUCT *Shm, PROC *Proc)
+void SysGate_Kernel(SHM_STRUCT *Shm, SYSGATE *SysGate)
 {
-	strncpy(Shm->SysGate.sysname, Proc->SysGate.sysname, MAX_UTS_LEN);
-	strncpy(Shm->SysGate.release, Proc->SysGate.release, MAX_UTS_LEN);
-	strncpy(Shm->SysGate.version, Proc->SysGate.version, MAX_UTS_LEN);
-	strncpy(Shm->SysGate.machine, Proc->SysGate.machine, MAX_UTS_LEN);
+	memcpy(Shm->SysGate.sysname, SysGate->sysname, MAX_UTS_LEN);
+	memcpy(Shm->SysGate.release, SysGate->release, MAX_UTS_LEN);
+	memcpy(Shm->SysGate.version, SysGate->version, MAX_UTS_LEN);
+	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
 }
 
-void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
+void SysGate_Update(SHM_STRUCT *Shm, SYSGATE *SysGate)
 {
-	Shm->SysGate.taskCount = Proc->SysGate.taskCount;
+	Shm->SysGate.taskCount = SysGate->taskCount;
 
-	memcpy( Shm->SysGate.taskList, Proc->SysGate.taskList,
+	memcpy( Shm->SysGate.taskList, SysGate->taskList,
 		Shm->SysGate.taskCount * sizeof(TASK_MCB));
 
 	int reverseSign[2] = {+1, -1};
@@ -542,12 +542,12 @@ void SysGate_Update(SHM_STRUCT *Shm, PROC *Proc)
 			  SortByTracker
 			: SortByFunc[Shm->SysGate.sortByField]);
 
-	Shm->SysGate.memInfo.totalram  = Proc->SysGate.memInfo.totalram;
-	Shm->SysGate.memInfo.sharedram = Proc->SysGate.memInfo.sharedram;
-	Shm->SysGate.memInfo.freeram   = Proc->SysGate.memInfo.freeram;
-	Shm->SysGate.memInfo.bufferram = Proc->SysGate.memInfo.bufferram;
-	Shm->SysGate.memInfo.totalhigh = Proc->SysGate.memInfo.totalhigh;
-	Shm->SysGate.memInfo.freehigh  = Proc->SysGate.memInfo.freehigh;
+	Shm->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
+	Shm->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
+	Shm->SysGate.memInfo.freeram   = SysGate->memInfo.freeram;
+	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
+	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
+	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
@@ -575,7 +575,146 @@ typedef	struct
 		Svr;
 } FD;
 
-void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
+typedef struct {
+	sigset_t	Signal;
+	pthread_t	TID;
+	int		Started;
+	FD		*fd;
+	SHM_STRUCT	*Shm;
+	SYSGATE		**SysGate;
+} SIG;
+
+int SysGate_OnDemand(FD *fd, SYSGATE **SysGate, int operation)
+{
+	int rc = -1;
+	const size_t pageSize = ROUND_TO_PAGES(sizeof(SYSGATE));
+	if (operation == 0) {
+		if (*SysGate != NULL) {
+			if ((rc = munmap(*SysGate, pageSize)) == 0)
+				*SysGate = NULL;
+		}
+		else
+			rc = -1;
+	} else {
+		if (*SysGate == NULL) {
+			const off_t offset = 1 * PAGE_SIZE;
+			SYSGATE *MapGate = mmap(NULL, pageSize,
+						PROT_READ|PROT_WRITE,
+						MAP_SHARED,
+						fd->Drv, offset);
+			if (MapGate != MAP_FAILED) {
+				*SysGate = MapGate;
+				rc = 0;
+			}
+		}
+		else
+			rc = 0;
+	}
+	return(rc);
+}
+
+void SysGate_Toggle(SIG *Sig, unsigned int state)
+{
+    if (state == 0) {
+	if (BITWISEAND(LOCKLESS, Sig->Shm->SysGate.Operation, 0x1)) {
+		// Stop SysGate
+		BITCLR(LOCKLESS, Sig->Shm->SysGate.Operation,0);
+		// Notify
+		if (!BITVAL(Sig->Shm->Proc.Sync, 63))
+			BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
+
+		if (Quiet & 0x100) {
+			printf("  SysGate(%llu)\n",Sig->Shm->SysGate.Operation);
+			fflush(stdout);
+		}
+	}
+    } else {
+	if (!BITWISEAND(LOCKLESS, Sig->Shm->SysGate.Operation, 0x1)) {
+	    if (SysGate_OnDemand(Sig->fd, Sig->SysGate, 1) == 0) {
+		if (ioctl(Sig->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
+			// Aggregate the OS idle driver data.
+			SysGate_IdleDriver(Sig->Shm, *(Sig->SysGate));
+			// Copy system information.
+			SysGate_Kernel(Sig->Shm, *(Sig->SysGate));
+			// Start SysGate
+			BITSET(LOCKLESS, Sig->Shm->SysGate.Operation,0);
+			// Notify
+			if (!BITVAL(Sig->Shm->Proc.Sync, 63))
+				BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
+
+		    if (Quiet & 0x100) {
+			printf("  SysGate(%llu)\n",Sig->Shm->SysGate.Operation);
+			fflush(stdout);
+		    }
+		}
+	    }
+	}
+    }
+}
+
+static void *Emergency_Handler(void *arg)
+{
+	int caught = 0, leave = 0;
+	SIG *Sig = (SIG *) arg;
+	pthread_t tid = pthread_self();
+
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	CPU_SET(0, &cpuset);
+
+	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+	pthread_setname_np(tid, "corefreqd-kill");
+
+	while (!leave && !sigwait(&Sig->Signal, &caught))
+		switch (caught) {
+		case SIGUSR2:
+			SysGate_Toggle(Sig, 0);
+			break;
+		case SIGUSR1:
+			SysGate_Toggle(Sig, 1);
+			break;
+		case SIGTERM:
+			leave = 0x1;
+			break;
+		case SIGINT:
+			// Fallthrough
+		case SIGQUIT:
+			Shutdown = 0x1;
+			break;
+		}
+	return(NULL);
+}
+
+void Emergency_Command(SIG *Sig, unsigned int cmd)
+{
+	switch (cmd) {
+	case 0:
+		if (Sig->Started) {
+			pthread_kill(Sig->TID, SIGTERM);
+			pthread_join(Sig->TID, NULL);
+		}
+		break;
+	case 1: {
+		sigemptyset(&Sig->Signal);
+		sigaddset(&Sig->Signal, SIGUSR1);	// Start SysGate
+		sigaddset(&Sig->Signal, SIGUSR2);	// Stop  SysGate
+		sigaddset(&Sig->Signal, SIGINT);	// [CTRL] + [C]
+		sigaddset(&Sig->Signal, SIGQUIT);	// Shutdown
+		sigaddset(&Sig->Signal, SIGTERM);	// Thread kill
+
+		if (!pthread_sigmask(SIG_BLOCK, &Sig->Signal, NULL)
+		 && !pthread_create(&Sig->TID, NULL, Emergency_Handler, Sig))
+			Sig->Started = 1;
+		}
+		break;
+	}
+}
+
+void Core_Manager(FD *fd,
+		SHM_STRUCT *Shm,
+		PROC *Proc,
+		CORE **Core,
+		SYSGATE **SysGate)
 {
     unsigned int cpu = 0;
 
@@ -676,9 +815,14 @@ void Core_Manager(FD *fd, SHM_STRUCT *Shm, PROC *Proc, CORE **Core)
 		Shm->Proc.Avg.C6    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
-		// Update OS tasks and memory usage.
-		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSUPDT, NULL) != -1)
-			SysGate_Update(Shm, Proc);
+
+		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+			// Update OS tasks and memory usage.
+			if (SysGate_OnDemand(fd, SysGate, 1) == 0) {
+				if (ioctl(fd->Drv,COREFREQ_IOCTL_SYSUPDT) != -1)
+					SysGate_Update(Shm, *SysGate);
+			}
+		}
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
 	}
@@ -693,23 +837,23 @@ int Shm_Manager(FD *fd, PROC *Proc)
 {
 	unsigned int	cpu = 0;
 	CORE		**Core;
-	SHM_STRUCT	*Shm;
+	SYSGATE		*SysGate = NULL;
+	SHM_STRUCT	*Shm = NULL;
 	int		rc = 0;
+	const size_t	CoreSize  = ROUND_TO_PAGES(sizeof(CORE));
 
 	Core = calloc(Proc->CPU.Count, sizeof(Core));
 	for (cpu = 0; !rc && (cpu < Proc->CPU.Count); cpu++) {
-		off_t offset = (1 + cpu) * PAGE_SIZE;
+		const off_t offset = (10 + cpu) * PAGE_SIZE;
 
-		if ((Core[cpu] = mmap(NULL, PAGE_SIZE,
+		if ((Core[cpu] = mmap(NULL, CoreSize,
 				PROT_READ|PROT_WRITE,
 				MAP_SHARED,
-				fd->Drv, offset)) == NULL)
+				fd->Drv, offset)) == MAP_FAILED)
 			rc = 4;
 	}
-	size_t ShmSize, ShmCpuSize;
-	ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count;
-	ShmSize    = sizeof(SHM_STRUCT) + ShmCpuSize;
-	ShmSize    = ROUND_TO_PAGES(ShmSize);
+	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count,
+		ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT) + ShmCpuSize));
 
 	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
@@ -723,8 +867,19 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	    && ((Shm = mmap(0, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED))
-	    {	// Copy Processor data from Kernel to Userspace.
+	    {
+		// Clear SHM
 		memset(Shm, 0, ShmSize);
+
+		SIG Sig = {
+			.Signal	= {{0}},
+			.TID	= 0,
+			.Started= 0,
+			.fd	= fd,
+			.Shm	= Shm,
+			.SysGate= &SysGate
+		};
+		Emergency_Command(&Sig, 1);
 
 		// Copy the timer interval delay.
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
@@ -746,14 +901,10 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
-		if (ioctl(fd->Drv, COREFREQ_IOCTL_SYSONCE, NULL) != -1) {
-			// Aggregate the OS idle driver data.
-			SysGate_IdleDriver(Shm, Proc);
-			// Copy system information.
-			SysGate_Kernel(Shm, Proc);
-		}
 		// Initialize notification.
 		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+
+		SysGate_Toggle(&Sig, SysGateStartUp);
 
 		// Welcomes with brand and per CPU base clock.
 		if (Quiet & 0x001)
@@ -768,11 +919,14 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
 		if (Quiet & 0x100)
-		  printf("  SleepInterval(%u)\n\n", Shm->Proc.SleepInterval);
+		  printf("  SleepInterval(%u), SysGate(%llu)\n\n",
+			Shm->Proc.SleepInterval, Shm->SysGate.Operation);
 		if (Quiet)
 			fflush(stdout);
 
-		Core_Manager(fd, Shm, Proc, Core);
+		Core_Manager(fd, Shm, Proc, Core, &SysGate);
+
+		Emergency_Command(&Sig, 0);
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
@@ -780,44 +934,13 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	    else
 		rc = 5;
 	}
+	SysGate_OnDemand(fd, &SysGate, 0);
+
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 		if (Core[cpu] != NULL)
-			munmap(Core[cpu], PAGE_SIZE);
+			munmap(Core[cpu], CoreSize);
 	free(Core);
 	return(rc);
-}
-
-typedef struct {
-	sigset_t Signal;
-	pthread_t TID;
-	int Started;
-} SIG;
-
-static void *Emergency(void *arg)
-{
-	int caught = 0, leave = 0;
-	SIG *Sig = (SIG *) arg;
-	pthread_t tid = pthread_self();
-
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
-
-	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, "corefreqd-kill");
-
-	while (!leave && !sigwait(&Sig->Signal, &caught))
-		switch (caught) {
-		case SIGUSR1:
-			leave = 0x1;
-			break;
-		case SIGINT:
-		case SIGQUIT:
-		case SIGTERM:
-			Shutdown = 0x1;
-			break;
-		}
-	return(NULL);
 }
 
 int help(char *appName)
@@ -827,6 +950,8 @@ int help(char *appName)
 		"\t-i\tInfo\n"						\
 		"\t-d\tDebug\n"						\
 		"\t-m\tMath\n"						\
+		"\t-gon\tEnable SysGate\n"				\
+		"\t-goff\tDisable SysGate\n"				\
 		"\t-h\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
@@ -860,6 +985,17 @@ int main(int argc, char *argv[])
 			case 'm':
 				Math = 0x1;
 				break;
+			case 'g':
+				if (argv[i][2]=='o'
+				 && argv[i][3]=='f'
+				 && argv[i][4]=='f')
+					SysGateStartUp = 0;
+				else if (argv[i][2]=='o'
+				 && argv[i][3]=='n')
+					SysGateStartUp = 1;
+				else
+					rc = help(appName);
+				break;
 			case 'h':
 			default:
 				rc = help(appName);
@@ -875,27 +1011,14 @@ int main(int argc, char *argv[])
 	if (!rc) {
 	  if (geteuid() == 0) {
 	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1) {
-		unsigned long packageSize = ROUND_TO_PAGES(sizeof(PROC));
+		const size_t packageSize = ROUND_TO_PAGES(sizeof(PROC));
+
 		if ((Proc = mmap(NULL, packageSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd.Drv, 0)) != NULL) {
-			SIG Sig = {.Signal = {{0}}, .TID = 0, .Started = 0};
-			sigemptyset(&Sig.Signal);
-			sigaddset(&Sig.Signal, SIGUSR1);
-			sigaddset(&Sig.Signal, SIGINT);	// [CTRL] + [C]
-			sigaddset(&Sig.Signal, SIGQUIT);
-			sigaddset(&Sig.Signal, SIGTERM);
-
-			if (!pthread_sigmask(SIG_BLOCK, &Sig.Signal, NULL)
-			 && !pthread_create(&Sig.TID, NULL, Emergency, &Sig))
-				Sig.Started = 1;
+				fd.Drv, 0)) != MAP_FAILED) {
 
 			rc = Shm_Manager(&fd, Proc);
 
-			if (Sig.Started) {
-				pthread_kill(Sig.TID, SIGUSR1);
-				pthread_join(Sig.TID, NULL);
-			}
 			munmap(Proc, packageSize);
 		}
 		else

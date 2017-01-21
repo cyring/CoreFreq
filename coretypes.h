@@ -523,14 +523,14 @@ typedef struct	// BSP CPUID features.
 #endif
 
 typedef	struct {
-	char			Name[CPUIDLE_NAME_LEN];
 	int			stateCount;
 	struct {
-			char	Name[CPUIDLE_NAME_LEN];
 		unsigned int	exitLatency;		/* in US */
 			int	powerUsage;		/* in mW */
 		unsigned int	targetResidency;	/* in US */
+			char	Name[CPUIDLE_NAME_LEN];
 	} State[CPUIDLE_STATE_MAX];
+	char			Name[CPUIDLE_NAME_LEN];
 } IDLEDRIVER;
 
 #ifndef TASK_COMM_LEN

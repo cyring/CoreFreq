@@ -328,6 +328,20 @@ typedef struct
 	CLOCK				Clock;
 } CORE;
 
+typedef struct {
+		IDLEDRIVER	IdleDriver;
+
+		int		taskCount;
+		TASK_MCB	taskList[PID_MAX_DEFAULT];
+
+		MEM_MCB		memInfo;
+
+		char		sysname[MAX_UTS_LEN],
+				release[MAX_UTS_LEN],
+				version[MAX_UTS_LEN],
+				machine[MAX_UTS_LEN];
+} SYSGATE;
+
 typedef struct
 {
 	FEATURES		Features;
@@ -342,18 +356,7 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
-	struct {
-		char		sysname[MAX_UTS_LEN + 1],
-				release[MAX_UTS_LEN + 1],
-				version[MAX_UTS_LEN + 1],
-				machine[MAX_UTS_LEN + 1];
-
-		IDLEDRIVER	IdleDriver;
-
-		int		taskCount;
-		TASK_MCB	taskList[PID_MAX_DEFAULT];
-		MEM_MCB		memInfo;
-	} SysGate;
+	SYSGATE			*SysGate;
 
 	char			Architecture[32];
 } PROC;

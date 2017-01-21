@@ -2051,51 +2051,63 @@ void Stop_SandyBridge(void *arg)
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
 
-void Sys_IdleDriver_Query(void *arg)
+long Sys_IdleDriver_Query(void)
 {
-	struct cpuidle_driver *idleDriver;
+	if (Proc->SysGate != NULL) {
+	    struct cpuidle_driver *idleDriver;
 
-	if ((idleDriver = cpuidle_get_driver()) != NULL) {
+	    if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
 
-		strncpy(Proc->SysGate.IdleDriver.Name,
+		strncpy(Proc->SysGate->IdleDriver.Name,
 			idleDriver->name,
 			CPUIDLE_NAME_LEN - 1);
 
 		if (idleDriver->state_count < CPUIDLE_STATE_MAX)
-			Proc->SysGate.IdleDriver.stateCount =
+			Proc->SysGate->IdleDriver.stateCount =
 				idleDriver->state_count;
 		else	// No overflow check.
-			Proc->SysGate.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
+			Proc->SysGate->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
 
-		for (i = 0; i < Proc->SysGate.IdleDriver.stateCount; i++) {
-			strncpy(Proc->SysGate.IdleDriver.State[i].Name,
+		for (i = 0; i < Proc->SysGate->IdleDriver.stateCount; i++) {
+			strncpy(Proc->SysGate->IdleDriver.State[i].Name,
 				idleDriver->states[i].name,
 				CPUIDLE_NAME_LEN - 1);
 
-			Proc->SysGate.IdleDriver.State[i].exitLatency =
+			Proc->SysGate->IdleDriver.State[i].exitLatency =
 				idleDriver->states[i].exit_latency;
-			Proc->SysGate.IdleDriver.State[i].powerUsage =
+			Proc->SysGate->IdleDriver.State[i].powerUsage =
 				idleDriver->states[i].power_usage;
-			Proc->SysGate.IdleDriver.State[i].targetResidency =
+			Proc->SysGate->IdleDriver.State[i].targetResidency =
 				idleDriver->states[i].target_residency;
 		}
-	} else
-		memset(&Proc->SysGate.IdleDriver, 0, sizeof(IDLEDRIVER));
+	    }
+	    else
+		memset(&Proc->SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
+
+	    return(0);
+	}
+	else
+		return(-1);
 }
 
 long Sys_Kernel(void)
 {	// Source: /include/uapi/linux/utsname.h
-	strncpy(Proc->SysGate.sysname, utsname()->sysname, MAX_UTS_LEN);
-	strncpy(Proc->SysGate.release, utsname()->release, MAX_UTS_LEN);
-	strncpy(Proc->SysGate.version, utsname()->version, MAX_UTS_LEN);
-	strncpy(Proc->SysGate.machine, utsname()->machine, MAX_UTS_LEN);
+    if (Proc->SysGate != NULL) {
+	memcpy(Proc->SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
+	memcpy(Proc->SysGate->release, utsname()->release, MAX_UTS_LEN);
+	memcpy(Proc->SysGate->version, utsname()->version, MAX_UTS_LEN);
+	memcpy(Proc->SysGate->machine, utsname()->machine, MAX_UTS_LEN);
 
 	return(0);
+    }
+    else
+	return(-1);
 }
 
 long Sys_DumpTask(void)
 {	/// Source: /include/linux/sched.h
+    if (Proc->SysGate != NULL) {
 	struct task_struct *process, *thread;
 	int cnt = 0;
 
@@ -2103,59 +2115,79 @@ long Sys_DumpTask(void)
 	for_each_process_thread(process, thread) {
 	    task_lock(thread);
 
-	    Proc->SysGate.taskList[cnt].runtime  = thread->se.sum_exec_runtime;
-	    Proc->SysGate.taskList[cnt].usertime = thread->utime;
-	    Proc->SysGate.taskList[cnt].systime  = thread->stime;
-	    Proc->SysGate.taskList[cnt].state    = thread->state;
-	    Proc->SysGate.taskList[cnt].wake_cpu = thread->wake_cpu;
-	    Proc->SysGate.taskList[cnt].pid      = thread->pid;
-	    Proc->SysGate.taskList[cnt].tgid     = thread->tgid;
-	    Proc->SysGate.taskList[cnt].ppid     = thread->parent->pid;
-	    memcpy(Proc->SysGate.taskList[cnt].comm,thread->comm,TASK_COMM_LEN);
+	    Proc->SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
+	    Proc->SysGate->taskList[cnt].usertime = thread->utime;
+	    Proc->SysGate->taskList[cnt].systime  = thread->stime;
+	    Proc->SysGate->taskList[cnt].state    = thread->state;
+	    Proc->SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
+	    Proc->SysGate->taskList[cnt].pid      = thread->pid;
+	    Proc->SysGate->taskList[cnt].tgid     = thread->tgid;
+	    Proc->SysGate->taskList[cnt].ppid     = thread->parent->pid;
+	    memcpy(Proc->SysGate->taskList[cnt].comm,
+		  thread->comm, TASK_COMM_LEN);
 
 	    task_unlock(thread);
 	    cnt++;
 	}
 	rcu_read_unlock();
-	Proc->SysGate.taskCount = cnt;
+	Proc->SysGate->taskCount = cnt;
 
 	return(0);
+    }
+    else
+	return(-1);
 }
 
 long Sys_MemInfo(void)
 {	// Source: /include/uapi/linux/sysinfo.h
+    if (Proc->SysGate != NULL) {
 	struct sysinfo info;
 	si_meminfo(&info);
 
-	Proc->SysGate.memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
-	Proc->SysGate.memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
 
 	return(0);
+    }
+    else
+	return(-1);
 }
 
-static long CoreFreqK_ioctl(	struct file *filp,
-				unsigned int cmd,
-				unsigned long arg)
+long SysGate_OnDemand(void)
+{
+	long rc = -1;
+	if (Proc->SysGate == NULL) {
+		unsigned long pageSize = ROUND_TO_PAGES(sizeof(SYSGATE));
+		// Alloc on demand
+		if((Proc->SysGate = kmalloc(pageSize, GFP_KERNEL)) != NULL) {
+			memset(Proc->SysGate, 0, pageSize);
+			rc = 0;
+		}
+	}
+	else	// Already allocated
+		rc = 1;
+
+	return(rc);
+}
+
+static long CoreFreqK_ioctl(struct file *filp,
+			unsigned int cmd,
+			unsigned long arg)
 {
 	long rc;
-
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
 		rc = Sys_DumpTask() & Sys_MemInfo();
 		break;
 	case COREFREQ_IOCTL_SYSONCE:
-		rc = smp_call_function_single(	0, /* BSP */
-						Sys_IdleDriver_Query,
-						NULL,
-						1);
-		rc &= Sys_Kernel();
+		rc = Sys_IdleDriver_Query() & Sys_Kernel();
 		break;
 	default:
-		rc = 0;
+		rc = -1;
 	}
 	return(rc);
 }
@@ -2163,25 +2195,59 @@ static long CoreFreqK_ioctl(	struct file *filp,
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	if (vma->vm_pgoff == 0) {
-	    if ((Proc != NULL)
-	      && remap_pfn_range(vma,
+	    if (Proc != NULL) {
+	      if (remap_pfn_range(vma,
+			vma->vm_start,
+			virt_to_phys((void *) Proc) >> PAGE_SHIFT,
+			vma->vm_end - vma->vm_start,
+			vma->vm_page_prot) < 0)
+				return(-EIO);
+	    }
+	    else
+		return(-EIO);
+	} else if (vma->vm_pgoff == 1) {
+	    if (Proc != NULL) {
+		switch (SysGate_OnDemand()) {
+		case -1:
+			return(-EIO);
+		case 1:
+			// Fallthrough
+		case 0:
+			if (remap_pfn_range(vma,
 				vma->vm_start,
-				virt_to_phys((void *) Proc) >> PAGE_SHIFT,
+				virt_to_phys((void *)Proc->SysGate)>>PAGE_SHIFT,
 				vma->vm_end - vma->vm_start,
 				vma->vm_page_prot) < 0)
+					return(-EIO);
+			break;
+		}
+	    }
+	    else
 		return(-EIO);
-	} else {
-	    unsigned int cpu = vma->vm_pgoff - 1;
+	} else if (vma->vm_pgoff >= 10) {
+	  unsigned int cpu = vma->vm_pgoff - 10;
 
-	    if ((cpu < Proc->CPU.Count) && (cpu >= 0)
-	      && (KPublic->Core[cpu] != NULL)
-	      && remap_pfn_range(vma,
+	  if (Proc != NULL) {
+	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+	      if (KPublic->Core[cpu] != NULL) {
+		if (remap_pfn_range(vma,
 			vma->vm_start,
 			virt_to_phys((void *) KPublic->Core[cpu]) >> PAGE_SHIFT,
 			vma->vm_end - vma->vm_start,
 			vma->vm_page_prot) < 0)
+				return(-EIO);
+	      }
+	      else
+		return(-EIO);
+	    }
+	    else
+		return(-EIO);
+	  }
+	  else
 		return(-EIO);
 	}
+	else
+		return(-EIO);
 	return(0);
 }
 
@@ -2347,8 +2413,7 @@ static int __init CoreFreqK_init(void)
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
 
-			    memcpy(	&Proc->Features,
-					&Arg.features,
+			    memcpy(&Proc->Features, &Arg.features,
 					sizeof(FEATURES) );
 
 			    Arch[0].Architecture = Proc->Features.Info.VendorID;
@@ -2538,8 +2603,11 @@ static void __exit CoreFreqK_cleanup(void)
 		kmem_cache_destroy(KPublic->Cache);
 	if (KPrivate->Cache != NULL)
 		kmem_cache_destroy(KPrivate->Cache);
-	if (Proc != NULL)
+	if (Proc != NULL) {
+		if (Proc->SysGate != NULL)
+			kfree(Proc->SysGate);
 		kfree(Proc);
+	}
 	if (KPublic != NULL)
 		kfree(KPublic);
 	if (KPrivate != NULL)

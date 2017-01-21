@@ -75,10 +75,9 @@
 
 #define _BIT_TEST_GPR(_base, _offset)	\
 ({						\
-	register unsigned char _ret;		\
+	register unsigned char _ret = 0;	\
 	asm volatile				\
 	(					\
-		"xor	%[ret], %[ret]"	"\n\t"	\
 		"btq	%%rdx, %[base]"	"\n\t"	\
 		"setc	%[ret]"			\
 		: [ret]	"+r" (_ret)		\
@@ -89,20 +88,19 @@
 	_ret;					\
 })
 
-#define _BIT_TEST_IMM(_base, _imm8)			\
-({							\
-	register unsigned char _ret;			\
-	asm volatile					\
-	(						\
-		"xor	%[ret],  %[ret]"	"\n\t"	\
-		"btq	%[imm8], %[base]"	"\n\t"	\
-		"setc	%[ret]"				\
-		: [ret]	"+r" (_ret)			\
-		: [base] "m" (_base),			\
-		  [imm8] "i" (_imm8)			\
-		: "cc", "memory"			\
-	);						\
-	_ret;						\
+#define _BIT_TEST_IMM(_base, _imm8)		\
+({						\
+	register unsigned char _ret = 0;	\
+	asm volatile				\
+	(					\
+		"btq	%[imm8], %[base]""\n\t" \
+		"setc	%[ret]"			\
+		: [ret]	"+r" (_ret)		\
+		: [base] "m" (_base),		\
+		  [imm8] "i" (_imm8)		\
+		: "cc", "memory"		\
+	);					\
+	_ret;					\
 })
 
 #define _BITWISEAND(_lock, _opl, _opr)		\

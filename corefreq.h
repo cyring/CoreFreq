@@ -152,13 +152,8 @@ typedef struct
 
 typedef	struct
 {
-	char			AppName[TASK_COMM_LEN];
-
-	struct {	
-		char		sysname[MAX_UTS_LEN + 1],
-				release[MAX_UTS_LEN + 1],
-				version[MAX_UTS_LEN + 1],
-				machine[MAX_UTS_LEN + 1];
+	struct {
+		Bit64		Operation;
 
 		IDLEDRIVER	IdleDriver;
 
@@ -167,8 +162,16 @@ typedef	struct
 				reverseOrder,
 				taskCount;
 		TASK_MCB	taskList[PID_MAX_DEFAULT];
+
 		MEM_MCB		memInfo;
+
+		char		sysname[MAX_UTS_LEN],
+				release[MAX_UTS_LEN],
+				version[MAX_UTS_LEN],
+				machine[MAX_UTS_LEN];
 	} SysGate;
+
+	char			AppName[TASK_COMM_LEN];
 
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];

@@ -1795,14 +1795,16 @@ void RemoveWindow(Window *win, WinList *list)
 
 void AppendWindow(Window *win, WinList *list)
 {
-	if (!IsDead(list))
-		AppendWinList(win, list);
-	else {
-		// Dead head, now cycling
-		win->prev = win;
-		win->next = win;
+	if (win != NULL) {
+		if (!IsDead(list))
+			AppendWinList(win, list);
+		else {
+			// Dead head, now cycling
+			win->prev = win;
+			win->next = win;
+		}
+		SetHead(list, win);
 	}
-	SetHead(list, win);
 }
 
 void DestroyAllWindows(WinList *list)
@@ -2854,17 +2856,20 @@ void Top(SHM_STRUCT *Shm)
 		else
 			return(1);
 	}
-	const unsigned short margin = 12; // > "Freq(MHz)"
-	int padding = drawSize.width - margin -TASK_COMM_LEN-9;//"\x20\x20(%5d)"
-	unsigned int indent = 0;
-	Window *wTrack = CreateWindow( wLayer,
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+	  size_t tc = Shm->SysGate.taskCount;
+	  if (tc > 0) {
+	    const unsigned short margin = 12;	// @ "Freq(MHz)"
+	    int padding = drawSize.width - margin
+			- TASK_COMM_LEN - 9;	// - "\x20\x20(%5d)"
+	    unsigned int indent = 0;
+	    Window *wTrack = CreateWindow(wLayer,
 					id,
 					1,
 					TOP_HEADER_ROW + Shm->Proc.CPU.Count *2,
 					margin,
 					TOP_HEADER_ROW);
-	if (wTrack != NULL) {
-		size_t tc = Shm->SysGate.taskCount;
+	    if (wTrack != NULL) {
 		TASK_MCB *trackList = malloc(tc * sizeof(TASK_MCB));
 
 		memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
@@ -2913,8 +2918,14 @@ void Top(SHM_STRUCT *Shm)
 
 		free(item);
 		free(trackList);
+	    }
+	    return(wTrack);
+	  }
+	  else
+	    return(NULL);
 	}
-	return(wTrack);
+	else
+	  return(NULL);
     }
 
 
@@ -3186,7 +3197,7 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerDeclare(9) hProc1 = {
 		.origin = {.col = drawSize.width - 9, .row = row}, .length = 9,
-		.attr = {HDK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK},
+		.attr = {HDK,HWK,HWK,HDK,HWK,HWK,LWK,LWK,LWK},
 		.code = {']',' ',' ','/',' ',' ','C','P','U'}
 	};
 
@@ -3413,16 +3424,16 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.length = 77,
 		.attr ={HYK,						\
-			HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,		\
-			LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,		\
-			HBK,HBK,HBK,LWK,				\
-			LWK,LWK,LWK,LWK,				\
+			HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,		\
+			HDK,HWK,HWK,LWK,HWK,HWK,HDK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,LWK,		\
+			HBK,HBK,HBK,HDK,				\
+			LWK,LWK,LWK,HDK,				\
 			LYK,LYK,LYK					\
 		},
 		.code ={0x0,						\
@@ -3928,9 +3939,9 @@ void Top(SHM_STRUCT *Shm)
 		MakeAttr(GREEN, 0, BLACK, 1)
 	};
 	const struct { ASCII *code; Attribute attr; } TSC[] = {
-		(ASCII *)"  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1),
-		(ASCII *)"TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1),
-		(ASCII *)"TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)
+		{(ASCII *) "  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1)},
+		{(ASCII *) "TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1)},
+		{(ASCII *) "TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)}
 	};
 
 	hTech0.code[ 6] = TSC[Shm->Proc.InvariantTSC].code[0];
@@ -4082,12 +4093,14 @@ void Top(SHM_STRUCT *Shm)
 	  }
 	}
 	row++;
-	len = strlen(Shm->SysGate.sysname);
+
+	len = sprintf(  buffer, "%s",
+			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
+			Shm->SysGate.sysname : "SysGate");
 
 	LayerFillAt(	layer, col, row,
-			len, Shm->SysGate.sysname,
+			len, buffer,
 			MakeAttr(CYAN, 0, BLACK, 0));
-
 	col += len;
 
 	LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
@@ -4099,25 +4112,31 @@ void Top(SHM_STRUCT *Shm)
 	LayerAt(layer, code, col, row) = '[';
 
 	col++;
-	len = strlen(Shm->SysGate.release);
 
-	LayerFillAt(	layer, col, row,
-			len, Shm->SysGate.release,
-			MakeAttr(WHITE, 0, BLACK, 1));
-
-	col += len;
-	len = strlen(Shm->SysGate.IdleDriver.Name);
-	if (len > 0) {
-		LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
-		LayerAt(layer, code, col, row) = '/';
-
-		col++;
+	if(BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		len = strlen(Shm->SysGate.release);
 
 		LayerFillAt(	layer, col, row,
+				len, Shm->SysGate.release,
+				MakeAttr(WHITE, 0, BLACK, 1));
+		col += len;
+
+		if ((len = strlen(Shm->SysGate.IdleDriver.Name)) > 0) {
+		  LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
+		  LayerAt(layer, code, col, row) = '/';
+
+		  col++;
+
+		  LayerFillAt(	layer, col, row,
 				len, Shm->SysGate.IdleDriver.Name,
 				MakeAttr(WHITE, 0, BLACK, 1));
-
-		col += len;
+		  col += len;
+		}
+	} else {
+		LayerFillAt(	layer, col, row,
+				3, "OFF",
+				MakeAttr(RED, 0, BLACK, 0));
+		col += 3;
 	}
 	LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
 	LayerAt(layer, code, col, row) = ']';
@@ -4129,7 +4148,7 @@ void Top(SHM_STRUCT *Shm)
 	    .attr = {
 		LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK, \
 		LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
-		LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK
+		HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK
 		},
 	    .code = {
 		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']', \
