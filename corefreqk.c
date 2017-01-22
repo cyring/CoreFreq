@@ -970,6 +970,46 @@ void DynamicAcceleration(void)
 	}
 }
 
+void MemoryController(void)
+{
+	unsigned int code;
+	unsigned short cha;
+
+	RDPCI(code, PCI_CONFIG_ADDRESS(0xff, 0x3, 0, 0x48));
+	code = (code >> 8) & 0x7;
+
+	Proc->MC.ChannelCount =
+		MIN(code == 7 ?
+			3 : code == 4 ?
+				1 : code == 2 ?
+					1 : code == 1 ?
+						1 : code != 0 ?
+							2 : 0, IMC_MAX);
+
+	for (cha = 0; cha < Proc->MC.ChannelCount; cha++) {
+	    unsigned int MRs=0,RANK_TIMING_B=0,BANK_TIMING=0,REFRESH_TIMING=0;
+
+		RDPCI(MRs	    ,PCI_CONFIG_ADDRESS(0xff,(0x4+cha),0,0x70));
+		RDPCI(RANK_TIMING_B ,PCI_CONFIG_ADDRESS(0xff,(0x4+cha),0,0x84));
+		RDPCI(BANK_TIMING   ,PCI_CONFIG_ADDRESS(0xff,(0x4+cha),0,0x88));
+		RDPCI(REFRESH_TIMING,PCI_CONFIG_ADDRESS(0xff,(0x4+cha),0,0x8c));
+
+		Proc->MC.Channel[cha].Timing.tCL = ((MRs >> 4) & 0x7) != 0 ?
+						   ((MRs >> 4) & 0x7) + 4 : 0;
+		Proc->MC.Channel[cha].Timing.tRCD = (BANK_TIMING & 0x1E00) >> 9;
+		Proc->MC.Channel[cha].Timing.tRP  = (BANK_TIMING & 0xF);
+		Proc->MC.Channel[cha].Timing.tRAS = (BANK_TIMING & 0x1F0) >> 4;
+		Proc->MC.Channel[cha].Timing.tRRD = (RANK_TIMING_B & 0x1c0) >>6;
+		Proc->MC.Channel[cha].Timing.tRFC = (REFRESH_TIMING & 0x1ff);
+		Proc->MC.Channel[cha].Timing.tWR  = ((MRs >> 9) & 0x7) != 0 ?
+						    ((MRs >> 9) & 0x7) + 4 : 0;
+		Proc->MC.Channel[cha].Timing.tRTPr=(BANK_TIMING & 0x1E000) >>13;
+		Proc->MC.Channel[cha].Timing.tWTPr=(BANK_TIMING & 0x3E0000)>>17;
+		Proc->MC.Channel[cha].Timing.tFAW = (RANK_TIMING_B & 0x3f);
+		Proc->MC.Channel[cha].Timing.B2B=(RANK_TIMING_B & 0x1f0000)>>16;
+	}
+}
+
 #ifndef MSR_TURBO_RATIO_LIMIT
 #define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
 #endif
@@ -998,6 +1038,7 @@ void Query_GenuineIntel(void)
 {
 	Intel_Platform_Info();
 	HyperThreading_Technology();
+	MemoryController();
 }
 
 void Query_AuthenticAMD(void)
@@ -1049,6 +1090,7 @@ Note: hardware Families > 0Fh
 	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
 
 	HyperThreading_Technology();
+	MemoryController();
 }
 
 void Query_Core2(void)
@@ -1056,18 +1098,21 @@ void Query_Core2(void)
 	Intel_Platform_Info();
 	DynamicAcceleration();
 	HyperThreading_Technology();
+	MemoryController();
 }
 
 void Query_Nehalem(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+	MemoryController();
 }
 
 void Query_SandyBridge(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+	MemoryController();
 }
 
 void Dump_CPUID(CORE *Core)

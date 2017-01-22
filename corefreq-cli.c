@@ -1185,7 +1185,6 @@ void Dashboard( SHM_STRUCT *Shm,
     FreeAll();
 }
 
-
 void Counters(SHM_STRUCT *Shm)
 {
     unsigned int cpu = 0;
@@ -1248,7 +1247,6 @@ void Counters(SHM_STRUCT *Shm)
     }
 }
 
-
 void Instructions(SHM_STRUCT *Shm)
 {
 	unsigned int cpu = 0;
@@ -1281,11 +1279,10 @@ void Instructions(SHM_STRUCT *Shm)
 	}
 }
 
-
 void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
 	unsigned int cpu = 0, level = 0, nl = 6;
-	char *line = malloc(13 + 1);
+	char line[16];
 
 	void printv(char *fmt, ...)
 	{
@@ -1329,8 +1326,52 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 				'i' : 0x20);
 	    }
 	}
-	free(line);
 }
+
+void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+{
+	unsigned int nl = 12;
+	unsigned short cha;
+	char line[8];
+
+	void printv(char *fmt, ...)
+	{
+		va_list ap;
+		va_start(ap, fmt);
+		vsprintf(line, fmt, ap);
+		if (OutFunc == NULL)
+			if (!--nl) {
+				nl = 12;
+				printf("%s\n", line);
+			}
+			else
+				printf("%s", line);
+		else
+			OutFunc(line);
+		va_end(ap);
+	}
+
+	if (OutFunc == NULL) {
+		printv(" Cha ");printv("   CL");printv("  RCD");printv("   RP");
+		printv("  RAS");printv("  RRD");printv("  RFC");printv("   WR");
+		printv(" RTPr");printv(" WTPr");printv("  FAW");printv("  B2B");
+	}
+	for (cha = 0; cha < Shm->MC.ChannelCount; cha++) {
+		printv("\x20\x20#%-2u", cha);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tCL);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRCD);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRP);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRAS);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRRD);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRFC);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tWR);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tRTPr);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tWTPr);
+		printv("%5u", Shm->MC.Channel[cha].Timing.tFAW);
+		printv("%5u", Shm->MC.Channel[cha].Timing.B2B);
+	}
+}
+
 
 typedef union {
 	unsigned long long key;
@@ -1358,6 +1399,7 @@ typedef union {
 #define SCANKEY_PGDW		0x000000007e365b1b
 #define SCANKEY_SHIFT_a		0x0000000000000041
 #define SCANKEY_SHIFT_d		0x0000000000000044
+#define SCANKEY_SHIFT_m		0x000000000000004d
 #define SCANKEY_SHIFT_q		0x0000000000000051
 #define SCANKEY_SHIFT_s		0x0000000000000053
 #define SCANKEY_SHIFT_w		0x0000000000000057
@@ -2445,7 +2487,7 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateMenu(unsigned long long id)
     {
-	Window *wMenu = CreateWindow(wLayer, id, 3, 9, 3, 0);
+	Window *wMenu = CreateWindow(wLayer, id, 3, 10, 3, 0);
 	if (wMenu != NULL) {
 		Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
 			voidAttr = {.value = 0},
@@ -2492,7 +2534,11 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_u,	" CPUID        [u] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
+
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -2802,6 +2848,47 @@ void Top(SHM_STRUCT *Shm)
 	return(wTopology);
     }
 
+    Window *CreateMemCtrl(unsigned long long id)
+    {
+	if (Shm->MC.ChannelCount > 0) {
+	    Window *wIMC = CreateWindow(wLayer,
+					id,
+					12,
+					Shm->MC.ChannelCount,
+					15,
+					TOP_HEADER_ROW + 2);
+
+	    void AddMemoryControllerCell(char *input)
+	    {
+		StoreTCell(wIMC, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+	    }
+
+	    if (wIMC != NULL) {
+		MemoryController(Shm, AddMemoryControllerCell);
+
+		StoreWindow(wIMC, .color[1].title,
+			wIMC->hook.color[1].border);
+		StoreWindow(wIMC, .title,
+		" Cha   CL  RCD   RP  RAS  RRD  RFC   WR RTPr WTPr  FAW B2B");
+
+		StoreWindow(wIMC,	.key.Left,	MotionLeft_Win);
+		StoreWindow(wIMC,	.key.Right,	MotionRight_Win);
+		StoreWindow(wIMC,	.key.Down,	MotionDown_Win);
+		StoreWindow(wIMC,	.key.Up,	MotionUp_Win);
+		StoreWindow(wIMC,	.key.Home,	MotionHome_Win);
+		StoreWindow(wIMC,	.key.End,	MotionEnd_Win);
+
+		StoreWindow(wIMC,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wIMC,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wIMC,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wIMC,	.key.WinUp,	MotionOriginUp_Win);
+	    }
+	    return(wIMC);
+	}
+	else
+	    return(NULL);
+    }
+
     Window *CreateSortByField(unsigned long long id)
     {
 	Window *wSortBy = CreateWindow( wLayer,
@@ -3089,6 +3176,15 @@ void Top(SHM_STRUCT *Shm)
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
 			AppendWindow(CreateTopology(scan->key), &winList);
+		else
+			SetHead(&winList, win);
+		}
+		break;
+	case SCANKEY_SHIFT_m:
+		{
+		Window *win = SearchWinListById(scan->key, &winList);
+		if (win == NULL)
+			AppendWindow(CreateMemCtrl(scan->key), &winList);
 		else
 			SetHead(&winList, win);
 		}
@@ -4678,8 +4774,10 @@ int Help(char *appName)
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
+		"\t-M\tPrint Memory Controller\n"			\
 		"\t-m\tPrint Topology\n"				\
 		"\t-u\tPrint CPUID\n"					\
+		"\t-k\tPrint Kernel\n"					\
 		"\t-h\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
@@ -4709,6 +4807,11 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0))!=MAP_FAILED)))
 	    {
 		switch (option) {
+		case 'k':
+			if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+				SysInfoKernel(Shm, 80, NULL);
+			}
+			break;
 		case 'u':
 			SysInfoCPUID(Shm, 80, NULL);
 			break;
@@ -4727,14 +4830,13 @@ int main(int argc, char *argv[])
 			printv(NULL, 80, 0, "");
 			printv(NULL,80,0,"Power & Thermal Monitoring:");
 			SysInfoPwrThermal(Shm, 80, NULL);
-			printv(NULL, 80, 0, "");
-			SysInfoKernel(Shm, 80, NULL);
-
-			fflush(stdout);
 			}
 			break;
 		case 'm':
 			Topology(Shm, NULL);
+			break;
+		case 'M':
+			MemoryController(Shm, NULL);
 			break;
 		case 'i':
 			TrapSignal();

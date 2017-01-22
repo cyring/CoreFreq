@@ -356,6 +356,8 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
+	IMC_STRUCT		MC;
+
 	SYSGATE			*SysGate;
 
 	char			Architecture[32];

@@ -173,6 +173,7 @@ typedef	struct
 
 	char			AppName[TASK_COMM_LEN];
 
+	IMC_STRUCT		MC;
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;

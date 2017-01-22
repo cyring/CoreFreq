@@ -509,6 +509,31 @@ typedef struct	// BSP CPUID features.
 			FactoryFreq;
 } FEATURES;
 
+#define IMC_MAX		16
+
+typedef	struct
+{
+	struct
+	{
+		struct
+		{
+			unsigned int
+			tCL,
+			tRCD,
+			tRP,
+			tRAS,
+			tRRD,
+			tRFC,
+			tWR,
+			tRTPr,
+			tWTPr,
+			tFAW,
+			B2B;
+		} Timing;
+	}	Channel[IMC_MAX];
+	unsigned short ChannelCount;
+} IMC_STRUCT;
+
 // Source: /include/uapi/linux/utsname.h
 #ifdef __NEW_UTS_LEN
 #define MAX_UTS_LEN		__NEW_UTS_LEN

@@ -221,6 +221,25 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.PowerNow = 0;
 }
 
+void MemoryController(SHM_STRUCT *Shm, PROC *Proc)
+{
+    unsigned short cha;
+    Shm->MC.ChannelCount = Proc->MC.ChannelCount;
+    for (cha = 0; cha < Shm->MC.ChannelCount; cha++) {
+	Shm->MC.Channel[cha].Timing.tCL   = Proc->MC.Channel[cha].Timing.tCL;
+	Shm->MC.Channel[cha].Timing.tRCD  = Proc->MC.Channel[cha].Timing.tRCD;
+	Shm->MC.Channel[cha].Timing.tRP   = Proc->MC.Channel[cha].Timing.tRP;
+	Shm->MC.Channel[cha].Timing.tRAS  = Proc->MC.Channel[cha].Timing.tRAS;
+	Shm->MC.Channel[cha].Timing.tRRD  = Proc->MC.Channel[cha].Timing.tRRD;
+	Shm->MC.Channel[cha].Timing.tRFC  = Proc->MC.Channel[cha].Timing.tRFC;
+	Shm->MC.Channel[cha].Timing.tWR   = Proc->MC.Channel[cha].Timing.tWR;
+	Shm->MC.Channel[cha].Timing.tRTPr = Proc->MC.Channel[cha].Timing.tRTPr;
+	Shm->MC.Channel[cha].Timing.tWTPr = Proc->MC.Channel[cha].Timing.tWTPr;
+	Shm->MC.Channel[cha].Timing.tFAW  = Proc->MC.Channel[cha].Timing.tFAW;
+	Shm->MC.Channel[cha].Timing.B2B   = Proc->MC.Channel[cha].Timing.B2B;
+    }
+}
+
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {	// Copy the estimated base clock per CPU.
 	Shm->Cpu[cpu].Clock.Q  = Core[cpu]->Clock.Q;
@@ -897,6 +916,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		HyperThreading(Shm, Proc);
 
 		PowerNow(Shm, Proc);
+
+		MemoryController(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);

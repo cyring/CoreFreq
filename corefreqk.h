@@ -340,7 +340,7 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
 		"inl	%%dx,	%%eax"	"\n\t"				\
 		"movl	%%eax,	%0"					\
 		: "=m"	(_data)						\
-		: "i"	(_reg)						\
+		: "ir"	(_reg)						\
 		: "%rax", "%rdx", "memory"				\
 	);								\
 })
@@ -357,7 +357,7 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
 		"outl	%%eax,	%%dx"					\
 		:							\
 		: "m"	(_data),					\
-		  "i"	(_reg)						\
+		  "ir"	(_reg)						\
 		: "%rax", "%rdx", "memory"				\
 	);								\
 })
