@@ -788,7 +788,12 @@ void SysInfoTech(SHM_STRUCT *Shm,
 	printv(OutFunc, width, 2,
 		"Turbo Boost%.*sTURBO|CPB       [%3s]",
 		width - 35, hSpace,
-		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB ));
+		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB));
+
+	printv(OutFunc, width, 2,
+		"Northbridge%.*sFREQ SPEED      [%4u]",
+		width - 36, hSpace,
+		Shm->NB.FreqSpeed);
 }
 
 void SysInfoPerfMon(	SHM_STRUCT *Shm,
@@ -1331,7 +1336,7 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
 	unsigned int nl = 12;
-	unsigned short cha;
+	unsigned short mc, cha;
 	char line[8];
 
 	void printv(char *fmt, ...)
@@ -1356,19 +1361,20 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("  RAS");printv("  RRD");printv("  RFC");printv("   WR");
 		printv(" RTPr");printv(" WTPr");printv("  FAW");printv("  B2B");
 	}
-	for (cha = 0; cha < Shm->MC.ChannelCount; cha++) {
+	for (mc = 0; mc < Shm->MC.CtrlCount; mc++)
+	    for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tCL);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRCD);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRP);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRAS);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRRD);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRFC);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tWR);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tRTPr);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tWTPr);
-		printv("%5u", Shm->MC.Channel[cha].Timing.tFAW);
-		printv("%5u", Shm->MC.Channel[cha].Timing.B2B);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tCL);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRCD);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRP);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRAS);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRRD);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRFC);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tWR);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRTPr);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tWTPr);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tFAW);
+		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.B2B);
 	}
 }
 
@@ -2719,9 +2725,9 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_t:
 		{
-		matrixSize.hth = 5;
+		matrixSize.hth = 6;
 		winOrigin.col = 23;
-		winOrigin.row = TOP_HEADER_ROW + 12;
+		winOrigin.row = TOP_HEADER_ROW + 11;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
 		title = " Technologies ";
@@ -2850,11 +2856,15 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateMemCtrl(unsigned long long id)
     {
-	if (Shm->MC.ChannelCount > 0) {
+	unsigned short mc, cha, height = 0;
+	for (mc = 0; mc < Shm->MC.CtrlCount; mc++)
+		for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++)
+			height++;
+	if (height > 0) {
 	    Window *wIMC = CreateWindow(wLayer,
 					id,
 					12,
-					Shm->MC.ChannelCount,
+					height,
 					15,
 					TOP_HEADER_ROW + 2);
 

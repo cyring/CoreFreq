@@ -221,23 +221,44 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.PowerNow = 0;
 }
 
+void NorthBridge(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->NB.FreqSpeed = Proc->NB.QPI.QPIFREQSEL == 00 ?
+				4800 : Proc->NB.QPI.QPIFREQSEL == 10 ?
+					6400 : 0;		// "GT/s"
+}
+
 void MemoryController(SHM_STRUCT *Shm, PROC *Proc)
 {
-    unsigned short cha;
-    Shm->MC.ChannelCount = Proc->MC.ChannelCount;
-    for (cha = 0; cha < Shm->MC.ChannelCount; cha++) {
-	Shm->MC.Channel[cha].Timing.tCL   = Proc->MC.Channel[cha].Timing.tCL;
-	Shm->MC.Channel[cha].Timing.tRCD  = Proc->MC.Channel[cha].Timing.tRCD;
-	Shm->MC.Channel[cha].Timing.tRP   = Proc->MC.Channel[cha].Timing.tRP;
-	Shm->MC.Channel[cha].Timing.tRAS  = Proc->MC.Channel[cha].Timing.tRAS;
-	Shm->MC.Channel[cha].Timing.tRRD  = Proc->MC.Channel[cha].Timing.tRRD;
-	Shm->MC.Channel[cha].Timing.tRFC  = Proc->MC.Channel[cha].Timing.tRFC;
-	Shm->MC.Channel[cha].Timing.tWR   = Proc->MC.Channel[cha].Timing.tWR;
-	Shm->MC.Channel[cha].Timing.tRTPr = Proc->MC.Channel[cha].Timing.tRTPr;
-	Shm->MC.Channel[cha].Timing.tWTPr = Proc->MC.Channel[cha].Timing.tWTPr;
-	Shm->MC.Channel[cha].Timing.tFAW  = Proc->MC.Channel[cha].Timing.tFAW;
-	Shm->MC.Channel[cha].Timing.B2B   = Proc->MC.Channel[cha].Timing.B2B;
-    }
+	unsigned short mc, cha;
+	Shm->MC.CtrlCount = Proc->MC.CtrlCount;
+	for (mc = 0; mc < Shm->MC.CtrlCount; mc++) {
+		Shm->MC.Ctrl[mc].ChannelCount = Proc->MC.Ctrl[mc].ChannelCount;
+		for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++) {
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tCL   =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tCL;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRCD  =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRCD;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRP   =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRP;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRAS  =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRAS;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRRD  =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRRD;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRFC  =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRFC;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tWR   =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tWR;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRTPr =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRTPr;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tWTPr =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tWTPr;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.tFAW  =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.tFAW;
+			Shm->MC.Ctrl[mc].Channel[cha].Timing.B2B   =
+				Proc->MC.Ctrl[mc].Channel[cha].Timing.B2B;
+		}
+	}
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -916,6 +937,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		HyperThreading(Shm, Proc);
 
 		PowerNow(Shm, Proc);
+
+		NorthBridge(Shm, Proc);
 
 		MemoryController(Shm, Proc);
 

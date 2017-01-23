@@ -413,3 +413,10 @@ typedef union
 		Addr		: 64-12;
 	};
 } LOCAL_APIC;
+
+typedef struct
+{
+	unsigned int
+	QPIFREQSEL	:  2-0, // 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
+	Reserved4	: 32-2;
+} QPI_FREQUENCY;

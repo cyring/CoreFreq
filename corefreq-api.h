@@ -356,7 +356,11 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
-	IMC_STRUCT		MC;
+	union {
+		QPI_FREQUENCY	QPI;
+	} NB;
+
+	MC_STRUCT		MC;
 
 	SYSGATE			*SysGate;
 

@@ -149,8 +149,12 @@ typedef struct
 					Architecture[32];
 } PROC_STRUCT;
 
+typedef struct
+{
+	unsigned int		FreqSpeed;
+} NB_STRUCT;
 
-typedef	struct
+typedef struct
 {
 	struct {
 		Bit64		Operation;
@@ -173,7 +177,8 @@ typedef	struct
 
 	char			AppName[TASK_COMM_LEN];
 
-	IMC_STRUCT		MC;
+	NB_STRUCT		NB;
+	MC_STRUCT		MC;
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;

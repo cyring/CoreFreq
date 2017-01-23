@@ -144,10 +144,8 @@ typedef union
     };
 } INT_PENDING_MSG;
 
-typedef union
+typedef struct
 {
-    struct
-    {
 	unsigned int
 	Reserved1	:  1-0,
 	SensorTrip	:  2-1,  // 1 if temp. sensor trip occurs & was enabled
@@ -163,5 +161,4 @@ typedef union
 	TjOffset	: 29-24, // Tcontrol = CurTmp - TjOffset * 2 - 49
 	Reserved4	: 31-29,
 	SwThermTrip	: 32-31; // diagnostic bit, for testing purposes only.
-    };
 } THERMTRIP_STATUS;
