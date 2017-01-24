@@ -982,19 +982,19 @@ void DDR3_Timing(unsigned short mc, unsigned short cha,
     RDPCI(BANK_TIMING   ,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x88));
     RDPCI(REFRESH_TIMING,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x8c));
 
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tCL = ((MRs >> 4) & 0x7) != 0 ?
-						((MRs >> 4) & 0x7) + 4 : 0;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRCD = (BANK_TIMING & 0x1E00) >> 9;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRP  = (BANK_TIMING & 0xF);
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRAS = (BANK_TIMING & 0x1F0) >> 4;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRRD = (RANK_TIMING_B & 0x1c0) >>6;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRFC = (REFRESH_TIMING & 0x1ff);
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tWR  = ((MRs >> 9) & 0x7) != 0 ?
-						((MRs >> 9) & 0x7) + 4 : 0;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tRTPr=(BANK_TIMING & 0x1E000) >>13;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tWTPr=(BANK_TIMING & 0x3E0000)>>17;
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.tFAW = (RANK_TIMING_B & 0x3f);
-    Proc->MC.Ctrl[mc].Channel[cha].Timing.B2B  =(RANK_TIMING_B & 0x1f0000)>>16;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tCL = ((MRs >> 4) & 0x7) != 0 ?
+							((MRs >> 4) & 0x7)+4 :0;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (BANK_TIMING & 0x1E00) >> 9;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = (BANK_TIMING & 0xF);
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (BANK_TIMING & 0x1F0) >> 4;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (RANK_TIMING_B & 0x1c0) >>6;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (REFRESH_TIMING & 0x1ff);
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tWR  = ((MRs >> 9) & 0x7) != 0 ?
+							((MRs >> 9) & 0x7)+4 :0;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr=(BANK_TIMING & 0x1E000) >>13;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tWTPr=(BANK_TIMING & 0x3E0000)>>17;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (RANK_TIMING_B & 0x3f);
+    Proc->Uncore.MC[mc].Channel[cha].Timing.B2B  =(RANK_TIMING_B & 0x1f0000)>>16;
 }
 
 void MemoryController(	unsigned short mc,
@@ -1009,7 +1009,7 @@ void MemoryController(	unsigned short mc,
 	RDPCI(code, PCI_CONFIG_ADDRESS(bus, dev, fct, ofs));
 	code = (code >> 8) & 0x7;
 
-	Proc->MC.Ctrl[mc].ChannelCount =
+	Proc->Uncore.MC[mc].ChannelCount =
 		MIN(code == 7 ?
 			3 : code == 4 ?
 				1 : code == 2 ?
@@ -1017,27 +1017,9 @@ void MemoryController(	unsigned short mc,
 						1 : code != 0 ?
 							2 : 0, MC_MAX_CHA);
 
-	for (cha = 0; cha < Proc->MC.Ctrl[mc].ChannelCount; cha++) {
+	for (cha = 0; cha < Proc->Uncore.MC[mc].ChannelCount; cha++) {
 		DDR3_Timing(mc, cha, bus, dev + 1 + cha, 0);
 	}
-}
-
-void Intel_IOH(void)
-{
-	QPI_FREQUENCY QPI;
-	unsigned short mc;
-
-	RDPCI(QPI, PCI_CONFIG_ADDRESS(0x0, 0x14, 2, 0xd0));
-	Proc->MC.Bus.Speed = QPI.QPIFREQSEL == 00 ?
-				4800 : QPI.QPIFREQSEL == 10 ?
-					6400 : QPI.QPIFREQSEL == 01 ?
-						5866 : 8000;	// "GT/s"
-
-	RDPCI(Proc->MC.Bus.Ratio, PCI_CONFIG_ADDRESS(0xff, 0x3, 4, 0x50));
-
-	Proc->MC.CtrlCount = 1;
-	for (mc = 0; mc < Proc->MC.CtrlCount; mc++)
-		MemoryController(mc, 0xff, 0x3, 0, 0x48);
 }
 
 #ifndef MSR_TURBO_RATIO_LIMIT
@@ -1132,13 +1114,36 @@ void Query_Nehalem(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
-	Intel_IOH();
 }
 
 void Query_SandyBridge(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+}
+
+void Intel_IOH(CORE *Core)
+{
+	QPI_FREQUENCY QPI = {0};
+	unsigned short mc;
+
+	RDPCI(QPI, PCI_CONFIG_ADDRESS(0x0, 0x14, 2, 0xd0));
+	Proc->Uncore.Bus.Rate = QPI.QPIFREQSEL == 00 ?
+				4800 : QPI.QPIFREQSEL == 10 ?
+					6400 : QPI.QPIFREQSEL == 01 ?
+						5866 : 8000;	// "MT/s"
+
+	Proc->Uncore.Bus.Speed = (Proc->Boost[1]
+				* Core->Clock.Hz
+				* Proc->Uncore.Bus.Rate)
+				/ Proc->Features.FactoryFreq;
+
+	RDPCI(Proc->Uncore.Bus.Ratio, PCI_CONFIG_ADDRESS(0xff, 0x3, 4, 0x50));
+	Proc->Uncore.Bus.Ratio &= 0x1f;
+
+	Proc->Uncore.CtrlCount = 1;
+	for (mc = 0; mc < Proc->Uncore.CtrlCount; mc++)
+		MemoryController(mc, 0xff, 0x3, 0, 0x48);
 }
 
 void Dump_CPUID(CORE *Core)
@@ -1316,6 +1321,9 @@ void PerCore_Nehalem_Query(CORE *Core)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	if ((Core->T.CoreID == 0) && (Core->T.ThreadID <= 0))	// First Core
+		Intel_IOH(Core);
 }
 
 void PerCore_SandyBridge_Query(CORE *Core)

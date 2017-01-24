@@ -221,39 +221,40 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.PowerNow = 0;
 }
 
-void MemoryController(SHM_STRUCT *Shm, PROC *Proc)
+void Uncore(SHM_STRUCT *Shm, PROC *Proc)
 {
 	unsigned short mc, cha;
-	Shm->MC.CtrlCount = Proc->MC.CtrlCount;
-	for (mc = 0; mc < Shm->MC.CtrlCount; mc++) {
-		Shm->MC.Ctrl[mc].ChannelCount = Proc->MC.Ctrl[mc].ChannelCount;
-		for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++) {
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tCL   =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tCL;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRCD  =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRCD;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRP   =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRP;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRAS  =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRAS;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRRD  =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRRD;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRFC  =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRFC;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tWR   =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tWR;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tRTPr =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tRTPr;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tWTPr =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tWTPr;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.tFAW  =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.tFAW;
-			Shm->MC.Ctrl[mc].Channel[cha].Timing.B2B   =
-				Proc->MC.Ctrl[mc].Channel[cha].Timing.B2B;
-		}
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tCL;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tWR;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tWTPr;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+			Proc->Uncore.MC[mc].Channel[cha].Timing.B2B;
+	    }
 	}
-	Shm->MC.Bus.Speed = Proc->MC.Bus.Speed;
-	Shm->MC.Bus.Ratio = Proc->MC.Bus.Ratio & 0x1f;
+	Shm->Uncore.Bus.Rate  = Proc->Uncore.Bus.Rate;
+	Shm->Uncore.Bus.Speed = Proc->Uncore.Bus.Speed;
+	Shm->Uncore.Bus.Ratio = Proc->Uncore.Bus.Ratio;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -933,7 +934,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		PowerNow(Shm, Proc);
 
-		MemoryController(Shm, Proc);
+		Uncore(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);

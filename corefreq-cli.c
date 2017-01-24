@@ -1330,9 +1330,10 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
+	size_t len;
 	unsigned int nl = 12;
 	unsigned short mc, cha;
-	char line[8];
+	char line[8], str[16];
 
 	void printv(char *fmt, ...)
 	{
@@ -1356,38 +1357,43 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("  RAS");printv("  RRD");printv("  RFC");printv("   WR");
 		printv(" RTPr");printv(" WTPr");printv("  FAW");printv("  B2B");
 	}
-	for (mc = 0; mc < Shm->MC.CtrlCount; mc++) {
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 	    printv("Contr"); printv("oller");
 	    printv(" #%-2u\x20", mc); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 
 	    printv(" Bus "); printv("Speed");
-	    printv("%5u", Shm->MC.Bus.Speed); printv(" GT/s");
-	    printv("     "); printv("Ratio");
-	    printv("\x20x%-3u", Shm->MC.Bus.Ratio);
-	    printv("     "); printv("Clock");
-	    printv("\x20%4u",
-		(Shm->Cpu[0].Clock.Hz * Shm->MC.Bus.Ratio) / 1000000);
-	    printv(" MHz "); printv("     ");
+	    printv("%5llu", Shm->Uncore.Bus.Speed / 1000000L); printv(" MT/s");
+	    printv("     "); printv("DRAM "); printv("Clock");
+	    printv("%5llu",
+		(Shm->Cpu[0].Clock.Hz * Shm->Uncore.Bus.Ratio) / 1000000L);
+	    printv(" MHz ");
+
+	    len = sprintf(str, "( %u x %.2f )", Shm->Uncore.Bus.Ratio,
+			(double) Shm->Cpu[0].Clock.Hz / 1000000L);
+	    if (len < 15)
+		strncat(str, hSpace, 15 - len);
+	    printv("%.*s", 5, str); printv("%.*s", 5, &str[5]);
+	    printv("%.*s", 5, &str[10]);
 
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++) {
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tCL);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRCD);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRP);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRAS);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRRD);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRFC);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tWR);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tRTPr);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tWTPr);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tFAW);
-		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.B2B);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
 	    }
 	}
 }
@@ -2873,8 +2879,8 @@ void Top(SHM_STRUCT *Shm)
     Window *CreateMemCtrl(unsigned long long id)
     {
 	unsigned short mc, cha, height = 0;
-	for (mc = 0; mc < Shm->MC.CtrlCount; mc++)
-		for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++)
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+		for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
 			height++;
 	if (height > 0) {
 	    Window *wIMC = CreateWindow(wLayer,
