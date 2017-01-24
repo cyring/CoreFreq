@@ -221,13 +221,6 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.PowerNow = 0;
 }
 
-void NorthBridge(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Shm->NB.FreqSpeed = Proc->NB.QPI.QPIFREQSEL == 00 ?
-				4800 : Proc->NB.QPI.QPIFREQSEL == 10 ?
-					6400 : 0;		// "GT/s"
-}
-
 void MemoryController(SHM_STRUCT *Shm, PROC *Proc)
 {
 	unsigned short mc, cha;
@@ -259,6 +252,8 @@ void MemoryController(SHM_STRUCT *Shm, PROC *Proc)
 				Proc->MC.Ctrl[mc].Channel[cha].Timing.B2B;
 		}
 	}
+	Shm->MC.Bus.Speed = Proc->MC.Bus.Speed;
+	Shm->MC.Bus.Ratio = Proc->MC.Bus.Ratio & 0x1f;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -937,8 +932,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		HyperThreading(Shm, Proc);
 
 		PowerNow(Shm, Proc);
-
-		NorthBridge(Shm, Proc);
 
 		MemoryController(Shm, Proc);
 

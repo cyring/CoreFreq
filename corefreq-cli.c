@@ -789,11 +789,6 @@ void SysInfoTech(SHM_STRUCT *Shm,
 		"Turbo Boost%.*sTURBO|CPB       [%3s]",
 		width - 35, hSpace,
 		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB));
-
-	printv(OutFunc, width, 2,
-		"Northbridge%.*sFREQ SPEED      [%4u]",
-		width - 36, hSpace,
-		Shm->NB.FreqSpeed);
 }
 
 void SysInfoPerfMon(	SHM_STRUCT *Shm,
@@ -1361,7 +1356,25 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("  RAS");printv("  RRD");printv("  RFC");printv("   WR");
 		printv(" RTPr");printv(" WTPr");printv("  FAW");printv("  B2B");
 	}
-	for (mc = 0; mc < Shm->MC.CtrlCount; mc++)
+	for (mc = 0; mc < Shm->MC.CtrlCount; mc++) {
+	    printv("Contr"); printv("oller");
+	    printv(" #%-2u\x20", mc); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+
+	    printv(" Bus "); printv("Speed");
+	    printv("%5u", Shm->MC.Bus.Speed); printv(" GT/s");
+	    printv("     "); printv("Ratio");
+	    printv("\x20x%-3u", Shm->MC.Bus.Ratio);
+	    printv("     "); printv("Clock");
+	    printv("\x20%4u",
+		(Shm->Cpu[0].Clock.Hz * Shm->MC.Bus.Ratio) / 1000000);
+	    printv(" MHz "); printv("     ");
+
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+
 	    for (cha = 0; cha < Shm->MC.Ctrl[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
 		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tCL);
@@ -1375,6 +1388,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tWTPr);
 		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.tFAW);
 		printv("%5u", Shm->MC.Ctrl[mc].Channel[cha].Timing.B2B);
+	    }
 	}
 }
 
@@ -2725,7 +2739,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_t:
 		{
-		matrixSize.hth = 6;
+		matrixSize.hth = 5;
 		winOrigin.col = 23;
 		winOrigin.row = TOP_HEADER_ROW + 11;
 		winWidth = 50;
@@ -2796,6 +2810,7 @@ void Top(SHM_STRUCT *Shm)
 
 		switch (id) {
 		case SCANKEY_u:
+			wSysInfo->matrix.select.row = 1;
 			StoreWindow(wSysInfo,	.color[1].title,
 						wSysInfo->hook.color[1].border);
 			break;
@@ -2829,6 +2844,7 @@ void Top(SHM_STRUCT *Shm)
 					2 + Shm->Proc.CPU.Count,
 					1,
 					TOP_HEADER_ROW + 3);
+		wTopology->matrix.select.row = 2;
 
 	void AddTopologyCell(char *input)
 	{
@@ -2864,9 +2880,10 @@ void Top(SHM_STRUCT *Shm)
 	    Window *wIMC = CreateWindow(wLayer,
 					id,
 					12,
-					height,
+					height + 3,
 					15,
 					TOP_HEADER_ROW + 2);
+		wIMC->matrix.select.row = 3;
 
 	    void AddMemoryControllerCell(char *input)
 	    {

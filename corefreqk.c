@@ -1024,13 +1024,16 @@ void MemoryController(	unsigned short mc,
 
 void Intel_IOH(void)
 {
+	QPI_FREQUENCY QPI;
 	unsigned short mc;
-/* Test Begin : The all IMC must be changed per phys core
-	unsigned int ratio = 0;
-	RDPCI(ratio, PCI_CONFIG_ADDRESS(0xff, 0x3, 4, 0x50));
-	printk("DDR x %u\n", ratio & 0x1f);
-* Test End */
-	RDPCI(Proc->NB.QPI, PCI_CONFIG_ADDRESS(0x0, 0x14, 2, 0xd0));
+
+	RDPCI(QPI, PCI_CONFIG_ADDRESS(0x0, 0x14, 2, 0xd0));
+	Proc->MC.Bus.Speed = QPI.QPIFREQSEL == 00 ?
+				4800 : QPI.QPIFREQSEL == 10 ?
+					6400 : QPI.QPIFREQSEL == 01 ?
+						5866 : 8000;	// "GT/s"
+
+	RDPCI(Proc->MC.Bus.Ratio, PCI_CONFIG_ADDRESS(0xff, 0x3, 4, 0x50));
 
 	Proc->MC.CtrlCount = 1;
 	for (mc = 0; mc < Proc->MC.CtrlCount; mc++)

@@ -509,7 +509,7 @@ typedef struct	// BSP CPUID features.
 			FactoryFreq;
 } FEATURES;
 
-#define MC_MAX_CTRL	4
+#define MC_MAX_CTRL	2
 #define MC_MAX_CHA	4
 
 typedef struct
@@ -534,11 +534,17 @@ typedef struct
 {
 	struct {
 		struct {
-		    RAM_TIMING	Timing;
+			RAM_TIMING	Timing;
 		} Channel[MC_MAX_CHA];
-		unsigned short	ChannelCount;
+		unsigned short		ChannelCount;
 	} Ctrl[MC_MAX_CTRL];
-	unsigned short		CtrlCount;
+	unsigned short			CtrlCount;
+
+	struct
+	{
+		unsigned int		Speed,
+					Ratio;
+	} Bus;
 } MC_STRUCT;
 
 // Source: /include/uapi/linux/utsname.h

@@ -151,11 +151,6 @@ typedef struct
 
 typedef struct
 {
-	unsigned int		FreqSpeed;
-} NB_STRUCT;
-
-typedef struct
-{
 	struct {
 		Bit64		Operation;
 
@@ -177,7 +172,6 @@ typedef struct
 
 	char			AppName[TASK_COMM_LEN];
 
-	NB_STRUCT		NB;
 	MC_STRUCT		MC;
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
