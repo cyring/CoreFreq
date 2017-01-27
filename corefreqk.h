@@ -1006,7 +1006,7 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Xeon Phi"
+	"Knights Landing"
 	},
 /* 42*/	{
 	_Kabylake,
