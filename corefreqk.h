@@ -406,6 +406,7 @@ extern CLOCK Clock_AuthenticAMD(unsigned int ratio) ;
 extern CLOCK Clock_Core(unsigned int ratio) ;
 extern CLOCK Clock_Core2(unsigned int ratio) ;
 extern CLOCK Clock_Atom(unsigned int ratio) ;
+extern CLOCK Clock_Airmont(unsigned int ratio) ;
 extern CLOCK Clock_Silvermont(unsigned int ratio) ;
 extern CLOCK Clock_Nehalem(unsigned int ratio) ;
 extern CLOCK Clock_Westmere(unsigned int ratio) ;
@@ -521,6 +522,9 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
 #define _Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
+//	[Xeon Phi]	06_57H
+#define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
+
 //	[Kabylake]	06_8E || 06_94 || 06_9E
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
@@ -566,6 +570,7 @@ enum {	GenuineIntel,		\
 	Skylake_UY,		\
 	Skylake_S,		\
 	Skylake_E,		\
+	Xeon_Phi,		\
 	Kabylake,		\
 	Kabylake_UY,		\
 	ARCHITECTURES
@@ -723,7 +728,7 @@ static ARCH Arch[ARCHITECTURES]=
 	Stop_Core2,
 	NULL,
 	InitTimer_Core2,
-	Clock_Atom,
+	Clock_Airmont,
 	"Atom/Airmont"
 	},
 /* 15*/	{
@@ -994,6 +999,16 @@ static ARCH Arch[ARCHITECTURES]=
 	"Skylake/E"
 	},
 /* 41*/	{
+	_Xeon_Phi,
+	Query_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	InitTimer_SandyBridge,
+	Clock_Skylake,
+	"Xeon Phi"
+	},
+/* 42*/	{
 	_Kabylake,
 	Query_SandyBridge,
 	Start_SandyBridge,
@@ -1003,7 +1018,7 @@ static ARCH Arch[ARCHITECTURES]=
 	Clock_Skylake,
 	"Kaby Lake"
 	},
-/* 42*/	{
+/* 43*/	{
 	_Kabylake_UY,
 	Query_SandyBridge,
 	Start_SandyBridge,

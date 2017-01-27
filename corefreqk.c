@@ -603,6 +603,60 @@ CLOCK Clock_Atom(unsigned int ratio)
 	return(clock);
 };
 
+// [Airmont]
+CLOCK Clock_Airmont(unsigned int ratio)
+{
+	CLOCK clock = {.Q = 87, .R = 5};
+	FSB_FREQ FSB = {.value = 0};
+
+	RDMSR(FSB, MSR_FSB_FREQ);
+	switch(FSB.Bus_Speed) {
+	case 0b000: {
+		clock.Q = 83;
+		clock.R = 3333;
+		}
+		break;
+	case 0b001: {
+		clock.Q = 100;
+		clock.R = 0000;
+		}
+		break;
+	case 0b010: {
+		clock.Q = 133;
+		clock.R = 3333;
+		}
+		break;
+	case 0b011: {
+		clock.Q = 116;
+		clock.R = 6666;
+		}
+		break;
+	case 0b100: {
+		clock.Q = 80;
+		clock.R = 0000;
+		}
+		break;
+	case 0b101: {
+		clock.Q = 93;
+		clock.R = 3333;
+		}
+		break;
+	case 0b110: {
+		clock.Q = 90;
+		clock.R = 0000;
+		}
+		break;
+	case 0b111: {
+		clock.Q = 88;
+		clock.R = 9000;
+		}
+		break;
+	}
+	ClockToHz(&clock);
+	clock.R *= ratio;
+	return(clock);
+};
+
 // [Silvermont]
 CLOCK Clock_Silvermont(unsigned int ratio)
 {
@@ -970,6 +1024,30 @@ void DynamicAcceleration(void)
 	}
 }
 
+void DDR2_Timing(unsigned short mc, unsigned short cha,
+		unsigned char bus,
+		unsigned char dev,
+		unsigned char fct)
+{/* ToDo
+    unsigned int TR = 0;
+
+    Proc->Uncore.MC[mc].ChannelCount = 1;
+
+    RDPCI(TR, _ADDRESS(bus, dev, fct, 0x1214));
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (TR >> 5) & 0b111;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = TR & 0b111;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (TR >> 21) & 0b11111;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (TR >> 10) & 0b111;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr= (TR >> 28) & 0b11;
+
+    RDPCI(TR, PCI_CONFIG_ADDRESS(bus, dev, fct, 0x1218));
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (TR >> 17) & 0b11111;
+
+    RDPCI(TR, PCI_CONFIG_ADDRESS(bus, dev, fct, 0x121c));
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tCL  = (TR >> 23) & 0b111;
+    Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (TR >> 13) & 0b11111111;*/
+}
+
 void DDR3_Timing(unsigned short mc, unsigned short cha,
 		unsigned char bus,
 		unsigned char dev,
@@ -1120,6 +1198,14 @@ void Query_SandyBridge(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+}
+
+void P965(CORE *Core)
+{
+	Proc->Uncore.Bus.Speed = 667;
+	Proc->Uncore.Bus.Ratio = 1;
+	Proc->Uncore.CtrlCount = 1;
+	DDR2_Timing(0, 0, 0x0, 0x0, 0);
 }
 
 void Intel_IOH(CORE *Core)
@@ -1300,6 +1386,9 @@ void PerCore_Core2_Query(CORE *Core)
 	PowerThermal(Core);					// Shared/Unique
 
 	ThermalMonitor_Set(Core);
+
+	if (Core->T.CoreID == 0)
+		P965(Core);
 }
 
 void PerCore_Nehalem_Query(CORE *Core)

@@ -2965,24 +2965,27 @@ void Top(SHM_STRUCT *Shm)
 			return(-1);
 		else if (task1->ppid > task2->ppid)
 			return(1);
+
 		else if (task1->tgid < task2->tgid)
 			return(-1);
 		else if (task1->tgid > task2->tgid)
 			return(1);
-		else if (task1->pid == task1->tgid)
-			return(-1);
+
 		else if (task1->pid < task2->pid)
 			return(-1);
+		else if (task1->pid > task2->pid)
+			return(1);
+
 		else
 			return(1);
 	}
+
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 	  size_t tc = Shm->SysGate.taskCount;
 	  if (tc > 0) {
 	    const unsigned short margin = 12;	// @ "Freq(MHz)"
-	    int padding = drawSize.width - margin
-			- TASK_COMM_LEN - 9;	// - "\x20\x20(%5d)"
-	    unsigned int indent = 0;
+	    int padding = drawSize.width - margin - TASK_COMM_LEN - 7;
+
 	    Window *wTrack = CreateWindow(wLayer,
 					id,
 					1,
@@ -2990,29 +2993,34 @@ void Top(SHM_STRUCT *Shm)
 					margin,
 					TOP_HEADER_ROW);
 	    if (wTrack != NULL) {
+		char *item = malloc(MAX_WIDTH);
 		TASK_MCB *trackList = malloc(tc * sizeof(TASK_MCB));
 
 		memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
 		qsort(trackList, tc, sizeof(TASK_MCB), SortByForest);
 
-		unsigned int ti;
-		char *item = malloc(MAX_WIDTH),
-		     *fmt[2] = {
-			"%.*s" "\x20\x20%-16s" "%.*s" "(%5d)",
-			"%.*s" "%-16s\x20\x20" "%.*s" "(%5d)"
-		     };
-		pid_t previd = trackList[0].ppid;
+		unsigned int ti, si = 0, qi = 0;
+		pid_t previd = (pid_t) -1;
+
 		for (ti = 0; ti < tc; ti++) {
-			if((trackList[ti].ppid != previd) && (indent < padding))
-				indent++;
-			previd = trackList[ti].ppid;
+			if (trackList[ti].ppid == previd) {
+				si += (si < padding - 2) ? 1 : 0;
+			} else if (trackList[ti].tgid != previd) {
+				si -= (si > 0) ? 1 : 0;
+			}
+			previd = trackList[ti].tgid;
+
+			if (trackList[ti].pid == trackList[ti].tgid)
+				qi = si + 1;
+			else
+				qi = si + 2;
 
 			sprintf(item,
-				fmt[(trackList[ti].pid == trackList[ti].tgid)],
-				indent,
+				"%.*s" "%-16s" "%.*s" "(%5d)",
+				qi,
 				hSpace,
 				trackList[ti].comm,
-				padding - indent,
+				padding - qi,
 				hSpace,
 				trackList[ti].pid);
 
@@ -3036,8 +3044,8 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wTrack,	.key.Home,	MotionReset_Win);
 		StoreWindow(wTrack,	.key.End,	MotionEnd_Cell);
 
-		free(item);
 		free(trackList);
+		free(item);
 	    }
 	    return(wTrack);
 	  }
