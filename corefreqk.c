@@ -6,6 +6,7 @@
 
 #include <linux/module.h>
 #include <linux/cpu.h>
+#include <linux/pci.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/cdev.h>
@@ -1024,82 +1025,6 @@ void DynamicAcceleration(void)
 	}
 }
 
-void DDR2_Timing(unsigned short mc, unsigned short cha,
-		unsigned char bus,
-		unsigned char dev,
-		unsigned char fct)
-{/* ToDo
-    unsigned int TR = 0;
-
-    Proc->Uncore.MC[mc].ChannelCount = 1;
-
-    RDPCI(TR, _ADDRESS(bus, dev, fct, 0x1214));
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (TR >> 5) & 0b111;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = TR & 0b111;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (TR >> 21) & 0b11111;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (TR >> 10) & 0b111;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr= (TR >> 28) & 0b11;
-
-    RDPCI(TR, PCI_CONFIG_ADDRESS(bus, dev, fct, 0x1218));
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (TR >> 17) & 0b11111;
-
-    RDPCI(TR, PCI_CONFIG_ADDRESS(bus, dev, fct, 0x121c));
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tCL  = (TR >> 23) & 0b111;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (TR >> 13) & 0b11111111;*/
-}
-
-void DDR3_Timing(unsigned short mc, unsigned short cha,
-		unsigned char bus,
-		unsigned char dev,
-		unsigned char fct)
-{	// Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset
-    unsigned int MRs = 0,RANK_TIMING_B = 0,BANK_TIMING = 0,REFRESH_TIMING = 0;
-
-    RDPCI(MRs		,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x70));
-    RDPCI(RANK_TIMING_B ,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x84));
-    RDPCI(BANK_TIMING   ,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x88));
-    RDPCI(REFRESH_TIMING,PCI_CONFIG_ADDRESS(bus, dev, fct, 0x8c));
-
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tCL = ((MRs >> 4) & 0x7) != 0 ?
-							((MRs >> 4) & 0x7)+4 :0;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (BANK_TIMING & 0x1E00) >> 9;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = (BANK_TIMING & 0xF);
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (BANK_TIMING & 0x1F0) >> 4;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (RANK_TIMING_B & 0x1c0) >>6;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (REFRESH_TIMING & 0x1ff);
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tWR  = ((MRs >> 9) & 0x7) != 0 ?
-							((MRs >> 9) & 0x7)+4 :0;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr=(BANK_TIMING & 0x1E000) >>13;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tWTPr=(BANK_TIMING & 0x3E0000)>>17;
-    Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (RANK_TIMING_B & 0x3f);
-    Proc->Uncore.MC[mc].Channel[cha].Timing.B2B  =(RANK_TIMING_B & 0x1f0000)>>16;
-}
-
-void MemoryController(	unsigned short mc,
-			unsigned char bus,
-			unsigned char dev,
-			unsigned char fct,
-			unsigned char ofs)
-{
-	unsigned int code;
-	unsigned short cha;
-
-	RDPCI(code, PCI_CONFIG_ADDRESS(bus, dev, fct, ofs));
-	code = (code >> 8) & 0x7;
-
-	Proc->Uncore.MC[mc].ChannelCount =
-		MIN(code == 7 ?
-			3 : code == 4 ?
-				1 : code == 2 ?
-					1 : code == 1 ?
-						1 : code != 0 ?
-							2 : 0, MC_MAX_CHA);
-
-	for (cha = 0; cha < Proc->Uncore.MC[mc].ChannelCount; cha++) {
-		DDR3_Timing(mc, cha, bus, dev + 1 + cha, 0);
-	}
-}
-
 #ifndef MSR_TURBO_RATIO_LIMIT
 #define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
 #endif
@@ -1200,37 +1125,181 @@ void Query_SandyBridge(void)
 	HyperThreading_Technology();
 }
 
-void P965(CORE *Core)
+typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
+
+kernel_ulong_t DDR2_Timing(struct pci_dev *dev, unsigned short mc,
+						unsigned short cha)
 {
-	Proc->Uncore.Bus.Speed = 667;
-	Proc->Uncore.Bus.Ratio = 1;
-	Proc->Uncore.CtrlCount = 1;
-	DDR2_Timing(0, 0, 0x0, 0x0, 0);
+	unsigned int drt = 0;
+
+	Proc->Uncore.MC[mc].ChannelCount = 1;
+
+	pci_read_config_dword(dev, 0x1214, &drt);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (drt >> 5) & 0b111;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = drt & 0b111;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (drt >> 21) & 0b11111;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (drt >> 10) & 0b111;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr= (drt >> 28) & 0b11;
+
+	pci_read_config_dword(dev, 0x1218, &drt);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (drt >> 17) & 0b11111;
+
+	pci_read_config_dword(dev, 0x121c, &drt);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tCL  = (drt >> 23) & 0b111;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (drt >> 13) & 0b11111111;
+
+	return(0);
 }
 
-void Intel_IOH(CORE *Core)
+kernel_ulong_t DDR3_Timing(unsigned short mc, unsigned short cha)
+{	// Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset
+    unsigned int mr = 0, rank_b = 0, bank = 0, refresh = 0,
+		ctrl[3] = {
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+		};
+    struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, ctrl[cha], NULL);
+    if(dev != NULL) {
+	pci_read_config_dword(dev, 0x70, &mr);
+	pci_read_config_dword(dev ,0x84, &rank_b);
+	pci_read_config_dword(dev ,0x88, &bank);
+	pci_read_config_dword(dev ,0x8c, &refresh);
+
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tCL = ((mr >> 4) & 0x7) != 0 ?
+							((mr >> 4) & 0x7)+4 :0;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD = (bank & 0x1e00) >> 9;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRP  = (bank & 0xf);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS = (bank & 0x1f0) >> 4;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD = (rank_b & 0x1c0) >>6;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC = (refresh & 0x1ff);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tWR  = ((mr >> 9) & 0x7) != 0 ?
+							((mr >> 9) & 0x7)+4 :0;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr= (bank & 0x1e000) >>13;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tWTPr= (bank & 0x3e0000)>>17;
+	Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (rank_b & 0x3f);
+	Proc->Uncore.MC[mc].Channel[cha].Timing.B2B  = (rank_b & 0x1f0000)>>16;
+
+	return(0);
+    } else
+	return(-ENODEV);
+}
+
+kernel_ulong_t DDR3_ScanEachChannel(struct pci_dev *dev, unsigned short mc)
 {
-	QPI_FREQUENCY QPI = {0};
+	kernel_ulong_t rc = 0;
+	unsigned int code;
+	unsigned short cha;
+
+	pci_read_config_dword(dev, 0x48, &code);
+	code = (code >> 8) & 0x7;
+
+	Proc->Uncore.MC[mc].ChannelCount =
+		MIN(code == 7 ?
+			3 : code == 4 ?
+				1 : code == 2 ?
+					1 : code == 1 ?
+						1 : code != 0 ?
+							2 : 0, MC_MAX_CHA);
+
+	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
+		rc = DDR3_Timing(mc, cha);
+	}
+	return(rc);
+}
+
+PCI_CALLBACK Core_P965(struct pci_dev *dev)
+{
+	Proc->Uncore.Bus.Speed = (KPublic->Core[0]->Clock.Hz << 2) / 1000000L;
+	Proc->Uncore.Bus.Ratio = 2;
+	Proc->Uncore.CtrlCount = 1;
+
+	return((PCI_CALLBACK) DDR2_Timing(dev, 0, 0));
+}
+
+PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev)
+{
+	kernel_ulong_t rc = 0;
 	unsigned short mc;
 
-	RDPCI(QPI, PCI_CONFIG_ADDRESS(0x0, 0x14, 2, 0xd0));
+	Proc->Uncore.CtrlCount = 1;
+	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
+		rc = DDR3_ScanEachChannel(dev, mc);
+
+	return((PCI_CALLBACK) rc);
+}
+
+PCI_CALLBACK Nehalem_IMC_TR(struct pci_dev *dev)
+{
+	pci_read_config_dword(dev, 0x50, &Proc->Uncore.Bus.Ratio);
+
+	Proc->Uncore.Bus.Ratio &= 0x1f;
+
+	return(0);
+}
+
+PCI_CALLBACK Nehalem_QPI(struct pci_dev *dev)
+{
+	QPI_FREQUENCY QPI = {0};
+
+	pci_read_config_dword(dev, 0xd0, (unsigned int *) &QPI);
+
 	Proc->Uncore.Bus.Rate = QPI.QPIFREQSEL == 00 ?
 				4800 : QPI.QPIFREQSEL == 10 ?
 					6400 : QPI.QPIFREQSEL == 01 ?
 						5866 : 8000;	// "MT/s"
 
 	Proc->Uncore.Bus.Speed = (Proc->Boost[1]
-				* Core->Clock.Hz
+				* KPublic->Core[0]->Clock.Hz
 				* Proc->Uncore.Bus.Rate)
 				/ Proc->Features.FactoryFreq;
 
-	RDPCI(Proc->Uncore.Bus.Ratio, PCI_CONFIG_ADDRESS(0xff, 0x3, 4, 0x50));
-	Proc->Uncore.Bus.Ratio &= 0x1f;
-
-	Proc->Uncore.CtrlCount = 1;
-	for (mc = 0; mc < Proc->Uncore.CtrlCount; mc++)
-		MemoryController(mc, 0xff, 0x3, 0, 0x48);
+	return(0);
 }
+
+static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
+				const struct pci_device_id *id)
+{
+	if (!pci_enable_device(dev)) {
+		PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
+		return((int) Callback(dev));
+	}
+	else
+		return(-ENODEV);
+}
+
+static void CoreFreqK_RemovePCI(struct pci_dev *dev)
+{
+}
+
+static struct pci_device_id CoreFreqK_pci_ids[] = {
+	{	/* P965 */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2a00),
+		.driver_data = (kernel_ulong_t) Core_P965
+	},
+	{	/* Nehalem IMC */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
+		.driver_data = (kernel_ulong_t) Nehalem_IMC
+	},
+	{	/* Nehalem IMC */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
+		.driver_data = (kernel_ulong_t) Nehalem_IMC_TR
+	},
+	{	/* Nehalem Control Status and RAS Registers */
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
+		.driver_data = (kernel_ulong_t) Nehalem_QPI
+	},
+	{0, }
+};
+
+MODULE_DEVICE_TABLE(pci, CoreFreqK_pci_ids);
+
+static struct pci_driver CoreFreqK_pci_driver = {
+	.name = "pci4corefreq",
+	.id_table = CoreFreqK_pci_ids,
+	.probe = CoreFreqK_ProbePCI,
+	.remove = CoreFreqK_RemovePCI
+};
 
 void Dump_CPUID(CORE *Core)
 {
@@ -1386,9 +1455,6 @@ void PerCore_Core2_Query(CORE *Core)
 	PowerThermal(Core);					// Shared/Unique
 
 	ThermalMonitor_Set(Core);
-
-	if (Core->T.CoreID == 0)
-		P965(Core);
 }
 
 void PerCore_Nehalem_Query(CORE *Core)
@@ -1410,9 +1476,6 @@ void PerCore_Nehalem_Query(CORE *Core)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
-
-	if ((Core->T.CoreID == 0) && (Core->T.ThreadID <= 0))	// First Core
-		Intel_IOH(Core);
 }
 
 void PerCore_SandyBridge_Query(CORE *Core)
@@ -2686,6 +2749,8 @@ static int __init CoreFreqK_init(void)
 				Controller_Start();
 
 			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
+			    pci_register_driver(&CoreFreqK_pci_driver);
+
 			    } else {
 				if (KPublic->Cache != NULL)
 					kmem_cache_destroy(KPublic->Cache);
@@ -2755,6 +2820,7 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu = 0;
 
+	pci_unregister_driver(&CoreFreqK_pci_driver);
 	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
 
 	Controller_Stop();
