@@ -252,9 +252,10 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].Timing.B2B;
 	    }
 	}
+	Shm->Uncore.CtrlSpeed = Proc->Uncore.CtrlSpeed;
 	Shm->Uncore.Bus.Rate  = Proc->Uncore.Bus.Rate;
+	Shm->Uncore.Bus.Unit  = Proc->Uncore.Bus.Unit;
 	Shm->Uncore.Bus.Speed = Proc->Uncore.Bus.Speed;
-	Shm->Uncore.Bus.Ratio = Proc->Uncore.Bus.Ratio;
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)

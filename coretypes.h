@@ -539,11 +539,12 @@ typedef struct
 		unsigned short		ChannelCount;
 	} MC[MC_MAX_CTRL];
 	unsigned short			CtrlCount;
+	unsigned long long		CtrlSpeed;
 
 	struct
 	{
 		unsigned int		Rate,
-					Ratio;
+					Unit;		// 0: MHz , 1: MT/s
 		unsigned long long	Speed;
 	} Bus;
 } UNCORE;

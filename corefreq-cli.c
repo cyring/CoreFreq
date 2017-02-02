@@ -1330,10 +1330,9 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
-	size_t len;
 	unsigned int nl = 12;
 	unsigned short mc, cha;
-	char line[8], str[16];
+	char line[8];
 
 	void printv(char *fmt, ...)
 	{
@@ -1363,20 +1362,12 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    printv(" Bus "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.Bus.Speed / 1000000L); printv(" MT/s");
-	    printv("     "); printv("DRAM "); printv("Clock");
-	    printv("%5llu",
-		(Shm->Cpu[0].Clock.Hz * Shm->Uncore.Bus.Ratio) / 1000000L);
-	    printv(" MHz ");
-
-	    len = sprintf(str, "( %u x %.2f )", Shm->Uncore.Bus.Ratio,
-			(double) Shm->Cpu[0].Clock.Hz / 1000000L);
-	    if (len < 15)
-		strncat(str, hSpace, 15 - len);
-	    printv("%.*s", 5, str); printv("%.*s", 5, &str[5]);
-	    printv("%.*s", 5, &str[10]);
-
+	    printv("     "); printv(" Bus "); printv("Speed");
+	    printv("%5llu", Shm->Uncore.Bus.Speed);
+	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
+	    printv("     "); printv("     "); printv("DRAM "); printv("Speed");
+	    printv("%5llu", Shm->Uncore.CtrlSpeed);
+	    printv(" MHz "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
@@ -3429,9 +3420,9 @@ void Top(SHM_STRUCT *Shm)
 
 	LayerDeclare(MAX_WIDTH) hLoad0 = {
 		.origin = {.col = 0, .row = row}, .length = drawSize.width,
-		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LCK,LCK,		\
-			LCK,LCK,LCK,LCK,LCK,LCK,LCK,LWK,		\
+		.attr ={LWK,LWK,LWK,LWK,LCK,LCK,LCK,LCK,		\
+			LCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
@@ -3447,24 +3438,40 @@ void Top(SHM_STRUCT *Shm)
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK
 		},
-		.code ={"------------- CPU Ratio ----------------"	\
-			"----------------------------------------"	\
-			"----------------------------------------"	\
-			"------------"
+		.code ={'-','-','-',' ','R','a','t','i',		\
+			'o',' ','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-','-','-','-','-',		\
+			'-','-','-','-'
 		}
 	};
 
+	int bright = 0;
 	for (i = 0; i < ratioCount; i++) {
 		char tabStop[] = "00";
 		int hPos = availRatio[i] * loadWidth / maxRatio;
 		sprintf(tabStop, "%2.0f", availRatio[i]);
 
 		if (tabStop[0] != 0x20) {
-			hLoad0.code[hPos + 2] = tabStop[0];
-			hLoad0.attr[hPos + 2] = MakeAttr(CYAN, 0, BLACK, 0);
+			hLoad0.code[hPos + 2] =tabStop[0];
+			hLoad0.attr[hPos + 2] =MakeAttr(CYAN, 0, BLACK, bright);
 		}
 		hLoad0.code[hPos + 3] = tabStop[1];
-		hLoad0.attr[hPos + 3] = MakeAttr(CYAN, 0, BLACK, 0);
+		hLoad0.attr[hPos + 3] = MakeAttr(CYAN, 0, BLACK, bright);
+
+		bright = !bright;
 	}
 	len = strlen(Shm->Proc.Brand);
 
