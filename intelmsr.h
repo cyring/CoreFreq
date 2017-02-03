@@ -415,8 +415,31 @@ typedef union
 } LOCAL_APIC;
 
 typedef struct
-{
+{	// 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
 	unsigned int
-	QPIFREQSEL	:  2-0, // 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
-	Reserved	: 32-2;
+	Freq_Select	:  2-0,
+	ReservedBits	: 32-2;
 } QPI_FREQUENCY;
+
+typedef union
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		FSB_Select	:  3-0,
+		ReservedBits1	:  4-3,
+		RAM_Select	:  7-4,
+		VHCLK_Polarity	:  8-7,
+		ReservedBits2	: 14-8,
+		EN_DynamicFSB	: 15-14,
+		ReservedBits3	: 32-15;
+	};
+	struct
+	{
+	unsigned int
+		QPI_FreqSel	:  2-0,
+		UnusedBits1	: 16-2,
+		DDR_Ratio	: 21-16,
+		UnusedBits2	: 32-21;
+	};
+} CLKCFG;

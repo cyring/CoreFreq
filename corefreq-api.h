@@ -356,7 +356,22 @@ typedef struct
 	signed int		ArchID;
 	unsigned int		Boost[1+1+8];
 
-	UNCORE			Uncore;
+	struct {
+		struct {
+			struct {
+				RAM_TIMING	Timing;
+			} Channel[MC_MAX_CHA];
+			unsigned short		ChannelCount;
+		} MC[MC_MAX_CTRL];
+		unsigned short			CtrlCount;
+
+		struct
+		{
+			CLKCFG			ClkCfg;
+		} Bus;
+
+		unsigned short			ChipID;
+	} Uncore;
 
 	SYSGATE			*SysGate;
 

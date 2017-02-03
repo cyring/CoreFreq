@@ -530,25 +530,6 @@ typedef struct
 	};
 } RAM_TIMING;
 
-typedef struct
-{
-	struct {
-		struct {
-			RAM_TIMING	Timing;
-		} Channel[MC_MAX_CHA];
-		unsigned short		ChannelCount;
-	} MC[MC_MAX_CTRL];
-	unsigned short			CtrlCount;
-	unsigned long long		CtrlSpeed;
-
-	struct
-	{
-		unsigned int		Rate,
-					Unit;		// 0: MHz , 1: MT/s
-		unsigned long long	Speed;
-	} Bus;
-} UNCORE;
-
 // Source: /include/uapi/linux/utsname.h
 #ifdef __NEW_UTS_LEN
 #define MAX_UTS_LEN		__NEW_UTS_LEN

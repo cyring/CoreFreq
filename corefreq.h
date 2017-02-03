@@ -172,7 +172,24 @@ typedef struct
 
 	char			AppName[TASK_COMM_LEN];
 
-	UNCORE			Uncore;
+	struct {
+		struct {
+			struct {
+				RAM_TIMING	Timing;
+			} Channel[MC_MAX_CHA];
+			unsigned short		ChannelCount;
+		} MC[MC_MAX_CTRL];
+		unsigned short			CtrlCount;
+		unsigned long long		CtrlSpeed;
+
+		struct
+		{
+			unsigned int		Rate,
+						Unit;	// 0: MHz , 1: MT/s
+			unsigned long long	Speed;
+		} Bus;
+	} Uncore;
+
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;

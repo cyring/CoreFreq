@@ -221,7 +221,284 @@ void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.PowerNow = 0;
 }
 
-void Uncore(SHM_STRUCT *Shm, PROC *Proc)
+typedef struct {
+	unsigned int	Q,
+			R;
+} RAM_Ratio;
+
+void P965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
+	case 0b000:
+		Shm->Uncore.Bus.Rate = 1066;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b001:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b010:
+			Ratio.Q = 5;
+			Ratio.R = 4;
+			break;
+		case 0b011:
+			Ratio.Q = 3;
+			Ratio.R = 2;
+			break;
+		case 0b100:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		case 0b101:
+			Ratio.Q = 5;
+			Ratio.R = 2;
+			break;
+		}
+		break;
+	case 0b001:
+		Shm->Uncore.Bus.Rate = 533;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b001:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		case 0b010:
+			Ratio.Q = 5;
+			Ratio.R = 2;
+			break;
+		case 0b011:
+			Ratio.Q = 3;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	case 0b011:
+		Shm->Uncore.Bus.Rate = 667;
+		break;
+	case 0b100:
+		Shm->Uncore.Bus.Rate = 1333;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b010:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b011:
+			Ratio.Q = 6;
+			Ratio.R = 5;
+			break;
+		case 0b100:
+			Ratio.Q = 8;
+			Ratio.R = 5;
+			break;
+		case 0b101:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	case 0b110:
+		Shm->Uncore.Bus.Rate = 1600;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b011:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b100:
+			Ratio.Q = 4;
+			Ratio.R = 3;
+			break;
+		case 0b101:
+			Ratio.Q = 3;
+			Ratio.R = 2;
+			break;
+		case 0b110:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	default:
+		// Fallthrough
+	case 0b010:
+		Shm->Uncore.Bus.Rate = 800;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b000:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b001:
+			Ratio.Q = 5;
+			Ratio.R = 4;
+			break;
+		case 0b010:
+			Ratio.Q = 5;
+			Ratio.R = 3;
+			break;
+		case 0b011:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		case 0b100:
+			Ratio.Q = 8;
+			Ratio.R = 3;
+			break;
+		case 0b101:
+			Ratio.Q = 10;
+			Ratio.R = 3;
+			break;
+		}
+		break;
+	}
+	Shm->Uncore.CtrlSpeed = (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
+				/ (Ratio.R * Shm->Proc.Features.FactoryFreq);
+	Shm->Uncore.CtrlSpeed /= 1000;
+
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Bus.Unit = 0; // "MHz"
+}
+
+void GM965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
+	case 0b001:
+		Shm->Uncore.Bus.Rate = 533;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b001:
+			Ratio.Q = 5;
+			Ratio.R = 4;
+			break;
+		case 0b010:
+			Ratio.Q = 3;
+			Ratio.R = 2;
+			break;
+		case 0b011:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	case 0b011:
+		Shm->Uncore.Bus.Rate = 667;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b001:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b010:
+			Ratio.Q = 6;
+			Ratio.R = 5;
+			break;
+		case 0b011:
+			Ratio.Q = 8;
+			Ratio.R = 5;
+			break;
+		case 0b100:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		case 0b101:
+			Ratio.Q = 12;
+			Ratio.R = 5;
+			break;
+		}
+		break;
+	case 0b110:
+		Shm->Uncore.Bus.Rate = 1066;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b101:
+			Ratio.Q = 3;
+			Ratio.R = 2;
+			break;
+		case 0b110:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	default:
+		// Fallthrough
+	case 0b010:
+		Shm->Uncore.Bus.Rate = 800;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		case 0b001:
+			Ratio.Q = 5;
+			Ratio.R = 6;
+			break;
+		case 0b010:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b011:
+			Ratio.Q = 4;
+			Ratio.R = 3;
+			break;
+		case 0b100:
+			Ratio.Q = 5;
+			Ratio.R = 3;
+			break;
+		case 0b101:
+			Ratio.Q = 2;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	}
+	Shm->Uncore.CtrlSpeed = (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
+				/ (Ratio.R * Shm->Proc.Features.FactoryFreq);
+	Shm->Uncore.CtrlSpeed /= 1000;
+
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Bus.Unit = 0; // "MHz"
+}
+
+void P35(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	P965(Shm, Proc, cpu);
+}
+
+void X58(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
+				* Proc->Uncore.Bus.ClkCfg.DDR_Ratio)
+				/ 1000000L;
+
+	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 00 ?
+				4800 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 10 ?
+					6400 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 01 ?
+						5866 : 8000;
+
+	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+}
+
+void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	unsigned short mc, cha;
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
@@ -252,10 +529,30 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].Timing.B2B;
 	    }
 	}
-	Shm->Uncore.CtrlSpeed = Proc->Uncore.CtrlSpeed;
-	Shm->Uncore.Bus.Rate  = Proc->Uncore.Bus.Rate;
-	Shm->Uncore.Bus.Unit  = Proc->Uncore.Bus.Unit;
-	Shm->Uncore.Bus.Speed = Proc->Uncore.Bus.Speed;
+	switch (Proc->Uncore.ChipID) {
+	case 0x2970:
+	case 0x2990:
+	case 0x29a0:
+		P965(Shm, Proc, cpu);
+		break;
+	case 0x2a00:
+	case 0x2a10:
+	case 0x2a40:
+		GM965(Shm, Proc, cpu);
+		break;
+	case 0x29c0:
+	case 0x29d0:
+	case 0x29e0:
+	case 0x29f0:
+	case 0x2e10:
+	case 0x2e20:
+	case 0x2e30:
+		P35(Shm, Proc, cpu);
+		break;
+	case 0x3423:
+		X58(Shm, Proc, cpu);
+		break;
+	}
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -604,6 +901,9 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	CStates(Shm, Core, cpu);
 
 	ThermalMonitoring(Shm, Proc, Core, cpu);
+
+	if (cpu == 0)
+		Uncore(Shm, Proc, cpu);
 }
 
 typedef	struct
@@ -935,7 +1235,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		PowerNow(Shm, Proc);
 
-		Uncore(Shm, Proc);
+//-		Uncore(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
