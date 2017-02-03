@@ -993,17 +993,35 @@ void HyperThreading_Technology(void)
 
 void Intel_Platform_Info(void)
 {
-	PLATFORM_INFO Platform = {.value = 0};
+	PLATFORM_ID PfID = {.value = 0};
+	PLATFORM_INFO PfInfo = {.value = 0};
+	PERF_STATUS PerfStatus = {.value = 0};
+	unsigned int ratio0 = 0, ratio1 = 0, ratio2 = 0;
 
-	RDMSR(Platform, MSR_PLATFORM_INFO);
-
-	if (Platform.value != 0) {
-		Proc->Boost[0] = MINCOUNTER(Platform.MinimumRatio,
-						Platform.MaxNonTurboRatio);
-		Proc->Boost[1] = MAXCOUNTER(Platform.MinimumRatio,
-						Platform.MaxNonTurboRatio);
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+	if (PfInfo.value != 0) {
+		ratio0 = KMIN(PfInfo.MinimumRatio, PfInfo.MaxNonTurboRatio);
+		ratio1 = KMAX(PfInfo.MinimumRatio, PfInfo.MaxNonTurboRatio);
 	}
-	Proc->Boost[9] = Proc->Boost[1];
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	if (PerfStatus.value != 0) {				// §18.18.3.4
+		if (PerfStatus.XE_Enable) {
+			ratio2 = PerfStatus.MaxBusRatio;
+		} else {
+			RDMSR(PfID, MSR_IA32_PLATFORM_ID);
+			if (PfID.value != 0) {
+				ratio2 = PfID.MaxBusRatio;
+			}
+		}
+	} else {
+			RDMSR(PfID, MSR_IA32_PLATFORM_ID);
+			if (PfID.value != 0) {
+				ratio2 = PfID.MaxBusRatio;
+			}
+	}
+	Proc->Boost[0] = ratio0;
+	Proc->Boost[1] = KMIN(ratio1, ratio2);
+	Proc->Boost[9] = KMAX(ratio1, ratio2);
 }
 
 void DynamicAcceleration(void)
@@ -1019,9 +1037,10 @@ void DynamicAcceleration(void)
 			  "=d" (Power.DX)
 			:  "a" (0x6)
 		);
-
-		if (Power.AX.TurboIDA == 1) // workaround: max regular ratio + 1
-			Proc->Boost[9] = Proc->Boost[1] + 1;
+		if (Power.AX.TurboIDA == 1) {
+			Proc->Boost[8] = Proc->Boost[9];
+			Proc->Boost[9]++;
+		}
 	}
 }
 
@@ -1097,7 +1116,7 @@ kernel_ulong_t DDR3_ScanEachChannel(struct pci_dev *dev, unsigned short mc)
 	code = (code >> 8) & 0x7;
 
 	Proc->Uncore.MC[mc].ChannelCount =
-		MIN(code == 7 ?
+		KMIN(code == 7 ?
 			3 : code == 4 ?
 				1 : code == 2 ?
 					1 : code == 1 ?

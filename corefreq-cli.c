@@ -2136,7 +2136,7 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	// Care about the right-side window border.
-	unsigned short maxVisibleCol = MIN(MAX_WIDTH, GetScreenSize().width)
+	unsigned short maxVisibleCol = KMIN(MAX_WIDTH, GetScreenSize().width)
 					- win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
@@ -2155,7 +2155,7 @@ void MotionOriginUp_Win(Window *win)
 
 void MotionOriginDown_Win(Window *win)
 {	// Care about the bottom window border.
-	unsigned short maxVisibleRow = MIN(MAX_HEIGHT, GetScreenSize().height)
+	unsigned short maxVisibleRow = KMIN(MAX_HEIGHT, GetScreenSize().height)
 					- win->matrix.size.hth - 1;
 
 	if (win->matrix.origin.row < maxVisibleRow) {

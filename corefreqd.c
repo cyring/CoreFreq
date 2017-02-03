@@ -354,10 +354,8 @@ void P965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		}
 		break;
 	}
-	Shm->Uncore.CtrlSpeed = (Shm->Proc.Boost[1]
-				* Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
-				/ (Ratio.R * Shm->Proc.Features.FactoryFreq);
-	Shm->Uncore.CtrlSpeed /= 1000;
+	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
+				/ (Ratio.R * 1000000L);
 
 	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -459,10 +457,8 @@ void GM965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		}
 		break;
 	}
-	Shm->Uncore.CtrlSpeed = (Shm->Proc.Boost[1]
-				* Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
-				/ (Ratio.R * Shm->Proc.Features.FactoryFreq);
-	Shm->Uncore.CtrlSpeed /= 1000;
+	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q)
+				/ (Ratio.R * 1000000L);
 
 	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -485,9 +481,9 @@ void X58(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ 1000000L;
 
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 00 ?
-				4800 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 10 ?
-					6400 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 01 ?
-						5866 : 8000;
+		4800 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 10 ?
+			6400 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 01 ?
+				5866 : 8000;
 
 	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
 				* Shm->Cpu[cpu].Clock.Hz

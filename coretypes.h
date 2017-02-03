@@ -10,8 +10,8 @@ typedef unsigned int		Bit32;
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0))
 
-#define MAX(M, m)	((M) > (m) ? (M) : (m))
-#define MIN(m, M)	((m) < (M) ? (m) : (M))
+#define KMAX(M, m)	((M) > (m) ? (M) : (m))
+#define KMIN(m, M)	((m) < (M) ? (m) : (M))
 
 #define powered(bit)	((bit) ? "Present" : "Missing")
 #define enabled(bit)	((bit) ? "ON" : "OFF")
