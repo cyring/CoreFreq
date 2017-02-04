@@ -2136,7 +2136,7 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	// Care about the right-side window border.
-	unsigned short maxVisibleCol = KMIN(MAX_WIDTH, GetScreenSize().width)
+	unsigned short maxVisibleCol=KMIN(MAX_WIDTH - 1,GetScreenSize().width)
 					- win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
@@ -2155,7 +2155,7 @@ void MotionOriginUp_Win(Window *win)
 
 void MotionOriginDown_Win(Window *win)
 {	// Care about the bottom window border.
-	unsigned short maxVisibleRow = KMIN(MAX_HEIGHT, GetScreenSize().height)
+	unsigned short maxVisibleRow=KMIN(MAX_HEIGHT - 1,GetScreenSize().height)
 					- win->matrix.size.hth - 1;
 
 	if (win->matrix.origin.row < maxVisibleRow) {
@@ -3070,8 +3070,8 @@ void Top(SHM_STRUCT *Shm)
     void AllocAll()
     {
 	hBClk = calloc(Shm->Proc.CPU.Count, sizeof(HBCLK));
-	buffer = malloc(4 * MAX_WIDTH);
-	viewMask = malloc((4 * MAX_WIDTH) * MAX_HEIGHT);
+	buffer = malloc(10 * MAX_WIDTH); // 10 times for ANSI cursor string.
+	viewMask = malloc((10 * MAX_WIDTH) * MAX_HEIGHT);
 
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
@@ -4715,54 +4715,56 @@ void Top(SHM_STRUCT *Shm)
 	  struct {
 		int cursor;
 	  } flag = {0};
-	  int j = 0, k;
+
+	  int x = 0, k;
+
 	  for (col = 0; col < drawSize.width; col++) {
-	    Attribute	*fa=&fuze->attr[col + (row * fuze->size.wth)],
-			*sa=&sLayer->attr[col + (row * fuze->size.wth)],
-			*da=&dLayer->attr[col + (row * fuze->size.wth)],
-			*wa=&wLayer->attr[col + (row * fuze->size.wth)];
-	    ASCII	*fc=&fuze->code[col + (row * fuze->size.wth)],
-			*sc=&sLayer->code[col + (row * fuze->size.wth)],
-			*dc=&dLayer->code[col + (row * fuze->size.wth)],
-			*wc=&wLayer->code[col + (row * fuze->size.wth)];
+	    Attribute	*fa = &fuze->attr[col + (row * fuze->size.wth)],
+			*sa = &sLayer->attr[col + (row * fuze->size.wth)],
+			*da = &dLayer->attr[col + (row * fuze->size.wth)],
+			*wa = &wLayer->attr[col + (row * fuze->size.wth)];
+	    ASCII	*fc = &fuze->code[col + (row * fuze->size.wth)],
+			*sc = &sLayer->code[col + (row * fuze->size.wth)],
+			*dc = &dLayer->code[col + (row * fuze->size.wth)],
+			*wc = &wLayer->code[col + (row * fuze->size.wth)];
 	/* STATIC LAYER */
 	    if (sa->value != 0)
-		fa->value=sa->value;
+		fa->value = sa->value;
 	    if (*sc != 0)
-		*fc=*sc;
+		*fc = *sc;
 	/* DYNAMIC LAYER */
 	    if (da->value != 0)
-		fa->value=da->value;
+		fa->value = da->value;
 	    if (*dc != 0)
-		*fc=*dc;
+		*fc = *dc;
 	/* WINDOWS LAYER */
 	    if (wa->value != 0)
-		fa->value=wa->value;
+		fa->value = wa->value;
 	    if (*wc != 0)
-		*fc=*wc;
+		*fc = *wc;
 	/* FUZED LAYER */
-	    if ((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf)){
-		buffer[j++] = 0x1b;
-		buffer[j++] = '[';
-		buffer[j++] = '0' + fa->bf;
-		buffer[j++] = ';';
-		buffer[j++] = '3';
-		buffer[j++] = '0' + fa->fg;
-		buffer[j++] = ';';
-		buffer[j++] = '4';
-		buffer[j++] = '0' + fa->bg;
-		buffer[j++] = 'm';
+	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf)) {
+		buffer[x++] = 0x1b;
+		buffer[x++] = '[';
+		buffer[x++] = '0' + fa->bf;
+		buffer[x++] = ';';
+		buffer[x++] = '3';
+		buffer[x++] = '0' + fa->fg;
+		buffer[x++] = ';';
+		buffer[x++] = '4';
+		buffer[x++] = '0' + fa->bg;
+		buffer[x++] = 'm';
 	    }
 	    if (fa->un ^ attr.un) {
-		buffer[j++] = 0x1b;
-		buffer[j++] = '[';
+		buffer[x++] = 0x1b;
+		buffer[x++] = '[';
 		if (fa->un) {
-			buffer[j++] = '4';
-			buffer[j++] = 'm';
+			buffer[x++] = '4';
+			buffer[x++] = 'm';
 		} else {
-			buffer[j++] = '2';
-			buffer[j++] = '4';
-			buffer[j++] = 'm';
+			buffer[x++] = '2';
+			buffer[x++] = '4';
+			buffer[x++] = 'm';
 		}
 	    }
 	    attr.value = fa->value;
@@ -4775,26 +4777,28 @@ void Top(SHM_STRUCT *Shm)
 				unsigned short col, row;
 			} scr = {.col = col + 1, .row = row + 1};
 
-			buffer[j++] = 0x1b;
-			buffer[j++] = '[';
+			buffer[x++] = 0x1b;
+			buffer[x++] = '[';
 
-			for(j=log10(scr.row)+j+1, k=j; scr.row > 0; scr.row/=10)
+			x = log10(scr.row) + x + 1;
+			for(k = x; scr.row > 0; scr.row /= 10)
 				buffer[--k] = '0' + (scr.row % 10);
 
-			buffer[j++] = ';';
+			buffer[x++] = ';';
 
-			for(j=log10(scr.col)+j+1, k=j; scr.col > 0; scr.col/=10)
+			x = log10(scr.col) + x + 1;
+			for(k = x; scr.col > 0; scr.col /= 10)
 				buffer[--k] = '0' + (scr.col % 10);
 
-			buffer[j++] = 'H';
+			buffer[x++] = 'H';
 		}
-		buffer[j++] = *fc;
+		buffer[x++] = *fc;
 	    }
 	    else
 		flag.cursor = 0;
 	  }
-	  memcpy(&viewMask[i], buffer, j);
-	  i += j;
+	  memcpy(&viewMask[i], buffer, x);
+	  i += x;
 	}
 	fwrite(viewMask, i, 1, stdout);
 	fflush(stdout);
