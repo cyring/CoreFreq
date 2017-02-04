@@ -991,32 +991,60 @@ void HyperThreading_Technology(void)
 		Proc->CPU.OnLine = Proc->CPU.Count;
 }
 
+int Intel_MaxBusRatio(PLATFORM_ID *PfID)
+{
+	struct SIGNATURE signature[] = {
+		_Core_Conroe,		/* 06_0F */
+		_Core_Yorkfield,	/* 06_17 */
+		_Atom_Bonnell,		/* 06_1C */
+		_Atom_Silvermont,	/* 06_26 */
+		_Atom_Lincroft,		/* 06_27 */
+		_Atom_Clovertrail,	/* 06_35 */
+		_Atom_Saltwell,		/* 06_36 */
+		_Silvermont_637,	/* 06_37 */
+	};
+	int id, ids = sizeof(signature) / sizeof(signature[0]);
+	for (id = 0; id < ids; id++) {
+		if ((signature[id].ExtFamily == Proc->Features.Std.AX.ExtFamily)
+		 && (signature[id].Family == Proc->Features.Std.AX.Family)
+		 && (signature[id].ExtModel == Proc->Features.Std.AX.ExtModel)
+		 && (signature[id].Model == Proc->Features.Std.AX.Model)) {
+
+			RDMSR((*PfID), MSR_IA32_PLATFORM_ID);
+			return(0);
+		}
+	}
+	return(-1);
+}
+
 void Intel_Platform_Info(void)
 {
 	PLATFORM_ID PfID = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
 	PERF_STATUS PerfStatus = {.value = 0};
-	unsigned int ratio0 = 0, ratio1 = 0, ratio2 = 0;
+	unsigned int ratio0 = 1, ratio1 = 10, ratio2 = 50; // Arbitrary
 
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 	if (PfInfo.value != 0) {
 		ratio0 = KMIN(PfInfo.MinimumRatio, PfInfo.MaxNonTurboRatio);
 		ratio1 = KMAX(PfInfo.MinimumRatio, PfInfo.MaxNonTurboRatio);
+		ratio2 = ratio1;
 	}
+
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 	if (PerfStatus.value != 0) {				// §18.18.3.4
 		if (PerfStatus.XE_Enable) {
 			ratio2 = PerfStatus.MaxBusRatio;
 		} else {
-			RDMSR(PfID, MSR_IA32_PLATFORM_ID);
-			if (PfID.value != 0) {
-				ratio2 = PfID.MaxBusRatio;
+			if (Intel_MaxBusRatio(&PfID) == 0) {
+				if (PfID.value != 0)
+					ratio2 = PfID.MaxBusRatio;
 			}
 		}
 	} else {
-			RDMSR(PfID, MSR_IA32_PLATFORM_ID);
-			if (PfID.value != 0) {
-				ratio2 = PfID.MaxBusRatio;
+			if (Intel_MaxBusRatio(&PfID) == 0) {
+				if (PfID.value != 0)
+					ratio2 = PfID.MaxBusRatio;
 			}
 	}
 	Proc->Boost[0] = ratio0;
@@ -2934,24 +2962,26 @@ static int __init CoreFreqK_init(void)
 					if(!Proc->Features.AdvPower.DX.Inv_TSC)
 						AutoClock = 0;
 			      }
-			      if  ((ArchID != -1)
+			      if ( (ArchID != -1)
 				&& (ArchID >= 0)
-				&& (ArchID < ARCHITECTURES))
+				&& (ArchID < ARCHITECTURES) ) {
 					Proc->ArchID = ArchID;
-			      else {
-				for (	Proc->ArchID = ARCHITECTURES - 1;
+			      } else {
+				  for ( Proc->ArchID = ARCHITECTURES - 1;
 					Proc->ArchID > 0;
-					Proc->ArchID--)
+					Proc->ArchID--) {
 				  // Search for an architecture signature.
-				    if (!(Arch[Proc->ArchID].Signature.ExtFamily
-					^ Proc->Features.Std.AX.ExtFamily)
-				    && !(Arch[Proc->ArchID].Signature.Family
-				    ^ Proc->Features.Std.AX.Family)
-				    && !(Arch[Proc->ArchID].Signature.ExtModel
-				    ^ Proc->Features.Std.AX.ExtModel)
-				    && !(Arch[Proc->ArchID].Signature.Model
-				    ^ Proc->Features.Std.AX.Model))
-					break;
+				    if ((Arch[Proc->ArchID].Signature.ExtFamily
+					== Proc->Features.Std.AX.ExtFamily)
+				    && (Arch[Proc->ArchID].Signature.Family
+					== Proc->Features.Std.AX.Family)
+				    && (Arch[Proc->ArchID].Signature.ExtModel
+					== Proc->Features.Std.AX.ExtModel)
+				    && (Arch[Proc->ArchID].Signature.Model
+					== Proc->Features.Std.AX.Model)) {
+						break;
+					}
+				  }
 			      }
 
 				strncpy(Proc->Architecture,
