@@ -1129,32 +1129,10 @@ kernel_ulong_t DDR3_Timing(unsigned short mc, unsigned short cha)
 	Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW = (rank_b & 0x3f);
 	Proc->Uncore.MC[mc].Channel[cha].Timing.B2B  = (rank_b & 0x1f0000)>>16;
 
+	pci_dev_put(dev);
 	return(0);
     } else
 	return(-ENODEV);
-}
-
-kernel_ulong_t DDR3_ScanEachChannel(struct pci_dev *dev, unsigned short mc)
-{
-	kernel_ulong_t rc = 0;
-	unsigned int code;
-	unsigned short cha;
-
-	pci_read_config_dword(dev, 0x48, &code);
-	code = (code >> 8) & 0x7;
-
-	Proc->Uncore.MC[mc].ChannelCount =
-		KMIN(code == 7 ?
-			3 : code == 4 ?
-				1 : code == 2 ?
-					1 : code == 1 ?
-						1 : code != 0 ?
-							2 : 0, MC_MAX_CHA);
-
-	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
-		rc = DDR3_Timing(mc, cha);
-	}
-	return(rc);
 }
 
 PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset, ROUTER route)
@@ -1285,7 +1263,7 @@ void Query_P35_DDR2_Timing(	unsigned short mc, unsigned short cha,
 }
 
 void Query_P35(void __iomem *mchmap)
-{
+{	// Source: Intel® 3 Series Express Chipset Family
 	unsigned short cha;
 	unsigned int drb0 = 0, drb1 = 0;
 
@@ -1309,6 +1287,29 @@ void Query_P35(void __iomem *mchmap)
 
 		Query_P35_DDR2_Timing(0, cha, drt0, drt1, drt2, drt3);
 	}
+}
+
+kernel_ulong_t Query_X58(struct pci_dev *dev, unsigned short mc)
+{
+	kernel_ulong_t rc = 0;
+	unsigned int code;
+	unsigned short cha;
+
+	pci_read_config_dword(dev, 0x48, &code);
+	code = (code >> 8) & 0x7;
+
+	Proc->Uncore.MC[mc].ChannelCount =
+		KMIN(code == 7 ?
+			3 : code == 4 ?
+				1 : code == 2 ?
+					1 : code == 1 ?
+						1 : code != 0 ?
+							2 : 0, MC_MAX_CHA);
+
+	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
+		rc = DDR3_Timing(mc, cha);
+	}
+	return(rc);
 }
 
 PCI_CALLBACK P965(struct pci_dev *dev)
@@ -1343,19 +1344,19 @@ PCI_CALLBACK PG4(struct pci_dev *dev)
 	return(rc);
 }
 
-PCI_CALLBACK Nehalem_IMC(struct pci_dev *dev)
+PCI_CALLBACK X58_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short mc;
 
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
-		rc = DDR3_ScanEachChannel(dev, mc);
+		rc = Query_X58(dev, mc);
 
 	return((PCI_CALLBACK) rc);
 }
 
-PCI_CALLBACK Nehalem_IMC_TR(struct pci_dev *dev)
+PCI_CALLBACK X58_IMC_TR(struct pci_dev *dev)
 {
 	unsigned int DDR_Ratio = 0;
 
@@ -1365,7 +1366,7 @@ PCI_CALLBACK Nehalem_IMC_TR(struct pci_dev *dev)
 	return(0);
 }
 
-PCI_CALLBACK Nehalem_QPI(struct pci_dev *dev)
+PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 {
 	QPI_FREQUENCY QPI = {0};
 
@@ -1454,15 +1455,15 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	},
 	{	// Nehalem IMC
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
-		.driver_data = (kernel_ulong_t) Nehalem_IMC
+		.driver_data = (kernel_ulong_t) X58_IMC
 	},
 	{	// Nehalem IMC
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
-		.driver_data = (kernel_ulong_t) Nehalem_IMC_TR
+		.driver_data = (kernel_ulong_t) X58_IMC_TR
 	},
 	{	// Nehalem Control Status and RAS Registers
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
-		.driver_data = (kernel_ulong_t) Nehalem_QPI
+		.driver_data = (kernel_ulong_t) X58_QPI
 	},
 	{0, }
 };

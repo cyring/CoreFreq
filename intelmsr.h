@@ -415,10 +415,173 @@ typedef union
 } LOCAL_APIC;
 
 typedef struct
+{	// Offset: 1210h
+	unsigned int
+		BtoB_RdRd	:  3-0,
+		ReservedBits1	:  5-3,
+		BtoB_WrWr	:  8-5,
+		ReservedBits2	: 10-8,
+		BtoB_RdWr	: 14-10,
+		ReservedBits3	: 15-14,
+		BtoB_WrRd_DR	: 18-15,
+		ReservedBits4	: 20-18,
+		BtoB_WrRd_SR	: 24-20,
+		ReservedBits5	: 26-24,
+		BtoB_Wr2PCSB	: 31-26,
+		ReservedBits6	: 32-31;
+} I965_MC_DRAM_TIMING_R0;
+
+typedef struct
+{	// Offset: 1214h
+	unsigned int
+		tRP		:  3-0,
+		ReservedBits1	:  5-3,
+		tRCD		:  8-5,
+		ReservedBits2	: 10-8,
+		tRRD		: 13-10,
+		ReservedBits3	: 15-13,
+		tRPALL		: 16-15,
+		ReservedBits4	: 18-16,
+		tRP_DR_SR	: 19-18,
+		ReservedBits5	: 21-19,
+		tRAS		: 26-21,
+		ReservedBits6	: 28-26,
+		tRTP		: 30-28,
+		ReservedBits7	: 32-30;
+} I965_MC_DRAM_TIMING_R1;
+
+typedef struct
+{	// Offset: 1218h
+	unsigned int
+		ReservedBits1	:  6-0,
+		tXPDLL		: 10-6,
+		ReservedBits2	: 12-10,
+		tXP		: 15-10,
+		ReservedBits3	: 17-15,
+		tFAW		: 22-17,
+		ReservedBits4	: 24-22,
+		tCKE		: 27-24,
+		ReservedBits5	: 32-27;
+} I965_MC_DRAM_TIMING_R2;
+
+typedef struct
+{	// Offset: 121Ch
+	unsigned int
+		tWL		:  3-0,
+		ReservedBits1	: 13-3,
+		tRFC		: 21-13,
+		ReservedBits2	: 23-21,
+		tCL		: 26-23,
+		tXS		: 28-26,
+		ReservedBits3	: 32-28;
+} I965_MC_DRAM_TIMING_R3;
+
+typedef  struct
+{	// Offset: 252h
+	unsigned int
+		tRFC		:  9-0,
+		tRPALL		: 13-9,
+		tRP		: 17-13,
+		tRRD		: 21-17,
+		ACT_Disable	: 22-21,
+		ACT_Count	: 28-22,
+		ReservedBits	: 32-28;
+} P35_MC_CYCTRK_ACT;
+
+typedef struct
+{	// Offset: 258h
+	unsigned int
+		tRD_RD_DR	:  4-0,
+		tRD_RD_SR	:  8-4,
+		tWR_RD		: 12-8,
+		tWTR		: 17-12,
+		tRCD		: 21-17,
+		tREF		: 32-21;
+} P35_MC_CYCTRK_RD;
+
+typedef struct
+{	// Offset: 265h
+	unsigned short int
+		UnknownBits1	:  8-0,
+		tCL		: 14-8,
+		UnknownBits2	: 16-14;
+} P35_MC_UNKNOWN_R0;
+
+typedef struct
+{	// Offset: 25Dh
+	unsigned short int
+		tRAS		:  6-0,
+		UnknownBits	: 16-6;
+} P35_MC_UNKNOWN_R1;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 70h
+	unsigned int
+		MR0		: 16-0,
+		MR1		: 32-16;
+} X58_MC_MRS_VALUE_0_1;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
+	unsigned int
+		MR2		: 16-0,
+		RC0		: 20-16,
+		RC2		: 24-20,
+		ReservedBits	: 32-24;
+} X58_MC_MRS_VALUE_2;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
+	unsigned int
+		tsrRdTRd	:  1-0,
+		tdrRdTRd	:  4-1,
+		tddRdTRd	:  7-4,
+		tsrRdTWr	: 11-7,
+		tdrRdTWr	: 15-11,
+		tddRdTWr	: 19-15,
+		tsrWrTRd	: 23-19,
+		tdrWrTRd	: 26-23,
+		tddWrTRd	: 29-26,
+		ReservedBits	: 32-29;
+} X58_MC_RANK_TIMING_A;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
+	unsigned int
+		tFAW		:  6-0,
+		tRRD		:  9-6,
+		tsrWrTWr	: 10-9,
+		tdrWrTWr	: 13-10,
+		tddWrTWr	: 16-13,
+		B2B		: 21-16,
+		ReservedBits	: 32-21;
+} X58_MC_RANK_TIMING_B;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
+	unsigned int
+		tRP		:  4-0,
+		tRAS		:  9-4,
+		tRCD		: 13-9,
+		tRTPr		: 17-13,
+		tWTPr		: 22-17,
+		ReservedBits	: 32-22;
+} X58_DRAM_BANK_TIMING;
+
+typedef struct
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
+	unsigned int
+		tRFC		:  9-0,
+		tREFI_8		: 19-9,
+		tTHROT_OPPREF	: 30-19,
+		ReservedBits	: 32-30;
+} X58_DRAM_REFRESH_TIMING;
+
+typedef struct
 {	// 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
 	unsigned int
-	Freq_Select	:  2-0,
-	ReservedBits	: 32-2;
+		Freq_Select	:  2-0,
+		ReservedBits	: 32-2;
 } QPI_FREQUENCY;
 
 typedef union
