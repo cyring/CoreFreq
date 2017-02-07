@@ -33,11 +33,11 @@ typedef struct
 		struct {
 		unsigned int		Set,
 					Size;
-		unsigned short int	LineSz,
+		unsigned short		LineSz,
 					Part,
 					Way;
 		    struct {
-		    unsigned short int	WriteBack: 1-0,
+		    unsigned short	WriteBack: 1-0,
 					Inclusive: 2-1,
 					_pad16	: 16-2;
 		    } Feature;
@@ -173,6 +173,13 @@ typedef struct
 	char			AppName[TASK_COMM_LEN];
 
 	struct {
+		struct
+		{
+			unsigned int		Rate,
+						Unit;	// 0: MHz , 1: MT/s
+			unsigned long long	Speed;
+		} Bus;
+
 		struct {
 			struct {
 				RAM_TIMING	Timing;
@@ -181,13 +188,6 @@ typedef struct
 		} MC[MC_MAX_CTRL];
 		unsigned short			CtrlCount;
 		unsigned long long		CtrlSpeed;
-
-		struct
-		{
-			unsigned int		Rate,
-						Unit;	// 0: MHz , 1: MT/s
-			unsigned long long	Speed;
-		} Bus;
 	} Uncore;
 
 	PROC_STRUCT		Proc;

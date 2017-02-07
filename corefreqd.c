@@ -226,7 +226,43 @@ typedef struct {
 			R;
 } RAM_Ratio;
 
-void P965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT0.tCL;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT1.tRAS;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT1.tWR;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT2.tRFC;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT2.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
+/*?
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRTn.tFAW;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].P965.DRTn.tRTPr;
+*/
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
+	    }
+	}
+}
+
+void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
@@ -366,7 +402,44 @@ void P965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Bus.Unit = 0; // "MHz"
 }
 
-void GM965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT0.tWR;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRCD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRAS;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRTPr;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT2.tFAW;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT3.tCL;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT3.tRFC;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD += 2;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  += 2;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
+	    }
+	}
+}
+
+void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
@@ -469,20 +542,116 @@ void GM965(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Bus.Unit = 0; // "MHz"
 }
 
-void P35(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void P3S_MCH(SHM_STRUCT *Shm, PROC *Proc, unsigned short mc, unsigned short cha)
 {
-	P965(Shm, Proc, cpu);
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT0.tCL;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT2.tRFC;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT2.tRP;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT2.tRRD;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
+/*?
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
+*/
 }
 
-void X58(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		P3S_MCH(Shm, Proc, mc, cha);
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 9;
+	    }
+	}
+}
+
+void P35_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	P965_CLK(Shm, Proc, cpu);
+}
+
+void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		P3S_MCH(Shm, Proc, mc, cha);
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 6;
+	    }
+	}
+}
+
+void X58_IMC(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL ?
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL:0;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
+			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR ?
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR:0;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRCD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRAS;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Refresh.tRFC;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRTPr;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tWTPr;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tFAW;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.B2B;
+	    }
+	}
+}
+
+void X58_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
-				* Proc->Uncore.Bus.ClkCfg.DDR_Ratio)
+				* Proc->Uncore.Bus.DimmClock.QCLK_RATIO)
 				/ 1000000L;
 
-	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 00 ?
-		4800 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 10 ?
-			6400 : Proc->Uncore.Bus.ClkCfg.QPI_FreqSel == 01 ?
+	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
+		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
+			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
 				5866 : 8000;
 
 	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
@@ -496,57 +665,36 @@ void X58(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
-	unsigned short mc, cha;
-	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tCL;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRCD;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRP;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRAS;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRRD;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRFC;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tWR;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tRTPr;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tWTPr;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.tFAW;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
-			Proc->Uncore.MC[mc].Channel[cha].Timing.B2B;
-	    }
-	}
 	switch (Proc->Uncore.ChipID) {
 	case 0x2970:
 	case 0x2990:
 	case 0x29a0:
-		P965(Shm, Proc, cpu);
+		P965_CLK(Shm, Proc, cpu);
+		P965_MCH(Shm, Proc);
 		break;
 	case 0x2a00:
 	case 0x2a10:
 	case 0x2a40:
-		GM965(Shm, Proc, cpu);
+		G965_CLK(Shm, Proc, cpu);
+		G965_MCH(Shm, Proc);
 		break;
+	case 0x29b0:
 	case 0x29c0:
 	case 0x29d0:
 	case 0x29e0:
 	case 0x29f0:
+		P35_CLK(Shm, Proc, cpu);
+		P35_MCH(Shm, Proc);
+		break;
 	case 0x2e10:
 	case 0x2e20:
 	case 0x2e30:
-		P35(Shm, Proc, cpu);
+		P35_CLK(Shm, Proc, cpu);
+		P4S_MCH(Shm, Proc);
 		break;
-	case 0x3423:
-		X58(Shm, Proc, cpu);
+	case 0x2c18:
+		X58_CLK(Shm, Proc, cpu);
+		X58_IMC(Shm, Proc);
 		break;
 	}
 }

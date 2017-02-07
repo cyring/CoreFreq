@@ -328,6 +328,75 @@ typedef struct
 	CLOCK				Clock;
 } CORE;
 
+typedef struct
+{
+	struct {
+		union {
+			struct {
+	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits */
+	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits */
+	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits */
+	/* 256h */		P965_MC_CYCTRK_WR	DRT3;	/* 16 bits */
+	/* 258h */		P965_MC_CYCTRK_RD	DRT4;	/* 24 bits */
+			} P965;
+			struct {
+	/* 1210h */		G965_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits */
+	/* 1214h */		G965_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
+	/* 1218h */		G965_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits */
+	/* 121Ch */		G965_MC_DRAM_TIMING_R3	DRT3;	/* 32 bits */
+			} G965;
+			struct {
+	/* 265h */		P35_MC_UNKNOWN_R0	DRT0;	/* 16 bits */
+	/* 250h */		P35_MC_CYCTRK_PCHG	DRT1;	/* 16 bits */
+	/* 252h */		P35_MC_CYCTRK_ACT	DRT2;	/* 32 bits */
+	/* 256h */		P35_MC_CYCTRK_WR	DRT3;	/* 16 bits */
+	/* 258h */		P35_MC_CYCTRK_RD	DRT4;	/* 24 bits */
+	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits */
+			} P35;
+			struct {
+				X58_MC_MRS_VALUE_0_1	MRS;
+				X58_MC_RANK_TIMING_B	Rank_B;
+				X58_MC_BANK_TIMING	Bank;
+				X58_MC_REFRESH_TIMING	Refresh;
+			} X58;
+		};
+	} Channel[MC_MAX_CHA];
+
+	union {
+		struct {
+	/* 260h */	P965_MC_CKECTRL	CKE0,	/* 32 bits */
+					CKE1;	/* 32 bits */
+		} P965;
+		struct {
+	/* 1200h */	G965_MC_DRB_0_1 DRB0,	/* 32 bits @ channel0 */
+	/* 1300h*/			DRB1;	/* 32 bits @ channel1 */
+		} G965;
+		struct {
+	/* 260h */	P35_MC_CKECTRL	CKE0,	/* 32 bits */
+					CKE1;	/* 32 bits */
+		} P35;
+		struct {
+	/* 3:0-48h */	X58_MC_CONTROL	CONTROL;	/* 32 bits */
+	/* 3:0 4Ch*/	X58_MC_STATUS	STATUS;		/* 32 bits */
+		} X58;
+	};
+	unsigned short		ChannelCount;
+} MC_REGISTERS;
+
+typedef union
+{
+	union {
+		struct {
+			MCH_CLKCFG		ClkCfg;
+		};
+		struct {
+			X58_MC_CLK_RATIO_STATUS DimmClock;
+			X58_QPI_FREQUENCY	QuickPath;
+		};
+	};
+} BUS_REGISTERS;
+
+
 typedef struct {
 		IDLEDRIVER	IdleDriver;
 
@@ -357,20 +426,10 @@ typedef struct
 	unsigned int		Boost[1+1+8];
 
 	struct {
-		struct {
-			struct {
-				RAM_TIMING	Timing;
-			} Channel[MC_MAX_CHA];
-			unsigned short		ChannelCount;
-		} MC[MC_MAX_CTRL];
-		unsigned short			CtrlCount;
-
-		struct
-		{
-			CLKCFG			ClkCfg;
-		} Bus;
-
-		unsigned short			ChipID;
+		BUS_REGISTERS	Bus;
+		MC_REGISTERS	MC[MC_MAX_CTRL];
+		unsigned short	CtrlCount;
+		unsigned short	ChipID;
 	} Uncore;
 
 	SYSGATE			*SysGate;

@@ -414,9 +414,12 @@ typedef union
 	};
 } LOCAL_APIC;
 
-typedef struct
-{	// Offset: 1210h
-	unsigned int
+
+typedef union
+{	// Offset Channel0: 1210h & Channel1: 1310h
+	unsigned int		value;
+	struct {
+		unsigned int
 		BtoB_RdRd	:  3-0,
 		ReservedBits1	:  5-3,
 		BtoB_WrWr	:  8-5,
@@ -425,15 +428,18 @@ typedef struct
 		ReservedBits3	: 15-14,
 		BtoB_WrRd_DR	: 18-15,
 		ReservedBits4	: 20-18,
-		BtoB_WrRd_SR	: 24-20,
+		tWTR		: 24-20,
 		ReservedBits5	: 26-24,
-		BtoB_Wr2PCSB	: 31-26,
+		tWR		: 31-26,
 		ReservedBits6	: 32-31;
-} I965_MC_DRAM_TIMING_R0;
+	};
+} G965_MC_DRAM_TIMING_R0;
 
-typedef struct
-{	// Offset: 1214h
-	unsigned int
+typedef union
+{	// Offset Channel0: 1214h & Channel1: 1314h
+	unsigned int		value;
+	struct {
+		unsigned int
 		tRP		:  3-0,
 		ReservedBits1	:  5-3,
 		tRCD		:  8-5,
@@ -446,13 +452,16 @@ typedef struct
 		ReservedBits5	: 21-19,
 		tRAS		: 26-21,
 		ReservedBits6	: 28-26,
-		tRTP		: 30-28,
+		tRTPr		: 30-28,
 		ReservedBits7	: 32-30;
-} I965_MC_DRAM_TIMING_R1;
+	};
+} G965_MC_DRAM_TIMING_R1;
 
-typedef struct
-{	// Offset: 1218h
-	unsigned int
+typedef union
+{	// Offset Channel0: 1218h & Channel1: 1318h
+	unsigned int		value;
+	struct {
+		unsigned int
 		ReservedBits1	:  6-0,
 		tXPDLL		: 10-6,
 		ReservedBits2	: 12-10,
@@ -462,11 +471,14 @@ typedef struct
 		ReservedBits4	: 24-22,
 		tCKE		: 27-24,
 		ReservedBits5	: 32-27;
-} I965_MC_DRAM_TIMING_R2;
+	};
+} G965_MC_DRAM_TIMING_R2;
 
-typedef struct
-{	// Offset: 121Ch
-	unsigned int
+typedef union
+{	// Offset Channel0: 121Ch & Channel1: 131Ch
+	unsigned int		value;
+	struct {
+		unsigned int
 		tWL		:  3-0,
 		ReservedBits1	: 13-3,
 		tRFC		: 21-13,
@@ -474,11 +486,39 @@ typedef struct
 		tCL		: 26-23,
 		tXS		: 28-26,
 		ReservedBits3	: 32-28;
-} I965_MC_DRAM_TIMING_R3;
+	};
+} G965_MC_DRAM_TIMING_R3;
 
-typedef  struct
-{	// Offset: 252h
-	unsigned int
+typedef union
+{	// Offset Channel0: 1200h & Channel1: 1300h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Rank0Addr	:  9-0,
+		ReservedBits1	: 16-9,
+		Rank1Addr	: 25-16,
+		ReservedBits2	: 32-25;
+	};
+} G965_MC_DRB_0_1;
+
+
+typedef union
+{	// Offset Channel0: 250h & Channel1: 650h
+	unsigned short		value;
+	struct {
+		unsigned short
+		tPCHG		:  1-0,
+		tRD		:  6-2,
+		tWR		: 11-6,
+		tRAS		: 16-11;
+	};
+} P965_MC_CYCTRK_PCHG;
+
+typedef union
+{	// Offset Channel0: 252h & Channel1: 652h
+	unsigned int		value;
+	struct {
+		unsigned int
 		tRFC		:  9-0,
 		tRPALL		: 13-9,
 		tRP		: 17-13,
@@ -486,103 +526,167 @@ typedef  struct
 		ACT_Disable	: 22-21,
 		ACT_Count	: 28-22,
 		ReservedBits	: 32-28;
+	};
+} P965_MC_CYCTRK_ACT;
+
+typedef union
+{	// Offset Channel0: 256h & Channel1: 656h
+	unsigned short		value;
+	struct {
+		unsigned short
+		tRD_WR		:  4-0,
+		tWR_WR_DR	:  8-4,
+		tWR_WR_SR	: 12-8,
+		tRCD_WR		: 16-12;
+	};
+} P965_MC_CYCTRK_WR;
+
+typedef union
+{	// Offset Channel0: 258h & Channel1: 658h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRD_RD_DR	:  4-0,
+		tRD_RD_SR	:  8-4,
+		tWR_RD		: 11-8,
+		tWTR		: 16-11,
+		tRCD_RD		: 20-16,
+		ReservedBits	: 24-20,
+		tREF		: 32-24;	// Offset 25Bh
+	};
+} P965_MC_CYCTRK_RD;
+
+typedef union
+{	// Offset Channel0: 29Ch & Channel1: 69Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 17-0,
+		tCL		: 20-17,
+		MCH_ODT_Latency : 24-20,
+		ReservedBits2	: 32-24;
+	};
+} P965_MC_ODTCTRL;
+
+typedef union
+{	// Offset Channel0: 260h & Channel1: 660h
+	unsigned int		value;
+	struct {
+		unsigned int
+		SingleDimmPop	:  1-0,
+		tXSNR		: 10-1,
+		tXP		: 14-10,
+		WrODT_Safe	: 15-14,
+		RdODT_Safe	: 16-15,
+		EN_PDN		: 17-16,
+		tCKE_Low	: 20-17,
+		RankPop0	: 21-20,
+		RankPop1	: 22-21,
+		RankPop2	: 23-22,
+		RankPop3	: 24-23,
+		tCKE_High	: 27-24,
+		SRC_START	: 28-27,
+		CLK_WrODT_Safe	: 30-28,
+		CLK_RdODT_Safe	: 32-30;
+	};
+} P965_MC_CKECTRL;
+
+
+typedef union
+{	// Offset Channel0: 250h & Channel1: 650h
+	unsigned short		value;
+	struct {
+		unsigned short
+		tPCHG		:  1-0,
+		tRD		:  6-2,
+		tWR		: 11-6,
+		ReservedBits	: 16-11;
+	};
+} P35_MC_CYCTRK_PCHG;
+
+typedef union
+{	// Offset Channel0: 252h & Channel1: 652h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRFC		:  9-0,
+		tRPALL		: 13-9,
+		tRP		: 17-13,
+		tRRD		: 21-17,
+		ACT_Disable	: 22-21,
+		ACT_Count	: 28-22,
+		ReservedBits	: 32-28;
+	};
 } P35_MC_CYCTRK_ACT;
 
-typedef struct
-{	// Offset: 258h
-	unsigned int
+typedef union
+{	// Offset Channel0: 256h & Channel1: 656h
+	unsigned short		value;
+	struct {
+		unsigned short
+		tRD_WR		:  4-0,
+		tWR_WR_DR	:  8-4,
+		tWR_WR_SR	: 12-8,
+		tRCD_WR		: 16-12;
+	};
+} P35_MC_CYCTRK_WR;
+
+typedef union
+{	// Offset Channel0: 258h & Channel1: 658h
+	unsigned int		value;
+	struct {
+		unsigned int
 		tRD_RD_DR	:  4-0,
 		tRD_RD_SR	:  8-4,
 		tWR_RD		: 12-8,
 		tWTR		: 17-12,
-		tRCD		: 21-17,
-		tREF		: 32-21;
+		tRCD_RD		: 21-17,
+		ReservedBits	: 24-21,
+		tREF		: 32-24;	// Offset 25Bh
+	};
 } P35_MC_CYCTRK_RD;
 
-typedef struct
+typedef union
 {	// Offset: 265h
-	unsigned short int
+	unsigned short		value;
+	struct {
+		unsigned short
 		UnknownBits1	:  8-0,
 		tCL		: 14-8,
 		UnknownBits2	: 16-14;
+	};
 } P35_MC_UNKNOWN_R0;
 
-typedef struct
+typedef union
 {	// Offset: 25Dh
-	unsigned short int
+	unsigned short		value;
+	struct {
+		unsigned short
 		tRAS		:  6-0,
 		UnknownBits	: 16-6;
+	};
 } P35_MC_UNKNOWN_R1;
 
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 70h
-	unsigned int
-		MR0		: 16-0,
-		MR1		: 32-16;
-} X58_MC_MRS_VALUE_0_1;
-
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
-	unsigned int
-		MR2		: 16-0,
-		RC0		: 20-16,
-		RC2		: 24-20,
-		ReservedBits	: 32-24;
-} X58_MC_MRS_VALUE_2;
-
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
-	unsigned int
-		tsrRdTRd	:  1-0,
-		tdrRdTRd	:  4-1,
-		tddRdTRd	:  7-4,
-		tsrRdTWr	: 11-7,
-		tdrRdTWr	: 15-11,
-		tddRdTWr	: 19-15,
-		tsrWrTRd	: 23-19,
-		tdrWrTRd	: 26-23,
-		tddWrTRd	: 29-26,
-		ReservedBits	: 32-29;
-} X58_MC_RANK_TIMING_A;
-
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
-	unsigned int
-		tFAW		:  6-0,
-		tRRD		:  9-6,
-		tsrWrTWr	: 10-9,
-		tdrWrTWr	: 13-10,
-		tddWrTWr	: 16-13,
-		B2B		: 21-16,
-		ReservedBits	: 32-21;
-} X58_MC_RANK_TIMING_B;
-
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
-	unsigned int
-		tRP		:  4-0,
-		tRAS		:  9-4,
-		tRCD		: 13-9,
-		tRTPr		: 17-13,
-		tWTPr		: 22-17,
-		ReservedBits	: 32-22;
-} X58_DRAM_BANK_TIMING;
-
-typedef struct
-{	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
-	unsigned int
-		tRFC		:  9-0,
-		tREFI_8		: 19-9,
-		tTHROT_OPPREF	: 30-19,
-		ReservedBits	: 32-30;
-} X58_DRAM_REFRESH_TIMING;
-
-typedef struct
-{	// 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
-	unsigned int
-		Freq_Select	:  2-0,
-		ReservedBits	: 32-2;
-} QPI_FREQUENCY;
+typedef union
+{	// Offset Channel0: 260h & Channel1: 660h
+	unsigned int		value;
+	struct {
+		unsigned int
+		SingleDimmPop	:  1-0,
+		tXSNR		: 10-1,
+		tXP		: 14-10,
+		ReservedBits1	: 16-14,
+		EN_PDN		: 17-16,
+		tCKE_Low	: 20-17,
+		RankPop0	: 21-20,
+		RankPop1	: 22-21,
+		RankPop2	: 23-22,
+		RankPop3	: 24-23,
+		tCKE_High	: 27-24,
+		SRC_START	: 28-27,
+		ReservedBits2	: 32-28;
+	};
+} P35_MC_CKECTRL;
 
 typedef union
 {
@@ -597,12 +701,149 @@ typedef union
 		EN_DynamicFSB	: 15-14,
 		ReservedBits3	: 32-15;
 	};
-	struct
-	{
-	unsigned int
-		QPI_FreqSel	:  2-0,
-		UnusedBits1	: 16-2,
-		DDR_Ratio	: 21-16,
-		UnusedBits2	: 32-21;
+} MCH_CLKCFG;
+
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 70h
+	unsigned int		value;
+	struct { // Source: Micron DDR3
+		unsigned int
+		BL		:  2-0,
+		ReservedBits1	:  3-2,
+		BT		:  4-3,
+		tCL		:  7-4,
+		ReservedBits2	:  8-7,
+		DLL		:  9-8,
+		tWR		: 12-9,
+		Pchg_PD		: 13-12,
+		MR0		: 16-13,
+		MR1		: 32-16;
 	};
-} CLKCFG;
+} X58_MC_MRS_VALUE_0_1;
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
+	unsigned int		value;
+	struct {
+		unsigned int
+		MR2		: 16-0,
+		RC0		: 20-16,
+		RC2		: 24-20,
+		ReservedBits	: 32-24;
+	};
+} X58_MC_MRS_VALUE_2;
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tsrRdTRd	:  1-0,
+		tdrRdTRd	:  4-1,
+		tddRdTRd	:  7-4,
+		tsrRdTWr	: 11-7,
+		tdrRdTWr	: 15-11,
+		tddRdTWr	: 19-15,
+		tsrWrTRd	: 23-19,
+		tdrWrTRd	: 26-23,
+		tddWrTRd	: 29-26,
+		ReservedBits	: 32-29;
+	};
+} X58_MC_RANK_TIMING_A;
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tFAW		:  6-0,
+		tRRD		:  9-6,
+		tsrWrTWr	: 10-9,
+		tdrWrTWr	: 13-10,
+		tddWrTWr	: 16-13,
+		B2B		: 21-16,
+		ReservedBits	: 32-21;
+	};
+} X58_MC_RANK_TIMING_B;
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRP		:  4-0,
+		tRAS		:  9-4,
+		tRCD		: 13-9,
+		tRTPr		: 17-13,
+		tWTPr		: 22-17,
+		ReservedBits	: 32-22;
+	};
+} X58_MC_BANK_TIMING;
+
+typedef union
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRFC		:  9-0,
+		tREFI_8		: 19-9,
+		tTHROT_OPPREF	: 30-19,
+		ReservedBits	: 32-30;
+	};
+} X58_MC_REFRESH_TIMING;
+
+typedef union
+{	// Device: 3 - Function: 0 - Offset: 48h
+	unsigned int		value;
+	struct {
+		unsigned int
+		CLOSED_PAGE	:  1-0,
+		EN_ECC		:  2-1,
+		AUTOPRECHARGE	:  3-2,
+		CHANNELRESET0	:  4-3,
+		CHANNELRESET1	:  5-4,
+		CHANNELRESET2	:  6-5,
+		DIVBY3EN	:  7-6,
+		INIT_DONE	:  8-7,
+		CHANNEL0_ACTIVE :  9-8,
+		CHANNEL1_ACTIVE : 10-9,
+		CHANNEL2_ACTIVE : 11-10,
+		ReservedBits	: 32-11;
+	};
+} X58_MC_CONTROL;
+
+typedef union
+{	// Device: 3 - Function: 0 - Offset: 4Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		CHANNEL0_DISABLE: 1-0,
+		CHANNEL1_DISABLE: 2-1,
+		CHANNEL2_DISABLE: 3-2,
+		ReservedBits	:  4-3,
+		ECC_ENABLED	:  5-4;
+	};
+} X58_MC_STATUS;
+
+typedef union
+{	// Device: 3 - Function: 4 - Offset: 50h
+	unsigned int		value;
+	struct {
+		unsigned int
+		QCLK_RATIO	:  5-0,
+		ReservedBits1	: 24-5,
+		MAX_RATIO	: 29-24,
+		ReservedBits2	: 32-29;
+	};
+} X58_MC_CLK_RATIO_STATUS;
+
+typedef union
+{	// 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
+	unsigned int		value;
+	struct {
+		unsigned int
+		QPIFREQSEL	:  2-0,
+		ReservedBits	: 32-2;
+	};
+} X58_QPI_FREQUENCY;
