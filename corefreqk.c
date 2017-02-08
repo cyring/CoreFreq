@@ -1237,6 +1237,9 @@ kernel_ulong_t Query_X58_Timing(unsigned short mc, unsigned short cha)
 	pci_read_config_dword(dev, 0x70,
 			      &Proc->Uncore.MC[mc].Channel[cha].X58.MRS.value);
 
+	pci_read_config_dword(dev ,0x80,
+			    &Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.value);
+
 	pci_read_config_dword(dev ,0x84,
 			    &Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.value);
 

@@ -355,6 +355,7 @@ typedef struct
 			} P35;
 			struct {
 				X58_MC_MRS_VALUE_0_1	MRS;
+				X58_MC_RANK_TIMING_A	Rank_A;
 				X58_MC_RANK_TIMING_B	Rank_B;
 				X58_MC_BANK_TIMING	Bank;
 				X58_MC_REFRESH_TIMING	Refresh;

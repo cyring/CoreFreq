@@ -617,26 +617,82 @@ void X58_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL:0;
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL : 0;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
 			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR:0;
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR : 0;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRCD;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRP;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRAS;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tRRD;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Refresh.tRFC;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRTPr;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tWTPr;
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tsrRdTRd) {
+		case 0b0:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 4;
+			break;
+		case 0b1:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 6;
+			break;
+		}
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tdrRdTRd;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tddRdTRd;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tsrRdTWr;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tdrRdTWr;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tddRdTWr;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 10
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tsrWrTRd;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = 1
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tdrWrTRd;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 1
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.tddWrTRd;
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tsrWrTWr) {
+		case 0b0:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 4;
+			break;
+		case 0b1:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 6;
+			break;
+		}
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tdrWrTWr;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 2
+			+ Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tddWrTWr;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.tFAW;
+
 		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.B2B;
 	    }

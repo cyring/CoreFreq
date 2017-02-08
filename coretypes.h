@@ -526,7 +526,19 @@ typedef struct
 		tRTPr,
 		tWTPr,
 		tFAW,
-		B2B;
+		B2B,
+		tsrRdTRd,
+		tdrRdTRd,
+		tddRdTRd,
+		tsrRdTWr,
+		tdrRdTWr,
+		tddRdTWr,
+		tsrWrTRd,
+		tdrWrTRd,
+		tddWrTRd,
+		tsrWrTWr,
+		tdrWrTWr,
+		tddWrTWr;
 	};
 } RAM_TIMING;
 

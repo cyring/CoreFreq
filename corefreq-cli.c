@@ -1351,40 +1351,65 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		va_end(ap);
 	}
 
-	if (OutFunc == NULL) {
-		printv(" Cha ");printv("   CL");printv("  RCD");printv("   RP");
-		printv("  RAS");printv("  RRD");printv("  RFC");printv("   WR");
-		printv(" RTPr");printv(" WTPr");printv("  FAW");printv("  B2B");
-	}
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	    printv("Contr"); printv("oller");
-	    printv(" #%-2u\x20", mc); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("Contro"); printv("ller #");
+	    printv("%-6u", mc); printv("      "); printv("      ");
+	    printv("      ");printv("      ");printv("      ");printv("      ");
+	    printv("      ");printv("      ");printv("      ");printv("      ");
 
-	    printv("     "); printv(" Bus "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.Bus.Speed);
-	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
-	    printv("     "); printv("     "); printv("DRAM "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.CtrlSpeed);
-	    printv(" MHz "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("  Bus "); printv("Speed ");
+	    printv("%6llu", Shm->Uncore.Bus.Speed);
+	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s " : " MHz  ");
+	    printv("      ");printv("      ");printv(" DRAM ");printv("Speed ");
+	    printv("%6llu", Shm->Uncore.CtrlSpeed); printv(" MHz  ");
+	    printv("      "); printv("      "); printv("      ");
 
+	    printv("      ");
+	    printv("      ");printv("      ");printv("      ");printv("      ");
+	    printv("      ");printv("      ");printv("      ");printv("      ");
+	    printv("      ");printv("      ");printv("      ");printv("      ");
+
+	    printv("  Cha ");
+	    printv("    CL");printv("   RCD");printv("    RP");printv("   RAS");
+	    printv("   RRD");printv("   RFC");printv("    WR");printv("  RTPr");
+	    printv("  WTPr");printv("   FAW");printv("   B2B");printv("      ");
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv("\x20\x20#%-2u", cha);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
+		printv("\x20\x20\x20#%-2u", cha);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
+		printv("      ");
+	    }
+	    printv("      ");
+	    printv(" ddWtR"); printv(" drWtR"); printv(" srWtR");
+	    printv(" ddRtW"); printv(" drRtW"); printv(" srRtW");
+	    printv(" ddRtR"); printv(" drRtR"); printv(" srRtR");
+	    printv(" ddWtW"); printv(" drWtW"); printv(" srWtW");
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+		printv("\x20\x20\x20#%-2u", cha);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
+
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
+
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
+
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
 	    }
 	}
 }
@@ -2852,6 +2877,7 @@ void Top(SHM_STRUCT *Shm)
 		Topology(Shm, AddTopologyCell);
 
 		StoreWindow(wTopology,	.title, " Topology ");
+
 		StoreWindow(wTopology,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);
@@ -2869,18 +2895,19 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateMemCtrl(unsigned long long id)
     {
-	unsigned short mc, cha, height = 0;
+	unsigned short mc, cha, rows = 0;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
 		for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-			height++;
-	if (height > 0) {
+			rows++;
+	rows *= 2;
+	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer,
 					id,
-					12,
-					height + 3,
-					15,
+					13,
+					rows + 5,
+					1,
 					TOP_HEADER_ROW + 2);
-		wIMC->matrix.select.row = 3;
+		wIMC->matrix.select.row = 4;
 
 	    void AddMemoryControllerCell(char *input)
 	    {
@@ -2890,10 +2917,7 @@ void Top(SHM_STRUCT *Shm)
 	    if (wIMC != NULL) {
 		MemoryController(Shm, AddMemoryControllerCell);
 
-		StoreWindow(wIMC, .color[1].title,
-			wIMC->hook.color[1].border);
-		StoreWindow(wIMC, .title,
-		" Cha   CL  RCD   RP  RAS  RRD  RFC   WR RTPr WTPr  FAW B2B");
+		StoreWindow(wIMC, .title, " Memory Controller ");
 
 		StoreWindow(wIMC,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wIMC,	.key.Right,	MotionRight_Win);
