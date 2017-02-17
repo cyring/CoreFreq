@@ -1274,6 +1274,32 @@ kernel_ulong_t Query_X58(struct pci_dev *dev, unsigned short mc)
 	return(rc);
 }
 
+void Query_C200(void __iomem *mchmap)
+{	// Source: Intel® Xeon Processor E3-1200 Family
+	unsigned short cha;
+
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
+	Proc->Uncore.MC[0].P35.CKE0.value = readl(mchmap + 0x260);
+	Proc->Uncore.MC[0].P35.CKE1.value = readl(mchmap + 0x660);
+	Proc->Uncore.MC[0].ChannelCount =
+				  (Proc->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
+				+ (Proc->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
+
+	Proc->Uncore.CtrlCount = 1;
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+
+		Proc->Uncore.MC[0].Channel[cha].C200.DBP.value =
+					readl(mchmap + 0x4000 + 0x400 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].C200.RAP.value =
+					readl(mchmap + 0x4004 + 0x400 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].C200.RFTP.value =
+					readl(mchmap + 0x4298 + 0x400 * cha);
+	}
+}
+
 PCI_CALLBACK P965(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, Query_P965));
@@ -1315,6 +1341,11 @@ PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xd0, &Proc->Uncore.Bus.QuickPath.value);
 
 	return(0);
+}
+
+PCI_CALLBACK C200(struct pci_dev *dev)
+{
+	return(Router(dev, 0x48, Query_C200));
 }
 
 static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
@@ -1403,6 +1434,14 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	{	// Nehalem Control Status and RAS Registers
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
 		.driver_data = (kernel_ulong_t) X58_QPI
+	},
+	{	// Sandy Bridge
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
+		.driver_data = (kernel_ulong_t) C200
+	},
+	{	// Ivy Bridge
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea0),
+		.driver_data = (kernel_ulong_t) C200
 	},
 	{0, }
 };

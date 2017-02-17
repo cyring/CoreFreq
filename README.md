@@ -49,7 +49,9 @@ make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
 
 ### Start
 
- 3- Load the kernel module, as root.
+ 3a- Disable nmi_watchdog (See Q&A below).
+
+ 3b- Load the kernel module, as root.
 ```
 modprobe corefreqk
 ```
@@ -154,6 +156,7 @@ insmod corefreqk.ko
 ## Q&A
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
+* Q: UI crash frequently ?
   A: In the kernel command argument line, disable nmi_watchdog, if suitable with your setup.  
   ```
 nmi_watchdog=0

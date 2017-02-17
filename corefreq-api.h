@@ -360,6 +360,11 @@ typedef struct
 				X58_MC_BANK_TIMING	Bank;
 				X58_MC_REFRESH_TIMING	Refresh;
 			} X58;
+			struct {
+	/* 4000h */		C200_TC_DBP		DBP;	/* 32 bits */
+	/* 4004h */		C200_TC_RAP		RAP;	/* 32 bits */
+	/* 4298h */		C200_TC_RFTP		RFTP;	/* 32 bits */
+			} C200;
 		};
 	} Channel[MC_MAX_CHA];
 

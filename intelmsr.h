@@ -847,3 +847,41 @@ typedef union
 		ReservedBits	: 32-2;
 	};
 } X58_QPI_FREQUENCY;
+
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRCD		:  4-0,
+		tRP		:  8-4,
+		tCL		: 12-8,
+		ReservedBits	: 32-12;
+	};
+} C200_TC_DBP;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4400h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRRD		:  4-0,
+		tCAS_RTPr	:  8-4,
+		ReservedBits1	: 12-8,
+		tiWrTRd		: 16-12,
+		srACT		: 24-16,
+		ReservedBits2	: 32-24;
+	};
+} C200_TC_RAP;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tREFI		: 16-0,
+		tRFC		: 25-16,
+		tREFIx9		: 32-25;
+	};
+} C200_TC_RFTP;

@@ -266,6 +266,8 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
+	case 0b111:	// C200 chipset
+		// Fallthrough
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 1066;
 
@@ -719,6 +721,34 @@ void X58_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Bus.Unit = 1; // "MT/s"
 }
 
+void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCL;
+/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;*/
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRCD;
+/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;*/
+	    }
+	}
+}
+
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	switch (Proc->Uncore.ChipID) {
@@ -748,9 +778,14 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		P35_CLK(Shm, Proc, cpu);
 		P4S_MCH(Shm, Proc);
 		break;
-	case 0x2c18:
+	case 0x2c18:	// Nehalem
 		X58_CLK(Shm, Proc, cpu);
 		X58_IMC(Shm, Proc);
+		break;
+	case 0x3ca0:	// Sandy Bridge
+	case 0x0ea0:	// Ivy Bridge
+		P35_CLK(Shm, Proc, cpu);
+		C200_MCH(Shm, Proc);
 		break;
 	}
 }
