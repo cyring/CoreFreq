@@ -885,3 +885,46 @@ typedef union
 		tREFIx9		: 32-25;
 	};
 } C200_TC_RFTP;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_A_Size	:  8-0,
+		Dimm_B_Size	: 16-8,
+		DAS		: 17-16,	// where DIMM A is selected
+		DANOR		: 18-17,	// DIMM A number of ranks
+		DBNOR		: 19-18,	// DIMM B number of ranks
+		DAW		: 20-19,	// DIMM A chips width:0=x8,1=x16
+		DBW		: 21-20,	// DIMM B chips width
+		RI		: 22-21,	// Rank Interleave: 0=OFF, 1=ON
+		ENH_IM		: 23-22,	// Enhanced interleave mode
+		ReservedBits1	: 24-23,
+		ECC		: 26-24,	// active?0=No,1=IO,2=NoIO,3=All
+		ReservedBits2	: 32-26;
+	};
+} C200_MAD_CHANNEL;
+
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4c14h & Channel1:
+	unsigned int		value;
+	struct {
+		unsigned int
+		tCL		:  5-0,
+		tWCL		: 10-5,
+		ReservedBits	: 32-10;
+	};
+} C220_DDR_RANK_TIMING;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4e98h & Channel1:
+	unsigned int		value;
+	struct {
+		unsigned int
+		tREFI		: 16-0,
+		tRFC		: 25-16,
+		tREFIx9		: 32-25;
+	};
+} C220_TC_REFRESH_TIMING;

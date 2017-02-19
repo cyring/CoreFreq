@@ -156,18 +156,14 @@ insmod corefreqk.ko
 ## Q&A
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
-* Q: UI crash frequently ?
-  A: In the kernel command argument line, disable nmi_watchdog, if suitable with your setup.  
+* Q: The CPU ratio does not go above its minimum value ?  
+* Q: UI crash frequently ?  
+  A: In the kernel command argument line, disable nmi_watchdog (if suitable with your setup)  
   ```
 nmi_watchdog=0
 ```
+  A: Check also what the current idle driver is. In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
 
-* Q: The CPU ratio does not go above its minimum value ?  
-  A: Disable nmi_watchdog and check what is the current idle driver by starting the CoreFreq module with the following argument.  
-  ```
-insmod corefreqk.ko IdleDriverQuery=1
-```
-  In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
 
 * Q: The deep sleep states do not produce any value ?  
   A: Check if the intel_idle module is running.  
@@ -176,12 +172,14 @@ insmod corefreqk.ko IdleDriverQuery=1
 intel_idle.max_cstate=value
 ```
 
+
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
   A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
   ```
 insmod corefreqk.ko SleepInterval=value
 ```
   where value is supplied in milliseconds between a minimum of 500 ms and a maximum of 5000 ms. 1000 ms is the default value.  
+
 
 * Q: The base clock reports a wrong frequency value ?  
   A: CoreFreq uses various algorithms to estimate the base clock.  
@@ -195,12 +193,21 @@ insmod corefreqk.ko SleepInterval=value
 insmod corefreqk.ko AutoClock=0
 ```
 
+
 * Q: The CPU temperature is wrong ?  
-  A: CoreFreq employs two msr to calculate the temperature.
+  A: CoreFreq employs two msr to calculate the temperature.  
   ```
 MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 ```
-  If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.
+  If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
+
+
+* Q: The menu option "Memory Ctrl" does not open any window ?  
+  A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
+  ```
+insmod corefreqk.ko Experimental=1
+```
+
 
 ## Algorithm
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq-algorithm.png "CoreFreq algorithm")

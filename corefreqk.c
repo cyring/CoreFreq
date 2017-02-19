@@ -53,6 +53,10 @@ static unsigned int SleepInterval = 0;
 module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
 
+static unsigned int Experimental = 0;
+module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Experimental, "Enable features under development");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -1278,13 +1282,15 @@ void Query_C200(void __iomem *mchmap)
 {	// Source: Intel® Xeon Processor E3-1200 Family
 	unsigned short cha;
 
-	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+/*?*/	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	Proc->Uncore.MC[0].P35.CKE0.value = readl(mchmap + 0x260);
-	Proc->Uncore.MC[0].P35.CKE1.value = readl(mchmap + 0x660);
+	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
 	Proc->Uncore.MC[0].ChannelCount =
-				  (Proc->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
-				+ (Proc->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
+		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
+		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
 
 	Proc->Uncore.CtrlCount = 1;
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
@@ -1297,6 +1303,31 @@ void Query_C200(void __iomem *mchmap)
 
 		Proc->Uncore.MC[0].Channel[cha].C200.RFTP.value =
 					readl(mchmap + 0x4298 + 0x400 * cha);
+	}
+}
+
+void Query_C220(void __iomem *mchmap)
+{	// Source: Desktop 4th Generation Intel® Core™ Processor Family
+	unsigned short cha;
+
+/*?*/	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
+	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+	Proc->Uncore.MC[0].ChannelCount =
+		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
+		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
+
+	Proc->Uncore.CtrlCount = 1;
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Rank.value =
+					readl(mchmap + 0x4c14 + 0x400 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
+					readl(mchmap + 0x4e98 + 0x400 * cha);
 	}
 }
 
@@ -1346,6 +1377,11 @@ PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 PCI_CALLBACK C200(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, Query_C200));
+}
+
+PCI_CALLBACK C220(struct pci_dev *dev)
+{
+	return(Router(dev, 0x48, Query_C220));
 }
 
 static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
@@ -1442,6 +1478,10 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	{	// Ivy Bridge
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea0),
 		.driver_data = (kernel_ulong_t) C200
+	},
+	{	// Haswell
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa0),
+		.driver_data = (kernel_ulong_t) C220
 	},
 	{0, }
 };
@@ -2981,7 +3021,9 @@ static int __init CoreFreqK_init(void)
 
 				Controller_Start();
 
-			    pci_register_driver(&CoreFreqK_pci_driver);
+			    if (Experimental)
+				pci_register_driver(&CoreFreqK_pci_driver);
+
 			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
 
 			    } else {
@@ -3054,7 +3096,9 @@ static void __exit CoreFreqK_cleanup(void)
 	unsigned int cpu = 0;
 
 	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
-	pci_unregister_driver(&CoreFreqK_pci_driver);
+
+	if (Experimental)
+		pci_unregister_driver(&CoreFreqK_pci_driver);
 
 	Controller_Stop();
 	Controller_Exit();

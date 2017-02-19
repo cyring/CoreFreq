@@ -365,26 +365,34 @@ typedef struct
 	/* 4004h */		C200_TC_RAP		RAP;	/* 32 bits */
 	/* 4298h */		C200_TC_RFTP		RFTP;	/* 32 bits */
 			} C200;
+			struct {
+	/* 4c14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
+	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
+			} C220;
 		};
 	} Channel[MC_MAX_CHA];
 
 	union {
 		struct {
-	/* 260h */	P965_MC_CKECTRL	CKE0,	/* 32 bits */
-					CKE1;	/* 32 bits */
+	/* 260h */	P965_MC_CKECTRL	CKE0,		/* 32 bits */
+					CKE1;		/* 32 bits */
 		} P965;
 		struct {
 	/* 1200h */	G965_MC_DRB_0_1 DRB0,	/* 32 bits @ channel0 */
 	/* 1300h*/			DRB1;	/* 32 bits @ channel1 */
 		} G965;
 		struct {
-	/* 260h */	P35_MC_CKECTRL	CKE0,	/* 32 bits */
-					CKE1;	/* 32 bits */
+	/* 260h */	P35_MC_CKECTRL	CKE0,		/* 32 bits */
+					CKE1;		/* 32 bits */
 		} P35;
 		struct {
 	/* 3:0-48h */	X58_MC_CONTROL	CONTROL;	/* 32 bits */
 	/* 3:0 4Ch*/	X58_MC_STATUS	STATUS;		/* 32 bits */
 		} X58;
+		struct {
+	/* 5004h */	C200_MAD_CHANNEL MAD0,		/* 32 bits */
+	/* 5008h */			 MAD1;		/* 32 bits */
+		} C200;
 	};
 	unsigned short		ChannelCount;
 } MC_REGISTERS;

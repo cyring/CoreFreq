@@ -266,7 +266,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
-	case 0b111:	// C200 chipset
+	case 0b111:	// Unknown
 		// Fallthrough
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 1066;
@@ -734,7 +734,7 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCL;
 /*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].P35.DRT1.tWR;*/
+			Proc->Uncore.MC[mc].Channel[cha].C200._.tWR;*/
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
@@ -744,7 +744,72 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRCD;
 /*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;*/
+			Proc->Uncore.MC[mc].Channel[cha].C200._.tRAS;*/
+	    }
+	}
+}
+
+void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+	case 0b111:
+		Shm->Uncore.CtrlSpeed = 1067;
+		break;
+	case 0b110:
+		Shm->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b101:
+		Shm->Uncore.CtrlSpeed = 1600;
+		break;
+	case 0b100:
+		Shm->Uncore.CtrlSpeed = 1867;
+		break;
+	case 0b011:
+		Shm->Uncore.CtrlSpeed = 2133;
+		break;
+	case 0b010:
+		Shm->Uncore.CtrlSpeed = 2400;
+		break;
+	case 0b000:
+		// Fallthrough
+	case 0b001:
+		Shm->Uncore.CtrlSpeed = 2667;
+		break;
+	}
+	Shm->Uncore.Bus.Rate = 5000;
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+}
+
+void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned short mc, cha;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCL;
+/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tWR;*/
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].C220.Refresh.tRFC;
+/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tRP;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tRRD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tRCD;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tRAS;*/
 	    }
 	}
 }
@@ -784,8 +849,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	case 0x3ca0:	// Sandy Bridge
 	case 0x0ea0:	// Ivy Bridge
-		P35_CLK(Shm, Proc, cpu);
+		C200_CLK(Shm, Proc, cpu);
 		C200_MCH(Shm, Proc);
+		break;
+	case 0x2fa0:	// Haswell
+		C200_CLK(Shm, Proc, cpu);
+		C220_MCH(Shm, Proc);
 		break;
 	}
 }
