@@ -848,11 +848,14 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		X58_IMC(Shm, Proc);
 		break;
 	case 0x3ca0:	// Sandy Bridge
+	case 0x3ca8:
 	case 0x0ea0:	// Ivy Bridge
+	case 0x0ea8:
 		C200_CLK(Shm, Proc, cpu);
 		C200_MCH(Shm, Proc);
 		break;
 	case 0x2fa0:	// Haswell
+	case 0x2fa8:
 		C200_CLK(Shm, Proc, cpu);
 		C220_MCH(Shm, Proc);
 		break;

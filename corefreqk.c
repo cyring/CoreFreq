@@ -1471,16 +1471,34 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
-	{	// Sandy Bridge
+	// Sandy Bridge, Xeon E5: HA=0x3ca0 / IMC=0x3ca8 /
+	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
+	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C200
 	},
-	{	// Ivy Bridge
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3ca8),
+		.driver_data = (kernel_ulong_t) C200
+	},
+	// Ivy Bridge, Xeon E7/E5 v2: HA=0x0ea0 / IMC=0x0ea8
+	// TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead
+	{
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea0),
 		.driver_data = (kernel_ulong_t) C200
 	},
-	{	// Haswell
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea8),
+		.driver_data = (kernel_ulong_t) C200
+	},
+	// Haswell, Xeon E7/E5 v3: HA=0x2fa0 / TA_THM_RAS=0x2fa8
+	// TA0=0x2faa / TA1=0x2fab / TA2=0x2fac / TA3=0x2fad
+	{
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa0),
+		.driver_data = (kernel_ulong_t) C220
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa8),
 		.driver_data = (kernel_ulong_t) C220
 	},
 	{0, }
