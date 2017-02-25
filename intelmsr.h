@@ -727,12 +727,18 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		MR2		: 16-0,
-		RC0		: 20-16,
-		RC2		: 24-20,
-		ReservedBits	: 32-24;
+		ReservedBits1	:  3-0,
+		tWL		:  6-3,
+		ASR		:  7-6,
+		SRT		:  8-7,
+		ReservedBits2	:  9-8,
+		ODT_Rtt_Wr	: 11-9,
+		ReservedBits3	: 16-11,
+		RC0		: 20-16,	// RDIMMS
+		RC2		: 24-20,	// RDIMMS
+		MR3		: 32-24;
 	};
-} X58_MC_MRS_VALUE_2;
+} X58_MC_MRS_VALUE_2_3;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
@@ -818,9 +824,9 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		CHANNEL0_DISABLE: 1-0,
-		CHANNEL1_DISABLE: 2-1,
-		CHANNEL2_DISABLE: 3-2,
+		CHANNEL0_DISABLE:  1-0,
+		CHANNEL1_DISABLE:  2-1,
+		CHANNEL2_DISABLE:  3-2,
 		ReservedBits	:  4-3,
 		ECC_ENABLED	:  5-4;
 	};

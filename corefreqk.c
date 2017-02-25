@@ -1239,7 +1239,10 @@ kernel_ulong_t Query_X58_Timing(unsigned short mc, unsigned short cha)
     struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did[cha], NULL);
     if(dev != NULL) {
 	pci_read_config_dword(dev, 0x70,
-			      &Proc->Uncore.MC[mc].Channel[cha].X58.MRS.value);
+			    &Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.value);
+
+	pci_read_config_dword(dev, 0x74,
+			    &Proc->Uncore.MC[mc].Channel[cha].X58.MR2_3.value);
 
 	pci_read_config_dword(dev ,0x80,
 			    &Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.value);
@@ -2441,6 +2444,24 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
+/* ToDo: Package C-state Residency Counters
+		if (Core->T.Base.BSP) {
+			RDCOUNTER(Proc->Counter[1].PC03, MSR_PKG_C3_RESIDENCY);
+			RDCOUNTER(Proc->Counter[1].PC06, MSR_PKG_C6_RESIDENCY);
+			RDCOUNTER(Proc->Counter[1].PC07, MSR_PKG_C7_RESIDENCY);
+
+			Proc->Delta.PC03 = Proc->Counter[1].PC03
+					 - Proc->Counter[0].PC03;
+			Proc->Delta.PC06 = Proc->Counter[1].PC06
+					 - Proc->Counter[0].PC06;
+			Proc->Delta.PC07 = Proc->Counter[1].PC07
+					 - Proc->Counter[0].PC07;
+
+			Proc->Counter[0].PC03 = Proc->Counter[1].PC03;
+			Proc->Counter[0].PC06 = Proc->Counter[1].PC06;
+			Proc->Counter[0].PC07 = Proc->Counter[1].PC07;
+		}
+*/
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);

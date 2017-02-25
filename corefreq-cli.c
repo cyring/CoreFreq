@@ -1372,7 +1372,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	    printv("  Cha ");
 	    printv("    CL");printv("   RCD");printv("    RP");printv("   RAS");
 	    printv("   RRD");printv("   RFC");printv("    WR");printv("  RTPr");
-	    printv("  WTPr");printv("   FAW");printv("   B2B");printv("      ");
+	    printv("  WTPr");printv("   FAW");printv("   B2B");printv("    WL");
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 		printv("\x20\x20\x20#%-2u", cha);
 		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
@@ -1386,7 +1386,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
 		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
 		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
-		printv("      ");
+		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWL);
 	    }
 	    printv("      ");
 	    printv(" ddWtR"); printv(" drWtR"); printv(" srWtR");

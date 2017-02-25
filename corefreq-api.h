@@ -354,7 +354,8 @@ typedef struct
 	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits */
 			} P35;
 			struct {
-				X58_MC_MRS_VALUE_0_1	MRS;
+				X58_MC_MRS_VALUE_0_1	MR0_1;
+				X58_MC_MRS_VALUE_2_3	MR2_3;
 				X58_MC_RANK_TIMING_A	Rank_A;
 				X58_MC_RANK_TIMING_B	Rank_B;
 				X58_MC_BANK_TIMING	Bank;
@@ -427,6 +428,29 @@ typedef struct {
 
 typedef struct
 {
+/* ToDo: Package C-state Residency Counters
+	struct
+	{
+	    unsigned long long	PC02, // Goldmont, Sandy-Bridge, Phi
+				PC03, // Goldmont, Nehalem, Sandy-Bridge, Phi
+				PC06, // Goldmont, Nehalem, Sandy-Bridge, Phi
+				PC07, // Nehalem, Sandy-Bridge, Phi
+				PC08, // Haswell
+				PC09, // Haswell
+				PC10; // Goldmont, Haswell
+	} Counter[2];
+
+	struct
+	{
+	    unsigned long long	PC02,
+				PC03,
+				PC06,
+				PC07,
+				PC08,
+				PC09,
+				PC10;
+	} Delta;
+*/
 	FEATURES		Features;
 
 	unsigned int		SleepInterval;

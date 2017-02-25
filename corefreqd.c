@@ -148,17 +148,18 @@ static void *Core_Cycle(void *arg)
 		Flip->Thermal.Trip   = Core->PowerThermal.Trip;
 		Flip->Thermal.Sensor = Core->PowerThermal.Sensor;
 
-		if (thermalFormula == 0x01)
+		if (thermalFormula == 0x01) {
 			Flip->Thermal.Temp = Cpu->PowerThermal.Target
 					   - Flip->Thermal.Sensor;
-		else if (thermalFormula == 0x10)
+		}
+		else if (thermalFormula == 0x10) {
 			Flip->Thermal.Temp = Flip->Thermal.Sensor
 					  - (Cpu->PowerThermal.Target * 2) - 49;
-
-	    if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
-		Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
-	    if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
-		Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
+		}
+		if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
+			Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
+		if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
+			Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 	    }
 	} while (!Shutdown && !Core->OffLine.OS) ;
 
@@ -433,10 +434,13 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 				Proc->Uncore.MC[mc].Channel[cha].G965.DRT3.tCL;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 				Proc->Uncore.MC[mc].Channel[cha].G965.DRT3.tRFC;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  =
+				Proc->Uncore.MC[mc].Channel[cha].G965.DRT3.tWL;
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD += 2;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  += 2;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  += 2;
 	    }
 	}
 }
@@ -565,6 +569,7 @@ void P3S_MCH(SHM_STRUCT *Shm, PROC *Proc, unsigned short mc, unsigned short cha)
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  = ?
 */
 }
 
@@ -618,12 +623,12 @@ void X58_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tCL : 0;
+			Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.tCL ?
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.tCL : 0;
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
-			Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MRS.tWR : 0;
+			Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.tWR ?
+			4 + Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.tWR : 0;
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Bank.tRCD;
@@ -697,6 +702,21 @@ void X58_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
 			Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.B2B;
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].X58.MR2_3.tWL) {
+		case 0b000:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWL = 5;
+			break;
+		case 0b001:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWL = 6;
+			break;
+		case 0b010:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWL = 7;
+			break;
+		case 0b011:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWL = 8;
+			break;
+		}
 	    }
 	}
 }
@@ -733,8 +753,10 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCL;
-/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C200._.tWR;*/
+/*?
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].C200._.tWR;
+*/
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
@@ -743,8 +765,11 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRRD;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRCD;
-/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].C200._.tRAS;*/
+/*?
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].C200._.tRAS;
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  = ?
+*/
 	    }
 	}
 }
@@ -798,18 +823,24 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCL;
-/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tWR;*/
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  =
+			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tWCL;
+/*?
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tWR;
+*/
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].C220.Refresh.tRFC;
-/*?		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+/*?
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
 			Proc->Uncore.MC[mc].Channel[cha].C220._.tRP;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
 			Proc->Uncore.MC[mc].Channel[cha].C220._.tRRD;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].C220._.tRCD;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tRAS;*/
+			Proc->Uncore.MC[mc].Channel[cha].C220._.tRAS;
+*/
 	    }
 	}
 }
@@ -1467,6 +1498,19 @@ void Core_Manager(FD *fd,
 					SysGate_Update(Shm, *SysGate);
 			}
 		}
+
+/* ToDo: Package C-state Residency Counters
+		if (Quiet & 0x100) {
+			printf( "\tThread [%lx]\n"	\
+				"\tPC3=%llu\n"			\
+				"\tPC6=%llu\n"			\
+				"\tPC7=%llu\n",
+				tid,
+				Proc->Delta.PC03,
+				Proc->Delta.PC06,
+				Proc->Delta.PC07);
+		}
+*/
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
 	}
