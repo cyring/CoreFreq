@@ -479,7 +479,7 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tWL		:  3-0,
+		tCWL		:  3-0,
 		ReservedBits1	: 13-3,
 		tRFC		: 21-13,
 		ReservedBits2	: 23-21,
@@ -728,7 +728,7 @@ typedef union
 	struct {
 		unsigned int
 		ReservedBits1	:  3-0,
-		tWL		:  6-3,
+		tCWL		:  6-3,
 		ASR		:  7-6,
 		SRT		:  8-7,
 		ReservedBits2	:  9-8,
@@ -919,7 +919,7 @@ typedef union
 	struct {
 		unsigned int
 		tCL		:  5-0,
-		tWCL		: 10-5,
+		tCWL		: 10-5,
 		ReservedBits	: 32-10;
 	};
 } C220_DDR_RANK_TIMING;

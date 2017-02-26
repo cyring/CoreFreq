@@ -527,7 +527,7 @@ typedef struct
 		tWTPr,
 		tFAW,
 		B2B,
-		tWL,
+		tCWL,
 		tsrRdTRd,
 		tdrRdTRd,
 		tddRdTRd,
