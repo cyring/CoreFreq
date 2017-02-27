@@ -1474,10 +1474,11 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
+/* ToDo: IMC for Generation 2++
 	// Sandy Bridge, Xeon E5: HA=0x3ca0 / IMC=0x3ca8 /
 	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3ca0),
 		.driver_data = (kernel_ulong_t) C200
 	},
 	{
@@ -1504,6 +1505,7 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa8),
 		.driver_data = (kernel_ulong_t) C220
 	},
+*/
 	{0, }
 };
 
@@ -3061,7 +3063,7 @@ static int __init CoreFreqK_init(void)
 				Controller_Start();
 
 			    if (Experimental)
-				pci_register_driver(&CoreFreqK_pci_driver);
+				rc = pci_register_driver(&CoreFreqK_pci_driver);
 
 			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
 
