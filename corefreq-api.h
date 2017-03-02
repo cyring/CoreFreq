@@ -354,13 +354,14 @@ typedef struct
 	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits */
 			} P35;
 			struct {
-				X58_MC_MRS_VALUE_0_1	MR0_1;
-				X58_MC_MRS_VALUE_2_3	MR2_3;
-				X58_MC_RANK_TIMING_A	Rank_A;
-				X58_MC_RANK_TIMING_B	Rank_B;
-				X58_MC_BANK_TIMING	Bank;
-				X58_MC_REFRESH_TIMING	Refresh;
-			} X58;
+				NHM_IMC_MRS_VALUE_0_1	MR0_1;
+				NHM_IMC_MRS_VALUE_2_3	MR2_3;
+				NHM_IMC_RANK_TIMING_A	Rank_A;
+				NHM_IMC_RANK_TIMING_B	Rank_B;
+				NHM_IMC_BANK_TIMING	Bank;
+				NHM_IMC_REFRESH_TIMING	Refresh;
+				NHM_IMC_SCHEDULER_PARAMS Params;
+			} NHM;
 			struct {
 	/* 4000h */		C200_TC_DBP		DBP;	/* 32 bits */
 	/* 4004h */		C200_TC_RAP		RAP;	/* 32 bits */
@@ -371,6 +372,7 @@ typedef struct
 	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} C220;
 		};
+		unsigned int DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
 	union {
@@ -387,9 +389,9 @@ typedef struct
 					CKE1;		/* 32 bits */
 		} P35;
 		struct {
-	/* 3:0-48h */	X58_MC_CONTROL	CONTROL;	/* 32 bits */
-	/* 3:0 4Ch*/	X58_MC_STATUS	STATUS;		/* 32 bits */
-		} X58;
+	/* 3:0-48h */	NHM_IMC_CONTROL CONTROL;	/* 32 bits */
+	/* 3:0 4Ch*/	NHM_IMC_STATUS	STATUS;		/* 32 bits */
+		} NHM;
 		struct {
 	/* 5004h */	C200_MAD_CHANNEL MAD0,		/* 32 bits */
 	/* 5008h */			 MAD1;		/* 32 bits */
@@ -405,7 +407,7 @@ typedef union
 			MCH_CLKCFG		ClkCfg;
 		};
 		struct {
-			X58_MC_CLK_RATIO_STATUS DimmClock;
+			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			X58_QPI_FREQUENCY	QuickPath;
 		};
 	};

@@ -511,6 +511,81 @@ typedef struct	// BSP CPUID features.
 
 #define MC_MAX_CTRL	2
 #define MC_MAX_CHA	4
+#define MC_MAX_DIMM	3
+
+// Source: /drivers/char/agp/intel-agp.h
+#ifndef PCI_DEVICE_ID_INTEL_82946GZ_HB
+	#define PCI_DEVICE_ID_INTEL_82946GZ_HB		0x2970
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965Q_HB
+	#define PCI_DEVICE_ID_INTEL_82965Q_HB		0x2990
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965G_HB
+	#define PCI_DEVICE_ID_INTEL_82965G_HB		0x29a0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965GM_HB
+	#define PCI_DEVICE_ID_INTEL_82965GM_HB		0x2a00
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965GME_HB
+	#define PCI_DEVICE_ID_INTEL_82965GME_HB 	0x2a10
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_GM45_HB
+	#define PCI_DEVICE_ID_INTEL_GM45_HB		0x2a40
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_Q35_HB
+	#define PCI_DEVICE_ID_INTEL_Q35_HB		0x29b0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G33_HB
+	#define PCI_DEVICE_ID_INTEL_G33_HB		0x29c0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_Q33_HB
+	#define PCI_DEVICE_ID_INTEL_Q33_HB		0x29d0
+#endif
+// Source: /drivers/edac/x38_edac.c
+#ifndef PCI_DEVICE_ID_INTEL_X38_HB
+	#define PCI_DEVICE_ID_INTEL_X38_HB		0x29e0
+#endif
+// Source: /drivers/edac/i3200_edac.c
+#ifndef PCI_DEVICE_ID_INTEL_3200_HB
+	#define PCI_DEVICE_ID_INTEL_3200_HB		0x29f0
+#endif
+// Source: /drivers/char/agp/intel-agp.h
+#ifndef PCI_DEVICE_ID_INTEL_Q45_HB
+	#define PCI_DEVICE_ID_INTEL_Q45_HB		0x2e10
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G45_HB
+	#define PCI_DEVICE_ID_INTEL_G45_HB		0x2e20
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G41_HB
+	#define PCI_DEVICE_ID_INTEL_G41_HB		0x2e30
+#endif
+// Source: /include/linux/pci_ids.h
+#ifndef PCI_DEVICE_ID_INTEL_I7_MCR
+	#define PCI_DEVICE_ID_INTEL_I7_MCR		0x2c18
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL	0x2c20
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL	0x2c28
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL	0x2c30
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_TEST
+	#define PCI_DEVICE_ID_INTEL_I7_MC_TEST		0x2c1c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR	0x2c21
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR	0x2c29
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR	0x2c31
+#endif
+// Source: Intel X58 Express Chipset Datasheet
+#define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
 
 typedef struct
 {
@@ -528,6 +603,7 @@ typedef struct
 		tFAW,
 		B2B,
 		tCWL,
+		CMD_Rate,
 		tsrRdTRd,
 		tdrRdTRd,
 		tddRdTRd,

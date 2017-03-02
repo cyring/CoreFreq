@@ -720,7 +720,7 @@ typedef union
 		MR0		: 16-13,
 		MR1		: 32-16;
 	};
-} X58_MC_MRS_VALUE_0_1;
+} NHM_IMC_MRS_VALUE_0_1;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
@@ -738,7 +738,7 @@ typedef union
 		RC2		: 24-20,	// RDIMMS
 		MR3		: 32-24;
 	};
-} X58_MC_MRS_VALUE_2_3;
+} NHM_IMC_MRS_VALUE_2_3;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
@@ -756,7 +756,7 @@ typedef union
 		tddWrTRd	: 29-26,
 		ReservedBits	: 32-29;
 	};
-} X58_MC_RANK_TIMING_A;
+} NHM_IMC_RANK_TIMING_A;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
@@ -771,7 +771,7 @@ typedef union
 		B2B		: 21-16,
 		ReservedBits	: 32-21;
 	};
-} X58_MC_RANK_TIMING_B;
+} NHM_IMC_RANK_TIMING_B;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
@@ -785,7 +785,7 @@ typedef union
 		tWTPr		: 22-17,
 		ReservedBits	: 32-22;
 	};
-} X58_MC_BANK_TIMING;
+} NHM_IMC_BANK_TIMING;
 
 typedef union
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
@@ -797,7 +797,7 @@ typedef union
 		tTHROT_OPPREF	: 30-19,
 		ReservedBits	: 32-30;
 	};
-} X58_MC_REFRESH_TIMING;
+} NHM_IMC_REFRESH_TIMING;
 
 typedef union
 {	// Device: 3 - Function: 0 - Offset: 48h
@@ -817,7 +817,7 @@ typedef union
 		CHANNEL2_ACTIVE : 11-10,
 		ReservedBits	: 32-11;
 	};
-} X58_MC_CONTROL;
+} NHM_IMC_CONTROL;
 
 typedef union
 {	// Device: 3 - Function: 0 - Offset: 4Ch
@@ -830,7 +830,7 @@ typedef union
 		ReservedBits	:  4-3,
 		ECC_ENABLED	:  5-4;
 	};
-} X58_MC_STATUS;
+} NHM_IMC_STATUS;
 
 typedef union
 {	// Device: 3 - Function: 4 - Offset: 50h
@@ -842,14 +842,29 @@ typedef union
 		MAX_RATIO	: 29-24,
 		ReservedBits2	: 32-29;
 	};
-} X58_MC_CLK_RATIO_STATUS;
+} NHM_IMC_CLK_RATIO_STATUS;
 
 typedef union
-{	// 00=4800 GT/s, 10=6400 GT/s , 01 & 11=Reserved
+{	// Device: 4, 5, 6 - Function: 0 - Offset: B8h
 	unsigned int		value;
 	struct {
 		unsigned int
-		QPIFREQSEL	:  2-0,
+		PRIORITY_CNT	:  3-0,
+		ENABLE_2N	:  5-3,
+		DIS_ISOC_RBC	:  6-5,
+		PRE_CAS_THRSHLD : 11-6,
+		FLOAT_EN	: 12-11,
+		CS_FOR_CKE_TRANS: 13-12,
+		ReservedBits	: 32-13;
+	};
+} NHM_IMC_SCHEDULER_PARAMS;
+
+typedef union
+{	// X58 IOH Control Status & RAS Registers: Dev: 20 - Func: 2 - Off: D0h
+	unsigned int		value;
+	struct {
+		unsigned int
+		QPIFREQSEL	:  2-0, // 00=4800 GT/s, 10=6400 GT/s
 		ReservedBits	: 32-2;
 	};
 } X58_QPI_FREQUENCY;

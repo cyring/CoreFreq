@@ -1229,7 +1229,7 @@ void Query_P35(void __iomem *mchmap)
 	}
 }
 
-kernel_ulong_t Query_X58_Timing(unsigned short mc, unsigned short cha)
+kernel_ulong_t Query_NHM_Timing(unsigned short mc, unsigned short cha)
 {	// Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset
     unsigned int did[3] = {
 			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
@@ -1239,22 +1239,25 @@ kernel_ulong_t Query_X58_Timing(unsigned short mc, unsigned short cha)
     struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did[cha], NULL);
     if(dev != NULL) {
 	pci_read_config_dword(dev, 0x70,
-			    &Proc->Uncore.MC[mc].Channel[cha].X58.MR0_1.value);
+			    &Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.value);
 
 	pci_read_config_dword(dev, 0x74,
-			    &Proc->Uncore.MC[mc].Channel[cha].X58.MR2_3.value);
+			    &Proc->Uncore.MC[mc].Channel[cha].NHM.MR2_3.value);
 
 	pci_read_config_dword(dev ,0x80,
-			    &Proc->Uncore.MC[mc].Channel[cha].X58.Rank_A.value);
+			    &Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.value);
 
 	pci_read_config_dword(dev ,0x84,
-			    &Proc->Uncore.MC[mc].Channel[cha].X58.Rank_B.value);
+			    &Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.value);
 
 	pci_read_config_dword(dev ,0x88,
-			      &Proc->Uncore.MC[mc].Channel[cha].X58.Bank.value);
+			      &Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.value);
 
 	pci_read_config_dword(dev ,0x8c,
-			   &Proc->Uncore.MC[mc].Channel[cha].X58.Refresh.value);
+			   &Proc->Uncore.MC[mc].Channel[cha].NHM.Refresh.value);
+
+	pci_read_config_dword(dev, 0xb8,
+			    &Proc->Uncore.MC[mc].Channel[cha].NHM.Params.value);
 
 	pci_dev_put(dev);
 	return(0);
@@ -1262,21 +1265,45 @@ kernel_ulong_t Query_X58_Timing(unsigned short mc, unsigned short cha)
 	return(-ENODEV);
 }
 
-kernel_ulong_t Query_X58(struct pci_dev *dev, unsigned short mc)
+kernel_ulong_t Query_NHM_DIMM(unsigned short mc, unsigned short cha)
+{
+    unsigned int did[3] = {
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+		};
+    struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did[cha], NULL);
+    if(dev != NULL) {
+	pci_read_config_dword(dev, 0x48,
+			    &Proc->Uncore.MC[mc].Channel[cha].DIMM[0]);
+
+	pci_read_config_dword(dev, 0x4c,
+			    &Proc->Uncore.MC[mc].Channel[cha].DIMM[1]);
+
+	pci_read_config_dword(dev, 0x50,
+			    &Proc->Uncore.MC[mc].Channel[cha].DIMM[2]);
+
+	pci_dev_put(dev);
+	return(0);
+    } else
+	return(-ENODEV);
+}
+
+kernel_ulong_t Query_NHM_IMC(struct pci_dev *dev, unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short cha;
 
-	pci_read_config_dword(dev,0x48, &Proc->Uncore.MC[mc].X58.CONTROL.value);
-	pci_read_config_dword(dev,0x4c, &Proc->Uncore.MC[mc].X58.STATUS.value);
+	pci_read_config_dword(dev,0x48, &Proc->Uncore.MC[mc].NHM.CONTROL.value);
+	pci_read_config_dword(dev,0x4c, &Proc->Uncore.MC[mc].NHM.STATUS.value);
 
 	Proc->Uncore.MC[mc].ChannelCount =
-		  (Proc->Uncore.MC[mc].X58.CONTROL.CHANNEL0_ACTIVE != 0)
-		+ (Proc->Uncore.MC[mc].X58.CONTROL.CHANNEL1_ACTIVE != 0)
-		+ (Proc->Uncore.MC[mc].X58.CONTROL.CHANNEL2_ACTIVE != 0);
+		  (Proc->Uncore.MC[mc].NHM.CONTROL.CHANNEL0_ACTIVE != 0)
+		+ (Proc->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0)
+		+ (Proc->Uncore.MC[mc].NHM.CONTROL.CHANNEL2_ACTIVE != 0);
 
 	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
-		rc = Query_X58_Timing(mc, cha);
+		rc = Query_NHM_Timing(mc, cha) & Query_NHM_DIMM(mc, cha);
 	}
 	return(rc);
 }
@@ -1349,7 +1376,7 @@ PCI_CALLBACK P35(struct pci_dev *dev)
 	return(Router(dev, 0x48, Query_P35));
 }
 
-PCI_CALLBACK X58_IMC(struct pci_dev *dev)
+PCI_CALLBACK NHM_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short mc;
@@ -1358,12 +1385,12 @@ PCI_CALLBACK X58_IMC(struct pci_dev *dev)
 
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
-		rc = Query_X58(dev, mc);
+		rc = Query_NHM_IMC(dev, mc);
 
 	return((PCI_CALLBACK) rc);
 }
 
-PCI_CALLBACK X58_IMC_TR(struct pci_dev *dev)
+PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0x50, &Proc->Uncore.Bus.DimmClock.value);
 
@@ -1407,71 +1434,71 @@ static void CoreFreqK_RemovePCI(struct pci_dev *dev)
 
 static struct pci_device_id CoreFreqK_pci_ids[] = {
 	{	// i946 - Lakeport
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2970),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	// Q963/Q965 - Broadwater
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2990),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965Q_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	// P965/G965 - Broadwater
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29a0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965G_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
 	{	// GM965 - Crestline
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2a00),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GM_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	// GME965
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2a10),
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GME_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	// GM45 - Cantiga
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2a40),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GM45_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
 	{	// Q35 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29b0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// P35/G33 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29c0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// Q33 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29d0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// X38/X48 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29e0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X38_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// 3200/3210 - Unknown
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x29f0),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_3200_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// Q45/Q43 - Unknown
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2e10),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// P45/G45 - Eaglelake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2e20),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// G41 - Eaglelake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2e30),
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{	// Nehalem IMC
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
-		.driver_data = (kernel_ulong_t) X58_IMC
+		.driver_data = (kernel_ulong_t) NHM_IMC
 	},
 	{	// Nehalem IMC
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
-		.driver_data = (kernel_ulong_t) X58_IMC_TR
+		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
 	{	// Nehalem Control Status and RAS Registers
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3423),
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
 /* ToDo: IMC for Generation 2++

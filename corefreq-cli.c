@@ -1330,7 +1330,7 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
-	unsigned int nl = 12;
+	unsigned int nl = 14;
 	unsigned short mc, cha;
 	char line[8];
 
@@ -1341,7 +1341,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		vsprintf(line, fmt, ap);
 		if (OutFunc == NULL)
 			if (!--nl) {
-				nl = 12;
+				nl = 14;
 				printf("%s\n", line);
 			}
 			else
@@ -1352,64 +1352,72 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	}
 
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	    printv("Contro"); printv("ller #");
-	    printv("%-6u", mc); printv("      "); printv("      ");
-	    printv("      ");printv("      ");printv("      ");printv("      ");
-	    printv("      ");printv("      ");printv("      ");printv("      ");
+	    printv("Contr"); printv("oller");
+	    printv(" #%-3u", mc); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     ");
 
-	    printv("  Bus "); printv("Speed ");
-	    printv("%6llu", Shm->Uncore.Bus.Speed);
-	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s " : " MHz  ");
-	    printv("      ");printv("      ");printv(" DRAM ");printv("Speed ");
-	    printv("%6llu", Shm->Uncore.CtrlSpeed); printv(" MHz  ");
-	    printv("      "); printv("      "); printv("      ");
+	    printv(" Bus "); printv("Speed");
+	    printv("%5llu", Shm->Uncore.Bus.Speed);
+	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
+	    printv("     ");printv("     ");printv("DRAM "); printv("Speed");
+	    printv("%5llu", Shm->Uncore.CtrlSpeed); printv(" MHz ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    printv("      ");
-	    printv("      ");printv("      ");printv("      ");printv("      ");
-	    printv("      ");printv("      ");printv("      ");printv("      ");
-	    printv("      ");printv("      ");printv("      ");printv("      ");
+	    printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    printv("  Cha ");
-	    printv("    CL");printv("   RCD");printv("    RP");printv("   RAS");
-	    printv("   RRD");printv("   RFC");printv("    WR");printv("  RTPr");
-	    printv("  WTPr");printv("   FAW");printv("   B2B");printv("   CWL");
+	    printv(" Cha ");
+	    printv("   CL");printv("  RCD");printv("   RP");printv("  RAS");
+	    printv("  RRD");printv("  RFC");printv("   WR");printv(" RTPr");
+	    printv(" WTPr");printv("  FAW");printv("  B2B");printv("  CWL");
+	    printv(" Rate");
+
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv("\x20\x20\x20#%-2u", cha);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+		printv("\x20\x20#%-2u", cha);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+		printv("%4uN",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
 	    }
-	    printv("      ");
-	    printv(" ddWtR"); printv(" drWtR"); printv(" srWtR");
-	    printv(" ddRtW"); printv(" drRtW"); printv(" srRtW");
-	    printv(" ddRtR"); printv(" drRtR"); printv(" srRtR");
-	    printv(" ddWtW"); printv(" drWtW"); printv(" srWtW");
+	    printv("     ");
+	    printv(" ddWR"); printv(" drWR"); printv(" srWR");
+	    printv(" ddRW"); printv(" drRW"); printv(" srRW");
+	    printv(" ddRR"); printv(" drRR"); printv(" srRR");
+	    printv(" ddWW"); printv(" drWW"); printv(" srWW");
+	    printv("     ");
+
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv("\x20\x20\x20#%-2u", cha);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
+		printv("\x20\x20#%-2u", cha);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
 
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
 
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
 
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
-		printv("%6u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
+
+		printv("     ");
 	    }
 	}
 }
@@ -2903,7 +2911,7 @@ void Top(SHM_STRUCT *Shm)
 	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer,
 					id,
-					13,
+					14,
 					rows + 5,
 					1,
 					TOP_HEADER_ROW + 2);

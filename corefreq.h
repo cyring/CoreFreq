@@ -183,6 +183,7 @@ typedef struct
 		struct {
 			struct {
 				RAM_TIMING	Timing;
+				unsigned int	DIMM[MC_MAX_DIMM];
 			} Channel[MC_MAX_CHA];
 			unsigned short		ChannelCount;
 		} MC[MC_MAX_CTRL];
