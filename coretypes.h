@@ -586,6 +586,17 @@ typedef struct	// BSP CPUID features.
 #endif
 // Source: Intel X58 Express Chipset Datasheet
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
+// Source: /include/linux/pci_ids.h
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0	0x3ca0
+#endif
+// Source: /drivers/edac/sb_edac.c
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
+#endif
 
 typedef struct
 {

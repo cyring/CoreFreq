@@ -952,9 +952,19 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].C220._.tRCD;
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 			Proc->Uncore.MC[mc].Channel[cha].C220._.tRAS;
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tCWL;
 */
+		switch(Proc->Uncore.MC[mc].Channel[cha].C220.Timing.CMD_Stretch)
+		{
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+			break;
+		case 0b11:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+			break;
+		}
 	    }
 	}
 }
@@ -988,19 +998,16 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		P35_CLK(Shm, Proc, cpu);
 		P4S_MCH(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_I7_MCR:	// Nehalem
+	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Nehalem
 		X58_CLK(Shm, Proc, cpu);
 		NHM_IMC(Shm, Proc);
 		break;
-	case 0x3ca0:	// Sandy Bridge
-	case 0x3ca8:
-	case 0x0ea0:	// Ivy Bridge
-	case 0x0ea8:
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge
 		C200_CLK(Shm, Proc, cpu);
 		C200_MCH(Shm, Proc);
 		break;
-	case 0x2fa0:	// Haswell
-	case 0x2fa8:
+	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
 		C200_CLK(Shm, Proc, cpu);
 		C220_MCH(Shm, Proc);
 		break;

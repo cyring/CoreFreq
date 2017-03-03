@@ -929,7 +929,17 @@ typedef union
 
 
 typedef union
-{	// Device: 0 - Function: 0 - Offset Channel0: 4c14h & Channel1:
+{	// Device: 0 - Function: 0 - Offset Channel0: 4c04h
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits	: 30-0,
+		CMD_Stretch	: 32-30;
+	};
+} C220_DDR_TIMING;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4c14h
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -940,7 +950,7 @@ typedef union
 } C220_DDR_RANK_TIMING;
 
 typedef union
-{	// Device: 0 - Function: 0 - Offset Channel0: 4e98h & Channel1:
+{	// Device: 0 - Function: 0 - Offset Channel0: 4e98h
 	unsigned int		value;
 	struct {
 		unsigned int

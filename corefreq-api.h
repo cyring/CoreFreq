@@ -368,6 +368,7 @@ typedef struct
 	/* 4298h */		C200_TC_RFTP		RFTP;	/* 32 bits */
 			} C200;
 			struct {
+	/* 4C04h*/		C220_DDR_TIMING		Timing;	/* 32 bits */
 	/* 4c14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
 	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} C220;

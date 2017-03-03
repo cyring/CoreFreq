@@ -169,5 +169,19 @@
 	:	_BIT_TEST_GPR(_base, _offset)		\
 )
 
+#define BITCPL(_src)					\
+({							\
+	unsigned long long _dest;			\
+	asm volatile					\
+	(						\
+		"mov	%[src], %[dest]"	"\n\t"	\
+		"negq	%[dest]"			\
+		: [dest] "=m" (_dest)			\
+		: [src] "ir" (_src)			\
+		: "memory"				\
+	);						\
+	_dest;						\
+})
+
 #define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
 #define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)

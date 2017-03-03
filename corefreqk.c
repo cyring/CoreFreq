@@ -1104,7 +1104,8 @@ typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
 typedef void (*ROUTER)(void __iomem *mchmap);
 
-PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset, ROUTER route)
+PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
+			unsigned long long wsize, ROUTER route)
 {
 	void __iomem *mchmap;
 	union {
@@ -1114,15 +1115,16 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset, ROUTER route)
 			unsigned int high;
 		};
 	} mchbar;
+	unsigned long long wmask = BITCPL(wsize);
 
 	Proc->Uncore.ChipID = dev->device;
 
 	pci_read_config_dword(dev, offset    , &mchbar.low);
 	pci_read_config_dword(dev, offset + 4, &mchbar.high);
 
-	mchbar.addr &= 0xffffc000ULL;
+	mchbar.addr &= wmask;
 
-	mchmap = ioremap(mchbar.addr, 0x4000);
+	mchmap = ioremap(mchbar.addr, wsize);
 	if (mchmap != NULL) {
 		route(mchmap);
 
@@ -1353,6 +1355,9 @@ void Query_C220(void __iomem *mchmap)
 	Proc->Uncore.CtrlCount = 1;
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 
+		Proc->Uncore.MC[0].Channel[cha].C220.Timing.value =
+					readl(mchmap + 0x4c04 + 0x400 * cha);
+
 		Proc->Uncore.MC[0].Channel[cha].C220.Rank.value =
 					readl(mchmap + 0x4c14 + 0x400 * cha);
 
@@ -1363,17 +1368,17 @@ void Query_C220(void __iomem *mchmap)
 
 PCI_CALLBACK P965(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, Query_P965));
+	return(Router(dev, 0x48, 0x4000, Query_P965));
 }
 
 PCI_CALLBACK G965(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, Query_G965));
+	return(Router(dev, 0x48, 0x4000, Query_G965));
 }
 
 PCI_CALLBACK P35(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, Query_P35));
+	return(Router(dev, 0x48, 0x4000, Query_P35));
 }
 
 PCI_CALLBACK NHM_IMC(struct pci_dev *dev)
@@ -1406,12 +1411,12 @@ PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 
 PCI_CALLBACK C200(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, Query_C200));
+	return(Router(dev, 0x48, 0x8000, Query_C200));
 }
 
 PCI_CALLBACK C220(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, Query_C220));
+	return(Router(dev, 0x48, 0x8000, Query_C220));
 }
 
 static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
@@ -1489,6 +1494,7 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
+	// 1st Generation
 	{	// Nehalem IMC
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
 		.driver_data = (kernel_ulong_t) NHM_IMC
@@ -1501,38 +1507,27 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
-/* ToDo: IMC for Generation 2++
-	// Sandy Bridge, Xeon E5: HA=0x3ca0 / IMC=0x3ca8 /
+	// 2nd Generation
+	// Sandy Bridge ix-2xxx, Xeon E3-E5: IMC_HA=0x3ca0 / IMC_TA=0x3ca8 /
 	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
 	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3ca0),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C200
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x3ca8),
-		.driver_data = (kernel_ulong_t) C200
-	},
-	// Ivy Bridge, Xeon E7/E5 v2: HA=0x0ea0 / IMC=0x0ea8
+	// 3rd Generation
+	// Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
 	// TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead
 	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea0),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C200
 	},
+	// 4th Generation
+	// Haswell ix-4xxx, Xeon E7/E5 v3: IMC_HA0=0x2fa0 / IMC_HA0_TA=0x2fa8
+	// TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad
 	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x0ea8),
-		.driver_data = (kernel_ulong_t) C200
-	},
-	// Haswell, Xeon E7/E5 v3: HA=0x2fa0 / TA_THM_RAS=0x2fa8
-	// TA0=0x2faa / TA1=0x2fab / TA2=0x2fac / TA3=0x2fad
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa0),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C220
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x2fa8),
-		.driver_data = (kernel_ulong_t) C220
-	},
-*/
 	{0, }
 };
 
