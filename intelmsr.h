@@ -704,7 +704,7 @@ typedef union
 } MCH_CLKCFG;
 
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 70h
 	unsigned int		value;
 	struct { // Source: Micron DDR3
@@ -722,7 +722,7 @@ typedef union
 	};
 } NHM_IMC_MRS_VALUE_0_1;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
 	unsigned int		value;
 	struct {
@@ -740,7 +740,7 @@ typedef union
 	};
 } NHM_IMC_MRS_VALUE_2_3;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
 	unsigned int		value;
 	struct {
@@ -758,7 +758,7 @@ typedef union
 	};
 } NHM_IMC_RANK_TIMING_A;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
 	unsigned int		value;
 	struct {
@@ -773,7 +773,7 @@ typedef union
 	};
 } NHM_IMC_RANK_TIMING_B;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
 	unsigned int		value;
 	struct {
@@ -787,7 +787,7 @@ typedef union
 	};
 } NHM_IMC_BANK_TIMING;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
 	unsigned int		value;
 	struct {
@@ -799,40 +799,54 @@ typedef union
 	};
 } NHM_IMC_REFRESH_TIMING;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 3 - Function: 0 - Offset: 48h
 	unsigned int		value;
 	struct {
 		unsigned int
 		CLOSED_PAGE	:  1-0,
-		EN_ECC		:  2-1,
+		EN_ECC		:  2-1, // Bloomfield
 		AUTOPRECHARGE	:  3-2,
 		CHANNELRESET0	:  4-3,
 		CHANNELRESET1	:  5-4,
-		CHANNELRESET2	:  6-5,
+		CHANNELRESET2	:  6-5, // Bloomfield
 		DIVBY3EN	:  7-6,
 		INIT_DONE	:  8-7,
 		CHANNEL0_ACTIVE :  9-8,
 		CHANNEL1_ACTIVE : 10-9,
-		CHANNEL2_ACTIVE : 11-10,
+		CHANNEL2_ACTIVE : 11-10, // Bloomfield
 		ReservedBits	: 32-11;
 	};
 } NHM_IMC_CONTROL;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 3 - Function: 0 - Offset: 4Ch
 	unsigned int		value;
 	struct {
 		unsigned int
 		CHANNEL0_DISABLE:  1-0,
 		CHANNEL1_DISABLE:  2-1,
-		CHANNEL2_DISABLE:  3-2,
+		CHANNEL2_DISABLE:  3-2, // Bloomfield
 		ReservedBits	:  4-3,
-		ECC_ENABLED	:  5-4;
+		ECC_ENABLED	:  5-4; // Bloomfield
 	};
 } NHM_IMC_STATUS;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
+{	// Device: 3 - Function: 0 - Offset: 64h
+	unsigned int		value;
+	struct {
+		unsigned int
+		MAXNUMDIMMS	:  2-0,
+		MAXNUMRANK	:  4-2,
+		MAXNUMBANK	:  6-4,
+		MAXNUMROW	:  9-6,
+		MAXNUMCOL	: 11-9,
+		ReservedBits	: 32-11;
+	};
+} NHM_IMC_MAX_DOD;
+
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 3 - Function: 4 - Offset: 50h
 	unsigned int		value;
 	struct {
@@ -844,18 +858,19 @@ typedef union
 	};
 } NHM_IMC_CLK_RATIO_STATUS;
 
-typedef union
+typedef union	// Bloomfield, Lynnfield
 {	// Device: 4, 5, 6 - Function: 0 - Offset: B8h
 	unsigned int		value;
 	struct {
 		unsigned int
 		PRIORITY_CNT	:  3-0,
-		ENABLE_2N	:  5-3,
+		ENABLE_2N_3N	:  5-3, // 00=1N , 01=2N , 10=3N , 11=Reserved
 		DIS_ISOC_RBC	:  6-5,
 		PRE_CAS_THRSHLD : 11-6,
 		FLOAT_EN	: 12-11,
-		CS_FOR_CKE_TRANS: 13-12,
-		ReservedBits	: 32-13;
+		CS_FOR_CKE_TRANS: 13-12, // Lynnfield: CS_ODT_TRISTATE_DISABLE.
+		DDR_CLK_TRISTATE: 14-13, // Lynnfield: Disable status bit.
+		ReservedBits	: 32-14;
 	};
 } NHM_IMC_SCHEDULER_PARAMS;
 

@@ -813,7 +813,8 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 			break;
 		}
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N) {
+		switch(Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
+		{
 		case 0b00:
 			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 			break;
@@ -833,7 +834,7 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	}
 }
 
-void X58_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
 				* Proc->Uncore.Bus.DimmClock.QCLK_RATIO)
@@ -843,6 +844,23 @@ void X58_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
 				5866 : 8000;
+
+	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+}
+
+void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
+				* Proc->Uncore.Bus.DimmClock.QCLK_RATIO)
+				/ 1000000L;
+
+	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
 
 	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -998,8 +1016,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		P35_CLK(Shm, Proc, cpu);
 		P4S_MCH(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Nehalem
-		X58_CLK(Shm, Proc, cpu);
+	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Bloomfield
+		QPI_CLK(Shm, Proc, cpu);
+		NHM_IMC(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:		// Lynnfield
+		DMI_CLK(Shm, Proc, cpu);
 		NHM_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
