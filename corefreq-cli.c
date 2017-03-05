@@ -576,8 +576,8 @@ void SysInfoFeatures(	SHM_STRUCT *Shm,
 	};
 	const char *x2APIC[] = {
 		"Missing",
-	    GoK	"  xAPIC" DoK,
-	    GoK	" x2APIC" DoK
+		"  xAPIC",
+		" x2APIC"
 	};
 /* Section Mark */
 	printv(OutFunc, width, 2,
