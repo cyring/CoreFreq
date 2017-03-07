@@ -183,9 +183,9 @@ typedef struct
 		struct {
 			struct {
 				RAM_TIMING	Timing;
-				unsigned int	DIMM[MC_MAX_DIMM];
+				RAM_GEOMETRY	DIMM[MC_MAX_DIMM];
 			} Channel[MC_MAX_CHA];
-			unsigned short		ChannelCount;
+			unsigned short		SlotCount, ChannelCount;
 		} MC[MC_MAX_CTRL];
 		unsigned short			CtrlCount;
 		unsigned long long		CtrlSpeed;

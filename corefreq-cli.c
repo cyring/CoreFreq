@@ -1331,8 +1331,8 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
 	unsigned int nl = 14;
-	unsigned short mc, cha;
-	char line[8];
+	unsigned short mc, cha, slot;
+	char line[8], fInt[16], hInt[2][8];
 
 	void printv(char *fmt, ...)
 	{
@@ -1349,6 +1349,12 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		else
 			OutFunc(line);
 		va_end(ap);
+	}
+
+	void iSplit(unsigned int sInt) {
+		sprintf(fInt, "%10u", sInt);
+		strncpy(hInt[0], &fInt[0], 5); hInt[0][5] = '\0';
+		strncpy(hInt[1], &fInt[5], 5); hInt[1][5] = '\0';
 	}
 
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
@@ -1418,6 +1424,39 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
 
 		printv("     ");
+	    }
+	    printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+	    printv("     "); printv("     "); printv("     "); printv("     ");
+
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	      printv(" DIMM"); printv(" Geom"); printv("etry ");printv("for c");
+	      printv("hanne"); printv("l #%-2u", cha);
+	      printv("     "); printv("     "); printv("     ");printv("     ");
+	      printv("     "); printv("     "); printv("     ");printv("     ");
+
+	      printv("     ");
+	      printv(" Slot"); printv(" Bank"); printv(" Rank");
+	      printv("     "); printv("  Row");
+	      printv("   Me"); printv("mory "); printv("Size ");printv("(MB) ");
+	      printv("     "); printv("     "); printv("     ");printv("     ");
+
+	      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+		printv("     ");
+		printv("\x20\x20#%-2u", slot);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
+		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows);
+		printv("%5s", hInt[0]);
+		printv("%5s", hInt[1]);
+		printv("     ");
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size);
+		printv("%5s", hInt[0]);
+		printv("%5s", hInt[1]);
+		printv("     "); printv("     "); printv("     ");
+		printv("     "); printv("     ");
+	      }
 	    }
 	}
 }
@@ -2912,7 +2951,7 @@ void Top(SHM_STRUCT *Shm)
 	    Window *wIMC = CreateWindow(wLayer,
 					id,
 					14,
-					rows + 5,
+					rows + 11,
 					1,
 					TOP_HEADER_ROW + 2);
 		wIMC->matrix.select.row = 4;
@@ -2931,6 +2970,8 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wIMC,	.key.Right,	MotionRight_Win);
 		StoreWindow(wIMC,	.key.Down,	MotionDown_Win);
 		StoreWindow(wIMC,	.key.Up,	MotionUp_Win);
+		StoreWindow(wIMC,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wIMC,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wIMC,	.key.Home,	MotionHome_Win);
 		StoreWindow(wIMC,	.key.End,	MotionEnd_Win);
 

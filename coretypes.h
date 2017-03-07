@@ -648,6 +648,16 @@ typedef struct
 	};
 } RAM_TIMING;
 
+typedef struct
+{
+	struct {
+		unsigned int	Size,
+				Rows;
+		unsigned short	Banks,
+				Ranks;
+	};
+} RAM_GEOMETRY;
+
 // Source: /include/uapi/linux/utsname.h
 #ifdef __NEW_UTS_LEN
 #define MAX_UTS_LEN		__NEW_UTS_LEN

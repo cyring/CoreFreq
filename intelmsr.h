@@ -874,6 +874,21 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_SCHEDULER_PARAMS;
 
+typedef union	// Bloomfield, Lynnfield
+{	// Device: 4, 5, 6 - Function: 0 - Offset: 48h, 4Ch, 50h, Lynnfield(54h)
+	unsigned int		value;
+	struct {
+		unsigned int
+		NUMCOL		:  2-0,
+		NUMROW		:  5-2,
+		NUMRANK		:  7-5,
+		NUMBANK		:  9-7,
+		DIMMPRESENT	: 10-9,
+		RANKOFFSET	: 13-10,
+		ReservedBits	: 32-13;
+	};
+} NHM_IMC_DOD_CHANNEL;
+
 typedef union
 {	// X58 IOH Control Status & RAS Registers: Dev: 20 - Func: 2 - Off: D0h
 	unsigned int		value;

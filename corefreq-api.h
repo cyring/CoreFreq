@@ -373,32 +373,41 @@ typedef struct
 	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} C220;
 		};
-		unsigned int DIMM[MC_MAX_DIMM];
+		union {
+	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits */
+		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
 	union {
 		struct {
-	/* 260h */	P965_MC_CKECTRL	CKE0,		/* 32 bits */
-					CKE1;		/* 32 bits */
+	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits */
+						CKE1;		/* 32 bits */
 		} P965;
 		struct {
-	/* 1200h */	G965_MC_DRB_0_1 DRB0,	/* 32 bits @ channel0 */
-	/* 1300h*/			DRB1;	/* 32 bits @ channel1 */
+	/* 1200h */	G965_MC_DRB_0_1		DRB0,	/* 32 bits @ channel0 */
+	/* 1300h*/				DRB1;	/* 32 bits @ channel1 */
 		} G965;
 		struct {
-	/* 260h */	P35_MC_CKECTRL	CKE0,		/* 32 bits */
-					CKE1;		/* 32 bits */
+	/* 260h */	P35_MC_CKECTRL		CKE0,		/* 32 bits */
+						CKE1;		/* 32 bits */
 		} P35;
 		struct {
-	/* 3:0-48h */	NHM_IMC_CONTROL CONTROL;	/* 32 bits */
-	/* 3:0 4Ch*/	NHM_IMC_STATUS	STATUS;		/* 32 bits */
+	/* 3:0-48h */	NHM_IMC_CONTROL		CONTROL;	/* 32 bits */
+	/* 3:0 4Ch*/	NHM_IMC_STATUS		STATUS;		/* 32 bits */
 		} NHM;
 		struct {
-	/* 5004h */	C200_MAD_CHANNEL MAD0,		/* 32 bits */
-	/* 5008h */			 MAD1;		/* 32 bits */
+	/* 5004h */	C200_MAD_CHANNEL	MAD0,		/* 32 bits */
+	/* 5008h */				MAD1;		/* 32 bits */
 		} C200;
 	};
-	unsigned short		ChannelCount;
+
+	union {
+		struct {
+	/* 64h */	NHM_IMC_MAX_DOD		DOD;		/* 32 bits */
+		} NHM;
+	} MaxDIMMs;
+
+	unsigned short		SlotCount, ChannelCount;
 } MC_REGISTERS;
 
 typedef union

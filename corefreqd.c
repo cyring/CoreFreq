@@ -709,129 +709,179 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
-	unsigned short mc, cha, slot;
+    unsigned short mc, cha, slot;
 
-	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL ?
+		4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL : 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR ?
+		4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR : 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRCD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tRRD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRTPr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tWTPr;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTRd) {
+	case 0b0:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 4;
+		break;
+	case 0b1:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 6;
+		break;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 10
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrWrTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = 1
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrWrTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 1
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddWrTRd;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tsrWrTWr) {
+	case 0b0:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 4;
+		break;
+	case 0b1:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 6;
+		break;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tdrWrTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 2
+		+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tddWrTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.B2B;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].NHM.MR2_3.tCWL) {
+	case 0b000:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 5;
+		break;
+	case 0b001:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 6;
+		break;
+	case 0b010:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 7;
+		break;
+	case 0b011:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 8;
+		break;
+	}
+
+	switch(Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
 	{
-	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-	    {
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL : 0;
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
 
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR ?
-			4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR : 0;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRCD;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRP;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRAS;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tRRD;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Refresh.tRFC;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRTPr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tWTPr;
-
-		switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTRd) {
-		case 0b0:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 4;
-			break;
-		case 0b1:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd = 6;
-			break;
-		}
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTRd;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTRd;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrRdTWr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrRdTWr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddRdTWr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 10
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tsrWrTRd;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd = 1
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tdrWrTRd;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 1
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_A.tddWrTRd;
-
-		switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tsrWrTWr) {
-		case 0b0:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 4;
-			break;
-		case 0b1:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr = 6;
-			break;
-		}
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tdrWrTWr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 2
-			+ Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tddWrTWr;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.tFAW;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
-			Proc->Uncore.MC[mc].Channel[cha].NHM.Rank_B.B2B;
-
-		switch (Proc->Uncore.MC[mc].Channel[cha].NHM.MR2_3.tCWL) {
-		case 0b000:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 5;
-			break;
-		case 0b001:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 6;
-			break;
-		case 0b010:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 7;
-			break;
-		case 0b011:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = 8;
-			break;
-		}
-
-		switch(Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	    if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.DIMMPRESENT) {
+		switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMBANK)
 		{
 		case 0b00:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
 			break;
 		case 0b01:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 			break;
 		case 0b10:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 16;
+			break;
+		}
+		switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMRANK)
+		{
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
+			break;
+		case 0b01:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 4;
+			break;
+		}
+		switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMROW)
+		{
+		case 0b000:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<12;
+			break;
+		case 0b001:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<13;
+			break;
+		case 0b010:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<14;
+			break;
+		case 0b011:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<15;
+			break;
+		case 0b100:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<16;
 			break;
 		}
 
-		for (slot = 0; slot < MC_MAX_DIMM; slot++) {
-			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot] =
-				Proc->Uncore.MC[mc].Channel[cha].DIMM[slot];
-		}
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+			8 * Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= 1024;
 	    }
 	}
+      }
+    }
 }
 
 void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
@@ -1798,7 +1848,7 @@ int main(int argc, char *argv[])
 {
 	FD   fd = {0, 0};
 	PROC *Proc = NULL;	// Kernel module anchor point.
-	int  rc = 0, i = 0;
+	int   rc = 0, i = 0;
 	char *program = strdup(argv[0]), *appName = basename(program);
 
 	for (i = 1; i < argc; i++) {

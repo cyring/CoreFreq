@@ -1266,16 +1266,15 @@ kernel_ulong_t Query_NHM_Timing(unsigned int did,
 
 kernel_ulong_t Query_NHM_DIMM(	unsigned int did,
 				unsigned short mc,
-				unsigned short cha,
-				unsigned short maxDIMMs)
+				unsigned short cha)
 {
 	struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
 	if(dev != NULL) {
 		unsigned short slot;
 
-		for (slot = 0; slot < maxDIMMs; slot++) {
-			pci_read_config_dword(dev, 0x48 + 4 * slot,
-				  &Proc->Uncore.MC[mc].Channel[cha].DIMM[slot]);
+		for (slot = 0; slot < Proc->Uncore.MC[mc].SlotCount; slot++) {
+		    pci_read_config_dword(dev, 0x48 + 4 * slot,
+			&Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.value);
 		}
 		pci_dev_put(dev);
 		return(0);
@@ -1283,21 +1282,24 @@ kernel_ulong_t Query_NHM_DIMM(	unsigned int did,
 		return(-ENODEV);
 }
 
-unsigned short Compute_NHM_MaxDIMMs(struct pci_dev *dev)
+void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 {
-	NHM_IMC_MAX_DOD dod = {.value = 0};
+	pci_read_config_dword(	dev, 0x64,
+				&Proc->Uncore.MC[mc].MaxDIMMs.NHM.DOD.value);
 
-	pci_read_config_dword(dev,0x64, &dod.value);
-
-	switch (dod.MAXNUMDIMMS) {
+	switch (Proc->Uncore.MC[mc].MaxDIMMs.NHM.DOD.MAXNUMDIMMS) {
 	case 0b00:
-		return(1);
+		Proc->Uncore.MC[mc].SlotCount = 1;
+		break;
 	case 0b01:
-		return(2);
+		Proc->Uncore.MC[mc].SlotCount = 2;
+		break;
 	case 0b10:
-		return(3);
+		Proc->Uncore.MC[mc].SlotCount = 3;
+		break;
 	default:
-		return(0);
+		Proc->Uncore.MC[mc].SlotCount = 0;
+		break;
 	}
 }
 
@@ -1316,7 +1318,9 @@ kernel_ulong_t Query_Bloomfield_IMC(struct pci_dev *dev, unsigned short mc)
 			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
 		}
 	};
-	unsigned short cha, maxDIMMs = Compute_NHM_MaxDIMMs(dev);
+	unsigned short cha;
+
+	Query_NHM_MaxDIMMs(dev, mc);
 
 	pci_read_config_dword(dev,0x48, &Proc->Uncore.MC[mc].NHM.CONTROL.value);
 	pci_read_config_dword(dev,0x4c, &Proc->Uncore.MC[mc].NHM.STATUS.value);
@@ -1328,7 +1332,7 @@ kernel_ulong_t Query_Bloomfield_IMC(struct pci_dev *dev, unsigned short mc)
 
 	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
 		rc = Query_NHM_Timing(did[0][cha], mc, cha)
-		   & Query_NHM_DIMM(did[1][cha], mc, cha, maxDIMMs);
+		   & Query_NHM_DIMM(did[1][cha], mc, cha);
 	}
 	return(rc);
 }
@@ -1346,7 +1350,9 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 			PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR
 		}
 	};
-	unsigned short cha, maxDIMMs = Compute_NHM_MaxDIMMs(dev);
+	unsigned short cha;
+
+	Query_NHM_MaxDIMMs(dev, mc);
 
 	pci_read_config_dword(dev,0x48, &Proc->Uncore.MC[mc].NHM.CONTROL.value);
 	pci_read_config_dword(dev,0x4c, &Proc->Uncore.MC[mc].NHM.STATUS.value);
@@ -1357,7 +1363,7 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 
 	for (cha = 0; (cha < Proc->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
 		rc = Query_NHM_Timing(did[0][cha], mc, cha)
-		   & Query_NHM_DIMM(did[1][cha], mc, cha, maxDIMMs);
+		   & Query_NHM_DIMM(did[1][cha], mc, cha);
 	}
 	return(rc);
 }
