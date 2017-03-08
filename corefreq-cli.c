@@ -1438,7 +1438,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 	      printv("     ");
 	      printv(" Slot"); printv(" Bank"); printv(" Rank");
-	      printv("     "); printv("Rows "); printv("   Co");printv("lums ");
+	      printv("     "); printv("Rows "); printv("  Col");printv("umns ");
 	      printv("   Me"); printv("mory "); printv("Size ");printv("(MB) ");
 	      printv("     "); printv("     ");
 
