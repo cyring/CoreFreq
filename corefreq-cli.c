@@ -1438,9 +1438,9 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 	      printv("     ");
 	      printv(" Slot"); printv(" Bank"); printv(" Rank");
-	      printv("     "); printv("  Row");
+	      printv("     "); printv("Rows "); printv("   Co");printv("lums ");
 	      printv("   Me"); printv("mory "); printv("Size ");printv("(MB) ");
-	      printv("     "); printv("     "); printv("     ");printv("     ");
+	      printv("     "); printv("     ");
 
 	      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		printv("     ");
@@ -1450,12 +1450,14 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows);
 		printv("%5s", hInt[0]);
 		printv("%5s", hInt[1]);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols);
+		printv("%5s", hInt[0]);
+		printv("%5s", hInt[1]);
 		printv("     ");
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size);
 		printv("%5s", hInt[0]);
 		printv("%5s", hInt[1]);
 		printv("     "); printv("     "); printv("     ");
-		printv("     "); printv("     ");
 	      }
 	    }
 	}

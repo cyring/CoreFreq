@@ -872,6 +872,18 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1<<16;
 			break;
 		}
+		switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMCOL)
+		{
+		case 0b000:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1<<10;
+			break;
+		case 0b001:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1<<11;
+			break;
+		case 0b010:
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1<<12;
+			break;
+		}
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
 			8 * Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows

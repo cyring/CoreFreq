@@ -652,7 +652,8 @@ typedef struct
 {
 	struct {
 		unsigned int	Size,
-				Rows;
+				Rows,
+				Cols;
 		unsigned short	Banks,
 				Ranks;
 	};
