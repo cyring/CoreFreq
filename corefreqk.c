@@ -4,6 +4,7 @@
  * Licenses: GPL2
  */
 
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/cpu.h>
 #include <linux/pci.h>
@@ -2942,6 +2943,8 @@ static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
 #endif
 
 
+#ifdef CONFIG_HOTPLUG_CPU
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 				unsigned long action,
 				void *hcpu)
@@ -3002,6 +3005,8 @@ static struct notifier_block CoreFreqK_notifier_block=
 {
 	.notifier_call = CoreFreqK_hotplug,
 };
+#endif
+#endif
 
 static int __init CoreFreqK_init(void)
 {
@@ -3167,7 +3172,11 @@ static int __init CoreFreqK_init(void)
 			    if (Experimental)
 				rc = pci_register_driver(&CoreFreqK_pci_driver);
 
+		#ifdef CONFIG_HOTPLUG_CPU
+			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
+			#endif
+		#endif
 
 			    } else {
 				if (KPublic->Cache != NULL)
@@ -3238,7 +3247,11 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu = 0;
 
-	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
+#ifdef CONFIG_HOTPLUG_CPU
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
+	#endif
+#endif
 
 	if (Experimental)
 		pci_unregister_driver(&CoreFreqK_pci_driver);
