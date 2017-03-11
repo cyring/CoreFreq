@@ -54,7 +54,7 @@ static unsigned int SleepInterval = 0;
 module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
 
-static unsigned int Experimental = 0;
+static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
@@ -2944,56 +2944,72 @@ static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
 
 
 #ifdef CONFIG_HOTPLUG_CPU
+static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
+{
+	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		if ((KPublic->Core[cpu]->T.ApicID == -1)
+		 && !KPublic->Core[cpu]->OffLine.HW) {
+			if (!Core_Topology(cpu)) {
+				if (KPublic->Core[cpu]->T.ApicID >= 0)
+					KPublic->Core[cpu]->OffLine.HW = 0;
+				else
+					KPublic->Core[cpu]->OffLine.HW = 1;
+		    	}
+		memcpy(&KPublic->Core[cpu]->Clock,
+			&KPublic->Core[0]->Clock,
+			sizeof(CLOCK) );
+		}
+		if (Arch[Proc->ArchID].Timer != NULL) {
+			Arch[Proc->ArchID].Timer(cpu);
+		}
+		if ((KPrivate->Join[cpu]->tsm.started == 0)
+		 && (Arch[Proc->ArchID].Start != NULL)) {
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Start,
+						NULL, 0);
+		}
+		Proc->CPU.OnLine++;
+		KPublic->Core[cpu]->OffLine.OS = 0;
+
+		return(0);
+	} else
+		return(-EINVAL);
+}
+
+static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
+{
+	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		if ((KPrivate->Join[cpu]->tsm.created == 1)
+		 && (KPrivate->Join[cpu]->tsm.started == 1)
+		 && (Arch[Proc->ArchID].Stop != NULL)) {
+			smp_call_function_single(cpu,
+						Arch[Proc->ArchID].Stop,
+						NULL, 1);
+		}
+		Proc->CPU.OnLine--;
+		KPublic->Core[cpu]->OffLine.OS = 1;
+
+		return(0);
+	} else
+		return(-EINVAL);
+}
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 				unsigned long action,
 				void *hcpu)
 {
-	unsigned int cpu = (unsigned long) hcpu;
+	unsigned int cpu = (unsigned long) hcpu, rc = 0;
 
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
 //-	case CPU_ONLINE_FROZEN:
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-		    if ((KPublic->Core[cpu]->T.ApicID == -1)
-			&& !KPublic->Core[cpu]->OffLine.HW) {
-			    if (!Core_Topology(cpu)) {
-				if (KPublic->Core[cpu]->T.ApicID >= 0)
-					KPublic->Core[cpu]->OffLine.HW = 0;
-				else
-					KPublic->Core[cpu]->OffLine.HW = 1;
-			    }
-			memcpy(&KPublic->Core[cpu]->Clock,
-				&KPublic->Core[0]->Clock,
-				sizeof(CLOCK) );
-		    }
-		    if (Arch[Proc->ArchID].Timer != NULL)
-			Arch[Proc->ArchID].Timer(cpu);
-
-		    if ((KPrivate->Join[cpu]->tsm.started == 0)
-		      && (Arch[Proc->ArchID].Start != NULL))
-			smp_call_function_single(cpu,
-						Arch[Proc->ArchID].Start,
-						NULL, 0);
-
-		    Proc->CPU.OnLine++;
-		    KPublic->Core[cpu]->OffLine.OS = 0;
-		}
+			rc = CoreFreqK_hotplug_cpu_online(cpu);
 		break;
 	case CPU_DOWN_PREPARE:
 //-	case CPU_DOWN_PREPARE_FROZEN:
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-		    if ((KPrivate->Join[cpu]->tsm.created == 1)
-		      && (KPrivate->Join[cpu]->tsm.started == 1)
-		      && (Arch[Proc->ArchID].Stop != NULL))
-			smp_call_function_single(cpu,
-						Arch[Proc->ArchID].Stop,
-						NULL, 1);
-
-		    Proc->CPU.OnLine--;
-		    KPublic->Core[cpu]->OffLine.OS = 1;
-		}
+			rc = CoreFreqK_hotplug_cpu_offline(cpu);
 		break;
 	default:
 		break;
@@ -3062,6 +3078,8 @@ static int __init CoreFreqK_init(void)
 				Proc->SleepInterval = SleepInterval;
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
+
+			    Proc->Registration.Experimental = Experimental;
 
 			    memcpy(&Proc->Features, &Arg.features,
 					sizeof(FEATURES) );
@@ -3169,12 +3187,22 @@ static int __init CoreFreqK_init(void)
 
 				Controller_Start();
 
-			    if (Experimental)
-				rc = pci_register_driver(&CoreFreqK_pci_driver);
+			    if (Proc->Registration.Experimental) {
+				  Proc->Registration.pci =
+				    pci_register_driver(&CoreFreqK_pci_driver);
+			    }
 
 		#ifdef CONFIG_HOTPLUG_CPU
 			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+			// Always returns zero (kernel/notifier.c)
+			  Proc->Registration.hotplug =
 			    register_hotcpu_notifier(&CoreFreqK_notifier_block);
+			#else	// Continue with or without cpu hot-plugging.
+			  Proc->Registration.hotplug =
+				cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+						"corefreqk/cpu:online",
+						CoreFreqK_hotplug_cpu_online,
+						CoreFreqK_hotplug_cpu_offline);
 			#endif
 		#endif
 
@@ -3250,12 +3278,16 @@ static void __exit CoreFreqK_cleanup(void)
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
+	#else
+		if (!(Proc->Registration.hotplug < 0))
+			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
 
-	if (Experimental)
-		pci_unregister_driver(&CoreFreqK_pci_driver);
-
+	if (Proc->Registration.Experimental) {
+		if (!Proc->Registration.pci)
+			pci_unregister_driver(&CoreFreqK_pci_driver);
+	}
 	Controller_Stop();
 	Controller_Exit();
 

@@ -1764,6 +1764,10 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
 
+		Shm->Registration.Experimental=Proc->Registration.Experimental;
+		Shm->Registration.hotplug = Proc->Registration.hotplug;
+		Shm->Registration.pci = Proc->Registration.pci;
+
 		SIG Sig = {
 			.Signal	= {{0}},
 			.TID	= 0,

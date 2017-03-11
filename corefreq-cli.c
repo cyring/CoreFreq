@@ -2653,10 +2653,17 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 4, 8, TOP_HEADER_ROW + 3);
+      Window *wSet = CreateWindow(wLayer, id, 2, 7, 8, TOP_HEADER_ROW + 3);
       if (wSet != NULL) {
-	char intvStr[16];
-	int intvLen = sprintf(intvStr, "%13uE6", Shm->Proc.SleepInterval);
+	char intervStr[16], experStr[16], cpuhpStr[16], pciRegStr[16];
+	int intervLen = sprintf(intervStr, "%13uE6",
+				Shm->Proc.SleepInterval),
+	    experLen = sprintf(experStr, "[%3s]",
+				enabled(Shm->Registration.Experimental)),
+	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
+				enabled(!(Shm->Registration.hotplug < 0))),
+	    pciRegLen = sprintf(pciRegStr, "[%3s]",
+				enabled(!(Shm->Registration.pci < 0)));
 	size_t appLen = strlen(Shm->AppName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -2668,11 +2675,23 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
+	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
 	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->AppName, appLen);
-	memcpy(&TCellAt(wSet, 1, 2).item[15 - intvLen], intvStr, intvLen);
+	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
+	memcpy(&TCellAt(wSet, 1, 3).item[15 - experLen], experStr, experLen);
+	memcpy(&TCellAt(wSet, 1, 4).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
+	memcpy(&TCellAt(wSet, 1, 5).item[15 - pciRegLen], pciRegStr, pciRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);

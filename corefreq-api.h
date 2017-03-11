@@ -484,6 +484,12 @@ typedef struct
 
 	SYSGATE			*SysGate;
 
+	struct {
+		signed int	Experimental,
+				hotplug,
+				pci;
+	} Registration;
+
 	char			Architecture[32];
 } PROC;
 
