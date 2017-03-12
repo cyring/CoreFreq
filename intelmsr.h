@@ -272,7 +272,7 @@ typedef union
 		Clear_Ovf_PMC1	:  2-1,		// PM2
 		Clear_Ovf_PMC2	:  3-2,		// PM3
 		Clear_Ovf_PMC3	:  4-3,		// PM3
-		Clear_Ovf_PMCn	: 32-2,		// PM3
+		Clear_Ovf_PMCn	: 32-4,		// PM3
 		Clear_Ovf_CTR0 	: 33-32,	// PM2
 		Clear_Ovf_CTR1	: 34-33,	// PM2
 		Clear_Ovf_CTR2	: 35-34,	// PM2
