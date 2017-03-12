@@ -804,7 +804,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 22*/	{
 	_Nehalem_EX,
-	Query_Nehalem,
+	Query_Core2,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
@@ -835,7 +835,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 25*/	{
 	_Westmere_EX,
-	Query_Nehalem,
+	Query_Core2,
 	Start_Nehalem,
 	Stop_Nehalem,
 	NULL,
