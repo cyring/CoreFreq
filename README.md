@@ -13,6 +13,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings 
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -25,6 +26,25 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 
 
 ## Build & Run
+
+### Prerequistes
+
+ a- *Disable* the Kernel *NMI Watchdog*  
+Add the below parameter in the kernel boot loader (Grub, SysLinux) 
+The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counter 
+
+```
+nmi_watchdog=0
+```
+
+ b- No Virtualization 
+VMs don't provide access to the registers that the CoreFreq driver employs : 
+* Fixed Performance Counters 
+* Model Specific Registers 
+* PCI Registers 
+
+### Build
+
  1- Download or clone the source code into a working directory.
  
  2- Build the programs.
@@ -48,8 +68,6 @@ make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
 ```
 
 ### Start
-
- 3a- Disable nmi_watchdog (See Q&A below).
 
  3b- Load the kernel module, as root.
 ```
@@ -158,11 +176,13 @@ insmod corefreqk.ko
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 * Q: The CPU ratio does not go above its minimum value ?  
 * Q: UI crash frequently ?  
-  A: In the kernel command argument line, disable nmi_watchdog (if suitable with your setup)  
+
+  A: In the kernel boot command argument line, disable nmi_watchdog  
   ```
 nmi_watchdog=0
 ```
-  A: Check also what the current idle driver is. In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
+  A: Check also what the current idle driver is ?  
+  A: In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
 
 
 * Q: The deep sleep states do not produce any value ?  
