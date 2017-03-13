@@ -27,21 +27,24 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 
 ## Build & Run
 
-### Prerequistes
+### Prerequisites
 
  a- *Disable* the Kernel *NMI Watchdog*  
-Add the below parameter in the kernel boot loader (Grub, SysLinux) 
-The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counter 
+
+Add the below parameter in the kernel boot loader (Grub, SysLinux)  
+The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counters  
 
 ```
 nmi_watchdog=0
 ```
 
- b- No Virtualization 
+ b- No Virtualization  
+
 VMs don't provide access to the registers that the CoreFreq driver employs : 
 * Fixed Performance Counters 
 * Model Specific Registers 
 * PCI Registers 
+
 
 ### Build
 
@@ -69,7 +72,7 @@ make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
 
 ### Start
 
- 3b- Load the kernel module, as root.
+ 3- Load the kernel module, as root.
 ```
 modprobe corefreqk
 ```
@@ -175,9 +178,9 @@ insmod corefreqk.ko
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 * Q: The CPU ratio does not go above its minimum value ?  
-* Q: UI crash frequently ?  
+* Q: *The UI crashes frequently* with segmentation faults ?  
 
-  A: In the kernel boot command argument line, disable nmi_watchdog  
+  A: In the kernel boot command argument line, *disable the NMI Watchdog*  
   ```
 nmi_watchdog=0
 ```
