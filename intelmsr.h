@@ -501,7 +501,6 @@ typedef union
 	};
 } G965_MC_DRB_0_1;
 
-
 typedef union
 {	// Offset Channel0: 250h & Channel1: 650h
 	unsigned short		value;

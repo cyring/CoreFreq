@@ -1492,6 +1492,59 @@ PCI_CALLBACK C220(struct pci_dev *dev)
 	return(Router(dev, 0x48, 0x8000, Query_C220));
 }
 
+PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
+{	// Source: BKDG for AMD NPT Family 0Fh Processors
+	unsigned short cha, slot, chip;
+
+	Proc->Uncore.ChipID = dev->device;
+	// Specs defined
+	Proc->Uncore.CtrlCount = 1;
+	// DRAM Configuration low register
+	pci_read_config_dword(dev, 0x90,
+			&Proc->Uncore.MC[0].AMD0F.DCRL.value);
+	// DRAM Configuration high register
+	pci_read_config_dword(dev, 0x94,
+			&Proc->Uncore.MC[0].AMD0F.DCRH.value);
+	// 1 channel if 64 bits / 2 channels if 128 bits width
+	Proc->Uncore.MC[0].ChannelCount = Proc->Uncore.MC[0].AMD0F.DCRL.Width128
+					+ 1;
+	// DIMM Geometry
+	for (chip = 0; chip < 8; chip++) {
+		cha = chip >> 2;
+		slot = chip % 4;
+		pci_read_config_dword(dev, 0x40 + 4 * chip,
+			&Proc->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.value);
+
+		Proc->Uncore.MC[0].SlotCount +=
+			Proc->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.CSEnable;
+	}
+	// DIMM Size
+	pci_read_config_dword(	dev, 0x80,
+				&Proc->Uncore.MC[0].MaxDIMMs.AMD0F.CS.value);
+	// DRAM Timings
+	pci_read_config_dword(dev, 0x88,
+			&Proc->Uncore.MC[0].Channel[0].AMD0F.DTRL.value);
+	// Assume same timings for both channels
+	Proc->Uncore.MC[0].Channel[1].AMD0F.DTRL.value =
+			Proc->Uncore.MC[0].Channel[0].AMD0F.DTRL.value;
+
+	return(0);
+}
+
+PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
+{
+	unsigned int link;
+
+	pci_read_config_dword(dev, 0x64, &Proc->Uncore.Bus.UnitID.value);
+
+	for (link = 0; link < 3; link++) {
+		pci_read_config_dword(dev, 0x88 + 0x20 * link,
+				&Proc->Uncore.Bus.LDTi_Freq[link].value);
+	};
+
+	return(0);
+}
+
 static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
 				const struct pci_device_id *id)
 {
@@ -1608,6 +1661,15 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C220
+	},
+	// AMD Family 0Fh
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
+		.driver_data = (kernel_ulong_t) AMD_0F_MCH
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB),
+		.driver_data = (kernel_ulong_t) AMD_0F_HTT
 	},
 	{0, }
 };

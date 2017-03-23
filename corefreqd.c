@@ -23,6 +23,7 @@
 #include "corefreq.h"
 #include "bitasm.h"
 #include "intelmsr.h"
+#include "amdmsr.h"
 #include "corefreq-api.h"
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
@@ -234,6 +235,8 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
@@ -413,6 +416,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
@@ -489,7 +494,7 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		}
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-				Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRTPr;
+			      Proc->Uncore.MC[mc].Channel[cha].G965.DRT1.tRTPr;
 
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 				Proc->Uncore.MC[mc].Channel[cha].G965.DRT2.tFAW;
@@ -675,6 +680,8 @@ void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
@@ -696,6 +703,8 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
 
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
@@ -940,6 +949,8 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
@@ -1010,6 +1021,8 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
 	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 
@@ -1047,6 +1060,196 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		}
 	    }
 	}
+}
+
+void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+	struct {
+		unsigned int size;
+	} module[] = {
+		{256}, {512}, {1024}, {1024},
+		{1024}, {2048}, {2048}, {4096},
+		{4096}, {8192}, {8192}, {16384},
+		{0}, {0}, {0}, {0}
+	};
+	unsigned int mask;
+	unsigned short mc, cha, slot, shift, index;
+
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+
+	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tCL) {
+		case 0b010:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+			break;
+		case 0b011:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+			break;
+		case 0b100:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+			break;
+		case 0b101:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+			break;
+		}
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRCD) {
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 3;
+			break;
+		case 0b01:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 4;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 5;
+			break;
+		case 0b11:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 6;
+			break;
+		}
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRP) {
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 3;
+			break;
+		case 0b01:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 4;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 5;
+			break;
+		case 0b11:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 6;
+			break;
+		}
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRTPr) {
+		case 0b0:
+			if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=2;
+			else
+				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=4;
+			break;
+		case 0b1:
+			if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=3;
+			else
+				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=5;
+			break;
+		}
+
+		if (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS >= 0b0010)
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
+			  Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS + 3;
+
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
+			Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRC + 11;
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tWR) {
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 3;
+			break;
+		case 0b01:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 4;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
+			break;
+		case 0b11:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
+			break;
+		}
+
+		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRRD) {
+		case 0b00:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+			break;
+		case 0b01:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 3;
+			break;
+		case 0b10:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 4;
+			break;
+		case 0b11:
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 5;
+			break;
+		}
+
+		if ((Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW > 0b0000)
+		 && (Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW <= 0b1101)) {
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+				Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW + 7;
+		}
+
+		if (Proc->Uncore.MC[mc].AMD0F.DCRH.SlowAccessMode == 0b1)
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		else
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+
+		shift = 4 * cha;
+		mask  = 0b1111 << shift;
+
+		for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+		  if(Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable) {
+		    index = (Proc->Uncore.MC[mc].MaxDIMMs.AMD0F.CS.value & mask)
+			  >> shift;
+
+		    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+			module[index].size;
+		  }
+		}
+	    }
+	}
+}
+
+void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
+{
+	unsigned int link;
+
+	switch (Proc->Uncore.MC[0].AMD0F.DCRH.MemClkFreq) {
+		case 0b000:
+			Shm->Uncore.CtrlSpeed = 200;
+			break;
+		case 0b001:
+			Shm->Uncore.CtrlSpeed = 266;
+			break;
+		case 0b010:
+			Shm->Uncore.CtrlSpeed = 333;
+			break;
+		case 0b011:
+			Shm->Uncore.CtrlSpeed = 400;
+			break;
+	}
+
+	if ((link = Proc->Uncore.Bus.UnitID.McUnit) < 0b11) {
+		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) {
+		case 0b0000:
+			Shm->Uncore.Bus.Rate = 200;
+			break;
+		case 0b0010:
+			Shm->Uncore.Bus.Rate = 400;
+			break;
+		case 0b0100:
+			Shm->Uncore.Bus.Rate = 600;
+			break;
+		case 0b0101:
+			Shm->Uncore.Bus.Rate = 800;
+			break;
+		case 0b0110:
+			Shm->Uncore.Bus.Rate = 1000;
+			break;
+		case 0b1111:
+			Shm->Uncore.Bus.Rate = 100;
+			break;
+		}
+		Shm->Uncore.Bus.Speed = Shm->Uncore.Bus.Rate * 2;
+	}
+	Shm->Uncore.Bus.Unit = 1; // "MT/s"
 }
 
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
@@ -1094,6 +1297,10 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
 		C200_CLK(Shm, Proc, cpu);
 		C220_MCH(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
+		AMD_0F_HTT(Shm, Proc);
+		AMD_0F_MCH(Shm, Proc);
 		break;
 	}
 }

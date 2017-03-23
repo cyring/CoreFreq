@@ -372,9 +372,13 @@ typedef struct
 	/* 4c14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
 	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} C220;
+			struct {
+	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits */
+			} AMD0F;
 		};
 		union {
 	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits */
+	/* 40h*/	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits */
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
@@ -399,12 +403,19 @@ typedef struct
 	/* 5004h */	C200_MAD_CHANNEL	MAD0,		/* 32 bits */
 	/* 5008h */				MAD1;		/* 32 bits */
 		} C200;
+		struct {
+	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits */
+	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits */
+		} AMD0F;
 	};
 
 	union {
 		struct {
 	/* 64h */	NHM_IMC_MAX_DOD		DOD;		/* 32 bits */
 		} NHM;
+		struct {
+	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits */
+		} AMD0F;
 	} MaxDIMMs;
 
 	unsigned short		SlotCount, ChannelCount;
@@ -419,6 +430,10 @@ typedef union
 		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			X58_QPI_FREQUENCY	QuickPath;
+		};
+		struct {
+			AMD_0F_HTT_UNIT_ID	UnitID;
+			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];
 		};
 	};
 } BUS_REGISTERS;

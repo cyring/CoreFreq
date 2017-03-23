@@ -162,3 +162,126 @@ typedef struct
 	Reserved4	: 31-29,
 	SwThermTrip	: 32-31; // diagnostic bit, for testing purposes only.
 } THERMTRIP_STATUS;
+
+typedef union {
+	unsigned int		value;
+	struct {
+		unsigned int
+		CSEnable	:  1-0,
+		Spare		:  2-1,
+		MemTestFailed	:  3-2,
+		ReservedBits1	:  5-3,
+		BaseAddrLo	: 14-5,
+		ReservedBits2	: 19-14,
+		BaseAddrHi	: 29-19,
+		ReservedBits3	: 32-29;
+	};
+} AMD_0F_DRAM_CS_BASE_ADDR;
+
+typedef union
+{	// Function: 2 - Offset: 80h
+	unsigned int		value;
+	struct {
+		unsigned int
+			CS10	:  4-0,
+			CS32	:  8-4,
+			CS54	: 12-8,
+			CS76	: 16-12,
+		ReservedBits	: 32-16;
+	};
+} AMD_0F_DRAM_CS_MAPPING;
+
+typedef union
+{	// Function: 2 - Offset: 88h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tCL		:  3-0,
+		ReservedBits1	:  4-3,
+		tRCD		:  6-4,
+		ReservedBits2	:  8-6,
+		tRP		: 10-8,
+		ReservedBits3	: 11-10,
+		tRTPr		: 12-11,
+		tRAS		: 16-12,
+		tRC		: 20-16,
+		tWR		: 22-20,
+		tRRD		: 24-22,
+		MemClkDis	: 32-24;
+	};
+} AMD_0F_DRAM_TIMING_LOW;
+
+typedef union
+{	// Function: 2 - Offset: 90h
+	unsigned int		value;
+	struct {
+		unsigned int
+		InitializeDRAM	:  1-0,
+		ExitSelfRefresh :  2-1,
+		ReservedBits1	:  4-2,
+		DRAM_Term	:  6-4,
+		ReservedBits2	:  7-6,
+		DRAM_DrvWeak	:  8-7,
+		Parity_Enable	:  9-8,
+		SelfRefRateEn	: 10-9,
+		BurstLength32	: 11-10,  // 0b: 64-Byte, 1b: 32-Byte
+		Width128	: 12-11,  // 0b: 64-bits, 1b: 128-bits
+		X4_DIMMS	: 16-12,
+		UnbufferedDIMM	: 17-16,
+		ReservedBits3	: 19-17,
+		ECC_DIMM_Enable : 20-19,
+		ReservedBits4	: 32-20;
+	};
+} AMD_0F_DRAM_CONFIG_LOW;
+
+typedef union
+{	// Function: 2 - Offset: 94h
+	unsigned int		value;
+	struct {
+		unsigned int
+		MemClkFreq	:  3-0,  // 000b:200,001b:266,010b:333,011b:400
+		MemClkFreqValid :  4-3,
+		MaxAsyncLatency :  8-4,
+		ReservedBits1	: 12-8,
+		ReadDQS_Enable	: 13-12,
+		ReservedBits2	: 14-13,
+		DisDRAMInterface: 15-14,
+		PowerDown_Enable: 16-15,
+		PowerDownMode	: 17-16,
+		FourRankSODimm	: 18-17,
+		FourRankRDimm	: 19-18,
+		ReservedBits3	: 20-19,
+		SlowAccessMode	: 21-20,  // 2T Mode=[0b:1T , 1b:2T]
+		ReservedBits4	: 22-21,
+		BankSwizzleMode : 24-22,
+		DcqBypassMax	: 28-24,
+		tFAW		: 32-28;
+	};
+} AMD_0F_DRAM_CONFIG_HIGH;
+
+typedef union
+{	// HTT Unit ID Register: Func: 0 - Off: 64h
+	unsigned int		value;
+	struct {
+		unsigned int
+		C0Unit		:  2-0,
+		C1Unit		:  4-2,
+		McUnit		:  6-4,
+		HbUnit		:  8-6,
+		SbLink		: 10-8,
+		ReservedBits	: 32-10;
+	};
+} AMD_0F_HTT_UNIT_ID;
+
+typedef union
+{	// HTT Link Frequency Capabilities: Func: 0 - Off: 88h, a8h, c8h
+	unsigned int		value;
+	struct {
+		unsigned int
+		MinRev		:  5-0,
+		MajRev		:  8-5,
+		LinkFreqMax	: 12-8,
+		Error		: 16-12,
+		LinkFreqCap	: 32-16;
+	};
+} AMD_0F_HTT_FREQUENCY;

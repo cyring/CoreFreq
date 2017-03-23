@@ -511,7 +511,7 @@ typedef struct	// BSP CPUID features.
 
 #define MC_MAX_CTRL	2
 #define MC_MAX_CHA	4
-#define MC_MAX_DIMM	3
+#define MC_MAX_DIMM	4
 
 // Source: /drivers/char/agp/intel-agp.h
 #ifndef PCI_DEVICE_ID_INTEL_82946GZ_HB
@@ -614,6 +614,13 @@ typedef struct	// BSP CPUID features.
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
+#endif
+// Source: /include/linux/pci_ids.h
+#ifndef PCI_DEVICE_ID_AMD_K8_NB_MEMCTL
+	#define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL		0x1102
+#endif
+#ifndef PCI_DEVICE_ID_AMD_K8_NB
+	#define PCI_DEVICE_ID_AMD_K8_NB			0x1100
 #endif
 
 typedef struct
