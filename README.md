@@ -181,7 +181,7 @@ insmod corefreqk.ko
 * Q: *The UI crashes frequently* with segmentation faults ?  
 
   A: In the kernel boot command argument line, *disable the NMI Watchdog*  
-  ```
+```
 nmi_watchdog=0
 ```
   A: Check also what the current idle driver is ?  
@@ -191,14 +191,14 @@ nmi_watchdog=0
 * Q: The deep sleep states do not produce any value ?  
   A: Check if the intel_idle module is running.  
      Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
-  ```
+```
 intel_idle.max_cstate=value
 ```
 
 
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
   A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
-  ```
+```
 insmod corefreqk.ko SleepInterval=value
 ```
   where value is supplied in milliseconds between a minimum of 500 ms and a maximum of 5000 ms. 1000 ms is the default value.  
@@ -212,14 +212,14 @@ insmod corefreqk.ko SleepInterval=value
      4- The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
      The algorithms # 2, 3 and 4 will not return any under/over-clock frequency.  
      The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
-  ```
+```
 insmod corefreqk.ko AutoClock=0
 ```
 
 
 * Q: The CPU temperature is wrong ?  
   A: CoreFreq employs two msr to calculate the temperature.  
-  ```
+```
 MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 ```
   If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
@@ -227,7 +227,7 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 
 * Q: The menu option "Memory Ctrl" does not open any window ?  
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
-  ```
+```
 insmod corefreqk.ko Experimental=1
 ```
 
