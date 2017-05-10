@@ -5,6 +5,7 @@
 obj-m := corefreqk.o
 KVERSION = $(shell uname -r)
 DESTDIR = $(HOME)
+CC = cc
 
 all: corefreqd corefreq-cli
 	make -C /lib/modules/$(KVERSION)/build M=${PWD} modules
@@ -13,11 +14,11 @@ clean:
 	rm corefreqd corefreq-cli
 
 corefreqd: corefreqd.o
-	cc corefreqd.c -o corefreqd -lpthread -lrt
+	$(CC) corefreqd.c -o corefreqd -lpthread -lrt
 corefreqd.o: corefreqd.c
-	cc -Wall -pthread -c corefreqd.c -o corefreqd.o
+	$(CC) -Wall -pthread -c corefreqd.c -o corefreqd.o
 
 corefreq-cli: corefreq-cli.o
-	cc corefreq-cli.c -o corefreq-cli -lm -lrt
+	$(CC) corefreq-cli.c -o corefreq-cli -lm -lrt
 corefreq-cli.o: corefreq-cli.c
-	cc -Wall -c corefreq-cli.c -o corefreq-cli.o
+	$(CC) -Wall -c corefreq-cli.c -o corefreq-cli.o
