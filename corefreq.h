@@ -56,6 +56,11 @@ typedef struct
 	struct FLIP_FLOP {
 		struct
 		{
+		unsigned int		SMI;
+		} Counter;
+
+		struct
+		{
 		unsigned long long
 					INST;
 			struct

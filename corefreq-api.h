@@ -275,6 +275,8 @@ typedef struct
 					TSC;
 
 		unsigned long long	C1;
+
+		unsigned int		SMI;
 	} Counter[2];
 
 	struct

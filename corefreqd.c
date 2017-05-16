@@ -88,6 +88,7 @@ static void *Core_Cycle(void *arg)
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
+		Flip->Counter.SMI	= Core->Counter[1].SMI;
 		Flip->Delta.INST	= Core->Delta.INST;
 		Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 		Flip->Delta.C0.URC	= Core->Delta.C0.URC;

@@ -2322,7 +2322,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
-enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS};
+enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_INTR};
 
 #define LOAD_LEAD 4
 
@@ -2620,7 +2620,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_q,	" Interrupts   [q] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -3315,6 +3315,12 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 		}
 		break;
+	case SCANKEY_q:
+		{
+		drawFlag.view = V_INTR;
+		drawFlag.clear = 1;
+		}
+		break;
 	case SCANKEY_s:
 		{
 		Window *win = SearchWinListById(scan->key, &winList);
@@ -3736,6 +3742,7 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
+	case V_INTR:
 	case V_CYCLES:
 	case V_CSTATES:
 	  {
@@ -3935,6 +3942,19 @@ void Top(SHM_STRUCT *Shm)
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"---------------- C1 -------------- C3 --"		\
 		"------------ C6 -------------- C7 ------"		\
+		"----------------------------------------"		\
+		"------------",
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	  }
+	  break;
+	case V_INTR:
+	  {
+	    LayerFillAt(layer, 0, row, drawSize.width,
+		"-------- SMI ---------------------------"		\
+		"----------------------------------------"		\
 		"----------------------------------------"		\
 		"------------",
 			MakeAttr(WHITE, 0, BLACK, 0));
@@ -4570,6 +4590,15 @@ void Top(SHM_STRUCT *Shm)
 				"%7.2f",
 				(cpu == iClock) ? '~' : 0x20,
 				Flop->Relative.Freq);
+		      }
+		      break;
+		    case V_INTR:
+		      {
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
+				"%c"					\
+				"%10u",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Counter.SMI);
 		      }
 		      break;
 		    }

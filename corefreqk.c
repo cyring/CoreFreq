@@ -2587,6 +2587,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Counters_Nehalem(Core, 1);
 		Core_Intel_Temp(Core);
+		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
 
@@ -2687,6 +2688,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Counters_SandyBridge(Core, 1);
 		Core_Intel_Temp(Core);
+		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
 
