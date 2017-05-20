@@ -88,6 +88,7 @@ static void *Core_Cycle(void *arg)
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
+		Flip->Counter.NMI	= Core->Counter[1].NMI;
 		Flip->Counter.SMI	= Core->Counter[1].SMI;
 		Flip->Delta.INST	= Core->Delta.INST;
 		Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
@@ -1975,6 +1976,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Registration.Experimental=Proc->Registration.Experimental;
 		Shm->Registration.hotplug = Proc->Registration.hotplug;
 		Shm->Registration.pci = Proc->Registration.pci;
+		Shm->Registration.nmi = Proc->Registration.nmi;
 
 		SIG Sig = {
 			.Signal	= {{0}},

@@ -17,6 +17,7 @@
 #include <linux/utsname.h>
 #include <linux/cpuidle.h>
 #include <asm/msr.h>
+#include <asm/nmi.h>
 
 #include "coretypes.h"
 #include "bitasm.h"
@@ -3088,6 +3089,15 @@ static struct notifier_block CoreFreqK_notifier_block=
 #endif
 #endif
 
+static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
+{
+	unsigned int cpu = smp_processor_id();
+
+	KPublic->Core[cpu]->Counter[1].NMI++;
+
+	return(NMI_DONE);
+}
+
 static int __init CoreFreqK_init(void)
 {
 	int rc = 0;
@@ -3269,7 +3279,15 @@ static int __init CoreFreqK_init(void)
 						CoreFreqK_hotplug_cpu_offline);
 			#endif
 		#endif
-
+				Proc->Registration.nmi =
+					register_nmi_handler(NMI_LOCAL,
+							CoreFreqK_NMI_handler,
+							0,
+							"corefreqk")
+				|	register_nmi_handler(NMI_UNKNOWN,
+							CoreFreqK_NMI_handler,
+							0,
+							"corefreqk");
 			    } else {
 				if (KPublic->Cache != NULL)
 					kmem_cache_destroy(KPublic->Cache);
@@ -3339,6 +3357,10 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu = 0;
 
+	if (!Proc->Registration.nmi) {
+		unregister_nmi_handler(NMI_LOCAL, "corefreqk");
+		unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
+	}
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);

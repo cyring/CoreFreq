@@ -276,6 +276,7 @@ typedef struct
 
 		unsigned long long	C1;
 
+		unsigned long long	NMI;
 		unsigned int		SMI;
 	} Counter[2];
 
@@ -504,7 +505,8 @@ typedef struct
 	struct {
 		signed int	Experimental,
 				hotplug,
-				pci;
+				pci,
+				nmi;
 	} Registration;
 
 	char			Architecture[32];

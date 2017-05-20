@@ -2653,9 +2653,10 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 7, 8, TOP_HEADER_ROW + 3);
+      Window *wSet = CreateWindow(wLayer, id, 2, 8, 8, TOP_HEADER_ROW + 3);
       if (wSet != NULL) {
-	char intervStr[16], experStr[16], cpuhpStr[16], pciRegStr[16];
+	char	intervStr[16], experStr[16], cpuhpStr[16], pciRegStr[16],
+		nmiRegStr[16];
 	int intervLen = sprintf(intervStr, "%13uE6",
 				Shm->Proc.SleepInterval),
 	    experLen = sprintf(experStr, "[%3s]",
@@ -2663,7 +2664,9 @@ void Top(SHM_STRUCT *Shm)
 	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
 				enabled(!(Shm->Registration.hotplug < 0))),
 	    pciRegLen = sprintf(pciRegStr, "[%3s]",
-				enabled(!(Shm->Registration.pci < 0)));
+				enabled(!(Shm->Registration.pci < 0))),
+	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
+				 enabled(Shm->Registration.nmi == 0));
 	size_t appLen = strlen(Shm->AppName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -2684,6 +2687,9 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
+        StoreTCell(wSet, SCANKEY_NULL, " NMI registered ", MAKE_PRINT_FOCUS);
+        StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
@@ -2692,6 +2698,7 @@ void Top(SHM_STRUCT *Shm)
 	memcpy(&TCellAt(wSet, 1, 3).item[15 - experLen], experStr, experLen);
 	memcpy(&TCellAt(wSet, 1, 4).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
 	memcpy(&TCellAt(wSet, 1, 5).item[15 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 1, 6).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
@@ -3953,7 +3960,7 @@ void Top(SHM_STRUCT *Shm)
 	case V_INTR:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
-		"-------- SMI ---------------------------"		\
+		"---------- SMI ------------- NMI -------"		\
 		"----------------------------------------"		\
 		"----------------------------------------"		\
 		"------------",
@@ -4596,9 +4603,10 @@ void Top(SHM_STRUCT *Shm)
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
-				"%10u",
+				"%10u%18llu",
 				(cpu == iClock) ? '~' : 0x20,
-				Flop->Counter.SMI);
+				Flop->Counter.SMI,
+				Flop->Counter.NMI);
 		      }
 		      break;
 		    }

@@ -56,6 +56,7 @@ typedef struct
 	struct FLIP_FLOP {
 		struct
 		{
+		unsigned long long	NMI;
 		unsigned int		SMI;
 		} Counter;
 
@@ -159,7 +160,8 @@ typedef struct
 	struct {
 		signed int	Experimental,	// 0: Disable, 1: Enable
 				hotplug,	// < 0: Disable, Other: Enable
-				pci;		// < 0: Disable, other: Enable
+				pci,		// < 0: Disable, other: Enable
+				nmi;		// <> 0: Failed, == 0: Enable
 	} Registration;
 
 	struct {
