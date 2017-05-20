@@ -3299,6 +3299,14 @@ static int __init CoreFreqK_init(void)
 				|	register_nmi_handler(NMI_UNKNOWN,
 							CoreFreqK_NMI_handler,
 							0,
+							"corefreqk")
+				|	register_nmi_handler(NMI_SERR,
+							CoreFreqK_NMI_handler,
+							0,
+							"corefreqk")
+				|	register_nmi_handler(NMI_IO_CHECK,
+							CoreFreqK_NMI_handler,
+							0,
 							"corefreqk");
 			    } else {
 				if (KPublic->Cache != NULL)
@@ -3370,8 +3378,10 @@ static void __exit CoreFreqK_cleanup(void)
 	unsigned int cpu = 0;
 
 	if (!Proc->Registration.nmi) {
-		unregister_nmi_handler(NMI_LOCAL, "corefreqk");
-		unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
+		unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
+		unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
+		unregister_nmi_handler(NMI_SERR,     "corefreqk");
+		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
 	}
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
