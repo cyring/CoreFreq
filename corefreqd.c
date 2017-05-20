@@ -88,8 +88,12 @@ static void *Core_Cycle(void *arg)
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
-		Flip->Counter.NMI	= Core->Counter[1].NMI;
-		Flip->Counter.SMI	= Core->Counter[1].SMI;
+		Flip->Counter.SMI	  = Core->Counter[1].SMI;
+		Flip->Counter.NMI.LOCAL	  = Core->Counter[1].NMI.LOCAL;
+		Flip->Counter.NMI.UNKNOWN = Core->Counter[1].NMI.UNKNOWN;
+		Flip->Counter.NMI.PCISERR = Core->Counter[1].NMI.PCISERR;
+		Flip->Counter.NMI.IOCHECK = Core->Counter[1].NMI.IOCHECK;
+
 		Flip->Delta.INST	= Core->Delta.INST;
 		Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 		Flip->Delta.C0.URC	= Core->Delta.C0.URC;

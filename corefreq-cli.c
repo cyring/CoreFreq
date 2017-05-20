@@ -3960,8 +3960,8 @@ void Top(SHM_STRUCT *Shm)
 	case V_INTR:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
-		"---------- SMI ------------- NMI -------"		\
-		"----------------------------------------"		\
+		"---------- SMI -- NMI[LOCAL/UNKNOWN/PCI "		\
+		"SERR#/IO CHECK] ------------------------"		\
 		"----------------------------------------"		\
 		"------------",
 			MakeAttr(WHITE, 0, BLACK, 0));
@@ -4603,10 +4603,13 @@ void Top(SHM_STRUCT *Shm)
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
-				"%10u%18llu",
+				"%10u %10u%10u%10u%10u",
 				(cpu == iClock) ? '~' : 0x20,
 				Flop->Counter.SMI,
-				Flop->Counter.NMI);
+				Flop->Counter.NMI.LOCAL,
+				Flop->Counter.NMI.UNKNOWN,
+				Flop->Counter.NMI.PCISERR,
+				Flop->Counter.NMI.IOCHECK);
 		      }
 		      break;
 		    }

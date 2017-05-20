@@ -3093,8 +3093,20 @@ static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
 
-	KPublic->Core[cpu]->Counter[1].NMI++;
-
+	switch (type) {
+	case NMI_LOCAL:
+		KPublic->Core[cpu]->Counter[1].NMI.LOCAL++;
+		break;
+	case NMI_UNKNOWN:
+		KPublic->Core[cpu]->Counter[1].NMI.UNKNOWN++;
+		break;
+	case NMI_SERR:
+		KPublic->Core[cpu]->Counter[1].NMI.PCISERR++;
+		break;
+	case NMI_IO_CHECK:
+		KPublic->Core[cpu]->Counter[1].NMI.IOCHECK++;
+		break;
+	}
 	return(NMI_DONE);
 }
 

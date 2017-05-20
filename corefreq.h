@@ -56,8 +56,13 @@ typedef struct
 	struct FLIP_FLOP {
 		struct
 		{
-		unsigned long long	NMI;
 		unsigned int		SMI;
+			struct {
+		unsigned int	LOCAL,
+				UNKNOWN,
+				PCISERR,
+				IOCHECK;
+			}		NMI;
 		} Counter;
 
 		struct

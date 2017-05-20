@@ -276,8 +276,14 @@ typedef struct
 
 		unsigned long long	C1;
 
-		unsigned long long	NMI;
 		unsigned int		SMI;
+		struct {
+			unsigned int
+				LOCAL,
+				UNKNOWN,
+				PCISERR,
+				IOCHECK;
+		}			NMI;
 	} Counter[2];
 
 	struct
