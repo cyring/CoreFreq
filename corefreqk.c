@@ -2231,6 +2231,12 @@ void Counters_Clear(CORE *Core)
 			 - Core->Counter[0].INST;			\
 })
 
+#define Delta_SMI(Core)							\
+({	/* Delta of SMI interrupt. */					\
+	Core->Delta.SMI = Core->Counter[1].SMI				\
+			- Core->Counter[0].SMI;				\
+})
+
 #define Save_TSC(Core)							\
 ({	/* Save Time Stamp Counter. */					\
 	Core->Counter[0].TSC = Core->Counter[1].TSC;			\
@@ -2265,6 +2271,11 @@ void Counters_Clear(CORE *Core)
 #define Save_INST(Core)							\
 ({	/* Save the Instructions counter. */				\
 	Core->Counter[0].INST = Core->Counter[1].INST;			\
+})
+
+#define Save_SMI(Core)							\
+({	/* Save the SMI interrupt counter. */				\
+	Core->Counter[0].SMI = Core->Counter[1].SMI;			\
 })
 
 void Core_Intel_Temp(CORE *Core)
@@ -2602,6 +2613,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Delta_C1(Core);
 
+		Delta_SMI(Core);
+
 		Save_INST(Core);
 
 		Save_TSC(Core);
@@ -2612,6 +2625,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		Save_C6(Core);
 
 		Save_C1(Core);
+
+		Save_SMI(Core);
 
 /* ToDo: Package C-state Residency Counters
 		if (Core->T.Base.BSP) {
@@ -2705,6 +2720,8 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Delta_C1(Core);
 
+		Delta_SMI(Core);
+
 		Save_INST(Core);
 
 		Save_TSC(Core);
@@ -2716,6 +2733,8 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		Save_C7(Core);
 
 		Save_C1(Core);
+
+		Save_SMI(Core);
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 

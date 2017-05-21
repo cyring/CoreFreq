@@ -102,6 +102,7 @@ static void *Core_Cycle(void *arg)
 		Flip->Delta.C7		= Core->Delta.C7;
 		Flip->Delta.TSC		= Core->Delta.TSC;
 		Flip->Delta.C1		= Core->Delta.C1;
+		Flip->Delta.SMI		= Core->Delta.SMI;
 
 		// Compute IPS=Instructions per TSC
 		Flip->State.IPS	= (double) (Flip->Delta.INST)
@@ -135,6 +136,12 @@ static void *Core_Cycle(void *arg)
 				/ (double) (Flip->Delta.TSC);
 		Flip->State.C1	= (double) (Flip->Delta.C1)
 				/ (double) (Flip->Delta.TSC);
+
+		// Compute SMI percent increase when delta > 0
+		if (Flip->Delta.SMI > 0) {
+			Flip->State.SMI = (double) (Flip->Delta.SMI)
+					/ (double) (Core->Counter[0].SMI);
+		}
 		// Relative Ratio formula.
 		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
 						* Proc->Boost[1])

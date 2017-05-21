@@ -3959,12 +3959,31 @@ void Top(SHM_STRUCT *Shm)
 	  break;
 	case V_INTR:
 	  {
-	    LayerFillAt(layer, 0, row, drawSize.width,
-		"---------- SMI -- NMI[LOCAL/UNKNOWN/PCI "		\
-		"SERR#/IO CHECK] ------------------------"		\
-		"----------------------------------------"		\
-		"------------",
-			MakeAttr(WHITE, 0, BLACK, 0));
+	    LayerDeclare(MAX_WIDTH) hIntr0 = {
+		.origin = {
+			.col = 0,
+			.row = row
+		},
+		.length = drawSize.width,
+		.attr = {
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		.code = "---------- SMI - inc ------ NMI[ LOCAL   UNKNOWN"\
+			"  PCI_SERR#  IO_CHECK] -------------------------"\
+			"------------------------------------",
+	    };
+            LayerCopyAt(layer, hIntr0.origin.col, hIntr0.origin.row,
+                        hIntr0.length, hIntr0.attr, hIntr0.code);
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
@@ -4603,9 +4622,12 @@ void Top(SHM_STRUCT *Shm)
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
-				"%10u %10u%10u%10u%10u",
+				"%10u +%-.2f%%",
 				(cpu == iClock) ? '~' : 0x20,
 				Flop->Counter.SMI,
+				100.f * Flop->State.SMI);
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD +24,row),
+				"%10u%10u%10u%10u",
 				Flop->Counter.NMI.LOCAL,
 				Flop->Counter.NMI.UNKNOWN,
 				Flop->Counter.NMI.PCISERR,

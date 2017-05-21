@@ -81,6 +81,8 @@ typedef struct
 					C7,
 					TSC,
 					C1;
+
+		unsigned int		SMI;
 		} Delta;
 
 		struct {
@@ -92,7 +94,8 @@ typedef struct
 					C3,
 					C6,
 					C7,
-					C1;
+					C1,
+					SMI;
 		} State;
 
 		struct {

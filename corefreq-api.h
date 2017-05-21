@@ -302,6 +302,8 @@ typedef struct
 					C7,
 					TSC,
 					C1;
+
+		unsigned int		SMI;
 	} Delta;
 
 	POWER_THERMAL			PowerThermal;
