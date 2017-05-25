@@ -4,6 +4,14 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_TURBO_RATIO_LIMIT
+#define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
+#endif
+
+#ifndef  MSR_PKG_CST_CONFIG_CONTROL
+#define MSR_PKG_CST_CONFIG_CONTROL MSR_NHM_SNB_PKG_CST_CFG_CTL
+#endif
+
 static const CPUID_STRUCT CpuIDforIntel[CPUID_MAX_FUNC]={
 	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
 	{.func=0x00000002, .sub=0x00000000},	/* Cache & TLB		*/

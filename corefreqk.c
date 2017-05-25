@@ -16,6 +16,9 @@
 #include <linux/slab.h>
 #include <linux/utsname.h>
 #include <linux/cpuidle.h>
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 10, 0)
+#include <linux/sched/signal.h>
+#endif
 #include <asm/msr.h>
 #include <asm/nmi.h>
 
@@ -1078,10 +1081,6 @@ void DynamicAcceleration(void)
 	}
 }
 
-#ifndef MSR_TURBO_RATIO_LIMIT
-#define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
-#endif
-
 void Nehalem_Platform_Info(void)
 {
 	PLATFORM_INFO Platform = {.value = 0};
@@ -1928,7 +1927,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		CSTATE_CONFIG CStateConfig = {.value = 0};
 
-		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
@@ -1949,7 +1948,7 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		CSTATE_CONFIG CStateConfig = {.value = 0};
 
-		RDMSR(CStateConfig, MSR_NHM_SNB_PKG_CST_CFG_CTL);
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
