@@ -150,6 +150,22 @@ typedef struct
 
 	unsigned int			Top;
 
+	unsigned int			Toggle;
+
+	struct PKG_FLIP_FLOP {
+		struct
+		{
+		unsigned long long	PTSC,
+					PC02,
+					PC03,
+					PC06,
+					PC07,
+					PC08,
+					PC09,
+					PC10;
+		} Delta;
+	} FlipFlop[2];
+
 	struct {
 		double			Turbo,
 					C0,

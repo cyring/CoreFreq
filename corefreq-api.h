@@ -324,6 +324,7 @@ typedef struct
 					C1A	:  5-4,	// Core
 					C3U	:  6-5,	// Sandy Bridge
 					C1U	:  7-6,	// Sandy Bridge
+					PkgState: 11-7, // Package C-State
 					Unused	: 64-7;
 
 		CPUID_0x00000000	StdFunc;
@@ -466,10 +467,10 @@ typedef struct {
 
 typedef struct
 {
-/* ToDo: Package C-state Residency Counters
 	struct
 	{
-	    unsigned long long	PC02, // Goldmont, Sandy-Bridge, Phi
+	    unsigned long long	PTSC, // Package Time Stamp Counter
+				PC02, // Goldmont, Sandy-Bridge, Phi
 				PC03, // Goldmont, Nehalem, Sandy-Bridge, Phi
 				PC06, // Goldmont, Nehalem, Sandy-Bridge, Phi
 				PC07, // Nehalem, Sandy-Bridge, Phi
@@ -480,7 +481,8 @@ typedef struct
 
 	struct
 	{
-	    unsigned long long	PC02,
+	    unsigned long long	PTSC,
+				PC02,
 				PC03,
 				PC06,
 				PC07,
@@ -488,7 +490,7 @@ typedef struct
 				PC09,
 				PC10;
 	} Delta;
-*/
+
 	FEATURES		Features;
 
 	unsigned int		SleepInterval;

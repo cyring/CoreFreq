@@ -62,6 +62,10 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static signed short PkgCstateLimit = -1;
+module_param(PkgCstateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PkgCstateLimit, "Package C-State Limit");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -1918,6 +1922,8 @@ void PerCore_Core2_Query(CORE *Core)
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
+	CSTATE_CONFIG CStateConfig = {.value = 0};
+
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -1925,12 +1931,21 @@ void PerCore_Nehalem_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CSTATE_CONFIG CStateConfig = {.value = 0};
-
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
+	}
+	if (Core->T.Base.BSP) {
+		if (PkgCstateLimit != -1) {
+		    if (CStateConfig.CFG_Lock == 0) {
+			printk(KERN_INFO "CoreFreq: C-State Config submit\n");
+			CStateConfig.Pkg_CST_Limit = PkgCstateLimit;
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		    } else
+			printk(KERN_INFO "CoreFreq: C-State Config locked\n");
+		}
+		Core->Query.PkgState = CStateConfig.Pkg_CST_Limit;
 	}
 	PowerThermal(Core);
 
@@ -1939,6 +1954,8 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 void PerCore_SandyBridge_Query(CORE *Core)
 {
+	CSTATE_CONFIG CStateConfig = {.value = 0};
+
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -1946,14 +1963,23 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CSTATE_CONFIG CStateConfig = {.value = 0};
-
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
 		Core->Query.C3U = CStateConfig.C3undemotion;
 		Core->Query.C1U = CStateConfig.C1undemotion;
+	}
+	if (Core->T.Base.BSP) {
+		if (PkgCstateLimit != -1) {
+		    if (CStateConfig.CFG_Lock == 0) {
+			printk(KERN_INFO "CoreFreq: C-State Config submit\n");
+			CStateConfig.Pkg_CST_Limit = PkgCstateLimit;
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		    } else
+			printk(KERN_INFO "CoreFreq: C-State Config locked\n");
+		}
+		Core->Query.PkgState = CStateConfig.Pkg_CST_Limit;
 	}
 	PowerThermal(Core);
 
@@ -2236,6 +2262,54 @@ void Counters_Clear(CORE *Core)
 			- Core->Counter[0].SMI;				\
 })
 
+#define Delta_PTSC(Pkg)							\
+({									\
+	Pkg->Delta.PTSC = Pkg->Counter[1].PTSC				\
+			- Pkg->Counter[0].PTSC;				\
+})
+
+#define Delta_PC02(Pkg)							\
+({									\
+	Pkg->Delta.PC02 = Pkg->Counter[1].PC02				\
+			- Pkg->Counter[0].PC02;				\
+})
+
+#define Delta_PC03(Pkg)							\
+({									\
+	Pkg->Delta.PC03 = Pkg->Counter[1].PC03				\
+			- Pkg->Counter[0].PC03;				\
+})
+
+#define Delta_PC06(Pkg)							\
+({									\
+	Pkg->Delta.PC06 = Pkg->Counter[1].PC06				\
+			- Pkg->Counter[0].PC06;				\
+})
+
+#define Delta_PC07(Pkg)							\
+({									\
+	Pkg->Delta.PC07 = Pkg->Counter[1].PC07				\
+			- Pkg->Counter[0].PC07;				\
+})
+
+#define Delta_PC08(Pkg)							\
+({									\
+	Pkg->Delta.PC08 = Pkg->Counter[1].PC08				\
+			- Pkg->Counter[0].PC08;				\
+})
+
+#define Delta_PC09(Pkg)							\
+({									\
+	Pkg->Delta.PC09 = Pkg->Counter[1].PC09				\
+			- Pkg->Counter[0].PC09;				\
+})
+
+#define Delta_PC10(Pkg)							\
+({									\
+	Pkg->Delta.PC10 = Pkg->Counter[1].PC10				\
+			- Pkg->Counter[0].PC10;				\
+})
+
 #define Save_TSC(Core)							\
 ({	/* Save Time Stamp Counter. */					\
 	Core->Counter[0].TSC = Core->Counter[1].TSC;			\
@@ -2275,6 +2349,46 @@ void Counters_Clear(CORE *Core)
 #define Save_SMI(Core)							\
 ({	/* Save the SMI interrupt counter. */				\
 	Core->Counter[0].SMI = Core->Counter[1].SMI;			\
+})
+
+#define Save_PTSC(Pkg)							\
+({									\
+	Pkg->Counter[0].PTSC = Pkg->Counter[1].PTSC;			\
+})
+
+#define Save_PC02(Pkg)							\
+({									\
+	Pkg->Counter[0].PC02 = Pkg->Counter[1].PC02;			\
+})
+
+#define Save_PC03(Pkg)							\
+({									\
+	Pkg->Counter[0].PC03 = Pkg->Counter[1].PC03;			\
+})
+
+#define Save_PC06(Pkg)							\
+({									\
+	Pkg->Counter[0].PC06 = Pkg->Counter[1].PC06;			\
+})
+
+#define Save_PC07(Pkg)							\
+({									\
+	Pkg->Counter[0].PC07 = Pkg->Counter[1].PC07;			\
+})
+
+#define Save_PC08(Pkg)							\
+({									\
+	Pkg->Counter[0].PC08 = Pkg->Counter[1].PC08;			\
+})
+
+#define Save_PC09(Pkg)							\
+({									\
+	Pkg->Counter[0].PC09 = Pkg->Counter[1].PC09;			\
+})
+
+#define Save_PC10(Pkg)							\
+({									\
+	Pkg->Counter[0].PC10 = Pkg->Counter[1].PC10;			\
 })
 
 void Core_Intel_Temp(CORE *Core)
@@ -2597,7 +2711,32 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Nehalem(Core, 1);
+
+		if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
+			RDTSCP_COUNTERx3(Proc->Counter[1].PTSC, \
+				MSR_PKG_C3_RESIDENCY, Proc->Counter[1].PC03, \
+				MSR_PKG_C6_RESIDENCY, Proc->Counter[1].PC06, \
+				MSR_PKG_C7_RESIDENCY, Proc->Counter[1].PC07);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PTSC(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PTSC(Proc);
+		}
+
 		Core_Intel_Temp(Core);
+
 		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
@@ -2621,30 +2760,13 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		Save_C0(Core);
 
 		Save_C3(Core);
+
 		Save_C6(Core);
 
 		Save_C1(Core);
 
 		Save_SMI(Core);
 
-/* ToDo: Package C-state Residency Counters
-		if (Core->T.Base.BSP) {
-			RDCOUNTER(Proc->Counter[1].PC03, MSR_PKG_C3_RESIDENCY);
-			RDCOUNTER(Proc->Counter[1].PC06, MSR_PKG_C6_RESIDENCY);
-			RDCOUNTER(Proc->Counter[1].PC07, MSR_PKG_C7_RESIDENCY);
-
-			Proc->Delta.PC03 = Proc->Counter[1].PC03
-					 - Proc->Counter[0].PC03;
-			Proc->Delta.PC06 = Proc->Counter[1].PC06
-					 - Proc->Counter[0].PC06;
-			Proc->Delta.PC07 = Proc->Counter[1].PC07
-					 - Proc->Counter[0].PC07;
-
-			Proc->Counter[0].PC03 = Proc->Counter[1].PC03;
-			Proc->Counter[0].PC06 = Proc->Counter[1].PC06;
-			Proc->Counter[0].PC07 = Proc->Counter[1].PC07;
-		}
-*/
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -2666,6 +2788,15 @@ void Start_Nehalem(void *arg)
 
 	Counters_Set(Core);
 	Counters_Nehalem(Core, 0);
+
+	if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
+		RDTSCP_COUNTERx3(Proc->Counter[0].PTSC,			\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[0].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[0].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[0].PC07);
+	}
+
+	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
 
 	KPrivate->Join[cpu]->tsm.mustFwd = 1;
 
@@ -2702,7 +2833,37 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_SandyBridge(Core, 1);
+
+		if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
+			RDTSCP_COUNTERx4(Proc->Counter[1].PTSC, \
+				MSR_PKG_C2_RESIDENCY, Proc->Counter[1].PC02, \
+				MSR_PKG_C3_RESIDENCY, Proc->Counter[1].PC03, \
+				MSR_PKG_C6_RESIDENCY, Proc->Counter[1].PC06, \
+				MSR_PKG_C7_RESIDENCY, Proc->Counter[1].PC07);
+
+			Delta_PC02(Proc);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PTSC(Proc);
+
+			Save_PC02(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PTSC(Proc);
+                }
+
 		Core_Intel_Temp(Core);
+
 		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
@@ -2728,7 +2889,9 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		Save_C0(Core);
 
 		Save_C3(Core);
+
 		Save_C6(Core);
+
 		Save_C7(Core);
 
 		Save_C1(Core);
@@ -2756,6 +2919,16 @@ void Start_SandyBridge(void *arg)
 
 	Counters_Set(Core);
 	Counters_SandyBridge(Core, 0);
+
+	if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
+		RDTSCP_COUNTERx4(Proc->Counter[0].PTSC,			\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[0].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[0].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[0].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[0].PC07);
+	}
+
+	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
 
 	KPrivate->Join[cpu]->tsm.mustFwd = 1;
 

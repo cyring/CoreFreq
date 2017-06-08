@@ -32,8 +32,8 @@ unsigned int Shutdown = 0x0, Quiet = 0x001, Math = 0x0, SysGateStartUp = 1;
 static unsigned long long roomSeed = 0x0;
 
 typedef struct {
-	PROC_STRUCT	*Proc;
-	CPU_STRUCT	*Cpu;
+	SHM_STRUCT	*Shm;
+	PROC		*Pkg;
 	CORE		*Core;
 	unsigned int	Bind;
 	pthread_t	TID;
@@ -43,13 +43,16 @@ typedef struct {
 static void *Core_Cycle(void *arg)
 {
 	ARG *Arg = (ARG *) arg;
-	PROC_STRUCT *Proc = Arg->Proc;
-	CPU_STRUCT *Cpu = Arg->Cpu;
+	SHM_STRUCT *Shm = Arg->Shm;
+	PROC *Pkg = Arg->Pkg;
 	CORE *Core = Arg->Core;
-	unsigned int cpu = Arg->Bind,
-	thermalFormula = !strncmp(Proc->Features.Info.VendorID,VENDOR_INTEL,12)?
-		0x01 : !strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12) ?
-			0x10 : 0x0;
+	unsigned int cpu = Arg->Bind;
+	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+
+	unsigned int thermalFormula =
+	  !strncmp(Shm->Proc.Features.Info.VendorID,VENDOR_INTEL,12)?
+	    0x01 : !strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12) ?
+		0x10 : 0x0;
 
 	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
@@ -70,21 +73,21 @@ static void *Core_Cycle(void *arg)
 		fflush(stdout);
 	}
 	BITSET(BUS_LOCK, roomSeed, cpu);
-	BITSET(BUS_LOCK, Proc->Room, cpu);
+	BITSET(BUS_LOCK, Shm->Proc.Room, cpu);
 
 	do {
 	    while (!BITVAL(Core->Sync.V, 63)
 		&& !Shutdown
 		&& !Core->OffLine.OS) {
-			nanosleep(&Proc->BaseSleep, NULL);
+			nanosleep(&Shm->Proc.BaseSleep, NULL);
 	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
 	    if (!Shutdown && !Core->OffLine.OS)
 	    {
-		if (BITVAL(Proc->Room, cpu)) {
+		if (BITVAL(Shm->Proc.Room, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
-			BITCLR(BUS_LOCK, Proc->Room, cpu);
+			BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -144,20 +147,20 @@ static void *Core_Cycle(void *arg)
 		}
 		// Relative Ratio formula.
 		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
-						* Proc->Boost[1])
+						* Shm->Proc.Boost[1])
 					/ (double) (Flip->Delta.TSC);
 
 		if (!Math && Core->Query.Turbo) {
 			// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq = (double) (Flip->Delta.C0.UCC)
-						/ (Proc->SleepInterval * 1000);
+					/ (Shm->Proc.SleepInterval * 1000);
 		} else {
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		  Flip->Relative.Freq =
-		  (double) REL_FREQ(Proc->Boost[1],			\
+		  (double) REL_FREQ(Shm->Proc.Boost[1],			\
 				    Flip->Relative.Ratio,		\
-				    Core->Clock, Proc->SleepInterval)
-					/ (Proc->SleepInterval * 1000);
+				    Core->Clock, Shm->Proc.SleepInterval)
+					/ (Shm->Proc.SleepInterval * 1000);
 		}
 		Flip->Thermal.Trip   = Core->PowerThermal.Trip;
 		Flip->Thermal.Sensor = Core->PowerThermal.Sensor;
@@ -174,10 +177,27 @@ static void *Core_Cycle(void *arg)
 			Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
 		if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
 			Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
+
+		// Package C-state Residency Counters
+		if (Core->T.Base.BSP) {
+			Shm->Proc.Toggle = !Shm->Proc.Toggle;
+
+			struct PKG_FLIP_FLOP *Flip =
+					&Shm->Proc.FlipFlop[Shm->Proc.Toggle];
+
+			Flip->Delta.PTSC = Pkg->Delta.PTSC;
+			Flip->Delta.PC02 = Pkg->Delta.PC02;
+			Flip->Delta.PC03 = Pkg->Delta.PC03;
+			Flip->Delta.PC06 = Pkg->Delta.PC06;
+			Flip->Delta.PC07 = Pkg->Delta.PC07;
+			Flip->Delta.PC08 = Pkg->Delta.PC08;
+			Flip->Delta.PC09 = Pkg->Delta.PC09;
+			Flip->Delta.PC10 = Pkg->Delta.PC10;
+		}
 	    }
 	} while (!Shutdown && !Core->OffLine.OS) ;
 
-	BITCLR(BUS_LOCK, Proc->Room, cpu);
+	BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if (Quiet & 0x100) {
@@ -205,8 +225,10 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 
 void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
 {
-	Shm->Proc.InvariantTSC = ( Proc->Features.Std.DX.TSC
-				<< Proc->Features.AdvPower.DX.Inv_TSC);
+	Bit32	fTSC = Proc->Features.Std.DX.TSC,
+		aTSC = Proc->Features.AdvPower.DX.Inv_TSC;
+
+	Shm->Proc.InvariantTSC = fTSC << aTSC;
 }
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
@@ -1508,9 +1530,10 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
 
 	Shm->Cpu[cpu].PowerThermal.ODCM =
-		Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle
-		* (Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1) ?
-			6.25f : 12.5f;
+		Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1 ?
+					6.25f : 12.5f;
+	Shm->Cpu[cpu].PowerThermal.ODCM
+		*= Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle;
 
 	Shm->Cpu[cpu].PowerThermal.Target = Core[cpu]->PowerThermal.Target;
 
@@ -1852,9 +1875,9 @@ void Core_Manager(FD *fd,
 					* Proc->Boost[1])
 					/ 1000000L );
 
-			Arg[cpu].Proc = &Shm->Proc;
+			Arg[cpu].Shm  = Shm;
+			Arg[cpu].Pkg  = Proc;
 			Arg[cpu].Core = Core[cpu];
-			Arg[cpu].Cpu  = &Shm->Cpu[cpu];
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
 					NULL,
@@ -1924,18 +1947,6 @@ void Core_Manager(FD *fd,
 			}
 		}
 
-/* ToDo: Package C-state Residency Counters
-		if (Quiet & 0x100) {
-			printf( "\tThread [%lx]\n"	\
-				"\tPC3=%llu\n"			\
-				"\tPC6=%llu\n"			\
-				"\tPC7=%llu\n",
-				tid,
-				Proc->Delta.PC03,
-				Proc->Delta.PC06,
-				Proc->Delta.PC07);
-		}
-*/
 		// Notify Client.
 		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
 	}
@@ -2015,8 +2026,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		HyperThreading(Shm, Proc);
 
 		PowerNow(Shm, Proc);
-
-//-		Uncore(Shm, Proc);
 
 		// Store the application name.
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
