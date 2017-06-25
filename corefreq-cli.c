@@ -269,7 +269,7 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		void(*OutFunc)(char *output))
 {
 	size_t	len = 0;
-	char	*row = malloc(width + 1),
+	char	*row[2] = {malloc(width + 1), malloc(width + 1)},
 		*str = malloc(width + 1),
 		*pad = NULL;
 	int	i = 0;
@@ -302,22 +302,36 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	printv(OutFunc, width, 2, "Base Clock%.*s[%3llu]",
 		width - 18, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L);
 
-	printv(OutFunc, width, 2, "Ratio Boost:");
+	len = sprintf(row[0],
+			"Core Boost%.*sMin   Max"			\
+			"    8C    7C    6C    5C    4C    3C    2C    1C",
+			6, hSpace);
 
-	len = sprintf(row, "%.*sMin Max  8C  7C  6C  5C  4C  3C  2C  1C",
-			22, hSpace);
+	printv(OutFunc, width, 2, row[0]);
 
-	printv(OutFunc, width, 1, row);
-
-	len = sprintf(row, "%.*s", 22, hSpace);
-	for (i = 0; i < 10; i++) {
-		if (Shm->Proc.Boost[i] != 0)
-			len += sprintf(str, "%3d ", Shm->Proc.Boost[i]);
-		else
-			len += sprintf(str, "  - ");
-		strcat(row, str);
+	if (OutFunc == NULL) {
+		strcpy(row[0], "   |- ratio :    ");
+		strcpy(row[1], "   |-  freq :    ");
+	} else {
+		strcpy(row[0], "  |- ratio :    ");
+		strcpy(row[1], "  |-  freq :    ");
 	}
-	printv(OutFunc, width, 1, row);
+	for (i = 0; i < 10; i++) {
+		if (Shm->Proc.Boost[i] != 0) {
+			len += sprintf(str, " %4d ", Shm->Proc.Boost[i]);
+			strcat(row[0], str);
+
+			len += sprintf(str, " %4.0f ",
+					(double) ( Shm->Proc.Boost[i]
+					* Shm->Cpu[0].Clock.Hz) / 1000000.0);
+			strcat(row[1], str);
+		} else {
+			strcat(row[0], "   -  ");
+			strcat(row[1], "      ");
+		}
+	}
+	printv(OutFunc, width, 0, row[0]);
+	printv(OutFunc, width, 0, row[1]);
 /* Section Mark */
 	printv(OutFunc, width, 0, "Instruction set:");
 /* Row Mark */
@@ -326,26 +340,26 @@ void SysInfoProc(SHM_STRUCT *Shm,
 			Shm->Proc.Features.ExtInfo.DX._3DNow ? 'Y' : 'N',
 			Shm->Proc.Features.ExtInfo.DX._3DNowEx ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 11, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "AES [%c]",
 			Shm->Proc.Features.Std.CX.AES ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 6, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "AVX/AVX2 [%c/%c]",
 			Shm->Proc.Features.Std.CX.AVX ? 'Y' : 'N',
 			Shm->Proc.Features.ExtFeature.BX.AVX2 ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "BMI1/BMI2 [%c/%c]",
 			Shm->Proc.Features.ExtFeature.BX.BMI1 ? 'Y' : 'N',
@@ -354,33 +368,33 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "CLFSH        [%c]",
 			Shm->Proc.Features.Std.DX.CLFSH ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 10, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "CMOV [%c]",
 			Shm->Proc.Features.Std.DX.CMOV ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 7, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "CMPXCH8   [%c]",
 			Shm->Proc.Features.Std.DX.CMPXCH8 ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "CMPXCH16   [%c]",
 			Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N');
@@ -388,33 +402,33 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "F16C         [%c]",
 			Shm->Proc.Features.Std.CX.F16C ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 11, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "FPU [%c]",
 			Shm->Proc.Features.Std.DX.FPU ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 10, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "FXSR   [%c]",
 			Shm->Proc.Features.Std.DX.FXSR ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "LAHF/SAHF   [%c]",
 			Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N');
@@ -422,34 +436,34 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "MMX/Ext    [%c/%c]",
 			Shm->Proc.Features.Std.DX.MMX ? 'Y' : 'N',
 			Shm->Proc.Features.ExtInfo.DX.MMX_Ext ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 7, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "MONITOR [%c]",
 			Shm->Proc.Features.Std.CX.MONITOR ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 9, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "MOVBE   [%c]",
 			Shm->Proc.Features.Std.CX.MOVBE ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "PCLMULDQ   [%c]",
 			Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N');
@@ -457,33 +471,33 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "POPCNT       [%c]",
 			Shm->Proc.Features.Std.CX.POPCNT ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 8, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "RDRAND [%c]",
 			Shm->Proc.Features.Std.CX.RDRAND ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 8, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "RDTSCP   [%c]",
 			Shm->Proc.Features.ExtInfo.DX.RDTSCP ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SEP   [%c]",
 			Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N');
@@ -491,33 +505,33 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "SSE          [%c]",
 			Shm->Proc.Features.Std.DX.SSE ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 10, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SSE2 [%c]",
 			Shm->Proc.Features.Std.DX.SSE2 ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 10, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SSE3   [%c]",
 			Shm->Proc.Features.Std.CX.SSE3 ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SSSE3   [%c]",
 			Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N');
@@ -525,29 +539,29 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, pad);
-	strcat(row, str);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], pad);
+	strcat(row[0], str);
+	printv(OutFunc, width, 2, row[0]);
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "SSE4.1/4A  [%c/%c]",
 			Shm->Proc.Features.Std.CX.SSE41 ? 'Y' : 'N',
 			Shm->Proc.Features.ExtInfo.CX.SSE4A ? 'Y' : 'N');
 
-	strcpy(row, str);
+	strcpy(row[0], str);
 
 	len += sprintf(str, "%.*s", 8, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SSE4.2 [%c]",
 			Shm->Proc.Features.Std.CX.SSE42 ? 'Y' : 'N');
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "%.*s", 7, hSpace);
 
-	strcat(row, str);
+	strcat(row[0], str);
 
 	len += sprintf(str, "SYSCALL   [%c]",
 			Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N');
@@ -555,11 +569,12 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
 
-	strcat(row, str);
-	strcat(row, pad);
-	printv(OutFunc, width, 2, row);
+	strcat(row[0], str);
+	strcat(row[0], pad);
+	printv(OutFunc, width, 2, row[0]);
 
-	free(row);
+	free(row[0]);
+	free(row[1]);
 	free(str);
 	free(pad);
 }
