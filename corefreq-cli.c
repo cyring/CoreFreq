@@ -3630,8 +3630,8 @@ void Top(SHM_STRUCT *Shm)
 	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-    {
+  for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+  {
 	row++;
 	sprintf(buffer, "%-2u", cpu);
 
@@ -3649,21 +3649,13 @@ void Top(SHM_STRUCT *Shm)
 	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
 	LayerAt(layer, code, 3, row) = 0x20;
 
-      if (!Shm->Cpu[cpu].OffLine.OS) {
+    if (!Shm->Cpu[cpu].OffLine.OS) {
 	LayerAt(layer, attr, 1, row) =					\
 		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
 			MakeAttr(CYAN, 0, BLACK, 0);
 	LayerAt(layer, attr, 2, row) =					\
 		LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count)) = \
 			MakeAttr(CYAN, 0, BLACK, 0);
-      } else {
-	LayerAt(layer, attr, 1, row) =					\
-		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
-			MakeAttr(BLUE, 0, BLACK, 0);
-	LayerAt(layer, attr, 2, row) =					\
-		LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count)) = \
-			MakeAttr(BLUE, 0, BLACK, 0);
-      }
 
 	switch (drawFlag.view) {
 	default:
@@ -3832,6 +3824,21 @@ void Top(SHM_STRUCT *Shm)
 	  }
 	  break;
 	}
+    } else {
+	LayerAt(layer, attr, 1, row) =					\
+		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
+			MakeAttr(BLUE, 0, BLACK, 0);
+	LayerAt(layer, attr, 2, row) =					\
+		LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count)) = \
+			MakeAttr(BLUE, 0, BLACK, 0);
+
+	LayerFillAt(layer, LOAD_LEAD, row,
+			(drawSize.width - LOAD_LEAD), hSpace,
+			MakeAttr(WHITE, 0, BLACK, 0));
+	LayerFillAt(layer, (LOAD_LEAD - 1), (row + Shm->Proc.CPU.Count + 1),
+			(drawSize.width - LOAD_LEAD + 1), hSpace,
+			MakeAttr(WHITE, 0, BLACK, 0));
+   }
 
 	i = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
 	sprintf(hBClk[cpu],
@@ -3839,7 +3846,7 @@ void Top(SHM_STRUCT *Shm)
 		digit[0], digit[1], digit[2],
 		digit[3], digit[4], digit[5],
 		digit[6], digit[7], digit[8]);
-    }
+  }
 
 	row++;
 
