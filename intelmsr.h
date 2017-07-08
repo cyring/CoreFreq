@@ -8,8 +8,12 @@
 #define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
 #endif
 
-#ifndef  MSR_PKG_CST_CONFIG_CONTROL
+#ifndef MSR_PKG_CST_CONFIG_CONTROL
 #define MSR_PKG_CST_CONFIG_CONTROL MSR_NHM_SNB_PKG_CST_CFG_CTL
+#endif
+
+#ifndef MSR_PMG_IO_CAPTURE_BASE
+#define MSR_PMG_IO_CAPTURE_BASE 0xe4
 #endif
 
 static const CPUID_STRUCT CpuIDforIntel[CPUID_MAX_FUNC]={
@@ -124,7 +128,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Pkg_CST_Limit	:  3-0,
+		Pkg_CStateLimit :  3-0,
 		ReservedBits1	: 10-3,
 		IO_MWAIT_Redir	: 11-10,
 		ReservedBits2	: 15-11,
@@ -138,6 +142,18 @@ typedef union
 		ReservedBits4	: 64-29;
 	};
 } CSTATE_CONFIG;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		LVL2_BaseAddr	: 16-0,
+		CStateRange	: 19-16,
+		ReservedBits	: 64-19;
+	};
+} CSTATE_IO_MWAIT;
 
 typedef union
 {

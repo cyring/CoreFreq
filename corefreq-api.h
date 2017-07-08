@@ -264,11 +264,11 @@ typedef struct
 		unsigned long long 	INST;
 		struct
 		{
-			unsigned long long
+		unsigned long long
 				UCC,
 				URC;
 		}			C0;
-			unsigned long long
+		unsigned long long
 					C3,
 					C6,
 					C7,
@@ -279,10 +279,10 @@ typedef struct
 		unsigned int		SMI;
 		struct {
 			unsigned int
-				LOCAL,
-				UNKNOWN,
-				PCISERR,
-				IOCHECK;
+					LOCAL,
+					UNKNOWN,
+					PCISERR,
+					IOCHECK;
 		}			NMI;
 	} Counter[2];
 
@@ -316,19 +316,24 @@ typedef struct
 
 	struct
 	{
-		unsigned long long
-					EIST	:  1-0,	// Package
-					C1E	:  2-1,	// Package
-					Turbo	:  3-2,	// Thread
-					C3A	:  4-3,	// Core
-					C1A	:  5-4,	// Core
-					C3U	:  6-5,	// Sandy Bridge
-					C1U	:  7-6,	// Sandy Bridge
-					PkgState: 11-7, // Package C-State
-					Unused	: 64-7;
-
 		CPUID_0x00000000	StdFunc;
 		CPUID_0x80000000	ExtFunc;
+
+		struct {
+		unsigned long long
+					EIST	:  1-0,  // Package
+					C1E	:  2-1,  // Package
+					Turbo	:  3-2,  // Thread
+					C3A	:  4-3,  // Core
+					C1A	:  5-4,  // Core
+					C3U	:  6-5,  // Sandy Bridge
+					C1U	:  7-6,  // Sandy Bridge
+					CfgLock :  8-7,  // Core
+					IORedir :  9-8,  // Core
+					Unused	: 64-9;
+		};
+		unsigned short int	CStateLimit,
+					CStateInclude;
 	} Query;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];

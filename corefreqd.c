@@ -108,19 +108,19 @@ static void *Core_Cycle(void *arg)
 		Flip->Delta.SMI		= Core->Delta.SMI;
 
 		// Compute IPS=Instructions per TSC
-		Flip->State.IPS	= (double) (Flip->Delta.INST)
+		Flip->State.IPS = (double) (Flip->Delta.INST)
 				/ (double) (Flip->Delta.TSC);
 
 		// Compute IPC=Instructions per non-halted reference cycle.
 		// (Protect against a division by zero)
-		Flip->State.IPC	= (double) (Flip->Delta.C0.URC != 0) ?
+		Flip->State.IPC = (Flip->Delta.C0.URC != 0) ?
 				  (double) (Flip->Delta.INST)
 				/ (double) Flip->Delta.C0.URC
 				: 0.0f;
 
 		// Compute CPI=Non-halted reference cycles per instruction.
 		// (Protect against a division by zero)
-		Flip->State.CPI	= (double) (Flip->Delta.INST != 0) ?
+		Flip->State.CPI = (Flip->Delta.INST != 0) ?
 				  (double) Flip->Delta.C0.URC
 				/ (double) (Flip->Delta.INST)
 				: 0.0f;
@@ -141,13 +141,16 @@ static void *Core_Cycle(void *arg)
 				/ (double) (Flip->Delta.TSC);
 
 		// Compute SMI percent increase when delta > 0
+		// (Protect against a division by zero)
 		if (Flip->Delta.SMI > 0) {
-			Flip->State.SMI = (double) (Flip->Delta.SMI)
-					/ (double) (Core->Counter[0].SMI);
+			Flip->State.SMI = (Core->Counter[0].SMI != 0) ?
+					  (double) (Flip->Delta.SMI)
+					/ (double) (Core->Counter[0].SMI)
+					: 0.0f;
 		}
 		// Relative Ratio formula.
 		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
-						* Shm->Proc.Boost[1])
+						  * Shm->Proc.Boost[1])
 					/ (double) (Flip->Delta.TSC);
 
 		if (!Math && Core->Query.Turbo) {
@@ -193,6 +196,35 @@ static void *Core_Cycle(void *arg)
 			Flip->Delta.PC08 = Pkg->Delta.PC08;
 			Flip->Delta.PC09 = Pkg->Delta.PC09;
 			Flip->Delta.PC10 = Pkg->Delta.PC10;
+
+			Shm->Proc.State.PC02 = (Flip->Delta.PC02 != 0) ?
+						  (double) Flip->Delta.PC02
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC03 = (Flip->Delta.PC03 != 0) ?
+						  (double) Flip->Delta.PC03
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC06 = (Flip->Delta.PC06 != 0) ?
+						  (double) Flip->Delta.PC06
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC07 = (Flip->Delta.PC07 != 0) ?
+						  (double) Flip->Delta.PC07
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC08 = (Flip->Delta.PC08 != 0) ?
+						  (double) Flip->Delta.PC08
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC09 = (Flip->Delta.PC09 != 0) ?
+						  (double) Flip->Delta.PC09
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
+			Shm->Proc.State.PC10 = (Flip->Delta.PC10 != 0) ?
+						  (double) Flip->Delta.PC10
+						/ (double) Flip->Delta.PTSC
+						: 0.0f;
 		}
 	    }
 	} while (!Shutdown && !Core->OffLine.OS) ;
@@ -1510,6 +1542,12 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 		BITSET(LOCKLESS, Shm->Proc.C1U, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.C1U, cpu);
+
+	Shm->Cpu[cpu].Query.CfgLock = Core[cpu]->Query.CfgLock;
+	Shm->Cpu[cpu].Query.CStateLimit = Core[cpu]->Query.CStateLimit;
+
+	Shm->Cpu[cpu].Query.IORedir = Core[cpu]->Query.IORedir;
+	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
 void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)

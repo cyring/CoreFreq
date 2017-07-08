@@ -18,6 +18,14 @@ typedef struct
 	{
 		CPUID_0x00000000	StdFunc;
 		CPUID_0x80000000	ExtFunc;
+
+		struct {
+		unsigned short int	CfgLock :  1-0,
+					IORedir :  2-1,
+					Unused	: 16-2;
+		};
+		unsigned short int	CStateLimit,
+					CStateInclude;
 	} Query;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
@@ -54,23 +62,21 @@ typedef struct
 	} PowerThermal;
 
 	struct FLIP_FLOP {
-		struct
-		{
+		struct {
 		unsigned int		SMI;
 			struct {
-		unsigned int	LOCAL,
-				UNKNOWN,
-				PCISERR,
-				IOCHECK;
-			}		NMI;
+			unsigned int	LOCAL,
+					UNKNOWN,
+					PCISERR,
+					IOCHECK;
+			} NMI;
 		} Counter;
 
 		struct
 		{
 		unsigned long long
 					INST;
-			struct
-			{
+			struct {
 		unsigned long long
 				UCC,
 				URC;
@@ -145,7 +151,7 @@ typedef struct
 					C1A_Mask,
 					C3U,		// Sandy Bridge
 					C3U_Mask,
-					C1U,		// Sandy Bridge;
+					C1U,		// Sandy Bridge
 					C1U_Mask;
 
 	unsigned int			Top;
@@ -165,6 +171,16 @@ typedef struct
 					PC10;
 		} Delta;
 	} FlipFlop[2];
+
+	struct {
+		double			PC02,
+					PC03,
+					PC06,
+					PC07,
+					PC08,
+					PC09,
+					PC10;
+	} State;
 
 	struct {
 		double			Turbo,

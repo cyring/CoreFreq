@@ -62,9 +62,9 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
-static signed short PkgCstateLimit = -1;
-module_param(PkgCstateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(PkgCstateLimit, "Package C-State Limit");
+static signed short PkgCStateLimit = -1;
+module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
 
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
@@ -2150,17 +2150,76 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
-	}
-	if (Core->T.Base.BSP) {
-		if (PkgCstateLimit != -1) {
-		    if (CStateConfig.CFG_Lock == 0) {
-			printk(KERN_INFO "CoreFreq: C-State Config submit\n");
-			CStateConfig.Pkg_CST_Limit = PkgCstateLimit;
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-		    } else
-			printk(KERN_INFO "CoreFreq: C-State Config locked\n");
+
+		if (CStateConfig.CFG_Lock == 0) {
+			switch (PkgCStateLimit) {
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b100;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b011;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 3: // Cannot be used to limit package C-state to C3
+				CStateConfig.Pkg_CStateLimit = 0b010;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 1:
+				CStateConfig.Pkg_CStateLimit = 0b001;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b000;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			}
+			if (PkgCStateLimit != -1) {
+				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			}
 		}
-		Core->Query.PkgState = CStateConfig.Pkg_CST_Limit;
+		Core->Query.CfgLock = CStateConfig.CFG_Lock;
+
+		switch (CStateConfig.Pkg_CStateLimit) {
+		case 0b100:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b011:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b010:
+			Core->Query.CStateLimit = 3;
+			break;
+		case 0b001:
+			Core->Query.CStateLimit = 1;
+			break;
+		case 0b000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
+
+		if (CStateConfig.IO_MWAIT_Redir) {
+			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+
+			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
+			switch (CState_IO_MWAIT.CStateRange) {
+			case 0b010:
+				Core->Query.CStateInclude = 7;
+				break;
+			case 0b001:
+				Core->Query.CStateInclude = 6;
+				break;
+			case 0b000:
+				Core->Query.CStateInclude = 3;
+				break;
+			default:
+				Core->Query.CStateInclude = 0;
+				break;
+			}
+		}
+		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 	}
 	PowerThermal(Core);
 
@@ -2184,17 +2243,72 @@ void PerCore_SandyBridge_Query(CORE *Core)
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
 		Core->Query.C3U = CStateConfig.C3undemotion;
 		Core->Query.C1U = CStateConfig.C1undemotion;
-	}
-	if (Core->T.Base.BSP) {
-		if (PkgCstateLimit != -1) {
-		    if (CStateConfig.CFG_Lock == 0) {
-			printk(KERN_INFO "CoreFreq: C-State Config submit\n");
-			CStateConfig.Pkg_CST_Limit = PkgCstateLimit;
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-		    } else
-			printk(KERN_INFO "CoreFreq: C-State Config locked\n");
+
+		if (CStateConfig.CFG_Lock == 0) {
+			switch (PkgCStateLimit) {
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b100;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b010;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 2:
+				CStateConfig.Pkg_CStateLimit = 0b001;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 1:
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b000;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			}
+			if (PkgCStateLimit != -1) {
+				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			}
 		}
-		Core->Query.PkgState = CStateConfig.Pkg_CST_Limit;
+		Core->Query.CfgLock = CStateConfig.CFG_Lock;
+
+		switch (CStateConfig.Pkg_CStateLimit) {
+		case 0b101:
+		case 0b100:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b011:
+		case 0b010:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b001:
+			Core->Query.CStateLimit = 2;
+			break;
+		case 0b000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
+
+		if (CStateConfig.IO_MWAIT_Redir) {
+			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+
+			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
+			switch (CState_IO_MWAIT.CStateRange) {
+			case 0b010:
+				Core->Query.CStateInclude = 7;
+				break;
+			case 0b001:
+				Core->Query.CStateInclude = 6;
+				break;
+			case 0b000:
+				Core->Query.CStateInclude = 3;
+				break;
+			default:
+				Core->Query.CStateInclude = 0;
+				break;
+			}
+		}
+		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 	}
 	PowerThermal(Core);
 
@@ -2372,7 +2486,7 @@ void Counters_Clear(CORE *Core)
 	    : 0;							\
 })
 
-#define Counters_Nehalem(Core, T)					\
+#define SMT_Counters_Nehalem(Core, T)					\
 ({									\
 	register unsigned long long Cx = 0;				\
 									\
@@ -2393,7 +2507,7 @@ void Counters_Clear(CORE *Core)
 			: 0;						\
 })
 
-#define Counters_SandyBridge(Core, T)					\
+#define SMT_Counters_SandyBridge(Core, T)				\
 ({									\
 	register unsigned long long Cx = 0;				\
 									\
@@ -2475,6 +2589,23 @@ void Counters_Clear(CORE *Core)
 ({	/* Delta of SMI interrupt. */					\
 	Core->Delta.SMI = Core->Counter[1].SMI				\
 			- Core->Counter[0].SMI;				\
+})
+
+#define PKG_Counters_Nehalem(Core, T)					\
+({									\
+	RDTSCP_COUNTERx3(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
+})
+
+#define PKG_Counters_SandyBridge(Core, T)				\
+({									\
+	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
 })
 
 #define Delta_PTSC(Pkg)							\
@@ -2925,13 +3056,10 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Counters_Nehalem(Core, 1);
+		SMT_Counters_Nehalem(Core, 1);
 
-		if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
-			RDTSCP_COUNTERx3(Proc->Counter[1].PTSC, \
-				MSR_PKG_C3_RESIDENCY, Proc->Counter[1].PC03, \
-				MSR_PKG_C6_RESIDENCY, Proc->Counter[1].PC06, \
-				MSR_PKG_C7_RESIDENCY, Proc->Counter[1].PC07);
+		if (Core->T.Base.BSP) {
+			PKG_Counters_Nehalem(Core, 1);
 
 			Delta_PC03(Proc);
 
@@ -3002,13 +3130,10 @@ void Start_Nehalem(void *arg)
 	PerCore_Nehalem_Query(Core);
 
 	Counters_Set(Core);
-	Counters_Nehalem(Core, 0);
+	SMT_Counters_Nehalem(Core, 0);
 
-	if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
-		RDTSCP_COUNTERx3(Proc->Counter[0].PTSC,			\
-			MSR_PKG_C3_RESIDENCY, Proc->Counter[0].PC03,	\
-			MSR_PKG_C6_RESIDENCY, Proc->Counter[0].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[0].PC07);
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Nehalem(Core, 0);
 	}
 
 	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
@@ -3047,14 +3172,10 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Counters_SandyBridge(Core, 1);
+		SMT_Counters_SandyBridge(Core, 1);
 
-		if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
-			RDTSCP_COUNTERx4(Proc->Counter[1].PTSC, \
-				MSR_PKG_C2_RESIDENCY, Proc->Counter[1].PC02, \
-				MSR_PKG_C3_RESIDENCY, Proc->Counter[1].PC03, \
-				MSR_PKG_C6_RESIDENCY, Proc->Counter[1].PC06, \
-				MSR_PKG_C7_RESIDENCY, Proc->Counter[1].PC07);
+		if (Core->T.Base.BSP) {
+			PKG_Counters_SandyBridge(Core, 1);
 
 			Delta_PC02(Proc);
 
@@ -3075,7 +3196,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Save_PC07(Proc);
 
 			Save_PTSC(Proc);
-                }
+		}
 
 		Core_Intel_Temp(Core);
 
@@ -3133,14 +3254,10 @@ void Start_SandyBridge(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Counters_Set(Core);
-	Counters_SandyBridge(Core, 0);
+	SMT_Counters_SandyBridge(Core, 0);
 
-	if ((Core->T.Base.BSP) && (Core->Query.PkgState)) {
-		RDTSCP_COUNTERx4(Proc->Counter[0].PTSC,			\
-			MSR_PKG_C2_RESIDENCY, Proc->Counter[0].PC02,	\
-			MSR_PKG_C3_RESIDENCY, Proc->Counter[0].PC03,	\
-			MSR_PKG_C6_RESIDENCY, Proc->Counter[0].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[0].PC07);
+	if (Core->T.Base.BSP) {
+		PKG_Counters_SandyBridge(Core, 0);
 	}
 
 	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
