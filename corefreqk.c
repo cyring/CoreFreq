@@ -455,19 +455,12 @@ void Compute_Clock(void *arg)
 {
 	CLOCK *clock = (CLOCK *) arg;
 	unsigned int ratio = clock->Q;
-	// Allocate Cache aligned resources.
-	struct kmem_cache *hardwareCache = kmem_cache_create(
-				"CoreFreqCache",
-				STRUCT_SIZE, 0,
-				SLAB_HWCACHE_ALIGN, NULL);
+	struct kmem_cache *hardwareCache = NULL;
 	/*
 		TSC[0] stores the overhead
 		TSC[1] stores the estimation
 	*/
-	TSC_STRUCT *TSC[2] = {
-		kmem_cache_alloc(hardwareCache, GFP_KERNEL),
-		kmem_cache_alloc(hardwareCache, GFP_KERNEL)
-	};
+	TSC_STRUCT *TSC[2] = {NULL, NULL};
 	unsigned long long D[2][OCCURRENCES];
 	unsigned int loop = 0, what = 0, best[2] = {0, 0}, top[2] = {0, 0};
 
@@ -527,52 +520,66 @@ void Compute_Clock(void *arg)
 		raw_local_irq_restore(flags);
 		preempt_enable();
 	}
-	// Is the TSC invariant or a serialized read instruction is available ?
-	if (	(Proc->Features.AdvPower.DX.Inv_TSC == 1)
-		|| (Proc->Features.ExtInfo.DX.RDTSCP == 1))
-			ComputeWithSerializedTSC();
-	else
-			ComputeWithUnSerializedTSC();
 
-	// Select the best clock.
-	memset(D, 0, 2 * OCCURRENCES);
-	for (loop = 0; loop < OCCURRENCES; loop++)
-		for (what = 0; what < 2; what++) {
-			D[what][loop] 	= TSC[what][loop].V[1]
-					- TSC[what][loop].V[0];
-		}
-	for (loop = 0; loop < OCCURRENCES; loop++) {
-		unsigned int inner = 0, count[2] = {0, 0};
-		for (inner = loop; inner < OCCURRENCES; inner++) {
+	// Allocate Cache aligned resources.
+	hardwareCache = kmem_cache_create("CoreFreqCache",
+					STRUCT_SIZE, 0,
+					SLAB_HWCACHE_ALIGN, NULL);
+	if (hardwareCache != NULL) {
+	  TSC[0] = kmem_cache_alloc(hardwareCache, GFP_KERNEL);
+	  if (TSC[0] != NULL) {
+	    TSC[1] = kmem_cache_alloc(hardwareCache, GFP_KERNEL);
+	    if (TSC[1] != NULL) {
+
+	// Is the TSC invariant or a serialized read instruction is available ?
+		if (	(Proc->Features.AdvPower.DX.Inv_TSC == 1)
+			|| (Proc->Features.ExtInfo.DX.RDTSCP == 1))
+				ComputeWithSerializedTSC();
+		else
+				ComputeWithUnSerializedTSC();
+
+		// Select the best clock.
+		memset(D, 0, 2 * OCCURRENCES);
+		for (loop = 0; loop < OCCURRENCES; loop++)
 			for (what = 0; what < 2; what++) {
-				if (D[what][loop] == D[what][inner])
-					count[what]++;
+				D[what][loop] 	= TSC[what][loop].V[1]
+						- TSC[what][loop].V[0];
 			}
-		}
-		for (what = 0; what < 2; what++) {
-			if (	(count[what] > top[what])
+		for (loop = 0; loop < OCCURRENCES; loop++) {
+			unsigned int inner = 0, count[2] = {0, 0};
+			for (inner = loop; inner < OCCURRENCES; inner++) {
+				for (what = 0; what < 2; what++) {
+					if (D[what][loop] == D[what][inner])
+						count[what]++;
+				}
+			}
+			for (what = 0; what < 2; what++) {
+			    if ((count[what] > top[what])
 				|| ((count[what] == top[what])
 				&& (D[what][loop] < D[what][best[what]]))) {
 
 					top[what]  = count[what];
 					best[what] = loop;
 
+			    }
 			}
 		}
+		// Substract the overhead.
+		D[1][best[1]] -= D[0][best[0]];
+		D[1][best[1]] *= 1000;
+		// Compute Divisor and Remainder.
+		clock->Q = D[1][best[1]] / (1000000L * ratio);
+		clock->R = D[1][best[1]] % (1000000L * ratio);
+		// Compute full Hertz.
+		clock->Hz  = D[1][best[1]] / ratio;
+		clock->Hz += D[1][best[1]] % ratio;
+		// Release resources.
+		kmem_cache_free(hardwareCache, TSC[1]);
+	    }
+	    kmem_cache_free(hardwareCache, TSC[0]);
+	  }
+	  kmem_cache_destroy(hardwareCache);
 	}
-	// Substract the overhead.
-	D[1][best[1]] -= D[0][best[0]];
-	D[1][best[1]] *= 1000;
-	// Compute Divisor and Remainder.
-	clock->Q = D[1][best[1]] / (1000000L * ratio);
-	clock->R = D[1][best[1]] % (1000000L * ratio);
-	// Compute full Hertz.
-	clock->Hz  = D[1][best[1]] / ratio;
-	clock->Hz += D[1][best[1]] % ratio;
-	// Release resources.
-	kmem_cache_free(hardwareCache, TSC[1]);
-	kmem_cache_free(hardwareCache, TSC[0]);
-	kmem_cache_destroy(hardwareCache);
 }
 
 CLOCK Base_Clock(unsigned int cpu, unsigned int ratio)
@@ -2341,9 +2348,12 @@ void Controller_Init(void)
 	    cpu--;
 
 	    if (!KPublic->Core[cpu]->OffLine.OS) {
-		if(AutoClock)
+		if (AutoClock) {
 			clock = Base_Clock(cpu, Proc->Boost[1]);
-		else if(Arch[Proc->ArchID].Clock != NULL)
+			if (clock.Hz == 0) {	// NOMEM
+			    clock = Arch[Proc->ArchID].Clock(Proc->Boost[1]);
+			}
+		} else if (Arch[Proc->ArchID].Clock != NULL)
 			clock = Arch[Proc->ArchID].Clock(Proc->Boost[1]);
 
 		KPublic->Core[cpu]->Clock = clock;
@@ -3716,36 +3726,48 @@ static int __init CoreFreqK_init(void)
 				: !strncmp( Arch[0].Architecture,VENDOR_AMD,12)?
 						CpuIDforAMD : CpuIDforIntel;
 
-			      // Begin Loop to initialize allocation per CPU
-			      for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-			      {
-				void *kcache = kmem_cache_alloc(KPublic->Cache,
+				int allocPerCPU = 1;
+				// Allocation per CPU
+				for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+					void *kcache = NULL;
+					kcache=kmem_cache_alloc(KPublic->Cache,
 								GFP_KERNEL);
-				memset(kcache, 0, publicSize);
-				KPublic->Core[cpu] = kcache;
+					if (kcache != NULL) {
+						memset(kcache, 0, publicSize);
+						KPublic->Core[cpu] = kcache;
+					} else {
+						allocPerCPU = 0;
+						break;
+					}
+					kcache=kmem_cache_alloc(KPrivate->Cache,
+								GFP_KERNEL);
+					if (kcache != NULL) {
+						memset(kcache, 0, privateSize);
+						KPrivate->Join[cpu] = kcache;
+					} else {
+						allocPerCPU = 0;
+						break;
+					}
+				}
+				if (allocPerCPU) {
+				  for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+					BITCLR( BUS_LOCK,
+						KPublic->Core[cpu]->Sync.V, 63);
 
-				kcache = kmem_cache_alloc(KPrivate->Cache,
-							GFP_KERNEL);
-				memset(kcache, 0, privateSize);
-				KPrivate->Join[cpu] = kcache;
+					KPublic->Core[cpu]->Bind = cpu;
 
-				BITCLR(BUS_LOCK,KPublic->Core[cpu]->Sync.V,63);
+					Define_CPUID(KPublic->Core[cpu],
+							CpuIDforVendor);
+				  }
 
-				KPublic->Core[cpu]->Bind = cpu;
-
-				Define_CPUID(KPublic->Core[cpu],CpuIDforVendor);
-			      }
-			      // End Loop
-
-			      if (!strncmp(Arch[0].Architecture,
+				  if (!strncmp(Arch[0].Architecture,
 						VENDOR_INTEL, 12)) {
 					Arch[0].Query = Query_GenuineIntel;
 					Arch[0].Start = Start_GenuineIntel;
 					Arch[0].Stop  = Stop_GenuineIntel;
 					Arch[0].Timer = InitTimer_GenuineIntel;
 					Arch[0].Clock = Clock_GenuineIntel;
-			      }
-			      else if (!strncmp(Arch[0].Architecture,
+				  } else if (!strncmp(Arch[0].Architecture,
 						VENDOR_AMD, 12) ) {
 					Arch[0].Query = Query_AuthenticAMD;
 					Arch[0].Start = Start_AuthenticAMD;
@@ -3755,16 +3777,16 @@ static int __init CoreFreqK_init(void)
 
 					if(!Proc->Features.AdvPower.DX.Inv_TSC)
 						AutoClock = 0;
-			      }
-			      if ( (ArchID != -1)
-				&& (ArchID >= 0)
-				&& (ArchID < ARCHITECTURES) ) {
+				  }
+				  if ( (ArchID != -1)
+				    && (ArchID >= 0)
+				    && (ArchID < ARCHITECTURES) ) {
 					Proc->ArchID = ArchID;
-			      } else {
+				  } else {
 				  for ( Proc->ArchID = ARCHITECTURES - 1;
 					Proc->ArchID > 0;
 					Proc->ArchID--) {
-				  // Search for an architecture signature.
+				    // Search for an architecture signature.
 				    if ((Arch[Proc->ArchID].Signature.ExtFamily
 					== Proc->Features.Std.AX.ExtFamily)
 				    && (Arch[Proc->ArchID].Signature.Family
@@ -3775,15 +3797,15 @@ static int __init CoreFreqK_init(void)
 					== Proc->Features.Std.AX.Model)) {
 						break;
 					}
+				    }
 				  }
-			      }
 
-				strncpy(Proc->Architecture,
+				  strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);
 
-				Controller_Init();
+				  Controller_Init();
 
-				printk(KERN_INFO "CoreFreq:"		\
+				  printk(KERN_INFO "CoreFreq:"		\
 				      " Processor [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s] CPU [%u/%u]\n",
 					Proc->Features.Std.AX.ExtFamily,
@@ -3794,12 +3816,12 @@ static int __init CoreFreqK_init(void)
 					Proc->CPU.OnLine,
 					Proc->CPU.Count);
 
-				Controller_Start();
+				  Controller_Start();
 
-			    if (Proc->Registration.Experimental) {
-				  Proc->Registration.pci =
-				    pci_register_driver(&CoreFreqK_pci_driver);
-			    }
+				  if (Proc->Registration.Experimental) {
+				   Proc->Registration.pci =
+				     pci_register_driver(&CoreFreqK_pci_driver);
+				  }
 
 		#ifdef CONFIG_HOTPLUG_CPU
 			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
@@ -3814,7 +3836,7 @@ static int __init CoreFreqK_init(void)
 						CoreFreqK_hotplug_cpu_offline);
 			#endif
 		#endif
-				Proc->Registration.nmi =
+				  Proc->Registration.nmi =
 					register_nmi_handler(NMI_LOCAL,
 							CoreFreqK_NMI_handler,
 							0,
@@ -3831,6 +3853,37 @@ static int __init CoreFreqK_init(void)
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk");
+				} else {
+				    if (KPublic->Cache != NULL) {
+					for(cpu = 0;cpu < Proc->CPU.Count;cpu++)
+					{
+					  if (KPublic->Core[cpu] != NULL)
+					    kmem_cache_free(KPublic->Cache,
+							    KPublic->Core[cpu]);
+					}
+					kmem_cache_destroy(KPublic->Cache);
+				    }
+				    if (KPrivate->Cache != NULL) {
+					for(cpu = 0;cpu < Proc->CPU.Count;cpu++)
+					{
+					  if (KPrivate->Join[cpu] != NULL)
+					    kmem_cache_free(KPrivate->Cache,
+							  KPrivate->Join[cpu]);
+					}
+					kmem_cache_destroy(KPrivate->Cache);
+				    }
+				  kfree(Proc);
+				  kfree(KPublic);
+				  kfree(KPrivate);
+
+				  device_destroy(CoreFreqK.clsdev,
+						CoreFreqK.mkdev);
+				  class_destroy(CoreFreqK.clsdev);
+				  cdev_del(CoreFreqK.kcdev);
+				  unregister_chrdev_region(CoreFreqK.mkdev, 1);
+
+				  rc = -ENOMEM;
+				}
 			    } else {
 				if (KPublic->Cache != NULL)
 					kmem_cache_destroy(KPublic->Cache);
@@ -3925,7 +3978,7 @@ static void __exit CoreFreqK_cleanup(void)
 	for (cpu = 0;(KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
 	{
 		if (KPublic->Core[cpu] != NULL)
-			kmem_cache_free(KPublic->Cache,	KPublic->Core[cpu]);
+			kmem_cache_free(KPublic->Cache, KPublic->Core[cpu]);
 		if (KPrivate->Join[cpu] != NULL)
 			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
 	}
