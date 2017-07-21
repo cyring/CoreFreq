@@ -1712,6 +1712,8 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].OffLine.HW = Core[cpu]->OffLine.HW;
 
+	Shm->Cpu[cpu].Query.Microcode = Core[cpu]->Query.Microcode;
+
 	CPUID_Dump(Shm, Core, cpu);
 
 	BaseClock(Shm, Core, cpu);

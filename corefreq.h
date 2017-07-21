@@ -19,6 +19,8 @@ typedef struct
 		CPUID_0x00000000	StdFunc;
 		CPUID_0x80000000	ExtFunc;
 
+		unsigned int		Microcode;
+
 		struct {
 		unsigned short int	CfgLock :  1-0,
 					IORedir :  2-1,

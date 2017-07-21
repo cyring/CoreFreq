@@ -278,6 +278,10 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	printv(OutFunc, width, 0, "Processor%.*s[%s]",
 		width - 11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
 
+	printv(OutFunc, width, 2, "Architecture%.*s[%s]",
+		width - 17 - strlen(Shm->Proc.Architecture), hSpace,
+		Shm->Proc.Architecture);
+
 	printv(OutFunc, width, 2, "Vendor ID%.*s[%s]",
 		width - 14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
 		Shm->Proc.Features.Info.VendorID);
@@ -289,18 +293,17 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		Shm->Proc.Features.Std.AX.ExtModel,
 		Shm->Proc.Features.Std.AX.Model);
 
-	printv(OutFunc, width, 2, "Stepping%.*s[%3u]",
-		width - 16, hSpace, Shm->Proc.Features.Std.AX.Stepping);
+	printv(OutFunc, width, 2, "Stepping%.*s[%5u]",
+		width - 18, hSpace, Shm->Proc.Features.Std.AX.Stepping);
 
-	printv(OutFunc, width, 2, "Architecture%.*s[%s]",
-		width - 17 - strlen(Shm->Proc.Architecture), hSpace,
-		Shm->Proc.Architecture);
+	printv(OutFunc, width, 2, "Microcode%.*s[%5u]",
+		width - 19, hSpace, Shm->Cpu[0].Query.Microcode);
 
-	printv(OutFunc, width, 2, "Online CPU%.*s[%u/%u]",
-		width - 18, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+	printv(OutFunc, width, 2, "Online CPU%.*s[%2u/%-2u]",
+		width - 20, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	printv(OutFunc, width, 2, "Base Clock%.*s[%3llu]",
-		width - 18, hSpace, Shm->Cpu[0].Clock.Hz / 1000000L);
+	printv(OutFunc, width, 2, "Base Clock%.*s[%5.1f]",
+		width - 20, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
 
 	len = sprintf(row[0],
 			"Core Boost%.*sMin   Max"			\

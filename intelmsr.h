@@ -46,7 +46,18 @@ static const CPUID_STRUCT CpuIDforIntel[CPUID_MAX_FUNC]={
 	{.func=0x80000008, .sub=0x00000000},	/* Address size		*/
 };
 
-typedef	union
+typedef union
+{
+	unsigned long long value;
+	struct
+	{
+		unsigned long long
+		ReservedBits	: 32-0,
+		Signature	: 64-32;
+	};
+} MICROCODE_ID;
+
+typedef union
 {
 	unsigned long long value;
 	struct

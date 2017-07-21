@@ -2115,8 +2115,17 @@ void PowerThermal(CORE *Core)
     }
 }
 
+void Microcode(CORE *Core)
+{
+	MICROCODE_ID Microcode = {.value = 0};
+	RDMSR(Microcode, MSR_IA32_UCODE_REV);
+	Core->Query.Microcode = Microcode.Signature;
+}
+
 void PerCore_Intel_Query(CORE *Core)
 {
+	Microcode(Core);
+
 	Dump_CPUID(Core);
 
 	PowerThermal(Core);
@@ -2133,6 +2142,8 @@ void PerCore_AMD_Query(CORE *Core)
 
 void PerCore_Core2_Query(CORE *Core)
 {
+	Microcode(Core);
+
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -2145,6 +2156,8 @@ void PerCore_Core2_Query(CORE *Core)
 void PerCore_Nehalem_Query(CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
+
+	Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -2236,6 +2249,8 @@ void PerCore_Nehalem_Query(CORE *Core)
 void PerCore_SandyBridge_Query(CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
+
+	Microcode(Core);
 
 	Dump_CPUID(Core);
 

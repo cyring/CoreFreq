@@ -330,7 +330,8 @@ typedef struct
 					C1U	:  7-6,  // Sandy Bridge
 					CfgLock :  8-7,  // Core
 					IORedir :  9-8,  // Core
-					Unused	: 64-9;
+					Unused	: 32-9,
+					Microcode:64-32; // Thread
 		};
 		unsigned short int	CStateLimit,
 					CStateInclude;
