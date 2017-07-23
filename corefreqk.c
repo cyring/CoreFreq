@@ -66,6 +66,34 @@ static signed short PkgCStateLimit = -1;
 module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
 
+static signed short SpeedStepEnable = -1;
+module_param(SpeedStepEnable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(SpeedStepEnable, "Enable SpeedStep");
+
+static signed short C1E_Enable = -1;
+module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
+
+static signed short TurboBoostEnable = -1;
+module_param(TurboBoostEnable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(TurboBoostEnable, "Enable Turbo Boost");
+
+static signed short C3A_Enable = -1;
+module_param(C3A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(C3A_Enable, "Enable C3 Auto Demotion");
+
+static signed short C1A_Enable = -1;
+module_param(C1A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(C1A_Enable, "Enable C3 Auto Demotion");
+
+static signed short C3U_Enable = -1;
+module_param(C3U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(C3U_Enable, "Enable C3 UnDemotion");
+
+static signed short C1U_Enable = -1;
+module_param(C1U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -2021,32 +2049,65 @@ void Dump_CPUID(CORE *Core)
 
 void SpeedStep_Technology(CORE *Core)				// Per Package!
 {
-	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
+	if (Proc->Features.Std.CX.EIST == 1) {
+		MISC_PROC_FEATURES MiscFeatures = {.value = 0};
+		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-
-	Core->Query.EIST = Proc->Features.Std.CX.EIST & MiscFeatures.EIST;
+		switch (SpeedStepEnable) {
+		    case 0:
+		    case 1:
+			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
+				MiscFeatures.EIST = SpeedStepEnable;
+				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+				RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+			}
+		    break;
+		}
+		Core->Query.EIST = MiscFeatures.EIST;
+	} else {
+		Core->Query.EIST = 0;
+	}
 }
 
 void TurboBoost_Technology(CORE *Core)
 {
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
-	PERF_CONTROL PerfControl = {.value = 0};
-
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-	RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
-	Core->Query.Turbo = (MiscFeatures.Turbo_IDA == 1) ? 0
-				: (PerfControl.Turbo_IDA == 1) ? 0 : 1;
+	if (MiscFeatures.Turbo_IDA == 0) {
+		PERF_CONTROL PerfControl = {.value = 0};
+		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
+
+		switch (TurboBoostEnable) {			// Per Thread
+		    case 0:
+		    case 1:
+			PerfControl.Turbo_IDA = !TurboBoostEnable;
+			WRMSR(PerfControl, MSR_IA32_PERF_CTL);
+			RDMSR(PerfControl, MSR_IA32_PERF_CTL);
+		    break;
+		}
+		Core->Query.Turbo = !PerfControl.Turbo_IDA;
+	} else {
+		Core->Query.Turbo = 0;
+	}
 }
 
 void Query_Intel_C1E(CORE *Core)
 {
 	POWER_CONTROL PowerCtrl = {.value = 0};
-
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
 
-	Core->Query.C1E = PowerCtrl.C1E;			// Per Package!
+	switch (C1E_Enable) {					// Per Package
+		case 0:
+		case 1:
+			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
+				PowerCtrl.C1E = C1E_Enable;
+				WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+				RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+			}
+		break;
+	}
+	Core->Query.C1E = PowerCtrl.C1E;
 }
 
 void Query_AMD_C1E(CORE *Core)
@@ -2166,8 +2227,28 @@ void PerCore_Nehalem_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
+		int ToggleDemotion = 0;
+
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
+		switch (C3A_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C3autoDemotion = C3A_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		switch (C1A_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C1autoDemotion = C1A_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		if (ToggleDemotion == 1) {
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		}
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
 
@@ -2259,8 +2340,42 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
+		int ToggleDemotion = 0;
+
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
+		switch (C3A_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C3autoDemotion = C3A_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		switch (C1A_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C1autoDemotion = C1A_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		switch (C3U_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C3undemotion = C3U_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		switch (C1U_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.C1undemotion = C1U_Enable;
+				ToggleDemotion = 1;
+			break;
+		}
+		if (ToggleDemotion == 1) {
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		}
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
 		Core->Query.C3U = CStateConfig.C3undemotion;
@@ -2353,7 +2468,7 @@ void InitTimer(void *Cycle_Function)
 
 void Controller_Init(void)
 {
-	CLOCK clock;
+	CLOCK clock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int cpu = Proc->CPU.Count;
 
 	if (Arch[Proc->ArchID].Query != NULL)
@@ -2365,10 +2480,8 @@ void Controller_Init(void)
 	    if (!KPublic->Core[cpu]->OffLine.OS) {
 		if (AutoClock) {
 			clock = Base_Clock(cpu, Proc->Boost[1]);
-			if (clock.Hz == 0) {	// NOMEM
-			    clock = Arch[Proc->ArchID].Clock(Proc->Boost[1]);
-			}
-		} else if (Arch[Proc->ArchID].Clock != NULL)
+		} // else ENOMEM
+		if ((clock.Hz == 0) && (Arch[Proc->ArchID].Clock != NULL))
 			clock = Arch[Proc->ArchID].Clock(Proc->Boost[1]);
 
 		KPublic->Core[cpu]->Clock = clock;
