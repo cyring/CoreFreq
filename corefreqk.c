@@ -1304,10 +1304,6 @@ void DynamicAcceleration(void)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		if (Power.AX.TurboIDA == 1) {
-			Proc->Boost[8] = Proc->Boost[9];
-			Proc->Boost[9]++;
-		}
 	}
 }
 
