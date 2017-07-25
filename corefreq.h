@@ -59,8 +59,8 @@ typedef struct
 					TM2,
 					Target,
 					Limit[2];
-		float			ODCM;
 		unsigned int		PowerPolicy;
+		float			DutyCycle;
 	} PowerThermal;
 
 	struct FLIP_FLOP {
@@ -141,6 +141,10 @@ typedef struct
 					HyperThreading;
 
 	Bit64				PowerNow,
+					ODCM,
+					ODCM_Mask,
+					PowerMgmt,
+					PowerMgmt_Mask,
 					SpeedStep,
 					SpeedStep_Mask,
 					TurboBoost,

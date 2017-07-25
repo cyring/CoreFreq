@@ -1550,8 +1550,29 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
-void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
+void PowerThermal(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 {
+	BITSET(LOCKLESS, Shm->Proc.ODCM_Mask, cpu);
+	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
+		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
+	else
+		BITCLR(LOCKLESS, Shm->Proc.ODCM, cpu);
+
+	Shm->Cpu[cpu].PowerThermal.DutyCycle =
+		Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1 ?
+					6.25f : 12.5f;
+	Shm->Cpu[cpu].PowerThermal.DutyCycle
+		*= Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle;
+
+	BITSET(LOCKLESS, Shm->Proc.PowerMgmt_Mask, cpu);
+	if (Core[cpu]->PowerThermal.PwrManagement.Perf_BIAS_Enable)
+		BITSET(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
+	else
+		BITCLR(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
+
+	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
+		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
+
 	Shm->Cpu[cpu].PowerThermal.TM1 =
 		Proc->Features.Std.DX.TM1;			//0001
 
@@ -1567,16 +1588,7 @@ void ThermalMonitoring(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.TM2 |=
 		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
 
-	Shm->Cpu[cpu].PowerThermal.ODCM =
-		Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1 ?
-					6.25f : 12.5f;
-	Shm->Cpu[cpu].PowerThermal.ODCM
-		*= Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle;
-
 	Shm->Cpu[cpu].PowerThermal.Target = Core[cpu]->PowerThermal.Target;
-
-	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
-		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Target;
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
@@ -1726,7 +1738,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	CStates(Shm, Core, cpu);
 
-	ThermalMonitoring(Shm, Proc, Core, cpu);
+	PowerThermal(Shm, Proc, Core, cpu);
 
 	if (cpu == 0)
 		Uncore(Shm, Proc, cpu);

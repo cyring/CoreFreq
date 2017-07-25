@@ -893,47 +893,25 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm,
 
 	printv(OutFunc, width, 2, "Package C-State");
 
-	if (OutFunc == NULL) {
-		printv(OutFunc, width, 3,
-			"Configuration Control%.*sCONFIG   [%7s]",
-			width - 45, hSpace,
-			!Shm->Cpu[0].Query.CfgLock? "UNLOCK":"LOCK");
+	printv(OutFunc, width, 3,
+		"Configuration Control%.*sCONFIG   [%7s]",
+		width - (OutFunc == NULL ? 45 : 43), hSpace,
+		!Shm->Cpu[0].Query.CfgLock? "UNLOCK":"LOCK");
 
-		printv(OutFunc, width, 3,
-			"Lowest C-State%.*sLIMIT   [%7d]",
-			width - 37, hSpace,
-			Shm->Cpu[0].Query.CStateLimit);
+	printv(OutFunc, width, 3,
+		"Lowest C-State%.*sLIMIT   [%7d]",
+		width - (OutFunc == NULL ? 37 : 35), hSpace,
+		Shm->Cpu[0].Query.CStateLimit);
 
-		printv(OutFunc, width, 3,
-			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
-			width - 46, hSpace,
-			Shm->Cpu[0].Query.CfgLock? " ENABLE":"DISABLE");
+	printv(OutFunc, width, 3,
+		"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
+		width - (OutFunc == NULL ? 46 : 44), hSpace,
+		Shm->Cpu[0].Query.CfgLock? " ENABLE":"DISABLE");
 
-		printv(OutFunc, width, 3,
-			"Max C-State Inclusion%.*sRANGE   [%7d]",
-			width - 44, hSpace,
-			Shm->Cpu[0].Query.CStateInclude);
-	} else {
-		printv(OutFunc, width, 3,
-			"Configuration Control%.*sCONFIG   [%7s]",
-			width - 43, hSpace,
-			!Shm->Cpu[0].Query.CfgLock? "UNLOCK":"LOCK");
-
-		printv(OutFunc, width, 3,
-			"Lowest C-State%.*sLIMIT   [%7d]",
-			width - 35, hSpace,
-			Shm->Cpu[0].Query.CStateLimit);
-
-		printv(OutFunc, width, 3,
-			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
-			width - 44, hSpace,
-			Shm->Cpu[0].Query.CfgLock? " ENABLE":"DISABLE");
-
-		printv(OutFunc, width, 3,
-			"Max C-State Inclusion%.*sRANGE   [%7d]",
-			width - 42, hSpace,
-			Shm->Cpu[0].Query.CStateInclude);
-	}
+	printv(OutFunc, width, 3,
+		"Max C-State Inclusion%.*sRANGE   [%7d]",
+		width - (OutFunc == NULL ? 44 : 42), hSpace,
+		Shm->Cpu[0].Query.CStateInclude);
 
 	printv(OutFunc, width, 2,
 		"MWAIT States:%.*sC0      C1      C2      C3      C4",
@@ -993,8 +971,32 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm,
 		"Present",
 		"Disable",
 		" Enable",
+	}, *Unlock[] = {
+		"  LOCK",
+		"UNLOCK",
 	};
+	const unsigned int
+		isODCM = (Shm->Proc.ODCM == Shm->Proc.ODCM_Mask),
+		isPowerMgmt = (Shm->Proc.PowerMgmt == Shm->Proc.PowerMgmt_Mask);
 /* Section Mark */
+	printv(OutFunc, width, 2,
+		"Clock Modulation%.*sODCM   [%7s]",
+		width - 35, hSpace, isODCM ? " Enable" : "Disable");
+
+	printv(OutFunc, width, 3,
+		"DutyCycle%.*s[%6.2f%%]",
+		width - (OutFunc == NULL ? 24: 22),
+		hSpace, Shm->Cpu[0].PowerThermal.DutyCycle);
+
+	printv(OutFunc, width, 2,
+		"Power Management%.*sPWR MGMT   [%7s]",
+		width - 39, hSpace, Unlock[isPowerMgmt]);
+
+	printv(OutFunc, width, 3,
+		"Energy Policy%.*sBias Hint   [%7u]",
+		width - (OutFunc == NULL ? 40 : 38),
+		hSpace, Shm->Cpu[0].PowerThermal.PowerPolicy);
+
 	printv(OutFunc, width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
 		width - 40, hSpace,
@@ -1017,14 +1019,6 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace, TM[  Shm->Cpu[0].PowerThermal.TM2
 					|Shm->Proc.Features.AdvPower.DX.TM ]);
-
-	printv(OutFunc, width, 2,
-		"Clock Modulation%.*sODCM   [%6.2f%%]",
-		width - 35, hSpace, Shm->Cpu[0].PowerThermal.ODCM);
-
-	printv(OutFunc, width, 2,
-		"Energy Policy%.*sBias Hint   [%7u]",
-		width - 37, hSpace, Shm->Cpu[0].PowerThermal.PowerPolicy);
 }
 
 void SysInfoKernel(	SHM_STRUCT *Shm,
@@ -2917,7 +2911,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_w:
 		{
-		matrixSize.hth = 7;
+		matrixSize.hth = 8;
 		winOrigin.col = 23;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;

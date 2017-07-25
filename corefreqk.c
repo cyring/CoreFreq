@@ -94,6 +94,18 @@ static signed short C1U_Enable = -1;
 module_param(C1U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
 
+static signed short ODCM_DutyCycle = -1;
+module_param(ODCM_DutyCycle, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(ODCM_DutyCycle, "On-Demand Clock Modulation DutyCycle [0-7]");
+
+static signed short PowerMGMT_Unlock = -1;
+module_param(PowerMGMT_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PowerMGMT_Unlock, "Unlock Power Management");
+
+static signed short PowerPolicy = -1;
+module_param(PowerPolicy, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -2165,14 +2177,48 @@ void PowerThermal(CORE *Core)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
+	if (Power.CX.SETBH == 1) {
+	  RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+
+	  if ((PowerPolicy >= 0) && (PowerPolicy <= 15)) {
+	    Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
+	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	  }
+	} else {
+	  RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+
+	  if (Experimental == 1) {
+	    switch (PowerMGMT_Unlock) {
+	    case 0:
+		Core->PowerThermal.PwrManagement.Perf_BIAS_Enable = 0;
+		WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+		break;
+	    case 1:
+		Core->PowerThermal.PwrManagement.Perf_BIAS_Enable = 1;
+		WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+		break;
+	    }
+	  }
+	}
+	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
 	if (Proc->Features.Std.DX.ACPI == 1) {
-	    RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
+	  RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
+	  Core->PowerThermal.ClockModulation.ExtensionBit = Power.AX.ECMD;
 
-	    Core->PowerThermal.ClockModulation.ExtensionBit = Power.AX.ECMD;
+	 if (Experimental == 1) {
+	  if ((ODCM_DutyCycle >= 0) && (ODCM_DutyCycle <= 7)) {
+	    if (ODCM_DutyCycle > 0)
+		Core->PowerThermal.ClockModulation.ODCM_Enable = 1;
+	    else
+		Core->PowerThermal.ClockModulation.ODCM_Enable = 0;
+	    Core->PowerThermal.ClockModulation.ODCM_DutyCycle = ODCM_DutyCycle;
+	    WRMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
+	    RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
+	  }
+	 }
 	}
-	if (Power.CX.SETBH == 1)
-	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
     }
 }
 

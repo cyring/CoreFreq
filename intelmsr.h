@@ -259,6 +259,27 @@ typedef union
 	Shared/Unique:	Core Solo, Core Duo, Dual-Core-Xeon-LV
 */
 
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		HW_Coord_EIST	:  1-0,  // Pkg: 0=Enable; 1=Disable
+		Perf_BIAS_Enable:  2-1,  // SMT: 1=Enable; 0=Disable*
+		ReservedBits1	: 22-2,
+		Therm_Intr_Coord: 23-22, // Pkg: Goldmont 0=Disable; 1=Enable
+		ReservedBits2	: 64-23;
+	};
+} MISC_PWR_MGMT;
+/*
+	*MSR_MISC_PWR_MGMT
+	Per Thread:	Nehalem, Sandy Bridge
+	Perf_BIAS_Enable bit makes the IA32_ENERGY_PERF_BIAS register (MSR 1B0h)
+	visible to software with Ring 0 privileges. This bit’s status (1 or 0)
+	is also reflected by CPUID.(EAX=06h):ECX[3]
+*/
+
 /* ToDo
 typedef struct
 {
