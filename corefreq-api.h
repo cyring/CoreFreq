@@ -396,6 +396,7 @@ typedef struct
 			} AMD0F;
 		};
 		union {
+	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;
 	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits */
 	/* 40h*/	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits */
 		} DIMM[MC_MAX_DIMM];

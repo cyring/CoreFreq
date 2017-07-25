@@ -1396,7 +1396,7 @@ void Query_P965(void __iomem *mchmap)
 
 void Query_G965(void __iomem *mchmap)
 {	// Source: Mobile Intel 965 Express Chipset Family
-	unsigned short cha;
+	unsigned short cha, slot;
 
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
@@ -1407,6 +1407,7 @@ void Query_G965(void __iomem *mchmap)
 				+ (Proc->Uncore.MC[0].G965.DRB1.Rank1Addr != 0);
 
 	Proc->Uncore.CtrlCount = 1;
+	Proc->Uncore.MC[0].SlotCount=Proc->Uncore.MC[0].ChannelCount > 1 ? 1:2;
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 
 		Proc->Uncore.MC[0].Channel[cha].G965.DRT0.value =
@@ -1420,6 +1421,11 @@ void Query_G965(void __iomem *mchmap)
 
 		Proc->Uncore.MC[0].Channel[cha].G965.DRT3.value =
 					readl(mchmap + 0x121c + 0x100 * cha);
+
+		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
+			Proc->Uncore.MC[0].Channel[cha].DIMM[slot].DRA.value =
+				readl(mchmap + 0x1208 + 0x100 * cha);
+		}
 	}
 }
 

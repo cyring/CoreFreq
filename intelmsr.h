@@ -558,6 +558,22 @@ typedef union
 } G965_MC_DRB_0_1;
 
 typedef union
+{	// Offset Channel0: 1208h
+	unsigned int		value;
+	struct {
+		unsigned int
+		EvenRank0	:  3-0,
+		ReservedBits1	:  4-3,
+		OddRank1	:  7-4,
+		ReservedBits2	: 16-7,
+		Rank0Bank	: 18-16,
+		ReservedBits3	: 19-18,
+		Rank1Bank	: 21-19,
+		ReservedBits4	: 32-21;
+	};
+} G965_MC_DRAM_RANK_ATTRIB;
+
+typedef union
 {	// Offset Channel0: 250h & Channel1: 650h
 	unsigned short		value;
 	struct {
