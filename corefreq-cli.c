@@ -1420,12 +1420,15 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	    printv("     "); printv("     "); printv("     "); printv("     ");
 	    printv("     ");
 
+	    printv(" Bus "); printv("Rate ");
+	    printv("%5llu", Shm->Uncore.Bus.Rate);
+	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
+	    printv("     ");
 	    printv(" Bus "); printv("Speed");
 	    printv("%5llu", Shm->Uncore.Bus.Speed);
 	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
-	    printv("     ");printv("     ");printv("DRAM "); printv("Speed");
+	    printv("     "); printv("DRAM "); printv("Speed");
 	    printv("%5llu", Shm->Uncore.CtrlSpeed); printv(" MHz ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
 
 	    printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
@@ -1459,7 +1462,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	    printv(" ddRW"); printv(" drRW"); printv(" srRW");
 	    printv(" ddRR"); printv(" drRR"); printv(" srRR");
 	    printv(" ddWW"); printv(" drWW"); printv(" srWW");
-	    printv("     ");
+	    printv("  ECC");
 
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
@@ -1479,7 +1482,7 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
 
-		printv("     ");
+		printv("%4u ", Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
 	    }
 	    printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");

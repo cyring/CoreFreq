@@ -1366,17 +1366,22 @@ void Query_P965(void __iomem *mchmap)
 {
 	unsigned short cha;
 
+	Proc->Uncore.CtrlCount = 1;
+
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].P965.CKE0.value = readl(mchmap + 0x260);
 	Proc->Uncore.MC[0].P965.CKE1.value = readl(mchmap + 0x660);
+
 	Proc->Uncore.MC[0].ChannelCount =
 				  (Proc->Uncore.MC[0].P965.CKE0.RankPop0 != 0)
 				+ (Proc->Uncore.MC[0].P965.CKE1.RankPop0 != 0);
 
-	Proc->Uncore.CtrlCount = 1;
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+	Proc->Uncore.MC[0].SlotCount =
+			  (Proc->Uncore.MC[0].P965.CKE0.SingleDimmPop ? 1 : 2)
+			+ (Proc->Uncore.MC[0].P965.CKE1.SingleDimmPop ? 1 : 2);
 
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].P965.DRT0.value =
 					readl(mchmap + 0x29c + 0x400 * cha);
 
@@ -1398,18 +1403,20 @@ void Query_G965(void __iomem *mchmap)
 {	// Source: Mobile Intel 965 Express Chipset Family
 	unsigned short cha, slot;
 
+	Proc->Uncore.CtrlCount = 1;
+
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].G965.DRB0.value = readl(mchmap + 0x1200);
 	Proc->Uncore.MC[0].G965.DRB1.value = readl(mchmap + 0x1300);
+
 	Proc->Uncore.MC[0].ChannelCount =
 				  (Proc->Uncore.MC[0].G965.DRB0.Rank1Addr != 0)
 				+ (Proc->Uncore.MC[0].G965.DRB1.Rank1Addr != 0);
 
-	Proc->Uncore.CtrlCount = 1;
 	Proc->Uncore.MC[0].SlotCount=Proc->Uncore.MC[0].ChannelCount > 1 ? 1:2;
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].G965.DRT0.value =
 					readl(mchmap + 0x1210 + 0x100 * cha);
 
@@ -1433,17 +1440,22 @@ void Query_P35(void __iomem *mchmap)
 {	// Source: Intel® 3 Series Express Chipset Family
 	unsigned short cha;
 
+	Proc->Uncore.CtrlCount = 1;
+
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].P35.CKE0.value = readl(mchmap + 0x260);
 	Proc->Uncore.MC[0].P35.CKE1.value = readl(mchmap + 0x660);
+
 	Proc->Uncore.MC[0].ChannelCount =
 				  (Proc->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
 				+ (Proc->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
 
-	Proc->Uncore.CtrlCount = 1;
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+	Proc->Uncore.MC[0].SlotCount =
+			  (Proc->Uncore.MC[0].P35.CKE0.SingleDimmPop ? 1 : 2)
+			+ (Proc->Uncore.MC[0].P35.CKE1.SingleDimmPop ? 1 : 2);
 
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].P35.DRT0.value =
 					readw(mchmap + 0x265 + 0x400 * cha);
 
@@ -1605,19 +1617,21 @@ void Query_C200(void __iomem *mchmap)
 {	// Source: Intel® Xeon Processor E3-1200 Family
 	unsigned short cha;
 
-/*?*/	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+	Proc->Uncore.CtrlCount = 1;
+
+/* ToDo */
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+
 	Proc->Uncore.MC[0].ChannelCount =
 		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
+		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))  /*0 or 1*/
 		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
+		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0)); /*0 or 1*/
 
-	Proc->Uncore.CtrlCount = 1;
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-
 		Proc->Uncore.MC[0].Channel[cha].C200.DBP.value =
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
@@ -1633,19 +1647,21 @@ void Query_C220(void __iomem *mchmap)
 {	// Source: Desktop 4th Generation Intel® Core™ Processor Family
 	unsigned short cha;
 
-/*?*/	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+	Proc->Uncore.CtrlCount = 1;
+
+/* ToDo */
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+
 	Proc->Uncore.MC[0].ChannelCount =
 		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
 		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
 		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
 		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
 
-	Proc->Uncore.CtrlCount = 1;
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-
 		Proc->Uncore.MC[0].Channel[cha].C220.Timing.value =
 					readl(mchmap + 0x4c04 + 0x400 * cha);
 

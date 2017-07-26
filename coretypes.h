@@ -651,7 +651,8 @@ typedef struct
 		tddWrTRd,
 		tsrWrTWr,
 		tdrWrTWr,
-		tddWrTWr;
+		tddWrTWr,
+		ECC;
 	};
 } RAM_TIMING;
 
