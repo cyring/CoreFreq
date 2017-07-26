@@ -44,6 +44,14 @@ static const CPUID_STRUCT CpuIDforIntel[CPUID_MAX_FUNC]={
 	{.func=0x80000006, .sub=0x00000000},	/* Cache L2 Size & Way	*/
 	{.func=0x80000007, .sub=0x00000000},	/* Advanced Power	*/
 	{.func=0x80000008, .sub=0x00000000},	/* Address size		*/
+	{.func=0x40000000, .sub=0x00000000},	/* Hypervisor vendor	*/
+	{.func=0x40000000, .sub=0x00000001},	/* Hypervisor interface */
+	{.func=0x40000000, .sub=0x00000002},	/* Hypervisor version	*/
+	{.func=0x40000000, .sub=0x00000003},	/* Hypervisor features	*/
+	{.func=0x40000000, .sub=0x00000004},	/* Hyperv. requirements	*/
+	{.func=0x40000000, .sub=0x00000005},	/* Hypervisor limits	*/
+	{.func=0x40000000, .sub=0x00000006},	/* Hypervisor exploits	*/
+	{.func=0x00000000, .sub=0x00000000},
 };
 
 typedef union

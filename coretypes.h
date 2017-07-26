@@ -30,7 +30,7 @@ typedef unsigned int		Bit32;
 	tsec;								\
 })
 
-#define CPUID_MAX_FUNC	27
+#define CPUID_MAX_FUNC	35
 #define CACHE_MAX_LEVEL	(3 + 1)
 
 #define VENDOR_INTEL	"GenuineIntel"
@@ -141,7 +141,7 @@ typedef struct
 		AVX	: 29-28,
 		F16C	: 30-29,
 		RDRAND	: 31-30,
-		Unused3	: 32-31;
+		Hyperv	: 32-31;
 	} CX;
 	struct
 	{	// Most common x86

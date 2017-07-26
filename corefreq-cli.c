@@ -807,6 +807,11 @@ void SysInfoTech(SHM_STRUCT *Shm,
 		"Turbo Boost%.*sTURBO|CPB       [%3s]",
 		width - 35, hSpace,
 		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB));
+
+	printv(OutFunc, width, 2,
+		"Virtualization%.*sHYPERVISOR       [%3s]",
+		width - 39, hSpace,
+		enabled(Shm->Proc.Features.Std.CX.Hyperv));
 }
 
 void SysInfoPerfMon(	SHM_STRUCT *Shm,
@@ -2898,7 +2903,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_t:
 		{
-		matrixSize.hth = 5;
+		matrixSize.hth = 6;
 		winOrigin.col = 23;
 		winOrigin.row = TOP_HEADER_ROW + 11;
 		winWidth = 50;

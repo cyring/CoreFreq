@@ -31,6 +31,13 @@ static const CPUID_STRUCT CpuIDforAMD[CPUID_MAX_FUNC]={
 	{.func=0x8000001d, .sub=0x00000002},	/* Cache L2 Properties	*/
 	{.func=0x8000001d, .sub=0x00000003},	/* Cache Properties End	*/
 	{.func=0x8000001e, .sub=0x00000000},	/* Extended Identifiers	*/
+	{.func=0x40000000, .sub=0x00000000},	/* Hypervisor vendor	*/
+	{.func=0x40000000, .sub=0x00000001},	/* Hypervisor interface */
+	{.func=0x40000000, .sub=0x00000002},	/* Hypervisor version	*/
+	{.func=0x40000000, .sub=0x00000003},	/* Hypervisor features	*/
+	{.func=0x40000000, .sub=0x00000004},	/* Hyperv. requirements	*/
+	{.func=0x40000000, .sub=0x00000005},	/* Hypervisor limits	*/
+	{.func=0x40000000, .sub=0x00000006},	/* Hypervisor exploits	*/
 	{.func=0x00000000, .sub=0x00000000},
 };
 

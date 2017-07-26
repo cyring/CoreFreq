@@ -2048,32 +2048,28 @@ void Dump_CPUID(CORE *Core)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	for (i = 0; i < CPUID_MAX_FUNC; i++) {
-	    if ( ( (Core->CpuID[i].func & 0x80000000)
-		&& (Core->CpuID[i].func <= Core->Query.ExtFunc.LargestExtFunc))
-		|| (Core->CpuID[i].func && !(Core->CpuID[i].func & 0x80000000)
-		&& (Core->CpuID[i].func <= Core->Query.StdFunc.LargestStdFunc)))
-			asm volatile
-			(
-				"xorq	%%rax, %%rax	\n\t"
-				"xorq	%%rbx, %%rbx	\n\t"
-				"xorq	%%rcx, %%rcx	\n\t"
-				"xorq	%%rdx, %%rdx	\n\t"
-				"mov	%4,    %%eax	\n\t"
-				"mov	%5,    %%ecx	\n\t"
-				"cpuid			\n\t"
-				"mov	%%eax, %0	\n\t"
-				"mov	%%ebx, %1	\n\t"
-				"mov	%%ecx, %2	\n\t"
-				"mov	%%edx, %3"
-				: "=r" (Core->CpuID[i].reg[0]),
-				  "=r" (Core->CpuID[i].reg[1]),
-				  "=r" (Core->CpuID[i].reg[2]),
-				  "=r" (Core->CpuID[i].reg[3])
-				:  "r" (Core->CpuID[i].func),
-				   "r" (Core->CpuID[i].sub)
-				: "%rax", "%rbx", "%rcx", "%rdx"
-			);
+	for (i = 0; (i < CPUID_MAX_FUNC) && (Core->CpuID[i].func != 0x0); i++) {
+		asm volatile
+		(
+			"xorq	%%rax, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx	\n\t"
+			"xorq	%%rcx, %%rcx	\n\t"
+			"xorq	%%rdx, %%rdx	\n\t"
+			"mov	%4,    %%eax	\n\t"
+			"mov	%5,    %%ecx	\n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r" (Core->CpuID[i].reg[0]),
+			  "=r" (Core->CpuID[i].reg[1]),
+			  "=r" (Core->CpuID[i].reg[2]),
+			  "=r" (Core->CpuID[i].reg[3])
+			:  "r" (Core->CpuID[i].func),
+			   "r" (Core->CpuID[i].sub)
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
 	}
 }
 
