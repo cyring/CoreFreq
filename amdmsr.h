@@ -4,43 +4,6 @@
  * Licenses: GPL2
  */
 
-static const CPUID_STRUCT CpuIDforAMD[CPUID_MAX_FUNC]={
-	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
-	{.func=0x00000005, .sub=0x00000000},	/* MONITOR/MWAIT	*/
-	{.func=0x00000006, .sub=0x00000000},	/* Power & Thermal	*/
-	{.func=0x00000007, .sub=0x00000000},	/* Extended Feature	*/
-	{.func=0x0000000d, .sub=0x00000000},	/* Ext. State Main leaf	*/
-	{.func=0x0000000d, .sub=0x00000001},	/* Ext. State Sub-leaf	*/
-	{.func=0x0000000d, .sub=0x00000002},	/* Ext. State Sub-leaf	*/
-	{.func=0x0000000d, .sub=0x0000003e},	/* Ext. State Sub-leaf	*/
-	{.func=0x80000001, .sub=0x00000000},	/* Extended feature	*/
-	{.func=0x80000002, .sub=0x00000000},	/* Processor Name Id.	*/
-	{.func=0x80000003, .sub=0x00000000},	/* Processor Name Id.	*/
-	{.func=0x80000004, .sub=0x00000000},	/* Processor Name Id.	*/
-	{.func=0x80000005, .sub=0x00000000},	/* Caches L1D L1I & TLB	*/
-	{.func=0x80000006, .sub=0x00000000},	/* Caches L2 L3 & TLB	*/
-	{.func=0x80000007, .sub=0x00000000},	/* Advanced Power	*/
-	{.func=0x80000008, .sub=0x00000000},	/* Address size		*/
-	{.func=0x8000000a, .sub=0x00000000},	/* SVM Revision		*/
-	{.func=0x80000019, .sub=0x00000000},	/* Caches & TLB 1G	*/
-	{.func=0x8000001a, .sub=0x00000000},	/* Perf. Optimization	*/
-	{.func=0x8000001b, .sub=0x00000000},	/* Inst. Based Sampling	*/
-	{.func=0x8000001c, .sub=0x00000000},	/* Lightweight Profiling*/
-	{.func=0x8000001d, .sub=0x00000000},	/* Cache L1D Properties	*/
-	{.func=0x8000001d, .sub=0x00000001},	/* Cache L1I Properties	*/
-	{.func=0x8000001d, .sub=0x00000002},	/* Cache L2 Properties	*/
-	{.func=0x8000001d, .sub=0x00000003},	/* Cache Properties End	*/
-	{.func=0x8000001e, .sub=0x00000000},	/* Extended Identifiers	*/
-	{.func=0x40000000, .sub=0x00000000},	/* Hypervisor vendor	*/
-	{.func=0x40000000, .sub=0x00000001},	/* Hypervisor interface */
-	{.func=0x40000000, .sub=0x00000002},	/* Hypervisor version	*/
-	{.func=0x40000000, .sub=0x00000003},	/* Hypervisor features	*/
-	{.func=0x40000000, .sub=0x00000004},	/* Hyperv. requirements	*/
-	{.func=0x40000000, .sub=0x00000005},	/* Hypervisor limits	*/
-	{.func=0x40000000, .sub=0x00000006},	/* Hypervisor exploits	*/
-	{.func=0x00000000, .sub=0x00000000},
-};
-
 typedef union
 {
 	unsigned long long value;

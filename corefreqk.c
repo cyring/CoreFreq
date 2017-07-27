@@ -3908,12 +3908,6 @@ static int __init CoreFreqK_init(void)
 					privateSize, 0,
 					SLAB_HWCACHE_ALIGN, NULL)) != NULL))
 			    {
-				const CPUID_STRUCT *CpuIDforVendor =
-				!strncmp(Arch[0].Architecture,VENDOR_INTEL,12)?
-						CpuIDforIntel
-				: !strncmp( Arch[0].Architecture,VENDOR_AMD,12)?
-						CpuIDforAMD : CpuIDforIntel;
-
 				int allocPerCPU = 1;
 				// Allocation per CPU
 				for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
