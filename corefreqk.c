@@ -3985,10 +3985,8 @@ static int __init CoreFreqK_init(void)
 					Arch[0].Stop  = Stop_AuthenticAMD;
 					Arch[0].Timer = InitTimer_AuthenticAMD;
 					Arch[0].Clock = Clock_AuthenticAMD;
-
-					if (!Proc->Features.AdvPower.DX.Inv_TSC)
-						AutoClock = 0;
 				  }
+
 				  if ( (ArchID != -1)
 				    && (ArchID >= 0)
 				    && (ArchID < ARCHITECTURES) ) {

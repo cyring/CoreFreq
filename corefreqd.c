@@ -171,8 +171,7 @@ static void *Core_Cycle(void *arg)
 		if (thermalFormula == 0x01) {
 			Flip->Thermal.Temp = Cpu->PowerThermal.Target
 					   - Flip->Thermal.Sensor;
-		}
-		else if (thermalFormula == 0x10) {
+		} else if (thermalFormula == 0x10) {
 			Flip->Thermal.Temp = Flip->Thermal.Sensor
 					  - (Cpu->PowerThermal.Target * 2) - 49;
 		}
@@ -1694,6 +1693,11 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 
 void PowerThermal(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 {
+	unsigned int thermalFormula =
+	  !strncmp(Shm->Proc.Features.Info.VendorID,VENDOR_INTEL,12)?
+	    0x01 : !strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12) ?
+		0x10 : 0x0;
+
 	BITSET(LOCKLESS, Shm->Proc.ODCM_Mask, cpu);
 	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
 		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
@@ -1732,8 +1736,13 @@ void PowerThermal(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 
 	Shm->Cpu[cpu].PowerThermal.Target = Core[cpu]->PowerThermal.Target;
 
-	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Target;
-	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
+	if (thermalFormula == 0x01) {
+	  Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Target;
+	  Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
+	} else if (thermalFormula == 0x10) {
+	  Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor
+				    - (Core[cpu]->PowerThermal.Target * 2) - 49;
+	}
 }
 
 void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
