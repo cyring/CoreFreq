@@ -1481,7 +1481,7 @@ kernel_ulong_t Query_NHM_Timing(unsigned int did,
 				unsigned short cha)
 {	// Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset
     struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
-    if(dev != NULL) {
+    if (dev != NULL) {
 	pci_read_config_dword(dev, 0x70,
 			    &Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.value);
 
@@ -1514,7 +1514,7 @@ kernel_ulong_t Query_NHM_DIMM(	unsigned int did,
 				unsigned short cha)
 {
 	struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
-	if(dev != NULL) {
+	if (dev != NULL) {
 		unsigned short slot;
 
 		for (slot = 0; slot < Proc->Uncore.MC[mc].SlotCount; slot++) {
@@ -2997,7 +2997,36 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
-#define Cycle_AuthenticAMD Cycle_GenuineIntel
+static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Genuine(Core, 1);
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
 
 void InitTimer_GenuineIntel(unsigned int cpu)
 {
@@ -3077,7 +3106,7 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 }
 */
 
-static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3091,7 +3120,7 @@ static enum hrtimer_restart Cycle_AMD_Family_10h(struct hrtimer *pTimer)
 
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		// C-state workaround
+		// C-state like placeholder
 		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
 					+ (8 + FidVidStatus.CurrFID)
 					* Core->Clock.Hz;
@@ -3133,14 +3162,14 @@ void InitTimer_AuthenticAMD(unsigned int cpu)
 /*
 Note: hardware Family_12h
 
-	if(Proc->Features.AdvPower.DX.CPB == 1)	// Core Performance Boost.
+	if (Proc->Features.AdvPower.DX.CPB == 1)	// Core Performance Boost.
 	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
 	else
 */
 	if (Proc->Features.Power.CX.EffFreq == 1) // MPERF & APERF ?
 	    smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
 	else
-	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_10h, 1);
+	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
 }
 
 void Start_AuthenticAMD(void *arg)
@@ -3595,7 +3624,7 @@ long SysGate_OnDemand(void)
 	if (Proc->SysGate == NULL) {
 		unsigned long pageSize = ROUND_TO_PAGES(sizeof(SYSGATE));
 		// Alloc on demand
-		if((Proc->SysGate = kmalloc(pageSize, GFP_KERNEL)) != NULL) {
+		if ((Proc->SysGate = kmalloc(pageSize, GFP_KERNEL)) != NULL) {
 			memset(Proc->SysGate, 0, pageSize);
 			rc = 0;
 		}
@@ -3957,7 +3986,7 @@ static int __init CoreFreqK_init(void)
 					Arch[0].Timer = InitTimer_AuthenticAMD;
 					Arch[0].Clock = Clock_AuthenticAMD;
 
-					if(!Proc->Features.AdvPower.DX.Inv_TSC)
+					if (!Proc->Features.AdvPower.DX.Inv_TSC)
 						AutoClock = 0;
 				  }
 				  if ( (ArchID != -1)
@@ -4097,9 +4126,9 @@ static int __init CoreFreqK_init(void)
 			    rc = -ENOMEM;
 			}
 		    } else {
-			if(KPublic != NULL)
+			if (KPublic != NULL)
 				kfree(KPublic);
-			if(KPrivate != NULL)
+			if (KPrivate != NULL)
 				kfree(KPrivate);
 
 			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);

@@ -486,7 +486,10 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.Bus.Speed /= 1000000L;
 
-	Shm->Uncore.Bus.Unit = 0; // "MHz"
+	Shm->Uncore.Unit.Bus_Rate = 0b00;
+	Shm->Uncore.Unit.BusSpeed = 0b00;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
@@ -769,7 +772,10 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.Bus.Speed /= 1000000L;
 
-	Shm->Uncore.Bus.Unit = 0; // "MHz"
+	Shm->Uncore.Unit.Bus_Rate = 0b00;
+	Shm->Uncore.Unit.BusSpeed = 0b00;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void P3S_MCH(SHM_STRUCT *Shm, PROC *Proc, unsigned short mc, unsigned short cha)
@@ -1077,7 +1083,10 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.Bus.Speed /= 1000000L;
 
-	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
@@ -1094,7 +1103,10 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.Bus.Speed /= 1000000L;
 
-	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
@@ -1182,7 +1194,10 @@ void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.Bus.Speed /= 1000000L;
 
-	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
@@ -1248,192 +1263,202 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
-	struct {
-		unsigned int size;
-	} module[] = {
-		{256}, {512}, {1024}, {1024},
-		{1024}, {2048}, {2048}, {4096},
-		{4096}, {8192}, {8192}, {16384},
-		{0}, {0}, {0}, {0}
-	};
-	unsigned int mask;
-	unsigned short mc, cha, slot, shift, index;
+    struct {
+	unsigned int size;
+    } module[] = {
+	{256}, {512}, {1024}, {1024},
+	{1024}, {2048}, {2048}, {4096},
+	{4096}, {8192}, {8192}, {16384},
+	{0}, {0}, {0}, {0}
+    };
+    unsigned int mask;
+    unsigned short mc, cha, slot, shift, index;
 
-	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
 
-	    Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-	    Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tCL) {
+	case 0b010:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		break;
+	case 0b011:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		break;
+	case 0b100:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		break;
+	case 0b101:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		break;
+	}
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tCL) {
-		case 0b010:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
-			break;
-		case 0b011:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
-			break;
-		case 0b100:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
-			break;
-		case 0b101:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
-			break;
-		}
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRCD) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 3;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 4;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 5;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 6;
+		break;
+	}
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRCD) {
-		case 0b00:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 3;
-			break;
-		case 0b01:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 4;
-			break;
-		case 0b10:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 5;
-			break;
-		case 0b11:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD = 6;
-			break;
-		}
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRP) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 3;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 4;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 5;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 6;
+		break;
+	}
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRP) {
-		case 0b00:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 3;
-			break;
-		case 0b01:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 4;
-			break;
-		case 0b10:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 5;
-			break;
-		case 0b11:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRP = 6;
-			break;
-		}
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRTPr) {
+	case 0b0:
+		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 2;
+		else
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 4;
+		break;
+	case 0b1:
+		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 3;
+		else
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 5;
+		break;
+	}
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRTPr) {
-		case 0b0:
-			if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
-				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=2;
-			else
-				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=4;
-			break;
-		case 0b1:
-			if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
-				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=3;
-			else
-				Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr=5;
-			break;
-		}
+	if (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS >= 0b0010)
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS + 3;
 
-		if (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS >= 0b0010)
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
-			  Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS + 3;
-
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRC + 11;
 
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tWR) {
-		case 0b00:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 3;
-			break;
-		case 0b01:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 4;
-			break;
-		case 0b10:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
-			break;
-		case 0b11:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
-			break;
-		}
-
-		switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRRD) {
-		case 0b00:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
-			break;
-		case 0b01:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 3;
-			break;
-		case 0b10:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 4;
-			break;
-		case 0b11:
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 5;
-			break;
-		}
-
-		if ((Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW > 0b0000)
-		 && (Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW <= 0b1101)) {
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-				Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW + 7;
-		}
-
-		if (Proc->Uncore.MC[mc].AMD0F.DCRH.SlowAccessMode == 0b1)
-			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
-		else
-			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
-
-		shift = 4 * cha;
-		mask  = 0b1111 << shift;
-
-		for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		  if(Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable) {
-		    index = (Proc->Uncore.MC[mc].MaxDIMMs.AMD0F.CS.value & mask)
-			  >> shift;
-
-		    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
-			module[index].size;
-		  }
-		}
-	    }
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tWR) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 3;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 4;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
+		break;
 	}
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRRD) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 3;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 4;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 5;
+		break;
+	}
+
+	if ((Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW > 0b0000)
+	 && (Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW <= 0b1101)) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+				Proc->Uncore.MC[mc].AMD0F.DCRH.tFAW + 7;
+	}
+
+	if (Proc->Uncore.MC[mc].AMD0F.DCRH.SlowAccessMode == 0b1)
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+	else
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+
+	shift = 4 * cha;
+	mask  = 0b1111 << shift;
+
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	  if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable) {
+	    index=(Proc->Uncore.MC[mc].MaxDIMMs.AMD0F.CS.value & mask) >> shift;
+
+	    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=module[index].size;
+	  }
+	}
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
+				Proc->Uncore.MC[mc].AMD0F.DCRL.ECC_DIMM_Enable;
+      }
+    }
 }
 
 void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 {
-	unsigned int link;
+	unsigned int link = 0;
+	RAM_Ratio Ratio = {.Q = 0, .R = 0};
+	unsigned long long HTT_Clock = 0;
 
 	switch (Proc->Uncore.MC[0].AMD0F.DCRH.MemClkFreq) {
 		case 0b000:
-			Shm->Uncore.CtrlSpeed = 200;
+			Ratio.Q = 200;
+			Ratio.R = 0;
 			break;
 		case 0b001:
-			Shm->Uncore.CtrlSpeed = 266;
+			Ratio.Q = 266;
+			Ratio.R = 1;
 			break;
 		case 0b010:
-			Shm->Uncore.CtrlSpeed = 333;
+			Ratio.Q = 333;
+			Ratio.R = 1;
 			break;
 		case 0b011:
-			Shm->Uncore.CtrlSpeed = 400;
+			Ratio.Q = 400;
+			Ratio.R = 0;
 			break;
 	}
+	Shm->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	// DDR2
 
 	if ((link = Proc->Uncore.Bus.UnitID.McUnit) < 0b11) {
-		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) {
+		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) { // "MHz"
 		case 0b0000:
-			Shm->Uncore.Bus.Rate = 200;
+			HTT_Clock = 200;
 			break;
 		case 0b0010:
-			Shm->Uncore.Bus.Rate = 400;
+			HTT_Clock = 400;
 			break;
 		case 0b0100:
-			Shm->Uncore.Bus.Rate = 600;
+			HTT_Clock = 600;
 			break;
 		case 0b0101:
-			Shm->Uncore.Bus.Rate = 800;
+			HTT_Clock = 800;
 			break;
 		case 0b0110:
-			Shm->Uncore.Bus.Rate = 1000;
+			HTT_Clock = 1000;
 			break;
 		case 0b1111:
-			Shm->Uncore.Bus.Rate = 100;
+			HTT_Clock = 100;
 			break;
 		}
-		Shm->Uncore.Bus.Speed = Shm->Uncore.Bus.Rate * 2;
+		Shm->Uncore.Bus.Rate = HTT_Clock * 2;	// "MT/s"
+		Shm->Uncore.Bus.Speed = HTT_Clock * 4;	// "MB/s"
 	}
-	Shm->Uncore.Bus.Unit = 1; // "MT/s"
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b10;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)

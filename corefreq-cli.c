@@ -1422,18 +1422,84 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	    printv("Contr"); printv("oller");
 	    printv(" #%-3u", mc); printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     ");
+	    printv("     "); printv("     ");
+
+	    switch (Shm->Uncore.MC[mc].ChannelCount) {
+	    case 1:
+		printv("Singl"); printv("e Cha"); printv("nnel ");
+		break;
+	    case 2:
+		printv(" Dual"); printv(" Chan"); printv("nel  ");
+		break;
+	    case 3:
+		printv("Tripl"); printv("e Cha"); printv("nnel ");
+		break;
+	    case 4:
+		printv(" Quad"); printv(" Chan"); printv("nel  ");
+		break;
+	    case 6:
+		printv(" Hexa"); printv(" Chan"); printv("nel  ");
+		break;
+	    case 8:
+		printv(" Octa"); printv(" Chan"); printv("nel  ");
+		break;
+	    default:
+		printv("     "); printv("     "); printv("     ");
+		break;
+	    }
 
 	    printv(" Bus "); printv("Rate ");
 	    printv("%5llu", Shm->Uncore.Bus.Rate);
-	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
+	    switch (Shm->Uncore.Unit.Bus_Rate) {
+	    case 0b00:
+		printv(" MHz ");
+		break;
+	    case 0b01:
+		printv(" MT/s");
+		break;
+	    case 0b10:
+		printv(" MB/s");
+		break;
+	    case 0b11:
+		printv("     ");
+		break;
+	    }
 	    printv("     ");
+
 	    printv(" Bus "); printv("Speed");
 	    printv("%5llu", Shm->Uncore.Bus.Speed);
-	    printv("%s", Shm->Uncore.Bus.Unit == 1 ? " MT/s" : " MHz ");
-	    printv("     "); printv("DRAM "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.CtrlSpeed); printv(" MHz ");
+	    switch (Shm->Uncore.Unit.BusSpeed) {
+	    case 0b00:
+		printv(" MHz ");
+		break;
+	    case 0b01:
+		printv(" MT/s");
+		break;
+	    case 0b10:
+		printv(" MB/s");
+		break;
+	    case 0b11:
+		printv("     ");
+		break;
+	    }
+	    printv("     ");
+
+	    printv("DRAM "); printv("Speed");
+	    printv("%5llu", Shm->Uncore.CtrlSpeed);
+	    switch (Shm->Uncore.Unit.DDRSpeed) {
+	    case 0b00:
+		printv(" MHz ");
+		break;
+	    case 0b01:
+		printv(" MT/s");
+		break;
+	    case 0b10:
+		printv(" MB/s");
+		break;
+	    case 0b11:
+		printv("     ");
+		break;
+	    }
 
 	    printv("     "); printv("     ");
 	    printv("     "); printv("     "); printv("     "); printv("     ");
