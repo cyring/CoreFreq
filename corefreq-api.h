@@ -277,6 +277,8 @@ typedef struct
 
 		unsigned long long	C1;
 
+		int			VID;
+
 		unsigned int		SMI;
 		struct {
 			unsigned int

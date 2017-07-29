@@ -4,6 +4,21 @@
  * Licenses: GPL2
  */
 
+const struct {
+	unsigned int	MCF,
+			PCF[5];
+} VCO[0b1000] = {
+/* FID */
+/* 000000b */	{ 8, { 0,  0, 16, 17, 18}},
+/* 000001b */	{ 9, {16, 17, 18, 19, 20}},
+/* 000010b */	{10, {18, 19, 20, 21, 22}},
+/* 000011b */	{11, {20, 21, 22, 23, 24}},
+/* 000100b */	{12, {22, 23, 24, 25, 26}},
+/* 000101b */	{13, {24, 25, 26, 27, 28}},
+/* 000110b */	{14, {26, 27, 28, 29, 30}},
+/* 000111b */	{15, {28, 29, 30, 31, 32}},
+};
+
 typedef union
 {
 	unsigned long long value;
@@ -66,6 +81,23 @@ typedef union
 	Reserved	: 64-32;
     } Family_0Fh;
 } HWCR;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	NewFID		:  6-0,
+	Reserved1	:  8-6,
+	NewVID		: 14-8,
+	Reserved2	: 16-14,
+	InitFidVid	: 17-16,	// Initiate FID/VID Change
+	Reserved3	: 32-17,
+	StpGntTOCnt	: 52-32,	// Stop Grant Time-Out Count
+	Reserved4	: 64-52;
+    };
+} FIDVID_CONTROL;
 
 typedef union
 {

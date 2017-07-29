@@ -106,6 +106,14 @@ static signed short PowerPolicy = -1;
 module_param(PowerPolicy, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
 
+static signed int PState_FID = -1;
+module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
+
+static signed int PState_VID = -1;
+module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -1944,26 +1952,15 @@ void Query_AuthenticAMD(void)
 		// Processor supports FID changes.
 		FIDVID_STATUS FidVidStatus = {.value = 0};
 
-	/* FID */ const unsigned int VCO[0b1000][5] = {
-	/* 000000b */	{ 0,  0, 16, 17, 18},
-	/* 000001b */	{16, 17, 18, 19, 20},
-	/* 000010b */	{18, 19, 20, 21, 22},
-	/* 000011b */	{20, 21, 22, 23, 24},
-	/* 000100b */	{22, 23, 24, 25, 26},
-	/* 000101b */	{24, 25, 26, 27, 28},
-	/* 000110b */	{26, 27, 28, 29, 30},
-	/* 000111b */	{28, 29, 30, 31, 32}
-		};
-
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		Proc->Boost[0] = 8 + FidVidStatus.StartFID;
+		Proc->Boost[0] = VCO[FidVidStatus.StartFID].MCF;
 		Proc->Boost[1] = 8 + FidVidStatus.MaxFID;
 
 		if (FidVidStatus.StartFID < 0b1000) {
 		    unsigned int t;
 		    for (t = 0; t < 5; t++)
-			Proc->Boost[5 + t] = VCO[FidVidStatus.StartFID][t];
+			Proc->Boost[5 + t] = VCO[FidVidStatus.StartFID].PCF[t];
 		}
 		else
 			Proc->Boost[9] = 8 + FidVidStatus.MaxFID;
@@ -1976,18 +1973,16 @@ void Query_AuthenticAMD(void)
 		Proc->Boost[1] = Proc->Boost[0];
 		Proc->Boost[9] = Proc->Boost[0];
 	}
-/*
-Note: hardware Families > 0Fh
-
-	else if ( Proc->Features.AdvPower.DX.HwPstate == 1)
-		CoreCOF = 100 * (MSRC001_00[6B:64][CpuFid] + 10h)
-			/ (2^MSRC001_00[6B:64][CpuDid])
-*/
-
 	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
 
 	HyperThreading_Technology();
 }
+/* Todo: AMD Hardware Families > 0Fh
+
+	if ( Proc->Features.AdvPower.DX.HwPstate == 1)
+		CoreCOF = 100 * (MSRC001_00[6B:64][CpuFid] + 10h)
+			/ (2^MSRC001_00[6B:64][CpuDid])
+*/
 
 void Query_Core2(void)
 {
@@ -2142,7 +2137,8 @@ void Query_AMD_C1E(CORE *Core)
 
 	RDMSR(IntPendingMsg, MSR_K8_INT_PENDING_MSG);
 
-	Core->Query.C1E = IntPendingMsg.C1eOnCmpHalt;
+	Core->Query.C1E = IntPendingMsg.C1eOnCmpHalt
+			& !IntPendingMsg.SmiOnCmpHalt;
 }
 
 void ThermalMonitor_Set(CORE *Core)
@@ -2236,6 +2232,44 @@ void PowerThermal(CORE *Core)
     }
 }
 
+void PerCore_AMD_PStates(CORE *Core)
+{
+    if (Experimental == 1) {
+	FIDVID_STATUS FidVidStatus = {.value = 0};
+	FIDVID_CONTROL FidVidControl = {.value = 0};
+	int NewFID = -1, NewVID = -1, loop = 100;
+
+	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+
+	NewFID	= ((PState_FID >= FidVidStatus.StartFID)
+		&& (PState_FID <= FidVidStatus.MaxFID)) ?
+		PState_FID : FidVidStatus.CurrFID,
+
+	NewVID	= ((PState_VID <= FidVidStatus.StartVID)
+		&& (PState_VID >= FidVidStatus.MaxVID)) ?
+		PState_VID : FidVidStatus.CurrVID;
+	do {
+		if (FidVidStatus.FidVidPending == 0) {
+			RDMSR(FidVidControl, MSR_K7_FID_VID_CTL);
+
+			FidVidControl.InitFidVid = 1;
+			FidVidControl.StpGntTOCnt = 400;
+			FidVidControl.NewFID = NewFID;
+			FidVidControl.NewVID = NewVID;
+
+			WRMSR(FidVidControl, MSR_K7_FID_VID_CTL);
+			loop = 0;
+		} else
+			RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+
+		if (loop == 0) {
+			break;
+		} else
+			loop-- ;
+	} while (FidVidStatus.FidVidPending == 1) ;
+    }
+}
+
 void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
@@ -2259,6 +2293,8 @@ void PerCore_AMD_Query(CORE *Core)
 	Dump_CPUID(Core);
 
 	Query_AMD_C1E(Core);
+
+	PerCore_AMD_PStates(Core);
 }
 
 void PerCore_Core2_Query(CORE *Core)
@@ -3120,7 +3156,9 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		// C-state like placeholder
+		Core->Counter[1].VID = FidVidStatus.CurrVID;
+
+		// P-States
 		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
 					+ (8 + FidVidStatus.CurrFID)
 					* Core->Clock.Hz;
@@ -3136,6 +3174,8 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
 		    : 0;
 
+		Core_AMD_Temp(Core);
+
 		Delta_C0(Core);
 
 		Delta_TSC(Core);
@@ -3147,8 +3187,6 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		Save_C0(Core);
 
 		Save_C1(Core);
-
-		Core_AMD_Temp(Core);
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
