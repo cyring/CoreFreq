@@ -889,10 +889,26 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL ?
 		4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tCL : 0;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
-		Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR ?
-		4 + Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR : 0;
-
+	switch (Proc->Uncore.MC[mc].Channel[cha].NHM.MR0_1.tWR) {
+	case 0b001:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 5;
+		break;
+	case 0b010:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 6;
+		break;
+	case 0b011:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 7;
+		break;
+	case 0b100:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 8;
+		break;
+	case 0b101:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 10;
+		break;
+	case 0b110:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tWR = 12;
+		break;
+	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRCD;
 
