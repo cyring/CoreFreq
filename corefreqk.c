@@ -3905,7 +3905,13 @@ static int __init CoreFreqK_init(void)
 	// Query features on the presumed BSP processor.
 	memset(&Arg.features, 0, sizeof(FEATURES));
 	rc = smp_call_function_single(0, Query_Features, &Arg, 1);
-	rc = (rc == 0) ? ((Arg.count > 0) ? 0 : -ENXIO) : rc;
+	if (rc == 0) {
+		unsigned int OS_count = num_present_cpus();
+		// Rely on operating system's cpu counting.
+		if (Arg.count != OS_count)
+			Arg.count = OS_count;
+	} else
+		rc = -ENXIO;
 	if (rc == 0)
 	{
 	  CoreFreqK.kcdev = cdev_alloc();
