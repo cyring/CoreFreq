@@ -137,7 +137,7 @@ char lcd[10][3][3] = {
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3
-#define MAX_CPU_ROW	32
+#define MAX_CPU_ROW	48
 
 #define MAX_HEIGHT	((2 * MAX_CPU_ROW)				\
 			+ TOP_HEADER_ROW				\
@@ -4628,7 +4628,8 @@ void Top(SHM_STRUCT *Shm)
 		},
 	};
 
-	if ((len=hSys1.origin.col - col) > 0)
+	len = hSys1.origin.col - col;
+	if ((signed int)len  > 0)
 	    LayerFillAt(layer, col, hSys1.origin.row,
 			len, hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
