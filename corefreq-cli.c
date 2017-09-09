@@ -1308,6 +1308,36 @@ void Counters(SHM_STRUCT *Shm)
     }
 }
 
+void Voltage(SHM_STRUCT *Shm)
+{
+    unsigned int cpu = 0;
+    while (!Shutdown) {
+	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
+
+	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+
+	if (BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+
+		printf("CPU Freq(MHz) VID  Vcore\n");
+	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	  if (!Shm->Cpu[cpu].OffLine.HW) {
+	    struct FLIP_FLOP *Flop =
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	    if (!Shm->Cpu[cpu].OffLine.OS)
+		printf("#%02u %7.2f %5d % 6.5f\n",
+			cpu,
+			Flop->Relative.Freq,
+			Flop->Voltage.VID,
+			Flop->Voltage.Vcore);
+	    else
+		printf("#%02u        OFF\n", cpu);
+	  }
+    }
+}
+
 void Instructions(SHM_STRUCT *Shm)
 {
 	unsigned int cpu = 0;
@@ -5180,6 +5210,7 @@ int Help(char *appName)
 			" <marginWidth>"				\
 			" <marginHeight>"				\
 		"\n"							\
+		"\t-V\tMonitor Voltage\n"				\
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
@@ -5254,6 +5285,10 @@ int main(int argc, char *argv[])
 		case 'c':
 			TrapSignal();
 			Counters(Shm);
+			break;
+		case 'V':
+			TrapSignal();
+			Voltage(Shm);
 			break;
 		case 'd':
 			if (argc == 6) {

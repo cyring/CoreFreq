@@ -3429,6 +3429,7 @@ void Stop_Nehalem(void *arg)
 
 static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 {
+	PERF_STATUS PerfStatus = {.value = 0};
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
@@ -3441,6 +3442,9 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		if (Core->T.Base.BSP) {
 			PKG_Counters_SandyBridge(Core, 1);
+
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.Pstate_VID;
 
 			Delta_PC02(Proc);
 

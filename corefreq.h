@@ -116,6 +116,11 @@ typedef struct
 					Temp,
 					Trip;
 		} Thermal;
+
+		struct {
+			int		VID;
+			double		Vcore;
+		} Voltage;
 	} FlipFlop[2];
 } CPU_STRUCT;
 

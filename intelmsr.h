@@ -61,11 +61,11 @@ typedef	union
 		CurrentRatio	: 16-0,
 		ReservedBits1	: 31-16,
 		XE_Enable	: 32-31, // Intel Core
-		ReservedBits2	: 40-32, // Sandy Bridge: 48-32 Core Voltage
+		Pstate_VID	: 40-32, // Core Voltage ID (Sandy Bridge)
 		MaxBusRatio	: 45-40, // Architectural
-		ReservedBits3	: 46-45,
+		ReservedBits2	: 46-45,
 		NonInt_BusRatio	: 47-46,
-		ReservedBits4	: 64-47;
+		ReservedBits3	: 64-47;
 	};
 } PERF_STATUS;
 

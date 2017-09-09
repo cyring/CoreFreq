@@ -277,8 +277,6 @@ typedef struct
 
 		unsigned long long	C1;
 
-		int			VID;
-
 		unsigned int		SMI;
 		struct {
 			unsigned int
@@ -287,6 +285,8 @@ typedef struct
 					PCISERR,
 					IOCHECK;
 		}			NMI;
+
+		int			VID;
 	} Counter[2];
 
 	struct

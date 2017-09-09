@@ -167,13 +167,42 @@ static void *Core_Cycle(void *arg)
 		}
 		Flip->Thermal.Trip   = Core->PowerThermal.Trip;
 		Flip->Thermal.Sensor = Core->PowerThermal.Sensor;
+		Flip->Voltage.VID    = Core->Counter[1].VID;
 
 		if (thermalFormula == 0x01) {
 			Flip->Thermal.Temp = Cpu->PowerThermal.Target
 					   - Flip->Thermal.Sensor;
+
+			if (Core->T.Base.BSP) {
+			    Flip->Voltage.Vcore = (Flip->Voltage.VID == 0) ?
+				0.0
+			    :	0.245 + (double) (Flip->Voltage.VID) * 0.005;
+			}
 		} else if (thermalFormula == 0x10) {
 			Flip->Thermal.Temp = Flip->Thermal.Sensor
 					  - (Cpu->PowerThermal.Target * 2) - 49;
+
+			short	Vselect = (Flip->Voltage.VID & 0b110000) >> 4,
+				Vnibble = Flip->Voltage.VID & 0b1111;
+
+			switch (Vselect) {
+			case 0b00:
+			    Flip->Voltage.Vcore = 1.550
+						- (double) (Vnibble) * 0.025;
+			    break;
+			case 0b01:
+			    Flip->Voltage.Vcore = 1.150
+						- (double) (Vnibble) * 0.025;
+			    break;
+			case 0b10:
+			    Flip->Voltage.Vcore = 0.7625
+						- (double) (Vnibble) * 0.0125;
+			    break;
+			case 0b11:
+			    Flip->Voltage.Vcore = 0.5625
+						- (double) (Vnibble) * 0.0125;
+			    break;
+			}
 		}
 		if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 			Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
