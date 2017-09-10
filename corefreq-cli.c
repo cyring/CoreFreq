@@ -1327,7 +1327,7 @@ void Voltage(SHM_STRUCT *Shm)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!Shm->Cpu[cpu].OffLine.OS)
-		printf("#%02u %7.2f %5d % 6.5f\n",
+		printf("#%02u %7.2f %5d  %6.5f\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Voltage.VID,
@@ -1654,6 +1654,7 @@ typedef union {
 #define SCANKEY_SHIFT_m		0x000000000000004d
 #define SCANKEY_SHIFT_q		0x0000000000000051
 #define SCANKEY_SHIFT_s		0x0000000000000053
+#define SCANKEY_SHIFT_v		0x0000000000000056
 #define SCANKEY_SHIFT_w		0x0000000000000057
 #define SCANKEY_SHIFT_z		0x000000000000005a
 #define SCANKEY_a		0x0000000000000061
@@ -2483,7 +2484,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
-enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_INTR};
+enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_INTR, V_VOLT};
 
 #define LOAD_LEAD 4
 
@@ -2787,7 +2788,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
 		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -3497,6 +3498,12 @@ void Top(SHM_STRUCT *Shm)
 		drawFlag.clear = 1;
 		}
 		break;
+	case SCANKEY_SHIFT_v:
+		{
+		drawFlag.view = V_VOLT;
+		drawFlag.clear = 1;
+		}
+		break;
 	case SCANKEY_s:
 		{
 		Window *win = SearchWinListById(scan->key, &winList);
@@ -3910,6 +3917,7 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
+	case V_VOLT:
 	case V_INTR:
 	case V_CYCLES:
 	case V_CSTATES:
@@ -4425,6 +4433,40 @@ void Top(SHM_STRUCT *Shm)
 			hTrack0.length, hTrack0.attr, hTrack0.code);
 	  }
 	  break;
+	case V_VOLT:
+	  {
+	    LayerDeclare(MAX_WIDTH) hVolt0 = {
+		.origin = {
+			.col = 0,
+			.row = row
+		},
+		.length = drawSize.width,
+		.attr = {
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK, \
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		.code = "--- Freq(MHz) - VID - Vcore ------------"	\
+			"----------------------------------------"	\
+			"----------------------------------------"	\
+			"------------",
+	    };
+	    LayerCopyAt(layer, hVolt0.origin.col, hVolt0.origin.row,
+			hVolt0.length, hVolt0.attr, hVolt0.code);
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine,
+			MakeAttr(WHITE, 0, BLACK, 0));
+	  }
+	  break;
 	}
 
 	row += Shm->Proc.CPU.Count + 2;
@@ -4850,6 +4892,18 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Counter.NMI.UNKNOWN,
 				Flop->Counter.NMI.PCISERR,
 				Flop->Counter.NMI.IOCHECK);
+		      }
+		      break;
+		    case V_VOLT:
+		      {
+			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
+				"%c"					\
+				"%7.2f "				\
+				"%7d   %6.5f",
+				(cpu == iClock) ? '~' : 0x20,
+				Flop->Relative.Freq,
+				Flop->Voltage.VID,
+				Flop->Voltage.Vcore);
 		      }
 		      break;
 		    }
