@@ -3200,7 +3200,8 @@ void InitTimer_AuthenticAMD(unsigned int cpu)
 /*
 Note: hardware Family_12h
 
-	if (Proc->Features.AdvPower.DX.CPB == 1)	// Core Performance Boost.
+	if (Proc->Features.AdvPower.DX.CPB == 1)
+	// Core Performance Boost [Here].
 	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
 	else
 */
@@ -4025,19 +4026,34 @@ static int __init CoreFreqK_init(void)
 				  }
 
 				  if (!strncmp(Arch[0].Architecture,
-						VENDOR_INTEL, 12)) {
+							VENDOR_INTEL, 12))
+				  {
 					Arch[0].Query = Query_GenuineIntel;
 					Arch[0].Start = Start_GenuineIntel;
 					Arch[0].Stop  = Stop_GenuineIntel;
 					Arch[0].Timer = InitTimer_GenuineIntel;
 					Arch[0].Clock = Clock_GenuineIntel;
-				  } else if (!strncmp(Arch[0].Architecture,
-						VENDOR_AMD, 12) ) {
+
+					Arch[0].thermalFormula =
+							THERMAL_FORMULA_INTEL;
+
+					Arch[0].voltageFormula =
+							VOLTAGE_FORMULA_INTEL;
+				  }
+				  else if (!strncmp(Arch[0].Architecture,
+							VENDOR_AMD, 12) )
+				  {
 					Arch[0].Query = Query_AuthenticAMD;
 					Arch[0].Start = Start_AuthenticAMD;
 					Arch[0].Stop  = Stop_AuthenticAMD;
 					Arch[0].Timer = InitTimer_AuthenticAMD;
 					Arch[0].Clock = Clock_AuthenticAMD;
+
+					Arch[0].thermalFormula =
+							THERMAL_FORMULA_AMD;
+
+					Arch[0].voltageFormula =
+							VOLTAGE_FORMULA_AMD;
 				  }
 
 				  if ( (ArchID != -1)
@@ -4061,6 +4077,12 @@ static int __init CoreFreqK_init(void)
 					}
 				    }
 				  }
+
+				  Proc->thermalFormula =
+					Arch[Proc->ArchID].thermalFormula;
+
+				  Proc->voltageFormula =
+					Arch[Proc->ArchID].voltageFormula;
 
 				  strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);

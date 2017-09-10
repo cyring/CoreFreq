@@ -1327,7 +1327,7 @@ void Voltage(SHM_STRUCT *Shm)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!Shm->Cpu[cpu].OffLine.OS)
-		printf("#%02u %7.2f %5d  %6.5f\n",
+		printf("#%02u %7.2f %5d  %5.4f\n",
 			cpu,
 			Flop->Relative.Freq,
 			Flop->Voltage.VID,
@@ -4899,7 +4899,7 @@ void Top(SHM_STRUCT *Shm)
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
 				"%7.2f "				\
-				"%7d   %6.5f",
+				"%7d   %5.4f",
 				(cpu == iClock) ? '~' : 0x20,
 				Flop->Relative.Freq,
 				Flop->Voltage.VID,

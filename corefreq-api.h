@@ -503,6 +503,9 @@ typedef struct
 
 	FEATURES		Features;
 
+	unsigned long		thermalFormula,
+				voltageFormula;
+
 	unsigned int		SleepInterval;
 
 	struct {

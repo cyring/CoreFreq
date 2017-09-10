@@ -399,6 +399,8 @@ typedef	struct
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*Clock)(unsigned int ratio);
 	char			*Architecture;
+	unsigned long long	thermalFormula,
+				voltageFormula;
 } ARCH;
 
 extern CLOCK Clock_GenuineIntel(unsigned int ratio) ;
@@ -540,6 +542,8 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	NULL,
 	NULL,
+	THERMAL_FORMULA_NONE,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  1*/	{
 	_Core_Yonah,
@@ -549,7 +553,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_GenuineIntel,
 	Clock_Core,
-	"Core/Yonah"
+	"Core/Yonah",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  2*/	{
 	_Core_Conroe,
@@ -559,7 +565,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Core2/Conroe/Merom"
+	"Core2/Conroe/Merom",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_MEROM,
 	},
 /*  3*/	{
 	_Core_Kentsfield,
@@ -569,7 +577,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Core2/Kentsfield"
+	"Core2/Kentsfield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  4*/	{
 	_Core_Conroe_616,
@@ -579,7 +589,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Core2/Conroe/Yonah"
+	"Core2/Conroe/Yonah",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  5*/	{
 	_Core_Yorkfield,
@@ -589,7 +601,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Core2/Yorkfield"
+	"Core2/Yorkfield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  6*/	{
 	_Core_Dunnington,
@@ -599,7 +613,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Core2,
-	"Xeon/Dunnington"
+	"Xeon/Dunnington",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /*  7*/	{
@@ -610,7 +626,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Bonnell"
+	"Atom/Bonnell",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  8*/	{
 	_Atom_Silvermont,
@@ -620,7 +638,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Silvermont"
+	"Atom/Silvermont",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /*  9*/	{
 	_Atom_Lincroft,
@@ -630,7 +650,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Lincroft"
+	"Atom/Lincroft",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 10*/	{
 	_Atom_Clovertrail,
@@ -640,7 +662,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Clovertrail"
+	"Atom/Clovertrail",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 11*/	{
 	_Atom_Saltwell,
@@ -650,7 +674,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Saltwell"
+	"Atom/Saltwell",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /* 12*/	{
@@ -661,7 +687,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Silvermont,
-	"Silvermont"
+	"Silvermont",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 13*/	{
 	_Atom_Avoton,
@@ -671,7 +699,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Silvermont,
-	"Atom/Avoton"
+	"Atom/Avoton",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /* 14*/	{
@@ -682,7 +712,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Airmont,
-	"Atom/Airmont"
+	"Atom/Airmont",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 15*/	{
 	_Atom_Goldmont,
@@ -692,7 +724,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Goldmont"
+	"Atom/Goldmont",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 16*/	{
 	_Atom_Sofia,
@@ -702,7 +736,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Sofia"
+	"Atom/Sofia",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 17*/	{
 	_Atom_Merrifield,
@@ -712,7 +748,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Merrifield"
+	"Atom/Merrifield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 18*/	{
 	_Atom_Moorefield,
@@ -722,7 +760,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Core2,
 	Clock_Atom,
-	"Atom/Moorefield"
+	"Atom/Moorefield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /* 19*/	{
@@ -733,7 +773,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Nehalem,
-	"Nehalem/Bloomfield"
+	"Nehalem/Bloomfield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 20*/	{
 	_Nehalem_Lynnfield,
@@ -743,7 +785,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Nehalem,
-	"Nehalem/Lynnfield"
+	"Nehalem/Lynnfield",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 21*/	{
 	_Nehalem_MB,
@@ -753,7 +797,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Nehalem,
-	"Nehalem/Mobile"
+	"Nehalem/Mobile",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 22*/	{
 	_Nehalem_EX,
@@ -763,7 +809,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Nehalem,
-	"Nehalem/eXtreme.EP"
+	"Nehalem/eXtreme.EP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /* 23*/	{
@@ -774,7 +822,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Westmere,
-	"Westmere"
+	"Westmere",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 24*/	{
 	_Westmere_EP,
@@ -784,7 +834,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Westmere,
-	"Westmere/EP"
+	"Westmere/EP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 25*/	{
 	_Westmere_EX,
@@ -794,7 +846,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_Nehalem,
 	Clock_Westmere,
-	"Westmere/eXtreme"
+	"Westmere/eXtreme",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 
 /* 26*/	{
@@ -805,7 +859,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_SandyBridge,
-	"SandyBridge"
+	"SandyBridge",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 27*/	{
 	_SandyBridge_EP,
@@ -815,7 +871,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_SandyBridge,
-	"SandyBridge/eXtreme.EP"
+	"SandyBridge/eXtreme.EP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 
 /* 28*/	{
@@ -826,7 +884,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_IvyBridge,
-	"IvyBridge"
+	"IvyBridge",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 29*/	{
 	_IvyBridge_EP,
@@ -836,7 +896,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_IvyBridge,
-	"IvyBridge/EP"
+	"IvyBridge/EP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 
 /* 30*/	{
@@ -847,7 +909,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Haswell/Desktop"
+	"Haswell/Desktop",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 31*/	{
 	_Haswell_MB,
@@ -857,7 +921,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Haswell/Mobile"
+	"Haswell/Mobile",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 32*/	{
 	_Haswell_ULT,
@@ -867,7 +933,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Haswell/Ultra Low TDP"
+	"Haswell/Ultra Low TDP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 33*/	{
 	_Haswell_ULX,
@@ -877,7 +945,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Haswell/Ultra Low eXtreme"
+	"Haswell/Ultra Low eXtreme",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 
 /* 34*/	{
@@ -888,7 +958,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Broadwell/Mobile"
+	"Broadwell/Mobile",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 35*/	{
 	_Broadwell_EP,
@@ -898,7 +970,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Broadwell/EP"
+	"Broadwell/EP",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 36*/	{
 	_Broadwell_H,
@@ -908,7 +982,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Broadwell/H"
+	"Broadwell/H",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 37*/	{
 	_Broadwell_EX,
@@ -918,7 +994,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Broadwell/EX"
+	"Broadwell/EX",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 
 /* 38*/	{
@@ -929,7 +1007,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Skylake/UY"
+	"Skylake/UY",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 39*/	{
 	_Skylake_S,
@@ -939,7 +1019,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Skylake/S"
+	"Skylake/S",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 40*/	{
 	_Skylake_E,
@@ -949,7 +1031,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Skylake/E"
+	"Skylake/E",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 41*/	{
 	_Xeon_Phi,
@@ -959,7 +1043,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Knights Landing"
+	"Knights Landing",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 /* 42*/	{
 	_Kabylake,
@@ -969,7 +1055,9 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Kaby Lake"
+	"Kaby Lake",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 43*/	{
 	_Kabylake_UY,
@@ -979,6 +1067,8 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Kaby Lake/UY"
+	"Kaby Lake/UY",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 };
