@@ -4,6 +4,53 @@
  * Licenses: GPL2
  */
 
+enum {	GenuineIntel,		\
+	Core_Yonah,		\
+	Core_Conroe,		\
+	Core_Kentsfield,	\
+	Core_Conroe_616,	\
+	Core_Yorkfield,		\
+	Core_Dunnington,	\
+	Atom_Bonnell,		\
+	Atom_Silvermont,	\
+	Atom_Lincroft,		\
+	Atom_Clovertrail,	\
+	Atom_Saltwell,		\
+	Silvermont_637,		\
+	Atom_Avoton,		\
+	Atom_Airmont,		\
+	Atom_Goldmont,		\
+	Atom_Sofia,		\
+	Atom_Merrifield,	\
+	Atom_Moorefield,	\
+	Nehalem_Bloomfield,	\
+	Nehalem_Lynnfield,	\
+	Nehalem_MB,		\
+	Nehalem_EX,		\
+	Westmere,		\
+	Westmere_EP,		\
+	Westmere_EX,		\
+	SandyBridge,		\
+	SandyBridge_EP,		\
+	IvyBridge,		\
+	IvyBridge_EP,		\
+	Haswell_DT,		\
+	Haswell_MB,		\
+	Haswell_ULT,		\
+	Haswell_ULX,		\
+	Broadwell,		\
+	Broadwell_EP,		\
+	Broadwell_H,		\
+	Broadwell_EX,		\
+	Skylake_UY,		\
+	Skylake_S,		\
+	Skylake_E,		\
+	Xeon_Phi,		\
+	Kabylake,		\
+	Kabylake_UY,		\
+	ARCHITECTURES
+};
+
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 

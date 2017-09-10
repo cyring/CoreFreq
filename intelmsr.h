@@ -58,15 +58,30 @@ typedef	union
 	struct
 	{
 		unsigned long long
-		CurrentRatio	: 16-0,
+		CurrVID		:  8-0,
+		CurrFID		: 16-8,
 		ReservedBits1	: 31-16,
 		XE_Enable	: 32-31, // Intel Core
-		Pstate_VID	: 40-32, // Core Voltage ID (Sandy Bridge)
+		ReservedBits2	: 40-32,
 		MaxBusRatio	: 45-40, // Architectural
-		ReservedBits2	: 46-45,
+		ReservedBits3	: 46-45,
 		NonInt_BusRatio	: 47-46,
-		ReservedBits3	: 64-47;
-	};
+		ReservedBits4	: 64-47;
+	} CORE;
+	struct
+	{
+		unsigned long long
+		CurrentRatio	: 16-0,
+		ReservedBits	: 64-16;
+	} NHM;
+	struct
+	{
+		unsigned long long
+		CurrentRatio	: 16-0,
+		ReservedBits1	: 32-16,
+		CurrVID		: 48-32, // Core Voltage ID (Sandy Bridge)
+		ReservedBits2	: 64-48;
+	} SNB;
 } PERF_STATUS;
 
 typedef	union

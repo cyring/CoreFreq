@@ -54,6 +54,70 @@ static void *Core_Cycle(void *arg)
 	    0x01 : !strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12) ?
 		0x10 : 0x0;
 
+	unsigned int voltageFormula = 0;
+	if (!strncmp(Shm->Proc.Features.Info.VendorID,VENDOR_INTEL,12)) {
+		switch (Pkg->ArchID) {
+		case Core_Conroe:
+		case Core_Kentsfield:
+		case Core_Conroe_616:
+		case Core_Yorkfield:
+		case Core_Dunnington:
+			voltageFormula = 0b00000011;
+			break;
+		case Atom_Bonnell:
+		case Atom_Silvermont:
+		case Atom_Lincroft:
+		case Atom_Clovertrail:
+		case Atom_Saltwell:
+			voltageFormula = 0b00000000;
+			break;
+		case Silvermont_637:
+		case Atom_Merrifield:
+		case Atom_Avoton:
+		case Atom_Moorefield:
+		case Atom_Sofia:
+			voltageFormula = 0b00000000;
+			break;
+		case Atom_Airmont:
+		case Atom_Goldmont:
+			voltageFormula = 0b00000000;
+			break;
+		case Nehalem_Bloomfield:
+		case Nehalem_Lynnfield:
+		case Nehalem_MB:
+		case Nehalem_EX:
+		case Westmere:
+		case Westmere_EP:
+		case Westmere_EX:
+			voltageFormula = 0b00000000;
+			break;
+		case SandyBridge:
+		case SandyBridge_EP:
+		case IvyBridge:
+		case IvyBridge_EP:
+		case Haswell_DT:
+		case Haswell_MB:
+		case Haswell_ULT:
+		case Haswell_ULX:
+		case Broadwell:
+		case Broadwell_EP:
+		case Broadwell_H:
+		case Broadwell_EX:
+		case Skylake_UY:
+		case Skylake_S:
+		case Skylake_E:
+		case Kabylake:
+		case Kabylake_UY:
+			voltageFormula = 0b00000101;
+			break;
+		case Xeon_Phi:
+			voltageFormula = 0b00000000;
+			break;
+		}
+	} else if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12)) {
+			voltageFormula = 0b00110000;
+	}
+
 	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
 	cpu_set_t cpuset;
@@ -165,23 +229,44 @@ static void *Core_Cycle(void *arg)
 				    Core->Clock, Shm->Proc.SleepInterval)
 					/ (Shm->Proc.SleepInterval * 1000);
 		}
+
+		// Thermal
 		Flip->Thermal.Trip   = Core->PowerThermal.Trip;
 		Flip->Thermal.Sensor = Core->PowerThermal.Sensor;
-		Flip->Voltage.VID    = Core->Counter[1].VID;
 
-		if (thermalFormula == 0x01) {
+		switch (thermalFormula) {
+		case 0x01:
 			Flip->Thermal.Temp = Cpu->PowerThermal.Target
 					   - Flip->Thermal.Sensor;
+			break;
+		case 0x10:
+			Flip->Thermal.Temp = Flip->Thermal.Sensor
+					  - (Cpu->PowerThermal.Target * 2) - 49;
+			break;
+		}
+		if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
+			Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
+		if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
+			Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 
+		// Voltage
+		Flip->Voltage.VID    = Core->Counter[1].VID;
+		switch (voltageFormula) {
+		case 0b00000011: // Intel Core 2 Extreme Datasheet §3.3-Table 2
+			if (Flip->Voltage.VID <= 120)
+				Flip->Voltage.Vcore = 1.5000
+					- (double) (Flip->Voltage.VID) * 0.0125;
+			else
+				Flip->Voltage.Vcore = 0.0;
+			break;
+		case 0b00000101: // Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
 			if (Core->T.Base.BSP) {
 			    Flip->Voltage.Vcore = (Flip->Voltage.VID == 0) ?
 				0.0
 			    :	0.245 + (double) (Flip->Voltage.VID) * 0.005;
 			}
-		} else if (thermalFormula == 0x10) {
-			Flip->Thermal.Temp = Flip->Thermal.Sensor
-					  - (Cpu->PowerThermal.Target * 2) - 49;
-
+			break;
+		case 0b00110000: { // AMD BKDG Family 0Fh §10.6 Table 70
 			short	Vselect = (Flip->Voltage.VID & 0b110000) >> 4,
 				Vnibble = Flip->Voltage.VID & 0b1111;
 
@@ -203,11 +288,9 @@ static void *Core_Cycle(void *arg)
 						- (double) (Vnibble) * 0.0125;
 			    break;
 			}
+		    }
+		    break;
 		}
-		if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
-			Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
-		if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
-			Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 
 		// Package C-state Residency Counters
 		if (Core->T.Base.BSP) {

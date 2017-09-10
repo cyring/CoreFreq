@@ -1271,8 +1271,8 @@ void Intel_Platform_Info(void)
 
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 	if (PerfStatus.value != 0) {				// §18.18.3.4
-		if (PerfStatus.XE_Enable) {
-			ratio2 = PerfStatus.MaxBusRatio;
+		if (PerfStatus.CORE.XE_Enable) {
+			ratio2 = PerfStatus.CORE.MaxBusRatio;
 		} else {
 			if (Intel_MaxBusRatio(&PfID) == 0) {
 				if (PfID.value != 0)
@@ -3239,6 +3239,7 @@ void Stop_AuthenticAMD(void *arg)
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 {
+	PERF_STATUS PerfStatus = {.value = 0};
 	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
@@ -3248,6 +3249,10 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Core2(Core, 1);
+
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Counter[1].VID = PerfStatus.CORE.CurrVID;
+
 		Core_Intel_Temp(Core);
 
 		Delta_INST(Core);
@@ -3444,7 +3449,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			PKG_Counters_SandyBridge(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.Pstate_VID;
+			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
 			Delta_PC02(Proc);
 
