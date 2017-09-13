@@ -171,6 +171,7 @@ static void *Core_Cycle(void *arg)
 					   - Flip->Thermal.Sensor;
 			break;
 		case THERMAL_FORMULA_AMD:
+			break;
 		case THERMAL_FORMULA_AMD_0F:
 			Flip->Thermal.Temp = Flip->Thermal.Sensor
 					  - (Cpu->PowerThermal.Target * 2) - 49;
@@ -192,12 +193,12 @@ static void *Core_Cycle(void *arg)
 		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
 		case VOLTAGE_FORMULA_INTEL_SNB:
 			if (Core->T.Base.BSP) {
-			    Flip->Voltage.Vcore = (Flip->Voltage.VID == 0) ?
-				0.0
-			    :	0.245 + (double) (Flip->Voltage.VID) * 0.005;
+			    Flip->Voltage.Vcore = (double) (Flip->Voltage.VID)
+						/ 8192.0;
 			}
 			break;
 		case VOLTAGE_FORMULA_AMD:
+			break;
 		// AMD BKDG Family 0Fh §10.6 Table 70
 		case VOLTAGE_FORMULA_AMD_0F: {
 			short	Vselect = (Flip->Voltage.VID & 0b110000) >> 4,
