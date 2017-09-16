@@ -1753,13 +1753,8 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
-void PowerThermal(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
+void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
-	unsigned int thermalFormula =
-	  !strncmp(Shm->Proc.Features.Info.VendorID,VENDOR_INTEL,12)?
-	    0x01 : !strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12) ?
-		0x10 : 0x0;
-
 	BITSET(LOCKLESS, Shm->Proc.ODCM_Mask, cpu);
 	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
 		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
@@ -1798,12 +1793,16 @@ void PowerThermal(SHM_STRUCT *Shm,PROC *Proc,CORE **Core,unsigned int cpu)
 
 	Shm->Cpu[cpu].PowerThermal.Target = Core[cpu]->PowerThermal.Target;
 
-	if (thermalFormula == 0x01) {
+	switch (Proc->thermalFormula) {
+	case THERMAL_FORMULA_INTEL:
+	case THERMAL_FORMULA_AMD:
 	  Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Target;
 	  Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
-	} else if (thermalFormula == 0x10) {
+	  break;
+	case THERMAL_FORMULA_AMD_0F:
 	  Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor
 				    - (Core[cpu]->PowerThermal.Target * 2) - 49;
+	  break;
 	}
 }
 
