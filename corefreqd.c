@@ -2124,7 +2124,7 @@ void Core_Manager(FD *fd,
 			Arg[cpu].TID = 0;
 			// Raise this bit up to notify a platform change.
 			if (!BITVAL(Shm->Proc.Sync, 63))
-				BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 		Shm->Cpu[cpu].OffLine.OS = 1;
 	    } else {
@@ -2149,7 +2149,7 @@ void Core_Manager(FD *fd,
 					&Arg[cpu]);
 			// Notify
 			if (!BITVAL(Shm->Proc.Sync, 63))
-				BITSET(BUS_LOCK, Shm->Proc.Sync, 63);
+				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 		Shm->Cpu[cpu].OffLine.OS = 0;
 	    }
@@ -2158,8 +2158,6 @@ void Core_Manager(FD *fd,
 	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
-	// Reset the Room mask
-	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
 
 	if (!Shutdown) {
 		double maxRelFreq = 0.0;
@@ -2212,8 +2210,10 @@ void Core_Manager(FD *fd,
 		}
 
 		// Notify Client.
-		BITSET(BUS_LOCK, Shm->Proc.Sync, 0);
+		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
+	// Reset the Room mask
+	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	if (Arg[cpu].TID)
@@ -2295,7 +2295,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
 		// Initialize notification.
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 		SysGate_Toggle(&Sig, SysGateStartUp);
 

@@ -5,7 +5,7 @@
  */
 
 #define LOOP_MIN_MS	100
-#define LOOP_MAX_MS	5000
+#define LOOP_MAX_MS	4000
 #define LOOP_DEF_MS	1000
 
 #define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))

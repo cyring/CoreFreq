@@ -3964,7 +3964,7 @@ static int __init CoreFreqK_init(void)
 			    Proc->CPU.Count = Arg.count;
 
 			    if ( (SleepInterval >= LOOP_MIN_MS)
-			      && (SleepInterval < LOOP_MAX_MS))
+			      && (SleepInterval <= LOOP_MAX_MS))
 				Proc->SleepInterval = SleepInterval;
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
@@ -4016,7 +4016,7 @@ static int __init CoreFreqK_init(void)
 				}
 				if (allocPerCPU) {
 				  for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-					BITCLR( BUS_LOCK,
+					BITCLR( LOCKLESS,
 						KPublic->Core[cpu]->Sync.V, 63);
 
 					KPublic->Core[cpu]->Bind = cpu;

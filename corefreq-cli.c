@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+#include <sched.h>
 
 #include "bitasm.h"
 #include "coretypes.h"
@@ -1194,10 +1195,10 @@ void Dashboard( SHM_STRUCT *Shm,
 	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
-	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
 	X = leadingLeft;
 	Y = leadingTop;
@@ -1253,10 +1254,10 @@ void Counters(SHM_STRUCT *Shm)
 	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
-	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
 		printf("CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
@@ -1315,10 +1316,10 @@ void Voltage(SHM_STRUCT *Shm)
 	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
-	BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
 		printf("CPU Freq(MHz) VID  Vcore\n");
 	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
@@ -1345,10 +1346,10 @@ void Instructions(SHM_STRUCT *Shm)
 	  while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
 			nanosleep(&Shm->Proc.BaseSleep, NULL);
 
-	  BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+	  BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 	  if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
 		    printf("CPU     IPS            IPC            CPI\n");
 
@@ -4740,11 +4741,11 @@ void Top(SHM_STRUCT *Shm)
 	} while (!Shutdown && !drawFlag.daemon && !drawFlag.layout) ;
 
 	if (drawFlag.daemon) {
-		BITCLR(BUS_LOCK, Shm->Proc.Sync, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 		if (BITVAL(Shm->Proc.Sync, 63)) {
 			// Platform changed, redraw the layout.
 			drawFlag.layout = 1;
-			BITCLR(BUS_LOCK, Shm->Proc.Sync, 63);
+			BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 	}
 
@@ -5300,6 +5301,11 @@ int main(int argc, char *argv[])
 		&& ((Shm = mmap(0, shmStat.st_size,
 			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0))!=MAP_FAILED)))
 	    {
+		cpu_set_t cpuset;
+		CPU_ZERO(&cpuset);
+		CPU_SET(0, &cpuset);
+		sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+
 		switch (option) {
 		case 'k':
 			if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
