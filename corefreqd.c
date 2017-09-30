@@ -1136,7 +1136,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
 		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
-				5866 : 8000;
+				5866 : 4800;	// processor SKU dependent=8000
 
 	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
 				* Shm->Cpu[cpu].Clock.Hz

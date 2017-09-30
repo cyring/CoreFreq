@@ -1260,7 +1260,7 @@ void Intel_Platform_Info(void)
 	PLATFORM_ID PfID = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
 	PERF_STATUS PerfStatus = {.value = 0};
-	unsigned int ratio0 = 1, ratio1 = 10, ratio2 = 50; // Arbitrary
+	unsigned int ratio0 = 10, ratio1 = 10, ratio2 = 10; // Arbitrary
 
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 	if (PfInfo.value != 0) {
@@ -1288,31 +1288,6 @@ void Intel_Platform_Info(void)
 	Proc->Boost[0] = ratio0;
 	Proc->Boost[1] = KMIN(ratio1, ratio2);
 	Proc->Boost[9] = KMAX(ratio1, ratio2);
-}
-
-void DynamicAcceleration(void)
-{
-	if (Proc->Features.Info.LargestStdFunc >= 0x6) {
-		struct THERMAL_POWER_LEAF Power = {{0}};
-		asm volatile
-		(
-			"movq	$0x6,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (Power.AX),
-			  "=r" (Power.BX),
-			  "=r" (Power.CX),
-			  "=r" (Power.DX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	}
 }
 
 void Nehalem_Platform_Info(void)
@@ -1987,7 +1962,6 @@ void Query_AuthenticAMD(void)
 void Query_Core2(void)
 {
 	Intel_Platform_Info();
-	DynamicAcceleration();
 	HyperThreading_Technology();
 }
 
@@ -2087,6 +2061,36 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 		Core->Query.EIST = MiscFeatures.EIST;
 	} else {
 		Core->Query.EIST = 0;
+	}
+}
+
+void DynamicAcceleration(CORE *Core)
+{
+
+	if ((Proc->Features.Info.LargestStdFunc >= 0x6)
+	 && (Proc->Features.Power.AX.TurboIDA)) {
+		struct THERMAL_POWER_LEAF Power = {{0}};
+		asm volatile
+		(
+			"movq	$0x6,  %%rax	\n\t"
+			"xorq	%%rbx, %%rbx	\n\t"
+			"xorq	%%rcx, %%rcx	\n\t"
+			"xorq	%%rdx, %%rdx	\n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r" (Power.AX),
+			  "=r" (Power.BX),
+			  "=r" (Power.CX),
+			  "=r" (Power.DX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+		Core->Query.Turbo = Power.AX.TurboIDA;
+	} else {
+		Core->Query.Turbo = 0;
 	}
 }
 
@@ -2305,7 +2309,9 @@ void PerCore_Core2_Query(CORE *Core)
 
 	SpeedStep_Technology(Core);
 
-	PowerThermal(Core);					// Shared/Unique
+	DynamicAcceleration(Core);				// Unique
+
+	PowerThermal(Core);					// Shared|Unique
 
 	ThermalMonitor_Set(Core);
 }
@@ -2574,12 +2580,20 @@ void Controller_Init(void)
 	    cpu--;
 
 	    if (!KPublic->Core[cpu]->OffLine.OS) {
-		if (AutoClock) {
-			clock = Base_Clock(cpu, Proc->Boost[1]);
-		} // else ENOMEM
-		if ((clock.Hz == 0) && (Arch[Proc->ArchID].Clock != NULL))
-			clock = Arch[Proc->ArchID].Clock(Proc->Boost[1]);
+		unsigned int ratio = Proc->Boost[1];
 
+		if ((AutoClock != 0) && (ratio != 0)) {
+			clock = Base_Clock(cpu, ratio);
+		} // else ENOMEM
+		if ((clock.Hz == 0) && (ratio != 0)) {
+			if (Arch[Proc->ArchID].Clock != NULL)
+				clock = Arch[Proc->ArchID].Clock(ratio);
+		}
+		if (clock.Hz == 0) {
+			clock.Q = 100;
+			clock.R = 0;
+			clock.Hz = 100000000L;
+		}
 		KPublic->Core[cpu]->Clock = clock;
 
 		if (Arch[Proc->ArchID].Timer != NULL)
