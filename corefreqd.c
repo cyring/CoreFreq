@@ -1129,9 +1129,35 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
-	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
-				* Proc->Uncore.Bus.DimmClock.QCLK_RATIO)
-				/ 1000000L;
+	switch (Proc->Uncore.Bus.DimmClock.QCLK_RATIO) {
+	case 0b00110:
+		Shm->Uncore.CtrlSpeed = 800;
+		break;
+	case 0b01000:
+		Shm->Uncore.CtrlSpeed = 1066;
+		break;
+	case 0b01010:
+		Shm->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b01100:
+		Shm->Uncore.CtrlSpeed = 1600;
+		break;
+	case 0b01110:
+		Shm->Uncore.CtrlSpeed = 1866;
+		break;
+	case 0b10000:
+		Shm->Uncore.CtrlSpeed = 2133;
+		break;
+	case 0b000000:
+		// Fallthrough
+	default:
+		Shm->Uncore.CtrlSpeed = 800;
+		break;
+	}
+	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.CtrlSpeed /= 1000000L;
 
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
 		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
@@ -1152,9 +1178,32 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 
 void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
-	Shm->Uncore.CtrlSpeed	= (Shm->Cpu[cpu].Clock.Hz
-				* Proc->Uncore.Bus.DimmClock.QCLK_RATIO)
-				/ 1000000L;
+	switch (Proc->Uncore.Bus.DimmClock.QCLK_RATIO) {
+	case 0b00010:
+		Shm->Uncore.CtrlSpeed = 266;
+		break;
+	case 0b00100:
+		Shm->Uncore.CtrlSpeed = 533;
+		break;
+	case 0b00110:
+		Shm->Uncore.CtrlSpeed = 800;
+		break;
+	case 0b01000:
+		Shm->Uncore.CtrlSpeed = 1066;
+		break;
+	case 0b01010:
+		Shm->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b000000:
+		// Fallthrough
+	default:
+		Shm->Uncore.CtrlSpeed = 266;
+		break;
+	}
+	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[1]
+				* Shm->Cpu[cpu].Clock.Hz)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.CtrlSpeed /= 1000000L;
 
 	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
 
@@ -1952,7 +2001,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	PowerThermal(Shm, Proc, Core, cpu);
 
-	if (cpu == 0)
+	if (Shm->Cpu[cpu].Topology.MP.BSP)
 		Uncore(Shm, Proc, cpu);
 }
 
