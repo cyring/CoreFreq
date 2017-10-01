@@ -2064,36 +2064,6 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 	}
 }
 
-void DynamicAcceleration(CORE *Core)
-{
-
-	if ((Proc->Features.Info.LargestStdFunc >= 0x6)
-	 && (Proc->Features.Power.AX.TurboIDA)) {
-		struct THERMAL_POWER_LEAF Power = {{0}};
-		asm volatile
-		(
-			"movq	$0x6,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (Power.AX),
-			  "=r" (Power.BX),
-			  "=r" (Power.CX),
-			  "=r" (Power.DX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-		Core->Query.Turbo = Power.AX.TurboIDA;
-	} else {
-		Core->Query.Turbo = 0;
-	}
-}
-
 void TurboBoost_Technology(CORE *Core)
 {
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
@@ -2112,6 +2082,15 @@ void TurboBoost_Technology(CORE *Core)
 		    break;
 		}
 		Core->Query.Turbo = !PerfControl.Turbo_IDA;
+	} else {
+		Core->Query.Turbo = 0;
+	}
+}
+
+void DynamicAcceleration(CORE *Core)
+{
+	if (Proc->Features.Power.AX.TurboIDA) {
+		TurboBoost_Technology(Core);
 	} else {
 		Core->Query.Turbo = 0;
 	}
