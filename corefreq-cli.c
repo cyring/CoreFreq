@@ -1004,6 +1004,10 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm,
 		hSpace, Shm->Cpu[0].PowerThermal.PowerPolicy);
 
 	printv(OutFunc, width, 2,
+		"Junction Temperature%.*sTjMax   [%7u]",
+		width - 40, hSpace, Shm->Cpu[0].PowerThermal.Target);
+
+	printv(OutFunc, width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
 		width - 40, hSpace,
 		powered( Shm->Proc.Features.Power.AX.DTS
@@ -3017,7 +3021,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_w:
 		{
-		matrixSize.hth = 8;
+		matrixSize.hth = 10;
 		winOrigin.col = 23;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
