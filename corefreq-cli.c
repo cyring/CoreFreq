@@ -2657,7 +2657,7 @@ void Top(SHM_STRUCT *Shm)
 				+ win->matrix.scroll.vert)
 				).quick.key) != SCANKEY_NULL) {
 					SCANKEY closeKey = {.key = SCANKEY_ESC};
-					Motion_Trigger(&closeKey, win, &winList);
+					Motion_Trigger(&closeKey, win,&winList);
 					return(1);
 				} else
 					return(0);
@@ -3893,11 +3893,11 @@ void Top(SHM_STRUCT *Shm)
 		.length = 76,
 		.attr ={HYK,						\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
-			HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HDK,LWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
 		},
