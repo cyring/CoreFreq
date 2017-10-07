@@ -1055,7 +1055,7 @@ static ARCH Arch[ARCHITECTURES]=
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Kaby Lake",
+	"Kaby/Coffee Lake",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},
