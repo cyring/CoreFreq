@@ -2618,7 +2618,7 @@ void Controller_Exit(void)
 		KPrivate->Join[cpu]->tsm.created = 0;
 }
 
-void Counters_Set(CORE *Core)
+void Core_Counters_Set(CORE *Core)
 {
     if (Proc->Features.PerfMon.AX.Version >= 2) {
 	CORE_GLOBAL_PERF_COUNTER	Core_GlobalPerfCounter = {.value = 0};
@@ -2668,8 +2668,11 @@ void Counters_Set(CORE *Core)
 	  | Core_PerfOverflow.Overflow_CTR2)
 		WRMSR(Core_PerfOvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
     }
+}
 
-    if ((Proc->Features.PerfMon.AX.Version >= 2) && (Core->T.Base.BSP)) {
+void Uncore_Counters_Set(CORE *Core)
+{
+    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {
 	UNCORE_GLOBAL_PERF_COUNTER	Uncore_GlobalPerfCounter;
 	UNCORE_FIXED_PERF_COUNTER	Uncore_FixedPerfCounter;
 	UNCORE_GLOBAL_PERF_STATUS	Uncore_PerfOverflow = {.value = 0};
@@ -2693,14 +2696,17 @@ void Counters_Set(CORE *Core)
     }
 }
 
-void Counters_Clear(CORE *Core)
+void Core_Counters_Clear(CORE *Core)
 {
   if (Proc->Features.PerfMon.AX.Version >= 2) {
       WRMSR(Core->SaveArea.Core_FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
       WRMSR(Core->SaveArea.Core_GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
   }
+}
 
-  if ((Proc->Features.PerfMon.AX.Version >= 2) && (Core->T.Base.BSP)) {
+void Uncore_Counters_Clear(CORE *Core)
+{
+  if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {
    WRMSR(Proc->SaveArea.Uncore_FixedPerfCounter,MSR_UNCORE_PERF_FIXED_CTR_CTRL);
    WRMSR(Proc->SaveArea.Uncore_GlobalPerfCounter, MSR_UNCORE_PERF_GLOBAL_CTRL);
   }
@@ -2851,12 +2857,11 @@ void Counters_Clear(CORE *Core)
 
 #define PKG_Counters_SandyBridge(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
+	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
-		MSR_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);\
 })
 
 #define Delta_PTSC(Pkg)							\
@@ -3314,7 +3319,7 @@ void Start_Core2(void *arg)
 
 	PerCore_Core2_Query(Core);
 
-	Counters_Set(Core);
+	Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
 	KPrivate->Join[cpu]->tsm.mustFwd = 1;
@@ -3335,7 +3340,7 @@ void Stop_Core2(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Counters_Clear(Core);
+	Core_Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
@@ -3423,7 +3428,8 @@ void Start_Nehalem(void *arg)
 
 	PerCore_Nehalem_Query(Core);
 
-	Counters_Set(Core);
+	Core_Counters_Set(Core);
+	Uncore_Counters_Set(Core);
 	SMT_Counters_Nehalem(Core, 0);
 
 	if (Core->T.Base.BSP) {
@@ -3450,7 +3456,8 @@ void Stop_Nehalem(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Counters_Clear(Core);
+	Core_Counters_Clear(Core);
+	Uncore_Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
@@ -3551,7 +3558,7 @@ void Start_SandyBridge(void *arg)
 
 	PerCore_SandyBridge_Query(Core);
 
-	Counters_Set(Core);
+	Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->T.Base.BSP) {
@@ -3578,7 +3585,7 @@ void Stop_SandyBridge(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Counters_Clear(Core);
+	Core_Counters_Clear(Core);
 
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
