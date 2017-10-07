@@ -314,10 +314,10 @@ typedef struct
 		}			NMI;
 	} Interrupt;
 
-	struct SAVEAREA
+	struct
 	{
-		GLOBAL_PERF_COUNTER	GlobalPerfCounter;
-		FIXED_PERF_COUNTER	FixedPerfCounter;
+		CORE_GLOBAL_PERF_COUNTER Core_GlobalPerfCounter;
+		CORE_FIXED_PERF_COUNTER  Core_FixedPerfCounter;
 	} SaveArea;
 
 	struct
@@ -490,6 +490,9 @@ typedef struct
 				PC08, // Haswell
 				PC09, // Haswell
 				PC10; // Goldmont, Haswell
+	  struct {
+	    unsigned long long	FC0; // Uncore fixed counter #0
+	  } Uncore;
 	} Counter[2];
 
 	struct
@@ -502,7 +505,16 @@ typedef struct
 				PC08,
 				PC09,
 				PC10;
+	  struct {
+	    unsigned long long	FC0;
+	  } Uncore;
 	} Delta;
+
+	struct SAVEAREA
+	{
+		UNCORE_GLOBAL_PERF_COUNTER Uncore_GlobalPerfCounter;
+		UNCORE_FIXED_PERF_COUNTER  Uncore_FixedPerfCounter;
+	} SaveArea;
 
 	FEATURES		Features;
 

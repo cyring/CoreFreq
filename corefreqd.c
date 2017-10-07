@@ -261,6 +261,8 @@ static void *Core_Cycle(void *arg)
 						  (double) Flip->Delta.PC10
 						/ (double) Flip->Delta.PTSC
 						: 0.0f;
+
+			Flip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
 		}
 	    }
 	} while (!Shutdown && !Core->OffLine.OS) ;

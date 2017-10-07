@@ -2489,7 +2489,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
-enum VIEW {V_FREQ, V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_INTR, V_VOLT};
+enum VIEW {V_FREQ,V_INST,V_CYCLES,V_CSTATES,V_PACKAGE,V_TASKS,V_INTR,V_VOLTAGE};
 
 #define LOAD_LEAD 4
 
@@ -2785,19 +2785,19 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_g,	" Pkg counters [g] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_q,	" Interrupts   [q] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
+		StoreTCell(wMenu, SCANKEY_q,	" Interrupts   [q] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
 		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -3458,6 +3458,12 @@ void Top(SHM_STRUCT *Shm)
 			    SetHead(&winList, win);
 		}
 		break;
+	case SCANKEY_g:
+		{
+		drawFlag.view = V_PACKAGE;
+		drawFlag.clear = 1;
+		}
+		break;
 	case SCANKEY_h:
 		{
 		Window *win = SearchWinListById(scan->key, &winList);
@@ -3505,7 +3511,7 @@ void Top(SHM_STRUCT *Shm)
 		break;
 	case SCANKEY_SHIFT_v:
 		{
-		drawFlag.view = V_VOLT;
+		drawFlag.view = V_VOLTAGE;
 		drawFlag.clear = 1;
 		}
 		break;
@@ -3922,10 +3928,11 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	  break;
-	case V_VOLT:
 	case V_INTR:
 	case V_CYCLES:
 	case V_CSTATES:
+	case V_VOLTAGE:
+	case V_PACKAGE:
 	  {
 	    LayerDeclare(73) hMon0 = {
 		.origin = {	.col = LOAD_LEAD - 1,
@@ -4219,6 +4226,19 @@ void Top(SHM_STRUCT *Shm)
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
+	case V_PACKAGE:
+	  {
+	    LayerFillAt(layer, 0, row, drawSize.width,
+		"----------------------------------------"		\
+		"----------------------------------------"		\
+		"----------------------------------------"		\
+		"------------",
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	  }
+	  break;
 	case V_TASKS:
 	  {
 	    LayerDeclare(MAX_WIDTH) hTask0 = {
@@ -4438,7 +4458,7 @@ void Top(SHM_STRUCT *Shm)
 			hTrack0.length, hTrack0.attr, hTrack0.code);
 	  }
 	  break;
-	case V_VOLT:
+	case V_VOLTAGE:
 	  {
 	    LayerDeclare(MAX_WIDTH) hVolt0 = {
 		.origin = {
@@ -4874,6 +4894,10 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Delta.C7);
 		      }
 		      break;
+		    case V_PACKAGE:
+		      {
+		      }
+		      break;
 		    case V_TASKS:
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
@@ -4898,7 +4922,7 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Counter.NMI.IOCHECK);
 		      }
 		      break;
-		    case V_VOLT:
+		    case V_VOLTAGE:
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
 				"%c"					\
@@ -4947,6 +4971,31 @@ void Top(SHM_STRUCT *Shm)
 				100.f * Shm->Proc.State.PC08,
 				100.f * Shm->Proc.State.PC09,
 				100.f * Shm->Proc.State.PC10);
+	    }
+	    break;
+	  case V_PACKAGE:
+	    {
+		struct PKG_FLIP_FLOP *Flop =
+				&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+		unsigned short row = 2 + TOP_HEADER_ROW
+				   + Shm->Proc.CPU.Count;
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu%18llu", Flop->Delta.PTSC, Flop->Uncore.FC0);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC02);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC03);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC06);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC07);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC08);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC09);
+		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
+			"%18llu", Flop->Delta.PC10);
 	    }
 	    break;
 	  case V_TASKS:

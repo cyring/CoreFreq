@@ -179,6 +179,10 @@ typedef struct
 					PC09,
 					PC10;
 		} Delta;
+		struct
+		{
+		unsigned long long	FC0;
+		} Uncore;
 	} FlipFlop[2];
 
 	struct {
