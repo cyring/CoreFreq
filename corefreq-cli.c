@@ -4208,7 +4208,7 @@ void Top(SHM_STRUCT *Shm)
 			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
 			 LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
 		},
-		.code = "---------- SMI - inc ------ NMI[ LOCAL   UNKNOWN"\
+		.code = "---------- SMI ------------ NMI[ LOCAL   UNKNOWN"\
 			"  PCI_SERR#  IO_CHECK] -------------------------"\
 			"------------------------------------",
 	    };
@@ -4886,11 +4886,10 @@ void Top(SHM_STRUCT *Shm)
 		    case V_INTR:
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD - 1,row),
-				"%c"					\
-				"%10u +%-.2f%%",
+				"%c"
+				"%10u",
 				(cpu == iClock) ? '~' : 0x20,
-				Flop->Counter.SMI,
-				100.f * Flop->State.SMI);
+				Flop->Counter.SMI);
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD +24,row),
 				"%10u%10u%10u%10u",
 				Flop->Counter.NMI.LOCAL,

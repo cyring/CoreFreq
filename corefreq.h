@@ -64,15 +64,6 @@ typedef struct
 	} PowerThermal;
 
 	struct FLIP_FLOP {
-		struct {
-		unsigned int		SMI;
-			struct {
-			unsigned int	LOCAL,
-					UNKNOWN,
-					PCISERR,
-					IOCHECK;
-			} NMI;
-		} Counter;
 
 		struct
 		{
@@ -89,8 +80,6 @@ typedef struct
 					C7,
 					TSC,
 					C1;
-
-		unsigned int		SMI;
 		} Delta;
 
 		struct {
@@ -102,8 +91,7 @@ typedef struct
 					C3,
 					C6,
 					C7,
-					C1,
-					SMI;
+					C1;
 		} State;
 
 		struct {
@@ -121,6 +109,16 @@ typedef struct
 			int		VID;
 			double		Vcore;
 		} Voltage;
+		struct {
+
+		unsigned int		SMI;
+			struct {
+			unsigned int	LOCAL,
+					UNKNOWN,
+					PCISERR,
+					IOCHECK;
+			} NMI;
+		} Counter;
 	} FlipFlop[2];
 } CPU_STRUCT;
 

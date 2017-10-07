@@ -2812,12 +2812,6 @@ void Counters_Clear(CORE *Core)
 			 - Core->Counter[0].INST;			\
 })
 
-#define Delta_SMI(Core)							\
-({	/* Delta of SMI interrupt. */					\
-	Core->Delta.SMI = Core->Counter[1].SMI				\
-			- Core->Counter[0].SMI;				\
-})
-
 #define PKG_Counters_Nehalem(Core, T)					\
 ({									\
 	RDTSCP_COUNTERx3(Proc->Counter[T].PTSC,				\
@@ -2917,11 +2911,6 @@ void Counters_Clear(CORE *Core)
 #define Save_INST(Core)							\
 ({	/* Save the Instructions counter. */				\
 	Core->Counter[0].INST = Core->Counter[1].INST;			\
-})
-
-#define Save_SMI(Core)							\
-({	/* Save the SMI interrupt counter. */				\
-	Core->Counter[0].SMI = Core->Counter[1].SMI;			\
 })
 
 #define Save_PTSC(Pkg)							\
@@ -3344,7 +3333,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Core_Intel_Temp(Core);
 
-		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
 
@@ -3358,8 +3347,6 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Delta_C1(Core);
 
-		Delta_SMI(Core);
-
 		Save_INST(Core);
 
 		Save_TSC(Core);
@@ -3371,8 +3358,6 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		Save_C6(Core);
 
 		Save_C1(Core);
-
-		Save_SMI(Core);
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
@@ -3400,7 +3385,7 @@ void Start_Nehalem(void *arg)
 		PKG_Counters_Nehalem(Core, 0);
 	}
 
-	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 	KPrivate->Join[cpu]->tsm.mustFwd = 1;
 
@@ -3468,7 +3453,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Core_Intel_Temp(Core);
 
-		RDCOUNTER(Core->Counter[1].SMI, MSR_SMI_COUNT);
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		Delta_INST(Core);
 
@@ -3484,8 +3469,6 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Delta_C1(Core);
 
-		Delta_SMI(Core);
-
 		Save_INST(Core);
 
 		Save_TSC(Core);
@@ -3499,8 +3482,6 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		Save_C7(Core);
 
 		Save_C1(Core);
-
-		Save_SMI(Core);
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
@@ -3528,7 +3509,7 @@ void Start_SandyBridge(void *arg)
 		PKG_Counters_SandyBridge(Core, 0);
 	}
 
-	RDCOUNTER(Core->Counter[0].SMI, MSR_SMI_COUNT);
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 	KPrivate->Join[cpu]->tsm.mustFwd = 1;
 
@@ -3886,16 +3867,16 @@ static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 
 	switch (type) {
 	case NMI_LOCAL:
-		KPublic->Core[cpu]->Counter[1].NMI.LOCAL++;
+		KPublic->Core[cpu]->Interrupt.NMI.LOCAL++;
 		break;
 	case NMI_UNKNOWN:
-		KPublic->Core[cpu]->Counter[1].NMI.UNKNOWN++;
+		KPublic->Core[cpu]->Interrupt.NMI.UNKNOWN++;
 		break;
 	case NMI_SERR:
-		KPublic->Core[cpu]->Counter[1].NMI.PCISERR++;
+		KPublic->Core[cpu]->Interrupt.NMI.PCISERR++;
 		break;
 	case NMI_IO_CHECK:
-		KPublic->Core[cpu]->Counter[1].NMI.IOCHECK++;
+		KPublic->Core[cpu]->Interrupt.NMI.IOCHECK++;
 		break;
 	}
 	return(NMI_DONE);

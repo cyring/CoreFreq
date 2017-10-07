@@ -86,12 +86,6 @@ static void *Core_Cycle(void *arg)
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
-		Flip->Counter.SMI	  = Core->Counter[1].SMI;
-		Flip->Counter.NMI.LOCAL	  = Core->Counter[1].NMI.LOCAL;
-		Flip->Counter.NMI.UNKNOWN = Core->Counter[1].NMI.UNKNOWN;
-		Flip->Counter.NMI.PCISERR = Core->Counter[1].NMI.PCISERR;
-		Flip->Counter.NMI.IOCHECK = Core->Counter[1].NMI.IOCHECK;
-
 		Flip->Delta.INST	= Core->Delta.INST;
 		Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 		Flip->Delta.C0.URC	= Core->Delta.C0.URC;
@@ -100,7 +94,6 @@ static void *Core_Cycle(void *arg)
 		Flip->Delta.C7		= Core->Delta.C7;
 		Flip->Delta.TSC		= Core->Delta.TSC;
 		Flip->Delta.C1		= Core->Delta.C1;
-		Flip->Delta.SMI		= Core->Delta.SMI;
 
 		// Compute IPS=Instructions per TSC
 		Flip->State.IPS = (double) (Flip->Delta.INST)
@@ -135,14 +128,6 @@ static void *Core_Cycle(void *arg)
 		Flip->State.C1	= (double) (Flip->Delta.C1)
 				/ (double) (Flip->Delta.TSC);
 
-		// Compute SMI percent increase when delta > 0
-		// (Protect against a division by zero)
-		if (Flip->Delta.SMI > 0) {
-			Flip->State.SMI = (Core->Counter[0].SMI != 0) ?
-					  (double) (Flip->Delta.SMI)
-					/ (double) (Core->Counter[0].SMI)
-					: 0.0f;
-		}
 		// Relative Ratio formula.
 		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
 						  * Shm->Proc.Boost[1])
@@ -225,6 +210,12 @@ static void *Core_Cycle(void *arg)
 		    }
 		    break;
 		}
+
+		Flip->Counter.SMI	  = Core->Interrupt.SMI;
+		Flip->Counter.NMI.LOCAL	  = Core->Interrupt.NMI.LOCAL;
+		Flip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
+		Flip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
+		Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 
 		// Package C-state Residency Counters
 		if (Core->T.Base.BSP) {

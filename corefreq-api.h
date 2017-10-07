@@ -277,15 +277,6 @@ typedef struct
 
 		unsigned long long	C1;
 
-		unsigned int		SMI;
-		struct {
-			unsigned int
-					LOCAL,
-					UNKNOWN,
-					PCISERR,
-					IOCHECK;
-		}			NMI;
-
 		int			VID;
 	} Counter[2];
 
@@ -310,6 +301,18 @@ typedef struct
 	} Delta;
 
 	POWER_THERMAL			PowerThermal;
+
+	struct
+	{
+		unsigned int		SMI;
+		struct {
+			unsigned int
+					LOCAL,
+					UNKNOWN,
+					PCISERR,
+					IOCHECK;
+		}			NMI;
+	} Interrupt;
 
 	struct SAVEAREA
 	{
