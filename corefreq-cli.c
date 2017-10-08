@@ -2553,7 +2553,7 @@ void Top(SHM_STRUCT *Shm)
 
     unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i;
 
-    int MIN_HEIGHT = (2 * Shm->Proc.CPU.Count)
+    int MIN_HEIGHT = (2 * KMAX(8, Shm->Proc.CPU.Count))
 		 + TOP_HEADER_ROW + TOP_SEPARATOR + TOP_FOOTER_ROW,
 	loadWidth = 0;
 
@@ -3932,7 +3932,6 @@ void Top(SHM_STRUCT *Shm)
 	case V_CYCLES:
 	case V_CSTATES:
 	case V_VOLTAGE:
-	case V_PACKAGE:
 	  {
 	    LayerDeclare(73) hMon0 = {
 		.origin = {	.col = LOAD_LEAD - 1,
@@ -3968,6 +3967,10 @@ void Top(SHM_STRUCT *Shm)
 				(drawSize.width - hMon0.length),
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
+	  }
+	  break;
+	case V_PACKAGE:
+	  {
 	  }
 	  break;
 	case V_TASKS:
@@ -4229,13 +4232,17 @@ void Top(SHM_STRUCT *Shm)
 	case V_PACKAGE:
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
-		"----------------------------------------"		\
-		"----------------------------------------"		\
+		"------------ Cycles ---- State ---------"		\
+		"------------------------ Cycles --------"		\
 		"----------------------------------------"		\
 		"------------",
 			MakeAttr(WHITE, 0, BLACK, 0));
+	    row++;
+	    for (i=0; i < 8; i++, row++)
+		LayerFillAt(layer, 0, row,
+			drawSize.width, hSpace, MakeAttr(WHITE, 0, BLACK, 0));
 
-	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
+	    LayerFillAt(layer, 0, row,
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 	  }
 	  break;
@@ -4980,22 +4987,31 @@ void Top(SHM_STRUCT *Shm)
 
 		unsigned short row = 2 + TOP_HEADER_ROW
 				   + Shm->Proc.CPU.Count;
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu%18llu", Flop->Delta.PTSC, Flop->Uncore.FC0);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC02);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC03);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC06);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC07);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC08);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC09);
-		sprintf((char *)&LayerAt(dLayer, code, LOAD_LEAD, row++),
-			"%18llu", Flop->Delta.PC10);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC02:%18llu" "%7.2f%%",
+			Flop->Delta.PC02, 100.f * Shm->Proc.State.PC02);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC03:%18llu" "%7.2f%%",
+			Flop->Delta.PC03, 100.f * Shm->Proc.State.PC03);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC06:%18llu" "%7.2f%%",
+			Flop->Delta.PC06, 100.f * Shm->Proc.State.PC06);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC07:%18llu" "%7.2f%%",
+			Flop->Delta.PC07, 100.f * Shm->Proc.State.PC07);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC08:%18llu" "%7.2f%%",
+			Flop->Delta.PC08, 100.f * Shm->Proc.State.PC08);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC09:%18llu" "%7.2f%%",
+			Flop->Delta.PC09, 100.f * Shm->Proc.State.PC09);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+			"PC10:%18llu" "%7.2f%%",
+			Flop->Delta.PC10, 100.f * Shm->Proc.State.PC10);
+		sprintf((char *)&LayerAt(dLayer, code, 0, row),
+			" TSC:%18llu", Flop->Delta.PTSC);
+		sprintf((char *)&LayerAt(dLayer, code, 50, row++),
+			"UNCORE:%18llu", Flop->Uncore.FC0);
 	    }
 	    break;
 	  case V_TASKS:
