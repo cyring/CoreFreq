@@ -35,7 +35,7 @@ enum {	GenuineIntel,		\
 	IvyBridge,		\
 	IvyBridge_EP,		\
 	Haswell_DT,		\
-	Haswell_MB,		\
+	Haswell_EP,		\
 	Haswell_ULT,		\
 	Haswell_ULX,		\
 	Broadwell,		\

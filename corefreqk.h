@@ -509,7 +509,7 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
 //	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
 #define _Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
-#define _Haswell_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
+#define _Haswell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
 #define _Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
 #define _Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
 
@@ -914,14 +914,14 @@ static ARCH Arch[ARCHITECTURES]=
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 31*/	{
-	_Haswell_MB,
+	_Haswell_EP,
 	Query_SandyBridge,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Haswell,
-	"Haswell/Mobile",
+	"Haswell/EP/Mobile",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},

@@ -316,8 +316,8 @@ typedef struct
 
 	struct
 	{
-		CORE_GLOBAL_PERF_COUNTER Core_GlobalPerfCounter;
-		CORE_FIXED_PERF_COUNTER  Core_FixedPerfCounter;
+		CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;
+		CORE_FIXED_PERF_CONTROL  Core_FixedPerfControl;
 	} SaveArea;
 
 	struct
@@ -510,10 +510,10 @@ typedef struct
 	  } Uncore;
 	} Delta;
 
-	struct SAVEAREA
+	struct
 	{
-		UNCORE_GLOBAL_PERF_COUNTER Uncore_GlobalPerfCounter;
-		UNCORE_FIXED_PERF_COUNTER  Uncore_FixedPerfCounter;
+		UNCORE_GLOBAL_PERF_CONTROL Uncore_GlobalPerfControl;
+		UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
 	} SaveArea;
 
 	FEATURES		Features;

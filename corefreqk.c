@@ -2621,40 +2621,40 @@ void Controller_Exit(void)
 void Core_Counters_Set(CORE *Core)
 {
     if (Proc->Features.PerfMon.AX.Version >= 2) {
-	CORE_GLOBAL_PERF_COUNTER	Core_GlobalPerfCounter = {.value = 0};
-	CORE_FIXED_PERF_COUNTER 	Core_FixedPerfCounter = {.value = 0};
+	CORE_GLOBAL_PERF_CONTROL	Core_GlobalPerfControl = {.value = 0};
+	CORE_FIXED_PERF_CONTROL 	Core_FixedPerfControl = {.value = 0};
 	CORE_GLOBAL_PERF_STATUS 	Core_PerfOverflow = {.value = 0};
 	CORE_GLOBAL_PERF_OVF_CTRL	Core_PerfOvfControl = {.value = 0};
 
-	RDMSR(Core_GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
-	Core->SaveArea.Core_GlobalPerfCounter = Core_GlobalPerfCounter;
-	Core_GlobalPerfCounter.EN_FIXED_CTR0  = 1;
-	Core_GlobalPerfCounter.EN_FIXED_CTR1  = 1;
-	Core_GlobalPerfCounter.EN_FIXED_CTR2  = 1;
-	WRMSR(Core_GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
+	RDMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
+	Core->SaveArea.Core_GlobalPerfControl = Core_GlobalPerfControl;
+	Core_GlobalPerfControl.EN_FIXED_CTR0  = 1;
+	Core_GlobalPerfControl.EN_FIXED_CTR1  = 1;
+	Core_GlobalPerfControl.EN_FIXED_CTR2  = 1;
+	WRMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
 
-	RDMSR(Core_FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
-	Core->SaveArea.Core_FixedPerfCounter = Core_FixedPerfCounter;
-	Core_FixedPerfCounter.EN0_OS = 1;
-	Core_FixedPerfCounter.EN1_OS = 1;
-	Core_FixedPerfCounter.EN2_OS = 1;
-	Core_FixedPerfCounter.EN0_Usr = 1;
-	Core_FixedPerfCounter.EN1_Usr = 1;
-	Core_FixedPerfCounter.EN2_Usr = 1;
+	RDMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
+	Core->SaveArea.Core_FixedPerfControl = Core_FixedPerfControl;
+	Core_FixedPerfControl.EN0_OS = 1;
+	Core_FixedPerfControl.EN1_OS = 1;
+	Core_FixedPerfControl.EN2_OS = 1;
+	Core_FixedPerfControl.EN0_Usr = 1;
+	Core_FixedPerfControl.EN1_Usr = 1;
+	Core_FixedPerfControl.EN2_Usr = 1;
 
 	if (Proc->Features.PerfMon.AX.Version >= 3) {
 		if (!Proc->Features.HTT_Enable) {
-			Core_FixedPerfCounter.AnyThread_EN0 = 1;
-			Core_FixedPerfCounter.AnyThread_EN1 = 1;
-			Core_FixedPerfCounter.AnyThread_EN2 = 1;
+			Core_FixedPerfControl.AnyThread_EN0 = 1;
+			Core_FixedPerfControl.AnyThread_EN1 = 1;
+			Core_FixedPerfControl.AnyThread_EN2 = 1;
 		} else {
 			// Per Thread
-			Core_FixedPerfCounter.AnyThread_EN0 = 0;
-			Core_FixedPerfCounter.AnyThread_EN1 = 0;
-			Core_FixedPerfCounter.AnyThread_EN2 = 0;
+			Core_FixedPerfControl.AnyThread_EN0 = 0;
+			Core_FixedPerfControl.AnyThread_EN1 = 0;
+			Core_FixedPerfControl.AnyThread_EN2 = 0;
 		}
 	}
-	WRMSR(Core_FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
+	WRMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
 	RDMSR(Core_PerfOverflow, MSR_CORE_PERF_GLOBAL_STATUS);
 	if (Core_PerfOverflow.Overflow_CTR0)
@@ -2670,47 +2670,51 @@ void Core_Counters_Set(CORE *Core)
     }
 }
 
-void Uncore_Counters_Set(CORE *Core)
-{
-    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {
-	UNCORE_GLOBAL_PERF_COUNTER	Uncore_GlobalPerfCounter;
-	UNCORE_FIXED_PERF_COUNTER	Uncore_FixedPerfCounter;
-	UNCORE_GLOBAL_PERF_STATUS	Uncore_PerfOverflow = {.value = 0};
-	UNCORE_GLOBAL_PERF_OVF_CTRL	Uncore_PerfOvfControl = {.value = 0};
-
-	RDMSR(Uncore_GlobalPerfCounter, MSR_UNCORE_PERF_GLOBAL_CTRL);
-	Proc->SaveArea.Uncore_GlobalPerfCounter = Uncore_GlobalPerfCounter;
-	Uncore_GlobalPerfCounter.EN_FIXED_CTR0  = 1;
-	WRMSR(Uncore_GlobalPerfCounter, MSR_UNCORE_PERF_GLOBAL_CTRL);
-
-	RDMSR(Uncore_FixedPerfCounter, MSR_UNCORE_PERF_FIXED_CTR_CTRL);
-	Proc->SaveArea.Uncore_FixedPerfCounter = Uncore_FixedPerfCounter;
-	Uncore_FixedPerfCounter.EN_PMC0 = 1;
-	WRMSR(Uncore_FixedPerfCounter, MSR_UNCORE_PERF_FIXED_CTR_CTRL);
-
-	RDMSR(Uncore_PerfOverflow, MSR_UNCORE_PERF_GLOBAL_STATUS);
-	if (Uncore_PerfOverflow.Overflow_CTR0) {
-		Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;
-		WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);
-	}
-    }
-}
+#define Uncore_Counters_Set(PMU, Core)					\
+({									\
+    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {\
+	UNCORE_GLOBAL_PERF_CONTROL  Uncore_GlobalPerfControl;		\
+	UNCORE_FIXED_PERF_CONTROL   Uncore_FixedPerfControl;		\
+	UNCORE_GLOBAL_PERF_STATUS   Uncore_PerfOverflow = {.value = 0}; \
+	UNCORE_GLOBAL_PERF_OVF_CTRL Uncore_PerfOvfControl = {.value = 0};\
+									\
+	RDMSR(Uncore_GlobalPerfControl, MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);\
+	Proc->SaveArea.Uncore_GlobalPerfControl = Uncore_GlobalPerfControl;\
+	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
+	WRMSR(Uncore_GlobalPerfControl, MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);\
+									\
+	RDMSR(Uncore_FixedPerfControl, MSR_UNCORE_PERF_FIXED_CTR_CTRL); \
+	Proc->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;\
+	Uncore_FixedPerfControl.PMU.EN_PMC0 = 1;			\
+	WRMSR(Uncore_FixedPerfControl, MSR_UNCORE_PERF_FIXED_CTR_CTRL); \
+									\
+	RDMSR(Uncore_PerfOverflow, MSR_##PMU##_UNCORE_PERF_GLOBAL_STATUS);\
+	if (Uncore_PerfOverflow.PMU.Overflow_CTR0) {			\
+		Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;		\
+		WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);\
+	}								\
+    }									\
+})
 
 void Core_Counters_Clear(CORE *Core)
 {
-  if (Proc->Features.PerfMon.AX.Version >= 2) {
-      WRMSR(Core->SaveArea.Core_FixedPerfCounter, MSR_CORE_PERF_FIXED_CTR_CTRL);
-      WRMSR(Core->SaveArea.Core_GlobalPerfCounter, MSR_CORE_PERF_GLOBAL_CTRL);
-  }
+    if (Proc->Features.PerfMon.AX.Version >= 2) {
+	WRMSR(Core->SaveArea.Core_FixedPerfControl,
+					MSR_CORE_PERF_FIXED_CTR_CTRL);
+	WRMSR(Core->SaveArea.Core_GlobalPerfControl,
+					MSR_CORE_PERF_GLOBAL_CTRL);
+    }
 }
 
-void Uncore_Counters_Clear(CORE *Core)
-{
-  if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {
-   WRMSR(Proc->SaveArea.Uncore_FixedPerfCounter,MSR_UNCORE_PERF_FIXED_CTR_CTRL);
-   WRMSR(Proc->SaveArea.Uncore_GlobalPerfCounter, MSR_UNCORE_PERF_GLOBAL_CTRL);
-  }
-}
+#define Uncore_Counters_Clear(PMU, Core)				\
+({									\
+    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {\
+	WRMSR(Proc->SaveArea.Uncore_FixedPerfControl,			\
+					MSR_UNCORE_PERF_FIXED_CTR_CTRL);\
+	WRMSR(Proc->SaveArea.Uncore_GlobalPerfControl,			\
+				MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);	\
+    }									\
+})
 
 #define Counters_Genuine(Core, T)					\
 ({									\
@@ -3429,7 +3433,7 @@ void Start_Nehalem(void *arg)
 	PerCore_Nehalem_Query(Core);
 
 	Core_Counters_Set(Core);
-	Uncore_Counters_Set(Core);
+	Uncore_Counters_Set(NHM, Core);
 	SMT_Counters_Nehalem(Core, 0);
 
 	if (Core->T.Base.BSP) {
@@ -3457,7 +3461,7 @@ void Stop_Nehalem(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	Uncore_Counters_Clear(Core);
+	Uncore_Counters_Clear(NHM, Core);
 
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
