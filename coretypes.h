@@ -76,6 +76,9 @@ enum {	GenuineIntel,		\
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
+typedef unsigned short int	CUINT;
+typedef signed short int	CSINT;
+
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0))
 

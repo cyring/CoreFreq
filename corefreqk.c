@@ -3649,7 +3649,7 @@ long Sys_Kernel(void)
 }
 
 long Sys_DumpTask(void)
-{	/// Source: /include/linux/sched.h
+{	// Source: /include/linux/sched.h
     if (Proc->SysGate != NULL) {
 	struct task_struct *process, *thread;
 	int cnt = 0;
