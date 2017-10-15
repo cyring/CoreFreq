@@ -2550,10 +2550,9 @@ void Top(SHM_STRUCT *Shm)
 
     struct FLIP_FLOP *Flop;
 
-    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, i;
+    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, idx;
 	CUINT	_col, _row, loadWidth = 0;
-	CUINT	MIN_HEIGHT = (2 * KMAX(8, Shm->Proc.CPU.Count))
-		 + TOP_HEADER_ROW + TOP_SEPARATOR + TOP_FOOTER_ROW,
+	CUINT	MIN_HEIGHT = 0,
 		TOP_UPPER_FIRST = 1 + TOP_HEADER_ROW,
 		TOP_LOWER_FIRST = 2+ TOP_HEADER_ROW + Shm->Proc.CPU.Count,
 		TOP_LOWER_LAST  = 2 + TOP_HEADER_ROW + 2 * Shm->Proc.CPU.Count,
@@ -2788,7 +2787,7 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_g,	" Pkg counters [g] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_g,	" Pkg. cycles  [g] ", skeyAttr);
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -3362,15 +3361,15 @@ void Top(SHM_STRUCT *Shm)
 	CreateLayer(fuze, layerSize);
     }
 
-    for (i = 1; i < 10; i++)
-	if (Shm->Proc.Boost[i] != 0) {
-		int sort = Shm->Proc.Boost[i] - availRatio[ratioCount];
+    for (idx = 1; idx < 10; idx++)
+	if (Shm->Proc.Boost[idx] != 0) {
+		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {
 			availRatio[ratioCount + 1] = availRatio[ratioCount];
-			availRatio[ratioCount++]   = Shm->Proc.Boost[i];
+			availRatio[ratioCount++]   = Shm->Proc.Boost[idx];
 		}
 		else if (sort > 0)
-			availRatio[++ratioCount]   = Shm->Proc.Boost[i];
+			availRatio[++ratioCount]   = Shm->Proc.Boost[idx];
 	}
     ratioCount++;
 
@@ -3384,6 +3383,22 @@ void Top(SHM_STRUCT *Shm)
 			else
 				drawSize.height = currentSize.height;
 
+		    switch (drawFlag.view) {
+		    case V_FREQ:
+		    case V_INST:
+		    case V_CYCLES:
+		    case V_CSTATES:
+		    case V_TASKS:
+		    case V_INTR:
+		    case V_VOLTAGE:
+			MIN_HEIGHT = (2 * Shm->Proc.CPU.Count) + TOP_HEADER_ROW
+					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
+			break;
+		    case V_PACKAGE:
+			MIN_HEIGHT = Shm->Proc.CPU.Count + 8 + TOP_HEADER_ROW
+					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
+			break;
+		    }
 			drawFlag.clear  = 1;
 			drawFlag.height = !(drawSize.height < MIN_HEIGHT);
 		}
@@ -3443,13 +3458,15 @@ void Top(SHM_STRUCT *Shm)
 	case SCANKEY_c:
 		{
 		drawFlag.view = V_CYCLES;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_f:
 		{
 		drawFlag.view = V_FREQ;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_n:
@@ -3464,7 +3481,8 @@ void Top(SHM_STRUCT *Shm)
 	case SCANKEY_g:
 		{
 		drawFlag.view = V_PACKAGE;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_h:
@@ -3479,13 +3497,15 @@ void Top(SHM_STRUCT *Shm)
 	case SCANKEY_i:
 		{
 		drawFlag.view = V_INST;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_l:
 		{
 		drawFlag.view = V_CSTATES;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_m:
@@ -3509,13 +3529,15 @@ void Top(SHM_STRUCT *Shm)
 	case SCANKEY_q:
 		{
 		drawFlag.view = V_INTR;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_SHIFT_v:
 		{
 		drawFlag.view = V_VOLTAGE;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SCANKEY_s:
@@ -3543,7 +3565,8 @@ void Top(SHM_STRUCT *Shm)
 		{
 		Shm->SysGate.trackTask = 0;
 		drawFlag.view = V_TASKS;
-		drawFlag.clear = 1;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SORTBY_STATE:
@@ -3754,12 +3777,12 @@ void Top(SHM_STRUCT *Shm)
 			'-','-','-','-'
 		}
 	};
-
+	// Alternate the color of the frequency ratios
 	int bright = 0;
-	for (i = 0; i < ratioCount; i++) {
+	for (idx = 0; idx < ratioCount; idx++) {
 		char tabStop[] = "00";
-		int hPos = availRatio[i] * loadWidth / maxRatio;
-		sprintf(tabStop, "%2.0f", availRatio[i]);
+		int hPos = availRatio[idx] * loadWidth / maxRatio;
+		sprintf(tabStop, "%2.0f", availRatio[idx]);
 
 		if (tabStop[0] != 0x20) {
 			hLoad0.code[hPos + 2] =tabStop[0];
@@ -4038,14 +4061,13 @@ void Top(SHM_STRUCT *Shm)
 			MakeAttr(WHITE, 0, BLACK, 0));
    }
 
-	i = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
+	idx = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
 	sprintf(hBClk[cpu],
 		"%u%u%u %u%u%u %u%u%u",
 		digit[0], digit[1], digit[2],
 		digit[3], digit[4], digit[5],
 		digit[6], digit[7], digit[8]);
   }
-
 	row++;
 
 	switch (drawFlag.view) {
@@ -4161,6 +4183,7 @@ void Top(SHM_STRUCT *Shm)
 	      LayerCopyAt(layer, hPkg0.origin.col, hPkg0.origin.row,
 			hPkg0.length, hPkg0.attr, hPkg0.code);
 	    }
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_INST:
@@ -4175,6 +4198,8 @@ void Top(SHM_STRUCT *Shm)
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_CYCLES:
@@ -4188,6 +4213,8 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_CSTATES:
@@ -4201,6 +4228,8 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_INTR:
@@ -4233,6 +4262,8 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_PACKAGE:
@@ -4244,12 +4275,14 @@ void Top(SHM_STRUCT *Shm)
 		"------------",
 			MakeAttr(WHITE, 0, BLACK, 0));
 	    row++;
-	    for (i=0; i < 8; i++, row++)
+	    for (idx=0; idx < 8; idx++, row++) {
 		LayerFillAt(layer, 0, row,
 			drawSize.width, hSpace, MakeAttr(WHITE, 0, BLACK, 0));
-
+	    }
 	    LayerFillAt(layer, 0, row,
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row ++;
 	  }
 	  break;
 	case V_TASKS:
@@ -4469,6 +4502,8 @@ void Top(SHM_STRUCT *Shm)
 
 	    LayerCopyAt(layer, hTrack0.origin.col, hTrack0.origin.row,
 			hTrack0.length, hTrack0.attr, hTrack0.code);
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	case V_VOLTAGE:
@@ -4503,11 +4538,11 @@ void Top(SHM_STRUCT *Shm)
 	    LayerFillAt(layer, 0, (row + Shm->Proc.CPU.Count + 1),
 			drawSize.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0));
+
+	    row += Shm->Proc.CPU.Count + 2;
 	  }
 	  break;
 	}
-
-	row += Shm->Proc.CPU.Count + 2;
 
 	LayerDeclare(61) hTech0 = {
 		.origin = {.col = 0, .row = row}, .length = 14,
@@ -4809,21 +4844,23 @@ void Top(SHM_STRUCT *Shm)
 		Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!Shm->Cpu[cpu].OffLine.OS)
-		{ // Upper View
+		{ // Upper view area
 			CUINT	bar0=(Flop->Relative.Ratio *loadWidth)/maxRatio,
 				bar1 = loadWidth - bar0,
 				row = TOP_UPPER_FIRST + cpu;
 
+		// Print the Per Core BCLK indicator (yellow)
 		    LayerAt(dLayer, code, LOAD_LEAD - 1, row) = (cpu == iClock)?
 								'~' : 0x20;
 
+		// Draw the relative Core frequency ratio
 		    LayerFillAt(dLayer, LOAD_LEAD, row,
 				bar0, hBar,
 				MakeAttr((Flop->Relative.Ratio > medianRatio ?
 					RED : Flop->Relative.Ratio > minRatio ?
 					YELLOW : GREEN),
 					0, BLACK, 1));
-
+		// Pad with blank characters
 		    LayerFillAt(dLayer, (bar0 + LOAD_LEAD), row,
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
@@ -4961,8 +4998,8 @@ void Top(SHM_STRUCT *Shm)
 				hSpace,
 				MakeAttr(WHITE, 0, BLACK, 0));
 
-			for (i = 0; i < Shm->SysGate.taskCount; i++) {
-				switch (Shm->SysGate.taskList[i].state) {
+			for (idx = 0; idx < Shm->SysGate.taskCount; idx++) {
+				switch (Shm->SysGate.taskList[idx].state) {
 				case 0: {	// TASK_RUNNING
 					attr = runColor;
 					symbol = 'R';
@@ -4994,33 +5031,33 @@ void Top(SHM_STRUCT *Shm)
 					}
 					break;
 				}
-			if(Shm->SysGate.taskList[i].pid==Shm->SysGate.trackTask)
+		    if(Shm->SysGate.taskList[idx].pid==Shm->SysGate.trackTask) {
 				attr = trackerColor;
-
+		    }
 			  if (!drawFlag.taskVal) {
 				len = sprintf(buffer, "%s",
-						Shm->SysGate.taskList[i].comm);
+					Shm->SysGate.taskList[idx].comm);
 			  } else {
 			    switch (Shm->SysGate.sortByField) {
 			    case F_STATE:
 				len = sprintf(buffer, "%s(%c)",
-					Shm->SysGate.taskList[i].comm,
+					Shm->SysGate.taskList[idx].comm,
 					symbol);
 				break;
 			    case F_RTIME:
 				len = sprintf(buffer, "%s(%llu)",
-					Shm->SysGate.taskList[i].comm,
-					Shm->SysGate.taskList[i].runtime);
+					Shm->SysGate.taskList[idx].comm,
+					Shm->SysGate.taskList[idx].runtime);
 				break;
 			    case F_UTIME:
 				len = sprintf(buffer, "%s(%llu)",
-					Shm->SysGate.taskList[i].comm,
-					Shm->SysGate.taskList[i].usertime);
+					Shm->SysGate.taskList[idx].comm,
+					Shm->SysGate.taskList[idx].usertime);
 				break;
 			    case F_STIME:
 				len = sprintf(buffer, "%s(%llu)",
-					Shm->SysGate.taskList[i].comm,
-					Shm->SysGate.taskList[i].systime);
+					Shm->SysGate.taskList[idx].comm,
+					Shm->SysGate.taskList[idx].systime);
 				break;
 			    case F_PID:
 				// fallthrough
@@ -5028,21 +5065,22 @@ void Top(SHM_STRUCT *Shm)
 				// fallthrough
 			    default:
 				len = sprintf(buffer, "%s(%d)",
-					Shm->SysGate.taskList[i].comm,
-					Shm->SysGate.taskList[i].pid);
+					Shm->SysGate.taskList[idx].comm,
+					Shm->SysGate.taskList[idx].pid);
 				break;
 			    }
 			  }
-			  if (cTask[Shm->SysGate.taskList[i].wake_cpu].col
+			  if (cTask[Shm->SysGate.taskList[idx].wake_cpu].col
 							<= (MAX_WIDTH - len)) {
 			    LayerCopyAt(dLayer,
-				cTask[Shm->SysGate.taskList[i].wake_cpu].col,
-				cTask[Shm->SysGate.taskList[i].wake_cpu].row,
+				cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
+				cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
 				len,
 				attr,
 				buffer);
 
-			    cTask[Shm->SysGate.taskList[i].wake_cpu].col+=len+2;
+			    cTask[Shm->SysGate.taskList[idx].wake_cpu].col +=
+									len + 2;
 			  }
 			}
 		      }
@@ -5074,13 +5112,13 @@ void Top(SHM_STRUCT *Shm)
 		}
 	    }
 	  }
-	// Lower View
+	// Lower view area
 	  switch (drawFlag.view) {
 	  case V_FREQ:
 	    {
-		CUINT row = TOP_LOWER_LAST;
+		_row = TOP_LOWER_LAST;
 		if (!drawFlag.avgOrPC)
-			sprintf((char *)&LayerAt(dLayer, code, 20, row),
+			sprintf((char *)&LayerAt(dLayer, code, 20, _row),
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "\
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 				100.f * Shm->Proc.Avg.Turbo,
@@ -5090,7 +5128,7 @@ void Top(SHM_STRUCT *Shm)
 				100.f * Shm->Proc.Avg.C6,
 				100.f * Shm->Proc.Avg.C7);
 		else
-			sprintf((char *)&LayerAt(dLayer, code, 11, row),
+			sprintf((char *)&LayerAt(dLayer, code, 11, _row),
 				"  c2:%-5.1f" "  c3:%-5.1f" "  c6:%-5.1f"\
 				"  c7:%-5.1f" "  c8:%-5.1f" "  c9:%-5.1f"\
 				" c10:%-5.1f",
@@ -5102,58 +5140,59 @@ void Top(SHM_STRUCT *Shm)
 				100.f * Shm->Proc.State.PC09,
 				100.f * Shm->Proc.State.PC10);
 	    }
+	    // fallthrough
+	  default:  // V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_TASKS, V_VOLTAGE
+		_row = TOP_FOOTER_LAST;
 	    break;
 	  case V_PACKAGE:
 	    {
 		struct PKG_FLIP_FLOP *Flop =
 				&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-		CUINT row = TOP_LOWER_FIRST;
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		_row = TOP_LOWER_FIRST;
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC02:%18llu" "%7.2f%%",
 			Flop->Delta.PC02, 100.f * Shm->Proc.State.PC02);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC03:%18llu" "%7.2f%%",
 			Flop->Delta.PC03, 100.f * Shm->Proc.State.PC03);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC06:%18llu" "%7.2f%%",
 			Flop->Delta.PC06, 100.f * Shm->Proc.State.PC06);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC07:%18llu" "%7.2f%%",
 			Flop->Delta.PC07, 100.f * Shm->Proc.State.PC07);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC08:%18llu" "%7.2f%%",
 			Flop->Delta.PC08, 100.f * Shm->Proc.State.PC08);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC09:%18llu" "%7.2f%%",
 			Flop->Delta.PC09, 100.f * Shm->Proc.State.PC09);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC10:%18llu" "%7.2f%%",
 			Flop->Delta.PC10, 100.f * Shm->Proc.State.PC10);
-		sprintf((char *)&LayerAt(dLayer, code, 0, row),
+		sprintf((char *)&LayerAt(dLayer, code, 0, _row),
 			" TSC:%18llu", Flop->Delta.PTSC);
-		sprintf((char *)&LayerAt(dLayer, code, 50, row++),
+		sprintf((char *)&LayerAt(dLayer, code, 50, _row++),
 			"UNCORE:%18llu", Flop->Uncore.FC0);
+
+		_row += 2;
 	    }
 	    break;
-	  default:  // V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_TASKS, V_VOLTAGE
-	    break;
 	  }
-	// Footer View
-	  CUINT row = TOP_FOOTER_LAST;
-
+	// Footer view area
 	  sprintf(buffer, "%6u" "%8lu" "%8lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
 			Shm->SysGate.memInfo.totalram);
 
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 34),row),&buffer[0], 6);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 21),row),&buffer[6], 8);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width - 12),row),&buffer[14],8);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -34),_row),&buffer[0], 6);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -21),_row),&buffer[6], 8);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row),&buffer[14],8);
 
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-	// Header View
+	// Header view area
 	  Dec2Digit((unsigned int) Flop->Relative.Freq, digit);
 
 	  unsigned int lcdColor;
@@ -5183,7 +5222,7 @@ void Top(SHM_STRUCT *Shm)
 
 	  memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
 
-	// Left Side Yellow Pointer
+	// Increment the BCLK indicator (skip offline CPU)
 	  do {
 		iClock++;
 		if (iClock == Shm->Proc.CPU.Count)
@@ -5191,7 +5230,7 @@ void Top(SHM_STRUCT *Shm)
 	  } while (Shm->Cpu[iClock].OffLine.OS && iClock) ;
 	}
 
-	// Print Windows
+	// Print the stack of Windows
 	Window *walker;
 	if ((walker=GetHead(&winList)) != NULL) {
 		do {
@@ -5204,9 +5243,9 @@ void Top(SHM_STRUCT *Shm)
 		} while (!IsHead(&winList, walker)) ;
 	}
 
-	// Fuse Layers
+	// Fuse all layers
 	Attribute attr = {.value = 0};
-	i = 0;
+	idx = 0;
 
 	for (_row = 0; _row < drawSize.height; _row++)
 	{
@@ -5214,18 +5253,19 @@ void Top(SHM_STRUCT *Shm)
 		int cursor;
 	  } flag = {0};
 
-	  int x = 0, k;
+	  int _bix = 0, _bdx;
 	  CUINT _wth = _row * fuze->size.wth;
 
 	  for (_col = 0; _col < drawSize.width; _col++) {
-	    Attribute	*fa =   &fuze->attr[_col + _wth],
-			*sa = &sLayer->attr[_col + _wth],
-			*da = &dLayer->attr[_col + _wth],
-			*wa = &wLayer->attr[_col + _wth];
-	    ASCII	*fc =   &fuze->code[_col + _wth],
-			*sc = &sLayer->code[_col + _wth],
-			*dc = &dLayer->code[_col + _wth],
-			*wc = &wLayer->code[_col + _wth];
+	    int _idx = _col + _wth;
+	    Attribute	*fa =   &fuze->attr[_idx],
+			*sa = &sLayer->attr[_idx],
+			*da = &dLayer->attr[_idx],
+			*wa = &wLayer->attr[_idx];
+	    ASCII	*fc =   &fuze->code[_idx],
+			*sc = &sLayer->code[_idx],
+			*dc = &dLayer->code[_idx],
+			*wc = &wLayer->code[_idx];
 	/* STATIC LAYER */
 	    if (sa->value != 0)
 		fa->value = sa->value;
@@ -5243,27 +5283,27 @@ void Top(SHM_STRUCT *Shm)
 		*fc = *wc;
 	/* FUZED LAYER */
 	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf)) {
-		buffer[x++] = 0x1b;
-		buffer[x++] = '[';
-		buffer[x++] = '0' + fa->bf;
-		buffer[x++] = ';';
-		buffer[x++] = '3';
-		buffer[x++] = '0' + fa->fg;
-		buffer[x++] = ';';
-		buffer[x++] = '4';
-		buffer[x++] = '0' + fa->bg;
-		buffer[x++] = 'm';
+		buffer[_bix++] = 0x1b;
+		buffer[_bix++] = '[';
+		buffer[_bix++] = '0' + fa->bf;
+		buffer[_bix++] = ';';
+		buffer[_bix++] = '3';
+		buffer[_bix++] = '0' + fa->fg;
+		buffer[_bix++] = ';';
+		buffer[_bix++] = '4';
+		buffer[_bix++] = '0' + fa->bg;
+		buffer[_bix++] = 'm';
 	    }
 	    if (fa->un ^ attr.un) {
-		buffer[x++] = 0x1b;
-		buffer[x++] = '[';
+		buffer[_bix++] = 0x1b;
+		buffer[_bix++] = '[';
 		if (fa->un) {
-			buffer[x++] = '4';
-			buffer[x++] = 'm';
+			buffer[_bix++] = '4';
+			buffer[_bix++] = 'm';
 		} else {
-			buffer[x++] = '2';
-			buffer[x++] = '4';
-			buffer[x++] = 'm';
+			buffer[_bix++] = '2';
+			buffer[_bix++] = '4';
+			buffer[_bix++] = 'm';
 		}
 	    }
 	    attr.value = fa->value;
@@ -5276,31 +5316,31 @@ void Top(SHM_STRUCT *Shm)
 				CUINT col, row;
 			} scr = {.col = _col + 1, .row = _row + 1};
 
-			buffer[x++] = 0x1b;
-			buffer[x++] = '[';
+			buffer[_bix++] = 0x1b;
+			buffer[_bix++] = '[';
 
-			x = log10(scr.row) + x + 1;
-			for(k = x; scr.row > 0; scr.row /= 10)
-				buffer[--k] = '0' + (scr.row % 10);
+			_bix = log10(scr.row) + _bix + 1;
+			for(_bdx = _bix; scr.row > 0; scr.row /= 10)
+				buffer[--_bdx] = '0' + (scr.row % 10);
 
-			buffer[x++] = ';';
+			buffer[_bix++] = ';';
 
-			x = log10(scr.col) + x + 1;
-			for(k = x; scr.col > 0; scr.col /= 10)
-				buffer[--k] = '0' + (scr.col % 10);
+			_bix = log10(scr.col) + _bix + 1;
+			for(_bdx = _bix; scr.col > 0; scr.col /= 10)
+				buffer[--_bdx] = '0' + (scr.col % 10);
 
-			buffer[x++] = 'H';
+			buffer[_bix++] = 'H';
 		}
-		buffer[x++] = *fc;
+		buffer[_bix++] = *fc;
 	    }
 	    else
 		flag.cursor = 0;
 	  }
-	  memcpy(&viewMask[i], buffer, x);
-	  i += x;
+	  memcpy(&viewMask[idx], buffer, _bix);
+	  idx += _bix;
 	}
-	// Write To Standard Output
-	fwrite(viewMask, i, 1, stdout);
+	// Write buffering to the standard output
+	fwrite(viewMask, idx, 1, stdout);
 	fflush(stdout);
       }
       else
