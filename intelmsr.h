@@ -4,6 +4,10 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_MISC_PWR_MGMT
+#define MSR_MISC_PWR_MGMT 0x1aa
+#endif
+
 #ifndef MSR_TURBO_RATIO_LIMIT
 #define MSR_TURBO_RATIO_LIMIT MSR_NHM_TURBO_RATIO_LIMIT
 #endif
