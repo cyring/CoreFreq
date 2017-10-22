@@ -3635,8 +3635,10 @@ long Sys_IdleDriver_Query(void)
 }
 
 long Sys_Kernel(void)
-{	// Source: /include/uapi/linux/utsname.h
+{	/* Sources:	/include/generated/uapi/linux/version.h
+			/include/uapi/linux/utsname.h		*/
     if (Proc->SysGate != NULL) {
+	Proc->SysGate->kernelVersionNumber = LINUX_VERSION_CODE;
 	memcpy(Proc->SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
 	memcpy(Proc->SysGate->release, utsname()->release, MAX_UTS_LEN);
 	memcpy(Proc->SysGate->version, utsname()->version, MAX_UTS_LEN);

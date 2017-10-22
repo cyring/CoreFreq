@@ -1877,6 +1877,10 @@ void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
 
 void SysGate_Kernel(SHM_STRUCT *Shm, SYSGATE *SysGate)
 {
+	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
+	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
+	Shm->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
+
 	memcpy(Shm->SysGate.sysname, SysGate->sysname, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.release, SysGate->release, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.version, SysGate->version, MAX_UTS_LEN);

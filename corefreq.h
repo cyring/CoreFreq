@@ -230,6 +230,12 @@ typedef struct
 
 		MEM_MCB		memInfo;
 
+		struct {
+		unsigned short	version,
+				major,
+				minor;
+		} kernel;
+
 		char		sysname[MAX_UTS_LEN],
 				release[MAX_UTS_LEN],
 				version[MAX_UTS_LEN],

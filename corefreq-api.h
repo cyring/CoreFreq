@@ -472,6 +472,8 @@ typedef struct {
 
 		MEM_MCB		memInfo;
 
+		unsigned int	kernelVersionNumber;
+
 		char		sysname[MAX_UTS_LEN],
 				release[MAX_UTS_LEN],
 				version[MAX_UTS_LEN],

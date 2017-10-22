@@ -4730,10 +4730,13 @@ void Top(SHM_STRUCT *Shm)
 	col++;
 
 	if(BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		len = strlen(Shm->SysGate.release);
+		len = sprintf(buffer, "%hu.%hu.%hu",
+				Shm->SysGate.kernel.version,
+				Shm->SysGate.kernel.major,
+				Shm->SysGate.kernel.minor);
 
 		LayerFillAt(	layer, col, row,
-				len, Shm->SysGate.release,
+				len, buffer,
 				MakeAttr(WHITE, 0, BLACK, 1));
 		col += len;
 
@@ -4759,17 +4762,17 @@ void Top(SHM_STRUCT *Shm)
 
 	col++;
 
-	LayerDeclare(41) hSys1 = {
-	    .origin = {.col = (drawSize.width - 41), .row = row}, .length = 41,
+	LayerDeclare(42) hSys1 = {
+	    .origin = {.col = (drawSize.width - 42), .row = row}, .length = 42,
 	    .attr = {
 		LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK, \
 		LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK, \
-		HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK
+		HWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK
 		},
 	    .code = {
 		'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']', \
 		' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ', \
-		'/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']'
+		' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']'
 		},
 	};
 
@@ -5181,14 +5184,14 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  }
 	// Footer view area
-	  sprintf(buffer, "%6u" "%8lu" "%8lu",
+	  sprintf(buffer, "%6u" "%9lu" "%-9lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
 			Shm->SysGate.memInfo.totalram);
 
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -34),_row),&buffer[0], 6);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -21),_row),&buffer[6], 8);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row),&buffer[14],8);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -35),_row),&buffer[0], 6);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -22),_row),&buffer[6], 9);
+	  memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row),&buffer[15],9);
 
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
