@@ -3923,6 +3923,7 @@ static struct notifier_block CoreFreqK_notifier_block=
 #endif
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
@@ -3943,6 +3944,7 @@ static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 	}
 	return(NMI_DONE);
 }
+#endif
 
 static int __init CoreFreqK_init(void)
 {
@@ -4156,6 +4158,7 @@ static int __init CoreFreqK_init(void)
 						CoreFreqK_hotplug_cpu_offline);
 			#endif
 		#endif
+		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 				  Proc->Registration.nmi =
 					register_nmi_handler(NMI_LOCAL,
 							CoreFreqK_NMI_handler,
@@ -4173,6 +4176,7 @@ static int __init CoreFreqK_init(void)
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk");
+		#endif
 				} else {
 				    if (KPublic->Cache != NULL) {
 					for(cpu = 0;cpu < Proc->CPU.Count;cpu++)
@@ -4272,13 +4276,14 @@ static int __init CoreFreqK_init(void)
 static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu = 0;
-
+#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 2, 0)
 	if (!Proc->Registration.nmi) {
 		unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
 		unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
 		unregister_nmi_handler(NMI_SERR,     "corefreqk");
 		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
 	}
+#endif
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
@@ -4287,7 +4292,6 @@ static void __exit CoreFreqK_cleanup(void)
 			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
-
 	if (Proc->Registration.Experimental) {
 		if (!Proc->Registration.pci)
 			pci_unregister_driver(&CoreFreqK_pci_driver);
