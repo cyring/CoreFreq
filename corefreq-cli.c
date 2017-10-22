@@ -2837,7 +2837,7 @@ void Top(SHM_STRUCT *Shm)
 	    pciRegLen = sprintf(pciRegStr, "[%3s]",
 				enabled(!(Shm->Registration.pci < 0))),
 	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
-				 enabled(Shm->Registration.nmi == 0));
+				 enabled(Shm->Registration.nmi));
 	size_t appLen = strlen(Shm->AppName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);

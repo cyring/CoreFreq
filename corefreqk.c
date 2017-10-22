@@ -4160,7 +4160,7 @@ static int __init CoreFreqK_init(void)
 		#endif
 		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 				  Proc->Registration.nmi =
-					register_nmi_handler(NMI_LOCAL,
+				    !(	register_nmi_handler(NMI_LOCAL,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
@@ -4175,7 +4175,7 @@ static int __init CoreFreqK_init(void)
 				|	register_nmi_handler(NMI_IO_CHECK,
 							CoreFreqK_NMI_handler,
 							0,
-							"corefreqk");
+							"corefreqk"));
 		#endif
 				} else {
 				    if (KPublic->Cache != NULL) {
@@ -4277,7 +4277,7 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	unsigned int cpu = 0;
 #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 2, 0)
-	if (!Proc->Registration.nmi) {
+	if (Proc->Registration.nmi) {
 		unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
 		unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
 		unregister_nmi_handler(NMI_SERR,     "corefreqk");
