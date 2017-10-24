@@ -2824,12 +2824,14 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 8, 8, TOP_HEADER_ROW + 3);
+      Window *wSet = CreateWindow(wLayer, id, 2, 9, 8, TOP_HEADER_ROW + 3);
       if (wSet != NULL) {
-	char	intervStr[16], experStr[16], cpuhpStr[16], pciRegStr[16],
-		nmiRegStr[16];
+	char	intervStr[16], tickStr[16], experStr[16],
+		cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
 	int intervLen = sprintf(intervStr, "%13uE6",
 				Shm->Proc.SleepInterval),
+	    tickLen = sprintf(tickStr, "%13uE6",
+				Shm->Proc.SleepInterval*Shm->SysGate.tickReset),
 	    experLen = sprintf(experStr, "[%3s]",
 				enabled(Shm->Registration.Experimental)),
 	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
@@ -2849,6 +2851,9 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
+	StoreTCell(wSet, SCANKEY_NULL, " Sys.Tick(ns)   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
 	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
@@ -2866,10 +2871,11 @@ void Top(SHM_STRUCT *Shm)
 
 	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->AppName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
-	memcpy(&TCellAt(wSet, 1, 3).item[15 - experLen], experStr, experLen);
-	memcpy(&TCellAt(wSet, 1, 4).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
-	memcpy(&TCellAt(wSet, 1, 5).item[15 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 1, 6).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen], tickStr, tickLen);
+	memcpy(&TCellAt(wSet, 1, 4).item[15 - experLen], experStr, experLen);
+	memcpy(&TCellAt(wSet, 1, 5).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
+	memcpy(&TCellAt(wSet, 1, 6).item[15 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 1, 7).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
@@ -4948,60 +4954,62 @@ void Top(SHM_STRUCT *Shm)
 		      break;
 		    case V_TASKS:
 		      {
-			char symbol;
-			Attribute runColor[] = {
-				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
-				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
-				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
-				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,	\
-				HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
-			}, unintColor[] = {
-				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
-				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
-				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
-				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,	\
-				LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK
-			}, zombieColor[] = {
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,	\
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
-			}, sleepColor[] = {
-				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,	\
-				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-			}, otherColor[] = {
-				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
-				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
-				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
-				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,	\
-				HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK
-			}, trackerColor[] = {
-				LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,	\
-				LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,	\
-				LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,	\
-				LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,	\
-				LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC
-			}, *attr;
 			size_t len;
 
 			sprintf((char *) &LayerAt(dLayer, code, LOAD_LEAD, row),
 				"%7.2f",
 				Flop->Relative.Freq);
 
-			cTask[cpu].col = LOAD_LEAD + 8;
+			if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+				char symbol;
+				Attribute runColor[] = {
+					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
+				}, unintColor[] = {
+					LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
+					LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
+					LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
+					LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
+					LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK
+				}, zombieColor[] = {
+					LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
+					LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
+					LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
+					LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
+					LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
+				}, sleepColor[] = {
+					LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+					LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+					LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+					LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+					LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+				}, otherColor[] = {
+					HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+					HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+					HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+					HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+					HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK
+				}, trackerColor[] = {
+					LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+					LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+					LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+					LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+					LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC
+				}, *attr;
 
-			LayerFillAt(dLayer,
-				cTask[cpu].col,
-				cTask[cpu].row,
-				(MAX_WIDTH - LOAD_LEAD - 8),
-				hSpace,
-				MakeAttr(WHITE, 0, BLACK, 0));
+				cTask[cpu].col = LOAD_LEAD + 8;
 
-			for (idx = 0; idx < Shm->SysGate.taskCount; idx++) {
+				LayerFillAt(dLayer,
+					cTask[cpu].col,
+					cTask[cpu].row,
+					(MAX_WIDTH - LOAD_LEAD - 8),
+					hSpace,
+					MakeAttr(WHITE, 0, BLACK, 0));
+
+			  for (idx = 0; idx < Shm->SysGate.taskCount; idx++) {
 				switch (Shm->SysGate.taskList[idx].state) {
 				case 0: {	// TASK_RUNNING
 					attr = runColor;
@@ -5034,9 +5042,11 @@ void Top(SHM_STRUCT *Shm)
 					}
 					break;
 				}
-		    if(Shm->SysGate.taskList[idx].pid==Shm->SysGate.trackTask) {
+			  if (Shm->SysGate.taskList[idx].pid ==
+							Shm->SysGate.trackTask)
+			  {
 				attr = trackerColor;
-		    }
+			  }
 			  if (!drawFlag.taskVal) {
 				len = sprintf(buffer, "%s",
 					Shm->SysGate.taskList[idx].comm);
@@ -5084,6 +5094,7 @@ void Top(SHM_STRUCT *Shm)
 
 			    cTask[Shm->SysGate.taskList[idx].wake_cpu].col +=
 									len + 2;
+			    }
 			  }
 			}
 		      }
@@ -5184,6 +5195,7 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  }
 	// Footer view area
+	if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 	  sprintf(buffer, "%6u" "%9lu" "%-9lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
@@ -5192,7 +5204,7 @@ void Top(SHM_STRUCT *Shm)
 	  memcpy(&LayerAt(dLayer,code,(drawSize.width -35),_row),&buffer[0], 6);
 	  memcpy(&LayerAt(dLayer,code,(drawSize.width -22),_row),&buffer[6], 9);
 	  memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row),&buffer[15],9);
-
+	}
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
 	// Header view area

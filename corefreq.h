@@ -222,6 +222,9 @@ typedef struct
 
 		IDLEDRIVER	IdleDriver;
 
+		unsigned int	tickReset,
+				tickStep;
+
 		pid_t		trackTask;
 		int		sortByField,
 				reverseOrder,

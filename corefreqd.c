@@ -2055,11 +2055,6 @@ void SysGate_Toggle(SIG *Sig, unsigned int state)
 		// Notify
 		if (!BITVAL(Sig->Shm->Proc.Sync, 63))
 			BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
-
-		if (Quiet & 0x100) {
-			printf("  SysGate(%llu)\n",Sig->Shm->SysGate.Operation);
-			fflush(stdout);
-		}
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Sig->Shm->SysGate.Operation, 0x1)) {
@@ -2074,11 +2069,6 @@ void SysGate_Toggle(SIG *Sig, unsigned int state)
 			// Notify
 			if (!BITVAL(Sig->Shm->Proc.Sync, 63))
 				BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
-
-		    if (Quiet & 0x100) {
-			printf("  SysGate(%llu)\n",Sig->Shm->SysGate.Operation);
-			fflush(stdout);
-		    }
 		}
 	    }
 	}
@@ -2150,6 +2140,7 @@ void Core_Manager(FD *fd,
 		SYSGATE **SysGate)
 {
     unsigned int cpu = 0;
+    double maxRelFreq;
 
     pthread_t tid = pthread_self();
     cpu_set_t cpuset;
@@ -2162,6 +2153,19 @@ void Core_Manager(FD *fd,
     ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
     while (!Shutdown) {
+	// Loop while all the cpu room bits are not cleared.
+	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
+	}
+	// Reset the averages & the max frequency
+	Shm->Proc.Avg.Turbo = 0;
+	Shm->Proc.Avg.C0    = 0;
+	Shm->Proc.Avg.C3    = 0;
+	Shm->Proc.Avg.C6    = 0;
+	Shm->Proc.Avg.C7    = 0;
+	Shm->Proc.Avg.C1    = 0;
+	maxRelFreq = 0.0;
+
 	for (cpu = 0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++) {
 	    if (Core[cpu]->OffLine.OS == 1) {
 		if (Arg[cpu].TID) {
@@ -2198,47 +2202,27 @@ void Core_Manager(FD *fd,
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 		Shm->Cpu[cpu].OffLine.OS = 0;
+
+		struct FLIP_FLOP *Flop =
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+		// Index cpu with the highest frequency.
+		if (Flop->Relative.Freq > maxRelFreq) {
+			maxRelFreq = Flop->Relative.Freq;
+			Shm->Proc.Top = cpu;
+		}
+		// Sum counters values from the alternated memory structure.
+		Shm->Proc.Avg.Turbo += Flop->State.Turbo;
+		Shm->Proc.Avg.C0    += Flop->State.C0;
+		Shm->Proc.Avg.C3    += Flop->State.C3;
+		Shm->Proc.Avg.C6    += Flop->State.C6;
+		Shm->Proc.Avg.C7    += Flop->State.C7;
+		Shm->Proc.Avg.C1    += Flop->State.C1;
 	    }
 	}
-	// Loop while all the cpu room bits are not cleared.
-	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
-	}
-
 	if (!Shutdown) {
-		double maxRelFreq = 0.0;
-
 		// Update the count of online CPU
 		Shm->Proc.CPU.OnLine = Proc->CPU.OnLine;
-
-		//  Average the counters.
-		Shm->Proc.Avg.Turbo = 0;
-		Shm->Proc.Avg.C0    = 0;
-		Shm->Proc.Avg.C3    = 0;
-		Shm->Proc.Avg.C6    = 0;
-		Shm->Proc.Avg.C7    = 0;
-		Shm->Proc.Avg.C1    = 0;
-
-		for (cpu = 0; !Shutdown &&(cpu < Shm->Proc.CPU.Count); cpu++) {
-		    if (!Shm->Cpu[cpu].OffLine.OS) {
-			struct FLIP_FLOP *Flop =
-				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-			// Index cpu with the highest frequency.
-			if (Flop->Relative.Freq > maxRelFreq) {
-				maxRelFreq = Flop->Relative.Freq;
-				Shm->Proc.Top = cpu;
-			}
-			// For each cpu, sum counters values from
-			// the alternated memory structure.
-			Shm->Proc.Avg.Turbo += Flop->State.Turbo;
-			Shm->Proc.Avg.C0    += Flop->State.C0;
-			Shm->Proc.Avg.C3    += Flop->State.C3;
-			Shm->Proc.Avg.C6    += Flop->State.C6;
-			Shm->Proc.Avg.C7    += Flop->State.C7;
-			Shm->Proc.Avg.C1    += Flop->State.C1;
-		    }
-		}
 		// Compute the counters averages.
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -2247,14 +2231,18 @@ void Core_Manager(FD *fd,
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
 
-		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		Shm->SysGate.tickStep--;
+		if (!Shm->SysGate.tickStep) {
+		    Shm->SysGate.tickStep = Shm->SysGate.tickReset;
+
+		    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 			// Update OS tasks and memory usage.
 			if (SysGate_OnDemand(fd, SysGate, 1) == 0) {
 				if (ioctl(fd->Drv,COREFREQ_IOCTL_SYSUPDT) != -1)
 					SysGate_Update(Shm, *SysGate);
 			}
+		    }
 		}
-
 		// Notify Client.
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
@@ -2325,6 +2313,9 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Compute the polling rate based on the timer interval.
 		Shm->Proc.BaseSleep =
 			TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / 5);
+		// Compute the SysGate tick steps.
+		Shm->SysGate.tickReset = Shm->SysGate.tickStep =
+					LOOP_MAX_MS / Shm->Proc.SleepInterval;
 
 		Architecture(Shm, Proc);
 
@@ -2358,8 +2349,9 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
 		if (Quiet & 0x100)
-		  printf("  SleepInterval(%u), SysGate(%llu)\n\n",
-			Shm->Proc.SleepInterval, Shm->SysGate.Operation);
+		  printf("  SleepInterval(%u), SysGate(%u)\n\n",
+			Shm->Proc.SleepInterval, !Shm->SysGate.Operation ? 0
+			: Shm->Proc.SleepInterval * Shm->SysGate.tickReset);
 		if (Quiet)
 			fflush(stdout);
 
