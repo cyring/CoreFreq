@@ -28,7 +28,8 @@
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int Shutdown = 0x0, Quiet = 0x001, Math = 0x0, SysGateStartUp = 1;
+unsigned int	Shutdown = 0x0, Quiet = 0x001, Math = 0x0,
+		SysGateStartUp = 1, SysGateTickReset;
 static unsigned long long roomSeed = 0x0;
 
 typedef struct {
@@ -2314,8 +2315,12 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Proc.BaseSleep =
 			TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / 5);
 		// Compute the SysGate tick steps.
-		Shm->SysGate.tickReset = Shm->SysGate.tickStep =
-					LOOP_MAX_MS / Shm->Proc.SleepInterval;
+		Shm->SysGate.tickReset =
+			  ((SysGateTickReset >= Shm->Proc.SleepInterval)
+			&& (SysGateTickReset <= LOOP_MAX_MS)) ?
+						SysGateTickReset : LOOP_MAX_MS;
+		Shm->SysGate.tickReset /= Shm->Proc.SleepInterval;
+		Shm->SysGate.tickStep = Shm->SysGate.tickReset;
 
 		Architecture(Shm, Proc);
 
@@ -2376,14 +2381,15 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 int help(char *appName)
 {
-	printf( "usage:\t%s [-option]\n"				\
-		"\t-q\tQuiet\n"						\
-		"\t-i\tInfo\n"						\
-		"\t-d\tDebug\n"						\
-		"\t-m\tMath\n"						\
-		"\t-gon\tEnable SysGate\n"				\
-		"\t-goff\tDisable SysGate\n"				\
-		"\t-h\tPrint out this message\n"			\
+	printf( "usage:\t%s [-option <arguments>]\n"			\
+		"\t-q\t\tQuiet\n"					\
+		"\t-i\t\tInfo\n"					\
+		"\t-d\t\tDebug\n"					\
+		"\t-m\t\tMath\n"					\
+		"\t-gon\t\tEnable SysGate\n"				\
+		"\t-goff\t\tDisable SysGate\n"				\
+		"\t-gtick <ms>\tSysGate requested wait time\n"		\
+		"\t-h\t\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
 			"1\tif problems,\n"				\
@@ -2421,10 +2427,16 @@ int main(int argc, char *argv[])
 				 && argv[i][3]=='f'
 				 && argv[i][4]=='f')
 					SysGateStartUp = 0;
-				else if (argv[i][2]=='o'
-				 && argv[i][3]=='n')
+			  else if (argv[i][2]=='o'
+				&& argv[i][3]=='n')
 					SysGateStartUp = 1;
-				else
+			  else if (argv[i][2]=='t'
+				&& argv[i][3]=='i'
+				&& argv[i][4]=='c'
+				&& argv[i][5]=='k'
+				&& argv[++i] != NULL)
+					sscanf(argv[i],"%u",&SysGateTickReset);
+			  else
 					rc = help(appName);
 				break;
 			case 'h':
