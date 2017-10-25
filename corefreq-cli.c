@@ -1760,6 +1760,7 @@ typedef union {
 #define HWC	{.fg = WHITE,	.bg = CYAN,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
+#define _HKW	{.fg = BLACK,	.bg = WHITE,	.un = 1,	.bf = 1}
 #define LDK	{.fg = BLACK,	.bg = BLACK}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRK	{.fg = RED,	.bg = BLACK}
@@ -2550,9 +2551,9 @@ void Top(SHM_STRUCT *Shm)
 
     struct FLIP_FLOP *Flop;
 
-    unsigned int digit[9], cpu=0, iClock=0, ratioCount=0, idx;
-	CUINT	_col, _row, loadWidth = 0;
-	CUINT	MIN_HEIGHT = 0,
+    unsigned int digit[9], cpu = 0, iClock = 0, ratioCount = 0, idx;
+    CUINT	_col, _row, loadWidth = 0;
+    CUINT	MIN_HEIGHT = 0,
 		TOP_UPPER_FIRST = 1 + TOP_HEADER_ROW,
 		TOP_LOWER_FIRST = 2+ TOP_HEADER_ROW + Shm->Proc.CPU.Count,
 		TOP_LOWER_LAST  = 2 + TOP_HEADER_ROW + 2 * Shm->Proc.CPU.Count,
@@ -2753,6 +2754,10 @@ void Top(SHM_STRUCT *Shm)
 	if (wMenu != NULL) {
 		Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
 			voidAttr = {.value = 0},
+			stopAttr[18] = {
+				HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,
+				HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW
+			},
 			helpAttr[18] = {
 				LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,
 				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
@@ -2791,7 +2796,12 @@ void Top(SHM_STRUCT *Shm)
 		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
+	    else
+		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", stopAttr);
+
 		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -2800,7 +2810,11 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
+
+	    if (Shm->Uncore.CtrlCount > 0)
 		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",skeyAttr);
+	    else
+		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",stopAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
@@ -3524,12 +3538,12 @@ void Top(SHM_STRUCT *Shm)
 		}
 		break;
 	case SCANKEY_SHIFT_m:
-		{
-		Window *win = SearchWinListById(scan->key, &winList);
-		if (win == NULL)
-			AppendWindow(CreateMemCtrl(scan->key), &winList);
-		else
-			SetHead(&winList, win);
+		if (Shm->Uncore.CtrlCount > 0) {
+			Window *win = SearchWinListById(scan->key, &winList);
+			if (win == NULL)
+				AppendWindow(CreateMemCtrl(scan->key),&winList);
+			else
+				SetHead(&winList, win);
 		}
 		break;
 	case SCANKEY_q:
@@ -3568,11 +3582,11 @@ void Top(SHM_STRUCT *Shm)
 		}
 		break;
 	case SCANKEY_x:
-		{
-		Shm->SysGate.trackTask = 0;
-		drawFlag.view = V_TASKS;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
+		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+			Shm->SysGate.trackTask = 0;
+			drawFlag.view = V_TASKS;
+			drawSize.height = 0;
+			TrapScreenSize(SIGWINCH);
 		}
 		break;
 	case SORTBY_STATE:
@@ -3641,6 +3655,8 @@ void Top(SHM_STRUCT *Shm)
     {
 	size_t len;
 	CUINT col = 0, row = 0;
+	unsigned int processorHot = 0;
+
 	loadWidth = drawSize.width - LOAD_LEAD;
 
 	LayerDeclare(12) hProc0 = {
@@ -3649,10 +3665,10 @@ void Top(SHM_STRUCT *Shm)
 		.code = {' ','P','r','o','c','e','s','s','o','r',' ','['}
 	};
 
-	LayerDeclare(9) hProc1 = {
-		.origin = {.col = drawSize.width - 9, .row = row}, .length = 9,
-		.attr = {HDK,HWK,HWK,HDK,HWK,HWK,LWK,LWK,LWK},
-		.code = {']',' ',' ','/',' ',' ','C','P','U'}
+	LayerDeclare(11) hProc1 = {
+		.origin = {.col = drawSize.width - 11, .row = row},.length = 11,
+		.attr = {HDK,HWK,HWK,HWK,HDK,HWK,HWK,HWK,LWK,LWK,LWK},
+		.code = {']',' ',' ',' ','/',' ',' ',' ','C','P','U'}
 	};
 
 	row++;
@@ -3704,10 +3720,10 @@ void Top(SHM_STRUCT *Shm)
 	sprintf(buffer, "%2u" "%-2u",
 		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	hProc1.code[1] = buffer[0];
-	hProc1.code[2] = buffer[1];
-	hProc1.code[4] = buffer[2];
-	hProc1.code[5] = buffer[3];
+	hProc1.code[2] = buffer[0];
+	hProc1.code[3] = buffer[1];
+	hProc1.code[5] = buffer[2];
+	hProc1.code[6] = buffer[3];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
 	if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12)) {
@@ -4051,6 +4067,11 @@ void Top(SHM_STRUCT *Shm)
 	  }
 	  break;
 	}
+	Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	if (Flop->Thermal.Trip && !processorHot) {
+		processorHot = cpu;
+	}
     } else {
 	LayerAt(layer, attr, 1, row) =					\
 		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
@@ -4065,7 +4086,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerFillAt(layer, (LOAD_LEAD - 1), (row + Shm->Proc.CPU.Count + 1),
 			(drawSize.width - LOAD_LEAD + 1), hSpace,
 			MakeAttr(WHITE, 0, BLACK, 0));
-   }
+    }
 
 	idx = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
 	sprintf(hBClk[cpu],
@@ -4558,7 +4579,8 @@ void Top(SHM_STRUCT *Shm)
 
 	const Attribute Pwr[] = {
 		MakeAttr(BLACK, 0, BLACK, 1),
-		MakeAttr(GREEN, 0, BLACK, 1)
+		MakeAttr(GREEN, 0, BLACK, 1),
+		MakeAttr(BLUE,  0, BLACK, 1)
 	};
 	const struct { ASCII *code; Attribute attr; } TSC[] = {
 		{(ASCII *) "  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1)},
@@ -4583,24 +4605,24 @@ void Top(SHM_STRUCT *Shm)
 
 	if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
 	{
-	    LayerDeclare(65) hTech1 = {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=51,
+	    LayerDeclare(69) hTech1 = {
+		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=55,
 		.attr ={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK, \
 			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
 		},
 		.code ={'H','T','T',',','E','I','S','T',',','I','D','A',',', \
 			'T','U','R','B','O',',','C','1','E',',',	\
 			' ','P','M',',','C','3','A',',','C','1','A',',',\
 			'C','3','U',',','C','1','U',',',		\
-			'T','M','1',',','T','M','2',']'
+			'T','M','1',',','T','M','2',',','H','O','T',']'
 		},
 	    };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
-		Pwr[Shm->Proc.HyperThreading];
+	    Pwr[Shm->Proc.HyperThreading? : Shm->Proc.Features.Std.DX.HTT? 2:0];
 
 		const Attribute TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
@@ -4654,6 +4676,10 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =
 		TM2[Shm->Cpu[0].PowerThermal.TM2];
 
+	    if (processorHot) {
+		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =
+			MakeAttr(RED, 0, BLACK, 1);
+	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
@@ -4664,15 +4690,15 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
 	  if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12)) {
-	    LayerDeclare(61) hTech1 = {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=35,
-		.attr ={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
-			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
+	    LayerDeclare(65) hTech1 = {
+		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=39,
+		.attr={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
+		       HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
+		       HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
 		},
-		.code ={'H','T','T',',','P','o','w','e','r','N','o','w',',',\
-			'T','U','R','B','O',',','C','1','E',',',	\
-			' ','P','M',',','D','T','S',',','T','T','P',']'
+		.code={'H','T','T',',','P','o','w','e','r','N','o','w',',',\
+		       'T','U','R','B','O',',','C','1','E',',',' ','P','M',',',\
+		       'D','T','S',',','T','T','P',',','H','O','T',']'
 		},
 	    };
 
@@ -4704,6 +4730,10 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
 		Pwr[(Shm->Proc.Features.AdvPower.DX.TTP != 0)];
 
+	    if (processorHot) {
+		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =
+			MakeAttr(RED, 0, BLACK, 1);
+	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
@@ -4907,9 +4937,9 @@ void Top(SHM_STRUCT *Shm)
 				    Shm->Cpu[cpu].PowerThermal.Limit[1])
 					warning = MakeAttr(YELLOW, 0, BLACK, 0);
 			}
-			if (Flop->Thermal.Trip)
+			if (Flop->Thermal.Trip) {
 				warning = MakeAttr(RED, 0, BLACK, 1);
-
+			}
 			LayerAt(dLayer, attr, LOAD_LEAD + 69, row) =
 			LayerAt(dLayer, attr, LOAD_LEAD + 70, row) =
 			LayerAt(dLayer, attr, LOAD_LEAD + 71, row) = warning;
@@ -5195,7 +5225,8 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  }
 	// Footer view area
-	if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
+	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
 	  sprintf(buffer, "%6u" "%9lu" "%-9lu",
 			Shm->SysGate.taskCount,
 			Shm->SysGate.memInfo.freeram,
