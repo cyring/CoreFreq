@@ -4848,17 +4848,15 @@ void Top(SHM_STRUCT *Shm)
 		}
 		break;
 	    }
-	  }
-	} while (!Shutdown && !drawFlag.daemon && !drawFlag.layout) ;
-
-	if (drawFlag.daemon) {
+	  } else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 		if (BITVAL(Shm->Proc.Sync, 63)) {
 			// Platform changed, redraw the layout.
 			drawFlag.layout = 1;
 			BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 		}
-	}
+	  }
+	} while (!Shutdown && !drawFlag.daemon && !drawFlag.layout) ;
 
       if (drawFlag.height & drawFlag.width)
       {

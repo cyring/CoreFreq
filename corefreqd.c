@@ -2168,7 +2168,7 @@ void Core_Manager(FD *fd,
 	maxRelFreq = 0.0;
 
 	for (cpu = 0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++) {
-	    if (Core[cpu]->OffLine.OS != 0) {
+	    if (Core[cpu]->OffLine.OS == 1) {
 		if (Arg[cpu].TID) {
 			// Remove this cpu.
 			pthread_join(Arg[cpu].TID, NULL);
@@ -2313,12 +2313,12 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
 		// Compute the polling rate based on the timer interval.
 		Shm->Proc.BaseSleep =
-			TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / 5);
+		  TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / WAKEUP_RATIO);
 		// Compute the SysGate tick steps.
 		Shm->SysGate.tickReset =
 			  ((SysGateTickReset >= Shm->Proc.SleepInterval)
 			&& (SysGateTickReset <= LOOP_MAX_MS)) ?
-						SysGateTickReset : LOOP_MAX_MS;
+						SysGateTickReset : TICK_DEF_MS;
 		Shm->SysGate.tickReset /= Shm->Proc.SleepInterval;
 		Shm->SysGate.tickStep = Shm->SysGate.tickReset;
 

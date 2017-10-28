@@ -62,6 +62,10 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static unsigned int NMI_Disable = 0;
+module_param(NMI_Disable, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(NMI_Disable, "Disable the NMI handler");
+
 static signed short PkgCStateLimit = -1;
 module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
@@ -4167,23 +4171,25 @@ static int __init CoreFreqK_init(void)
 			#endif
 		#endif
 		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
+				if (!NMI_Disable) {
 				  Proc->Registration.nmi =
-				    !(	register_nmi_handler(NMI_LOCAL,
+				   !( register_nmi_handler(NMI_LOCAL,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				|	register_nmi_handler(NMI_UNKNOWN,
+				    | register_nmi_handler(NMI_UNKNOWN,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				|	register_nmi_handler(NMI_SERR,
+				    | register_nmi_handler(NMI_SERR,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				|	register_nmi_handler(NMI_IO_CHECK,
+				    | register_nmi_handler(NMI_IO_CHECK,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk"));
+				}
 		#endif
 				} else {
 				    if (KPublic->Cache != NULL) {

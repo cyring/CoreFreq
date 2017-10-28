@@ -91,9 +91,11 @@ typedef signed short int	CSINT;
 #define DRV_DEVNAME	"corefreqk"
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
 
+#define WAKEUP_RATIO	5
 #define LOOP_MIN_MS	100
 #define LOOP_MAX_MS	4000
 #define LOOP_DEF_MS	1000
+#define TICK_DEF_MS	2000
 
 #define PRECISION	100
 
