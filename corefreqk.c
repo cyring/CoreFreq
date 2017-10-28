@@ -2586,9 +2586,9 @@ void Controller_Start(void)
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if (   (KPrivate->Join[cpu]->tsm.created == 1)
-			&& (KPrivate->Join[cpu]->tsm.started == 0))
-				smp_call_function_single(cpu,
+		    if((KPrivate->Join[cpu]->tsm.created == 1)
+		    && (KPrivate->Join[cpu]->tsm.started == 0))
+			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, 0);
 	}
@@ -2598,10 +2598,10 @@ void Controller_Stop(void)
 {
 	if (Arch[Proc->ArchID].Stop != NULL) {
 		unsigned int cpu;
-		for (cpu=0; cpu < Proc->CPU.Count; cpu++)
-		    if (   (KPrivate->Join[cpu]->tsm.created == 1)
-			&& (KPrivate->Join[cpu]->tsm.started == 1))
-				smp_call_function_single(cpu,
+		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+		    if((KPrivate->Join[cpu]->tsm.created == 1)
+		    && (KPrivate->Join[cpu]->tsm.started == 1))
+			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, 1);
 	}
@@ -3239,8 +3239,12 @@ Note: hardware Family_12h
 */
 	if (Proc->Features.Power.CX.EffFreq == 1) // MPERF & APERF ?
 	    smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
-	else
+	else {
+		Proc->thermalFormula = THERMAL_FORMULA_AMD_0F;
+		Proc->voltageFormula = VOLTAGE_FORMULA_AMD_0F;
+
 	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
+	}
 }
 
 void Start_AuthenticAMD(void *arg)
@@ -3825,12 +3829,16 @@ static int CoreFreqK_suspend(struct device *dev)
 {
 	Controller_Stop();
 
+	printk(KERN_NOTICE "CoreFreq: Suspend\n");
+
 	return(0);
 }
 
 static int CoreFreqK_resume(struct device *dev)
 {
 	Controller_Start();
+
+	printk(KERN_NOTICE "CoreFreq: Resume\n");
 
 	return(0);
 }
