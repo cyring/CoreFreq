@@ -2838,14 +2838,16 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 9, 8, TOP_HEADER_ROW + 3);
+      Window *wSet = CreateWindow(wLayer, id, 2, 10, 8, TOP_HEADER_ROW + 3);
       if (wSet != NULL) {
-	char	intervStr[16], tickStr[16], experStr[16],
+	char	intervStr[16], tickStr[16], pollStr[16], experStr[16],
 		cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
 	int intervLen = sprintf(intervStr, "%13uE6",
 				Shm->Proc.SleepInterval),
 	    tickLen = sprintf(tickStr, "%13uE6",
 				Shm->Proc.SleepInterval*Shm->SysGate.tickReset),
+	    pollLen = sprintf(pollStr, "%13ldE6",
+				Shm->Proc.BaseSleep.tv_nsec / 1000000L),
 	    experLen = sprintf(experStr, "[%3s]",
 				enabled(Shm->Registration.Experimental)),
 	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
@@ -2853,7 +2855,7 @@ void Top(SHM_STRUCT *Shm)
 	    pciRegLen = sprintf(pciRegStr, "[%3s]",
 				enabled(!(Shm->Registration.pci < 0))),
 	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
-				 enabled(Shm->Registration.nmi));
+				enabled(Shm->Registration.nmi));
 	size_t appLen = strlen(Shm->AppName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -2866,6 +2868,9 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL, " Sys.Tick(ns)   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " Polling (ns)   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_FOCUS);
@@ -2886,10 +2891,11 @@ void Top(SHM_STRUCT *Shm)
 	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->AppName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
 	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen], tickStr, tickLen);
-	memcpy(&TCellAt(wSet, 1, 4).item[15 - experLen], experStr, experLen);
-	memcpy(&TCellAt(wSet, 1, 5).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
-	memcpy(&TCellAt(wSet, 1, 6).item[15 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 1, 7).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 1, 4).item[15 - pollLen], pollStr, pollLen);
+	memcpy(&TCellAt(wSet, 1, 5).item[15 - experLen], experStr, experLen);
+	memcpy(&TCellAt(wSet, 1, 6).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
+	memcpy(&TCellAt(wSet, 1, 7).item[15 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 1, 8).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
