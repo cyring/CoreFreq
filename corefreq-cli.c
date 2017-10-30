@@ -2993,8 +2993,8 @@ void Top(SHM_STRUCT *Shm)
 		for (i = 0; i < f; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, F[i], MAKE_PRINT_FOCUS);
 
-		size_t pos = strlen((char*) TCellAt(wAbout, 1, 4).item) - 1 - v;
-		memcpy(&TCellAt(wAbout, 1, 4).item[pos], COREFREQ_VERSION, v);
+		size_t pos = strlen((char*) TCellAt(wAbout, 1, 5).item) - 2 - v;
+		memcpy(&TCellAt(wAbout, 1, 5).item[pos], COREFREQ_VERSION, v);
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
@@ -3673,6 +3673,47 @@ void Top(SHM_STRUCT *Shm)
 			return(-1);
 	}
 	return(0);
+    }
+
+    void PrintLCD(Layer *layer, unsigned int relativeFreq, double relativeRatio)
+    {
+	unsigned int lcdColor, j = 4;
+
+	Dec2Digit(relativeFreq, digit);
+
+	if (relativeRatio > medianRatio)
+		lcdColor = RED;
+	else if (relativeRatio > minRatio)
+		lcdColor = YELLOW;
+	else
+		lcdColor = GREEN;
+
+	do {
+		int offset = (4 - j) * 3;
+
+		LayerFillAt(layer, offset, 0,
+				3, lcd[digit[9 - j]][0],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(layer, offset, 1,
+				3, lcd[digit[9 - j]][1],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(layer, offset, 2,
+				3, lcd[digit[9 - j]][2],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		j--;
+	} while (j > 0) ;
+    }
+
+    void PrintTaskMemory(Layer *layer, CUINT row,
+			int taskCount,
+			unsigned long freeRAM,
+			unsigned long totalRAM)
+    {
+	sprintf(buffer, "%6u" "%9lu" "%-9lu", taskCount, freeRAM, totalRAM);
+
+	memcpy(&LayerAt(layer, code, (drawSize.width -35), row), &buffer[0], 6);
+	memcpy(&LayerAt(layer, code, (drawSize.width -22), row), &buffer[6], 9);
+	memcpy(&LayerAt(layer, code, (drawSize.width -12), row), &buffer[15],9);
     }
 
     void Layout(Layer *layer)
@@ -4846,50 +4887,22 @@ void Top(SHM_STRUCT *Shm)
 	LayerCopyAt(layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
+	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+	// Reset the Top Frequency
+	PrintLCD(layer,(unsigned int)Flop->Relative.Freq,Flop->Relative.Ratio);
+
+	// Reset Tasks count & Memory usage
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+		PrintTaskMemory(layer, row,
+				Shm->SysGate.taskCount,
+				Shm->SysGate.memInfo.freeram,
+				Shm->SysGate.memInfo.totalram);
+
+	// Clear garbage in bottom screen
 	while (++row < drawSize.height)
 		LayerFillAt(	layer, 0, row,
 				drawSize.width, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
-    }
-
-    void PrintLCD(unsigned int relativeFreq, double relativeRatio)
-    {
-	unsigned int lcdColor, j = 4;
-
-	Dec2Digit(relativeFreq, digit);
-
-	if (relativeRatio > medianRatio)
-		lcdColor = RED;
-	else if (relativeRatio > minRatio)
-		lcdColor = YELLOW;
-	else
-		lcdColor = GREEN;
-
-	do {
-		int offset = (4 - j) * 3;
-
-		LayerFillAt(dLayer, offset, 0,
-				3, lcd[digit[9 - j]][0],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(dLayer, offset, 1,
-				3, lcd[digit[9 - j]][1],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(dLayer, offset, 2,
-				3, lcd[digit[9 - j]][2],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-		j--;
-	} while (j > 0) ;
-    }
-
-    void PrintTaskMemory(int taskCount,
-			unsigned long freeRAM,
-			unsigned long totalRAM)
-    {
-	sprintf(buffer, "%6u" "%9lu" "%-9lu", taskCount, freeRAM, totalRAM);
-
-	memcpy(&LayerAt(dLayer,code,(drawSize.width -35),_row), &buffer[0], 6);
-	memcpy(&LayerAt(dLayer,code,(drawSize.width -22),_row), &buffer[6], 9);
-	memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row), &buffer[15],9);
     }
 
     TrapScreenSize(SIGWINCH);
@@ -5298,7 +5311,8 @@ void Top(SHM_STRUCT *Shm)
 			prevTaskCount = Shm->SysGate.taskCount;
 			prevFreeRAM = Shm->SysGate.memInfo.freeram;
 
-			PrintTaskMemory(Shm->SysGate.taskCount,
+			PrintTaskMemory(dLayer, _row,
+					Shm->SysGate.taskCount,
 					Shm->SysGate.memInfo.freeram,
 					Shm->SysGate.memInfo.totalram);
 		}
@@ -5309,7 +5323,7 @@ void Top(SHM_STRUCT *Shm)
 	  unsigned int relativeTopFreq = (unsigned int) Flop->Relative.Freq;
 	  if (prevTopFreq != relativeTopFreq) {
 		prevTopFreq = relativeTopFreq;
-		PrintLCD(relativeTopFreq, Flop->Relative.Ratio);
+		PrintLCD(dLayer, relativeTopFreq, Flop->Relative.Ratio);
 	  }
 	// Print the focus BCLK
 	  memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
@@ -5421,7 +5435,7 @@ void Top(SHM_STRUCT *Shm)
 	// Write buffering to the standard output
 	fwrite(viewMask, idx, 1, stdout);
 	fflush(stdout);
-      }
+      } // endif (drawFlag.height & drawFlag.width)
       else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		drawSize.width, drawSize.height, MIN_WIDTH, MIN_HEIGHT);
