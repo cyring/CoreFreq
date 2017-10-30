@@ -2978,7 +2978,7 @@ void Top(SHM_STRUCT *Shm)
       };
 	size_t	c = sizeof(C) / sizeof(C[0]),
 		f = sizeof(F) / sizeof(F[0]),
-		l = strlen(C[0]);
+		l = strlen(C[0]), v = strlen(COREFREQ_VERSION);
 
 	Window *wAbout = CreateWindow(	wLayer,
 					id,
@@ -2992,6 +2992,9 @@ void Top(SHM_STRUCT *Shm)
 			StoreTCell(wAbout,SCANKEY_NULL, C[i], MAKE_PRINT_FOCUS);
 		for (i = 0; i < f; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, F[i], MAKE_PRINT_FOCUS);
+
+		size_t pos = strlen((char*) TCellAt(wAbout, 1, 4).item) - 1 - v;
+		memcpy(&TCellAt(wAbout, 1, 4).item[pos], COREFREQ_VERSION, v);
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
@@ -4644,7 +4647,7 @@ void Top(SHM_STRUCT *Shm)
 	    };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
-	    Pwr[Shm->Proc.HyperThreading? : Shm->Proc.Features.Std.DX.HTT? 2:0];
+						Pwr[Shm->Proc.HyperThreading];
 
 		const Attribute TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
