@@ -2549,9 +2549,10 @@ void Top(SHM_STRUCT *Shm)
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
-    struct FLIP_FLOP *Flop;
+    unsigned int cpu = 0,prevTopFreq = 0,digit[9],iClock = 0,ratioCount = 0,idx;
+    unsigned long prevFreeRAM = 0;
+    int prevTaskCount = 0;
 
-    unsigned int digit[9], cpu = 0, iClock = 0, ratioCount = 0, idx;
     CUINT	_col, _row, loadWidth = 0;
     CUINT	MIN_HEIGHT = 0,
 		TOP_UPPER_FIRST = 1 + TOP_HEADER_ROW,
@@ -3345,6 +3346,20 @@ void Top(SHM_STRUCT *Shm)
 	  return(NULL);
     }
 
+    void PrintWindowStack(void)
+    {
+	Window *walker;
+	if ((walker=GetHead(&winList)) != NULL) {
+		do {
+			walker = walker->next;
+
+			if (walker->hook.Print != NULL)
+				walker->hook.Print(walker, &winList);
+			else
+				ForEachCellPrint(walker, &winList);
+		} while (!IsHead(&winList, walker)) ;
+	}
+    }
 
     void FreeAll(void)
     {
@@ -3659,9 +3674,10 @@ void Top(SHM_STRUCT *Shm)
 
     void Layout(Layer *layer)
     {
-	size_t len;
-	CUINT col = 0, row = 0;
+	struct FLIP_FLOP *Flop = NULL;
 	unsigned int processorHot = 0;
+	CUINT col = 0, row = 0;
+	size_t len;
 
 	loadWidth = drawSize.width - LOAD_LEAD;
 
@@ -4833,6 +4849,46 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
     }
 
+    void PrintLCD(unsigned int relativeFreq, double relativeRatio)
+    {
+	unsigned int lcdColor, j = 4;
+
+	Dec2Digit(relativeFreq, digit);
+
+	if (relativeRatio > medianRatio)
+		lcdColor = RED;
+	else if (relativeRatio > minRatio)
+		lcdColor = YELLOW;
+	else
+		lcdColor = GREEN;
+
+	do {
+		int offset = (4 - j) * 3;
+
+		LayerFillAt(dLayer, offset, 0,
+				3, lcd[digit[9 - j]][0],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(dLayer, offset, 1,
+				3, lcd[digit[9 - j]][1],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		LayerFillAt(dLayer, offset, 2,
+				3, lcd[digit[9 - j]][2],
+				MakeAttr(lcdColor, 0, BLACK, 1));
+		j--;
+	} while (j > 0) ;
+    }
+
+    void PrintTaskMemory(int taskCount,
+			unsigned long freeRAM,
+			unsigned long totalRAM)
+    {
+	sprintf(buffer, "%6u" "%9lu" "%-9lu", taskCount, freeRAM, totalRAM);
+
+	memcpy(&LayerAt(dLayer,code,(drawSize.width -35),_row), &buffer[0], 6);
+	memcpy(&LayerAt(dLayer,code,(drawSize.width -22),_row), &buffer[6], 9);
+	memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row), &buffer[15],9);
+    }
+
     TrapScreenSize(SIGWINCH);
     signal(SIGWINCH, TrapScreenSize);
 
@@ -4840,18 +4896,22 @@ void Top(SHM_STRUCT *Shm)
 
     while (!Shutdown)
     {
+	struct FLIP_FLOP *Flop = NULL;
+
 	do {
 	  SCANKEY scan = {.key = 0};
 
 	  if ((drawFlag.daemon=BITVAL(Shm->Proc.Sync, 0)) == 0) {
 	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
 		if (Shortcut(&scan) == -1) {
-		    if (IsDead(&winList))
-				AppendWindow(CreateMenu(SCANKEY_F2), &winList);
-		    else
-			if (Motion_Trigger(&scan,GetFocus(&winList),&winList)>0)
-				Shortcut(&scan);
+		  if (IsDead(&winList))
+			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
+		  else
+		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+			Shortcut(&scan);
 		}
+		PrintWindowStack();
+
 		break;
 	    }
 	  } else {
@@ -4891,11 +4951,9 @@ void Top(SHM_STRUCT *Shm)
 			CUINT	bar0=(Flop->Relative.Ratio *loadWidth)/maxRatio,
 				bar1 = loadWidth - bar0,
 				row = TOP_UPPER_FIRST + cpu;
-
 		// Print the Per Core BCLK indicator (yellow)
 		    LayerAt(dLayer, code, LOAD_LEAD - 1, row) = (cpu == iClock)?
 								'~' : 0x20;
-
 		// Draw the relative Core frequency ratio
 		    LayerFillAt(dLayer, LOAD_LEAD, row,
 				bar0, hBar,
@@ -4908,6 +4966,7 @@ void Top(SHM_STRUCT *Shm)
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 
+		// Lower view area
 		    row = TOP_LOWER_FIRST + cpu;
 
 		    switch (drawFlag.view) {
@@ -5136,8 +5195,8 @@ void Top(SHM_STRUCT *Shm)
 		    case V_INTR:
 		      {
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD, row),
-				"%10u",
-				Flop->Counter.SMI);
+				"%10u", Flop->Counter.SMI);
+		      if (Shm->Registration.nmi)
 			sprintf((char *)&LayerAt(dLayer,code,LOAD_LEAD +24,row),
 				"%10u%10u%10u%10u",
 				Flop->Counter.NMI.LOCAL,
@@ -5160,7 +5219,7 @@ void Top(SHM_STRUCT *Shm)
 		}
 	    }
 	  }
-	// Lower view area
+
 	  switch (drawFlag.view) {
 	  case V_FREQ:
 	    {
@@ -5194,104 +5253,71 @@ void Top(SHM_STRUCT *Shm)
 	    break;
 	  case V_PACKAGE:
 	    {
-		struct PKG_FLIP_FLOP *Flop =
+		struct PKG_FLIP_FLOP *Pkg =
 				&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
 		_row = TOP_LOWER_FIRST;
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC02:%18llu" "%7.2f%%",
-			Flop->Delta.PC02, 100.f * Shm->Proc.State.PC02);
+			Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC03:%18llu" "%7.2f%%",
-			Flop->Delta.PC03, 100.f * Shm->Proc.State.PC03);
+			Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC06:%18llu" "%7.2f%%",
-			Flop->Delta.PC06, 100.f * Shm->Proc.State.PC06);
+			Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC07:%18llu" "%7.2f%%",
-			Flop->Delta.PC07, 100.f * Shm->Proc.State.PC07);
+			Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC08:%18llu" "%7.2f%%",
-			Flop->Delta.PC08, 100.f * Shm->Proc.State.PC08);
+			Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC09:%18llu" "%7.2f%%",
-			Flop->Delta.PC09, 100.f * Shm->Proc.State.PC09);
+			Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
 			"PC10:%18llu" "%7.2f%%",
-			Flop->Delta.PC10, 100.f * Shm->Proc.State.PC10);
+			Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10);
 		sprintf((char *)&LayerAt(dLayer, code, 0, _row),
-			" TSC:%18llu", Flop->Delta.PTSC);
+			" TSC:%18llu", Pkg->Delta.PTSC);
 		sprintf((char *)&LayerAt(dLayer, code, 50, _row++),
-			"UNCORE:%18llu", Flop->Uncore.FC0);
+			"UNCORE:%18llu", Pkg->Uncore.FC0);
 
 		_row += 2;
 	    }
 	    break;
 	  }
 	// Footer view area
-	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
-	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
-	  sprintf(buffer, "%6u" "%9lu" "%-9lu",
-			Shm->SysGate.taskCount,
-			Shm->SysGate.memInfo.freeram,
-			Shm->SysGate.memInfo.totalram);
+	  if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
+	  && (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
+		if ((prevTaskCount != Shm->SysGate.taskCount)
+		 || (prevFreeRAM != Shm->SysGate.memInfo.freeram)) {
+			prevTaskCount = Shm->SysGate.taskCount;
+			prevFreeRAM = Shm->SysGate.memInfo.freeram;
 
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -35),_row),&buffer[0], 6);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -22),_row),&buffer[6], 9);
-	  memcpy(&LayerAt(dLayer,code,(drawSize.width -12),_row),&buffer[15],9);
-	}
-	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
-
+			PrintTaskMemory(Shm->SysGate.taskCount,
+					Shm->SysGate.memInfo.freeram,
+					Shm->SysGate.memInfo.totalram);
+		}
+	  }
 	// Header view area
-	  Dec2Digit((unsigned int) Flop->Relative.Freq, digit);
-
-	  unsigned int lcdColor;
-	  if (Flop->Relative.Ratio > medianRatio)
-		lcdColor = RED;
-	  else if (Flop->Relative.Ratio > minRatio)
-		lcdColor = YELLOW;
-	  else
-		lcdColor = GREEN;
-
-	  unsigned int j = 4;
-	  do {
-		int offset = (4 - j) * 3;
-
-		LayerFillAt(dLayer, offset, 0,
-				3, lcd[digit[9 - j]][0],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(dLayer, offset, 1,
-				3, lcd[digit[9 - j]][1],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(dLayer, offset, 2,
-				3, lcd[digit[9 - j]][2],
-				MakeAttr(lcdColor, 0, BLACK, 1));
-
-		j--;
-	  } while (j > 0) ;
-
+	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+	// Print the Top Frequency
+	  unsigned int relativeTopFreq = (unsigned int) Flop->Relative.Freq;
+	  if (prevTopFreq != relativeTopFreq) {
+		prevTopFreq = relativeTopFreq;
+		PrintLCD(relativeTopFreq, Flop->Relative.Ratio);
+	  }
+	// Print the focus BCLK
 	  memcpy(&LayerAt(dLayer, code, 26, 2), hBClk[iClock], 11);
-
 	// Increment the BCLK indicator (skip offline CPU)
 	  do {
 		iClock++;
 		if (iClock == Shm->Proc.CPU.Count)
 			iClock = 0;
 	  } while (Shm->Cpu[iClock].OffLine.OS && iClock) ;
-	}
 
-	// Print the stack of Windows
-	Window *walker;
-	if ((walker=GetHead(&winList)) != NULL) {
-		do {
-			walker = walker->next;
-
-			if (walker->hook.Print != NULL)
-				walker->hook.Print(walker, &winList);
-			else
-				ForEachCellPrint(walker, &winList);
-		} while (!IsHead(&winList, walker)) ;
-	}
+	} // endif (drawFlag.daemon)
 
 	// Fuse all layers
 	Attribute attr = {.value = 0};

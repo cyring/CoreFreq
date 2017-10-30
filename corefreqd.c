@@ -211,13 +211,15 @@ static void *Core_Cycle(void *arg)
 		    }
 		    break;
 		}
-
+		// Interrupts
 		Flip->Counter.SMI	  = Core->Interrupt.SMI;
-		Flip->Counter.NMI.LOCAL	  = Core->Interrupt.NMI.LOCAL;
-		Flip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
-		Flip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
-		Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 
+		if (Shm->Registration.nmi) {
+			Flip->Counter.NMI.LOCAL	  = Core->Interrupt.NMI.LOCAL;
+			Flip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
+			Flip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
+			Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
+		}
 		// Package C-state Residency Counters
 		if (Core->T.Base.BSP) {
 			Shm->Proc.Toggle = !Shm->Proc.Toggle;
