@@ -33,6 +33,7 @@ MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD Family 0Fh");
 MODULE_LICENSE ("GPL");
+MODULE_VERSION (COREFREQ_VERSION);
 
 typedef struct {
 	FEATURES	features;
