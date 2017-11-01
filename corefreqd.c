@@ -29,7 +29,7 @@
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 unsigned int	Shutdown = 0x0, Quiet = 0x001, Math = 0x0,
-		SysGateStartUp = 1, SysGateTickReset;
+		SysGateStartUp = 1;
 static unsigned long long roomSeed = 0x0;
 
 typedef struct {
@@ -2234,17 +2234,14 @@ void Core_Manager(FD *fd,
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
 
-		Shm->SysGate.tickStep--;
-		if (!Shm->SysGate.tickStep) {
-		    Shm->SysGate.tickStep = Shm->SysGate.tickReset;
-
-		    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-			// Update OS tasks and memory usage.
-			if (SysGate_OnDemand(fd, SysGate, 1) == 0) {
-				if (ioctl(fd->Drv,COREFREQ_IOCTL_SYSUPDT) != -1)
+		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+			Shm->SysGate.tickStep = Proc->tickStep;
+			if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+				// Update OS tasks and memory usage.
+				if (SysGate_OnDemand(fd, SysGate, 1) == 0) {
 					SysGate_Update(Shm, *SysGate);
+				}
 			}
-		    }
 		}
 		// Notify Client.
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
@@ -2316,13 +2313,9 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Compute the polling rate based on the timer interval.
 		Shm->Proc.BaseSleep =
 		  TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / WAKEUP_RATIO);
-		// Compute the SysGate tick steps.
-		Shm->SysGate.tickReset =
-			  ((SysGateTickReset >= Shm->Proc.SleepInterval)
-			&& (SysGateTickReset <= LOOP_MAX_MS)) ?
-						SysGateTickReset : TICK_DEF_MS;
-		Shm->SysGate.tickReset /= Shm->Proc.SleepInterval;
-		Shm->SysGate.tickStep = Shm->SysGate.tickReset;
+		// Copy the SysGate tick steps.
+		Shm->SysGate.tickReset = Proc->tickReset;
+		Shm->SysGate.tickStep  = Proc->tickStep;
 
 		Architecture(Shm, Proc);
 
@@ -2390,7 +2383,6 @@ int help(char *appName)
 		"\t-m\t\tMath\n"					\
 		"\t-gon\t\tEnable SysGate\n"				\
 		"\t-goff\t\tDisable SysGate\n"				\
-		"\t-gtick <ms>\tSysGate requested wait time\n"		\
 		"\t-h\t\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
@@ -2432,12 +2424,6 @@ int main(int argc, char *argv[])
 			  else if (argv[i][2]=='o'
 				&& argv[i][3]=='n')
 					SysGateStartUp = 1;
-			  else if (argv[i][2]=='t'
-				&& argv[i][3]=='i'
-				&& argv[i][4]=='c'
-				&& argv[i][5]=='k'
-				&& argv[++i] != NULL)
-					sscanf(argv[i],"%u",&SysGateTickReset);
 			  else
 					rc = help(appName);
 				break;

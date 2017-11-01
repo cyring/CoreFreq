@@ -523,7 +523,9 @@ typedef struct
 	unsigned long long	thermalFormula,
 				voltageFormula;
 
-	unsigned int		SleepInterval;
+	unsigned int		SleepInterval,
+				tickReset,
+				tickStep;
 
 	struct {
 		unsigned int	Count,

@@ -2819,7 +2819,11 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
+	    else
+		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", stopAttr);
 
 		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
 		StoreWindow(wMenu, .color[0].title, MakeAttr(BLACK,0,WHITE,0));
@@ -3649,8 +3653,11 @@ void Top(SHM_STRUCT *Shm)
 		drawFlag.layout = 1;
 		}
 		break;
-	case SCANKEY_e:
 	case SCANKEY_k:
+		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0)
+			break;
+		// fallthrough
+	case SCANKEY_e:
 	case SCANKEY_o:
 	case SCANKEY_p:
 	case SCANKEY_t:
@@ -5070,6 +5077,7 @@ void Top(SHM_STRUCT *Shm)
 				Flop->Relative.Freq);
 
 			if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+				CSINT pos;
 				char symbol;
 				Attribute runColor[] = {
 					HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
@@ -5114,7 +5122,7 @@ void Top(SHM_STRUCT *Shm)
 				LayerFillAt(dLayer,
 					cTask[cpu].col,
 					cTask[cpu].row,
-					(MAX_WIDTH - LOAD_LEAD - 8),
+					(drawSize.width - LOAD_LEAD - 8),
 					hSpace,
 					MakeAttr(WHITE, 0, BLACK, 0));
 
@@ -5151,57 +5159,58 @@ void Top(SHM_STRUCT *Shm)
 					}
 					break;
 				}
-			  if (Shm->SysGate.taskList[idx].pid ==
+			    if (Shm->SysGate.taskList[idx].pid ==
 							Shm->SysGate.trackTask)
-			  {
+			    {
 				attr = trackerColor;
-			  }
-			  if (!drawFlag.taskVal) {
+			    }
+			    if (!drawFlag.taskVal) {
 				len = sprintf(buffer, "%s",
 					Shm->SysGate.taskList[idx].comm);
-			  } else {
-			    switch (Shm->SysGate.sortByField) {
-			    case F_STATE:
+			    } else {
+			      switch (Shm->SysGate.sortByField) {
+			      case F_STATE:
 				len = sprintf(buffer, "%s(%c)",
 					Shm->SysGate.taskList[idx].comm,
 					symbol);
 				break;
-			    case F_RTIME:
+			      case F_RTIME:
 				len = sprintf(buffer, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].runtime);
 				break;
-			    case F_UTIME:
+			      case F_UTIME:
 				len = sprintf(buffer, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].usertime);
 				break;
-			    case F_STIME:
+			      case F_STIME:
 				len = sprintf(buffer, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].systime);
 				break;
-			    case F_PID:
+			      case F_PID:
 				// fallthrough
-			    case F_COMM:
+			      case F_COMM:
 				// fallthrough
-			    default:
+			      default:
 				len = sprintf(buffer, "%s(%d)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].pid);
 				break;
+			      }
 			    }
-			  }
-			  if (cTask[Shm->SysGate.taskList[idx].wake_cpu].col
-							<= (MAX_WIDTH - len)) {
-			    LayerCopyAt(dLayer,
+			    pos =drawSize.width
+				-cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
+			    if (pos >= 0) {
+			      LayerCopyAt(dLayer,
 				cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 				cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
-				len,
+				(pos > len ? len : pos),
 				attr,
 				buffer);
 
-			    cTask[Shm->SysGate.taskList[idx].wake_cpu].col +=
+			      cTask[Shm->SysGate.taskList[idx].wake_cpu].col +=
 									len + 2;
 			    }
 			  }

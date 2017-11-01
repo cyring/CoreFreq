@@ -57,7 +57,11 @@ MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
 
 static unsigned int SleepInterval = 0;
 module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(SleepInterval, "Sleep interval (ms) of the loops");
+MODULE_PARM_DESC(SleepInterval, "Timer interval (ms)");
+
+static unsigned int TickInterval = 0;
+module_param(TickInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(TickInterval, "System requested interval (ms)");
 
 static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -2538,6 +2542,71 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
+long Sys_DumpTask(void)
+{	// Source: /include/linux/sched.h
+    if (Proc->SysGate != NULL) {
+	struct task_struct *process, *thread;
+	int cnt = 0;
+
+	rcu_read_lock();
+	for_each_process_thread(process, thread) {
+	    task_lock(thread);
+
+	    Proc->SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
+	    Proc->SysGate->taskList[cnt].usertime = thread->utime;
+	    Proc->SysGate->taskList[cnt].systime  = thread->stime;
+	    Proc->SysGate->taskList[cnt].state    = thread->state;
+	    Proc->SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
+	    Proc->SysGate->taskList[cnt].pid      = thread->pid;
+	    Proc->SysGate->taskList[cnt].tgid     = thread->tgid;
+	    Proc->SysGate->taskList[cnt].ppid     = thread->parent->pid;
+	    memcpy(Proc->SysGate->taskList[cnt].comm,
+		  thread->comm, TASK_COMM_LEN);
+
+	    task_unlock(thread);
+	    cnt++;
+	}
+	rcu_read_unlock();
+	Proc->SysGate->taskCount = cnt;
+
+	return(0);
+    }
+    else
+	return(-1);
+}
+
+long Sys_MemInfo(void)
+{	// Source: /include/uapi/linux/sysinfo.h
+    if (Proc->SysGate != NULL) {
+	struct sysinfo info;
+	si_meminfo(&info);
+
+	Proc->SysGate->memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
+	Proc->SysGate->memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
+
+	return(0);
+    }
+    else
+	return(-1);
+}
+
+#define Sys_Tick(Pkg)						\
+({								\
+	long rc = -1;						\
+	if (Pkg->SysGate != NULL) {				\
+		Pkg->tickStep--;				\
+		if (!Pkg->tickStep) {				\
+			Pkg->tickStep = Pkg->tickReset;		\
+			rc = Sys_DumpTask() & Sys_MemInfo();	\
+		}						\
+	}							\
+	rc;							\
+})
+
 void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu=smp_processor_id();
@@ -3049,6 +3118,11 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Genuine(Core, 1);
+
+		if (Core->T.Base.BSP) {
+			Sys_Tick(Proc);
+		}
+
 		Core_Intel_Temp(Core);
 
 		Delta_C0(Core);
@@ -3081,6 +3155,10 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		Counters_Genuine(Core, 1);
+
+		if (Core->T.Base.BSP) {
+			Sys_Tick(Proc);
+		}
 
 		Delta_C0(Core);
 
@@ -3211,6 +3289,10 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
 		    : 0;
 
+		if (Core->T.Base.BSP) {
+			Sys_Tick(Proc);
+		}
+
 		Core_AMD_Temp(Core);
 
 		Delta_C0(Core);
@@ -3292,8 +3374,12 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Counters_Core2(Core, 1);
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Counter[1].VID = PerfStatus.CORE.CurrVID;
+		if (Core->T.Base.BSP) {
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.CORE.CurrVID;
+
+			Sys_Tick(Proc);
+		}
 
 		Core_Intel_Temp(Core);
 
@@ -3392,6 +3478,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Sys_Tick(Proc);
 		}
 
 		Core_Intel_Temp(Core);
@@ -3518,6 +3606,8 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Sys_Tick(Proc);
 		}
 
 		Core_Intel_Temp(Core);
@@ -3652,58 +3742,6 @@ long Sys_Kernel(void)
 	memcpy(Proc->SysGate->release, utsname()->release, MAX_UTS_LEN);
 	memcpy(Proc->SysGate->version, utsname()->version, MAX_UTS_LEN);
 	memcpy(Proc->SysGate->machine, utsname()->machine, MAX_UTS_LEN);
-
-	return(0);
-    }
-    else
-	return(-1);
-}
-
-long Sys_DumpTask(void)
-{	// Source: /include/linux/sched.h
-    if (Proc->SysGate != NULL) {
-	struct task_struct *process, *thread;
-	int cnt = 0;
-
-	rcu_read_lock();
-	for_each_process_thread(process, thread) {
-	    task_lock(thread);
-
-	    Proc->SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
-	    Proc->SysGate->taskList[cnt].usertime = thread->utime;
-	    Proc->SysGate->taskList[cnt].systime  = thread->stime;
-	    Proc->SysGate->taskList[cnt].state    = thread->state;
-	    Proc->SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
-	    Proc->SysGate->taskList[cnt].pid      = thread->pid;
-	    Proc->SysGate->taskList[cnt].tgid     = thread->tgid;
-	    Proc->SysGate->taskList[cnt].ppid     = thread->parent->pid;
-	    memcpy(Proc->SysGate->taskList[cnt].comm,
-		  thread->comm, TASK_COMM_LEN);
-
-	    task_unlock(thread);
-	    cnt++;
-	}
-	rcu_read_unlock();
-	Proc->SysGate->taskCount = cnt;
-
-	return(0);
-    }
-    else
-	return(-1);
-}
-
-long Sys_MemInfo(void)
-{	// Source: /include/uapi/linux/sysinfo.h
-    if (Proc->SysGate != NULL) {
-	struct sysinfo info;
-	si_meminfo(&info);
-
-	Proc->SysGate->memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
 
 	return(0);
     }
@@ -4020,6 +4058,15 @@ static int __init CoreFreqK_init(void)
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
 
+			// Compute the tick steps.
+			    Proc->tickReset =
+				 ( (TickInterval >= Proc->SleepInterval)
+				&& (TickInterval <= LOOP_MAX_MS) ) ?
+					TickInterval:KMAX(TICK_DEF_MS,
+							  Proc->SleepInterval);
+			    Proc->tickReset /= Proc->SleepInterval;
+			    Proc->tickStep = Proc->tickReset;
+
 			    Proc->Registration.Experimental = Experimental;
 
 			    memcpy(&Proc->Features, &Arg.features,
@@ -4290,14 +4337,15 @@ static int __init CoreFreqK_init(void)
 
 static void __exit CoreFreqK_cleanup(void)
 {
-	unsigned int cpu = 0;
+	if (Proc != NULL) {
+		unsigned int cpu = 0;
 #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 2, 0)
-	if (Proc->Registration.nmi) {
-		unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
-		unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
-		unregister_nmi_handler(NMI_SERR,     "corefreqk");
-		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
-	}
+		if (Proc->Registration.nmi) {
+			unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
+			unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
+			unregister_nmi_handler(NMI_SERR,     "corefreqk");
+			unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
+		}
 #endif
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
@@ -4307,12 +4355,15 @@ static void __exit CoreFreqK_cleanup(void)
 			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
-	if (Proc->Registration.Experimental) {
-		if (!Proc->Registration.pci)
-			pci_unregister_driver(&CoreFreqK_pci_driver);
-	}
-	Controller_Stop();
-	Controller_Exit();
+		if (Proc->Registration.Experimental) {
+			if (!Proc->Registration.pci)
+				pci_unregister_driver(&CoreFreqK_pci_driver);
+		}
+		Controller_Stop();
+		Controller_Exit();
+
+		if (Proc->SysGate != NULL)
+			kfree(Proc->SysGate);
 
 	for (cpu = 0;(KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
 	{
@@ -4321,26 +4372,25 @@ static void __exit CoreFreqK_cleanup(void)
 		if (KPrivate->Join[cpu] != NULL)
 			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
 	}
-	if (KPublic->Cache != NULL)
-		kmem_cache_destroy(KPublic->Cache);
-	if (KPrivate->Cache != NULL)
-		kmem_cache_destroy(KPrivate->Cache);
-	if (Proc != NULL) {
-		if (Proc->SysGate != NULL)
-			kfree(Proc->SysGate);
+		if (KPublic->Cache != NULL)
+			kmem_cache_destroy(KPublic->Cache);
+		if (KPrivate->Cache != NULL)
+			kmem_cache_destroy(KPrivate->Cache);
+
+		if (KPublic != NULL)
+			kfree(KPublic);
+		if (KPrivate != NULL)
+			kfree(KPrivate);
+
+		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
+		class_destroy(CoreFreqK.clsdev);
+		cdev_del(CoreFreqK.kcdev);
+		unregister_chrdev_region(CoreFreqK.mkdev, 1);
+
+		printk(KERN_NOTICE "CoreFreq: Unload\n");
+
 		kfree(Proc);
 	}
-	if (KPublic != NULL)
-		kfree(KPublic);
-	if (KPrivate != NULL)
-		kfree(KPrivate);
-
-	device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-	class_destroy(CoreFreqK.clsdev);
-	cdev_del(CoreFreqK.kcdev);
-	unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-	printk(KERN_NOTICE "CoreFreq: Unload\n");
 }
 
 module_init(CoreFreqK_init);

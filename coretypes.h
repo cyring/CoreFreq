@@ -95,7 +95,7 @@ typedef signed short int	CSINT;
 
 #define WAKEUP_RATIO	4
 #define LOOP_MIN_MS	100
-#define LOOP_MAX_MS	4000
+#define LOOP_MAX_MS	((1000 - 1) * WAKEUP_RATIO)
 #define LOOP_DEF_MS	1000
 #define TICK_DEF_MS	2000
 
