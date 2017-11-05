@@ -2058,8 +2058,8 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 		switch (SpeedStepEnable) {
-		    case 0:
-		    case 1:
+		    case COREFREQ_TOOGLE_OFF:
+		    case COREFREQ_TOOGLE_ON:
 			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
 				MiscFeatures.EIST = SpeedStepEnable;
 				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
@@ -2083,8 +2083,8 @@ void TurboBoost_Technology(CORE *Core)
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
 		switch (TurboBoostEnable) {			// Per Thread
-		    case 0:
-		    case 1:
+		    case COREFREQ_TOOGLE_OFF:
+		    case COREFREQ_TOOGLE_ON:
 			PerfControl.Turbo_IDA = !TurboBoostEnable;
 			WRMSR(PerfControl, MSR_IA32_PERF_CTL);
 			RDMSR(PerfControl, MSR_IA32_PERF_CTL);
@@ -2111,8 +2111,8 @@ void Query_Intel_C1E(CORE *Core)
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
 
 	switch (C1E_Enable) {					// Per Package
-		case 0:
-		case 1:
+		case COREFREQ_TOOGLE_OFF:
+		case COREFREQ_TOOGLE_ON:
 			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
 				PowerCtrl.C1E = C1E_Enable;
 				WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
@@ -2542,69 +2542,56 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-long Sys_DumpTask(void)
+void Sys_DumpTask(SYSGATE *SysGate)
 {	// Source: /include/linux/sched.h
-    if (Proc->SysGate != NULL) {
 	struct task_struct *process, *thread;
 	int cnt = 0;
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
-	    task_lock(thread);
+		task_lock(thread);
 
-	    Proc->SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
-	    Proc->SysGate->taskList[cnt].usertime = thread->utime;
-	    Proc->SysGate->taskList[cnt].systime  = thread->stime;
-	    Proc->SysGate->taskList[cnt].state    = thread->state;
-	    Proc->SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
-	    Proc->SysGate->taskList[cnt].pid      = thread->pid;
-	    Proc->SysGate->taskList[cnt].tgid     = thread->tgid;
-	    Proc->SysGate->taskList[cnt].ppid     = thread->parent->pid;
-	    memcpy(Proc->SysGate->taskList[cnt].comm,
-		  thread->comm, TASK_COMM_LEN);
+		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
+		SysGate->taskList[cnt].usertime = thread->utime;
+		SysGate->taskList[cnt].systime  = thread->stime;
+		SysGate->taskList[cnt].state    = thread->state;
+		SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
+		SysGate->taskList[cnt].pid      = thread->pid;
+		SysGate->taskList[cnt].tgid     = thread->tgid;
+		SysGate->taskList[cnt].ppid     = thread->parent->pid;
+		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
-	    task_unlock(thread);
-	    cnt++;
+		task_unlock(thread);
+		cnt++;
 	}
 	rcu_read_unlock();
-	Proc->SysGate->taskCount = cnt;
-
-	return(0);
-    }
-    else
-	return(-1);
+	SysGate->taskCount = cnt;
 }
 
-long Sys_MemInfo(void)
+void Sys_MemInfo(SYSGATE *SysGate)
 {	// Source: /include/uapi/linux/sysinfo.h
-    if (Proc->SysGate != NULL) {
 	struct sysinfo info;
 	si_meminfo(&info);
 
-	Proc->SysGate->memInfo.totalram  = info.totalram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.freeram   = info.freeram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
-	Proc->SysGate->memInfo.freehigh  = info.freehigh << (PAGE_SHIFT - 10);
-
-	return(0);
-    }
-    else
-	return(-1);
+	SysGate->memInfo.totalram  = info.totalram  << (PAGE_SHIFT - 10);
+	SysGate->memInfo.sharedram = info.sharedram << (PAGE_SHIFT - 10);
+	SysGate->memInfo.freeram   = info.freeram   << (PAGE_SHIFT - 10);
+	SysGate->memInfo.bufferram = info.bufferram << (PAGE_SHIFT - 10);
+	SysGate->memInfo.totalhigh = info.totalhigh << (PAGE_SHIFT - 10);
+	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
 #define Sys_Tick(Pkg)						\
 ({								\
-	long rc = -1;						\
 	if (Pkg->SysGate != NULL) {				\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset;		\
-			rc = Sys_DumpTask() & Sys_MemInfo();	\
+								\
+			Sys_DumpTask(Pkg->SysGate);		\
+			Sys_MemInfo(Pkg->SysGate);		\
 		}						\
 	}							\
-	rc;							\
 })
 
 void InitTimer(void *Cycle_Function)
@@ -2660,8 +2647,8 @@ void Controller_Start(void)
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if((KPrivate->Join[cpu]->tsm.created == 1)
-		    && (KPrivate->Join[cpu]->tsm.started == 0))
+		    if ((KPrivate->Join[cpu]->tsm.created == 1)
+		     && (KPrivate->Join[cpu]->tsm.started == 0))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, 0);
@@ -2673,8 +2660,8 @@ void Controller_Stop(void)
 	if (Arch[Proc->ArchID].Stop != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if((KPrivate->Join[cpu]->tsm.created == 1)
-		    && (KPrivate->Join[cpu]->tsm.started == 1))
+		    if ((KPrivate->Join[cpu]->tsm.created == 1)
+		     && (KPrivate->Join[cpu]->tsm.started == 1))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, 1);
@@ -3693,60 +3680,59 @@ void Stop_SandyBridge(void *arg)
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
 
-long Sys_IdleDriver_Query(void)
+long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {
-	if (Proc->SysGate != NULL) {
+	if (SysGate != NULL) {
 	    struct cpuidle_driver *idleDriver;
 
 	    if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
 
-		strncpy(Proc->SysGate->IdleDriver.Name,
+		strncpy(SysGate->IdleDriver.Name,
 			idleDriver->name,
 			CPUIDLE_NAME_LEN - 1);
 
 		if (idleDriver->state_count < CPUIDLE_STATE_MAX)
-			Proc->SysGate->IdleDriver.stateCount =
-				idleDriver->state_count;
+			SysGate->IdleDriver.stateCount=idleDriver->state_count;
 		else	// No overflow check.
-			Proc->SysGate->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
+			SysGate->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
 
-		for (i = 0; i < Proc->SysGate->IdleDriver.stateCount; i++) {
-			strncpy(Proc->SysGate->IdleDriver.State[i].Name,
+		for (i = 0; i < SysGate->IdleDriver.stateCount; i++) {
+			strncpy(SysGate->IdleDriver.State[i].Name,
 				idleDriver->states[i].name,
 				CPUIDLE_NAME_LEN - 1);
 
-			Proc->SysGate->IdleDriver.State[i].exitLatency =
-				idleDriver->states[i].exit_latency;
-			Proc->SysGate->IdleDriver.State[i].powerUsage =
-				idleDriver->states[i].power_usage;
-			Proc->SysGate->IdleDriver.State[i].targetResidency =
-				idleDriver->states[i].target_residency;
+			SysGate->IdleDriver.State[i].exitLatency =
+					idleDriver->states[i].exit_latency;
+			SysGate->IdleDriver.State[i].powerUsage =
+					idleDriver->states[i].power_usage;
+			SysGate->IdleDriver.State[i].targetResidency =
+					idleDriver->states[i].target_residency;
 		}
 	    }
 	    else
-		memset(&Proc->SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
+		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
 
 	    return(0);
 	}
 	else
-		return(-1);
+	    return(-1);
 }
 
-long Sys_Kernel(void)
+long Sys_Kernel(SYSGATE *SysGate)
 {	/* Sources:	/include/generated/uapi/linux/version.h
 			/include/uapi/linux/utsname.h		*/
-    if (Proc->SysGate != NULL) {
-	Proc->SysGate->kernelVersionNumber = LINUX_VERSION_CODE;
-	memcpy(Proc->SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
-	memcpy(Proc->SysGate->release, utsname()->release, MAX_UTS_LEN);
-	memcpy(Proc->SysGate->version, utsname()->version, MAX_UTS_LEN);
-	memcpy(Proc->SysGate->machine, utsname()->machine, MAX_UTS_LEN);
+	if (SysGate != NULL) {
+		SysGate->kernelVersionNumber = LINUX_VERSION_CODE;
+		memcpy(SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
+		memcpy(SysGate->release, utsname()->release, MAX_UTS_LEN);
+		memcpy(SysGate->version, utsname()->version, MAX_UTS_LEN);
+		memcpy(SysGate->machine, utsname()->machine, MAX_UTS_LEN);
 
-	return(0);
-    }
-    else
-	return(-1);
+		return(0);
+	}
+	else
+		return(-1);
 }
 
 long SysGate_OnDemand(void)
@@ -3766,20 +3752,67 @@ long SysGate_OnDemand(void)
 	return(rc);
 }
 
-static long CoreFreqK_ioctl(struct file *filp,
-			unsigned int cmd,
-			unsigned long arg)
+static long CoreFreqK_ioctl(	struct file *filp,
+				unsigned int cmd,
+				unsigned long arg)
 {
-	long rc;
+	long rc = -1;
+	int toggleFeature = COREFREQ_TOOGLE_OFF;
+
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
-		rc = Sys_DumpTask() & Sys_MemInfo();
+		if (Proc->SysGate != NULL) {
+			Sys_DumpTask(Proc->SysGate);
+			Sys_MemInfo(Proc->SysGate);
+			rc = 0;
+		}
 		break;
 	case COREFREQ_IOCTL_SYSONCE:
-		rc = Sys_IdleDriver_Query() & Sys_Kernel();
+		rc = Sys_IdleDriver_Query(Proc->SysGate)
+		   & Sys_Kernel(Proc->SysGate);
+		break;
+	case COREFREQ_IOCTL_MACHINE:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_EIST:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					SpeedStepEnable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_C1E:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					C1E_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_TURBO:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					TurboBoostEnable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
 		break;
 	default:
 		rc = -1;
+	}
+	if (toggleFeature == COREFREQ_TOOGLE_ON) {
+		Controller_Stop();
+		Controller_Start();
+		rc = 0;
 	}
 	return(rc);
 }

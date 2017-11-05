@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.11"
+#define COREFREQ_VERSION	"1.12"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -849,7 +849,7 @@ typedef	struct {
 } IDLEDRIVER;
 
 #ifndef TASK_COMM_LEN
-#define	TASK_COMM_LEN		16
+#define TASK_COMM_LEN		16
 #endif
 
 #ifndef PID_MAX_DEFAULT
@@ -878,3 +878,39 @@ typedef struct {
 				totalhigh,
 				freehigh;
 } MEM_MCB;
+
+// Input-Output Control
+#define COREFREQ_TOOGLE_OFF	0x0000000000000000L
+#define COREFREQ_TOOGLE_ON	0x0000000000000001L
+
+#define COREFREQ_IOCTL_MAGIC 0xc3
+#define COREFREQ_IOCTL_SYSUPDT	_IO(COREFREQ_IOCTL_MAGIC, 0x0)
+#define COREFREQ_IOCTL_SYSONCE	_IO(COREFREQ_IOCTL_MAGIC, 0x1)
+#define COREFREQ_IOCTL_MACHINE	_IO(COREFREQ_IOCTL_MAGIC, 0x2)
+#define COREFREQ_IOCTL_EIST	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
+#define COREFREQ_IOCTL_C1E	_IO(COREFREQ_IOCTL_MAGIC, 0x8)
+#define COREFREQ_IOCTL_TURBO	_IO(COREFREQ_IOCTL_MAGIC, 0x10)
+
+// Circular buffer
+#define RING_SIZE	16
+
+#define RING_NULL(Ring)							\
+({									\
+	((Ring.head - Ring.tail) == 0);					\
+})
+
+#define RING_FULL(Ring)							\
+({									\
+	((Ring.head - Ring.tail) == RING_SIZE);				\
+})
+
+#define RING_READ(Ring)							\
+({									\
+	Ring.buffer[Ring.tail++ & (RING_SIZE - 1)];			\
+})
+
+#define RING_WRITE(Ring, _cmd, _arg)					\
+({									\
+	struct RING_CTRL ctrl = {.arg = _arg, .cmd = _cmd};		\
+	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+})

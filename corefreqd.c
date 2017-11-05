@@ -2017,8 +2017,10 @@ typedef struct {
 	int		Started;
 	FD		*fd;
 	SHM_STRUCT	*Shm;
+	PROC		*Proc;
+	CORE		**Core;
 	SYSGATE		**SysGate;
-} SIG;
+} REF;
 
 int SysGate_OnDemand(FD *fd, SYSGATE **SysGate, int operation)
 {
@@ -2049,29 +2051,29 @@ int SysGate_OnDemand(FD *fd, SYSGATE **SysGate, int operation)
 	return(rc);
 }
 
-void SysGate_Toggle(SIG *Sig, unsigned int state)
+void SysGate_Toggle(REF *Ref, unsigned int state)
 {
     if (state == 0) {
-	if (BITWISEAND(LOCKLESS, Sig->Shm->SysGate.Operation, 0x1)) {
+	if (BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
 		// Stop SysGate
-		BITCLR(LOCKLESS, Sig->Shm->SysGate.Operation,0);
+		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation,0);
 		// Notify
-		if (!BITVAL(Sig->Shm->Proc.Sync, 63))
-			BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
+		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
 	}
     } else {
-	if (!BITWISEAND(LOCKLESS, Sig->Shm->SysGate.Operation, 0x1)) {
-	    if (SysGate_OnDemand(Sig->fd, Sig->SysGate, 1) == 0) {
-		if (ioctl(Sig->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
+	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
+	    if (SysGate_OnDemand(Ref->fd, Ref->SysGate, 1) == 0) {
+		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
 			// Aggregate the OS idle driver data.
-			SysGate_IdleDriver(Sig->Shm, *(Sig->SysGate));
+			SysGate_IdleDriver(Ref->Shm, *(Ref->SysGate));
 			// Copy system information.
-			SysGate_Kernel(Sig->Shm, *(Sig->SysGate));
+			SysGate_Kernel(Ref->Shm, *(Ref->SysGate));
 			// Start SysGate
-			BITSET(LOCKLESS, Sig->Shm->SysGate.Operation,0);
+			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation,0);
 			// Notify
-			if (!BITVAL(Sig->Shm->Proc.Sync, 63))
-				BITSET(BUS_LOCK, Sig->Shm->Proc.Sync, 63);
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
 		}
 	    }
 	}
@@ -2081,9 +2083,12 @@ void SysGate_Toggle(SIG *Sig, unsigned int state)
 static void *Emergency_Handler(void *arg)
 {
 	int caught = 0, leave = 0;
-	SIG *Sig = (SIG *) arg;
+	REF *Ref = (REF *) arg;
 	pthread_t tid = pthread_self();
-
+	const struct timespec timeout = {
+			.tv_sec  = TICK_DEF_MS / 1000,
+			.tv_nsec = 0
+	};
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
@@ -2091,46 +2096,66 @@ static void *Emergency_Handler(void *arg)
 	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
 	pthread_setname_np(tid, "corefreqd-kill");
 
-	while (!leave && !sigwait(&Sig->Signal, &caught))
-		switch (caught) {
-		case SIGUSR2:
-			SysGate_Toggle(Sig, 0);
-			break;
-		case SIGUSR1:
-			SysGate_Toggle(Sig, 1);
-			break;
-		case SIGTERM:
-			leave = 0x1;
-			break;
-		case SIGINT:
-			// Fallthrough
-		case SIGQUIT:
-			Shutdown = 0x1;
-			break;
+	while (!leave) {
+		if ((caught = sigtimedwait(&Ref->Signal, NULL, &timeout)) != -1)
+			switch (caught) {
+			case SIGUSR2:
+				SysGate_Toggle(Ref, 0);
+				break;
+			case SIGUSR1:
+				SysGate_Toggle(Ref, 1);
+				break;
+			case SIGTERM:
+				leave = 0x1;
+				break;
+			case SIGINT:
+				// Fallthrough
+			case SIGQUIT:
+				Shutdown = 0x1;
+				break;
+			}
+		else if ((errno == EAGAIN) && !RING_NULL(Ref->Shm->Ring))
+		{
+		    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring);
+		    if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) == 0)
+		    {
+			unsigned int cpu;
+			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
+				if (Ref->Core[cpu]->OffLine.OS == 0)
+					PerCore_Update( Ref->Shm,
+							Ref->Proc,
+							Ref->Core,
+							cpu);
+			}
+			// Notify
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
+		    }
 		}
+	}
 	return(NULL);
 }
 
-void Emergency_Command(SIG *Sig, unsigned int cmd)
+void Emergency_Command(REF *Ref, unsigned int cmd)
 {
 	switch (cmd) {
 	case 0:
-		if (Sig->Started) {
-			pthread_kill(Sig->TID, SIGTERM);
-			pthread_join(Sig->TID, NULL);
+		if (Ref->Started) {
+			pthread_kill(Ref->TID, SIGTERM);
+			pthread_join(Ref->TID, NULL);
 		}
 		break;
 	case 1: {
-		sigemptyset(&Sig->Signal);
-		sigaddset(&Sig->Signal, SIGUSR1);	// Start SysGate
-		sigaddset(&Sig->Signal, SIGUSR2);	// Stop  SysGate
-		sigaddset(&Sig->Signal, SIGINT);	// [CTRL] + [C]
-		sigaddset(&Sig->Signal, SIGQUIT);	// Shutdown
-		sigaddset(&Sig->Signal, SIGTERM);	// Thread kill
+		sigemptyset(&Ref->Signal);
+		sigaddset(&Ref->Signal, SIGUSR1);	// Start SysGate
+		sigaddset(&Ref->Signal, SIGUSR2);	// Stop  SysGate
+		sigaddset(&Ref->Signal, SIGINT);	// [CTRL] + [C]
+		sigaddset(&Ref->Signal, SIGQUIT);	// Shutdown
+		sigaddset(&Ref->Signal, SIGTERM);	// Thread kill
 
-		if (!pthread_sigmask(SIG_BLOCK, &Sig->Signal, NULL)
-		 && !pthread_create(&Sig->TID, NULL, Emergency_Handler, Sig))
-			Sig->Started = 1;
+		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
+		 && !pthread_create(&Ref->TID, NULL, Emergency_Handler, Ref))
+			Ref->Started = 1;
 		}
 		break;
 	}
@@ -2298,15 +2323,17 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Registration.pci = Proc->Registration.pci;
 		Shm->Registration.nmi = Proc->Registration.nmi;
 
-		SIG Sig = {
-			.Signal	= {{0}},
+		REF Ref = {
+			.Signal = {{0}},
 			.TID	= 0,
 			.Started= 0,
 			.fd	= fd,
 			.Shm	= Shm,
+			.Proc	= Proc,
+			.Core	= Core,
 			.SysGate= &SysGate
 		};
-		Emergency_Command(&Sig, 1);
+		Emergency_Command(&Ref, 1);
 
 		// Copy the timer interval delay.
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
@@ -2334,7 +2361,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Initialize notification.
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
-		SysGate_Toggle(&Sig, SysGateStartUp);
+		SysGate_Toggle(&Ref, SysGateStartUp);
 
 		// Welcomes with brand and per CPU base clock.
 		if (Quiet & 0x001)
@@ -2357,7 +2384,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		Core_Manager(fd, Shm, Proc, Core, &SysGate);
 
-		Emergency_Command(&Sig, 0);
+		Emergency_Command(&Ref, 0);
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
