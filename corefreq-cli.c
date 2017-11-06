@@ -244,6 +244,18 @@ typedef union {
 #define BOXKEY_TURBO		0x3000000000000010
 #define BOXKEY_TURBO_OFF	0x3000000000000011
 #define BOXKEY_TURBO_ON		0x3000000000000012
+#define BOXKEY_C1A		0x3000000000000020
+#define BOXKEY_C1A_OFF		0x3000000000000021
+#define BOXKEY_C1A_ON		0x3000000000000022
+#define BOXKEY_C3A		0x3000000000000040
+#define BOXKEY_C3A_OFF		0x3000000000000041
+#define BOXKEY_C3A_ON		0x3000000000000042
+#define BOXKEY_C1U		0x3000000000000080
+#define BOXKEY_C1U_OFF		0x3000000000000081
+#define BOXKEY_C1U_ON		0x3000000000000082
+#define BOXKEY_C3U		0x3000000000000100
+#define BOXKEY_C3U_OFF		0x3000000000000101
+#define BOXKEY_C3U_ON		0x3000000000000102
 
 #define TRACK_TASK		0x2000000000000000
 #define TRACK_MASK		0x0000000000007fff
@@ -955,20 +967,20 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 		"Enhanced Halt State%.*sC1E       <%3s>",
 		width - 37, hSpace, enabled(isEnhancedHaltState));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"C1 Auto Demotion%.*sC1A       [%3s]",
+	printv(OutFunc, BOXKEY_C1A, width, 2,
+		"C1 Auto Demotion%.*sC1A       <%3s>",
 		width - 34, hSpace, enabled(isC1autoDemotion));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"C3 Auto Demotion%.*sC3A       [%3s]",
+	printv(OutFunc, BOXKEY_C3A, width, 2,
+		"C3 Auto Demotion%.*sC3A       <%3s>",
 		width - 34, hSpace, enabled(isC3autoDemotion));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"C1 UnDemotion%.*sC1U       [%3s]",
+	printv(OutFunc, BOXKEY_C1U, width, 2,
+		"C1 UnDemotion%.*sC1U       <%3s>",
 		width - 31, hSpace, enabled(isC1undemotion));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"C3 UnDemotion%.*sC3U       [%3s]",
+	printv(OutFunc, BOXKEY_C3U, width, 2,
+		"C3 UnDemotion%.*sC3U       <%3s>",
 		width - 31, hSpace, enabled(isC3undemotion));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
@@ -1770,6 +1782,7 @@ typedef union {
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
 #define _HKW	{.fg = BLACK,	.bg = WHITE,	.un = 1,	.bf = 1}
+#define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define LDK	{.fg = BLACK,	.bg = BLACK}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRK	{.fg = RED,	.bg = BLACK}
@@ -1783,6 +1796,7 @@ typedef union {
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
 #define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
+#define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
 
 #define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
 #define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN, 1)
@@ -3515,6 +3529,32 @@ void Top(SHM_STRUCT *Shm)
 
     int Shortcut(SCANKEY *scan)
     {
+	Attribute stateAttr[2] = {
+		MakeAttr(WHITE, 0, BLACK, 0),
+		MakeAttr(CYAN, 0, BLACK, 1)
+	},
+	blankAttr = MakeAttr(BLACK, 0, BLACK, 1),
+	descAttr =  MakeAttr(CYAN, 0, BLACK, 0);
+	ASCII *stateStr[2][2] = {
+		{
+			(ASCII*)"              Disable               ",
+			(ASCII*)"            < Disable >             "
+		},{
+			(ASCII*)"              Enable                ",
+			(ASCII*)"            < Enable >              "
+		}
+	},
+	*blankStr =	(ASCII*)"                                    ",
+	*descStr[] = {
+			(ASCII*)"             SpeedStep              ",
+			(ASCII*)"        Enhanced Halt State         ",
+			(ASCII*)" Turbo Boost/Core Performance Boost ",
+			(ASCII*)"          C1 Auto Demotion          ",
+			(ASCII*)"          C3 Auto Demotion          ",
+			(ASCII*)"            C1 UnDemotion           ",
+			(ASCII*)"            C3 UnDemotion           "
+	};
+
 	switch (scan->key) {
 /*	case SCANKEY_PLUS:
 	  {
@@ -3723,28 +3763,20 @@ void Top(SHM_STRUCT *Shm)
 	    {
 	    const unsigned int isEIST =
 			(Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask);
-	    Coordinate origin = {
-		.col = (drawSize.width - (50 -25)) / 2,
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	    }, select = {
 		.col = 0,
 		.row = isEIST ? 4 : 3
 	    };
 	    AppendWindow(CreateBox(scan->key, origin, select, " EIST ",
-	(ASCII*)"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-		"        SpeedStep        ",
-				MakeAttr(BLACK, 0, BLACK, 1), SCANKEY_NULL,
-		"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-	isEIST? "       < Enable >        ":"         Enable          ",
-	isEIST? MakeAttr(CYAN, 0, BLACK, 1):MakeAttr(WHITE, 0, BLACK, 0),
-								BOXKEY_EIST_ON,
-	isEIST? "         Disable         ":"       < Disable >       ",
-	isEIST? MakeAttr(WHITE, 0, BLACK, 0):MakeAttr(CYAN, 0, BLACK, 1),
-								BOXKEY_EIST_OFF,
-		"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL),
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[0], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isEIST], stateAttr[isEIST], BOXKEY_EIST_ON,
+		stateStr[0][!isEIST], stateAttr[!isEIST], BOXKEY_EIST_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
 	    } else
 		SetHead(&winList, win);
@@ -3768,28 +3800,20 @@ void Top(SHM_STRUCT *Shm)
 	  if (win == NULL)
 	    {
 	    const unsigned int isC1E = (Shm->Proc.C1E == Shm->Proc.C1E_Mask);
-	    Coordinate origin = {
-		.col = (drawSize.width - (50 -25)) / 2,
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	    }, select = {
 		.col = 0,
 		.row = isC1E ? 4 : 3
 	    };
 	    AppendWindow(CreateBox(scan->key, origin, select, " C1E ",
-	(ASCII*)"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-		"   Enhanced Halt State   ",
-				MakeAttr(BLACK, 0, BLACK, 1), SCANKEY_NULL,
-		"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-	isC1E ? "       < Enable >        " : "         Enable          ",
-	isC1E ? MakeAttr(CYAN, 0, BLACK, 1) : MakeAttr(WHITE, 0, BLACK, 0),
-								BOXKEY_C1E_ON,
-	isC1E ? "         Disable         " : "       < Disable >       ",
-	isC1E ? MakeAttr(WHITE, 0, BLACK, 0):MakeAttr(CYAN, 0, BLACK, 1),
-								BOXKEY_C1E_OFF,
-		"                         ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL),
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[1], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isC1E], stateAttr[isC1E], BOXKEY_C1E_ON,
+		stateStr[0][!isC1E], stateAttr[!isC1E], BOXKEY_C1E_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
 	    } else
 		SetHead(&winList, win);
@@ -3814,31 +3838,21 @@ void Top(SHM_STRUCT *Shm)
 	    {
 	    const unsigned int isTurbo =
 			(Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask);
-	    Coordinate origin = {
-		.col = (drawSize.width - (61 -25)) / 2,
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 4
 	    }, select = {
 		.col = 0,
 		.row = isTurbo ? 4 : 3
 	    };
 	    AppendWindow(CreateBox(scan->key, origin, select, " Turbo ",
-	(ASCII*)"                                    ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-		" Turbo Boost/Core Performance Boost ",
-				MakeAttr(BLACK, 0, BLACK, 1), SCANKEY_NULL,
-		"                                    ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL,
-	isTurbo? "            < Enable >              "
-		:"              Enable                ",
-	isTurbo? MakeAttr(CYAN, 0, BLACK, 1) : MakeAttr(WHITE, 0, BLACK, 0),
-							BOXKEY_TURBO_ON,
-	isTurbo? "              Disable               "
-		:"            < Disable >             ",
-	isTurbo? MakeAttr(WHITE, 0, BLACK, 0):MakeAttr(CYAN, 0, BLACK, 1),
-							BOXKEY_TURBO_OFF,
-		"                                    ",
-				MakeAttr(BLACK, 0, BLACK, 0), SCANKEY_NULL),
-			&winList);
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[2], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isTurbo], stateAttr[isTurbo], BOXKEY_TURBO_ON,
+		stateStr[0][!isTurbo], stateAttr[!isTurbo], BOXKEY_TURBO_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
 	    } else
 		SetHead(&winList, win);
 	  }
@@ -3853,6 +3867,154 @@ void Top(SHM_STRUCT *Shm)
 	    {
 	    if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO, COREFREQ_TOOGLE_ON);
+	    }
+	    break;
+	case BOXKEY_C1A:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+	    const unsigned int isC1A = (Shm->Proc.C1A == Shm->Proc.C1A_Mask);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 5
+	    }, select = {
+		.col = 0,
+		.row = isC1A ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " C1A ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[3], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isC1A], stateAttr[isC1A], BOXKEY_C1A_ON,
+		stateStr[0][!isC1A], stateAttr[!isC1A], BOXKEY_C1A_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_C1A_OFF:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOOGLE_OFF);
+	    }
+	    break;
+	case BOXKEY_C1A_ON:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOOGLE_ON);
+	    }
+	    break;
+	case BOXKEY_C3A:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+	    const unsigned int isC3A = (Shm->Proc.C3A == Shm->Proc.C3A_Mask);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 6
+	    }, select = {
+		.col = 0,
+		.row = isC3A ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " C3A ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[4], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isC3A], stateAttr[isC3A], BOXKEY_C3A_ON,
+		stateStr[0][!isC3A], stateAttr[!isC3A], BOXKEY_C3A_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_C3A_OFF:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOOGLE_OFF);
+	    }
+	    break;
+	case BOXKEY_C3A_ON:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOOGLE_ON);
+	    }
+	    break;
+	case BOXKEY_C1U:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+	    const unsigned int isC1U = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 7
+	    }, select = {
+		.col = 0,
+		.row = isC1U ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " C1U ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[5], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isC1U], stateAttr[isC1U], BOXKEY_C1U_ON,
+		stateStr[0][!isC1U], stateAttr[!isC1U], BOXKEY_C1U_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_C1U_OFF:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOOGLE_OFF);
+	    }
+	    break;
+	case BOXKEY_C1U_ON:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOOGLE_ON);
+	    }
+	    break;
+	case BOXKEY_C3U:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+	    const unsigned int isC3U = (Shm->Proc.C3U == Shm->Proc.C3U_Mask);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 8
+	    }, select = {
+		.col = 0,
+		.row = isC3U ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " C3U ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[6], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isC3U], stateAttr[isC3U], BOXKEY_C3U_ON,
+		stateStr[0][!isC3U], stateAttr[!isC3U], BOXKEY_C3U_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_C3U_OFF:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOOGLE_OFF);
+	    }
+	    break;
+	case BOXKEY_C3U_ON:
+	    {
+	    if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOOGLE_ON);
 	    }
 	    break;
 	case SCANKEY_k:
@@ -4419,7 +4581,7 @@ void Top(SHM_STRUCT *Shm)
 			.row = (row + Shm->Proc.CPU.Count +1)
 		},
 		.length = drawSize.width,
-		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,		\
+		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,	\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
@@ -4460,7 +4622,7 @@ void Top(SHM_STRUCT *Shm)
 			.row = (row + Shm->Proc.CPU.Count +1)
 		},
 		.length = drawSize.width,
-		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,LWK,LWK,LWK,	\
+		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,	\
 			LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,	\
@@ -4633,7 +4795,7 @@ void Top(SHM_STRUCT *Shm)
 	    } hSort[SORTBYCOUNT] = {
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
@@ -4643,7 +4805,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -4653,7 +4815,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, LCK,HDK,LWK
 		  },
 		  .code = {
@@ -4663,7 +4825,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -4673,7 +4835,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK, LWK,LWK,LWK
 		  },
 		  .code = {
@@ -4683,7 +4845,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,	\
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,	\
 			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK
 		  },
 		  .code = {
@@ -4712,7 +4874,7 @@ void Top(SHM_STRUCT *Shm)
 	    } hReverse[2] = {
 		{
 		  .attr = {
-		    LWK,_HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+		    LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
 		  },
 		  .code = {
 		    ' ', 'R','e','v','e','r','s','e',' ','[','O','F','F',']',' '
@@ -4720,7 +4882,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		{
 		  .attr = {
-		    LWK,_HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK
+		    LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK
 		  },
 		  .code = {
 		    ' ', 'R','e','v','e','r','s','e',' ','[',' ','O','N',']',' '
@@ -4740,7 +4902,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.length = 13,
 		.attr = {
-			LWK,_HWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+			LWK,_HCK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
 		},
 		.code = {
 			' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '
@@ -4779,7 +4941,7 @@ void Top(SHM_STRUCT *Shm)
 		},
 		.length = 22,
 		.attr = {
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,HDK,LWK, LWK,LWK,		\
 			LWK,LWK,HDK,LWK
 		},

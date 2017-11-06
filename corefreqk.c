@@ -3806,6 +3806,42 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
+	case COREFREQ_IOCTL_C1A:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					C1A_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_C3A:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					C3A_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_C1U:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					C1U_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_C3U:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					C3U_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
 	default:
 		rc = -1;
 	}
