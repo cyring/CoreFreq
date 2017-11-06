@@ -2642,7 +2642,7 @@ void Controller_Init(void)
 	} while (cpu != 0) ;
 }
 
-void Controller_Start(void)
+void Controller_Start(int wait)
 {
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
@@ -2651,11 +2651,11 @@ void Controller_Start(void)
 		     && (KPrivate->Join[cpu]->tsm.started == 0))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
-						NULL, 0);
+						NULL, wait);
 	}
 }
 
-void Controller_Stop(void)
+void Controller_Stop(int wait)
 {
 	if (Arch[Proc->ArchID].Stop != NULL) {
 		unsigned int cpu;
@@ -2664,7 +2664,7 @@ void Controller_Stop(void)
 		     && (KPrivate->Join[cpu]->tsm.started == 1))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
-						NULL, 1);
+						NULL, wait);
 	}
 }
 
@@ -3810,8 +3810,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -1;
 	}
 	if (toggleFeature == COREFREQ_TOOGLE_ON) {
-		Controller_Stop();
-		Controller_Start();
+		Controller_Stop(1);
+		Controller_Start(1);
 		rc = 0;
 	}
 	return(rc);
@@ -3903,7 +3903,7 @@ static struct file_operations CoreFreqK_fops = {
 #ifdef CONFIG_PM_SLEEP
 static int CoreFreqK_suspend(struct device *dev)
 {
-	Controller_Stop();
+	Controller_Stop(1);
 
 	printk(KERN_NOTICE "CoreFreq: Suspend\n");
 
@@ -3912,7 +3912,7 @@ static int CoreFreqK_suspend(struct device *dev)
 
 static int CoreFreqK_resume(struct device *dev)
 {
-	Controller_Start();
+	Controller_Start(0);
 
 	printk(KERN_NOTICE "CoreFreq: Resume\n");
 
@@ -4231,7 +4231,7 @@ static int __init CoreFreqK_init(void)
 					Proc->CPU.OnLine,
 					Proc->CPU.Count);
 
-				  Controller_Start();
+				  Controller_Start(0);
 
 				  if (Proc->Registration.Experimental) {
 				   Proc->Registration.pci =
@@ -4392,7 +4392,7 @@ static void __exit CoreFreqK_cleanup(void)
 			if (!Proc->Registration.pci)
 				pci_unregister_driver(&CoreFreqK_pci_driver);
 		}
-		Controller_Stop();
+		Controller_Stop(1);
 		Controller_Exit();
 
 		if (Proc->SysGate != NULL)

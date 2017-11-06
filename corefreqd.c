@@ -30,7 +30,8 @@
 
 unsigned int	Shutdown = 0x0, Quiet = 0x001, Math = 0x0,
 		SysGateStartUp = 1;
-static unsigned long long roomSeed = 0x0;
+
+static unsigned long long roomSeed __attribute__ ((aligned (64))) = 0x0;
 
 typedef struct {
 	SHM_STRUCT	*Shm;
@@ -2059,7 +2060,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation,0);
 		// Notify
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
@@ -2073,7 +2074,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation,0);
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		}
 	    }
 	}
@@ -2117,19 +2118,29 @@ static void *Emergency_Handler(void *arg)
 		else if ((errno == EAGAIN) && !RING_NULL(Ref->Shm->Ring))
 		{
 		    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring);
-		    if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) == 0)
+		    if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1)
 		    {
 			unsigned int cpu;
-			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
-				if (Ref->Core[cpu]->OffLine.OS == 0)
-					PerCore_Update( Ref->Shm,
-							Ref->Proc,
-							Ref->Core,
-							cpu);
-			}
+			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
+				if (Ref->Core[cpu]->OffLine.OS == 0) {
+					SpeedStep(Ref->Shm,
+						  Ref->Proc,
+						  Ref->Core,
+						  cpu);
+
+					TurboBoost(Ref->Shm,
+						   Ref->Core,
+						   cpu);
+
+					CStates(Ref->Shm,
+						Ref->Core,
+						cpu);
+				}
+			if (Quiet & 0x100)
+			    printf("  IOCTL(%x,%llx)\n", ctrl.cmd, ctrl.arg);
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 63);
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		    }
 		}
 	}

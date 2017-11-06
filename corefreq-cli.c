@@ -2570,15 +2570,6 @@ void Top(SHM_STRUCT *Shm)
     double minRatio = Shm->Proc.Boost[0], maxRatio = Shm->Proc.Boost[9],
 	medianRatio = (minRatio + maxRatio) / 2, availRatio[10] = {minRatio};
 
-    const unsigned int
-	isTurboBoost = (Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask),
-	isSpeedStep = (Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask),
-	isEnhancedHaltState = (Shm->Proc.C1E == Shm->Proc.C1E_Mask),
-	isC3autoDemotion = (Shm->Proc.C3A == Shm->Proc.C3A_Mask),
-	isC1autoDemotion = (Shm->Proc.C1A == Shm->Proc.C1A_Mask),
-	isC3undemotion = (Shm->Proc.C3U == Shm->Proc.C3U_Mask),
-	isC1undemotion = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
-
     typedef char HBCLK[11 + 1];
     HBCLK *hBClk;
 
@@ -3937,6 +3928,14 @@ void Top(SHM_STRUCT *Shm)
     void Layout(Layer *layer)
     {
 	struct FLIP_FLOP *Flop = NULL;
+	const unsigned int
+		isTurbo = (Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask),
+		isEIST = (Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask),
+		isC1E = (Shm->Proc.C1E == Shm->Proc.C1E_Mask),
+		isC3A = (Shm->Proc.C3A == Shm->Proc.C3A_Mask),
+		isC1A = (Shm->Proc.C1A == Shm->Proc.C1A_Mask),
+		isC3U = (Shm->Proc.C3U == Shm->Proc.C3U_Mask),
+		isC1U = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
 	unsigned int processorHot = 0;
 	CUINT col = 0, row = 0;
 	size_t len;
@@ -4921,17 +4920,16 @@ void Top(SHM_STRUCT *Shm)
 			MakeAttr(GREEN, 0, BLACK, 1)
 		};
 
-	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = hTech1.attr[7]=
-		Pwr[isSpeedStep];
+	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = hTech1.attr[7] =
+								Pwr[isEIST];
 
 	    hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =
 		Pwr[Shm->Proc.Features.Power.AX.TurboIDA];
 
 	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
-	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurboBoost];
+	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =
-		Pwr[isEnhancedHaltState];
+	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isC1E];
 
 	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
@@ -4942,17 +4940,13 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =
 		Pwr[(Shm->Proc.PM_version > 0)];
 
-	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =
-		Pwr[isC3autoDemotion];
+	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] = Pwr[isC3A];
 
-	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
-		Pwr[isC1autoDemotion];
+	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] = Pwr[isC1A];
 
-	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =
-		Pwr[isC3undemotion];
+	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] = Pwr[isC3U];
 
-	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =
-		Pwr[isC1undemotion];
+	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] = Pwr[isC1U];
 
 	    hTech1.attr[43] = hTech1.attr[44] = hTech1.attr[45] =
 		TM1[Shm->Cpu[0].PowerThermal.TM1];
@@ -4994,10 +4988,9 @@ void Top(SHM_STRUCT *Shm)
 		Pwr[(Shm->Proc.PowerNow == 0b11)];
 
 	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
-	    hTech1.attr[16]=hTech1.attr[17]=Pwr[isTurboBoost];
+	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =
-		Pwr[isEnhancedHaltState];
+	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isEIST];
 
 	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
@@ -5135,7 +5128,7 @@ void Top(SHM_STRUCT *Shm)
 	do {
 	  SCANKEY scan = {.key = 0};
 
-	  if ((drawFlag.daemon=BITVAL(Shm->Proc.Sync, 0)) == 0) {
+	  if ((drawFlag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
 	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
 		if (Shortcut(&scan) == -1) {
 		  if (IsDead(&winList))
@@ -5150,11 +5143,11 @@ void Top(SHM_STRUCT *Shm)
 	    }
 	  } else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
-		if (BITVAL(Shm->Proc.Sync, 63)) {
-			// Platform changed, redraw the layout.
-			drawFlag.layout = 1;
-			BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
-		}
+	  }
+	  if (BITVAL(Shm->Proc.Sync, 63)) {
+		// Platform changed, redraw the layout.
+		drawFlag.layout = 1;
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	  }
 	} while (!Shutdown && !drawFlag.daemon && !drawFlag.layout) ;
 
