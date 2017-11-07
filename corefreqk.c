@@ -2518,6 +2518,10 @@ void PerCore_SandyBridge_Query(CORE *Core)
 				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 				break;
 			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b011;
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			case 3:
 				CStateConfig.Pkg_CStateLimit = 0b010;
 				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 				break;
@@ -2544,8 +2548,10 @@ void PerCore_SandyBridge_Query(CORE *Core)
 			Core->Query.CStateLimit = 7;
 			break;
 		case 0b011:
-		case 0b010:
 			Core->Query.CStateLimit = 6;
+			break;
+		case 0b010:
+			Core->Query.CStateLimit = 3;
 			break;
 		case 0b001:
 			Core->Query.CStateLimit = 2;
