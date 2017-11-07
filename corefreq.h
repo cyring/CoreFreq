@@ -247,11 +247,10 @@ typedef struct
 
 	struct {
 		struct RING_CTRL {
-			unsigned long long	arg;
-			unsigned int		cmd,
-						pad;
+			unsigned long	arg;
+			unsigned int	cmd;
 		} buffer[RING_SIZE];
-		unsigned int			head, tail;
+		unsigned int		head, tail;
 	} Ring;
 
 	char			AppName[TASK_COMM_LEN];

@@ -2137,7 +2137,7 @@ static void *Emergency_Handler(void *arg)
 						cpu);
 				}
 			if (Quiet & 0x100)
-			    printf("  IOCTL(%x,%llx)\n", ctrl.cmd, ctrl.arg);
+				printf("  IOCTL(%x,%lx)\n", ctrl.cmd, ctrl.arg);
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);

@@ -256,6 +256,13 @@ typedef union {
 #define BOXKEY_C3U		0x3000000000000100
 #define BOXKEY_C3U_OFF		0x3000000000000101
 #define BOXKEY_C3U_ON		0x3000000000000102
+#define BOXKEY_PKGCST		0x3000000000000200
+#define BOXKEY_PKGCST_C0	0x3000000000000201
+#define BOXKEY_PKGCST_C1	0x3000000000000211
+#define BOXKEY_PKGCST_C2	0x3000000000000221
+#define BOXKEY_PKGCST_C3	0x3000000000000231
+#define BOXKEY_PKGCST_C6	0x3000000000000261
+#define BOXKEY_PKGCST_C7	0x3000000000000271
 
 #define TRACK_TASK		0x2000000000000000
 #define TRACK_MASK		0x0000000000007fff
@@ -1017,8 +1024,8 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
 		!Shm->Cpu[0].Query.CfgLock? "UNLOCK":"LOCK");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"Lowest C-State%.*sLIMIT   [%7d]",
+	printv(OutFunc, BOXKEY_PKGCST, width, 3,
+		"Lowest C-State%.*sLIMIT   <%7d>",
 		width - (OutFunc == NULL ? 37 : 35), hSpace,
 		Shm->Cpu[0].Query.CStateLimit);
 
@@ -4017,6 +4024,58 @@ void Top(SHM_STRUCT *Shm)
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOOGLE_ON);
 	    }
 	    break;
+	case BOXKEY_PKGCST:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0};
+		const Coordinate origin = {
+			.col = (drawSize.width - (44 - 17)) / 2,
+			.row = TOP_HEADER_ROW + 2
+		}, select = {
+			.col = 0,
+			.row = thisCST[Shm->Cpu[0].Query.CStateLimit] != -1 ?
+				    thisCST[Shm->Cpu[0].Query.CStateLimit] : 0
+		};
+		Window *wBox = CreateBox(scan->key, origin, select,
+					" Package C-State Limit ",
+	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
+	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
+	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
+	(ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
+	(ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
+	(ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+		if (wBox != NULL) {
+			TCellAt(wBox, 0, select.row).attr[11] =		\
+			TCellAt(wBox, 0, select.row).attr[12] =		\
+			TCellAt(wBox, 0, select.row).attr[13] =		\
+			TCellAt(wBox, 0, select.row).attr[14] =		\
+			TCellAt(wBox, 0, select.row).attr[15] =		\
+			TCellAt(wBox, 0, select.row).attr[16] =		\
+								stateAttr[1];
+			TCellAt(wBox, 0, select.row).item[11] = '<';
+			TCellAt(wBox, 0, select.row).item[16] = '>';
+
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_PKGCST_C7:
+	case BOXKEY_PKGCST_C6:
+	case BOXKEY_PKGCST_C3:
+	case BOXKEY_PKGCST_C2:
+	case BOXKEY_PKGCST_C1:
+	case BOXKEY_PKGCST_C0:
+		{
+		const unsigned long newCST=(scan->key - BOXKEY_PKGCST_C0) >> 4;
+		if (!RING_FULL(Shm->Ring))
+			RING_WRITE(Shm->Ring, COREFREQ_IOCTL_PKGCST, newCST);
+		}
+		break;
 	case SCANKEY_k:
 		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0)
 			break;

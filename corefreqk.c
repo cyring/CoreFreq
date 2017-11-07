@@ -3842,6 +3842,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
+	case COREFREQ_IOCTL_PKGCST:
+		PkgCStateLimit = arg;
+		toggleFeature = COREFREQ_TOOGLE_ON;
+		break;
 	default:
 		rc = -1;
 	}
