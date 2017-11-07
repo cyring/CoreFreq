@@ -75,6 +75,14 @@ static signed short PkgCStateLimit = -1;
 module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
 
+static signed short IOMWAIT_Enable = -1;
+module_param(IOMWAIT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(IOMWAIT_Enable, "I/O MWAIT Redirection Enable");
+
+static signed short CStateIORedir = -1;
+module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
+
 static signed short SpeedStepEnable = -1;
 module_param(SpeedStepEnable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStepEnable, "Enable SpeedStep");
@@ -2307,6 +2315,7 @@ void PerCore_Core2_Query(CORE *Core)
 void PerCore_Nehalem_Query(CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
+	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 
 	Microcode(Core);
 
@@ -2317,7 +2326,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		int ToggleDemotion = 0;
+		int ToggleFeature = 0;
 
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
@@ -2325,17 +2334,24 @@ void PerCore_Nehalem_Query(CORE *Core)
 			case 0:
 			case 1:
 				CStateConfig.C3autoDemotion = C3A_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
 		switch (C1A_Enable) {
 			case 0:
 			case 1:
 				CStateConfig.C1autoDemotion = C1A_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
-		if (ToggleDemotion == 1) {
+		switch (IOMWAIT_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+				ToggleFeature = 1;
+			break;
+		}
+		if (ToggleFeature == 1) {
 			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		}
@@ -2370,6 +2386,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 			}
 		}
 		Core->Query.CfgLock = CStateConfig.CFG_Lock;
+		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
 		switch (CStateConfig.Pkg_CStateLimit) {
 		case 0b100:
@@ -2390,27 +2407,42 @@ void PerCore_Nehalem_Query(CORE *Core)
 			break;
 		}
 
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
 		if (CStateConfig.IO_MWAIT_Redir) {
-			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-
-			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-
-			switch (CState_IO_MWAIT.CStateRange) {
-			case 0b010:
-				Core->Query.CStateInclude = 7;
+			switch (CStateIORedir) {
+			case 7:
+				CState_IO_MWAIT.CStateRange = 0b010;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
-			case 0b001:
-				Core->Query.CStateInclude = 6;
+			case 6:
+				CState_IO_MWAIT.CStateRange = 0b001;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
-			case 0b000:
-				Core->Query.CStateInclude = 3;
-				break;
-			default:
-				Core->Query.CStateInclude = 0;
+			case 3:
+				CState_IO_MWAIT.CStateRange = 0b000;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
 			}
+			if (CStateIORedir != -1) {
+				RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			}
 		}
-		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+
+		switch (CState_IO_MWAIT.CStateRange) {
+		case 0b010:
+			Core->Query.CStateInclude = 7;
+			break;
+		case 0b001:
+			Core->Query.CStateInclude = 6;
+			break;
+		case 0b000:
+			Core->Query.CStateInclude = 3;
+			break;
+		default:
+			Core->Query.CStateInclude = 0;
+			break;
+		}
 	}
 	PowerThermal(Core);
 
@@ -2420,6 +2452,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 void PerCore_SandyBridge_Query(CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
+	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 
 	Microcode(Core);
 
@@ -2430,7 +2463,7 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		int ToggleDemotion = 0;
+		int ToggleFeature = 0;
 
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
@@ -2438,31 +2471,38 @@ void PerCore_SandyBridge_Query(CORE *Core)
 			case 0:
 			case 1:
 				CStateConfig.C3autoDemotion = C3A_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
 		switch (C1A_Enable) {
 			case 0:
 			case 1:
 				CStateConfig.C1autoDemotion = C1A_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
 		switch (C3U_Enable) {
 			case 0:
 			case 1:
 				CStateConfig.C3undemotion = C3U_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
 		switch (C1U_Enable) {
 			case 0:
 			case 1:
 				CStateConfig.C1undemotion = C1U_Enable;
-				ToggleDemotion = 1;
+				ToggleFeature = 1;
 			break;
 		}
-		if (ToggleDemotion == 1) {
+		switch (IOMWAIT_Enable) {
+			case 0:
+			case 1:
+				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+				ToggleFeature = 1;
+			break;
+		}
+		if (ToggleFeature == 1) {
 			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		}
@@ -2496,6 +2536,7 @@ void PerCore_SandyBridge_Query(CORE *Core)
 			}
 		}
 		Core->Query.CfgLock = CStateConfig.CFG_Lock;
+		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
 		switch (CStateConfig.Pkg_CStateLimit) {
 		case 0b101:
@@ -2515,27 +2556,42 @@ void PerCore_SandyBridge_Query(CORE *Core)
 			break;
 		}
 
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
 		if (CStateConfig.IO_MWAIT_Redir) {
-			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-
-			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-
-			switch (CState_IO_MWAIT.CStateRange) {
-			case 0b010:
-				Core->Query.CStateInclude = 7;
+			switch (CStateIORedir) {
+			case 7:
+				CState_IO_MWAIT.CStateRange = 0b010;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
-			case 0b001:
-				Core->Query.CStateInclude = 6;
+			case 6:
+				CState_IO_MWAIT.CStateRange = 0b001;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
-			case 0b000:
-				Core->Query.CStateInclude = 3;
-				break;
-			default:
-				Core->Query.CStateInclude = 0;
+			case 3:
+				CState_IO_MWAIT.CStateRange = 0b000;
+				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 				break;
 			}
+			if (CStateIORedir != -1) {
+				RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			}
 		}
-		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+
+		switch (CState_IO_MWAIT.CStateRange) {
+		case 0b010:
+			Core->Query.CStateInclude = 7;
+			break;
+		case 0b001:
+			Core->Query.CStateInclude = 6;
+			break;
+		case 0b000:
+			Core->Query.CStateInclude = 3;
+			break;
+		default:
+			Core->Query.CStateInclude = 0;
+			break;
+		}
 	}
 	PowerThermal(Core);
 
@@ -3844,6 +3900,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 	case COREFREQ_IOCTL_PKGCST:
 		PkgCStateLimit = arg;
+		toggleFeature = COREFREQ_TOOGLE_ON;
+		break;
+	case COREFREQ_IOCTL_IOMWAIT:
+		switch (arg) {
+			case COREFREQ_TOOGLE_OFF:
+			case COREFREQ_TOOGLE_ON:
+					IOMWAIT_Enable = arg;
+					toggleFeature = COREFREQ_TOOGLE_ON;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_IORCST:
+		CStateIORedir = arg;
 		toggleFeature = COREFREQ_TOOGLE_ON;
 		break;
 	default:

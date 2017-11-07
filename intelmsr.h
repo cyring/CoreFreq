@@ -173,10 +173,32 @@ typedef union
 	{
 		unsigned long long
 		LVL2_BaseAddr	: 16-0,
-		CStateRange	: 19-16,
+		CStateRange	: 19-16, // R/W
 		ReservedBits	: 64-19;
 	};
 } CSTATE_IO_MWAIT;
+/*
+	*MSR_PMG_IO_CAPTURE_BASE(E4h)
+	Silvermont, Airmont, Goldmont, Nehalem, Sandy Bridge, Ivy Bridge-E, Phi
+
+	if MSR_PKG_CST_CONFIG_CONTROL(E2h).IO_MWAIT_Redir is enable then
+	{
+	Per Module	Phi.CStateRange =	100b	C4
+						110b	C6
+	Per Core	SNB & IVB-E.CStateRange=000b	C3
+						001b	C6
+						010b	C7
+	Per Core	NHM.CStateRange =	000b	C3
+						001b	C6
+						010b	C7
+	Per Module	Airmont.CStateRange =	000b	C3
+						001b	Deep Power Down tech.
+						010b	C7
+	Per Module	Goldmont.CStateRange =	100b	C4
+						110b	C6
+						111b	C7
+	}
+*/
 
 typedef union
 {

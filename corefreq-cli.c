@@ -263,6 +263,15 @@ typedef union {
 #define BOXKEY_PKGCST_C3	0x3000000000000231
 #define BOXKEY_PKGCST_C6	0x3000000000000261
 #define BOXKEY_PKGCST_C7	0x3000000000000271
+#define BOXKEY_IOMWAIT		0x3000000000000400
+#define BOXKEY_IOMWAIT_OFF	0x3000000000000401
+#define BOXKEY_IOMWAIT_ON	0x3000000000000402
+#define BOXKEY_IORCST		0x3000000000000800
+#define BOXKEY_IORCST_C0	0x3000000000000801
+#define BOXKEY_IORCST_C3	0x3000000000000831
+#define BOXKEY_IORCST_C4	0x3000000000000841
+#define BOXKEY_IORCST_C6	0x3000000000000861
+#define BOXKEY_IORCST_C7	0x3000000000000871
 
 #define TRACK_TASK		0x2000000000000000
 #define TRACK_MASK		0x0000000000007fff
@@ -1029,13 +1038,13 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 		width - (OutFunc == NULL ? 37 : 35), hSpace,
 		Shm->Cpu[0].Query.CStateLimit);
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
+	printv(OutFunc, BOXKEY_IOMWAIT, width, 3,
+		"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
 		width - (OutFunc == NULL ? 46 : 44), hSpace,
-		Shm->Cpu[0].Query.CfgLock? " ENABLE":"DISABLE");
+		Shm->Cpu[0].Query.IORedir? " ENABLE":"DISABLE");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"Max C-State Inclusion%.*sRANGE   [%7d]",
+	printv(OutFunc, BOXKEY_IORCST, width, 3,
+		"Max C-State Inclusion%.*sRANGE   <%7d>",
 		width - (OutFunc == NULL ? 44 : 42), hSpace,
 		Shm->Cpu[0].Query.CStateInclude);
 
@@ -3559,7 +3568,8 @@ void Top(SHM_STRUCT *Shm)
 			(ASCII*)"          C1 Auto Demotion          ",
 			(ASCII*)"          C3 Auto Demotion          ",
 			(ASCII*)"            C1 UnDemotion           ",
-			(ASCII*)"            C3 UnDemotion           "
+			(ASCII*)"            C3 UnDemotion           ",
+			(ASCII*)"        I/O MWAIT Redirection       "
 	};
 
 	switch (scan->key) {
@@ -4029,7 +4039,7 @@ void Top(SHM_STRUCT *Shm)
 	  Window *win = SearchWinListById(scan->key, &winList);
 	  if (win == NULL)
 	    {
-		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0};
+		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0}; // Row index
 		const Coordinate origin = {
 			.col = (drawSize.width - (44 - 17)) / 2,
 			.row = TOP_HEADER_ROW + 2
@@ -4074,6 +4084,91 @@ void Top(SHM_STRUCT *Shm)
 		const unsigned long newCST=(scan->key - BOXKEY_PKGCST_C0) >> 4;
 		if (!RING_FULL(Shm->Ring))
 			RING_WRITE(Shm->Ring, COREFREQ_IOCTL_PKGCST, newCST);
+		}
+		break;
+	case BOXKEY_IOMWAIT:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+	    const unsigned int isIORedir = (Shm->Cpu[0].Query.IORedir == 1);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 9
+	    }, select = {
+		.col = 0,
+		.row = isIORedir ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " I/O MWAIT ",
+	      blankStr, blankAttr, SCANKEY_NULL,
+	      descStr[7], descAttr, SCANKEY_NULL,
+	      blankStr, blankAttr, SCANKEY_NULL,
+	      stateStr[1][isIORedir], stateAttr[isIORedir], BOXKEY_IOMWAIT_ON,
+	      stateStr[0][!isIORedir], stateAttr[!isIORedir],BOXKEY_IOMWAIT_OFF,
+	      blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_IOMWAIT_OFF:
+	  {
+	  if (!RING_FULL(Shm->Ring))
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOOGLE_OFF);
+	  }
+	  break;
+	case BOXKEY_IOMWAIT_ON:
+	  {
+	  if (!RING_FULL(Shm->Ring))
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOOGLE_ON);
+	  }
+	  break;
+	case BOXKEY_IORCST:
+	  {
+	  Window *win = SearchWinListById(scan->key, &winList);
+	  if (win == NULL)
+	    {
+		const CSINT thisCST[]={-1, -1, -1, 3, 2, -1, 1, 0}; // Row index
+		const Coordinate origin = {
+			.col = (drawSize.width - (44 - 17)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = thisCST[Shm->Cpu[0].Query.CStateInclude] != -1 ?
+				    thisCST[Shm->Cpu[0].Query.CStateInclude] : 0
+		};
+		Window *wBox = CreateBox(scan->key, origin, select,
+					" I/O MWAIT Max C-State ",
+	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_IORCST_C7,
+	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_IORCST_C6,
+	(ASCII*)"             C4            ", stateAttr[0], BOXKEY_IORCST_C4,
+	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_IORCST_C3);
+		if (wBox != NULL) {
+			TCellAt(wBox, 0, select.row).attr[11] =		\
+			TCellAt(wBox, 0, select.row).attr[12] =		\
+			TCellAt(wBox, 0, select.row).attr[13] =		\
+			TCellAt(wBox, 0, select.row).attr[14] =		\
+			TCellAt(wBox, 0, select.row).attr[15] =		\
+			TCellAt(wBox, 0, select.row).attr[16] =		\
+								stateAttr[1];
+			TCellAt(wBox, 0, select.row).item[11] = '<';
+			TCellAt(wBox, 0, select.row).item[16] = '>';
+
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
+	    } else
+		SetHead(&winList, win);
+	  }
+	  break;
+	case BOXKEY_IORCST_C3:
+	case BOXKEY_IORCST_C4:
+	case BOXKEY_IORCST_C6:
+	case BOXKEY_IORCST_C7:
+		{
+		const unsigned long newCST=(scan->key - BOXKEY_IORCST_C0) >> 4;
+		if (!RING_FULL(Shm->Ring))
+			RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IORCST, newCST);
 		}
 		break;
 	case SCANKEY_k:
