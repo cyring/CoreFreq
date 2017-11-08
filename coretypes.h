@@ -845,7 +845,8 @@ typedef	struct {
 		unsigned int	targetResidency;	/* in US */
 			char	Name[CPUIDLE_NAME_LEN];
 	} State[CPUIDLE_STATE_MAX];
-	char			Name[CPUIDLE_NAME_LEN];
+	char			Name[CPUIDLE_NAME_LEN],
+				Governor[CPUIDLE_NAME_LEN];
 } IDLEDRIVER;
 
 #ifndef TASK_COMM_LEN
@@ -880,8 +881,8 @@ typedef struct {
 } MEM_MCB;
 
 // Input-Output Control
-#define COREFREQ_TOOGLE_OFF	0x0000000000000000L
-#define COREFREQ_TOOGLE_ON	0x0000000000000001L
+#define COREFREQ_TOGGLE_OFF	0x0000000000000000L
+#define COREFREQ_TOGGLE_ON	0x0000000000000001L
 
 #define COREFREQ_IOCTL_MAGIC 0xc3
 #define COREFREQ_IOCTL_SYSUPDT	_IO(COREFREQ_IOCTL_MAGIC, 0x1)

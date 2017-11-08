@@ -1877,6 +1877,9 @@ void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
 			SysGate->IdleDriver.State[i].targetResidency;
 	}
     }
+    if (strlen(SysGate->IdleDriver.Governor) > 0)
+	strncpy(Shm->SysGate.IdleDriver.Governor,
+		SysGate->IdleDriver.Governor, CPUIDLE_NAME_LEN - 1);
 }
 
 void SysGate_Kernel(SHM_STRUCT *Shm, SYSGATE *SysGate)

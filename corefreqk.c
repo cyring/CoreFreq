@@ -16,6 +16,7 @@
 #include <linux/slab.h>
 #include <linux/utsname.h>
 #include <linux/cpuidle.h>
+#include <linux/cpufreq.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/sched/signal.h>
 #endif
@@ -2066,8 +2067,8 @@ void SpeedStep_Technology(CORE *Core)				// Per Package!
 		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 		switch (SpeedStepEnable) {
-		    case COREFREQ_TOOGLE_OFF:
-		    case COREFREQ_TOOGLE_ON:
+		    case COREFREQ_TOGGLE_OFF:
+		    case COREFREQ_TOGGLE_ON:
 			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
 				MiscFeatures.EIST = SpeedStepEnable;
 				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
@@ -2091,8 +2092,8 @@ void TurboBoost_Technology(CORE *Core)
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
 		switch (TurboBoostEnable) {			// Per Thread
-		    case COREFREQ_TOOGLE_OFF:
-		    case COREFREQ_TOOGLE_ON:
+		    case COREFREQ_TOGGLE_OFF:
+		    case COREFREQ_TOGGLE_ON:
 			PerfControl.Turbo_IDA = !TurboBoostEnable;
 			WRMSR(PerfControl, MSR_IA32_PERF_CTL);
 			RDMSR(PerfControl, MSR_IA32_PERF_CTL);
@@ -2119,8 +2120,8 @@ void Query_Intel_C1E(CORE *Core)
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
 
 	switch (C1E_Enable) {					// Per Package
-		case COREFREQ_TOOGLE_OFF:
-		case COREFREQ_TOOGLE_ON:
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
 			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
 				PowerCtrl.C1E = C1E_Enable;
 				WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
@@ -2331,22 +2332,22 @@ void PerCore_Nehalem_Query(CORE *Core)
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		switch (C3A_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C3autoDemotion = C3A_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (C1A_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C1autoDemotion = C1A_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (IOMWAIT_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
 				ToggleFeature = 1;
 			break;
@@ -2468,36 +2469,36 @@ void PerCore_SandyBridge_Query(CORE *Core)
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
 		switch (C3A_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C3autoDemotion = C3A_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (C1A_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C1autoDemotion = C1A_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (C3U_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C3undemotion = C3U_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (C1U_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.C1undemotion = C1U_Enable;
 				ToggleFeature = 1;
 			break;
 		}
 		switch (IOMWAIT_Enable) {
-			case 0:
-			case 1:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
 				ToggleFeature = 1;
 			break;
@@ -3744,10 +3745,11 @@ void Stop_SandyBridge(void *arg)
 
 long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {
-	if (SysGate != NULL) {
-	    struct cpuidle_driver *idleDriver;
+    if (SysGate != NULL) {
+	struct cpuidle_driver *idleDriver;
+	struct cpufreq_policy freqPolicy;
 
-	    if ((idleDriver = cpuidle_get_driver()) != NULL) {
+	if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
 
 		strncpy(SysGate->IdleDriver.Name,
@@ -3771,14 +3773,22 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 			SysGate->IdleDriver.State[i].targetResidency =
 					idleDriver->states[i].target_residency;
 		}
-	    }
-	    else
-		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
-
-	    return(0);
 	}
 	else
-	    return(-1);
+		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
+
+	memset(&freqPolicy, 0, sizeof(freqPolicy));
+	if (cpufreq_get_policy(&freqPolicy, smp_processor_id()) == 0) {
+		struct cpufreq_governor *pGovernor = freqPolicy.governor;
+		if (pGovernor != NULL)
+			strncpy(SysGate->IdleDriver.Governor,
+				pGovernor->name,
+				CPUIDLE_NAME_LEN - 1);
+	}
+	return(0);
+    }
+    else
+	return(-1);
 }
 
 long Sys_Kernel(SYSGATE *SysGate)
@@ -3819,7 +3829,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned long arg)
 {
 	long rc = -1;
-	int toggleFeature = COREFREQ_TOOGLE_OFF;
+	int toggleFeature = COREFREQ_TOGGLE_OFF;
 
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
@@ -3835,96 +3845,96 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 	case COREFREQ_IOCTL_MACHINE:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
-					toggleFeature = COREFREQ_TOOGLE_ON;
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_EIST:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					SpeedStepEnable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_C1E:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					C1E_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_TURBO:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					TurboBoostEnable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_C1A:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					C1A_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_C3A:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					C3A_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_C1U:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					C1U_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_C3U:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					C3U_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_PKGCST:
 		PkgCStateLimit = arg;
-		toggleFeature = COREFREQ_TOOGLE_ON;
+		toggleFeature = COREFREQ_TOGGLE_ON;
 		break;
 	case COREFREQ_IOCTL_IOMWAIT:
 		switch (arg) {
-			case COREFREQ_TOOGLE_OFF:
-			case COREFREQ_TOOGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 					IOMWAIT_Enable = arg;
-					toggleFeature = COREFREQ_TOOGLE_ON;
+					toggleFeature = COREFREQ_TOGGLE_ON;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_IORCST:
 		CStateIORedir = arg;
-		toggleFeature = COREFREQ_TOOGLE_ON;
+		toggleFeature = COREFREQ_TOGGLE_ON;
 		break;
 	default:
 		rc = -1;
 	}
-	if (toggleFeature == COREFREQ_TOOGLE_ON) {
+	if (toggleFeature == COREFREQ_TOGGLE_ON) {
 		Controller_Stop(1);
 		Controller_Start(1);
 		rc = 0;

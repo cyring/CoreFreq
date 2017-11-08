@@ -1209,9 +1209,11 @@ void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Free High" "%.*s" "%s KB",
 		width - 15 - len, hSpace, str);
 /* Section Mark */
-    if ((len = strlen(Shm->SysGate.IdleDriver.Name)) > 0) {
-	printv(OutFunc, SCANKEY_NULL, width, 0, "Idle driver%.*s[%s]",
-		width - 13 - len, hSpace, Shm->SysGate.IdleDriver.Name);
+    if ((len = strlen(Shm->SysGate.IdleDriver.Name)
+		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0) {
+	printv(OutFunc, SCANKEY_NULL, width, 0, "Idle driver%.*s[%s@%s]",
+		width - 14 - len, hSpace,
+		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
 	len = sprintf(row, "States:%.*s", 9, hSpace);
 	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
@@ -3576,13 +3578,13 @@ void Top(SHM_STRUCT *Shm)
 /*	case SCANKEY_PLUS:
 	  {
 	  if (!RING_FULL(Shm->Ring))
-	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOOGLE_ON);
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_ON);
 	  }
 	  break;
 	case SCANKEY_MINUS:
 	  {
 	  if (!RING_FULL(Shm->Ring))
-	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOOGLE_OFF);
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_OFF);
 	  }
 	  break;	*/
 	case SCANKEY_F2:
@@ -3802,13 +3804,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_EIST_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_EIST_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_C1E:
@@ -3839,13 +3841,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_C1E_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_C1E_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_TURBO:
@@ -3877,13 +3879,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_TURBO_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO,COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO,COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_TURBO_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_C1A:
@@ -3914,13 +3916,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_C1A_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_C1A_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_C3A:
@@ -3951,13 +3953,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_C3A_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_C3A_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_C1U:
@@ -3988,13 +3990,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_C1U_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_C1U_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_C3U:
@@ -4025,13 +4027,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_C3U_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOOGLE_OFF);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
 	case BOXKEY_C3U_ON:
 	    {
 	    if (!RING_FULL(Shm->Ring))
-		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOOGLE_ON);
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_ON);
 	    }
 	    break;
 	case BOXKEY_PKGCST:
@@ -4114,13 +4116,13 @@ void Top(SHM_STRUCT *Shm)
 	case BOXKEY_IOMWAIT_OFF:
 	  {
 	  if (!RING_FULL(Shm->Ring))
-	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOOGLE_OFF);
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_OFF);
 	  }
 	  break;
 	case BOXKEY_IOMWAIT_ON:
 	  {
 	  if (!RING_FULL(Shm->Ring))
-	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOOGLE_ON);
+	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_ON);
 	  }
 	  break;
 	case BOXKEY_IORCST:
