@@ -272,6 +272,25 @@ typedef union {
 #define BOXKEY_IORCST_C4	0x3000000000000841
 #define BOXKEY_IORCST_C6	0x3000000000000861
 #define BOXKEY_IORCST_C7	0x3000000000000871
+#define BOXKEY_ODCM		0x3000000000001000
+#define BOXKEY_ODCM_OFF		0x3000000000001001
+#define BOXKEY_ODCM_ON		0x3000000000001002
+#define BOXKEY_DUTYCYCLE	0x3000000000002000
+#define BOXKEY_ODCM_DC00	0x3000000000002001
+#define BOXKEY_ODCM_DC01	0x3000000000002011
+#define BOXKEY_ODCM_DC02	0x3000000000002021
+#define BOXKEY_ODCM_DC03	0x3000000000002031
+#define BOXKEY_ODCM_DC04	0x3000000000002041
+#define BOXKEY_ODCM_DC05	0x3000000000002051
+#define BOXKEY_ODCM_DC06	0x3000000000002061
+#define BOXKEY_ODCM_DC07	0x3000000000002071
+#define BOXKEY_ODCM_DC08	0x3000000000002081
+#define BOXKEY_ODCM_DC09	0x3000000000002091
+#define BOXKEY_ODCM_DC10	0x30000000000020a1
+#define BOXKEY_ODCM_DC11	0x30000000000020b1
+#define BOXKEY_ODCM_DC12	0x30000000000020c1
+#define BOXKEY_ODCM_DC13	0x30000000000020d1
+#define BOXKEY_ODCM_DC14	0x30000000000020e1
 
 #define TRACK_TASK		0x2000000000000000
 #define TRACK_MASK		0x0000000000007fff
@@ -1113,14 +1132,16 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 		isODCM = (Shm->Proc.ODCM == Shm->Proc.ODCM_Mask),
 		isPowerMgmt = (Shm->Proc.PowerMgmt == Shm->Proc.PowerMgmt_Mask);
 /* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Clock Modulation%.*sODCM   [%7s]",
+	printv(OutFunc, BOXKEY_ODCM, width, 2,
+		"Clock Modulation%.*sODCM   <%7s>",
 		width - 35, hSpace, isODCM ? " Enable" : "Disable");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"DutyCycle%.*s[%6.2f%%]",
-		width - (OutFunc == NULL ? 24: 22),
-		hSpace, Shm->Cpu[0].PowerThermal.DutyCycle);
+	printv(OutFunc, BOXKEY_DUTYCYCLE, width, 3,
+		"DutyCycle%.*s<%6.2f%%>",
+		width - (OutFunc == NULL ? 24: 22), hSpace,
+		(Shm->Cpu[0].PowerThermal.DutyCycle.Extended ?
+			6.25f : 12.5f
+			* Shm->Cpu[0].PowerThermal.DutyCycle.ClockMod));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Power Management%.*sPWR MGMT   [%7s]",
@@ -3545,8 +3566,8 @@ void Top(SHM_STRUCT *Shm)
 	}
     }
 
-    int Shortcut(SCANKEY *scan)
-    {
+  int Shortcut(SCANKEY *scan)
+  {
 	Attribute stateAttr[2] = {
 		MakeAttr(WHITE, 0, BLACK, 0),
 		MakeAttr(CYAN, 0, BLACK, 1)
@@ -3571,214 +3592,217 @@ void Top(SHM_STRUCT *Shm)
 			(ASCII*)"          C3 Auto Demotion          ",
 			(ASCII*)"            C1 UnDemotion           ",
 			(ASCII*)"            C3 UnDemotion           ",
-			(ASCII*)"        I/O MWAIT Redirection       "
+			(ASCII*)"        I/O MWAIT Redirection       ",
+			(ASCII*)"          Clock Modulation          "
 	};
 
-	switch (scan->key) {
-/*	case SCANKEY_PLUS:
-	  {
-	  if (!RING_FULL(Shm->Ring))
+    switch (scan->key) {
+/*
+    case SCANKEY_PLUS:
+	{
+	if (!RING_FULL(Shm->Ring))
 	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_ON);
-	  }
-	  break;
-	case SCANKEY_MINUS:
-	  {
-	  if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case SCANKEY_MINUS:
+	{
+	if (!RING_FULL(Shm->Ring))
 	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_OFF);
-	  }
-	  break;	*/
-	case SCANKEY_F2:
-	case SCANCON_F2:
-		{
-		Window *win = SearchWinListById(SCANKEY_F2, &winList);
-		if (win == NULL)
-			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
-		else
-			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_F4:
-	case SCANCON_F4:
-		Shutdown = 0x1;
-		break;
-	case SCANKEY_PERCENT:
-		{
-		drawFlag.avgOrPC = !drawFlag.avgOrPC;
-		drawFlag.clear = 1;
-		}
-		break;
-	case SCANKEY_a:
-		{
+	}
+	break;
+*/
+    case SCANKEY_F2:
+    case SCANCON_F2:
+	{
+	Window *win = SearchWinListById(SCANKEY_F2, &winList);
+	if (win == NULL)
+		AppendWindow(CreateMenu(SCANKEY_F2), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_F4:
+    case SCANCON_F4:
+	Shutdown = 0x1;
+	break;
+    case SCANKEY_PERCENT:
+	{
+	drawFlag.avgOrPC = !drawFlag.avgOrPC;
+	drawFlag.clear = 1;
+	}
+	break;
+    case SCANKEY_a:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateAbout(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_b:
+	if (drawFlag.view == V_TASKS) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
-			AppendWindow(CreateAbout(scan->key), &winList);
-		else
-			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_b:
-		if (drawFlag.view == V_TASKS) {
-		    Window *win = SearchWinListById(scan->key, &winList);
-		    if (win == NULL)
 			AppendWindow(CreateSortByField(scan->key), &winList);
-		    else
-			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_c:
-		{
-		drawFlag.view = V_CYCLES;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_f:
-		{
-		drawFlag.view = V_FREQ;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_n:
-		if (drawFlag.view == V_TASKS) {
-			Window *win = SearchWinListById(scan->key, &winList);
-			if (win == NULL)
-			    AppendWindow(CreateTracking(scan->key), &winList);
-			else
-			    SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_g:
-		{
-		drawFlag.view = V_PACKAGE;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_h:
-		{
-		Window *win = SearchWinListById(scan->key, &winList);
-		if (win == NULL)
-			AppendWindow(CreateHelp(scan->key), &winList);
 		else
 			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_i:
-		{
-		drawFlag.view = V_INST;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_l:
-		{
-		drawFlag.view = V_CSTATES;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_m:
-		{
+	}
+	break;
+    case SCANKEY_c:
+	{
+	drawFlag.view = V_CYCLES;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_f:
+	{
+	drawFlag.view = V_FREQ;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_n:
+	if (drawFlag.view == V_TASKS) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
-			AppendWindow(CreateTopology(scan->key), &winList);
+			AppendWindow(CreateTracking(scan->key), &winList);
 		else
 			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_SHIFT_m:
-		if (Shm->Uncore.CtrlCount > 0) {
-			Window *win = SearchWinListById(scan->key, &winList);
-			if (win == NULL)
-				AppendWindow(CreateMemCtrl(scan->key),&winList);
-			else
-				SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_q:
-		{
-		drawFlag.view = V_INTR;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_SHIFT_v:
-		{
-		drawFlag.view = V_VOLTAGE;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SCANKEY_s:
-		{
+	}
+	break;
+    case SCANKEY_g:
+	{
+	drawFlag.view = V_PACKAGE;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_h:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateHelp(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_i:
+	{
+	drawFlag.view = V_INST;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_l:
+	{
+	drawFlag.view = V_CSTATES;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_m:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateTopology(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_SHIFT_m:
+	if (Shm->Uncore.CtrlCount > 0) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
-			AppendWindow(CreateSettings(scan->key), &winList);
+			AppendWindow(CreateMemCtrl(scan->key),&winList);
 		else
 			SetHead(&winList, win);
-		}
-		break;
-	case SCANKEY_r:
-		if (drawFlag.view == V_TASKS) {
-			Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
-			drawFlag.layout = 1;
-		}
-		break;
-	case SCANKEY_v:
-		if (drawFlag.view == V_TASKS) {
-			drawFlag.taskVal = !drawFlag.taskVal;
-			drawFlag.layout = 1;
-		}
-		break;
-	case SCANKEY_x:
-		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-			Shm->SysGate.trackTask = 0;
-			drawFlag.view = V_TASKS;
-			drawSize.height = 0;
-			TrapScreenSize(SIGWINCH);
-		}
-		break;
-	case SORTBY_STATE:
-		{
-		Shm->SysGate.sortByField = F_STATE;
+	}
+	break;
+    case SCANKEY_q:
+	{
+	drawFlag.view = V_INTR;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_SHIFT_v:
+	{
+	drawFlag.view = V_VOLTAGE;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_s:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateSettings(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_r:
+	if (drawFlag.view == V_TASKS) {
+		Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
 		drawFlag.layout = 1;
-		}
-		break;
-	case SORTBY_RTIME:
-		{
-		Shm->SysGate.sortByField = F_RTIME;
+	}
+	break;
+    case SCANKEY_v:
+	if (drawFlag.view == V_TASKS) {
+		drawFlag.taskVal = !drawFlag.taskVal;
 		drawFlag.layout = 1;
-		}
-		break;
-	case SORTBY_UTIME:
-		{
-		Shm->SysGate.sortByField = F_UTIME;
-		drawFlag.layout = 1;
-		}
-		break;
-	case SORTBY_STIME:
-		{
-		Shm->SysGate.sortByField = F_STIME;
-		drawFlag.layout = 1;
-		}
-		break;
-	case SORTBY_PID:
-		{
-		Shm->SysGate.sortByField = F_PID;
-		drawFlag.layout = 1;
-		}
-		break;
-	case SORTBY_COMM:
-		{
-		Shm->SysGate.sortByField = F_COMM;
-		drawFlag.layout = 1;
-		}
-		break;
-	case BOXKEY_EIST:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case SCANKEY_x:
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		Shm->SysGate.trackTask = 0;
+		drawFlag.view = V_TASKS;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SORTBY_STATE:
+	{
+	Shm->SysGate.sortByField = F_STATE;
+	drawFlag.layout = 1;
+	}
+	break;
+    case SORTBY_RTIME:
+	{
+	Shm->SysGate.sortByField = F_RTIME;
+	drawFlag.layout = 1;
+	}
+	break;
+    case SORTBY_UTIME:
+	{
+	Shm->SysGate.sortByField = F_UTIME;
+	drawFlag.layout = 1;
+	}
+	break;
+    case SORTBY_STIME:
+	{
+	Shm->SysGate.sortByField = F_STIME;
+	drawFlag.layout = 1;
+	}
+	break;
+    case SORTBY_PID:
+	{
+	Shm->SysGate.sortByField = F_PID;
+	drawFlag.layout = 1;
+	}
+	break;
+    case SORTBY_COMM:
+	{
+	Shm->SysGate.sortByField = F_COMM;
+	drawFlag.layout = 1;
+	}
+	break;
+    case BOXKEY_EIST:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isEIST =
 			(Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask);
@@ -3799,24 +3823,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_EIST_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_EIST_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_EIST_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_EIST_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_C1E:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_C1E:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isC1E = (Shm->Proc.C1E == Shm->Proc.C1E_Mask);
 	    const Coordinate origin = {
@@ -3836,24 +3860,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_C1E_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C1E_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_C1E_ON:
-	    {
+	}
+	break;
+    case BOXKEY_C1E_ON:
+	{
 	    if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_TURBO:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_TURBO:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isTurbo =
 			(Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask);
@@ -3874,24 +3898,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_TURBO_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_TURBO_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO,COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_TURBO_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_TURBO_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_C1A:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_C1A:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isC1A = (Shm->Proc.C1A == Shm->Proc.C1A_Mask);
 	    const Coordinate origin = {
@@ -3911,24 +3935,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_C1A_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C1A_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_C1A_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C1A_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_C3A:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_C3A:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isC3A = (Shm->Proc.C3A == Shm->Proc.C3A_Mask);
 	    const Coordinate origin = {
@@ -3948,24 +3972,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
+	}
+	break;
 	case BOXKEY_C3A_OFF:
 	    {
 	    if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_OFF);
 	    }
 	    break;
-	case BOXKEY_C3A_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+    case BOXKEY_C3A_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_C1U:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_C1U:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isC1U = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
 	    const Coordinate origin = {
@@ -3985,24 +4009,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_C1U_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C1U_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_C1U_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C1U_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_C3U:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_C3U:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isC3U = (Shm->Proc.C3U == Shm->Proc.C3U_Mask);
 	    const Coordinate origin = {
@@ -4022,24 +4046,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_C3U_OFF:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C3U_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_OFF);
-	    }
-	    break;
-	case BOXKEY_C3U_ON:
-	    {
-	    if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_C3U_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_ON);
-	    }
-	    break;
-	case BOXKEY_PKGCST:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_PKGCST:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0}; // Row index
 		const Coordinate origin = {
@@ -4074,24 +4098,24 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_PKGCST_C7:
-	case BOXKEY_PKGCST_C6:
-	case BOXKEY_PKGCST_C3:
-	case BOXKEY_PKGCST_C2:
-	case BOXKEY_PKGCST_C1:
-	case BOXKEY_PKGCST_C0:
-		{
-		const unsigned long newCST=(scan->key - BOXKEY_PKGCST_C0) >> 4;
-		if (!RING_FULL(Shm->Ring))
-			RING_WRITE(Shm->Ring, COREFREQ_IOCTL_PKGCST, newCST);
-		}
-		break;
-	case BOXKEY_IOMWAIT:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_PKGCST_C7:
+    case BOXKEY_PKGCST_C6:
+    case BOXKEY_PKGCST_C3:
+    case BOXKEY_PKGCST_C2:
+    case BOXKEY_PKGCST_C1:
+    case BOXKEY_PKGCST_C0:
+	{
+	const unsigned long newCST = (scan->key - BOXKEY_PKGCST_C0) >> 4;
+	if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_PKGCST, newCST);
+	}
+	break;
+    case BOXKEY_IOMWAIT:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 	    const unsigned int isIORedir = (Shm->Cpu[0].Query.IORedir == 1);
 	    const Coordinate origin = {
@@ -4111,24 +4135,24 @@ void Top(SHM_STRUCT *Shm)
 		&winList);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_IOMWAIT_OFF:
-	  {
-	  if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_IOMWAIT_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
 	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_OFF);
-	  }
-	  break;
-	case BOXKEY_IOMWAIT_ON:
-	  {
-	  if (!RING_FULL(Shm->Ring))
+	}
+	break;
+    case BOXKEY_IOMWAIT_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
 	    RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_ON);
-	  }
-	  break;
-	case BOXKEY_IORCST:
-	  {
-	  Window *win = SearchWinListById(scan->key, &winList);
-	  if (win == NULL)
+	}
+	break;
+    case BOXKEY_IORCST:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
 	    {
 		const CSINT thisCST[]={-1, -1, -1, 3, 2, -1, 1, 0}; // Row index
 		const Coordinate origin = {
@@ -4161,46 +4185,170 @@ void Top(SHM_STRUCT *Shm)
 			SetHead(&winList, win);
 	    } else
 		SetHead(&winList, win);
-	  }
-	  break;
-	case BOXKEY_IORCST_C3:
-	case BOXKEY_IORCST_C4:
-	case BOXKEY_IORCST_C6:
-	case BOXKEY_IORCST_C7:
-		{
-		const unsigned long newCST=(scan->key - BOXKEY_IORCST_C0) >> 4;
-		if (!RING_FULL(Shm->Ring))
-			RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IORCST, newCST);
-		}
-		break;
-	case SCANKEY_k:
-		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0)
-			break;
-		// fallthrough
-	case SCANKEY_e:
-	case SCANKEY_o:
-	case SCANKEY_p:
-	case SCANKEY_t:
-	case SCANKEY_u:
-	case SCANKEY_w:
-		{
-		Window *win = SearchWinListById(scan->key, &winList);
-		if (win == NULL)
-			AppendWindow(CreateSysInfo(scan->key), &winList);
-		else
-			SetHead(&winList, win);
-		}
-		break;
-	default:
-		if (scan->key & TRACK_TASK) {
-			Shm->SysGate.trackTask = scan->key & TRACK_MASK;
-			drawFlag.layout = 1;
-		}
-		else
-			return(-1);
 	}
-	return(0);
+	break;
+    case BOXKEY_IORCST_C3:
+    case BOXKEY_IORCST_C4:
+    case BOXKEY_IORCST_C6:
+    case BOXKEY_IORCST_C7:
+	{
+	const unsigned long newCST = (scan->key - BOXKEY_IORCST_C0) >> 4;
+	if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_IORCST, newCST);
+	}
+	break;
+    case BOXKEY_ODCM:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	    {
+	    const unsigned int isODCM = (Shm->Proc.ODCM == Shm->Proc.ODCM_Mask);
+	    const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 6
+	    }, select = {
+		.col = 0,
+		.row = isODCM ? 4 : 3
+	    };
+	    AppendWindow(CreateBox(scan->key, origin, select, " ODCM ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[8], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][isODCM], stateAttr[isODCM], BOXKEY_ODCM_ON,
+		stateStr[0][!isODCM], stateAttr[!isODCM],BOXKEY_ODCM_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+	    } else
+		SetHead(&winList, win);
+	}
+	break;
+    case BOXKEY_ODCM_OFF:
+	{
+	if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_OFF);
+	}
+	break;
+    case BOXKEY_ODCM_ON:
+	{
+	if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_ON);
+	}
+	break;
+    case BOXKEY_DUTYCYCLE:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	  {
+	  const CSINT maxCM = 7 << Shm->Cpu[0].PowerThermal.DutyCycle.Extended;
+	  const Coordinate origin = {
+		.col = (drawSize.width - (44 - 17)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	  }, select = {
+	  .col = 0,
+	  .row = (Shm->Cpu[0].PowerThermal.DutyCycle.ClockMod >= 0)
+	      && (Shm->Cpu[0].PowerThermal.DutyCycle.ClockMod <= maxCM) ?
+			Shm->Cpu[0].PowerThermal.DutyCycle.ClockMod : 1
+	  };
+	  Window *wBox = NULL;
+	  if (Shm->Cpu[0].PowerThermal.DutyCycle.Extended)
+		wBox = CreateBox(scan->key, origin, select,
+				" Extended Duty Cycle ",
+	(ASCII*)"          Reserved         ", blankAttr,    BOXKEY_ODCM_DC00,
+	(ASCII*)"            6.25%          ", stateAttr[0], BOXKEY_ODCM_DC01,
+	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC02,
+	(ASCII*)"           18.75%          ", stateAttr[0], BOXKEY_ODCM_DC03,
+	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC04,
+	(ASCII*)"           31.25%          ", stateAttr[0], BOXKEY_ODCM_DC05,
+	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC06,
+	(ASCII*)"           43.75%          ", stateAttr[0], BOXKEY_ODCM_DC07,
+	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC08,
+	(ASCII*)"           56.25%          ", stateAttr[0], BOXKEY_ODCM_DC09,
+	(ASCII*)"           63.50%          ", stateAttr[0], BOXKEY_ODCM_DC10,
+	(ASCII*)"           68.75%          ", stateAttr[0], BOXKEY_ODCM_DC11,
+	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC12,
+	(ASCII*)"           81.25%          ", stateAttr[0], BOXKEY_ODCM_DC13,
+	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC14);
+	  else
+		wBox = CreateBox(scan->key, origin, select,
+				" Duty Cycle ",
+	(ASCII*)"          Reserved         ", blankAttr,    BOXKEY_ODCM_DC00,
+	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC01,
+	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC02,
+	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC03,
+	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC04,
+	(ASCII*)"           63.50%          ", stateAttr[0], BOXKEY_ODCM_DC05,
+	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC06,
+	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC07);
+	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 9] =		\
+		TCellAt(wBox, 0, select.row).attr[10] =		\
+		TCellAt(wBox, 0, select.row).attr[11] =		\
+		TCellAt(wBox, 0, select.row).attr[12] =		\
+		TCellAt(wBox, 0, select.row).attr[13] =		\
+		TCellAt(wBox, 0, select.row).attr[14] =		\
+		TCellAt(wBox, 0, select.row).attr[15] =		\
+		TCellAt(wBox, 0, select.row).attr[16] =		\
+		TCellAt(wBox, 0, select.row).attr[17] =		\
+		TCellAt(wBox, 0, select.row).attr[18] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 9] = '<';
+		TCellAt(wBox, 0, select.row).item[18] = '>';
+
+		AppendWindow(wBox, &winList);
+	    } else
+		SetHead(&winList, win);
+	  } else
+		SetHead(&winList, win);
+	}
+	break;
+    case BOXKEY_ODCM_DC00:
+    case BOXKEY_ODCM_DC01:
+    case BOXKEY_ODCM_DC02:
+    case BOXKEY_ODCM_DC03:
+    case BOXKEY_ODCM_DC04:
+    case BOXKEY_ODCM_DC05:
+    case BOXKEY_ODCM_DC06:
+    case BOXKEY_ODCM_DC07:
+    case BOXKEY_ODCM_DC08:
+    case BOXKEY_ODCM_DC09:
+    case BOXKEY_ODCM_DC10:
+    case BOXKEY_ODCM_DC11:
+    case BOXKEY_ODCM_DC12:
+    case BOXKEY_ODCM_DC13:
+    case BOXKEY_ODCM_DC14:
+	{
+	const unsigned long newDC = (scan->key - BOXKEY_ODCM_DC00) >> 4;
+	if (!RING_FULL(Shm->Ring))
+		RING_WRITE(Shm->Ring, COREFREQ_IOCTL_ODCM_DC, newDC);
+	}
+	break;
+    case SCANKEY_k:
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0)
+		break;
+	// fallthrough
+    case SCANKEY_e:
+    case SCANKEY_o:
+    case SCANKEY_p:
+    case SCANKEY_t:
+    case SCANKEY_u:
+    case SCANKEY_w:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateSysInfo(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    default:
+	if (scan->key & TRACK_TASK) {
+		Shm->SysGate.trackTask = scan->key & TRACK_MASK;
+		drawFlag.layout = 1;
+	}
+	else
+		return(-1);
     }
+    return(0);
+  }
 
     void PrintLCD(Layer *layer, unsigned int relativeFreq, double relativeRatio)
     {

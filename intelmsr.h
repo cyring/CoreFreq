@@ -274,10 +274,10 @@ typedef union
 	struct
 	{
 		unsigned long long
-		ODCM_DutyCycle	:  4-0,  // OnDemand Clock Modulation Duty Cycle
+		DutyCycle	:  4-0,  // OnDemand Clock Modulation Duty Cycle
 		ODCM_Enable	:  5-4,
 		ReservedBits	: 63-5,
-		ExtensionBit	: 64-63; // Workaround to store CPUID(0x6)AX.5
+		ECMD		: 64-63; // Placebo for CPUID(0x6)AX.5
 	};
 } CLOCK_MODULATION;
 

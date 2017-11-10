@@ -1799,20 +1799,24 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
-void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+void ClockModulation(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
+	Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended =
+			Core[cpu]->PowerThermal.ClockModulation.ECMD;
+
+	Shm->Cpu[cpu].PowerThermal.DutyCycle.ClockMod =
+		Core[cpu]->PowerThermal.ClockModulation.DutyCycle
+			>> !Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended;
+
 	BITSET(LOCKLESS, Shm->Proc.ODCM_Mask, cpu);
 	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
 		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.ODCM, cpu);
+}
 
-	Shm->Cpu[cpu].PowerThermal.DutyCycle =
-		Core[cpu]->PowerThermal.ClockModulation.ExtensionBit == 1 ?
-					6.25f : 12.5f;
-	Shm->Cpu[cpu].PowerThermal.DutyCycle
-		*= Core[cpu]->PowerThermal.ClockModulation.ODCM_DutyCycle;
-
+void PowerManagement(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{
 	BITSET(LOCKLESS, Shm->Proc.PowerMgmt_Mask, cpu);
 	if (Core[cpu]->PowerThermal.PwrManagement.Perf_BIAS_Enable)
 		BITSET(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
@@ -1821,6 +1825,12 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
 		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
+}
+
+void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{
+	ClockModulation(Shm, Proc, Core, cpu);
+	PowerManagement(Shm, Proc, Core, cpu);
 
 	Shm->Cpu[cpu].PowerThermal.TM1 =
 		Proc->Features.Std.DX.TM1;			//0001
@@ -2138,6 +2148,11 @@ static void *Emergency_Handler(void *arg)
 					CStates(Ref->Shm,
 						Ref->Core,
 						cpu);
+
+					ClockModulation(Ref->Shm,
+							Ref->Proc,
+							Ref->Core,
+							cpu);
 				}
 			if (Quiet & 0x100)
 				printf("  IOCTL(%x,%lx)\n", ctrl.cmd, ctrl.arg);

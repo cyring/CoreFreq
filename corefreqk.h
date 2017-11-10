@@ -441,10 +441,10 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 //	[Void]
 #define _Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
-//	[Core]		06_0EH (32 bits)
+//	[Core]		06_0Eh (32 bits)
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
 
-//	[Core2]		06_0FH, 06_15H, 06_16H, 06_17H, 06_1D
+//	[Core2]		06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh
 #define _Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
 #define _Core_Kentsfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
@@ -454,7 +454,7 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 #define _Core_Dunnington \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
 
-//	[Atom]		06_1CH, 06_26H, 06_27H (32bits), 06_35H (32bits), 06_36H
+//	[Atom]		06_1Ch, 06_26h, 06_27h (32bits), 06_35h (32bits), 06_36h
 #define _Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
 #define _Atom_Silvermont \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
@@ -463,26 +463,26 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
 #define _Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
 
-//	[Silvermont]	06_37H
+//	[Silvermont]	06_37h
 #define _Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
 
-//	[Avoton]	06_4DH
+//	[Avoton]	06_4Dh
 #define _Atom_Avoton	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
 
-//	[Airmont]	06_4CH
+//	[Airmont]	06_4Ch
 #define _Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
-//	[Goldmont]	06_5CH
+//	[Goldmont]	06_5Ch
 #define _Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
-//	[SoFIA]		06_5DH
+//	[SoFIA]		06_5Dh
 #define _Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
-//	[Merrifield]	06_4AH
+//	[Merrifield]	06_4Ah
 #define _Atom_Merrifield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xA}
-//	[Moorefield]	06_5AH
+//	[Moorefield]	06_5Ah
 #define _Atom_Moorefield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
 
-//	[Nehalem]	06_1AH, 06_1EH, 06_1FH, 06_2EH
+//	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh
 #define _Nehalem_Bloomfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
 #define _Nehalem_Lynnfield \
@@ -490,40 +490,40 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 #define _Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
 #define _Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
 
-//	[Westmere]	06_25H, 06_2CH, 06_2FH
+//	[Westmere]	06_25h, 06_2Ch, 06_2Fh
 #define _Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
 #define _Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
 #define _Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
 
-//	[Sandy Bridge]	06_2AH, 06_2DH
+//	[Sandy Bridge]	06_2Ah, 06_2Dh
 #define _SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
 #define _SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
 
-//	[Ivy Bridge]	06_3AH, 06_3EH
+//	[Ivy Bridge]	06_3Ah, 06_3Eh
 #define _IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
 #define _IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
 
-//	[Haswell]	06_3CH, 06_3FH, 06_45H, 06_46H
+//	[Haswell]	06_3Ch, 06_3Fh, 06_45h, 06_46h
 #define _Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
 #define _Haswell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
 #define _Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
 #define _Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
 
-//	[Broadwell]	06_3DH, 06_56H, 06_47H, 06_4FH
+//	[Broadwell]	06_3Dh, 06_56h, 06_47h, 06_4Fh
 #define _Broadwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xD}
 #define _Broadwell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x6}
 #define _Broadwell_H	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x7}
 #define _Broadwell_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xF}
 
-//	[Skylake]	06_4EH, 06_5EH, 06_55H
+//	[Skylake]	06_4Eh, 06_5Eh, 06_55h
 #define _Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
 #define _Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
-//	[Xeon Phi]	06_57H
+//	[Xeon Phi]	06_57h
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-//	[Kabylake]	06_8E || 06_94 || 06_9E
+//	[Kabylake]	06_8Eh || 06_94h || 06_9h
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 

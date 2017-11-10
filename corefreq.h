@@ -59,8 +59,11 @@ typedef struct
 					TM2,
 					Target,
 					Limit[2];
+		struct {
+			unsigned int	ClockMod : 16-0,
+					Extended : 32-16;
+			} DutyCycle;
 		unsigned int		PowerPolicy;
-		float			DutyCycle;
 	} PowerThermal;
 
 	struct FLIP_FLOP {

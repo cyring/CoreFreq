@@ -112,9 +112,13 @@ static signed short C1U_Enable = -1;
 module_param(C1U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
 
+static signed short ODCM_Enable = -1;
+module_param(ODCM_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(ODCM_Enable, "Enable On-Demand Clock Modulation");
+
 static signed short ODCM_DutyCycle = -1;
 module_param(ODCM_DutyCycle, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(ODCM_DutyCycle, "On-Demand Clock Modulation DutyCycle [0-7]");
+MODULE_PARM_DESC(ODCM_DutyCycle, "ODCM DutyCycle [0-7] | [0-14]");
 
 static signed short PowerMGMT_Unlock = -1;
 module_param(PowerMGMT_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -2167,6 +2171,8 @@ void ThermalMonitor_Set(CORE *Core)
 
 void PowerThermal(CORE *Core)
 {
+    CLOCK_MODULATION ClockModulation = {.value = 0};
+
     if (Proc->Features.Info.LargestStdFunc >= 0x6) {
 	struct THERMAL_POWER_LEAF Power = {{0}};
 
@@ -2215,20 +2221,29 @@ void PowerThermal(CORE *Core)
 	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
 	if (Proc->Features.Std.DX.ACPI == 1) {
-	  RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
-	  Core->PowerThermal.ClockModulation.ExtensionBit = Power.AX.ECMD;
+		int ToggleFeature = 0;
 
-	 if (Experimental == 1) {
-	  if ((ODCM_DutyCycle >= 0) && (ODCM_DutyCycle <= 7)) {
-	    if (ODCM_DutyCycle > 0)
-		Core->PowerThermal.ClockModulation.ODCM_Enable = 1;
-	    else
-		Core->PowerThermal.ClockModulation.ODCM_Enable = 0;
-	    Core->PowerThermal.ClockModulation.ODCM_DutyCycle = ODCM_DutyCycle;
-	    WRMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
-	    RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
-	  }
-	 }
+		RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+		ClockModulation.ECMD = Power.AX.ECMD;
+
+		switch (ODCM_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				ClockModulation.ODCM_Enable = ODCM_Enable;
+				ToggleFeature = 1;
+				break;
+		}
+		if ((ODCM_DutyCycle >= 0)
+		 && (ODCM_DutyCycle <= (7 << ClockModulation.ECMD))) {
+			ClockModulation.DutyCycle =
+					ODCM_DutyCycle << !ClockModulation.ECMD;
+			ToggleFeature = 1;
+		}
+		if (ToggleFeature == 1) {
+			WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+			RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+		}
+		Core->PowerThermal.ClockModulation = ClockModulation;
 	}
     }
 }
@@ -3929,6 +3944,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 	case COREFREQ_IOCTL_IORCST:
 		CStateIORedir = arg;
+		toggleFeature = COREFREQ_TOGGLE_ON;
+		break;
+	case COREFREQ_IOCTL_ODCM:
+		ODCM_Enable = arg;
+		toggleFeature = COREFREQ_TOGGLE_ON;
+		break;
+	case COREFREQ_IOCTL_ODCM_DC:
+		ODCM_DutyCycle = arg;
 		toggleFeature = COREFREQ_TOGGLE_ON;
 		break;
 	default:
