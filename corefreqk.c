@@ -2360,47 +2360,49 @@ void PerCore_Nehalem_Query(CORE *Core)
 				ToggleFeature = 1;
 			break;
 		}
-		switch (IOMWAIT_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-				ToggleFeature = 1;
-			break;
-		}
 		if (ToggleFeature == 1) {
 			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		}
-		Core->Query.C3A = CStateConfig.C3autoDemotion;
-		Core->Query.C1A = CStateConfig.C1autoDemotion;
 
 		if (CStateConfig.CFG_Lock == 0) {
+			ToggleFeature = 0;
+			switch (IOMWAIT_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+				ToggleFeature = 1;
+				break;
+			}
 			switch (PkgCStateLimit) {
 			case 7:
 				CStateConfig.Pkg_CStateLimit = 0b100;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				ToggleFeature = 1;
 				break;
 			case 6:
 				CStateConfig.Pkg_CStateLimit = 0b011;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				ToggleFeature = 1;
 				break;
 			case 3: // Cannot be used to limit package C-state to C3
 				CStateConfig.Pkg_CStateLimit = 0b010;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				ToggleFeature = 1;
 				break;
 			case 1:
 				CStateConfig.Pkg_CStateLimit = 0b001;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				ToggleFeature = 1;
 				break;
 			case 0:
 				CStateConfig.Pkg_CStateLimit = 0b000;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				ToggleFeature = 1;
 				break;
 			}
-			if (PkgCStateLimit != -1) {
+			if (ToggleFeature == 1) {
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 			}
 		}
+		Core->Query.C3A = CStateConfig.C3autoDemotion;
+		Core->Query.C1A = CStateConfig.C1autoDemotion;
 		Core->Query.CfgLock = CStateConfig.CFG_Lock;
 		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
@@ -2511,50 +2513,53 @@ void PerCore_SandyBridge_Query(CORE *Core)
 				ToggleFeature = 1;
 			break;
 		}
-		switch (IOMWAIT_Enable) {
+		if (ToggleFeature == 1) {
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		}
+
+		if (CStateConfig.CFG_Lock == 0) {
+			ToggleFeature = 0;
+
+			switch (IOMWAIT_Enable) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
 				ToggleFeature = 1;
-			break;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				break;
+			}
+			switch (PkgCStateLimit) {
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b100;
+				ToggleFeature = 1;
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b011;
+				ToggleFeature = 1;
+				break;
+			case 3:
+				CStateConfig.Pkg_CStateLimit = 0b010;
+				ToggleFeature = 1;
+				break;
+			case 2:
+				CStateConfig.Pkg_CStateLimit = 0b001;
+				ToggleFeature = 1;
+				break;
+			case 1:
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b000;
+				ToggleFeature = 1;
+				break;
+			}
+			if (ToggleFeature == 1) {
+				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			}
 		}
 		Core->Query.C3A = CStateConfig.C3autoDemotion;
 		Core->Query.C1A = CStateConfig.C1autoDemotion;
 		Core->Query.C3U = CStateConfig.C3undemotion;
 		Core->Query.C1U = CStateConfig.C1undemotion;
-
-		if (CStateConfig.CFG_Lock == 0) {
-			switch (PkgCStateLimit) {
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b100;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b011;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				break;
-			case 3:
-				CStateConfig.Pkg_CStateLimit = 0b010;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				break;
-			case 2:
-				CStateConfig.Pkg_CStateLimit = 0b001;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				break;
-			case 1:
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b000;
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				break;
-			}
-			if (PkgCStateLimit != -1) {
-				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			}
-		}
 		Core->Query.CfgLock = CStateConfig.CFG_Lock;
 		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 

@@ -31,7 +31,8 @@
 unsigned int	Shutdown = 0x0, Quiet = 0x001, Math = 0x0,
 		SysGateStartUp = 1;
 
-static unsigned long long roomSeed __attribute__ ((aligned (64))) = 0x0;
+// §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory
+static unsigned long long roomSeed __attribute__ ((aligned (128))) = 0x0;
 
 typedef struct {
 	SHM_STRUCT	*Shm;
@@ -84,7 +85,7 @@ static void *Core_Cycle(void *arg)
 	    {
 		if (BITVAL(Shm->Proc.Room, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
-			BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
+			BITCLR(LOCKLESS, Shm->Proc.Room, cpu);
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -2211,7 +2212,7 @@ void Core_Manager(FD *fd,
 
     while (!Shutdown) {
 	// Loop while all the cpu room bits are not cleared.
-	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
+	while (!Shutdown && BITWISEAND(LOCKLESS, Shm->Proc.Room, roomSeed)) {
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
 	// Reset the averages & the max frequency
