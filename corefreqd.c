@@ -85,7 +85,7 @@ static void *Core_Cycle(void *arg)
 	    {
 		if (BITVAL(Shm->Proc.Room, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
-			BITCLR(LOCKLESS, Shm->Proc.Room, cpu);
+			BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -293,7 +293,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
-	memcpy(Shm->Proc.Boost, Proc->Boost, (1+1+8) * sizeof(unsigned int));
+	memcpy(Shm->Proc.Boost, Proc->Boost,(MAX_BOOST) * sizeof(unsigned int));
 	// Copy the processor's brand string.
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
 }
@@ -2212,7 +2212,7 @@ void Core_Manager(FD *fd,
 
     while (!Shutdown) {
 	// Loop while all the cpu room bits are not cleared.
-	while (!Shutdown && BITWISEAND(LOCKLESS, Shm->Proc.Room, roomSeed)) {
+	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
 	// Reset the averages & the max frequency

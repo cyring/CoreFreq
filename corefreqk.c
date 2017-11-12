@@ -1309,7 +1309,7 @@ void Intel_Platform_Info(void)
 	}
 	Proc->Boost[0] = ratio0;
 	Proc->Boost[1] = KMIN(ratio1, ratio2);
-	Proc->Boost[9] = KMAX(ratio1, ratio2);
+	Proc->Boost[LAST_BOOST] = KMAX(ratio1, ratio2);
 }
 
 void Nehalem_Platform_Info(void)
@@ -1329,7 +1329,7 @@ void Nehalem_Platform_Info(void)
 	Proc->Boost[6] = Turbo.MaxRatio_4C;
 	Proc->Boost[7] = Turbo.MaxRatio_3C;
 	Proc->Boost[8] = Turbo.MaxRatio_2C;
-	Proc->Boost[9] = Turbo.MaxRatio_1C;
+	Proc->Boost[LAST_BOOST] = Turbo.MaxRatio_1C;
 }
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
@@ -1960,7 +1960,7 @@ void Query_AuthenticAMD(void)
 			Proc->Boost[5 + t] = VCO[FidVidStatus.StartFID].PCF[t];
 		}
 		else
-			Proc->Boost[9] = 8 + FidVidStatus.MaxFID;
+			Proc->Boost[LAST_BOOST] = 8 + FidVidStatus.MaxFID;
 	} else {
 		HWCR HwCfgRegister = {.value = 0};
 
@@ -1968,7 +1968,7 @@ void Query_AuthenticAMD(void)
 
 		Proc->Boost[0] = 8 + HwCfgRegister.Family_0Fh.StartFID;
 		Proc->Boost[1] = Proc->Boost[0];
-		Proc->Boost[9] = Proc->Boost[0];
+		Proc->Boost[LAST_BOOST] = Proc->Boost[0];
 	}
 	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
 
@@ -2171,81 +2171,338 @@ void ThermalMonitor_Set(CORE *Core)
 
 void PowerThermal(CORE *Core)
 {
-    CLOCK_MODULATION ClockModulation = {.value = 0};
+  CLOCK_MODULATION ClockModulation = {.value = 0};
 
-    if (Proc->Features.Info.LargestStdFunc >= 0x6) {
-	struct THERMAL_POWER_LEAF Power = {{0}};
+  if (Proc->Features.Info.LargestStdFunc >= 0x6) {
+    struct THERMAL_POWER_LEAF Power = {{0}};
 
-	asm volatile
-	(
-		"movq	$0x6,  %%rax	\n\t"
-		"xorq	%%rbx, %%rbx	\n\t"
-		"xorq	%%rcx, %%rcx	\n\t"
-		"xorq	%%rdx, %%rdx	\n\t"
-		"cpuid			\n\t"
-		"mov	%%eax, %0	\n\t"
-		"mov	%%ebx, %1	\n\t"
-		"mov	%%ecx, %2	\n\t"
-		"mov	%%edx, %3"
-		: "=r" (Power.AX),
-		  "=r" (Power.BX),
-		  "=r" (Power.CX),
-		  "=r" (Power.DX)
-		:
-		: "%rax", "%rbx", "%rcx", "%rdx"
-	);
-	if (Power.CX.SETBH == 1) {
-	  RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+    asm volatile
+    (
+	"movq	$0x6,  %%rax	\n\t"
+	"xorq	%%rbx, %%rbx	\n\t"
+	"xorq	%%rcx, %%rcx	\n\t"
+	"xorq	%%rdx, %%rdx	\n\t"
+	"cpuid			\n\t"
+	"mov	%%eax, %0	\n\t"
+	"mov	%%ebx, %1	\n\t"
+	"mov	%%ecx, %2	\n\t"
+	"mov	%%edx, %3"
+	: "=r" (Power.AX),
+	  "=r" (Power.BX),
+	  "=r" (Power.CX),
+	  "=r" (Power.DX)
+	:
+	: "%rax", "%rbx", "%rcx", "%rdx"
+    );
 
-	  if ((PowerPolicy >= 0) && (PowerPolicy <= 15)) {
-	    Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
-	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	  }
-	} else {
-	  RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-
-	  if (Experimental == 1) {
-	    switch (PowerMGMT_Unlock) {
-	    case 0:
-		Core->PowerThermal.PwrManagement.Perf_BIAS_Enable = 0;
-		WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-		break;
-	    case 1:
-		Core->PowerThermal.PwrManagement.Perf_BIAS_Enable = 1;
-		WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-		break;
-	    }
-	  }
-	}
+    if (Power.CX.SETBH == 1) {
+	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
-	if (Proc->Features.Std.DX.ACPI == 1) {
-		int ToggleFeature = 0;
+      if (Experimental == 1) {
+	switch (PowerMGMT_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+	    Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
+	    WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+	    RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+	    break;
+	}
+      }
 
-		RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
-		ClockModulation.ECMD = Power.AX.ECMD;
-
-		switch (ODCM_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				ClockModulation.ODCM_Enable = ODCM_Enable;
-				ToggleFeature = 1;
-				break;
-		}
-		if ((ODCM_DutyCycle >= 0)
-		 && (ODCM_DutyCycle <= (7 << ClockModulation.ECMD))) {
-			ClockModulation.DutyCycle =
-					ODCM_DutyCycle << !ClockModulation.ECMD;
-			ToggleFeature = 1;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
-			RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
-		}
-		Core->PowerThermal.ClockModulation = ClockModulation;
+      if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
+      && (PowerPolicy >= 0) && (PowerPolicy <= 15))
+	{
+	Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
+	WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	}
     }
+
+    if (Proc->Features.Std.DX.ACPI == 1) {
+	int ToggleFeature = 0;
+
+	RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+	ClockModulation.ECMD = Power.AX.ECMD;
+
+	switch (ODCM_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		ClockModulation.ODCM_Enable = ODCM_Enable;
+		ToggleFeature = 1;
+		break;
+	}
+	if ((ODCM_DutyCycle >= 0)
+	 && (ODCM_DutyCycle <= (7 << ClockModulation.ECMD)))
+	{
+	    ClockModulation.DutyCycle = ODCM_DutyCycle << !ClockModulation.ECMD;
+	    ToggleFeature = 1;
+	}
+	if (ToggleFeature == 1) {
+	    WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+	    RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
+	}
+	Core->PowerThermal.ClockModulation = ClockModulation;
+    }
+  }
+}
+
+void CStatesConfiguration(int encoding, CORE *Core)
+{
+	CSTATE_CONFIG CStateConfig = {.value = 0};
+	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+	int ToggleFeature = 0;
+
+	RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+
+	switch (C3A_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.C3autoDemotion = C3A_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+	switch (C1A_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.C1autoDemotion = C1A_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+    if (encoding == 0x062A) {
+	switch (C3U_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.C3undemotion = C3U_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+	switch (C1U_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.C1undemotion = C1U_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+    }
+	if (ToggleFeature == 1) {
+		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+	}
+	if (CStateConfig.CFG_Lock == 0) {
+		ToggleFeature = 0;
+	    if (encoding == 0x061A) { // Nehalem coding compatibility
+		switch (IOMWAIT_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+			ToggleFeature = 1;
+			break;
+		}
+		switch (PkgCStateLimit) {
+		case 7:
+			CStateConfig.Pkg_CStateLimit = 0b100;
+			ToggleFeature = 1;
+			break;
+		case 6:
+			CStateConfig.Pkg_CStateLimit = 0b011;
+			ToggleFeature = 1;
+			break;
+		case 3: // Cannot be used to limit package C-state to C3
+			CStateConfig.Pkg_CStateLimit = 0b010;
+			ToggleFeature = 1;
+			break;
+		case 1:
+			CStateConfig.Pkg_CStateLimit = 0b001;
+			ToggleFeature = 1;
+			break;
+		case 0:
+			CStateConfig.Pkg_CStateLimit = 0b000;
+			ToggleFeature = 1;
+			break;
+		}
+	    } else if (encoding == 0x062A) { //Sandy Bridge coding compatibility
+		switch (PkgCStateLimit) {
+		case 7:
+			CStateConfig.Pkg_CStateLimit = 0b100;
+			ToggleFeature = 1;
+			break;
+		case 6:
+			CStateConfig.Pkg_CStateLimit = 0b011;
+			ToggleFeature = 1;
+			break;
+		case 3:
+			CStateConfig.Pkg_CStateLimit = 0b010;
+			ToggleFeature = 1;
+			break;
+		case 2:
+			CStateConfig.Pkg_CStateLimit = 0b001;
+			ToggleFeature = 1;
+			break;
+		case 1:
+		case 0:
+			CStateConfig.Pkg_CStateLimit = 0b000;
+			ToggleFeature = 1;
+			break;
+		}
+	    } else if (encoding == 0x0645) {// Haswell_ULT coding compatibility
+		switch (PkgCStateLimit) {
+		case 10:
+			CStateConfig.Pkg_CStateLimit = 0b1000;
+			ToggleFeature = 1;
+			break;
+		case 9:
+			CStateConfig.Pkg_CStateLimit = 0b0111;
+			ToggleFeature = 1;
+			break;
+		case 8:
+			CStateConfig.Pkg_CStateLimit = 0b0110;
+			ToggleFeature = 1;
+			break;
+		case 7:
+			CStateConfig.Pkg_CStateLimit = 0b0100;
+			ToggleFeature = 1;
+			break;
+		case 6:
+			CStateConfig.Pkg_CStateLimit = 0b0011;
+			ToggleFeature = 1;
+			break;
+		case 3:
+			CStateConfig.Pkg_CStateLimit = 0b0010;
+			ToggleFeature = 1;
+			break;
+		case 2:
+			CStateConfig.Pkg_CStateLimit = 0b0001;
+			ToggleFeature = 1;
+			break;
+		case 1:
+		case 0:
+			CStateConfig.Pkg_CStateLimit = 0b0000;
+			ToggleFeature = 1;
+			break;
+		}
+	    }
+		if (ToggleFeature == 1) {
+			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		}
+	}
+	Core->Query.C3A = CStateConfig.C3autoDemotion;
+	Core->Query.C1A = CStateConfig.C1autoDemotion;
+
+    if (encoding == 0x062A) {
+	Core->Query.C3U = CStateConfig.C3undemotion;
+	Core->Query.C1U = CStateConfig.C1undemotion;
+    }
+	Core->Query.CfgLock = CStateConfig.CFG_Lock;
+	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+
+    if (encoding == 0x061A) {
+	switch (CStateConfig.Pkg_CStateLimit & 0x7) {
+	case 0b100:
+		Core->Query.CStateLimit = 7;
+		break;
+	case 0b011:
+		Core->Query.CStateLimit = 6;
+		break;
+	case 0b010:
+		Core->Query.CStateLimit = 3;
+		break;
+	case 0b001:
+		Core->Query.CStateLimit = 1;
+		break;
+	case 0b000:
+	default:
+		Core->Query.CStateLimit = 0;
+		break;
+	}
+    } else if (encoding == 0x062A) {
+	switch (CStateConfig.Pkg_CStateLimit & 0x7) {
+	case 0b101:
+	case 0b100:
+		Core->Query.CStateLimit = 7;
+		break;
+	case 0b011:
+		Core->Query.CStateLimit = 6;
+		break;
+	case 0b010:
+		Core->Query.CStateLimit = 3;
+		break;
+	case 0b001:
+		Core->Query.CStateLimit = 2;
+		break;
+	case 0b000:
+	default:
+		Core->Query.CStateLimit = 0;
+		break;
+	}
+    } else if (encoding == 0x0645) {
+	switch (CStateConfig.Pkg_CStateLimit) {
+	case 0b1000:
+		Core->Query.CStateLimit = 10;
+		break;
+	case 0b0111:
+		Core->Query.CStateLimit = 9;
+		break;
+	case 0b0110:
+		Core->Query.CStateLimit = 8;
+		break;
+	case 0b0101:
+	case 0b0100:
+		Core->Query.CStateLimit = 7;
+		break;
+	case 0b0011:
+		Core->Query.CStateLimit = 6;
+		break;
+	case 0b0010:
+		Core->Query.CStateLimit = 3;
+		break;
+	case 0b0001:
+		Core->Query.CStateLimit = 2;
+		break;
+	case 0b0000:
+	default:
+		Core->Query.CStateLimit = 0;
+		break;
+	}
+    }
+
+	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
+	if (CStateConfig.IO_MWAIT_Redir) {
+		switch (CStateIORedir) {
+		case 7:
+			CState_IO_MWAIT.CStateRange = 0b010;
+			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			break;
+		case 6:
+			CState_IO_MWAIT.CStateRange = 0b001;
+			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			break;
+		case 3:
+			CState_IO_MWAIT.CStateRange = 0b000;
+			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			break;
+		}
+		if (CStateIORedir != -1) {
+			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+		}
+	}
+
+	switch (CState_IO_MWAIT.CStateRange) {
+	case 0b010:
+		Core->Query.CStateInclude = 7;
+		break;
+	case 0b001:
+		Core->Query.CStateInclude = 6;
+		break;
+	case 0b000:
+		Core->Query.CStateInclude = 3;
+		break;
+	default:
+		Core->Query.CStateInclude = 0;
+		break;
+	}
 }
 
 void PerCore_AMD_PStates(CORE *Core)
@@ -2330,9 +2587,6 @@ void PerCore_Core2_Query(CORE *Core)
 
 void PerCore_Nehalem_Query(CORE *Core)
 {
-	CSTATE_CONFIG CStateConfig = {.value = 0};
-	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -2342,125 +2596,7 @@ void PerCore_Nehalem_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		int ToggleFeature = 0;
-
-		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-
-		switch (C3A_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C3autoDemotion = C3A_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		switch (C1A_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C1autoDemotion = C1A_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-		}
-
-		if (CStateConfig.CFG_Lock == 0) {
-			ToggleFeature = 0;
-			switch (IOMWAIT_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-				ToggleFeature = 1;
-				break;
-			}
-			switch (PkgCStateLimit) {
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b100;
-				ToggleFeature = 1;
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b011;
-				ToggleFeature = 1;
-				break;
-			case 3: // Cannot be used to limit package C-state to C3
-				CStateConfig.Pkg_CStateLimit = 0b010;
-				ToggleFeature = 1;
-				break;
-			case 1:
-				CStateConfig.Pkg_CStateLimit = 0b001;
-				ToggleFeature = 1;
-				break;
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b000;
-				ToggleFeature = 1;
-				break;
-			}
-			if (ToggleFeature == 1) {
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			}
-		}
-		Core->Query.C3A = CStateConfig.C3autoDemotion;
-		Core->Query.C1A = CStateConfig.C1autoDemotion;
-		Core->Query.CfgLock = CStateConfig.CFG_Lock;
-		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
-
-		switch (CStateConfig.Pkg_CStateLimit) {
-		case 0b100:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b011:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b010:
-			Core->Query.CStateLimit = 3;
-			break;
-		case 0b001:
-			Core->Query.CStateLimit = 1;
-			break;
-		case 0b000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-
-		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-
-		if (CStateConfig.IO_MWAIT_Redir) {
-			switch (CStateIORedir) {
-			case 7:
-				CState_IO_MWAIT.CStateRange = 0b010;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			case 6:
-				CState_IO_MWAIT.CStateRange = 0b001;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			case 3:
-				CState_IO_MWAIT.CStateRange = 0b000;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			}
-			if (CStateIORedir != -1) {
-				RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			}
-		}
-
-		switch (CState_IO_MWAIT.CStateRange) {
-		case 0b010:
-			Core->Query.CStateInclude = 7;
-			break;
-		case 0b001:
-			Core->Query.CStateInclude = 6;
-			break;
-		case 0b000:
-			Core->Query.CStateInclude = 3;
-			break;
-		default:
-			Core->Query.CStateInclude = 0;
-			break;
-		}
+		CStatesConfiguration(0x061A, Core);
 	}
 	PowerThermal(Core);
 
@@ -2469,9 +2605,6 @@ void PerCore_Nehalem_Query(CORE *Core)
 
 void PerCore_SandyBridge_Query(CORE *Core)
 {
-	CSTATE_CONFIG CStateConfig = {.value = 0};
-	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -2481,144 +2614,25 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		int ToggleFeature = 0;
+		CStatesConfiguration(0x062A, Core);
+	}
+	PowerThermal(Core);
 
-		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+	ThermalMonitor_Set(Core);
+}
 
-		switch (C3A_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C3autoDemotion = C3A_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		switch (C1A_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C1autoDemotion = C1A_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		switch (C3U_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C3undemotion = C3U_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		switch (C1U_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C1undemotion = C1U_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-		}
+void PerCore_Haswell_ULT_Query(CORE *Core)
+{
+	Microcode(Core);
 
-		if (CStateConfig.CFG_Lock == 0) {
-			ToggleFeature = 0;
+	Dump_CPUID(Core);
 
-			switch (IOMWAIT_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-				ToggleFeature = 1;
-				break;
-			}
-			switch (PkgCStateLimit) {
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b100;
-				ToggleFeature = 1;
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b011;
-				ToggleFeature = 1;
-				break;
-			case 3:
-				CStateConfig.Pkg_CStateLimit = 0b010;
-				ToggleFeature = 1;
-				break;
-			case 2:
-				CStateConfig.Pkg_CStateLimit = 0b001;
-				ToggleFeature = 1;
-				break;
-			case 1:
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b000;
-				ToggleFeature = 1;
-				break;
-			}
-			if (ToggleFeature == 1) {
-				WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-				RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			}
-		}
-		Core->Query.C3A = CStateConfig.C3autoDemotion;
-		Core->Query.C1A = CStateConfig.C1autoDemotion;
-		Core->Query.C3U = CStateConfig.C3undemotion;
-		Core->Query.C1U = CStateConfig.C1undemotion;
-		Core->Query.CfgLock = CStateConfig.CFG_Lock;
-		Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+	SpeedStep_Technology(Core);
+	TurboBoost_Technology(Core);
+	Query_Intel_C1E(Core);
 
-		switch (CStateConfig.Pkg_CStateLimit) {
-		case 0b101:
-		case 0b100:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b011:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b010:
-			Core->Query.CStateLimit = 3;
-			break;
-		case 0b001:
-			Core->Query.CStateLimit = 2;
-			break;
-		case 0b000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-
-		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-
-		if (CStateConfig.IO_MWAIT_Redir) {
-			switch (CStateIORedir) {
-			case 7:
-				CState_IO_MWAIT.CStateRange = 0b010;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			case 6:
-				CState_IO_MWAIT.CStateRange = 0b001;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			case 3:
-				CState_IO_MWAIT.CStateRange = 0b000;
-				WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-				break;
-			}
-			if (CStateIORedir != -1) {
-				RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			}
-		}
-
-		switch (CState_IO_MWAIT.CStateRange) {
-		case 0b010:
-			Core->Query.CStateInclude = 7;
-			break;
-		case 0b001:
-			Core->Query.CStateInclude = 6;
-			break;
-		case 0b000:
-			Core->Query.CStateInclude = 3;
-			break;
-		default:
-			Core->Query.CStateInclude = 0;
-			break;
-		}
+	if (Core->T.ThreadID == 0) {				// Per Core
+		CStatesConfiguration(0x0645, Core);
 	}
 	PowerThermal(Core);
 
@@ -3009,7 +3023,19 @@ void Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
+})
+
+#define PKG_Counters_Haswell_ULT(Core, T)				\
+({									\
+	RDTSCP_COUNTERx7(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+			MSR_PKG_C8_RESIDENCY, Proc->Counter[T].PC08,	\
+			MSR_PKG_C9_RESIDENCY, Proc->Counter[T].PC09,	\
+			MSR_PKG_C10_RESIDENCY,Proc->Counter[T].PC10);	\
 })
 
 #define Delta_PTSC(Pkg)							\
@@ -3762,6 +3788,135 @@ void Stop_SandyBridge(void *arg)
 
 	KPrivate->Join[cpu]->tsm.started = 0;
 }
+
+
+static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		SMT_Counters_SandyBridge(Core, 1);
+
+		if (Core->T.Base.BSP) {
+			PKG_Counters_Haswell_ULT(Core, 1);
+
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+
+			Delta_PC02(Proc);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PC08(Proc);
+
+			Delta_PC09(Proc);
+
+			Delta_PC10(Proc);
+
+			Delta_PTSC(Proc);
+
+			Delta_UNCORE_FC0(Proc);
+
+			Save_PC02(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PC08(Proc);
+
+			Save_PC09(Proc);
+
+			Save_PC10(Proc);
+
+			Save_PTSC(Proc);
+
+			Save_UNCORE_FC0(Proc);
+
+			Sys_Tick(Proc);
+		}
+
+		Core_Intel_Temp(Core);
+
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_C7(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+
+		Save_C6(Core);
+
+		Save_C7(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Haswell_ULT(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_ULT, 1);
+}
+
+void Start_Haswell_ULT(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_Haswell_ULT_Query(Core);
+
+	Core_Counters_Set(Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Haswell_ULT(Core, 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	KPrivate->Join[cpu]->tsm.started = 1;
+}
+
 
 long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {

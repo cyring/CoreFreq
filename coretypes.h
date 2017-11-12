@@ -110,7 +110,9 @@ typedef signed short int	CSINT;
 	tsec;								\
 })
 
-#define CACHE_MAX_LEVEL	(3 + 1)
+#define MAX_BOOST	(1 + 1 + 8)
+#define LAST_BOOST	(MAX_BOOST - 1)
+#define CACHE_MAX_LEVEL (3 + 1)
 
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"

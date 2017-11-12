@@ -140,7 +140,7 @@ typedef struct
 					OnLine;
 	} CPU;
 
-	unsigned int			Boost[1+1+8],
+	unsigned int			Boost[MAX_BOOST],
 					PM_version;
 
 	Bit32				InvariantTSC,

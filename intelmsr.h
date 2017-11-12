@@ -151,8 +151,8 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Pkg_CStateLimit :  3-0,
-		ReservedBits1	: 10-3,
+		Pkg_CStateLimit :  4-0,
+		ReservedBits1	: 10-4,
 		IO_MWAIT_Redir	: 11-10,
 		ReservedBits2	: 15-11,
 		CFG_Lock	: 16-15,

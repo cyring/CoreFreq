@@ -1314,8 +1314,8 @@ void Dashboard( SHM_STRUCT *Shm,
 	 *lcdView = NULL,
 	 *cpuView = NULL,
 	 *absMove = CUH CLS;
-    double minRatio = Shm->Proc.Boost[0], maxRatio = Shm->Proc.Boost[9];
-    double medianRatio =(minRatio + maxRatio) / 2;
+    double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[LAST_BOOST];
+    double medianRatio = (minRatio + maxRatio) / 2;
 
     void FreeAll(void)
     {
@@ -2620,7 +2620,7 @@ void Top(SHM_STRUCT *Shm)
 		TOP_FOOTER_LAST = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
 				+ 2 * Shm->Proc.CPU.Count;
 
-    double minRatio = Shm->Proc.Boost[0], maxRatio = Shm->Proc.Boost[9],
+    double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[LAST_BOOST],
 	medianRatio = (minRatio + maxRatio) / 2, availRatio[10] = {minRatio};
 
     typedef char HBCLK[11 + 1];
@@ -3122,6 +3122,8 @@ void Top(SHM_STRUCT *Shm)
 		StoreWindow(wBox,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wBox,	.key.Down,	MotionDown_Win);
 		StoreWindow(wBox,	.key.Up,	MotionUp_Win);
+		StoreWindow(wBox,	.key.Home,	MotionReset_Win);
+		StoreWindow(wBox,	.key.End,	MotionEnd_Cell);
 	    }
 	    free(pBox);
 	}
@@ -4280,18 +4282,20 @@ void Top(SHM_STRUCT *Shm)
 	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC06,
 	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC07);
 	    if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 9] =		\
-		TCellAt(wBox, 0, select.row).attr[10] =		\
-		TCellAt(wBox, 0, select.row).attr[11] =		\
-		TCellAt(wBox, 0, select.row).attr[12] =		\
-		TCellAt(wBox, 0, select.row).attr[13] =		\
-		TCellAt(wBox, 0, select.row).attr[14] =		\
-		TCellAt(wBox, 0, select.row).attr[15] =		\
-		TCellAt(wBox, 0, select.row).attr[16] =		\
-		TCellAt(wBox, 0, select.row).attr[17] =		\
-		TCellAt(wBox, 0, select.row).attr[18] = stateAttr[1];
-		TCellAt(wBox, 0, select.row).item[ 9] = '<';
-		TCellAt(wBox, 0, select.row).item[18] = '>';
+		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
+		TCellAt(wBox, 0, select.row).attr[10] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = 	\
+		TCellAt(wBox, 0, select.row).attr[12] = 	\
+		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[14] = 	\
+		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[16] = 	\
+		TCellAt(wBox, 0, select.row).attr[17] = 	\
+		TCellAt(wBox, 0, select.row).attr[18] = 	\
+		TCellAt(wBox, 0, select.row).attr[19] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 8] = '<';
+		TCellAt(wBox, 0, select.row).item[19] = '>';
 
 		AppendWindow(wBox, &winList);
 	    } else

@@ -285,6 +285,40 @@ ASM_RDMSR(_msr6, _reg6) \
 );
 
 
+#define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6, _reg7,\
+			_tsc_inst, mem_tsc, \
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3, \
+			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6, \
+			_msr7, _mem7) \
+asm volatile \
+( \
+_tsc_inst(_reg0) \
+ASM_RDMSR(_msr1, _reg1) \
+ASM_RDMSR(_msr2, _reg2) \
+ASM_RDMSR(_msr3, _reg3) \
+ASM_RDMSR(_msr4, _reg4) \
+ASM_RDMSR(_msr5, _reg5) \
+ASM_RDMSR(_msr6, _reg6) \
+ASM_RDMSR(_msr7, _reg7) \
+"# Store values into memory.""\n\t" \
+"movq	%%" #_reg0 ", %0""\n\t" \
+"movq	%%" #_reg1 ", %1""\n\t" \
+"movq	%%" #_reg2 ", %2""\n\t" \
+"movq	%%" #_reg3 ", %3""\n\t" \
+"movq	%%" #_reg4 ", %4""\n\t" \
+"movq	%%" #_reg5 ", %5""\n\t" \
+"movq	%%" #_reg6 ", %6""\n\t" \
+"movq	%%" #_reg7 ", %7" \
+: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3), \
+"=m" (_mem4), "=m" (_mem5), "=m" (_mem6), "=m" (_mem7) \
+: \
+:"%rax", "%rcx", "%rdx", \
+"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
+"%" #_reg4"", "%" #_reg5"", "%" #_reg6"", "%" #_reg7"", \
+"memory" \
+);
+
+
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
 ASM_COUNTERx1(r10, r11, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
@@ -320,6 +354,12 @@ ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_COUNTERx6(mem_tsc, ...) \
 ASM_COUNTERx6(r10, r11, r12, r13, r14, r15, r9, ASM_RDTSCP, mem_tsc,__VA_ARGS__)
+
+#define RDTSC_COUNTERx7(mem_tsc, ...) \
+ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSC,mem_tsc,__VA_ARGS__)
+
+#define RDTSCP_COUNTERx7(mem_tsc, ...) \
+ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 
 #define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
@@ -437,6 +477,10 @@ extern void Query_SandyBridge(void) ;
 extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
+
+extern void Start_Haswell_ULT(void *arg);
+    #define Stop_Haswell_ULT Stop_SandyBridge
+extern void InitTimer_Haswell_ULT(unsigned int cpu);
 
 //	[Void]
 #define _Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -924,10 +968,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 32*/	{
 	_Haswell_ULT,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Haswell_ULT,
+	Stop_Haswell_ULT,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Haswell_ULT,
 	Clock_Haswell,
 	"Haswell/Ultra Low TDP",
 	THERMAL_FORMULA_INTEL,
@@ -985,10 +1029,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 37*/	{
 	_Broadwell_EX,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Haswell_ULT,
+	Stop_Haswell_ULT,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Haswell_ULT,
 	Clock_Haswell,
 	"Broadwell/EX",
 	THERMAL_FORMULA_INTEL,
@@ -1031,6 +1075,7 @@ static ARCH Arch[ARCHITECTURES]=
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},
+
 /* 41*/	{
 	_Xeon_Phi,
 	Query_SandyBridge,
@@ -1043,6 +1088,7 @@ static ARCH Arch[ARCHITECTURES]=
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_NONE,
 	},
+
 /* 42*/	{
 	_Kabylake,
 	Query_SandyBridge,
