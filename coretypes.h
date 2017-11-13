@@ -110,7 +110,7 @@ typedef signed short int	CSINT;
 	tsec;								\
 })
 
-#define MAX_BOOST	(1 + 1 + 8)
+#define MAX_BOOST	(1 + 1 + 18)
 #define LAST_BOOST	(MAX_BOOST - 1)
 #define CACHE_MAX_LEVEL (3 + 1)
 

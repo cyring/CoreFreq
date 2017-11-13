@@ -1315,22 +1315,44 @@ void Intel_Platform_Info(void)
 void Nehalem_Platform_Info(void)
 {
 	PLATFORM_INFO Platform = {.value = 0};
-	TURBO_RATIO Turbo = {.value = 0};
+	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
 
 	RDMSR(Platform, MSR_PLATFORM_INFO);
-	RDMSR(Turbo, MSR_TURBO_RATIO_LIMIT);
+	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
 	Proc->Boost[0] = Platform.MinimumRatio;
 	Proc->Boost[1] = Platform.MaxNonTurboRatio;
-	Proc->Boost[2] = Turbo.MaxRatio_8C;
-	Proc->Boost[3] = Turbo.MaxRatio_7C;
-	Proc->Boost[4] = Turbo.MaxRatio_6C;
-	Proc->Boost[5] = Turbo.MaxRatio_5C;
-	Proc->Boost[6] = Turbo.MaxRatio_4C;
-	Proc->Boost[7] = Turbo.MaxRatio_3C;
-	Proc->Boost[8] = Turbo.MaxRatio_2C;
-	Proc->Boost[LAST_BOOST] = Turbo.MaxRatio_1C;
+	Proc->Boost[MAX_BOOST - 8] = TurboCfg0.MaxRatio_8C;
+	Proc->Boost[MAX_BOOST - 7] = TurboCfg0.MaxRatio_7C;
+	Proc->Boost[MAX_BOOST - 6] = TurboCfg0.MaxRatio_6C;
+	Proc->Boost[MAX_BOOST - 5] = TurboCfg0.MaxRatio_5C;
+	Proc->Boost[MAX_BOOST - 4] = TurboCfg0.MaxRatio_4C;
+	Proc->Boost[MAX_BOOST - 3] = TurboCfg0.MaxRatio_3C;
+	Proc->Boost[MAX_BOOST - 2] = TurboCfg0.MaxRatio_2C;
+	Proc->Boost[MAX_BOOST - 1] = TurboCfg0.MaxRatio_1C;
 }
+
+void Haswell_EP_Platform_Info(void)
+{
+	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
+	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
+
+	Nehalem_Platform_Info();
+	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
+
+	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
+	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
+	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.MaxRatio_16C;
+	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.MaxRatio_15C;
+	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.MaxRatio_14C;
+	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.MaxRatio_13C;
+	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.MaxRatio_12C;
+	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.MaxRatio_11C;
+	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.MaxRatio_10C;
+	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.MaxRatio_9C;
+}
+
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -1993,9 +2015,9 @@ void Query_Nehalem(void)
 	HyperThreading_Technology();
 }
 
-void Query_SandyBridge(void)
+void Query_Haswell_EP(void)
 {
-	Nehalem_Platform_Info();
+	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 }
 

@@ -215,7 +215,37 @@ typedef union
 		MaxRatio_7C	: 56-48,
 		MaxRatio_8C	: 64-56;
 	};
-} TURBO_RATIO;
+} TURBO_RATIO_CONFIG0;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		MaxRatio_9C	:  8-0,
+		MaxRatio_10C	: 16-8,
+		MaxRatio_11C	: 24-16,
+		MaxRatio_12C	: 32-24,
+		MaxRatio_13C	: 40-32,
+		MaxRatio_14C	: 48-40,
+		MaxRatio_15C	: 56-48,
+		MaxRatio_16C	: 64-56;
+	};
+} TURBO_RATIO_CONFIG1;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		MaxRatio_17C	:  8-0,
+		MaxRatio_18C	: 16-8,
+		ReservedBits	: 63-16,
+		Semaphore	: 64-63;
+	};
+} TURBO_RATIO_CONFIG2;
 
 typedef union
 {

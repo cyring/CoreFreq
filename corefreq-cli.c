@@ -465,13 +465,19 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
 
 	if (OutFunc == NULL) {
-		strcpy(row[0], "   |- ratio :    ");
-		strcpy(row[1], "   |-  freq :    ");
+		sprintf(row[0], "   |- ratio :    "" %4d "" %4d ",
+			Shm->Proc.Boost[0], Shm->Proc.Boost[1]);
+		sprintf(row[1], "   |-  freq :    "" %4.0f "" %4.0f ",
+		(double)(Shm->Proc.Boost[0] * Shm->Cpu[0].Clock.Hz) /1000000.0,
+		(double)(Shm->Proc.Boost[1] * Shm->Cpu[0].Clock.Hz) /1000000.0);
 	} else {
-		strcpy(row[0], "  |- ratio :    ");
-		strcpy(row[1], "  |-  freq :    ");
+		sprintf(row[0], "  |- ratio :    "" %4d "" %4d ",
+			Shm->Proc.Boost[0], Shm->Proc.Boost[1]);
+		sprintf(row[1], "  |-  freq :    "" %4.0f "" %4.0f ",
+		(double)(Shm->Proc.Boost[0] * Shm->Cpu[0].Clock.Hz) /1000000.0,
+		(double)(Shm->Proc.Boost[1] * Shm->Cpu[0].Clock.Hz) /1000000.0);
 	}
-	for (i = 0; i < 10; i++) {
+	for (i = MAX_BOOST - 8; i < MAX_BOOST; i++) {
 		if (Shm->Proc.Boost[i] != 0) {
 			len += sprintf(str, " %4d ", Shm->Proc.Boost[i]);
 			strcat(row[0], str);

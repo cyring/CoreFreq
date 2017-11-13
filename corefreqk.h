@@ -473,11 +473,12 @@ extern void Start_Nehalem(void *arg) ;
 extern void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
 
-extern void Query_SandyBridge(void) ;
+    #define Query_SandyBridge Query_Nehalem
 extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
+extern void Query_Haswell_EP(void) ;
 extern void Start_Haswell_ULT(void *arg);
     #define Stop_Haswell_ULT Stop_SandyBridge
 extern void InitTimer_Haswell_ULT(unsigned int cpu);
@@ -955,7 +956,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 31*/	{
 	_Haswell_EP,
-	Query_SandyBridge,
+	Query_Haswell_EP,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
