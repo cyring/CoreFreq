@@ -1052,21 +1052,37 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
 		!Shm->Cpu[0].Query.CfgLock? "UNLOCK":"LOCK");
 
-	printv(OutFunc, BOXKEY_PKGCST, width, 3,
-		"Lowest C-State%.*sLIMIT   <%7d>",
-		width - (OutFunc == NULL ? 37 : 35), hSpace,
-		Shm->Cpu[0].Query.CStateLimit);
+	if (!Shm->Cpu[0].Query.CfgLock) {
+		printv(OutFunc, BOXKEY_PKGCST, width, 3,
+			"Lowest C-State%.*sLIMIT   <%7d>",
+			width - (OutFunc == NULL ? 37 : 35), hSpace,
+			Shm->Cpu[0].Query.CStateLimit);
 
-	printv(OutFunc, BOXKEY_IOMWAIT, width, 3,
-		"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
-		width - (OutFunc == NULL ? 46 : 44), hSpace,
-		Shm->Cpu[0].Query.IORedir? " ENABLE":"DISABLE");
+		printv(OutFunc, BOXKEY_IOMWAIT, width, 3,
+			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
+			width - (OutFunc == NULL ? 46 : 44), hSpace,
+			Shm->Cpu[0].Query.IORedir? " ENABLE":"DISABLE");
 
-	printv(OutFunc, BOXKEY_IORCST, width, 3,
-		"Max C-State Inclusion%.*sRANGE   <%7d>",
-		width - (OutFunc == NULL ? 44 : 42), hSpace,
-		Shm->Cpu[0].Query.CStateInclude);
+		printv(OutFunc, BOXKEY_IORCST, width, 3,
+			"Max C-State Inclusion%.*sRANGE   <%7d>",
+			width - (OutFunc == NULL ? 44 : 42), hSpace,
+			Shm->Cpu[0].Query.CStateInclude);
+	} else {
+		printv(OutFunc, SCANKEY_NULL, width, 3,
+			"Lowest C-State%.*sLIMIT   [%7d]",
+			width - (OutFunc == NULL ? 37 : 35), hSpace,
+			Shm->Cpu[0].Query.CStateLimit);
 
+		printv(OutFunc, SCANKEY_NULL, width, 3,
+			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
+			width - (OutFunc == NULL ? 46 : 44), hSpace,
+			Shm->Cpu[0].Query.IORedir? " ENABLE":"DISABLE");
+
+		printv(OutFunc, SCANKEY_NULL, width, 3,
+			"Max C-State Inclusion%.*sRANGE   [%7d]",
+			width - (OutFunc == NULL ? 44 : 42), hSpace,
+			Shm->Cpu[0].Query.CStateInclude);
+	}
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"MWAIT States:%.*sC0      C1      C2      C3      C4",
 		06, hSpace);
@@ -2621,7 +2637,7 @@ void Top(SHM_STRUCT *Shm)
 				+ 2 * Shm->Proc.CPU.Count;
 
     double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[LAST_BOOST],
-	medianRatio = (minRatio + maxRatio) / 2, availRatio[10] = {minRatio};
+	medianRatio=(minRatio + maxRatio) / 2, availRatio[MAX_BOOST]={minRatio};
 
     typedef char HBCLK[11 + 1];
     HBCLK *hBClk;
@@ -3515,7 +3531,7 @@ void Top(SHM_STRUCT *Shm)
 	CreateLayer(fuze, layerSize);
     }
 
-    for (idx = 1; idx < 10; idx++)
+    for (idx = 1; idx < MAX_BOOST; idx++)
 	if (Shm->Proc.Boost[idx] != 0) {
 		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {
@@ -4842,11 +4858,16 @@ void Top(SHM_STRUCT *Shm)
     }
 
 	idx = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
-	sprintf(hBClk[cpu],
-		"%u%u%u %u%u%u %u%u%u",
-		digit[0], digit[1], digit[2],
-		digit[3], digit[4], digit[5],
-		digit[6], digit[7], digit[8]);
+
+	hBClk[cpu][ 0] = digit[0] + '0';
+	hBClk[cpu][ 1] = digit[1] + '0';
+	hBClk[cpu][ 2] = digit[2] + '0';
+	hBClk[cpu][ 4] = digit[3] + '0';
+	hBClk[cpu][ 5] = digit[4] + '0';
+	hBClk[cpu][ 6] = digit[5] + '0';
+	hBClk[cpu][ 8] = digit[6] + '0';
+	hBClk[cpu][ 9] = digit[7] + '0';
+	hBClk[cpu][10] = digit[8] + '0';
   }
 	row++;
 
