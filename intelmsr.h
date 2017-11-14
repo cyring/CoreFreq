@@ -307,7 +307,7 @@ typedef union
 		DutyCycle	:  4-0,  // OnDemand Clock Modulation Duty Cycle
 		ODCM_Enable	:  5-4,
 		ReservedBits	: 63-5,
-		ECMD		: 64-63; // Placebo for CPUID(0x6)AX.5
+		ECMD		: 64-63; // Placeholder for CPUID(0x6)AX.5
 	};
 } CLOCK_MODULATION;
 

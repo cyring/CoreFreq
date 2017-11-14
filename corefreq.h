@@ -143,9 +143,13 @@ typedef struct
 	unsigned int			Boost[MAX_BOOST],
 					PM_version;
 
-	Bit32				InvariantTSC,
-					HyperThreading;
-
+	struct {
+		Bit32			InvariantTSC	:  8-0,
+					HyperThreading	:  9-8,
+					Ratio_Unlock	: 10-9,
+					TDP_Unlock	: 11-10,
+					_pad32		: 32-11;
+	};
 	Bit64				PowerNow,
 					ODCM,
 					ODCM_Mask,

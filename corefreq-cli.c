@@ -456,7 +456,12 @@ void SysInfoProc(SHM_STRUCT *Shm,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%5.1f]",
 		width - 20, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
-
+/* Row Mark */
+	printv(OutFunc, SCANKEY_NULL, width, 2,
+		"Limits for Turbo%.*sRatio [%6s]%.*sTDP [%6s]",
+		width - 56, hSpace, Shm->Proc.TDP_Unlock? "UNLOCK" : "LOCK",
+		11, hSpace, Shm->Proc.Ratio_Unlock? "UNLOCK" : "LOCK");
+/* Row Mark */
 	len = sprintf(row[0],
 			"Core Boost%.*sMin   Max"			\
 			"    8C    7C    6C    5C    4C    3C    2C    1C",
@@ -5487,7 +5492,7 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
 	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isEIST];
+	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isC1E];
 
 	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 

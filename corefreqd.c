@@ -316,6 +316,12 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.HyperThreading = Proc->Features.HTT_Enable;
 }
 
+void Programmable(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.Ratio_Unlock	= Proc->Features.Ratio_Unlock;
+	Shm->Proc.TDP_Unlock	= Proc->Features.TDP_Unlock;
+}
+
 void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 {
 	if (!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12)) {
@@ -2382,6 +2388,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		InvariantTSC(Shm, Proc);
 
 		HyperThreading(Shm, Proc);
+
+		Programmable(Shm, Proc);
 
 		PowerNow(Shm, Proc);
 

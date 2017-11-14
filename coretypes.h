@@ -664,8 +664,14 @@ typedef struct	// BSP CPUID features.
 	CPUID_0x80000001 ExtInfo;
 	CPUID_0x80000007 AdvPower;
 
-	unsigned int	HTT_Enable,
-			FactoryFreq;
+	unsigned int	FactoryFreq;
+	struct {
+		unsigned int
+			HTT_Enable	:  1-0,
+			Ratio_Unlock	:  2-1,
+			TDP_Unlock	:  3-2,
+			NotUsed		: 32-3;
+	};
 } FEATURES;
 
 #define MC_MAX_CTRL	2

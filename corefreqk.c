@@ -1253,7 +1253,7 @@ void HyperThreading_Technology(void)
 
 int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 {
-	struct SIGNATURE signature[] = {
+	struct SIGNATURE whiteList[] = {
 		_Core_Conroe,		/* 06_0F */
 		_Core_Yorkfield,	/* 06_17 */
 		_Atom_Bonnell,		/* 06_1C */
@@ -1263,12 +1263,12 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 		_Atom_Saltwell,		/* 06_36 */
 		_Silvermont_637,	/* 06_37 */
 	};
-	int id, ids = sizeof(signature) / sizeof(signature[0]);
+	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
-		if ((signature[id].ExtFamily == Proc->Features.Std.AX.ExtFamily)
-		 && (signature[id].Family == Proc->Features.Std.AX.Family)
-		 && (signature[id].ExtModel == Proc->Features.Std.AX.ExtModel)
-		 && (signature[id].Model == Proc->Features.Std.AX.Model)) {
+		if ((whiteList[id].ExtFamily == Proc->Features.Std.AX.ExtFamily)
+		 && (whiteList[id].Family == Proc->Features.Std.AX.Family)
+		 && (whiteList[id].ExtModel == Proc->Features.Std.AX.ExtModel)
+		 && (whiteList[id].Model == Proc->Features.Std.AX.Model)) {
 
 			RDMSR((*PfID), MSR_IA32_PLATFORM_ID);
 			return(0);
@@ -1320,6 +1320,8 @@ void Nehalem_Platform_Info(void)
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
+	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
+	Proc->Features.TDP_Unlock = Platform.TDC_TDP_Limited;
 	Proc->Boost[0] = Platform.MinimumRatio;
 	Proc->Boost[1] = Platform.MaxNonTurboRatio;
 	Proc->Boost[MAX_BOOST - 8] = TurboCfg0.MaxRatio_8C;
@@ -1967,34 +1969,34 @@ void Query_GenuineIntel(void)
 
 void Query_AuthenticAMD(void)
 {
-	if (Proc->Features.AdvPower.DX.FID == 1) {
-		// Processor supports FID changes.
-		FIDVID_STATUS FidVidStatus = {.value = 0};
+    if (Proc->Features.AdvPower.DX.FID == 1) {
+	// Processor supports FID changes.
+	FIDVID_STATUS FidVidStatus = {.value = 0};
 
-		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		Proc->Boost[0] = VCO[FidVidStatus.StartFID].MCF;
-		Proc->Boost[1] = 8 + FidVidStatus.MaxFID;
+	Proc->Boost[0] = VCO[FidVidStatus.StartFID].MCF;
+	Proc->Boost[1] = 8 + FidVidStatus.MaxFID;
 
-		if (FidVidStatus.StartFID < 0b1000) {
-		    unsigned int t;
-		    for (t = 0; t < 5; t++)
-			Proc->Boost[5 + t] = VCO[FidVidStatus.StartFID].PCF[t];
-		}
-		else
-			Proc->Boost[LAST_BOOST] = 8 + FidVidStatus.MaxFID;
-	} else {
-		HWCR HwCfgRegister = {.value = 0};
-
-		RDMSR(HwCfgRegister, MSR_K7_HWCR);
-
-		Proc->Boost[0] = 8 + HwCfgRegister.Family_0Fh.StartFID;
-		Proc->Boost[1] = Proc->Boost[0];
-		Proc->Boost[LAST_BOOST] = Proc->Boost[0];
+	if (FidVidStatus.StartFID < 0b1000) {
+	    unsigned int t;
+	    for (t = 0; t < 5; t++)
+		Proc->Boost[MAX_BOOST-5+t] = VCO[FidVidStatus.StartFID].PCF[t];
 	}
-	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
+	else
+		Proc->Boost[LAST_BOOST] = 8 + FidVidStatus.MaxFID;
+    } else {
+	HWCR HwCfgRegister = {.value = 0};
 
-	HyperThreading_Technology();
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	Proc->Boost[0] = 8 + HwCfgRegister.Family_0Fh.StartFID;
+	Proc->Boost[1] = Proc->Boost[0];
+	Proc->Boost[LAST_BOOST] = Proc->Boost[0];
+    }
+    Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
+
+    HyperThreading_Technology();
 }
 /* Todo: AMD Hardware Families > 0Fh
 
