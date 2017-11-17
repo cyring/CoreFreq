@@ -478,10 +478,14 @@ extern void Start_SandyBridge(void *arg) ;
 extern void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
+extern void Query_IvyBridge_EP(void) ;
+
 extern void Query_Haswell_EP(void) ;
 extern void Start_Haswell_ULT(void *arg);
     #define Stop_Haswell_ULT Stop_SandyBridge
 extern void InitTimer_Haswell_ULT(unsigned int cpu);
+
+extern void Query_Skylake_X(void) ;
 
 //	[Void]
 #define _Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -563,14 +567,17 @@ extern void InitTimer_Haswell_ULT(unsigned int cpu);
 //	[Skylake]	06_4Eh, 06_5Eh, 06_55h
 #define _Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
-#define _Skylake_E	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
+#define _Skylake_X	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
-//	[Xeon Phi]	06_57h
+//	[Xeon Phi]	06_57h, 06_85h
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-//	[Kabylake]	06_8Eh || 06_94h || 06_9h
+//	[Kabylake]	06_8Eh, 06_9Eh
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
+
+//	[Cannonlake]	06_66h
+#define _Cannonlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0x6}
 
 static ARCH Arch[ARCHITECTURES]=
 {
@@ -931,7 +938,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 29*/	{
 	_IvyBridge_EP,
-	Query_SandyBridge,
+	Query_IvyBridge_EP,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
@@ -1005,7 +1012,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 35*/	{
 	_Broadwell_EP,
-	Query_SandyBridge,
+	Query_Haswell_EP,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
@@ -1029,7 +1036,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 37*/	{
 	_Broadwell_EX,
-	Query_SandyBridge,
+	Query_Haswell_EP,
 	Start_Haswell_ULT,
 	Stop_Haswell_ULT,
 	NULL,
@@ -1065,14 +1072,14 @@ static ARCH Arch[ARCHITECTURES]=
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},
 /* 40*/	{
-	_Skylake_E,
-	Query_SandyBridge,
+	_Skylake_X,
+	Query_Skylake_X,
 	Start_SandyBridge,
 	Stop_SandyBridge,
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
-	"Skylake/E",
+	"Skylake/X",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},
@@ -1111,6 +1118,19 @@ static ARCH Arch[ARCHITECTURES]=
 	InitTimer_SandyBridge,
 	Clock_Skylake,
 	"Kaby Lake/UY",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_INTEL_SNB,
+	},
+
+/* 44*/	{
+	_Cannonlake,
+	Query_SandyBridge,
+	Start_SandyBridge,
+	Stop_SandyBridge,
+	NULL,
+	InitTimer_SandyBridge,
+	Clock_Skylake,
+	"Cannon Lake",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
 	},

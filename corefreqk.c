@@ -1334,6 +1334,22 @@ void Nehalem_Platform_Info(void)
 	Proc->Boost[MAX_BOOST - 1] = TurboCfg0.MaxRatio_1C;
 }
 
+void IvyBridge_EP_Platform_Info(void)
+{
+	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
+
+	Nehalem_Platform_Info();
+	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.IVB_EP.MaxRatio_15C;
+	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.IVB_EP.MaxRatio_14C;
+	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.IVB_EP.MaxRatio_13C;
+	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.IVB_EP.MaxRatio_12C;
+	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.IVB_EP.MaxRatio_11C;
+	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.IVB_EP.MaxRatio_10C;
+	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.IVB_EP.MaxRatio_9C;
+}
+
 void Haswell_EP_Platform_Info(void)
 {
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
@@ -1345,14 +1361,31 @@ void Haswell_EP_Platform_Info(void)
 
 	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
 	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
-	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.MaxRatio_16C;
-	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.MaxRatio_15C;
-	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.MaxRatio_14C;
-	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.MaxRatio_13C;
-	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.MaxRatio_12C;
-	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.MaxRatio_11C;
-	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.MaxRatio_10C;
-	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.MaxRatio_9C;
+	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.HSW_EP.MaxRatio_16C;
+	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.HSW_EP.MaxRatio_15C;
+	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.HSW_EP.MaxRatio_14C;
+	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.HSW_EP.MaxRatio_13C;
+	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.HSW_EP.MaxRatio_12C;
+	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.HSW_EP.MaxRatio_11C;
+	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.HSW_EP.MaxRatio_10C;
+	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.HSW_EP.MaxRatio_9C;
+}
+
+void Skylake_X_Platform_Info(void)
+{
+	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
+
+	Nehalem_Platform_Info();
+	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.SKL_X.NUMCORE_7;
+	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.SKL_X.NUMCORE_6;
+	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.SKL_X.NUMCORE_5;
+	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.SKL_X.NUMCORE_4;
+	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.SKL_X.NUMCORE_3;
+	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.SKL_X.NUMCORE_2;
+	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.SKL_X.NUMCORE_1;
+	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.SKL_X.NUMCORE_0;
 }
 
 
@@ -2017,9 +2050,21 @@ void Query_Nehalem(void)
 	HyperThreading_Technology();
 }
 
+void Query_IvyBridge_EP(void)
+{
+	IvyBridge_EP_Platform_Info();
+	HyperThreading_Technology();
+}
+
 void Query_Haswell_EP(void)
 {
 	Haswell_EP_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Skylake_X(void)
+{
+	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 }
 

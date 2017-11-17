@@ -46,10 +46,11 @@ enum {	GenuineIntel,		\
 	Broadwell_EX,		\
 	Skylake_UY,		\
 	Skylake_S,		\
-	Skylake_E,		\
+	Skylake_X,		\
 	Xeon_Phi,		\
 	Kabylake,		\
 	Kabylake_UY,		\
+	Cannonlake,		\
 	ARCHITECTURES
 };
 

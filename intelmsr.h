@@ -202,26 +202,37 @@ typedef union
 
 typedef union
 {
+/*
+	Atom Avoton [06_4D] & Goldmont [06_5C], Nehalem [06_1A, 06_1E, 06_1F]
+	Xeon Westmere [06_25, 06_2C]
+	*must blackList w/ Nehalem Xeon 7500 [06_2E] & Westmere Xeon E7 [06_2F]
+	Sandy Bridge [06_2A] & Xeon SNB-E5 [06_2D]
+	Haswell [06_3C, 06_45, 06_46] & Xeon E5v3 [06_3F]
+	Broadwell [06_3D, 06_56] & Xeon E3v4 [06_47] & Xeon E5v4[06_4F]
+	Skylake Client [06_4E, 06_5E] & Xeon Skylake-X Server [06_55]
+	Kabylake [06_8E, 06_9E]
+	Cannonlake [06_66]
+*/
 	unsigned long long	value;
 	struct
 	{
 		unsigned long long
-		MaxRatio_1C	:  8-0,
-		MaxRatio_2C	: 16-8,
-		MaxRatio_3C	: 24-16,
-		MaxRatio_4C	: 32-24,
-		MaxRatio_5C	: 40-32,
-		MaxRatio_6C	: 48-40,
-		MaxRatio_7C	: 56-48,
-		MaxRatio_8C	: 64-56;
+		MaxRatio_1C	:  8-0,  // NHM, SNB, HSW, BDW, SKL, KBL
+		MaxRatio_2C	: 16-8,  // NHM, SNB, HSW, BDW, SKL, KBL
+		MaxRatio_3C	: 24-16, // NHM, SNB, HSW, BDW, SKL, KBL
+		MaxRatio_4C	: 32-24, // NHM, SNB, HSW, BDW, SKL, KBL
+		MaxRatio_5C	: 40-32, // Westmere, SNB-E5, E3v4
+		MaxRatio_6C	: 48-40, // Westmere, SNB-E5, E3v4
+		MaxRatio_7C	: 56-48, // SNB-E5, E5v3, E5v4, SKL-X
+		MaxRatio_8C	: 64-56; // AVT, GLM, SNB-E5, E5v3, E5v4, SKL-X
 	};
 } TURBO_RATIO_CONFIG0;
 
 typedef union
-{
+{	// MSR_TURBO_RATIO_LIMIT1(1AEh)
 	unsigned long long	value;
 	struct
-	{
+	{	// Haswell-E5v3 [06_3F], Broadwell-E [06_56] & Xeon E5v4 [06_4F]
 		unsigned long long
 		MaxRatio_9C	:  8-0,
 		MaxRatio_10C	: 16-8,
@@ -231,14 +242,39 @@ typedef union
 		MaxRatio_14C	: 48-40,
 		MaxRatio_15C	: 56-48,
 		MaxRatio_16C	: 64-56;
-	};
+	} HSW_EP;
+	struct
+	{	// Xeon IvyBridge-EPv2 [06_3E]
+		unsigned long long
+		MaxRatio_9C	:  8-0, 	// E5 + E7
+		MaxRatio_10C	: 16-8, 	// E5 + E7
+		MaxRatio_11C	: 24-16,	// E5 + E7
+		MaxRatio_12C	: 32-24,	// E5 + E7
+		MaxRatio_13C	: 40-32,	// E7
+		MaxRatio_14C	: 48-40,	// E7
+		MaxRatio_15C	: 56-48,	// E7
+		ReservedBits	: 63-56,	// E7
+		Semaphore	: 64-63;	// E7
+	} IVB_EP;
+	struct
+	{	// Skylake_X [06_55]
+		unsigned long long
+		NUMCORE_0	:  8-0,
+		NUMCORE_1	: 16-8,
+		NUMCORE_2	: 24-16,
+		NUMCORE_3	: 32-24,
+		NUMCORE_4	: 40-32,
+		NUMCORE_5	: 48-40,
+		NUMCORE_6	: 56-48,
+		NUMCORE_7	: 64-56;
+	} SKL_X;
 } TURBO_RATIO_CONFIG1;
 
 typedef union
-{
+{	// MSR_TURBO_RATIO_LIMIT2(1AFh)
 	unsigned long long	value;
 	struct
-	{
+	{	// Xeon Haswell-E5v3 [06_3F]
 		unsigned long long
 		MaxRatio_17C	:  8-0,
 		MaxRatio_18C	: 16-8,

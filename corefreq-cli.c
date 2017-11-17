@@ -459,8 +459,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 /* Row Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Limits for Turbo%.*sRatio [%6s]%.*sTDP [%6s]",
-		width - 56, hSpace, Shm->Proc.TDP_Unlock? "UNLOCK" : "LOCK",
-		11, hSpace, Shm->Proc.Ratio_Unlock? "UNLOCK" : "LOCK");
+		width - 57, hSpace, Shm->Proc.TDP_Unlock? "UNLOCK" : "LOCK",
+		12, hSpace, Shm->Proc.Ratio_Unlock? "UNLOCK" : "LOCK");
 /* Row Mark */
 	len = sprintf(row[0],
 			"Core Boost%.*sMin   Max"			\
