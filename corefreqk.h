@@ -579,6 +579,9 @@ extern void Query_Skylake_X(void) ;
 //	[Cannonlake]	06_66h
 #define _Cannonlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0x6}
 
+//	[Geminilake]	06_7Ah
+#define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
+
 static ARCH Arch[ARCHITECTURES]=
 {
 /*  0*/	{
@@ -766,12 +769,12 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 15*/	{
 	_Atom_Goldmont,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
+	Query_SandyBridge,
+	Start_Haswell_ULT,
+	Stop_Haswell_ULT,
 	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
+	InitTimer_Haswell_ULT,
+	Clock_Haswell,
 	"Atom/Goldmont",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_NONE,
@@ -1133,5 +1136,18 @@ static ARCH Arch[ARCHITECTURES]=
 	"Cannon Lake",
 	THERMAL_FORMULA_INTEL,
 	VOLTAGE_FORMULA_INTEL_SNB,
+	},
+
+/* 45*/	{
+	_Geminilake,
+	Query_SandyBridge,
+	Start_Haswell_ULT,
+	Stop_Haswell_ULT,
+	NULL,
+	InitTimer_Haswell_ULT,
+	Clock_Haswell,
+	"Atom/Gemini Lake",
+	THERMAL_FORMULA_INTEL,
+	VOLTAGE_FORMULA_NONE,
 	},
 };

@@ -458,9 +458,9 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		width - 20, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
 /* Row Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Limits for Turbo%.*sRatio [%6s]%.*sTDP [%6s]",
-		width - 57, hSpace, Shm->Proc.TDP_Unlock? "UNLOCK" : "LOCK",
-		12, hSpace, Shm->Proc.Ratio_Unlock? "UNLOCK" : "LOCK");
+		"Limits for Turbo%.*sRatio [%6s]%.*sTDP [%6s]", width-57,hSpace,
+		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK", 12,hSpace,
+		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
 /* Row Mark */
 	len = sprintf(row[0],
 			"Core Boost%.*sMin   Max"			\
@@ -906,7 +906,7 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Time Stamp Counter%.*sTSC [%9s]",
-		width - 36, hSpace, TSC[Shm->Proc.InvariantTSC]);
+		width - 36, hSpace, TSC[Shm->Proc.Features.InvariantTSC]);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]",
@@ -947,31 +947,27 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 /* Section Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Hyper-Threading%.*sHTT       [%3s]",
-		width - 33, hSpace, enabled(Shm->Proc.HyperThreading));
+		"Hyper-Threading%.*sHTT       [%3s]", width - 33, hSpace,
+		enabled(Shm->Proc.Features.HyperThreading));
 
 	printv(OutFunc, BOXKEY_EIST, width, 2,
-		"SpeedStep%.*sEIST       <%3s>",
-		width - 28, hSpace, enabled(isSpeedStep));
+		"SpeedStep%.*sEIST       <%3s>", width - 28, hSpace,
+		enabled(isSpeedStep));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"PowerNow!%.*sPowerNow       [%3s]",
-		width - 32, hSpace,
+		"PowerNow!%.*sPowerNow       [%3s]", width - 32, hSpace,
 		enabled(Shm->Proc.PowerNow == 0b11));	// VID + FID
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Dynamic Acceleration%.*sIDA       [%3s]",
-		width - 38, hSpace,
+		"Dynamic Acceleration%.*sIDA       [%3s]", width - 38, hSpace,
 		enabled(Shm->Proc.Features.Power.AX.TurboIDA));
 
 	printv(OutFunc, BOXKEY_TURBO, width, 2,
-		"Turbo Boost/CPB%.*sTURBO       <%3s>",
-		width - 35, hSpace,
+		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
 		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Virtualization%.*sHYPERVISOR       [%3s]",
-		width - 39, hSpace,
+		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
 		enabled(Shm->Proc.Features.Std.CX.Hyperv));
 }
 
@@ -5373,17 +5369,17 @@ void Top(SHM_STRUCT *Shm)
 		{(ASCII *) "TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)}
 	};
 
-	hTech0.code[ 6] = TSC[Shm->Proc.InvariantTSC].code[0];
-	hTech0.code[ 7] = TSC[Shm->Proc.InvariantTSC].code[1];
-	hTech0.code[ 8] = TSC[Shm->Proc.InvariantTSC].code[2];
-	hTech0.code[ 9] = TSC[Shm->Proc.InvariantTSC].code[3];
-	hTech0.code[10] = TSC[Shm->Proc.InvariantTSC].code[4];
-	hTech0.code[11] = TSC[Shm->Proc.InvariantTSC].code[5];
-	hTech0.code[12] = TSC[Shm->Proc.InvariantTSC].code[6];
+	hTech0.code[ 6] = TSC[Shm->Proc.Features.InvariantTSC].code[0];
+	hTech0.code[ 7] = TSC[Shm->Proc.Features.InvariantTSC].code[1];
+	hTech0.code[ 8] = TSC[Shm->Proc.Features.InvariantTSC].code[2];
+	hTech0.code[ 9] = TSC[Shm->Proc.Features.InvariantTSC].code[3];
+	hTech0.code[10] = TSC[Shm->Proc.Features.InvariantTSC].code[4];
+	hTech0.code[11] = TSC[Shm->Proc.Features.InvariantTSC].code[5];
+	hTech0.code[12] = TSC[Shm->Proc.Features.InvariantTSC].code[6];
 
 	hTech0.attr[ 6] = hTech0.attr[ 7]=hTech0.attr[ 8] =
 	hTech0.attr[ 9] = hTech0.attr[10]=hTech0.attr[11] =
-	hTech0.attr[12] = TSC[Shm->Proc.InvariantTSC].attr;
+	hTech0.attr[12] = TSC[Shm->Proc.Features.InvariantTSC].attr;
 
 	LayerCopyAt(layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code);
@@ -5407,7 +5403,7 @@ void Top(SHM_STRUCT *Shm)
 	    };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
-						Pwr[Shm->Proc.HyperThreading];
+					Pwr[Shm->Proc.Features.HyperThreading];
 
 		const Attribute TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
@@ -5483,7 +5479,7 @@ void Top(SHM_STRUCT *Shm)
 	    };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
-		Pwr[Shm->Proc.HyperThreading];
+					Pwr[Shm->Proc.Features.HyperThreading];
 
 	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]=
 	    hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]=
@@ -5501,13 +5497,13 @@ void Top(SHM_STRUCT *Shm)
 	    hTech1.code[25] = buffer[2];
 
 	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =
-		Pwr[(Shm->Proc.PM_version > 0)];
+						Pwr[(Shm->Proc.PM_version > 0)];
 
 	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =
-		Pwr[(Shm->Proc.Features.AdvPower.DX.TS != 0)];
+				Pwr[(Shm->Proc.Features.AdvPower.DX.TS != 0)];
 
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
-		Pwr[(Shm->Proc.Features.AdvPower.DX.TTP != 0)];
+				Pwr[(Shm->Proc.Features.AdvPower.DX.TTP != 0)];
 
 	    if (processorHot) {
 		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =

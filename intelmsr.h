@@ -133,8 +133,8 @@ typedef union
 		ReservedBits1	:  8-0,
 		MaxNonTurboRatio: 16-8,
 		ReservedBits2	: 28-16,
-		Ratio_Limited	: 29-28,
-		TDC_TDP_Limited	: 30-29,
+		Ratio_Progable	: 29-28,
+		TDP_Progable	: 30-29,
 		ReservedBits3	: 32-30,
 		LowPowerMode	: 33-32,
 		ConfigTDPlevels	: 35-33,
@@ -201,7 +201,7 @@ typedef union
 */
 
 typedef union
-{
+{	// MSR_TURBO_RATIO_LIMIT(1ADh)
 /*
 	Atom Avoton [06_4D] & Goldmont [06_5C], Nehalem [06_1A, 06_1E, 06_1F]
 	Xeon Westmere [06_25, 06_2C]

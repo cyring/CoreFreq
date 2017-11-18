@@ -1312,18 +1312,22 @@ void Intel_Platform_Info(void)
 	Proc->Boost[LAST_BOOST] = KMAX(ratio1, ratio2);
 }
 
-void Nehalem_Platform_Info(void)
+void Intel_Platform_Turbo(void)
 {
 	PLATFORM_INFO Platform = {.value = 0};
-	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
-
 	RDMSR(Platform, MSR_PLATFORM_INFO);
-	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
-	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
-	Proc->Features.TDP_Unlock = Platform.TDC_TDP_Limited;
+	Proc->Features.Ratio_Unlock = Platform.Ratio_Progable;
+	Proc->Features.TDP_Unlock = Platform.TDP_Progable;
 	Proc->Boost[0] = Platform.MinimumRatio;
 	Proc->Boost[1] = Platform.MaxNonTurboRatio;
+}
+
+void Intel_Turbo_Config8C(void)
+{
+	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
+	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+
 	Proc->Boost[MAX_BOOST - 8] = TurboCfg0.MaxRatio_8C;
 	Proc->Boost[MAX_BOOST - 7] = TurboCfg0.MaxRatio_7C;
 	Proc->Boost[MAX_BOOST - 6] = TurboCfg0.MaxRatio_6C;
@@ -1334,11 +1338,9 @@ void Nehalem_Platform_Info(void)
 	Proc->Boost[MAX_BOOST - 1] = TurboCfg0.MaxRatio_1C;
 }
 
-void IvyBridge_EP_Platform_Info(void)
+void Intel_Turbo_Config15C(void)
 {
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-
-	Nehalem_Platform_Info();
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
 	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.IVB_EP.MaxRatio_15C;
@@ -1350,17 +1352,11 @@ void IvyBridge_EP_Platform_Info(void)
 	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.IVB_EP.MaxRatio_9C;
 }
 
-void Haswell_EP_Platform_Info(void)
+void Intel_Turbo_Config16C(void)
 {
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
-
-	Nehalem_Platform_Info();
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
 
-	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
-	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
 	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.HSW_EP.MaxRatio_16C;
 	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.HSW_EP.MaxRatio_15C;
 	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.HSW_EP.MaxRatio_14C;
@@ -1371,12 +1367,43 @@ void Haswell_EP_Platform_Info(void)
 	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.HSW_EP.MaxRatio_9C;
 }
 
+void Intel_Turbo_Config18C(void)
+{
+	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
+	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
+
+	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
+	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
+}
+
+void Nehalem_Platform_Info(void)
+{
+	Intel_Platform_Turbo();
+	Intel_Turbo_Config8C();
+}
+
+void IvyBridge_EP_Platform_Info(void)
+{
+	Intel_Platform_Turbo();
+	Intel_Turbo_Config8C();
+	Intel_Turbo_Config15C();
+}
+
+void Haswell_EP_Platform_Info(void)
+{
+	Intel_Platform_Turbo();
+	Intel_Turbo_Config8C();
+	Intel_Turbo_Config16C();
+	Intel_Turbo_Config18C();
+}
+
 void Skylake_X_Platform_Info(void)
 {
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-
-	Nehalem_Platform_Info();
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	Intel_Platform_Turbo();
+	Intel_Turbo_Config8C();
 
 	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.SKL_X.NUMCORE_7;
 	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.SKL_X.NUMCORE_6;

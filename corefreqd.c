@@ -285,6 +285,9 @@ static void *Core_Cycle(void *arg)
 
 void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 {
+	Bit32	fTSC = Proc->Features.Std.DX.TSC,
+		aTSC = Proc->Features.AdvPower.DX.Inv_TSC;
+
 	// Copy all BSP features.
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
 	// Copy the numbers of total & online CPU.
@@ -296,14 +299,11 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	memcpy(Shm->Proc.Boost, Proc->Boost,(MAX_BOOST) * sizeof(unsigned int));
 	// Copy the processor's brand string.
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
-}
-
-void InvariantTSC(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Bit32	fTSC = Proc->Features.Std.DX.TSC,
-		aTSC = Proc->Features.AdvPower.DX.Inv_TSC;
-
-	Shm->Proc.InvariantTSC = fTSC << aTSC;
+	// Compute the TSC mode: None, Variant, Invariant
+	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
+	// Copy the Turbo Ratio & TDP modes: Lock or Unlock
+	Shm->Proc.Features.Ratio_Unlock = Proc->Features.Ratio_Unlock;
+	Shm->Proc.Features.TDP_Unlock = Proc->Features.TDP_Unlock;
 }
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
@@ -312,14 +312,8 @@ void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 }
 
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Shm->Proc.HyperThreading = Proc->Features.HTT_Enable;
-}
-
-void Programmable(SHM_STRUCT *Shm, PROC *Proc)
-{
-	Shm->Proc.Ratio_Unlock	= Proc->Features.Ratio_Unlock;
-	Shm->Proc.TDP_Unlock	= Proc->Features.TDP_Unlock;
+{	// Update the HyperThreading state
+	Shm->Proc.Features.HyperThreading = Proc->Features.HTT_Enable;
 }
 
 void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
@@ -2385,11 +2379,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Technologies aggregation.
 		PerformanceMonitoring(Shm, Proc);
 
-		InvariantTSC(Shm, Proc);
-
 		HyperThreading(Shm, Proc);
-
-		Programmable(Shm, Proc);
 
 		PowerNow(Shm, Proc);
 

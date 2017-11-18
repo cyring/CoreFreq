@@ -51,6 +51,7 @@ enum {	GenuineIntel,		\
 	Kabylake,		\
 	Kabylake_UY,		\
 	Cannonlake,		\
+	Geminilake,		\
 	ARCHITECTURES
 };
 
@@ -666,12 +667,14 @@ typedef struct	// BSP CPUID features.
 	CPUID_0x80000007 AdvPower;
 
 	unsigned int	FactoryFreq;
+
 	struct {
-		unsigned int
-			HTT_Enable	:  1-0,
-			Ratio_Unlock	:  2-1,
-			TDP_Unlock	:  3-2,
-			NotUsed		: 32-3;
+		Bit32	InvariantTSC	:  8-0,
+			HyperThreading	:  9-8,
+			HTT_Enable	: 10-9,
+			Ratio_Unlock	: 11-10,
+			TDP_Unlock	: 12-11,
+			NotUsed		: 32-12;
 	};
 } FEATURES;
 
