@@ -189,6 +189,7 @@ typedef union {
 #define SCANKEY_PERCENT		0x0000000000000025
 #define SCANKEY_SHIFT_a		0x0000000000000041
 #define SCANKEY_SHIFT_d		0x0000000000000044
+#define SCANKEY_SHIFT_i		0x0000000000000049
 #define SCANKEY_SHIFT_m		0x000000000000004d
 #define SCANKEY_SHIFT_q		0x0000000000000051
 #define SCANKEY_SHIFT_s		0x0000000000000053
@@ -420,13 +421,24 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		CUINT width,
 		void(*OutFunc)(unsigned long long key, char *output))
 {
-	size_t	len = 0;
-	char	*row[2] = {malloc(width + 1), malloc(width + 1)},
-		*str = malloc(width + 1),
-		*pad = NULL;
-	int	i = 0;
+	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
+	int	activeCores, boost = 0;
 
-/* Section Mark */
+	void PrintBoost(char *pfx, int _boost, int syc, unsigned long long _key)
+	{
+		if (Shm->Proc.Boost[_boost] > 0) {
+			sprintf(str, "%.*s""%s""%.*s""%4.2f""%.*s""%c%4d %c",
+					17, hSpace, pfx, 3, hSpace,
+				(double) ( Shm->Proc.Boost[_boost]
+					* Shm->Cpu[0].Clock.Hz) / 1000000.0,
+					20, hSpace,
+					symb[syc][0],
+					Shm->Proc.Boost[_boost],
+					symb[syc][1]);
+			printv(OutFunc, _key, width, 0, str);
+		}
+	}
+
 	printv(OutFunc, SCANKEY_NULL, width, 0, "Processor%.*s[%s]",
 		width - 11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
 
@@ -456,50 +468,42 @@ void SysInfoProc(SHM_STRUCT *Shm,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%5.1f]",
 		width - 20, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
-/* Row Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Limits for Turbo%.*sRatio [%6s]%.*sTDP [%6s]", width-57,hSpace,
-		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK", 12,hSpace,
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "TDP Limited%.*s[%6s]",
+		width - 22, hSpace,
+		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Ratio Limited%.*s[%6s]",
+		width - 24, hSpace,
 		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
-/* Row Mark */
-	len = sprintf(row[0],
-			"Core Boost%.*sMin   Max"			\
-			"    8C    7C    6C    5C    4C    3C    2C    1C",
-			6, hSpace);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Frequency%.*s(Mhz)%.*sRatio",
+		12, hSpace, 23 - (OutFunc == NULL), hSpace);
 
-	if (OutFunc == NULL) {
-		sprintf(row[0], "   |- ratio :    "" %4d "" %4d ",
-			Shm->Proc.Boost[0], Shm->Proc.Boost[1]);
-		sprintf(row[1], "   |-  freq :    "" %4.0f "" %4.0f ",
-		(double)(Shm->Proc.Boost[0] * Shm->Cpu[0].Clock.Hz) /1000000.0,
-		(double)(Shm->Proc.Boost[1] * Shm->Cpu[0].Clock.Hz) /1000000.0);
-	} else {
-		sprintf(row[0], "  |- ratio :    "" %4d "" %4d ",
-			Shm->Proc.Boost[0], Shm->Proc.Boost[1]);
-		sprintf(row[1], "  |-  freq :    "" %4.0f "" %4.0f ",
-		(double)(Shm->Proc.Boost[0] * Shm->Cpu[0].Clock.Hz) /1000000.0,
-		(double)(Shm->Proc.Boost[1] * Shm->Cpu[0].Clock.Hz) /1000000.0);
+	PrintBoost("Min", 0, 0, SCANKEY_NULL);
+	PrintBoost("Max", 1, 0, SCANKEY_NULL);
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Turbo Boost");
+	for (boost = LAST_BOOST, activeCores = 1;
+		boost > LAST_BOOST - Shm->Proc.Features.SpecTurboRatio;
+			boost--, activeCores++)
+	{
+	    char pfx[4];
+	    sprintf(pfx, "%2dC", activeCores);
+	    PrintBoost(pfx,boost,Shm->Proc.Features.Ratio_Unlock,SCANKEY_NULL);
 	}
-	for (i = MAX_BOOST - 8; i < MAX_BOOST; i++) {
-		if (Shm->Proc.Boost[i] != 0) {
-			len += sprintf(str, " %4d ", Shm->Proc.Boost[i]);
-			strcat(row[0], str);
 
-			len += sprintf(str, " %4.0f ",
-					(double) ( Shm->Proc.Boost[i]
-					* Shm->Cpu[0].Clock.Hz) / 1000000.0);
-			strcat(row[1], str);
-		} else {
-			strcat(row[0], "   -  ");
-			strcat(row[1], "      ");
-		}
-	}
-	printv(OutFunc, SCANKEY_NULL, width, 0, row[0]);
-	printv(OutFunc, SCANKEY_NULL, width, 0, row[1]);
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 0, "Instruction set:");
+	free(str);
+}
+
+void SysInfoISA(SHM_STRUCT *Shm,
+		CUINT width,
+		void(*OutFunc)(unsigned long long key, char *output))
+{
+	size_t	len = 0;
+	char	*row[2] = {malloc(width + 1), malloc(width + 1)},
+		*str = malloc(width + 1),
+		*pad = NULL;
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "3DNow!/Ext [%c,%c]",
@@ -2824,7 +2828,7 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateMenu(unsigned long long id)
     {
-	Window *wMenu = CreateWindow(wLayer, id, 3, 10, 3, 0);
+	Window *wMenu = CreateWindow(wLayer, id, 3, 11, 3, 0);
 	if (wMenu != NULL) {
 		Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
 			voidAttr = {.value = 0},
@@ -2863,28 +2867,29 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_l,	" Idle states  [l] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
+		StoreTCell(wMenu,SCANKEY_SHIFT_i," ISA Extens.  [I] ",skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_g,	" Pkg. cycles  [g] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
 	    else
 		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", stopAttr);
-
-		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_q,	" Interrupts   [q] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
+		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
+		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
 
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
+		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 	    if (Shm->Uncore.CtrlCount > 0)
 		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",skeyAttr);
 	    else
@@ -2892,7 +2897,6 @@ void Top(SHM_STRUCT *Shm)
 
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
 		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
 	    else
@@ -3172,6 +3176,16 @@ void Top(SHM_STRUCT *Shm)
 		winWidth = 76;
 		SysInfoFunc = SysInfoProc;
 		title = " Processor ";
+		}
+		break;
+	case SCANKEY_SHIFT_i:
+		{
+		matrixSize.hth = 7;
+		winOrigin.col = 2;
+		winOrigin.row = TOP_HEADER_ROW + 3;
+		winWidth = 76;
+		SysInfoFunc = SysInfoISA;
+		title = " Instruction Set Extensions ";
 		}
 		break;
 	case SCANKEY_e:
@@ -4355,6 +4369,7 @@ void Top(SHM_STRUCT *Shm)
     case SCANKEY_e:
     case SCANKEY_o:
     case SCANKEY_p:
+    case SCANKEY_SHIFT_i:
     case SCANKEY_t:
     case SCANKEY_u:
     case SCANKEY_w:
@@ -6220,6 +6235,9 @@ int main(int argc, char *argv[])
 	case 's':
 		{
 		SysInfoProc(Shm, 80, NULL);
+		printv(NULL, SCANKEY_VOID, 80, 0,"");
+		printv(NULL, SCANKEY_VOID, 80, 0,"ISA Extensions:");
+		SysInfoISA(Shm, 80, NULL);
 		printv(NULL, SCANKEY_VOID, 80, 0,"");
 		printv(NULL, SCANKEY_VOID, 80, 0,"Features:");
 		SysInfoFeatures(Shm, 80, NULL);

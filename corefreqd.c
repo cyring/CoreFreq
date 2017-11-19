@@ -301,9 +301,6 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
 	// Compute the TSC mode: None, Variant, Invariant
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
-	// Copy the Turbo Ratio & TDP modes: Lock or Unlock
-	Shm->Proc.Features.Ratio_Unlock = Proc->Features.Ratio_Unlock;
-	Shm->Proc.Features.TDP_Unlock = Proc->Features.TDP_Unlock;
 }
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)

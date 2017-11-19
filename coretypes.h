@@ -674,7 +674,8 @@ typedef struct	// BSP CPUID features.
 			HTT_Enable	: 10-9,
 			Ratio_Unlock	: 11-10,
 			TDP_Unlock	: 12-11,
-			NotUsed		: 32-12;
+			UnusedBits	: 24-12,
+			SpecTurboRatio	: 32-24;
 	};
 } FEATURES;
 

@@ -1310,6 +1310,8 @@ void Intel_Platform_Info(void)
 	Proc->Boost[0] = ratio0;
 	Proc->Boost[1] = KMIN(ratio1, ratio2);
 	Proc->Boost[LAST_BOOST] = KMAX(ratio1, ratio2);
+
+	Proc->Features.SpecTurboRatio = 1;
 }
 
 void Intel_Platform_Turbo(void)
@@ -1317,10 +1319,13 @@ void Intel_Platform_Turbo(void)
 	PLATFORM_INFO Platform = {.value = 0};
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 
-	Proc->Features.Ratio_Unlock = Platform.Ratio_Progable;
-	Proc->Features.TDP_Unlock = Platform.TDP_Progable;
+	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
+	Proc->Features.TDP_Unlock = Platform.TDP_Limited;
+
 	Proc->Boost[0] = Platform.MinimumRatio;
 	Proc->Boost[1] = Platform.MaxNonTurboRatio;
+
+	Proc->Features.SpecTurboRatio = 0;
 }
 
 void Intel_Turbo_Config8C(void)
@@ -1336,6 +1341,8 @@ void Intel_Turbo_Config8C(void)
 	Proc->Boost[MAX_BOOST - 3] = TurboCfg0.MaxRatio_3C;
 	Proc->Boost[MAX_BOOST - 2] = TurboCfg0.MaxRatio_2C;
 	Proc->Boost[MAX_BOOST - 1] = TurboCfg0.MaxRatio_1C;
+
+	Proc->Features.SpecTurboRatio += 8;
 }
 
 void Intel_Turbo_Config15C(void)
@@ -1350,6 +1357,8 @@ void Intel_Turbo_Config15C(void)
 	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.IVB_EP.MaxRatio_11C;
 	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.IVB_EP.MaxRatio_10C;
 	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.IVB_EP.MaxRatio_9C;
+
+	Proc->Features.SpecTurboRatio += 7;
 }
 
 void Intel_Turbo_Config16C(void)
@@ -1365,6 +1374,8 @@ void Intel_Turbo_Config16C(void)
 	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.HSW_EP.MaxRatio_11C;
 	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.HSW_EP.MaxRatio_10C;
 	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.HSW_EP.MaxRatio_9C;
+
+	Proc->Features.SpecTurboRatio += 8;
 }
 
 void Intel_Turbo_Config18C(void)
@@ -1374,6 +1385,8 @@ void Intel_Turbo_Config18C(void)
 
 	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
 	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
+
+	Proc->Features.SpecTurboRatio += 2;
 }
 
 void Nehalem_Platform_Info(void)
@@ -1413,6 +1426,8 @@ void Skylake_X_Platform_Info(void)
 	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.SKL_X.NUMCORE_2;
 	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.SKL_X.NUMCORE_1;
 	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.SKL_X.NUMCORE_0;
+
+	Proc->Features.SpecTurboRatio += 8;
 }
 
 
