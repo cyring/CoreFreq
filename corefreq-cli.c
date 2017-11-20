@@ -2828,94 +2828,89 @@ void Top(SHM_STRUCT *Shm)
 
     Window *CreateMenu(unsigned long long id)
     {
-	Window *wMenu = CreateWindow(wLayer, id, 3, 11, 3, 0);
-	if (wMenu != NULL) {
-		Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
-			voidAttr = {.value = 0},
-			stopAttr[18] = {
-				HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,
-				HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW
-			},
-			helpAttr[18] = {
-				LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,LKW,
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
-			},
-			quitAttr[18] = {
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,
-				LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW
-			},
-			skeyAttr[18] = {
-				LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,
-				LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
-			};
+      Window *wMenu = CreateWindow(wLayer, id, 3, 11, 3, 0);
+      if (wMenu != NULL) {
+	Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
+		voidAttr = {.value = 0}, gateAttr[24], ctrlAttr[24],
+		stopAttr[24] = {
+			HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,
+			HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW
+		},
+		helpAttr[24] = {
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,_LKW,LKW,
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW, LKW,LKW
+		},
+		quitAttr[24] = {
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW, LKW,LKW,LKW,LKW,
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW
+		},
+		skeyAttr[24] = {
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW, LKW,LKW,LKW,
+			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
+		};
 
-		StoreTCell(wMenu, SCANKEY_h,	"      Help        ", helpAttr);
-		StoreTCell(wMenu, SCANKEY_NULL,	"      View        ", sameAttr);
-		StoreTCell(wMenu, SCANKEY_NULL,	"      Window      ", sameAttr);
+	memcpy(gateAttr, BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
+			skeyAttr : stopAttr, 24);
+	memcpy(ctrlAttr, (Shm->Uncore.CtrlCount > 0) ? skeyAttr : stopAttr, 24);
 
-		StoreTCell(wMenu, SCANKEY_s,	" Settings     [s] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_f,	" Frequency    [f] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_p,	" Processor    [p] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_h,      "          Help          ", helpAttr);
+	StoreTCell(wMenu, SCANKEY_NULL,   "          View          ", sameAttr);
+	StoreTCell(wMenu, SCANKEY_NULL,   "         Window         ", sameAttr);
 
-		StoreTCell(wMenu, SCANKEY_a,	" About        [a] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_i,	" Inst cycles  [i] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_m,	" Topology     [m] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_s,      " Settings           [s] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_p,      " Processor          [p] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_F4,	" Quit        [F4] ", quitAttr);
-		StoreTCell(wMenu, SCANKEY_c,	" Core cycles  [c] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_e,	" Features     [e] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_m,      " Topology           [m] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_l,	" Idle states  [l] ", skeyAttr);
-		StoreTCell(wMenu,SCANKEY_SHIFT_i," ISA Extens.  [I] ",skeyAttr);
+	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", quitAttr);
+	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_e,      " Features           [e] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_g,	" Pkg. cycles  [g] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_t,	" Technologies [t] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extension      [I] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", skeyAttr);
-	    else
-		StoreTCell(wMenu, SCANKEY_x,	" Task Monitor [x] ", stopAttr);
-		StoreTCell(wMenu, SCANKEY_o,	" Perf. Monit. [o] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_t,      " Technologies       [t] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_q,	" Interrupts   [q] ", skeyAttr);
-		StoreTCell(wMenu, SCANKEY_w,	" PowerThermal [w] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_x,      " Tasks Monitoring   [x] ", gateAttr);
+	StoreTCell(wMenu, SCANKEY_o,      " Perf. Monitoring   [o] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu,SCANKEY_SHIFT_v," Voltage      [V] ",skeyAttr);
-		StoreTCell(wMenu, SCANKEY_u,	" CPUID Dump   [u] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_q,      " System Interrupts  [q] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_w,      " Power & Thermal    [w] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-	    if (Shm->Uncore.CtrlCount > 0)
-		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",skeyAttr);
-	    else
-		StoreTCell(wMenu,SCANKEY_SHIFT_m," Memory Ctrl  [M] ",stopAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_u,      " CPUID Inst. Dump   [u] ", skeyAttr);
 
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-		StoreTCell(wMenu, SCANKEY_VOID,	"", voidAttr);
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", skeyAttr);
-	    else
-		StoreTCell(wMenu, SCANKEY_k,	" Kernel       [k] ", stopAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
 
-		StoreWindow(wMenu, .color[0].select, MakeAttr(BLACK,0,WHITE,0));
-		StoreWindow(wMenu, .color[0].title, MakeAttr(BLACK,0,WHITE,0));
-		StoreWindow(wMenu, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
 
-		StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
-		StoreWindow(wMenu,	.key.Enter,	MotionEnter_Cell);
-		StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
-		StoreWindow(wMenu,	.key.Right,	MotionRight_Menu);
-		StoreWindow(wMenu,	.key.Down,	MotionDown_Menu);
-		StoreWindow(wMenu,	.key.Up,	MotionUp_Menu);
-		StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
-		StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
-	}
-	return(wMenu);
+	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK,0,WHITE,0));
+	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK,0,WHITE,0));
+	StoreWindow(wMenu, .color[1].title,	MakeAttr(BLACK,0,WHITE,1));
+
+	StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
+	StoreWindow(wMenu,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wMenu,	.key.Left,	MotionLeft_Menu);
+	StoreWindow(wMenu,	.key.Right,	MotionRight_Menu);
+	StoreWindow(wMenu,	.key.Down,	MotionDown_Menu);
+	StoreWindow(wMenu,	.key.Up,	MotionUp_Menu);
+	StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
+	StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
+      }
+      return(wMenu);
     }
 
     Window *CreateSettings(unsigned long long id)
