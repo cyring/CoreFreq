@@ -4,6 +4,9 @@
  * Licenses: GPL2
  */
 
+typedef unsigned long long int	Bit64;
+typedef unsigned int		Bit32;
+
 #define LOCKLESS " "
 #define BUS_LOCK "lock "
 
@@ -129,6 +132,19 @@
 	_ret;					\
 })
 
+#define _BITWISEXOR(_lock, _opl, _opr)		\
+({						\
+	volatile unsigned long long _ret=_opl;	\
+	asm volatile				\
+	(					\
+	_lock	"xorq %[opr], %[ret]"		\
+		: [ret] "=m" (_ret)		\
+		: [opr] "Jr" (_opr)		\
+		: "memory"			\
+	);					\
+	_ret;					\
+})
+
 #define BITMSK(_lock, _base, _offset)				\
 ({								\
 	asm volatile						\
@@ -185,3 +201,7 @@
 
 #define BITWISEAND(_lock, _opl, _opr)	_BITWISEAND(_lock, _opl, _opr)
 #define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)
+#define BITWISEXOR(_lock, _opl, _opr)	_BITWISEXOR(_lock, _opl, _opr)
+
+#define BITSTOR(_lock, _dest, _src)			\
+	_dest = BITWISEAND(_lock, _src, 0xffffffffffffffff)

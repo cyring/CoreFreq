@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.12"
+#define COREFREQ_VERSION	"1.13"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -77,9 +77,6 @@ enum {	GenuineIntel,		\
 #define VOLTAGE_FORMULA_AMD_0F \
 	0b0000000000000000000000000000001100000000000000000000000000000000
 
-typedef unsigned long long int	Bit64;
-typedef unsigned int		Bit32;
-
 typedef unsigned short int	CUINT;
 typedef signed short int	CSINT;
 
@@ -119,11 +116,11 @@ typedef signed short int	CSINT;
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
 
-typedef struct
+enum OFFLINE
 {
-	unsigned long long	HW,
-				OS;
-} OFFLINE;
+	HW,
+	OS
+};
 
 typedef struct
 {

@@ -405,17 +405,18 @@ typedef struct
 	CORE			*Core[];
 } KPUBLIC;
 
+enum { CREATED, STARTED, MUSTFWD };
+
 typedef struct
 {
 	struct hrtimer		Timer;
-	struct				// Timer State Machine.
-	{
-		unsigned long long
-			created	:  1-0,	// hrtimer_init() || ?()
-			started	:  2-1,	// hrtimer_start() || hrtimer_cancel()
-			mustFwd	:  3-2,	// hrtimer_forward()
-			_pad64	: 64-3;
-	} tsm;
+/*
+		TSM: Timer State Machine
+			CREATED: 1-0
+			STARTED: 2-1
+			MUSTFWD: 3-2
+*/
+	Bit64			TSM __attribute__ ((aligned (64)));
 } JOIN;
 
 typedef struct

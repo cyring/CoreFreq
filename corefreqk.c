@@ -23,10 +23,10 @@
 #include <asm/msr.h>
 #include <asm/nmi.h>
 
-#include "coretypes.h"
 #include "bitasm.h"
-#include "intelmsr.h"
 #include "amdmsr.h"
+#include "intelmsr.h"
+#include "coretypes.h"
 #include "corefreq-api.h"
 #include "corefreqk.h"
 
@@ -57,19 +57,19 @@ module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
 
 static unsigned int SleepInterval = 0;
-module_param(SleepInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(SleepInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SleepInterval, "Timer interval (ms)");
 
 static unsigned int TickInterval = 0;
-module_param(TickInterval, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+module_param(TickInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TickInterval, "System requested interval (ms)");
 
 static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
-static unsigned int NMI_Disable = 0;
-module_param(NMI_Disable, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+static unsigned short NMI_Disable = 0;
+module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI handler");
 
 static signed short PkgCStateLimit = -1;
@@ -84,17 +84,17 @@ static signed short CStateIORedir = -1;
 module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
 
-static signed short SpeedStepEnable = -1;
-module_param(SpeedStepEnable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(SpeedStepEnable, "Enable SpeedStep");
+static signed short SpeedStep_Enable = -1;
+module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
 
 static signed short C1E_Enable = -1;
 module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
 
-static signed short TurboBoostEnable = -1;
-module_param(TurboBoostEnable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(TurboBoostEnable, "Enable Turbo Boost");
+static signed short TurboBoost_Enable = -1;
+module_param(TurboBoost_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
 
 static signed short C3A_Enable = -1;
 module_param(C3A_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -1218,25 +1218,27 @@ unsigned int Proc_Topology(void)
 	unsigned int cpu, CountEnabledCPU = 0;
 
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+		unsigned long long OS_State=!cpu_online(cpu)||!cpu_active(cpu);
+
 		KPublic->Core[cpu]->T.Base.value = 0;
 		KPublic->Core[cpu]->T.ApicID     = -1;
 		KPublic->Core[cpu]->T.CoreID     = -1;
 		KPublic->Core[cpu]->T.ThreadID   = -1;
 
 		// CPU state based on the OS
-		if (	!(KPublic->Core[cpu]->OffLine.OS = !cpu_online(cpu)
-			|| !cpu_active(cpu)) ) {
-
+		if (!OS_State) {
+			BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 			if (!Core_Topology(cpu)) {
-				// CPU state based on the hardware
-				if (KPublic->Core[cpu]->T.ApicID >= 0) {
-					KPublic->Core[cpu]->OffLine.HW = 0;
-					CountEnabledCPU++;
-				}
-				else
-					KPublic->Core[cpu]->OffLine.HW = 1;
+			    // CPU state based on the hardware
+			    if (KPublic->Core[cpu]->T.ApicID >= 0) {
+				BITCLR(LOCKLESS,KPublic->Core[cpu]->OffLine,HW);
+				CountEnabledCPU++;
+			    }
+			    else
+				BITSET(LOCKLESS,KPublic->Core[cpu]->OffLine,HW);
 			}
-		}
+		} else
+			BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 	}
 	return(CountEnabledCPU);
 }
@@ -2175,29 +2177,31 @@ void Dump_CPUID(CORE *Core)
 	}
 }
 
-void SpeedStep_Technology(CORE *Core)				// Per Package!
+void SpeedStep_Technology(CORE *Core, unsigned int cpu)
 {
-	if (Proc->Features.Std.CX.EIST == 1) {
-		MISC_PROC_FEATURES MiscFeatures = {.value = 0};
-		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+	if (Core->T.Base.BSP) {
+		if (Proc->Features.Std.CX.EIST == 1) {
+			MISC_PROC_FEATURES MiscFeatures = {.value = 0};
+			RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-		switch (SpeedStepEnable) {
-		    case COREFREQ_TOGGLE_OFF:
-		    case COREFREQ_TOGGLE_ON:
-			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
-				MiscFeatures.EIST = SpeedStepEnable;
+			switch (SpeedStep_Enable) {
+			    case COREFREQ_TOGGLE_OFF:
+			    case COREFREQ_TOGGLE_ON:
+				MiscFeatures.EIST = SpeedStep_Enable;
 				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 				RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+			    break;
 			}
-		    break;
+			Core->Query.EIST = MiscFeatures.EIST;
+		} else {
+			Core->Query.EIST = 0;
 		}
-		Core->Query.EIST = MiscFeatures.EIST;
-	} else {
-		Core->Query.EIST = 0;
-	}
+		BITSET(LOCKLESS, Proc->SpeedStep_Mask, cpu);	// Per Package
+	} else
+		BITCLR(LOCKLESS, Proc->SpeedStep_Mask, cpu);
 }
 
-void TurboBoost_Technology(CORE *Core)
+void TurboBoost_Technology(CORE *Core, unsigned int cpu)
 {
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
@@ -2206,48 +2210,57 @@ void TurboBoost_Technology(CORE *Core)
 		PERF_CONTROL PerfControl = {.value = 0};
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
-		switch (TurboBoostEnable) {			// Per Thread
-		    case COREFREQ_TOGGLE_OFF:
-		    case COREFREQ_TOGGLE_ON:
-			PerfControl.Turbo_IDA = !TurboBoostEnable;
-			WRMSR(PerfControl, MSR_IA32_PERF_CTL);
-			RDMSR(PerfControl, MSR_IA32_PERF_CTL);
-		    break;
+		switch (TurboBoost_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				PerfControl.Turbo_IDA = !TurboBoost_Enable;
+				WRMSR(PerfControl, MSR_IA32_PERF_CTL);
+				RDMSR(PerfControl, MSR_IA32_PERF_CTL);
+			break;
 		}
 		Core->Query.Turbo = !PerfControl.Turbo_IDA;
 	} else {
 		Core->Query.Turbo = 0;
 	}
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);		// Per Thread
 }
 
-void DynamicAcceleration(CORE *Core)
+void DynamicAcceleration(CORE *Core, unsigned int cpu)
 {
 	if (Proc->Features.Power.AX.TurboIDA) {
-		TurboBoost_Technology(Core);
+		TurboBoost_Technology(Core, cpu);
 	} else {
 		Core->Query.Turbo = 0;
+
+		BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);	// Unique
 	}
 }
 
-void Query_Intel_C1E(CORE *Core)
+void Query_Intel_C1E(CORE *Core, unsigned int cpu)
 {
-	POWER_CONTROL PowerCtrl = {.value = 0};
-	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);			// Per Core
+	if (Core->T.Base.BSP) {
+		POWER_CONTROL PowerCtrl = {.value = 0};
+		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 
-	switch (C1E_Enable) {					// Per Package
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			if ((Core->T.CoreID == 0) && (Core->T.ThreadID == 0)) {
+		switch (C1E_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				PowerCtrl.C1E = C1E_Enable;
 				WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 				RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
-			}
-		break;
+			break;
+		}
+		Core->Query.C1E = PowerCtrl.C1E;
+
+		BITSET(LOCKLESS, Proc->C1E_Mask, cpu);		// Per Package
+	} else {
+		Core->Query.C1E = 0;
+
+		BITCLR(LOCKLESS, Proc->C1E_Mask, cpu);
 	}
-	Core->Query.C1E = PowerCtrl.C1E;
 }
 
-void Query_AMD_C1E(CORE *Core)
+void Query_AMD_C1E(CORE *Core, unsigned int cpu)
 {
 	INT_PENDING_MSG IntPendingMsg = {.value = 0};
 
@@ -2255,6 +2268,8 @@ void Query_AMD_C1E(CORE *Core)
 
 	Core->Query.C1E = IntPendingMsg.C1eOnCmpHalt
 			& !IntPendingMsg.SmiOnCmpHalt;
+
+	BITSET(LOCKLESS, Proc->C1E_Mask, cpu);			// Per Core
 }
 
 void ThermalMonitor_Set(CORE *Core)
@@ -2280,7 +2295,7 @@ void ThermalMonitor_Set(CORE *Core)
 	Core->PowerThermal.TM2_Enable = Therm2Control.TM_SELECT;
 }
 
-void PowerThermal(CORE *Core)
+void PowerThermal(CORE *Core, unsigned int cpu)
 {
   CLOCK_MODULATION ClockModulation = {.value = 0};
 
@@ -2356,9 +2371,11 @@ void PowerThermal(CORE *Core)
 	Core->PowerThermal.ClockModulation = ClockModulation;
     }
   }
+  BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
+  BITSET(LOCKLESS, Proc->PowerMgmt_Mask, cpu);
 }
 
-void CStatesConfiguration(int encoding, CORE *Core)
+void CStatesConfiguration(int encoding, CORE *Core, unsigned int cpu)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
@@ -2380,119 +2397,119 @@ void CStatesConfiguration(int encoding, CORE *Core)
 			ToggleFeature = 1;
 		break;
 	}
-    if (encoding == 0x062A) {
-	switch (C3U_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.C3undemotion = C3U_Enable;
-			ToggleFeature = 1;
-		break;
+	if (encoding == 0x062A) {
+		switch (C3U_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				CStateConfig.C3undemotion = C3U_Enable;
+				ToggleFeature = 1;
+			break;
+		}
+		switch (C1U_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				CStateConfig.C1undemotion = C1U_Enable;
+				ToggleFeature = 1;
+			break;
+		}
 	}
-	switch (C1U_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.C1undemotion = C1U_Enable;
-			ToggleFeature = 1;
-		break;
-	}
-    }
 	if (ToggleFeature == 1) {
 		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 	}
 	if (CStateConfig.CFG_Lock == 0) {
 		ToggleFeature = 0;
-	    if (encoding == 0x061A) { // Nehalem coding compatibility
-		switch (IOMWAIT_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-			ToggleFeature = 1;
-			break;
+		if (encoding == 0x061A) { // NHM encoding compatibility
+			switch (IOMWAIT_Enable) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+				ToggleFeature = 1;
+				break;
+			}
+			switch (PkgCStateLimit) {
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b100;
+				ToggleFeature = 1;
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b011;
+				ToggleFeature = 1;
+				break;
+			case 3: // Cannot be used to limit package C-State to C3
+				CStateConfig.Pkg_CStateLimit = 0b010;
+				ToggleFeature = 1;
+				break;
+			case 1:
+				CStateConfig.Pkg_CStateLimit = 0b001;
+				ToggleFeature = 1;
+				break;
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b000;
+				ToggleFeature = 1;
+				break;
+			}
+		} else if (encoding == 0x062A) { // SNB encoding compatibility
+			switch (PkgCStateLimit) {
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b100;
+				ToggleFeature = 1;
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b011;
+				ToggleFeature = 1;
+				break;
+			case 3:
+				CStateConfig.Pkg_CStateLimit = 0b010;
+				ToggleFeature = 1;
+				break;
+			case 2:
+				CStateConfig.Pkg_CStateLimit = 0b001;
+				ToggleFeature = 1;
+				break;
+			case 1:
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b000;
+				ToggleFeature = 1;
+				break;
+			}
+		} else if (encoding == 0x0645) {//HSW_ULT encoding compatibility
+			switch (PkgCStateLimit) {
+			case 10:
+				CStateConfig.Pkg_CStateLimit = 0b1000;
+				ToggleFeature = 1;
+				break;
+			case 9:
+				CStateConfig.Pkg_CStateLimit = 0b0111;
+				ToggleFeature = 1;
+				break;
+			case 8:
+				CStateConfig.Pkg_CStateLimit = 0b0110;
+				ToggleFeature = 1;
+				break;
+			case 7:
+				CStateConfig.Pkg_CStateLimit = 0b0100;
+				ToggleFeature = 1;
+				break;
+			case 6:
+				CStateConfig.Pkg_CStateLimit = 0b0011;
+				ToggleFeature = 1;
+				break;
+			case 3:
+				CStateConfig.Pkg_CStateLimit = 0b0010;
+				ToggleFeature = 1;
+				break;
+			case 2:
+				CStateConfig.Pkg_CStateLimit = 0b0001;
+				ToggleFeature = 1;
+				break;
+			case 1:
+			case 0:
+				CStateConfig.Pkg_CStateLimit = 0b0000;
+				ToggleFeature = 1;
+				break;
+			}
 		}
-		switch (PkgCStateLimit) {
-		case 7:
-			CStateConfig.Pkg_CStateLimit = 0b100;
-			ToggleFeature = 1;
-			break;
-		case 6:
-			CStateConfig.Pkg_CStateLimit = 0b011;
-			ToggleFeature = 1;
-			break;
-		case 3: // Cannot be used to limit package C-state to C3
-			CStateConfig.Pkg_CStateLimit = 0b010;
-			ToggleFeature = 1;
-			break;
-		case 1:
-			CStateConfig.Pkg_CStateLimit = 0b001;
-			ToggleFeature = 1;
-			break;
-		case 0:
-			CStateConfig.Pkg_CStateLimit = 0b000;
-			ToggleFeature = 1;
-			break;
-		}
-	    } else if (encoding == 0x062A) { //Sandy Bridge coding compatibility
-		switch (PkgCStateLimit) {
-		case 7:
-			CStateConfig.Pkg_CStateLimit = 0b100;
-			ToggleFeature = 1;
-			break;
-		case 6:
-			CStateConfig.Pkg_CStateLimit = 0b011;
-			ToggleFeature = 1;
-			break;
-		case 3:
-			CStateConfig.Pkg_CStateLimit = 0b010;
-			ToggleFeature = 1;
-			break;
-		case 2:
-			CStateConfig.Pkg_CStateLimit = 0b001;
-			ToggleFeature = 1;
-			break;
-		case 1:
-		case 0:
-			CStateConfig.Pkg_CStateLimit = 0b000;
-			ToggleFeature = 1;
-			break;
-		}
-	    } else if (encoding == 0x0645) {// Haswell_ULT coding compatibility
-		switch (PkgCStateLimit) {
-		case 10:
-			CStateConfig.Pkg_CStateLimit = 0b1000;
-			ToggleFeature = 1;
-			break;
-		case 9:
-			CStateConfig.Pkg_CStateLimit = 0b0111;
-			ToggleFeature = 1;
-			break;
-		case 8:
-			CStateConfig.Pkg_CStateLimit = 0b0110;
-			ToggleFeature = 1;
-			break;
-		case 7:
-			CStateConfig.Pkg_CStateLimit = 0b0100;
-			ToggleFeature = 1;
-			break;
-		case 6:
-			CStateConfig.Pkg_CStateLimit = 0b0011;
-			ToggleFeature = 1;
-			break;
-		case 3:
-			CStateConfig.Pkg_CStateLimit = 0b0010;
-			ToggleFeature = 1;
-			break;
-		case 2:
-			CStateConfig.Pkg_CStateLimit = 0b0001;
-			ToggleFeature = 1;
-			break;
-		case 1:
-		case 0:
-			CStateConfig.Pkg_CStateLimit = 0b0000;
-			ToggleFeature = 1;
-			break;
-		}
-	    }
 		if (ToggleFeature == 1) {
 			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
@@ -2501,82 +2518,86 @@ void CStatesConfiguration(int encoding, CORE *Core)
 	Core->Query.C3A = CStateConfig.C3autoDemotion;
 	Core->Query.C1A = CStateConfig.C1autoDemotion;
 
-    if (encoding == 0x062A) {
-	Core->Query.C3U = CStateConfig.C3undemotion;
-	Core->Query.C1U = CStateConfig.C1undemotion;
-    }
+	if (encoding == 0x062A) {
+		Core->Query.C3U = CStateConfig.C3undemotion;
+		Core->Query.C1U = CStateConfig.C1undemotion;
+	}
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
-    if (encoding == 0x061A) {
-	switch (CStateConfig.Pkg_CStateLimit & 0x7) {
-	case 0b100:
-		Core->Query.CStateLimit = 7;
-		break;
-	case 0b011:
-		Core->Query.CStateLimit = 6;
-		break;
-	case 0b010:
-		Core->Query.CStateLimit = 3;
-		break;
-	case 0b001:
-		Core->Query.CStateLimit = 1;
-		break;
-	case 0b000:
-	default:
-		Core->Query.CStateLimit = 0;
-		break;
+	if (encoding == 0x061A) {
+		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
+		case 0b100:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b011:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b010:
+			Core->Query.CStateLimit = 3;
+			break;
+		case 0b001:
+			Core->Query.CStateLimit = 1;
+			break;
+		case 0b000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
+	} else if (encoding == 0x062A) {
+		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
+		case 0b101:
+		case 0b100:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b011:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b010:
+			Core->Query.CStateLimit = 3;
+			break;
+		case 0b001:
+			Core->Query.CStateLimit = 2;
+			break;
+		case 0b000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
+	} else if (encoding == 0x0645) {
+		switch (CStateConfig.Pkg_CStateLimit) {
+		case 0b1000:
+			Core->Query.CStateLimit = 10;
+			break;
+		case 0b0111:
+			Core->Query.CStateLimit = 9;
+			break;
+		case 0b0110:
+			Core->Query.CStateLimit = 8;
+			break;
+		case 0b0101:
+		case 0b0100:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b0011:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b0010:
+			Core->Query.CStateLimit = 3;
+			break;
+		case 0b0001:
+			Core->Query.CStateLimit = 2;
+			break;
+		case 0b0000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
 	}
-    } else if (encoding == 0x062A) {
-	switch (CStateConfig.Pkg_CStateLimit & 0x7) {
-	case 0b101:
-	case 0b100:
-		Core->Query.CStateLimit = 7;
-		break;
-	case 0b011:
-		Core->Query.CStateLimit = 6;
-		break;
-	case 0b010:
-		Core->Query.CStateLimit = 3;
-		break;
-	case 0b001:
-		Core->Query.CStateLimit = 2;
-		break;
-	case 0b000:
-	default:
-		Core->Query.CStateLimit = 0;
-		break;
-	}
-    } else if (encoding == 0x0645) {
-	switch (CStateConfig.Pkg_CStateLimit) {
-	case 0b1000:
-		Core->Query.CStateLimit = 10;
-		break;
-	case 0b0111:
-		Core->Query.CStateLimit = 9;
-		break;
-	case 0b0110:
-		Core->Query.CStateLimit = 8;
-		break;
-	case 0b0101:
-	case 0b0100:
-		Core->Query.CStateLimit = 7;
-		break;
-	case 0b0011:
-		Core->Query.CStateLimit = 6;
-		break;
-	case 0b0010:
-		Core->Query.CStateLimit = 3;
-		break;
-	case 0b0001:
-		Core->Query.CStateLimit = 2;
-		break;
-	case 0b0000:
-	default:
-		Core->Query.CStateLimit = 0;
-		break;
-	}
-    }
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
 
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 
@@ -2661,91 +2682,113 @@ void Microcode(CORE *Core)
 	Core->Query.Microcode = Microcode.Signature;
 }
 
-void PerCore_Intel_Query(CORE *Core)
+void PerCore_Intel_Query(CORE *Core, unsigned int cpu)
 {
 	Microcode(Core);
 
 	Dump_CPUID(Core);
 
-	PowerThermal(Core);
+	BITSET(LOCKLESS, Proc->SpeedStep_Mask, cpu);
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1E_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
+
+	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_AMD_Query(CORE *Core)
+void PerCore_AMD_Query(CORE *Core, unsigned int cpu)
 {
 	Dump_CPUID(Core);
 
-	Query_AMD_C1E(Core);
+	Query_AMD_C1E(Core, cpu);
+
+	BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
+	BITSET(LOCKLESS, Proc->PowerMgmt_Mask, cpu);
+	BITSET(LOCKLESS, Proc->SpeedStep_Mask, cpu);
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
 
 	PerCore_AMD_PStates(Core);
 }
 
-void PerCore_Core2_Query(CORE *Core)
+void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
 {
 	Microcode(Core);
 
 	Dump_CPUID(Core);
 
-	SpeedStep_Technology(Core);
+	SpeedStep_Technology(Core, cpu);
+	DynamicAcceleration(Core, cpu);				// Unique
 
-	DynamicAcceleration(Core);				// Unique
+	BITSET(LOCKLESS, Proc->C1E_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
 
-	PowerThermal(Core);					// Shared|Unique
+	PowerThermal(Core, cpu);				// Shared|Unique
 
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_Nehalem_Query(CORE *Core)
+void PerCore_Nehalem_Query(CORE *Core, unsigned int cpu)
 {
 	Microcode(Core);
 
 	Dump_CPUID(Core);
 
-	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
-	Query_Intel_C1E(Core);
+	SpeedStep_Technology(Core, cpu);
+	TurboBoost_Technology(Core, cpu);
+	Query_Intel_C1E(Core, cpu);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x061A, Core);
+		CStatesConfiguration(0x061A, Core, cpu);
 	}
-	PowerThermal(Core);
+	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_SandyBridge_Query(CORE *Core)
+void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 {
 	Microcode(Core);
 
 	Dump_CPUID(Core);
 
-	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
-	Query_Intel_C1E(Core);
+	SpeedStep_Technology(Core, cpu);
+	TurboBoost_Technology(Core, cpu);
+	Query_Intel_C1E(Core, cpu);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x062A, Core);
+		CStatesConfiguration(0x062A, Core, cpu);
 	}
-	PowerThermal(Core);
+	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_Haswell_ULT_Query(CORE *Core)
+void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 {
 	Microcode(Core);
 
 	Dump_CPUID(Core);
 
-	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
-	Query_Intel_C1E(Core);
+	SpeedStep_Technology(Core, cpu);
+	TurboBoost_Technology(Core, cpu);
+	Query_Intel_C1E(Core, cpu);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x0645, Core);
+		CStatesConfiguration(0x0645, Core, cpu);
 	}
-	PowerThermal(Core);
+	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
 }
@@ -2806,13 +2849,13 @@ void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu=smp_processor_id();
 
-	if (KPrivate->Join[cpu]->tsm.created == 0) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 0) {
 		hrtimer_init(	&KPrivate->Join[cpu]->Timer,
 				CLOCK_MONOTONIC,
 				HRTIMER_MODE_REL_PINNED);
 
 		KPrivate->Join[cpu]->Timer.function = Cycle_Function;
-		KPrivate->Join[cpu]->tsm.created = 1;
+		BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, CREATED);
 	}
 }
 
@@ -2827,7 +2870,7 @@ void Controller_Init(void)
 	do {	// from last AP to BSP
 	    cpu--;
 
-	    if (!KPublic->Core[cpu]->OffLine.OS) {
+	    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 		unsigned int ratio = Proc->Boost[1];
 
 		if ((AutoClock != 0) && (ratio != 0)) {
@@ -2855,8 +2898,8 @@ void Controller_Start(int wait)
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if ((KPrivate->Join[cpu]->tsm.created == 1)
-		     && (KPrivate->Join[cpu]->tsm.started == 0))
+		    if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
+		     && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, wait);
@@ -2868,8 +2911,8 @@ void Controller_Stop(int wait)
 	if (Arch[Proc->ArchID].Stop != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if ((KPrivate->Join[cpu]->tsm.created == 1)
-		     && (KPrivate->Join[cpu]->tsm.started == 1))
+		    if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
+		     && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, wait);
@@ -2884,7 +2927,7 @@ void Controller_Exit(void)
 		Arch[Proc->ArchID].Exit();
 
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		KPrivate->Join[cpu]->tsm.created = 0;
+		BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, CREATED);
 }
 
 void Core_Counters_Set(CORE *Core)
@@ -3319,7 +3362,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3356,7 +3399,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3396,28 +3439,28 @@ void Start_GenuineIntel(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_Intel_Query(Core);
+	PerCore_Intel_Query(Core, cpu);
 
 	Counters_Genuine(Core, 0);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 void Stop_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	KPrivate->Join[cpu]->tsm.started = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 /*
@@ -3428,7 +3471,7 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3469,7 +3512,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		FIDVID_STATUS FidVidStatus = {.value = 0};
 
 		hrtimer_forward(pTimer,
@@ -3546,26 +3589,26 @@ void Start_AuthenticAMD(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	PerCore_AMD_Query(Core);
+	PerCore_AMD_Query(Core, cpu);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 void Stop_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	KPrivate->Join[cpu]->tsm.started = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
@@ -3574,7 +3617,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3623,18 +3666,18 @@ void Start_Core2(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_Core2_Query(Core);
+	PerCore_Core2_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 void Stop_Core2(void *arg)
@@ -3642,13 +3685,13 @@ void Stop_Core2(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
 
-	KPrivate->Join[cpu]->tsm.started = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
@@ -3656,7 +3699,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	unsigned int cpu=smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3734,7 +3777,7 @@ void Start_Nehalem(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_Nehalem_Query(Core);
+	PerCore_Nehalem_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
 	Uncore_Counters_Set(NHM, Core);
@@ -3746,13 +3789,13 @@ void Start_Nehalem(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 void Stop_Nehalem(void *arg)
@@ -3760,14 +3803,14 @@ void Stop_Nehalem(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
 	Uncore_Counters_Clear(NHM, Core);
 
-	KPrivate->Join[cpu]->tsm.started = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 
@@ -3777,7 +3820,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -3866,7 +3909,7 @@ void Start_SandyBridge(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_SandyBridge_Query(Core);
+	PerCore_SandyBridge_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
@@ -3877,13 +3920,13 @@ void Start_SandyBridge(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 void Stop_SandyBridge(void *arg)
@@ -3891,13 +3934,13 @@ void Stop_SandyBridge(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
 
-	KPrivate->Join[cpu]->tsm.started = 0;
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 
@@ -3907,7 +3950,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if (KPrivate->Join[cpu]->tsm.mustFwd == 1) {
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -4008,7 +4051,7 @@ void Start_Haswell_ULT(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_Haswell_ULT_Query(Core);
+	PerCore_Haswell_ULT_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
@@ -4019,13 +4062,13 @@ void Start_Haswell_ULT(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	KPrivate->Join[cpu]->tsm.mustFwd = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	KPrivate->Join[cpu]->tsm.started = 1;
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 
@@ -4115,7 +4158,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned long arg)
 {
 	long rc = -1;
-	int toggleFeature = COREFREQ_TOGGLE_OFF;
 
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
@@ -4132,8 +4174,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case COREFREQ_IOCTL_MACHINE:
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
+					Controller_Stop(1);
+					rc = 0;
+				break;
 			case COREFREQ_TOGGLE_ON:
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Start(1);
+					rc = 0;
 				break;
 		}
 		break;
@@ -4141,8 +4187,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					SpeedStepEnable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					SpeedStep_Enable = arg;
+					Controller_Stop(1);
+					Controller_Start(1);
+					SpeedStep_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4151,7 +4200,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					C1E_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					C1E_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4159,8 +4211,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					TurboBoostEnable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					TurboBoost_Enable = arg;
+					Controller_Stop(1);
+					Controller_Start(1);
+					TurboBoost_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4169,7 +4224,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					C1A_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					C1A_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4178,7 +4236,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					C3A_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					C3A_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4187,7 +4248,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					C1U_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					C1U_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
@@ -4196,42 +4260,55 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					C3U_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					C3U_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_PKGCST:
 		PkgCStateLimit = arg;
-		toggleFeature = COREFREQ_TOGGLE_ON;
+		Controller_Stop(1);
+		Controller_Start(1);
+		PkgCStateLimit = -1;
+		rc = 0;
 		break;
 	case COREFREQ_IOCTL_IOMWAIT:
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
 					IOMWAIT_Enable = arg;
-					toggleFeature = COREFREQ_TOGGLE_ON;
+					Controller_Stop(1);
+					Controller_Start(1);
+					IOMWAIT_Enable = -1;
+					rc = 0;
 				break;
 		}
 		break;
 	case COREFREQ_IOCTL_IORCST:
 		CStateIORedir = arg;
-		toggleFeature = COREFREQ_TOGGLE_ON;
+		Controller_Stop(1);
+		Controller_Start(1);
+		CStateIORedir = -1;
+		rc = 0;
 		break;
 	case COREFREQ_IOCTL_ODCM:
 		ODCM_Enable = arg;
-		toggleFeature = COREFREQ_TOGGLE_ON;
+		Controller_Stop(1);
+		Controller_Start(1);
+		ODCM_Enable = -1;
+		rc = 0;
 		break;
 	case COREFREQ_IOCTL_ODCM_DC:
 		ODCM_DutyCycle = arg;
-		toggleFeature = COREFREQ_TOGGLE_ON;
+		Controller_Stop(1);
+		Controller_Start(1);
+		ODCM_DutyCycle = -1;
+		rc = 0;
 		break;
 	default:
 		rc = -1;
-	}
-	if (toggleFeature == COREFREQ_TOGGLE_ON) {
-		Controller_Stop(1);
-		Controller_Start(1);
-		rc = 0;
 	}
 	return(rc);
 }
@@ -4350,12 +4427,12 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 {
 	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
 		if ((KPublic->Core[cpu]->T.ApicID == -1)
-		 && !KPublic->Core[cpu]->OffLine.HW) {
+		 && !BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
 			if (!Core_Topology(cpu)) {
-				if (KPublic->Core[cpu]->T.ApicID >= 0)
-					KPublic->Core[cpu]->OffLine.HW = 0;
-				else
-					KPublic->Core[cpu]->OffLine.HW = 1;
+			    if (KPublic->Core[cpu]->T.ApicID >= 0)
+				BITCLR(LOCKLESS,KPublic->Core[cpu]->OffLine,HW);
+			    else
+				BITSET(LOCKLESS,KPublic->Core[cpu]->OffLine,HW);
 		    	}
 		memcpy(&KPublic->Core[cpu]->Clock,
 			&KPublic->Core[0]->Clock,
@@ -4364,14 +4441,14 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 		if (Arch[Proc->ArchID].Timer != NULL) {
 			Arch[Proc->ArchID].Timer(cpu);
 		}
-		if ((KPrivate->Join[cpu]->tsm.started == 0)
+		if ((BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)
 		 && (Arch[Proc->ArchID].Start != NULL)) {
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, 0);
 		}
 		Proc->CPU.OnLine++;
-		KPublic->Core[cpu]->OffLine.OS = 0;
+		BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
 		return(0);
 	} else
@@ -4381,15 +4458,15 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 {
 	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-		if ((KPrivate->Join[cpu]->tsm.created == 1)
-		 && (KPrivate->Join[cpu]->tsm.started == 1)
+		if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
+		 && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1)
 		 && (Arch[Proc->ArchID].Stop != NULL)) {
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, 1);
 		}
 		Proc->CPU.OnLine--;
-		KPublic->Core[cpu]->OffLine.OS = 1;
+		BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
 		return(0);
 	} else

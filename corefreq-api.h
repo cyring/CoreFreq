@@ -258,7 +258,7 @@ typedef struct
 					_pad[7];
 	} Sync;
 
-	OFFLINE				OffLine;
+	Bit64				OffLine __attribute__ ((aligned (64)));
 
 	struct
 	{
@@ -519,6 +519,16 @@ typedef struct
 	} SaveArea;
 
 	FEATURES		Features;
+
+	Bit64			ODCM_Mask	__attribute__ ((aligned (64)));
+	Bit64			PowerMgmt_Mask	__attribute__ ((aligned (64)));
+	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
+	Bit64			TurboBoost_Mask __attribute__ ((aligned (64)));
+	Bit64			C1E_Mask __attribute__ ((aligned (64)));
+	Bit64			C3A_Mask __attribute__ ((aligned (64))); // NHM
+	Bit64			C1A_Mask __attribute__ ((aligned (64))); // NHM
+	Bit64			C3U_Mask __attribute__ ((aligned (64))); // SNB
+	Bit64			C1U_Mask __attribute__ ((aligned (64))); // SNB
 
 	unsigned long long	thermalFormula,
 				voltageFormula;

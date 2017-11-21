@@ -8,7 +8,7 @@
 
 typedef struct
 {
-	OFFLINE				OffLine;
+	Bit64				OffLine __attribute__ ((aligned (64)));
 
 	CLOCK				Clock;
 
@@ -132,6 +132,26 @@ typedef struct
 
 	FEATURES			Features;
 
+	Bit64			PowerNow	__attribute__ ((aligned (64)));
+	Bit64			ODCM		__attribute__ ((aligned (64)));
+	Bit64			ODCM_Mask	__attribute__ ((aligned (64)));
+	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
+	Bit64			PowerMgmt_Mask	__attribute__ ((aligned (64)));
+	Bit64			SpeedStep	__attribute__ ((aligned (64)));
+	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
+	Bit64			TurboBoost	__attribute__ ((aligned (64)));
+	Bit64			TurboBoost_Mask __attribute__ ((aligned (64)));
+	Bit64			C1E		__attribute__ ((aligned (64)));
+	Bit64			C1E_Mask	__attribute__ ((aligned (64)));
+	Bit64			C3A		__attribute__ ((aligned (64)));
+	Bit64			C3A_Mask	__attribute__ ((aligned (64)));
+	Bit64			C1A		__attribute__ ((aligned (64)));
+	Bit64			C1A_Mask	__attribute__ ((aligned (64)));
+	Bit64			C3U		__attribute__ ((aligned (64)));
+	Bit64			C3U_Mask	__attribute__ ((aligned (64)));
+	Bit64			C1U		__attribute__ ((aligned (64)));
+	Bit64			C1U_Mask	__attribute__ ((aligned (64)));
+
 	unsigned int			SleepInterval;
 	struct timespec			BaseSleep;
 
@@ -142,26 +162,6 @@ typedef struct
 
 	unsigned int			Boost[MAX_BOOST],
 					PM_version;
-
-	Bit64				PowerNow,
-					ODCM,
-					ODCM_Mask,
-					PowerMgmt,
-					PowerMgmt_Mask,
-					SpeedStep,
-					SpeedStep_Mask,
-					TurboBoost,
-					TurboBoost_Mask,
-					C1E,
-					C1E_Mask,
-					C3A,		// Nehalem
-					C3A_Mask,
-					C1A,		// Nehalem
-					C1A_Mask,
-					C3U,		// Sandy Bridge
-					C3U_Mask,
-					C1U,		// Sandy Bridge
-					C1U_Mask;
 
 	unsigned int			Top;
 
@@ -218,7 +218,7 @@ typedef struct
 	} Registration;
 
 	struct {
-		Bit64		Operation;
+		Bit64		Operation	__attribute__ ((aligned (64)));
 
 		IDLEDRIVER	IdleDriver;
 

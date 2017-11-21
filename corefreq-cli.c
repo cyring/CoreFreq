@@ -26,7 +26,7 @@
 #include "coretypes.h"
 #include "corefreq.h"
 
-unsigned int Shutdown = 0x0;
+static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
 void Emergency(int caught)
 {
@@ -35,7 +35,7 @@ void Emergency(int caught)
 	case SIGQUIT:
 	case SIGTERM:
 	case SIGTSTP:
-		Shutdown = 0x1;
+		BITSET(LOCKLESS, Shutdown, 0);
 		break;
 	}
 }
@@ -427,7 +427,7 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	void PrintBoost(char *pfx, int _boost, int syc, unsigned long long _key)
 	{
 		if (Shm->Proc.Boost[_boost] > 0) {
-			sprintf(str, "%.*s""%s""%.*s""%4.2f""%.*s""%c%4d %c",
+			sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 					17, hSpace, pfx, 3, hSpace,
 				(double) ( Shm->Proc.Boost[_boost]
 					* Shm->Cpu[0].Clock.Hz) / 1000000.0,
@@ -946,9 +946,10 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 		void(*OutFunc)(unsigned long long key, char *output) )
 {
 	const unsigned int
-	    isTurboBoost = (Shm->Proc.TurboBoost==Shm->Proc.TurboBoost_Mask),
-	    isSpeedStep  = (Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask);
-
+		isTurbo = !BITWISEXOR(LOCKLESS, Shm->Proc.TurboBoost,
+						Shm->Proc.TurboBoost_Mask),
+		isEIST  = !BITWISEXOR(LOCKLESS, Shm->Proc.SpeedStep,
+						Shm->Proc.SpeedStep_Mask);
 /* Section Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Hyper-Threading%.*sHTT       [%3s]", width - 33, hSpace,
@@ -956,7 +957,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, BOXKEY_EIST, width, 2,
 		"SpeedStep%.*sEIST       <%3s>", width - 28, hSpace,
-		enabled(isSpeedStep));
+		enabled(isEIST));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"PowerNow!%.*sPowerNow       [%3s]", width - 32, hSpace,
@@ -968,7 +969,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, BOXKEY_TURBO, width, 2,
 		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
-		enabled(isTurboBoost|Shm->Proc.Features.AdvPower.DX.CPB));
+		enabled(isTurbo|Shm->Proc.Features.AdvPower.DX.CPB));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
@@ -979,11 +980,11 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 			void(*OutFunc)(unsigned long long key, char *output) )
 {
 	const unsigned int
-		isEnhancedHaltState = (Shm->Proc.C1E == Shm->Proc.C1E_Mask),
-		isC3autoDemotion = (Shm->Proc.C3A == Shm->Proc.C3A_Mask),
-		isC1autoDemotion = (Shm->Proc.C1A == Shm->Proc.C1A_Mask),
-		isC3undemotion = (Shm->Proc.C3U == Shm->Proc.C3U_Mask),
-		isC1undemotion = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
+		isC1E = !BITWISEXOR(LOCKLESS,Shm->Proc.C1E, Shm->Proc.C1E_Mask),
+		isC3A = !BITWISEXOR(LOCKLESS,Shm->Proc.C3A, Shm->Proc.C3A_Mask),
+		isC1A = !BITWISEXOR(LOCKLESS,Shm->Proc.C1A, Shm->Proc.C1A_Mask),
+		isC3U = !BITWISEXOR(LOCKLESS,Shm->Proc.C3U, Shm->Proc.C3U_Mask),
+		isC1U = !BITWISEXOR(LOCKLESS,Shm->Proc.C1U, Shm->Proc.C1U_Mask);
 
 /* Section Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
@@ -1011,23 +1012,23 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
     }
 	printv(OutFunc, BOXKEY_C1E, width, 2,
 		"Enhanced Halt State%.*sC1E       <%3s>",
-		width - 37, hSpace, enabled(isEnhancedHaltState));
+		width - 37, hSpace, enabled(isC1E));
 
 	printv(OutFunc, BOXKEY_C1A, width, 2,
 		"C1 Auto Demotion%.*sC1A       <%3s>",
-		width - 34, hSpace, enabled(isC1autoDemotion));
+		width - 34, hSpace, enabled(isC1A));
 
 	printv(OutFunc, BOXKEY_C3A, width, 2,
 		"C3 Auto Demotion%.*sC3A       <%3s>",
-		width - 34, hSpace, enabled(isC3autoDemotion));
+		width - 34, hSpace, enabled(isC3A));
 
 	printv(OutFunc, BOXKEY_C1U, width, 2,
 		"C1 UnDemotion%.*sC1U       <%3s>",
-		width - 31, hSpace, enabled(isC1undemotion));
+		width - 31, hSpace, enabled(isC1U));
 
 	printv(OutFunc, BOXKEY_C3U, width, 2,
 		"C3 UnDemotion%.*sC3U       <%3s>",
-		width - 31, hSpace, enabled(isC3undemotion));
+		width - 31, hSpace, enabled(isC3U));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
@@ -1156,8 +1157,10 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 		"UNLOCK",
 	};
 	const unsigned int
-		isODCM = (Shm->Proc.ODCM == Shm->Proc.ODCM_Mask),
-		isPowerMgmt = (Shm->Proc.PowerMgmt == Shm->Proc.PowerMgmt_Mask);
+		isODCM = !BITWISEXOR(LOCKLESS,	Shm->Proc.ODCM,
+						Shm->Proc.ODCM_Mask),
+		isPowerMgmt = !BITWISEXOR(LOCKLESS, Shm->Proc.PowerMgmt,
+						Shm->Proc.PowerMgmt_Mask);
 /* Section Mark */
 	printv(OutFunc, BOXKEY_ODCM, width, 2,
 		"Clock Modulation%.*sODCM   <%7s>",
@@ -1370,11 +1373,11 @@ void Dashboard( SHM_STRUCT *Shm,
     marginHeight += 3 + 1;	// shifted by lcd height + cpu frame
     unsigned int cpu = 0;
 
-    while (!Shutdown) {
+    while (!BITVAL(Shutdown, 0)) {
     	unsigned int digit[9];
 	CUINT X, Y;
 
-	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
+	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -1386,12 +1389,12 @@ void Dashboard( SHM_STRUCT *Shm,
 	Y = leadingTop;
 	boardView[0] = '\0';
 
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	    if (!Shm->Cpu[cpu].OffLine.HW) {
+	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!Shm->Cpu[cpu].OffLine.OS) {
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 			LCD_Draw(X, Y, lcdView,
 				(unsigned int) Flop->Relative.Freq, digit);
 			sprintf(cpuView,
@@ -1432,8 +1435,8 @@ void Dashboard( SHM_STRUCT *Shm,
 void Counters(SHM_STRUCT *Shm)
 {
     unsigned int cpu = 0;
-    while (!Shutdown) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
+    while (!BITVAL(Shutdown, 0)) {
+	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -1444,12 +1447,12 @@ void Counters(SHM_STRUCT *Shm)
 		printf("CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 			"  Min TMP:TS  Max\n");
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	  if (!Shm->Cpu[cpu].OffLine.HW) {
+	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!Shm->Cpu[cpu].OffLine.OS)
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printf("#%02u %7.2f (%5.2f)"				\
 			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 			"  %-3u/%3u:%-3u/%3u\n",
@@ -1494,8 +1497,8 @@ void Counters(SHM_STRUCT *Shm)
 void Voltage(SHM_STRUCT *Shm)
 {
     unsigned int cpu = 0;
-    while (!Shutdown) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
+    while (!BITVAL(Shutdown, 0)) {
+	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -1504,12 +1507,12 @@ void Voltage(SHM_STRUCT *Shm)
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
 		printf("CPU Freq(MHz) VID  Vcore\n");
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	  if (!Shm->Cpu[cpu].OffLine.HW) {
+	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!Shm->Cpu[cpu].OffLine.OS)
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printf("#%02u %7.2f %5d  %5.4f\n",
 			cpu,
 			Flop->Relative.Freq,
@@ -1524,8 +1527,8 @@ void Voltage(SHM_STRUCT *Shm)
 void Instructions(SHM_STRUCT *Shm)
 {
 	unsigned int cpu = 0;
-	while (!Shutdown) {
-	  while (!BITVAL(Shm->Proc.Sync, 0) && !Shutdown)
+	while (!BITVAL(Shutdown, 0)) {
+	  while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
 			nanosleep(&Shm->Proc.BaseSleep, NULL);
 
 	  BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -1535,12 +1538,12 @@ void Instructions(SHM_STRUCT *Shm)
 
 		    printf("CPU     IPS            IPC            CPI\n");
 
-	  for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
-	    if (!Shm->Cpu[cpu].OffLine.HW) {
+	  for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!Shm->Cpu[cpu].OffLine.OS)
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		    printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
 			cpu,
 			Flop->State.IPS,
@@ -2871,7 +2874,7 @@ void Top(SHM_STRUCT *Shm)
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extension      [I] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extensions     [I] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
@@ -3657,7 +3660,7 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_F4:
     case SCANCON_F4:
-	Shutdown = 0x1;
+	BITSET(LOCKLESS, Shutdown, 0);
 	break;
     case SCANKEY_PERCENT:
 	{
@@ -3838,8 +3841,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isEIST =
-			(Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask);
+	    const unsigned int isEIST = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.SpeedStep,
+						Shm->Proc.SpeedStep_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 3
@@ -3876,7 +3880,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isC1E = (Shm->Proc.C1E == Shm->Proc.C1E_Mask);
+	    const unsigned int isC1E = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.C1E,
+						Shm->Proc.C1E_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 2
@@ -3913,8 +3919,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isTurbo =
-			(Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask);
+	    const unsigned int isTurbo = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.TurboBoost,
+						Shm->Proc.TurboBoost_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 4
@@ -3951,7 +3958,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isC1A = (Shm->Proc.C1A == Shm->Proc.C1A_Mask);
+	    const unsigned int isC1A = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.C1A,
+						Shm->Proc.C1A_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 5
@@ -3988,7 +3997,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isC3A = (Shm->Proc.C3A == Shm->Proc.C3A_Mask);
+	    const unsigned int isC3A = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.C3A,
+						Shm->Proc.C3A_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 6
@@ -4025,7 +4036,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isC1U = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
+	    const unsigned int isC1U = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.C1U,
+						Shm->Proc.C1U_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 7
@@ -4062,7 +4075,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isC3U = (Shm->Proc.C3U == Shm->Proc.C3U_Mask);
+	    const unsigned int isC3U = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.C3U,
+						Shm->Proc.C3U_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 8
@@ -4236,7 +4251,9 @@ void Top(SHM_STRUCT *Shm)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	    {
-	    const unsigned int isODCM = (Shm->Proc.ODCM == Shm->Proc.ODCM_Mask);
+	    const unsigned int isODCM = !BITWISEXOR(LOCKLESS,
+						Shm->Proc.ODCM,
+						Shm->Proc.ODCM_Mask);
 	    const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 6
@@ -4310,7 +4327,7 @@ void Top(SHM_STRUCT *Shm)
 	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC02,
 	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC03,
 	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC04,
-	(ASCII*)"           63.50%          ", stateAttr[0], BOXKEY_ODCM_DC05,
+	(ASCII*)"           62.50%          ", stateAttr[0], BOXKEY_ODCM_DC05,
 	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC06,
 	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC07);
 	    if (wBox != NULL) {
@@ -4432,13 +4449,15 @@ void Top(SHM_STRUCT *Shm)
     {
 	struct FLIP_FLOP *Flop = NULL;
 	const unsigned int
-		isTurbo = (Shm->Proc.TurboBoost == Shm->Proc.TurboBoost_Mask),
-		isEIST = (Shm->Proc.SpeedStep == Shm->Proc.SpeedStep_Mask),
-		isC1E = (Shm->Proc.C1E == Shm->Proc.C1E_Mask),
-		isC3A = (Shm->Proc.C3A == Shm->Proc.C3A_Mask),
-		isC1A = (Shm->Proc.C1A == Shm->Proc.C1A_Mask),
-		isC3U = (Shm->Proc.C3U == Shm->Proc.C3U_Mask),
-		isC1U = (Shm->Proc.C1U == Shm->Proc.C1U_Mask);
+		isTurbo = !BITWISEXOR(LOCKLESS, Shm->Proc.TurboBoost,
+						Shm->Proc.TurboBoost_Mask),
+		isEIST = !BITWISEXOR(LOCKLESS,	Shm->Proc.SpeedStep,
+						Shm->Proc.SpeedStep_Mask),
+		isC1E = !BITWISEXOR(LOCKLESS,Shm->Proc.C1E, Shm->Proc.C1E_Mask),
+		isC3A = !BITWISEXOR(LOCKLESS,Shm->Proc.C3A, Shm->Proc.C3A_Mask),
+		isC1A = !BITWISEXOR(LOCKLESS,Shm->Proc.C1A, Shm->Proc.C1A_Mask),
+		isC3U = !BITWISEXOR(LOCKLESS,Shm->Proc.C3U, Shm->Proc.C3U_Mask),
+		isC1U = !BITWISEXOR(LOCKLESS,Shm->Proc.C1U, Shm->Proc.C1U_Mask);
 	unsigned int processorHot = 0;
 	CUINT col = 0, row = 0;
 	size_t len;
@@ -4670,7 +4689,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
 	LayerAt(layer, code, 3, row) = 0x20;
 
-    if (!Shm->Cpu[cpu].OffLine.OS) {
+    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 	LayerAt(layer, attr, 1, row) =					\
 		LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
 			MakeAttr(CYAN, 0, BLACK, 0);
@@ -5629,7 +5648,7 @@ void Top(SHM_STRUCT *Shm)
 
     AllocAll();
 
-    while (!Shutdown)
+    while (!BITVAL(Shutdown, 0))
     {
 	struct FLIP_FLOP *Flop = NULL;
 
@@ -5657,7 +5676,7 @@ void Top(SHM_STRUCT *Shm)
 		drawFlag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	  }
-	} while (!Shutdown && !drawFlag.daemon && !drawFlag.layout) ;
+	} while (!BITVAL(Shutdown, 0) && !drawFlag.daemon && !drawFlag.layout) ;
 
       if (drawFlag.height & drawFlag.width)
       {
@@ -5675,13 +5694,13 @@ void Top(SHM_STRUCT *Shm)
 	}
 	if (drawFlag.daemon)
 	{
-	  for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !Shutdown; cpu++)
+	  for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
 	  {
-	    if (!Shm->Cpu[cpu].OffLine.HW)
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 	    {
 		Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!Shm->Cpu[cpu].OffLine.OS)
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		{ // Upper view area
 			CUINT	bar0=(Flop->Relative.Ratio *loadWidth)/maxRatio,
 				bar1 = loadWidth - bar0,
@@ -6053,7 +6072,7 @@ void Top(SHM_STRUCT *Shm)
 		iClock++;
 		if (iClock == Shm->Proc.CPU.Count)
 			iClock = 0;
-	  } while (Shm->Cpu[iClock].OffLine.OS && iClock) ;
+	  } while (BITVAL(Shm->Cpu[iClock].OffLine, OS) && iClock) ;
 
 	} // endif (drawFlag.daemon)
 

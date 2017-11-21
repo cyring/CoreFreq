@@ -19,20 +19,19 @@
 #include <errno.h>
 #include <pthread.h>
 
+#include "bitasm.h"
+#include "amdmsr.h"
+#include "intelmsr.h"
 #include "coretypes.h"
 #include "corefreq.h"
-#include "bitasm.h"
-#include "intelmsr.h"
-#include "amdmsr.h"
 #include "corefreq-api.h"
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-unsigned int	Shutdown = 0x0, Quiet = 0x001, Math = 0x0,
-		SysGateStartUp = 1;
-
 // §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory
-static unsigned long long roomSeed __attribute__ ((aligned (128))) = 0x0;
+static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
+static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
+unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
 typedef struct {
 	SHM_STRUCT	*Shm;
@@ -41,7 +40,6 @@ typedef struct {
 	unsigned int	Bind;
 	pthread_t	TID;
 } ARG;
-
 
 static void *Core_Cycle(void *arg)
 {
@@ -75,13 +73,13 @@ static void *Core_Cycle(void *arg)
 
 	do {
 	    while (!BITVAL(Core->Sync.V, 63)
-		&& !Shutdown
-		&& !Core->OffLine.OS) {
+		&& !BITVAL(Shutdown, 0)
+		&& !BITVAL(Core->OffLine, OS)) {
 			nanosleep(&Shm->Proc.BaseSleep, NULL);
 	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
-	    if (!Shutdown && !Core->OffLine.OS)
+	    if (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS))
 	    {
 		if (BITVAL(Shm->Proc.Room, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
@@ -136,7 +134,7 @@ static void *Core_Cycle(void *arg)
 						  * Shm->Proc.Boost[1])
 					/ (double) (Flip->Delta.TSC);
 
-		if (!Math && Core->Query.Turbo) {
+		if (Shm->Proc.PM_version >= 2) {
 			// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq = (double) (Flip->Delta.C0.UCC)
 					/ (Shm->Proc.SleepInterval * 1000);
@@ -270,14 +268,14 @@ static void *Core_Cycle(void *arg)
 			Flip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
 		}
 	    }
-	} while (!Shutdown && !Core->OffLine.OS) ;
+	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
 
 	BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CPU %03u\n", tid,
-			Core->OffLine.OS ? "Offline" : "Shutdown", cpu);
+			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
 	return(NULL);
@@ -1725,11 +1723,6 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
-	if ((Core[cpu]->T.ApicID >= 0) && (Core[cpu]->T.CoreID >= 0))
-		BITSET(LOCKLESS, Shm->Proc.SpeedStep_Mask, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.SpeedStep_Mask, cpu);
-
 	if (Core[cpu]->Query.EIST)
 		BITSET(LOCKLESS, Shm->Proc.SpeedStep, cpu);
 	else
@@ -1738,11 +1731,6 @@ void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	if ((Core[cpu]->T.ApicID >= 0) && (Core[cpu]->T.CoreID >= 0))
-		BITSET(LOCKLESS, Shm->Proc.TurboBoost_Mask, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.TurboBoost_Mask, cpu);
-
 	if (Core[cpu]->Query.Turbo)
 		BITSET(LOCKLESS, Shm->Proc.TurboBoost, cpu);
 	else
@@ -1751,40 +1739,26 @@ void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	if ((Core[cpu]->T.ApicID >= 0) && (Core[cpu]->T.CoreID >= 0)) {
-		BITSET(LOCKLESS, Shm->Proc.C1E_Mask, cpu);
-
-	    if ((Core[cpu]->T.ThreadID == 0) || (Core[cpu]->T.ThreadID == -1)) {
-		BITSET(LOCKLESS, Shm->Proc.C3A_Mask, cpu);
-		BITSET(LOCKLESS, Shm->Proc.C1A_Mask, cpu);
-		BITSET(LOCKLESS, Shm->Proc.C3U_Mask, cpu);
-		BITSET(LOCKLESS, Shm->Proc.C1U_Mask, cpu);
-	    } else {
-		BITCLR(LOCKLESS, Shm->Proc.C3A_Mask, cpu);
-		BITCLR(LOCKLESS, Shm->Proc.C1A_Mask, cpu);
-		BITCLR(LOCKLESS, Shm->Proc.C3U_Mask, cpu);
-		BITCLR(LOCKLESS, Shm->Proc.C1U_Mask, cpu);
-	    }
-	}
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C1E_Mask, cpu);
-
 	if (Core[cpu]->Query.C1E)
 		BITSET(LOCKLESS, Shm->Proc.C1E, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.C1E, cpu);
+
 	if (Core[cpu]->Query.C3A)
 		BITSET(LOCKLESS, Shm->Proc.C3A, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.C3A, cpu);
+
 	if (Core[cpu]->Query.C1A)
 		BITSET(LOCKLESS, Shm->Proc.C1A, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.C1A, cpu);
+
 	if (Core[cpu]->Query.C3U)
 		BITSET(LOCKLESS, Shm->Proc.C3U, cpu);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.C3U, cpu);
+
 	if (Core[cpu]->Query.C1U)
 		BITSET(LOCKLESS, Shm->Proc.C1U, cpu);
 	else
@@ -1806,7 +1780,6 @@ void ClockModulation(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		Core[cpu]->PowerThermal.ClockModulation.DutyCycle
 			>> !Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended;
 
-	BITSET(LOCKLESS, Shm->Proc.ODCM_Mask, cpu);
 	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
 		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
 	else
@@ -1815,7 +1788,6 @@ void ClockModulation(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 void PowerManagement(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
-	BITSET(LOCKLESS, Shm->Proc.PowerMgmt_Mask, cpu);
 	if (Core[cpu]->PowerThermal.PwrManagement.Perf_BIAS_Enable)
 		BITSET(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
 	else
@@ -1995,7 +1967,10 @@ void SysGate_Update(SHM_STRUCT *Shm, SYSGATE *SysGate)
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
-	Shm->Cpu[cpu].OffLine.HW = Core[cpu]->OffLine.HW;
+	if (BITVAL(Core[cpu]->OffLine, HW))
+		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
+	else
+		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
 
 	Shm->Cpu[cpu].Query.Microcode = Core[cpu]->Query.Microcode;
 
@@ -2015,6 +1990,19 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	if (Shm->Cpu[cpu].Topology.MP.BSP)
 		Uncore(Shm, Proc, cpu);
+}
+
+void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
+{
+	BITSTOR(LOCKLESS, Shm->Proc.ODCM_Mask, Proc->ODCM_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.PowerMgmt_Mask, Proc->PowerMgmt_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.SpeedStep_Mask, Proc->SpeedStep_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.TurboBoost_Mask, Proc->TurboBoost_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1E_Mask, Proc->C1E_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C3A_Mask, Proc->C3A_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1A_Mask, Proc->C1A_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C3U_Mask, Proc->C3U_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
 }
 
 typedef	struct
@@ -2068,7 +2056,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
     if (state == 0) {
 	if (BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
 		// Stop SysGate
-		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation,0);
+		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 		// Notify
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
@@ -2082,7 +2070,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 			// Copy system information.
 			SysGate_Kernel(Ref->Shm, *(Ref->SysGate));
 			// Start SysGate
-			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation,0);
+			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
@@ -2123,7 +2111,7 @@ static void *Emergency_Handler(void *arg)
 			case SIGINT:
 				// Fallthrough
 			case SIGQUIT:
-				Shutdown = 0x1;
+				BITSET(LOCKLESS, Shutdown, 0);
 				break;
 			}
 		else if ((errno == EAGAIN) && !RING_NULL(Ref->Shm->Ring))
@@ -2133,7 +2121,7 @@ static void *Emergency_Handler(void *arg)
 		    {
 			unsigned int cpu;
 			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-				if (Ref->Core[cpu]->OffLine.OS == 0) {
+				if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
 					SpeedStep(Ref->Shm,
 						  Ref->Proc,
 						  Ref->Core,
@@ -2207,9 +2195,11 @@ void Core_Manager(FD *fd,
 
     ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
-    while (!Shutdown) {
+    while (!BITVAL(Shutdown, 0)) {
 	// Loop while all the cpu room bits are not cleared.
-	while (!Shutdown && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed)) {
+	while (!BITVAL(Shutdown,0)
+	    && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
+	{
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
 	// Reset the averages & the max frequency
@@ -2221,8 +2211,8 @@ void Core_Manager(FD *fd,
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq = 0.0;
 
-	for (cpu = 0; !Shutdown && (cpu < Shm->Proc.CPU.Count); cpu++) {
-	    if (Core[cpu]->OffLine.OS == 1) {
+	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
+	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
 			// Remove this cpu.
 			pthread_join(Arg[cpu].TID, NULL);
@@ -2231,7 +2221,7 @@ void Core_Manager(FD *fd,
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
-		Shm->Cpu[cpu].OffLine.OS = 1;
+		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
 		if (!Arg[cpu].TID) {
 			// Add this cpu.
@@ -2256,7 +2246,7 @@ void Core_Manager(FD *fd,
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
-		Shm->Cpu[cpu].OffLine.OS = 0;
+		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
 		struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
@@ -2275,7 +2265,7 @@ void Core_Manager(FD *fd,
 		Shm->Proc.Avg.C1    += Flop->State.C1;
 	    }
 	}
-	if (!Shutdown) {
+	if (!BITVAL(Shutdown, 0)) {
 		// Update the count of online CPU
 		Shm->Proc.CPU.OnLine = Proc->CPU.OnLine;
 		// Compute the counters averages.
@@ -2373,6 +2363,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		Architecture(Shm, Proc);
 
+		Package_Update(Shm, Proc);
+
 		// Technologies aggregation.
 		PerformanceMonitoring(Shm, Proc);
 
@@ -2402,8 +2394,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.CPU.Count );
 		if (Quiet & 0x100)
 		  printf("  SleepInterval(%u), SysGate(%u)\n\n",
-			Shm->Proc.SleepInterval, !Shm->SysGate.Operation ? 0
-			: Shm->Proc.SleepInterval * Shm->SysGate.tickReset);
+		    Shm->Proc.SleepInterval, !BITVAL(Shm->SysGate.Operation,0) ?
+			0 : Shm->Proc.SleepInterval * Shm->SysGate.tickReset);
 		if (Quiet)
 			fflush(stdout);
 
@@ -2432,7 +2424,6 @@ int help(char *appName)
 		"\t-q\t\tQuiet\n"					\
 		"\t-i\t\tInfo\n"					\
 		"\t-d\t\tDebug\n"					\
-		"\t-m\t\tMath\n"					\
 		"\t-gon\t\tEnable SysGate\n"				\
 		"\t-goff\t\tDisable SysGate\n"				\
 		"\t-h\t\tPrint out this message\n"			\
@@ -2464,9 +2455,6 @@ int main(int argc, char *argv[])
 				break;
 			case 'd':
 				Quiet = 0x111;
-				break;
-			case 'm':
-				Math = 0x1;
 				break;
 			case 'g':
 				if (argv[i][2]=='o'
