@@ -106,43 +106,43 @@ typedef unsigned int		Bit32;
 	_ret;					\
 })
 
-#define _BITWISEAND(_lock, _opl, _opr)		\
-({						\
-	volatile unsigned long long _ret=_opl;	\
-	asm volatile				\
-	(					\
-	_lock	"andq %[opr], %[ret]"		\
-		: [ret] "=m" (_ret)		\
-		: [opr] "Jr" (_opr)		\
-		: "memory"			\
-	);					\
-	_ret;					\
+#define _BITWISEAND(_lock, _opl, _opr)				\
+({								\
+	volatile Bit64 _ret __attribute__ ((aligned (64)))=_opl;\
+	asm volatile						\
+	(							\
+	_lock	"andq %[opr], %[ret]"				\
+		: [ret] "=m" (_ret)				\
+		: [opr] "Jr" (_opr)				\
+		: "memory"					\
+	);							\
+	_ret;							\
 })
 
-#define _BITWISEOR(_lock, _opl, _opr)		\
-({						\
-	volatile unsigned long long _ret=_opl;	\
-	asm volatile				\
-	(					\
-	_lock	"orq %[opr], %[ret]"		\
-		: [ret] "=m" (_ret)		\
-		: [opr] "Jr" (_opr)		\
-		: "memory"			\
-	);					\
-	_ret;					\
+#define _BITWISEOR(_lock, _opl, _opr)				\
+({								\
+	volatile Bit64 _ret __attribute__ ((aligned (64)))=_opl;\
+	asm volatile						\
+	(							\
+	_lock	"orq %[opr], %[ret]"				\
+		: [ret] "=m" (_ret)				\
+		: [opr] "Jr" (_opr)				\
+		: "memory"					\
+	);							\
+	_ret;							\
 })
 
-#define _BITWISEXOR(_lock, _opl, _opr)		\
-({						\
-	volatile unsigned long long _ret=_opl;	\
-	asm volatile				\
-	(					\
-	_lock	"xorq %[opr], %[ret]"		\
-		: [ret] "=m" (_ret)		\
-		: [opr] "Jr" (_opr)		\
-		: "memory"			\
-	);					\
-	_ret;					\
+#define _BITWISEXOR(_lock, _opl, _opr)				\
+({								\
+	volatile Bit64 _ret __attribute__ ((aligned (64)))=_opl;\
+	asm volatile						\
+	(							\
+	_lock	"xorq %[opr], %[ret]"				\
+		: [ret] "=m" (_ret)				\
+		: [opr] "Jr" (_opr)				\
+		: "memory"					\
+	);							\
+	_ret;							\
 })
 
 #define BITMSK(_lock, _base, _offset)				\
