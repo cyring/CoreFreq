@@ -394,9 +394,9 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 			0x80000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc,
-			Shm->Cpu[cpu].Query.ExtFunc.BX,
-			Shm->Cpu[cpu].Query.ExtFunc.CX,
-			Shm->Cpu[cpu].Query.ExtFunc.DX);
+			Shm->Cpu[cpu].Query.ExtFunc.EBX,
+			Shm->Cpu[cpu].Query.ExtFunc.ECX,
+			Shm->Cpu[cpu].Query.ExtFunc.EDX);
 
 		printv(OutFunc, SCANKEY_NULL, width, 3,
 			"Largest Extended Function=%08x",
@@ -447,18 +447,18 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		Shm->Proc.Architecture);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Vendor ID%.*s[%s]",
-		width - 14 - strlen(Shm->Proc.Features.Info.VendorID), hSpace,
-		Shm->Proc.Features.Info.VendorID);
+		width - 14 - strlen(Shm->Proc.Features.Info.Vendor.ID), hSpace,
+		Shm->Proc.Features.Info.Vendor.ID);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Signature%.*s[%1X%1X_%1X%1X]",
 		width - 19, hSpace,
-		Shm->Proc.Features.Std.AX.ExtFamily,
-		Shm->Proc.Features.Std.AX.Family,
-		Shm->Proc.Features.Std.AX.ExtModel,
-		Shm->Proc.Features.Std.AX.Model);
+		Shm->Proc.Features.Std.EAX.ExtFamily,
+		Shm->Proc.Features.Std.EAX.Family,
+		Shm->Proc.Features.Std.EAX.ExtModel,
+		Shm->Proc.Features.Std.EAX.Model);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Stepping%.*s[%5u]",
-		width - 18, hSpace, Shm->Proc.Features.Std.AX.Stepping);
+		width - 18, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Microcode%.*s[%5u]",
 		width - 19, hSpace, Shm->Cpu[0].Query.Microcode);
@@ -507,8 +507,8 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "3DNow!/Ext [%c,%c]",
-			Shm->Proc.Features.ExtInfo.DX._3DNow ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.DX._3DNowEx ? 'Y' : 'N');
+			Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
+			Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -517,7 +517,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "AES [%c]",
-			Shm->Proc.Features.Std.CX.AES ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -526,14 +526,14 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "AVX/AVX2 [%c/%c]",
-			Shm->Proc.Features.Std.CX.AVX ? 'Y' : 'N',
-			Shm->Proc.Features.ExtFeature.BX.AVX2 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
+			Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "BMI1/BMI2 [%c/%c]",
-			Shm->Proc.Features.ExtFeature.BX.BMI1 ? 'Y' : 'N',
-			Shm->Proc.Features.ExtFeature.BX.BMI2 ? 'Y' : 'N');
+			Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
+			Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -544,7 +544,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "CLFSH        [%c]",
-			Shm->Proc.Features.Std.DX.CLFSH ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -553,7 +553,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "CMOV [%c]",
-			Shm->Proc.Features.Std.DX.CMOV ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -562,12 +562,12 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "CMPXCH8   [%c]",
-			Shm->Proc.Features.Std.DX.CMPXCH8 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "CMPXCH16   [%c]",
-			Shm->Proc.Features.Std.CX.CMPXCH16 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -578,7 +578,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "F16C         [%c]",
-			Shm->Proc.Features.Std.CX.F16C ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -587,7 +587,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "FPU [%c]",
-			Shm->Proc.Features.Std.DX.FPU ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -596,12 +596,12 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "FXSR   [%c]",
-			Shm->Proc.Features.Std.DX.FXSR ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "LAHF/SAHF   [%c]",
-			Shm->Proc.Features.ExtInfo.CX.LAHFSAHF ? 'Y' : 'N');
+			Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -612,8 +612,8 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "MMX/Ext    [%c/%c]",
-			Shm->Proc.Features.Std.DX.MMX ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.DX.MMX_Ext ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
+			Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -622,7 +622,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "MONITOR [%c]",
-			Shm->Proc.Features.Std.CX.MONITOR ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -631,12 +631,12 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "MOVBE   [%c]",
-			Shm->Proc.Features.Std.CX.MOVBE ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "PCLMULDQ   [%c]",
-			Shm->Proc.Features.Std.CX.PCLMULDQ ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -647,7 +647,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "POPCNT       [%c]",
-			Shm->Proc.Features.Std.CX.POPCNT ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -656,7 +656,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "RDRAND [%c]",
-			Shm->Proc.Features.Std.CX.RDRAND ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -665,12 +665,12 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "RDTSCP   [%c]",
-			Shm->Proc.Features.ExtInfo.DX.RDTSCP ? 'Y' : 'N');
+			Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "SEP   [%c]",
-			Shm->Proc.Features.Std.DX.SEP ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -681,7 +681,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "SSE          [%c]",
-			Shm->Proc.Features.Std.DX.SSE ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -690,7 +690,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "SSE2 [%c]",
-			Shm->Proc.Features.Std.DX.SSE2 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -699,12 +699,12 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "SSE3   [%c]",
-			Shm->Proc.Features.Std.CX.SSE3 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
 	len += sprintf(str, "SSSE3   [%c]",
-			Shm->Proc.Features.Std.CX.SSSE3 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -715,8 +715,8 @@ void SysInfoISA(SHM_STRUCT *Shm,
 /* Row Mark */
 	len = 3;
 	len += sprintf(str, "SSE4.1/4A  [%c/%c]",
-			Shm->Proc.Features.Std.CX.SSE41 ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.CX.SSE4A ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
+			Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
 	strcpy(row[0], str);
 
@@ -725,7 +725,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "SSE4.2 [%c]",
-			Shm->Proc.Features.Std.CX.SSE42 ? 'Y' : 'N');
+			Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
 
 	strcat(row[0], str);
 
@@ -734,7 +734,7 @@ void SysInfoISA(SHM_STRUCT *Shm,
 	strcat(row[0], str);
 
 	len += sprintf(str, "SYSCALL   [%c]",
-			Shm->Proc.Features.ExtInfo.DX.SYSCALL ? 'Y' : 'N');
+			Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
 
 	pad = realloc(pad, (width - len) + 1);
 	sprintf(pad, "%.*s", (int)(width - len), hSpace);
@@ -767,146 +767,146 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"1 GB Pages Support%.*s1GB-PAGES   [%7s]",
 		width - 42, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.DX.PG_1GB));
+		powered(Shm->Proc.Features.ExtInfo.EDX.PG_1GB));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"100 MHz multiplier Control%.*s100MHzSteps   [%7s]",
 		width - 52, hSpace,
-		powered(Shm->Proc.Features.AdvPower.DX._100MHz));
+		powered(Shm->Proc.Features.AdvPower.EDX._100MHz));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Advanced Configuration & Power Interface"		\
 					"%.*sACPI   [%7s]",
 		width - 59, hSpace,
-		powered(Shm->Proc.Features.Std.DX.ACPI			// Intel
-			| Shm->Proc.Features.AdvPower.DX.HwPstate) );	// AMD
+		powered(Shm->Proc.Features.Std.EDX.ACPI			// Intel
+			| Shm->Proc.Features.AdvPower.EDX.HwPstate) );	// AMD
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Advanced Programmable Interrupt Controller"		\
 						"%.*sAPIC   [%7s]",
-		width - 61, hSpace, powered(Shm->Proc.Features.Std.DX.APIC));
+		width - 61, hSpace, powered(Shm->Proc.Features.Std.EDX.APIC));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Core Multi-Processing%.*sCMP Legacy   [%7s]",
 		width - 46, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.CX.MP_Mode));
+		powered(Shm->Proc.Features.ExtInfo.ECX.MP_Mode));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"L1 Data Cache Context ID%.*sCNXT-ID   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.CX.CNXT_ID));
+		width - 46,hSpace, powered(Shm->Proc.Features.Std.ECX.CNXT_ID));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Direct Cache Access%.*sDCA   [%7s]",
-		width - 37, hSpace, powered(Shm->Proc.Features.Std.CX.DCA));
+		width - 37, hSpace, powered(Shm->Proc.Features.Std.ECX.DCA));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Debugging Extension%.*sDE   [%7s]",
-		width - 36, hSpace, powered(Shm->Proc.Features.Std.DX.DE));
+		width - 36, hSpace, powered(Shm->Proc.Features.Std.EDX.DE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Debug Store & Precise Event Based Sampling"		\
 					"%.*sDS, PEBS   [%7s]",
-		width - 65, hSpace, powered(Shm->Proc.Features.Std.DX.DS_PEBS));
+		width - 65,hSpace, powered(Shm->Proc.Features.Std.EDX.DS_PEBS));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"CPL Qualified Debug Store%.*sDS-CPL   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.CX.DS_CPL));
+		width - 46, hSpace, powered(Shm->Proc.Features.Std.ECX.DS_CPL));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"64-Bit Debug Store%.*sDTES64   [%7s]",
-		width - 39, hSpace, powered(Shm->Proc.Features.Std.CX.DTES64));
+		width - 39, hSpace, powered(Shm->Proc.Features.Std.ECX.DTES64));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Fast-String Operation%.*sFast-Strings   [%7s]",
 		width - 48,hSpace,
-		powered(Shm->Proc.Features.ExtFeature.BX.FastStrings));
+		powered(Shm->Proc.Features.ExtFeature.EBX.FastStrings));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Fused Multiply Add%.*sFMA|FMA4   [%7s]",
 		width - 41, hSpace,
-		powered(  Shm->Proc.Features.Std.CX.FMA
-			| Shm->Proc.Features.ExtInfo.CX.FMA4 ));
+		powered(  Shm->Proc.Features.Std.ECX.FMA
+			| Shm->Proc.Features.ExtInfo.ECX.FMA4 ));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Hardware Lock Elision%.*sHLE   [%7s]",
 		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtFeature.BX.HLE));
+		powered(Shm->Proc.Features.ExtFeature.EBX.HLE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Long Mode 64 bits%.*sIA64|LM   [%7s]",
 		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.DX.IA64));
+		powered(Shm->Proc.Features.ExtInfo.EDX.IA64));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"LightWeight Profiling%.*sLWP   [%7s]",
 		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.CX.LWP));
+		powered(Shm->Proc.Features.ExtInfo.ECX.LWP));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Machine-Check Architecture%.*sMCA   [%7s]",
 		width - 44, hSpace,
-		powered(Shm->Proc.Features.Std.DX.MCA));
+		powered(Shm->Proc.Features.Std.EDX.MCA));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Model Specific Registers%.*sMSR   [%7s]",
-		width - 42, hSpace, powered(Shm->Proc.Features.Std.DX.MSR));
+		width - 42, hSpace, powered(Shm->Proc.Features.Std.EDX.MSR));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Memory Type Range Registers%.*sMTRR   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.DX.MTRR));
+		width - 46, hSpace, powered(Shm->Proc.Features.Std.EDX.MTRR));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]",
-		width - 54, hSpace, powered(Shm->Proc.Features.Std.CX.OSXSAVE));
+		width - 54,hSpace, powered(Shm->Proc.Features.Std.ECX.OSXSAVE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Physical Address Extension%.*sPAE   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Std.DX.PAE));
+		width - 44, hSpace, powered(Shm->Proc.Features.Std.EDX.PAE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Page Attribute Table%.*sPAT   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.DX.PAT));
+		width - 38, hSpace, powered(Shm->Proc.Features.Std.EDX.PAT));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Pending Break Enable%.*sPBE   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.DX.PBE));
+		width - 38, hSpace, powered(Shm->Proc.Features.Std.EDX.PBE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Process Context Identifiers%.*sPCID   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.CX.PCID));
+		width - 46, hSpace, powered(Shm->Proc.Features.Std.ECX.PCID));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Perfmon and Debug Capability%.*sPDCM   [%7s]",
-		width - 47, hSpace, powered(Shm->Proc.Features.Std.CX.PDCM));
+		width - 47, hSpace, powered(Shm->Proc.Features.Std.ECX.PDCM));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Page Global Enable%.*sPGE   [%7s]",
-		width - 36, hSpace, powered(Shm->Proc.Features.Std.DX.PGE));
+		width - 36, hSpace, powered(Shm->Proc.Features.Std.EDX.PGE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Page Size Extension%.*sPSE   [%7s]",
-		width - 37, hSpace, powered(Shm->Proc.Features.Std.DX.PSE));
+		width - 37, hSpace, powered(Shm->Proc.Features.Std.EDX.PSE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"36-bit Page Size Extension%.*sPSE36   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.DX.PSE36));
+		width - 46, hSpace, powered(Shm->Proc.Features.Std.EDX.PSE36));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Processor Serial Number%.*sPSN   [%7s]",
-		width - 41, hSpace, powered(Shm->Proc.Features.Std.DX.PSN));
+		width - 41, hSpace, powered(Shm->Proc.Features.Std.EDX.PSN));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Restricted Transactional Memory%.*sRTM   [%7s]",
 		width - 49, hSpace,
-		powered(Shm->Proc.Features.ExtFeature.BX.RTM));
+		powered(Shm->Proc.Features.ExtFeature.EBX.RTM));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Safer Mode Extensions%.*sSMX   [%7s]",
-		width - 39, hSpace, powered(Shm->Proc.Features.Std.CX.SMX));
+		width - 39, hSpace, powered(Shm->Proc.Features.Std.ECX.SMX));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Self-Snoop%.*sSS   [%7s]",
-		width - 27, hSpace, powered(Shm->Proc.Features.Std.DX.SS));
+		width - 27, hSpace, powered(Shm->Proc.Features.Std.EDX.SS));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Time Stamp Counter%.*sTSC [%9s]",
@@ -914,15 +914,15 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]",
-		width - 54, hSpace, powered(Shm->Proc.Features.Std.CX.TSCDEAD));
+		width - 54,hSpace, powered(Shm->Proc.Features.Std.ECX.TSCDEAD));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Virtual Mode Extension%.*sVME   [%7s]",
-		width - 40, hSpace, powered(Shm->Proc.Features.Std.DX.VME));
+		width - 40, hSpace, powered(Shm->Proc.Features.Std.EDX.VME));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Virtual Machine Extensions%.*sVMX   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Std.CX.VMX));
+		width - 44, hSpace, powered(Shm->Proc.Features.Std.ECX.VMX));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Extended xAPIC Support%.*sx2APIC   [%7s]",
@@ -931,15 +931,15 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Execution Disable Bit Support%.*sXD-Bit   [%7s]",
 		width - 50, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.DX.XD_Bit));
+		powered(Shm->Proc.Features.ExtInfo.EDX.XD_Bit));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"XSAVE/XSTOR States%.*sXSAVE   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.CX.XSAVE));
+		width - 38, hSpace, powered(Shm->Proc.Features.Std.ECX.XSAVE));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"xTPR Update Control%.*sxTPR   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.CX.xTPR));
+		width - 38, hSpace, powered(Shm->Proc.Features.Std.ECX.xTPR));
 }
 
 void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
@@ -965,15 +965,15 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Dynamic Acceleration%.*sIDA       [%3s]", width - 38, hSpace,
-		enabled(Shm->Proc.Features.Power.AX.TurboIDA));
+		enabled(Shm->Proc.Features.Power.EAX.TurboIDA));
 
 	printv(OutFunc, BOXKEY_TURBO, width, 2,
 		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
-		enabled(isTurbo|Shm->Proc.Features.AdvPower.DX.CPB));
+		enabled(isTurbo|Shm->Proc.Features.AdvPower.EDX.CPB));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
-		enabled(Shm->Proc.Features.Std.CX.Hyperv));
+		enabled(Shm->Proc.Features.Std.ECX.Hyperv));
 }
 
 void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
@@ -998,17 +998,17 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
     if (OutFunc == NULL) {
 	printv(OutFunc, SCANKEY_NULL, width, 1,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
-		19, hSpace,	Shm->Proc.Features.PerfMon.AX.MonCtrs,
-				Shm->Proc.Features.PerfMon.AX.MonWidth,
-		11, hSpace,	Shm->Proc.Features.PerfMon.DX.FixCtrs,
-				Shm->Proc.Features.PerfMon.DX.FixWidth);
+		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
+				Shm->Proc.Features.PerfMon.EAX.MonWidth,
+		11, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
+				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     } else {
 	printv(OutFunc, SCANKEY_NULL, width, 0,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
-		19, hSpace,	Shm->Proc.Features.PerfMon.AX.MonCtrs,
-				Shm->Proc.Features.PerfMon.AX.MonWidth,
-		5, hSpace,	Shm->Proc.Features.PerfMon.DX.FixCtrs,
-				Shm->Proc.Features.PerfMon.DX.FixWidth);
+		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
+				Shm->Proc.Features.PerfMon.EAX.MonWidth,
+		5, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
+				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     }
 	printv(OutFunc, BOXKEY_C1E, width, 2,
 		"Enhanced Halt State%.*sC1E       <%3s>",
@@ -1033,29 +1033,29 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
 		width - 38, hSpace,
-		enabled(Shm->Proc.Features.AdvPower.DX.FID));
+		enabled(Shm->Proc.Features.AdvPower.EDX.FID));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Voltage ID control%.*sVID       [%3s]",
 		width - 36, hSpace,
-		enabled(Shm->Proc.Features.AdvPower.DX.VID));
+		enabled(Shm->Proc.Features.AdvPower.EDX.VID));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"P-State Hardware Coordination Feedback"		\
 			"%.*sMPERF/APERF       [%3s]",
 		width - 64, hSpace,
-		enabled(Shm->Proc.Features.Power.CX.HCF_Cap));
+		enabled(Shm->Proc.Features.Power.ECX.HCF_Cap));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Hardware-Controlled Performance States%.*sHWP       [%3s]",
 		width - 56, hSpace,
-		enabled(  Shm->Proc.Features.Power.AX.HWP_Reg
-			| Shm->Proc.Features.AdvPower.DX.HwPstate));
+		enabled(  Shm->Proc.Features.Power.EAX.HWP_Reg
+			| Shm->Proc.Features.AdvPower.EDX.HwPstate));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Hardware Duty Cycling%.*sHDC       [%3s]",
 		width - 39, hSpace,
-		enabled(Shm->Proc.Features.Power.AX.HDC_Reg));
+		enabled(Shm->Proc.Features.Power.EAX.HDC_Reg));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Package C-State");
 
@@ -1102,46 +1102,46 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, (OutFunc == NULL) ? 1 : 0,
 		"%.*s%2d      %2d      %2d      %2d      %2d",
 		21, hSpace,
-		Shm->Proc.Features.MWait.DX.Num_C0_MWAIT,
-		Shm->Proc.Features.MWait.DX.Num_C1_MWAIT,
-		Shm->Proc.Features.MWait.DX.Num_C2_MWAIT,
-		Shm->Proc.Features.MWait.DX.Num_C3_MWAIT,
-		Shm->Proc.Features.MWait.DX.Num_C4_MWAIT);
+		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Core Cycles%.*s[%7s]",
 		width - 23, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.CoreCycles));
+		powered(!Shm->Proc.Features.PerfMon.EBX.CoreCycles));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Instructions Retired%.*s[%7s]",
 		width - 32, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.InstrRetired));
+		powered(!Shm->Proc.Features.PerfMon.EBX.InstrRetired));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Reference Cycles%.*s[%7s]",
 		width - 28, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.RefCycles));
+		powered(!Shm->Proc.Features.PerfMon.EBX.RefCycles));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Last Level Cache References%.*s[%7s]",
 		width - 39, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.LLC_Ref));
+		powered(!Shm->Proc.Features.PerfMon.EBX.LLC_Ref));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Last Level Cache Misses%.*s[%7s]",
 		width - 35, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.LLC_Misses));
+		powered(!Shm->Proc.Features.PerfMon.EBX.LLC_Misses));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Branch Instructions Retired%.*s[%7s]",
 		width - 39, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.BranchRetired));
+		powered(!Shm->Proc.Features.PerfMon.EBX.BranchRetired));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Branch Mispredicts Retired%.*s[%7s]",
 		width - 38, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.BX.BranchMispred));
+		powered(!Shm->Proc.Features.PerfMon.EBX.BranchMispred));
 }
 
 void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
@@ -1189,25 +1189,25 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
 		width - 40, hSpace,
-		powered( Shm->Proc.Features.Power.AX.DTS
-			|Shm->Proc.Features.AdvPower.DX.TS));
+		powered( Shm->Proc.Features.Power.EAX.DTS
+			|Shm->Proc.Features.AdvPower.EDX.TS));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Power Limit Notification%.*sPLN   [%7s]",
-		width - 42, hSpace, powered(Shm->Proc.Features.Power.AX.PLN));
+		width - 42, hSpace, powered(Shm->Proc.Features.Power.EAX.PLN));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Package Thermal Management%.*sPTM   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Power.AX.PTM));
+		width - 44, hSpace, powered(Shm->Proc.Features.Power.EAX.PTM));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Thermal Monitor 1%.*sTM1|TTP   [%7s]",
 		width - 39, hSpace, TM[  Shm->Cpu[0].PowerThermal.TM1
-					|Shm->Proc.Features.AdvPower.DX.TTP ]);
+					|Shm->Proc.Features.AdvPower.EDX.TTP ]);
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace, TM[  Shm->Cpu[0].PowerThermal.TM2
-					|Shm->Proc.Features.AdvPower.DX.TM ]);
+					|Shm->Proc.Features.AdvPower.EDX.TM ]);
 }
 
 void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
@@ -2092,7 +2092,8 @@ void AllocCopyItem(TCell *cell, ASCII *item)
 	win->lazyComp.bottomRow = (win->dim / win->matrix.size.wth)	\
 				- win->matrix.size.hth;			\
 									\
-      if ((win->cell = realloc(win->cell,sizeof(TCell) * win->dim)) != NULL) {\
+      if ((win->cell = realloc(win->cell,sizeof(TCell) * win->dim)) != NULL)\
+      {									\
 	win->cell[win->dim - 1].quick.key = shortkey;			\
 	win->cell[win->dim - 1].length = strlen((char *)item);		\
 									\
@@ -4531,13 +4532,13 @@ void Top(SHM_STRUCT *Shm)
 	hProc1.code[6] = buffer[3];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
-	if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12)) {
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 		L1I_Size = Shm->Cpu[0].Topology.Cache[0].Size / 1024;
 		L1D_Size = Shm->Cpu[0].Topology.Cache[1].Size / 1024;
 		L2U_Size = Shm->Cpu[0].Topology.Cache[2].Size / 1024;
 		L3U_Size = Shm->Cpu[0].Topology.Cache[3].Size / 1024;
 	} else {
-	    if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12)) {
+	    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 		L1I_Size = Shm->Cpu[0].Topology.Cache[0].Size;
 		L1D_Size = Shm->Cpu[0].Topology.Cache[1].Size;
 		L2U_Size = Shm->Cpu[0].Topology.Cache[2].Size;
@@ -5413,7 +5414,7 @@ void Top(SHM_STRUCT *Shm)
 	LayerCopyAt(layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code);
 
-	if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
 	    LayerDeclare(69) hTech1 = {
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=55,
@@ -5451,7 +5452,7 @@ void Top(SHM_STRUCT *Shm)
 								Pwr[isEIST];
 
 	    hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =
-		Pwr[Shm->Proc.Features.Power.AX.TurboIDA];
+		Pwr[Shm->Proc.Features.Power.EAX.TurboIDA];
 
 	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
 	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
@@ -5494,7 +5495,7 @@ void Top(SHM_STRUCT *Shm)
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
-	  if (!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12)) {
+	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	    LayerDeclare(65) hTech1 = {
 		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=39,
 		.attr={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
@@ -5529,10 +5530,10 @@ void Top(SHM_STRUCT *Shm)
 						Pwr[(Shm->Proc.PM_version > 0)];
 
 	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =
-				Pwr[(Shm->Proc.Features.AdvPower.DX.TS != 0)];
+				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
-				Pwr[(Shm->Proc.Features.AdvPower.DX.TTP != 0)];
+				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	    if (processorHot) {
 		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =

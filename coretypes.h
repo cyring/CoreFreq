@@ -115,6 +115,8 @@ typedef signed short int	CSINT;
 
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
+#define CRC_INTEL	0x75a2ba39
+#define CRC_AMD		0x3485bbd3
 
 enum OFFLINE
 {
@@ -226,12 +228,13 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC]={
 
 typedef struct
 {		// Common x86
-	unsigned int	LargestStdFunc, // Largest CPUID Standard Function.
-			LargestExtFunc;	// Largest CPUID Extended Function.
-	char		Brand[48],
-			_pad48[2],
-			VendorID[13],
-			_pad62[1];
+	unsigned int		LargestStdFunc,//Largest CPUID Standard Function
+				LargestExtFunc;//Largest CPUID Extended Function
+	struct {
+		unsigned int	CRC;
+		char		ID[12 + 4];
+	} Vendor;
+	char			Brand[48 + 4];
 } CPUID_FUNCTION;
 
 typedef struct	// Basic CPUID Function.
@@ -254,7 +257,7 @@ typedef struct
 		ExtModel	: 20-16,
 		ExtFamily	: 28-20,
 		Unused2		: 32-28;
-	    } AX;
+	    } EAX;
 		unsigned int Signature;
 	};
 	struct
@@ -264,7 +267,7 @@ typedef struct
 		CLFSH_Size	: 16-8,
 		MaxThread	: 24-16,
 		Apic_ID		: 32-24;
-	} BX;
+	} EBX;
 	struct
 	{
 		unsigned int
@@ -300,7 +303,7 @@ typedef struct
 		F16C	: 30-29,
 		RDRAND	: 31-30,
 		Hyperv	: 32-31;
-	} CX;
+	} ECX;
 	struct
 	{	// Most common x86
 		unsigned int
@@ -336,7 +339,7 @@ typedef struct
 		TM1	: 30-29, // Intel
 		Unused3	: 31-30,
 		PBE	: 32-31; // Intel
-	} DX;
+	} EDX;
 } CPUID_0x00000001;
 
 typedef struct	// MONITOR & MWAIT Leaf.
@@ -346,20 +349,20 @@ typedef struct	// MONITOR & MWAIT Leaf.
 		unsigned int
 		SmallestSize	: 16-0,
 		ReservedBits	: 32-16;
-	} AX;
+	} EAX;
 	struct
 	{
 		unsigned int
 		LargestSize	: 16-0,
 		ReservedBits	: 32-16;
-	} BX;
+	} EBX;
 	struct
 	{
 		unsigned int
 		EMX_MWAIT	:  1-0,
 		IBE_MWAIT	:  2-1,
 		ReservedBits	: 32-2;
-	} CX;
+	} ECX;
 	struct
 	{	// Intel reseved.
 		unsigned int
@@ -369,7 +372,7 @@ typedef struct	// MONITOR & MWAIT Leaf.
 		Num_C3_MWAIT	: 16-12,
 		Num_C4_MWAIT	: 20-16,
 		ReservedBits	: 32-20;
-	} DX;
+	} EDX;
 }  CPUID_0x00000005;
 
 typedef struct THERMAL_POWER_LEAF
@@ -392,13 +395,13 @@ typedef struct THERMAL_POWER_LEAF
 		Unused2	: 13-12,
 		HDC_Reg	: 15-13,// Hardware Duty Cycling registers
 		Unused3	: 32-15;
-	} AX;
+	} EAX;
 	struct
 	{	// Intel reserved.
 		unsigned int
 		Threshld:  4-0,
 		Unused1	: 32-4;
-	} BX;
+	} EBX;
     union
     {
 	struct
@@ -416,12 +419,12 @@ typedef struct THERMAL_POWER_LEAF
 		EffFreq	:  1-0, // MSR0000_00E7 (MPERF) & MSR0000_00E8 (APERF)
 		NotUsed : 32-1;
 	};
-    } CX;
+    } ECX;
 	struct
 	{	// Intel reserved.
 		unsigned int
 		Unused1	: 32-0;
-	} DX;
+	} EDX;
 } CPUID_0x00000006;
 
 typedef struct	// Extended Feature Flags Enumeration Leaf.
@@ -430,7 +433,7 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 	{	// Common x86
 		unsigned int
 		MaxSubLeaf	: 32-0;
-	} AX;
+	} EAX;
 	struct
 	{
 		unsigned int
@@ -457,7 +460,7 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		Unused4		: 25-21,
 		ProcessorTrace	: 26-25,
 		Unused5		: 32-26;
-	} BX;
+	} EBX;
 	struct
 	{	// Intel reserved.
 		unsigned int
@@ -466,9 +469,9 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		PKU		:  4-3,
 		OSPKE		:  5-4,
 		Unused2		: 32-5;
-	} CX;
+	} ECX;
 		unsigned int
-	DX			: 32-0; // Intel reserved.
+	EDX			: 32-0; // Intel reserved.
 } CPUID_0x00000007;
 
 typedef struct	// Architectural Performance Monitoring Leaf.
@@ -480,7 +483,7 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		MonCtrs	: 16-8,
 		MonWidth: 24-16,
 		VectorSz: 32-24;
-	} AX;
+	} EAX;
 	struct
 	{
 		unsigned int
@@ -492,24 +495,24 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		BranchRetired	:  6-5,
 		BranchMispred	:  7-6,
 		ReservedBits	: 32-7;
-	} BX;
+	} EBX;
 	struct
 	{
 		unsigned int
 		Unused1	: 32-0;
-	} CX;
+	} ECX;
 	struct
 	{
 		unsigned int
 		FixCtrs	:  5-0,
 		FixWidth: 13-5,
 		Unused1	: 32-13;
-	} DX;
+	} EDX;
 } CPUID_0x0000000a;
 
 typedef struct	// Extended CPUID Function.
 {
-		unsigned int LargestExtFunc, BX, CX, DX;
+		unsigned int LargestExtFunc, EBX, ECX, EDX;
 } CPUID_0x80000000;
 
 typedef	struct
@@ -555,7 +558,7 @@ typedef	struct
 		MWaitExt: 30-29, // MWAITX/MONITORX support.
 		NotUsed4: 32-30;
 	};
-    } CX;
+    } ECX;
     union
     {
 	struct { // Intel reserved.
@@ -605,7 +608,7 @@ typedef	struct
 		_3DNowEx: 31-30, // Extensions to 3DNow!
 		_3DNow	: 32-31; // 3DNow! instructions.
 	};
-    } DX;
+    } EDX;
 } CPUID_0x80000001;
 
 typedef struct	// Architectural Performance Monitoring Leaf.
@@ -614,7 +617,7 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 	{
 		unsigned int
 		Unused1	: 32-0;
-	} AX, BX, CX;
+	} EAX, EBX, ECX;
     union
     {
 	struct { // Intel reserved.
@@ -648,7 +651,7 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 		Reserved: 32-13;
 	};
       };
-    } DX;
+    } EDX;
 } CPUID_0x80000007;
 
 typedef struct	// BSP CPUID features.

@@ -161,7 +161,7 @@ typedef unsigned int		Bit32;
 (							\
 	__builtin_constant_p(_offset) ?			\
 		_BITSET_IMM(_lock, _base, _offset)	\
-	: 	_BITSET_GPR(_lock, _base, _offset)	\
+	:	_BITSET_GPR(_lock, _base, _offset)	\
 )
 
 #define BITCLR(_lock, _base, _offset)			\

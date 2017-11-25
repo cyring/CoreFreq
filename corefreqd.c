@@ -283,8 +283,8 @@ static void *Core_Cycle(void *arg)
 
 void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 {
-	Bit32	fTSC = Proc->Features.Std.DX.TSC,
-		aTSC = Proc->Features.AdvPower.DX.Inv_TSC;
+	Bit32	fTSC = Proc->Features.Std.EDX.TSC,
+		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
 
 	// Copy all BSP features.
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
@@ -303,7 +303,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 
 void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 {
-	Shm->Proc.PM_version = Proc->Features.PerfMon.AX.Version;
+	Shm->Proc.PM_version = Proc->Features.PerfMon.EAX.Version;
 }
 
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
@@ -313,13 +313,13 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 
 void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
 {
-	if (!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12)) {
-		if (Proc->Features.AdvPower.DX.FID)
+	if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {
+		if (Proc->Features.AdvPower.EDX.FID)
 			BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 		else
 			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
 
-		if (Proc->Features.AdvPower.DX.VID)
+		if (Proc->Features.AdvPower.EDX.VID)
 			BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
 		else
 			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
@@ -1646,7 +1646,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.ApicID    = Core[cpu]->T.ApicID;
 	Shm->Cpu[cpu].Topology.CoreID    = Core[cpu]->T.CoreID;
 	Shm->Cpu[cpu].Topology.ThreadID  = Core[cpu]->T.ThreadID;
-	Shm->Cpu[cpu].Topology.MP.x2APIC = ((Proc->Features.Std.CX.x2APIC
+	Shm->Cpu[cpu].Topology.MP.x2APIC = ((Proc->Features.Std.ECX.x2APIC
 					    & Core[cpu]->T.Base.EN)
 					   << Core[cpu]->T.Base.EXTD);
 	unsigned int loop;
@@ -1658,7 +1658,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		if (Core[cpu]->T.Cache[loop].Type == 2) // Instruction
 			level = 0;
 
-		if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_INTEL, 12))
+		if(Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 		{
 			Shm->Cpu[cpu].Topology.Cache[level].Set =
 				Core[cpu]->T.Cache[loop].Set + 1;
@@ -1679,8 +1679,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
 		else {
-		  if(!strncmp(Shm->Proc.Features.Info.VendorID, VENDOR_AMD, 12))
-		  {
+		    if(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 
 			unsigned int Compute_Way(unsigned int value)
 			{
@@ -1711,7 +1710,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 			Shm->Cpu[cpu].Topology.Cache[level].Size =
 				Core[cpu]->T.Cache[loop].Size;
-		  }
+		    }
 		}
 		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack =
 			Core[cpu]->T.Cache[loop].WrBack;
@@ -1803,7 +1802,7 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	PowerManagement(Shm, Proc, Core, cpu);
 
 	Shm->Cpu[cpu].PowerThermal.TM1 =
-		Proc->Features.Std.DX.TM1;			//0001
+		Proc->Features.Std.EDX.TM1;			//0001
 
 	Shm->Cpu[cpu].PowerThermal.TM1 |=
 		(Core[cpu]->PowerThermal.TCC_Enable << 1);	//0010
@@ -1812,7 +1811,7 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		(Core[cpu]->PowerThermal.TM_Select << 1);	//0010
 
 	Shm->Cpu[cpu].PowerThermal.TM2 =
-		Proc->Features.Std.CX.TM2;			//0001
+		Proc->Features.Std.ECX.TM2;			//0001
 
 	Shm->Cpu[cpu].PowerThermal.TM2 |=
 		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010

@@ -37,8 +37,9 @@ MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
 typedef struct {
-	FEATURES	features;
-	unsigned int	count;
+	FEATURES	Features;
+	unsigned int	SMT_Count;
+	signed int	rc;
 } ARG;
 
 static struct {
@@ -168,14 +169,13 @@ unsigned int Intel_Brand(char *pBrand)
 			: "r"   (0x80000002 + ix)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.AX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.BX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.CX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.DX.Chr[jx];
+		for (jx = 0; jx < 4; jx++, px++) {
+			idString[px     ] = Brand.AX.Chr[jx];
+			idString[px +  4] = Brand.BX.Chr[jx];
+			idString[px +  8] = Brand.CX.Chr[jx];
+			idString[px + 12] = Brand.DX.Chr[jx];
+		}
+		px += 12;
 	}
 	for (ix = 0; ix < 46; ix++)
 		if ((idString[ix+1] == 'H') && (idString[ix+2] == 'z')) {
@@ -237,14 +237,13 @@ void AMD_Brand(char *pBrand)
 			: "r"   (0x80000002 + ix)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.AX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.BX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.CX.Chr[jx];
-		for (jx = 0; jx < 4; jx++, px++)
-			idString[px] = Brand.DX.Chr[jx];
+		for (jx = 0; jx < 4; jx++, px++) {
+			idString[px     ] = Brand.AX.Chr[jx];
+			idString[px +  4] = Brand.BX.Chr[jx];
+			idString[px +  8] = Brand.CX.Chr[jx];
+			idString[px + 12] = Brand.DX.Chr[jx];
+		}
+		px += 12;
 	}
 	for (ix = jx = 0; jx < 48; jx++)
 		if (!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
@@ -254,7 +253,7 @@ void AMD_Brand(char *pBrand)
 // Retreive the Processor(BSP) features through calls to the CPUID instruction.
 void Query_Features(void *pArg)
 {
-	ARG *arg = (ARG *) pArg;
+	ARG *Arg = (ARG *) pArg;
 
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; // DWORD Only!
 
@@ -270,26 +269,35 @@ void Query_Features(void *pArg)
 		"mov	%%ebx, %1	\n\t"
 		"mov	%%ecx, %2	\n\t"
 		"mov	%%edx, %3"
-		: "=r" (arg->features.Info.LargestStdFunc),
+		: "=r" (Arg->Features.Info.LargestStdFunc),
 		  "=r" (ebx),
 		  "=r" (ecx),
 		  "=r" (edx)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	arg->features.Info.VendorID[ 0] = ebx;
-	arg->features.Info.VendorID[ 1] = (ebx >> 8);
-	arg->features.Info.VendorID[ 2] = (ebx >> 16);
-	arg->features.Info.VendorID[ 3] = (ebx >> 24);
-	arg->features.Info.VendorID[ 4] = edx;
-	arg->features.Info.VendorID[ 5] = (edx >> 8);
-	arg->features.Info.VendorID[ 6] = (edx >> 16);
-	arg->features.Info.VendorID[ 7] = (edx >> 24);
-	arg->features.Info.VendorID[ 8] = ecx;
-	arg->features.Info.VendorID[ 9] = (ecx >> 8);
-	arg->features.Info.VendorID[10] = (ecx >> 16);
-	arg->features.Info.VendorID[11] = (ecx >> 24);
-	arg->features.Info.VendorID[12] = '\0';
+	Arg->Features.Info.Vendor.ID[ 0] = ebx;
+	Arg->Features.Info.Vendor.ID[ 1] = (ebx >> 8);
+	Arg->Features.Info.Vendor.ID[ 2] = (ebx >> 16);
+	Arg->Features.Info.Vendor.ID[ 3] = (ebx >> 24);
+	Arg->Features.Info.Vendor.ID[ 4] = edx;
+	Arg->Features.Info.Vendor.ID[ 5] = (edx >> 8);
+	Arg->Features.Info.Vendor.ID[ 6] = (edx >> 16);
+	Arg->Features.Info.Vendor.ID[ 7] = (edx >> 24);
+	Arg->Features.Info.Vendor.ID[ 8] = ecx;
+	Arg->Features.Info.Vendor.ID[ 9] = (ecx >> 8);
+	Arg->Features.Info.Vendor.ID[10] = (ecx >> 16);
+	Arg->Features.Info.Vendor.ID[11] = (ecx >> 24);
+	Arg->Features.Info.Vendor.ID[12] = '\0';
+
+	if (!strncmp(Arg->Features.Info.Vendor.ID, VENDOR_INTEL, 12))
+		Arg->Features.Info.Vendor.CRC = CRC_INTEL;
+	else if (!strncmp(Arg->Features.Info.Vendor.ID, VENDOR_AMD, 12))
+		Arg->Features.Info.Vendor.CRC = CRC_AMD;
+	else {
+		Arg->rc = -ENXIO;
+		return;
+	}
 
 	asm volatile
 	(
@@ -302,14 +310,14 @@ void Query_Features(void *pArg)
 		"mov	%%ebx, %1	\n\t"
 		"mov	%%ecx, %2	\n\t"
 		"mov	%%edx, %3"
-		: "=r" (arg->features.Std.AX),
-		  "=r" (arg->features.Std.BX),
-		  "=r" (arg->features.Std.CX),
-		  "=r" (arg->features.Std.DX)
+		: "=r" (Arg->Features.Std.EAX),
+		  "=r" (Arg->Features.Std.EBX),
+		  "=r" (Arg->Features.Std.ECX),
+		  "=r" (Arg->Features.Std.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	if (arg->features.Info.LargestStdFunc >= 0x5) {
+	if (Arg->Features.Info.LargestStdFunc >= 0x5) {
 		asm volatile
 		(
 			"movq	$0x5,  %%rax	\n\t"
@@ -321,15 +329,15 @@ void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (arg->features.MWait.AX),
-			  "=r" (arg->features.MWait.BX),
-			  "=r" (arg->features.MWait.CX),
-			  "=r" (arg->features.MWait.DX)
+			: "=r" (Arg->Features.MWait.EAX),
+			  "=r" (Arg->Features.MWait.EBX),
+			  "=r" (Arg->Features.MWait.ECX),
+			  "=r" (Arg->Features.MWait.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-	if (arg->features.Info.LargestStdFunc >= 0x6) {
+	if (Arg->Features.Info.LargestStdFunc >= 0x6) {
 		asm volatile
 		(
 			"movq	$0x6,  %%rax	\n\t"
@@ -341,15 +349,15 @@ void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (arg->features.Power.AX),
-			  "=r" (arg->features.Power.BX),
-			  "=r" (arg->features.Power.CX),
-			  "=r" (arg->features.Power.DX)
+			: "=r" (Arg->Features.Power.EAX),
+			  "=r" (Arg->Features.Power.EBX),
+			  "=r" (Arg->Features.Power.ECX),
+			  "=r" (Arg->Features.Power.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-	if (arg->features.Info.LargestStdFunc >= 0x7) {
+	if (Arg->Features.Info.LargestStdFunc >= 0x7) {
 		asm volatile
 		(
 			"movq	$0x7,  %%rax	\n\t"
@@ -361,10 +369,10 @@ void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (arg->features.ExtFeature.AX),
-			  "=r" (arg->features.ExtFeature.BX),
-			  "=r" (arg->features.ExtFeature.CX),
-			  "=r" (arg->features.ExtFeature.DX)
+			: "=r" (Arg->Features.ExtFeature.EAX),
+			  "=r" (Arg->Features.ExtFeature.EBX),
+			  "=r" (Arg->Features.ExtFeature.ECX),
+			  "=r" (Arg->Features.ExtFeature.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
@@ -381,7 +389,7 @@ void Query_Features(void *pArg)
 		"mov	%%ebx, %1		\n\t"
 		"mov	%%ecx, %2		\n\t"
 		"mov	%%edx, %3"
-		: "=r" (arg->features.Info.LargestExtFunc),
+		: "=r" (Arg->Features.Info.LargestExtFunc),
 		  "=r" (ebx),
 		  "=r" (ecx),
 		  "=r" (edx)
@@ -401,12 +409,12 @@ void Query_Features(void *pArg)
 		"mov	%%edx, %3"
 		: "=r" (eax),
 		  "=r" (ebx),
-		  "=r" (arg->features.ExtInfo.CX),
-		  "=r" (arg->features.ExtInfo.DX)
+		  "=r" (Arg->Features.ExtInfo.ECX),
+		  "=r" (Arg->Features.ExtInfo.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	if (arg->features.Info.LargestExtFunc >= 0x80000007) {
+	if (Arg->Features.Info.LargestExtFunc >= 0x80000007) {
 		asm volatile
 		(
 			"movq	$0x80000007, %%rax	\n\t"
@@ -418,26 +426,26 @@ void Query_Features(void *pArg)
 			"mov	%%ebx, %1		\n\t"
 			"mov	%%ecx, %2		\n\t"
 			"mov	%%edx, %3"
-			: "=r" (arg->features.AdvPower.AX),
-			  "=r" (arg->features.AdvPower.BX),
-			  "=r" (arg->features.AdvPower.CX),
-			  "=r" (arg->features.AdvPower.DX)
+			: "=r" (Arg->Features.AdvPower.EAX),
+			  "=r" (Arg->Features.AdvPower.EBX),
+			  "=r" (Arg->Features.AdvPower.ECX),
+			  "=r" (Arg->Features.AdvPower.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
 
 	// Reset the performance features bits (present is zero)
-	arg->features.PerfMon.BX.CoreCycles    = 1;
-	arg->features.PerfMon.BX.InstrRetired  = 1;
-	arg->features.PerfMon.BX.RefCycles     = 1;
-	arg->features.PerfMon.BX.LLC_Ref       = 1;
-	arg->features.PerfMon.BX.LLC_Misses    = 1;
-	arg->features.PerfMon.BX.BranchRetired = 1;
-	arg->features.PerfMon.BX.BranchMispred = 1;
+	Arg->Features.PerfMon.EBX.CoreCycles    = 1;
+	Arg->Features.PerfMon.EBX.InstrRetired  = 1;
+	Arg->Features.PerfMon.EBX.RefCycles     = 1;
+	Arg->Features.PerfMon.EBX.LLC_Ref       = 1;
+	Arg->Features.PerfMon.EBX.LLC_Misses    = 1;
+	Arg->Features.PerfMon.EBX.BranchRetired = 1;
+	Arg->Features.PerfMon.EBX.BranchMispred = 1;
 
 	// Per Vendor features
-	if (!strncmp(arg->features.Info.VendorID, VENDOR_INTEL, 12)) {
+	if (Arg->Features.Info.Vendor.CRC == CRC_INTEL) {
 		asm volatile
 		(
 			"movq	$0x4,  %%rax	\n\t"
@@ -456,10 +464,10 @@ void Query_Features(void *pArg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		arg->count = (eax >> 26) & 0x3f;
-		arg->count++;
+		Arg->SMT_Count = (eax >> 26) & 0x3f;
+		Arg->SMT_Count++;
 
-	    if (arg->features.Info.LargestStdFunc >= 0xa) {
+	    if (Arg->Features.Info.LargestStdFunc >= 0xa) {
 		asm volatile
 		(
 			"movq	$0xa,  %%rax	\n\t"
@@ -471,22 +479,22 @@ void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (arg->features.PerfMon.AX),
-			  "=r" (arg->features.PerfMon.BX),
-			  "=r" (arg->features.PerfMon.CX),
-			  "=r" (arg->features.PerfMon.DX)
+			: "=r" (Arg->Features.PerfMon.EAX),
+			  "=r" (Arg->Features.PerfMon.EBX),
+			  "=r" (Arg->Features.PerfMon.ECX),
+			  "=r" (Arg->Features.PerfMon.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	    }
-	    arg->features.FactoryFreq = Intel_Brand(arg->features.Info.Brand);
+	    Arg->Features.FactoryFreq = Intel_Brand(Arg->Features.Info.Brand);
 
-	} else if (!strncmp(arg->features.Info.VendorID, VENDOR_AMD, 12)) {
+	} else if (Arg->Features.Info.Vendor.CRC == CRC_AMD) {
 
-		if (arg->features.Std.DX.HTT)
-			arg->count = arg->features.Std.BX.MaxThread;
+		if (Arg->Features.Std.EDX.HTT)
+			Arg->SMT_Count = Arg->Features.Std.EBX.MaxThread;
 		else {
-			if (arg->features.Info.LargestExtFunc >= 0x80000008) {
+			if (Arg->Features.Info.LargestExtFunc >= 0x80000008) {
 				asm volatile
 				(
 					"movq	$0x80000008, %%rax	\n\t"
@@ -505,10 +513,10 @@ void Query_Features(void *pArg)
 					:
 					: "%rax", "%rbx", "%rcx", "%rdx"
 				);
-				arg->count = (ecx & 0xf) + 1;
+				Arg->SMT_Count = (ecx & 0xf) + 1;
 			}
 		}
-		AMD_Brand(arg->features.Info.Brand);
+		AMD_Brand(Arg->Features.Info.Brand);
 	}
 }
 
@@ -602,8 +610,8 @@ void Compute_Clock(void *arg)
 	    if (TSC[1] != NULL) {
 
 	// Is the TSC invariant or a serialized read instruction is available ?
-		if (	(Proc->Features.AdvPower.DX.Inv_TSC == 1)
-			|| (Proc->Features.ExtInfo.DX.RDTSCP == 1))
+		if (	(Proc->Features.AdvPower.EDX.Inv_TSC == 1)
+			|| (Proc->Features.ExtInfo.EDX.RDTSCP == 1))
 				ComputeWithSerializedTSC();
 		else
 				ComputeWithUnSerializedTSC();
@@ -992,7 +1000,7 @@ void Define_CPUID(CORE *Core, const CPUID_STRUCT CpuIDforVendor[])
 void Cache_Topology(CORE *Core)
 {
 	unsigned long level = 0x0;
-	if (!strncmp(Proc->Features.Info.VendorID, VENDOR_INTEL, 12)) {
+	if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {
 	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
 		asm volatile
 		(
@@ -1016,7 +1024,7 @@ void Cache_Topology(CORE *Core)
 			break;
 	    }
 	}
-	else if (!strncmp(Proc->Features.Info.VendorID, VENDOR_AMD, 12)) {
+	else if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {
 	    struct CACHE_INFO CacheInfo; // Employ the Intel algorithm.
 
 	    if (Proc->Features.Info.LargestExtFunc >= 0x80000005) {
@@ -1108,14 +1116,14 @@ void Map_Topology(void *arg)
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
 			: "=r" (eax),
-			  "=r" (features.Std.BX),
+			  "=r" (features.Std.EBX),
 			  "=r" (ecx),
 			  "=r" (edx)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 
-		Core->T.CoreID = Core->T.ApicID=features.Std.BX.Apic_ID;
+		Core->T.CoreID = Core->T.ApicID = features.Std.EBX.Apic_ID;
 
 		Cache_Topology(Core);
 	}
@@ -1247,7 +1255,7 @@ void HyperThreading_Technology(void)
 {
 	unsigned int CountEnabledCPU = Proc_Topology();
 
-	if (Proc->Features.Std.DX.HTT)
+	if (Proc->Features.Std.EDX.HTT)
 		Proc->CPU.OnLine = CountEnabledCPU;
 	else
 		Proc->CPU.OnLine = Proc->CPU.Count;
@@ -1267,10 +1275,10 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
-		if ((whiteList[id].ExtFamily == Proc->Features.Std.AX.ExtFamily)
-		 && (whiteList[id].Family == Proc->Features.Std.AX.Family)
-		 && (whiteList[id].ExtModel == Proc->Features.Std.AX.ExtModel)
-		 && (whiteList[id].Model == Proc->Features.Std.AX.Model)) {
+		if((whiteList[id].ExtFamily == Proc->Features.Std.EAX.ExtFamily)
+		 && (whiteList[id].Family == Proc->Features.Std.EAX.Family)
+		 && (whiteList[id].ExtModel == Proc->Features.Std.EAX.ExtModel)
+		 && (whiteList[id].Model == Proc->Features.Std.EAX.Model)) {
 
 			RDMSR((*PfID), MSR_IA32_PLATFORM_ID);
 			return(0);
@@ -1781,7 +1789,10 @@ void Query_C220(void __iomem *mchmap)
 
 PCI_CALLBACK P965(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x4000, Query_P965));
+	if (Experimental == 1)
+		return(Router(dev, 0x48, 0x4000, Query_P965));
+	else
+		return((PCI_CALLBACK) -ENOSYS);
 }
 
 PCI_CALLBACK G965(struct pci_dev *dev)
@@ -1791,7 +1802,10 @@ PCI_CALLBACK G965(struct pci_dev *dev)
 
 PCI_CALLBACK P35(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x4000, Query_P35));
+	if (Experimental == 1)
+		return(Router(dev, 0x48, 0x4000, Query_P35));
+	else
+		return((PCI_CALLBACK) -ENOSYS);
 }
 
 PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
@@ -1838,12 +1852,18 @@ PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 
 PCI_CALLBACK C200(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_C200));
+	if (Experimental == 1)
+		return(Router(dev, 0x48, 0x8000, Query_C200));
+	else
+		return((PCI_CALLBACK) -ENOSYS);
 }
 
 PCI_CALLBACK C220(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_C220));
+	if (Experimental == 1)
+		return(Router(dev, 0x48, 0x8000, Query_C220));
+	else
+		return((PCI_CALLBACK) -ENOSYS);
 }
 
 PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
@@ -2046,7 +2066,7 @@ void Query_GenuineIntel(void)
 
 void Query_AuthenticAMD(void)
 {
-    if (Proc->Features.AdvPower.DX.FID == 1) {
+    if (Proc->Features.AdvPower.EDX.FID == 1) {
 	// Processor supports FID changes.
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 
@@ -2146,9 +2166,9 @@ void Dump_CPUID(CORE *Core)
 		"mov	%%ecx, %2		\n\t"
 		"mov	%%edx, %3"
 		: "=r" (Core->Query.ExtFunc.LargestExtFunc),
-		  "=r" (Core->Query.ExtFunc.BX),
-		  "=r" (Core->Query.ExtFunc.CX),
-		  "=r" (Core->Query.ExtFunc.DX)
+		  "=r" (Core->Query.ExtFunc.EBX),
+		  "=r" (Core->Query.ExtFunc.ECX),
+		  "=r" (Core->Query.ExtFunc.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
@@ -2180,7 +2200,7 @@ void Dump_CPUID(CORE *Core)
 void SpeedStep_Technology(CORE *Core, unsigned int cpu)
 {
 	if (Core->T.Base.BSP) {
-		if (Proc->Features.Std.CX.EIST == 1) {
+		if (Proc->Features.Std.ECX.EIST == 1) {
 			MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 			RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
@@ -2227,7 +2247,7 @@ void TurboBoost_Technology(CORE *Core, unsigned int cpu)
 
 void DynamicAcceleration(CORE *Core, unsigned int cpu)
 {
-	if (Proc->Features.Power.AX.TurboIDA) {
+	if (Proc->Features.Power.EAX.TurboIDA) {
 		TurboBoost_Technology(Core, cpu);
 	} else {
 		Core->Query.Turbo = 0;
@@ -2313,15 +2333,15 @@ void PowerThermal(CORE *Core, unsigned int cpu)
 	"mov	%%ebx, %1	\n\t"
 	"mov	%%ecx, %2	\n\t"
 	"mov	%%edx, %3"
-	: "=r" (Power.AX),
-	  "=r" (Power.BX),
-	  "=r" (Power.CX),
-	  "=r" (Power.DX)
+	: "=r" (Power.EAX),
+	  "=r" (Power.EBX),
+	  "=r" (Power.ECX),
+	  "=r" (Power.EDX)
 	:
 	: "%rax", "%rbx", "%rcx", "%rdx"
     );
 
-    if (Power.CX.SETBH == 1) {
+    if (Power.ECX.SETBH == 1) {
 	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
@@ -2345,11 +2365,11 @@ void PowerThermal(CORE *Core, unsigned int cpu)
 	}
     }
 
-    if (Proc->Features.Std.DX.ACPI == 1) {
+    if (Proc->Features.Std.EDX.ACPI == 1) {
 	int ToggleFeature = 0;
 
 	RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
-	ClockModulation.ECMD = Power.AX.ECMD;
+	ClockModulation.ECMD = Power.EAX.ECMD;
 
 	switch (ODCM_Enable) {
 	case COREFREQ_TOGGLE_OFF:
@@ -2932,7 +2952,7 @@ void Controller_Exit(void)
 
 void Core_Counters_Set(CORE *Core)
 {
-    if (Proc->Features.PerfMon.AX.Version >= 2) {
+    if (Proc->Features.PerfMon.EAX.Version >= 2) {
 	CORE_GLOBAL_PERF_CONTROL	Core_GlobalPerfControl = {.value = 0};
 	CORE_FIXED_PERF_CONTROL 	Core_FixedPerfControl = {.value = 0};
 	CORE_GLOBAL_PERF_STATUS 	Core_PerfOverflow = {.value = 0};
@@ -2954,7 +2974,7 @@ void Core_Counters_Set(CORE *Core)
 	Core_FixedPerfControl.EN1_Usr = 1;
 	Core_FixedPerfControl.EN2_Usr = 1;
 
-	if (Proc->Features.PerfMon.AX.Version >= 3) {
+	if (Proc->Features.PerfMon.EAX.Version >= 3) {
 		if (!Proc->Features.HTT_Enable) {
 			Core_FixedPerfControl.AnyThread_EN0 = 1;
 			Core_FixedPerfControl.AnyThread_EN1 = 1;
@@ -2984,7 +3004,8 @@ void Core_Counters_Set(CORE *Core)
 
 #define Uncore_Counters_Set(PMU, Core)					\
 ({									\
-    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {\
+    if ((Proc->Features.PerfMon.EAX.Version >= 3) && (Core->T.Base.BSP))\
+    {									\
 	UNCORE_GLOBAL_PERF_CONTROL  Uncore_GlobalPerfControl;		\
 	UNCORE_FIXED_PERF_CONTROL   Uncore_FixedPerfControl;		\
 	UNCORE_GLOBAL_PERF_STATUS   Uncore_PerfOverflow = {.value = 0}; \
@@ -3010,7 +3031,7 @@ void Core_Counters_Set(CORE *Core)
 
 void Core_Counters_Clear(CORE *Core)
 {
-    if (Proc->Features.PerfMon.AX.Version >= 2) {
+    if (Proc->Features.PerfMon.EAX.Version >= 2) {
 	WRMSR(Core->SaveArea.Core_FixedPerfControl,
 					MSR_CORE_PERF_FIXED_CTR_CTRL);
 	WRMSR(Core->SaveArea.Core_GlobalPerfControl,
@@ -3020,7 +3041,8 @@ void Core_Counters_Clear(CORE *Core)
 
 #define Uncore_Counters_Clear(PMU, Core)				\
 ({									\
-    if ((Proc->Features.PerfMon.AX.Version >= 3) && (Core->T.Base.BSP)) {\
+    if ((Proc->Features.PerfMon.EAX.Version >= 3) && (Core->T.Base.BSP))\
+    {									\
 	WRMSR(Proc->SaveArea.Uncore_FixedPerfControl,			\
 					MSR_UNCORE_PERF_FIXED_CTR_CTRL);\
 	WRMSR(Proc->SaveArea.Uncore_GlobalPerfControl,			\
@@ -3042,7 +3064,7 @@ void Core_Counters_Clear(CORE *Core)
 
 #define Counters_Core2(Core, T)						\
 ({									\
-    if (!Proc->Features.AdvPower.DX.Inv_TSC)				\
+    if (!Proc->Features.AdvPower.EDX.Inv_TSC)				\
  	{								\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
@@ -3338,7 +3360,7 @@ void Core_Intel_Temp(CORE *Core)
 
 void Core_AMD_Temp(CORE *Core)
 {
-	if (Proc->Features.AdvPower.DX.TTP == 1) {
+	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip;
 
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
@@ -3574,7 +3596,7 @@ Note: hardware Family_12h
 	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
 	else
 */
-	if (Proc->Features.Power.CX.EffFreq == 1) // MPERF & APERF ?
+	if (Proc->Features.Power.ECX.EffFreq == 1) // MPERF & APERF ?
 	    smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
 	else {
 		Proc->thermalFormula = THERMAL_FORMULA_AMD_0F;
@@ -4157,7 +4179,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
 				unsigned long arg)
 {
-	long rc = -1;
+	long rc = -EPERM;
 
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
@@ -4308,7 +4330,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = 0;
 		break;
 	default:
-		rc = -1;
+		rc = -EINVAL;
 	}
 	return(rc);
 }
@@ -4529,15 +4551,17 @@ static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 static int __init CoreFreqK_init(void)
 {
 	int rc = 0;
-	ARG Arg = {.count = 0};
+	ARG Arg = {.SMT_Count = 0, .rc = 0};
+
 	// Query features on the presumed BSP processor.
-	memset(&Arg.features, 0, sizeof(FEATURES));
-	rc = smp_call_function_single(0, Query_Features, &Arg, 1);
+	memset(&Arg.Features, 0, sizeof(FEATURES));
+	if ((rc = smp_call_function_single(0, Query_Features, &Arg, 1)) == 0)
+		rc = Arg.rc;
 	if (rc == 0) {
-		unsigned int OS_count = num_present_cpus();
+		unsigned int OS_Count = num_present_cpus();
 		// Rely on operating system's cpu counting.
-		if (Arg.count != OS_count)
-			Arg.count = OS_count;
+		if (Arg.SMT_Count != OS_Count)
+			Arg.SMT_Count = OS_Count;
 	} else
 		rc = -ENXIO;
 	if (rc == 0)
@@ -4565,9 +4589,9 @@ static int __init CoreFreqK_init(void)
 		  unsigned int cpu = 0;
 		  unsigned long publicSize = 0,privateSize = 0,packageSize = 0;
 
-		    publicSize = sizeof(KPUBLIC) + sizeof(CORE *) * Arg.count;
+		  publicSize=sizeof(KPUBLIC) + sizeof(CORE *) * Arg.SMT_Count;
 
-		    privateSize = sizeof(KPRIVATE) + sizeof(JOIN *) * Arg.count;
+		  privateSize=sizeof(KPRIVATE) + sizeof(JOIN *) * Arg.SMT_Count;
 
 		    if (((KPublic = kmalloc(publicSize, GFP_KERNEL)) != NULL)
 		     && ((KPrivate = kmalloc(privateSize, GFP_KERNEL)) != NULL))
@@ -4579,7 +4603,7 @@ static int __init CoreFreqK_init(void)
 			if ((Proc = kmalloc(packageSize, GFP_KERNEL)) != NULL)
 			{
 			    memset(Proc, 0, packageSize);
-			    Proc->CPU.Count = Arg.count;
+			    Proc->CPU.Count = Arg.SMT_Count;
 
 			    if ( (SleepInterval >= LOOP_MIN_MS)
 			      && (SleepInterval <= LOOP_MAX_MS))
@@ -4598,10 +4622,10 @@ static int __init CoreFreqK_init(void)
 
 			    Proc->Registration.Experimental = Experimental;
 
-			    memcpy(&Proc->Features, &Arg.features,
-					sizeof(FEATURES) );
+			    memcpy(&Proc->Features, &Arg.Features,
+							sizeof(FEATURES) );
 
-			    Arch[0].Architecture = Proc->Features.Info.VendorID;
+			    Arch[0].Architecture=Proc->Features.Info.Vendor.ID;
 
 			    RearmTheTimer =
 				ktime_set(0, Proc->SleepInterval * 1000000LU);
@@ -4693,13 +4717,13 @@ static int __init CoreFreqK_init(void)
 					Proc->ArchID--) {
 				    // Search for an architecture signature.
 				    if ((Arch[Proc->ArchID].Signature.ExtFamily
-					== Proc->Features.Std.AX.ExtFamily)
+					== Proc->Features.Std.EAX.ExtFamily)
 				    && (Arch[Proc->ArchID].Signature.Family
-					== Proc->Features.Std.AX.Family)
+					== Proc->Features.Std.EAX.Family)
 				    && (Arch[Proc->ArchID].Signature.ExtModel
-					== Proc->Features.Std.AX.ExtModel)
+					== Proc->Features.Std.EAX.ExtModel)
 				    && (Arch[Proc->ArchID].Signature.Model
-					== Proc->Features.Std.AX.Model)) {
+					== Proc->Features.Std.EAX.Model)) {
 						break;
 					}
 				    }
@@ -4719,20 +4743,18 @@ static int __init CoreFreqK_init(void)
 				  printk(KERN_INFO "CoreFreq:"		\
 				      " Processor [%1X%1X_%1X%1X]"	\
 				      " Architecture [%s] CPU [%u/%u]\n",
-					Proc->Features.Std.AX.ExtFamily,
-					Proc->Features.Std.AX.Family,
-					Proc->Features.Std.AX.ExtModel,
-					Proc->Features.Std.AX.Model,
+					Proc->Features.Std.EAX.ExtFamily,
+					Proc->Features.Std.EAX.Family,
+					Proc->Features.Std.EAX.ExtModel,
+					Proc->Features.Std.EAX.Model,
 					Arch[Proc->ArchID].Architecture,
 					Proc->CPU.OnLine,
 					Proc->CPU.Count);
 
 				  Controller_Start(0);
 
-				  if (Proc->Registration.Experimental) {
-				   Proc->Registration.pci =
-				     pci_register_driver(&CoreFreqK_pci_driver);
-				  }
+				  Proc->Registration.pci =
+				    pci_register_driver(&CoreFreqK_pci_driver);
 
 		#ifdef CONFIG_HOTPLUG_CPU
 			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
@@ -4884,9 +4906,8 @@ static void __exit CoreFreqK_cleanup(void)
 			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
-		if (Proc->Registration.Experimental) {
-			if (!Proc->Registration.pci)
-				pci_unregister_driver(&CoreFreqK_pci_driver);
+		if (!Proc->Registration.pci) {
+			pci_unregister_driver(&CoreFreqK_pci_driver);
 		}
 		Controller_Stop(1);
 		Controller_Exit();

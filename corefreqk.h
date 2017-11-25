@@ -59,19 +59,19 @@
 #define RDTSC(_lo, _hi)							\
 	asm volatile							\
 	(								\
-		"lfence			\n\t"				\
+		"lfence"		"\n\t"				\
 		"rdtsc"							\
-		:"=a" (_lo),						\
-		 "=d" (_hi)						\
+		: "=a" (_lo),						\
+		  "=d" (_hi)						\
 	);
 
 #define RDTSCP(_lo, _hi, aux)						\
 	asm volatile							\
 	(								\
 		"rdtscp"						\
-		:"=a" (_lo),						\
-		 "=d" (_hi),						\
-		 "=c" (aux)						\
+		: "=a" (_lo),						\
+		  "=d" (_hi),						\
+		  "=c" (aux)						\
 	);
 
 #define BARRIER()							\
@@ -86,236 +86,237 @@
 #define RDTSC64(_val64)							\
 	asm volatile							\
 	(								\
-		"lfence			\n\t"				\
-		"rdtsc			\n\t"				\
-		"shlq	$32,	%%rdx	\n\t"				\
-		"orq	%%rdx,	%%rax	\n\t"				\
+		"lfence"		"\n\t"				\
+		"rdtsc"			"\n\t"				\
+		"shlq	$32,	%%rdx"	"\n\t"				\
+		"orq	%%rdx,	%%rax"	"\n\t"				\
 		"movq	%%rax,	%0"					\
-		:"=m" (_val64)						\
+		: "=m" (_val64)						\
 		:							\
-		:"%rax","%rcx","%rdx","memory"				\
+		: "%rax","%rcx","%rdx","memory"				\
 	);
 
 #define RDTSCP64(_val64)						\
 	asm volatile							\
 	(								\
-		"rdtscp			\n\t"				\
-		"shlq	$32,	%%rdx	\n\t"				\
-		"orq	%%rdx,	%%rax	\n\t"				\
+		"rdtscp"		"\n\t"				\
+		"shlq	$32,	%%rdx"	"\n\t"				\
+		"orq	%%rdx,	%%rax"	"\n\t"				\
 		"movq	%%rax,	%0"					\
-		:"=m" (_val64)						\
+		: "=m" (_val64)						\
 		:							\
-		:"%rax","%rcx","%rdx","memory"				\
+		: "%rax","%rcx","%rdx","memory"				\
 	);
 
 #define ASM_RDTSCP(_reg) \
-"# Read invariant TSC.""\n\t" \
-"rdtscp""\n\t" \
-"shlq	$32, %%rdx""\n\t" \
-"orq	%%rdx, %%rax""\n\t" \
-"# Save TSC value.""\n\t" \
-"movq	%%rax, %%" #_reg "\n\t" \
+	"# Read invariant TSC."		"\n\t"		\
+	"rdtscp"			"\n\t"		\
+	"shlq	$32, %%rdx"		"\n\t"		\
+	"orq	%%rdx, %%rax"		"\n\t"		\
+	"# Save TSC value."		"\n\t"		\
+	"movq	%%rax, %%" #_reg	"\n\t"
 
 #define ASM_RDTSC(_reg) \
-"# Read variant TSC.""\n\t" \
-"lfence""\n\t" \
-"rdtsc""\n\t" \
-"shlq	$32, %%rdx""\n\t" \
-"orq	%%rdx, %%rax""\n\t" \
-"# Save TSC value.""\n\t" \
-"movq	%%rax, %%" #_reg "\n\t" \
+	"# Read variant TSC."		"\n\t"		\
+	"lfence"			"\n\t"		\
+	"rdtsc"				"\n\t"		\
+	"shlq	$32, %%rdx"		"\n\t"		\
+	"orq	%%rdx, %%rax"		"\n\t"		\
+	"# Save TSC value."		"\n\t"		\
+	"movq	%%rax, %%" #_reg	"\n\t"
 
 
 #define ASM_CODE_RDMSR(_msr, _reg) \
-"# Read MSR counter.""\n\t" \
-"movq	$" #_msr ", %%rcx""\n\t" \
-"rdmsr""\n\t" \
-"shlq	$32, %%rdx""\n\t" \
-"orq	%%rdx, %%rax""\n\t" \
-"# Save counter value.""\n\t" \
-"movq	%%rax, %%" #_reg "\n\t" \
+	"# Read MSR counter."		"\n\t"		\
+	"movq	$" #_msr ", %%rcx"	"\n\t"		\
+	"rdmsr"				"\n\t"		\
+	"shlq	$32, %%rdx"		"\n\t"		\
+	"orq	%%rdx, %%rax"		"\n\t"		\
+	"# Save counter value."		"\n\t"		\
+	"movq	%%rax, %%" #_reg	"\n\t"
 
 #define ASM_RDMSR(_msr, _reg) ASM_CODE_RDMSR(_msr, _reg)
 
 
-#define ASM_COUNTERx1(	_reg0, _reg1, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1" \
-: "=m" (mem_tsc), "=m" (_mem1) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", \
-"memory" \
+#define ASM_COUNTERx1(	_reg0, _reg1,			\
+			_tsc_inst, mem_tsc,		\
+			_msr1, _mem1)			\
+asm volatile						\
+(							\
+	_tsc_inst(_reg0)				\
+	ASM_RDMSR(_msr1, _reg1)				\
+	"# Store values into memory."	"\n\t"		\
+	"movq	%%" #_reg0 ", %0"	"\n\t"		\
+	"movq	%%" #_reg1 ", %1"			\
+	: "=m" (mem_tsc), "=m" (_mem1)			\
+	:						\
+	: "%rax", "%rcx", "%rdx",			\
+	  "%" #_reg0"", "%" #_reg1"",			\
+	  "memory"					\
 );
 
 
-#define ASM_COUNTERx2(	_reg0, _reg1, _reg2, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", \
-"memory" \
+#define ASM_COUNTERx2(	_reg0, _reg1, _reg2,		\
+			_tsc_inst, mem_tsc,		\
+			_msr1, _mem1, _msr2, _mem2)	\
+asm volatile						\
+(							\
+	_tsc_inst(_reg0)				\
+	ASM_RDMSR(_msr1, _reg1)				\
+	ASM_RDMSR(_msr2, _reg2)				\
+	"# Store values into memory."	"\n\t"		\
+	"movq	%%" #_reg0 ", %0"	"\n\t"		\
+	"movq	%%" #_reg1 ", %1"	"\n\t"		\
+	"movq	%%" #_reg2 ", %2"			\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)	\
+	:						\
+	: "%rax", "%rcx", "%rdx",			\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",	\
+	  "memory"					\
 );
 
 
-#define ASM_COUNTERx3(	_reg0, _reg1, _reg2, _reg3, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-ASM_RDMSR(_msr3, _reg3) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2""\n\t" \
-"movq	%%" #_reg3 ", %3" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
-"memory" \
+#define ASM_COUNTERx3(	_reg0, _reg1, _reg2, _reg3,			\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3)	\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %3"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3)	\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "memory"							\
 );
 
 
-#define ASM_COUNTERx4(	_reg0, _reg1, _reg2, _reg3, _reg4, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3, \
-			_msr4, _mem4) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-ASM_RDMSR(_msr3, _reg3) \
-ASM_RDMSR(_msr4, _reg4) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2""\n\t" \
-"movq	%%" #_reg3 ", %3""\n\t" \
-"movq	%%" #_reg4 ", %4" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3), \
-"=m" (_mem4) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
-"%" #_reg4"", \
-"memory" \
+#define ASM_COUNTERx4(	_reg0, _reg1, _reg2, _reg3, _reg4,		\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4)					\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	ASM_RDMSR(_msr4, _reg4)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %3"	"\n\t"				\
+	"movq	%%" #_reg4 ", %4"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4)							\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "%" #_reg4"",							\
+	  "memory"							\
 );
 
 
-#define ASM_COUNTERx5(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3, \
-			_msr4, _mem4, _msr5, _mem5) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-ASM_RDMSR(_msr3, _reg3) \
-ASM_RDMSR(_msr4, _reg4) \
-ASM_RDMSR(_msr5, _reg5) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2""\n\t" \
-"movq	%%" #_reg3 ", %3""\n\t" \
-"movq	%%" #_reg4 ", %4""\n\t" \
-"movq	%%" #_reg5 ", %5" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3), \
-"=m" (_mem4), "=m" (_mem5) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
-"%" #_reg4"", "%" #_reg5"", \
-"memory" \
+#define ASM_COUNTERx5(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5,	\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5)			\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	ASM_RDMSR(_msr4, _reg4)						\
+	ASM_RDMSR(_msr5, _reg5)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %3"	"\n\t"				\
+	"movq	%%" #_reg4 ", %4"	"\n\t"				\
+	"movq	%%" #_reg5 ", %5"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5)					\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "%" #_reg4"", "%" #_reg5"",					\
+	  "memory"							\
 );
 
 
-#define ASM_COUNTERx6(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6, \
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3, \
-			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-ASM_RDMSR(_msr3, _reg3) \
-ASM_RDMSR(_msr4, _reg4) \
-ASM_RDMSR(_msr5, _reg5) \
-ASM_RDMSR(_msr6, _reg6) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2""\n\t" \
-"movq	%%" #_reg3 ", %3""\n\t" \
-"movq	%%" #_reg4 ", %4""\n\t" \
-"movq	%%" #_reg5 ", %5""\n\t" \
-"movq	%%" #_reg6 ", %6" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3), \
-"=m" (_mem4), "=m" (_mem5), "=m" (_mem6) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
-"%" #_reg4"", "%" #_reg5"", "%" #_reg6"", \
-"memory" \
+#define ASM_COUNTERx6(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6,\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	ASM_RDMSR(_msr4, _reg4)						\
+	ASM_RDMSR(_msr5, _reg5)						\
+	ASM_RDMSR(_msr6, _reg6)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %3"	"\n\t"				\
+	"movq	%%" #_reg4 ", %4"	"\n\t"				\
+	"movq	%%" #_reg5 ", %5"	"\n\t"				\
+	"movq	%%" #_reg6 ", %6"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5), "=m" (_mem6)			\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"",			\
+	  "memory"							\
 );
 
 
-#define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6, _reg7,\
-			_tsc_inst, mem_tsc, \
-			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3, \
-			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6, \
-			_msr7, _mem7) \
-asm volatile \
-( \
-_tsc_inst(_reg0) \
-ASM_RDMSR(_msr1, _reg1) \
-ASM_RDMSR(_msr2, _reg2) \
-ASM_RDMSR(_msr3, _reg3) \
-ASM_RDMSR(_msr4, _reg4) \
-ASM_RDMSR(_msr5, _reg5) \
-ASM_RDMSR(_msr6, _reg6) \
-ASM_RDMSR(_msr7, _reg7) \
-"# Store values into memory.""\n\t" \
-"movq	%%" #_reg0 ", %0""\n\t" \
-"movq	%%" #_reg1 ", %1""\n\t" \
-"movq	%%" #_reg2 ", %2""\n\t" \
-"movq	%%" #_reg3 ", %3""\n\t" \
-"movq	%%" #_reg4 ", %4""\n\t" \
-"movq	%%" #_reg5 ", %5""\n\t" \
-"movq	%%" #_reg6 ", %6""\n\t" \
-"movq	%%" #_reg7 ", %7" \
-: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3), \
-"=m" (_mem4), "=m" (_mem5), "=m" (_mem6), "=m" (_mem7) \
-: \
-:"%rax", "%rcx", "%rdx", \
-"%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"", \
-"%" #_reg4"", "%" #_reg5"", "%" #_reg6"", "%" #_reg7"", \
-"memory" \
+#define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3,			\
+			_reg4, _reg5, _reg6, _reg7,			\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
+			_msr7, _mem7)					\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	ASM_RDMSR(_msr4, _reg4)						\
+	ASM_RDMSR(_msr5, _reg5)						\
+	ASM_RDMSR(_msr6, _reg6)						\
+	ASM_RDMSR(_msr7, _reg7)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %3"	"\n\t"				\
+	"movq	%%" #_reg4 ", %4"	"\n\t"				\
+	"movq	%%" #_reg5 ", %5"	"\n\t"				\
+	"movq	%%" #_reg6 ", %6"	"\n\t"				\
+	"movq	%%" #_reg7 ", %7"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5), "=m" (_mem6), "=m" (_mem7)	\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"", "%" #_reg7"",	\
+	  "memory" \
 );
 
 
