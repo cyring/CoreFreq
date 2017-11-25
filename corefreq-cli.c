@@ -5108,18 +5108,100 @@ void Top(SHM_STRUCT *Shm)
 	  {
 	    LayerFillAt(layer, 0, row, drawSize.width,
 		"------------ Cycles ---- State ---------"		\
-		"------------------------ Cycles --------"		\
+		"----------- TSC Ratio ------------------"		\
 		"----------------------------------------"		\
 		"------------",
 			MakeAttr(WHITE, 0, BLACK, 0));
 	    row++;
-	    for (idx=0; idx < 8; idx++, row++) {
-		LayerFillAt(layer, 0, row,
-			drawSize.width, hSpace, MakeAttr(WHITE, 0, BLACK, 0));
+
+	    Attribute	hPCnnAttr[MAX_WIDTH] = {
+			LWK,LWK,LWK,LWK,HDK,				\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,		\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+			HBK,HBK,HBK,HBK
+		};
+	    ASCII	hPCnnCode[MAX_WIDTH] = {
+			'P','C','0','0',':',				\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' '
+		};
+	    ASCII	hCState[8][2] = {
+			{'0', '2'},
+			{'0', '3'},
+			{'0', '6'},
+			{'0', '7'},
+			{'0', '8'},
+			{'0', '9'},
+			{'1', '0'}
+	    };
+	    for (idx = 0; idx < 7; idx++, row++)
+	    {
+		hPCnnCode[2] = hCState[idx][0];
+		hPCnnCode[3] = hCState[idx][1];
+		LayerCopyAt(layer,0, row, drawSize.width, hPCnnAttr, hPCnnCode);
 	    }
+
+	    LayerDeclare(MAX_WIDTH) hUncore = {
+		.origin = {
+			.col = 0,
+			.row = row
+		},
+		.length = drawSize.width,
+		.attr ={LWK,LWK,LWK,LWK,HDK,	\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,					\
+			LWK,LWK,LWK,LWK,LWK,LWK,HDK,			\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK		},
+		.code ={' ','T','S','C',':',	\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',					\
+			'U','N','C','O','R','E',':',			\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,		\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' '		}
+	    };
+
+	    LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,
+			hUncore.length, hUncore.attr, hUncore.code);
+	    row ++;
+
 	    LayerFillAt(layer, 0, row,
 			drawSize.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
-
 	    row ++;
 	  }
 	  break;
@@ -6012,32 +6094,69 @@ void Top(SHM_STRUCT *Shm)
 	    {
 		struct PKG_FLIP_FLOP *Pkg =
 				&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+		CUINT bar0, bar1, margin = loadWidth - 18 - 7 - 2;
 
 		_row = TOP_LOWER_FIRST;
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC02:%18llu" "%7.2f%%",
-			Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC03:%18llu" "%7.2f%%",
-			Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC06:%18llu" "%7.2f%%",
-			Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC07:%18llu" "%7.2f%%",
-			Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC08:%18llu" "%7.2f%%",
-			Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC09:%18llu" "%7.2f%%",
-			Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row++),
-			"PC10:%18llu" "%7.2f%%",
-			Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10);
-		sprintf((char *)&LayerAt(dLayer, code, 0, _row),
-			" TSC:%18llu", Pkg->Delta.PTSC);
-		sprintf((char *)&LayerAt(dLayer, code, 50, _row++),
+	/* PC02 */
+		bar0 = (Shm->Proc.State.PC02 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
+			bar0, hBar, bar1, hSpace);
+	/* PC03 */
+		bar0 = (Shm->Proc.State.PC03 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+			bar0, hBar, bar1, hSpace);
+	/* PC06 */
+		bar0 = (Shm->Proc.State.PC06 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
+			bar0, hBar, bar1, hSpace);
+	/* PC07 */
+		bar0 = (Shm->Proc.State.PC07 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
+			bar0, hBar, bar1, hSpace);
+	/* PC08 */
+		bar0 = (Shm->Proc.State.PC08 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
+			bar0, hBar, bar1, hSpace);
+	/* PC09 */
+		bar0 = (Shm->Proc.State.PC09 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
+			bar0, hBar, bar1, hSpace);
+	/* PC10 */
+		bar0 = (Shm->Proc.State.PC10 * margin) / 100;
+		bar1 = margin - bar0;
+
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row++),
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+			bar0, hBar, bar1, hSpace);
+	/* TSC & UNCORE */
+		sprintf((char *) &LayerAt(dLayer, code, 5, _row),
+			"%18llu", Pkg->Delta.PTSC);
+		sprintf((char *) &LayerAt(dLayer, code, 50, _row++),
 			"UNCORE:%18llu", Pkg->Uncore.FC0);
 
 		_row += 2;
