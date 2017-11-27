@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.13"
+#define COREFREQ_VERSION	"1.14"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -116,7 +116,7 @@ typedef signed short int	CSINT;
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
 #define CRC_INTEL	0x75a2ba39
-#define CRC_AMD		0x3485bbd3
+#define CRC_AMD 	0x3485bbd3
 
 enum OFFLINE
 {

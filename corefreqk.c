@@ -4623,7 +4623,7 @@ static int __init CoreFreqK_init(void)
 			    Proc->Registration.Experimental = Experimental;
 
 			    memcpy(&Proc->Features, &Arg.Features,
-							sizeof(FEATURES) );
+							sizeof(FEATURES));
 
 			    Arch[0].Architecture=Proc->Features.Info.Vendor.ID;
 
@@ -4665,7 +4665,8 @@ static int __init CoreFreqK_init(void)
 						break;
 					}
 				}
-				if (allocPerCPU) {
+				if (allocPerCPU)
+				{
 				  for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 					BITCLR( LOCKLESS,
 						KPublic->Core[cpu]->Sync.V, 63);
@@ -4676,9 +4677,8 @@ static int __init CoreFreqK_init(void)
 							CpuIDforVendor);
 				  }
 
-				  if (!strncmp(Arch[0].Architecture,
-							VENDOR_INTEL, 12))
-				  {
+				  switch (Proc->Features.Info.Vendor.CRC) {
+				  case CRC_INTEL: {
 					Arch[0].Query = Query_GenuineIntel;
 					Arch[0].Start = Start_GenuineIntel;
 					Arch[0].Stop  = Stop_GenuineIntel;
@@ -4690,10 +4690,9 @@ static int __init CoreFreqK_init(void)
 
 					Arch[0].voltageFormula =
 							VOLTAGE_FORMULA_INTEL;
-				  }
-				  else if (!strncmp(Arch[0].Architecture,
-							VENDOR_AMD, 12) )
-				  {
+					}
+					break;
+				  case CRC_AMD: {
 					Arch[0].Query = Query_AuthenticAMD;
 					Arch[0].Start = Start_AuthenticAMD;
 					Arch[0].Stop  = Stop_AuthenticAMD;
@@ -4705,8 +4704,9 @@ static int __init CoreFreqK_init(void)
 
 					Arch[0].voltageFormula =
 							VOLTAGE_FORMULA_AMD;
+					}
+					break;
 				  }
-
 				  if ( (ArchID != -1)
 				    && (ArchID >= 0)
 				    && (ArchID < ARCHITECTURES) ) {
@@ -4770,25 +4770,25 @@ static int __init CoreFreqK_init(void)
 			#endif
 		#endif
 		#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-				if (!NMI_Disable) {
-				  Proc->Registration.nmi =
-				   !( register_nmi_handler(NMI_LOCAL,
+				  if (!NMI_Disable) {
+				    Proc->Registration.nmi =
+					!( register_nmi_handler(NMI_LOCAL,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				    | register_nmi_handler(NMI_UNKNOWN,
+					| register_nmi_handler(NMI_UNKNOWN,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				    | register_nmi_handler(NMI_SERR,
+					| register_nmi_handler(NMI_SERR,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk")
-				    | register_nmi_handler(NMI_IO_CHECK,
+					| register_nmi_handler(NMI_IO_CHECK,
 							CoreFreqK_NMI_handler,
 							0,
 							"corefreqk"));
-				}
+				  }
 		#endif
 				} else {
 				    if (KPublic->Cache != NULL) {
