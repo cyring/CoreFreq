@@ -1789,10 +1789,7 @@ void Query_C220(void __iomem *mchmap)
 
 PCI_CALLBACK P965(struct pci_dev *dev)
 {
-	if (Experimental == 1)
-		return(Router(dev, 0x48, 0x4000, Query_P965));
-	else
-		return((PCI_CALLBACK) -ENOSYS);
+	return(Router(dev, 0x48, 0x4000, Query_P965));
 }
 
 PCI_CALLBACK G965(struct pci_dev *dev)
@@ -1802,10 +1799,7 @@ PCI_CALLBACK G965(struct pci_dev *dev)
 
 PCI_CALLBACK P35(struct pci_dev *dev)
 {
-	if (Experimental == 1)
-		return(Router(dev, 0x48, 0x4000, Query_P35));
-	else
-		return((PCI_CALLBACK) -ENOSYS);
+	return(Router(dev, 0x48, 0x4000, Query_P35));
 }
 
 PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
@@ -1852,18 +1846,12 @@ PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 
 PCI_CALLBACK C200(struct pci_dev *dev)
 {
-	if (Experimental == 1)
-		return(Router(dev, 0x48, 0x8000, Query_C200));
-	else
-		return((PCI_CALLBACK) -ENOSYS);
+	return(Router(dev, 0x48, 0x8000, Query_C200));
 }
 
 PCI_CALLBACK C220(struct pci_dev *dev)
 {
-	if (Experimental == 1)
-		return(Router(dev, 0x48, 0x8000, Query_C220));
-	else
-		return((PCI_CALLBACK) -ENOSYS);
+	return(Router(dev, 0x48, 0x8000, Query_C220));
 }
 
 PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
@@ -4753,8 +4741,10 @@ static int __init CoreFreqK_init(void)
 
 				  Controller_Start(0);
 
+				if (Proc->Registration.Experimental) {
 				  Proc->Registration.pci =
 				    pci_register_driver(&CoreFreqK_pci_driver);
+				}
 
 		#ifdef CONFIG_HOTPLUG_CPU
 			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
@@ -4906,8 +4896,9 @@ static void __exit CoreFreqK_cleanup(void)
 			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
-		if (!Proc->Registration.pci) {
-			pci_unregister_driver(&CoreFreqK_pci_driver);
+		if (Proc->Registration.Experimental) {
+			if (!Proc->Registration.pci)
+				pci_unregister_driver(&CoreFreqK_pci_driver);
 		}
 		Controller_Stop(1);
 		Controller_Exit();
