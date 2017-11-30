@@ -147,6 +147,13 @@ const char lcd[10][3][3] = {
 #define MAX_WIDTH	132
 #define MIN_WIDTH	80
 
+#define LEADING_LEFT	1
+#define LEADING_TOP	1
+#define MARGIN_WIDTH	2
+#define MARGIN_HEIGHT	1
+#define INTER_WIDTH	3
+#define INTER_HEIGHT	(3 + 1)
+
 char hSpace[] = "        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
@@ -1300,136 +1307,6 @@ void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
     }
 	free(row);
 	free(str);
-}
-
-#define LEADING_LEFT	2
-#define LEADING_TOP	1
-#define MARGIN_WIDTH	2
-#define MARGIN_HEIGHT	1
-
-void LCD_Draw(	CUINT col,
-		CUINT row,
-		char *thisView,
-		unsigned int thisNumber,
-		unsigned int thisDigit[] )
-{
-    char lcdBuf[32];
-    CUINT j = (CUINT) Dec2Digit(thisNumber, thisDigit);
-
-    thisView[0] = '\0';
-    j = 4;
-    do {
-	CSINT offset = col + (4 - j) * 3;
-
-	sprintf(lcdBuf,
-		"\033[%hu;%hdH" "%.*s"					\
-		"\033[%hu;%hdH" "%.*s"					\
-		"\033[%hu;%hdH" "%.*s",
-		row	, offset, 3, lcd[thisDigit[9 - j]][0],
-		row + 1	, offset, 3, lcd[thisDigit[9 - j]][1],
-		row + 2	, offset, 3, lcd[thisDigit[9 - j]][2]);
-
-	strcat(thisView, lcdBuf);
-	j--;
-    } while (j > 0) ;
-}
-
-void Dashboard( SHM_STRUCT *Shm,
-		CUINT leadingLeft,
-		CUINT leadingTop,
-		CUINT marginWidth,
-		CUINT marginHeight)
-{
-    char *boardView = NULL,
-	 *lcdView = NULL,
-	 *cpuView = NULL,
-	 *absMove = CUH CLS;
-    double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[LAST_BOOST];
-    double medianRatio = (minRatio + maxRatio) / 2;
-
-    void FreeAll(void)
-    {
-	free(cpuView);
-	free(lcdView);
-	free(boardView);
-    }
-
-    void AllocAll()
-    {
-	// Up to 9 digits x 3 cols x 3 lines per digit
-	const size_t lcdSize	= (9 * 3 * 3)
-				+ (9 * 3 * sizeof("\033[000;000H")) + 1;
-	lcdView = malloc(lcdSize);
-	const size_t cpuSize	= (9 * 3) + sizeof("\033[000;000H")
-				+ (3 * sizeof(DoK)) + 1;
-	cpuView = malloc(cpuSize);
-	// All LCD views x total number of CPU
-	boardView = malloc(Shm->Proc.CPU.Count * (lcdSize + cpuSize));
-    }
-
-    AllocAll();
-
-    marginWidth  += 12;		// shifted by lcd width
-    marginHeight += 3 + 1;	// shifted by lcd height + cpu frame
-    unsigned int cpu = 0;
-
-    while (!BITVAL(Shutdown, 0)) {
-    	unsigned int digit[9];
-	CUINT X, Y;
-
-	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
-
-	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
-
-	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
-
-	X = leadingLeft;
-	Y = leadingTop;
-	boardView[0] = '\0';
-
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-		struct FLIP_FLOP *Flop =
-			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-			LCD_Draw(X, Y, lcdView,
-				(unsigned int) Flop->Relative.Freq, digit);
-			sprintf(cpuView,
-				"\033[%hu;%huH"DoK"[ µ%-2u"WoK"%4u"DoK"C ]",
-					Y + 3, X, cpu, Flop->Thermal.Temp);
-
-			if (Flop->Relative.Ratio > medianRatio)
-				strcat(boardView, RoK);
-			else if (Flop->Relative.Ratio > minRatio)
-				strcat(boardView, YoK);
-			else
-				strcat(boardView, GoK);
-		} else {
-			sprintf(lcdView, "\033[%hu;%huH" "_  _  _  _",
-				Y + 1, X + 1);
-			sprintf(cpuView, "\033[%hu;%huH" "[ µ%-2u""  OFF ]",
-				Y + 3, X, cpu);
-		}
-		X += marginWidth;
-
-		if ((X - 3) >= (GetScreenSize().width - marginWidth)) {
-			X = leadingLeft;
-			Y += marginHeight;
-			absMove = CUH;
-		}
-		else
-			absMove = CUH CLS;
-
-		strcat(boardView, lcdView);
-		strcat(boardView, cpuView);
-	    }
-	if (printf("%s" "%s", absMove, boardView) > 0)
-		fflush(stdout);
-    }
-    FreeAll();
 }
 
 void Counters(SHM_STRUCT *Shm)
@@ -2592,7 +2469,7 @@ enum VIEW {
 
 #define LOAD_LEAD 4
 
-void Top(SHM_STRUCT *Shm)
+void Top(SHM_STRUCT *Shm, char option)
 {
 /*
            SCREEN
@@ -2631,28 +2508,31 @@ void Top(SHM_STRUCT *Shm)
 		width	:  4-3,		// Valid width
 		daemon	:  5-4,		// Draw dynamic
 		taskVal	:  6-5,		// Display task's value
-		avgOrPC :  7-6,		// C-states average | % pkg states
-		_pad	: 32-7;
+		avgOrPC :  7-6,		// C-states average || % pkg states
+		_pad8	:  8-7,
+		disposal: 16-8,
+		_pad16	: 32-16;
 	};
 	enum VIEW view;
     } drawFlag = {
-	.layout=0,
-	.clear=0,
-	.height=0,
-	.width=0,
-	.daemon=0,
-	.taskVal=0,
-	.avgOrPC=0,
-	.view=V_FREQ
+	.layout = 0,
+	.clear	= 0,
+	.height = 0,
+	.width	= 0,
+	.daemon = 0,
+	.taskVal= 0,
+	.avgOrPC= 0,
+	.view	= V_FREQ,
+	.disposal= (option == 'd') ? 1 : 0
     };
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
-    unsigned int cpu = 0,prevTopFreq = 0,digit[9],iClock = 0,ratioCount = 0,idx;
+    unsigned int cpu = 0, prevTopFreq = 0, digit[9], iClock = 0, ratioCount = 0;
     unsigned long prevFreeRAM = 0;
     int prevTaskCount = 0;
 
-    CUINT	_col, _row, loadWidth = 0;
+    CUINT	loadWidth = 0;
     CUINT	MIN_HEIGHT = 0,
 		TOP_UPPER_FIRST = 1 + TOP_HEADER_ROW,
 		TOP_LOWER_FIRST = 2+ TOP_HEADER_ROW + Shm->Proc.CPU.Count,
@@ -2666,11 +2546,11 @@ void Top(SHM_STRUCT *Shm)
     typedef char HBCLK[11 + 1];
     HBCLK *hBClk;
 
-    char *buffer = NULL, *viewMask = NULL;
+    char *buffer = NULL, *console = NULL;
 
     Coordinate *cTask;
 
-    for (idx = 1; idx < MAX_BOOST; idx++)
+    for (unsigned int idx = 1; idx < MAX_BOOST; idx++)
 	if (Shm->Proc.Boost[idx] != 0) {
 		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {
@@ -2883,39 +2763,39 @@ void Top(SHM_STRUCT *Shm)
 	StoreTCell(wMenu, SCANKEY_NULL,   "         Window         ", sameAttr);
 
 	StoreTCell(wMenu, SCANKEY_s,      " Settings           [s] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_d,      " Dashboard          [d] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_p,      " Processor          [p] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_m,      " Topology           [m] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", quitAttr);
-	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_e,      " Features           [e] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extensions     [I] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_t,      " Technologies       [t] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_x,      " Tasks Monitoring   [x] ", gateAttr);
+	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_o,      " Perf. Monitoring   [o] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_q,      " System Interrupts  [q] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_x,      " Tasks Monitoring   [x] ", gateAttr);
 	StoreTCell(wMenu, SCANKEY_w,      " Power & Thermal    [w] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_u,      " CPUID Inst. Dump   [u] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_q,      " System Interrupts  [q] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_u,      " CPUID Hexa Dump    [u] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
@@ -3537,7 +3417,7 @@ void Top(SHM_STRUCT *Shm)
 
 	free(hBClk);
 	free(buffer);
-	free(viewMask);
+	free(console);
 	free(cTask);
 
 	DestroyLayer(sLayer);
@@ -3554,7 +3434,7 @@ void Top(SHM_STRUCT *Shm)
     {
 	hBClk = calloc(Shm->Proc.CPU.Count, sizeof(HBCLK));
 	buffer = malloc(10 * MAX_WIDTH); // 10 times for ANSI cursor string.
-	viewMask = malloc((10 * MAX_WIDTH) * MAX_HEIGHT);
+	console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT);
 
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
@@ -3576,40 +3456,49 @@ void Top(SHM_STRUCT *Shm)
     {
 	if (caught == SIGWINCH) {
 		SCREEN_SIZE currentSize = GetScreenSize();
-		if (currentSize.height != drawSize.height) {
-			if (currentSize.height > MAX_HEIGHT)
-				drawSize.height = MAX_HEIGHT;
-			else
-				drawSize.height = currentSize.height;
 
-		    switch (drawFlag.view) {
-		    case V_FREQ:
-		    case V_INST:
-		    case V_CYCLES:
-		    case V_CSTATES:
-		    case V_TASKS:
-		    case V_INTR:
-		    case V_VOLTAGE:
+	  if (currentSize.height != drawSize.height) {
+		if (currentSize.height > MAX_HEIGHT)
+			drawSize.height = MAX_HEIGHT;
+		else
+			drawSize.height = currentSize.height;
+
+	    switch (drawFlag.disposal) {
+	    case 0:
+		switch (drawFlag.view) {
+		case V_FREQ:
+		case V_INST:
+		case V_CYCLES:
+		case V_CSTATES:
+		case V_TASKS:
+		case V_INTR:
+		case V_VOLTAGE:
 			MIN_HEIGHT = (2 * Shm->Proc.CPU.Count) + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
-		    case V_PACKAGE:
+		case V_PACKAGE:
 			MIN_HEIGHT = Shm->Proc.CPU.Count + 8 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
-		    }
-			drawFlag.clear  = 1;
-			drawFlag.height = !(drawSize.height < MIN_HEIGHT);
 		}
-		if (currentSize.width != drawSize.width) {
-			if (currentSize.width > MAX_WIDTH)
-				drawSize.width = MAX_WIDTH;
-			else
-				drawSize.width = currentSize.width;
+		break;
+	    case 1:
+		MIN_HEIGHT = LEADING_TOP + MARGIN_HEIGHT + INTER_HEIGHT;
+		break;
+	    }
 
-			drawFlag.clear = 1;
-			drawFlag.width = !(drawSize.width < MIN_WIDTH);
-		}
+		drawFlag.clear  = 1;
+		drawFlag.height = !(drawSize.height < MIN_HEIGHT);
+	  }
+	  if (currentSize.width != drawSize.width) {
+		if (currentSize.width > MAX_WIDTH)
+			drawSize.width = MAX_WIDTH;
+		else
+			drawSize.width = currentSize.width;
+
+		drawFlag.clear = 1;
+		drawFlag.width = !(drawSize.width < MIN_WIDTH);
+	  }
 	}
     }
 
@@ -3698,13 +3587,22 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_c:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_CYCLES;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_d:
+	{
+	drawFlag.disposal = 1;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
 	}
 	break;
     case SCANKEY_f:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_FREQ;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -3721,6 +3619,7 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_g:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_PACKAGE;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -3737,6 +3636,7 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_i:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_INST;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -3769,6 +3669,7 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_q:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_INTR;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -3776,6 +3677,7 @@ void Top(SHM_STRUCT *Shm)
 	break;
     case SCANKEY_SHIFT_v:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_VOLTAGE;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -3805,6 +3707,7 @@ void Top(SHM_STRUCT *Shm)
     case SCANKEY_x:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.trackTask = 0;
+		drawFlag.disposal = 0;
 		drawFlag.view = V_TASKS;
 		drawSize.height = 0;
 		TrapScreenSize(SIGWINCH);
@@ -4434,10 +4337,10 @@ void Top(SHM_STRUCT *Shm)
 		LayerFillAt(layer, offset, row,
 				3, lcd[digit[9 - j]][0],
 				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(layer, offset, row + 1,
+		LayerFillAt(layer, offset, (row + 1),
 				3, lcd[digit[9 - j]][1],
 				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(layer, offset, row + 2,
+		LayerFillAt(layer, offset, (row + 2),
 				3, lcd[digit[9 - j]][2],
 				MakeAttr(lcdColor, 0, BLACK, 1));
 		j--;
@@ -4465,8 +4368,7 @@ void Top(SHM_STRUCT *Shm)
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
 	PrintLCD(layer, 0, row,
-		(unsigned int) Flop->Relative.Freq,
-		Flop->Relative.Ratio);
+		(unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
 
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
@@ -4660,7 +4562,9 @@ void Top(SHM_STRUCT *Shm)
 		}
 	};
 	// Alternate the color of the frequency ratios
+	unsigned int idx;
 	int bright = 0;
+
 	for (idx = 0; idx < ratioCount; idx++) {
 		char tabStop[] = "00";
 		int hPos = availRatio[idx] * loadWidth / maxRatio;
@@ -5089,6 +4993,8 @@ void Top(SHM_STRUCT *Shm)
 		{'0', '9'},
 		{'1', '0'}
 	};
+
+	unsigned int idx;
 	for (idx = 0; idx < 7; idx++, row++)
 	{
 		hPCnnCode[2] = hCState[idx][0];
@@ -5858,6 +5764,7 @@ void Top(SHM_STRUCT *Shm)
 			hSpace,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
+	    unsigned int idx;
 	    for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
 	    {
 		switch (Shm->SysGate.taskList[idx].state) {
@@ -6113,7 +6020,7 @@ void Top(SHM_STRUCT *Shm)
 	return(row);
     }
 
-    void Layout(Layer *layer)
+    void Layout_Header_DualView_Footer(Layer *layer)
     {
 	unsigned int processorHot = 0;
 	CUINT row = 0;
@@ -6183,7 +6090,7 @@ void Top(SHM_STRUCT *Shm)
 			MakeAttr(WHITE, 0, BLACK, 0));
 	    }
 
-		idx = Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
+		Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
 
 		hBClk[cpu][ 0] = digit[0] + '0';
 		hBClk[cpu][ 1] = digit[1] + '0';
@@ -6242,7 +6149,7 @@ void Top(SHM_STRUCT *Shm)
 				MakeAttr(BLACK, 0, BLACK, 1));
     }
 
-    void Dynamic(Layer *layer)
+    void Dynamic_Header_DualView_Footer(Layer *layer)
     {
 	CUINT row = 0;
 
@@ -6304,69 +6211,104 @@ void Top(SHM_STRUCT *Shm)
 	row = Draw_Footer(layer, row);
     }
 
-    TrapScreenSize(SIGWINCH);
-    signal(SIGWINCH, TrapScreenSize);
-
-    AllocAll();
-
-    while (!BITVAL(Shutdown, 0))
+    void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
     {
-      do
-      {
-	SCANKEY scan = {.key = 0};
+	CUINT row;
+	for (row = 0; row < drawSize.height; row++)
+		LayerFillAt(	layer, 0, row,
+				drawSize.width, hSpace,
+				MakeAttr(BLACK, 0, BLACK, 1));
+    }
 
-	if ((drawFlag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
-	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
-		if (Shortcut(&scan) == -1) {
-		  if (IsDead(&winList))
-			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
-		  else
-		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
-			Shortcut(&scan);
+    void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
+    {
+	CUINT leadingLeft = LEADING_LEFT;
+	CUINT leadingTop = LEADING_TOP;
+	CUINT marginWidth = MARGIN_WIDTH + (4 * INTER_WIDTH);
+	CUINT marginHeight = MARGIN_HEIGHT + INTER_HEIGHT;
+	CUINT X = leadingLeft, Y = leadingTop;
+	const CUINT rightEdge = drawSize.width - marginWidth + INTER_WIDTH,
+			bottomEdge = drawSize.height - marginHeight;
+
+	int MoveCursorXY(int endline)
+	{
+		if (endline == 0) {
+			X += marginWidth;
+		} else {
+			X = rightEdge;
 		}
-		PrintWindowStack();
+		if (X >= rightEdge) {
+			X = leadingLeft;
+			Y += marginHeight;
+		}
+		if (Y > bottomEdge) {
+			return(-1);
+		}
+		return(0);
+	}
 
-		break;
+	for (cpu = 0;
+		(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, 0);
+			cpu++)
+	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	  struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+
+		Attribute warning ={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+		if (Flop->Thermal.Temp <=
+			Shm->Cpu[cpu].PowerThermal.Limit[0])
+				warning = MakeAttr(BLUE, 0, BLACK, 1);
+		else {
+			if (Flop->Thermal.Temp >=
+			    Shm->Cpu[cpu].PowerThermal.Limit[1])
+				warning = MakeAttr(YELLOW, 0, BLACK, 0);
+		}
+		if (Flop->Thermal.Trip) {
+			warning = MakeAttr(RED, 0, BLACK, 1);
+		}
+		PrintLCD(layer, X, Y,
+		    (unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
+
+		LayerAt(layer, attr, (X + 5), (Y + 3)) =	\
+		LayerAt(layer, attr, (X + 6), (Y + 3)) =	\
+		LayerAt(layer, attr, (X + 7), (Y + 3)) =	\
+		LayerAt(layer, attr, (X + 8), (Y + 3)) = warning;
+
+		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
+			"[ #%-2u%4uC ]", cpu, Flop->Thermal.Temp);
+	    } else {
+		sprintf((char *) &LayerAt(layer, code, X, (Y + 1)),
+			"%s", "_  _  _  _");
+		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
+			"[ #%-2u  OFF ]", cpu);
 	    }
-	} else {
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	    if (MoveCursorXY(0) == -1)
+		break;
 	}
-	if (BITVAL(Shm->Proc.Sync, 63)) {
-		// Platform changed, redraw the layout.
-		drawFlag.layout = 1;
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	if (MoveCursorXY(1) == 0) {
+		PrintLCD(layer, X, Y,
+		    (unsigned int) Pkg->Delta.PTSC / 1000000, 0);
+
+		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
+			"%s", "[ BSP  TSC ]");
 	}
-      } while (!BITVAL(Shutdown, 0) && !drawFlag.daemon && !drawFlag.layout) ;
+	if (MoveCursorXY(0) == 0) {
+		PrintLCD(layer, X, Y,
+		    (unsigned int) Pkg->Uncore.FC0 / 1000000, 0);
 
-      if (drawFlag.height & drawFlag.width)
-      {
-	if (drawFlag.clear) {
-		drawFlag.clear  = 0;
-		drawFlag.layout = 1;
-
-		ResetLayer(dLayer);
+		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
+			"%s", "[  UNCORE  ]");
 	}
-	if (drawFlag.layout) {
-		drawFlag.layout = 0;
+    }
 
-		ResetLayer(sLayer);
-		Layout(sLayer);
-	}
-	if (drawFlag.daemon) {
-
-		Dynamic(dLayer);
-
-		// Increment the BCLK indicator (skip offline CPU)
-		do {
-			iClock++;
-			if (iClock == Shm->Proc.CPU.Count)
-				iClock = 0;
-		} while (BITVAL(Shm->Cpu[iClock].OffLine, OS) && iClock) ;
-	}
-
-	// Fuse all layers
+    size_t FuseAll(char stream[])
+    {
+	unsigned int sdx = 0;
 	Attribute attr = {.value = 0};
-	idx = 0;
+	CUINT _col, _row;
 
 	for (_row = 0; _row < drawSize.height; _row++)
 	{
@@ -6458,18 +6400,92 @@ void Top(SHM_STRUCT *Shm)
 	    else
 		flag.cursor = 0;
 	  }
-	  memcpy(&viewMask[idx], buffer, _bix);
-	  idx += _bix;
+	  memcpy(&stream[sdx], buffer, _bix);
+	  sdx += _bix;
 	}
-	// Write buffering to the standard output
-	fwrite(viewMask, idx, 1, stdout);
-	fflush(stdout);
-      } // endif (drawFlag.height & drawFlag.width)
-      else
+	return((size_t) sdx);
+    }
+
+    TrapScreenSize(SIGWINCH);
+    signal(SIGWINCH, TrapScreenSize);
+
+    AllocAll();
+
+    typedef void (*LAYOUT_VIEW_FUNC)(Layer*);
+
+    LAYOUT_VIEW_FUNC LayoutView[2] = {
+		Layout_Header_DualView_Footer,
+		Layout_NoHeader_SingleView_NoFooter
+	};
+    LAYOUT_VIEW_FUNC DynamicView[2] = {
+		Dynamic_Header_DualView_Footer,
+		Dynamic_NoHeader_SingleView_NoFooter
+	};
+
+  while (!BITVAL(Shutdown, 0))
+  {
+    size_t writeSize = 0;
+    do
+    {
+	SCANKEY scan = {.key = 0};
+
+	if ((drawFlag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
+	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
+		if (Shortcut(&scan) == -1) {
+		  if (IsDead(&winList))
+			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
+		  else
+		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+			Shortcut(&scan);
+		}
+		PrintWindowStack();
+
+		break;
+	    }
+	} else {
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	}
+	if (BITVAL(Shm->Proc.Sync, 63)) {
+		// Platform changed, redraw the layout.
+		drawFlag.layout = 1;
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	}
+    } while (!BITVAL(Shutdown, 0) && !drawFlag.daemon && !drawFlag.layout) ;
+
+    if (drawFlag.height & drawFlag.width)
+    {
+	if (drawFlag.clear) {
+		drawFlag.clear  = 0;
+		drawFlag.layout = 1;
+		ResetLayer(dLayer);
+	}
+	if (drawFlag.layout) {
+		drawFlag.layout = 0;
+		ResetLayer(sLayer);
+
+		LayoutView[drawFlag.disposal](sLayer);
+	}
+	if (drawFlag.daemon) {
+
+		DynamicView[drawFlag.disposal](dLayer);
+
+		// Increment the BCLK indicator (skip offline CPU)
+		do {
+			iClock++;
+			if (iClock == Shm->Proc.CPU.Count)
+				iClock = 0;
+		} while (BITVAL(Shm->Cpu[iClock].OffLine, OS) && iClock) ;
+	}
+	// Write buffer to the standard output
+	if ((writeSize = FuseAll(console)) > 0) {
+		fwrite(console, writeSize, 1, stdout);
+		fflush(stdout);
+	}
+    } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		drawSize.width, drawSize.height, MIN_WIDTH, MIN_HEIGHT);
-    }
-    FreeAll();
+  }
+  FreeAll();
 }
 
 int Help(char *appName)
@@ -6479,12 +6495,6 @@ int Help(char *appName)
 	printf(	"usage:\t%s [-option <arguments>]\n"			\
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\
-		"\t\t  arguments:"					\
-			" <left>"					\
-			" <top>"					\
-			" <marginWidth>"				\
-			" <marginHeight>"				\
-		"\n"							\
 		"\t-V\tMonitor Voltage\n"				\
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
@@ -6574,26 +6584,7 @@ int main(int argc, char *argv[])
 		Voltage(Shm);
 		break;
 	case 'd':
-		if (argc == 6) {
-			printf(SCP SCR1 HIDE);
-			TrapSignal();
-			Dashboard(Shm,	atoi(argv[2]),
-					atoi(argv[3]),
-					atoi(argv[4]),
-					atoi(argv[5]) );
-			printf(SHOW SCR0 RCP COLOR(0,9,9));
-		} else if (argc == 2) {
-			printf(SCP SCR1 HIDE);
-			TrapSignal();
-			Dashboard(Shm,	LEADING_LEFT,
-					LEADING_TOP,
-					MARGIN_WIDTH,
-					MARGIN_HEIGHT);
-			printf(SHOW SCR0 RCP COLOR(0,9,9));
-		}
-		else
-			rc = Help(appName);
-		break;
+		// Fallthrough
 	case 't':
 		{
 		printf(SCP SCR1 HIDE);
@@ -6606,7 +6597,7 @@ int main(int argc, char *argv[])
 		tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
 		TrapSignal();
-		Top(Shm);
+		Top(Shm, option);
 
 		tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
