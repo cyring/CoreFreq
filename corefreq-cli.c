@@ -2528,8 +2528,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
-    unsigned int cpu = 0, prevTopFreq = 0, digit[9], iClock = 0, ratioCount = 0;
     unsigned long prevFreeRAM = 0;
+    unsigned int cpu = 0, prevTopFreq = 0, digit[9], iClock = 0, ratioCount = 0;
+    unsigned int idx;
     int prevTaskCount = 0;
 
     CUINT	loadWidth = 0;
@@ -2550,7 +2551,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Coordinate *cTask;
 
-    for (unsigned int idx = 1; idx < MAX_BOOST; idx++)
+    for (idx = 1; idx < MAX_BOOST; idx++)
 	if (Shm->Proc.Boost[idx] != 0) {
 		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {
