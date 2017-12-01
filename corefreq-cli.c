@@ -3645,6 +3645,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_l:
 	{
+	drawFlag.disposal = 0;
 	drawFlag.view = V_CSTATES;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -5918,7 +5919,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT bar0, bar1, margin = loadWidth - 18 - 7 - 2;
 /* PC02 */
-	bar0 = (Shm->Proc.State.PC02 * margin) / 100;
+	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5926,7 +5927,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 		bar0, hBar, bar1, hSpace);
 /* PC03 */
-	bar0 = (Shm->Proc.State.PC03 * margin) / 100;
+	bar0 = Shm->Proc.State.PC03 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5934,7 +5935,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 		bar0, hBar, bar1, hSpace);
 /* PC06 */
-	bar0 = (Shm->Proc.State.PC06 * margin) / 100;
+	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5942,7 +5943,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 		bar0, hBar, bar1, hSpace);
 /* PC07 */
-	bar0 = (Shm->Proc.State.PC07 * margin) / 100;
+	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5950,7 +5951,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 		bar0, hBar, bar1, hSpace);
 /* PC08 */
-	bar0 = (Shm->Proc.State.PC08 * margin) / 100;
+	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5958,7 +5959,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 		bar0, hBar, bar1, hSpace);
 /* PC09 */
-	bar0 = (Shm->Proc.State.PC09 * margin) / 100;
+	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
@@ -5966,7 +5967,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 		bar0, hBar, bar1, hSpace);
 /* PC10 */
-	bar0 = (Shm->Proc.State.PC10 * margin) / 100;
+	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
 
 	sprintf((char *) &LayerAt(layer, code, 5, row++),
