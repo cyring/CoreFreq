@@ -147,12 +147,12 @@ const char lcd[10][3][3] = {
 #define MAX_WIDTH	132
 #define MIN_WIDTH	80
 
-#define LEADING_LEFT	1
-#define LEADING_TOP	1
 #define MARGIN_WIDTH	2
 #define MARGIN_HEIGHT	1
 #define INTER_WIDTH	3
 #define INTER_HEIGHT	(3 + 1)
+#define LEADING_LEFT	(MIN_WIDTH / (MARGIN_WIDTH + (4 * INTER_WIDTH)))
+#define LEADING_TOP	1
 
 char hSpace[] = "        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
@@ -1709,10 +1709,10 @@ typedef union {
 			bg:  7-4,
 			bf:  8-7;
 	};
-} Attribute;
+} ATTRIBUTE;
 
 #define MakeAttr(_fg, _un, _bg, _bf)					\
-	({Attribute _attr={.fg = _fg,.un = _un,.bg = _bg,.bf = _bf}; _attr;})
+	({ATTRIBUTE _attr={.fg = _fg,.un = _un,.bg = _bg,.bf = _bf}; _attr;})
 
 #define HDK	{.fg = BLACK,	.bg = BLACK,	.bf = 1}
 #define HBK	{.fg = BLUE,	.bg = BLACK,	.bf = 1}
@@ -1754,19 +1754,27 @@ typedef union {
 #define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
 #define MAKE_PRINT_DROP		MakeAttr(BLACK, 0, WHITE, 0)
 
+typedef union {
+	unsigned long long	qword;
+	struct {
+	unsigned int	hi, lo;
+	}			dword;
+	unsigned short		word[4];
+} DATA;
+
 typedef unsigned char	ASCII;
 
 #define LayerDeclare(_len)						\
 	struct {							\
 		Coordinate	origin;					\
 		size_t		length;					\
-		Attribute	attr[_len];				\
+		ATTRIBUTE	attr[_len];				\
 		ASCII		code[_len];				\
 	}
 
 typedef struct {
 	ASCII		*code;
-	Attribute	*attr;
+	ATTRIBUTE	*attr;
 	CoordSize	size;
 } Layer;
 
@@ -1779,7 +1787,7 @@ typedef struct {
 
 typedef struct {
 	SCANKEY 	quick;
-	Attribute	*attr;
+	ATTRIBUTE	*attr;
 	ASCII		*item;
 	size_t		length;
 } TCell;
@@ -1811,7 +1819,7 @@ typedef struct _Win {
 	    } key;
 
 	    struct {
-	      Attribute	select,
+	      ATTRIBUTE select,
 			border,
 			title;
 	    } color[2];
@@ -1834,6 +1842,22 @@ typedef struct {
 	Window	*head;
 } WinList;
 
+typedef struct _Card {
+	struct _Card	*next;
+
+	Coordinate	origin;
+	struct {
+		void	(*Layout)(Layer *layer, struct _Card *card);
+		void	(*Draw)(Layer *layer, struct _Card *card);
+	} hook;
+	DATA		data;
+} Card;
+
+typedef struct {
+	Card	*head,
+		*tail;
+} CardList;
+
 typedef void (*TCELLFUNC)(Window*, void*);
 typedef int  (*KEYFUNC)(SCANKEY*, Window*);
 typedef void (*WINFUNC)(Window*);
@@ -1846,7 +1870,7 @@ void HookKeyFunc(KEYFUNC *with, KEYFUNC what) { *with=what; }
 
 void HookWinFunc(WINFUNC *with, WINFUNC what) { *with=what; }
 
-void HookAttrib(Attribute *with, Attribute what) { with->value=what.value; }
+void HookAttrib(ATTRIBUTE *with, ATTRIBUTE what) { with->value=what.value; }
 
 void HookString(REGSTR *with, REGSTR what) { strcpy(*with, what); }
 
@@ -1865,13 +1889,25 @@ void HookPointer(REGPTR *with, REGPTR what)
     __builtin_choose_expr(__builtin_types_compatible_p(			\
 	typeof(win->hook with), typeof(WINFUNC)), HookWinFunc,		\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(Attribute)), HookAttrib,		\
+	typeof(win->hook with), typeof(ATTRIBUTE)), HookAttrib,		\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
 	typeof(win->hook with), typeof(REGSTR)), HookString,		\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
 	typeof(win->hook with), typeof(REGPTR)), HookPointer,		\
     (void)0))))))							\
 	(&(win->hook with), what)					\
+)
+
+typedef void (*CARDFUNC)(Layer*, Card*);
+
+void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }
+
+#define StoreCard(card, with, what)					\
+(									\
+    __builtin_choose_expr(__builtin_types_compatible_p(			\
+	typeof(card->hook with), typeof(CARDFUNC)), HookCardFunc,	\
+    (void)0)							\
+	(&(card->hook with), what)					\
 )
 
 #define LayerAt(layer, plane, col, row)					\
@@ -1921,7 +1957,7 @@ void CreateLayer(Layer *layer, CoordSize size)
 	layer->size.hth = size.hth;
 	size_t len = layer->size.wth * layer->size.hth;
 
-	layer->attr = calloc(len, sizeof(Attribute));
+	layer->attr = calloc(len, sizeof(ATTRIBUTE));
 	layer->code = calloc(len, sizeof(ASCII));
     }
 }
@@ -1929,6 +1965,15 @@ void CreateLayer(Layer *layer, CoordSize size)
 #define ResetLayer(layer)						\
 	memset(layer->attr, 0, layer->size.wth * layer->size.hth);	\
 	memset(layer->code, 0, layer->size.wth * layer->size.hth);
+
+void FillLayerArea(Layer *layer,CUINT col, CUINT row,
+				CUINT width, CUINT height,
+				ASCII *source, ATTRIBUTE attrib)
+{
+	CUINT _row;
+	for (_row = row; _row < row + height; _row++)
+		LayerFillAt(layer, col, _row, width, source, attrib);
+}
 
 void FreeAllTCells(Window *win)
 {
@@ -1944,13 +1989,13 @@ void FreeAllTCells(Window *win)
 	}
 }
 
-void AllocCopyAttr(TCell *cell, Attribute attrib[])
+void AllocCopyAttr(TCell *cell, ATTRIBUTE attrib[])
 {
 	if ((attrib != NULL) && (cell->attr = malloc(cell->length)) != NULL)
 		memcpy(&cell->attr->value, &attrib->value, cell->length);
 }
 
-void AllocFillAttr(TCell *cell, Attribute attrib)
+void AllocFillAttr(TCell *cell, ATTRIBUTE attrib)
 {
 	if ((cell->attr = malloc(cell->length)) != NULL)
 		memset(&cell->attr->value, attrib.value, cell->length);
@@ -1975,9 +2020,9 @@ void AllocCopyItem(TCell *cell, ASCII *item)
 	win->cell[win->dim - 1].length = strlen((char *)item);		\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
-		typeof(attrib), typeof(Attribute[])), AllocCopyAttr,	\
+		typeof(attrib), typeof(ATTRIBUTE[])), AllocCopyAttr,	\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
-		typeof(attrib), typeof(Attribute)), AllocFillAttr,	\
+		typeof(attrib), typeof(ATTRIBUTE)), AllocFillAttr,	\
 	(void)0))							\
 		(&(win->cell[win->dim - 1]), attrib);			\
 									\
@@ -2013,7 +2058,7 @@ Window *CreateWindow(	Layer *layer, unsigned long long id,
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
 
-	    Attribute	select[2] = {
+	    ATTRIBUTE	select[2] = {
 				MAKE_SELECT_UNFOCUS,
 				MAKE_SELECT_FOCUS
 			},
@@ -2102,6 +2147,38 @@ Window *SearchWinListById(unsigned long long id, WinList *list)
 	return(win);
 }
 
+Card *CreateCard(void)
+{
+	Card *card = calloc(1, sizeof(Card));
+	if (card != NULL) {
+		card->next = NULL;
+	}
+	return(card);
+}
+
+void AppendCard(Card *card, CardList *list)
+{
+	if (card != NULL) {
+		if (list->head == NULL) {
+			list->head = list->tail = card;
+		} else {
+			list->tail->next = card;
+			list->tail = card;
+		}
+	}
+}
+
+void DestroyAllCards(CardList *list)
+{
+	Card *card = list->head;
+	while (card != NULL) {
+		Card *next = card->next;
+		free(card);
+		card = next;
+	}
+	list->head = list->tail = NULL;
+}
+
 void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
 {
     if ((win->matrix.select.col == col)
@@ -2155,7 +2232,7 @@ void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
 void ForEachCellPrint(Window *win, WinList *list)
 {
 	CUINT col, row;
-	Attribute border = win->hook.color[(GetFocus(list) == win)].border;
+	ATTRIBUTE border = win->hook.color[(GetFocus(list) == win)].border;
 
 	if (win->lazyComp.rowLen == 0)
 	  for (col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
@@ -2497,7 +2574,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		*dLayer = NULL,
 		*wLayer = NULL,
 		*fuze = NULL;
+
     WinList	winList = {.head = NULL};
+    CardList	cardList = {.head = NULL, .tail = NULL};
 
     struct {
 	struct {
@@ -2736,7 +2815,7 @@ void Top(SHM_STRUCT *Shm, char option)
     {
       Window *wMenu = CreateWindow(wLayer, id, 3, 11, 3, 0);
       if (wMenu != NULL) {
-	Attribute sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
+	ATTRIBUTE sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
 		voidAttr = {.value = 0}, gateAttr[24], ctrlAttr[24],
 		stopAttr[24] = {
 			HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,
@@ -3001,7 +3080,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		struct SBOX {
 			unsigned long long key;
 			ASCII item[MIN_WIDTH];
-			Attribute attr;
+			ATTRIBUTE attr;
 		} btn[];
 	} *pBox = NULL;
 	int cnt = 0;
@@ -3009,7 +3088,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	va_list ap;
 	va_start(ap, button);
 	ASCII *item = button;
-	Attribute attr = va_arg(ap, Attribute);
+	ATTRIBUTE attr = va_arg(ap, ATTRIBUTE);
 	unsigned long long aKey = va_arg(ap, unsigned long long);
 	do {
 	    if (item != NULL) {
@@ -3024,7 +3103,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			pBox->cnt = cnt;
 		}
 		item = va_arg(ap, ASCII*);
-		attr = va_arg(ap, Attribute);
+		attr = va_arg(ap, ATTRIBUTE);
 		aKey = va_arg(ap, unsigned long long);
 	    }
 	} while (item != NULL) ;
@@ -3484,7 +3563,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 		break;
 	    case 1:
-		MIN_HEIGHT = LEADING_TOP + MARGIN_HEIGHT + INTER_HEIGHT;
+		MIN_HEIGHT = 2 * (LEADING_TOP + MARGIN_HEIGHT + INTER_HEIGHT);
 		break;
 	    }
 
@@ -3505,7 +3584,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
   int Shortcut(SCANKEY *scan)
   {
-	Attribute stateAttr[2] = {
+	ATTRIBUTE stateAttr[2] = {
 		MakeAttr(WHITE, 0, BLACK, 0),
 		MakeAttr(CYAN, 0, BLACK, 1)
 	},
@@ -4956,7 +5035,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			MakeAttr(WHITE, 0, BLACK, 0));
 	row++;
 
-	Attribute hPCnnAttr[MAX_WIDTH] = {
+	ATTRIBUTE hPCnnAttr[MAX_WIDTH] = {
 		LWK,LWK,LWK,LWK,HDK,					\
 		HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,			\
 		HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,			\
@@ -5087,7 +5166,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 
 	struct {
-		Attribute attr[21];
+		ATTRIBUTE attr[21];
 		ASCII code[21];
 	} hSort[SORTBYCOUNT] = {
 	  {
@@ -5164,7 +5243,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 
 	struct {
-		Attribute attr[15];
+		ATTRIBUTE attr[15];
 		ASCII code[15];
 	} hReverse[2] = {
 	  {
@@ -5205,7 +5284,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 
 	struct {
-		Attribute attr[3];
+		ATTRIBUTE attr[3];
 		ASCII code[3];
 	} hTaskVal[2] = {
 		{
@@ -5328,12 +5407,12 @@ void Top(SHM_STRUCT *Shm, char option)
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
 	};
 
-	const Attribute Pwr[] = {
+	const ATTRIBUTE Pwr[] = {
 		MakeAttr(BLACK, 0, BLACK, 1),
 		MakeAttr(GREEN, 0, BLACK, 1),
 		MakeAttr(BLUE,  0, BLACK, 1)
 	};
-	const struct { ASCII *code; Attribute attr; } TSC[] = {
+	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
 		{(ASCII *) "  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1)},
 		{(ASCII *) "TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1)},
 		{(ASCII *) "TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)}
@@ -5375,13 +5454,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-		const Attribute TM1[] = {
+		const ATTRIBUTE TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
 			MakeAttr(BLUE,  0, BLACK, 1),
 			MakeAttr(WHITE, 0, BLACK, 1),
 			MakeAttr(GREEN, 0, BLACK, 1)
 		};
-		const Attribute TM2[] = {
+		const ATTRIBUTE TM2[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
 			MakeAttr(BLUE,  0, BLACK, 1),
 			MakeAttr(WHITE, 0, BLACK, 1),
@@ -5628,8 +5707,9 @@ void Top(SHM_STRUCT *Shm, char option)
     CUINT Draw_Monitor_Frequency(Layer *layer, CUINT row)
     {
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	size_t len;
 
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),
+	len = sprintf(buffer,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -5645,8 +5725,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		Shm->Cpu[cpu].PowerThermal.Limit[0],
 		Flop->Thermal.Temp,
 		Shm->Cpu[cpu].PowerThermal.Limit[1]);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
-	Attribute warning ={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+	ATTRIBUTE warning ={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
 
 	if (Flop->Thermal.Temp <=
 		Shm->Cpu[cpu].PowerThermal.Limit[0])
@@ -5669,42 +5750,45 @@ void Top(SHM_STRUCT *Shm, char option)
 #define Draw_Monitor_Instructions(layer, row)				\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
-									\
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),		\
-		"%17.6f" "/s"						\
-		"%17.6f" "/c"						\
-		"%17.6f" "/i"						\
-		"%18llu",						\
-		Flop->State.IPS,					\
-		Flop->State.IPC,					\
-		Flop->State.CPI,					\
-		Flop->Delta.INST);					\
+	size_t len;							\
+	len = sprintf(buffer,						\
+			"%17.6f" "/s"					\
+			"%17.6f" "/c"					\
+			"%17.6f" "/i"					\
+			"%18llu",					\
+			Flop->State.IPS,				\
+			Flop->State.IPC,				\
+			Flop->State.CPI,				\
+			Flop->Delta.INST);				\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
 	row;								\
     })
 
 #define Draw_Monitor_Cycles(layer, row)					\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
-									\
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),		\
-		"%18llu%18llu%18llu%18llu",				\
-		Flop->Delta.C0.UCC,					\
-		Flop->Delta.C0.URC,					\
-		Flop->Delta.C1,						\
-		Flop->Delta.TSC);					\
+	size_t len;							\
+	len = sprintf(buffer,						\
+			"%18llu%18llu%18llu%18llu",			\
+			Flop->Delta.C0.UCC,				\
+			Flop->Delta.C0.URC,				\
+			Flop->Delta.C1,					\
+			Flop->Delta.TSC);				\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
 	row;								\
     })
 
 #define Draw_Monitor_CStates(layer, row)				\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
-									\
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),		\
-		"%18llu%18llu%18llu%18llu",				\
-		Flop->Delta.C1,						\
-		Flop->Delta.C3,						\
-		Flop->Delta.C6,						\
-		Flop->Delta.C7);					\
+	size_t len;							\
+	len = sprintf(buffer,						\
+			"%18llu%18llu%18llu%18llu",			\
+			Flop->Delta.C1,					\
+			Flop->Delta.C3,					\
+			Flop->Delta.C6,					\
+			Flop->Delta.C7);				\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
 	row;								\
     })
 
@@ -5713,13 +5797,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),
-		"%7.2f", Flop->Relative.Freq);
+	len = sprintf(buffer, "%7.2f", Flop->Relative.Freq);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 		CSINT pos;
 		char symbol;
-		Attribute runColor[] = {
+		ATTRIBUTE runColor[] = {
 			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
 			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
 			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
@@ -5860,37 +5944,44 @@ void Top(SHM_STRUCT *Shm, char option)
 #define Draw_Monitor_Interrupts(layer, row)				\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
+	size_t len;							\
 									\
-	sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),		\
-		"%10u", Flop->Counter.SMI);				\
+	len = sprintf(buffer, "%10u", Flop->Counter.SMI);		\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
 									\
-	if (Shm->Registration.nmi)					\
-		sprintf((char *) &LayerAt(layer,code,(LOAD_LEAD+24),row),\
-			"%10u%10u%10u%10u",				\
-			Flop->Counter.NMI.LOCAL,			\
-			Flop->Counter.NMI.UNKNOWN,			\
-			Flop->Counter.NMI.PCISERR,			\
-			Flop->Counter.NMI.IOCHECK);			\
+	if (Shm->Registration.nmi) {					\
+		len = sprintf(buffer,					\
+				"%10u%10u%10u%10u",			\
+				Flop->Counter.NMI.LOCAL,		\
+				Flop->Counter.NMI.UNKNOWN,		\
+				Flop->Counter.NMI.PCISERR,		\
+				Flop->Counter.NMI.IOCHECK);		\
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD+24),row),buffer,len);\
+	}								\
 	row;								\
     })
 
 #define Draw_Monitor_Voltage(layer, row)				\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
+	size_t len;							\
 									\
-		sprintf((char *) &LayerAt(layer, code, LOAD_LEAD, row),	\
+	len = sprintf(buffer,						\
 			"%7.2f "					\
 			"%7d   %5.4f",					\
 			Flop->Relative.Freq,				\
 			Flop->Voltage.VID,				\
 			Flop->Voltage.Vcore);				\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
 	row;								\
     })
 
 #define Draw_AltMonitor_Frequency(layer, row)				\
     ({									\
-	if (!drawFlag.avgOrPC)						\
-		sprintf((char *) &LayerAt(layer, code, 20, row),	\
+	size_t len;							\
+									\
+	if (!drawFlag.avgOrPC) {					\
+		len = sprintf(buffer,					\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",	\
 			100.f * Shm->Proc.Avg.Turbo,			\
@@ -5899,8 +5990,9 @@ void Top(SHM_STRUCT *Shm, char option)
 			100.f * Shm->Proc.Avg.C3,			\
 			100.f * Shm->Proc.Avg.C6,			\
 			100.f * Shm->Proc.Avg.C7);			\
-	else								\
-		sprintf((char *) &LayerAt(layer, code, 11, row),	\
+		memcpy(&LayerAt(layer, code, 20, row), buffer, len);	\
+	} else {							\
+		len = sprintf(buffer,					\
 			"  c2:%-5.1f" "  c3:%-5.1f" "  c6:%-5.1f"	\
 			"  c7:%-5.1f" "  c8:%-5.1f" "  c9:%-5.1f"	\
 			" c10:%-5.1f",					\
@@ -5911,6 +6003,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			100.f * Shm->Proc.State.PC08,			\
 			100.f * Shm->Proc.State.PC09,			\
 			100.f * Shm->Proc.State.PC10);			\
+		memcpy(&LayerAt(layer, code, 11, row), buffer, len);	\
+	}								\
 	row;								\
     })
 
@@ -5918,67 +6012,68 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT bar0, bar1, margin = loadWidth - 18 - 7 - 2;
+	size_t len;
 /* PC02 */
 	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC03 */
 	bar0 = Shm->Proc.State.PC03 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC06 */
 	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC07 */
 	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC08 */
 	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC09 */
 	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* PC10 */
 	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
 
-	sprintf((char *) &LayerAt(layer, code, 5, row++),
-		"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-		Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
-		bar0, hBar, bar1, hSpace);
+	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+			bar0, hBar, bar1, hSpace);
+	memcpy(&LayerAt(layer, code, 5, row++), buffer, len);
 /* TSC & UNCORE */
-	sprintf((char *) &LayerAt(layer, code, 5, row),
-		"%18llu", Pkg->Delta.PTSC);
-	sprintf((char *) &LayerAt(layer, code, 50, row++),
-		"UNCORE:%18llu", Pkg->Uncore.FC0);
+	len = sprintf(buffer, "%18llu", Pkg->Delta.PTSC);
+	memcpy(&LayerAt(layer, code, 5, row), buffer, len);
+	len = sprintf(buffer, "UNCORE:%18llu", Pkg->Uncore.FC0);
+	memcpy(&LayerAt(layer, code, 50, row++), buffer, len);
 
 	return(row);
     }
@@ -6042,11 +6137,11 @@ void Top(SHM_STRUCT *Shm, char option)
 
 		LayerAt(layer, attr, 1, row) = \
 		    LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
-		    MakeAttr(CYAN, 0, BLACK, 0);
+			MakeAttr(CYAN, 0, BLACK, 0);
 
 		LayerAt(layer, attr, 2, row) = \
 		    LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count)) = \
-		    MakeAttr(CYAN, 0, BLACK, 0);
+			MakeAttr(CYAN, 0, BLACK, 0);
 
 		switch (drawFlag.view) {
 		default:
@@ -6075,11 +6170,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	    } else {
 		LayerAt(layer, attr, 1, row) = \
 		    LayerAt(layer, attr, 1, (1 + row + Shm->Proc.CPU.Count)) = \
-		    MakeAttr(BLUE, 0, BLACK, 0);
+			MakeAttr(BLUE, 0, BLACK, 0);
 
 		LayerAt(layer, attr, 2, row) = \
 		    LayerAt(layer, attr, 2, (1 + row + Shm->Proc.CPU.Count)) = \
-		    MakeAttr(BLUE, 0, BLACK, 0);
+			MakeAttr(BLUE, 0, BLACK, 0);
 
 		LayerFillAt(layer, LOAD_LEAD, row,
 			(drawSize.width - LOAD_LEAD), hSpace,
@@ -6141,12 +6236,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 
 	row = Layout_Footer(layer, row, &processorHot);
-
-	// Clear garbage in bottom screen
-	while (++row < drawSize.height)
-		LayerFillAt(	layer, 0, row,
-				drawSize.width, hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
     }
 
     void Dynamic_Header_DualView_Footer(Layer *layer)
@@ -6211,103 +6300,233 @@ void Top(SHM_STRUCT *Shm, char option)
 	row = Draw_Footer(layer, row);
     }
 
+    void Layout_Card_Core(Layer *layer, Card* card)
+    {
+	unsigned int _cpu = card->data.dword.lo;
+
+	if (!BITVAL(Shm->Cpu[_cpu].OffLine, HW)) {
+	    Dec2Digit(_cpu, digit);
+	    if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
+	    {
+		LayerDeclare(4 * INTER_WIDTH) hOnLine = {
+			.origin = {
+				.col = card->origin.col,
+				.row = (card->origin.row + 3)
+			},
+			.length = (4 * INTER_WIDTH),
+			.attr={HDK,HDK,HDK,LCK,LCK,HDK,HDK,HDK,HDK,HDK,HDK,HDK},
+			.code={'[',' ','#',' ',' ',' ',' ',' ',' ','C',' ',']'}
+		};
+
+		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
+				hOnLine.length, hOnLine.attr, hOnLine.code);
+	    } else {
+		LayerDeclare(4 * INTER_WIDTH) hOffLine = {
+			.origin = {
+				.col = card->origin.col,
+				.row = (card->origin.row + 3)
+			},
+			.length = (4 * INTER_WIDTH),
+			.attr={HDK,HDK,HDK,LBK,LBK,HDK,HDK,LWK,LWK,LWK,HDK,HDK},
+			.code={'[',' ','#',' ',' ',' ',' ','O','F','F',' ',']'}
+		};
+
+		card->data.dword.hi = 0x010;
+
+		LayerFillAt(layer, card->origin.col, (card->origin.row + 1), \
+		(4 * INTER_WIDTH), " _  _  _  _ ", MakeAttr(BLACK,0,BLACK,1));
+
+		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row, \
+				hOffLine.length, hOffLine.attr, hOffLine.code);
+	    }
+	    LayerAt(layer, code,
+		(card->origin.col + 3),			\
+		(card->origin.row + 3)) = digit[7] + '0';
+
+	    LayerAt(layer, code,			\
+		(card->origin.col + 4),			\
+		(card->origin.row + 3)) = digit[8] + '0';
+	}
+    }
+
+    void Layout_Card_TSC(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hTSC = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HDK,LCK,LCK,LCK,HDK,HDK,LWK,LWK,LWK,HDK,HDK},
+		.code={'[',' ','B','S','P',' ',' ','T','S','C',' ',']'}
+	};
+	LayerCopyAt(layer, hTSC.origin.col, hTSC.origin.row,	\
+			hTSC.length, hTSC.attr, hTSC.code);
+    }
+
+    void Layout_Card_Uncore(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hUncore = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK},
+		.code={'[',' ',' ','U','N','C','O','R','E',' ',' ',']'}
+	};
+	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,	\
+			hUncore.length, hUncore.attr, hUncore.code);
+    }
+
+#define Layout_Dashboard(layer)						\
+    ({									\
+	CUINT leadingLeft = LEADING_LEFT;				\
+	CUINT leadingTop = LEADING_TOP;					\
+	CUINT marginWidth = MARGIN_WIDTH + (4 * INTER_WIDTH);		\
+	CUINT marginHeight = MARGIN_HEIGHT + INTER_HEIGHT;		\
+	CUINT X = leadingLeft, Y = leadingTop;				\
+	const CUINT	rightEdge = drawSize.width - marginWidth,	\
+			bottomEdge = drawSize.height - leadingTop;	\
+									\
+	unsigned int MoveCursorXY(void)					\
+	{								\
+		X += marginWidth;					\
+		if (X > rightEdge) {					\
+			X = leadingLeft;				\
+			Y += marginHeight;				\
+		}							\
+		if (Y > bottomEdge) {					\
+			return(0x001);					\
+		}							\
+		return(0x000);						\
+	}								\
+									\
+	Card *walker = cardList.head;					\
+	while (walker != NULL) {					\
+		walker->origin.col = X;					\
+		walker->origin.row = Y;					\
+		if ((walker->data.dword.hi = MoveCursorXY()) == 0)	\
+			walker->hook.Layout(layer, walker);		\
+		walker = walker->next;					\
+	}								\
+    })
+
+  void Draw_Card_Core(Layer *layer, Card* card)
+  {
+    if (card->data.dword.hi == 0x000) {
+	unsigned int _cpu = card->data.dword.lo;
+	struct FLIP_FLOP *Flop=&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
+	ATTRIBUTE warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+
+	PrintLCD(layer, card->origin.col, card->origin.row,
+		(unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
+
+	if (Flop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
+		warning = MakeAttr(BLUE, 0, BLACK, 1);
+	} else if (Flop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
+		warning = MakeAttr(YELLOW, 0, BLACK, 0);
+	}
+	if (Flop->Thermal.Trip) {
+		warning = MakeAttr(RED, 0, BLACK, 1);
+	}
+	Dec2Digit(Flop->Thermal.Temp, digit);
+
+	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
+	LayerAt(layer, attr, (card->origin.col + 7), (card->origin.row + 3)) = \
+	LayerAt(layer, attr, (card->origin.col + 8), (card->origin.row + 3)) = \
+									warning;
+
+	LayerAt(layer, code, (card->origin.col + 6), (card->origin.row + 3)) = \
+					digit[6] ? digit[6] + '0' : 0x20;
+
+	LayerAt(layer, code, (card->origin.col + 7), (card->origin.row + 3)) = \
+				(digit[6] | digit[7]) ? digit[7] + '0' : 0x20;
+
+	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
+								digit[8] + '0';
+    }
+    else if (card->data.dword.hi == 0x010) {
+	CUINT row;
+
+	card->data.dword.hi = 0x100;
+
+      for (row = card->origin.row; row < card->origin.row + 4; row++) {
+	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
+	memset(&LayerAt(layer, code, card->origin.col, row), 0, 4*INTER_WIDTH);
+      }
+    }
+  }
+
+    void Draw_Card_TSC(Layer *layer, Card* card)
+    {
+	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	PrintLCD(layer, card->origin.col, card->origin.row,
+		(unsigned int) Pkg->Delta.PTSC / 1000000, 0);
+    }
+
+    void Draw_Card_Uncore(Layer *layer, Card* card)
+    {
+	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	PrintLCD(layer, card->origin.col, card->origin.row,
+		(unsigned int) Pkg->Uncore.FC0 / 1000000, 0);
+    }
+
+#define Draw_Dashboard(layer)					\
+    ({								\
+	Card *walker = cardList.head;				\
+	while (walker != NULL) {				\
+		walker->hook.Draw(layer, walker);		\
+		walker = walker->next;				\
+	}							\
+    })
+
+    void AllocDashboard(void)
+    {
+	Card *card = NULL;
+	for(cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, 0); cpu++)
+	{
+		if ((card = CreateCard()) != NULL) {
+			card->data.dword.lo = cpu;
+			card->data.dword.hi = 0x000;
+
+			AppendCard(card, &cardList);
+			StoreCard(card, .Layout, Layout_Card_Core);
+			StoreCard(card, .Draw, Draw_Card_Core);
+		}
+	}
+	if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_TSC);
+		StoreCard(card, .Draw, Draw_Card_TSC);
+	}
+	if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_Uncore);
+		StoreCard(card, .Draw, Draw_Card_Uncore);
+	}
+    }
+
     void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
     {
-	CUINT row;
-	for (row = 0; row < drawSize.height; row++)
-		LayerFillAt(	layer, 0, row,
-				drawSize.width, hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
+	Layout_Dashboard(layer);
     }
 
     void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
     {
-	CUINT leadingLeft = LEADING_LEFT;
-	CUINT leadingTop = LEADING_TOP;
-	CUINT marginWidth = MARGIN_WIDTH + (4 * INTER_WIDTH);
-	CUINT marginHeight = MARGIN_HEIGHT + INTER_HEIGHT;
-	CUINT X = leadingLeft, Y = leadingTop;
-	const CUINT rightEdge = drawSize.width - marginWidth + INTER_WIDTH,
-			bottomEdge = drawSize.height - marginHeight;
-
-	int MoveCursorXY(int endline)
-	{
-		if (endline == 0) {
-			X += marginWidth;
-		} else {
-			X = rightEdge;
-		}
-		if (X >= rightEdge) {
-			X = leadingLeft;
-			Y += marginHeight;
-		}
-		if (Y > bottomEdge) {
-			return(-1);
-		}
-		return(0);
-	}
-
-    for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, 0); cpu++)
-    {
-	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
-	{
-	  struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-	    {
-		Attribute warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
-		if (Flop->Thermal.Temp <=
-			Shm->Cpu[cpu].PowerThermal.Limit[0]) {
-				warning = MakeAttr(BLUE, 0, BLACK, 1);
-		} else if (Flop->Thermal.Temp >=
-			    Shm->Cpu[cpu].PowerThermal.Limit[1]) {
-				warning = MakeAttr(YELLOW, 0, BLACK, 0);
-		}
-		if (Flop->Thermal.Trip) {
-			warning = MakeAttr(RED, 0, BLACK, 1);
-		}
-		PrintLCD(layer, X, Y,
-		    (unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
-
-		LayerAt(layer, attr, (X + 5), (Y + 3)) =	\
-		LayerAt(layer, attr, (X + 6), (Y + 3)) =	\
-		LayerAt(layer, attr, (X + 7), (Y + 3)) =	\
-		LayerAt(layer, attr, (X + 8), (Y + 3)) = warning;
-
-		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
-			"[ #%-2u%4uC ]", cpu, Flop->Thermal.Temp);
-	    } else {
-		sprintf((char *) &LayerAt(layer, code, X, (Y + 1)),
-			"%s", "_  _  _  _");
-		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
-			"[ #%-2u  OFF ]", cpu);
-	    }
-	    if (MoveCursorXY(0) == -1)
-		break;
-	}
-    }
-	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-
-	if (MoveCursorXY(1) == 0) {
-		PrintLCD(layer, X, Y,
-			(unsigned int) Pkg->Delta.PTSC / 1000000, 0);
-
-		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
-			"%s", "[ BSP  TSC ]");
-	}
-	if (MoveCursorXY(0) == 0) {
-		PrintLCD(layer, X, Y,
-		    (unsigned int) Pkg->Uncore.FC0 / 1000000, 0);
-
-		sprintf((char *) &LayerAt(layer, code, X, (Y + 3)),
-			"%s", "[  UNCORE  ]");
-	}
+	Draw_Dashboard(layer);
     }
 
     size_t FuseAll(char stream[])
     {
 	unsigned int sdx = 0;
-	Attribute attr = {.value = 0};
+	ATTRIBUTE attr = {.value = 0};
 	CUINT _col, _row;
 
 	for (_row = 0; _row < drawSize.height; _row++)
@@ -6322,7 +6541,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	  for (_col = 0; _col < drawSize.width; _col++)
 	  {
 	    int _idx = _col + _wth;
-	    Attribute	*fa =   &fuze->attr[_idx],
+	    ATTRIBUTE	*fa =   &fuze->attr[_idx],
 			*sa = &sLayer->attr[_idx],
 			*da = &dLayer->attr[_idx],
 			*wa = &wLayer->attr[_idx];
@@ -6410,6 +6629,7 @@ void Top(SHM_STRUCT *Shm, char option)
     signal(SIGWINCH, TrapScreenSize);
 
     AllocAll();
+    AllocDashboard();
 
     typedef void (*LAYOUT_VIEW_FUNC)(Layer*);
 
@@ -6462,6 +6682,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (drawFlag.layout) {
 		drawFlag.layout = 0;
 		ResetLayer(sLayer);
+		FillLayerArea(sLayer, 0, 0, drawSize.width, drawSize.height,
+				(ASCII*) hSpace, MakeAttr(BLACK, 0, BLACK, 1));
 
 		LayoutView[drawFlag.disposal](sLayer);
 	}
@@ -6486,6 +6708,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		drawSize.width, drawSize.height, MIN_WIDTH, MIN_HEIGHT);
   }
   FreeAll();
+  DestroyAllCards(&cardList);
 }
 
 int Help(char *appName)
