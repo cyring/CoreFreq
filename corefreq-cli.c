@@ -60,14 +60,16 @@ void TrapSignal(void)
 #define CUH	"\033[H"
 #define CUP(col, row) "\033["#row";"#col"H"
 
-#define BLACK	0
-#define RED	1
-#define GREEN	2
-#define YELLOW	3
-#define BLUE	4
-#define MAGENTA	5
-#define CYAN	6
-#define WHITE	7
+enum PALETTE {
+	BLACK,
+	RED,
+	GREEN,
+	YELLOW,
+	BLUE,
+	MAGENTA,
+	CYAN,
+	WHITE,
+};
 
 #define _COLOR(_mod, _fg, _bg) "\033["#_mod";3"#_fg";4"#_bg"m"
 #define COLOR(mod, fg, bg) _COLOR(mod, fg, bg)
@@ -2503,28 +2505,24 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
     ratioCount++;
 
-    #define EraseTCell_Menu(win)					\
-    (									\
-	{								\
-	    CoordShift shift = {					\
+#define EraseTCell_Menu(win)						\
+({									\
+	CoordShift shift = {						\
 		.horz = win->matrix.scroll.horz + win->matrix.select.col,\
 		.vert = win->matrix.scroll.vert + row			\
-	    };								\
-	    Coordinate cell = {						\
+	};								\
+	Coordinate cell = {						\
 		.col =	(win->matrix.origin.col				\
 			+ (win->matrix.select.col			\
 			* TCellAt(win, shift.horz, shift.vert).length)),\
 			(win->matrix.origin.row + row),			\
 		.row =	win->matrix.origin.row + row			\
-	    };								\
-		memset(&LayerAt(win->layer, attr, cell.col, cell.row),	\
-			0,						\
-			TCellAt(win, shift.horz, shift.vert).length);	\
-		memset(&LayerAt(win->layer, code, cell.col, cell.row),	\
-			0,						\
-			TCellAt(win, shift.horz, shift.vert).length);	\
-	}								\
-    )
+	};								\
+	memset(&LayerAt(win->layer, attr, cell.col, cell.row), 0,	\
+		TCellAt(win, shift.horz, shift.vert).length);		\
+	memset(&LayerAt(win->layer, code, cell.col, cell.row), 0,	\
+		TCellAt(win, shift.horz, shift.vert).length);		\
+})
 
     void ForEachCellPrint_Menu(Window *win, void *plist)
     {
@@ -4287,18 +4285,20 @@ void Top(SHM_STRUCT *Shm, char option)
   }
 
     void PrintLCD(Layer *layer, CUINT col, CUINT row,
-		unsigned int relativeFreq, double relativeRatio)
+		unsigned int value1, double value2,
+		double threshold1, double threshold2,
+		enum PALETTE _low, enum PALETTE _medium, enum PALETTE _high)
     {
 	unsigned int lcdColor, j = 4;
 
-	Dec2Digit(relativeFreq, digit);
+	Dec2Digit(value1, digit);
 
-	if (relativeRatio > medianRatio)
-		lcdColor = RED;
-	else if (relativeRatio > minRatio)
-		lcdColor = YELLOW;
+	if (value2 > threshold2)
+		lcdColor = _high;
+	else if (value2 > threshold1)
+		lcdColor = _medium;
 	else
-		lcdColor = GREEN;
+		lcdColor = _low;
 
 	do {
 		int offset = col + (4 - j) * 3;
@@ -4315,6 +4315,28 @@ void Top(SHM_STRUCT *Shm, char option)
 		j--;
 	} while (j > 0) ;
     }
+
+#define Clock2LCD(layer, col, row, value1, value2)			\
+		PrintLCD(layer, col, row,				\
+			(unsigned int) value1, value2,			\
+			minRatio, medianRatio,				\
+			GREEN, YELLOW, RED)
+
+#define Counter2LCD(layer, col, row, value1, value2)			\
+	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
+			0, 1, BLACK, BLUE, WHITE)
+
+#define Load2LCD(layer, col, row, value1, value2)			\
+	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
+			33.0, 66.0, BLUE, WHITE ,CYAN)
+
+#define Idle2LCD(layer, col, row, value1, value2)			\
+	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
+			33.0, 66.0, WHITE, CYAN ,BLUE)
+
+#define Free2LCD(layer, col, row, value1, value2)			\
+	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
+			50.0, 85.0, RED, WHITE ,BLUE)
 
     void PrintTaskMemory(Layer *layer, CUINT row,
 			int taskCount,
@@ -4336,8 +4358,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	// Reset the Top Frequency
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-	PrintLCD(layer, 0, row,
-		(unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
+	Clock2LCD(layer, 0, row, Flop->Relative.Freq, Flop->Relative.Ratio);
 
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
@@ -5994,7 +6015,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (prevTopFreq != relativeTopFreq) {
 		prevTopFreq = relativeTopFreq;
 
-		PrintLCD(layer, 0, row, relativeTopFreq, Flop->Relative.Ratio);
+		Clock2LCD(layer, 0, row, relativeTopFreq, Flop->Relative.Ratio);
 	}
 	// Print the focus BCLK
 	row += 2;
@@ -6237,19 +6258,19 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
     }
 
-    void Layout_Card_TSC(Layer *layer, Card* card)
+    void Layout_Card_CLK(Layer *layer, Card* card)
     {
-	LayerDeclare(4 * INTER_WIDTH) hTSC = {
+	LayerDeclare(4 * INTER_WIDTH) hCLK = {
 		.origin = {
 			.col = card->origin.col,
 			.row = (card->origin.row + 3)
 		},
 		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HDK,LCK,LCK,LCK,HDK,HDK,LWK,LWK,LWK,HDK,HDK},
-		.code={'[',' ','B','S','P',' ',' ','T','S','C',' ',']'}
+		.attr={HDK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK},
+		.code={'[',' ','0','0','0','.','0',' ','M','H','z',']'}
 	};
-	LayerCopyAt(layer, hTSC.origin.col, hTSC.origin.row,	\
-			hTSC.length, hTSC.attr, hTSC.code);
+	LayerCopyAt(layer, hCLK.origin.col, hCLK.origin.row,	\
+			hCLK.length, hCLK.attr, hCLK.code);
     }
 
     void Layout_Card_Uncore(Layer *layer, Card* card)
@@ -6265,6 +6286,55 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,	\
 			hUncore.length, hUncore.attr, hUncore.code);
+    }
+
+    void Layout_Card_Load(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hLoad = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK},
+		.code={'[',' ',' ','%','L','O','A','D',' ',' ',' ',']'}
+	};
+	LayerCopyAt(layer, hLoad.origin.col, hLoad.origin.row,	\
+			hLoad.length, hLoad.attr, hLoad.code);
+    }
+
+    void Layout_Card_Idle(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hIdle = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK},
+		.code={'[',' ',' ','%','I','D','L','E',' ',' ',' ',']'}
+	};
+	LayerCopyAt(layer, hIdle.origin.col, hIdle.origin.row,	\
+			hIdle.length, hIdle.attr, hIdle.code);
+    }
+
+    void Layout_Card_System(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hSystem = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HDK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
+		.code={'[',' ','T',':',' ',' ',' ',' ',' ',' ',' ',']'}
+	};
+
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+		LayerCopyAt(layer, hSystem.origin.col, hSystem.origin.row, \
+				hSystem.length, hSystem.attr, hSystem.code);
+	else
+		card->data.dword.hi = 0x010;
     }
 
 #define Layout_Dashboard(layer)						\
@@ -6307,8 +6377,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	struct FLIP_FLOP *Flop=&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
 	ATTRIBUTE warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
 
-	PrintLCD(layer, card->origin.col, card->origin.row,
-		(unsigned int) Flop->Relative.Freq, Flop->Relative.Ratio);
+	Clock2LCD(layer, card->origin.col, card->origin.row,
+			Flop->Relative.Freq, Flop->Relative.Ratio);
 
 	if (Flop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
 		warning = MakeAttr(BLUE, 0, BLACK, 1);
@@ -6346,21 +6416,67 @@ void Top(SHM_STRUCT *Shm, char option)
     }
   }
 
-    void Draw_Card_TSC(Layer *layer, Card* card)
+    void Draw_Card_CLK(Layer *layer, Card* card)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	unsigned long long clock = Pkg->Delta.PTSC / 1000000;
 
-	PrintLCD(layer, card->origin.col, card->origin.row,
-		(unsigned int) Pkg->Delta.PTSC / 1000000, 0);
+	Counter2LCD(layer, card->origin.col, card->origin.row, clock, clock);
+
+	sprintf(buffer, "%5.1f", Shm->Cpu[0].Clock.Hz / 1000000.0);
+
+	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
+		buffer, 5);
     }
 
     void Draw_Card_Uncore(Layer *layer, Card* card)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	unsigned long long uncore = Pkg->Uncore.FC0 / 1000000;
 
-	PrintLCD(layer, card->origin.col, card->origin.row,
-		(unsigned int) Pkg->Uncore.FC0 / 1000000, 0);
+	Counter2LCD(layer, card->origin.col, card->origin.row, uncore, uncore);
     }
+
+    void Draw_Card_Load(Layer *layer, Card* card)
+    {
+	double percent = 100.f * Shm->Proc.Avg.C0;
+
+	Load2LCD(layer, card->origin.col, card->origin.row, percent,percent);
+    }
+
+    void Draw_Card_Idle(Layer *layer, Card* card)
+    {
+	double percent = 100.f * (Shm->Proc.Avg.C1
+				+ Shm->Proc.Avg.C3
+				+ Shm->Proc.Avg.C6
+				+ Shm->Proc.Avg.C7);
+
+	Idle2LCD(layer, card->origin.col, card->origin.row, percent,percent);
+    }
+
+  void Draw_Card_System(Layer *layer, Card* card)
+  {
+    if (card->data.dword.hi == 0x000) {
+	double percent = (100.f * Shm->SysGate.memInfo.freeram)
+			/ Shm->SysGate.memInfo.totalram;
+
+	Free2LCD(layer, card->origin.col, card->origin.row, percent, percent);
+
+	sprintf(buffer, "%6u", Shm->SysGate.taskCount);
+	memcpy(&LayerAt(layer, code, (card->origin.col+4),(card->origin.row+3)),
+		buffer,6);
+    }
+    else if (card->data.dword.hi == 0x010) {
+	CUINT row;
+
+	card->data.dword.hi = 0x100;
+
+      for (row = card->origin.row; row < card->origin.row + 4; row++) {
+	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
+	memset(&LayerAt(layer, code, card->origin.col, row), 0, 4*INTER_WIDTH);
+      }
+    }
+  }
 
 #define Draw_Dashboard(layer)					\
     ({								\
@@ -6389,8 +6505,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		card->data.qword = 0;
 
 		AppendCard(card, &cardList);
-		StoreCard(card, .Layout, Layout_Card_TSC);
-		StoreCard(card, .Draw, Draw_Card_TSC);
+		StoreCard(card, .Layout, Layout_Card_CLK);
+		StoreCard(card, .Draw, Draw_Card_CLK);
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.qword = 0;
@@ -6398,6 +6514,28 @@ void Top(SHM_STRUCT *Shm, char option)
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Uncore);
 		StoreCard(card, .Draw, Draw_Card_Uncore);
+	}
+	if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_Load);
+		StoreCard(card, .Draw, Draw_Card_Load);
+	}
+	if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_Idle);
+		StoreCard(card, .Draw, Draw_Card_Idle);
+	}
+	if ((card = CreateCard()) != NULL) {
+		card->data.dword.lo = 0;
+		card->data.dword.hi = 0x000;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_System);
+		StoreCard(card, .Draw, Draw_Card_System);
 	}
     }
 
