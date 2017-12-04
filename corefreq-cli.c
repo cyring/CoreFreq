@@ -503,257 +503,118 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	free(str);
 }
 
-void SysInfoISA(SHM_STRUCT *Shm,
-		CUINT width,
-		void(*OutFunc)(unsigned long long key, char *output))
+void SysInfoISA(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
-	size_t	len = 0;
-	char	*row[2] = {malloc(width + 1), malloc(width + 1)},
-		*str = malloc(width + 1),
-		*pad = NULL;
+	unsigned int nl = 4;
+	char line[18];
+
+	void printv(char *fmt, ...)
+	{
+		va_list ap;
+		va_start(ap, fmt);
+		vsprintf(line, fmt, ap);
+		if (OutFunc == NULL) {
+			nl--;
+			if (nl == 3)
+				printf("|-%s", line);
+			else if (nl == 0) {
+				nl = 4;
+				printf("%s\n", line);
+			} else
+				printf("%s", line);
+		} else
+			OutFunc(line);
+		va_end(ap);
+	}
+
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "3DNow!/Ext [%c,%c]",
-			Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
+	printv(" 3DNow!/Ext [%c,%c]",
+		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("        AES [%c]  ",
+		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 11, hSpace);
+	printv(" AVX/AVX2 [%c/%c]  ",
+		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
+		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "AES [%c]",
-			Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 6, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "AVX/AVX2 [%c/%c]",
-			Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
-			Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "BMI1/BMI2 [%c/%c]",
-			Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
-			Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv(" BMI1/BMI2 [%c/%c] ",
+		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
+		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "CLFSH        [%c]",
-			Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
+	printv(" CLFSH        [%c]",
+		Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("       CMOV [%c]  ",
+		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 10, hSpace);
+	printv("    CMPXCH8 [%c]  ",
+		Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "CMOV [%c]",
-			Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 7, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "CMPXCH8   [%c]",
-			Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "CMPXCH16   [%c]",
-			Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv("    CMPXCH16 [%c] ",
+		Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "F16C         [%c]",
-			Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
+	printv(" F16C         [%c]",
+		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("        FPU [%c]  ",
+		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 11, hSpace);
+	printv("       FXSR [%c]  ",
+		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "FPU [%c]",
-			Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 10, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "FXSR   [%c]",
-			Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "LAHF/SAHF   [%c]",
-			Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv("   LAHF/SAHF [%c] ",
+		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "MMX/Ext    [%c/%c]",
-			Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
+	printv(" MMX/Ext    [%c/%c]",
+		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("    MONITOR [%c]  ",
+		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 7, hSpace);
+	printv("      MOVBE [%c]  ",
+		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "MONITOR [%c]",
-			Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 9, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "MOVBE   [%c]",
-			Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "PCLMULDQ   [%c]",
-			Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv("    PCLMULDQ [%c] ",
+		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "POPCNT       [%c]",
-			Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
+	printv(" POPCNT       [%c]",
+		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("     RDRAND [%c]  ",
+		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 8, hSpace);
+	printv("     RDTSCP [%c]  ",
+		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "RDRAND [%c]",
-			Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 8, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "RDTSCP   [%c]",
-			Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "SEP   [%c]",
-			Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv("         SEP [%c] ",
+		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "SSE          [%c]",
-			Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
+	printv(" SSE          [%c]",
+		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("       SSE2 [%c]  ",
+		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 10, hSpace);
+	printv("       SSE3 [%c]  ",
+		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "SSE2 [%c]",
-			Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 10, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "SSE3   [%c]",
-			Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "SSSE3   [%c]",
-			Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], pad);
-	strcat(row[0], str);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
+	printv("       SSSE3 [%c] ",
+		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 /* Row Mark */
-	len = 3;
-	len += sprintf(str, "SSE4.1/4A  [%c/%c]",
-			Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
-			Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
+	printv(" SSE4.1/4A  [%c/%c]",
+		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
-	strcpy(row[0], str);
+	printv("     SSE4.2 [%c]  ",
+		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
 
-	len += sprintf(str, "%.*s", 8, hSpace);
+	printv("    SYSCALL [%c]  ",
+		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
 
-	strcat(row[0], str);
-
-	len += sprintf(str, "SSE4.2 [%c]",
-			Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "%.*s", 7, hSpace);
-
-	strcat(row[0], str);
-
-	len += sprintf(str, "SYSCALL   [%c]",
-			Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
-
-	pad = realloc(pad, (width - len) + 1);
-	sprintf(pad, "%.*s", (int)(width - len), hSpace);
-
-	strcat(row[0], str);
-	strcat(row[0], pad);
-	printv(OutFunc, SCANKEY_NULL, width, 2, row[0]);
-
-	free(row[0]);
-	free(row[1]);
-	free(str);
-	free(pad);
+	printv("                 ");
 }
 
 void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
@@ -2652,7 +2513,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    Coordinate cell = {						\
 		.col =	(win->matrix.origin.col				\
 			+ (win->matrix.select.col			\
-			* TCellAt(win, shift.horz, shift.vert).length)), \
+			* TCellAt(win, shift.horz, shift.vert).length)),\
 			(win->matrix.origin.row + row),			\
 		.row =	win->matrix.origin.row + row			\
 	    };								\
@@ -3158,16 +3019,6 @@ void Top(SHM_STRUCT *Shm, char option)
 		title = " Processor ";
 		}
 		break;
-	case SCANKEY_SHIFT_i:
-		{
-		matrixSize.hth = 7;
-		winOrigin.col = 2;
-		winOrigin.row = TOP_HEADER_ROW + 3;
-		winWidth = 76;
-		SysInfoFunc = SysInfoISA;
-		title = " Instruction Set Extensions ";
-		}
-		break;
 	case SCANKEY_e:
 		{
 		winOrigin.col = 4;
@@ -3303,6 +3154,35 @@ void Top(SHM_STRUCT *Shm, char option)
 		StoreWindow(wTopology,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wTopology);
+    }
+
+    Window *CreateISA(unsigned long long id)
+    {
+	Window *wISA = CreateWindow(wLayer, id, 4, 7, 6, TOP_HEADER_ROW + 2);
+
+	void AddISACell(char *input)
+	{
+		StoreTCell(wISA, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+	}
+
+	if (wISA != NULL) {
+		SysInfoISA(Shm, AddISACell);
+
+		StoreWindow(wISA,	.title, " Instruction Set Extensions ");
+
+		StoreWindow(wISA,	.key.Left,	MotionLeft_Win);
+		StoreWindow(wISA,	.key.Right,	MotionRight_Win);
+		StoreWindow(wISA,	.key.Down,	MotionDown_Win);
+		StoreWindow(wISA,	.key.Up,	MotionUp_Win);
+		StoreWindow(wISA,	.key.Home,	MotionHome_Win);
+		StoreWindow(wISA,	.key.End,	MotionEnd_Win);
+
+		StoreWindow(wISA,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wISA,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wISA,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wISA,	.key.WinUp,	MotionOriginUp_Win);
+	}
+	return(wISA);
     }
 
     Window *CreateMemCtrl(unsigned long long id)
@@ -3735,6 +3615,15 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 		AppendWindow(CreateTopology(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_SHIFT_i:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateISA(scan->key), &winList);
 	else
 		SetHead(&winList, win);
 	}
@@ -4375,7 +4264,6 @@ void Top(SHM_STRUCT *Shm, char option)
     case SCANKEY_e:
     case SCANKEY_o:
     case SCANKEY_p:
-    case SCANKEY_SHIFT_i:
     case SCANKEY_t:
     case SCANKEY_u:
     case SCANKEY_w:
@@ -6406,7 +6294,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	while (walker != NULL) {					\
 		walker->origin.col = X;					\
 		walker->origin.row = Y;					\
-		if ((walker->data.dword.hi = MoveCursorXY()) == 0)	\
+		if ((walker->data.dword.hi = MoveCursorXY()) == 0x000)	\
 			walker->hook.Layout(layer, walker);		\
 		walker = walker->next;					\
 	}								\
@@ -6773,7 +6661,7 @@ int main(int argc, char *argv[])
 		SysInfoProc(Shm, 80, NULL);
 		printv(NULL, SCANKEY_VOID, 80, 0,"");
 		printv(NULL, SCANKEY_VOID, 80, 0,"ISA Extensions:");
-		SysInfoISA(Shm, 80, NULL);
+		SysInfoISA(Shm, NULL);
 		printv(NULL, SCANKEY_VOID, 80, 0,"");
 		printv(NULL, SCANKEY_VOID, 80, 0,"Features:");
 		SysInfoFeatures(Shm, 80, NULL);
