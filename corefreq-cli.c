@@ -137,6 +137,13 @@ const char lcd[10][3][3] = {
 	}
 };
 
+const char dot[3][3] = {
+	// 'o'
+		"   ",
+		"   ",
+		" o "
+};
+
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3
@@ -4284,12 +4291,12 @@ void Top(SHM_STRUCT *Shm, char option)
     return(0);
   }
 
-    void PrintLCD(Layer *layer, CUINT col, CUINT row,
+    void PrintLCD(Layer *layer, CUINT col, CUINT row, unsigned int W,
 		unsigned int value1, double value2,
 		double threshold1, double threshold2,
 		enum PALETTE _low, enum PALETTE _medium, enum PALETTE _high)
     {
-	unsigned int lcdColor, j = 4;
+	unsigned int lcdColor, j = 3 + W;
 
 	Dec2Digit(value1, digit);
 
@@ -4300,43 +4307,73 @@ void Top(SHM_STRUCT *Shm, char option)
 	else
 		lcdColor = _low;
 
-	do {
-		int offset = col + (4 - j) * 3;
+	if (!W) {
+		int offset = col + 2 * 3;
 
-		LayerFillAt(layer, offset, row,
-				3, lcd[digit[9 - j]][0],
+		LayerFillAt(layer, offset, row,				\
+				3, dot[0], MakeAttr(lcdColor, 0, BLACK, 1));
+
+		LayerFillAt(layer, offset, (row + 1),			\
+				3, dot[1], MakeAttr(lcdColor, 0, BLACK, 1));
+
+		LayerFillAt(layer, offset, (row + 2),			\
+				3, dot[2], MakeAttr(lcdColor, 0, BLACK, 1));
+	}
+	do {
+		int offset = col + 3 * (!W & (j == 1)) + (3 + W - j) * 3;
+
+		LayerFillAt(layer, offset, row,				\
+				3, lcd[digit[9 - j]][0],		\
 				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(layer, offset, (row + 1),
-				3, lcd[digit[9 - j]][1],
+
+		LayerFillAt(layer, offset, (row + 1),			\
+				3, lcd[digit[9 - j]][1],		\
 				MakeAttr(lcdColor, 0, BLACK, 1));
-		LayerFillAt(layer, offset, (row + 2),
-				3, lcd[digit[9 - j]][2],
+
+		LayerFillAt(layer, offset, (row + 2),			\
+				3, lcd[digit[9 - j]][2],		\
 				MakeAttr(lcdColor, 0, BLACK, 1));
 		j--;
 	} while (j > 0) ;
     }
 
 #define Clock2LCD(layer, col, row, value1, value2)			\
-		PrintLCD(layer, col, row,				\
+		PrintLCD(layer, col, row, 1,				\
 			(unsigned int) value1, value2,			\
 			minRatio, medianRatio,				\
 			GREEN, YELLOW, RED)
 
-#define Counter2LCD(layer, col, row, value1, value2)			\
-	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
-			0, 1, BLACK, BLUE, WHITE)
+#define Counter2LCD(layer, col, row, value)				\
+	PrintLCD(layer, col, row, 1,					\
+			value, value,					\
+			0.f, 1.f, RED, YELLOW, WHITE)
 
-#define Load2LCD(layer, col, row, value1, value2)			\
-	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
-			33.0, 66.0, BLUE, WHITE ,CYAN)
+#define Load2LCD(layer, col, row, value)				\
+({									\
+	unsigned int W = (value < 1000.f);				\
+									\
+	PrintLCD(layer, col, row, !W,					\
+		(unsigned int) (W ? value: value / 10.0), value,	\
+				333.f, 666.f, WHITE, YELLOW, RED);	\
+})
 
-#define Idle2LCD(layer, col, row, value1, value2)			\
-	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
-			33.0, 66.0, WHITE, CYAN ,BLUE)
+#define Idle2LCD(layer, col, row, value)				\
+({									\
+	unsigned int W = (value < 1000.f);				\
+									\
+	PrintLCD(layer, col, row, !W,					\
+		(unsigned int) (W ? value: value / 10.0), value,	\
+			333.f, 666.f, YELLOW, WHITE, GREEN);		\
+})
 
-#define Free2LCD(layer, col, row, value1, value2)			\
-	PrintLCD(layer, col, row, (unsigned int) value1, value2,	\
-			50.0, 85.0, RED, WHITE ,BLUE)
+#define Sys2LCD(layer, col, row, value)					\
+({									\
+	unsigned int W = (value < 1000.f);				\
+									\
+	PrintLCD(layer, col, row, !W,					\
+		(unsigned int) (W ? value: value / 10.0), value,	\
+			150.f, 500.f, RED, YELLOW, WHITE);		\
+})
 
     void PrintTaskMemory(Layer *layer, CUINT row,
 			int taskCount,
@@ -6266,7 +6303,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			.row = (card->origin.row + 3)
 		},
 		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK},
+		.attr={HDK,HDK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK},
 		.code={'[',' ','0','0','0','.','0',' ','M','H','z',']'}
 	};
 	LayerCopyAt(layer, hCLK.origin.col, hCLK.origin.row,	\
@@ -6326,8 +6363,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			.row = (card->origin.row + 3)
 		},
 		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HDK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK},
-		.code={'[',' ','T',':',' ',' ',' ',' ',' ',' ',' ',']'}
+		.attr={HDK,HDK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK},
+		.code={'[',' ','O','S',' ',' ',' ',' ',' ',' ',' ',']'}
 	};
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
@@ -6419,11 +6456,11 @@ void Top(SHM_STRUCT *Shm, char option)
     void Draw_Card_CLK(Layer *layer, Card* card)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	unsigned long long clock = Pkg->Delta.PTSC / 1000000;
+	double clock = Pkg->Delta.PTSC / 1000000.f;
 
-	Counter2LCD(layer, card->origin.col, card->origin.row, clock, clock);
+	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
-	sprintf(buffer, "%5.1f", Shm->Cpu[0].Clock.Hz / 1000000.0);
+	sprintf(buffer, "%5.1f", Shm->Cpu[0].Clock.Hz / 1000000.f);
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
 		buffer, 5);
@@ -6432,35 +6469,35 @@ void Top(SHM_STRUCT *Shm, char option)
     void Draw_Card_Uncore(Layer *layer, Card* card)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	unsigned long long uncore = Pkg->Uncore.FC0 / 1000000;
+	double uncore = Pkg->Uncore.FC0 / 1000000.f;
 
-	Counter2LCD(layer, card->origin.col, card->origin.row, uncore, uncore);
+	Counter2LCD(layer, card->origin.col, card->origin.row, uncore);
     }
 
     void Draw_Card_Load(Layer *layer, Card* card)
     {
-	double percent = 100.f * Shm->Proc.Avg.C0;
+	double permil = 1000.f * Shm->Proc.Avg.C0;
 
-	Load2LCD(layer, card->origin.col, card->origin.row, percent,percent);
+	Load2LCD(layer, card->origin.col, card->origin.row, permil);
     }
 
     void Draw_Card_Idle(Layer *layer, Card* card)
     {
-	double percent = 100.f * (Shm->Proc.Avg.C1
-				+ Shm->Proc.Avg.C3
-				+ Shm->Proc.Avg.C6
-				+ Shm->Proc.Avg.C7);
+	double permil = ( Shm->Proc.Avg.C1
+			+ Shm->Proc.Avg.C3
+			+ Shm->Proc.Avg.C6
+			+ Shm->Proc.Avg.C7 ) * 1000.f;
 
-	Idle2LCD(layer, card->origin.col, card->origin.row, percent,percent);
+	Idle2LCD(layer, card->origin.col, card->origin.row, permil);
     }
 
   void Draw_Card_System(Layer *layer, Card* card)
   {
     if (card->data.dword.hi == 0x000) {
-	double percent = (100.f * Shm->SysGate.memInfo.freeram)
-			/ Shm->SysGate.memInfo.totalram;
+	double permil = (1000.f * Shm->SysGate.memInfo.freeram)
+				/ Shm->SysGate.memInfo.totalram;
 
-	Free2LCD(layer, card->origin.col, card->origin.row, percent, percent);
+	Sys2LCD(layer, card->origin.col, card->origin.row, permil);
 
 	sprintf(buffer, "%6u", Shm->SysGate.taskCount);
 	memcpy(&LayerAt(layer, code, (card->origin.col+4),(card->origin.row+3)),
