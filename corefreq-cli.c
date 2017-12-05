@@ -71,6 +71,15 @@ enum PALETTE {
 	WHITE,
 };
 
+#define BLACK	0
+#define RED	1
+#define GREEN	2
+#define YELLOW	3
+#define BLUE	4
+#define MAGENTA 5
+#define CYAN	6
+#define WHITE	7
+
 #define _COLOR(_mod, _fg, _bg) "\033["#_mod";3"#_fg";4"#_bg"m"
 #define COLOR(mod, fg, bg) _COLOR(mod, fg, bg)
 
@@ -3448,7 +3457,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 		break;
 	    case 1:
-		MIN_HEIGHT = 2 * (LEADING_TOP + MARGIN_HEIGHT + INTER_HEIGHT);
+		MIN_HEIGHT = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
 		break;
 	    }
 
