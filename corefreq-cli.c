@@ -301,8 +301,6 @@ typedef union {
 #define SCANKEY_TAB		0x0000000000000009
 #define SCANKEY_ENTER		0x000000000000000a
 #define SCANKEY_ESC		0x000000000000001b
-#define SCANKEY_PLUS		0x000000000000002b
-#define SCANKEY_MINUS		0x000000000000002d
 #define SCANKEY_UP		0x0000000000415b1b
 #define SCANKEY_DOWN		0x0000000000425b1b
 #define SCANKEY_RIGHT		0x0000000000435b1b
@@ -318,6 +316,13 @@ typedef union {
 #define SCANKEY_PGUP		0x000000007e355b1b
 #define SCANKEY_PGDW		0x000000007e365b1b
 #define SCANKEY_PERCENT		0x0000000000000025
+#define SCANKEY_PLUS		0x000000000000002b
+#define SCANKEY_MINUS		0x000000000000002d
+#define SCANKEY_DOT		0x000000000000002e
+#define SCANKEY_SHIFT_UP	0x000041323b315b1b
+#define SCANKEY_SHIFT_DOWN	0x000042323b315b1b
+#define SCANKEY_SHIFT_RIGHT	0x000043323b315b1b
+#define SCANKEY_SHIFT_LEFT	0x000044323b315b1b
 #define SCANKEY_SHIFT_a		0x0000000000000041
 #define SCANKEY_SHIFT_d		0x0000000000000044
 #define SCANKEY_SHIFT_i		0x0000000000000049
@@ -433,7 +438,7 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 	struct pollfd fds = {.fd = STDIN_FILENO, .events = POLLIN};
 	int rp = 0, rz = 0;
 
-	if ((rp=ppoll(&fds, 1, tsec, NULL)) > 0)
+	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0)
 		if (fds.revents == POLLIN) {
 			size_t lc = fread(&scan->key, 1, 8, stdin);
 			for (rz = lc; rz < 8; rz++)
@@ -2490,20 +2495,24 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		if (win->hook.key.PgDw != NULL)
 			win->hook.key.PgDw(win);
 		break;
+	case SCANKEY_SHIFT_RIGHT:
 	case SCANKEY_SHIFT_d:
 		if (win->hook.key.WinRight != NULL)
 			win->hook.key.WinRight(win);
 		break;
-	case SCANKEY_SHIFT_a:
-	case SCANKEY_SHIFT_q:
+	case SCANKEY_SHIFT_LEFT:
+	case SCANKEY_SHIFT_a:	/* AZERTY */
+	case SCANKEY_SHIFT_q:	/* QWERTY */
 		if (win->hook.key.WinLeft != NULL)
 			win->hook.key.WinLeft(win);
 		break;
-	case SCANKEY_SHIFT_w:
-	case SCANKEY_SHIFT_z:
+	case SCANKEY_SHIFT_UP:
+	case SCANKEY_SHIFT_w:	/* QWERTY */
+	case SCANKEY_SHIFT_z:	/* AZERTY */
 		if (win->hook.key.WinUp != NULL)
 			win->hook.key.WinUp(win);
 		break;
+	case SCANKEY_SHIFT_DOWN:
 	case SCANKEY_SHIFT_s:
 		if (win->hook.key.WinDown != NULL)
 			win->hook.key.WinDown(win);
@@ -2571,9 +2580,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		height	:  3-2,		// Valid height
 		width	:  4-3,		// Valid width
 		daemon	:  5-4,		// Draw dynamic
-		taskVal	:  6-5,		// Display task's value
+		taskVal :  6-5,		// Display task's value
 		avgOrPC :  7-6,		// C-states average || % pkg states
-		_pad8	:  8-7,
+		clkOrLd :  8-7,		// Relative freq. || % load
 		disposal: 16-8,
 		_pad16	: 32-16;
 	};
@@ -2586,13 +2595,14 @@ void Top(SHM_STRUCT *Shm, char option)
 	.daemon = 0,
 	.taskVal= 0,
 	.avgOrPC= 0,
+	.clkOrLd= 0,
 	.view	= V_FREQ,
 	.disposal= (option == 'd') ? 1 : 0
     };
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
-    double prevTopFreq = 0.0;
+    double prevTopFreq = 0.0, prevTopLoad = 0.0;
     unsigned long prevFreeRAM = 0;
     unsigned int cpu = 0, digit[9], iClock = 0, ratioCount = 0;
     unsigned int idx;
@@ -3643,8 +3653,14 @@ void Top(SHM_STRUCT *Shm, char option)
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
     case SCANKEY_PERCENT:
-	{
-	drawFlag.avgOrPC = !drawFlag.avgOrPC;
+	if ((drawFlag.view == V_FREQ) && (drawFlag.disposal == 0)) {
+		drawFlag.avgOrPC = !drawFlag.avgOrPC;
+		drawFlag.clear = 1;
+	}
+	break;
+    case SCANKEY_DOT:
+	if (drawFlag.disposal == 0) {
+	drawFlag.clkOrLd = !drawFlag.clkOrLd;
 	drawFlag.clear = 1;
 	}
 	break;
@@ -3658,7 +3674,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	break;
     case SCANKEY_b:
-	if (drawFlag.view == V_TASKS) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
 			AppendWindow(CreateSortByField(scan->key), &winList);
@@ -3690,7 +3706,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	break;
     case SCANKEY_n:
-	if (drawFlag.view == V_TASKS) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
 			AppendWindow(CreateTracking(scan->key), &winList);
@@ -3784,13 +3800,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	break;
     case SCANKEY_r:
-	if (drawFlag.view == V_TASKS) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
 		Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
 		drawFlag.layout = 1;
 	}
 	break;
     case SCANKEY_v:
-	if (drawFlag.view == V_TASKS) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
 		drawFlag.taskVal = !drawFlag.taskVal;
 		drawFlag.layout = 1;
 	}
@@ -4491,8 +4507,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	// Reset the Top Frequency
 	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-	Clock2LCD(layer, 0, row, Flop->Relative.Freq, Flop->Relative.Ratio);
+	if (!drawFlag.clkOrLd) {
+		Clock2LCD(layer,0,row,Flop->Relative.Freq,Flop->Relative.Ratio);
+	} else {
+		double percent = 100.f * Shm->Proc.Avg.C0;
 
+		Load2LCD(layer, 0, row, percent);
+	}
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
 		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
@@ -6142,12 +6163,20 @@ void Top(SHM_STRUCT *Shm, char option)
     {	// Update Header view area
 	struct FLIP_FLOP *Flop = \
 	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
-
-	// Print the Top Frequency
-	if (prevTopFreq != Flop->Relative.Freq) {
+	// Print the Top value if delta exists with the previous one
+	if (!drawFlag.clkOrLd) { // Frequency MHz
+	    if (prevTopFreq != Flop->Relative.Freq) {
 		prevTopFreq = Flop->Relative.Freq;
 
 		Clock2LCD(layer,0,row,Flop->Relative.Freq,Flop->Relative.Ratio);
+	    }
+	} else { // C0 C-State % load
+		if (prevTopLoad != Shm->Proc.Avg.C0) {
+			double percent = 100.f * Shm->Proc.Avg.C0;
+			prevTopLoad = Shm->Proc.Avg.C0;
+
+			Load2LCD(layer, 0, row, percent);
+		}
 	}
 	// Print the focus BCLK
 	row += 2;
