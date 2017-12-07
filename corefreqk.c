@@ -69,7 +69,7 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
-static unsigned short NMI_Disable = 0;
+static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI handler");
 
@@ -251,7 +251,7 @@ void AMD_Brand(char *pBrand)
 }
 
 // Retreive the Processor(BSP) features through calls to the CPUID instruction.
-void Query_Features(void *pArg)
+static void Query_Features(void *pArg)
 {
 	ARG *Arg = (ARG *) pArg;
 
@@ -529,7 +529,7 @@ typedef struct {			// V[0] stores previous TSC
 // OCCURRENCES x 2 (TSC values) needs a 64-byte cache line size.
 #define STRUCT_SIZE (OCCURRENCES * sizeof(TSC_STRUCT))
 
-void Compute_Clock(void *arg)
+static void Compute_Clock(void *arg)
 {
 	CLOCK *clock = (CLOCK *) arg;
 	unsigned int ratio = clock->Q;
@@ -1095,7 +1095,7 @@ void Cache_Topology(CORE *Core)
 }
 
 // Enumerate the Processor's Cores and Threads topology.
-void Map_Topology(void *arg)
+static void Map_Topology(void *arg)
 {
 	if (arg != NULL) {
 		unsigned int eax = 0x0, ecx = 0x0, edx = 0x0;
@@ -1129,7 +1129,7 @@ void Map_Topology(void *arg)
 	}
 }
 
-void Map_Extended_Topology(void *arg)
+static void Map_Extended_Topology(void *arg)
 {
 	if (arg != NULL) {
 		CORE *Core = (CORE *) arg;
@@ -2853,9 +2853,9 @@ void Sys_MemInfo(SYSGATE *SysGate)
 	}							\
 })
 
-void InitTimer(void *Cycle_Function)
+static void InitTimer(void *Cycle_Function)
 {
-	unsigned int cpu=smp_processor_id();
+	unsigned int cpu = smp_processor_id();
 
 	if (BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 0) {
 		hrtimer_init(	&KPrivate->Join[cpu]->Timer,
@@ -3038,7 +3038,7 @@ void Core_Counters_Clear(CORE *Core)
     }									\
 })
 
-#define Counters_Genuine(Core, T)					\
+#define Counters_Generic(Core, T)					\
 ({									\
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
 			MSR_IA32_APERF, Core->Counter[T].C0.UCC,	\
@@ -3170,6 +3170,11 @@ void Core_Counters_Clear(CORE *Core)
 ({	/* Delta of Instructions Retired */				\
 	Core->Delta.INST = Core->Counter[1].INST			\
 			 - Core->Counter[0].INST;			\
+})
+
+#define PKG_Counters_Generic(Core, T)					\
+({									\
+	Proc->Counter[T].PTSC = Core->Counter[T].TSC;			\
 })
 
 #define PKG_Counters_Nehalem(Core, T)					\
@@ -3377,9 +3382,15 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Counters_Genuine(Core, 1);
+		Counters_Generic(Core, 1);
 
 		if (Core->T.Base.BSP) {
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
+
 			Sys_Tick(Proc);
 		}
 
@@ -3414,9 +3425,15 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Counters_Genuine(Core, 1);
+		Counters_Generic(Core, 1);
 
 		if (Core->T.Base.BSP) {
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
+
 			Sys_Tick(Proc);
 		}
 
@@ -3444,14 +3461,18 @@ void InitTimer_GenuineIntel(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
 }
 
-void Start_GenuineIntel(void *arg)
+static void Start_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	PerCore_Intel_Query(Core, cpu);
 
-	Counters_Genuine(Core, 0);
+	Counters_Generic(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
@@ -3462,7 +3483,7 @@ void Start_GenuineIntel(void *arg)
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-void Stop_GenuineIntel(void *arg)
+static void Stop_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 
@@ -3550,6 +3571,12 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		    : 0;
 
 		if (Core->T.Base.BSP) {
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
+
 			Sys_Tick(Proc);
 		}
 
@@ -3594,12 +3621,16 @@ Note: hardware Family_12h
 	}
 }
 
-void Start_AuthenticAMD(void *arg)
+static void Start_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Query(Core, cpu);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
@@ -3610,7 +3641,7 @@ void Start_AuthenticAMD(void *arg)
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-void Stop_AuthenticAMD(void *arg)
+static void Stop_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 
@@ -3635,8 +3666,14 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 		Counters_Core2(Core, 1);
 
 		if (Core->T.Base.BSP) {
+			PKG_Counters_Generic(Core, 1);
+
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->Counter[1].VID = PerfStatus.CORE.CurrVID;
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
 
 			Sys_Tick(Proc);
 		}
@@ -3671,7 +3708,7 @@ void InitTimer_Core2(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Core2, 1);
 }
 
-void Start_Core2(void *arg)
+static void Start_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3680,6 +3717,10 @@ void Start_Core2(void *arg)
 
 	Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
@@ -3690,7 +3731,7 @@ void Start_Core2(void *arg)
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-void Stop_Core2(void *arg)
+static void Stop_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3782,7 +3823,7 @@ void InitTimer_Nehalem(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Nehalem, 1);
 }
 
-void Start_Nehalem(void *arg)
+static void Start_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3808,7 +3849,7 @@ void Start_Nehalem(void *arg)
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-void Stop_Nehalem(void *arg)
+static void Stop_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3914,7 +3955,7 @@ void InitTimer_SandyBridge(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge, 1);
 }
 
-void Start_SandyBridge(void *arg)
+static void Start_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -3939,7 +3980,7 @@ void Start_SandyBridge(void *arg)
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-void Stop_SandyBridge(void *arg)
+static void Stop_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -4056,7 +4097,7 @@ void InitTimer_Haswell_ULT(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_ULT, 1);
 }
 
-void Start_Haswell_ULT(void *arg)
+static void Start_Haswell_ULT(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -4699,6 +4740,8 @@ static int __init CoreFreqK_init(void)
 				    && (ArchID >= 0)
 				    && (ArchID < ARCHITECTURES) ) {
 					Proc->ArchID = ArchID;
+				  } else if (Proc->Features.Std.ECX.Hyperv) {
+					ArchID = 0;
 				  } else {
 				  for ( Proc->ArchID = ARCHITECTURES - 1;
 					Proc->ArchID > 0;

@@ -431,8 +431,8 @@ typedef	struct
 {
 	struct	SIGNATURE	Signature;
 	void			(*Query)(void);
-	void			(*Start)(void *arg);
-	void			(*Stop)(void *arg);
+	void			(*Start)(void *arg);	// Must be static
+	void			(*Stop)(void *arg);	// Must be static
 	void			(*Exit)(void);
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*Clock)(unsigned int ratio);
@@ -456,34 +456,34 @@ extern CLOCK Clock_Haswell(unsigned int ratio) ;
 extern CLOCK Clock_Skylake(unsigned int ratio) ;
 
 extern void Query_GenuineIntel(void) ;
-extern void Start_GenuineIntel(void *arg) ;
-extern void Stop_GenuineIntel(void *arg) ;
+static void Start_GenuineIntel(void *arg) ;
+static void Stop_GenuineIntel(void *arg) ;
 extern void InitTimer_GenuineIntel(unsigned int cpu) ;
 
 extern void Query_AuthenticAMD(void) ;
-extern void Start_AuthenticAMD(void *arg) ;
-extern void Stop_AuthenticAMD(void *arg) ;
+static void Start_AuthenticAMD(void *arg) ;
+static void Stop_AuthenticAMD(void *arg) ;
 extern void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
 extern void Query_Core2(void) ;
-extern void Start_Core2(void *arg) ;
-extern void Stop_Core2(void *arg) ;
+static void Start_Core2(void *arg) ;
+static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
 
 extern void Query_Nehalem(void) ;
-extern void Start_Nehalem(void *arg) ;
-extern void Stop_Nehalem(void *arg) ;
+static void Start_Nehalem(void *arg) ;
+static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
 
     #define Query_SandyBridge Query_Nehalem
-extern void Start_SandyBridge(void *arg) ;
-extern void Stop_SandyBridge(void *arg) ;
+static void Start_SandyBridge(void *arg) ;
+static void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
 extern void Query_IvyBridge_EP(void) ;
 
 extern void Query_Haswell_EP(void) ;
-extern void Start_Haswell_ULT(void *arg);
+static void Start_Haswell_ULT(void *arg);
     #define Stop_Haswell_ULT Stop_SandyBridge
 extern void InitTimer_Haswell_ULT(unsigned int cpu);
 
