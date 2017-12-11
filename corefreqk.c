@@ -3004,13 +3004,14 @@ void Core_Counters_Set(CORE *Core)
 	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
 	WRMSR(Uncore_GlobalPerfControl, MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);\
 									\
-	RDMSR(Uncore_FixedPerfControl, MSR_UNCORE_PERF_FIXED_CTR_CTRL); \
+	RDMSR(Uncore_FixedPerfControl, MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
 	Proc->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;\
-	Uncore_FixedPerfControl.PMU.EN_PMC0 = 1;			\
-	WRMSR(Uncore_FixedPerfControl, MSR_UNCORE_PERF_FIXED_CTR_CTRL); \
+	Uncore_FixedPerfControl.PMU.EN_CTR0 = 1;			\
+	WRMSR(Uncore_FixedPerfControl, MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
 									\
 	RDMSR(Uncore_PerfOverflow, MSR_##PMU##_UNCORE_PERF_GLOBAL_STATUS);\
 	if (Uncore_PerfOverflow.PMU.Overflow_CTR0) {			\
+		RDMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);\
 		Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;		\
 		WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);\
 	}								\
@@ -3032,7 +3033,7 @@ void Core_Counters_Clear(CORE *Core)
     if ((Proc->Features.PerfMon.EAX.Version >= 3) && (Core->T.Base.BSP))\
     {									\
 	WRMSR(Proc->SaveArea.Uncore_FixedPerfControl,			\
-					MSR_UNCORE_PERF_FIXED_CTR_CTRL);\
+				MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
 	WRMSR(Proc->SaveArea.Uncore_GlobalPerfControl,			\
 				MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);	\
     }									\
@@ -3183,16 +3184,17 @@ void Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
 			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
-		MSR_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);\
+	MSR_NHM_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_SandyBridge(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
+	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+	MSR_SNB_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
@@ -3205,6 +3207,16 @@ void Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C8_RESIDENCY, Proc->Counter[T].PC08,	\
 			MSR_PKG_C9_RESIDENCY, Proc->Counter[T].PC09,	\
 			MSR_PKG_C10_RESIDENCY,Proc->Counter[T].PC10);	\
+})
+
+#define PKG_Counters_Skylake(Core, T)					\
+({									\
+	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+	MSR_SKL_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
 #define Delta_PTSC(Pkg)							\
@@ -3963,6 +3975,7 @@ static void Start_SandyBridge(void *arg)
 	PerCore_SandyBridge_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
+	Uncore_Counters_Set(SNB, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->T.Base.BSP) {
@@ -3990,6 +4003,7 @@ static void Stop_SandyBridge(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
+	Uncore_Counters_Clear(SNB, Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4105,6 +4119,8 @@ static void Start_Haswell_ULT(void *arg)
 	PerCore_Haswell_ULT_Query(Core, cpu);
 
 	Core_Counters_Set(Core);
+	if (Experimental)
+		Uncore_Counters_Set(SNB, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->T.Base.BSP) {
@@ -4120,6 +4136,154 @@ static void Start_Haswell_ULT(void *arg)
 			HRTIMER_MODE_REL_PINNED);
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_Haswell_ULT(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Core_Counters_Clear(Core);
+	if (Experimental)
+		Uncore_Counters_Clear(SNB, Core);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+
+static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		SMT_Counters_SandyBridge(Core, 1);
+
+		if (Core->T.Base.BSP) {
+			PKG_Counters_Skylake(Core, 1);
+
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+
+			Delta_PC02(Proc);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PTSC(Proc);
+
+			Delta_UNCORE_FC0(Proc);
+
+			Save_PC02(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PTSC(Proc);
+
+			Save_UNCORE_FC0(Proc);
+
+			Sys_Tick(Proc);
+		}
+
+		Core_Intel_Temp(Core);
+
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_C7(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+
+		Save_C6(Core);
+
+		Save_C7(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Skylake(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Skylake, 1);
+}
+
+static void Start_Skylake(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_SandyBridge_Query(Core, cpu);
+
+	Core_Counters_Set(Core);
+	Uncore_Counters_Set(SKL, Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Skylake(Core, 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_Skylake(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Core_Counters_Clear(Core);
+	Uncore_Counters_Clear(SKL, Core);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 

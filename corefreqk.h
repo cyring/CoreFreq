@@ -475,7 +475,7 @@ static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
 
-    #define Query_SandyBridge Query_Nehalem
+#define     Query_SandyBridge Query_Nehalem
 static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
@@ -484,10 +484,17 @@ extern void Query_IvyBridge_EP(void) ;
 
 extern void Query_Haswell_EP(void) ;
 static void Start_Haswell_ULT(void *arg);
-    #define Stop_Haswell_ULT Stop_SandyBridge
+static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu);
 
+#define     Start_Broadwell Start_SandyBridge
+#define     Stop_Broadwell Stop_SandyBridge
+#define     InitTimer_Broadwell InitTimer_SandyBridge
+
 extern void Query_Skylake_X(void) ;
+static void Start_Skylake(void *arg) ;
+static void Stop_Skylake(void *arg) ;
+extern void InitTimer_Skylake(unsigned int cpu) ;
 
 //	[Void]
 #define _Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -1006,10 +1013,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 34*/	{
 	_Broadwell,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Broadwell,
+	Stop_Broadwell,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Broadwell,
 	Clock_Haswell,
 	"Broadwell/Mobile",
 	THERMAL_FORMULA_INTEL,
@@ -1055,10 +1062,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 38*/	{
 	_Skylake_UY,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Skylake,
 	Clock_Skylake,
 	"Skylake/UY",
 	THERMAL_FORMULA_INTEL,
@@ -1067,10 +1074,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 39*/	{
 	_Skylake_S,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Skylake,
 	Clock_Skylake,
 	"Skylake/S",
 	THERMAL_FORMULA_INTEL,
@@ -1079,8 +1086,8 @@ static ARCH Arch[ARCHITECTURES]=
 /* 40*/	{
 	_Skylake_X,
 	Query_Skylake_X,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
 	InitTimer_SandyBridge,
 	Clock_Skylake,
@@ -1105,10 +1112,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 42*/	{
 	_Kabylake,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Skylake,
 	Clock_Skylake,
 	"Kaby/Coffee Lake",
 	THERMAL_FORMULA_INTEL,
@@ -1117,10 +1124,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 43*/	{
 	_Kabylake_UY,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Skylake,
 	Clock_Skylake,
 	"Kaby Lake/UY",
 	THERMAL_FORMULA_INTEL,
@@ -1130,10 +1137,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 44*/	{
 	_Cannonlake,
 	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
+	Start_Skylake,
+	Stop_Skylake,
 	NULL,
-	InitTimer_SandyBridge,
+	InitTimer_Skylake,
 	Clock_Skylake,
 	"Cannon Lake",
 	THERMAL_FORMULA_INTEL,

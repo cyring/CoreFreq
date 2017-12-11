@@ -28,13 +28,23 @@
 #define MSR_PMG_IO_CAPTURE_BASE 0x000000e4
 #endif
 
-#define MSR_NHM_UNCORE_PERF_GLOBAL_CTRL 	0x391
-#define MSR_SKL_UNCORE_PERF_GLOBAL_CTRL 	0xe01
-#define MSR_NHM_UNCORE_PERF_GLOBAL_STATUS	0x392
-#define MSR_SKL_UNCORE_PERF_GLOBAL_STATUS	0xe02
-#define MSR_UNCORE_PERF_GLOBAL_OVF_CTRL 	0x393
-#define MSR_UNCORE_PERF_FIXED_CTR0		0x394
-#define MSR_UNCORE_PERF_FIXED_CTR_CTRL		0x395
+#define MSR_NHM_UNCORE_PERF_GLOBAL_CTRL    0x00000391
+#define MSR_SNB_UNCORE_PERF_GLOBAL_CTRL    MSR_NHM_UNCORE_PERF_GLOBAL_CTRL
+#define MSR_SKL_UNCORE_PERF_GLOBAL_CTRL    0x00000e01
+
+#define MSR_NHM_UNCORE_PERF_GLOBAL_STATUS  0x00000392
+#define MSR_SNB_UNCORE_PERF_GLOBAL_STATUS  MSR_NHM_UNCORE_PERF_GLOBAL_STATUS
+#define MSR_SKL_UNCORE_PERF_GLOBAL_STATUS  0x00000e02
+
+#define MSR_UNCORE_PERF_GLOBAL_OVF_CTRL    0x00000393
+
+#define MSR_NHM_UNCORE_PERF_FIXED_CTR0     0x00000394
+#define MSR_SNB_UNCORE_PERF_FIXED_CTR0     0x00000395
+#define MSR_SKL_UNCORE_PERF_FIXED_CTR0     MSR_SNB_UNCORE_PERF_FIXED_CTR0
+
+#define MSR_NHM_UNCORE_PERF_FIXED_CTR_CTRL 0x00000395
+#define MSR_SNB_UNCORE_PERF_FIXED_CTR_CTRL 0x00000394
+#define MSR_SKL_UNCORE_PERF_FIXED_CTR_CTRL MSR_SNB_UNCORE_PERF_FIXED_CTR_CTRL
 
 typedef union
 {
@@ -549,32 +559,39 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Overflow_PMC0	:  1-0,		// R/O , NHM, SNB
-		Overflow_PMC1	:  2-1,		// R/O , NHM, SNB
-		Overflow_PMC2	:  3-2,		// R/O , NHM, SNB
-		Overflow_PMC3	:  4-3,		// R/O , NHM, SNB
+		Overflow_PMC0	:  1-0,		// R/O , NHM
+		Overflow_PMC1	:  2-1,		// R/O , NHM
+		Overflow_PMC2	:  3-2,		// R/O , NHM
+		Overflow_PMC3	:  4-3,		// R/O , NHM
 		Overflow_PMC4	:  5-4,		// R/O , NHM, *CPUID(0xa)
 		Overflow_PMC5	:  6-5,		// R/O , NHM, *CPUID(0xa)
 		Overflow_PMC6	:  7-6,		// R/O , NHM, *CPUID(0xa)
 		Overflow_PMC7	:  8-7,		// R/O , NHM, *CPUID(0xa)
 		ReservedBits1	: 32-8,
 		Overflow_CTR0	: 33-32,	// R/O , NHM
-		Overflow_CTR1	: 34-33,	// R/O , SNB
-		Overflow_CTR2	: 35-34,	// R/O , SNB
-		ReservedBits2	: 61-35,
-		Overflow_PMI	: 62-61,	// R/W , NHM, SNB
+		ReservedBits2	: 61-33,
+		Overflow_PMI	: 62-61,	// R/W , NHM
 		Ovf_DSBuffer	: 63-62,	// SNB
-		Ovf_CondChg	: 64-63;	// R/W , NHM, SNB
+		Ovf_CondChg	: 64-63;	// R/W , NHM
 	} NHM;	// PMU: 06_1AH
 	struct
 	{
 		unsigned long long
-		Overflow_PMC0	:  1-0,
+		Overflow_CTR0	:  1-0,
 		Overflow_ARB	:  2-1,
 		ReservedBits1	:  3-2,
-		Overflow_Cbox	:  4-3,
+		Overflow_PMC0	:  4-3, // Overflow_Cbox
 		ReservedBits2	: 64-4;
 	} SNB;	// PMU: 06_2AH/06_3CH/06_45H/06_46H/06_4EH/06_5EH
+	struct
+	{
+		unsigned long long
+		Overflow_CTR0	:  1-0,
+		Overflow_ARB	:  2-1,
+		ReservedBits1	:  3-2,
+		Overflow_PMC0	:  4-3, // Overflow_Cbox
+		ReservedBits2	: 64-4;
+	} SKL;
 } UNCORE_GLOBAL_PERF_STATUS;
 
 typedef union
@@ -593,9 +610,7 @@ typedef union
 		Clear_Ovf_PMC7	:  8-7,		// NHM, *CPUID(0xa)
 		ReservedBits1	: 32-8,
 		Clear_Ovf_CTR0 	: 33-32,	// NHM, SNB
-		Clear_Ovf_CTR1 	: 34-33,	// SNB
-		Clear_Ovf_CTR2 	: 35-34,	// SNB
-		ReservedBits2	: 61-35,
+		ReservedBits2	: 61-33,
 		Clear_Ovf_PMI 	: 62-61,	// NHM, SNB
 		Clear_Ovf_DSBuf : 63-62,	// SNB
 		Clear_CondChg	: 64-63;	// NHM, SNB
@@ -617,10 +632,8 @@ typedef union
 		EN_PMC6		:  7-6,		// R/W , NHM, *CPUID(0xa)
 		EN_PMC7		:  8-7,		// R/W , NHM, *CPUID(0xa)
 		ReservedBits1	: 32-8,
-		EN_FIXED_CTR0	: 33-32,	// R/W , NHM, SNB
-		EN_FIXED_CTR1	: 34-33,	// R/W , SNB
-		EN_FIXED_CTR2	: 35-34,	// R/W , SNB
-		ReservedBits2	: 48-35,
+		EN_FIXED_CTR0	: 33-32,	// R/W , NHM
+		ReservedBits2	: 48-33,
 		EN_PMI_CORE0	: 49-48,	// R/W , NHM
 		EN_PMI_CORE1	: 50-49,	// R/W , NHM
 		EN_PMI_CORE2	: 51-50,	// R/W , NHM
@@ -631,17 +644,29 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_Slice0	:  1-0,
-		EN_Slice1	:  2-1,
-		EN_Slice2	:  3-2,
-		EN_Slice3	:  4-3,
-		EN_Slice4	:  5-4,
-		ReservedBits1	: 29-5,
-		EN_COUNTERS	: 30-29,
+		EN_PMI_CORE0	:  1-0,		// Slice 0
+		EN_PMI_CORE1	:  2-1,		// Slice 1
+		EN_PMI_CORE2	:  3-2,		// Slice 2
+		EN_PMI_CORE3	:  4-3,		// Slice 3
+		ReservedBits1	: 29-4,		// Slice 4
+		EN_FIXED_CTR0	: 30-29,
 		EN_WakeOn_PMI	: 31-30,
 		PMI_FRZ		: 32-31,
 		ReservedBits2	: 64-32;
 	} SNB;	// PMU: 06_2AH/06_3CH/06_45H/06_46H/06_4EH/06_5EH
+	struct
+	{
+		unsigned long long
+		EN_PMI_CORE0	:  1-0,		// Slice 0
+		EN_PMI_CORE1	:  2-1,		// Slice 1
+		EN_PMI_CORE2	:  3-2,		// Slice 2
+		EN_PMI_CORE3	:  4-3,		// Slice 3
+		ReservedBits1	: 29-4,		// Slice 4
+		EN_FIXED_CTR0	: 30-29,
+		EN_WakeOn_PMI	: 31-30,
+		PMI_FRZ		: 32-31,
+		ReservedBits2	: 64-32;
+	} SKL;
 } UNCORE_GLOBAL_PERF_CONTROL;
 /*
 	*CPUID(0xa): if CPUID.0AH:EAX[15:8] == 8 then bit is valid
@@ -652,7 +677,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMC0		:  1-0,
+		EN_CTR0		:  1-0,
 		ReservedBits1	:  2-1,
 		EN_PMI		:  3-2,
 		ReservedBits2	: 64-3;
@@ -660,12 +685,21 @@ typedef union
 	struct
 	{
 		unsigned long long
-		ReservedBits1	: 20-1,
+		ReservedBits1	: 20-0,
 		EN_Overflow	: 21-20,
 		ReservedBits2	: 22-21,
-		EN_PMC0		: 23-22,
+		EN_CTR0		: 23-22,
 		ReservedBits3	: 64-23;
 	} SNB;	// PMU: 06_2AH/06_3CH/06_45H/06_46H/06_4EH/06_5EH
+	struct
+	{
+		unsigned long long
+		ReservedBits1	: 20-0,
+		EN_Overflow	: 21-20,
+		ReservedBits2	: 22-21,
+		EN_CTR0		: 23-22,
+		ReservedBits3	: 64-23;
+	} SKL;
 } UNCORE_FIXED_PERF_CONTROL;
 
 /* ToDo

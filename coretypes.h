@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.14"
+#define COREFREQ_VERSION	"1.15"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -77,17 +77,11 @@ enum {	GenuineIntel,		\
 #define VOLTAGE_FORMULA_AMD_0F \
 	0b0000000000000000000000000000001100000000000000000000000000000000
 
-typedef unsigned short int	CUINT;
-typedef signed short int	CSINT;
-
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0))
 
 #define KMAX(M, m)	((M) > (m) ? (M) : (m))
 #define KMIN(m, M)	((m) < (M) ? (m) : (M))
-
-#define powered(bit)	((bit) ? "Present" : "Missing")
-#define enabled(bit)	((bit) ? "ON" : "OFF")
 
 #define DRV_DEVNAME	"corefreqk"
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
