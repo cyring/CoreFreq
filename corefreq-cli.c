@@ -2522,7 +2522,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	drawFlag.clear = 1;
 	}
 	break;
-    case 0x000000000000b2c2:
+    case 0x000000000000007e:
 	{
 	drawFlag.disposal = 2;
 	drawSize.height = 0;
@@ -3296,12 +3296,18 @@ void Top(SHM_STRUCT *Shm, char option)
     })
 
 #define Clock2LCD(layer, col, row, value1, value2)			\
-	PrintLCD(layer, col, row, sprintf(buffer, "%04.f", value1), buffer, \
-		Threshold(value2, minRatio, medianRatio, _GREEN,_YELLOW,_RED))
+({									\
+	sprintf(buffer, "%04.0f", value1);				\
+	PrintLCD(layer, col, row, 4, buffer,				\
+	    Threshold(value2,minRatio,medianRatio,_GREEN,_YELLOW,_RED));\
+})
 
 #define Counter2LCD(layer, col, row, value)				\
-	PrintLCD(layer, col, row, sprintf(buffer, "%04.f", value), buffer, \
-		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE))
+({									\
+	sprintf(buffer, "%04.0f", value);				\
+	PrintLCD(layer, col, row, 4, buffer,				\
+		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE));	\
+})
 
 #define Load2LCD(layer, col, row, value)				\
 	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
@@ -3956,7 +3962,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',	\
 		' ',' ',' ',' '
 	};
-	ASCII	hCState[8][2] = {
+	ASCII	hCState[7][2] = {
 		{'0', '2'},
 		{'0', '3'},
 		{'0', '6'},
@@ -4902,7 +4908,7 @@ void Top(SHM_STRUCT *Shm, char option)
     CUINT Draw_AltMonitor_Package(Layer *layer, CUINT row)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	CUINT bar0, bar1, margin = loadWidth - 18 - 7 - 2;
+	CUINT bar0, bar1, margin = loadWidth - 28;
 	size_t len;
 /* PC02 */
 	bar0 = Shm->Proc.State.PC02 * margin;
@@ -5465,7 +5471,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	double uncore = Pkg->Uncore.FC0 / 1000000.f;
 
-	Counter2LCD(layer, card->origin.col, card->origin.row, uncore);
+	Idle2LCD(layer, card->origin.col, card->origin.row, uncore);
     }
 
     void Draw_Card_Load(Layer *layer, Card* card)
@@ -5649,12 +5655,20 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
     {
-	PrintLCD(layer, 0, 1, 0x1e, " ! \" # $ % & \' ( ) * + , - . /", _WHITE);
-	PrintLCD(layer, 0, 5, 0x1f, "0 1 2 3 4 5 6 7 8 9 : ; < = > ?",  _WHITE);
-	PrintLCD(layer, 0, 9, 0x1f, "@ A B C D E F G H I J K L M N O",  _WHITE);
-	PrintLCD(layer, 0,13, 0x1f, "P Q R S T U V W X Y Z [ \\ ] ^ _", _WHITE);
-	PrintLCD(layer, 0,17, 0x1f, "` a b c d e f g h i j k l m n o",  _WHITE);
-	PrintLCD(layer, 0,21, 0x1f, "p q r s t u v w x y z { | } ~\x7f",_WHITE);
+	char *mir[] = {
+		" ! \" # $ % & \' () * + , -./",
+		"  0123456789 : ; < = > ?",
+		"@ ABCDEFGHIJKLMNO",
+		"  PQRSTUVWXYZ [ \\ ] ^ _",
+		"` abcdefghijklmno",
+		"  pqrstuvwxyz { | } ~\x7f"
+	};
+	PrintLCD(layer, 0, 1, strlen(mir[0]), mir[0], _WHITE);
+	PrintLCD(layer, 0, 5, strlen(mir[1]), mir[1], _WHITE);
+	PrintLCD(layer, 0, 9, strlen(mir[2]), mir[2], _WHITE);
+	PrintLCD(layer, 0,13, strlen(mir[3]), mir[3], _WHITE);
+	PrintLCD(layer, 0,17, strlen(mir[4]), mir[4], _WHITE);
+	PrintLCD(layer, 0,21, strlen(mir[5]), mir[5], _WHITE);
     }
 
     void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)

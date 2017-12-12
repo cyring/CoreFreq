@@ -2977,6 +2977,7 @@ void Core_Counters_Set(CORE *Core)
 	WRMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
 
 	RDMSR(Core_PerfOverflow, MSR_CORE_PERF_GLOBAL_STATUS);
+	RDMSR(Core_PerfOvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 	if (Core_PerfOverflow.Overflow_CTR0)
 		Core_PerfOvfControl.Clear_Ovf_CTR0 = 1;
 	if (Core_PerfOverflow.Overflow_CTR1)
@@ -3269,7 +3270,12 @@ void Core_Counters_Clear(CORE *Core)
 
 #define Delta_UNCORE_FC0(Pkg)						\
 ({									\
-	Pkg->Delta.Uncore.FC0 = Pkg->Counter[1].Uncore.FC0		\
+	Pkg->Delta.Uncore.FC0 =						\
+		(Pkg->Counter[0].Uncore.FC0 >				\
+		Pkg->Counter[1].Uncore.FC0) ?				\
+			Pkg->Counter[0].Uncore.FC0			\
+			- Pkg->Counter[1].Uncore.FC0			\
+			: Pkg->Counter[1].Uncore.FC0			\
 			- Pkg->Counter[0].Uncore.FC0;			\
 })
 
