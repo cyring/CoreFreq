@@ -220,9 +220,9 @@ const char LCD[0x6][0x10][3][3] = {
 		}
 	},{
 		{// 0x40
-			"   ",
-			" __",
-			"((|"
+			" _ ",
+			"(()",
+			" ``"
 		},
 		{// 0x41
 			" _ ",
@@ -357,28 +357,28 @@ const char LCD[0x6][0x10][3][3] = {
 		},
 		{// 0x5b
 			"  _",
-			"_| ",
+			" | ",
 			" |_"
 		},
 		{// 0x5c
-			"   ",
-			" | ",
-			" | "
+			"\\  ",
+			" \\ ",
+			"  \\"
 		},
 		{// 0x5d
 			"_  ",
-			" |_",
+			" | ",
 			"_| "
 		},
 		{// 0x5e
+			"/\\ ",
 			"   ",
-			"   ",
-			" ~ "
+			"   "
 		},
 		{// 0x5f
 			"   ",
-			"DEL",
-			"   "
+			"   ",
+			"___"
 		}
 	},{
 		{// 0x60
@@ -518,19 +518,19 @@ const char LCD[0x6][0x10][3][3] = {
 			"/_ "
 		},
 		{// 0x7b
-			"   ",
-			"   ",
-			" { "
+			"  _",
+			"_| ",
+			" |_"
 		},
 		{// 0x7c
-			"   ",
-			"   ",
+			" | ",
+			" | ",
 			" | "
 		},
 		{// 0x7d
-			"   ",
-			"   ",
-			" } "
+			"_  ",
+			" |_",
+			"_| "
 		},
 		{// 0x7e
 			"   ",
@@ -539,7 +539,7 @@ const char LCD[0x6][0x10][3][3] = {
 		},
 		{// 0x7f
 			"   ",
-			"   ",
+			".^.",
 			"DEL"
 		}
 	}
@@ -1516,6 +1516,8 @@ void PrintLCD(Layer *layer, CUINT col, CUINT row,
 }
 
 #define Prolog								\
+	printf(SCP SCR1 CUH CLS HIDE);					\
+									\
 	struct termios oldt, newt;					\
 	tcgetattr(STDIN_FILENO, &oldt);					\
 	newt = oldt;							\
@@ -1526,4 +1528,6 @@ void PrintLCD(Layer *layer, CUINT col, CUINT row,
 
 
 #define Epilog								\
-	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);			\
+									\
+	printf(SHOW SCR0 RCP COLOR(0,9,9));

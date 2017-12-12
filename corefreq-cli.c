@@ -1917,8 +1917,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		for (i = 0; i < f; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, F[i], MAKE_PRINT_FOCUS);
 
-		size_t pos = strlen((char*) TCellAt(wAbout, 1, 5).item) - 2 - v;
-		memcpy(&TCellAt(wAbout, 1, 5).item[pos], COREFREQ_VERSION, v);
+		size_t p = TCellAt(wAbout, 1, 5).length - 2 - v;
+		memcpy(&TCellAt(wAbout, 1, 5).item[p], COREFREQ_VERSION, v);
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;
 
@@ -5661,7 +5661,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		"@ ABCDEFGHIJKLMNO",
 		"  PQRSTUVWXYZ [ \\ ] ^ _",
 		"` abcdefghijklmno",
-		"  pqrstuvwxyz { | } ~\x7f"
+		"  pqrstuvwxyz { | } ~ \x7f"
 	};
 	PrintLCD(layer, 0, 1, strlen(mir[0]), mir[0], _WHITE);
 	PrintLCD(layer, 0, 5, strlen(mir[1]), mir[1], _WHITE);
@@ -5963,16 +5963,12 @@ int main(int argc, char *argv[])
 		// Fallthrough
 	case 't':
 		{
-		printf(SCP SCR1 HIDE);
-
 		Prolog
 
 		TrapSignal();
 		Top(Shm, option);
 
 		Epilog
-
-		printf(SHOW SCR0 RCP COLOR(0,9,9));
 		}
 		break;
 	default:
