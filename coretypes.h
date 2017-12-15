@@ -779,6 +779,9 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
 #endif
+#ifndef PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0	0x1604
+#endif
 // Source: /include/linux/pci_ids.h
 #ifndef PCI_DEVICE_ID_AMD_K8_NB_MEMCTL
 	#define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL		0x1102

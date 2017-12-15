@@ -1280,17 +1280,49 @@ typedef union
 
 
 typedef union
-{	// Device: 0 - Function: 0 - Offset Channel0: 4c04h
+{	// Device: 0 - Function: 0 - Offset Channel0: 4C04h
 	unsigned int		value;
 	struct {
 		unsigned int
-		ReservedBits	: 30-0,
+		ReservedBits1	: 12-0,
+		tsrRdTRd	: 15-12,
+		tdrRdTRd	: 19-15,
+		tddRdTRd	: 23-19,
+		ReservedBits2	: 30-23,
 		CMD_Stretch	: 32-30;
 	};
 } C220_DDR_TIMING;
 
 typedef union
-{	// Device: 0 - Function: 0 - Offset Channel0: 4c14h
+{	// Device: 0 - Function: 0 - Offset Channel0: 4C08h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tsrWrTRd	:  6-0,
+		tdrWrTRd	: 10-6,
+		tddWrTRd	: 14-10,
+		tsrWrTWr	: 17-14,
+		tdrWrTWr	: 21-17,
+		tddWrTWr	: 25-21,
+		ReservedBits	: 32-25;
+	};
+} C220_DDR_RANK_TIMING_A;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4C0Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 14-0,
+		tsrRdTWr	: 19-14,
+		tdrRdTWr	: 24-19,
+		tddRdTWr	: 29-24,
+		ReservedBits2	: 32-29;
+	};
+} C220_DDR_RANK_TIMING_B;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4C14h
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1301,7 +1333,7 @@ typedef union
 } C220_DDR_RANK_TIMING;
 
 typedef union
-{	// Device: 0 - Function: 0 - Offset Channel0: 4e98h
+{	// Device: 0 - Function: 0 - Offset Channel0: 4E98h
 	unsigned int		value;
 	struct {
 		unsigned int

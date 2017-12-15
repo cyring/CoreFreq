@@ -483,10 +483,11 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 extern void Query_IvyBridge_EP(void) ;
 
 extern void Query_Haswell_EP(void) ;
-static void Start_Haswell_ULT(void *arg);
+static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
-extern void InitTimer_Haswell_ULT(unsigned int cpu);
+extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 
+extern void Query_Broadwell(void) ;
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
@@ -1012,7 +1013,7 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 34*/	{
 	_Broadwell,
-	Query_SandyBridge,
+	Query_Broadwell,
 	Start_Broadwell,
 	Stop_Broadwell,
 	NULL,

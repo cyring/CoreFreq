@@ -1787,6 +1787,43 @@ void Query_C220(void __iomem *mchmap)
 	}
 }
 
+void Query_Broadwell_IMC(void __iomem *mchmap)
+{	// Source: Mobile 5th Generation Intel® Core™ Processor Family
+	unsigned short cha;
+
+	Proc->Uncore.CtrlCount = 1;
+
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
+	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+
+	Proc->Uncore.MC[0].ChannelCount =
+		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
+		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
+
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+		Proc->Uncore.MC[0].Channel[cha].C220.Timing.value =
+					readl(mchmap + 0x4c04);
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Rank_A.value =
+					readl(mchmap + 0x4c08);
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Rank_B.value =
+					readl(mchmap + 0x4c0c);
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Rank.value =
+					readl(mchmap + 0x4c14);
+
+		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
+					readl(mchmap + 0x4e98);
+	}
+
+	Proc->Uncore.MC[0].SlotCount = 1;
+}
+
 PCI_CALLBACK P965(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x4000, Query_P965));
@@ -1852,6 +1889,11 @@ PCI_CALLBACK C200(struct pci_dev *dev)
 PCI_CALLBACK C220(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x8000, Query_C220));
+}
+
+PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev)
+{
+	return(Router(dev, 0x48, 0x8000, Query_Broadwell_IMC));
 }
 
 PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
@@ -2024,6 +2066,12 @@ static struct pci_device_id CoreFreqK_pci_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) C220
 	},
+	// 5th Generation
+	// Broadwell ix-5xxx: IMC_HA0=0x1604
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
+		.driver_data = (kernel_ulong_t) Broadwell_IMC
+	},
 	// AMD Family 0Fh
 	{
 		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
@@ -2112,6 +2160,25 @@ void Query_Haswell_EP(void)
 {
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
+}
+
+void Query_Broadwell(void)
+{
+	struct pci_dev *dev;
+
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+
+    if (Experimental) {
+	dev = pci_get_device(	PCI_VENDOR_ID_INTEL,
+				PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0, NULL);
+	if (dev != NULL) {
+
+		Broadwell_IMC(dev);
+
+		pci_dev_put(dev);
+	}
+    }
 }
 
 void Query_Skylake_X(void)

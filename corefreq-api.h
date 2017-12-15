@@ -392,9 +392,11 @@ typedef struct
 	/* 4298h */		C200_TC_RFTP		RFTP;	/* 32 bits */
 			} C200;
 			struct {
-	/* 4C04h*/		C220_DDR_TIMING		Timing;	/* 32 bits */
-	/* 4c14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
-	/* 4e98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
+	/* 4C04h */		C220_DDR_TIMING		Timing;	/* 32 bits */
+	/* 4C08h */		C220_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits */
+	/* 4C0Ch */		C220_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits */
+	/* 4C14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
+	/* 4E98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} C220;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits */
