@@ -3296,18 +3296,18 @@ void Top(SHM_STRUCT *Shm, char option)
     })
 
 #define Clock2LCD(layer, col, row, value1, value2)			\
-({									\
+    ({									\
 	sprintf(buffer, "%04.0f", value1);				\
 	PrintLCD(layer, col, row, 4, buffer,				\
 	    Threshold(value2,minRatio,medianRatio,_GREEN,_YELLOW,_RED));\
-})
+    })
 
 #define Counter2LCD(layer, col, row, value)				\
-({									\
+    ({									\
 	sprintf(buffer, "%04.0f", value);				\
 	PrintLCD(layer, col, row, 4, buffer,				\
 		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE));	\
-})
+    })
 
 #define Load2LCD(layer, col, row, value)				\
 	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
@@ -5313,7 +5313,34 @@ void Top(SHM_STRUCT *Shm, char option)
 			hIdle.length, hIdle.attr, hIdle.code);
     }
 
-    void Layout_Card_System(Layer *layer, Card* card)
+    void Layout_Card_RAM(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hMem = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,HWK,HWK,HWK,HWK,HWK,LWK,HDK,HWK,HWK,LWK,HDK},
+		.code={'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']'}
+	};
+
+	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		unsigned long totalRAM;
+		int unit;
+		char symbol[4] = {'K', 'M', 'G', 'T'};
+
+		unit = ByteReDim(Shm->SysGate.memInfo.totalram, 2, &totalRAM);
+		sprintf(buffer, "%2lu%c", totalRAM, symbol[unit]);
+		memcpy(&hMem.code[8], buffer, 3);
+
+		LayerCopyAt(layer, hMem.origin.col, hMem.origin.row, \
+				hMem.length, hMem.attr, hMem.code);
+	} else
+		card->data.dword.hi = 0x010;
+    }
+
+    void Layout_Card_Task(Layer *layer, Card* card)
     {
 	LayerDeclare(4 * INTER_WIDTH) hSystem = {
 		.origin = {
@@ -5321,8 +5348,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			.row = (card->origin.row + 3)
 		},
 		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HDK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK},
-		.code={'[',' ','O','S',' ',' ',' ',' ',' ',' ',' ',']'}
+		.attr={HDK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HDK},
+		.code={'[','T','a','s','k','s',' ',' ',' ',' ',' ',']'}
 	};
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
@@ -5331,49 +5358,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	else
 		card->data.dword.hi = 0x010;
     }
-#if 0
-    void Layout_Card_Task(Layer *layer, Card* card)
-    {
-	unsigned int _cpu = card->data.dword.lo;
 
-	if (!BITVAL(Shm->Cpu[_cpu].OffLine, HW)) {
-	    Dec2Digit(_cpu, digit);
-	    if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
-	    {
-		LayerDeclare(4 * INTER_WIDTH) hOnLine = {
-			.origin = {
-				.col = card->origin.col,
-				.row = (card->origin.row + 3)
-			},
-			.length = (4 * INTER_WIDTH),
-			.attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
-			.code={'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']'}
-		};
-
-		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
-				hOnLine.length, hOnLine.attr, hOnLine.code);
-	    } else {
-		LayerDeclare(4 * INTER_WIDTH) hOffLine = {
-			.origin = {
-				.col = card->origin.col,
-				.row = (card->origin.row + 3)
-			},
-			.length = (4 * INTER_WIDTH),
-			.attr={HDK,HDK,HDK,LBK,LBK,HDK,HDK,LWK,LWK,LWK,HDK,HDK},
-			.code={'[',' ','#',' ',' ',' ',' ','O','F','F',' ',']'}
-		};
-
-		card->data.dword.hi = 0x010;
-
-		LayerFillAt(layer, card->origin.col, (card->origin.row + 1), \
-		(4 * INTER_WIDTH), " _  _  _  _ ", MakeAttr(BLACK,0,BLACK,1));
-
-		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row, \
-				hOffLine.length, hOffLine.attr, hOffLine.code);
-	    }
-	}
-    }
-#endif
     void Layout_Dashboard(Layer *layer)
     {
 	CUINT leadingLeft = LEADING_LEFT;
@@ -5491,17 +5476,23 @@ void Top(SHM_STRUCT *Shm, char option)
 	Idle2LCD(layer, card->origin.col, card->origin.row, percent);
     }
 
-  void Draw_Card_System(Layer *layer, Card* card)
+  void Draw_Card_RAM(Layer *layer, Card* card)
   {
     if (card->data.dword.hi == 0x000) {
+      if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+	unsigned long freeRAM;
+	int unit;
+	char symbol[4] = {'K', 'M', 'G', 'T'};
 	double percent = (100.f * Shm->SysGate.memInfo.freeram)
 				/ Shm->SysGate.memInfo.totalram;
 
 	Sys2LCD(layer, card->origin.col, card->origin.row, percent);
 
-	sprintf(buffer, "%6u", Shm->SysGate.taskCount);
-	memcpy(&LayerAt(layer, code, (card->origin.col+4),(card->origin.row+3)),
-		buffer,6);
+	unit = ByteReDim(Shm->SysGate.memInfo.freeram, 6, &freeRAM);
+	sprintf(buffer, "%5lu%c", freeRAM, symbol[unit]);
+	memcpy(&LayerAt(layer,code, (card->origin.col+1), (card->origin.row+3)),
+		buffer, 6);
+      }
     }
     else if (card->data.dword.hi == 0x010) {
 	CUINT row;
@@ -5514,55 +5505,55 @@ void Top(SHM_STRUCT *Shm, char option)
       }
     }
   }
-#if 0
+
   void Draw_Card_Task(Layer *layer, Card* card)
   {
     if (card->data.dword.hi == 0x000) {
       if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-	unsigned int _cpu = card->data.dword.lo;
-	unsigned int idx;
-	for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
-	    if (Shm->SysGate.taskList[idx].wake_cpu == _cpu) {
-		size_t len = sprintf(buffer, "%10.*s", 10,
-					Shm->SysGate.taskList[idx].comm);
-
-		LayerFillAt(layer,	(card->origin.col + 1),		\
-					(card->origin.row + 3),		\
-					len,				\
-					buffer,\
-					MakeAttr(BLACK, 0, BLACK, 0));
-
-		switch (Shm->SysGate.sortByField) {
-		case F_RTIME:
-			len = sprintf(buffer, "%4e",
-				(double) Shm->SysGate.taskList[idx].runtime);
-			PrintLCD(layer, card->origin.col, card->origin.row, \
-				4, buffer, _WHITE);
-			break;
-		case F_UTIME:
-			len = sprintf(buffer, "%4e",
-				(double) Shm->SysGate.taskList[idx].usertime);
-			PrintLCD(layer, card->origin.col, card->origin.row, \
-				4, buffer, _WHITE);
-			break;
-		case F_STIME:
-			len = sprintf(buffer, "%4e",
-				(double) Shm->SysGate.taskList[idx].systime);
-			PrintLCD(layer, card->origin.col, card->origin.row, \
-				4, buffer, _WHITE);
-			break;
-		case F_STATE:
-		case F_PID:
-		case F_COMM:
-			// fallthrough
-		default:
-		  len = sprintf(buffer, "%4u", Shm->SysGate.taskList[idx].pid);
-			PrintLCD(layer, card->origin.col, card->origin.row, \
-				4, buffer, _WHITE);
-			break;
-		}
+	char symbol;
+	switch (Shm->SysGate.taskList[0].state) {
+	case 0: 	// TASK_RUNNING
+		symbol = 'R';
 		break;
-	    }
+	case 1: 	// TASK_INTERRUPTIBLE
+		symbol = 'S';
+		break;
+	case 2: 	// TASK_UNINTERRUPTIBLE
+		symbol = 'U';
+		break;
+	case 4: 	// TASK_ZOMBIE
+		symbol = 'Z';
+		break;
+	case 8: 	// TASK_STOPPED
+		symbol = 'H';
+		break;
+	default:
+		symbol = 'O';
+		break;
+	}
+
+	size_t len = strnlen(Shm->SysGate.taskList[0].comm, 12);
+	int	hl = (12 - len) / 2, hr = hl + hl % 2;
+	sprintf(buffer, "%.*s%s%.*s",
+			hl, hSpace,
+			Shm->SysGate.taskList[0].comm,
+			hr, hSpace);
+	LayerFillAt(layer,	(card->origin.col + 0),		\
+				(card->origin.row + 1),		\
+				12,				\
+				buffer,				\
+				MakeAttr(WHITE, 0, BLACK, 1));
+
+	len = sprintf(buffer, "%5u (%c)", Shm->SysGate.taskList[0].pid, symbol);
+	LayerFillAt(layer,	(card->origin.col + 2),		\
+				(card->origin.row + 2),		\
+				len,				\
+				buffer,				\
+				MakeAttr(WHITE, 0, BLACK, 0));
+
+	sprintf(buffer, "%5u", Shm->SysGate.taskCount);
+	memcpy(&LayerAt(layer, code, (card->origin.col+6),(card->origin.row+3)),
+		buffer, 5);
       }
     }
     else if (card->data.dword.hi == 0x010) {
@@ -5576,7 +5567,7 @@ void Top(SHM_STRUCT *Shm, char option)
       }
     }
   }
-#endif
+
     void Draw_Dashboard(Layer *layer)
     {
 	Card *walker = cardList.head;
@@ -5633,24 +5624,17 @@ void Top(SHM_STRUCT *Shm, char option)
 		card->data.dword.hi = 0x000;
 
 		AppendCard(card, &cardList);
-		StoreCard(card, .Layout, Layout_Card_System);
-		StoreCard(card, .Draw, Draw_Card_System);
+		StoreCard(card, .Layout, Layout_Card_RAM);
+		StoreCard(card, .Draw, Draw_Card_RAM);
 	}
-#if 0
-	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-	    for(cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, 0);
-		cpu++) {
-			if ((card = CreateCard()) != NULL) {
-				card->data.dword.lo = cpu;
-				card->data.dword.hi = 0x000;
+	if ((card = CreateCard()) != NULL) {
+		card->data.dword.lo = 0;
+		card->data.dword.hi = 0x000;
 
-				AppendCard(card, &cardList);
-				StoreCard(card, .Layout, Layout_Card_Task);
-				StoreCard(card, .Draw, Draw_Card_Task);
-			}
-	    }
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_Task);
+		StoreCard(card, .Draw, Draw_Card_Task);
 	}
-#endif
     }
 
     void Layout_NoHeader_SingleView_NoFooter(Layer *layer)

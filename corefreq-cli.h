@@ -1515,6 +1515,18 @@ void PrintLCD(Layer *layer, CUINT col, CUINT row,
 	} while (j > 0) ;
 }
 
+int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
+{
+	int base = 1 + (int) log10(ival);
+
+	(*oval) = ival;
+	if (base > constraint) {
+		(*oval) = (*oval) >> 10;
+		return(1 + ByteReDim((*oval), constraint, oval));
+	} else
+		return(0);
+}
+
 #define Prolog								\
 	printf(SCP SCR1 CUH CLS HIDE);					\
 									\
