@@ -1441,8 +1441,6 @@ void Skylake_X_Platform_Info(void)
 }
 
 
-typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
-
 typedef void (*ROUTER)(void __iomem *mchmap);
 
 PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
@@ -1820,26 +1818,26 @@ void Query_Broadwell_IMC(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
 					readl(mchmap + 0x4e98);
 	}
-
+/* ToDo */
 	Proc->Uncore.MC[0].SlotCount = 1;
 }
 
-PCI_CALLBACK P965(struct pci_dev *dev)
+static PCI_CALLBACK P965(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x4000, Query_P965));
 }
 
-PCI_CALLBACK G965(struct pci_dev *dev)
+static PCI_CALLBACK G965(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x4000, Query_G965));
 }
 
-PCI_CALLBACK P35(struct pci_dev *dev)
+static PCI_CALLBACK P35(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x4000, Query_P35));
 }
 
-PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
+static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short mc;
@@ -1853,7 +1851,7 @@ PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 	return((PCI_CALLBACK) rc);
 }
 
-PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
+static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short mc;
@@ -1867,36 +1865,36 @@ PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 	return((PCI_CALLBACK) rc);
 }
 
-PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev)
+static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0x50, &Proc->Uncore.Bus.DimmClock.value);
 
 	return(0);
 }
 
-PCI_CALLBACK X58_QPI(struct pci_dev *dev)
+static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xd0, &Proc->Uncore.Bus.QuickPath.value);
 
 	return(0);
 }
 
-PCI_CALLBACK C200(struct pci_dev *dev)
+static PCI_CALLBACK C200(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x8000, Query_C200));
 }
 
-PCI_CALLBACK C220(struct pci_dev *dev)
+static PCI_CALLBACK C220(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x8000, Query_C220));
 }
 
-PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev)
+static PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev)
 {
 	return(Router(dev, 0x48, 0x8000, Query_Broadwell_IMC));
 }
 
-PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
+static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
 {	// Source: BKDG for AMD NPT Family 0Fh Processors
 	unsigned short cha, slot, chip;
 
@@ -1935,7 +1933,7 @@ PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
 	return(0);
 }
 
-PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
+static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
 {
 	unsigned int link;
 
@@ -1949,150 +1947,26 @@ PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
 	return(0);
 }
 
-static int CoreFreqK_ProbePCI(	struct pci_dev *dev,
-				const struct pci_device_id *id)
+static int CoreFreqK_ProbePCI(void)
 {
+	struct pci_device_id *id = Arch[Proc->ArchID].PCI_ids;
+	struct pci_dev *dev = NULL;
 	int rc = -ENODEV;
 
-	if (!pci_enable_device(dev)) {
-		PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
-			rc =(int) Callback(dev);
+	while (id->vendor || id->subvendor || id->class_mask) {
+		dev = pci_get_device(id->vendor, id->device, NULL);
+		if (dev != NULL) {
+		    if (!pci_enable_device(dev)) {
+			PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
+				rc =(int) Callback(dev);
+			pci_disable_device(dev);
+		    }
+		    pci_dev_put(dev);
+		}
+		id++;
 	}
-
 	return(rc);
 }
-
-static void CoreFreqK_RemovePCI(struct pci_dev *dev)
-{
-	pci_disable_device(dev);
-}
-
-static struct pci_device_id CoreFreqK_pci_ids[] = {
-	{	// i946 - Lakeport
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
-		.driver_data = (kernel_ulong_t) P965
-	},
-	{	// Q963/Q965 - Broadwater
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965Q_HB),
-		.driver_data = (kernel_ulong_t) P965
-	},
-	{	// P965/G965 - Broadwater
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965G_HB),
-		.driver_data = (kernel_ulong_t) P965
-	},
-	{	// GM965 - Crestline
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GM_HB),
-		.driver_data = (kernel_ulong_t) G965
-	},
-	{	// GME965
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GME_HB),
-		.driver_data = (kernel_ulong_t) G965
-	},
-	{	// GM45 - Cantiga
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GM45_HB),
-		.driver_data = (kernel_ulong_t) G965
-	},
-	{	// Q35 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// P35/G33 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G33_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// Q33 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q33_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// X38/X48 - Bearlake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X38_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// 3200/3210 - Unknown
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_3200_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// Q45/Q43 - Unknown
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q45_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// P45/G45 - Eaglelake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G45_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	{	// G41 - Eaglelake
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
-		.driver_data = (kernel_ulong_t) P35
-	},
-	// 1st Generation
-	{	// Bloomfield IMC
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
-		.driver_data = (kernel_ulong_t) Bloomfield_IMC
-	},
-	{	// Bloomfield IMC Test Registers
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
-		.driver_data = (kernel_ulong_t) NHM_IMC_TR
-	},
-	{	// Nehalem Control Status and RAS Registers
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
-		.driver_data = (kernel_ulong_t) X58_QPI
-	},
-	{	// Lynnfield IMC
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR),
-		.driver_data = (kernel_ulong_t) Lynnfield_IMC
-	},
-	{	// Lynnfield IMC Test Registers
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST),
-		.driver_data = (kernel_ulong_t) NHM_IMC_TR
-	},
-	// 2nd Generation
-	// Sandy Bridge ix-2xxx, Xeon E3-E5: IMC_HA=0x3ca0 / IMC_TA=0x3ca8 /
-	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
-	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C200
-	},
-	// 3rd Generation
-	// Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
-	// TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead
-	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C200
-	},
-	// 4th Generation
-	// Haswell ix-4xxx, Xeon E7/E5 v3: IMC_HA0=0x2fa0 / IMC_HA0_TA=0x2fa8
-	// TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad
-	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C220
-	},
-	// 5th Generation
-	// Broadwell ix-5xxx: IMC_HA0=0x1604
-	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
-		.driver_data = (kernel_ulong_t) Broadwell_IMC
-	},
-	// AMD Family 0Fh
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
-		.driver_data = (kernel_ulong_t) AMD_0F_MCH
-	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB),
-		.driver_data = (kernel_ulong_t) AMD_0F_HTT
-	},
-	{0, }
-};
-
-MODULE_DEVICE_TABLE(pci, CoreFreqK_pci_ids);
-
-static struct pci_driver CoreFreqK_pci_driver = {
-	.name = "corefreqk",
-	.id_table = CoreFreqK_pci_ids,
-	.probe = CoreFreqK_ProbePCI,
-	.remove = CoreFreqK_RemovePCI
-};
-
 
 void Query_GenuineIntel(void)
 {
@@ -2160,25 +2034,6 @@ void Query_Haswell_EP(void)
 {
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
-}
-
-void Query_Broadwell(void)
-{
-	struct pci_dev *dev;
-
-	Nehalem_Platform_Info();
-	HyperThreading_Technology();
-
-    if (Experimental) {
-	dev = pci_get_device(	PCI_VENDOR_ID_INTEL,
-				PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0, NULL);
-	if (dev != NULL) {
-
-		Broadwell_IMC(dev);
-
-		pci_dev_put(dev);
-	}
-    }
 }
 
 void Query_Skylake_X(void)
@@ -3701,6 +3556,7 @@ Note: hardware Family_12h
 	else {
 		Proc->thermalFormula = THERMAL_FORMULA_AMD_0F;
 		Proc->voltageFormula = VOLTAGE_FORMULA_AMD_0F;
+		Arch[Proc->ArchID].PCI_ids = PCI_AMD_0F_ids;
 
 	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
 	}
@@ -5022,10 +4878,8 @@ static int __init CoreFreqK_init(void)
 				  Controller_Start(0);
 
 				if (Proc->Registration.Experimental) {
-				  Proc->Registration.pci =
-				    pci_register_driver(&CoreFreqK_pci_driver);
+				  Proc->Registration.pci |=CoreFreqK_ProbePCI();
 				}
-
 		#ifdef CONFIG_HOTPLUG_CPU
 			#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 			// Always returns zero (kernel/notifier.c)
@@ -5176,10 +5030,6 @@ static void __exit CoreFreqK_cleanup(void)
 			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
 	#endif
 #endif
-		if (Proc->Registration.Experimental) {
-			if (!Proc->Registration.pci)
-				pci_unregister_driver(&CoreFreqK_pci_driver);
-		}
 		Controller_Stop(1);
 		Controller_Exit();
 

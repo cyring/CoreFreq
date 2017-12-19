@@ -439,6 +439,7 @@ typedef	struct
 	char			*Architecture;
 	unsigned long long	thermalFormula,
 				voltageFormula;
+	struct pci_device_id	*PCI_ids;
 } ARCH;
 
 extern CLOCK Clock_GenuineIntel(unsigned int ratio) ;
@@ -487,7 +488,7 @@ static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 
-extern void Query_Broadwell(void) ;
+#define     Query_Broadwell Query_SandyBridge
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
@@ -498,7 +499,7 @@ static void Stop_Skylake(void *arg) ;
 extern void InitTimer_Skylake(unsigned int cpu) ;
 
 //	[Void]
-#define _Void_Signature	{.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
+#define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
 //	[Core]		06_0Eh (32 bits)
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
@@ -509,7 +510,7 @@ extern void InitTimer_Skylake(unsigned int cpu) ;
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
 #define _Core_Conroe_616 \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x6}
-#define _Core_Yorkfield	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
+#define _Core_Yorkfield {.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x7}
 #define _Core_Dunnington \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
 
@@ -592,572 +593,783 @@ extern void InitTimer_Skylake(unsigned int cpu) ;
 //	[Geminilake]	06_7Ah
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
+
+typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
+
+static PCI_CALLBACK P965(struct pci_dev *dev) ;
+static PCI_CALLBACK G965(struct pci_dev *dev) ;
+static PCI_CALLBACK P35(struct pci_dev *dev) ;
+static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
+static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
+static PCI_CALLBACK C200(struct pci_dev *dev) ;
+static PCI_CALLBACK C220(struct pci_dev *dev) ;
+static PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev) ;
+
+static struct pci_device_id PCI_Void_ids[] = {
+	{0, }
+};
+
+static struct pci_device_id PCI_Core2_ids[] = {
+	{	// 946PL/946GZ - Lakeport
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
+		.driver_data = (kernel_ulong_t) P965
+	},
+	{	// Q963/Q965 - Broadwater
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965Q_HB),
+		.driver_data = (kernel_ulong_t) P965
+	},
+	{	// P965/G965 - Broadwater
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965G_HB),
+		.driver_data = (kernel_ulong_t) P965
+	},
+	{	// GM965 - Crestline
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GM_HB),
+		.driver_data = (kernel_ulong_t) G965
+	},
+	{	// GME965 - Crestline
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GME_HB),
+		.driver_data = (kernel_ulong_t) G965
+	},
+	{	// GM45 - Cantiga
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GM45_HB),
+		.driver_data = (kernel_ulong_t) G965
+	},
+	{	// Q35 - Bearlake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// P35/G33 - Bearlake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G33_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// Q33 - Bearlake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q33_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// X38/X48 - Bearlake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X38_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// 3200/3210 - Unknown
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_3200_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// Q45/Q43 - Eaglelake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q45_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// P45/G45 - Eaglelake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G45_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{	// G41 - Eaglelake
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
+		.driver_data = (kernel_ulong_t) P35
+	},
+	{0, }
+};
+
+	// 1st Generation
+static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
+	{	// Bloomfield IMC
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
+		.driver_data = (kernel_ulong_t) Bloomfield_IMC
+	},
+	{	// Bloomfield IMC Test Registers
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
+		.driver_data = (kernel_ulong_t) NHM_IMC_TR
+	},
+	{	// Nehalem Control Status and RAS Registers
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+		.driver_data = (kernel_ulong_t) X58_QPI
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
+	{	// Lynnfield IMC
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR),
+		.driver_data = (kernel_ulong_t) Lynnfield_IMC
+	},
+	{	// Lynnfield IMC Test Registers
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST),
+		.driver_data = (kernel_ulong_t) NHM_IMC_TR
+	},
+	{0, }
+};
+
+	// 2nd Generation
+	// Sandy Bridge ix-2xxx, Xeon E3-E5: IMC_HA=0x3ca0 / IMC_TA=0x3ca8 /
+	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
+static struct pci_device_id PCI_SandyBridge_ids[] = {
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
+		.driver_data = (kernel_ulong_t) C200
+	},
+	{0, }
+};
+
+	// 3rd Generation
+	// Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
+	// TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead
+static struct pci_device_id PCI_IvyBridge_ids[] = {
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
+		.driver_data = (kernel_ulong_t) C200
+	},
+	{0, }
+};
+
+	// 4th Generation
+	// Haswell ix-4xxx, Xeon E7/E5 v3: IMC_HA0=0x2fa0 / IMC_HA0_TA=0x2fa8
+	// TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad
+static struct pci_device_id PCI_Haswell_ids[] = {
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
+		.driver_data = (kernel_ulong_t) C220
+	},
+	{0, }
+};
+
+	// 5th Generation
+	// Broadwell ix-5xxx: IMC_HA0=0x1604
+static struct pci_device_id PCI_Broadwell_ids[] = {
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
+		.driver_data = (kernel_ulong_t) Broadwell_IMC
+	},
+	{0, }
+};
+
+	// AMD Family 0Fh
+static struct pci_device_id PCI_AMD_0F_ids[] = {
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
+		.driver_data = (kernel_ulong_t) AMD_0F_MCH
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB),
+		.driver_data = (kernel_ulong_t) AMD_0F_HTT
+	},
+	{0, }
+};
+
 static ARCH Arch[ARCHITECTURES]=
 {
 /*  0*/	{
-	_Void_Signature,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	THERMAL_FORMULA_NONE,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Void_Signature,
+	.Query = NULL,
+	.Start = NULL,
+	.Stop = NULL,
+	.Exit = NULL,
+	.Timer = NULL,
+	.Clock = NULL,
+	.Architecture = NULL,
+	.thermalFormula = THERMAL_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /*  1*/	{
-	_Core_Yonah,
-	Query_GenuineIntel,
-	Start_GenuineIntel,
-	Stop_GenuineIntel,
-	NULL,
-	InitTimer_GenuineIntel,
-	Clock_Core,
-	"Core/Yonah",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Core_Yonah,
+	.Query = Query_GenuineIntel,
+	.Start = Start_GenuineIntel,
+	.Stop = Stop_GenuineIntel,
+	.Exit = NULL,
+	.Timer = InitTimer_GenuineIntel,
+	.Clock = Clock_Core,
+	.Architecture = "Core/Yonah",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Core2_ids
 	},
 /*  2*/	{
-	_Core_Conroe,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Core2,
-	"Core2/Conroe/Merom",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_MEROM,
+	.Signature = _Core_Conroe,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Core2,
+	.Architecture = "Core2/Conroe/Merom",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_MEROM,
+	.PCI_ids = PCI_Core2_ids
 	},
 /*  3*/	{
-	_Core_Kentsfield,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Core2,
-	"Core2/Kentsfield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Core_Kentsfield,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Core2,
+	.Architecture = "Core2/Kentsfield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Core2_ids
 	},
 /*  4*/	{
-	_Core_Conroe_616,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Core2,
-	"Core2/Conroe/Yonah",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Core_Conroe_616,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Core2,
+	.Architecture = "Core2/Conroe/Yonah",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Core2_ids
 	},
 /*  5*/	{
-	_Core_Yorkfield,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Core2,
-	"Core2/Yorkfield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Core_Yorkfield,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Core2,
+	.Architecture = "Core2/Yorkfield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Core2_ids
 	},
 /*  6*/	{
-	_Core_Dunnington,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Core2,
-	"Xeon/Dunnington",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Core_Dunnington,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Core2,
+	.Architecture = "Xeon/Dunnington",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Core2_ids
 	},
 
 /*  7*/	{
-	_Atom_Bonnell,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Bonnell",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Bonnell,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Bonnell",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /*  8*/	{
-	_Atom_Silvermont,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Silvermont",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Silvermont,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Silvermont",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /*  9*/	{
-	_Atom_Lincroft,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Lincroft",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Lincroft,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Lincroft",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 10*/	{
-	_Atom_Clovertrail,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Clovertrail",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Clovertrail,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Clovertrail",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 11*/	{
-	_Atom_Saltwell,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Saltwell",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Saltwell,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Saltwell",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 12*/	{
-	_Silvermont_637,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Silvermont,
-	"Silvermont",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Silvermont_637,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Silvermont,
+	.Architecture = "Silvermont",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 13*/	{
-	_Atom_Avoton,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Silvermont,
-	"Atom/Avoton",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Avoton,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Silvermont,
+	.Architecture = "Atom/Avoton",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 14*/	{
-	_Atom_Airmont,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Airmont,
-	"Atom/Airmont",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Airmont,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Airmont,
+	.Architecture = "Atom/Airmont",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 15*/	{
-	_Atom_Goldmont,
-	Query_SandyBridge,
-	Start_Haswell_ULT,
-	Stop_Haswell_ULT,
-	NULL,
-	InitTimer_Haswell_ULT,
-	Clock_Haswell,
-	"Atom/Goldmont",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Goldmont,
+	.Query = Query_SandyBridge,
+	.Start = Start_Haswell_ULT,
+	.Stop = Stop_Haswell_ULT,
+	.Exit = NULL,
+	.Timer = InitTimer_Haswell_ULT,
+	.Clock = Clock_Haswell,
+	.Architecture = "Atom/Goldmont",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 16*/	{
-	_Atom_Sofia,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Sofia",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Sofia,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Sofia",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 17*/	{
-	_Atom_Merrifield,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Merrifield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Merrifield,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Merrifield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 18*/	{
-	_Atom_Moorefield,
-	Query_Core2,
-	Start_Core2,
-	Stop_Core2,
-	NULL,
-	InitTimer_Core2,
-	Clock_Atom,
-	"Atom/Moorefield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Atom_Moorefield,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
+	.Exit = NULL,
+	.Timer = InitTimer_Core2,
+	.Clock = Clock_Atom,
+	.Architecture = "Atom/Moorefield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 19*/	{
-	_Nehalem_Bloomfield,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Nehalem,
-	"Nehalem/Bloomfield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Nehalem_Bloomfield,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Nehalem,
+	.Architecture = "Nehalem/Bloomfield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 /* 20*/	{
-	_Nehalem_Lynnfield,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Nehalem,
-	"Nehalem/Lynnfield",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Nehalem_Lynnfield,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Nehalem,
+	.Architecture = "Nehalem/Lynnfield",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 21*/	{
-	_Nehalem_MB,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Nehalem,
-	"Nehalem/Mobile",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Nehalem_MB,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Nehalem,
+	.Architecture = "Nehalem/Mobile",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 22*/	{
-	_Nehalem_EX,
-	Query_Core2,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Nehalem,
-	"Nehalem/eXtreme.EP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Nehalem_EX,
+	.Query = Query_Core2,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Nehalem,
+	.Architecture = "Nehalem/eXtreme.EP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 
 /* 23*/	{
-	_Westmere,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Westmere,
-	"Westmere",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Westmere,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Westmere,
+	.Architecture = "Westmere",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 24*/	{
-	_Westmere_EP,
-	Query_Nehalem,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Westmere,
-	"Westmere/EP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Westmere_EP,
+	.Query = Query_Nehalem,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Westmere,
+	.Architecture = "Westmere/EP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 /* 25*/	{
-	_Westmere_EX,
-	Query_Core2,
-	Start_Nehalem,
-	Stop_Nehalem,
-	NULL,
-	InitTimer_Nehalem,
-	Clock_Westmere,
-	"Westmere/eXtreme",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Westmere_EX,
+	.Query = Query_Core2,
+	.Start = Start_Nehalem,
+	.Stop = Stop_Nehalem,
+	.Exit = NULL,
+	.Timer = InitTimer_Nehalem,
+	.Clock = Clock_Westmere,
+	.Architecture = "Westmere/eXtreme",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 
 /* 26*/	{
-	_SandyBridge,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_SandyBridge,
-	"SandyBridge",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _SandyBridge,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_SandyBridge,
+	.Architecture = "SandyBridge",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_SandyBridge_ids
 	},
 /* 27*/	{
-	_SandyBridge_EP,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_SandyBridge,
-	"SandyBridge/eXtreme.EP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _SandyBridge_EP,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_SandyBridge,
+	.Architecture = "SandyBridge/eXtreme.EP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_SandyBridge_ids
 	},
 
 /* 28*/	{
-	_IvyBridge,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_IvyBridge,
-	"IvyBridge",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _IvyBridge,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_IvyBridge,
+	.Architecture = "IvyBridge",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_IvyBridge_ids
 	},
 /* 29*/	{
-	_IvyBridge_EP,
-	Query_IvyBridge_EP,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_IvyBridge,
-	"IvyBridge/EP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _IvyBridge_EP,
+	.Query = Query_IvyBridge_EP,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_IvyBridge,
+	.Architecture = "IvyBridge/EP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_IvyBridge_ids
 	},
 
 /* 30*/	{
-	_Haswell_DT,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Haswell,
-	"Haswell/Desktop",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Haswell_DT,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_Haswell,
+	.Architecture = "Haswell/Desktop",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Haswell_ids
 	},
 /* 31*/	{
-	_Haswell_EP,
-	Query_Haswell_EP,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Haswell,
-	"Haswell/EP/Mobile",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Haswell_EP,
+	.Query = Query_Haswell_EP,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_Haswell,
+	.Architecture = "Haswell/EP/Mobile",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Haswell_ids
 	},
 /* 32*/	{
-	_Haswell_ULT,
-	Query_SandyBridge,
-	Start_Haswell_ULT,
-	Stop_Haswell_ULT,
-	NULL,
-	InitTimer_Haswell_ULT,
-	Clock_Haswell,
-	"Haswell/Ultra Low TDP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Haswell_ULT,
+	.Query = Query_SandyBridge,
+	.Start = Start_Haswell_ULT,
+	.Stop = Stop_Haswell_ULT,
+	.Exit = NULL,
+	.Timer = InitTimer_Haswell_ULT,
+	.Clock = Clock_Haswell,
+	.Architecture = "Haswell/Ultra Low TDP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Haswell_ids
 	},
 /* 33*/	{
-	_Haswell_ULX,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Haswell,
-	"Haswell/Ultra Low eXtreme",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Haswell_ULX,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_Haswell,
+	.Architecture = "Haswell/Ultra Low eXtreme",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Haswell_ids
 	},
 
 /* 34*/	{
-	_Broadwell,
-	Query_Broadwell,
-	Start_Broadwell,
-	Stop_Broadwell,
-	NULL,
-	InitTimer_Broadwell,
-	Clock_Haswell,
-	"Broadwell/Mobile",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Broadwell,
+	.Query = Query_Broadwell,
+	.Start = Start_Broadwell,
+	.Stop = Stop_Broadwell,
+	.Exit = NULL,
+	.Timer = InitTimer_Broadwell,
+	.Clock = Clock_Haswell,
+	.Architecture = "Broadwell/Mobile",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 35*/	{
-	_Broadwell_EP,
-	Query_Haswell_EP,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Haswell,
-	"Broadwell/EP",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Broadwell_EP,
+	.Query = Query_Haswell_EP,
+	.Start = Start_Broadwell,
+	.Stop = Stop_Broadwell,
+	.Exit = NULL,
+	.Timer = InitTimer_Broadwell,
+	.Clock = Clock_Haswell,
+	.Architecture = "Broadwell/EP",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 36*/	{
-	_Broadwell_H,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Haswell,
-	"Broadwell/H",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Broadwell_H,
+	.Query = Query_Broadwell,
+	.Start = Start_Broadwell,
+	.Stop = Stop_Broadwell,
+	.Exit = NULL,
+	.Timer = InitTimer_Broadwell,
+	.Clock = Clock_Haswell,
+	.Architecture = "Broadwell/H",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 37*/	{
-	_Broadwell_EX,
-	Query_Haswell_EP,
-	Start_Haswell_ULT,
-	Stop_Haswell_ULT,
-	NULL,
-	InitTimer_Haswell_ULT,
-	Clock_Haswell,
-	"Broadwell/EX",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Broadwell_EX,
+	.Query = Query_Haswell_EP,
+	.Start = Start_Haswell_ULT,
+	.Stop = Stop_Haswell_ULT,
+	.Exit = NULL,
+	.Timer = InitTimer_Haswell_ULT,
+	.Clock = Clock_Haswell,
+	.Architecture = "Broadwell/EX",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Broadwell_ids
 	},
 
 /* 38*/	{
-	_Skylake_UY,
-	Query_SandyBridge,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_Skylake,
-	Clock_Skylake,
-	"Skylake/UY",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Skylake_UY,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Skylake/UY",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 39*/	{
-	_Skylake_S,
-	Query_SandyBridge,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_Skylake,
-	Clock_Skylake,
-	"Skylake/S",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Skylake_S,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Skylake/S",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 40*/	{
-	_Skylake_X,
-	Query_Skylake_X,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Skylake,
-	"Skylake/X",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Skylake_X,
+	.Query = Query_Skylake_X,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_Skylake,
+	.Architecture = "Skylake/X",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 41*/	{
-	_Xeon_Phi,
-	Query_SandyBridge,
-	Start_SandyBridge,
-	Stop_SandyBridge,
-	NULL,
-	InitTimer_SandyBridge,
-	Clock_Skylake,
-	"Knights Landing",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Xeon_Phi,
+	.Query = Query_SandyBridge,
+	.Start = Start_SandyBridge,
+	.Stop = Stop_SandyBridge,
+	.Exit = NULL,
+	.Timer = InitTimer_SandyBridge,
+	.Clock = Clock_Skylake,
+	.Architecture = "Knights Landing",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 42*/	{
-	_Kabylake,
-	Query_SandyBridge,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_Skylake,
-	Clock_Skylake,
-	"Kaby/Coffee Lake",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Kabylake,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Kaby/Coffee Lake",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 /* 43*/	{
-	_Kabylake_UY,
-	Query_SandyBridge,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_Skylake,
-	Clock_Skylake,
-	"Kaby Lake/UY",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Kabylake_UY,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Kaby Lake/UY",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 44*/	{
-	_Cannonlake,
-	Query_SandyBridge,
-	Start_Skylake,
-	Stop_Skylake,
-	NULL,
-	InitTimer_Skylake,
-	Clock_Skylake,
-	"Cannon Lake",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_INTEL_SNB,
+	.Signature = _Cannonlake,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Cannon Lake",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.PCI_ids = PCI_Void_ids
 	},
 
 /* 45*/	{
-	_Geminilake,
-	Query_SandyBridge,
-	Start_Haswell_ULT,
-	Stop_Haswell_ULT,
-	NULL,
-	InitTimer_Haswell_ULT,
-	Clock_Haswell,
-	"Atom/Gemini Lake",
-	THERMAL_FORMULA_INTEL,
-	VOLTAGE_FORMULA_NONE,
+	.Signature = _Geminilake,
+	.Query = Query_SandyBridge,
+	.Start = Start_Haswell_ULT,
+	.Stop = Stop_Haswell_ULT,
+	.Exit = NULL,
+	.Timer = InitTimer_Haswell_ULT,
+	.Clock = Clock_Haswell,
+	.Architecture = "Atom/Gemini Lake",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
 	},
 };
