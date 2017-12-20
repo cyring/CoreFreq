@@ -241,24 +241,24 @@ void SysInfoProc(SHM_STRUCT *Shm,
 		width - 14 - strlen(Shm->Proc.Features.Info.Vendor.ID), hSpace,
 		Shm->Proc.Features.Info.Vendor.ID);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Signature%.*s[%1X%1X_%1X%1X]",
-		width - 19, hSpace,
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Signature%.*s[%2X%1X_%1X%1X]",
+		width - 20, hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
 		Shm->Proc.Features.Std.EAX.Family,
 		Shm->Proc.Features.Std.EAX.ExtModel,
 		Shm->Proc.Features.Std.EAX.Model);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Stepping%.*s[%5u]",
-		width - 18, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Stepping%.*s[%6u]",
+		width - 19, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Microcode%.*s[%5u]",
-		width - 19, hSpace, Shm->Cpu[0].Query.Microcode);
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Microcode%.*s[%6u]",
+		width - 20, hSpace, Shm->Cpu[0].Query.Microcode);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Online CPU%.*s[%2u/%-2u]",
-		width - 20, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Online CPU%.*s[ %2u/%-2u]",
+		width - 21, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%5.1f]",
-		width - 20, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%6.2f]",
+		width - 21, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "TDP Limited%.*s[%6s]",
 		width - 22, hSpace,

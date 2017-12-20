@@ -692,8 +692,8 @@ CLOCK Clock_GenuineIntel(unsigned int ratio)
 
 // [Authentic AMD]
 CLOCK Clock_AuthenticAMD(unsigned int ratio)
-{
-	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L}; // AMD assumption
+{	// For AMD Families 0Fh, 10h up to 16h
+	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return(clock);
 };
 
@@ -985,6 +985,12 @@ CLOCK Clock_Skylake(unsigned int ratio)
 	}
 	ClockToHz(&clock);
 	clock.R *= ratio;
+	return(clock);
+};
+
+CLOCK Clock_AMD_Family_17h(unsigned int ratio)
+{	// Processor Programming Reference for AMD Family 17h
+	CLOCK clock = {.Q = 200, .R = 0, .Hz = 200000000L};
 	return(clock);
 };
 
@@ -1974,7 +1980,74 @@ void Query_GenuineIntel(void)
 	HyperThreading_Technology();
 }
 
+void Query_Core2(void)
+{
+	Intel_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Nehalem(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_IvyBridge_EP(void)
+{
+	IvyBridge_EP_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Haswell_EP(void)
+{
+	Haswell_EP_Platform_Info();
+	HyperThreading_Technology();
+}
+
+void Query_Skylake_X(void)
+{
+	Skylake_X_Platform_Info();
+	HyperThreading_Technology();
+}
+
 void Query_AuthenticAMD(void)
+{
+	Proc->Boost[0] = 8;
+
+	if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
+		COFVID CofVid = {.value = 0};
+
+		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+
+		switch(Arch[Proc->ArchID].Signature.ExtFamily) {
+		case 0x10:
+		case 0x15:
+		case 0x16:
+			Proc->Boost[1] = CofVid.Arch_COF.MaxCpuCof;
+			break;
+		case 0x11:
+			Proc->Boost[1] = CofVid.Arch_Pll.MainPllOpFidMax;
+			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+				Proc->Boost[1] += 0x8;
+			break;
+		case 0x12:
+		case 0x14:
+			Proc->Boost[1] = CofVid.Arch_Pll.MainPllOpFidMax;
+			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+				Proc->Boost[1] += 0x10;
+			break;
+		}
+	}
+	Proc->Boost[LAST_BOOST] = Proc->Boost[1];
+
+	Proc->Features.SpecTurboRatio = 0;
+
+	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
+
+	HyperThreading_Technology();
+}
+
+void Query_AMD_Family_0Fh(void)
 {
     if (Proc->Features.AdvPower.EDX.FID == 1) {
 	// Processor supports FID changes.
@@ -2005,42 +2078,99 @@ void Query_AuthenticAMD(void)
 
     HyperThreading_Technology();
 }
-/* Todo: AMD Hardware Families > 0Fh
 
-	if ( Proc->Features.AdvPower.DX.HwPstate == 1)
-		CoreCOF = 100 * (MSRC001_00[6B:64][CpuFid] + 10h)
-			/ (2^MSRC001_00[6B:64][CpuDid])
-*/
-
-void Query_Core2(void)
+void Query_AMD_Family_10h(void)
 {
-	Intel_Platform_Info();
-	HyperThreading_Technology();
+	unsigned int p;
+
+	for (p = 0; p <= 4; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		Proc->Boost[4 - p] =(PstateDef.Family_10h.CpuFid + 0x10)
+				   / (1 << PstateDef.Family_10h.CpuDid);
+	}	// @ 100 MHz
 }
 
-void Query_Nehalem(void)
+void Query_AMD_Family_11h(void)
 {
-	Nehalem_Platform_Info();
-	HyperThreading_Technology();
+	unsigned int p;
+
+	for (p = 0; p <= 7; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		Proc->Boost[7 - p] =(PstateDef.Family_10h.CpuFid + 0x8)
+				   / (1 << PstateDef.Family_10h.CpuDid);
+	}	// @ 100 MHz
 }
 
-void Query_IvyBridge_EP(void)
+void Query_AMD_Family_12h(void)
 {
-	IvyBridge_EP_Platform_Info();
-	HyperThreading_Technology();
+	unsigned int p;
+
+	for (p = 0; p <= 7; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		Proc->Boost[7 - p] =(PstateDef.Family_12h.CpuFid + 0x10)
+				   / PstateDef.Family_12h.CpuDid;
+	}	// @ 100 MHz
 }
 
-void Query_Haswell_EP(void)
+void Query_AMD_Family_14h(void)
 {
-	Haswell_EP_Platform_Info();
-	HyperThreading_Technology();
+	COFVID CofVid = {.value = 0};
+	unsigned int MaxFreq = 100, ClockDiv, p;
+
+	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+
+	if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+		MaxFreq *= (CofVid.Arch_Pll.MainPllOpFidMax + 0x10);
+
+	for (p = 0; p <= 7; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		ClockDiv = (PstateDef.Family_14h.CpuDidMSD + 1) * 4;
+		ClockDiv += PstateDef.Family_14h.CpuDidLSD;
+
+		Proc->Boost[7 - p] = (MaxFreq * 4) / ClockDiv;
+	}	// @ MainPllOpFidMax MHz
 }
 
-void Query_Skylake_X(void)
+void Query_AMD_Family_15h(void)
 {
-	Skylake_X_Platform_Info();
-	HyperThreading_Technology();
+	unsigned int p;
+
+	for (p = 0; p <= 7; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		Proc->Boost[7 - p] =(PstateDef.Family_15h.CpuFid + 0x10)
+				   / (1 << PstateDef.Family_15h.CpuDid);
+	}	// @ 100 MHz
 }
+
+void Query_AMD_Family_17h(void)
+{
+	unsigned int p;
+
+	for (p = 0; p <= 7; p++) {
+		PSTATEDEF PstateDef = {.value = 0};
+
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+
+		Proc->Boost[7 - p] = PstateDef.Family_17h.CpuFid
+				   / PstateDef.Family_17h.CpuDfsId;
+	}	// @ 200 MHz
+}
+
 
 void Dump_CPUID(CORE *Core)
 {
@@ -3355,6 +3485,44 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
+void InitTimer_GenuineIntel(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
+}
+
+static void Start_GenuineIntel(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_Intel_Query(Core, cpu);
+
+	Counters_Generic(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_GenuineIntel(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
 static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 {
 	unsigned int cpu = smp_processor_id();
@@ -3396,176 +3564,15 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
-void InitTimer_GenuineIntel(unsigned int cpu)
-{
-	smp_call_function_single(cpu, InitTimer, Cycle_GenuineIntel, 1);
-}
-
-static void Start_GenuineIntel(void *arg)
-{
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
-
-	PerCore_Intel_Query(Core, cpu);
-
-	Counters_Generic(Core, 0);
-
-	if (Core->T.Base.BSP) {
-		PKG_Counters_Generic(Core, 0);
-	}
-
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
-
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
-			RearmTheTimer,
-			HRTIMER_MODE_REL_PINNED);
-
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
-}
-
-static void Stop_GenuineIntel(void *arg)
-{
-	unsigned int cpu = smp_processor_id();
-
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
-
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
-
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
-}
-
-/*
-Note: hardware Family_12h
-
-static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
-{
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
-
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
-
-		// Core Performance Boost instructions
-		// [ Here ]
-
-		// Derive C1
-		Core->Counter[1].C1 =
-		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?
-		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
-		    : 0;
-
-		Delta_C0(Core);
-
-		Delta_TSC(Core);
-
-		Delta_C1(Core);
-
-		Save_TSC(Core);
-
-		Save_C0(Core);
-
-		Save_C1(Core);
-
-		Core_AMD_Temp(Core);
-
-		BITSET(LOCKLESS, Core->Sync.V, 63);
-
-		return(HRTIMER_RESTART);
-	} else
-		return(HRTIMER_NORESTART);
-}
-*/
-
-static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
-{
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
-
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
-		FIDVID_STATUS FidVidStatus = {.value = 0};
-
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
-
-		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
-
-		Core->Counter[1].VID = FidVidStatus.CurrVID;
-
-		// P-States
-		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
-					+ (8 + FidVidStatus.CurrFID)
-					* Core->Clock.Hz;
-
-		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
-
-		Core->Counter[1].TSC	= Core->Counter[0].TSC
-					+ (Proc->Boost[1] * Core->Clock.Hz);
-
-		/* Derive C1 */
-		Core->Counter[1].C1 =
-		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?
-		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
-		    : 0;
-
-		if (Core->T.Base.BSP) {
-			PKG_Counters_Generic(Core, 1);
-
-			Delta_PTSC(Proc);
-
-			Save_PTSC(Proc);
-
-			Sys_Tick(Proc);
-		}
-
-		Core_AMD_Temp(Core);
-
-		Delta_C0(Core);
-
-		Delta_TSC(Core);
-
-		Delta_C1(Core);
-
-		Save_TSC(Core);
-
-		Save_C0(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, Core->Sync.V, 63);
-
-		return(HRTIMER_RESTART);
-	} else
-		return(HRTIMER_NORESTART);
-}
-
 void InitTimer_AuthenticAMD(unsigned int cpu)
 {
-/*
-Note: hardware Family_12h
-
-	if (Proc->Features.AdvPower.DX.CPB == 1)
-	// Core Performance Boost [Here].
-	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
-	else
-*/
-	if (Proc->Features.Power.ECX.EffFreq == 1) // MPERF & APERF ?
-	    smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
-	else {
-		Proc->thermalFormula = THERMAL_FORMULA_AMD_0F;
-		Proc->voltageFormula = VOLTAGE_FORMULA_AMD_0F;
-		Arch[Proc->ArchID].PCI_ids = PCI_AMD_0F_ids;
-
-	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
-	}
+	smp_call_function_single(cpu, InitTimer, Cycle_AuthenticAMD, 1);
 }
 
 static void Start_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core=(CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Query(Core, cpu);
 
@@ -4216,6 +4223,159 @@ static void Stop_Skylake(void *arg)
 }
 
 
+static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		FIDVID_STATUS FidVidStatus = {.value = 0};
+
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
+
+		Core->Counter[1].VID = FidVidStatus.CurrVID;
+
+		// P-States
+		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
+					+ (8 + FidVidStatus.CurrFID)
+					* Core->Clock.Hz;
+
+		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
+
+		Core->Counter[1].TSC	= Core->Counter[0].TSC
+					+ (Proc->Boost[1] * Core->Clock.Hz);
+
+		/* Derive C1 */
+		Core->Counter[1].C1 =
+		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?
+		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
+		    : 0;
+
+		if (Core->T.Base.BSP) {
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
+
+			Sys_Tick(Proc);
+		}
+
+		Core_AMD_Temp(Core);
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_AMD_Family_0Fh(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_0Fh, 1);
+}
+
+static void Start_AMD_Family_0Fh(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Query(Core, cpu);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_AMD_Family_0Fh(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+/*
+Note: hardware Family_12h
+
+	if (Proc->Features.AdvPower.DX.CPB == 1)
+	// Core Performance Boost [Here].
+	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
+	else
+	if (Proc->Features.Power.ECX.EffFreq == 1) // MPERF & APERF ?
+*/
+
+/*
+Note: hardware Family_12h
+
+static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		// Core Performance Boost instructions
+		// [ Here ]
+
+		// Derive C1
+		Core->Counter[1].C1 =
+		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?
+		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
+		    : 0;
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		Core_AMD_Temp(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+*/
+
 long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {
     if (SysGate != NULL) {
@@ -4627,11 +4787,11 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
-//-	case CPU_ONLINE_FROZEN:
+//	case CPU_ONLINE_FROZEN:
 			rc = CoreFreqK_hotplug_cpu_online(cpu);
 		break;
 	case CPU_DOWN_PREPARE:
-//-	case CPU_DOWN_PREPARE_FROZEN:
+//	case CPU_DOWN_PREPARE_FROZEN:
 			rc = CoreFreqK_hotplug_cpu_offline(cpu);
 		break;
 	default:
@@ -4640,8 +4800,7 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 	return(NOTIFY_OK);
 }
 
-static struct notifier_block CoreFreqK_notifier_block=
-{
+static struct notifier_block CoreFreqK_notifier_block = {
 	.notifier_call = CoreFreqK_hotplug,
 };
 #endif
@@ -4840,14 +4999,17 @@ static int __init CoreFreqK_init(void)
 					Proc->ArchID > 0;
 					Proc->ArchID--) {
 				    // Search for an architecture signature.
-				    if ((Arch[Proc->ArchID].Signature.ExtFamily
-					== Proc->Features.Std.EAX.ExtFamily)
-				    && (Arch[Proc->ArchID].Signature.Family
-					== Proc->Features.Std.EAX.Family)
-				    && (Arch[Proc->ArchID].Signature.ExtModel
-					== Proc->Features.Std.EAX.ExtModel)
-				    && (Arch[Proc->ArchID].Signature.Model
-					== Proc->Features.Std.EAX.Model)) {
+				    if((Proc->Features.Std.EAX.ExtFamily
+				    == Arch[Proc->ArchID].Signature.ExtFamily)
+				    && (Proc->Features.Std.EAX.Family
+				    == Arch[Proc->ArchID].Signature.Family)
+				    && (((Proc->Features.Std.EAX.ExtModel
+				      ==  Arch[Proc->ArchID].Signature.ExtModel)
+				      && (Proc->Features.Std.EAX.Model
+				      ==  Arch[Proc->ArchID].Signature.Model))
+				      || (!Arch[Proc->ArchID].Signature.ExtModel
+				      &&  !Arch[Proc->ArchID].Signature.Model)))
+					{
 						break;
 					}
 				    }
@@ -4865,7 +5027,7 @@ static int __init CoreFreqK_init(void)
 				  Controller_Init();
 
 				  printk(KERN_INFO "CoreFreq:"		\
-				      " Processor [%1X%1X_%1X%1X]"	\
+				      " Processor [%2X%1X_%1X%1X]"	\
 				      " Architecture [%s] CPU [%u/%u]\n",
 					Proc->Features.Std.EAX.ExtFamily,
 					Proc->Features.Std.EAX.Family,

@@ -52,6 +52,14 @@ enum {	GenuineIntel,		\
 	Kabylake_UY,		\
 	Cannonlake,		\
 	Geminilake,		\
+	AMD_Family_0Fh,		\
+	AMD_Family_10h,		\
+	AMD_Family_11h,		\
+	AMD_Family_12h,		\
+	AMD_Family_14h,		\
+	AMD_Family_15h,		\
+	AMD_Family_16h,		\
+	AMD_Family_17h,		\
 	ARCHITECTURES
 };
 

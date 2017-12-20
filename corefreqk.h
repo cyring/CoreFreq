@@ -455,6 +455,7 @@ extern CLOCK Clock_SandyBridge(unsigned int ratio) ;
 extern CLOCK Clock_IvyBridge(unsigned int ratio) ;
 extern CLOCK Clock_Haswell(unsigned int ratio) ;
 extern CLOCK Clock_Skylake(unsigned int ratio) ;
+extern CLOCK Clock_AMD_Family_17h(unsigned int ratio) ;
 
 extern void Query_GenuineIntel(void) ;
 static void Start_GenuineIntel(void *arg) ;
@@ -497,6 +498,23 @@ extern void Query_Skylake_X(void) ;
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
 extern void InitTimer_Skylake(unsigned int cpu) ;
+
+extern void Query_AMD_Family_0Fh(void) ;
+static void Start_AMD_Family_0Fh(void *arg) ;
+static void Stop_AMD_Family_0Fh(void *arg) ;
+extern void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
+
+extern void Query_AMD_Family_10h(void) ;
+
+extern void Query_AMD_Family_11h(void) ;
+
+extern void Query_AMD_Family_12h(void) ;
+
+extern void Query_AMD_Family_14h(void) ;
+
+extern void Query_AMD_Family_15h(void) ;
+
+extern void Query_AMD_Family_17h(void) ;
 
 //	[Void]
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -592,6 +610,30 @@ extern void InitTimer_Skylake(unsigned int cpu) ;
 
 //	[Geminilake]	06_7Ah
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
+
+//	[Family 0Fh]	000F_00h
+#define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
+
+//	[Family 10h]	100F_00h
+#define _AMD_Family_10h {.ExtFamily=0x10, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 11h]	110F_00h
+#define _AMD_Family_11h {.ExtFamily=0x11, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 12h]	120F_00h
+#define _AMD_Family_12h {.ExtFamily=0x12, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 14h]	140F_00h
+#define _AMD_Family_14h {.ExtFamily=0x14, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 15h]	150F_00h
+#define _AMD_Family_15h {.ExtFamily=0x15, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 16h]	160F_00h
+#define _AMD_Family_16h {.ExtFamily=0x16, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+
+//	[Family 17h]	170F_00h
+#define _AMD_Family_17h {.ExtFamily=0x17, .Family=0xF, .ExtModel=0x0,.Model=0x0}
 
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
@@ -1370,6 +1412,118 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Gemini Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_0Fh,
+	.Query = Query_AMD_Family_0Fh,
+	.Start = Start_AMD_Family_0Fh,
+	.Stop = Stop_AMD_Family_0Fh,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_Family_0Fh,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 0Fh",
+	.thermalFormula = THERMAL_FORMULA_AMD_0F,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_0F,
+	.PCI_ids = PCI_AMD_0F_ids
+	},
+
+	{
+	.Signature = _AMD_Family_10h,
+	.Query = Query_AMD_Family_10h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 10h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_11h,
+	.Query = Query_AMD_Family_11h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 11h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_12h,
+	.Query = Query_AMD_Family_12h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 12h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_14h,
+	.Query = Query_AMD_Family_14h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 14h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_15h,
+	.Query = Query_AMD_Family_15h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 15h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_16h,
+	.Query = Query_AMD_Family_15h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AuthenticAMD,
+	.Architecture = "Family 16h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.PCI_ids = PCI_Void_ids
+	},
+
+	{
+	.Signature = _AMD_Family_17h,
+	.Query = Query_AMD_Family_17h,
+	.Start = Start_AuthenticAMD,
+	.Stop = Stop_AuthenticAMD,
+	.Exit = NULL,
+	.Timer = InitTimer_AuthenticAMD,
+	.Clock = Clock_AMD_Family_17h,
+	.Architecture = "Family 17h",
+	.thermalFormula = THERMAL_FORMULA_AMD,
+	.voltageFormula = VOLTAGE_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 };

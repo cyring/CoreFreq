@@ -4,6 +4,14 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_AMD_PSTATE_DEF_BASE
+#define MSR_AMD_PSTATE_DEF_BASE 0xc0010064
+#endif
+
+#ifndef MSR_AMD_COFVID_STATUS
+#define MSR_AMD_COFVID_STATUS 0xc0010071
+#endif
+
 const struct {
 	unsigned int	MCF,
 			PCF[5];
@@ -105,9 +113,9 @@ typedef union
     struct
     {
 	unsigned long long
-	CurrFID		:  6-0,	 // Current FID
+	CurrFID		:  6-0,  // Current FID
 	Reserved1	:  8-6,
-	StartFID	: 14-8,	 // Startup FID
+	StartFID	: 14-8,  // Startup FID
 	Reserved2	: 16-14,
 	MaxFID		: 22-16, // Max FID
 	Reserved3	: 24-22,
@@ -127,6 +135,119 @@ typedef union
 	Reserved9	: 64-62;
     };
 } FIDVID_STATUS;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 // MSRC001_00[68:64] P-State [4:0]
+	CpuFid		:  6-0,  // Core Frequency ID. RW: Value <= 2Fh
+	CpuDid		:  9-6,  // Core Divisor ID. RW: 0h-4h divide by 1-16
+	CpuVid		: 16-9,  // Core Voltage ID. RW
+	Reserved1	: 22-16,
+	NbDid		: 23-22, // Northbridge Divisor ID. RW: 0-1 => 0-2
+	Reserved2	: 25-23,
+	NbVid		: 32-25, // NB VID. RW: in MSRC001_0071[MaxVid,MinVid]
+	IddValue	: 40-32, // Current Dissipation. RW: 00-10b->1,10,100A
+	IddDiv		: 42-40, // Current Dissipation Divisor. RW
+	Reserved3	: 63-42,
+	PstateEn	: 64-63; // Pstate enabled. RW
+    } Family_10h;
+    struct
+    {
+	unsigned long long	 // MSRC001_00[6B:64] P-State [7:0]
+	CpuDid		:  4-0,  // Core Divisor ID. RW
+	CpuFid		:  9-4,  // Core Frequency ID. RW
+	CpuVid		: 16-9,  // Core Voltage ID. RW
+	Reserved1	: 32-16,
+	IddValue	: 40-32, // Current value field. RW
+	IddDiv		: 42-40, // Current divisor field. RW
+	Reserved2	: 63-42,
+	PstateEn	: 64-63; // Pstate enabled. RW
+    } Family_12h;
+    struct
+    {
+	unsigned long long	 // MSRC001_00[6B:64] P-State [7:0]
+	CpuDidLSD	:  4-0,  // Core Divisor ID least significant digit. RW
+	CpuDidMSD	:  9-4,  // Core Divisor ID most significant digit. RW
+	CpuVid		: 16-9,  // Core Voltage ID. RW
+	Reserved1	: 32-16,
+	IddValue	: 40-32, // Current value field. RW
+	IddDiv		: 42-40, // Current divisor field. RW
+	Reserved2	: 63-42,
+	PstateEn	: 64-63; // Pstate enabled. RW
+    } Family_14h;
+    struct
+    {
+	unsigned long long	 // MSRC001_00[6B:64] P-state [7:0]
+	CpuFid		:  6-0,  // Core Frequency ID. RW
+	CpuDid		:  9-6,  // Core Divisor ID. RW: 0h-4h divide by 1-16
+	CpuVid		: 16-9,  // Core Voltage ID. RW
+	CpuVid_bit	: 17-16,
+	Reserved1	: 22-17,
+	NbPstate	: 23-22, //Northbridge P-state.MSRC001_0071[NbPstateDis]
+	Reserved2	: 32-23,
+	IddValue	: 40-32, // Max Current Dissipation: 00-10b->1,10,100A
+	IddDiv		: 42-40, // Current Dissipation Divisor. RW
+	Reserved3	: 63-42,
+	PstateEn	: 64-63; // Pstate enabled. RW
+    } Family_15h;
+    struct
+    {
+	unsigned long long	 // MSRC001_0064 [P-state [7:0]]
+	CpuFid		:  8-0,  // Core Frequency ID. RW: FFh-10h <Value>*25
+	CpuDfsId	: 14-8,  // Core Divisor ID. RW
+	CpuVid		: 22-14, // Core Voltage ID. RW
+	IddValue	: 30-22, // Current Dissipation in amps. RW
+	IddDiv		: 32-30, // Current Dissipation Divisor. RW
+	Reserved	: 63-32,
+	PstateEn	: 64-63; // Pstate enabled. RW
+    } Family_17h;
+} PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 // MSRC001_0071 COFVID Status
+	CurCpuFid	:  6-0,
+	CurCpuDid	:  9-6,
+	CurCpuVid	: 16-9,
+	CurPstate	: 19-16,
+	Reserved1	: 20-19,
+	CurCpuVid_bit	: 21-20,
+	Reserved2	: 23-21,
+	NbPstateDis	: 24-23,
+	CurNbVid	: 32-24,
+	StartupPstate	: 35-32,
+	Reserved3	: 49-35,
+	MaxCpuCof	: 55-49,
+	Reserved4	: 56-55,
+	CurPstateLimit	: 59-56,
+	MaxNbCof	: 64-59;
+    } Arch_COF;
+    struct
+    {
+	unsigned long long	 // MSRC001_0071 COFVID Status
+	CurCpuDidLSD	:  4-0,  // Current Core Divisor ID. RO
+	CurCpuDidMSD	:  9-4,
+	CurCpuVid	: 16-9,  // Current Core Voltage ID. RO
+	CurPstate	: 19-16, // Current P-state. RO
+	Reserved1	: 20-19,
+	PstateInProgress: 21-20, // RO: 1=Change, 0=No change
+	Reserved2	: 25-21,
+	CurNbVid	: 32-25, // Current Northbridge VID. RO
+	StartupPstate	: 35-32, // Startup P-state Number. RO
+	MaxVid		: 42-35, // Maximum Voltage ID. RO
+	MinVid		: 49-42, // Minimum Voltage ID. RO
+	MainPllOpFidMax : 55-49, // Main Pll Operating Frequency ID maximum. RO
+	Reserved3	: 56-55,
+	CurPstateLimit	: 59-56, // Current P-state Limit. RO
+	Reserved4	: 64-59;
+    } Arch_Pll;
+} COFVID;
 
 typedef union
 {
