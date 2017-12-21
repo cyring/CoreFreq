@@ -505,8 +505,12 @@ static void Stop_AMD_Family_0Fh(void *arg) ;
 extern void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
 
 extern void Query_AMD_Family_10h(void) ;
+static void Start_AMD_Family_10h(void *arg) ;
+static void Stop_AMD_Family_10h(void *arg) ;
 
 extern void Query_AMD_Family_11h(void) ;
+#define     Start_AMD_Family_11h Start_AMD_Family_10h
+#define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 
 extern void Query_AMD_Family_12h(void) ;
 
@@ -1432,8 +1436,8 @@ static ARCH Arch[ARCHITECTURES]=
 	{
 	.Signature = _AMD_Family_10h,
 	.Query = Query_AMD_Family_10h,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Start = Start_AMD_Family_10h,
+	.Stop = Stop_AMD_Family_10h,
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.Clock = Clock_AuthenticAMD,
@@ -1446,8 +1450,8 @@ static ARCH Arch[ARCHITECTURES]=
 	{
 	.Signature = _AMD_Family_11h,
 	.Query = Query_AMD_Family_11h,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Start = Start_AMD_Family_11h,
+	.Stop = Stop_AMD_Family_11h,
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.Clock = Clock_AuthenticAMD,

@@ -2081,93 +2081,94 @@ void Query_AMD_Family_0Fh(void)
 
 void Query_AMD_Family_10h(void)
 {
-	unsigned int p;
+	unsigned int pstate, sort[5] = {1, 2, 3, 4, 0};
 
-	for (p = 0; p <= 4; p++) {
+	for (pstate = 0; pstate <= 4; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[4 - p] =(PstateDef.Family_10h.CpuFid + 0x10)
-				   / (1 << PstateDef.Family_10h.CpuDid);
+		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x10)
+					  / (1 << PstateDef.Family_10h.CpuDid);
 	}	// @ 100 MHz
 }
 
 void Query_AMD_Family_11h(void)
 {
-	unsigned int p;
+	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
 
-	for (p = 0; p <= 7; p++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[7 - p] =(PstateDef.Family_10h.CpuFid + 0x8)
-				   / (1 << PstateDef.Family_10h.CpuDid);
+		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x8)
+					  / (1 << PstateDef.Family_10h.CpuDid);
 	}	// @ 100 MHz
 }
 
 void Query_AMD_Family_12h(void)
 {
-	unsigned int p;
+	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
 
-	for (p = 0; p <= 7; p++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[7 - p] =(PstateDef.Family_12h.CpuFid + 0x10)
-				   / PstateDef.Family_12h.CpuDid;
+		Proc->Boost[sort[pstate]] = (PstateDef.Family_12h.CpuFid + 0x10)
+					  /  PstateDef.Family_12h.CpuDid;
 	}	// @ 100 MHz
 }
 
 void Query_AMD_Family_14h(void)
 {
 	COFVID CofVid = {.value = 0};
-	unsigned int MaxFreq = 100, ClockDiv, p;
+	unsigned int	pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0},
+			MaxFreq = 100, ClockDiv;
 
 	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 
 	if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
 		MaxFreq *= (CofVid.Arch_Pll.MainPllOpFidMax + 0x10);
 
-	for (p = 0; p <= 7; p++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
 		ClockDiv = (PstateDef.Family_14h.CpuDidMSD + 1) * 4;
 		ClockDiv += PstateDef.Family_14h.CpuDidLSD;
 
-		Proc->Boost[7 - p] = (MaxFreq * 4) / ClockDiv;
+		Proc->Boost[sort[pstate]] = (MaxFreq * 4) / ClockDiv;
 	}	// @ MainPllOpFidMax MHz
 }
 
 void Query_AMD_Family_15h(void)
 {
-	unsigned int p;
+	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
 
-	for (p = 0; p <= 7; p++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[7 - p] =(PstateDef.Family_15h.CpuFid + 0x10)
-				   / (1 << PstateDef.Family_15h.CpuDid);
+		Proc->Boost[sort[pstate]] = (PstateDef.Family_15h.CpuFid + 0x10)
+					  / (1 << PstateDef.Family_15h.CpuDid);
 	}	// @ 100 MHz
 }
 
 void Query_AMD_Family_17h(void)
 {
-	unsigned int p;
+	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
 
-	for (p = 0; p <= 7; p++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + p));
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[7 - p] = PstateDef.Family_17h.CpuFid
-				   / PstateDef.Family_17h.CpuDfsId;
+		Proc->Boost[sort[pstate]] = PstateDef.Family_17h.CpuFid
+					  / PstateDef.Family_17h.CpuDfsId;
 	}	// @ 200 MHz
 }
 
@@ -2320,7 +2321,7 @@ void Query_Intel_C1E(CORE *Core, unsigned int cpu)
 	}
 }
 
-void Query_AMD_C1E(CORE *Core, unsigned int cpu)
+void Query_AMD_Family_0Fh_C1E(CORE *Core, unsigned int cpu)
 {
 	INT_PENDING_MSG IntPendingMsg = {.value = 0};
 
@@ -2697,7 +2698,7 @@ void CStatesConfiguration(int encoding, CORE *Core, unsigned int cpu)
 	}
 }
 
-void PerCore_AMD_PStates(CORE *Core)
+void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
 {
     if (Experimental == 1) {
 	FIDVID_STATUS FidVidStatus = {.value = 0};
@@ -2761,11 +2762,9 @@ void PerCore_Intel_Query(CORE *Core, unsigned int cpu)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_AMD_Query(CORE *Core, unsigned int cpu)
+void PerCore_AuthenticAMD_Query(CORE *Core, unsigned int cpu)
 {
 	Dump_CPUID(Core);
-
-	Query_AMD_C1E(Core, cpu);
 
 	BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
 	BITSET(LOCKLESS, Proc->PowerMgmt_Mask, cpu);
@@ -2775,8 +2774,6 @@ void PerCore_AMD_Query(CORE *Core, unsigned int cpu)
 	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
 	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
 	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
-
-	PerCore_AMD_PStates(Core);
 }
 
 void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
@@ -2851,6 +2848,40 @@ void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
+}
+
+void PerCore_AMD_Family_0Fh_Query(CORE *Core, unsigned int cpu)
+{
+	Dump_CPUID(Core);
+
+	Query_AMD_Family_0Fh_C1E(Core, cpu);
+
+	BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
+	BITSET(LOCKLESS, Proc->PowerMgmt_Mask, cpu);
+	BITSET(LOCKLESS, Proc->SpeedStep_Mask, cpu);
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
+
+	PerCore_AMD_Family_0Fh_PStates(Core);
+}
+
+void PerCore_AMD_Family_10h_Query(CORE *Core, unsigned int cpu)
+{
+	Dump_CPUID(Core);
+
+	Query_AMD_Family_0Fh_C1E(Core, cpu);
+
+	BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
+	BITSET(LOCKLESS, Proc->PowerMgmt_Mask, cpu);
+	BITSET(LOCKLESS, Proc->SpeedStep_Mask, cpu);
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1A_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C3U_Mask, cpu);
+	BITSET(LOCKLESS, Proc->C1U_Mask, cpu);
 }
 
 void Sys_DumpTask(SYSGATE *SysGate)
@@ -3421,7 +3452,7 @@ void Core_Intel_Temp(CORE *Core)
 	Core->PowerThermal.Trip = ThermStatus.StatusBit | ThermStatus.StatusLog;
 }
 
-void Core_AMD_Temp(CORE *Core)
+void Core_AMD_Family_0Fh_Temp(CORE *Core)
 {
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip;
@@ -3574,7 +3605,7 @@ static void Start_AuthenticAMD(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_AMD_Query(Core, cpu);
+	PerCore_AuthenticAMD_Query(Core, cpu);
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_Generic(Core, 0);
@@ -4265,7 +4296,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 			Sys_Tick(Proc);
 		}
 
-		Core_AMD_Temp(Core);
+		Core_AMD_Family_0Fh_Temp(Core);
 
 		Delta_C0(Core);
 
@@ -4296,7 +4327,7 @@ static void Start_AMD_Family_0Fh(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
-	PerCore_AMD_Query(Core, cpu);
+	PerCore_AMD_Family_0Fh_Query(Core, cpu);
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_Generic(Core, 0);
@@ -4312,6 +4343,37 @@ static void Start_AMD_Family_0Fh(void *arg)
 }
 
 static void Stop_AMD_Family_0Fh(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_AMD_Family_10h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_10h_Query(Core, cpu);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_AMD_Family_10h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 

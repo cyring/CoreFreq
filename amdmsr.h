@@ -251,7 +251,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long value;
+	unsigned long long value; // MSR C001_0055h
     struct
     {
 	unsigned long long
@@ -261,7 +261,7 @@ typedef union
 	IntrPndMsg	: 26-25,
 	IORd		: 27-26,
 	SmiOnCmpHalt	: 28-27, // SMI on Multi-core halt
-	C1eOnCmpHalt	: 29-28, // C1E on Multi-core halt
+	C1eOnCmpHalt	: 29-28, // C1E on Multi-core halt: Family 0Fh,10h,11h
 	Reserved1	: 32-29,
 	Reserved2	: 64-32;
     };
