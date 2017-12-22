@@ -545,7 +545,7 @@ typedef struct
 	} CPU;
 
 	signed int		ArchID;
-	unsigned int		Boost[MAX_BOOST];
+	unsigned int		Boost[BOOST(SIZE)];
 
 	struct {
 		BUS_REGISTERS	Bus;

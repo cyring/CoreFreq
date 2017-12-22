@@ -111,8 +111,32 @@ enum {	GenuineIntel,		\
 	tsec;								\
 })
 
-#define MAX_BOOST	(1 + 1 + 18)
-#define LAST_BOOST	(MAX_BOOST - 1)
+enum RATIO_BOOST {
+	RATIO_MIN,
+	RATIO_MAX,
+	RATIO_18C,
+	RATIO_17C,
+	RATIO_16C,
+	RATIO_15C,
+	RATIO_14C,
+	RATIO_13C,
+	RATIO_12C,
+	RATIO_11C,
+	RATIO_10C,
+	RATIO_9C,
+	RATIO_8C,
+	RATIO_7C,
+	RATIO_6C,
+	RATIO_5C,
+	RATIO_4C,
+	RATIO_3C,
+	RATIO_2C,
+	RATIO_1C,
+	RATIO_SIZE
+};
+
+#define BOOST(NC) RATIO_##NC
+
 #define CACHE_MAX_LEVEL (3 + 1)
 
 #define VENDOR_INTEL	"GenuineIntel"

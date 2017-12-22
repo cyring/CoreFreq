@@ -131,7 +131,7 @@ static void *Core_Cycle(void *arg)
 
 		// Relative Ratio formula.
 		Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
-						  * Shm->Proc.Boost[1])
+						  * Shm->Proc.Boost[BOOST(MAX)])
 					/ (double) (Flip->Delta.TSC);
 
 		if (Shm->Proc.PM_version >= 2) {
@@ -141,7 +141,7 @@ static void *Core_Cycle(void *arg)
 		} else {
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		  Flip->Relative.Freq =
-		  (double) REL_FREQ(Shm->Proc.Boost[1],			\
+		  (double) REL_FREQ(Shm->Proc.Boost[BOOST(MAX)],	\
 				    Flip->Relative.Ratio,		\
 				    Core->Clock, Shm->Proc.SleepInterval)
 					/ (Shm->Proc.SleepInterval * 1000);
@@ -294,7 +294,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
-	memcpy(Shm->Proc.Boost, Proc->Boost,(MAX_BOOST) * sizeof(unsigned int));
+	memcpy(Shm->Proc.Boost, Proc->Boost,(BOOST(SIZE))*sizeof(unsigned int));
 	// Copy the processor's brand string.
 	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
 	// Compute the TSC mode: None, Variant, Invariant
@@ -518,7 +518,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
 				* Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.FactoryFreq;
@@ -804,7 +804,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
 				* Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.FactoryFreq;
@@ -1147,7 +1147,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[1]
+	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.CtrlSpeed /= 1000000L;
@@ -1157,7 +1157,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
 				5866 : 4800;	// processor SKU dependent=8000
 
-	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
+	Shm->Uncore.Bus.Speed = (Proc->Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
 				* Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.FactoryFreq;
@@ -1193,14 +1193,14 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[1]
+	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz)
 				/ Shm->Proc.Features.FactoryFreq;
 	Shm->Uncore.CtrlSpeed /= 1000000L;
 
 	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
 
-	Shm->Uncore.Bus.Speed = (Proc->Boost[1]
+	Shm->Uncore.Bus.Speed = (Proc->Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
 				* Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.FactoryFreq;
@@ -1291,7 +1291,7 @@ void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	}
 	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[1]
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
 				* Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.FactoryFreq;
@@ -2314,7 +2314,7 @@ void Core_Manager(FD *fd,
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
 				(double)( Core[cpu]->Clock.Hz
-					* Proc->Boost[1])
+					* Proc->Boost[BOOST(MAX)])
 					/ 1000000L );
 
 			Arg[cpu].Shm  = Shm;

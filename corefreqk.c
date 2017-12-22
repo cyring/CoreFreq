@@ -990,7 +990,8 @@ CLOCK Clock_Skylake(unsigned int ratio)
 
 CLOCK Clock_AMD_Family_17h(unsigned int ratio)
 {	// Processor Programming Reference for AMD Family 17h
-	CLOCK clock = {.Q = 200, .R = 0, .Hz = 200000000L};
+	// § 1.4/ Table 11 : REFCLK (Reference clock) = 100 MHz
+	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return(clock);
 };
 
@@ -1323,9 +1324,9 @@ void Intel_Platform_Info(void)
 					ratio2 = PfID.MaxBusRatio;
 			}
 	}
-	Proc->Boost[0] = ratio0;
-	Proc->Boost[1] = KMIN(ratio1, ratio2);
-	Proc->Boost[LAST_BOOST] = KMAX(ratio1, ratio2);
+	Proc->Boost[BOOST(MIN)] = ratio0;
+	Proc->Boost[BOOST(MAX)] = KMIN(ratio1, ratio2);
+	Proc->Boost[BOOST(1C)] = KMAX(ratio1, ratio2);
 
 	Proc->Features.SpecTurboRatio = 1;
 }
@@ -1338,8 +1339,8 @@ void Intel_Platform_Turbo(void)
 	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
 	Proc->Features.TDP_Unlock = Platform.TDP_Limited;
 
-	Proc->Boost[0] = Platform.MinimumRatio;
-	Proc->Boost[1] = Platform.MaxNonTurboRatio;
+	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
+	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
 
 	Proc->Features.SpecTurboRatio = 0;
 }
@@ -1349,14 +1350,14 @@ void Intel_Turbo_Config8C(void)
 	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
 	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
-	Proc->Boost[MAX_BOOST - 8] = TurboCfg0.MaxRatio_8C;
-	Proc->Boost[MAX_BOOST - 7] = TurboCfg0.MaxRatio_7C;
-	Proc->Boost[MAX_BOOST - 6] = TurboCfg0.MaxRatio_6C;
-	Proc->Boost[MAX_BOOST - 5] = TurboCfg0.MaxRatio_5C;
-	Proc->Boost[MAX_BOOST - 4] = TurboCfg0.MaxRatio_4C;
-	Proc->Boost[MAX_BOOST - 3] = TurboCfg0.MaxRatio_3C;
-	Proc->Boost[MAX_BOOST - 2] = TurboCfg0.MaxRatio_2C;
-	Proc->Boost[MAX_BOOST - 1] = TurboCfg0.MaxRatio_1C;
+	Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
+	Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
+	Proc->Boost[BOOST(6C)] = TurboCfg0.MaxRatio_6C;
+	Proc->Boost[BOOST(5C)] = TurboCfg0.MaxRatio_5C;
+	Proc->Boost[BOOST(4C)] = TurboCfg0.MaxRatio_4C;
+	Proc->Boost[BOOST(3C)] = TurboCfg0.MaxRatio_3C;
+	Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
+	Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
 
 	Proc->Features.SpecTurboRatio += 8;
 }
@@ -1366,13 +1367,13 @@ void Intel_Turbo_Config15C(void)
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
-	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.IVB_EP.MaxRatio_15C;
-	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.IVB_EP.MaxRatio_14C;
-	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.IVB_EP.MaxRatio_13C;
-	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.IVB_EP.MaxRatio_12C;
-	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.IVB_EP.MaxRatio_11C;
-	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.IVB_EP.MaxRatio_10C;
-	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.IVB_EP.MaxRatio_9C;
+	Proc->Boost[BOOST(15C)] = TurboCfg1.IVB_EP.MaxRatio_15C;
+	Proc->Boost[BOOST(14C)] = TurboCfg1.IVB_EP.MaxRatio_14C;
+	Proc->Boost[BOOST(13C)] = TurboCfg1.IVB_EP.MaxRatio_13C;
+	Proc->Boost[BOOST(12C)] = TurboCfg1.IVB_EP.MaxRatio_12C;
+	Proc->Boost[BOOST(11C)] = TurboCfg1.IVB_EP.MaxRatio_11C;
+	Proc->Boost[BOOST(10C)] = TurboCfg1.IVB_EP.MaxRatio_10C;
+	Proc->Boost[BOOST(9C) ] = TurboCfg1.IVB_EP.MaxRatio_9C;
 
 	Proc->Features.SpecTurboRatio += 7;
 }
@@ -1382,14 +1383,14 @@ void Intel_Turbo_Config16C(void)
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
-	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.HSW_EP.MaxRatio_16C;
-	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.HSW_EP.MaxRatio_15C;
-	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.HSW_EP.MaxRatio_14C;
-	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.HSW_EP.MaxRatio_13C;
-	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.HSW_EP.MaxRatio_12C;
-	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.HSW_EP.MaxRatio_11C;
-	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.HSW_EP.MaxRatio_10C;
-	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.HSW_EP.MaxRatio_9C;
+	Proc->Boost[BOOST(16C)] = TurboCfg1.HSW_EP.MaxRatio_16C;
+	Proc->Boost[BOOST(15C)] = TurboCfg1.HSW_EP.MaxRatio_15C;
+	Proc->Boost[BOOST(14C)] = TurboCfg1.HSW_EP.MaxRatio_14C;
+	Proc->Boost[BOOST(13C)] = TurboCfg1.HSW_EP.MaxRatio_13C;
+	Proc->Boost[BOOST(12C)] = TurboCfg1.HSW_EP.MaxRatio_12C;
+	Proc->Boost[BOOST(11C)] = TurboCfg1.HSW_EP.MaxRatio_11C;
+	Proc->Boost[BOOST(10C)] = TurboCfg1.HSW_EP.MaxRatio_10C;
+	Proc->Boost[BOOST(9C) ] = TurboCfg1.HSW_EP.MaxRatio_9C;
 
 	Proc->Features.SpecTurboRatio += 8;
 }
@@ -1399,8 +1400,8 @@ void Intel_Turbo_Config18C(void)
 	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
 	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
 
-	Proc->Boost[MAX_BOOST - 18] = TurboCfg2.MaxRatio_18C;
-	Proc->Boost[MAX_BOOST - 17] = TurboCfg2.MaxRatio_17C;
+	Proc->Boost[BOOST(18C)] = TurboCfg2.MaxRatio_18C;
+	Proc->Boost[BOOST(17C)] = TurboCfg2.MaxRatio_17C;
 
 	Proc->Features.SpecTurboRatio += 2;
 }
@@ -1434,14 +1435,14 @@ void Skylake_X_Platform_Info(void)
 	Intel_Platform_Turbo();
 	Intel_Turbo_Config8C();
 
-	Proc->Boost[MAX_BOOST - 16] = TurboCfg1.SKL_X.NUMCORE_7;
-	Proc->Boost[MAX_BOOST - 15] = TurboCfg1.SKL_X.NUMCORE_6;
-	Proc->Boost[MAX_BOOST - 14] = TurboCfg1.SKL_X.NUMCORE_5;
-	Proc->Boost[MAX_BOOST - 13] = TurboCfg1.SKL_X.NUMCORE_4;
-	Proc->Boost[MAX_BOOST - 12] = TurboCfg1.SKL_X.NUMCORE_3;
-	Proc->Boost[MAX_BOOST - 11] = TurboCfg1.SKL_X.NUMCORE_2;
-	Proc->Boost[MAX_BOOST - 10] = TurboCfg1.SKL_X.NUMCORE_1;
-	Proc->Boost[MAX_BOOST -  9] = TurboCfg1.SKL_X.NUMCORE_0;
+	Proc->Boost[BOOST(16C)] = TurboCfg1.SKL_X.NUMCORE_7;
+	Proc->Boost[BOOST(15C)] = TurboCfg1.SKL_X.NUMCORE_6;
+	Proc->Boost[BOOST(14C)] = TurboCfg1.SKL_X.NUMCORE_5;
+	Proc->Boost[BOOST(13C)] = TurboCfg1.SKL_X.NUMCORE_4;
+	Proc->Boost[BOOST(12C)] = TurboCfg1.SKL_X.NUMCORE_3;
+	Proc->Boost[BOOST(11C)] = TurboCfg1.SKL_X.NUMCORE_2;
+	Proc->Boost[BOOST(10C)] = TurboCfg1.SKL_X.NUMCORE_1;
+	Proc->Boost[BOOST(9C) ] = TurboCfg1.SKL_X.NUMCORE_0;
 
 	Proc->Features.SpecTurboRatio += 8;
 }
@@ -2010,9 +2011,12 @@ void Query_Skylake_X(void)
 	HyperThreading_Technology();
 }
 
+// Default algorithm for unspecified AMD architectures.
 void Query_AuthenticAMD(void)
 {
-	Proc->Boost[0] = 8;
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+
+	Proc->Boost[BOOST(MIN)] = 8;
 
 	if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
 		COFVID CofVid = {.value = 0};
@@ -2023,66 +2027,95 @@ void Query_AuthenticAMD(void)
 		case 0x10:
 		case 0x15:
 		case 0x16:
-			Proc->Boost[1] = CofVid.Arch_COF.MaxCpuCof;
+			Proc->Boost[BOOST(MAX)] = CofVid.Arch_COF.MaxCpuCof;
 			break;
 		case 0x11:
-			Proc->Boost[1] = CofVid.Arch_Pll.MainPllOpFidMax;
+			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
-				Proc->Boost[1] += 0x8;
+				Proc->Boost[BOOST(MAX)] += 0x8;
 			break;
 		case 0x12:
 		case 0x14:
-			Proc->Boost[1] = CofVid.Arch_Pll.MainPllOpFidMax;
+			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
-				Proc->Boost[1] += 0x10;
+				Proc->Boost[BOOST(MAX)] += 0x10;
 			break;
 		}
+	} else { // No P-States, try Frequence id
+		Query_AMD_Family_0Fh();
+
+		return;
 	}
-	Proc->Boost[LAST_BOOST] = Proc->Boost[1];
+	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.SpecTurboRatio = 0;
 
-	Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
 
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_0Fh(void)
 {
+    CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+
     if (Proc->Features.AdvPower.EDX.FID == 1) {
 	// Processor supports FID changes.
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-	Proc->Boost[0] = VCO[FidVidStatus.StartFID].MCF;
-	Proc->Boost[1] = 8 + FidVidStatus.MaxFID;
+	Proc->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
+	Proc->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
 
 	if (FidVidStatus.StartFID < 0b1000) {
 	    unsigned int t;
-	    for (t = 0; t < 5; t++)
-		Proc->Boost[MAX_BOOST-5+t] = VCO[FidVidStatus.StartFID].PCF[t];
+	    for (t = 0; t < 5; t++) {
+		Proc->Boost[BOOST(SIZE)-5+t]=VCO[FidVidStatus.StartFID].PCF[t];
+	    }
+
+	    Proc->Features.SpecTurboRatio = 5;
+	} else {
+		Proc->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
+
+		Proc->Features.SpecTurboRatio = 1;
 	}
-	else
-		Proc->Boost[LAST_BOOST] = 8 + FidVidStatus.MaxFID;
     } else {
 	HWCR HwCfgRegister = {.value = 0};
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
-	Proc->Boost[0] = 8 + HwCfgRegister.Family_0Fh.StartFID;
-	Proc->Boost[1] = Proc->Boost[0];
-	Proc->Boost[LAST_BOOST] = Proc->Boost[0];
-    }
-    Proc->Features.FactoryFreq = Proc->Boost[1] * 1000; // MHz
+	Proc->Boost[BOOST(MIN)] = 8 + HwCfgRegister.Family_0Fh.StartFID;
+	Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
+	Proc->Boost[BOOST(1C) ] = Proc->Boost[BOOST(MIN)];
 
-    HyperThreading_Technology();
+	Proc->Features.SpecTurboRatio = 1;
+    }
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_10h(void)
 {
-	unsigned int pstate, sort[5] = {1, 2, 3, 4, 0};
-
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+	unsigned int pstate, sort[5] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(MIN)
+	};
 	for (pstate = 0; pstate <= 4; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
@@ -2090,13 +2123,28 @@ void Query_AMD_Family_10h(void)
 
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x10)
 					  / (1 << PstateDef.Family_10h.CpuDid);
-	}	// @ 100 MHz
+	}
+	Proc->Features.SpecTurboRatio = 3;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_11h(void)
 {
-	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
-
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+	unsigned int pstate, sort[8] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
+		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	};
 	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
@@ -2104,13 +2152,28 @@ void Query_AMD_Family_11h(void)
 
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x8)
 					  / (1 << PstateDef.Family_10h.CpuDid);
-	}	// @ 100 MHz
+	}
+	Proc->Features.SpecTurboRatio = 6;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_12h(void)
 {
-	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
-
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+	unsigned int pstate, sort[8] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
+		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	};
 	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
@@ -2118,14 +2181,30 @@ void Query_AMD_Family_12h(void)
 
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_12h.CpuFid + 0x10)
 					  /  PstateDef.Family_12h.CpuDid;
-	}	// @ 100 MHz
+	}
+	Proc->Features.SpecTurboRatio = 6;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_14h(void)
 {
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	COFVID CofVid = {.value = 0};
-	unsigned int	pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0},
-			MaxFreq = 100, ClockDiv;
+	unsigned int MaxFreq = 100, ClockDiv;
+	unsigned int pstate, sort[8] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
+		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	};
 
 	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 
@@ -2142,12 +2221,27 @@ void Query_AMD_Family_14h(void)
 
 		Proc->Boost[sort[pstate]] = (MaxFreq * 4) / ClockDiv;
 	}	// @ MainPllOpFidMax MHz
+	Proc->Features.SpecTurboRatio = 6;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_15h(void)
 {
-	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
-
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+	unsigned int pstate, sort[8] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
+		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	};
 	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
@@ -2155,21 +2249,47 @@ void Query_AMD_Family_15h(void)
 
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_15h.CpuFid + 0x10)
 					  / (1 << PstateDef.Family_15h.CpuDid);
-	}	// @ 100 MHz
+	}
+	Proc->Features.SpecTurboRatio = 6;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_17h(void)
 {
-	unsigned int pstate, sort[8] = {1, 2, 3, 4, 5, 6, 7, 0};
-
+	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
+	unsigned int pstate, sort[8] = {
+		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
+		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	};
 	for (pstate = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[sort[pstate]] = PstateDef.Family_17h.CpuFid
-					  / PstateDef.Family_17h.CpuDfsId;
-	}	// @ 200 MHz
+		Proc->Boost[sort[pstate]] = PstateDef.Family_17h.CpuFid * 25;
+	}
+	Proc->Features.SpecTurboRatio = 6;
+
+    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
+	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
+
+	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
+				   / 1000000L;
+    } else {	// Default @ 100 MHz
+	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
+    }
+
+	HyperThreading_Technology();
 }
 
 
@@ -2962,7 +3082,7 @@ void Controller_Init(void)
 	    cpu--;
 
 	    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
-		unsigned int ratio = Proc->Boost[1];
+		unsigned int ratio = Proc->Boost[BOOST(MAX)];
 
 		if ((AutoClock != 0) && (ratio != 0)) {
 			clock = Base_Clock(cpu, ratio);
@@ -4278,7 +4398,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
 
 		Core->Counter[1].TSC	= Core->Counter[0].TSC
-					+ (Proc->Boost[1] * Core->Clock.Hz);
+				+ (Proc->Boost[BOOST(MAX)] * Core->Clock.Hz);
 
 		/* Derive C1 */
 		Core->Counter[1].C1 =

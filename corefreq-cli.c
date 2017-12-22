@@ -274,9 +274,14 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	PrintBoost("Min", 0, 0, SCANKEY_NULL);
 	PrintBoost("Max", 1, 0, SCANKEY_NULL);
 
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Factory");
+	printv(OutFunc, SCANKEY_NULL, width, 0, "%.*s""%5u""%.*s""[%4d ]",
+		22, hSpace, Shm->Proc.Features.FactoryFreq,
+		23, hSpace, Shm->Proc.Boost[BOOST(MAX)]);
+
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Turbo Boost");
-	for (boost = LAST_BOOST, activeCores = 1;
-		boost > LAST_BOOST - Shm->Proc.Features.SpecTurboRatio;
+	for (boost = BOOST(1C), activeCores = 1;
+		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
 	{
 	    char pfx[4];
@@ -1489,8 +1494,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		TOP_FOOTER_LAST = 2 + TOP_HEADER_ROW + TOP_FOOTER_ROW
 				+ 2 * Shm->Proc.CPU.Count;
 
-    double minRatio=Shm->Proc.Boost[0], maxRatio=Shm->Proc.Boost[LAST_BOOST],
-	medianRatio=(minRatio + maxRatio) / 2, availRatio[MAX_BOOST]={minRatio};
+    double minRatio = Shm->Proc.Boost[BOOST(MIN)],
+	   maxRatio = Shm->Proc.Boost[BOOST(1C)],
+	   medianRatio = (minRatio + maxRatio) / 2,
+	   availRatio[BOOST(SIZE)] = {minRatio};
 
     typedef char HBCLK[11 + 1];
     HBCLK *hBClk;
@@ -1499,7 +1506,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Coordinate *cTask;
 
-    for (idx = 1; idx < MAX_BOOST; idx++)
+    for (idx = BOOST(MAX); idx < BOOST(SIZE); idx++)
 	if (Shm->Proc.Boost[idx] != 0) {
 		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {

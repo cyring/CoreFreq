@@ -160,7 +160,7 @@ typedef struct
 					OnLine;
 	} CPU;
 
-	unsigned int			Boost[MAX_BOOST],
+	unsigned int			Boost[BOOST(SIZE)],
 					PM_version;
 
 	unsigned int			Top;
