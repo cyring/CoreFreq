@@ -615,29 +615,29 @@ extern void Query_AMD_Family_17h(void) ;
 //	[Geminilake]	06_7Ah
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
-//	[Family 0Fh]	000F_00h
+//	[Family 0Fh]	0F_00h
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 10h]	100F_00h
-#define _AMD_Family_10h {.ExtFamily=0x10, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 10h]	1F_00h
+#define _AMD_Family_10h {.ExtFamily=0x1, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 11h]	110F_00h
-#define _AMD_Family_11h {.ExtFamily=0x11, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 11h]	2F_00h
+#define _AMD_Family_11h {.ExtFamily=0x2, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 12h]	120F_00h
-#define _AMD_Family_12h {.ExtFamily=0x12, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 12h]	3F_00h
+#define _AMD_Family_12h {.ExtFamily=0x3, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 14h]	140F_00h
-#define _AMD_Family_14h {.ExtFamily=0x14, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 14h]	5F_00h
+#define _AMD_Family_14h {.ExtFamily=0x5, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 15h]	150F_00h
-#define _AMD_Family_15h {.ExtFamily=0x15, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 15h]	6F_00h
+#define _AMD_Family_15h {.ExtFamily=0x6, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 16h]	160F_00h
-#define _AMD_Family_16h {.ExtFamily=0x16, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 16h]	7F_00h
+#define _AMD_Family_16h {.ExtFamily=0x7, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 17h]	170F_00h
-#define _AMD_Family_17h {.ExtFamily=0x17, .Family=0xF, .ExtModel=0x0,.Model=0x0}
+//	[Family 17h]	8F_00h
+#define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);

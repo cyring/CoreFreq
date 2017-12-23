@@ -2020,20 +2020,20 @@ void Query_AuthenticAMD(void)
 		COFVID CofVid = {.value = 0};
 
 		switch(Arch[Proc->ArchID].Signature.ExtFamily) {
-		case 0x10:
-		case 0x15:
-		case 0x16:
+		case 0x1:
+		case 0x6:
+		case 0x7:
 			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)] = CofVid.Arch_COF.MaxCpuCof;
 			break;
-		case 0x11:
+		case 0x2:
 			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
 				Proc->Boost[BOOST(MAX)] += 0x8;
 			break;
-		case 0x12:
-		case 0x14:
+		case 0x3:
+		case 0x5:
 			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
@@ -5169,7 +5169,8 @@ static int __init CoreFreqK_init(void)
 					}
 					break;
 				  }
-				  if (Proc->Features.Std.ECX.Hyperv) {
+				  if ( (Proc->Features.Std.ECX.Hyperv == 1)
+				    && (ArchID == -1) ) {
 					ArchID = 0;
 				  }
 				  if ( (ArchID != -1)
