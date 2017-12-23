@@ -989,8 +989,7 @@ CLOCK Clock_Skylake(unsigned int ratio)
 };
 
 CLOCK Clock_AMD_Family_17h(unsigned int ratio)
-{	// Processor Programming Reference for AMD Family 17h
-	// § 1.4/ Table 11 : REFCLK (Reference clock) = 100 MHz
+{	// AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return(clock);
 };
@@ -2011,9 +2010,8 @@ void Query_Skylake_X(void)
 	HyperThreading_Technology();
 }
 
-// Default algorithm for unspecified AMD architectures.
 void Query_AuthenticAMD(void)
-{
+{	// Fallback algorithm for unspecified AMD architectures.
 	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 
 	Proc->Boost[BOOST(MIN)] = 8;
@@ -2021,21 +2019,22 @@ void Query_AuthenticAMD(void)
 	if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
 		COFVID CofVid = {.value = 0};
 
-		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-
 		switch(Arch[Proc->ArchID].Signature.ExtFamily) {
 		case 0x10:
 		case 0x15:
 		case 0x16:
+			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)] = CofVid.Arch_COF.MaxCpuCof;
 			break;
 		case 0x11:
+			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
 				Proc->Boost[BOOST(MAX)] += 0x8;
 			break;
 		case 0x12:
 		case 0x14:
+			RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 			Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
 			if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
 				Proc->Boost[BOOST(MAX)] += 0x10;
@@ -2063,7 +2062,7 @@ void Query_AuthenticAMD(void)
 }
 
 void Query_AMD_Family_0Fh(void)
-{
+{   // BKDG for AMD NPT Family 0Fh: §13.8
     CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 
     if (Proc->Features.AdvPower.EDX.FID == 1) {
@@ -5170,12 +5169,13 @@ static int __init CoreFreqK_init(void)
 					}
 					break;
 				  }
+				  if (Proc->Features.Std.ECX.Hyperv) {
+					ArchID = 0;
+				  }
 				  if ( (ArchID != -1)
 				    && (ArchID >= 0)
 				    && (ArchID < ARCHITECTURES) ) {
 					Proc->ArchID = ArchID;
-				  } else if (Proc->Features.Std.ECX.Hyperv) {
-					ArchID = 0;
 				  } else {
 				  for ( Proc->ArchID = ARCHITECTURES - 1;
 					Proc->ArchID > 0;
