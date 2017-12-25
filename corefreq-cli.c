@@ -1924,7 +1924,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		for (i = 0; i < f; i++)
 			StoreTCell(wAbout,SCANKEY_NULL, F[i], MAKE_PRINT_FOCUS);
 
-		size_t p = TCellAt(wAbout, 1, 5).length - 2 - v;
+		size_t p = TCellAt(wAbout, 1, 5).length - 3 - v;
 		memcpy(&TCellAt(wAbout, 1, 5).item[p], COREFREQ_VERSION, v);
 
 		wAbout->matrix.select.row = wAbout->matrix.size.hth - 1;

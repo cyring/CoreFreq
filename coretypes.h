@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.16"
+#define COREFREQ_VERSION	"1.16.5"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -52,6 +52,7 @@ enum {	GenuineIntel,		\
 	Kabylake_UY,		\
 	Cannonlake,		\
 	Geminilake,		\
+	Icelake_UY,		\
 	AMD_Family_0Fh,		\
 	AMD_Family_10h,		\
 	AMD_Family_11h,		\

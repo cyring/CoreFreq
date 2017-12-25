@@ -615,6 +615,9 @@ extern void Query_AMD_Family_17h(void) ;
 //	[Geminilake]	06_7Ah
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
+//	[Icelake]	06_7Eh
+#define _Icelake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xE}
+
 //	[Family 0Fh]	0F_00h
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
@@ -1416,6 +1419,20 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Gemini Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.PCI_ids = PCI_Void_ids
+	},
+
+/* 46*/	{
+	.Signature = _Icelake_UY,
+	.Query = Query_SandyBridge,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.Clock = Clock_Skylake,
+	.Architecture = "Ice Lake/UY",
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.PCI_ids = PCI_Void_ids
 	},
 
