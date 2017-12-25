@@ -1732,14 +1732,14 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 }
 
 void Query_C200(void __iomem *mchmap)
-{	// Source: Intel® Xeon Processor E3-1200 Family
+{	// Sources:	Desktop 3rd Generation Intel® Core™ Processor Family
+	//		Intel® Xeon Processor E3-1200 Family
 	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
-
-/* ToDo */
-	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
-
+/* ToDo
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0x0);
+*/
 	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
 
@@ -1759,6 +1759,8 @@ void Query_C200(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].C200.RFTP.value =
 					readl(mchmap + 0x4298 + 0x400 * cha);
 	}
+/* ToDo */
+	Proc->Uncore.MC[0].SlotCount = 2;
 }
 
 void Query_C220(void __iomem *mchmap)
@@ -1766,10 +1768,9 @@ void Query_C220(void __iomem *mchmap)
 	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
-
-/* ToDo */
-	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
-
+/* ToDo
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0x0);
+*/
 	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
 
@@ -1789,6 +1790,8 @@ void Query_C220(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
 					readl(mchmap + 0x4e98 + 0x400 * cha);
 	}
+/* ToDo */
+	Proc->Uncore.MC[0].SlotCount = 1;
 }
 
 void Query_Broadwell_IMC(void __iomem *mchmap)
@@ -1796,7 +1799,9 @@ void Query_Broadwell_IMC(void __iomem *mchmap)
 	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
-
+/* ToDo
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0x0);
+*/
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
 	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);

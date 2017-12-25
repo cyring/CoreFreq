@@ -1225,24 +1225,49 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCL;
-/* ToDo
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C200._.tWR;
-*/
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRP;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRRD;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRCD;
-/* ToDo
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRP;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].C200._.tRAS;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  = ?
-*/
-/* ToDo */
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRRD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tWR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRTPr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tWTPr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCWL;
+
+	switch(Proc->Uncore.MC[mc].Channel[cha].C200.RAP.CMD_Stretch) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;

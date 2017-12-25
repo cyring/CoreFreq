@@ -1229,7 +1229,9 @@ typedef union
 		tRCD		:  4-0,
 		tRP		:  8-4,
 		tCL		: 12-8,
-		ReservedBits	: 32-12;
+		tCWL		: 16-12,
+		tRAS		: 24-16,
+		ReservedBits	: 32-24;
 	};
 } C200_TC_DBP;
 
@@ -1239,11 +1241,13 @@ typedef union
 	struct {
 		unsigned int
 		tRRD		:  4-0,
-		tCAS_RTPr	:  8-4,
-		ReservedBits1	: 12-8,
-		tiWrTRd		: 16-12,
-		srACT		: 24-16,
-		ReservedBits2	: 32-24;
+		tRTPr		:  8-4,
+		tCKE		: 12-8,
+		tWTPr		: 16-12,
+		tFAW		: 24-16,
+		tWR		: 29-24,
+		CMD_3ST		: 30-29,
+		CMD_Stretch	: 32-30;
 	};
 } C200_TC_RAP;
 
