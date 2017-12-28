@@ -2017,8 +2017,6 @@ void Query_Skylake_X(void)
 
 void Query_AuthenticAMD(void)
 {	// Fallback algorithm for unspecified AMD architectures.
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
-
 	Proc->Boost[BOOST(MIN)] = 8;
 
 	if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
@@ -2045,31 +2043,18 @@ void Query_AuthenticAMD(void)
 				Proc->Boost[BOOST(MAX)] += 0x10;
 			break;
 		}
-	} else { // No P-States, try Frequence id
-		Query_AMD_Family_0Fh();
-
-		return;
+	} else { // No Solution !
+		Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
 	}
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.SpecTurboRatio = 0;
-
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
 
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_0Fh(void)
 {   // BKDG for AMD NPT Family 0Fh: §13.8
-    CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
-
     if (Proc->Features.AdvPower.EDX.FID == 1) {
 	// Processor supports FID changes.
 	FIDVID_STATUS FidVidStatus = {.value = 0};
@@ -2102,21 +2087,12 @@ void Query_AMD_Family_0Fh(void)
 
 	Proc->Features.SpecTurboRatio = 1;
     }
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
 
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_10h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int pstate, sort[5] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(MIN)
 	};
@@ -2130,21 +2106,11 @@ void Query_AMD_Family_10h(void)
 	}
 	Proc->Features.SpecTurboRatio = 3;
 
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
-
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_11h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
@@ -2159,21 +2125,11 @@ void Query_AMD_Family_11h(void)
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
-
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_12h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
@@ -2188,21 +2144,11 @@ void Query_AMD_Family_12h(void)
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
-
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_14h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	COFVID CofVid = {.value = 0};
 	unsigned int MaxFreq = 100, ClockDiv;
 	unsigned int pstate, sort[8] = {
@@ -2227,21 +2173,11 @@ void Query_AMD_Family_14h(void)
 	}	// @ MainPllOpFidMax MHz
 	Proc->Features.SpecTurboRatio = 6;
 
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
-
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_15h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
@@ -2256,21 +2192,11 @@ void Query_AMD_Family_15h(void)
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
-
 	HyperThreading_Technology();
 }
 
 void Query_AMD_Family_17h(void)
 {
-	CLOCK FactoryClock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
@@ -2283,15 +2209,6 @@ void Query_AMD_Family_17h(void)
 		Proc->Boost[sort[pstate]] = PstateDef.Family_17h.CpuFid * 25;
 	}
 	Proc->Features.SpecTurboRatio = 6;
-
-    if (Arch[Proc->ArchID].Clock != NULL) { // Compute Factory Freq. in MHz
-	FactoryClock = Arch[Proc->ArchID].Clock(Proc->Boost[BOOST(MAX)]);
-
-	Proc->Features.FactoryFreq = (Proc->Boost[BOOST(MAX)] * FactoryClock.Hz)
-				   / 1000000L;
-    } else {	// Default @ 100 MHz
-	Proc->Features.FactoryFreq = Proc->Boost[BOOST(MAX)] * PRECISION;
-    }
 
 	HyperThreading_Technology();
 }
@@ -3077,29 +2994,40 @@ static void InitTimer(void *Cycle_Function)
 void Controller_Init(void)
 {
 	CLOCK clock = {.Q = 0, .R = 0, .Hz = 0};
-	unsigned int cpu = Proc->CPU.Count;
+	unsigned int cpu = Proc->CPU.Count, ratio = 0;
 
-	if (Arch[Proc->ArchID].Query != NULL)
+	if (Arch[Proc->ArchID].Query != NULL) {
 		Arch[Proc->ArchID].Query();
+	}
+	if (Proc->Boost[BOOST(MAX)] > 0) {
+		ratio = Proc->Boost[BOOST(MAX)];
+	}
+	if (ratio > 0) {
+		if (Arch[Proc->ArchID].Clock != NULL) {
+			clock = Arch[Proc->ArchID].Clock(ratio);
+		}
+	}
+	if (clock.Hz == 0) {	// Fallback @ 100 MHz
+		clock.Q = 100;
+		clock.R = 0;
+		clock.Hz = 100000000L;
+	}
+	if (Proc->Features.FactoryFreq != 0) {
+	    if (ratio == 0) {
+		ratio = Proc->Boost[BOOST(MAX)] = Proc->Features.FactoryFreq
+						/ clock.Q;
+	    }
+	} else { // Fix factory frequency (MHz)
+		Proc->Features.FactoryFreq = (ratio * clock.Hz) / 1000000L;
+	}
 
 	do {	// from last AP to BSP
 	    cpu--;
 
 	    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
-		unsigned int ratio = Proc->Boost[BOOST(MAX)];
-
 		if ((AutoClock != 0) && (ratio != 0)) {
 			clock = Base_Clock(cpu, ratio);
 		} // else ENOMEM
-		if ((clock.Hz == 0) && (ratio != 0)) {
-			if (Arch[Proc->ArchID].Clock != NULL)
-				clock = Arch[Proc->ArchID].Clock(ratio);
-		}
-		if (clock.Hz == 0) {
-			clock.Q = 100;
-			clock.R = 0;
-			clock.Hz = 100000000L;
-		}
 		KPublic->Core[cpu]->Clock = clock;
 
 		if (Arch[Proc->ArchID].Timer != NULL)
