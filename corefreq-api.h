@@ -387,17 +387,17 @@ typedef struct
 				NHM_IMC_SCHEDULER_PARAMS Params;
 			} NHM;
 			struct {
-	/* 4000h */		C200_TC_DBP		DBP;	/* 32 bits */
-	/* 4004h */		C200_TC_RAP		RAP;	/* 32 bits */
-	/* 4298h */		C200_TC_RFTP		RFTP;	/* 32 bits */
-			} C200;
+	/* 4000h */		IVB_IMC_TC_DBP		DBP;	/* 32 bits */
+	/* 4004h */		IVB_IMC_TC_RAP		RAP;	/* 32 bits */
+	/* 4298h */		IVB_IMC_TC_RFTP		RFTP;	/* 32 bits */
+			} IVB;
 			struct {
-	/* 4C04h */		C220_DDR_TIMING		Timing;	/* 32 bits */
-	/* 4C08h */		C220_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits */
-	/* 4C0Ch */		C220_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits */
-	/* 4C14h */		C220_DDR_RANK_TIMING	Rank;	/* 32 bits */
-	/* 4E98h */		C220_TC_REFRESH_TIMING	Refresh; /*32 bits */
-			} C220;
+	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits */
+	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits */
+	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits */
+	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits */
+	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits */
+			} HSW;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits */
 			} AMD0F;
@@ -427,9 +427,9 @@ typedef struct
 	/* 3:0 4Ch*/	NHM_IMC_STATUS		STATUS;		/* 32 bits */
 		} NHM;
 		struct {
-	/* 5004h */	C200_MAD_CHANNEL	MAD0,		/* 32 bits */
+	/* 5004h */	IVB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
 	/* 5008h */				MAD1;		/* 32 bits */
-		} C200;
+		} IVB;
 		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits */

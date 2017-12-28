@@ -1212,7 +1212,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
-void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
+void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
@@ -1224,39 +1224,39 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCL;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tCL;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRCD;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRCD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRP;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRP;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tRAS;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRAS;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRRD;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tRRD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RFTP.tRFC;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RFTP.tRFC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tWR;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tWR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tRTPr;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tRTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tWTPr;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tWTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.RAP.tFAW;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tFAW;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].C200.DBP.tCWL;
+			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tCWL;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].C200.RAP.CMD_Stretch) {
+	switch(Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -1269,10 +1269,30 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	}
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+		unsigned int width;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+
+	    if (slot == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].IVB.MAD0.DANOR;
+
+		width = Proc->Uncore.MC[mc].IVB.MAD0.DAW;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].IVB.MAD0.DBNOR;
+
+		width = Proc->Uncore.MC[mc].IVB.MAD0.DBW;
+	    }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
+
+	    if (width == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	    }
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
@@ -1282,14 +1302,15 @@ void C200_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
-					Proc->Uncore.MC[mc].C200.MAD0.ECC
-				:	Proc->Uncore.MC[mc].C200.MAD1.ECC;
+					Proc->Uncore.MC[mc].IVB.MAD0.ECC
+				:	Proc->Uncore.MC[mc].IVB.MAD1.ECC;
       }
     }
 }
 
-void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+/* ToDo
 	switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 	case 0b111:
 		Shm->Uncore.CtrlSpeed = 1067;
@@ -1315,6 +1336,7 @@ void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 2667;
 		break;
 	}
+*/
 	Shm->Uncore.Bus.Rate = 5000;
 	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -1328,7 +1350,7 @@ void C200_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
-void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
+void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
@@ -1340,26 +1362,26 @@ void C220_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCL;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCL;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCWL;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
 /* ToDo
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tWR;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Refresh.tRFC;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
 /* ToDo
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tRP;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRP;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tRRD;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRRD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tRCD;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRCD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tRAS;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRAS;
 */
-	switch(Proc->Uncore.MC[mc].Channel[cha].C220.Timing.CMD_Stretch) {
+	switch(Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -1402,60 +1424,56 @@ void BDW_IMC(SHM_STRUCT *Shm, PROC *Proc)
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 /* ToDo
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCL;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCL;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank.tCWL;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].C220._.tWR;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Refresh.tRFC;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Timing.tsrRdTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.tsrRdTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Timing.tdrRdTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.tdrRdTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Timing.tddRdTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.tddRdTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tsrWrTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tsrWrTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tdrWrTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tdrWrTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tddWrTRd;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tddWrTRd;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tsrWrTWr;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tsrWrTWr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tdrWrTWr;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tdrWrTWr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_A.tddWrTWr;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_A.tddWrTWr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_B.tsrRdTWr;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tsrRdTWr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_B.tdrRdTWr;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tdrRdTWr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
-			Proc->Uncore.MC[mc].Channel[cha].C220.Rank_B.tddRdTWr;
-
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tddRdTWr;
+/* ToDo */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks =
-			Proc->Uncore.MC[mc].C200.MAD0.DANOR;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
-			Proc->Uncore.MC[mc].C200.MAD0.DBNOR;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows =
-			Proc->Uncore.MC[mc].C200.MAD0.DAW;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols =
-			Proc->Uncore.MC[mc].C200.MAD0.DBW;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
@@ -1708,15 +1726,16 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge
-		C200_CLK(Shm, Proc, cpu);
-		C200_MCH(Shm, Proc);
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// Ivy Bridge Desktop
+		IVB_CAP(Shm, Proc, cpu);
+		IVB_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
-		C200_CLK(Shm, Proc, cpu);
-		C220_MCH(Shm, Proc);
+		IVB_CAP(Shm, Proc, cpu);
+		HSW_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell
-		C200_CLK(Shm, Proc, cpu);
+		IVB_CAP(Shm, Proc, cpu);
 		BDW_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:

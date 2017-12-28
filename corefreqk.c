@@ -1731,7 +1731,7 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 	return(rc);
 }
 
-void Query_C200(void __iomem *mchmap)
+void Query_IVB_IMC(void __iomem *mchmap)
 {	// Sources:	Desktop 3rd Generation Intel® Core™ Processor Family
 	//		Intel® Xeon Processor E3-1200 Family
 	unsigned short cha;
@@ -1740,30 +1740,30 @@ void Query_C200(void __iomem *mchmap)
 /* ToDo
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0x0);
 */
-	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
-	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+	Proc->Uncore.MC[0].IVB.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].IVB.MAD1.value = readl(mchmap + 0x5008);
 
 	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))  /*0 or 1*/
-		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0)); /*0 or 1*/
+		  ((Proc->Uncore.MC[0].IVB.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD0.Dimm_B_Size != 0))  /*0 or 1*/
+		+ ((Proc->Uncore.MC[0].IVB.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD1.Dimm_B_Size != 0)); /*0 or 1*/
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-		Proc->Uncore.MC[0].Channel[cha].C200.DBP.value =
+		Proc->Uncore.MC[0].Channel[cha].IVB.DBP.value =
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-		Proc->Uncore.MC[0].Channel[cha].C200.RAP.value =
+		Proc->Uncore.MC[0].Channel[cha].IVB.RAP.value =
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-		Proc->Uncore.MC[0].Channel[cha].C200.RFTP.value =
+		Proc->Uncore.MC[0].Channel[cha].IVB.RFTP.value =
 					readl(mchmap + 0x4298 + 0x400 * cha);
 	}
-/* ToDo */
+	// DIMM A & DIMM B
 	Proc->Uncore.MC[0].SlotCount = 2;
 }
 
-void Query_C220(void __iomem *mchmap)
+void Query_HSW_IMC(void __iomem *mchmap)
 {	// Source: Desktop 4th Generation Intel® Core™ Processor Family
 	unsigned short cha;
 
@@ -1771,30 +1771,30 @@ void Query_C220(void __iomem *mchmap)
 /* ToDo
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0x0);
 */
-	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
-	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+	Proc->Uncore.MC[0].IVB.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].IVB.MAD1.value = readl(mchmap + 0x5008);
 
 	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
-		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
+		  ((Proc->Uncore.MC[0].IVB.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD0.Dimm_B_Size != 0))
+		+ ((Proc->Uncore.MC[0].IVB.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD1.Dimm_B_Size != 0));
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-		Proc->Uncore.MC[0].Channel[cha].C220.Timing.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
 					readl(mchmap + 0x4c04 + 0x400 * cha);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Rank.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank.value =
 					readl(mchmap + 0x4c14 + 0x400 * cha);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
 					readl(mchmap + 0x4e98 + 0x400 * cha);
 	}
 /* ToDo */
 	Proc->Uncore.MC[0].SlotCount = 1;
 }
 
-void Query_Broadwell_IMC(void __iomem *mchmap)
+void Query_BDW_IMC(void __iomem *mchmap)
 {	// Source: Mobile 5th Generation Intel® Core™ Processor Family
 	unsigned short cha;
 
@@ -1804,29 +1804,29 @@ void Query_Broadwell_IMC(void __iomem *mchmap)
 */
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	Proc->Uncore.MC[0].C200.MAD0.value = readl(mchmap + 0x5004);
-	Proc->Uncore.MC[0].C200.MAD1.value = readl(mchmap + 0x5008);
+	Proc->Uncore.MC[0].IVB.MAD0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].IVB.MAD1.value = readl(mchmap + 0x5008);
 
 	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].C200.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD0.Dimm_B_Size != 0))
-		+ ((Proc->Uncore.MC[0].C200.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].C200.MAD1.Dimm_B_Size != 0));
+		  ((Proc->Uncore.MC[0].IVB.MAD0.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD0.Dimm_B_Size != 0))
+		+ ((Proc->Uncore.MC[0].IVB.MAD1.Dimm_A_Size != 0)
+		|| (Proc->Uncore.MC[0].IVB.MAD1.Dimm_B_Size != 0));
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-		Proc->Uncore.MC[0].Channel[cha].C220.Timing.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
 					readl(mchmap + 0x4c04);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Rank_A.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_A.value =
 					readl(mchmap + 0x4c08);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Rank_B.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_B.value =
 					readl(mchmap + 0x4c0c);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Rank.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank.value =
 					readl(mchmap + 0x4c14);
 
-		Proc->Uncore.MC[0].Channel[cha].C220.Refresh.value =
+		Proc->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
 					readl(mchmap + 0x4e98);
 	}
 /* ToDo */
@@ -1890,19 +1890,19 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 	return(0);
 }
 
-static PCI_CALLBACK C200(struct pci_dev *dev)
+static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_C200));
+	return(Router(dev, 0x48, 0x8000, Query_IVB_IMC));
 }
 
-static PCI_CALLBACK C220(struct pci_dev *dev)
+static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_C220));
+	return(Router(dev, 0x48, 0x8000, Query_HSW_IMC));
 }
 
-static PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev)
+static PCI_CALLBACK BDW_IMC(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_Broadwell_IMC));
+	return(Router(dev, 0x48, 0x8000, Query_BDW_IMC));
 }
 
 static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)

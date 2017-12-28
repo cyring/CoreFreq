@@ -652,9 +652,9 @@ static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
-static PCI_CALLBACK C200(struct pci_dev *dev) ;
-static PCI_CALLBACK C220(struct pci_dev *dev) ;
-static PCI_CALLBACK Broadwell_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK BDW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev) ;
 
@@ -757,7 +757,7 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C200
+		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
 };
@@ -768,7 +768,11 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C200
+		.driver_data = (kernel_ulong_t) IVB_IMC
+	},
+	{	// Desktop: IMC_SystemAgent=0x0150
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
+		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
 };
@@ -779,7 +783,7 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 static struct pci_device_id PCI_Haswell_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
-		.driver_data = (kernel_ulong_t) C220
+		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
 };
@@ -789,7 +793,7 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
-		.driver_data = (kernel_ulong_t) Broadwell_IMC
+		.driver_data = (kernel_ulong_t) BDW_IMC
 	},
 	{0, }
 };

@@ -1233,7 +1233,7 @@ typedef union
 		tRAS		: 24-16,
 		ReservedBits	: 32-24;
 	};
-} C200_TC_DBP;
+} IVB_IMC_TC_DBP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4400h
@@ -1249,7 +1249,7 @@ typedef union
 		CMD_3ST		: 30-29,
 		CMD_Stretch	: 32-30;
 	};
-} C200_TC_RAP;
+} IVB_IMC_TC_RAP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h
@@ -1260,7 +1260,7 @@ typedef union
 		tRFC		: 25-16,
 		tREFIx9		: 32-25;
 	};
-} C200_TC_RFTP;
+} IVB_IMC_TC_RFTP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h
@@ -1280,7 +1280,7 @@ typedef union
 		ECC		: 26-24,	// active?0=No,1=IO,2=NoIO,3=All
 		ReservedBits2	: 32-26;
 	};
-} C200_MAD_CHANNEL;
+} IVB_IMC_MAD_CHANNEL;
 
 
 typedef union
@@ -1295,7 +1295,7 @@ typedef union
 		ReservedBits2	: 30-23,
 		CMD_Stretch	: 32-30;
 	};
-} C220_DDR_TIMING;
+} HSW_DDR_TIMING;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4C08h
@@ -1310,7 +1310,7 @@ typedef union
 		tddWrTWr	: 25-21,
 		ReservedBits	: 32-25;
 	};
-} C220_DDR_RANK_TIMING_A;
+} HSW_DDR_RANK_TIMING_A;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4C0Ch
@@ -1323,7 +1323,7 @@ typedef union
 		tddRdTWr	: 29-24,
 		ReservedBits2	: 32-29;
 	};
-} C220_DDR_RANK_TIMING_B;
+} HSW_DDR_RANK_TIMING_B;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4C14h
@@ -1334,7 +1334,7 @@ typedef union
 		tCWL		: 10-5,
 		ReservedBits	: 32-10;
 	};
-} C220_DDR_RANK_TIMING;
+} HSW_DDR_RANK_TIMING;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4E98h
@@ -1345,4 +1345,4 @@ typedef union
 		tRFC		: 25-16,
 		tREFIx9		: 32-25;
 	};
-} C220_TC_REFRESH_TIMING;
+} HSW_TC_REFRESH_TIMING;
