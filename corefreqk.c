@@ -2424,26 +2424,42 @@ void PowerThermal(CORE *Core, unsigned int cpu)
     );
 
     if (Power.ECX.SETBH == 1) {
-	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-
-      if (Experimental == 1) {
-	switch (PowerMGMT_Unlock) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-	    Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
-	    WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-	    RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
-	    break;
+	struct SIGNATURE blackList[] = {
+		_Silvermont_637,	/* 06_37 */
+		_Atom_Airmont,		/* 06_4C */
+		_Atom_Avoton,		/* 06_4D */
+	};
+	int id, ids = sizeof(blackList) / sizeof(blackList[0]);
+	for (id = 0; id < ids; id++) {
+		if((blackList[id].ExtFamily == Proc->Features.Std.EAX.ExtFamily)
+		 && (blackList[id].Family == Proc->Features.Std.EAX.Family)
+		 && (blackList[id].ExtModel == Proc->Features.Std.EAX.ExtModel)
+		 && (blackList[id].Model == Proc->Features.Std.EAX.Model)) {
+			break;
+		}
 	}
-      }
+	if (id == ids) {
+	  RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	  RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
-      if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
-      && (PowerPolicy >= 0) && (PowerPolicy <= 15))
-	{
-	Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
-	WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	  if (Experimental == 1) {
+	    switch (PowerMGMT_Unlock) {
+	    case COREFREQ_TOGGLE_OFF:
+	    case COREFREQ_TOGGLE_ON:
+	     Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
+	     WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+	     RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+	     break;
+	   }
+	  }
+
+	  if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
+	  && (PowerPolicy >= 0) && (PowerPolicy <= 15))
+	  {
+	    Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
+	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	  }
 	}
     }
 
