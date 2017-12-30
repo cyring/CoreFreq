@@ -652,9 +652,10 @@ static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK BDW_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev) ;
 
@@ -757,7 +758,11 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) IVB_IMC
+		.driver_data = (kernel_ulong_t) SNB_IMC
+	},
+	{	// Desktop: IMC_SystemAgent=0x0100
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA),
+		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{0, }
 };
@@ -771,7 +776,7 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{	// Desktop: IMC_SystemAgent=0x0150
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
@@ -785,6 +790,10 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
+	{	// Desktop: IMC_SystemAgent=0x0c00
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
+		.driver_data = (kernel_ulong_t) IVB_IMC
+	},
 	{0, }
 };
 
@@ -793,7 +802,69 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
-		.driver_data = (kernel_ulong_t) BDW_IMC
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+	{	// Desktop: IMC_SystemAgent=0x0c00
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
+		.driver_data = (kernel_ulong_t) IVB_IMC
+	},
+	{0, }
+};
+
+	// 6th Generation
+static struct pci_device_id PCI_Skylake_ids[] = {
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{0, }
+};
+
+	// 7th & 8th Generation
+static struct pci_device_id PCI_Kabylake_ids[] = {
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH),
+		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{0, }
 };
@@ -1328,7 +1399,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/UY",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Void_ids
+	.PCI_ids = PCI_Skylake_ids
 	},
 /* 39*/	{
 	.Signature = _Skylake_S,
@@ -1341,7 +1412,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/S",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Void_ids
+	.PCI_ids = PCI_Skylake_ids
 	},
 /* 40*/	{
 	.Signature = _Skylake_X,
@@ -1354,7 +1425,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/X",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Void_ids
+	.PCI_ids = PCI_Skylake_ids
 	},
 
 /* 41*/	{
@@ -1382,7 +1453,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Kaby/Coffee Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Void_ids
+	.PCI_ids = PCI_Kabylake_ids
 	},
 /* 43*/	{
 	.Signature = _Kabylake_UY,
@@ -1395,7 +1466,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Kaby Lake/UY",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Void_ids
+	.PCI_ids = PCI_Kabylake_ids
 	},
 
 /* 44*/	{

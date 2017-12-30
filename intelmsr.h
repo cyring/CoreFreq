@@ -1229,11 +1229,11 @@ typedef union
 		tRCD		:  4-0,
 		tRP		:  8-4,
 		tCL		: 12-8,
-		tCWL		: 16-12,
-		tRAS		: 24-16,
+		tCWL		: 16-12, // IVB
+		tRAS		: 24-16, // IVB
 		ReservedBits	: 32-24;
 	};
-} IVB_IMC_TC_DBP;
+} SNB_IMC_TC_DBP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4400h
@@ -1245,11 +1245,11 @@ typedef union
 		tCKE		: 12-8,
 		tWTPr		: 16-12,
 		tFAW		: 24-16,
-		tWR		: 29-24,
-		CMD_3ST		: 30-29,
-		CMD_Stretch	: 32-30;
+		tWR		: 29-24, // IVB
+		CMD_3ST		: 30-29, // IVB
+		CMD_Stretch	: 32-30; // IVB: 00 = 1N , 10 = 2N , 11 = 3N
 	};
-} IVB_IMC_TC_RAP;
+} SNB_IMC_TC_RAP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h
@@ -1260,27 +1260,61 @@ typedef union
 		tRFC		: 25-16,
 		tREFIx9		: 32-25;
 	};
-} IVB_IMC_TC_RFTP;
+} SNB_IMC_TC_RFTP;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h
 	unsigned int		value;
 	struct {
 		unsigned int
-		Dimm_A_Size	:  8-0,
+		Dimm_A_Size	:  8-0,  // Size of DIMM in 256 MB multiples
 		Dimm_B_Size	: 16-8,
-		DAS		: 17-16,	// where DIMM A is selected
-		DANOR		: 18-17,	// DIMM A number of ranks
-		DBNOR		: 19-18,	// DIMM B number of ranks
-		DAW		: 20-19,	// DIMM A chips width:0=x8,1=x16
-		DBW		: 21-20,	// DIMM B chips width
-		RI		: 22-21,	// Rank Interleave: 0=OFF, 1=ON
-		ENH_IM		: 23-22,	// Enhanced interleave mode
+		DAS		: 17-16, // where DIMM A is selected
+		DANOR		: 18-17, // DIMM A number of ranks
+		DBNOR		: 19-18, // DIMM B number of ranks
+		DAW		: 20-19, // DIMM A chips width:0=x8,1=x16
+		DBW		: 21-20, // DIMM B chips width
+		RI		: 22-21, // Rank Interleave: 0=OFF, 1=ON
+		ENH_IM		: 23-22, // Enhanced interleave mode
 		ReservedBits1	: 24-23,
-		ECC		: 26-24,	// active?0=No,1=IO,2=NoIO,3=All
+		ECC		: 26-24, // IVB: active?0=No,1=IO,2=NoIO,3=All
 		ReservedBits2	: 32-26;
 	};
-} IVB_IMC_MAD_CHANNEL;
+} SNB_IMC_MAD_CHANNEL;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset E4h
+	unsigned int		value;
+	struct {
+		unsigned int
+		DMFC		:  3-0,  // DDR3 Maximum Frequency Capability
+		ReservedBits1	: 14-3,
+		DDPCD		: 15-14, // 2 DIMMS/Channel: 0=Enable,1=Disable
+		ReservedBits2	: 23-15,
+		VT_d		: 24-23, // VT-d: 0=Enable, 1=Disable
+		ReservedBits3	: 32-24;
+	};
+} SNB_CAPID;	// §2.5.33 CAPID0_A—Capabilities A Register
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset E8h
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	:  4-0,
+		DMFC		:  7-4,
+		ReservedBits2	: 17-7,
+		ADDGFXCAP	: 18-17, // Additive Graphics
+		ADDGFXEN	: 19-18,
+		ReservedBits3	: 20-19,
+		PEGG3_DIS	: 21-20, // PCIe Gen 3 Disable
+		PLL_REF100_CFG	: 24-21, // DDR3 Max. Freq. Capability @ 100 MHz
+		ReservedBits4	: 25-24,
+		CACHESZ		: 28-25, // Cache Size Capability
+		SMTCAP		: 29-28, // SMT Capability
+		ReservedBits5	: 32-29;
+	};
+} IVB_CAPID;	// §2.5.39 CAPID0_B—Capabilities B Register
 
 
 typedef union
@@ -1293,7 +1327,7 @@ typedef union
 		tdrRdTRd	: 19-15,
 		tddRdTRd	: 23-19,
 		ReservedBits2	: 30-23,
-		CMD_Stretch	: 32-30;
+		CMD_Stretch	: 32-30; // 00: 1N , 10: 2N , 11: 3N
 	};
 } HSW_DDR_TIMING;
 
@@ -1346,3 +1380,94 @@ typedef union
 		tREFIx9		: 32-25;
 	};
 } HSW_TC_REFRESH_TIMING;
+
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4000h & Channel1: 4400h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRP		:  6-0, // Holds parameter tRP (and tRCD) !
+		tRPab_ext	:  8-6,
+		tRAS		: 15-8,
+		ReservedBits1	: 16-15,
+		tRDPRE		: 20-16,
+		ReservedBits2	: 24-20,
+		tWRPRE		: 31-24,
+		ReservedBits3	: 32-31;
+	};
+} SKL_IMC_CR_TC_PRE;	// Timing constraints to PRE commands
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 401Ch & Channel1: 441Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		DRAM_Tech	:  2-0, // 00:DDR4 01:DDR3 10:LPDDR3 11:Illegal
+		CMD_Stretch	:  4-2, // 00:1N , 01:2N , 10:3N , 11:1N
+		N_to_1_ratio	:  7-4,
+		ReservedBits	:  8-7,
+		Addr_Mirroring	: 10-8,
+		Dimm_x8		: 12-11,
+		tCPDED		: 15-12,
+		LPDDR_2N_CS	: 16-15,
+		Reset_OnCmd	: 20-16,
+		Reset_Delay	: 23-20,
+		CMD_3st		: 24-23,
+		tCKE		: 27-24,
+		EN_ODT_Matrix	: 28-27,
+		ProbelessLowFreq: 29-28,
+		tCAL		: 32-29;
+	};
+} SKL_IMC_CR_SC_CFG;	// Scheduler configuration
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 4070h & Channel1: 4470h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Read_Duration	:  3-0,
+		ReservedBits1	:  4-3,
+		Read_Delay	:  7-4,
+		ReservedBits2	:  8-7,
+		Write_Duration	: 11-8,
+		ReservedBits3	: 12-11,
+		Write_Delay	: 15-12,
+		Write_Early	: 16-15,
+		tCL		: 21-16,
+		tCWL		: 26-21,
+		tAONPD		: 31-26,
+		Always_Rank0	: 32-31;
+	};
+} SKL_IMC_CR_TC_ODT;	// ODT timing parameters
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 423Ch & Channel1: 463Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		tREFI		: 16-0,
+		tRFC		: 26-16,
+		ReservedBits	: 32-26;
+	};
+} SKL_IMC_REFRESH_TC;	// Refresh timing parameters
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 500Ch & Channel1: 5010h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_L_Size	:  6-0,  // Size of DIMM in 1024 MB multiples
+		ReservedBits1	:  8-6,
+		DLW		: 10-8,  // DIMM L chips width:0=x8,1=x16,10=x32
+		DLNOR		: 11-10, // DIMM L number of ranks
+		DL8Gb		: 12-11, // DDR3 DIMM L: 1=8Gb or zero
+		ReservedBits2	: 16-12,
+		Dimm_S_Size	: 22-16,
+		ReservedBits3	: 24-22,
+		DSW		: 26-24, // DIMM S chips width
+		DSNOR		: 27-26, // DIMM S # of ranks: 0=1 , 1=2
+		DS8Gb		: 28-27,
+		ReservedBits4	: 32-28;
+	};
+} SKL_IMC_MAD_CHANNEL;

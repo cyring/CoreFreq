@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.16.7"
+#define COREFREQ_VERSION	"1.16.8"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -805,18 +805,67 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0	0x3ca0
 #endif
+// Source: 2nd Generation Intel® Core™ Processor Family Vol2
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA	0x0100
+#endif
 // Source: /drivers/edac/sb_edac.c
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
 #endif
-#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_DDR
+// Source: 3rd Generation Intel® Core™ Processor Family Vol2
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA	0x0150
 #endif
+// Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
 #endif
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA	0x0c00
+#endif
 #ifndef PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0	0x1604
+#endif
+// Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ	0x191f
+#endif
+// Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD	0x1900
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
+#endif
+// Source: 7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA	0x5904
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA	0x590c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD	0x590f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
+#endif
+// Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ 0x3e1f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH 0x3ec2
 #endif
 // Source: /include/linux/pci_ids.h
 #ifndef PCI_DEVICE_ID_AMD_K8_NB_MEMCTL

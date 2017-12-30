@@ -1212,7 +1212,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
-void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
+void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
@@ -1224,39 +1224,39 @@ void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tCL;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tCL;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRCD;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tRCD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRP;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tRP;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tRAS;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tRAS;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tRRD;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tRRD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RFTP.tRFC;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RFTP.tRFC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tWR;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tWR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tRTPr;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tRTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tWTPr;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tWTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.tFAW;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tFAW;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].IVB.DBP.tCWL;
+			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].IVB.RAP.CMD_Stretch) {
+	switch(Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -1265,6 +1265,9 @@ void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	case 0b11:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	default:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
 		break;
 	}
 
@@ -1275,14 +1278,14 @@ void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	    if (slot == 0) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
-					Proc->Uncore.MC[mc].IVB.MAD0.DANOR;
+					Proc->Uncore.MC[mc].SNB.MAD0.DANOR;
 
-		width = Proc->Uncore.MC[mc].IVB.MAD0.DAW;
+		width = Proc->Uncore.MC[mc].SNB.MAD0.DAW;
 	    } else {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
-					Proc->Uncore.MC[mc].IVB.MAD0.DBNOR;
+					Proc->Uncore.MC[mc].SNB.MAD0.DBNOR;
 
-		width = Proc->Uncore.MC[mc].IVB.MAD0.DBW;
+		width = Proc->Uncore.MC[mc].SNB.MAD0.DBW;
 	    }
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
 
@@ -1302,16 +1305,15 @@ void IVB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
-					Proc->Uncore.MC[mc].IVB.MAD0.ECC
-				:	Proc->Uncore.MC[mc].IVB.MAD1.ECC;
+					Proc->Uncore.MC[mc].SNB.MAD0.ECC
+				:	Proc->Uncore.MC[mc].SNB.MAD1.ECC;
       }
     }
 }
 
-void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
-/* ToDo
-	switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+	switch (Proc->Uncore.Bus.SNB_Cap.DMFC) {
 	case 0b111:
 		Shm->Uncore.CtrlSpeed = 1067;
 		break;
@@ -1330,13 +1332,78 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	case 0b010:
 		Shm->Uncore.CtrlSpeed = 2400;
 		break;
-	case 0b000:
-		// Fallthrough
 	case 0b001:
 		Shm->Uncore.CtrlSpeed = 2667;
 		break;
+	case 0b000:
+		Shm->Uncore.CtrlSpeed = 2933;
+		break;
 	}
-*/
+
+	Shm->Uncore.Bus.Rate = 5000;
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
+}
+
+void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	switch (Proc->Uncore.Bus.IVB_Cap.DMFC) {
+	case 0b111:
+		Shm->Uncore.CtrlSpeed = 1067;
+		break;
+	case 0b110:
+		Shm->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b101:
+		Shm->Uncore.CtrlSpeed = 1600;
+		break;
+	case 0b100:
+		Shm->Uncore.CtrlSpeed = 1867;
+		break;
+	case 0b011:
+		Shm->Uncore.CtrlSpeed = 2133;
+		break;
+	case 0b010:
+		Shm->Uncore.CtrlSpeed = 2400;
+		break;
+	case 0b001:
+		Shm->Uncore.CtrlSpeed = 2667;
+		break;
+	case 0b000:
+		switch (Proc->ArchID) {
+		case IvyBridge:
+		case IvyBridge_EP:
+			Shm->Uncore.CtrlSpeed = 2933;
+			break;
+		case Haswell_DT:
+		case Haswell_EP:
+		case Haswell_ULT:
+		case Haswell_ULX:
+		case Skylake_UY:
+		case Skylake_S:
+		case Skylake_X:
+		case Kabylake:
+		case Kabylake_UY:
+			Shm->Uncore.CtrlSpeed = 2667;
+			break;
+		case Broadwell:
+		case Broadwell_EP:
+		case Broadwell_H:
+		case Broadwell_EX:
+			Shm->Uncore.CtrlSpeed = 3200;
+			break;
+		}
+		break;
+	}
+
 	Shm->Uncore.Bus.Rate = 5000;
 	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -1363,72 +1430,24 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
       for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCL;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
 /* ToDo
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
-*/
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
-/* ToDo
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRP;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRRD;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRCD;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRAS;
-*/
-	switch(Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
-	case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
-		break;
-	case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
-		break;
-	case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
-		break;
-	}
-/* ToDo */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
-      }
-    }
-}
-
-void BDW_IMC(SHM_STRUCT *Shm, PROC *Proc)
-{
-    unsigned short mc, cha, slot;
-
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
-      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-/* ToDo
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
-			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCL;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
@@ -1468,6 +1487,21 @@ void BDW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tddRdTWr;
+
+	switch(Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	default:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		break;
+	}
 /* ToDo */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
@@ -1483,6 +1517,105 @@ void BDW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+      }
+    }
+}
+
+void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
+{
+    unsigned short mc, cha, slot;
+
+    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCL;
+/*
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL._.tRCD;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRAS;
+/*
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL._.tRRD;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
+/*
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL._.tWR;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRDPRE;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tWRPRE;
+/*
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL._.tFAW;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL;
+
+	switch(Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.CMD_Stretch) {
+	case 0b00:
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 3;
+		break;
+	}
+
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+		unsigned int width;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+
+	    if (slot == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SKL.MAD0.DLNOR;
+
+		width = Proc->Uncore.MC[mc].SKL.MAD0.DLW;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SKL.MAD0.DSNOR;
+
+		width = Proc->Uncore.MC[mc].SKL.MAD0.DSW;
+	    }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
+
+	    if (width == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	    }
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+	}
+/*
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
+					Proc->Uncore.MC[mc].SKL.MAD0.ECC
+				:	Proc->Uncore.MC[mc].SKL.MAD1.ECC;
+*/
       }
     }
 }
@@ -1725,18 +1858,36 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		NHM_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
+		break;
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:	// SNB Desktop
+		SNB_CAP(Shm, Proc, cpu);
+		SNB_IMC(Shm, Proc);
+		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// Ivy Bridge Desktop
+		break;
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// IVB Desktop
+	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
 		IVB_CAP(Shm, Proc, cpu);
-		IVB_IMC(Shm, Proc);
+		SNB_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
-		IVB_CAP(Shm, Proc, cpu);
+	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell
 		HSW_IMC(Shm, Proc);
 		break;
-	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD:	// Skylake/S Dual Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ:	// Skylake/S Quad Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD:	// Skylake/H Dual Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ:	// Skylake/H Quad Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	// BGA 1356
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	// BGA 1515
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ:	// U-Quad Core BGA 1356
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake Quad Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ:
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:	// CoffeeLake Quad Core
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:	// CoffeeLake Hexa Core
 		IVB_CAP(Shm, Proc, cpu);
-		BDW_IMC(Shm, Proc);
+		SKL_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
 		AMD_0F_HTT(Shm, Proc);

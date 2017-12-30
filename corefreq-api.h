@@ -387,10 +387,10 @@ typedef struct
 				NHM_IMC_SCHEDULER_PARAMS Params;
 			} NHM;
 			struct {
-	/* 4000h */		IVB_IMC_TC_DBP		DBP;	/* 32 bits */
-	/* 4004h */		IVB_IMC_TC_RAP		RAP;	/* 32 bits */
-	/* 4298h */		IVB_IMC_TC_RFTP		RFTP;	/* 32 bits */
-			} IVB;
+	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits */
+	/* 4004h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits */
+	/* 4298h */		SNB_IMC_TC_RFTP		RFTP;	/* 32 bits */
+			} SNB;
 			struct {
 	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits */
 	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits */
@@ -398,6 +398,12 @@ typedef struct
 	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits */
 	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits */
 			} HSW;
+			struct {
+	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing;	/* 32 bits */
+	/* 401Ch */		SKL_IMC_CR_SC_CFG	Sched;	/* 32 bits */
+	/* 4070h */		SKL_IMC_CR_TC_ODT	ODT;	/* 32 bits */
+	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits */
+			} SKL;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits */
 			} AMD0F;
@@ -427,9 +433,13 @@ typedef struct
 	/* 3:0 4Ch*/	NHM_IMC_STATUS		STATUS;		/* 32 bits */
 		} NHM;
 		struct {
-	/* 5004h */	IVB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
+	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
 	/* 5008h */				MAD1;		/* 32 bits */
-		} IVB;
+		} SNB;
+		struct {
+	/* 500Ch */	SKL_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
+	/* 5010h */				MAD1;		/* 32 bits */
+		} SKL;
 		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits */
@@ -457,6 +467,12 @@ typedef union
 		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
 			X58_QPI_FREQUENCY	QuickPath;
+		};
+		struct {
+			SNB_CAPID		SNB_Cap;
+		};
+		struct {
+			IVB_CAPID		IVB_Cap;
 		};
 		struct {
 			AMD_0F_HTT_UNIT_ID	UnitID;

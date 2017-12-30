@@ -4503,18 +4503,6 @@ void Top(SHM_STRUCT *Shm, char option)
 				len, buffer,
 				MakeAttr(WHITE, 0, BLACK, 1));
 		col += len;
-
-		if ((len = strlen(Shm->SysGate.IdleDriver.Name)) > 0) {
-		  LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
-		  LayerAt(layer, code, col, row) = '/';
-
-		  col++;
-
-		  LayerFillAt(	layer, col, row,
-				len, Shm->SysGate.IdleDriver.Name,
-				MakeAttr(WHITE, 0, BLACK, 1));
-		  col += len;
-		}
 	} else {
 		LayerFillAt(	layer, col, row,
 				3, "OFF",
