@@ -494,10 +494,14 @@ extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
 
-extern void Query_Skylake_X(void) ;
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
 extern void InitTimer_Skylake(unsigned int cpu) ;
+
+extern void Query_Skylake_X(void) ;
+static void Start_Skylake_X(void *arg) ;
+static void Stop_Skylake_X(void *arg) ;
+extern void InitTimer_Skylake_X(unsigned int cpu) ;
 
 extern void Query_AMD_Family_0Fh(void) ;
 static void Start_AMD_Family_0Fh(void *arg) ;
@@ -1417,10 +1421,10 @@ static ARCH Arch[ARCHITECTURES]=
 /* 40*/	{
 	.Signature = _Skylake_X,
 	.Query = Query_Skylake_X,
-	.Start = Start_Skylake,
-	.Stop = Stop_Skylake,
+	.Start = Start_Skylake_X,
+	.Stop = Stop_Skylake_X,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge,
+	.Timer = InitTimer_Skylake_X,
 	.Clock = Clock_Skylake,
 	.Architecture = "Skylake/X",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
