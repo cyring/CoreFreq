@@ -2802,7 +2802,21 @@ void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
 void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
-	RDMSR(Microcode, MSR_IA32_UCODE_REV);
+
+	asm volatile
+	(
+		"xorq	%%rax, %%rax"	"\n\t"
+		"xorq	%%rdx, %%rdx"	"\n\t"
+		"movq	%1, %%rcx"	"\n\t"
+		"rdmsr"			"\n\t"
+		"shlq	$32,	%%rdx"	"\n\t"
+		"orq	%%rdx,	%%rax"	"\n\t"
+		"movq	%%rax,	%0"
+		: "=m" (Microcode.value)
+		: "i" (MSR_IA32_UCODE_REV)
+		: "%rax", "%rcx", "%rdx", "memory"
+	);
+
 	Core->Query.Microcode = Microcode.Signature;
 }
 
