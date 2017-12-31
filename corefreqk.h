@@ -1048,11 +1048,11 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 12*/	{
 	.Signature = _Silvermont_637,
-	.Query = Query_Nehalem,
-	.Start = Start_Nehalem,
-	.Stop = Stop_Nehalem,
+	.Query = Query_Core2,
+	.Start = Start_Core2,
+	.Stop = Stop_Core2,
 	.Exit = NULL,
-	.Timer = InitTimer_Nehalem,
+	.Timer = InitTimer_Core2,
 	.Clock = Clock_Silvermont,
 	.Architecture = "Silvermont",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
