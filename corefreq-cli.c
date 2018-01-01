@@ -959,6 +959,40 @@ void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
 	free(str);
 }
 
+void Package(SHM_STRUCT *Shm)
+{
+    while (!BITVAL(Shutdown, 0)) {
+	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+		nanosleep(&Shm->Proc.BaseSleep, NULL);
+
+	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+
+	if (BITVAL(Shm->Proc.Sync, 63))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+
+	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	printf( "\t\t" "Cycles" "\t\t" "State(%%)" "\n"	\
+		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC03" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC06" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC07" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC08" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC09" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC10" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PTSC" "\t" "%18llu" "\n"		\
+		"UNCORE" "\t" "%18llu" "\n\n",
+		Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
+		Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+		Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
+		Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
+		Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
+		Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
+		Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+		Pkg->Delta.PTSC,
+		Pkg->Uncore.FC0);
+    }
+}
+
 void Counters(SHM_STRUCT *Shm)
 {
     unsigned int cpu = 0;
@@ -5852,6 +5886,7 @@ int Help(char *appName)
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\
 		"\t-V\tMonitor Voltage\n"				\
+		"\t-g\tMonitor Package\n"				\
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
@@ -5937,6 +5972,10 @@ int main(int argc, char *argv[])
 	case 'V':
 		TrapSignal();
 		Voltage(Shm);
+		break;
+	case 'g':
+		TrapSignal();
+		Package(Shm);
 		break;
 	case 'd':
 		// Fallthrough
