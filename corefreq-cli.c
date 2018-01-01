@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2017 CYRIL INGENIERIE
+ * Copyright (C) 2015-2018 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -1907,7 +1907,7 @@ void Top(SHM_STRUCT *Shm, char option)
       char *F[] = {
 	"   ""   by CyrIng                                  ""   ",
 	"   ""                                              ""   ",
-	"   ""         (C)2015-2017 CYRIL INGENIERIE        ""   "
+	"   ""         (C)2015-2018 CYRIL INGENIERIE        ""   "
       };
 	size_t	c = sizeof(C) / sizeof(C[0]),
 		f = sizeof(F) / sizeof(F[0]),
@@ -5847,7 +5847,7 @@ void Top(SHM_STRUCT *Shm, char option)
 int Help(char *appName)
 {
 	printf(	"CoreFreq."						\
-		"  Copyright (C) 2015-2017 CYRIL INGENIERIE\n\n");
+		"  Copyright (C) 2015-2018 CYRIL INGENIERIE\n\n");
 	printf(	"usage:\t%s [-option <arguments>]\n"			\
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\

@@ -100,6 +100,9 @@ insmod corefreqk.ko
 rmmod corefreqk.ko
 ```
 
+### Try
+[Download](http://corefreq.iso.cyring.fr) Live CD (627 MB)
+
 ## Screenshots
 ### Linux kernel module
 Use ```dmesg``` or ```journalctl -k``` to check if the module is started
@@ -109,7 +112,7 @@ CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 
 ### Daemon
 ```
-CoreFreq Daemon.  Copyright (C) 2015-2017 CYRIL INGENIERIE
+CoreFreq Daemon.  Copyright (C) 2015-2018 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
@@ -117,7 +120,7 @@ CoreFreq Daemon.  Copyright (C) 2015-2017 CYRIL INGENIERIE
 
 ### Client
 Without arguments, the corefreq-cli program displays Top Monitoring  
-![alt text](http://blog.cyring.free.fr/images/CoreFreq_UI.gif "CoreFreq UI")  
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Tour_2017-12-06.gif "CoreFreq UI")  
  * _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
 
  * With the option '-c', the client traces counters.
@@ -183,7 +186,7 @@ insmod corefreqk.ko
   A: In the kernel boot command argument line, *disable the NMI Watchdog*  
 ```
 nmi_watchdog=0
-```
+```  
   A: Check also what the current idle driver is ?  
   A: In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
 
@@ -193,15 +196,15 @@ nmi_watchdog=0
      Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 ```
 intel_idle.max_cstate=value
-```
+```  
 
 
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
   A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
 ```
 insmod corefreqk.ko SleepInterval=value
-```
-  where value is supplied in milliseconds between a minimum of 500 ms and a maximum of 5000 ms. 1000 ms is the default value.  
+```  
+  where <value> is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
 
 * Q: The base clock reports a wrong frequency value ?  
@@ -214,14 +217,14 @@ insmod corefreqk.ko SleepInterval=value
      The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
 ```
 insmod corefreqk.ko AutoClock=0
-```
+```  
 
 
 * Q: The CPU temperature is wrong ?  
   A: CoreFreq employs two msr to calculate the temperature.  
 ```
 MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
-```
+```  
   If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
 
@@ -229,7 +232,7 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
 ```
 insmod corefreqk.ko Experimental=1
-```
+```  
 
 
 ## Algorithm
@@ -238,5 +241,5 @@ insmod corefreqk.ko Experimental=1
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2017 CYRIL INGENIERIE
+Copyright (C) 2015-2018 CYRIL INGENIERIE
  -------

@@ -1,5 +1,5 @@
 # CoreFreq
-# Copyright (C) 2015-2017 CYRIL INGENIERIE
+# Copyright (C) 2015-2018 CYRIL INGENIERIE
 # Licenses: GPL2
 
 obj-m := corefreqk.o
