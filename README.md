@@ -101,7 +101,7 @@ rmmod corefreqk.ko
 ```
 
 ### Try
-[Download](http://corefreq.iso.cyring.fr) Live CD (627 MB)
+[Download](http://blog.cyring.fr/live/archlinux-corefreq.iso) Live CD (627 MB)
 
 ## Screenshots
 ### Linux kernel module
@@ -187,8 +187,6 @@ insmod corefreqk.ko
 ```
 nmi_watchdog=0
 ```  
-  A: Check also what the current idle driver is ?  
-  A: In the CoreFreq client UI, should be written the driver name beside the Linux version, "intel_idle" is the recommended driver.  
 
 
 * Q: The deep sleep states do not produce any value ?  
