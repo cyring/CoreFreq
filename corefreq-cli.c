@@ -2463,11 +2463,11 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_TASKS:
 		case V_INTR:
 		case V_VOLTAGE:
-			MIN_HEIGHT = (2 * Shm->Proc.CPU.Count) + TOP_HEADER_ROW
+			MIN_HEIGHT = TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
 		case V_PACKAGE:
-			MIN_HEIGHT = Shm->Proc.CPU.Count + 8 + TOP_HEADER_ROW
+			MIN_HEIGHT = 8 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
 		}
@@ -5981,12 +5981,12 @@ int main(int argc, char *argv[])
 		// Fallthrough
 	case 't':
 		{
-		Prolog
+		TERMINAL(IN);
 
 		TrapSignal();
 		Top(Shm, option);
 
-		Epilog
+		TERMINAL(OUT);
 		}
 		break;
 	default:

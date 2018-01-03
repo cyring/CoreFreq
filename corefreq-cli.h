@@ -448,12 +448,12 @@ const char LCD[0x6][0x10][3][3] = {
 		},
 		{// 0x6d
 			"   ",
-			",,,",
+			"   ",
 			"|'|"
 		},
 		{// 0x6e
 			"   ",
-			", ,",
+			"   ",
 			"|\\|"
 		},
 		{// 0x6f
@@ -548,7 +548,7 @@ const char LCD[0x6][0x10][3][3] = {
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3
-#define MAX_CPU_ROW	48
+#define MAX_CPU_ROW	64
 
 #define MAX_HEIGHT	((2 * MAX_CPU_ROW)				\
 			+ TOP_HEADER_ROW				\
@@ -1527,7 +1527,7 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 		return(0);
 }
 
-#define Prolog								\
+#define _TERMINAL_IN							\
 	printf(SCP SCR1 CUH CLS HIDE);					\
 									\
 	struct termios oldt, newt;					\
@@ -1536,10 +1536,14 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 	newt.c_lflag &= ~( ICANON | ECHO );				\
 	newt.c_cc[VTIME] = 0;						\
 	newt.c_cc[VMIN] = 0;						\
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);			\
+	{}
 
 
-#define Epilog								\
+#define _TERMINAL_OUT							\
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);			\
 									\
-	printf(SHOW SCR0 RCP COLOR(0,9,9));
+	printf(SHOW SCR0 RCP COLOR(0,9,9));				\
+	{}
+
+#define TERMINAL(IO)	_TERMINAL_##IO
