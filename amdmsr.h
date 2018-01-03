@@ -202,7 +202,7 @@ typedef union
 	IddValue	: 30-22, // Current Dissipation in amps. RW
 	IddDiv		: 32-30, // Current Dissipation Divisor. RW
 	Reserved	: 63-32,
-	PstateEn	: 64-63; // Pstate enabled. RW
+	PstateEn	: 64-63; // RW: Is this Pstate MSR valid ?
     } Family_17h;
 } PSTATEDEF;
 

@@ -2203,18 +2203,21 @@ void Query_AMD_Family_15h(void)
 
 void Query_AMD_Family_17h(void)
 {
-	unsigned int pstate, sort[8] = {
-		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
-		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
+	unsigned int index, pstate, sort[8] = {
+		BOOST(MAX), BOOST(MIN), BOOST(1C), BOOST(2C),
+		BOOST(3C) , BOOST(4C) , BOOST(5C), BOOST(6C)
 	};
-	for (pstate = 0; pstate <= 7; pstate++) {
+	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		Proc->Boost[sort[pstate]] = PstateDef.Family_17h.CpuFid * 25;
+	    if (PstateDef.Family_17h.PstateEn) {
+		Proc->Boost[sort[index]] = PstateDef.Family_17h.CpuFid >> 2;
+		index++;
+	    }
 	}
-	Proc->Features.SpecTurboRatio = 6;
+	Proc->Features.SpecTurboRatio = index > 2 ? index - 2 : 0;
 
 	HyperThreading_Technology();
 }
