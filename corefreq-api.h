@@ -564,6 +564,7 @@ typedef struct
 	unsigned int		Boost[BOOST(SIZE)];
 
 	struct {
+		unsigned int	Boost[2];
 		BUS_REGISTERS	Bus;
 		MC_REGISTERS	MC[MC_MAX_CTRL];
 		unsigned short	CtrlCount;

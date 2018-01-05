@@ -5,11 +5,11 @@
  */
 
 #ifndef MSR_AMD_PSTATE_DEF_BASE
-#define MSR_AMD_PSTATE_DEF_BASE 0xc0010064
+	#define MSR_AMD_PSTATE_DEF_BASE 	0xc0010064
 #endif
 
 #ifndef MSR_AMD_COFVID_STATUS
-#define MSR_AMD_COFVID_STATUS 0xc0010071
+	#define MSR_AMD_COFVID_STATUS		0xc0010071
 #endif
 
 const struct {

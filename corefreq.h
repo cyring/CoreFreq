@@ -253,33 +253,34 @@ typedef struct
 		unsigned int		head, tail;
 	} Ring;
 
-	char			AppName[TASK_COMM_LEN];
+	char				AppName[TASK_COMM_LEN];
 
 	struct {
-		struct
-		{
-			unsigned long long	Speed;
-			unsigned int		Rate;
-		} Bus;
+		unsigned int		Boost[2];
+	    struct
+	    {
+		unsigned long long	Speed;
+		unsigned int		Rate;
+	    } Bus;
 
+	    struct {
 		struct {
-			struct {
-				RAM_TIMING	Timing;
-				RAM_GEOMETRY	DIMM[MC_MAX_DIMM];
-			} Channel[MC_MAX_CHA];
-			unsigned short		SlotCount, ChannelCount;
-		} MC[MC_MAX_CTRL];
+			RAM_TIMING	Timing;
+			RAM_GEOMETRY	DIMM[MC_MAX_DIMM];
+		} Channel[MC_MAX_CHA];
+		unsigned short		SlotCount, ChannelCount;
+	    } MC[MC_MAX_CTRL];
 
-		unsigned long long		CtrlSpeed;
-		unsigned short			CtrlCount;
+	unsigned long long		CtrlSpeed;
+	unsigned short			CtrlCount;
 
-		struct {
-			unsigned char	// 00:MHz , 01:MT/s , 10:MB/s , 11:VOID
+	    struct {
+		unsigned char		// 00:MHz , 01:MT/s , 10:MB/s , 11:VOID
 					Bus_Rate: 2-0,
 					BusSpeed: 4-2,
 					DDR_Rate: 6-4,
 					DDRSpeed: 8-6;
-		} Unit;
+	    } Unit;
 	} Uncore;
 
 	PROC_STRUCT		Proc;

@@ -1894,6 +1894,9 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		AMD_0F_MCH(Shm, Proc);
 		break;
 	}
+
+	Shm->Uncore.Boost[BOOST(MIN)] = Proc->Uncore.Boost[BOOST(MIN)];
+	Shm->Uncore.Boost[BOOST(MIN)] = Proc->Uncore.Boost[BOOST(MAX)];
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)

@@ -1405,6 +1405,15 @@ void Intel_Turbo_Config18C(void)
 	Proc->Features.SpecTurboRatio += 2;
 }
 
+void Haswell_Uncore_Ratio(void)
+{
+	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
+	RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
+
+	Proc->Uncore.Boost[BOOST(MIN)] = UncoreRatio.MinRatio;
+	Proc->Uncore.Boost[BOOST(MAX)] = UncoreRatio.MaxRatio;
+}
+
 void Nehalem_Platform_Info(void)
 {
 	Intel_Platform_Turbo();
@@ -2013,12 +2022,21 @@ void Query_Haswell_EP(void)
 {
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
+	Haswell_Uncore_Ratio();
+}
+
+void Query_Broadwell(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+	Haswell_Uncore_Ratio();
 }
 
 void Query_Skylake_X(void)
 {
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
+	Haswell_Uncore_Ratio();
 }
 
 void Query_AuthenticAMD(void)

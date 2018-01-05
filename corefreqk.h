@@ -489,7 +489,7 @@ static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 
-#define     Query_Broadwell Query_SandyBridge
+extern void Query_Broadwell(void) ;
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
@@ -1448,7 +1448,7 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 42*/	{
 	.Signature = _Kabylake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Broadwell,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1461,7 +1461,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 43*/	{
 	.Signature = _Kabylake_UY,
-	.Query = Query_SandyBridge,
+	.Query = Query_Broadwell,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1475,7 +1475,7 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 44*/	{
 	.Signature = _Cannonlake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Broadwell,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,

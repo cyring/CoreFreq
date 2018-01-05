@@ -271,8 +271,8 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Frequency%.*s(Mhz)%.*sRatio",
 		12, hSpace, 23 - (OutFunc == NULL), hSpace);
 
-	PrintBoost("Min", 0, 0, SCANKEY_NULL);
-	PrintBoost("Max", 1, 0, SCANKEY_NULL);
+	PrintBoost("Min", BOOST(MIN), 0, SCANKEY_NULL);
+	PrintBoost("Max", BOOST(MAX), 0, SCANKEY_NULL);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Factory");
 	printv(OutFunc, SCANKEY_NULL, width, 0, "%.*s""%5u""%.*s""[%4d ]",
@@ -288,6 +288,28 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	    sprintf(pfx, "%2dC", activeCores);
 	    PrintBoost(pfx,boost,Shm->Proc.Features.Ratio_Unlock,SCANKEY_NULL);
 	}
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Uncore");
+
+	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
+			17, hSpace, "Min", 3, hSpace,
+		(double) ( Shm->Uncore.Boost[BOOST(MIN)]
+			* Shm->Cpu[0].Clock.Hz) / 1000000.0,
+			20, hSpace,
+			'[',
+			Shm->Uncore.Boost[BOOST(MIN)],
+			']');
+	printv(OutFunc, SCANKEY_NULL, width, 0, str);
+
+	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
+			17, hSpace, "Max", 3, hSpace,
+		(double) ( Shm->Uncore.Boost[BOOST(MAX)]
+			* Shm->Cpu[0].Clock.Hz) / 1000000.0,
+			20, hSpace,
+			'[',
+			Shm->Uncore.Boost[BOOST(MAX)],
+			']');
+	printv(OutFunc, SCANKEY_NULL, width, 0, str);
 
 	free(str);
 }
