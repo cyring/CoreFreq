@@ -1896,7 +1896,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	}
 
 	Shm->Uncore.Boost[BOOST(MIN)] = Proc->Uncore.Boost[BOOST(MIN)];
-	Shm->Uncore.Boost[BOOST(MIN)] = Proc->Uncore.Boost[BOOST(MAX)];
+	Shm->Uncore.Boost[BOOST(MAX)] = Proc->Uncore.Boost[BOOST(MAX)];
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
