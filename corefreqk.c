@@ -1410,8 +1410,8 @@ void Haswell_Uncore_Ratio(void)
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
 	RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
 
-	Proc->Uncore.Boost[BOOST(MIN)] = UncoreRatio.MinRatio;
-	Proc->Uncore.Boost[BOOST(MAX)] = UncoreRatio.MaxRatio;
+	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = UncoreRatio.MinRatio;
+	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreRatio.MaxRatio;
 }
 
 void Nehalem_Platform_Info(void)
@@ -1883,6 +1883,18 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0x50, &Proc->Uncore.Bus.DimmClock.value);
+
+	return(0);
+}
+
+static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev)
+{
+	NHM_CURRENT_UCLK_RATIO UncoreClock = {.value = 0};
+
+	pci_read_config_dword(dev, 0xc0, &UncoreClock.value);
+
+	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreClock.UCLK;
+	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = UncoreClock.MinRatio;
 
 	return(0);
 }

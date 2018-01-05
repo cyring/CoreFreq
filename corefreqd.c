@@ -1895,8 +1895,10 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	}
 
-	Shm->Uncore.Boost[BOOST(MIN)] = Proc->Uncore.Boost[BOOST(MIN)];
-	Shm->Uncore.Boost[BOOST(MAX)] = Proc->Uncore.Boost[BOOST(MAX)];
+	// Copy the Uncore clock ratios.
+	memcpy( Shm->Uncore.Boost,
+		Proc->Uncore.Boost,
+		(UNCORE_BOOST(SIZE)) * sizeof(unsigned int) );
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)

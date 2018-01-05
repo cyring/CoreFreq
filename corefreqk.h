@@ -655,6 +655,7 @@ static PCI_CALLBACK P35(struct pci_dev *dev) ;
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
+static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
@@ -741,6 +742,14 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
+	{	// Nehalem Bloomfield/Xeon C3500: Non-Core Registers
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
+	{	// Nehalem EP Xeon C5500: Non-Core Registers
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NEHALEM_EP_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
 	{0, }
 };
 
@@ -752,6 +761,14 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	{	// Lynnfield IMC Test Registers
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
+	},
+	{	// Lynnfield QuickPath Architecture Generic Non-core Registers
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
+	{	// Westmere/Clarkdale QuickPath Architecture Non-core Registers
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
 };

@@ -256,7 +256,7 @@ typedef struct
 	char				AppName[TASK_COMM_LEN];
 
 	struct {
-		unsigned int		Boost[2];
+		unsigned int		Boost[UNCORE_BOOST(SIZE)];
 	    struct
 	    {
 		unsigned long long	Speed;

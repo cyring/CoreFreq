@@ -1225,6 +1225,18 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_DOD_CHANNEL;
 
+typedef union	// Xeon C5500/C3500, Bloomfield, Lynnfield
+{	// Device: 0 - Function: 0 - Offset: C0h
+	unsigned int		value;
+	struct {
+		unsigned int
+		UCLK		:  7-0,
+		ReservedBits1	:  8-7,
+		MinRatio	: 15-8,
+		ReservedBits2	: 32-15;
+	};
+} NHM_CURRENT_UCLK_RATIO;
+
 typedef union
 {	// X58 IOH Control Status & RAS Registers: Dev: 20 - Func: 2 - Off: D0h
 	unsigned int		value;
