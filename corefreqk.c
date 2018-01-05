@@ -4400,9 +4400,6 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		if (Core->T.Base.BSP) {
 			PKG_Counters_Skylake_X(Core, 1);
 
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
-
 			Delta_PC02(Proc);
 
 			Delta_PC03(Proc);
@@ -4429,6 +4426,9 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Sys_Tick(Proc);
 		}
+
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
 		Core_Intel_Temp(Core);
 
