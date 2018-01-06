@@ -661,6 +661,7 @@ static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev) ;
 
@@ -836,20 +837,24 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 static struct pci_device_id PCI_Skylake_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_SA
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_SA
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_SA
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_SA
 	},
+	{0, }
+};
+
+static struct pci_device_id PCI_Skylake_X_ids[] = {
 	{0, }
 };
 
@@ -1446,7 +1451,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/X",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.PCI_ids = PCI_Skylake_ids
+	.PCI_ids = PCI_Skylake_X_ids
 	},
 
 /* 41*/	{

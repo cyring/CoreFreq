@@ -1498,3 +1498,16 @@ typedef union
 		ReservedBits4	: 32-28;
 	};
 } SKL_IMC_MAD_CHANNEL;
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset 5918h
+	unsigned int		value;
+	struct {
+		unsigned int
+		QCLK		:  7-0,
+		QCLK_REF	:  8-7,  // 0=133Mhz, 1=100Mhz
+		FCLK		: 16-8,
+		ICLK		: 24-16,
+		UCLK		: 32-24;
+	};
+} SKL_SA_PLL_RATIOS;	// 06_4E/06_5E
