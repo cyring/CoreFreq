@@ -1450,7 +1450,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Clock = Clock_Skylake,
 	.Architecture = "Skylake/X",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SKL_X,
 	.PCI_ids = PCI_Skylake_X_ids
 	},
 

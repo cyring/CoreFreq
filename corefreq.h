@@ -35,7 +35,8 @@ typedef struct
 	struct {
 		unsigned int		ApicID,
 					CoreID,
-					ThreadID;
+					ThreadID,
+					PackageID;
 		struct {
 			Bit32		BSP,
 					x2APIC;

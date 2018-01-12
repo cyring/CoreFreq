@@ -169,7 +169,7 @@ static void *Core_Cycle(void *arg)
 			Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 
 		// Voltage formulas
-		Flip->Voltage.VID    = Core->Counter[1].VID;
+		Flip->Voltage.VID = Core->Counter[1].VID;
 		switch (Pkg->voltageFormula) {
 		// Intel Core 2 Extreme Datasheet §3.3-Table 2
 		case VOLTAGE_FORMULA_INTEL_MEROM:
@@ -178,10 +178,14 @@ static void *Core_Cycle(void *arg)
 			break;
 		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
 		case VOLTAGE_FORMULA_INTEL_SNB:
-			if (Core->T.Base.BSP) {
+			if (Cpu->Topology.MP.BSP) {
 			    Flip->Voltage.Vcore = (double) (Flip->Voltage.VID)
 						/ 8192.0;
 			}
+			break;
+		case VOLTAGE_FORMULA_INTEL_SKL_X:
+			    Flip->Voltage.Vcore = (double) (Flip->Voltage.VID)
+						/ 8192.0;
 			break;
 		case VOLTAGE_FORMULA_AMD:
 			break;
@@ -212,7 +216,7 @@ static void *Core_Cycle(void *arg)
 		    break;
 		}
 		// Interrupts
-		Flip->Counter.SMI	  = Core->Interrupt.SMI;
+		Flip->Counter.SMI = Core->Interrupt.SMI;
 
 		if (Shm->Registration.nmi) {
 			Flip->Counter.NMI.LOCAL	  = Core->Interrupt.NMI.LOCAL;
@@ -221,7 +225,7 @@ static void *Core_Cycle(void *arg)
 			Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 		}
 		// Package C-state Residency Counters
-		if (Core->T.Base.BSP) {
+		if (Cpu->Topology.MP.BSP) {
 			Shm->Proc.Toggle = !Shm->Proc.Toggle;
 
 			struct PKG_FLIP_FLOP *Flip =
@@ -1930,6 +1934,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.ApicID    = Core[cpu]->T.ApicID;
 	Shm->Cpu[cpu].Topology.CoreID    = Core[cpu]->T.CoreID;
 	Shm->Cpu[cpu].Topology.ThreadID  = Core[cpu]->T.ThreadID;
+	Shm->Cpu[cpu].Topology.PackageID = Core[cpu]->T.PackageID;
 	Shm->Cpu[cpu].Topology.MP.x2APIC = ((Proc->Features.Std.ECX.x2APIC
 					    & Core[cpu]->T.Base.EN)
 					   << Core[cpu]->T.Base.EXTD);

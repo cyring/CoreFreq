@@ -76,7 +76,7 @@ typedef unsigned int		Bit32;
 	);					\
 })
 
-#define _BIT_TEST_GPR(_base, _offset)	\
+#define _BIT_TEST_GPR(_base, _offset)		\
 ({						\
 	register unsigned char _ret = 0;	\
 	asm volatile				\
@@ -205,3 +205,33 @@ typedef unsigned int		Bit32;
 
 #define BITSTOR(_lock, _dest, _src)			\
 	_dest = BITWISEAND(_lock, _src, 0xffffffffffffffff)
+
+#define BITBSF(_base, _index)				\
+({							\
+	register unsigned char _ret = 0;		\
+	asm volatile					\
+	(						\
+		"bsf	%[base], %[index]"	"\n\t"	\
+		"setz	%[ret]"				\
+		: [ret]   "+r" (_ret),			\
+		  [index] "=r" (_index) 		\
+		: [base]  "r" (_base)			\
+		: "cc", "memory"			\
+	);						\
+	_ret;						\
+})
+
+#define BITBSR(_base, _index)				\
+({							\
+	register unsigned char _ret = 0;		\
+	asm volatile					\
+	(						\
+		"bsr	%[base], %[index]"	"\n\t"	\
+		"setz	%[ret]"				\
+		: [ret]   "+r" (_ret),			\
+		  [index] "=r" (_index) 		\
+		: [base]  "r" (_base)			\
+		: "cc", "memory"			\
+	);						\
+	_ret;						\
+})

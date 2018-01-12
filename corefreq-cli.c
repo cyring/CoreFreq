@@ -1159,16 +1159,21 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		va_end(ap);
 	}
 
-	printv("CPU    Apic  ");printv(" Core  Thread");printv("  Caches     ");
+	printv("CPU Pkg  Apic");printv("  Core Thread");printv("  Caches     ");
 	printv(" (w)rite-Back");printv(" (i)nclusive ");printv("             ");
-	printv(" #      ID   ");printv("  ID     ID  ");printv(" L1-Inst Way ");
+	printv(" #   ID   ID ");printv("   ID     ID ");printv(" L1-Inst Way ");
 	printv(" L1-Data Way ");printv("     L2  Way ");printv("     L3  Way ");
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-		printv("%02u%-4s%6d ",
-			cpu,
-			(Shm->Cpu[cpu].Topology.MP.BSP) ? ":BSP" : ":AP",
-			Shm->Cpu[cpu].Topology.ApicID);
+		if (Shm->Cpu[cpu].Topology.MP.BSP)
+			printv("%02u: BSP%6d",
+				cpu,
+				Shm->Cpu[cpu].Topology.ApicID);
+		else
+			printv("%02u:%4d%6d",
+				cpu,
+				Shm->Cpu[cpu].Topology.PackageID,
+				Shm->Cpu[cpu].Topology.ApicID);
 
 		printv("%6d %6d",
 			Shm->Cpu[cpu].Topology.CoreID,

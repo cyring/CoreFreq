@@ -1100,115 +1100,189 @@ void Cache_Topology(CORE *Core)
 	}
 }
 
-// Enumerate the Processor's Cores and Threads topology.
+/*
+ Enumerate the topology of Processors, Cores and Threads
+ Remark: Early single-core processors are not processed.
+ Sources: Intel Software Developer’s Manual vol 3A §8.9 /
+	  Intel whitepaper: Detecting Hyper-Threading Technology /
+*/
 static void Map_Topology(void *arg)
 {
-	if (arg != NULL) {
-		unsigned int eax = 0x0, ecx = 0x0, edx = 0x0;
-		CORE *Core = (CORE *) arg;
-		FEATURES features;
+    unsigned short FindMaskWidth(unsigned short maxCount)
+    {
+	unsigned short maskWidth = 0, count = (maxCount - 1);
 
-		RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+	if (BITBSR(count, maskWidth) == 0)
+		maskWidth++;
+
+	return(maskWidth);
+    }
+
+    if (arg != NULL) {
+	CORE *Core = (CORE *) arg;
+	unsigned short	SMT_Mask_Width, CORE_Mask_Width,
+			SMT_Select_Mask, CORE_Select_Mask, PKG_Select_Mask;
+
+	struct
+	{	// CPUID 1
+		unsigned int
+		Brand_ID	:  8-0,
+		CLFSH_Size	: 16-8,
+		Max_SMT_ID	: 24-16,
+		Init_APIC_ID	: 32-24;
+	} leaf1_ebx;
+
+	struct
+	{	// CPUID 4
+		unsigned int
+		Type		:  5-0,
+		Level		:  8-5,
+		Init		:  9-8,
+		Assoc		: 10-9,
+		Unused		: 14-10,
+		Cache_SMT_ID	: 26-14,
+		Max_Core_ID	: 32-26;
+	} leaf4_eax;
+
+	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+
+	asm volatile
+	(
+		"movq	$0x1,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rcx, %%rcx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%ebx, %0"
+		: "=r" (leaf1_ebx)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+
+	if (Proc->Features.Std.EDX.HTT) {
+		SMT_Mask_Width = leaf1_ebx.Max_SMT_ID;
 
 		asm volatile
 		(
-			"movq	$0x1,  %%rax	\n\t"
+			"movq	$0x4,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
 			"xorq	%%rcx, %%rcx	\n\t"
+			"xorq	%%rdx, %%rdx	\n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0"
+			: "=r" (leaf4_eax)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+
+		CORE_Mask_Width = leaf4_eax.Max_Core_ID + 1;
+	} else {
+		SMT_Mask_Width = 0;
+		CORE_Mask_Width = 1;
+	}
+	SMT_Mask_Width    = FindMaskWidth(SMT_Mask_Width) / CORE_Mask_Width;
+
+	SMT_Select_Mask   = ~((-1) << SMT_Mask_Width);
+
+	CORE_Select_Mask  = (~((-1) << (CORE_Mask_Width + SMT_Mask_Width)))
+			  ^ SMT_Select_Mask;
+
+	PKG_Select_Mask   = (-1) << (CORE_Mask_Width + SMT_Mask_Width);
+
+	Core->T.ThreadID  = leaf1_ebx.Init_APIC_ID & SMT_Select_Mask;
+
+	Core->T.CoreID    = (leaf1_ebx.Init_APIC_ID & CORE_Select_Mask)
+			  >> SMT_Mask_Width;
+
+	Core->T.PackageID = (leaf1_ebx.Init_APIC_ID & PKG_Select_Mask)
+			  >> (CORE_Mask_Width + SMT_Mask_Width);
+
+	Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
+
+	Cache_Topology(Core);
+    }
+}
+
+static void Map_Extended_Topology(void *arg)
+{
+    if (arg != NULL) {
+	CORE *Core = (CORE *) arg;
+
+	long	InputLevel = 0;
+	int	NoMoreLevels = 0,
+		SMT_Mask_Width = 0, SMT_Select_Mask = 0,
+		CorePlus_Mask_Width = 0, CoreOnly_Select_Mask = 0,
+		Package_Select_Mask = 0;
+
+	CPUID_TOPOLOGY_LEAF ExtTopology = {
+		.AX.Register = 0,
+		.BX.Register = 0,
+		.CX.Register = 0,
+		.DX.Register = 0
+	};
+
+	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+
+	do {
+		asm volatile
+		(
+			"movq	$0xb,  %%rax	\n\t"
+			"xorq	%%rbx, %%rbx	\n\t"
+			"movq	%4,    %%rcx	\n\t"
 			"xorq	%%rdx, %%rdx	\n\t"
 			"cpuid			\n\t"
 			"mov	%%eax, %0	\n\t"
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (eax),
-			  "=r" (features.Std.EBX),
-			  "=r" (ecx),
-			  "=r" (edx)
-			:
+			: "=r" (ExtTopology.AX),
+			  "=r" (ExtTopology.BX),
+			  "=r" (ExtTopology.CX),
+			  "=r" (ExtTopology.DX)
+			: "r" (InputLevel)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
+		// Exit from the loop if the BX register equals 0 or
+		// if the requested level exceeds the level of a Core.
+		if (!ExtTopology.BX.Register || (InputLevel > LEVEL_CORE))
+			NoMoreLevels = 1;
+		else {
+		    switch (ExtTopology.CX.Type) {
+		    case LEVEL_THREAD: {
+			SMT_Mask_Width   = ExtTopology.AX.SHRbits;
 
-		Core->T.CoreID = Core->T.ApicID = features.Std.EBX.Apic_ID;
+			SMT_Select_Mask  = ~((-1) << SMT_Mask_Width);
 
-		Cache_Topology(Core);
-	}
-}
-
-static void Map_Extended_Topology(void *arg)
-{
-	if (arg != NULL) {
-		CORE *Core = (CORE *) arg;
-
-		long	InputLevel = 0;
-		int	NoMoreLevels = 0,
-			SMT_Mask_Width = 0, SMT_Select_Mask = 0,
-			CorePlus_Mask_Width = 0, CoreOnly_Select_Mask = 0;
-
-		CPUID_TOPOLOGY_LEAF ExtTopology = {
-			.AX.Register = 0,
-			.BX.Register = 0,
-			.CX.Register = 0,
-			.DX.Register = 0
-		};
-
-		RDMSR(Core->T.Base, MSR_IA32_APICBASE);
-
-		do {
-			asm volatile
-			(
-				"movq	$0xb,  %%rax	\n\t"
-				"xorq	%%rbx, %%rbx	\n\t"
-				"movq	%4,    %%rcx	\n\t"
-				"xorq	%%rdx, %%rdx	\n\t"
-				"cpuid			\n\t"
-				"mov	%%eax, %0	\n\t"
-				"mov	%%ebx, %1	\n\t"
-				"mov	%%ecx, %2	\n\t"
-				"mov	%%edx, %3"
-				: "=r" (ExtTopology.AX),
-				  "=r" (ExtTopology.BX),
-				  "=r" (ExtTopology.CX),
-				  "=r" (ExtTopology.DX)
-				: "r" (InputLevel)
-				: "%rax", "%rbx", "%rcx", "%rdx"
-			);
-			// Exit from the loop if the BX register equals 0 or
-			// if the requested level exceeds the level of a Core.
-			if (	!ExtTopology.BX.Register
-				|| (InputLevel > LEVEL_CORE))
-					NoMoreLevels = 1;
-			else {
-			    switch (ExtTopology.CX.Type) {
-			    case LEVEL_THREAD: {
-				SMT_Mask_Width   = ExtTopology.AX.SHRbits;
-
-				SMT_Select_Mask  = ~((-1) << SMT_Mask_Width);
-
-				Core->T.ThreadID = ExtTopology.DX.x2ApicID
-							& SMT_Select_Mask;
-				}
-				break;
-			    case LEVEL_CORE: {
-				CorePlus_Mask_Width  = ExtTopology.AX.SHRbits;
-
-				CoreOnly_Select_Mask =
-						(~((-1) << CorePlus_Mask_Width))
-							^ SMT_Select_Mask;
-
-				Core->T.CoreID = (ExtTopology.DX.x2ApicID
-				    & CoreOnly_Select_Mask) >> SMT_Mask_Width;
-				}
-				break;
-			    }
+			Core->T.ThreadID = ExtTopology.DX.x2ApicID
+					 & SMT_Select_Mask;
 			}
-			InputLevel++;
-		} while (!NoMoreLevels);
+			break;
+		    case LEVEL_CORE: {
+			CorePlus_Mask_Width  = ExtTopology.AX.SHRbits;
 
-		Core->T.ApicID = ExtTopology.DX.x2ApicID;
+			CoreOnly_Select_Mask = (~((-1) << CorePlus_Mask_Width))
+					     ^ SMT_Select_Mask;
 
-		Cache_Topology(Core);
-	}
+			Core->T.CoreID	= (ExtTopology.DX.x2ApicID
+						& CoreOnly_Select_Mask)
+					>> SMT_Mask_Width;
+
+			Package_Select_Mask = (-1) << CorePlus_Mask_Width;
+
+			Core->T.PackageID = (ExtTopology.DX.x2ApicID
+						& Package_Select_Mask)
+					  >> CorePlus_Mask_Width;
+			}
+			break;
+		    }
+		}
+		InputLevel++;
+	} while (!NoMoreLevels);
+
+	Core->T.ApicID = ExtTopology.DX.x2ApicID;
+
+	Cache_Topology(Core);
+    }
 }
 
 int Core_Topology(unsigned int cpu)
@@ -1238,6 +1312,7 @@ unsigned int Proc_Topology(void)
 		KPublic->Core[cpu]->T.ApicID     = -1;
 		KPublic->Core[cpu]->T.CoreID     = -1;
 		KPublic->Core[cpu]->T.ThreadID   = -1;
+		KPublic->Core[cpu]->T.PackageID  = -1;
 
 		// CPU state based on the OS
 		if (!OS_State) {

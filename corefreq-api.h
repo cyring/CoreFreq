@@ -60,7 +60,8 @@ typedef struct
 	LOCAL_APIC	Base;
 	int		ApicID,
 			CoreID,
-			ThreadID;
+			ThreadID,
+			PackageID;
 
 	struct CACHE_INFO
 	{
