@@ -297,13 +297,13 @@ typedef struct
 	    } EAX;
 		unsigned int Signature;
 	};
-	struct
+	struct CPUID_0x00000001_EBX
 	{
 		unsigned int
 		Brand_ID	:  8-0,
 		CLFSH_Size	: 16-8,
-		MaxThread	: 24-16,
-		Apic_ID		: 32-24;
+		Max_SMT_ID	: 24-16,
+		Init_APIC_ID	: 32-24;
 	} EBX;
 	struct
 	{
@@ -552,23 +552,23 @@ typedef struct	// Extended CPUID Function.
 		unsigned int LargestExtFunc, EBX, ECX, EDX;
 } CPUID_0x80000000;
 
-typedef	struct
+typedef struct
 {
     union
     {
-	struct	{ // Intel reserved.
+	struct { // Intel reserved.
 		unsigned int
 		LAHFSAHF:  1-0,  // LAHF and SAHF instruction support.
 		Unused1	: 32-1;
 	};
-	struct	{ // AMD reserved.
+	struct { // AMD reserved.
 		unsigned int
 		// Family 0Fh :
 		LahfSahf:  1-0,
 		MP_Mode	:  2-1,  // Core multi-processing legacy mode.
 		SVM	:  3-2,  // Secure virtual machine.
 		Ext_APIC:  4-3,  // Extended APIC space.
-		AltMov	:  5-4,	 // AltMovCr8
+		AltMov	:  5-4,  // AltMovCr8
 		ABM	:  6-5,  // LZCNT instruction support.
 		SSE4A	:  7-6,
 		AlignSSE:  8-7,  // Misaligned SSE mode.
@@ -690,6 +690,30 @@ typedef struct	// Architectural Performance Monitoring Leaf.
       };
     } EDX;
 } CPUID_0x80000007;
+
+typedef struct	// Processor Capacity Leaf.
+{
+	struct {
+		unsigned int
+		MaxPhysicalAddr :  8-0,  // Common x86
+		MaxLinearAddr	: 16-8,  // Common x86
+		MaxGuestPhysAddr: 24-16, // AMD reserved
+		Reserved	: 32-24;
+	} EAX;
+	struct { // AMD reserved
+		unsigned int
+		NC		:  8-0,  // Zero based number of physical cores 
+		Reserved1	: 12-8,
+		ApicIdCoreIdSize: 16-12, // Initial APIC ID size to compute MNC
+		PerfTscSize	: 18-16, // 00b=40, 01b=48, 10b=56, 11b=64 bits
+		Reserved2	: 32-18;
+	} ECX;
+	struct
+	{
+		unsigned int
+		Reserved	: 32-0;
+	} EBX, EDX;
+} CPUID_0x80000008;
 
 typedef struct	// BSP CPUID features.
 {

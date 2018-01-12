@@ -492,7 +492,7 @@ static void Query_Features(void *pArg)
 	} else if (Arg->Features.Info.Vendor.CRC == CRC_AMD) {
 
 		if (Arg->Features.Std.EDX.HTT)
-			Arg->SMT_Count = Arg->Features.Std.EBX.MaxThread;
+			Arg->SMT_Count = Arg->Features.Std.EBX.Max_SMT_ID;
 		else {
 			if (Arg->Features.Info.LargestExtFunc >= 0x80000008) {
 				asm volatile
@@ -1100,13 +1100,65 @@ void Cache_Topology(CORE *Core)
 	}
 }
 
+static void Map_AMD_Topology(void *arg)
+{
+    if (arg != NULL) {
+	CORE *Core = (CORE *) arg;
+
+	struct CPUID_0x00000001_EBX leaf1_ebx;
+
+	CPUID_0x80000008 leaf80000008;
+
+	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
+
+	asm volatile
+	(
+		"movq	$0x1,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rcx, %%rcx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%ebx, %0"
+		: "=r" (leaf1_ebx)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+
+	asm volatile
+	(
+		"movq	$0x80000008, %%rax	\n\t"
+		"xorq	%%rbx, %%rbx		\n\t"
+		"xorq	%%rcx, %%rcx		\n\t"
+		"xorq	%%rdx, %%rdx		\n\t"
+		"cpuid				\n\t"
+		"mov	%%ecx, %0"
+		: "=r" (leaf80000008.ECX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+
+	if (leaf80000008.ECX.ApicIdCoreIdSize == 0) { // Legacy processor
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.PackageID = 0;
+	} else { // ToDo: Families > 0Fh
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
+				  >> leaf80000008.ECX.ApicIdCoreIdSize;
+	}
+
+	Core->T.ApicID = leaf1_ebx.Init_APIC_ID;
+
+	Cache_Topology(Core);
+    }
+}
+
 /*
  Enumerate the topology of Processors, Cores and Threads
  Remark: Early single-core processors are not processed.
  Sources: Intel Software Developer’s Manual vol 3A §8.9 /
 	  Intel whitepaper: Detecting Hyper-Threading Technology /
 */
-static void Map_Topology(void *arg)
+static void Map_Intel_Topology(void *arg)
 {
     unsigned short FindMaskWidth(unsigned short maxCount)
     {
@@ -1123,14 +1175,7 @@ static void Map_Topology(void *arg)
 	unsigned short	SMT_Mask_Width, CORE_Mask_Width,
 			SMT_Select_Mask, CORE_Select_Mask, PKG_Select_Mask;
 
-	struct
-	{	// CPUID 1
-		unsigned int
-		Brand_ID	:  8-0,
-		CLFSH_Size	: 16-8,
-		Max_SMT_ID	: 24-16,
-		Init_APIC_ID	: 32-24;
-	} leaf1_ebx;
+	struct CPUID_0x00000001_EBX leaf1_ebx;
 
 	struct
 	{	// CPUID 4
@@ -1180,7 +1225,9 @@ static void Map_Topology(void *arg)
 		SMT_Mask_Width = 0;
 		CORE_Mask_Width = 1;
 	}
-	SMT_Mask_Width    = FindMaskWidth(SMT_Mask_Width) / CORE_Mask_Width;
+
+	if (CORE_Mask_Width != 0)
+	   SMT_Mask_Width = FindMaskWidth(SMT_Mask_Width) / CORE_Mask_Width;
 
 	SMT_Select_Mask   = ~((-1) << SMT_Mask_Width);
 
@@ -1203,7 +1250,7 @@ static void Map_Topology(void *arg)
     }
 }
 
-static void Map_Extended_Topology(void *arg)
+static void Map_Intel_Extended_Topology(void *arg)
 {
     if (arg != NULL) {
 	CORE *Core = (CORE *) arg;
@@ -1288,10 +1335,11 @@ static void Map_Extended_Topology(void *arg)
 int Core_Topology(unsigned int cpu)
 {
 	int rc = smp_call_function_single(cpu,
-				(Proc->Features.Info.LargestStdFunc >= 0xb) ?
-					Map_Extended_Topology : Map_Topology,
-				KPublic->Core[cpu],
-				1); // Synchronous call.
+		(Proc->Features.Info.Vendor.CRC == CRC_AMD) ?
+			Map_AMD_Topology
+			: (Proc->Features.Info.LargestStdFunc >= 0xb) ?
+			Map_Intel_Extended_Topology : Map_Intel_Topology,
+		KPublic->Core[cpu], 1); // Synchronous call.
 
 	if (	!rc
 		&& !Proc->Features.HTT_Enable
