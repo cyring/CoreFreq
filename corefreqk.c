@@ -2369,21 +2369,48 @@ void Query_AMD_Family_15h(void)
 
 void Query_AMD_Family_17h(void)
 {
-	unsigned int index, pstate, sort[8] = {
-		BOOST(MAX), BOOST(MIN), BOOST(1C), BOOST(2C),
-		BOOST(3C) , BOOST(4C) , BOOST(5C), BOOST(6C)
-	};
-	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
-		PSTATEDEF PstateDef = {.value = 0};
+	unsigned int CoreCOF(unsigned int FID, unsigned int DID)
+	{/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
+	    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200 */
+		unsigned int COF;
+		if (DID != 0) {
+			COF = (FID << 1) / DID;
+			COF += ((FID >> 1) % 2);
+		} else {
+			COF = FID >> 3;
+		}
+		return(COF);
+	}
 
+	unsigned int COF, index, pstate, sort[8] = {
+		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
+		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
+	};
+	PSTATEDEF PstateDef = {.value = 0};
+
+	// Core & L3 frequencies < 400MHz are not supported by the architecture
+	Proc->Boost[BOOST(MIN)] = 4;
+
+	RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
+
+	COF = CoreCOF(	PstateDef.Family_17h.CpuFid,
+			PstateDef.Family_17h.CpuDfsId);
+
+	Proc->Boost[BOOST(1C)] = COF;
+	Proc->Features.SpecTurboRatio = 1;
+
+	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-	    if (PstateDef.Family_17h.PstateEn) {
-		Proc->Boost[sort[index]] = PstateDef.Family_17h.CpuFid >> 2;
-		index++;
-	    }
+		if (PstateDef.Family_17h.PstateEn) {
+			COF = CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId);
+
+			Proc->Boost[sort[index]] = COF;
+			index++;
+		}
 	}
-	Proc->Features.SpecTurboRatio = index > 2 ? index - 2 : 0;
+	Proc->Features.SpecTurboRatio += index;
 
 	HyperThreading_Technology();
 }
@@ -3204,25 +3231,22 @@ void Controller_Init(void)
 	if (Arch[Proc->ArchID].Query != NULL) {
 		Arch[Proc->ArchID].Query();
 	}
-	if (Proc->Boost[BOOST(MAX)] > 0) {
-		ratio = Proc->Boost[BOOST(MAX)];
-	}
-	if (ratio > 0) {
-		if (Arch[Proc->ArchID].Clock != NULL) {
-			clock = Arch[Proc->ArchID].Clock(ratio);
-		}
+	ratio = Proc->Boost[BOOST(MAX)];
+
+	if (Arch[Proc->ArchID].Clock != NULL) {
+		clock = Arch[Proc->ArchID].Clock(ratio);
 	}
 	if (clock.Hz == 0) {	// Fallback @ 100 MHz
 		clock.Q = 100;
 		clock.R = 0;
 		clock.Hz = 100000000L;
 	}
+
 	if (Proc->Features.FactoryFreq != 0) {
-	    if (ratio == 0) {
+	    if (ratio == 0) // Fix ratio
 		ratio = Proc->Boost[BOOST(MAX)] = Proc->Features.FactoryFreq
 						/ clock.Q;
-	    }
-	} else { // Fix factory frequency (MHz)
+	} else if (ratio > 0) { // Fix factory frequency (MHz)
 		Proc->Features.FactoryFreq = (ratio * clock.Hz) / 1000000L;
 	}
 
