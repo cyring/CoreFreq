@@ -5330,11 +5330,96 @@ void Top(SHM_STRUCT *Shm, char option)
 			.row = (card->origin.row + 3)
 		},
 		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK},
-		.code={'[',' ',' ','U','N','C','O','R','E',' ',' ',']'}
+		.attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,LCK,LCK,HDK},
+		.code={'[','U','N','C','O','R','E',' ',' ',' ',' ',']'}
 	};
+
+	sprintf(buffer, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
+	hUncore.code[ 8] = buffer[0];
+	hUncore.code[ 9] = buffer[1];
+	hUncore.code[10] = buffer[2];
+
 	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,	\
 			hUncore.length, hUncore.attr, hUncore.code);
+    }
+
+    void Layout_Card_Bus(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hBus = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK},
+		.code={'[','B','u','s',' ',' ',' ',' ',' ',' ',' ',']'}
+	};
+
+	sprintf(buffer, "%4u", Shm->Uncore.Bus.Rate);
+	hBus.code[5] = buffer[0];
+	hBus.code[6] = buffer[1];
+	hBus.code[7] = buffer[2];
+	hBus.code[8] = buffer[3];
+
+	switch (Shm->Uncore.Unit.Bus_Rate) {
+	case 0b00:
+		hBus.code[ 9] = 'M';
+		hBus.code[10] = 'H';
+		break;
+	case 0b01:
+		hBus.code[ 9] = 'M';
+		hBus.code[10] = 'T';
+		break;
+	case 0b10:
+		hBus.code[ 9] = 'M';
+		hBus.code[10] = 'B';
+		break;
+	}
+
+	LayerCopyAt(layer, hBus.origin.col, hBus.origin.row,	\
+			hBus.length, hBus.attr, hBus.code);
+
+	Counter2LCD(layer, card->origin.col, card->origin.row,
+			(double) Shm->Uncore.Bus.Speed);
+    }
+
+    void Layout_Card_MC(Layer *layer, Card* card)
+    {
+	LayerDeclare(4 * INTER_WIDTH) hRAM = {
+		.origin = {
+			.col = card->origin.col,
+			.row = (card->origin.row + 3)
+		},
+		.length = (4 * INTER_WIDTH),
+		.attr={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
+		.code={'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']'}
+	};
+	unsigned int timings[4] = {
+		Shm->Uncore.MC[0].Channel[0].Timing.tCL,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRP,
+		Shm->Uncore.MC[0].Channel[0].Timing.tRAS
+	}, tdx, bdx = 0, ldx, sdx;
+	char str[16];
+	for (tdx = 0; tdx < 4; tdx++) {
+		ldx = sprintf(str, "%u", timings[tdx]);
+		sdx = 0;
+		while (sdx < ldx)
+			buffer[bdx++] = str[sdx++];
+		if ((9 - bdx) > ldx) {
+			if (tdx < 3)
+				buffer[bdx++] = '-';
+		} else
+			break;
+	}
+	for (sdx = 0, ldx = 10 - bdx; sdx < bdx; sdx++, ldx++)
+		hRAM.code[ldx] = buffer[sdx];
+
+	LayerCopyAt(layer, hRAM.origin.col, hRAM.origin.row,	\
+			hRAM.length, hRAM.attr, hRAM.code);
+
+	Counter2LCD(layer, card->origin.col, card->origin.row,
+			(double) Shm->Uncore.CtrlSpeed);
     }
 
     void Layout_Card_Load(Layer *layer, Card* card)
@@ -5367,32 +5452,50 @@ void Top(SHM_STRUCT *Shm, char option)
 			hIdle.length, hIdle.attr, hIdle.code);
     }
 
-    void Layout_Card_RAM(Layer *layer, Card* card)
-    {
-	LayerDeclare(4 * INTER_WIDTH) hMem = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr={HDK,HWK,HWK,HWK,HWK,HWK,LWK,HDK,HWK,HWK,LWK,HDK},
-		.code={'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']'}
-	};
+  void Layout_Card_RAM(Layer *layer, Card* card)
+  {
+    LayerDeclare(4 * INTER_WIDTH) hMem = {
+	.origin = {
+		.col = card->origin.col,
+		.row = (card->origin.row + 3)
+	},
+	.length = (4 * INTER_WIDTH),
+	.attr={HDK,HWK,HWK,HWK,HWK,HWK,LWK,HDK,HWK,HWK,LWK,HDK},
+	.code={'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']'}
+    };
 
-	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		unsigned long totalRAM;
-		int unit;
-		char symbol[4] = {'K', 'M', 'G', 'T'};
+    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+	unsigned long totalRAM, totalDimm = 0;
+	int unit;
+	char symbol = 0x20;
 
-		unit = ByteReDim(Shm->SysGate.memInfo.totalram, 2, &totalRAM);
-		sprintf(buffer, "%2lu%c", totalRAM, symbol[unit]);
-		memcpy(&hMem.code[8], buffer, 3);
+      if (Shm->Uncore.CtrlCount > 0) {
+	unsigned short mc, cha, slot;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+	  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+		totalDimm += Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size;
+	    }
+	unit = ByteReDim(totalDimm, 2, &totalRAM);
+	if ((unit >= 0) && (unit < 4)) {
+		char symbols[4] = {'M', 'G', 'T', 'P'};
+		symbol = symbols[unit];
+	}
+      } else {
+	unit = ByteReDim(Shm->SysGate.memInfo.totalram, 2, &totalRAM);
+	if ((unit >= 0) && (unit < 4)) {
+		char symbols[4] = {'K', 'M', 'G', 'T'};
+		symbol = symbols[unit];
+	}
+      }
+	sprintf(buffer, "%2lu%c", totalRAM, symbol);
+	memcpy(&hMem.code[8], buffer, 3);
 
-		LayerCopyAt(layer, hMem.origin.col, hMem.origin.row, \
-				hMem.length, hMem.attr, hMem.code);
-	} else
-		card->data.dword.hi = 0x010;
-    }
+	LayerCopyAt(layer, hMem.origin.col, hMem.origin.row,	\
+			hMem.length, hMem.attr, hMem.code);
+    } else
+	card->data.dword.hi = 0x010;
+  }
 
     void Layout_Card_Task(Layer *layer, Card* card)
     {
@@ -5508,9 +5611,9 @@ void Top(SHM_STRUCT *Shm, char option)
     void Draw_Card_Uncore(Layer *layer, Card* card)
     {
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	double uncore = Pkg->Uncore.FC0 / 1000000.f;
+	double Uncore = Pkg->Uncore.FC0 / 1000000.f;
 
-	Idle2LCD(layer, card->origin.col, card->origin.row, uncore);
+	Idle2LCD(layer, card->origin.col, card->origin.row, Uncore);
     }
 
     void Draw_Card_Load(Layer *layer, Card* card)
@@ -5622,6 +5725,10 @@ void Top(SHM_STRUCT *Shm, char option)
     }
   }
 
+    void Dont_Draw_Card(Layer *layer, Card* card)
+    {
+    }
+
     void Draw_Dashboard(Layer *layer)
     {
 	Card *walker = cardList.head;
@@ -5658,6 +5765,22 @@ void Top(SHM_STRUCT *Shm, char option)
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Uncore);
 		StoreCard(card, .Draw, Draw_Card_Uncore);
+	}
+	if (Shm->Uncore.CtrlCount > 0) {
+	    if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_Bus);
+		StoreCard(card, .Draw, Dont_Draw_Card);
+	    }
+	    if ((card = CreateCard()) != NULL) {
+		card->data.qword = 0;
+
+		AppendCard(card, &cardList);
+		StoreCard(card, .Layout, Layout_Card_MC);
+		StoreCard(card, .Draw, Dont_Draw_Card);
+	    }
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.qword = 0;

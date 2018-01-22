@@ -2838,10 +2838,6 @@ void CStatesConfiguration(int encoding, CORE *Core, unsigned int cpu)
 	Core->Query.C3A = CStateConfig.C3autoDemotion;
 	Core->Query.C1A = CStateConfig.C1autoDemotion;
 
-	if (encoding == 0x062A) {
-		Core->Query.C3U = CStateConfig.C3undemotion;
-		Core->Query.C1U = CStateConfig.C1undemotion;
-	}
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
@@ -2865,6 +2861,9 @@ void CStatesConfiguration(int encoding, CORE *Core, unsigned int cpu)
 			break;
 		}
 	} else if (encoding == 0x062A) {
+		Core->Query.C3U = CStateConfig.C3undemotion;
+		Core->Query.C1U = CStateConfig.C1undemotion;
+
 		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
 		case 0b101:
 		case 0b100:
@@ -2885,6 +2884,9 @@ void CStatesConfiguration(int encoding, CORE *Core, unsigned int cpu)
 			break;
 		}
 	} else if (encoding == 0x0645) {
+		Core->Query.C3U = CStateConfig.C3undemotion;
+		Core->Query.C1U = CStateConfig.C1undemotion;
+
 		switch (CStateConfig.Pkg_CStateLimit) {
 		case 0b1000:
 			Core->Query.CStateLimit = 10;
@@ -4016,7 +4018,7 @@ static void Stop_Core2(void *arg)
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 {
-	unsigned int cpu=smp_processor_id();
+	unsigned int cpu = smp_processor_id();
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
 	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
