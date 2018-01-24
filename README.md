@@ -101,7 +101,8 @@ rmmod corefreqk.ko
 ```
 
 ### Try
-[Download](http://blog.cyring.fr/live/archlinux-corefreq.iso) Live CD (627 MB)
+Download the CoreFreq Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_LiveCD_Step1.png "CoreFreq for ArchLinux")  
 
 ## Screenshots
 ### Linux kernel module
