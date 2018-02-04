@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define	SHM_FILENAME	"corefreq-shm"
+#define SHM_FILENAME	"corefreq-shm"
 
 typedef struct
 {
