@@ -132,6 +132,8 @@ typedef union {
 #define SCANKEY_w		0x0000000000000077
 #define SCANKEY_x		0x0000000000000078
 #define SCANKEY_z		0x000000000000007a
+#define SCANKEY_OPEN_BRACE	0x000000000000007b
+#define SCANKEY_CLOSE_BRACE	0x000000000000007d
 
 #define SCANCON_HOME		0x000000007e315b1b
 #define SCANCON_END		0x000000007e345b1b
@@ -302,8 +304,7 @@ typedef char *REGPTR;
 
 extern Layer	*sLayer,
 		*dLayer,
-		*wLayer,
-		*fuse;
+		*wLayer;
 
 extern WinList winList;
 
