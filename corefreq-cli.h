@@ -85,6 +85,12 @@
 
 typedef char HBCLK[11 + 1];
 
+enum DISPOSAL {
+	D_MAINVIEW,
+	D_DASHBOARD,
+	D_ASCIITEST
+};
+
 enum VIEW {
 	V_FREQ,
 	V_INST,

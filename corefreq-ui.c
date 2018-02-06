@@ -997,8 +997,8 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	// Care about the right-side window border.
-	CUINT maxVisibleCol=CUMIN(MAX_WIDTH - 1,GetScreenSize().width)
-					- win->lazyComp.rowLen;
+	CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1,GetScreenSize().width)
+			    - win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
 		EraseWindowWithBorder(win);
@@ -1016,8 +1016,8 @@ void MotionOriginUp_Win(Window *win)
 
 void MotionOriginDown_Win(Window *win)
 {	// Care about the bottom window border.
-	CUINT maxVisibleRow=CUMIN(MAX_HEIGHT - 1,GetScreenSize().height)
-					- win->matrix.size.hth - 1;
+	CUINT maxVisibleRow = CUMIN(MAX_HEIGHT - 1, GetScreenSize().height)
+			    - win->matrix.size.hth - 1;
 
 	if (win->matrix.origin.row < maxVisibleRow) {
 		EraseWindowWithBorder(win);

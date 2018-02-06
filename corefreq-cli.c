@@ -1434,7 +1434,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	.avgOrPC= 0,
 	.clkOrLd= 0,
 	.view	= V_FREQ,
-	.disposal= (option == 'd') ? 1 : 0
+	.disposal= (option == 'd') ? D_DASHBOARD : D_MAINVIEW
     };
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
@@ -1724,7 +1724,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 10, 8, TOP_HEADER_ROW + 3);
+      Window *wSet = CreateWindow(wLayer, id, 2, 10, 8,
+				(TOP_HEADER_ROW + 10 + 3 < drawSize.height) ?
+					TOP_HEADER_ROW + 3 : 1);
       if (wSet != NULL) {
 	char	intervStr[16], tickStr[16], pollStr[16], experStr[16],
 		cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
@@ -1797,7 +1799,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateHelp(unsigned long long id)
     {
-      Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2, TOP_HEADER_ROW + 1);
+      Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2,
+				(TOP_HEADER_ROW + 19 + 1 < drawSize.height) ?
+					TOP_HEADER_ROW + 1 : 1);
       if (wHelp != NULL) {
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
@@ -1869,9 +1873,14 @@ void Top(SHM_STRUCT *Shm, char option)
 		f = sizeof(F) / sizeof(F[0]),
 		l = strlen(C[0]), v = strlen(COREFREQ_VERSION);
 
-	Window *wAbout = CreateWindow(	wLayer, id,
-					1, c + f,
-					(drawSize.width-l)/2, TOP_HEADER_ROW+4);
+	CUINT cHeight=c + f, oCol=(drawSize.width-l)/2, oRow=TOP_HEADER_ROW + 4;
+	if (cHeight >= (drawSize.height - 1)) {
+		cHeight = drawSize.height - 2;
+	}
+	if (oRow + cHeight >= drawSize.height) {
+		oRow = abs(drawSize.height - (1 + cHeight));
+	}
+	Window *wAbout = CreateWindow(wLayer, id, 1, cHeight, oCol, oRow);
 	if (wAbout != NULL) {
 		unsigned int i;
 
@@ -1939,9 +1948,14 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	Window *wBox = NULL;
 	if (pBox != NULL) {
+	    CUINT cHeight = pBox->cnt, oRow = origin.row;
+	    if (oRow + cHeight >= drawSize.height) {
+		cHeight = CUMIN(cHeight, (drawSize.height - 2));
+		oRow = 1;
+	    }
 	    wBox = CreateWindow(wLayer, id,
-				1, pBox->cnt,
-				origin.col, origin.row);
+				1, cHeight,
+				origin.col, oRow);
 	    if (wBox != NULL) {
 		wBox->matrix.select.col = select.col;
 		wBox->matrix.select.row = select.row;
@@ -1970,7 +1984,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateSysInfo(unsigned long long id)
     {
-	CoordSize matrixSize = {.wth = 1, .hth = 18};
+	CoordSize matrixSize = {
+		.wth = 1,
+		.hth = CUMIN(18, (drawSize.height - TOP_HEADER_ROW - 2))
+	};
 	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 1};
 	CUINT winWidth = 74;
 	void (*SysInfoFunc)	(SHM_STRUCT*, CUINT,
@@ -1996,9 +2013,15 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_t:
 		{
-		matrixSize.hth = 6;
-		winOrigin.col = 23;
-		winOrigin.row = TOP_HEADER_ROW + 11;
+		if (TOP_HEADER_ROW + 11 + 6 < drawSize.height) {
+			winOrigin.col = 23;
+			matrixSize.hth = 6;
+			winOrigin.row = TOP_HEADER_ROW + 11;
+		} else {
+			winOrigin.col = 18;
+			matrixSize.hth = CUMIN((drawSize.height - 2), 6);
+			winOrigin.row = 1;
+		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
 		title = " Technologies ";
@@ -2012,9 +2035,14 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_w:
 		{
-		matrixSize.hth = 10;
-		winOrigin.col = 23;
-		winOrigin.row = TOP_HEADER_ROW + 2;
+		winOrigin.col = 25;
+		if (TOP_HEADER_ROW + 2 + 10 < drawSize.height) {
+			matrixSize.hth = 10;
+			winOrigin.row = TOP_HEADER_ROW + 2;
+		} else {
+			matrixSize.hth = CUMIN((drawSize.height - 2), 10);
+			winOrigin.row = 1;
+		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;
 		title = " Power & Thermal ";
@@ -2030,9 +2058,14 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_k:
 		{
-		matrixSize.hth = 11;
 		winOrigin.col = 4;
-		winOrigin.row = TOP_HEADER_ROW + 8;
+		if (TOP_HEADER_ROW + 8 + 11 < drawSize.height) {
+			matrixSize.hth = 11;
+			winOrigin.row = TOP_HEADER_ROW + 8;
+		} else {
+			matrixSize.hth = CUMIN((drawSize.height - 2), 11);
+			winOrigin.row = 1;
+		}
 		SysInfoFunc = SysInfoKernel;
 		title = " Kernel ";
 		}
@@ -2094,7 +2127,8 @@ void Top(SHM_STRUCT *Shm, char option)
     Window *CreateTopology(unsigned long long id)
     {
 	Window *wTopology = CreateWindow(wLayer, id,
-					6, 2 + Shm->Proc.CPU.Count,
+					6, CUMIN(2 + Shm->Proc.CPU.Count,
+					    (drawSize.height-TOP_HEADER_ROW-5)),
 					1, TOP_HEADER_ROW + 3);
 		wTopology->matrix.select.row = 2;
 
@@ -2112,8 +2146,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);
 		StoreWindow(wTopology,	.key.Up,	MotionUp_Win);
-		StoreWindow(wTopology,	.key.Home,	MotionHome_Win);
-		StoreWindow(wTopology,	.key.End,	MotionEnd_Win);
+		StoreWindow(wTopology,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wTopology,	.key.PgDw,	MotionPgDw_Win);
+		StoreWindow(wTopology,	.key.Home,	MotionReset_Win);
+		StoreWindow(wTopology,	.key.End,	MotionEnd_Cell);
 
 		StoreWindow(wTopology,	.key.WinLeft,	MotionOriginLeft_Win);
 		StoreWindow(wTopology,	.key.WinRight,	MotionOriginRight_Win);
@@ -2125,7 +2161,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateISA(unsigned long long id)
     {
-	Window *wISA = CreateWindow(wLayer, id, 4, 7, 6, TOP_HEADER_ROW + 2);
+	Window *wISA = CreateWindow(wLayer, id,
+				4, CUMIN(7, (drawSize.height-TOP_HEADER_ROW-3)),
+				6, TOP_HEADER_ROW + 2);
 
 	void AddISACell(char *input)
 	{
@@ -2161,7 +2199,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	rows *= 2;
 	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer, id,
-					14, rows + 11,
+					14, CUMIN((rows + 11),
+					    (drawSize.height-TOP_HEADER_ROW-3)),
 					1, TOP_HEADER_ROW + 2);
 		wIMC->matrix.select.row = 4;
 
@@ -2410,16 +2449,65 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 
     switch (scan->key) {
+    case SCANKEY_DOWN:
+	if (!IsDead(&winList))
+		return(-1);
+	// Fallthrough
     case SCANKEY_PLUS:
-	if (cpuScroll < (Shm->Proc.CPU.Count - MAX_ROWS)) {
+	if ((drawFlag.disposal == D_MAINVIEW)
+	&&  (cpuScroll < (Shm->Proc.CPU.Count - MAX_ROWS))) {
 		cpuScroll++;
 		drawFlag.layout = 1;
 	}
 	break;
+    case SCANKEY_UP:
+	if (!IsDead(&winList))
+		return(-1);
+	// Fallthrough
     case SCANKEY_MINUS:
-	if (cpuScroll > 0) {
+	if ((drawFlag.disposal == D_MAINVIEW) && (cpuScroll > 0)) {
 		cpuScroll--;
 		drawFlag.layout = 1;
+	}
+	break;
+    case SCANKEY_HOME:
+    case SCANCON_HOME:
+	if (!IsDead(&winList))
+		return(-1);
+	else if (drawFlag.disposal == D_MAINVIEW) {
+		cpuScroll = 0;
+		drawFlag.layout = 1;
+	}
+	break;
+    case SCANKEY_END:
+    case SCANCON_END:
+	if (!IsDead(&winList))
+		return(-1);
+	else if (drawFlag.disposal == D_MAINVIEW) {
+		cpuScroll = Shm->Proc.CPU.Count - MAX_ROWS;
+		drawFlag.layout = 1;
+	}
+	break;
+    case SCANKEY_PGDW:
+	if (!IsDead(&winList))
+		return(-1);
+	else if (drawFlag.disposal == D_MAINVIEW) {
+		CUINT offset = Shm->Proc.CPU.Count / 4;
+		if ((cpuScroll + offset) < (Shm->Proc.CPU.Count - MAX_ROWS)) {
+			cpuScroll += offset;
+			drawFlag.layout = 1;
+		}
+	}
+	break;
+    case SCANKEY_PGUP:
+	if (!IsDead(&winList))
+		return(-1);
+	else if (drawFlag.disposal == D_MAINVIEW) {
+		CUINT offset = Shm->Proc.CPU.Count / 4;
+		if (cpuScroll >= offset) {
+			cpuScroll -= offset;
+			drawFlag.layout = 1;
+		}
 	}
 	break;
     case SCANKEY_OPEN_BRACE:
@@ -2449,20 +2537,20 @@ void Top(SHM_STRUCT *Shm, char option)
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
     case SCANKEY_PERCENT:
-	if ((drawFlag.view == V_FREQ) && (drawFlag.disposal == 0)) {
+	if ((drawFlag.view == V_FREQ) && (drawFlag.disposal == D_MAINVIEW)) {
 		drawFlag.avgOrPC = !drawFlag.avgOrPC;
 		drawFlag.clear = 1;
 	}
 	break;
     case SCANKEY_DOT:
-	if (drawFlag.disposal == 0) {
+	if (drawFlag.disposal == D_MAINVIEW) {
 		drawFlag.clkOrLd = !drawFlag.clkOrLd;
 		drawFlag.clear = 1;
 	}
 	break;
     case 0x000000000000007e:
 	{
-	drawFlag.disposal = 2;
+	drawFlag.disposal = D_ASCIITEST;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
 	}
@@ -2477,7 +2565,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	break;
     case SCANKEY_b:
-	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == D_MAINVIEW)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
 			AppendWindow(CreateSortByField(scan->key), &winList);
@@ -2487,7 +2575,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_c:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_CYCLES;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2495,21 +2583,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_d:
 	{
-	drawFlag.disposal = 1;
+	drawFlag.disposal = D_DASHBOARD;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
 	}
 	break;
     case SCANKEY_f:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_FREQ;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
 	}
 	break;
     case SCANKEY_n:
-	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == D_MAINVIEW)) {
 		Window *win = SearchWinListById(scan->key, &winList);
 		if (win == NULL)
 			AppendWindow(CreateTracking(scan->key), &winList);
@@ -2519,7 +2607,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_g:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_PACKAGE;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2536,7 +2624,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_i:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_INST;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2544,7 +2632,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_l:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_CSTATES;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2579,7 +2667,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_q:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_INTR;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2587,7 +2675,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	break;
     case SCANKEY_SHIFT_v:
 	{
-	drawFlag.disposal = 0;
+	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_VOLTAGE;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
@@ -2603,13 +2691,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	break;
     case SCANKEY_r:
-	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == D_MAINVIEW)) {
 		Shm->SysGate.reverseOrder = !Shm->SysGate.reverseOrder;
 		drawFlag.layout = 1;
 	}
 	break;
     case SCANKEY_v:
-	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == 0)) {
+	if ((drawFlag.view == V_TASKS) && (drawFlag.disposal == D_MAINVIEW)) {
 		drawFlag.taskVal = !drawFlag.taskVal;
 		drawFlag.layout = 1;
 	}
@@ -2617,7 +2705,7 @@ void Top(SHM_STRUCT *Shm, char option)
     case SCANKEY_x:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.trackTask = 0;
-		drawFlag.disposal = 0;
+		drawFlag.disposal = D_MAINVIEW;
 		drawFlag.view = V_TASKS;
 		drawSize.height = 0;
 		TrapScreenSize(SIGWINCH);
