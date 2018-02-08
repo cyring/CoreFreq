@@ -252,7 +252,7 @@ typedef struct
 			unsigned int	cmd;
 		} buffer[RING_SIZE];
 		unsigned int		head, tail;
-	} Ring;
+	} Ring[2]; // [0] Parent ; [1] Child
 
 	char				AppName[TASK_COMM_LEN];
 

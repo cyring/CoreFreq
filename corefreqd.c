@@ -33,21 +33,40 @@ static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
+typedef struct
+{
+	int	Drv,
+		Svr;
+} FD;
+
+typedef void (*SLICE_FUNC)(void);
+
 typedef struct {
+	sigset_t	Signal;
+	pid_t		CPID;
+	pthread_t	KID;
+	int		Started;
+	SLICE_FUNC	SliceFunc;
+	FD		*fd;
 	SHM_STRUCT	*Shm;
-	PROC		*Pkg;
-	CORE		*Core;
+	PROC		*Proc;
+	CORE		**Core;
+	SYSGATE		**SysGate;
+} REF;
+
+typedef struct {
+	REF		*Ref;
 	unsigned int	Bind;
 	pthread_t	TID;
 } ARG;
 
 static void *Core_Cycle(void *arg)
 {
-	ARG *Arg = (ARG *) arg;
-	SHM_STRUCT *Shm = Arg->Shm;
-	PROC *Pkg = Arg->Pkg;
-	CORE *Core = Arg->Core;
+	ARG *Arg	= (ARG *) arg;
 	unsigned int cpu = Arg->Bind;
+	SHM_STRUCT *Shm = Arg->Ref->Shm;
+	PROC *Pkg	= Arg->Ref->Proc;
+	CORE *Core	= Arg->Ref->Core[cpu];
 	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
 
 	pthread_t tid = pthread_self();
@@ -279,6 +298,66 @@ static void *Core_Cycle(void *arg)
 
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CPU %03u\n", tid,
+			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
+		fflush(stdout);
+	}
+	return(NULL);
+}
+
+void Slice_Burn(void)
+{
+	unsigned long long xchg = 0x436f757274696174LLU;
+	unsigned long long atom = 0x436f726546726571LLU;
+
+	__asm__ __volatile__
+	(
+		"xchg %0,%1"
+		:"=r"((unsigned long long) xchg)
+		:"m" (*(volatile long long *) &atom), "0" (xchg)
+		:"memory"
+	);
+}
+
+static void *Child_Thread(void *arg)
+{
+	ARG *Arg	= (ARG *) arg;
+	unsigned int cpu = Arg->Bind;
+	SHM_STRUCT *Shm = Arg->Ref->Shm;
+//++	PROC *Pkg	= Arg->Ref->Proc;
+	CORE *Core	= Arg->Ref->Core[cpu];
+//++	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+
+	pthread_t tid = pthread_self();
+	cpu_set_t affinity;
+	cpu_set_t cpuset;
+	CPU_ZERO(&affinity);
+	CPU_ZERO(&cpuset);
+	CPU_SET(cpu, &cpuset);
+	if (!pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset)) {
+		CPU_OR(&affinity, &affinity, &cpuset);
+	}
+
+	char comm[TASK_COMM_LEN];
+	sprintf(comm, "corefreqd#%d", cpu);
+	pthread_setname_np(tid, comm);
+
+	if (Quiet & 0x100) {
+		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
+		fflush(stdout);
+	}
+
+	do {
+		while ((Arg->Ref->SliceFunc == NULL)
+		    && !BITVAL(Shutdown, 0)
+		    && !BITVAL(Core->OffLine, OS)) {
+			nanosleep(&Shm->Proc.BaseSleep, NULL);
+		}
+		if (Arg->Ref->SliceFunc != NULL)
+			Arg->Ref->SliceFunc();
+	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
+
+	if (Quiet & 0x100) {
+		printf("    Thread [%lx] %s CHILD %03u\n", tid,
 			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
@@ -2293,23 +2372,6 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
 }
 
-typedef	struct
-{
-	int	Drv,
-		Svr;
-} FD;
-
-typedef struct {
-	sigset_t	Signal;
-	pthread_t	TID;
-	int		Started;
-	FD		*fd;
-	SHM_STRUCT	*Shm;
-	PROC		*Proc;
-	CORE		**Core;
-	SYSGATE		**SysGate;
-} REF;
-
 int SysGate_OnDemand(FD *fd, SYSGATE **SysGate, int operation)
 {
 	int rc = -1;
@@ -2368,10 +2430,12 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
     }
 }
 
-static void *Emergency_Handler(void *arg)
+static void *Emergency_Handler(void *pRef)
 {
+	REF *Ref = (REF *) pRef;
+	unsigned int rid = (Ref->CPID == 0);
+
 	int caught = 0, leave = 0;
-	REF *Ref = (REF *) arg;
 	pthread_t tid = pthread_self();
 	const struct timespec timeout = {
 			.tv_sec  = TICK_DEF_MS / 1000,
@@ -2382,31 +2446,33 @@ static void *Emergency_Handler(void *arg)
 	CPU_SET(0, &cpuset);
 
 	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, "corefreqd-kill");
+	pthread_setname_np(tid, rid ? "corefreqd-ckill" : "corefreqd-pkill");
 
-	while (!leave) {
-		if ((caught = sigtimedwait(&Ref->Signal, NULL, &timeout)) != -1)
-			switch (caught) {
-			case SIGUSR2:
-				SysGate_Toggle(Ref, 0);
-				break;
-			case SIGUSR1:
-				SysGate_Toggle(Ref, 1);
-				break;
-			case SIGTERM:
-				leave = 0x1;
-				break;
-			case SIGINT:
-				// Fallthrough
-			case SIGQUIT:
-				BITSET(LOCKLESS, Shutdown, 0);
-				break;
-			}
-		else if ((errno == EAGAIN) && !RING_NULL(Ref->Shm->Ring))
-		{
-		    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring);
-		    if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1)
-		    {
+    while (!leave) {
+      if ((caught = sigtimedwait(&Ref->Signal, NULL, &timeout)) != -1) {
+	switch (caught) {
+	case SIGUSR2:
+		if (Ref->CPID)
+			SysGate_Toggle(Ref, 0);
+		break;
+	case SIGUSR1:
+		if (Ref->CPID)
+			SysGate_Toggle(Ref, 1);
+		break;
+	case SIGTERM:
+		leave = 0x1;
+		break;
+	case SIGINT:
+		// Fallthrough
+	case SIGQUIT:
+		BITSET(LOCKLESS, Shutdown, 0);
+		break;
+	}
+      } else if (errno == EAGAIN) {
+	if (Ref->CPID) {
+	    if (!RING_NULL(Ref->Shm->Ring[rid])) {
+		struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+		if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
 			unsigned int cpu;
 			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
 				if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
@@ -2433,9 +2499,27 @@ static void *Emergency_Handler(void *arg)
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
-		    }
 		}
+	    }
+	} else {
+	    if (!RING_NULL(Ref->Shm->Ring[rid])) {
+		struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+		switch (ctrl.cmd) {
+		case COREFREQ_ORDER_TOOL:
+			switch (ctrl.arg) {
+			case COREFREQ_TOGGLE_ON:
+				Ref->SliceFunc = Slice_Burn;
+				break;
+			case COREFREQ_TOGGLE_OFF:
+				Ref->SliceFunc = NULL;
+				break;
+			}
+			break;
+		}
+	    }
 	}
+      }
+    }
 	return(NULL);
 }
 
@@ -2444,8 +2528,8 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	switch (cmd) {
 	case 0:
 		if (Ref->Started) {
-			pthread_kill(Ref->TID, SIGTERM);
-			pthread_join(Ref->TID, NULL);
+			pthread_kill(Ref->KID, SIGTERM);
+			pthread_join(Ref->KID, NULL);
 		}
 		break;
 	case 1: {
@@ -2457,34 +2541,36 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		sigaddset(&Ref->Signal, SIGTERM);	// Thread kill
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
-		 && !pthread_create(&Ref->TID, NULL, Emergency_Handler, Ref))
+		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
 			Ref->Started = 1;
 		}
 		break;
 	}
 }
 
-void Core_Manager(FD *fd,
-		SHM_STRUCT *Shm,
-		PROC *Proc,
-		CORE **Core,
-		SYSGATE **SysGate)
+void Core_Manager(REF *Ref)
 {
-    unsigned int cpu = 0;
-    double maxRelFreq;
+	FD *fd		= Ref->fd;
+	SHM_STRUCT *Shm = Ref->Shm;
+	PROC *Proc	= Ref->Proc;
+	CORE **Core	= Ref->Core;
+	SYSGATE **SysGate = Ref->SysGate;
 
-    pthread_t tid = pthread_self();
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(0, &cpuset);
+	unsigned int cpu = 0;
+	double maxRelFreq;
 
-    pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-    pthread_setname_np(tid, "corefreqd-mgr");
+	pthread_t tid = pthread_self();
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	CPU_SET(0, &cpuset);
 
-    ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+	pthread_setname_np(tid, "corefreqd-pmgr");
 
-    while (!BITVAL(Shutdown, 0)) {
-	// Loop while all the cpu room bits are not cleared.
+	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+
+    while (!BITVAL(Shutdown, 0))
+    {	// Loop while all the cpu room bits are not cleared.
 	while (!BITVAL(Shutdown,0)
 	    && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
 	{
@@ -2522,9 +2608,7 @@ void Core_Manager(FD *fd,
 					* Proc->Boost[BOOST(MAX)])
 					/ 1000000L );
 
-			Arg[cpu].Shm  = Shm;
-			Arg[cpu].Pkg  = Proc;
-			Arg[cpu].Core = Core[cpu];
+			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
 					NULL,
@@ -2579,10 +2663,57 @@ void Core_Manager(FD *fd,
 	// Reset the Room mask
 	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
     }
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-	if (Arg[cpu].TID)
-		pthread_join(Arg[cpu].TID, NULL);
-    free(Arg);
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+		if (Arg[cpu].TID)
+			pthread_join(Arg[cpu].TID, NULL);
+	free(Arg);
+}
+
+void Child_Manager(REF *Ref)
+{
+	SHM_STRUCT *Shm = Ref->Shm;
+//++	PROC *Proc	= Ref->Proc;
+	CORE **Core	= Ref->Core;
+
+	unsigned int cpu = 0;
+
+	pthread_t tid = pthread_self();
+	cpu_set_t cpuset;
+	CPU_ZERO(&cpuset);
+	CPU_SET(0, &cpuset);
+
+	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+	pthread_setname_np(tid, "corefreqd-cmgr");
+
+	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
+
+    do {
+	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
+	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
+		if (Arg[cpu].TID) {
+			// Remove this child thread.
+			pthread_join(Arg[cpu].TID, NULL);
+			Arg[cpu].TID = 0;
+		}
+	    } else {
+		if (!Arg[cpu].TID) {
+			// Add this child thread.
+			Arg[cpu].Ref  = Ref;
+			Arg[cpu].Bind = cpu;
+			pthread_create( &Arg[cpu].TID,
+					NULL,
+					Child_Thread,
+					&Arg[cpu]);
+		}
+	    }
+	}
+	sleep(LOOP_DEF_MS / 1000);
+    } while (!BITVAL(Shutdown, 0)) ;
+
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+		if (Arg[cpu].TID)
+			pthread_join(Arg[cpu].TID, NULL);
+	free(Arg);
 }
 
 int Shm_Manager(FD *fd, PROC *Proc)
@@ -2629,17 +2760,24 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Registration.nmi = Proc->Registration.nmi;
 
 		REF Ref = {
-			.Signal = {{0}},
-			.TID	= 0,
-			.Started= 0,
-			.fd	= fd,
-			.Shm	= Shm,
-			.Proc	= Proc,
-			.Core	= Core,
-			.SysGate= &SysGate
+			.Signal		= {{0}},
+			.CPID		= fork(),
+			.KID		= 0,
+			.Started	= 0,
+			.SliceFunc	= NULL,
+			.fd		= fd,
+			.Shm		= Shm,
+			.Proc		= Proc,
+			.Core		= Core,
+			.SysGate	= &SysGate
 		};
 		Emergency_Command(&Ref, 1);
 
+	    if (Ref.CPID == 0) {
+		Child_Manager(&Ref);
+	    }
+	    else
+	    {
 		// Copy the timer interval delay.
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
 		// Compute the polling rate based on the timer interval.
@@ -2687,8 +2825,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		if (Quiet)
 			fflush(stdout);
 
-		Core_Manager(fd, Shm, Proc, Core, &SysGate);
-
+		Core_Manager(&Ref);
+	    }
 		Emergency_Command(&Ref, 0);
 
 		munmap(Shm, ShmSize);

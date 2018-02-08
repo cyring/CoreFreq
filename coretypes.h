@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.18.2"
+#define COREFREQ_VERSION	"1.19.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1041,6 +1041,9 @@ typedef struct {
 #define COREFREQ_IOCTL_IORCST	_IO(COREFREQ_IOCTL_MAGIC, 0xd)
 #define COREFREQ_IOCTL_ODCM	_IO(COREFREQ_IOCTL_MAGIC, 0xe)
 #define COREFREQ_IOCTL_ODCM_DC	_IO(COREFREQ_IOCTL_MAGIC, 0xf)
+
+#define COREFREQ_ORDER_MAGIC 0xc6
+#define COREFREQ_ORDER_TOOL	_IO(COREFREQ_ORDER_MAGIC, 0x1)
 
 // Circular buffer
 #define RING_SIZE	16
