@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.19.1"
+#define COREFREQ_VERSION	"1.19.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -102,6 +102,10 @@ enum {	GenuineIntel,		\
 #define LOOP_MAX_MS	((1000 - 1) * WAKEUP_RATIO)
 #define LOOP_DEF_MS	1000
 #define TICK_DEF_MS	2000
+
+#define CHILD_PS_MS	(500 * 1000000LU)
+#define CHILD_TH_MS	(500 * 1000000LU)
+#define SIG_HDLR_MS	(500 * 1000000LU)
 
 #define PRECISION	100
 

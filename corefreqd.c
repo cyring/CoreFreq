@@ -315,6 +315,7 @@ static void *Child_Thread(void *arg)
 //++	PROC *Pkg	= Arg->Ref->Proc;
 	CORE *Core	= Arg->Ref->Core[cpu];
 //++	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+	const struct timespec interval = TIMESPEC(CHILD_TH_MS);
 
 	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
@@ -340,7 +341,7 @@ static void *Child_Thread(void *arg)
 		while (!BITVAL(Shm->Proc.Sync, 31)
 		    && !BITVAL(Shutdown, 0)
 		    && !BITVAL(Core->OffLine, OS)) {
-			nanosleep(&Shm->Proc.BaseSleep, NULL);
+			nanosleep(&interval, NULL);
 		}
 
 		BITSET(BUS_LOCK, roomCore, cpu);
@@ -2436,12 +2437,10 @@ static void *Emergency_Handler(void *pRef)
 	REF *Ref = (REF *) pRef;
 	unsigned int rid = (Ref->CPID == 0);
 
+	const struct timespec timeout = TIMESPEC(SIG_HDLR_MS);
 	int caught = 0, leave = 0;
 	pthread_t tid = pthread_self();
-	const struct timespec timeout = {
-			.tv_sec  = TICK_DEF_MS / 1000,
-			.tv_nsec = 0
-	};
+
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
@@ -2704,6 +2703,7 @@ void Child_Manager(REF *Ref)
 	CORE **Core	= Ref->Core;
 
 	unsigned int cpu = 0;
+	const struct timespec interval = TIMESPEC(CHILD_PS_MS);
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
@@ -2735,7 +2735,7 @@ void Child_Manager(REF *Ref)
 		}
 	    }
 	}
-	sleep(LOOP_DEF_MS / 1000);
+	nanosleep(&interval, NULL);
     } while (!BITVAL(Shutdown, 0)) ;
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
