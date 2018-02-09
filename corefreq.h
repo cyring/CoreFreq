@@ -128,8 +128,7 @@ typedef struct
 
 typedef struct
 {
-	volatile unsigned long long	Sync,
-					Room __attribute__ ((aligned (128)));
+	volatile unsigned long long	Sync __attribute__ ((aligned (128)));
 
 	FEATURES			Features;
 

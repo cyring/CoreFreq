@@ -14,11 +14,14 @@ clean:
 	make -C /lib/modules/$(KVERSION)/build M=${PWD} clean
 	rm corefreqd corefreq-cli
 
-corefreqd: corefreqd.o
-	$(CC) corefreqd.c -o corefreqd -lpthread -lrt
+corefreqm.o: corefreqm.c
+	$(CC) -Wall -c corefreqm.c -o corefreqm.o
 
 corefreqd.o: corefreqd.c
 	$(CC) -Wall -pthread -c corefreqd.c -o corefreqd.o
+
+corefreqd: corefreqd.o corefreqm.o
+	$(CC) corefreqd.c corefreqm.c -o corefreqd -lpthread -lm -lrt
 
 corefreq-ui.o: corefreq-ui.c
 	$(CC) -Wall -c corefreq-ui.c -o corefreq-ui.o

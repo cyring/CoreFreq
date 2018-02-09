@@ -24,12 +24,14 @@
 #include "intelmsr.h"
 #include "coretypes.h"
 #include "corefreq.h"
+#include "corefreqm.h"
 #include "corefreq-api.h"
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 // §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory
 static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
+static Bit64 roomCore __attribute__ ((aligned (64))) = 0x0;
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
@@ -39,19 +41,20 @@ typedef struct
 		Svr;
 } FD;
 
-typedef void (*SLICE_FUNC)(void);
-
 typedef struct {
-	sigset_t	Signal;
-	pid_t		CPID;
-	pthread_t	KID;
-	int		Started;
-	SLICE_FUNC	SliceFunc;
-	FD		*fd;
-	SHM_STRUCT	*Shm;
-	PROC		*Proc;
-	CORE		**Core;
-	SYSGATE		**SysGate;
+	sigset_t		Signal;
+	pid_t			CPID;
+	pthread_t		KID;
+	int			Started;
+	struct {
+		SLICE_FUNC	Func;
+		void		*pArg;
+	} Slice;
+	FD			*fd;
+	SHM_STRUCT		*Shm;
+	PROC			*Proc;
+	CORE			**Core;
+	SYSGATE			**SysGate;
 } REF;
 
 typedef struct {
@@ -84,11 +87,11 @@ static void *Core_Cycle(void *arg)
 	pthread_setname_np(tid, comm);
 
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] Init CPU %03u\n", tid, cpu);
+		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
 		fflush(stdout);
 	}
 	BITSET(BUS_LOCK, roomSeed, cpu);
-	BITSET(BUS_LOCK, Shm->Proc.Room, cpu);
+	BITSET(BUS_LOCK, roomCore, cpu);
 
 	do {
 	    while (!BITVAL(Core->Sync.V, 63)
@@ -100,9 +103,9 @@ static void *Core_Cycle(void *arg)
 
 	    if (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS))
 	    {
-		if (BITVAL(Shm->Proc.Room, cpu)) {
+		if (BITVAL(roomCore, cpu)) {
 			Cpu->Toggle = !Cpu->Toggle;
-			BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
+			BITCLR(BUS_LOCK, roomCore, cpu);
 		}
 		struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -293,29 +296,15 @@ static void *Core_Cycle(void *arg)
 	    }
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
 
-	BITCLR(BUS_LOCK, Shm->Proc.Room, cpu);
+	BITCLR(BUS_LOCK, roomCore, cpu);
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if (Quiet & 0x100) {
-		printf("    Thread [%lx] %s CPU %03u\n", tid,
+		printf("    Thread [%lx] %s CYCLE %03u\n", tid,
 			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
 	return(NULL);
-}
-
-void Slice_Burn(void)
-{
-	unsigned long long xchg = 0x436f757274696174LLU;
-	unsigned long long atom = 0x436f726546726571LLU;
-
-	__asm__ __volatile__
-	(
-		"xchg %0,%1"
-		:"=r"((unsigned long long) xchg)
-		:"m" (*(volatile long long *) &atom), "0" (xchg)
-		:"memory"
-	);
 }
 
 static void *Child_Thread(void *arg)
@@ -345,16 +334,28 @@ static void *Child_Thread(void *arg)
 		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
 		fflush(stdout);
 	}
+	BITSET(BUS_LOCK, roomSeed, cpu);
 
 	do {
-		while ((Arg->Ref->SliceFunc == NULL)
+		while (!BITVAL(Shm->Proc.Sync, 31)
 		    && !BITVAL(Shutdown, 0)
 		    && !BITVAL(Core->OffLine, OS)) {
 			nanosleep(&Shm->Proc.BaseSleep, NULL);
 		}
-		if (Arg->Ref->SliceFunc != NULL)
-			Arg->Ref->SliceFunc();
+
+		BITSET(BUS_LOCK, roomCore, cpu);
+
+		while ( BITVAL(Shm->Proc.Sync, 31)
+		    && !BITVAL(Shutdown, 0)
+		    && !BITVAL(Core->OffLine, OS)) {
+
+			Arg->Ref->Slice.Func(Arg->Ref->Slice.pArg);
+		}
+		BITCLR(BUS_LOCK, roomCore, cpu);
+
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
+
+	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CHILD %03u\n", tid,
@@ -2495,28 +2496,55 @@ static void *Emergency_Handler(void *pRef)
 							cpu);
 				}
 			if (Quiet & 0x100)
-				printf("  IOCTL(%x,%lx)\n", ctrl.cmd, ctrl.arg);
+			  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		}
 	    }
 	} else {
-	    if (!RING_NULL(Ref->Shm->Ring[rid])) {
-		struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
-		switch (ctrl.cmd) {
-		case COREFREQ_ORDER_TOOL:
+	  if (!RING_NULL(Ref->Shm->Ring[rid])) {
+	    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	    switch (ctrl.cmd) {
+	    case COREFREQ_ORDER_MACHINE:
 			switch (ctrl.arg) {
-			case COREFREQ_TOGGLE_ON:
-				Ref->SliceFunc = Slice_Burn;
-				break;
 			case COREFREQ_TOGGLE_OFF:
-				Ref->SliceFunc = NULL;
-				break;
+			    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
+				BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+
+				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+					{/*SpinLock*/;}
+				Ref->Slice.Func = NULL;
+				Ref->Slice.pArg = NULL;
+			    }
+			    break;
 			}
 			break;
+	    default:
+		{
+		RING_SLICE *porder = order_list;
+		while (porder->func != NULL) {
+			if ((porder->ctrl.cmd == ctrl.cmd)
+			&&  (porder->ctrl.arg == ctrl.arg)) {
+			    if (!BITVAL(Ref->Shm->Proc.Sync, 31)) {
+
+				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+					{/*SpinLock*/;}
+				Ref->Slice.Func = porder->func;
+				Ref->Slice.pArg = (void *) porder->ctrl.arg;
+
+				BITSET(BUS_LOCK,Ref->Shm->Proc.Sync,31);
+			    }
+			    break;
+			}
+			porder++;
+		    }
 		}
+		break;
 	    }
+	  if (Quiet & 0x100)
+		printf("\tRING[%u](%x,%lx)\n", rid, ctrl.cmd, ctrl.arg);
+	  }
 	}
       }
     }
@@ -2571,8 +2599,8 @@ void Core_Manager(REF *Ref)
 
     while (!BITVAL(Shutdown, 0))
     {	// Loop while all the cpu room bits are not cleared.
-	while (!BITVAL(Shutdown,0)
-	    && BITWISEAND(BUS_LOCK, Shm->Proc.Room, roomSeed))
+	while (!BITVAL(Shutdown, 0)
+	    && BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 	{
 		nanosleep(&Shm->Proc.BaseSleep, NULL);
 	}
@@ -2661,7 +2689,7 @@ void Core_Manager(REF *Ref)
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	// Reset the Room mask
-	BITMSK(BUS_LOCK, Shm->Proc.Room, Shm->Proc.CPU.Count);
+	BITMSK(BUS_LOCK, roomCore, Shm->Proc.CPU.Count);
     }
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 		if (Arg[cpu].TID)
@@ -2764,7 +2792,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			.CPID		= fork(),
 			.KID		= 0,
 			.Started	= 0,
-			.SliceFunc	= NULL,
+			.Slice.Func	= NULL,
+			.Slice.pArg	= NULL,
 			.fd		= fd,
 			.Shm		= Shm,
 			.Proc		= Proc,

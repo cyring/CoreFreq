@@ -3283,6 +3283,13 @@ void Top(SHM_STRUCT *Shm, char option)
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM_DC, newDC);
 	}
 	break;
+    case SCANKEY_F10:
+    case BOXKEY_TOOLS_MACHINE:
+	{
+	if (!RING_FULL(Shm->Ring[1]))
+	  RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
+	}
+	break;
     case SCANKEY_F3:
     case SCANCON_F3:
 	{
@@ -3290,7 +3297,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (win == NULL)
 	    {
 		const Coordinate origin = {
-			.col = (drawSize.width - (44 - 17)) / 2,
+			.col = 13,
 			.row = TOP_HEADER_ROW + 2
 		}, select = {
 			.col = 0,
@@ -3298,8 +3305,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		};
 		Window *wBox = CreateBox(scan->key, origin, select,
 					" Tools ",
-	(ASCII*)"            STOP           ", stateAttr[0], BOXKEY_TOOLS_STOP,
-	(ASCII*)"            BURN           ", stateAttr[0], BOXKEY_TOOLS_BURN);
+    (ASCII*)"            STOP           ", stateAttr[0], BOXKEY_TOOLS_MACHINE,
+    (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
+    (ASCII*)"       CRC32 Compute       ", stateAttr[0], BOXKEY_TOOLS_CRC32,
+    (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC);
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
 		} else
@@ -3308,17 +3317,80 @@ void Top(SHM_STRUCT *Shm, char option)
 		SetHead(&winList, win);
 	}
 	break;
-    case BOXKEY_TOOLS_BURN:
+    case BOXKEY_TOOLS_ATOMIC:
 	{
 	if (!RING_FULL(Shm->Ring[1]))
-	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TOOL, COREFREQ_TOGGLE_ON);
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_ATOMIC, COREFREQ_TOGGLE_ON);
 	}
 	break;
-    case SCANKEY_F10:
-    case BOXKEY_TOOLS_STOP:
+    case BOXKEY_TOOLS_CRC32:
 	{
 	if (!RING_FULL(Shm->Ring[1]))
-	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TOOL, COREFREQ_TOGGLE_OFF);
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CRC32, COREFREQ_TOGGLE_ON);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	    {
+		const Coordinate origin = {
+			.col = 13 + 27 + 3,
+			.row = TOP_HEADER_ROW + 2 + 4
+		}, select = {
+			.col = 0,
+			.row = 0
+		};
+		Window *wBox = CreateBox(scan->key, origin, select,
+					" Conic variations ",
+    (ASCII*)"         Ellipsoid         ", stateAttr[0], BOXKEY_TOOLS_CONIC0,
+    (ASCII*)" Hyperboloid of one sheet  ", stateAttr[0], BOXKEY_TOOLS_CONIC1,
+    (ASCII*)" Hyperboloid of two sheets ", stateAttr[0], BOXKEY_TOOLS_CONIC2,
+    (ASCII*)"    Elliptical cylinder    ", stateAttr[0], BOXKEY_TOOLS_CONIC3,
+    (ASCII*)"    Hyperbolic cylinder    ", stateAttr[0], BOXKEY_TOOLS_CONIC4,
+    (ASCII*)"    Two parallel planes    ", stateAttr[0], BOXKEY_TOOLS_CONIC5);
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
+	    } else
+		SetHead(&winList, win);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC0:
+	{
+	if (!RING_FULL(Shm->Ring[1]))
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_ELLIPSOID);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC1:
+	{
+  if (!RING_FULL(Shm->Ring[1]))
+    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLOID_ONE_SHEET);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC2:
+	{
+  if (!RING_FULL(Shm->Ring[1]))
+   RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLOID_TWO_SHEETS);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC3:
+	{
+  if (!RING_FULL(Shm->Ring[1]))
+      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_ELLIPTICAL_CYLINDER);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC4:
+	{
+  if (!RING_FULL(Shm->Ring[1]))
+      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLIC_CYLINDER);
+	}
+	break;
+    case BOXKEY_TOOLS_CONIC5:
+	{
+  if (!RING_FULL(Shm->Ring[1]))
+      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_TWO_PARALLEL_PLANES);
 	}
 	break;
     case SCANKEY_k:
