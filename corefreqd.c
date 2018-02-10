@@ -2440,13 +2440,17 @@ static void *Emergency_Handler(void *pRef)
 	const struct timespec timeout = TIMESPEC(SIG_HDLR_MS);
 	int caught = 0, leave = 0;
 	pthread_t tid = pthread_self();
+	char handlerName[TASK_COMM_LEN] = {
+		'c','o','r','e','f','r','e','q','d','-','r','i','n','g','0',0
+	};
+	handlerName[14] += rid;
 
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
 
 	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, rid ? "corefreqd-ckill" : "corefreqd-pkill");
+	pthread_setname_np(tid, handlerName);
 
     while (!leave) {
       if ((caught = sigtimedwait(&Ref->Signal, NULL, &timeout)) != -1) {
@@ -2459,10 +2463,11 @@ static void *Emergency_Handler(void *pRef)
 		if (Ref->CPID)
 			SysGate_Toggle(Ref, 1);
 		break;
-	case SIGTERM:
+	case SIGCHLD:
 		leave = 0x1;
 		break;
-	case SIGINT:
+	case SIGTERM:
+	case SIGINT:	// [CTRL] + [C]
 		// Fallthrough
 	case SIGQUIT:
 		BITSET(LOCKLESS, Shutdown, 0);
@@ -2512,7 +2517,10 @@ static void *Emergency_Handler(void *pRef)
 				BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
 
 				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-					{/*SpinLock*/;}
+				{
+					if (leave)	/*SpinLock*/
+						break;
+				}
 				Ref->Slice.Func = NULL;
 				Ref->Slice.pArg = NULL;
 			    }
@@ -2528,7 +2536,10 @@ static void *Emergency_Handler(void *pRef)
 			    if (!BITVAL(Ref->Shm->Proc.Sync, 31)) {
 
 				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-					{/*SpinLock*/;}
+				{
+					if (leave)	/*SpinLock*/
+						break;
+				}
 				Ref->Slice.Func = porder->func;
 				Ref->Slice.pArg = (void *) porder->ctrl.arg;
 
@@ -2555,17 +2566,19 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	switch (cmd) {
 	case 0:
 		if (Ref->Started) {
-			pthread_kill(Ref->KID, SIGTERM);
-			pthread_join(Ref->KID, NULL);
+			if (!pthread_kill(Ref->KID, SIGCHLD))
+				if (!pthread_join(Ref->KID, NULL))
+					Ref->Started = 0;
 		}
 		break;
 	case 1: {
 		sigemptyset(&Ref->Signal);
 		sigaddset(&Ref->Signal, SIGUSR1);	// Start SysGate
 		sigaddset(&Ref->Signal, SIGUSR2);	// Stop  SysGate
-		sigaddset(&Ref->Signal, SIGINT);	// [CTRL] + [C]
+		sigaddset(&Ref->Signal, SIGINT);	// Shutdown
 		sigaddset(&Ref->Signal, SIGQUIT);	// Shutdown
-		sigaddset(&Ref->Signal, SIGTERM);	// Thread kill
+		sigaddset(&Ref->Signal, SIGTERM);	// Shutdown
+		sigaddset(&Ref->Signal, SIGCHLD);	// Exit Ring Thread
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
 		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
@@ -2587,6 +2600,7 @@ void Core_Manager(REF *Ref)
 	double maxRelFreq;
 
 	pthread_t tid = pthread_self();
+	Shm->AppSvr = tid;
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
@@ -2746,11 +2760,11 @@ void Child_Manager(REF *Ref)
 
 int Shm_Manager(FD *fd, PROC *Proc)
 {
+	int		rc = 0;
 	unsigned int	cpu = 0;
 	CORE		**Core;
 	SYSGATE		*SysGate = NULL;
 	SHM_STRUCT	*Shm = NULL;
-	int		rc = 0;
 	const size_t	CoreSize  = ROUND_TO_PAGES(sizeof(CORE));
 
 	Core = calloc(Proc->CPU.Count, sizeof(Core));
@@ -2770,15 +2784,15 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 	if (!rc)
 	{	// Initialize shared memory.
-	    if (((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+	  if (((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
-	    && (ftruncate(fd->Svr, ShmSize) != -1)
-	    && ((Shm = mmap(0, ShmSize,
+	  && (ftruncate(fd->Svr, ShmSize) != -1)
+	  && ((Shm = mmap(0, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED))
-	    {
+	  {
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
 
@@ -2802,11 +2816,15 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		};
 		Emergency_Command(&Ref, 1);
 
-	    if (Ref.CPID == 0) {
+	    switch (Ref.CPID) {
+	    case 0:
 		Child_Manager(&Ref);
-	    }
-	    else
-	    {
+		break;
+	    case -1:
+		rc = 6;
+		break;
+	    default:
+		{
 		// Copy the timer interval delay.
 		Shm->Proc.SleepInterval = Proc->SleepInterval;
 		// Compute the polling rate based on the timer interval.
@@ -2827,8 +2845,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		PowerNow(Shm, Proc);
 
-		// Store the application name.
-		strncpy(Shm->AppName, SHM_FILENAME, TASK_COMM_LEN - 1);
+		// Store the daemon gate name.
+		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
 		// Initialize notification.
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -2855,17 +2873,24 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			fflush(stdout);
 
 		Core_Manager(&Ref);
+
+		if (Shm->AppCli)
+			kill(Shm->AppCli, SIGCHLD);
+
+		SysGate_OnDemand(fd, &SysGate, 0);
+
+		kill(Ref.CPID, SIGQUIT);
+		}
+		break;
 	    }
 		Emergency_Command(&Ref, 0);
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
-	    }
-	    else
+	  }
+	  else
 		rc = 5;
 	}
-	SysGate_OnDemand(fd, &SysGate, 0);
-
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 		if (Core[cpu] != NULL)
 			munmap(Core[cpu], CoreSize);

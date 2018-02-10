@@ -253,7 +253,9 @@ typedef struct
 		unsigned int		head, tail;
 	} Ring[2]; // [0] Parent ; [1] Child
 
-	char				AppName[TASK_COMM_LEN];
+	char				ShmName[TASK_COMM_LEN];
+	pid_t				AppSvr,
+					AppCli;
 
 	struct {
 		unsigned int		Boost[UNCORE_BOOST(SIZE)];

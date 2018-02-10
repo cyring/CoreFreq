@@ -47,17 +47,24 @@ void Emergency(int caught)
 	case SIGQUIT:
 	case SIGTERM:
 	case SIGTSTP:
+	case SIGCHLD:
 		BITSET(LOCKLESS, Shutdown, 0);
 		break;
 	}
 }
 
-void TrapSignal(void)
+void TrapSignal(SHM_STRUCT *Shm, int operation)
 {
-	signal(SIGINT, Emergency);
-	signal(SIGQUIT, Emergency);
-	signal(SIGTERM, Emergency);
-	signal(SIGTSTP, Emergency);	// [CTRL] + [Z]
+	if (operation == 0) {
+		Shm->AppCli = 0;
+	} else {
+		Shm->AppCli = getpid();
+		signal(SIGINT,  Emergency);
+		signal(SIGQUIT, Emergency);
+		signal(SIGTERM, Emergency);
+		signal(SIGTSTP, Emergency);	// [CTRL] + [Z]
+		signal(SIGCHLD, Emergency);
+	}
 }
 
 unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
@@ -1740,7 +1747,7 @@ void Top(SHM_STRUCT *Shm, char option)
 				enabled(!(Shm->Registration.pci < 0))),
 	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
 				enabled(Shm->Registration.nmi));
-	size_t appLen = strlen(Shm->AppName);
+	size_t appLen = strlen(Shm->ShmName);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
@@ -1772,7 +1779,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->AppName, appLen);
+	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->ShmName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
 	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen], tickStr, tickLen);
 	memcpy(&TCellAt(wSet, 1, 4).item[15 - pollLen], pollStr, pollLen);
@@ -6019,20 +6026,24 @@ int main(int argc, char *argv[])
 		MemoryController(Shm, NULL);
 		break;
 	case 'i':
-		TrapSignal();
+		TrapSignal(Shm, 1);
 		Instructions(Shm);
+		TrapSignal(Shm, 0);
 		break;
 	case 'c':
-		TrapSignal();
+		TrapSignal(Shm, 1);
 		Counters(Shm);
+		TrapSignal(Shm, 0);
 		break;
 	case 'V':
-		TrapSignal();
+		TrapSignal(Shm, 1);
 		Voltage(Shm);
+		TrapSignal(Shm, 0);
 		break;
 	case 'g':
-		TrapSignal();
+		TrapSignal(Shm, 1);
 		Package(Shm);
+		TrapSignal(Shm, 0);
 		break;
 	case 'd':
 		// Fallthrough
@@ -6040,8 +6051,9 @@ int main(int argc, char *argv[])
 		{
 		TERMINAL(IN);
 
-		TrapSignal();
+		TrapSignal(Shm, 1);
 		Top(Shm, option);
+		TrapSignal(Shm, 0);
 
 		TERMINAL(OUT);
 		}
