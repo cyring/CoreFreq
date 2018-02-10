@@ -4867,6 +4867,8 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
     if (SysGate != NULL) {
 	struct cpuidle_driver *idleDriver;
 	struct cpufreq_policy freqPolicy;
+	unsigned int cpu;
+	int rc;
 
 	if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
@@ -4897,7 +4899,10 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
 
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
-	if (cpufreq_get_policy(&freqPolicy, smp_processor_id()) == 0) {
+	cpu = get_cpu();
+	rc = cpufreq_get_policy(&freqPolicy, cpu);
+	put_cpu();
+	if (rc == 0) {
 		struct cpufreq_governor *pGovernor = freqPolicy.governor;
 		if (pGovernor != NULL)
 			strncpy(SysGate->IdleDriver.Governor,
