@@ -11,6 +11,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
@@ -97,7 +98,7 @@ static void *Core_Cycle(void *arg)
 	    while (!BITVAL(Core->Sync.V, 63)
 		&& !BITVAL(Shutdown, 0)
 		&& !BITVAL(Core->OffLine, OS)) {
-			nanosleep(&Shm->Proc.BaseSleep, NULL);
+			nanosleep(&Shm->Sleep.busyWaiting, NULL);
 	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
@@ -159,14 +160,14 @@ static void *Core_Cycle(void *arg)
 		if (Shm->Proc.PM_version >= 2) {
 			// Relative Frequency equals UCC per second.
 			Flip->Relative.Freq = (double) (Flip->Delta.C0.UCC)
-					/ (Shm->Proc.SleepInterval * 1000);
+						/ (Shm->Sleep.Interval * 1000);
 		} else {
 		// Relative Frequency = Relative Ratio x Bus Clock Frequency
 		  Flip->Relative.Freq =
 		  (double) REL_FREQ(Shm->Proc.Boost[BOOST(MAX)],	\
 				    Flip->Relative.Ratio,		\
-				    Core->Clock, Shm->Proc.SleepInterval)
-					/ (Shm->Proc.SleepInterval * 1000);
+				    Core->Clock, Shm->Sleep.Interval)
+						/ (Shm->Sleep.Interval * 1000);
 		}
 
 		// Thermal formulas
@@ -315,7 +316,6 @@ static void *Child_Thread(void *arg)
 //++	PROC *Pkg	= Arg->Ref->Proc;
 	CORE *Core	= Arg->Ref->Core[cpu];
 //++	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
-	const struct timespec interval = TIMESPEC(CHILD_TH_MS);
 
 	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
@@ -341,7 +341,7 @@ static void *Child_Thread(void *arg)
 		while (!BITVAL(Shm->Proc.Sync, 31)
 		    && !BITVAL(Shutdown, 0)
 		    && !BITVAL(Core->OffLine, OS)) {
-			nanosleep(&interval, NULL);
+			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 		}
 
 		BITSET(BUS_LOCK, roomCore, cpu);
@@ -2436,8 +2436,6 @@ static void *Emergency_Handler(void *pRef)
 {
 	REF *Ref = (REF *) pRef;
 	unsigned int rid = (Ref->CPID == 0);
-
-	const struct timespec timeout = TIMESPEC(SIG_HDLR_MS);
 	int caught = 0, leave = 0;
 	pthread_t tid = pthread_self();
 	char handlerName[TASK_COMM_LEN] = {
@@ -2453,7 +2451,8 @@ static void *Emergency_Handler(void *pRef)
 	pthread_setname_np(tid, handlerName);
 
     while (!leave) {
-      if ((caught = sigtimedwait(&Ref->Signal, NULL, &timeout)) != -1) {
+	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
+      if (caught != -1) {
 	switch (caught) {
 	case SIGUSR2:
 		if (Ref->CPID)
@@ -2474,7 +2473,7 @@ static void *Emergency_Handler(void *pRef)
 		break;
 	}
       } else if (errno == EAGAIN) {
-	if (Ref->CPID) {
+	if (Ref->CPID) {					// -[ Parent ]-
 	    if (!RING_NULL(Ref->Shm->Ring[rid])) {
 		struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 		if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
@@ -2506,7 +2505,7 @@ static void *Emergency_Handler(void *pRef)
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		}
 	    }
-	} else {
+	} else {						// -[ Child ]-
 	  if (!RING_NULL(Ref->Shm->Ring[rid])) {
 	    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 	    switch (ctrl.cmd) {
@@ -2615,7 +2614,7 @@ void Core_Manager(REF *Ref)
 	while (!BITVAL(Shutdown, 0)
 	    && BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 	{
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
+		nanosleep(&Shm->Sleep.busyWaiting, NULL);
 	}
 	// Reset the averages & the max frequency
 	Shm->Proc.Avg.Turbo = 0;
@@ -2715,9 +2714,7 @@ void Child_Manager(REF *Ref)
 	SHM_STRUCT *Shm = Ref->Shm;
 //++	PROC *Proc	= Ref->Proc;
 	CORE **Core	= Ref->Core;
-
 	unsigned int cpu = 0;
-	const struct timespec interval = TIMESPEC(CHILD_PS_MS);
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
@@ -2749,7 +2746,7 @@ void Child_Manager(REF *Ref)
 		}
 	    }
 	}
-	nanosleep(&interval, NULL);
+	nanosleep(&Shm->Sleep.childWaiting, NULL);
     } while (!BITVAL(Shutdown, 0)) ;
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
@@ -2801,6 +2798,22 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Shm->Registration.pci = Proc->Registration.pci;
 		Shm->Registration.nmi = Proc->Registration.nmi;
 
+		// Store the daemon gate name.
+		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);
+
+		// Copy the timer interval delay.
+		Shm->Sleep.Interval = Proc->SleepInterval;
+		// Compute the busy wait time based on the timer interval.
+		Shm->Sleep.busyWaiting = TIMESPEC((Shm->Sleep.Interval*1000000L)
+					/ WAKEUP_RATIO);
+		// Initialize the busy wait times.
+		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
+		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);
+		Shm->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
+		// Copy the SysGate tick steps.
+		Shm->SysGate.tickReset = Proc->tickReset;
+		Shm->SysGate.tickStep  = Proc->tickStep;
+
 		REF Ref = {
 			.Signal		= {{0}},
 			.CPID		= fork(),
@@ -2825,15 +2838,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		break;
 	    default:
 		{
-		// Copy the timer interval delay.
-		Shm->Proc.SleepInterval = Proc->SleepInterval;
-		// Compute the polling rate based on the timer interval.
-		Shm->Proc.BaseSleep =
-		  TIMESPEC((Shm->Proc.SleepInterval * 1000000L) / WAKEUP_RATIO);
-		// Copy the SysGate tick steps.
-		Shm->SysGate.tickReset = Proc->tickReset;
-		Shm->SysGate.tickStep  = Proc->tickStep;
-
 		Architecture(Shm, Proc);
 
 		Package_Update(Shm, Proc);
@@ -2844,9 +2848,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		HyperThreading(Shm, Proc);
 
 		PowerNow(Shm, Proc);
-
-		// Store the daemon gate name.
-		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
 		// Initialize notification.
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -2866,9 +2867,10 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
 		if (Quiet & 0x100)
-		  printf("  SleepInterval(%u), SysGate(%u)\n\n",
-		    Shm->Proc.SleepInterval, !BITVAL(Shm->SysGate.Operation,0) ?
-			0 : Shm->Proc.SleepInterval * Shm->SysGate.tickReset);
+		 printf("  SleepInterval(%u), SysGate(%u)\n\n",
+			Shm->Sleep.Interval,
+			!BITVAL(Shm->SysGate.Operation,0) ?
+				0:Shm->Sleep.Interval * Shm->SysGate.tickReset);
 		if (Quiet)
 			fflush(stdout);
 
@@ -2879,7 +2881,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		SysGate_OnDemand(fd, &SysGate, 0);
 
-		kill(Ref.CPID, SIGQUIT);
+		if (!kill(Ref.CPID, SIGQUIT))
+			waitpid(Ref.CPID, NULL, 0);
 		}
 		break;
 	    }

@@ -933,7 +933,7 @@ void Package(SHM_STRUCT *Shm)
 {
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
+		nanosleep(&Shm->Sleep.busyWaiting, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
@@ -968,7 +968,7 @@ void Counters(SHM_STRUCT *Shm)
     unsigned int cpu = 0;
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
+		nanosleep(&Shm->Sleep.busyWaiting, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
@@ -1030,7 +1030,7 @@ void Voltage(SHM_STRUCT *Shm)
     unsigned int cpu = 0;
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-		nanosleep(&Shm->Proc.BaseSleep, NULL);
+		nanosleep(&Shm->Sleep.busyWaiting, NULL);
 
 	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
@@ -1060,7 +1060,7 @@ void Instructions(SHM_STRUCT *Shm)
 	unsigned int cpu = 0;
 	while (!BITVAL(Shutdown, 0)) {
 	  while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-			nanosleep(&Shm->Proc.BaseSleep, NULL);
+			nanosleep(&Shm->Sleep.busyWaiting, NULL);
 
 	  BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
@@ -1727,18 +1727,24 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 10, 8,
-				(TOP_HEADER_ROW + 10 + 3 < drawSize.height) ?
+      Window *wSet = CreateWindow(wLayer, id, 2, 13,
+				8, (TOP_HEADER_ROW + 13 + 3 < drawSize.height) ?
 					TOP_HEADER_ROW + 3 : 1);
       if (wSet != NULL) {
-	char	intervStr[16], tickStr[16], pollStr[16], experStr[16],
-		cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
-	int intervLen = sprintf(intervStr, "%13uE6",
-				Shm->Proc.SleepInterval),
+	char	intervStr[16], tickStr[16], busyStr[16], ringStr[16],
+		childStr[16], sliceStr[16],
+		experStr[16], cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
+	int intervLen = sprintf(intervStr, "%13uE6", Shm->Sleep.Interval),
 	    tickLen = sprintf(tickStr, "%13uE6",
-				Shm->Proc.SleepInterval*Shm->SysGate.tickReset),
-	    pollLen = sprintf(pollStr, "%13ldE6",
-				Shm->Proc.BaseSleep.tv_nsec / 1000000L),
+				Shm->Sleep.Interval * Shm->SysGate.tickReset),
+	    busyLen = sprintf(busyStr, "%13ldE6",
+				Shm->Sleep.busyWaiting.tv_nsec / 1000000L),
+	    ringLen = sprintf(ringStr, "%13ldE6",
+				Shm->Sleep.ringWaiting.tv_nsec / 1000000L),
+	    childLen = sprintf(childStr, "%13ldE6",
+				Shm->Sleep.childWaiting.tv_nsec / 1000000L),
+	    sliceLen = sprintf(sliceStr, "%13ldE6",
+				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
 	    experLen = sprintf(experStr, "[%3s]",
 				enabled(Shm->Registration.Experimental)),
 	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
@@ -1758,10 +1764,19 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Sys.Tick(ns)   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)  ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Polling (ns)   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Busy Wait(ns)  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns) ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+
+	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns) ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_FOCUS);
@@ -1779,14 +1794,17 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen], Shm->ShmName, appLen);
+	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen],    Shm->ShmName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
-	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen], tickStr, tickLen);
-	memcpy(&TCellAt(wSet, 1, 4).item[15 - pollLen], pollStr, pollLen);
-	memcpy(&TCellAt(wSet, 1, 5).item[15 - experLen], experStr, experLen);
-	memcpy(&TCellAt(wSet, 1, 6).item[15 - cpuhpLen], cpuhpStr, cpuhpLen);
-	memcpy(&TCellAt(wSet, 1, 7).item[15 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 1, 8).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen],   tickStr,   tickLen);
+	memcpy(&TCellAt(wSet, 1, 4).item[15 - busyLen],   busyStr,   busyLen);
+	memcpy(&TCellAt(wSet, 1, 5).item[15 - ringLen],   ringStr,   ringLen);
+	memcpy(&TCellAt(wSet, 1, 6).item[15 - childLen],  childStr,  childLen);
+	memcpy(&TCellAt(wSet, 1, 7).item[15 - sliceLen],  sliceStr,  sliceLen);
+	memcpy(&TCellAt(wSet, 1, 8).item[15 - experLen],  experStr,  experLen);
+	memcpy(&TCellAt(wSet, 1, 9).item[15 - cpuhpLen],  cpuhpStr,  cpuhpLen);
+	memcpy(&TCellAt(wSet, 1,10).item[15 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 1,11).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
@@ -5879,7 +5897,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	SCANKEY scan = {.key = 0};
 
 	if ((drawFlag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
-	    if (GetKey(&scan, &Shm->Proc.BaseSleep) > 0) {
+	    if (GetKey(&scan, &Shm->Sleep.busyWaiting) > 0) {
 		if (Shortcut(&scan) == -1) {
 		  if (IsDead(&winList))
 			AppendWindow(CreateMenu(SCANKEY_F2), &winList);

@@ -152,9 +152,6 @@ typedef struct
 	Bit64			C1U		__attribute__ ((aligned (64)));
 	Bit64			C1U_Mask	__attribute__ ((aligned (64)));
 
-	unsigned int			SleepInterval;
-	struct timespec			BaseSleep;
-
 	struct {
 		unsigned int		Count,
 					OnLine;
@@ -244,6 +241,14 @@ typedef struct
 				version[MAX_UTS_LEN],
 				machine[MAX_UTS_LEN];
 	} SysGate;
+
+	struct {
+		unsigned int	Interval;
+		struct timespec busyWaiting,
+				ringWaiting,
+				childWaiting,
+				sliceWaiting;
+	} Sleep;
 
 	struct {
 		struct RING_CTRL {
