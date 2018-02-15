@@ -2404,6 +2404,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_TASKS:
 		case V_INTR:
 		case V_VOLTAGE:
+		case V_SLICE:
 			MIN_HEIGHT = 2 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
@@ -2700,6 +2701,14 @@ void Top(SHM_STRUCT *Shm, char option)
 	{
 	drawFlag.disposal = D_MAINVIEW;
 	drawFlag.view = V_VOLTAGE;
+	drawSize.height = 0;
+	TrapScreenSize(SIGWINCH);
+	}
+	break;
+    case SCANKEY_SHIFT_t:
+	{
+	drawFlag.disposal = D_MAINVIEW;
+	drawFlag.view = V_SLICE;
 	drawSize.height = 0;
 	TrapScreenSize(SIGWINCH);
 	}
@@ -3333,13 +3342,22 @@ void Top(SHM_STRUCT *Shm, char option)
     (ASCII*)"            STOP           ", stateAttr[0], BOXKEY_TOOLS_MACHINE,
     (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
     (ASCII*)"       CRC32 Compute       ", stateAttr[0], BOXKEY_TOOLS_CRC32,
-    (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC);
+    (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC,
+    (ASCII*)"      Turbo Random CPU     ", stateAttr[0], BOXKEY_TOOLS_TURBO);
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
 		} else
 			SetHead(&winList, win);
 	    } else
 		SetHead(&winList, win);
+
+	    if ((drawFlag.view != V_SLICE) || (drawFlag.disposal != D_MAINVIEW))
+	    {
+		drawFlag.disposal = D_MAINVIEW;
+		drawFlag.view = V_SLICE;
+		drawSize.height = 0;
+		TrapScreenSize(SIGWINCH);
+	    }
 	}
 	break;
     case BOXKEY_TOOLS_ATOMIC:
@@ -3416,6 +3434,12 @@ void Top(SHM_STRUCT *Shm, char option)
 	{
   if (!RING_FULL(Shm->Ring[1]))
       RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_TWO_PARALLEL_PLANES);
+	}
+	break;
+    case BOXKEY_TOOLS_TURBO:
+	{
+	if (!RING_FULL(Shm->Ring[1]))
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, COREFREQ_TOGGLE_ON);
 	}
 	break;
     case SCANKEY_k:
@@ -3770,12 +3794,12 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Layout_Monitor_Common(Layer *layer, CUINT row)
     {
-	LayerDeclare(73) hMon0 = {
+	LayerDeclare(77) hMon0 = {
 		.origin = {	.col = (LOAD_LEAD - 1),
 				.row = (row + MAX_ROWS + 1)
 		},
-		.length = 73,
-		.attr ={HWK,						\
+		.length = 77,
+		.attr ={HWK,HWK,HWK,HWK,HWK,				\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
@@ -3785,7 +3809,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
 			HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
 		},
-		.code ={' ',						\
+		.code ={' ',' ',' ',' ',' ',				\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
 			' ',' ',' ',' ',' ',' ',' ',' ',' ',		\
@@ -4394,6 +4418,40 @@ void Top(SHM_STRUCT *Shm, char option)
 			MakeAttr(WHITE, 0, BLACK, 0));
     }
 
+    void Layout_Ruller_Slice(Layer *layer, CUINT row)
+    {
+	LayerDeclare(MAX_WIDTH) hSlice0 = {
+		.origin = {
+			.col = 0,
+			.row = row
+		},
+		.length = drawSize.width,
+		.attr = {
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK, \
+			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		.code = "--- Freq(MHz) ------ Cycles -- Instructi"	\
+			"ons ------------ TSC ------------ PMC0 -"	\
+			"----------------------------------------"	\
+			"------------"
+	};
+	LayerCopyAt(layer, hSlice0.origin.col, hSlice0.origin.row,
+			hSlice0.length, hSlice0.attr, hSlice0.code);
+
+	LayerFillAt(layer, 0, (row + MAX_ROWS + 1),
+			drawSize.width, hLine,
+			MakeAttr(WHITE, 0, BLACK, 0));
+    }
+
     void Layout_Footer(Layer *layer, CUINT row, unsigned int *processorHot)
     {
 	const unsigned int
@@ -4745,6 +4803,7 @@ void Top(SHM_STRUCT *Shm, char option)
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
 	size_t len;							\
+									\
 	len = sprintf(buffer,						\
 			"%17.6f" "/s"					\
 			"%17.6f" "/c"					\
@@ -4761,6 +4820,7 @@ void Top(SHM_STRUCT *Shm, char option)
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
 	size_t len;							\
+									\
 	len = sprintf(buffer,						\
 			"%18llu%18llu%18llu%18llu",			\
 			Flop->Delta.C0.UCC,				\
@@ -4774,6 +4834,7 @@ void Top(SHM_STRUCT *Shm, char option)
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
 	size_t len;							\
+									\
 	len = sprintf(buffer,						\
 			"%18llu%18llu%18llu%18llu",			\
 			Flop->Delta.C1,					\
@@ -4964,6 +5025,22 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
     })
 
+#define Draw_Monitor_Slice(layer, row)					\
+    ({									\
+    struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
+	size_t len;							\
+									\
+	len = sprintf(buffer,						\
+			"%7.2f "					\
+			"%16llu%16llu%18llu%18llu",			\
+			Flop->Relative.Freq,				\
+			Shm->Cpu[cpu].Slice.Delta.TSC,			\
+			Shm->Cpu[cpu].Slice.Delta.INST,			\
+			Shm->Cpu[cpu].Slice.Counter[1].TSC,		\
+			Shm->Cpu[cpu].Slice.Counter[1].INST);		\
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
+    })
+
 #define Draw_AltMonitor_Frequency(layer, row)				\
     ({									\
 	size_t len;							\
@@ -5147,6 +5224,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_CYCLES:
 		case V_CSTATES:
 		case V_VOLTAGE:
+		case V_SLICE:
 			Layout_Monitor_Common(layer, row);
 			break;
 		case V_PACKAGE:
@@ -5225,6 +5303,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		Layout_Ruller_Voltage(layer, row);
 		row += MAX_ROWS + 2;
 		break;
+	case V_SLICE:
+		Layout_Ruller_Slice(layer, row);
+		row += MAX_ROWS + 2;
+		break;
 	}
 
 	Layout_Footer(layer, row, &processorHot);
@@ -5269,6 +5351,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_VOLTAGE:
 			Draw_Monitor_Voltage(layer, (1 + row + MAX_ROWS));
 			break;
+		case V_SLICE:
+			Draw_Monitor_Slice(layer, (1 + row + MAX_ROWS));
+			break;
 		}
 	    }
 	}
@@ -5284,7 +5369,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		Draw_AltMonitor_Package(layer, row);
 		row += 2 + 8;
 		break;
-	default: // V_INST, V_CYCLES, V_CSTATES, V_TASKS, V_TASKS, V_VOLTAGE
+	default: // V_INST,V_CYCLES,V_CSTATES,V_TASKS,V_TASKS,V_VOLTAGE,V_SLICE
 		row += 2 + TOP_FOOTER_ROW + MAX_ROWS;
 		break;
 	}

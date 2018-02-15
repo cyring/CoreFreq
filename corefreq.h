@@ -30,8 +30,6 @@ typedef struct
 					CStateInclude;
 	} Query;
 
-	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
-
 	struct {
 		unsigned int		ApicID,
 					CoreID,
@@ -113,8 +111,8 @@ typedef struct
 			int		VID;
 			double		Vcore;
 		} Voltage;
-		struct {
 
+		struct {
 		unsigned int		SMI;
 			struct {
 			unsigned int	LOCAL,
@@ -124,6 +122,26 @@ typedef struct
 			} NMI;
 		} Counter;
 	} FlipFlop[2];
+
+	struct {
+		Bit64			CR0,
+					CR4;
+	} ControlRegister;
+
+	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
+
+	struct SLICE_STRUCT {
+		struct
+		{
+		unsigned long long	TSC,
+					INST;
+		} Delta;
+
+		struct {
+		unsigned long long	TSC,
+					INST;
+		} Counter[3];
+	} Slice;
 } CPU_STRUCT;
 
 typedef struct

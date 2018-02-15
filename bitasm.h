@@ -4,11 +4,141 @@
  * Licenses: GPL2
  */
 
+#define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
+#define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
+
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
 #define LOCKLESS " "
 #define BUS_LOCK "lock "
+
+#define RDTSC(_lo, _hi) 			\
+asm volatile					\
+(						\
+	"lfence"		"\n\t"		\
+	"rdtsc"					\
+	: "=a" (_lo),				\
+	  "=d" (_hi)				\
+)
+
+#define RDTSCP(_lo, _hi, aux)			\
+asm volatile					\
+(						\
+	"rdtscp"				\
+	: "=a" (_lo),				\
+	  "=d" (_hi),				\
+	  "=c" (aux)				\
+)
+
+#define BARRIER(pfx)				\
+asm volatile					\
+(						\
+	#pfx"fence"				\
+	:					\
+	:					\
+	:					\
+)
+
+#define SERIALIZE()				\
+asm volatile					\
+(						\
+	"xorq %%rax,%%rax"	"\n\t"		\
+	"cpuid"					\
+	:					\
+	:					\
+	: "%rax"				\
+)
+
+#define RDTSC64(_val64) 			\
+asm volatile					\
+(						\
+	"lfence"		"\n\t"		\
+	"rdtsc"			"\n\t"		\
+	"shlq	$32,	%%rdx"	"\n\t"		\
+	"orq	%%rdx,	%%rax"	"\n\t"		\
+	"movq	%%rax,	%0"			\
+	: "=m" (_val64)				\
+	:					\
+	: "%rax","%rcx","%rdx","memory"		\
+)
+
+#define RDTSCP64(_val64)			\
+asm volatile					\
+(						\
+	"rdtscp"		"\n\t"		\
+	"shlq	$32,	%%rdx"	"\n\t"		\
+	"orq	%%rdx,	%%rax"	"\n\t"		\
+	"movq	%%rax,	%0"			\
+	: "=m" (_val64)				\
+	:					\
+	: "%rax","%rcx","%rdx","memory"		\
+)
+
+#define ASM_RDTSCP(_reg)			\
+	"# Read invariant TSC."		"\n\t"	\
+	"rdtscp"			"\n\t"	\
+	"shlq	$32, %%rdx"		"\n\t"	\
+	"orq	%%rdx, %%rax"		"\n\t"	\
+	"# Save TSC value."		"\n\t"	\
+	"movq	%%rax, %%" #_reg	"\n\t"
+
+#define ASM_RDTSC(_reg) 			\
+	"# Read variant TSC."		"\n\t"	\
+	"lfence"			"\n\t"	\
+	"rdtsc"				"\n\t"	\
+	"shlq	$32, %%rdx"		"\n\t"	\
+	"orq	%%rdx, %%rax"		"\n\t"	\
+	"# Save TSC value."		"\n\t"	\
+	"movq	%%rax, %%" #_reg	"\n\t"
+
+#define ASM_CODE_RDPMC(_ctr, _reg)		\
+	"# Read PMC counter."		"\n\t"	\
+	"movq	$" #_ctr ", %%rcx"	"\n\t"	\
+	"rdpmc"				"\n\t"	\
+	"shlq	$32, %%rdx"		"\n\t"	\
+	"orq	%%rdx, %%rax"		"\n\t"	\
+	"# Save counter value."		"\n\t"	\
+	"movq	%%rax, %%" #_reg	"\n\t"
+
+#define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
+
+#define RDPMC(_ctr, _reg, _mem) 		\
+asm volatile					\
+(						\
+	ASM_CODE_RDPMC(_ctr, _reg)		\
+	"# Store values into memory."	"\n\t"	\
+	"movq	%%" #_reg ", %0"		\
+	: "=m" (_mem)				\
+	:					\
+	: "%rax", "%rcx", "%rdx",		\
+	  "%" #_reg"", 				\
+	  "memory"				\
+)
+
+#define ASM_RDTSC_PMCx1(_reg0, _reg1,			\
+			_tsc_inst, mem_tsc,		\
+			_ctr1, _mem1)			\
+asm volatile						\
+(							\
+	_tsc_inst(_reg0)				\
+	ASM_RDPMC(_ctr1, _reg1)				\
+	"# Store values into memory."	"\n\t"		\
+	"movq	%%" #_reg0 ", %0"	"\n\t"		\
+	"movq	%%" #_reg1 ", %1"			\
+	: "=m" (mem_tsc), "=m" (_mem1)			\
+	:						\
+	: "%rax", "%rcx", "%rdx",			\
+	  "%" #_reg0"", "%" #_reg1"",			\
+	  "memory"					\
+)
+
+#define RDTSC_PMCx1(mem_tsc, ...) \
+ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+
+#define RDTSCP_PMCx1(mem_tsc, ...) \
+ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+
 
 #define _BITSET_GPR(_lock, _base, _offset)	\
 ({						\

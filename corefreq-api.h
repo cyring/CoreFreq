@@ -344,13 +344,18 @@ typedef struct
 					CStateInclude;
 	} Query;
 
-	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
-
 	CACHE_TOPOLOGY			T;
+
+	struct {
+		Bit64			CR0,
+					CR4;
+	} ControlRegister;
 
 	unsigned int			Bind;
 
 	CLOCK				Clock;
+
+	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
 } CORE;
 
 typedef struct

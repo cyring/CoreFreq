@@ -6,6 +6,7 @@
 
 #include <sys/ioctl.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "bitasm.h"
@@ -13,16 +14,108 @@
 #include "corefreq.h"
 #include "corefreqm.h"
 
-void Slice_Atomic(void *nil)
+#define DeltaTSC(pSlice)					\
+(	pSlice->Delta.TSC = (pSlice->Counter[2].TSC		\
+				- pSlice->Counter[1].TSC)	\
+			  - (pSlice->Counter[1].TSC		\
+				- pSlice->Counter[0].TSC)	\
+)
+
+#define DeltaINST(pSlice)					\
+(	pSlice->Delta.INST = (pSlice->Counter[2].INST		\
+				- pSlice->Counter[1].INST)	\
+			   - (pSlice->Counter[1].INST		\
+				- pSlice->Counter[0].INST)	\
+)
+
+void CallWith_RDTSCP_RDPMC(	struct SLICE_STRUCT *pSlice,
+				SLICE_FUNC SliceFunc, void *pArg)
+{
+	RDTSCP_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
+
+	RDTSCP_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
+
+	SliceFunc(pSlice, pArg);
+
+	RDTSCP_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
+
+	DeltaTSC(pSlice);
+	DeltaINST(pSlice);
+}
+
+void CallWith_RDTSC_RDPMC(	struct SLICE_STRUCT *pSlice,
+				SLICE_FUNC SliceFunc, void *pArg)
+{
+	RDTSC_PMCx1(pSlice->Counter[0].TSC,0x40000000,pSlice->Counter[0].INST);
+
+	RDTSC_PMCx1(pSlice->Counter[1].TSC,0x40000000,pSlice->Counter[1].INST);
+
+	SliceFunc(pSlice, pArg);
+
+	RDTSC_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
+
+	DeltaTSC(pSlice);
+	DeltaINST(pSlice);
+}
+
+void CallWith_RDTSCP_No_RDPMC(	struct SLICE_STRUCT *pSlice,
+				SLICE_FUNC SliceFunc, void *pArg)
+{
+	RDTSCP64(pSlice->Counter[0].TSC);
+
+	RDTSCP64(pSlice->Counter[1].TSC);
+
+	SliceFunc(pSlice, pArg);
+
+	RDTSCP64(pSlice->Counter[2].TSC);
+
+	DeltaTSC(pSlice);
+	pSlice->Delta.INST = 0;
+}
+
+void CallWith_RDTSC_No_RDPMC(	struct SLICE_STRUCT *pSlice,
+				SLICE_FUNC SliceFunc, void *pArg)
+{
+	RDTSC64(pSlice->Counter[0].TSC);
+
+	RDTSC64(pSlice->Counter[1].TSC);
+
+	SliceFunc(pSlice, pArg);
+
+	RDTSC64(pSlice->Counter[2].TSC);
+
+	DeltaTSC(pSlice);
+	pSlice->Delta.INST = 0;
+}
+
+void Slice_NOP(struct SLICE_STRUCT *pSlice, void *pArg)
+{
+	__asm__ __volatile__
+	(
+		"nop"
+		:
+		:
+		:
+	);
+}
+
+void Slice_Atomic(struct SLICE_STRUCT *pSlice, void *pArg)
 {
 	unsigned long long xchg = 0x436f757274696174LLU;
 	unsigned long long atom = 0x436f726546726571LLU;
 
 	__asm__ __volatile__
 	(
-		"xchg %0,%1"
-		:"=r"((unsigned long long) xchg)
-		:"r" (*(volatile long long *) &atom), "r" (xchg)
+		".SAH:"			"\n\t"
+		"push	%0"		"\n\t"
+		"push	%1"		"\n\t"
+		"xchg	%0,%1"		"\n\t"
+		"pop	%1"		"\n\t"
+		"pop	%0"		"\n\t"
+		"loop	.SAH"
+		: "=r"((unsigned long long) xchg)
+		: "r" (*(volatile long long *) &atom), "r" (xchg),
+		  "c" (1000*1000*1000)
 		:
 	);
 }
@@ -57,12 +150,12 @@ void Slice_Atomic(void *nil)
 		: [_rem] "+m" (rem)					\
 		: [_data] "m" (data),					\
 		  [_len] "im" (len)					\
-		: "memory", "rdx", "%r8", "%r9", "%r10", "%r11", "%r12" \
+		: "memory", "%rdx", "%r8", "%r9", "%r10", "%r11", "%r12"\
 	);								\
 	rem;								\
 })
 
-void Slice_CRC32(void *nil)
+void Slice_CRC32(struct SLICE_STRUCT *pSlice, void *pArg)
 {
 	unsigned char *data = (unsigned char *) "CYRING_INGENIERIE";
 	unsigned int len = 17;
@@ -81,7 +174,7 @@ void Slice_CRC32(void *nil)
 	    5 - le cylindre hyperbolique
 	    6 - deux plans parallèles
 */
-void Slice_Conic(void *pArg)
+void Slice_Conic(struct SLICE_STRUCT *pSlice, void *pArg)
 {
 	const double interval = 4.0 * 1024.0;
 	const struct {
@@ -104,6 +197,17 @@ void Slice_Conic(void *pArg)
 
 		UNUSED(Z);
 	    }
+}
+
+void Slice_Turbo(struct SLICE_STRUCT *pSlice, void *pArg)
+{
+	if (rand() < (RAND_MAX / 50)) {
+		Slice_Atomic(pSlice, pArg);
+		Slice_Atomic(pSlice, pArg);
+	} else {
+		const struct timespec sliceTime = TIMESPEC(CHILD_TH_MS);
+		nanosleep(&sliceTime, NULL);
+	}
 }
 
 RING_SLICE order_list[] = {
@@ -131,6 +235,9 @@ RING_SLICE order_list[] = {
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_TWO_PARALLEL_PLANES},
 		 .func = Slice_Conic
+	},{
+		{.cmd=COREFREQ_ORDER_TURBO,  .arg=COREFREQ_TOGGLE_ON},
+		 .func = Slice_Turbo
 	},{
 		{},
 		 .func = NULL

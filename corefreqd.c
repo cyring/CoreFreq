@@ -313,9 +313,19 @@ static void *Child_Thread(void *arg)
 	ARG *Arg	= (ARG *) arg;
 	unsigned int cpu = Arg->Bind;
 	SHM_STRUCT *Shm = Arg->Ref->Shm;
-//++	PROC *Pkg	= Arg->Ref->Proc;
+	PROC *Pkg	= Arg->Ref->Proc;
 	CORE *Core	= Arg->Ref->Core[cpu];
-//++	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
+
+	CALL_FUNC MatrixCallFunc[2][2] = {
+		{ CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC  },
+		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
+	};
+	const int withTSCP = ((Pkg->Features.AdvPower.EDX.Inv_TSC == 1)
+				|| (Pkg->Features.ExtInfo.EDX.RDTSCP == 1)),
+		withRDPMC  = (BITVAL(Cpu->ControlRegister.CR4, CR4_PCE) == 1);
+
+	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
 
 	pthread_t tid = pthread_self();
 	cpu_set_t affinity;
@@ -335,6 +345,7 @@ static void *Child_Thread(void *arg)
 		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
 		fflush(stdout);
 	}
+
 	BITSET(BUS_LOCK, roomSeed, cpu);
 
 	do {
@@ -347,11 +358,14 @@ static void *Child_Thread(void *arg)
 		BITSET(BUS_LOCK, roomCore, cpu);
 
 		while ( BITVAL(Shm->Proc.Sync, 31)
-		    && !BITVAL(Shutdown, 0)
-		    && !BITVAL(Core->OffLine, OS)) {
+			&& !BITVAL(Shutdown, 0)
+			&& !BITVAL(Core->OffLine, OS)) {
 
-			Arg->Ref->Slice.Func(Arg->Ref->Slice.pArg);
+			CallSliceFunc(	&Cpu->Slice,
+					Arg->Ref->Slice.Func,
+					Arg->Ref->Slice.pArg);
 		}
+
 		BITCLR(BUS_LOCK, roomCore, cpu);
 
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
@@ -2201,6 +2215,12 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	}
 }
 
+void ControlRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+{
+	Shm->Cpu[cpu].ControlRegister.CR0 = Core[cpu]->ControlRegister.CR0;
+	Shm->Cpu[cpu].ControlRegister.CR4 = Core[cpu]->ControlRegister.CR4;
+}
+
 void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
 {
     if (strlen(SysGate->IdleDriver.Name) > 0) {
@@ -2343,8 +2363,6 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	Shm->Cpu[cpu].Query.Microcode = Core[cpu]->Query.Microcode;
 
-	CPUID_Dump(Shm, Core, cpu);
-
 	BaseClock(Shm, Core, cpu);
 
 	Topology(Shm, Proc, Core, cpu);
@@ -2356,6 +2374,10 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	CStates(Shm, Core, cpu);
 
 	PowerThermal(Shm, Proc, Core, cpu);
+
+	ControlRegisters(Shm, Core, cpu);
+
+	CPUID_Dump(Shm, Core, cpu);
 
 	if (Shm->Cpu[cpu].Topology.MP.BSP)
 		Uncore(Shm, Proc, cpu);
@@ -2465,6 +2487,7 @@ static void *Emergency_Handler(void *pRef)
 	case SIGCHLD:
 		leave = 0x1;
 		break;
+	case SIGSEGV:
 	case SIGTERM:
 	case SIGINT:	// [CTRL] + [C]
 		// Fallthrough
@@ -2520,7 +2543,7 @@ static void *Emergency_Handler(void *pRef)
 					if (leave)	/*SpinLock*/
 						break;
 				}
-				Ref->Slice.Func = NULL;
+				Ref->Slice.Func = Slice_NOP;
 				Ref->Slice.pArg = NULL;
 			    }
 			    break;
@@ -2577,6 +2600,7 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		sigaddset(&Ref->Signal, SIGINT);	// Shutdown
 		sigaddset(&Ref->Signal, SIGQUIT);	// Shutdown
 		sigaddset(&Ref->Signal, SIGTERM);	// Shutdown
+		sigaddset(&Ref->Signal, SIGSEGV);	// Shutdown
 		sigaddset(&Ref->Signal, SIGCHLD);	// Exit Ring Thread
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)

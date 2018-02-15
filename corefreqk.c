@@ -69,6 +69,10 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static unsigned short RDPMC_Enable = 0;
+module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(RDPMC_Enable, "Enable RDPMC bit in CR4 register");
+
 static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI handler");
@@ -2997,6 +3001,31 @@ void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
     }
 }
 
+void ControlRegisters(CORE *Core)
+{
+	if (RDPMC_Enable) {
+		asm volatile
+		(
+			"movq	%%cr4, %%rax"	"\n\t"
+			"btsq	%0,    %%rax"	"\n\t"
+			"movq	%%rax, %%cr4"	"\n\t"
+			"wbinvd"
+			:
+			: "i" (CR4_PCE)
+			: "%rax"
+		);
+	}
+	asm volatile
+	(
+		"movq	%%cr0, %0"	"\n\t"
+		"movq	%%cr4, %1"
+		: "=r" (Core->ControlRegister.CR0),
+		  "=r" (Core->ControlRegister.CR4)
+		:
+		:
+	);
+}
+
 void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
@@ -3053,6 +3082,8 @@ void PerCore_AuthenticAMD_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
 {
+	ControlRegisters(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3073,6 +3104,8 @@ void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Nehalem_Query(CORE *Core, unsigned int cpu)
 {
+	ControlRegisters(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3091,6 +3124,8 @@ void PerCore_Nehalem_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 {
+	ControlRegisters(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3102,6 +3137,7 @@ void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		CStatesConfiguration(0x062A, Core, cpu);
 	}
+
 	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);
@@ -3109,6 +3145,8 @@ void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 {
+	ControlRegisters(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3120,6 +3158,7 @@ void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		CStatesConfiguration(0x0645, Core, cpu);
 	}
+
 	PowerThermal(Core, cpu);
 
 	ThermalMonitor_Set(Core);

@@ -4,10 +4,6 @@
  * Licenses: GPL2
  */
 
-#define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
-#define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
-
-
 #define RDCOUNTER(_val, _cnt)						\
 ({									\
 	unsigned int _lo, _hi;						\
@@ -55,76 +51,6 @@
 		  "a" ((unsigned int) _data.value & 0xFFFFFFFF),	\
 		  "d" ((unsigned int) (_data.value >> 32))		\
 	);
-
-#define RDTSC(_lo, _hi)							\
-	asm volatile							\
-	(								\
-		"lfence"		"\n\t"				\
-		"rdtsc"							\
-		: "=a" (_lo),						\
-		  "=d" (_hi)						\
-	);
-
-#define RDTSCP(_lo, _hi, aux)						\
-	asm volatile							\
-	(								\
-		"rdtscp"						\
-		: "=a" (_lo),						\
-		  "=d" (_hi),						\
-		  "=c" (aux)						\
-	);
-
-#define BARRIER()							\
-	asm volatile							\
-	(								\
-		"lfence"						\
-		:							\
-		:							\
-		:							\
-	);
-
-#define RDTSC64(_val64)							\
-	asm volatile							\
-	(								\
-		"lfence"		"\n\t"				\
-		"rdtsc"			"\n\t"				\
-		"shlq	$32,	%%rdx"	"\n\t"				\
-		"orq	%%rdx,	%%rax"	"\n\t"				\
-		"movq	%%rax,	%0"					\
-		: "=m" (_val64)						\
-		:							\
-		: "%rax","%rcx","%rdx","memory"				\
-	);
-
-#define RDTSCP64(_val64)						\
-	asm volatile							\
-	(								\
-		"rdtscp"		"\n\t"				\
-		"shlq	$32,	%%rdx"	"\n\t"				\
-		"orq	%%rdx,	%%rax"	"\n\t"				\
-		"movq	%%rax,	%0"					\
-		: "=m" (_val64)						\
-		:							\
-		: "%rax","%rcx","%rdx","memory"				\
-	);
-
-#define ASM_RDTSCP(_reg) \
-	"# Read invariant TSC."		"\n\t"		\
-	"rdtscp"			"\n\t"		\
-	"shlq	$32, %%rdx"		"\n\t"		\
-	"orq	%%rdx, %%rax"		"\n\t"		\
-	"# Save TSC value."		"\n\t"		\
-	"movq	%%rax, %%" #_reg	"\n\t"
-
-#define ASM_RDTSC(_reg) \
-	"# Read variant TSC."		"\n\t"		\
-	"lfence"			"\n\t"		\
-	"rdtsc"				"\n\t"		\
-	"shlq	$32, %%rdx"		"\n\t"		\
-	"orq	%%rdx, %%rax"		"\n\t"		\
-	"# Save TSC value."		"\n\t"		\
-	"movq	%%rax, %%" #_reg	"\n\t"
-
 
 #define ASM_CODE_RDMSR(_msr, _reg) \
 	"# Read MSR counter."		"\n\t"		\
