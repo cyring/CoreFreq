@@ -2454,6 +2454,92 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
     }
 }
 
+void Master_Ring_Handler(REF *Ref, unsigned int rid)
+{
+    if (!RING_NULL(Ref->Shm->Ring[rid])) {
+	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
+		unsigned int cpu;
+		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
+			if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
+				SpeedStep(Ref->Shm,
+					  Ref->Proc,
+					  Ref->Core,
+					  cpu);
+
+				TurboBoost(Ref->Shm,
+					   Ref->Core,
+					   cpu);
+
+				CStates(Ref->Shm,
+					Ref->Core,
+					cpu);
+
+				ClockModulation(Ref->Shm,
+						Ref->Proc,
+						Ref->Core,
+						cpu);
+			}
+		if (Quiet & 0x100)
+		  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
+		// Notify
+		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+	}
+    }
+}
+
+void Child_Ring_Handler(REF *Ref, unsigned int rid)
+{
+  if (!RING_NULL(Ref->Shm->Ring[rid])) {
+    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+    switch (ctrl.cmd) {
+    case COREFREQ_ORDER_MACHINE:
+		switch (ctrl.arg) {
+		case COREFREQ_TOGGLE_OFF:
+		    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
+			BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+
+			while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+			{
+				if (BITVAL(Shutdown, 0))	/*SpinLock*/
+					break;
+			}
+			Ref->Slice.Func = Slice_NOP;
+			Ref->Slice.pArg = NULL;
+		    }
+		    break;
+		}
+		break;
+    default: {
+	RING_SLICE *porder = order_list;
+	while (porder->func != NULL) {
+		if ((porder->ctrl.cmd == ctrl.cmd)
+		&&  (porder->ctrl.arg == ctrl.arg)) {
+		    if (!BITVAL(Ref->Shm->Proc.Sync, 31)) {
+
+			while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+			{
+				if (BITVAL(Shutdown, 0))	/*SpinLock*/
+					break;
+			}
+			Ref->Slice.Func = porder->func;
+			Ref->Slice.pArg = (void *) porder->ctrl.arg;
+
+			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+		    }
+		    break;
+		}
+		porder++;
+	    }
+	}
+	break;
+    }
+    if (Quiet & 0x100)
+	printf("\tRING[%u](%x,%lx)\n", rid, ctrl.cmd, ctrl.arg);
+  }
+}
+
 static void *Emergency_Handler(void *pRef)
 {
 	REF *Ref = (REF *) pRef;
@@ -2474,111 +2560,34 @@ static void *Emergency_Handler(void *pRef)
 
     while (!leave) {
 	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
-      if (caught != -1) {
-	switch (caught) {
-	case SIGUSR2:
-		if (Ref->CPID)
-			SysGate_Toggle(Ref, 0);
-		break;
-	case SIGUSR1:
-		if (Ref->CPID)
-			SysGate_Toggle(Ref, 1);
-		break;
-	case SIGCHLD:
-		leave = 0x1;
-		break;
-	case SIGSEGV:
-	case SIGTERM:
-	case SIGINT:	// [CTRL] + [C]
-		// Fallthrough
-	case SIGQUIT:
-		BITSET(LOCKLESS, Shutdown, 0);
-		break;
-	}
-      } else if (errno == EAGAIN) {
-	if (Ref->CPID) {					// -[ Parent ]-
-	    if (!RING_NULL(Ref->Shm->Ring[rid])) {
-		struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
-		if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
-			unsigned int cpu;
-			for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-				if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
-					SpeedStep(Ref->Shm,
-						  Ref->Proc,
-						  Ref->Core,
-						  cpu);
-
-					TurboBoost(Ref->Shm,
-						   Ref->Core,
-						   cpu);
-
-					CStates(Ref->Shm,
-						Ref->Core,
-						cpu);
-
-					ClockModulation(Ref->Shm,
-							Ref->Proc,
-							Ref->Core,
-							cpu);
-				}
-			if (Quiet & 0x100)
-			  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
-			// Notify
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
-		}
-	    }
-	} else {						// -[ Child ]-
-	  if (!RING_NULL(Ref->Shm->Ring[rid])) {
-	    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
-	    switch (ctrl.cmd) {
-	    case COREFREQ_ORDER_MACHINE:
-			switch (ctrl.arg) {
-			case COREFREQ_TOGGLE_OFF:
-			    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
-				BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
-
-				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-				{
-					if (leave)	/*SpinLock*/
-						break;
-				}
-				Ref->Slice.Func = Slice_NOP;
-				Ref->Slice.pArg = NULL;
-			    }
-			    break;
-			}
+	if (caught != -1) {
+		switch (caught) {
+		case SIGUSR2:
+			if (Ref->CPID)
+				SysGate_Toggle(Ref, 0);
 			break;
-	    default:
-		{
-		RING_SLICE *porder = order_list;
-		while (porder->func != NULL) {
-			if ((porder->ctrl.cmd == ctrl.cmd)
-			&&  (porder->ctrl.arg == ctrl.arg)) {
-			    if (!BITVAL(Ref->Shm->Proc.Sync, 31)) {
-
-				while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-				{
-					if (leave)	/*SpinLock*/
-						break;
-				}
-				Ref->Slice.Func = porder->func;
-				Ref->Slice.pArg = (void *) porder->ctrl.arg;
-
-				BITSET(BUS_LOCK,Ref->Shm->Proc.Sync,31);
-			    }
-			    break;
-			}
-			porder++;
-		    }
+		case SIGUSR1:
+			if (Ref->CPID)
+				SysGate_Toggle(Ref, 1);
+			break;
+		case SIGCHLD:
+			leave = 0x1;
+			break;
+		case SIGSEGV:
+		case SIGTERM:
+		case SIGINT:	// [CTRL] + [C]
+			// Fallthrough
+		case SIGQUIT:
+			BITSET(LOCKLESS, Shutdown, 0);
+			break;
 		}
-		break;
-	    }
-	  if (Quiet & 0x100)
-		printf("\tRING[%u](%x,%lx)\n", rid, ctrl.cmd, ctrl.arg);
-	  }
+	} else if (errno == EAGAIN) {
+		if (Ref->CPID) {
+			Master_Ring_Handler(Ref, rid);
+		} else {
+			Child_Ring_Handler(Ref, rid);
+		}
 	}
-      }
     }
 	return(NULL);
 }
