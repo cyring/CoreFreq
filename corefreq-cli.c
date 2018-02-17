@@ -1706,7 +1706,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_t," Slice counters     [T] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
 
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
