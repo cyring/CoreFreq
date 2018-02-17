@@ -49,7 +49,7 @@ typedef struct {
 	int			Started;
 	struct {
 		SLICE_FUNC	Func;
-		void		*pArg;
+		unsigned long	arg;
 	} Slice;
 	FD			*fd;
 	SHM_STRUCT		*Shm;
@@ -361,9 +361,9 @@ static void *Child_Thread(void *arg)
 			&& !BITVAL(Shutdown, 0)
 			&& !BITVAL(Core->OffLine, OS)) {
 
-			CallSliceFunc(	&Cpu->Slice,
+			CallSliceFunc(	Shm, cpu,
 					Arg->Ref->Slice.Func,
-					Arg->Ref->Slice.pArg);
+					Arg->Ref->Slice.arg);
 		}
 
 		BITCLR(BUS_LOCK, roomCore, cpu);
@@ -2506,7 +2506,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 					break;
 			}
 			Ref->Slice.Func = Slice_NOP;
-			Ref->Slice.pArg = NULL;
+			Ref->Slice.arg = 0;
 		    }
 		    break;
 		}
@@ -2524,7 +2524,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 					break;
 			}
 			Ref->Slice.Func = porder->func;
-			Ref->Slice.pArg = (void *) porder->ctrl.arg;
+			Ref->Slice.arg  = porder->ctrl.arg;
 
 			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
 		    }
@@ -2853,7 +2853,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			.KID		= 0,
 			.Started	= 0,
 			.Slice.Func	= NULL,
-			.Slice.pArg	= NULL,
+			.Slice.arg	= 0,
 			.fd		= fd,
 			.Shm		= Shm,
 			.Proc		= Proc,
