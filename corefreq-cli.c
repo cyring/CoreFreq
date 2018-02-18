@@ -158,6 +158,100 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 	}
 }
 
+void ControlRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+{
+	unsigned int cpu, idx = 0;
+	unsigned int nl = 17;
+	char line[6];
+	struct {
+		unsigned int bit;
+		char *flag;
+	} CR[] = {
+		{CR0_PE,	" PE "},
+		{CR0_MP,	" MP "},
+		{CR0_EM,	" EM "},
+		{CR0_TS,	" TS "},
+		{CR0_ET,	" ET "},
+		{CR0_NE,	" NE "},
+		{CR0_WP,	" WP "},
+		{CR0_AM,	" AM "},
+		{CR0_NW,	" NW "},
+		{CR0_CD,	" CD "},
+		{CR0_PG,	" PG "},
+		{CR4_VME,	" VME"},
+		{CR4_PVI,	" PVI"},
+		{CR4_TSD,	" TSD"},
+		{CR4_DE,	" DE "},
+		{CR4_PSE,	" PSE"},
+		{CR4_PAE,	" PAE"},
+		{CR4_MCE,	" MCE"},
+		{CR4_PGE,	" PGE"},
+		{CR4_PCE,	" PCE"},
+		{CR4_OSFXSR,	" FX "},
+		{CR4_OSXMMEXCPT,"XMM "},
+		{CR4_UMIP,	"UMIP"},
+		{CR4_VMXE,	" VMX"},
+		{CR4_SMXE,	" SMX"},
+		{CR4_FSGSBASE,	" FS "},
+		{CR4_PCIDE,	"PCID"},
+		{CR4_OSXSAVE,	" SAV"},
+		{CR4_SMEP,	" SME"},
+		{CR4_SMAP,	" SMA"},
+		{CR4_PKE,	" PKE"}
+	};
+
+	void printv(char *fmt, ...)
+	{
+		va_list ap;
+		va_start(ap, fmt);
+		vsprintf(line, fmt, ap);
+		if (OutFunc == NULL) {
+			nl--;
+			if (nl == 16)
+				printf("|-%s", line);
+			else if (nl == 0) {
+				nl = 17;
+				printf("%s\n", line);
+			} else
+				printf("%s", line);
+		} else
+			OutFunc(line);
+		va_end(ap);
+	}
+
+/* Section Mark */
+	printv("CR0:");
+    for (idx = 0; idx < 11; idx++) {
+	printv("%s", CR[idx].flag);
+    }
+	printv("CR4:");
+    for (idx = 11; idx < 15; idx++) {
+	printv("%s", CR[idx].flag);
+    }
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	printv("#%-2u ", cpu);
+
+      for (idx = 0; idx < 11; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR0,CR[idx].bit));
+      }
+	printv("    ");
+      for (idx = 11; idx < 15; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR4,CR[idx].bit));
+      }
+    }
+/* Section Mark */
+	printv("CR4:");
+    for (idx = 15; idx < 31; idx++) {
+	printv("%s", CR[idx].flag);
+    }
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	printv("#%-2u ", cpu);
+      for (idx = 15; idx < 31; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR4,CR[idx].bit));
+      }
+    }
+}
+
 void SysInfoProc(SHM_STRUCT *Shm,
 		CUINT width,
 		void(*OutFunc)(unsigned long long key, char *output))
@@ -1644,7 +1738,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateMenu(unsigned long long id)
     {
-      Window *wMenu = CreateWindow(wLayer, id, 3, 11, 3, 0);
+      Window *wMenu = CreateWindow(wLayer, id, 3, 12, 3, 0);
       if (wMenu != NULL) {
 	ATTRIBUTE sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
 		voidAttr = {.value = 0}, gateAttr[24], ctrlAttr[24],
@@ -1703,10 +1797,14 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_r," Control Registers  [R] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_t," Slice counters     [T] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
+
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
 
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
@@ -2211,6 +2309,40 @@ void Top(SHM_STRUCT *Shm, char option)
 	return(wISA);
     }
 
+    Window *CreateCR(unsigned long long id)
+    {
+	Window *wCR = CreateWindow(wLayer, id,
+				17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
+					(drawSize.height-TOP_HEADER_ROW-3)),
+				6, TOP_HEADER_ROW + 2);
+
+	void AddCRCell(char *input)
+	{
+		StoreTCell(wCR, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+	}
+
+	if (wCR != NULL) {
+		ControlRegisters(Shm, AddCRCell);
+
+		StoreWindow(wCR,	.title, " Control Registers ");
+
+		StoreWindow(wCR,	.key.Left,	MotionLeft_Win);
+		StoreWindow(wCR,	.key.Right,	MotionRight_Win);
+		StoreWindow(wCR,	.key.Down,	MotionDown_Win);
+		StoreWindow(wCR,	.key.Up,	MotionUp_Win);
+		StoreWindow(wCR,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wCR,	.key.PgDw,	MotionPgDw_Win);
+		StoreWindow(wCR,	.key.Home,	MotionHome_Win);
+		StoreWindow(wCR,	.key.End,	MotionEnd_Win);
+
+		StoreWindow(wCR,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wCR,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wCR,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wCR,	.key.WinUp,	MotionOriginUp_Win);
+	}
+	return(wCR);
+    }
+
     Window *CreateMemCtrl(unsigned long long id)
     {
 	unsigned short mc, cha, rows = 0;
@@ -2687,6 +2819,15 @@ void Top(SHM_STRUCT *Shm, char option)
 			AppendWindow(CreateMemCtrl(scan->key),&winList);
 		else
 			SetHead(&winList, win);
+	}
+	break;
+    case SCANKEY_SHIFT_r:
+	{
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateCR(scan->key), &winList);
+	else
+		SetHead(&winList, win);
 	}
 	break;
     case SCANKEY_q:
