@@ -2507,6 +2507,9 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 			}
 			Ref->Slice.Func = Slice_NOP;
 			Ref->Slice.arg = 0;
+			// Notify
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		    }
 		    break;
 		}
@@ -2527,6 +2530,9 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 			Ref->Slice.arg  = porder->ctrl.arg;
 
 			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+			// Notify
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		    }
 		    break;
 		}

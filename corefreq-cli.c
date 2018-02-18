@@ -3350,14 +3350,6 @@ void Top(SHM_STRUCT *Shm, char option)
 			SetHead(&winList, win);
 	    } else
 		SetHead(&winList, win);
-
-	    if ((drawFlag.view != V_SLICE) || (drawFlag.disposal != D_MAINVIEW))
-	    {
-		drawFlag.disposal = D_MAINVIEW;
-		drawFlag.view = V_SLICE;
-		drawSize.height = 0;
-		TrapScreenSize(SIGWINCH);
-	    }
 	}
 	break;
     case BOXKEY_TOOLS_ATOMIC:
@@ -3500,7 +3492,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	LayerDeclare(12) hProc0 = {
 		.origin = {.col = 12, .row = row}, .length = 12,
-		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK},
+		.attr = {LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HRK,HDK},
 		.code = {' ','P','r','o','c','e','s','s','o','r',' ','['}
 	};
 
@@ -3600,6 +3592,9 @@ void Top(SHM_STRUCT *Shm, char option)
 	hBClk1.code[15] = buffer[8];
 
 	len = strlen(Shm->Proc.Brand);
+
+	if (BITVAL(Shm->Proc.Sync, 31))
+		hProc0.code[10] = '.';
 
 	LayerCopyAt(layer, hProc0.origin.col, hProc0.origin.row,
 			hProc0.length, hProc0.attr, hProc0.code);
