@@ -13,7 +13,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
-* In progress: Uncore, Memory Controller channels & geometry, DIMM timings 
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -56,18 +56,20 @@ make
 ```
 
 ```
-cc -c corefreqd.c -o corefreqd.o
-cc -lpthread -lrt -o corefreqd corefreqd.c
-cc -c corefreq-cli.c -o corefreq-cli.o
-cc -lrt -o corefreq-cli corefreq-cli.c
-make -C /lib/modules/4.7.2-1-ARCH/build M=/workdir/CoreFreq modules
-make[1]: Entering directory '/usr/lib/modules/4.7.2-1-ARCH/build'
+cc -Wall -pthread -c corefreqd.c -o corefreqd.o
+cc -Wall -c corefreqm.c -o corefreqm.o
+cc corefreqd.c corefreqm.c -o corefreqd -lpthread -lm -lrt
+cc -Wall -c corefreq-cli.c -o corefreq-cli.o
+cc -Wall -c corefreq-ui.c -o corefreq-ui.o
+cc corefreq-cli.c corefreq-ui.c -o corefreq-cli -lm -lrt
+make -C /lib/modules/x.y.z/build M=/workdir/CoreFreq modules
+make[1]: Entering directory '/usr/lib/modules/x.y.z/build'
   CC [M]  /workdir/CoreFreq/corefreqk.o
   Building modules, stage 2.
   MODPOST 1 modules
   CC      /workdir/CoreFreq/corefreqk.mod.o
   LD [M]  /workdir/CoreFreq/corefreqk.ko
-make[1]: Leaving directory '/usr/lib/modules/4.7.2-1-ARCH/build'
+make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
 ```
 
 ### Start
@@ -231,6 +233,14 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
 ```
 insmod corefreqk.ko Experimental=1
+```  
+
+
+* Q: The Instructions and PMC0 counters are stuck to zero ?  
+  A: The PCE bit of control register CR4 allows RDPMC in ring 3  
+```
+echo 2 > /sys/devices/cpu/rdpmc
+insmod corefreqk.ko RDPMC_Enable=1
 ```  
 
 
