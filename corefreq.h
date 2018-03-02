@@ -124,9 +124,11 @@ typedef struct
 	} FlipFlop[2];
 
 	struct {
-		Bit64			CR0,
-					CR4;
-	} ControlRegister;
+		Bit64			RFLAGS,
+					CR0,
+					CR4,
+					EFER;
+	} SystemRegister;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
 

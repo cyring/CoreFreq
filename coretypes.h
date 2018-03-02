@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.20.0"
+#define COREFREQ_VERSION	"1.20.1"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -64,7 +64,18 @@ enum {	GenuineIntel,		\
 	ARCHITECTURES
 };
 
-enum {
+enum SYS_REG {
+	RFLAG_TF	= 8,
+	RFLAG_IF	= 9,
+	RFLAG_IOPL	= 12,
+	RFLAG_NT	= 14,
+	RFLAG_RF	= 16,
+	RFLAG_VM	= 17,
+	RFLAG_AC	= 18,
+	RFLAG_VIF	= 19,
+	RFLAG_VIP	= 20,
+	RFLAG_ID	= 21,
+
 	CR0_PE		= 0,
 	CR0_MP		= 1,
 	CR0_EM		= 2,
@@ -96,7 +107,12 @@ enum {
 	CR4_OSXSAVE	= 18,
 	CR4_SMEP	= 20,
 	CR4_SMAP	= 21,
-	CR4_PKE		= 22
+	CR4_PKE		= 22,
+
+	EXFER_SCE	= 0,
+	EXFER_LME	= 8,
+	EXFER_LMA	= 10,
+	EXFER_NXE	= 11
 };
 
 #define THERMAL_FORMULA_NONE \
@@ -156,6 +172,10 @@ enum {
 enum RATIO_BOOST {
 	RATIO_MIN,
 	RATIO_MAX,
+	RATIO_ACT,
+	RATIO_TDP,
+	RATIO_TDP1,
+	RATIO_TDP2,
 	RATIO_18C,
 	RATIO_17C,
 	RATIO_16C,
@@ -515,11 +535,11 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		unsigned int
 		FSGSBASE	:  1-0, // Common x86
 		TSC_ADJUST	:  2-1,
-		Unused1		:  3-2,
+		SGX		:  3-2,
 		BMI1		:  4-3, // Common x86
 		HLE		:  5-4,
 		AVX2		:  6-5, // Common x86
-		Unused2		:  7-6,
+		Unused1		:  7-6,
 		SMEP		:  8-7, // Common x86
 		BMI2		:  9-8, // Common x86
 		FastStrings	: 10-9,
@@ -529,13 +549,13 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		FPU_CS_DS	: 14-13,
 		MPX		: 15-14,
 		PQE		: 16-15,
-		Unused3		: 18-16,
+		Unused2		: 18-16,
 		RDSEED		: 19-18,
 		ADX		: 20-19,
 		SMAP		: 21-20,
-		Unused4		: 25-21,
+		Unused3		: 25-21,
 		ProcessorTrace	: 26-25,
-		Unused5		: 32-26;
+		Unused4		: 32-26;
 	} EBX;
 	struct
 	{	// Intel reserved.
@@ -774,7 +794,11 @@ typedef struct	// BSP CPUID features.
 			HTT_Enable	: 10-9,
 			Ratio_Unlock	: 11-10,
 			TDP_Unlock	: 12-11,
-			UnusedBits	: 24-12,
+			TDP_Levels	: 14-12,
+			TDP_Cfg_Lock	: 15-14,
+			TDP_Cfg_Level	: 17-15,
+			TurboRatio_Lock : 18-17,
+			UnusedBits	: 24-18,
 			SpecTurboRatio	: 32-24;
 	};
 } FEATURES;
@@ -894,6 +918,9 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA
 	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA	0x0100
 #endif
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104	0x0104
+#endif
 // Source: /drivers/edac/sb_edac.c
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
@@ -901,6 +928,9 @@ typedef struct	// BSP CPUID features.
 // Source: 3rd Generation Intel® Core™ Processor Family Vol2
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA	0x0150
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
 #endif
 // Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0

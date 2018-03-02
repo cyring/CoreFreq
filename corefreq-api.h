@@ -160,7 +160,7 @@ typedef struct
 				LineSz	:  8-0,  // L1 inst. cache line size (B)
 				ClPerTag: 16-8,  // L1 inst. cache lines per tag
 				Assoc	: 24-16, // L1 inst. cache associativity
-				Size	: 32-24; // L1 inst. cache size (KB) 
+				Size	: 32-24; // L1 inst. cache size (KB)
 			} CPUID_0x80000005_L1I;
 			struct
 			{	// AMD L3
@@ -347,9 +347,11 @@ typedef struct
 	CACHE_TOPOLOGY			T;
 
 	struct {
-		Bit64			CR0,
-					CR4;
-	} ControlRegister;
+		Bit64			RFLAGS,
+					CR0,
+					CR4,
+					EFER;
+	} SystemRegister;
 
 	unsigned int			Bind;
 

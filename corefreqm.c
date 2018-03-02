@@ -198,21 +198,23 @@ void Slice_CRC32(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 */
 void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 {
-	const double interval = 4.0 * 1024.0;
+	const double interval = (4.0 * 1024.0) - (double) cpu;
 	const struct {
-		double a, b, c, k, step;
+		double a, b, c, k;
 	} p[CONIC_VARIATIONS] = {
-		{.a=+1.0 , .b=+1.0, .c=-1.0 , .k=    +0.0, .step=8.0 },
-		{.a=-3.0 , .b=+3.0, .c=-3.0 , .k=-17000.0, .step=8.0 },
-		{.a=+0.01, .b=+0.7, .c=+0.2 , .k= +3000.0, .step=8.0 },
-		{.a=+2.0 , .b=+0.0, .c=+1.0 , .k= +5000.0, .step=5.0 },
-		{.a=-0.5 , .b=+0.0, .c=+0.75, .k=  +500.0, .step=8.0 },
-		{.a=+0.0 , .b=+0.0, .c=+1.0 , .k= +3000.0, .step=28.0}
+		{.a=+1.0 , .b=+1.0, .c=-1.0 , .k=    +0.0},
+		{.a=-3.0 , .b=+3.0, .c=-3.0 , .k=-17000.0},
+		{.a=+0.01, .b=+0.7, .c=+0.2 , .k= +3000.0},
+		{.a=+2.0 , .b=+0.0, .c=+1.0 , .k= +5000.0},
+		{.a=-0.5 , .b=+0.0, .c=+0.75, .k=  +500.0},
+		{.a=+0.0 , .b=+0.0, .c=+1.0 , .k= +3000.0}
 	};
 	double X, Y, Z, Q;
 
-	for (Y = -interval; Y <= interval; Y += p[v].step)
-	    for (X = -interval; X <= interval; X += p[v].step) {
+	const double step = (double) Shm->Proc.CPU.Count;
+
+	for (Y = -interval; Y <= interval; Y += step)
+	    for (X = -interval; X <= interval; X += step) {
 		Q=(p[v].k - p[v].a * pow(X,2.0) - p[v].b * pow(Y,2.0)) / p[v].c;
 		Z = sqrt(Q);
 

@@ -48,6 +48,26 @@
 
 #define MSR_HSW_UNCORE_RATIO_LIMIT		0x00000620
 
+#ifndef MSR_CONFIG_TDP_NOMINAL
+	#define MSR_CONFIG_TDP_NOMINAL		0x00000648
+#endif
+
+#ifndef MSR_CONFIG_TDP_LEVEL_1
+	#define MSR_CONFIG_TDP_LEVEL_1		0x00000649
+#endif
+
+#ifndef MSR_CONFIG_TDP_LEVEL_2
+	#define MSR_CONFIG_TDP_LEVEL_2		0x0000064a
+#endif
+
+#ifndef MSR_CONFIG_TDP_CONTROL
+	#define MSR_CONFIG_TDP_CONTROL		0x0000064b
+#endif
+
+#ifndef MSR_TURBO_ACTIVATION_RATIO
+	#define MSR_TURBO_ACTIVATION_RATIO	0x0000064c
+#endif
+
 typedef union
 {
 	unsigned long long	value;
@@ -157,7 +177,7 @@ typedef union
 		TDP_Limited	: 30-29,
 		ReservedBits3	: 32-30,
 		LowPowerMode	: 33-32,
-		ConfigTDPlevels	: 35-33,
+		ConfigTDPlevels	: 35-33, // Ivy Bridge, Haswell(-E), Phy
 		ReservedBits4	: 40-35,
 		MinimumRatio	: 48-40,
 		MinOperatRatio	: 56-48, // Ivy Bridge, Haswell(-E)
@@ -302,6 +322,60 @@ typedef union
 		Semaphore	: 64-63;
 	};
 } TURBO_RATIO_CONFIG2;
+
+// Config TDP MSRs: 06_3A/06_3C/06_45/06_46/06_57/06_5C/06_7A
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Ratio		:  8-0, // ratio x 100 MHz
+		ReservedBits	: 64-8;
+	};
+} CONFIG_TDP_NOMINAL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Power		: 15-0,
+		ReservedBits1	: 16-15,
+		Ratio		: 24-16,
+		ReservedBits2	: 32-24,
+		MaxPower	: 47-32,
+		ReservedBits3	: 48-47,
+		MinPower	: 64-48;
+	};
+} CONFIG_TDP_LEVEL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Level		:  2-0,
+		ReservedBits1	: 31-2,
+		Lock		: 32-31,
+		ReservedBits2	: 64-32;
+	};
+} CONFIG_TDP_CONTROL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		MaxRatio	:  8-0,
+		ReservedBits1	: 31-8,
+		Ratio_Lock	: 32-31,
+		ReservedBits2	: 64-32;
+	};
+} TURBO_ACTIVATION;
 
 typedef union
 {
@@ -1321,7 +1395,7 @@ typedef union
 		VT_d		: 24-23, // VT-d: 0=Enable, 1=Disable
 		ReservedBits3	: 32-24;
 	};
-} SNB_CAPID;	// §2.5.33 CAPID0_A—Capabilities A Register
+} SNB_CAPID;	// §2.5.33 CAPID0_A Capabilities A Register
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset E8h
@@ -1341,7 +1415,7 @@ typedef union
 		SMTCAP		: 29-28, // SMT Capability
 		ReservedBits5	: 32-29;
 	};
-} IVB_CAPID;	// §2.5.39 CAPID0_B—Capabilities B Register
+} IVB_CAPID;	// §2.5.39 CAPID0_B Capabilities B Register
 
 
 typedef union

@@ -403,11 +403,12 @@ static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
 
-#define     Query_SandyBridge Query_Nehalem
+extern void Query_SandyBridge(void) ;
 static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
+extern void Query_IvyBridge(void);
 extern void Query_IvyBridge_EP(void) ;
 
 extern void Query_Haswell_EP(void) ;
@@ -708,8 +709,12 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
-	{	// Desktop: IMC_SystemAgent=0x0100
+	{	// Desktop: IMC_SystemAgent=0x0100,0x0104
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA),
+		.driver_data = (kernel_ulong_t) SNB_IMC
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{0, }
@@ -725,6 +730,10 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 	},
 	{	// Desktop: IMC_SystemAgent=0x0150
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
+		.driver_data = (kernel_ulong_t) IVB_IMC
+	},
+	{	// Mobile i5-3337U: IMC=0x0154
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
@@ -1209,7 +1218,7 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 28*/	{
 	.Signature = _IvyBridge,
-	.Query = Query_SandyBridge,
+	.Query = Query_IvyBridge,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1236,7 +1245,7 @@ static ARCH Arch[ARCHITECTURES]=
 
 /* 30*/	{
 	.Signature = _Haswell_DT,
-	.Query = Query_SandyBridge,
+	.Query = Query_IvyBridge,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1262,7 +1271,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 32*/	{
 	.Signature = _Haswell_ULT,
-	.Query = Query_SandyBridge,
+	.Query = Query_IvyBridge,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
@@ -1275,7 +1284,7 @@ static ARCH Arch[ARCHITECTURES]=
 	},
 /* 33*/	{
 	.Signature = _Haswell_ULX,
-	.Query = Query_SandyBridge,
+	.Query = Query_IvyBridge,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,

@@ -1464,6 +1464,7 @@ void Intel_Platform_Turbo(void)
 
 	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
 	Proc->Features.TDP_Unlock = Platform.TDP_Limited;
+	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
@@ -1532,6 +1533,39 @@ void Intel_Turbo_Config18C(void)
 	Proc->Features.SpecTurboRatio += 2;
 }
 
+void Intel_Turbo_TDP_Config(void)
+{
+	TURBO_ACTIVATION TurboActivation = {.value = 0};
+	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
+	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
+	CONFIG_TDP_LEVEL ConfigTDP;
+
+	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+	Proc->Features.TurboRatio_Lock = TurboActivation.Ratio_Lock;
+
+	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
+	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
+
+	ConfigTDP.value = 0;
+	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_2);
+	Proc->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+
+	ConfigTDP.value = 0;
+	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_1);
+	Proc->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+
+	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
+	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
+}
+
+void SandyBridge_Uncore_Ratio(void)
+{
+	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
+	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = Proc->Boost[BOOST(MAX)];
+}
+
 void Haswell_Uncore_Ratio(void)
 {
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
@@ -1597,21 +1631,25 @@ PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
 		};
 	} mchbar;
 	unsigned long long wmask = BITCPL(wsize);
+	unsigned char mchbarEnable = 0;
 
 	Proc->Uncore.ChipID = dev->device;
 
 	pci_read_config_dword(dev, offset    , &mchbar.low);
 	pci_read_config_dword(dev, offset + 4, &mchbar.high);
 
-	mchbar.addr &= wmask;
+	mchbarEnable = BITVAL(mchbar, 0);
+	if (mchbarEnable) {
+		mchbar.addr &= wmask;
+		mchmap = ioremap(mchbar.addr, wsize);
+		if (mchmap != NULL) {
+			route(mchmap);
 
-	mchmap = ioremap(mchbar.addr, wsize);
-	if (mchmap != NULL) {
-		route(mchmap);
+			iounmap(mchmap);
 
-		iounmap(mchmap);
-
-		return(0);
+			return(0);
+		} else
+			return((PCI_CALLBACK) -ENOMEM);
 	} else
 		return((PCI_CALLBACK) -ENOMEM);
 }
@@ -1870,18 +1908,22 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 void Query_SNB_IMC(void __iomem *mchmap)
 {	// Sources:	2nd & 3rd Generation Intel® Core™ Processor Family
 	//		Intel® Xeon Processor E3-1200 Family
-	unsigned short cha;
+	unsigned short cha, dimmCount[2];
 
 	Proc->Uncore.CtrlCount = 1;
 
 	Proc->Uncore.MC[0].SNB.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].SNB.MAD1.value = readl(mchmap + 0x5008);
 
-	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].SNB.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].SNB.MAD0.Dimm_B_Size != 0))  /*0 or 1*/
-		+ ((Proc->Uncore.MC[0].SNB.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].SNB.MAD1.Dimm_B_Size != 0)); /*0 or 1*/
+	Proc->Uncore.MC[0].ChannelCount = 0;
+
+	dimmCount[0] = (Proc->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
+		     + (Proc->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1] = (Proc->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
+		     + (Proc->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+
+	for (cha = 0; cha < 2; cha++)
+		Proc->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].SNB.DBP.value =
@@ -1893,8 +1935,9 @@ void Query_SNB_IMC(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].SNB.RFTP.value =
 					readl(mchmap + 0x4298 + 0x400 * cha);
 	}
-	// DIMM A & DIMM B
-	Proc->Uncore.MC[0].SlotCount = 2;
+	// Dual DIMM Per Channel Disable ?
+	Proc->Uncore.MC[0].SlotCount = (Proc->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
+					1 : Proc->Uncore.MC[0].ChannelCount;
 }
 
 void Query_HSW_IMC(void __iomem *mchmap)
@@ -2042,6 +2085,7 @@ static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 {
+	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SNB_Cap.value);
 	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
 
 	return(Router(dev, 0x48, 0x8000, Query_SNB_IMC));
@@ -2162,6 +2206,21 @@ void Query_Nehalem(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+}
+
+void Query_SandyBridge(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+	SandyBridge_Uncore_Ratio();
+}
+
+void Query_IvyBridge(void)
+{
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+	SandyBridge_Uncore_Ratio();
+	Intel_Turbo_TDP_Config();
 }
 
 void Query_IvyBridge_EP(void)
@@ -3001,7 +3060,7 @@ void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
     }
 }
 
-void ControlRegisters(CORE *Core)
+void SystemRegisters(CORE *Core)
 {
 	if (RDPMC_Enable) {
 		asm volatile
@@ -3017,12 +3076,23 @@ void ControlRegisters(CORE *Core)
 	}
 	asm volatile
 	(
-		"movq	%%cr0, %0"	"\n\t"
-		"movq	%%cr4, %1"
-		: "=r" (Core->ControlRegister.CR0),
-		  "=r" (Core->ControlRegister.CR4)
-		:
-		:
+		"pushfq"		"\n\t"
+		"popq	%0"		"\n\t"
+		"movq	%%cr0, %1"	"\n\t"
+		"movq	%%cr4, %2"	"\n\t"
+		"xorq	%%rax, %%rax"	"\n\t"
+		"xorq	%%rdx, %%rdx"	"\n\t"
+		"movq	%4,%%rcx"	"\n\t"
+		"rdmsr"			"\n\t"
+		"shlq	$32, %%rdx"	"\n\t"
+		"orq	%%rdx, %%rax"	"\n\t"
+		"movq	%%rax, %3"
+		: "=r" (Core->SystemRegister.RFLAGS),
+		  "=r" (Core->SystemRegister.CR0),
+		  "=r" (Core->SystemRegister.CR4),
+		  "=r" (Core->SystemRegister.EFER)
+		: "i" (MSR_EFER)
+		: "%rax", "%rcx", "%rdx"
 	);
 }
 
@@ -3049,6 +3119,8 @@ void Microcode(CORE *Core)
 
 void PerCore_Intel_Query(CORE *Core, unsigned int cpu)
 {
+	SystemRegisters(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3068,6 +3140,8 @@ void PerCore_Intel_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_AuthenticAMD_Query(CORE *Core, unsigned int cpu)
 {
+	SystemRegisters(Core);
+
 	Dump_CPUID(Core);
 
 	BITSET(LOCKLESS, Proc->ODCM_Mask, cpu);
@@ -3082,7 +3156,7 @@ void PerCore_AuthenticAMD_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
 {
-	ControlRegisters(Core);
+	SystemRegisters(Core);
 
 	Microcode(Core);
 
@@ -3104,7 +3178,7 @@ void PerCore_Core2_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Nehalem_Query(CORE *Core, unsigned int cpu)
 {
-	ControlRegisters(Core);
+	SystemRegisters(Core);
 
 	Microcode(Core);
 
@@ -3124,7 +3198,7 @@ void PerCore_Nehalem_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 {
-	ControlRegisters(Core);
+	SystemRegisters(Core);
 
 	Microcode(Core);
 
@@ -3145,7 +3219,7 @@ void PerCore_SandyBridge_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 {
-	ControlRegisters(Core);
+	SystemRegisters(Core);
 
 	Microcode(Core);
 
@@ -3166,6 +3240,8 @@ void PerCore_Haswell_ULT_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_AMD_Family_0Fh_Query(CORE *Core, unsigned int cpu)
 {
+	SystemRegisters(Core);
+
 	Dump_CPUID(Core);
 
 	Query_AMD_Family_0Fh_C1E(Core, cpu);
@@ -3184,6 +3260,8 @@ void PerCore_AMD_Family_0Fh_Query(CORE *Core, unsigned int cpu)
 
 void PerCore_AMD_Family_10h_Query(CORE *Core, unsigned int cpu)
 {
+	SystemRegisters(Core);
+
 	Dump_CPUID(Core);
 
 	Query_AMD_Family_0Fh_C1E(Core, cpu);

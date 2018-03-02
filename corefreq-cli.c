@@ -158,15 +158,26 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 	}
 }
 
-void ControlRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
 	unsigned int cpu, idx = 0;
 	unsigned int nl = 17;
 	char line[6];
 	struct {
-		unsigned int bit;
+		enum SYS_REG bit;
 		char *flag;
-	} CR[] = {
+	} SR[] = {
+		{RFLAG_TF,	" TF "},
+		{RFLAG_IF,	" IF "},
+		{RFLAG_IOPL,	"IOPL"},
+		{RFLAG_NT,	" NT "},
+		{RFLAG_RF,	" RF "},
+		{RFLAG_VM,	" VM "},
+		{RFLAG_AC,	" AC "},
+		{RFLAG_VIF,	" VIF"},
+		{RFLAG_VIP,	" VIP"},
+		{RFLAG_ID,	" ID "},
+
 		{CR0_PE,	" PE "},
 		{CR0_MP,	" MP "},
 		{CR0_EM,	" EM "},
@@ -178,6 +189,7 @@ void ControlRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		{CR0_NW,	" NW "},
 		{CR0_CD,	" CD "},
 		{CR0_PG,	" PG "},
+
 		{CR4_VME,	" VME"},
 		{CR4_PVI,	" PVI"},
 		{CR4_TSD,	" TSD"},
@@ -197,8 +209,19 @@ void ControlRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		{CR4_OSXSAVE,	" SAV"},
 		{CR4_SMEP,	" SME"},
 		{CR4_SMAP,	" SMA"},
-		{CR4_PKE,	" PKE"}
+		{CR4_PKE,	" PKE"},
+
+		{EXFER_SCE,	" SCE"},
+		{EXFER_LME,	" LME"},
+		{EXFER_LMA,	" LMA"},
+		{EXFER_NXE,	" NXE"}
 	};
+	const struct {
+		unsigned int Start, Stop;
+	} tabRFLAGS = {0, 10}, tabCR0 = {tabRFLAGS.Stop, tabRFLAGS.Stop + 11},
+	tabCR4[2] = {	{tabCR0.Stop, tabCR0.Stop + 4},
+			{tabCR4[0].Stop, tabCR4[0].Stop + 16}
+	}, tabEFER = {tabCR4[1].Stop, tabCR4[1].Stop + 4};
 
 	void printv(char *fmt, ...)
 	{
@@ -220,34 +243,55 @@ void ControlRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	}
 
 /* Section Mark */
-	printv("CR0:");
-    for (idx = 0; idx < 11; idx++) {
-	printv("%s", CR[idx].flag);
+	printv("CPU "); printv("FLAG");
+    for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
+	printv("%s", SR[idx].flag);
     }
-	printv("CR4:");
-    for (idx = 11; idx < 15; idx++) {
-	printv("%s", CR[idx].flag);
+	printv("EFER");
+    for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
+	printv("%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printv("#%-2u ", cpu);
 
-      for (idx = 0; idx < 11; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR0,CR[idx].bit));
+	printv("    ");
+      for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
+       printv("  %1u ",BITVAL(Shm->Cpu[cpu].SystemRegister.RFLAGS,SR[idx].bit));
       }
 	printv("    ");
-      for (idx = 11; idx < 15; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR4,CR[idx].bit));
+      for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.EFER,SR[idx].bit));
+      }
+    }
+/* Section Mark */
+	printv("CR0:");
+    for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
+	printv("%s", SR[idx].flag);
+    }
+	printv("CR4:");
+    for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
+	printv("%s", SR[idx].flag);
+    }
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	printv("#%-2u ", cpu);
+
+      for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR0,SR[idx].bit));
+      }
+	printv("    ");
+      for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR4,SR[idx].bit));
       }
     }
 /* Section Mark */
 	printv("CR4:");
-    for (idx = 15; idx < 31; idx++) {
-	printv("%s", CR[idx].flag);
+    for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
+	printv("%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printv("#%-2u ", cpu);
-      for (idx = 15; idx < 31; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].ControlRegister.CR4,CR[idx].bit));
+      for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
+	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR4,SR[idx].bit));
       }
     }
 }
@@ -263,7 +307,7 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	{
 		if (Shm->Proc.Boost[_boost] > 0) {
 			sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-					17, hSpace, pfx, 3, hSpace,
+				(int)(20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 				(double) ( Shm->Proc.Boost[_boost]
 					* Shm->Cpu[0].Clock.Hz) / 1000000.0,
 					20, hSpace,
@@ -278,7 +322,7 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	{
 		if (Shm->Uncore.Boost[_boost] > 0) {
 			sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-					17, hSpace, pfx, 3, hSpace,
+				(int)(20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 				(double) ( Shm->Uncore.Boost[_boost]
 					* Shm->Cpu[0].Clock.Hz) / 1000000.0,
 					20, hSpace,
@@ -319,10 +363,6 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%6.2f]",
 		width - 21, hSpace, Shm->Cpu[0].Clock.Hz / 1000000.0);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "TDP Limited%.*s[%6s]",
-		width - 22, hSpace,
-		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
-
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Ratio Limited%.*s[%6s]",
 		width - 24, hSpace,
 		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
@@ -347,11 +387,31 @@ void SysInfoProc(SHM_STRUCT *Shm,
 	sprintf(pfx, "%2dC", activeCores);
 	PrintCoreBoost(pfx,boost,Shm->Proc.Features.Ratio_Unlock,SCANKEY_NULL);
     }
-
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Uncore");
 
 	PrintUncoreBoost("Min", UNCORE_BOOST(MIN), 0, SCANKEY_NULL);
 	PrintUncoreBoost("Max", UNCORE_BOOST(MAX), 0, SCANKEY_NULL);
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "TDP%.*sLevel [%3d:%-2d]",
+		width - 20, hSpace,
+		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
+
+	printv(OutFunc, SCANKEY_NULL, width, 3, "Limited%.*s[%6s]",
+		width - (OutFunc == NULL ? 21 : 19), hSpace,
+		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
+
+	printv(OutFunc, SCANKEY_NULL, width, 3, "Configuration%.*s[%6s]",
+		width - (OutFunc == NULL ? 27 : 25), hSpace,
+		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
+
+	printv(OutFunc, SCANKEY_NULL, width, 3, "Ratio Activation%.*s[%6s]",
+		width - (OutFunc == NULL ? 30 : 28), hSpace,
+		Shm->Proc.Features.TurboRatio_Lock ? "LOCK" : "UNLOCK");
+
+	PrintCoreBoost("Nominal", BOOST(TDP), 0, SCANKEY_NULL);
+	PrintCoreBoost("Level1", BOOST(TDP1), 0, SCANKEY_NULL);
+	PrintCoreBoost("Level2", BOOST(TDP2), 0, SCANKEY_NULL);
+	PrintCoreBoost("Turbo", BOOST(ACT), 0, SCANKEY_NULL);
 
 	free(str);
 }
@@ -445,29 +505,30 @@ void SysInfoISA(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("         SEP [%c] ",
 		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
 /* Row Mark */
-	printv(" SSE          [%c]",
+	printv(" SGX          [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.SGX ? 'Y' : 'N');
+
+	printv("        SSE [%c]  ",
 		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
 	printv("       SSE2 [%c]  ",
 		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
 
-	printv("       SSE3 [%c]  ",
+	printv("        SSE3 [%c] ",
 		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
-
-	printv("       SSSE3 [%c] ",
-		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 /* Row Mark */
-	printv(" SSE4.1/4A  [%c/%c]",
+	printv(" SSSE3        [%c]",
+		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
+
+	printv(" SSE4.1/4A [%c/%c] ",
 		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
 	printv("     SSE4.2 [%c]  ",
 		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
 
-	printv("    SYSCALL [%c]  ",
+	printv("     SYSCALL [%c] ",
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
-
-	printv("                 ");
 }
 
 void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
@@ -1550,7 +1611,8 @@ void Top(SHM_STRUCT *Shm, char option)
 
     double minRatio = Shm->Proc.Boost[BOOST(MIN)],
 	   maxRatio = Shm->Proc.Boost[BOOST(1C)],
-	   medianRatio = (minRatio + maxRatio) / 2,
+	   medianRatio=(Shm->Proc.Boost[BOOST(ACT)] > 0) ?
+			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2,
 	   availRatio[BOOST(SIZE)] = {minRatio};
 
     HBCLK *hBClk;
@@ -1563,11 +1625,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (Shm->Proc.Boost[idx] != 0) {
 		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
 		if (sort < 0) {
-			availRatio[ratioCount + 1] = availRatio[ratioCount];
-			availRatio[ratioCount++]   = Shm->Proc.Boost[idx];
+			availRatio[ratioCount+1] = availRatio[ratioCount];
+			availRatio[ratioCount++] = Shm->Proc.Boost[idx];
 		}
 		else if (sort > 0)
-			availRatio[++ratioCount]   = Shm->Proc.Boost[idx];
+			availRatio[++ratioCount] = Shm->Proc.Boost[idx];
 	}
     ratioCount++;
 
@@ -1797,7 +1859,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_r," Control Registers  [R] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_r," System Registers   [R] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_t," Slice counters     [T] ", skeyAttr);
@@ -2309,50 +2371,53 @@ void Top(SHM_STRUCT *Shm, char option)
 	return(wISA);
     }
 
-    Window *CreateCR(unsigned long long id)
+    Window *CreateSysRegs(unsigned long long id)
     {
-	Window *wCR = CreateWindow(wLayer, id,
+	Window *wSR = CreateWindow(wLayer, id,
 				17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
 					(drawSize.height-TOP_HEADER_ROW-3)),
 				6, TOP_HEADER_ROW + 2);
 
-	void AddCRCell(char *input)
+	void AddSysRegsCell(char *input)
 	{
-		StoreTCell(wCR, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wSR, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
 	}
 
-	if (wCR != NULL) {
-		ControlRegisters(Shm, AddCRCell);
+	if (wSR != NULL) {
+		SystemRegisters(Shm, AddSysRegsCell);
 
-		StoreWindow(wCR,	.title, " Control Registers ");
+		StoreWindow(wSR,	.title, " System Registers ");
 
-		StoreWindow(wCR,	.key.Left,	MotionLeft_Win);
-		StoreWindow(wCR,	.key.Right,	MotionRight_Win);
-		StoreWindow(wCR,	.key.Down,	MotionDown_Win);
-		StoreWindow(wCR,	.key.Up,	MotionUp_Win);
-		StoreWindow(wCR,	.key.PgUp,	MotionPgUp_Win);
-		StoreWindow(wCR,	.key.PgDw,	MotionPgDw_Win);
-		StoreWindow(wCR,	.key.Home,	MotionHome_Win);
-		StoreWindow(wCR,	.key.End,	MotionEnd_Win);
+		StoreWindow(wSR,	.key.Left,	MotionLeft_Win);
+		StoreWindow(wSR,	.key.Right,	MotionRight_Win);
+		StoreWindow(wSR,	.key.Down,	MotionDown_Win);
+		StoreWindow(wSR,	.key.Up,	MotionUp_Win);
+		StoreWindow(wSR,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wSR,	.key.PgDw,	MotionPgDw_Win);
+		StoreWindow(wSR,	.key.Home,	MotionHome_Win);
+		StoreWindow(wSR,	.key.End,	MotionEnd_Win);
 
-		StoreWindow(wCR,	.key.WinLeft,	MotionOriginLeft_Win);
-		StoreWindow(wCR,	.key.WinRight,	MotionOriginRight_Win);
-		StoreWindow(wCR,	.key.WinDown,	MotionOriginDown_Win);
-		StoreWindow(wCR,	.key.WinUp,	MotionOriginUp_Win);
+		StoreWindow(wSR,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wSR,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wSR,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wSR,	.key.WinUp,	MotionOriginUp_Win);
 	}
-	return(wCR);
+	return(wSR);
     }
 
     Window *CreateMemCtrl(unsigned long long id)
     {
-	unsigned short mc, cha, rows = 0;
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-		for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-			rows++;
-	rows *= 2;
+	unsigned short mc, cha, slot, rows = 0;
+	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+		rows+=7;
+	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+		rows++;
+	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+		rows++;
+	}
 	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer, id,
-					14, CUMIN((rows + 11),
+					14, CUMIN((rows + 2),
 					    (drawSize.height-TOP_HEADER_ROW-3)),
 					1, TOP_HEADER_ROW + 2);
 		wIMC->matrix.select.row = 4;
@@ -2825,7 +2890,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	{
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-		AppendWindow(CreateCR(scan->key), &winList);
+		AppendWindow(CreateSysRegs(scan->key), &winList);
 	else
 		SetHead(&winList, win);
 	}
@@ -6194,6 +6259,7 @@ int Help(char *appName)
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
 		"\t-M\tPrint Memory Controller\n"			\
+		"\t-R\tPrint System Registers\n"			\
 		"\t-m\tPrint Topology\n"				\
 		"\t-u\tPrint CPUID\n"					\
 		"\t-k\tPrint Kernel\n"					\
@@ -6263,6 +6329,9 @@ int main(int argc, char *argv[])
 		break;
 	case 'M':
 		MemoryController(Shm, NULL);
+		break;
+	case 'R':
+		SystemRegisters(Shm, NULL);
 		break;
 	case 'i':
 		TrapSignal(Shm, 1);

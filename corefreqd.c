@@ -323,7 +323,7 @@ static void *Child_Thread(void *arg)
 	};
 	const int withTSCP = ((Pkg->Features.AdvPower.EDX.Inv_TSC == 1)
 				|| (Pkg->Features.ExtInfo.EDX.RDTSCP == 1)),
-		withRDPMC  = (BITVAL(Cpu->ControlRegister.CR4, CR4_PCE) == 1);
+		withRDPMC  = (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1);
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
 
@@ -1317,6 +1317,15 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+      unsigned short dimmSize[2][2] = {
+	{
+		Proc->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
+		Proc->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+	}, {
+		Proc->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
+		Proc->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+	}
+      };
 
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
@@ -1373,8 +1382,6 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		unsigned int width;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
-
 	    if (slot == 0) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
 					Proc->Uncore.MC[mc].SNB.MAD0.DANOR;
@@ -1396,12 +1403,14 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+						dimmSize[cha][slot] * 256;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks =
+			(8 * dimmSize[cha][slot] * 1024 * 1024)
+			/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
 					Proc->Uncore.MC[mc].SNB.MAD0.ECC
@@ -1959,12 +1968,14 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:	// SNB Desktop
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104:
 		SNB_CAP(Shm, Proc, cpu);
 		SNB_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// IVB Desktop
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:	// IVB Mobile i5-3337U
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
 		IVB_CAP(Shm, Proc, cpu);
 		SNB_IMC(Shm, Proc);
@@ -2215,10 +2226,12 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	}
 }
 
-void ControlRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
+void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	Shm->Cpu[cpu].ControlRegister.CR0 = Core[cpu]->ControlRegister.CR0;
-	Shm->Cpu[cpu].ControlRegister.CR4 = Core[cpu]->ControlRegister.CR4;
+	Shm->Cpu[cpu].SystemRegister.RFLAGS = Core[cpu]->SystemRegister.RFLAGS;
+	Shm->Cpu[cpu].SystemRegister.CR0    = Core[cpu]->SystemRegister.CR0;
+	Shm->Cpu[cpu].SystemRegister.CR4    = Core[cpu]->SystemRegister.CR4;
+	Shm->Cpu[cpu].SystemRegister.EFER   = Core[cpu]->SystemRegister.EFER;
 }
 
 void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
@@ -2375,7 +2388,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	PowerThermal(Shm, Proc, Core, cpu);
 
-	ControlRegisters(Shm, Core, cpu);
+	SystemRegisters(Shm, Core, cpu);
 
 	CPUID_Dump(Shm, Core, cpu);
 
@@ -2820,15 +2833,15 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 	if (!rc)
 	{	// Initialize shared memory.
-	  if (((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+	    if (((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
-	  && (ftruncate(fd->Svr, ShmSize) != -1)
-	  && ((Shm = mmap(0, ShmSize,
+	    && (ftruncate(fd->Svr, ShmSize) != -1)
+	    && ((Shm = mmap(0, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED))
-	  {
+	    {
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
 
@@ -2855,7 +2868,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		REF Ref = {
 			.Signal		= {{0}},
-			.CPID		= fork(),
+			.CPID		= -1,
 			.KID		= 0,
 			.Started	= 0,
 			.Slice.Func	= NULL,
@@ -2866,17 +2879,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			.Core		= Core,
 			.SysGate	= &SysGate
 		};
-		Emergency_Command(&Ref, 1);
 
-	    switch (Ref.CPID) {
-	    case 0:
-		Child_Manager(&Ref);
-		break;
-	    case -1:
-		rc = 6;
-		break;
-	    default:
-		{
 		Architecture(Shm, Proc);
 
 		Package_Update(Shm, Proc);
@@ -2913,24 +2916,37 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		if (Quiet)
 			fflush(stdout);
 
-		Core_Manager(&Ref);
+		Ref.CPID = fork();
 
-		if (Shm->AppCli)
-			kill(Shm->AppCli, SIGCHLD);
+		Emergency_Command(&Ref, 1);
 
-		SysGate_OnDemand(fd, &SysGate, 0);
+		switch (Ref.CPID) {
+		case 0:
+			Child_Manager(&Ref);
+			break;
+		case -1:
+			rc = 6;
+			break;
+		default:
+			{
+			Core_Manager(&Ref);
 
-		if (!kill(Ref.CPID, SIGQUIT))
-			waitpid(Ref.CPID, NULL, 0);
+			if (Shm->AppCli)
+				kill(Shm->AppCli, SIGCHLD);
+
+			SysGate_OnDemand(fd, &SysGate, 0);
+
+			if (!kill(Ref.CPID, SIGQUIT))
+				waitpid(Ref.CPID, NULL, 0);
+			}
+			break;
 		}
-		break;
-	    }
 		Emergency_Command(&Ref, 0);
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
-	  }
-	  else
+	    }
+	    else
 		rc = 5;
 	}
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
