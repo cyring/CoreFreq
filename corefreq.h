@@ -185,8 +185,7 @@ typedef struct
 	unsigned int			Toggle;
 
 	struct PKG_FLIP_FLOP {
-		struct
-		{
+		struct {
 		unsigned long long	PTSC,
 					PC02,
 					PC03,
@@ -194,10 +193,11 @@ typedef struct
 					PC07,
 					PC08,
 					PC09,
-					PC10;
+					PC10,
+					ACCU[PWR_DOMAIN(SIZE)];
 		} Delta;
-		struct
-		{
+
+		struct {
 		unsigned long long	FC0;
 		} Uncore;
 	} FlipFlop[2];
@@ -209,7 +209,9 @@ typedef struct
 					PC07,
 					PC08,
 					PC09,
-					PC10;
+					PC10,
+					Energy[PWR_DOMAIN(SIZE)],
+					Power[PWR_DOMAIN(SIZE)];
 	} State;
 
 	struct {
@@ -220,6 +222,14 @@ typedef struct
 					C7,
 					C1;
 	} Avg;
+
+	struct {
+		struct {
+			double		Watts,
+					Joules,
+					Times;
+		} Unit;
+	} Power;
 
 	char				Brand[64],
 					Architecture[32];

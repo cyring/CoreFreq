@@ -990,6 +990,20 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace, TM[  Shm->Cpu[0].PowerThermal.TM2
 					|Shm->Proc.Features.AdvPower.EDX.TM ]);
+
+	printv(OutFunc, SCANKEY_NULL, width, 2, "Units");
+	printv(OutFunc, SCANKEY_NULL, width, 3,
+		"Power%.*sWatts   [%13.9f]",
+		width - (OutFunc == NULL ? 34 : 32), hSpace,
+		Shm->Proc.Power.Unit.Watts);
+	printv(OutFunc, SCANKEY_NULL, width, 3,
+		"Energy%.*sJoules   [%13.9f]",
+		width - (OutFunc == NULL ? 36 : 34), hSpace,
+		Shm->Proc.Power.Unit.Joules);
+	printv(OutFunc, SCANKEY_NULL, width, 3,
+		"Window%.*sSeconds   [%13.9f]",
+		width - (OutFunc == NULL ? 37 : 35), hSpace,
+		Shm->Proc.Power.Unit.Times);
 }
 
 void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
@@ -1182,6 +1196,7 @@ void Counters(SHM_STRUCT *Shm)
 
 void Voltage(SHM_STRUCT *Shm)
 {
+    enum PWR_DOMAIN pw;
     unsigned int cpu = 0;
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
@@ -1207,6 +1222,19 @@ void Voltage(SHM_STRUCT *Shm)
 	    else
 		printf("#%02u        OFF\n", cpu);
 	  }
+
+	printf("\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory",
+		14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
+
+	printf("\n" "Energy(J):");
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+		printf("%.*s" "%13.9f", 2, hSpace, Shm->Proc.State.Energy[pw]);
+
+	printf("\n" "Power(W) :");
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+		printf("%.*s" "%13.9f", 2, hSpace, Shm->Proc.State.Power[pw]);
+
+	printf("\n\n");
     }
 }
 
@@ -1858,7 +1886,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wMenu, SCANKEY_u,      " CPUID Hexa Dump    [u] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_v," Voltage Vcore      [V] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_v," Power & Voltage    [V] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_r," System Registers   [R] ", skeyAttr);
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
@@ -2217,11 +2245,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		if (TOP_HEADER_ROW + 2 + 10 < drawSize.height) {
-			matrixSize.hth = 10;
+		if (TOP_HEADER_ROW + 2 + 14 < drawSize.height) {
+			matrixSize.hth = 14;
 			winOrigin.row = TOP_HEADER_ROW + 2;
 		} else {
-			matrixSize.hth = CUMIN((drawSize.height - 2), 10);
+			matrixSize.hth = CUMIN((drawSize.height - 2), 14);
 			winOrigin.row = 1;
 		}
 		winWidth = 50;
@@ -2600,12 +2628,12 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_CSTATES:
 		case V_TASKS:
 		case V_INTR:
-		case V_VOLTAGE:
 		case V_SLICE:
 			MIN_HEIGHT = 2 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
 		case V_PACKAGE:
+		case V_VOLTAGE:
 			MIN_HEIGHT = 8 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
@@ -4585,7 +4613,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			hTrack0.length, hTrack0.attr, hTrack0.code);
     }
 
-    void Layout_Ruller_Voltage(Layer *layer, CUINT row)
+    void Layout_Ruller_Voltage(Layer *layer, CUINT tab, CUINT row)
     {
 	LayerDeclare(MAX_WIDTH) hVolt0 = {
 		.origin = {
@@ -4598,8 +4626,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,HDK,LWK,HDK,LWK,LWK,LWK,LWK, \
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,HDK,LWK, \
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
@@ -4607,7 +4635,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
 		},
 		.code = "--- Freq(MHz) - VID - Vcore ------------"	\
-			"----------------------------------------"	\
+			"------ Energy(J) ----- Power(W) --------"	\
 			"----------------------------------------"	\
 			"------------"
 	};
@@ -4617,6 +4645,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerFillAt(layer, 0, (row + MAX_ROWS + 1),
 			drawSize.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0));
+
+	LayerFillAt(layer,tab,(row+1), 7, "Package",MakeAttr(WHITE,0,BLACK,0));
+	LayerFillAt(layer,tab,(row+2), 5, "Cores"  ,MakeAttr(WHITE,0,BLACK,0));
+	LayerFillAt(layer,tab,(row+3), 6, "Uncore" ,MakeAttr(WHITE,0,BLACK,0));
+	LayerFillAt(layer,tab,(row+4), 6, "Memory" ,MakeAttr(WHITE,0,BLACK,0));
     }
 
     void Layout_Ruller_Slice(Layer *layer, CUINT row)
@@ -5226,6 +5259,29 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
     })
 
+#define Draw_Power(layer, col, tab, row) 				\
+    ({									\
+	sprintf(buffer,							\
+		"%13.9f" "%13.9f" "%13.9f" "%13.9f"			\
+		"%13.9f" "%13.9f" "%13.9f" "%13.9f",			\
+		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],		\
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORE)],		\
+		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],		\
+		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)],		\
+		Shm->Proc.State.Power[PWR_DOMAIN(PKG)], 		\
+		Shm->Proc.State.Power[PWR_DOMAIN(CORE)],		\
+		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],		\
+		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);		\
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[ 0], 13);\
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[52], 13);\
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[13], 13);\
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[65], 13);\
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[26], 13);\
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[78], 13);\
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[39], 13);\
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[91], 13);\
+    })
+
 #define Draw_Monitor_Slice(layer, row)					\
     ({									\
     struct FLIP_FLOP *Flop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];\
@@ -5501,7 +5557,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		row += MAX_ROWS + 2;
 		break;
 	case V_VOLTAGE:
-		Layout_Ruller_Voltage(layer, row);
+		Layout_Ruller_Voltage(layer, LOAD_LEAD + 24 + 6, row);
 		row += MAX_ROWS + 2;
 		break;
 	case V_SLICE:
@@ -5570,7 +5626,12 @@ void Top(SHM_STRUCT *Shm, char option)
 		Draw_AltMonitor_Package(layer, row);
 		row += 2 + 8;
 		break;
-	default: // V_INST,V_CYCLES,V_CSTATES,V_TASKS,V_TASKS,V_VOLTAGE,V_SLICE
+	case V_VOLTAGE:
+		row += 2;
+		Draw_Power(layer, LOAD_LEAD + 24 + 16, 13 + 3, row);
+		row += MAX_ROWS - TOP_FOOTER_ROW;
+		break;
+	default: // V_INST,V_CYCLES,V_CSTATES,V_TASKS,V_TASKS,V_SLICE
 		row += 2 + TOP_FOOTER_ROW + MAX_ROWS;
 		break;
 	}
@@ -6253,7 +6314,7 @@ int Help(char *appName)
 	printf(	"usage:\t%s [-option <arguments>]\n"			\
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\
-		"\t-V\tMonitor Voltage\n"				\
+		"\t-V\tMonitor Power and Voltage\n"				\
 		"\t-g\tMonitor Package\n"				\
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\

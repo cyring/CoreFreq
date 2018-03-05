@@ -1575,6 +1575,11 @@ void Haswell_Uncore_Ratio(void)
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreRatio.MaxRatio;
 }
 
+void SandyBridge_PowerInterface(void)
+{
+	RDMSR(Proc->Power.Unit, MSR_RAPL_POWER_UNIT);
+}
+
 void Nehalem_Platform_Info(void)
 {
 	Intel_Platform_Turbo();
@@ -2213,6 +2218,7 @@ void Query_SandyBridge(void)
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
+	SandyBridge_PowerInterface();
 }
 
 void Query_IvyBridge(void)
@@ -2221,12 +2227,14 @@ void Query_IvyBridge(void)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
 	Intel_Turbo_TDP_Config();
+	SandyBridge_PowerInterface();
 }
 
 void Query_IvyBridge_EP(void)
 {
 	IvyBridge_EP_Platform_Info();
 	HyperThreading_Technology();
+	SandyBridge_PowerInterface();
 }
 
 void Query_Haswell_EP(void)
@@ -2234,6 +2242,7 @@ void Query_Haswell_EP(void)
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio();
+	SandyBridge_PowerInterface();
 }
 
 void Query_Broadwell(void)
@@ -2241,6 +2250,7 @@ void Query_Broadwell(void)
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio();
+	SandyBridge_PowerInterface();
 }
 
 void Query_Skylake_X(void)
@@ -2248,6 +2258,7 @@ void Query_Skylake_X(void)
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio();
+	SandyBridge_PowerInterface();
 }
 
 void Query_AuthenticAMD(void)
@@ -3852,6 +3863,43 @@ void Core_Counters_Clear(CORE *Core)
 	Pkg->Counter[0].Uncore.FC0 = Pkg->Counter[1].Uncore.FC0;	\
 })
 
+#define PWR_ACCU_SandyBridge(Pkg, T)					\
+({									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+						MSR_PKG_ENERGY_STATUS); \
+									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+						MSR_PP0_ENERGY_STATUS); \
+									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(UNCORE)],	\
+						MSR_PP1_ENERGY_STATUS); \
+})
+
+#define PWR_ACCU_SandyBridge_EP(Pkg, T)					\
+({									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+						MSR_PKG_ENERGY_STATUS); \
+									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+						MSR_PP0_ENERGY_STATUS); \
+									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
+						MSR_DRAM_ENERGY_STATUS);\
+})
+
+#define Delta_PWR_ACCU(Pkg, PwrDomain)					\
+({									\
+	Pkg->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =			\
+		Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]	\
+		- Pkg->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)];	\
+})
+
+#define Save_PWR_ACCU(Pkg, PwrDomain)					\
+({									\
+	Pkg->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)] =		\
+		Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)];	\
+})
+
 void Core_Intel_Temp(CORE *Core)
 {
 	THERM_STATUS ThermStatus = {.value = 0};
@@ -4272,6 +4320,8 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
+			PWR_ACCU_SandyBridge(Proc, 1);
+
 			Delta_PC02(Proc);
 
 			Delta_PC03(Proc);
@@ -4284,6 +4334,12 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(Proc);
 
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
+
+			Delta_PWR_ACCU(Proc, UNCORE);
+
 			Save_PC02(Proc);
 
 			Save_PC03(Proc);
@@ -4295,6 +4351,12 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORE);
+
+			Save_PWR_ACCU(Proc, UNCORE);
 
 			Sys_Tick(Proc);
 		}
@@ -4356,6 +4418,7 @@ static void Start_SandyBridge(void *arg)
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_SandyBridge(Core, 0);
+		PWR_ACCU_SandyBridge(Proc, 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
@@ -4370,6 +4433,153 @@ static void Start_SandyBridge(void *arg)
 }
 
 static void Stop_SandyBridge(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Core_Counters_Clear(Core);
+	Uncore_Counters_Clear(SNB, Core);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+
+static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		SMT_Counters_SandyBridge(Core, 1);
+
+		if (Core->T.Base.BSP) {
+			PKG_Counters_SandyBridge(Core, 1);
+
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+
+			PWR_ACCU_SandyBridge_EP(Proc, 1);
+
+			Delta_PC02(Proc);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PTSC(Proc);
+
+			Delta_UNCORE_FC0(Proc);
+
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
+
+			Delta_PWR_ACCU(Proc, RAM);
+
+			Save_PC02(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PTSC(Proc);
+
+			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORE);
+
+			Save_PWR_ACCU(Proc, RAM);
+
+			Sys_Tick(Proc);
+		}
+
+		Core_Intel_Temp(Core);
+
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_C7(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+
+		Save_C6(Core);
+
+		Save_C7(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_SandyBridge_EP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge_EP, 1);
+}
+
+static void Start_SandyBridge_EP(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_SandyBridge_Query(Core, cpu);
+
+	Core_Counters_Set(Core);
+	Uncore_Counters_Set(SNB, Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->T.Base.BSP) {
+		PKG_Counters_SandyBridge(Core, 0);
+		PWR_ACCU_SandyBridge_EP(Proc, 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_SandyBridge_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -4404,6 +4614,8 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
+			PWR_ACCU_SandyBridge(Proc, 1);
+
 			Delta_PC02(Proc);
 
 			Delta_PC03(Proc);
@@ -4422,6 +4634,12 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(Proc);
 
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
+
+			Delta_PWR_ACCU(Proc, UNCORE);
+
 			Save_PC02(Proc);
 
 			Save_PC03(Proc);
@@ -4439,6 +4657,12 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORE);
+
+			Save_PWR_ACCU(Proc, UNCORE);
 
 			Sys_Tick(Proc);
 		}
@@ -4501,6 +4725,7 @@ static void Start_Haswell_ULT(void *arg)
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_Haswell_ULT(Core, 0);
+		PWR_ACCU_SandyBridge(Proc, 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
@@ -4550,6 +4775,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
+			PWR_ACCU_SandyBridge(Proc, 1);
+
 			Delta_PC02(Proc);
 
 			Delta_PC03(Proc);
@@ -4562,6 +4789,12 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(Proc);
 
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
+
+			Delta_PWR_ACCU(Proc, UNCORE);
+
 			Save_PC02(Proc);
 
 			Save_PC03(Proc);
@@ -4573,6 +4806,12 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORE);
+
+			Save_PWR_ACCU(Proc, UNCORE);
 
 			Sys_Tick(Proc);
 		}
@@ -4634,6 +4873,7 @@ static void Start_Skylake(void *arg)
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_Skylake(Core, 0);
+		PWR_ACCU_SandyBridge(Proc, 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
@@ -4679,6 +4919,8 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		if (Core->T.Base.BSP) {
 			PKG_Counters_Skylake_X(Core, 1);
 
+			PWR_ACCU_SandyBridge_EP(Proc, 1);
+
 			Delta_PC02(Proc);
 
 			Delta_PC03(Proc);
@@ -4691,6 +4933,12 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(Proc);
 
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
+
+			Delta_PWR_ACCU(Proc, RAM);
+
 			Save_PC02(Proc);
 
 			Save_PC03(Proc);
@@ -4702,6 +4950,12 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORE);
+
+			Save_PWR_ACCU(Proc, RAM);
 
 			Sys_Tick(Proc);
 		}
@@ -4766,6 +5020,7 @@ static void Start_Skylake_X(void *arg)
 
 	if (Core->T.Base.BSP) {
 		PKG_Counters_Skylake_X(Core, 0);
+		PWR_ACCU_SandyBridge_EP(Proc, 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
@@ -5579,6 +5834,9 @@ static int __init CoreFreqK_init(void)
 
 					Arch[0].voltageFormula =
 							VOLTAGE_FORMULA_INTEL;
+
+					Arch[0].powerFormula =
+							POWER_FORMULA_INTEL;
 					}
 					break;
 				  case CRC_AMD: {
@@ -5593,6 +5851,9 @@ static int __init CoreFreqK_init(void)
 
 					Arch[0].voltageFormula =
 							VOLTAGE_FORMULA_AMD;
+
+					Arch[0].powerFormula =
+							POWER_FORMULA_AMD;
 					}
 					break;
 				  }
@@ -5630,6 +5891,9 @@ static int __init CoreFreqK_init(void)
 
 				  Proc->voltageFormula =
 					Arch[Proc->ArchID].voltageFormula;
+
+				  Proc->powerFormula =
+					Arch[Proc->ArchID].powerFormula;
 
 				  strncpy(Proc->Architecture,
 					Arch[Proc->ArchID].Architecture, 32);

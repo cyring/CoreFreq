@@ -521,6 +521,10 @@ typedef struct
 	  struct {
 	    unsigned long long	FC0; // Uncore fixed counter #0
 	  } Uncore;
+
+	  struct {
+	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
+	  } Power;
 	} Counter[2];
 
 	struct
@@ -536,6 +540,10 @@ typedef struct
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;
+
+	  struct {
+	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
+	  } Power;
 	} Delta;
 
 	struct
@@ -557,7 +565,8 @@ typedef struct
 	Bit64			C1U_Mask __attribute__ ((aligned (64))); // SNB
 
 	unsigned long long	thermalFormula,
-				voltageFormula;
+				voltageFormula,
+				powerFormula;
 
 	unsigned int		SleepInterval,
 				tickReset,
@@ -578,6 +587,10 @@ typedef struct
 		unsigned short	CtrlCount;
 		unsigned short	ChipID;
 	} Uncore;
+
+	struct {
+		RAPL_POWER_UNIT Unit;
+	} Power;
 
 	SYSGATE			*SysGate;
 

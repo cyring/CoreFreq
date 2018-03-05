@@ -249,6 +249,8 @@ static void *Core_Cycle(void *arg)
 		}
 		// Package C-state Residency Counters
 		if (Cpu->Topology.MP.BSP) {
+			enum PWR_DOMAIN pw;
+
 			Shm->Proc.Toggle = !Shm->Proc.Toggle;
 
 			struct PKG_FLIP_FLOP *Flip =
@@ -293,6 +295,18 @@ static void *Core_Cycle(void *arg)
 						: 0.0f;
 
 			Flip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
+
+		    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+		    {
+			Flip->Delta.ACCU[pw] = Pkg->Delta.Power.ACCU[pw];
+
+			Shm->Proc.State.Energy[pw]=(double)Flip->Delta.ACCU[pw]
+						  * Shm->Proc.Power.Unit.Joules;
+
+			Shm->Proc.State.Power[pw] =(double)Flip->Delta.ACCU[pw]
+						  * Shm->Proc.Power.Unit.Watts
+						  * Shm->Proc.Power.Unit.Times;
+		    }
 		}
 	    }
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
@@ -410,21 +424,40 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Features.HyperThreading = Proc->Features.HTT_Enable;
 }
 
-void PowerNow(SHM_STRUCT *Shm, PROC *Proc)
+void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 {
-	if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {
-		if (Proc->Features.AdvPower.EDX.FID)
-			BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
-		else
-			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
-
-		if (Proc->Features.AdvPower.EDX.VID)
-			BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
-		else
-			BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
-	}
+    if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {	// AMD PowerNow
+	if (Proc->Features.AdvPower.EDX.FID)
+		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 	else
-		Shm->Proc.PowerNow = 0;
+		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
+
+	if (Proc->Features.AdvPower.EDX.VID)
+		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
+	else
+		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
+    }
+    else
+	Shm->Proc.PowerNow = 0;
+
+  if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {	// Intel RAPL
+    switch (Proc->powerFormula) {
+    case POWER_FORMULA_INTEL:
+	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
+				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
+				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	break;
+    case POWER_FORMULA_INTEL_ATOM:
+	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
+				0.001 / (double)(1 << Proc->Power.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
+				0.001 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	break;
+    }
+	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?
+				1.0 / (double) (1 << Proc->Power.Unit.TU) : 0;
+  }
 }
 
 typedef struct {
@@ -2188,7 +2221,7 @@ void PowerManagement(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		BITCLR(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
 
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
-		Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
+			Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 }
 
 void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
@@ -2889,7 +2922,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		HyperThreading(Shm, Proc);
 
-		PowerNow(Shm, Proc);
+		PowerInterface(Shm, Proc);
 
 		// Initialize notification.
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);

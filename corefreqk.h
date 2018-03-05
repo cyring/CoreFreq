@@ -364,7 +364,8 @@ typedef	struct
 	CLOCK			(*Clock)(unsigned int ratio);
 	char			*Architecture;
 	unsigned long long	thermalFormula,
-				voltageFormula;
+				voltageFormula,
+				powerFormula;
 	struct pci_device_id	*PCI_ids;
 } ARCH;
 
@@ -408,6 +409,10 @@ static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 
+static void Start_SandyBridge_EP(void *arg) ;
+static void Stop_SandyBridge_EP(void *arg) ;
+extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
+
 extern void Query_IvyBridge(void);
 extern void Query_IvyBridge_EP(void) ;
 
@@ -420,6 +425,10 @@ extern void Query_Broadwell(void) ;
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
+
+#define     Start_Broadwell_EP Start_SandyBridge_EP
+#define     Stop_Broadwell_EP Stop_SandyBridge_EP
+#define     InitTimer_Broadwell_EP InitTimer_SandyBridge_EP
 
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
@@ -856,6 +865,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /*  1*/	{
@@ -869,6 +879,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Core/Yonah",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 /*  2*/	{
@@ -882,6 +893,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Core2/Conroe/Merom",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_MEROM,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 /*  3*/	{
@@ -895,6 +907,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Core2/Kentsfield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 /*  4*/	{
@@ -908,6 +921,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Core2/Conroe/Yonah",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 /*  5*/	{
@@ -921,6 +935,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Core2/Yorkfield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 /*  6*/	{
@@ -934,6 +949,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Xeon/Dunnington",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids
 	},
 
@@ -948,6 +964,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Bonnell",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /*  8*/	{
@@ -961,6 +978,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Silvermont",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /*  9*/	{
@@ -974,6 +992,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Lincroft",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 10*/	{
@@ -987,6 +1006,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Clovertrail",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 11*/	{
@@ -1000,6 +1020,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Saltwell",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1014,6 +1035,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Silvermont",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 13*/	{
@@ -1027,6 +1049,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Avoton",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1041,6 +1064,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Airmont",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 15*/	{
@@ -1054,6 +1078,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Goldmont",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 16*/	{
@@ -1067,6 +1092,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Sofia",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 17*/	{
@@ -1080,6 +1106,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Merrifield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids
 	},
 /* 18*/	{
@@ -1093,6 +1120,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Moorefield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1107,6 +1135,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Nehalem/Bloomfield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 /* 20*/	{
@@ -1120,6 +1149,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Nehalem/Lynnfield",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 21*/	{
@@ -1133,6 +1163,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Nehalem/Mobile",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 22*/	{
@@ -1146,6 +1177,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Nehalem/eXtreme.EP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 
@@ -1160,6 +1192,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Westmere",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids
 	},
 /* 24*/	{
@@ -1173,6 +1206,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Westmere/EP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 /* 25*/	{
@@ -1186,6 +1220,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Westmere/eXtreme",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids
 	},
 
@@ -1200,19 +1235,21 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "SandyBridge",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_ids
 	},
 /* 27*/	{
 	.Signature = _SandyBridge_EP,
 	.Query = Query_SandyBridge,
-	.Start = Start_SandyBridge,
-	.Stop = Stop_SandyBridge,
+	.Start = Start_SandyBridge_EP,
+	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge,
+	.Timer = InitTimer_SandyBridge_EP,
 	.Clock = Clock_SandyBridge,
 	.Architecture = "SandyBridge/eXtreme.EP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_ids
 	},
 
@@ -1227,19 +1264,21 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "IvyBridge",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_IvyBridge_ids
 	},
 /* 29*/	{
 	.Signature = _IvyBridge_EP,
 	.Query = Query_IvyBridge_EP,
-	.Start = Start_SandyBridge,
-	.Stop = Stop_SandyBridge,
+	.Start = Start_SandyBridge_EP,
+	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge,
+	.Timer = InitTimer_SandyBridge_EP,
 	.Clock = Clock_IvyBridge,
 	.Architecture = "IvyBridge/EP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_IvyBridge_ids
 	},
 
@@ -1254,19 +1293,21 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Haswell/Desktop",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Haswell_ids
 	},
 /* 31*/	{
 	.Signature = _Haswell_EP,
 	.Query = Query_Haswell_EP,
-	.Start = Start_SandyBridge,
-	.Stop = Stop_SandyBridge,
+	.Start = Start_SandyBridge_EP,
+	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge,
+	.Timer = InitTimer_SandyBridge_EP,
 	.Clock = Clock_Haswell,
 	.Architecture = "Haswell/EP/Mobile",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Haswell_ids
 	},
 /* 32*/	{
@@ -1280,6 +1321,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Haswell/Ultra Low TDP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Haswell_ids
 	},
 /* 33*/	{
@@ -1293,6 +1335,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Haswell/Ultra Low eXtreme",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Haswell_ids
 	},
 
@@ -1307,19 +1350,21 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Broadwell/Mobile",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 35*/	{
 	.Signature = _Broadwell_EP,
 	.Query = Query_Haswell_EP,
-	.Start = Start_Broadwell,
-	.Stop = Stop_Broadwell,
+	.Start = Start_Broadwell_EP,
+	.Stop = Stop_Broadwell_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_Broadwell,
+	.Timer = InitTimer_Broadwell_EP,
 	.Clock = Clock_Haswell,
 	.Architecture = "Broadwell/EP",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 36*/	{
@@ -1333,6 +1378,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Broadwell/H",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids
 	},
 /* 37*/	{
@@ -1346,6 +1392,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Broadwell/EX",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids
 	},
 
@@ -1373,6 +1420,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/S",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Skylake_ids
 	},
 /* 40*/	{
@@ -1386,6 +1434,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Skylake/X",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SKL_X,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Skylake_X_ids
 	},
 
@@ -1400,6 +1449,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Knights Landing",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1414,6 +1464,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Kaby/Coffee Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Kabylake_ids
 	},
 /* 43*/	{
@@ -1427,6 +1478,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Kaby Lake/UY",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Kabylake_ids
 	},
 
@@ -1441,6 +1493,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Cannon Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1455,6 +1508,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Atom/Gemini Lake",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1469,6 +1523,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Ice Lake/UY",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1483,6 +1538,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 0Fh",
 	.thermalFormula = THERMAL_FORMULA_AMD_0F,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_0F,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_AMD_0F_ids
 	},
 
@@ -1497,6 +1553,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 10h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1511,6 +1568,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 11h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1525,6 +1583,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 12h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1539,6 +1598,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 14h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1553,6 +1613,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 15h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1567,6 +1628,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 16h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 
@@ -1581,6 +1643,7 @@ static ARCH Arch[ARCHITECTURES]=
 	.Architecture = "Family 17h",
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
+	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids
 	},
 };

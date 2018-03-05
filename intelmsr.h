@@ -68,6 +68,30 @@
 	#define MSR_TURBO_ACTIVATION_RATIO	0x0000064c
 #endif
 
+#ifndef MSR_RAPL_POWER_UNIT
+	#define MSR_RAPL_POWER_UNIT		0x00000606
+#endif
+
+#ifndef MSR_DRAM_ENERGY_STATUS
+	#define MSR_DRAM_ENERGY_STATUS		0x00000619
+#endif
+
+#ifndef MSR_PP0_POWER_LIMIT
+	#define MSR_PP0_POWER_LIMIT		0x00000638
+#endif
+
+#ifndef MSR_PP0_ENERGY_STATUS
+	#define MSR_PP0_ENERGY_STATUS		0x00000639
+#endif
+
+#ifndef MSR_PP0_POLICY
+	#define MSR_PP0_POLICY			0x0000063a
+#endif
+
+#ifndef MSR_PP0_PERF_STATUS
+	#define MSR_PP0_PERF_STATUS		0x0000063b
+#endif
+
 typedef union
 {
 	unsigned long long	value;
@@ -790,6 +814,20 @@ typedef union
 		ReservedBits3	: 64-23;
 	} SKL;
 } UNCORE_FIXED_PERF_CONTROL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct {
+		unsigned long long	// Pkg: R/O
+		PU		:  4-0,
+		ReservedBits1	:  8-4,
+		ESU		: 13-8,
+		ReservedBits2	: 16-13,
+		TU		: 20-16,
+		ReservedBits3	: 64-20;
+	};
+} RAPL_POWER_UNIT;
 
 /* ToDo
 typedef struct
