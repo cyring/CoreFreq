@@ -265,34 +265,20 @@ static void *Core_Cycle(void *arg)
 			Flip->Delta.PC09 = Pkg->Delta.PC09;
 			Flip->Delta.PC10 = Pkg->Delta.PC10;
 
-			Shm->Proc.State.PC02 = (Flip->Delta.PC02 != 0) ?
-						  (double) Flip->Delta.PC02
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC03 = (Flip->Delta.PC03 != 0) ?
-						  (double) Flip->Delta.PC03
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC06 = (Flip->Delta.PC06 != 0) ?
-						  (double) Flip->Delta.PC06
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC07 = (Flip->Delta.PC07 != 0) ?
-						  (double) Flip->Delta.PC07
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC08 = (Flip->Delta.PC08 != 0) ?
-						  (double) Flip->Delta.PC08
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC09 = (Flip->Delta.PC09 != 0) ?
-						  (double) Flip->Delta.PC09
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
-			Shm->Proc.State.PC10 = (Flip->Delta.PC10 != 0) ?
-						  (double) Flip->Delta.PC10
-						/ (double) Flip->Delta.PTSC
-						: 0.0f;
+			Shm->Proc.State.PC02	= (double) Flip->Delta.PC02
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC03	= (double) Flip->Delta.PC03
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC06	= (double) Flip->Delta.PC06
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC07	= (double) Flip->Delta.PC07
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC08	= (double) Flip->Delta.PC08
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC09	= (double) Flip->Delta.PC09
+						/ (double) Flip->Delta.PTSC;
+			Shm->Proc.State.PC10	= (double) Flip->Delta.PC10
+						/ (double) Flip->Delta.PTSC;
 
 			Flip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
 
