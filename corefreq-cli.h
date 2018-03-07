@@ -125,6 +125,10 @@ typedef union {
 	unsigned short		word[4];
 } DATA;
 
+#define RENDER_OK	0x000
+#define RENDER_KO	0x010
+#define RENDER_OFF	0x100
+
 typedef struct _Card {
 	struct _Card	*next;
 

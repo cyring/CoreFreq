@@ -5670,7 +5670,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			.code={'[',' ','#',' ',' ',' ',' ','O','F','F',' ',']'}
 		};
 
-		card->data.dword.hi = 0x010;
+		card->data.dword.hi = RENDER_KO;
 
 		LayerFillAt(layer, card->origin.col, (card->origin.row + 1), \
 		(4 * INTER_WIDTH), " _  _  _  _ ", MakeAttr(BLACK,0,BLACK,1));
@@ -5875,7 +5875,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerCopyAt(layer, hMem.origin.col, hMem.origin.row,	\
 			hMem.length, hMem.attr, hMem.code);
     } else
-	card->data.dword.hi = 0x010;
+	card->data.dword.hi = RENDER_KO;
   }
 
     void Layout_Card_Task(Layer *layer, Card* card)
@@ -5894,7 +5894,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		LayerCopyAt(layer, hSystem.origin.col, hSystem.origin.row, \
 				hSystem.length, hSystem.attr, hSystem.code);
 	else
-		card->data.dword.hi = 0x010;
+		card->data.dword.hi = RENDER_KO;
     }
 
     void Layout_Dashboard(Layer *layer)
@@ -5915,16 +5915,16 @@ void Top(SHM_STRUCT *Shm, char option)
 			Y += marginHeight;
 		}
 		if (Y > bottomEdge) {
-			return(0x001);
+			return(RENDER_KO);
 		}
-		return(0x000);
+		return(RENDER_OK);
 	}
 
 	Card *walker = cardList.head;
 	while (walker != NULL) {
 		walker->origin.col = X;
 		walker->origin.row = Y;
-		if ((walker->data.dword.hi = MoveCursorXY()) == 0x000)
+		if ((walker->data.dword.hi = MoveCursorXY()) == RENDER_OK)
 			walker->hook.Layout(layer, walker);
 		walker = walker->next;
 	}
@@ -5932,7 +5932,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
   void Draw_Card_Core(Layer *layer, Card* card)
   {
-    if (card->data.dword.hi == 0x000) {
+    if (card->data.dword.hi == RENDER_OK) {
 	unsigned int _cpu = card->data.dword.lo;
 	struct FLIP_FLOP *Flop=&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
 	ATTRIBUTE warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
@@ -5964,10 +5964,10 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
 								digit[8] + '0';
     }
-    else if (card->data.dword.hi == 0x010) {
+    else if (card->data.dword.hi == RENDER_KO) {
 	CUINT row;
 
-	card->data.dword.hi = 0x100;
+	card->data.dword.hi = RENDER_OFF;
 
       for (row = card->origin.row; row < card->origin.row + 4; row++) {
 	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
@@ -6016,7 +6016,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
   void Draw_Card_RAM(Layer *layer, Card* card)
   {
-    if (card->data.dword.hi == 0x000) {
+    if (card->data.dword.hi == RENDER_OK) {
       if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 	unsigned long freeRAM;
 	int unit;
@@ -6032,10 +6032,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		buffer, 6);
       }
     }
-    else if (card->data.dword.hi == 0x010) {
+    else if (card->data.dword.hi == RENDER_KO) {
 	CUINT row;
 
-	card->data.dword.hi = 0x100;
+	card->data.dword.hi = RENDER_OFF;
 
       for (row = card->origin.row; row < card->origin.row + 4; row++) {
 	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
@@ -6046,7 +6046,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
   void Draw_Card_Task(Layer *layer, Card* card)
   {
-    if (card->data.dword.hi == 0x000) {
+    if (card->data.dword.hi == RENDER_OK) {
       if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 	char symbol;
 	switch (Shm->SysGate.taskList[0].state) {
@@ -6094,10 +6094,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		buffer, 5);
       }
     }
-    else if (card->data.dword.hi == 0x010) {
+    else if (card->data.dword.hi == RENDER_KO) {
 	CUINT row;
 
-	card->data.dword.hi = 0x100;
+	card->data.dword.hi = RENDER_OFF;
 
       for (row = card->origin.row; row < card->origin.row + 4; row++) {
 	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
@@ -6126,7 +6126,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	{
 		if ((card = CreateCard()) != NULL) {
 			card->data.dword.lo = cpu;
-			card->data.dword.hi = 0x000;
+			card->data.dword.hi = RENDER_OK;
 
 			AppendCard(card, &cardList);
 			StoreCard(card, .Layout, Layout_Card_Core);
@@ -6134,14 +6134,16 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	}
 	if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_CLK);
 		StoreCard(card, .Draw, Draw_Card_CLK);
 	}
 	if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Uncore);
@@ -6149,14 +6151,16 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	if (Shm->Uncore.CtrlCount > 0) {
 	    if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Bus);
 		StoreCard(card, .Draw, Dont_Draw_Card);
 	    }
 	    if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_MC);
@@ -6164,14 +6168,16 @@ void Top(SHM_STRUCT *Shm, char option)
 	    }
 	}
 	if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Load);
 		StoreCard(card, .Draw, Draw_Card_Load);
 	}
 	if ((card = CreateCard()) != NULL) {
-		card->data.qword = 0;
+		card->data.dword.lo = 0;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Idle);
@@ -6179,7 +6185,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;
-		card->data.dword.hi = 0x000;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_RAM);
@@ -6187,7 +6193,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;
-		card->data.dword.hi = 0x000;
+		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Task);
