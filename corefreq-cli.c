@@ -162,66 +162,83 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 {
 	unsigned int cpu, idx = 0;
 	unsigned int nl = 17;
-	char line[6];
-	struct {
+	char line[8];
+	const struct {
 		enum SYS_REG bit;
-		char *flag;
+		unsigned int len;
+		const char *flag;
 	} SR[] = {
-		{RFLAG_TF,	" TF "},
-		{RFLAG_IF,	" IF "},
-		{RFLAG_IOPL,	"IOPL"},
-		{RFLAG_NT,	" NT "},
-		{RFLAG_RF,	" RF "},
-		{RFLAG_VM,	" VM "},
-		{RFLAG_AC,	" AC "},
-		{RFLAG_VIF,	" VIF"},
-		{RFLAG_VIP,	" VIP"},
-		{RFLAG_ID,	" ID "},
+		{RFLAG_TF,	1,	" TF "},
+		{RFLAG_IF,	1,	" IF "},
+		{RFLAG_IOPL,	2,	"IOPL"},
+		{RFLAG_NT,	1,	" NT "},
+		{RFLAG_RF,	1,	" RF "},
+		{RFLAG_VM,	1,	" VM "},
+		{RFLAG_AC,	1,	" AC "},
+		{RFLAG_VIF,	1,	" VIF"},
+		{RFLAG_VIP,	1,	" VIP"},
+		{RFLAG_ID,	1,	" ID "},
 
-		{CR0_PE,	" PE "},
-		{CR0_MP,	" MP "},
-		{CR0_EM,	" EM "},
-		{CR0_TS,	" TS "},
-		{CR0_ET,	" ET "},
-		{CR0_NE,	" NE "},
-		{CR0_WP,	" WP "},
-		{CR0_AM,	" AM "},
-		{CR0_NW,	" NW "},
-		{CR0_CD,	" CD "},
-		{CR0_PG,	" PG "},
+		{CR0_PE,	1,	" PE "},
+		{CR0_MP,	1,	" MP "},
+		{CR0_EM,	1,	" EM "},
+		{CR0_TS,	1,	" TS "},
+		{CR0_ET,	1,	" ET "},
+		{CR0_NE,	1,	" NE "},
+		{CR0_WP,	1,	" WP "},
+		{CR0_AM,	1,	" AM "},
+		{CR0_NW,	1,	" NW "},
+		{CR0_CD,	1,	" CD "},
+		{CR0_PG,	1,	" PG "},
 
-		{CR4_VME,	" VME"},
-		{CR4_PVI,	" PVI"},
-		{CR4_TSD,	" TSD"},
-		{CR4_DE,	" DE "},
-		{CR4_PSE,	" PSE"},
-		{CR4_PAE,	" PAE"},
-		{CR4_MCE,	" MCE"},
-		{CR4_PGE,	" PGE"},
-		{CR4_PCE,	" PCE"},
-		{CR4_OSFXSR,	" FX "},
-		{CR4_OSXMMEXCPT,"XMM "},
-		{CR4_UMIP,	"UMIP"},
-		{CR4_VMXE,	" VMX"},
-		{CR4_SMXE,	" SMX"},
-		{CR4_FSGSBASE,	" FS "},
-		{CR4_PCIDE,	"PCID"},
-		{CR4_OSXSAVE,	" SAV"},
-		{CR4_SMEP,	" SME"},
-		{CR4_SMAP,	" SMA"},
-		{CR4_PKE,	" PKE"},
+		{CR3_PWT,	1,	" PWT"},
+		{CR3_PCD,	1,	" PCD"},
 
-		{EXFER_SCE,	" SCE"},
-		{EXFER_LME,	" LME"},
-		{EXFER_LMA,	" LMA"},
-		{EXFER_NXE,	" NXE"}
+		{CR4_VME,	1,	" VME"},
+		{CR4_PVI,	1,	" PVI"},
+		{CR4_TSD,	1,	" TSD"},
+		{CR4_DE,	1,	" DE "},
+		{CR4_PSE,	1,	" PSE"},
+		{CR4_PAE,	1,	" PAE"},
+		{CR4_MCE,	1,	" MCE"},
+		{CR4_PGE,	1,	" PGE"},
+		{CR4_PCE,	1,	" PCE"},
+		{CR4_OSFXSR,	1,	" FX "},
+		{CR4_OSXMMEXCPT,1,	"XMM "},
+		{CR4_UMIP,	1,	"UMIP"},
+		{CR4_VMXE,	1,	" VMX"},
+		{CR4_SMXE,	1,	" SMX"},
+		{CR4_FSGSBASE,	1,	" FS "},
+		{CR4_PCIDE,	1,	"PCID"},
+		{CR4_OSXSAVE,	1,	" SAV"},
+		{CR4_SMEP,	1,	" SME"},
+		{CR4_SMAP,	1,	" SMA"},
+		{CR4_PKE,	1,	" PKE"},
+
+		{EXFCR_LOCK,	1,	"LOCK"},
+		{EXFCR_VMX_IN_SMX,1,	" VMi"},
+		{EXFCR_VMXOUT_SMX,1,	" VMo"},
+		{EXFCR_SENTER_LEN,6,	" ENl"},
+		{EXFCR_SENTER_GEN,1,	" ENg"},
+		{EXFCR_SGX_LCE, 1,	" SGl"},
+		{EXFCR_SGX_GEN, 1,	" SGg"},
+		{EXFCR_LMCE,	1,	" LMC"},
+
+		{EXFER_SCE,	1,	" SCE"},
+		{EXFER_LME,	1,	" LME"},
+		{EXFER_LMA,	1,	" LMA"},
+		{EXFER_NXE,	1,	" NXE"}
 	};
 	const struct {
 		unsigned int Start, Stop;
-	} tabRFLAGS = {0, 10}, tabCR0 = {tabRFLAGS.Stop, tabRFLAGS.Stop + 11},
-	tabCR4[2] = {	{tabCR0.Stop, tabCR0.Stop + 4},
+	} tabRFLAGS = {0, 10},
+	tabCR0 = {tabRFLAGS.Stop, tabRFLAGS.Stop + 11},
+	tabCR3 = {tabCR0.Stop, tabCR0.Stop + 2},
+	tabCR4[2] = {	{tabCR3.Stop, tabCR3.Stop + 4},
 			{tabCR4[0].Stop, tabCR4[0].Stop + 16}
-	}, tabEFER = {tabCR4[1].Stop, tabCR4[1].Stop + 4};
+	},
+	tabEFCR = {tabCR4[1].Stop, tabCR4[1].Stop + 8},
+	tabEFER = {tabEFCR.Stop, tabEFCR.Stop + 4};
 
 	void printv(char *fmt, ...)
 	{
@@ -230,9 +247,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		vsprintf(line, fmt, ap);
 		if (OutFunc == NULL) {
 			nl--;
-			if (nl == 16)
-				printf("|-%s", line);
-			else if (nl == 0) {
+			if (nl == 0) {
 				nl = 17;
 				printf("%s\n", line);
 			} else
@@ -247,21 +262,27 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
     for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
 	printv("%s", SR[idx].flag);
     }
-	printv("EFER");
-    for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
+	printv("    ");
+	printv("CR3:");
+    for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
 	printv("%s", SR[idx].flag);
     }
+	printv("    ");
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printv("#%-2u ", cpu);
 
 	printv("    ");
       for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-       printv("  %1u ",BITVAL(Shm->Cpu[cpu].SystemRegister.RFLAGS,SR[idx].bit));
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
+			SR[idx].bit, SR[idx].len));
       }
 	printv("    ");
-      for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.EFER,SR[idx].bit));
+	printv("    ");
+      for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
+			SR[idx].bit, SR[idx].len));
       }
+	printv("    ");
     }
 /* Section Mark */
 	printv("CR0:");
@@ -276,11 +297,13 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("#%-2u ", cpu);
 
       for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR0,SR[idx].bit));
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
+			SR[idx].bit, SR[idx].len));
       }
 	printv("    ");
       for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR4,SR[idx].bit));
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
+			SR[idx].bit, SR[idx].len));
       }
     }
 /* Section Mark */
@@ -291,8 +314,37 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printv("#%-2u ", cpu);
       for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	printv("  %1u ", BITVAL(Shm->Cpu[cpu].SystemRegister.CR4,SR[idx].bit));
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
+			SR[idx].bit, SR[idx].len));
       }
+    }
+/* Section Mark */
+	printv("EFCR");
+	printv("    ");
+    for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
+	printv("%s", SR[idx].flag);
+    }
+	printv("    ");
+	printv("EFER");
+    for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
+	printv("%s", SR[idx].flag);
+    }
+	printv("    ");
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	printv("#%-2u ", cpu);
+	printv("    ");
+
+      for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
+			SR[idx].bit, SR[idx].len));
+    }
+	printv("    ");
+	printv("    ");
+      for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
+	printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
+			SR[idx].bit, SR[idx].len));
+      }
+	printv("    ");
     }
 }
 

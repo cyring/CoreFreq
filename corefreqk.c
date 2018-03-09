@@ -3090,19 +3090,32 @@ void SystemRegisters(CORE *Core)
 		"pushfq"		"\n\t"
 		"popq	%0"		"\n\t"
 		"movq	%%cr0, %1"	"\n\t"
-		"movq	%%cr4, %2"	"\n\t"
+		"movq	%%cr3, %2"	"\n\t"
+		"movq	%%cr4, %3"	"\n\t"
+		"# EFCR"		"\n\t"
 		"xorq	%%rax, %%rax"	"\n\t"
 		"xorq	%%rdx, %%rdx"	"\n\t"
-		"movq	%4,%%rcx"	"\n\t"
+		"movq	%6,%%rcx"	"\n\t"
 		"rdmsr"			"\n\t"
 		"shlq	$32, %%rdx"	"\n\t"
 		"orq	%%rdx, %%rax"	"\n\t"
-		"movq	%%rax, %3"
+		"movq	%%rax, %4"	"\n\t"
+		"# EFER"		"\n\t"
+		"xorq	%%rax, %%rax"	"\n\t"
+		"xorq	%%rdx, %%rdx"	"\n\t"
+		"movq	%7,%%rcx"	"\n\t"
+		"rdmsr"			"\n\t"
+		"shlq	$32, %%rdx"	"\n\t"
+		"orq	%%rdx, %%rax"	"\n\t"
+		"movq	%%rax, %5"
 		: "=r" (Core->SystemRegister.RFLAGS),
 		  "=r" (Core->SystemRegister.CR0),
+		  "=r" (Core->SystemRegister.CR3),
 		  "=r" (Core->SystemRegister.CR4),
+		  "=r" (Core->SystemRegister.EFCR),
 		  "=r" (Core->SystemRegister.EFER)
-		: "i" (MSR_EFER)
+		: "i" (MSR_IA32_FEATURE_CONTROL),
+		  "i" (MSR_EFER)
 		: "%rax", "%rcx", "%rdx"
 	);
 }

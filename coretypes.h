@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.21.1"
+#define COREFREQ_VERSION	"1.21.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -67,7 +67,7 @@ enum {	GenuineIntel,		\
 enum SYS_REG {
 	RFLAG_TF	= 8,
 	RFLAG_IF	= 9,
-	RFLAG_IOPL	= 12,
+	RFLAG_IOPL	= 12,	// [13:12]
 	RFLAG_NT	= 14,
 	RFLAG_RF	= 16,
 	RFLAG_VM	= 17,
@@ -87,6 +87,9 @@ enum SYS_REG {
 	CR0_NW		= 29,
 	CR0_CD		= 30,
 	CR0_PG		= 31,
+
+	CR3_PWT		= 3,
+	CR3_PCD		= 4,
 
 	CR4_VME		= 0,
 	CR4_PVI		= 1,
@@ -108,6 +111,15 @@ enum SYS_REG {
 	CR4_SMEP	= 20,
 	CR4_SMAP	= 21,
 	CR4_PKE		= 22,
+
+	EXFCR_LOCK	= 0,
+	EXFCR_VMX_IN_SMX= 1,
+	EXFCR_VMXOUT_SMX= 2,
+	EXFCR_SENTER_LEN= 8,	// [14:8]
+	EXFCR_SENTER_GEN= 15,
+	EXFCR_SGX_LCE	= 17,
+	EXFCR_SGX_GEN	= 18,
+	EXFCR_LMCE	= 20,
 
 	EXFER_SCE	= 0,
 	EXFER_LME	= 8,

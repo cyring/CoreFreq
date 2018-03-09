@@ -126,7 +126,9 @@ typedef struct
 	struct {
 		Bit64			RFLAGS,
 					CR0,
+					CR3,
 					CR4,
+					EFCR,
 					EFER;
 	} SystemRegister;
 

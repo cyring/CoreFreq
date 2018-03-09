@@ -2249,7 +2249,9 @@ void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].SystemRegister.RFLAGS = Core[cpu]->SystemRegister.RFLAGS;
 	Shm->Cpu[cpu].SystemRegister.CR0    = Core[cpu]->SystemRegister.CR0;
+	Shm->Cpu[cpu].SystemRegister.CR3    = Core[cpu]->SystemRegister.CR3;
 	Shm->Cpu[cpu].SystemRegister.CR4    = Core[cpu]->SystemRegister.CR4;
+	Shm->Cpu[cpu].SystemRegister.EFCR   = Core[cpu]->SystemRegister.EFCR;
 	Shm->Cpu[cpu].SystemRegister.EFER   = Core[cpu]->SystemRegister.EFER;
 }
 
