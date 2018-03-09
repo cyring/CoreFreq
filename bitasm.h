@@ -365,3 +365,26 @@ ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	);						\
 	_ret;						\
 })
+
+#define BITEXTRZ(_src, _offset, _length)		\
+({							\
+	unsigned long long _dest;			\
+	asm volatile					\
+	(						\
+		"movq	$1, %%rdx"		"\n\t"	\
+		"mov	%[len], %%ecx"		"\n\t"	\
+		"shlq	%%cl, %%rdx"		"\n\t"	\
+		"decq	%%rdx"			"\n\t"	\
+		"mov	%[ofs], %%ecx"		"\n\t"	\
+		"shlq	%%cl, %%rdx"		"\n\t"	\
+		"andq	%[src], %%rdx"		"\n\t"	\
+		"shrq	%%cl, %%rdx"		"\n\t"	\
+		"movq	%%rdx, %[dest]"			\
+		: [dest] "=m" (_dest)			\
+		: [src] "ir" (_src),			\
+		  [ofs] "ir" (_offset),			\
+		  [len] "ir" (_length)			\
+		: "%ecx", "%rdx", "memory"		\
+	);						\
+	_dest;						\
+})
