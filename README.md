@@ -13,7 +13,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
-* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools  
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL)  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -205,12 +205,12 @@ intel_idle.max_cstate=value
 ```
 insmod corefreqk.ko SleepInterval=value
 ```  
-  where <value> is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
+  where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
 
 * Q: The base clock reports a wrong frequency value ?  
   A: CoreFreq uses various algorithms to estimate the base clock.  
-     1- The delta of two TimeStampCounter reads in the interval of 1000 ms  
+     1- The delta of two TimeStamp counters during a defined interval  
      2- The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
      3- A static value advertised by the manufacturer specs.  
      4- The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  

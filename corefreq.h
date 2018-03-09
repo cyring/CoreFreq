@@ -276,7 +276,7 @@ typedef struct
 
 	struct {
 		unsigned int	Interval;
-		struct timespec busyWaiting,
+		struct timespec pollingWait,
 				ringWaiting,
 				childWaiting,
 				sliceWaiting;

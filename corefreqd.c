@@ -98,7 +98,7 @@ static void *Core_Cycle(void *arg)
 	    while (!BITVAL(Core->Sync.V, 63)
 		&& !BITVAL(Shutdown, 0)
 		&& !BITVAL(Core->OffLine, OS)) {
-			nanosleep(&Shm->Sleep.busyWaiting, NULL);
+			nanosleep(&Shm->Sleep.pollingWait, NULL);
 	    }
 	    BITCLR(LOCKLESS, Core->Sync.V, 63);
 
@@ -2687,7 +2687,7 @@ void Core_Manager(REF *Ref)
 	while (!BITVAL(Shutdown, 0)
 	    && BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 	{
-		nanosleep(&Shm->Sleep.busyWaiting, NULL);
+		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
 	// Reset the averages & the max frequency
 	Shm->Proc.Avg.Turbo = 0;
@@ -2876,8 +2876,8 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		// Copy the timer interval delay.
 		Shm->Sleep.Interval = Proc->SleepInterval;
-		// Compute the busy wait time based on the timer interval.
-		Shm->Sleep.busyWaiting = TIMESPEC((Shm->Sleep.Interval*1000000L)
+		// Compute the polling wait time based on the timer interval.
+		Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval*1000000L)
 					/ WAKEUP_RATIO);
 		// Initialize the busy wait times.
 		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
