@@ -3629,7 +3629,8 @@ void Top(SHM_STRUCT *Shm, char option)
     (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
     (ASCII*)"       CRC32 Compute       ", stateAttr[0], BOXKEY_TOOLS_CRC32,
     (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC,
-    (ASCII*)"      Turbo Random CPU     ", stateAttr[0], BOXKEY_TOOLS_TURBO);
+    (ASCII*)"      Turbo Random CPU     ", stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
+    (ASCII*)"      Turbo Round Robin    ", stateAttr[0], BOXKEY_TOOLS_TURBO_RR);
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
 		} else
@@ -3714,10 +3715,16 @@ void Top(SHM_STRUCT *Shm, char option)
       RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_TWO_PARALLEL_PLANES);
 	}
 	break;
-    case BOXKEY_TOOLS_TURBO:
+    case BOXKEY_TOOLS_TURBO_RND:
 	{
 	if (!RING_FULL(Shm->Ring[1]))
-	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, COREFREQ_TOGGLE_ON);
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, RAND_SMT);
+	}
+	break;
+    case BOXKEY_TOOLS_TURBO_RR:
+	{
+	if (!RING_FULL(Shm->Ring[1]))
+	    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, RR_SMT);
 	}
 	break;
     case SCANKEY_k:

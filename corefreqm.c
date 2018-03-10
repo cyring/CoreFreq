@@ -6,7 +6,6 @@
 
 #include <sys/ioctl.h>
 #include <pthread.h>
-#include <stdlib.h>
 #include <math.h>
 
 #include "bitasm.h"
@@ -222,47 +221,52 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 	    }
 }
 
-static unsigned int randomCpu = 0;
-
 void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	if (cpu == randomCpu) {
-		Slice_Atomic(Shm, cpu, 0x7fffffff);
-
-		randomCpu = rand() % Shm->Proc.CPU.Count;
-	} else {
-		nanosleep(&Shm->Sleep.sliceWaiting, NULL);
-	}
+	Slice_Atomic(Shm, cpu, 0x7fffffff);
 }
 
 RING_SLICE order_list[] = {
 	{
 		{.cmd=COREFREQ_ORDER_ATOMIC, .arg=COREFREQ_TOGGLE_ON},
-		 .func = Slice_Atomic
+		 .func = Slice_Atomic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CRC32,  .arg=COREFREQ_TOGGLE_ON},
-		 .func = Slice_CRC32
+		 .func = Slice_CRC32,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_ELLIPSOID},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLOID_ONE_SHEET},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLOID_TWO_SHEETS},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_ELLIPTICAL_CYLINDER},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLIC_CYLINDER},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
 		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_TWO_PARALLEL_PLANES},
-		 .func = Slice_Conic
+		 .func = Slice_Conic,
+		 .pattern = ALL_SMT
 	},{
-		{.cmd=COREFREQ_ORDER_TURBO,  .arg=COREFREQ_TOGGLE_ON},
-		 .func = Slice_Turbo
+		{.cmd=COREFREQ_ORDER_TURBO,  .arg=RAND_SMT},
+		 .func = Slice_Turbo,
+		 .pattern = RAND_SMT
+	},{
+		{.cmd=COREFREQ_ORDER_TURBO,  .arg=RR_SMT},
+		 .func = Slice_Turbo,
+		 .pattern = RR_SMT
 	},{
 		{},
 		 .func = NULL

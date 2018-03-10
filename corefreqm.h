@@ -19,6 +19,7 @@ void Slice_Turbo(SHM_STRUCT*, unsigned int, unsigned long);
 typedef struct {
 	struct  RING_CTRL	ctrl;
 		SLICE_FUNC	func;
+	enum	PATTERN		pattern;
 } RING_SLICE;
 
 extern RING_SLICE order_list[];

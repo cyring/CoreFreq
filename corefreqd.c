@@ -33,6 +33,7 @@
 // §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory
 static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
 static Bit64 roomCore __attribute__ ((aligned (64))) = 0x0;
+static Bit64 roomSched __attribute__ ((aligned (64))) = 0x0;
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
@@ -50,6 +51,7 @@ typedef struct {
 	struct {
 		SLICE_FUNC	Func;
 		unsigned long	arg;
+		enum PATTERN	pattern;
 	} Slice;
 	FD			*fd;
 	SHM_STRUCT		*Shm;
@@ -357,13 +359,51 @@ static void *Child_Thread(void *arg)
 
 		BITSET(BUS_LOCK, roomCore, cpu);
 
+		Cpu->Slice.Counter[0].TSC = 0;
+		Cpu->Slice.Counter[1].TSC = 0;
+		Cpu->Slice.Counter[2].TSC = 0;
+		Cpu->Slice.Counter[0].INST= 0;
+		Cpu->Slice.Counter[1].INST= 0;
+		Cpu->Slice.Counter[2].INST= 0;
+		Cpu->Slice.Delta.TSC = 0;
+		Cpu->Slice.Delta.INST= 0;
+
 		while ( BITVAL(Shm->Proc.Sync, 31)
 			&& !BITVAL(Shutdown, 0)
 			&& !BITVAL(Core->OffLine, OS)) {
-
+		    if (BITVAL(roomSched, cpu)) {
 			CallSliceFunc(	Shm, cpu,
 					Arg->Ref->Slice.Func,
 					Arg->Ref->Slice.arg);
+
+			switch (Arg->Ref->Slice.pattern) {
+			case ALL_SMT:
+				break;
+			case RAND_SMT: {
+				unsigned int next;
+				do {
+					next = (unsigned int) rand();
+					next = next % Shm->Proc.CPU.Count;
+				} while (BITVAL(Shm->Cpu[next].OffLine, OS));
+				BITCLR(LOCKLESS, roomSched, cpu);
+				BITSET(LOCKLESS, roomSched, next);
+				}
+				break;
+			case RR_SMT: {
+				unsigned int next = cpu;
+				do {
+					next++;
+					if (next == Shm->Proc.CPU.Count)
+						next = 0;
+				} while (BITVAL(Shm->Cpu[next].OffLine, OS));
+				BITCLR(LOCKLESS, roomSched, cpu);
+				BITSET(LOCKLESS, roomSched, next);
+				}
+				break;
+			}
+		    } else {
+			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
+		    }
 		}
 
 		BITCLR(BUS_LOCK, roomCore, cpu);
@@ -2539,8 +2579,10 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 				if (BITVAL(Shutdown, 0))	/*SpinLock*/
 					break;
 			}
+			roomSched = 0;
 			Ref->Slice.Func = Slice_NOP;
 			Ref->Slice.arg = 0;
+			Ref->Slice.pattern = ALL_SMT;
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
@@ -2560,8 +2602,26 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 				if (BITVAL(Shutdown, 0))	/*SpinLock*/
 					break;
 			}
+			switch (porder->pattern) {
+			case ALL_SMT:
+				roomSched = roomSeed;
+				break;
+			case RAND_SMT: {
+				unsigned int next;
+				do {
+					next = (unsigned int) rand();
+					next = next % Ref->Shm->Proc.CPU.Count;
+				} while(BITVAL(Ref->Shm->Cpu[next].OffLine,OS));
+				BITSET(LOCKLESS, roomSched, next);
+				}
+				break;
+			case RR_SMT:
+				BITSET(LOCKLESS, roomSched, 0);
+				break;
+			}
 			Ref->Slice.Func = porder->func;
 			Ref->Slice.arg  = porder->ctrl.arg;
+			Ref->Slice.pattern = porder->pattern;
 
 			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
 			// Notify
@@ -2785,7 +2845,6 @@ void Core_Manager(REF *Ref)
 void Child_Manager(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-//++	PROC *Proc	= Ref->Proc;
 	CORE **Core	= Ref->Core;
 	unsigned int cpu = 0;
 

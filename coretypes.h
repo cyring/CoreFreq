@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.21.3"
+#define COREFREQ_VERSION	"1.21.4"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1150,6 +1150,12 @@ typedef struct {
 #define COREFREQ_ORDER_CRC32	_IO(COREFREQ_ORDER_MAGIC, 0x3)
 #define COREFREQ_ORDER_CONIC	_IO(COREFREQ_ORDER_MAGIC, 0x4)
 #define COREFREQ_ORDER_TURBO	_IO(COREFREQ_ORDER_MAGIC, 0x5)
+
+enum PATTERN {
+	ALL_SMT,
+	RAND_SMT,
+	RR_SMT
+};
 
 enum {
 	CONIC_ELLIPSOID,
