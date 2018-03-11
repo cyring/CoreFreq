@@ -359,14 +359,7 @@ static void *Child_Thread(void *arg)
 
 		BITSET(BUS_LOCK, roomCore, cpu);
 
-		Cpu->Slice.Counter[0].TSC = 0;
-		Cpu->Slice.Counter[1].TSC = 0;
-		Cpu->Slice.Counter[2].TSC = 0;
-		Cpu->Slice.Counter[0].INST= 0;
-		Cpu->Slice.Counter[1].INST= 0;
-		Cpu->Slice.Counter[2].INST= 0;
-		Cpu->Slice.Delta.TSC = 0;
-		Cpu->Slice.Delta.INST= 0;
+		RESET_Slice(Cpu->Slice);
 
 		while ( BITVAL(Shm->Proc.Sync, 31)
 			&& !BITVAL(Shutdown, 0)
@@ -411,6 +404,8 @@ static void *Child_Thread(void *arg)
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
 
 	BITCLR(BUS_LOCK, roomSeed, cpu);
+
+	RESET_Slice(Cpu->Slice);
 
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CHILD %03u\n", tid,
