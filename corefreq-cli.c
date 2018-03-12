@@ -4701,14 +4701,40 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerCopyAt(layer, hVolt0.origin.col, hVolt0.origin.row,
 			hVolt0.length, hVolt0.attr, hVolt0.code);
 
-	LayerFillAt(layer, 0, (row + MAX_ROWS + 1),
-			drawSize.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0));
+	row++;
 
-	LayerFillAt(layer,tab,(row+1), 7, "Package",MakeAttr(WHITE,0,BLACK,0));
-	LayerFillAt(layer,tab,(row+2), 5, "Cores"  ,MakeAttr(WHITE,0,BLACK,0));
-	LayerFillAt(layer,tab,(row+3), 6, "Uncore" ,MakeAttr(WHITE,0,BLACK,0));
-	LayerFillAt(layer,tab,(row+4), 6, "Memory" ,MakeAttr(WHITE,0,BLACK,0));
+	ASCII hDomain[PWR_DOMAIN(SIZE)][7] = {
+		{'P','a','c','k','a','g','e'},
+		{'C','o','r','e','s',' ',' '},
+		{'U','n','c','o','r','e',' '},
+		{'M','e','m','o','r','y',' '}
+	};
+	enum PWR_DOMAIN pw;
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++, row++)
+	{
+		LayerDeclare(39) hPower0 = {
+			.origin = {
+				.col = tab,
+				.row = row
+			},
+			.length = 39,
+			.attr = {
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK, \
+				LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+			},
+			.code = "            0.000000000     0.000000000"
+		};
+		memcpy(&hPower0.code[0], hDomain[pw], 7);
+
+		LayerCopyAt(layer, hPower0.origin.col, hPower0.origin.row,
+				hPower0.length, hPower0.attr, hPower0.code);
+	}
+
+	if (MAX_ROWS > 4)
+		row +=  MAX_ROWS - 4;
+	LayerFillAt(layer,0,row,drawSize.width,hLine,MakeAttr(WHITE,0,BLACK,0));
     }
 
     void Layout_Ruller_Slice(Layer *layer, CUINT row)
@@ -5318,28 +5344,28 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
     })
 
-#define Draw_Power(layer, col, tab, row) 				\
-    ({									\
-	sprintf(buffer,							\
+    void Draw_Power(Layer *layer, CUINT col, CUINT tab, CUINT row)
+    {
+	sprintf(buffer,
 		"%13.9f" "%13.9f" "%13.9f" "%13.9f"			\
-		"%13.9f" "%13.9f" "%13.9f" "%13.9f",			\
-		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],		\
-		Shm->Proc.State.Energy[PWR_DOMAIN(CORE)],		\
-		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],		\
-		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)],		\
-		Shm->Proc.State.Power[PWR_DOMAIN(PKG)], 		\
-		Shm->Proc.State.Power[PWR_DOMAIN(CORE)],		\
-		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],		\
-		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);		\
-	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[ 0], 13);\
-	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[52], 13);\
-	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[13], 13);\
-	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[65], 13);\
-	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[26], 13);\
-	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[78], 13);\
-	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[39], 13);\
-	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[91], 13);\
-    })
+		"%13.9f" "%13.9f" "%13.9f" "%13.9f",
+		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORE)],
+		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],
+		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)],
+		Shm->Proc.State.Power[PWR_DOMAIN(PKG)],
+		Shm->Proc.State.Power[PWR_DOMAIN(CORE)],
+		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],
+		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[ 0], 13);
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[52], 13);
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[13], 13);
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[65], 13);
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[26], 13);
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[78], 13);
+	memcpy(&LayerAt(layer, code, col     , row  ), &buffer[39], 13);
+	memcpy(&LayerAt(layer, code, col+tab , row++), &buffer[91], 13);
+    }
 
 #define Draw_Monitor_Slice(layer, row)					\
     ({									\
@@ -5617,7 +5643,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case V_VOLTAGE:
 		Layout_Ruller_Voltage(layer, LOAD_LEAD + 24 + 6, row);
-		row += MAX_ROWS + 2;
+		row += CUMAX(MAX_ROWS, 4) + 2;
 		break;
 	case V_SLICE:
 		Layout_Ruller_Slice(layer, row);
@@ -5688,7 +5714,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	case V_VOLTAGE:
 		row += 2;
 		Draw_Power(layer, LOAD_LEAD + 24 + 16, 13 + 3, row);
-		row += MAX_ROWS - TOP_FOOTER_ROW;
+		row += 2 + CUMAX(MAX_ROWS, 4);
 		break;
 	default: // V_INST,V_CYCLES,V_CSTATES,V_TASKS,V_TASKS,V_SLICE
 		row += 2 + TOP_FOOTER_ROW + MAX_ROWS;
