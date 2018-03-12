@@ -324,8 +324,10 @@ static void *Child_Thread(void *arg)
 		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
 	};
 	const int withTSCP = ((Pkg->Features.AdvPower.EDX.Inv_TSC == 1)
-				|| (Pkg->Features.ExtInfo.EDX.RDTSCP == 1)),
-		withRDPMC  = (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1);
+			   || (Pkg->Features.ExtInfo.EDX.RDTSCP == 1)),
+		withRDPMC = ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+			  && (Shm->Proc.PM_version >= 1)
+			  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1));
 
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
 
@@ -447,7 +449,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 
 void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 {
-    if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {	// AMD PowerNow
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {	// AMD PowerNow
 	if (Proc->Features.AdvPower.EDX.FID)
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 	else
@@ -461,7 +463,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     else
 	Shm->Proc.PowerNow = 0;
 
-  if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {	// Intel RAPL
+  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {	// Intel RAPL
     switch (Proc->powerFormula) {
     case POWER_FORMULA_INTEL:
 	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
