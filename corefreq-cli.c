@@ -1045,16 +1045,16 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Units");
 	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"Power%.*sWatts   [%13.9f]",
-		width - (OutFunc == NULL ? 34 : 32), hSpace,
+		"Power%.*swatt   [%13.9f]",
+		width - (OutFunc == NULL ? 33 : 31), hSpace,
 		Shm->Proc.Power.Unit.Watts);
 	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"Energy%.*sJoules   [%13.9f]",
-		width - (OutFunc == NULL ? 36 : 34), hSpace,
+		"Energy%.*sjoule   [%13.9f]",
+		width - (OutFunc == NULL ? 35 : 33), hSpace,
 		Shm->Proc.Power.Unit.Joules);
 	printv(OutFunc, SCANKEY_NULL, width, 3,
-		"Window%.*sSeconds   [%13.9f]",
-		width - (OutFunc == NULL ? 37 : 35), hSpace,
+		"Window%.*ssecond   [%13.9f]",
+		width - (OutFunc == NULL ? 36 : 34), hSpace,
 		Shm->Proc.Power.Unit.Times);
 }
 
@@ -1684,7 +1684,6 @@ void Top(SHM_STRUCT *Shm, char option)
     double prevTopFreq = 0.0, prevTopLoad = 0.0;
     unsigned long prevFreeRAM = 0;
     unsigned int cpu = 0, cpuScroll = 0, digit[9], iClock = 0, ratioCount = 0;
-    unsigned int idx;
     int prevTaskCount = 0;
 
     CUINT loadWidth = 0, MIN_HEIGHT = 0, MAX_ROWS = 0;
@@ -1701,15 +1700,16 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Coordinate *cTask;
 
-    for (idx = BOOST(MAX); idx < BOOST(SIZE); idx++)
-	if (Shm->Proc.Boost[idx] != 0) {
-		int sort = Shm->Proc.Boost[idx] - availRatio[ratioCount];
+    unsigned int rdx;
+    for (rdx = BOOST(MAX); rdx < BOOST(SIZE); rdx++)
+	if (Shm->Proc.Boost[rdx] != 0) {
+		int sort = Shm->Proc.Boost[rdx] - availRatio[ratioCount];
 		if (sort < 0) {
 			availRatio[ratioCount+1] = availRatio[ratioCount];
-			availRatio[ratioCount++] = Shm->Proc.Boost[idx];
+			availRatio[ratioCount++] = Shm->Proc.Boost[rdx];
 		}
 		else if (sort > 0)
-			availRatio[++ratioCount] = Shm->Proc.Boost[idx];
+			availRatio[++ratioCount] = Shm->Proc.Boost[rdx];
 	}
     ratioCount++;
 
@@ -2455,7 +2455,7 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	Window *wSR = CreateWindow(wLayer, id,
 				17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
-					(drawSize.height-TOP_HEADER_ROW-3)),
+					(drawSize.height - TOP_HEADER_ROW - 3)),
 				6, TOP_HEADER_ROW + 2);
 
 	void AddSysRegsCell(char *input)
@@ -5057,7 +5057,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 	{ // Upper view area
-		CUINT	bar0 = (Flop->Relative.Ratio *loadWidth) / maxRatio,
+		CUINT	bar0 = (Flop->Relative.Ratio * loadWidth) / maxRatio,
 			bar1 = loadWidth - bar0;
 	// Print the Per Core BCLK indicator (yellow)
 	    LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
@@ -5102,19 +5102,17 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	ATTRIBUTE warning ={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
 
-	if (Flop->Thermal.Temp <=
-		Shm->Cpu[cpu].PowerThermal.Limit[0])
+	if (Flop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
 			warning = MakeAttr(BLUE, 0, BLACK, 1);
 	else {
-		if (Flop->Thermal.Temp >=
-		    Shm->Cpu[cpu].PowerThermal.Limit[1])
+		if (Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
 			warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
 	if (Flop->Thermal.Trip) {
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
-	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =
-	LayerAt(layer, attr, (LOAD_LEAD + 70), row) =
+	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =		\
+	LayerAt(layer, attr, (LOAD_LEAD + 70), row) =		\
 	LayerAt(layer, attr, (LOAD_LEAD + 71), row) = warning;
     }
 
@@ -5163,6 +5161,74 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);	\
     })
 
+	ATTRIBUTE runColor[] = {
+		HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+		HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+		HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+		HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
+		HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
+	}, unintColor[] = {
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK
+	}, zombieColor[] = {
+		LRW,LRW,LRW,LRW,LRW,LRW,LRW,LRW,\
+		LRW,LRW,LRW,LRW,LRW,LRW,LRW,LRW,\
+		LRW,LRW,LRW,LRW,LRW,LRW,LRW,LRW,\
+		LRW,LRW,LRW,LRW,LRW,LRW,LRW,LRW,\
+		LRW,LRW,LRW,LRW,LRW,LRW,LRW,LRW
+	}, sleepColor[] = {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	}, waitColor[] = {
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+	}, otherColor[] = {
+		LGK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,\
+		LGK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,\
+		LGK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,\
+		LGK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,\
+		LGK,LGK,LGK,LGK,LGK,LGK,LGK,LGK
+	}, trackerColor[] = {
+		LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+		LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+		LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+		LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
+		LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC
+	};
+
+    ATTRIBUTE *stateToSymbol(short int state, char stateStr[])
+    {
+	ATTRIBUTE *attrib[14] = {
+	/* R */runColor,/* S */sleepColor,/* D */unintColor,/* T */waitColor,
+	/* t */waitColor,/* X */waitColor,/* Z */zombieColor,/* P*/waitColor,
+	/* I */waitColor,/* K */sleepColor,/* W */runColor,/* i */waitColor,
+	/* N */runColor,/* m */otherColor
+	}, *stateAttr = otherColor;
+	const char symbol[14] = "RSDTtXZPIKWiNm";
+	unsigned short idx, jdx = 0;
+
+	if (BITBSR(state, idx) == 1) {
+		stateStr[jdx++] = symbol[0];
+		stateAttr = attrib[0];
+	} else
+		do {
+			BITCLR(LOCKLESS, state, idx);
+			stateStr[jdx++] = symbol[1 + idx];
+			stateAttr = attrib[1 + idx];
+		} while (!BITBSR(state, idx));
+	stateStr[jdx] = '\0';
+	return(stateAttr);
+    }
+
     void Draw_Monitor_Tasks(Layer *layer, CUINT row)
     {
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
@@ -5173,44 +5239,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 		CSINT pos;
-		char symbol;
-		ATTRIBUTE runColor[] = {
-			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
-			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
-			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
-			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,\
-			HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK
-		}, unintColor[] = {
-			LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
-			LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
-			LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
-			LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK,\
-			LYK,LYK,LYK,LYK,LYK,LYK,LYK,LYK
-		}, zombieColor[] = {
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,\
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW
-		}, sleepColor[] = {
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		}, otherColor[] = {
-			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
-			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
-			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
-			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
-			HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK
-		}, trackerColor[] = {
-			LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
-			LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
-			LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
-			LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC,\
-			LKC,LKC,LKC,LKC,LKC,LKC,LKC,LKC
-		}, *attr;
+		unsigned int idx;
+		char stateStr[16];
+		ATTRIBUTE *stateAttr;
 
 		cTask[cpu].col = LOAD_LEAD + 8;
 
@@ -5221,43 +5252,12 @@ void Top(SHM_STRUCT *Shm, char option)
 			hSpace,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
-	    unsigned int idx;
 	    for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
 	    {
-		switch (Shm->SysGate.taskList[idx].state) {
-		case 0: {	// TASK_RUNNING
-			attr = runColor;
-			symbol = 'R';
-			}
-			break;
-		case 1: {	// TASK_INTERRUPTIBLE
-			attr = sleepColor;
-			symbol = 'S';
-			}
-			break;
-		case 2: {	// TASK_UNINTERRUPTIBLE
-			attr = unintColor;
-			symbol = 'U';
-			}
-			break;
-		case 4: {	// TASK_ZOMBIE
-			attr = zombieColor;
-			symbol = 'Z';
-			}
-			break;
-		case 8: {	// TASK_STOPPED
-			attr = sleepColor;
-			symbol = 'H';
-			}
-			break;
-		default: {
-			attr = otherColor;
-			symbol = 'O';
-			}
-			break;
-		}
+	    stateAttr=stateToSymbol(Shm->SysGate.taskList[idx].state, stateStr);
+
 		if (Shm->SysGate.taskList[idx].pid == Shm->SysGate.trackTask) {
-			attr = trackerColor;
+			stateAttr = trackerColor;
 		}
 		if (!drawFlag.taskVal) {
 			len = sprintf(buffer, "%s",
@@ -5265,9 +5265,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		} else {
 		    switch (Shm->SysGate.sortByField) {
 		    case F_STATE:
-			len = sprintf(buffer, "%s(%c)",
+			len = sprintf(buffer, "%s(%s)",
 					Shm->SysGate.taskList[idx].comm,
-					symbol);
+					stateStr);
 			break;
 		    case F_RTIME:
 			len = sprintf(buffer, "%s(%llu)",
@@ -5302,7 +5302,7 @@ void Top(SHM_STRUCT *Shm, char option)
 				cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 				cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
 				(pos > len ? len : pos),
-				attr,
+				stateAttr,
 				buffer);
 
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len+2;
@@ -6133,41 +6133,27 @@ void Top(SHM_STRUCT *Shm, char option)
   {
     if (card->data.dword.hi == RENDER_OK) {
       if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-	char symbol;
-	switch (Shm->SysGate.taskList[0].state) {
-	case 0: 	// TASK_RUNNING
-		symbol = 'R';
-		break;
-	case 1: 	// TASK_INTERRUPTIBLE
-		symbol = 'S';
-		break;
-	case 2: 	// TASK_UNINTERRUPTIBLE
-		symbol = 'U';
-		break;
-	case 4: 	// TASK_ZOMBIE
-		symbol = 'Z';
-		break;
-	case 8: 	// TASK_STOPPED
-		symbol = 'H';
-		break;
-	default:
-		symbol = 'O';
-		break;
-	}
-
 	size_t len = strnlen(Shm->SysGate.taskList[0].comm, 12);
 	int	hl = (12 - len) / 2, hr = hl + hl % 2;
+	char	stateStr[16];
+	ATTRIBUTE *stateAttr;
+	stateAttr = stateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
+
 	sprintf(buffer, "%.*s%s%.*s",
 			hl, hSpace,
 			Shm->SysGate.taskList[0].comm,
 			hr, hSpace);
-	LayerFillAt(layer,	(card->origin.col + 0),		\
+
+	LayerCopyAt(layer,	(card->origin.col + 0),		\
 				(card->origin.row + 1),		\
 				12,				\
-				buffer,				\
-				MakeAttr(WHITE, 0, BLACK, 1));
+				stateAttr,			\
+				buffer);
 
-	len = sprintf(buffer, "%5u (%c)", Shm->SysGate.taskList[0].pid, symbol);
+	len = sprintf(buffer, "%5u (%c)",
+				Shm->SysGate.taskList[0].pid,
+				stateStr[0]);
+
 	LayerFillAt(layer,	(card->origin.col + 2),		\
 				(card->origin.row + 2),		\
 				len,				\

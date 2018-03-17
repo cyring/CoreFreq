@@ -594,7 +594,13 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	} Power;
 
-	SYSGATE			*SysGate;
+	struct {
+		struct {
+			size_t	Size;
+			int	Order;
+		} ReqMem;
+		SYSGATE		*Gate;
+	} OS;
 
 	struct {
 		signed int	Experimental,

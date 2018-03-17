@@ -3319,11 +3319,11 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
 		SysGate->taskList[cnt].usertime = thread->utime;
 		SysGate->taskList[cnt].systime  = thread->stime;
-		SysGate->taskList[cnt].state    = thread->state;
-		SysGate->taskList[cnt].wake_cpu = thread->wake_cpu;
 		SysGate->taskList[cnt].pid      = thread->pid;
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
+		SysGate->taskList[cnt].state    = (short int) thread->state;
+		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		task_unlock(thread);
@@ -3348,13 +3348,13 @@ void Sys_MemInfo(SYSGATE *SysGate)
 
 #define Sys_Tick(Pkg)						\
 ({								\
-	if (Pkg->SysGate != NULL) {				\
+	if (Pkg->OS.Gate != NULL) {				\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset;		\
 								\
-			Sys_DumpTask(Pkg->SysGate);		\
-			Sys_MemInfo(Pkg->SysGate);		\
+			Sys_DumpTask(Pkg->OS.Gate);		\
+			Sys_MemInfo(Pkg->OS.Gate);		\
 		}						\
 	}							\
 })
@@ -5326,15 +5326,15 @@ long Sys_Kernel(SYSGATE *SysGate)
 long SysGate_OnDemand(void)
 {
 	long rc = -1;
-	if (Proc->SysGate == NULL) {
-		unsigned long pageSize = ROUND_TO_PAGES(sizeof(SYSGATE));
-		// Alloc on demand
-		if ((Proc->SysGate = kmalloc(pageSize, GFP_KERNEL)) != NULL) {
-			memset(Proc->SysGate, 0, pageSize);
-			rc = 0;
-		}
+	if (Proc->OS.Gate == NULL) {			// Alloc on demand
+	    Proc->OS.Gate = alloc_pages_exact(Proc->OS.ReqMem.Size, GFP_KERNEL);
+	    if (Proc->OS.Gate != NULL) {
+		const size_t allocPages = PAGE_SIZE << Proc->OS.ReqMem.Order;
+		memset(Proc->OS.Gate, 0, allocPages);
+		rc = 0;
+	    }
 	}
-	else	// Already allocated
+	else						// Already allocated
 		rc = 1;
 
 	return(rc);
@@ -5348,15 +5348,15 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 	switch (cmd) {
 	case COREFREQ_IOCTL_SYSUPDT:
-		if (Proc->SysGate != NULL) {
-			Sys_DumpTask(Proc->SysGate);
-			Sys_MemInfo(Proc->SysGate);
+		if (Proc->OS.Gate != NULL) {
+			Sys_DumpTask(Proc->OS.Gate);
+			Sys_MemInfo(Proc->OS.Gate);
 			rc = 0;
 		}
 		break;
 	case COREFREQ_IOCTL_SYSONCE:
-		rc = Sys_IdleDriver_Query(Proc->SysGate)
-		   & Sys_Kernel(Proc->SysGate);
+		rc = Sys_IdleDriver_Query(Proc->OS.Gate)
+		   & Sys_Kernel(Proc->OS.Gate);
 		break;
 	case COREFREQ_IOCTL_MACHINE:
 		switch (arg) {
@@ -5523,7 +5523,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		case 0:
 			if (remap_pfn_range(vma,
 				vma->vm_start,
-				virt_to_phys((void *)Proc->SysGate)>>PAGE_SHIFT,
+				virt_to_phys((void *)Proc->OS.Gate)>>PAGE_SHIFT,
 				vma->vm_end - vma->vm_start,
 				vma->vm_page_prot) < 0)
 					return(-EIO);
@@ -5775,8 +5775,11 @@ static int __init CoreFreqK_init(void)
 			    else
 				Proc->SleepInterval = LOOP_DEF_MS;
 
+			// PreComp SysGate memory allocation.
+			  Proc->OS.ReqMem.Size = sizeof(SYSGATE);
+			  Proc->OS.ReqMem.Order=get_order(Proc->OS.ReqMem.Size);
 			// Compute the tick steps.
-			    Proc->tickReset =
+			    Proc->tickReset =				\
 				 ( (TickInterval >= Proc->SleepInterval)
 				&& (TickInterval <= LOOP_MAX_MS) ) ?
 					TickInterval:KMAX(TICK_DEF_MS,
@@ -6089,8 +6092,8 @@ static void __exit CoreFreqK_cleanup(void)
 		Controller_Stop(1);
 		Controller_Exit();
 
-		if (Proc->SysGate != NULL)
-			kfree(Proc->SysGate);
+		if (Proc->OS.Gate != NULL)
+			free_pages_exact(Proc->OS.Gate, Proc->OS.ReqMem.Size);
 
 	for (cpu = 0;(KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
 	{

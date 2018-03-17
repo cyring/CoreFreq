@@ -345,7 +345,7 @@ ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"setz	%[ret]"				\
 		: [ret]   "+r" (_ret),			\
 		  [index] "=r" (_index) 		\
-		: [base]  "r" (_base)			\
+		: [base]  "rm" (_base)			\
 		: "cc", "memory"			\
 	);						\
 	_ret;						\
@@ -360,7 +360,7 @@ ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"setz	%[ret]"				\
 		: [ret]   "+r" (_ret),			\
 		  [index] "=r" (_index) 		\
-		: [base]  "r" (_base)			\
+		: [base]  "rm" (_base)			\
 		: "cc", "memory"			\
 	);						\
 	_ret;						\

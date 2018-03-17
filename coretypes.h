@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.21.5"
+#define COREFREQ_VERSION	"1.21.6"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1104,11 +1104,11 @@ typedef struct {
 	unsigned long long	runtime,
 				usertime,
 				systime;
-	long			state;
-	int			wake_cpu;
-	pid_t			pid,	// type of __kernel_pid_t = int
+	pid_t			pid,		// type of __kernel_pid_t = int
 				tgid,
 				ppid;
+	short int		state;		// TASK_STATE_MAX = 0x1000
+	short int		wake_cpu;	// limited to 64K CPU
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 

@@ -179,34 +179,36 @@ typedef union {
 	({ATTRIBUTE _attr={.fg = _fg,.un = _un,.bg = _bg,.bf = _bf}; _attr;})
 
 #define HDK	{.fg = BLACK,	.bg = BLACK,	.bf = 1}
-#define HBK	{.fg = BLUE,	.bg = BLACK,	.bf = 1}
 #define HRK	{.fg = RED,	.bg = BLACK,	.bf = 1}
 #define HGK	{.fg = GREEN,	.bg = BLACK,	.bf = 1}
 #define HYK	{.fg = YELLOW,	.bg = BLACK,	.bf = 1}
+#define HBK	{.fg = BLUE,	.bg = BLACK,	.bf = 1}
+#define HCK	{.fg = CYAN,	.bg = BLACK,	.bf = 1}
 #define HWK	{.fg = WHITE,	.bg = BLACK,	.bf = 1}
 #define HKB	{.fg = BLACK,	.bg = BLUE,	.bf = 1}
 #define HWB	{.fg = WHITE,	.bg = BLUE,	.bf = 1}
-#define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
-#define HCK	{.fg = CYAN,	.bg = BLACK,	.bf = 1}
 #define HWC	{.fg = WHITE,	.bg = CYAN,	.bf = 1}
+#define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
+#define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
 #define _HKW	{.fg = BLACK,	.bg = WHITE,	.un = 1,	.bf = 1}
-#define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define LDK	{.fg = BLACK,	.bg = BLACK}
-#define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRK	{.fg = RED,	.bg = BLACK}
+#define LGK	{.fg = GREEN,	.bg = BLACK}
 #define LYK	{.fg = YELLOW,	.bg = BLACK}
 #define LBK	{.fg = BLUE,	.bg = BLACK}
-#define LBW	{.fg = BLUE,	.bg = WHITE}
 #define LCK	{.fg = CYAN,	.bg = BLACK}
 #define LWK	{.fg = WHITE,	.bg = BLACK}
 #define LWB	{.fg = WHITE,	.bg = BLUE}
 #define LKC	{.fg = BLACK,	.bg = CYAN}
+#define LKW	{.fg = BLACK,	.bg = WHITE}
+#define LRW	{.fg = RED,	.bg = WHITE}
+#define LBW	{.fg = BLUE,	.bg = WHITE}
+#define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
+#define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
-#define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
-#define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
 
 #define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
 #define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN, 1)

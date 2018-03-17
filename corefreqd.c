@@ -57,7 +57,7 @@ typedef struct {
 	SHM_STRUCT		*Shm;
 	PROC			*Proc;
 	CORE			**Core;
-	SYSGATE			**SysGate;
+	SYSGATE			*SysGate;
 } REF;
 
 typedef struct {
@@ -2292,8 +2292,11 @@ void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].SystemRegister.EFER   = Core[cpu]->SystemRegister.EFER;
 }
 
-void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
+void SysGate_IdleDriver(REF *Ref)
 {
+    SHM_STRUCT *Shm = Ref->Shm;
+    SYSGATE *SysGate = Ref->SysGate;
+
     if (strlen(SysGate->IdleDriver.Name) > 0) {
 	int i;
 
@@ -2322,8 +2325,11 @@ void SysGate_IdleDriver(SHM_STRUCT *Shm, SYSGATE *SysGate)
 		SysGate->IdleDriver.Governor, CPUIDLE_NAME_LEN - 1);
 }
 
-void SysGate_Kernel(SHM_STRUCT *Shm, SYSGATE *SysGate)
+void SysGate_Kernel(REF *Ref)
 {
+	SHM_STRUCT *Shm = Ref->Shm;
+	SYSGATE *SysGate = Ref->SysGate;
+
 	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
 	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
 	Shm->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
@@ -2334,8 +2340,11 @@ void SysGate_Kernel(SHM_STRUCT *Shm, SYSGATE *SysGate)
 	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
 }
 
-void SysGate_Update(SHM_STRUCT *Shm, SYSGATE *SysGate)
+void SysGate_Update(REF *Ref)
 {
+	SHM_STRUCT *Shm = Ref->Shm;
+	SYSGATE *SysGate = Ref->SysGate;
+
 	Shm->SysGate.taskCount = SysGate->taskCount;
 
 	memcpy( Shm->SysGate.taskList, SysGate->taskList,
@@ -2467,31 +2476,31 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
 }
 
-int SysGate_OnDemand(FD *fd, SYSGATE **SysGate, int operation)
+int SysGate_OnDemand(REF *Ref, int operation)
 {
 	int rc = -1;
-	const size_t pageSize = ROUND_TO_PAGES(sizeof(SYSGATE));
+	const size_t allocPages = PAGE_SIZE << Ref->Proc->OS.ReqMem.Order;
 	if (operation == 0) {
-		if (*SysGate != NULL) {
-			if ((rc = munmap(*SysGate, pageSize)) == 0)
-				*SysGate = NULL;
-		}
-		else
-			rc = -1;
+	    if (Ref->SysGate != NULL) {
+		if ((rc = munmap(Ref->SysGate, allocPages)) == 0)
+			Ref->SysGate = NULL;
+	    }
+	    else
+		rc = -1;
 	} else {
-		if (*SysGate == NULL) {
-			const off_t offset = 1 * PAGE_SIZE;
-			SYSGATE *MapGate = mmap(NULL, pageSize,
-						PROT_READ|PROT_WRITE,
-						MAP_SHARED,
-						fd->Drv, offset);
-			if (MapGate != MAP_FAILED) {
-				*SysGate = MapGate;
-				rc = 0;
-			}
-		}
-		else
+	    if (Ref->SysGate == NULL) {
+		const off_t vm_pgoff = 1 * PAGE_SIZE;
+		SYSGATE *MapGate = mmap(NULL, allocPages,
+					PROT_READ|PROT_WRITE,
+					MAP_SHARED,
+					Ref->fd->Drv, vm_pgoff);
+		if (MapGate != MAP_FAILED) {
+			Ref->SysGate = MapGate;
 			rc = 0;
+		}
+	    }
+	    else
+		rc = 0;
 	}
 	return(rc);
 }
@@ -2508,12 +2517,12 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
-	    if (SysGate_OnDemand(Ref->fd, Ref->SysGate, 1) == 0) {
+	    if (SysGate_OnDemand(Ref, 1) == 0) {
 		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
 			// Aggregate the OS idle driver data.
-			SysGate_IdleDriver(Ref->Shm, *(Ref->SysGate));
+			SysGate_IdleDriver(Ref);
 			// Copy system information.
-			SysGate_Kernel(Ref->Shm, *(Ref->SysGate));
+			SysGate_Kernel(Ref);
 			// Start SysGate
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 			// Notify
@@ -2719,11 +2728,9 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 
 void Core_Manager(REF *Ref)
 {
-	FD *fd		= Ref->fd;
 	SHM_STRUCT *Shm = Ref->Shm;
 	PROC *Proc	= Ref->Proc;
 	CORE **Core	= Ref->Core;
-	SYSGATE **SysGate = Ref->SysGate;
 
 	unsigned int cpu = 0;
 	double maxRelFreq;
@@ -2822,8 +2829,8 @@ void Core_Manager(REF *Ref)
 			Shm->SysGate.tickStep = Proc->tickStep;
 			if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 				// Update OS tasks and memory usage.
-				if (SysGate_OnDemand(fd, SysGate, 1) == 0) {
-					SysGate_Update(Shm, *SysGate);
+				if (SysGate_OnDemand(Ref, 1) == 0) {
+					SysGate_Update(Ref);
 				}
 			}
 		}
@@ -2889,7 +2896,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	int		rc = 0;
 	unsigned int	cpu = 0;
 	CORE		**Core;
-	SYSGATE		*SysGate = NULL;
 	SHM_STRUCT	*Shm = NULL;
 	const size_t	CoreSize  = ROUND_TO_PAGES(sizeof(CORE));
 
@@ -2954,7 +2960,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			.Shm		= Shm,
 			.Proc		= Proc,
 			.Core		= Core,
-			.SysGate	= &SysGate
+			.SysGate	= NULL
 		};
 
 		Architecture(Shm, Proc);
@@ -2988,7 +2994,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		if (Quiet & 0x100)
 		 printf("  SleepInterval(%u), SysGate(%u)\n\n",
 			Shm->Sleep.Interval,
-			!BITVAL(Shm->SysGate.Operation,0) ?
+			!BITVAL(Shm->SysGate.Operation, 0) ?
 				0:Shm->Sleep.Interval * Shm->SysGate.tickReset);
 		if (Quiet)
 			fflush(stdout);
@@ -3011,7 +3017,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			if (Shm->AppCli)
 				kill(Shm->AppCli, SIGCHLD);
 
-			SysGate_OnDemand(fd, &SysGate, 0);
+			SysGate_OnDemand(&Ref, 0);
 
 			if (!kill(Ref.CPID, SIGQUIT))
 				waitpid(Ref.CPID, NULL, 0);
