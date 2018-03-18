@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.21.6"
+#define COREFREQ_VERSION	"1.21.7"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1098,7 +1098,8 @@ typedef	struct {
 #define PID_MAX_DEFAULT		(1<<15)
 #endif
 
-enum {F_STATE,F_RTIME,F_UTIME,F_STIME,F_PID,F_COMM, SORTBYCOUNT} SORTBYFIELD;
+enum SORTBYFIELD {F_STATE, F_RTIME, F_UTIME, F_STIME, F_PID, F_COMM};
+#define SORTBYCOUNT	(1 + F_COMM)
 
 typedef struct {
 	unsigned long long	runtime,

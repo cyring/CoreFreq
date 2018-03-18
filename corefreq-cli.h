@@ -103,6 +103,7 @@ enum DISPOSAL {
 	D_DASHBOARD,
 	D_ASCIITEST
 };
+#define DISPOSAL_SIZE	(1 + D_ASCIITEST)
 
 enum VIEW {
 	V_FREQ,
@@ -115,8 +116,11 @@ enum VIEW {
 	V_VOLTAGE,
 	V_SLICE
 };
+#define VIEW_SIZE	(1 + V_SLICE)
 
-typedef void (*LAYOUT_VIEW_FUNC)(Layer*);
+typedef void (*DISPOSAL_FUNC)(Layer*);
+
+typedef CUINT (*VIEW_FUNC)(Layer*, CUINT);
 
 typedef union {
 	unsigned long long	qword;

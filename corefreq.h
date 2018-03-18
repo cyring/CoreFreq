@@ -255,8 +255,8 @@ typedef struct
 				tickStep;
 
 		pid_t		trackTask;
-		int		sortByField,
-				reverseOrder,
+		enum SORTBYFIELD sortByField;
+		int		reverseOrder,
 				taskCount;
 		TASK_MCB	taskList[PID_MAX_DEFAULT];
 
