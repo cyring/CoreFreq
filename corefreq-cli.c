@@ -5087,8 +5087,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Load(Layer *layer, CUINT row)
     {
-      if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
-      {
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
@@ -5110,7 +5108,6 @@ void Top(SHM_STRUCT *Shm, char option)
 			bar1, hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	}
-      }
     }
 
     CUINT Draw_Monitor_Frequency(Layer *layer, CUINT row)
@@ -5467,8 +5464,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	char stateStr[16];
 	ATTRIBUTE *stateAttr;
 
-      for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
-      {
+     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
+      if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)) {
 	unsigned int ldx = 2;
 	CSINT dif=drawSize.width-cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
 
@@ -5521,6 +5518,13 @@ void Top(SHM_STRUCT *Shm, char option)
 			len, stateAttr, buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
+	    } else if (dif > 0) {
+		LayerCopyAt(layer,
+			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
+			dif, stateAttr, buffer);
+
+		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
 	    }
 	    while ((dif = drawSize.width
 			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col) > 0
@@ -5746,10 +5750,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	for (cpu = cpuScroll; cpu < (cpuScroll + MAX_ROWS); cpu++) {
 		row++;
 
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		Draw_Load(layer, row);
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 		Matrix_Draw_Monitor[drawFlag.view](layer, (1 + row + MAX_ROWS));
+	    }
 	}
 	row = Matrix_Draw_AltMon[drawFlag.view](layer, row);
 
