@@ -6460,16 +6460,19 @@ int main(int argc, char *argv[])
 
 	char *program = strdup(argv[0]), *appName=basename(program);
 	char option = 't';
-    if ((argc >= 2) && (argv[1][0] == '-'))
+  if ((argc >= 2) && (argv[1][0] == '-'))
 	option = argv[1][1];
-    if (option == 'h')
+  if (option == 'h')
 	Help(appName);
-    else if (((fd = shm_open(SHM_FILENAME, O_RDWR,
+  else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
-	  && ((fstat(fd, &shmStat) != -1)
-	  && ((Shm = mmap(0, shmStat.st_size,
-			PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0))!=MAP_FAILED)))
+  {
+    if (fstat(fd, &shmStat) != -1)
     {
+      if ((Shm = mmap(NULL, shmStat.st_size,
+			PROT_READ|PROT_WRITE, MAP_SHARED,
+			fd, 0)) != MAP_FAILED)
+      {
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
@@ -6552,9 +6555,13 @@ int main(int argc, char *argv[])
 	}
 	munmap(Shm, shmStat.st_size);
 	close(fd);
-    }
-    else
+      } else
+	rc = 4;
+    } else
+	rc = 3;
+  } else
 	rc = 2;
+
     free(program);
     return(rc);
 }

@@ -2900,9 +2900,9 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		const off_t offset = (10 + cpu) * PAGE_SIZE;
 
 		if ((Core[cpu] = mmap(NULL, CoreSize,
-				PROT_READ|PROT_WRITE,
-				MAP_SHARED,
-				fd->Drv, offset)) == MAP_FAILED)
+					PROT_READ|PROT_WRITE,
+					MAP_SHARED,
+					fd->Drv, offset)) == MAP_FAILED)
 			rc = 4;
 	}
 	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count,
@@ -2912,15 +2912,17 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 	if (!rc)
 	{	// Initialize shared memory.
-	    if (((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+	  if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
-	    && (ftruncate(fd->Svr, ShmSize) != -1)
-	    && ((Shm = mmap(0, ShmSize,
-				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd->Svr, 0)) != MAP_FAILED))
+	  {
+	    if (ftruncate(fd->Svr, ShmSize) != -1)
 	    {
+	      if ((Shm = mmap(NULL, ShmSize,
+				PROT_READ|PROT_WRITE, MAP_SHARED,
+				fd->Svr, 0)) != MAP_FAILED)
+	      {
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
 
@@ -3024,8 +3026,14 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		munmap(Shm, ShmSize);
 		shm_unlink(SHM_FILENAME);
+	      }
+	      else
+		rc = 7;
 	    }
 	    else
+		rc = 6;
+	  }
+	  else
 		rc = 5;
 	}
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)

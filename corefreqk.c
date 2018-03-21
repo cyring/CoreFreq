@@ -5502,12 +5502,18 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
+	unsigned long reqSize = vma->vm_end - vma->vm_start, secSize = 0;
+
 	if (vma->vm_pgoff == 0) {
 	    if (Proc != NULL) {
+	      secSize = ROUND_TO_PAGES(sizeof(PROC));
+	      if (reqSize != secSize)
+		return(-EAGAIN);
+
 	      if (remap_pfn_range(vma,
 			vma->vm_start,
 			virt_to_phys((void *) Proc) >> PAGE_SHIFT,
-			vma->vm_end - vma->vm_start,
+			reqSize,
 			vma->vm_page_prot) < 0)
 				return(-EIO);
 	    }
@@ -5521,10 +5527,14 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		case 1:
 			// Fallthrough
 		case 0:
+			secSize = PAGE_SIZE << Proc->OS.ReqMem.Order;
+			if (reqSize != secSize)
+				return(-EAGAIN);
+
 			if (remap_pfn_range(vma,
 				vma->vm_start,
 				virt_to_phys((void *)Proc->OS.Gate)>>PAGE_SHIFT,
-				vma->vm_end - vma->vm_start,
+				reqSize,
 				vma->vm_page_prot) < 0)
 					return(-EIO);
 			break;
@@ -5538,10 +5548,14 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	  if (Proc != NULL) {
 	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
 	      if (KPublic->Core[cpu] != NULL) {
+		secSize = ROUND_TO_PAGES(sizeof(CORE));
+		if (reqSize != secSize)
+			return(-EAGAIN);
+
 		if (remap_pfn_range(vma,
 			vma->vm_start,
 			virt_to_phys((void *) KPublic->Core[cpu]) >> PAGE_SHIFT,
-			vma->vm_end - vma->vm_start,
+			reqSize,
 			vma->vm_page_prot) < 0)
 				return(-EIO);
 	      }
