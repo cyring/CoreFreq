@@ -76,14 +76,11 @@ static void *Core_Cycle(void *arg)
 	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
 
 	pthread_t tid = pthread_self();
-	cpu_set_t affinity;
 	cpu_set_t cpuset;
-	CPU_ZERO(&affinity);
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-	if (!pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset)) {
-		CPU_OR(&affinity, &affinity, &cpuset);
-	}
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
+		goto EXIT;
 
 	char comm[TASK_COMM_LEN];
 	sprintf(comm, "corefreqd/%d", cpu);
@@ -301,7 +298,7 @@ static void *Core_Cycle(void *arg)
 
 	BITCLR(BUS_LOCK, roomCore, cpu);
 	BITCLR(BUS_LOCK, roomSeed, cpu);
-
+EXIT:
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CYCLE %03u\n", tid,
 			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
@@ -310,13 +307,49 @@ static void *Core_Cycle(void *arg)
 	return(NULL);
 }
 
+void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
+{
+	unsigned int seek;
+	switch (pattern) {
+	case RESET_BSP:
+		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
+			if (Shm->Cpu[seek].Topology.MP.BSP)
+				BITSET(LOCKLESS, roomSched, seek);
+			else
+				BITCLR(LOCKLESS, roomSched, seek);
+		}
+		break;
+	case ALL_SMT:
+		if (Shm->Cpu[cpu].Topology.MP.BSP)
+			roomSched = roomSeed;
+		break;
+	case RAND_SMT:
+		do {
+			seek = (unsigned int) rand();
+			seek = seek % Shm->Proc.CPU.Count;
+		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
+		BITCLR(LOCKLESS, roomSched, cpu);
+		BITSET(LOCKLESS, roomSched, seek);
+		break;
+	case RR_SMT:
+		seek = cpu;
+		do {
+			seek++;
+			if (seek >= Shm->Proc.CPU.Count)
+				seek = 0;
+		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
+		BITCLR(LOCKLESS, roomSched, cpu);
+		BITSET(LOCKLESS, roomSched, seek);
+		break;
+	}
+}
+
 static void *Child_Thread(void *arg)
 {
 	ARG *Arg	= (ARG *) arg;
 	unsigned int cpu = Arg->Bind;
 	SHM_STRUCT *Shm = Arg->Ref->Shm;
 	PROC *Pkg	= Arg->Ref->Proc;
-	CORE *Core	= Arg->Ref->Core[cpu];
 	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
 
 	CALL_FUNC MatrixCallFunc[2][2] = {
@@ -332,14 +365,11 @@ static void *Child_Thread(void *arg)
 	CALL_FUNC CallSliceFunc = MatrixCallFunc[withTSCP][withRDPMC];
 
 	pthread_t tid = pthread_self();
-	cpu_set_t affinity;
 	cpu_set_t cpuset;
-	CPU_ZERO(&affinity);
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-	if (!pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset)) {
-		CPU_OR(&affinity, &affinity, &cpuset);
-	}
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
+		goto EXIT;
 
 	char comm[TASK_COMM_LEN];
 	sprintf(comm, "corefreqd#%d", cpu);
@@ -355,7 +385,7 @@ static void *Child_Thread(void *arg)
 	do {
 		while (!BITVAL(Shm->Proc.Sync, 31)
 		    && !BITVAL(Shutdown, 0)
-		    && !BITVAL(Core->OffLine, OS)) {
+		    && !BITVAL(Cpu->OffLine, OS)) {
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 		}
 
@@ -364,54 +394,38 @@ static void *Child_Thread(void *arg)
 		RESET_Slice(Cpu->Slice);
 
 		while ( BITVAL(Shm->Proc.Sync, 31)
-			&& !BITVAL(Shutdown, 0)
-			&& !BITVAL(Core->OffLine, OS)) {
+		    && !BITVAL(Shutdown, 0) )
+		{
 		    if (BITVAL(roomSched, cpu)) {
 			CallSliceFunc(	Shm, cpu,
 					Arg->Ref->Slice.Func,
 					Arg->Ref->Slice.arg);
 
-			switch (Arg->Ref->Slice.pattern) {
-			case ALL_SMT:
-				break;
-			case RAND_SMT: {
-				unsigned int next;
-				do {
-					next = (unsigned int) rand();
-					next = next % Shm->Proc.CPU.Count;
-				} while (BITVAL(Shm->Cpu[next].OffLine, OS));
-				BITCLR(LOCKLESS, roomSched, cpu);
-				BITSET(LOCKLESS, roomSched, next);
-				}
-				break;
-			case RR_SMT: {
-				unsigned int next = cpu;
-				do {
-					next++;
-					if (next == Shm->Proc.CPU.Count)
-						next = 0;
-				} while (BITVAL(Shm->Cpu[next].OffLine, OS));
-				BITCLR(LOCKLESS, roomSched, cpu);
-				BITSET(LOCKLESS, roomSched, next);
-				}
+			SliceScheduling(Shm, cpu, Arg->Ref->Slice.pattern);
+
+			if (BITVAL(Cpu->OffLine, OS)) { // ReSchedule to BSP
+				SliceScheduling(Shm, 0, RESET_BSP);
 				break;
 			}
 		    } else {
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
+
+			if (BITVAL(Cpu->OffLine, OS))
+				break;
 		    }
 		}
 
 		BITCLR(BUS_LOCK, roomCore, cpu);
 
-	} while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
+	} while (!BITVAL(Shutdown, 0) && !BITVAL(Cpu->OffLine, OS)) ;
 
 	BITCLR(BUS_LOCK, roomSeed, cpu);
 
 	RESET_Slice(Cpu->Slice);
-
+EXIT:
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CHILD %03u\n", tid,
-			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
+			BITVAL(Cpu->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
 	return(NULL);
@@ -2588,7 +2602,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 			roomSched = 0;
 			Ref->Slice.Func = Slice_NOP;
 			Ref->Slice.arg = 0;
-			Ref->Slice.pattern = ALL_SMT;
+			Ref->Slice.pattern = RESET_BSP;
 			// Notify
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
@@ -2608,23 +2622,8 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 				if (BITVAL(Shutdown, 0))	/*SpinLock*/
 					break;
 			}
-			switch (porder->pattern) {
-			case ALL_SMT:
-				roomSched = roomSeed;
-				break;
-			case RAND_SMT: {
-				unsigned int next;
-				do {
-					next = (unsigned int) rand();
-					next = next % Ref->Shm->Proc.CPU.Count;
-				} while(BITVAL(Ref->Shm->Cpu[next].OffLine,OS));
-				BITSET(LOCKLESS, roomSched, next);
-				}
-				break;
-			case RR_SMT:
-				BITSET(LOCKLESS, roomSched, 0);
-				break;
-			}
+			SliceScheduling(Ref->Shm, 0, porder->pattern);
+
 			Ref->Slice.Func = porder->func;
 			Ref->Slice.arg  = porder->ctrl.arg;
 			Ref->Slice.pattern = porder->pattern;
@@ -2651,18 +2650,17 @@ static void *Emergency_Handler(void *pRef)
 	REF *Ref = (REF *) pRef;
 	unsigned int rid = (Ref->CPID == 0);
 	int caught = 0, leave = 0;
-	pthread_t tid = pthread_self();
 	char handlerName[TASK_COMM_LEN] = {
 		'c','o','r','e','f','r','e','q','d','-','r','i','n','g','0',0
 	};
 	handlerName[14] += rid;
 
+	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
-
-	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, handlerName);
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
+		pthread_setname_np(tid, handlerName);
 
     while (!leave) {
 	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
@@ -2740,9 +2738,8 @@ void Core_Manager(REF *Ref)
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
-
-	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, "corefreqd-pmgr");
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
+		pthread_setname_np(tid, "corefreqd-pmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
@@ -2849,7 +2846,6 @@ void Core_Manager(REF *Ref)
 void Child_Manager(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-	CORE **Core	= Ref->Core;
 	unsigned int cpu = 0;
 
 	pthread_t tid = pthread_self();
@@ -2857,14 +2853,14 @@ void Child_Manager(REF *Ref)
 	CPU_ZERO(&cpuset);
 	CPU_SET(0, &cpuset);
 
-	pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	pthread_setname_np(tid, "corefreqd-cmgr");
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
+		pthread_setname_np(tid, "corefreqd-cmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
     do {
 	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
-	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
+	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
 			// Remove this child thread.
 			pthread_join(Arg[cpu].TID, NULL);

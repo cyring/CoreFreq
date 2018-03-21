@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.21.8"
+#define COREFREQ_VERSION	"1.21.9"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1153,6 +1153,7 @@ typedef struct {
 #define COREFREQ_ORDER_TURBO	_IO(COREFREQ_ORDER_MAGIC, 0x5)
 
 enum PATTERN {
+	RESET_BSP,
 	ALL_SMT,
 	RAND_SMT,
 	RR_SMT

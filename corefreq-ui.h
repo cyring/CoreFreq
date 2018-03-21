@@ -380,6 +380,9 @@ void CreateLayer(Layer *layer, CoordSize size) ;
 	memset(layer->attr, 0, layer->size.wth * layer->size.hth);	\
 	memset(layer->code, 0, layer->size.wth * layer->size.hth);
 
+#define ClearGarbage(_layer, _plane, _col, _row, _len)			\
+	memset(&LayerAt(_layer, _plane, _col, _row), 0, _len)
+
 void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				CUINT width, CUINT height,
 				ASCII *source, ATTRIBUTE attrib) ;

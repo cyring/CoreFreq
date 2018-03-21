@@ -5087,26 +5087,26 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Load(Layer *layer, CUINT row)
     {
+	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	{
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-	{ // Upper view area
+	// Upper view area
 		CUINT	bar0 = (Flop->Relative.Ratio * loadWidth) / maxRatio,
 			bar1 = loadWidth - bar0;
 	// Print the Per Core BCLK indicator (yellow)
-	    LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
+		LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
 				(iClock == (cpu - cpuScroll)) ? '~' : 0x20;
 	// Draw the relative Core frequency ratio
-	    LayerFillAt(layer, LOAD_LEAD, row,
-			bar0, hBar,
-			MakeAttr((Flop->Relative.Ratio > medianRatio ?
-				RED : Flop->Relative.Ratio > minRatio ?
-				YELLOW : GREEN),
-				0, BLACK, 1));
+		LayerFillAt(layer, LOAD_LEAD, row,
+				bar0, hBar,
+				MakeAttr((Flop->Relative.Ratio > medianRatio ?
+					RED : Flop->Relative.Ratio > minRatio ?
+						YELLOW : GREEN),
+					0, BLACK, 1));
 	// Pad with blank characters
-	    LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
-			bar1, hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+		LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
+				bar1, hSpace,
+				MakeAttr(BLACK, 0, BLACK, 1));
 	}
     }
 
@@ -5303,7 +5303,7 @@ void Top(SHM_STRUCT *Shm, char option)
 				Flop->Counter.NMI.UNKNOWN,
 				Flop->Counter.NMI.PCISERR,
 				Flop->Counter.NMI.IOCHECK);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD+24),row),buffer,len);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), buffer, len);
 	}
 	return(0);
     }
@@ -5465,7 +5465,10 @@ void Top(SHM_STRUCT *Shm, char option)
 	ATTRIBUTE *stateAttr;
 
      for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
-      if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)) {
+      if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
+	&& (Shm->SysGate.taskList[idx].wake_cpu >= cpuScroll)
+	&& (Shm->SysGate.taskList[idx].wake_cpu < (cpuScroll + MAX_ROWS)))
+	{
 	unsigned int ldx = 2;
 	CSINT dif=drawSize.width-cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
 
@@ -5618,6 +5621,17 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, 26, row), hBClk[iClock + cpuScroll], 11);
     }
 
+#define Illuminates_CPU(_layer, _row, fg, bg)				\
+({									\
+	LayerAt(_layer, attr, 1, _row) =				\
+		LayerAt(_layer, attr, 1, (1 + _row + MAX_ROWS)) =	\
+						MakeAttr(fg, 0, bg, 0); \
+									\
+	LayerAt(_layer, attr, 2, _row) =				\
+		LayerAt(_layer, attr, 2, (1 + _row + MAX_ROWS)) =	\
+						MakeAttr(fg, 0, bg, 0); \
+})
+
     VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Frequency,
 	Layout_Monitor_Instructions,
@@ -5664,36 +5678,27 @@ void Top(SHM_STRUCT *Shm, char option)
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		struct FLIP_FLOP *Flop =
 				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-		LayerAt(layer, attr, 1, row) =				\
-		    LayerAt(layer, attr, 1, (1 + row + MAX_ROWS)) =	\
-			MakeAttr(CYAN, 0, BLACK, 0);
-
-		LayerAt(layer, attr, 2, row) =				\
-		    LayerAt(layer, attr, 2, (1 + row + MAX_ROWS)) =	\
-			MakeAttr(CYAN, 0, BLACK, 0);
-
-		Matrix_Layout_Monitor[drawFlag.view](layer, row);
-
+		// Store thermal throttling
 		if (Flop->Thermal.Trip && !processorHot) {
 			processorHot = cpu;
 		}
+		Illuminates_CPU(layer, row, CYAN, BLACK);
+
+		Matrix_Layout_Monitor[drawFlag.view](layer, row);
 	    } else {
-		LayerAt(layer, attr, 1, row) =				\
-		    LayerAt(layer, attr, 1, (1 + row + MAX_ROWS)) =	\
-			MakeAttr(BLUE, 0, BLACK, 0);
+		Illuminates_CPU(layer, row, BLUE, BLACK);
 
-		LayerAt(layer, attr, 2, row) =				\
-		    LayerAt(layer, attr, 2, (1 + row + MAX_ROWS)) =	\
-			MakeAttr(BLUE, 0, BLACK, 0);
+		ClearGarbage(	dLayer, code,
+				(LOAD_LEAD - 1), row,
+				(drawSize.width - LOAD_LEAD + 1));
 
-		LayerFillAt(layer, LOAD_LEAD, row,
-			(drawSize.width - LOAD_LEAD), hSpace,
-			MakeAttr(WHITE, 0, BLACK, 0));
+		ClearGarbage(	dLayer, attr,
+				(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
+				(drawSize.width - LOAD_LEAD + 1));
 
-		LayerFillAt(layer,(LOAD_LEAD - 1),(row + MAX_ROWS + 1),
-			(drawSize.width - LOAD_LEAD + 1), hSpace,
-			MakeAttr(WHITE, 0, BLACK, 0));
+		ClearGarbage(	dLayer, code,
+				(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
+				(drawSize.width - LOAD_LEAD + 1));
 	    }
 
 		Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
@@ -5750,7 +5755,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	for (cpu = cpuScroll; cpu < (cpuScroll + MAX_ROWS); cpu++) {
 		row++;
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		Draw_Load(layer, row);
 
 		Matrix_Draw_Monitor[drawFlag.view](layer, (1 + row + MAX_ROWS));
