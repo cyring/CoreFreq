@@ -31,7 +31,7 @@ typedef struct
 	} Query;
 
 	struct {
-		unsigned int		ApicID,
+		signed int		ApicID,
 					CoreID,
 					ThreadID,
 					PackageID;
@@ -176,7 +176,8 @@ typedef struct
 
 	struct {
 		unsigned int		Count,
-					OnLine;
+					OnLine,
+					Service;
 	} CPU;
 
 	unsigned int			Boost[BOOST(SIZE)],

@@ -200,7 +200,7 @@ static void *Core_Cycle(void *arg)
 			break;
 		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
 		case VOLTAGE_FORMULA_INTEL_SNB:
-			if (Cpu->Topology.MP.BSP) {
+			if (cpu == Pkg->CPU.Service) {
 			    Flip->Voltage.Vcore = (double) (Flip->Voltage.VID)
 						/ 8192.0;
 			}
@@ -247,7 +247,7 @@ static void *Core_Cycle(void *arg)
 			Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 		}
 		// Package C-state Residency Counters
-		if (Cpu->Topology.MP.BSP) {
+		if (cpu == Pkg->CPU.Service) {
 			enum PWR_DOMAIN pw;
 
 			Shm->Proc.Toggle = !Shm->Proc.Toggle;
@@ -311,16 +311,16 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 {
 	unsigned int seek;
 	switch (pattern) {
-	case RESET_BSP:
+	case RESET_CSP:
 		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
-			if (Shm->Cpu[seek].Topology.MP.BSP)
+			if (seek == Shm->Proc.CPU.Service)
 				BITSET(LOCKLESS, roomSched, seek);
 			else
 				BITCLR(LOCKLESS, roomSched, seek);
 		}
 		break;
 	case ALL_SMT:
-		if (Shm->Cpu[cpu].Topology.MP.BSP)
+		if (cpu == Shm->Proc.CPU.Service)
 			roomSched = roomSeed;
 		break;
 	case RAND_SMT:
@@ -403,10 +403,10 @@ static void *Child_Thread(void *arg)
 
 			SliceScheduling(Shm, cpu, Arg->Ref->Slice.pattern);
 
-			if (BITVAL(Cpu->OffLine, OS)) { // ReSchedule to BSP
-				SliceScheduling(Shm, 0, RESET_BSP);
-				break;
-			}
+		      if (BITVAL(Cpu->OffLine, OS)) { // ReSchedule to Service
+			SliceScheduling(Shm, Shm->Proc.CPU.Service, RESET_CSP);
+			break;
+		      }
 		    } else {
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 
@@ -436,11 +436,12 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	Bit32	fTSC = Proc->Features.Std.EDX.TSC,
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
 
-	// Copy all BSP features.
+	// Copy all initial CPUID features.
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
 	// Copy the numbers of total & online CPU.
-	Shm->Proc.CPU.Count  = Proc->CPU.Count;
-	Shm->Proc.CPU.OnLine = Proc->CPU.OnLine;
+	Shm->Proc.CPU.Count   = Proc->CPU.Count;
+	Shm->Proc.CPU.OnLine  = Proc->CPU.OnLine;
+	Shm->Proc.CPU.Service = Proc->CPU.Service;
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
@@ -495,6 +496,32 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.TU) : 0;
   }
+}
+
+void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
+{	// Technologies aggregation.
+	BITSTOR(LOCKLESS, Shm->Proc.ODCM_Mask, Proc->ODCM_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.PowerMgmt_Mask, Proc->PowerMgmt_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.SpeedStep_Mask, Proc->SpeedStep_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.TurboBoost_Mask, Proc->TurboBoost_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1E_Mask, Proc->C1E_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C3A_Mask, Proc->C3A_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1A_Mask, Proc->C1A_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C3U_Mask, Proc->C3U_Mask);
+	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
+}
+
+void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Architecture(Shm, Proc);
+
+	Technology_Update(Shm, Proc);
+
+	PerformanceMonitoring(Shm, Proc);
+
+	HyperThreading(Shm, Proc);
+
+	PowerInterface(Shm, Proc);
 }
 
 typedef struct {
@@ -2473,21 +2500,8 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	CPUID_Dump(Shm, Core, cpu);
 
-	if (Shm->Cpu[cpu].Topology.MP.BSP)
+	if (cpu == Proc->CPU.Service)
 		Uncore(Shm, Proc, cpu);
-}
-
-void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
-{
-	BITSTOR(LOCKLESS, Shm->Proc.ODCM_Mask, Proc->ODCM_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.PowerMgmt_Mask, Proc->PowerMgmt_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.SpeedStep_Mask, Proc->SpeedStep_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.TurboBoost_Mask, Proc->TurboBoost_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1E_Mask, Proc->C1E_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C3A_Mask, Proc->C3A_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1A_Mask, Proc->C1A_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C3U_Mask, Proc->C3U_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
 }
 
 int SysGate_OnDemand(REF *Ref, int operation)
@@ -2555,25 +2569,9 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-			if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
-				SpeedStep(Ref->Shm,
-					  Ref->Proc,
-					  Ref->Core,
-					  cpu);
-
-				TurboBoost(Ref->Shm,
-					   Ref->Core,
-					   cpu);
-
-				CStates(Ref->Shm,
-					Ref->Core,
-					cpu);
-
-				ClockModulation(Ref->Shm,
-						Ref->Proc,
-						Ref->Core,
-						cpu);
-			}
+		    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
+			PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
+		    }
 		if (Quiet & 0x100)
 		  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
 		// Notify
@@ -2585,61 +2583,67 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 
 void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
-  if (!RING_NULL(Ref->Shm->Ring[rid])) {
-    struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
-    switch (ctrl.cmd) {
-    case COREFREQ_ORDER_MACHINE:
-		switch (ctrl.arg) {
-		case COREFREQ_TOGGLE_OFF:
-		    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
-			BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+  if (!RING_NULL(Ref->Shm->Ring[rid]))
+  {
+	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 
-			while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-			{
-				if (BITVAL(Shutdown, 0))	/*SpinLock*/
-					break;
-			}
-			roomSched = 0;
-			Ref->Slice.Func = Slice_NOP;
-			Ref->Slice.arg = 0;
-			Ref->Slice.pattern = RESET_BSP;
-			// Notify
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
-		    }
-		    break;
+   switch (ctrl.cmd)
+   {
+   case COREFREQ_ORDER_MACHINE:
+	switch (ctrl.arg) {
+	case COREFREQ_TOGGLE_OFF:
+	    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
+		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+
+		while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+		{
+			if (BITVAL(Shutdown, 0))	/*SpinLock*/
+				break;
 		}
-		break;
-    default: {
-	RING_SLICE *porder = order_list;
-	while (porder->func != NULL) {
-		if ((porder->ctrl.cmd == ctrl.cmd)
-		&&  (porder->ctrl.arg == ctrl.arg)) {
-		    if (!BITVAL(Ref->Shm->Proc.Sync, 31)) {
-
-			while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
-			{
-				if (BITVAL(Shutdown, 0))	/*SpinLock*/
-					break;
-			}
-			SliceScheduling(Ref->Shm, 0, porder->pattern);
-
-			Ref->Slice.Func = porder->func;
-			Ref->Slice.arg  = porder->ctrl.arg;
-			Ref->Slice.pattern = porder->pattern;
-
-			BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
-			// Notify
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
-		    }
-		    break;
-		}
-		porder++;
+		roomSched = 0;
+		Ref->Slice.Func = Slice_NOP;
+		Ref->Slice.arg = 0;
+		Ref->Slice.pattern = RESET_CSP;
+		// Notify
+		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 	    }
+	    break;
 	}
 	break;
+   default:
+    {
+	RING_SLICE *porder = order_list;
+
+     while (porder->func != NULL)
+     {
+      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.arg == ctrl.arg))
+      {
+       if (!BITVAL(Ref->Shm->Proc.Sync, 31))
+       {
+	while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+	{
+		if (BITVAL(Shutdown, 0))	/*SpinLock*/
+			break;
+	}
+	SliceScheduling(Ref->Shm, Ref->Shm->Proc.CPU.Service, porder->pattern);
+
+	Ref->Slice.Func = porder->func;
+	Ref->Slice.arg  = porder->ctrl.arg;
+	Ref->Slice.pattern = porder->pattern;
+
+	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+	// Notify
+	if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+		BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+       }
+       break;
+      }
+	porder++;
+     }
     }
+    break;
+   }
     if (Quiet & 0x100)
 	printf("\tRING[%u](%x,%lx)\n", rid, ctrl.cmd, ctrl.arg);
   }
@@ -2648,7 +2652,8 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 static void *Emergency_Handler(void *pRef)
 {
 	REF *Ref = (REF *) pRef;
-	unsigned int rid = (Ref->CPID == 0);
+	unsigned int rid = (Ref->CPID == 0),
+			localProcessor = Ref->Shm->Proc.CPU.Service;
 	int caught = 0, leave = 0;
 	char handlerName[TASK_COMM_LEN] = {
 		'c','o','r','e','f','r','e','q','d','-','r','i','n','g','0',0
@@ -2658,7 +2663,7 @@ static void *Emergency_Handler(void *pRef)
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
+	CPU_SET(localProcessor, &cpuset);
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
 		pthread_setname_np(tid, handlerName);
 
@@ -2691,6 +2696,13 @@ static void *Emergency_Handler(void *pRef)
 		} else {
 			Child_Ring_Handler(Ref, rid);
 		}
+	}
+	if (localProcessor != Ref->Shm->Proc.CPU.Service) {
+		localProcessor = Ref->Shm->Proc.CPU.Service;
+
+		CPU_ZERO(&cpuset);
+		CPU_SET(localProcessor, &cpuset);
+		pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
 	}
     }
 	return(NULL);
@@ -2730,19 +2742,22 @@ void Core_Manager(REF *Ref)
 	PROC *Proc	= Ref->Proc;
 	CORE **Core	= Ref->Core;
 
-	unsigned int cpu = 0;
+	unsigned int cpu = 0, localProcessor = Shm->Proc.CPU.Service;
 	double maxRelFreq;
 
 	pthread_t tid = pthread_self();
 	Shm->AppSvr = tid;
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
+	CPU_SET(localProcessor, &cpuset);
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
 		pthread_setname_np(tid, "corefreqd-pmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	PerCore_Update(Shm, Proc, Core, cpu);
+    }
     while (!BITVAL(Shutdown, 0))
     {	// Loop while all the cpu room bits are not cleared.
 	while (!BITVAL(Shutdown, 0)
@@ -2759,12 +2774,17 @@ void Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq = 0.0;
 
-	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
+	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++)
+	{
 	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
 			// Remove this cpu.
 			pthread_join(Arg[cpu].TID, NULL);
 			Arg[cpu].TID = 0;
+
+			Package_Update(Shm, Proc);
+			PerCore_Update(Shm, Proc, Core, cpu);
+
 			// Raise this bit up to notify a platform change.
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
@@ -2773,8 +2793,8 @@ void Core_Manager(REF *Ref)
 	    } else {
 		if (!Arg[cpu].TID) {
 			// Add this cpu.
+			Package_Update(Shm, Proc);
 			PerCore_Update(Shm, Proc, Core, cpu);
-			HyperThreading(Shm, Proc);
 
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
@@ -2812,8 +2832,6 @@ void Core_Manager(REF *Ref)
 	    }
 	}
 	if (!BITVAL(Shutdown, 0)) {
-		// Update the count of online CPU
-		Shm->Proc.CPU.OnLine = Proc->CPU.OnLine;
 		// Compute the counters averages.
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -2822,37 +2840,49 @@ void Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
 
-		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-			Shm->SysGate.tickStep = Proc->tickStep;
-			if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-				// Update OS tasks and memory usage.
-				if (SysGate_OnDemand(Ref, 1) == 0) {
-					SysGate_Update(Ref);
-				}
+	    if (Shm->Proc.CPU.Service != Proc->CPU.Service) {
+		Shm->Proc.CPU.Service = Proc->CPU.Service;
+
+		if (localProcessor != Shm->Proc.CPU.Service) {
+			localProcessor = Shm->Proc.CPU.Service;
+
+			CPU_ZERO(&cpuset);
+			CPU_SET(localProcessor, &cpuset);
+			pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+		}
+	    }
+
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		Shm->SysGate.tickStep = Proc->tickStep;
+		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+			// Update OS tasks and memory usage.
+			if (SysGate_OnDemand(Ref, 1) == 0) {
+				SysGate_Update(Ref);
 			}
 		}
+	    }
 		// Notify Client.
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	// Reset the Room mask
 	BITMSK(BUS_LOCK, roomCore, Shm->Proc.CPU.Count);
     }
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-		if (Arg[cpu].TID)
-			pthread_join(Arg[cpu].TID, NULL);
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	if (Arg[cpu].TID)
+		pthread_join(Arg[cpu].TID, NULL);
+    }
 	free(Arg);
 }
 
 void Child_Manager(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-	unsigned int cpu = 0;
+	unsigned int cpu = 0, localProcessor = Shm->Proc.CPU.Service;
 
 	pthread_t tid = pthread_self();
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
-
+	CPU_SET(localProcessor, &cpuset);
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
 		pthread_setname_np(tid, "corefreqd-cmgr");
 
@@ -2877,6 +2907,13 @@ void Child_Manager(REF *Ref)
 					&Arg[cpu]);
 		}
 	    }
+	}
+	if (localProcessor != Shm->Proc.CPU.Service) {
+		localProcessor = Shm->Proc.CPU.Service;
+
+		CPU_ZERO(&cpuset);
+		CPU_SET(localProcessor, &cpuset);
+		pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
 	}
 	nanosleep(&Shm->Sleep.childWaiting, NULL);
     } while (!BITVAL(Shutdown, 0)) ;
@@ -2961,16 +2998,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			.SysGate	= NULL
 		};
 
-		Architecture(Shm, Proc);
-
 		Package_Update(Shm, Proc);
-
-		// Technologies aggregation.
-		PerformanceMonitoring(Shm, Proc);
-
-		HyperThreading(Shm, Proc);
-
-		PowerInterface(Shm, Proc);
 
 		// Initialize notification.
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);

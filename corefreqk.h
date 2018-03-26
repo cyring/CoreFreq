@@ -325,6 +325,25 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
+typedef struct {
+	FEATURES	Features;
+	unsigned int	SMT_Count,
+			ServiceProcessor;
+	signed int	rc;
+} INIT_ARG;
+
+typedef struct {			// V[0] stores previous TSC
+	unsigned long long V[2];	// V[1] stores current TSC
+} TSC_STRUCT;
+
+#define OCCURRENCES 4
+// OCCURRENCES x 2 (TSC values) needs a 64-byte cache line size.
+#define STRUCT_SIZE (OCCURRENCES * sizeof(TSC_STRUCT))
+
+typedef struct {
+	TSC_STRUCT	*TSC[2];
+	CLOCK		Clock;
+} COMPUTE_ARG;
 
 typedef struct
 {

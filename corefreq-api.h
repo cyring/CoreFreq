@@ -58,7 +58,7 @@ typedef struct {
 typedef struct
 {
 	LOCAL_APIC	Base;
-	int		ApicID,
+	signed int	ApicID,
 			CoreID,
 			ThreadID,
 			PackageID;
@@ -576,7 +576,8 @@ typedef struct
 
 	struct {
 		unsigned int	Count,
-				OnLine;
+				OnLine,
+				Service;
 	} CPU;
 
 	signed int		ArchID;
