@@ -534,11 +534,8 @@ static void Compute_Clock(void *arg)
 */
 	void ComputeWithSerializedTSC(void)
 	{
-		/*++ No preemption, no interrupt.
-		unsigned long flags;
-		preempt_disable();
-		raw_local_irq_save(flags);
-		*/
+		// Writeback and Invalidate Caches
+		WBINVD();
 		// Warm-up & Overhead
 		for (loop = 0; loop < OCCURRENCES; loop++) {
 			RDTSCP64(pCompute->TSC[0][loop].V[0]);
@@ -556,19 +553,12 @@ static void Compute_Clock(void *arg)
 
 			RDTSCP64(pCompute->TSC[1][loop].V[1]);
 		}
-		/*++ Restore preemption and interrupt.
-		raw_local_irq_restore(flags);
-		preempt_enable();
-		*/
 	}
 
 	void ComputeWithUnSerializedTSC(void)
 	{
-		/*++ No preemption, no interrupt.
-		unsigned long flags;
-		preempt_disable();
-		raw_local_irq_save(flags);
-		*/
+		// Writeback and Invalidate Caches
+		WBINVD();
 		// Warm-up & Overhead
 		for (loop=0; loop < OCCURRENCES; loop++) {
 			RDTSC64(pCompute->TSC[0][loop].V[0]);
@@ -585,10 +575,6 @@ static void Compute_Clock(void *arg)
 
 			RDTSC64(pCompute->TSC[1][loop].V[1]);
 		}
-		/*++ Restore preemption and interrupt.
-		raw_local_irq_restore(flags);
-		preempt_enable();
-		*/
 	}
 
 	// Is the TSC invariant or a serialized read instruction is available ?

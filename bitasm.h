@@ -40,6 +40,15 @@ asm volatile					\
 	:					\
 )
 
+#define WBINVD()				\
+asm volatile					\
+(						\
+	"wbinvd"				\
+	:					\
+	:					\
+	: "memory"				\
+)
+
 #define SERIALIZE()				\
 asm volatile					\
 (						\
