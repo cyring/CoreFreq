@@ -121,7 +121,7 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 	    } else {
 		printv(OutFunc, SCANKEY_NULL, width, 0, "CPU #%-2u", cpu);
 	    }
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		printv(OutFunc, SCANKEY_NULL, width, 2, format,
 			0x00000000, 0x00000000,
 			4, hSpace,
@@ -277,7 +277,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 
 	printv("    ");
 	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -286,7 +286,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("    ");
 	printv("    ");
 	for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -307,7 +307,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("#%-2u ", cpu);
 
 	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -315,7 +315,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	}
 	printv("    ");
 	for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -330,7 +330,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printv("#%-2u ", cpu);
 	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -354,7 +354,8 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("    ");
 
 	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)
+	    &&  ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -363,7 +364,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	printv("    ");
 	printv("    ");
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
 					SR[idx].bit, SR[idx].len));
 	    else
@@ -1401,7 +1402,7 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 			Shm->Cpu[cpu].Topology.ThreadID);
 
 	  for (level = 0; level < CACHE_MAX_LEVEL; level++)
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printv("%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
@@ -4849,7 +4850,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	return(row);
     }
 
-    void Layout_Footer(Layer *layer, CUINT row, unsigned int *processorHot)
+    void Layout_Footer(Layer *layer, CUINT row, signed int *processorHot)
     {
 	const unsigned int
 		isTurbo = !BITWISEXOR(LOCKLESS, Shm->Proc.TurboBoost,
@@ -4964,7 +4965,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =
 		TM2[Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.TM2];
 
-	    if ( (*processorHot) ) {
+	    if ( (*processorHot) != -1 ) {
 		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =
 			MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -5017,7 +5018,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
-	    if ( (*processorHot) ) {
+	    if ( (*processorHot) != -1 ) {
 		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =
 			MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -5134,20 +5135,22 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 	{
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	// Upper view area
+
+
+		// Upper view area
 		CUINT	bar0 = (Flop->Relative.Ratio * loadWidth) / maxRatio,
 			bar1 = loadWidth - bar0;
-	// Print the Per Core BCLK indicator (yellow)
+		// Print the Per Core BCLK indicator (yellow)
 		LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
 				(iClock == (cpu - cpuScroll)) ? '~' : 0x20;
-	// Draw the relative Core frequency ratio
+		// Draw the relative Core frequency ratio
 		LayerFillAt(layer, LOAD_LEAD, row,
 				bar0, hBar,
 				MakeAttr((Flop->Relative.Ratio > medianRatio ?
 					RED : Flop->Relative.Ratio > minRatio ?
 						YELLOW : GREEN),
 					0, BLACK, 1));
-	// Pad with blank characters
+		// Pad with blank characters
 		LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
@@ -5700,9 +5703,9 @@ void Top(SHM_STRUCT *Shm, char option)
 	Layout_Ruller_Slice
     };
 
-    void Layout_Header_DualView_Footer(Layer *layer)
-    {
-	unsigned int processorHot = 0;
+  void Layout_Header_DualView_Footer(Layer *layer)
+  {
+	signed int processorHot = -1;
 	CUINT row = 0;
 
 	loadWidth = drawSize.width - LOAD_LEAD;
@@ -5713,56 +5716,56 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	Layout_Ruller_Load(layer, row);
 
-	for (cpu = cpuScroll; cpu < (cpuScroll + MAX_ROWS); cpu++)
-	{
-		row++;
+    for (cpu = cpuScroll; cpu < (cpuScroll + MAX_ROWS); cpu++)
+    {
+	row++;
 
-		Layout_Load(layer, row);
+	Layout_Load(layer, row);
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		struct FLIP_FLOP *Flop =
-				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-		// Store thermal throttling
-		if (Flop->Thermal.Trip && !processorHot) {
-			processorHot = cpu;
-		}
-		Illuminates_CPU(layer, row, CYAN, BLACK);
-
-		Matrix_Layout_Monitor[drawFlag.view](layer, row);
-	    } else {
-		Illuminates_CPU(layer, row, BLUE, BLACK);
-
-		ClearGarbage(	dLayer, code,
-				(LOAD_LEAD - 1), row,
-				(drawSize.width - LOAD_LEAD + 1));
-
-		ClearGarbage(	dLayer, attr,
-				(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
-				(drawSize.width - LOAD_LEAD + 1));
-
-		ClearGarbage(	dLayer, code,
-				(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
-				(drawSize.width - LOAD_LEAD + 1));
-	    }
-
-		Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
-
-		hBClk[cpu][ 0] = digit[0] + '0';
-		hBClk[cpu][ 1] = digit[1] + '0';
-		hBClk[cpu][ 2] = digit[2] + '0';
-		hBClk[cpu][ 4] = digit[3] + '0';
-		hBClk[cpu][ 5] = digit[4] + '0';
-		hBClk[cpu][ 6] = digit[5] + '0';
-		hBClk[cpu][ 8] = digit[6] + '0';
-		hBClk[cpu][ 9] = digit[7] + '0';
-		hBClk[cpu][10] = digit[8] + '0';
+      if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+      {
+	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	// Store thermal throttling
+	if (Flop->Thermal.Trip && (processorHot == -1)) {
+		processorHot = cpu;
 	}
+	Illuminates_CPU(layer, row, CYAN, BLACK);
+
+	Matrix_Layout_Monitor[drawFlag.view](layer, row);
+      } else {
+	Illuminates_CPU(layer, row, BLUE, BLACK);
+
+	ClearGarbage(	dLayer, code,
+			(LOAD_LEAD - 1), row,
+			(drawSize.width - LOAD_LEAD + 1));
+
+	ClearGarbage(	dLayer, attr,
+			(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
+			(drawSize.width - LOAD_LEAD + 1));
+
+	ClearGarbage(	dLayer, code,
+			(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
+			(drawSize.width - LOAD_LEAD + 1));
+      }
+
+	Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
+
+	hBClk[cpu][ 0] = digit[0] + '0';
+	hBClk[cpu][ 1] = digit[1] + '0';
+	hBClk[cpu][ 2] = digit[2] + '0';
+	hBClk[cpu][ 4] = digit[3] + '0';
+	hBClk[cpu][ 5] = digit[4] + '0';
+	hBClk[cpu][ 6] = digit[5] + '0';
+	hBClk[cpu][ 8] = digit[6] + '0';
+	hBClk[cpu][ 9] = digit[7] + '0';
+	hBClk[cpu][10] = digit[8] + '0';
+    }
 	row++;
 
 	row = Matrix_Layout_Ruller[drawFlag.view](layer, row);
 
 	Layout_Footer(layer, row, &processorHot);
-    }
+  }
 
     VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
 	Draw_Monitor_Frequency,
@@ -5814,10 +5817,8 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	unsigned int _cpu = card->data.dword.lo;
 
-	if (!BITVAL(Shm->Cpu[_cpu].OffLine, HW)) {
-	    Dec2Digit(_cpu, digit);
-	    if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
-	    {
+	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS)) {
+		Dec2Digit(_cpu, digit);
 		LayerDeclare(4 * INTER_WIDTH) hOnLine = {
 			.origin = {
 				.col = card->origin.col,
@@ -5830,7 +5831,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
 				hOnLine.length, hOnLine.attr, hOnLine.code);
-	    } else {
+	} else {
 		LayerDeclare(4 * INTER_WIDTH) hOffLine = {
 			.origin = {
 				.col = card->origin.col,
@@ -5848,15 +5849,14 @@ void Top(SHM_STRUCT *Shm, char option)
 
 		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row, \
 				hOffLine.length, hOffLine.attr, hOffLine.code);
-	    }
-	    LayerAt(layer, code,
+	}
+	LayerAt(layer, code,
 		(card->origin.col + 3),			\
 		(card->origin.row + 3)) = digit[7] + '0';
 
-	    LayerAt(layer, code,			\
+	LayerAt(layer, code,			\
 		(card->origin.col + 4),			\
 		(card->origin.row + 3)) = digit[8] + '0';
-	}
     }
 
     void Layout_Card_CLK(Layer *layer, Card* card)
