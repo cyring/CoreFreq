@@ -176,9 +176,10 @@ typedef struct
 
 	struct {
 		unsigned int		Count,
-					OnLine,
-					Service;
+					OnLine;
 	} CPU;
+
+	SERVICE_PROC			Service;
 
 	unsigned int			Boost[BOOST(SIZE)],
 					PM_version;

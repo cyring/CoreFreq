@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.22.1"
+#define COREFREQ_VERSION	"1.22.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -262,6 +262,14 @@ typedef struct
 		( ((this_ratio * clock.Q) * 1000L * interval)		\
 		+ ((this_ratio * clock.R) / max_ratio))
 
+typedef union
+{
+	signed long long	Proc;
+	struct {
+		unsigned int	Core;
+		signed int	Thread;
+	};
+} SERVICE_PROC;
 
 /* Sources:
  * Intel® 64 and IA-32 Architectures Software Developer’s Manual; Vol. 2A
@@ -792,7 +800,7 @@ typedef struct	// Processor Capacity Leaf.
 	} EAX;
 	struct { // AMD reserved
 		unsigned int
-		NC		:  8-0,  // Zero based number of physical cores 
+		NC		:  8-0,  // Zero based number of physical cores
 		Reserved1	: 12-8,
 		ApicIdCoreIdSize: 16-12, // Initial APIC ID size to compute MNC
 		PerfTscSize	: 18-16, // 00b=40, 01b=48, 10b=56, 11b=64 bits
@@ -1143,6 +1151,8 @@ typedef struct {
 #define COREFREQ_IOCTL_IORCST	_IO(COREFREQ_IOCTL_MAGIC, 0xd)
 #define COREFREQ_IOCTL_ODCM	_IO(COREFREQ_IOCTL_MAGIC, 0xe)
 #define COREFREQ_IOCTL_ODCM_DC	_IO(COREFREQ_IOCTL_MAGIC, 0xf)
+#define COREFREQ_IOCTL_CPU_OFF	_IO(COREFREQ_IOCTL_MAGIC, 0x10)
+#define COREFREQ_IOCTL_CPU_ON	_IO(COREFREQ_IOCTL_MAGIC, 0x11)
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 

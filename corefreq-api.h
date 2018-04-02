@@ -576,9 +576,10 @@ typedef struct
 
 	struct {
 		unsigned int	Count,
-				OnLine,
-				Service;
+				OnLine;
 	} CPU;
+
+	SERVICE_PROC		Service;
 
 	signed int		ArchID;
 	unsigned int		Boost[BOOST(SIZE)];

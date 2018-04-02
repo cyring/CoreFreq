@@ -198,7 +198,7 @@ static void *Core_Cycle(void *arg)
 	break;
 	// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
       case VOLTAGE_FORMULA_INTEL_SNB:
-	if (cpu == Pkg->CPU.Service) {
+	if (cpu == Pkg->Service.Core) {
 		Flip->Voltage.Vcore = (double) (Flip->Voltage.VID) / 8192.0;
 	}
 	break;
@@ -239,13 +239,13 @@ static void *Core_Cycle(void *arg)
 		Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
 	// Package C-state Residency Counters
-	if (cpu == Pkg->CPU.Service)
+	if (cpu == Pkg->Service.Core)
 	{
 		enum PWR_DOMAIN pw;
 
 		Shm->Proc.Toggle = !Shm->Proc.Toggle;
 
-	struct PKG_FLIP_FLOP *Flip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
+	    struct PKG_FLIP_FLOP *Flip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
 
 		Flip->Delta.PTSC = Pkg->Delta.PTSC;
 		Flip->Delta.PC02 = Pkg->Delta.PC02;
@@ -305,14 +305,14 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 	switch (pattern) {
 	case RESET_CSP:
 		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
-			if (seek == Shm->Proc.CPU.Service)
+			if (seek == Shm->Proc.Service.Core)
 				BITSET(LOCKLESS, roomSched, seek);
 			else
 				BITCLR(LOCKLESS, roomSched, seek);
 		}
 		break;
 	case ALL_SMT:
-		if (cpu == Shm->Proc.CPU.Service)
+		if (cpu == Shm->Proc.Service.Core)
 			roomSched = roomSeed;
 		break;
 	case RAND_SMT:
@@ -396,7 +396,7 @@ static void *Child_Thread(void *arg)
 			SliceScheduling(Shm, cpu, Arg->Ref->Slice.pattern);
 
 		      if (BITVAL(Cpu->OffLine, OS)) { // ReSchedule to Service
-			SliceScheduling(Shm, Shm->Proc.CPU.Service, RESET_CSP);
+			SliceScheduling(Shm, Shm->Proc.Service.Core, RESET_CSP);
 			break;
 		      }
 		    } else {
@@ -431,9 +431,9 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy all initial CPUID features.
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
 	// Copy the numbers of total & online CPU.
-	Shm->Proc.CPU.Count   = Proc->CPU.Count;
-	Shm->Proc.CPU.OnLine  = Proc->CPU.OnLine;
-	Shm->Proc.CPU.Service = Proc->CPU.Service;
+	Shm->Proc.CPU.Count	= Proc->CPU.Count;
+	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
+	Shm->Proc.Service.Proc	= Proc->Service.Proc;
 	// Copy the Architecture name.
 	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
 	// Copy the base clock ratios.
@@ -2492,7 +2492,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	CPUID_Dump(Shm, Core, cpu);
 
-	if (cpu == Proc->CPU.Service)
+	if (cpu == Proc->Service.Core)
 		Uncore(Shm, Proc, cpu);
 }
 
@@ -2561,7 +2561,9 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-		    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0) {
+		    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0)
+		    {
+			Package_Update(Ref->Shm, Ref->Proc);
 			PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
 		    }
 		if (Quiet & 0x100)
@@ -2618,7 +2620,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		if (BITVAL(Shutdown, 0))	/*SpinLock*/
 			break;
 	}
-	SliceScheduling(Ref->Shm, Ref->Shm->Proc.CPU.Service, porder->pattern);
+	SliceScheduling(Ref->Shm, Ref->Shm->Proc.Service.Core, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
 	Ref->Slice.arg  = porder->ctrl.arg;
@@ -2641,11 +2643,29 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
   }
 }
 
+int ServerFollowService(SERVICE_PROC *pSlave,
+			SERVICE_PROC *pMaster,
+			pthread_t tid)
+{
+	if (pSlave->Proc != pMaster->Proc) {
+		pSlave->Proc = pMaster->Proc;
+
+		cpu_set_t cpuset;
+		CPU_ZERO(&cpuset);
+		CPU_SET(pSlave->Core, &cpuset);
+		if (pSlave->Thread != -1)
+			CPU_SET(pSlave->Thread, &cpuset);
+
+		return(pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
+	}
+	return(0);
+}
+
 static void *Emergency_Handler(void *pRef)
 {
 	REF *Ref = (REF *) pRef;
-	unsigned int rid = (Ref->CPID == 0),
-			localProcessor = Ref->Shm->Proc.CPU.Service;
+	unsigned int rid = (Ref->CPID == 0);
+	SERVICE_PROC localService = {.Proc = -1};
 	int caught = 0, leave = 0;
 	char handlerName[TASK_COMM_LEN] = {
 		'c','o','r','e','f','r','e','q','d','-','r','i','n','g','0',0
@@ -2653,11 +2673,9 @@ static void *Emergency_Handler(void *pRef)
 	handlerName[14] += rid;
 
 	pthread_t tid = pthread_self();
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(localProcessor, &cpuset);
-	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
-		pthread_setname_np(tid, handlerName);
+
+    if (ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid) == 0)
+	pthread_setname_np(tid, handlerName);
 
     while (!leave) {
 	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
@@ -2689,13 +2707,7 @@ static void *Emergency_Handler(void *pRef)
 			Child_Ring_Handler(Ref, rid);
 		}
 	}
-	if (localProcessor != Ref->Shm->Proc.CPU.Service) {
-		localProcessor = Ref->Shm->Proc.CPU.Service;
-
-		CPU_ZERO(&cpuset);
-		CPU_SET(localProcessor, &cpuset);
-		pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	}
+	ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid);
     }
 	return(NULL);
 }
@@ -2733,21 +2745,20 @@ void Core_Manager(REF *Ref)
 	SHM_STRUCT *Shm = Ref->Shm;
 	PROC *Proc	= Ref->Proc;
 	CORE **Core	= Ref->Core;
-
-	unsigned int cpu = 0, localProcessor = Shm->Proc.CPU.Service;
+	SERVICE_PROC localService = {.Proc = -1};
 	double maxRelFreq;
+	unsigned int cpu = 0;
 
 	pthread_t tid = pthread_self();
 	Shm->AppSvr = tid;
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(localProcessor, &cpuset);
-	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
+
+	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0)
 		pthread_setname_np(tid, "corefreqd-pmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+    {
 	PerCore_Update(Shm, Proc, Core, cpu);
     }
     while (!BITVAL(Shutdown, 0))
@@ -2776,6 +2787,9 @@ void Core_Manager(REF *Ref)
 
 			Package_Update(Shm, Proc);
 			PerCore_Update(Shm, Proc, Core, cpu);
+			ServerFollowService(&localService,
+					    &Shm->Proc.Service,
+					    tid);
 
 			// Raise this bit up to notify a platform change.
 			if (!BITVAL(Shm->Proc.Sync, 63))
@@ -2787,6 +2801,9 @@ void Core_Manager(REF *Ref)
 			// Add this cpu.
 			Package_Update(Shm, Proc);
 			PerCore_Update(Shm, Proc, Core, cpu);
+			ServerFollowService(&localService,
+					    &Shm->Proc.Service,
+					    tid);
 
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
@@ -2832,18 +2849,6 @@ void Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
 
-	    if (Shm->Proc.CPU.Service != Proc->CPU.Service) {
-		Shm->Proc.CPU.Service = Proc->CPU.Service;
-
-		if (localProcessor != Shm->Proc.CPU.Service) {
-			localProcessor = Shm->Proc.CPU.Service;
-
-			CPU_ZERO(&cpuset);
-			CPU_SET(localProcessor, &cpuset);
-			pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-		}
-	    }
-
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
@@ -2869,13 +2874,12 @@ void Core_Manager(REF *Ref)
 void Child_Manager(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
-	unsigned int cpu = 0, localProcessor = Shm->Proc.CPU.Service;
+	SERVICE_PROC localService = {.Proc = -1};
+	unsigned int cpu = 0;
 
 	pthread_t tid = pthread_self();
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(localProcessor, &cpuset);
-	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) == 0)
+
+	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0)
 		pthread_setname_np(tid, "corefreqd-cmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
@@ -2900,13 +2904,8 @@ void Child_Manager(REF *Ref)
 		}
 	    }
 	}
-	if (localProcessor != Shm->Proc.CPU.Service) {
-		localProcessor = Shm->Proc.CPU.Service;
+	ServerFollowService(&localService, &Shm->Proc.Service, tid);
 
-		CPU_ZERO(&cpuset);
-		CPU_SET(localProcessor, &cpuset);
-		pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
-	}
 	nanosleep(&Shm->Sleep.childWaiting, NULL);
     } while (!BITVAL(Shutdown, 0)) ;
 

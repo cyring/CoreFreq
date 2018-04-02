@@ -40,7 +40,23 @@ char hLine[] =	"--------""--------""--------""--------""--------"	\
 
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
-unsigned int localProcessor;
+SERVICE_PROC localService = {.Proc = -1};
+
+int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
+{
+	if (pSlave->Proc != pMaster->Proc) {
+		pSlave->Proc = pMaster->Proc;
+
+		cpu_set_t cpuset;
+		CPU_ZERO(&cpuset);
+		CPU_SET(pSlave->Core, &cpuset);
+		if (pSlave->Thread != -1)
+			CPU_SET(pSlave->Thread, &cpuset);
+
+		return(sched_setaffinity(pid, sizeof(cpu_set_t), &cpuset));
+	}
+	return(0);
+}
 
 void Emergency(int caught)
 {
@@ -374,8 +390,7 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
     }
 }
 
-void SysInfoProc(SHM_STRUCT *Shm,
-		CUINT width,
+void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
 		void(*OutFunc)(unsigned long long key, char *output))
 {
 	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
@@ -385,13 +400,13 @@ void SysInfoProc(SHM_STRUCT *Shm,
   {
     if (Shm->Proc.Boost[_boost] > 0) {
 	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-		(int)(20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-		(double) ( Shm->Proc.Boost[_boost]
-			* Shm->Cpu[Shm->Proc.CPU.Service].Clock.Hz) / 1000000.0,
-			20, hSpace,
-			symb[syc][0],
-			Shm->Proc.Boost[_boost],
-			symb[syc][1]);
+	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
+	(double) ( Shm->Proc.Boost[_boost]
+		* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz) / 1000000.0,
+		20, hSpace,
+		symb[syc][0],
+		Shm->Proc.Boost[_boost],
+		symb[syc][1]);
 	printv(OutFunc, _key, width, 0, str);
     }
   }
@@ -400,13 +415,13 @@ void SysInfoProc(SHM_STRUCT *Shm,
   {
     if (Shm->Uncore.Boost[_boost] > 0) {
 	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-		(int)(20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-		(double) ( Shm->Uncore.Boost[_boost]
-			* Shm->Cpu[Shm->Proc.CPU.Service].Clock.Hz) / 1000000.0,
-			20, hSpace,
-			symb[syc][0],
-			Shm->Uncore.Boost[_boost],
-			symb[syc][1]);
+	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
+	(double) ( Shm->Uncore.Boost[_boost]
+		* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz) / 1000000.0,
+		20, hSpace,
+		symb[syc][0],
+		Shm->Uncore.Boost[_boost],
+		symb[syc][1]);
 	printv(OutFunc, _key, width, 0, str);
     }
   }
@@ -434,14 +449,14 @@ void SysInfoProc(SHM_STRUCT *Shm,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Microcode%.*s[%6u]",
 		width - 20, hSpace,
-		Shm->Cpu[Shm->Proc.CPU.Service].Query.Microcode);
+		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Online CPU%.*s[ %2u/%-2u]",
 		width - 21, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%6.2f]",
 		width - 21, hSpace,
-		Shm->Cpu[Shm->Proc.CPU.Service].Clock.Hz / 1000000.0);
+		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Ratio Limited%.*s[%6s]",
 		width - 24, hSpace,
@@ -789,7 +804,7 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Extended xAPIC Support%.*sx2APIC   [%7s]",
 		width - 43, hSpace,
-		x2APIC[Shm->Cpu[Shm->Proc.CPU.Service].Topology.MP.x2APIC]);
+		x2APIC[Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC]);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Execution Disable Bit Support%.*sXD-Bit   [%7s]",
@@ -925,41 +940,41 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 3,
 		"Configuration Control%.*sCONFIG   [%7s]",
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
-		!Shm->Cpu[Shm->Proc.CPU.Service].Query.CfgLock ?
+		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
 			"UNLOCK" : "LOCK");
 
-	if (!Shm->Cpu[Shm->Proc.CPU.Service].Query.CfgLock) {
+	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
 		printv(OutFunc, BOXKEY_PKGCST, width, 3,
 			"Lowest C-State%.*sLIMIT   <%7d>",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateLimit);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
 		printv(OutFunc, BOXKEY_IOMWAIT, width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.IORedir?
+			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir?
 				" ENABLE" : "DISABLE");
 
 		printv(OutFunc, BOXKEY_IORCST, width, 3,
 			"Max C-State Inclusion%.*sRANGE   <%7d>",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateInclude);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	} else {
 		printv(OutFunc, SCANKEY_NULL, width, 3,
 			"Lowest C-State%.*sLIMIT   [%7d]",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateLimit);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
 		printv(OutFunc, SCANKEY_NULL, width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.IORedir ?
+			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				" ENABLE" : "DISABLE");
 
 		printv(OutFunc, SCANKEY_NULL, width, 3,
 			"Max C-State Inclusion%.*sRANGE   [%7d]",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateInclude);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"MWAIT States:%.*sC0      C1      C2      C3      C4",
@@ -1034,9 +1049,9 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, BOXKEY_DUTYCYCLE, width, 3,
 	"DutyCycle%.*s<%6.2f%%>", width - (OutFunc == NULL ? 24: 22), hSpace,
-	(Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.Extended ?
+	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
-	* Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.ClockMod));
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Power Management%.*sPWR MGMT   [%7s]",
@@ -1045,11 +1060,11 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 3,
 		"Energy Policy%.*sBias Hint   [%7u]",
 		width - (OutFunc == NULL ? 40 : 38), hSpace,
-		Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.PowerPolicy);
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Junction Temperature%.*sTjMax   [%7u]", width - 40, hSpace,
-		Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.Target);
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
@@ -1068,13 +1083,13 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Thermal Monitor 1%.*sTM1|TTP   [%7s]",
 		width - 39, hSpace,
-		TM[  Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.TM1
+		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 			| Shm->Proc.Features.AdvPower.EDX.TTP ]);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace,
-		TM[  Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.TM2
+		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 			| Shm->Proc.Features.AdvPower.EDX.TM ]);
 
 	printv(OutFunc, SCANKEY_NULL, width, 2, "Units");
@@ -1198,6 +1213,8 @@ void Package(SHM_STRUCT *Shm)
 	if (BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
+
 	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	printf( "\t\t" "Cycles" "\t\t" "State(%%)" "\n"	\
 		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
@@ -1232,6 +1249,8 @@ void Counters(SHM_STRUCT *Shm)
 
 	if (BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 		printf("CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
@@ -1279,7 +1298,7 @@ void Counters(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7,
 			8, hSpace,
-			Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.Target);
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target);
     }
 }
 
@@ -1295,6 +1314,8 @@ void Voltage(SHM_STRUCT *Shm)
 
 	if (BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 		printf("CPU Freq(MHz) VID  Vcore\n");
 	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
@@ -1330,32 +1351,35 @@ void Voltage(SHM_STRUCT *Shm)
 void Instructions(SHM_STRUCT *Shm)
 {
 	unsigned int cpu = 0;
-	while (!BITVAL(Shutdown, 0)) {
-	  while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
-			nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	  BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+    while (!BITVAL(Shutdown, 0)) {
+	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	  if (BITVAL(Shm->Proc.Sync, 63))
+	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+
+	if (BITVAL(Shm->Proc.Sync, 63))
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 
-		    printf("CPU     IPS            IPC            CPI\n");
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	  for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+		printf("CPU     IPS            IPC            CPI\n");
+
+	for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		    printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+		printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
 			cpu,
 			Flop->State.IPS,
 			Flop->State.IPC,
 			Flop->State.CPI);
-		else
-		    printf("#%02u\n", cpu);
-	    }
-	  printf("\n");
+	    else
+		printf("#%02u\n", cpu);
+	  }
+		printf("\n");
 	}
 }
 
@@ -1406,9 +1430,9 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack?
+			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
 				'w' : 0x20,
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive?
+			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 				'i' : 0x20);
 	    else
 		printv("       -  -  ");
@@ -1444,101 +1468,104 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		strncpy(hInt[1], &fInt[5], 5); hInt[1][5] = '\0';
 	}
 
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	    printv("Contr"); printv("oller");
-	    printv(" #%-3u", mc); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     ");
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+	printv("Contr"); printv("oller");
+	printv(" #%-3u", mc); printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     ");
 
-	    switch (Shm->Uncore.MC[mc].ChannelCount) {
-	    case 1:
+	switch (Shm->Uncore.MC[mc].ChannelCount) {
+	case 1:
 		printv("Singl"); printv("e Cha"); printv("nnel ");
 		break;
-	    case 2:
+	case 2:
 		printv(" Dual"); printv(" Chan"); printv("nel  ");
 		break;
-	    case 3:
+	case 3:
 		printv("Tripl"); printv("e Cha"); printv("nnel ");
 		break;
-	    case 4:
+	case 4:
 		printv(" Quad"); printv(" Chan"); printv("nel  ");
 		break;
-	    case 6:
+	case 6:
 		printv(" Hexa"); printv(" Chan"); printv("nel  ");
 		break;
-	    case 8:
+	case 8:
 		printv(" Octa"); printv(" Chan"); printv("nel  ");
 		break;
-	    default:
+	default:
 		printv("     "); printv("     "); printv("     ");
 		break;
-	    }
+	}
 
-	    printv(" Bus "); printv("Rate ");
-	    printv("%5llu", Shm->Uncore.Bus.Rate);
-	    switch (Shm->Uncore.Unit.Bus_Rate) {
-	    case 0b00:
+	printv(" Bus "); printv("Rate ");
+	printv("%5llu", Shm->Uncore.Bus.Rate);
+
+	switch (Shm->Uncore.Unit.Bus_Rate) {
+	case 0b00:
 		printv(" MHz ");
 		break;
-	    case 0b01:
+	case 0b01:
 		printv(" MT/s");
 		break;
-	    case 0b10:
+	case 0b10:
 		printv(" MB/s");
 		break;
-	    case 0b11:
+	case 0b11:
 		printv("     ");
 		break;
-	    }
-	    printv("     ");
+	}
+	printv("     ");
 
-	    printv(" Bus "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.Bus.Speed);
-	    switch (Shm->Uncore.Unit.BusSpeed) {
-	    case 0b00:
+	printv(" Bus "); printv("Speed");
+	printv("%5llu", Shm->Uncore.Bus.Speed);
+
+	switch (Shm->Uncore.Unit.BusSpeed) {
+	case 0b00:
 		printv(" MHz ");
 		break;
-	    case 0b01:
+	case 0b01:
 		printv(" MT/s");
 		break;
-	    case 0b10:
+	case 0b10:
 		printv(" MB/s");
 		break;
-	    case 0b11:
+	case 0b11:
 		printv("     ");
 		break;
-	    }
-	    printv("     ");
+	}
+	printv("     ");
 
-	    printv("DRAM "); printv("Speed");
-	    printv("%5llu", Shm->Uncore.CtrlSpeed);
-	    switch (Shm->Uncore.Unit.DDRSpeed) {
-	    case 0b00:
+	printv("DRAM "); printv("Speed");
+	printv("%5llu", Shm->Uncore.CtrlSpeed);
+
+	switch (Shm->Uncore.Unit.DDRSpeed) {
+	case 0b00:
 		printv(" MHz ");
 		break;
-	    case 0b01:
+	case 0b01:
 		printv(" MT/s");
 		break;
-	    case 0b10:
+	case 0b10:
 		printv(" MB/s");
 		break;
-	    case 0b11:
+	case 0b11:
 		printv("     ");
 		break;
-	    }
+	}
 
-	    printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    printv(" Cha ");
-	    printv("   CL");printv("  RCD");printv("   RP");printv("  RAS");
-	    printv("  RRD");printv("  RFC");printv("   WR");printv(" RTPr");
-	    printv(" WTPr");printv("  FAW");printv("  B2B");printv("  CWL");
-	    printv(" Rate");
+	printv(" Cha ");
+	printv("   CL");printv("  RCD");printv("   RP");printv("  RAS");
+	printv("  RRD");printv("  RFC");printv("   WR");printv(" RTPr");
+	printv(" WTPr");printv("  FAW");printv("  B2B");printv("  CWL");
+	printv(" Rate");
 
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
@@ -1553,15 +1580,15 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
 		printv("%4uN",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
-	    }
-	    printv("     ");
-	    printv(" ddWR"); printv(" drWR"); printv(" srWR");
-	    printv(" ddRW"); printv(" drRW"); printv(" srRW");
-	    printv(" ddRR"); printv(" drRR"); printv(" srRR");
-	    printv(" ddWW"); printv(" drWW"); printv(" srWW");
-	    printv("  ECC");
+	}
+	printv("     ");
+	printv(" ddWR"); printv(" drWR"); printv(" srWR");
+	printv(" ddRW"); printv(" drRW"); printv(" srRW");
+	printv(" ddRR"); printv(" drRR"); printv(" srRR");
+	printv(" ddWW"); printv(" drWW"); printv(" srWW");
+	printv("  ECC");
 
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
 		printv("\x20\x20#%-2u", cha);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
@@ -1580,25 +1607,25 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
 
 		printv("%4u ", Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
-	    }
-	    printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
-	    printv("     "); printv("     "); printv("     "); printv("     ");
+	}
+	printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
+	printv("     "); printv("     "); printv("     "); printv("     ");
 
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-	      printv(" DIMM"); printv(" Geom"); printv("etry ");printv("for c");
-	      printv("hanne"); printv("l #%-2u", cha);
-	      printv("     "); printv("     "); printv("     ");printv("     ");
-	      printv("     "); printv("     "); printv("     ");printv("     ");
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+		printv(" DIMM");printv(" Geom");printv("etry ");printv("for c");
+		printv("hanne");printv("l #%-2u", cha);
+		printv("     ");printv("     ");printv("     ");printv("     ");
+		printv("     ");printv("     ");printv("     ");printv("     ");
 
-	      printv("     ");
-	      printv(" Slot"); printv(" Bank"); printv(" Rank");
-	      printv("     "); printv("Rows "); printv("  Col");printv("umns ");
-	      printv("   Me"); printv("mory "); printv("Size ");printv("(MB) ");
-	      printv("     "); printv("     ");
+		printv("     ");
+		printv(" Slot");printv(" Bank");printv(" Rank");
+		printv("     ");printv("Rows ");printv("  Col");printv("umns ");
+		printv("   Me");printv("mory ");printv("Size ");printv("(MB) ");
+		printv("     ");printv("     ");
 
-	      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		printv("     ");
 		printv("\x20\x20#%-2u", slot);
 		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
@@ -1614,9 +1641,9 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		printv("%5s", hInt[0]);
 		printv("%5s", hInt[1]);
 		printv("     "); printv("     "); printv("     ");
-	      }
 	    }
 	}
+    }
 }
 
 int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
@@ -2699,6 +2726,32 @@ void Top(SHM_STRUCT *Shm, char option)
 	  return(NULL);
     }
 
+    Window *CreateHotPlugCPU(unsigned long long id)
+    {
+	Window *wCPU = CreateWindow(	wLayer, id, 1, MAX_ROWS,
+					LOAD_LEAD + 1, TOP_HEADER_ROW + 1);
+	if (wCPU != NULL) {
+		unsigned int cpu;
+		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+		    if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+			StoreTCell(wCPU, CPU_ONLINE | cpu , " ENABLE  ",
+				MakeAttr(WHITE, 0, BLACK, 1));
+		    else
+			StoreTCell(wCPU, CPU_OFFLINE | cpu, " DISABLE ",
+				MakeAttr(BLUE, 0, BLACK, 1));
+		}
+		StoreWindow(wCPU,	.title,		" CPU ");
+		StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
+
+		StoreWindow(wCPU,	.key.Enter,	MotionEnter_Cell);
+		StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
+		StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
+		StoreWindow(wCPU,	.key.Home,	MotionReset_Win);
+		StoreWindow(wCPU,	.key.End,	MotionEnd_Cell);
+	}
+	return(wCPU);
+    }
+
     void TrapScreenSize(int caught)
     {
       if (caught == SIGWINCH) {
@@ -2873,6 +2926,15 @@ void Top(SHM_STRUCT *Shm, char option)
     case SCANKEY_F4:
     case SCANCON_F4:
 	BITSET(LOCKLESS, Shutdown, 0);
+	break;
+    case SCANKEY_HASH:
+	if (drawFlag.disposal == D_MAINVIEW) {
+		Window *win = SearchWinListById(scan->key, &winList);
+		if (win == NULL)
+			AppendWindow(CreateHotPlugCPU(scan->key), &winList);
+		else
+			SetHead(&winList, win);
+	}
 	break;
     case SCANKEY_PERCENT:
 	if ((drawFlag.view == V_FREQ) && (drawFlag.disposal == D_MAINVIEW)) {
@@ -3388,8 +3450,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	.row = TOP_HEADER_ROW + 2
 	}, select = {
 	.col=0,
-	.row=thisCST[Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateLimit] != -1 ?
-		thisCST[Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateLimit] : 0
+	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] != -1 ?
+		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] : 0
 	};
 		Window *wBox = CreateBox(scan->key, origin, select,
 					" Package C-State Limit ",
@@ -3435,7 +3497,7 @@ void Top(SHM_STRUCT *Shm, char option)
       if (win == NULL)
       {
 	const unsigned int isIORedir = (
-			Shm->Cpu[Shm->Proc.CPU.Service].Query.IORedir == 1
+			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1
 	);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
@@ -3479,8 +3541,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	.row = TOP_HEADER_ROW + 3
 	}, select = {
 	.col = 0,
-	.row=thisCST[Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateInclude] != -1?
-		thisCST[Shm->Cpu[Shm->Proc.CPU.Service].Query.CStateInclude] : 0
+	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]!=-1 ?
+		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]:0
 	};
 		Window *wBox = CreateBox(scan->key, origin, select,
 					" I/O MWAIT Max C-State ",
@@ -3560,21 +3622,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
      if (win == NULL)
      {
-	const CSINT maxCM = 7 << Shm->Cpu[Shm->Proc.CPU.Service]	\
+	const CSINT maxCM = 7 << Shm->Cpu[Shm->Proc.Service.Core]	\
 					.PowerThermal.DutyCycle.Extended;
 	const Coordinate origin = {
 		.col = (drawSize.width - (44 - 17)) / 2,
 		.row = TOP_HEADER_ROW + 3
      }, select = {
 	.col = 0, .row = (
-	Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.ClockMod >= 0
+	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod >= 0
 	) && (
-	Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.ClockMod <= maxCM
-	) ? Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.ClockMod : 1
+	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod <=maxCM
+	) ? Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod : 1
      };
 	Window *wBox = NULL;
 
-      if (Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.DutyCycle.Extended)
+      if (Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended)
 		wBox = CreateBox(scan->key, origin, select,
 		" Extended Duty Cycle ",
 	(ASCII*)"          Reserved         ", blankAttr,    BOXKEY_ODCM_DC00,
@@ -3795,6 +3857,16 @@ void Top(SHM_STRUCT *Shm, char option)
 		Shm->SysGate.trackTask = scan->key & TRACK_MASK;
 		drawFlag.layout = 1;
 	}
+	else if (scan->key & CPU_ONLINE) {
+		const unsigned long cpu = scan->key & CPUID_MASK;
+		if (!RING_FULL(Shm->Ring[0]))
+			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
+	}
+	else if (scan->key & CPU_OFFLINE) {
+		const unsigned long cpu = scan->key & CPUID_MASK;
+		if (!RING_FULL(Shm->Ring[0]))
+			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
+	}
 	else
 		return(-1);
     }
@@ -3896,15 +3968,15 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
-	L1I_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[0].Size / 1024;
-	L1D_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[1].Size / 1024;
-	L2U_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[2].Size / 1024;
-	L3U_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[3].Size / 1024;
+	L1I_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[0].Size / 1024;
+	L1D_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[1].Size / 1024;
+	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size / 1024;
+	L3U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[3].Size / 1024;
     } else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-	L1I_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[0].Size;
-	L1D_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[1].Size;
-	L2U_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[2].Size;
-	L3U_Size=Shm->Cpu[Shm->Proc.CPU.Service].Topology.Cache[3].Size;
+	L1I_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[0].Size;
+	L1D_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[1].Size;
+	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size;
+	L3U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[3].Size;
     }
 	sprintf(buffer, "%-3u" "%-3u", L1I_Size, L1D_Size);
 
@@ -4960,10 +5032,10 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] = Pwr[isC1U];
 
 	    hTech1.attr[43] = hTech1.attr[44] = hTech1.attr[45] =
-		TM1[Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.TM1];
+		TM1[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1];
 
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =
-		TM2[Shm->Cpu[Shm->Proc.CPU.Service].PowerThermal.TM2];
+		TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
 	    if ( (*processorHot) != -1 ) {
 		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =
@@ -5111,22 +5183,19 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	LayerAt(layer, attr, 0, row) =					\
 		LayerAt(layer, attr, 0, (1 + row + MAX_ROWS)) =		\
-			MakeAttr(WHITE, 0, BLACK, 0);
+						MakeAttr(WHITE, 0, BLACK, 0);
 
 	LayerAt(layer, code, 0, row) =					\
 		LayerAt(layer, code, 0, (1 + row + MAX_ROWS)) = '#';
 
 	LayerAt(layer, code, 1, row) =					\
-		LayerAt(layer, code, 1, (1 + row + MAX_ROWS)) =		\
-			buffer[0];
+		LayerAt(layer, code, 1, (1 + row + MAX_ROWS)) = buffer[0];
 
 	LayerAt(layer, code, 2, row) =					\
-		LayerAt(layer, code, 2, (1 + row + MAX_ROWS)) =		\
-			buffer[1];
+		LayerAt(layer, code, 2, (1 + row + MAX_ROWS)) = buffer[1];
 
-	LayerAt(layer, attr, 3, row) = (cpu == Shm->Proc.CPU.Service) ?
-						MakeAttr(WHITE , 0, BLACK, 1)
-					:	MakeAttr(YELLOW, 0, BLACK, 1);
+	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
+
 	LayerAt(layer, code, 3, row) = 0x20;
     }
 
@@ -5668,15 +5737,15 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, 26, row), hBClk[iClock + cpuScroll], 11);
     }
 
-#define Illuminates_CPU(_layer, _row, fg, bg)				\
+#define Illuminates_CPU(_layer, _row, fg, bg, hi)			\
 ({									\
 	LayerAt(_layer, attr, 1, _row) =				\
 		LayerAt(_layer, attr, 1, (1 + _row + MAX_ROWS)) =	\
-						MakeAttr(fg, 0, bg, 0); \
+						MakeAttr(fg, 0, bg, hi);\
 									\
 	LayerAt(_layer, attr, 2, _row) =				\
 		LayerAt(_layer, attr, 2, (1 + _row + MAX_ROWS)) =	\
-						MakeAttr(fg, 0, bg, 0); \
+						MakeAttr(fg, 0, bg, hi);\
 })
 
     VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
@@ -5729,11 +5798,16 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (Flop->Thermal.Trip && (processorHot == -1)) {
 		processorHot = cpu;
 	}
-	Illuminates_CPU(layer, row, CYAN, BLACK);
+	if (cpu == Shm->Proc.Service.Core)
+		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
+	else if (cpu == Shm->Proc.Service.Thread)
+		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
+	else
+		Illuminates_CPU(layer, row, CYAN, BLACK, 0);
 
 	Matrix_Layout_Monitor[drawFlag.view](layer, row);
       } else {
-	Illuminates_CPU(layer, row, BLUE, BLACK);
+	Illuminates_CPU(layer, row, BLUE, BLACK, 0);
 
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
@@ -5817,8 +5891,8 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	unsigned int _cpu = card->data.dword.lo;
 
-	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS)) {
 		Dec2Digit(_cpu, digit);
+	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS)) {
 		LayerDeclare(4 * INTER_WIDTH) hOnLine = {
 			.origin = {
 				.col = card->origin.col,
@@ -6155,7 +6229,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
 	sprintf(buffer, "%5.1f",
-			Shm->Cpu[Shm->Proc.CPU.Service].Clock.Hz / 1000000.f);
+			Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.f);
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
 		buffer, 5);
@@ -6424,14 +6498,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	if (BITVAL(Shm->Proc.Sync, 63)) {
-	    if (localProcessor != Shm->Proc.CPU.Service) {
-		localProcessor = Shm->Proc.CPU.Service;
-
-		cpu_set_t cpuset;
-		CPU_ZERO(&cpuset);
-		CPU_SET(localProcessor, &cpuset);
-		sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
-	    }
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		// Platform changed, redraw the layout.
 		drawFlag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
@@ -6463,7 +6530,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			if (iClock >= MAX_ROWS)
 				iClock = 0;
 		} while (BITVAL(Shm->Cpu[iClock].OffLine, OS)
-			&& (iClock != Shm->Proc.CPU.Service)) ;
+			&& (iClock != Shm->Proc.Service.Core)) ;
 	}
 	// Write to the standard output
 	WriteConsole(drawSize, buffer);
@@ -6487,7 +6554,7 @@ int Help(char *appName)
 	printf(	"usage:\t%s [-option <arguments>]\n"			\
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\
-		"\t-V\tMonitor Power and Voltage\n"				\
+		"\t-V\tMonitor Power and Voltage\n"			\
 		"\t-g\tMonitor Package\n"				\
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
@@ -6527,12 +6594,7 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
-	localProcessor = Shm->Proc.CPU.Service;
-
-	cpu_set_t cpuset;
-	CPU_ZERO(&cpuset);
-	CPU_SET(localProcessor, &cpuset);
-	sched_setaffinity(0, sizeof(cpu_set_t), &cpuset);
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 	switch (option) {
 	case 'k':

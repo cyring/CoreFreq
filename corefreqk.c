@@ -63,9 +63,11 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
-static signed int ServiceProcessor = -1;
+static signed int ServiceProcessor = -1; // -1=ANY ; 0=BSP
 module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
+
+static SERVICE_PROC DefaultSMT = {.Proc = -1};
 
 static unsigned short RDPMC_Enable = 0;
 module_param(RDPMC_Enable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -1335,6 +1337,85 @@ unsigned int Proc_Topology(void)
 	return(CountEnabledCPU);
 }
 
+signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
+{
+	unsigned int seek;
+
+    for (seek = 0; seek < Proc->CPU.Count; seek++) {
+	if(((exclude ^ cpu) > 0)
+	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
+	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
+	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
+	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
+	&& (KPublic->Core[seek]->T.ThreadID == 0)
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+		return((signed int) seek);
+    }
+	return(-1);
+}
+
+signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
+{
+	unsigned int seek;
+
+    for (seek = 0; seek < Proc->CPU.Count; seek++) {
+	if(((exclude ^ cpu) > 0)
+	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
+	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
+	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
+	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
+	&& (KPublic->Core[seek]->T.ThreadID > 0)
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+		return((signed int) seek);
+    }
+	return(-1);
+}
+
+void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
+{
+	unsigned int cpu;
+
+    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+	if(((cpx ^ cpu) > 0)
+	&& (KPublic->Core[cpu]->T.PackageID == KPublic->Core[cpi]->T.PackageID)
+	&& !BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	{
+		pService->Core = cpu;
+		pService->Thread = -1;
+		break;
+	}
+    }
+}
+
+int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
+{
+	unsigned int cpu = cpi, cpn = 0;
+	signed int seek;
+MATCH:
+	if (KPublic->Core[cpu]->T.ThreadID == 0)
+	{
+		if ((seek = Seek_Topology_Thread_Peer(cpu, cpx)) != -1) {
+			pService->Core = cpu;
+			pService->Thread = seek;
+			return(0);
+		}
+	}
+	else if (KPublic->Core[cpu]->T.ThreadID > 0)
+	{
+		if ((seek = Seek_Topology_Core_Peer(cpu, cpx)) != -1) {
+			pService->Core = seek;
+			pService->Thread = cpu;
+			return(0);
+		}
+	}
+	while (cpn < Proc->CPU.Count) {
+		cpu = cpn++;
+		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+			goto MATCH;
+	}
+	return(-1);
+}
+
 void HyperThreading_Technology(void)
 {
 	unsigned int CountEnabledCPU = Proc_Topology();
@@ -2508,7 +2589,7 @@ void Dump_CPUID(CORE *Core)
 
 void SpeedStep_Technology(CORE *Core)				// Per Package
 {
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		if (Proc->Features.Std.ECX.EIST == 1) {
 			MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 			RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
@@ -2567,7 +2648,7 @@ void DynamicAcceleration(CORE *Core)				// Unique
 
 void Query_Intel_C1E(CORE *Core)				// Per Package
 {
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		POWER_CONTROL PowerCtrl = {.value = 0};
 		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 
@@ -3489,10 +3570,9 @@ void Core_Counters_Set(CORE *Core)
     }
 }
 
-#define Uncore_Counters_Set(PMU, Core)					\
+#define Uncore_Counters_Set(PMU)					\
 ({									\
-    if ((Proc->Features.PerfMon.EAX.Version >= 3)			\
-    &&  (Core->Bind == Proc->CPU.Service))				\
+    if (Proc->Features.PerfMon.EAX.Version >= 3)			\
     {									\
 	UNCORE_GLOBAL_PERF_CONTROL  Uncore_GlobalPerfControl;		\
 	UNCORE_FIXED_PERF_CONTROL   Uncore_FixedPerfControl;		\
@@ -3528,10 +3608,9 @@ void Core_Counters_Clear(CORE *Core)
     }
 }
 
-#define Uncore_Counters_Clear(PMU, Core)				\
+#define Uncore_Counters_Clear(PMU)					\
 ({									\
-    if ((Proc->Features.PerfMon.EAX.Version >= 3)			\
-    &&  (Core->Bind == Proc->CPU.Service))				\
+    if (Proc->Features.PerfMon.EAX.Version >= 3)			\
     {									\
 	WRMSR(Proc->SaveArea.Uncore_FixedPerfControl,			\
 				MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
@@ -3948,7 +4027,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 		Counters_Generic(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
 			Delta_PTSC(Proc);
@@ -3993,7 +4072,7 @@ static void Start_GenuineIntel(void *arg)
 
 	Counters_Generic(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -4029,7 +4108,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 
 		Counters_Generic(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
 			Delta_PTSC(Proc);
@@ -4070,7 +4149,7 @@ static void Start_AuthenticAMD(void *arg)
 
 	PerCore_AuthenticAMD_Query(Core);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -4107,7 +4186,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Counters_Core2(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -4160,7 +4239,7 @@ static void Start_Core2(void *arg)
 	Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -4199,7 +4278,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		SMT_Counters_Nehalem(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Nehalem(Core, 1);
 
 			Delta_PC03(Proc);
@@ -4273,10 +4352,10 @@ static void Start_Nehalem(void *arg)
 	PerCore_Nehalem_Query(Core);
 
 	Core_Counters_Set(Core);
-	Uncore_Counters_Set(NHM, Core);
 	SMT_Counters_Nehalem(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_Nehalem(NULL);
 		PKG_Counters_Nehalem(Core, 0);
 	}
 
@@ -4301,9 +4380,21 @@ static void Stop_Nehalem(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	Uncore_Counters_Clear(NHM, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_Nehalem(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_Uncore_Nehalem(void *arg)
+{
+	Uncore_Counters_Set(NHM);
+}
+
+static void Stop_Uncore_Nehalem(void *arg)
+{
+	Uncore_Counters_Clear(NHM);
 }
 
 
@@ -4320,7 +4411,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		SMT_Counters_SandyBridge(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_SandyBridge(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -4419,10 +4510,10 @@ static void Start_SandyBridge(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Core_Counters_Set(Core);
-	Uncore_Counters_Set(SNB, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_SandyBridge(NULL);
 		PKG_Counters_SandyBridge(Core, 0);
 		PWR_ACCU_SandyBridge(Proc, 0);
 	}
@@ -4448,9 +4539,21 @@ static void Stop_SandyBridge(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	Uncore_Counters_Clear(SNB, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_SandyBridge(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_Uncore_SandyBridge(void *arg)
+{
+	Uncore_Counters_Set(SNB);
+}
+
+static void Stop_Uncore_SandyBridge(void *arg)
+{
+	Uncore_Counters_Clear(SNB);
 }
 
 
@@ -4467,7 +4570,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 		SMT_Counters_SandyBridge(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_SandyBridge(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -4566,10 +4669,10 @@ static void Start_SandyBridge_EP(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Core_Counters_Set(Core);
-	Uncore_Counters_Set(SNB, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_SandyBridge_EP(NULL);
 		PKG_Counters_SandyBridge(Core, 0);
 		PWR_ACCU_SandyBridge_EP(Proc, 0);
 	}
@@ -4595,7 +4698,9 @@ static void Stop_SandyBridge_EP(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	Uncore_Counters_Clear(SNB, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_SandyBridge_EP(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4614,7 +4719,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 		SMT_Counters_SandyBridge(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Haswell_ULT(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -4725,11 +4830,10 @@ static void Start_Haswell_ULT(void *arg)
 	PerCore_Haswell_ULT_Query(Core);
 
 	Core_Counters_Set(Core);
-	if (Experimental)
-		Uncore_Counters_Set(SNB, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_Haswell_ULT(NULL);
 		PKG_Counters_Haswell_ULT(Core, 0);
 		PWR_ACCU_SandyBridge(Proc, 0);
 	}
@@ -4755,12 +4859,24 @@ static void Stop_Haswell_ULT(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	if (Experimental)
-		Uncore_Counters_Clear(SNB, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_Haswell_ULT(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static void Start_Uncore_Haswell_ULT(void *arg)
+{
+    if (Experimental)
+	Uncore_Counters_Set(SNB);
+}
+
+static void Stop_Uncore_Haswell_ULT(void *arg)
+{
+    if (Experimental)
+	Uncore_Counters_Clear(SNB);
+}
 
 static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 {
@@ -4775,7 +4891,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 		SMT_Counters_SandyBridge(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Skylake(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
@@ -4874,10 +4990,10 @@ static void Start_Skylake(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Core_Counters_Set(Core);
-	Uncore_Counters_Set(SKL, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_Skylake(NULL);
 		PKG_Counters_Skylake(Core, 0);
 		PWR_ACCU_SandyBridge(Proc, 0);
 	}
@@ -4903,11 +5019,22 @@ static void Stop_Skylake(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-	Uncore_Counters_Clear(SKL, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_Skylake(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static void Start_Uncore_Skylake(void *arg)
+{
+	Uncore_Counters_Set(SKL);
+}
+
+static void Stop_Uncore_Skylake(void *arg)
+{
+	Uncore_Counters_Clear(SKL);
+}
 
 static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 {
@@ -4922,7 +5049,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 		SMT_Counters_SandyBridge(Core, 1);
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Skylake_X(Core, 1);
 
 			PWR_ACCU_SandyBridge_EP(Proc, 1);
@@ -5021,10 +5148,10 @@ static void Start_Skylake_X(void *arg)
 	PerCore_SandyBridge_Query(Core);
 
 	Core_Counters_Set(Core);
-//ToDo:	Uncore_Counters_Set(SKL_X, Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_Skylake_X(NULL);
 		PKG_Counters_Skylake_X(Core, 0);
 		PWR_ACCU_SandyBridge_EP(Proc, 0);
 	}
@@ -5050,11 +5177,22 @@ static void Stop_Skylake_X(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
-//ToDo:	Uncore_Counters_Clear(SKL_X, Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_Skylake_X(NULL);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static void Start_Uncore_Skylake_X(void *arg)
+{
+//ToDo:	Uncore_Counters_Set(SKL_X);
+}
+
+static void Stop_Uncore_Skylake_X(void *arg)
+{
+//ToDo:	Uncore_Counters_Clear(SKL_X);
+}
 
 static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 {
@@ -5088,7 +5226,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
 		    : 0;
 
-		if (Core->Bind == Proc->CPU.Service) {
+		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
 			Delta_PTSC(Proc);
@@ -5131,7 +5269,7 @@ static void Start_AMD_Family_0Fh(void *arg)
 
 	PerCore_AMD_Family_0Fh_Query(Core);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -5162,7 +5300,7 @@ static void Start_AMD_Family_10h(void *arg)
 
 	PerCore_AMD_Family_10h_Query(Core);
 
-	if (Core->Bind == Proc->CPU.Service) {
+	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -5480,6 +5618,20 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		ODCM_DutyCycle = -1;
 		rc = 0;
 		break;
+	case COREFREQ_IOCTL_CPU_OFF: {
+		unsigned int cpu = (unsigned int) arg;
+
+		if ((cpu >= 0) && (cpu < Proc->CPU.Count))
+			rc = cpu_down(cpu);
+		}
+		break;
+	case COREFREQ_IOCTL_CPU_ON: {
+		unsigned int cpu = (unsigned int) arg;
+
+		if ((cpu >= 0) && (cpu < Proc->CPU.Count))
+			rc = cpu_up(cpu);
+		}
+		break;
 	default:
 		rc = -EINVAL;
 	}
@@ -5614,11 +5766,8 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 {
   if ((cpu >= 0) && (cpu < Proc->CPU.Count))
   {
-	// Restore the CPU affinity if it's the initial Service Processor.
-   if ((ServiceProcessor >= 0) && (ServiceProcessor < Proc->CPU.Count)
-   && ((ServiceProcessor == cpu) && (Proc->CPU.Service != cpu))) {
-	Proc->CPU.Service = cpu;
-   }
+   SERVICE_PROC hotService;
+
 	// Is this the very first time the processor is online ?
    if (KPublic->Core[cpu]->T.ApicID == -1)
    {
@@ -5631,7 +5780,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
       if (KPublic->Core[cpu]->Clock.Hz == 0)
       {
        if (AutoClock == 0)
-	KPublic->Core[cpu]->Clock = KPublic->Core[Proc->CPU.Service]->Clock;
+	KPublic->Core[cpu]->Clock = KPublic->Core[Proc->Service.Core]->Clock;
        else
        {
 	COMPUTE_ARG Compute = {
@@ -5667,36 +5816,74 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	Proc->CPU.OnLine++;
 	BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
+	// Try to restore the initial Service affinity.
+	hotService.Core = cpu;
+	hotService.Thread = -1;
+   if (Proc->Features.HTT_Enable) {
+    if (KPublic->Core[cpu]->T.ThreadID == 0)
+    {
+	hotService.Core = cpu;
+	hotService.Thread = Seek_Topology_Thread_Peer(cpu, -1);
+    }
+    else if (KPublic->Core[cpu]->T.ThreadID > 0)
+    {
+	hotService.Core = Seek_Topology_Core_Peer(cpu, -1);
+	hotService.Thread = cpu;
+    }
+   }
+   if (hotService.Proc == DefaultSMT.Proc) {
+	Proc->Service.Proc = hotService.Proc;
+   }
+	// Match best SMT for the Service Processor.
+   if ((Proc->Features.HTT_Enable) && (Proc->Service.Thread == -1)) {
+	MatchCoreForService(&Proc->Service, cpu, -1);
+   }
 	return(0);
   } else
 	return(-EINVAL);
 }
 
 static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
-{	// Stop the associated collect timer.
-	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-	    if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
-	     && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1)
-	     && (Arch[Proc->ArchID].Stop != NULL)) {
-			smp_call_function_single(cpu,
-						Arch[Proc->ArchID].Stop,
-						NULL, 1);
-	    }
-		Proc->CPU.OnLine--;
-		BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
+{
+    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+	// Stop the associated collect timer.
+	if((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
+	&& (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1)
+	&& (Arch[Proc->ArchID].Stop != NULL)) {
+		smp_call_function_single(cpu,
+					Arch[Proc->ArchID].Stop,
+					NULL, 1);
+	}
+	Proc->CPU.OnLine--;
+	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
-	    // Seek for an alternate Service Processor.
-	    if (cpu == Proc->CPU.Service) {
-		unsigned int seek;
-		for (seek = 0; seek < Proc->CPU.Count; seek++)
-		    if (!BITVAL(KPublic->Core[seek]->OffLine, OS)) {
-			Proc->CPU.Service = seek;
-			break;
-		    }
-	    }
-		return(0);
-	} else
-		return(-EINVAL);
+	// Seek for an alternate Service Processor.
+	if((cpu == Proc->Service.Core) || (cpu == Proc->Service.Thread)) {
+		int rc = -1;
+
+		if (Proc->Features.HTT_Enable)
+			rc = MatchPeerForService(&Proc->Service, cpu, cpu);
+		if (rc == -1)
+			MatchCoreForService(&Proc->Service, cpu, cpu);
+
+#if CONFIG_HAVE_PERF_EVENTS==1
+		if (Proc->Service.Core != cpu) {
+		// Reinitialize PMU Uncore counters.
+		    if (Arch[Proc->ArchID].Uncore.Stop != NULL)
+			smp_call_function_single(Proc->Service.Core,
+						Arch[Proc->ArchID].Uncore.Stop,
+						NULL, 1); // Must wait
+
+		    if (Arch[Proc->ArchID].Uncore.Start != NULL)
+			smp_call_function_single(Proc->Service.Core,
+						Arch[Proc->ArchID].Uncore.Start,
+						NULL, 0); // Don't wait
+		}
+#endif
+	}
+	return(0);
+    } else
+	return(-EINVAL);
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
@@ -5753,21 +5940,19 @@ static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 
 static int __init CoreFreqK_init(void)
 {
+	INIT_ARG iArg = {.SMT_Count = 0, .localProcessor = 0, .rc = 0};
 	int rc = 0;
-	INIT_ARG iArg = {.SMT_Count = 0, .ServiceProcessor = 0, .rc = 0};
 
 	memset(&iArg.Features, 0, sizeof(FEATURES));
 
     if (ServiceProcessor == -1) {	// Query features on any processor.
-	iArg.ServiceProcessor = get_cpu();
+	iArg.localProcessor = get_cpu();
 	Query_Features(&iArg);
 	put_cpu();
-	if ((rc = iArg.rc) == 0)
-		ServiceProcessor = iArg.ServiceProcessor;
     } else {
 	if (ServiceProcessor >= 0) {
-		iArg.ServiceProcessor = ServiceProcessor;
-		if((rc = smp_call_function_single(iArg.ServiceProcessor,
+		iArg.localProcessor = ServiceProcessor;
+		if((rc = smp_call_function_single(iArg.localProcessor,
 						Query_Features,
 						&iArg, 1)) == 0) {
 			rc = iArg.rc;
@@ -5812,18 +5997,17 @@ static int __init CoreFreqK_init(void)
 
 		privateSize = sizeof(KPRIVATE) + sizeof(JOIN*) * iArg.SMT_Count;
 
-	    if (((KPublic = kmalloc(publicSize, GFP_KERNEL)) != NULL)
-	     && ((KPrivate = kmalloc(privateSize, GFP_KERNEL)) != NULL))
-	    {
+	  if (((KPublic = kmalloc(publicSize, GFP_KERNEL)) != NULL)
+	   && ((KPrivate = kmalloc(privateSize, GFP_KERNEL)) != NULL))
+	  {
 		memset(KPublic, 0, publicSize);
 		memset(KPrivate, 0, privateSize);
 
 		packageSize = ROUND_TO_PAGES(sizeof(PROC));
-	      if ((Proc = kmalloc(packageSize, GFP_KERNEL)) != NULL)
-	      {
+	    if ((Proc = kmalloc(packageSize, GFP_KERNEL)) != NULL)
+	    {
 		memset(Proc, 0, packageSize);
 		Proc->CPU.Count = iArg.SMT_Count;
-		Proc->CPU.Service = iArg.ServiceProcessor;
 
 		if ( (SleepInterval >= LOOP_MIN_MS)
 		  && (SleepInterval <= LOOP_MAX_MS))
@@ -5864,7 +6048,7 @@ static int __init CoreFreqK_init(void)
 		{
 			int allocPerCPU = 1;
 			// Allocation per CPU
-		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+		  for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 			void *kcache = NULL;
 			kcache = kmem_cache_alloc(KPublic->Cache, GFP_KERNEL);
 			if (kcache != NULL) {
@@ -5882,20 +6066,20 @@ static int __init CoreFreqK_init(void)
 				allocPerCPU = 0;
 				break;
 			}
-		    }
-		    if (allocPerCPU)
-		    {
-		      for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+		  }
+		  if (allocPerCPU)
+		  {
+		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 			BITCLR(LOCKLESS, KPublic->Core[cpu]->Sync.V, 63);
 
 			KPublic->Core[cpu]->Bind = cpu;
 
 			Define_CPUID(KPublic->Core[cpu], CpuIDforVendor);
-		      }
+		    }
 
-		      switch (Proc->Features.Info.Vendor.CRC)
-		      {
-		       case CRC_INTEL: {
+		    switch (Proc->Features.Info.Vendor.CRC)
+		    {
+		    case CRC_INTEL: {
 			Arch[0].Query = Query_GenuineIntel;
 			Arch[0].Start = Start_GenuineIntel;
 			Arch[0].Stop  = Stop_GenuineIntel;
@@ -5907,9 +6091,9 @@ static int __init CoreFreqK_init(void)
 			Arch[0].voltageFormula = VOLTAGE_FORMULA_INTEL;
 
 			Arch[0].powerFormula = POWER_FORMULA_INTEL;
-		       }
+			}
 			break;
-		       case CRC_AMD: {
+		    case CRC_AMD: {
 			Arch[0].Query = Query_AuthenticAMD;
 			Arch[0].Start = Start_AuthenticAMD;
 			Arch[0].Stop  = Stop_AuthenticAMD;
@@ -5921,23 +6105,23 @@ static int __init CoreFreqK_init(void)
 			Arch[0].voltageFormula = VOLTAGE_FORMULA_AMD;
 
 			Arch[0].powerFormula = POWER_FORMULA_AMD;
-		       }
+			}
 			break;
-		      }
-		     if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
-		      {
+		    }
+		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
+		    {
 			ArchID = 0;
-		      }
-		     if((ArchID != -1)&&(ArchID >= 0)&&(ArchID < ARCHITECTURES))
-		      {
+		    }
+		    if((ArchID != -1)&&(ArchID >= 0)&&(ArchID < ARCHITECTURES))
+		    {
 			Proc->ArchID = ArchID;
-		      }
-		      else
-		      {
-			for ( Proc->ArchID = ARCHITECTURES - 1;
+		    }
+		    else
+		    {
+		      for ( Proc->ArchID = ARCHITECTURES - 1;
 							Proc->ArchID > 0;
 								Proc->ArchID--)
-		       {
+		      {
 			// Search for an architecture signature.
 			if((Proc->Features.Std.EAX.ExtFamily
 			    == Arch[Proc->ArchID].Signature.ExtFamily)
@@ -5952,8 +6136,8 @@ static int __init CoreFreqK_init(void)
 			{
 				break;
 			}
-		       }
 		      }
+		    }
 
 			Proc->thermalFormula=Arch[Proc->ArchID].thermalFormula;
 
@@ -5966,23 +6150,50 @@ static int __init CoreFreqK_init(void)
 
 			Controller_Init();
 
-			printk(KERN_INFO "CoreFreq(%u):"	\
+		    if (Proc->Features.HTT_Enable) {
+		      if (MatchPeerForService(	&Proc->Service,
+						iArg.localProcessor, -1) == -1)
+		      {
+			MatchCoreForService(&Proc->Service,
+					    iArg.localProcessor, -1);
+		      }
+		      if (KPublic->Core[ServiceProcessor]->T.ThreadID == 0)
+		      {
+			DefaultSMT.Core = ServiceProcessor;
+			DefaultSMT.Thread = \
+				Seek_Topology_Thread_Peer(ServiceProcessor, -1);
+		      }
+		      else if (KPublic->Core[ServiceProcessor]->T.ThreadID > 0)
+		      {
+			DefaultSMT.Core = \
+				Seek_Topology_Core_Peer(ServiceProcessor, -1);
+			DefaultSMT.Thread = ServiceProcessor;
+		      }
+		    } else {
+			Proc->Service.Core = iArg.localProcessor;
+			Proc->Service.Thread = -1;
+			DefaultSMT.Core = ServiceProcessor;
+			DefaultSMT.Thread = -1;
+		    }
+
+			printk(KERN_INFO "CoreFreq(%u:%d):"	\
 				" Processor [%2X%1X_%1X%1X]"	\
-				" Architecture [%s] CPU [%u/%u]\n",
-				Proc->CPU.Service,
+				" Architecture [%s] %3s [%u/%u]\n",
+				Proc->Service.Core, Proc->Service.Thread,
 				Proc->Features.Std.EAX.ExtFamily,
 				Proc->Features.Std.EAX.Family,
 				Proc->Features.Std.EAX.ExtModel,
 				Proc->Features.Std.EAX.Model,
 				Arch[Proc->ArchID].Architecture,
+				Proc->Features.HTT_Enable ? "SMT" : "CPU",
 				Proc->CPU.OnLine,
 				Proc->CPU.Count);
 
 			Controller_Start(0);
 
-			if (Proc->Registration.Experimental) {
-				Proc->Registration.pci |= CoreFreqK_ProbePCI();
-			}
+		    if (Proc->Registration.Experimental) {
+			Proc->Registration.pci |= CoreFreqK_ProbePCI();
+		    }
 	#ifdef CONFIG_HOTPLUG_CPU
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 		// Always returns zero (kernel/notifier.c)
@@ -5997,7 +6208,7 @@ static int __init CoreFreqK_init(void)
 		#endif
 	#endif
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-		      if (!NMI_Disable) {
+		    if (!NMI_Disable) {
 			Proc->Registration.nmi = !(
 				register_nmi_handler(	NMI_LOCAL,
 							CoreFreqK_NMI_handler,
@@ -6016,27 +6227,27 @@ static int __init CoreFreqK_init(void)
 							0,
 							"corefreqk")
 			);
-		      }
-	#endif
 		    }
-		    else
+	#endif
+		  }
+		  else
+		  {
+		   if (KPublic->Cache != NULL) {
+		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 		    {
-		     if (KPublic->Cache != NULL) {
-		      for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		      {
-		      if (KPublic->Core[cpu] != NULL)
+		     if (KPublic->Core[cpu] != NULL)
 			kmem_cache_free(KPublic->Cache, KPublic->Core[cpu]);
-		      }
+		    }
 			kmem_cache_destroy(KPublic->Cache);
-		     }
-		     if (KPrivate->Cache != NULL) {
-		      for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		      {
-		      if (KPrivate->Join[cpu] != NULL)
+		   }
+		   if (KPrivate->Cache != NULL) {
+		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+		    {
+		     if (KPrivate->Join[cpu] != NULL)
 			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
-		      }
+		    }
 			kmem_cache_destroy(KPrivate->Cache);
-		     }
+		   }
 			kfree(Proc);
 			kfree(KPublic);
 			kfree(KPrivate);
@@ -6047,8 +6258,8 @@ static int __init CoreFreqK_init(void)
 			unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 			rc = -ENOMEM;
-		    }
-		  } else {
+		  }
+		} else {
 			if (KPublic->Cache != NULL)
 				kmem_cache_destroy(KPublic->Cache);
 			if (KPrivate->Cache != NULL)
@@ -6064,8 +6275,8 @@ static int __init CoreFreqK_init(void)
 			unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 			rc = -ENOMEM;
-		  }
-	      } else {
+		}
+	    } else {
 		kfree(KPublic);
 		kfree(KPrivate);
 
@@ -6075,8 +6286,8 @@ static int __init CoreFreqK_init(void)
 		unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 		rc = -ENOMEM;
-	      }
-	    } else {
+	    }
+	  } else {
 		if (KPublic != NULL)
 			kfree(KPublic);
 		if (KPrivate != NULL)
@@ -6088,7 +6299,7 @@ static int __init CoreFreqK_init(void)
 		unregister_chrdev_region(CoreFreqK.mkdev, 1);
 
 		rc = -ENOMEM;
-	    }
+	  }
 	} else {
 		class_destroy(CoreFreqK.clsdev);
 		cdev_del(CoreFreqK.kcdev);
