@@ -1337,85 +1337,6 @@ unsigned int Proc_Topology(void)
 	return(CountEnabledCPU);
 }
 
-signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
-{
-	unsigned int seek;
-
-    for (seek = 0; seek < Proc->CPU.Count; seek++) {
-	if(((exclude ^ cpu) > 0)
-	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
-	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
-	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
-	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
-	&& (KPublic->Core[seek]->T.ThreadID == 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
-		return((signed int) seek);
-    }
-	return(-1);
-}
-
-signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
-{
-	unsigned int seek;
-
-    for (seek = 0; seek < Proc->CPU.Count; seek++) {
-	if(((exclude ^ cpu) > 0)
-	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
-	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
-	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
-	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
-	&& (KPublic->Core[seek]->T.ThreadID > 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
-		return((signed int) seek);
-    }
-	return(-1);
-}
-
-void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
-{
-	unsigned int cpu;
-
-    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-	if(((cpx ^ cpu) > 0)
-	&& (KPublic->Core[cpu]->T.PackageID == KPublic->Core[cpi]->T.PackageID)
-	&& !BITVAL(KPublic->Core[cpu]->OffLine, OS))
-	{
-		pService->Core = cpu;
-		pService->Thread = -1;
-		break;
-	}
-    }
-}
-
-int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
-{
-	unsigned int cpu = cpi, cpn = 0;
-	signed int seek;
-MATCH:
-	if (KPublic->Core[cpu]->T.ThreadID == 0)
-	{
-		if ((seek = Seek_Topology_Thread_Peer(cpu, cpx)) != -1) {
-			pService->Core = cpu;
-			pService->Thread = seek;
-			return(0);
-		}
-	}
-	else if (KPublic->Core[cpu]->T.ThreadID > 0)
-	{
-		if ((seek = Seek_Topology_Core_Peer(cpu, cpx)) != -1) {
-			pService->Core = seek;
-			pService->Thread = cpu;
-			return(0);
-		}
-	}
-	while (cpn < Proc->CPU.Count) {
-		cpu = cpn++;
-		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
-			goto MATCH;
-	}
-	return(-1);
-}
-
 void HyperThreading_Technology(void)
 {
 	unsigned int CountEnabledCPU = Proc_Topology();
@@ -2521,7 +2442,6 @@ void Query_AMD_Family_17h(void)
 	HyperThreading_Technology();
 }
 
-
 void Dump_CPUID(CORE *Core)
 {
 	unsigned int i;
@@ -2602,13 +2522,16 @@ void SpeedStep_Technology(CORE *Core)				// Per Package
 				RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 			    break;
 			}
-			Core->Query.EIST = MiscFeatures.EIST;
+			if (MiscFeatures.EIST)
+				BITSET(LOCKLESS, Proc->SpeedStep, Core->Bind);
+			else
+				BITCLR(LOCKLESS, Proc->SpeedStep, Core->Bind);
+
 		} else {
-			Core->Query.EIST = 0;
+			BITCLR(LOCKLESS, Proc->SpeedStep, Core->Bind);
 		}
 		BITSET(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
-	} else
-		BITCLR(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
+	}
 }
 
 void TurboBoost_Technology(CORE *Core)				// Per SMT
@@ -2628,9 +2551,12 @@ void TurboBoost_Technology(CORE *Core)				// Per SMT
 				RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 			break;
 		}
-		Core->Query.Turbo = !PerfControl.Turbo_IDA;
+		if (!PerfControl.Turbo_IDA)
+			BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 	} else {
-		Core->Query.Turbo = 0;
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 	}
 	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 }
@@ -2640,8 +2566,7 @@ void DynamicAcceleration(CORE *Core)				// Unique
 	if (Proc->Features.Power.EAX.TurboIDA) {
 		TurboBoost_Technology(Core);
 	} else {
-		Core->Query.Turbo = 0;
-
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 		BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 	}
 }
@@ -2660,13 +2585,12 @@ void Query_Intel_C1E(CORE *Core)				// Per Package
 				RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 			break;
 		}
-		Core->Query.C1E = PowerCtrl.C1E;
+		if (PowerCtrl.C1E)
+			BITSET(LOCKLESS, Proc->C1E, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->C1E, Core->Bind);
 
 		BITSET(LOCKLESS, Proc->C1E_Mask, Core->Bind);
-	} else {
-		Core->Query.C1E = 0;
-
-		BITCLR(LOCKLESS, Proc->C1E_Mask, Core->Bind);
 	}
 }
 
@@ -2676,8 +2600,10 @@ void Query_AMD_Family_0Fh_C1E(CORE *Core)			// Per Core
 
 	RDMSR(IntPendingMsg, MSR_K8_INT_PENDING_MSG);
 
-	Core->Query.C1E = IntPendingMsg.C1eOnCmpHalt
-			& !IntPendingMsg.SmiOnCmpHalt;
+	if (IntPendingMsg.C1eOnCmpHalt & !IntPendingMsg.SmiOnCmpHalt)
+		BITSET(LOCKLESS, Proc->C1E, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->C1E, Core->Bind);
 
 	BITSET(LOCKLESS, Proc->C1E_Mask, Core->Bind);
 }
@@ -2768,8 +2694,17 @@ void PowerThermal(CORE *Core)
 	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	  }
+
+	  if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable)
+		BITSET(LOCKLESS, Proc->PowerMgmt, Core->Bind);
+	  else
+		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 	}
+	else
+		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
     }
+    else
+	BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 
     if (Proc->Features.Std.EDX.ACPI == 1) {
 	int ToggleFeature = 0;
@@ -2795,7 +2730,18 @@ void PowerThermal(CORE *Core)
 	    RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
 	}
 	Core->PowerThermal.ClockModulation = ClockModulation;
+
+	if (ClockModulation.ODCM_Enable)
+		BITSET(LOCKLESS, Proc->ODCM, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->ODCM, Core->Bind);
     }
+    else
+	BITCLR(LOCKLESS, Proc->ODCM, Core->Bind);
+  }
+  else {
+	BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
+	BITCLR(LOCKLESS, Proc->ODCM, Core->Bind);
   }
   BITSET(LOCKLESS, Proc->ODCM_Mask, Core->Bind);
   BITSET(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
@@ -2941,8 +2887,16 @@ void CStatesConfiguration(int encoding, CORE *Core)
 			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		}
 	}
-	Core->Query.C3A = CStateConfig.C3autoDemotion;
-	Core->Query.C1A = CStateConfig.C1autoDemotion;
+
+	if (CStateConfig.C3autoDemotion)
+		BITSET(LOCKLESS, Proc->C3A, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->C3A, Core->Bind);
+
+	if (CStateConfig.C1autoDemotion)
+		BITSET(LOCKLESS, Proc->C1A, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->C1A, Core->Bind);
 
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
@@ -2967,8 +2921,15 @@ void CStatesConfiguration(int encoding, CORE *Core)
 			break;
 		}
 	} else if (encoding == 0x062A) {
-		Core->Query.C3U = CStateConfig.C3undemotion;
-		Core->Query.C1U = CStateConfig.C1undemotion;
+		if (CStateConfig.C3undemotion)
+			BITSET(LOCKLESS, Proc->C3U, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->C3U, Core->Bind);
+
+		if (CStateConfig.C1undemotion)
+			BITSET(LOCKLESS, Proc->C1U, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->C1U, Core->Bind);
 
 		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
 		case 0b101:
@@ -2990,8 +2951,15 @@ void CStatesConfiguration(int encoding, CORE *Core)
 			break;
 		}
 	} else if (encoding == 0x0645) {
-		Core->Query.C3U = CStateConfig.C3undemotion;
-		Core->Query.C1U = CStateConfig.C1undemotion;
+		if (CStateConfig.C3undemotion)
+			BITSET(LOCKLESS, Proc->C3U, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->C3U, Core->Bind);
+
+		if (CStateConfig.C1undemotion)
+			BITSET(LOCKLESS, Proc->C1U, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->C1U, Core->Bind);
 
 		switch (CStateConfig.Pkg_CStateLimit) {
 		case 0b1000:
@@ -3180,8 +3148,33 @@ void Microcode(CORE *Core)
 	Core->Query.Microcode = Microcode.Signature;
 }
 
-void PerCore_Intel_Query(CORE *Core)
+void PerCore_Reset(CORE *Core)
 {
+	BITCLR(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->PowerMgmt_Mask	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->SpeedStep_Mask	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->TurboBoost_Mask	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1E_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C3A_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+
+	BITCLR(LOCKLESS, Proc->ODCM		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->PowerMgmt	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->SpeedStep	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->TurboBoost	, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1E		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C3A		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1A		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C3U		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->C1U		, Core->Bind);
+}
+
+static void PerCore_Intel_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Microcode(Core);
@@ -3201,8 +3194,10 @@ void PerCore_Intel_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_AuthenticAMD_Query(CORE *Core)
+static void PerCore_AuthenticAMD_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);
@@ -3217,8 +3212,10 @@ void PerCore_AuthenticAMD_Query(CORE *Core)
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
 }
 
-void PerCore_Core2_Query(CORE *Core)
+static void PerCore_Core2_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Microcode(Core);
@@ -3239,8 +3236,10 @@ void PerCore_Core2_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_Nehalem_Query(CORE *Core)
+static void PerCore_Nehalem_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Microcode(Core);
@@ -3259,8 +3258,10 @@ void PerCore_Nehalem_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_SandyBridge_Query(CORE *Core)
+static void PerCore_SandyBridge_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Microcode(Core);
@@ -3280,8 +3281,10 @@ void PerCore_SandyBridge_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_Haswell_ULT_Query(CORE *Core)
+static void PerCore_Haswell_ULT_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Microcode(Core);
@@ -3301,8 +3304,10 @@ void PerCore_Haswell_ULT_Query(CORE *Core)
 	ThermalMonitor_Set(Core);
 }
 
-void PerCore_AMD_Family_0Fh_Query(CORE *Core)
+static void PerCore_AMD_Family_0Fh_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);
@@ -3321,8 +3326,10 @@ void PerCore_AMD_Family_0Fh_Query(CORE *Core)
 	PerCore_AMD_Family_0Fh_PStates(Core);
 }
 
-void PerCore_AMD_Family_10h_Query(CORE *Core)
+static void PerCore_AMD_Family_10h_Query(void *arg)
 {
+	CORE *Core = (CORE*) arg;
+
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);
@@ -4088,10 +4095,13 @@ static void Start_GenuineIntel(void *arg)
 static void Stop_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4165,10 +4175,13 @@ static void Start_AuthenticAMD(void *arg)
 static void Stop_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4262,6 +4275,8 @@ static void Stop_Core2(void *arg)
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
 	Core_Counters_Clear(Core);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4383,6 +4398,8 @@ static void Stop_Nehalem(void *arg)
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Nehalem(NULL);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4543,6 +4560,8 @@ static void Stop_SandyBridge(void *arg)
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_SandyBridge(NULL);
 
+	PerCore_Reset(Core);
+
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
@@ -4701,6 +4720,8 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_SandyBridge_EP(NULL);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -4863,6 +4884,8 @@ static void Stop_Haswell_ULT(void *arg)
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Haswell_ULT(NULL);
 
+	PerCore_Reset(Core);
+
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
@@ -5023,6 +5046,8 @@ static void Stop_Skylake(void *arg)
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Skylake(NULL);
 
+	PerCore_Reset(Core);
+
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
@@ -5181,6 +5206,8 @@ static void Stop_Skylake_X(void *arg)
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Skylake_X(NULL);
 
+	PerCore_Reset(Core);
+
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
@@ -5285,10 +5312,13 @@ static void Start_AMD_Family_0Fh(void *arg)
 static void Stop_AMD_Family_0Fh(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -5316,10 +5346,13 @@ static void Start_AMD_Family_10h(void *arg)
 static void Stop_AMD_Family_10h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
@@ -5462,6 +5495,147 @@ long SysGate_OnDemand(void)
 		rc = 1;
 
 	return(rc);
+}
+
+signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
+{
+	unsigned int seek;
+
+    for (seek = 0; seek < Proc->CPU.Count; seek++) {
+	if(((exclude ^ cpu) > 0)
+	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
+	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
+	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
+	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
+	&& (KPublic->Core[seek]->T.ThreadID == 0)
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+		return((signed int) seek);
+    }
+	return(-1);
+}
+
+signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
+{
+	unsigned int seek;
+
+    for (seek = 0; seek < Proc->CPU.Count; seek++) {
+	if(((exclude ^ cpu) > 0)
+	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
+	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
+	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
+	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
+	&& (KPublic->Core[seek]->T.ThreadID > 0)
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+		return((signed int) seek);
+    }
+	return(-1);
+}
+
+void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
+{
+	unsigned int cpu;
+
+    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+	if(((cpx ^ cpu) > 0)
+	&& (KPublic->Core[cpu]->T.PackageID == KPublic->Core[cpi]->T.PackageID)
+	&& !BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	{
+		pService->Core = cpu;
+		pService->Thread = -1;
+		break;
+	}
+    }
+}
+
+int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
+{
+	unsigned int cpu = cpi, cpn = 0;
+	signed int seek;
+MATCH:
+	if (KPublic->Core[cpu]->T.ThreadID == 0)
+	{
+		if ((seek = Seek_Topology_Thread_Peer(cpu, cpx)) != -1) {
+			pService->Core = cpu;
+			pService->Thread = seek;
+			return(0);
+		}
+	}
+	else if (KPublic->Core[cpu]->T.ThreadID > 0)
+	{
+		if ((seek = Seek_Topology_Core_Peer(cpu, cpx)) != -1) {
+			pService->Core = seek;
+			pService->Thread = cpu;
+			return(0);
+		}
+	}
+	while (cpn < Proc->CPU.Count) {
+		cpu = cpn++;
+		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+			goto MATCH;
+	}
+	return(-1);
+}
+
+void MatchPeerForDefaultService(SERVICE_PROC *pService, unsigned int cpu)
+{
+	if (Proc->Features.HTT_Enable) {
+		if (MatchPeerForService(pService, cpu, -1) == -1)
+		{
+			MatchCoreForService(pService, cpu, -1);
+		}
+	} else {
+		pService->Core = cpu;
+		pService->Thread = -1;
+	}
+	if (ServiceProcessor != -1) {
+		DefaultSMT.Proc = pService->Proc;
+	}
+}
+
+void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
+{	// Try to restore the initial Service affinity or move to SMT peer.
+	SERVICE_PROC hService = {
+		.Core = cpu,
+		.Thread = -1,
+	};
+	if (Proc->Features.HTT_Enable)
+	{
+		signed int seek;
+
+		if ((KPublic->Core[cpu]->T.ThreadID == 0)
+		&& ((seek = Seek_Topology_Thread_Peer(cpu, -1)) != -1))
+		{
+			hService.Core = cpu;
+			hService.Thread = seek;
+		} else {
+			if ((KPublic->Core[cpu]->T.ThreadID > 0)
+			&& ((seek = Seek_Topology_Core_Peer(cpu, -1)) != -1))
+			{
+				hService.Core = seek;
+				hService.Thread = cpu;
+			}
+		}
+	}
+	if (pService->Proc != DefaultSMT.Proc)
+	{
+		if (hService.Proc == DefaultSMT.Proc)
+			pService->Proc = hService.Proc;
+		else
+			if ((pService->Thread == -1) && (hService.Thread > 0))
+			{
+				pService->Proc = hService.Proc;
+			}
+	}
+}
+
+void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
+{
+	int rc = -1;
+
+	if (Proc->Features.HTT_Enable)
+		rc = MatchPeerForService(pService, cpu, cpu);
+	if (rc == -1)
+		MatchCoreForService(pService, cpu, cpu);
 }
 
 static long CoreFreqK_ioctl(	struct file *filp,
@@ -5621,15 +5795,23 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case COREFREQ_IOCTL_CPU_OFF: {
 		unsigned int cpu = (unsigned int) arg;
 
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count))
-			rc = cpu_down(cpu);
+		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+			if (!cpu_is_hotpluggable(cpu))
+				rc = -EINVAL;
+			else
+				rc = cpu_down(cpu);
+		    }
 		}
 		break;
 	case COREFREQ_IOCTL_CPU_ON: {
 		unsigned int cpu = (unsigned int) arg;
 
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count))
-			rc = cpu_up(cpu);
+		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+			if (!cpu_is_hotpluggable(cpu))
+				rc = -EINVAL;
+			else
+				rc = cpu_up(cpu);
+		    }
 		}
 		break;
 	default:
@@ -5766,8 +5948,6 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 {
   if ((cpu >= 0) && (cpu < Proc->CPU.Count))
   {
-   SERVICE_PROC hotService;
-
 	// Is this the very first time the processor is online ?
    if (KPublic->Core[cpu]->T.ApicID == -1)
    {
@@ -5816,28 +5996,8 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	Proc->CPU.OnLine++;
 	BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
-	// Try to restore the initial Service affinity.
-	hotService.Core = cpu;
-	hotService.Thread = -1;
-   if (Proc->Features.HTT_Enable) {
-    if (KPublic->Core[cpu]->T.ThreadID == 0)
-    {
-	hotService.Core = cpu;
-	hotService.Thread = Seek_Topology_Thread_Peer(cpu, -1);
-    }
-    else if (KPublic->Core[cpu]->T.ThreadID > 0)
-    {
-	hotService.Core = Seek_Topology_Core_Peer(cpu, -1);
-	hotService.Thread = cpu;
-    }
-   }
-   if (hotService.Proc == DefaultSMT.Proc) {
-	Proc->Service.Proc = hotService.Proc;
-   }
-	// Match best SMT for the Service Processor.
-   if ((Proc->Features.HTT_Enable) && (Proc->Service.Thread == -1)) {
-	MatchCoreForService(&Proc->Service, cpu, -1);
-   }
+	MatchPeerForUpService(&Proc->Service, cpu);
+
 	return(0);
   } else
 	return(-EINVAL);
@@ -5858,28 +6018,29 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
 
 	// Seek for an alternate Service Processor.
-	if((cpu == Proc->Service.Core) || (cpu == Proc->Service.Thread)) {
-		int rc = -1;
+	if ((cpu == Proc->Service.Core) || (cpu == Proc->Service.Thread))
+	{
+		MatchPeerForDownService(&Proc->Service, cpu);
 
-		if (Proc->Features.HTT_Enable)
-			rc = MatchPeerForService(&Proc->Service, cpu, cpu);
-		if (rc == -1)
-			MatchCoreForService(&Proc->Service, cpu, cpu);
-
+	  if (Proc->Service.Core != cpu)
+	  {
+	    if (Arch[Proc->ArchID].Update != NULL)
+		smp_call_function_single(Proc->Service.Core,
+					Arch[Proc->ArchID].Update,
+					KPublic->Core[Proc->Service.Core], 1);
 #if CONFIG_HAVE_PERF_EVENTS==1
-		if (Proc->Service.Core != cpu) {
 		// Reinitialize PMU Uncore counters.
-		    if (Arch[Proc->ArchID].Uncore.Stop != NULL)
-			smp_call_function_single(Proc->Service.Core,
-						Arch[Proc->ArchID].Uncore.Stop,
-						NULL, 1); // Must wait
+	    if (Arch[Proc->ArchID].Uncore.Stop != NULL)
+		smp_call_function_single(Proc->Service.Core,
+					Arch[Proc->ArchID].Uncore.Stop,
+					NULL, 1); // Must wait
 
-		    if (Arch[Proc->ArchID].Uncore.Start != NULL)
-			smp_call_function_single(Proc->Service.Core,
-						Arch[Proc->ArchID].Uncore.Start,
-						NULL, 0); // Don't wait
-		}
+	    if (Arch[Proc->ArchID].Uncore.Start != NULL)
+		smp_call_function_single(Proc->Service.Core,
+					Arch[Proc->ArchID].Uncore.Start,
+					NULL, 0); // Don't wait
 #endif
+	  }
 	}
 	return(0);
     } else
@@ -6080,11 +6241,12 @@ static int __init CoreFreqK_init(void)
 		    switch (Proc->Features.Info.Vendor.CRC)
 		    {
 		    case CRC_INTEL: {
-			Arch[0].Query = Query_GenuineIntel;
-			Arch[0].Start = Start_GenuineIntel;
-			Arch[0].Stop  = Stop_GenuineIntel;
-			Arch[0].Timer = InitTimer_GenuineIntel;
-			Arch[0].Clock = Clock_GenuineIntel;
+			Arch[0].Query	= Query_GenuineIntel;
+			Arch[0].Update	= PerCore_Intel_Query;
+			Arch[0].Start	= Start_GenuineIntel;
+			Arch[0].Stop	= Stop_GenuineIntel;
+			Arch[0].Timer	= InitTimer_GenuineIntel;
+			Arch[0].Clock	= Clock_GenuineIntel;
 
 			Arch[0].thermalFormula = THERMAL_FORMULA_INTEL;
 
@@ -6094,11 +6256,12 @@ static int __init CoreFreqK_init(void)
 			}
 			break;
 		    case CRC_AMD: {
-			Arch[0].Query = Query_AuthenticAMD;
-			Arch[0].Start = Start_AuthenticAMD;
-			Arch[0].Stop  = Stop_AuthenticAMD;
-			Arch[0].Timer = InitTimer_AuthenticAMD;
-			Arch[0].Clock = Clock_AuthenticAMD;
+			Arch[0].Query	= Query_AuthenticAMD;
+			Arch[0].Update	= PerCore_AuthenticAMD_Query;
+			Arch[0].Start	= Start_AuthenticAMD;
+			Arch[0].Stop	= Stop_AuthenticAMD;
+			Arch[0].Timer	= InitTimer_AuthenticAMD;
+			Arch[0].Clock	= Clock_AuthenticAMD;
 
 			Arch[0].thermalFormula = THERMAL_FORMULA_AMD;
 
@@ -6150,31 +6313,8 @@ static int __init CoreFreqK_init(void)
 
 			Controller_Init();
 
-		    if (Proc->Features.HTT_Enable) {
-		      if (MatchPeerForService(	&Proc->Service,
-						iArg.localProcessor, -1) == -1)
-		      {
-			MatchCoreForService(&Proc->Service,
-					    iArg.localProcessor, -1);
-		      }
-		      if (KPublic->Core[ServiceProcessor]->T.ThreadID == 0)
-		      {
-			DefaultSMT.Core = ServiceProcessor;
-			DefaultSMT.Thread = \
-				Seek_Topology_Thread_Peer(ServiceProcessor, -1);
-		      }
-		      else if (KPublic->Core[ServiceProcessor]->T.ThreadID > 0)
-		      {
-			DefaultSMT.Core = \
-				Seek_Topology_Core_Peer(ServiceProcessor, -1);
-			DefaultSMT.Thread = ServiceProcessor;
-		      }
-		    } else {
-			Proc->Service.Core = iArg.localProcessor;
-			Proc->Service.Thread = -1;
-			DefaultSMT.Core = ServiceProcessor;
-			DefaultSMT.Thread = -1;
-		    }
+			MatchPeerForDefaultService(&Proc->Service,
+						iArg.localProcessor);
 
 			printk(KERN_INFO "CoreFreq(%u:%d):"	\
 				" Processor [%2X%1X_%1X%1X]"	\

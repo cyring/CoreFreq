@@ -328,16 +328,9 @@ typedef struct
 
 		struct {
 		unsigned long long
-					EIST	:  1-0,  // Package
-					C1E	:  2-1,  // Package
-					Turbo	:  3-2,  // Thread
-					C3A	:  4-3,  // Core
-					C1A	:  5-4,  // Core
-					C3U	:  6-5,  // Sandy Bridge
-					C1U	:  7-6,  // Sandy Bridge
-					CfgLock :  8-7,  // Core
-					IORedir :  9-8,  // Core
-					Unused	: 32-9,
+					CfgLock :  1-0,  // Core
+					IORedir :  2-1,  // Core
+					Unused	: 32-3,
 					Microcode:64-32; // Thread
 		};
 		unsigned short int	CStateLimit,
@@ -565,6 +558,16 @@ typedef struct
 	Bit64			C1A_Mask __attribute__ ((aligned (64))); // NHM
 	Bit64			C3U_Mask __attribute__ ((aligned (64))); // SNB
 	Bit64			C1U_Mask __attribute__ ((aligned (64))); // SNB
+
+	Bit64			ODCM		__attribute__ ((aligned (64)));
+	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
+	Bit64			SpeedStep	__attribute__ ((aligned (64)));
+	Bit64			TurboBoost	__attribute__ ((aligned (64)));
+	Bit64			C1E		__attribute__ ((aligned (64)));
+	Bit64			C3A		__attribute__ ((aligned (64)));
+	Bit64			C1A		__attribute__ ((aligned (64)));
+	Bit64			C3U		__attribute__ ((aligned (64)));
+	Bit64			C1U		__attribute__ ((aligned (64)));
 
 	unsigned long long	thermalFormula,
 				voltageFormula,

@@ -376,6 +376,7 @@ typedef	struct
 {
 	struct	SIGNATURE	Signature;
 	void			(*Query)(void);
+	void			(*Update)(void *arg);	// Must be static
 	void			(*Start)(void *arg);	// Must be static
 	void			(*Stop)(void *arg);	// Must be static
 	void			(*Exit)(void);
@@ -408,21 +409,25 @@ extern CLOCK Clock_Skylake(unsigned int ratio) ;
 extern CLOCK Clock_AMD_Family_17h(unsigned int ratio) ;
 
 extern void Query_GenuineIntel(void) ;
+static void PerCore_Intel_Query(void *arg) ;
 static void Start_GenuineIntel(void *arg) ;
 static void Stop_GenuineIntel(void *arg) ;
 extern void InitTimer_GenuineIntel(unsigned int cpu) ;
 
 extern void Query_AuthenticAMD(void) ;
+static void PerCore_AuthenticAMD_Query(void *arg) ;
 static void Start_AuthenticAMD(void *arg) ;
 static void Stop_AuthenticAMD(void *arg) ;
 extern void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
 extern void Query_Core2(void) ;
+static void PerCore_Core2_Query(void *arg) ;
 static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
 
 extern void Query_Nehalem(void) ;
+static void PerCore_Nehalem_Query(void *arg) ;
 static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
@@ -430,22 +435,28 @@ static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
 
 extern void Query_SandyBridge(void) ;
+static void PerCore_SandyBridge_Query(void *arg) ;
 static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
 extern void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
+#define     PerCore_SandyBridge_EP_Query PerCore_SandyBridge_Query
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
 extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
 #define     Start_Uncore_SandyBridge_EP Start_Uncore_SandyBridge
 #define     Stop_Uncore_SandyBridge_EP Stop_Uncore_SandyBridge
 
-extern void Query_IvyBridge(void);
+extern void Query_IvyBridge(void) ;
+#define     PerCore_IvyBridge_Query PerCore_SandyBridge_Query
 extern void Query_IvyBridge_EP(void) ;
+#define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
 
 extern void Query_Haswell_EP(void) ;
+
+static void PerCore_Haswell_ULT_Query(void *arg) ;
 static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
@@ -453,18 +464,21 @@ static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
 
 extern void Query_Broadwell(void) ;
+#define     PerCore_Broadwell_Query PerCore_SandyBridge_Query
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
 
+#define     PerCore_Broadwell_EP_Query PerCore_SandyBridge_EP_Query
 #define     Start_Broadwell_EP Start_SandyBridge_EP
 #define     Stop_Broadwell_EP Stop_SandyBridge_EP
 #define     InitTimer_Broadwell_EP InitTimer_SandyBridge_EP
 #define     Start_Uncore_Broadwell_EP Start_Uncore_SandyBridge_EP
 #define     Stop_Uncore_Broadwell_EP Stop_Uncore_SandyBridge_EP
 
+#define     PerCore_Skylake_Query PerCore_SandyBridge_Query
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
 extern void InitTimer_Skylake(unsigned int cpu) ;
@@ -472,6 +486,7 @@ static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
 extern void Query_Skylake_X(void) ;
+#define     PerCore_Skylake_X_Query PerCore_SandyBridge_Query
 static void Start_Skylake_X(void *arg) ;
 static void Stop_Skylake_X(void *arg) ;
 extern void InitTimer_Skylake_X(unsigned int cpu) ;
@@ -479,25 +494,32 @@ static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
 extern void Query_AMD_Family_0Fh(void) ;
+static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
 static void Start_AMD_Family_0Fh(void *arg) ;
 static void Stop_AMD_Family_0Fh(void *arg) ;
 extern void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
 
 extern void Query_AMD_Family_10h(void) ;
+static void PerCore_AMD_Family_10h_Query(void *arg) ;
 static void Start_AMD_Family_10h(void *arg) ;
 static void Stop_AMD_Family_10h(void *arg) ;
 
 extern void Query_AMD_Family_11h(void) ;
+#define     PerCore_AMD_Family_11h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_11h Start_AMD_Family_10h
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 
 extern void Query_AMD_Family_12h(void) ;
+#define     PerCore_AMD_Family_12h_Query PerCore_AMD_Family_10h_Query
 
 extern void Query_AMD_Family_14h(void) ;
+#define     PerCore_AMD_Family_14h_Query PerCore_AMD_Family_10h_Query
 
 extern void Query_AMD_Family_15h(void) ;
+#define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
 
 extern void Query_AMD_Family_17h(void) ;
+#define     PerCore_AMD_Family_17h_Query PerCore_AMD_Family_10h_Query
 
 //	[Void]
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -895,6 +917,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  0*/	{
 	.Signature = _Void_Signature,
 	.Query = NULL,
+	.Update = NULL,
 	.Start = NULL,
 	.Stop = NULL,
 	.Exit = NULL,
@@ -913,6 +936,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  1*/	{
 	.Signature = _Core_Yonah,
 	.Query = Query_GenuineIntel,
+	.Update = PerCore_Intel_Query,
 	.Start = Start_GenuineIntel,
 	.Stop = Stop_GenuineIntel,
 	.Exit = NULL,
@@ -931,6 +955,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  2*/	{
 	.Signature = _Core_Conroe,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -949,6 +974,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  3*/	{
 	.Signature = _Core_Kentsfield,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -967,6 +993,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  4*/	{
 	.Signature = _Core_Conroe_616,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -985,6 +1012,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  5*/	{
 	.Signature = _Core_Yorkfield,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1003,6 +1031,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  6*/	{
 	.Signature = _Core_Dunnington,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1022,6 +1051,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  7*/	{
 	.Signature = _Atom_Bonnell,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1040,6 +1070,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  8*/	{
 	.Signature = _Atom_Silvermont,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1058,6 +1089,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /*  9*/	{
 	.Signature = _Atom_Lincroft,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1076,6 +1108,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 10*/	{
 	.Signature = _Atom_Clovertrail,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1094,6 +1127,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 11*/	{
 	.Signature = _Atom_Saltwell,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1113,6 +1147,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 12*/	{
 	.Signature = _Silvermont_637,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1131,6 +1166,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 13*/	{
 	.Signature = _Atom_Avoton,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1150,6 +1186,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 14*/	{
 	.Signature = _Atom_Airmont,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1168,6 +1205,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 15*/	{
 	.Signature = _Atom_Goldmont,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
@@ -1186,6 +1224,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 16*/	{
 	.Signature = _Atom_Sofia,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1204,6 +1243,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 17*/	{
 	.Signature = _Atom_Merrifield,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1222,6 +1262,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 18*/	{
 	.Signature = _Atom_Moorefield,
 	.Query = Query_Core2,
+	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
 	.Stop = Stop_Core2,
 	.Exit = NULL,
@@ -1241,6 +1282,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 19*/	{
 	.Signature = _Nehalem_Bloomfield,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1259,6 +1301,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 20*/	{
 	.Signature = _Nehalem_Lynnfield,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1277,6 +1320,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 21*/	{
 	.Signature = _Nehalem_MB,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1295,6 +1339,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 22*/	{
 	.Signature = _Nehalem_EX,
 	.Query = Query_Core2,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1314,6 +1359,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 23*/	{
 	.Signature = _Westmere,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1332,6 +1378,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 24*/	{
 	.Signature = _Westmere_EP,
 	.Query = Query_Nehalem,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1350,6 +1397,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 25*/	{
 	.Signature = _Westmere_EX,
 	.Query = Query_Core2,
+	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -1369,6 +1417,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 26*/	{
 	.Signature = _SandyBridge,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_SandyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1387,6 +1436,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 27*/	{
 	.Signature = _SandyBridge_EP,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_SandyBridge_EP_Query,
 	.Start = Start_SandyBridge_EP,
 	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
@@ -1406,6 +1456,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 28*/	{
 	.Signature = _IvyBridge,
 	.Query = Query_IvyBridge,
+	.Update = PerCore_IvyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1424,6 +1475,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 29*/	{
 	.Signature = _IvyBridge_EP,
 	.Query = Query_IvyBridge_EP,
+	.Update = PerCore_IvyBridge_EP_Query,
 	.Start = Start_SandyBridge_EP,
 	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
@@ -1443,6 +1495,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 30*/	{
 	.Signature = _Haswell_DT,
 	.Query = Query_IvyBridge,
+	.Update = PerCore_IvyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1461,6 +1514,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 31*/	{
 	.Signature = _Haswell_EP,
 	.Query = Query_Haswell_EP,
+	.Update = PerCore_SandyBridge_EP_Query,
 	.Start = Start_SandyBridge_EP,
 	.Stop = Stop_SandyBridge_EP,
 	.Exit = NULL,
@@ -1479,6 +1533,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 32*/	{
 	.Signature = _Haswell_ULT,
 	.Query = Query_IvyBridge,
+	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
@@ -1497,6 +1552,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 33*/	{
 	.Signature = _Haswell_ULX,
 	.Query = Query_IvyBridge,
+	.Update = PerCore_IvyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1516,6 +1572,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 34*/	{
 	.Signature = _Broadwell,
 	.Query = Query_Broadwell,
+	.Update = PerCore_Broadwell_Query,
 	.Start = Start_Broadwell,
 	.Stop = Stop_Broadwell,
 	.Exit = NULL,
@@ -1534,6 +1591,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 35*/	{
 	.Signature = _Broadwell_EP,
 	.Query = Query_Haswell_EP,
+	.Update = PerCore_Broadwell_EP_Query,
 	.Start = Start_Broadwell_EP,
 	.Stop = Stop_Broadwell_EP,
 	.Exit = NULL,
@@ -1552,6 +1610,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 36*/	{
 	.Signature = _Broadwell_H,
 	.Query = Query_Broadwell,
+	.Update = PerCore_Broadwell_Query,
 	.Start = Start_Broadwell,
 	.Stop = Stop_Broadwell,
 	.Exit = NULL,
@@ -1570,6 +1629,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 37*/	{
 	.Signature = _Broadwell_EX,
 	.Query = Query_Haswell_EP,
+	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
@@ -1589,6 +1649,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 38*/	{
 	.Signature = _Skylake_UY,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1606,6 +1667,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 39*/	{
 	.Signature = _Skylake_S,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1624,6 +1686,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 40*/	{
 	.Signature = _Skylake_X,
 	.Query = Query_Skylake_X,
+	.Update = PerCore_Skylake_X_Query,
 	.Start = Start_Skylake_X,
 	.Stop = Stop_Skylake_X,
 	.Exit = NULL,
@@ -1643,6 +1706,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 41*/	{
 	.Signature = _Xeon_Phi,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_SandyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -1662,6 +1726,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 42*/	{
 	.Signature = _Kabylake,
 	.Query = Query_Broadwell,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1680,6 +1745,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 43*/	{
 	.Signature = _Kabylake_UY,
 	.Query = Query_Broadwell,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1699,6 +1765,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 44*/	{
 	.Signature = _Cannonlake,
 	.Query = Query_Broadwell,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1718,6 +1785,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 45*/	{
 	.Signature = _Geminilake,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
@@ -1737,6 +1805,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 46*/	{
 	.Signature = _Icelake_UY,
 	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -1756,6 +1825,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_0Fh,
 	.Query = Query_AMD_Family_0Fh,
+	.Update = PerCore_AMD_Family_0Fh_Query,
 	.Start = Start_AMD_Family_0Fh,
 	.Stop = Stop_AMD_Family_0Fh,
 	.Exit = NULL,
@@ -1775,6 +1845,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_10h,
 	.Query = Query_AMD_Family_10h,
+	.Update = PerCore_AMD_Family_10h_Query,
 	.Start = Start_AMD_Family_10h,
 	.Stop = Stop_AMD_Family_10h,
 	.Exit = NULL,
@@ -1794,6 +1865,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_11h,
 	.Query = Query_AMD_Family_11h,
+	.Update = PerCore_AMD_Family_11h_Query,
 	.Start = Start_AMD_Family_11h,
 	.Stop = Stop_AMD_Family_11h,
 	.Exit = NULL,
@@ -1813,6 +1885,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_12h,
 	.Query = Query_AMD_Family_12h,
+	.Update = PerCore_AMD_Family_12h_Query,
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,
@@ -1832,6 +1905,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_14h,
 	.Query = Query_AMD_Family_14h,
+	.Update = PerCore_AMD_Family_14h_Query,
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,
@@ -1851,6 +1925,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_15h,
 	.Query = Query_AMD_Family_15h,
+	.Update = PerCore_AMD_Family_15h_Query,
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,
@@ -1870,6 +1945,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_16h,
 	.Query = Query_AMD_Family_15h,
+	.Update = PerCore_AMD_Family_15h_Query,
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,
@@ -1889,6 +1965,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	{
 	.Signature = _AMD_Family_17h,
 	.Query = Query_AMD_Family_17h,
+	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,

@@ -492,22 +492,48 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 {	// Technologies aggregation.
-	BITSTOR(LOCKLESS, Shm->Proc.ODCM_Mask, Proc->ODCM_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.PowerMgmt_Mask, Proc->PowerMgmt_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.SpeedStep_Mask, Proc->SpeedStep_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.TurboBoost_Mask, Proc->TurboBoost_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1E_Mask, Proc->C1E_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C3A_Mask, Proc->C3A_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1A_Mask, Proc->C1A_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C3U_Mask, Proc->C3U_Mask);
-	BITSTOR(LOCKLESS, Shm->Proc.C1U_Mask, Proc->C1U_Mask);
+	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
+
+	Shm->Proc.Technology.ODCM = BITWISEAND(LOCKLESS,
+						Proc->ODCM,
+						Proc->ODCM_Mask) != 0;
+
+	Shm->Proc.Technology.PowerMgmt = BITWISEAND(LOCKLESS,
+						Proc->PowerMgmt,
+						Proc->PowerMgmt_Mask) != 0;
+
+	Shm->Proc.Technology.EIST = BITWISEAND(LOCKLESS,
+						Proc->SpeedStep,
+						Proc->SpeedStep_Mask) != 0;
+
+	Shm->Proc.Technology.Turbo = BITWISEAND(LOCKLESS,
+						Proc->TurboBoost,
+						Proc->TurboBoost_Mask) != 0;
+
+	Shm->Proc.Technology.C1E = BITWISEAND(LOCKLESS,
+						Proc->C1E,
+						Proc->C1E_Mask) != 0;
+
+	Shm->Proc.Technology.C3A = BITWISEAND(LOCKLESS,
+						Proc->C3A,
+						Proc->C3A_Mask) != 0;
+
+	Shm->Proc.Technology.C1A = BITWISEAND(LOCKLESS,
+						Proc->C1A,
+						Proc->C1A_Mask) != 0;
+
+	Shm->Proc.Technology.C3U = BITWISEAND(LOCKLESS,
+						Proc->C3U,
+						Proc->C3U_Mask) != 0;
+
+	Shm->Proc.Technology.C1U = BITWISEAND(LOCKLESS,
+						Proc->C1U,
+						Proc->C1U_Mask) != 0;
 }
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Architecture(Shm, Proc);
-
-	Technology_Update(Shm, Proc);
 
 	PerformanceMonitoring(Shm, Proc);
 
@@ -2204,49 +2230,8 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	}
 }
 
-void SpeedStep(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{
-	if (Core[cpu]->Query.EIST)
-		BITSET(LOCKLESS, Shm->Proc.SpeedStep, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.SpeedStep, cpu);
-}
-
-void TurboBoost(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
-{
-	if (Core[cpu]->Query.Turbo)
-		BITSET(LOCKLESS, Shm->Proc.TurboBoost, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.TurboBoost, cpu);
-}
-
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
-	if (Core[cpu]->Query.C1E)
-		BITSET(LOCKLESS, Shm->Proc.C1E, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C1E, cpu);
-
-	if (Core[cpu]->Query.C3A)
-		BITSET(LOCKLESS, Shm->Proc.C3A, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C3A, cpu);
-
-	if (Core[cpu]->Query.C1A)
-		BITSET(LOCKLESS, Shm->Proc.C1A, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C1A, cpu);
-
-	if (Core[cpu]->Query.C3U)
-		BITSET(LOCKLESS, Shm->Proc.C3U, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C3U, cpu);
-
-	if (Core[cpu]->Query.C1U)
-		BITSET(LOCKLESS, Shm->Proc.C1U, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.C1U, cpu);
-
 	Shm->Cpu[cpu].Query.CfgLock = Core[cpu]->Query.CfgLock;
 	Shm->Cpu[cpu].Query.CStateLimit = Core[cpu]->Query.CStateLimit;
 
@@ -2254,7 +2239,7 @@ void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
-void ClockModulation(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended =
 			Core[cpu]->PowerThermal.ClockModulation.ECMD;
@@ -2263,27 +2248,8 @@ void ClockModulation(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		Core[cpu]->PowerThermal.ClockModulation.DutyCycle
 			>> !Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended;
 
-	if (Core[cpu]->PowerThermal.ClockModulation.ODCM_Enable)
-		BITSET(LOCKLESS, Shm->Proc.ODCM, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.ODCM, cpu);
-}
-
-void PowerManagement(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{
-	if (Core[cpu]->PowerThermal.PwrManagement.Perf_BIAS_Enable)
-		BITSET(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
-	else
-		BITCLR(LOCKLESS, Shm->Proc.PowerMgmt, cpu);
-
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
 			Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
-}
-
-void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{
-	ClockModulation(Shm, Proc, Core, cpu);
-	PowerManagement(Shm, Proc, Core, cpu);
 
 	Shm->Cpu[cpu].PowerThermal.TM1 =
 		Proc->Features.Std.EDX.TM1;			//0001
@@ -2480,10 +2446,6 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	Topology(Shm, Proc, Core, cpu);
 
-	SpeedStep(Shm, Proc, Core, cpu);
-
-	TurboBoost(Shm, Core, cpu);
-
 	CStates(Shm, Core, cpu);
 
 	PowerThermal(Shm, Proc, Core, cpu);
@@ -2560,12 +2522,15 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 	if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
 		unsigned int cpu;
+
+		Package_Update(Ref->Shm, Ref->Proc);
 		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
 		    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0)
 		    {
-			Package_Update(Ref->Shm, Ref->Proc);
 			PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
 		    }
+		Technology_Update(Ref->Shm, Ref->Proc);
+
 		if (Quiet & 0x100)
 		  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
 		// Notify
@@ -2757,10 +2722,6 @@ void Core_Manager(REF *Ref)
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-    {
-	PerCore_Update(Shm, Proc, Core, cpu);
-    }
     while (!BITVAL(Shutdown, 0))
     {	// Loop while all the cpu room bits are not cleared.
 	while (!BITVAL(Shutdown, 0)
@@ -2787,6 +2748,8 @@ void Core_Manager(REF *Ref)
 
 			Package_Update(Shm, Proc);
 			PerCore_Update(Shm, Proc, Core, cpu);
+			Technology_Update(Shm, Proc);
+
 			ServerFollowService(&localService,
 					    &Shm->Proc.Service,
 					    tid);
@@ -2801,6 +2764,8 @@ void Core_Manager(REF *Ref)
 			// Add this cpu.
 			Package_Update(Shm, Proc);
 			PerCore_Update(Shm, Proc, Core, cpu);
+			Technology_Update(Shm, Proc);
+
 			ServerFollowService(&localService,
 					    &Shm->Proc.Service,
 					    tid);

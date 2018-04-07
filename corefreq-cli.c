@@ -823,11 +823,6 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 		void(*OutFunc)(unsigned long long key, char *output) )
 {
-	const unsigned int
-		isTurbo = !BITWISEXOR(LOCKLESS, Shm->Proc.TurboBoost,
-						Shm->Proc.TurboBoost_Mask),
-		isEIST  = !BITWISEXOR(LOCKLESS, Shm->Proc.SpeedStep,
-						Shm->Proc.SpeedStep_Mask);
 /* Section Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Hyper-Threading%.*sHTT       [%3s]", width - 33, hSpace,
@@ -835,7 +830,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, BOXKEY_EIST, width, 2,
 		"SpeedStep%.*sEIST       <%3s>", width - 28, hSpace,
-		enabled(isEIST));
+		enabled(Shm->Proc.Technology.EIST));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"PowerNow!%.*sPowerNow       [%3s]", width - 32, hSpace,
@@ -847,7 +842,8 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, BOXKEY_TURBO, width, 2,
 		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
-		enabled(isTurbo|Shm->Proc.Features.AdvPower.EDX.CPB));
+		enabled( Shm->Proc.Technology.Turbo
+			|Shm->Proc.Features.AdvPower.EDX.CPB ));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
@@ -857,13 +853,6 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
 void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 			void(*OutFunc)(unsigned long long key, char *output) )
 {
-	const unsigned int
-		isC1E = !BITWISEXOR(LOCKLESS,Shm->Proc.C1E, Shm->Proc.C1E_Mask),
-		isC3A = !BITWISEXOR(LOCKLESS,Shm->Proc.C3A, Shm->Proc.C3A_Mask),
-		isC1A = !BITWISEXOR(LOCKLESS,Shm->Proc.C1A, Shm->Proc.C1A_Mask),
-		isC3U = !BITWISEXOR(LOCKLESS,Shm->Proc.C3U, Shm->Proc.C3U_Mask),
-		isC1U = !BITWISEXOR(LOCKLESS,Shm->Proc.C1U, Shm->Proc.C1U_Mask);
-
 /* Section Mark */
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Version%.*sPM       [%3d]",
@@ -890,23 +879,23 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
     }
 	printv(OutFunc, BOXKEY_C1E, width, 2,
 		"Enhanced Halt State%.*sC1E       <%3s>",
-		width - 37, hSpace, enabled(isC1E));
+		width - 37, hSpace, enabled(Shm->Proc.Technology.C1E));
 
 	printv(OutFunc, BOXKEY_C1A, width, 2,
 		"C1 Auto Demotion%.*sC1A       <%3s>",
-		width - 34, hSpace, enabled(isC1A));
+		width - 34, hSpace, enabled(Shm->Proc.Technology.C1A));
 
 	printv(OutFunc, BOXKEY_C3A, width, 2,
 		"C3 Auto Demotion%.*sC3A       <%3s>",
-		width - 34, hSpace, enabled(isC3A));
+		width - 34, hSpace, enabled(Shm->Proc.Technology.C3A));
 
 	printv(OutFunc, BOXKEY_C1U, width, 2,
 		"C1 UnDemotion%.*sC1U       <%3s>",
-		width - 31, hSpace, enabled(isC1U));
+		width - 31, hSpace, enabled(Shm->Proc.Technology.C1U));
 
 	printv(OutFunc, BOXKEY_C3U, width, 2,
 		"C3 UnDemotion%.*sC3U       <%3s>",
-		width - 31, hSpace, enabled(isC3U));
+		width - 31, hSpace, enabled(Shm->Proc.Technology.C3U));
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
@@ -1037,15 +1026,11 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 		"  LOCK",
 		"UNLOCK",
 	};
-	const unsigned int
-		isODCM = !BITWISEXOR(LOCKLESS,	Shm->Proc.ODCM,
-						Shm->Proc.ODCM_Mask),
-		isPowerMgmt = !BITWISEXOR(LOCKLESS, Shm->Proc.PowerMgmt,
-						Shm->Proc.PowerMgmt_Mask);
 /* Section Mark */
 	printv(OutFunc, BOXKEY_ODCM, width, 2,
 		"Clock Modulation%.*sODCM   <%7s>",
-		width - 35, hSpace, isODCM ? " Enable" : "Disable");
+		width - 35, hSpace,
+		Shm->Proc.Technology.ODCM ? " Enable" : "Disable");
 
 	printv(OutFunc, BOXKEY_DUTYCYCLE, width, 3,
 	"DutyCycle%.*s<%6.2f%%>", width - (OutFunc == NULL ? 24: 22), hSpace,
@@ -1055,7 +1040,7 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 
 	printv(OutFunc, SCANKEY_NULL, width, 2,
 		"Power Management%.*sPWR MGMT   [%7s]",
-		width - 39, hSpace, Unlock[isPowerMgmt]);
+		width - 39, hSpace, Unlock[Shm->Proc.Technology.PowerMgmt]);
 
 	printv(OutFunc, SCANKEY_NULL, width, 3,
 		"Energy Policy%.*sBias Hint   [%7u]",
@@ -1975,23 +1960,23 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wMenu, SCANKEY_d,      " Dashboard          [d] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_p,      " Processor          [p] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F3,     " Tools             [F3] ", fkeyAttr);
+	StoreTCell(wMenu, SCANKEY_HASH,   " HotPlug CPU        [#] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_m,      " Topology           [m] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_F3,     " Tools             [F3] ", fkeyAttr);
 	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_e,      " Features           [e] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_h,      " Help               [h] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extensions     [I] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", fkeyAttr);
+	StoreTCell(wMenu, SCANKEY_h,      " Help               [h] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_t,      " Technologies       [t] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", fkeyAttr);
 	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_o,      " Perf. Monitoring   [o] ", skeyAttr);
 
@@ -2728,26 +2713,41 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateHotPlugCPU(unsigned long long id)
     {
-	Window *wCPU = CreateWindow(	wLayer, id, 1, MAX_ROWS,
+	Window *wCPU = CreateWindow(	wLayer, id, 2, MAX_ROWS,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1);
 	if (wCPU != NULL) {
+		ASCII item[12];
 		unsigned int cpu;
 		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-		    if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
-			StoreTCell(wCPU, CPU_ONLINE | cpu , " ENABLE  ",
-				MakeAttr(WHITE, 0, BLACK, 1));
-		    else
-			StoreTCell(wCPU, CPU_OFFLINE | cpu, " DISABLE ",
-				MakeAttr(BLUE, 0, BLACK, 1));
+		    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+			sprintf((char*) item, " %02u  Off ", cpu);
+			StoreTCell(wCPU, SCANKEY_NULL , item,
+					MakeAttr(BLUE, 0, BLACK, 1));
+			StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]",
+				MakeAttr(GREEN, 0, BLACK, 1));
+		    } else {
+			sprintf((char*) item, " %02u  On  ", cpu);
+			StoreTCell(wCPU, SCANKEY_NULL , item,
+					MakeAttr(WHITE, 0, BLACK, 0));
+			StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]",
+				MakeAttr(CYAN, 0, BLACK, 0));
+		    }
 		}
+		wCPU->matrix.select.col = 1;
+
 		StoreWindow(wCPU,	.title,		" CPU ");
 		StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
 
 		StoreWindow(wCPU,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
 		StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
-		StoreWindow(wCPU,	.key.Home,	MotionReset_Win);
-		StoreWindow(wCPU,	.key.End,	MotionEnd_Cell);
+		StoreWindow(wCPU,	.key.PgUp,	MotionPgUp_Win);
+		StoreWindow(wCPU,	.key.PgDw,	MotionPgDw_Win);
+
+		StoreWindow(wCPU,	.key.WinLeft,	MotionOriginLeft_Win);
+		StoreWindow(wCPU,	.key.WinRight,	MotionOriginRight_Win);
+		StoreWindow(wCPU,	.key.WinDown,	MotionOriginDown_Win);
+		StoreWindow(wCPU,	.key.WinUp,	MotionOriginUp_Win);
 	}
 	return(wCPU);
     }
@@ -2928,13 +2928,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
     case SCANKEY_HASH:
-	if (drawFlag.disposal == D_MAINVIEW) {
-		Window *win = SearchWinListById(scan->key, &winList);
-		if (win == NULL)
-			AppendWindow(CreateHotPlugCPU(scan->key), &winList);
-		else
-			SetHead(&winList, win);
-	}
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateHotPlugCPU(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
 	break;
     case SCANKEY_PERCENT:
 	if ((drawFlag.view == V_FREQ) && (drawFlag.disposal == D_MAINVIEW)) {
@@ -3171,22 +3171,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
 	{
-	const unsigned int isEIST = !BITWISEXOR(LOCKLESS,
-						Shm->Proc.SpeedStep,
-						Shm->Proc.SpeedStep_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
-		.row = isEIST ? 4 : 3
+		.row = Shm->Proc.Technology.EIST ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " EIST ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[0], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isEIST] , stateAttr[isEIST] , BOXKEY_EIST_ON,
-		stateStr[0][!isEIST], stateAttr[!isEIST], BOXKEY_EIST_OFF,
+		stateStr[1][Shm->Proc.Technology.EIST],
+			stateAttr[Shm->Proc.Technology.EIST] , BOXKEY_EIST_ON,
+		stateStr[0][!Shm->Proc.Technology.EIST],
+			stateAttr[!Shm->Proc.Technology.EIST], BOXKEY_EIST_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3210,22 +3209,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
 	{
-	const unsigned int isC1E = !BITWISEXOR( LOCKLESS,
-						Shm->Proc.C1E,
-						Shm->Proc.C1E_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
-		.row = isC1E ? 4 : 3
+		.row = Shm->Proc.Technology.C1E ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " C1E ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[1], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isC1E] , stateAttr[isC1E] , BOXKEY_C1E_ON,
-		stateStr[0][!isC1E], stateAttr[!isC1E], BOXKEY_C1E_OFF,
+		stateStr[1][Shm->Proc.Technology.C1E],
+			stateAttr[Shm->Proc.Technology.C1E] , BOXKEY_C1E_ON,
+		stateStr[0][!Shm->Proc.Technology.C1E],
+			stateAttr[!Shm->Proc.Technology.C1E], BOXKEY_C1E_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3249,22 +3247,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
 	{
-	const unsigned int isTurbo = !BITWISEXOR(LOCKLESS,
-						Shm->Proc.TurboBoost,
-						Shm->Proc.TurboBoost_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 4
 	}, select = {
 		.col = 0,
-		.row = isTurbo ? 4 : 3
+		.row = Shm->Proc.Technology.Turbo ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " Turbo ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[2], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isTurbo] , stateAttr[isTurbo] , BOXKEY_TURBO_ON,
-		stateStr[0][!isTurbo], stateAttr[!isTurbo], BOXKEY_TURBO_OFF,
+		stateStr[1][Shm->Proc.Technology.Turbo],
+			stateAttr[Shm->Proc.Technology.Turbo] , BOXKEY_TURBO_ON,
+		stateStr[0][!Shm->Proc.Technology.Turbo],
+			stateAttr[!Shm->Proc.Technology.Turbo], BOXKEY_TURBO_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
@@ -3288,22 +3285,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const unsigned int isC1A = !BITWISEXOR( LOCKLESS,
-						Shm->Proc.C1A,
-						Shm->Proc.C1A_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 5
 	}, select = {
 		.col = 0,
-		.row = isC1A ? 4 : 3
+		.row = Shm->Proc.Technology.C1A ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " C1A ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[3], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isC1A] , stateAttr[isC1A] , BOXKEY_C1A_ON,
-		stateStr[0][!isC1A], stateAttr[!isC1A], BOXKEY_C1A_OFF,
+		stateStr[1][Shm->Proc.Technology.C1A],
+			stateAttr[Shm->Proc.Technology.C1A] , BOXKEY_C1A_ON,
+		stateStr[0][!Shm->Proc.Technology.C1A],
+			stateAttr[!Shm->Proc.Technology.C1A], BOXKEY_C1A_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3327,22 +3323,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const unsigned int isC3A = !BITWISEXOR( LOCKLESS,
-						Shm->Proc.C3A,
-						Shm->Proc.C3A_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 6
 	}, select = {
 		.col = 0,
-		.row = isC3A ? 4 : 3
+		.row = Shm->Proc.Technology.C3A ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " C3A ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[4], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isC3A] , stateAttr[isC3A] , BOXKEY_C3A_ON,
-		stateStr[0][!isC3A], stateAttr[!isC3A], BOXKEY_C3A_OFF,
+		stateStr[1][Shm->Proc.Technology.C3A] ,
+			stateAttr[Shm->Proc.Technology.C3A] , BOXKEY_C3A_ON,
+		stateStr[0][!Shm->Proc.Technology.C3A],
+			stateAttr[!Shm->Proc.Technology.C3A], BOXKEY_C3A_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
@@ -3366,22 +3361,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const unsigned int isC1U = !BITWISEXOR( LOCKLESS,
-						Shm->Proc.C1U,
-						Shm->Proc.C1U_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 7
 	}, select = {
 		.col = 0,
-		.row = isC1U ? 4 : 3
+		.row = Shm->Proc.Technology.C1U ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " C1U ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[5], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isC1U] , stateAttr[isC1U] , BOXKEY_C1U_ON,
-		stateStr[0][!isC1U], stateAttr[!isC1U], BOXKEY_C1U_OFF,
+		stateStr[1][Shm->Proc.Technology.C1U] ,
+			stateAttr[Shm->Proc.Technology.C1U] , BOXKEY_C1U_ON,
+		stateStr[0][!Shm->Proc.Technology.C1U],
+			stateAttr[!Shm->Proc.Technology.C1U], BOXKEY_C1U_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3405,22 +3399,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const unsigned int isC3U = !BITWISEXOR( LOCKLESS,
-						Shm->Proc.C3U,
-						Shm->Proc.C3U_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 8
 	}, select = {
 		.col = 0,
-		.row = isC3U ? 4 : 3
+		.row = Shm->Proc.Technology.C3U ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " C3U ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[6], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isC3U] , stateAttr[isC3U] , BOXKEY_C3U_ON,
-		stateStr[0][!isC3U], stateAttr[!isC3U], BOXKEY_C3U_OFF,
+		stateStr[1][Shm->Proc.Technology.C3U] ,
+			stateAttr[Shm->Proc.Technology.C3U] , BOXKEY_C3U_ON,
+		stateStr[0][!Shm->Proc.Technology.C3U],
+			stateAttr[!Shm->Proc.Technology.C3U], BOXKEY_C3U_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3583,22 +3576,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const unsigned int isODCM = !BITWISEXOR(LOCKLESS,
-						Shm->Proc.ODCM,
-						Shm->Proc.ODCM_Mask);
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 6
 	}, select = {
 		.col = 0,
-		.row = isODCM ? 4 : 3
+		.row = Shm->Proc.Technology.ODCM ? 4 : 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " ODCM ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[8], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][isODCM] , stateAttr[isODCM] , BOXKEY_ODCM_ON,
-		stateStr[0][!isODCM], stateAttr[!isODCM],BOXKEY_ODCM_OFF,
+		stateStr[1][Shm->Proc.Technology.ODCM] ,
+			stateAttr[Shm->Proc.Technology.ODCM] , BOXKEY_ODCM_ON,
+		stateStr[0][!Shm->Proc.Technology.ODCM],
+			stateAttr[!Shm->Proc.Technology.ODCM],BOXKEY_ODCM_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -4924,16 +4916,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Layout_Footer(Layer *layer, CUINT row, signed int *processorHot)
     {
-	const unsigned int
-		isTurbo = !BITWISEXOR(LOCKLESS, Shm->Proc.TurboBoost,
-						Shm->Proc.TurboBoost_Mask),
-		isEIST = !BITWISEXOR(LOCKLESS,	Shm->Proc.SpeedStep,
-						Shm->Proc.SpeedStep_Mask),
-		isC1E = !BITWISEXOR(LOCKLESS,Shm->Proc.C1E, Shm->Proc.C1E_Mask),
-		isC3A = !BITWISEXOR(LOCKLESS,Shm->Proc.C3A, Shm->Proc.C3A_Mask),
-		isC1A = !BITWISEXOR(LOCKLESS,Shm->Proc.C1A, Shm->Proc.C1A_Mask),
-		isC3U = !BITWISEXOR(LOCKLESS,Shm->Proc.C3U, Shm->Proc.C3U_Mask),
-		isC1U = !BITWISEXOR(LOCKLESS,Shm->Proc.C1U, Shm->Proc.C1U_Mask);
 	CUINT col = 0;
 	size_t len;
 
@@ -5003,16 +4985,17 @@ void Top(SHM_STRUCT *Shm, char option)
 			MakeAttr(GREEN, 0, BLACK, 1)
 		};
 
-	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] = hTech1.attr[7] =
-								Pwr[isEIST];
+	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
+	    hTech1.attr[7] = Pwr[Shm->Proc.Technology.EIST];
 
-	    hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =
-		Pwr[Shm->Proc.Features.Power.EAX.TurboIDA];
+	    hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =	\
+				Pwr[Shm->Proc.Features.Power.EAX.TurboIDA];
 
-	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
-	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
+	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =	\
+	    hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isC1E];
+	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =	\
+						Pwr[Shm->Proc.Technology.C1E];
 
 	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
@@ -5020,26 +5003,30 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.code[24] = buffer[1];
 	    hTech1.code[25] = buffer[2];
 
-	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =
-		Pwr[(Shm->Proc.PM_version > 0)];
+	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =	\
+						Pwr[(Shm->Proc.PM_version > 0)];
 
-	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] = Pwr[isC3A];
+	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =	\
+						Pwr[Shm->Proc.Technology.C3A];
 
-	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] = Pwr[isC1A];
+	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
+						Pwr[Shm->Proc.Technology.C1A];
 
-	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] = Pwr[isC3U];
+	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
+						Pwr[Shm->Proc.Technology.C3U];
 
-	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] = Pwr[isC1U];
+	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =	\
+						Pwr[Shm->Proc.Technology.C1U];
 
-	    hTech1.attr[43] = hTech1.attr[44] = hTech1.attr[45] =
-		TM1[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1];
+	    hTech1.attr[43] = hTech1.attr[44] = hTech1.attr[45] =	\
+			TM1[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1];
 
-	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =
-		TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
+	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =	\
+			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
 	    if ( (*processorHot) != -1 ) {
-		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =
-			MakeAttr(RED, 0, BLACK, 1);
+		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =	\
+						MakeAttr(RED, 0, BLACK, 1);
 	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
@@ -5063,17 +5050,18 @@ void Top(SHM_STRUCT *Shm, char option)
 		},
 	    };
 
-	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
+	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]=
-	    hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]=
-		Pwr[(Shm->Proc.PowerNow == 0b11)];
+	  hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]= \
+	  hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]= \
+					Pwr[(Shm->Proc.PowerNow == 0b11)];
 
-	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =
-	    hTech1.attr[16] = hTech1.attr[17] = Pwr[isTurbo];
+	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =	\
+	    hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] = Pwr[isC1E];
+	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =	\
+						Pwr[Shm->Proc.Technology.C1E];
 
 	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
@@ -5081,18 +5069,18 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.code[24] = buffer[1];
 	    hTech1.code[25] = buffer[2];
 
-	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =
+	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =	\
 						Pwr[(Shm->Proc.PM_version > 0)];
 
-	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =
+	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =
+	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	    if ( (*processorHot) != -1 ) {
-		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =
-			MakeAttr(RED, 0, BLACK, 1);
+		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
+						MakeAttr(RED, 0, BLACK, 1);
 	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);

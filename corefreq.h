@@ -155,24 +155,21 @@ typedef struct
 	FEATURES			Features;
 
 	Bit64			PowerNow	__attribute__ ((aligned (64)));
-	Bit64			ODCM		__attribute__ ((aligned (64)));
-	Bit64			ODCM_Mask	__attribute__ ((aligned (64)));
-	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
-	Bit64			PowerMgmt_Mask	__attribute__ ((aligned (64)));
-	Bit64			SpeedStep	__attribute__ ((aligned (64)));
-	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
-	Bit64			TurboBoost	__attribute__ ((aligned (64)));
-	Bit64			TurboBoost_Mask __attribute__ ((aligned (64)));
-	Bit64			C1E		__attribute__ ((aligned (64)));
-	Bit64			C1E_Mask	__attribute__ ((aligned (64)));
-	Bit64			C3A		__attribute__ ((aligned (64)));
-	Bit64			C3A_Mask	__attribute__ ((aligned (64)));
-	Bit64			C1A		__attribute__ ((aligned (64)));
-	Bit64			C1A_Mask	__attribute__ ((aligned (64)));
-	Bit64			C3U		__attribute__ ((aligned (64)));
-	Bit64			C3U_Mask	__attribute__ ((aligned (64)));
-	Bit64			C1U		__attribute__ ((aligned (64)));
-	Bit64			C1U_Mask	__attribute__ ((aligned (64)));
+
+	struct {
+		unsigned long long
+				PowerNow	:  1-0,
+				ODCM		:  2-1,
+				PowerMgmt	:  3-2,
+				EIST		:  4-3,
+				Turbo		:  5-4,
+				C1E		:  6-5,
+				C3A		:  7-6,
+				C1A		:  8-7,
+				C3U		:  9-8,
+				C1U		: 10-9,
+				_pad64		: 64-10;
+	} Technology;
 
 	struct {
 		unsigned int		Count,
