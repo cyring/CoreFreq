@@ -211,12 +211,12 @@ typedef union {
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
 #define _LBW	{.fg = BLUE,	.bg = WHITE,	.un = 1}
 
-#define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
-#define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN, 1)
-#define MAKE_BORDER_UNFOCUS	MakeAttr(BLACK, 0, BLUE, 1)
-#define MAKE_BORDER_FOCUS	MakeAttr(WHITE, 0, BLUE, 1)
+#define MAKE_TITLE_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
+#define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN , 1)
+#define MAKE_BORDER_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
+#define MAKE_BORDER_FOCUS	MakeAttr(WHITE, 0, BLUE , 1)
 #define MAKE_SELECT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
-#define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN, 0)
+#define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN , 0)
 #define MAKE_PRINT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
 #define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
 #define MAKE_PRINT_DROP		MakeAttr(BLACK, 0, WHITE, 0)
@@ -411,8 +411,10 @@ void FreeAllTCells(Window *win) ;
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		typeof(attrib), typeof(ATTRIBUTE[])), AllocCopyAttr,	\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
+		typeof(attrib), typeof(ATTRIBUTE*)), AllocCopyAttr,	\
+	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		typeof(attrib), typeof(ATTRIBUTE)), AllocFillAttr,	\
-	(void)0))							\
+	(void)0)))							\
 		(&(win->cell[win->dim - 1]), attrib);			\
 									\
 	AllocCopyItem(&win->cell[win->dim - 1], (ASCII *)item);		\
@@ -472,6 +474,10 @@ void MotionDown_Win(Window *win) ;
 void MotionHome_Win(Window *win) ;
 
 void MotionEnd_Win(Window *win) ;
+
+void MotionTop_Win(Window *win) ;
+
+void MotionBottom_Win(Window *win) ;
 
 void MotionPgUp_Win(Window *win) ;
 

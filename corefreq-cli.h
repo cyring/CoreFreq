@@ -126,6 +126,10 @@ typedef void (*DISPOSAL_FUNC)(Layer*);
 
 typedef CUINT (*VIEW_FUNC)(Layer*, CUINT);
 
+#define CELL_ARGS unsigned long long key, ATTRIBUTE *attrib, ASCII *item
+
+typedef void (*CELL_FUNC)(CELL_ARGS);
+
 typedef union {
 	unsigned long long	qword;
 	struct {

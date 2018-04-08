@@ -971,6 +971,17 @@ void MotionEnd_Win(Window *win)
 	win->matrix.select.col = win->matrix.size.wth - 1;
 }
 
+void MotionTop_Win(Window *win)
+{
+	win->matrix.scroll.vert = win->matrix.select.row = 0;
+}
+
+void MotionBottom_Win(Window *win)
+{
+	win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	win->matrix.select.row = win->matrix.size.hth - 1;
+}
+
 void MotionPgUp_Win(Window *win)
 {
 	if (win->matrix.scroll.vert >= win->matrix.size.hth)

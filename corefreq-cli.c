@@ -96,49 +96,65 @@ unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
 	return(9 - j);
 }
 
-void printv(	void(*OutFunc)(unsigned long long key, char *output),
-		unsigned long long key, CUINT width, int tab, char *fmt, ...)
+void printv(	CELL_FUNC OutFunc,
+		unsigned long long key,
+		ATTRIBUTE *attrib,
+		CUINT width,
+		int tab,
+		char *fmt, ...)
 {
 	const char *indent[2][4] = {
 		{"",	"|",	"|- ",	"   |- "},
 		{"",	" ",	"  ",	"   "}
 	};
-	char	*line = malloc(width + 1);
+	char *line = malloc(width + 1);
 
 	va_list ap;
 	va_start(ap, fmt);
 	vsprintf(line, fmt, ap);
 
-	if (OutFunc == NULL)
-	    printf("%s%s%.*s\n", indent[0][tab], line,
+    if (OutFunc == NULL)
+	printf("%s%s%.*s\n", indent[0][tab], line,
 		(int)(width - strlen(line) - strlen(indent[0][tab])), hSpace);
-	else {
-	    char *output = malloc(width + 1);
-	    sprintf(output, "%s%s%.*s", indent[1][tab], line,
+    else {
+	ASCII *item = malloc(width + 1);
+	sprintf((char *)item, "%s%s%.*s", indent[1][tab], line,
 		(int)(width - strlen(line) - strlen(indent[1][tab])), hSpace);
-	    OutFunc(key, output);
-	    free(output);
-	}
+	OutFunc(key, attrib, item);
+	free(item);
+    }
 	va_end(ap);
 	free(line);
 }
 
-void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
-		void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[1][74] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    }
+	};
 	char format[] = "%08x:%08x%.*s%08x     %08x     %08x     %08x";
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (OutFunc == NULL) {
-		printv(OutFunc, SCANKEY_NULL, width, 0,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
 			"CPU #%-2u function"				\
 			"          EAX          EBX          ECX          EDX",
 			cpu);
 	    } else {
-		printv(OutFunc, SCANKEY_NULL, width, 0, "CPU #%-2u", cpu);
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+			"CPU #%-2u", cpu);
 	    }
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		printv(OutFunc, SCANKEY_NULL, width, 2, format,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, format,
 			0x00000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc,
@@ -146,11 +162,11 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 			Shm->Cpu[cpu].Query.StdFunc.CX,
 			Shm->Cpu[cpu].Query.StdFunc.DX);
 
-		printv(OutFunc, SCANKEY_NULL, width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 			"Largest Standard Function=%08x",
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc);
 
-		printv(OutFunc, SCANKEY_NULL, width, 2, format,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, format,
 			0x80000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc,
@@ -158,14 +174,15 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width,
 			Shm->Cpu[cpu].Query.ExtFunc.ECX,
 			Shm->Cpu[cpu].Query.ExtFunc.EDX);
 
-		printv(OutFunc, SCANKEY_NULL, width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 			"Largest Extended Function=%08x",
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
 		int i;
 		for (i = 0; i < CPUID_MAX_FUNC; i++)
 		    if (Shm->Cpu[cpu].CpuID[i].func) {
-			printv(OutFunc, SCANKEY_NULL, width, 2, format,
+			printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+				format,
 				Shm->Cpu[cpu].CpuID[i].func,
 				Shm->Cpu[cpu].CpuID[i].sub,
 				4, hSpace,
@@ -390,9 +407,29 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
     }
 }
 
-void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
-		void(*OutFunc)(unsigned long long key, char *output))
+void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[2][76] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HGK,HGK,
+		HGK,HGK,HGK,HGK,LWK,LWK
+	    }
+	};
 	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
 	int	activeCores, boost = 0;
 
@@ -407,7 +444,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
 		symb[syc][0],
 		Shm->Proc.Boost[_boost],
 		symb[syc][1]);
-	printv(OutFunc, _key, width, 0, str);
+	printv(OutFunc, _key, attrib[0], width, 0, str);
     }
   }
 
@@ -422,58 +459,69 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
 		symb[syc][0],
 		Shm->Uncore.Boost[_boost],
 		symb[syc][1]);
-	printv(OutFunc, _key, width, 0, str);
+	printv(OutFunc, _key, attrib[0], width, 0, str);
     }
   }
 
-	printv(OutFunc, SCANKEY_NULL, width, 0, "Processor%.*s[%s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		"Processor%.*s[%s]",
 		width - 11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Architecture%.*s[%s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Architecture%.*s[%s]",
 		width - 17 - strlen(Shm->Proc.Architecture), hSpace,
 		Shm->Proc.Architecture);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Vendor ID%.*s[%s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Vendor ID%.*s[%s]",
 		width - 14 - strlen(Shm->Proc.Features.Info.Vendor.ID), hSpace,
 		Shm->Proc.Features.Info.Vendor.ID);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Signature%.*s[%2X%1X_%1X%1X]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Signature%.*s[%2X%1X_%1X%1X]",
 		width - 20, hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
 		Shm->Proc.Features.Std.EAX.Family,
 		Shm->Proc.Features.Std.EAX.ExtModel,
 		Shm->Proc.Features.Std.EAX.Model);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Stepping%.*s[%6u]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Stepping%.*s[%6u]",
 		width - 19, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Microcode%.*s[%6u]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Microcode%.*s[%6u]",
 		width - 20, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Online CPU%.*s[ %2u/%-2u]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Online CPU%.*s[ %2u/%-2u]",
 		width - 21, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Base Clock%.*s[%6.2f]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Base Clock%.*s[%6.2f]",
 		width - 21, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Ratio Limited%.*s[%6s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.Ratio_Unlock],
+		width, 2, "Ratio Limited%.*s[%6s]",
 		width - 24, hSpace,
 		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Frequency%.*s(Mhz)%.*sRatio",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Frequency%.*s(Mhz)%.*sRatio",
 		12, hSpace, 23 - (OutFunc == NULL), hSpace);
 
 	PrintCoreBoost("Min", BOOST(MIN), 0, SCANKEY_NULL);
 	PrintCoreBoost("Max", BOOST(MAX), 0, SCANKEY_NULL);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Factory");
-	printv(OutFunc, SCANKEY_NULL, width, 0, "%.*s""%5u""%.*s""[%4d ]",
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Factory");
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		"%.*s""%5u""%.*s""[%4d ]",
 		22, hSpace, Shm->Proc.Features.FactoryFreq,
 		23, hSpace, Shm->Proc.Boost[BOOST(MAX)]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Turbo Boost");
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Turbo Boost");
     for (boost = BOOST(1C), activeCores = 1;
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
@@ -482,24 +530,29 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
 	sprintf(pfx, "%2dC", activeCores);
 	PrintCoreBoost(pfx,boost,Shm->Proc.Features.Ratio_Unlock,SCANKEY_NULL);
     }
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Uncore");
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Uncore");
 
 	PrintUncoreBoost("Min", UNCORE_BOOST(MIN), 0, SCANKEY_NULL);
 	PrintUncoreBoost("Max", UNCORE_BOOST(MAX), 0, SCANKEY_NULL);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "TDP%.*sLevel [%3d:%-2d]",
+    if (Shm->Proc.Features.TDP_Levels > 0) {
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"TDP%.*sLevel [%3d:%-2d]",
 		width - 20, hSpace,
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
-	printv(OutFunc, SCANKEY_NULL, width, 3, "Limited%.*s[%6s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
+		width, 3, "Limited%.*s[%6s]",
 		width - (OutFunc == NULL ? 21 : 19), hSpace,
 		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3, "Configuration%.*s[%6s]",
+	printv(OutFunc, SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],
+		width, 3, "Configuration%.*s[%6s]",
 		width - (OutFunc == NULL ? 27 : 25), hSpace,
 		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3, "Ratio Activation%.*s[%6s]",
+	printv(OutFunc,SCANKEY_NULL,attrib[!Shm->Proc.Features.TurboRatio_Lock],
+		width, 3, "Ratio Activation%.*s[%6s]",
 		width - (OutFunc == NULL ? 30 : 28), hSpace,
 		Shm->Proc.Features.TurboRatio_Lock ? "LOCK" : "UNLOCK");
 
@@ -507,7 +560,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width,
 	PrintCoreBoost("Level1", BOOST(TDP1), 0, SCANKEY_NULL);
 	PrintCoreBoost("Level2", BOOST(TDP2), 0, SCANKEY_NULL);
 	PrintCoreBoost("Turbo", BOOST(ACT), 0, SCANKEY_NULL);
-
+    }
 	free(str);
 }
 
@@ -626,10 +679,38 @@ void SysInfoISA(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
 }
 
-void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
-			void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoFeatures(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-/* Section Mark */
+	ATTRIBUTE attrib[3][72] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,
+		LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HGK,HGK,HGK,HGK,HGK,HGK,HGK,HGK,HGK,
+		LWK,LWK
+	    }
+	};
 	const char *TSC[] = {
 		"Missing",
 		"Variant",
@@ -640,336 +721,430 @@ void SysInfoFeatures(	SHM_STRUCT *Shm, CUINT width,
 		"  xAPIC",
 		" x2APIC"
 	};
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	int bix;
+// Section Mark
+	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"1 GB Pages Support%.*s1GB-PAGES   [%7s]",
-		width - 42, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.EDX.PG_1GB));
+		width - 42, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"100 MHz multiplier Control%.*s100MHzSteps   [%7s]",
-		width - 52, hSpace,
-		powered(Shm->Proc.Features.AdvPower.EDX._100MHz));
+		width - 52, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Advanced Configuration & Power Interface"		\
-					"%.*sACPI   [%7s]",
-		width - 59, hSpace,
-		powered(Shm->Proc.Features.Std.EDX.ACPI			// Intel
-			| Shm->Proc.Features.AdvPower.EDX.HwPstate) );	// AMD
+	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		// Intel
+	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	// AMD
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Advanced Configuration & Power Interface%.*sACPI   [%7s]",
+		width - 59, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Advanced Programmable Interrupt Controller"		\
-						"%.*sAPIC   [%7s]",
-		width - 61, hSpace, powered(Shm->Proc.Features.Std.EDX.APIC));
+	bix = Shm->Proc.Features.Std.EDX.APIC == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Advanced Programmable Interrupt Controller%.*sAPIC   [%7s]",
+		width - 61, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Core Multi-Processing%.*sCMP Legacy   [%7s]",
-		width - 46, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.ECX.MP_Mode));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.CNXT_ID == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"L1 Data Cache Context ID%.*sCNXT-ID   [%7s]",
-		width - 46,hSpace, powered(Shm->Proc.Features.Std.ECX.CNXT_ID));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.DCA == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Direct Cache Access%.*sDCA   [%7s]",
-		width - 37, hSpace, powered(Shm->Proc.Features.Std.ECX.DCA));
+		width - 37, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.DE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Debugging Extension%.*sDE   [%7s]",
-		width - 36, hSpace, powered(Shm->Proc.Features.Std.EDX.DE));
+		width - 36, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"Debug Store & Precise Event Based Sampling"		\
+	bix = Shm->Proc.Features.Std.EDX.DS_PEBS == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Debug Store & Precise Event Based Sampling"
 					"%.*sDS, PEBS   [%7s]",
-		width - 65,hSpace, powered(Shm->Proc.Features.Std.EDX.DS_PEBS));
+		width - 65, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.DS_CPL == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"CPL Qualified Debug Store%.*sDS-CPL   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.ECX.DS_CPL));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.DTES64 == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"64-Bit Debug Store%.*sDTES64   [%7s]",
-		width - 39, hSpace, powered(Shm->Proc.Features.Std.ECX.DTES64));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Fast-String Operation%.*sFast-Strings   [%7s]",
-		width - 48,hSpace,
-		powered(Shm->Proc.Features.ExtFeature.EBX.FastStrings));
+		width - 48, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
+	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Fused Multiply Add%.*sFMA|FMA4   [%7s]",
-		width - 41, hSpace,
-		powered(  Shm->Proc.Features.Std.ECX.FMA
-			| Shm->Proc.Features.ExtInfo.ECX.FMA4 ));
+		width - 41, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware Lock Elision%.*sHLE   [%7s]",
-		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtFeature.EBX.HLE));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Long Mode 64 bits%.*sIA64|LM   [%7s]",
-		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.EDX.IA64));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"LightWeight Profiling%.*sLWP   [%7s]",
-		width - 39, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.ECX.LWP));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.MCA == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Machine-Check Architecture%.*sMCA   [%7s]",
-		width - 44, hSpace,
-		powered(Shm->Proc.Features.Std.EDX.MCA));
+		width - 44, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Model Specific Registers%.*sMSR   [%7s]",
-		width - 42, hSpace, powered(Shm->Proc.Features.Std.EDX.MSR));
+		width - 42, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.MTRR == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Memory Type Range Registers%.*sMTRR   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.EDX.MTRR));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.OSXSAVE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]",
-		width - 54,hSpace, powered(Shm->Proc.Features.Std.ECX.OSXSAVE));
+		width - 54,hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PAE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Physical Address Extension%.*sPAE   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Std.EDX.PAE));
+		width - 44, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PAT == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Attribute Table%.*sPAT   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.EDX.PAT));
+		width - 38, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PBE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Pending Break Enable%.*sPBE   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.EDX.PBE));
+		width - 38, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.PCID == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Process Context Identifiers%.*sPCID   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.ECX.PCID));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.PDCM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Perfmon and Debug Capability%.*sPDCM   [%7s]",
-		width - 47, hSpace, powered(Shm->Proc.Features.Std.ECX.PDCM));
+		width - 47, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PGE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Global Enable%.*sPGE   [%7s]",
-		width - 36, hSpace, powered(Shm->Proc.Features.Std.EDX.PGE));
+		width - 36, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PSE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Size Extension%.*sPSE   [%7s]",
-		width - 37, hSpace, powered(Shm->Proc.Features.Std.EDX.PSE));
+		width - 37, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PSE36 == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"36-bit Page Size Extension%.*sPSE36   [%7s]",
-		width - 46, hSpace, powered(Shm->Proc.Features.Std.EDX.PSE36));
+		width - 46, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.PSN == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Processor Serial Number%.*sPSN   [%7s]",
-		width - 41, hSpace, powered(Shm->Proc.Features.Std.EDX.PSN));
+		width - 41, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Restricted Transactional Memory%.*sRTM   [%7s]",
-		width - 49, hSpace,
-		powered(Shm->Proc.Features.ExtFeature.EBX.RTM));
+		width - 49, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.SMX == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Safer Mode Extensions%.*sSMX   [%7s]",
-		width - 39, hSpace, powered(Shm->Proc.Features.Std.ECX.SMX));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.SS == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Self-Snoop%.*sSS   [%7s]",
-		width - 27, hSpace, powered(Shm->Proc.Features.Std.EDX.SS));
+		width - 27, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.InvariantTSC],
+		width, 2,
 		"Time Stamp Counter%.*sTSC [%9s]",
 		width - 36, hSpace, TSC[Shm->Proc.Features.InvariantTSC]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]",
-		width - 54,hSpace, powered(Shm->Proc.Features.Std.ECX.TSCDEAD));
+		width - 54,hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.EDX.VME == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtual Mode Extension%.*sVME   [%7s]",
-		width - 40, hSpace, powered(Shm->Proc.Features.Std.EDX.VME));
+		width - 40, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.VMX == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtual Machine Extensions%.*sVMX   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Std.ECX.VMX));
+		width - 44, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC > 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Extended xAPIC Support%.*sx2APIC   [%7s]",
 		width - 43, hSpace,
 		x2APIC[Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Execution Disable Bit Support%.*sXD-Bit   [%7s]",
-		width - 50, hSpace,
-		powered(Shm->Proc.Features.ExtInfo.EDX.XD_Bit));
+		width - 50, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.XSAVE == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"XSAVE/XSTOR States%.*sXSAVE   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.ECX.XSAVE));
+		width - 38, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.xTPR == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"xTPR Update Control%.*sxTPR   [%7s]",
-		width - 38, hSpace, powered(Shm->Proc.Features.Std.ECX.xTPR));
+		width - 38, hSpace, powered(bix));
 }
 
-void SysInfoTech(SHM_STRUCT *Shm, CUINT width,
-		void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	ATTRIBUTE attrib[2][49] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,HGK,HGK,HGK,LWK
+	    }
+	};
+	int bix;
+// Section Mark
+	bix = Shm->Proc.Features.HyperThreading == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Hyper-Threading%.*sHTT       [%3s]", width - 33, hSpace,
-		enabled(Shm->Proc.Features.HyperThreading));
+		enabled(bix));
 
-	printv(OutFunc, BOXKEY_EIST, width, 2,
+	bix = Shm->Proc.Technology.EIST == 1;
+	printv(OutFunc, BOXKEY_EIST, attrib[bix], width, 2,
 		"SpeedStep%.*sEIST       <%3s>", width - 28, hSpace,
-		enabled(Shm->Proc.Technology.EIST));
+		enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.PowerNow == 0b11;	// VID + FID
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"PowerNow!%.*sPowerNow       [%3s]", width - 32, hSpace,
-		enabled(Shm->Proc.PowerNow == 0b11));	// VID + FID
+		enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Dynamic Acceleration%.*sIDA       [%3s]", width - 38, hSpace,
-		enabled(Shm->Proc.Features.Power.EAX.TurboIDA));
+		enabled(bix));
 
-	printv(OutFunc, BOXKEY_TURBO, width, 2,
+	bix = (Shm->Proc.Technology.Turbo == 1)
+	   || (Shm->Proc.Features.AdvPower.EDX.CPB == 1);
+	printv(OutFunc, BOXKEY_TURBO, attrib[bix], width, 2,
 		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
-		enabled( Shm->Proc.Technology.Turbo
-			|Shm->Proc.Features.AdvPower.EDX.CPB ));
+		enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
-		enabled(Shm->Proc.Features.Std.ECX.Hyperv));
+		enabled(bix));
 }
 
-void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
-			void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	ATTRIBUTE attrib[4][74] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HGK,
+		HGK,HGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,HBK,HBK,HBK,HBK,HBK,
+		HBK,HBK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,HGK,HGK,HGK,HGK,HGK,
+		HGK,HGK,LWK,LWK
+	    }
+	};
+	int bix;
+// Section Mark
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Version%.*sPM       [%3d]",
 		width - 24, hSpace, Shm->Proc.PM_version);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Counters:%.*sGeneral%.*sFixed",
 		10, hSpace, width - 61, hSpace);
 
     if (OutFunc == NULL) {
-	printv(OutFunc, SCANKEY_NULL, width, 1,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 1,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
 		11, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
 				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     } else {
-	printv(OutFunc, SCANKEY_NULL, width, 0,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
 		5, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
 				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     }
-	printv(OutFunc, BOXKEY_C1E, width, 2,
+	bix = Shm->Proc.Technology.C1E == 1;
+	printv(OutFunc, BOXKEY_C1E, attrib[bix], width, 2,
 		"Enhanced Halt State%.*sC1E       <%3s>",
-		width - 37, hSpace, enabled(Shm->Proc.Technology.C1E));
+		width - 37, hSpace, enabled(bix));
 
-	printv(OutFunc, BOXKEY_C1A, width, 2,
+	bix = Shm->Proc.Technology.C1A == 1;
+	printv(OutFunc, BOXKEY_C1A, attrib[bix], width, 2,
 		"C1 Auto Demotion%.*sC1A       <%3s>",
-		width - 34, hSpace, enabled(Shm->Proc.Technology.C1A));
+		width - 34, hSpace, enabled(bix));
 
-	printv(OutFunc, BOXKEY_C3A, width, 2,
+	bix = Shm->Proc.Technology.C3A == 1;
+	printv(OutFunc, BOXKEY_C3A, attrib[bix], width, 2,
 		"C3 Auto Demotion%.*sC3A       <%3s>",
-		width - 34, hSpace, enabled(Shm->Proc.Technology.C3A));
+		width - 34, hSpace, enabled(bix));
 
-	printv(OutFunc, BOXKEY_C1U, width, 2,
+	bix = Shm->Proc.Technology.C1U == 1;
+	printv(OutFunc, BOXKEY_C1U, attrib[bix], width, 2,
 		"C1 UnDemotion%.*sC1U       <%3s>",
-		width - 31, hSpace, enabled(Shm->Proc.Technology.C1U));
+		width - 31, hSpace, enabled(bix));
 
-	printv(OutFunc, BOXKEY_C3U, width, 2,
+	bix = Shm->Proc.Technology.C3U == 1;
+	printv(OutFunc, BOXKEY_C3U, attrib[bix], width, 2,
 		"C3 UnDemotion%.*sC3U       <%3s>",
-		width - 31, hSpace, enabled(Shm->Proc.Technology.C3U));
+		width - 31, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
-		width - 38, hSpace,
-		enabled(Shm->Proc.Features.AdvPower.EDX.FID));
+		width - 38, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.AdvPower.EDX.VID == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Voltage ID control%.*sVID       [%3s]",
-		width - 36, hSpace,
-		enabled(Shm->Proc.Features.AdvPower.EDX.VID));
+		width - 36, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
-		"P-State Hardware Coordination Feedback"		\
+	bix = Shm->Proc.Features.Power.ECX.HCF_Cap == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"P-State Hardware Coordination Feedback"	\
 			"%.*sMPERF/APERF       [%3s]",
-		width - 64, hSpace,
-		enabled(Shm->Proc.Features.Power.ECX.HCF_Cap));
+		width - 64, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
+	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware-Controlled Performance States%.*sHWP       [%3s]",
-		width - 56, hSpace,
-		enabled(  Shm->Proc.Features.Power.EAX.HWP_Reg
-			| Shm->Proc.Features.AdvPower.EDX.HwPstate));
+		width - 56, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Power.EAX.HDC_Reg == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware Duty Cycling%.*sHDC       [%3s]",
-		width - 39, hSpace,
-		enabled(Shm->Proc.Features.Power.EAX.HDC_Reg));
+		width - 39, hSpace, enabled(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Package C-State");
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Package C-State");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
+	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
 		"Configuration Control%.*sCONFIG   [%7s]",
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
 		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
 			"UNLOCK" : "LOCK");
 
 	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
-		printv(OutFunc, BOXKEY_PKGCST, width, 3,
+		printv(OutFunc, BOXKEY_PKGCST, attrib[0], width, 3,
 			"Lowest C-State%.*sLIMIT   <%7d>",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
-		printv(OutFunc, BOXKEY_IOMWAIT, width, 3,
+		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
+		printv(OutFunc, BOXKEY_IOMWAIT, attrib[bix], width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir?
+			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				" ENABLE" : "DISABLE");
 
-		printv(OutFunc, BOXKEY_IORCST, width, 3,
+		printv(OutFunc, BOXKEY_IORCST, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   <%7d>",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	} else {
-		printv(OutFunc, SCANKEY_NULL, width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 			"Lowest C-State%.*sLIMIT   [%7d]",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
-		printv(OutFunc, SCANKEY_NULL, width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				" ENABLE" : "DISABLE");
 
-		printv(OutFunc, SCANKEY_NULL, width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   [%7d]",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"MWAIT States:%.*sC0      C1      C2      C3      C4",
 		06, hSpace);
 
-	printv(OutFunc, SCANKEY_NULL, width, (OutFunc == NULL) ? 1 : 0,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1:0,
 		"%.*s%2d      %2d      %2d      %2d      %2d",
 		21, hSpace,
 		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
@@ -978,45 +1153,71 @@ void SysInfoPerfMon(	SHM_STRUCT *Shm, CUINT width,
 		Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT,
 		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Core Cycles%.*s[%7s]",
-		width - 23, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.CoreCycles));
+		width - 23, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.InstrRetired == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Instructions Retired%.*s[%7s]",
-		width - 32, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.InstrRetired));
+		width - 32, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.RefCycles == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Reference Cycles%.*s[%7s]",
-		width - 28, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.RefCycles));
+		width - 28, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Ref == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Last Level Cache References%.*s[%7s]",
-		width - 39, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.LLC_Ref));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Last Level Cache Misses%.*s[%7s]",
-		width - 35, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.LLC_Misses));
+		width - 35, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.BranchRetired == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Branch Instructions Retired%.*s[%7s]",
-		width - 39, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.BranchRetired));
+		width - 39, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.PerfMon.EBX.BranchMispred == 0 ? 2 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Branch Mispredicts Retired%.*s[%7s]",
-		width - 38, hSpace,
-		powered(!Shm->Proc.Features.PerfMon.EBX.BranchMispred));
+		width - 38, hSpace, powered(bix));
 }
 
-void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
-			void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoPwrThermal(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[4][50] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HGK,HGK,HGK,HGK,HGK,HGK,HGK,LWK,LWK
+	    }
+	};
 	const char *TM[] = {
 		"Missing",
 		"Present",
@@ -1026,162 +1227,181 @@ void SysInfoPwrThermal( SHM_STRUCT *Shm, CUINT width,
 		"  LOCK",
 		"UNLOCK",
 	};
-/* Section Mark */
-	printv(OutFunc, BOXKEY_ODCM, width, 2,
-		"Clock Modulation%.*sODCM   <%7s>",
-		width - 35, hSpace,
+	int bix;
+// Section Mark
+	bix = Shm->Proc.Technology.ODCM == 1 ? 3 : 1;
+	printv(OutFunc, BOXKEY_ODCM, attrib[bix], width, 2,
+		"Clock Modulation%.*sODCM   <%7s>", width - 35, hSpace,
 		Shm->Proc.Technology.ODCM ? " Enable" : "Disable");
 
-	printv(OutFunc, BOXKEY_DUTYCYCLE, width, 3,
+	printv(OutFunc, BOXKEY_DUTYCYCLE, attrib[0], width, 3,
 	"DutyCycle%.*s<%6.2f%%>", width - (OutFunc == NULL ? 24: 22), hSpace,
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
 	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Technology.PowerMgmt == 1 ? 3 : 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Power Management%.*sPWR MGMT   [%7s]",
 		width - 39, hSpace, Unlock[Shm->Proc.Technology.PowerMgmt]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 		"Energy Policy%.*sBias Hint   [%7u]",
 		width - (OutFunc == NULL ? 40 : 38), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Junction Temperature%.*sTjMax   [%7u]", width - 40, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
+	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
-		width - 40, hSpace,
-		powered( Shm->Proc.Features.Power.EAX.DTS
-			|Shm->Proc.Features.AdvPower.EDX.TS));
+		width - 40, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Power.EAX.PLN == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Power Limit Notification%.*sPLN   [%7s]",
-		width - 42, hSpace, powered(Shm->Proc.Features.Power.EAX.PLN));
+		width - 42, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Proc.Features.Power.EAX.PTM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Package Thermal Management%.*sPTM   [%7s]",
-		width - 44, hSpace, powered(Shm->Proc.Features.Power.EAX.PTM));
+		width - 44, hSpace, powered(bix));
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
+	    | Shm->Proc.Features.AdvPower.EDX.TTP;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Thermal Monitor 1%.*sTM1|TTP   [%7s]",
 		width - 39, hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 			| Shm->Proc.Features.AdvPower.EDX.TTP ]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2,
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
+	    | Shm->Proc.Features.AdvPower.EDX.TM;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 			| Shm->Proc.Features.AdvPower.EDX.TM ]);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Units");
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Units");
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 		"Power%.*swatt   [%13.9f]",
 		width - (OutFunc == NULL ? 33 : 31), hSpace,
 		Shm->Proc.Power.Unit.Watts);
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 		"Energy%.*sjoule   [%13.9f]",
 		width - (OutFunc == NULL ? 35 : 33), hSpace,
 		Shm->Proc.Power.Unit.Joules);
 
-	printv(OutFunc, SCANKEY_NULL, width, 3,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
 		"Window%.*ssecond   [%13.9f]",
 		width - (OutFunc == NULL ? 36 : 34), hSpace,
 		Shm->Proc.Power.Unit.Times);
 }
 
-void SysInfoKernel(	SHM_STRUCT *Shm, CUINT width,
-			void(*OutFunc)(unsigned long long key, char *output) )
+void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[1][74] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    }
+	};
 	size_t	len = 0;
 	char	*row = malloc(width + 1),
 		*str = malloc(width + 1);
-	int	i = 0;
+	int	idx = 0;
+// Section Mark
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		"%s:", Shm->SysGate.sysname);
 
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 0, "%s:", Shm->SysGate.sysname);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Release%.*s[%s]", width - 12 - strlen(Shm->SysGate.release),
+		hSpace, Shm->SysGate.release);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Release%.*s[%s]",
-		width - 12 - strlen(Shm->SysGate.release), hSpace,
-		Shm->SysGate.release);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Version%.*s[%s]", width - 12 - strlen(Shm->SysGate.version),
+		hSpace, Shm->SysGate.version);
 
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Version%.*s[%s]",
-		width - 12 - strlen(Shm->SysGate.version), hSpace,
-		Shm->SysGate.version);
-
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Machine%.*s[%s]",
-		width - 12 - strlen(Shm->SysGate.machine), hSpace,
-		Shm->SysGate.machine);
-/* Section Mark */
-	printv(OutFunc, SCANKEY_NULL, width, 0, "Memory:%.*s",
-		width - 7, hSpace);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Machine%.*s[%s]", width - 12 - strlen(Shm->SysGate.machine),
+		hSpace, Shm->SysGate.machine);
+// Section Mark
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		"Memory:%.*s", width - 7, hSpace);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Total RAM" "%.*s" "%s KB",
-		width - 15 - len, hSpace, str);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Total RAM" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Shared RAM" "%.*s" "%s KB",
-		width - 16 - len, hSpace, str);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Shared RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Free RAM" "%.*s" "%s KB",
-		width - 14 - len, hSpace, str);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Free RAM" "%.*s" "%s KB", width - 14 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Buffer RAM" "%.*s" "%s KB",
-		width - 16 - len, hSpace, str);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Buffer RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Total High" "%.*s" "%s KB",
-		width - 16 - len, hSpace, str);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Total High" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
-	printv(OutFunc, SCANKEY_NULL, width, 2, "Free High" "%.*s" "%s KB",
-		width - 15 - len, hSpace, str);
-/* Section Mark */
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
+// Section Mark
     if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0) {
-	printv(OutFunc, SCANKEY_NULL, width, 0, "Idle driver%.*s[%s@%s]",
-		width - 14 - len, hSpace,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
-/* Row Mark */
+// Row Mark
 	len = sprintf(row, "States:%.*s", 9, hSpace);
-	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
 		len += sprintf(str, "%-8s",
-			Shm->SysGate.IdleDriver.State[i].Name);
+			Shm->SysGate.IdleDriver.State[idx].Name);
 		strcat(row, str);
 	}
-	printv(OutFunc, SCANKEY_NULL, width, 3, row);
-/* Row Mark */
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
+// Row Mark
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
-	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
 		len += sprintf(str, "%-8d",
-			Shm->SysGate.IdleDriver.State[i].powerUsage);
+			Shm->SysGate.IdleDriver.State[idx].powerUsage);
 		strcat(row, str);
 	}
-	printv(OutFunc, SCANKEY_NULL, width, 3, row);
-/* Row Mark */
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
+// Row Mark
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
-	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
 		len += sprintf(str, "%-8u",
-			Shm->SysGate.IdleDriver.State[i].exitLatency);
+			Shm->SysGate.IdleDriver.State[idx].exitLatency);
 		strcat(row, str);
 	}
-	printv(OutFunc, SCANKEY_NULL, width, 3, row);
-/* Row Mark */
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
+// Row Mark
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
-	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++) {
+	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
 		len += sprintf(str, "%-8u",
-			Shm->SysGate.IdleDriver.State[i].targetResidency);
+			Shm->SysGate.IdleDriver.State[idx].targetResidency);
 		strcat(row, str);
 	}
-	printv(OutFunc, SCANKEY_NULL, width, 3, row);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
     }
 	free(row);
 	free(str);
@@ -2302,8 +2522,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 1};
 	CUINT winWidth = 74;
-	void (*SysInfoFunc)	(SHM_STRUCT*, CUINT,
-				void(*OutFunc)(unsigned long long, char*));
+	void (*SysInfoFunc)(SHM_STRUCT*, CUINT, CELL_FUNC OutFunc) = NULL;
 	char *title = NULL;
 
 	switch (id) {
@@ -2390,14 +2609,15 @@ void Top(SHM_STRUCT *Shm, char option)
 					matrixSize.wth, matrixSize.hth,
 					winOrigin.col, winOrigin.row);
 
-	void AddSysInfoCell(unsigned long long key, char *input)
+	void AddSysInfoCell(CELL_ARGS)
 	{
 		pad++;
-		StoreTCell(wSysInfo, key, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wSysInfo, key, item, attrib);
 	}
 
 	if (wSysInfo != NULL) {
-		SysInfoFunc(Shm, winWidth, AddSysInfoCell);
+		if (SysInfoFunc != NULL)
+			SysInfoFunc(Shm, winWidth, AddSysInfoCell);
 
 		while (pad < matrixSize.hth) {	// Pad with blank rows.
 			pad++;
@@ -2716,23 +2936,25 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *wCPU = CreateWindow(	wLayer, id, 2, MAX_ROWS,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1);
 	if (wCPU != NULL) {
+		ATTRIBUTE enAttr[12] = {
+			LWK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,LWK,LDK,LDK,LDK
+		}, disAttr[12] = {
+			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,LWK,LDK,LDK,LDK
+		};
 		ASCII item[12];
 		unsigned int cpu;
-		for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-		    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-			sprintf((char*) item, " %02u  Off ", cpu);
-			StoreTCell(wCPU, SCANKEY_NULL , item,
-					MakeAttr(BLUE, 0, BLACK, 1));
-			StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]",
-				MakeAttr(GREEN, 0, BLACK, 1));
-		    } else {
-			sprintf((char*) item, " %02u  On  ", cpu);
-			StoreTCell(wCPU, SCANKEY_NULL , item,
-					MakeAttr(WHITE, 0, BLACK, 0));
-			StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]",
-				MakeAttr(CYAN, 0, BLACK, 0));
-		    }
-		}
+
+	  for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+		sprintf((char*) item, " %02u  Off ", cpu);
+		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
+		StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]", enAttr);
+	    } else {
+		sprintf((char*) item, " %02u  On  ", cpu);
+		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
+		StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]", disAttr);
+	    }
+	  }
 		wCPU->matrix.select.col = 1;
 
 		StoreWindow(wCPU,	.title,		" CPU ");
@@ -2743,6 +2965,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
 		StoreWindow(wCPU,	.key.PgUp,	MotionPgUp_Win);
 		StoreWindow(wCPU,	.key.PgDw,	MotionPgDw_Win);
+		StoreWindow(wCPU,	.key.Home,	MotionTop_Win);
+		StoreWindow(wCPU,	.key.End,	MotionBottom_Win);
 
 		StoreWindow(wCPU,	.key.WinLeft,	MotionOriginLeft_Win);
 		StoreWindow(wCPU,	.key.WinRight,	MotionOriginRight_Win);
@@ -3724,7 +3948,10 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 			" Tools ",
-    (ASCII*)"            STOP           ", stateAttr[0], BOXKEY_TOOLS_MACHINE,
+    (ASCII*)"            STOP           ", BITVAL(Shm->Proc.Sync, 31) ?
+					   MakeAttr(RED,0,BLACK,0) : blankAttr,
+					   BITVAL(Shm->Proc.Sync, 31) ?
+					   BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
     (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
     (ASCII*)"       CRC32 Compute       ", stateAttr[0], BOXKEY_TOOLS_CRC32,
     (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC,
@@ -6594,24 +6821,24 @@ int main(int argc, char *argv[])
 		SysInfoCPUID(Shm, 80, NULL);
 		break;
 	case 's':
-		{
-		SysInfoProc(Shm, 80, NULL);
-		printv(NULL, SCANKEY_VOID, 80, 0,"");
-		printv(NULL, SCANKEY_VOID, 80, 0,"ISA Extensions:");
-		SysInfoISA(Shm, NULL);
-		printv(NULL, SCANKEY_VOID, 80, 0,"");
-		printv(NULL, SCANKEY_VOID, 80, 0,"Features:");
-		SysInfoFeatures(Shm, 80, NULL);
-		printv(NULL, SCANKEY_VOID, 80, 0,"");
-		printv(NULL, SCANKEY_VOID, 80, 0,"Technologies:");
-		SysInfoTech(Shm, 80, NULL);
-		printv(NULL, SCANKEY_VOID, 80, 0,"");
-		printv(NULL, SCANKEY_VOID, 80, 0,"Performance Monitoring:");
-		SysInfoPerfMon(Shm, 80, NULL);
-		printv(NULL, SCANKEY_VOID, 80, 0,"");
-		printv(NULL, SCANKEY_VOID, 80, 0,"Power & Thermal Monitoring:");
-		SysInfoPwrThermal(Shm, 80, NULL);
-		}
+	{
+	SysInfoProc(Shm, 80, NULL);
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"");
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"ISA Extensions:");
+	SysInfoISA(Shm, NULL);
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"");
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"Features:");
+	SysInfoFeatures(Shm, 80, NULL);
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"");
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"Technologies:");
+	SysInfoTech(Shm, 80, NULL);
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"");
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"Performance Monitoring:");
+	SysInfoPerfMon(Shm, 80, NULL);
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"");
+	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"Power & Thermal Monitoring:");
+	SysInfoPwrThermal(Shm, 80, NULL);
+	}
 		break;
 	case 'm':
 		Topology(Shm, NULL);
