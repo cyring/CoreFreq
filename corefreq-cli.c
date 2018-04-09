@@ -564,118 +564,234 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	free(str);
 }
 
-void SysInfoISA(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+void SysInfoISA(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[4][5][17] = {
+	  {
+	    {	// [N] & [N/N]	2*(0|0)+(0<<0)
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{ // [Y]
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,HGK,LWK
+	    },{ // [N/Y]	2*(0|1)+(0<<1)
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,HGK,LWK
+	    },{ // [Y/N]	2*(1|0)+(1<<0)
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HGK,LWK,LWK,LWK
+	    },{ // [Y/Y]	2*(1|1)+(1<<1)
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HGK,LWK,HGK,LWK
+	    }
+	  },
+	  {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HGK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,HGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,HGK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,HGK,LWK,HGK,LWK,LWK
+	    }
+	  },
+	  {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HGK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HGK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HGK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HGK,LWK,HGK,LWK,LWK,LWK
+	    }
+	  },
+	  {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,HGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,HGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,HGK,LWK,LWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,HGK,LWK,HGK,LWK,LWK
+	    }
+	  }
+	};
 	unsigned int nl = 4;
-	char line[18];
+	ASCII item[18];
 
-	void printv(char *fmt, ...)
+	void printm(ATTRIBUTE *attrib, char *fmt, ...)
 	{
 		va_list ap;
 		va_start(ap, fmt);
-		vsprintf(line, fmt, ap);
+		vsprintf((char*) item, fmt, ap);
 		if (OutFunc == NULL) {
 			nl--;
 			if (nl == 3)
-				printf("|-%s", line);
+				printf("|-%s", item);
 			else if (nl == 0) {
 				nl = 4;
-				printf("%s\n", line);
+				printf("%s\n", item);
 			} else
-				printf("%s", line);
+				printf("%s", item);
 		} else
-			OutFunc(line);
+			OutFunc(SCANKEY_NULL, attrib, item);
 		va_end(ap);
 	}
-
-/* Row Mark */
-	printv(" 3DNow!/Ext [%c,%c]",
+// Row Mark
+	printm(attrib[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
+			   |  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
+			   + (Shm->Proc.Features.ExtInfo.EDX._3DNow
+			   << Shm->Proc.Features.ExtInfo.EDX._3DNowEx)],
+		" 3DNow!/Ext [%c,%c]",
 		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
 
-	printv("        AES [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.ECX.AES],
+		"        AES [%c]  ",
 		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
 
-	printv(" AVX/AVX2 [%c/%c]  ",
+	printm(attrib[2][2 * (Shm->Proc.Features.Std.ECX.AVX
+			   |  Shm->Proc.Features.ExtFeature.EBX.AVX2)
+			   + (Shm->Proc.Features.Std.ECX.AVX
+			   << Shm->Proc.Features.ExtFeature.EBX.AVX2)],
+		" AVX/AVX2 [%c/%c]  ",
 		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 
-	printv(" BMI1/BMI2 [%c/%c] ",
+	printm(attrib[3][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
+			   |  Shm->Proc.Features.ExtFeature.EBX.BMI2)
+			   + (Shm->Proc.Features.ExtFeature.EBX.BMI1
+			   << Shm->Proc.Features.ExtFeature.EBX.BMI2)],
+		" BMI1/BMI2 [%c/%c] ",
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
-/* Row Mark */
-	printv(" CLFSH        [%c]",
+// Row Mark
+	printm(attrib[0][Shm->Proc.Features.Std.EDX.CLFSH],
+		" CLFSH        [%c]",
 		Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
 
-	printv("       CMOV [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.EDX.CMOV],
+		"       CMOV [%c]  ",
 		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
 
-	printv("    CMPXCH8 [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.Std.EDX.CMPXCH8],
+		"    CMPXCH8 [%c]  ",
 		Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
 
-	printv("    CMPXCH16 [%c] ",
+	printm(attrib[3][Shm->Proc.Features.Std.ECX.CMPXCH16],
+		"    CMPXCH16 [%c] ",
 		Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
-/* Row Mark */
-	printv(" F16C         [%c]",
+// Row Mark
+	printm(attrib[0][Shm->Proc.Features.Std.ECX.F16C],
+		" F16C         [%c]",
 		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
 
-	printv("        FPU [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.EDX.FPU],
+		"        FPU [%c]  ",
 		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
 
-	printv("       FXSR [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.Std.EDX.FXSR],
+		"       FXSR [%c]  ",
 		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
 
-	printv("   LAHF/SAHF [%c] ",
+	printm(attrib[3][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
+		"   LAHF/SAHF [%c] ",
 		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
-/* Row Mark */
-	printv(" MMX/Ext    [%c/%c]",
+// Row Mark
+	printm(attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
+			   |  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
+			   + (Shm->Proc.Features.Std.EDX.MMX
+			   << Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)],
+		" MMX/Ext    [%c/%c]",
 		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
-	printv("    MONITOR [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.ECX.MONITOR],
+		"    MONITOR [%c]  ",
 		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
 
-	printv("      MOVBE [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.Std.ECX.MOVBE],
+		"      MOVBE [%c]  ",
 		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
-	printv("    PCLMULDQ [%c] ",
+	printm(attrib[3][Shm->Proc.Features.Std.ECX.PCLMULDQ],
+		"    PCLMULDQ [%c] ",
 		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
-/* Row Mark */
-	printv(" POPCNT       [%c]",
+// Row Mark
+	printm(attrib[0][Shm->Proc.Features.Std.ECX.POPCNT],
+		" POPCNT       [%c]",
 		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
 
-	printv("     RDRAND [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.ECX.RDRAND],
+		"     RDRAND [%c]  ",
 		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
 
-	printv("     RDTSCP [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
+		"     RDTSCP [%c]  ",
 		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
 
-	printv("         SEP [%c] ",
+	printm(attrib[3][Shm->Proc.Features.Std.EDX.SEP],
+		"         SEP [%c] ",
 		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
-/* Row Mark */
-	printv(" SGX          [%c]",
+// Row Mark
+	printm(attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX],
+		" SGX          [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.SGX ? 'Y' : 'N');
 
-	printv("        SSE [%c]  ",
+	printm(attrib[1][Shm->Proc.Features.Std.EDX.SSE],
+		"        SSE [%c]  ",
 		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
-	printv("       SSE2 [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.Std.EDX.SSE2],
+		"       SSE2 [%c]  ",
 		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
 
-	printv("        SSE3 [%c] ",
+	printm(attrib[3][Shm->Proc.Features.Std.ECX.SSE3],
+		"        SSE3 [%c] ",
 		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
-/* Row Mark */
-	printv(" SSSE3        [%c]",
+// Row Mark
+	printm(attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
+		" SSSE3        [%c]",
 		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 
-	printv(" SSE4.1/4A [%c/%c] ",
+	printm(attrib[1][2 * (Shm->Proc.Features.Std.ECX.SSE41
+			   |  Shm->Proc.Features.ExtInfo.ECX.SSE4A)
+			   + (Shm->Proc.Features.Std.ECX.SSE41
+			   << Shm->Proc.Features.ExtInfo.ECX.SSE4A)],
+		" SSE4.1/4A [%c/%c] ",
 		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
-	printv("     SSE4.2 [%c]  ",
+	printm(attrib[2][Shm->Proc.Features.Std.ECX.SSE42],
+		"     SSE4.2 [%c]  ",
 		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
 
-	printv("     SYSCALL [%c] ",
+	printm(attrib[3][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
+		"     SYSCALL [%c] ",
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
 }
 
@@ -2697,9 +2813,9 @@ void Top(SHM_STRUCT *Shm, char option)
 				4, CUMIN(7, (drawSize.height-TOP_HEADER_ROW-3)),
 				6, TOP_HEADER_ROW + 2);
 
-	void AddISACell(char *input)
+	void AddISACell(CELL_ARGS)
 	{
-		StoreTCell(wISA, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wISA, key, item, attrib);
 	}
 
 	if (wISA != NULL) {
