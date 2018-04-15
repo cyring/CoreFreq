@@ -129,15 +129,45 @@ void printv(	CELL_FUNC OutFunc,
 
 void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-	ATTRIBUTE attrib[1][74] = {
+	ATTRIBUTE attrib[4][74] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LCK,LCK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    },
+	    {
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    },
 	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,
+		HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK
+	    },
+	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,
+		HWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,
+		HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,HWK,
+		HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,
+		LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,
 		LWK,LWK,LWK,LWK
 	    }
 	};
@@ -150,11 +180,12 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 			"          EAX          EBX          ECX          EDX",
 			cpu);
 	    } else {
-		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+		printv(OutFunc, SCANKEY_NULL,
+			attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], width, 0,
 			"CPU #%-2u", cpu);
 	    }
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, format,
+		printv(OutFunc, SCANKEY_NULL, attrib[3], width, 2, format,
 			0x00000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc,
@@ -162,11 +193,11 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.StdFunc.CX,
 			Shm->Cpu[cpu].Query.StdFunc.DX);
 
-		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[2], width, 3,
 			"Largest Standard Function=%08x",
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc);
 
-		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, format,
+		printv(OutFunc, SCANKEY_NULL, attrib[3], width, 2, format,
 			0x80000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc,
@@ -174,14 +205,14 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.ExtFunc.ECX,
 			Shm->Cpu[cpu].Query.ExtFunc.EDX);
 
-		printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3,
+		printv(OutFunc, SCANKEY_NULL, attrib[2], width, 3,
 			"Largest Extended Function=%08x",
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
 		int i;
 		for (i = 0; i < CPUID_MAX_FUNC; i++)
 		    if (Shm->Cpu[cpu].CpuID[i].func) {
-			printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+			printv(OutFunc, SCANKEY_NULL, attrib[3], width, 2,
 				format,
 				Shm->Cpu[cpu].CpuID[i].func,
 				Shm->Cpu[cpu].CpuID[i].sub,
@@ -640,8 +671,8 @@ void SysInfoISA(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	    }
 	  }
 	};
-	unsigned int nl = 4;
 	ASCII item[18];
+	unsigned int nl = 4;
 
 	void printm(ATTRIBUTE *attrib, char *fmt, ...)
 	{
@@ -1704,51 +1735,65 @@ void Instructions(SHM_STRUCT *Shm)
 	}
 }
 
-void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+void Topology(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[2][13] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK
+	    },{
+		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,
+		HBK,HBK,HBK
+	    }
+	};
+	ASCII item[16];
 	unsigned int cpu = 0, level = 0, nl = 6;
-	char line[16];
 
-	void printv(char *fmt, ...)
+	void printm(ATTRIBUTE *attrib, char *fmt, ...)
 	{
 		va_list ap;
 		va_start(ap, fmt);
-		vsprintf(line, fmt, ap);
+		vsprintf((char *) item, fmt, ap);
 		if (OutFunc == NULL)
 			if (!--nl) {
 				nl = 6;
-				printf("%s\n", line);
+				printf("%s\n", item);
 			}
 			else
-				printf("%s", line);
+				printf("%s", item);
 		else
-			OutFunc(line);
+			OutFunc(SCANKEY_NULL, attrib, item);
 		va_end(ap);
 	}
 
-	printv("CPU Pkg  Apic");printv("  Core Thread");printv("  Caches     ");
-	printv(" (w)rite-Back");printv(" (i)nclusive ");printv("             ");
-	printv(" #   ID   ID ");printv("   ID     ID ");printv(" L1-Inst Way ");
-	printv(" L1-Data Way ");printv("     L2  Way ");printv("     L3  Way ");
+	printm(attrib[0], "CPU Pkg  Apic"); printm(attrib[0], "  Core Thread");
+	printm(attrib[0], "  Caches     "); printm(attrib[0], " (w)rite-Back");
+	printm(attrib[0], " (i)nclusive "); printm(attrib[0], "             ");
+	printm(attrib[0], " #   ID   ID "); printm(attrib[0], "   ID     ID ");
+	printm(attrib[0], " L1-Inst Way "); printm(attrib[0], " L1-Data Way ");
+	printm(attrib[0], "     L2  Way "); printm(attrib[0], "     L3  Way ");
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 		if (Shm->Cpu[cpu].Topology.MP.BSP)
-			printv("%02u: BSP%6d",
+			printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+				"%02u: BSP%6d",
 				cpu,
 				Shm->Cpu[cpu].Topology.ApicID);
 		else
-			printv("%02u:%4d%6d",
+			printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+				"%02u:%4d%6d",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
 				Shm->Cpu[cpu].Topology.ApicID);
 
-		printv("%6d %6d",
+		printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+			"%6d %6d",
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
 
 	  for (level = 0; level < CACHE_MAX_LEVEL; level++)
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%8u%3u%c%c",
+		printm(attrib[0], "%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
@@ -1756,7 +1801,7 @@ void Topology(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 				'i' : 0x20);
 	    else
-		printv("       -  -  ");
+		printm(attrib[1], "       -  -  ");
 	}
 }
 
@@ -2780,9 +2825,9 @@ void Top(SHM_STRUCT *Shm, char option)
 					1, TOP_HEADER_ROW + 3);
 		wTopology->matrix.select.row = 2;
 
-	void AddTopologyCell(char *input)
+	void AddTopologyCell(CELL_ARGS)
 	{
-		StoreTCell(wTopology, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wTopology, key, item, attrib);
 	}
 
 	if (wTopology != NULL) {
