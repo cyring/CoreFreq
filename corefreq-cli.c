@@ -1465,7 +1465,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		LWK,LWK,LWK,LWK
 	    }
 	};
-	size_t	len = 0;
+	size_t	len = 0, sln;
 	char	*row = malloc(width + 1),
 		*str = malloc(width + 1);
 	int	idx = 0;
@@ -1512,44 +1512,49 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 // Section Mark
-    if ((len = strlen(Shm->SysGate.IdleDriver.Name)
-		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0) {
+  if ((len = strlen(Shm->SysGate.IdleDriver.Name)
+		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
+  {
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
 		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 // Row Mark
 	len = sprintf(row, "States:%.*s", 9, hSpace);
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
-		len += sprintf(str, "%-8s",
-			Shm->SysGate.IdleDriver.State[idx].Name);
-		strcat(row, str);
-	}
+    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+			 && (3 + len + sln <= width);
+					idx++, len += sln, strcat(row, str))
+    {
+	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
+    }
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
 // Row Mark
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
-		len += sprintf(str, "%-8d",
-			Shm->SysGate.IdleDriver.State[idx].powerUsage);
-		strcat(row, str);
-	}
+    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+			 && (3 + len + sln <= width);
+					idx++, len += sln, strcat(row, str))
+    {
+	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
+    }
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
 // Row Mark
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
-		len += sprintf(str, "%-8u",
-			Shm->SysGate.IdleDriver.State[idx].exitLatency);
-		strcat(row, str);
-	}
+    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+			 && (3 + len + sln <= width);
+				idx++, len += sln, strcat(row, str))
+    {
+	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
+    }
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
 // Row Mark
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++) {
-		len += sprintf(str, "%-8u",
-			Shm->SysGate.IdleDriver.State[idx].targetResidency);
-		strcat(row, str);
-	}
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
+    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+			 && (3 + len + sln <= width);
+					idx++, len += sln, strcat(row, str))
+    {
+    sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
     }
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 3, row);
+  }
 	free(row);
 	free(str);
 }
