@@ -2431,45 +2431,53 @@ void Top(SHM_STRUCT *Shm, char option)
 	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
 				enabled(Shm->Registration.nmi));
 	size_t appLen = strlen(Shm->ShmName);
+	ATTRIBUTE attribute[2][16] = {
+	{LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK},
+	{LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HGK,HGK,HGK,HDK,LWK}
+	};
 
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate    ", MAKE_PRINT_FOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
-
-	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_FOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
-
-	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate    ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Poll Wait(ns)  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)  ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns) ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Poll Wait(ns)  ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns) ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)  ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns) ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug   ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns) ", MAKE_PRINT_UNFOCUS);
 	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement ", MAKE_PRINT_FOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ",
+				attribute[Shm->Registration.Experimental]);
 
-        StoreTCell(wSet, SCANKEY_NULL, " NMI registered ", MAKE_PRINT_FOCUS);
-        StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug   ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ",
+				attribute[!(Shm->Registration.hotplug < 0)]);
 
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ",
+				attribute[!(Shm->Registration.pci < 0)]);
+
+	StoreTCell(wSet, SCANKEY_NULL, " NMI registered ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ",
+					attribute[Shm->Registration.nmi]);
+
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
 
 	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen],    Shm->ShmName, appLen);
 	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
@@ -2485,7 +2493,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	StoreWindow(wSet, .title, " Settings ");
 	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wSet, .color[1].select, MAKE_PRINT_FOCUS);
+	StoreWindow(wSet, .color[1].select, MAKE_PRINT_UNFOCUS);
 
 	StoreWindow(wSet,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
@@ -2501,48 +2509,48 @@ void Top(SHM_STRUCT *Shm, char option)
 				(TOP_HEADER_ROW + 19 + 1 < drawSize.height) ?
 					TOP_HEADER_ROW + 1 : 1);
       if (wHelp != NULL) {
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [F2]             ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "             Menu ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Escape]         ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "     Close window ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Shift]+[Tab]    ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "  Previous window ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Tab]            ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      Next window ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       [A|Z]      ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [W|Q]  [S]  [D]  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      Move window ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       [Up]       ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Left]    [Right]", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "   Move selection ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      [Down]      ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [End]            ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "        Last cell ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       First cell ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "Trigger selection ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Up]        ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "    Previous page ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Dw]        ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "        Next page ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Minus]          ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "  Scroll row down ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Plus]           ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "    Scroll row up ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                  ", MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [F2]             ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"             Menu ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Escape]         ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"     Close window ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Shift]+[Tab]    ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"  Previous window ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Tab]            ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"      Next window ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"       [A|Z]      ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [W|Q]  [S]  [D]  ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"      Move window ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"       [Up]       ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Left]    [Right]",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"   Move selection ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"      [Down]      ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [End]            ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"        Last cell ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Home]           ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"       First cell ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Enter]          ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"Trigger selection ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Page-Up]        ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"    Previous page ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Page-Dw]        ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"        Next page ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Minus]          ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"  Scroll row down ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL," [Plus]           ",MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"    Scroll row up ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 
 	StoreWindow(wHelp, .title, " Help ");
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_FOCUS);
+	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_UNFOCUS);
 
 	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
