@@ -153,7 +153,7 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,
 		HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
@@ -226,11 +226,18 @@ void SysInfoCPUID(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	}
 }
 
-void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
-	unsigned int cpu, idx = 0;
-	unsigned int nl = 17;
-	char line[8];
+	ATTRIBUTE attrib[3][4] = {
+	    {
+		LWK,LWK,LWK,LWK
+	    },{
+		HBK,HBK,HBK,HBK
+	    },{
+		HWK,HWK,HWK,HWK
+	    }
+	};
+	ASCII item[8];
 	const struct {
 		enum SYS_REG bit;
 		unsigned int len;
@@ -307,140 +314,149 @@ void SystemRegisters(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	},
 	tabEFCR = {tabCR4[1].Stop, tabCR4[1].Stop + 8},
 	tabEFER = {tabEFCR.Stop, tabEFCR.Stop + 4};
+	unsigned int cpu, idx = 0;
+	unsigned int nl = 17;
 
-	void printv(char *fmt, ...)
+	void printm(ATTRIBUTE *attrib, char *fmt, ...)
 	{
 		va_list ap;
 		va_start(ap, fmt);
-		vsprintf(line, fmt, ap);
+		vsprintf((char*) item, fmt, ap);
 		if (OutFunc == NULL) {
 			nl--;
 			if (nl == 0) {
 				nl = 17;
-				printf("%s\n", line);
+				printf("%s\n", item);
 			} else
-				printf("%s", line);
+				printf("%s", item);
 		} else
-			OutFunc(line);
+			OutFunc(SCANKEY_NULL, attrib, item);
 		va_end(ap);
 	}
 
 /* Section Mark */
-	printv("CPU "); printv("FLAG");
+	printm(attrib[0], "CPU "); printm(attrib[0], "FLAG");
     for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printv("    ");
-	printv("CR3:");
+	printm(attrib[0], "    ");
+	printm(attrib[0], "CR3:");
     for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printv("    ");
+	printm(attrib[0], "    ");
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	printv("#%-2u ", cpu);
+	printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 
-	printv("    ");
+	printm(attrib[0], "    ");
 	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
-	printv("    ");
-	printv("    ");
+	printm(attrib[0], "    ");
+	printm(attrib[0], "    ");
 	for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
-	printv("    ");
+	printm(attrib[0], "    ");
     }
 /* Section Mark */
-	printv("CR0:");
+	printm(attrib[0], "CR0:");
     for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printv("CR4:");
+	printm(attrib[0], "CR4:");
     for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	printv("#%-2u ", cpu);
+	printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 
 	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
-	printv("    ");
+	printm(attrib[0], "    ");
 	for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
     }
 /* Section Mark */
-	printv("CR4:");
+	printm(attrib[0], "CR4:");
     for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	printv("#%-2u ", cpu);
+	printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
     }
 /* Section Mark */
-	printv("EFCR");
-	printv("    ");
+	printm(attrib[0], "EFCR");
+	printm(attrib[0], "    ");
     for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printv("    ");
-	printv("EFER");
+	printm(attrib[0], "    ");
+	printm(attrib[0], "EFER");
     for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	printv("%s", SR[idx].flag);
+	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printv("    ");
+	printm(attrib[0], "    ");
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	printv("#%-2u ", cpu);
-	printv("    ");
+	printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+	printm(attrib[0], "    ");
 
 	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)
 	    &&  ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
-	printv("    ");
-	printv("    ");
+	printm(attrib[0], "    ");
+	printm(attrib[0], "    ");
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printv("%3llx ",BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
-					SR[idx].bit, SR[idx].len));
+		printm(attrib[2], "%3llx ",
+				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
+				SR[idx].bit, SR[idx].len));
 	    else
-		printv("  - ");
+		printm(attrib[1], "  - ");
 	}
-	printv("    ");
+	printm(attrib[0], "    ");
     }
 }
 
 void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-	ATTRIBUTE attrib[2][76] = {
+	ATTRIBUTE attrib[4][76] = {
 	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
@@ -459,6 +475,24 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HGK,HGK,
 		HGK,HGK,HGK,HGK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,
+		HWK,HWK,HWK,HWK,LWK,LWK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK
 	    }
 	};
 	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
@@ -475,7 +509,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		symb[syc][0],
 		Shm->Proc.Boost[_boost],
 		symb[syc][1]);
-	printv(OutFunc, _key, attrib[0], width, 0, str);
+	printv(OutFunc, _key, attrib[3], width, 0, str);
     }
   }
 
@@ -490,7 +524,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		symb[syc][0],
 		Shm->Uncore.Boost[_boost],
 		symb[syc][1]);
-	printv(OutFunc, _key, attrib[0], width, 0, str);
+	printv(OutFunc, _key, attrib[3], width, 0, str);
     }
   }
 
@@ -508,7 +542,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		width - 14 - strlen(Shm->Proc.Features.Info.Vendor.ID), hSpace,
 		Shm->Proc.Features.Info.Vendor.ID);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Signature%.*s[%2X%1X_%1X%1X]",
 		width - 20, hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
@@ -516,20 +550,20 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.EAX.ExtModel,
 		Shm->Proc.Features.Std.EAX.Model);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Stepping%.*s[%6u]",
 		width - 19, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Microcode%.*s[%6u]",
 		width - 20, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Online CPU%.*s[ %2u/%-2u]",
 		width - 21, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
+	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Base Clock%.*s[%6.2f]",
 		width - 21, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
@@ -547,7 +581,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	PrintCoreBoost("Max", BOOST(MAX), 0, SCANKEY_NULL);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Factory");
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 0,
+	printv(OutFunc, SCANKEY_NULL, attrib[3], width, 0,
 		"%.*s""%5u""%.*s""[%4d ]",
 		22, hSpace, Shm->Proc.Features.FactoryFreq,
 		23, hSpace, Shm->Proc.Boost[BOOST(MAX)]);
@@ -1742,13 +1776,16 @@ void Instructions(SHM_STRUCT *Shm)
 
 void Topology(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
-	ATTRIBUTE attrib[2][13] = {
+	ATTRIBUTE attrib[3][13] = {
 	    {
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK
+		HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,
+		HWK,HWK,HWK
 	    },{
 		HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,
 		HBK,HBK,HBK
+	    },{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK
 	    }
 	};
 	ASCII item[16];
@@ -1771,12 +1808,12 @@ void Topology(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		va_end(ap);
 	}
 
-	printm(attrib[0], "CPU Pkg  Apic"); printm(attrib[0], "  Core Thread");
-	printm(attrib[0], "  Caches     "); printm(attrib[0], " (w)rite-Back");
-	printm(attrib[0], " (i)nclusive "); printm(attrib[0], "             ");
-	printm(attrib[0], " #   ID   ID "); printm(attrib[0], "   ID     ID ");
-	printm(attrib[0], " L1-Inst Way "); printm(attrib[0], " L1-Data Way ");
-	printm(attrib[0], "     L2  Way "); printm(attrib[0], "     L3  Way ");
+	printm(attrib[2], "CPU Pkg  Apic"); printm(attrib[2], "  Core Thread");
+	printm(attrib[2], "  Caches     "); printm(attrib[2], " (w)rite-Back");
+	printm(attrib[2], " (i)nclusive "); printm(attrib[2], "             ");
+	printm(attrib[2], " #   ID   ID "); printm(attrib[2], "   ID     ID ");
+	printm(attrib[2], " L1-Inst Way "); printm(attrib[2], " L1-Data Way ");
+	printm(attrib[2], "     L2  Way "); printm(attrib[2], "     L3  Way ");
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 		if (Shm->Cpu[cpu].Topology.MP.BSP)
@@ -2903,9 +2940,9 @@ void Top(SHM_STRUCT *Shm, char option)
 					(drawSize.height - TOP_HEADER_ROW - 3)),
 				6, TOP_HEADER_ROW + 2);
 
-	void AddSysRegsCell(char *input)
+	void AddSysRegsCell(CELL_ARGS)
 	{
-		StoreTCell(wSR, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wSR, key, item, attrib);
 	}
 
 	if (wSR != NULL) {
