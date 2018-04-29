@@ -1847,26 +1847,34 @@ void Topology(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	}
 }
 
-void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
+void MemoryController(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE attrib[2][5] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK
+	    },{
+		HWK,HWK,HWK,HWK,HWK
+	    }
+	};
+	ASCII item[8];
+	char fInt[16], hInt[2][8];
 	unsigned int nl = 14;
 	unsigned short mc, cha, slot;
-	char line[8], fInt[16], hInt[2][8];
 
-	void printv(char *fmt, ...)
+	void printm(ATTRIBUTE *attrib, char *fmt, ...)
 	{
 		va_list ap;
 		va_start(ap, fmt);
-		vsprintf(line, fmt, ap);
+		vsprintf((char *) item, fmt, ap);
 		if (OutFunc == NULL)
 			if (!--nl) {
 				nl = 14;
-				printf("%s\n", line);
+				printf("%s\n", item);
 			}
 			else
-				printf("%s", line);
+				printf("%s", item);
 		else
-			OutFunc(line);
+			OutFunc(SCANKEY_NULL, attrib, item);
 		va_end(ap);
 	}
 
@@ -1877,178 +1885,215 @@ void MemoryController(SHM_STRUCT *Shm, void(*OutFunc)(char *output))
 	}
 
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-	printv("Contr"); printv("oller");
-	printv(" #%-3u", mc); printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-	printv("     "); printv("     ");
+	printm(attrib[0], "Contr");	printm(attrib[0], "oller");
+	printm(attrib[1], " #%-3u",mc); printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");
 
 	switch (Shm->Uncore.MC[mc].ChannelCount) {
 	case 1:
-		printv("Singl"); printv("e Cha"); printv("nnel ");
+		printm(attrib[1], "Singl");
+		printm(attrib[1], "e Cha");
+		printm(attrib[1], "nnel ");
 		break;
 	case 2:
-		printv(" Dual"); printv(" Chan"); printv("nel  ");
+		printm(attrib[1], " Dual");
+		printm(attrib[1], " Chan");
+		printm(attrib[1], "nel  ");
 		break;
 	case 3:
-		printv("Tripl"); printv("e Cha"); printv("nnel ");
+		printm(attrib[1], "Tripl");
+		printm(attrib[1], "e Cha");
+		printm(attrib[1], "nnel ");
 		break;
 	case 4:
-		printv(" Quad"); printv(" Chan"); printv("nel  ");
+		printm(attrib[1], " Quad");
+		printm(attrib[1], " Chan");
+		printm(attrib[1], "nel  ");
 		break;
 	case 6:
-		printv(" Hexa"); printv(" Chan"); printv("nel  ");
+		printm(attrib[1], "  Six");
+		printm(attrib[1], " Chan");
+		printm(attrib[1], "nel  ");
 		break;
 	case 8:
-		printv(" Octa"); printv(" Chan"); printv("nel  ");
+		printm(attrib[1], "Eight");
+		printm(attrib[1], " Chan");
+		printm(attrib[1], "nel  ");
 		break;
 	default:
-		printv("     "); printv("     "); printv("     ");
+		printm(attrib[0], "     ");
+		printm(attrib[0], "     ");
+		printm(attrib[0], "     ");
 		break;
 	}
 
-	printv(" Bus "); printv("Rate ");
-	printv("%5llu", Shm->Uncore.Bus.Rate);
+	printm(attrib[0], " Bus ");	printm(attrib[0], "Rate ");
+	printm(attrib[1], "%5llu", Shm->Uncore.Bus.Rate);
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
 	case 0b00:
-		printv(" MHz ");
+		printm(attrib[0], " MHz ");
 		break;
 	case 0b01:
-		printv(" MT/s");
+		printm(attrib[0], " MT/s");
 		break;
 	case 0b10:
-		printv(" MB/s");
+		printm(attrib[0], " MB/s");
 		break;
 	case 0b11:
-		printv("     ");
+		printm(attrib[0], "     ");
 		break;
 	}
-	printv("     ");
+	printm(attrib[0], "     ");
 
-	printv(" Bus "); printv("Speed");
-	printv("%5llu", Shm->Uncore.Bus.Speed);
+	printm(attrib[0], " Bus ");	printm(attrib[0], "Speed");
+	printm(attrib[1], "%5llu", Shm->Uncore.Bus.Speed);
 
 	switch (Shm->Uncore.Unit.BusSpeed) {
 	case 0b00:
-		printv(" MHz ");
+		printm(attrib[0], " MHz ");
 		break;
 	case 0b01:
-		printv(" MT/s");
+		printm(attrib[0], " MT/s");
 		break;
 	case 0b10:
-		printv(" MB/s");
+		printm(attrib[0], " MB/s");
 		break;
 	case 0b11:
-		printv("     ");
+		printm(attrib[0], "     ");
 		break;
 	}
-	printv("     ");
+	printm(attrib[0], "     ");
 
-	printv("DRAM "); printv("Speed");
-	printv("%5llu", Shm->Uncore.CtrlSpeed);
+	printm(attrib[0], "DRAM "); printm(attrib[0], "Speed");
+	printm(attrib[1], "%5llu", Shm->Uncore.CtrlSpeed);
 
 	switch (Shm->Uncore.Unit.DDRSpeed) {
 	case 0b00:
-		printv(" MHz ");
+		printm(attrib[0], " MHz ");
 		break;
 	case 0b01:
-		printv(" MT/s");
+		printm(attrib[0], " MT/s");
 		break;
 	case 0b10:
-		printv(" MB/s");
+		printm(attrib[0], " MB/s");
 		break;
 	case 0b11:
-		printv("     ");
+		printm(attrib[0], "     ");
 		break;
 	}
 
-	printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
 
-	printv(" Cha ");
-	printv("   CL");printv("  RCD");printv("   RP");printv("  RAS");
-	printv("  RRD");printv("  RFC");printv("   WR");printv(" RTPr");
-	printv(" WTPr");printv("  FAW");printv("  B2B");printv("  CWL");
-	printv(" Rate");
+	printm(attrib[0], " Cha ");
+	printm(attrib[0], "   CL");	printm(attrib[0], "  RCD");
+	printm(attrib[0], "   RP");	printm(attrib[0], "  RAS");
+	printm(attrib[0], "  RRD");	printm(attrib[0], "  RFC");
+	printm(attrib[0], "   WR");	printm(attrib[0], " RTPr");
+	printm(attrib[0], " WTPr");	printm(attrib[0], "  FAW");
+	printm(attrib[0], "  B2B");	printm(attrib[0], "  CWL");
+	printm(attrib[0], " Rate");
+
+    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	printm(attrib[1], "\x20\x20#%-2u", cha);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
+	printm(attrib[1], "%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+	printm(attrib[1], "%4uN",
+			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+    }
+	printm(attrib[0], "     ");
+	printm(attrib[0], " ddWR");	printm(attrib[0], " drWR");
+	printm(attrib[0], " srWR");	printm(attrib[0], " ddRW");
+	printm(attrib[0], " drRW");	printm(attrib[0], " srRW");
+	printm(attrib[0], " ddRR");	printm(attrib[0], " drRR");
+	printm(attrib[0], " srRR");	printm(attrib[0], " ddWW");
+	printm(attrib[0], " drWW");	printm(attrib[0], " srWW");
+	printm(attrib[0], "  ECC");
+
+    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	printm(attrib[1],"\x20\x20#%-2u", cha);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
+
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
+
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
+
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
+	printm(attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
+
+	printm(attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
+    }
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
+	printm(attrib[0], "     ");	printm(attrib[0], "     ");
 
 	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv("\x20\x20#%-2u", cha);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
-		printv("%4uN",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
-	}
-	printv("     ");
-	printv(" ddWR"); printv(" drWR"); printv(" srWR");
-	printv(" ddRW"); printv(" drRW"); printv(" srRW");
-	printv(" ddRR"); printv(" drRR"); printv(" srRR");
-	printv(" ddWW"); printv(" drWW"); printv(" srWW");
-	printv("  ECC");
+		printm(attrib[0], " DIMM"); printm(attrib[0], " Geom");
+		printm(attrib[0], "etry "); printm(attrib[0], "for c");
+		printm(attrib[0], "hanne"); printm(attrib[0], "l #%-2u", cha);
+		printm(attrib[0], "     "); printm(attrib[0], "     ");
+		printm(attrib[0], "     "); printm(attrib[0], "     ");
+		printm(attrib[0], "     "); printm(attrib[0], "     ");
+		printm(attrib[0], "     "); printm(attrib[0], "     ");
 
-	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv("\x20\x20#%-2u", cha);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
-
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
-
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
-
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
-
-		printv("%4u ", Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
-	}
-	printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-	printv("     "); printv("     "); printv("     "); printv("     ");
-
-	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
-		printv(" DIMM");printv(" Geom");printv("etry ");printv("for c");
-		printv("hanne");printv("l #%-2u", cha);
-		printv("     ");printv("     ");printv("     ");printv("     ");
-		printv("     ");printv("     ");printv("     ");printv("     ");
-
-		printv("     ");
-		printv(" Slot");printv(" Bank");printv(" Rank");
-		printv("     ");printv("Rows ");printv("  Col");printv("umns ");
-		printv("   Me");printv("mory ");printv("Size ");printv("(MB) ");
-		printv("     ");printv("     ");
+		printm(attrib[0], "     "); printm(attrib[0], " Slot");
+		printm(attrib[0], " Bank"); printm(attrib[0], " Rank");
+		printm(attrib[0], "     "); printm(attrib[0], "Rows ");
+		printm(attrib[0], "  Col"); printm(attrib[0], "umns ");
+		printm(attrib[0], "   Me"); printm(attrib[0], "mory ");
+		printm(attrib[0], "Size "); printm(attrib[0], "(MB) ");
+		printm(attrib[0], "     "); printm(attrib[0], "     ");
 
 	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		printv("     ");
-		printv("\x20\x20#%-2u", slot);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
-		printv("%5u", Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+		printm(attrib[0], "     ");
+		printm(attrib[1], "\x20\x20#%-2u", slot);
+		printm(attrib[1], "%5u",
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
+		printm(attrib[1], "%5u",
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows);
-		printv("%5s", hInt[0]);
-		printv("%5s", hInt[1]);
+		printm(attrib[1], "%5s", hInt[0]);
+		printm(attrib[1], "%5s", hInt[1]);
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols);
-		printv("%5s", hInt[0]);
-		printv("%5s", hInt[1]);
-		printv("     ");
+		printm(attrib[1], "%5s", hInt[0]);
+		printm(attrib[1], "%5s", hInt[1]);
+		printm(attrib[0], "     ");
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size);
-		printv("%5s", hInt[0]);
-		printv("%5s", hInt[1]);
-		printv("     "); printv("     "); printv("     ");
+		printm(attrib[1], "%5s", hInt[0]);
+		printm(attrib[1], "%5s", hInt[1]);
+		printm(attrib[0], "     ");
+		printm(attrib[0], "     ");
+		printm(attrib[0], "     ");
 	    }
 	}
     }
@@ -2984,9 +3029,9 @@ void Top(SHM_STRUCT *Shm, char option)
 					1, TOP_HEADER_ROW + 2);
 		wIMC->matrix.select.row = 4;
 
-	    void AddMemoryControllerCell(char *input)
+	    void AddMemoryControllerCell(CELL_ARGS)
 	    {
-		StoreTCell(wIMC, SCANKEY_NULL, input, MAKE_PRINT_FOCUS);
+		StoreTCell(wIMC, key, item, attrib);
 	    }
 
 	    if (wIMC != NULL) {
