@@ -646,6 +646,8 @@ extern void Query_AMD_Family_17h(void) ;
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
+static PCI_CALLBACK P945(struct pci_dev *dev) ;
+static PCI_CALLBACK P955(struct pci_dev *dev) ;
 static PCI_CALLBACK P965(struct pci_dev *dev) ;
 static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
@@ -667,6 +669,22 @@ static struct pci_device_id PCI_Void_ids[] = {
 };
 
 static struct pci_device_id PCI_Core2_ids[] = {
+	{	// 82945G - Lakeport
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945P_HB),
+		.driver_data = (kernel_ulong_t) P945
+	},
+	{	// 82945GM - Lakeport
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GM_HB),
+		.driver_data = (kernel_ulong_t) P945
+	},
+	{	// 82945GME/SE - Calistoga
+	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GME_HB),
+		.driver_data = (kernel_ulong_t) P945
+	},
+	{	// 82955X - Lakeport
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82955_HB),
+		.driver_data = (kernel_ulong_t) P955
+	},
 	{	// 946PL/946GZ - Lakeport
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
 		.driver_data = (kernel_ulong_t) P965

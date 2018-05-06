@@ -849,6 +849,168 @@ typedef struct
 
 
 typedef union
+{	// Offset Channel0: 110h & Channel1: 190h
+	unsigned int		value;
+	struct {
+		unsigned int
+		BtoB_RdRd	:  4-0,
+		BtoB_WrRd	:  9-4,
+		ReservedBits1	: 11-9,
+		tRD		: 16-11,
+		BtoB_RdRd_DR	: 17-16,
+		ReservedBits2	: 18-17,
+		BtoB_WrWr_DR	: 20-18,
+		BtoB_RdWr	: 22-20,
+		BtoB_WrRd_DR	: 24-22,
+		tWTR		: 28-24,
+		tWR		: 32-28;
+	};
+} P945_MC_DRAM_TIMING_R0;
+
+typedef union
+{	// Offset Channel0: 114h & Channel1: 194h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRP		:  3-0,
+		ReservedBits1	:  4-3,
+		tRCD		:  7-4,
+		ReservedBits2	:  8-7,
+		tCL		: 10-8,
+		tRFC		: 16-10,
+		tRPALL		: 17-16,
+		ReservedBits3	: 18-17,
+		tRRD		: 19-18,
+		tRAS		: 24-19,
+		ReservedBits4	: 28-24,
+		tRTPr		: 30-28,
+		ReservedBits5	: 32-30;
+	};
+} P945_MC_DRAM_TIMING_R1;
+
+typedef union
+{	// Offset Channel0: 118h & Channel1: 198h
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	:  8-0,
+		ReservedBits2	: 11-8,
+		ReservedBits3	: 16-11,
+		ReservedBits4	: 18-16,
+		ReservedBits5	: 30-18,
+		tCKE		: 32-30;
+	};
+} P945_MC_DRAM_TIMING_R2;
+
+typedef union
+{	// Offset Channel0: 100h & Channel1: 180h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Rank0Addr	:  8-0,
+		Rank1Addr	: 16-8,
+		Rank2Addr	: 24-16,
+		Rank3Addr	: 32-24;
+	};
+} P945_MC_DRB;
+
+typedef union
+{	// Offset Channel0: 108h + 109h
+	unsigned int		value;
+	struct {
+		unsigned int
+		EvenRank_R0	:  3-0,
+		ReservedBits1	:  4-3,
+		OddRank_R1	:  7-4,
+		ReservedBits2	:  8-7,
+		EvenRank_R2	: 11-8,
+		ReservedBits3	: 12-11,
+		OddRank_R3	: 15-12,
+		ReservedBits4	: 16-15;
+	};
+} P945_MC_DRAM_RANK_ATTRIB;
+
+typedef union
+{	// Offset Channel0: 10Eh & Channel1: 18Eh
+	unsigned int		value;
+	struct {
+		unsigned int
+		Rank0		:  2-0,
+		Rank1		:  4-2,
+		Rank2		:  6-4,
+		Rank3		:  8-6,
+		ReservedBits	: 16-8;
+	};
+} P945_MC_DRAM_BANK_ARCH;
+
+typedef union
+{	// Offset Channel0: 200h
+	unsigned int		value;
+	struct {
+		unsigned int
+		DAMC		:  2-0,
+		SCS		:  3-2,
+		ReservedBits1	:  9-3,
+		Channel_XOR	: 10-9,
+		Cha_XOR_Random	: 11-10,
+		ReservedBits2	: 14-11,
+		ReservedBits3	: 16-14,
+		SMS		: 19-16,
+		IC		: 20-19,
+		IC_SMS_Ctrl	: 21-20,
+		EMRS		: 23-21,
+		ReservedBits4	: 24-23,
+		ReservedBits5	: 29-24,
+		ReservedBits6	: 32-29;
+	};
+} P945_MC_DCC;
+
+typedef union
+{	// Offset Channel0: 40Ch & Channel1: 48Ch
+	unsigned int		value;
+	struct {
+		unsigned int
+		Rank0		:  2-0,
+		Rank1		:  4-2,
+		Rank2		:  6-4,
+		Rank3		:  8-6,
+		ReservedBits	: 16-8;
+	};
+} P945_MC_DRAM_RANK_WIDTH;
+
+typedef union
+{	// Offset Channel0: 114h & Channel1: 194h
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRP		:  3-0,
+		ReservedBits1	:  4-3,
+		tRCD		:  7-4,
+		ReservedBits2	:  8-7,
+		tCL		: 10-8,
+		ReservedBits3	: 20-10,
+		tRAS		: 24-20,
+		ReservedBits4	: 32-24;
+	};
+} P955_MC_DRAM_TIMING_R1;
+
+typedef union
+{	// Offset Channel0: 120h
+	unsigned int		value;
+	struct {
+		unsigned int
+		DT		:  2-0,
+		ReservedBits1	:  4-2,
+		SMS		:  7-4,
+		ReservedBits2	:  8-7,
+		RMS		: 11-8,
+		ReservedBits3	: 29-11,
+		IC		: 30-29,
+		ReservedBits4	: 32-30;
+	};
+} P955_MC_DRC0;
+
+typedef union
 {	// Offset Channel0: 1210h & Channel1: 1310h
 	unsigned int		value;
 	struct {

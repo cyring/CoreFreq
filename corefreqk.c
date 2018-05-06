@@ -1577,8 +1577,8 @@ void Skylake_X_Platform_Info(void)
 
 typedef void (*ROUTER)(void __iomem *mchmap);
 
-PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
-			unsigned long long wsize, ROUTER route)
+PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
+		unsigned int bsize, unsigned long long wsize, ROUTER route)
 {
 	void __iomem *mchmap;
 	union {
@@ -1593,9 +1593,16 @@ PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
 
 	Proc->Uncore.ChipID = dev->device;
 
-	pci_read_config_dword(dev, offset    , &mchbar.low);
-	pci_read_config_dword(dev, offset + 4, &mchbar.high);
-
+	switch (bsize) {
+	case 32:
+		pci_read_config_dword(dev, offset    , &mchbar.low);
+		mchbar.high = 0;
+		break;
+	case 64:
+		pci_read_config_dword(dev, offset    , &mchbar.low);
+		pci_read_config_dword(dev, offset + 4, &mchbar.high);
+		break;
+	}
 	mchbarEnable = BITVAL(mchbar, 0);
 	if (mchbarEnable) {
 		mchbar.addr &= wmask;
@@ -1610,6 +1617,96 @@ PCI_CALLBACK Router(	struct pci_dev *dev, unsigned int offset,
 			return((PCI_CALLBACK) -ENOMEM);
 	} else
 		return((PCI_CALLBACK) -ENOMEM);
+}
+
+void Query_P945(void __iomem *mchmap)
+{	// Source: Mobile Intel 945 Express Chipset Family
+	unsigned short cha;	/*	, slot;	*/
+
+	Proc->Uncore.CtrlCount = 1;
+
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
+	Proc->Uncore.MC[0].P945.DCC.value = readl(mchmap + 0x200);
+
+	switch (Proc->Uncore.MC[0].P945.DCC.DAMC) {
+	case 0b00:
+	case 0b11:
+		Proc->Uncore.MC[0].ChannelCount = 1;
+		break;
+	case 0b01:
+	case 0b10:
+		Proc->Uncore.MC[0].ChannelCount = 2;
+		break;
+	}
+
+	Proc->Uncore.MC[0].SlotCount = 1;
+
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+		Proc->Uncore.MC[0].Channel[cha].P945.DRA.value =
+					readw(mchmap + 0x108 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P945.DRT0.value =
+					readl(mchmap + 0x110 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P945.DRT1.value =
+					readw(mchmap + 0x114 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P945.DRT2.value =
+					readl(mchmap + 0x118 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P945.BANK.value =
+					readw(mchmap + 0x10e + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value =
+					readw(mchmap + 0x40c + 0x80 * cha);
+/*
+		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
+		}	*/
+		printk("CHA(%d)\tDRA=%x\tBANK=%x\tWIDTH=%x\n",
+			cha,
+			Proc->Uncore.MC[0].Channel[cha].P945.DRA.value,
+			Proc->Uncore.MC[0].Channel[cha].P945.BANK.value,
+			Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value);
+	}
+}
+
+void Query_P955(void __iomem *mchmap)
+{	// Source: Intel 82955X Memory Controller Hub (MCH)
+	unsigned short cha;	/*	, slot;	*/
+
+	Proc->Uncore.CtrlCount = 1;
+
+	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
+
+	Proc->Uncore.MC[0].P945.DCC.value = readl(mchmap + 0x200);
+
+	switch (Proc->Uncore.MC[0].P945.DCC.DAMC) {
+	case 0b00:
+	case 0b11:
+		Proc->Uncore.MC[0].ChannelCount = 1;
+		break;
+	case 0b01:
+	case 0b10:
+		Proc->Uncore.MC[0].ChannelCount = 2;
+		break;
+	}
+
+	Proc->Uncore.MC[0].SlotCount = 1;
+
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+		Proc->Uncore.MC[0].Channel[cha].P945.DRA.value =
+					readw(mchmap + 0x108 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P955.DRT1.value =
+					readw(mchmap + 0x114 + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P955.BANK.value =
+					readw(mchmap + 0x10e + 0x80 * cha);
+/*
+		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
+		}	*/
+	}
 }
 
 void Query_P965(void __iomem *mchmap)
@@ -1681,7 +1778,7 @@ void Query_G965(void __iomem *mchmap)
 
 		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
 			Proc->Uncore.MC[0].Channel[cha].DIMM[slot].DRA.value =
-				readl(mchmap + 0x1208 + 0x100 * cha);
+					readl(mchmap + 0x1208 + 0x100 * cha);
 		}
 	}
 }
@@ -1965,19 +2062,29 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	Proc->Uncore.MC[0].SlotCount = 2;
 }
 
+static PCI_CALLBACK P945(struct pci_dev *dev)
+{
+	return(Router(dev, 0x44, 32, 0x4000, Query_P945));
+}
+
+static PCI_CALLBACK P955(struct pci_dev *dev)
+{
+	return(Router(dev, 0x44, 32, 0x4000, Query_P955));
+}
+
 static PCI_CALLBACK P965(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x4000, Query_P965));
+	return(Router(dev, 0x48, 64, 0x4000, Query_P965));
 }
 
 static PCI_CALLBACK G965(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x4000, Query_G965));
+	return(Router(dev, 0x48, 64, 0x4000, Query_G965));
 }
 
 static PCI_CALLBACK P35(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x4000, Query_P35));
+	return(Router(dev, 0x48, 64, 0x4000, Query_P35));
 }
 
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
@@ -2038,7 +2145,7 @@ static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SNB_Cap.value);
 
-	return(Router(dev, 0x48, 0x8000, Query_SNB_IMC));
+	return(Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
 }
 
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
@@ -2046,19 +2153,19 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SNB_Cap.value);
 	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
 
-	return(Router(dev, 0x48, 0x8000, Query_SNB_IMC));
+	return(Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
 }
 
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 {
-	return(Router(dev, 0x48, 0x8000, Query_HSW_IMC));
+	return(Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC));
 }
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
 
-	return(Router(dev, 0x48, 0x8000, Query_SKL_IMC));
+	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
 
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
@@ -2070,7 +2177,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = PllRatios.UCLK;
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = 0;
 
-//ToDo:	return(Router(dev, 0x48, 0x8000, Query_SKL_IMC));
+//ToDo:	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 	return(0);
 }
 

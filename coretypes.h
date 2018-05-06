@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.22.4"
+#define COREFREQ_VERSION	"1.23.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -846,7 +846,19 @@ typedef struct	// BSP CPUID features.
 #define MC_MAX_CHA	4
 #define MC_MAX_DIMM	4
 
+#ifndef PCI_DEVICE_ID_INTEL_82945P_HB
+	#define PCI_DEVICE_ID_INTEL_82945P_HB		0x2770
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82945GM_HB
+	#define PCI_DEVICE_ID_INTEL_82945GM_HB		0x27a0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82955_HB
+	#define PCI_DEVICE_ID_INTEL_82955_HB		0x2774
+#endif
 // Source: /drivers/char/agp/intel-agp.h
+#ifndef PCI_DEVICE_ID_INTEL_82945GME_HB
+	#define PCI_DEVICE_ID_INTEL_82945GME_HB		0x27ac
+#endif
 #ifndef PCI_DEVICE_ID_INTEL_82946GZ_HB
 	#define PCI_DEVICE_ID_INTEL_82946GZ_HB		0x2970
 #endif

@@ -360,6 +360,18 @@ typedef struct
 	struct {
 		union {
 			struct {
+	/* 108h */		P945_MC_DRAM_RANK_ATTRIB DRA;	/* 16 bits */
+	/* 110h */		P945_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits */
+	/* 114h */		P945_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
+	/* 118h */		P945_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits */
+	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
+	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH	WIDTH;	/* 16 bits */
+			} P945;
+			struct {
+	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
+	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
+			} P955;
+			struct {
 	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits */
 	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits */
 	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits */
@@ -412,13 +424,16 @@ typedef struct
 			} AMD0F;
 		};
 		union {
-	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;
+	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits */
 	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits */
 	/* 40h*/	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits */
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
 	union {
+		struct {
+	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits */
+		} P945;
 		struct {
 	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits */
 						CKE1;		/* 32 bits */

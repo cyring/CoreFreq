@@ -547,6 +547,242 @@ typedef struct {
 			R;
 } RAM_Ratio;
 
+void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+    unsigned short mc, cha, slot;
+
+    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT0.tWR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRTPr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRAS;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRRD) {
+	case 0b000:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 1;
+		break;
+	case 0b001:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD = 2;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRFC;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tCL) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRCD + 2;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRP + 2;
+
+       for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+       {
+	switch(Proc->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
+	{
+	    case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+		break;
+	    case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+		break;
+	}
+	switch(Proc->Uncore.MC[mc].Channel[cha].P945.DRA.EvenRank_R0)
+	{
+	    case 0b010:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 1;
+		break;
+	    case 0b011:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 2;
+		break;
+	    case 0b100:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 4;
+		break;
+	}
+	switch(Proc->Uncore.MC[mc].Channel[cha].P945.DRA.OddRank_R1)
+	{
+	    case 0b010:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 1;
+		break;
+	    case 0b011:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 2;
+		break;
+	    case 0b100:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 4;
+		break;
+	}
+	switch(Proc->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
+	{
+	    case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
+		break;
+	    case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
+		break;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+       }
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+      }
+    }
+}
+
+void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
+{
+    unsigned short mc, cha, slot;
+
+    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
+			Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tRAS;
+
+	switch (Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tCL) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 5;
+		break;
+	case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 4;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 3;
+		break;
+	case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tCL = 6;
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD =
+			Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tRCD + 2;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP =
+			Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tRP + 2;
+
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 0;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+      }
+    }
+}
+
+void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
+	case 0b000:
+		Shm->Uncore.Bus.Rate = 400;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		default:
+			// Fallthrough
+		case 0b010:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b011:
+			Ratio.Q = 4;
+			Ratio.R = 3;
+			break;
+		case 0b100:
+			Ratio.Q = 5;
+			Ratio.R = 3;
+			break;
+		}
+		break;
+	case 0b001:
+		Shm->Uncore.Bus.Rate = 533;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		default:
+			// Fallthrough
+		case 0b010:
+			Ratio.Q = 3;
+			Ratio.R = 4;
+			break;
+		case 0b011:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		case 0b001:
+			Ratio.Q = 5;
+			Ratio.R = 4;
+			break;
+		}
+		break;
+	default:
+		// Fallthrough
+	case 0b011:
+		Shm->Uncore.Bus.Rate = 667;
+
+		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
+		default:
+			// Fallthrough
+		case 0b010:
+			Ratio.Q = 3;
+			Ratio.R = 5;
+			break;
+		case 0b011:
+			Ratio.Q = 4;
+			Ratio.R = 5;
+			break;
+		case 0b100:
+			Ratio.Q = 1;
+			Ratio.R = 1;
+			break;
+		}
+		break;
+	}
+	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
+				/ (Ratio.R * 1000000L);
+
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Unit.Bus_Rate = 0b00;
+	Shm->Uncore.Unit.BusSpeed = 0b00;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
+}
+
 void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
@@ -876,7 +1112,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank1Bank) {
+	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank1Bank)
+	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
 		break;
@@ -884,7 +1121,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
 	    }
-	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank0Bank) {
+	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank0Bank)
+	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 4;
 		break;
@@ -892,7 +1130,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks += 8;
 		break;
 	    }
-	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.OddRank1) {
+	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.OddRank1)
+	    {
 	    case 0b10:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1;
 		break;
@@ -900,7 +1139,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 2;
 		break;
 	    }
-	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.EvenRank0) {
+	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.EvenRank0)
+	    {
 	    case 0b10:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks += 1;
 		break;
@@ -2046,6 +2286,16 @@ void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	switch (Proc->Uncore.ChipID) {
+	case PCI_DEVICE_ID_INTEL_82945P_HB:
+	case PCI_DEVICE_ID_INTEL_82945GM_HB:
+	case PCI_DEVICE_ID_INTEL_82945GME_HB:
+		P945_CLK(Shm, Proc, cpu);
+		P945_MCH(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_INTEL_82955_HB:
+		P945_CLK(Shm, Proc, cpu);
+		P955_MCH(Shm, Proc);
+		break;
 	case PCI_DEVICE_ID_INTEL_82946GZ_HB:
 	case PCI_DEVICE_ID_INTEL_82965Q_HB:
 	case PCI_DEVICE_ID_INTEL_82965G_HB:
