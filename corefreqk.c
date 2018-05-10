@@ -5528,28 +5528,29 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 
 	if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
-
-		strncpy(SysGate->IdleDriver.Name,
+		memcpy( SysGate->IdleDriver.Name,
 			idleDriver->name,
-			CPUIDLE_NAME_LEN - 1);
+			CPUIDLE_NAME_LEN);
+		SysGate->IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = 0;
 
 		if (idleDriver->state_count < CPUIDLE_STATE_MAX)
 			SysGate->IdleDriver.stateCount=idleDriver->state_count;
 		else	// No overflow check.
 			SysGate->IdleDriver.stateCount=CPUIDLE_STATE_MAX;
 
-		for (i = 0; i < SysGate->IdleDriver.stateCount; i++) {
-			strncpy(SysGate->IdleDriver.State[i].Name,
-				idleDriver->states[i].name,
-				CPUIDLE_NAME_LEN - 1);
+	    for (i = 0; i < SysGate->IdleDriver.stateCount; i++) {
+		memcpy( SysGate->IdleDriver.State[i].Name,
+			idleDriver->states[i].name,
+			CPUIDLE_NAME_LEN);
+		SysGate->IdleDriver.State[i].Name[CPUIDLE_NAME_LEN - 1] = 0;
 
-			SysGate->IdleDriver.State[i].exitLatency =
-					idleDriver->states[i].exit_latency;
-			SysGate->IdleDriver.State[i].powerUsage =
-					idleDriver->states[i].power_usage;
-			SysGate->IdleDriver.State[i].targetResidency =
-					idleDriver->states[i].target_residency;
-		}
+		SysGate->IdleDriver.State[i].exitLatency =
+				idleDriver->states[i].exit_latency;
+		SysGate->IdleDriver.State[i].powerUsage =
+				idleDriver->states[i].power_usage;
+		SysGate->IdleDriver.State[i].targetResidency =
+				idleDriver->states[i].target_residency;
+	    }
 	}
 	else
 		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
@@ -5560,10 +5561,12 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 	put_cpu();
 	if (rc == 0) {
 		struct cpufreq_governor *pGovernor = freqPolicy.governor;
-		if (pGovernor != NULL)
-			strncpy(SysGate->IdleDriver.Governor,
+		if (pGovernor != NULL) {
+			memcpy( SysGate->IdleDriver.Governor,
 				pGovernor->name,
-				CPUIDLE_NAME_LEN - 1);
+				CPUIDLE_NAME_LEN);
+			SysGate->IdleDriver.Governor[CPUIDLE_NAME_LEN - 1] = 0;
+		}
 	}
 	return(0);
     }
