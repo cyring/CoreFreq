@@ -552,12 +552,13 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
     unsigned short mc, cha, slot;
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
 			Proc->Uncore.MC[mc].Channel[cha].P945.DRT0.tWR;
 
@@ -600,40 +601,40 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP =
 			Proc->Uncore.MC[mc].Channel[cha].P945.DRT1.tRP + 2;
 
-       for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-       {
-	unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
-	for (rank = 0; rank < rankCount; rank++)
-	    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
-		Proc->Uncore.MC[mc].Channel[cha].P945.DRB[rank].Boundary;
-
-	switch(Proc->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
+	    unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
+	    for (rank = 0; rank < rankCount; rank++) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
+		    Proc->Uncore.MC[mc].Channel[cha].P945.DRB[rank].Boundary;
+	    }
+	    switch(Proc->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
+	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
 		break;
 	    case 0b01:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
-	}
-	switch(Proc->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
-	{
+	    }
+	    switch(Proc->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
+	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
 		break;
 	    case 0b01:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
 		break;
-	}
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+	    }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
-		  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-		* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 * 1024);
-       }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+			  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /=(1024 * 1024);
+	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
     }
@@ -644,12 +645,13 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
     unsigned short mc, cha, slot;
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
 			Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tRAS;
 
@@ -674,7 +676,38 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP =
 			Proc->Uncore.MC[mc].Channel[cha].P955.DRT1.tRP + 2;
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+	    unsigned short rank;
+	    for (rank = 0; rank < 4; rank++) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
+		    Proc->Uncore.MC[mc].Channel[cha].P955.DRB[rank].Boundary;
+	    }
+	    switch(Proc->Uncore.MC[mc].Channel[cha].P955.BANK.Rank0)
+	    {
+	    case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
+		break;
+	    case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+		break;
+	    }
+	    switch(Proc->Uncore.MC[mc].Channel[cha].P955.WIDTH.Rank0)
+	    {
+	    case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
+		break;
+	    case 0b01:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 8192;
+		break;
+	    }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+			  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 0;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;

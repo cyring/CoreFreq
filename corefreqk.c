@@ -1642,7 +1642,8 @@ void Query_P945(void __iomem *mchmap)
 
 	Proc->Uncore.MC[0].SlotCount = 1;
 
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++)
+	{
 		unsigned short rank, rankCount;
 
 		Proc->Uncore.MC[0].Channel[cha].P945.DRT0.value =
@@ -1680,9 +1681,9 @@ void Query_P955(void __iomem *mchmap)
 
 	Proc->Uncore.Bus.ClkCfg.value = readl(mchmap + 0xc00);
 
-	Proc->Uncore.MC[0].P945.DCC.value = readl(mchmap + 0x200);
+	Proc->Uncore.MC[0].P955.DCC.value = readl(mchmap + 0x200);
 
-	switch (Proc->Uncore.MC[0].P945.DCC.DAMC) {
+	switch (Proc->Uncore.MC[0].P955.DCC.DAMC) {
 	case 0b00:
 	case 0b11:
 		Proc->Uncore.MC[0].ChannelCount = 1;
@@ -1695,17 +1696,22 @@ void Query_P955(void __iomem *mchmap)
 
 	Proc->Uncore.MC[0].SlotCount = 1;
 
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++)
+	{
 		unsigned short rank;
-		for (rank = 0; rank < 4; rank++)
-			Proc->Uncore.MC[0].Channel[cha].P945.DRB[rank].value =
-				readw(mchmap + 0x100 + rank + 0x80 * cha);
 
 		Proc->Uncore.MC[0].Channel[cha].P955.DRT1.value =
 					readw(mchmap + 0x114 + 0x80 * cha);
 
 		Proc->Uncore.MC[0].Channel[cha].P955.BANK.value =
 					readw(mchmap + 0x10e + 0x80 * cha);
+
+		Proc->Uncore.MC[0].Channel[cha].P955.WIDTH.value =
+					readw(mchmap + 0x40c + 0x80 * cha);
+
+	    for (rank = 0; rank < 4; rank++)
+		Proc->Uncore.MC[0].Channel[cha].P955.DRB[rank].value =
+				readb(mchmap + 0x100 + rank + 0x80 * cha);
 	}
 }
 

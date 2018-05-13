@@ -368,8 +368,10 @@ typedef struct
 	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits */
 			} P945;
 			struct {
+	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits*/
 	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
 	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
+	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits */
 			} P955;
 			struct {
 	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits */
@@ -434,6 +436,9 @@ typedef struct
 		struct {
 	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits */
 		} P945;
+		struct {
+	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits */
+		} P955;
 		struct {
 	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits */
 						CKE1;		/* 32 bits */
