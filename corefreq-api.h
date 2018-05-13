@@ -360,12 +360,12 @@ typedef struct
 	struct {
 		union {
 			struct {
-	/* 108h */		P945_MC_DRAM_RANK_ATTRIB DRA;	/* 16 bits */
+	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits*/
 	/* 110h */		P945_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits */
 	/* 114h */		P945_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
 	/* 118h */		P945_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits */
 	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
-	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH	WIDTH;	/* 16 bits */
+	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits */
 			} P945;
 			struct {
 	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */

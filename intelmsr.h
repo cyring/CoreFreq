@@ -903,19 +903,18 @@ typedef union
 } P945_MC_DRAM_TIMING_R2;
 
 typedef union
-{	// Offset Channel0: 100h & Channel1: 180h
-	unsigned int		value;
+{	// Offset Channel0: 100h, 101h, 102h, 103 & Channel1: 180h, 181h
+	unsigned char		value;
 	struct {
-		unsigned int
-		Rank0Addr	:  8-0,
-		Rank1Addr	: 16-8,
-		Rank2Addr	: 24-16,
-		Rank3Addr	: 32-24;
+		unsigned char
+		Zeroed		:  2-0,
+		Boundary	:  7-2,
+		DRAM_4GB	:  8-7;
 	};
-} P945_MC_DRB;
+} P945_MC_DRAM_RANK_BOUND;
 
 typedef union
-{	// Offset Channel0: 108h + 109h
+{	// Offset Channel0: 108h + 109h & Channel 1: 188h
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -993,22 +992,6 @@ typedef union
 		ReservedBits4	: 32-24;
 	};
 } P955_MC_DRAM_TIMING_R1;
-
-typedef union
-{	// Offset Channel0: 120h
-	unsigned int		value;
-	struct {
-		unsigned int
-		DT		:  2-0,
-		ReservedBits1	:  4-2,
-		SMS		:  7-4,
-		ReservedBits2	:  8-7,
-		RMS		: 11-8,
-		ReservedBits3	: 29-11,
-		IC		: 30-29,
-		ReservedBits4	: 32-30;
-	};
-} P955_MC_DRC0;
 
 typedef union
 {	// Offset Channel0: 1210h & Channel1: 1310h

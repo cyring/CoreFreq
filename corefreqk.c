@@ -1621,7 +1621,7 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 
 void Query_P945(void __iomem *mchmap)
 {	// Source: Mobile Intel 945 Express Chipset Family
-	unsigned short cha;	/*	, slot;	*/
+	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
 
@@ -1643,8 +1643,7 @@ void Query_P945(void __iomem *mchmap)
 	Proc->Uncore.MC[0].SlotCount = 1;
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-		Proc->Uncore.MC[0].Channel[cha].P945.DRA.value =
-					readw(mchmap + 0x108 + 0x80 * cha);
+		unsigned short rank, rankCount;
 
 		Proc->Uncore.MC[0].Channel[cha].P945.DRT0.value =
 					readl(mchmap + 0x110 + 0x80 * cha);
@@ -1660,20 +1659,22 @@ void Query_P945(void __iomem *mchmap)
 
 		Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value =
 					readw(mchmap + 0x40c + 0x80 * cha);
-/*
-		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
-		}	*/
-		printk("CHA(%d)\tDRA=%x\tBANK=%x\tWIDTH=%x\n",
-			cha,
-			Proc->Uncore.MC[0].Channel[cha].P945.DRA.value,
-			Proc->Uncore.MC[0].Channel[cha].P945.BANK.value,
-			Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value);
+	    if (cha == 0) {
+		Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b11111111;
+		rankCount = 4;
+	    } else {
+		Proc->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b1111;
+		rankCount = 2;
+	    }
+	    for (rank = 0; rank < rankCount; rank++)
+		Proc->Uncore.MC[0].Channel[cha].P945.DRB[rank].value =
+				readb(mchmap + 0x100 + rank + 0x80 * cha);
 	}
 }
 
 void Query_P955(void __iomem *mchmap)
 {	// Source: Intel 82955X Memory Controller Hub (MCH)
-	unsigned short cha;	/*	, slot;	*/
+	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
 
@@ -1695,17 +1696,16 @@ void Query_P955(void __iomem *mchmap)
 	Proc->Uncore.MC[0].SlotCount = 1;
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
-		Proc->Uncore.MC[0].Channel[cha].P945.DRA.value =
-					readw(mchmap + 0x108 + 0x80 * cha);
+		unsigned short rank;
+		for (rank = 0; rank < 4; rank++)
+			Proc->Uncore.MC[0].Channel[cha].P945.DRB[rank].value =
+				readw(mchmap + 0x100 + rank + 0x80 * cha);
 
 		Proc->Uncore.MC[0].Channel[cha].P955.DRT1.value =
 					readw(mchmap + 0x114 + 0x80 * cha);
 
 		Proc->Uncore.MC[0].Channel[cha].P955.BANK.value =
 					readw(mchmap + 0x10e + 0x80 * cha);
-/*
-		for (slot = 0; slot < Proc->Uncore.MC[0].SlotCount; slot++) {
-		}	*/
 	}
 }
 
