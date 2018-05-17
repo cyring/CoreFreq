@@ -4135,6 +4135,17 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 	}
 }
 
+void Core_AMD_Family_17h_Temp(CORE *Core)
+{
+	if (Proc->Features.AdvPower.EDX.TTP == 1) {
+		unsigned int sensor = 0;
+
+		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 18, 3, 0xa4));
+
+		Core->PowerThermal.Sensor = sensor >> 21;
+	}
+}
+
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
 	unsigned int cpu = smp_processor_id();
@@ -5470,20 +5481,7 @@ static void Stop_AMD_Family_10h(void *arg)
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
-/*
-Note: hardware Family_12h
-
-	if (Proc->Features.AdvPower.DX.CPB == 1)
-	// Core Performance Boost [Here].
-	    smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_12h, 1);
-	else
-	if (Proc->Features.Power.ECX.EffFreq == 1) // MPERF & APERF ?
-*/
-
-/*
-Note: hardware Family_12h
-
-static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
@@ -5493,15 +5491,19 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		// Core Performance Boost instructions
-		// [ Here ]
+		Counters_Generic(Core, 1);
+// ToDo:	Compute Core Performance Boost
 
-		// Derive C1
-		Core->Counter[1].C1 =
-		  (Core->Counter[1].TSC > Core->Counter[1].C0.URC) ?
-		    Core->Counter[1].TSC - Core->Counter[1].C0.URC
-		    : 0;
+		if (Core->Bind == Proc->Service.Core) {
 
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(Proc);
+
+			Save_PTSC(Proc);
+
+			Sys_Tick(Proc);
+		}
 		Delta_C0(Core);
 
 		Delta_TSC(Core);
@@ -5514,7 +5516,9 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		Core_AMD_Temp(Core);
+	    if (Experimental) {
+		Core_AMD_Family_17h_Temp(Core);
+	    }
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
@@ -5522,7 +5526,45 @@ static enum hrtimer_restart Cycle_AMD_Family_12h(struct hrtimer *pTimer)
 	} else
 		return(HRTIMER_NORESTART);
 }
-*/
+
+void InitTimer_AMD_Family_17Fh(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_17h, 1);
+}
+
+static void Start_AMD_Family_17h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core=(CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_17h_Query(Core);
+
+	if (Core->Bind == Proc->Service.Core) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_AMD_Family_17h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	PerCore_Reset(Core);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
 
 long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {

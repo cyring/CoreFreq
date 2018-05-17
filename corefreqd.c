@@ -183,6 +183,9 @@ static void *Core_Cycle(void *arg)
 		Flip->Thermal.Temp = Flip->Thermal.Sensor
 				   - (Cpu->PowerThermal.Target * 2) - 49;
 		break;
+	case THERMAL_FORMULA_AMD_17F:
+		Flip->Thermal.Temp = Flip->Thermal.Sensor;
+		break;
 	}
 	if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 		Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
@@ -708,7 +711,6 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 0;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
