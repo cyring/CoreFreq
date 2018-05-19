@@ -4140,7 +4140,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		unsigned int sensor = 0;
 
-		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 18, 3, 0xa4));
+		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
 
 		Core->PowerThermal.Sensor = sensor >> 21;
 	}
