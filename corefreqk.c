@@ -3459,6 +3459,24 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
 }
 
+static void PerCore_AMD_Family_17h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	SystemRegisters(Core);
+
+	Dump_CPUID(Core);
+
+	BITSET(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
+	BITSET(LOCKLESS, Proc->PowerMgmt_Mask	, Core->Bind);
+	BITSET(LOCKLESS, Proc->SpeedStep_Mask	, Core->Bind);
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask	, Core->Bind);
+	BITSET(LOCKLESS, Proc->C3A_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+}
+
 void Sys_DumpTask(SYSGATE *SysGate)
 {	// Source: /include/linux/sched.h
 	struct task_struct *process, *thread;
@@ -4137,10 +4155,15 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
+/* Source: BKDG for AMD Family 16h
+	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
+	59800h : undocumented AMD 17h
+*/
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
-		unsigned int sensor = 0;
+		unsigned int indexRegister = 0x00059800, sensor = 0;
 
-		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
+		WRPCI(indexRegister, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
+		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
 
 		Core->PowerThermal.Sensor = sensor >> 21;
 	}

@@ -519,7 +519,7 @@ extern void Query_AMD_Family_15h(void) ;
 #define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
 
 extern void Query_AMD_Family_17h(void) ;
-#define     PerCore_AMD_Family_17h_Query PerCore_AMD_Family_10h_Query
+static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
 extern void InitTimer_AMD_Family_17Fh(unsigned int cpu) ;
