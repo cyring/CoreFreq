@@ -4165,7 +4165,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 		WRPCI(indexRegister, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
 		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
 
-		Core->PowerThermal.Sensor = sensor >> 21;
+		Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
 	}
 }
 
@@ -5526,6 +5526,10 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Sys_Tick(Proc);
+
+		    if (Experimental) {
+			Core_AMD_Family_17h_Temp(Core);
+		    }
 		}
 		Delta_C0(Core);
 
@@ -5538,10 +5542,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		Save_C0(Core);
 
 		Save_C1(Core);
-
-	    if (Experimental) {
-		Core_AMD_Family_17h_Temp(Core);
-	    }
 
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 

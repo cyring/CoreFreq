@@ -184,8 +184,9 @@ static void *Core_Cycle(void *arg)
 				   - (Cpu->PowerThermal.Target * 2) - 49;
 		break;
 	case THERMAL_FORMULA_AMD_17F:
-		Flip->Thermal.Temp = Flip->Thermal.Sensor;
-		break;
+	    if (cpu == Pkg->Service.Core)
+		Flip->Thermal.Temp = (Flip->Thermal.Sensor * 5 / 40) - 49;
+	    break;
 	}
 	if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 		Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
