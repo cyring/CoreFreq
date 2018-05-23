@@ -2522,22 +2522,15 @@ void Query_AMD_Family_17h(void)
 		return(COF);
 	}
 
-	unsigned int COF, index, pstate, sort[8] = {
+	unsigned int XFR = 0, COF = 0, index, pstate, sort[8] = {
 		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
 		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
 	};
 	PSTATEDEF PstateDef = {.value = 0};
+	Proc->Features.SpecTurboRatio = 0;
 
 	// Core & L3 frequencies < 400MHz are not supported by the architecture
 	Proc->Boost[BOOST(MIN)] = 4;
-
-	RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
-
-	COF = CoreCOF(	PstateDef.Family_17h.CpuFid,
-			PstateDef.Family_17h.CpuDfsId);
-
-	Proc->Boost[BOOST(1C)] = COF;
-	Proc->Features.SpecTurboRatio = 1;
 
 	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
@@ -2551,6 +2544,30 @@ void Query_AMD_Family_17h(void)
 		}
 	}
 	Proc->Features.SpecTurboRatio += index;
+
+	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
+
+	for (index = 0; index < 400000000; index++) {
+		RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
+
+		XFR = CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId);
+
+		__asm__ __volatile__
+		(
+			"xchg	%0,%1"
+			: "=r"(COF)
+			: "r" (XFR), "r" (COF)
+			:
+		);
+
+		if (COF > Proc->Boost[BOOST(1C)])
+			Proc->Boost[BOOST(1C)] = COF;
+	}
+	if (Proc->Boost[BOOST(1C)] != Proc->Boost[BOOST(MAX)])
+		Proc->Boost[BOOST(1C)]++;
+
+	Proc->Features.SpecTurboRatio++;
 
 	HyperThreading_Technology();
 }
