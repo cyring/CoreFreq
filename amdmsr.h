@@ -59,7 +59,7 @@ typedef union
 	ForceRdWrSzPrb	: 24-23, // Force probes for RdSized and WrSized.
 	TscFreqSel	: 25-24, // 1=The TSC increments at the P0 frequency.
 	CpbDis		: 26-25, // 1=Core performance boost disable.
-	EffFreqCntMwait	: 27-26, // Effective frequency counting during mwait.
+	EffFreqCntMwait : 27-26, // Effective frequency counting during mwait.
 	// Family 15h
 	EffFreqROLock	: 28-27, // Read-only effective frequency counter lock.
 	SmuLock		: 29-28,
@@ -67,6 +67,37 @@ typedef union
 	Reserved7	: 32-30,
 	Reserved	: 64-32;
     } Family_12h;
+    struct
+    {
+	unsigned long long
+	SmmLock		:  1-0,
+	Reserved1	:  3-1,
+	TlbCacheDis	:  4-3,
+	INVDWBINVD	:  5-4,
+	Reserved2	:  7-5,
+	AllowFerrOnNe	:  8-7,
+	IgnneEm		:  9-8,
+	MonMwaitDis	: 10-9,
+	MonMwaitUserEn	: 11-10,
+	Reserved3	: 13-11,
+	SmiSpCycDis	: 14-13,
+	RsmSpCycDis	: 15-14,
+	Reserved4	: 17-15,
+	Wrap32Dis	: 18-17,
+	McStatusWrEn	: 19-18,
+	Reserved5	: 20-19,
+	IoCfgGpFault	: 21-20,
+	LockTscToCurrP0 : 22-21, // RW: lock the TSC to the current P0 frequency
+	Reserved6	: 24-22,
+	TscFreqSel	: 25-24,
+	CpbDis		: 26-25,
+	EffFreqCntMwait : 27-26,
+	EffFreqROLock	: 28-27,
+	Reserved7	: 29-28,
+	CSEnable	: 30-29,
+	IRPerfEn	: 31-30, // RW: enable instructions retired counter
+	Reserved	: 64-31;
+    } Family_17h;
     struct
     {
 	unsigned long long

@@ -2701,6 +2701,20 @@ void DynamicAcceleration(CORE *Core)				// Unique
 	}
 }
 
+void CorePerformanceBoost(CORE *Core)				// Per SMT
+{
+	HWCR HwCfgRegister = {.value = 0};
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	if (!HwCfgRegister.Family_17h.CpbDis)
+		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
+}
+
 void Query_Intel_C1E(CORE *Core)				// Per Package
 {
 	if (Core->Bind == Proc->Service.Core) {
@@ -3492,6 +3506,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+
+	CorePerformanceBoost(Core);
 }
 
 void Sys_DumpTask(SYSGATE *SysGate)
