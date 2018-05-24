@@ -2522,10 +2522,11 @@ void Query_AMD_Family_17h(void)
 		return(COF);
 	}
 
-	unsigned int XFR = 0, COF = 0, index, pstate, sort[8] = {
+	unsigned int COF = 0, index, pstate, sort[8] = {
 		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
 		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
 	};
+	HWCR HwCfgRegister = {.value = 0};
 	PSTATEDEF PstateDef = {.value = 0};
 	Proc->Features.SpecTurboRatio = 0;
 
@@ -2547,26 +2548,43 @@ void Query_AMD_Family_17h(void)
 
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 
-	for (index = 0; index < 400000000; index++) {
-		RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
-		XFR = CoreCOF(	PstateDef.Family_17h.CpuFid,
-				PstateDef.Family_17h.CpuDfsId);
+	if (!HwCfgRegister.Family_17h.CpbDis)
+	{
+		struct CPB_ST {
+			char *brandSubStr;
+			unsigned int boost, xfr;
+		} CPB_Table[] = {
+			{"AMD Ryzen 3 1200",		+3, +1},
+			{"AMD Ryzen 5 1500X",		+2, +2},
+			{"AMD Ryzen 5 2500U",		+16, 0},
+			{"AMD Ryzen 5 1600X",		+4, +1},
+			{"AMD Ryzen 5 1600",		+4, +1},
+			{"AMD Ryzen 5 2600X",		+6, +2},
+			{"AMD Ryzen 5 2600",		+5, +2},
+			{"AMD Ryzen 7 1700X",		+4, +1},
+			{"AMD Ryzen 7 1700",		+7, +1}, /* XFR=+0.5 */
+			{"AMD Ryzen 7 1800X",		+4, +1},
+			{"AMD Ryzen 7 2700X",		+6, +2},
+			{"AMD Ryzen 7 2700",		+9, +2},
+			{"AMD Ryzen Threadripper 1950X",+6, +2},
+			{"AMD Ryzen Threadripper 1920X",+5, +2},
+			{"AMD Ryzen Threadripper 1900X",+2, +2},
+			{"AMD Ryzen Threadripper 1950" ,+0, +0},
+			{"AMD Ryzen Threadripper 1920" ,+6, +0},
+			{"AMD Ryzen Threadripper 1900" ,+6, +0}
+		};
+		const size_t nmemb = sizeof(CPB_Table) / sizeof(struct CPB_ST);
 
-		__asm__ __volatile__
-		(
-			"xchg	%0,%1"
-			: "=r"(COF)
-			: "r" (XFR), "r" (COF)
-			:
-		);
-
-		if (COF > Proc->Boost[BOOST(1C)])
-			Proc->Boost[BOOST(1C)] = COF;
+	  for (index = 0; index < nmemb; index++)
+	    if (strstr(Proc->Features.Info.Brand, CPB_Table[index].brandSubStr))
+	    {
+		Proc->Boost[BOOST(1C)] += CPB_Table[index].boost;
+		Proc->Boost[BOOST(1C)] += CPB_Table[index].xfr;
+		break;
+	    }
 	}
-	if (Proc->Boost[BOOST(1C)] != Proc->Boost[BOOST(MAX)])
-		Proc->Boost[BOOST(1C)]++;
-
 	Proc->Features.SpecTurboRatio++;
 
 	HyperThreading_Technology();
@@ -3501,7 +3519,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
 	BITSET(LOCKLESS, Proc->PowerMgmt_Mask	, Core->Bind);
 	BITSET(LOCKLESS, Proc->SpeedStep_Mask	, Core->Bind);
-	BITSET(LOCKLESS, Proc->TurboBoost_Mask	, Core->Bind);
+
 	BITSET(LOCKLESS, Proc->C3A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
