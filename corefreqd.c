@@ -107,143 +107,134 @@ static void *Core_Cycle(void *arg)
 		Cpu->Toggle = !Cpu->Toggle;
 		BITCLR(BUS_LOCK, roomCore, cpu);
 	}
-	struct FLIP_FLOP *Flip = &Cpu->FlipFlop[Cpu->Toggle];
+	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
-	Flip->Delta.INST	= Core->Delta.INST;
-	Flip->Delta.C0.UCC	= Core->Delta.C0.UCC;
-	Flip->Delta.C0.URC	= Core->Delta.C0.URC;
-	Flip->Delta.C3		= Core->Delta.C3;
-	Flip->Delta.C6		= Core->Delta.C6;
-	Flip->Delta.C7		= Core->Delta.C7;
-	Flip->Delta.TSC		= Core->Delta.TSC;
-	Flip->Delta.C1		= Core->Delta.C1;
+	CFlip->Delta.INST	= Core->Delta.INST;
+	CFlip->Delta.C0.UCC	= Core->Delta.C0.UCC;
+	CFlip->Delta.C0.URC	= Core->Delta.C0.URC;
+	CFlip->Delta.C3		= Core->Delta.C3;
+	CFlip->Delta.C6		= Core->Delta.C6;
+	CFlip->Delta.C7		= Core->Delta.C7;
+	CFlip->Delta.TSC	= Core->Delta.TSC;
+	CFlip->Delta.C1		= Core->Delta.C1;
 
 	// Compute IPS=Instructions per TSC
-	Flip->State.IPS = (double) (Flip->Delta.INST)
-			/ (double) (Flip->Delta.TSC);
+	CFlip->State.IPS = (double) (CFlip->Delta.INST)
+			 / (double) (CFlip->Delta.TSC);
 
 	// Compute IPC=Instructions per non-halted reference cycle.
 	// (Protect against a division by zero)
-	Flip->State.IPC = (Flip->Delta.C0.URC != 0) ?
-			  (double) (Flip->Delta.INST)
-			/ (double) Flip->Delta.C0.URC
-			: 0.0f;
+	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ?
+			  (double) (CFlip->Delta.INST)
+			 / (double) CFlip->Delta.C0.URC
+			 : 0.0f;
 
 	// Compute CPI=Non-halted reference cycles per instruction.
 	// (Protect against a division by zero)
-	Flip->State.CPI = (Flip->Delta.INST != 0) ?
-			  (double) Flip->Delta.C0.URC
-			/ (double) (Flip->Delta.INST)
-			: 0.0f;
+	CFlip->State.CPI = (CFlip->Delta.INST != 0) ?
+			  (double) CFlip->Delta.C0.URC
+			 / (double) (CFlip->Delta.INST)
+			 : 0.0f;
 
 	// Compute Turbo State.
-	Flip->State.Turbo=(double) (Flip->Delta.C0.UCC)
-			/ (double) (Flip->Delta.TSC);
+	CFlip->State.Turbo = (double) (CFlip->Delta.C0.UCC)
+			   / (double) (CFlip->Delta.TSC);
 	// Compute C-States.
-	Flip->State.C0	= (double) (Flip->Delta.C0.URC)
-			/ (double) (Flip->Delta.TSC);
-	Flip->State.C3	= (double) (Flip->Delta.C3)
-			/ (double) (Flip->Delta.TSC);
-	Flip->State.C6	= (double) (Flip->Delta.C6)
-			/ (double) (Flip->Delta.TSC);
-	Flip->State.C7	= (double) (Flip->Delta.C7)
-			/ (double) (Flip->Delta.TSC);
-	Flip->State.C1	= (double) (Flip->Delta.C1)
-			/ (double) (Flip->Delta.TSC);
+	CFlip->State.C0 = (double) (CFlip->Delta.C0.URC)
+			/ (double) (CFlip->Delta.TSC);
+	CFlip->State.C3 = (double) (CFlip->Delta.C3)
+			/ (double) (CFlip->Delta.TSC);
+	CFlip->State.C6 = (double) (CFlip->Delta.C6)
+			/ (double) (CFlip->Delta.TSC);
+	CFlip->State.C7 = (double) (CFlip->Delta.C7)
+			/ (double) (CFlip->Delta.TSC);
+	CFlip->State.C1 = (double) (CFlip->Delta.C1)
+			/ (double) (CFlip->Delta.TSC);
 
 	// Relative Ratio formula.
-	Flip->Relative.Ratio	= (double) (Flip->Delta.C0.UCC
+	CFlip->Relative.Ratio	= (double) (CFlip->Delta.C0.UCC
 					  * Shm->Proc.Boost[BOOST(MAX)])
-				/ (double) (Flip->Delta.TSC);
+				/ (double) (CFlip->Delta.TSC);
 
 	if (Shm->Proc.PM_version >= 2) {
 		// Relative Frequency equals UCC per second.
-		Flip->Relative.Freq = (double) (Flip->Delta.C0.UCC)
-				    / (Shm->Sleep.Interval * 1000);
+		CFlip->Relative.Freq = (double) (CFlip->Delta.C0.UCC)
+				     / (Shm->Sleep.Interval * 1000);
 	} else {
 	// Relative Frequency = Relative Ratio x Bus Clock Frequency
-	  Flip->Relative.Freq=(double)REL_FREQ( Shm->Proc.Boost[BOOST(MAX)], \
-						Flip->Relative.Ratio,	\
-					       Core->Clock, Shm->Sleep.Interval)
-			     / (Shm->Sleep.Interval * 1000);
+	  CFlip->Relative.Freq = (double)REL_FREQ( Shm->Proc.Boost[BOOST(MAX)],\
+					CFlip->Relative.Ratio,		\
+					Core->Clock, Shm->Sleep.Interval)
+				/ (Shm->Sleep.Interval * 1000);
 	}
 
-	// Thermal formulas
-	Flip->Thermal.Trip   = Core->PowerThermal.Trip;
-	Flip->Thermal.Sensor = Core->PowerThermal.Sensor;
+	// Per Core thermal formulas
+	CFlip->Thermal.Trip   = Core->PowerThermal.Trip;
+	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
 
 	switch (Pkg->thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
-		Flip->Thermal.Temp = Cpu->PowerThermal.Target
-				   - Flip->Thermal.Sensor;
+		CFlip->Thermal.Temp = Cpu->PowerThermal.Target
+				    - CFlip->Thermal.Sensor;
 		break;
 	case THERMAL_FORMULA_AMD:
 		break;
 	case THERMAL_FORMULA_AMD_0F:
-		Flip->Thermal.Temp = Flip->Thermal.Sensor
-				   - (Cpu->PowerThermal.Target * 2) - 49;
+		CFlip->Thermal.Temp = CFlip->Thermal.Sensor
+				    - (Cpu->PowerThermal.Target * 2) - 49;
 		break;
-	case THERMAL_FORMULA_AMD_17F:
-	    if (cpu == Pkg->Service.Core) {
-		Flip->Thermal.Temp = (Flip->Thermal.Sensor * 5 / 40) - 49;
-		Flip->Thermal.Temp -= Cpu->PowerThermal.Target;
-	    }
-	    break;
 	}
-	if (Flip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
-		Cpu->PowerThermal.Limit[0] = Flip->Thermal.Temp;
-	if (Flip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
-		Cpu->PowerThermal.Limit[1] = Flip->Thermal.Temp;
 
-	// Voltage formulas
-	Flip->Voltage.VID = Core->Counter[1].VID;
+	// Per Core voltage formulas
+	CFlip->Voltage.VID = Core->Counter[1].VID;
       switch (Pkg->voltageFormula) {
 	// Intel Core 2 Extreme Datasheet §3.3-Table 2
       case VOLTAGE_FORMULA_INTEL_MEROM:
-	Flip->Voltage.Vcore = 0.8875 + (double) (Flip->Voltage.VID) * 0.0125;
+	CFlip->Voltage.Vcore = 0.8875 + (double) (CFlip->Voltage.VID) * 0.0125;
 	break;
 	// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
       case VOLTAGE_FORMULA_INTEL_SNB:
 	if (cpu == Pkg->Service.Core) {
-		Flip->Voltage.Vcore = (double) (Flip->Voltage.VID) / 8192.0;
+		CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
 	}
 	break;
       case VOLTAGE_FORMULA_INTEL_SKL_X:
-	Flip->Voltage.Vcore = (double) (Flip->Voltage.VID) / 8192.0;
+	CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
 	break;
       case VOLTAGE_FORMULA_AMD:
 	break;
 	// AMD BKDG Family 0Fh §10.6 Table 70
       case VOLTAGE_FORMULA_AMD_0F: {
-		short	Vselect = (Flip->Voltage.VID & 0b110000) >> 4,
-			Vnibble = Flip->Voltage.VID & 0b1111;
+		short	Vselect =(CFlip->Voltage.VID & 0b110000) >> 4,
+			Vnibble = CFlip->Voltage.VID & 0b1111;
 
 	    switch (Vselect) {
 	    case 0b00:
-		Flip->Voltage.Vcore = 1.550 - (double) (Vnibble) * 0.025;
+		CFlip->Voltage.Vcore = 1.550 - (double) (Vnibble) * 0.025;
 		break;
 	    case 0b01:
-		Flip->Voltage.Vcore = 1.150 - (double) (Vnibble) * 0.025;
+		CFlip->Voltage.Vcore = 1.150 - (double) (Vnibble) * 0.025;
 		break;
 	    case 0b10:
-		Flip->Voltage.Vcore = 0.7625 - (double) (Vnibble) * 0.0125;
+		CFlip->Voltage.Vcore = 0.7625 - (double) (Vnibble) * 0.0125;
 		break;
 	    case 0b11:
-		Flip->Voltage.Vcore = 0.5625 - (double) (Vnibble) * 0.0125;
+		CFlip->Voltage.Vcore = 0.5625 - (double) (Vnibble) * 0.0125;
 		break;
 	    }
 	  }
 	break;
       }
 	// Interrupts
-	Flip->Counter.SMI = Core->Interrupt.SMI;
+	CFlip->Counter.SMI = Core->Interrupt.SMI;
 
 	if (Shm->Registration.nmi) {
-		Flip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
-		Flip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
-		Flip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
-		Flip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
+		CFlip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
+		CFlip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
+		CFlip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
+		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
+
 	// Package C-state Residency Counters
 	if (cpu == Pkg->Service.Core)
 	{
@@ -251,46 +242,59 @@ static void *Core_Cycle(void *arg)
 
 		Shm->Proc.Toggle = !Shm->Proc.Toggle;
 
-	    struct PKG_FLIP_FLOP *Flip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
+	    struct PKG_FLIP_FLOP *PFlip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
 
-		Flip->Delta.PTSC = Pkg->Delta.PTSC;
-		Flip->Delta.PC02 = Pkg->Delta.PC02;
-		Flip->Delta.PC03 = Pkg->Delta.PC03;
-		Flip->Delta.PC06 = Pkg->Delta.PC06;
-		Flip->Delta.PC07 = Pkg->Delta.PC07;
-		Flip->Delta.PC08 = Pkg->Delta.PC08;
-		Flip->Delta.PC09 = Pkg->Delta.PC09;
-		Flip->Delta.PC10 = Pkg->Delta.PC10;
+		PFlip->Delta.PTSC = Pkg->Delta.PTSC;
+		PFlip->Delta.PC02 = Pkg->Delta.PC02;
+		PFlip->Delta.PC03 = Pkg->Delta.PC03;
+		PFlip->Delta.PC06 = Pkg->Delta.PC06;
+		PFlip->Delta.PC07 = Pkg->Delta.PC07;
+		PFlip->Delta.PC08 = Pkg->Delta.PC08;
+		PFlip->Delta.PC09 = Pkg->Delta.PC09;
+		PFlip->Delta.PC10 = Pkg->Delta.PC10;
 
-		Shm->Proc.State.PC02	= (double) Flip->Delta.PC02
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC03	= (double) Flip->Delta.PC03
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC06	= (double) Flip->Delta.PC06
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC07	= (double) Flip->Delta.PC07
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC08	= (double) Flip->Delta.PC08
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC09	= (double) Flip->Delta.PC09
-					/ (double) Flip->Delta.PTSC;
-		Shm->Proc.State.PC10	= (double) Flip->Delta.PC10
-					/ (double) Flip->Delta.PTSC;
+		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC09	= (double) PFlip->Delta.PC09
+					/ (double) PFlip->Delta.PTSC;
+		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10
+					/ (double) PFlip->Delta.PTSC;
 
-		Flip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
+		PFlip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
 
 	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	    {
-		Flip->Delta.ACCU[pw] = Pkg->Delta.Power.ACCU[pw];
+		PFlip->Delta.ACCU[pw] = Pkg->Delta.Power.ACCU[pw];
 
-		Shm->Proc.State.Energy[pw] = (double)Flip->Delta.ACCU[pw]
+		Shm->Proc.State.Energy[pw] = (double) PFlip->Delta.ACCU[pw]
 					   * Shm->Proc.Power.Unit.Joules;
 
-		Shm->Proc.State.Power[pw] =(double)Flip->Delta.ACCU[pw]
+		Shm->Proc.State.Power[pw] =(double) PFlip->Delta.ACCU[pw]
 					  * Shm->Proc.Power.Unit.Watts
 					  * Shm->Proc.Power.Unit.Times;
 	    }
+
+	// Per Package thermal formulas
+	    switch (Pkg->thermalFormula) {
+	    case THERMAL_FORMULA_AMD_17F:
+		CFlip->Thermal.Temp = (CFlip->Thermal.Sensor * 5 / 40) - 49;
+		CFlip->Thermal.Temp -= Cpu->PowerThermal.Target;
+		break;
+	    }
 	}
+	// Min and Max temperatures per Core
+	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
+		Cpu->PowerThermal.Limit[0] = CFlip->Thermal.Temp;
+	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
+		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
     }
   } while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
 

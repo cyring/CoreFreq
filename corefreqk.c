@@ -5578,9 +5578,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			Sys_Tick(Proc);
 
-		    if (Experimental) {
 			Core_AMD_Family_17h_Temp(Core);
-		    }
 		}
 		Delta_C0(Core);
 
