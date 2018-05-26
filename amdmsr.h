@@ -16,6 +16,18 @@
 	#define MSR_AMD_COFVID_STATUS		0xc0010071
 #endif
 
+#ifndef MSR_AMD_RAPL_POWER_UNIT
+	#define MSR_AMD_RAPL_POWER_UNIT		0xc0010299
+#endif
+
+#ifndef MSR_AMD_PKG_ENERGY_STATUS
+	#define MSR_AMD_PKG_ENERGY_STATUS	0xc001029b
+#endif
+
+#ifndef MSR_AMD_PP0_ENERGY_STATUS
+	#define MSR_AMD_PP0_ENERGY_STATUS	0xc001029a
+#endif
+
 const struct {
 	unsigned int	MCF,
 			PCF[5];

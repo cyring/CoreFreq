@@ -32,7 +32,7 @@
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
-MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD Family 0Fh");
+MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD [0Fh, 17h]");
 MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
@@ -2587,6 +2587,9 @@ void Query_AMD_Family_17h(void)
 	}
 	Proc->Features.SpecTurboRatio++;
 
+	// Same register bit fields as Intel RAPL_POWER_UNIT.
+	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
+
 	HyperThreading_Technology();
 }
 
@@ -4161,6 +4164,15 @@ void Core_Counters_Clear(CORE *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
+#define PWR_ACCU_AMD_Family_17h(Pkg, T)					\
+({									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+					MSR_AMD_PKG_ENERGY_STATUS);	\
+									\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+					MSR_AMD_PP0_ENERGY_STATUS);	\
+})
+
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
 	Pkg->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =			\
@@ -5569,16 +5581,30 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 // ToDo:	Compute Core Performance Boost
 
 		if (Core->Bind == Proc->Service.Core) {
+			PSTATEDEF PstateDef = {.value = 0};
 
 			PKG_Counters_Generic(Core, 1);
 
+			Core_AMD_Family_17h_Temp(Core);
+
+			RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
+			Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
+
+			PWR_ACCU_AMD_Family_17h(Proc, 1);
+
 			Delta_PTSC(Proc);
+
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORE);
 
 			Save_PTSC(Proc);
 
-			Sys_Tick(Proc);
+			Save_PWR_ACCU(Proc, PKG);
 
-			Core_AMD_Family_17h_Temp(Core);
+			Save_PWR_ACCU(Proc, CORE);
+
+			Sys_Tick(Proc);
 		}
 		Delta_C0(Core);
 
@@ -5613,6 +5639,7 @@ static void Start_AMD_Family_17h(void *arg)
 
 	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
+		PWR_ACCU_AMD_Family_17h(Proc, 0);
 	}
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);

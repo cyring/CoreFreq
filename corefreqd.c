@@ -289,6 +289,13 @@ static void *Core_Cycle(void *arg)
 		CFlip->Thermal.Temp -= Cpu->PowerThermal.Target;
 		break;
 	    }
+	// Per Package voltage formulas
+	    switch (Pkg->voltageFormula) {
+	    case VOLTAGE_FORMULA_AMD_17F:
+		CFlip->Voltage.Vcore = 1.550
+				     -(0.00625 * (double) (CFlip->Voltage.VID));
+		break;
+	    }
 	}
 	// Min and Max temperatures per Core
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
@@ -480,9 +487,9 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     else
 	Shm->Proc.PowerNow = 0;
 
-  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {	// Intel RAPL
     switch (Proc->powerFormula) {
     case POWER_FORMULA_INTEL:
+    case POWER_FORMULA_AMD:
 	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
@@ -497,7 +504,6 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     }
 	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.TU) : 0;
-  }
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
