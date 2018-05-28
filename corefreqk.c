@@ -5581,13 +5581,17 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 // ToDo:	Compute Core Performance Boost
 
 		if (Core->Bind == Proc->Service.Core) {
-			PSTATEDEF PstateDef = {.value = 0};
+			PSTATESTAT PstateStat;
+			PSTATEDEF PstateDef;
+			unsigned int pstate;
 
 			PKG_Counters_Generic(Core, 1);
 
 			Core_AMD_Family_17h_Temp(Core);
 
-			RDMSR(PstateDef, MSR_AMD_PSTATE_F17_BOOST);
+			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
+			pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
+			RDMSR(PstateDef, pstate);
 			Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
 
 			PWR_ACCU_AMD_Family_17h(Proc, 1);

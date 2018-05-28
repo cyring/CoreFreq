@@ -4,6 +4,10 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_AMD_PERF_STATUS
+	#define MSR_AMD_PERF_STATUS		0xc0010063
+#endif
+
 #ifndef MSR_AMD_PSTATE_DEF_BASE
 	#define MSR_AMD_PSTATE_DEF_BASE 	0xc0010064
 #endif
@@ -252,6 +256,17 @@ typedef union
 	PstateEn	: 64-63; // RW: Is this Pstate MSR valid ?
     } Family_17h;
 } PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 // MSRC001_0063
+	Current		:  3-0,
+	Reserved	: 64-3;
+    };
+} PSTATESTAT;
 
 typedef union
 {
