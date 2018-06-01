@@ -5597,22 +5597,16 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			PWR_ACCU_AMD_Family_17h(Proc, 1);
 
 			Delta_PTSC(Proc);
-/*--
+
 			Delta_PWR_ACCU(Proc, PKG);
 
 			Delta_PWR_ACCU(Proc, CORE);
-*/
+
 			Save_PTSC(Proc);
-/*--
+
 			Save_PWR_ACCU(Proc, PKG);
 
 			Save_PWR_ACCU(Proc, CORE);
-*/
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(PKG)] =	\
-				Proc->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)];
-
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORE)] =	\
-				Proc->Counter[1].Power.ACCU[PWR_DOMAIN(CORE)];
 
 			Sys_Tick(Proc);
 		}
