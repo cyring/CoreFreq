@@ -504,6 +504,8 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     }
 	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.TU) : 0;
+	// Scale window unit time to the driver monitoring interval.
+	Shm->Proc.Power.Unit.Times *= 1000.0 / (double) Shm->Sleep.Interval;
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
@@ -2499,6 +2501,9 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 			Shm->Cpu[cpu].Topology.Cache[level].Size =
 				Core[cpu]->T.Cache[loop].Size;
+
+			if (Proc->ArchID == AMD_Family_17h)
+				Shm->Cpu[cpu].Topology.Cache[level].Size *= 512;
 		    }
 		}
 		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack =

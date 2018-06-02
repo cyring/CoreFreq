@@ -2561,13 +2561,13 @@ void Query_AMD_Family_17h(void)
 			{"AMD Ryzen 5 2500U",		+16, 0},
 			{"AMD Ryzen 5 1600X",		+4, +1},
 			{"AMD Ryzen 5 1600",		+4, +1},
-			{"AMD Ryzen 5 2600X",		+6, +2},
-			{"AMD Ryzen 5 2600",		+5, +2},
+			{"AMD Ryzen 5 2600X",		+5, +2},
+			{"AMD Ryzen 5 2600",		+3, +2},
 			{"AMD Ryzen 7 1700X",		+4, +1},
 			{"AMD Ryzen 7 1700",		+7, +1}, /* XFR=+0.5 */
 			{"AMD Ryzen 7 1800X",		+4, +1},
-			{"AMD Ryzen 7 2700X",		+6, +2},
-			{"AMD Ryzen 7 2700",		+9, +2},
+			{"AMD Ryzen 7 2700X",		+5, +2},
+			{"AMD Ryzen 7 2700",		+8, +2},
 			{"AMD Ryzen Threadripper 1950X",+6, +2},
 			{"AMD Ryzen Threadripper 1920X",+5, +2},
 			{"AMD Ryzen Threadripper 1900X",+2, +2},
@@ -3200,7 +3200,6 @@ void CStatesConfiguration(int encoding, CORE *Core)
 
 void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
 {
-    if (Experimental == 1) {
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	FIDVID_CONTROL FidVidControl = {.value = 0};
 	int NewFID = -1, NewVID = -1, loop = 100;
@@ -3233,7 +3232,6 @@ void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
 		} else
 			loop-- ;
 	} while (FidVidStatus.FidVidPending == 1) ;
-    }
 }
 
 void SystemRegisters(CORE *Core)
