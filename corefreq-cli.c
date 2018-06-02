@@ -4529,8 +4529,8 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	LayerDeclare(MAX_WIDTH) hLoad0 = {
 		.origin = {.col = 0, .row = row}, .length = drawSize.width,
-		.attr ={LWK,LWK,LWK,LWK,LCK,LCK,LCK,LCK,		\
-			LCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+		.attr ={LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
 			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
