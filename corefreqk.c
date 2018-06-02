@@ -2591,6 +2591,31 @@ void Query_AMD_Family_17h(void)
 	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
 
 	HyperThreading_Technology();
+
+	if ((Proc->Features.HTT_Enable == 0)
+	 && (Proc->Features.ExtInfo.ECX.TopoExt == 1))
+	{
+		CPUID_0x8000001e leaf8000001e;
+
+		asm volatile
+		(
+			"movq	$0x8000001e, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2"
+			: "=r" (leaf8000001e.EAX),
+			  "=r" (leaf8000001e.EBX),
+			  "=r" (leaf8000001e.ECX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+		if (leaf8000001e.EBX.ThreadsPerCore >= 1)
+			Proc->Features.HTT_Enable = 1;
+	}
 }
 
 void Dump_CPUID(CORE *Core)
