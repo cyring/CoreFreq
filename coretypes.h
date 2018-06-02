@@ -817,6 +817,32 @@ typedef struct	// Processor Capacity Leaf.
 	} EBX, EDX;
 } CPUID_0x80000008;
 
+typedef struct	// AMD Extended ID Leaf.
+{	// Remark: all registers valid if CPUID(0x80000001).ECX.TopoEx == 1
+	struct {
+		unsigned int
+		ExtApicId	: 32-0;  // Valid if MSR(APIC_BAR[ApicEn]) != 0
+	} EAX;
+	struct
+	{
+		unsigned int
+		CoreId		:  8-0,
+		ThreadsPerCore	: 16-8,
+		Reserved	: 32-16;
+	} EBX;
+	struct {
+		unsigned int
+		NodeId		:  8-0,
+		NodesPerProc	: 11-8,  // 000b=1, 001b=2, 011b=4 nodes
+		Reserved	: 32-11;
+	} ECX;
+	struct
+	{
+		unsigned int
+		Reserved	: 32-0;
+	} EDX;
+} CPUID_0x8000001e;
+
 typedef struct	// BSP CPUID features.
 {
 	CPUID_FUNCTION Info;
