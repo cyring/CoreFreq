@@ -2501,9 +2501,6 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 			Shm->Cpu[cpu].Topology.Cache[level].Size =
 				Core[cpu]->T.Cache[loop].Size;
-
-			if (Proc->ArchID == AMD_Family_17h)
-				Shm->Cpu[cpu].Topology.Cache[level].Size *= 512;
 		    }
 		}
 		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack =
@@ -2511,6 +2508,12 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive =
 			Core[cpu]->T.Cache[loop].Inclus;
 	    }
+	}
+	// Apply various architecture size unit.
+	switch (Proc->ArchID) {
+	case AMD_Family_17h:
+		Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+		break;
 	}
 }
 
