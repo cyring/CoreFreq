@@ -1096,16 +1096,62 @@ static void Map_AMD_Topology(void *arg)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 
-	if (leaf80000008.ECX.ApicIdCoreIdSize == 0) { // Legacy processor
+	switch (Proc->ArchID) {
+	default:
+	case AMD_Family_0Fh:	// Legacy processor
+		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = 0;
-	} else { // ToDo: Families > 0Fh
+		break;
+	case AMD_Family_10h:
+	case AMD_Family_11h:
+	case AMD_Family_12h:
+	case AMD_Family_14h:
+	case AMD_Family_15h:
+	case AMD_Family_16h:
+		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
-	}
+		break;
+	case AMD_Family_17h:
+	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
+	    {
+		CPUID_0x8000001e leaf8000001e;
 
-	Core->T.ApicID = leaf1_ebx.Init_APIC_ID;
+		asm volatile
+		(
+			"movq	$0x8000001e, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (leaf8000001e.EAX),
+			  "=r" (leaf8000001e.EBX),
+			  "=r" (leaf8000001e.ECX),
+			  "=r" (leaf8000001e.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+		Core->T.ApicID    = leaf8000001e.EAX.ExtApicId;
+		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
+		Core->T.PackageID = leaf8000001e.ECX.NodeId;
+		Core->T.ThreadID  = leaf8000001e.EBX.CoreId * 2;
+		Core->T.ThreadID *= leaf8000001e.EBX.ThreadsPerCore;
+		Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId
+				  - Core->T.ThreadID;
+	    } else {
+		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.PackageID = 0;
+		Core->T.ThreadID  = 0;
+	    }
+	    break;
+	}
 
 	Cache_Topology(Core);
     }
@@ -2592,8 +2638,8 @@ void Query_AMD_Family_17h(void)
 
 	HyperThreading_Technology();
 
-	if ((Proc->Features.HTT_Enable == 0)
-	 && (Proc->Features.ExtInfo.ECX.TopoExt == 1))
+	Proc->Features.HTT_Enable = 0;
+	if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	{
 		CPUID_0x8000001e leaf8000001e;
 
@@ -2606,10 +2652,12 @@ void Query_AMD_Family_17h(void)
 			"cpuid				\n\t"
 			"mov	%%eax, %0		\n\t"
 			"mov	%%ebx, %1		\n\t"
-			"mov	%%ecx, %2"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
 			: "=r" (leaf8000001e.EAX),
 			  "=r" (leaf8000001e.EBX),
-			  "=r" (leaf8000001e.ECX)
+			  "=r" (leaf8000001e.ECX),
+			  "=r" (leaf8000001e.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
