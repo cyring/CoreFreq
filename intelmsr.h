@@ -72,8 +72,20 @@
 	#define MSR_RAPL_POWER_UNIT		0x00000606
 #endif
 
+#ifndef MSR_PKG_ENERGY_STATUS
+	#define MSR_PKG_ENERGY_STATUS		0x00000611
+#endif
+
+#ifndef MSR_PKG_PERF_STATUS
+	#define MSR_PKG_PERF_STATUS		0x00000613
+#endif
+
 #ifndef MSR_DRAM_ENERGY_STATUS
 	#define MSR_DRAM_ENERGY_STATUS		0x00000619
+#endif
+
+#ifndef MSR_DRAM_PERF_STATUS
+	#define MSR_DRAM_PERF_STATUS		0x0000061b
 #endif
 
 #ifndef MSR_PP0_POWER_LIMIT
@@ -90,6 +102,10 @@
 
 #ifndef MSR_PP0_PERF_STATUS
 	#define MSR_PP0_PERF_STATUS		0x0000063b
+#endif
+
+#ifndef MSR_PP1_ENERGY_STATUS
+	#define MSR_PP1_ENERGY_STATUS		0x00000641
 #endif
 
 typedef union
