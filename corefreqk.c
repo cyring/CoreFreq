@@ -1140,7 +1140,11 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.ApicID    = leaf8000001e.EAX.ExtApicId;
 		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
 		Core->T.PackageID = leaf8000001e.ECX.NodeId;
-		Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
+
+		if (leaf8000001e.EBX.ThreadsPerCore > 0)
+			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
+		else
+			Core->T.ThreadID  = 0;
 	    } else {
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
