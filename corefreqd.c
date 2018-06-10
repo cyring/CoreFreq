@@ -192,12 +192,6 @@ static void *Core_Cycle(void *arg)
       case VOLTAGE_FORMULA_INTEL_MEROM:
 	CFlip->Voltage.Vcore = 0.8875 + (double) (CFlip->Voltage.VID) * 0.0125;
 	break;
-	// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
-      case VOLTAGE_FORMULA_INTEL_SNB:
-	if (cpu == Pkg->Service.Core) {
-		CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
-	}
-	break;
       case VOLTAGE_FORMULA_INTEL_SKL_X:
 	CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
 	break;
@@ -224,8 +218,11 @@ static void *Core_Cycle(void *arg)
 	    }
 	  }
 	break;
+      case VOLTAGE_FORMULA_AMD_17F:
+	CFlip->Voltage.Vcore = 1.550 -(0.00625 * (double) (CFlip->Voltage.VID));
+	break;
       }
-	// Interrupts
+	// Interrupts counters
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
 
 	if (Shm->Registration.nmi) {
@@ -235,7 +232,7 @@ static void *Core_Cycle(void *arg)
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
 
-	// Package C-state Residency Counters
+	// Package scope counters
 	if (cpu == Pkg->Service.Core)
 	{
 		enum PWR_DOMAIN pw;
@@ -252,7 +249,7 @@ static void *Core_Cycle(void *arg)
 		PFlip->Delta.PC08 = Pkg->Delta.PC08;
 		PFlip->Delta.PC09 = Pkg->Delta.PC09;
 		PFlip->Delta.PC10 = Pkg->Delta.PC10;
-
+	    // Package C-state Residency counters
 		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03
@@ -267,9 +264,9 @@ static void *Core_Cycle(void *arg)
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10
 					/ (double) PFlip->Delta.PTSC;
-
+	    // Uncore scope counters
 		PFlip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
-
+	    // Power & Energy counters
 	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	    {
 		PFlip->Delta.ACCU[pw] = Pkg->Delta.Power.ACCU[pw];
@@ -281,19 +278,18 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Power.Unit.Watts
 					  * Shm->Proc.Power.Unit.Times;
 	    }
-
-	// Per Package thermal formulas
+	    // Package thermal formulas
 	    switch (Pkg->thermalFormula) {
 	    case THERMAL_FORMULA_AMD_17F:
 		CFlip->Thermal.Temp = (CFlip->Thermal.Sensor * 5 / 40) - 49;
 		CFlip->Thermal.Temp -= Cpu->PowerThermal.Target;
 		break;
 	    }
-	// Per Package voltage formulas
+	    // Package voltage formulas
 	    switch (Pkg->voltageFormula) {
-	    case VOLTAGE_FORMULA_AMD_17F:
-		CFlip->Voltage.Vcore = 1.550
-				     -(0.00625 * (double) (CFlip->Voltage.VID));
+	    // Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
+	    case VOLTAGE_FORMULA_INTEL_SNB:
+		CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
 		break;
 	    }
 	}
@@ -500,6 +496,18 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 				0.001 / (double)(1 << Proc->Power.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
 				0.001 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	break;
+    case POWER_FORMULA_AMD_17F: {
+	unsigned int maxCoreCount =((Shm->Proc.Features.leaf80000008.ECX.NC + 1)
+					>> Shm->Proc.Features.HTT_Enable);
+
+	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
+				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
+				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts  /= maxCoreCount;
+	Shm->Proc.Power.Unit.Joules /= maxCoreCount;
+	}
 	break;
     }
 	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?

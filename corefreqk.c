@@ -498,27 +498,27 @@ static void Query_Features(void *pArg)
 		if (iArg->Features.Std.EDX.HTT)
 			iArg->SMT_Count = iArg->Features.Std.EBX.Max_SMT_ID;
 		else {
-			if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
-				asm volatile
-				(
-					"movq	$0x80000008, %%rax	\n\t"
-					"xorq	%%rbx, %%rbx		\n\t"
-					"xorq	%%rcx, %%rcx		\n\t"
-					"xorq	%%rdx, %%rdx		\n\t"
-					"cpuid				\n\t"
-					"mov	%%eax, %0		\n\t"
-					"mov	%%ebx, %1		\n\t"
-					"mov	%%ecx, %2		\n\t"
-					"mov	%%edx, %3"
-					: "=r" (eax),
-					  "=r" (ebx),
-					  "=r" (ecx),
-					  "=r" (edx)
-					:
-					: "%rax", "%rbx", "%rcx", "%rdx"
-				);
-				iArg->SMT_Count = (ecx & 0xf) + 1;
-			}
+		    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
+			asm volatile
+			(
+				"movq	$0x80000008, %%rax	\n\t"
+				"xorq	%%rbx, %%rbx		\n\t"
+				"xorq	%%rcx, %%rcx		\n\t"
+				"xorq	%%rdx, %%rdx		\n\t"
+				"cpuid				\n\t"
+				"mov	%%eax, %0		\n\t"
+				"mov	%%ebx, %1		\n\t"
+				"mov	%%ecx, %2		\n\t"
+				"mov	%%edx, %3"
+				: "=r" (iArg->Features.leaf80000008.EAX),
+				  "=r" (iArg->Features.leaf80000008.EBX),
+				  "=r" (iArg->Features.leaf80000008.ECX),
+				  "=r" (iArg->Features.leaf80000008.EDX)
+				:
+				: "%rax", "%rbx", "%rcx", "%rdx"
+			);
+			iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC+1;
+		    }
 		}
 		AMD_Brand(iArg->Features.Info.Brand);
 	}
@@ -2636,6 +2636,8 @@ void Query_AMD_Family_17h(void)
 
 	// Same register bit fields as Intel RAPL_POWER_UNIT.
 	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
+	// Processors family have unlocked ratios.
+	Proc->Features.Ratio_Unlock = 1;
 
 	HyperThreading_Technology();
 }
@@ -4190,7 +4192,7 @@ void Core_Counters_Clear(CORE *Core)
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 						MSR_PKG_ENERGY_STATUS); \
 									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
 						MSR_PP0_ENERGY_STATUS); \
 									\
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(UNCORE)],	\
@@ -4202,7 +4204,7 @@ void Core_Counters_Clear(CORE *Core)
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 						MSR_PKG_ENERGY_STATUS); \
 									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],		\
 						MSR_PP0_ENERGY_STATUS); \
 									\
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
@@ -4214,7 +4216,7 @@ void Core_Counters_Clear(CORE *Core)
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 					MSR_AMD_PKG_ENERGY_STATUS);	\
 									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORE)],		\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
 					MSR_AMD_PP0_ENERGY_STATUS);	\
 })
 
@@ -4274,6 +4276,11 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
 
 		Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
+	}
+	if (Experimental) {
+		THERMTRIP_STATUS ThermTrip;
+		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+		Core->PowerThermal.Trip = ThermTrip.SensorTrip;
 	}
 }
 
@@ -4705,7 +4712,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Delta_PWR_ACCU(Proc, UNCORE);
 
@@ -4723,7 +4730,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, UNCORE);
 
@@ -4866,7 +4873,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Delta_PWR_ACCU(Proc, RAM);
 
@@ -4884,7 +4891,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, RAM);
 
@@ -5023,7 +5030,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Delta_PWR_ACCU(Proc, UNCORE);
 
@@ -5047,7 +5054,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, UNCORE);
 
@@ -5191,7 +5198,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Delta_PWR_ACCU(Proc, UNCORE);
 
@@ -5209,7 +5216,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, UNCORE);
 
@@ -5348,7 +5355,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Delta_PWR_ACCU(Proc, RAM);
 
@@ -5366,7 +5373,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, RAM);
 
@@ -5614,6 +5621,9 @@ static void Stop_AMD_Family_10h(void *arg)
 
 static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 {
+	PSTATESTAT PstateStat;
+	PSTATEDEF PstateDef;
+	unsigned int pstate;
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
@@ -5626,18 +5636,9 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 // ToDo:	Compute Core Performance Boost
 
 		if (Core->Bind == Proc->Service.Core) {
-			PSTATESTAT PstateStat;
-			PSTATEDEF PstateDef;
-			unsigned int pstate;
-
 			PKG_Counters_Generic(Core, 1);
 
 			Core_AMD_Family_17h_Temp(Core);
-
-			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-			pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-			RDMSR(PstateDef, pstate);
-			Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
 
 			PWR_ACCU_AMD_Family_17h(Proc, 1);
 
@@ -5645,16 +5646,24 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORE);
+			Delta_PWR_ACCU(Proc, CORES);
 
 			Save_PTSC(Proc);
 
 			Save_PWR_ACCU(Proc, PKG);
 
-			Save_PWR_ACCU(Proc, CORE);
+			Save_PWR_ACCU(Proc, CORES);
 
 			Sys_Tick(Proc);
 		}
+		// Read the current P-State number
+		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
+		// Offset the P-State base register
+		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
+		// Read the voltage ID at offset
+		RDMSR(PstateDef, pstate);
+		Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
+
 		Delta_C0(Core);
 
 		Delta_TSC(Core);

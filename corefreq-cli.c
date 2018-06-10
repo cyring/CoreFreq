@@ -6147,11 +6147,11 @@ void Top(SHM_STRUCT *Shm, char option)
 		"%13.9f" "%13.9f" "%13.9f" "%13.9f"		\
 		"%13.9f" "%13.9f" "%13.9f" "%13.9f",
 		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],
-		Shm->Proc.State.Energy[PWR_DOMAIN(CORE)],
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)],
 		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],
 		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)],
 		Shm->Proc.State.Power[PWR_DOMAIN(PKG)],
-		Shm->Proc.State.Power[PWR_DOMAIN(CORE)],
+		Shm->Proc.State.Power[PWR_DOMAIN(CORES)],
 		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],
 		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);
 	memcpy(&LayerAt(layer, code, col     , row)   , &buffer[ 0], 13);

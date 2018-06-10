@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.23.6"
+#define COREFREQ_VERSION	"1.23.7"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -163,6 +163,8 @@ enum SYS_REG {
 	0b0000000000000000000000000000000000000000000000000000000000000011
 #define POWER_FORMULA_AMD \
 	0b0000000000000000000000000000000100000000000000000000000000000000
+#define POWER_FORMULA_AMD_17F \
+	0b0000000000000000000000010000000100000000000000000000000000000000
 
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0))
@@ -234,7 +236,7 @@ enum UNCORE_BOOST {
 
 enum PWR_DOMAIN {
 	DOMAIN_PKG,
-	DOMAIN_CORE,
+	DOMAIN_CORES,
 	DOMAIN_UNCORE,
 	DOMAIN_RAM,
 	DOMAIN_SIZE
@@ -804,7 +806,7 @@ typedef struct	// Processor Capacity Leaf.
 	} EAX;
 	struct { // AMD reserved
 		unsigned int
-		NC		:  8-0,  // Zero based number of physical cores
+		NC		:  8-0,  // Zero based number of threads
 		Reserved1	: 12-8,
 		ApicIdCoreIdSize: 16-12, // Initial APIC ID size to compute MNC
 		PerfTscSize	: 18-16, // 00b=40, 01b=48, 10b=56, 11b=64 bits
@@ -854,6 +856,7 @@ typedef struct	// BSP CPUID features.
 	CPUID_0x0000000a PerfMon;
 	CPUID_0x80000001 ExtInfo;
 	CPUID_0x80000007 AdvPower;
+	CPUID_0x80000008 leaf80000008;
 
 	unsigned int	FactoryFreq;
 
