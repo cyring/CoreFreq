@@ -484,30 +484,32 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.PowerNow = 0;
 
     switch (Proc->powerFormula) {
-    case POWER_FORMULA_INTEL:
-    case POWER_FORMULA_AMD:
+      case POWER_FORMULA_INTEL:
+      case POWER_FORMULA_AMD:
 	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
 				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
 	break;
-    case POWER_FORMULA_INTEL_ATOM:
+      case POWER_FORMULA_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
 				0.001 / (double)(1 << Proc->Power.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
 				0.001 / (double)(1 << Proc->Power.Unit.ESU) : 0;
 	break;
-    case POWER_FORMULA_AMD_17F: {
-	unsigned int maxCoreCount =((Shm->Proc.Features.leaf80000008.ECX.NC + 1)
-					>> Shm->Proc.Features.HTT_Enable);
+      case POWER_FORMULA_AMD_17F: {
+	unsigned int maxCoreCount = (Shm->Proc.Features.leaf80000008.ECX.NC + 1)
+					>> Shm->Proc.Features.HTT_Enable;
 
 	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
 				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
 				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
-	Shm->Proc.Power.Unit.Watts  /= maxCoreCount;
-	Shm->Proc.Power.Unit.Joules /= maxCoreCount;
+	if (maxCoreCount != 0) {
+		Shm->Proc.Power.Unit.Watts  /= maxCoreCount;
+		Shm->Proc.Power.Unit.Joules /= maxCoreCount;
 	}
+      }
 	break;
     }
 	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?

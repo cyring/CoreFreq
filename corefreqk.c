@@ -438,7 +438,26 @@ static void Query_Features(void *pArg)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-
+	if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
+		asm volatile
+		(
+			"movq	$0x80000008, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (iArg->Features.leaf80000008.EAX),
+			  "=r" (iArg->Features.leaf80000008.EBX),
+			  "=r" (iArg->Features.leaf80000008.ECX),
+			  "=r" (iArg->Features.leaf80000008.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	}
 	// Reset the performance features bits (present is zero)
 	iArg->Features.PerfMon.EBX.CoreCycles    = 1;
 	iArg->Features.PerfMon.EBX.InstrRetired  = 1;
@@ -494,32 +513,13 @@ static void Query_Features(void *pArg)
 	    iArg->Features.FactoryFreq = Intel_Brand(iArg->Features.Info.Brand);
 
 	} else if (iArg->Features.Info.Vendor.CRC == CRC_AMD) {
-
-		if (iArg->Features.Std.EDX.HTT)
-			iArg->SMT_Count = iArg->Features.Std.EBX.Max_SMT_ID;
-		else {
-		    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
-			asm volatile
-			(
-				"movq	$0x80000008, %%rax	\n\t"
-				"xorq	%%rbx, %%rbx		\n\t"
-				"xorq	%%rcx, %%rcx		\n\t"
-				"xorq	%%rdx, %%rdx		\n\t"
-				"cpuid				\n\t"
-				"mov	%%eax, %0		\n\t"
-				"mov	%%ebx, %1		\n\t"
-				"mov	%%ecx, %2		\n\t"
-				"mov	%%edx, %3"
-				: "=r" (iArg->Features.leaf80000008.EAX),
-				  "=r" (iArg->Features.leaf80000008.EBX),
-				  "=r" (iArg->Features.leaf80000008.ECX),
-				  "=r" (iArg->Features.leaf80000008.EDX)
-				:
-				: "%rax", "%rbx", "%rcx", "%rdx"
-			);
-			iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC+1;
-		    }
-		}
+	    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
+		iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC + 1;
+	    } else if (iArg->Features.Std.EDX.HTT) {
+		iArg->SMT_Count = iArg->Features.Std.EBX.Max_SMT_ID;
+	    } else {
+		iArg->SMT_Count = 1;
+	    }
 		AMD_Brand(iArg->Features.Info.Brand);
 	}
 }
