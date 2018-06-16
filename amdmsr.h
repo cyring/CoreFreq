@@ -4,6 +4,20 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_AMD_F17H_MPERF
+	#define MSR_AMD_F17H_MPERF		0xc00000e7
+#endif
+
+#ifndef MSR_AMD_F17H_APERF
+	#define MSR_AMD_F17H_APERF		0xc00000e8
+#endif
+
+#ifndef MSR_F17H_IRPERF
+	#define MSR_AMD_F17H_IRPERF		0xc00000e9
+#else
+	#define MSR_AMD_F17H_IRPERF		MSR_F17H_IRPERF
+#endif
+
 #ifndef MSR_AMD_PERF_STATUS
 	#define MSR_AMD_PERF_STATUS		0xc0010063
 #endif

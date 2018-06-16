@@ -3943,6 +3943,19 @@ void Core_Counters_Clear(CORE *Core)
 			: 0;						\
 })
 
+#define SMT_Counters_AMD_Family_17h(Core, T)				\
+({									\
+	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+			MSR_AMD_F17H_APERF, Core->Counter[T].C0.UCC,	\
+			MSR_AMD_F17H_MPERF, Core->Counter[T].C0.URC,	\
+			MSR_AMD_F17H_IRPERF, Core->Counter[T].INST);	\
+	/* Derive C1 */							\
+	Core->Counter[T].C1 =						\
+	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
+	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
+	    : 0;							\
+})
+
 #define Delta_TSC(Core)							\
 ({									\
 	Core->Delta.TSC = Core->Counter[1].TSC				\
@@ -5638,7 +5651,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Counters_Generic(Core, 1);
+		SMT_Counters_AMD_Family_17h(Core, 1);
 // ToDo:	Compute Core Performance Boost
 
 		if (Core->Bind == Proc->Service.Core) {
@@ -5670,11 +5683,15 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		RDMSR(PstateDef, pstate);
 		Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
 
+		Delta_INST(Core);
+
 		Delta_C0(Core);
 
 		Delta_TSC(Core);
 
 		Delta_C1(Core);
+
+		Save_INST(Core);
 
 		Save_TSC(Core);
 
@@ -5700,6 +5717,8 @@ static void Start_AMD_Family_17h(void *arg)
 	CORE *Core=(CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Family_17h_Query(Core);
+
+	SMT_Counters_AMD_Family_17h(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
