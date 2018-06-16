@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.23.7"
+#define COREFREQ_VERSION	"1.24.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1026,6 +1026,16 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0	0x1604
 #endif
+#ifndef PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0 0x1614
+#endif
+// Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA	0x1904
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
+#endif
 // Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
@@ -1041,6 +1051,9 @@ typedef struct	// BSP CPUID features.
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
 #endif
 // Source: 7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
+#endif
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA	0x5904
 #endif
@@ -1049,6 +1062,9 @@ typedef struct	// BSP CPUID features.
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD	0x590f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ	0x5910
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914

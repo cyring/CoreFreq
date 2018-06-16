@@ -493,9 +493,12 @@ typedef union
 		};
 		struct {
 			SNB_CAPID		SNB_Cap;
+			IVB_CAPID		IVB_Cap;
 		};
 		struct {
-			IVB_CAPID		IVB_Cap;
+			SKL_CAPID_A		SKL_Cap_A;
+			SKL_CAPID_B		SKL_Cap_B;
+			SKL_CAPID_C		SKL_Cap_C;
 		};
 		struct {
 			AMD_0F_HTT_UNIT_ID	UnitID;

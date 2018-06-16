@@ -2216,7 +2216,9 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
+	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SKL_Cap_A.value);
+	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.SKL_Cap_B.value);
+	pci_read_config_dword(dev, 0xec, &Proc->Uncore.Bus.SKL_Cap_C.value);
 
 	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
@@ -2229,8 +2231,12 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = PllRatios.UCLK;
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = 0;
+/*ToDo:
+	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SKL_Cap_A.value);
+	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.SKL_Cap_B.value);
 
-//ToDo:	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
+	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
+*/
 	return(0);
 }
 

@@ -846,10 +846,14 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 };
 
 	// 5th Generation
-	// Broadwell ix-5xxx: IMC_HA0=0x1604
+	// Broadwell ix-5xxx: IMC_HA0=0x1604 / 0x1614
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{	// Desktop: IMC_SystemAgent=0x0c00
@@ -861,6 +865,14 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 
 	// 6th Generation
 static struct pci_device_id PCI_Skylake_ids[] = {
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
 		.driver_data = (kernel_ulong_t) SKL_SA
@@ -887,6 +899,10 @@ static struct pci_device_id PCI_Skylake_X_ids[] = {
 	// 7th & 8th Generation
 static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
@@ -896,6 +912,10 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{

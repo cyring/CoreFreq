@@ -1891,11 +1891,6 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		case Haswell_EP:
 		case Haswell_ULT:
 		case Haswell_ULX:
-		case Skylake_UY:
-		case Skylake_S:
-		case Skylake_X:
-		case Kabylake:
-		case Kabylake_UY:
 			Shm->Uncore.CtrlSpeed = 2667;
 			break;
 		case Broadwell:
@@ -2100,10 +2095,19 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	    }
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
 
-	    if (width == 0) {
+	    switch (width) {
+	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-	    } else {
+		break;
+	    case 0b01:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+		break;
+	    case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
+		break;
+	    case 0b11:
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 0;
+		break;
 	    }
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
@@ -2122,6 +2126,59 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 */
       }
     }
+}
+
+void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
+{
+	unsigned int DMFC;
+
+	switch (Proc->ArchID) {
+	case Skylake_UY:
+	case Kabylake_UY:
+		DMFC = Proc->Uncore.Bus.SKL_Cap_B.DMFC_DDR3;
+		Shm->Uncore.Bus.Rate = 4000;	// 4 GT/s QPI
+		break;
+	default:
+		DMFC = Proc->Uncore.Bus.SKL_Cap_C.DMFC_DDR4;
+		Shm->Uncore.Bus.Rate = 8000;	// 8 GT/s DMI3
+		break;
+	}
+
+	switch (DMFC) {
+	case 0b111:
+		Shm->Uncore.CtrlSpeed = 1067;
+		break;
+	case 0b110:
+		Shm->Uncore.CtrlSpeed = 1333;
+		break;
+	case 0b101:
+		Shm->Uncore.CtrlSpeed = 1600;
+		break;
+	case 0b100:
+		Shm->Uncore.CtrlSpeed = 1867;
+		break;
+	case 0b011:
+		Shm->Uncore.CtrlSpeed = 2133;
+		break;
+	case 0b010:
+		Shm->Uncore.CtrlSpeed = 2400;
+		break;
+	case 0b001:
+	case 0b000:
+		Shm->Uncore.CtrlSpeed = 2667;
+		break;
+	}
+
+	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
+				* Shm->Cpu[cpu].Clock.Hz
+				* Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.FactoryFreq;
+	Shm->Uncore.Bus.Speed /= 1000000L;
+
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
+	Shm->Uncore.Unit.BusSpeed = 0b01;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
@@ -2387,22 +2444,27 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		SNB_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
-	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell
+	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell/U , Core m
+	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:	// Broadwell/H
 		HSW_IMC(Shm, Proc);
 		break;
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA:	// Skylake/U Processor
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA:	// Skylake/Y Processor
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD:	// Skylake/S Dual Core
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ:	// Skylake/S Quad Core
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD:	// Skylake/H Dual Core
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ:	// Skylake/H Quad Core
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	// BGA 1356
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	// BGA 1515
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD:	// Kabylake/H Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake/S Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ:	// Kabylake/H Quad Core
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ:	// U-Quad Core BGA 1356
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake Quad Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake/S Quad Core
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ:
 	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:	// CoffeeLake Quad Core
 	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:	// CoffeeLake Hexa Core
-		IVB_CAP(Shm, Proc, cpu);
+		SKL_CAP(Shm, Proc, cpu);
 		SKL_IMC(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:

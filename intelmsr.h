@@ -1784,3 +1784,59 @@ typedef union
 		UCLK		: 32-24;
 	};
 } SKL_SA_PLL_RATIOS;	// 06_4E/06_5E
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset E4h
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 12-0,
+		PDCD		: 13-12, // 0: Capable Dual Channels, 1: Single
+		X2APIC_EN	: 14-13, // 1: Supports Extended APIC mode
+		DDPCD		: 15-14,
+		ReservedBits2	: 23-15,
+		VT_d		: 24-23,
+		ReservedBits3	: 25-24,
+		ECCDIS		: 26-25, // 0: ECC capable, 1: Not ECC capable
+		ReservedBits4	: 32-26;
+	};
+} SKL_CAPID_A;	// §3.39 CAPID0_A Capabilities A Register
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset E8h
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	:  2-0,
+		LPDDR3_EN	:  3-2,  // Allow LPDDR3 operation
+		ReservedBits2	:  4-3,
+		DMFC_DDR3	:  7-4,
+		ReservedBits3	:  8-7,
+		GMM_DIS		:  9-8,  // Device 8 associated memory spaces
+		ReservedBits4	: 15-9,
+		DMIG3DIS	: 16-15, // DMI Gen 3 Disable fuse
+		ReservedBits5	: 17-16,
+		ADDGFXCAP	: 18-17,
+		ADDGFXEN	: 19-18,
+		ReservedBits6	: 20-19,
+		PEGG3_DIS	: 21-20,
+		PLL_REF100_CFG	: 24-21,
+		ReservedBits7	: 25-24,
+		CACHESZ		: 28-25,
+		SMTCAP		: 29-28,
+		ReservedBits8	: 31-29,
+		IMGU_DIS	: 32-31; // Device 5 associated memory spaces
+	};
+} SKL_CAPID_B;	// §3.40 CAPID0_B Capabilities B Register
+
+typedef union
+{	// Device: 0 - Function: 0 - Offset ECh
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 14-0,
+		DMFC_LPDDR3	: 17-14,
+		DMFC_DDR4	: 20-17,
+		ReservedBits2	: 32-20;
+	};
+} SKL_CAPID_C;	// §3.41 CAPID0_C Capabilities C Register
