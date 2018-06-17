@@ -1261,7 +1261,9 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"Voltage ID control%.*sVID       [%3s]",
 		width - 36, hSpace, enabled(bix));
 
-	bix = Shm->Proc.Features.Power.ECX.HCF_Cap == 1;
+	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"P-State Hardware Coordination Feedback"	\
 			"%.*sMPERF/APERF       [%3s]",

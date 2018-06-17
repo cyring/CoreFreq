@@ -315,10 +315,17 @@ typedef struct
 		}			NMI;
 	} Interrupt;
 
-	struct
-	{
+	union {
+	    struct	// Intel
+	    {
 		CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;
 		CORE_FIXED_PERF_CONTROL  Core_FixedPerfControl;
+	    };
+	    struct	// AMD
+	    {
+		unsigned long long	Core_PerfEventsCtrsControl;
+		HWCR			Core_HardwareConfiguration;
+	    };
 	} SaveArea;
 
 	struct

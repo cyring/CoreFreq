@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.24.1"
+#define COREFREQ_VERSION	"1.24.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -804,6 +804,14 @@ typedef struct	// Processor Capacity Leaf.
 		MaxGuestPhysAddr: 24-16, // AMD reserved
 		Reserved	: 32-24;
 	} EAX;
+	struct
+	{
+		unsigned int
+		CLZERO		:  1-0,  // AMD Clear Zero Instruction
+		IRPerf		:  2-1,  // AMD Inst. Retired Counter support
+		XSaveErPtr	:  3-2,  // AMD FX___ error pointers suuport
+		Reserved	: 32-3;
+	} EBX;
 	struct { // AMD reserved
 		unsigned int
 		NC		:  8-0,  // Zero based number of threads
@@ -816,7 +824,7 @@ typedef struct	// Processor Capacity Leaf.
 	{
 		unsigned int
 		Reserved	: 32-0;
-	} EBX, EDX;
+	} EDX;
 } CPUID_0x80000008;
 
 typedef struct	// AMD Extended ID Leaf.

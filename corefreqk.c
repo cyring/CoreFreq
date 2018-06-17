@@ -513,8 +513,19 @@ static void Query_Features(void *pArg)
 	    iArg->Features.FactoryFreq = Intel_Brand(iArg->Features.Info.Brand);
 
 	} else if (iArg->Features.Info.Vendor.CRC == CRC_AMD) {
+	    if ( iArg->Features.Power.ECX.HCF_Cap
+	       | iArg->Features.AdvPower.EDX.EffFrqRO ) {
+		iArg->Features.PerfMon.EBX.CoreCycles = 0;
+		iArg->Features.PerfMon.EBX.RefCycles  = 0;
+		iArg->Features.PerfMon.EDX.FixCtrs += 2;
+	    }
 	    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
 		iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC + 1;
+
+		if (iArg->Features.leaf80000008.EBX.IRPerf) {
+			iArg->Features.PerfMon.EBX.InstrRetired = 0;
+			iArg->Features.PerfMon.EDX.FixCtrs++;
+		}
 	    } else if (iArg->Features.Std.EDX.HTT) {
 		iArg->SMT_Count = iArg->Features.Std.EBX.Max_SMT_ID;
 	    } else {
@@ -3762,7 +3773,7 @@ void Controller_Exit(void)
 		BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, CREATED);
 }
 
-void Core_Counters_Set(CORE *Core)
+void Intel_Core_Counters_Set(CORE *Core)
 {
     if (Proc->Features.PerfMon.EAX.Version >= 2) {
 	CORE_GLOBAL_PERF_CONTROL	Core_GlobalPerfControl = {.value = 0};
@@ -3815,6 +3826,18 @@ void Core_Counters_Set(CORE *Core)
     }
 }
 
+#define AMD_Core_Counters_Set(Core, PMU)				\
+({									\
+	if (Proc->Features.PerfMon.EBX.InstrRetired == 0) {		\
+		HWCR HwCfgRegister = {.value = 0};			\
+									\
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);			\
+		Core->SaveArea.Core_HardwareConfiguration = HwCfgRegister;\
+		HwCfgRegister.PMU.IRPerfEn = 1;				\
+		WRMSR(HwCfgRegister, MSR_K7_HWCR);			\
+	}								\
+})
+
 #define Uncore_Counters_Set(PMU)					\
 ({									\
     if (Proc->Features.PerfMon.EAX.Version >= 3)			\
@@ -3843,7 +3866,7 @@ void Core_Counters_Set(CORE *Core)
     }									\
 })
 
-void Core_Counters_Clear(CORE *Core)
+void Intel_Core_Counters_Clear(CORE *Core)
 {
     if (Proc->Features.PerfMon.EAX.Version >= 2) {
 	WRMSR(Core->SaveArea.Core_FixedPerfControl,
@@ -3851,6 +3874,13 @@ void Core_Counters_Clear(CORE *Core)
 	WRMSR(Core->SaveArea.Core_GlobalPerfControl,
 					MSR_CORE_PERF_GLOBAL_CTRL);
     }
+}
+
+void AMD_Core_Counters_Clear(CORE *Core)
+{
+	if (Proc->Features.PerfMon.EBX.InstrRetired == 0) {
+		WRMSR(Core->SaveArea.Core_HardwareConfiguration, MSR_K7_HWCR);
+	}
 }
 
 #define Uncore_Counters_Clear(PMU)					\
@@ -4530,7 +4560,7 @@ static void Start_Core2(void *arg)
 
 	PerCore_Core2_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -4555,7 +4585,7 @@ static void Stop_Core2(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	PerCore_Reset(Core);
 
@@ -4647,7 +4677,7 @@ static void Start_Nehalem(void *arg)
 
 	PerCore_Nehalem_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_Nehalem(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -4675,7 +4705,7 @@ static void Stop_Nehalem(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Nehalem(NULL);
@@ -4807,7 +4837,7 @@ static void Start_SandyBridge(void *arg)
 
 	PerCore_SandyBridge_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -4836,7 +4866,7 @@ static void Stop_SandyBridge(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_SandyBridge(NULL);
@@ -4968,7 +4998,7 @@ static void Start_SandyBridge_EP(void *arg)
 
 	PerCore_SandyBridge_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -4997,7 +5027,7 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_SandyBridge_EP(NULL);
@@ -5131,7 +5161,7 @@ static void Start_Haswell_ULT(void *arg)
 
 	PerCore_Haswell_ULT_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -5160,7 +5190,7 @@ static void Stop_Haswell_ULT(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Haswell_ULT(NULL);
@@ -5293,7 +5323,7 @@ static void Start_Skylake(void *arg)
 
 	PerCore_SandyBridge_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -5322,7 +5352,7 @@ static void Stop_Skylake(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Skylake(NULL);
@@ -5453,7 +5483,7 @@ static void Start_Skylake_X(void *arg)
 
 	PerCore_SandyBridge_Query(Core);
 
-	Core_Counters_Set(Core);
+	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -5482,7 +5512,7 @@ static void Stop_Skylake_X(void *arg)
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
 
-	Core_Counters_Clear(Core);
+	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == Proc->Service.Core)
 		Stop_Uncore_Skylake_X(NULL);
@@ -5718,6 +5748,7 @@ static void Start_AMD_Family_17h(void *arg)
 
 	PerCore_AMD_Family_17h_Query(Core);
 
+	AMD_Core_Counters_Set(Core, Family_17h);
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
 	if (Core->Bind == Proc->Service.Core) {
@@ -5742,6 +5773,8 @@ static void Stop_AMD_Family_17h(void *arg)
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
 
 	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	AMD_Core_Counters_Clear(Core);
 
 	PerCore_Reset(Core);
 
