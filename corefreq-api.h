@@ -519,7 +519,7 @@ typedef struct {
 		IDLEDRIVER	IdleDriver;
 
 		int		taskCount;
-		TASK_MCB	taskList[PID_MAX_DEFAULT];
+		TASK_MCB	taskList[TASK_LIMIT];
 
 		MEM_MCB		memInfo;
 

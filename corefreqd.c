@@ -3366,10 +3366,11 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
 		if (Quiet & 0x100)
-		 printf("  SleepInterval(%u), SysGate(%u)\n\n",
+		 printf("  SleepInterval(%u), SysGate(%u), %ld tasks\n\n",
 			Shm->Sleep.Interval,
 			!BITVAL(Shm->SysGate.Operation, 0) ?
-				0:Shm->Sleep.Interval * Shm->SysGate.tickReset);
+				0:Shm->Sleep.Interval * Shm->SysGate.tickReset,
+			TASK_LIMIT);
 		if (Quiet)
 			fflush(stdout);
 

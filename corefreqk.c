@@ -3615,7 +3615,8 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		task_unlock(thread);
-		cnt++;
+		if (cnt < TASK_LIMIT)
+			cnt++;
 	}
 	rcu_read_unlock();
 	SysGate->taskCount = cnt;

@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.24.2"
+#define COREFREQ_VERSION	"1.24.3"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -1171,10 +1171,6 @@ typedef struct {
 #define TASK_COMM_LEN		16
 #endif
 
-#ifndef PID_MAX_DEFAULT
-#define PID_MAX_DEFAULT		(1<<15)
-#endif
-
 enum SORTBYFIELD {F_STATE, F_RTIME, F_UTIME, F_STIME, F_PID, F_COMM};
 #define SORTBYCOUNT	(1 + F_COMM)
 
@@ -1198,6 +1194,15 @@ typedef struct {
 				totalhigh,
 				freehigh;
 } MEM_MCB;
+
+#define SYSGATE_STRUCT_SIZE	( sizeof(IDLEDRIVER)			\
+				+ sizeof(int)				\
+				+ sizeof(MEM_MCB)			\
+				+ sizeof(unsigned int)			\
+				+ 4 * MAX_UTS_LEN )
+
+#define TASK_LIMIT		(((4096 << 5) - SYSGATE_STRUCT_SIZE)	\
+				/ sizeof(TASK_MCB))
 
 // Input-Output Control
 #define COREFREQ_TOGGLE_OFF	0x0000000000000000L
