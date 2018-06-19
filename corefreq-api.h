@@ -467,8 +467,10 @@ typedef struct
 	/* 5008h */				MAD1;		/* 32 bits */
 		} SNB;
 		struct {
-	/* 500Ch */	SKL_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
-	/* 5010h */				MAD1;		/* 32 bits */
+	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits */
+	/* 5008h */				MADC1;		/* 32 bits */
+	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits */
+	/* 5010h */				MADD1;		/* 32 bits */
 		} SKL;
 		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits */

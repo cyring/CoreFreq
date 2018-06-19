@@ -2095,19 +2095,22 @@ void Query_HSW_IMC(void __iomem *mchmap)
 }
 
 void Query_SKL_IMC(void __iomem *mchmap)
-{	// Source: 6th Generation Intel® Processor Datasheet for S-Platforms
+{	// Source: 6th & 7th Generation Intel® Processor for S-Platforms Vol 2
 	unsigned short cha;
 
 	Proc->Uncore.CtrlCount = 1;
-
-	Proc->Uncore.MC[0].SKL.MAD0.value = readl(mchmap + 0x500c);
-	Proc->Uncore.MC[0].SKL.MAD1.value = readl(mchmap + 0x5010);
+	// Intra channel configuration
+	Proc->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
+	Proc->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
+	// DIMM parameters
+	Proc->Uncore.MC[0].SKL.MADD0.value = readl(mchmap + 0x500c);
+	Proc->Uncore.MC[0].SKL.MADD1.value = readl(mchmap + 0x5010);
 
 	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].SKL.MAD0.Dimm_L_Size != 0)
-		|| (Proc->Uncore.MC[0].SKL.MAD0.Dimm_S_Size != 0))
-		+ ((Proc->Uncore.MC[0].SKL.MAD1.Dimm_L_Size != 0)
-		|| (Proc->Uncore.MC[0].SKL.MAD1.Dimm_S_Size != 0));
+		  ((Proc->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
+		|| (Proc->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
+		+ ((Proc->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
+		|| (Proc->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].SKL.Timing.value =
@@ -4254,10 +4257,25 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 						MSR_PKG_ENERGY_STATUS); \
 									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],		\
+	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
 						MSR_PP0_ENERGY_STATUS); \
 									\
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
+						MSR_DRAM_ENERGY_STATUS);\
+})
+
+#define PWR_ACCU_Skylake(Pkg, T)					\
+({									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+						MSR_PKG_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
+						MSR_PP0_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(UNCORE)],	\
+						MSR_PP1_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
@@ -5232,7 +5250,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
 
-			PWR_ACCU_SandyBridge(Proc, 1);
+			PWR_ACCU_Skylake(Proc, 1);
 
 			Delta_PC02(Proc);
 
@@ -5330,7 +5348,7 @@ static void Start_Skylake(void *arg)
 	if (Core->Bind == Proc->Service.Core) {
 		Start_Uncore_Skylake(NULL);
 		PKG_Counters_Skylake(Core, 0);
-		PWR_ACCU_SandyBridge(Proc, 0);
+		PWR_ACCU_Skylake(Proc, 0);
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);

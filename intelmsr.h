@@ -1753,6 +1753,26 @@ typedef union
 } SKL_IMC_REFRESH_TC;	// Refresh timing parameters
 
 typedef union
+{	// Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h
+	unsigned int		value;
+	struct {
+		unsigned int
+		Dimm_L_Map	:  1-0,  // DIMM L mapping: 0=DIMM0, 1=DIMM1
+		ReservedBits1	:  4-1,
+		RI		:  5-4,  // Rank interleaving enable
+		ReservedBits2	:  8-5,
+		EIM		:  9-8,  // Enhanced mode enable
+		ReservedBits3	: 12-9,
+		ECC		: 14-12,
+		ReservedBits4	: 24-14,
+		HORI		: 25-24, // High order RI enable
+		ReservedBits5	: 28-25,
+		HORI_ADDR	: 31-28,
+		ReservedBits6	: 32-31;
+	};
+} SKL_IMC_MAD_CHANNEL;
+
+typedef union
 {	// Device: 0 - Function: 0 - Offset Channel0: 500Ch & Channel1: 5010h
 	unsigned int		value;
 	struct {
@@ -1770,7 +1790,7 @@ typedef union
 		DS8Gb		: 28-27,
 		ReservedBits4	: 32-28;
 	};
-} SKL_IMC_MAD_CHANNEL;
+} SKL_IMC_MAD_DIMM;
 
 typedef union
 {	// Device: 0 - Function: 0 - Offset 5918h

@@ -2022,21 +2022,37 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
+	unsigned int DimmWidthToRows(unsigned int width)
+	{
+		switch (width) {
+		case 0b00:
+			return(1 << 14);
+		case 0b01:
+			return(1 << 15);
+		case 0b10:
+			return(1 << 16);
+		case 0b11:
+			return(1 << 0);
+		}
+		return(1 << 0);
+	}
+
     unsigned short mc, cha, slot;
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+     {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCL;
-/*
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].SKL._.tRCD;
-*/
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRP;
 
@@ -2077,54 +2093,53 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		unsigned int width;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
-
-	    if (slot == 0) {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
-					Proc->Uncore.MC[mc].SKL.MAD0.DLNOR;
-
-		width = Proc->Uncore.MC[mc].SKL.MAD0.DLW;
-	    } else {
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
-					Proc->Uncore.MC[mc].SKL.MAD0.DSNOR;
-
-		width = Proc->Uncore.MC[mc].SKL.MAD0.DSW;
-	    }
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
-
-	    switch (width) {
-	    case 0b00:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
-		break;
-	    case 0b01:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
-		break;
-	    case 0b10:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
-		break;
-	    case 0b11:
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 0;
-		break;
-	    }
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
-	}
-/*
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
-					Proc->Uncore.MC[mc].SKL.MAD0.ECC
-				:	Proc->Uncore.MC[mc].SKL.MAD1.ECC;
-*/
+      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+      {
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
       }
+     }
+	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
+				Proc->Uncore.MC[mc].SKL.MADC0.ECC;
+
+	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
+				Proc->Uncore.MC[mc].SKL.MADC1.ECC;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Size = 1024
+				* Proc->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Size = 1024
+				* Proc->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Size = 1024
+				* Proc->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Size = 1024
+				* Proc->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Ranks = 1
+				+ Proc->Uncore.MC[mc].SKL.MADD0.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Ranks = 1
+				+ Proc->Uncore.MC[mc].SKL.MADD0.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Ranks = 1
+				+ Proc->Uncore.MC[mc].SKL.MADD1.DLNOR;
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Ranks = 1
+				+ Proc->Uncore.MC[mc].SKL.MADD1.DSNOR;
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Rows =
+			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DLW);
+
+	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Rows =
+			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DSW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Rows =
+			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DLW);
+
+	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Rows =
+			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DSW);
     }
 }
 
