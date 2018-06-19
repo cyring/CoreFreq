@@ -26,12 +26,20 @@
 	#define MSR_AMD_PSTATE_DEF_BASE 	0xc0010064
 #endif
 
-#ifndef MSR_AMD_PSTATE_F17_BOOST
-	#define MSR_AMD_PSTATE_F17_BOOST	0xc0010293
-#endif
-
 #ifndef MSR_AMD_COFVID_STATUS
 	#define MSR_AMD_COFVID_STATUS		0xc0010071
+#endif
+
+#ifndef MSR_VM_CR
+	#define MSR_VM_CR			0xc0010114
+#endif
+
+#ifndef MSR_SVM_LOCK_KEY
+	#define MSR_SVM_LOCK_KEY		0xc0010118
+#endif
+
+#ifndef MSR_AMD_PSTATE_F17_BOOST
+	#define MSR_AMD_PSTATE_F17_BOOST	0xc0010293
 #endif
 
 #ifndef MSR_AMD_RAPL_POWER_UNIT
@@ -342,6 +350,32 @@ typedef union
 	Reserved2	: 64-32;
     };
 } INT_PENDING_MSG;
+
+typedef union
+{
+	unsigned long long value; // Per SMT: MSR C001_0114h (VM_CR)
+    struct
+    {
+	unsigned long long
+	Reserved1	:  1-0,
+	InterceptInit	:  2-1,
+	Reserved2	:  3-2,
+	SVM_Lock	:  4-3,  // 0=SvmeDisable is read-write, 1=read-only
+	SVME_Disable	:  5-4,  // 0=Msr::EFER[SVME] is read-write, 1=read-only
+	Reserved3	: 32-5,
+	Reserved4	: 64-32;
+    };
+} VM_CONTROL;
+
+typedef union
+{
+	unsigned long long value; // Per SMT: MSR C001_0118h
+    struct
+    {
+	unsigned long long
+	SvmLockKey	: 64-0; // Write if (Core::X86::Msr::VM_CR[Lock] == 0)
+    };
+} SVM_LOCK_KEY;
 
 typedef struct
 {

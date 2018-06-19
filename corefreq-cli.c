@@ -302,7 +302,8 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		{EXFER_SCE,	1,	" SCE"},
 		{EXFER_LME,	1,	" LME"},
 		{EXFER_LMA,	1,	" LMA"},
-		{EXFER_NXE,	1,	" NXE"}
+		{EXFER_NXE,	1,	" NXE"},
+		{EXFER_SVME,	1,	" SVM"}
 	};
 	const struct {
 		unsigned int Start, Stop;
@@ -313,7 +314,7 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{tabCR4[0].Stop, tabCR4[0].Stop + 16}
 	},
 	tabEFCR = {tabCR4[1].Stop, tabCR4[1].Stop + 8},
-	tabEFER = {tabEFCR.Stop, tabEFCR.Stop + 4};
+	tabEFER = {tabEFCR.Stop, tabEFCR.Stop + 5};
 	unsigned int cpu, idx = 0;
 	unsigned int nl = 17;
 
@@ -440,7 +441,6 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	    else
 		printm(attrib[1], "  - ");
 	}
-	printm(attrib[0], "    ");
 	printm(attrib[0], "    ");
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
