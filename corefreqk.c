@@ -2105,12 +2105,19 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	// DIMM parameters
 	Proc->Uncore.MC[0].SKL.MADD0.value = readl(mchmap + 0x500c);
 	Proc->Uncore.MC[0].SKL.MADD1.value = readl(mchmap + 0x5010);
-
+	// Sum of any present DIMM per channel
 	Proc->Uncore.MC[0].ChannelCount =
 		  ((Proc->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
 		|| (Proc->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
 		+ ((Proc->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
 		|| (Proc->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
+	// Max of populated DIMMs L and DIMMs S
+	Proc->Uncore.MC[0].SlotCount = KMAX(
+		 ((Proc->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
+		+ (Proc->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0)),
+		 ((Proc->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
+		+ (Proc->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0))
+	);
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
 		Proc->Uncore.MC[0].Channel[cha].SKL.Timing.value =
@@ -2125,8 +2132,6 @@ void Query_SKL_IMC(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].SKL.Refresh.value =
 					readl(mchmap + 0x423c + 0x400 * cha);
 	}
-	// DIMM L & DIMM S
-	Proc->Uncore.MC[0].SlotCount = 2;
 }
 
 static PCI_CALLBACK P945(struct pci_dev *dev)

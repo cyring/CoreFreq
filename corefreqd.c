@@ -2096,7 +2096,11 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
       for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
       {
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.Dimm_x8 ?
+				  (1 << 13)
+				: (1 << 10);
       }
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
@@ -2105,41 +2109,53 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[1].Timing.ECC =
 				Proc->Uncore.MC[mc].SKL.MADC1.ECC;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Size = 1024
-				* Proc->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size;
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Size = 1024 * Proc->Uncore.MC[mc].SKL.MADD0.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Size = 1024
-				* Proc->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size;
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Size = 1024 * Proc->Uncore.MC[mc].SKL.MADD0.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Size = 1024
-				* Proc->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size;
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Size = 1024 * Proc->Uncore.MC[mc].SKL.MADD1.Dimm_L_Size;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Size = 1024
-				* Proc->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size;
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Size = 1024 * Proc->Uncore.MC[mc].SKL.MADD1.Dimm_S_Size;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Ranks = 1
-				+ Proc->Uncore.MC[mc].SKL.MADD0.DLNOR;
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].SKL.MADD0.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Ranks = 1
-				+ Proc->Uncore.MC[mc].SKL.MADD0.DSNOR;
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].SKL.MADD0.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Ranks = 1
-				+ Proc->Uncore.MC[mc].SKL.MADD1.DLNOR;
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].SKL.MADD1.DLNOR;
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Ranks = 1
-				+ Proc->Uncore.MC[mc].SKL.MADD1.DSNOR;
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Ranks = 1 + Proc->Uncore.MC[mc].SKL.MADD1.DSNOR;
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[0].Rows =
-			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DLW);
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DLW);
 
-	Shm->Uncore.MC[mc].Channel[0].DIMM[1].Rows =
-			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DSW);
+	Shm->Uncore.MC[mc].Channel[0].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
+	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DSW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[0].Rows =
-			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DLW);
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DLW);
 
-	Shm->Uncore.MC[mc].Channel[1].DIMM[1].Rows =
-			DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DSW);
+	Shm->Uncore.MC[mc].Channel[1].DIMM[
+		!Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
+	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DSW);
     }
 }
 
