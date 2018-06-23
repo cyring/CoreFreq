@@ -427,7 +427,6 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
     for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	printm(attrib[0], "%s", SR[idx].flag);
     }
-	printm(attrib[0], "    ");
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	printm(attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 	printm(attrib[0], "    ");
@@ -442,6 +441,7 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		printm(attrib[1], "  - ");
 	}
 	printm(attrib[0], "    ");
+	printm(attrib[0], "    ");
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printm(attrib[2], "%3llx ",
@@ -450,7 +450,6 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	    else
 		printm(attrib[1], "  - ");
 	}
-	printm(attrib[0], "    ");
     }
 }
 
