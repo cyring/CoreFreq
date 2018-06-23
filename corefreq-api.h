@@ -351,8 +351,12 @@ typedef struct
 					CR0,
 					CR3,
 					CR4,
-					EFCR,
 					EFER;
+		union {
+			Bit64		EFCR;
+			VM_CR		VMCR;
+
+		};
 	} SystemRegister;
 
 	unsigned int			Bind;
@@ -581,6 +585,7 @@ typedef struct
 
 	FEATURES		Features;
 
+	Bit64			CR_Mask 	__attribute__ ((aligned (64)));
 	Bit64			ODCM_Mask	__attribute__ ((aligned (64)));
 	Bit64			PowerMgmt_Mask	__attribute__ ((aligned (64)));
 	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
@@ -600,6 +605,7 @@ typedef struct
 	Bit64			C1A		__attribute__ ((aligned (64)));
 	Bit64			C3U		__attribute__ ((aligned (64)));
 	Bit64			C1U		__attribute__ ((aligned (64)));
+	Bit64			VM		__attribute__ ((aligned (64)));
 
 	unsigned long long	thermalFormula,
 				voltageFormula,

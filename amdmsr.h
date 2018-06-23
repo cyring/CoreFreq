@@ -357,15 +357,15 @@ typedef union
     struct
     {
 	unsigned long long
-	Reserved1	:  1-0,
+	DPD		:  1-0,  // Debug Port Disable. ReservedBits: F17h
 	InterceptInit	:  2-1,
-	Reserved2	:  3-2,
+	DisA20m		:  3-2,  // Disable A20 Masking. ReservedBits: F17h
 	SVM_Lock	:  4-3,  // 0=SvmeDisable is read-write, 1=read-only
 	SVME_Disable	:  5-4,  // 0=Msr::EFER[SVME] is read-write, 1=read-only
-	Reserved3	: 32-5,
-	Reserved4	: 64-32;
+	Reserved1	: 32-5,
+	Reserved2	: 64-32;
     };
-} VM_CONTROL;
+} VM_CR;	// Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h, 0Fh
 
 typedef union
 {
@@ -375,7 +375,7 @@ typedef union
 	unsigned long long
 	SvmLockKey	: 64-0; // Write if (Core::X86::Msr::VM_CR[Lock] == 0)
     };
-} SVM_LOCK_KEY;
+} SVM_LOCK_KEY;	// Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h
 
 typedef struct
 {

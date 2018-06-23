@@ -168,7 +168,8 @@ typedef struct
 				C1A		:  8-7,
 				C3U		:  9-8,
 				C1U		: 10-9,
-				_pad64		: 64-10;
+				VM		: 11-10,
+				_pad64		: 64-11;
 	} Technology;
 
 	struct {

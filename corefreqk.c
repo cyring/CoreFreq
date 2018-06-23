@@ -3361,7 +3361,19 @@ void SystemRegisters(CORE *Core)
 			: "i" (MSR_IA32_FEATURE_CONTROL)
 			: "%rax", "%rcx", "%rdx"
 		);
+		// Virtualization Technology
+		if (BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
+			BITSET(LOCKLESS, Proc->VM, Core->Bind);
 	}
+	else if (Proc->Features.Info.Vendor.CRC == CRC_AMD)
+	{
+		RDMSR(Core->SystemRegister.VMCR, MSR_VM_CR);
+		// Secure Virtual Machine
+		if(!Core->SystemRegister.VMCR.SVME_Disable
+		 && Core->SystemRegister.VMCR.SVM_Lock)
+			BITSET(LOCKLESS, Proc->VM, Core->Bind);
+	}
+	BITSET(LOCKLESS, Proc->CR_Mask, Core->Bind);
 }
 
 void Microcode(CORE *Core)

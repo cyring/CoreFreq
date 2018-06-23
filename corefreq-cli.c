@@ -1153,9 +1153,14 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
 		enabled(bix));
 
-	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
+	bix = Shm->Proc.Technology.VM == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtualization%.*sHYPERVISOR       [%3s]", width - 39, hSpace,
+		"Virtualization%.*sVM       [%3s]", width - 31, hSpace,
+		enabled(bix));
+
+	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
+		"Hypervisor%.*s[%3s]", width - (OutFunc == NULL? 21:19), hSpace,
 		enabled(bix));
 }
 
@@ -2803,11 +2808,11 @@ void Top(SHM_STRUCT *Shm, char option)
 		{
 		if (TOP_HEADER_ROW + 11 + 6 < drawSize.height) {
 			winOrigin.col = 23;
-			matrixSize.hth = 6;
+			matrixSize.hth = 7;
 			winOrigin.row = TOP_HEADER_ROW + 11;
 		} else {
 			winOrigin.col = 18;
-			matrixSize.hth = CUMIN((drawSize.height - 2), 6);
+			matrixSize.hth = CUMIN((drawSize.height - 2), 7);
 			winOrigin.row = 1;
 		}
 		winWidth = 50;
