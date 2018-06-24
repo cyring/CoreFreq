@@ -2594,6 +2594,7 @@ void Query_AMD_Family_17h(void)
 		return(COF);
 	}
 
+	const size_t nmemb = sizeof(Zen_Table) / sizeof(struct ZEN_ST);
 	unsigned int COF = 0, index, pstate, sort[8] = {
 		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
 		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
@@ -2604,64 +2605,44 @@ void Query_AMD_Family_17h(void)
 
 	// Core & L3 frequencies < 400MHz are not supported by the architecture
 	Proc->Boost[BOOST(MIN)] = 4;
-
+	// Loop over all frequency ids.
 	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-
+		// Handle only valid P-States
 		if (PstateDef.Family_17h.PstateEn) {
 			COF = CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId);
-
+			// Sort ratios by ascending order.
 			Proc->Boost[sort[index]] = COF;
 			index++;
 		}
 	}
 	Proc->Features.SpecTurboRatio += index;
-
+	// Set the one Core ratio with the default max P-State ratio.
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
-
+	Proc->Features.SpecTurboRatio++;
+	// Get the Core Performance disablement state.
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-
-	if (!HwCfgRegister.Family_17h.CpbDis)
-	{
-		struct CPB_ST {
-			char *brandSubStr;
-			unsigned int boost, xfr;
-		} CPB_Table[] = {
-			{"AMD Ryzen 3 1200",		+3, +1},
-			{"AMD Ryzen 5 1500X",		+2, +2},
-			{"AMD Ryzen 5 2500U",		+16, 0},
-			{"AMD Ryzen 5 1600X",		+4, +1},
-			{"AMD Ryzen 5 1600",		+4, +1},
-			{"AMD Ryzen 5 2600X",		+5, +2},
-			{"AMD Ryzen 5 2600",		+3, +2},
-			{"AMD Ryzen 7 1700X",		+4, +1},
-			{"AMD Ryzen 7 1700",		+7, +1}, /* XFR=+0.5 */
-			{"AMD Ryzen 7 1800X",		+4, +1},
-			{"AMD Ryzen 7 2700X",		+5, +2},
-			{"AMD Ryzen 7 2700",		+8, +2},
-			{"AMD Ryzen Threadripper 1950X",+6, +2},
-			{"AMD Ryzen Threadripper 1920X",+5, +2},
-			{"AMD Ryzen Threadripper 1900X",+2, +2},
-			{"AMD Ryzen Threadripper 1950" ,+0, +0},
-			{"AMD Ryzen Threadripper 1920" ,+6, +0},
-			{"AMD Ryzen Threadripper 1900" ,+6, +0}
-		};
-		const size_t nmemb = sizeof(CPB_Table) / sizeof(struct CPB_ST);
-
-	  for (index = 0; index < nmemb; index++)
-	    if (strstr(Proc->Features.Info.Brand, CPB_Table[index].brandSubStr))
-	    {
-		Proc->Boost[BOOST(1C)] += CPB_Table[index].boost;
-		Proc->Boost[BOOST(1C)] += CPB_Table[index].xfr;
+	// Seek for a processor brand.
+	for (index = 0; index < nmemb; index++) {
+	    if (strstr(Proc->Features.Info.Brand, Zen_Table[index].brandSubStr))
+	    {	// Save index for a later temperature offset use.
+		Proc->Features.Std.EBX.Brand_ID = index;
+		// If CPB is ON then add Boost + XFR to the one Core ratio.
+		if (!HwCfgRegister.Family_17h.CpbDis) {
+			Proc->Boost[BOOST(1C)] += Zen_Table[index].Boost;
+			Proc->Boost[BOOST(1C)] += Zen_Table[index].XFR;
+		}
 		break;
 	    }
 	}
-	Proc->Features.SpecTurboRatio++;
+	// Reset the brand index to default if no Processor found.
+	if (index == nmemb)
+		Proc->Features.Std.EBX.Brand_ID = 0;
 
-	// Same register bit fields as Intel RAPL_POWER_UNIT.
+	// Apply same register bit fields as Intel RAPL_POWER_UNIT.
 	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
-	// Processors family have unlocked ratios.
+	// Processors of family 17h have unlocked ratios.
 	Proc->Features.Ratio_Unlock = 1;
 
 	HyperThreading_Technology();
@@ -3613,6 +3594,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
 
 	CorePerformanceBoost(Core);
+
+	Core->PowerThermal.Target =					\
+			Zen_Table[Proc->Features.Std.EBX.Brand_ID].tempOffset;
 }
 
 void Sys_DumpTask(SYSGATE *SysGate)

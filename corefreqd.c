@@ -2672,38 +2672,13 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor
 				    - (Core[cpu]->PowerThermal.Target * 2) - 49;
     break;
-    case THERMAL_FORMULA_AMD_17F: {
-	struct THERMAL_ADJUSTMENT_ST {
-		char *brandSubStr;
-		unsigned int tempOffset;
-	} thermalAdjustment[] = { /* Source: Linux/k10temp.c */
-		{"AMD Ryzen 5 1600X",			20},
-		{"AMD Ryzen 7 1700X",			20},
-		{"AMD Ryzen 7 1800X",			20},
-		{"AMD Ryzen 7 2700X",			10},
-		{"AMD Ryzen Threadripper 1950X",	27},
-		{"AMD Ryzen Threadripper 1920X",	27},
-		{"AMD Ryzen Threadripper 1900X",	27},
-		{"AMD Ryzen Threadripper 1950" ,	10},
-		{"AMD Ryzen Threadripper 1920" ,	10},
-		{"AMD Ryzen Threadripper 1910" ,	10}
-	};
-	const size_t nmemb = sizeof(thermalAdjustment)
-			   / sizeof(struct THERMAL_ADJUSTMENT_ST);
-	unsigned int idx;
-      for (idx = 0; idx < nmemb; idx++)
-	if (strstr(Shm->Proc.Brand, thermalAdjustment[idx].brandSubStr) != NULL)
-	{
-	  Shm->Cpu[cpu].PowerThermal.Target = thermalAdjustment[idx].tempOffset;
-	  break;
-	}
+    case THERMAL_FORMULA_AMD_17F:
       if (cpu == Proc->Service.Core) {
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor;
 	Shm->Cpu[cpu].PowerThermal.Limit[0] *= 5 / 40;
 	Shm->Cpu[cpu].PowerThermal.Limit[0] -= 49;
 	Shm->Cpu[cpu].PowerThermal.Limit[0] -=Shm->Cpu[cpu].PowerThermal.Target;
       }
-     }
     break;
     }
 }
