@@ -1129,7 +1129,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 // Section Mark
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Hyper-Threading%.*sHTT       [%3s]", width - 33, hSpace,
+		"Hyper-Threading%.*sHTT|SMT       [%3s]", width - 37, hSpace,
 		enabled(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
@@ -5533,8 +5533,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		       HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
 		       HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
 		},
-		.code={'H','T','T',',','P','o','w','e','r','N','o','w',',',\
-		       'T','U','R','B','O',',','C','1','E',',',' ','P','M',',',\
+		.code={'S','M','T',',','P','o','w','e','r','N','o','w',',',\
+		       'B','O','O','S','T',',','C','1','E',',',' ','P','M',',',\
 		       'D','T','S',',','T','T','P',',','H','O','T',']'
 		},
 	    };
