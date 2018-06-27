@@ -1493,7 +1493,7 @@ void SysInfoPwrThermal(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 
 void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
-	ATTRIBUTE attrib[1][74] = {
+	ATTRIBUTE attrib[1][76] = {
 	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
@@ -1502,7 +1502,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK
+		LWK,LWK,LWK,LWK,LWK,LWK
 	    }
 	};
 	size_t	len = 0, sln;
@@ -2851,7 +2851,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_k:
 		{
-		winOrigin.col = 4;
+		winOrigin.col = 2;
+		winWidth = 76;
 		if (TOP_HEADER_ROW + 8 + 11 < drawSize.height) {
 			matrixSize.hth = 11;
 			winOrigin.row = TOP_HEADER_ROW + 8;
