@@ -3343,7 +3343,8 @@ void SystemRegisters(CORE *Core)
 			: "%rax", "%rcx", "%rdx"
 		);
 		// Virtualization Technology
-		if (BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
+		if (BITVAL(Core->SystemRegister.EFCR, EXFCR_VMX_IN_SMX)
+		  | BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
 			BITSET(LOCKLESS, Proc->VM, Core->Bind);
 	}
 	else if (Proc->Features.Info.Vendor.CRC == CRC_AMD)
