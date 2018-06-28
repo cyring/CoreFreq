@@ -3600,6 +3600,12 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 			Zen_Table[Proc->Features.Std.EBX.Brand_ID].tempOffset;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
+void Sys_DumpTask(SYSGATE *SysGate)
+{
+        SysGate->taskCount = 0;
+}
+#else
 void Sys_DumpTask(SYSGATE *SysGate)
 {	// Source: /include/linux/sched.h
 	struct task_struct *process, *thread;
@@ -3626,6 +3632,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 	rcu_read_unlock();
 	SysGate->taskCount = cnt;
 }
+#endif
 
 void Sys_MemInfo(SYSGATE *SysGate)
 {	// Source: /include/uapi/linux/sysinfo.h
@@ -6186,7 +6193,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		ODCM_DutyCycle = -1;
 		rc = 0;
 		break;
-	case COREFREQ_IOCTL_CPU_OFF: {
+	case COREFREQ_IOCTL_CPU_OFF:
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
+		{
 		unsigned int cpu = (unsigned int) arg;
 
 		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
@@ -6196,8 +6205,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				rc = cpu_down(cpu);
 		    }
 		}
+	#else
+		rc = -EINVAL;
+	#endif
 		break;
-	case COREFREQ_IOCTL_CPU_ON: {
+	case COREFREQ_IOCTL_CPU_ON:
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
+		{
 		unsigned int cpu = (unsigned int) arg;
 
 		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
@@ -6207,6 +6221,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				rc = cpu_up(cpu);
 		    }
 		}
+	#else
+		rc = -EINVAL;
+	#endif
 		break;
 	default:
 		rc = -EINVAL;
@@ -6470,7 +6487,7 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
 static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
@@ -6741,7 +6758,7 @@ static int __init CoreFreqK_init(void)
 						CoreFreqK_hotplug_cpu_offline);
 		#endif
 	#endif
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
+	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
 		    if (!NMI_Disable) {
 			Proc->Registration.nmi = !(
 				register_nmi_handler(	NMI_LOCAL,
@@ -6860,7 +6877,7 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	if (Proc != NULL) {
 		unsigned int cpu = 0;
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 2, 0)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
 		if (Proc->Registration.nmi) {
 			unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
 			unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");

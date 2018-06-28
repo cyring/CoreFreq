@@ -4,8 +4,20 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_SMI_COUNT
+	#define MSR_SMI_COUNT			0x00000034
+#endif
+
+#ifndef MSR_PLATFORM_INFO
+	#define MSR_PLATFORM_INFO		0x000000ce
+#endif
+
 #ifndef MSR_MISC_PWR_MGMT
 	#define MSR_MISC_PWR_MGMT		0x000001aa
+#endif
+
+#ifndef MSR_NHM_TURBO_RATIO_LIMIT
+	#define MSR_NHM_TURBO_RATIO_LIMIT	0x000001ad
 #endif
 
 #ifndef MSR_TURBO_RATIO_LIMIT
@@ -18,6 +30,10 @@
 
 #ifndef MSR_TURBO_RATIO_LIMIT2
 	#define MSR_TURBO_RATIO_LIMIT2		0x000001af
+#endif
+
+#ifndef MSR_IA32_POWER_CTL
+	#define MSR_IA32_POWER_CTL		0x000001fc
 #endif
 
 #ifndef MSR_PKG_CST_CONFIG_CONTROL
@@ -106,6 +122,54 @@
 
 #ifndef MSR_PP1_ENERGY_STATUS
 	#define MSR_PP1_ENERGY_STATUS		0x00000641
+#endif
+
+#ifndef MSR_PKG_C3_RESIDENCY
+	#define MSR_PKG_C3_RESIDENCY		0x000003f8
+#endif
+
+#ifndef MSR_PKG_C6_RESIDENCY
+	#define MSR_PKG_C6_RESIDENCY		0x000003f9
+#endif
+
+#ifndef MSR_ATOM_PKG_C6_RESIDENCY
+	#define MSR_ATOM_PKG_C6_RESIDENCY	0x000003fa
+#endif
+
+#ifndef MSR_PKG_C7_RESIDENCY
+	#define MSR_PKG_C7_RESIDENCY		0x000003fa
+#endif
+
+#ifndef MSR_CORE_C3_RESIDENCY
+	#define MSR_CORE_C3_RESIDENCY		0x000003fc
+#endif
+
+#ifndef MSR_CORE_C6_RESIDENCY
+	#define MSR_CORE_C6_RESIDENCY		0x000003fd
+#endif
+
+#ifndef MSR_CORE_C7_RESIDENCY
+	#define MSR_CORE_C7_RESIDENCY		0x000003fe
+#endif
+
+#ifndef MSR_KNL_CORE_C6_RESIDENCY
+	#define MSR_KNL_CORE_C6_RESIDENCY	0x000003ff
+#endif
+
+#ifndef MSR_PKG_C2_RESIDENCY
+	#define MSR_PKG_C2_RESIDENCY		0x0000060d
+#endif
+
+#ifndef MSR_PKG_C8_RESIDENCY
+	#define MSR_PKG_C8_RESIDENCY		0x00000630
+#endif
+
+#ifndef MSR_PKG_C9_RESIDENCY
+	#define MSR_PKG_C9_RESIDENCY		0x00000631
+#endif
+
+#ifndef MSR_PKG_C10_RESIDENCY
+	#define MSR_PKG_C10_RESIDENCY		0x00000632
 #endif
 
 typedef union
