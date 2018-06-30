@@ -179,7 +179,7 @@ static void *Core_Cycle(void *arg)
 		break;
 	case THERMAL_FORMULA_AMD:
 		break;
-	case THERMAL_FORMULA_AMD_0F:
+	case THERMAL_FORMULA_AMD_0Fh:
 		CFlip->Thermal.Temp = CFlip->Thermal.Sensor
 				    - (Cpu->PowerThermal.Target * 2) - 49;
 		break;
@@ -198,7 +198,7 @@ static void *Core_Cycle(void *arg)
       case VOLTAGE_FORMULA_AMD:
 	break;
 	// AMD BKDG Family 0Fh §10.6 Table 70
-      case VOLTAGE_FORMULA_AMD_0F: {
+      case VOLTAGE_FORMULA_AMD_0Fh: {
 		short	Vselect =(CFlip->Voltage.VID & 0b110000) >> 4,
 			Vnibble = CFlip->Voltage.VID & 0b1111;
 
@@ -218,7 +218,7 @@ static void *Core_Cycle(void *arg)
 	    }
 	  }
 	break;
-      case VOLTAGE_FORMULA_AMD_17F:
+      case VOLTAGE_FORMULA_AMD_17h:
 	CFlip->Voltage.Vcore = 1.550 -(0.00625 * (double) (CFlip->Voltage.VID));
 	break;
       }
@@ -280,7 +280,7 @@ static void *Core_Cycle(void *arg)
 	    }
 	    // Package thermal formulas
 	    switch (Pkg->thermalFormula) {
-	    case THERMAL_FORMULA_AMD_17F:
+	    case THERMAL_FORMULA_AMD_17h:
 		CFlip->Thermal.Temp = (CFlip->Thermal.Sensor * 5 / 40) - 49;
 		CFlip->Thermal.Temp -= Cpu->PowerThermal.Target;
 		break;
@@ -497,7 +497,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
 				0.001 / (double)(1 << Proc->Power.Unit.ESU) : 0;
 	break;
-      case POWER_FORMULA_AMD_17F: {
+      case POWER_FORMULA_AMD_17h: {
 	unsigned int maxCoreCount = (Shm->Proc.Features.leaf80000008.ECX.NC + 1)
 					>> Shm->Proc.Features.HTT_Enable;
 
@@ -557,6 +557,10 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Technology.C1U = BITWISEAND(LOCKLESS,
 						Proc->C1U,
 						Proc->C1U_Mask) != 0;
+
+	Shm->Proc.Technology.SMM = BITWISEAND(LOCKLESS,
+						Proc->SMM,
+						Proc->CR_Mask) != 0;
 
 	Shm->Proc.Technology.VM = BITWISEAND(LOCKLESS,
 						Proc->VM,
@@ -1859,6 +1863,8 @@ void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
+
+	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.SNB_Cap.VT_d;
 }
 
 void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
@@ -1918,6 +1924,8 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
+
+	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.SNB_Cap.VT_d;
 }
 
 void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
@@ -2214,6 +2222,8 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
+
+	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.SKL_Cap_A.VT_d;
 }
 
 void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
@@ -2416,6 +2426,11 @@ void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
+void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.Technology.IOMMU = BITVAL(Proc->Uncore.Bus.IOMMU_CR, 0);
+}
+
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
 	switch (Proc->Uncore.ChipID) {
@@ -2505,6 +2520,9 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
 		AMD_0F_HTT(Shm, Proc);
 		AMD_0F_MCH(Shm, Proc);
+		break;
+	case PCI_DEVICE_ID_AMD_17H_IOMMU:
+		AMD_17h_IOMMU(Shm, Proc);
 		break;
 	}
 
@@ -2668,11 +2686,11 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Target;
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
     break;
-    case THERMAL_FORMULA_AMD_0F:
+    case THERMAL_FORMULA_AMD_0Fh:
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor
 				    - (Core[cpu]->PowerThermal.Target * 2) - 49;
     break;
-    case THERMAL_FORMULA_AMD_17F:
+    case THERMAL_FORMULA_AMD_17h:
       if (cpu == Proc->Service.Core) {
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor;
 	Shm->Cpu[cpu].PowerThermal.Limit[0] *= 5 / 40;

@@ -2259,7 +2259,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return(0);
 }
 
-static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
+static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	// Source: BKDG for AMD NPT Family 0Fh Processors
 	unsigned short cha, slot, chip;
 
@@ -2298,7 +2298,7 @@ static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev)
 	return(0);
 }
 
-static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
+static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 {
 	unsigned int link;
 
@@ -2310,6 +2310,34 @@ static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev)
 	};
 
 	return(0);
+}
+
+static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev)
+{
+	void __iomem *mmio;
+	unsigned long long base;
+	unsigned int low = 0, high = 0;
+
+	Proc->Uncore.ChipID = dev->device;
+
+	pci_read_config_dword(dev, 0x4, &low);
+	pci_read_config_dword(dev, 0x8, &high);
+
+	base = ((low & 0b11111111111110000000000000000000) >> 19)
+		+ ((unsigned long long) high << 32);
+
+	if (BITVAL(base, 0)) {
+		mmio = ioremap(base, 0x4000);
+		if (mmio != NULL) {
+			Proc->Uncore.Bus.IOMMU_CR = readl(mmio + 0x18);
+
+			iounmap(mmio);
+
+			return(0);
+		} else
+			return((PCI_CALLBACK) -ENOMEM);
+	}
+	return((PCI_CALLBACK) -ENOMEM);
 }
 
 static int CoreFreqK_ProbePCI(void)
@@ -2777,11 +2805,14 @@ void DynamicAcceleration(CORE *Core)				// Unique
 	}
 }
 
-void CorePerformanceBoost(CORE *Core)				// Per SMT
+void Query_AMD_Zen(CORE *Core)				// Per SMT
 {
 	HWCR HwCfgRegister = {.value = 0};
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	if (HwCfgRegister.Family_17h.SmmLock)
+		BITSET(LOCKLESS, Proc->SMM, Core->Bind);
 
 	if (!HwCfgRegister.Family_17h.CpbDis)
 		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
@@ -3358,6 +3389,18 @@ void SystemRegisters(CORE *Core)
 	BITSET(LOCKLESS, Proc->CR_Mask, Core->Bind);
 }
 
+void VirtualMachineExtensions(CORE *Core)
+{
+	if (Proc->Features.Std.ECX.VMX) {
+		VMX_BASIC VMX_Basic = {.value = 0};
+		// Basic VMX Information
+		RDMSR(VMX_Basic, MSR_IA32_VMX_BASIC);
+
+		if (VMX_Basic.SMM_DualMon)
+			BITSET(LOCKLESS, Proc->SMM, Core->Bind);
+	}
+}
+
 void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
@@ -3408,6 +3451,8 @@ static void PerCore_Intel_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	VirtualMachineExtensions(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3449,6 +3494,8 @@ static void PerCore_Core2_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	VirtualMachineExtensions(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3473,6 +3520,8 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	VirtualMachineExtensions(Core);
+
 	Microcode(Core);
 
 	Dump_CPUID(Core);
@@ -3494,6 +3543,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 	CORE *Core = (CORE*) arg;
 
 	SystemRegisters(Core);
+
+	VirtualMachineExtensions(Core);
 
 	Microcode(Core);
 
@@ -3517,6 +3568,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	CORE *Core = (CORE*) arg;
 
 	SystemRegisters(Core);
+
+	VirtualMachineExtensions(Core);
 
 	Microcode(Core);
 
@@ -3594,7 +3647,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
 
-	CorePerformanceBoost(Core);
+	Query_AMD_Zen(Core);
 
 	Core->PowerThermal.Target =					\
 			Zen_Table[Proc->Features.Std.EBX.Brand_ID].tempOffset;

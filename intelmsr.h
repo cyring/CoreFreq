@@ -172,6 +172,10 @@
 	#define MSR_PKG_C10_RESIDENCY		0x00000632
 #endif
 
+#ifndef MSR_IA32_VMX_BASIC
+	#define MSR_IA32_VMX_BASIC		0x00000480
+#endif
+
 typedef union
 {
 	unsigned long long	value;
@@ -926,6 +930,21 @@ typedef struct
 	IA32_PERF_GLOBAL_STATUS_SET
 	IA32_PERF_GLOBAL_INUSE
 */
+
+typedef union
+{
+	unsigned long long	value;
+	struct {
+		unsigned long long	// NHM, SNB: Thread
+		VMCS_RevId	: 31-0,
+		ReservedBits1	: 32-31,
+		VMCS_Size	: 48-32,
+		PhysAddrWidth	: 49-48,
+		SMM_DualMon	: 50-49,
+		VMCS_Type	: 54-50,
+		ReservedBits2	: 64-54;
+	};
+} VMX_BASIC;
 
 
 typedef union

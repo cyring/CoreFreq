@@ -517,6 +517,9 @@ typedef union
 			AMD_0F_HTT_UNIT_ID	UnitID;
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];
 		};
+		struct {
+			unsigned long long	IOMMU_CR;
+		};
 	};
 } BUS_REGISTERS;
 
@@ -605,6 +608,7 @@ typedef struct
 	Bit64			C1A		__attribute__ ((aligned (64)));
 	Bit64			C3U		__attribute__ ((aligned (64)));
 	Bit64			C1U		__attribute__ ((aligned (64)));
+	Bit64			SMM		__attribute__ ((aligned (64)));
 	Bit64			VM		__attribute__ ((aligned (64)));
 
 	unsigned long long	thermalFormula,

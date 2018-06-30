@@ -1127,41 +1127,80 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	};
 	int bix;
 // Section Mark
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	bix = Shm->Proc.Technology.SMM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"System Management Mode%.*sSMM-Dual       [%3s]",
+		width - 45, hSpace, enabled(bix));
+
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Hyper-Threading%.*sHTT|SMT       [%3s]", width - 37, hSpace,
-		enabled(bix));
+		"Hyper-Threading%.*sHTT       [%3s]",
+		width - 33, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
 	printv(OutFunc, BOXKEY_EIST, attrib[bix], width, 2,
-		"SpeedStep%.*sEIST       <%3s>", width - 28, hSpace,
-		enabled(bix));
-
-	bix = Shm->Proc.PowerNow == 0b11;	// VID + FID
-	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"PowerNow!%.*sPowerNow       [%3s]", width - 32, hSpace,
-		enabled(bix));
+		"SpeedStep%.*sEIST       <%3s>",
+		width - 28, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Dynamic Acceleration%.*sIDA       [%3s]", width - 38, hSpace,
-		enabled(bix));
+		"Dynamic Acceleration%.*sIDA       [%3s]",
+		width - 38, hSpace, enabled(bix));
+
+	bix = Shm->Proc.Technology.Turbo == 1;
+	printv(OutFunc, BOXKEY_TURBO, attrib[bix], width, 2,
+		"Turbo Boost%.*sTURBO       <%3s>",
+		width - 31, hSpace, enabled(bix));
+
+	bix = Shm->Proc.Technology.VM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Virtualization%.*sVMX       [%3s]",
+		width - 32, hSpace, enabled(bix));
+
+	bix = 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
+		"I/O MMU%.*sVT-d       [%3s]",
+		width - (OutFunc ? 27 : 29), hSpace, enabled(bix));
+    }
+    else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    {
+	bix = Shm->Proc.Technology.SMM == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"System Management Mode%.*sSMM-Lock       [%3s]",
+		width - 45, hSpace, enabled(bix));
+
+	bix = Shm->Proc.Features.HyperThreading == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Simultaneous Multithreading%.*sSMT       [%3s]",
+		width - 45, hSpace, enabled(bix));
+
+	bix = Shm->Proc.PowerNow == 0b11;	// VID + FID
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"PowerNow!%.*sCnQ       [%3s]",
+		width - 27, hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Technology.Turbo == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.CPB == 1);
 	printv(OutFunc, BOXKEY_TURBO, attrib[bix], width, 2,
-		"Turbo Boost/CPB%.*sTURBO       <%3s>", width - 35, hSpace,
-		enabled(bix));
+		"Core Performance Boost%.*sCPB       <%3s>",
+		width - 40, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.VM == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtualization%.*sVM       [%3s]", width - 31, hSpace,
-		enabled(bix));
+		"Virtualization%.*sSVM       [%3s]",
+		width - 32, hSpace, enabled(bix));
 
+	bix = 0;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
+		"I/O MMU%.*sAMD-V       [%3s]",
+		width - (OutFunc? 30 : 32), hSpace, enabled(bix));
+    }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
-		"Hypervisor%.*s[%3s]", width - (OutFunc == NULL? 21:19), hSpace,
-		enabled(bix));
+		"Hypervisor%.*s[%3s]",
+		width - (OutFunc? 19 : 21), hSpace, enabled(bix));
 }
 
 void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)

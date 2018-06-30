@@ -664,8 +664,9 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_0F_MCH(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_0F_HTT(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -942,17 +943,27 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 };
 
 	// AMD Family 0Fh
-static struct pci_device_id PCI_AMD_0F_ids[] = {
+static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 	{
 		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
-		.driver_data = (kernel_ulong_t) AMD_0F_MCH
+		.driver_data = (kernel_ulong_t) AMD_0Fh_MCH
 	},
 	{
 		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB),
-		.driver_data = (kernel_ulong_t) AMD_0F_HTT
+		.driver_data = (kernel_ulong_t) AMD_0Fh_HTT
 	},
 	{0, }
 };
+
+	// AMD Family 17h
+static struct pci_device_id PCI_AMD_17h_ids[] = {
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_17H_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_17h_IOMMU
+	},
+	{0, }
+};
+
 
 static ARCH Arch[ARCHITECTURES] = {
 /*  0*/	{
@@ -1873,10 +1884,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_AMD_Family_0Fh,
 	.Clock = Clock_AuthenticAMD,
 	.Architecture = "Family 0Fh",
-	.thermalFormula = THERMAL_FORMULA_AMD_0F,
-	.voltageFormula = VOLTAGE_FORMULA_AMD_0F,
+	.thermalFormula = THERMAL_FORMULA_AMD_0Fh,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_0Fh,
 	.powerFormula   = POWER_FORMULA_AMD,
-	.PCI_ids = PCI_AMD_0F_ids,
+	.PCI_ids = PCI_AMD_0Fh_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
@@ -2013,10 +2024,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_AMD_Family_17Fh,
 	.Clock = Clock_AMD_Family_17h,
 	.Architecture = "Family 17h",
-	.thermalFormula = THERMAL_FORMULA_AMD_17F,
-	.voltageFormula = VOLTAGE_FORMULA_AMD_17F,
-	.powerFormula   = POWER_FORMULA_AMD_17F,
-	.PCI_ids = PCI_Void_ids,
+	.thermalFormula = THERMAL_FORMULA_AMD_17h,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
