@@ -2632,7 +2632,7 @@ void Query_AMD_Family_15h(void)
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_17h(void)
+void Compute_AMD_Zen_Boost(void)
 {
 	unsigned int CoreCOF(unsigned int FID, unsigned int DID)
 	{/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
@@ -2692,7 +2692,11 @@ void Query_AMD_Family_17h(void)
 	// Reset the brand index to default if no Processor found.
 	if (index == nmemb)
 		Proc->Features.Std.EBX.Brand_ID = 0;
+}
 
+void Query_AMD_Family_17h(void)
+{
+	Compute_AMD_Zen_Boost();
 	// Apply same register bit fields as Intel RAPL_POWER_UNIT.
 	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
 	// Processors of family 17h have unlocked ratios.
@@ -2838,12 +2842,18 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 
 	if (HwCfgRegister.Family_17h.SmmLock)
 		BITSET(LOCKLESS, Proc->SMM, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->SMM, Core->Bind);
 
 	switch (TurboBoost_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
 			WRMSR(HwCfgRegister, MSR_K7_HWCR);
+			// Re-compute Turbo Boost ratios.
+			if (Core->Bind == Proc->Service.Core) {
+				Compute_AMD_Zen_Boost();
+			}
 			RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;
 	}
@@ -3422,7 +3432,7 @@ void SystemRegisters(CORE *Core)
 	BITSET(LOCKLESS, Proc->CR_Mask, Core->Bind);
 }
 
-void VirtualMachineExtensions(CORE *Core)
+void Intel_VirtualMachine(CORE *Core)
 {
 	if (Proc->Features.Std.ECX.VMX) {
 		VMX_BASIC VMX_Basic = {.value = 0};
@@ -3431,6 +3441,8 @@ void VirtualMachineExtensions(CORE *Core)
 
 		if (VMX_Basic.SMM_DualMon)
 			BITSET(LOCKLESS, Proc->SMM, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->SMM, Core->Bind);
 	}
 }
 
@@ -3484,7 +3496,7 @@ static void PerCore_Intel_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	VirtualMachineExtensions(Core);
+	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
 
@@ -3527,7 +3539,7 @@ static void PerCore_Core2_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	VirtualMachineExtensions(Core);
+	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
 
@@ -3553,7 +3565,7 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	VirtualMachineExtensions(Core);
+	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
 
@@ -3577,7 +3589,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	VirtualMachineExtensions(Core);
+	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
 
@@ -3602,7 +3614,7 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	VirtualMachineExtensions(Core);
+	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
 
@@ -5850,7 +5862,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		return(HRTIMER_NORESTART);
 }
 
-void InitTimer_AMD_Family_17Fh(unsigned int cpu)
+void InitTimer_AMD_Family_17h(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_17h, 1);
 }

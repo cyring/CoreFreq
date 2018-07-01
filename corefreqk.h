@@ -522,7 +522,7 @@ extern void Query_AMD_Family_17h(void) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
-extern void InitTimer_AMD_Family_17Fh(unsigned int cpu) ;
+extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
 //	[Void]
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -2026,7 +2026,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
 	.Exit = NULL,
-	.Timer = InitTimer_AMD_Family_17Fh,
+	.Timer = InitTimer_AMD_Family_17h,
 	.Clock = Clock_AMD_Family_17h,
 	.Architecture = "Family 17h",
 	.thermalFormula = THERMAL_FORMULA_AMD_17h,

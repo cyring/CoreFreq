@@ -1181,8 +1181,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"PowerNow!%.*sCnQ       [%3s]",
 		width - 27, hSpace, enabled(bix));
 
-	bix = (Shm->Proc.Technology.Turbo == 1)
-	   || (Shm->Proc.Features.AdvPower.EDX.CPB == 1);
+	bix = Shm->Proc.Technology.Turbo == 1;
 	printv(OutFunc, BOXKEY_TURBO, attrib[bix], width, 2,
 		"Core Performance Boost%.*sCPB       <%3s>",
 		width - 40, hSpace, enabled(bix));
