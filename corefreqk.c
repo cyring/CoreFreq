@@ -2214,26 +2214,28 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 }
 
 static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
-{/*
-	void __iomem *mmio;
-	unsigned int base = 0, version = 0;
+{
+	kernel_ulong_t rc = 0;
+	unsigned int base = 0;
 
 	pci_read_config_dword(dev, 0x180, &base);
-printk("VTBAS=%x\n",base);
-	base = base >> 13;
-printk("VTBAR=%x\n",base);
-	mmio = ioremap(base, 0x2000);
-	if (mmio != NULL) {
-		version = readl(mmio + 0x0);
-printk("VERSION=%x\n",version);
-		iounmap(mmio);
+	if (base) {
+		Proc->Uncore.Bus.SNB_Cap.VT_d = 0;
+/* IOMMU Bug:	{
+			void __iomem *mmio;
+			unsigned int version = 0;
+			base = (base >> 13) + 1;
+			mmio = ioremap(base, 0x1000);
+			if (mmio != NULL) {
+				version = readl(mmio + 0x0);
+				iounmap(mmio);
+			} else
+				rc = -ENOMEM;
+		}	*/
+	} else
+		Proc->Uncore.Bus.SNB_Cap.VT_d = 1;
 
-		return(0);
-	} else {
-printk("MMIO FAILED\n");
-		return((PCI_CALLBACK) -ENOMEM);
-	}*/
-	return(0);
+	return((PCI_CALLBACK) rc);
 }
 
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)

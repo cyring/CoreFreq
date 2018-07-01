@@ -1159,7 +1159,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"Virtualization%.*sVMX       [%3s]",
 		width - 32, hSpace, enabled(bix));
 
-	bix = 0;
+	bix = Shm->Proc.Technology.IOMMU == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
 		"I/O MMU%.*sVT-d       [%3s]",
 		width - (OutFunc ? 27 : 29), hSpace, enabled(bix));
@@ -1192,7 +1192,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"Virtualization%.*sSVM       [%3s]",
 		width - 32, hSpace, enabled(bix));
 
-	bix = 0;
+	bix = Shm->Proc.Technology.IOMMU == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
 		"I/O MMU%.*sAMD-V       [%3s]",
 		width - (OutFunc? 28 : 30), hSpace, enabled(bix));
