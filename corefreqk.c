@@ -2213,6 +2213,29 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 	return(0);
 }
 
+static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
+{/*
+	void __iomem *mmio;
+	unsigned int base = 0, version = 0;
+
+	pci_read_config_dword(dev, 0x180, &base);
+printk("VTBAS=%x\n",base);
+	base = base >> 13;
+printk("VTBAR=%x\n",base);
+	mmio = ioremap(base, 0x2000);
+	if (mmio != NULL) {
+		version = readl(mmio + 0x0);
+printk("VERSION=%x\n",version);
+		iounmap(mmio);
+
+		return(0);
+	} else {
+printk("MMIO FAILED\n");
+		return((PCI_CALLBACK) -ENOMEM);
+	}*/
+	return(0);
+}
+
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SNB_Cap.value);
@@ -2323,13 +2346,13 @@ static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0x4, &low);
 	pci_read_config_dword(dev, 0x8, &high);
 
-	base = ((low & 0b11111111111110000000000000000000) >> 19)
+	base = ((low & 0b11111111111111111100000000000000) >> 14)
 		+ ((unsigned long long) high << 32);
 
-	if (BITVAL(base, 0)) {
+	if (BITVAL(low, 0)) {
 		mmio = ioremap(base, 0x4000);
 		if (mmio != NULL) {
-			Proc->Uncore.Bus.IOMMU_CR = readl(mmio + 0x18);
+			Proc->Uncore.Bus.IOMMU_CR = readq(mmio + 0x18);
 
 			iounmap(mmio);
 
@@ -2805,7 +2828,7 @@ void DynamicAcceleration(CORE *Core)				// Unique
 	}
 }
 
-void Query_AMD_Zen(CORE *Core)				// Per SMT
+void Query_AMD_Zen(CORE *Core)					// Per SMT
 {
 	HWCR HwCfgRegister = {.value = 0};
 
@@ -2814,6 +2837,14 @@ void Query_AMD_Zen(CORE *Core)				// Per SMT
 	if (HwCfgRegister.Family_17h.SmmLock)
 		BITSET(LOCKLESS, Proc->SMM, Core->Bind);
 
+	switch (TurboBoost_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
+			WRMSR(HwCfgRegister, MSR_K7_HWCR);
+			RDMSR(HwCfgRegister, MSR_K7_HWCR);
+		break;
+	}
 	if (!HwCfgRegister.Family_17h.CpbDis)
 		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
 	else

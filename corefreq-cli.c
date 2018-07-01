@@ -1195,7 +1195,7 @@ void SysInfoTech(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	bix = 0;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,
 		"I/O MMU%.*sAMD-V       [%3s]",
-		width - (OutFunc? 30 : 32), hSpace, enabled(bix));
+		width - (OutFunc? 28 : 30), hSpace, enabled(bix));
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 3,

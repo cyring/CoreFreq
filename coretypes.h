@@ -1004,6 +1004,7 @@ typedef struct	// BSP CPUID features.
     #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR	0x2ca9
 #endif
 // Source: Intel X58 Express Chipset Datasheet
+#define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
 // Source: /include/linux/pci_ids.h
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0

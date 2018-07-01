@@ -658,6 +658,7 @@ static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
+static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
@@ -759,8 +760,12 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
 	{	// Nehalem Control Status and RAS Registers
-	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
+	},
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
+		.driver_data = (kernel_ulong_t) X58_VTD
 	},
 	{	// Nehalem Bloomfield/Xeon C3500: Non-Core Registers
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE),
