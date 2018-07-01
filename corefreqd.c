@@ -1671,7 +1671,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 
-	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.SNB_Cap.VT_d;
+	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.QuickPath.VT_d;
 }
 
 void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)

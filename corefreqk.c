@@ -2220,7 +2220,7 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 
 	pci_read_config_dword(dev, 0x180, &base);
 	if (base) {
-		Proc->Uncore.Bus.SNB_Cap.VT_d = 0;
+		Proc->Uncore.Bus.QuickPath.VT_d = 0;
 /* IOMMU Bug:	{
 			void __iomem *mmio;
 			unsigned int version = 0;
@@ -2233,7 +2233,7 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 				rc = -ENOMEM;
 		}	*/
 	} else
-		Proc->Uncore.Bus.SNB_Cap.VT_d = 1;
+		Proc->Uncore.Bus.QuickPath.VT_d = 1;
 
 	return((PCI_CALLBACK) rc);
 }

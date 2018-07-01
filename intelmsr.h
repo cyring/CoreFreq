@@ -1598,8 +1598,9 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		QPIFREQSEL	:  2-0, // 00=4800 GT/s, 10=6400 GT/s
-		ReservedBits	: 32-2;
+		QPIFREQSEL	:  2-0,  // 00=4800 GT/s, 10=6400 GT/s
+		ReservedBits	: 31-2,
+		VT_d		: 32-31; // Placeholder for VT-d: 0=Enable
 	};
 } X58_QPI_FREQUENCY;
 
