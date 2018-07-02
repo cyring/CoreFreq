@@ -2928,7 +2928,50 @@ void ThermalMonitor_Set(CORE *Core)
 void PowerThermal(CORE *Core)
 {
   CLOCK_MODULATION ClockModulation = {.value = 0};
-
+  /* blackList :			ODCM
+	_Atom_Airmont,			// 06_4C
+	_IvyBridge			// 06_3A
+	_Kabylake,			// 06_9E
+  */
+  struct {
+	struct SIGNATURE Arch;
+	unsigned int grantPWR_MGMT, grantODCM;
+  } whiteList[] = {
+	{_Core_Yonah,		0, 1},
+	{_Core_Conroe,		0, 1},
+	{_Core_Kentsfield,	0, 1},
+	{_Core_Conroe_616,	0, 1},
+	{_Core_Yorkfield,	0, 1},
+	{_Core_Dunnington,	0, 1},
+	{_Atom_Bonnell,		0, 1},	// 06_1C
+	{_Atom_Silvermont,	0, 1},	// 06_26
+	{_Atom_Lincroft,	0, 1},	// 06_27
+	{_Atom_Clovertrail,	0, 1},	// 06_35
+	{_Atom_Saltwell,	0, 1},	// 06_36
+	{_Silvermont_637,	0, 1},	// 06_37
+	{_Atom_Merrifield,	0, 1},	// 06_4A
+	{_Atom_Avoton,		0, 1},	// 06_4D
+	{_Atom_Moorefield,	0, 1},	// 06_5A
+	{_Atom_Goldmont,	1, 0},	// 06_5C
+	{_Atom_Sofia,		0, 1},	// 06_5D
+	{_Nehalem_Bloomfield,	1, 1},	// 06_1A
+	{_Nehalem_Lynnfield,	1, 1},	// 06_1E
+	{_Nehalem_MB,		1, 1},	// 06_1F
+	{_Nehalem_EX,		1, 1},	// 06_2E
+	{_SandyBridge,		1, 1},	// 06_2A
+	{_SandyBridge_EP,	1, 1},	// 06_2D
+	{_Xeon_Phi,		0, 1},	// 06_57
+	{_Geminilake,		1, 0},	// 06_7A
+  };
+  unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+  for (id = 0; id < ids; id++) {
+	if((whiteList[id].Arch.ExtFamily == Proc->Features.Std.EAX.ExtFamily)
+	 && (whiteList[id].Arch.Family == Proc->Features.Std.EAX.Family)
+	 && (whiteList[id].Arch.ExtModel == Proc->Features.Std.EAX.ExtModel)
+	 && (whiteList[id].Arch.Model == Proc->Features.Std.EAX.Model)) {
+		break;
+	}
+  }
   if (Proc->Features.Info.LargestStdFunc >= 0x6) {
     struct THERMAL_POWER_LEAF Power = {{0}};
 
@@ -2950,51 +2993,33 @@ void PowerThermal(CORE *Core)
 	:
 	: "%rax", "%rbx", "%rcx", "%rdx"
     );
-
     if (Power.ECX.SETBH == 1) {
-	struct SIGNATURE blackList[] = {
-		_Silvermont_637,	/* 06_37 */
-		_Atom_Airmont,		/* 06_4C */
-		_Atom_Avoton,		/* 06_4D */
-	};
-	int id, ids = sizeof(blackList) / sizeof(blackList[0]);
-	for (id = 0; id < ids; id++) {
-		if((blackList[id].ExtFamily == Proc->Features.Std.EAX.ExtFamily)
-		 && (blackList[id].Family == Proc->Features.Std.EAX.Family)
-		 && (blackList[id].ExtModel == Proc->Features.Std.EAX.ExtModel)
-		 && (blackList[id].Model == Proc->Features.Std.EAX.Model)) {
-			break;
-		}
-	}
-	if (id == ids) {
-	  RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	  RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
+      if ((id < ids) && (whiteList[id].grantPWR_MGMT == 1)){
+	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
-	  if (Experimental == 1) {
-	    switch (PowerMGMT_Unlock) {
-	    case COREFREQ_TOGGLE_OFF:
-	    case COREFREQ_TOGGLE_ON:
+	switch (PowerMGMT_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
 	     Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
 	     WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 	     RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 	     break;
-	   }
-	  }
+	}
 
-	  if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
-	  && (PowerPolicy >= 0) && (PowerPolicy <= 15))
-	  {
+	if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
+	&& (PowerPolicy >= 0) && (PowerPolicy <= 15))
+	{
 	    Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
 	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	  }
-
-	  if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable)
-		BITSET(LOCKLESS, Proc->PowerMgmt, Core->Bind);
-	  else
-		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 	}
+
+	if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable)
+		BITSET(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 	else
+		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
+      } else
 		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
     }
     else
@@ -3019,7 +3044,8 @@ void PowerThermal(CORE *Core)
 	    ClockModulation.DutyCycle = ODCM_DutyCycle << !ClockModulation.ECMD;
 	    ToggleFeature = 1;
 	}
-	if (ToggleFeature == 1) {
+	if((ToggleFeature == 1) && (id < ids) && (whiteList[id].grantODCM == 1))
+	{
 	    WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
 	    RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
 	}
