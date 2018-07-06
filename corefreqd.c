@@ -2940,24 +2940,40 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
+    void UpdateFeatures(void)
+    {
+	unsigned int cpu;
+
+	Package_Update(Ref->Shm, Ref->Proc);
+	for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
+	    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0)
+	    {
+		PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
+	    }
+	Technology_Update(Ref->Shm, Ref->Proc);
+    }
+
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
 	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
-	if (ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg) != -1) {
-		unsigned int cpu;
-
-		Package_Update(Ref->Shm, Ref->Proc);
-		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
-		    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0)
-		    {
-			PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
-		    }
-		Technology_Update(Ref->Shm, Ref->Proc);
-
-		if (Quiet & 0x100)
-		  printf("\tRING[%u](%x,%lx)\n",rid,ctrl.cmd,ctrl.arg);
-		// Notify
+	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
+	if (Quiet & 0x100)
+		printf("\tRING[%u](%x,%lx)>%d\n",rid,ctrl.cmd,ctrl.arg, rc);
+	switch (rc) {
+	case -EPERM:
+		break;
+	case 0: // Update SHM and notify a platform changed.
+		UpdateFeatures();
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+		break;
+	case 2: // Update SHM, notify a compute is required,
+		UpdateFeatures();
+		if (!BITVAL(Ref->Shm->Proc.Sync, 62))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 62);
+		// and platform has changed.
+		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+		break;
 	}
     }
 }

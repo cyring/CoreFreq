@@ -2251,21 +2251,30 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT loadWidth = 0, MIN_HEIGHT = 0, MAX_ROWS = 0;
 
-    double minRatio = Shm->Proc.Boost[BOOST(MIN)],
-	   maxRatio = Shm->Proc.Boost[BOOST(1C)],
-	   medianRatio=(Shm->Proc.Boost[BOOST(ACT)] > 0) ?
-			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2,
-	   availRatio[BOOST(SIZE)] = {minRatio};
-
     HBCLK *hBClk;
 
     char *buffer = NULL;
 
     Coordinate *cTask;
 
-    unsigned int rdx;
-    for (rdx = BOOST(MAX); rdx < BOOST(SIZE); rdx++)
-	if (Shm->Proc.Boost[rdx] != 0) {
+    double minRatio = Shm->Proc.Boost[BOOST(MIN)],
+	maxRatio = Shm->Proc.Boost[BOOST(1C)],
+	medianRatio=(Shm->Proc.Boost[BOOST(ACT)] > 0) ?
+			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2,
+	availRatio[BOOST(SIZE)] = {minRatio};
+
+
+    void ComputeAvailableRatio()
+    {
+	unsigned int rdx;
+	// Update the ruller tab ratios.
+	minRatio = Shm->Proc.Boost[BOOST(MIN)];
+	maxRatio = Shm->Proc.Boost[BOOST(1C)];
+	medianRatio = (Shm->Proc.Boost[BOOST(ACT)] > 0) ?
+			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2;
+	ratioCount = 0;
+	for (rdx = BOOST(MAX); rdx < BOOST(SIZE); rdx++)
+	    if (Shm->Proc.Boost[rdx] != 0) {
 		int sort = Shm->Proc.Boost[rdx] - availRatio[ratioCount];
 		if (sort < 0) {
 			availRatio[ratioCount+1] = availRatio[ratioCount];
@@ -2273,8 +2282,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 		else if (sort > 0)
 			availRatio[++ratioCount] = Shm->Proc.Boost[rdx];
-	}
-    ratioCount++;
+	    }
+	ratioCount++;
+    }
 
 #define EraseTCell_Menu(win)						\
     ({									\
@@ -5720,10 +5730,10 @@ void Top(SHM_STRUCT *Shm, char option)
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 	{
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-
 		// Upper view area
-		CUINT	bar0 = (Flop->Relative.Ratio * loadWidth) / maxRatio,
+		CUINT	bar0 =((Flop->Relative.Ratio > maxRatio ?
+				maxRatio:Flop->Relative.Ratio)
+				* loadWidth) / maxRatio,
 			bar1 = loadWidth - bar0;
 		// Print the Per Core BCLK indicator (yellow)
 		LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
@@ -6971,21 +6981,24 @@ void Top(SHM_STRUCT *Shm, char option)
     {
     }
 
-    TrapScreenSize(SIGWINCH);
-    signal(SIGWINCH, TrapScreenSize);
+	/* Top starts here */
+	ComputeAvailableRatio();
 
-    hBClk = calloc(Shm->Proc.CPU.Count, sizeof(HBCLK));
-    cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate));
+	TrapScreenSize(SIGWINCH);
+	signal(SIGWINCH, TrapScreenSize);
 
-    AllocAll(&buffer);
-    AllocDashboard();
+	hBClk = calloc(Shm->Proc.CPU.Count, sizeof(HBCLK));
+	cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate));
 
-    DISPOSAL_FUNC LayoutView[DISPOSAL_SIZE] = {
+	AllocAll(&buffer);
+	AllocDashboard();
+
+	DISPOSAL_FUNC LayoutView[DISPOSAL_SIZE] = {
 		Layout_Header_DualView_Footer,
 		Layout_Dashboard,
 		Layout_NoHeader_SingleView_NoFooter
 	};
-    DISPOSAL_FUNC DynamicView[DISPOSAL_SIZE] = {
+	DISPOSAL_FUNC DynamicView[DISPOSAL_SIZE] = {
 		Dynamic_Header_DualView_Footer,
 		Draw_Dashboard,
 		Dynamic_NoHeader_SingleView_NoFooter
@@ -7013,9 +7026,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
-	if (BITVAL(Shm->Proc.Sync, 63)) {
+	if (BITVAL(Shm->Proc.Sync, 62)) { // Compute required, clear the layout
+		ComputeAvailableRatio();
+		drawFlag.clear = 1;
+		BITCLR(LOCKLESS, Shm->Proc.Sync, 62);
+	}
+	if (BITVAL(Shm->Proc.Sync, 63)) { // Platform changed, redraw the layout
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
-		// Platform changed, redraw the layout.
 		drawFlag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	}
@@ -7036,8 +7053,8 @@ void Top(SHM_STRUCT *Shm, char option)
 
 		LayoutView[drawFlag.disposal](sLayer);
 	}
-	if (drawFlag.daemon) {
-
+	if (drawFlag.daemon)
+	{
 		DynamicView[drawFlag.disposal](dLayer);
 
 		// Increment the BCLK indicator (skip offline CPU)

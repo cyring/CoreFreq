@@ -2850,10 +2850,6 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 		case COREFREQ_TOGGLE_ON:
 			HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
 			WRMSR(HwCfgRegister, MSR_K7_HWCR);
-			// Re-compute Turbo Boost ratios.
-			if (Core->Bind == Proc->Service.Core) {
-				Compute_AMD_Zen_Boost();
-			}
 			RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;
 	}
@@ -6223,9 +6219,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_ON:
 					TurboBoost_Enable = arg;
 					Controller_Stop(1);
+					if (Proc->ArchID == AMD_Family_17h) {
+						Compute_AMD_Zen_Boost();
+						rc = 2;
+					} else {
+						rc = 0;
+					}
 					Controller_Start(1);
 					TurboBoost_Enable = -1;
-					rc = 0;
 				break;
 		}
 		break;
