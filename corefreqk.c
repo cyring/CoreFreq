@@ -1473,8 +1473,8 @@ void Intel_Platform_Turbo(void)
 	PLATFORM_INFO Platform = {.value = 0};
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 
-	Proc->Features.Ratio_Unlock = Platform.Ratio_Limited;
-	Proc->Features.TDP_Unlock = Platform.TDP_Limited;
+	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
+	Proc->Features.TDP_Unlock = !Platform.TDP_Limited;
 	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
@@ -2655,6 +2655,9 @@ void Compute_AMD_Zen_Boost(void)
 	HWCR HwCfgRegister = {.value = 0};
 	PSTATEDEF PstateDef = {.value = 0};
 	Proc->Features.SpecTurboRatio = 0;
+
+	for (index = BOOST(MIN); index < BOOST(SIZE); index++)
+		Proc->Boost[index] = 0;
 
 	// Core & L3 frequencies < 400MHz are not supported by the architecture
 	Proc->Boost[BOOST(MIN)] = 4;

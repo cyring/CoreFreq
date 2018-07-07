@@ -2257,16 +2257,13 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Coordinate *cTask;
 
-    double minRatio = Shm->Proc.Boost[BOOST(MIN)],
-	maxRatio = Shm->Proc.Boost[BOOST(1C)],
-	medianRatio=(Shm->Proc.Boost[BOOST(ACT)] > 0) ?
-			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2,
-	availRatio[BOOST(SIZE)] = {minRatio};
-
+    double minRatio, maxRatio, medianRatio, availRatio[BOOST(SIZE)];
 
     void ComputeAvailableRatio()
     {
 	unsigned int rdx;
+	for (rdx = BOOST(MIN); rdx < BOOST(SIZE); rdx++)
+		availRatio[rdx] = Shm->Proc.Boost[BOOST(MIN)];
 	// Update the ruller tab ratios.
 	minRatio = Shm->Proc.Boost[BOOST(MIN)];
 	maxRatio = Shm->Proc.Boost[BOOST(1C)];
