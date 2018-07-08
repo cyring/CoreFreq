@@ -6372,6 +6372,30 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
+	case COREFREQ_IOCTL_CC6:
+		switch (arg) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+					CC6_Enable = arg;
+					Controller_Stop(1);
+					Controller_Start(1);
+					CC6_Enable = -1;
+					rc = 0;
+				break;
+		}
+		break;
+	case COREFREQ_IOCTL_PC6:
+		switch (arg) {
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
+					PC6_Enable = arg;
+					Controller_Stop(1);
+					Controller_Start(1);
+					PC6_Enable = -1;
+					rc = 0;
+				break;
+		}
+		break;
 	case COREFREQ_IOCTL_PKGCST:
 		PkgCStateLimit = arg;
 		Controller_Stop(1);

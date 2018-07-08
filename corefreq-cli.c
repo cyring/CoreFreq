@@ -1294,13 +1294,13 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		width - 31, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.CC6 == 1;
-	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Core C6 State%.*sCC6       [%3s]",
+	printv(OutFunc, BOXKEY_CC6, attrib[bix], width, 2,
+		"Core C6 State%.*sCC6       <%3s>",
 		width - 31, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.PC6 == 1;
-	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
-		"Package C6 State%.*sPC6       [%3s]",
+	printv(OutFunc, BOXKEY_PC6, attrib[bix], width, 2,
+		"Package C6 State%.*sPC6       <%3s>",
 		width - 34, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
@@ -3378,7 +3378,9 @@ void Top(SHM_STRUCT *Shm, char option)
 			(ASCII*)"            C1 UnDemotion           ",
 			(ASCII*)"            C3 UnDemotion           ",
 			(ASCII*)"        I/O MWAIT Redirection       ",
-			(ASCII*)"          Clock Modulation          "
+			(ASCII*)"          Clock Modulation          ",
+			(ASCII*)"           Core C6 State            ",
+			(ASCII*)"          Package C6 State          "
 	};
 
     switch (scan->key) {
@@ -3972,6 +3974,82 @@ void Top(SHM_STRUCT *Shm, char option)
     {
       if (!RING_FULL(Shm->Ring[0]))
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_ON);
+    }
+    break;
+    case BOXKEY_CC6:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 9
+	}, select = {
+		.col = 0,
+		.row = Shm->Proc.Technology.CC6 ? 4 : 3
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " CC6 ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[9], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.CC6] ,
+			stateAttr[Shm->Proc.Technology.CC6] , BOXKEY_CC6_ON,
+		stateStr[0][!Shm->Proc.Technology.CC6],
+			stateAttr[!Shm->Proc.Technology.CC6], BOXKEY_CC6_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_CC6_OFF:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_OFF);
+    }
+    break;
+    case BOXKEY_CC6_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_ON);
+    }
+    break;
+    case BOXKEY_PC6:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 10
+	}, select = {
+		.col = 0,
+		.row = Shm->Proc.Technology.PC6 ? 4 : 3
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " PC6 ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		descStr[10], descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.PC6] ,
+			stateAttr[Shm->Proc.Technology.PC6] , BOXKEY_PC6_ON,
+		stateStr[0][!Shm->Proc.Technology.PC6],
+			stateAttr[!Shm->Proc.Technology.PC6], BOXKEY_PC6_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_PC6_OFF:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_OFF);
+    }
+    break;
+    case BOXKEY_PC6_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_ON);
     }
     break;
     case BOXKEY_PKGCST:
