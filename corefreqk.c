@@ -3548,6 +3548,8 @@ void PerCore_Reset(CORE *Core)
 	BITCLR(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITCLR(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITCLR(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->CC6_Mask		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->PC6_Mask		, Core->Bind);
 
 	BITCLR(LOCKLESS, Proc->ODCM		, Core->Bind);
 	BITCLR(LOCKLESS, Proc->PowerMgmt	, Core->Bind);
@@ -3558,6 +3560,8 @@ void PerCore_Reset(CORE *Core)
 	BITCLR(LOCKLESS, Proc->C1A		, Core->Bind);
 	BITCLR(LOCKLESS, Proc->C3U		, Core->Bind);
 	BITCLR(LOCKLESS, Proc->C1U		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->CC6		, Core->Bind);
+	BITCLR(LOCKLESS, Proc->PC6		, Core->Bind);
 }
 
 static void PerCore_Intel_Query(void *arg)
@@ -3579,6 +3583,8 @@ static void PerCore_Intel_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->CC6_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask		, Proc->Service.Core);
 
 	PowerThermal(Core);
 
@@ -3601,6 +3607,8 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->CC6_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask		, Proc->Service.Core);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -3623,6 +3631,8 @@ static void PerCore_Core2_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
 
 	PowerThermal(Core);					// Shared|Unique
 
@@ -3648,6 +3658,10 @@ static void PerCore_Nehalem_Query(void *arg)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		Intel_CStatesConfiguration(0x061A, Core);
 	}
+
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -3672,6 +3686,9 @@ static void PerCore_SandyBridge_Query(void *arg)
 	if (Core->T.ThreadID == 0) {				// Per Core
 		Intel_CStatesConfiguration(0x062A, Core);
 	}
+
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
 
 	PowerThermal(Core);
 
@@ -3698,6 +3715,9 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 		Intel_CStatesConfiguration(0x0645, Core);
 	}
 
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
+
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
@@ -3721,6 +3741,8 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->CC6_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask		, Proc->Service.Core);
 
 	PerCore_AMD_Family_0Fh_PStates(Core);
 }
@@ -3743,6 +3765,8 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 	BITSET(LOCKLESS, Proc->C1A_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C3U_Mask		, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->CC6_Mask		, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask		, Proc->Service.Core);
 }
 
 static void PerCore_AMD_Family_17h_Query(void *arg)
