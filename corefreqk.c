@@ -521,6 +521,15 @@ static void Query_Features(void *pArg)
 	    iArg->Features.FactoryFreq = Intel_Brand(iArg->Features.Info.Brand);
 
 	} else if (iArg->Features.Info.Vendor.CRC == CRC_AMD) {
+		// General Core Performance 64 bits Counters.
+		iArg->Features.PerfMon.EAX.MonWidth = 64;
+	    if (iArg->Features.ExtInfo.ECX.PerfCore) {
+		iArg->Features.PerfMon.EAX.MonCtrs = 6;
+	    } else {
+		iArg->Features.PerfMon.EAX.MonCtrs = 4;
+	    }
+		// Fixed Performance Counters.
+		iArg->Features.PerfMon.EDX.FixWidth = 64;
 	    if ( iArg->Features.Power.ECX.HCF_Cap
 	       | iArg->Features.AdvPower.EDX.EffFrqRO ) {
 		iArg->Features.PerfMon.EBX.CoreCycles = 0;
@@ -529,7 +538,7 @@ static void Query_Features(void *pArg)
 	    }
 	    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
 		iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC + 1;
-
+		// Add the Retired Instructions Perf Counter to the fixed set
 		if (iArg->Features.leaf80000008.EBX.IRPerf) {
 			iArg->Features.PerfMon.EBX.InstrRetired = 0;
 			iArg->Features.PerfMon.EDX.FixCtrs++;
