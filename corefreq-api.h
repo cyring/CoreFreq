@@ -598,6 +598,8 @@ typedef struct
 	Bit64			C1A_Mask __attribute__ ((aligned (64))); // NHM
 	Bit64			C3U_Mask __attribute__ ((aligned (64))); // SNB
 	Bit64			C1U_Mask __attribute__ ((aligned (64))); // SNB
+	Bit64			CC6_Mask __attribute__ ((aligned (64))); // AMD
+	Bit64			PC6_Mask __attribute__ ((aligned (64))); // AMD
 
 	Bit64			ODCM		__attribute__ ((aligned (64)));
 	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
@@ -608,6 +610,8 @@ typedef struct
 	Bit64			C1A		__attribute__ ((aligned (64)));
 	Bit64			C3U		__attribute__ ((aligned (64)));
 	Bit64			C1U		__attribute__ ((aligned (64)));
+	Bit64			CC6		__attribute__ ((aligned (64)));
+	Bit64			PC6		__attribute__ ((aligned (64)));
 	Bit64			SMM		__attribute__ ((aligned (64)));
 	Bit64			VM		__attribute__ ((aligned (64)));
 

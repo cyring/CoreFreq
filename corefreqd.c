@@ -558,6 +558,14 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 						Proc->C1U,
 						Proc->C1U_Mask) != 0;
 
+	Shm->Proc.Technology.CC6 = BITWISEAND(LOCKLESS,
+						Proc->CC6,
+						Proc->CC6_Mask) != 0;
+
+	Shm->Proc.Technology.PC6 = BITWISEAND(LOCKLESS,
+						Proc->PC6,
+						Proc->PC6_Mask) != 0;
+
 	Shm->Proc.Technology.SMM = BITWISEAND(LOCKLESS,
 						Proc->SMM,
 						Proc->CR_Mask) != 0;

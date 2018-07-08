@@ -1293,6 +1293,16 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"C3 UnDemotion%.*sC3U       <%3s>",
 		width - 31, hSpace, enabled(bix));
 
+	bix = Shm->Proc.Technology.CC6 == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Core C6 State%.*sCC6       [%3s]",
+		width - 31, hSpace, enabled(bix));
+
+	bix = Shm->Proc.Technology.PC6 == 1;
+	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
+		"Package C6 State%.*sPC6       [%3s]",
+		width - 34, hSpace, enabled(bix));
+
 	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Frequency ID control%.*sFID       [%3s]",

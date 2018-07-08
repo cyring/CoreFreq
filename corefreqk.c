@@ -2839,6 +2839,7 @@ void DynamicAcceleration(CORE *Core)				// Unique
 
 void Query_AMD_Zen(CORE *Core)					// Per SMT
 {
+	unsigned long long CC6 = 0, PC6 = 0;
 	HWCR HwCfgRegister = {.value = 0};
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
@@ -2862,6 +2863,50 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 
 	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
+
+	asm volatile
+	(
+		"xorq	%%rax, %%rax"	"\n\t"
+		"xorq	%%rdx, %%rdx"	"\n\t"
+		"movq	%1,%%rcx"	"\n\t"
+		"rdmsr"			"\n\t"
+		"shlq	$32, %%rdx"	"\n\t"
+		"orq	%%rdx, %%rax"	"\n\t"
+		"movq	%%rax, %0"
+		: "=r" (CC6)
+		: "i" (MSR_AMD_CC6_F17_STATUS)
+		: "%rax", "%rcx", "%rdx"
+	);
+	// Test Bit[22,14,16]
+	if (BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU)
+		BITSET(LOCKLESS, Proc->CC6, Core->Bind);
+	else
+		BITCLR(LOCKLESS, Proc->CC6, Core->Bind);
+
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+
+	if (Core->Bind == Proc->Service.Core) {
+		asm volatile
+		(
+			"xorq	%%rax, %%rax"	"\n\t"
+			"xorq	%%rdx, %%rdx"	"\n\t"
+			"movq	%1,%%rcx"	"\n\t"
+			"rdmsr"			"\n\t"
+			"shlq	$32, %%rdx"	"\n\t"
+			"orq	%%rdx, %%rax"	"\n\t"
+			"movq	%%rax, %0"
+			: "=r" (PC6)
+			: "i" (MSR_AMD_PC6_F17_STATUS)
+			: "%rax", "%rcx", "%rdx"
+		);
+		// Test Bit[32]
+		if (BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
+			BITSET(LOCKLESS, Proc->PC6, Core->Bind);
+		else
+			BITCLR(LOCKLESS, Proc->PC6, Core->Bind);
+
+		BITSET(LOCKLESS, Proc->PC6_Mask, Core->Bind);
+	}
 }
 
 void Query_Intel_C1E(CORE *Core)				// Per Package
@@ -3066,7 +3111,7 @@ void PowerThermal(CORE *Core)
   BITSET(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 }
 
-void CStatesConfiguration(int encoding, CORE *Core)
+void Intel_CStatesConfiguration(int encoding, CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
@@ -3601,7 +3646,7 @@ static void PerCore_Nehalem_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x061A, Core);
+		Intel_CStatesConfiguration(0x061A, Core);
 	}
 	PowerThermal(Core);
 
@@ -3625,7 +3670,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x062A, Core);
+		Intel_CStatesConfiguration(0x062A, Core);
 	}
 
 	PowerThermal(Core);
@@ -3650,7 +3695,7 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				// Per Core
-		CStatesConfiguration(0x0645, Core);
+		Intel_CStatesConfiguration(0x0645, Core);
 	}
 
 	PowerThermal(Core);

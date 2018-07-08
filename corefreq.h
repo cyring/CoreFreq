@@ -168,10 +168,12 @@ typedef struct
 				C1A		:  8-7,
 				C3U		:  9-8,
 				C1U		: 10-9,
-				SMM		: 11-10,
-				VM		: 12-11,
-				IOMMU		: 13-12,
-				_pad64		: 64-13;
+				CC6		: 11-10,
+				PC6		: 12-11,
+				SMM		: 13-12,
+				VM		: 14-13,
+				IOMMU		: 15-14,
+				_pad64		: 64-15;
 	} Technology;
 
 	struct {
