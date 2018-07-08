@@ -52,6 +52,34 @@
 		  "d" ((unsigned int) (_data.value >> 32))		\
 	);
 
+#define RDMSR64(_data, _reg)						\
+	asm volatile							\
+	(								\
+		"xorq	%%rax, %%rax"	"\n\t"				\
+		"xorq	%%rdx, %%rdx"	"\n\t"				\
+		"movq	%1,%%rcx"	"\n\t"				\
+		"rdmsr"			"\n\t"				\
+		"shlq	$32, %%rdx"	"\n\t"				\
+		"orq	%%rdx, %%rax"	"\n\t"				\
+		"movq	%%rax, %0"					\
+		: "=r" (_data)						\
+		: "i" (_reg)						\
+		: "%rax", "%rcx", "%rdx"				\
+	)
+
+#define WRMSR64(_data, _reg)						\
+	asm volatile							\
+	(								\
+		"movq	%0, %%rax"		"\n\t"			\
+		"movq	%%rax, %%rdx"		"\n\t"			\
+		"shrq	$32, %%rdx"		"\n\t"			\
+		"movq	%1, %%rcx"		"\n\t"			\
+		"wrmsr"							\
+		: "=r" (_data)						\
+		: "i" (_reg)						\
+		: "%rax", "%rcx", "%rdx"				\
+	)
+
 #define ASM_CODE_RDMSR(_msr, _reg) \
 	"# Read MSR counter."		"\n\t"		\
 	"movq	$" #_msr ", %%rcx"	"\n\t"		\

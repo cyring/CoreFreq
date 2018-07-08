@@ -117,6 +117,14 @@ static signed short C1U_Enable = -1;
 module_param(C1U_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1U_Enable, "Enable C1 UnDemotion");
 
+static signed short CC6_Enable = -1;
+module_param(CC6_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(CC6_Enable, "Enable Core C6 State");
+
+static signed short PC6_Enable = -1;
+module_param(PC6_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(PC6_Enable, "Enable Package C6 State");
+
 static signed short ODCM_Enable = -1;
 module_param(ODCM_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ODCM_Enable, "Enable On-Demand Clock Modulation");
@@ -2840,21 +2848,25 @@ void DynamicAcceleration(CORE *Core)				// Unique
 void Query_AMD_Zen(CORE *Core)					// Per SMT
 {
 	unsigned long long CC6 = 0, PC6 = 0;
-	HWCR HwCfgRegister = {.value = 0};
+	int ToggleFeature;
 
+	// Read The Hardware Configuration Register
+	HWCR HwCfgRegister = {.value = 0};
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
+	// Query the SMM
 	if (HwCfgRegister.Family_17h.SmmLock)
 		BITSET(LOCKLESS, Proc->SMM, Core->Bind);
 	else
 		BITCLR(LOCKLESS, Proc->SMM, Core->Bind);
 
+	// Enable-Disable the Core Performance Boost
 	switch (TurboBoost_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
-			WRMSR(HwCfgRegister, MSR_K7_HWCR);
-			RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
+		WRMSR(HwCfgRegister, MSR_K7_HWCR);
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;
 	}
 	if (!HwCfgRegister.Family_17h.CpbDis)
@@ -2864,20 +2876,29 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 
 	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 
-	asm volatile
-	(
-		"xorq	%%rax, %%rax"	"\n\t"
-		"xorq	%%rdx, %%rdx"	"\n\t"
-		"movq	%1,%%rcx"	"\n\t"
-		"rdmsr"			"\n\t"
-		"shlq	$32, %%rdx"	"\n\t"
-		"orq	%%rdx, %%rax"	"\n\t"
-		"movq	%%rax, %0"
-		: "=r" (CC6)
-		: "i" (MSR_AMD_CC6_F17_STATUS)
-		: "%rax", "%rcx", "%rdx"
-	);
-	// Test Bit[22,14,16]
+	// Enable-Disable the Core C6 State. Bit[22,14,16]
+	RDMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
+	switch (CC6_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+		BITCLR(LOCKLESS, CC6, 22);
+		BITCLR(LOCKLESS, CC6, 14);
+		BITCLR(LOCKLESS, CC6, 16);
+		ToggleFeature = 1;
+		break;
+	case COREFREQ_TOGGLE_ON:
+		BITSET(LOCKLESS, CC6, 22);
+		BITSET(LOCKLESS, CC6, 14);
+		BITSET(LOCKLESS, CC6, 16);
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
+		break;
+	}
+	if (ToggleFeature == 1) {
+		WRMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
+		RDMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
+	}
 	if (BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU)
 		BITSET(LOCKLESS, Proc->CC6, Core->Bind);
 	else
@@ -2885,21 +2906,26 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 
 	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
 
+	// Enable-Disable the Package C6 State. Bit[32]
 	if (Core->Bind == Proc->Service.Core) {
-		asm volatile
-		(
-			"xorq	%%rax, %%rax"	"\n\t"
-			"xorq	%%rdx, %%rdx"	"\n\t"
-			"movq	%1,%%rcx"	"\n\t"
-			"rdmsr"			"\n\t"
-			"shlq	$32, %%rdx"	"\n\t"
-			"orq	%%rdx, %%rax"	"\n\t"
-			"movq	%%rax, %0"
-			: "=r" (PC6)
-			: "i" (MSR_AMD_PC6_F17_STATUS)
-			: "%rax", "%rcx", "%rdx"
-		);
-		// Test Bit[32]
+		RDMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
+		switch (PC6_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+			BITCLR(LOCKLESS, PC6, 32);
+			ToggleFeature = 1;
+			break;
+		case COREFREQ_TOGGLE_ON:
+			BITSET(LOCKLESS, PC6, 32);
+			ToggleFeature = 1;
+			break;
+		default:
+			ToggleFeature = 0;
+			break;
+		}
+		if (ToggleFeature == 1) {
+			WRMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
+			RDMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
+		}
 		if (BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
 			BITSET(LOCKLESS, Proc->PC6, Core->Bind);
 		else
@@ -3520,19 +3546,7 @@ void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
 
-	asm volatile
-	(
-		"xorq	%%rax, %%rax"	"\n\t"
-		"xorq	%%rdx, %%rdx"	"\n\t"
-		"movq	%1, %%rcx"	"\n\t"
-		"rdmsr"			"\n\t"
-		"shlq	$32,	%%rdx"	"\n\t"
-		"orq	%%rdx,	%%rax"	"\n\t"
-		"movq	%%rax,	%0"
-		: "=m" (Microcode.value)
-		: "i" (MSR_IA32_UCODE_REV)
-		: "%rax", "%rcx", "%rdx", "memory"
-	);
+	RDMSR(Microcode, MSR_IA32_UCODE_REV);
 
 	Core->Query.Microcode = Microcode.Signature;
 }
