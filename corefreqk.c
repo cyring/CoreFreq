@@ -2076,6 +2076,33 @@ void Query_SNB_IMC(void __iomem *mchmap)
 					1 : Proc->Uncore.MC[0].ChannelCount;
 }
 
+void Query_Turbo_TDP_Config(void __iomem *mchmap)
+{
+	TURBO_ACTIVATION TurboActivation = {.value = 0};
+	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
+	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
+	CONFIG_TDP_LEVEL ConfigTDP;
+
+	NominalTDP.value = readl(mchmap + 0x5f3c);
+	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
+
+	ConfigTDP.value = readq(mchmap + 0x5f40);
+	Proc->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+
+	ConfigTDP.value = readq(mchmap + 0x5f48);
+	Proc->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+
+	ControlTDP.value = readl(mchmap + 0x5f50);
+	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
+	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
+
+	TurboActivation.value = readl(mchmap + 0x5f54);
+	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+	Proc->Features.TurboRatio_Lock = TurboActivation.Ratio_Lock;
+
+	Proc->Features.TDP_Levels = 3;
+}
+
 void Query_HSW_IMC(void __iomem *mchmap)
 {	// Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family
 	unsigned short cha;
@@ -2109,6 +2136,8 @@ void Query_HSW_IMC(void __iomem *mchmap)
 	}
 	// DIMM A & DIMM B
 	Proc->Uncore.MC[0].SlotCount = 2;
+
+	Query_Turbo_TDP_Config(mchmap);
 }
 
 void Query_SKL_IMC(void __iomem *mchmap)
@@ -2149,6 +2178,8 @@ void Query_SKL_IMC(void __iomem *mchmap)
 		Proc->Uncore.MC[0].Channel[cha].SKL.Refresh.value =
 					readl(mchmap + 0x423c + 0x400 * cha);
 	}
+
+	Query_Turbo_TDP_Config(mchmap);
 }
 
 static PCI_CALLBACK P945(struct pci_dev *dev)

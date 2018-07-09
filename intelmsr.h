@@ -437,9 +437,10 @@ typedef union
 	unsigned long long	value;
 	struct
 	{
-		unsigned long long
+		unsigned int
 		Ratio		:  8-0, // ratio x 100 MHz
-		ReservedBits	: 64-8;
+		ReservedBits	: 32-8;
+		unsigned int	: 32-0;
 	};
 } CONFIG_TDP_NOMINAL;
 
@@ -464,11 +465,11 @@ typedef union
 	unsigned long long	value;
 	struct
 	{
-		unsigned long long
+		unsigned int
 		Level		:  2-0,
-		ReservedBits1	: 31-2,
-		Lock		: 32-31,
-		ReservedBits2	: 64-32;
+		ReservedBits	: 31-2,
+		Lock		: 32-31;
+		unsigned int	: 32-0;
 	};
 } CONFIG_TDP_CONTROL;
 
@@ -477,11 +478,11 @@ typedef union
 	unsigned long long	value;
 	struct
 	{
-		unsigned long long
+		unsigned int
 		MaxRatio	:  8-0,
 		ReservedBits1	: 31-8,
-		Ratio_Lock	: 32-31,
-		ReservedBits2	: 64-32;
+		Ratio_Lock	: 32-31;
+		unsigned int	: 32-0;
 	};
 } TURBO_ACTIVATION;
 
