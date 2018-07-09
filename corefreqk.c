@@ -2277,16 +2277,8 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
-	unsigned int DEVEN = 0;
-	pci_read_config_dword(dev, 0x54, &DEVEN);
-
-    if (BITVAL(DEVEN, 4) == 1) {
-	pci_read_config_dword(dev, 0x44, &Proc->Uncore.Bus.SKL_Cap_A.value);
-	pci_read_config_dword(dev, 0x48, &Proc->Uncore.Bus.SKL_Cap_B.value);
-    } else if (BITVAL(DEVEN, 7) == 1) {
 	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SKL_Cap_A.value);
 	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.SKL_Cap_B.value);
-    }
 	pci_read_config_dword(dev, 0xec, &Proc->Uncore.Bus.SKL_Cap_C.value);
 
 	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
