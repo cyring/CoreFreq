@@ -62,7 +62,7 @@
 		"shlq	$32, %%rdx"	"\n\t"				\
 		"orq	%%rdx, %%rax"	"\n\t"				\
 		"movq	%%rax, %0"					\
-		: "=r" (_data)						\
+		: "=m" (_data)						\
 		: "i" (_reg)						\
 		: "%rax", "%rcx", "%rdx"				\
 	)
@@ -75,7 +75,7 @@
 		"shrq	$32, %%rdx"		"\n\t"			\
 		"movq	%1, %%rcx"		"\n\t"			\
 		"wrmsr"							\
-		: "=r" (_data)						\
+		: "=m" (_data)						\
 		: "i" (_reg)						\
 		: "%rax", "%rcx", "%rdx"				\
 	)
