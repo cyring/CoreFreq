@@ -6345,14 +6345,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_ON:
 					TurboBoost_Enable = arg;
 					Controller_Stop(1);
+					Controller_Start(1);
+					TurboBoost_Enable = -1;
 					if (Proc->ArchID == AMD_Family_17h) {
 						Compute_AMD_Zen_Boost();
 						rc = 2;
 					} else {
 						rc = 0;
 					}
-					Controller_Start(1);
-					TurboBoost_Enable = -1;
 				break;
 		}
 		break;
