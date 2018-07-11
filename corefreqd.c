@@ -2974,13 +2974,10 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		break;
-	case 2: // Update SHM, notify a compute is required,
+	case 2: // Update SHM and notify to re-compute.
 		UpdateFeatures();
 		if (!BITVAL(Ref->Shm->Proc.Sync, 62))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 62);
-		// and platform has changed.
-		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		break;
 	}
     }

@@ -616,7 +616,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
 
 	printv(OutFunc,SCANKEY_NULL,attrib[!Shm->Proc.Features.TurboRatio_Lock],
-		width, 3, "Ratio Activation%.*s[%6s]",
+		width, 3, "Turbo Activation%.*s[%6s]",
 		width - (OutFunc == NULL ? 30 : 28), hSpace,
 		Shm->Proc.Features.TurboRatio_Lock ? "LOCK" : "UNLOCK");
 
@@ -7121,7 +7121,10 @@ void Top(SHM_STRUCT *Shm, char option)
 		drawFlag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	}
-    } while (!BITVAL(Shutdown, 0) && !drawFlag.daemon && !drawFlag.layout) ;
+    } while (	!BITVAL(Shutdown, 0)
+		&& !drawFlag.daemon
+		&& !drawFlag.layout
+		&& !drawFlag.clear ) ;
 
     if (drawFlag.height & drawFlag.width)
     {
