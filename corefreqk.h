@@ -695,8 +695,9 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev) ;
-
+/* ToDo
+static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev) ;
+*/
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
 };
@@ -990,10 +991,6 @@ static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 
 	// AMD Family 17h
 static struct pci_device_id PCI_AMD_17h_ids[] = {
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_17H_IOMMU),
-		.driver_data = (kernel_ulong_t) AMD_17h_IOMMU
-	},
 	{0, }
 };
 

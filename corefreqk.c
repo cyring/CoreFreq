@@ -2384,8 +2384,8 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 
 	return(0);
 }
-
-static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev)
+/* Todo
+static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 {
 	void __iomem *mmio;
 	unsigned long long base;
@@ -2412,7 +2412,7 @@ static PCI_CALLBACK AMD_17h_IOMMU(struct pci_dev *dev)
 	}
 	return((PCI_CALLBACK) -ENOMEM);
 }
-
+*/
 static int CoreFreqK_ProbePCI(void)
 {
 	struct pci_device_id *id = Arch[Proc->ArchID].PCI_ids;
@@ -2973,6 +2973,10 @@ void Query_AMD_Zen(CORE *Core)					// Per SMT
 
 		BITSET(LOCKLESS, Proc->PC6_Mask, Core->Bind);
 	}
+	// Package C-State: Configuration Control
+	Core->Query.CfgLock = 1;
+	// Package C-State: I/O MWAIT Redirection
+	Core->Query.IORedir = 0;
 }
 
 void Query_Intel_C1E(CORE *Core)				// Per Package
