@@ -483,6 +483,12 @@ extern void Query_IvyBridge_EP(void) ;
 #define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
 
 extern void Query_Haswell_EP(void) ;
+#define     PerCore_Haswell_EP PerCore_SandyBridge_Query
+static void Start_Haswell_EP(void *arg) ;
+static void Stop_Haswell_EP(void *arg) ;
+extern void InitTimer_Haswell_EP(unsigned int cpu) ;
+static void Start_Uncore_Haswell_EP(void *arg) ;
+static void Stop_Uncore_Haswell_EP(void *arg) ;
 
 static void PerCore_Haswell_ULT_Query(void *arg) ;
 static void Start_Haswell_ULT(void *arg) ;
@@ -498,14 +504,6 @@ extern void Query_Broadwell(void) ;
 #define     InitTimer_Broadwell InitTimer_SandyBridge
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
-
-#define     Query_Broadwell_EP Query_Haswell_EP
-#define     PerCore_Broadwell_EP_Query PerCore_Haswell_ULT_Query
-#define     Start_Broadwell_EP Start_SandyBridge_EP
-#define     Stop_Broadwell_EP Stop_SandyBridge_EP
-#define     InitTimer_Broadwell_EP InitTimer_SandyBridge_EP
-static void Start_Uncore_Broadwell_EP(void *arg) ;
-static void Stop_Uncore_Broadwell_EP(void *arg) ;
 
 #define     PerCore_Skylake_Query PerCore_SandyBridge_Query
 static void Start_Skylake(void *arg) ;
@@ -1609,8 +1607,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Haswell_ids,
 	.Uncore = {
-		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP
+		.Start = Start_Uncore_Haswell_EP,
+		.Stop = Stop_Uncore_Haswell_EP
 		}
 	},
 /* 32*/	{
@@ -1673,12 +1671,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 /* 35*/	{
 	.Signature = _Broadwell_D,
-	.Query = Query_Broadwell_EP,
-	.Update = PerCore_Broadwell_EP_Query,
-	.Start = Start_Broadwell_EP,
-	.Stop = Stop_Broadwell_EP,
+	.Query = Query_Haswell_EP,
+	.Update = PerCore_Haswell_EP,
+	.Start = Start_Haswell_EP,
+	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_Broadwell_EP,
+	.Timer = InitTimer_Haswell_EP,
 	.Clock = Clock_Haswell,
 	.Architecture = "Broadwell/D",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
@@ -1686,8 +1684,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Broadwell_EP,
-		.Stop = Stop_Uncore_Broadwell_EP
+		.Start = Start_Uncore_Haswell_EP,
+		.Stop = Stop_Uncore_Haswell_EP
 		}
 	},
 /* 36*/	{
@@ -1711,12 +1709,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 /* 37*/	{
 	.Signature = _Broadwell_EP,
-	.Query = Query_Broadwell_EP,
-	.Update = PerCore_Broadwell_EP_Query,
-	.Start = Start_Broadwell_EP,
-	.Stop = Stop_Broadwell_EP,
+	.Query = Query_Haswell_EP,
+	.Update = PerCore_Haswell_EP,
+	.Start = Start_Haswell_EP,
+	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_Broadwell_EP,
+	.Timer = InitTimer_Haswell_EP,
 	.Clock = Clock_Haswell,
 	.Architecture = "Broadwell/EP/EX",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
@@ -1724,8 +1722,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Broadwell_EP,
-		.Stop = Stop_Uncore_Broadwell_EP
+		.Start = Start_Uncore_Haswell_EP,
+		.Stop = Stop_Uncore_Haswell_EP
 		}
 	},
 

@@ -4328,6 +4328,15 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	MSR_SNB_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
+#define PKG_Counters_Haswell_EP(Core, T)				\
+({									\
+	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
+})
+
 #define PKG_Counters_Haswell_ULT(Core, T)				\
 ({									\
 	RDTSCP_COUNTERx7(Proc->Counter[T].PTSC,				\
@@ -5317,16 +5326,12 @@ static void Stop_SandyBridge_EP(void *arg)
 
 static void Start_Uncore_SandyBridge_EP(void *arg)
 {
-/* ToDo:
-	Uncore_Counters_Set(SNB_EP);
-*/
+//ToDo:	Uncore_Counters_Set(SNB_EP);
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
 {
-/* ToDo:
-	Uncore_Counters_Clear(SNB_EP);
-*/
+//ToDo:	Uncore_Counters_Clear(SNB_EP);
 }
 
 
@@ -5504,17 +5509,169 @@ static void Stop_Uncore_Haswell_ULT(void *arg)
 	Uncore_Counters_Clear(SNB);
 }
 
-static void Start_Uncore_Broadwell_EP(void *arg)
+
+static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		SMT_Counters_SandyBridge(Core, 1);
+
+		if (Core->Bind == Proc->Service.Core) {
+			PKG_Counters_Haswell_EP(Core, 1);
+
+			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+
+			PWR_ACCU_SandyBridge_EP(Proc, 1);
+
+			Delta_PC02(Proc);
+
+			Delta_PC03(Proc);
+
+			Delta_PC06(Proc);
+
+			Delta_PC07(Proc);
+
+			Delta_PTSC(Proc);
+
+			Delta_UNCORE_FC0(Proc);
+
+			Delta_PWR_ACCU(Proc, PKG);
+
+			Delta_PWR_ACCU(Proc, CORES);
+
+			Delta_PWR_ACCU(Proc, RAM);
+
+			Save_PC02(Proc);
+
+			Save_PC03(Proc);
+
+			Save_PC06(Proc);
+
+			Save_PC07(Proc);
+
+			Save_PTSC(Proc);
+
+			Save_UNCORE_FC0(Proc);
+
+			Save_PWR_ACCU(Proc, PKG);
+
+			Save_PWR_ACCU(Proc, CORES);
+
+			Save_PWR_ACCU(Proc, RAM);
+
+			Sys_Tick(Proc);
+		}
+
+		Core_Intel_Temp(Core);
+
+		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		Delta_INST(Core);
+
+		Delta_C0(Core);
+
+		Delta_C3(Core);
+
+		Delta_C6(Core);
+
+		Delta_C7(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_INST(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C3(Core);
+
+		Save_C6(Core);
+
+		Save_C7(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_Haswell_EP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_Haswell_EP, 1);
+}
+
+static void Start_Haswell_EP(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_Haswell_EP(Core);
+
+	Intel_Core_Counters_Set(Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->Bind == Proc->Service.Core) {
+		Start_Uncore_Haswell_EP(NULL);
+		PKG_Counters_Haswell_EP(Core, 0);
+		PWR_ACCU_SandyBridge_EP(Proc, 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Stop_Haswell_EP(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+
+	Intel_Core_Counters_Clear(Core);
+
+	if (Core->Bind == Proc->Service.Core)
+		Stop_Uncore_Haswell_EP(NULL);
+
+	PerCore_Reset(Core);
+
+	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_Uncore_Haswell_EP(void *arg)
 {
     if (Experimental)
 	Uncore_Counters_Set(SKL);
 }
 
-static void Stop_Uncore_Broadwell_EP(void *arg)
+static void Stop_Uncore_Haswell_EP(void *arg)
 {
     if (Experimental)
 	Uncore_Counters_Clear(SKL);
 }
+
 
 static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 {
