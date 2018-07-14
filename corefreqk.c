@@ -5490,6 +5490,18 @@ static void Stop_Uncore_Haswell_ULT(void *arg)
 	Uncore_Counters_Clear(SNB);
 }
 
+static void Start_Uncore_Broadwell_EP(void *arg)
+{
+    if (Experimental)
+	Uncore_Counters_Set(SKL);
+}
+
+static void Stop_Uncore_Broadwell_EP(void *arg)
+{
+    if (Experimental)
+	Uncore_Counters_Clear(SKL);
+}
+
 static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 {
 	PERF_STATUS PerfStatus = {.value = 0};

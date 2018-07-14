@@ -1914,9 +1914,9 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 			Shm->Uncore.CtrlSpeed = 2667;
 			break;
 		case Broadwell:
-		case Broadwell_EP:
+		case Broadwell_D:
 		case Broadwell_H:
-		case Broadwell_EX:
+		case Broadwell_EP:
 			Shm->Uncore.CtrlSpeed = 3200;
 			break;
 		}

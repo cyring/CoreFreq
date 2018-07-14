@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.25.7"
+#define COREFREQ_VERSION	"1.26.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -41,9 +41,9 @@ enum {	GenuineIntel,		\
 	Haswell_ULT,		\
 	Haswell_ULX,		\
 	Broadwell,		\
-	Broadwell_EP,		\
+	Broadwell_D,		\
 	Broadwell_H,		\
-	Broadwell_EX,		\
+	Broadwell_EP,		\
 	Skylake_UY,		\
 	Skylake_S,		\
 	Skylake_X,		\
