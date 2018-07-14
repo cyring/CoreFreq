@@ -483,7 +483,7 @@ extern void Query_IvyBridge_EP(void) ;
 #define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
 
 extern void Query_Haswell_EP(void) ;
-#define     PerCore_Haswell_EP PerCore_SandyBridge_Query
+#define     PerCore_Haswell_EP_Query PerCore_SandyBridge_Query
 static void Start_Haswell_EP(void *arg) ;
 static void Stop_Haswell_EP(void *arg) ;
 extern void InitTimer_Haswell_EP(unsigned int cpu) ;
@@ -1595,11 +1595,11 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 31*/	{
 	.Signature = _Haswell_EP,
 	.Query = Query_Haswell_EP,
-	.Update = PerCore_SandyBridge_EP_Query,
-	.Start = Start_SandyBridge_EP,
-	.Stop = Stop_SandyBridge_EP,
+	.Update = PerCore_Haswell_EP_Query,
+	.Start = Start_Haswell_EP,
+	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge_EP,
+	.Timer = InitTimer_Haswell_EP,
 	.Clock = Clock_Haswell,
 	.Architecture = "Haswell/EP/Mobile",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
@@ -1672,7 +1672,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 35*/	{
 	.Signature = _Broadwell_D,
 	.Query = Query_Haswell_EP,
-	.Update = PerCore_Haswell_EP,
+	.Update = PerCore_Haswell_EP_Query,
 	.Start = Start_Haswell_EP,
 	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
@@ -1710,7 +1710,7 @@ static ARCH Arch[ARCHITECTURES] = {
 /* 37*/	{
 	.Signature = _Broadwell_EP,
 	.Query = Query_Haswell_EP,
-	.Update = PerCore_Haswell_EP,
+	.Update = PerCore_Haswell_EP_Query,
 	.Start = Start_Haswell_EP,
 	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,

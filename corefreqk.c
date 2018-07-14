@@ -5619,7 +5619,7 @@ static void Start_Haswell_EP(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	PerCore_Haswell_EP(Core);
+	PerCore_Haswell_EP_Query(Core);
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
