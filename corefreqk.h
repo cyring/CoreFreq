@@ -474,8 +474,8 @@ static void Stop_Uncore_SandyBridge(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
 extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
-#define     Start_Uncore_SandyBridge_EP Start_Uncore_SandyBridge
-#define     Stop_Uncore_SandyBridge_EP Stop_Uncore_SandyBridge
+static void Start_Uncore_SandyBridge_EP(void *arg) ;
+static void Stop_Uncore_SandyBridge_EP(void *arg) ;
 
 extern void Query_IvyBridge(void) ;
 #define     PerCore_IvyBridge_Query PerCore_SandyBridge_Query

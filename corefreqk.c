@@ -5315,6 +5315,20 @@ static void Stop_SandyBridge_EP(void *arg)
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static void Start_Uncore_SandyBridge_EP(void *arg)
+{
+/* ToDo:
+	Uncore_Counters_Set(SNB_EP);
+*/
+}
+
+static void Stop_Uncore_SandyBridge_EP(void *arg)
+{
+/* ToDo:
+	Uncore_Counters_Clear(SNB_EP);
+*/
+}
+
 
 static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 {
