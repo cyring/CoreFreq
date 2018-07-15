@@ -2489,31 +2489,31 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wMenu, SCANKEY_d,      " Dashboard          [d] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_p,      " Processor          [p] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_HASH,   " HotPlug CPU        [#] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
 	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_m,      " Topology           [m] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F3,     " Tools             [F3] ", fkeyAttr);
+	StoreTCell(wMenu, SCANKEY_HASH,   " HotPlug CPU        [#] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_e,      " Features           [e] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_F3,     " Tools             [F3] ", fkeyAttr);
 	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extensions     [I] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_h,      " Help               [h] ", skeyAttr);
+	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_t,      " Technologies       [t] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", fkeyAttr);
+	StoreTCell(wMenu, SCANKEY_h,      " Help               [h] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_o,      " Perf. Monitoring   [o] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_F1,     " Keys              [F1] ", fkeyAttr);
 	StoreTCell(wMenu, SCANKEY_x,      " Tasks Monitoring   [x] ", gateAttr);
 	StoreTCell(wMenu, SCANKEY_w,      " Power & Thermal    [w] ", skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", fkeyAttr);
 	StoreTCell(wMenu, SCANKEY_q,      " System Interrupts  [q] ", skeyAttr);
 	StoreTCell(wMenu, SCANKEY_u,      " CPUID Hexa Dump    [u] ", skeyAttr);
 
@@ -2527,7 +2527,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
+	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
 
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
 	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK, 0, WHITE, 0));
@@ -2547,7 +2547,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 2, 13,
+      Window *wSet = CreateWindow(wLayer, id, 1, 13,
 				8, (TOP_HEADER_ROW + 13 + 3 < drawSize.height) ?
 					TOP_HEADER_ROW + 3 : 1);
       if (wSet != NULL) {
@@ -2565,83 +2565,88 @@ void Top(SHM_STRUCT *Shm, char option)
 				Shm->Sleep.childWaiting.tv_nsec / 1000000L),
 	    sliceLen = sprintf(sliceStr, "%13ldE6",
 				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
-	    experLen = sprintf(experStr, "[%3s]",
-				enabled(Shm->Registration.Experimental)),
+	    experLen = sprintf(experStr, "<%3s>",
+				enabled((Shm->Registration.Experimental != 0))),
 	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
 				enabled(!(Shm->Registration.hotplug < 0))),
 	    pciRegLen = sprintf(pciRegStr, "[%3s]",
-				enabled(!(Shm->Registration.pci < 0))),
+				enabled((Shm->Registration.pci == 1))),
 	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
 				enabled(Shm->Registration.nmi));
 	size_t appLen = strlen(Shm->ShmName);
-	ATTRIBUTE attribute[2][16] = {
-	{LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK},
-	{LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HGK,HGK,HGK,HDK,LWK}
+	ATTRIBUTE attribute[2][32] = {
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
+	    },
+	    {
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HGK,HGK,HGK,HDK,LWK
+	    }
 	};
 
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                                ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate    ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate                    ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)   ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)                   ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)  ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)                  ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Poll Wait(ns)  ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Poll Wait(ns)                  ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)  ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)                  ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns) ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns)                 ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns) ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_FOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns)                 ",
+							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Experimental   ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ",
-				attribute[Shm->Registration.Experimental]);
+	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
+				attribute[Shm->Registration.Experimental != 0]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug   ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ",
+	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug                   ",
 				attribute[!(Shm->Registration.hotplug < 0)]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ",
-				attribute[!(Shm->Registration.pci < 0)]);
+	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement                 ",
+				attribute[(Shm->Registration.pci == 1)]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " NMI registered ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ",
+	StoreTCell(wSet, SCANKEY_NULL, " NMI registered                 ",
 					attribute[Shm->Registration.nmi]);
 
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
-	StoreTCell(wSet, SCANKEY_NULL, "                ", MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL, "                                ",
+							MAKE_PRINT_UNFOCUS);
 
-	memcpy(&TCellAt(wSet, 1, 1).item[15 - appLen],    Shm->ShmName, appLen);
-	memcpy(&TCellAt(wSet, 1, 2).item[15 - intervLen], intervStr, intervLen);
-	memcpy(&TCellAt(wSet, 1, 3).item[15 - tickLen],   tickStr,   tickLen);
-	memcpy(&TCellAt(wSet, 1, 4).item[15 - pollLen],   pollStr,   pollLen);
-	memcpy(&TCellAt(wSet, 1, 5).item[15 - ringLen],   ringStr,   ringLen);
-	memcpy(&TCellAt(wSet, 1, 6).item[15 - childLen],  childStr,  childLen);
-	memcpy(&TCellAt(wSet, 1, 7).item[15 - sliceLen],  sliceStr,  sliceLen);
-	memcpy(&TCellAt(wSet, 1, 8).item[15 - experLen],  experStr,  experLen);
-	memcpy(&TCellAt(wSet, 1, 9).item[15 - cpuhpLen],  cpuhpStr,  cpuhpLen);
-	memcpy(&TCellAt(wSet, 1,10).item[15 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 1,11).item[15 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 0, 1).item[31 - appLen],    Shm->ShmName, appLen);
+	memcpy(&TCellAt(wSet, 0, 2).item[31 - intervLen], intervStr, intervLen);
+	memcpy(&TCellAt(wSet, 0, 3).item[31 - tickLen],   tickStr,   tickLen);
+	memcpy(&TCellAt(wSet, 0, 4).item[31 - pollLen],   pollStr,   pollLen);
+	memcpy(&TCellAt(wSet, 0, 5).item[31 - ringLen],   ringStr,   ringLen);
+	memcpy(&TCellAt(wSet, 0, 6).item[31 - childLen],  childStr,  childLen);
+	memcpy(&TCellAt(wSet, 0, 7).item[31 - sliceLen],  sliceStr,  sliceLen);
+	memcpy(&TCellAt(wSet, 0, 8).item[31 - experLen],  experStr,  experLen);
+	memcpy(&TCellAt(wSet, 0, 9).item[31 - cpuhpLen],  cpuhpStr,  cpuhpLen);
+	memcpy(&TCellAt(wSet, 0,10).item[31 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 0,11).item[31 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
-	StoreWindow(wSet, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wSet, .color[1].select, MAKE_PRINT_UNFOCUS);
 
 	StoreWindow(wSet,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wSet,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wSet,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wSet,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wSet,	.key.Down,	MotionDown_Win);
+	StoreWindow(wSet,	.key.Up,	MotionUp_Win);
+	StoreWindow(wSet,	.key.Home,	MotionReset_Win);
+	StoreWindow(wSet,	.key.End,	MotionEnd_Cell);
       }
       return(wSet);
     }
@@ -2699,6 +2704,71 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
+      }
+      return(wHelp);
+    }
+
+    Window *CreateAdvHelp(unsigned long long id)
+    {
+      ATTRIBUTE attribute[2][38] = {
+		{
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		{
+		LWK,HCK,HCK,HCK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		}
+      };
+      struct ADV_HELP_ST {
+	short theme;
+	char *item;
+	SCANKEY quick;
+      } advHelp[] = {
+	{0,"                                      ", {SCANKEY_NULL}	},
+	{0," Frequency view:                      ", {SCANKEY_NULL}	},
+	{1," %        Averages or Package C-States", {SCANKEY_PERCENT}	},
+	{1," .             Top frequency or Usage ", {SCANKEY_DOT}	},
+	{0,"                                      ", {SCANKEY_NULL}	},
+	{0," Task Monitoring view:                ", {SCANKEY_NULL}	},
+	{1," b                Sorting tasks order ", {SCANKEY_b}	},
+	{1," n               Select task tracking ", {SCANKEY_n}	},
+	{1," r              Reverse tasks sorting ", {SCANKEY_r}	},
+	{1," v         Show|Hide contextual value ", {SCANKEY_v}	},
+	{0,"                                      ", {SCANKEY_NULL}	},
+	{0," Any view:                            ", {SCANKEY_NULL}	},
+	{1," {             Start CoreFreq Machine ", {SCANKEY_OPEN_BRACE}},
+	{1," }              Stop CoreFreq Machine ", {SCANKEY_CLOSE_BRACE}},
+	{1," F10            Stop tools processing ", {SCANKEY_F10}	},
+	{0,"                                      ", {SCANKEY_NULL}	},
+      };
+	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
+	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
+				(TOP_HEADER_ROW + nmemb + 1 < drawSize.height) ?
+					TOP_HEADER_ROW + 2 : 1);
+      if (wHelp != NULL) {
+	unsigned int idx;
+	for (idx = 0; idx < nmemb; idx++)
+		StoreTCell(	wHelp,
+				advHelp[idx].quick.key,
+				advHelp[idx].item,
+				attribute[advHelp[idx].theme] );
+
+	StoreWindow(wHelp, .title, " Keys ");
+
+	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wHelp,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wHelp,	.key.Down,	MotionDown_Win);
+	StoreWindow(wHelp,	.key.Up,	MotionUp_Win);
+	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
+	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
       }
       return(wHelp);
     }
@@ -3355,10 +3425,10 @@ void Top(SHM_STRUCT *Shm, char option)
   {
 	ATTRIBUTE stateAttr[2] = {
 		MakeAttr(WHITE, 0, BLACK, 0),
-		MakeAttr(CYAN, 0, BLACK, 1)
+		MakeAttr(CYAN , 0, BLACK, 1)
 	},
 	blankAttr = MakeAttr(BLACK, 0, BLACK, 1),
-	descAttr =  MakeAttr(CYAN, 0, BLACK, 0);
+	descAttr =  MakeAttr(CYAN , 0, BLACK, 0);
 	ASCII *stateStr[2][2] = {
 		{
 			(ASCII*)"              Disable               ",
@@ -3471,6 +3541,59 @@ void Top(SHM_STRUCT *Shm, char option)
     case SCANCON_F4:
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
+    case OPS_EXPERIMENTAL:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	ATTRIBUTE exp_Attr[2] = {
+		MakeAttr(RED , 0, BLACK, 1),
+		MakeAttr(CYAN, 0, BLACK, 1)
+	};
+	ASCII *ops_Str[2][2] = {
+		{
+			(ASCII*)"       Nominal operating mode       ",
+			(ASCII*)"     < Nominal operating mode >     ",
+		},{
+			(ASCII*)"     Experimental operating mode    ",
+			(ASCII*)"   < Experimental operating mode >  "
+		}
+	};
+	const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = 4
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " Experimental ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		"       CoreFreq Operation Mode       ", descAttr, SCANKEY_NULL,
+		blankStr, blankAttr, SCANKEY_NULL,
+		ops_Str[1][Shm->Registration.Experimental != 0] ,
+			exp_Attr[Shm->Registration.Experimental != 0],
+			OPS_EXPERIMENTAL_ON,
+		ops_Str[0][Shm->Registration.Experimental == 0],
+			stateAttr[Shm->Registration.Experimental == 0],
+			OPS_EXPERIMENTAL_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case OPS_EXPERIMENTAL_OFF:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+       RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_OFF);
+    }
+    break;
+    case OPS_EXPERIMENTAL_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_ON);
+    }
+    break;
     case SCANKEY_HASH:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -3559,6 +3682,14 @@ void Top(SHM_STRUCT *Shm, char option)
     break;
     case SCANKEY_F1:
     case SCANCON_F1:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateAdvHelp(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
     case SCANKEY_h:
     {
 	Window *win = SearchWinListById(scan->key, &winList);

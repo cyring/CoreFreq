@@ -577,6 +577,11 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 {
+	Shm->Registration.Experimental = Proc->Registration.Experimental;
+	Shm->Registration.hotplug = Proc->Registration.hotplug;
+	Shm->Registration.pci = Proc->Registration.pci;
+	Shm->Registration.nmi = Proc->Registration.nmi;
+
 	Architecture(Shm, Proc);
 
 	PerformanceMonitoring(Shm, Proc);
@@ -3361,11 +3366,6 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	      {
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
-
-		Shm->Registration.Experimental=Proc->Registration.Experimental;
-		Shm->Registration.hotplug = Proc->Registration.hotplug;
-		Shm->Registration.pci = Proc->Registration.pci;
-		Shm->Registration.nmi = Proc->Registration.nmi;
 
 		// Store the daemon gate name.
 		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);

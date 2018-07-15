@@ -4613,7 +4613,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 
 		Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
 	}
-	if (Experimental) {
+	if (Proc->Registration.Experimental) {
 		THERMTRIP_STATUS ThermTrip;
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
 		Core->PowerThermal.Trip = ThermTrip.SensorTrip;
@@ -5499,13 +5499,13 @@ static void Stop_Haswell_ULT(void *arg)
 
 static void Start_Uncore_Haswell_ULT(void *arg)
 {
-    if (Experimental)
+    if (Proc->Registration.Experimental)
 	Uncore_Counters_Set(SNB);
 }
 
 static void Stop_Uncore_Haswell_ULT(void *arg)
 {
-    if (Experimental)
+    if (Proc->Registration.Experimental)
 	Uncore_Counters_Clear(SNB);
 }
 
@@ -5662,13 +5662,13 @@ static void Stop_Haswell_EP(void *arg)
 
 static void Start_Uncore_Haswell_EP(void *arg)
 {
-    if (Experimental)
+    if (Proc->Registration.Experimental)
 	Uncore_Counters_Set(SKL);
 }
 
 static void Stop_Uncore_Haswell_EP(void *arg)
 {
-    if (Experimental)
+    if (Proc->Registration.Experimental)
 	Uncore_Counters_Clear(SKL);
 }
 
@@ -6502,6 +6502,22 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
+	case COREFREQ_IOCTL_EXPERIMENTAL:
+		switch (arg) {
+		    case COREFREQ_TOGGLE_OFF:
+		    case COREFREQ_TOGGLE_ON:
+			Proc->Registration.Experimental = arg;
+			Controller_Stop(1);
+			Controller_Start(1);
+		    if( Proc->Registration.Experimental
+		    && !Proc->Registration.pci )
+		    {
+			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+		    }
+			rc = 0;
+			break;
+		}
+		break;
 	case COREFREQ_IOCTL_EIST:
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
@@ -7205,7 +7221,7 @@ static int __init CoreFreqK_init(void)
 			Controller_Start(0);
 
 		    if (Proc->Registration.Experimental) {
-			Proc->Registration.pci |= CoreFreqK_ProbePCI();
+			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
 		    }
 	#ifdef CONFIG_HOTPLUG_CPU
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
