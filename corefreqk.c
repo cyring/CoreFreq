@@ -6472,6 +6472,29 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 		MatchCoreForService(pService, cpu, cpu);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
+{
+	unsigned int cpu = smp_processor_id();
+
+	switch (type) {
+	case NMI_LOCAL:
+		KPublic->Core[cpu]->Interrupt.NMI.LOCAL++;
+		break;
+	case NMI_UNKNOWN:
+		KPublic->Core[cpu]->Interrupt.NMI.UNKNOWN++;
+		break;
+	case NMI_SERR:
+		KPublic->Core[cpu]->Interrupt.NMI.PCISERR++;
+		break;
+	case NMI_IO_CHECK:
+		KPublic->Core[cpu]->Interrupt.NMI.IOCHECK++;
+		break;
+	}
+	return(NMI_DONE);
+}
+#endif
+
 static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
 				unsigned long arg)
@@ -6506,8 +6529,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 		    case COREFREQ_TOGGLE_OFF:
 		    case COREFREQ_TOGGLE_ON:
-			Proc->Registration.Experimental = arg;
 			Controller_Stop(1);
+			Proc->Registration.Experimental = arg;
 			Controller_Start(1);
 		    if( Proc->Registration.Experimental
 		    && !Proc->Registration.pci )
@@ -6515,6 +6538,56 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
 		    }
 			rc = 0;
+			break;
+		}
+		break;
+	case COREFREQ_IOCTL_INTERRUPTS:
+		switch (arg) {
+		    case COREFREQ_TOGGLE_OFF:
+		    #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
+		    if (Proc->Registration.nmi) {
+			Controller_Stop(1);
+			unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
+			unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
+			unregister_nmi_handler(NMI_SERR,     "corefreqk");
+			unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
+			Proc->Registration.nmi = COREFREQ_TOGGLE_OFF;
+			Controller_Start(1);
+		    }
+			rc = 0;
+		    #else
+			rc = -EINVAL;
+		    #endif
+			break;
+		    case COREFREQ_TOGGLE_ON:
+		    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+		    if (!Proc->Registration.nmi) {
+			Controller_Stop(1);
+			Proc->Registration.nmi = !(
+			  register_nmi_handler( NMI_LOCAL,
+						CoreFreqK_NMI_handler,
+						0,
+						"corefreqk")
+			| register_nmi_handler( NMI_UNKNOWN,
+						CoreFreqK_NMI_handler,
+						0,
+						"corefreqk")
+			| register_nmi_handler( NMI_SERR,
+						CoreFreqK_NMI_handler,
+						0,
+						"corefreqk")
+			| register_nmi_handler( NMI_IO_CHECK,
+						CoreFreqK_NMI_handler,
+						0,
+						"corefreqk")
+			);
+			Proc->Registration.nmi = COREFREQ_TOGGLE_ON;
+			Controller_Start(1);
+		    }
+			rc = 0;
+		    #else
+			rc = -EINVAL;
+		    #endif
 			break;
 		}
 		break;
@@ -6963,29 +7036,6 @@ static struct notifier_block CoreFreqK_notifier_block = {
 	.notifier_call = CoreFreqK_hotplug,
 };
 #endif
-#endif
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
-static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
-{
-	unsigned int cpu = smp_processor_id();
-
-	switch (type) {
-	case NMI_LOCAL:
-		KPublic->Core[cpu]->Interrupt.NMI.LOCAL++;
-		break;
-	case NMI_UNKNOWN:
-		KPublic->Core[cpu]->Interrupt.NMI.UNKNOWN++;
-		break;
-	case NMI_SERR:
-		KPublic->Core[cpu]->Interrupt.NMI.PCISERR++;
-		break;
-	case NMI_IO_CHECK:
-		KPublic->Core[cpu]->Interrupt.NMI.IOCHECK++;
-		break;
-	}
-	return(NMI_DONE);
-}
 #endif
 
 static int __init CoreFreqK_init(void)

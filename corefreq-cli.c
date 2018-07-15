@@ -2571,7 +2571,7 @@ void Top(SHM_STRUCT *Shm, char option)
 				enabled(!(Shm->Registration.hotplug < 0))),
 	    pciRegLen = sprintf(pciRegStr, "[%3s]",
 				enabled((Shm->Registration.pci == 1))),
-	    nmiRegLen = sprintf(nmiRegStr, "[%3s]",
+	    nmiRegLen = sprintf(nmiRegStr, "<%3s>",
 				enabled(Shm->Registration.nmi));
 	size_t appLen = strlen(Shm->ShmName);
 	ATTRIBUTE attribute[2][32] = {
@@ -2618,7 +2618,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement                 ",
 				attribute[(Shm->Registration.pci == 1)]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " NMI registered                 ",
+	StoreTCell(wSet, OPS_INTERRUPTS," NMI registered                 ",
 					attribute[Shm->Registration.nmi]);
 
 	StoreTCell(wSet, SCANKEY_NULL, "                                ",
@@ -3592,6 +3592,44 @@ void Top(SHM_STRUCT *Shm, char option)
     {
       if (!RING_FULL(Shm->Ring[0]))
 	RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_ON);
+    }
+    break;
+    case OPS_INTERRUPTS:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 5
+	}, select = {
+		.col = 0,
+		.row = Shm->Registration.nmi ? 2 : 1
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " NMI Interrupts ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Registration.nmi != 0] ,
+			stateAttr[Shm->Registration.nmi != 0],
+			OPS_INTERRUPTS_ON,
+		stateStr[0][Shm->Registration.nmi == 0],
+			stateAttr[Shm->Registration.nmi == 0],
+			OPS_INTERRUPTS_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case OPS_INTERRUPTS_OFF:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS,COREFREQ_TOGGLE_OFF);
+    }
+    break;
+    case OPS_INTERRUPTS_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS, COREFREQ_TOGGLE_ON);
     }
     break;
     case SCANKEY_HASH:
