@@ -2554,7 +2554,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	char	intervStr[16], tickStr[16], pollStr[16], ringStr[16],
 		childStr[16], sliceStr[16],
 		experStr[16], cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
-	int intervLen = sprintf(intervStr, "%13uE6", Shm->Sleep.Interval),
+	int intervLen = sprintf(intervStr,"       <%4u>E6",Shm->Sleep.Interval),
 	    tickLen = sprintf(tickStr, "%13uE6",
 				Shm->Sleep.Interval * Shm->SysGate.tickReset),
 	    pollLen = sprintf(pollStr, "%13ldE6",
@@ -2591,7 +2591,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate                    ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Interval(ns)                   ",
+	StoreTCell(wSet, OPS_INTERVAL, " Interval(ns)                   ",
 							MAKE_PRINT_UNFOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)                  ",
@@ -3541,6 +3541,94 @@ void Top(SHM_STRUCT *Shm, char option)
     case SCANCON_F4:
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
+    case OPS_INTERVAL:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = 43,
+		.row = TOP_HEADER_ROW + 4
+	}, select = {
+		.col = 0,
+		.row = 5
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " Interval ",
+	(ASCII*)"    100   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_100,
+	(ASCII*)"    150   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_150,
+	(ASCII*)"    250   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_250,
+	(ASCII*)"    500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_500,
+	(ASCII*)"    750   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_750,
+	(ASCII*)"   1000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1000,
+	(ASCII*)"   1500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1500,
+	(ASCII*)"   2000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2000,
+	(ASCII*)"   2500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2500,
+	(ASCII*)"   3000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_3000),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case OPS_INTERVAL_100:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 100);
+    }
+    break;
+    case OPS_INTERVAL_150:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 150);
+    }
+    break;
+    case OPS_INTERVAL_250:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 250);
+    }
+    break;
+    case OPS_INTERVAL_500:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 500);
+    }
+    break;
+    case OPS_INTERVAL_750:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 750);
+    }
+    break;
+    case OPS_INTERVAL_1000:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1000);
+    }
+    break;
+    case OPS_INTERVAL_1500:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1500);
+    }
+    break;
+    case OPS_INTERVAL_2000:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2000);
+    }
+    break;
+    case OPS_INTERVAL_2500:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2500);
+    }
+    break;
+    case OPS_INTERVAL_3000:
+    {
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 3000);
+    }
+    break;
     case OPS_EXPERIMENTAL:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -3564,18 +3652,18 @@ void Top(SHM_STRUCT *Shm, char option)
 		.row = TOP_HEADER_ROW + 3
 	}, select = {
 		.col = 0,
-		.row = 4
+		.row = 3
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " Experimental ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		"       CoreFreq Operation Mode       ", descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
-		ops_Str[1][Shm->Registration.Experimental != 0] ,
-			exp_Attr[Shm->Registration.Experimental != 0],
-			OPS_EXPERIMENTAL_ON,
 		ops_Str[0][Shm->Registration.Experimental == 0],
 			stateAttr[Shm->Registration.Experimental == 0],
 			OPS_EXPERIMENTAL_OFF,
+		ops_Str[1][Shm->Registration.Experimental != 0] ,
+			exp_Attr[Shm->Registration.Experimental != 0],
+			OPS_EXPERIMENTAL_ON,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
       } else
@@ -3599,19 +3687,28 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
+	ASCII *ops_Str[2][2] = {
+		{
+			(ASCII*)"              Register              ",
+			(ASCII*)"            < Register >            ",
+		},{
+			(ASCII*)"             Unregister             ",
+			(ASCII*)"           < Unregister >           "
+		}
+	};
 	const Coordinate origin = {
 		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
 		.row = TOP_HEADER_ROW + 5
 	}, select = {
 		.col = 0,
-		.row = Shm->Registration.nmi ? 2 : 1
+		.row = Shm->Registration.nmi == 0 ? 1 : 2
 	};
 	AppendWindow(CreateBox(scan->key, origin, select, " NMI Interrupts ",
 		blankStr, blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Registration.nmi != 0] ,
+		ops_Str[0][Shm->Registration.nmi != 0],
 			stateAttr[Shm->Registration.nmi != 0],
 			OPS_INTERRUPTS_ON,
-		stateStr[0][Shm->Registration.nmi == 0],
+		ops_Str[1][Shm->Registration.nmi == 0] ,
 			stateAttr[Shm->Registration.nmi == 0],
 			OPS_INTERRUPTS_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),

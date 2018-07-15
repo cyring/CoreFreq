@@ -577,6 +577,15 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 {
+	// Copy the timer interval delay.
+	Shm->Sleep.Interval = Proc->SleepInterval;
+	// Compute the polling wait time based on the timer interval.
+	Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval*1000000L)
+				/ WAKEUP_RATIO);
+	// Copy the SysGate tick steps.
+	Shm->SysGate.tickReset = Proc->tickReset;
+	Shm->SysGate.tickStep  = Proc->tickStep;
+
 	Shm->Registration.Experimental = Proc->Registration.Experimental;
 	Shm->Registration.hotplug = Proc->Registration.hotplug;
 	Shm->Registration.pci = Proc->Registration.pci;
@@ -3370,18 +3379,10 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		// Store the daemon gate name.
 		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);
 
-		// Copy the timer interval delay.
-		Shm->Sleep.Interval = Proc->SleepInterval;
-		// Compute the polling wait time based on the timer interval.
-		Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval*1000000L)
-					/ WAKEUP_RATIO);
 		// Initialize the busy wait times.
 		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
 		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);
 		Shm->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
-		// Copy the SysGate tick steps.
-		Shm->SysGate.tickReset = Proc->tickReset;
-		Shm->SysGate.tickStep  = Proc->tickStep;
 
 		REF Ref = {
 			.Signal		= {{0}},

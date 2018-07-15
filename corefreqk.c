@@ -552,6 +552,18 @@ static void Query_Features(void *pArg)
 	}
 }
 
+void Compute_Interval(void)
+{	// Compute the tick steps.
+	Proc->tickReset = ((TickInterval >= Proc->SleepInterval)
+			&& (TickInterval <= LOOP_MAX_MS)) ?
+				TickInterval
+			    :	KMAX(TICK_DEF_MS, Proc->SleepInterval);
+	Proc->tickReset /= Proc->SleepInterval;
+	Proc->tickStep = Proc->tickReset;
+
+	RearmTheTimer = ktime_set(0, Proc->SleepInterval * 1000000LU);
+}
+
 static void Compute_Clock(void *arg)
 {
 	COMPUTE_ARG *pCompute = (COMPUTE_ARG *) arg;
@@ -6525,6 +6537,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 		}
 		break;
+	case COREFREQ_IOCTL_INTERVAL:
+		Controller_Stop(1);
+		Proc->SleepInterval = arg;
+		Compute_Interval();
+		Controller_Start(1);
+		rc = 0;
+		break;
 	case COREFREQ_IOCTL_EXPERIMENTAL:
 		switch (arg) {
 		    case COREFREQ_TOGGLE_OFF:
@@ -7118,21 +7137,14 @@ static int __init CoreFreqK_init(void)
 		// PreComp SysGate memory allocation.
 		Proc->OS.ReqMem.Size = sizeof(SYSGATE);
 		Proc->OS.ReqMem.Order = get_order(Proc->OS.ReqMem.Size);
-		// Compute the tick steps.
-		Proc->tickReset = ((TickInterval >= Proc->SleepInterval)
-				&& (TickInterval <= LOOP_MAX_MS)) ?
-					TickInterval
-				    :	KMAX(TICK_DEF_MS, Proc->SleepInterval);
-		Proc->tickReset /= Proc->SleepInterval;
-		Proc->tickStep = Proc->tickReset;
+
+		Compute_Interval();
 
 		Proc->Registration.Experimental = Experimental;
 
 		memcpy(&Proc->Features,&iArg.Features,sizeof(FEATURES));
 
 		Arch[0].Architecture = Proc->Features.Info.Vendor.ID;
-
-		RearmTheTimer = ktime_set(0, Proc->SleepInterval * 1000000LU);
 
 		publicSize  = ROUND_TO_PAGES(sizeof(CORE));
 		privateSize = ROUND_TO_PAGES(sizeof(JOIN));
