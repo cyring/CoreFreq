@@ -6920,9 +6920,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	LayerCopyAt(layer, hRAM.origin.col, hRAM.origin.row,	\
 			hRAM.length, hRAM.attr, hRAM.code);
-
-	Counter2LCD(layer, card->origin.col, card->origin.row,
-			(double) Shm->Uncore.CtrlSpeed);
+	if (Shm->Uncore.CtrlCount > 0) {
+		Counter2LCD(layer, card->origin.col, card->origin.row,
+				(double) Shm->Uncore.CtrlSpeed);
+	}
     }
 
     void Layout_Card_Load(Layer *layer, Card* card)
@@ -7258,23 +7259,21 @@ void Top(SHM_STRUCT *Shm, char option)
 		StoreCard(card, .Layout, Layout_Card_Uncore);
 		StoreCard(card, .Draw, Draw_Card_Uncore);
 	}
-	if (Shm->Uncore.CtrlCount > 0) {
-	    if ((card = CreateCard()) != NULL) {
+	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;
 		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_Bus);
 		StoreCard(card, .Draw, Dont_Draw_Card);
-	    }
-	    if ((card = CreateCard()) != NULL) {
+	}
+	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;
 		card->data.dword.hi = RENDER_OK;
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_MC);
 		StoreCard(card, .Draw, Dont_Draw_Card);
-	    }
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;

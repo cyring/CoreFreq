@@ -553,7 +553,13 @@ static void Query_Features(void *pArg)
 }
 
 void Compute_Interval(void)
-{	// Compute the tick steps.
+{
+	if ( (SleepInterval >= LOOP_MIN_MS)
+	  && (SleepInterval <= LOOP_MAX_MS))
+		Proc->SleepInterval = SleepInterval;
+	else
+		Proc->SleepInterval = LOOP_DEF_MS;
+	// Compute the tick steps.
 	Proc->tickReset = ((TickInterval >= Proc->SleepInterval)
 			&& (TickInterval <= LOOP_MAX_MS)) ?
 				TickInterval
@@ -6539,7 +6545,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		break;
 	case COREFREQ_IOCTL_INTERVAL:
 		Controller_Stop(1);
-		Proc->SleepInterval = arg;
+		SleepInterval = arg;
 		Compute_Interval();
 		Controller_Start(1);
 		rc = 0;
@@ -6556,7 +6562,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		    {
 			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
 		    }
-			rc = 0;
+			rc = 2;
 			break;
 		}
 		break;
@@ -7127,12 +7133,6 @@ static int __init CoreFreqK_init(void)
 	    {
 		memset(Proc, 0, packageSize);
 		Proc->CPU.Count = iArg.SMT_Count;
-
-		if ( (SleepInterval >= LOOP_MIN_MS)
-		  && (SleepInterval <= LOOP_MAX_MS))
-			Proc->SleepInterval = SleepInterval;
-		else
-			Proc->SleepInterval = LOOP_DEF_MS;
 
 		// PreComp SysGate memory allocation.
 		Proc->OS.ReqMem.Size = sizeof(SYSGATE);
