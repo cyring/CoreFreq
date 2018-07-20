@@ -3609,25 +3609,7 @@ void Microcode(CORE *Core)
 	MICROCODE_ID Microcode = {.value = 0};
 
 	if (Proc->Registration.Experimental) {
-/*		RDMSR(Microcode, MSR_IA32_UCODE_REV);	*/
-		asm volatile						\
-		(							\
-			"xorq	%%rbx, %%rbx"	"\n\t"			\
-			"xorq	%%rdx, %%rdx"	"\n\t"			\
-			"movq	$1, %%rax"	"\n\t"			\
-			"movq	%1, %%rcx"	"\n\t"			\
-			"cpuid" 		"\n\t"			\
-			"xorq	%%rax, %%rax"	"\n\t"			\
-			"xorq	%%rdx, %%rdx"	"\n\t"			\
-			"movq	%1, %%rcx"	"\n\t"			\
-			"rdmsr" 		"\n\t"			\
-			"shlq	$32, %%rdx"	"\n\t"			\
-			"orq	%%rdx, %%rax"	"\n\t"			\
-			"movq	%%rax, %0"				\
-			: "=r" (Microcode.value)			\
-			: "i" (MSR_IA32_UCODE_REV)			\
-			: "%rax", "%rbx", "%rcx", "%rdx"		\
-		);
+		RDMSR(Microcode, MSR_IA32_UCODE_REV);
 	}
 	Core->Query.Microcode = Microcode.Signature;
 }
@@ -3771,6 +3753,34 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Intel_VirtualMachine(Core);
 
 	Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	SpeedStep_Technology(Core);
+	TurboBoost_Technology(Core);
+	Query_Intel_C1E(Core);
+
+	if (Core->T.ThreadID == 0) {				// Per Core
+		Intel_CStatesConfiguration(0x062A, Core);
+	}
+
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
+
+	PowerThermal(Core);
+
+	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_Haswell_EP_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	SystemRegisters(Core);
+
+	Intel_VirtualMachine(Core);
+
+//ToDo:	Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4372,7 +4382,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
 			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
-	MSR_HSWEP_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0); \
+	MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
@@ -5700,14 +5710,24 @@ static void Stop_Haswell_EP(void *arg)
 
 static void Start_Uncore_Haswell_EP(void *arg)
 {
-    if (Proc->Registration.Experimental)
-	Uncore_Counters_Set(HSWEP);
+    if (Proc->Registration.Experimental) {
+	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
+
+	RDMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	Proc->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;
+	Uncore_FixedPerfControl.HSW_EP.EN_CTR0 = 1;
+
+	WRMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+    }
 }
 
 static void Stop_Uncore_Haswell_EP(void *arg)
 {
-    if (Proc->Registration.Experimental)
-	Uncore_Counters_Clear(HSWEP);
+    if (Proc->Registration.Experimental) {
+	WRMSR(	Proc->SaveArea.Uncore_FixedPerfControl,
+		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+    }
 }
 
 

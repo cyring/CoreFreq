@@ -483,7 +483,7 @@ extern void Query_IvyBridge_EP(void) ;
 #define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
 
 extern void Query_Haswell_EP(void) ;
-#define     PerCore_Haswell_EP_Query PerCore_SandyBridge_Query
+static void PerCore_Haswell_EP_Query(void *arg) ;
 static void Start_Haswell_EP(void *arg) ;
 static void Stop_Haswell_EP(void *arg) ;
 extern void InitTimer_Haswell_EP(unsigned int cpu) ;
