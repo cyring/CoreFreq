@@ -3608,8 +3608,27 @@ void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
 
-	RDMSR(Microcode, MSR_IA32_UCODE_REV);
-
+	if (Proc->Registration.Experimental) {
+/*		RDMSR(Microcode, MSR_IA32_UCODE_REV);	*/
+		asm volatile						\
+		(							\
+			"xorq	%%rbx, %%rbx"	"\n\t"			\
+			"xorq	%%rdx, %%rdx"	"\n\t"			\
+			"movq	$1, %%rax"	"\n\t"			\
+			"movq	%1, %%rcx"	"\n\t"			\
+			"cpuid" 		"\n\t"			\
+			"xorq	%%rax, %%rax"	"\n\t"			\
+			"xorq	%%rdx, %%rdx"	"\n\t"			\
+			"movq	%1, %%rcx"	"\n\t"			\
+			"rdmsr" 		"\n\t"			\
+			"shlq	$32, %%rdx"	"\n\t"			\
+			"orq	%%rdx, %%rax"	"\n\t"			\
+			"movq	%%rax, %0"				\
+			: "=r" (Microcode.value)			\
+			: "i" (MSR_IA32_UCODE_REV)			\
+			: "%rax", "%rbx", "%rcx", "%rdx"		\
+		);
+	}
 	Core->Query.Microcode = Microcode.Signature;
 }
 
@@ -4348,11 +4367,12 @@ void AMD_Core_Counters_Clear(CORE *Core)
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
+	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+	MSR_HSWEP_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0); \
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
@@ -5681,13 +5701,13 @@ static void Stop_Haswell_EP(void *arg)
 static void Start_Uncore_Haswell_EP(void *arg)
 {
     if (Proc->Registration.Experimental)
-	Uncore_Counters_Set(SKL);
+	Uncore_Counters_Set(HSWEP);
 }
 
 static void Stop_Uncore_Haswell_EP(void *arg)
 {
     if (Proc->Registration.Experimental)
-	Uncore_Counters_Clear(SKL);
+	Uncore_Counters_Clear(HSWEP);
 }
 
 

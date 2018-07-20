@@ -610,7 +610,7 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
 //	[Sandy Bridge]	06_2Ah, 06_2Dh
 #define _SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
-#define _SandyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
+#define _SandyBridge_EP {.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
 
 //	[Ivy Bridge]	06_3Ah, 06_3Eh
 #define _IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
