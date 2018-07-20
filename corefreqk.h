@@ -2069,8 +2069,12 @@ static struct ZEN_ST {
 	unsigned int Boost, XFR;	/* Round +0.5 XFR to +1 */
 	unsigned int tempOffset;	/* Source: Linux/k10temp.c */
 } Zen_Table[] = {
-	{VENDOR_AMD,			+0, +0,  0},	/* Default */
+	{VENDOR_AMD,			+0,  0,  0},	/* Default */
 	{"AMD Ryzen 3 1200",		+3, +1,  0},
+	{"AMD Ryzen 3 1300X",		+2, +2,  0},
+	{"AMD Ryzen 3 2200G",		+2,  0,  0},
+	{"AMD Ryzen 5 1400",		+2, +1,  0},
+	{"AMD Ryzen 5 2400G",		+3,  0,  0},
 	{"AMD Ryzen 5 1500X",		+2, +2,  0},
 	{"AMD Ryzen 5 2500U",		+16, 0,  0},
 	{"AMD Ryzen 5 1600X",		+4, +1, 20},
@@ -2081,11 +2085,12 @@ static struct ZEN_ST {
 	{"AMD Ryzen 7 1700",		+7, +1,  0},
 	{"AMD Ryzen 7 1800X",		+4, +1, 20},
 	{"AMD Ryzen 7 2700X",		+5, +2, 10},
+	{"AMD Ryzen 7 2700U",		+16, 0,  0},
 	{"AMD Ryzen 7 2700",		+8, +2,  0},
 	{"AMD Ryzen Threadripper 1950X",+6, +2, 27},
 	{"AMD Ryzen Threadripper 1920X",+5, +2, 27},
 	{"AMD Ryzen Threadripper 1900X",+2, +2, 27},
-	{"AMD Ryzen Threadripper 1950" ,+0, +0, 10},
-	{"AMD Ryzen Threadripper 1920" ,+6, +0, 10},
-	{"AMD Ryzen Threadripper 1900" ,+6, +0, 10}
+	{"AMD Ryzen Threadripper 1950" ,+0,  0, 10},
+	{"AMD Ryzen Threadripper 1920" ,+6,  0, 10},
+	{"AMD Ryzen Threadripper 1900" ,+6,  0, 10}
 };
