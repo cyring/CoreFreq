@@ -1994,21 +1994,11 @@ void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 	}
 }
 
-kernel_ulong_t Query_Bloomfield_IMC(struct pci_dev *dev, unsigned short mc)
+kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
+				unsigned int did[2][3],
+				unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
-	unsigned int did[2][3] = {
-		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
-		},
-		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
-		}
-	};
 	unsigned short cha;
 
 	Query_NHM_MaxDIMMs(dev, mc);
@@ -2228,13 +2218,25 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
+	unsigned int did[2][3] = {
+		{
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+		},
+		{
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+		}
+	};
 	unsigned short mc;
 
 	Proc->Uncore.ChipID = dev->device;
 
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
-		rc = Query_Bloomfield_IMC(dev, mc);
+		rc = Query_NHM_IMC(dev, did, mc);
 
 	return((PCI_CALLBACK) rc);
 }
@@ -2249,6 +2251,32 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
 		rc = Query_Lynnfield_IMC(dev, mc);
+
+	return((PCI_CALLBACK) rc);
+}
+
+static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
+{
+	kernel_ulong_t rc = 0;
+	unsigned int did[2][3] = {
+		{
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL
+		},
+		{
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR
+		}
+	};
+	unsigned short mc;
+
+	Proc->Uncore.ChipID = dev->device;
+
+	Proc->Uncore.CtrlCount = 1;
+	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
+		rc = Query_NHM_IMC(dev, did, mc);
 
 	return((PCI_CALLBACK) rc);
 }

@@ -1410,7 +1410,7 @@ typedef union
 } MCH_CLKCFG;
 
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 70h
 	unsigned int		value;
 	struct { // Source: Micron DDR3
@@ -1428,7 +1428,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_MRS_VALUE_0_1;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 74h
 	unsigned int		value;
 	struct {
@@ -1446,7 +1446,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_MRS_VALUE_2_3;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 80h
 	unsigned int		value;
 	struct {
@@ -1464,7 +1464,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_RANK_TIMING_A;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 84h
 	unsigned int		value;
 	struct {
@@ -1479,7 +1479,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_RANK_TIMING_B;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 88h
 	unsigned int		value;
 	struct {
@@ -1493,7 +1493,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_BANK_TIMING;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 8Ch
 	unsigned int		value;
 	struct {
@@ -1505,7 +1505,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_REFRESH_TIMING;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 3 - Function: 0 - Offset: 48h
 	unsigned int		value;
 	struct {
@@ -1525,7 +1525,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_CONTROL;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 3 - Function: 0 - Offset: 4Ch
 	unsigned int		value;
 	struct {
@@ -1538,7 +1538,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_STATUS;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 3 - Function: 0 - Offset: 64h
 	unsigned int		value;
 	struct {
@@ -1564,7 +1564,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_CLK_RATIO_STATUS;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: B8h
 	unsigned int		value;
 	struct {
@@ -1580,7 +1580,7 @@ typedef union	// Bloomfield, Lynnfield
 	};
 } NHM_IMC_SCHEDULER_PARAMS;
 
-typedef union	// Bloomfield, Lynnfield
+typedef union	// Nehalem
 {	// Device: 4, 5, 6 - Function: 0 - Offset: 48h, 4Ch, 50h, Lynnfield(54h)
 	unsigned int		value;
 	struct {

@@ -683,6 +683,7 @@ static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;
@@ -800,7 +801,7 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{	// Nehalem EP Xeon C5500: Non-Core Registers
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NEHALEM_EP_NON_CORE),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_C5500_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -821,6 +822,30 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	},
 	{	// Westmere/Clarkdale QuickPath Architecture Non-core Registers
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_Westmere_EP_ids[] = {
+	{	// Westmere EP IMC
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MCR),
+		.driver_data = (kernel_ulong_t) Westmere_EP_IMC
+	},
+	{	// Westmere EP IMC Test Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST),
+		.driver_data = (kernel_ulong_t) NHM_IMC_TR
+	},
+	{	// Nehalem Control Status and RAS Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+		.driver_data = (kernel_ulong_t) X58_QPI
+	},
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
+		.driver_data = (kernel_ulong_t) X58_VTD
+	},
+	{	// Westmere EP: Non-Core Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -1469,7 +1494,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 	.powerFormula   = POWER_FORMULA_NONE,
-	.PCI_ids = PCI_Nehalem_QPI_ids,
+	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem

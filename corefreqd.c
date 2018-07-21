@@ -1680,7 +1680,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
 		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
-				5866 : 4800;	// processor SKU dependent=8000
+				5866 : 6400;
 
 	Shm->Uncore.Bus.Speed = (Proc->Boost[BOOST(MAX)]
 				* Shm->Cpu[cpu].Clock.Hz
@@ -2495,6 +2495,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		P4S_MCH(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Bloomfield
+	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:		// Westmere EP
 		QPI_CLK(Shm, Proc, cpu);
 		NHM_IMC(Shm, Proc);
 		break;
