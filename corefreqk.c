@@ -1505,12 +1505,21 @@ void Intel_Platform_Info(void)
 
 void Intel_Platform_Turbo(void)
 {
+	PROCESSOR_SPECIFIC *pSpecific = Arch[Proc->ArchID].Specific;
 	PLATFORM_INFO Platform = {.value = 0};
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 
-	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
 	Proc->Features.TDP_Unlock = !Platform.TDP_Limited;
 	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
+	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
+
+	while (pSpecific->brandSubStr != NULL) {
+		if (strstr(Proc->Features.Info.Brand, pSpecific->brandSubStr)) {
+			Proc->Features.Ratio_Unlock = pSpecific->ratioUnlocked;
+			break;
+		}
+		pSpecific++;
+	}
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
