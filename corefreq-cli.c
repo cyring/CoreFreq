@@ -3395,47 +3395,19 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 	ASCII item[32];
-	unsigned int ratio, compute;
+	OVERCLOCK overclock  = {.sllong = id};
+	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
 	signed int offset;
-
-	switch (id) {
-	case BOXKEY_OVERCLOCK_1C:
-		ratio = 1;
-		break;
-	case BOXKEY_OVERCLOCK_2C:
-		ratio = 2;
-		break;
-	case BOXKEY_OVERCLOCK_3C:
-		ratio = 3;
-		break;
-	case BOXKEY_OVERCLOCK_4C:
-		ratio = 4;
-		break;
-	case BOXKEY_OVERCLOCK_5C:
-		ratio = 5;
-		break;
-	case BOXKEY_OVERCLOCK_6C:
-		ratio = 6;
-		break;
-	case BOXKEY_OVERCLOCK_7C:
-		ratio = 7;
-		break;
-	case BOXKEY_OVERCLOCK_8C:
-		ratio = 8;
-		break;
-	}
 	for (offset = -20; offset <= 20; offset++) {
-		OVERCLOCK overclock  = {.sllong = id};
-		overclock.Ratio &= OVERCLOCK_RATIO_MASK;
-		overclock.Ratio |= BOXKEY_OVERCLOCK;
+		overclock.Ratio = ratio | BOXKEY_OVERCLOCK;
 		overclock.Offset = offset;
-		compute = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
+		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
-			(double)(compute
+			(double)(multiplier
 				* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
 				/ 1000000.0,
-			compute, offset);
+			multiplier, offset);
 
 		StoreTCell(wOC, overclock.sllong, item,
 			attribute[offset < -5 ? 1 : offset > 5 ? 2 : 0]);
