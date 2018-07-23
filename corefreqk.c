@@ -1615,6 +1615,68 @@ void Intel_Turbo_TDP_Config(void)
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 }
 
+long Intel_Turbo_OverClock(OVERCLOCK OverClock)
+{
+	long rc = 0;
+	if ((Proc->Features.Ratio_Unlock) && (OverClock.sllong)) {
+		unsigned short WrRd8C = 0;
+		TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
+		RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+		switch (OverClock.Ratio) {
+		case 1:
+			TurboCfg0.MaxRatio_1C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 2:
+			TurboCfg0.MaxRatio_2C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 3:
+			TurboCfg0.MaxRatio_3C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 4:
+			TurboCfg0.MaxRatio_4C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 5:
+			TurboCfg0.MaxRatio_5C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 6:
+			TurboCfg0.MaxRatio_6C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 7:
+			TurboCfg0.MaxRatio_7C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 8:
+			TurboCfg0.MaxRatio_8C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		default:
+			break;
+		}
+		if (WrRd8C) {
+			WRMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+			RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+
+			Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
+			Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
+			Proc->Boost[BOOST(6C)] = TurboCfg0.MaxRatio_6C;
+			Proc->Boost[BOOST(5C)] = TurboCfg0.MaxRatio_5C;
+			Proc->Boost[BOOST(4C)] = TurboCfg0.MaxRatio_4C;
+			Proc->Boost[BOOST(3C)] = TurboCfg0.MaxRatio_3C;
+			Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
+			Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
+
+			rc = 2;
+		}
+	}
+	return(rc);
+}
+
 void SandyBridge_Uncore_Ratio(void)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
@@ -6877,6 +6939,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	#else
 		rc = -EINVAL;
 	#endif
+		break;
+	case COREFREQ_IOCTL_OVERCLOCK: {
+		OVERCLOCK OverClock = {.sllong = arg};
+		Controller_Stop(1);
+		rc = Intel_Turbo_OverClock(OverClock);
+		Controller_Start(1);
+		}
 		break;
 	default:
 		rc = -EINVAL;

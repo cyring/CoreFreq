@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.28.1"
+#define COREFREQ_VERSION	"1.28.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -270,6 +270,14 @@ typedef struct
 #define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
 		( ((this_ratio * clock.Q) * 1000L * interval)		\
 		+ ((this_ratio * clock.R) / max_ratio))
+
+typedef union {
+	signed long long	sllong;
+	struct {
+		signed int	Offset;
+		unsigned int	Ratio;
+	};
+} OVERCLOCK;
 
 typedef union
 {
@@ -1267,6 +1275,7 @@ typedef struct {
 #define COREFREQ_IOCTL_ODCM_DC		_IO(COREFREQ_IOCTL_MAGIC, 0x14)
 #define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x15)
 #define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
+#define COREFREQ_IOCTL_OVERCLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x17)
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 
