@@ -683,7 +683,7 @@ void ClockToHz(CLOCK *clock)
 }
 
 // [Genuine Intel]
-CLOCK Clock_GenuineIntel(unsigned int ratio)
+CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 
@@ -696,14 +696,14 @@ CLOCK Clock_GenuineIntel(unsigned int ratio)
 };
 
 // [Authentic AMD]
-CLOCK Clock_AuthenticAMD(unsigned int ratio)
+CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
 {	// For AMD Families 0Fh, 10h up to 16h
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return(clock);
 };
 
 // [Core]
-CLOCK Clock_Core(unsigned int ratio)
+CLOCK BaseClock_Core(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	FSB_FREQ FSB={.value = 0};
@@ -732,7 +732,7 @@ CLOCK Clock_Core(unsigned int ratio)
 };
 
 // [Core2]
-CLOCK Clock_Core2(unsigned int ratio)
+CLOCK BaseClock_Core2(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	FSB_FREQ FSB={.value = 0};
@@ -781,7 +781,7 @@ CLOCK Clock_Core2(unsigned int ratio)
 };
 
 // [Atom]
-CLOCK Clock_Atom(unsigned int ratio)
+CLOCK BaseClock_Atom(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 83, .R = 0};
 	FSB_FREQ FSB = {.value = 0};
@@ -820,7 +820,7 @@ CLOCK Clock_Atom(unsigned int ratio)
 };
 
 // [Airmont]
-CLOCK Clock_Airmont(unsigned int ratio)
+CLOCK BaseClock_Airmont(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 87, .R = 5};
 	FSB_FREQ FSB = {.value = 0};
@@ -874,7 +874,7 @@ CLOCK Clock_Airmont(unsigned int ratio)
 };
 
 // [Silvermont]
-CLOCK Clock_Silvermont(unsigned int ratio)
+CLOCK BaseClock_Silvermont(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 83, .R = 3};
 	FSB_FREQ FSB = {.value = 0};
@@ -914,7 +914,7 @@ CLOCK Clock_Silvermont(unsigned int ratio)
 };
 
 // [Nehalem]
-CLOCK Clock_Nehalem(unsigned int ratio)
+CLOCK BaseClock_Nehalem(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 133, .R = 3333};
 	ClockToHz(&clock);
@@ -923,7 +923,7 @@ CLOCK Clock_Nehalem(unsigned int ratio)
 };
 
 // [Westmere]
-CLOCK Clock_Westmere(unsigned int ratio)
+CLOCK BaseClock_Westmere(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 133, .R = 3333};
 	ClockToHz(&clock);
@@ -932,7 +932,7 @@ CLOCK Clock_Westmere(unsigned int ratio)
 };
 
 // [SandyBridge]
-CLOCK Clock_SandyBridge(unsigned int ratio)
+CLOCK BaseClock_SandyBridge(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -941,7 +941,7 @@ CLOCK Clock_SandyBridge(unsigned int ratio)
 };
 
 // [IvyBridge]
-CLOCK Clock_IvyBridge(unsigned int ratio)
+CLOCK BaseClock_IvyBridge(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -950,7 +950,7 @@ CLOCK Clock_IvyBridge(unsigned int ratio)
 };
 
 // [Haswell]
-CLOCK Clock_Haswell(unsigned int ratio)
+CLOCK BaseClock_Haswell(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 	ClockToHz(&clock);
@@ -959,7 +959,7 @@ CLOCK Clock_Haswell(unsigned int ratio)
 };
 
 // [Skylake]
-CLOCK Clock_Skylake(unsigned int ratio)
+CLOCK BaseClock_Skylake(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
 
@@ -993,7 +993,7 @@ CLOCK Clock_Skylake(unsigned int ratio)
 	return(clock);
 };
 
-CLOCK Clock_AMD_Family_17h(unsigned int ratio)
+CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
 {	// AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return(clock);
@@ -1527,10 +1527,57 @@ void Intel_Platform_Turbo(void)
 	Proc->Features.SpecTurboRatio = 0;
 }
 
-void Intel_Turbo_Config8C(void)
+long Intel_Turbo_Config8C(CLOCK_ARG *pOverClock)
 {
+	long rc = 0;
 	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
 	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+
+	if (pOverClock != NULL) {
+		if (Proc->Features.Ratio_Unlock) {
+			unsigned short WrRd8C = 0;
+			switch (pOverClock->Ratio) {
+			case 1:
+				TurboCfg0.MaxRatio_1C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 2:
+				TurboCfg0.MaxRatio_2C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 3:
+				TurboCfg0.MaxRatio_3C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 4:
+				TurboCfg0.MaxRatio_4C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 5:
+				TurboCfg0.MaxRatio_5C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 6:
+				TurboCfg0.MaxRatio_6C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 7:
+				TurboCfg0.MaxRatio_7C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			case 8:
+				TurboCfg0.MaxRatio_8C += pOverClock->Offset;
+				WrRd8C = 1;
+				break;
+			}
+			if (WrRd8C) {
+				WRMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+				RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+				rc = 2;
+			}
+		}
+	} else
+		Proc->Features.SpecTurboRatio += 8;
 
 	Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
 	Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
@@ -1541,13 +1588,56 @@ void Intel_Turbo_Config8C(void)
 	Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
 	Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
 
-	Proc->Features.SpecTurboRatio += 8;
+	return(rc);
 }
 
-void Intel_Turbo_Config15C(void)
+long Intel_Turbo_Config15C(CLOCK_ARG *pOverClock)
 {
+	long rc = 0;
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	if (pOverClock != NULL) {
+	    if (Proc->Features.Ratio_Unlock) {
+		unsigned short WrRd15C = 0;
+		switch (pOverClock->Ratio) {
+		case 9:
+			TurboCfg1.IVB_EP.MaxRatio_9C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 10:
+			TurboCfg1.IVB_EP.MaxRatio_10C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 11:
+			TurboCfg1.IVB_EP.MaxRatio_11C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 12:
+			TurboCfg1.IVB_EP.MaxRatio_12C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 13:
+			TurboCfg1.IVB_EP.MaxRatio_13C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 14:
+			TurboCfg1.IVB_EP.MaxRatio_14C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		case 15:
+			TurboCfg1.IVB_EP.MaxRatio_15C += pOverClock->Offset;
+			WrRd15C = 1;
+			break;
+		}
+		if (WrRd15C) {
+			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			rc = 2;
+		}
+	    }
+	} else
+		Proc->Features.SpecTurboRatio += 7;
 
 	Proc->Boost[BOOST(15C)] = TurboCfg1.IVB_EP.MaxRatio_15C;
 	Proc->Boost[BOOST(14C)] = TurboCfg1.IVB_EP.MaxRatio_14C;
@@ -1557,13 +1647,60 @@ void Intel_Turbo_Config15C(void)
 	Proc->Boost[BOOST(10C)] = TurboCfg1.IVB_EP.MaxRatio_10C;
 	Proc->Boost[BOOST(9C) ] = TurboCfg1.IVB_EP.MaxRatio_9C;
 
-	Proc->Features.SpecTurboRatio += 7;
+	return(rc);
 }
 
-void Intel_Turbo_Config16C(void)
+long Intel_Turbo_Config16C(CLOCK_ARG *pOverClock)
 {
+	long rc = 0;
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	if (pOverClock != NULL) {
+	    if (Proc->Features.Ratio_Unlock) {
+		unsigned short WrRd16C = 0;
+		switch (pOverClock->Ratio) {
+		case 9:
+			TurboCfg1.HSW_EP.MaxRatio_9C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 10:
+			TurboCfg1.HSW_EP.MaxRatio_10C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 11:
+			TurboCfg1.HSW_EP.MaxRatio_11C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 12:
+			TurboCfg1.HSW_EP.MaxRatio_12C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 13:
+			TurboCfg1.HSW_EP.MaxRatio_13C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 14:
+			TurboCfg1.HSW_EP.MaxRatio_14C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 15:
+			TurboCfg1.HSW_EP.MaxRatio_15C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		case 16:
+			TurboCfg1.HSW_EP.MaxRatio_16C += pOverClock->Offset;
+			WrRd16C = 1;
+			break;
+		}
+		if (WrRd16C) {
+			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			rc = 2;
+		}
+	    }
+	} else
+		Proc->Features.SpecTurboRatio += 8;
 
 	Proc->Boost[BOOST(16C)] = TurboCfg1.HSW_EP.MaxRatio_16C;
 	Proc->Boost[BOOST(15C)] = TurboCfg1.HSW_EP.MaxRatio_15C;
@@ -1574,18 +1711,105 @@ void Intel_Turbo_Config16C(void)
 	Proc->Boost[BOOST(10C)] = TurboCfg1.HSW_EP.MaxRatio_10C;
 	Proc->Boost[BOOST(9C) ] = TurboCfg1.HSW_EP.MaxRatio_9C;
 
-	Proc->Features.SpecTurboRatio += 8;
+	return(rc);
 }
 
-void Intel_Turbo_Config18C(void)
+long Intel_Turbo_Config18C(CLOCK_ARG *pOverClock)
 {
+	long rc = 0;
 	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
 	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
+
+	if (pOverClock != NULL) {
+		if (Proc->Features.Ratio_Unlock) {
+			unsigned short WrRd18C = 0;
+			switch (pOverClock->Ratio) {
+			case 17:
+				TurboCfg2.MaxRatio_17C += pOverClock->Offset;
+				WrRd18C = 1;
+				break;
+			case 18:
+				TurboCfg2.MaxRatio_18C += pOverClock->Offset;
+				WrRd18C = 1;
+				break;
+			}
+			if (WrRd18C) {
+				WRMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
+				RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
+				rc = 2;
+			}
+		}
+	} else
+		Proc->Features.SpecTurboRatio += 2;
 
 	Proc->Boost[BOOST(18C)] = TurboCfg2.MaxRatio_18C;
 	Proc->Boost[BOOST(17C)] = TurboCfg2.MaxRatio_17C;
 
-	Proc->Features.SpecTurboRatio += 2;
+	return(rc);
+}
+
+long Skylake_X_Turbo_Config16C(CLOCK_ARG *pOverClock)
+{
+	long rc = 0;
+	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
+	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+
+	if (pOverClock != NULL) {
+		if (Proc->Features.Ratio_Unlock) {
+			unsigned short WrRd16C = 0;
+			switch (pOverClock->Ratio) {
+			case 9:
+				TurboCfg1.SKL_X.NUMCORE_0 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 10:
+				TurboCfg1.SKL_X.NUMCORE_1 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 11:
+				TurboCfg1.SKL_X.NUMCORE_2 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 12:
+				TurboCfg1.SKL_X.NUMCORE_3 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 13:
+				TurboCfg1.SKL_X.NUMCORE_4 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 14:
+				TurboCfg1.SKL_X.NUMCORE_5 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 15:
+				TurboCfg1.SKL_X.NUMCORE_6 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			case 16:
+				TurboCfg1.SKL_X.NUMCORE_7 += pOverClock->Offset;
+				WrRd16C = 1;
+				break;
+			}
+			if (WrRd16C) {
+				WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+				RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+				rc = 2;
+			}
+		}
+	} else
+		Proc->Features.SpecTurboRatio += 8;
+
+	Proc->Boost[BOOST(16C)] = TurboCfg1.SKL_X.NUMCORE_7;
+	Proc->Boost[BOOST(15C)] = TurboCfg1.SKL_X.NUMCORE_6;
+	Proc->Boost[BOOST(14C)] = TurboCfg1.SKL_X.NUMCORE_5;
+	Proc->Boost[BOOST(13C)] = TurboCfg1.SKL_X.NUMCORE_4;
+	Proc->Boost[BOOST(12C)] = TurboCfg1.SKL_X.NUMCORE_3;
+	Proc->Boost[BOOST(11C)] = TurboCfg1.SKL_X.NUMCORE_2;
+	Proc->Boost[BOOST(10C)] = TurboCfg1.SKL_X.NUMCORE_1;
+	Proc->Boost[BOOST(9C) ] = TurboCfg1.SKL_X.NUMCORE_0;
+
+	return(rc);
 }
 
 void Intel_Turbo_TDP_Config(void)
@@ -1615,68 +1839,6 @@ void Intel_Turbo_TDP_Config(void)
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 }
 
-long Intel_Turbo_OverClock(OVERCLOCK OverClock)
-{
-	long rc = 0;
-	if ((Proc->Features.Ratio_Unlock) && (OverClock.sllong)) {
-		unsigned short WrRd8C = 0;
-		TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
-		RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-		switch (OverClock.Ratio) {
-		case 1:
-			TurboCfg0.MaxRatio_1C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 2:
-			TurboCfg0.MaxRatio_2C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 3:
-			TurboCfg0.MaxRatio_3C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 4:
-			TurboCfg0.MaxRatio_4C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 5:
-			TurboCfg0.MaxRatio_5C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 6:
-			TurboCfg0.MaxRatio_6C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 7:
-			TurboCfg0.MaxRatio_7C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		case 8:
-			TurboCfg0.MaxRatio_8C += OverClock.Offset;
-			WrRd8C = 1;
-			break;
-		default:
-			break;
-		}
-		if (WrRd8C) {
-			WRMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-			RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-
-			Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
-			Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
-			Proc->Boost[BOOST(6C)] = TurboCfg0.MaxRatio_6C;
-			Proc->Boost[BOOST(5C)] = TurboCfg0.MaxRatio_5C;
-			Proc->Boost[BOOST(4C)] = TurboCfg0.MaxRatio_4C;
-			Proc->Boost[BOOST(3C)] = TurboCfg0.MaxRatio_3C;
-			Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
-			Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
-
-			rc = 2;
-		}
-	}
-	return(rc);
-}
-
 void SandyBridge_Uncore_Ratio(void)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
@@ -1700,42 +1862,51 @@ void SandyBridge_PowerInterface(void)
 void Nehalem_Platform_Info(void)
 {
 	Intel_Platform_Turbo();
-	Intel_Turbo_Config8C();
+	Intel_Turbo_Config8C(NULL);
 }
 
 void IvyBridge_EP_Platform_Info(void)
 {
 	Intel_Platform_Turbo();
-	Intel_Turbo_Config8C();
-	Intel_Turbo_Config15C();
+	Intel_Turbo_Config8C(NULL);
+	Intel_Turbo_Config15C(NULL);
 }
 
 void Haswell_EP_Platform_Info(void)
 {
 	Intel_Platform_Turbo();
-	Intel_Turbo_Config8C();
-	Intel_Turbo_Config16C();
-	Intel_Turbo_Config18C();
+	Intel_Turbo_Config8C(NULL);
+	Intel_Turbo_Config16C(NULL);
+	Intel_Turbo_Config18C(NULL);
 }
 
 void Skylake_X_Platform_Info(void)
 {
-	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-
 	Intel_Platform_Turbo();
-	Intel_Turbo_Config8C();
+	Intel_Turbo_Config8C(NULL);
+	Skylake_X_Turbo_Config16C(NULL);
+}
 
-	Proc->Boost[BOOST(16C)] = TurboCfg1.SKL_X.NUMCORE_7;
-	Proc->Boost[BOOST(15C)] = TurboCfg1.SKL_X.NUMCORE_6;
-	Proc->Boost[BOOST(14C)] = TurboCfg1.SKL_X.NUMCORE_5;
-	Proc->Boost[BOOST(13C)] = TurboCfg1.SKL_X.NUMCORE_4;
-	Proc->Boost[BOOST(12C)] = TurboCfg1.SKL_X.NUMCORE_3;
-	Proc->Boost[BOOST(11C)] = TurboCfg1.SKL_X.NUMCORE_2;
-	Proc->Boost[BOOST(10C)] = TurboCfg1.SKL_X.NUMCORE_1;
-	Proc->Boost[BOOST(9C) ] = TurboCfg1.SKL_X.NUMCORE_0;
+long OverClock_IvyBridge_EP(CLOCK_ARG *pOverClock)
+{
+	long rc = Intel_Turbo_Config8C(pOverClock)
+		| Intel_Turbo_Config15C(pOverClock);
+	return(rc);
+}
 
-	Proc->Features.SpecTurboRatio += 8;
+long OverClock_Haswell_EP(CLOCK_ARG *pOverClock)
+{
+	long rc = Intel_Turbo_Config8C(pOverClock)
+		| Intel_Turbo_Config16C(pOverClock)
+		| Intel_Turbo_Config18C(pOverClock);
+	return(rc);
+}
+
+long OverClock_Skylake_X(CLOCK_ARG *pOverClock)
+{
+	long rc = Intel_Turbo_Config8C(pOverClock)
+		| Skylake_X_Turbo_Config16C(pOverClock);
+	return(rc);
 }
 
 
@@ -4080,8 +4251,8 @@ void Controller_Init(void)
 	}
 	ratio = Proc->Boost[BOOST(MAX)];
 
-	if (Arch[Proc->ArchID].Clock != NULL) {
-		clock = Arch[Proc->ArchID].Clock(ratio);
+	if (Arch[Proc->ArchID].BaseClock != NULL) {
+		clock = Arch[Proc->ArchID].BaseClock(ratio);
 	}
 	if (clock.Hz == 0) {	// Fallback @ 100 MHz
 		clock.Q = 100;
@@ -6941,9 +7112,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	#endif
 		break;
 	case COREFREQ_IOCTL_OVERCLOCK: {
-		OVERCLOCK OverClock = {.sllong = arg};
+		CLOCK_ARG OverClock = {.sllong = arg};
 		Controller_Stop(1);
-		rc = Intel_Turbo_OverClock(OverClock);
+		if (Arch[Proc->ArchID].OverClock != NULL)
+			rc = Arch[Proc->ArchID].OverClock(&OverClock);
 		Controller_Start(1);
 		}
 		break;
@@ -7343,7 +7515,7 @@ static int __init CoreFreqK_init(void)
 			Arch[0].Start	= Start_GenuineIntel;
 			Arch[0].Stop	= Stop_GenuineIntel;
 			Arch[0].Timer	= InitTimer_GenuineIntel;
-			Arch[0].Clock	= Clock_GenuineIntel;
+			Arch[0].BaseClock= BaseClock_GenuineIntel;
 
 			Arch[0].thermalFormula = THERMAL_FORMULA_INTEL;
 
@@ -7358,7 +7530,7 @@ static int __init CoreFreqK_init(void)
 			Arch[0].Start	= Start_AuthenticAMD;
 			Arch[0].Stop	= Stop_AuthenticAMD;
 			Arch[0].Timer	= InitTimer_AuthenticAMD;
-			Arch[0].Clock	= Clock_AuthenticAMD;
+			Arch[0].BaseClock= BaseClock_AuthenticAMD;
 
 			Arch[0].thermalFormula = THERMAL_FORMULA_AMD;
 

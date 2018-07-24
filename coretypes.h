@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.28.2"
+#define COREFREQ_VERSION	"1.28.3"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -277,7 +277,7 @@ typedef union {
 		signed int	Offset;
 		unsigned int	Ratio;
 	};
-} OVERCLOCK;
+} CLOCK_ARG;
 
 typedef union
 {
