@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 #pragma once
-#define COREFREQ_VERSION	"1.27.3"
+#define COREFREQ_VERSION	"1.28.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -270,6 +270,14 @@ typedef struct
 #define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
 		( ((this_ratio * clock.Q) * 1000L * interval)		\
 		+ ((this_ratio * clock.R) / max_ratio))
+
+typedef union {
+	signed long long	sllong;
+	struct {
+		signed int	Offset;
+		unsigned int	Ratio;
+	};
+} OVERCLOCK;
 
 typedef union
 {
@@ -976,8 +984,8 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE
 	#define PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE 0x2c41
 #endif
-#ifndef PCI_DEVICE_ID_INTEL_NEHALEM_EP_NON_CORE
-	#define PCI_DEVICE_ID_INTEL_NEHALEM_EP_NON_CORE 0x2c58
+#ifndef PCI_DEVICE_ID_INTEL_C5500_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_C5500_NON_CORE	0x2c58
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE
 	#define PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE	0x2c51
@@ -1002,6 +1010,33 @@ typedef struct	// BSP CPUID features.
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR
     #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR	0x2ca9
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MCR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MCR		0x2d98
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL	0x2da0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL	0x2da8
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL	0x2db0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST	0x2d9c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR	0x2da1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR	0x2da9
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR	0x2db1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE	0x2c70
 #endif
 // Source: Intel X58 Express Chipset Datasheet
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
@@ -1240,6 +1275,7 @@ typedef struct {
 #define COREFREQ_IOCTL_ODCM_DC		_IO(COREFREQ_IOCTL_MAGIC, 0x14)
 #define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x15)
 #define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
+#define COREFREQ_IOCTL_OVERCLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x17)
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 

@@ -400,7 +400,12 @@ typedef struct
 } KPRIVATE;
 
 
-typedef	struct
+typedef struct {
+	char		*brandSubStr;
+	unsigned int	ratioUnlocked;
+} PROCESSOR_SPECIFIC;
+
+typedef struct
 {
 	struct	SIGNATURE	Signature;
 	void			(*Query)(void);
@@ -419,6 +424,7 @@ typedef	struct
 		void		(*Start)(void *arg);	// Must be static
 		void		(*Stop)(void *arg);	// Must be static
 	} Uncore;
+	PROCESSOR_SPECIFIC	*Specific;
 } ARCH;
 
 extern CLOCK Clock_GenuineIntel(unsigned int ratio) ;
@@ -683,6 +689,7 @@ static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev) ;
 static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;
@@ -694,7 +701,7 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
-/* ToDo
+/* ToDo:
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev) ;
 */
 static struct pci_device_id PCI_Void_ids[] = {
@@ -800,7 +807,7 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{	// Nehalem EP Xeon C5500: Non-Core Registers
-	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NEHALEM_EP_NON_CORE),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_C5500_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -821,6 +828,30 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	},
 	{	// Westmere/Clarkdale QuickPath Architecture Non-core Registers
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_Westmere_EP_ids[] = {
+	{	// Westmere EP IMC
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MCR),
+		.driver_data = (kernel_ulong_t) Westmere_EP_IMC
+	},
+	{	// Westmere EP IMC Test Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST),
+		.driver_data = (kernel_ulong_t) NHM_IMC_TR
+	},
+	{	// Nehalem Control Status and RAS Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
+		.driver_data = (kernel_ulong_t) X58_QPI
+	},
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
+		.driver_data = (kernel_ulong_t) X58_VTD
+	},
+	{	// Westmere EP: Non-Core Registers
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
@@ -994,6 +1025,31 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 };
 
 
+static PROCESSOR_SPECIFIC Void_Specific[] = {
+	{NULL, 0}
+};
+
+static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
+	{
+	.brandSubStr = "Intel(R) Core(TM) i7 CPU 920",
+	.ratioUnlocked = 0
+	},
+	{NULL, 0}
+};
+
+static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
+	{
+	.brandSubStr = "Intel(R) Xeon(R) CPU W3680",
+	.ratioUnlocked = 1
+	},
+	{
+	.brandSubStr = "Intel(R) Xeon(R) CPU W3690",
+	.ratioUnlocked = 1
+	},
+	{NULL, 0}
+};
+
+
 static ARCH Arch[ARCHITECTURES] = {
 /*  0*/	{
 	.Signature = _Void_Signature,
@@ -1012,7 +1068,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  1*/	{
 	.Signature = _Core_Yonah,
@@ -1031,7 +1088,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  2*/	{
 	.Signature = _Core_Conroe,
@@ -1050,7 +1108,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  3*/	{
 	.Signature = _Core_Kentsfield,
@@ -1069,7 +1128,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  4*/	{
 	.Signature = _Core_Conroe_616,
@@ -1088,7 +1148,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  5*/	{
 	.Signature = _Core_Yorkfield,
@@ -1107,7 +1168,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  6*/	{
 	.Signature = _Core_Dunnington,
@@ -1126,7 +1188,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /*  7*/	{
@@ -1146,7 +1209,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  8*/	{
 	.Signature = _Atom_Silvermont,
@@ -1165,7 +1229,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /*  9*/	{
 	.Signature = _Atom_Lincroft,
@@ -1184,7 +1249,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 10*/	{
 	.Signature = _Atom_Clovertrail,
@@ -1203,7 +1269,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 11*/	{
 	.Signature = _Atom_Saltwell,
@@ -1222,7 +1289,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 12*/	{
@@ -1242,7 +1310,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 13*/	{
 	.Signature = _Atom_Avoton,
@@ -1261,7 +1330,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 14*/	{
@@ -1281,7 +1351,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 15*/	{
 	.Signature = _Atom_Goldmont,
@@ -1300,7 +1371,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
 		.Stop = Stop_Uncore_Haswell_ULT
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 16*/	{
 	.Signature = _Atom_Sofia,
@@ -1319,7 +1391,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 17*/	{
 	.Signature = _Atom_Merrifield,
@@ -1338,7 +1411,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 18*/	{
 	.Signature = _Atom_Moorefield,
@@ -1357,7 +1431,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 19*/	{
@@ -1377,7 +1452,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Nehalem_Bloomfield_Specific
 	},
 /* 20*/	{
 	.Signature = _Nehalem_Lynnfield,
@@ -1396,7 +1472,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 21*/	{
 	.Signature = _Nehalem_MB,
@@ -1415,7 +1492,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 22*/	{
 	.Signature = _Nehalem_EX,
@@ -1434,7 +1512,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 23*/	{
@@ -1454,7 +1533,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 24*/	{
 	.Signature = _Westmere_EP,
@@ -1469,11 +1549,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 	.powerFormula   = POWER_FORMULA_NONE,
-	.PCI_ids = PCI_Nehalem_QPI_ids,
+	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Westmere_EP_Specific
 	},
 /* 25*/	{
 	.Signature = _Westmere_EX,
@@ -1492,7 +1573,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 26*/	{
@@ -1512,7 +1594,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 27*/	{
 	.Signature = _SandyBridge_EP,
@@ -1531,7 +1614,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
 		.Stop = Stop_Uncore_SandyBridge_EP
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 28*/	{
@@ -1551,7 +1635,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 29*/	{
 	.Signature = _IvyBridge_EP,
@@ -1570,7 +1655,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
 		.Stop = Stop_Uncore_SandyBridge_EP
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 30*/	{
@@ -1590,7 +1676,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 31*/	{
 	.Signature = _Haswell_EP,
@@ -1609,7 +1696,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 32*/	{
 	.Signature = _Haswell_ULT,
@@ -1628,7 +1716,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
 		.Stop = Stop_Uncore_Haswell_ULT
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 33*/	{
 	.Signature = _Haswell_ULX,
@@ -1647,7 +1736,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 34*/	{
@@ -1667,7 +1757,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
 		.Stop = Stop_Uncore_Broadwell
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 35*/	{
 	.Signature = _Broadwell_D,
@@ -1686,7 +1777,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 36*/	{
 	.Signature = _Broadwell_H,
@@ -1705,7 +1797,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
 		.Stop = Stop_Uncore_Broadwell
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 37*/	{
 	.Signature = _Broadwell_EP,
@@ -1724,7 +1817,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 38*/	{
@@ -1743,7 +1837,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 39*/	{
 	.Signature = _Skylake_S,
@@ -1762,7 +1857,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 40*/	{
 	.Signature = _Skylake_X,
@@ -1781,7 +1877,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake_X,
 		.Stop = Stop_Uncore_Skylake_X
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 41*/	{
@@ -1801,7 +1898,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 42*/	{
@@ -1821,7 +1919,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 /* 43*/	{
 	.Signature = _Kabylake_UY,
@@ -1840,7 +1939,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 44*/	{
@@ -1860,7 +1960,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 45*/	{
@@ -1880,7 +1981,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
 		.Stop = Stop_Uncore_Haswell_ULT
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 /* 46*/	{
@@ -1900,7 +2002,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -1920,7 +2023,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -1940,7 +2044,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -1960,7 +2065,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -1980,7 +2086,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -2000,7 +2107,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -2020,7 +2128,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -2040,7 +2149,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 
 	{
@@ -2060,7 +2170,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL
-		}
+		},
+	.Specific = Void_Specific
 	},
 };
 

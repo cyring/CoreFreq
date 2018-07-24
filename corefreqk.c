@@ -1505,12 +1505,21 @@ void Intel_Platform_Info(void)
 
 void Intel_Platform_Turbo(void)
 {
+	PROCESSOR_SPECIFIC *pSpecific = Arch[Proc->ArchID].Specific;
 	PLATFORM_INFO Platform = {.value = 0};
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 
-	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
 	Proc->Features.TDP_Unlock = !Platform.TDP_Limited;
 	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
+	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
+
+	while (pSpecific->brandSubStr != NULL) {
+		if (strstr(Proc->Features.Info.Brand, pSpecific->brandSubStr)) {
+			Proc->Features.Ratio_Unlock = pSpecific->ratioUnlocked;
+			break;
+		}
+		pSpecific++;
+	}
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
@@ -1604,6 +1613,68 @@ void Intel_Turbo_TDP_Config(void)
 	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
 	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
+}
+
+long Intel_Turbo_OverClock(OVERCLOCK OverClock)
+{
+	long rc = 0;
+	if ((Proc->Features.Ratio_Unlock) && (OverClock.sllong)) {
+		unsigned short WrRd8C = 0;
+		TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
+		RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+		switch (OverClock.Ratio) {
+		case 1:
+			TurboCfg0.MaxRatio_1C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 2:
+			TurboCfg0.MaxRatio_2C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 3:
+			TurboCfg0.MaxRatio_3C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 4:
+			TurboCfg0.MaxRatio_4C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 5:
+			TurboCfg0.MaxRatio_5C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 6:
+			TurboCfg0.MaxRatio_6C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 7:
+			TurboCfg0.MaxRatio_7C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		case 8:
+			TurboCfg0.MaxRatio_8C += OverClock.Offset;
+			WrRd8C = 1;
+			break;
+		default:
+			break;
+		}
+		if (WrRd8C) {
+			WRMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+			RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
+
+			Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
+			Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
+			Proc->Boost[BOOST(6C)] = TurboCfg0.MaxRatio_6C;
+			Proc->Boost[BOOST(5C)] = TurboCfg0.MaxRatio_5C;
+			Proc->Boost[BOOST(4C)] = TurboCfg0.MaxRatio_4C;
+			Proc->Boost[BOOST(3C)] = TurboCfg0.MaxRatio_3C;
+			Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
+			Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
+
+			rc = 2;
+		}
+	}
+	return(rc);
 }
 
 void SandyBridge_Uncore_Ratio(void)
@@ -1994,21 +2065,11 @@ void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 	}
 }
 
-kernel_ulong_t Query_Bloomfield_IMC(struct pci_dev *dev, unsigned short mc)
+kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
+				unsigned int did[2][3],
+				unsigned short mc)
 {
 	kernel_ulong_t rc = 0;
-	unsigned int did[2][3] = {
-		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
-		},
-		{
-			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
-			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
-		}
-	};
 	unsigned short cha;
 
 	Query_NHM_MaxDIMMs(dev, mc);
@@ -2228,13 +2289,25 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
+	unsigned int did[2][3] = {
+		{
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+		},
+		{
+			PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR,
+			PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+		}
+	};
 	unsigned short mc;
 
 	Proc->Uncore.ChipID = dev->device;
 
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
-		rc = Query_Bloomfield_IMC(dev, mc);
+		rc = Query_NHM_IMC(dev, did, mc);
 
 	return((PCI_CALLBACK) rc);
 }
@@ -2249,6 +2322,32 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 	Proc->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
 		rc = Query_Lynnfield_IMC(dev, mc);
+
+	return((PCI_CALLBACK) rc);
+}
+
+static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
+{
+	kernel_ulong_t rc = 0;
+	unsigned int did[2][3] = {
+		{
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL
+		},
+		{
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR,
+			PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR
+		}
+	};
+	unsigned short mc;
+
+	Proc->Uncore.ChipID = dev->device;
+
+	Proc->Uncore.CtrlCount = 1;
+	for (mc = 0; (mc < Proc->Uncore.CtrlCount) && !rc; mc++)
+		rc = Query_NHM_IMC(dev, did, mc);
 
 	return((PCI_CALLBACK) rc);
 }
@@ -6840,6 +6939,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	#else
 		rc = -EINVAL;
 	#endif
+		break;
+	case COREFREQ_IOCTL_OVERCLOCK: {
+		OVERCLOCK OverClock = {.sllong = arg};
+		Controller_Stop(1);
+		rc = Intel_Turbo_OverClock(OverClock);
+		Controller_Start(1);
+		}
 		break;
 	default:
 		rc = -EINVAL;
