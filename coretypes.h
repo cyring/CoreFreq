@@ -3,8 +3,7 @@
  * Copyright (C) 2015-2018 CYRIL INGENIERIE
  * Licenses: GPL2
  */
-#pragma once
-#define COREFREQ_VERSION	"1.28.2"
+#define COREFREQ_VERSION	"1.28.3"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -277,7 +276,7 @@ typedef union {
 		signed int	Offset;
 		unsigned int	Ratio;
 	};
-} OVERCLOCK;
+} CLOCK_ARG;
 
 typedef union
 {

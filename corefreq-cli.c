@@ -592,7 +592,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
 	{
-	OVERCLOCK overclock={.Ratio=BOXKEY_OVERCLOCK_NC|activeCores, .Offset=0};
+	CLOCK_ARG overclock={.Ratio=BOXKEY_OVERCLOCK_NC|activeCores, .Offset=0};
 	char pfx[4];
 	sprintf(pfx, "%2dC", activeCores);
 	PrintCoreBoost(pfx, boost, 1, overclock.sllong);
@@ -3396,7 +3396,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 	ASCII item[32];
-	OVERCLOCK overclock  = {.sllong = id};
+	CLOCK_ARG overclock  = {.sllong = id};
 	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
 	signed int offset;
 	for (offset = -20; offset <= 20; offset++) {
@@ -4836,15 +4836,15 @@ void Top(SHM_STRUCT *Shm, char option)
 			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
 	}
 	else {
-	OVERCLOCK overclock  = {.sllong = scan->key};
-	if (overclock.Ratio & BOXKEY_OVERCLOCK)
-	{
-	  overclock.Ratio &= OVERCLOCK_RATIO_MASK;
+	  CLOCK_ARG overclock  = {.sllong = scan->key};
+	  if (overclock.Ratio & BOXKEY_OVERCLOCK)
+	  {
+	    overclock.Ratio &= OVERCLOCK_RATIO_MASK;
 
 	  if (!RING_FULL(Shm->Ring[0]))
 	    RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_OVERCLOCK, overclock.sllong);
-	}
-	else
+	  }
+	  else
 		return(-1);
 	}
     }
