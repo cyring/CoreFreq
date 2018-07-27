@@ -285,8 +285,8 @@ typedef union
 		ReservedBits1	:  8-0,
 		MaxNonTurboRatio: 16-8,
 		ReservedBits2	: 28-16,
-		Ratio_Limited	: 29-28,
-		TDP_Limited	: 30-29,
+		ProgrammableTurbo:29-28, // Phi,SKL,BDW,HSW,IVB,SNB,NHM,GDM
+		ProgrammableTDP	: 30-29,
 		ReservedBits3	: 32-30,
 		LowPowerMode	: 33-32,
 		ConfigTDPlevels	: 35-33, // Ivy Bridge, Haswell(-E), Phy

@@ -569,8 +569,8 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.Ratio_Unlock],
-		width, 2, "Ratio Limited%.*s[%6s]",
-		width - 24, hSpace,
+		width, 2, "Overclocking%.*s[%6s]",
+		width - 23, hSpace,
 		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
@@ -617,8 +617,8 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
-		width, 3, "Limited%.*s[%6s]",
-		width - (OutFunc == NULL ? 21 : 19), hSpace,
+		width, 3, "Programmable%.*s[%6s]",
+		width - (OutFunc == NULL ? 26 : 24), hSpace,
 		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
 
 	printv(OutFunc, SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],

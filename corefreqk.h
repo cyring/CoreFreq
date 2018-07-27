@@ -1043,18 +1043,6 @@ static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	{NULL, 0}
 };
 
-static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
-	{
-	.brandSubStr = "Intel(R) Xeon(R) CPU W3680",
-	.ratioUnlocked = 1
-	},
-	{
-	.brandSubStr = "Intel(R) Xeon(R) CPU W3690",
-	.ratioUnlocked = 1
-	},
-	{NULL, 0}
-};
-
 
 static ARCH Arch[ARCHITECTURES] = {
 /*  0*/	{
@@ -1585,7 +1573,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Start = Start_Uncore_Nehalem,
 		.Stop = Stop_Uncore_Nehalem
 		},
-	.Specific = Westmere_EP_Specific
+	.Specific = Void_Specific
 	},
 /* 25*/	{
 	.Signature = _Westmere_EX,

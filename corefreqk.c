@@ -1509,9 +1509,9 @@ void Intel_Platform_Turbo(void)
 	PLATFORM_INFO Platform = {.value = 0};
 	RDMSR(Platform, MSR_PLATFORM_INFO);
 
-	Proc->Features.TDP_Unlock = !Platform.TDP_Limited;
+	Proc->Features.TDP_Unlock = Platform.ProgrammableTDP;
 	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
-	Proc->Features.Ratio_Unlock = !Platform.Ratio_Limited;
+	Proc->Features.Ratio_Unlock = Platform.ProgrammableTurbo;
 
 	while (pSpecific->brandSubStr != NULL) {
 		if (strstr(Proc->Features.Info.Brand, pSpecific->brandSubStr)) {
