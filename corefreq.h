@@ -3,6 +3,7 @@
  * Copyright (C) 2015-2018 CYRIL INGENIERIE
  * Licenses: GPL2
  */
+#pragma once
 
 #define SHM_FILENAME	"corefreq-shm"
 

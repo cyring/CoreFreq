@@ -24,6 +24,7 @@
 #include "corefreq.h"
 #include "corefreq-ui.h"
 #include "corefreq-cli.h"
+#include "corefreq-cli-json.h"
 
 char hSpace[] = "        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
@@ -7546,6 +7547,7 @@ int Help(char *appName)
 		"\t-m\tPrint Topology\n"				\
 		"\t-u\tPrint CPUID\n"					\
 		"\t-k\tPrint Kernel\n"					\
+		"\t-j\tPrint json-encoded system information\n" 	\
 		"\t-h\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
@@ -7606,6 +7608,9 @@ int main(int argc, char *argv[])
 	printv(NULL, SCANKEY_VOID, NULL, 80, 0,"Power & Thermal Monitoring:");
 	SysInfoPwrThermal(Shm, 80, NULL);
 	}
+		break;
+	case 'j':
+		JsonSysInfo(Shm, NULL);
 		break;
 	case 'm':
 		Topology(Shm, NULL);

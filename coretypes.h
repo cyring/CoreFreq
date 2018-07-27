@@ -3,7 +3,6 @@
  * Copyright (C) 2015-2018 CYRIL INGENIERIE
  * Licenses: GPL2
  */
-
 #define COREFREQ_VERSION	"1.28.3"
 
 enum {	GenuineIntel,		\
