@@ -1,11 +1,11 @@
 /*
- * CoreFreq
- * Copyright (C) 2015-2018 CYRIL INGENIERIE
+ * CoreFreq (C) 2015-2018 CYRIL INGENIERIE
+ * Contributors: Andrew Gurinovich ;
  * Licenses: GPL2
+ *
+ * Some ideas taken from https://github.com/cesanta/frozen/ 
+ * under Apache 2.0 license
  */
-
-/* Some ideas taken from https://github.com/cesanta/frozen/ 
- * under Apache 2.0 license */
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -15,16 +15,9 @@
 #include <string.h>
 #include <assert.h>
 
-#define JSON_MAX_DEPTH 32
-#define JSON_MAX_VALUE 4096
+#include "corefreq-cli-extra.h"
 
 struct json_state;
-
-struct json_state {
-    int (*write)(struct json_state* state, const char *str, size_t len);
-    uint8_t nested_state[JSON_MAX_DEPTH];
-    uint8_t depth;
-};
 
 enum JSON_STATE {
     DEFAULT, IN_ARRAY, IN_ARRAY2, IN_OBJECT, IN_OBJECT2

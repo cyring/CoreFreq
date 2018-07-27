@@ -2304,6 +2304,61 @@ void Top(SHM_STRUCT *Shm, char option)
 	ratioCount++;
     }
 
+    void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }
+
+#define StoreCard(card, with, what)					\
+(									\
+    __builtin_choose_expr(__builtin_types_compatible_p(			\
+	typeof(card->hook with), typeof(CARDFUNC)), HookCardFunc,	\
+    (void)0)							\
+	(&(card->hook with), what)					\
+)
+
+#define Threshold(value, threshold1, threshold2, _low, _medium, _high)	\
+({									\
+	enum PALETTE _ret;						\
+	if (value > threshold2)						\
+		_ret = _high;						\
+	else if (value > threshold1)					\
+		_ret = _medium;						\
+	else								\
+		_ret = _low;						\
+	_ret;								\
+})
+
+#define frtostr(r, d, pStr)						\
+({									\
+	int p = d - ((int) log10(fabs(r))) - 2;				\
+	sprintf(pStr, "%*.*f", d, p, r);				\
+	pStr;								\
+})
+
+#define Clock2LCD(layer, col, row, value1, value2)			\
+({									\
+	sprintf(buffer, "%04.0f", value1);				\
+	PrintLCD(layer, col, row, 4, buffer,				\
+	    Threshold(value2,minRatio,medianRatio,_GREEN,_YELLOW,_RED));\
+})
+
+#define Counter2LCD(layer, col, row, value)				\
+({									\
+	sprintf(buffer, "%04.0f", value);				\
+	PrintLCD(layer, col, row, 4, buffer,				\
+		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE));	\
+})
+
+#define Load2LCD(layer, col, row, value)				\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+		Threshold(value, 100.f/3.f, 100.f/1.5f, _WHITE,_YELLOW,_RED))
+
+#define Idle2LCD(layer, col, row, value)				\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+		Threshold(value, 100.f/3.f, 100.f/1.5f, _YELLOW,_WHITE,_GREEN))
+
+#define Sys2LCD(layer, col, row, value)					\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+		Threshold(value, 100.f/6.6f, 50.0, _RED,_YELLOW,_WHITE))
+
 #define EraseTCell_Menu(win)						\
     ({									\
 	CoordShift shift = {						\

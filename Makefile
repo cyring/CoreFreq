@@ -29,5 +29,14 @@ corefreq-ui.o: corefreq-ui.c
 corefreq-cli.o: corefreq-cli.c
 	$(CC) -Wall -c corefreq-cli.c -o corefreq-cli.o
 
-corefreq-cli: corefreq-cli.o corefreq-ui.o
-	$(CC) corefreq-cli.c corefreq-ui.c -o corefreq-cli -lm -lrt
+corefreq-cli-json.o: corefreq-cli-json.c
+	$(CC) -Wall -c corefreq-cli-json.c -o corefreq-cli-json.o
+
+corefreq-cli-extra.o: corefreq-cli-extra.c
+	$(CC) -Wall -c corefreq-cli-extra.c -o corefreq-cli-extra.o
+
+corefreq-cli:	corefreq-cli.o corefreq-ui.o \
+		corefreq-cli-json.o corefreq-cli-extra.o
+	$(CC)	corefreq-cli.c corefreq-ui.c \
+		corefreq-cli-json.c corefreq-cli-extra.c \
+		-o corefreq-cli -lm -lrt
