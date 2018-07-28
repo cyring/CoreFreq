@@ -13,7 +13,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
-* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL)  
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL), Overclocking  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -44,6 +44,10 @@ VMs don't provide access to the registers that the CoreFreq driver employs :
 * Fixed Performance Counters 
 * Model Specific Registers 
 * PCI Registers 
+
+ c- Rendering  
+
+The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI colors support 
 
 
 ### Build
