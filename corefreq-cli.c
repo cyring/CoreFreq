@@ -3432,10 +3432,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateOC(unsigned long long id)
     {
-      Window *wOC = CreateWindow(wLayer, id, 1, 16,
-				34,(TOP_HEADER_ROW + 16 + 2 < drawSize.height) ?
-					TOP_HEADER_ROW + 2 : 1);
-      if (wOC != NULL) {
 	ATTRIBUTE attribute[3][28] = {
 		{
 		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
@@ -3453,8 +3449,25 @@ void Top(SHM_STRUCT *Shm, char option)
 	ASCII item[32];
 	CLOCK_ARG overclock  = {.sllong = id};
 	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
-	signed int offset;
-	for (offset = -20; offset <= 20; offset++) {
+	signed int lowestOperatingShift = Shm->Proc.Boost[BOOST(SIZE) - ratio]
+					- Shm->Proc.Boost[BOOST(MIN)],
+		medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+				+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1,
+		startingHotZone = Shm->Proc.Boost[BOOST(MAX)]
+				+(Shm->Proc.Boost[BOOST(MAX)] >> 2),
+		dangerShift = (unsigned int) (5100000000.0
+				/ Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
+				- Shm->Proc.Boost[BOOST(SIZE) - ratio],
+		offset;
+	const CUINT	hthMin = 16;
+		CUINT	hthMax = lowestOperatingShift + dangerShift,
+			hthWin = CUMIN(hthMin, hthMax);
+
+	Window *wOC = CreateWindow(wLayer, id, 1, hthWin, 34,
+				(TOP_HEADER_ROW + hthWin+2 < drawSize.height) ?
+					TOP_HEADER_ROW + 2 : 1);
+      if (wOC != NULL) {
+	for (offset = -lowestOperatingShift; offset <= dangerShift; offset++) {
 		overclock.Ratio = ratio | BOXKEY_OVERCLOCK;
 		overclock.Offset = offset;
 		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
@@ -3466,14 +3479,20 @@ void Top(SHM_STRUCT *Shm, char option)
 			multiplier, offset);
 
 		StoreTCell(wOC, overclock.sllong, item,
-			attribute[offset < -5 ? 1 : offset > 5 ? 2 : 0]);
+			attribute[multiplier < medianColdZone ?
+					1 : multiplier >= startingHotZone ?
+						2 : 0]);
 	}
 	sprintf((char*) item, " Under-Over Clock %1dC ", ratio);
 	StoreWindow(wOC, .title, (char*) item);
 
-	wOC->matrix.select.row  = +7;
-	wOC->matrix.scroll.vert = +13;
-
+	if (lowestOperatingShift >= hthWin) {
+		wOC->matrix.scroll.vert = (hthMax - hthWin) >> 1;
+		wOC->matrix.select.row  = lowestOperatingShift
+					- wOC->matrix.scroll.vert;
+	} else {
+		wOC->matrix.select.row  = lowestOperatingShift;
+	}
 	StoreWindow(wOC,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wOC,	.key.Down,	MotionDown_Win);
 	StoreWindow(wOC,	.key.Up,	MotionUp_Win);
