@@ -2756,9 +2756,9 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wHelp, SCANKEY_NULL," [Page-Dw]        ",MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL,"        Next page ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL," [Minus]          ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"  Scroll row down ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"  Scroll CPU down ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL," [Plus]           ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"    Scroll row up ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL,"    Scroll CPU up ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 
@@ -2784,7 +2784,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
 		},
 		{
-		LWK,HCK,HCK,HCK,LWK,LWK,LWK,LWK,LWK,LWK,
+		LWK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
@@ -2798,7 +2798,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	{0,"                                      ", {SCANKEY_NULL}	},
 	{0," Frequency view:                      ", {SCANKEY_NULL}	},
 	{1," %        Averages or Package C-States", {SCANKEY_PERCENT}	},
-	{1," .             Top frequency or Usage ", {SCANKEY_DOT}	},
 	{0,"                                      ", {SCANKEY_NULL}	},
 	{0," Task Monitoring view:                ", {SCANKEY_NULL}	},
 	{1," b                Sorting tasks order ", {SCANKEY_b}	},
@@ -2807,15 +2806,19 @@ void Top(SHM_STRUCT *Shm, char option)
 	{1," v         Show|Hide contextual value ", {SCANKEY_v}	},
 	{0,"                                      ", {SCANKEY_NULL}	},
 	{0," Any view:                            ", {SCANKEY_NULL}	},
+	{1," .             Top frequency or Usage ", {SCANKEY_DOT}	},
 	{1," {             Start CoreFreq Machine ", {SCANKEY_OPEN_BRACE}},
 	{1," }              Stop CoreFreq Machine ", {SCANKEY_CLOSE_BRACE}},
 	{1," F10            Stop tools processing ", {SCANKEY_F10}	},
+	{0,"                                      ", {SCANKEY_NULL}	},
+	{1,"  Up  PgUp                     Scroll ", {SCANKEY_NULL}	},
+	{1," Down PgDw                       CPU  ", {SCANKEY_NULL}	},
 	{0,"                                      ", {SCANKEY_NULL}	},
       };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
 	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
 				(TOP_HEADER_ROW + nmemb + 1 < drawSize.height) ?
-					TOP_HEADER_ROW + 2 : 1);
+					TOP_HEADER_ROW + 1 : 1);
       if (wHelp != NULL) {
 	unsigned int idx;
 	for (idx = 0; idx < nmemb; idx++)
@@ -4975,8 +4978,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerDeclare(30) hArch1 = {
 		.origin = {.col = drawSize.width - 30, .row = row},.length = 30,
 		.attr ={HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
-			LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,	\
-			LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,LWK,LWK
+			LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,	\
+			LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,LWK,LWK
 		},
 		.code ={']',' ','C','a','c','h','e','s',' ',		\
 			'L','1',' ','I','n','s','t','=',' ',' ',' ',	\
@@ -4998,13 +5001,13 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 
-	LayerDeclare(18) hBClk1 = {
-		.origin = {.col = drawSize.width - 18, .row = row},.length = 18,
-		.attr ={LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,		\
-			LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK
+	LayerDeclare(21) hArch2 = {
+		.origin = {.col = drawSize.width - 21, .row = row},.length = 21,
+		.attr ={LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,	\
+			LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK
 		},
-		.code ={'L','2','=',' ',' ',' ',' ',' ',		\
-			'L','3','=',' ',' ',' ',' ',' ','K','B'
+		.code ={'L','2','=',' ',' ',' ',' ',' ',' ',' ',	\
+			'L','3','=',' ',' ',' ',' ',' ',' ','K','B'
 		}
 	};
 
@@ -5041,15 +5044,15 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	sprintf(buffer, "%-4u" "%-5u", L2U_Size, L3U_Size);
 
-	hBClk1.code[ 3] = buffer[0];
-	hBClk1.code[ 4] = buffer[1];
-	hBClk1.code[ 5] = buffer[2];
-	hBClk1.code[ 6] = buffer[3];
-	hBClk1.code[11] = buffer[4];
-	hBClk1.code[12] = buffer[5];
-	hBClk1.code[13] = buffer[6];
-	hBClk1.code[14] = buffer[7];
-	hBClk1.code[15] = buffer[8];
+	hArch2.code[ 3] = buffer[0];
+	hArch2.code[ 4] = buffer[1];
+	hArch2.code[ 5] = buffer[2];
+	hArch2.code[ 6] = buffer[3];
+	hArch2.code[13] = buffer[4];
+	hArch2.code[14] = buffer[5];
+	hArch2.code[15] = buffer[6];
+	hArch2.code[16] = buffer[7];
+	hArch2.code[17] = buffer[8];
 
 	len = strlen(Shm->Proc.Brand);
 
@@ -5094,12 +5097,12 @@ void Top(SHM_STRUCT *Shm, char option)
 			hBClk0.length, hBClk0.attr, hBClk0.code);
 
 	LayerFillAt(layer,(hBClk0.origin.col + hBClk0.length),hBClk0.origin.row,
-			(hBClk1.origin.col - hBClk0.origin.col + hBClk0.length),
+			(hArch2.origin.col - hBClk0.origin.col + hBClk0.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 
-	LayerCopyAt(layer, hBClk1.origin.col, hBClk1.origin.row,
-			hBClk1.length, hBClk1.attr, hBClk1.code);
+	LayerCopyAt(layer, hArch2.origin.col, hArch2.origin.row,
+			hArch2.length, hArch2.attr, hArch2.code);
     }
 
     void Layout_Ruller_Load(Layer *layer, CUINT row)
@@ -6225,26 +6228,24 @@ void Top(SHM_STRUCT *Shm, char option)
 				Shm->SysGate.memInfo.totalram);
     }
 
-    void Layout_Load(Layer *layer, CUINT row)
+    void Layout_Load_UpperView(Layer *layer, CUINT row)
     {
 	sprintf(buffer, "%-2u", cpu);
-
-	LayerAt(layer, attr, 0, row) =					\
-		LayerAt(layer, attr, 0, (1 + row + MAX_ROWS)) =		\
-						MakeAttr(WHITE, 0, BLACK, 0);
-
-	LayerAt(layer, code, 0, row) =					\
-		LayerAt(layer, code, 0, (1 + row + MAX_ROWS)) = '#';
-
-	LayerAt(layer, code, 1, row) =					\
-		LayerAt(layer, code, 1, (1 + row + MAX_ROWS)) = buffer[0];
-
-	LayerAt(layer, code, 2, row) =					\
-		LayerAt(layer, code, 2, (1 + row + MAX_ROWS)) = buffer[1];
+	LayerAt(layer, attr, 0, row) = MakeAttr(WHITE, 0, BLACK, 0);
+	LayerAt(layer, code, 0, row) = '#';
+	LayerAt(layer, code, 1, row) = buffer[0];
+	LayerAt(layer, code, 2, row) = buffer[1];
 
 	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
-
 	LayerAt(layer, code, 3, row) = 0x20;
+    }
+
+    void Layout_Load_LowerView(Layer *layer, CUINT row)
+    {
+	LayerAt(layer, attr, 0, (1 + row + MAX_ROWS))=MakeAttr(WHITE,0,BLACK,0);
+	LayerAt(layer, code, 0, (1 + row + MAX_ROWS)) = '#';
+	LayerAt(layer, code, 1, (1 + row + MAX_ROWS)) = buffer[0];
+	LayerAt(layer, code, 2, (1 + row + MAX_ROWS)) = buffer[1];
     }
 
     void Draw_Load(Layer *layer, CUINT row)
@@ -6837,7 +6838,10 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	row++;
 
-	Layout_Load(layer, row);
+	Layout_Load_UpperView(layer, row);
+
+	if (drawFlag.view != V_PACKAGE)
+		Layout_Load_LowerView(layer, row);
 
       if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
@@ -7616,12 +7620,12 @@ int Help(char *appName)
 		"\t-c\tMonitor Counters\n"				\
 		"\t-i\tMonitor Instructions\n"				\
 		"\t-s\tPrint System Information\n"			\
+		"\t-j\tPrint System Information (json-encoded)\n" 	\
 		"\t-M\tPrint Memory Controller\n"			\
 		"\t-R\tPrint System Registers\n"			\
 		"\t-m\tPrint Topology\n"				\
 		"\t-u\tPrint CPUID\n"					\
 		"\t-k\tPrint Kernel\n"					\
-		"\t-j\tPrint json-encoded system information\n" 	\
 		"\t-h\tPrint out this message\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
