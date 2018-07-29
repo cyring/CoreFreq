@@ -3360,6 +3360,9 @@ void PowerThermal(CORE *Core)
 	{_Nehalem_Lynnfield,	1, 1},	// 06_1E
 	{_Nehalem_MB,		1, 1},	// 06_1F
 	{_Nehalem_EX,		1, 1},	// 06_2E
+	{_Westmere,		0, 1},	// 06_25
+	{_Westmere_EP,		0, 1},	// 06_2C
+	{_Westmere_EX,		0, 1},	// 06_2F
 	{_SandyBridge,		1, 1},	// 06_2A
 	{_SandyBridge_EP,	1, 1},	// 06_2D
 	{_Xeon_Phi,		0, 1},	// 06_57

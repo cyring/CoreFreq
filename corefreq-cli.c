@@ -1286,6 +1286,8 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		"Enhanced Halt State%.*sC1E       <%3s>",
 		width - 37, hSpace, enabled(bix));
 
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
 	bix = Shm->Proc.Technology.C1A == 1;
 	printv(OutFunc, BOXKEY_C1A, attrib[bix], width, 2,
 		"C1 Auto Demotion%.*sC1A       <%3s>",
@@ -1305,7 +1307,9 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	printv(OutFunc, BOXKEY_C3U, attrib[bix], width, 2,
 		"C3 UnDemotion%.*sC3U       <%3s>",
 		width - 31, hSpace, enabled(bix));
-
+    }
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    {
 	bix = Shm->Proc.Technology.CC6 == 1;
 	printv(OutFunc, BOXKEY_CC6, attrib[bix], width, 2,
 		"Core C6 State%.*sCC6       <%3s>",
@@ -1315,7 +1319,7 @@ void SysInfoPerfMon(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	printv(OutFunc, BOXKEY_PC6, attrib[bix], width, 2,
 		"Package C6 State%.*sPC6       <%3s>",
 		width - 34, hSpace, enabled(bix));
-
+    }
 	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
 	printv(OutFunc, SCANKEY_NULL, attrib[bix], width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
