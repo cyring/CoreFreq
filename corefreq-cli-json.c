@@ -986,7 +986,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
                 json_end_object(&s);
             }
             json_key(&s, "FactoryFreq");
-            json_literal(&s, "%u", Shm->Proc.Features.FactoryFreq);
+            json_literal(&s, "%u", Shm->Proc.Features.Factory.Freq);
 
             json_key(&s, "InvariantTSC");
             json_literal(&s, "%u", Shm->Proc.Features.InvariantTSC);

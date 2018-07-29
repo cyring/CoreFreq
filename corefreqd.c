@@ -842,11 +842,8 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
 	Shm->Uncore.Unit.BusSpeed = 0b00;
@@ -1039,11 +1036,8 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
 	Shm->Uncore.Unit.BusSpeed = 0b00;
@@ -1329,11 +1323,8 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
 	Shm->Uncore.Unit.BusSpeed = 0b00;
@@ -1672,21 +1663,16 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.CtrlSpeed /= 1000000L;
+	Shm->Uncore.CtrlSpeed *= Shm->Cpu[cpu].Clock.Hz;
+	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
 		4800 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 10 ?
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
 				5866 : 6400;
 
-	Shm->Uncore.Bus.Speed = (Proc->Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;
@@ -1720,18 +1706,13 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.CtrlSpeed /= 1000000L;
+	Shm->Uncore.CtrlSpeed *= Shm->Cpu[cpu].Clock.Hz;
+	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
 
-	Shm->Uncore.Bus.Speed = (Proc->Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;
@@ -1877,11 +1858,8 @@ void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	}
 
 	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;
@@ -1938,11 +1916,8 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	}
 
 	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;
@@ -2236,11 +2211,8 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	}
 
-	Shm->Uncore.Bus.Speed = (Shm->Proc.Boost[BOOST(MAX)]
-				* Shm->Cpu[cpu].Clock.Hz
-				* Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.FactoryFreq;
-	Shm->Uncore.Bus.Speed /= 1000000L;
+	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b01;

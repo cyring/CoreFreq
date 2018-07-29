@@ -518,7 +518,7 @@ static void Query_Features(void *pArg)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	    }
-	    iArg->Features.FactoryFreq = Intel_Brand(iArg->Features.Info.Brand);
+	    iArg->Features.Factory.Freq=Intel_Brand(iArg->Features.Info.Brand);
 
 	} else if (iArg->Features.Info.Vendor.CRC == CRC_AMD) {
 		// General Core Performance 64 bits Counters.
@@ -687,10 +687,10 @@ CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 
-	if (Proc->Features.FactoryFreq > 0) {
-		clock.Hz = (Proc->Features.FactoryFreq * 1000000L) / ratio;
-		clock.Q  = Proc->Features.FactoryFreq / ratio;
-		clock.R  = (Proc->Features.FactoryFreq % ratio) * PRECISION;
+	if (Proc->Features.Factory.Freq > 0) {
+		clock.Hz = (Proc->Features.Factory.Freq * 1000000L) / ratio;
+		clock.Q  = Proc->Features.Factory.Freq / ratio;
+		clock.R  = (Proc->Features.Factory.Freq % ratio) * PRECISION;
 	}
 	return(clock);
 };
@@ -4260,13 +4260,18 @@ void Controller_Init(void)
 		clock.Hz = 100000000L;
 	}
 
-	if (Proc->Features.FactoryFreq != 0) {
+	if (Proc->Features.Factory.Freq != 0) {
 	    if (ratio == 0) // Fix ratio
-		ratio = Proc->Boost[BOOST(MAX)] = Proc->Features.FactoryFreq
+		ratio = Proc->Boost[BOOST(MAX)] = Proc->Features.Factory.Freq
 						/ clock.Q;
 	} else if (ratio > 0) { // Fix factory frequency (MHz)
-		Proc->Features.FactoryFreq = (ratio * clock.Hz) / 1000000L;
+		Proc->Features.Factory.Freq = (ratio * clock.Hz) / 1000000L;
 	}
+	Proc->Features.Factory.Clock.Q  = clock.Q;
+	Proc->Features.Factory.Clock.R  = clock.R;
+	Proc->Features.Factory.Clock.Hz = clock.Hz;
+	Proc->Features.Factory.Ratio	= Proc->Features.Factory.Freq * 1000000L
+					/ Proc->Features.Factory.Clock.Hz;
 
 	if ((AutoClock != 0) && (ratio != 0)) {
 		struct kmem_cache *hwCache = NULL;

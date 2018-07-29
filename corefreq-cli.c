@@ -491,8 +491,8 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK
+		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,
+		HWK,HWK,HWK,HWK,LWK,LWK
 	    }
 	};
 	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
@@ -582,9 +582,11 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Factory");
 	printv(OutFunc, SCANKEY_NULL, attrib[3], width, 0,
-		"%.*s""%5u""%.*s""[%4d ]",
-		22, hSpace, Shm->Proc.Features.FactoryFreq,
-		23, hSpace, Shm->Proc.Boost[BOOST(MAX)]);
+		"%.*s""%5u""%.*s""[%4d ]""%.*s""[%6.2f]",
+		22, hSpace, Shm->Proc.Features.Factory.Freq,
+		23, hSpace, Shm->Proc.Features.Factory.Ratio,
+		(OutFunc == NULL) ? 15 : 10, hSpace,
+			Shm->Proc.Features.Factory.Clock.Hz / 1000000.0);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Turbo Boost");
     if (Shm->Proc.Features.Ratio_Unlock)
@@ -2976,7 +2978,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		.wth = 1,
 		.hth = CUMIN(18, (drawSize.height - TOP_HEADER_ROW - 2))
 	};
-	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 1};
+	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 2};
 	CUINT winWidth = 74;
 	void (*SysInfoFunc)(SHM_STRUCT*, CUINT, CELL_FUNC OutFunc) = NULL;
 	char *title = NULL;
@@ -3455,9 +3457,9 @@ void Top(SHM_STRUCT *Shm, char option)
 	signed int lowestOperatingShift = Shm->Proc.Boost[BOOST(SIZE) - ratio]
 					- Shm->Proc.Boost[BOOST(MIN)],
 		medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-				+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1,
-		startingHotZone = Shm->Proc.Boost[BOOST(MAX)]
-				+(Shm->Proc.Boost[BOOST(MAX)] >> 2),
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+		startingHotZone = Shm->Proc.Features.Factory.Ratio
+				+(Shm->Proc.Features.Factory.Ratio >> 2),
 		dangerShift = (unsigned int) (5100000000.0
 				/ Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
 				- Shm->Proc.Boost[BOOST(SIZE) - ratio],

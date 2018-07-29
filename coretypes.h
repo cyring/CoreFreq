@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.29.2"
+#define COREFREQ_VERSION	"1.30.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -866,18 +866,22 @@ typedef struct	// AMD Extended ID Leaf.
 
 typedef struct	// BSP CPUID features.
 {
-	CPUID_FUNCTION Info;
+	CPUID_FUNCTION		Info;
 
-	CPUID_0x00000001 Std;
-	CPUID_0x00000005 MWait;
-	CPUID_0x00000006 Power;
-	CPUID_0x00000007 ExtFeature;
-	CPUID_0x0000000a PerfMon;
-	CPUID_0x80000001 ExtInfo;
-	CPUID_0x80000007 AdvPower;
-	CPUID_0x80000008 leaf80000008;
+	CPUID_0x00000001	Std;
+	CPUID_0x00000005	MWait;
+	CPUID_0x00000006	Power;
+	CPUID_0x00000007	ExtFeature;
+	CPUID_0x0000000a	PerfMon;
+	CPUID_0x80000001	ExtInfo;
+	CPUID_0x80000007	AdvPower;
+	CPUID_0x80000008	leaf80000008;
 
-	unsigned int	FactoryFreq;
+	struct {
+		CLOCK		Clock;
+		unsigned int	Freq,
+				Ratio;
+	} Factory;
 
 	struct {
 		Bit32	InvariantTSC	:  8-0,
