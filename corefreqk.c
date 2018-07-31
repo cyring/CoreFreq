@@ -1515,7 +1515,8 @@ void Intel_Platform_Turbo(void)
 
 	while (pSpecific->brandSubStr != NULL) {
 		if (strstr(Proc->Features.Info.Brand, pSpecific->brandSubStr)) {
-			Proc->Features.Ratio_Unlock = pSpecific->ratioUnlocked;
+			Proc->Features.Ratio_Unlock = pSpecific->CoreUnlocked;
+			Proc->Features.Uncore_Unlock= pSpecific->UncoreUnlocked;
 			break;
 		}
 		pSpecific++;
@@ -1845,13 +1846,35 @@ void SandyBridge_Uncore_Ratio(void)
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = Proc->Boost[BOOST(MAX)];
 }
 
-void Haswell_Uncore_Ratio(void)
+long Haswell_Uncore_Ratio(CLOCK_ARG *pOverClock)
 {
+	long rc = 0;
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
 	RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
 
+	if (pOverClock != NULL) {
+		unsigned short WrRdMSR = 0;
+		switch (pOverClock->Ratio) {
+		case 1:
+			UncoreRatio.MaxRatio += pOverClock->Offset;
+			WrRdMSR = 1;
+			break;
+		case 2:
+			UncoreRatio.MinRatio += pOverClock->Offset;
+			WrRdMSR = 1;
+			break;
+		}
+		if (WrRdMSR) {
+			WRMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
+			RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
+			rc = 2;
+		}
+	}
+
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = UncoreRatio.MinRatio;
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreRatio.MaxRatio;
+
+	return(rc);
 }
 
 void SandyBridge_PowerInterface(void)
@@ -2768,7 +2791,7 @@ void Query_Haswell_EP(void)
 {
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
-	Haswell_Uncore_Ratio();
+	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 }
 
@@ -2776,7 +2799,7 @@ void Query_Broadwell(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
-	Haswell_Uncore_Ratio();
+	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 }
 
@@ -2784,7 +2807,7 @@ void Query_Skylake_X(void)
 {
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
-	Haswell_Uncore_Ratio();
+	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 }
 
@@ -7125,6 +7148,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		if (Arch[Proc->ArchID].OverClock != NULL)
 			rc = Arch[Proc->ArchID].OverClock(&OverClock);
 		Controller_Start(1);
+		}
+		break;
+	case COREFREQ_IOCTL_UNCORE_CLOCK:
+		if (Proc->Features.Uncore_Unlock) {
+			CLOCK_ARG OverClock = {.sllong = arg};
+			Controller_Stop(1);
+			rc = Haswell_Uncore_Ratio(&OverClock);
+			Controller_Start(1);
 		}
 		break;
 	default:

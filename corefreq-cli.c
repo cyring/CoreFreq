@@ -607,10 +607,20 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	sprintf(pfx, "%2dC", activeCores);
 	PrintCoreBoost(pfx, boost, 0, SCANKEY_NULL);
       }
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Uncore");
 
-	PrintUncoreBoost("Min", UNCORE_BOOST(MIN), 0, SCANKEY_NULL);
-	PrintUncoreBoost("Max", UNCORE_BOOST(MAX), 0, SCANKEY_NULL);
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Uncore");
+    if (Shm->Proc.Features.Uncore_Unlock) {
+	CLOCK_ARG uncoreClock = {.Ratio = 0, .Offset = 0};
+
+	uncoreClock.Ratio = BOXKEY_UNCORE_CLOCK_OR | 2;
+	PrintUncoreBoost("Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong);
+
+	uncoreClock.Ratio = BOXKEY_UNCORE_CLOCK_OR | 1;
+	PrintUncoreBoost("Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong);
+    } else {
+	PrintUncoreBoost("Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL);
+	PrintUncoreBoost("Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL);
+    }
 
     if (Shm->Proc.Features.TDP_Levels > 0) {
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
@@ -3492,11 +3502,12 @@ void Top(SHM_STRUCT *Shm, char option)
 					1 : multiplier >= startingHotZone ?
 						2 : 0]);
 	}
-	sprintf((char*) item, " Under-Over Clock %1dC ", ratio);
+	sprintf((char*) item, " Under/Over-Clock %1dC ", ratio);
 	StoreWindow(wOC, .title, (char*) item);
 
 	if (lowestOperatingShift >= hthWin) {
-		wOC->matrix.scroll.vert = (hthMax - hthWin) >> 1;
+		wOC->matrix.scroll.vert = hthMax > (hthMin << 1) ?
+					  hthMax >> 1 : (hthMax - hthWin) >> 1;
 		wOC->matrix.select.row  = lowestOperatingShift
 					- wOC->matrix.scroll.vert;
 	} else {
@@ -3516,6 +3527,63 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreWindow(wOC,	.key.WinUp,	MotionOriginUp_Win);
       }
 	return(wOC);
+    }
+
+    Window *CreateUC(unsigned long long id)
+    {
+	ATTRIBUTE attribute[28] = {
+		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
+		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+	};
+	ASCII item[32];
+	CLOCK_ARG overclock  = {.sllong = id};
+	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
+	signed int offset,
+		lowestOperatingShift  = Shm->Proc.Features.Factory.Ratio
+				      - Shm->Proc.Boost[BOOST(MIN)],
+		highestOperatingShift = Shm->Proc.Features.Factory.Ratio >> 4;
+	const CUINT	hthMin = 16;
+		CUINT	hthMax = lowestOperatingShift + highestOperatingShift,
+			hthWin = CUMIN(hthMin, hthMax);
+
+	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40,
+				(TOP_HEADER_ROW + hthWin+2 < drawSize.height) ?
+					TOP_HEADER_ROW + 2 : 1);
+      if (wUC != NULL) {
+	for (offset = -lowestOperatingShift;
+		offset <= highestOperatingShift;
+			offset++)
+		{
+		overclock.Ratio = ratio | BOXKEY_UNCORE_CLOCK;
+		overclock.Offset = offset;
+		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio];
+		multiplier += offset;
+
+		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
+			(double)(multiplier
+				* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
+				/ 1000000.0,
+			multiplier, offset);
+
+		StoreTCell(wUC, overclock.sllong, item, attribute);
+		}
+	sprintf((char*) item, " %s Clock Uncore ", ratio == 1 ? "Max" : "Min");
+	StoreWindow(wUC, .title, (char*) item);
+
+	StoreWindow(wUC,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wUC,	.key.Down,	MotionDown_Win);
+	StoreWindow(wUC,	.key.Up,	MotionUp_Win);
+	StoreWindow(wUC,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wUC,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wUC,	.key.Home,	MotionTop_Win);
+	StoreWindow(wUC,	.key.End,	MotionBottom_Win);
+
+	StoreWindow(wUC,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wUC,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wUC,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wUC,	.key.WinUp,	MotionOriginUp_Win);
+      }
+	return(wUC);
     }
 
     void TrapScreenSize(int caught)
@@ -4758,6 +4826,16 @@ void Top(SHM_STRUCT *Shm, char option)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_UNCORE_CLOCK_MAX:
+    case BOXKEY_UNCORE_CLOCK_MIN:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateUC(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
     case SCANKEY_F10:
     case BOXKEY_TOOLS_MACHINE:
     {
@@ -4904,32 +4982,39 @@ void Top(SHM_STRUCT *Shm, char option)
     }
     break;
     default:
-	if (scan->key & TRACK_TASK) {
+      if (scan->key & TRACK_TASK) {
 		Shm->SysGate.trackTask = scan->key & TRACK_MASK;
 		drawFlag.layout = 1;
-	}
-	else if (scan->key & CPU_ONLINE) {
+      }
+      else if (scan->key & CPU_ONLINE) {
 		const unsigned long cpu = scan->key & CPUID_MASK;
 		if (!RING_FULL(Shm->Ring[0]))
 			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
-	}
-	else if (scan->key & CPU_OFFLINE) {
+      }
+      else if (scan->key & CPU_OFFLINE) {
 		const unsigned long cpu = scan->key & CPUID_MASK;
 		if (!RING_FULL(Shm->Ring[0]))
 			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
-	}
-	else {
-	  CLOCK_ARG overclock  = {.sllong = scan->key};
-	  if (overclock.Ratio & BOXKEY_OVERCLOCK)
-	  {
-	    overclock.Ratio &= OVERCLOCK_RATIO_MASK;
+      }
+      else {
+	CLOCK_ARG overclock  = {.sllong = scan->key};
+	if (overclock.Ratio & BOXKEY_OVERCLOCK)
+	{
+	  overclock.Ratio &= OVERCLOCK_RATIO_MASK;
 
-	  if (!RING_FULL(Shm->Ring[0]))
-	    RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_OVERCLOCK, overclock.sllong);
-	  }
-	  else
-		return(-1);
+	 if (!RING_FULL(Shm->Ring[0]))
+	   RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_OVERCLOCK, overclock.sllong);
 	}
+	else if (overclock.Ratio & BOXKEY_UNCORE_CLOCK)
+	{
+	  overclock.Ratio &= OVERCLOCK_RATIO_MASK;
+
+	 if (!RING_FULL(Shm->Ring[0]))
+	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK,overclock.sllong);
+	}
+	else
+		return(-1);
+      }
     }
 	return(0);
   }

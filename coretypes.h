@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.30.1"
+#define COREFREQ_VERSION	"1.30.2"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -893,7 +893,8 @@ typedef struct	// BSP CPUID features.
 			TDP_Cfg_Lock	: 15-14,
 			TDP_Cfg_Level	: 17-15,
 			TurboRatio_Lock : 18-17,
-			UnusedBits	: 24-18,
+			Uncore_Unlock	: 19-18,
+			UnusedBits	: 24-19,
 			SpecTurboRatio	: 32-24;
 	};
 } FEATURES;
@@ -1280,6 +1281,7 @@ typedef struct {
 #define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x15)
 #define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
 #define COREFREQ_IOCTL_OVERCLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x17)
+#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x18)
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 

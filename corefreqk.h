@@ -401,8 +401,10 @@ typedef struct
 
 
 typedef struct {
-	char		*brandSubStr;
-	unsigned int	ratioUnlocked;
+	char			*brandSubStr;
+	unsigned long long	CoreUnlocked	:  1-0,
+				UncoreUnlocked	:  2-1,
+				freeToUse	: 64-2;
 } PROCESSOR_SPECIFIC;
 
 typedef struct
@@ -1038,7 +1040,17 @@ static PROCESSOR_SPECIFIC Void_Specific[] = {
 static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	{
 	.brandSubStr = "Intel(R) Core(TM) i7 CPU 920",
-	.ratioUnlocked = 0
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0
+	},
+	{NULL, 0}
+};
+
+static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
+	{
+	.brandSubStr = "Intel(R) Core(TM) i5-7500 CPU",
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 1
 	},
 	{NULL, 0}
 };
@@ -1957,7 +1969,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake
 		},
-	.Specific = Void_Specific
+	.Specific = Kabylake_Specific
 	},
 /* 43*/	{
 	.Signature = _Kabylake_UY,
