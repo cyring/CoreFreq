@@ -3531,19 +3531,27 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateUC(unsigned long long id)
     {
-	ATTRIBUTE attribute[28] = {
+	ATTRIBUTE attribute[2][28] = {
+		{
 		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
 		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		},
+		{
+		LWK,HRK,HRK,HRK,HRK,LRK,HRK,HRK,LWK,HDK,HDK,HDK,LWK,LWK,
+		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
+		}
 	};
 	ASCII item[32];
 	CLOCK_ARG overclock  = {.sllong = id};
 	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
 	signed int offset,
-		lowestOperatingShift  = Shm->Proc.Features.Factory.Ratio
-				      - Shm->Proc.Boost[BOOST(MIN)],
-		highestOperatingShift = Shm->Proc.Features.Factory.Ratio >> 4;
+	lowestOperatingShift = abs(Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
+				 - Shm->Proc.Boost[BOOST(MIN)]),
+	highestOperatingShift	= Shm->Proc.Features.Factory.Ratio
+				+(Shm->Proc.Features.Factory.Ratio >> 3)
+				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio];
 	const CUINT	hthMin = 16;
-		CUINT	hthMax = lowestOperatingShift + highestOperatingShift,
+		CUINT	hthMax = 1 + lowestOperatingShift+highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
 	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40,
@@ -3565,11 +3573,22 @@ void Top(SHM_STRUCT *Shm, char option)
 				/ 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wUC, overclock.sllong, item, attribute);
+		StoreTCell(wUC, overclock.sllong, item,
+			attribute[multiplier > Shm->Proc.Features.Factory.Ratio?
+					1 : 0]);
 		}
 	sprintf((char*) item, " %s Clock Uncore ", ratio == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);
 
+	if (lowestOperatingShift >= hthWin) {
+		wUC->matrix.scroll.vert = hthMax
+					- hthWin * (1 + (highestOperatingShift
+							/ hthWin));
+		wUC->matrix.select.row  = lowestOperatingShift
+					- wUC->matrix.scroll.vert;
+	} else {
+		wUC->matrix.select.row  = lowestOperatingShift;
+	}
 	StoreWindow(wUC,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wUC,	.key.Down,	MotionDown_Win);
 	StoreWindow(wUC,	.key.Up,	MotionUp_Win);
