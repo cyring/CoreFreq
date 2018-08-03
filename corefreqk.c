@@ -6978,8 +6978,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					SpeedStep_Enable = arg;
 					Controller_Stop(1);
+					SpeedStep_Enable = arg;
 					Controller_Start(1);
 					SpeedStep_Enable = -1;
 					rc = 0;
@@ -6990,8 +6990,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					C1E_Enable = arg;
 					Controller_Stop(1);
+					C1E_Enable = arg;
 					Controller_Start(1);
 					C1E_Enable = -1;
 					rc = 0;
@@ -7002,8 +7002,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					TurboBoost_Enable = arg;
 					Controller_Stop(1);
+					TurboBoost_Enable = arg;
 					Controller_Start(1);
 					TurboBoost_Enable = -1;
 					if (Proc->ArchID == AMD_Family_17h) {
@@ -7019,8 +7019,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					C1A_Enable = arg;
 					Controller_Stop(1);
+					C1A_Enable = arg;
 					Controller_Start(1);
 					C1A_Enable = -1;
 					rc = 0;
@@ -7031,8 +7031,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					C3A_Enable = arg;
 					Controller_Stop(1);
+					C3A_Enable = arg;
 					Controller_Start(1);
 					C3A_Enable = -1;
 					rc = 0;
@@ -7043,8 +7043,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					C1U_Enable = arg;
 					Controller_Stop(1);
+					C1U_Enable = arg;
 					Controller_Start(1);
 					C1U_Enable = -1;
 					rc = 0;
@@ -7055,8 +7055,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					C3U_Enable = arg;
 					Controller_Stop(1);
+					C3U_Enable = arg;
 					Controller_Start(1);
 					C3U_Enable = -1;
 					rc = 0;
@@ -7067,8 +7067,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					CC6_Enable = arg;
 					Controller_Stop(1);
+					CC6_Enable = arg;
 					Controller_Start(1);
 					CC6_Enable = -1;
 					rc = 0;
@@ -7079,8 +7079,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					PC6_Enable = arg;
 					Controller_Stop(1);
+					PC6_Enable = arg;
 					Controller_Start(1);
 					PC6_Enable = -1;
 					rc = 0;
@@ -7088,8 +7088,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		break;
 	case COREFREQ_IOCTL_PKGCST:
-		PkgCStateLimit = arg;
 		Controller_Stop(1);
+		PkgCStateLimit = arg;
 		Controller_Start(1);
 		PkgCStateLimit = -1;
 		rc = 0;
@@ -7098,8 +7098,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					IOMWAIT_Enable = arg;
 					Controller_Stop(1);
+					IOMWAIT_Enable = arg;
 					Controller_Start(1);
 					IOMWAIT_Enable = -1;
 					rc = 0;
@@ -7107,22 +7107,22 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		break;
 	case COREFREQ_IOCTL_IORCST:
-		CStateIORedir = arg;
 		Controller_Stop(1);
+		CStateIORedir = arg;
 		Controller_Start(1);
 		CStateIORedir = -1;
 		rc = 0;
 		break;
 	case COREFREQ_IOCTL_ODCM:
-		ODCM_Enable = arg;
 		Controller_Stop(1);
+		ODCM_Enable = arg;
 		Controller_Start(1);
 		ODCM_Enable = -1;
 		rc = 0;
 		break;
 	case COREFREQ_IOCTL_ODCM_DC:
-		ODCM_DutyCycle = arg;
 		Controller_Stop(1);
+		ODCM_DutyCycle = arg;
 		Controller_Start(1);
 		ODCM_DutyCycle = -1;
 		rc = 0;
