@@ -568,11 +568,6 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		width - 21, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.Ratio_Unlock],
-		width, 2, "Overclocking%.*s[%6s]",
-		width - 23, hSpace,
-		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
-
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Frequency%.*s(Mhz)%.*sRatio",
 		12, hSpace, 23 - (OutFunc == NULL), hSpace);
@@ -580,15 +575,20 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	PrintCoreBoost("Min", BOOST(MIN), 0, SCANKEY_NULL);
 	PrintCoreBoost("Max", BOOST(MAX), 0, SCANKEY_NULL);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Factory");
-	printv(OutFunc, SCANKEY_NULL, attrib[3], width, 0,
-		"%.*s""%5u""%.*s""[%4d ]""%.*s""[%6.2f]",
-		22, hSpace, Shm->Proc.Features.Factory.Freq,
-		23, hSpace, Shm->Proc.Features.Factory.Ratio,
-		(OutFunc == NULL) ? 15 : 10, hSpace,
+	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Factory%.*s[%6.2f]",
+		(OutFunc == NULL) ? 62 : 58, hSpace,
 			Shm->Proc.Features.Factory.Clock.Hz / 1000000.0);
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Turbo Boost");
+	printv(OutFunc, SCANKEY_NULL, attrib[3], width, 0,
+		"%.*s""%5u""%.*s""[%4d ]",
+		22, hSpace, Shm->Proc.Features.Factory.Freq,
+		23, hSpace, Shm->Proc.Features.Factory.Ratio);
+
+	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.Ratio_Unlock],
+		width, 2,
+		"Turbo Boost%.*s[%6s]", width - 22, hSpace,
+		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
+
     if (Shm->Proc.Features.Ratio_Unlock)
       for (boost = BOOST(1C), activeCores = 1;
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
@@ -608,7 +608,10 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	PrintCoreBoost(pfx, boost, 0, SCANKEY_NULL);
       }
 
-	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2, "Uncore");
+	printv(OutFunc, SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
+		width, 2, "Uncore%.*s[%6s]", width - 17, hSpace,
+		Shm->Proc.Features.Uncore_Unlock ? "UNLOCK" : "LOCK");
+
     if (Shm->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.Ratio = 0, .Offset = 0};
 
@@ -3468,25 +3471,28 @@ void Top(SHM_STRUCT *Shm, char option)
 	ASCII item[32];
 	CLOCK_ARG overclock  = {.sllong = id};
 	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
-	signed int lowestOperatingShift = Shm->Proc.Boost[BOOST(SIZE) - ratio]
-					- Shm->Proc.Boost[BOOST(MIN)],
+	signed int offset,
+		lowestOperatingShift= abs(Shm->Proc.Boost[BOOST(SIZE) - ratio]
+					- Shm->Proc.Boost[BOOST(MIN)]),
 		medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 		startingHotZone = Shm->Proc.Features.Factory.Ratio
-				+(Shm->Proc.Features.Factory.Ratio >> 2),
-		dangerShift = (unsigned int) (5100000000.0
+				+(Shm->Proc.Features.Factory.Ratio * 2 / 5),
+		highestOperatingShift = (unsigned int) (5100000000.0
 				/ Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
-				- Shm->Proc.Boost[BOOST(SIZE) - ratio],
-		offset;
+				- Shm->Proc.Boost[BOOST(SIZE) - ratio];
 	const CUINT	hthMin = 16;
-		CUINT	hthMax = lowestOperatingShift + dangerShift,
+		CUINT	hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
 	Window *wOC = CreateWindow(wLayer, id, 1, hthWin, 34,
 				(TOP_HEADER_ROW + hthWin+2 < drawSize.height) ?
 					TOP_HEADER_ROW + 2 : 1);
       if (wOC != NULL) {
-	for (offset = -lowestOperatingShift; offset <= dangerShift; offset++) {
+	for (offset = -lowestOperatingShift;
+		offset <= highestOperatingShift;
+			offset++)
+		{
 		overclock.Ratio = ratio | BOXKEY_OVERCLOCK;
 		overclock.Offset = offset;
 		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
@@ -3501,13 +3507,14 @@ void Top(SHM_STRUCT *Shm, char option)
 			attribute[multiplier < medianColdZone ?
 					1 : multiplier >= startingHotZone ?
 						2 : 0]);
-	}
+		}
 	sprintf((char*) item, " Under/Over-Clock %1dC ", ratio);
 	StoreWindow(wOC, .title, (char*) item);
 
 	if (lowestOperatingShift >= hthWin) {
-		wOC->matrix.scroll.vert = hthMax > (hthMin << 1) ?
-					  hthMax >> 1 : (hthMax - hthWin) >> 1;
+		wOC->matrix.scroll.vert = hthMax
+					- hthWin * (1 + (highestOperatingShift
+							/ hthWin));
 		wOC->matrix.select.row  = lowestOperatingShift
 					- wOC->matrix.scroll.vert;
 	} else {
@@ -3548,10 +3555,12 @@ void Top(SHM_STRUCT *Shm, char option)
 	lowestOperatingShift = abs(Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
 				 - Shm->Proc.Boost[BOOST(MIN)]),
 	highestOperatingShift	= Shm->Proc.Features.Factory.Ratio
-				+(Shm->Proc.Features.Factory.Ratio >> 3)
-				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio];
+				+(Shm->Proc.Features.Factory.Ratio >> 1)
+				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio],
+	startingHotZone = Shm->Proc.Features.Factory.Ratio +
+			+(Shm->Proc.Features.Factory.Ratio * 2 / 5);
 	const CUINT	hthMin = 16;
-		CUINT	hthMax = 1 + lowestOperatingShift+highestOperatingShift,
+		CUINT	hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
 	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40,
@@ -3574,8 +3583,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			multiplier, offset);
 
 		StoreTCell(wUC, overclock.sllong, item,
-			attribute[multiplier > Shm->Proc.Features.Factory.Ratio?
-					1 : 0]);
+			attribute[multiplier > startingHotZone ? 1 : 0]);
 		}
 	sprintf((char*) item, " %s Clock Uncore ", ratio == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);

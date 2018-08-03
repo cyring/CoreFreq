@@ -496,6 +496,8 @@ extern void Query_IvyBridge(void) ;
 extern void Query_IvyBridge_EP(void) ;
 #define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
 
+extern void Query_Haswell(void) ;
+
 extern void Query_Haswell_EP(void) ;
 static void PerCore_Haswell_EP_Query(void *arg) ;
 static void Start_Haswell_EP(void *arg) ;
@@ -1697,7 +1699,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 /* 30*/	{
 	.Signature = _Haswell_DT,
-	.Query = Query_IvyBridge,
+	.Query = Query_Haswell,
 	.Update = PerCore_IvyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,

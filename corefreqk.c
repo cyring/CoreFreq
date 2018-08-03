@@ -2787,8 +2787,19 @@ void Query_IvyBridge_EP(void)
 	SandyBridge_PowerInterface();
 }
 
+void Query_Haswell(void)
+{
+	Proc->Features.Uncore_Unlock = 1;
+	Nehalem_Platform_Info();
+	HyperThreading_Technology();
+	SandyBridge_Uncore_Ratio();
+	Intel_Turbo_TDP_Config();
+	SandyBridge_PowerInterface();
+}
+
 void Query_Haswell_EP(void)
 {
+	Proc->Features.Uncore_Unlock = 1;
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2797,6 +2808,7 @@ void Query_Haswell_EP(void)
 
 void Query_Broadwell(void)
 {
+	Proc->Features.Uncore_Unlock = 1;
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2805,6 +2817,7 @@ void Query_Broadwell(void)
 
 void Query_Skylake_X(void)
 {
+	Proc->Features.Uncore_Unlock = 1;
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -6071,6 +6084,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_PWR_ACCU(Proc, UNCORE);
 
+			Delta_PWR_ACCU(Proc, RAM);
+
 			Save_PC02(Proc);
 
 			Save_PC03(Proc);
@@ -6088,6 +6103,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, CORES);
 
 			Save_PWR_ACCU(Proc, UNCORE);
+
+			Save_PWR_ACCU(Proc, RAM);
 
 			Sys_Tick(Proc);
 		}
