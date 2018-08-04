@@ -6596,12 +6596,15 @@ void Top(SHM_STRUCT *Shm, char option)
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = sprintf(buffer,
-			"%7.2f "				\
-			"%7d   %5.4f",
-			Flop->Relative.Freq,
-			Flop->Voltage.VID,
-			Flop->Voltage.Vcore);
+	if (Flop->Voltage.VID != 0)
+		len = sprintf(buffer,	"%7.2f "	\
+					"%7d   %5.4f",
+					Flop->Relative.Freq,
+					Flop->Voltage.VID,
+					Flop->Voltage.Vcore);
+	else
+		len = sprintf(buffer, "%7.2f ", Flop->Relative.Freq);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
