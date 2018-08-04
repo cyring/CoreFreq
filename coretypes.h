@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.30.3"
+#define COREFREQ_VERSION	"1.30.4"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -141,6 +141,22 @@ enum SYS_REG {
 #define THERMAL_FORMULA_AMD_17h \
 	0b0000000000000000000000010000000100000000000000000000000000000000
 
+#define COMPUTE_THERMAL_INTEL(Temp, Target, Sensor)			\
+		(Temp = Target - Sensor)
+
+#define COMPUTE_THERMAL_AMD(Temp, Target, Sensor)			\
+		/*( ToDo )*/
+
+#define COMPUTE_THERMAL_AMD_0Fh(Temp, Target, Sensor)			\
+		(Temp = Sensor - (Target * 2) - 49)
+
+#define COMPUTE_THERMAL_AMD_17h(Temp, Target, Sensor)			\
+		(Temp = ((Sensor * 5 / 40) - 49) - Target)
+
+#define COMPUTE_THERMAL(_ARCH_, Temp, Target, Sensor)			\
+		COMPUTE_THERMAL_##_ARCH_(Temp, Target, Sensor)
+
+
 #define VOLTAGE_FORMULA_NONE \
 	0b0000000000000000000000000000000000000000000000000000000000000000
 #define VOLTAGE_FORMULA_INTEL \
@@ -157,6 +173,45 @@ enum SYS_REG {
 	0b0000000000000000000000000000001100000000000000000000000000000000
 #define VOLTAGE_FORMULA_AMD_17h \
 	0b0000000000000000000000010000000100000000000000000000000000000000
+
+#define COMPUTE_VOLTAGE_INTEL_MEROM(Vcore, VID) 			\
+		(Vcore = 0.8875 + (double) (VID) * 0.0125)
+
+#define COMPUTE_VOLTAGE_INTEL_SNB(Vcore, VID) 				\
+		(Vcore = (double) (VID) / 8192.0)
+
+#define COMPUTE_VOLTAGE_INTEL_SKL_X(Vcore, VID) 			\
+		(Vcore = (double) (VID) / 8192.0)
+
+#define COMPUTE_VOLTAGE_AMD(Vcore, VID)					\
+		/*( ToDo )*/
+
+#define COMPUTE_VOLTAGE_AMD_0Fh(Vcore, VID)				\
+({									\
+	short	Vselect =(VID & 0b110000) >> 4, Vnibble = VID & 0b1111; \
+									\
+	switch (Vselect) {						\
+	case 0b00:							\
+		Vcore = 1.550 - (double) (Vnibble) * 0.025;		\
+		break;							\
+	case 0b01:							\
+		Vcore = 1.150 - (double) (Vnibble) * 0.025;		\
+		break;							\
+	case 0b10:							\
+		Vcore = 0.7625 - (double) (Vnibble) * 0.0125;		\
+		break;							\
+	case 0b11:							\
+		Vcore = 0.5625 - (double) (Vnibble) * 0.0125;		\
+		break;							\
+	}								\
+})
+
+#define COMPUTE_VOLTAGE_AMD_17h(Vcore, VID)				\
+		(Vcore = 1.550 -(0.00625 * (double) (VID)))
+
+#define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)	\
+		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
+
 
 #define POWER_FORMULA_NONE \
 	0b0000000000000000000000000000000000000000000000000000000000000000

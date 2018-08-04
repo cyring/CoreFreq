@@ -174,54 +174,56 @@ static void *Core_Cycle(void *arg)
 
 	switch (Pkg->thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
-		CFlip->Thermal.Temp = Cpu->PowerThermal.Target
-				    - CFlip->Thermal.Sensor;
+		COMPUTE_THERMAL(INTEL,
+				CFlip->Thermal.Temp,
+				Cpu->PowerThermal.Target,
+				CFlip->Thermal.Sensor);
 		break;
 	case THERMAL_FORMULA_AMD:
+		COMPUTE_THERMAL(AMD,
+				CFlip->Thermal.Temp,
+				Cpu->PowerThermal.Target,
+				CFlip->Thermal.Sensor);
 		break;
 	case THERMAL_FORMULA_AMD_0Fh:
-		CFlip->Thermal.Temp = CFlip->Thermal.Sensor
-				    - (Cpu->PowerThermal.Target * 2) - 49;
+		COMPUTE_THERMAL(AMD_0Fh,
+				CFlip->Thermal.Temp,
+				Cpu->PowerThermal.Target,
+				CFlip->Thermal.Sensor);
 		break;
 	}
 
 	// Per Core voltage formulas
 	CFlip->Voltage.VID = Core->Counter[1].VID;
-      switch (Pkg->voltageFormula) {
+	switch (Pkg->voltageFormula) {
 	// Intel Core 2 Extreme Datasheet §3.3-Table 2
-      case VOLTAGE_FORMULA_INTEL_MEROM:
-	CFlip->Voltage.Vcore = 0.8875 + (double) (CFlip->Voltage.VID) * 0.0125;
-	break;
-      case VOLTAGE_FORMULA_INTEL_SKL_X:
-	CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
-	break;
-      case VOLTAGE_FORMULA_AMD:
-	break;
+	case VOLTAGE_FORMULA_INTEL_MEROM:
+		COMPUTE_VOLTAGE(INTEL_MEROM,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
+		break;
+	case VOLTAGE_FORMULA_INTEL_SKL_X:
+		COMPUTE_VOLTAGE(INTEL_SKL_X,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
+		break;
+	case VOLTAGE_FORMULA_AMD:
+		COMPUTE_VOLTAGE(AMD,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
+		break;
 	// AMD BKDG Family 0Fh §10.6 Table 70
-      case VOLTAGE_FORMULA_AMD_0Fh: {
-		short	Vselect =(CFlip->Voltage.VID & 0b110000) >> 4,
-			Vnibble = CFlip->Voltage.VID & 0b1111;
-
-	    switch (Vselect) {
-	    case 0b00:
-		CFlip->Voltage.Vcore = 1.550 - (double) (Vnibble) * 0.025;
+	case VOLTAGE_FORMULA_AMD_0Fh:
+		COMPUTE_VOLTAGE(AMD_0Fh,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
 		break;
-	    case 0b01:
-		CFlip->Voltage.Vcore = 1.150 - (double) (Vnibble) * 0.025;
+	case VOLTAGE_FORMULA_AMD_17h:
+		COMPUTE_VOLTAGE(AMD_17h,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
 		break;
-	    case 0b10:
-		CFlip->Voltage.Vcore = 0.7625 - (double) (Vnibble) * 0.0125;
-		break;
-	    case 0b11:
-		CFlip->Voltage.Vcore = 0.5625 - (double) (Vnibble) * 0.0125;
-		break;
-	    }
-	  }
-	break;
-      case VOLTAGE_FORMULA_AMD_17h:
-	CFlip->Voltage.Vcore = 1.550 -(0.00625 * (double) (CFlip->Voltage.VID));
-	break;
-      }
+	}
 	// Interrupts counters
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
 
@@ -249,7 +251,7 @@ static void *Core_Cycle(void *arg)
 		PFlip->Delta.PC08 = Pkg->Delta.PC08;
 		PFlip->Delta.PC09 = Pkg->Delta.PC09;
 		PFlip->Delta.PC10 = Pkg->Delta.PC10;
-	    // Package C-state Residency counters
+		// Package C-state Residency counters
 		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03
@@ -264,9 +266,10 @@ static void *Core_Cycle(void *arg)
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10
 					/ (double) PFlip->Delta.PTSC;
-	    // Uncore scope counters
+		// Uncore scope counters
 		PFlip->Uncore.FC0 = Pkg->Delta.Uncore.FC0;
-	    // Power & Energy counters
+
+		// Power & Energy counters
 	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	    {
 		PFlip->Delta.ACCU[pw] = Pkg->Delta.Power.ACCU[pw];
@@ -278,19 +281,23 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Power.Unit.Watts
 					  * Shm->Proc.Power.Unit.Times;
 	    }
-	    // Package thermal formulas
-	    switch (Pkg->thermalFormula) {
-	    case THERMAL_FORMULA_AMD_17h:
-		CFlip->Thermal.Temp = (CFlip->Thermal.Sensor * 5 / 40) - 49;
-		CFlip->Thermal.Temp -= Cpu->PowerThermal.Target;
-		break;
-	    }
-	    // Package voltage formulas
-	    switch (Pkg->voltageFormula) {
-	    // Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
-	    case VOLTAGE_FORMULA_INTEL_SNB:
-		CFlip->Voltage.Vcore = (double) (CFlip->Voltage.VID) / 8192.0;
-		break;
+		// Package thermal formulas
+		switch (Pkg->thermalFormula) {
+		case THERMAL_FORMULA_AMD_17h:
+			COMPUTE_THERMAL(AMD_17h,
+					CFlip->Thermal.Temp,
+					Cpu->PowerThermal.Target,
+					CFlip->Thermal.Sensor);
+			break;
+		}
+		// Package voltage formulas
+		switch (Pkg->voltageFormula) {
+		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
+		case VOLTAGE_FORMULA_INTEL_SNB:
+			COMPUTE_VOLTAGE(INTEL_SNB,
+					CFlip->Voltage.Vcore,
+					CFlip->Voltage.VID);
+			break;
 	    }
 	}
 	// Min and Max temperatures per Core
@@ -2676,7 +2683,10 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
 
 	Shm->Cpu[cpu].PowerThermal.Target = Core[cpu]->PowerThermal.Target;
+}
 
+void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{
     switch (Proc->thermalFormula) {
     case THERMAL_FORMULA_INTEL:
     case THERMAL_FORMULA_AMD:
@@ -2684,15 +2694,17 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
     break;
     case THERMAL_FORMULA_AMD_0Fh:
-	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor
-				    - (Core[cpu]->PowerThermal.Target * 2) - 49;
+	COMPUTE_THERMAL(AMD_0Fh,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Core[cpu]->PowerThermal.Target,
+			Core[cpu]->PowerThermal.Sensor);
     break;
     case THERMAL_FORMULA_AMD_17h:
       if (cpu == Proc->Service.Core) {
-	Shm->Cpu[cpu].PowerThermal.Limit[0] = Core[cpu]->PowerThermal.Sensor;
-	Shm->Cpu[cpu].PowerThermal.Limit[0] *= 5 / 40;
-	Shm->Cpu[cpu].PowerThermal.Limit[0] -= 49;
-	Shm->Cpu[cpu].PowerThermal.Limit[0] -=Shm->Cpu[cpu].PowerThermal.Target;
+	COMPUTE_THERMAL(AMD_17h,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Shm->Cpu[cpu].PowerThermal.Target,
+			Core[cpu]->PowerThermal.Sensor);
       }
     break;
     }
@@ -3193,6 +3205,7 @@ void Core_Manager(REF *Ref)
 		if (!Arg[cpu].TID) {
 			// Add this cpu.
 			Package_Update(Shm, Proc);
+			InitThermal(Shm, Proc, Core, cpu);
 			PerCore_Update(Shm, Proc, Core, cpu);
 			Technology_Update(Shm, Proc);
 
