@@ -594,10 +594,10 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
 	{
-	CLOCK_ARG overclock={.Ratio=BOXKEY_OVERCLOCK_NC|activeCores, .Offset=0};
+	CLOCK_ARG clockMod={.Ratio=BOXKEY_TURBO_CLOCK_NC|activeCores,.Offset=0};
 	char pfx[4];
 	sprintf(pfx, "%2dC", activeCores);
-	PrintCoreBoost(pfx, boost, 1, overclock.sllong);
+	PrintCoreBoost(pfx, boost, 1, clockMod.sllong);
       }
     else
       for (boost = BOOST(1C), activeCores = 1;
@@ -3452,7 +3452,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	return(wCPU);
     }
 
-    Window *CreateOC(unsigned long long id)
+    Window *CreateTurboClock(unsigned long long id)
     {
 	ATTRIBUTE attribute[3][28] = {
 		{
@@ -3469,8 +3469,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 	ASCII item[32];
-	CLOCK_ARG overclock  = {.sllong = id};
-	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
+	CLOCK_ARG clockMod  = {.sllong = id};
+	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
 		lowestOperatingShift= abs(Shm->Proc.Boost[BOOST(SIZE) - ratio]
 					- Shm->Proc.Boost[BOOST(MIN)]),
@@ -3485,16 +3485,16 @@ void Top(SHM_STRUCT *Shm, char option)
 		CUINT	hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
-	Window *wOC = CreateWindow(wLayer, id, 1, hthWin, 34,
+	Window *wTC = CreateWindow(wLayer, id, 1, hthWin, 34,
 				(TOP_HEADER_ROW + hthWin+2 < drawSize.height) ?
 					TOP_HEADER_ROW + 2 : 1);
-      if (wOC != NULL) {
+      if (wTC != NULL) {
 	for (offset = -lowestOperatingShift;
 		offset <= highestOperatingShift;
 			offset++)
 		{
-		overclock.Ratio = ratio | BOXKEY_OVERCLOCK;
-		overclock.Offset = offset;
+		clockMod.Ratio = ratio | BOXKEY_TURBO_CLOCK;
+		clockMod.Offset = offset;
 		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
@@ -3503,40 +3503,40 @@ void Top(SHM_STRUCT *Shm, char option)
 				/ 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wOC, overclock.sllong, item,
+		StoreTCell(wTC, clockMod.sllong, item,
 			attribute[multiplier < medianColdZone ?
 					1 : multiplier >= startingHotZone ?
 						2 : 0]);
 		}
-	sprintf((char*) item, " Under/Over-Clock %1dC ", ratio);
-	StoreWindow(wOC, .title, (char*) item);
+	sprintf((char*) item, " Turbo Clock %1dC ", ratio);
+	StoreWindow(wTC, .title, (char*) item);
 
 	if (lowestOperatingShift >= hthWin) {
-		wOC->matrix.scroll.vert = hthMax
+		wTC->matrix.scroll.vert = hthMax
 					- hthWin * (1 + (highestOperatingShift
 							/ hthWin));
-		wOC->matrix.select.row  = lowestOperatingShift
-					- wOC->matrix.scroll.vert;
+		wTC->matrix.select.row  = lowestOperatingShift
+					- wTC->matrix.scroll.vert;
 	} else {
-		wOC->matrix.select.row  = lowestOperatingShift;
+		wTC->matrix.select.row  = lowestOperatingShift;
 	}
-	StoreWindow(wOC,	.key.Enter,	MotionEnter_Cell);
-	StoreWindow(wOC,	.key.Down,	MotionDown_Win);
-	StoreWindow(wOC,	.key.Up,	MotionUp_Win);
-	StoreWindow(wOC,	.key.PgUp,	MotionPgUp_Win);
-	StoreWindow(wOC,	.key.PgDw,	MotionPgDw_Win);
-	StoreWindow(wOC,	.key.Home,	MotionTop_Win);
-	StoreWindow(wOC,	.key.End,	MotionBottom_Win);
+	StoreWindow(wTC,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wTC,	.key.Down,	MotionDown_Win);
+	StoreWindow(wTC,	.key.Up,	MotionUp_Win);
+	StoreWindow(wTC,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wTC,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wTC,	.key.Home,	MotionTop_Win);
+	StoreWindow(wTC,	.key.End,	MotionBottom_Win);
 
-	StoreWindow(wOC,	.key.WinLeft,	MotionOriginLeft_Win);
-	StoreWindow(wOC,	.key.WinRight,	MotionOriginRight_Win);
-	StoreWindow(wOC,	.key.WinDown,	MotionOriginDown_Win);
-	StoreWindow(wOC,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wTC,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wTC,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wTC,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wTC,	.key.WinUp,	MotionOriginUp_Win);
       }
-	return(wOC);
+	return(wTC);
     }
 
-    Window *CreateUC(unsigned long long id)
+    Window *CreateUncoreClock(unsigned long long id)
     {
 	ATTRIBUTE attribute[2][28] = {
 		{
@@ -3549,8 +3549,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 	ASCII item[32];
-	CLOCK_ARG overclock  = {.sllong = id};
-	unsigned int ratio = overclock.Ratio & OVERCLOCK_RATIO_MASK, multiplier;
+	CLOCK_ARG clockMod  = {.sllong = id};
+	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
 	lowestOperatingShift = abs(Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
 				 - Shm->Proc.Boost[BOOST(MIN)]),
@@ -3571,8 +3571,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		offset <= highestOperatingShift;
 			offset++)
 		{
-		overclock.Ratio = ratio | BOXKEY_UNCORE_CLOCK;
-		overclock.Offset = offset;
+		clockMod.Ratio = ratio | BOXKEY_UNCORE_CLOCK;
+		clockMod.Offset = offset;
 		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio];
 		multiplier += offset;
 
@@ -3582,7 +3582,7 @@ void Top(SHM_STRUCT *Shm, char option)
 				/ 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wUC, overclock.sllong, item,
+		StoreTCell(wUC, clockMod.sllong, item,
 			attribute[multiplier > startingHotZone ? 1 : 0]);
 		}
 	sprintf((char*) item, " %s Clock Uncore ", ratio == 1 ? "Max" : "Min");
@@ -4837,18 +4837,18 @@ void Top(SHM_STRUCT *Shm, char option)
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM_DC, newDC);
     }
     break;
-    case BOXKEY_OVERCLOCK_1C:
-    case BOXKEY_OVERCLOCK_2C:
-    case BOXKEY_OVERCLOCK_3C:
-    case BOXKEY_OVERCLOCK_4C:
-    case BOXKEY_OVERCLOCK_5C:
-    case BOXKEY_OVERCLOCK_6C:
-    case BOXKEY_OVERCLOCK_7C:
-    case BOXKEY_OVERCLOCK_8C:
+    case BOXKEY_TURBO_CLOCK_1C:
+    case BOXKEY_TURBO_CLOCK_2C:
+    case BOXKEY_TURBO_CLOCK_3C:
+    case BOXKEY_TURBO_CLOCK_4C:
+    case BOXKEY_TURBO_CLOCK_5C:
+    case BOXKEY_TURBO_CLOCK_6C:
+    case BOXKEY_TURBO_CLOCK_7C:
+    case BOXKEY_TURBO_CLOCK_8C:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-		AppendWindow(CreateOC(scan->key), &winList);
+		AppendWindow(CreateTurboClock(scan->key), &winList);
 	else
 		SetHead(&winList, win);
     }
@@ -4858,7 +4858,7 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-		AppendWindow(CreateUC(scan->key), &winList);
+		AppendWindow(CreateUncoreClock(scan->key), &winList);
 	else
 		SetHead(&winList, win);
     }
@@ -5024,20 +5024,20 @@ void Top(SHM_STRUCT *Shm, char option)
 			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
       }
       else {
-	CLOCK_ARG overclock  = {.sllong = scan->key};
-	if (overclock.Ratio & BOXKEY_OVERCLOCK)
+	CLOCK_ARG clockMod  = {.sllong = scan->key};
+	if (clockMod.Ratio & BOXKEY_TURBO_CLOCK)
 	{
-	  overclock.Ratio &= OVERCLOCK_RATIO_MASK;
+	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
 
 	 if (!RING_FULL(Shm->Ring[0]))
-	   RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_OVERCLOCK, overclock.sllong);
+	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
 	}
-	else if (overclock.Ratio & BOXKEY_UNCORE_CLOCK)
+	else if (clockMod.Ratio & BOXKEY_UNCORE_CLOCK)
 	{
-	  overclock.Ratio &= OVERCLOCK_RATIO_MASK;
+	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
 
 	 if (!RING_FULL(Shm->Ring[0]))
-	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK,overclock.sllong);
+	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
 	}
 	else
 		return(-1);

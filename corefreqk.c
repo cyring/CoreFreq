@@ -1528,46 +1528,46 @@ void Intel_Platform_Turbo(void)
 	Proc->Features.SpecTurboRatio = 0;
 }
 
-long Intel_Turbo_Config8C(CLOCK_ARG *pOverClock)
+long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
 	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
-	if (pOverClock != NULL) {
+	if (pClockMod != NULL) {
 		if (Proc->Features.Ratio_Unlock) {
 			unsigned short WrRd8C = 0;
-			switch (pOverClock->Ratio) {
+			switch (pClockMod->Ratio) {
 			case 1:
-				TurboCfg0.MaxRatio_1C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_1C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 2:
-				TurboCfg0.MaxRatio_2C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_2C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 3:
-				TurboCfg0.MaxRatio_3C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_3C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 4:
-				TurboCfg0.MaxRatio_4C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_4C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 5:
-				TurboCfg0.MaxRatio_5C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_5C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 6:
-				TurboCfg0.MaxRatio_6C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_6C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 7:
-				TurboCfg0.MaxRatio_7C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_7C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			case 8:
-				TurboCfg0.MaxRatio_8C += pOverClock->Offset;
+				TurboCfg0.MaxRatio_8C += pClockMod->Offset;
 				WrRd8C = 1;
 				break;
 			}
@@ -1592,42 +1592,42 @@ long Intel_Turbo_Config8C(CLOCK_ARG *pOverClock)
 	return(rc);
 }
 
-long Intel_Turbo_Config15C(CLOCK_ARG *pOverClock)
+long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
-	if (pOverClock != NULL) {
+	if (pClockMod != NULL) {
 	    if (Proc->Features.Ratio_Unlock) {
 		unsigned short WrRd15C = 0;
-		switch (pOverClock->Ratio) {
+		switch (pClockMod->Ratio) {
 		case 9:
-			TurboCfg1.IVB_EP.MaxRatio_9C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_9C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 10:
-			TurboCfg1.IVB_EP.MaxRatio_10C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_10C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 11:
-			TurboCfg1.IVB_EP.MaxRatio_11C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_11C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 12:
-			TurboCfg1.IVB_EP.MaxRatio_12C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_12C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 13:
-			TurboCfg1.IVB_EP.MaxRatio_13C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_13C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 14:
-			TurboCfg1.IVB_EP.MaxRatio_14C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_14C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		case 15:
-			TurboCfg1.IVB_EP.MaxRatio_15C += pOverClock->Offset;
+			TurboCfg1.IVB_EP.MaxRatio_15C += pClockMod->Offset;
 			WrRd15C = 1;
 			break;
 		}
@@ -1651,46 +1651,46 @@ long Intel_Turbo_Config15C(CLOCK_ARG *pOverClock)
 	return(rc);
 }
 
-long Intel_Turbo_Config16C(CLOCK_ARG *pOverClock)
+long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
-	if (pOverClock != NULL) {
+	if (pClockMod != NULL) {
 	    if (Proc->Features.Ratio_Unlock) {
 		unsigned short WrRd16C = 0;
-		switch (pOverClock->Ratio) {
+		switch (pClockMod->Ratio) {
 		case 9:
-			TurboCfg1.HSW_EP.MaxRatio_9C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_9C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 10:
-			TurboCfg1.HSW_EP.MaxRatio_10C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_10C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 11:
-			TurboCfg1.HSW_EP.MaxRatio_11C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_11C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 12:
-			TurboCfg1.HSW_EP.MaxRatio_12C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_12C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 13:
-			TurboCfg1.HSW_EP.MaxRatio_13C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_13C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 14:
-			TurboCfg1.HSW_EP.MaxRatio_14C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_14C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 15:
-			TurboCfg1.HSW_EP.MaxRatio_15C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_15C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		case 16:
-			TurboCfg1.HSW_EP.MaxRatio_16C += pOverClock->Offset;
+			TurboCfg1.HSW_EP.MaxRatio_16C += pClockMod->Offset;
 			WrRd16C = 1;
 			break;
 		}
@@ -1715,22 +1715,22 @@ long Intel_Turbo_Config16C(CLOCK_ARG *pOverClock)
 	return(rc);
 }
 
-long Intel_Turbo_Config18C(CLOCK_ARG *pOverClock)
+long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
 	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
 
-	if (pOverClock != NULL) {
+	if (pClockMod != NULL) {
 		if (Proc->Features.Ratio_Unlock) {
 			unsigned short WrRd18C = 0;
-			switch (pOverClock->Ratio) {
+			switch (pClockMod->Ratio) {
 			case 17:
-				TurboCfg2.MaxRatio_17C += pOverClock->Offset;
+				TurboCfg2.MaxRatio_17C += pClockMod->Offset;
 				WrRd18C = 1;
 				break;
 			case 18:
-				TurboCfg2.MaxRatio_18C += pOverClock->Offset;
+				TurboCfg2.MaxRatio_18C += pClockMod->Offset;
 				WrRd18C = 1;
 				break;
 			}
@@ -1749,55 +1749,55 @@ long Intel_Turbo_Config18C(CLOCK_ARG *pOverClock)
 	return(rc);
 }
 
-long Skylake_X_Turbo_Config16C(CLOCK_ARG *pOverClock)
+long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
-	if (pOverClock != NULL) {
-		if (Proc->Features.Ratio_Unlock) {
-			unsigned short WrRd16C = 0;
-			switch (pOverClock->Ratio) {
-			case 9:
-				TurboCfg1.SKL_X.NUMCORE_0 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 10:
-				TurboCfg1.SKL_X.NUMCORE_1 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 11:
-				TurboCfg1.SKL_X.NUMCORE_2 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 12:
-				TurboCfg1.SKL_X.NUMCORE_3 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 13:
-				TurboCfg1.SKL_X.NUMCORE_4 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 14:
-				TurboCfg1.SKL_X.NUMCORE_5 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 15:
-				TurboCfg1.SKL_X.NUMCORE_6 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			case 16:
-				TurboCfg1.SKL_X.NUMCORE_7 += pOverClock->Offset;
-				WrRd16C = 1;
-				break;
-			}
-			if (WrRd16C) {
-				WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-				RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-				rc = 2;
-			}
+	if (pClockMod != NULL) {
+	    if (Proc->Features.Ratio_Unlock) {
+		unsigned short WrRd16C = 0;
+		switch (pClockMod->Ratio) {
+		case 9:
+			TurboCfg1.SKL_X.NUMCORE_0 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 10:
+			TurboCfg1.SKL_X.NUMCORE_1 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 11:
+			TurboCfg1.SKL_X.NUMCORE_2 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 12:
+			TurboCfg1.SKL_X.NUMCORE_3 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 13:
+			TurboCfg1.SKL_X.NUMCORE_4 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 14:
+			TurboCfg1.SKL_X.NUMCORE_5 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 15:
+			TurboCfg1.SKL_X.NUMCORE_6 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
+		case 16:
+			TurboCfg1.SKL_X.NUMCORE_7 += pClockMod->Offset;
+			WrRd16C = 1;
+			break;
 		}
+		if (WrRd16C) {
+			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
+			rc = 2;
+		}
+	    }
 	} else
 		Proc->Features.SpecTurboRatio += 8;
 
@@ -1846,21 +1846,21 @@ void SandyBridge_Uncore_Ratio(void)
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = Proc->Boost[BOOST(MAX)];
 }
 
-long Haswell_Uncore_Ratio(CLOCK_ARG *pOverClock)
+long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
 	RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
 
-	if (pOverClock != NULL) {
+	if (pClockMod != NULL) {
 		unsigned short WrRdMSR = 0;
-		switch (pOverClock->Ratio) {
+		switch (pClockMod->Ratio) {
 		case 1:
-			UncoreRatio.MaxRatio += pOverClock->Offset;
+			UncoreRatio.MaxRatio += pClockMod->Offset;
 			WrRdMSR = 1;
 			break;
 		case 2:
-			UncoreRatio.MinRatio += pOverClock->Offset;
+			UncoreRatio.MinRatio += pClockMod->Offset;
 			WrRdMSR = 1;
 			break;
 		}
@@ -1910,25 +1910,25 @@ void Skylake_X_Platform_Info(void)
 	Skylake_X_Turbo_Config16C(NULL);
 }
 
-long OverClock_IvyBridge_EP(CLOCK_ARG *pOverClock)
+long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 {
-	long rc = Intel_Turbo_Config8C(pOverClock)
-		| Intel_Turbo_Config15C(pOverClock);
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Intel_Turbo_Config15C(pClockMod);
 	return(rc);
 }
 
-long OverClock_Haswell_EP(CLOCK_ARG *pOverClock)
+long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 {
-	long rc = Intel_Turbo_Config8C(pOverClock)
-		| Intel_Turbo_Config16C(pOverClock)
-		| Intel_Turbo_Config18C(pOverClock);
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Intel_Turbo_Config16C(pClockMod)
+		| Intel_Turbo_Config18C(pClockMod);
 	return(rc);
 }
 
-long OverClock_Skylake_X(CLOCK_ARG *pOverClock)
+long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
 {
-	long rc = Intel_Turbo_Config8C(pOverClock)
-		| Skylake_X_Turbo_Config16C(pOverClock);
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Skylake_X_Turbo_Config16C(pClockMod);
 	return(rc);
 }
 
@@ -7159,19 +7159,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -EINVAL;
 	#endif
 		break;
-	case COREFREQ_IOCTL_OVERCLOCK: {
-		CLOCK_ARG OverClock = {.sllong = arg};
+	case COREFREQ_IOCTL_TURBO_CLOCK: {
+		CLOCK_ARG clockMod = {.sllong = arg};
 		Controller_Stop(1);
-		if (Arch[Proc->ArchID].OverClock != NULL)
-			rc = Arch[Proc->ArchID].OverClock(&OverClock);
+		if (Arch[Proc->ArchID].TurboClock != NULL)
+			rc = Arch[Proc->ArchID].TurboClock(&clockMod);
 		Controller_Start(1);
 		}
 		break;
 	case COREFREQ_IOCTL_UNCORE_CLOCK:
 		if (Proc->Features.Uncore_Unlock) {
-			CLOCK_ARG OverClock = {.sllong = arg};
+			CLOCK_ARG clockMod = {.sllong = arg};
 			Controller_Stop(1);
-			rc = Haswell_Uncore_Ratio(&OverClock);
+			rc = Haswell_Uncore_Ratio(&clockMod);
 			Controller_Start(1);
 		}
 		break;

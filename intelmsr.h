@@ -269,7 +269,7 @@ typedef	union
 	struct
 	{
 		unsigned long long
-		EIST_Target	: 16-0,
+		TargetRatio	: 16-0,
 		ReservedBits1	: 32-16,
 		Turbo_IDA	: 33-32, // IDA Disengage bit w/ Mobile [06_0F]
 		ReservedBits2	: 64-33;
