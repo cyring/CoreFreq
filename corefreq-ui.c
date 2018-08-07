@@ -521,8 +521,8 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 	int rp = 0, rz = 0;
 
 	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0)
-		if (fds.revents == POLLIN) {
-			size_t lc = fread(&scan->key, 1, 8, stdin);
+		if (fds.revents & POLLIN) {
+			size_t lc = read(STDIN_FILENO, &scan->key, 8);
 			for (rz = lc; rz < 8; rz++)
 				scan->code[rz] = 0;
 		}
