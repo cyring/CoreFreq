@@ -2493,10 +2493,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// IVB Desktop
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:	// IVB Mobile i5-3337U
-	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
 		IVB_CAP(Shm, Proc, cpu);
 		SNB_IMC(Shm, Proc);
 		break;
+	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
+		IVB_CAP(Shm, Proc, cpu);
+		// Fallthrough
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
 	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell/U , Core m
 	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:	// Broadwell/H

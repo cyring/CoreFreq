@@ -915,7 +915,7 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	},
 	{	// Desktop: IMC_SystemAgent=0x0c00
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
-		.driver_data = (kernel_ulong_t) IVB_IMC
+		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
 };
@@ -933,7 +933,7 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 	},
 	{	// Desktop: IMC_SystemAgent=0x0c00
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
-		.driver_data = (kernel_ulong_t) IVB_IMC
+		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
 };
