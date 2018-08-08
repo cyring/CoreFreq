@@ -2299,28 +2299,37 @@ void Top(SHM_STRUCT *Shm, char option)
 
     double minRatio, maxRatio, medianRatio, availRatio[BOOST(SIZE)];
 
-    void ComputeAvailableRatio()
+    void SortAvailableRatio()
     {
+	int AscendingSort(const void *p1, const void *p2)
+	{
+		const double *r1 = p1, *r2 = p2;
+		int sort = (*r1) < (*r2) ? -1 : (*r1) == (*r2) ? 0 : +1;
+		return(sort);
+	}
+
 	unsigned int rdx;
-	for (rdx = BOOST(MIN); rdx < BOOST(SIZE); rdx++)
-		availRatio[rdx] = Shm->Proc.Boost[BOOST(MIN)];
-	// Update the ruller tab ratios.
 	minRatio = Shm->Proc.Boost[BOOST(MIN)];
-	maxRatio = Shm->Proc.Boost[BOOST(1C)];
-	medianRatio = (Shm->Proc.Boost[BOOST(ACT)] > 0) ?
-			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2;
+	maxRatio = Shm->Proc.Boost[BOOST(MIN)];
 	ratioCount = 0;
-	for (rdx = BOOST(MAX); rdx < BOOST(SIZE); rdx++)
+	memset(availRatio, 0, BOOST(SIZE) * sizeof(double));
+	for (rdx = BOOST(MIN); rdx < BOOST(SIZE); rdx++)
 	    if (Shm->Proc.Boost[rdx] != 0) {
-		int sort = Shm->Proc.Boost[rdx] - availRatio[ratioCount];
-		if (sort < 0) {
-			availRatio[ratioCount+1] = availRatio[ratioCount];
+		unsigned int idx, unik = 1;
+		for (idx = 0; (idx < ratioCount) && unik; idx++) {
+		    if (Shm->Proc.Boost[rdx] == availRatio[idx])
+			unik = 0;	// ignore duplicates.
+		}
+		if (unik) {
+			maxRatio=CUMAX(maxRatio, Shm->Proc.Boost[rdx]);
+			// Update the ruller tab ratios.
 			availRatio[ratioCount++] = Shm->Proc.Boost[rdx];
 		}
-		else if (sort > 0)
-			availRatio[++ratioCount] = Shm->Proc.Boost[rdx];
 	    }
-	ratioCount++;
+	medianRatio = (Shm->Proc.Boost[BOOST(ACT)] > 0) ?
+			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2;
+
+	qsort(availRatio, ratioCount, sizeof(*availRatio), AscendingSort);
     }
 
     void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }
@@ -7628,7 +7637,7 @@ void Top(SHM_STRUCT *Shm, char option)
     }
 
 	/* Top starts here */
-	ComputeAvailableRatio();
+	SortAvailableRatio();
 
 	TrapScreenSize(SIGWINCH);
 	signal(SIGWINCH, TrapScreenSize);
@@ -7673,7 +7682,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	if (BITVAL(Shm->Proc.Sync, 62)) { // Compute required, clear the layout
-		ComputeAvailableRatio();
+		SortAvailableRatio();
 		drawFlag.clear = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 62);
 	}
