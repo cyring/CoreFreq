@@ -4206,7 +4206,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 			Zen_Table[Proc->Features.Std.EBX.Brand_ID].tempOffset;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
 void Sys_DumpTask(SYSGATE *SysGate)
 {
         SysGate->taskCount = 0;
