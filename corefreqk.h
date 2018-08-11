@@ -2264,7 +2264,20 @@ static struct ZEN_ST {
 	{"AMD Ryzen Threadripper 1950X",+6, +2, 27},
 	{"AMD Ryzen Threadripper 1920X",+5, +2, 27},
 	{"AMD Ryzen Threadripper 1900X",+2, +2, 27},
-	{"AMD Ryzen Threadripper 1950" ,+0,  0, 10},
-	{"AMD Ryzen Threadripper 1920" ,+6,  0, 10},
-	{"AMD Ryzen Threadripper 1900" ,+6,  0, 10}
+	{"AMD Ryzen Threadripper 2990", +12, 0, 27},
+	{"AMD Ryzen Threadripper 2970", +12, 0, 27},
+	{"AMD Ryzen Threadripper 2950", +9,  0, 27},
+	{"AMD Ryzen Threadripper 2920", +8,  0, 27},
+	{"AMD EPYC 7351P",		+5,  0,  0},
+	{"AMD EPYC 7401P",		+8, +2,  0},
+	{"AMD EPYC 7551P",		+6, +4,  0},
+	{"AMD EPYC 7251",		+8,  0,  0},
+	{"AMD EPYC 7281",		+6,  0,  0},
+	{"AMD EPYC 7301",		+5,  0,  0},
+	{"AMD EPYC 7351",		+5,  0,  0},
+	{"AMD EPYC 7401",		+8, +2,  0},
+	{"AMD EPYC 7451",		+6, +3,  0},
+	{"AMD EPYC 7501",		+6, +4,  0},
+	{"AMD EPYC 7551",		+6, +4,  0},
+	{"AMD EPYC 7601",		+5, +5,  0}
 };
