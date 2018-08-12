@@ -708,10 +708,10 @@ static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
-static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 /* ToDo:
+static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev) ;
 */
 static struct pci_device_id PCI_Void_ids[] = {
@@ -950,19 +950,19 @@ static struct pci_device_id PCI_Skylake_ids[] = {
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_SA
+		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_SA
+		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_SA
+		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_SA
+		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{0, }
 };
