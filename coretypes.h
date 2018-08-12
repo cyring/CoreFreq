@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.30.5"
+#define COREFREQ_VERSION	"1.30.6"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -291,6 +291,9 @@ enum UNCORE_BOOST {
 };
 
 #define UNCORE_BOOST(NC) UNCORE_RATIO_##NC
+
+#define MAXCLOCK_TO_RATIO(BaseClock)					\
+	((unsigned int) (5100000000.0 / BaseClock))
 
 enum PWR_DOMAIN {
 	DOMAIN_PKG,

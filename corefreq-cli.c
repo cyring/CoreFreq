@@ -3481,17 +3481,19 @@ void Top(SHM_STRUCT *Shm, char option)
 	CLOCK_ARG clockMod  = {.sllong = id};
 	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
-		lowestOperatingShift= abs(Shm->Proc.Boost[BOOST(SIZE) - ratio]
+	lowestOperatingShift = abs(Shm->Proc.Boost[BOOST(SIZE) - ratio]
 					- Shm->Proc.Boost[BOOST(MIN)]),
-		medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-		startingHotZone = Shm->Proc.Features.Factory.Ratio
-				+(Shm->Proc.Features.Factory.Ratio * 2 / 5),
-		highestOperatingShift = (unsigned int) (5100000000.0
-				/ Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
-				- Shm->Proc.Boost[BOOST(SIZE) - ratio];
-	const CUINT	hthMin = 16;
-		CUINT	hthMax = 1+lowestOperatingShift + highestOperatingShift,
+	highestOperatingShift = MAXCLOCK_TO_RATIO(
+				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
+				) - Shm->Proc.Boost[BOOST(SIZE) - ratio],
+	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(
+				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
+				) - Shm->Proc.Features.Factory.Ratio ) >> 1);
+	const CUINT	hthMin = 16,
+			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
 	Window *wTC = CreateWindow(wLayer, id, 1, hthWin, 34,
@@ -3514,7 +3516,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 		StoreTCell(wTC, clockMod.sllong, item,
 			attribute[multiplier < medianColdZone ?
-					1 : multiplier >= startingHotZone ?
+					1 : multiplier > startingHotZone ?
 						2 : 0]);
 		}
 	sprintf((char*) item, " Turbo Clock %1dC ", ratio);
@@ -3563,13 +3565,15 @@ void Top(SHM_STRUCT *Shm, char option)
 	signed int offset,
 	lowestOperatingShift = abs(Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
 				 - Shm->Proc.Boost[BOOST(MIN)]),
-	highestOperatingShift	= Shm->Proc.Features.Factory.Ratio
-				+(Shm->Proc.Features.Factory.Ratio >> 1)
-				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio],
-	startingHotZone = Shm->Proc.Features.Factory.Ratio +
-			+(Shm->Proc.Features.Factory.Ratio * 2 / 5);
-	const CUINT	hthMin = 16;
-		CUINT	hthMax = 1+lowestOperatingShift + highestOperatingShift,
+	highestOperatingShift = MAXCLOCK_TO_RATIO(
+				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
+				) - Shm->Uncore.Boost[UNCORE_BOOST(SIZE)-ratio],
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(
+				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
+				) - Shm->Proc.Features.Factory.Ratio ) >> 1);
+	const CUINT	hthMin = 16,
+			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
 	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40,
