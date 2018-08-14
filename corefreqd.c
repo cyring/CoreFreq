@@ -282,7 +282,16 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Power.Unit.Times;
 	    }
 		// Package thermal formulas
+		PFlip->Thermal.Trip   = Pkg->PowerThermal.Trip;
+		PFlip->Thermal.Sensor = Pkg->PowerThermal.Sensor;
+
 		switch (Pkg->thermalFormula) {
+		case THERMAL_FORMULA_INTEL:
+			COMPUTE_THERMAL(INTEL,
+					PFlip->Thermal.Temp,
+					Cpu->PowerThermal.Target,
+					PFlip->Thermal.Sensor);
+			break;
 		case THERMAL_FORMULA_AMD_17h:
 			COMPUTE_THERMAL(AMD_17h,
 					CFlip->Thermal.Temp,
@@ -493,25 +502,25 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     switch (Proc->powerFormula) {
       case POWER_FORMULA_INTEL:
       case POWER_FORMULA_AMD:
-	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
-				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
-				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
+			1.0 / (double) (1 << Proc->PowerThermal.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
+			1.0 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
 	break;
       case POWER_FORMULA_INTEL_ATOM:
-	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
-				0.001 / (double)(1 << Proc->Power.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
-				0.001 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
+			0.001 / (double)(1 << Proc->PowerThermal.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
+			0.001 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
 	break;
       case POWER_FORMULA_AMD_17h: {
 	unsigned int maxCoreCount = (Shm->Proc.Features.leaf80000008.ECX.NC + 1)
 					>> Shm->Proc.Features.HTT_Enable;
 
-	Shm->Proc.Power.Unit.Watts = Proc->Power.Unit.PU > 0 ?
-				1.0 / (double) (1 << Proc->Power.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->Power.Unit.ESU > 0 ?
-				1.0 / (double)(1 << Proc->Power.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
+			1.0 / (double) (1 << Proc->PowerThermal.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
+			1.0 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
 	if (maxCoreCount != 0) {
 		Shm->Proc.Power.Unit.Watts  /= maxCoreCount;
 		Shm->Proc.Power.Unit.Joules /= maxCoreCount;
@@ -519,8 +528,8 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
       }
 	break;
     }
-	Shm->Proc.Power.Unit.Times = Proc->Power.Unit.TU > 0 ?
-				1.0 / (double) (1 << Proc->Power.Unit.TU) : 0;
+	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
+			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
 	// Scale window unit time to the driver monitoring interval.
 	Shm->Proc.Power.Unit.Times *= 1000.0 / (double) Shm->Sleep.Interval;
 }
@@ -2705,7 +2714,7 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
       if (cpu == Proc->Service.Core) {
 	COMPUTE_THERMAL(AMD_17h,
 			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			Shm->Cpu[cpu].PowerThermal.Target,
+			Core[cpu]->PowerThermal.Target,
 			Core[cpu]->PowerThermal.Sensor);
       }
     break;

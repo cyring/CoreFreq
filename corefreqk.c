@@ -1879,7 +1879,7 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 
 void SandyBridge_PowerInterface(void)
 {
-	RDMSR(Proc->Power.Unit, MSR_RAPL_POWER_UNIT);
+	RDMSR(Proc->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 }
 
 void Nehalem_Platform_Info(void)
@@ -3073,7 +3073,7 @@ void Query_AMD_Family_17h(void)
 {
 	Compute_AMD_Zen_Boost();
 	// Apply same register bit fields as Intel RAPL_POWER_UNIT.
-	RDMSR(Proc->Power.Unit, MSR_AMD_RAPL_POWER_UNIT);
+	RDMSR(Proc->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
 	// Processors of family 17h have unlocked ratios.
 	Proc->Features.Ratio_Unlock = 1;
 
@@ -4938,6 +4938,16 @@ void Core_Intel_Temp(CORE *Core)
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
 	Core->PowerThermal.Trip = ThermStatus.StatusBit | ThermStatus.StatusLog;
+
+	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
+	{
+		ThermStatus.value = 0;
+		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
+
+		Proc->PowerThermal.Sensor = ThermStatus.DTS;
+		Proc->PowerThermal.Trip = ThermStatus.StatusBit
+					| ThermStatus.StatusLog;
+	}
 }
 
 void Core_AMD_Family_0Fh_Temp(CORE *Core)

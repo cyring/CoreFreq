@@ -643,7 +643,9 @@ typedef struct
 
 	struct {
 		RAPL_POWER_UNIT Unit;
-	} Power;
+		unsigned int	Sensor,
+				Trip;
+	} PowerThermal;
 
 	struct {
 		struct {

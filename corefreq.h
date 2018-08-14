@@ -206,6 +206,12 @@ typedef struct
 		struct {
 		unsigned long long	FC0;
 		} Uncore;
+
+		struct {
+		unsigned int		Sensor,
+					Temp,
+					Trip;
+		} Thermal;
 	} FlipFlop[2];
 
 	struct {
