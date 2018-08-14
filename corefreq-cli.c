@@ -1727,16 +1727,17 @@ void Counters(SHM_STRUCT *Shm)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf("CPU Freq(MHz) Ratio  Turbo"			\
+		printf( "CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 			"  Min TMP:TS  Max\n");
 	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	{
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *Flop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf("#%02u %7.2f (%5.2f)"				\
+		printf( "#%02u %7.2f (%5.2f)"				\
 			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 			"  %-3u/%3u:%-3u/%3u\n",
 			cpu,
@@ -1754,17 +1755,19 @@ void Counters(SHM_STRUCT *Shm)
 			Shm->Cpu[cpu].PowerThermal.Limit[1]);
 	    else
 		printf("#%02u        OFF\n", cpu);
-
 	  }
-		printf("\n"						\
+	}
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	printf( "\n"							\
 		"%.*s" "Averages:"					\
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-		"%.*s" "TjMax:\n"					\
+		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
 		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-		"%.*s" "%3u C\n\n",
+		"%.*s" "%3u C" "%.*s" "%3u C\n\n",
 			4, hSpace,
 			8, hSpace,
-			7, hSpace,
+			4, hSpace,
+			4, hSpace,
 			20, hSpace,
 			100.f * Shm->Proc.Avg.Turbo,
 			100.f * Shm->Proc.Avg.C0,
@@ -1772,8 +1775,10 @@ void Counters(SHM_STRUCT *Shm)
 			100.f * Shm->Proc.Avg.C3,
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7,
-			8, hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target);
+			5, hSpace,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target,
+			3, hSpace,
+			PFlop->Thermal.Temp);
     }
 }
 
@@ -5533,8 +5538,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
-			' ',' ',' ',' ',0x0,' ',' ',0x0,' ',']',' ',	\
-			'-','-','-','-','-','-','-','-','-','-','-',	\
+			' ',' ',' ',' ',0x0,' ',' ',0x0,' ',']','-',	\
+			' ','P','a','c','k','a','g','e',' ','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
@@ -6110,6 +6115,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Layout_Footer(Layer *layer, CUINT row, signed int *processorHot)
     {
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT col = 0;
 	size_t len;
 
@@ -6147,24 +6153,30 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	    LayerDeclare(69) hTech1 = {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=55,
+	    LayerDeclare(78) hTech1 = {
+		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=64,
 		.attr ={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK, \
 			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
 			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
+			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,\
+			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
 		},
 		.code ={'H','T','T',',','E','I','S','T',',','I','D','A',',', \
 			'T','U','R','B','O',',','C','1','E',',',	\
 			' ','P','M',',','C','3','A',',','C','1','A',',',\
 			'C','3','U',',','C','1','U',',',		\
-			'T','M','1',',','T','M','2',',','H','O','T',']'
+			'T','M','1',',','T','M','2',',','H','O','T',']',\
+			' ',' ',' ',' ',' ',' ',' ',' ',' '
 		},
 	    };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
+
+	    hTech1.attr[59] = hTech1.attr[60] = hTech1.attr[61] =
+			    PFlop->Thermal.Trip ? MakeAttr(RED,   0, BLACK, 1)
+						: MakeAttr(WHITE, 0, BLACK, 1);
 
 		const ATTRIBUTE TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
@@ -6218,7 +6230,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =	\
 			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
-	    if ( (*processorHot) != -1 ) {
+	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
 		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =	\
 						MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -6272,7 +6284,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
-	    if ( (*processorHot) != -1 ) {
+	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
 		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
 						MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -6657,6 +6669,12 @@ void Top(SHM_STRUCT *Shm, char option)
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7);
 		memcpy(&LayerAt(layer, code, 20, row), buffer, len);
+
+	  if (Shm->Proc.Features.Power.EAX.PTM) {
+	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+		len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
+		memcpy(&LayerAt(layer, code, 73, (row + 1)), buffer, len);
+	  }
 	} else {
 		len = sprintf(buffer,
 			"  c2:%-5.1f" "  c3:%-5.1f" "  c6:%-5.1f"	\
