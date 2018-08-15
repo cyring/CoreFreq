@@ -4126,6 +4126,33 @@ void Top(SHM_STRUCT *Shm, char option)
 		SetHead(&winList, win);
     }
     break;
+    case SCANKEY_SHIFT_h:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = 53,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = 0
+	};
+	Window *wBox = CreateBox(scan->key, origin, select,
+		" Clear Event ",
+    (ASCII*)"     Thermal Sensor     ", stateAttr[0], BOXKEY_CLR_THM_SENSOR,
+    (ASCII*)"     PROCHOT# Agent     ", stateAttr[0], BOXKEY_CLR_THM_PROCHOT,
+    (ASCII*)"  Critical Temperature  ", stateAttr[0], BOXKEY_CLR_THM_CRITIC,
+    (ASCII*)"   Thermal Threshold    ", stateAttr[0], BOXKEY_CLR_THM_THRESH,
+    (ASCII*)"    Power Limitation    ", stateAttr[0], BOXKEY_CLR_PWR_LIMITS);
+	if (wBox != NULL) {
+		AppendWindow(wBox, &winList);
+	} else
+		SetHead(&winList, win);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
     case SCANKEY_SHIFT_i:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -4853,6 +4880,17 @@ void Top(SHM_STRUCT *Shm, char option)
 	const unsigned long newDC = (scan->key - BOXKEY_ODCM_DC00) >> 4;
 	if (!RING_FULL(Shm->Ring[0]))
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM_DC, newDC);
+    }
+    break;
+    case BOXKEY_CLR_THM_SENSOR:
+    case BOXKEY_CLR_THM_PROCHOT:
+    case BOXKEY_CLR_THM_CRITIC:
+    case BOXKEY_CLR_THM_THRESH:
+    case BOXKEY_CLR_PWR_LIMITS:
+    {
+	const enum THERMAL_POWER_EVENTS evt=(scan->key & CLEAR_EVENT_MASK) >> 4;
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, evt);
     }
     break;
     case BOXKEY_TURBO_CLOCK_1C:
@@ -6231,8 +6269,8 @@ void Top(SHM_STRUCT *Shm, char option)
 			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
 	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
-		hTech1.attr[51] = hTech1.attr[52] = hTech1.attr[53] =	\
-						MakeAttr(RED, 0, BLACK, 1);
+		hTech1.attr[51] = MakeAttr(RED, 1, BLACK, 1);
+		hTech1.attr[52] = hTech1.attr[53] = MakeAttr(RED, 0, BLACK, 1);
 	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
@@ -6285,8 +6323,8 @@ void Top(SHM_STRUCT *Shm, char option)
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
-		hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
-						MakeAttr(RED, 0, BLACK, 1);
+		hTech1.attr[35] = MakeAttr(RED, 1, BLACK, 1);
+		hTech1.attr[36] = hTech1.attr[37] = MakeAttr(RED, 0, BLACK, 1);
 	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);

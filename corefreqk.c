@@ -149,6 +149,10 @@ static signed int PState_VID = -1;
 module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
 
+static unsigned int Clear_Events = 0;
+module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
+
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
@@ -3345,6 +3349,8 @@ void ThermalMonitor_Set(CORE *Core)
 	TJMAX TjMax = {.value = 0};
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	THERM2_CONTROL Therm2Control = {.value = 0};
+	THERM_STATUS ThermStatus = {.value = 0};
+	int ClearBit;
 
 	//Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch.
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
@@ -3361,6 +3367,73 @@ void ThermalMonitor_Set(CORE *Core)
 	RDMSR(Therm2Control, MSR_THERM2_CTL);		// All Intel families.
 
 	Core->PowerThermal.TM2_Enable = Therm2Control.TM_SELECT;
+
+	// Clear Thermal Events if requested.
+	ClearBit = 0;
+	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+
+	if (Clear_Events & EVENT_THERM_SENSOR) {
+		ThermStatus.StatusLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_PROCHOT) {
+		ThermStatus.PROCHOTLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_CRITICAL) {
+		ThermStatus.CriticalTempLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_THRESHOLD) {
+		ThermStatus.Threshold1Log = 0;
+		ThermStatus.Threshold2Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_POWER_LIMITS) {
+		ThermStatus.PwrLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (ClearBit) {
+		WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+		RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+	}
+	Core->PowerThermal.Trip = ThermStatus.StatusBit
+				| ThermStatus.StatusLog;
+
+	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
+	{
+		ClearBit = 0;
+		ThermStatus.value = 0;
+		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
+
+		if (Clear_Events & EVENT_THERM_SENSOR) {
+			ThermStatus.StatusLog = 0;
+			ClearBit = 1;
+		}
+		if (Clear_Events & EVENT_THERM_PROCHOT) {
+			ThermStatus.PROCHOTLog = 0;
+			ClearBit = 1;
+		}
+		if (Clear_Events & EVENT_THERM_CRITICAL) {
+			ThermStatus.CriticalTempLog = 0;
+			ClearBit = 1;
+		}
+		if (Clear_Events & EVENT_THERM_THRESHOLD) {
+			ThermStatus.Threshold1Log = 0;
+			ThermStatus.Threshold2Log = 0;
+			ClearBit = 1;
+		}
+		if (Clear_Events & EVENT_POWER_LIMITS) {
+			ThermStatus.PwrLimitLog = 0;
+			ClearBit = 1;
+		}
+		if (ClearBit) {
+			WRMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
+			RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
+		}
+		Proc->PowerThermal.Trip = ThermStatus.StatusBit
+					| ThermStatus.StatusLog;
+	}
 }
 
 void PowerThermal(CORE *Core)
@@ -4937,7 +5010,8 @@ void Core_Intel_Temp(CORE *Core)
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	// All Intel families.
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
-	Core->PowerThermal.Trip = ThermStatus.StatusBit | ThermStatus.StatusLog;
+	Core->PowerThermal.Trip = ThermStatus.StatusBit
+				| ThermStatus.StatusLog;
 
 	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
 	{
@@ -7183,6 +7257,21 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			Controller_Stop(1);
 			rc = Haswell_Uncore_Ratio(&clockMod);
 			Controller_Start(1);
+		}
+		break;
+	case COREFREQ_IOCTL_CLEAR_EVENTS:
+		switch (arg) {
+			case EVENT_THERM_SENSOR:
+			case EVENT_THERM_PROCHOT:
+			case EVENT_THERM_CRITICAL:
+			case EVENT_THERM_THRESHOLD:
+			case EVENT_POWER_LIMITS:
+					Controller_Stop(1);
+					Clear_Events = arg;
+					Controller_Start(1);
+					Clear_Events = 0;
+					rc = 2;
+				break;
 		}
 		break;
 	default:
