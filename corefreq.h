@@ -103,8 +103,8 @@ typedef struct
 
 		struct {
 		unsigned int		Sensor,
-					Temp,
-					Trip;
+					Temp;
+		enum THERM_PWR_EVENTS	Events;
 		} Thermal;
 
 		struct {
@@ -209,8 +209,8 @@ typedef struct
 
 		struct {
 		unsigned int		Sensor,
-					Temp,
-					Trip;
+					Temp;
+		enum THERM_PWR_EVENTS	Events;
 		} Thermal;
 	} FlipFlop[2];
 

@@ -169,8 +169,8 @@ static void *Core_Cycle(void *arg)
 	}
 
 	// Per Core thermal formulas
-	CFlip->Thermal.Trip   = Core->PowerThermal.Trip;
 	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
+	CFlip->Thermal.Events = Core->PowerThermal.Events;
 
 	switch (Pkg->thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
@@ -282,8 +282,8 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Power.Unit.Times;
 	    }
 		// Package thermal formulas
-		PFlip->Thermal.Trip   = Pkg->PowerThermal.Trip;
 		PFlip->Thermal.Sensor = Pkg->PowerThermal.Sensor;
+		PFlip->Thermal.Events = Pkg->PowerThermal.Events;
 
 		switch (Pkg->thermalFormula) {
 		case THERMAL_FORMULA_INTEL:

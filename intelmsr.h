@@ -706,10 +706,10 @@ typedef union
 		Threshold2Log   : 10-9,
 		PwrLimitStatus	: 11-10,
 		PwrLimitLog	: 12-11,
-		CurLimitStatus	: 13-12,
-		CurLimitLog	: 14-13,
-		CrDomLimitStatus: 15-14,
-		CrDomLimitLog	: 16-15,
+		CurLimitStatus	: 13-12,	// HWP Feedback
+		CurLimitLog	: 14-13,	// HWP Feedback
+		XDomLimitStatus : 15-14,	// HWP Feedback
+		XDomLimitLog	: 16-15,	// HWP Feedback
 		DTS             : 23-16,
 		ReservedBits1   : 27-23,
 		Resolution      : 31-27,

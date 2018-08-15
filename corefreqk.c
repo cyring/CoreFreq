@@ -3380,25 +3380,40 @@ void ThermalMonitor_Set(CORE *Core)
 		ThermStatus.PROCHOTLog = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_THERM_CRITICAL) {
+	if (Clear_Events & EVENT_THERM_CRIT) {
 		ThermStatus.CriticalTempLog = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_THERM_THRESHOLD) {
+	if (Clear_Events & EVENT_THERM_THOLD) {
 		ThermStatus.Threshold1Log = 0;
 		ThermStatus.Threshold2Log = 0;
 		ClearBit = 1;
 	}
-	if (Clear_Events & EVENT_POWER_LIMITS) {
+	if (Clear_Events & EVENT_POWER_LIMIT) {
 		ThermStatus.PwrLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CURRENT_LIMIT) {
+		ThermStatus.CurLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_CROSS_DOMAIN) {
+		ThermStatus.XDomLimitLog = 0;
 		ClearBit = 1;
 	}
 	if (ClearBit) {
 		WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 		RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 	}
-	Core->PowerThermal.Trip = ThermStatus.StatusBit
-				| ThermStatus.StatusLog;
+	Core->PowerThermal.Events = (	(ThermStatus.StatusBit
+					|ThermStatus.StatusLog ) << 0)
+				  | (ThermStatus.PROCHOTLog << 1)
+				  | (ThermStatus.CriticalTempLog << 2)
+				  | (	(ThermStatus.Threshold1Log
+					|ThermStatus.Threshold2Log ) << 3)
+				  | (ThermStatus.PwrLimitLog << 4)
+				  | (ThermStatus.CurLimitLog << 5)
+				  | (ThermStatus.XDomLimitLog << 6);
 
 	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
 	{
@@ -3414,16 +3429,16 @@ void ThermalMonitor_Set(CORE *Core)
 			ThermStatus.PROCHOTLog = 0;
 			ClearBit = 1;
 		}
-		if (Clear_Events & EVENT_THERM_CRITICAL) {
+		if (Clear_Events & EVENT_THERM_CRIT) {
 			ThermStatus.CriticalTempLog = 0;
 			ClearBit = 1;
 		}
-		if (Clear_Events & EVENT_THERM_THRESHOLD) {
+		if (Clear_Events & EVENT_THERM_THOLD) {
 			ThermStatus.Threshold1Log = 0;
 			ThermStatus.Threshold2Log = 0;
 			ClearBit = 1;
 		}
-		if (Clear_Events & EVENT_POWER_LIMITS) {
+		if (Clear_Events & EVENT_POWER_LIMIT) {
 			ThermStatus.PwrLimitLog = 0;
 			ClearBit = 1;
 		}
@@ -3431,8 +3446,13 @@ void ThermalMonitor_Set(CORE *Core)
 			WRMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 			RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 		}
-		Proc->PowerThermal.Trip = ThermStatus.StatusBit
-					| ThermStatus.StatusLog;
+		Proc->PowerThermal.Events = (	(ThermStatus.StatusBit
+						|ThermStatus.StatusLog) << 0)
+					  | (ThermStatus.PROCHOTLog << 1)
+					  | (ThermStatus.CriticalTempLog << 2)
+					  | (	(ThermStatus.Threshold1Log
+						|ThermStatus.Threshold2Log)<< 3)
+					  | (ThermStatus.PwrLimitLog << 4);
 	}
 }
 
@@ -5010,8 +5030,15 @@ void Core_Intel_Temp(CORE *Core)
 	RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);	// All Intel families.
 
 	Core->PowerThermal.Sensor = ThermStatus.DTS;
-	Core->PowerThermal.Trip = ThermStatus.StatusBit
-				| ThermStatus.StatusLog;
+	Core->PowerThermal.Events = (	(ThermStatus.StatusBit
+					|ThermStatus.StatusLog ) << 0)
+				  | (ThermStatus.PROCHOTLog << 1)
+				  | (ThermStatus.CriticalTempLog << 2)
+				  | (	(ThermStatus.Threshold1Log
+					|ThermStatus.Threshold2Log ) << 3)
+				  | (ThermStatus.PwrLimitLog << 4)
+				  | (ThermStatus.CurLimitLog << 5)
+				  | (ThermStatus.XDomLimitLog << 6);
 
 	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
 	{
@@ -5019,8 +5046,13 @@ void Core_Intel_Temp(CORE *Core)
 		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 
 		Proc->PowerThermal.Sensor = ThermStatus.DTS;
-		Proc->PowerThermal.Trip = ThermStatus.StatusBit
-					| ThermStatus.StatusLog;
+		Proc->PowerThermal.Events = (	(ThermStatus.StatusBit
+						|ThermStatus.StatusLog ) << 0)
+					  | (ThermStatus.PROCHOTLog << 1)
+					  | (ThermStatus.CriticalTempLog << 2)
+					  | (	(ThermStatus.Threshold1Log
+						|ThermStatus.Threshold2Log )<<3)
+					  | (ThermStatus.PwrLimitLog << 4);
 	}
 }
 
@@ -5041,7 +5073,7 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 		Core->PowerThermal.Target = ThermTrip.TjOffset;
 		Core->PowerThermal.Sensor = ThermTrip.CurrentTemp;
 
-		Core->PowerThermal.Trip = ThermTrip.SensorTrip;
+		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
 }
 
@@ -5062,7 +5094,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 	if (Proc->Registration.Experimental) {
 		THERMTRIP_STATUS ThermTrip;
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
-		Core->PowerThermal.Trip = ThermTrip.SensorTrip;
+		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
 }
 
@@ -6976,12 +7008,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	case COREFREQ_IOCTL_MACHINE:
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
-					Controller_Stop(1);
-					rc = 0;
+				Controller_Stop(1);
+				rc = 0;
 				break;
 			case COREFREQ_TOGGLE_ON:
-					Controller_Start(1);
-					rc = 0;
+				Controller_Start(1);
+				rc = 0;
 				break;
 		}
 		break;
@@ -7062,11 +7094,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					SpeedStep_Enable = arg;
-					Controller_Start(1);
-					SpeedStep_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				SpeedStep_Enable = arg;
+				Controller_Start(1);
+				SpeedStep_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7074,11 +7106,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					C1E_Enable = arg;
-					Controller_Start(1);
-					C1E_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				C1E_Enable = arg;
+				Controller_Start(1);
+				C1E_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7086,16 +7118,16 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					TurboBoost_Enable = arg;
-					Controller_Start(1);
-					TurboBoost_Enable = -1;
-					if (Proc->ArchID == AMD_Family_17h) {
-						Compute_AMD_Zen_Boost();
-						rc = 2;
-					} else {
-						rc = 0;
-					}
+				Controller_Stop(1);
+				TurboBoost_Enable = arg;
+				Controller_Start(1);
+				TurboBoost_Enable = -1;
+				if (Proc->ArchID == AMD_Family_17h) {
+					Compute_AMD_Zen_Boost();
+					rc = 2;
+				} else {
+					rc = 0;
+				}
 				break;
 		}
 		break;
@@ -7103,11 +7135,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					C1A_Enable = arg;
-					Controller_Start(1);
-					C1A_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				C1A_Enable = arg;
+				Controller_Start(1);
+				C1A_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7115,11 +7147,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					C3A_Enable = arg;
-					Controller_Start(1);
-					C3A_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				C3A_Enable = arg;
+				Controller_Start(1);
+				C3A_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7127,11 +7159,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					C1U_Enable = arg;
-					Controller_Start(1);
-					C1U_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				C1U_Enable = arg;
+				Controller_Start(1);
+				C1U_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7139,11 +7171,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					C3U_Enable = arg;
-					Controller_Start(1);
-					C3U_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				C3U_Enable = arg;
+				Controller_Start(1);
+				C3U_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7151,11 +7183,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					CC6_Enable = arg;
-					Controller_Start(1);
-					CC6_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				CC6_Enable = arg;
+				Controller_Start(1);
+				CC6_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7163,11 +7195,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					PC6_Enable = arg;
-					Controller_Start(1);
-					PC6_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				PC6_Enable = arg;
+				Controller_Start(1);
+				PC6_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7182,11 +7214,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
-					Controller_Stop(1);
-					IOMWAIT_Enable = arg;
-					Controller_Start(1);
-					IOMWAIT_Enable = -1;
-					rc = 0;
+				Controller_Stop(1);
+				IOMWAIT_Enable = arg;
+				Controller_Start(1);
+				IOMWAIT_Enable = -1;
+				rc = 0;
 				break;
 		}
 		break;
@@ -7243,12 +7275,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -EINVAL;
 	#endif
 		break;
-	case COREFREQ_IOCTL_TURBO_CLOCK: {
-		CLOCK_ARG clockMod = {.sllong = arg};
-		Controller_Stop(1);
-		if (Arch[Proc->ArchID].TurboClock != NULL)
+	case COREFREQ_IOCTL_TURBO_CLOCK:
+		if (Arch[Proc->ArchID].TurboClock) {
+			CLOCK_ARG clockMod = {.sllong = arg};
+			Controller_Stop(1);
 			rc = Arch[Proc->ArchID].TurboClock(&clockMod);
-		Controller_Start(1);
+			Controller_Start(1);
 		}
 		break;
 	case COREFREQ_IOCTL_UNCORE_CLOCK:
@@ -7263,14 +7295,16 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		switch (arg) {
 			case EVENT_THERM_SENSOR:
 			case EVENT_THERM_PROCHOT:
-			case EVENT_THERM_CRITICAL:
-			case EVENT_THERM_THRESHOLD:
-			case EVENT_POWER_LIMITS:
-					Controller_Stop(1);
-					Clear_Events = arg;
-					Controller_Start(1);
-					Clear_Events = 0;
-					rc = 2;
+			case EVENT_THERM_CRIT:
+			case EVENT_THERM_THOLD:
+			case EVENT_POWER_LIMIT:
+			case EVENT_CURRENT_LIMIT:
+			case EVENT_CROSS_DOMAIN:
+				Controller_Stop(1);
+				Clear_Events = arg;
+				Controller_Start(1);
+				Clear_Events = 0;
+				rc = 2;
 				break;
 		}
 		break;

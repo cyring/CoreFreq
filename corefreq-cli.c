@@ -4128,9 +4128,14 @@ void Top(SHM_STRUCT *Shm, char option)
     break;
     case SCANKEY_SHIFT_h:
     {
+	ATTRIBUTE eventAttr[2] ={
+		MakeAttr(WHITE,  0, BLACK, 0),
+		MakeAttr(YELLOW, 0, BLACK, 0)
+	};
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	const Coordinate origin = {
 		.col = 53,
 		.row = TOP_HEADER_ROW + 3
@@ -4140,11 +4145,27 @@ void Top(SHM_STRUCT *Shm, char option)
 	};
 	Window *wBox = CreateBox(scan->key, origin, select,
 		" Clear Event ",
-    (ASCII*)"     Thermal Sensor     ", stateAttr[0], BOXKEY_CLR_THM_SENSOR,
-    (ASCII*)"     PROCHOT# Agent     ", stateAttr[0], BOXKEY_CLR_THM_PROCHOT,
-    (ASCII*)"  Critical Temperature  ", stateAttr[0], BOXKEY_CLR_THM_CRITIC,
-    (ASCII*)"   Thermal Threshold    ", stateAttr[0], BOXKEY_CLR_THM_THRESH,
-    (ASCII*)"    Power Limitation    ", stateAttr[0], BOXKEY_CLR_PWR_LIMITS);
+    (ASCII*)"     Thermal Sensor     ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_SENSOR) == 1)],
+		BOXKEY_CLR_THM_SENSOR,
+    (ASCII*)"     PROCHOT# Agent     ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_PROCHOT) == 1)],
+		BOXKEY_CLR_THM_PROCHOT,
+    (ASCII*)"  Critical Temperature  ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_CRIT) == 1)],
+		BOXKEY_CLR_THM_CRIT,
+    (ASCII*)"   Thermal Threshold    ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_THOLD) == 1)],
+		BOXKEY_CLR_THM_THOLD,
+    (ASCII*)"    Power Limitation    ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_POWER_LIMIT) == 1)],
+		BOXKEY_CLR_PWR_LIMIT,
+    (ASCII*)"   Current Limitation   ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_CURRENT_LIMIT) == 1)],
+		BOXKEY_CLR_CUR_LIMIT,
+    (ASCII*)"   Cross Domain Limit.  ",
+		eventAttr[((PFlop->Thermal.Events & EVENT_CROSS_DOMAIN) == 1)],
+		BOXKEY_CLR_X_DOMAIN);
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
 	} else
@@ -4884,13 +4905,15 @@ void Top(SHM_STRUCT *Shm, char option)
     break;
     case BOXKEY_CLR_THM_SENSOR:
     case BOXKEY_CLR_THM_PROCHOT:
-    case BOXKEY_CLR_THM_CRITIC:
-    case BOXKEY_CLR_THM_THRESH:
-    case BOXKEY_CLR_PWR_LIMITS:
+    case BOXKEY_CLR_THM_CRIT:
+    case BOXKEY_CLR_THM_THOLD:
+    case BOXKEY_CLR_PWR_LIMIT:
+    case BOXKEY_CLR_CUR_LIMIT:
+    case BOXKEY_CLR_X_DOMAIN:
     {
-	const enum THERMAL_POWER_EVENTS evt=(scan->key & CLEAR_EVENT_MASK) >> 4;
+	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, evt);
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
     }
     break;
     case BOXKEY_TURBO_CLOCK_1C:
@@ -6213,7 +6236,7 @@ void Top(SHM_STRUCT *Shm, char option)
 					Pwr[Shm->Proc.Features.HyperThreading];
 
 	    hTech1.attr[59] = hTech1.attr[60] = hTech1.attr[61] =
-			    PFlop->Thermal.Trip ? MakeAttr(RED,   0, BLACK, 1)
+			  PFlop->Thermal.Events ? MakeAttr(RED,   0, BLACK, 1)
 						: MakeAttr(WHITE, 0, BLACK, 1);
 
 		const ATTRIBUTE TM1[] = {
@@ -6268,7 +6291,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =	\
 			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
-	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
+	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Events) {
 		hTech1.attr[51] = MakeAttr(RED, 1, BLACK, 1);
 		hTech1.attr[52] = hTech1.attr[53] = MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -6322,7 +6345,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
-	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Trip) {
+	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Events) {
 		hTech1.attr[35] = MakeAttr(RED, 1, BLACK, 1);
 		hTech1.attr[36] = hTech1.attr[37] = MakeAttr(RED, 0, BLACK, 1);
 	    }
@@ -6487,7 +6510,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		if (Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
 			warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
-	if (Flop->Thermal.Trip) {
+	if (Flop->Thermal.Events) {
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =		\
@@ -7037,7 +7060,7 @@ void Top(SHM_STRUCT *Shm, char option)
       {
 	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	// Store thermal throttling
-	if (Flop->Thermal.Trip && (processorHot == -1)) {
+	if (Flop->Thermal.Events && (processorHot == -1)) {
 		processorHot = cpu;
 	}
 	if (cpu == Shm->Proc.Service.Core)
@@ -7433,7 +7456,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	} else if (Flop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
 		warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
-	if (Flop->Thermal.Trip) {
+	if (Flop->Thermal.Events) {
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 	Dec2Digit(Flop->Thermal.Temp, digit);

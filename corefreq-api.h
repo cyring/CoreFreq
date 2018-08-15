@@ -236,19 +236,19 @@ typedef struct
 
 typedef struct
 {
-	unsigned int		Sensor,
-				Target;
+	unsigned int			Sensor,
+					Target;
 	struct {
+		enum THERM_PWR_EVENTS	Events;
 		unsigned int
-				TCC_Enable:  1-0,
-				TM2_Enable:  2-1,
-				TM_Select :  3-2,
-				Trip      :  4-3,
-				Unused    : 32-4;
+					TCC_Enable:  1-0,
+					TM2_Enable:  2-1,
+					TM_Select :  3-2,
+					Unused    : 32-3;
 	};
-	CLOCK_MODULATION	ClockModulation;
-	ENERGY_PERF_BIAS	PerfEnergyBias;
-	MISC_PWR_MGMT		PwrManagement;
+	CLOCK_MODULATION		ClockModulation;
+	ENERGY_PERF_BIAS		PerfEnergyBias;
+	MISC_PWR_MGMT			PwrManagement;
 } POWER_THERMAL;
 
 typedef struct
@@ -642,9 +642,9 @@ typedef struct
 	} Uncore;
 
 	struct {
+		unsigned int	Sensor;
+	enum THERM_PWR_EVENTS	Events;
 		RAPL_POWER_UNIT Unit;
-		unsigned int	Sensor,
-				Trip;
 	} PowerThermal;
 
 	struct {

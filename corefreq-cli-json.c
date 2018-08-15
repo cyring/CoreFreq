@@ -1383,8 +1383,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
                 json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Sensor);
                 json_key(&s, "Temp");
                 json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Temp);
-                json_key(&s, "Trip");
-                json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Trip);
+                json_key(&s, "Events");
+                json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Events);
                 json_end_object(&s);
             }
             json_key(&s, "Voltage");
