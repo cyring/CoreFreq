@@ -2289,6 +2289,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
+    enum THERM_PWR_EVENTS processorEvents;
     double prevTopFreq = 0.0, prevTopLoad = 0.0;
     unsigned long prevFreeRAM = 0;
     unsigned int cpu = 0, cpuScroll = 0, digit[9], iClock = 0, ratioCount = 0;
@@ -4135,7 +4136,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	const Coordinate origin = {
 		.col = 53,
 		.row = TOP_HEADER_ROW + 3
@@ -4146,25 +4146,25 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *wBox = CreateBox(scan->key, origin, select,
 		" Clear Event ",
     (ASCII*)"     Thermal Sensor     ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_SENSOR) == 1)],
+		eventAttr[((processorEvents & EVENT_THERM_SENSOR) == 1)],
 		BOXKEY_CLR_THM_SENSOR,
     (ASCII*)"     PROCHOT# Agent     ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_PROCHOT) == 1)],
+		eventAttr[((processorEvents & EVENT_THERM_PROCHOT) == 1)],
 		BOXKEY_CLR_THM_PROCHOT,
     (ASCII*)"  Critical Temperature  ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_CRIT) == 1)],
+		eventAttr[((processorEvents & EVENT_THERM_CRIT) == 1)],
 		BOXKEY_CLR_THM_CRIT,
     (ASCII*)"   Thermal Threshold    ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_THERM_THOLD) == 1)],
+		eventAttr[((processorEvents & EVENT_THERM_THOLD) == 1)],
 		BOXKEY_CLR_THM_THOLD,
     (ASCII*)"    Power Limitation    ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_POWER_LIMIT) == 1)],
+		eventAttr[((processorEvents & EVENT_POWER_LIMIT) == 1)],
 		BOXKEY_CLR_PWR_LIMIT,
     (ASCII*)"   Current Limitation   ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_CURRENT_LIMIT) == 1)],
+		eventAttr[((processorEvents & EVENT_CURRENT_LIMIT) == 1)],
 		BOXKEY_CLR_CUR_LIMIT,
     (ASCII*)"   Cross Domain Limit.  ",
-		eventAttr[((PFlop->Thermal.Events & EVENT_CROSS_DOMAIN) == 1)],
+		eventAttr[((processorEvents & EVENT_CROSS_DOMAIN) == 1)],
 		BOXKEY_CLR_X_DOMAIN);
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
@@ -4965,7 +4965,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *wBox = CreateBox(scan->key, origin, select,
 			" Tools ",
     (ASCII*)"            STOP           ", BITVAL(Shm->Proc.Sync, 31) ?
-					   MakeAttr(RED,0,BLACK,0) : blankAttr,
+					   MakeAttr(YELLOW,0,BLACK,0):blankAttr,
 					   BITVAL(Shm->Proc.Sync, 31) ?
 					   BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
     (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
@@ -5600,7 +5600,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,		\
 			' ',' ',' ',' ',0x0,' ',' ',0x0,' ',']','-',	\
-			' ','P','a','c','k','a','g','e',' ','-','-',	\
+			'-','-','-','-','-','-','-','-','-','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
 			'-','-','-','-','-','-','-','-','-','-','-',	\
@@ -6174,13 +6174,12 @@ void Top(SHM_STRUCT *Shm, char option)
 	return(row);
     }
 
-    void Layout_Footer(Layer *layer, CUINT row, signed int *processorHot)
+    void Layout_Footer(Layer *layer, CUINT row)
     {
-	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT col = 0;
 	size_t len;
 
-	LayerDeclare(61) hTech0 = {
+	LayerDeclare(14) hTech0 = {
 		.origin = {.col = 0, .row = row}, .length = 14,
 		.attr={LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK},
 		.code={'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',','},
@@ -6214,30 +6213,28 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	    LayerDeclare(78) hTech1 = {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=64,
-		.attr ={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK, \
-			HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
-			HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,\
-			HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
-		},
-		.code ={'H','T','T',',','E','I','S','T',',','I','D','A',',', \
-			'T','U','R','B','O',',','C','1','E',',',	\
-			' ','P','M',',','C','3','A',',','C','1','A',',',\
-			'C','3','U',',','C','1','U',',',		\
-			'T','M','1',',','T','M','2',',','H','O','T',']',\
-			' ',' ',' ',' ',' ',' ',' ',' ',' '
-		},
-	    };
+	  LayerDeclare((55 + 11)) hTech1 = {
+	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=63,
+	    .attr = {
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
+		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,			\
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,	\
+		HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+	    },
+	    .code = {
+		'H','T','T',',','E','I','S','T',',','I','D','A',',',	\
+		'T','U','R','B','O',',','C','1','E',',',		\
+		' ','P','M',',','C','3','A',',','C','1','A',',',	\
+		'C','3','U',',','C','1','U',',',			\
+		'T','M','1',',','T','M','2',',','H','O','T',']',	\
+		' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
+	    },
+	  };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
-
-	    hTech1.attr[59] = hTech1.attr[60] = hTech1.attr[61] =
-			  PFlop->Thermal.Events ? MakeAttr(RED,   0, BLACK, 1)
-						: MakeAttr(WHITE, 0, BLACK, 1);
 
 		const ATTRIBUTE TM1[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
@@ -6291,10 +6288,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =	\
 			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
-	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Events) {
-		hTech1.attr[51] = MakeAttr(RED, 1, BLACK, 1);
-		hTech1.attr[52] = hTech1.attr[53] = MakeAttr(RED, 0, BLACK, 1);
-	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
@@ -6305,17 +6298,23 @@ void Top(SHM_STRUCT *Shm, char option)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
 	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-	    LayerDeclare(65) hTech1 = {
-		.origin={.col=hTech0.length, .row=hTech0.origin.row},.length=39,
-		.attr={HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,\
-		       HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
-		       HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK
-		},
-		.code={'S','M','T',',','P','o','w','e','r','N','o','w',',',\
-		       'B','O','O','S','T',',','C','1','E',',',' ','P','M',',',\
-		       'D','T','S',',','T','T','P',',','H','O','T',']'
-		},
-	    };
+	   LayerDeclare((39 + 27)) hTech1 = {
+	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=63,
+	    .attr = {
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,	\
+		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
+		HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+	    },
+	    .code = {
+		'S','M','T',',','P','o','w','e','r','N','o','w',',',	\
+		'B','O','O','S','T',',','C','1','E',',',' ','P','M',',',\
+		'D','T','S',',','T','T','P',',','H','O','T',']',' ',' ',\
+		' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+		' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
+	    },
+	   };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
@@ -6345,10 +6344,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
-	    if (( (*processorHot) != -1 ) || PFlop->Thermal.Events) {
-		hTech1.attr[35] = MakeAttr(RED, 1, BLACK, 1);
-		hTech1.attr[36] = hTech1.attr[37] = MakeAttr(RED, 0, BLACK, 1);
-	    }
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
@@ -6730,12 +6725,6 @@ void Top(SHM_STRUCT *Shm, char option)
 			100.f * Shm->Proc.Avg.C6,
 			100.f * Shm->Proc.Avg.C7);
 		memcpy(&LayerAt(layer, code, 20, row), buffer, len);
-
-	  if (Shm->Proc.Features.Power.EAX.PTM) {
-	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-		len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
-		memcpy(&LayerAt(layer, code, 73, (row + 1)), buffer, len);
-	  }
 	} else {
 		len = sprintf(buffer,
 			"  c2:%-5.1f" "  c3:%-5.1f" "  c6:%-5.1f"	\
@@ -6750,13 +6739,13 @@ void Top(SHM_STRUCT *Shm, char option)
 			100.f * Shm->Proc.State.PC10);
 		memcpy(&LayerAt(layer, code, 11, row), buffer, len);
 	}
-	row += 2;
+	row += 1;
 	return(row);
     }
 
     CUINT Draw_AltMonitor_Common(Layer *layer, CUINT row)
     {
-	row += 2 + TOP_FOOTER_ROW + MAX_ROWS;
+	row += 1 + TOP_FOOTER_ROW + MAX_ROWS;
 	return(row);
     }
 
@@ -6829,7 +6818,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	len = sprintf(buffer, "UNCORE:%18llu", Pkg->Uncore.FC0);
 	memcpy(&LayerAt(layer, code,50,(row+7)), buffer, len);
 
-	row += 2 + 8;
+	row += 1 + 8;
 	return(row);
     }
 
@@ -6924,7 +6913,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
       }
     }
-    row += 2;
+    row += 1;
     return(row);
   }
 
@@ -6954,12 +6943,32 @@ void Top(SHM_STRUCT *Shm, char option)
 	memcpy(&LayerAt(layer, code, col     ,(row+3)), &buffer[39], 13);
 	memcpy(&LayerAt(layer, code,(col+tab),(row+3)), &buffer[91], 13);
 
-	row += 2 + CUMAX(MAX_ROWS, 4);
+	row += 1 + CUMAX(MAX_ROWS, 4);
 	return(row);
     }
 
     void Draw_Footer(Layer *layer, CUINT row)
     {	// Update Footer view area
+	if (processorEvents) {
+		LayerAt(layer, attr, 14+51, row) = MakeAttr(RED, 1, BLACK, 1);
+		LayerAt(layer, attr, 14+52, row) = \
+		LayerAt(layer, attr, 14+53, row) = MakeAttr(RED, 0, BLACK, 1);
+	}/*-- else {
+		LayerAt(layer, attr, 14+51, (row-1)) = \
+		LayerAt(layer, attr, 14+52, (row-1)) = \
+		LayerAt(layer, attr, 14+53, (row-1)) = MakeAttr(CYAN,0,BLUE,0);
+	}	*/
+	if (Shm->Proc.Features.Power.EAX.PTM) {
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+		LayerAt(layer, attr, 14+59, row) = \
+		LayerAt(layer, attr, 14+60, row) = \
+		LayerAt(layer, attr, 14+61, row) = PFlop->Thermal.Events ?
+						  MakeAttr(RED,   0, BLACK, 1)
+						: MakeAttr(WHITE, 0, BLACK, 1);
+
+		size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
+		memcpy(&LayerAt(layer, code, 73, row), buffer, len);
+	}
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
 		if ((prevTaskCount != Shm->SysGate.taskCount)
@@ -6967,7 +6976,7 @@ void Top(SHM_STRUCT *Shm, char option)
 			prevTaskCount = Shm->SysGate.taskCount;
 			prevFreeRAM = Shm->SysGate.memInfo.freeram;
 
-			PrintTaskMemory(layer, row,
+			PrintTaskMemory(layer, (row + 1),
 					Shm->SysGate.taskCount,
 					Shm->SysGate.memInfo.freeram,
 					Shm->SysGate.memInfo.totalram);
@@ -7036,7 +7045,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
   void Layout_Header_DualView_Footer(Layer *layer)
   {
-	signed int processorHot = -1;
 	CUINT row = 0;
 
 	loadWidth = drawSize.width - LOAD_LEAD;
@@ -7058,11 +7066,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
       if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	// Store thermal throttling
-	if (Flop->Thermal.Events && (processorHot == -1)) {
-		processorHot = cpu;
-	}
 	if (cpu == Shm->Proc.Service.Core)
 		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
 	else if (cpu == Shm->Proc.Service.Thread)
@@ -7103,7 +7106,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	row = Matrix_Layout_Ruller[drawFlag.view](layer, row);
 
-	Layout_Footer(layer, row, &processorHot);
+	Layout_Footer(layer, row);
   }
 
     VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
@@ -7134,11 +7137,20 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	CUINT row = 0;
 
+	if (Shm->Proc.Features.Power.EAX.PTM) {
+	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+		processorEvents = PFlop->Thermal.Events;
+	} else
+		processorEvents = 0;
+
 	Draw_Header(layer, row);
 
 	row += TOP_HEADER_ROW;
 
 	for (cpu = cpuScroll; cpu < (cpuScroll + MAX_ROWS); cpu++) {
+	 struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+		processorEvents |= CFlop->Thermal.Events;
+
 		row++;
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
