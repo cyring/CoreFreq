@@ -1690,7 +1690,7 @@ void Package(SHM_STRUCT *Shm)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	printf( "\t\t" "Cycles" "\t\t" "State(%%)" "\n"	\
 		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC03" "\t" "%18llu" "\t" "%7.2f" "\n"	\
@@ -1701,15 +1701,15 @@ void Package(SHM_STRUCT *Shm)
 		"PC10" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PTSC" "\t" "%18llu" "\n"		\
 		"UNCORE" "\t" "%18llu" "\n\n",
-		Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
-		Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
-		Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
-		Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
-		Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
-		Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
-		Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
-		Pkg->Delta.PTSC,
-		Pkg->Uncore.FC0);
+		PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
+		PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+		PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
+		PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
+		PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
+		PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
+		PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+		PFlop->Delta.PTSC,
+		PFlop->Uncore.FC0);
     }
 }
 
@@ -1733,7 +1733,7 @@ void Counters(SHM_STRUCT *Shm)
 	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
 	{
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *Flop =
+	    struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
@@ -1741,17 +1741,17 @@ void Counters(SHM_STRUCT *Shm)
 			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 			"  %-3u/%3u:%-3u/%3u\n",
 			cpu,
-			Flop->Relative.Freq,
-			Flop->Relative.Ratio,
-			100.f * Flop->State.Turbo,
-			100.f * Flop->State.C0,
-			100.f * Flop->State.C1,
-			100.f * Flop->State.C3,
-			100.f * Flop->State.C6,
-			100.f * Flop->State.C7,
+			CFlop->Relative.Freq,
+			CFlop->Relative.Ratio,
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7,
 			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			Flop->Thermal.Temp,
-			Flop->Thermal.Sensor,
+			CFlop->Thermal.Temp,
+			CFlop->Thermal.Sensor,
 			Shm->Cpu[cpu].PowerThermal.Limit[1]);
 	    else
 		printf("#%02u        OFF\n", cpu);
@@ -1800,15 +1800,15 @@ void Voltage(SHM_STRUCT *Shm)
 		printf("CPU Freq(MHz) VID  Vcore\n");
 	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *Flop =
+	    struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printf("#%02u %7.2f %5d  %5.4f\n",
 			cpu,
-			Flop->Relative.Freq,
-			Flop->Voltage.VID,
-			Flop->Voltage.Vcore);
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore);
 	    else
 		printf("#%02u        OFF\n", cpu);
 	  }
@@ -1847,15 +1847,15 @@ void Instructions(SHM_STRUCT *Shm)
 
 	for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-		struct FLIP_FLOP *Flop =
+		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
 			cpu,
-			Flop->State.IPS,
-			Flop->State.IPC,
-			Flop->State.CPI);
+			CFlop->State.IPS,
+			CFlop->State.IPC,
+			CFlop->State.CPI);
 	    else
 		printf("#%02u\n", cpu);
 	  }
@@ -4129,9 +4129,10 @@ void Top(SHM_STRUCT *Shm, char option)
     break;
     case SCANKEY_SHIFT_h:
     {
-	ATTRIBUTE eventAttr[2] ={
-		MakeAttr(WHITE,  0, BLACK, 0),
-		MakeAttr(YELLOW, 0, BLACK, 0)
+	ATTRIBUTE eventAttr[3] = {
+		MakeAttr(WHITE,   0, BLACK, 0),
+		MakeAttr(MAGENTA, 0, BLACK, 0),
+		MakeAttr(YELLOW,  0, BLACK, 1)
 	};
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
@@ -4146,25 +4147,25 @@ void Top(SHM_STRUCT *Shm, char option)
 	Window *wBox = CreateBox(scan->key, origin, select,
 		" Clear Event ",
     (ASCII*)"     Thermal Sensor     ",
-		eventAttr[((processorEvents & EVENT_THERM_SENSOR) == 1)],
+		eventAttr[(processorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
 		BOXKEY_CLR_THM_SENSOR,
     (ASCII*)"     PROCHOT# Agent     ",
-		eventAttr[((processorEvents & EVENT_THERM_PROCHOT) == 1)],
+		eventAttr[(processorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
 		BOXKEY_CLR_THM_PROCHOT,
     (ASCII*)"  Critical Temperature  ",
-		eventAttr[((processorEvents & EVENT_THERM_CRIT) == 1)],
+		eventAttr[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
 		BOXKEY_CLR_THM_CRIT,
     (ASCII*)"   Thermal Threshold    ",
-		eventAttr[((processorEvents & EVENT_THERM_THOLD) == 1)],
+		eventAttr[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
 		BOXKEY_CLR_THM_THOLD,
     (ASCII*)"    Power Limitation    ",
-		eventAttr[((processorEvents & EVENT_POWER_LIMIT) == 1)],
+		eventAttr[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
 		BOXKEY_CLR_PWR_LIMIT,
     (ASCII*)"   Current Limitation   ",
-		eventAttr[((processorEvents & EVENT_CURRENT_LIMIT) == 1)],
+		eventAttr[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
 		BOXKEY_CLR_CUR_LIMIT,
     (ASCII*)"   Cross Domain Limit.  ",
-		eventAttr[((processorEvents & EVENT_CROSS_DOMAIN) == 1)],
+		eventAttr[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
 		BOXKEY_CLR_X_DOMAIN);
 	if (wBox != NULL) {
 		AppendWindow(wBox, &winList);
@@ -5139,14 +5140,13 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Layout_Header(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = NULL;
 	size_t len;
+	struct FLIP_FLOP *CFlop = \
+	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
 	// Reset the Top Frequency
-	Flop=&Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
-
 	if (!drawFlag.clkOrLd) {
-		Clock2LCD(layer,0,row,Flop->Relative.Freq,Flop->Relative.Ratio);
+	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
 	} else {
 		double percent = 100.f * Shm->Proc.Avg.C0;
 
@@ -6451,10 +6451,10 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 	{
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 		// Upper view area
-		CUINT	bar0 =((Flop->Relative.Ratio > maxRatio ?
-				maxRatio:Flop->Relative.Ratio)
+		CUINT	bar0 =((CFlop->Relative.Ratio > maxRatio ?
+				maxRatio : CFlop->Relative.Ratio)
 				* loadWidth) / maxRatio,
 			bar1 = loadWidth - bar0;
 		// Print the Per Core BCLK indicator (yellow)
@@ -6463,8 +6463,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		// Draw the relative Core frequency ratio
 		LayerFillAt(layer, LOAD_LEAD, row,
 				bar0, hBar,
-				MakeAttr((Flop->Relative.Ratio > medianRatio ?
-					RED : Flop->Relative.Ratio > minRatio ?
+				MakeAttr((CFlop->Relative.Ratio > medianRatio ?
+					RED : CFlop->Relative.Ratio > minRatio ?
 						YELLOW : GREEN),
 					0, BLACK, 1));
 		// Pad with blank characters
@@ -6476,7 +6476,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Frequency(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
 	len = sprintf(buffer,
@@ -6484,28 +6484,33 @@ void Top(SHM_STRUCT *Shm, char option)
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
-		Flop->Relative.Freq,
-		Flop->Relative.Ratio,
-		100.f * Flop->State.Turbo,
-		100.f * Flop->State.C0,
-		100.f * Flop->State.C1,
-		100.f * Flop->State.C3,
-		100.f * Flop->State.C6,
-		100.f * Flop->State.C7,
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
 		Shm->Cpu[cpu].PowerThermal.Limit[0],
-		Flop->Thermal.Temp,
+		CFlop->Thermal.Temp,
 		Shm->Cpu[cpu].PowerThermal.Limit[1]);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
-	ATTRIBUTE warning ={.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
 
-	if (Flop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
+	if (CFlop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
 			warning = MakeAttr(BLUE, 0, BLACK, 1);
 	else {
-		if (Flop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
+		if (CFlop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
 			warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
-	if (Flop->Thermal.Events) {
+	if (CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
+				      |	EVENT_THERM_PROCHOT
+				      |	EVENT_THERM_CRIT
+				      |	EVENT_THERM_THOLD ))
+	{
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =		\
@@ -6517,7 +6522,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Instructions(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
 	len = sprintf(buffer,
@@ -6525,10 +6530,10 @@ void Top(SHM_STRUCT *Shm, char option)
 			"%17.6f" "/c"				\
 			"%17.6f" "/i"				\
 			"%18llu",
-			Flop->State.IPS,
-			Flop->State.IPC,
-			Flop->State.CPI,
-			Flop->Delta.INST);
+			CFlop->State.IPS,
+			CFlop->State.IPC,
+			CFlop->State.CPI,
+			CFlop->Delta.INST);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
@@ -6536,15 +6541,15 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Cycles(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
 	len = sprintf(buffer,
 			"%18llu%18llu%18llu%18llu",
-			Flop->Delta.C0.UCC,
-			Flop->Delta.C0.URC,
-			Flop->Delta.C1,
-			Flop->Delta.TSC);
+			CFlop->Delta.C0.UCC,
+			CFlop->Delta.C0.URC,
+			CFlop->Delta.C1,
+			CFlop->Delta.TSC);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
@@ -6552,15 +6557,15 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_CStates(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
 	len = sprintf(buffer,
 			"%18llu%18llu%18llu%18llu",
-			Flop->Delta.C1,
-			Flop->Delta.C3,
-			Flop->Delta.C6,
-			Flop->Delta.C7);
+			CFlop->Delta.C1,
+			CFlop->Delta.C3,
+			CFlop->Delta.C6,
+			CFlop->Delta.C7);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
@@ -6641,10 +6646,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Tasks(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = sprintf(buffer, "%7.2f", Flop->Relative.Freq);
+	len = sprintf(buffer, "%7.2f", CFlop->Relative.Freq);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	cTask[cpu].col = LOAD_LEAD + 8;
@@ -6654,19 +6659,19 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Interrupts(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = sprintf(buffer, "%10u", Flop->Counter.SMI);
+	len = sprintf(buffer, "%10u", CFlop->Counter.SMI);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	if (Shm->Registration.nmi) {
 		len = sprintf(buffer,
 				"%10u%10u%10u%10u",
-				Flop->Counter.NMI.LOCAL,
-				Flop->Counter.NMI.UNKNOWN,
-				Flop->Counter.NMI.PCISERR,
-				Flop->Counter.NMI.IOCHECK);
+				CFlop->Counter.NMI.LOCAL,
+				CFlop->Counter.NMI.UNKNOWN,
+				CFlop->Counter.NMI.PCISERR,
+				CFlop->Counter.NMI.IOCHECK);
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), buffer, len);
 	}
 	return(0);
@@ -6674,17 +6679,17 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Voltage(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	if (Flop->Voltage.VID != 0)
+	if (CFlop->Voltage.VID != 0)
 		len = sprintf(buffer,	"%7.2f "	\
 					"%7d   %5.4f",
-					Flop->Relative.Freq,
-					Flop->Voltage.VID,
-					Flop->Voltage.Vcore);
+					CFlop->Relative.Freq,
+					CFlop->Voltage.VID,
+					CFlop->Voltage.Vcore);
 	else
-		len = sprintf(buffer, "%7.2f ", Flop->Relative.Freq);
+		len = sprintf(buffer, "%7.2f ", CFlop->Relative.Freq);
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
@@ -6693,13 +6698,13 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_Monitor_Slice(Layer *layer, CUINT row)
     {
-	struct FLIP_FLOP *Flop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
 	len = sprintf(buffer,
 			"%7.2f "				\
 			"%16llu%16llu%18llu%18llu",
-			Flop->Relative.Freq,
+			CFlop->Relative.Freq,
 			Shm->Cpu[cpu].Slice.Delta.TSC,
 			Shm->Cpu[cpu].Slice.Delta.INST,
 			Shm->Cpu[cpu].Slice.Counter[1].TSC,
@@ -6751,7 +6756,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT Draw_AltMonitor_Package(Layer *layer, CUINT row)
     {
-	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT bar0, bar1, margin = loadWidth - 28;
 	size_t len;
 
@@ -6761,7 +6766,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC02, 100.f * Shm->Proc.State.PC02,
+			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, row), buffer, len);
 /* PC03 */
@@ -6769,7 +6774,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+1)), buffer, len);
 /* PC06 */
@@ -6777,7 +6782,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC06, 100.f * Shm->Proc.State.PC06,
+			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+2)), buffer, len);
 /* PC07 */
@@ -6785,7 +6790,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC07, 100.f * Shm->Proc.State.PC07,
+			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+3)), buffer, len);
 /* PC08 */
@@ -6793,7 +6798,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC08, 100.f * Shm->Proc.State.PC08,
+			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+4)), buffer, len);
 /* PC09 */
@@ -6801,7 +6806,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC09, 100.f * Shm->Proc.State.PC09,
+			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+5)), buffer, len);
 /* PC10 */
@@ -6809,13 +6814,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	bar1 = margin - bar0;
 
 	len = sprintf(buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
-			Pkg->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5,(row+6)), buffer, len);
 /* TSC & UNCORE */
-	len = sprintf(buffer, "%18llu", Pkg->Delta.PTSC);
+	len = sprintf(buffer, "%18llu", PFlop->Delta.PTSC);
 	memcpy(&LayerAt(layer, code, 5,(row+7)), buffer, len);
-	len = sprintf(buffer, "UNCORE:%18llu", Pkg->Uncore.FC0);
+	len = sprintf(buffer, "UNCORE:%18llu", PFlop->Uncore.FC0);
 	memcpy(&LayerAt(layer, code,50,(row+7)), buffer, len);
 
 	row += 1 + 8;
@@ -6949,26 +6954,49 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Footer(Layer *layer, CUINT row)
     {	// Update Footer view area
-	if (processorEvents) {
-		LayerAt(layer, attr, 14+51, row) = MakeAttr(RED, 1, BLACK, 1);
-		LayerAt(layer, attr, 14+52, row) = \
-		LayerAt(layer, attr, 14+53, row) = MakeAttr(RED, 0, BLACK, 1);
-	}/*-- else {
-		LayerAt(layer, attr, 14+51, (row-1)) = \
-		LayerAt(layer, attr, 14+52, (row-1)) = \
-		LayerAt(layer, attr, 14+53, (row-1)) = MakeAttr(CYAN,0,BLUE,0);
-	}	*/
+	ATTRIBUTE eventAttr[2][5] = {
+		{
+			MakeAttr(BLACK,   0, BLACK, 1),
+			MakeAttr(MAGENTA, 0, BLACK, 0),
+			MakeAttr(YELLOW,  0, BLACK, 0),
+			MakeAttr(RED,     0, BLACK, 1),
+			MakeAttr(WHITE,   0, BLACK, 1)
+		},{
+			MakeAttr(BLACK,   0, BLACK, 1),
+			MakeAttr(MAGENTA, 0, BLACK, 1),
+			MakeAttr(YELLOW,  0, BLACK, 1),
+			MakeAttr(RED,     0, BLACK, 1),
+			MakeAttr(WHITE,   0, BLACK, 1)
+		}
+	};
+	unsigned int _hot = 0, _tmp = 0;
+
+	if (!processorEvents) {
+		_hot = 0;
+		_tmp = 4;
+	} else {
+	    if (processorEvents & (EVENT_POWER_LIMIT | EVENT_CURRENT_LIMIT)) {
+		_hot = 2;
+		_tmp = 4;
+	    } else {
+		_hot = 1;
+		_tmp = 3;
+	    }
+	}
+	LayerAt(layer, attr, 14+51, row) = eventAttr[1][_hot];
+	LayerAt(layer, attr, 14+52, row) = \
+	LayerAt(layer, attr, 14+53, row) = eventAttr[0][_hot];
+
 	if (Shm->Proc.Features.Power.EAX.PTM) {
-	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	  struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 		LayerAt(layer, attr, 14+59, row) = \
 		LayerAt(layer, attr, 14+60, row) = \
-		LayerAt(layer, attr, 14+61, row) = PFlop->Thermal.Events ?
-						  MakeAttr(RED,   0, BLACK, 1)
-						: MakeAttr(WHITE, 0, BLACK, 1);
+		LayerAt(layer, attr, 14+61, row) = eventAttr[0][_tmp];
 
 		size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
 		memcpy(&LayerAt(layer, code, 73, row), buffer, len);
 	}
+
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
 		if ((prevTaskCount != Shm->SysGate.taskCount)
@@ -6986,14 +7014,14 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Header(Layer *layer, CUINT row)
     {	// Update Header view area
-	struct FLIP_FLOP *Flop = \
+	struct FLIP_FLOP *CFlop = \
 	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 	// Print the Top value if delta exists with the previous one
 	if (!drawFlag.clkOrLd) { // Frequency MHz
-	    if (prevTopFreq != Flop->Relative.Freq) {
-		prevTopFreq = Flop->Relative.Freq;
+	    if (prevTopFreq != CFlop->Relative.Freq) {
+		prevTopFreq = CFlop->Relative.Freq;
 
-		Clock2LCD(layer,0,row,Flop->Relative.Freq,Flop->Relative.Ratio);
+	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
 	    }
 	} else { // C0 C-State % load
 		if (prevTopLoad != Shm->Proc.Avg.C0) {
@@ -7457,21 +7485,23 @@ void Top(SHM_STRUCT *Shm, char option)
   {
     if (card->data.dword.hi == RENDER_OK) {
 	unsigned int _cpu = card->data.dword.lo;
-	struct FLIP_FLOP *Flop=&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
+	struct FLIP_FLOP *CFlop = \
+			&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
+
 	ATTRIBUTE warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
 
 	Clock2LCD(layer, card->origin.col, card->origin.row,
-			Flop->Relative.Freq, Flop->Relative.Ratio);
+			CFlop->Relative.Freq, CFlop->Relative.Ratio);
 
-	if (Flop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
+	if (CFlop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
 		warning = MakeAttr(BLUE, 0, BLACK, 1);
-	} else if (Flop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
+	} else if (CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
 		warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
-	if (Flop->Thermal.Events) {
+	if (CFlop->Thermal.Events) {
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
-	Dec2Digit(Flop->Thermal.Temp, digit);
+	Dec2Digit(CFlop->Thermal.Temp, digit);
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
 	LayerAt(layer, attr, (card->origin.col + 7), (card->origin.row + 3)) = \
@@ -7501,8 +7531,8 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Card_CLK(Layer *layer, Card* card)
     {
-	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	double clock = Pkg->Delta.PTSC / 1000000.f;
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	double clock = PFlop->Delta.PTSC / 1000000.f;
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
@@ -7515,8 +7545,8 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Card_Uncore(Layer *layer, Card* card)
     {
-	struct PKG_FLIP_FLOP *Pkg = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	double Uncore = Pkg->Uncore.FC0 / 1000000.f;
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	double Uncore = PFlop->Uncore.FC0 / 1000000.f;
 
 	Idle2LCD(layer, card->origin.col, card->origin.row, Uncore);
     }

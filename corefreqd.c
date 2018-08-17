@@ -3243,21 +3243,21 @@ void Core_Manager(REF *Ref)
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
-		struct FLIP_FLOP *Flop =
+		struct FLIP_FLOP *CFlop =
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		// Index cpu with the highest frequency.
-		if (Flop->Relative.Freq > maxRelFreq) {
-			maxRelFreq = Flop->Relative.Freq;
+		if (CFlop->Relative.Freq > maxRelFreq) {
+			maxRelFreq = CFlop->Relative.Freq;
 			Shm->Proc.Top = cpu;
 		}
 		// Sum counters values from the alternated memory structure.
-		Shm->Proc.Avg.Turbo += Flop->State.Turbo;
-		Shm->Proc.Avg.C0    += Flop->State.C0;
-		Shm->Proc.Avg.C3    += Flop->State.C3;
-		Shm->Proc.Avg.C6    += Flop->State.C6;
-		Shm->Proc.Avg.C7    += Flop->State.C7;
-		Shm->Proc.Avg.C1    += Flop->State.C1;
+		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
+		Shm->Proc.Avg.C0    += CFlop->State.C0;
+		Shm->Proc.Avg.C3    += CFlop->State.C3;
+		Shm->Proc.Avg.C6    += CFlop->State.C6;
+		Shm->Proc.Avg.C7    += CFlop->State.C7;
+		Shm->Proc.Avg.C1    += CFlop->State.C1;
 	    }
 	}
 	if (!BITVAL(Shutdown, 0)) {
