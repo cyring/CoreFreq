@@ -287,7 +287,6 @@ static void *Core_Cycle(void *arg)
 
 		switch (Pkg->thermalFormula) {
 		case THERMAL_FORMULA_INTEL:
-		    if (Shm->Proc.Features.Power.EAX.PTM)
 			COMPUTE_THERMAL(INTEL,
 					PFlip->Thermal.Temp,
 					Cpu->PowerThermal.Target,

@@ -2342,9 +2342,9 @@ void Top(SHM_STRUCT *Shm, char option)
 
 #define StoreCard(card, with, what)					\
 (									\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
+    __builtin_choose_expr(__builtin_types_compatible_p( 		\
 	typeof(card->hook with), typeof(CARDFUNC)), HookCardFunc,	\
-    (void)0)							\
+    (void)0)								\
 	(&(card->hook with), what)					\
 )
 
@@ -2389,7 +2389,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
 		Threshold(value, 100.f/3.f, 100.f/1.5f, _YELLOW,_WHITE,_GREEN))
 
-#define Sys2LCD(layer, col, row, value)					\
+#define Sys2LCD(layer, col, row, value) 				\
 	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
 		Threshold(value, 100.f/6.6f, 50.0, _RED,_YELLOW,_WHITE))
 
@@ -6990,15 +6990,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	LayerAt(layer, attr, 14+52, row) = \
 	LayerAt(layer, attr, 14+53, row) = eventAttr[0][_hot];
 
-	if (Shm->Proc.Features.Power.EAX.PTM) {
-	  struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-		LayerAt(layer, attr, 14+59, row) = \
-		LayerAt(layer, attr, 14+60, row) = \
-		LayerAt(layer, attr, 14+61, row) = eventAttr[0][_tmp];
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	LayerAt(layer, attr, 14+59, row) = \
+	LayerAt(layer, attr, 14+60, row) = \
+	LayerAt(layer, attr, 14+61, row) = eventAttr[0][_tmp];
 
-		size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
-		memcpy(&LayerAt(layer, code, 73, row), buffer, len);
-	}
+	size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
+	memcpy(&LayerAt(layer, code, 73, row), buffer, len);
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
@@ -7168,11 +7166,8 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	CUINT row = 0;
 
-	if (Shm->Proc.Features.Power.EAX.PTM) {
-	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-		processorEvents = PFlop->Thermal.Events;
-	} else
-		processorEvents = 0;
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	processorEvents = PFlop->Thermal.Events;
 
 	Draw_Header(layer, row);
 
@@ -7236,7 +7231,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		(card->origin.col + 3),			\
 		(card->origin.row + 3)) = digit[7] + '0';
 
-	LayerAt(layer, code,			\
+	LayerAt(layer, code,				\
 		(card->origin.col + 4),			\
 		(card->origin.row + 3)) = digit[8] + '0';
     }

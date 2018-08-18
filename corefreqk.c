@@ -4703,7 +4703,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	    : 0;							\
 })
 
-#define Delta_TSC(Core)							\
+#define Delta_TSC(Core) 						\
 ({									\
 	Core->Delta.TSC = Core->Counter[1].TSC				\
 			- Core->Counter[0].TSC;				\
@@ -4814,7 +4814,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	MSR_SKL_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
-#define PKG_Counters_Skylake_X(Core, T)					\
+#define PKG_Counters_Skylake_X(Core, T) 				\
 ({									\
 	RDTSCP_COUNTERx4(Proc->Counter[T].PTSC,				\
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
@@ -4823,49 +4823,49 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
 })
 
-#define Delta_PTSC(Pkg)							\
+#define Delta_PTSC(Pkg) 						\
 ({									\
 	Pkg->Delta.PTSC = Pkg->Counter[1].PTSC				\
 			- Pkg->Counter[0].PTSC;				\
 })
 
-#define Delta_PC02(Pkg)							\
+#define Delta_PC02(Pkg) 						\
 ({									\
 	Pkg->Delta.PC02 = Pkg->Counter[1].PC02				\
 			- Pkg->Counter[0].PC02;				\
 })
 
-#define Delta_PC03(Pkg)							\
+#define Delta_PC03(Pkg) 						\
 ({									\
 	Pkg->Delta.PC03 = Pkg->Counter[1].PC03				\
 			- Pkg->Counter[0].PC03;				\
 })
 
-#define Delta_PC06(Pkg)							\
+#define Delta_PC06(Pkg) 						\
 ({									\
 	Pkg->Delta.PC06 = Pkg->Counter[1].PC06				\
 			- Pkg->Counter[0].PC06;				\
 })
 
-#define Delta_PC07(Pkg)							\
+#define Delta_PC07(Pkg) 						\
 ({									\
 	Pkg->Delta.PC07 = Pkg->Counter[1].PC07				\
 			- Pkg->Counter[0].PC07;				\
 })
 
-#define Delta_PC08(Pkg)							\
+#define Delta_PC08(Pkg) 						\
 ({									\
 	Pkg->Delta.PC08 = Pkg->Counter[1].PC08				\
 			- Pkg->Counter[0].PC08;				\
 })
 
-#define Delta_PC09(Pkg)							\
+#define Delta_PC09(Pkg) 						\
 ({									\
 	Pkg->Delta.PC09 = Pkg->Counter[1].PC09				\
 			- Pkg->Counter[0].PC09;				\
 })
 
-#define Delta_PC10(Pkg)							\
+#define Delta_PC10(Pkg) 						\
 ({									\
 	Pkg->Delta.PC10 = Pkg->Counter[1].PC10				\
 			- Pkg->Counter[0].PC10;				\
@@ -4913,7 +4913,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	Core->Counter[0].C7 = Core->Counter[1].C7;			\
 })
 
-#define Save_INST(Core)							\
+#define Save_INST(Core) 						\
 ({	/* Save the Instructions counter. */				\
 	Core->Counter[0].INST = Core->Counter[1].INST;			\
 })
@@ -4975,7 +4975,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 						MSR_PP1_ENERGY_STATUS); \
 })
 
-#define PWR_ACCU_SandyBridge_EP(Pkg, T)					\
+#define PWR_ACCU_SandyBridge_EP(Pkg, T) 				\
 ({									\
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 						MSR_PKG_ENERGY_STATUS); \
@@ -5002,7 +5002,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
-#define PWR_ACCU_AMD_Family_17h(Pkg, T)					\
+#define PWR_ACCU_AMD_Family_17h(Pkg, T) 				\
 ({									\
 	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
 					MSR_AMD_PKG_ENERGY_STATUS);	\
@@ -5040,8 +5040,9 @@ void Core_Intel_Temp(CORE *Core)
 				  | (ThermStatus.CurLimitLog << 5)
 				  | (ThermStatus.XDomLimitLog << 6);
 
-	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
-	{
+	if (Proc->Features.Power.EAX.PTM) {
+	    if (Core->Bind == Proc->Service.Core)
+	    {
 		ThermStatus.value = 0;
 		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 
@@ -5053,6 +5054,12 @@ void Core_Intel_Temp(CORE *Core)
 					  | (	(ThermStatus.Threshold1Log
 						|ThermStatus.Threshold2Log )<<3)
 					  | (ThermStatus.PwrLimitLog << 4);
+	    }
+	} else { // Workaround to Package Thermal Management: the hottest Core.
+		if (Core->Bind == Proc->Service.Core)
+			Proc->PowerThermal.Sensor = Core->PowerThermal.Sensor;
+/* race cond */ else if (Core->PowerThermal.Sensor < Proc->PowerThermal.Sensor)
+			Proc->PowerThermal.Sensor = Core->PowerThermal.Sensor;
 	}
 }
 
@@ -7013,7 +7020,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				break;
 			case COREFREQ_TOGGLE_ON:
 				Controller_Start(1);
-				rc = 0;
+				rc = 2;
 				break;
 		}
 		break;
