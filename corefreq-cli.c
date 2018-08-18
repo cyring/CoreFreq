@@ -3653,18 +3653,21 @@ void Top(SHM_STRUCT *Shm, char option)
 		case V_TASKS:
 		case V_INTR:
 		case V_SLICE:
-			MIN_HEIGHT = 2 + TOP_HEADER_ROW
+	/*10*/		MIN_HEIGHT = 2 + TOP_HEADER_ROW
+					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
+			break;
+		case V_VOLTAGE:
+	/*16*/		MIN_HEIGHT = 8 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
 		case V_PACKAGE:
-		case V_VOLTAGE:
-			MIN_HEIGHT = 8 + TOP_HEADER_ROW
+	/*24*/		MIN_HEIGHT =16 + TOP_HEADER_ROW
 					+ TOP_SEPARATOR + TOP_FOOTER_ROW;
 			break;
 		}
 		break;
 	    default:
-		MIN_HEIGHT = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
+	/*11*/	MIN_HEIGHT = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
 		break;
 	    }
 
