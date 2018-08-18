@@ -1869,7 +1869,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 /* 38*/	{
 	.Signature = _Skylake_UY,
-	.Query = Query_SandyBridge,
+	.Query = Query_Broadwell,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -1880,6 +1880,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = "Skylake/UY",
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Skylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
@@ -1889,7 +1890,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 /* 39*/	{
 	.Signature = _Skylake_S,
-	.Query = Query_SandyBridge,
+	.Query = Query_Broadwell,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
