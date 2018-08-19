@@ -282,9 +282,6 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Power.Unit.Times;
 	    }
 		// Package thermal formulas
-		PFlip->Thermal.Sensor = Pkg->PowerThermal.Sensor;
-		PFlip->Thermal.Events = Pkg->PowerThermal.Events;
-
 		switch (Pkg->thermalFormula) {
 		case THERMAL_FORMULA_INTEL:
 			COMPUTE_THERMAL(INTEL,
@@ -307,7 +304,18 @@ static void *Core_Cycle(void *arg)
 					CFlip->Voltage.Vcore,
 					CFlip->Voltage.VID);
 			break;
+		}
+	    if (Shm->Proc.Features.Power.EAX.PTM) {
+		PFlip->Thermal.Sensor = Pkg->PowerThermal.Sensor;
+		PFlip->Thermal.Events = Pkg->PowerThermal.Events;
+	    } else {	// Reset PTM sensor with the Service Processor.
+		PFlip->Thermal.Sensor = CFlip->Thermal.Sensor;
 	    }
+	} else if (!Shm->Proc.Features.Power.EAX.PTM) {
+	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+		// Workaround to Package Thermal Management: the hottest Core.
+		if (CFlip->Thermal.Sensor < PFlop->Thermal.Sensor)
+			PFlop->Thermal.Sensor = CFlip->Thermal.Sensor;
 	}
 	// Min and Max temperatures per Core
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])

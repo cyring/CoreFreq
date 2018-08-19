@@ -5040,9 +5040,8 @@ void Core_Intel_Temp(CORE *Core)
 				  | (ThermStatus.CurLimitLog << 5)
 				  | (ThermStatus.XDomLimitLog << 6);
 
-	if (Proc->Features.Power.EAX.PTM) {
-	    if (Core->Bind == Proc->Service.Core)
-	    {
+	if (Proc->Features.Power.EAX.PTM && (Core->Bind == Proc->Service.Core))
+	{
 		ThermStatus.value = 0;
 		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 
@@ -5054,12 +5053,6 @@ void Core_Intel_Temp(CORE *Core)
 					  | (	(ThermStatus.Threshold1Log
 						|ThermStatus.Threshold2Log )<<3)
 					  | (ThermStatus.PwrLimitLog << 4);
-	    }
-	} else { // Workaround to Package Thermal Management: the hottest Core.
-		if (Core->Bind == Proc->Service.Core)
-			Proc->PowerThermal.Sensor = Core->PowerThermal.Sensor;
-/* race cond */ else if (Core->PowerThermal.Sensor < Proc->PowerThermal.Sensor)
-			Proc->PowerThermal.Sensor = Core->PowerThermal.Sensor;
 	}
 }
 

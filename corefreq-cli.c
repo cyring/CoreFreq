@@ -4388,9 +4388,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		descStr[2], descAttr, SCANKEY_NULL,
 		blankStr, blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.Turbo],
-			stateAttr[Shm->Proc.Technology.Turbo] , BOXKEY_TURBO_ON,
+			stateAttr[Shm->Proc.Technology.Turbo] ,BOXKEY_TURBO_ON,
 		stateStr[0][!Shm->Proc.Technology.Turbo],
-			stateAttr[!Shm->Proc.Technology.Turbo], BOXKEY_TURBO_OFF,
+			stateAttr[!Shm->Proc.Technology.Turbo],BOXKEY_TURBO_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
@@ -7493,7 +7493,7 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (CFlop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
 		warning = MakeAttr(BLUE, 0, BLACK, 1);
-	} else if (CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
+	} else if(CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
 		warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
 	if (CFlop->Thermal.Events) {
