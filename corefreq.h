@@ -10,8 +10,6 @@ typedef struct
 {
 	Bit64				OffLine __attribute__ ((aligned (64)));
 
-	CLOCK				Clock;
-
 	unsigned int			Toggle;
 
 	struct
@@ -83,6 +81,8 @@ typedef struct
 					TSC,
 					C1;
 		} Delta;
+
+		CLOCK			Clock;
 
 		struct {
 			double		IPS,

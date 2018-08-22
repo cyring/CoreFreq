@@ -47,7 +47,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = 1;
+static signed int AutoClock = 0b01;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
 
@@ -4405,7 +4405,7 @@ void Controller_Init(void)
 	Proc->Features.Factory.Ratio	= Proc->Features.Factory.Freq * 1000000L
 					/ Proc->Features.Factory.Clock.Hz;
 
-	if ((AutoClock != 0) && (ratio != 0)) {
+	if ((AutoClock & 0b01) && (ratio != 0)) {
 		struct kmem_cache *hwCache = NULL;
 		// Allocate Cache aligned resources.
 		hwCache = kmem_cache_create(	"CoreFreqCache",
@@ -4707,6 +4707,17 @@ void AMD_Core_Counters_Clear(CORE *Core)
 ({									\
 	Core->Delta.TSC = Core->Counter[1].TSC				\
 			- Core->Counter[0].TSC;				\
+    if (AutoClock & 0b10)						\
+    {									\
+	Core->Clock.Q	= Core->Delta.TSC				\
+			/ (1000000L * Proc->Boost[BOOST(MAX)]); 	\
+									\
+	Core->Clock.R	= Core->Delta.TSC				\
+			% (1000000L * Proc->Boost[BOOST(MAX)]); 	\
+									\
+	Core->Clock.Hz  = Core->Delta.TSC / Proc->Boost[BOOST(MAX)];	\
+	Core->Clock.Hz += Core->Delta.TSC % Proc->Boost[BOOST(MAX)];	\
+    }									\
 })
 
 #define Delta_C0(Core)							\
@@ -7453,9 +7464,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	// Is the BCLK frequency missing ?
       if (KPublic->Core[cpu]->Clock.Hz == 0)
       {
-       if (AutoClock == 0)
-	KPublic->Core[cpu]->Clock = KPublic->Core[Proc->Service.Core]->Clock;
-       else
+       if (AutoClock & 0b01)
        {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
@@ -7472,6 +7481,8 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 		kfree(Compute.TSC[0]);
 	}
        }
+       else
+	KPublic->Core[cpu]->Clock = KPublic->Core[Proc->Service.Core]->Clock;
       }
      }
     } else

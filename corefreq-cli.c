@@ -456,6 +456,9 @@ void SystemRegisters(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+
 	ATTRIBUTE attrib[4][76] = {
 	    {
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
@@ -503,8 +506,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Boost[_boost] > 0) {
 	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-	(double) ( Shm->Proc.Boost[_boost]
-		* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz) / 1000000.0,
+	(double) ( Shm->Proc.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
 		20, hSpace,
 		symb[syc][0],
 		Shm->Proc.Boost[_boost],
@@ -518,8 +520,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Uncore.Boost[_boost] > 0) {
 	sprintf(str, "%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-	(double) ( Shm->Uncore.Boost[_boost]
-		* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz) / 1000000.0,
+	(double) ( Shm->Uncore.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
 		20, hSpace,
 		symb[syc][0],
 		Shm->Uncore.Boost[_boost],
@@ -566,7 +567,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	printv(OutFunc, SCANKEY_NULL, attrib[2], width, 2,
 		"Base Clock%.*s[%6.2f]",
 		width - 21, hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.0);
+		CFlop->Clock.Hz / 1000000.0);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
 		"Frequency%.*s(Mhz)%.*sRatio",
@@ -2297,8 +2298,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
     CUINT loadWidth = 0, MIN_HEIGHT = 0, MAX_ROWS = 0;
 
-    HBCLK *hBClk;
-
     char *buffer = NULL;
 
     Coordinate *cTask;
@@ -3469,6 +3468,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateTurboClock(unsigned long long id)
     {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
 	ATTRIBUTE attribute[3][28] = {
 		{
 		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
@@ -3489,15 +3492,13 @@ void Top(SHM_STRUCT *Shm, char option)
 	signed int offset,
 	lowestOperatingShift = abs(Shm->Proc.Boost[BOOST(SIZE) - ratio]
 					- Shm->Proc.Boost[BOOST(MIN)]),
-	highestOperatingShift = MAXCLOCK_TO_RATIO(
-				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
-				) - Shm->Proc.Boost[BOOST(SIZE) - ratio],
+	highestOperatingShift = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Proc.Boost[BOOST(SIZE) - ratio],
 	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(
-				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
-				) - Shm->Proc.Features.Factory.Ratio ) >> 1);
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
 	const CUINT	hthMin = 16,
 			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
@@ -3515,9 +3516,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
-			(double)(multiplier
-				* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
-				/ 1000000.0,
+			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
 		StoreTCell(wTC, clockMod.sllong, item,
@@ -3555,6 +3554,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateUncoreClock(unsigned long long id)
     {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
 	ATTRIBUTE attribute[2][28] = {
 		{
 		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
@@ -3571,13 +3574,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	signed int offset,
 	lowestOperatingShift = abs(Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
 				 - Shm->Proc.Boost[BOOST(MIN)]),
-	highestOperatingShift = MAXCLOCK_TO_RATIO(
-				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
-				) - Shm->Uncore.Boost[UNCORE_BOOST(SIZE)-ratio],
+	highestOperatingShift = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE)-ratio],
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(
-				Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz
-				) - Shm->Proc.Features.Factory.Ratio ) >> 1);
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
 	const CUINT	hthMin = 16,
 			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
@@ -3596,9 +3597,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		multiplier += offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
-			(double)(multiplier
-				* Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz)
-				/ 1000000.0,
+			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
 		StoreTCell(wUC, clockMod.sllong, item,
@@ -7015,8 +7014,11 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Header(Layer *layer, CUINT row)
     {	// Update Header view area
-	struct FLIP_FLOP *CFlop = \
-	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+	struct FLIP_FLOP *CFlop = NULL;
+
+	CFlop = &Shm->Cpu[Shm->Proc.Top] \
+		.FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+
 	// Print the Top value if delta exists with the previous one
 	if (!drawFlag.clkOrLd) { // Frequency MHz
 	    if (prevTopFreq != CFlop->Relative.Freq) {
@@ -7034,7 +7036,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 	// Print the focus BCLK
 	row += 2;
-	memcpy(&LayerAt(layer, code, 26, row), hBClk[iClock + cpuScroll], 11);
+
+	CFlop = &Shm->Cpu[iClock + cpuScroll] \
+		.FlipFlop[!Shm->Cpu[iClock + cpuScroll].Toggle];
+
+	Dec2Digit(CFlop->Clock.Hz, digit);
+
+	LayerAt(layer, code, 26 +  0, row) = digit[0] + '0';
+	LayerAt(layer, code, 26 +  1, row) = digit[1] + '0';
+	LayerAt(layer, code, 26 +  2, row) = digit[2] + '0';
+	LayerAt(layer, code, 26 +  4, row) = digit[3] + '0';
+	LayerAt(layer, code, 26 +  5, row) = digit[4] + '0';
+	LayerAt(layer, code, 26 +  6, row) = digit[5] + '0';
+	LayerAt(layer, code, 26 +  8, row) = digit[6] + '0';
+	LayerAt(layer, code, 26 +  9, row) = digit[7] + '0';
+	LayerAt(layer, code, 26 + 10, row) = digit[8] + '0';
     }
 
 #define Illuminates_CPU(_layer, _row, fg, bg, hi)			\
@@ -7118,18 +7134,6 @@ void Top(SHM_STRUCT *Shm, char option)
 			(LOAD_LEAD - 1), (row + MAX_ROWS + 1),
 			(drawSize.width - LOAD_LEAD + 1));
       }
-
-	Dec2Digit(Shm->Cpu[cpu].Clock.Hz, digit);
-
-	hBClk[cpu][ 0] = digit[0] + '0';
-	hBClk[cpu][ 1] = digit[1] + '0';
-	hBClk[cpu][ 2] = digit[2] + '0';
-	hBClk[cpu][ 4] = digit[3] + '0';
-	hBClk[cpu][ 5] = digit[4] + '0';
-	hBClk[cpu][ 6] = digit[5] + '0';
-	hBClk[cpu][ 8] = digit[6] + '0';
-	hBClk[cpu][ 9] = digit[7] + '0';
-	hBClk[cpu][10] = digit[8] + '0';
     }
 	row++;
 
@@ -7529,13 +7533,17 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Card_CLK(Layer *layer, Card* card)
     {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
 	double clock = PFlop->Delta.PTSC / 1000000.f;
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
-	sprintf(buffer, "%5.1f",
-			Shm->Cpu[Shm->Proc.Service.Core].Clock.Hz / 1000000.f);
+	sprintf(buffer, "%5.1f", CFlop->Clock.Hz / 1000000.f);
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
 		buffer, 5);
@@ -7765,7 +7773,6 @@ void Top(SHM_STRUCT *Shm, char option)
 	TrapScreenSize(SIGWINCH);
 	signal(SIGWINCH, TrapScreenSize);
 
-	hBClk = calloc(Shm->Proc.CPU.Count, sizeof(HBCLK));
 	cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate));
 
 	AllocAll(&buffer);
@@ -7855,7 +7862,6 @@ void Top(SHM_STRUCT *Shm, char option)
 
   FreeAll(buffer);
 
-  free(hBClk);
   free(cTask);
 
   DestroyAllCards(&cardList);

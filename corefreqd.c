@@ -118,6 +118,11 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1		= Core->Delta.C1;
 
+	// Re-estimate the base clock.
+	CFlip->Clock.Q  = Core->Clock.Q;
+	CFlip->Clock.R  = Core->Clock.R;
+	CFlip->Clock.Hz = Core->Clock.Hz;
+
 	// Compute IPS=Instructions per TSC
 	CFlip->State.IPS = (double) (CFlip->Delta.INST)
 			 / (double) (CFlip->Delta.TSC);
@@ -798,7 +803,9 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 400;
@@ -863,10 +870,11 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		}
 		break;
 	}
-	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
+
+	Shm->Uncore.CtrlSpeed = (CFlop->Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
@@ -929,7 +937,9 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b111:	// Unknown
 		// Fallthrough
@@ -1057,10 +1067,11 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		}
 		break;
 	}
-	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
+
+	Shm->Uncore.CtrlSpeed = (CFlop->Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
@@ -1255,7 +1266,9 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
+
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
 	case 0b001:
 		Shm->Uncore.Bus.Rate = 533;
@@ -1344,10 +1357,11 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		}
 		break;
 	}
-	Shm->Uncore.CtrlSpeed = (Shm->Cpu[cpu].Clock.Hz * Ratio.Q * 2)	// DDR2
+
+	Shm->Uncore.CtrlSpeed = (CFlop->Clock.Hz * Ratio.Q * 2)	// DDR2
 				/ (Ratio.R * 1000000L);
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
@@ -1662,6 +1676,8 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
+
 	switch (Proc->Uncore.Bus.DimmClock.QCLK_RATIO) {
 	case 0b00110:
 		Shm->Uncore.CtrlSpeed = 800;
@@ -1687,7 +1703,8 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= Shm->Cpu[cpu].Clock.Hz;
+
+	Shm->Uncore.CtrlSpeed *= CFlop->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 00 ?
@@ -1695,7 +1712,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 			6400 : Proc->Uncore.Bus.QuickPath.QPIFREQSEL == 01 ?
 				5866 : 6400;
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
@@ -1708,6 +1725,8 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 
 void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
+
 	switch (Proc->Uncore.Bus.DimmClock.QCLK_RATIO) {
 	case 0b00010:
 		Shm->Uncore.CtrlSpeed = 266;
@@ -1730,12 +1749,13 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
 	}
-	Shm->Uncore.CtrlSpeed *= Shm->Cpu[cpu].Clock.Hz;
+
+	Shm->Uncore.CtrlSpeed *= CFlop->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
@@ -1854,6 +1874,8 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
+
 	switch (Proc->Uncore.Bus.SNB_Cap.DMFC) {
 	case 0b111:
 		Shm->Uncore.CtrlSpeed = 1067;
@@ -1882,7 +1904,7 @@ void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	}
 
 	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
@@ -1895,6 +1917,8 @@ void SNB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 
 void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
+
 	switch (Proc->Uncore.Bus.IVB_Cap.DMFC) {
 	case 0b111:
 		Shm->Uncore.CtrlSpeed = 1067;
@@ -1940,7 +1964,7 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 	}
 
 	Shm->Uncore.Bus.Rate = 5000;
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
@@ -2196,6 +2220,7 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu->Toggle];
 	unsigned int DMFC;
 
 	switch (Proc->ArchID) {
@@ -2235,7 +2260,7 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 		break;
 	}
 
-	Shm->Uncore.Bus.Speed = ( Shm->Cpu[cpu].Clock.Hz * Shm->Uncore.Bus.Rate)
+	Shm->Uncore.Bus.Speed = ( CFlop->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
@@ -2556,10 +2581,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, unsigned int cpu)
 }
 
 void BaseClock(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
-{	// Copy the estimated base clock per CPU.
-	Shm->Cpu[cpu].Clock.Q  = Core[cpu]->Clock.Q;
-	Shm->Cpu[cpu].Clock.R  = Core[cpu]->Clock.R;
-	Shm->Cpu[cpu].Clock.Hz = Core[cpu]->Clock.Hz;
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	// Copy the estimated base clock per CPU.
+	CFlop->Clock.Q  = Core[cpu]->Clock.Q;
+	CFlop->Clock.R  = Core[cpu]->Clock.R;
+	CFlop->Clock.Hz = Core[cpu]->Clock.Hz;
 }
 
 void CPUID_Dump(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -3221,6 +3248,9 @@ void Core_Manager(REF *Ref)
 		}
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
+		struct FLIP_FLOP *CFlop =
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
 		if (!Arg[cpu].TID) {
 			// Add this cpu.
 			Package_Update(Shm, Proc);
@@ -3234,7 +3264,7 @@ void Core_Manager(REF *Ref)
 
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
-				(double)( Core[cpu]->Clock.Hz
+				(double)( CFlop->Clock.Hz
 					* Proc->Boost[BOOST(MAX)])
 					/ 1000000L );
 
@@ -3249,9 +3279,6 @@ void Core_Manager(REF *Ref)
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
-
-		struct FLIP_FLOP *CFlop =
-			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		// Index cpu with the highest frequency.
 		if (CFlop->Relative.Freq > maxRelFreq) {

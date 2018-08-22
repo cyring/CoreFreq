@@ -1219,6 +1219,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
     json_key(&s, "Cpu");
     json_start_arr(&s);
     for (i = 0; (i < Shm->Proc.CPU.Count); i++) {
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[i].FlipFlop[!Shm->Cpu[i].Toggle];
+
         json_start_object(&s);
         json_key(&s, "OffLine");
         json_literal(&s, "%llu", Shm->Cpu[i].OffLine);
@@ -1226,11 +1228,11 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
         {
             json_start_object(&s);
             json_key(&s, "Q");
-            json_literal(&s, "%u", Shm->Cpu[i].Clock.Q);
+            json_literal(&s, "%u", CFlop->Clock.Q);
             json_key(&s, "R");
-            json_literal(&s, "%llu", Shm->Cpu[i].Clock.R);
+            json_literal(&s, "%llu", CFlop->Clock.R);
             json_key(&s, "Hz");
-            json_literal(&s, "%llu", Shm->Cpu[i].Clock.Hz);
+            json_literal(&s, "%llu", CFlop->Clock.Hz);
             json_end_object(&s);
         }
         json_key(&s, "Toggle");
