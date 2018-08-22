@@ -1,3 +1,4 @@
+
 /*
  * CoreFreq
  * Copyright (C) 2015-2018 CYRIL INGENIERIE
@@ -2653,25 +2654,37 @@ void Top(SHM_STRUCT *Shm, char option)
 	char	intervStr[16], tickStr[16], pollStr[16], ringStr[16],
 		childStr[16], sliceStr[16],
 		experStr[16], cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
-	int intervLen = sprintf(intervStr,"       <%4u>E6",Shm->Sleep.Interval),
-	    tickLen = sprintf(tickStr, "%13uE6",
+
+	int intervLen = sprintf(intervStr, "%.*s<%4u>",
+				9, hSpace, Shm->Sleep.Interval),
+
+	    tickLen = sprintf(tickStr,         "%14u ",
 				Shm->Sleep.Interval * Shm->SysGate.tickReset),
-	    pollLen = sprintf(pollStr, "%13ldE6",
+
+	    pollLen = sprintf(pollStr,        "%14ld ",
 				Shm->Sleep.pollingWait.tv_nsec / 1000000L),
-	    ringLen = sprintf(ringStr, "%13ldE6",
+
+	    ringLen = sprintf(ringStr,        "%14ld ",
 				Shm->Sleep.ringWaiting.tv_nsec / 1000000L),
-	    childLen = sprintf(childStr, "%13ldE6",
+
+	    childLen = sprintf(childStr,      "%14ld ",
 				Shm->Sleep.childWaiting.tv_nsec / 1000000L),
-	    sliceLen = sprintf(sliceStr, "%13ldE6",
+
+	    sliceLen = sprintf(sliceStr,      "%14ld ",
 				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
-	    experLen = sprintf(experStr, "<%3s>",
+
+	    experLen = sprintf(experStr,       "<%3s>",
 				enabled((Shm->Registration.Experimental != 0))),
-	    cpuhpLen = sprintf(cpuhpStr, "[%3s]",
+
+	    cpuhpLen = sprintf(cpuhpStr,       "[%3s]",
 				enabled(!(Shm->Registration.hotplug < 0))),
-	    pciRegLen = sprintf(pciRegStr, "[%3s]",
+
+	    pciRegLen = sprintf(pciRegStr,     "[%3s]",
 				enabled((Shm->Registration.pci == 1))),
-	    nmiRegLen = sprintf(nmiRegStr, "<%3s>",
+
+	    nmiRegLen = sprintf(nmiRegStr,     "<%3s>",
 				enabled(Shm->Registration.nmi));
+
 	size_t appLen = strlen(Shm->ShmName);
 	ATTRIBUTE attribute[2][32] = {
 	    {
@@ -2684,43 +2697,43 @@ void Top(SHM_STRUCT *Shm, char option)
 	    }
 	};
 
-	StoreTCell(wSet, SCANKEY_NULL, "                                ",
+	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Daemon gate                    ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Daemon gate                    ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, OPS_INTERVAL, " Interval(ns)                   ",
+	StoreTCell(wSet, OPS_INTERVAL,   " Interval(ms)                   ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Sys. Tick(ns)                  ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Sys. Tick(ms)                  ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Poll Wait(ns)                  ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Poll Wait(ms)                  ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Ring Wait(ns)                  ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Ring Wait(ms)                  ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Child Wait(ns)                 ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Child Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL, " Slice Wait(ns)                 ",
+	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
 	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
 				attribute[Shm->Registration.Experimental != 0]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " CPU Hot-Plug                   ",
+	StoreTCell(wSet, SCANKEY_NULL,   " CPU Hot-Plug                   ",
 				attribute[!(Shm->Registration.hotplug < 0)]);
 
-	StoreTCell(wSet, SCANKEY_NULL, " PCI enablement                 ",
+	StoreTCell(wSet, SCANKEY_NULL,   " PCI enablement                 ",
 				attribute[(Shm->Registration.pci == 1)]);
 
-	StoreTCell(wSet, OPS_INTERRUPTS," NMI registered                 ",
+	StoreTCell(wSet, OPS_INTERRUPTS, " NMI registered                 ",
 					attribute[Shm->Registration.nmi]);
 
-	StoreTCell(wSet, SCANKEY_NULL, "                                ",
+	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
 							MAKE_PRINT_UNFOCUS);
 
 	memcpy(&TCellAt(wSet, 0, 1).item[31 - appLen],    Shm->ShmName, appLen);
@@ -6956,43 +6969,34 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Footer(Layer *layer, CUINT row)
     {	// Update Footer view area
-	ATTRIBUTE eventAttr[2][5] = {
-		{
-			MakeAttr(BLACK,   0, BLACK, 1),
-			MakeAttr(MAGENTA, 0, BLACK, 0),
-			MakeAttr(YELLOW,  0, BLACK, 0),
-			MakeAttr(RED,     0, BLACK, 1),
-			MakeAttr(WHITE,   0, BLACK, 1)
-		},{
-			MakeAttr(BLACK,   0, BLACK, 1),
-			MakeAttr(MAGENTA, 0, BLACK, 1),
-			MakeAttr(YELLOW,  0, BLACK, 1),
-			MakeAttr(RED,     0, BLACK, 1),
-			MakeAttr(WHITE,   0, BLACK, 1)
-		}
+	ATTRIBUTE eventAttr[4] = {
+		MakeAttr(BLACK,  0, BLACK, 1),
+		MakeAttr(RED,    0, BLACK, 1),
+		MakeAttr(YELLOW, 0, BLACK, 1),
+		MakeAttr(WHITE,  0, BLACK, 1)
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
 	if (!processorEvents) {
 		_hot = 0;
-		_tmp = 4;
+		_tmp = 3;
 	} else {
 	    if (processorEvents & (EVENT_POWER_LIMIT | EVENT_CURRENT_LIMIT)) {
 		_hot = 2;
-		_tmp = 4;
+		_tmp = 3;
 	    } else {
 		_hot = 1;
-		_tmp = 3;
+		_tmp = 1;
 	    }
 	}
-	LayerAt(layer, attr, 14+51, row) = eventAttr[1][_hot];
+	LayerAt(layer, attr, 14+51, row) = \
 	LayerAt(layer, attr, 14+52, row) = \
-	LayerAt(layer, attr, 14+53, row) = eventAttr[0][_hot];
+	LayerAt(layer, attr, 14+53, row) = eventAttr[_hot];
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	LayerAt(layer, attr, 14+59, row) = \
 	LayerAt(layer, attr, 14+60, row) = \
-	LayerAt(layer, attr, 14+61, row) = eventAttr[0][_tmp];
+	LayerAt(layer, attr, 14+61, row) = eventAttr[_tmp];
 
 	size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
 	memcpy(&LayerAt(layer, code, 73, row), buffer, len);
