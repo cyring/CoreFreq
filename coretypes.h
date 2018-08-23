@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.32.0"
+#define COREFREQ_VERSION	"1.32.1"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -334,6 +334,16 @@ typedef struct
 	unsigned long long	R;
 	unsigned long long	Hz;
 } CLOCK;
+
+#define REL_BCLK(clock, ratio, delta_tsc, interval)			\
+({	/* Compute Divisor					*/	\
+	clock.Q  = delta_tsc / (1000L * interval * ratio);		\
+	/* Compute Remainder					*/	\
+	clock.R  = delta_tsc % (1000L * interval * ratio);		\
+	clock.R /= (PRECISION * ratio); 				\
+	/* Compute full Hertz					*/	\
+	clock.Hz = (clock.Q * 1000000L) + (clock.R * PRECISION);	\
+})
 
 #define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
 		( ((this_ratio * clock.Q) * 1000L * interval)		\

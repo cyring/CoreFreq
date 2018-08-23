@@ -574,6 +574,8 @@ void Compute_Interval(void)
 	RearmTheTimer = ktime_set(0, Proc->SleepInterval * 1000000LU);
 }
 
+#define BUSYWAIT 1000
+
 static void Compute_Clock(void *arg)
 {
 	COMPUTE_ARG *pCompute = (COMPUTE_ARG *) arg;
@@ -601,7 +603,7 @@ static void Compute_Clock(void *arg)
 		for (loop=0; loop < OCCURRENCES; loop++) {
 			RDTSCP64(pCompute->TSC[1][loop].V[0]);
 
-			udelay(1000);
+			udelay(BUSYWAIT);
 
 			RDTSCP64(pCompute->TSC[1][loop].V[1]);
 		}
@@ -623,7 +625,7 @@ static void Compute_Clock(void *arg)
 		for (loop = 0; loop < OCCURRENCES; loop++) {
 			RDTSC64(pCompute->TSC[1][loop].V[0]);
 
-			udelay(1000);
+			udelay(BUSYWAIT);
 
 			RDTSC64(pCompute->TSC[1][loop].V[1]);
 		}
@@ -664,13 +666,9 @@ static void Compute_Clock(void *arg)
 	}
 	// Substract the overhead.
 	D[1][best[1]] -= D[0][best[0]];
-	D[1][best[1]] *= 1000;
-	// Compute Divisor and Remainder.
-	pCompute->Clock.Q = D[1][best[1]] / (1000000L * ratio);
-	pCompute->Clock.R = D[1][best[1]] % (1000000L * ratio);
-	// Compute full Hertz.
-	pCompute->Clock.Hz  = D[1][best[1]] / ratio;
-	pCompute->Clock.Hz += D[1][best[1]] % ratio;
+	D[1][best[1]] *= BUSYWAIT;
+	// Compute the Base Clock
+	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], BUSYWAIT);
 }
 
 CLOCK Base_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
@@ -4706,18 +4704,13 @@ void AMD_Core_Counters_Clear(CORE *Core)
 #define Delta_TSC(Core) 						\
 ({									\
 	Core->Delta.TSC = Core->Counter[1].TSC				\
-			- Core->Counter[0].TSC;				\
-    if (AutoClock & 0b10)						\
-    {									\
-	Core->Clock.Q	= Core->Delta.TSC				\
-			/ (1000000L * Proc->Boost[BOOST(MAX)]); 	\
+			- Core->Counter[0].TSC; 			\
 									\
-	Core->Clock.R	= Core->Delta.TSC				\
-			% (1000000L * Proc->Boost[BOOST(MAX)]); 	\
-									\
-	Core->Clock.Hz  = Core->Delta.TSC / Proc->Boost[BOOST(MAX)];	\
-	Core->Clock.Hz += Core->Delta.TSC % Proc->Boost[BOOST(MAX)];	\
-    }									\
+	if (AutoClock & 0b10)						\
+		REL_BCLK(Core->Clock,					\
+			Proc->Boost[BOOST(MAX)],			\
+			Core->Delta.TSC,				\
+			Proc->SleepInterval);				\
 })
 
 #define Delta_C0(Core)							\
@@ -7656,9 +7649,10 @@ static int __init CoreFreqK_init(void)
 		Proc->OS.ReqMem.Size = sizeof(SYSGATE);
 		Proc->OS.ReqMem.Order = get_order(Proc->OS.ReqMem.Size);
 
-		Compute_Interval();
-
+		Proc->Registration.AutoClock = AutoClock;
 		Proc->Registration.Experimental = Experimental;
+
+		Compute_Interval();
 
 		memcpy(&Proc->Features,&iArg.Features,sizeof(FEATURES));
 

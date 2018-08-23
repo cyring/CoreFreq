@@ -109,6 +109,11 @@ static void *Core_Cycle(void *arg)
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
+	// Refresh this Base Clock.
+	CFlip->Clock.Q  = Core->Clock.Q;
+	CFlip->Clock.R  = Core->Clock.R;
+	CFlip->Clock.Hz = Core->Clock.Hz;
+
 	CFlip->Delta.INST	= Core->Delta.INST;
 	CFlip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 	CFlip->Delta.C0.URC	= Core->Delta.C0.URC;
@@ -117,11 +122,6 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C7		= Core->Delta.C7;
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1		= Core->Delta.C1;
-
-	// Re-estimate the base clock.
-	CFlip->Clock.Q  = Core->Clock.Q;
-	CFlip->Clock.R  = Core->Clock.R;
-	CFlip->Clock.Hz = Core->Clock.Hz;
 
 	// Compute IPS=Instructions per TSC
 	CFlip->State.IPS = (double) (CFlip->Delta.INST)
@@ -605,7 +605,12 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 }
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
-{
+{	// Copy the operational settings.
+	Shm->Registration.AutoClock = Proc->Registration.AutoClock;
+	Shm->Registration.Experimental = Proc->Registration.Experimental;
+	Shm->Registration.hotplug = Proc->Registration.hotplug;
+	Shm->Registration.pci = Proc->Registration.pci;
+	Shm->Registration.nmi = Proc->Registration.nmi;
 	// Copy the timer interval delay.
 	Shm->Sleep.Interval = Proc->SleepInterval;
 	// Compute the polling wait time based on the timer interval.
@@ -614,11 +619,6 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	// Copy the SysGate tick steps.
 	Shm->SysGate.tickReset = Proc->tickReset;
 	Shm->SysGate.tickStep  = Proc->tickStep;
-
-	Shm->Registration.Experimental = Proc->Registration.Experimental;
-	Shm->Registration.hotplug = Proc->Registration.hotplug;
-	Shm->Registration.pci = Proc->Registration.pci;
-	Shm->Registration.nmi = Proc->Registration.nmi;
 
 	Architecture(Shm, Proc);
 

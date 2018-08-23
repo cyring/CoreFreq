@@ -656,7 +656,8 @@ typedef struct
 	} OS;
 
 	struct {
-		signed int	Experimental,
+		signed int	AutoClock,
+				Experimental,
 				hotplug,
 				pci,
 				nmi;

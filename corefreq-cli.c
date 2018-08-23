@@ -2647,42 +2647,45 @@ void Top(SHM_STRUCT *Shm, char option)
 
     Window *CreateSettings(unsigned long long id)
     {
-      Window *wSet = CreateWindow(wLayer, id, 1, 13,
-				8, (TOP_HEADER_ROW + 13 + 3 < drawSize.height) ?
+      Window *wSet = CreateWindow(wLayer, id, 1, 14,
+				8, (TOP_HEADER_ROW + 14 + 3 < drawSize.height) ?
 					TOP_HEADER_ROW + 3 : 1);
       if (wSet != NULL) {
 	char	intervStr[16], tickStr[16], pollStr[16], ringStr[16],
-		childStr[16], sliceStr[16],
+		childStr[16], sliceStr[16], autoStr[16],
 		experStr[16], cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
 
 	int intervLen = sprintf(intervStr, "%.*s<%4u>",
 				9, hSpace, Shm->Sleep.Interval),
 
-	    tickLen = sprintf(tickStr,         "%14u ",
+	    tickLen = sprintf(tickStr,     "%14u ",
 				Shm->Sleep.Interval * Shm->SysGate.tickReset),
 
-	    pollLen = sprintf(pollStr,        "%14ld ",
+	    pollLen = sprintf(pollStr,     "%14ld ",
 				Shm->Sleep.pollingWait.tv_nsec / 1000000L),
 
-	    ringLen = sprintf(ringStr,        "%14ld ",
+	    ringLen = sprintf(ringStr,     "%14ld ",
 				Shm->Sleep.ringWaiting.tv_nsec / 1000000L),
 
-	    childLen = sprintf(childStr,      "%14ld ",
+	    childLen = sprintf(childStr,   "%14ld ",
 				Shm->Sleep.childWaiting.tv_nsec / 1000000L),
 
-	    sliceLen = sprintf(sliceStr,      "%14ld ",
+	    sliceLen = sprintf(sliceStr,   "%14ld ",
 				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
 
-	    experLen = sprintf(experStr,       "<%3s>",
+	    autoLen = sprintf(autoStr,     "[%3s]",
+				enabled((Shm->Registration.AutoClock & 0b10))),
+
+	    experLen = sprintf(experStr,   "<%3s>",
 				enabled((Shm->Registration.Experimental != 0))),
 
-	    cpuhpLen = sprintf(cpuhpStr,       "[%3s]",
+	    cpuhpLen = sprintf(cpuhpStr,   "[%3s]",
 				enabled(!(Shm->Registration.hotplug < 0))),
 
-	    pciRegLen = sprintf(pciRegStr,     "[%3s]",
+	    pciRegLen = sprintf(pciRegStr, "[%3s]",
 				enabled((Shm->Registration.pci == 1))),
 
-	    nmiRegLen = sprintf(nmiRegStr,     "<%3s>",
+	    nmiRegLen = sprintf(nmiRegStr, "<%3s>",
 				enabled(Shm->Registration.nmi));
 
 	size_t appLen = strlen(Shm->ShmName);
@@ -2721,8 +2724,11 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
+	StoreTCell(wSet, SCANKEY_NULL,   " Auto Clock                     ",
+		attribute[((Shm->Registration.AutoClock & 0b10) != 0)]);
+
 	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
-				attribute[Shm->Registration.Experimental != 0]);
+			attribute[Shm->Registration.Experimental != 0]);
 
 	StoreTCell(wSet, SCANKEY_NULL,   " CPU Hot-Plug                   ",
 				attribute[!(Shm->Registration.hotplug < 0)]);
@@ -2736,17 +2742,18 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
 							MAKE_PRINT_UNFOCUS);
 
-	memcpy(&TCellAt(wSet, 0, 1).item[31 - appLen],    Shm->ShmName, appLen);
+	memcpy(&TCellAt(wSet, 0, 1).item[31 -    appLen], Shm->ShmName, appLen);
 	memcpy(&TCellAt(wSet, 0, 2).item[31 - intervLen], intervStr, intervLen);
-	memcpy(&TCellAt(wSet, 0, 3).item[31 - tickLen],   tickStr,   tickLen);
-	memcpy(&TCellAt(wSet, 0, 4).item[31 - pollLen],   pollStr,   pollLen);
-	memcpy(&TCellAt(wSet, 0, 5).item[31 - ringLen],   ringStr,   ringLen);
-	memcpy(&TCellAt(wSet, 0, 6).item[31 - childLen],  childStr,  childLen);
-	memcpy(&TCellAt(wSet, 0, 7).item[31 - sliceLen],  sliceStr,  sliceLen);
-	memcpy(&TCellAt(wSet, 0, 8).item[31 - experLen],  experStr,  experLen);
-	memcpy(&TCellAt(wSet, 0, 9).item[31 - cpuhpLen],  cpuhpStr,  cpuhpLen);
-	memcpy(&TCellAt(wSet, 0,10).item[31 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 0,11).item[31 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 0, 3).item[31 -   tickLen], tickStr  ,   tickLen);
+	memcpy(&TCellAt(wSet, 0, 4).item[31 -   pollLen], pollStr  ,   pollLen);
+	memcpy(&TCellAt(wSet, 0, 5).item[31 -   ringLen], ringStr  ,   ringLen);
+	memcpy(&TCellAt(wSet, 0, 6).item[31 -  childLen], childStr ,  childLen);
+	memcpy(&TCellAt(wSet, 0, 7).item[31 -  sliceLen], sliceStr ,  sliceLen);
+	memcpy(&TCellAt(wSet, 0, 8).item[31 -   autoLen], autoStr  ,   autoLen);
+	memcpy(&TCellAt(wSet, 0, 9).item[31 -  experLen], experStr ,  experLen);
+	memcpy(&TCellAt(wSet, 0,10).item[31 -  cpuhpLen], cpuhpStr ,  cpuhpLen);
+	memcpy(&TCellAt(wSet, 0,11).item[31 - pciRegLen], pciRegStr, pciRegLen);
+	memcpy(&TCellAt(wSet, 0,12).item[31 - nmiRegLen], nmiRegStr, nmiRegLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 
