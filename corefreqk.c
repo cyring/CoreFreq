@@ -7028,6 +7028,20 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Start(1);
 		rc = 0;
 		break;
+	case COREFREQ_IOCTL_AUTOCLOCK:
+		Controller_Stop(1);
+		switch (arg) {
+			case COREFREQ_TOGGLE_OFF:
+				BITCLR(LOCKLESS, AutoClock, 1);
+				break;
+			case COREFREQ_TOGGLE_ON:
+				BITSET(LOCKLESS, AutoClock, 1);
+				break;
+			}
+		Proc->Registration.AutoClock = AutoClock;
+		Controller_Start(1);
+		rc = 0;
+		break;
 	case COREFREQ_IOCTL_EXPERIMENTAL:
 		switch (arg) {
 		    case COREFREQ_TOGGLE_OFF:

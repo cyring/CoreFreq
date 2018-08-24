@@ -2673,8 +2673,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	    sliceLen = sprintf(sliceStr,   "%14ld ",
 				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
 
-	    autoLen = sprintf(autoStr,     "[%3s]",
-				enabled((Shm->Registration.AutoClock & 0b10))),
+	    autoLen = sprintf(autoStr,     "<%3s>",
+			   enabled((Shm->Registration.AutoClock & 0b10) != 0)),
 
 	    experLen = sprintf(experStr,   "<%3s>",
 				enabled((Shm->Registration.Experimental != 0))),
@@ -2724,7 +2724,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Auto Clock                     ",
+	StoreTCell(wSet, OPS_AUTOCLOCK,  " Auto Clock                     ",
 		attribute[((Shm->Registration.AutoClock & 0b10) != 0)]);
 
 	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
@@ -3917,6 +3917,41 @@ void Top(SHM_STRUCT *Shm, char option)
     {
 	if (!RING_FULL(Shm->Ring[0]))
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 3000);
+    }
+    break;
+    case OPS_AUTOCLOCK:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+	{
+	const int bON = ((Shm->Registration.AutoClock & 0b10) != 0);
+	const Coordinate origin = {
+		.col = (drawSize.width - strlen((char *) blankStr)) / 2,
+		.row = TOP_HEADER_ROW + 4
+	}, select = {
+		.col = 0,
+		.row = bON ? 2 : 1
+	};
+	AppendWindow(CreateBox(scan->key, origin, select, " Auto Clock ",
+		blankStr, blankAttr, SCANKEY_NULL,
+		stateStr[1][bON], stateAttr[bON] , OPS_AUTOCLOCK_ON,
+		stateStr[0][!bON],stateAttr[!bON], OPS_AUTOCLOCK_OFF,
+		blankStr, blankAttr, SCANKEY_NULL),
+		&winList);
+      } else
+		SetHead(&winList, win);
+    }
+    break;
+    case OPS_AUTOCLOCK_OFF:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+       RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_OFF);
+    }
+    break;
+    case OPS_AUTOCLOCK_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_ON);
     }
     break;
     case OPS_EXPERIMENTAL:
