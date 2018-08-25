@@ -354,7 +354,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 })
 
 typedef struct {
-	FEATURES	Features;
+	FEATURES	*Features;
 	unsigned int	SMT_Count,
 			localProcessor;
 	signed int	rc;
@@ -399,6 +399,87 @@ typedef struct
 	JOIN			*Join[];
 } KPRIVATE;
 
+
+/* Sources:
+ * Intel® 64 and IA-32 Architectures Software Developer’s Manual; Vol. 2A
+ * AMD64 Architecture Programmer’s Manual; Vol. 3
+*/
+
+static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC]={
+/* x86 */
+	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
+/* Intel */
+	{.func=0x00000002, .sub=0x00000000},	/* Cache & TLB		*/
+	{.func=0x00000003, .sub=0x00000000},	/* Proc. Serial Number	*/
+	{.func=0x00000004, .sub=0x00000000},	/* Cache L1I		*/
+	{.func=0x00000004, .sub=0x00000001},	/* Cache L1D		*/
+	{.func=0x00000004, .sub=0x00000002},	/* Cache L2		*/
+	{.func=0x00000004, .sub=0x00000003},	/* Cache L3		*/
+/* x86 */
+	{.func=0x00000005, .sub=0x00000000},	/* MONITOR/MWAIT	*/
+	{.func=0x00000006, .sub=0x00000000},	/* Power & Thermal Mgmt	*/
+	{.func=0x00000007, .sub=0x00000000},	/* Extended Features	*/
+/* Intel */
+	{.func=0x00000009, .sub=0x00000000},	/* Direct Cache Access	*/
+	{.func=0x0000000a, .sub=0x00000000},	/* Perf. Monitoring	*/
+/* x86 */
+	{.func=0x0000000b, .sub=0x00000000},	/* Ext. Topology	*/
+	{.func=0x0000000d, .sub=0x00000000},	/* Ext. State Main leaf	*/
+	{.func=0x0000000d, .sub=0x00000001},	/* Ext. State Sub-leaf	*/
+/* AMD */
+	{.func=0x0000000d, .sub=0x00000002},	/* Ext. State Sub-leaf	*/
+/* AMD Family 15h */
+	{.func=0x0000000d, .sub=0x0000003e},	/* Ext. State Sub-leaf	*/
+/* Intel */
+	{.func=0x0000000f, .sub=0x00000000},	/* QoS Monitoring cap.	*/
+	{.func=0x0000000f, .sub=0x00000001},	/* L3 QoS Monitoring	*/
+	{.func=0x00000010, .sub=0x00000000},	/* QoS Enforcement cap.	*/
+	{.func=0x00000010, .sub=0x00000001},	/* L3 Alloc Enumeration	*/
+	{.func=0x00000010, .sub=0x00000002},	/* L2 Alloc Enumeration	*/
+	{.func=0x00000010, .sub=0x00000003},	/* RAM Bandwidth Enum.	*/
+	{.func=0x00000012, .sub=0x00000000},	/* SGX Capability	*/
+	{.func=0x00000012, .sub=0x00000001},	/* SGX Attributes	*/
+	{.func=0x00000012, .sub=0x00000002},	/* SGX EnclavePageCache	*/
+	{.func=0x00000014, .sub=0x00000000},	/* Processor Trace	*/
+	{.func=0x00000014, .sub=0x00000001},	/* Proc. Trace Sub-leaf	*/
+	{.func=0x00000015, .sub=0x00000000},	/* Time Stamp Counter	*/
+	{.func=0x00000016, .sub=0x00000000},	/* Processor Frequency	*/
+	{.func=0x00000017, .sub=0x00000000},	/* System-On-Chip	*/
+	{.func=0x00000017, .sub=0x00000001},	/* SOC Attrib. Sub-leaf	*/
+	{.func=0x00000017, .sub=0x00000002},	/* SOC Attrib. Sub-leaf	*/
+	{.func=0x00000017, .sub=0x00000003},	/* SOC Attrib. Sub-leaf	*/
+/* x86 */
+	{.func=0x80000001, .sub=0x00000000},	/* Extended Features	*/
+	{.func=0x80000002, .sub=0x00000000},	/* Processor Name Id.	*/
+	{.func=0x80000003, .sub=0x00000000},	/* Processor Name Id.	*/
+	{.func=0x80000004, .sub=0x00000000},	/* Processor Name Id.	*/
+/* AMD */
+	{.func=0x80000005, .sub=0x00000000},	/* Caches L1D L1I TLB	*/
+/* x86 */
+	{.func=0x80000006, .sub=0x00000000},	/* Cache L2 Size & Way	*/
+	{.func=0x80000007, .sub=0x00000000},	/* Advanced Power Mgmt	*/
+	{.func=0x80000008, .sub=0x00000000},	/* LM Address Size	*/
+/* AMD */
+	{.func=0x8000000a, .sub=0x00000000},	/* SVM Revision		*/
+	{.func=0x80000019, .sub=0x00000000},	/* Caches & TLB 1G	*/
+	{.func=0x8000001a, .sub=0x00000000},	/* Perf. Optimization	*/
+	{.func=0x8000001b, .sub=0x00000000},	/* Inst. Based Sampling	*/
+	{.func=0x8000001c, .sub=0x00000000},	/* Lightweight Profiling*/
+	{.func=0x8000001d, .sub=0x00000000},	/* Cache L1D Properties	*/
+	{.func=0x8000001d, .sub=0x00000001},	/* Cache L1I Properties	*/
+	{.func=0x8000001d, .sub=0x00000002},	/* Cache L2 Properties	*/
+	{.func=0x8000001d, .sub=0x00000003},	/* Cache Properties End	*/
+	{.func=0x8000001e, .sub=0x00000000},	/* Extended Identifiers	*/
+/* x86 */
+	{.func=0x40000000, .sub=0x00000000},	/* Hypervisor vendor	*/
+	{.func=0x40000001, .sub=0x00000000},	/* Hypervisor interface	*/
+	{.func=0x40000002, .sub=0x00000000},	/* Hypervisor version	*/
+	{.func=0x40000003, .sub=0x00000000},	/* Hypervisor features	*/
+	{.func=0x40000004, .sub=0x00000000},	/* Hyperv. requirements	*/
+	{.func=0x40000005, .sub=0x00000000},	/* Hypervisor limits	*/
+	{.func=0x40000006, .sub=0x00000000},	/* Hypervisor exploits	*/
+	{.func=0x00000000, .sub=0x00000000},
+};
 
 typedef struct {
 	char			*brandSubStr;

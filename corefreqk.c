@@ -285,31 +285,31 @@ static void Query_Features(void *pArg)
 		"mov	%%ebx, %1	\n\t"
 		"mov	%%ecx, %2	\n\t"
 		"mov	%%edx, %3"
-		: "=r" (iArg->Features.Info.LargestStdFunc),
+		: "=r" (iArg->Features->Info.LargestStdFunc),
 		  "=r" (ebx),
 		  "=r" (ecx),
 		  "=r" (edx)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	iArg->Features.Info.Vendor.ID[ 0] = ebx;
-	iArg->Features.Info.Vendor.ID[ 1] = (ebx >> 8);
-	iArg->Features.Info.Vendor.ID[ 2] = (ebx >> 16);
-	iArg->Features.Info.Vendor.ID[ 3] = (ebx >> 24);
-	iArg->Features.Info.Vendor.ID[ 4] = edx;
-	iArg->Features.Info.Vendor.ID[ 5] = (edx >> 8);
-	iArg->Features.Info.Vendor.ID[ 6] = (edx >> 16);
-	iArg->Features.Info.Vendor.ID[ 7] = (edx >> 24);
-	iArg->Features.Info.Vendor.ID[ 8] = ecx;
-	iArg->Features.Info.Vendor.ID[ 9] = (ecx >> 8);
-	iArg->Features.Info.Vendor.ID[10] = (ecx >> 16);
-	iArg->Features.Info.Vendor.ID[11] = (ecx >> 24);
-	iArg->Features.Info.Vendor.ID[12] = '\0';
+	iArg->Features->Info.Vendor.ID[ 0] = ebx;
+	iArg->Features->Info.Vendor.ID[ 1] = (ebx >> 8);
+	iArg->Features->Info.Vendor.ID[ 2] = (ebx >> 16);
+	iArg->Features->Info.Vendor.ID[ 3] = (ebx >> 24);
+	iArg->Features->Info.Vendor.ID[ 4] = edx;
+	iArg->Features->Info.Vendor.ID[ 5] = (edx >> 8);
+	iArg->Features->Info.Vendor.ID[ 6] = (edx >> 16);
+	iArg->Features->Info.Vendor.ID[ 7] = (edx >> 24);
+	iArg->Features->Info.Vendor.ID[ 8] = ecx;
+	iArg->Features->Info.Vendor.ID[ 9] = (ecx >> 8);
+	iArg->Features->Info.Vendor.ID[10] = (ecx >> 16);
+	iArg->Features->Info.Vendor.ID[11] = (ecx >> 24);
+	iArg->Features->Info.Vendor.ID[12] = '\0';
 
-	if (!strncmp(iArg->Features.Info.Vendor.ID, VENDOR_INTEL, 12))
-		iArg->Features.Info.Vendor.CRC = CRC_INTEL;
-	else if (!strncmp(iArg->Features.Info.Vendor.ID, VENDOR_AMD, 12))
-		iArg->Features.Info.Vendor.CRC = CRC_AMD;
+	if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_INTEL, 12))
+		iArg->Features->Info.Vendor.CRC = CRC_INTEL;
+	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_AMD, 12))
+		iArg->Features->Info.Vendor.CRC = CRC_AMD;
 	else {
 		iArg->rc = -ENXIO;
 		return;
@@ -326,14 +326,14 @@ static void Query_Features(void *pArg)
 		"mov	%%ebx, %1	\n\t"
 		"mov	%%ecx, %2	\n\t"
 		"mov	%%edx, %3"
-		: "=r" (iArg->Features.Std.EAX),
-		  "=r" (iArg->Features.Std.EBX),
-		  "=r" (iArg->Features.Std.ECX),
-		  "=r" (iArg->Features.Std.EDX)
+		: "=r" (iArg->Features->Std.EAX),
+		  "=r" (iArg->Features->Std.EBX),
+		  "=r" (iArg->Features->Std.ECX),
+		  "=r" (iArg->Features->Std.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	if (iArg->Features.Info.LargestStdFunc >= 0x5) {
+	if (iArg->Features->Info.LargestStdFunc >= 0x5) {
 		asm volatile
 		(
 			"movq	$0x5,  %%rax	\n\t"
@@ -345,15 +345,15 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.MWait.EAX),
-			  "=r" (iArg->Features.MWait.EBX),
-			  "=r" (iArg->Features.MWait.ECX),
-			  "=r" (iArg->Features.MWait.EDX)
+			: "=r" (iArg->Features->MWait.EAX),
+			  "=r" (iArg->Features->MWait.EBX),
+			  "=r" (iArg->Features->MWait.ECX),
+			  "=r" (iArg->Features->MWait.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-	if (iArg->Features.Info.LargestStdFunc >= 0x6) {
+	if (iArg->Features->Info.LargestStdFunc >= 0x6) {
 		asm volatile
 		(
 			"movq	$0x6,  %%rax	\n\t"
@@ -365,15 +365,15 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.Power.EAX),
-			  "=r" (iArg->Features.Power.EBX),
-			  "=r" (iArg->Features.Power.ECX),
-			  "=r" (iArg->Features.Power.EDX)
+			: "=r" (iArg->Features->Power.EAX),
+			  "=r" (iArg->Features->Power.EBX),
+			  "=r" (iArg->Features->Power.ECX),
+			  "=r" (iArg->Features->Power.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-	if (iArg->Features.Info.LargestStdFunc >= 0x7) {
+	if (iArg->Features->Info.LargestStdFunc >= 0x7) {
 		asm volatile
 		(
 			"movq	$0x7,  %%rax	\n\t"
@@ -385,10 +385,10 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.ExtFeature.EAX),
-			  "=r" (iArg->Features.ExtFeature.EBX),
-			  "=r" (iArg->Features.ExtFeature.ECX),
-			  "=r" (iArg->Features.ExtFeature.EDX)
+			: "=r" (iArg->Features->ExtFeature.EAX),
+			  "=r" (iArg->Features->ExtFeature.EBX),
+			  "=r" (iArg->Features->ExtFeature.ECX),
+			  "=r" (iArg->Features->ExtFeature.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
@@ -405,7 +405,7 @@ static void Query_Features(void *pArg)
 		"mov	%%ebx, %1		\n\t"
 		"mov	%%ecx, %2		\n\t"
 		"mov	%%edx, %3"
-		: "=r" (iArg->Features.Info.LargestExtFunc),
+		: "=r" (iArg->Features->Info.LargestExtFunc),
 		  "=r" (ebx),
 		  "=r" (ecx),
 		  "=r" (edx)
@@ -425,12 +425,12 @@ static void Query_Features(void *pArg)
 		"mov	%%edx, %3"
 		: "=r" (eax),
 		  "=r" (ebx),
-		  "=r" (iArg->Features.ExtInfo.ECX),
-		  "=r" (iArg->Features.ExtInfo.EDX)
+		  "=r" (iArg->Features->ExtInfo.ECX),
+		  "=r" (iArg->Features->ExtInfo.EDX)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	if (iArg->Features.Info.LargestExtFunc >= 0x80000007) {
+	if (iArg->Features->Info.LargestExtFunc >= 0x80000007) {
 		asm volatile
 		(
 			"movq	$0x80000007, %%rax	\n\t"
@@ -442,15 +442,15 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1		\n\t"
 			"mov	%%ecx, %2		\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.AdvPower.EAX),
-			  "=r" (iArg->Features.AdvPower.EBX),
-			  "=r" (iArg->Features.AdvPower.ECX),
-			  "=r" (iArg->Features.AdvPower.EDX)
+			: "=r" (iArg->Features->AdvPower.EAX),
+			  "=r" (iArg->Features->AdvPower.EBX),
+			  "=r" (iArg->Features->AdvPower.ECX),
+			  "=r" (iArg->Features->AdvPower.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
-	if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
+	if (iArg->Features->Info.LargestExtFunc >= 0x80000008) {
 		asm volatile
 		(
 			"movq	$0x80000008, %%rax	\n\t"
@@ -462,25 +462,25 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1		\n\t"
 			"mov	%%ecx, %2		\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.leaf80000008.EAX),
-			  "=r" (iArg->Features.leaf80000008.EBX),
-			  "=r" (iArg->Features.leaf80000008.ECX),
-			  "=r" (iArg->Features.leaf80000008.EDX)
+			: "=r" (iArg->Features->leaf80000008.EAX),
+			  "=r" (iArg->Features->leaf80000008.EBX),
+			  "=r" (iArg->Features->leaf80000008.ECX),
+			  "=r" (iArg->Features->leaf80000008.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	}
 	// Reset the performance features bits (present is zero)
-	iArg->Features.PerfMon.EBX.CoreCycles    = 1;
-	iArg->Features.PerfMon.EBX.InstrRetired  = 1;
-	iArg->Features.PerfMon.EBX.RefCycles     = 1;
-	iArg->Features.PerfMon.EBX.LLC_Ref       = 1;
-	iArg->Features.PerfMon.EBX.LLC_Misses    = 1;
-	iArg->Features.PerfMon.EBX.BranchRetired = 1;
-	iArg->Features.PerfMon.EBX.BranchMispred = 1;
+	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
+	iArg->Features->PerfMon.EBX.InstrRetired  = 1;
+	iArg->Features->PerfMon.EBX.RefCycles     = 1;
+	iArg->Features->PerfMon.EBX.LLC_Ref       = 1;
+	iArg->Features->PerfMon.EBX.LLC_Misses    = 1;
+	iArg->Features->PerfMon.EBX.BranchRetired = 1;
+	iArg->Features->PerfMon.EBX.BranchMispred = 1;
 
 	// Per Vendor features
-	if (iArg->Features.Info.Vendor.CRC == CRC_INTEL) {
+	if (iArg->Features->Info.Vendor.CRC == CRC_INTEL) {
 		asm volatile
 		(
 			"movq	$0x4,  %%rax	\n\t"
@@ -502,7 +502,7 @@ static void Query_Features(void *pArg)
 		iArg->SMT_Count = (eax >> 26) & 0x3f;
 		iArg->SMT_Count++;
 
-	    if (iArg->Features.Info.LargestStdFunc >= 0xa) {
+	    if (iArg->Features->Info.LargestStdFunc >= 0xa) {
 		asm volatile
 		(
 			"movq	$0xa,  %%rax	\n\t"
@@ -514,45 +514,45 @@ static void Query_Features(void *pArg)
 			"mov	%%ebx, %1	\n\t"
 			"mov	%%ecx, %2	\n\t"
 			"mov	%%edx, %3"
-			: "=r" (iArg->Features.PerfMon.EAX),
-			  "=r" (iArg->Features.PerfMon.EBX),
-			  "=r" (iArg->Features.PerfMon.ECX),
-			  "=r" (iArg->Features.PerfMon.EDX)
+			: "=r" (iArg->Features->PerfMon.EAX),
+			  "=r" (iArg->Features->PerfMon.EBX),
+			  "=r" (iArg->Features->PerfMon.ECX),
+			  "=r" (iArg->Features->PerfMon.EDX)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	    }
-	    iArg->Features.Factory.Freq=Intel_Brand(iArg->Features.Info.Brand);
+	  iArg->Features->Factory.Freq=Intel_Brand(iArg->Features->Info.Brand);
 
-	} else if (iArg->Features.Info.Vendor.CRC == CRC_AMD) {
+	} else if (iArg->Features->Info.Vendor.CRC == CRC_AMD) {
 		// General Core Performance 64 bits Counters.
-		iArg->Features.PerfMon.EAX.MonWidth = 64;
-	    if (iArg->Features.ExtInfo.ECX.PerfCore) {
-		iArg->Features.PerfMon.EAX.MonCtrs = 6;
+		iArg->Features->PerfMon.EAX.MonWidth = 64;
+	    if (iArg->Features->ExtInfo.ECX.PerfCore) {
+		iArg->Features->PerfMon.EAX.MonCtrs = 6;
 	    } else {
-		iArg->Features.PerfMon.EAX.MonCtrs = 4;
+		iArg->Features->PerfMon.EAX.MonCtrs = 4;
 	    }
 		// Fixed Performance Counters.
-		iArg->Features.PerfMon.EDX.FixWidth = 64;
-	    if ( iArg->Features.Power.ECX.HCF_Cap
-	       | iArg->Features.AdvPower.EDX.EffFrqRO ) {
-		iArg->Features.PerfMon.EBX.CoreCycles = 0;
-		iArg->Features.PerfMon.EBX.RefCycles  = 0;
-		iArg->Features.PerfMon.EDX.FixCtrs += 2;
+		iArg->Features->PerfMon.EDX.FixWidth = 64;
+	    if ( iArg->Features->Power.ECX.HCF_Cap
+	       | iArg->Features->AdvPower.EDX.EffFrqRO ) {
+		iArg->Features->PerfMon.EBX.CoreCycles = 0;
+		iArg->Features->PerfMon.EBX.RefCycles  = 0;
+		iArg->Features->PerfMon.EDX.FixCtrs += 2;
 	    }
-	    if (iArg->Features.Info.LargestExtFunc >= 0x80000008) {
-		iArg->SMT_Count = iArg->Features.leaf80000008.ECX.NC + 1;
+	    if (iArg->Features->Info.LargestExtFunc >= 0x80000008) {
+		iArg->SMT_Count = iArg->Features->leaf80000008.ECX.NC + 1;
 		// Add the Retired Instructions Perf Counter to the fixed set
-		if (iArg->Features.leaf80000008.EBX.IRPerf) {
-			iArg->Features.PerfMon.EBX.InstrRetired = 0;
-			iArg->Features.PerfMon.EDX.FixCtrs++;
+		if (iArg->Features->leaf80000008.EBX.IRPerf) {
+			iArg->Features->PerfMon.EBX.InstrRetired = 0;
+			iArg->Features->PerfMon.EDX.FixCtrs++;
 		}
-	    } else if (iArg->Features.Std.EDX.HTT) {
-		iArg->SMT_Count = iArg->Features.Std.EBX.Max_SMT_ID;
+	    } else if (iArg->Features->Std.EDX.HTT) {
+		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
 	    } else {
 		iArg->SMT_Count = 1;
 	    }
-		AMD_Brand(iArg->Features.Info.Brand);
+		AMD_Brand(iArg->Features->Info.Brand);
 	}
 }
 
@@ -708,7 +708,7 @@ CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
 CLOCK BaseClock_Core(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
-	FSB_FREQ FSB={.value = 0};
+	FSB_FREQ FSB = {.value = 0};
 
 	RDMSR(FSB, MSR_FSB_FREQ);
 	switch(FSB.Bus_Speed) {
@@ -737,7 +737,7 @@ CLOCK BaseClock_Core(unsigned int ratio)
 CLOCK BaseClock_Core2(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0};
-	FSB_FREQ FSB={.value = 0};
+	FSB_FREQ FSB = {.value = 0};
 
 	RDMSR(FSB, MSR_FSB_FREQ);
 	switch(FSB.Bus_Speed) {
@@ -3464,7 +3464,9 @@ void PowerThermal(CORE *Core)
   */
   struct {
 	struct SIGNATURE Arch;
-	unsigned int grantPWR_MGMT, grantODCM;
+	unsigned int	grantPWR_MGMT	:  1-0,
+			grantODCM	:  2-1,
+			freeToUse	: 32-2;
   } whiteList[] = {
 	{_Core_Yonah,		0, 1},
 	{_Core_Conroe,		0, 1},
@@ -4180,8 +4182,9 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-//ToDo:	Microcode(Core);
-
+/*ToDo: return undefined value with this platform.
+	Microcode(Core);
+*/
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -7590,10 +7593,14 @@ static struct notifier_block CoreFreqK_notifier_block = {
 
 static int __init CoreFreqK_init(void)
 {
-	INIT_ARG iArg = {.SMT_Count = 0, .localProcessor = 0, .rc = 0};
+	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
 	int rc = 0;
 
-	memset(&iArg.Features, 0, sizeof(FEATURES));
+    if ((iArg.Features = kmalloc(sizeof(FEATURES), GFP_KERNEL)) == NULL) {
+	rc = -ENOMEM;
+	goto EXIT;
+    }
+	memset(iArg.Features, 0, sizeof(FEATURES));
 
     if (ServiceProcessor == -1) {	// Query features on any processor.
 	iArg.localProcessor = get_cpu();
@@ -7668,7 +7675,7 @@ static int __init CoreFreqK_init(void)
 
 		Compute_Interval();
 
-		memcpy(&Proc->Features,&iArg.Features,sizeof(FEATURES));
+		memcpy(&Proc->Features, iArg.Features, sizeof(FEATURES));
 
 		Arch[0].Architecture = Proc->Features.Info.Vendor.ID;
 
@@ -7936,6 +7943,8 @@ static int __init CoreFreqK_init(void)
 	rc = -EBUSY;
     }
   }
+	kfree(iArg.Features);
+EXIT:
 	return(rc);
 }
 

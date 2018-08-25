@@ -329,7 +329,7 @@ ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	unsigned long long _dest;			\
 	asm volatile					\
 	(						\
-		"mov	%[src], %[dest]"	"\n\t"	\
+		"movq	%[src], %[dest]"	"\n\t"	\
 		"negq	%[dest]"			\
 		: [dest] "=m" (_dest)			\
 		: [src] "ir" (_src)			\
