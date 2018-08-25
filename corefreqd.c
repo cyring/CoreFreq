@@ -167,9 +167,10 @@ static void *Core_Cycle(void *arg)
 				     / (Shm->Sleep.Interval * 1000);
 	} else {
 	// Relative Frequency = Relative Ratio x Bus Clock Frequency
-	  CFlip->Relative.Freq = (double)REL_FREQ( Shm->Proc.Boost[BOOST(MAX)],\
-					CFlip->Relative.Ratio,		\
-					Core->Clock, Shm->Sleep.Interval)
+	  CFlip->Relative.Freq=(double)REL_FREQ(Shm->Proc.Boost[BOOST(MAX)], \
+						CFlip->Relative.Ratio,	\
+						Core->Clock,		\
+						Shm->Sleep.Interval)
 				/ (Shm->Sleep.Interval * 1000);
 	}
 

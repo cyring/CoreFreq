@@ -1228,7 +1228,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
         {
             json_start_object(&s);
             json_key(&s, "Q");
-            json_literal(&s, "%u", CFlop->Clock.Q);
+            json_literal(&s, "%llu", CFlop->Clock.Q);
             json_key(&s, "R");
             json_literal(&s, "%llu", CFlop->Clock.R);
             json_key(&s, "Hz");

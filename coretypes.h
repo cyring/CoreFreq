@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.32.3"
+#define COREFREQ_VERSION	"1.32.4"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -330,23 +330,25 @@ enum OFFLINE
 
 typedef struct
 {
-	unsigned int		Q;
-	unsigned long long	R;
-	unsigned long long	Hz;
+	unsigned long long	Q,
+				R,
+				Hz;
 } CLOCK;
 
 #define REL_BCLK(clock, ratio, delta_tsc, interval)			\
-({	/* Compute Divisor					*/	\
-	clock.Q  = delta_tsc / (1000L * interval * ratio);		\
+({	/* Compute Divisor in Interval				*/	\
+	unsigned long long divisor = 1000LLU * ratio * interval;	\
+	/* Compute Quotient					*/	\
+	clock.Q  = delta_tsc / divisor;					\
 	/* Compute Remainder					*/	\
-	clock.R  = delta_tsc % (1000L * interval * ratio);		\
-	clock.R /= (PRECISION * ratio); 				\
+	clock.R  = delta_tsc % divisor;					\
 	/* Compute full Hertz					*/	\
-	clock.Hz = (clock.Q * 1000000L) + (clock.R * PRECISION);	\
+	clock.Hz = (clock.Q * 1000000LLU)				\
+		 + (clock.R * 1000000LLU) / divisor;			\
 })
 
 #define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
-		( ((this_ratio * clock.Q) * 1000L * interval)		\
+		( ((this_ratio * clock.Q) * 1000LLU * interval) 	\
 		+ ((this_ratio * clock.R) / max_ratio))
 
 typedef union {
