@@ -7030,9 +7030,15 @@ void Top(SHM_STRUCT *Shm, char option)
 		_tmp = 1;
 	    }
 	}
-	LayerAt(layer, attr, 14+51, row) = \
-	LayerAt(layer, attr, 14+52, row) = \
-	LayerAt(layer, attr, 14+53, row) = eventAttr[_hot];
+
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+		LayerAt(layer, attr, 14+51, row) = \
+		LayerAt(layer, attr, 14+52, row) = \
+		LayerAt(layer, attr, 14+53, row) = eventAttr[_hot];
+	else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		LayerAt(layer, attr, 14+35, row) = \
+		LayerAt(layer, attr, 14+36, row) = \
+		LayerAt(layer, attr, 14+37, row) = eventAttr[_hot];
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	LayerAt(layer, attr, 14+59, row) = \
