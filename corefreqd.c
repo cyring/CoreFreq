@@ -295,11 +295,27 @@ static void *Core_Cycle(void *arg)
 					Cpu->PowerThermal.Target,
 					PFlip->Thermal.Sensor);
 			break;
+		case THERMAL_FORMULA_AMD:
+			COMPUTE_THERMAL(AMD,
+					PFlip->Thermal.Temp,
+					Cpu->PowerThermal.Target,
+					PFlip->Thermal.Sensor);
+			break;
+		case THERMAL_FORMULA_AMD_0Fh:
+			COMPUTE_THERMAL(AMD_0Fh,
+					PFlip->Thermal.Temp,
+					Cpu->PowerThermal.Target,
+					PFlip->Thermal.Sensor);
+			break;
 		case THERMAL_FORMULA_AMD_17h:
 			COMPUTE_THERMAL(AMD_17h,
 					CFlip->Thermal.Temp,
 					Cpu->PowerThermal.Target,
 					CFlip->Thermal.Sensor);
+			COMPUTE_THERMAL(AMD_17h,
+					PFlip->Thermal.Temp,
+					Cpu->PowerThermal.Target,
+					PFlip->Thermal.Sensor);
 			break;
 		}
 		// Package voltage formulas
@@ -320,8 +336,18 @@ static void *Core_Cycle(void *arg)
 	} else if (!Shm->Proc.Features.Power.EAX.PTM) {
 	    struct PKG_FLIP_FLOP *PFlop=&Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 		// Workaround to Package Thermal Management: the hottest Core.
-		if (CFlip->Thermal.Sensor < PFlop->Thermal.Sensor)
-			PFlop->Thermal.Sensor = CFlip->Thermal.Sensor;
+		switch (Pkg->thermalFormula) {
+		case THERMAL_FORMULA_INTEL:
+			if (CFlip->Thermal.Sensor < PFlop->Thermal.Sensor)
+				PFlop->Thermal.Sensor = CFlip->Thermal.Sensor;
+			break;
+		case THERMAL_FORMULA_AMD:
+		case THERMAL_FORMULA_AMD_0Fh:
+		case THERMAL_FORMULA_AMD_17h:
+			if (CFlip->Thermal.Sensor > PFlop->Thermal.Sensor)
+				PFlop->Thermal.Sensor = CFlip->Thermal.Sensor;
+			break;
+		}
 	}
 	// Min and Max temperatures per Core
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
