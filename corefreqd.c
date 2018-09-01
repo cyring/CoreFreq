@@ -197,6 +197,13 @@ static void *Core_Cycle(void *arg)
 				Cpu->PowerThermal.Target,
 				CFlip->Thermal.Sensor);
 		break;
+	case THERMAL_FORMULA_AMD_17h:
+	    if (cpu == Pkg->Service.Core)
+		COMPUTE_THERMAL(AMD_17h,
+				CFlip->Thermal.Temp,
+				Cpu->PowerThermal.Target,
+				CFlip->Thermal.Sensor);
+		break;
 	}
 	// Min and Max temperatures per Core
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
@@ -3288,10 +3295,6 @@ void Core_Manager(REF *Ref)
 		break;
 	    case THERMAL_FORMULA_AMD_17h:
 		COMPUTE_THERMAL(AMD_17h,
-			SProc->Thermal.Temp,
-			Shm->Cpu[Proc->Service.Core].PowerThermal.Target,
-			SProc->Thermal.Sensor);
-		COMPUTE_THERMAL(AMD_17h,
 			PFlip->Thermal.Temp,
 			Shm->Cpu[Proc->Service.Core].PowerThermal.Target,
 			PFlip->Thermal.Sensor);
@@ -3301,10 +3304,10 @@ void Core_Manager(REF *Ref)
 	    switch (Proc->voltageFormula) {
 		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
 	    case VOLTAGE_FORMULA_INTEL_SNB:
-			COMPUTE_VOLTAGE(INTEL_SNB,
-					SProc->Voltage.Vcore,
-					SProc->Voltage.VID);
-			break;
+		COMPUTE_VOLTAGE(INTEL_SNB,
+				SProc->Voltage.Vcore,
+				SProc->Voltage.VID);
+		break;
 	    }
 		// Tasks collection
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
