@@ -47,7 +47,7 @@ static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
-static signed int AutoClock = 0b01;
+static signed int AutoClock = 0b11;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
 
@@ -576,7 +576,7 @@ void Compute_Interval(void)
 
 #define BUSYWAIT 1000
 
-static void Compute_Clock(void *arg)
+static void Compute_TSC(void *arg)
 {
 	COMPUTE_ARG *pCompute = (COMPUTE_ARG *) arg;
 	unsigned long long D[2][OCCURRENCES];
@@ -671,9 +671,9 @@ static void Compute_Clock(void *arg)
 	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], BUSYWAIT);
 }
 
-CLOCK Base_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
+CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
 {	// Synchronous call the Base Clock estimation on the pinned CPU
-	smp_call_function_single(cpu, Compute_Clock, pCompute, 1);
+	smp_call_function_single(cpu, Compute_TSC, pCompute, 1);
 
 	return(pCompute->Clock);
 }
@@ -4428,13 +4428,13 @@ void Controller_Init(void)
 		    if (Compute.TSC[0] != NULL)
 		    {
 			Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
-		    if (Compute.TSC[1] != NULL)
-		      {
-			KPublic->Core[cpu]->Clock = Base_Clock(cpu, &Compute);
+			if (Compute.TSC[1] != NULL)
+			{
+			KPublic->Core[cpu]->Clock = Compute_Clock(cpu,&Compute);
 
 			// Release resources.
 			kmem_cache_free(hwCache, Compute.TSC[1]);
-		      }
+			}
 			kmem_cache_free(hwCache, Compute.TSC[0]);
 		    }
 		  }
@@ -4693,7 +4693,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
-	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
+	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_AMD_F17H_APERF, Core->Counter[T].C0.UCC,	\
 			MSR_AMD_F17H_MPERF, Core->Counter[T].C0.URC,	\
 			MSR_AMD_F17H_IRPERF, Core->Counter[T].INST);	\
@@ -4704,8 +4704,8 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	    : 0;							\
 })
 
-#define SMT_OVH(Core, CNT, Cycles)					\
-	Core->Delta.CNT -= (Core->Counter[1].CNT - Cycles)
+#define SUB_OVH(Scope, CNT, Cycles)					\
+	Scope->Delta.CNT -= (Scope->Counter[1].CNT - Cycles)
 
 #define Delta_TSC(Core) 						\
 ({									\
@@ -4826,9 +4826,6 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
 			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
 })
-
-#define PKG_OVH(Pkg, CNT, Cycle)					\
-	Pkg->Delta.CNT -= (Pkg->Counter[1].CNT - Cycle)
 
 #define Delta_PTSC(Pkg) 						\
 ({									\
@@ -5131,7 +5128,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5151,7 +5148,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -5232,7 +5229,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5250,7 +5247,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -5336,7 +5333,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5360,7 +5357,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -5460,7 +5457,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 			Save_UNCORE_FC0(Proc);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5494,7 +5491,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -5633,7 +5630,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, UNCORE);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5671,7 +5668,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -5811,7 +5808,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -5849,7 +5846,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -6001,7 +5998,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, UNCORE);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -6039,7 +6036,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -6181,7 +6178,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -6219,7 +6216,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -6375,7 +6372,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -6413,7 +6410,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -6549,7 +6546,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -6590,7 +6587,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -6816,7 +6813,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 	unsigned int pstate;
 	unsigned int cpu;
 
-	RDTSC64(_TSC);
+	RDTSCP64(_TSC);
 
 	cpu = smp_processor_id();
 	Core = (CORE *) KPublic->Core[cpu];
@@ -6849,7 +6846,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, CORES);
 
 			if (AutoClock & 0b10)
-				PKG_OVH(Proc, PTSC, _TSC);
+				SUB_OVH(Proc, PTSC, _TSC);
 
 			Sys_Tick(Proc);
 		}
@@ -6878,7 +6875,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10) {
-			SMT_OVH(Core, TSC, _TSC);
+			SUB_OVH(Core, TSC, _TSC);
 
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
@@ -7196,338 +7193,350 @@ static long CoreFreqK_ioctl(	struct file *filp,
 {
 	long rc = -EPERM;
 
-	switch (cmd) {
-	case COREFREQ_IOCTL_SYSUPDT:
-		if (Proc->OS.Gate != NULL) {
-			Sys_DumpTask(Proc->OS.Gate);
-			Sys_MemInfo(Proc->OS.Gate);
-			rc = 0;
-		}
-		break;
-	case COREFREQ_IOCTL_SYSONCE:
-		rc = Sys_IdleDriver_Query(Proc->OS.Gate)
-		   & Sys_Kernel(Proc->OS.Gate);
-		break;
-	case COREFREQ_IOCTL_MACHINE:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-				Controller_Stop(1);
-				rc = 0;
-				break;
-			case COREFREQ_TOGGLE_ON:
-				Controller_Start(1);
-				rc = 2;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_INTERVAL:
-		Controller_Stop(1);
-		SleepInterval = arg;
-		Compute_Interval();
-		Controller_Start(1);
+    switch (cmd) {
+    case COREFREQ_IOCTL_SYSUPDT:
+	if (Proc->OS.Gate != NULL) {
+		Sys_DumpTask(Proc->OS.Gate);
+		Sys_MemInfo(Proc->OS.Gate);
 		rc = 0;
-		break;
-	case COREFREQ_IOCTL_AUTOCLOCK:
+	}
+	break;
+    case COREFREQ_IOCTL_SYSONCE:
+	rc = Sys_IdleDriver_Query(Proc->OS.Gate)
+	   & Sys_Kernel(Proc->OS.Gate);
+	break;
+    case COREFREQ_IOCTL_MACHINE:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+			Controller_Stop(1);
+			rc = 0;
+			break;
+		case COREFREQ_TOGGLE_ON:
+			Controller_Start(1);
+			rc = 2;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_INTERVAL:
+	Controller_Stop(1);
+	SleepInterval = arg;
+	Compute_Interval();
+	Controller_Start(1);
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_AUTOCLOCK:
+	switch (arg) {
+	  case COREFREQ_TOGGLE_OFF:
+	  {
+		unsigned int cpu;
 		Controller_Stop(1);
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-				BITCLR(LOCKLESS, AutoClock, 1);
-				break;
-			case COREFREQ_TOGGLE_ON:
-				BITSET(LOCKLESS, AutoClock, 1);
-				break;
-			}
+	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+		KPublic->Core[cpu]->Clock.Q  = Proc->Features.Factory.Clock.Q;
+		KPublic->Core[cpu]->Clock.R  = Proc->Features.Factory.Clock.R;
+		KPublic->Core[cpu]->Clock.Hz = Proc->Features.Factory.Clock.Hz;
+	    }
+	  }
+		BITCLR(LOCKLESS, AutoClock, 1);
 		Proc->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
 		rc = 0;
 		break;
-	case COREFREQ_IOCTL_EXPERIMENTAL:
-		switch (arg) {
-		    case COREFREQ_TOGGLE_OFF:
-		    case COREFREQ_TOGGLE_ON:
+	  case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		BITSET(LOCKLESS, AutoClock, 1);
+		Proc->Registration.AutoClock = AutoClock;
+		Controller_Start(1);
+		rc = 0;
+		break;
+	}
+	break;
+    case COREFREQ_IOCTL_EXPERIMENTAL:
+	switch (arg) {
+	    case COREFREQ_TOGGLE_OFF:
+	    case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		Proc->Registration.Experimental = arg;
+		Controller_Start(1);
+	    if( Proc->Registration.Experimental
+	    && !Proc->Registration.pci )
+	    {
+		Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+	    }
+		rc = 2;
+		break;
+	}
+	break;
+    case COREFREQ_IOCTL_INTERRUPTS:
+	switch (arg) {
+	    case COREFREQ_TOGGLE_OFF:
+	    #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
+	    if (Proc->Registration.nmi) {
+		Controller_Stop(1);
+		unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
+		unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
+		unregister_nmi_handler(NMI_SERR,     "corefreqk");
+		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
+		Proc->Registration.nmi = COREFREQ_TOGGLE_OFF;
+		Controller_Start(1);
+	    }
+		rc = 0;
+	    #else
+		rc = -EINVAL;
+	    #endif
+		break;
+	    case COREFREQ_TOGGLE_ON:
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+	    if (!Proc->Registration.nmi) {
+		Controller_Stop(1);
+		Proc->Registration.nmi = !(
+		  register_nmi_handler( NMI_LOCAL,
+					CoreFreqK_NMI_handler,
+					0,
+					"corefreqk")
+		| register_nmi_handler( NMI_UNKNOWN,
+					CoreFreqK_NMI_handler,
+					0,
+					"corefreqk")
+		| register_nmi_handler( NMI_SERR,
+					CoreFreqK_NMI_handler,
+					0,
+					"corefreqk")
+		| register_nmi_handler( NMI_IO_CHECK,
+					CoreFreqK_NMI_handler,
+					0,
+					"corefreqk")
+		);
+		Proc->Registration.nmi = COREFREQ_TOGGLE_ON;
+		Controller_Start(1);
+	    }
+		rc = 0;
+	    #else
+		rc = -EINVAL;
+	    #endif
+		break;
+	}
+	break;
+    case COREFREQ_IOCTL_EIST:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
 			Controller_Stop(1);
-			Proc->Registration.Experimental = arg;
+			SpeedStep_Enable = arg;
 			Controller_Start(1);
-		    if( Proc->Registration.Experimental
-		    && !Proc->Registration.pci )
-		    {
-			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
-		    }
+			SpeedStep_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_C1E:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			C1E_Enable = arg;
+			Controller_Start(1);
+			C1E_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_TURBO:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			TurboBoost_Enable = arg;
+			Controller_Start(1);
+			TurboBoost_Enable = -1;
+			if (Proc->ArchID == AMD_Family_17h) {
+				Compute_AMD_Zen_Boost();
+				rc = 2;
+			} else {
+				rc = 0;
+			}
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_C1A:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			C1A_Enable = arg;
+			Controller_Start(1);
+			C1A_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_C3A:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			C3A_Enable = arg;
+			Controller_Start(1);
+			C3A_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_C1U:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			C1U_Enable = arg;
+			Controller_Start(1);
+			C1U_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_C3U:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			C3U_Enable = arg;
+			Controller_Start(1);
+			C3U_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_CC6:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			CC6_Enable = arg;
+			Controller_Start(1);
+			CC6_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_PC6:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			PC6_Enable = arg;
+			Controller_Start(1);
+			PC6_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_PKGCST:
+	Controller_Stop(1);
+	PkgCStateLimit = arg;
+	Controller_Start(1);
+	PkgCStateLimit = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_IOMWAIT:
+	switch (arg) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			IOMWAIT_Enable = arg;
+			Controller_Start(1);
+			IOMWAIT_Enable = -1;
+			rc = 0;
+			break;
+	}
+	break;
+    case COREFREQ_IOCTL_IORCST:
+	Controller_Stop(1);
+	CStateIORedir = arg;
+	Controller_Start(1);
+	CStateIORedir = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_ODCM:
+	Controller_Stop(1);
+	ODCM_Enable = arg;
+	Controller_Start(1);
+	ODCM_Enable = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_ODCM_DC:
+	Controller_Stop(1);
+	ODCM_DutyCycle = arg;
+	Controller_Start(1);
+	ODCM_DutyCycle = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_CPU_OFF:
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
+	{
+	unsigned int cpu = (unsigned int) arg;
+
+	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		if (!cpu_is_hotpluggable(cpu))
+			rc = -EINVAL;
+		else
+			rc = cpu_down(cpu);
+	    }
+	}
+    #else
+	rc = -EINVAL;
+    #endif
+	break;
+    case COREFREQ_IOCTL_CPU_ON:
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
+	{
+	unsigned int cpu = (unsigned int) arg;
+
+	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		if (!cpu_is_hotpluggable(cpu))
+			rc = -EINVAL;
+		else
+			rc = cpu_up(cpu);
+	    }
+	}
+    #else
+	rc = -EINVAL;
+    #endif
+	break;
+    case COREFREQ_IOCTL_TURBO_CLOCK:
+	if (Arch[Proc->ArchID].TurboClock) {
+		CLOCK_ARG clockMod = {.sllong = arg};
+		Controller_Stop(1);
+		rc = Arch[Proc->ArchID].TurboClock(&clockMod);
+		Controller_Start(1);
+	}
+	break;
+    case COREFREQ_IOCTL_UNCORE_CLOCK:
+	if (Proc->Features.Uncore_Unlock) {
+		CLOCK_ARG clockMod = {.sllong = arg};
+		Controller_Stop(1);
+		rc = Haswell_Uncore_Ratio(&clockMod);
+		Controller_Start(1);
+	}
+	break;
+    case COREFREQ_IOCTL_CLEAR_EVENTS:
+	switch (arg) {
+		case EVENT_THERM_SENSOR:
+		case EVENT_THERM_PROCHOT:
+		case EVENT_THERM_CRIT:
+		case EVENT_THERM_THOLD:
+		case EVENT_POWER_LIMIT:
+		case EVENT_CURRENT_LIMIT:
+		case EVENT_CROSS_DOMAIN:
+			Controller_Stop(1);
+			Clear_Events = arg;
+			Controller_Start(1);
+			Clear_Events = 0;
 			rc = 2;
 			break;
-		}
-		break;
-	case COREFREQ_IOCTL_INTERRUPTS:
-		switch (arg) {
-		    case COREFREQ_TOGGLE_OFF:
-		    #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
-		    if (Proc->Registration.nmi) {
-			Controller_Stop(1);
-			unregister_nmi_handler(NMI_LOCAL,    "corefreqk");
-			unregister_nmi_handler(NMI_UNKNOWN,  "corefreqk");
-			unregister_nmi_handler(NMI_SERR,     "corefreqk");
-			unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
-			Proc->Registration.nmi = COREFREQ_TOGGLE_OFF;
-			Controller_Start(1);
-		    }
-			rc = 0;
-		    #else
-			rc = -EINVAL;
-		    #endif
-			break;
-		    case COREFREQ_TOGGLE_ON:
-		    #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
-		    if (!Proc->Registration.nmi) {
-			Controller_Stop(1);
-			Proc->Registration.nmi = !(
-			  register_nmi_handler( NMI_LOCAL,
-						CoreFreqK_NMI_handler,
-						0,
-						"corefreqk")
-			| register_nmi_handler( NMI_UNKNOWN,
-						CoreFreqK_NMI_handler,
-						0,
-						"corefreqk")
-			| register_nmi_handler( NMI_SERR,
-						CoreFreqK_NMI_handler,
-						0,
-						"corefreqk")
-			| register_nmi_handler( NMI_IO_CHECK,
-						CoreFreqK_NMI_handler,
-						0,
-						"corefreqk")
-			);
-			Proc->Registration.nmi = COREFREQ_TOGGLE_ON;
-			Controller_Start(1);
-		    }
-			rc = 0;
-		    #else
-			rc = -EINVAL;
-		    #endif
-			break;
-		}
-		break;
-	case COREFREQ_IOCTL_EIST:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				SpeedStep_Enable = arg;
-				Controller_Start(1);
-				SpeedStep_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_C1E:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				C1E_Enable = arg;
-				Controller_Start(1);
-				C1E_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_TURBO:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				TurboBoost_Enable = arg;
-				Controller_Start(1);
-				TurboBoost_Enable = -1;
-				if (Proc->ArchID == AMD_Family_17h) {
-					Compute_AMD_Zen_Boost();
-					rc = 2;
-				} else {
-					rc = 0;
-				}
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_C1A:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				C1A_Enable = arg;
-				Controller_Start(1);
-				C1A_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_C3A:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				C3A_Enable = arg;
-				Controller_Start(1);
-				C3A_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_C1U:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				C1U_Enable = arg;
-				Controller_Start(1);
-				C1U_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_C3U:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				C3U_Enable = arg;
-				Controller_Start(1);
-				C3U_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_CC6:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				CC6_Enable = arg;
-				Controller_Start(1);
-				CC6_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_PC6:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				PC6_Enable = arg;
-				Controller_Start(1);
-				PC6_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_PKGCST:
-		Controller_Stop(1);
-		PkgCStateLimit = arg;
-		Controller_Start(1);
-		PkgCStateLimit = -1;
-		rc = 0;
-		break;
-	case COREFREQ_IOCTL_IOMWAIT:
-		switch (arg) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				Controller_Stop(1);
-				IOMWAIT_Enable = arg;
-				Controller_Start(1);
-				IOMWAIT_Enable = -1;
-				rc = 0;
-				break;
-		}
-		break;
-	case COREFREQ_IOCTL_IORCST:
-		Controller_Stop(1);
-		CStateIORedir = arg;
-		Controller_Start(1);
-		CStateIORedir = -1;
-		rc = 0;
-		break;
-	case COREFREQ_IOCTL_ODCM:
-		Controller_Stop(1);
-		ODCM_Enable = arg;
-		Controller_Start(1);
-		ODCM_Enable = -1;
-		rc = 0;
-		break;
-	case COREFREQ_IOCTL_ODCM_DC:
-		Controller_Stop(1);
-		ODCM_DutyCycle = arg;
-		Controller_Start(1);
-		ODCM_DutyCycle = -1;
-		rc = 0;
-		break;
-	case COREFREQ_IOCTL_CPU_OFF:
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
-		{
-		unsigned int cpu = (unsigned int) arg;
-
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-			if (!cpu_is_hotpluggable(cpu))
-				rc = -EINVAL;
-			else
-				rc = cpu_down(cpu);
-		    }
-		}
-	#else
-		rc = -EINVAL;
-	#endif
-		break;
-	case COREFREQ_IOCTL_CPU_ON:
-	#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 3, 0)
-		{
-		unsigned int cpu = (unsigned int) arg;
-
-		if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-			if (!cpu_is_hotpluggable(cpu))
-				rc = -EINVAL;
-			else
-				rc = cpu_up(cpu);
-		    }
-		}
-	#else
-		rc = -EINVAL;
-	#endif
-		break;
-	case COREFREQ_IOCTL_TURBO_CLOCK:
-		if (Arch[Proc->ArchID].TurboClock) {
-			CLOCK_ARG clockMod = {.sllong = arg};
-			Controller_Stop(1);
-			rc = Arch[Proc->ArchID].TurboClock(&clockMod);
-			Controller_Start(1);
-		}
-		break;
-	case COREFREQ_IOCTL_UNCORE_CLOCK:
-		if (Proc->Features.Uncore_Unlock) {
-			CLOCK_ARG clockMod = {.sllong = arg};
-			Controller_Stop(1);
-			rc = Haswell_Uncore_Ratio(&clockMod);
-			Controller_Start(1);
-		}
-		break;
-	case COREFREQ_IOCTL_CLEAR_EVENTS:
-		switch (arg) {
-			case EVENT_THERM_SENSOR:
-			case EVENT_THERM_PROCHOT:
-			case EVENT_THERM_CRIT:
-			case EVENT_THERM_THOLD:
-			case EVENT_POWER_LIMIT:
-			case EVENT_CURRENT_LIMIT:
-			case EVENT_CROSS_DOMAIN:
-				Controller_Stop(1);
-				Clear_Events = arg;
-				Controller_Start(1);
-				Clear_Events = 0;
-				rc = 2;
-				break;
-		}
-		break;
-	default:
-		rc = -EINVAL;
 	}
+	break;
+    default:
+	rc = -EINVAL;
+}
 	return(rc);
 }
 
@@ -7680,7 +7689,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	{
 	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	    {
-		KPublic->Core[cpu]->Clock = Base_Clock(cpu, &Compute);
+		KPublic->Core[cpu]->Clock = Compute_Clock(cpu, &Compute);
 
 		kfree(Compute.TSC[1]);
 	    }
