@@ -52,9 +52,9 @@ typedef struct
 	} Topology;
 
 	struct {
+		THERMAL_PARAM		Param;
 		unsigned int		TM1,
 					TM2,
-					Target,
 					Limit[2];
 		struct {
 			unsigned int	ClockMod : 16-0,

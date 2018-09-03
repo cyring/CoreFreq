@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.33.2"
+#define COREFREQ_VERSION	"1.33.3"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -140,6 +140,13 @@ enum THERM_PWR_EVENTS {
 	EVENT_CROSS_DOMAIN	= 0b1000000
 };
 
+typedef union
+{
+	unsigned int	Target;
+	unsigned short	Offset[2];
+} THERMAL_PARAM;
+
+
 #define THERMAL_FORMULA_NONE \
 	0b0000000000000000000000000000000000000000000000000000000000000000
 #define THERMAL_FORMULA_INTEL \
@@ -151,20 +158,20 @@ enum THERM_PWR_EVENTS {
 #define THERMAL_FORMULA_AMD_17h \
 	0b0000000000000000000000010000000100000000000000000000000000000000
 
-#define COMPUTE_THERMAL_INTEL(Temp, Target, Sensor)			\
-		(Temp = Target - Sensor)
+#define COMPUTE_THERMAL_INTEL(Temp, Param, Sensor)			\
+	(Temp = Param.Target - Sensor)
 
-#define COMPUTE_THERMAL_AMD(Temp, Target, Sensor)			\
-		/*( ToDo )*/
+#define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
+	/*( ToDo )*/
 
-#define COMPUTE_THERMAL_AMD_0Fh(Temp, Target, Sensor)			\
-		(Temp = Sensor - (Target * 2) - 49)
+#define COMPUTE_THERMAL_AMD_0Fh(Temp, Param, Sensor)			\
+	(Temp = Sensor - (Param.Target * 2) - 49)
 
-#define COMPUTE_THERMAL_AMD_17h(Temp, Target, Sensor)			\
-		(Temp = ((Sensor * 5 / 40) - 49) - Target)
+#define COMPUTE_THERMAL_AMD_17h(Temp, Param, Sensor)			\
+	(Temp = ((Sensor * 5 / 40) - Param.Offset[1]) - Param.Offset[0])
 
-#define COMPUTE_THERMAL(_ARCH_, Temp, Target, Sensor)			\
-		COMPUTE_THERMAL_##_ARCH_(Temp, Target, Sensor)
+#define COMPUTE_THERMAL(_ARCH_, Temp, Param, Sensor)			\
+	COMPUTE_THERMAL_##_ARCH_(Temp, Param, Sensor)
 
 
 #define VOLTAGE_FORMULA_NONE \

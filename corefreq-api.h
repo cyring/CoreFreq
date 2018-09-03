@@ -236,8 +236,8 @@ typedef struct
 
 typedef struct
 {
-	unsigned int			Sensor,
-					Target;
+	THERMAL_PARAM			Param;
+	unsigned int			Sensor;
 	struct {
 		enum THERM_PWR_EVENTS	Events;
 		unsigned int

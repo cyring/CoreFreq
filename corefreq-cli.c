@@ -1517,8 +1517,9 @@ void SysInfoPwrThermal(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
 
 	printv(OutFunc, SCANKEY_NULL, attrib[0], width, 2,
-		"Junction Temperature%.*sTjMax   [%7u]", width - 40, hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target);
+		"Junction Temperature%.*sTjMax   [%3u:%3u]", width - 40, hSpace,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
@@ -1765,21 +1766,21 @@ void Counters(SHM_STRUCT *Shm)
 		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
 		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"%.*s" "%3u C" "%.*s" "%3u C\n\n",
-			4, hSpace,
-			8, hSpace,
-			4, hSpace,
-			4, hSpace,
-			20, hSpace,
-			100.f * Shm->Proc.Avg.Turbo,
-			100.f * Shm->Proc.Avg.C0,
-			100.f * Shm->Proc.Avg.C1,
-			100.f * Shm->Proc.Avg.C3,
-			100.f * Shm->Proc.Avg.C6,
-			100.f * Shm->Proc.Avg.C7,
-			5, hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Target,
-			3, hSpace,
-			PFlop->Thermal.Temp);
+		4, hSpace,
+		8, hSpace,
+		4, hSpace,
+		4, hSpace,
+		20, hSpace,
+		100.f * Shm->Proc.Avg.Turbo,
+		100.f * Shm->Proc.Avg.C0,
+		100.f * Shm->Proc.Avg.C1,
+		100.f * Shm->Proc.Avg.C3,
+		100.f * Shm->Proc.Avg.C6,
+		100.f * Shm->Proc.Avg.C7,
+		5, hSpace,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0],
+		3, hSpace,
+		PFlop->Thermal.Temp);
     }
 }
 

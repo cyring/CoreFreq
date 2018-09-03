@@ -1295,7 +1295,12 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
             json_key(&s, "TM2");
             json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.TM2);
             json_key(&s, "Target");
-            json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Target);
+            json_start_arr(&s);
+            {
+                json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Param.Offset[0]);
+                json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Param.Offset[1]);
+            }
+            json_end_arr(&s);
             json_key(&s, "Limit");
             json_start_arr(&s);
             {

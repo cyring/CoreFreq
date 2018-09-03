@@ -3353,9 +3353,9 @@ void ThermalMonitor_Set(CORE *Core)
 	//Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch.
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->PowerThermal.Target = TjMax.Target;
-	if (Core->PowerThermal.Target == 0)
-		Core->PowerThermal.Target = 100; // ToDo: TjMax database.
+	Core->PowerThermal.Param.Target = TjMax.Target;
+	if (Core->PowerThermal.Param.Target == 0)
+		Core->PowerThermal.Param.Target = 100; // ToDo: TjMax database.
 
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
@@ -4296,8 +4296,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Query_AMD_Zen(Core);
 
-	Core->PowerThermal.Target =					\
-			Zen_Table[Proc->Features.Std.EBX.Brand_ID].tempOffset;
+      Core->PowerThermal.Param=Zen_Table[Proc->Features.Std.EBX.Brand_ID].Param;
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
@@ -5074,7 +5073,7 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
 
 		// Formula is " CurTmp - (TjOffset * 2) - 49 "
-		Core->PowerThermal.Target = ThermTrip.TjOffset;
+		Core->PowerThermal.Param.Target = ThermTrip.TjOffset;
 		Core->PowerThermal.Sensor = ThermTrip.CurrentTemp;
 
 		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
@@ -5087,19 +5086,19 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
 	59800h : undocumented AMD 17h
 */
-	if (Proc->Features.AdvPower.EDX.TTP == 1) {
-		unsigned int indexRegister = 0x00059800, sensor = 0;
+	unsigned int indexRegister = 0x00059800, sensor = 0;
 
-		WRPCI(indexRegister, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
-		RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
+	WRPCI(indexRegister, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
+	RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
 
-		Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
-	}
-	if (Proc->Registration.Experimental) {
-		THERMTRIP_STATUS ThermTrip;
-		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
-		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
-	}
+	Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
+
+	if (Proc->Registration.Experimental)
+		if (Proc->Features.AdvPower.EDX.TTP == 1) {
+			THERMTRIP_STATUS ThermTrip;
+			RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+			Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
+		}
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
