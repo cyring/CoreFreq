@@ -4010,9 +4010,7 @@ void Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
 
-	if (Proc->Registration.Experimental) {
-		RDMSR(Microcode, MSR_IA32_UCODE_REV);
-	}
+	RDMSR(Microcode, MSR_IA32_UCODE_REV);
 	Core->Query.Microcode = Microcode.Signature;
 }
 
@@ -4182,9 +4180,9 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-/*ToDo: return undefined value with this platform.
-	Microcode(Core);
-*/
+	if (Proc->Registration.Experimental)
+		Microcode(Core);
+
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
