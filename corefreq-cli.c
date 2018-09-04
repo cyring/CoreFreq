@@ -6359,17 +6359,17 @@ void Top(SHM_STRUCT *Shm, char option)
 	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=63,
 	    .attr = {
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,	\
-		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,\
-		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,\
-		HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,\
-		HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,	\
+		LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
+		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
+		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK
 	    },
 	    .code = {
 		'S','M','T',',','P','o','w','e','r','N','o','w',',',	\
-		'B','O','O','S','T',',','C','1','E',',',' ','P','M',',',\
-		'D','T','S',',','T','T','P',',','H','O','T',']',' ',' ',\
-		' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-		' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
+		'B','O','O','S','T',',','C','1','E',',','C','C','6',	\
+		',','P','C','6',',',' ','P','M',',','D','T','S',',',	\
+		'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',	\
+		' ',' ',' ',' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
 	    },
 	   };
 
@@ -6386,19 +6386,25 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =	\
 						Pwr[Shm->Proc.Technology.C1E];
 
-	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
-
-	    hTech1.code[23] = buffer[0];
-	    hTech1.code[24] = buffer[1];
-	    hTech1.code[25] = buffer[2];
-
 	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =	\
-						Pwr[(Shm->Proc.PM_version > 0)];
+						Pwr[Shm->Proc.Technology.CC6];
 
 	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =	\
-				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
+						Pwr[Shm->Proc.Technology.PC6];
+
+	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
+
+	    hTech1.code[31] = buffer[0];
+	    hTech1.code[32] = buffer[1];
+	    hTech1.code[33] = buffer[2];
 
 	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
+						Pwr[(Shm->Proc.PM_version > 0)];
+
+	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
+				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
+
+	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =	\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
@@ -7037,9 +7043,9 @@ void Top(SHM_STRUCT *Shm, char option)
 		LayerAt(layer, attr, 14+52, row) = \
 		LayerAt(layer, attr, 14+53, row) = eventAttr[_hot];
 	else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		LayerAt(layer, attr, 14+35, row) = \
-		LayerAt(layer, attr, 14+36, row) = \
-		LayerAt(layer, attr, 14+37, row) = eventAttr[_hot];
+		LayerAt(layer, attr, 14+43, row) = \
+		LayerAt(layer, attr, 14+44, row) = \
+		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot];
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	LayerAt(layer, attr, 14+59, row) = \
