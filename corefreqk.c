@@ -8017,9 +8017,8 @@ static int __init CoreFreqK_init(void)
 
 			Controller_Start(0);
 
-		    if (Proc->Registration.Experimental) {
 			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
-		    }
+
 	#ifdef CONFIG_HOTPLUG_CPU
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 		// Always returns zero (kernel/notifier.c)
