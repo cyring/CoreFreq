@@ -881,6 +881,16 @@ void ForEachCellPrint(Window *win, WinList *list)
 	LayerAt(win->layer, code,
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 		(win->matrix.origin.row + win->matrix.size.hth)) = 0x20;
+	// Scrolling indicators
+	if (win->matrix.scroll.vert > 0)
+		LayerAt(win->layer, code,
+			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+			(win->matrix.origin.row)) =  '^';
+
+	if (win->matrix.scroll.vert < win->lazyComp.bottomRow)
+		LayerAt(win->layer, code,
+			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+			(win->matrix.origin.row + win->matrix.size.hth-1))='v';
 }
 
 void EraseWindowWithBorder(Window *win)
