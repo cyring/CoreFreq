@@ -498,8 +498,8 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		HWK,HWK,HWK,HWK,LWK,LWK
 	    }
 	};
-	char	*str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
-	int	activeCores, boost = 0;
+	char *str = malloc(width + 1), symb[2][2] = {{'[', ']'}, {'<', '>'}};
+	unsigned int activeCores, boost = 0;
 
   void PrintCoreBoost(char *pfx, int _boost, int syc, unsigned long long _key)
   {
@@ -597,7 +597,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	{
 	CLOCK_ARG clockMod={.Ratio=BOXKEY_TURBO_CLOCK_NC|activeCores,.Offset=0};
 	char pfx[4];
-	sprintf(pfx, "%2dC", activeCores);
+	sprintf(pfx, "%2uC", activeCores);
 	PrintCoreBoost(pfx, boost, 1, clockMod.sllong);
       }
     else
@@ -605,7 +605,7 @@ void SysInfoProc(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++) {
 	char pfx[4];
-	sprintf(pfx, "%2dC", activeCores);
+	sprintf(pfx, "%2uC", activeCores);
 	PrintCoreBoost(pfx, boost, 0, SCANKEY_NULL);
       }
 
@@ -1971,8 +1971,8 @@ void MemoryController(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	void iSplit(unsigned int sInt) {
 		sprintf(fInt, "%10u", sInt);
-		strncpy(hInt[0], &fInt[0], 5); hInt[0][5] = '\0';
-		strncpy(hInt[1], &fInt[5], 5); hInt[1][5] = '\0';
+		memcpy(hInt[0], &fInt[0], 5); hInt[0][5] = '\0';
+		memcpy(hInt[1], &fInt[5], 5); hInt[1][5] = '\0';
 	}
 
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
@@ -2975,7 +2975,9 @@ void Top(SHM_STRUCT *Shm, char option)
 					sizeof(struct PBOX)
 					+ cnt * sizeof(struct SBOX))) != NULL)
 		{
-			strcpy((char *) pBox->btn[cnt - 1].item, (char *) item);
+			size_t len = KMIN(strlen((char *) item), MIN_WIDTH);
+			memcpy((char*)pBox->btn[cnt - 1].item,(char *)item,len);
+			pBox->btn[cnt - 1].item[len] = '\0';
 			pBox->btn[cnt - 1].attr = attr;
 			pBox->btn[cnt - 1].key = aKey;
 			pBox->cnt = cnt;
@@ -6894,7 +6896,7 @@ void Top(SHM_STRUCT *Shm, char option)
   {
     row += 2 + MAX_ROWS;
     if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-	size_t len;
+	size_t len = 0;
 	unsigned int idx;
 	char stateStr[16];
 	ATTRIBUTE *stateAttr;

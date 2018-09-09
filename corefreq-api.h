@@ -261,6 +261,13 @@ typedef struct
 
 	Bit64				OffLine __attribute__ ((aligned (64)));
 
+#if FEAT_DBG > 0
+	struct
+	{
+		unsigned long long	TSC;
+	} Overhead;
+#endif
+
 	struct
 	{
 		unsigned long long 	INST;

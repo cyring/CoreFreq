@@ -143,10 +143,10 @@ asm volatile						\
 )
 
 #define RDTSC_PMCx1(mem_tsc, ...) \
-ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
 #define RDTSCP_PMCx1(mem_tsc, ...) \
-ASM_RDTSC_PMCx1(r10, r11, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 
 #define _BITSET_GPR(_lock, _base, _offset)	\

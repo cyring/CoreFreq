@@ -392,6 +392,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Bit32	fTSC = Proc->Features.Std.EDX.TSC,
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
+	size_t	len;
 
 	// Copy all initial CPUID features.
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
@@ -400,11 +401,15 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
 	Shm->Proc.Service.Proc	= Proc->Service.Proc;
 	// Copy the Architecture name.
-	strncpy(Shm->Proc.Architecture, Proc->Architecture, 32);
+	len = KMIN(strlen(Proc->Architecture), 32 - 1);
+	memcpy(Shm->Proc.Architecture, Proc->Architecture, len);
+	Shm->Proc.Architecture[len] = '\0';
 	// Copy the base clock ratios.
 	memcpy(Shm->Proc.Boost, Proc->Boost,(BOOST(SIZE))*sizeof(unsigned int));
 	// Copy the processor's brand string.
-	strncpy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48);
+	len = KMIN(strlen(Proc->Features.Info.Brand), 48 + 4 - 1);
+	memcpy(Shm->Proc.Brand, Proc->Features.Info.Brand, len);
+	Shm->Proc.Brand[len] = '\0';
 	// Compute the TSC mode: None, Variant, Invariant
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
@@ -2674,31 +2679,38 @@ void SysGate_IdleDriver(REF *Ref)
     SYSGATE *SysGate = Ref->SysGate;
 
     if (strlen(SysGate->IdleDriver.Name) > 0) {
-	int i;
+	int idx;
 
-	strncpy(Shm->SysGate.IdleDriver.Name,
+	memcpy(Shm->SysGate.IdleDriver.Name,
 		SysGate->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+	Shm->SysGate.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
 
 	Shm->SysGate.IdleDriver.stateCount = SysGate->IdleDriver.stateCount;
-	for (i = 0; i < Shm->SysGate.IdleDriver.stateCount; i++)
+	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
 	{
-		strncpy(Shm->SysGate.IdleDriver.State[i].Name,
-			SysGate->IdleDriver.State[i].Name,
+	size_t len=KMIN(strlen(SysGate->IdleDriver.State[idx].Name),
 			CPUIDLE_NAME_LEN - 1);
+		memcpy( Shm->SysGate.IdleDriver.State[idx].Name,
+			SysGate->IdleDriver.State[idx].Name, len);
+		Shm->SysGate.IdleDriver.State[idx].Name[len] = '\0';
 
-		Shm->SysGate.IdleDriver.State[i].exitLatency =
-			SysGate->IdleDriver.State[i].exitLatency;
+		Shm->SysGate.IdleDriver.State[idx].exitLatency =
+			SysGate->IdleDriver.State[idx].exitLatency;
 
-		Shm->SysGate.IdleDriver.State[i].powerUsage =
-			SysGate->IdleDriver.State[i].powerUsage;
+		Shm->SysGate.IdleDriver.State[idx].powerUsage =
+			SysGate->IdleDriver.State[idx].powerUsage;
 
-		Shm->SysGate.IdleDriver.State[i].targetResidency =
-			SysGate->IdleDriver.State[i].targetResidency;
+		Shm->SysGate.IdleDriver.State[idx].targetResidency =
+			SysGate->IdleDriver.State[idx].targetResidency;
 	}
     }
-    if (strlen(SysGate->IdleDriver.Governor) > 0)
-	strncpy(Shm->SysGate.IdleDriver.Governor,
-		SysGate->IdleDriver.Governor, CPUIDLE_NAME_LEN - 1);
+    if (strlen(SysGate->IdleDriver.Governor) > 0) {
+	size_t len=KMIN(strlen(SysGate->IdleDriver.Governor),
+			CPUIDLE_NAME_LEN - 1);
+	memcpy(Shm->SysGate.IdleDriver.Governor,
+		SysGate->IdleDriver.Governor, len);
+	Shm->SysGate.IdleDriver.Governor[len] = '\0';
+    }
 }
 
 void SysGate_Kernel(REF *Ref)
@@ -3412,12 +3424,13 @@ int Shm_Manager(FD *fd, PROC *Proc)
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED)
 	      {
+		size_t len;
 		// Clear SHM
 		memset(Shm, 0, ShmSize);
-
 		// Store the daemon gate name.
-		strncpy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN - 1);
-
+		len = KMIN(sizeof(SHM_FILENAME), TASK_COMM_LEN - 1);
+		memcpy(Shm->ShmName, SHM_FILENAME, len);
+		Shm->ShmName[len] = '\0';
 		// Initialize the busy wait times.
 		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
 		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);

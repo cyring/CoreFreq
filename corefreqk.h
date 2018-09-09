@@ -207,6 +207,37 @@ asm volatile								\
 	  "memory"							\
 );
 
+#define ASM_COUNTERx5_STACK(_reg0, _reg1, _reg2, _reg3, 		\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5)			\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	"pushq	%%" #_reg3		"\n\t"				\
+	ASM_RDMSR(_msr4, _reg3)						\
+	"pushq	%%" #_reg3		"\n\t"				\
+	ASM_RDMSR(_msr5, _reg3)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %5"	"\n\t"				\
+	"popq	%%" #_reg3		"\n\t"				\
+	"movq	%%" #_reg3 ", %4"	"\n\t"				\
+	"popq	%%" #_reg3		"\n\t"				\
+	"movq	%%" #_reg3 ", %3"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5)					\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "memory"							\
+);
+
 
 #define ASM_COUNTERx6(	_reg0, _reg1, _reg2, _reg3, _reg4, _reg5, _reg6,\
 			_tsc_inst, mem_tsc,				\
@@ -238,6 +269,40 @@ asm volatile								\
 	  "memory"							\
 );
 
+#define ASM_COUNTERx6_STACK(_reg0, _reg1, _reg2, _reg3, 		\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	ASM_RDMSR(_msr3, _reg3)						\
+	"pushq	%%" #_reg3		"\n\t"				\
+	ASM_RDMSR(_msr4, _reg3)						\
+	"pushq	%%" #_reg3		"\n\t"				\
+	ASM_RDMSR(_msr5, _reg3)						\
+	"pushq	%%" #_reg3		"\n\t"				\
+	ASM_RDMSR(_msr6, _reg3)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"	"\n\t"				\
+	"movq	%%" #_reg3 ", %6"	"\n\t"				\
+	"popq	%%" #_reg3		"\n\t"				\
+	"movq	%%" #_reg3 ", %5"	"\n\t"				\
+	"popq	%%" #_reg3		"\n\t"				\
+	"movq	%%" #_reg3 ", %4"	"\n\t"				\
+	"popq	%%" #_reg3		"\n\t"				\
+	"movq	%%" #_reg3 ", %3"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5), "=m" (_mem6)			\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
+	  "memory"							\
+);
 
 #define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3,			\
 			_reg4, _reg5, _reg6, _reg7,			\
@@ -273,6 +338,48 @@ asm volatile								\
 	  "memory" \
 );
 
+#define ASM_COUNTERx7_STACK(_reg0, _reg1, _reg2,			\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
+			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
+			_msr7, _mem7)					\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	"pushq	%%" #_reg2		"\n\t"				\
+	ASM_RDMSR(_msr3, _reg2)						\
+	"pushq	%%" #_reg2		"\n\t"				\
+	ASM_RDMSR(_msr4, _reg2)						\
+	"pushq	%%" #_reg2		"\n\t"				\
+	ASM_RDMSR(_msr5, _reg2)						\
+	"pushq	%%" #_reg2		"\n\t"				\
+	ASM_RDMSR(_msr6, _reg2)						\
+	"pushq	%%" #_reg2		"\n\t"				\
+	ASM_RDMSR(_msr7, _reg2)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %7"	"\n\t"				\
+	"popq	%%" #_reg2		"\n\t"				\
+	"movq	%%" #_reg2 ", %6"	"\n\t"				\
+	"popq	%%" #_reg2		"\n\t"				\
+	"movq	%%" #_reg2 ", %5"	"\n\t"				\
+	"popq	%%" #_reg2		"\n\t"				\
+	"movq	%%" #_reg2 ", %4"	"\n\t"				\
+	"popq	%%" #_reg2		"\n\t"				\
+	"movq	%%" #_reg2 ", %3"	"\n\t"				\
+	"popq	%%" #_reg2		"\n\t"				\
+	"movq	%%" #_reg2 ", %2"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2), "=m" (_mem3),	\
+	  "=m" (_mem4), "=m" (_mem5), "=m" (_mem6), "=m" (_mem7)	\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
+	  "memory"							\
+);
+
 
 #define RDTSC_COUNTERx1(mem_tsc, ...) \
 ASM_COUNTERx1(r10, r11, ASM_RDTSC, mem_tsc, __VA_ARGS__)
@@ -298,6 +405,30 @@ ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 #define RDTSCP_COUNTERx4(mem_tsc, ...) \
 ASM_COUNTERx4(r10, r11, r12, r13, r14, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
+
+#if defined(OPTIM_LVL) && OPTIM_LVL == 0
+
+#define RDTSC_COUNTERx5(mem_tsc, ...) \
+ASM_COUNTERx5_STACK(r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+
+#define RDTSCP_COUNTERx5(mem_tsc, ...) \
+ASM_COUNTERx5_STACK(r12, r13, r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+
+#define RDTSC_COUNTERx6(mem_tsc, ...) \
+ASM_COUNTERx6_STACK(r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+
+#define RDTSCP_COUNTERx6(mem_tsc, ...) \
+ASM_COUNTERx6_STACK(r12, r13, r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+
+#define RDTSC_COUNTERx7(mem_tsc, ...) \
+ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
+
+#define RDTSCP_COUNTERx7(mem_tsc, ...) \
+ASM_COUNTERx7_STACK(r13, r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
+
+#else
+/*	#warning "Optimization"						*/
+
 #define RDTSC_COUNTERx5(mem_tsc, ...) \
 ASM_COUNTERx5(r10, r11, r12, r13, r14, r15, ASM_RDTSC, mem_tsc, __VA_ARGS__)
 
@@ -315,6 +446,8 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSC,mem_tsc,__VA_ARGS__)
 
 #define RDTSCP_COUNTERx7(mem_tsc, ...) \
 ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
+
+#endif
 
 
 #define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
