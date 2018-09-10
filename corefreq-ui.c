@@ -881,16 +881,26 @@ void ForEachCellPrint(Window *win, WinList *list)
 	LayerAt(win->layer, code,
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 		(win->matrix.origin.row + win->matrix.size.hth)) = 0x20;
-	// Scrolling indicators
-	if (win->matrix.scroll.vert > 0)
-		LayerAt(win->layer, code,
-			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
-			(win->matrix.origin.row)) =  '^';
+	// Vertical Scrolling Bar
+	if ((win->dim / win->matrix.size.wth > win->matrix.size.hth)
+		&& win->lazyComp.bottomRow)
+	{
+		CUINT vScrollbar = win->matrix.origin.row
+				 + (win->matrix.size.hth - 1)
+				 * win->matrix.scroll.vert
+				 / win->lazyComp.bottomRow;
 
-	if (win->matrix.scroll.vert < win->lazyComp.bottomRow)
+		ATTRIBUTE attrBar=GetFocus(list) == win ? MAKE_TITLE_FOCUS
+							: border;
+
+		LayerAt(win->layer, attr,
+			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
+			vScrollbar) =  attrBar;
+
 		LayerAt(win->layer, code,
 			(win->matrix.origin.col + win->lazyComp.rowLen - 2),
-			(win->matrix.origin.row + win->matrix.size.hth-1))='v';
+			vScrollbar) =  '=';
+	}
 }
 
 void EraseWindowWithBorder(Window *win)
