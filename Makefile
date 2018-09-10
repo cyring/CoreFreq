@@ -2,22 +2,22 @@
 # Copyright (C) 2015-2018 CYRIL INGENIERIE
 # Licenses: GPL2
 
-CC = cc
-FEAT_DBG = 1
-OPTIM_LVL =
-WARNING = -Wall
+CC=cc
+FEAT_DBG=1
+WARNING=-Wall
+# Remark: Optimization OPTIM_LVL=<N> where N={0,1,2,3}
 
-obj-m := corefreqk.o
-ccflags-y := -D FEAT_DBG=${FEAT_DBG}
+obj-m:=corefreqk.o
+ccflags-y:=-D FEAT_DBG=${FEAT_DBG}
 
 ifneq ($(OPTIM_LVL),)
-	OPTIM_FLG = -O${OPTIM_LVL}
-	ccflags-y += -D OPTIM_LVL=${OPTIM_LVL}
-	ccflags-y += ${OPTIM_FLG}
+	OPTIM_FLG=-O${OPTIM_LVL}
+	ccflags-y+=-D OPTIM_LVL=${OPTIM_LVL}
+	ccflags-y+=${OPTIM_FLG}
 endif
 
-KVERSION = $(shell uname -r)
-DESTDIR = ${HOME}
+KVERSION=$(shell uname -r)
+DESTDIR=${HOME}
 
 all: corefreqd corefreq-cli
 	make -C /lib/modules/$(KVERSION)/build M=${PWD} modules
