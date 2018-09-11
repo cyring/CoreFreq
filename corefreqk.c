@@ -3342,11 +3342,46 @@ void Query_AMD_Family_0Fh_C1E(CORE *Core)			// Per Core
 	BITSET(LOCKLESS, Proc->C1E_Mask, Core->Bind);
 }
 
+void ThermalMonitor2_Set(CORE *Core)	// Intel Core Solo Duo.
+{
+	struct SIGNATURE whiteList[] = {
+		_Core_Yonah,		/* 06_0E */
+		_Core_Conroe,		/* 06_0F */
+		_Core_Yorkfield,	/* 06_17 */
+		_Atom_Bonnell,		/* 06_1C */
+		_Atom_Silvermont,	/* 06_26 */
+		_Atom_Lincroft,		/* 06_27 */
+		_Atom_Clovertrail,	/* 06_35 */
+		_Atom_Saltwell,		/* 06_36 */
+	};
+	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	for (id = 0; id < ids; id++) {
+		if((whiteList[id].ExtFamily == Proc->Features.Std.EAX.ExtFamily)
+		 && (whiteList[id].Family == Proc->Features.Std.EAX.Family)
+		 && (whiteList[id].ExtModel == Proc->Features.Std.EAX.ExtModel)
+		 && (whiteList[id].Model == Proc->Features.Std.EAX.Model)) {
+
+			if (Core->PowerThermal.TCC_Enable) {
+				THERM2_CONTROL Therm2Control = {.value = 0};
+
+				RDMSR(Therm2Control, MSR_THERM2_CTL);
+
+				if (Therm2Control.TM_SELECT) {
+					Core->PowerThermal.TCC_Enable = 0;
+					Core->PowerThermal.TM2_Enable = 1;
+				} else {
+					Core->PowerThermal.TM2_Enable = 0;
+				}
+			}
+			break;
+		}
+	}
+}
+
 void ThermalMonitor_Set(CORE *Core)
 {
 	TJMAX TjMax = {.value = 0};
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
-	THERM2_CONTROL Therm2Control = {.value = 0};
 	THERM_STATUS ThermStatus = {.value = 0};
 	int ClearBit;
 
@@ -3359,12 +3394,10 @@ void ThermalMonitor_Set(CORE *Core)
 
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-	Core->PowerThermal.TCC_Enable = MiscFeatures.TCC;
+	Core->PowerThermal.TCC_Enable = MiscFeatures.TCC;	// alias TM1
 	Core->PowerThermal.TM2_Enable = MiscFeatures.TM2_Enable;
 
-	RDMSR(Therm2Control, MSR_THERM2_CTL);		// All Intel families.
-
-	Core->PowerThermal.TM2_Enable = Therm2Control.TM_SELECT;
+	ThermalMonitor2_Set(Core);
 
 	// Clear Thermal Events if requested.
 	ClearBit = 0;
@@ -5353,7 +5386,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 			PKG_Counters_Generic(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.CORE.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
 
 			Delta_PTSC(Proc);
 
@@ -5614,7 +5647,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			PKG_Counters_SandyBridge(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 			PWR_ACCU_SandyBridge(Proc, 1);
 
@@ -5791,7 +5824,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 			PKG_Counters_SandyBridge(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 			PWR_ACCU_SandyBridge_EP(Proc, 1);
 
@@ -5968,7 +6001,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			PKG_Counters_Haswell_ULT(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 			PWR_ACCU_SandyBridge(Proc, 1);
 
@@ -6159,7 +6192,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 			PKG_Counters_Haswell_EP(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 			PWR_ACCU_SandyBridge_EP(Proc, 1);
 
@@ -6348,7 +6381,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			PKG_Counters_Skylake(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 			PWR_ACCU_Skylake(Proc, 1);
 
@@ -6572,7 +6605,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		}
 
 		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Counter[1].VID = PerfStatus.SNB.CurrVID;
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 
 		Core_Intel_Temp(Core);
 
@@ -6696,7 +6729,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		Core->Counter[1].VID = FidVidStatus.CurrVID;
+		Core->PowerThermal.VID = FidVidStatus.CurrVID;
 
 		// P-States
 		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
@@ -6875,7 +6908,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
 		// Read the voltage ID at offset
 		RDMSR(PstateDef, pstate);
-		Core->Counter[1].VID = PstateDef.Family_17h.CpuVid;
+		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 
 		Delta_INST(Core);
 

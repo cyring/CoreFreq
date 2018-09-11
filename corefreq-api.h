@@ -238,13 +238,13 @@ typedef struct
 {
 	THERMAL_PARAM			Param;
 	unsigned int			Sensor;
+	signed int			VID;
 	struct {
 		enum THERM_PWR_EVENTS	Events;
 		unsigned int
 					TCC_Enable:  1-0,
 					TM2_Enable:  2-1,
-					TM_Select :  3-2,
-					Unused    : 32-3;
+					Unused    : 32-2;
 	};
 	CLOCK_MODULATION		ClockModulation;
 	ENERGY_PERF_BIAS		PerfEnergyBias;
@@ -284,8 +284,6 @@ typedef struct
 					TSC;
 
 		unsigned long long	C1;
-
-		int			VID;
 	} Counter[2];
 
 	struct

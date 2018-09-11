@@ -211,7 +211,7 @@ static void *Core_Cycle(void *arg)
 	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
 		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
 	// Per Core voltage formulas
-	CFlip->Voltage.VID = Core->Counter[1].VID;
+	CFlip->Voltage.VID = Core->PowerThermal.VID;
 	switch (Pkg->voltageFormula) {
 	// Intel Core 2 Extreme Datasheet §3.3-Table 2
 	case VOLTAGE_FORMULA_INTEL_MEROM:
@@ -2620,20 +2620,15 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
 			Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 
-	Shm->Cpu[cpu].PowerThermal.TM1 =
-		Proc->Features.Std.EDX.TM1;			//0001
+	Shm->Cpu[cpu].PowerThermal.TM1 = Proc->Features.Std.EDX.TM1;	//000v
 
 	Shm->Cpu[cpu].PowerThermal.TM1 |=
-		(Core[cpu]->PowerThermal.TCC_Enable << 1);	//0010
+			(Core[cpu]->PowerThermal.TCC_Enable << 1);	//00v0
 
-	Shm->Cpu[cpu].PowerThermal.TM1 ^=
-		(Core[cpu]->PowerThermal.TM_Select << 1);	//0010
-
-	Shm->Cpu[cpu].PowerThermal.TM2 =
-		Proc->Features.Std.ECX.TM2;			//0001
+	Shm->Cpu[cpu].PowerThermal.TM2 = Proc->Features.Std.ECX.TM2;	//000v
 
 	Shm->Cpu[cpu].PowerThermal.TM2 |=
-		(Core[cpu]->PowerThermal.TM2_Enable << 1);	//0010
+			(Core[cpu]->PowerThermal.TM2_Enable << 1);	//00v0
 
 	Shm->Cpu[cpu].PowerThermal.Param = Core[cpu]->PowerThermal.Param;
 }
@@ -3120,9 +3115,6 @@ void Core_Manager(REF *Ref)
 	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0)
 		pthread_setname_np(tid, "corefreqd-pmgr");
 
-	SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
-					!Shm->Cpu[Proc->Service.Core].Toggle];
-
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
     while (!BITVAL(Shutdown, 0))
@@ -3135,6 +3127,9 @@ void Core_Manager(REF *Ref)
 
 	Shm->Proc.Toggle = !Shm->Proc.Toggle;
 	PFlip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
+
+	SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
+					!Shm->Cpu[Proc->Service.Core].Toggle];
 
 	// Reset PTM sensor with the Service Processor.
 	PFlip->Thermal.Sensor = SProc->Thermal.Sensor;
