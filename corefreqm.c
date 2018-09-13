@@ -127,13 +127,13 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 
 	__asm__ __volatile__
 	(
-		".SAH_%=:"		"\n\t"
+		"1:"			"\n\t"
 		"push	%0"		"\n\t"
 		"push	%1"		"\n\t"
 		"xchg	%0,%1"		"\n\t"
 		"pop	%1"		"\n\t"
 		"pop	%0"		"\n\t"
-		"loop	.SAH_%="
+		"loop	1b"
 		: "=r"((unsigned long long) xchg)
 		: "r" (*(volatile long long *) &atom), "r" (xchg),
 		  "c" (arg)
@@ -150,23 +150,23 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 		"	addq	%%r10, %%r8"		"\n\t"		\
 		"	movl	$0, %%r12d"		"\n\t"		\
 		"	movl	$0x436f7265, %%r9d"	"\n\t"		\
-		".LOOP_%=:"				"\n\t"		\
+		"1:"					"\n\t"		\
 		"	cmpq	%%r8, %%r10"		"\n\t"		\
-		"	je	.EXIT_%="		"\n\t"		\
+		"	je	3f"			"\n\t"		\
 		"	addq	$1, %%r10"		"\n\t"		\
 		"	movzbl	-1(%%r10), %%edx"	"\n\t"		\
 		"	xorl	%%edx, %%r12d"		"\n\t"		\
 		"	movl	$8, %%edx"		"\n\t"		\
-		".INSIDE_%=:"				"\n\t"		\
+		"2:"					"\n\t"		\
 		"	movl	%%r12d, %%r11d"		"\n\t"		\
 		"	shrl	%%r11d"			"\n\t"		\
 		"	andl	$1, %%r12d"		"\n\t"		\
 		"	cmovne	%%r9d, %%r12d"		"\n\t"		\
 		"	xorl	%%r11d, %%r12d"		"\n\t"		\
 		"	subl	$1, %%edx"		"\n\t"		\
-		"	jne	.INSIDE_%="		"\n\t"		\
-		"	jmp	.LOOP_%="		"\n\t"		\
-		".EXIT_%=:"				"\n\t"		\
+		"	jne	2b"			"\n\t"		\
+		"	jmp	1b"			"\n\t"		\
+		"3:"					"\n\t"		\
 		"	movl	%%r12d, %[_rem]"			\
 		: [_rem] "+m" (rem)					\
 		: [_data] "m" (data),					\
