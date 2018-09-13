@@ -1642,7 +1642,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	len = sprintf(row, "States:%.*s", 9, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-					idx++, len += sln, strcat(row, str))
+				idx++, len += sln, strncat(row, str, sln))
     {
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
     }
@@ -1651,7 +1651,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-					idx++, len += sln, strcat(row, str))
+				idx++, len += sln, strncat(row, str, sln))
     {
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
     }
@@ -1660,7 +1660,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-				idx++, len += sln, strcat(row, str))
+				idx++, len += sln, strncat(row, str, sln))
     {
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
     }
@@ -1669,7 +1669,7 @@ void SysInfoKernel(SHM_STRUCT *Shm, CUINT width, CELL_FUNC OutFunc)
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-					idx++, len += sln, strcat(row, str))
+				idx++, len += sln, strncat(row, str, sln))
     {
     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
     }
