@@ -5,7 +5,6 @@
  */
 
 #define _GNU_SOURCE
-#include <math.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -1198,45 +1197,41 @@ void AllocAll(char **buffer)
 
 size_t FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 {
-	unsigned int sdx = 0;
-	ATTRIBUTE attr = {.value = 0};
-	CUINT _col, _row;
+	ATTRIBUTE	*fa, *sa, *da, *wa;
+	ASCII		*fc, *sc, *dc, *wc;
+	unsigned int	sdx = 0, _bix, _bdx, _idx;
+	struct {
+	   unsigned int flag;
+	   CUINT	col, row;
+	} cursor;
+	CUINT		_col, _row, _wth;
+	ATTRIBUTE	attr = {.value = 0};
 
 	for (_row = 0; _row < drawSize.height; _row++)
 	{
-	  struct {
-		int cursor;
-	  } flag = {0};
+	  cursor.flag = 0;
+	  _wth = _row * fuse->size.wth;
 
-	  int _bix = 0, _bdx;
-	  CUINT _wth = _row * fuse->size.wth;
-
-	  for (_col = 0; _col < drawSize.width; _col++)
+	  for (_col = 0, _bix = 0; _col < drawSize.width; _col++)
 	  {
-	    int _idx = _col + _wth;
-	    ATTRIBUTE	*fa =   &fuse->attr[_idx],
-			*sa = &sLayer->attr[_idx],
-			*da = &dLayer->attr[_idx],
-			*wa = &wLayer->attr[_idx];
-	    ASCII	*fc =   &fuse->code[_idx],
-			*sc = &sLayer->code[_idx],
-			*dc = &dLayer->code[_idx],
-			*wc = &wLayer->code[_idx];
+		_idx = _col + _wth;
+		fa =   &fuse->attr[_idx];
+		sa = &sLayer->attr[_idx];
+		da = &dLayer->attr[_idx];
+		wa = &wLayer->attr[_idx];
+		fc =   &fuse->code[_idx];
+		sc = &sLayer->code[_idx];
+		dc = &dLayer->code[_idx];
+		wc = &wLayer->code[_idx];
 	/* STATIC LAYER */
-	    if (sa->value != 0)
 		fa->value = sa->value;
-	    if (*sc != 0)
 		*fc = *sc;
 	/* DYNAMIC LAYER */
-	    if (da->value != 0)
-		fa->value = da->value;
-	    if (*dc != 0)
-		*fc = *dc;
+		fa->value = da->value ? da->value : fa->value;
+		*fc = *dc ? *dc : *fc;
 	/* WINDOWS LAYER */
-	    if (wa->value != 0)
-		fa->value = wa->value;
-	    if (*wc != 0)
-		*fc = *wc;
+		fa->value = wa->value ? wa->value : fa->value;
+		*fc = *wc ? *wc : *fc;
 	/* FUSED LAYER */
 	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf)) {
 		buffer[_bix++] = 0x1b;
@@ -1265,32 +1260,31 @@ size_t FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	    attr.value = fa->value;
 
 	    if (*fc != 0) {
-		if (flag.cursor == 0) {
-			flag.cursor = 1;
-
-			struct {
-				CUINT col, row;
-			} scr = {.col = _col + 1, .row = _row + 1};
+		if (cursor.flag == 0) {
+			cursor.flag = 1;
+			cursor.row = _row + 1;
+			cursor.col = _col + 1;
 
 			buffer[_bix++] = 0x1b;
 			buffer[_bix++] = '[';
 
-			_bix = log10(scr.row) + _bix + 1;
-			for(_bdx = _bix; scr.row > 0; scr.row /= 10)
-				buffer[--_bdx] = '0' + (scr.row % 10);
+			_bix += cursor.row >= 100 ? 3 : cursor.row >= 10 ? 2:1;
+			for(_bdx = _bix; cursor.row > 0; cursor.row /= 10)
+				buffer[--_bdx] = '0' + (cursor.row % 10);
 
 			buffer[_bix++] = ';';
 
-			_bix = log10(scr.col) + _bix + 1;
-			for(_bdx = _bix; scr.col > 0; scr.col /= 10)
-				buffer[--_bdx] = '0' + (scr.col % 10);
+			_bix += cursor.col >= 100 ? 3 : cursor.col >= 10 ? 2:1;
+			for(_bdx = _bix; cursor.col > 0; cursor.col /= 10)
+				buffer[--_bdx] = '0' + (cursor.col % 10);
 
 			buffer[_bix++] = 'H';
 		}
 		buffer[_bix++] = *fc;
 	    }
 	    else
-		flag.cursor = 0;
+		if (cursor.flag != 0)
+			cursor.flag = 0;
 	  }
 	  memcpy(&stream[sdx], buffer, _bix);
 	  sdx += _bix;
@@ -1300,8 +1294,9 @@ size_t FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 
 void WriteConsole(SCREEN_SIZE drawSize, char *buffer)
 {
-	size_t writeSize = 0;
-	if ((writeSize = FuseAll(console, drawSize, buffer)) > 0) {
+	size_t writeSize = FuseAll(console, drawSize, buffer);
+
+	if (writeSize > 0) {
 		fwrite(console, writeSize, 1, stdout);
 		fflush(stdout);
 	}
