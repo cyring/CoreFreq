@@ -221,7 +221,10 @@ unsigned int Intel_Brand(char *pBrand)
 		frequency *= frequency;
 	    }
 	}
-	for (ix = jx = 0; jx < 48; jx++)
+	for (jx = 0; jx < 48; jx++)
+		if (idString[jx] != 0x20)
+			break;
+	for (ix = 0; jx < 48; jx++)
 		if (!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
 			pBrand[ix++] = idString[jx];
 
@@ -261,7 +264,10 @@ void AMD_Brand(char *pBrand)
 		}
 		px += 12;
 	}
-	for (ix = jx = 0; jx < 48; jx++)
+	for (jx = 0; jx < 48; jx++)
+		if (idString[jx] != 0x20)
+			break;
+	for (ix = 0; jx < 48; jx++)
 		if (!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
 			pBrand[ix++] = idString[jx];
 }
