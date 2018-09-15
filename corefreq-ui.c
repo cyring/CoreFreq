@@ -1195,7 +1195,7 @@ void AllocAll(char **buffer)
 	CreateLayer(fuse, layerSize);
 }
 
-size_t FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
+unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 {
 	ATTRIBUTE	*fa, *sa, *da, *wa;
 	ASCII		*fc, *sc, *dc, *wc;
@@ -1289,15 +1289,15 @@ size_t FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	  memcpy(&stream[sdx], buffer, _bix);
 	  sdx += _bix;
 	}
-	return((size_t) sdx);
+	return(sdx);
 }
 
 void WriteConsole(SCREEN_SIZE drawSize, char *buffer)
 {
-	size_t writeSize = FuseAll(console, drawSize, buffer);
+	unsigned int writeSize = FuseAll(console, drawSize, buffer);
 
 	if (writeSize > 0) {
-		fwrite(console, writeSize, 1, stdout);
+		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 	}
 }

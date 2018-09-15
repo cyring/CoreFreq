@@ -7827,7 +7827,7 @@ void Top(SHM_STRUCT *Shm, char option)
     {
     }
 
-	/* Top starts here */
+    /* BEGIN */
 	SortAvailableRatio();
 
 	TrapScreenSize(SIGWINCH);
@@ -7848,14 +7848,14 @@ void Top(SHM_STRUCT *Shm, char option)
 		Draw_Dashboard,
 		Dynamic_NoHeader_SingleView_NoFooter
 	};
-
+    /* LOOP */
   while (!BITVAL(Shutdown, 0))
   {
     do
     {
-	SCANKEY scan = {.key = 0};
-
 	if ((drawFlag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
+	    SCANKEY scan = {.key = 0};
+
 	    if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
 		if (Shortcut(&scan) == -1) {
 		  if (IsDead(&winList))
@@ -7925,7 +7925,7 @@ void Top(SHM_STRUCT *Shm, char option)
   free(cTask);
 
   DestroyAllCards(&cardList);
-}
+}  /* END */
 
 int Help(char *appName)
 {
