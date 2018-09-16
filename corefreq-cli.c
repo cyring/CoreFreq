@@ -2291,51 +2291,48 @@ void Top(SHM_STRUCT *Shm, char option)
 
     SCREEN_SIZE drawSize = {.width = 0, .height = 0};
 
-    enum THERM_PWR_EVENTS processorEvents;
-    double prevTopFreq = 0.0, prevTopLoad = 0.0;
-    unsigned long prevFreeRAM = 0;
-    unsigned int cpu = 0, cpuScroll = 0, digit[9], iClock = 0, ratioCount = 0;
-    int prevTaskCount = 0;
-
-    CUINT loadWidth = 0, MIN_HEIGHT = 0, MAX_ROWS = 0;
-
     char *buffer = NULL;
 
     Coordinate *cTask;
 
-    double minRatio, maxRatio, medianRatio, availRatio[BOOST(SIZE)];
+    enum THERM_PWR_EVENTS processorEvents;
+    double prevTopFreq = 0.0, prevTopLoad = 0.0;
+    double minRatio, maxRatio, medianRatio;
+    unsigned long prevFreeRAM = 0;
+    unsigned int cpu = 0, cpuScroll = 0, digit[9], iClock = 0,
+		uniqRatio[BOOST(SIZE)], ratioCount = 0;
+    int prevTaskCount = 0;
 
-    void SortAvailableRatio()
+    CUINT loadWidth = 0, MIN_HEIGHT = 0, MAX_ROWS = 0;
+
+    void SortUniqRatio()
     {
-	int AscendingSort(const void *p1, const void *p2)
-	{
-		const double *r1 = p1, *r2 = p2;
-		int sort = (*r1) < (*r2) ? -1 : (*r1) == (*r2) ? 0 : +1;
-		return(sort);
-	}
-
-	unsigned int rdx;
-	minRatio = Shm->Proc.Boost[BOOST(MIN)];
-	maxRatio = Shm->Proc.Boost[BOOST(MIN)];
+	unsigned int idx, jdx;
+	minRatio = maxRatio = (double) Shm->Proc.Boost[BOOST(MIN)];
 	ratioCount = 0;
-	memset(availRatio, 0, BOOST(SIZE) * sizeof(double));
-	for (rdx = BOOST(MIN); rdx < BOOST(SIZE); rdx++)
-	    if (Shm->Proc.Boost[rdx] != 0) {
-		unsigned int idx, unik = 1;
-		for (idx = 0; (idx < ratioCount) && unik; idx++) {
-		    if (Shm->Proc.Boost[rdx] == availRatio[idx])
-			unik = 0;	// ignore duplicates.
-		}
-		if (unik) {
-			maxRatio=CUMAX(maxRatio, Shm->Proc.Boost[rdx]);
-			// Update the ruller tab ratios.
-			availRatio[ratioCount++] = Shm->Proc.Boost[rdx];
+	for (idx = BOOST(MIN); idx < BOOST(SIZE); idx++)
+	    if (Shm->Proc.Boost[idx] > 0) {
+		for (jdx = BOOST(MIN); jdx < ratioCount; jdx++)
+		    if (Shm->Proc.Boost[idx] == uniqRatio[jdx])
+			break;
+		if (jdx == ratioCount) {
+			uniqRatio[ratioCount] = Shm->Proc.Boost[idx];
+			if ((double) uniqRatio[ratioCount] > maxRatio)
+				maxRatio = (double) uniqRatio[ratioCount];
+			ratioCount++;
 		}
 	    }
+	for (idx = BOOST(MAX); idx < ratioCount; idx++) {
+		unsigned int tmpRatio = uniqRatio[idx];
+		jdx = idx;
+		while (jdx > BOOST(MIN) && tmpRatio < uniqRatio[jdx - 1]) {
+			uniqRatio[jdx] = uniqRatio[jdx - 1];
+			--jdx;
+		}
+		uniqRatio[jdx] = tmpRatio;
+	}
 	medianRatio = (Shm->Proc.Boost[BOOST(ACT)] > 0) ?
 			Shm->Proc.Boost[BOOST(ACT)] : (minRatio + maxRatio) / 2;
-
-	qsort(availRatio, ratioCount, sizeof(*availRatio), AscendingSort);
     }
 
     void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }
@@ -5403,13 +5400,11 @@ void Top(SHM_STRUCT *Shm, char option)
 		}
 	};
 	// Alternate the color of the frequency ratios
-	unsigned int idx;
-	int bright = 0;
-
-	for (idx = 0; idx < ratioCount; idx++) {
+	int idx = ratioCount, bright = 1;
+	while (idx-- > 0) {
 		char tabStop[] = "00";
-		int hPos = availRatio[idx] * loadWidth / maxRatio;
-		sprintf(tabStop, "%2.0f", availRatio[idx]);
+		int hPos = uniqRatio[idx] * loadWidth / maxRatio;
+		sprintf(tabStop, "%2u", uniqRatio[idx]);
 
 		if (tabStop[0] != 0x20) {
 			hLoad0.code[hPos + 2]=tabStop[0];
@@ -7828,7 +7823,7 @@ void Top(SHM_STRUCT *Shm, char option)
     }
 
     /* BEGIN */
-	SortAvailableRatio();
+	SortUniqRatio();
 
 	TrapScreenSize(SIGWINCH);
 	signal(SIGWINCH, TrapScreenSize);
@@ -7872,7 +7867,7 @@ void Top(SHM_STRUCT *Shm, char option)
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	if (BITVAL(Shm->Proc.Sync, 62)) { // Compute required, clear the layout
-		SortAvailableRatio();
+		SortUniqRatio();
 		drawFlag.clear = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 62);
 	}
