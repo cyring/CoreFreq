@@ -6267,36 +6267,30 @@ void Top(SHM_STRUCT *Shm, char option)
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	  LayerDeclare((55 + 11)) hTech1 = {
-	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=63,
+	  LayerDeclare(66) hTech1 = {
+	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=66,
 	    .attr = {
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
-		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,			\
-		HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,	\
-		HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK
+		HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,			\
+		HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,			\
+		LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK
 	    },
 	    .code = {
 		'H','T','T',',','E','I','S','T',',','I','D','A',',',	\
 		'T','U','R','B','O',',','C','1','E',',',		\
 		' ','P','M',',','C','3','A',',','C','1','A',',',	\
 		'C','3','U',',','C','1','U',',',			\
-		'T','M','1',',','T','M','2',',','H','O','T',']',	\
-		' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
+		'T','M',',','H','O','T',']',' ',' ',			\
+		'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',']'
 	    },
 	  };
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-		const ATTRIBUTE TM1[] = {
-			MakeAttr(BLACK, 0, BLACK, 1),
-			MakeAttr(BLUE,  0, BLACK, 1),
-			MakeAttr(WHITE, 0, BLACK, 1),
-			MakeAttr(GREEN, 0, BLACK, 1)
-		};
-		const ATTRIBUTE TM2[] = {
+		const ATTRIBUTE TM[] = {
 			MakeAttr(BLACK, 0, BLACK, 1),
 			MakeAttr(BLUE,  0, BLACK, 1),
 			MakeAttr(WHITE, 0, BLACK, 1),
@@ -6336,11 +6330,9 @@ void Top(SHM_STRUCT *Shm, char option)
 	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =	\
 						Pwr[Shm->Proc.Technology.C1U];
 
-	    hTech1.attr[43] = hTech1.attr[44] = hTech1.attr[45] =	\
-			TM1[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1];
-
-	    hTech1.attr[47] = hTech1.attr[48] = hTech1.attr[49] =	\
-			TM2[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
+	    hTech1.attr[43] = hTech1.attr[44] = 			\
+			TM[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
+			  |Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
 	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
@@ -6352,21 +6344,21 @@ void Top(SHM_STRUCT *Shm, char option)
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
 	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-	   LayerDeclare((39 + 27)) hTech1 = {
-	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=63,
+	   LayerDeclare(66) hTech1 = {
+	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=66,
 	    .attr = {
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,	\
 		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,	\
 		LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK
+		LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK
 	    },
 	    .code = {
 		'S','M','T',',','P','o','w','e','r','N','o','w',',',	\
 		'B','O','O','S','T',',','C','1','E',',','C','C','6',	\
 		',','P','C','6',',',' ','P','M',',','D','T','S',',',	\
 		'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',	\
-		' ',' ',' ',' ',' ','T','[',' ',' ',' ',']',' ',' ',' '
+		'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',']'
 	    },
 	   };
 
@@ -7014,6 +7006,10 @@ void Top(SHM_STRUCT *Shm, char option)
 
     void Draw_Footer(Layer *layer, CUINT row)
     {	// Update Footer view area
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+	struct FLIP_FLOP *SProc = &Shm->Cpu[Shm->Proc.Service.Core]	\
+			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+
 	ATTRIBUTE eventAttr[4] = {
 		MakeAttr(BLACK,  0, BLACK, 1),
 		MakeAttr(RED,    0, BLACK, 1),
@@ -7036,21 +7032,21 @@ void Top(SHM_STRUCT *Shm, char option)
 	}
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-		LayerAt(layer, attr, 14+51, row) = \
-		LayerAt(layer, attr, 14+52, row) = \
-		LayerAt(layer, attr, 14+53, row) = eventAttr[_hot];
+		LayerAt(layer, attr, 14+46, row) = \
+		LayerAt(layer, attr, 14+47, row) = \
+		LayerAt(layer, attr, 14+48, row) = eventAttr[_hot];
 	else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		LayerAt(layer, attr, 14+43, row) = \
 		LayerAt(layer, attr, 14+44, row) = \
 		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot];
 
-	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	LayerAt(layer, attr, 14+59, row) = \
-	LayerAt(layer, attr, 14+60, row) = \
-	LayerAt(layer, attr, 14+61, row) = eventAttr[_tmp];
+	LayerAt(layer, attr, 14+62, row) = \
+	LayerAt(layer, attr, 14+63, row) = \
+	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp];
 
-	size_t len = sprintf(buffer, "%3u", PFlop->Thermal.Temp);
-	memcpy(&LayerAt(layer, code, 73, row), buffer, len);
+	sprintf(buffer, "%3u%4.2f", PFlop->Thermal.Temp, SProc->Voltage.Vcore);
+	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);
+	memcpy(&LayerAt(layer, code, 68, row), &buffer[3], 4);
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
