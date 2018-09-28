@@ -5,7 +5,6 @@
 CC=cc
 FEAT_DBG=1
 WARNING=-Wall
-# Remark: Optimization OPTIM_LVL=<N> where N={0,1,2,3}
 
 obj-m:=corefreqk.o
 ccflags-y:=-D FEAT_DBG=${FEAT_DBG}
@@ -15,6 +14,43 @@ ifneq ($(OPTIM_LVL),)
 	ccflags-y+=-D OPTIM_LVL=${OPTIM_LVL}
 	ccflags-y+=${OPTIM_FLG}
 endif
+
+ifneq ($(wildcard /dev/watchdog),)
+	OWNED=1
+else
+	OWNED=0
+endif
+
+ifndef MSR_CORE_PERF_UCC
+	ifeq ($(OWNED), 1)
+		MSR_CORE_PERF_UCC = MSR_IA32_APERF
+	else
+		MSR_CORE_PERF_UCC = MSR_CORE_PERF_FIXED_CTR1
+	endif
+else
+	CHK1=$(filter ${MSR_CORE_PERF_UCC},\
+			MSR_IA32_APERF MSR_CORE_PERF_FIXED_CTR1)
+	ifeq ($(CHK1),)
+        $(error MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1 expected)
+	endif
+endif
+
+ifndef MSR_CORE_PERF_URC
+	ifeq ($(OWNED), 1)
+		MSR_CORE_PERF_URC = MSR_IA32_MPERF
+	else
+		MSR_CORE_PERF_URC = MSR_CORE_PERF_FIXED_CTR2
+	endif
+else
+	CHK2=$(filter ${MSR_CORE_PERF_URC},\
+			MSR_IA32_MPERF MSR_CORE_PERF_FIXED_CTR2)
+	ifeq ($(CHK2),)
+        $(error MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2 expected)
+	endif
+endif
+
+ccflags-y+=-D MSR_CORE_PERF_UCC=${MSR_CORE_PERF_UCC}
+ccflags-y+=-D MSR_CORE_PERF_URC=${MSR_CORE_PERF_URC}
 
 KVERSION=$(shell uname -r)
 DESTDIR=${HOME}
@@ -57,3 +93,17 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o \
 		corefreq-cli.c corefreq-ui.c \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		-o corefreq-cli -lm -lrt
+
+help:
+	@echo "o-------------------------------------------------------------o"
+	@echo "|  make [all] [clean] [help]                                  |"
+	@echo "|                                                             |"
+	@echo "|  OPTIM_LVL=<N>                                              |"
+	@echo "|    where N is 0,1,2, or 3                                   |"
+	@echo "|                                                             |"
+	@echo "|  MSR_CORE_PERF_UCC=REG                                      |"
+	@echo "|    where REG is MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1  |"
+	@echo "|                                                             |"
+	@echo "|  MSR_CORE_PERF_URC=REG                                      |"
+	@echo "|    where REG is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |"
+	@echo "o-------------------------------------------------------------o"

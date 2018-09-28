@@ -4665,15 +4665,15 @@ void AMD_Core_Counters_Clear(CORE *Core)
     if (!Proc->Features.AdvPower.EDX.Inv_TSC)				\
  	{								\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
-			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
-			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 	}								\
     else								\
 	{								\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
-			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
-			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
 	}								\
 	/* Derive C1 */							\
@@ -4688,8 +4688,8 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	register unsigned long long Cx = 0;				\
 									\
 	RDTSCP_COUNTERx5(Core->Counter[T].TSC,				\
-			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
-			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_C3_RESIDENCY,Core->Counter[T].C3,	\
 			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
@@ -4709,8 +4709,8 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	register unsigned long long Cx = 0;				\
 									\
 	RDTSCP_COUNTERx6(Core->Counter[T].TSC,				\
-			MSR_CORE_PERF_FIXED_CTR1,Core->Counter[T].C0.UCC,\
-			MSR_CORE_PERF_FIXED_CTR2,Core->Counter[T].C0.URC,\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_C3_RESIDENCY,Core->Counter[T].C3,	\
 			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
 			MSR_CORE_C7_RESIDENCY,Core->Counter[T].C7,	\
