@@ -16,13 +16,13 @@ ifneq ($(OPTIM_LVL),)
 endif
 
 ifneq ($(wildcard /dev/watchdog),)
-	OWNED=1
+	NMI=1
 else
-	OWNED=0
+	NMI=0
 endif
 
 ifndef MSR_CORE_PERF_UCC
-	ifeq ($(OWNED), 1)
+	ifeq ($(NMI), 1)
 		MSR_CORE_PERF_UCC = MSR_IA32_APERF
 	else
 		MSR_CORE_PERF_UCC = MSR_CORE_PERF_FIXED_CTR1
@@ -36,7 +36,7 @@ else
 endif
 
 ifndef MSR_CORE_PERF_URC
-	ifeq ($(OWNED), 1)
+	ifeq ($(NMI), 1)
 		MSR_CORE_PERF_URC = MSR_IA32_MPERF
 	else
 		MSR_CORE_PERF_URC = MSR_CORE_PERF_FIXED_CTR2
@@ -58,6 +58,7 @@ DESTDIR=${HOME}
 all: corefreqd corefreq-cli
 	make -C /lib/modules/$(KVERSION)/build M=${PWD} modules
 
+.PHONY: clean
 clean:
 	make -C /lib/modules/$(KVERSION)/build M=${PWD} clean
 	rm corefreqd corefreq-cli
@@ -94,16 +95,33 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		-o corefreq-cli -lm -lrt
 
+.PHONY: info
+info:
+	$(info NMI [${NMI}])
+	$(info MSR_CORE_PERF_UCC [${MSR_CORE_PERF_UCC}])
+	$(info MSR_CORE_PERF_URC [${MSR_CORE_PERF_URC}])
+
+.PHONY: help
 help:
-	@echo "o-------------------------------------------------------------o"
-	@echo "|  make [all] [clean] [help]                                  |"
-	@echo "|                                                             |"
-	@echo "|  OPTIM_LVL=<N>                                              |"
-	@echo "|    where N is 0,1,2, or 3                                   |"
-	@echo "|                                                             |"
-	@echo "|  MSR_CORE_PERF_UCC=REG                                      |"
-	@echo "|    where REG is MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1  |"
-	@echo "|                                                             |"
-	@echo "|  MSR_CORE_PERF_URC=REG                                      |"
-	@echo "|    where REG is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |"
-	@echo "o-------------------------------------------------------------o"
+	@echo -e \
+	"o---------------------------------------------------------------o\n"\
+	"|  make [all] [clean] [info] [help]                             |\n"\
+	"|                                                               |\n"\
+	"|  CC=<COMPILER>                                                |\n"\
+	"|    where <COMPILER> is compiler: cc, gcc or clang [NIY]       |\n"\
+	"|                                                               |\n"\
+	"|  WARNING=<ARG>                                                |\n"\
+	"|    where default argument is -Wall                            |\n"\
+	"|                                                               |\n"\
+	"|  FEAT_DBG=<N>                                                 |\n"\
+	"|    where <N> is 0 or 1 for FEATURE DEBUG level                |\n"\
+	"|                                                               |\n"\
+	"|  OPTIM_LVL=<N>                                                |\n"\
+	"|    where <N> is 0,1,2, or 3 for OPTIMIZATION level            |\n"\
+	"|                                                               |\n"\
+	"|  MSR_CORE_PERF_UCC=<REG>                                      |\n"\
+	"|    where <REG> is MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1  |\n"\
+	"|                                                               |\n"\
+	"|  MSR_CORE_PERF_URC=<REG>                                      |\n"\
+	"|    where <REG> is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |\n"\
+	"o---------------------------------------------------------------o"
