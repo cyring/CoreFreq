@@ -7283,30 +7283,56 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	rc = 0;
 	break;
     case COREFREQ_IOCTL_AUTOCLOCK:
-	switch (arg) {
-	  case COREFREQ_TOGGLE_OFF:
-	  {
-		unsigned int cpu;
+      switch (arg) {
+	case COREFREQ_TOGGLE_OFF:
+	{
+		unsigned int cpu = Proc->CPU.Count;
+
 		Controller_Stop(1);
-	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-		KPublic->Core[cpu]->Clock.Q  = Proc->Features.Factory.Clock.Q;
-		KPublic->Core[cpu]->Clock.R  = Proc->Features.Factory.Clock.R;
-		KPublic->Core[cpu]->Clock.Hz = Proc->Features.Factory.Clock.Hz;
+	  do {
+		CLOCK Clock = {
+			.Q  = Proc->Features.Factory.Clock.Q,
+			.R  = Proc->Features.Factory.Clock.R,
+			.Hz = Proc->Features.Factory.Clock.Hz
+		};
+		// from last AP to BSP
+		cpu--;
+
+	    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	    {
+		COMPUTE_ARG Compute = {
+			.TSC = {NULL, NULL},
+			.Clock = {.Q = Proc->Boost[BOOST(MAX)], .R = 0, .Hz = 0}
+		};
+	      if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
+	      {
+		if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
+		{
+			Clock = Compute_Clock(cpu, &Compute);
+
+			kfree(Compute.TSC[1]);
+		}
+			kfree(Compute.TSC[0]);
+	      }
 	    }
-	  }
+		KPublic->Core[cpu]->Clock.Q  = Clock.Q;
+		KPublic->Core[cpu]->Clock.R  = Clock.R;
+		KPublic->Core[cpu]->Clock.Hz = Clock.Hz;
+	  } while (cpu != 0) ;
+	}
 		BITCLR(LOCKLESS, AutoClock, 1);
 		Proc->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
 		rc = 0;
 		break;
-	  case COREFREQ_TOGGLE_ON:
+	case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		BITSET(LOCKLESS, AutoClock, 1);
 		Proc->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
 		rc = 0;
 		break;
-	}
+      }
 	break;
     case COREFREQ_IOCTL_EXPERIMENTAL:
 	switch (arg) {
