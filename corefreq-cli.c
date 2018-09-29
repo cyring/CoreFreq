@@ -3036,6 +3036,8 @@ void Top(SHM_STRUCT *Shm, char option)
 	switch (id) {
 	case SCANKEY_p:
 		{
+		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= drawSize.height)
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 2;
 		winWidth = 76;
 		SysInfoFunc = SysInfoProc;
@@ -3044,6 +3046,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_e:
 		{
+		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= drawSize.height)
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 4;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
@@ -3068,6 +3072,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_o:
 		{
+		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= drawSize.height)
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		SysInfoFunc = SysInfoPerfMon;
 		title = " Performance Monitoring ";
 		}
@@ -3089,6 +3095,8 @@ void Top(SHM_STRUCT *Shm, char option)
 		break;
 	case SCANKEY_u:
 		{
+		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= drawSize.height)
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		winWidth = 74;
 		SysInfoFunc = SysInfoCPUID;
 		title = " function           "				\
@@ -3518,7 +3526,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	const CUINT	hthMin = 16,
+	const CUINT	hthMin = 8,
 			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
@@ -3598,7 +3606,7 @@ void Top(SHM_STRUCT *Shm, char option)
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	const CUINT	hthMin = 16,
+	const CUINT	hthMin = 8,
 			hthMax = 1+lowestOperatingShift + highestOperatingShift,
 			hthWin = CUMIN(hthMin, hthMax);
 
