@@ -2297,7 +2297,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc)
 }
 
 /* >>> GLOBALS >>> */
-char *buffer = NULL;
+static char *buffer = NULL;
 
 Coordinate *cTask = NULL;
 
@@ -6939,8 +6939,8 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 void Draw_Header(Layer *layer, CUINT row)
 {	// Update Header view area
-	unsigned int digit[9];
 	struct FLIP_FLOP *CFlop = NULL;
+	unsigned int digit[9];
 
 	CFlop = &Shm->Cpu[Shm->Proc.Top] \
 		.FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
@@ -7901,14 +7901,14 @@ int main(int argc, char *argv[])
 		break;
 	case 's':
 	{
-		Window win = {.matrix.size.wth = 4};
+		Window tty = {.matrix.size.wth = 4};
 
 		SysInfoProc(NULL, 80, NULL);
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
 			80, 0, "ISA Extensions:");
-		SysInfoISA(&win, NULL);
+		SysInfoISA(&tty, NULL);
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
@@ -7935,18 +7935,18 @@ int main(int argc, char *argv[])
 		JsonSysInfo(Shm, NULL);
 		break;
 	case 'm': {
-		Window win = {.matrix.size.wth = 6};
-		Topology(&win, NULL);
+		Window tty = {.matrix.size.wth = 6};
+		Topology(&tty, NULL);
 		}
 		break;
 	case 'M': {
-		Window win = {.matrix.size.wth = 14};
-		MemoryController(&win, NULL);
+		Window tty = {.matrix.size.wth = 14};
+		MemoryController(&tty, NULL);
 		}
 		break;
 	case 'R': {
-		Window win = {.matrix.size.wth = 17};
-		SystemRegisters(&win, NULL);
+		Window tty = {.matrix.size.wth = 17};
+		SystemRegisters(&tty, NULL);
 		}
 		break;
 	case 'i':
