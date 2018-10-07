@@ -179,38 +179,15 @@ enum VIEW {
 
 typedef void (*DISPOSAL_FUNC)(Layer*);
 
-typedef CUINT (*VIEW_FUNC)(Layer*, CUINT);
+typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 
-#define CELL_ARGS unsigned long long key, ATTRIBUTE *attrib, ASCII *item
+#define CELL_ARGS	Window *win,			\
+			unsigned long long key, 	\
+			ATTRIBUTE *attrib,		\
+			ASCII *item
 
 typedef void (*CELL_FUNC)(CELL_ARGS);
-
-typedef union {
-	unsigned long long	qword;
-	struct {
-	unsigned int	hi, lo;
-	}			dword;
-	unsigned short		word[4];
-} DATA;
 
 #define RENDER_OK	0x000
 #define RENDER_KO	0x010
 #define RENDER_OFF	0x100
-
-typedef struct _Card {
-	struct _Card	*next;
-
-	Coordinate	origin;
-	struct {
-		void	(*Layout)(Layer *layer, struct _Card *card);
-		void	(*Draw)(Layer *layer, struct _Card *card);
-	} hook;
-	DATA		data;
-} Card;
-
-typedef struct {
-	Card	*head,
-		*tail;
-} CardList;
-
-typedef void (*CARDFUNC)(Layer*, Card*);

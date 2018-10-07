@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "corefreq-ui.h"
 
@@ -1143,6 +1144,119 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	return(0);
 }
 
+void ForEachCellPrint_Drop(Window *win, void *plist)
+{
+	WinList *list = (WinList *) plist;
+	CUINT col, row;
+
+	if (win->lazyComp.rowLen == 0)
+	  for (col = 0; col < win->matrix.size.wth; col++)
+		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
+
+	for (row = 0; row < win->matrix.size.hth; row++)
+	    if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			PrintContent(win, list, win->matrix.select.col, row);
+}
+
+int MotionEnter_Cell(SCANKEY *scan, Window *win)
+{
+	if ((scan->key = TCellAt(win,
+				( win->matrix.select.col
+				+ win->matrix.scroll.horz),
+				( win->matrix.select.row
+				+ win->matrix.scroll.vert)
+				).quick.key) != SCANKEY_NULL) {
+					SCANKEY closeKey = {.key = SCANKEY_ESC};
+					Motion_Trigger(&closeKey, win,&winList);
+					return(1);
+				} else
+					return(0);
+}
+
+void MotionEnd_Cell(Window *win)
+{
+	win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	win->matrix.select.row  = win->matrix.size.hth - 1;
+}
+
+void MotionLeft_Menu(Window *win)
+{
+	CUINT row;
+	for (row = 1; row < win->matrix.size.hth; row++)
+		EraseTCell_Menu(win);
+
+	if (win->matrix.select.col > 0)
+		win->matrix.select.col--;
+	else
+		win->matrix.select.col = win->matrix.size.wth - 1;
+
+	win->matrix.select.row = 0;
+}
+
+void MotionRight_Menu(Window *win)
+{
+	CUINT row;
+	for (row = 1; row < win->matrix.size.hth; row++)
+		EraseTCell_Menu(win);
+
+	if (win->matrix.select.col < win->matrix.size.wth - 1)
+		win->matrix.select.col++;
+	else
+		win->matrix.select.col = 0;
+
+	win->matrix.select.row = 0;
+}
+
+void MotionUp_Menu(Window *win)
+{
+	CUINT row = win->matrix.select.row;
+
+	if (win->matrix.select.row > 0)
+		row--;
+
+	if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row = row;
+}
+
+void MotionDown_Menu(Window *win)
+{
+	CUINT row = win->matrix.select.row;
+
+	if (row < win->matrix.size.hth - 1)
+		row++;
+
+	if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row = row;
+}
+
+void MotionHome_Menu(Window *win)
+{
+	if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + 1)).quick.key != SCANKEY_VOID)
+			win->matrix.select.row = 1;
+	else
+			win->matrix.select.row = 0;
+}
+
+void MotionEnd_Menu(Window *win)
+{
+	CUINT row = 0;
+	for (row = win->matrix.size.hth - 1; row > 1; row--)
+	    if (TCellAt(win,
+		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+			break;
+
+	win->matrix.select.row = row;
+}
+
 void PrintWindowStack(WinList *winList)
 {
 	Window *walker;
@@ -1156,6 +1270,40 @@ void PrintWindowStack(WinList *winList)
 				ForEachCellPrint(walker, winList);
 		} while (!IsHead(winList, walker)) ;
 	}
+}
+
+void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }
+
+Card *CreateCard(void)
+{
+	Card *card = calloc(1, sizeof(Card));
+	if (card != NULL) {
+		card->next = NULL;
+	}
+	return(card);
+}
+
+void AppendCard(Card *card, CardList *list)
+{
+	if (card != NULL) {
+		if (list->head == NULL) {
+			list->head = list->tail = card;
+		} else {
+			list->tail->next = card;
+			list->tail = card;
+		}
+	}
+}
+
+void DestroyAllCards(CardList *list)
+{
+	Card *card = list->head;
+	while (card != NULL) {
+		Card *next = card->next;
+		free(card);
+		card = next;
+	}
+	list->head = list->tail = NULL;
 }
 
 void FreeAll(char *buffer)

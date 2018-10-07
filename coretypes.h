@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.35.1"
+#define COREFREQ_VERSION	"1.36.0"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
@@ -131,6 +131,7 @@ enum SYS_REG {
 };
 
 enum THERM_PWR_EVENTS {
+	EVENT_THERM_NONE	= 0b0000000,
 	EVENT_THERM_SENSOR	= 0b0000001,
 	EVENT_THERM_PROCHOT	= 0b0000010,
 	EVENT_THERM_CRIT	= 0b0000100,

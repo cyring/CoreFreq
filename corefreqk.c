@@ -582,6 +582,53 @@ void Compute_Interval(void)
 
 #define BUSYWAIT 1000
 
+static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
+{
+	unsigned int loop;
+	// Writeback and Invalidate Caches
+	WBINVD();
+	// Warm-up & Overhead
+	for (loop = 0; loop < OCCURRENCES; loop++) {
+		RDTSCP64(pCompute->TSC[0][loop].V[0]);
+
+		udelay(0);
+
+		RDTSCP64(pCompute->TSC[0][loop].V[1]);
+	}
+
+	// Estimation
+	for (loop=0; loop < OCCURRENCES; loop++) {
+		RDTSCP64(pCompute->TSC[1][loop].V[0]);
+
+		udelay(BUSYWAIT);
+
+		RDTSCP64(pCompute->TSC[1][loop].V[1]);
+	}
+}
+
+static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
+{
+	unsigned int loop;
+	// Writeback and Invalidate Caches
+	WBINVD();
+	// Warm-up & Overhead
+	for (loop = 0; loop < OCCURRENCES; loop++) {
+		RDTSC64(pCompute->TSC[0][loop].V[0]);
+
+		udelay(0);
+
+		RDTSC64(pCompute->TSC[0][loop].V[1]);
+	}
+	// Estimation
+	for (loop = 0; loop < OCCURRENCES; loop++) {
+		RDTSC64(pCompute->TSC[1][loop].V[0]);
+
+		udelay(BUSYWAIT);
+
+		RDTSC64(pCompute->TSC[1][loop].V[1]);
+	}
+}
+
 static void Compute_TSC(void *arg)
 {
 	COMPUTE_ARG *pCompute = (COMPUTE_ARG *) arg;
@@ -592,57 +639,12 @@ static void Compute_TSC(void *arg)
 	TSC[0] stores the overhead
 	TSC[1] stores the estimation
 */
-	void ComputeWithSerializedTSC(void)
-	{
-		// Writeback and Invalidate Caches
-		WBINVD();
-		// Warm-up & Overhead
-		for (loop = 0; loop < OCCURRENCES; loop++) {
-			RDTSCP64(pCompute->TSC[0][loop].V[0]);
-
-			udelay(0);
-
-			RDTSCP64(pCompute->TSC[0][loop].V[1]);
-		}
-
-		// Estimation
-		for (loop=0; loop < OCCURRENCES; loop++) {
-			RDTSCP64(pCompute->TSC[1][loop].V[0]);
-
-			udelay(BUSYWAIT);
-
-			RDTSCP64(pCompute->TSC[1][loop].V[1]);
-		}
-	}
-
-	void ComputeWithUnSerializedTSC(void)
-	{
-		// Writeback and Invalidate Caches
-		WBINVD();
-		// Warm-up & Overhead
-		for (loop=0; loop < OCCURRENCES; loop++) {
-			RDTSC64(pCompute->TSC[0][loop].V[0]);
-
-			udelay(0);
-
-			RDTSC64(pCompute->TSC[0][loop].V[1]);
-		}
-		// Estimation
-		for (loop = 0; loop < OCCURRENCES; loop++) {
-			RDTSC64(pCompute->TSC[1][loop].V[0]);
-
-			udelay(BUSYWAIT);
-
-			RDTSC64(pCompute->TSC[1][loop].V[1]);
-		}
-	}
-
 	// Is the TSC invariant or a serialized read instruction is available ?
 	if ((Proc->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (Proc->Features.ExtInfo.EDX.RDTSCP == 1))
-		ComputeWithSerializedTSC();
+		ComputeWithSerializedTSC(pCompute);
 	else
-		ComputeWithUnSerializedTSC();
+		ComputeWithUnSerializedTSC(pCompute);
 
 	// Select the best clock.
 	memset(D, 0, 2 * OCCURRENCES);
@@ -1218,18 +1220,18 @@ static void Map_AMD_Topology(void *arg)
  Sources: Intel Software Developer's Manual vol 3A §8.9 /
 	  Intel whitepaper: Detecting Hyper-Threading Technology /
 */
-static void Map_Intel_Topology(void *arg)
+unsigned short FindMaskWidth(unsigned short maxCount)
 {
-    unsigned short FindMaskWidth(unsigned short maxCount)
-    {
 	unsigned short maskWidth = 0, count = (maxCount - 1);
 
 	if (BITBSR(count, maskWidth) == 0)
 		maskWidth++;
 
 	return(maskWidth);
-    }
+}
 
+static void Map_Intel_Topology(void *arg)
+{
     if (arg != NULL) {
 	CORE *Core = (CORE *) arg;
 	unsigned short	SMT_Mask_Width, CORE_Mask_Width,
@@ -3012,21 +3014,21 @@ void Query_AMD_Family_15h(void)
 	HyperThreading_Technology();
 }
 
+unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
+{/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
+    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200 */
+	unsigned int COF;
+	if (DID != 0) {
+		COF = (FID << 1) / DID;
+		COF += ((FID >> 1) % 2);
+	} else {
+		COF = FID >> 3;
+	}
+	return(COF);
+}
+
 void Compute_AMD_Zen_Boost(void)
 {
-	unsigned int CoreCOF(unsigned int FID, unsigned int DID)
-	{/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
-	    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200 */
-		unsigned int COF;
-		if (DID != 0) {
-			COF = (FID << 1) / DID;
-			COF += ((FID >> 1) % 2);
-		} else {
-			COF = FID >> 3;
-		}
-		return(COF);
-	}
-
 	const size_t nmemb = sizeof(Zen_Table) / sizeof(struct ZEN_ST);
 	unsigned int COF = 0, index, pstate, sort[8] = {
 		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
@@ -3046,8 +3048,8 @@ void Compute_AMD_Zen_Boost(void)
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 		// Handle only valid P-States
 		if (PstateDef.Family_17h.PstateEn) {
-			COF = CoreCOF(	PstateDef.Family_17h.CpuFid,
-					PstateDef.Family_17h.CpuDfsId);
+			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+						PstateDef.Family_17h.CpuDfsId);
 			// Sort ratios by ascending order.
 			Proc->Boost[sort[index]] = COF;
 			index++;

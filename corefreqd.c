@@ -1996,23 +1996,23 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
     }
 }
 
-void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
+unsigned int SKL_DimmWidthToRows(unsigned int width)
 {
-	unsigned int DimmWidthToRows(unsigned int width)
-	{
-		switch (width) {
-		case 0b00:
-			return(1 << 14);
-		case 0b01:
-			return(1 << 15);
-		case 0b10:
-			return(1 << 16);
-		case 0b11:
-			return(1 << 0);
-		}
+	switch (width) {
+	case 0b00:
+		return(1 << 14);
+	case 0b01:
+		return(1 << 15);
+	case 0b10:
+		return(1 << 16);
+	case 0b11:
 		return(1 << 0);
 	}
+	return(1 << 0);
+}
 
+void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
+{
     unsigned short mc, cha, slot;
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
@@ -2119,19 +2119,19 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[0].DIMM[
 		Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
-	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DLW);
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DLW);
 
 	Shm->Uncore.MC[mc].Channel[0].DIMM[
 		!Proc->Uncore.MC[mc].SKL.MADC0.Dimm_L_Map
-	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DSW);
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD0.DSW);
 
 	Shm->Uncore.MC[mc].Channel[1].DIMM[
 		Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
-	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DLW);
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DLW);
 
 	Shm->Uncore.MC[mc].Channel[1].DIMM[
 		!Proc->Uncore.MC[mc].SKL.MADC1.Dimm_L_Map
-	].Rows = DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DSW);
+	].Rows = SKL_DimmWidthToRows(Proc->Uncore.MC[mc].SKL.MADD1.DSW);
     }
 }
 
@@ -2512,6 +2512,28 @@ void CPUID_Dump(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	}
 }
 
+unsigned int Compute_Way(unsigned int value)
+{
+	switch (value) {
+	case 0x6:
+		return(8);
+	case 0x8:
+		return(16);
+	case 0xa:
+		return(32);
+	case 0xb:
+		return(48);
+	case 0xc:
+		return(64);
+	case 0xd:
+		return(96);
+	case 0xe:
+		return(128);
+	default:
+		return(value);
+	}
+}
+
 void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {	// Copy each Core topology.
 	Shm->Cpu[cpu].Topology.MP.BSP    = (Core[cpu]->T.Base.BSP) ? 1 : 0;
@@ -2552,30 +2574,8 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
 		else {
-		    if(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-
-			unsigned int Compute_Way(unsigned int value)
-			{
-				switch (value) {
-				case 0x6:
-					return(8);
-				case 0x8:
-					return(16);
-				case 0xa:
-					return(32);
-				case 0xb:
-					return(48);
-				case 0xc:
-					return(64);
-				case 0xd:
-					return(96);
-				case 0xe:
-					return(128);
-				default:
-					return(value);
-				}
-			}
-
+		    if(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		    {
 			Shm->Cpu[cpu].Topology.Cache[level].Way =
 			    (loop != 2) ?
 				  Core[cpu]->T.Cache[loop].Way
@@ -2723,6 +2723,84 @@ void SysGate_Kernel(REF *Ref)
 	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
 }
 
+static const int reverseSign[2] = {+1, -1};
+
+static int SortByRuntime(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = task1->runtime < task2->runtime ? +1 : -1;
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+static int SortByUsertime(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = task1->usertime < task2->usertime ? +1 : -1;
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+static int SortBySystime(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = task1->systime < task2->systime ? +1 : -1;
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+static int SortByState(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = task1->state < task2->state ? -1 : +1;
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+static int SortByPID(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = task1->pid < task2->pid ? -1 : +1;
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+static int SortByCommand(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+	int sort = strcmp(task1->comm, task2->comm);
+	sort *= reverseSign[Shm->SysGate.reverseOrder];
+	return(sort);
+}
+
+typedef int (*SORTBYFUNC)(const void *, const void *, void *);
+
+static SORTBYFUNC SortByFunc[SORTBYCOUNT] = {
+	SortByState,
+	SortByRuntime,
+	SortByUsertime,
+	SortBySystime,
+	SortByPID,
+	SortByCommand
+};
+
+static int SortByTracker(const void *p1, const void *p2, void *arg)
+{
+	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
+	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
+
+	int sort = (task1->pid == Shm->SysGate.trackTask) ?
+		-1 : (task2->pid == Shm->SysGate.trackTask) ?
+		+1 :  SortByFunc[Shm->SysGate.sortByField](p1, p2, Shm);
+	return(sort);
+}
+
 void SysGate_Update(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
@@ -2733,81 +2811,10 @@ void SysGate_Update(REF *Ref)
 	memcpy( Shm->SysGate.taskList, SysGate->taskList,
 		Shm->SysGate.taskCount * sizeof(TASK_MCB));
 
-	int reverseSign[2] = {+1, -1};
-
-	int SortByRuntime(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->runtime < task2->runtime ? +1 : -1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	int SortByUsertime(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->usertime < task2->usertime ? +1 : -1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	int SortBySystime(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->systime < task2->systime ? +1 : -1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	int SortByState(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->state < task2->state ? -1 : +1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	int SortByPID(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = task1->pid < task2->pid ? -1 : +1;
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	int SortByCommand(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-		int sort = strcmp(task1->comm, task2->comm);
-		sort *= reverseSign[Shm->SysGate.reverseOrder];
-		return(sort);
-	}
-
-	typedef int (*SORTBYFUNC)(const void *, const void *);
-
-	SORTBYFUNC SortByFunc[SORTBYCOUNT] = {
-		SortByState,
-		SortByRuntime,
-		SortByUsertime,
-		SortBySystime,
-		SortByPID,
-		SortByCommand
-	};
-
-	int SortByTracker(const void *p1, const void *p2)
-	{
-		TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
-
-		int sort = (task1->pid == Shm->SysGate.trackTask) ?
-			-1 : (task2->pid == Shm->SysGate.trackTask) ?
-			+1 :  SortByFunc[Shm->SysGate.sortByField](p1, p2);
-		return(sort);
-	}
-
-	qsort(Shm->SysGate.taskList, Shm->SysGate.taskCount, sizeof(TASK_MCB),
+	qsort_r(Shm->SysGate.taskList, Shm->SysGate.taskCount, sizeof(TASK_MCB),
 		Shm->SysGate.trackTask ?
 			  SortByTracker
-			: SortByFunc[Shm->SysGate.sortByField]);
+			: SortByFunc[Shm->SysGate.sortByField], Shm);
 
 	Shm->SysGate.memInfo.totalram  = SysGate->memInfo.totalram;
 	Shm->SysGate.memInfo.sharedram = SysGate->memInfo.sharedram;
@@ -2895,10 +2902,8 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
     }
 }
 
-void Master_Ring_Handler(REF *Ref, unsigned int rid)
+void UpdateFeatures(REF *Ref)
 {
-    void UpdateFeatures(void)
-    {
 	unsigned int cpu;
 
 	Package_Update(Ref->Shm, Ref->Proc);
@@ -2909,8 +2914,10 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	    }
 	Uncore(Ref->Shm, Ref->Proc, Ref->Core[Ref->Proc->Service.Core]);
 	Technology_Update(Ref->Shm, Ref->Proc);
-    }
+}
 
+void Master_Ring_Handler(REF *Ref, unsigned int rid)
+{
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
 	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
@@ -2920,12 +2927,12 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	case -EPERM:
 		break;
 	case 0: // Update SHM and notify a platform changed.
-		UpdateFeatures();
+		UpdateFeatures(Ref);
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		break;
 	case 2: // Update SHM and notify to re-compute.
-		UpdateFeatures();
+		UpdateFeatures(Ref);
 		if (!BITVAL(Ref->Shm->Proc.Sync, 62))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 62);
 		break;

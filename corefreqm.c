@@ -134,7 +134,7 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 		"pop	%1"		"\n\t"
 		"pop	%0"		"\n\t"
 		"loop	1b"
-		: "=r"((unsigned long long) xchg)
+		: "=r"(xchg)
 		: "r" (*(volatile long long *) &atom), "r" (xchg),
 		  "c" (arg)
 		:

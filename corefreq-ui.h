@@ -496,6 +496,84 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;
 
 void PrintWindowStack(WinList *winList) ;
 
+#define EraseTCell_Menu(win)						\
+({									\
+	CoordShift shift = {						\
+		.horz = win->matrix.scroll.horz + win->matrix.select.col,\
+		.vert = win->matrix.scroll.vert + row			\
+	};								\
+	Coordinate cell = {						\
+		.col =	(win->matrix.origin.col				\
+			+ (win->matrix.select.col			\
+			* TCellAt(win, shift.horz, shift.vert).length)),\
+		.row =	(win->matrix.origin.row + row)			\
+	};								\
+	memset(&LayerAt(win->layer, attr, cell.col, cell.row), 0,	\
+		TCellAt(win, shift.horz, shift.vert).length);		\
+	memset(&LayerAt(win->layer, code, cell.col, cell.row), 0,	\
+		TCellAt(win, shift.horz, shift.vert).length);		\
+})
+
+void ForEachCellPrint_Drop(Window *win, void *plist) ;
+
+int MotionEnter_Cell(SCANKEY *scan, Window *win) ;
+
+void MotionEnd_Cell(Window *win) ;
+
+void MotionLeft_Menu(Window *win) ;
+
+void MotionRight_Menu(Window *win) ;
+
+void MotionUp_Menu(Window *win) ;
+
+void MotionDown_Menu(Window *win) ;
+
+void MotionHome_Menu(Window *win) ;
+
+void MotionEnd_Menu(Window *win) ;
+
+typedef union {
+	unsigned long long	qword;
+	struct {
+	unsigned int	hi, lo;
+	}			dword;
+	unsigned short		word[4];
+} DATA;
+
+typedef struct _Card {
+	struct _Card	*next;
+
+	Coordinate	origin;
+	struct {
+		void	(*Layout)(Layer *layer, struct _Card *card);
+		void	(*Draw)(Layer *layer, struct _Card *card);
+	} hook;
+	DATA		data;
+} Card;
+
+typedef struct {
+	Card	*head,
+		*tail;
+} CardList;
+
+typedef void (*CARDFUNC)(Layer*, Card*);
+
+Card *CreateCard(void) ;
+
+void AppendCard(Card *card, CardList *list) ;
+
+void DestroyAllCards(CardList *list) ;
+
+void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
+
+#define StoreCard(card, with, what)					\
+(									\
+    __builtin_choose_expr(__builtin_types_compatible_p( 		\
+	typeof(card->hook with), typeof(CARDFUNC)), HookCardFunc,	\
+    (void)0)								\
+	(&(card->hook with), what)					\
+)
+
 void FreeAll(char *buffer) ;
 
 void AllocAll(char **buffer) ;
