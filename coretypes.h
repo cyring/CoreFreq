@@ -4,14 +4,14 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.36.0"
+#define COREFREQ_VERSION	"1.36.1"
 
 enum {	GenuineIntel,		\
 	Core_Yonah,		\
 	Core_Conroe,		\
 	Core_Kentsfield,	\
 	Core_Conroe_616,	\
-	Core_Yorkfield,		\
+	Core_Penryn,		\
 	Core_Dunnington,	\
 	Atom_Bonnell,		\
 	Atom_Silvermont,	\

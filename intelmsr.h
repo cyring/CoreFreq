@@ -291,7 +291,7 @@ typedef union
 		LowPowerMode	: 33-32,
 		ConfigTDPlevels	: 35-33, // Ivy Bridge, Haswell(-E), Phy
 		ReservedBits4	: 40-35,
-		MinimumRatio	: 48-40,
+		MinimumRatio	: 48-40, // Phi,SKL,BDW,HSW,IVB,SNB,NHM,GDM
 		MinOperatRatio	: 56-48, // Ivy Bridge, Haswell(-E)
 		ReservedBits5	: 64-56;
 	};
