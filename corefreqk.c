@@ -3068,7 +3068,7 @@ unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 
 void Compute_AMD_Zen_Boost(void)
 {
-	const size_t nmemb = sizeof(Zen_Table) / sizeof(struct ZEN_ST);
+	PROCESSOR_SPECIFIC *pSpecific = NULL;
 	unsigned int COF = 0, index, pstate, sort[8] = {
 		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
 		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
@@ -3098,24 +3098,22 @@ void Compute_AMD_Zen_Boost(void)
 	/* Set the one Core ratio with the default max P-State ratio. */
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 	Proc->Features.SpecTurboRatio++;
+
 	/* Get the Core Performance disablement state. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-	/* Seek for a processor brand. */
-	for (index = 0; index < nmemb; index++) {
-	    if (strstr(Proc->Features.Info.Brand, Zen_Table[index].brandSubStr))
-	    {	/* Save index for a later temperature offset use. */
-		Proc->Features.Std.EBX.Brand_ID = index;
+
+	if ((pSpecific = LookupProcessor()) != NULL) {
+		/* Save thermal parameters to set each Core thermal settings. */
+		Arch[Proc->ArchID].Specific[0].Param = pSpecific->Param;
 		/* If CPB is ON ? then add Boost + XFR to the one Core ratio. */
 		if (!HwCfgRegister.Family_17h.CpbDis) {
-			Proc->Boost[BOOST(1C)] += Zen_Table[index].Boost;
-			Proc->Boost[BOOST(1C)] += Zen_Table[index].XFR;
+			Proc->Boost[BOOST(1C)] += pSpecific->Boost[0];
+			Proc->Boost[BOOST(1C)] += pSpecific->Boost[1]; /* XFR */
 		}
-		break;
-	    }
-	}
-	/* Reset the brand index to default if no processor brand found ? */
-	if (index == nmemb)
-		Proc->Features.Std.EBX.Brand_ID = 0;
+		OverrideCodeNameString(pSpecific);
+		OverrideUnlockCapability(pSpecific);
+	} else	/* Reset thermal union */
+		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
 }
 
 void Query_AMD_Family_17h(void)
@@ -3123,8 +3121,6 @@ void Query_AMD_Family_17h(void)
 	Compute_AMD_Zen_Boost();
 	/* Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(Proc->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
-	/* Processors of family 17h have unlocked ratios. */
-	Proc->Features.Ratio_Unlock = 1;
 
 	HyperThreading_Technology();
 }
@@ -4374,7 +4370,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Query_AMD_Zen(Core);
 
-      Core->PowerThermal.Param=Zen_Table[Proc->Features.Std.EBX.Brand_ID].Param;
+	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)

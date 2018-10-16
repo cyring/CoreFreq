@@ -1268,7 +1268,10 @@ static MICRO_ARCH Arch_Core_Conroe[] = {{"Core2/Conroe/Merom"}, {NULL}};
 static MICRO_ARCH Arch_Core_Kentsfield[] = {{"Core2/Kentsfield"}, {NULL}};
 static MICRO_ARCH Arch_Core_Conroe_616[] = {{"Core2/Conroe/Yonah"}, {NULL}};
 static MICRO_ARCH Arch_Core_Penryn[] = {
-	{"Core2/Penryn"}, {"Core2/Yorkfield"}, {"Core2/Wolfdale"}, {NULL}
+	{"Core2/Penryn"},
+	{"Core2/Yorkfield"},
+	{"Core2/Wolfdale"},
+	{NULL}
 };
 static MICRO_ARCH Arch_Core_Dunnington[] = {{"Xeon/Dunnington"}, {NULL}};
 static MICRO_ARCH Arch_Atom_Bonnell[] = {{"Atom/Bonnell"}, {NULL}};
@@ -1289,7 +1292,9 @@ static MICRO_ARCH Arch_Nehalem_MB[] = {{"Nehalem/Mobile"}, {NULL}};
 static MICRO_ARCH Arch_Nehalem_EX[] = {{"Nehalem/eXtreme.EP"}, {NULL}};
 static MICRO_ARCH Arch_Westmere[] = {{"Westmere"}, {NULL}};
 static MICRO_ARCH Arch_Westmere_EP[] = {
-	{"Westmere/EP"}, {"Westmere/Gulftown"}, {NULL}
+	{"Westmere/EP"},
+	{"Westmere/Gulftown"},
+	{NULL}
 };
 static MICRO_ARCH Arch_Westmere_EX[] = {{"Westmere/eXtreme"}, {NULL}};
 static MICRO_ARCH Arch_SandyBridge[] = {{"SandyBridge"}, {NULL}};
@@ -1308,19 +1313,35 @@ static MICRO_ARCH Arch_Skylake_UY[] = {{"Skylake/UY"}, {NULL}};
 static MICRO_ARCH Arch_Skylake_S[] = {{"Skylake/S"}, {NULL}};
 static MICRO_ARCH Arch_Skylake_X[] = {{"Skylake/X"}, {NULL}};
 static MICRO_ARCH Arch_Xeon_Phi[] = {{"Knights Landing"}, {NULL}};
-static MICRO_ARCH Arch_Kabylake[] = {{"Kaby Lake"}, {"Coffee Lake"}, {NULL}};
+static MICRO_ARCH Arch_Kabylake[] = {
+	{"Kaby Lake"},
+	{"Kaby Lake/S"},
+	{"Coffee Lake/S"},
+	{NULL}
+};
 static MICRO_ARCH Arch_Kabylake_UY[] = {{"Kaby Lake/UY"}, {NULL}};
 static MICRO_ARCH Arch_Cannonlake[] = {{"Cannon Lake"}, {NULL}};
 static MICRO_ARCH Arch_Geminilake[] = {{"Atom/Gemini Lake"}, {NULL}};
 static MICRO_ARCH Arch_Icelake_UY[] = {{"Ice Lake/UY"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Family 0Fh"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_10h[] = {{"Family 10h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Family 11h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Family 12h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Family 14h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_15h[] = {{"Family 15h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_16h[] = {{"Family 16h"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_17h[] = {{"Family 17h"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Hammer"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_10h[] = {{"K10"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Turion"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Fusion"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Bobcat"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_15h[] = {{"Bulldozer"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_16h[] = {{"Jaguar"}, {NULL}};
+
+enum {SUMMIT_RIDGE, RAVEN_RIDGE, PINNACLE_RIDGE, WHITEHAVEN, COLFAX, NAPLES};
+
+static MICRO_ARCH Arch_AMD_Family_17h[] = {
+	[SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
+	[RAVEN_RIDGE]	= {"Zen/Raven Ridge"},
+	[PINNACLE_RIDGE]= {"Zen+ Pinnacle Ridge"},
+	[WHITEHAVEN]	= {"Zen/Whitehaven"},
+	[COLFAX]	= {"Zen+ Colfax"},
+	[NAPLES]	= {"EPYC/Naples"},
+	{NULL}
+};
 
 static PROCESSOR_SPECIFIC Void_Specific[] = {
 	{
@@ -1556,59 +1577,327 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 
 static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i5-7500 CPU",
+	.BrandSubStr = "Intel(R) Core(TM) i3-7",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
-	.CodeNameIdx = 0,
+	.CodeNameIdx = 1,
 	.CoreUnlocked = 0,
 	.UncoreUnlocked = 1,
-	.Latch = LATCH_CORE_UNLOCK|LATCH_UNCORE_UNLOCK
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-7",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 1,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-7",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 1,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 2,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 2,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 2,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
 	},
 	{NULL}
 };
 
-static struct ZEN_ST {
-	char *brandSubStr;
-	unsigned int Boost, XFR;	/* Round +0.5 XFR to +1 */
-	THERMAL_PARAM Param;		/* Source: Linux/k10temp.c */
-} Zen_Table[] = {
-	{VENDOR_AMD,	/* Default */	+0,  0, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 3 1200",		+3, +1, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 3 1300X",		+2, +2, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 3 2200G",		+2,  0, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 1400",		+2, +1, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 2400G",		+3,  0, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 1500X",		+2, +2, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 2500U",		+16, 0, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 1600X",		+4, +1, .Param.Offset = {20, 0}},
-	{"AMD Ryzen 5 1600",		+4, +1, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 5 2600X",		+5, +2, .Param.Offset = {10, 0}},
-	{"AMD Ryzen 5 2600",		+3, +2, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 7 1700X",		+4, +1, .Param.Offset = {20, 0}},
-	{"AMD Ryzen 7 1700",		+7, +1, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 7 1800X",		+4, +1, .Param.Offset = {20, 0}},
-	{"AMD Ryzen 7 2700X",		+5, +2, .Param.Offset = {10,49}},
-	{"AMD Ryzen 7 2700U",		+16, 0, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen 7 2700",		+8, +2, .Param.Offset = { 0, 0}},
-	{"AMD Ryzen Threadripper 1950X",+6, +2, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 1920X",+5, +2, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 1900X",+2, +2, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 2990", +12, 0, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 2970", +12, 0, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 2950", +9,  0, .Param.Offset = {27, 0}},
-	{"AMD Ryzen Threadripper 2920", +8,  0, .Param.Offset = {27, 0}},
-	{"AMD EPYC 7351P",		+5,  0, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7401P",		+8, +2, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7551P",		+6, +4, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7251",		+8,  0, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7281",		+6,  0, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7301",		+5,  0, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7351",		+5,  0, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7401",		+8, +2, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7451",		+6, +3, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7501",		+6, +4, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7551",		+6, +4, .Param.Offset = { 0, 0}},
-	{"AMD EPYC 7601",		+5, +5, .Param.Offset = { 0, 0}}
+/*	AMD Family 17h
+	Remarks:Thermal Offset from Linux/k10temp.c
+		+0.5 XFR rounded to +1
+*/
+static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
+	{	/* Index 0 is a placeholder: must be present! */
+	.BrandSubStr = VENDOR_AMD,
+	.Boost = {+0,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = 0,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 3 1200",
+	.Boost = {+3, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 3 1300X",
+	.Boost = {+2, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 3 2200G",
+	.Boost = {+2,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = RAVEN_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 1400",
+	.Boost = {+2, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 2400G",
+	.Boost = {+3,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = RAVEN_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 1500X",
+	.Boost = {+2, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 2500U",
+	.Boost = {+16, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = RAVEN_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 1600X",
+	.Boost = {+4, +1},
+	.Param.Offset = {20, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 1600",
+	.Boost = {+4, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 2600X",
+	.Boost = {+5, +2},
+	.Param.Offset = {10, 0},
+	.CodeNameIdx = PINNACLE_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 2600",
+	.Boost = {+3, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = PINNACLE_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 1700X",
+	.Boost = {+4, +1},
+	.Param.Offset = {20, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 1700",
+	.Boost = {+7, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 1800X",
+	.Boost = {+4, +1},
+	.Param.Offset = {20, 0},
+	.CodeNameIdx = SUMMIT_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 2700X",
+	.Boost = {+5, +2},
+	.Param.Offset = {10,49},
+	.CodeNameIdx = PINNACLE_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 2700U",
+	.Boost = {+16, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = RAVEN_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 2700",
+	.Boost = {+8, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = PINNACLE_RIDGE,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 1950X",
+	.Boost = {+6, +2},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = WHITEHAVEN,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 1920X",
+	.Boost = {+5, +2},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = WHITEHAVEN,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 1900X",
+	.Boost = {+2, +2},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = WHITEHAVEN,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 2990",
+	.Boost = {+12, 0},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = COLFAX,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 2970",
+	.Boost = {+12, 0},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = COLFAX,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 2950",
+	.Boost = {+9,  0},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = COLFAX,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 2920",
+	.Boost = {+8,  0},
+	.Param.Offset = {27, 0},
+	.CodeNameIdx = COLFAX,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7351P",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7401P",
+	.Boost = {+8, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7551P",
+	.Boost = {+6, +4},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7251",
+	.Boost = {+8,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7281",
+	.Boost = {+6,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7301",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7351",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7401",
+	.Boost = {+8, +2},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7451",
+	.Boost = {+6, +3},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7501",
+	.Boost = {+6, +4},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7551",
+	.Boost = {+6, +4},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7601",
+	.Boost = {+5, +5},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = NAPLES,
+	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	},
+	{NULL}
 };
 
 static ARCH Arch[ARCHITECTURES] = {
@@ -2787,7 +3076,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Start = NULL,
 		.Stop = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = Family_17h_Specific,
 	.Architecture = Arch_AMD_Family_17h
 	}
 };
