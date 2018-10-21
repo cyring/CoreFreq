@@ -8003,6 +8003,7 @@ static int __init CoreFreqK_init(void)
 
 		memcpy(&Proc->Features, iArg.Features, sizeof(FEATURES));
 
+		/* Initialize default uArch's codename with the CPUID brand. */
 		Arch[0].Architecture->CodeName = Proc->Features.Info.Vendor.ID;
 
 		publicSize  = ROUND_TO_PAGES(sizeof(CORE));
@@ -8118,6 +8119,7 @@ static int __init CoreFreqK_init(void)
 
 			Proc->powerFormula = Arch[Proc->ArchID].powerFormula;
 
+			/* Set the uArch's name with the first found codename */
 			strncpy(Proc->Architecture,
 				Arch[Proc->ArchID].Architecture[0].CodeName,32);
 

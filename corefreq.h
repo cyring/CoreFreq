@@ -331,6 +331,11 @@ typedef struct
 					DDR_Rate: 6-4,
 					DDRSpeed: 8-6;
 	    } Unit;
+
+	    struct {
+		enum CHIPSET		ArchID;
+		char			CodeName[32];
+	    } Chipset;
 	} Uncore;
 
 	PROC_STRUCT		Proc;

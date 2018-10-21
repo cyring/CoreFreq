@@ -2392,105 +2392,272 @@ void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Technology.IOMMU = BITVAL(Proc->Uncore.Bus.IOMMU_CR, 0);
 }
 
+static char *Chipset[CHIPSETS] = {
+	[IC_CHIPSET]		= NULL,
+	[IC_LAKEPORT]		= "82945/Lakeport",
+	[IC_LAKEPORT_P] 	= "82946/Lakeport-P",
+	[IC_LAKEPORT_X] 	= "82955/Lakeport-X",
+	[IC_CALISTOGA]		= "82945/Calistoga",
+	[IC_BROADWATER] 	= "82965/Broadwater",
+	[IC_CRESTLINE]		= "82965/Crestline",
+	[IC_CANTIGA]		= "G45/Cantiga",
+	[IC_BEARLAKE_Q] 	= "Q35/Bearlake-Q",
+	[IC_BEARLAKE_P] 	= "G33/Bearlake-PG+",
+	[IC_BEARLAKE_QF]	= "Q33/Bearlake-QF",
+	[IC_BEARLAKE_X] 	= "X38/Bearlake-X",
+	[IC_INTEL_3200] 	= "Intel 3200",
+	[IC_EAGLELAKE_Q]	= "Q45/Eaglelake-Q",
+	[IC_EAGLELAKE_P]	= "G45/Eaglelake-P",
+	[IC_EAGLELAKE_G]	= "G41/Eaglelake-G",
+	[IC_TYLERSBURG] 	= "X58/Tylersburg",
+	[IC_IBEXPEAK]		= "P55/Ibex Peak",
+	[IC_IBEXPEAK_M] 	= "QM57/Ibex Peak-M",
+	[IC_COUGARPOINT]	= "P67/Cougar Point",
+	[IC_PATSBURG]		= "X79/Patsburg",
+	[IC_CAVECREEK]		= "Cave Creek",
+	[IC_WELLSBURG]		= "X99/Wellsburg",
+	[IC_PANTHERPOINT]	= "Panther Point",
+	[IC_PANTHERPOINT_M]	= "Panther Point-M",
+	[IC_LYNXPOINT]		= "Lynx Point",
+	[IC_LYNXPOINT_M]	= "Lynx Point-M",
+	[IC_WILDCATPOINT]	= "Wildcat Point",
+	[IC_WILDCATPOINT_M]	= "Wildcat Point-M",
+	[IC_SUNRISEPOINT]	= "Sunrise Point",
+	[IC_UNIONPOINT] 	= "Union Point",
+	[IC_CANNONPOINT]	= "Cannon Point",
+	[IC_K8] 		= "K8",
+	[IC_ZEN]		= "Zen"
+};
+
+#define SET_CHIPSET(ic) (Shm->Uncore.Chipset.ArchID = ic)
+
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 {
 	switch (Proc->Uncore.ChipID) {
 	case PCI_DEVICE_ID_INTEL_82945P_HB:
+		P945_CLK(Shm, Proc, Core);
+		P945_MCH(Shm, Proc);
+		SET_CHIPSET(IC_LAKEPORT);
+		break;
 	case PCI_DEVICE_ID_INTEL_82945GM_HB:
 	case PCI_DEVICE_ID_INTEL_82945GME_HB:
 		P945_CLK(Shm, Proc, Core);
 		P945_MCH(Shm, Proc);
+		SET_CHIPSET(IC_CALISTOGA);
 		break;
 	case PCI_DEVICE_ID_INTEL_82955_HB:
 		P945_CLK(Shm, Proc, Core);
 		P955_MCH(Shm, Proc);
+		SET_CHIPSET(IC_LAKEPORT_X);
 		break;
 	case PCI_DEVICE_ID_INTEL_82946GZ_HB:
+		P965_CLK(Shm, Proc, Core);
+		P965_MCH(Shm, Proc);
+		SET_CHIPSET(IC_LAKEPORT_P);
+		break;
 	case PCI_DEVICE_ID_INTEL_82965Q_HB:
 	case PCI_DEVICE_ID_INTEL_82965G_HB:
 		P965_CLK(Shm, Proc, Core);
 		P965_MCH(Shm, Proc);
+		SET_CHIPSET(IC_BROADWATER);
 		break;
 	case PCI_DEVICE_ID_INTEL_82965GM_HB:
 	case PCI_DEVICE_ID_INTEL_82965GME_HB:
+		G965_CLK(Shm, Proc, Core);
+		G965_MCH(Shm, Proc);
+		SET_CHIPSET(IC_CRESTLINE);
 	case PCI_DEVICE_ID_INTEL_GM45_HB:
 		G965_CLK(Shm, Proc, Core);
 		G965_MCH(Shm, Proc);
+		SET_CHIPSET(IC_CANTIGA);
 		break;
 	case PCI_DEVICE_ID_INTEL_Q35_HB:
+		P35_CLK(Shm, Proc, Core);
+		P35_MCH(Shm, Proc);
+		SET_CHIPSET(IC_BEARLAKE_Q);
+		break;
 	case PCI_DEVICE_ID_INTEL_G33_HB:
+		P35_CLK(Shm, Proc, Core);
+		P35_MCH(Shm, Proc);
+		SET_CHIPSET(IC_BEARLAKE_P);
+		break;
 	case PCI_DEVICE_ID_INTEL_Q33_HB:
+		P35_CLK(Shm, Proc, Core);
+		P35_MCH(Shm, Proc);
+		SET_CHIPSET(IC_BEARLAKE_QF);
+		break;
 	case PCI_DEVICE_ID_INTEL_X38_HB:
+		P35_CLK(Shm, Proc, Core);
+		P35_MCH(Shm, Proc);
+		SET_CHIPSET(IC_BEARLAKE_X);
+		break;
 	case PCI_DEVICE_ID_INTEL_3200_HB:
 		P35_CLK(Shm, Proc, Core);
 		P35_MCH(Shm, Proc);
+		SET_CHIPSET(IC_INTEL_3200);
 		break;
 	case PCI_DEVICE_ID_INTEL_Q45_HB:
+		P35_CLK(Shm, Proc, Core);
+		P4S_MCH(Shm, Proc);
+		SET_CHIPSET(IC_EAGLELAKE_Q);
+		break;
 	case PCI_DEVICE_ID_INTEL_G45_HB:
+		P35_CLK(Shm, Proc, Core);
+		P4S_MCH(Shm, Proc);
+		SET_CHIPSET(IC_EAGLELAKE_P);
+		break;
 	case PCI_DEVICE_ID_INTEL_G41_HB:
 		P35_CLK(Shm, Proc, Core);
 		P4S_MCH(Shm, Proc);
+		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
 	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Bloomfield
 	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:		// Westmere EP
 		QPI_CLK(Shm, Proc, Core);
 		NHM_IMC(Shm, Proc);
+		SET_CHIPSET(IC_TYLERSBURG);
 		break;
 	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:		// Lynnfield
 		DMI_CLK(Shm, Proc, Core);
 		NHM_IMC(Shm, Proc);
+		SET_CHIPSET(IC_IBEXPEAK);
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge-E
+		SET_CHIPSET(IC_PATSBURG);
+		/* ToDo: IMC decoding */
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:	// SNB Desktop
+		SNB_CAP(Shm, Proc, Core);
+		SNB_IMC(Shm, Proc);
+		SET_CHIPSET(IC_COUGARPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104:
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
+		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge/Xeon v2
+		/* ToDo: IMC decoding */
+		SET_CHIPSET(IC_CAVECREEK);
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// IVB Desktop
+		IVB_CAP(Shm, Proc, Core);
+		SNB_IMC(Shm, Proc);
+		SET_CHIPSET(IC_PANTHERPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:	// IVB Mobile i5-3337U
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
+		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
 		IVB_CAP(Shm, Proc, Core);
-		// Fallthrough
+		HSW_IMC(Shm, Proc);
+		SET_CHIPSET(IC_LYNXPOINT_M);
+		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
-	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell/U , Core m
+		HSW_IMC(Shm, Proc);
+		SET_CHIPSET(IC_LYNXPOINT);
+		break;
+	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell/Y/U Core m
+		HSW_IMC(Shm, Proc);
+		SET_CHIPSET(IC_WILDCATPOINT_M);
+		break;
 	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:	// Broadwell/H
 		HSW_IMC(Shm, Proc);
+		SET_CHIPSET(IC_WELLSBURG);
 		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA:	// Skylake/U Processor
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA:	// Skylake/Y Processor
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD:	// Skylake/S Dual Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ:	// Skylake/S Quad Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD:	// Skylake/H Dual Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ:	// Skylake/H Quad Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	// BGA 1356
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	// BGA 1515
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD:	// Kabylake/H Dual Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake/S Dual Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ:	// Kabylake/H Quad Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ:	// U-Quad Core BGA 1356
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake/S Quad Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ:
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
 	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:	// CoffeeLake Quad Core
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_CANNONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:	// CoffeeLake Hexa Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_CANNONPOINT);
 		break;
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
 		AMD_0F_HTT(Shm, Proc);
 		AMD_0F_MCH(Shm, Proc);
+		SET_CHIPSET(IC_K8);
 		break;
 	case PCI_DEVICE_ID_AMD_17H_IOMMU:
 		AMD_17h_IOMMU(Shm, Proc);
+		SET_CHIPSET(IC_ZEN);
+		break;
+	default:
+		Chipset[IC_CHIPSET] = Proc->Features.Info.Vendor.ID;
+		SET_CHIPSET(IC_CHIPSET);
 		break;
 	}
-
-	// Copy the Uncore clock ratios.
+	/* Copy the chipset codename. */
+	strcpy( Shm->Uncore.Chipset.CodeName,
+		Chipset[Shm->Uncore.Chipset.ArchID]);
+	/* Copy the Uncore clock ratios. */
 	memcpy( Shm->Uncore.Boost,
 		Proc->Uncore.Boost,
 		(UNCORE_BOOST(SIZE)) * sizeof(unsigned int) );

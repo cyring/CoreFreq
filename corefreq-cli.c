@@ -2068,6 +2068,9 @@ void iSplit(unsigned int sInt, char hInt[]) {
 
 void MemoryController(Window *win, CELL_FUNC OutFunc)
 {
+	size_t len = strlen(Shm->Uncore.Chipset.CodeName);
+	CUINT nl = win->matrix.size.wth, nc;
+	unsigned short mc, cha, slot;
 	ATTRIBUTE attrib[2][5] = {
 	    {
 		LWK,LWK,LWK,LWK,LWK
@@ -2075,9 +2078,16 @@ void MemoryController(Window *win, CELL_FUNC OutFunc)
 		HWK,HWK,HWK,HWK,HWK
 	    }
 	};
-	char hInt[16];
-	CUINT nl = win->matrix.size.wth;
-	unsigned short mc, cha, slot;
+	char hInt[16], codeName[14][5 + 1];
+
+  for (nc = 0; nc < 14; nc++)
+	strcpy(codeName[nc], "     ");
+  for (nc = 0; nc < (len / 5); nc++)
+	strncpy(codeName[5 + nc], &Shm->Uncore.Chipset.CodeName[nc * 5], 5);
+  if ((len = len - (nc * 5)) > 0)
+	strncpy(codeName[5 + nc], &Shm->Uncore.Chipset.CodeName[nc * 5], len);
+  for (nc = 0; nc < 14; nc++)
+	PRT(IMC, attrib[0], codeName[nc]);
 
   for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
   {
@@ -3141,10 +3151,10 @@ Window *CreateMemCtrl(unsigned long long id)
 	}
 	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer, id,
-					14, CUMIN((rows + 2),
+					14, CUMIN((rows + 3),
 					  (draw.Size.height-TOP_HEADER_ROW-3)),
 					1, TOP_HEADER_ROW + 2);
-		wIMC->matrix.select.row = 4;
+		wIMC->matrix.select.row = 5;
 
 	    if (wIMC != NULL) {
 		MemoryController(wIMC, AddCell);

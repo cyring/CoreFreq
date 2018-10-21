@@ -4,64 +4,102 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.36.2"
+#define COREFREQ_VERSION	"1.36.3"
 
-enum {	GenuineIntel,		\
-	Core_Yonah,		\
-	Core_Conroe,		\
-	Core_Kentsfield,	\
-	Core_Conroe_616,	\
-	Core_Penryn,		\
-	Core_Dunnington,	\
-	Atom_Bonnell,		\
-	Atom_Silvermont,	\
-	Atom_Lincroft,		\
-	Atom_Clovertrail,	\
-	Atom_Saltwell,		\
-	Silvermont_637,		\
-	Atom_Avoton,		\
-	Atom_Airmont,		\
-	Atom_Goldmont,		\
-	Atom_Sofia,		\
-	Atom_Merrifield,	\
-	Atom_Moorefield,	\
-	Nehalem_Bloomfield,	\
-	Nehalem_Lynnfield,	\
-	Nehalem_MB,		\
-	Nehalem_EX,		\
-	Westmere,		\
-	Westmere_EP,		\
-	Westmere_EX,		\
-	SandyBridge,		\
-	SandyBridge_EP,		\
-	IvyBridge,		\
-	IvyBridge_EP,		\
-	Haswell_DT,		\
-	Haswell_EP,		\
-	Haswell_ULT,		\
-	Haswell_ULX,		\
-	Broadwell,		\
-	Broadwell_D,		\
-	Broadwell_H,		\
-	Broadwell_EP,		\
-	Skylake_UY,		\
-	Skylake_S,		\
-	Skylake_X,		\
-	Xeon_Phi,		\
-	Kabylake,		\
-	Kabylake_UY,		\
-	Cannonlake,		\
-	Geminilake,		\
-	Icelake_UY,		\
-	AMD_Family_0Fh,		\
-	AMD_Family_10h,		\
-	AMD_Family_11h,		\
-	AMD_Family_12h,		\
-	AMD_Family_14h,		\
-	AMD_Family_15h,		\
-	AMD_Family_16h,		\
-	AMD_Family_17h,		\
+enum {	GenuineIntel,
+	Core_Yonah,
+	Core_Conroe,
+	Core_Kentsfield,
+	Core_Conroe_616,
+	Core_Penryn,
+	Core_Dunnington,
+	Atom_Bonnell,
+	Atom_Silvermont,
+	Atom_Lincroft,
+	Atom_Clovertrail,
+	Atom_Saltwell,
+	Silvermont_637,
+	Atom_Avoton,
+	Atom_Airmont,
+	Atom_Goldmont,
+	Atom_Sofia,
+	Atom_Merrifield,
+	Atom_Moorefield,
+	Nehalem_Bloomfield,
+	Nehalem_Lynnfield,
+	Nehalem_MB,
+	Nehalem_EX,
+	Westmere,
+	Westmere_EP,
+	Westmere_EX,
+	SandyBridge,
+	SandyBridge_EP,
+	IvyBridge,
+	IvyBridge_EP,
+	Haswell_DT,
+	Haswell_EP,
+	Haswell_ULT,
+	Haswell_ULX,
+	Broadwell,
+	Broadwell_D,
+	Broadwell_H,
+	Broadwell_EP,
+	Skylake_UY,
+	Skylake_S,
+	Skylake_X,
+	Xeon_Phi,
+	Kabylake,
+	Kabylake_UY,
+	Cannonlake,
+	Geminilake,
+	Icelake_UY,
+	AMD_Family_0Fh,
+	AMD_Family_10h,
+	AMD_Family_11h,
+	AMD_Family_12h,
+	AMD_Family_14h,
+	AMD_Family_15h,
+	AMD_Family_16h,
+	AMD_Family_17h,
 	ARCHITECTURES
+};
+
+enum CHIPSET {
+	IC_CHIPSET,
+	IC_LAKEPORT,
+	IC_LAKEPORT_P,
+	IC_LAKEPORT_X,
+	IC_CALISTOGA,
+	IC_BROADWATER,
+	IC_CRESTLINE,
+	IC_CANTIGA,
+	IC_BEARLAKE_Q,
+	IC_BEARLAKE_P,
+	IC_BEARLAKE_QF,
+	IC_BEARLAKE_X,
+	IC_INTEL_3200,
+	IC_EAGLELAKE_Q,
+	IC_EAGLELAKE_P,
+	IC_EAGLELAKE_G,
+	IC_TYLERSBURG,
+	IC_IBEXPEAK,
+	IC_IBEXPEAK_M,
+	IC_COUGARPOINT,
+	IC_PATSBURG,
+	IC_CAVECREEK,
+	IC_WELLSBURG,
+	IC_PANTHERPOINT,
+	IC_PANTHERPOINT_M,
+	IC_LYNXPOINT,
+	IC_LYNXPOINT_M,
+	IC_WILDCATPOINT,
+	IC_WILDCATPOINT_M,
+	IC_SUNRISEPOINT,
+	IC_UNIONPOINT,
+	IC_CANNONPOINT,
+	IC_K8,
+	IC_ZEN,
+	CHIPSETS
 };
 
 enum SYS_REG {
