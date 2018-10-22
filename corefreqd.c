@@ -2466,6 +2466,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		G965_CLK(Shm, Proc, Core);
 		G965_MCH(Shm, Proc);
 		SET_CHIPSET(IC_CRESTLINE);
+		break;
 	case PCI_DEVICE_ID_INTEL_GM45_HB:
 		G965_CLK(Shm, Proc, Core);
 		G965_MCH(Shm, Proc);
@@ -2606,30 +2607,37 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD:	// Kabylake/H Dual Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake/S Dual Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ:	// Kabylake/H Quad Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ:	// U-Quad Core BGA 1356
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake/S Quad Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ:
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:	// CoffeeLake Quad Core
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
