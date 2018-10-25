@@ -1275,9 +1275,9 @@ enum {
 };
 
 static MICRO_ARCH Arch_Core_Penryn[] = {
-	{"Core2/Penryn"},
-	{"Core2/Yorkfield"},
-	{"Core2/Wolfdale"},
+	[CN_PENRYN]		= {"Core2/Penryn"},
+	[CN_YORKFIELD]		= {"Core2/Yorkfield"},
+	[CN_WOLFDALE]		= {"Core2/Wolfdale"},
 	{NULL}
 };
 
@@ -1306,8 +1306,8 @@ enum {
 };
 
 static MICRO_ARCH Arch_Westmere_EP[] = {
-	{"Westmere/EP"},
-	{"Westmere/Gulftown"},
+	[CN_WESTMERE_EP]	= {"Westmere/EP"},
+	[CN_GULFTOWN]		= {"Westmere/Gulftown"},
 	{NULL}
 };
 
@@ -1332,13 +1332,15 @@ static MICRO_ARCH Arch_Xeon_Phi[] = {{"Knights Landing"}, {NULL}};
 enum {
 	CN_KABYLAKE,
 	CN_KABYLAKE_S,
-	CN_COFFEELAKE_S
+	CN_COFFEELAKE_S,
+	CN_COFFEELAKE_R
 };
 
 static MICRO_ARCH Arch_Kabylake[] = {
-	{"Kaby Lake"},
-	{"Kaby Lake/S"},
-	{"Coffee Lake/S"},
+	[CN_KABYLAKE]		= {"Kaby Lake"},
+	[CN_KABYLAKE_S] 	= {"Kaby Lake/S"},
+	[CN_COFFEELAKE_S]	= {"Coffee Lake/S"},
+	[CN_COFFEELAKE_R]	= {"Coffee Lake/R"},
 	{NULL}
 };
 
@@ -1656,6 +1658,51 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Pentium(R) Gold G5",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Celeron(R) G4",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-9600K",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_R,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-9700K",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_R,
+	.CoreUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i9-9900K",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_R,
 	.CoreUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
