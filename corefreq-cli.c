@@ -3387,13 +3387,22 @@ Window *CreateTurboClock(unsigned long long id)
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	const CUINT	hthMin = 8,
-			hthMax = 1 + lowestOperating + highestOperating,
-			hthWin = CUMIN(hthMin, hthMax);
+	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
+	CUINT oRow;
 
-	Window *wTC = CreateWindow(wLayer, id, 1, hthWin, 34,
-				(TOP_HEADER_ROW + hthWin+2 < draw.Size.height) ?
-					TOP_HEADER_ROW + 2 : 1);
+	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
+		hthMin = draw.Size.height - 	( TOP_HEADER_ROW
+						+ TOP_FOOTER_ROW
+						+ TOP_SEPARATOR);
+		oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
+	} else {
+		hthMin = draw.Size.height - 2;
+		oRow = 1;
+	}
+	hthWin = CUMIN(hthMin, hthMax);
+
+	Window *wTC = CreateWindow(wLayer, id, 1, hthWin, 34, oRow);
+
     if (wTC != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
@@ -3465,13 +3474,22 @@ Window *CreateUncoreClock(unsigned long long id)
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	const CUINT	hthMin = 8,
-			hthMax = 1+lowestOperating + highestOperating,
-			hthWin = CUMIN(hthMin, hthMax);
+        CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
+        CUINT oRow;
 
-	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40,
-				(TOP_HEADER_ROW + hthWin+2 < draw.Size.height) ?
-					TOP_HEADER_ROW + 2 : 1);
+        if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
+                hthMin = draw.Size.height -     ( TOP_HEADER_ROW
+                                                + TOP_FOOTER_ROW
+                                                + TOP_SEPARATOR);
+                oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
+        } else {
+                hthMin = draw.Size.height - 2;
+                oRow = 1;
+        }
+        hthWin = CUMIN(hthMin, hthMax);
+
+        Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40, oRow);
+
     if (wUC != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
