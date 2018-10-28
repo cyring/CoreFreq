@@ -162,6 +162,7 @@ enum DISPOSAL {
 	D_DASHBOARD,
 	D_ASCIITEST
 };
+
 #define DISPOSAL_SIZE	(1 + D_ASCIITEST)
 
 enum VIEW {
@@ -181,9 +182,9 @@ typedef void (*DISPOSAL_FUNC)(Layer*);
 
 typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 
-#define CELL_ARGS	Window *win,			\
-			unsigned long long key, 	\
-			ATTRIBUTE *attrib,		\
+#define CELL_ARGS	Window *win,					\
+			unsigned long long key, 			\
+			ATTRIBUTE *attrib,				\
 			ASCII *item
 
 typedef void (*CELL_FUNC)(CELL_ARGS);

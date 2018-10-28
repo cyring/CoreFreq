@@ -68,26 +68,26 @@ typedef struct
 		union
 		{
 			struct
-			{	// Intel
+			{	/* Intel				*/
 				unsigned int
-				Type	:  5-0,  // Cache Type *
-				Level	:  8-5,  // Cache Level (starts at 1)
-				Init	:  9-8,  // Self Init. cache level
-				Assoc	: 10-9,  // Fully Associative cache
+				Type	:  5-0,  /* Cache Type* 	*/
+				Level	:  8-5,  /* Cache Level (starts at 1) */
+				Init	:  9-8,  /* Self Init. cache level    */
+				Assoc	: 10-9,  /* Fully Associative cache   */
 				Unused	: 14-10,
-				MxThrdID: 26-14, // Max threads for this cache
-				MxCoreID: 32-26; // Max cores for this cache
+				MxThrdID: 26-14, /* Max threads w/ this cache */
+				MxCoreID: 32-26; /* Max cores for this cache  */
 			};
 			struct
-			{	// AMD L1
+			{	/* AMD L1				*/
 				unsigned int
-				ISize	:  8-0,  // Inst. TLB number of entries
-				IAssoc	: 16-8,  // Inst. TLB associativity
-				DSize	: 24-16, // Data TLB number of entries
-				DAssoc	: 32-24; // Data TLB associativity
-			} CPUID_0x80000005_L1Tlb2and4M; // for 2 MB & 4 MB pages
+				ISize	:  8-0,  /* Inst. TLB number/entries  */
+				IAssoc	: 16-8,  /* Inst. TLB associativity   */
+				DSize	: 24-16, /* Data TLB number/entries   */
+				DAssoc	: 32-24; /* Data TLB associativity    */
+			} CPUID_0x80000005_L1Tlb2and4M; /* 2 MB & 4 MB pages  */
 			struct
-			{	// AMD L2
+			{	/* AMD L2				*/
 				unsigned int
 				ISize	: 12-0,
 				IAssoc	: 16-12,
@@ -99,22 +99,22 @@ typedef struct
 		union
 		{
 			struct
-			{	// Intel
+			{	/* Intel				*/
 				unsigned int
-				LineSz	: 12-0,  // L=System Coherency Line Size
-				Part	: 22-12, // P=Physical Line partitions
-				Way	: 32-22; // W=Ways of associativity
+				LineSz	: 12-0,  /* L=Sys Coherency Line Size */
+				Part	: 22-12, /* P=Phys Line partitions    */
+				Way	: 32-22; /* W=Ways of associativity   */
 			};
 			struct
-			{	// AMD L1
+			{	/* AMD L1				*/
 				unsigned int
-				ISize	:  8-0,  // Inst. TLB number of entries
-				IAssoc	: 16-8,  // Inst. TLB associativity *
-				DSize	: 24-16, // Data TLB number of entries
-				DAssoc	: 32-24; // Data TLB associativity *
-			} CPUID_0x80000005_L1Tlb4K; // for 4 KB pages
+				ISize	:  8-0,  /* Inst. TLB number/entries  */
+				IAssoc	: 16-8,  /* Inst. TLB associativity*  */
+				DSize	: 24-16, /* Data TLB number/entries   */
+				DAssoc	: 32-24; /* Data TLB associativity*   */
+			} CPUID_0x80000005_L1Tlb4K; /* for 4 KB pages	*/
 			struct
-			{	// AMD L2
+			{	/* AMD L2				*/
 				unsigned int
 				ISize	: 12-0,
 				IAssoc	: 16-12,
@@ -124,52 +124,52 @@ typedef struct
 			unsigned int BX;
 		};
 		union
-		{		// Intel
-			unsigned int Set;	// S=Number of Sets
+		{		/* Intel				*/
+			unsigned int Set;	/* S=Number of Sets	*/
 			struct
-			{	// AMD L1
+			{	/* AMD L1-Data				*/
 				unsigned int
-				LineSz	:  8-0,  // L1 data cache line size (B)
-				ClPerTag: 16-8,  // L1 data cache lines per tag
-				Assoc	: 24-16, // L1 data cache associativity*
-				Size	: 32-24; // L1 data cache size (KB)
+				LineSz	:  8-0,  /* L1-D cache line size (B)  */
+				ClPerTag: 16-8,  /* L1-D cache lines per tag  */
+				Assoc	: 24-16, /* L1-D cache associativity* */
+				Size	: 32-24; /* L1-D cache size (KB)      */
 			} CPUID_0x80000005_L1D;
 			struct
-			{	// AMD L2
+			{	/* AMD L2				*/
 				unsigned int
-				LineSz	:  8-0,  // L2 cache line size (B)
-				ClPerTag: 12-8,  // L2 cache lines per tag
-				Assoc	: 16-12, // L2 cache associativity **
-				Size	: 32-16; // L2 cache size (KB) ***
+				LineSz	:  8-0,  /* L2 cache line size (B)    */
+				ClPerTag: 12-8,  /* L2 cache lines per tag    */
+				Assoc	: 16-12, /* L2 cache associativity**  */
+				Size	: 32-16; /* L2 cache size (KB)***     */
 			} CPUID_0x80000006_L2;
 			unsigned int CX;
 		};
 		union
 		{
 			struct
-			{	// Intel
+			{	/* Intel				*/
 				unsigned int
-				WrBack	: 1-0,  // Write-Back **
-				Inclus	: 2-1,  // Cache Inclusiveness ***
-				Direct	: 3-2,  // Complex Cache Indexing ****
+				WrBack	: 1-0,  /* Write-Back**		*/
+				Inclus	: 2-1,  /* Cache Inclusiveness*** */
+				Direct	: 3-2,  /* Cache Indexing****	*/
 				Resrvd	: 32-3;
 			};
 			struct
-			{	// AMD L1
+			{	/* AMD L1-Instruction			*/
 				unsigned int
-				LineSz	:  8-0,  // L1 inst. cache line size (B)
-				ClPerTag: 16-8,  // L1 inst. cache lines per tag
-				Assoc	: 24-16, // L1 inst. cache associativity
-				Size	: 32-24; // L1 inst. cache size (KB)
+				LineSz	:  8-0,  /* L1-I cache line size (B)  */
+				ClPerTag: 16-8,  /* L1-I cache lines per tag  */
+				Assoc	: 24-16, /* L1-I cache associativity  */
+				Size	: 32-24; /* L1-I cache size (KB)      */
 			} CPUID_0x80000005_L1I;
 			struct
-			{	// AMD L3
+			{	/* AMD L3				*/
 				unsigned int
-				LineSz	:  8-0,  // L3 cache line (B)
-				ClPerTag: 12-8,  // L3 cache lines per tag
-				Assoc	: 16-12, // L3 cache associativity
+				LineSz	:  8-0,  /* L3 cache line (B)	*/
+				ClPerTag: 12-8,  /* L3 cache lines per tag */
+				Assoc	: 16-12, /* L3 cache associativity */
 				Reserved: 18-16,
-				Size	: 32-18; // L3 cache size
+				Size	: 32-18; /* L3 cache size	*/
 			} CPUID_0x80000006_L3;
 			unsigned int DX;
 		};
@@ -253,7 +253,7 @@ typedef struct
 
 typedef struct
 {
-	struct	// 64-byte cache line size.
+	struct	/* 64-byte cache line size.				*/
 	{
 		unsigned long long	V,
 					_pad[7];
@@ -321,12 +321,12 @@ typedef struct
 	} Interrupt;
 
 	union {
-	    struct	// Intel
+	    struct	/* Intel					*/
 	    {
 		CORE_GLOBAL_PERF_CONTROL Core_GlobalPerfControl;
 		CORE_FIXED_PERF_CONTROL  Core_FixedPerfControl;
 	    };
-	    struct	// AMD
+	    struct	/* AMD						*/
 	    {
 		unsigned long long	Core_PerfEventsCtrsControl;
 		HWCR			Core_HardwareConfiguration;
@@ -340,10 +340,10 @@ typedef struct
 
 		struct {
 		unsigned long long
-					CfgLock :  1-0,  // Core
-					IORedir :  2-1,  // Core
+					CfgLock :  1-0,  /* Core	*/
+					IORedir :  2-1,  /* Core	*/
 					Unused	: 32-3,
-					Microcode:64-32; // Thread
+					Microcode:64-32; /* Thread	*/
 		};
 		unsigned short int	CStateLimit,
 					CStateInclude;
@@ -376,39 +376,39 @@ typedef struct
 	struct {
 		union {
 			struct {
-	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits*/
-	/* 110h */		P945_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits */
-	/* 114h */		P945_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
-	/* 118h */		P945_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits */
-	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
-	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits */
+	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits   */
+	/* 110h */		P945_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits    */
+	/* 114h */		P945_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
+	/* 118h */		P945_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits    */
+	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits    */
+	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits    */
 			} P945;
 			struct {
-	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits*/
-	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
-	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits */
-	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits */
+	/* 100h */		P945_MC_DRAM_RANK_BOUND DRB[4]; /* 4x8 bits   */
+	/* 114h */		P955_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
+	/* 10Eh */		P945_MC_DRAM_BANK_ARCH	BANK;	/* 16 bits    */
+	/* 40Ch */		P945_MC_DRAM_RANK_WIDTH WIDTH;	/* 16 bits    */
 			} P955;
 			struct {
-	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits */
-	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits */
-	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits */
-	/* 256h */		P965_MC_CYCTRK_WR	DRT3;	/* 16 bits */
-	/* 258h */		P965_MC_CYCTRK_RD	DRT4;	/* 24 bits */
+	/* 29Ch */		P965_MC_ODTCTRL		DRT0;	/* 32 bits    */
+	/* 250h */		P965_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
+	/* 252h */		P965_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */
+	/* 256h */		P965_MC_CYCTRK_WR	DRT3;	/* 16 bits    */
+	/* 258h */		P965_MC_CYCTRK_RD	DRT4;	/* 24 bits    */
 			} P965;
 			struct {
-	/* 1210h */		G965_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits */
-	/* 1214h */		G965_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits */
-	/* 1218h */		G965_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits */
-	/* 121Ch */		G965_MC_DRAM_TIMING_R3	DRT3;	/* 32 bits */
+	/* 1210h */		G965_MC_DRAM_TIMING_R0	DRT0;	/* 32 bits    */
+	/* 1214h */		G965_MC_DRAM_TIMING_R1	DRT1;	/* 32 bits    */
+	/* 1218h */		G965_MC_DRAM_TIMING_R2	DRT2;	/* 32 bits    */
+	/* 121Ch */		G965_MC_DRAM_TIMING_R3	DRT3;	/* 32 bits    */
 			} G965;
 			struct {
-	/* 265h */		P35_MC_UNKNOWN_R0	DRT0;	/* 16 bits */
-	/* 250h */		P35_MC_CYCTRK_PCHG	DRT1;	/* 16 bits */
-	/* 252h */		P35_MC_CYCTRK_ACT	DRT2;	/* 32 bits */
-	/* 256h */		P35_MC_CYCTRK_WR	DRT3;	/* 16 bits */
-	/* 258h */		P35_MC_CYCTRK_RD	DRT4;	/* 24 bits */
-	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits */
+	/* 265h */		P35_MC_UNKNOWN_R0	DRT0;	/* 16 bits    */
+	/* 250h */		P35_MC_CYCTRK_PCHG	DRT1;	/* 16 bits    */
+	/* 252h */		P35_MC_CYCTRK_ACT	DRT2;	/* 32 bits    */
+	/* 256h */		P35_MC_CYCTRK_WR	DRT3;	/* 16 bits    */
+	/* 258h */		P35_MC_CYCTRK_RD	DRT4;	/* 24 bits    */
+	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits    */
 			} P35;
 			struct {
 				NHM_IMC_MRS_VALUE_0_1	MR0_1;
@@ -420,79 +420,79 @@ typedef struct
 				NHM_IMC_SCHEDULER_PARAMS Params;
 			} NHM;
 			struct {
-	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits */
-	/* 4004h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits */
-	/* 4298h */		SNB_IMC_TC_RFTP		RFTP;	/* 32 bits */
+	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
+	/* 4004h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
+	/* 4298h */		SNB_IMC_TC_RFTP		RFTP;	/* 32 bits    */
 			} SNB;
 			struct {
-	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits */
-	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits */
-	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits */
-	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits */
-	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits */
+	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits    */
+	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits    */
+	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits    */
+	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits    */
+	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits    */
 			} HSW;
 			struct {
-	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing;	/* 32 bits */
-	/* 401Ch */		SKL_IMC_CR_SC_CFG	Sched;	/* 32 bits */
-	/* 4070h */		SKL_IMC_CR_TC_ODT	ODT;	/* 32 bits */
-	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits */
+	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing;	/* 32 bits    */
+	/* 401Ch */		SKL_IMC_CR_SC_CFG	Sched;	/* 32 bits    */
+	/* 4070h */		SKL_IMC_CR_TC_ODT	ODT;	/* 32 bits    */
+	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
 			} SKL;
 			struct {
-	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits */
+	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0F;
 		};
 		union {
-	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits */
-	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits */
-	/* 40h*/	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits */
+	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits    */
+	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits    */
+	/* 40h */	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits    */
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
 
 	union {
 		struct {
-	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits */
+	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits    */
 		} P945;
 		struct {
-	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits */
+	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits    */
 		} P955;
 		struct {
-	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits */
-						CKE1;		/* 32 bits */
+	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits    */
+						CKE1;		/* 32 bits    */
 		} P965;
 		struct {
 	/* 1200h */	G965_MC_DRB_0_1		DRB0,	/* 32 bits @ channel0 */
-	/* 1300h*/				DRB1;	/* 32 bits @ channel1 */
+	/* 1300h */				DRB1;	/* 32 bits @ channel1 */
 		} G965;
 		struct {
-	/* 260h */	P35_MC_CKECTRL		CKE0,		/* 32 bits */
-						CKE1;		/* 32 bits */
+	/* 260h */	P35_MC_CKECTRL		CKE0,		/* 32 bits    */
+						CKE1;		/* 32 bits    */
 		} P35;
 		struct {
-	/* 3:0-48h */	NHM_IMC_CONTROL		CONTROL;	/* 32 bits */
-	/* 3:0 4Ch*/	NHM_IMC_STATUS		STATUS;		/* 32 bits */
+	/* 3:0-48h */	NHM_IMC_CONTROL		CONTROL;	/* 32 bits    */
+	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS;		/* 32 bits    */
 		} NHM;
 		struct {
-	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits */
-	/* 5008h */				MAD1;		/* 32 bits */
+	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits    */
+	/* 5008h */				MAD1;		/* 32 bits    */
 		} SNB;
 		struct {
-	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits */
-	/* 5008h */				MADC1;		/* 32 bits */
-	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits */
-	/* 5010h */				MADD1;		/* 32 bits */
+	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
+	/* 5008h */				MADC1;		/* 32 bits    */
+	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */
+	/* 5010h */				MADD1;		/* 32 bits    */
 		} SKL;
 		struct {
-	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits */
-	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits */
+	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
+	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */
 		} AMD0F;
 	};
 
 	union {
 		struct {
-	/* 64h */	NHM_IMC_MAX_DOD		DOD;		/* 32 bits */
+	/* 64h */	NHM_IMC_MAX_DOD		DOD;		/* 32 bits    */
 		} NHM;
 		struct {
-	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits */
+	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits    */
 		} AMD0F;
 	} MaxDIMMs;
 
@@ -549,16 +549,16 @@ typedef struct
 {
 	struct
 	{
-	    unsigned long long	PTSC, // Package Time Stamp Counter
-				PC02, // Goldmont, Sandy-Bridge, Phi
-				PC03, // Goldmont, Nehalem, Sandy-Bridge, Phi
-				PC06, // Goldmont, Nehalem, Sandy-Bridge, Phi
-				PC07, // Nehalem, Sandy-Bridge, Phi
-				PC08, // Haswell
-				PC09, // Haswell
-				PC10; // Goldmont, Haswell
+	    unsigned long long	PTSC, /* Package Time Stamp Counter	*/
+				PC02, /* Goldmont, Sandy-Bridge, Phi	*/
+				PC03, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
+				PC06, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
+				PC07, /* Nehalem, Sandy-Bridge, Phi	*/
+				PC08, /* Haswell			*/
+				PC09, /* Haswell			*/
+				PC10; /* Goldmont, Haswell		*/
 	  struct {
-	    unsigned long long	FC0; // Uncore fixed counter #0
+	    unsigned long long	FC0; /* Uncore fixed counter #0		*/
 	  } Uncore;
 
 	  struct {
@@ -599,12 +599,12 @@ typedef struct
 	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
 	Bit64			TurboBoost_Mask __attribute__ ((aligned (64)));
 	Bit64			C1E_Mask __attribute__ ((aligned (64)));
-	Bit64			C3A_Mask __attribute__ ((aligned (64))); // NHM
-	Bit64			C1A_Mask __attribute__ ((aligned (64))); // NHM
-	Bit64			C3U_Mask __attribute__ ((aligned (64))); // SNB
-	Bit64			C1U_Mask __attribute__ ((aligned (64))); // SNB
-	Bit64			CC6_Mask __attribute__ ((aligned (64))); // AMD
-	Bit64			PC6_Mask __attribute__ ((aligned (64))); // AMD
+	Bit64	/* NHM */	C3A_Mask __attribute__ ((aligned (64)));
+	Bit64	/* NHM */	C1A_Mask __attribute__ ((aligned (64)));
+	Bit64	/* SNB */	C3U_Mask __attribute__ ((aligned (64)));
+	Bit64	/* SNB */	C1U_Mask __attribute__ ((aligned (64)));
+	Bit64	/* AMD */	CC6_Mask __attribute__ ((aligned (64)));
+	Bit64	/* AMD */	PC6_Mask __attribute__ ((aligned (64)));
 
 	Bit64			ODCM		__attribute__ ((aligned (64)));
 	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
@@ -668,5 +668,5 @@ typedef struct
 				nmi;
 	} Registration;
 
-	char			Architecture[32];
+	char			Architecture[CODENAME_LEN];
 } PROC;

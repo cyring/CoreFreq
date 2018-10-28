@@ -1,6 +1,6 @@
 /*
  * CoreFreq (C) 2015-2018 CYRIL INGENIERIE
- * Contributors: Andrew Gurinovich ;
+ * Contributors: Andrew Gurinovich ; CyrIng
  * Licenses: GPL2
  *
  * Some ideas taken from https://github.com/cesanta/frozen/ 
@@ -40,7 +40,7 @@ int get_utf8_char_len(unsigned char ch) {
 }
 
 /* This routine does NOT handle unicode finely - everything above 0x7f should
- * be \u0000 encoded, but this requires us to be utf8 capable. Check the 
+ * be \u0000 encoded, but this requires us to be utf8 capable. Check the
  * following tiny libraries(for future improvement):
  * https://github.com/git/git/blob/master/utf8.c
  * https://github.com/JeffBezanson/cutef8/blob/master/utf8.c
@@ -77,7 +77,7 @@ int json_escape(struct json_state *state, const char *p, size_t len) {
 
 void json_start_object(struct json_state *state) {
     assert(state->depth < JSON_MAX_DEPTH);
-    //assert(state->nested_state[state->depth] != IN_OBJECT);
+    /* ToDo: assert(state->nested_state[state->depth] != IN_OBJECT);	*/
     if (state->nested_state[state->depth] == IN_ARRAY2 ) {
         state->write(state, ", {", 3);
     } else {

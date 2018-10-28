@@ -1,9 +1,9 @@
 /*
  * CoreFreq (C) 2015-2018 CYRIL INGENIERIE
- * Contributors: Andrew Gurinovich ;
+ * Contributors: Andrew Gurinovich ; CyrIng
  * Licenses: GPL2
  *
- * Some ideas taken from https://github.com/cesanta/frozen/ 
+ * Some ideas taken from github.com/cesanta/frozen
  * under Apache 2.0 license
  */
 

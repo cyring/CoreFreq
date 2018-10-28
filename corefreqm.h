@@ -46,16 +46,16 @@ void CallWith_RDTSC_No_RDPMC(	SHM_STRUCT*,
 				SLICE_FUNC,
 				unsigned long);
 
-#define RESET_Slice(Slice)			\
-({						\
-	Slice.Counter[0].TSC = 0;		\
-	Slice.Counter[1].TSC = 0;		\
-	Slice.Counter[2].TSC = 0;		\
-	Slice.Counter[0].INST= 0;		\
-	Slice.Counter[1].INST= 0;		\
-	Slice.Counter[2].INST= 0;		\
-	Slice.Delta.TSC = 0;			\
-	Slice.Delta.INST= 0;			\
+#define RESET_Slice(Slice)						\
+({									\
+	Slice.Counter[0].TSC = 0;					\
+	Slice.Counter[1].TSC = 0;					\
+	Slice.Counter[2].TSC = 0;					\
+	Slice.Counter[0].INST= 0;					\
+	Slice.Counter[1].INST= 0;					\
+	Slice.Counter[2].INST= 0;					\
+	Slice.Delta.TSC = 0;						\
+	Slice.Delta.INST= 0;						\
 })
 
 #define UNUSED(expr) do { (void)(expr); } while (0)

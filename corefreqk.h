@@ -81,52 +81,52 @@
 	)
 
 #define ASM_CODE_RDMSR(_msr, _reg) \
-	"# Read MSR counter."		"\n\t"		\
-	"movq	$" #_msr ", %%rcx"	"\n\t"		\
-	"rdmsr"				"\n\t"		\
-	"shlq	$32, %%rdx"		"\n\t"		\
-	"orq	%%rdx, %%rax"		"\n\t"		\
-	"# Save counter value."		"\n\t"		\
+	"# Read MSR counter."		"\n\t"				\
+	"movq	$" #_msr ", %%rcx"	"\n\t"				\
+	"rdmsr"				"\n\t"				\
+	"shlq	$32, %%rdx"		"\n\t"				\
+	"orq	%%rdx, %%rax"		"\n\t"				\
+	"# Save counter value."		"\n\t"				\
 	"movq	%%rax, %%" #_reg	"\n\t"
 
 #define ASM_RDMSR(_msr, _reg) ASM_CODE_RDMSR(_msr, _reg)
 
 
-#define ASM_COUNTERx1(	_reg0, _reg1,			\
-			_tsc_inst, mem_tsc,		\
-			_msr1, _mem1)			\
-asm volatile						\
-(							\
-	_tsc_inst(_reg0)				\
-	ASM_RDMSR(_msr1, _reg1)				\
-	"# Store values into memory."	"\n\t"		\
-	"movq	%%" #_reg0 ", %0"	"\n\t"		\
-	"movq	%%" #_reg1 ", %1"			\
-	: "=m" (mem_tsc), "=m" (_mem1)			\
-	:						\
-	: "%rax", "%rcx", "%rdx",			\
-	  "%" #_reg0"", "%" #_reg1"",			\
-	  "memory"					\
+#define ASM_COUNTERx1(	_reg0, _reg1,					\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1)					\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"					\
+	: "=m" (mem_tsc), "=m" (_mem1)					\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"",					\
+	  "memory"							\
 );
 
 
-#define ASM_COUNTERx2(	_reg0, _reg1, _reg2,		\
-			_tsc_inst, mem_tsc,		\
-			_msr1, _mem1, _msr2, _mem2)	\
-asm volatile						\
-(							\
-	_tsc_inst(_reg0)				\
-	ASM_RDMSR(_msr1, _reg1)				\
-	ASM_RDMSR(_msr2, _reg2)				\
-	"# Store values into memory."	"\n\t"		\
-	"movq	%%" #_reg0 ", %0"	"\n\t"		\
-	"movq	%%" #_reg1 ", %1"	"\n\t"		\
-	"movq	%%" #_reg2 ", %2"			\
-	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)	\
-	:						\
-	: "%rax", "%rcx", "%rdx",			\
-	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",	\
-	  "memory"					\
+#define ASM_COUNTERx2(	_reg0, _reg1, _reg2,				\
+			_tsc_inst, mem_tsc,				\
+			_msr1, _mem1, _msr2, _mem2)			\
+asm volatile								\
+(									\
+	_tsc_inst(_reg0)						\
+	ASM_RDMSR(_msr1, _reg1)						\
+	ASM_RDMSR(_msr2, _reg2)						\
+	"# Store values into memory."	"\n\t"				\
+	"movq	%%" #_reg0 ", %0"	"\n\t"				\
+	"movq	%%" #_reg1 ", %1"	"\n\t"				\
+	"movq	%%" #_reg2 ", %2"					\
+	: "=m" (mem_tsc), "=m" (_mem1), "=m" (_mem2)			\
+	:								\
+	: "%rax", "%rcx", "%rdx",					\
+	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
+	  "memory"							\
 );
 
 
@@ -493,12 +493,12 @@ typedef struct {
 	signed int	rc;
 } INIT_ARG;
 
-typedef struct {			// V[0] stores previous TSC
-	unsigned long long V[2];	// V[1] stores current TSC
+typedef struct {			/* V[0] stores the previous TSC */
+	unsigned long long V[2];	/* V[1] stores the current TSC	*/
 } TSC_STRUCT;
 
 #define OCCURRENCES 4
-// OCCURRENCES x 2 (TSC values) needs a 64-byte cache line size.
+/* OCCURRENCES x 2 (TSC values) needs a 64-byte cache line size.	*/
 #define STRUCT_SIZE (OCCURRENCES * sizeof(TSC_STRUCT))
 
 typedef struct {
@@ -638,9 +638,9 @@ typedef struct
 {
 	struct	SIGNATURE	Signature;
 	void			(*Query)(void);
-	void			(*Update)(void *arg);	// Must be static
-	void			(*Start)(void *arg);	// Must be static
-	void			(*Stop)(void *arg);	// Must be static
+	void			(*Update)(void *arg);	/* Must be static */
+	void			(*Start)(void *arg);	/* Must be static */
+	void			(*Stop)(void *arg);	/* Must be static */
 	void			(*Exit)(void);
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*BaseClock)(unsigned int ratio);
@@ -650,8 +650,8 @@ typedef struct
 				powerFormula;
 	struct pci_device_id	*PCI_ids;
 	struct {
-		void		(*Start)(void *arg);	// Must be static
-		void		(*Stop)(void *arg);	// Must be static
+		void		(*Start)(void *arg);	/* Must be static */
+		void		(*Stop)(void *arg);	/* Must be static */
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
 	MICRO_ARCH		*Architecture;
@@ -794,13 +794,13 @@ static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
 extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
-//	[Void]
+/*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
-//	[Core]		06_0Eh (32 bits)
+/*	[Core]		06_0Eh (32 bits)				*/
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
 
-//	[Core2]		06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh
+/*	[Core2]		06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh		*/
 #define _Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
 #define _Core_Kentsfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
@@ -810,7 +810,7 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 #define _Core_Dunnington \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xD}
 
-//	[Atom]		06_1Ch, 06_26h, 06_27h (32bits), 06_35h (32bits), 06_36h
+/*	[Atom]	06_1Ch, 06_26h, 06_27h (32bits), 06_35h (32bits), 06_36h */
 #define _Atom_Bonnell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xC}
 #define _Atom_Silvermont \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
@@ -819,26 +819,26 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
 #define _Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
 
-//	[Silvermont]	06_37h
+/*	[Silvermont]	06_37h						*/
 #define _Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
 
-//	[Avoton]	06_4Dh
+/*	[Avoton]	06_4Dh						*/
 #define _Atom_Avoton	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
 
-//	[Airmont]	06_4Ch
+/*	[Airmont]	06_4Ch						*/
 #define _Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
-//	[Goldmont]	06_5Ch
+/*	[Goldmont]	06_5Ch						*/
 #define _Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
-//	[SoFIA]		06_5Dh
+/*	[SoFIA]		06_5Dh						*/
 #define _Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
-//	[Merrifield]	06_4Ah
+/*	[Merrifield]	06_4Ah						*/
 #define _Atom_Merrifield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xA}
-//	[Moorefield]	06_5Ah
+/*	[Moorefield]	06_5Ah						*/
 #define _Atom_Moorefield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
 
-//	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh
+/*	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh			*/
 #define _Nehalem_Bloomfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xA}
 #define _Nehalem_Lynnfield \
@@ -846,74 +846,74 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 #define _Nehalem_MB	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0xF}
 #define _Nehalem_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xE}
 
-//	[Westmere]	06_25h, 06_2Ch, 06_2Fh
+/*	[Westmere]	06_25h, 06_2Ch, 06_2Fh				*/
 #define _Westmere	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x5}
 #define _Westmere_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xC}
 #define _Westmere_EX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xF}
 
-//	[Sandy Bridge]	06_2Ah, 06_2Dh
+/*	[Sandy Bridge]	06_2Ah, 06_2Dh					*/
 #define _SandyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xA}
 #define _SandyBridge_EP {.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0xD}
 
-//	[Ivy Bridge]	06_3Ah, 06_3Eh
+/*	[Ivy Bridge]	06_3Ah, 06_3Eh					*/
 #define _IvyBridge	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xA}
 #define _IvyBridge_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xE}
 
-//	[Haswell]	06_3Ch, 06_3Fh, 06_45h, 06_46h
+/*	[Haswell]	06_3Ch, 06_3Fh, 06_45h, 06_46h			*/
 #define _Haswell_DT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xC}
 #define _Haswell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xF}
 #define _Haswell_ULT	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x5}
 #define _Haswell_ULX	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x6}
 
-//	[Broadwell]	06_3Dh, 06_56h, 06_47h, 06_4Fh
+/*	[Broadwell]	06_3Dh, 06_56h, 06_47h, 06_4Fh			*/
 #define _Broadwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0xD}
 #define _Broadwell_D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x6}
 #define _Broadwell_H	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0x7}
 #define _Broadwell_EP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xF}
 
-//	[Skylake]	06_4Eh, 06_5Eh, 06_55h
+/*	[Skylake]	06_4Eh, 06_5Eh, 06_55h				*/
 #define _Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
 #define _Skylake_X	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
-//	[Xeon Phi]	06_57h, 06_85h
+/*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-//	[Kabylake]	06_8Eh, 06_9Eh
+/*	[Kabylake]	06_8Eh, 06_9Eh					*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 
-//	[Cannonlake]	06_66h
+/*	[Cannonlake]	06_66h						*/
 #define _Cannonlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0x6}
 
-//	[Geminilake]	06_7Ah
+/*	[Geminilake]	06_7Ah						*/
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
-//	[Icelake]	06_7Eh
+/*	[Icelake]	06_7Eh						*/
 #define _Icelake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xE}
 
-//	[Family 0Fh]	0F_00h
+/*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 10h]	1F_00h
+/*	[Family 10h]	1F_00h						*/
 #define _AMD_Family_10h {.ExtFamily=0x1, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 11h]	2F_00h
+/*	[Family 11h]	2F_00h						*/
 #define _AMD_Family_11h {.ExtFamily=0x2, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 12h]	3F_00h
+/*	[Family 12h]	3F_00h						*/
 #define _AMD_Family_12h {.ExtFamily=0x3, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 14h]	5F_00h
+/*	[Family 14h]	5F_00h						*/
 #define _AMD_Family_14h {.ExtFamily=0x5, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 15h]	6F_00h
+/*	[Family 15h]	6F_00h						*/
 #define _AMD_Family_15h {.ExtFamily=0x6, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 16h]	7F_00h
+/*	[Family 16h]	7F_00h						*/
 #define _AMD_Family_16h {.ExtFamily=0x7, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-//	[Family 17h]	8F_00h
+/*	[Family 17h]	8F_00h						*/
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
 
@@ -946,92 +946,92 @@ static struct pci_device_id PCI_Void_ids[] = {
 };
 
 static struct pci_device_id PCI_Core2_ids[] = {
-	{	// 82945G - Lakeport
+	{	/* 82945G - Lakeport					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945P_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
-	{	// 82945GM - Calistoga
+	{	/* 82945GM - Calistoga					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GM_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
-	{	// 82945GME/SE - Calistoga
+	{	/* 82945GME/SE - Calistoga				*/
 	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945GME_HB),
 		.driver_data = (kernel_ulong_t) P945
 	},
-	{	// 82955X - Lakeport-X
+	{	/* 82955X - Lakeport-X					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82955_HB),
 		.driver_data = (kernel_ulong_t) P955
 	},
-	{	// 946PL/946GZ - Lakeport-PL/GZ
+	{	/* 946PL/946GZ - Lakeport-PL/GZ				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82946GZ_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
-	{	// Q963/Q965 - Broadwater
+	{	/* Q963/Q965 - Broadwater				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965Q_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
-	{	// P965/G965 - Broadwater
+	{	/* P965/G965 - Broadwater				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965G_HB),
 		.driver_data = (kernel_ulong_t) P965
 	},
-	{	// GM965 - Crestline
+	{	/* GM965 - Crestline					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GM_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
-	{	// GME965 - Crestline
+	{	/* GME965 - Crestline					*/
 	      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82965GME_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
-	{	// GM45 - Cantiga
+	{	/* GM45 - Cantiga					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_GM45_HB),
 		.driver_data = (kernel_ulong_t) G965
 	},
-	{	// Q35 - Bearlake-Q
+	{	/* Q35 - Bearlake-Q					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q35_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// P35/G33 - Bearlake-PG+
+	{	/* P35/G33 - Bearlake-PG+				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// Q33 - Bearlake-QF
+	{	/* Q33 - Bearlake-QF					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q33_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// X38/X48 - Bearlake-X
+	{	/* X38/X48 - Bearlake-X					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X38_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// 3200/3210 - Intel 3200
+	{	/* 3200/3210 - Intel 3200				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_3200_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// Q45/Q43 - Eaglelake-Q
+	{	/* Q45/Q43 - Eaglelake-Q				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_Q45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// P45/G45 - Eaglelake-P
+	{	/* P45/G45 - Eaglelake-P				*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G45_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
-	{	// G41 - Eaglelake-G
+	{	/* G41 - Eaglelake-G					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
 		.driver_data = (kernel_ulong_t) P35
 	},
 	{0, }
 };
 
-	// 1st Generation
+/* 1st Generation							*/
 static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
-	{	// Bloomfield IMC
+	{	/* Bloomfield IMC					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MCR),
 		.driver_data = (kernel_ulong_t) Bloomfield_IMC
 	},
-	{	// Bloomfield IMC Test Registers
+	{	/* Bloomfield IMC Test Registers			*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_I7_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
-	{	// Nehalem Control Status and RAS Registers
+	{	/* Nehalem Control Status and RAS Registers		*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
@@ -1039,11 +1039,11 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
 		.driver_data = (kernel_ulong_t) X58_VTD
 	},
-	{	// Nehalem Bloomfield/Xeon C3500: Non-Core Registers
+	{	/* Nehalem Bloomfield/Xeon C3500: Non-Core Registers	*/
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
-	{	// Nehalem EP Xeon C5500: Non-Core Registers
+	{	/* Nehalem EP Xeon C5500: Non-Core Registers		*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_C5500_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
@@ -1051,19 +1051,19 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 };
 
 static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
-	{	// Lynnfield IMC
+	{	/* Lynnfield IMC					*/
 	      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR),
 		.driver_data = (kernel_ulong_t) Lynnfield_IMC
 	},
-	{	// Lynnfield IMC Test Registers
+	{	/* Lynnfield IMC Test Registers				*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
-	{	// Lynnfield QuickPath Architecture Generic Non-core Registers
+	{ /* Lynnfield QuickPath Architecture Generic Non-core Registers */
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
-	{	// Westmere/Clarkdale QuickPath Architecture Non-core Registers
+	{ /* Westmere/Clarkdale QuickPath Architecture Non-core Registers */
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
@@ -1071,15 +1071,15 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 };
 
 static struct pci_device_id PCI_Westmere_EP_ids[] = {
-	{	// Westmere EP IMC
+	{	/* Westmere EP IMC */
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MCR),
 		.driver_data = (kernel_ulong_t) Westmere_EP_IMC
 	},
-	{	// Westmere EP IMC Test Registers
+	{	/* Westmere EP IMC Test Registers			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST),
 		.driver_data = (kernel_ulong_t) NHM_IMC_TR
 	},
-	{	// Nehalem Control Status and RAS Registers
+	{	/* Nehalem Control Status and RAS Registers		*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CTRL),
 		.driver_data = (kernel_ulong_t) X58_QPI
 	},
@@ -1087,22 +1087,22 @@ static struct pci_device_id PCI_Westmere_EP_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_X58_HUB_CORE),
 		.driver_data = (kernel_ulong_t) X58_VTD
 	},
-	{	// Westmere EP: Non-Core Registers
+	{	/* Westmere EP: Non-Core Registers			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
 	{0, }
 };
 
-	// 2nd Generation
-	// Sandy Bridge ix-2xxx, Xeon E3-E5: IMC_HA=0x3ca0 / IMC_TA=0x3ca8 /
-	// TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae
+/* 2nd Generation
+	Sandy Bridge ix-2xxx, Xeon E3-E5: IMC_HA=0x3ca0 / IMC_TA=0x3ca8
+	TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae	*/
 static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
-	{	// Desktop: IMC_SystemAgent=0x0100,0x0104
+	{	/* Desktop: IMC_SystemAgent=0x0100,0x0104		*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
@@ -1113,42 +1113,42 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{0, }
 };
 
-	// 3rd Generation
-	// Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
-	// TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead
+/* 3rd Generation
+	Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
+	TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead		*/
 static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
-	{	// Desktop: IMC_SystemAgent=0x0150
+	{	/* Desktop: IMC_SystemAgent=0x0150			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
-	{	// Mobile i5-3337U: IMC=0x0154
+	{	/* Mobile i5-3337U: IMC=0x0154				*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }
 };
 
-	// 4th Generation
-	// Haswell ix-4xxx, Xeon E7/E5 v3: IMC_HA0=0x2fa0 / IMC_HA0_TA=0x2fa8
-	// TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad
+/* 4th Generation
+	Haswell ix-4xxx, Xeon E7/E5 v3: IMC_HA0=0x2fa0 / IMC_HA0_TA=0x2fa8
+	TAD0=0x2faa / TAD1=0x2fab / TAD2=0x2fac / TAD3=0x2fad		*/
 static struct pci_device_id PCI_Haswell_ids[] = {
 	{
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
-	{	// Desktop: IMC_SystemAgent=0x0c00
+	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
 };
 
-	// 5th Generation
-	// Broadwell ix-5xxx: IMC_HA0=0x1604 / 0x1614
+/* 5th Generation
+	Broadwell ix-5xxx: IMC_HA0=0x1604 / 0x1614			*/
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
@@ -1158,14 +1158,14 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
-	{	// Desktop: IMC_SystemAgent=0x0c00
+	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{0, }
 };
 
-	// 6th Generation
+/* 6th Generation							*/
 static struct pci_device_id PCI_Skylake_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA),
@@ -1198,7 +1198,7 @@ static struct pci_device_id PCI_Skylake_X_ids[] = {
 	{0, }
 };
 
-	// 7th & 8th Generation
+/* 7th & 8th Generation							*/
 static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD),
@@ -1243,7 +1243,7 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{0, }
 };
 
-	// AMD Family 0Fh
+/* AMD Family 0Fh							*/
 static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 	{
 		PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB_MEMCTL),
@@ -1256,7 +1256,7 @@ static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 	{0, }
 };
 
-	// AMD Family 17h
+/* AMD Family 17h							*/
 static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{0, }
 };
@@ -1389,7 +1389,7 @@ static PROCESSOR_SPECIFIC Void_Specific[] = {
 
 static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 /* Yorkfield
-	06_17h			"Intel(R) Core(TM)2 Quad CPU Q8400"
+		06_17h		"Intel(R) Core(TM)2 Quad CPU Q8400"
 		''		"Intel(R) Core(TM)2 Quad CPU Q9400"
 		''		"Intel(R) Core(TM)2 Quad CPU Q9450"
 		''		"Intel(R) Core(TM)2 Quad CPU Q9550"
@@ -1715,7 +1715,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 		+0.5 XFR rounded to +1
 */
 static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
-	{	/* Index 0 is a placeholder: must be present! */
+	{	/* Index 0 is a placeholder: must be present!		*/
 	.BrandSubStr = VENDOR_AMD,
 	.Boost = {+0,  0},
 	.Param.Offset = { 0, 0},

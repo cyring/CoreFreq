@@ -30,7 +30,7 @@
 
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
-// §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory
+/* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
 static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
 static Bit64 roomCore __attribute__ ((aligned (64))) = 0x0;
 static Bit64 roomSched __attribute__ ((aligned (64))) = 0x0;
@@ -109,7 +109,7 @@ static void *Core_Cycle(void *arg)
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
-	// Refresh this Base Clock.
+	/* Refresh this Base Clock.					*/
 	CFlip->Clock.Q  = Core->Clock.Q;
 	CFlip->Clock.R  = Core->Clock.R;
 	CFlip->Clock.Hz = Core->Clock.Hz;
@@ -123,28 +123,28 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1		= Core->Delta.C1;
 
-	// Compute IPS=Instructions per TSC
+	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = (double) (CFlip->Delta.INST)
 			 / (double) (CFlip->Delta.TSC);
 
-	// Compute IPC=Instructions per non-halted reference cycle.
-	// (Protect against a division by zero)
+	/* Compute IPC=Instructions per non-halted reference cycle.
+	   (Protect against a division by zero)				*/
 	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ?
 			  (double) (CFlip->Delta.INST)
 			 / (double) CFlip->Delta.C0.URC
 			 : 0.0f;
 
-	// Compute CPI=Non-halted reference cycles per instruction.
-	// (Protect against a division by zero)
+	/* Compute CPI=Non-halted reference cycles per instruction.
+	   (Protect against a division by zero)				*/
 	CFlip->State.CPI = (CFlip->Delta.INST != 0) ?
 			  (double) CFlip->Delta.C0.URC
 			 / (double) (CFlip->Delta.INST)
 			 : 0.0f;
 
-	// Compute Turbo State.
+	/* Compute Turbo State.						*/
 	CFlip->State.Turbo = (double) (CFlip->Delta.C0.UCC)
 			   / (double) (CFlip->Delta.TSC);
-	// Compute C-States.
+	/* Compute C-States.						*/
 	CFlip->State.C0 = (double) (CFlip->Delta.C0.URC)
 			/ (double) (CFlip->Delta.TSC);
 	CFlip->State.C3 = (double) (CFlip->Delta.C3)
@@ -156,17 +156,17 @@ static void *Core_Cycle(void *arg)
 	CFlip->State.C1 = (double) (CFlip->Delta.C1)
 			/ (double) (CFlip->Delta.TSC);
 
-	// Relative Ratio formula.
+	/* Relative Ratio formula.					*/
 	CFlip->Relative.Ratio	= (double) (CFlip->Delta.C0.UCC
 					  * Shm->Proc.Boost[BOOST(MAX)])
 				/ (double) (CFlip->Delta.TSC);
 
 	if (Shm->Proc.PM_version >= 2) {
-		// Relative Frequency equals UCC per second.
+		/* Relative Frequency equals UCC per second.		*/
 		CFlip->Relative.Freq = (double) (CFlip->Delta.C0.UCC)
 				     / (Shm->Sleep.Interval * 1000);
 	} else {
-	// Relative Frequency = Relative Ratio x Bus Clock Frequency
+	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	  CFlip->Relative.Freq=(double)REL_FREQ(Shm->Proc.Boost[BOOST(MAX)], \
 						CFlip->Relative.Ratio,	\
 						Core->Clock,		\
@@ -174,7 +174,7 @@ static void *Core_Cycle(void *arg)
 				/ (Shm->Sleep.Interval * 1000);
 	}
 
-	// Per Core thermal formulas
+	/* Per Core thermal formulas					*/
 	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events = Core->PowerThermal.Events;
 
@@ -205,15 +205,15 @@ static void *Core_Cycle(void *arg)
 				CFlip->Thermal.Sensor);
 		break;
 	}
-	// Min and Max temperatures per Core
+	/* Min and Max temperatures per Core				*/
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 		Cpu->PowerThermal.Limit[0] = CFlip->Thermal.Temp;
 	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
 		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
-	// Per Core voltage formulas
+	/* Per Core voltage formulas					*/
 	CFlip->Voltage.VID = Core->PowerThermal.VID;
 	switch (Pkg->voltageFormula) {
-	// Intel Core 2 Extreme Datasheet §3.3-Table 2
+	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
 	case VOLTAGE_FORMULA_INTEL_MEROM:
 		COMPUTE_VOLTAGE(INTEL_MEROM,
 				CFlip->Voltage.Vcore,
@@ -229,7 +229,7 @@ static void *Core_Cycle(void *arg)
 				CFlip->Voltage.Vcore,
 				CFlip->Voltage.VID);
 		break;
-	// AMD BKDG Family 0Fh §10.6 Table 70
+	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
 	case VOLTAGE_FORMULA_AMD_0Fh:
 		COMPUTE_VOLTAGE(AMD_0Fh,
 				CFlip->Voltage.Vcore,
@@ -241,9 +241,9 @@ static void *Core_Cycle(void *arg)
 				CFlip->Voltage.VID);
 		break;
 	}
-	// Interrupts counters
+	/* Interrupts counters						*/
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
-	// Registered NMI counters
+	/* Registered NMI counters					*/
 	if (Shm->Registration.nmi) {
 		CFlip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
 		CFlip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
@@ -360,7 +360,7 @@ static void *Child_Thread(void *arg)
 
 			SliceScheduling(Shm, cpu, Arg->Ref->Slice.pattern);
 
-		      if (BITVAL(Cpu->OffLine, OS)) { // ReSchedule to Service
+		      if (BITVAL(Cpu->OffLine, OS)) {/* ReSchedule to Service */
 			SliceScheduling(Shm, Shm->Proc.Service.Core, RESET_CSP);
 			break;
 		      }
@@ -394,23 +394,23 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
 	size_t	len;
 
-	// Copy all initial CPUID features.
+	/* Copy all initial CPUID features.				*/
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
-	// Copy the numbers of total & online CPU.
+	/* Copy the numbers of total & online CPU.			*/
 	Shm->Proc.CPU.Count	= Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
 	Shm->Proc.Service.Proc	= Proc->Service.Proc;
-	// Copy the Architecture name.
-	len = KMIN(strlen(Proc->Architecture), 32 - 1);
+	/* Copy the Architecture name.					*/
+	len = KMIN(strlen(Proc->Architecture), CODENAME_LEN - 1);
 	memcpy(Shm->Proc.Architecture, Proc->Architecture, len);
 	Shm->Proc.Architecture[len] = '\0';
-	// Copy the base clock ratios.
+	/* Copy the base clock ratios.					*/
 	memcpy(Shm->Proc.Boost, Proc->Boost,(BOOST(SIZE))*sizeof(unsigned int));
-	// Copy the processor's brand string.
+	/* Copy the processor's brand string.				*/
 	len = KMIN(strlen(Proc->Features.Info.Brand), 48 + 4 - 1);
 	memcpy(Shm->Proc.Brand, Proc->Features.Info.Brand, len);
 	Shm->Proc.Brand[len] = '\0';
-	// Compute the TSC mode: None, Variant, Invariant
+	/* Compute the TSC mode: None, Variant, Invariant		*/
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
 
@@ -420,13 +420,13 @@ void PerformanceMonitoring(SHM_STRUCT *Shm, PROC *Proc)
 }
 
 void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
-{	// Update the HyperThreading state
+{	/* Update the HyperThreading state				*/
 	Shm->Proc.Features.HyperThreading = Proc->Features.HTT_Enable;
 }
 
 void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 {
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {	// AMD PowerNow
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) { /* AMD PowerNow */
 	if (Proc->Features.AdvPower.EDX.FID)
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 	else
@@ -471,12 +471,12 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     }
 	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
 			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
-	// Scale window unit time to the driver monitoring interval.
+	/* Scale window unit time to the driver monitoring interval.	*/
 	Shm->Proc.Power.Unit.Times *= 1000.0 / (double) Shm->Sleep.Interval;
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
-{	// Technologies aggregation.
+{	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
 
 	Shm->Proc.Technology.ODCM = BITWISEAND(LOCKLESS,
@@ -533,18 +533,18 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 }
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
-{	// Copy the operational settings.
+{	/* Copy the operational settings.				*/
 	Shm->Registration.AutoClock = Proc->Registration.AutoClock;
 	Shm->Registration.Experimental = Proc->Registration.Experimental;
 	Shm->Registration.hotplug = Proc->Registration.hotplug;
 	Shm->Registration.pci = Proc->Registration.pci;
 	Shm->Registration.nmi = Proc->Registration.nmi;
-	// Copy the timer interval delay.
+	/* Copy the timer interval delay.				*/
 	Shm->Sleep.Interval = Proc->SleepInterval;
-	// Compute the polling wait time based on the timer interval.
-	Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval*1000000L)
+	/* Compute the polling wait time based on the timer interval.	*/
+	Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval * 1000000L)
 				/ WAKEUP_RATIO);
-	// Copy the SysGate tick steps.
+	/* Copy the SysGate tick steps.					*/
 	Shm->SysGate.tickReset = Proc->tickReset;
 	Shm->SysGate.tickStep  = Proc->tickStep;
 
@@ -739,7 +739,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			// Fallthrough
+			/* Fallthrough */
 		case 0b010:
 			Ratio.Q = 1;
 			Ratio.R = 1;
@@ -759,7 +759,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			// Fallthrough
+			/* Fallthrough */
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 4;
@@ -775,13 +775,13 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		}
 		break;
 	default:
-		// Fallthrough
+		/* Fallthrough */
 	case 0b011:
 		Shm->Uncore.Bus.Rate = 667;
 
 		switch (Proc->Uncore.Bus.ClkCfg.RAM_Select) {
 		default:
-			// Fallthrough
+			/* Fallthrough */
 		case 0b010:
 			Ratio.Q = 3;
 			Ratio.R = 5;
@@ -798,7 +798,7 @@ void P945_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	// DDR2
+	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	/* DDR2 */
 				/ (Ratio.R * 1000000L);
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -867,8 +867,8 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	RAM_Ratio Ratio = {.Q = 1, .R = 1};
 
 	switch (Proc->Uncore.Bus.ClkCfg.FSB_Select) {
-	case 0b111:	// Unknown
-		// Fallthrough
+	case 0b111:	/* Unknown */
+		/* Fallthrough */
 	case 0b000:
 		Shm->Uncore.Bus.Rate = 1066;
 
@@ -961,7 +961,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		}
 		break;
 	default:
-		// Fallthrough
+		/* Fallthrough */
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -994,7 +994,7 @@ void P965_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	// DDR2
+	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	/* DDR2 */
 				/ (Ratio.R * 1000000L);
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -1254,7 +1254,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		}
 		break;
 	default:
-		// Fallthrough
+		/* Fallthrough */
 	case 0b010:
 		Shm->Uncore.Bus.Rate = 800;
 
@@ -1283,7 +1283,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		break;
 	}
 
-	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	// DDR2
+	Shm->Uncore.CtrlSpeed = (Core->Clock.Hz * Ratio.Q * 2)	/* DDR2 */
 				/ (Ratio.R * 1000000L);
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -1621,7 +1621,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		Shm->Uncore.CtrlSpeed = 2133;
 		break;
 	case 0b000000:
-		// Fallthrough
+		/* Fallthrough */
 	default:
 		Shm->Uncore.CtrlSpeed = 800;
 		break;
@@ -1665,7 +1665,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		Shm->Uncore.CtrlSpeed = 1333;
 		break;
 	case 0b000000:
-		// Fallthrough
+		/* Fallthrough */
 	default:
 		Shm->Uncore.CtrlSpeed = 266;
 		break;
@@ -1674,7 +1674,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	Shm->Uncore.CtrlSpeed *= Core->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = 2500;	// ToDo: hardwired to Lynnfield
+	Shm->Uncore.Bus.Rate = 2500;	/* ToDo: hardwired to Lynnfield */
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
@@ -2143,11 +2143,11 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	case Skylake_UY:
 	case Kabylake_UY:
 		DMFC = Proc->Uncore.Bus.SKL_Cap_B.DMFC_DDR3;
-		Shm->Uncore.Bus.Rate = 4000;	// 4 GT/s QPI
+		Shm->Uncore.Bus.Rate = 4000;	/* 4 GT/s QPI */
 		break;
 	default:
 		DMFC = Proc->Uncore.Bus.SKL_Cap_C.DMFC_DDR4;
-		Shm->Uncore.Bus.Rate = 8000;	// 8 GT/s DMI3
+		Shm->Uncore.Bus.Rate = 8000;	/* 8 GT/s DMI3 */
 		break;
 	}
 
@@ -2355,10 +2355,10 @@ void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 			Ratio.R = 0;
 			break;
 	}
-	Shm->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	// DDR2
+	Shm->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	/* DDR2 */
 
 	if ((link = Proc->Uncore.Bus.UnitID.McUnit) < 0b11) {
-		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) { // "MHz"
+		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) {/*"MHz"*/
 		case 0b0000:
 			HTT_Clock = 200;
 			break;
@@ -2378,8 +2378,8 @@ void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 			HTT_Clock = 100;
 			break;
 		}
-		Shm->Uncore.Bus.Rate = HTT_Clock * 2;	// "MT/s"
-		Shm->Uncore.Bus.Speed = HTT_Clock * 4;	// "MB/s"
+		Shm->Uncore.Bus.Rate = HTT_Clock * 2;	/* "MT/s" */
+		Shm->Uncore.Bus.Speed = HTT_Clock * 4;	/* "MB/s" */
 	}
 	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b10;
@@ -2433,6 +2433,8 @@ static char *Chipset[CHIPSETS] = {
 
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 {
+	size_t len;
+
 	switch (Proc->Uncore.ChipID) {
 	case PCI_DEVICE_ID_INTEL_82945P_HB:
 		P945_CLK(Shm, Proc, Core);
@@ -2512,22 +2514,22 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		P4S_MCH(Shm, Proc);
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
-	case PCI_DEVICE_ID_INTEL_I7_MCR:		// Bloomfield
-	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:		// Westmere EP
+	case PCI_DEVICE_ID_INTEL_I7_MCR:	/* Bloomfield		*/
+	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:	/* Westmere EP		*/
 		QPI_CLK(Shm, Proc, Core);
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_TYLERSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:		// Lynnfield
+	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:	/* Lynnfield		*/
 		DMI_CLK(Shm, Proc, Core);
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:	// Sandy Bridge-E
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:   /* Sandy Bridge-E	*/
 		SET_CHIPSET(IC_PATSBURG);
 		/* ToDo: IMC decoding */
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:	// SNB Desktop
+	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:    /* SNB Desktop	*/
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_COUGARPOINT);
@@ -2537,98 +2539,98 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:	// Ivy Bridge/Xeon v2
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:   /* Ivy Bridge/Xeon v2 */
 		/* ToDo: IMC decoding */
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:	// IVB Desktop
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:    /* IVB Desktop	*/
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:	// IVB Mobile i5-3337U
+	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:  /* IVB Mobile i5-3337U */
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:	// HSW & BDW Desktop
+	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:    /* HSW & BDW Desktop */
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:	// Haswell
+	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:   /* Haswell		*/
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0:	// Broadwell/Y/U Core m
+	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0: /* Broadwell/Y/U Core m */
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:	// Broadwell/H
+	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:/* Broadwell/H	*/
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WELLSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA:	// Skylake/U Processor
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA:  /* Skylake/U Processor */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA:	// Skylake/Y Processor
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA:  /* Skylake/Y Processor */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD:	// Skylake/S Dual Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD: /* Skylake/S Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ:	// Skylake/S Quad Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ: /* Skylake/S Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD:	// Skylake/H Dual Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD: /* Skylake/H Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ:	// Skylake/H Quad Core
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ: /* Skylake/H Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	// BGA 1356
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	/* BGA 1356	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	// BGA 1515
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA:	/* BGA 1515	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD:	// Kabylake/H Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD: /* Kabylake/H Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD:	// Kabylake/S Dual Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD: /* Kabylake/S Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ:	// Kabylake/H Quad Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ: /* Kabylake/H Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ:	// U-Quad Core BGA 1356
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ: /* U-Quad Core BGA 1356 */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ:	// Kabylake/S Quad Core
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ: /* Kabylake/S Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
@@ -2638,12 +2640,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:	// CoffeeLake Quad Core
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:/* CoffeeLake Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:	// CoffeeLake Hexa Core
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:/* CoffeeLake Hexa Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
@@ -2662,17 +2664,19 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SET_CHIPSET(IC_CHIPSET);
 		break;
 	}
-	/* Copy the chipset codename. */
-	strcpy( Shm->Uncore.Chipset.CodeName,
-		Chipset[Shm->Uncore.Chipset.ArchID]);
-	/* Copy the Uncore clock ratios. */
+	/* Copy the chipset codename.					*/
+	len = KMIN(strlen(Chipset[Shm->Uncore.Chipset.ArchID]), CODENAME_LEN-1);
+	memcpy( Shm->Uncore.Chipset.CodeName,
+		Chipset[Shm->Uncore.Chipset.ArchID], len);
+	Shm->Uncore.Chipset.CodeName[len] = '\0';
+	/* Copy the Uncore clock ratios.				*/
 	memcpy( Shm->Uncore.Boost,
 		Proc->Uncore.Boost,
 		(UNCORE_BOOST(SIZE)) * sizeof(unsigned int) );
 }
 
 void CPUID_Dump(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
-{	// Copy the Vendor CPUID dump per Core.
+{	/* Copy the Vendor CPUID dump per Core.				*/
 	Shm->Cpu[cpu].Query.StdFunc = Core[cpu]->Query.StdFunc;
 	Shm->Cpu[cpu].Query.ExtFunc = Core[cpu]->Query.ExtFunc;
 
@@ -2710,7 +2714,7 @@ unsigned int Compute_Way(unsigned int value)
 }
 
 void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{	// Copy each Core topology.
+{	/* Copy each Core topology.					*/
 	Shm->Cpu[cpu].Topology.MP.BSP    = (Core[cpu]->T.Base.BSP) ? 1 : 0;
 	Shm->Cpu[cpu].Topology.ApicID    = Core[cpu]->T.ApicID;
 	Shm->Cpu[cpu].Topology.CoreID    = Core[cpu]->T.CoreID;
@@ -2725,7 +2729,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	    if (Core[cpu]->T.Cache[loop].Type > 0)
 	    {
 		unsigned int level=Core[cpu]->T.Cache[loop].Level;
-		if (Core[cpu]->T.Cache[loop].Type == 2) // Instruction
+		if (Core[cpu]->T.Cache[loop].Type == 2) /* Instruction	*/
 			level = 0;
 
 		if(Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -2766,7 +2770,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->T.Cache[loop].Inclus;
 	    }
 	}
-	// Apply various architecture size unit.
+	/* Apply various architecture size unit.			*/
 	switch (Proc->ArchID) {
 	case AMD_Family_17h:
 		Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
@@ -2795,15 +2799,15 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.PowerPolicy =
 			Core[cpu]->PowerThermal.PerfEnergyBias.PowerPolicy;
 
-	Shm->Cpu[cpu].PowerThermal.TM1 = Proc->Features.Std.EDX.TM1;	//000v
+	Shm->Cpu[cpu].PowerThermal.TM1 = Proc->Features.Std.EDX.TM1; /* 000v */
 
 	Shm->Cpu[cpu].PowerThermal.TM1 |=
-			(Core[cpu]->PowerThermal.TCC_Enable << 1);	//00v0
+			(Core[cpu]->PowerThermal.TCC_Enable << 1);   /* 00v0 */
 
-	Shm->Cpu[cpu].PowerThermal.TM2 = Proc->Features.Std.ECX.TM2;	//000v
+	Shm->Cpu[cpu].PowerThermal.TM2 = Proc->Features.Std.ECX.TM2; /* 000v */
 
 	Shm->Cpu[cpu].PowerThermal.TM2 |=
-			(Core[cpu]->PowerThermal.TM2_Enable << 1);	//00v0
+			(Core[cpu]->PowerThermal.TM2_Enable << 1);   /* 00v0 */
 
 	Shm->Cpu[cpu].PowerThermal.Param = Core[cpu]->PowerThermal.Param;
 }
@@ -3052,9 +3056,9 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 {
     if (state == 0) {
 	if (BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
-		// Stop SysGate
+		/* Stop SysGate 					*/
 		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
-		// Notify
+		/* Notify						*/
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 	}
@@ -3062,13 +3066,13 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
 		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
-			// Aggregate the OS idle driver data.
+			/* Aggregate the OS idle driver data.		*/
 			SysGate_IdleDriver(Ref);
-			// Copy system information.
+			/* Copy system information.			*/
 			SysGate_Kernel(Ref);
-			// Start SysGate
+			/* Start SysGate				*/
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
-			// Notify
+			/* Notify					*/
 			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		}
@@ -3101,12 +3105,12 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	switch (rc) {
 	case -EPERM:
 		break;
-	case 0: // Update SHM and notify a platform changed.
+	case 0: /* Update SHM and notify a platform changed.		*/
 		UpdateFeatures(Ref);
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 		break;
-	case 2: // Update SHM and notify to re-compute.
+	case 2: /* Update SHM and notify to re-compute.			*/
 		UpdateFeatures(Ref);
 		if (!BITVAL(Ref->Shm->Proc.Sync, 62))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 62);
@@ -3131,14 +3135,14 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
 		while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 		{
-			if (BITVAL(Shutdown, 0))	/*SpinLock*/
+			if (BITVAL(Shutdown, 0))	/* SpinLock */
 				break;
 		}
 		roomSched = 0;
 		Ref->Slice.Func = Slice_NOP;
 		Ref->Slice.arg = 0;
 		Ref->Slice.pattern = RESET_CSP;
-		// Notify
+		/* Notify						*/
 		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
 	    }
@@ -3157,7 +3161,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
        {
 	while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 	{
-		if (BITVAL(Shutdown, 0))	/*SpinLock*/
+		if (BITVAL(Shutdown, 0))	/* SpinLock */
 			break;
 	}
 	SliceScheduling(Ref->Shm, Ref->Shm->Proc.Service.Core, porder->pattern);
@@ -3167,7 +3171,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	Ref->Slice.pattern = porder->pattern;
 
 	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
-	// Notify
+	/* Notify							*/
 	if (!BITVAL(Ref->Shm->Proc.Sync, 63))
 		BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
        }
@@ -3234,8 +3238,8 @@ static void *Emergency_Handler(void *pRef)
 			break;
 		case SIGSEGV:
 		case SIGTERM:
-		case SIGINT:	// [CTRL] + [C]
-			// Fallthrough
+		case SIGINT:	/* [CTRL] + [C] */
+			/* Fallthrough */
 		case SIGQUIT:
 			BITSET(LOCKLESS, Shutdown, 0);
 			break;
@@ -3264,13 +3268,13 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		break;
 	case 1: {
 		sigemptyset(&Ref->Signal);
-		sigaddset(&Ref->Signal, SIGUSR1);	// Start SysGate
-		sigaddset(&Ref->Signal, SIGUSR2);	// Stop  SysGate
-		sigaddset(&Ref->Signal, SIGINT);	// Shutdown
-		sigaddset(&Ref->Signal, SIGQUIT);	// Shutdown
-		sigaddset(&Ref->Signal, SIGTERM);	// Shutdown
-		sigaddset(&Ref->Signal, SIGSEGV);	// Shutdown
-		sigaddset(&Ref->Signal, SIGCHLD);	// Exit Ring Thread
+		sigaddset(&Ref->Signal, SIGUSR1);	/* Start SysGate    */
+		sigaddset(&Ref->Signal, SIGUSR2);	/* Stop  SysGate    */
+		sigaddset(&Ref->Signal, SIGINT);	/* Shutdown	    */
+		sigaddset(&Ref->Signal, SIGQUIT);	/* Shutdown	    */
+		sigaddset(&Ref->Signal, SIGTERM);	/* Shutdown	    */
+		sigaddset(&Ref->Signal, SIGSEGV);	/* Shutdown	    */
+		sigaddset(&Ref->Signal, SIGCHLD);	/* Exit Ring Thread */
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
 		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
@@ -3300,7 +3304,7 @@ void Core_Manager(REF *Ref)
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
 
     while (!BITVAL(Shutdown, 0))
-    {	// Loop while all the cpu room bits are not cleared.
+    {	/* Loop while all the cpu room bits are not cleared.		*/
 	while (!BITVAL(Shutdown, 0)
 	    && BITWISEAND(BUS_LOCK, roomCore, roomSeed))
 	{
@@ -3313,9 +3317,9 @@ void Core_Manager(REF *Ref)
 	SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
 					!Shm->Cpu[Proc->Service.Core].Toggle];
 
-	// Reset PTM sensor with the Service Processor.
+	/* Reset PTM sensor with the Service Processor.			*/
 	PFlip->Thermal.Sensor = SProc->Thermal.Sensor;
-	// Reset the averages & the max frequency
+	/* Reset the averages & the max frequency			*/
 	Shm->Proc.Avg.Turbo = 0;
 	Shm->Proc.Avg.C0    = 0;
 	Shm->Proc.Avg.C3    = 0;
@@ -3328,7 +3332,7 @@ void Core_Manager(REF *Ref)
 	{
 	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
-			// Remove this cpu.
+			/* Remove this cpu.				*/
 			pthread_join(Arg[cpu].TID, NULL);
 			Arg[cpu].TID = 0;
 
@@ -3342,7 +3346,7 @@ void Core_Manager(REF *Ref)
 			    SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
 					!Shm->Cpu[Proc->Service.Core].Toggle];
 			}
-			// Raise this bit up to notify a platform change.
+			/* Raise this bit up to notify a platform change. */
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
@@ -3352,7 +3356,7 @@ void Core_Manager(REF *Ref)
 				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!Arg[cpu].TID) {
-			// Add this cpu.
+			/* Add this cpu.				*/
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
@@ -3376,18 +3380,18 @@ void Core_Manager(REF *Ref)
 				(double)( Core[cpu]->Clock.Hz
 					* Proc->Boost[BOOST(MAX)])
 					/ 1000000L );
-			// Notify
+			/* Notify					*/
 			if (!BITVAL(Shm->Proc.Sync, 63))
 				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
-		// Index cpu with the highest frequency.
+		/* Index cpu with the highest frequency.		*/
 		if (CFlop->Relative.Freq > maxRelFreq) {
 			maxRelFreq = CFlop->Relative.Freq;
 			Shm->Proc.Top = cpu;
 		}
-		// Workaround to Package Thermal Management: the hottest Core.
+		/* Workaround to Package Thermal Management: the hottest Core */
 		if (!Shm->Proc.Features.Power.EAX.PTM) {
 		    switch (Proc->thermalFormula) {
 		    case THERMAL_FORMULA_INTEL:
@@ -3402,7 +3406,7 @@ void Core_Manager(REF *Ref)
 			break;
 		    }
 		}
-		// Sum counters.
+		/* Sum counters.					*/
 		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
 		Shm->Proc.Avg.C0    += CFlop->State.C0;
 		Shm->Proc.Avg.C3    += CFlop->State.C3;
@@ -3412,14 +3416,14 @@ void Core_Manager(REF *Ref)
 	    }
 	}
 	if (!BITVAL(Shutdown, 0)) {
-		// Compute the counters averages.
+		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C3    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C6    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
-		// Package scope counters
+		/* Package scope counters				*/
 		PFlip->Delta.PTSC = Proc->Delta.PTSC;
 		PFlip->Delta.PC02 = Proc->Delta.PC02;
 		PFlip->Delta.PC03 = Proc->Delta.PC03;
@@ -3428,7 +3432,7 @@ void Core_Manager(REF *Ref)
 		PFlip->Delta.PC08 = Proc->Delta.PC08;
 		PFlip->Delta.PC09 = Proc->Delta.PC09;
 		PFlip->Delta.PC10 = Proc->Delta.PC10;
-		// Package C-state Residency counters
+		/* Package C-state Residency counters			*/
 		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03
@@ -3443,9 +3447,9 @@ void Core_Manager(REF *Ref)
 					/ (double) PFlip->Delta.PTSC;
 		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10
 					/ (double) PFlip->Delta.PTSC;
-		// Uncore scope counters
+		/* Uncore scope counters				*/
 		PFlip->Uncore.FC0 = Proc->Delta.Uncore.FC0;
-		// Power & Energy counters
+		/* Power & Energy counters				*/
 		enum PWR_DOMAIN pw;
 	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	    {
@@ -3458,7 +3462,7 @@ void Core_Manager(REF *Ref)
 					  * Shm->Proc.Power.Unit.Watts
 					  * Shm->Proc.Power.Unit.Times;
 	    }
-		// Package thermal formulas
+		/* Package thermal formulas				*/
 	    if (Shm->Proc.Features.Power.EAX.PTM) {
 		PFlip->Thermal.Sensor = Proc->PowerThermal.Sensor;
 		PFlip->Thermal.Events = Proc->PowerThermal.Events;
@@ -3489,29 +3493,29 @@ void Core_Manager(REF *Ref)
 			PFlip->Thermal.Sensor);
 		break;
 	    }
-		// Package voltage formulas
+		/* Package voltage formulas				*/
 	    switch (Proc->voltageFormula) {
-		// Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1
+		/* Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1		*/
 	    case VOLTAGE_FORMULA_INTEL_SNB:
 		COMPUTE_VOLTAGE(INTEL_SNB,
 				SProc->Voltage.Vcore,
 				SProc->Voltage.VID);
 		break;
 	    }
-		// Tasks collection
+		/* Tasks collection					*/
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-			// Update OS tasks and memory usage.
+			/* Update OS tasks and memory usage.		*/
 			if (SysGate_OnDemand(Ref, 1) == 0) {
 				SysGate_Update(Ref);
 			}
 		}
 	    }
-		// Notify Client.
+		/* Notify Client.					*/
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
-	// Reset the Room mask
+	/* Reset the Room mask						*/
 	BITMSK(BUS_LOCK, roomCore, Shm->Proc.CPU.Count);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
@@ -3538,13 +3542,13 @@ void Child_Manager(REF *Ref)
 	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
-			// Remove this child thread.
+			/* Remove this child thread.			*/
 			pthread_join(Arg[cpu].TID, NULL);
 			Arg[cpu].TID = 0;
 		}
 	    } else {
 		if (!Arg[cpu].TID) {
-			// Add this child thread.
+			/* Add this child thread.			*/
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
@@ -3589,7 +3593,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
 	if (!rc)
-	{	// Initialize shared memory.
+	{	/* Initialize shared memory.				*/
 	  if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
@@ -3602,13 +3606,13 @@ int Shm_Manager(FD *fd, PROC *Proc)
 				fd->Svr, 0)) != MAP_FAILED)
 	      {
 		size_t len;
-		// Clear SHM
+		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
-		// Store the daemon gate name.
+		/* Store the daemon gate name.				*/
 		len = KMIN(sizeof(SHM_FILENAME), TASK_COMM_LEN - 1);
 		memcpy(Shm->ShmName, SHM_FILENAME, len);
 		Shm->ShmName[len] = '\0';
-		// Initialize the busy wait times.
+		/* Initialize the busy wait times.			*/
 		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
 		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);
 		Shm->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
@@ -3630,12 +3634,12 @@ int Shm_Manager(FD *fd, PROC *Proc)
 		Package_Update(Shm, Proc);
 		Uncore(Shm, Proc, Core[Proc->Service.Core]);
 
-		// Initialize notification.
+		/* Initialize notification.				*/
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 
 		SysGate_Toggle(&Ref, SysGateStartUp);
 
-		// Welcomes with brand and per CPU base clock.
+		/* Welcomes with brand and per CPU base clock.		*/
 		if (Quiet & 0x001)
 		 printf("CoreFreq Daemon."				\
 			"  Copyright (C) 2015-2018 CYRIL INGENIERIE\n");
@@ -3722,7 +3726,7 @@ int help(char *appName)
 int main(int argc, char *argv[])
 {
 	FD   fd = {0, 0};
-	PROC *Proc = NULL;	// Kernel module anchor point.
+	PROC *Proc = NULL;	/* Kernel module anchor point.		*/
 	int   rc = 0, i = 0;
 	char *program = strdup(argv[0]), *appName = basename(program);
 

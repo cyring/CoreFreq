@@ -13,24 +13,24 @@
 #include "corefreq.h"
 #include "corefreqm.h"
 
-#define DeltaTSC(pSlice)					\
-({								\
-	unsigned long long overhead = pSlice->Counter[1].TSC	\
-				    - pSlice->Counter[0].TSC;	\
-	pSlice->Delta.TSC = pSlice->Counter[2].TSC		\
-			  - pSlice->Counter[1].TSC;		\
-	if (overhead <= pSlice->Delta.TSC)			\
-		pSlice->Delta.TSC -= overhead;			\
+#define DeltaTSC(pSlice)						\
+({									\
+	unsigned long long overhead = pSlice->Counter[1].TSC		\
+				    - pSlice->Counter[0].TSC;		\
+	pSlice->Delta.TSC = pSlice->Counter[2].TSC			\
+			  - pSlice->Counter[1].TSC;			\
+	if (overhead <= pSlice->Delta.TSC)				\
+		pSlice->Delta.TSC -= overhead;				\
 })
 
-#define DeltaINST(pSlice)					\
-({								\
-	unsigned long long overhead = pSlice->Counter[1].INST	\
-				    - pSlice->Counter[0].INST;	\
-	pSlice->Delta.INST = pSlice->Counter[2].INST		\
-			   - pSlice->Counter[1].INST;		\
-	if (overhead <= pSlice->Delta.INST)			\
-		pSlice->Delta.INST -= overhead;			\
+#define DeltaINST(pSlice)						\
+({									\
+	unsigned long long overhead = pSlice->Counter[1].INST		\
+				    - pSlice->Counter[0].INST;		\
+	pSlice->Delta.INST = pSlice->Counter[2].INST			\
+			   - pSlice->Counter[1].INST;			\
+	if (overhead <= pSlice->Delta.INST)				\
+		pSlice->Delta.INST -= overhead;				\
 })
 
 void CallWith_RDTSCP_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
@@ -144,7 +144,7 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 #define CRC32vASM(data, len)						\
 ({									\
 	unsigned int rem = 0;						\
-	asm (								\
+	__asm__ (							\
 		"	movl	%[_len], %%r8d"		"\n\t"		\
 		"	movq	%[_data], %%r10"	"\n\t"		\
 		"	addq	%%r10, %%r8"		"\n\t"		\

@@ -1,11 +1,13 @@
 /*
  * CoreFreq (C) 2015-2018 CYRIL INGENIERIE
- * Contributors: Andrew Gurinovich ;
+ * Contributors: Andrew Gurinovich ; CyrIng
  * Licenses: GPL2
  */
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <sys/types.h>
 #include <time.h>
 
 #include "bitasm.h"
@@ -43,9 +45,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
     json_key(&s, "SysGate");
     {
         json_start_object(&s);
-        // Bit64		Operation
-        // IDLEDRIVER	IdleDriver;
-
+        /* ToDo:
+		Bit64		Operation
+		IDLEDRIVER	IdleDriver;
+	*/
         json_key(&s, "tickReset");
         json_literal(&s, "%u", Shm->SysGate.tickReset);
         json_key(&s, "tickStep");
@@ -293,7 +296,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
     json_key(&s, "Proc");
     {
         json_start_object(&s);
-        // volatile unsigned long long	Sync __attribute__ ((aligned (128)));
+        /* ToDo:
+	 volatile unsigned long long	Sync __attribute__ ((aligned (128)));
+	*/
         json_key(&s, "Features");
         {
             json_start_object(&s);
@@ -1237,7 +1242,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
         }
         json_key(&s, "Toggle");
         json_literal(&s, "%u", Shm->Cpu[i].Toggle);
-        // ... Query
+        /* ToDo: ... Query */
         json_key(&s, "Topology");
         {
             json_start_object(&s);

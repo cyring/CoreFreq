@@ -22,7 +22,7 @@
 typedef unsigned short int	CUINT;
 typedef signed short int	CSINT;
 
-// VT100 requirements.
+/* VT100 requirements.							*/
 #define SCP	"\033[s"
 #define RCP	"\033[u"
 #define HIDE	"\033[?25l"
@@ -333,17 +333,17 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 #define StoreWindow(win, with, what)					\
 (									\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(TCELLFUNC)), HookCellFunc,	\
+	__typeof__(win->hook with), __typeof__(TCELLFUNC)),HookCellFunc,\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(KEYFUNC)), HookKeyFunc,		\
+	__typeof__(win->hook with), __typeof__(KEYFUNC)), HookKeyFunc,	\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(WINFUNC)), HookWinFunc,		\
+	__typeof__(win->hook with), __typeof__(WINFUNC)), HookWinFunc,	\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(ATTRIBUTE)), HookAttrib,		\
+	__typeof__(win->hook with), __typeof__(ATTRIBUTE)), HookAttrib,	\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(REGSTR)), HookString,		\
+	__typeof__(win->hook with), __typeof__(REGSTR)), HookString,	\
     __builtin_choose_expr(__builtin_types_compatible_p(			\
-	typeof(win->hook with), typeof(REGPTR)), HookPointer,		\
+	__typeof__(win->hook with), __typeof__(REGPTR)), HookPointer,	\
     (void)0))))))							\
 	(&(win->hook with), what)					\
 )
@@ -410,11 +410,11 @@ void FreeAllTCells(Window *win) ;
 	win->cell[win->dim - 1].length = strlen((char *)item);		\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
-		typeof(attrib), typeof(ATTRIBUTE[])), AllocCopyAttr,	\
+		__typeof__(attrib),__typeof__(ATTRIBUTE[])),AllocCopyAttr,\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
-		typeof(attrib), typeof(ATTRIBUTE*)), AllocCopyAttr,	\
+		__typeof__(attrib),__typeof__(ATTRIBUTE*)),AllocCopyAttr,\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
-		typeof(attrib), typeof(ATTRIBUTE)), AllocFillAttr,	\
+		__typeof__(attrib),__typeof__(ATTRIBUTE)),AllocFillAttr,\
 	(void)0)))							\
 		(&(win->cell[win->dim - 1]), attrib);			\
 									\
@@ -569,7 +569,7 @@ void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
 #define StoreCard(card, with, what)					\
 (									\
     __builtin_choose_expr(__builtin_types_compatible_p( 		\
-	typeof(card->hook with), typeof(CARDFUNC)), HookCardFunc,	\
+	__typeof__(card->hook with), __typeof__(CARDFUNC)),HookCardFunc,\
     (void)0)								\
 	(&(card->hook with), what)					\
 )

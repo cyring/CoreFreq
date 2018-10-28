@@ -244,17 +244,17 @@ typedef struct
 	} Power;
 
 	char				Brand[64],
-					Architecture[32];
+					Architecture[CODENAME_LEN];
 } PROC_STRUCT;
 
 typedef struct
 {
 	struct {
-		signed int	AutoClock,	// 10: Auto, 01: Init, 00: Specs
-				Experimental,	// 0: Disable, 1: Enable
-				hotplug,	// < 0: Disable, Other: Enable
-				pci,		// < 0: Disable, other: Enable
-				nmi;		// <> 0: Failed, == 0: Enable
+		signed int	AutoClock,   /* 10: Auto, 01: Init, 00: Specs */
+				Experimental,/* 0: Disable, 1: Enable	      */
+				hotplug,     /* < 0: Disable, Other: Enable   */
+				pci,	     /* < 0: Disable, other: Enable   */
+				nmi;	     /* <> 0: Failed, == 0: Enable    */
 	} Registration;
 
 	struct {
@@ -299,7 +299,7 @@ typedef struct
 			unsigned int	cmd;
 		} buffer[RING_SIZE];
 		unsigned int		head, tail;
-	} Ring[2]; // [0] Parent ; [1] Child
+	} Ring[2]; /* [0] Parent ; [1] Child				*/
 
 	char				ShmName[TASK_COMM_LEN];
 	pid_t				AppSvr,
@@ -325,7 +325,7 @@ typedef struct
 	unsigned short			CtrlCount;
 
 	    struct {
-		unsigned char		// 00:MHz , 01:MT/s , 10:MB/s , 11:VOID
+		unsigned char	/* 00:MHz , 01:MT/s , 10:MB/s , 11:VOID */
 					Bus_Rate: 2-0,
 					BusSpeed: 4-2,
 					DDR_Rate: 6-4,
@@ -334,7 +334,7 @@ typedef struct
 
 	    struct {
 		enum CHIPSET		ArchID;
-		char			CodeName[32];
+		char			CodeName[CODENAME_LEN];
 	    } Chipset;
 	} Uncore;
 

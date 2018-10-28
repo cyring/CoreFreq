@@ -1452,10 +1452,13 @@ void HyperThreading_Technology(void)
 
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
-	unsigned short codeNameIdx = pSpecific->CodeNameIdx;
+  unsigned short codeNameIdx = pSpecific->CodeNameIdx;
+  size_t len = KMIN(CODENAME_LEN - 1,
+		strlen(Arch[Proc->ArchID].Architecture[codeNameIdx].CodeName));
 
-	strncpy(Proc->Architecture,
-		Arch[Proc->ArchID].Architecture[codeNameIdx].CodeName, 32);
+	memcpy( Proc->Architecture,
+		Arch[Proc->ArchID].Architecture[codeNameIdx].CodeName, len);
+	Proc->Architecture[len] = '\0';
 }
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -8120,8 +8123,9 @@ static int __init CoreFreqK_init(void)
 			Proc->powerFormula = Arch[Proc->ArchID].powerFormula;
 
 			/* Set the uArch's name with the first found codename */
-			strncpy(Proc->Architecture,
-				Arch[Proc->ArchID].Architecture[0].CodeName,32);
+			memcpy( Proc->Architecture,
+				Arch[Proc->ArchID].Architecture[0].CodeName,
+				CODENAME_LEN);
 
 			Controller_Init();
 

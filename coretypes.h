@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.36.3"
+#define COREFREQ_VERSION	"1.37.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -102,10 +102,12 @@ enum CHIPSET {
 	CHIPSETS
 };
 
+#define CODENAME_LEN	32
+
 enum SYS_REG {
 	RFLAG_TF	= 8,
 	RFLAG_IF	= 9,
-	RFLAG_IOPL	= 12,	// [13:12]
+	RFLAG_IOPL	= 12,	/* [13:12]				*/
 	RFLAG_NT	= 14,
 	RFLAG_RF	= 16,
 	RFLAG_VM	= 17,
@@ -153,7 +155,7 @@ enum SYS_REG {
 	EXFCR_LOCK	= 0,
 	EXFCR_VMX_IN_SMX= 1,
 	EXFCR_VMXOUT_SMX= 2,
-	EXFCR_SENTER_LEN= 8,	// [14:8]
+	EXFCR_SENTER_LEN= 8,	/* [14:8]				*/
 	EXFCR_SENTER_GEN= 15,
 	EXFCR_SGX_LCE	= 17,
 	EXFCR_SGX_GEN	= 18,
@@ -163,9 +165,9 @@ enum SYS_REG {
 	EXFER_LME	= 8,
 	EXFER_LMA	= 10,
 	EXFER_NXE	= 11,
-	EXFER_SVME	= 12,	// AMD F17h
-	EXFER_LMSLE	= 13,	// AMD F17h
-	EXFER_FFXSE	= 14	// AMD F17h
+	EXFER_SVME	= 12,	/* AMD F17h				*/
+	EXFER_LMSLE	= 13,	/* AMD F17h				*/
+	EXFER_FFXSE	= 14	/* AMD F17h				*/
 };
 
 enum THERM_PWR_EVENTS {
@@ -424,9 +426,9 @@ typedef struct
 } CPUID_STRUCT;
 
 typedef struct
-{		// Common x86
-	unsigned int		LargestStdFunc,//Largest CPUID Standard Function
-				LargestExtFunc;//Largest CPUID Extended Function
+{		/* Common x86						*/
+	unsigned int		LargestStdFunc, /* Largest CPUID Standard Func*/
+				LargestExtFunc; /* Largest CPUID Extended Func*/
 	struct {
 		unsigned int	CRC;
 		char		ID[12 + 4];
@@ -434,7 +436,7 @@ typedef struct
 	char			Brand[48 + 4];
 } CPUID_FUNCTION;
 
-typedef struct	// Basic CPUID Function.
+typedef struct	/* Basic CPUID Function.				*/
 {
 		unsigned int LargestStdFunc, BX, CX, DX;
 } CPUID_0x00000000;
@@ -468,7 +470,7 @@ typedef struct
 	struct
 	{
 		unsigned int
-		SSE3	:  1-0,  // AMD Family 0Fh
+		SSE3	:  1-0,  /* AMD Family 0Fh			*/
 		PCLMULDQ:  2-1,
 		DTES64	:  3-2,
 		MONITOR	:  4-3,
@@ -477,7 +479,7 @@ typedef struct
 		SMX	:  7-6,
 		EIST	:  8-7,
 		TM2	:  9-8,
-		SSSE3	: 10-9,  // AMD Family 0Fh
+		SSSE3	: 10-9,  /* AMD Family 0Fh			*/
 		CNXT_ID	: 11-10,
 		Unused1	: 12-11,
 		FMA	: 13-12,
@@ -502,7 +504,7 @@ typedef struct
 		Hyperv	: 32-31;
 	} ECX;
 	struct
-	{	// Most common x86
+	{	/* Most common x86					*/
 		unsigned int
 		FPU	:  1-0,
 		VME	:  2-1,
@@ -522,25 +524,25 @@ typedef struct
 		CMOV	: 16-15,
 		PAT	: 17-16,
 		PSE36	: 18-17,
-		PSN	: 19-18, // Intel
+		PSN	: 19-18, /* Intel				*/
 		CLFSH	: 20-19,
 		Unused2	: 21-20,
 		DS_PEBS	: 22-21,
 		ACPI	: 23-22,
 		MMX	: 24-23,
-		FXSR	: 25-24, // FXSAVE and FXRSTOR instructions.
+		FXSR	: 25-24, /* FXSAVE and FXRSTOR instructions.	*/
 		SSE	: 26-25,
 		SSE2	: 27-26,
-		SS	: 28-27, // Intel
+		SS	: 28-27, /* Intel				*/
 		HTT	: 29-28,
-		TM1	: 30-29, // Intel
+		TM1	: 30-29, /* Intel				*/
 		Unused3	: 31-30,
-		PBE	: 32-31; // Intel
+		PBE	: 32-31; /* Intel				*/
 	} EDX;
 } CPUID_0x00000001;
 
-typedef struct	// MONITOR & MWAIT Leaf.
-{		// Common x86
+typedef struct	/* MONITOR & MWAIT Leaf.				*/
+{		/* Common x86						*/
 	struct
 	{
 		unsigned int
@@ -561,7 +563,7 @@ typedef struct	// MONITOR & MWAIT Leaf.
 		ReservedBits	: 32-2;
 	} ECX;
 	struct
-	{	// Intel reseved.
+	{	/* Intel reseved.					*/
 		unsigned int
 		Num_C0_MWAIT	:  4-0,
 		Num_C1_MWAIT	:  8-4,
@@ -573,28 +575,28 @@ typedef struct	// MONITOR & MWAIT Leaf.
 }  CPUID_0x00000005;
 
 typedef struct THERMAL_POWER_LEAF
-{	// Thermal and Power Management Leaf.
+{	/* Thermal and Power Management Leaf.				*/
 	struct
-	{	// Most Intel reserved.
+	{	/* Most Intel reserved.					*/
 		unsigned int
 		DTS	:  1-0,
-		TurboIDA:  2-1, // Reports bit 38 of MSR 0x1a0
-		ARAT	:  3-2, // Common x86
+		TurboIDA:  2-1, /* Reports bit 38 of MSR 0x1a0		*/
+		ARAT	:  3-2, /* Common x86				*/
 		Unused1	:  4-3,
 		PLN	:  5-4,
 		ECMD	:  6-5,
 		PTM	:  7-6,
-		HWP_Reg	:  8-7, // Hardware Performance registers
-		HWP_Int	:  9-8, // IA32_HWP_INTERRUPT HWP_Notification.
-		HWP_Act	: 10-9, // IA32_HWP_REQUEST Activity_Window
-		HWP_Prf	: 11-10,// IA32_HWP_REQUEST Performance_Pref.
-		HWP_Lvl	: 12-11,// IA32_HWP_REQUEST_PKG
+		HWP_Reg	:  8-7, /* Hardware Performance registers	*/
+		HWP_Int	:  9-8, /* IA32_HWP_INTERRUPT HWP_Notification. */
+		HWP_Act	: 10-9, /* IA32_HWP_REQUEST Activity_Window	*/
+		HWP_Prf	: 11-10,/* IA32_HWP_REQUEST Performance_Pref.	*/
+		HWP_Lvl	: 12-11,/* IA32_HWP_REQUEST_PKG			*/
 		Unused2	: 13-12,
-		HDC_Reg	: 15-13,// Hardware Duty Cycling registers
+		HDC_Reg	: 15-13,/* Hardware Duty Cycling registers	*/
 		Unused3	: 32-15;
 	} EAX;
 	struct
-	{	// Intel reserved.
+	{	/* Intel reserved.					*/
 		unsigned int
 		Threshld:  4-0,
 		Unused1	: 32-4;
@@ -602,47 +604,47 @@ typedef struct THERMAL_POWER_LEAF
     union
     {
 	struct
-	{	// Intel reserved.
+	{	/* Intel reserved.					*/
 		unsigned int
-		HCF_Cap	:  1-0, // MSR: IA32_MPERF (E7H) & IA32_APERF (E8H)
+		HCF_Cap	:  1-0, /* MSR: IA32_MPERF (E7H) & IA32_APERF (E8H)   */
 		ACNT_Cap:  2-1,
 		Unused1	:  3-2,
 		SETBH	:  4-3,
 		Unused2	: 32-4;
 	};
 	struct
-	{	// AMD reserved.
+	{	/* AMD reserved.					*/
 		unsigned int
-		EffFreq	:  1-0, // MSR0000_00E7 (MPERF) & MSR0000_00E8 (APERF)
+		EffFreq	:  1-0, /* MSR0000_00E7 (MPERF) & MSR0000_00E8 (APERF)*/
 		NotUsed : 32-1;
 	};
     } ECX;
 	struct
-	{	// Intel reserved.
+	{	/* Intel reserved.					*/
 		unsigned int
 		Unused1	: 32-0;
 	} EDX;
 } CPUID_0x00000006;
 
-typedef struct	// Extended Feature Flags Enumeration Leaf.
+typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 {
 	struct
-	{	// Common x86
+	{	/* Common x86						*/
 		unsigned int
 		MaxSubLeaf	: 32-0;
 	} EAX;
 	struct
 	{
 		unsigned int
-		FSGSBASE	:  1-0, // Common x86
+		FSGSBASE	:  1-0, /* Common x86			*/
 		TSC_ADJUST	:  2-1,
 		SGX		:  3-2,
-		BMI1		:  4-3, // Common x86
+		BMI1		:  4-3, /* Common x86			*/
 		HLE		:  5-4,
-		AVX2		:  6-5, // Common x86
+		AVX2		:  6-5, /* Common x86			*/
 		Unused1		:  7-6,
-		SMEP		:  8-7, // Common x86
-		BMI2		:  9-8, // Common x86
+		SMEP		:  8-7, /* Common x86			*/
+		BMI2		:  9-8, /* Common x86			*/
 		FastStrings	: 10-9,
 		INVPCID		: 11-10,
 		RTM		: 12-11,
@@ -659,7 +661,7 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		Unused4		: 32-26;
 	} EBX;
 	struct
-	{	// Intel reserved.
+	{	/* Intel reserved.					*/
 		unsigned int
 		PREFETCHWT1	:  1-0,
 		Unused1		:  3-1,
@@ -668,11 +670,11 @@ typedef struct	// Extended Feature Flags Enumeration Leaf.
 		Unused2		: 32-5;
 	} ECX;
 		unsigned int
-	EDX			: 32-0; // Intel reserved.
+	EDX			: 32-0; /* Intel reserved.		*/
 } CPUID_0x00000007;
 
-typedef struct	// Architectural Performance Monitoring Leaf.
-{	// Intel reserved.
+typedef struct	/* Architectural Performance Monitoring Leaf.		*/
+{	/* Intel reserved.						*/
 	struct
 	{
 		unsigned int
@@ -707,7 +709,7 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 	} EDX;
 } CPUID_0x0000000a;
 
-typedef struct	// Extended CPUID Function.
+typedef struct	/* Extended CPUID Function.				*/
 {
 		unsigned int LargestExtFunc, EBX, ECX, EDX;
 } CPUID_0x80000000;
@@ -716,49 +718,49 @@ typedef struct
 {
     union
     {
-	struct { // Intel reserved.
+	struct { /* Intel reserved.					*/
 		unsigned int
-		LAHFSAHF:  1-0,  // LAHF and SAHF instruction support.
+		LAHFSAHF:  1-0,  /* LAHF and SAHF instruction support.	*/
 		Unused1	: 32-1;
 	};
-	struct { // AMD reserved.
+	struct { /* AMD reserved.					*/
 		unsigned int
-		// Family 0Fh :
+		/* Family 0Fh :						*/
 		LahfSahf:  1-0,
-		MP_Mode	:  2-1,  // Core multi-processing legacy mode.
-		SVM	:  3-2,  // Secure virtual machine.
-		Ext_APIC:  4-3,  // Extended APIC space.
-		AltMov	:  5-4,  // AltMovCr8
-		ABM	:  6-5,  // LZCNT instruction support.
+		MP_Mode	:  2-1,  /* Core multi-processing legacy mode.	*/
+		SVM	:  3-2,  /* Secure virtual machine.		*/
+		Ext_APIC:  4-3,  /* Extended APIC space.		*/
+		AltMov	:  5-4,  /* AltMovCr8				*/
+		ABM	:  6-5,  /* LZCNT instruction support.		*/
 		SSE4A	:  7-6,
-		AlignSSE:  8-7,  // Misaligned SSE mode.
-		PREFETCH:  9-8,  // 3DNow PREFETCH, PREFETCHW instruction.
-		// Family 15h :
-		OSVW	: 10-9,  // OS-visible workaround support.
-		IBS	: 11-10, // Instruction based sampling.
-		XOP	: 12-11, // Extended operation support.
-		SKINIT	: 13-12, // SKINIT and STGI support.
-		WDT	: 14-13, // Watchdog timer support.
+		AlignSSE:  8-7,  /* Misaligned SSE mode.		*/
+		PREFETCH:  9-8,  /* 3DNow PREFETCH, PREFETCHW instruction. */
+		/* Family 15h :						*/
+		OSVW	: 10-9,  /* OS-visible workaround support.	*/
+		IBS	: 11-10, /* Instruction based sampling.		*/
+		XOP	: 12-11, /* Extended operation support.		*/
+		SKINIT	: 13-12, /* SKINIT and STGI support.		*/
+		WDT	: 14-13, /* Watchdog timer support.		*/
 		NotUsed1: 15-14,
-		LWP	: 16-15, // Lightweight profiling support.
-		FMA4	: 17-16, // Four-operand FMA instruction.
-		TCE	: 18-17, // Translation Cache Extension.
+		LWP	: 16-15, /* Lightweight profiling support.	*/
+		FMA4	: 17-16, /* Four-operand FMA instruction.	*/
+		TCE	: 18-17, /* Translation Cache Extension.	*/
 		NotUsed2: 21-18,
-		TBM	: 22-21, // Trailing bit manipulation.
-		TopoExt	: 23-22, // Topology extensions support.
-		PerfCore: 24-23, // PerfCtrExtCore MSR.
-		PerfNB	: 25-24, // PerfCtrExtNB MSR.
+		TBM	: 22-21, /* Trailing bit manipulation.		*/
+		TopoExt	: 23-22, /* Topology extensions support.	*/
+		PerfCore: 24-23, /* PerfCtrExtCore MSR.			*/
+		PerfNB	: 25-24, /* PerfCtrExtNB MSR.			*/
 		NotUsed3: 26-25,
-		Data_BP	: 27-26, // Data access breakpoint extension.
-		PerfTSC	: 28-27, // Performance TSC MSR.
-		PerfL2I	: 29-28, // L2I performance counter extensions support.
-		MWaitExt: 30-29, // MWAITX/MONITORX support.
+		Data_BP	: 27-26, /* Data access breakpoint extension.	*/
+		PerfTSC	: 28-27, /* Performance TSC MSR.		*/
+		PerfL2I	: 29-28, /* L2I performance counter extensions support*/
+		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
 		NotUsed4: 32-30;
 	};
     } ECX;
     union
     {
-	struct { // Intel reserved.
+	struct { /* Intel reserved.					*/
 		unsigned int
 		Unused1	: 11-0,
 		SYSCALL	: 12-11,
@@ -771,14 +773,14 @@ typedef struct
 		IA64	: 30-29,
 		Unused5	: 32-30;
 	};
-	struct { // AMD reserved.
-		unsigned int	 // Most bits equal to CPUID 0x01
+	struct { /* AMD reserved.					*/
+		unsigned int	 /* Most bits equal to CPUID 0x01	*/
 		FPU	:  1-0,
-		VME	:  2-1,  // Virtual-mode enhancements.
-		DE	:  3-2,  // Debugging extensions.
-		PSE	:  4-3,  // Page-size extensions.
+		VME	:  2-1,  /* Virtual-mode enhancements.		*/
+		DE	:  3-2,  /* Debugging extensions.		*/
+		PSE	:  4-3,  /* Page-size extensions.		*/
 		TSC	:  5-4,
-		MSR	:  6-5,  // AMD MSR.
+		MSR	:  6-5,  /* AMD MSR.				*/
 		PAE	:  7-6,
 		MCE	:  8-7,
 		CMPXCH8	:  9-8,
@@ -792,23 +794,23 @@ typedef struct
 		PAT	: 17-16,
 		PSE36	: 18-17,
 		NotUsed2: 20-18,
-		NX	: 21-20, // No-execute page protection.
+		NX	: 21-20, /* No-execute page protection.		*/
 		NotUsed3: 22-21,
-		MMX_Ext : 23-22, // MMX extensions.
+		MMX_Ext : 23-22, /* MMX extensions.			*/
 		MMX	: 24-23,
 		FXSR	: 25-24,
-		FFXSR	: 26-25, // FXSAVE and FXRSTOR optimizations.
+		FFXSR	: 26-25, /* FXSAVE and FXRSTOR optimizations.	*/
 		Page1GB	: 27-26,
 		RDTSCP	: 28-27,
 		NotUsed4: 29-28,
-		LM	: 30-29, // Long mode.
-		_3DNowEx: 31-30, // Extensions to 3DNow!
-		_3DNow	: 32-31; // 3DNow! instructions.
+		LM	: 30-29, /* Long mode.				*/
+		_3DNowEx: 31-30, /* Extensions to 3DNow!		*/
+		_3DNow	: 32-31; /* 3DNow! instructions.		*/
 	};
     } EDX;
 } CPUID_0x80000001;
 
-typedef struct	// Architectural Performance Monitoring Leaf.
+typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 {
 	struct
 	{
@@ -817,63 +819,63 @@ typedef struct	// Architectural Performance Monitoring Leaf.
 	} EAX, EBX, ECX;
     union
     {
-	struct { // Intel reserved.
+	struct { /* Intel reserved.					*/
 		unsigned int
 		Unused1	:  8-0,
-		Inv_TSC	:  9-8, // Invariant TSC available if 1
+		Inv_TSC	:  9-8,  /* Invariant TSC available if 1	*/
 		Unused2	: 32-9;
 	};
       union
-      {		// AMD Family 0Fh
+      {		/* AMD Family 0Fh					*/
 	struct {
 		unsigned int
-		TS	:  1-0,  // Temperature sensor
-		FID	:  2-1,  // Frequency ID control is supported.
-		VID	:  3-2,  // Voltage ID control is supported.
-		TTP	:  4-3,  // THERMTRIP is supported = 1.
-		TM	:  5-4,  // Hardware thermal control (HTC).
-		STC	:  6-5,  // K7-K8: Software thermal control (STC)
-		_100MHz	:  7-6,  // 100 MHz multiplier Control.
+		TS	:  1-0,  /* Temperature sensor			*/
+		FID	:  2-1,  /* Frequency ID control is supported.	*/
+		VID	:  3-2,  /* Voltage ID control is supported.	*/
+		TTP	:  4-3,  /* THERMTRIP is supported = 1.		*/
+		TM	:  5-4,  /* Hardware thermal control (HTC).	*/
+		STC	:  6-5,  /* K7-K8: Software thermal control (STC) */
+		_100MHz	:  7-6,  /* 100 MHz multiplier Control. 	*/
 		NotUsed	: 32-7;
 	};
-	struct { // AMD Family 15h
+	struct { /* AMD Family 15h					*/
 		unsigned int
-		Fam_0Fh	:  7-0,  // Family 0Fh features.
-		HwPstate:  8-7,  // Hardware P-state control msr exist ?
-		TscInv	:  9-8,  // Invariant TSC ?
-		CPB	: 10-9,  // Core performance boost.
-		EffFrqRO: 11-10, // Read-only effective frequency interf. msr ?
-		ProcFb	: 12-11, // Processor feedback interface available if 1
-		ProcPwr	: 13-12, // Core power reporting interface supported.
+		Fam_0Fh	:  7-0,  /* Family 0Fh features.		*/
+		HwPstate:  8-7,  /* Hardware P-state control msr exist ? */
+		TscInv	:  9-8,  /* Invariant TSC ?			*/
+		CPB	: 10-9,  /* Core performance boost.		*/
+		EffFrqRO: 11-10, /* Read-only effective freq. interf. msr ?   */
+		ProcFb	: 12-11, /* Processor feedback interf. available if 1 */
+		ProcPwr	: 13-12, /* Core power reporting interface supported. */
 		Reserved: 32-13;
 	};
       };
     } EDX;
 } CPUID_0x80000007;
 
-typedef struct	// Processor Capacity Leaf.
+typedef struct	/* Processor Capacity Leaf.				*/
 {
 	struct {
 		unsigned int
-		MaxPhysicalAddr :  8-0,  // Common x86
-		MaxLinearAddr	: 16-8,  // Common x86
-		MaxGuestPhysAddr: 24-16, // AMD reserved
+		MaxPhysicalAddr :  8-0,  /* Common x86			*/
+		MaxLinearAddr	: 16-8,  /* Common x86			*/
+		MaxGuestPhysAddr: 24-16, /* AMD reserved		*/
 		Reserved	: 32-24;
 	} EAX;
 	struct
 	{
 		unsigned int
-		CLZERO		:  1-0,  // AMD Clear Zero Instruction
-		IRPerf		:  2-1,  // AMD Inst. Retired Counter support
-		XSaveErPtr	:  3-2,  // AMD FX___ error pointers suuport
+		CLZERO		:  1-0,  /* AMD Clear Zero Instruction	*/
+		IRPerf		:  2-1,  /* AMD Inst. Retired Counter support */
+		XSaveErPtr	:  3-2,  /* AMD FX___ error pointers suuport  */
 		Reserved	: 32-3;
 	} EBX;
-	struct { // AMD reserved
+	struct { /* AMD reserved					*/
 		unsigned int
-		NC		:  8-0,  // Zero based number of threads
+		NC		:  8-0,  /* Zero based number of threads */
 		Reserved1	: 12-8,
-		ApicIdCoreIdSize: 16-12, // Initial APIC ID size to compute MNC
-		PerfTscSize	: 18-16, // 00b=40, 01b=48, 10b=56, 11b=64 bits
+		ApicIdCoreIdSize: 16-12,/* Initial APIC ID size to compute MNC*/
+		PerfTscSize	: 18-16, /* 00b=40,01b=48,10b=56,11b=64 bits  */
 		Reserved2	: 32-18;
 	} ECX;
 	struct
@@ -883,11 +885,11 @@ typedef struct	// Processor Capacity Leaf.
 	} EDX;
 } CPUID_0x80000008;
 
-typedef struct	// AMD Extended ID Leaf.
-{	// Remark: all registers valid if CPUID(0x80000001).ECX.TopoEx == 1
+typedef struct	/* AMD Extended ID Leaf.				*/
+{ /* Remark: all registers valid if CPUID(0x80000001).ECX.TopoEx == 1	*/
 	struct {
 		unsigned int
-		ExtApicId	: 32-0;  // Valid if MSR(APIC_BAR[ApicEn]) != 0
+		ExtApicId	: 32-0;/* Valid if MSR(APIC_BAR[ApicEn]) != 0 */
 	} EAX;
 	struct
 	{
@@ -899,7 +901,7 @@ typedef struct	// AMD Extended ID Leaf.
 	struct {
 		unsigned int
 		NodeId		:  8-0,
-		NodesPerProc	: 11-8,  // 000b=1, 001b=2, 011b=4 nodes
+		NodesPerProc	: 11-8,  /* 000b=1,001b=2,011b=4 nodes	*/
 		Reserved	: 32-11;
 	} ECX;
 	struct
@@ -909,7 +911,7 @@ typedef struct	// AMD Extended ID Leaf.
 	} EDX;
 } CPUID_0x8000001e;
 
-typedef struct	// BSP CPUID features.
+typedef struct	/* BSP CPUID features.					*/
 {
 	CPUID_FUNCTION		Info;
 
@@ -957,7 +959,7 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_82955_HB
 	#define PCI_DEVICE_ID_INTEL_82955_HB		0x2774
 #endif
-// Source: /drivers/char/agp/intel-agp.h
+/* Source: /drivers/char/agp/intel-agp.h				*/
 #ifndef PCI_DEVICE_ID_INTEL_82945GME_HB
 	#define PCI_DEVICE_ID_INTEL_82945GME_HB		0x27ac
 #endif
@@ -988,15 +990,15 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_Q33_HB
 	#define PCI_DEVICE_ID_INTEL_Q33_HB		0x29d0
 #endif
-// Source: /drivers/edac/x38_edac.c
+/* Source: /drivers/edac/x38_edac.c					*/
 #ifndef PCI_DEVICE_ID_INTEL_X38_HB
 	#define PCI_DEVICE_ID_INTEL_X38_HB		0x29e0
 #endif
-// Source: /drivers/edac/i3200_edac.c
+/* Source: /drivers/edac/i3200_edac.c					*/
 #ifndef PCI_DEVICE_ID_INTEL_3200_HB
 	#define PCI_DEVICE_ID_INTEL_3200_HB		0x29f0
 #endif
-// Source: /drivers/char/agp/intel-agp.h
+/* Source: /drivers/char/agp/intel-agp.h				*/
 #ifndef PCI_DEVICE_ID_INTEL_Q45_HB
 	#define PCI_DEVICE_ID_INTEL_Q45_HB		0x2e10
 #endif
@@ -1006,7 +1008,7 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_G41_HB
 	#define PCI_DEVICE_ID_INTEL_G41_HB		0x2e30
 #endif
-// Source: /include/linux/pci_ids.h
+/* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_INTEL_I7_MCR
 	#define PCI_DEVICE_ID_INTEL_I7_MCR		0x2c18
 #endif
@@ -1088,32 +1090,32 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE
 	#define PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE	0x2c70
 #endif
-// Source: Intel X58 Express Chipset Datasheet
+/* Source: Intel X58 Express Chipset Datasheet				*/
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
-// Source: /include/linux/pci_ids.h
+/* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0	0x3ca0
 #endif
-// Source: 2nd Generation Intel® Core™ Processor Family Vol2
+/* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA
 	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA	0x0100
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104
 	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104	0x0104
 #endif
-// Source: /drivers/edac/sb_edac.c
+/* Source: /drivers/edac/sb_edac.c					*/
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
 #endif
-// Source: 3rd Generation Intel® Core™ Processor Family Vol2
+/* Source: 3rd Generation Intel® Core™ Processor Family Vol2		*/
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA	0x0150
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
 #endif
-// Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0
+/* Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	*/
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
 #endif
@@ -1126,28 +1128,28 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0
 	#define PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0 0x1614
 #endif
-// Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2
+/* Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 */
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA	0x1904
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
 #endif
-// Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2
+/* Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2 */
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ	0x191f
 #endif
-// Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2
+/* Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2 */
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD	0x1900
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
 #endif
-// Source: 7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2
+/* Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2*/
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
 #endif
@@ -1172,21 +1174,21 @@ typedef struct	// BSP CPUID features.
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
 #endif
-// Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2
+/* Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2 */
 #ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ 0x3e1f
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH
 	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH 0x3ec2
 #endif
-// Source: /include/linux/pci_ids.h
+/* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_AMD_K8_NB_MEMCTL
 	#define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL		0x1102
 #endif
 #ifndef PCI_DEVICE_ID_AMD_K8_NB
 	#define PCI_DEVICE_ID_AMD_K8_NB			0x1100
 #endif
-// Source: AMD I/O Virtualization Technology (IOMMU) Specification
+/* Source: AMD I/O Virtualization Technology (IOMMU) Specification	*/
 #ifndef PCI_DEVICE_ID_AMD_17H_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_IOMMU		0x1451
 #endif
@@ -1235,14 +1237,14 @@ typedef struct
 	};
 } RAM_GEOMETRY;
 
-// Source: /include/uapi/linux/utsname.h
+/* Source: /include/uapi/linux/utsname.h				*/
 #ifdef __NEW_UTS_LEN
 #define MAX_UTS_LEN		__NEW_UTS_LEN
 #else
 #define MAX_UTS_LEN		64
 #endif
 
-// Source: /include/linux/cpuidle.h
+/* Source: /include/linux/cpuidle.h					*/
 #ifndef _LINUX_CPUIDLE_H
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
@@ -1251,9 +1253,9 @@ typedef struct
 typedef struct {
 	int			stateCount;
 	struct {
-		unsigned int	exitLatency;		/* in US */
-			int	powerUsage;		/* in mW */
-		unsigned int	targetResidency;	/* in US */
+		unsigned int	exitLatency;		/* in US	*/
+			int	powerUsage;		/* in mW	*/
+		unsigned int	targetResidency;	/* in US	*/
 			char	Name[CPUIDLE_NAME_LEN];
 	} State[CPUIDLE_STATE_MAX];
 	char			Name[CPUIDLE_NAME_LEN],
@@ -1271,11 +1273,11 @@ typedef struct {
 	unsigned long long	runtime,
 				usertime,
 				systime;
-	pid_t			pid,		// type of __kernel_pid_t = int
+	pid_t			pid,	/* type of __kernel_pid_t is integer */
 				tgid,
 				ppid;
-	short int		state;		// TASK_STATE_MAX = 0x1000
-	short int		wake_cpu;	// limited to 64K CPU
+	short int		state;		/* TASK_STATE_MAX = 0x1000 */
+	short int		wake_cpu;	/* limited to 64K CPUs	*/
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 
@@ -1297,7 +1299,7 @@ typedef struct {
 #define TASK_LIMIT		(((4096 << 5) - SYSGATE_STRUCT_SIZE)	\
 				/ sizeof(TASK_MCB))
 
-// Input-Output Control
+/* Input-Output Control							*/
 #define COREFREQ_TOGGLE_OFF	0x0000000000000000L
 #define COREFREQ_TOGGLE_ON	0x0000000000000001L
 
@@ -1355,7 +1357,7 @@ enum {
 	CONIC_VARIATIONS
 };
 
-// Circular buffer
+/* Circular buffer							*/
 #define RING_SIZE	16
 
 #define RING_NULL(Ring)							\

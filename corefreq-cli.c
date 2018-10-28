@@ -86,7 +86,7 @@ void TrapSignal(int operation)
 		signal(SIGINT,  Emergency);
 		signal(SIGQUIT, Emergency);
 		signal(SIGTERM, Emergency);
-		signal(SIGTSTP, Emergency);	// [CTRL] + [Z]
+		signal(SIGTSTP, Emergency);	/* [CTRL] + [Z]		*/
 		signal(SIGCHLD, Emergency);
 	}
 }
@@ -185,7 +185,8 @@ void Print_v1(	CELL_FUNC OutFunc,
 		{"",	" ",	"  ",	"   "}
 	};
 	char *line = malloc(width + 1);
-
+  if (line != NULL)
+  {
 	va_list ap;
 	va_start(ap, fmt);
 	vsprintf(line, fmt, ap);
@@ -195,13 +196,16 @@ void Print_v1(	CELL_FUNC OutFunc,
 		(int)(width - strlen(line) - strlen(indent[0][tab])), hSpace);
     else {
 	ASCII *item = malloc(width + 1);
+      if (item != NULL) {
 	sprintf((char *)item, "%s%s%.*s", indent[1][tab], line,
 		(int)(width - strlen(line) - strlen(indent[1][tab])), hSpace);
 	OutFunc(win, key, attrib, item);
 	free(item);
+      }
     }
 	va_end(ap);
 	free(line);
+  }
 }
 
 void Print_v2(	CELL_FUNC OutFunc,
@@ -209,8 +213,10 @@ void Print_v2(	CELL_FUNC OutFunc,
 		CUINT *nl,
 		ATTRIBUTE *attrib, ...)
 {
+	ASCII *item = malloc(32);
+    if (item != NULL)
+    {
 	char *fmt;
-	ASCII item[32];
 	va_list ap;
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
@@ -227,6 +233,8 @@ void Print_v2(	CELL_FUNC OutFunc,
 			OutFunc(win, SCANKEY_NULL, attrib, item);
 	}
 	va_end(ap);
+	free(item);
+    }
 }
 
 void Print_v3(	CELL_FUNC OutFunc,
@@ -234,8 +242,10 @@ void Print_v3(	CELL_FUNC OutFunc,
 		CUINT *nl,
 		ATTRIBUTE *attrib, ...)
 {
+	ASCII *item = malloc(32);
+    if (item != NULL)
+    {
 	char *fmt;
-	ASCII item[32];
 	va_list ap;
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
@@ -254,6 +264,8 @@ void Print_v3(	CELL_FUNC OutFunc,
 			OutFunc(win, SCANKEY_NULL, attrib, item);
 	}
 	va_end(ap);
+	free(item);
+    }
 }
 
 #define PUT(key, attrib, width, tab, fmt, ...)	\
@@ -811,19 +823,19 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE attrib[4][5][17] = {
 	  {
-	    {	// [N] & [N/N]	2*(0|0)+(0<<0)
+	    {	/*	[N] & [N/N]	2*(0|0)+(0<<0)			*/
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK
-	    },{ // [Y]
+	    },{ /*	[Y]						*/
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,HGK,LWK
-	    },{ // [N/Y]	2*(0|1)+(0<<1)
+	    },{ /*	[N/Y]	2*(0|1)+(0<<1)				*/
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,LWK,LWK,HGK,LWK
-	    },{ // [Y/N]	2*(1|0)+(1<<0)
+	    },{ /*	[Y/N]	2*(1|0)+(1<<0)				*/
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,HGK,LWK,LWK,LWK
-	    },{ // [Y/Y]	2*(1|1)+(1<<1)
+	    },{ /*	[Y/Y]	2*(1|1)+(1<<1)				*/
 		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
 		LWK,LWK,LWK,HGK,LWK,HGK,LWK
 	    }
@@ -884,7 +896,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	  }
 	};
 	CUINT nl = win->matrix.size.wth;
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
 			|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
 			+ (Shm->Proc.Features.ExtInfo.EDX._3DNow
@@ -912,7 +924,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		" BMI1/BMI2 [%c/%c] ",
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CLFSH],
 		" CLFSH        [%c]",
 		Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
@@ -928,7 +940,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.CMPXCH16],
 		"    CMPXCH16 [%c] ",
 		Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
 		" F16C         [%c]",
 		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
@@ -944,7 +956,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
 		"   LAHF/SAHF [%c] ",
 		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
 			|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
 			+ (Shm->Proc.Features.Std.EDX.MMX
@@ -964,7 +976,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.PCLMULDQ],
 		"    PCLMULDQ [%c] ",
 		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.POPCNT],
 		" POPCNT       [%c]",
 		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
@@ -980,7 +992,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.SEP],
 		"         SEP [%c] ",
 		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX],
 		" SGX          [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.SGX ? 'Y' : 'N');
@@ -996,7 +1008,7 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.SSE3],
 		"        SSE3 [%c] ",
 		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
-// Row Mark
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
 		" SSSE3        [%c]",
 		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
@@ -1061,7 +1073,7 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		" x2APIC"
 	};
 	int bix;
-// Section Mark
+/* Section Mark */
 	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"1 GB Pages Support%.*s1GB-PAGES   [%7s]",
@@ -1072,8 +1084,8 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"100 MHz multiplier Control%.*s100MHzSteps   [%7s]",
 		width - 52, hSpace, powered(bix));
 
-	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		// Intel
-	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	// AMD
+	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		/* Intel */
+	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	/* AMD   */
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Advanced Configuration & Power Interface%.*sACPI   [%7s]",
 		width - 59, hSpace, powered(bix));
@@ -1285,7 +1297,7 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	    }
 	};
 	int bix;
-// Section Mark
+/* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
@@ -1335,7 +1347,7 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"Simultaneous Multithreading%.*sSMT       [%3s]",
 		width - 45, hSpace, enabled(bix));
 
-	bix = Shm->Proc.PowerNow == 0b11;	// VID + FID
+	bix = Shm->Proc.PowerNow == 0b11;	/*	VID + FID	*/
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"PowerNow!%.*sCnQ       [%3s]",
 		width - 27, hSpace, enabled(bix));
@@ -1403,7 +1415,7 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	    }
 	};
 	int bix;
-// Section Mark
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Version%.*sPM       [%3d]",
 		width - 24, hSpace, Shm->Proc.PM_version);
@@ -1626,7 +1638,7 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"UNLOCK",
 	};
 	int bix;
-// Section Mark
+/* Section Mark */
 	bix = Shm->Proc.Technology.ODCM == 1 ? 3 : 1;
 	PUT(BOXKEY_ODCM, attrib[bix], width, 2,
 		"Clock Modulation%.*sODCM   <%7s>", width - 35, hSpace,
@@ -1721,7 +1733,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	char	*row = malloc(width + 1),
 		*str = malloc(width + 1);
 	int	idx = 0;
-// Section Mark
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"%s:", Shm->SysGate.sysname);
 
@@ -1736,7 +1748,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Machine%.*s[%s]", width - 12 - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
-// Section Mark
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"Memory:%.*s", width - 7, hSpace);
 
@@ -1763,14 +1775,14 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
-// Section Mark
+/* Section Mark */
   if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
   {
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
-// Row Mark
+/* Row Mark */
 	len = sprintf(row, "States:%.*s", 9, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
@@ -1779,7 +1791,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
     }
 	PUT(SCANKEY_NULL, attrib[0], width, 3, row, NULL);
-// Row Mark
+/* Row Mark */
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
@@ -1788,7 +1800,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
     }
 	PUT(SCANKEY_NULL, attrib[0], width, 3, row, NULL);
-// Row Mark
+/* Row Mark */
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
@@ -1797,7 +1809,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
     }
 	PUT(SCANKEY_NULL, attrib[0], width, 3, row, NULL);
-// Row Mark
+/* Row Mark */
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
@@ -2068,27 +2080,40 @@ void iSplit(unsigned int sInt, char hInt[]) {
 
 void MemoryController(Window *win, CELL_FUNC OutFunc)
 {
+	#define MATX 14
+	#define MATY 5
 	size_t len = strlen(Shm->Uncore.Chipset.CodeName);
-	CUINT nl = win->matrix.size.wth, nc;
+	CUINT nl = win->matrix.size.wth, ni, nr, nc;
 	unsigned short mc, cha, slot;
-	ATTRIBUTE attrib[2][5] = {
+	ATTRIBUTE attrib[2][MATY] = {
 	    {
 		LWK,LWK,LWK,LWK,LWK
 	    },{
 		HWK,HWK,HWK,HWK,HWK
 	    }
 	};
-	char hInt[16], codeName[14][5 + 1];
+	char hInt[16], **codeName = malloc(MATX * sizeof(char *));
 
-  for (nc = 0; nc < 14; nc++)
-	strcpy(codeName[nc], "     ");
-  for (nc = 0; nc < (len / 5); nc++)
-	strncpy(codeName[5 + nc], &Shm->Uncore.Chipset.CodeName[nc * 5], 5);
-  if ((len = len - (nc * 5)) > 0)
-	strncpy(codeName[5 + nc], &Shm->Uncore.Chipset.CodeName[nc * 5], len);
-  for (nc = 0; nc < 14; nc++)
-	PRT(IMC, attrib[0], codeName[nc]);
-
+  if (codeName != NULL) {
+	for (nc = 0; nc < MATX; nc++) {
+		if ((codeName[nc] = malloc(MATY + 1)) != NULL) {
+			memset(codeName[nc], 0x20, MATY);
+			codeName[nc][MATY] = '\0';
+		} else
+			goto IMC_FREE;
+	}
+	for (ni = 0; ni < len; ni++) {
+		nc = (MATX + len + ni) / MATY;
+		nr = (MATX + len + ni) % MATY;
+		codeName[nc][nr] = Shm->Uncore.Chipset.CodeName[ni];
+	}
+	for (nc = 0; nc < MATX; nc++)
+		PRT(IMC, attrib[1], codeName[nc]);
+IMC_FREE:
+	while (nc > 0)
+		free(codeName[--nc]);
+	free(codeName);
+  }
   for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
   {
 	PRT(IMC, attrib[0], "Contr");		PRT(IMC, attrib[0], "oller");
@@ -2338,14 +2363,14 @@ struct {
 struct {
 	struct {
 	unsigned int
-		layout	:  1-0,		// Draw layout
-		clear	:  2-1,		// Clear screen
-		height	:  3-2,		// Valid height
-		width	:  4-3,		// Valid width
-		daemon	:  5-4,		// Draw dynamic
-		taskVal :  6-5,		// Display task's value
-		avgOrPC :  7-6,		// C-states average || % pkg states
-		clkOrLd :  8-7,		// Relative freq. || % load
+		layout	:  1-0,		/* Draw layout			*/
+		clear	:  2-1,		/* Clear screen			*/
+		height	:  3-2,		/* Valid height			*/
+		width	:  4-3,		/* Valid width			*/
+		daemon	:  5-4,		/* Draw dynamic			*/
+		taskVal :  6-5,		/* Display task's value		*/
+		avgOrPC :  7-6,		/* C-states average || % pkg states */
+		clkOrLd :  8-7,		/* Relative freq. || % load	*/
 		_padding: 32-8;
 	} Flag;
 	enum VIEW	View;
@@ -3011,7 +3036,7 @@ Window *CreateSysInfo(unsigned long long id)
 	if (wSysInfo != NULL) {
 		if (SysInfoFunc != NULL)
 			SysInfoFunc(wSysInfo, winWidth, AddSysInfoCell);
-		// Pad with blank rows.
+		/* Pad with blank rows.					*/
 		while (SysInfoCellPadding < matrixSize.hth) {
 			SysInfoCellPadding++;
 			StoreTCell(wSysInfo,
@@ -3239,7 +3264,7 @@ Window *CreateTracking(unsigned long long id)
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 	  size_t tc = Shm->SysGate.taskCount;
 	  if (tc > 0) {
-	    const CUINT margin = 12;	// @ "Freq(MHz)"
+	    const CUINT margin = 12;	/*	@ "Freq(MHz)"		*/
 	    int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
 
 	    Window *wTrack = CreateWindow(wLayer, id,
@@ -3711,7 +3736,7 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_DOWN:
 	if (!IsDead(&winList))
 		return(-1);
-	// Fallthrough
+	/* Fallthrough */
     case SCANKEY_PLUS:
 	if ((draw.Disposal == D_MAINVIEW)
 	&&  (draw.cpuScroll < (Shm->Proc.CPU.Count - draw.Area.MaxRows))) {
@@ -3722,7 +3747,7 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_UP:
 	if (!IsDead(&winList))
 		return(-1);
-	// Fallthrough
+	/* Fallthrough */
     case SCANKEY_MINUS:
 	if ((draw.Disposal == D_MAINVIEW) && (draw.cpuScroll > 0)) {
 		draw.cpuScroll--;
@@ -4662,7 +4687,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0}; // Row indexes
+	const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0}; /* Row indexes */
 	const Coordinate origin = {
 	.col = (draw.Size.width - (44 - 17)) / 2,
 	.row = TOP_HEADER_ROW + 2
@@ -4753,7 +4778,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	const CSINT thisCST[]={-1, -1, -1, 3, 2, -1, 1, 0}; // Row indexes
+	const CSINT thisCST[]={-1, -1, -1, 3, 2, -1, 1, 0}; /* Row indexes */
 	const Coordinate origin = {
 	.col = (draw.Size.width - (44 - 17)) / 2,
 	.row = TOP_HEADER_ROW + 3
@@ -5096,7 +5121,7 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_k:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) == 0)
 		break;
-	// fallthrough
+	/* fallthrough */
     case SCANKEY_e:
     case SCANKEY_o:
     case SCANKEY_p:
@@ -5167,7 +5192,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	struct FLIP_FLOP *CFlop = \
 	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-	// Reset the Top Frequency
+	/* Reset the Top Frequency					*/
 	if (!draw.Flag.clkOrLd) {
 	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
 	} else {
@@ -5366,7 +5391,7 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 			'-','-','-','-'
 		}
 	};
-	// Alternate the color of the frequency ratios
+	/* Alternate the color of the frequency ratios			*/
 	int idx = ratio.Count, bright = 1;
 	while (idx-- > 0) {
 		char tabStop[] = "00";
@@ -6438,7 +6463,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerCopyAt(layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
-	// Reset Tasks count & Memory usage
+	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		PrintTaskMemory(layer, row,
 				Shm->SysGate.taskCount,
@@ -6472,22 +6497,22 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
 	{
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-		// Upper view area
+		/* Upper view area					*/
 		CUINT	bar0 =((CFlop->Relative.Ratio > ratio.Maximum ?
 				ratio.Maximum : CFlop->Relative.Ratio)
 				* draw.Area.LoadWidth) / ratio.Maximum,
 			bar1 = draw.Area.LoadWidth - bar0;
-		// Print the Per Core BCLK indicator (yellow)
+		/* Print the Per Core BCLK indicator (yellow)		*/
 		LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
 			(draw.iClock == (cpu - draw.cpuScroll)) ? '~' : 0x20;
-		// Draw the relative Core frequency ratio
+		/* Draw the relative Core frequency ratio		*/
 		LayerFillAt(layer, LOAD_LEAD, row,
 			bar0, hBar,
 			MakeAttr((CFlop->Relative.Ratio > ratio.Median ?
 				RED : CFlop->Relative.Ratio > ratio.Minimum ?
 					YELLOW : GREEN),
 				0, BLACK, 1));
-		// Pad with blank characters
+		/* Pad with blank characters				*/
 		LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
 				bar1, hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
@@ -6831,9 +6856,9 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 				Shm->SysGate.taskList[idx].systime);
 		break;
 	      case F_PID:
-		// fallthrough
+		/* fallthrough */
 	      case F_COMM:
-		// fallthrough
+		/* fallthrough */
 		len = sprintf(buffer, "%s(%d)",
 				Shm->SysGate.taskList[idx].comm,
 				Shm->SysGate.taskList[idx].pid);
@@ -6907,7 +6932,7 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 }
 
 void Draw_Footer(Layer *layer, CUINT row)
-{	// Update Footer view area
+{	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	struct FLIP_FLOP *SProc = &Shm->Cpu[Shm->Proc.Service.Core]	\
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
@@ -6966,21 +6991,21 @@ void Draw_Footer(Layer *layer, CUINT row)
 }
 
 void Draw_Header(Layer *layer, CUINT row)
-{	// Update Header view area
+{	/* Update Header view area					*/
 	struct FLIP_FLOP *CFlop = NULL;
 	unsigned int digit[9];
 
 	CFlop = &Shm->Cpu[Shm->Proc.Top] \
 		.FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
-	// Print the Top value if delta exists with the previous one
-	if (!draw.Flag.clkOrLd) { // Frequency MHz
+	/* Print the Top value if delta exists with the previous one	*/
+	if (!draw.Flag.clkOrLd) { /* Frequency MHz			*/
 	    if (previous.TopFreq != CFlop->Relative.Freq) {
 		previous.TopFreq = CFlop->Relative.Freq;
 
 	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
 	    }
-	} else { // C0 C-State % load
+	} else { /* C0 C-State % load					*/
 		if (previous.TopLoad != Shm->Proc.Avg.C0) {
 			double percent = 100.f * Shm->Proc.Avg.C0;
 			previous.TopLoad = Shm->Proc.Avg.C0;
@@ -6988,7 +7013,7 @@ void Draw_Header(Layer *layer, CUINT row)
 			Load2LCD(layer, 0, row, percent);
 		}
 	}
-	// Print the focus BCLK
+	/* Print the focus BCLK						*/
 	row += 2;
 
 	CFlop = &Shm->Cpu[draw.iClock + draw.cpuScroll]	\
@@ -7813,12 +7838,12 @@ void Top(char option)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
-	if (BITVAL(Shm->Proc.Sync, 62)) { // Compute required, clear the layout
+	if (BITVAL(Shm->Proc.Sync, 62)) {/* Compute required, clear the layout*/
 		SortUniqRatio();
 		draw.Flag.clear = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 62);
 	}
-	if (BITVAL(Shm->Proc.Sync, 63)) { // Platform changed, redraw the layout
+	if (BITVAL(Shm->Proc.Sync, 63)) {/* Platform changed,redraw the layout*/
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		draw.Flag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
@@ -7847,7 +7872,7 @@ void Top(char option)
 	{
 		DynamicView[draw.Disposal](dLayer);
 
-		// Increment the BCLK indicator (skip offline CPU)
+		/* Increment the BCLK indicator (skip offline CPU)	*/
 		do {
 			draw.iClock++;
 			if (draw.iClock >= draw.Area.MaxRows)
@@ -7855,7 +7880,7 @@ void Top(char option)
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
-	// Write to the standard output
+	/* Write to the standard output					*/
 	WriteConsole(draw.Size, buffer);
     } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
@@ -7998,7 +8023,7 @@ int main(int argc, char *argv[])
 		TrapSignal(0);
 		break;
 	case 'd':
-		// Fallthrough
+		/* Fallthrough */
 	case 't':
 		{
 		TERMINAL(IN);

@@ -28,7 +28,7 @@ ifndef MSR_CORE_PERF_UCC
 		MSR_CORE_PERF_UCC = MSR_CORE_PERF_FIXED_CTR1
 	endif
 else
-	CHK1=$(filter $(MSR_CORE_PERF_UCC),\
+	CHK1=$(filter $(MSR_CORE_PERF_UCC), \
 			MSR_IA32_APERF MSR_CORE_PERF_FIXED_CTR1)
 	ifeq ($(CHK1),)
         $(error MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1 expected)
@@ -42,7 +42,7 @@ ifndef MSR_CORE_PERF_URC
 		MSR_CORE_PERF_URC = MSR_CORE_PERF_FIXED_CTR2
 	endif
 else
-	CHK2=$(filter $(MSR_CORE_PERF_URC),\
+	CHK2=$(filter $(MSR_CORE_PERF_URC), \
 			MSR_IA32_MPERF MSR_CORE_PERF_FIXED_CTR2)
 	ifeq ($(CHK2),)
         $(error MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2 expected)

@@ -84,33 +84,33 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock		:  1-0,  // SMM Configuration Lock.
+	SmmLock		:  1-0,  /* SMM Configuration Lock.		*/
 	Reserved1	:  3-1,
-	TlbCacheDis	:  4-3,  // Cacheable Memory Disable.
-	INVDWBINVD	:  5-4,  // INVD to WBINVD Conversion.
+	TlbCacheDis	:  4-3,  /* Cacheable Memory Disable.		*/
+	INVDWBINVD	:  5-4,  /* INVD to WBINVD Conversion.		*/
 	Reserved2	:  7-5,
-	AllowFerrOnNe	:  8-7,  // Allow FERR on NE..
-	IgnneEm		:  9-8,  // IGNNE port emulation enable.
-	MonMwaitDis	: 10-9,  // 1 = MONITOR & MWAIT opcodes become invalid.
-	MonMwaitUserEn	: 11-10, // MONITOR/MWAIT user mode enable. 0=pl0 only
+	AllowFerrOnNe	:  8-7,  /* Allow FERR on NE..			*/
+	IgnneEm		:  9-8,  /* IGNNE port emulation enable.	*/
+	MonMwaitDis	: 10-9,  /* 1=MONITOR & MWAIT opcodes become invalid. */
+	MonMwaitUserEn	: 11-10, /* MONITOR/MWAIT user mode enable. 0=pl0 only*/
 	Reserved3	: 12-11,
-	HltXSpCycEn	: 13-12, // halt-exit special bus cycle enable.
-	SmiSpCycDis	: 14-13, // SMI special bus cycle disable.
-	RsmSpCycDis	: 15-14, // RSM special bus cycle disable.
+	HltXSpCycEn	: 13-12, /* halt-exit special bus cycle enable. */
+	SmiSpCycDis	: 14-13, /* SMI special bus cycle disable.	*/
+	RsmSpCycDis	: 15-14, /* RSM special bus cycle disable.	*/
 	Reserved4	: 17-15,
-	Wrap32Dis	: 18-17, // 32-bit address wrap disable.
-	McStatusWrEn	: 19-18, // Machine check status write enable.
+	Wrap32Dis	: 18-17, /* 32-bit address wrap disable.	*/
+	McStatusWrEn	: 19-18, /* Machine check status write enable.	*/
 	Reserved5	: 20-19,
-	IoCfgGpFault	: 21-20, // IO-space configuration causes a GP fault.
+	IoCfgGpFault	: 21-20, /* IO-space configuration causes a GP fault. */
 	Reserved6	: 23-21,
-	ForceRdWrSzPrb	: 24-23, // Force probes for RdSized and WrSized.
-	TscFreqSel	: 25-24, // 1=The TSC increments at the P0 frequency.
-	CpbDis		: 26-25, // 1=Core performance boost disable.
-	EffFreqCntMwait : 27-26, // Effective frequency counting during mwait.
-	// Family 15h
-	EffFreqROLock	: 28-27, // Read-only effective frequency counter lock.
+	ForceRdWrSzPrb	: 24-23, /* Force probes for RdSized and WrSized. */
+	TscFreqSel	: 25-24, /* 1=The TSC increments at the P0 frequency. */
+	CpbDis		: 26-25, /* 1=Core performance boost disable.	*/
+	EffFreqCntMwait : 27-26, /* Effective frequency counting during mwait.*/
+	/* Family 15h */
+	EffFreqROLock	: 28-27, /* Read-only effective frequency counter lock*/
 	SmuLock		: 29-28,
-	CSEnable	: 30-29, // Connected standby enable.
+	CSEnable	: 30-29, /* Connected standby enable.		*/
 	Reserved7	: 32-30,
 	Reserved	: 64-32;
     } Family_12h;
@@ -134,7 +134,7 @@ typedef union
 	McStatusWrEn	: 19-18,
 	Reserved5	: 20-19,
 	IoCfgGpFault	: 21-20,
-	LockTscToCurrP0 : 22-21, // RW: lock the TSC to the current P0 frequency
+	LockTscToCurrP0 : 22-21,/* RW:lock the TSC to the current P0 frequency*/
 	Reserved6	: 24-22,
 	TscFreqSel	: 25-24,
 	CpbDis		: 26-25,
@@ -142,31 +142,31 @@ typedef union
 	EffFreqROLock	: 28-27,
 	Reserved7	: 29-28,
 	CSEnable	: 30-29,
-	IRPerfEn	: 31-30, // RW: enable instructions retired counter
+	IRPerfEn	: 31-30, /* RW: enable instructions retired counter */
 	Reserved	: 64-31;
     } Family_17h;
     struct
     {
 	unsigned long long
 	SmmLock		:  1-0,
-	SLOWFENCE	:  2-1,  // Slow SFENCE Enable.
+	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable.			*/
 	Reserved1	:  3-2,
 	TlbCacheDis	:  4-3,
 	INVDWBINVD	:  5-4,
 	Reserved2	:  6-5,
-	FFDIS		:  7-6,  // TLB Flush Filter Disable.
-	DISLOCK		:  8-7,  // Disable x86 LOCK prefix functionality.
+	FFDIS		:  7-6,  /* TLB Flush Filter Disable.		*/
+	DISLOCK		:  8-7,  /* Disable x86 LOCK prefix functionality. */
 	IgnneEm		:  9-8,
 	Reserved3	: 12-9,
 	HltXSpCycEn	: 13-12,
 	SmiSpCycDis	: 14-13,
 	RsmSpCycDis	: 15-14,
-	SSEDIS		: 16-15, // SSE Instructions Disable.
+	SSEDIS		: 16-15, /* SSE Instructions Disable.		*/
 	Reserved4	: 17-16,
 	Wrap32Dis	: 18-17,
 	McStatusWrEn	: 19-18,
 	Reserved5	: 24-19,
-	StartFID	: 30-24, // Startup FID Status.
+	StartFID	: 30-24, /* Startup FID Status.			*/
 	Reserved6	: 32-30,
 	Reserved	: 64-32;
     } Family_0Fh;
@@ -182,9 +182,9 @@ typedef union
 	Reserved1	:  8-6,
 	NewVID		: 14-8,
 	Reserved2	: 16-14,
-	InitFidVid	: 17-16,	// Initiate FID/VID Change
+	InitFidVid	: 17-16,	/* Initiate FID/VID Change	*/
 	Reserved3	: 32-17,
-	StpGntTOCnt	: 52-32,	// Stop Grant Time-Out Count
+	StpGntTOCnt	: 52-32,	/* Stop Grant Time-Out Count	*/
 	Reserved4	: 64-52;
     };
 } FIDVID_CONTROL;
@@ -195,25 +195,25 @@ typedef union
     struct
     {
 	unsigned long long
-	CurrFID		:  6-0,  // Current FID
+	CurrFID		:  6-0,  /* Current FID				*/
 	Reserved1	:  8-6,
-	StartFID	: 14-8,  // Startup FID
+	StartFID	: 14-8,  /* Startup FID				*/
 	Reserved2	: 16-14,
-	MaxFID		: 22-16, // Max FID
+	MaxFID		: 22-16, /* Max FID				*/
 	Reserved3	: 24-22,
-	MaxRampVID	: 30-24, // Max Ramp VID
+	MaxRampVID	: 30-24, /* Max Ramp VID			*/
 	Reserved4	: 31-30,
-	FidVidPending	: 32-31, // 0b when the FID/VID change has completed.
-	CurrVID		: 38-32, // Current VID
+	FidVidPending	: 32-31, /* 0b when the FID/VID change has completed.*/
+	CurrVID		: 38-32, /* Current VID				*/
 	Reserved5	: 40-38,
-	StartVID	: 46-40, // Startup VID
+	StartVID	: 46-40, /* Startup VID				*/
 	Reserved6	: 48-46,
-	MaxVID		: 54-48, // Max VID
+	MaxVID		: 54-48, /* Max VID				*/
 	Reserved7	: 56-54,
-	PstateStep	: 57-56, // voltage reduction: 0b=25mV; 1b=50mV
-	AltVidOffset	: 60-57, // [NA;-50;-100;-125;-150;-175;-200;-225]mV
+	PstateStep	: 57-56, /* voltage reduction: 0b=25mV; 1b=50mV */
+	AltVidOffset	: 60-57, /* [NA;-50;-100;-125;-150;-175;-200;-225]mV */
 	Reserved8	: 61-60,
-	IntPstateSup	: 62-61, // 1b = Intermediate P-states is supported.
+	IntPstateSup	: 62-61, /* 1b = Intermediate P-states is supported. */
 	Reserved9	: 64-62;
     };
 } FIDVID_STATUS;
@@ -223,68 +223,68 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 // MSRC001_00[68:64] P-State [4:0]
-	CpuFid		:  6-0,  // Core Frequency ID. RW: Value <= 2Fh
-	CpuDid		:  9-6,  // Core Divisor ID. RW: 0h-4h divide by 1-16
-	CpuVid		: 16-9,  // Core Voltage ID. RW
+	unsigned long long	 /* MSRC001_00[68:64] P-State [4:0]	*/
+	CpuFid		:  6-0,  /* Core Frequency ID. RW: Value <= 2Fh */
+	CpuDid		:  9-6,  /* Core Divisor ID. RW: 0h-4h divide by 1-16 */
+	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	Reserved1	: 22-16,
-	NbDid		: 23-22, // Northbridge Divisor ID. RW: 0-1 => 0-2
+	NbDid		: 23-22, /* Northbridge Divisor ID. RW: 0-1 => 0-2 */
 	Reserved2	: 25-23,
-	NbVid		: 32-25, // NB VID. RW: in MSRC001_0071[MaxVid,MinVid]
-	IddValue	: 40-32, // Current Dissipation. RW: 00-10b->1,10,100A
-	IddDiv		: 42-40, // Current Dissipation Divisor. RW
+	NbVid		: 32-25, /* NB VID. RW:in MSRC001_0071[MaxVid,MinVid] */
+	IddValue	: 40-32, /* Current Dissipation. RW:00-10b->1,10,100A */
+	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
 	Reserved3	: 63-42,
-	PstateEn	: 64-63; // Pstate enabled. RW
+	PstateEn	: 64-63; /* Pstate enabled. RW			*/
     } Family_10h;
     struct
     {
-	unsigned long long	 // MSRC001_00[6B:64] P-State [7:0]
-	CpuDid		:  4-0,  // Core Divisor ID. RW
-	CpuFid		:  9-4,  // Core Frequency ID. RW
-	CpuVid		: 16-9,  // Core Voltage ID. RW
+	unsigned long long	 /* MSRC001_00[6B:64] P-State [7:0]	*/
+	CpuDid		:  4-0,  /* Core Divisor ID. RW			*/
+	CpuFid		:  9-4,  /* Core Frequency ID. RW		*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	Reserved1	: 32-16,
-	IddValue	: 40-32, // Current value field. RW
-	IddDiv		: 42-40, // Current divisor field. RW
+	IddValue	: 40-32, /* Current value field. RW		*/
+	IddDiv		: 42-40, /* Current divisor field. RW		*/
 	Reserved2	: 63-42,
-	PstateEn	: 64-63; // Pstate enabled. RW
+	PstateEn	: 64-63; /* Pstate enabled. RW			*/
     } Family_12h;
     struct
     {
-	unsigned long long	 // MSRC001_00[6B:64] P-State [7:0]
-	CpuDidLSD	:  4-0,  // Core Divisor ID least significant digit. RW
-	CpuDidMSD	:  9-4,  // Core Divisor ID most significant digit. RW
-	CpuVid		: 16-9,  // Core Voltage ID. RW
+	unsigned long long	 /* MSRC001_00[6B:64] P-State [7:0]	*/
+	CpuDidLSD	:  4-0,  /* Core Divisor ID least significant digit.RW*/
+	CpuDidMSD	:  9-4,  /* Core Divisor ID most significant digit. RW*/
+	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	Reserved1	: 32-16,
-	IddValue	: 40-32, // Current value field. RW
-	IddDiv		: 42-40, // Current divisor field. RW
+	IddValue	: 40-32, /* Current value field. RW		*/
+	IddDiv		: 42-40, /* Current divisor field. RW		*/
 	Reserved2	: 63-42,
-	PstateEn	: 64-63; // Pstate enabled. RW
+	PstateEn	: 64-63; /* Pstate enabled. RW			*/
     } Family_14h;
     struct
     {
-	unsigned long long	 // MSRC001_00[6B:64] P-state [7:0]
-	CpuFid		:  6-0,  // Core Frequency ID. RW
-	CpuDid		:  9-6,  // Core Divisor ID. RW: 0h-4h divide by 1-16
-	CpuVid		: 16-9,  // Core Voltage ID. RW
+	unsigned long long	 /* MSRC001_00[6B:64] P-state [7:0]	*/
+	CpuFid		:  6-0,  /* Core Frequency ID. RW		*/
+	CpuDid		:  9-6,  /* Core Divisor ID. RW:0h-4h divide by 1-16 */
+	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	CpuVid_bit	: 17-16,
 	Reserved1	: 22-17,
-	NbPstate	: 23-22, //Northbridge P-state.MSRC001_0071[NbPstateDis]
+	NbPstate	: 23-22, /* Northbr. P-state.MSRC001_0071[NbPstateDis]*/
 	Reserved2	: 32-23,
-	IddValue	: 40-32, // Max Current Dissipation: 00-10b->1,10,100A
-	IddDiv		: 42-40, // Current Dissipation Divisor. RW
+	IddValue	: 40-32, /* Max Current Dissipation:00-10b->1,10,100A */
+	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
 	Reserved3	: 63-42,
-	PstateEn	: 64-63; // Pstate enabled. RW
+	PstateEn	: 64-63; /* Pstate enabled. RW			*/
     } Family_15h;
     struct
     {
-	unsigned long long	 // MSRC001_0064 [P-state [7:0]]
-	CpuFid		:  8-0,  // Core Frequency ID. RW: FFh-10h <Value>*25
-	CpuDfsId	: 14-8,  // Core Divisor ID. RW
-	CpuVid		: 22-14, // Core Voltage ID. RW
-	IddValue	: 30-22, // Current Dissipation in amps. RW
-	IddDiv		: 32-30, // Current Dissipation Divisor. RW
+	unsigned long long	 /* MSRC001_0064 [P-state [7:0]]	*/
+	CpuFid		:  8-0,  /* Core Frequency ID. RW: FFh-10h <Value>*25 */
+	CpuDfsId	: 14-8,  /* Core Divisor ID. RW			*/
+	CpuVid		: 22-14, /* Core Voltage ID. RW			*/
+	IddValue	: 30-22, /* Current Dissipation in amps. RW	*/
+	IddDiv		: 32-30, /* Current Dissipation Divisor. RW	*/
 	Reserved	: 63-32,
-	PstateEn	: 64-63; // RW: Is this Pstate MSR valid ?
+	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
     } Family_17h;
 } PSTATEDEF;
 
@@ -293,7 +293,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 // MSRC001_0063
+	unsigned long long	 /* MSRC001_0063			*/
 	Current		:  3-0,
 	Reserved	: 64-3;
     };
@@ -304,7 +304,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 // MSRC001_0071 COFVID Status
+	unsigned long long	 /* MSRC001_0071 COFVID Status		*/
 	CurCpuFid	:  6-0,
 	CurCpuDid	:  9-6,
 	CurCpuVid	: 16-9,
@@ -323,28 +323,28 @@ typedef union
     } Arch_COF;
     struct
     {
-	unsigned long long	 // MSRC001_0071 COFVID Status
-	CurCpuDidLSD	:  4-0,  // Current Core Divisor ID. RO
+	unsigned long long	 /* MSRC001_0071 COFVID Status		*/
+	CurCpuDidLSD	:  4-0,  /* Current Core Divisor ID. RO		*/
 	CurCpuDidMSD	:  9-4,
-	CurCpuVid	: 16-9,  // Current Core Voltage ID. RO
-	CurPstate	: 19-16, // Current P-state. RO
+	CurCpuVid	: 16-9,  /* Current Core Voltage ID. RO		*/
+	CurPstate	: 19-16, /* Current P-state. RO			*/
 	Reserved1	: 20-19,
-	PstateInProgress: 21-20, // RO: 1=Change, 0=No change
+	PstateInProgress: 21-20, /* RO: 1=Change, 0=No change		*/
 	Reserved2	: 25-21,
-	CurNbVid	: 32-25, // Current Northbridge VID. RO
-	StartupPstate	: 35-32, // Startup P-state Number. RO
-	MaxVid		: 42-35, // Maximum Voltage ID. RO
-	MinVid		: 49-42, // Minimum Voltage ID. RO
-	MainPllOpFidMax : 55-49, // Main Pll Operating Frequency ID maximum. RO
+	CurNbVid	: 32-25, /* Current Northbridge VID. RO		*/
+	StartupPstate	: 35-32, /* Startup P-state Number. RO		*/
+	MaxVid		: 42-35, /* Maximum Voltage ID. RO		*/
+	MinVid		: 49-42, /* Minimum Voltage ID. RO		*/
+	MainPllOpFidMax : 55-49, /* Main Pll Operating Frequency ID maximum.RO*/
 	Reserved3	: 56-55,
-	CurPstateLimit	: 59-56, // Current P-state Limit. RO
+	CurPstateLimit	: 59-56, /* Current P-state Limit. RO		*/
 	Reserved4	: 64-59;
     } Arch_Pll;
 } COFVID;
 
 typedef union
 {
-	unsigned long long value; // MSR C001_0055h
+	unsigned long long value; /* MSR C001_0055h			*/
     struct
     {
 	unsigned long long
@@ -353,8 +353,8 @@ typedef union
 	IntrPndMsgDis	: 25-24,
 	IntrPndMsg	: 26-25,
 	IORd		: 27-26,
-	SmiOnCmpHalt	: 28-27, // SMI on Multi-core halt
-	C1eOnCmpHalt	: 29-28, // C1E on Multi-core halt: Family 0Fh,10h,11h
+	SmiOnCmpHalt	: 28-27, /* SMI on Multi-core halt		*/
+	C1eOnCmpHalt	: 29-28, /* C1E on Multi-core halt: Family 0Fh,10h,11h*/
 	Reserved1	: 32-29,
 	Reserved2	: 64-32;
     };
@@ -362,47 +362,47 @@ typedef union
 
 typedef union
 {
-	unsigned long long value; // Per SMT: MSR C001_0114h (VM_CR)
+	unsigned long long value; /* Per SMT: MSR C001_0114h (VM_CR)	*/
     struct
     {
 	unsigned long long
-	DPD		:  1-0,  // Debug Port Disable. ReservedBits: F17h
+	DPD		:  1-0,  /* Debug Port Disable. ReservedBits: F17h */
 	InterceptInit	:  2-1,
-	DisA20m		:  3-2,  // Disable A20 Masking. ReservedBits: F17h
-	SVM_Lock	:  4-3,  // 0=SvmeDisable is read-write, 1=read-only
-	SVME_Disable	:  5-4,  // 0=Msr::EFER[SVME] is read-write, 1=read-only
+	DisA20m		:  3-2,  /* Disable A20 Masking. ReservedBits: F17h */
+	SVM_Lock	:  4-3,  /* 0=SvmeDisable is read-write, 1=read-only */
+	SVME_Disable	:  5-4,  /* 0 = Msr::EFER[SVME] is RW, 1 = read-only */
 	Reserved1	: 32-5,
 	Reserved2	: 64-32;
     };
-} VM_CR;	// Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h, 0Fh
+} VM_CR;	/* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h, 0Fh	*/
 
 typedef union
 {
-	unsigned long long value; // Per SMT: MSR C001_0118h
+	unsigned long long value; /* Per SMT: MSR C001_0118h		*/
     struct
     {
 	unsigned long long
-	SvmLockKey	: 64-0; // Write if (Core::X86::Msr::VM_CR[Lock] == 0)
+	SvmLockKey	: 64-0; /* Write if (Core::X86::Msr::VM_CR[Lock] == 0)*/
     };
-} SVM_LOCK_KEY;	// Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h
+} SVM_LOCK_KEY;	/* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h		*/
 
 typedef struct
 {
 	unsigned int
 	Reserved1	:  1-0,
-	SensorTrip	:  2-1,  // 1 if temp. sensor trip occurs & was enabled
-	SensorCoreSelect:  3-2,  // 0b: CPU1 Therm Sensor. 1b: CPU0 Therm Sensor
-	Sensor0Trip	:  4-3,  // 1 if trip @ CPU0 (single), or @ CPU1 (dual)
-	Sensor1Trip	:  5-4,  // 1 if sensor trip occurs @ CPU0 (dual core)
-	SensorTripEnable:  6-5,  // a THERMTRIP High event causes a PLL shutdown
-	SelectSensorCPU	:  7-6,  // 0b: CPU[0,1] Sensor 0. 1b: CPU[0,1] Sensor 1
+	SensorTrip	:  2-1,  /*1 if temp. sensor trip occurs & was enabled*/
+	SensorCoreSelect:  3-2,  /*0b:CPU1 Therm Sensor. 1b:CPU0 Therm Sensor */
+	Sensor0Trip	:  4-3,  /*1 if trip @ CPU0 (single), or @ CPU1 (dual)*/
+	Sensor1Trip	:  5-4,  /*1 if sensor trip occurs @ CPU0 (dual core) */
+	SensorTripEnable:  6-5,  /*THERMTRIP High event causes a PLL shutdown */
+	SelectSensorCPU	:  7-6,  /*0b:CPU[0,1] Sensor 0. 1b:CPU[0,1] Sensor 1 */
 	Reserved2	:  8-7,
-	DiodeOffset	: 14-8,  // offset should be added to the external temp.
+	DiodeOffset	: 14-8,  /*offset should be added to the external temp*/
 	Reserved3	: 16-14,
-	CurrentTemp	: 24-16, // 00h = -49C , 01h = -48C ... ffh = 206C 
-	TjOffset	: 29-24, // Tcontrol = CurTmp - TjOffset * 2 - 49
+	CurrentTemp	: 24-16, /* 00h = -49C , 01h = -48C ... ffh = 206C */
+	TjOffset	: 29-24, /* Tcontrol = CurTmp - TjOffset * 2 - 49  */
 	Reserved4	: 31-29,
-	SwThermTrip	: 32-31; // diagnostic bit, for testing purposes only.
+	SwThermTrip	: 32-31; /* diagnostic bit, for testing purposes only.*/
 } THERMTRIP_STATUS;
 
 typedef union {
@@ -421,7 +421,7 @@ typedef union {
 } AMD_0F_DRAM_CS_BASE_ADDR;
 
 typedef union
-{	// Function: 2 - Offset: 80h
+{	/* Function: 2 - Offset: 80h					*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -434,7 +434,7 @@ typedef union
 } AMD_0F_DRAM_CS_MAPPING;
 
 typedef union
-{	// Function: 2 - Offset: 88h
+{	/* Function: 2 - Offset: 88h					*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -454,7 +454,7 @@ typedef union
 } AMD_0F_DRAM_TIMING_LOW;
 
 typedef union
-{	// Function: 2 - Offset: 90h
+{	/* Function: 2 - Offset: 90h					*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -466,8 +466,8 @@ typedef union
 		DRAM_DrvWeak	:  8-7,
 		Parity_Enable	:  9-8,
 		SelfRefRateEn	: 10-9,
-		BurstLength32	: 11-10,  // 0b: 64-Byte, 1b: 32-Byte
-		Width128	: 12-11,  // 0b: 64-bits, 1b: 128-bits
+		BurstLength32	: 11-10,  /* 0b: 64-Byte, 1b: 32-Byte	*/
+		Width128	: 12-11,  /* 0b: 64-bits, 1b: 128-bits	*/
 		X4_DIMMS	: 16-12,
 		UnbufferedDIMM	: 17-16,
 		ReservedBits3	: 19-17,
@@ -477,11 +477,11 @@ typedef union
 } AMD_0F_DRAM_CONFIG_LOW;
 
 typedef union
-{	// Function: 2 - Offset: 94h
+{	/* Function: 2 - Offset: 94h					*/
 	unsigned int		value;
 	struct {
 		unsigned int
-		MemClkFreq	:  3-0,  // 000b:200,001b:266,010b:333,011b:400
+		MemClkFreq	:  3-0,  /*000b:200,001b:266,010b:333,011b:400*/
 		MemClkFreqValid :  4-3,
 		MaxAsyncLatency :  8-4,
 		ReservedBits1	: 12-8,
@@ -493,7 +493,7 @@ typedef union
 		FourRankSODimm	: 18-17,
 		FourRankRDimm	: 19-18,
 		ReservedBits3	: 20-19,
-		SlowAccessMode	: 21-20,  // 2T Mode=[0b:1T , 1b:2T]
+		SlowAccessMode	: 21-20,  /* 2T Mode=[0b:1T , 1b:2T]	*/
 		ReservedBits4	: 22-21,
 		BankSwizzleMode : 24-22,
 		DcqBypassMax	: 28-24,
@@ -502,7 +502,7 @@ typedef union
 } AMD_0F_DRAM_CONFIG_HIGH;
 
 typedef union
-{	// HTT Unit ID Register: Func: 0 - Off: 64h
+{	/* HTT Unit ID Register: Func: 0 - Off: 64h			*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -516,7 +516,7 @@ typedef union
 } AMD_0F_HTT_UNIT_ID;
 
 typedef union
-{	// HTT Link Frequency Capabilities: Func: 0 - Off: 88h, a8h, c8h
+{	/* HTT Link Frequency Capabilities: Func: 0 - Off: 88h, a8h, c8h */
 	unsigned int		value;
 	struct {
 		unsigned int
