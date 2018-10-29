@@ -52,8 +52,19 @@ endif
 ccflags-y+=-D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y+=-D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
+UID=$(shell id -u)
+DKMS=$(shell dkms --version >/dev/null 2>&1 && echo 0)
+
+ifeq ($(UID), 0)
+ifeq ($(DKMS), 0)
+	REQ=1
+endif
+endif
+
 KVERSION=$(shell uname -r)
-DESTDIR=$(HOME)
+DESTDIR=/usr/local
+BINDIR=$(DESTDIR)/bin
+DKMSDIR=/usr/src/corefreqk-$(KVERSION)
 
 all: corefreqd corefreq-cli
 	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
@@ -61,7 +72,36 @@ all: corefreqd corefreq-cli
 .PHONY: clean
 clean:
 	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
-	rm corefreqd corefreq-cli
+	rm -f corefreqd corefreq-cli
+
+.PHONY: install
+install: corefreqd corefreq-cli
+ifeq ($(REQ), 1)
+ifeq ($(wildcard $(DKMSDIR)),)
+	mkdir -p $(DKMSDIR)
+endif
+ifneq ($(wildcard $(DKMSDIR)),"")
+	install -m 0644 Makefile dkms.conf *.c *.h $(DKMSDIR)
+	dkms add -c dkms.conf -m corefreqk -v $(KVERSION)
+	dkms build -c dkms.conf corefreqk/$(KVERSION)
+	dkms install -c dkms.conf corefreqk/$(KVERSION)
+endif
+ifeq ($(wildcard $(BINDIR)),"")
+	mkdir -p $(BINDIR)
+endif
+ifneq ($(wildcard $(BINDIR)),"")
+	install -m 0755 corefreqd $(BINDIR)
+	install -m 0755 corefreq-cli $(BINDIR)
+endif
+endif
+
+.PHONY: uninstall
+uninstall: corefreqd corefreq-cli
+ifeq ($(REQ), 1)
+	dkms remove -c dkms.conf corefreqk/$(KVERSION) --all
+	rm -Ir $(DKMSDIR)
+	rm -i $(BINDIR)/corefreqd $(BINDIR)/corefreq-cli
+endif
 
 corefreqm.o: corefreqm.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c -o corefreqm.o
@@ -105,7 +145,7 @@ info:
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] [info] [help]                             |\n"\
+	"|  make [all] [clean] [install] [uninstall] [info] [help]       |\n"\
 	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is compiler: cc, gcc or clang [NIY]       |\n"\
