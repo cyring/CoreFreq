@@ -64,7 +64,7 @@ endif
 KVERSION=$(shell uname -r)
 DESTDIR=/usr/local
 BINDIR=$(DESTDIR)/bin
-DKMSDIR=/usr/src/corefreqk-$(KVERSION)
+DRVDIR=/usr/src/corefreqk-$(KVERSION)
 
 all: corefreqd corefreq-cli
 	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
@@ -77,29 +77,21 @@ clean:
 .PHONY: install
 install: corefreqd corefreq-cli
 ifeq ($(REQ), 1)
-ifeq ($(wildcard $(DKMSDIR)),)
-	mkdir -p $(DKMSDIR)
-endif
-ifneq ($(wildcard $(DKMSDIR)),"")
-	install -m 0644 Makefile dkms.conf *.c *.h $(DKMSDIR)
+	install -Dm 0644 Makefile $(DRVDIR)/Makefile
+	install -Dm 0644 dkms.conf $(DRVDIR)/dkms.conf
+	install -m 0644 *.c *.h $(DRVDIR)/
 	dkms add -c dkms.conf -m corefreqk -v $(KVERSION)
 	dkms build -c dkms.conf corefreqk/$(KVERSION)
 	dkms install -c dkms.conf corefreqk/$(KVERSION)
-endif
-ifeq ($(wildcard $(BINDIR)),"")
-	mkdir -p $(BINDIR)
-endif
-ifneq ($(wildcard $(BINDIR)),"")
-	install -m 0755 corefreqd $(BINDIR)
-	install -m 0755 corefreq-cli $(BINDIR)
-endif
+	install -Dm 0755 corefreqd $(BINDIR)/corefreqd
+	install -Dm 0755 corefreq-cli $(BINDIR)/corefreq-cli
 endif
 
 .PHONY: uninstall
 uninstall: corefreqd corefreq-cli
 ifeq ($(REQ), 1)
 	dkms remove -c dkms.conf corefreqk/$(KVERSION) --all
-	rm -Ir $(DKMSDIR)
+	rm -Ir $(DRVDIR)
 	rm -i $(BINDIR)/corefreqd $(BINDIR)/corefreq-cli
 endif
 
