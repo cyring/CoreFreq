@@ -2,23 +2,37 @@
 # Copyright (C) 2015-2018 CYRIL INGENIERIE
 # Licenses: GPL2
 
-CC=cc
-FEAT_DBG=1
-WARNING=-Wall
+PWD ?= $(shell pwd)
+UID = $(shell id -u)
+DKMS = $(shell dkms --version >/dev/null 2>&1 && echo 0)
 
-obj-m:=corefreqk.o
-ccflags-y:=-D FEAT_DBG=$(FEAT_DBG)
+KVERSION = $(shell uname -r)
+DESTDIR ?= /usr/local
+BINDIR = $(DESTDIR)/bin
+DRVSRC = /usr/src/corefreqk-$(KVERSION)
+
+ifeq ($(CONFDIR),)
+	export CONFDIR = $(CURDIR)
+	include $(CONFDIR)/dkms.conf
+endif
+
+CC = cc
+FEAT_DBG = 1
+WARNING = -Wall
+
+obj-m := corefreqk.o
+ccflags-y := -D FEAT_DBG=$(FEAT_DBG)
 
 ifneq ($(OPTIM_LVL),)
-	OPTIM_FLG=-O$(OPTIM_LVL)
-	ccflags-y+=-D OPTIM_LVL=$(OPTIM_LVL)
-	ccflags-y+=$(OPTIM_FLG)
+	OPTIM_FLG = -O$(OPTIM_LVL)
+	ccflags-y += -D OPTIM_LVL=$(OPTIM_LVL)
+	ccflags-y += $(OPTIM_FLG)
 endif
 
 ifneq ($(wildcard /dev/watchdog),)
-	NMI=1
+	NMI = 1
 else
-	NMI=0
+	NMI = 0
 endif
 
 ifndef MSR_CORE_PERF_UCC
@@ -49,50 +63,54 @@ else
 	endif
 endif
 
-ccflags-y+=-D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
-ccflags-y+=-D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
-
-UID=$(shell id -u)
-DKMS=$(shell dkms --version >/dev/null 2>&1 && echo 0)
-
-ifeq ($(UID), 0)
-ifeq ($(DKMS), 0)
-	REQ=1
-endif
-endif
-
-KVERSION=$(shell uname -r)
-DESTDIR=/usr/local
-BINDIR=$(DESTDIR)/bin
-DRVDIR=/usr/src/corefreqk-$(KVERSION)
+ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
+ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
 all: corefreqd corefreq-cli
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
 
 .PHONY: clean
 clean:
-	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
 	rm -f corefreqd corefreq-cli
 
 .PHONY: install
-install: corefreqd corefreq-cli
-ifeq ($(REQ), 1)
-	install -Dm 0644 Makefile $(DRVDIR)/Makefile
-	install -Dm 0644 dkms.conf $(DRVDIR)/dkms.conf
-	install -m 0644 *.c *.h $(DRVDIR)/
-	dkms add -c dkms.conf -m corefreqk -v $(KVERSION)
-	dkms build -c dkms.conf corefreqk/$(KVERSION)
-	dkms install -c dkms.conf corefreqk/$(KVERSION)
+install: all
+ifeq ($(UID), 0)
 	install -Dm 0755 corefreqd $(BINDIR)/corefreqd
 	install -Dm 0755 corefreq-cli $(BINDIR)/corefreq-cli
+	install -Dm 0644 corefreqk.ko \
+		$(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
+endif
+
+.PHONY: dkms_install
+dkms_install:
+ifeq ($(UID), 0)
+	install -Dm 0644 Makefile $(DRVSRC)/Makefile
+	install -Dm 0644 dkms.conf $(DRVSRC)/dkms.conf
+	install -m 0644 *.c *.h $(DRVSRC)/
+ifeq ($(DKMS), 0)
+	dkms add -c $(DRVSRC)/dkms.conf -m corefreqk -v $(KVERSION)
+	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION)
+	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION)
+endif
 endif
 
 .PHONY: uninstall
-uninstall: corefreqd corefreq-cli
-ifeq ($(REQ), 1)
-	dkms remove -c dkms.conf corefreqk/$(KVERSION) --all
-	rm -Ir $(DRVDIR)
+uninstall:
+ifeq ($(UID), 0)
 	rm -i $(BINDIR)/corefreqd $(BINDIR)/corefreq-cli
+	rm -i $(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
+	cd $(DESTDIR)/lib/modules && rm -ri $(KVERSION)
+endif
+
+.PHONY: dkms_uninstall
+dkms_uninstall:
+ifeq ($(UID), 0)
+ifeq ($(DKMS), 0)
+	dkms remove -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION) --all
+	rm -Ir $(DRVSRC)
+endif
 endif
 
 corefreqm.o: corefreqm.c
