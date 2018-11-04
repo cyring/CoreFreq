@@ -1,0 +1,5 @@
+corefreq (1.37.0.12-0ubuntu1) bionic; urgency=medium
+
+  * DKMS release with debhelper 9
+
+ -- CyrIng <labs@cyring.fr>  Sun, 04 Nov 2018 06:06:06 +0100

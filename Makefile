@@ -9,12 +9,19 @@ DKMS = $(shell dkms --version >/dev/null 2>&1 && echo 0)
 KVERSION = $(shell uname -r)
 DESTDIR ?= /usr/local
 BINDIR = $(DESTDIR)/bin
-DRVSRC = /usr/src/corefreqk-$(KVERSION)
 
 ifeq ($(CONFDIR),)
 	export CONFDIR = $(CURDIR)
 	include $(CONFDIR)/dkms.conf
 endif
+
+ifeq ($(DESTDIR),)
+	SRCTREE = /usr/src
+else
+	SRCTREE = $(DESTDIR)/usr/src
+endif
+
+DRVSRC = $(SRCTREE)/corefreqk-$(DRV_VERSION)
 
 CC = cc
 FEAT_DBG = 1
@@ -67,20 +74,30 @@ ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
 all: corefreqd corefreq-cli
+ifneq ($(wildcard /lib/modules/$(KVERSION)/build/.),)
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+endif
 
 .PHONY: clean
 clean:
+ifneq ($(wildcard /lib/modules/$(KVERSION)/build/.),)
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+endif
 	rm -f corefreqd corefreq-cli
 
 .PHONY: install
 install: all
 ifeq ($(UID), 0)
+ifneq ($(wildcard corefreqd),)
 	install -Dm 0755 corefreqd $(BINDIR)/corefreqd
+endif
+ifneq ($(wildcard corefreq-cli),)
 	install -Dm 0755 corefreq-cli $(BINDIR)/corefreq-cli
+endif
+ifneq ($(wildcard corefreqk.ko),)
 	install -Dm 0644 corefreqk.ko \
 		$(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
+endif
 endif
 
 .PHONY: dkms_install
@@ -88,11 +105,29 @@ dkms_install:
 ifeq ($(UID), 0)
 	install -Dm 0644 Makefile $(DRVSRC)/Makefile
 	install -Dm 0644 dkms.conf $(DRVSRC)/dkms.conf
+	install -Dm 0755 package/scripter.sh $(DRVSRC)/package/scripter.sh
 	install -m 0644 *.c *.h $(DRVSRC)/
+endif
+
+.PHONY: dkms_setup
+dkms_setup:
+ifeq ($(UID), 0)
 ifeq ($(DKMS), 0)
-	dkms add -c $(DRVSRC)/dkms.conf -m corefreqk -v $(KVERSION)
-	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION)
-	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION)
+	dkms add --sourcetree $(SRCTREE) \
+		--dkmstree $(DESTDIR) \
+		--installtree $(DESTDIR) \
+		-c $(DRVSRC)/dkms.conf \
+		-m corefreqk -v $(DRV_VERSION)
+	dkms build --sourcetree $(SRCTREE) \
+		--dkmstree $(DESTDIR) \
+		--installtree $(DESTDIR) \
+		-c $(DRVSRC)/dkms.conf \
+		corefreqk/$(DRV_VERSION)
+	dkms install --sourcetree $(SRCTREE) \
+		--dkmstree $(DESTDIR) \
+		--installtree $(DESTDIR) \
+		-c $(DRVSRC)/dkms.conf \
+		corefreqk/$(DRV_VERSION)
 endif
 endif
 
@@ -108,7 +143,11 @@ endif
 dkms_uninstall:
 ifeq ($(UID), 0)
 ifeq ($(DKMS), 0)
-	dkms remove -c $(DRVSRC)/dkms.conf corefreqk/$(KVERSION) --all
+	dkms remove --sourcetree $(SRCTREE) \
+		--dkmstree $(DESTDIR) \
+		--installtree $(DESTDIR) \
+		-c $(DRVSRC)/dkms.conf \
+		corefreqk/$(DRV_VERSION) --all
 	rm -Ir $(DRVSRC)
 endif
 endif

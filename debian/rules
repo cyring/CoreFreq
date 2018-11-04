@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+install:
+	$(MAKE) DESTDIR=$(CURDIR)/debian/corefreq install
+	$(MAKE) DESTDIR=$(CURDIR)/debian/corefreq dkms_install
