@@ -1,4 +1,9 @@
 #/bin/sh
+#
+# CoreFreq
+# Copyright (C) 2015-2018 CYRIL INGENIERIE
+# Licenses: GPL2
+#
 if (( $# > 2 )); then
 	COMMAND=$1
 	shift

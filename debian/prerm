@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# CoreFreq
+# Copyright (C) 2015-2018 CYRIL INGENIERIE
+# Licenses: GPL2
+#
+
+set -e
+
+case "$1" in
+remove|upgrade|deconfigure)
+	PACKAGE="corefreq"
+	MODULE="corefreqk"
+	A_B_C_D=$(dpkg-query --show --showformat='${Version}' $PACKAGE 2>/dev/null)
+	if [ -e A_B_C_D ]; then
+		A_B_C=${A_B_C_D%.*}
+		VERSION=${A_B_C%.*}
+
+		if [ "$(dkms status -m $MODULE)" ]; then
+			dkms remove $MODULE/$VERSION --all
+		fi
+	fi
+;;
+
+failed-upgrade)
+;;
+
+*)
+	echo "prerm: unknown argument \`$1'" >&2
+	exit 1
+;;
+esac
+
+#DEBHELPER#
+
+exit 0
