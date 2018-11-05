@@ -12,11 +12,13 @@ configure)
 	PACKAGE="corefreq"
 	MODULE="corefreqk"
 	A_B_C_D=$(dpkg-query --show --showformat='${Version}' $PACKAGE 2>/dev/null)
-	if [ -e A_B_C_D ]; then
+	if [ -n "$A_B_C_D" ]; then
 		A_B_C=${A_B_C_D%.*}
 		VERSION=${A_B_C%.*}
 
 		dkms install $MODULE/$VERSION
+	else
+		echo "Post Installation: Can not query [${PACKAGE}]\n" >&2
 	fi
 ;;
 

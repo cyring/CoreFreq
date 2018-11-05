@@ -1,5 +1,5 @@
-corefreq (1.37.0.13-0ubuntu1) bionic; urgency=low
+corefreq (1.37.0.14-0ubuntu1) bionic; urgency=low
 
-  * Post Install and Pre Remove DKMS setup scripts
+  * Fix the postinst and prerm condition.
 
  -- CyrIng <labs@cyring.fr>  Mon, 05 Nov 2018 06:06:06 +0100
