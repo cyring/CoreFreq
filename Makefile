@@ -5,22 +5,15 @@
 PWD ?= $(shell pwd)
 UID = $(shell id -u)
 DKMS = $(shell dkms --version >/dev/null 2>&1 && echo 0)
-
 KVERSION = $(shell uname -r)
-DESTDIR ?= /usr/local
-BINDIR = $(DESTDIR)/bin
 
 ifeq ($(CONFDIR),)
 	export CONFDIR = $(CURDIR)
-	include $(CONFDIR)/dkms.conf
+	include $(CONFDIR)/package/dkms.conf
 endif
 
-ifeq ($(DESTDIR),)
-	SRCTREE = /usr/src
-else
-	SRCTREE = $(DESTDIR)/usr/src
-endif
-
+BINDIR = $(DESTDIR)/bin
+SRCTREE = $(DESTDIR)/usr/src
 DRVSRC = $(SRCTREE)/corefreqk-$(DRV_VERSION)
 
 CC = cc
@@ -80,10 +73,10 @@ endif
 
 .PHONY: clean
 clean:
+	rm -f corefreqd corefreq-cli
 ifneq ($(wildcard /lib/modules/$(KVERSION)/build/.),)
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
 endif
-	rm -f corefreqd corefreq-cli
 
 .PHONY: install
 install: all
@@ -104,7 +97,7 @@ endif
 dkms_install:
 ifeq ($(UID), 0)
 	install -Dm 0644 Makefile $(DRVSRC)/Makefile
-	install -Dm 0644 dkms.conf $(DRVSRC)/dkms.conf
+	install -Dm 0644 package/dkms.conf $(DRVSRC)/dkms.conf
 	install -Dm 0755 package/scripter.sh $(DRVSRC)/package/scripter.sh
 	install -m 0644 *.c *.h $(DRVSRC)/
 endif
@@ -113,21 +106,9 @@ endif
 dkms_setup:
 ifeq ($(UID), 0)
 ifeq ($(DKMS), 0)
-	dkms add --sourcetree $(SRCTREE) \
-		--dkmstree $(DESTDIR) \
-		--installtree $(DESTDIR) \
-		-c $(DRVSRC)/dkms.conf \
-		-m corefreqk -v $(DRV_VERSION)
-	dkms build --sourcetree $(SRCTREE) \
-		--dkmstree $(DESTDIR) \
-		--installtree $(DESTDIR) \
-		-c $(DRVSRC)/dkms.conf \
-		corefreqk/$(DRV_VERSION)
-	dkms install --sourcetree $(SRCTREE) \
-		--dkmstree $(DESTDIR) \
-		--installtree $(DESTDIR) \
-		-c $(DRVSRC)/dkms.conf \
-		corefreqk/$(DRV_VERSION)
+	dkms add -c $(DRVSRC)/dkms.conf -m corefreqk -v $(DRV_VERSION)
+	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
+	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
 endif
 endif
 
@@ -136,18 +117,13 @@ uninstall:
 ifeq ($(UID), 0)
 	rm -i $(BINDIR)/corefreqd $(BINDIR)/corefreq-cli
 	rm -i $(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
-	cd $(DESTDIR)/lib/modules && rm -ri $(KVERSION)
 endif
 
 .PHONY: dkms_uninstall
 dkms_uninstall:
 ifeq ($(UID), 0)
 ifeq ($(DKMS), 0)
-	dkms remove --sourcetree $(SRCTREE) \
-		--dkmstree $(DESTDIR) \
-		--installtree $(DESTDIR) \
-		-c $(DRVSRC)/dkms.conf \
-		corefreqk/$(DRV_VERSION) --all
+	dkms remove -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION) --all
 	rm -Ir $(DRVSRC)
 endif
 endif
@@ -194,8 +170,10 @@ info:
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] [install] [uninstall] [info] [help]       |\n"\
+	"|  make [all] [clean] *[install] *[uninstall] [info] [help]     |\n"\
+	"|      *[dkms_install] *[dkms_setup] *[dkms_uninstall]          |\n"\
 	"|                                                               |\n"\
+	"|                                             *(root required)  |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is compiler: cc, gcc or clang [NIY]       |\n"\
 	"|                                                               |\n"\
