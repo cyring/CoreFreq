@@ -97,7 +97,8 @@ endif
 dkms_install:
 ifeq ($(UID), 0)
 	install -Dm 0644 Makefile $(DRVSRC)/Makefile
-	install -Dm 0644 package/dkms.conf $(DRVSRC)/dkms.conf
+	install -Dm 0644 package/dkms.conf $(DRVSRC)/package/dkms.conf
+	ln -s $(DRVSRC)/package/dkms.conf $(DRVSRC)/dkms.conf
 	install -Dm 0755 package/scripter.sh $(DRVSRC)/package/scripter.sh
 	install -m 0644 *.c *.h $(DRVSRC)/
 endif
@@ -110,6 +111,13 @@ ifeq ($(DKMS), 0)
 	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
 	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
 endif
+endif
+
+.PHONY: service_install
+service_install:
+ifeq ($(UID), 0)
+	install -Dm 0644 package/corefreqd.service \
+		$(DESTDIR)/usr/lib/systemd/system/corefreqd.service
 endif
 
 .PHONY: uninstall
@@ -172,7 +180,7 @@ help:
 	"o---------------------------------------------------------------o\n"\
 	"|  make [all] [clean] *[install] *[uninstall] [info] [help]     |\n"\
 	"|      *[dkms_install] *[dkms_setup] *[dkms_uninstall]          |\n"\
-	"|                                                               |\n"\
+	"|      *[service_install]                                       |\n"\
 	"|                                             *(root required)  |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is compiler: cc, gcc or clang [NIY]       |\n"\

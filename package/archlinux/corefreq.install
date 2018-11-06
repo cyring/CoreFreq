@@ -1,0 +1,39 @@
+MODULE="corefreqk"
+
+post_install() {
+	A_B_C_D=${1}
+	DRV_VERSION=${A_B_C_D%-*}
+	dkms add -q -m ${MODULE} -v ${DRV_VERSION}
+	dkms build -q ${MODULE}/${DRV_VERSION}
+	dkms install -q ${MODULE}/${DRV_VERSION}
+
+	echo -e '--[ CoreFreq Starting Instructions ]--\n'\
+		' 1: load the kernel module\n'\
+		'  > modprobe corefreqk\n'\
+		' 2: enable and start the daemon\n'\
+		'  > systemctl enable corefreqd\n'\
+		'  > systemctl start corefreqd\n'\
+		' 3: run the client\n'\
+		'  > corefreq-cli'
+}
+
+pre_upgrade() {
+	pre_remove ${2%%-*}
+}
+
+post_upgrade() {
+	post_install ${1%%-*}
+}
+
+pre_remove() {
+	if [ "$(dkms status -m ${MODULE})" ]; then
+		modprobe -r ${MODULE} 2>/dev/null
+		if [ $? -eq 0 ]; then
+			echo "Module [${MODULE}] unloaded.\n"
+		fi
+
+		A_B_C_D=${1}
+		DRV_VERSION=${A_B_C_D%-*}
+		dkms remove -q ${MODULE}/${DRV_VERSION} --all
+	fi
+}
