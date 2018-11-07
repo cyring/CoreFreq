@@ -7,14 +7,13 @@ post_install() {
 	dkms build -q ${MODULE}/${DRV_VERSION}
 	dkms install -q ${MODULE}/${DRV_VERSION}
 
-	echo -e '--[ CoreFreq Starting Instructions ]--\n'\
-		' 1: load the kernel module\n'\
-		'  > modprobe corefreqk\n'\
-		' 2: enable and start the daemon\n'\
-		'  > systemctl enable corefreqd\n'\
-		'  > systemctl start corefreqd\n'\
-		' 3: run the client\n'\
-		'  > corefreq-cli'
+echo -e '\n[ \033[1;36;40mCoreFreq\033[0m Starting Instructions\033[0m ]\n'\
+		'\n1: load the kernel module\n'\
+		' # \033[1;36;40mmodprobe corefreqk\033[0m\n'\
+		'\n2: start the daemon\n'\
+		' # \033[1;36;40msystemctl start corefreqd\033[0m\n'\
+		'\n3: run the client\n'\
+		' $ \033[1;36;40mcorefreq-cli\033[0m\n'
 }
 
 pre_upgrade() {
