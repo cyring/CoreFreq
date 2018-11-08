@@ -56,7 +56,7 @@ The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI col
  
  2- Build the programs.
 ```
-make
+$ make
 ```
 
 ```
@@ -80,28 +80,24 @@ make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
 
  3- Load the kernel module, as root.
 ```
-modprobe corefreqk
-```
- _or_
-```
-insmod corefreqk.ko
+# insmod corefreqk.ko
 ```
  4- Start the daemon, as root.
 ```
-./corefreqd
+# corefreqd
 ```
- 5- Start the client, as a user.
+ 5- Start the client, as a user (in another terminal or console).
 ```
-./corefreq-cli
+$ corefreq-cli
 ```
 
 ### Stop
 
  6- Press [CTRL]+[C] to stop the client.
 
- 7- Press [CTRL]+[C] to stop the daemon.
+ 7- Press [CTRL]+[C] to stop the daemon (in foreground) or kill the background job.
 
- 8- Unload the kernel module with the ```rmmod``` command
+ 8- Unload the kernel module
 ```
 rmmod corefreqk.ko
 ```
@@ -157,32 +153,67 @@ CPU     IPS            IPC            CPI
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 ## Debian, Ubuntu
- * Install the prerequisite packages.
+ * Install from the Launchpad repository.
+```
+# add-apt-repository ppa:cyring/corefreq
+# apt update
+# apt install corefreq
+```
+ * For a manual setup, install those prerequisites.
 ```
 apt-get install dkms git libpthread-stubs0-dev
 ```
 
 ## Red Hat, CentOS
- * Install the prerequisite packages.
+ * For the CoreFreq rpm package, install the following packages.
 ```
-yum group install "Development Tools"
+# yum install epel-release
+# yum install dkms
+# yum install kernel-devel
+# yum group install "Development Tools"
+# yum install corefreq-{version}.x86_64.rpm
 ```
 
- * As a user, clone and build CoreFreq.
+## No Distribution
+ * The Makefile provides setup scripts.
+
+### Systemd & DKMS compatible
+ * All-in-one installation.
 ```
-git clone https://github.com/cyring/CoreFreq.git
-cd CoreFreq
-make
+$ git clone https://github.com/cyring/CoreFreq.git
+$ cd CoreFreq
+$ make
+# make dkms_install
+# make dkms_setup
+# make service_install
 ```
- * As root, change to the build directory then start the module followed by the daemon.
+ * Load the kernel module, start the daemon service then the client.
 ```
-insmod corefreqk.ko
-./corefreqd
+# modprobe corefreqk
+# systemctl start corefreqd
+$ corefreq-cli
 ```
- * As a user, start the client.
+ * Uninstallation scripts.
+_( a prompt will ask you to confirm the deletion of the CoreFreq source tree )_
 ```
-./corefreq-cli
+# systemctl stop corefreqd
+# modprobe -r corefreqk
+# cd /usr/src/corefreqk-{version}
+# make dkms_uninstall
 ```
+
+### Manual setup
+ * Build then install the kernel module, the daemon and the client.
+```
+$ make
+# make install
+```
+ * Removal script.
+_( a prompt will ask you to confirm the deletion of the binary files )_
+```
+# make uninstall
+```
+
 
 ## Q&A
 
