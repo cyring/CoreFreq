@@ -4391,7 +4391,11 @@ void Sys_DumpTask(SYSGATE *SysGate)
 	for_each_process_thread(process, thread) {
 		task_lock(thread);
 
+#ifdef CONFIG_SCHED_MUQSS
+		SysGate->taskList[cnt].runtime  = tsk_seruntime(thread);
+#else
 		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
+#endif
 		SysGate->taskList[cnt].usertime = thread->utime;
 		SysGate->taskList[cnt].systime  = thread->stime;
 		SysGate->taskList[cnt].pid      = thread->pid;
