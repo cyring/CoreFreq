@@ -7,7 +7,7 @@ Description=CoreFreq Daemon
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/corefreqd -q
+ExecStart=/bin/corefreqd -q
 ExecStop=/bin/kill -QUIT $MAINPID
 RemainAfterExit=no
 SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
