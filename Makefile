@@ -98,7 +98,7 @@ dkms_install:
 ifeq ($(UID), 0)
 	install -Dm 0644 Makefile $(DRVSRC)/Makefile
 	install -Dm 0644 package/dkms.conf $(DRVSRC)/package/dkms.conf
-	ln -s $(DRVSRC)/package/dkms.conf $(DRVSRC)/dkms.conf
+	ln -rs $(DRVSRC)/package/dkms.conf $(DRVSRC)/dkms.conf
 	install -Dm 0755 package/scripter.sh $(DRVSRC)/package/scripter.sh
 	install -m 0644 *.c *.h $(DRVSRC)/
 endif
