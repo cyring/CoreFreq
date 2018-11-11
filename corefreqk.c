@@ -167,7 +167,7 @@ unsigned int Intel_Brand(char *pBrand)
 	BRAND Brand;
 
 	for (ix = 0; ix < 3; ix++) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	%4,    %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -238,7 +238,7 @@ void AMD_Brand(char *pBrand)
 	BRAND Brand;
 
 	for (ix = 0; ix < 3; ix++) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	%4,    %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -272,7 +272,7 @@ void AMD_Brand(char *pBrand)
 			pBrand[ix++] = idString[jx];
 }
 
-/* Retreive the Processor(BSP) features through to the CPUID instruction. */
+/* Retreive the Processor(BSP) features. */
 static void Query_Features(void *pArg)
 {
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
@@ -280,7 +280,7 @@ static void Query_Features(void *pArg)
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
 
 	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
-	asm volatile
+	__asm__ volatile
 	(
 		"xorq	%%rax, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx	\n\t"
@@ -321,7 +321,7 @@ static void Query_Features(void *pArg)
 		return;
 	}
 
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x1,  %%rax	\n\t"
 		"xorq	%%rbx, %%rbx	\n\t"
@@ -340,7 +340,7 @@ static void Query_Features(void *pArg)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	if (iArg->Features->Info.LargestStdFunc >= 0x5) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x5,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -360,7 +360,7 @@ static void Query_Features(void *pArg)
 		);
 	}
 	if (iArg->Features->Info.LargestStdFunc >= 0x6) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x6,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -380,7 +380,7 @@ static void Query_Features(void *pArg)
 		);
 	}
 	if (iArg->Features->Info.LargestStdFunc >= 0x7) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x7,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx    \n\t"
@@ -400,7 +400,7 @@ static void Query_Features(void *pArg)
 		);
 	}
 	/* Must have 0x80000000,0x80000001,0x80000002,0x80000003,0x80000004 */
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x80000000, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx		\n\t"
@@ -418,7 +418,7 @@ static void Query_Features(void *pArg)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x80000001, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx		\n\t"
@@ -437,7 +437,7 @@ static void Query_Features(void *pArg)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	if (iArg->Features->Info.LargestExtFunc >= 0x80000007) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x80000007, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx		\n\t"
@@ -457,7 +457,7 @@ static void Query_Features(void *pArg)
 		);
 	}
 	if (iArg->Features->Info.LargestExtFunc >= 0x80000008) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x80000008, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx		\n\t"
@@ -487,7 +487,7 @@ static void Query_Features(void *pArg)
 
 	/* Per Vendor features */
 	if (iArg->Features->Info.Vendor.CRC == CRC_INTEL) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x4,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -509,7 +509,7 @@ static void Query_Features(void *pArg)
 		iArg->SMT_Count++;
 
 	    if (iArg->Features->Info.LargestStdFunc >= 0xa) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0xa,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -975,7 +975,7 @@ CLOCK BaseClock_Skylake(unsigned int ratio)
 
 	if (Proc->Features.Info.LargestStdFunc >= 0x16) {
 		unsigned int eax = 0x0, ebx = 0x0, edx = 0x0, fsb = 0;
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x16, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -1023,7 +1023,7 @@ void Cache_Topology(CORE *Core)
 	unsigned long level = 0x0;
 	if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {
 	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x4,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -1055,7 +1055,7 @@ void Cache_Topology(CORE *Core)
 		Core->T.Cache[1].Type  = 1;		/* Data */
 
 		/* Fn8000_0005 L1 Data and Inst. caches. */
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x80000005, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx		\n\t"
@@ -1087,7 +1087,7 @@ void Cache_Topology(CORE *Core)
 		Core->T.Cache[3].Type  = 3;
 
 		/* Fn8000_0006 L2 and L3 caches. */
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x80000006, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx		\n\t"
@@ -1126,7 +1126,7 @@ static void Map_AMD_Topology(void *arg)
 
 	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
 
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x1,  %%rax	\n\t"
 		"xorq	%%rbx, %%rbx	\n\t"
@@ -1139,7 +1139,7 @@ static void Map_AMD_Topology(void *arg)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x80000008, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx		\n\t"
@@ -1175,7 +1175,7 @@ static void Map_AMD_Topology(void *arg)
 	    {
 		CPUID_0x8000001e leaf8000001e;
 
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x8000001e, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx		\n\t"
@@ -1253,7 +1253,7 @@ static void Map_Intel_Topology(void *arg)
 
 	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
 
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x1,  %%rax	\n\t"
 		"xorq	%%rbx, %%rbx	\n\t"
@@ -1269,7 +1269,7 @@ static void Map_Intel_Topology(void *arg)
 	if (Proc->Features.Std.EDX.HTT) {
 		SMT_Mask_Width = leaf1_ebx.Max_SMT_ID;
 
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0x4,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -1333,7 +1333,7 @@ static void Map_Intel_Extended_Topology(void *arg)
 	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
 
 	do {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	$0xb,  %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -3132,7 +3132,7 @@ void Dump_CPUID(CORE *Core)
 {
 	unsigned int i;
 
-	asm volatile
+	__asm__ volatile
 	(
 		"xorq	%%rax, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx	\n\t"
@@ -3150,7 +3150,7 @@ void Dump_CPUID(CORE *Core)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	asm volatile
+	__asm__ volatile
 	(
 		"movq	$0x80000000, %%rax	\n\t"
 		"xorq	%%rbx, %%rbx		\n\t"
@@ -3169,7 +3169,7 @@ void Dump_CPUID(CORE *Core)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 	for (i = 0; (i < CPUID_MAX_FUNC) && (Core->CpuID[i].func != 0x0); i++) {
-		asm volatile
+		__asm__ volatile
 		(
 			"xorq	%%rax, %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -3588,7 +3588,7 @@ void PowerThermal(CORE *Core)
   if (Proc->Features.Info.LargestStdFunc >= 0x6) {
     struct THERMAL_POWER_LEAF Power = {{0}};
 
-    asm volatile
+    __asm__ volatile
     (
 	"movq	$0x6,  %%rax	\n\t"
 	"xorq	%%rbx, %%rbx	\n\t"
@@ -4005,7 +4005,7 @@ void PerCore_AMD_Family_0Fh_PStates(CORE *Core)
 void SystemRegisters(CORE *Core)
 {
 	if (RDPMC_Enable) {
-		asm volatile
+		__asm__ volatile
 		(
 			"movq	%%cr4, %%rax"	"\n\t"
 			"btsq	%0,    %%rax"	"\n\t"
@@ -4016,7 +4016,7 @@ void SystemRegisters(CORE *Core)
 			: "%rax"
 		);
 	}
-	asm volatile
+	__asm__ volatile
 	(
 		"# RFLAGS"		"\n\t"
 		"pushfq"		"\n\t"
@@ -4041,7 +4041,7 @@ void SystemRegisters(CORE *Core)
 		: "%rax", "%rcx", "%rdx"
 	);
 	if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {
-		asm volatile
+		__asm__ volatile
 		(
 			"# EFCR"		"\n\t"
 			"xorq	%%rax, %%rax"	"\n\t"

@@ -8,7 +8,7 @@
 ({									\
 	unsigned int _lo, _hi;						\
 									\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"rdmsr"							\
 		: "=a" (_lo),						\
@@ -19,7 +19,7 @@
 })
 
 #define WRCOUNTER(_val, _cnt)						\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"wrmsr"							\
 		:							\
@@ -32,7 +32,7 @@
 ({									\
 	unsigned int _lo, _hi;						\
 									\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"rdmsr"							\
 		: "=a" (_lo),						\
@@ -43,7 +43,7 @@
 })
 
 #define WRMSR(_data, _reg)						\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"wrmsr"							\
 		:							\
@@ -53,7 +53,7 @@
 	);
 
 #define RDMSR64(_data, _reg)						\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"xorq	%%rax, %%rax"	"\n\t"				\
 		"xorq	%%rdx, %%rdx"	"\n\t"				\
@@ -68,7 +68,7 @@
 	)
 
 #define WRMSR64(_data, _reg)						\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"movq	%0, %%rax"		"\n\t"			\
 		"movq	%%rax, %%rdx"		"\n\t"			\
@@ -95,7 +95,7 @@
 #define ASM_COUNTERx1(	_reg0, _reg1,					\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1)					\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -113,7 +113,7 @@ asm volatile								\
 #define ASM_COUNTERx2(	_reg0, _reg1, _reg2,				\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2)			\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -133,7 +133,7 @@ asm volatile								\
 #define ASM_COUNTERx3(	_reg0, _reg1, _reg2, _reg3,			\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3)	\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -156,7 +156,7 @@ asm volatile								\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4)					\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -183,7 +183,7 @@ asm volatile								\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -211,7 +211,7 @@ asm volatile								\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5)			\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -243,7 +243,7 @@ asm volatile								\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -273,7 +273,7 @@ asm volatile								\
 			_tsc_inst, mem_tsc,				\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6)	\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -310,7 +310,7 @@ asm volatile								\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -343,7 +343,7 @@ asm volatile								\
 			_msr1, _mem1, _msr2, _mem2, _msr3, _mem3,	\
 			_msr4, _mem4, _msr5, _mem5, _msr6, _mem6,	\
 			_msr7, _mem7)					\
-asm volatile								\
+__asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
 	ASM_RDMSR(_msr1, _reg1)						\
@@ -455,7 +455,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 #define RDPCI(_data, _reg)						\
 ({									\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"movl	%1,	%%eax"	"\n\t"				\
 		"movl	$0xcf8,	%%edx"	"\n\t"				\
@@ -471,7 +471,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 #define WRPCI(_data, _reg)						\
 ({									\
-	asm volatile							\
+	__asm__ volatile						\
 	(								\
 		"movl	%1,	%%eax"	"\n\t"				\
 		"movl	$0xcf8,	%%edx"	"\n\t"				\

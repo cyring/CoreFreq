@@ -111,7 +111,7 @@ void CallWith_RDTSC_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 void Slice_NOP(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	__asm__ __volatile__
+	__asm__ volatile
 	(
 		"nop"
 		:
@@ -125,7 +125,7 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 	unsigned long long xchg = 0x436f757274696174LLU;
 	unsigned long long atom = 0x436f726546726571LLU;
 
-	__asm__ __volatile__
+	__asm__ volatile
 	(
 		"1:"			"\n\t"
 		"push	%0"		"\n\t"
