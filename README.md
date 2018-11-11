@@ -1,6 +1,6 @@
 # CoreFreq
 ## Purpose
-CoreFreq is a CPU monitoring software designed for 64-bits Processors w/ architectures Intel Atom, Core2, Nehalem, SandyBridge and superior, AMD Family 0F
+CoreFreq is a CPU monitoring software designed for 64-bits Processors w/ architectures Intel Atom, Core2, Nehalem, SandyBridge and superior; AMD Families 0Fh, 17h (Zen)
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
@@ -29,7 +29,7 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 
 ### Prerequisites
 
- a- *Disable* the Kernel *NMI Watchdog*  
+ a- For a better accuracy, *disable* the Kernel *NMI Watchdog*  
 
 Add the below parameter in the kernel boot loader (Grub, SysLinux)  
 The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counters  
@@ -52,13 +52,12 @@ The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI col
 
 ### Build
 
- 1- Download or clone the source code into a working directory.
+ 1- Clone the source code into a working directory.  
+ :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
  
- 2- Build the programs.
-```
-$ make
-```
-
+ 2- Build the programs.  
+:heavy_dollar_sign:`cd CoreFreq`  
+:heavy_dollar_sign:`make`  
 ```
 cc -Wall -pthread -c corefreqd.c -o corefreqd.o
 cc -Wall -c corefreqm.c -o corefreqm.o
@@ -78,29 +77,21 @@ make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
 
 ### Start
 
- 3- Load the kernel module, as root.
-```
-# insmod corefreqk.ko
-```
- 4- Start the daemon, as root.
-```
-# corefreqd
-```
- 5- Start the client, as a user (in another terminal or console).
-```
-$ corefreq-cli
-```
+ 3- Load the kernel module, as root.  
+:hash:`insmod corefreqk.ko`  
+ 4- Start the daemon, as root.  
+:hash:`corefreqd`  
+ 5- Start the client, as a user (_in another terminal or console_).  
+:heavy_dollar_sign:`corefreq-cli`  
 
 ### Stop
 
  6- Press [CTRL]+[C] to stop the client.
 
- 7- Press [CTRL]+[C] to stop the daemon (in foreground) or kill the background job.
+ 7- Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
 
- 8- Unload the kernel module
-```
-rmmod corefreqk.ko
-```
+ 8- Unload the kernel module  
+:hash:`rmmod corefreqk.ko`  
 
 ### Try
 Download the CoreFreq Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
@@ -108,7 +99,7 @@ Download the CoreFreq Live CD from the [Wiki](http://github.com/cyring/CoreFreq/
 
 ## Screenshots
 ### Linux kernel module
-Use ```dmesg``` or ```journalctl -k``` to check if the module is started
+Use `dmesg` or `journalctl -k` to check if the module is started
 ```
 CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 ```
@@ -132,7 +123,7 @@ Without arguments, the corefreq-cli program displays Top Monitoring
  * Using option '-m' corefreq-cli shows the CPU topology
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
 
- * With the option '-i' corefreq-cli traces the number of instructions per second / cycle
+ * With the option '-i' corefreq-cli traces the number of instructions per second / cycle  
 ```
 CPU     IPS            IPC            CPI
 #00     0.000579/s     0.059728/c    16.742698/i
@@ -145,7 +136,7 @@ CPU     IPS            IPC            CPI
 #07     0.000088/s     0.150406/c     6.648674/i
 ```
 
- * Use option '-s' to show Processor information (BSP)   
+ * Use the option '-s' to show the Processor information (BSP)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
@@ -153,66 +144,50 @@ CPU     IPS            IPC            CPI
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 ## Debian, Ubuntu
- * Install from the Launchpad repository.
-```
-# add-apt-repository ppa:cyring/corefreq
-# apt update
-# apt install corefreq
-```
- * For a manual setup, install those prerequisites.
-```
-apt-get install dkms git libpthread-stubs0-dev
-```
+ * Install from the Launchpad repository.  
+:hash:`add-apt-repository ppa:cyring/corefreq`  
+:hash:`apt update`  
+:hash:`apt install corefreq`  
+ * For a manual setup, install those prerequisites.  
+:hash:`apt-get install dkms git libpthread-stubs0-dev`  
 
 ## Red Hat, CentOS
- * For the CoreFreq rpm package, install the following packages.
-```
-# yum install epel-release
-# yum install dkms
-# yum install kernel-devel
-# yum group install "Development Tools"
-# yum install corefreq-{version}.x86_64.rpm
-```
+ * For the CoreFreq rpm package, install the following packages.  
+:hash:`yum install epel-release`  
+:hash:`yum install dkms`  
+:hash:`yum install kernel-devel`  
+:hash:`yum group install "Development Tools"`  
+:hash:`yum install corefreq-{version}.x86_64.rpm`  
 
 ## No Distribution
  * The Makefile provides setup scripts.
 
 ### Systemd & DKMS compatible
- * All-in-one installation.
-```
-$ git clone https://github.com/cyring/CoreFreq.git
-$ cd CoreFreq
-$ make
-# make dkms_install
-# make dkms_setup
-# make service_install
-```
- * Load the kernel module, start the daemon service then the client.
-```
-# modprobe corefreqk
-# systemctl start corefreqd
-$ corefreq-cli
-```
- * Uninstallation scripts.
-_( a prompt will ask you to confirm the deletion of the CoreFreq source tree )_
-```
-# systemctl stop corefreqd
-# modprobe -r corefreqk
-# cd /usr/src/corefreqk-{version}
-# make dkms_uninstall
-```
+ * All-in-one installation.  
+:heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
+:heavy_dollar_sign:`cd CoreFreq`  
+:heavy_dollar_sign:`make`  
+:hash:`make dkms_install`  
+:hash:`make dkms_setup`  
+:hash:`make service_install`  
+ * Load the kernel module, start the daemon service then the client.  
+:hash:`modprobe corefreqk`  
+:hash:`systemctl start corefreqd`  
+:heavy_dollar_sign:`corefreq-cli`  
+ * Uninstallation scripts.  
+_( a prompt will ask you to confirm the deletion of the CoreFreq source tree )_  
+:hash:`systemctl stop corefreqd`  
+:hash:`modprobe -r corefreqk`  
+:hash:`cd /usr/src/corefreqk-{version}`  
+:hash:`make dkms_uninstall`  
 
 ### Manual setup
- * Build then install the kernel module, the daemon and the client.
-```
-$ make
-# make install
-```
- * Removal script.
-_( a prompt will ask you to confirm the deletion of the binary files )_
-```
-# make uninstall
-```
+ * Build then install the kernel module, the daemon and the client.  
+:heavy_dollar_sign:`make`  
+:hash:`make install`  
+ * Removal script.  
+_( a prompt will ask you to confirm the deletion of the binary files )_  
+:hash:`make uninstall`  
 
 
 ## Q&A
@@ -237,23 +212,20 @@ intel_idle.max_cstate=value
 
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
   A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
-```
-insmod corefreqk.ko SleepInterval=value
-```  
+:hash:`insmod corefreqk.ko SleepInterval=value`  
   where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
 
 * Q: The base clock reports a wrong frequency value ?  
   A: CoreFreq uses various algorithms to estimate the base clock.  
-     1- The delta of two TimeStamp counters during a defined interval  
-     2- The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
-     3- A static value advertised by the manufacturer specs.  
-     4- The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
-     The algorithms # 2, 3 and 4 will not return any under/over-clock frequency.  
+1. The delta of two TimeStamp counters during a defined interval  
+2. The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
+3. A static value advertised by the manufacturer specs.  
+4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
+
      The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
-```
-insmod corefreqk.ko AutoClock=0
-```  
+:hash:`insmod corefreqk.ko AutoClock=0`  
+     _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
 
 
 * Q: The CPU temperature is wrong ?  
@@ -266,17 +238,13 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 
 * Q: The menu option "Memory Ctrl" does not open any window ?  
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
-```
-insmod corefreqk.ko Experimental=1
-```  
+:hash:`insmod corefreqk.ko Experimental=1`  
 
 
 * Q: The Instructions and PMC0 counters are stuck to zero ?  
   A: The PCE bit of control register CR4 allows RDPMC in ring 3  
-```
-echo 2 > /sys/devices/cpu/rdpmc
-insmod corefreqk.ko RDPMC_Enable=1
-```  
+:hash:`echo 2 > /sys/devices/cpu/rdpmc`  
+:hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
 ## Algorithm
