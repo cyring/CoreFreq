@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.38.3"
+#define COREFREQ_VERSION	"1.38.4"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -643,21 +643,21 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		TSC_ADJUST	:  2-1,
 		SGX		:  3-2,
 		BMI1		:  4-3, /* Common x86			*/
-		HLE		:  5-4,
+		HLE		:  5-4, /* Hardware Lock Elision	*/
 		AVX2		:  6-5, /* Common x86			*/
 		Unused1		:  7-6,
 		SMEP		:  8-7, /* Common x86			*/
 		BMI2		:  9-8, /* Common x86			*/
 		FastStrings	: 10-9,
 		INVPCID		: 11-10,
-		RTM		: 12-11,
+		RTM		: 12-11, /* Restricted Transactional Memory */
 		PQM		: 13-12,
 		FPU_CS_DS	: 14-13,
-		MPX		: 15-14,
+		MPX		: 15-14, /* Memory Protection Extensions */
 		PQE		: 16-15,
-		Unused2		: 18-16,
-		RDSEED		: 19-18,
-		ADX		: 20-19,
+		AVX_512		: 18-16, /* AVX-512 Foundation Instructions */
+		RDSEED		: 19-18, /* RDSEED Instruction		*/
+		ADX		: 20-19, /* Arbitrary-Precision Arithmetic */
 		SMAP		: 21-20,
 		Unused3		: 25-21,
 		ProcessorTrace	: 26-25,
@@ -797,7 +797,7 @@ typedef struct
 		PAT	: 17-16,
 		PSE36	: 18-17,
 		NotUsed2: 20-18,
-		NX	: 21-20, /* No-execute page protection.		*/
+		NX	: 21-20, /* No-Execute Page Protection.		*/
 		NotUsed3: 22-21,
 		MMX_Ext : 23-22, /* MMX extensions.			*/
 		MMX	: 24-23,

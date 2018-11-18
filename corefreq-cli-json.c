@@ -635,8 +635,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
                     json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.MPX);
                     json_key(&s, "PQE");
                     json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.PQE);
-                    json_key(&s, "Unused2");
-                    json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.Unused2);
+                    json_key(&s, "AVX-512");
+                    json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.AVX_512);
                     json_key(&s, "RDSEED");
                     json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.RDSEED);
                     json_key(&s, "ADX");
