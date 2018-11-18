@@ -6594,7 +6594,8 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 		len = sprintf(buffer,
 			"%7.2f" " (" "%5.2f" ") "			\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  ",
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+			"%.*s",
 			CFlop->Relative.Freq,
 			CFlop->Relative.Ratio,
 			100.f * CFlop->State.Turbo,
@@ -6602,13 +6603,15 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			100.f * CFlop->State.C1,
 			100.f * CFlop->State.C3,
 			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7);
+			100.f * CFlop->State.C7,
+			11, hSpace);
 	    break;
 	case THERMAL_FORMULA_NONE:
 		len = sprintf(buffer,
 			"%7.2f" " (" "%5.2f" ") "			\
 			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  ",
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+			"%.*s",
 			CFlop->Relative.Freq,
 			CFlop->Relative.Ratio,
 			100.f * CFlop->State.Turbo,
@@ -6616,7 +6619,8 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			100.f * CFlop->State.C1,
 			100.f * CFlop->State.C3,
 			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7);
+			100.f * CFlop->State.C7,
+			11, hSpace);
 		break;
 	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
