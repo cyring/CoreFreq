@@ -176,6 +176,10 @@ typedef struct
 				_pad64		: 64-15;
 	} Technology;
 
+	enum THERMAL_FORMULAS	thermalFormula;
+	enum VOLTAGE_FORMULAS	voltageFormula;
+	enum POWER_FORMULAS	powerFormula;
+
 	struct {
 		unsigned int		Count,
 					OnLine;

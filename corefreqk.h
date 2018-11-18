@@ -645,9 +645,9 @@ typedef struct
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*BaseClock)(unsigned int ratio);
 	long			(*TurboClock)(CLOCK_ARG *pClockMod);
-	unsigned long long	thermalFormula,
-				voltageFormula,
-				powerFormula;
+	enum THERMAL_FORMULAS	thermalFormula;
+	enum VOLTAGE_FORMULAS	voltageFormula;
+	enum POWER_FORMULAS	powerFormula;
 	struct pci_device_id	*PCI_ids;
 	struct {
 		void		(*Start)(void *arg);	/* Must be static */
@@ -2031,7 +2031,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_Core2,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_MEROM,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_CORE2,
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {

@@ -6167,7 +6167,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 				HWK,HWK,HWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK, \
 				HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK
 			},
-			.code = "            0.000000000     0.000000000"
+			.code = "                                       "
 		};
 		memcpy(&hPower0.code[0], hDomain[pw], 7);
 
@@ -6524,23 +6524,74 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = sprintf(buffer,
-		"%7.2f" " (" "%5.2f" ") "			\
-		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-		"%-3u" "/" "%3u" "/" "%3u",
-		CFlop->Relative.Freq,
-		CFlop->Relative.Ratio,
-		100.f * CFlop->State.Turbo,
-		100.f * CFlop->State.C0,
-		100.f * CFlop->State.C1,
-		100.f * CFlop->State.C3,
-		100.f * CFlop->State.C6,
-		100.f * CFlop->State.C7,
-		Shm->Cpu[cpu].PowerThermal.Limit[0],
-		CFlop->Thermal.Temp,
-		Shm->Cpu[cpu].PowerThermal.Limit[1]);
-
+	switch (Shm->Proc.thermalFormula) {
+	case THERMAL_FORMULA_INTEL:
+	case THERMAL_FORMULA_AMD:
+	case THERMAL_FORMULA_AMD_0Fh:
+		len = sprintf(buffer,
+			"%7.2f" " (" "%5.2f" ") "			\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+			"%-3u" "/" "%3u" "/" "%3u",
+			CFlop->Relative.Freq,
+			CFlop->Relative.Ratio,
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			CFlop->Thermal.Temp,
+			Shm->Cpu[cpu].PowerThermal.Limit[1]);
+		break;
+	case THERMAL_FORMULA_AMD_17h:
+	    if (cpu == Shm->Proc.Service.Core)
+		len = sprintf(buffer,
+			"%7.2f" " (" "%5.2f" ") "			\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+			"%-3u" "/" "%3u" "/" "%3u",
+			CFlop->Relative.Freq,
+			CFlop->Relative.Ratio,
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			CFlop->Thermal.Temp,
+			Shm->Cpu[cpu].PowerThermal.Limit[1]);
+	    else
+		len = sprintf(buffer,
+			"%7.2f" " (" "%5.2f" ") "			\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  ",
+			CFlop->Relative.Freq,
+			CFlop->Relative.Ratio,
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7);
+	    break;
+	case THERMAL_FORMULA_NONE:
+		len = sprintf(buffer,
+			"%7.2f" " (" "%5.2f" ") "			\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  ",
+			CFlop->Relative.Freq,
+			CFlop->Relative.Ratio,
+			100.f * CFlop->State.Turbo,
+			100.f * CFlop->State.C0,
+			100.f * CFlop->State.C1,
+			100.f * CFlop->State.C3,
+			100.f * CFlop->State.C6,
+			100.f * CFlop->State.C7);
+		break;
+	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -6659,15 +6710,33 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	if (CFlop->Voltage.VID != 0)
+	switch (Shm->Proc.voltageFormula) {
+	case VOLTAGE_FORMULA_INTEL:
+	case VOLTAGE_FORMULA_INTEL_CORE2:
+	case VOLTAGE_FORMULA_INTEL_SNB:
+	case VOLTAGE_FORMULA_INTEL_SKL_X:
+	case VOLTAGE_FORMULA_AMD:
+	case VOLTAGE_FORMULA_AMD_0Fh:
 		len = sprintf(buffer,	"%7.2f "	\
 					"%7d   %5.4f",
 					CFlop->Relative.Freq,
 					CFlop->Voltage.VID,
 					CFlop->Voltage.Vcore);
-	else
+		break;
+	case VOLTAGE_FORMULA_AMD_17h:
+	    if (cpu == Shm->Proc.Service.Core)
+		len = sprintf(buffer,	"%7.2f "	\
+					"%7d   %5.4f",
+					CFlop->Relative.Freq,
+					CFlop->Voltage.VID,
+					CFlop->Voltage.Vcore);
+	    else
 		len = sprintf(buffer, "%7.2f ", CFlop->Relative.Freq);
-
+	    break;
+	case VOLTAGE_FORMULA_NONE:
+		len = sprintf(buffer, "%7.2f ", CFlop->Relative.Freq);
+		break;
+	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
@@ -6907,6 +6976,11 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	const CUINT tab = 13 + 3;
 
 	row += 2;
+    switch (Shm->Proc.powerFormula) {
+    case POWER_FORMULA_INTEL:
+    case POWER_FORMULA_INTEL_ATOM:
+    case POWER_FORMULA_AMD:
+    case POWER_FORMULA_AMD_17h:
 	sprintf(buffer,
 		"%13.9f" "%13.9f" "%13.9f" "%13.9f"		\
 		"%13.9f" "%13.9f" "%13.9f" "%13.9f",
@@ -6926,7 +7000,10 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&LayerAt(layer, code,(col+tab),(row+2)), &buffer[78], 13);
 	memcpy(&LayerAt(layer, code, col     ,(row+3)), &buffer[39], 13);
 	memcpy(&LayerAt(layer, code,(col+tab),(row+3)), &buffer[91], 13);
-
+	break;
+    case POWER_FORMULA_NONE:
+	break;
+    }
 	row += 1 + CUMAX(draw.Area.MaxRows, 4);
 	return(row);
 }

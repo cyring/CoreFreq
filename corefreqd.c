@@ -71,7 +71,6 @@ static void *Core_Cycle(void *arg)
 	ARG		*Arg = (ARG *) arg;
 	unsigned int	cpu  = Arg->Bind;
 	SHM_STRUCT	*Shm = Arg->Ref->Shm;
-	PROC		*Pkg = Arg->Ref->Proc;
 	CORE		*Core= Arg->Ref->Core[cpu];
 	CPU_STRUCT	*Cpu = &Shm->Cpu[cpu];
 
@@ -178,7 +177,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events = Core->PowerThermal.Events;
 
-	switch (Pkg->thermalFormula) {
+	switch (Shm->Proc.thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
 		COMPUTE_THERMAL(INTEL,
 				CFlip->Thermal.Temp,
@@ -198,11 +197,13 @@ static void *Core_Cycle(void *arg)
 				CFlip->Thermal.Sensor);
 		break;
 	case THERMAL_FORMULA_AMD_17h:
-	    if (cpu == Pkg->Service.Core)
+	    if (cpu == Shm->Proc.Service.Core)
 		COMPUTE_THERMAL(AMD_17h,
 				CFlip->Thermal.Temp,
 				Cpu->PowerThermal.Param,
 				CFlip->Thermal.Sensor);
+		break;
+	case THERMAL_FORMULA_NONE:
 		break;
 	}
 	/* Min and Max temperatures per Core				*/
@@ -212,10 +213,11 @@ static void *Core_Cycle(void *arg)
 		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
 	/* Per Core voltage formulas					*/
 	CFlip->Voltage.VID = Core->PowerThermal.VID;
-	switch (Pkg->voltageFormula) {
+
+	switch (Shm->Proc.voltageFormula) {
 	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
-	case VOLTAGE_FORMULA_INTEL_MEROM:
-		COMPUTE_VOLTAGE(INTEL_MEROM,
+	case VOLTAGE_FORMULA_INTEL_CORE2:
+		COMPUTE_VOLTAGE(INTEL_CORE2,
 				CFlip->Voltage.Vcore,
 				CFlip->Voltage.VID);
 		break;
@@ -239,6 +241,10 @@ static void *Core_Cycle(void *arg)
 		COMPUTE_VOLTAGE(AMD_17h,
 				CFlip->Voltage.Vcore,
 				CFlip->Voltage.VID);
+		break;
+	case VOLTAGE_FORMULA_INTEL:
+	case VOLTAGE_FORMULA_INTEL_SNB:
+	case VOLTAGE_FORMULA_NONE:
 		break;
 	}
 	/* Interrupts counters						*/
@@ -306,15 +312,14 @@ static void *Child_Thread(void *arg)
 	ARG *Arg	= (ARG *) arg;
 	unsigned int cpu = Arg->Bind;
 	SHM_STRUCT *Shm = Arg->Ref->Shm;
-	PROC *Pkg	= Arg->Ref->Proc;
 	CPU_STRUCT *Cpu = &Shm->Cpu[cpu];
 
 	CALL_FUNC MatrixCallFunc[2][2] = {
 		{ CallWith_RDTSC_No_RDPMC,  CallWith_RDTSC_RDPMC  },
 		{ CallWith_RDTSCP_No_RDPMC, CallWith_RDTSCP_RDPMC }
 	};
-	const int withTSCP = ((Pkg->Features.AdvPower.EDX.Inv_TSC == 1)
-			   || (Pkg->Features.ExtInfo.EDX.RDTSCP == 1)),
+	const int withTSCP = ((Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
+			   || (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1)),
 		withRDPMC = ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 			  && (Shm->Proc.PM_version >= 1)
 			  && (BITVAL(Cpu->SystemRegister.CR4, CR4_PCE) == 1));
@@ -396,6 +401,10 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 
 	/* Copy all initial CPUID features.				*/
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
+	/* Copy the fomula identifiers					*/
+	Shm->Proc.thermalFormula = Proc->thermalFormula;
+	Shm->Proc.voltageFormula = Proc->voltageFormula;
+	Shm->Proc.powerFormula   = Proc->powerFormula;
 	/* Copy the numbers of total & online CPU.			*/
 	Shm->Proc.CPU.Count	= Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
@@ -467,6 +476,8 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Proc.Power.Unit.Joules /= maxCoreCount;
 	}
       }
+	break;
+      case POWER_FORMULA_NONE:
 	break;
     }
 	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
@@ -2835,6 +2846,9 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].PowerThermal.Limit[0] = 0;
       }
 	break;
+    case THERMAL_FORMULA_NONE:
+	Shm->Cpu[cpu].PowerThermal.Limit[0] = 0;
+	break;
     }
 	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
 }
@@ -3316,8 +3330,9 @@ void Core_Manager(REF *Ref)
 	Shm->Proc.Toggle = !Shm->Proc.Toggle;
 	PFlip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
 
-	SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
-					!Shm->Cpu[Proc->Service.Core].Toggle];
+	SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
 
 	/* Reset PTM sensor with the Service Processor.			*/
 	PFlip->Thermal.Sensor = SProc->Thermal.Sensor;
@@ -3345,8 +3360,9 @@ void Core_Manager(REF *Ref)
 						&Shm->Proc.Service,
 						tid) == 0)
 			{
-			    SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
-					!Shm->Cpu[Proc->Service.Core].Toggle];
+			  SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+				];
 			}
 			/* Raise this bit up to notify a platform change. */
 			if (!BITVAL(Shm->Proc.Sync, 63))
@@ -3374,13 +3390,14 @@ void Core_Manager(REF *Ref)
 						&Shm->Proc.Service,
 						tid) == 0)
 			{
-			  SProc = &Shm->Cpu[Proc->Service.Core].FlipFlop[ \
-					!Shm->Cpu[Proc->Service.Core].Toggle];
+			  SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+				];
 			}
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
 				(double)( Core[cpu]->Clock.Hz
-					* Proc->Boost[BOOST(MAX)])
+					* Shm->Proc.Boost[BOOST(MAX)])
 					/ 1000000L );
 			/* Notify					*/
 			if (!BITVAL(Shm->Proc.Sync, 63))
@@ -3395,7 +3412,7 @@ void Core_Manager(REF *Ref)
 		}
 		/* Workaround to Package Thermal Management: the hottest Core */
 		if (!Shm->Proc.Features.Power.EAX.PTM) {
-		    switch (Proc->thermalFormula) {
+		    switch (Shm->Proc.thermalFormula) {
 		    case THERMAL_FORMULA_INTEL:
 			if (CFlop->Thermal.Sensor < PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
@@ -3405,6 +3422,8 @@ void Core_Manager(REF *Ref)
 		    case THERMAL_FORMULA_AMD_17h:
 			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+			break;
+		    case THERMAL_FORMULA_NONE:
 			break;
 		    }
 		}
@@ -3469,39 +3488,49 @@ void Core_Manager(REF *Ref)
 		PFlip->Thermal.Sensor = Proc->PowerThermal.Sensor;
 		PFlip->Thermal.Events = Proc->PowerThermal.Events;
 	    }
-	    switch (Proc->thermalFormula) {
+	    switch (Shm->Proc.thermalFormula) {
 	    case THERMAL_FORMULA_INTEL:
 		COMPUTE_THERMAL(INTEL,
 			PFlip->Thermal.Temp,
-			Shm->Cpu[Proc->Service.Core].PowerThermal.Param,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
 			PFlip->Thermal.Sensor);
 		break;
 	    case THERMAL_FORMULA_AMD:
 		COMPUTE_THERMAL(AMD,
 			PFlip->Thermal.Temp,
-			Shm->Cpu[Proc->Service.Core].PowerThermal.Param,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
 			PFlip->Thermal.Sensor);
 		break;
 	    case THERMAL_FORMULA_AMD_0Fh:
 		COMPUTE_THERMAL(AMD_0Fh,
 			PFlip->Thermal.Temp,
-			Shm->Cpu[Proc->Service.Core].PowerThermal.Param,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
 			PFlip->Thermal.Sensor);
 		break;
 	    case THERMAL_FORMULA_AMD_17h:
 		COMPUTE_THERMAL(AMD_17h,
 			PFlip->Thermal.Temp,
-			Shm->Cpu[Proc->Service.Core].PowerThermal.Param,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
 			PFlip->Thermal.Sensor);
+		break;
+	    case THERMAL_FORMULA_NONE:
 		break;
 	    }
 		/* Package voltage formulas				*/
-	    switch (Proc->voltageFormula) {
+	    switch (Shm->Proc.voltageFormula) {
 		/* Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1		*/
 	    case VOLTAGE_FORMULA_INTEL_SNB:
 		COMPUTE_VOLTAGE(INTEL_SNB,
 				SProc->Voltage.Vcore,
 				SProc->Voltage.VID);
+		break;
+	    case VOLTAGE_FORMULA_INTEL:
+	    case VOLTAGE_FORMULA_INTEL_CORE2:
+	    case VOLTAGE_FORMULA_INTEL_SKL_X:
+	    case VOLTAGE_FORMULA_AMD:
+	    case VOLTAGE_FORMULA_AMD_0Fh:
+	    case VOLTAGE_FORMULA_AMD_17h:
+	    case VOLTAGE_FORMULA_NONE:
 		break;
 	    }
 		/* Tasks collection					*/

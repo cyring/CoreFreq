@@ -620,9 +620,9 @@ typedef struct
 	Bit64			SMM		__attribute__ ((aligned (64)));
 	Bit64			VM		__attribute__ ((aligned (64)));
 
-	unsigned long long	thermalFormula,
-				voltageFormula,
-				powerFormula;
+	enum THERMAL_FORMULAS	thermalFormula;
+	enum VOLTAGE_FORMULAS	voltageFormula;
+	enum POWER_FORMULAS	powerFormula;
 
 	unsigned int		SleepInterval,
 				tickReset,
