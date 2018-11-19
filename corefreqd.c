@@ -2843,7 +2843,7 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
       } else {
-	Shm->Cpu[cpu].PowerThermal.Limit[0] = 0;
+      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target;
       }
 	break;
     case THERMAL_FORMULA_NONE:
