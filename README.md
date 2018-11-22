@@ -144,29 +144,20 @@ CPU     IPS            IPC            CPI
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 ## Debian, Ubuntu
- * Install from the Launchpad repository.  
-:hash:`add-apt-repository ppa:cyring/corefreq`  
-:hash:`apt update`  
-:hash:`apt install corefreq`  
- * For a manual setup, install those prerequisites.  
+ * Install those prerequisites then proceed with the DKMS or manual setup.  
 :hash:`apt-get install dkms git libpthread-stubs0-dev`  
 
 ## Red Hat, CentOS
- * For the CoreFreq rpm package, install the following packages.  
+ * Install the following packages then proceed with the DKMS or manual setup.  
 :hash:`yum install epel-release`  
 :hash:`yum install dkms`  
 :hash:`yum install kernel-devel`  
 :hash:`yum group install "Development Tools"`  
-:hash:`yum install corefreq-{version}.x86_64.rpm`  
 
-## No Distribution
- * The Makefile provides setup scripts.
-
-### Systemd & DKMS compatible
+## DKMS & Systemd setup
  * All-in-one installation.  
 :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
 :heavy_dollar_sign:`cd CoreFreq`  
-:heavy_dollar_sign:`make`  
 :hash:`make dkms_install`  
 :hash:`make dkms_setup`  
 :hash:`make service_install`  
@@ -174,14 +165,14 @@ CPU     IPS            IPC            CPI
 :hash:`modprobe corefreqk`  
 :hash:`systemctl start corefreqd`  
 :heavy_dollar_sign:`corefreq-cli`  
- * Uninstallation scripts.  
+ * Uninstallation.  
 _( a prompt will ask you to confirm the deletion of the CoreFreq source tree )_  
 :hash:`systemctl stop corefreqd`  
 :hash:`modprobe -r corefreqk`  
 :hash:`cd /usr/src/corefreqk-{version}`  
 :hash:`make dkms_uninstall`  
 
-### Manual setup
+## Manual setup
  * Build then install the kernel module, the daemon and the client.  
 :heavy_dollar_sign:`make`  
 :hash:`make install`  

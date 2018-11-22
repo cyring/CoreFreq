@@ -9,7 +9,7 @@ KVERSION = $(shell uname -r)
 
 ifeq ($(CONFDIR),)
 	export CONFDIR = $(CURDIR)
-	include $(CONFDIR)/package/dkms.conf
+	include $(CONFDIR)/dkms.conf
 endif
 
 BINDIR = $(DESTDIR)/bin
@@ -67,16 +67,12 @@ ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
 all: corefreqd corefreq-cli
-ifneq ($(wildcard /lib/modules/$(KVERSION)/build/.),)
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
-endif
 
 .PHONY: clean
 clean:
 	rm -f corefreqd corefreq-cli
-ifneq ($(wildcard /lib/modules/$(KVERSION)/build/.),)
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
-endif
 
 .PHONY: install
 install: all
@@ -97,9 +93,8 @@ endif
 dkms_install:
 ifeq ($(UID), 0)
 	install -Dm 0644 Makefile $(DRVSRC)/Makefile
-	install -Dm 0644 package/dkms.conf $(DRVSRC)/package/dkms.conf
-	ln -rs $(DRVSRC)/package/dkms.conf $(DRVSRC)/dkms.conf
-	install -Dm 0755 package/scripter.sh $(DRVSRC)/package/scripter.sh
+	install -Dm 0644 dkms.conf $(DRVSRC)/dkms.conf
+	install -Dm 0755 scripter.sh $(DRVSRC)/scripter.sh
 	install -m 0644 *.c *.h $(DRVSRC)/
 endif
 
@@ -110,13 +105,15 @@ ifeq ($(DKMS), 0)
 	dkms add -c $(DRVSRC)/dkms.conf -m corefreqk -v $(DRV_VERSION)
 	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
 	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
+else
+	$(error DKMS not found)
 endif
 endif
 
 .PHONY: service_install
 service_install:
 ifeq ($(UID), 0)
-	install -Dm 0644 package/corefreqd.service \
+	install -Dm 0644 corefreqd.service \
 		$(DESTDIR)/usr/lib/systemd/system/corefreqd.service
 endif
 
@@ -133,6 +130,8 @@ ifeq ($(UID), 0)
 ifeq ($(DKMS), 0)
 	dkms remove -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION) --all
 	rm -Ir $(DRVSRC)
+else
+	$(error DKMS not found)
 endif
 endif
 
