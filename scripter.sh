@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 #
 # CoreFreq
 # Copyright (C) 2015-2018 CYRIL INGENIERIE
