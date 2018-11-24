@@ -3062,11 +3062,21 @@ unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 	unsigned int COF;
 	if (DID != 0) {
 		COF = (FID << 1) / DID;
-		COF += ((FID >> 1) % 2);
 	} else {
-		COF = FID >> 3;
+		COF = FID >> 2;
 	}
 	return(COF);
+}
+
+unsigned int AMD_Zen_CoreFID(unsigned int COF, unsigned int DID)
+{
+	unsigned int FID;
+	if (DID != 0) {
+		FID = (COF * DID) >> 1;
+	} else {
+		FID = COF << 2;
+	}
+	return(FID);
 }
 
 void Compute_AMD_Zen_Boost(void)
@@ -3117,6 +3127,49 @@ void Compute_AMD_Zen_Boost(void)
 		OverrideUnlockCapability(pSpecific);
 	} else	/* Reset thermal union */
 		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
+}
+
+long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
+{
+	long rc = 0;
+    if (Proc->Registration.Experimental)
+    {
+	HWCR HwCfgRegister = {.value = 0};
+	/* Make sure the Core Performance Boost is disabled. */
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+
+	if (HwCfgRegister.Family_17h.CpbDis && (pClockMod != NULL)) {
+		unsigned long long PstateAddr = MSR_AMD_PSTATE_DEF_BASE;
+		PSTATEDEF PstateDef = {.value = 0};
+
+	    switch (pClockMod->Ratio) {
+	    case 1 ... 7:
+		PstateAddr += pClockMod->Ratio;
+		RDMSR(PstateDef, PstateAddr);
+		/* Apply if and only if the P-State is enabled */
+		if (PstateDef.Family_17h.PstateEn) {
+			unsigned int index = BOOST(SIZE) - pClockMod->Ratio;
+			/* Compute the P-State Frequency ID from the ratio */
+			unsigned int FID = 0, COF = 0;
+			FID = AMD_Zen_CoreFID(	Proc->Boost[index]
+						+ pClockMod->Offset,
+						PstateDef.Family_17h.CpuDfsId);
+			/* Write then Read the P-State MSR */
+			PstateDef.Family_17h.CpuFid = FID;
+			WRMSR(PstateDef, PstateAddr);
+			RDMSR(PstateDef, PstateAddr);
+			/* Re-compute the Core coefficient */
+			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+						PstateDef.Family_17h.CpuDfsId);
+			/* Update the Boost ratio with COF */
+			Proc->Boost[index] = COF;
+			rc = 2;
+		}
+		break;
+	    }
+	}
+    }
+	return(rc);
 }
 
 void Query_AMD_Family_17h(void)

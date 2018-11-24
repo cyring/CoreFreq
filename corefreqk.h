@@ -676,6 +676,7 @@ extern long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Skylake_X(CLOCK_ARG *pClockMod) ;
+extern long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
 extern void Query_GenuineIntel(void) ;
 static void PerCore_Intel_Query(void *arg) ;
@@ -3144,7 +3145,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
-	.TurboClock = NULL,
+	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_17h,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
 	.powerFormula   = POWER_FORMULA_AMD_17h,
