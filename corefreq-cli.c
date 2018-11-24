@@ -6549,7 +6549,7 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len;
+	size_t len = 0;
 
 	switch (Shm->Proc.thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
@@ -6739,7 +6739,7 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len;
+	size_t len = 0;
 
 	switch (Shm->Proc.voltageFormula) {
 	case VOLTAGE_FORMULA_INTEL:
