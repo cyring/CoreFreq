@@ -714,12 +714,32 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"Frequency%.*s(Mhz)%.*sRatio",
 		12, hSpace, 23 - (OutFunc == NULL), hSpace);
 
+    if (Shm->Proc.Features.MinRatio_Unlock) {
+	CLOCK_ARG coreClock = {.Ratio = 0, .Offset = 0};
+
+	coreClock.Ratio = BOXKEY_RATIO_CLOCK_OR | 2;
+
+	PrintCoreBoost(win, CFlop,
+			"Min", BOOST(MIN), 1, coreClock.sllong,
+			width, OutFunc, attrib[3]);
+    } else {
 	PrintCoreBoost(win, CFlop,
 			"Min", BOOST(MIN), 0, SCANKEY_NULL,
 			width, OutFunc, attrib[3]);
+    }
+    if (Shm->Proc.Features.MaxRatio_Unlock) {
+	CLOCK_ARG coreClock = {.Ratio = 0, .Offset = 0};
+
+	coreClock.Ratio = BOXKEY_RATIO_CLOCK_OR | 1;
+
+	PrintCoreBoost(win, CFlop,
+			"Max", BOOST(MAX), 1, coreClock.sllong,
+			width, OutFunc, attrib[3]);
+    } else {
 	PrintCoreBoost(win, CFlop,
 			"Max", BOOST(MAX), 0, SCANKEY_NULL,
 			width, OutFunc, attrib[3]);
+    }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "Factory%.*s[%6.2f]",
 		(OutFunc == NULL) ? 62 : 58, hSpace,
@@ -730,12 +750,12 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		22, hSpace, Shm->Proc.Features.Factory.Freq,
 		23, hSpace, Shm->Proc.Features.Factory.Ratio);
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Ratio_Unlock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
 		"Turbo Boost%.*s[%6s]", width - 22, hSpace,
-		Shm->Proc.Features.Ratio_Unlock ? "UNLOCK" : "LOCK");
+		Shm->Proc.Features.Turbo_Unlock ? "UNLOCK" : "LOCK");
 
-    if (Shm->Proc.Features.Ratio_Unlock)
+    if (Shm->Proc.Features.Turbo_Unlock)
       for (boost = BOOST(1C), activeCores = 1;
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
@@ -799,10 +819,10 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - (OutFunc == NULL ? 27 : 25), hSpace,
 		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
 
-	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboRatio_Lock],
+	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboActivation],
 		width, 3, "Turbo Activation%.*s[%6s]",
 		width - (OutFunc == NULL ? 30 : 28), hSpace,
-		Shm->Proc.Features.TurboRatio_Lock ? "LOCK" : "UNLOCK");
+		Shm->Proc.Features.TurboActivation ? "LOCK" : "UNLOCK");
 
 	PrintCoreBoost(win, CFlop,
 			"Nominal", BOOST(TDP), 0, SCANKEY_NULL,
@@ -3406,7 +3426,13 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	return(wCPU);
 }
 
-Window *CreateTurboClock(unsigned long long id)
+typedef void (*TITLE_CALLBACK)(unsigned int, char *);
+
+Window *CreateCoreClock(unsigned long long id,
+			unsigned int boostBase,
+			unsigned long long boxKey,
+			TITLE_CALLBACK TitleCallback,
+			CUINT oCol)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
@@ -3430,10 +3456,10 @@ Window *CreateTurboClock(unsigned long long id)
 	CLOCK_ARG clockMod  = {.sllong = id};
 	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
-	lowestOperating = abs((int)Shm->Proc.Boost[BOOST(SIZE) - ratio]
+	lowestOperating = abs((int)Shm->Proc.Boost[boostBase - ratio]
 			- (signed) Shm->Proc.Boost[BOOST(MIN)]),
 	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			 - Shm->Proc.Boost[BOOST(SIZE) - ratio],
+			 - Shm->Proc.Boost[boostBase - ratio],
 	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
@@ -3453,50 +3479,73 @@ Window *CreateTurboClock(unsigned long long id)
 	}
 	hthWin = CUMIN(hthMin, hthMax);
 
-	Window *wTC = CreateWindow(wLayer, id, 1, hthWin, 34, oRow);
+	Window *wCK = CreateWindow(wLayer, id, 1, hthWin, oCol, oRow);
 
-    if (wTC != NULL) {
+    if (wCK != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
-		clockMod.Ratio = ratio | BOXKEY_TURBO_CLOCK;
+		clockMod.Ratio = ratio | boxKey;
 		clockMod.Offset = offset;
-		multiplier = Shm->Proc.Boost[BOOST(SIZE) - ratio] + offset;
+		multiplier = Shm->Proc.Boost[boostBase - ratio] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wTC, clockMod.sllong, item,
+		StoreTCell(wCK, clockMod.sllong, item,
 			attribute[multiplier < medianColdZone ?
 					1 : multiplier > startingHotZone ?
 						2 : 0]);
 	}
-	sprintf((char*) item, " Turbo Clock %1dC ", ratio);
-	StoreWindow(wTC, .title, (char*) item);
+
+	TitleCallback(ratio, (char*) item);
+	StoreWindow(wCK, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
-		wTC->matrix.scroll.vert = hthMax
+		wCK->matrix.scroll.vert = hthMax
 					- hthWin * (1 + (highestOperating
 							/ hthWin));
-		wTC->matrix.select.row  = lowestOperating
-					- wTC->matrix.scroll.vert;
+		wCK->matrix.select.row  = lowestOperating
+					- wCK->matrix.scroll.vert;
 	} else {
-		wTC->matrix.select.row  = lowestOperating;
+		wCK->matrix.select.row  = lowestOperating;
 	}
-	StoreWindow(wTC,	.key.Enter,	MotionEnter_Cell);
-	StoreWindow(wTC,	.key.Down,	MotionDown_Win);
-	StoreWindow(wTC,	.key.Up,	MotionUp_Win);
-	StoreWindow(wTC,	.key.PgUp,	MotionPgUp_Win);
-	StoreWindow(wTC,	.key.PgDw,	MotionPgDw_Win);
-	StoreWindow(wTC,	.key.Home,	MotionTop_Win);
-	StoreWindow(wTC,	.key.End,	MotionBottom_Win);
+	StoreWindow(wCK,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wCK,	.key.Down,	MotionDown_Win);
+	StoreWindow(wCK,	.key.Up,	MotionUp_Win);
+	StoreWindow(wCK,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wCK,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wCK,	.key.Home,	MotionTop_Win);
+	StoreWindow(wCK,	.key.End,	MotionBottom_Win);
 
-	StoreWindow(wTC,	.key.WinLeft,	MotionOriginLeft_Win);
-	StoreWindow(wTC,	.key.WinRight,	MotionOriginRight_Win);
-	StoreWindow(wTC,	.key.WinDown,	MotionOriginDown_Win);
-	StoreWindow(wTC,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wCK,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wCK,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wCK,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wCK,	.key.WinUp,	MotionOriginUp_Win);
     }
-	return(wTC);
+	return(wCK);
+}
+
+void TitleForTurboClock(unsigned int ratio, char *title)
+{
+	sprintf(title, " Turbo Clock %1dC ", ratio);
+}
+
+Window *CreateTurboClock(unsigned long long id)
+{
+	return(CreateCoreClock(id, BOOST(SIZE), BOXKEY_TURBO_CLOCK,
+					TitleForTurboClock, 34));
+}
+
+void TitleForRatioClock(unsigned int ratio, char *title)
+{
+	sprintf(title, " %s Clock Ratio ", ratio == 1 ? "Max" : "Min");
+}
+
+Window *CreateRatioClock(unsigned long long id)
+{
+	return(CreateCoreClock(id, BOOST(ACT), BOXKEY_RATIO_CLOCK,
+					TitleForRatioClock, 38));
 }
 
 Window *CreateUncoreClock(unsigned long long id)
@@ -3540,7 +3589,7 @@ Window *CreateUncoreClock(unsigned long long id)
         }
         hthWin = CUMIN(hthMin, hthMax);
 
-        Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 40, oRow);
+        Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 42, oRow);
 
     if (wUC != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
@@ -5008,6 +5057,16 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_RATIO_CLOCK_MAX:
+    case BOXKEY_RATIO_CLOCK_MIN:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateRatioClock(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_UNCORE_CLOCK_MAX:
     case BOXKEY_UNCORE_CLOCK_MIN:
     {
@@ -5186,6 +5245,13 @@ int Shortcut(SCANKEY *scan)
 
 	 if (!RING_FULL(Shm->Ring[0]))
 	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
+	}
+	else if (clockMod.Ratio & BOXKEY_RATIO_CLOCK)
+	{
+	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
+
+	 if (!RING_FULL(Shm->Ring[0]))
+	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
 	}
 	else if (clockMod.Ratio & BOXKEY_UNCORE_CLOCK)
 	{
@@ -6370,7 +6436,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 		HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,	\
 		LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,	\
 		HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,	\
-		LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK
+		LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK
 	    },
 	    .code = {
 		'S','M','T',',','P','o','w','e','r','N','o','w',',',	\

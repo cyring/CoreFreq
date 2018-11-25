@@ -999,8 +999,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
             json_literal(&s, "%u", Shm->Proc.Features.HyperThreading);
             json_key(&s, "HTT_Enable");
             json_literal(&s, "%u", Shm->Proc.Features.HTT_Enable);
-            json_key(&s, "Ratio_Unlock");
-            json_literal(&s, "%u", Shm->Proc.Features.Ratio_Unlock);
+            json_key(&s, "Turbo_Unlock");
+            json_literal(&s, "%u", Shm->Proc.Features.Turbo_Unlock);
             json_key(&s, "TDP_Unlock");
             json_literal(&s, "%u", Shm->Proc.Features.TDP_Unlock);
             json_key(&s, "TDP_Levels");
@@ -1009,8 +1009,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc) {
             json_literal(&s, "%u", Shm->Proc.Features.TDP_Cfg_Lock);
             json_key(&s, "TDP_Cfg_Level");
             json_literal(&s, "%u", Shm->Proc.Features.TDP_Cfg_Level);
-            json_key(&s, "TurboRatio_Lock");
-            json_literal(&s, "%u", Shm->Proc.Features.TurboRatio_Lock);
+            json_key(&s, "TurboActivation_Lock");
+            json_literal(&s, "%u", Shm->Proc.Features.TurboActivation);
             json_key(&s, "UnusedBits");
             json_literal(&s, "%u", Shm->Proc.Features.UnusedBits);
             json_key(&s, "SpecTurboRatio");

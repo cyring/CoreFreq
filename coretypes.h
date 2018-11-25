@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.38.5"
+#define COREFREQ_VERSION	"1.38.6"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -937,14 +937,16 @@ typedef struct	/* BSP CPUID features.					*/
 		Bit32	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
 			HTT_Enable	: 10-9,
-			Ratio_Unlock	: 11-10,
-			TDP_Unlock	: 12-11,
-			TDP_Levels	: 14-12,
-			TDP_Cfg_Lock	: 15-14,
-			TDP_Cfg_Level	: 17-15,
-			TurboRatio_Lock : 18-17,
-			Uncore_Unlock	: 19-18,
-			UnusedBits	: 24-19,
+			MinRatio_Unlock : 11-10,
+			MaxRatio_Unlock : 12-11,
+			Turbo_Unlock	: 13-12,
+			TDP_Unlock	: 14-13,
+			TDP_Levels	: 16-14,
+			TDP_Cfg_Lock	: 17-16,
+			TDP_Cfg_Level	: 19-17,
+			TurboActivation : 20-19,
+			Uncore_Unlock	: 21-20,
+			UnusedBits	: 24-21,
 			SpecTurboRatio	: 32-24;
 	};
 } FEATURES;
@@ -1332,8 +1334,9 @@ typedef struct {
 #define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
 #define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x17)
 #define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x18)
-#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x19)
-#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0x1a)
+#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x19)
+#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x1a)
+#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0x1b)
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 

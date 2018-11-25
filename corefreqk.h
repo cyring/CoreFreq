@@ -615,8 +615,10 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC]={
 };
 
 #define LATCH_NONE		0b0000
-#define LATCH_CORE_UNLOCK	0b0001
-#define LATCH_UNCORE_UNLOCK	0b0010
+#define LATCH_MIN_RATIO_UNLOCK	0b0001
+#define LATCH_MAX_RATIO_UNLOCK	0b0010
+#define LATCH_TURBO_UNLOCK	0b0100
+#define LATCH_UNCORE_UNLOCK	0b1000
 
 typedef struct {
 	char			*CodeName;
@@ -627,10 +629,10 @@ typedef struct {
 	unsigned int		Boost[2];
 	THERMAL_PARAM		Param;
 	unsigned short		CodeNameIdx	:  8-0,
-				CoreUnlocked	:  9-8,
-				UncoreUnlocked	: 10-9,
-				emptySlot2	: 11-10,
-				emptySlot3	: 12-11,
+				MinRatioUnlocked:  9-8,
+				MaxRatioUnlocked: 10-9,
+				TurboUnlocked	: 11-10,
+				UncoreUnlocked	: 12-11,
 				Latch		: 16-12; /* Bits 8-9-10-11 */
 } PROCESSOR_SPECIFIC;
 
@@ -644,6 +646,7 @@ typedef struct
 	void			(*Exit)(void);
 	void			(*Timer)(unsigned int cpu);
 	CLOCK			(*BaseClock)(unsigned int ratio);
+	long			(*ClockMod)(CLOCK_ARG *pClockMod);
 	long			(*TurboClock)(CLOCK_ARG *pClockMod);
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -652,6 +655,7 @@ typedef struct
 	struct {
 		void		(*Start)(void *arg);	/* Must be static */
 		void		(*Stop)(void *arg);	/* Must be static */
+		long		(*ClockMod)(CLOCK_ARG *pClockMod);
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
 	MICRO_ARCH		*Architecture;
@@ -677,6 +681,10 @@ extern long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Skylake_X(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
+
+extern long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod) ;
+
+extern long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
 
 extern void Query_GenuineIntel(void) ;
 static void PerCore_Intel_Query(void *arg) ;
@@ -1382,9 +1390,11 @@ static PROCESSOR_SPECIFIC Void_Specific[] = {
 	.Boost = {0, 0},
 	.Param = {0, .Offset = { 0, 0}},
 	.CodeNameIdx = 0,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch=LATCH_NONE
+	.Latch = LATCH_NONE
 	}
 };
 
@@ -1406,7 +1416,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1415,7 +1427,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1424,7 +1438,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1433,7 +1449,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1442,7 +1460,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1451,7 +1471,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1477,7 +1499,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_WOLFDALE,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1486,7 +1510,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_WOLFDALE,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1495,7 +1521,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_WOLFDALE,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1539,7 +1567,9 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.Boost = {+2, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_PENRYN,
-	.CoreUnlocked = 1,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1552,9 +1582,11 @@ static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = 0,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
-	.Latch = LATCH_CORE_UNLOCK|LATCH_UNCORE_UNLOCK
+	.Latch = LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
 	},
 	{NULL}
 };
@@ -1565,7 +1597,9 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1574,7 +1608,9 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1583,7 +1619,9 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1592,7 +1630,9 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1601,7 +1641,9 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1614,7 +1656,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
@@ -1623,7 +1667,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
@@ -1632,7 +1678,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
@@ -1641,7 +1689,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1650,7 +1700,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1659,7 +1711,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1668,7 +1722,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1677,7 +1733,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1686,7 +1744,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1695,7 +1755,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1704,7 +1766,9 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
-	.CoreUnlocked = 0,
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 0,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
 	},
@@ -1721,259 +1785,407 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Boost = {+0,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = 0,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 1200",
 	.Boost = {+3, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 1300X",
 	.Boost = {+2, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 2200G",
 	.Boost = {+2,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 1400",
 	.Boost = {+2, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2400G",
 	.Boost = {+3,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 1500X",
 	.Boost = {+2, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2500U",
 	.Boost = {+16, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 1600X",
 	.Boost = {+4, +1},
 	.Param.Offset = {20, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 1600",
 	.Boost = {+4, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2600X",
 	.Boost = {+5, +2},
 	.Param.Offset = {10, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2600",
 	.Boost = {+3, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 1700X",
 	.Boost = {+4, +1},
 	.Param.Offset = {20, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 1700",
 	.Boost = {+7, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 1800X",
 	.Boost = {+4, +1},
 	.Param.Offset = {20, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 2700X",
 	.Boost = {+5, +2},
 	.Param.Offset = {10,49},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 2700U",
 	.Boost = {+16, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 7 2700",
 	.Boost = {+8, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1950X",
 	.Boost = {+6, +2},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_WHITEHAVEN,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1920X",
 	.Boost = {+5, +2},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_WHITEHAVEN,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1900X",
 	.Boost = {+2, +2},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_WHITEHAVEN,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2990",
 	.Boost = {+12, 0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2970",
 	.Boost = {+12, 0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2950",
 	.Boost = {+9,  0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2920",
 	.Boost = {+8,  0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7351P",
 	.Boost = {+5,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7401P",
 	.Boost = {+8, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7551P",
 	.Boost = {+6, +4},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7251",
 	.Boost = {+8,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7281",
 	.Boost = {+6,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7301",
 	.Boost = {+5,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7351",
 	.Boost = {+5,  0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7401",
 	.Boost = {+8, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7451",
 	.Boost = {+6, +3},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7501",
 	.Boost = {+6, +4},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7551",
 	.Boost = {+6, +4},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7601",
 	.Boost = {+5, +5},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
-	.CoreUnlocked = 1, .UncoreUnlocked = 0, .Latch = LATCH_CORE_UNLOCK
+	.MinRatioUnlocked = 0,
+	.MaxRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_MAX_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{NULL}
 };
@@ -1988,6 +2200,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = NULL,
 	.BaseClock = NULL,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_NONE,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -1995,7 +2208,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Void
@@ -2009,6 +2223,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_GenuineIntel,
 	.BaseClock = BaseClock_Core,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2016,7 +2231,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Core_Yonah
@@ -2030,6 +2246,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Core2,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_CORE2,
@@ -2037,7 +2254,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Core_Conroe
@@ -2051,6 +2269,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Core2,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2058,7 +2277,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Core_Kentsfield
@@ -2072,6 +2292,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Core2,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2079,7 +2300,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Core_Conroe_616
@@ -2093,6 +2315,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Core2,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2100,7 +2323,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Core_Penryn_Specific,
 	.Architecture = Arch_Core_Penryn
@@ -2114,6 +2338,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Core2,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2121,7 +2346,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Core2_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Core_Dunnington
@@ -2136,6 +2362,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2143,7 +2370,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Bonnell
@@ -2157,6 +2385,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2164,7 +2393,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Silvermont
@@ -2178,6 +2408,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2185,7 +2416,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Lincroft
@@ -2199,6 +2431,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2206,7 +2439,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Clovertrail
@@ -2220,6 +2454,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2227,7 +2462,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Saltwell
@@ -2242,6 +2478,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Silvermont,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2249,7 +2486,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Silvermont_637
@@ -2263,6 +2501,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Silvermont,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2270,7 +2509,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Avoton
@@ -2285,6 +2525,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Airmont,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2292,7 +2533,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Airmont
@@ -2306,6 +2548,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2313,7 +2556,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT
+		.Stop = Stop_Uncore_Haswell_ULT,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Goldmont
@@ -2327,6 +2571,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2334,7 +2579,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Sofia
@@ -2348,6 +2594,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2355,7 +2602,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Merrifield
@@ -2369,6 +2617,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Core2,
 	.BaseClock = BaseClock_Atom,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2376,7 +2625,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Atom_Moorefield
@@ -2391,6 +2641,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2398,7 +2649,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Nehalem_Bloomfield_Specific,
 	.Architecture = Arch_Nehalem_Bloomfield
@@ -2412,6 +2664,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2419,7 +2672,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Nehalem_Lynnfield
@@ -2433,6 +2687,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2440,7 +2695,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Nehalem_MB
@@ -2454,6 +2710,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2461,7 +2718,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Nehalem_EX
@@ -2476,6 +2734,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2483,7 +2742,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Westmere
@@ -2497,6 +2757,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2504,7 +2765,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Westmere_EP_Specific,
 	.Architecture = Arch_Westmere_EP
@@ -2518,6 +2780,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2525,7 +2788,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
-		.Stop = Stop_Uncore_Nehalem
+		.Stop = Stop_Uncore_Nehalem,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Westmere_EX
@@ -2540,6 +2804,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge,
 	.BaseClock = BaseClock_SandyBridge,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2547,7 +2812,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_SandyBridge_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
-		.Stop = Stop_Uncore_SandyBridge
+		.Stop = Stop_Uncore_SandyBridge,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_SandyBridge
@@ -2561,6 +2827,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge_EP,
 	.BaseClock = BaseClock_SandyBridge,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2568,7 +2835,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_SandyBridge_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP
+		.Stop = Stop_Uncore_SandyBridge_EP,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_SandyBridge_EP
@@ -2583,6 +2851,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge,
 	.BaseClock = BaseClock_IvyBridge,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2590,7 +2859,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_IvyBridge_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
-		.Stop = Stop_Uncore_SandyBridge
+		.Stop = Stop_Uncore_SandyBridge,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_IvyBridge
@@ -2604,6 +2874,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge_EP,
 	.BaseClock = BaseClock_IvyBridge,
+	.ClockMod = NULL,
 	.TurboClock = TurboClock_IvyBridge_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2611,7 +2882,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_IvyBridge_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP
+		.Stop = Stop_Uncore_SandyBridge_EP,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_IvyBridge_EP
@@ -2626,6 +2898,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2633,7 +2906,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Haswell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
-		.Stop = Stop_Uncore_SandyBridge
+		.Stop = Stop_Uncore_SandyBridge,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Haswell_DT
@@ -2647,6 +2921,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = TurboClock_Haswell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2654,7 +2929,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Haswell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
-		.Stop = Stop_Uncore_Haswell_EP
+		.Stop = Stop_Uncore_Haswell_EP,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Haswell_EP
@@ -2668,6 +2944,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2675,7 +2952,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Haswell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT
+		.Stop = Stop_Uncore_Haswell_ULT,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Haswell_ULT
@@ -2689,6 +2967,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2696,7 +2975,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Haswell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
-		.Stop = Stop_Uncore_SandyBridge
+		.Stop = Stop_Uncore_SandyBridge,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Haswell_ULX
@@ -2711,6 +2991,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Broadwell,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2718,7 +2999,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
-		.Stop = Stop_Uncore_Broadwell
+		.Stop = Stop_Uncore_Broadwell,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Broadwell
@@ -2732,6 +3014,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = TurboClock_Haswell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2739,7 +3022,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
-		.Stop = Stop_Uncore_Haswell_EP
+		.Stop = Stop_Uncore_Haswell_EP,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Broadwell_D
@@ -2753,6 +3037,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Broadwell,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2760,7 +3045,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
-		.Stop = Stop_Uncore_Broadwell
+		.Stop = Stop_Uncore_Broadwell,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Broadwell_H
@@ -2774,6 +3060,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = TurboClock_Haswell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2781,7 +3068,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Broadwell_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
-		.Stop = Stop_Uncore_Haswell_EP
+		.Stop = Stop_Uncore_Haswell_EP,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Broadwell_EP
@@ -2796,6 +3084,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2803,7 +3092,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Skylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Skylake_UY
@@ -2817,6 +3107,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2824,7 +3115,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Skylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Skylake_S
@@ -2838,6 +3130,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake_X,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = TurboClock_Skylake_X,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SKL_X,
@@ -2845,7 +3138,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Skylake_X_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake_X,
-		.Stop = Stop_Uncore_Skylake_X
+		.Stop = Stop_Uncore_Skylake_X,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Skylake_X
@@ -2860,6 +3154,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_SandyBridge,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2867,7 +3162,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
-		.Stop = Stop_Uncore_SandyBridge
+		.Stop = Stop_Uncore_SandyBridge,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Xeon_Phi
@@ -2882,6 +3178,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2889,7 +3186,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Kabylake_Specific,
 	.Architecture = Arch_Kabylake
@@ -2903,6 +3201,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2910,7 +3209,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Kabylake_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Kabylake_UY
@@ -2925,6 +3225,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2932,7 +3233,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Cannonlake
@@ -2947,6 +3249,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,
 	.BaseClock = BaseClock_Haswell,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
@@ -2954,7 +3257,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT
+		.Stop = Stop_Uncore_Haswell_ULT,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Geminilake
@@ -2969,6 +3273,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_Skylake,
 	.BaseClock = BaseClock_Skylake,
+	.ClockMod = NULL,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -2976,7 +3281,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_Icelake_UY
@@ -2991,6 +3297,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_Family_0Fh,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD_0Fh,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_0Fh,
@@ -2998,7 +3305,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_AMD_0Fh_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_0Fh
@@ -3013,6 +3321,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3020,7 +3329,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_10h
@@ -3035,6 +3345,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3042,7 +3353,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_11h
@@ -3057,6 +3369,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3064,7 +3377,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_12h
@@ -3079,6 +3393,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3086,7 +3401,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_14h
@@ -3101,6 +3417,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3108,7 +3425,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_15h
@@ -3123,6 +3441,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AuthenticAMD,
 	.BaseClock = BaseClock_AuthenticAMD,
+	.ClockMod = NULL,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_AMD,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
@@ -3130,7 +3449,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.Architecture = Arch_AMD_Family_16h
@@ -3145,6 +3465,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_Family_17h,
 	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
 	.thermalFormula = THERMAL_FORMULA_AMD_17h,
 	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
@@ -3152,7 +3473,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.PCI_ids = PCI_AMD_17h_ids,
 	.Uncore = {
 		.Start = NULL,
-		.Stop = NULL
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Family_17h_Specific,
 	.Architecture = Arch_AMD_Family_17h

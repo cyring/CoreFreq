@@ -1463,8 +1463,14 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
-	if (pSpecific->Latch & LATCH_CORE_UNLOCK)
-		Proc->Features.Ratio_Unlock = pSpecific->CoreUnlocked;
+	if (pSpecific->Latch & LATCH_MIN_RATIO_UNLOCK)
+		Proc->Features.MinRatio_Unlock = pSpecific->MinRatioUnlocked;
+
+	if (pSpecific->Latch & LATCH_MAX_RATIO_UNLOCK)
+		Proc->Features.MaxRatio_Unlock = pSpecific->MaxRatioUnlocked;
+
+	if (pSpecific->Latch & LATCH_TURBO_UNLOCK)
+		Proc->Features.Turbo_Unlock = pSpecific->TurboUnlocked;
 
 	if (pSpecific->Latch & LATCH_UNCORE_UNLOCK)
 		Proc->Features.Uncore_Unlock= pSpecific->UncoreUnlocked;
@@ -1553,7 +1559,7 @@ void Intel_Core_Platform_Info(void)
 	else if (Proc->Features.Power.EAX.TurboIDA) { /* Half Ratio capable ? */
 		Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)] + 2;
 	}
-	if (Proc->Features.Ratio_Unlock) {
+	if (Proc->Features.Turbo_Unlock) {
 		Proc->Features.SpecTurboRatio = 1;
 	} else
 		Proc->Features.SpecTurboRatio = 0;
@@ -1567,7 +1573,7 @@ void Intel_Platform_Turbo(void)
 
 	Proc->Features.TDP_Unlock = Platform.ProgrammableTDP;
 	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
-	Proc->Features.Ratio_Unlock = Platform.ProgrammableTurbo;
+	Proc->Features.Turbo_Unlock = Platform.ProgrammableTurbo;
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
@@ -1587,7 +1593,7 @@ long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
 
 	if (pClockMod != NULL) {
-		if (Proc->Features.Ratio_Unlock) {
+		if (Proc->Features.Turbo_Unlock) {
 			unsigned short WrRd8C = 0;
 			switch (pClockMod->Ratio) {
 			case 1:
@@ -1651,7 +1657,7 @@ long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
 	if (pClockMod != NULL) {
-	    if (Proc->Features.Ratio_Unlock) {
+	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd15C = 0;
 		switch (pClockMod->Ratio) {
 		case 9:
@@ -1710,7 +1716,7 @@ long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
 	if (pClockMod != NULL) {
-	    if (Proc->Features.Ratio_Unlock) {
+	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd16C = 0;
 		switch (pClockMod->Ratio) {
 		case 9:
@@ -1774,7 +1780,7 @@ long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
 
 	if (pClockMod != NULL) {
-		if (Proc->Features.Ratio_Unlock) {
+		if (Proc->Features.Turbo_Unlock) {
 			unsigned short WrRd18C = 0;
 			switch (pClockMod->Ratio) {
 			case 17:
@@ -1808,7 +1814,7 @@ long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
 
 	if (pClockMod != NULL) {
-	    if (Proc->Features.Ratio_Unlock) {
+	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd16C = 0;
 		switch (pClockMod->Ratio) {
 		case 9:
@@ -1874,7 +1880,7 @@ void Intel_Turbo_TDP_Config(void)
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
-	Proc->Features.TurboRatio_Lock = TurboActivation.Ratio_Lock;
+	Proc->Features.TurboActivation = TurboActivation.Ratio_Lock;
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
 	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
@@ -2423,7 +2429,7 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 
 	TurboActivation.value = readl(mchmap + 0x5f54);
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
-	Proc->Features.TurboRatio_Lock = TurboActivation.Ratio_Lock;
+	Proc->Features.TurboActivation = TurboActivation.Ratio_Lock;
 
 	Proc->Features.TDP_Levels = 3;
 }
@@ -3132,37 +3138,82 @@ void Compute_AMD_Zen_Boost(void)
 long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-    if (Proc->Registration.Experimental)
+    if (Proc->Registration.Experimental && (pClockMod != NULL))
     {
+	unsigned long long PstateAddr = MSR_AMD_PSTATE_DEF_BASE;
+	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
 	/* Make sure the Core Performance Boost is disabled. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-
-	if (HwCfgRegister.Family_17h.CpbDis && (pClockMod != NULL)) {
-		unsigned long long PstateAddr = MSR_AMD_PSTATE_DEF_BASE;
-		PSTATEDEF PstateDef = {.value = 0};
-
+	if (HwCfgRegister.Family_17h.CpbDis)
+	{
 	    switch (pClockMod->Ratio) {
-	    case 1 ... 7:
+	    case 1 ... 7:	/* Simultaneous Cores */
 		PstateAddr += pClockMod->Ratio;
 		RDMSR(PstateDef, PstateAddr);
 		/* Apply if and only if the P-State is enabled */
-		if (PstateDef.Family_17h.PstateEn) {
+		if (PstateDef.Family_17h.PstateEn)
+		{
 			unsigned int index = BOOST(SIZE) - pClockMod->Ratio;
 			/* Compute the P-State Frequency ID from the ratio */
 			unsigned int FID = 0, COF = 0;
+
 			FID = AMD_Zen_CoreFID(	Proc->Boost[index]
 						+ pClockMod->Offset,
 						PstateDef.Family_17h.CpuDfsId);
+
 			/* Write then Read the P-State MSR */
 			PstateDef.Family_17h.CpuFid = FID;
 			WRMSR(PstateDef, PstateAddr);
 			RDMSR(PstateDef, PstateAddr);
+
 			/* Re-compute the Core coefficient */
 			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 						PstateDef.Family_17h.CpuDfsId);
+
 			/* Update the Boost ratio with COF */
 			Proc->Boost[index] = COF;
+
+			rc = 2;
+		}
+		break;
+	    }
+	}
+    }
+	return(rc);
+}
+
+long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
+{
+	long rc = 0;
+    if (Proc->Registration.Experimental  && (pClockMod != NULL))
+    {
+	PSTATEDEF PstateDef = {.value = 0};
+	HWCR HwCfgRegister = {.value = 0};
+
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	if (HwCfgRegister.Family_17h.CpbDis)
+	{
+	    switch (pClockMod->Ratio) {
+	    case 1:	/* Called by BOXKEY_RATIO_CLOCK_MAX */
+		RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
+		if (PstateDef.Family_17h.PstateEn)
+		{
+			unsigned int FID = 0, COF = 0;
+
+			FID = AMD_Zen_CoreFID(	Proc->Boost[BOOST(MAX)]
+						+ pClockMod->Offset,
+						PstateDef.Family_17h.CpuDfsId);
+
+			PstateDef.Family_17h.CpuFid = FID;
+			WRMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
+			RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
+
+			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+						PstateDef.Family_17h.CpuDfsId);
+
+			Proc->Boost[BOOST(MAX)] = COF;
+
 			rc = 2;
 		}
 		break;
@@ -7690,11 +7741,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Start(1);
 	}
 	break;
-    case COREFREQ_IOCTL_UNCORE_CLOCK:
-	if (Proc->Features.Uncore_Unlock) {
+    case COREFREQ_IOCTL_RATIO_CLOCK:
+	if (Arch[Proc->ArchID].ClockMod) {
 		CLOCK_ARG clockMod = {.sllong = arg};
 		Controller_Stop(1);
-		rc = Haswell_Uncore_Ratio(&clockMod);
+		rc = Arch[Proc->ArchID].ClockMod(&clockMod);
+		Controller_Start(1);
+	}
+	break;
+    case COREFREQ_IOCTL_UNCORE_CLOCK:
+	if (Arch[Proc->ArchID].Uncore.ClockMod) {
+		CLOCK_ARG clockMod = {.sllong = arg};
+		Controller_Stop(1);
+		rc = Arch[Proc->ArchID].Uncore.ClockMod(&clockMod);
 		Controller_Start(1);
 	}
 	break;
