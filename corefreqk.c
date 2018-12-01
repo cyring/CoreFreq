@@ -1595,7 +1595,7 @@ long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 		if (Proc->Features.Turbo_Unlock) {
 			unsigned short WrRd8C = 0;
-			switch (pClockMod->Ratio) {
+			switch (pClockMod->NC) {
 			case 1:
 				TurboCfg0.MaxRatio_1C += pClockMod->Offset;
 				WrRd8C = 1;
@@ -1659,7 +1659,7 @@ long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd15C = 0;
-		switch (pClockMod->Ratio) {
+		switch (pClockMod->NC) {
 		case 9:
 			TurboCfg1.IVB_EP.MaxRatio_9C += pClockMod->Offset;
 			WrRd15C = 1;
@@ -1718,7 +1718,7 @@ long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd16C = 0;
-		switch (pClockMod->Ratio) {
+		switch (pClockMod->NC) {
 		case 9:
 			TurboCfg1.HSW_EP.MaxRatio_9C += pClockMod->Offset;
 			WrRd16C = 1;
@@ -1782,7 +1782,7 @@ long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 		if (Proc->Features.Turbo_Unlock) {
 			unsigned short WrRd18C = 0;
-			switch (pClockMod->Ratio) {
+			switch (pClockMod->NC) {
 			case 17:
 				TurboCfg2.MaxRatio_17C += pClockMod->Offset;
 				WrRd18C = 1;
@@ -1816,7 +1816,7 @@ long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 	    if (Proc->Features.Turbo_Unlock) {
 		unsigned short WrRd16C = 0;
-		switch (pClockMod->Ratio) {
+		switch (pClockMod->NC) {
 		case 9:
 			TurboCfg1.SKL_X.NUMCORE_0 += pClockMod->Offset;
 			WrRd16C = 1;
@@ -1912,7 +1912,7 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 
 	if (pClockMod != NULL) {
 		unsigned short WrRdMSR = 0;
-		switch (pClockMod->Ratio) {
+		switch (pClockMod->NC) {
 		case 1:
 			UncoreRatio.MaxRatio += pClockMod->Offset;
 			WrRdMSR = 1;
@@ -3145,12 +3145,12 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	if (HwCfgRegister.Family_17h.CpbDis)
 	{
-		PstateAddr += pClockMod->Ratio;
+		PstateAddr += pClockMod->NC;
 		RDMSR(PstateDef, PstateAddr);
 		/* Apply if and only if the P-State is enabled */
 		if (PstateDef.Family_17h.PstateEn)
 		{
-			unsigned int index = BOOST(SIZE) - pClockMod->Ratio;
+			unsigned int index = BOOST(SIZE) - pClockMod->NC;
 			unsigned int FID = 0;
 			/* Compute the Frequency ID from the offset coef. */
 			FID = AMD_Zen_CoreFID(	Proc->Boost[index]
@@ -3167,11 +3167,11 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
   if (Proc->Registration.Experimental && (pClockMod != NULL)) {
-    if ((pClockMod->Ratio >= 1) && (pClockMod->Ratio <= 7))
+    if ((pClockMod->NC >= 1) && (pClockMod->NC <= 7))
     {
 	PSTATEDEF PstateDef = {.value = 0};
 	unsigned int cpu = Proc->CPU.Count, COF = 0,
-			index = BOOST(SIZE) - pClockMod->Ratio;
+			index = BOOST(SIZE) - pClockMod->NC;
       do {	/* from last AP to BSP */
 	cpu--;
 
@@ -3181,7 +3181,7 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 	}
       } while (cpu != 0) ;
 	/* Re-compute this Boost coefficient from the current CPU */
-	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pClockMod->Ratio));
+	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pClockMod->NC));
 
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId);
@@ -3222,7 +3222,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
   if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
-    if (pClockMod->Ratio == 1)	/* Max non boost coefficient ? */
+    if (pClockMod->NC == 1)	/* Max non boost coefficient ? */
     {
 	PSTATEDEF PstateDef = {.value = 0};
 	unsigned int cpu = Proc->CPU.Count, COF = 0;

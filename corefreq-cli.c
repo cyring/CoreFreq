@@ -715,9 +715,9 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		12, hSpace, 23 - (OutFunc == NULL), hSpace);
 
     if (Shm->Proc.Features.MinRatio_Unlock) {
-	CLOCK_ARG coreClock = {.Ratio = 0, .Offset = 0};
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
-	coreClock.Ratio = BOXKEY_RATIO_CLOCK_OR | 2;
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | 2;
 
 	PrintCoreBoost(win, CFlop,
 			"Min", BOOST(MIN), 1, coreClock.sllong,
@@ -728,9 +728,9 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width, OutFunc, attrib[3]);
     }
     if (Shm->Proc.Features.MaxRatio_Unlock) {
-	CLOCK_ARG coreClock = {.Ratio = 0, .Offset = 0};
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
-	coreClock.Ratio = BOXKEY_RATIO_CLOCK_OR | 1;
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | 1;
 
 	PrintCoreBoost(win, CFlop,
 			"Max", BOOST(MAX), 1, coreClock.sllong,
@@ -760,7 +760,7 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++)
 	{
-	CLOCK_ARG clockMod={.Ratio=BOXKEY_TURBO_CLOCK_NC|activeCores,.Offset=0};
+	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[4];
 	sprintf(pfx, "%2uC", activeCores);
 	PrintCoreBoost(win, CFlop,
@@ -783,14 +783,14 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Uncore_Unlock ? "UNLOCK" : "LOCK");
 
     if (Shm->Proc.Features.Uncore_Unlock) {
-	CLOCK_ARG uncoreClock = {.Ratio = 0, .Offset = 0};
+	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
-	uncoreClock.Ratio = BOXKEY_UNCORE_CLOCK_OR | 2;
+	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | 2;
 	PrintUncoreBoost(win, CFlop,
 			"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
 			width, OutFunc, attrib[3]);
 
-	uncoreClock.Ratio = BOXKEY_UNCORE_CLOCK_OR | 1;
+	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | 1;
 	PrintUncoreBoost(win, CFlop,
 			"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
 			width, OutFunc, attrib[3]);
@@ -1525,12 +1525,14 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"Package C6 State%.*sPC6       <%3s>",
 		width - 34, hSpace, enabled(bix));
     }
-	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
+	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
+	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
 		width - 38, hSpace, enabled(bix));
 
-	bix = Shm->Proc.Features.AdvPower.EDX.VID == 1;
+	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1)
+	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Voltage ID control%.*sVID       [%3s]",
 		width - 36, hSpace, enabled(bix));
@@ -3454,12 +3456,12 @@ Window *CreateCoreClock(unsigned long long id,
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
+	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
-	lowestOperating = abs((int)Shm->Proc.Boost[boostBase - ratio]
+	lowestOperating = abs((int)Shm->Proc.Boost[boostBase - nc]
 			- (signed) Shm->Proc.Boost[BOOST(MIN)]),
 	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			 - Shm->Proc.Boost[boostBase - ratio],
+			 - Shm->Proc.Boost[boostBase - nc],
 	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
@@ -3484,9 +3486,9 @@ Window *CreateCoreClock(unsigned long long id,
     if (wCK != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
-		clockMod.Ratio = ratio | boxKey;
+		clockMod.NC = nc | boxKey;
 		clockMod.Offset = offset;
-		multiplier = Shm->Proc.Boost[boostBase - ratio] + offset;
+		multiplier = Shm->Proc.Boost[boostBase - nc] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
@@ -3498,7 +3500,7 @@ Window *CreateCoreClock(unsigned long long id,
 						2 : 0]);
 	}
 
-	TitleCallback(ratio, (char*) item);
+	TitleCallback(nc, (char*) item);
 	StoreWindow(wCK, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
@@ -3526,9 +3528,9 @@ Window *CreateCoreClock(unsigned long long id,
 	return(wCK);
 }
 
-void TitleForTurboClock(unsigned int ratio, char *title)
+void TitleForTurboClock(unsigned int nc, char *title)
 {
-	sprintf(title, " Turbo Clock %1dC ", ratio);
+	sprintf(title, " Turbo Clock %1dC ", nc);
 }
 
 Window *CreateTurboClock(unsigned long long id)
@@ -3537,9 +3539,9 @@ Window *CreateTurboClock(unsigned long long id)
 					TitleForTurboClock, 34));
 }
 
-void TitleForRatioClock(unsigned int ratio, char *title)
+void TitleForRatioClock(unsigned int nc, char *title)
 {
-	sprintf(title, " %s Clock Ratio ", ratio == 1 ? "Max" : "Min");
+	sprintf(title, " %s Clock Ratio ", nc == 1 ? "Max" : "Min");
 }
 
 Window *CreateRatioClock(unsigned long long id)
@@ -3566,12 +3568,12 @@ Window *CreateUncoreClock(unsigned long long id)
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int ratio = clockMod.Ratio & CLOCKMOD_RATIO_MASK, multiplier;
+	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
-	lowestOperating = abs((int)Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio]
+	lowestOperating = abs((int)Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc]
 			- (int) Shm->Proc.Boost[BOOST(MIN)]),
 	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE)-ratio],
+				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc],
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
@@ -3594,9 +3596,9 @@ Window *CreateUncoreClock(unsigned long long id)
     if (wUC != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
-		clockMod.Ratio = ratio | BOXKEY_UNCORE_CLOCK;
+		clockMod.NC = nc | BOXKEY_UNCORE_CLOCK;
 		clockMod.Offset = offset;
-		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - ratio];
+		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc];
 		multiplier += offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
@@ -3606,7 +3608,7 @@ Window *CreateUncoreClock(unsigned long long id)
 		StoreTCell(wUC, clockMod.sllong, item,
 			attribute[multiplier > startingHotZone ? 1 : 0]);
 	}
-	sprintf((char*) item, " %s Clock Uncore ", ratio == 1 ? "Max" : "Min");
+	sprintf((char*) item, " %s Clock Uncore ", nc == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
@@ -5239,23 +5241,23 @@ int Shortcut(SCANKEY *scan)
       }
       else {
 	CLOCK_ARG clockMod  = {.sllong = scan->key};
-	if (clockMod.Ratio & BOXKEY_TURBO_CLOCK)
+	if (clockMod.NC & BOXKEY_TURBO_CLOCK)
 	{
-	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
+	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
 	 if (!RING_FULL(Shm->Ring[0]))
 	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
 	}
-	else if (clockMod.Ratio & BOXKEY_RATIO_CLOCK)
+	else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
 	{
-	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
+	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
 	 if (!RING_FULL(Shm->Ring[0]))
 	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
 	}
-	else if (clockMod.Ratio & BOXKEY_UNCORE_CLOCK)
+	else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
 	{
-	  clockMod.Ratio &= CLOCKMOD_RATIO_MASK;
+	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
 	 if (!RING_FULL(Shm->Ring[0]))
 	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);

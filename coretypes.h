@@ -406,7 +406,7 @@ typedef union {
 	signed long long	sllong;
 	struct {
 		signed int	Offset;
-		unsigned int	Ratio;
+		unsigned int	NC;
 	};
 } CLOCK_ARG;
 
