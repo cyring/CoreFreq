@@ -3135,11 +3135,9 @@ void Compute_AMD_Zen_Boost(void)
 		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
 }
 
-long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
+static void TurboClock_AMD_Zen_PerCore(void *arg)
 {
-	long rc = 0;
-    if (Proc->Registration.Experimental && (pClockMod != NULL))
-    {
+	CLOCK_ARG *pClockMod = (CLOCK_ARG *) arg;
 	unsigned long long PstateAddr = MSR_AMD_PSTATE_DEF_BASE;
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
@@ -3147,59 +3145,68 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	if (HwCfgRegister.Family_17h.CpbDis)
 	{
-	    switch (pClockMod->Ratio) {
-	    case 1 ... 7:	/* Simultaneous Cores */
 		PstateAddr += pClockMod->Ratio;
 		RDMSR(PstateDef, PstateAddr);
 		/* Apply if and only if the P-State is enabled */
 		if (PstateDef.Family_17h.PstateEn)
 		{
 			unsigned int index = BOOST(SIZE) - pClockMod->Ratio;
-			/* Compute the P-State Frequency ID from the ratio */
-			unsigned int FID = 0, COF = 0;
-
+			unsigned int FID = 0;
+			/* Compute the Frequency ID from the offset coef. */
 			FID = AMD_Zen_CoreFID(	Proc->Boost[index]
 						+ pClockMod->Offset,
 						PstateDef.Family_17h.CpuDfsId);
-
-			/* Write then Read the P-State MSR */
+			/* Write the P-State MSR with the new FID */
 			PstateDef.Family_17h.CpuFid = FID;
 			WRMSR(PstateDef, PstateAddr);
-			RDMSR(PstateDef, PstateAddr);
-
-			/* Re-compute the Core coefficient */
-			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
-
-			/* Update the Boost ratio with COF */
-			Proc->Boost[index] = COF;
-
-			rc = 2;
 		}
-		break;
-	    }
 	}
+}
+
+long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
+{
+	long rc = 0;
+  if (Proc->Registration.Experimental && (pClockMod != NULL)) {
+    if ((pClockMod->Ratio >= 1) && (pClockMod->Ratio <= 7))
+    {
+	PSTATEDEF PstateDef = {.value = 0};
+	unsigned int cpu = Proc->CPU.Count, COF = 0,
+			index = BOOST(SIZE) - pClockMod->Ratio;
+      do {	/* from last AP to BSP */
+	cpu--;
+
+	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	{
+	smp_call_function_single(cpu, TurboClock_AMD_Zen_PerCore, pClockMod, 1);
+	}
+      } while (cpu != 0) ;
+	/* Re-compute this Boost coefficient from the current CPU */
+	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pClockMod->Ratio));
+
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId);
+
+	Proc->Boost[index] = COF;
+	/* Report a platform change */
+	rc = 2;
     }
+  }
 	return(rc);
 }
 
-long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
+static void ClockMod_AMD_Zen_PerCore(void *arg)
 {
-	long rc = 0;
-    if (Proc->Registration.Experimental  && (pClockMod != NULL))
-    {
+	CLOCK_ARG *pClockMod = (CLOCK_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-	if (HwCfgRegister.Family_17h.CpbDis)
+	if (HwCfgRegister.Family_17h.CpbDis)	/* Turbo Boost disabled ? */
 	{
-	    switch (pClockMod->Ratio) {
-	    case 1:	/* Called by BOXKEY_RATIO_CLOCK_MAX */
 		RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
-		if (PstateDef.Family_17h.PstateEn)
+		if (PstateDef.Family_17h.PstateEn) /* P0 has to be enabled ! */
 		{
-			unsigned int FID = 0, COF = 0;
+			unsigned int FID = 0;
 
 			FID = AMD_Zen_CoreFID(	Proc->Boost[BOOST(MAX)]
 						+ pClockMod->Offset,
@@ -3207,19 +3214,37 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 			PstateDef.Family_17h.CpuFid = FID;
 			WRMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
-			RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
-
-			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
-
-			Proc->Boost[BOOST(MAX)] = COF;
-
-			rc = 2;
 		}
-		break;
-	    }
 	}
+}
+
+long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
+{
+	long rc = 0;
+  if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
+    if (pClockMod->Ratio == 1)	/* Max non boost coefficient ? */
+    {
+	PSTATEDEF PstateDef = {.value = 0};
+	unsigned int cpu = Proc->CPU.Count, COF = 0;
+      do {	/* from last AP to BSP */
+	cpu--;
+
+	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	{
+	smp_call_function_single(cpu, ClockMod_AMD_Zen_PerCore, pClockMod, 1);
+	}
+      } while (cpu != 0) ;
+	/* Re-compute the max non boost coefficient from the current CPU */
+	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE);
+
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId);
+
+	Proc->Boost[BOOST(MAX)] = COF;
+	/* Report a platform change */
+	rc = 2;
     }
+  }
 	return(rc);
 }
 
@@ -7144,7 +7169,9 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 {
     if (SysGate != NULL) {
 	struct cpuidle_driver *idleDriver;
+#ifdef CONFIG_CPU_FREQ
 	struct cpufreq_policy freqPolicy;
+#endif
 	unsigned int cpu;
 	int rc;
 
@@ -7176,7 +7203,7 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 	}
 	else
 		memset(&SysGate->IdleDriver, 0, sizeof(IDLEDRIVER));
-
+#ifdef CONFIG_CPU_FREQ
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
 	cpu = get_cpu();
 	rc = cpufreq_get_policy(&freqPolicy, cpu);
@@ -7190,6 +7217,9 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 			SysGate->IdleDriver.Governor[CPUIDLE_NAME_LEN - 1] = 0;
 		}
 	}
+#else
+	memset(SysGate->IdleDriver.Governor, 0, CPUIDLE_NAME_LEN);
+#endif
 	return(0);
     }
     else
