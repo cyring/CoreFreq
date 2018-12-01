@@ -3,20 +3,8 @@
 # Licenses: GPL2
 
 PWD ?= $(shell pwd)
-UID = $(shell id -u)
-DKMS = $(shell dkms --version >/dev/null 2>&1 && echo 0)
-KVERSION = $(shell uname -r)
-
-ifeq ($(CONFDIR),)
-	export CONFDIR = $(CURDIR)
-	include $(CONFDIR)/dkms.conf
-endif
-
-BINDIR = $(DESTDIR)/bin
-SRCTREE = $(DESTDIR)/usr/src
-DRVSRC = $(SRCTREE)/corefreqk-$(DRV_VERSION)
-
-CC = cc
+KVERSION ?= $(shell uname -r)
+CC ?= cc
 FEAT_DBG = 1
 WARNING = -Wall
 
@@ -74,67 +62,6 @@ clean:
 	rm -f corefreqd corefreq-cli
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
 
-.PHONY: install
-install: all
-ifeq ($(UID), 0)
-ifneq ($(wildcard corefreqd),)
-	install -Dm 0755 corefreqd $(BINDIR)/corefreqd
-endif
-ifneq ($(wildcard corefreq-cli),)
-	install -Dm 0755 corefreq-cli $(BINDIR)/corefreq-cli
-endif
-ifneq ($(wildcard corefreqk.ko),)
-	install -Dm 0644 corefreqk.ko \
-		$(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
-endif
-endif
-
-.PHONY: dkms_install
-dkms_install:
-ifeq ($(UID), 0)
-	install -Dm 0644 Makefile $(DRVSRC)/Makefile
-	install -Dm 0644 dkms.conf $(DRVSRC)/dkms.conf
-	install -Dm 0755 scripter.sh $(DRVSRC)/scripter.sh
-	install -m 0644 *.c *.h $(DRVSRC)/
-endif
-
-.PHONY: dkms_setup
-dkms_setup:
-ifeq ($(UID), 0)
-ifeq ($(DKMS), 0)
-	dkms add -c $(DRVSRC)/dkms.conf -m corefreqk -v $(DRV_VERSION)
-	dkms build -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
-	dkms install -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION)
-else
-	$(error DKMS not found)
-endif
-endif
-
-.PHONY: service_install
-service_install:
-ifeq ($(UID), 0)
-	install -Dm 0644 corefreqd.service \
-		$(DESTDIR)/usr/lib/systemd/system/corefreqd.service
-endif
-
-.PHONY: uninstall
-uninstall:
-ifeq ($(UID), 0)
-	rm -i $(BINDIR)/corefreqd $(BINDIR)/corefreq-cli
-	rm -i $(DESTDIR)/lib/modules/$(KVERSION)$(DRV_PATH)/corefreqk.ko
-endif
-
-.PHONY: dkms_uninstall
-dkms_uninstall:
-ifeq ($(UID), 0)
-ifeq ($(DKMS), 0)
-	dkms remove -c $(DRVSRC)/dkms.conf corefreqk/$(DRV_VERSION) --all
-	rm -Ir $(DRVSRC)
-else
-	$(error DKMS not found)
-endif
-endif
-
 corefreqm.o: corefreqm.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c -o corefreqm.o
 
@@ -177,12 +104,10 @@ info:
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] *[install] *[uninstall] [info] [help]     |\n"\
-	"|      *[dkms_install] *[dkms_setup] *[dkms_uninstall]          |\n"\
-	"|      *[service_install]                                       |\n"\
-	"|                                             *(root required)  |\n"\
+	"|  make [all] [clean] [info] [help]                             |\n"\
+	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
-	"|    where <COMPILER> is compiler: cc, gcc or clang [NIY]       |\n"\
+	"|    where <COMPILER> is cc, gcc or clang                       |\n"\
 	"|                                                               |\n"\
 	"|  WARNING=<ARG>                                                |\n"\
 	"|    where default argument is -Wall                            |\n"\
