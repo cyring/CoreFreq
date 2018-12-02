@@ -717,7 +717,7 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.MinRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
-	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | 2;
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
 
 	PrintCoreBoost(win, CFlop,
 			"Min", BOOST(MIN), 1, coreClock.sllong,
@@ -730,7 +730,7 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.MaxRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
-	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | 1;
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
 	PrintCoreBoost(win, CFlop,
 			"Max", BOOST(MAX), 1, coreClock.sllong,
@@ -785,12 +785,12 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
-	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | 2;
+	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
 	PrintUncoreBoost(win, CFlop,
 			"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
 			width, OutFunc, attrib[3]);
 
-	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | 1;
+	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	PrintUncoreBoost(win, CFlop,
 			"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
 			width, OutFunc, attrib[3]);

@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.38.7"
+#define COREFREQ_VERSION	"1.38.8"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -409,6 +409,11 @@ typedef union {
 		unsigned int	NC;
 	};
 } CLOCK_ARG;
+
+enum CLOCK_MOD_INDEX {
+	CLOCK_MOD_MIN = 2,
+	CLOCK_MOD_MAX = 1
+};
 
 typedef union
 {
