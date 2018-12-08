@@ -2436,7 +2436,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_SUNRISEPOINT]	= "Sunrise Point",
 	[IC_UNIONPOINT] 	= "Union Point",
 	[IC_CANNONPOINT]	= "Cannon Point",
-	[IC_K8] 		= "K8",
+	[IC_K8] 		= "K8/HyperTransport",
 	[IC_ZEN]		= "Zen"
 };
 

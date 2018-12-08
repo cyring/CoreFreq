@@ -2490,10 +2490,8 @@ void Query_SKL_IMC(void __iomem *mchmap)
 		|| (Proc->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
 	/* Max of populated DIMMs L and DIMMs S */
 	Proc->Uncore.MC[0].SlotCount = KMAX(
-		 ((Proc->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
-		+ (Proc->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0)),
-		 ((Proc->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
-		+ (Proc->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0))
+				(1 + Proc->Uncore.MC[0].SKL.MADC0.Dimm_L_Map),
+				(1 + Proc->Uncore.MC[0].SKL.MADC1.Dimm_L_Map)
 	);
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
@@ -3088,51 +3086,54 @@ unsigned int AMD_Zen_CoreFID(unsigned int COF, unsigned int DID)
 void Compute_AMD_Zen_Boost(void)
 {
 	PROCESSOR_SPECIFIC *pSpecific = NULL;
-	unsigned int COF = 0, index, pstate, sort[8] = {
-		BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(4C),
-		BOOST(5C) , BOOST(6C), BOOST(7C), BOOST(8C)
+	unsigned int COF = 0, pstate, sort[8] = { /* P[0..7]-States */
+		BOOST(MAX), BOOST(1C), BOOST(2C), BOOST(3C),
+		BOOST(4C) , BOOST(5C), BOOST(6C), BOOST(7C)
 	};
 	HWCR HwCfgRegister = {.value = 0};
 	PSTATEDEF PstateDef = {.value = 0};
-	Proc->Features.SpecTurboRatio = 0;
 
-	for (index = BOOST(MIN); index < BOOST(SIZE); index++)
-		Proc->Boost[index] = 0;
+	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++)
+		Proc->Boost[pstate] = 0;
 
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
 	Proc->Boost[BOOST(MIN)] = 4;
 	/* Loop over all frequency ids. */
-	for (pstate = 0, index = 0; pstate <= 7; pstate++) {
+	for (pstate = 0; pstate <= 7; pstate++) {
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 		/* Handle only valid P-States. */
 		if (PstateDef.Family_17h.PstateEn) {
 			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 						PstateDef.Family_17h.CpuDfsId);
-			/* Sort ratios by ascending order. */
-			Proc->Boost[sort[index]] = COF;
-			index++;
+
+			Proc->Boost[sort[pstate]] = COF;
 		}
 	}
-	Proc->Features.SpecTurboRatio += index;
-	/* Set the one Core ratio with the default max P-State ratio. */
-	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
-	Proc->Features.SpecTurboRatio++;
+	Proc->Features.SpecTurboRatio = pstate;
 
-	/* Get the Core Performance disablement state. */
+	/* If CPB is enabled then add Boost + XFR to the P0 ratio. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	if (!HwCfgRegister.Family_17h.CpbDis)
+	{
+		Proc->Boost[BOOST(8C)] = Proc->Boost[BOOST(MAX)];
+		Proc->Boost[BOOST(9C)] = Proc->Boost[BOOST(MAX)];
 
-	if ((pSpecific = LookupProcessor()) != NULL) {
-		/* Save thermal parameters to set each Core thermal settings. */
+	    if ((pSpecific = LookupProcessor()) != NULL) {
+		/* Save thermal parameters to compute per Core temperature */
 		Arch[Proc->ArchID].Specific[0].Param = pSpecific->Param;
-		/* If CPB is ON ? then add Boost + XFR to the one Core ratio. */
-		if (!HwCfgRegister.Family_17h.CpbDis) {
-			Proc->Boost[BOOST(1C)] += pSpecific->Boost[0];
-			Proc->Boost[BOOST(1C)] += pSpecific->Boost[1]; /* XFR */
-		}
+
+		Proc->Boost[BOOST(8C)] += pSpecific->Boost[0]; /* Boost */
+
+		Proc->Boost[BOOST(9C)] += pSpecific->Boost[0]; /* Boost */
+		Proc->Boost[BOOST(9C)] += pSpecific->Boost[1]; /* XFR */
+
 		OverrideCodeNameString(pSpecific);
 		OverrideUnlockCapability(pSpecific);
-	} else	/* Reset thermal union */
+	    } else {
 		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
+	    }
+		Proc->Features.SpecTurboRatio += 2;
+	}
 }
 
 typedef struct {
@@ -3383,6 +3384,8 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
 		HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
+		HwCfgRegister.Family_17h.LockTscToCurrP0 =		\
+						HwCfgRegister.Family_17h.CpbDis;
 		WRMSR(HwCfgRegister, MSR_K7_HWCR);
 		RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;
@@ -4911,6 +4914,20 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			- Core->Counter[0].TSC; 			\
 })
 
+#define Delta_TSC_OVH(Core)						\
+({									\
+	Delta_TSC(Core);						\
+									\
+	if (AutoClock & 0b10) { 					\
+		Core_OVH(Core); 					\
+									\
+		REL_BCLK(Core->Clock,					\
+			Proc->Boost[BOOST(MAX)],			\
+			Core->Delta.TSC,				\
+			Proc->SleepInterval);				\
+	}								\
+})
+
 #define Delta_C0(Core)							\
 ({	/* Absolute Delta of Unhalted (Core & Ref) C0 Counter. */	\
 	Core->Delta.C0.UCC =						\
@@ -5038,6 +5055,14 @@ void AMD_Core_Counters_Clear(CORE *Core)
 ({									\
 	Pkg->Delta.PTSC = Pkg->Counter[1].PTSC				\
 			- Pkg->Counter[0].PTSC; 			\
+})
+
+#define Delta_PTSC_OVH(Pkg, Core)					\
+({									\
+	Delta_PTSC(Pkg);						\
+									\
+	if (AutoClock & 0b10)						\
+		Pkg_OVH(Pkg, Core);					\
 })
 
 #define Delta_PC02(Pkg) 						\
@@ -5334,12 +5359,9 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Save_PTSC(Proc);
-
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
 
 			Sys_Tick(Proc);
 		}
@@ -5348,7 +5370,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 		Delta_C0(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -5358,14 +5380,6 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -5439,19 +5453,16 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Save_PTSC(Proc);
-
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
 
 			Sys_Tick(Proc);
 		}
 
 		Delta_C0(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -5461,14 +5472,6 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -5544,12 +5547,9 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Save_PTSC(Proc);
-
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
 
 			Sys_Tick(Proc);
 		}
@@ -5560,7 +5560,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Delta_C0(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -5572,14 +5572,6 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -5657,7 +5649,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -5670,9 +5662,6 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Save_UNCORE_FC0(Proc);
-
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
 
 			Sys_Tick(Proc);
 		}
@@ -5689,7 +5678,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Delta_C6(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -5705,14 +5694,6 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -5815,7 +5796,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -5843,9 +5824,6 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, UNCORE);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -5863,7 +5841,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -5881,14 +5859,6 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -5992,7 +5962,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -6020,9 +5990,6 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, RAM);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -6040,7 +6007,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -6058,14 +6025,6 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -6175,7 +6134,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Delta_PC10(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -6209,9 +6168,6 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, UNCORE);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -6229,7 +6185,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -6247,14 +6203,6 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -6360,7 +6308,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -6388,9 +6336,6 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, RAM);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -6408,7 +6353,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -6426,14 +6371,6 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -6549,7 +6486,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -6581,9 +6518,6 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, RAM);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -6601,7 +6535,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -6619,14 +6553,6 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -6726,7 +6652,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Delta_PC07(Proc);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_UNCORE_FC0(Proc);
 
@@ -6754,9 +6680,6 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Save_PWR_ACCU(Proc, RAM);
 
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
-
 			Sys_Tick(Proc);
 		}
 
@@ -6777,7 +6700,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 		Delta_C7(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -6795,14 +6718,6 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
@@ -7041,7 +6956,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			PWR_ACCU_AMD_Family_17h(Proc, 1);
 
-			Delta_PTSC(Proc);
+			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_PWR_ACCU(Proc, PKG);
 
@@ -7052,9 +6967,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, PKG);
 
 			Save_PWR_ACCU(Proc, CORES);
-
-			if (AutoClock & 0b10)
-				Pkg_OVH(Proc, Core);
 
 			Sys_Tick(Proc);
 		}
@@ -7070,7 +6982,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 		Delta_C0(Core);
 
-		Delta_TSC(Core);
+		Delta_TSC_OVH(Core);
 
 		Delta_C1(Core);
 
@@ -7082,14 +6994,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		if (AutoClock & 0b10) {
-			Core_OVH(Core);
-
-			REL_BCLK(Core->Clock,
-				Proc->Boost[BOOST(MAX)],
-				Core->Delta.TSC,
-				Proc->SleepInterval);
-		}
 		BITSET(LOCKLESS, Core->Sync.V, 63);
 
 		return(HRTIMER_RESTART);
