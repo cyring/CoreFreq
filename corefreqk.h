@@ -946,7 +946,7 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
-/* ToDo:
+/* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev) ;
 */

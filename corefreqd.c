@@ -160,7 +160,8 @@ static void *Core_Cycle(void *arg)
 					  * Shm->Proc.Boost[BOOST(MAX)])
 				/ (double) (CFlip->Delta.TSC);
 
-	if (Shm->Proc.PM_version >= 2) {
+	if ((Shm->Proc.PM_version >= 2) && !Shm->Proc.Features.Std.ECX.Hyperv)
+	{
 		/* Relative Frequency equals UCC per second.		*/
 		CFlip->Relative.Freq = (double) (CFlip->Delta.C0.UCC)
 				     / (Shm->Sleep.Interval * 1000);
@@ -846,7 +847,7 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
-/* ToDo
+/* TODO
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT_.tFAW;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
@@ -854,7 +855,7 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = ?
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
-/* ToDo */
+/* TODO */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
@@ -1322,7 +1323,7 @@ void P3S_MCH(SHM_STRUCT *Shm, PROC *Proc, unsigned short mc, unsigned short cha)
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
-/* ToDo
+/* TODO
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
@@ -1345,7 +1346,7 @@ void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 9;
-/* ToDo */
+/* TODO */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
@@ -1383,7 +1384,7 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 6;
-/* ToDo */
+/* TODO */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
@@ -1685,7 +1686,7 @@ void DMI_CLK(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	Shm->Uncore.CtrlSpeed *= Core->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = 2500;	/* ToDo: hardwired to Lynnfield */
+	Shm->Uncore.Bus.Rate = 2500;	/* TODO: hardwired to Lynnfield */
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
@@ -1919,7 +1920,7 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
-/* ToDo
+/* TODO
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
@@ -1988,7 +1989,7 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
 		break;
 	}
-/* ToDo */
+/* TODO */
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
@@ -2538,7 +2539,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:   /* Sandy Bridge-E	*/
 		SET_CHIPSET(IC_PATSBURG);
-		/* ToDo: IMC decoding */
+		/* TODO: IMC decoding */
 		break;
 	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:    /* SNB Desktop	*/
 		SNB_CAP(Shm, Proc, Core);
@@ -2551,7 +2552,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:   /* Ivy Bridge/Xeon v2 */
-		/* ToDo: IMC decoding */
+		/* TODO: IMC decoding */
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
 	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:    /* IVB Desktop	*/

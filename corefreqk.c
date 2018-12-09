@@ -22,6 +22,9 @@
 #endif
 #include <asm/msr.h>
 #include <asm/nmi.h>
+#ifdef CONFIG_XEN
+#include <xen/xen.h>
+#endif
 
 #include "bitasm.h"
 #include "amdmsr.h"
@@ -158,6 +161,23 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
+
+signed int SearchArchitectureID(void)
+{
+	signed int id;
+    for (id = ARCHITECTURES - 1; id > 0; id--) {
+	/* Search for an architecture signature. */
+	if((Proc->Features.Std.EAX.ExtFamily == Arch[id].Signature.ExtFamily)
+	&& (Proc->Features.Std.EAX.Family == Arch[id].Signature.Family)
+	&& (((Proc->Features.Std.EAX.ExtModel ==  Arch[id].Signature.ExtModel)
+		&& (Proc->Features.Std.EAX.Model ==  Arch[id].Signature.Model))
+		|| (!Arch[id].Signature.ExtModel && !Arch[id].Signature.Model)))
+	{
+		break;
+	}
+    }
+	return(id);
+}
 
 unsigned int Intel_Brand(char *pBrand)
 {
@@ -2681,7 +2701,7 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 
 	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
-/*ToDo:
+/* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 {
 	SKL_SA_PLL_RATIOS PllRatios = {.value = 0};
@@ -2751,7 +2771,7 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 
 	return(0);
 }
-/* Todo
+/* TODO
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 {
 	void __iomem *mmio;
@@ -3545,7 +3565,7 @@ void ThermalMonitor_Set(CORE *Core)
 
 	Core->PowerThermal.Param.Target = TjMax.Target;
 	if (Core->PowerThermal.Param.Target == 0)
-		Core->PowerThermal.Param.Target = 100; /*ToDo: TjMax database.*/
+		Core->PowerThermal.Param.Target = 100; /*TODO: TjMax database.*/
 
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
@@ -6085,12 +6105,12 @@ static void Stop_SandyBridge_EP(void *arg)
 
 static void Start_Uncore_SandyBridge_EP(void *arg)
 {
-/*ToDo:	Uncore_Counters_Set(SNB_EP);*/
+/*TODO:	Uncore_Counters_Set(SNB_EP);*/
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
 {
-/*ToDo:	Uncore_Counters_Clear(SNB_EP);*/
+/*TODO:	Uncore_Counters_Clear(SNB_EP);*/
 }
 
 
@@ -6778,12 +6798,12 @@ static void Stop_Skylake_X(void *arg)
 
 static void Start_Uncore_Skylake_X(void *arg)
 {
-/*ToDo:	Uncore_Counters_Set(SKL_X);*/
+/*TODO:	Uncore_Counters_Set(SKL_X);*/
 }
 
 static void Stop_Uncore_Skylake_X(void *arg)
 {
-/*ToDo:	Uncore_Counters_Clear(SKL_X); */
+/*TODO:	Uncore_Counters_Clear(SKL_X); */
 }
 
 static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
@@ -6947,7 +6967,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		SMT_Counters_AMD_Family_17h(Core, 1);
-		/*ToDo:	Compute Core Performance Boost */
+		/*TODO:	Compute Core Performance Boost */
 
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
@@ -8112,6 +8132,16 @@ static int __init CoreFreqK_init(void)
 			}
 			break;
 		    }
+		#ifdef CONFIG_XEN
+		    if (xen_pv_domain() || xen_hvm_domain())
+		    {
+			if (ArchID == -1)
+				ArchID = SearchArchitectureID();
+
+			if (Proc->Features.Std.ECX.Hyperv == 0)
+				Proc->Features.Std.ECX.Hyperv = 1;
+		    }
+		#endif
 		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
 		    {
 			ArchID = 0;
@@ -8122,27 +8152,8 @@ static int __init CoreFreqK_init(void)
 		    }
 		    else
 		    {
-		      for ( Proc->ArchID = ARCHITECTURES - 1;
-							Proc->ArchID > 0;
-								Proc->ArchID--)
-		      {
-			/* Search for an architecture signature. */
-			if((Proc->Features.Std.EAX.ExtFamily
-			    == Arch[Proc->ArchID].Signature.ExtFamily)
-			    && (Proc->Features.Std.EAX.Family
-			    == Arch[Proc->ArchID].Signature.Family)
-			    && (((Proc->Features.Std.EAX.ExtModel
-			      ==  Arch[Proc->ArchID].Signature.ExtModel)
-			      && (Proc->Features.Std.EAX.Model
-			      ==  Arch[Proc->ArchID].Signature.Model))
-			      || (!Arch[Proc->ArchID].Signature.ExtModel
-			      &&  !Arch[Proc->ArchID].Signature.Model)))
-			{
-				break;
-			}
-		      }
+			Proc->ArchID = SearchArchitectureID();
 		    }
-
 			Proc->thermalFormula=Arch[Proc->ArchID].thermalFormula;
 
 			Proc->voltageFormula=Arch[Proc->ArchID].voltageFormula;

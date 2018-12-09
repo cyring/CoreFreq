@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.38.9"
+#define COREFREQ_VERSION	"1.39.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -204,7 +204,7 @@ enum THERMAL_FORMULAS {
 	(Temp = Param.Target - Sensor)
 
 #define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
-	/*( ToDo )*/
+	/*( TODO )*/
 
 #define COMPUTE_THERMAL_AMD_0Fh(Temp, Param, Sensor)			\
 	(Temp = Sensor - (Param.Target * 2) - 49)
@@ -244,7 +244,7 @@ enum VOLTAGE_FORMULAS {
 		(Vcore = (double) (VID) / 8192.0)
 
 #define COMPUTE_VOLTAGE_AMD(Vcore, VID)					\
-		/*( ToDo )*/
+		/*( TODO )*/
 
 #define COMPUTE_VOLTAGE_AMD_0Fh(Vcore, VID)				\
 ({									\

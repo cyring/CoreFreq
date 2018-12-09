@@ -927,7 +927,7 @@ typedef union
 	};
 } RAPL_POWER_UNIT;
 
-/* ToDo
+/* TODO
 typedef struct
 {
 	unsigned long long

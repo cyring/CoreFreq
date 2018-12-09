@@ -19,12 +19,22 @@ endif
 
 ifneq ($(wildcard /dev/watchdog),)
 	NMI = 1
+	PMC = 0
 else
 	NMI = 0
+	PMC = 1
+endif
+
+ifneq ($(wildcard /dev/xen/.),)
+	HYP = 1
+	PMC = 0
+else
+	HYP = 0
+	PMC = 1
 endif
 
 ifndef MSR_CORE_PERF_UCC
-	ifeq ($(NMI), 1)
+	ifneq ($(PMC), 1)
 		MSR_CORE_PERF_UCC = MSR_IA32_APERF
 	else
 		MSR_CORE_PERF_UCC = MSR_CORE_PERF_FIXED_CTR1
@@ -38,7 +48,7 @@ else
 endif
 
 ifndef MSR_CORE_PERF_URC
-	ifeq ($(NMI), 1)
+	ifneq ($(PMC), 1)
 		MSR_CORE_PERF_URC = MSR_IA32_MPERF
 	else
 		MSR_CORE_PERF_URC = MSR_CORE_PERF_FIXED_CTR2
@@ -97,6 +107,7 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o \
 .PHONY: info
 info:
 	$(info NMI [$(NMI)])
+	$(info HYPERVISOR [$(HYP)])
 	$(info MSR_CORE_PERF_UCC [$(MSR_CORE_PERF_UCC)])
 	$(info MSR_CORE_PERF_URC [$(MSR_CORE_PERF_URC)])
 
