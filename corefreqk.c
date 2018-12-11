@@ -4214,12 +4214,19 @@ void Intel_VirtualMachine(CORE *Core)
 	}
 }
 
-void Microcode(CORE *Core)
+void Intel_Microcode(CORE *Core)
 {
 	MICROCODE_ID Microcode = {.value = 0};
 
 	RDMSR(Microcode, MSR_IA32_UCODE_REV);
 	Core->Query.Microcode = Microcode.Signature;
+}
+
+void AMD_Microcode(CORE *Core)
+{
+	unsigned long long value = 0;
+	RDMSR64(value, MSR_AMD64_PATCH_LEVEL);
+	Core->Query.Microcode = (unsigned int) value;
 }
 
 void PerCore_Reset(CORE *Core)
@@ -4257,7 +4264,7 @@ static void PerCore_Intel_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	Microcode(Core);
+	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4282,6 +4289,9 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	if (Proc->Features.Std.EAX.ExtFamily >= 1) {
+		AMD_Microcode(Core);
+	}
 	Dump_CPUID(Core);
 
 	BITSET(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
@@ -4304,7 +4314,7 @@ static void PerCore_Core2_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	Microcode(Core);
+	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4332,7 +4342,7 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	Microcode(Core);
+	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4360,7 +4370,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	Microcode(Core);
+	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4389,7 +4399,7 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	Intel_VirtualMachine(Core);
 
 	if (Proc->Registration.Experimental)
-		Microcode(Core);
+		Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4417,7 +4427,7 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	Microcode(Core);
+	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -4467,6 +4477,8 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	AMD_Microcode(Core);
+
 	Dump_CPUID(Core);
 
 	Query_AMD_Family_0Fh_C1E(Core);
@@ -4488,6 +4500,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	CORE *Core = (CORE*) arg;
 
 	SystemRegisters(Core);
+
+	AMD_Microcode(Core);
 
 	Dump_CPUID(Core);
 
@@ -5545,7 +5559,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core=(CORE *) KPublic->Core[cpu];
+	Core = (CORE *) KPublic->Core[cpu];
 
     #if FEAT_DBG > 0
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
@@ -5649,7 +5663,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core=(CORE *) KPublic->Core[cpu];
+	Core = (CORE *) KPublic->Core[cpu];
 
 	Mark_OVH(Core);
 
@@ -6883,7 +6897,7 @@ void InitTimer_AMD_Family_0Fh(unsigned int cpu)
 static void Start_AMD_Family_0Fh(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core=(CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Family_0Fh_Query(Core);
 
@@ -6917,7 +6931,7 @@ static void Stop_AMD_Family_0Fh(void *arg)
 static void Start_AMD_Family_10h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core=(CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Family_10h_Query(Core);
 
@@ -7029,7 +7043,7 @@ void InitTimer_AMD_Family_17h(unsigned int cpu)
 static void Start_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core=(CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
 	PerCore_AMD_Family_17h_Query(Core);
 

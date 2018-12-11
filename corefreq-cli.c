@@ -685,6 +685,11 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Info.Vendor.ID);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
+		"Microcode%.*s[%10u]",
+		width - 24, hSpace,
+		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
+
+	PUT(SCANKEY_NULL, attrib[2], width, 2,
 		"Signature%.*s[%2X%1X_%1X%1X]",
 		width - 20, hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
@@ -695,11 +700,6 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
 		"Stepping%.*s[%6u]",
 		width - 19, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
-
-	PUT(SCANKEY_NULL, attrib[2], width, 2,
-		"Microcode%.*s[%6u]",
-		width - 20, hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
 		"Online CPU%.*s[ %2u/%-2u]",
