@@ -197,3 +197,831 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 #define RENDER_OK	0x000
 #define RENDER_KO	0x010
 #define RENDER_OFF	0x100
+
+#define HSPACE	"        ""        ""        ""        ""        "	\
+		"        ""        ""        ""        ""        "	\
+		"        ""        ""        ""        ""        "	\
+		"        ""        ""        ""        ""        "	\
+		"        ""        ""        ""        ""        "	\
+		"        ""        ""        ""        ""        "
+
+#define HBAR	"||||||||""||||||||""||||||||""||||||||""||||||||"	\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"	\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"	\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"	\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"	\
+		"||||||||""||||||||""||||||||""||||||||""||||||||"
+
+#define HLINE	"--------""--------""--------""--------""--------"	\
+		"--------""--------""--------""--------""--------"	\
+		"--------""--------""--------""--------""--------"	\
+		"--------""--------""--------""--------""--------"	\
+		"--------""--------""--------""--------""--------"	\
+		"--------""--------""--------""--------""--------"
+
+#define LAYOUT_HEADER_PROC_ATTR 					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HRK,HDK 		\
+}
+
+#define LAYOUT_HEADER_PROC_CODE 					\
+{									\
+	' ','P','r','o','c','e','s','s','o','r',' ','[' 		\
+}
+
+#define LAYOUT_HEADER_CPU_ATTR						\
+{									\
+	HDK,HWK,HWK,HWK,HDK,HWK,HWK,HWK,LWK,LWK,LWK			\
+}
+
+#define LAYOUT_HEADER_CPU_CODE						\
+{									\
+	']',' ',' ',' ','/',' ',' ',' ','C','P','U'			\
+}
+
+#define LAYOUT_HEADER_ARCH_ATTR 					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK	\
+}
+
+#define LAYOUT_HEADER_ARCH_CODE 					\
+{									\
+	' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['	\
+}
+
+#define LAYOUT_HEADER_CACHE_L1_ATTR					\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,				\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,			\
+	LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,LWK,LWK 			\
+}
+
+#define LAYOUT_HEADER_CACHE_L1_CODE					\
+{									\
+	']',' ','C','a','c','h','e','s',' ',				\
+	'L','1',' ','I','n','s','t','=',' ',' ',' ',			\
+	'D','a','t','a','=',' ',' ',' ','K','B' 			\
+}
+
+#define LAYOUT_HEADER_BCLK_ATTR 					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+	HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_HEADER_BCLK_CODE 					\
+{									\
+	' ','B','a','s','e',' ','C','l','o','c','k',' ',		\
+	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
+}
+
+#define LAYOUT_HEADER_CACHES_ATTR					\
+{									\
+	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,			\
+	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK			\
+}
+
+#define LAYOUT_HEADER_CACHES_CODE					\
+{									\
+	'L','2','=',' ',' ',' ',' ',' ',' ',' ',			\
+	'L','3','=',' ',' ',' ',' ',' ',' ','K','B'			\
+}
+
+#define LAYOUT_RULLER_LOAD_ATTR 					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_LOAD_CODE 					\
+{									\
+	'-','-','-',' ','R','a','t','i','o',' ','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define LAYOUT_MONITOR_FREQUENCY_ATTR					\
+{									\
+	HWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HWK,HWK,LWK,HWK,HWK,HDK,\
+	LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,\
+	LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,\
+	LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,LWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,\
+	LWK,LWK,HBK,HBK,HBK,HDK,LWK,LWK,LWK,HDK,LYK,LYK,LYK		\
+}
+
+#define LAYOUT_MONITOR_FREQUENCY_CODE					\
+{									\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',' '		\
+}
+
+#define LAYOUT_MONITOR_INST_ATTR					\
+{									\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HDK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HDK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK			\
+}
+
+#define LAYOUT_MONITOR_INST_CODE					\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',\
+	' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',\
+	' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',0x0,' ',' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '			\
+}
+
+#define LAYOUT_MONITOR_COMMON_ATTR					\
+{									\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK		\
+}
+
+#define LAYOUT_MONITOR_COMMON_CODE					\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
+}
+
+#define LAYOUT_MONITOR_TASKS_ATTR					\
+{									\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_MONITOR_TASKS_CODE					\
+{									\
+	' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_CODE					\
+	"--- Freq(MHz) Ratio - Turbo --- C0 ---- C1 ---- C3 ---- C6 -"	\
+	"--- C7 --Min TMP Max ---------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_RULLER_FREQUENCY_AVG_ATTR				\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_AVG_CODE				\
+{									\
+	'-','-','-','-','-','-',' ','%',' ','A','v','e','r','a','g','e',\
+	's',' ','[',' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',']','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_PKG_ATTR				\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_PKG_CODE				\
+{									\
+	'-','-','-','-','-',' ','%',' ','P','k','g',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define LAYOUT_RULLER_INST_CODE 					\
+	"------------ IPS -------------- IPC -------------- CPI -----"	\
+	"------------- INST -----------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_RULLER_CYCLES_CODE					\
+	"-------------- C0:UCC ---------- C0:URC ------------ C1 ----"	\
+	"--------- TSC ----------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_RULLER_CSTATES_CODE					\
+	"---------------- C1 -------------- C3 -------------- C6 ----"	\
+	"---------- C7 ----------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_RULLER_INTERRUPTS_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_INTERRUPTS_CODE					\
+{									\
+	"---------- SMI ------------ NMI[ LOCAL   UNKNOWN  PCI_SERR# "	\
+	" IO_CHECK] -------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+}
+
+#define LAYOUT_RULLER_PACKAGE_CODE					\
+	"------------ Cycles ---- State -------------------- TSC Rati"	\
+	"o ----------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_PACKAGE_PC_ATTR						\
+{									\
+	LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,\
+	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK \
+}
+
+#define LAYOUT_PACKAGE_PC_CODE						\
+{									\
+	'P','C','0','0',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define LAYOUT_PACKAGE_UNCORE_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_PACKAGE_UNCORE_CODE					\
+{									\
+	' ','T','S','C',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ','U','N','C','O','R','E',':',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define LAYOUT_RULLER_TASKS_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,\
+	LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LDK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_TASKS_CODE					\
+	"--- Freq(MHz) --- Tasks                    -----------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_TASKS_STATE_SORTED_ATTR					\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK, LWK,LWK,LWK			\
+}
+
+#define LAYOUT_TASKS_STATE_SORTED_CODE					\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','S','t','a','t','e',')',' ', '-','-','-'			\
+}
+
+#define LAYOUT_TASKS_RUNTIME_SORTED_ATTR				\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
+}
+
+#define LAYOUT_TASKS_RUNTIME_SORTED_CODE				\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','R','u','n','T','i','m','e', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_USRTIME_SORTED_ATTR				\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, LCK,HDK,LWK			\
+}
+
+#define LAYOUT_TASKS_USRTIME_SORTED_CODE				\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','U','s','e','r','T','i','m', 'e',')',' '			\
+}
+
+#define LAYOUT_TASKS_SYSTIME_SORTED_ATTR				\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
+}
+
+#define LAYOUT_TASKS_SYSTIME_SORTED_CODE				\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','S','y','s','T','i','m','e', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_PROCESS_SORTED_ATTR				\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK, LWK,LWK,LWK			\
+}
+
+#define LAYOUT_TASKS_PROCESS_SORTED_CODE				\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','P','I','D',')',' ','-','-', '-','-','-'			\
+}
+
+#define LAYOUT_TASKS_COMMAND_SORTED_ATTR				\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,			\
+	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
+}
+
+#define LAYOUT_TASKS_COMMAND_SORTED_CODE				\
+{									\
+	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','C','o','m','m','a','n','d', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_OFF_ATTR				\
+{									\
+	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK	\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_OFF_CODE				\
+{									\
+	' ', 'R','e','v','e','r','s','e',' ','[','O','F','F',']',' '	\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_ON_ATTR				\
+{									\
+	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK	\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_ON_CODE				\
+{									\
+	' ', 'R','e','v','e','r','s','e',' ','[',' ','O','N',']',' '	\
+}
+
+#define LAYOUT_TASKS_VALUE_SWITCH_ATTR					\
+{									\
+	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK		\
+}
+
+#define LAYOUT_TASKS_VALUE_SWITCH_CODE					\
+{									\
+	' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '		\
+}
+
+#define LAYOUT_TASKS_VALUE_OFF_ATTR					\
+{									\
+	LWK,LWK,LWK							\
+}
+
+#define LAYOUT_TASKS_VALUE_OFF_CODE					\
+{									\
+	'O','F','F'							\
+}
+
+#define LAYOUT_TASKS_VALUE_ON_ATTR					\
+{									\
+	LCK,LCK,LCK							\
+}
+
+#define LAYOUT_TASKS_VALUE_ON_CODE					\
+{									\
+	' ','O','N'							\
+}
+
+#define LAYOUT_TASKS_TRACKING_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,\
+	LWK,LWK,LWK,LWK,HDK,LWK						\
+}
+
+#define LAYOUT_TASKS_TRACKING_CODE					\
+{									\
+	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
+	'O','F','F',' ',']',' '						\
+}
+
+#define LAYOUT_RULLER_VOLTAGE_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,HDK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,HDK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_VOLTAGE_CODE					\
+	"--- Freq(MHz) - VID - Vcore ------------------ Energy(J) ---"	\
+	"-- Power(W) ------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_POWER_MONITOR_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,		\
+	LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK \
+}
+
+#define LAYOUT_POWER_MONITOR_CODE					\
+	"                                       "
+
+#define LAYOUT_RULLER_SLICE_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
+}
+
+#define LAYOUT_RULLER_SLICE_CODE					\
+	"--- Freq(MHz) ------ Cycles -- Instructions ------------ TSC"	\
+	" ------------ PMC0 -----------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"
+
+#define LAYOUT_FOOTER_TECH_X86_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK 	\
+}
+
+#define LAYOUT_FOOTER_TECH_X86_CODE					\
+{									\
+	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
+}
+
+#define LAYOUT_FOOTER_TECH_INTEL_ATTR					\
+{									\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,			\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,				\
+	HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,				\
+	LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK 	\
+}
+
+#define LAYOUT_FOOTER_TECH_INTEL_CODE					\
+{									\
+	'H','T','T',',','E','I','S','T',',','I','D','A',',',		\
+	'T','U','R','B','O',',','C','1','E',',',			\
+	' ','P','M',',','C','3','A',',','C','1','A',',',		\
+	'C','3','U',',','C','1','U',',',				\
+	'T','M',',','H','O','T',']',' ',' ',				\
+	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',']' 	\
+}
+
+#define LAYOUT_FOOTER_TECH_AMD_ATTR					\
+{									\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,		\
+	LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+	LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK 	\
+}
+
+#define LAYOUT_FOOTER_TECH_AMD_CODE					\
+{									\
+	'S','M','T',',','P','o','w','e','r','N','o','w',',',		\
+	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
+	',','P','C','6',',',' ','P','M',',','D','T','S',',',		\
+	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',		\
+	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',']' 	\
+}
+
+#define LAYOUT_FOOTER_SYSTEM_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,	\
+	LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,	\
+	HWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK 	\
+}
+
+#define LAYOUT_FOOTER_SYSTEM_CODE					\
+{									\
+	'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']',	\
+	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
+	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
+}
+
+#define LAYOUT_CARD_CORE_ONLINE_ATTR					\
+{									\
+	HDK,HDK,HDK,LCK,LCK,HDK,HDK,HDK,HDK,HDK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_CORE_ONLINE_CODE					\
+{									\
+	'[',' ','#',' ',' ',' ',' ',' ',' ','C',' ',']' 		\
+}
+
+#define LAYOUT_CARD_CORE_OFFLINE_ATTR					\
+{									\
+	HDK,HDK,HDK,LBK,LBK,HDK,HDK,LWK,LWK,LWK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_CORE_OFFLINE_CODE					\
+{									\
+	'[',' ','#',' ',' ',' ',' ','O','F','F',' ',']' 		\
+}
+
+#define LAYOUT_CARD_CLK_ATTR						\
+{									\
+	HDK,HDK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_CLK_CODE						\
+{									\
+	'[',' ','0','0','0','.','0',' ','M','H','z',']' 		\
+}
+
+#define LAYOUT_CARD_UNCORE_ATTR 					\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,LCK,LCK,HDK 		\
+}
+
+#define LAYOUT_CARD_UNCORE_CODE 					\
+{									\
+	'[','U','N','C','O','R','E',' ',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_BUS_ATTR						\
+{									\
+	HDK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK 		\
+}
+
+#define LAYOUT_CARD_BUS_CODE						\
+{									\
+	'[','B','u','s',' ',' ',' ',' ',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_MC_ATTR						\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK 		\
+}
+
+#define LAYOUT_CARD_MC_CODE						\
+{									\
+	'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_LOAD_ATTR						\
+{									\
+	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_LOAD_CODE						\
+{									\
+	'[',' ',' ','%','L','O','A','D',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_IDLE_ATTR						\
+{									\
+	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_IDLE_CODE						\
+{									\
+	'[',' ',' ','%','I','D','L','E',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_RAM_ATTR						\
+{									\
+	HDK,HWK,HWK,HWK,HWK,HWK,LWK,HDK,HWK,HWK,LWK,HDK 		\
+}
+
+#define LAYOUT_CARD_RAM_CODE						\
+{									\
+	'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_TASK_ATTR						\
+{									\
+	HDK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HDK 		\
+}
+
+#define LAYOUT_CARD_TASK_CODE						\
+{									\
+	'[','T','a','s','k','s',' ',' ',' ',' ',' ',']' 		\
+}

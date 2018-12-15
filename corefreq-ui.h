@@ -13,7 +13,7 @@
 			+ TOP_HEADER_ROW				\
 			+ TOP_SEPARATOR					\
 			+ TOP_FOOTER_ROW)
-#define MAX_WIDTH	132
+#define MAX_WIDTH	240
 #define MIN_WIDTH	80
 
 #define CUMAX(M, m)	((M) > (m) ? (M) : (m))
