@@ -4984,6 +4984,24 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &buffer[15],9);
 }
 
+ATTRIBUTE	Layout_Header_Proc_Attr[] = LAYOUT_HEADER_PROC_ATTR;
+ASCII		Layout_Header_Proc_Code[] = LAYOUT_HEADER_PROC_CODE;
+
+ATTRIBUTE	Layout_Header_CPU_Attr[] = LAYOUT_HEADER_CPU_ATTR;
+ASCII		Layout_Header_CPU_Code[] = LAYOUT_HEADER_CPU_CODE;
+
+ATTRIBUTE	Layout_Header_Arch_Attr[] = LAYOUT_HEADER_ARCH_ATTR;
+ASCII		Layout_Header_Arch_Code[] = LAYOUT_HEADER_ARCH_CODE;
+
+ATTRIBUTE	Layout_Header_CacheL1_Attr[] = LAYOUT_HEADER_CACHE_L1_ATTR;
+ASCII		Layout_Header_CacheL1_Code[] = LAYOUT_HEADER_CACHE_L1_CODE;
+
+ATTRIBUTE	Layout_Header_BClk_Attr[] = LAYOUT_HEADER_BCLK_ATTR;
+ASCII		Layout_Header_BClk_Code[] = LAYOUT_HEADER_BCLK_CODE;
+
+ATTRIBUTE	Layout_Header_Caches_Attr[] = LAYOUT_HEADER_CACHES_ATTR;
+ASCII		Layout_Header_Caches_Code[] = LAYOUT_HEADER_CACHES_CODE;
+
 void Layout_Header(Layer *layer, CUINT row)
 {
 	size_t len;
@@ -4998,47 +5016,22 @@ void Layout_Header(Layer *layer, CUINT row)
 
 		Load2LCD(layer, 0, row, percent);
 	}
-	LayerDeclare(12) hProc0 = {
-		.origin = {.col = 12, .row = row}, .length = 12,
-		.attr = LAYOUT_HEADER_PROC_ATTR,
-		.code = LAYOUT_HEADER_PROC_CODE
-	};
-	LayerDeclare(11) hProc1 = {
-		.origin ={.col = draw.Size.width - 11, .row = row},.length = 11,
-		.attr = LAYOUT_HEADER_CPU_ATTR,
-		.code = LAYOUT_HEADER_CPU_CODE
-	};
+	LayerDeclare(Layout_Header_Proc, 12, 12, row, hProc0);
+	LayerDeclare(Layout_Header_CPU, 11,(draw.Size.width - 11), row, hProc1);
 
 	row++;
 
-	LayerDeclare(15) hArch0 = {
-		.origin = {.col = 12, .row = row}, .length = 15,
-		.attr = LAYOUT_HEADER_ARCH_ATTR,
-		.code = LAYOUT_HEADER_ARCH_CODE
-	};
-	LayerDeclare(30) hArch1 = {
-		.origin ={.col = draw.Size.width - 30, .row = row},.length = 30,
-		.attr = LAYOUT_HEADER_CACHE_L1_ATTR,
-		.code = LAYOUT_HEADER_CACHE_L1_CODE
-	};
+	LayerDeclare(Layout_Header_Arch, 15, 12, row, hArch0);
+	LayerDeclare(Layout_Header_CacheL1,30,(draw.Size.width-30),row,hArch1);
 
 	row++;
 
-	LayerDeclare(28) hBClk0 = {
-		.origin = {.col = 12, .row = row}, .length = 28,
-		.attr = LAYOUT_HEADER_BCLK_ATTR,
-		.code = LAYOUT_HEADER_BCLK_CODE
-	};
-	LayerDeclare(21) hArch2 = {
-		.origin ={.col = draw.Size.width - 21, .row = row},.length = 21,
-		.attr = LAYOUT_HEADER_CACHES_ATTR,
-		.code = LAYOUT_HEADER_CACHES_CODE
-	};
+	LayerDeclare(Layout_Header_BClk, 28, 12, row, hBClk0);
+	LayerDeclare(Layout_Header_Caches,21,(draw.Size.width - 21),row,hArch2);
 
 	row++;
 
-	sprintf(buffer, "%2u" "%-2u",
-		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+	sprintf(buffer,"%2u" "%-2u", Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
 	hProc1.code[2] = buffer[0];
 	hProc1.code[3] = buffer[1];
@@ -5129,13 +5122,12 @@ void Layout_Header(Layer *layer, CUINT row)
 			hArch2.length, hArch2.attr, hArch2.code);
 }
 
+ATTRIBUTE	Layout_Ruller_Load_Attr[] = LAYOUT_RULLER_LOAD_ATTR;
+ASCII		Layout_Ruller_Load_Code[] = LAYOUT_RULLER_LOAD_CODE;
+
 void Layout_Ruller_Load(Layer *layer, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hLoad0 = {
-		.origin = {.col = 0, .row = row}, .length = draw.Size.width,
-		.attr = LAYOUT_RULLER_LOAD_ATTR,
-		.code = LAYOUT_RULLER_LOAD_CODE
-	};
+	LayerDeclare(Layout_Ruller_Load, draw.Size.width, 0, row, hLoad0);
 	/* Alternate the color of the frequency ratios			*/
 	int idx = ratio.Count, bright = 1;
 	while (idx-- > 0) {
@@ -5156,16 +5148,15 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 }
 
+ATTRIBUTE	Layout_Monitor_Frequency_Attr[] = LAYOUT_MONITOR_FREQUENCY_ATTR;
+ASCII		Layout_Monitor_Frequency_Code[] = LAYOUT_MONITOR_FREQUENCY_CODE;
+
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(77) hMon0 = {
-		.origin = {	.col = (LOAD_LEAD - 1),
-				.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = 77,
-		.attr = LAYOUT_MONITOR_FREQUENCY_ATTR,
-		.code = LAYOUT_MONITOR_FREQUENCY_CODE
-	};
+	LayerDeclare(	Layout_Monitor_Frequency, 77,
+			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			hMon0);
+
 	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
@@ -5176,17 +5167,16 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			MakeAttr(BLACK, 0, BLACK, 1));
 	return(0);
 }
+
+ATTRIBUTE	Layout_Monitor_Inst_Attr[] = LAYOUT_MONITOR_INST_ATTR;
+ASCII		Layout_Monitor_Inst_Code[] = LAYOUT_MONITOR_INST_CODE;
 
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
-	LayerDeclare(76) hMon0 = {
-		.origin = {	.col = (LOAD_LEAD - 1),
-				.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = 76,
-		.attr = LAYOUT_MONITOR_INST_ATTR,
-		.code = LAYOUT_MONITOR_INST_CODE
-	};
+	LayerDeclare(	Layout_Monitor_Inst, 76,
+			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			hMon0);
+
 	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
@@ -5198,16 +5188,15 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 	return(0);
 }
 
+ATTRIBUTE	Layout_Monitor_Common_Attr[] = LAYOUT_MONITOR_COMMON_ATTR;
+ASCII		Layout_Monitor_Common_Code[] = LAYOUT_MONITOR_COMMON_CODE;
+
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(77) hMon0 = {
-		.origin = {	.col = (LOAD_LEAD - 1),
-				.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = 77,
-		.attr = LAYOUT_MONITOR_COMMON_ATTR,
-		.code = LAYOUT_MONITOR_COMMON_CODE
-	};
+	LayerDeclare(	Layout_Monitor_Common, 77,
+			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			hMon0);
+
 	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
@@ -5224,16 +5213,15 @@ CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	return(0);
 }
 
+ATTRIBUTE	Layout_Monitor_Tasks_Attr[] = LAYOUT_MONITOR_TASKS_ATTR;
+ASCII		Layout_Monitor_Tasks_Code[] = LAYOUT_MONITOR_TASKS_CODE;
+
 CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hMon0 = {
-		.origin = {	.col = (LOAD_LEAD - 1),
-				.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = (MAX_WIDTH - LOAD_LEAD + 1),
-		.attr = LAYOUT_MONITOR_TASKS_ATTR,
-		.code = LAYOUT_MONITOR_TASKS_CODE
-	};
+	LayerDeclare(	Layout_Monitor_Tasks, (MAX_WIDTH - LOAD_LEAD + 1),
+			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			hMon0);
+
 	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
@@ -5243,44 +5231,33 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return(0);
 }
 
+ATTRIBUTE	Layout_Ruller_Frequency_Attr[] = LAYOUT_RULLER_FREQUENCY_ATTR;
+ASCII		Layout_Ruller_Frequency_Code[] = LAYOUT_RULLER_FREQUENCY_CODE;
+
+ATTRIBUTE	Layout_Ruller_Freq_Avg_Attr[]=LAYOUT_RULLER_FREQUENCY_AVG_ATTR;
+ASCII		Layout_Ruller_Freq_Avg_Code[]=LAYOUT_RULLER_FREQUENCY_AVG_CODE;
+
+ATTRIBUTE	Layout_Ruller_Freq_Pkg_Attr[]=LAYOUT_RULLER_FREQUENCY_PKG_ATTR;
+ASCII		Layout_Ruller_Freq_Pkg_Code[]=LAYOUT_RULLER_FREQUENCY_PKG_CODE;
+
 CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hFreq0 = {
-		.origin = {
-			.col = 0,
-			.row = row
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_RULLER_FREQUENCY_ATTR,
-		.code = LAYOUT_RULLER_FREQUENCY_CODE
-	};
+	LayerDeclare(Layout_Ruller_Frequency, draw.Size.width, 0, row, hFreq0);
 
 	LayerCopyAt(layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code);
 
 	if (!draw.Flag.avgOrPC) {
-		LayerDeclare(MAX_WIDTH) hAvg0 = {
-			.origin = {
-				.col = 0,
-				.row = (row + draw.Area.MaxRows + 1)
-			},
-			.length = draw.Size.width,
-			.attr = LAYOUT_RULLER_FREQUENCY_AVG_ATTR,
-			.code = LAYOUT_RULLER_FREQUENCY_AVG_CODE
-		};
+		LayerDeclare(	Layout_Ruller_Freq_Avg, draw.Size.width,
+				0, (row + draw.Area.MaxRows + 1),
+				hAvg0);
 
 		LayerCopyAt(layer, hAvg0.origin.col, hAvg0.origin.row,
 				hAvg0.length, hAvg0.attr, hAvg0.code);
 	} else {
-		LayerDeclare(MAX_WIDTH) hPkg0 = {
-			.origin = {
-				.col = 0,
-				.row = (row + draw.Area.MaxRows + 1)
-			},
-			.length = draw.Size.width,
-			.attr = LAYOUT_RULLER_FREQUENCY_PKG_ATTR,
-			.code = LAYOUT_RULLER_FREQUENCY_PKG_CODE
-		};
+		LayerDeclare(	Layout_Ruller_Freq_Pkg, draw.Size.width,
+				0, (row + draw.Area.MaxRows + 1),
+				hPkg0);
 
 		LayerCopyAt(layer, hPkg0.origin.col, hPkg0.origin.row,
 				hPkg0.length, hPkg0.attr, hPkg0.code);
@@ -5329,17 +5306,13 @@ CUINT Layout_Ruller_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+ATTRIBUTE	Layout_Ruller_Interrupts_Attr[] = LAYOUT_RULLER_INTERRUPTS_ATTR;
+ASCII		Layout_Ruller_Interrupts_Code[] = LAYOUT_RULLER_INTERRUPTS_CODE;
+
 CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hIntr0 = {
-		.origin = {
-			.col = 0,
-			.row = row
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_RULLER_INTERRUPTS_ATTR,
-		.code = LAYOUT_RULLER_INTERRUPTS_CODE
-	};
+	LayerDeclare(Layout_Ruller_Interrupts, draw.Size.width, 0, row, hIntr0);
+
 	LayerCopyAt(layer, hIntr0.origin.col, hIntr0.origin.row,
 			hIntr0.length, hIntr0.attr, hIntr0.code);
 
@@ -5349,6 +5322,9 @@ CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	row += draw.Area.MaxRows + 2;
 	return(row);
 }
+
+ATTRIBUTE	Layout_Package_Uncore_Attr[] = LAYOUT_PACKAGE_UNCORE_ATTR;
+ASCII		Layout_Package_Uncore_Code[] = LAYOUT_PACKAGE_UNCORE_CODE;
 
 CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
@@ -5377,15 +5353,7 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 				draw.Size.width, hPCnnAttr, hPCnnCode);
 	}
 
-	LayerDeclare(MAX_WIDTH) hUncore = {
-		.origin = {
-			.col = 0,
-			.row = row + 8
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_PACKAGE_UNCORE_ATTR,
-		.code = LAYOUT_PACKAGE_UNCORE_CODE
-	};
+	LayerDeclare(Layout_Package_Uncore,draw.Size.width,0,(row + 8),hUncore);
 
 	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,
 		hUncore.length, hUncore.attr, hUncore.code);
@@ -5397,72 +5365,108 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+ATTRIBUTE	Layout_Ruller_Tasks_Attr[] = LAYOUT_RULLER_TASKS_ATTR;
+ASCII		Layout_Ruller_Tasks_Code[] = LAYOUT_RULLER_TASKS_CODE;
+
+ATTRIBUTE	Layout_Task1_Attr[21], Layout_Task2_Attr[15];
+ASCII		Layout_Task1_Code[21], Layout_Task2_Code[15];
+
+ATTRIBUTE	Layout_Tasks_Tracking_Attr[] = LAYOUT_TASKS_TRACKING_ATTR;
+ASCII		Layout_Tasks_Tracking_Code[] = LAYOUT_TASKS_TRACKING_CODE;
+
+ATTRIBUTE	Layout_Tasks_State_Sorted_Attr[]=LAYOUT_TASKS_STATE_SORTED_ATTR;
+ASCII		Layout_Tasks_State_Sorted_Code[]=LAYOUT_TASKS_STATE_SORTED_CODE;
+
+ATTRIBUTE Layout_Tasks_RunTime_Sorted_Attr[]=LAYOUT_TASKS_RUNTIME_SORTED_ATTR;
+ASCII	  Layout_Tasks_RunTime_Sorted_Code[]=LAYOUT_TASKS_RUNTIME_SORTED_CODE;
+
+ATTRIBUTE Layout_Tasks_UsrTime_Sorted_Attr[]=LAYOUT_TASKS_USRTIME_SORTED_ATTR;
+ASCII	  Layout_Tasks_UsrTime_Sorted_Code[]=LAYOUT_TASKS_USRTIME_SORTED_CODE;
+
+ATTRIBUTE Layout_Tasks_SysTime_Sorted_Attr[]=LAYOUT_TASKS_SYSTIME_SORTED_ATTR;
+ASCII	  Layout_Tasks_SysTime_Sorted_Code[]=LAYOUT_TASKS_SYSTIME_SORTED_CODE;
+
+ATTRIBUTE Layout_Tasks_Process_Sorted_Attr[]=LAYOUT_TASKS_PROCESS_SORTED_ATTR;
+ASCII	  Layout_Tasks_Process_Sorted_Code[]=LAYOUT_TASKS_PROCESS_SORTED_CODE;
+
+ATTRIBUTE Layout_Tasks_Command_Sorted_Attr[]=LAYOUT_TASKS_COMMAND_SORTED_ATTR;
+ASCII	  Layout_Tasks_Command_Sorted_Code[]=LAYOUT_TASKS_COMMAND_SORTED_CODE;
+
+ATTRIBUTE	Layout_Tasks_Reverse_Sort_Attr[2][15] = {
+			[0] = LAYOUT_TASKS_REVERSE_SORT_OFF_ATTR,
+			[1] = LAYOUT_TASKS_REVERSE_SORT_ON_ATTR
+		};
+ASCII		Layout_Tasks_Reverse_Sort_Code[2][15] = {
+			[0] = LAYOUT_TASKS_REVERSE_SORT_OFF_CODE,
+			[1] = LAYOUT_TASKS_REVERSE_SORT_ON_CODE
+		};
+
+ATTRIBUTE	Layout_Tasks_Value_Switch_Attr[]=LAYOUT_TASKS_VALUE_SWITCH_ATTR;
+ASCII		Layout_Tasks_Value_Switch_Code[]=LAYOUT_TASKS_VALUE_SWITCH_CODE;
+
+ATTRIBUTE	Layout_Tasks_Value_Attr[2][3] = {
+			[0] = LAYOUT_TASKS_VALUE_OFF_ATTR,
+			[1] = LAYOUT_TASKS_VALUE_ON_ATTR
+		};
+ASCII		Layout_Tasks_Value_Code[2][3] = {
+			[0] = LAYOUT_TASKS_VALUE_OFF_CODE,
+			[1] = LAYOUT_TASKS_VALUE_ON_CODE
+		};
+
 CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hTask0 = {
-		.origin = {
-			.col = 0,
-			.row = row
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_RULLER_TASKS_ATTR,
-		.code = LAYOUT_RULLER_TASKS_CODE
-	};
-	LayerDeclare(21) hTask1 = {
-		.origin = {.col = 23, .row = row},
-		.length = 21,
-	};
+	LayerDeclare(Layout_Ruller_Tasks, draw.Size.width, 0, row, hTask0);
+
+	LayerDeclare(Layout_Task1, 21, 23, row, hTask1);
+
 	struct {
-		ATTRIBUTE attr[21];
-		ASCII code[21];
+		ATTRIBUTE *attr;
+		ASCII	  *code;
 	} hSort[SORTBYCOUNT] = {
 		{
-		.attr = LAYOUT_TASKS_STATE_SORTED_ATTR,
-		.code = LAYOUT_TASKS_STATE_SORTED_CODE
+		.attr = Layout_Tasks_State_Sorted_Attr,
+		.code = Layout_Tasks_State_Sorted_Code
 		},
 		{
-		.attr = LAYOUT_TASKS_RUNTIME_SORTED_ATTR,
-		.code = LAYOUT_TASKS_RUNTIME_SORTED_CODE
+		.attr = Layout_Tasks_RunTime_Sorted_Attr,
+		.code = Layout_Tasks_RunTime_Sorted_Code
 		},
 		{
-		.attr = LAYOUT_TASKS_USRTIME_SORTED_ATTR,
-		.code = LAYOUT_TASKS_USRTIME_SORTED_CODE
+		.attr = Layout_Tasks_UsrTime_Sorted_Attr,
+		.code = Layout_Tasks_UsrTime_Sorted_Code
 		},
 		{
-		.attr = LAYOUT_TASKS_SYSTIME_SORTED_ATTR,
-		.code = LAYOUT_TASKS_SYSTIME_SORTED_CODE
+		.attr = Layout_Tasks_SysTime_Sorted_Attr,
+		.code = Layout_Tasks_SysTime_Sorted_Code
 		},
 		{
-		.attr = LAYOUT_TASKS_PROCESS_SORTED_ATTR,
-		.code = LAYOUT_TASKS_PROCESS_SORTED_CODE
+		.attr = Layout_Tasks_Process_Sorted_Attr,
+		.code = Layout_Tasks_Process_Sorted_Code
 		},
 		{
-		.attr = LAYOUT_TASKS_COMMAND_SORTED_ATTR,
-		.code = LAYOUT_TASKS_COMMAND_SORTED_CODE
+		.attr = Layout_Tasks_Command_Sorted_Attr,
+		.code = Layout_Tasks_Command_Sorted_Code
 		}
 	};
 
 	memcpy(hTask1.attr, hSort[Shm->SysGate.sortByField].attr,hTask1.length);
 	memcpy(hTask1.code, hSort[Shm->SysGate.sortByField].code,hTask1.length);
 
-	LayerDeclare(15) hTask2 = {
-		.origin = {
-			.col = (draw.Size.width - 18),
-			.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = 15,
-	};
+	LayerDeclare(	Layout_Task2, 15,
+			(draw.Size.width - 18), (row + draw.Area.MaxRows + 1),
+			hTask2);
+
 	struct {
-		ATTRIBUTE attr[15];
-		ASCII code[15];
+		ATTRIBUTE *attr;
+		ASCII	  *code;
 	} hReverse[2] = {
 		{
-		.attr = LAYOUT_TASKS_REVERSE_SORT_OFF_ATTR,
-		.code = LAYOUT_TASKS_REVERSE_SORT_OFF_CODE
+		.attr = Layout_Tasks_Reverse_Sort_Attr[0],
+		.code = Layout_Tasks_Reverse_Sort_Code[0]
 		},
 		{
-		.attr = LAYOUT_TASKS_REVERSE_SORT_ON_ATTR,
-		.code = LAYOUT_TASKS_REVERSE_SORT_ON_CODE
+		.attr = Layout_Tasks_Reverse_Sort_Attr[1],
+		.code = Layout_Tasks_Reverse_Sort_Code[1]
 		}
 	};
 
@@ -5471,41 +5475,29 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(hTask2.code, hReverse[Shm->SysGate.reverseOrder].code,
 			hTask2.length);
 
-	LayerDeclare(13) hTask3 = {
-		.origin = {
-			.col = (draw.Size.width - 34),
-			.row = (row + draw.Area.MaxRows + 1)
-		},
-		.length = 13,
-		.attr = LAYOUT_TASKS_VALUE_SWITCH_ATTR,
-		.code = LAYOUT_TASKS_VALUE_SWITCH_CODE
-	};
+	LayerDeclare(	Layout_Tasks_Value_Switch, 13,
+			(draw.Size.width - 34), (row + draw.Area.MaxRows + 1),
+			hTask3);
+
 	struct {
-		ATTRIBUTE attr[3];
-		ASCII code[3];
+		ATTRIBUTE *attr;
+		ASCII	  *code;
 	} hTaskVal[2] = {
 		{
-		.attr = LAYOUT_TASKS_VALUE_OFF_ATTR,
-		.code = LAYOUT_TASKS_VALUE_OFF_CODE
+		.attr = Layout_Tasks_Value_Attr[0],
+		.code = Layout_Tasks_Value_Code[0]
 		},
 		{
-		.attr = LAYOUT_TASKS_VALUE_ON_ATTR,
-		.code = LAYOUT_TASKS_VALUE_ON_CODE
+		.attr = Layout_Tasks_Value_Attr[1],
+		.code = Layout_Tasks_Value_Code[1]
 		}
 	};
 
 	memcpy(&hTask3.attr[8], hTaskVal[draw.Flag.taskVal].attr, 3);
 	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
 
-	LayerDeclare(22) hTrack0 = {
-		.origin = {
-			.col = 55,
-			.row = row
-		},
-		.length = 22,
-		.attr = LAYOUT_TASKS_TRACKING_ATTR,
-		.code = LAYOUT_TASKS_TRACKING_CODE
-	};
+	LayerDeclare(Layout_Tasks_Tracking, 22, 55, row, hTrack0);
+
 	if (Shm->SysGate.trackTask) {
 		memset(&hTrack0.attr[15], MakeAttr(CYAN, 0, BLACK, 0).value, 5);
 		sprintf(buffer, "%5d", Shm->SysGate.trackTask);
@@ -5534,20 +5526,19 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+ATTRIBUTE	Layout_Ruller_Voltage_Attr[] = LAYOUT_RULLER_VOLTAGE_ATTR;
+ASCII		Layout_Ruller_Voltage_Code[] = LAYOUT_RULLER_VOLTAGE_CODE;
+
+ATTRIBUTE	Layout_Power_Monitor_Attr[] = LAYOUT_POWER_MONITOR_ATTR;
+ASCII		Layout_Power_Monitor_Code[] = LAYOUT_POWER_MONITOR_CODE;
+
 CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	const CUINT tab = LOAD_LEAD + 24 + 6;
 	CUINT vsh = row + PWR_DOMAIN(SIZE) + 1;
 
-	LayerDeclare(MAX_WIDTH) hVolt0 = {
-		.origin = {
-			.col = 0,
-			.row = row
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_RULLER_VOLTAGE_ATTR,
-		.code = LAYOUT_RULLER_VOLTAGE_CODE
-	};
+	LayerDeclare(Layout_Ruller_Voltage, draw.Size.width, 0, row, hVolt0);
+
 	LayerCopyAt(layer, hVolt0.origin.col, hVolt0.origin.row,
 			hVolt0.length, hVolt0.attr, hVolt0.code);
 
@@ -5560,15 +5551,10 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
-		LayerDeclare(39) hPower0 = {
-			.origin = {
-				.col = tab,
-				.row = row + pw + 1
-			},
-			.length = 39,
-			.attr = LAYOUT_POWER_MONITOR_ATTR,
-			.code = LAYOUT_POWER_MONITOR_CODE
-		};
+		LayerDeclare(	Layout_Power_Monitor, 39,
+				tab, (row + pw + 1),
+				hPower0);
+
 		memcpy(&hPower0.code[0], hDomain[pw], 7);
 
 		LayerCopyAt(layer, hPower0.origin.col, hPower0.origin.row,
@@ -5583,17 +5569,13 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+ATTRIBUTE	Layout_Ruller_Slice_Attr[] = LAYOUT_RULLER_SLICE_ATTR;
+ASCII		Layout_Ruller_Slice_Code[] = LAYOUT_RULLER_SLICE_CODE;
+
 CUINT Layout_Ruller_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(MAX_WIDTH) hSlice0 = {
-		.origin = {
-			.col = 0,
-			.row = row
-		},
-		.length = draw.Size.width,
-		.attr = LAYOUT_RULLER_SLICE_ATTR,
-		.code = LAYOUT_RULLER_SLICE_CODE
-	};
+	LayerDeclare(Layout_Ruller_Slice, draw.Size.width, 0, row, hSlice0);
+
 	LayerCopyAt(layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code);
 
@@ -5605,16 +5587,24 @@ CUINT Layout_Ruller_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+ATTRIBUTE	Layout_Footer_Tech_x86_Attr[] = LAYOUT_FOOTER_TECH_X86_ATTR;
+ASCII		Layout_Footer_Tech_x86_Code[] = LAYOUT_FOOTER_TECH_X86_CODE;
+
+ATTRIBUTE	Layout_Footer_Tech_Intel_Attr[] = LAYOUT_FOOTER_TECH_INTEL_ATTR;
+ASCII		Layout_Footer_Tech_Intel_Code[] = LAYOUT_FOOTER_TECH_INTEL_CODE;
+
+ATTRIBUTE	Layout_Footer_Tech_AMD_Attr[] = LAYOUT_FOOTER_TECH_AMD_ATTR;
+ASCII		Layout_Footer_Tech_AMD_Code[] = LAYOUT_FOOTER_TECH_AMD_CODE;
+
+ATTRIBUTE	Layout_Footer_System_Attr[] = LAYOUT_FOOTER_SYSTEM_ATTR;
+ASCII		Layout_Footer_System_Code[] = LAYOUT_FOOTER_SYSTEM_CODE;
+
 void Layout_Footer(Layer *layer, CUINT row)
 {
 	CUINT col = 0;
 	size_t len;
 
-	LayerDeclare(14) hTech0 = {
-		.origin = {.col = 0, .row = row}, .length = 14,
-		.attr = LAYOUT_FOOTER_TECH_X86_ATTR,
-		.code = LAYOUT_FOOTER_TECH_X86_CODE
-	};
+	LayerDeclare(Layout_Footer_Tech_x86, 14, 0, row, hTech0);
 
 	const ATTRIBUTE Pwr[] = {
 		MakeAttr(BLACK, 0, BLACK, 1),
@@ -5644,11 +5634,9 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	  LayerDeclare(66) hTech1 = {
-	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=66,
-	    .attr = LAYOUT_FOOTER_TECH_INTEL_ATTR,
-	    .code = LAYOUT_FOOTER_TECH_INTEL_CODE
-	  };
+	    LayerDeclare(Layout_Footer_Tech_Intel, 66,
+			hTech0.length, hTech0.origin.row,
+			hTech1);
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
@@ -5706,12 +5694,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 				hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
-	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-	   LayerDeclare(66) hTech1 = {
-	    .origin = {.col=hTech0.length, .row=hTech0.origin.row},.length=66,
-	    .attr = LAYOUT_FOOTER_TECH_AMD_ATTR,
-	    .code = LAYOUT_FOOTER_TECH_AMD_CODE
-	   };
+	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	  {
+	    LayerDeclare(Layout_Footer_Tech_AMD, 66,
+			hTech0.length, hTech0.origin.row,
+			hTech1);
 
 	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
@@ -5799,11 +5786,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	col++;
 
-	LayerDeclare(42) hSys1 = {
-	    .origin = {.col = (draw.Size.width - 42), .row = row}, .length = 42,
-	    .attr = LAYOUT_FOOTER_SYSTEM_ATTR,
-	    .code = LAYOUT_FOOTER_SYSTEM_CODE
-	};
+	LayerDeclare(Layout_Footer_System,42,(draw.Size.width - 42),row, hSys1);
 
 	len = hSys1.origin.col - col;
 	if ((signed int)len  > 0)
@@ -6616,6 +6599,12 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	Draw_Footer(layer, row);
 }
 
+ATTRIBUTE	Layout_Card_Core_Online_Attr[] = LAYOUT_CARD_CORE_ONLINE_ATTR;
+ASCII		Layout_Card_Core_Online_Code[] = LAYOUT_CARD_CORE_ONLINE_CODE;
+
+ATTRIBUTE	Layout_Card_Core_Offline_Attr[] = LAYOUT_CARD_CORE_OFFLINE_ATTR;
+ASCII		Layout_Card_Core_Offline_Code[] = LAYOUT_CARD_CORE_OFFLINE_CODE;
+
 void Layout_Card_Core(Layer *layer, Card* card)
 {
 	unsigned int digit[9];
@@ -6625,27 +6614,16 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
-		LayerDeclare(4 * INTER_WIDTH) hOnLine = {
-			.origin = {
-				.col = card->origin.col,
-				.row = (card->origin.row + 3)
-			},
-			.length = (4 * INTER_WIDTH),
-			.attr = LAYOUT_CARD_CORE_ONLINE_ATTR,
-			.code = LAYOUT_CARD_CORE_ONLINE_CODE
-		};
+		LayerDeclare(	Layout_Card_Core_Online, (4 * INTER_WIDTH),
+				card->origin.col, (card->origin.row + 3),
+				hOnLine);
+
 		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
 				hOnLine.length, hOnLine.attr, hOnLine.code);
 	} else {
-		LayerDeclare(4 * INTER_WIDTH) hOffLine = {
-			.origin = {
-				.col = card->origin.col,
-				.row = (card->origin.row + 3)
-			},
-			.length = (4 * INTER_WIDTH),
-			.attr = LAYOUT_CARD_CORE_OFFLINE_ATTR,
-			.code = LAYOUT_CARD_CORE_OFFLINE_CODE
-		};
+		LayerDeclare(	Layout_Card_Core_Offline, (4 * INTER_WIDTH),
+				card->origin.col, (card->origin.row + 3),
+				hOffLine);
 
 		card->data.dword.hi = RENDER_KO;
 
@@ -6664,32 +6642,28 @@ void Layout_Card_Core(Layer *layer, Card* card)
 		(card->origin.row + 3)) = digit[8] + '0';
 }
 
+ATTRIBUTE	Layout_Card_CLK_Attr[] = LAYOUT_CARD_CLK_ATTR;
+ASCII		Layout_Card_CLK_Code[] = LAYOUT_CARD_CLK_CODE;
+
 void Layout_Card_CLK(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hCLK = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_CLK_ATTR,
-		.code = LAYOUT_CARD_CLK_CODE
-	};
+	LayerDeclare(	Layout_Card_CLK, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hCLK);
+
 	LayerCopyAt(layer, hCLK.origin.col, hCLK.origin.row,	\
 			hCLK.length, hCLK.attr, hCLK.code);
 }
 
+ATTRIBUTE	Layout_Card_Uncore_Attr[] = LAYOUT_CARD_UNCORE_ATTR;
+ASCII		Layout_Card_Uncore_Code[] = LAYOUT_CARD_UNCORE_CODE;
+
 void Layout_Card_Uncore(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hUncore = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_UNCORE_ATTR,
-		.code = LAYOUT_CARD_UNCORE_CODE
-	};
+	LayerDeclare(	Layout_Card_Uncore, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hUncore);
+
 	sprintf(buffer, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
 	hUncore.code[ 8] = buffer[0];
 	hUncore.code[ 9] = buffer[1];
@@ -6699,17 +6673,15 @@ void Layout_Card_Uncore(Layer *layer, Card* card)
 			hUncore.length, hUncore.attr, hUncore.code);
 }
 
+ATTRIBUTE	Layout_Card_Bus_Attr[] = LAYOUT_CARD_BUS_ATTR;
+ASCII		Layout_Card_Bus_Code[] = LAYOUT_CARD_BUS_CODE;
+
 void Layout_Card_Bus(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hBus = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_BUS_ATTR,
-		.code = LAYOUT_CARD_BUS_CODE
-	};
+	LayerDeclare(	Layout_Card_Bus, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hBus);
+
 	sprintf(buffer, "%4u", Shm->Uncore.Bus.Rate);
 	hBus.code[5] = buffer[0];
 	hBus.code[6] = buffer[1];
@@ -6738,17 +6710,15 @@ void Layout_Card_Bus(Layer *layer, Card* card)
 			(double) Shm->Uncore.Bus.Speed);
 }
 
+ATTRIBUTE	Layout_Card_MC_Attr[] = LAYOUT_CARD_MC_ATTR;
+ASCII		Layout_Card_MC_Code[] = LAYOUT_CARD_MC_CODE;
+
 void Layout_Card_MC(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hRAM = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_MC_ATTR,
-		.code = LAYOUT_CARD_MC_CODE
-	};
+	LayerDeclare(	Layout_Card_MC, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hRAM);
+
 	unsigned int timings[4] = {
 		Shm->Uncore.MC[0].Channel[0].Timing.tCL,
 		Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
@@ -6778,47 +6748,40 @@ void Layout_Card_MC(Layer *layer, Card* card)
 	}
 }
 
+ATTRIBUTE	Layout_Card_Load_Attr[] = LAYOUT_CARD_LOAD_ATTR;
+ASCII		Layout_Card_Load_Code[] = LAYOUT_CARD_LOAD_CODE;
+
 void Layout_Card_Load(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hLoad = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_LOAD_ATTR,
-		.code = LAYOUT_CARD_LOAD_CODE
-	};
+	LayerDeclare(	Layout_Card_Load, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hLoad);
+
 	LayerCopyAt(layer, hLoad.origin.col, hLoad.origin.row,	\
 			hLoad.length, hLoad.attr, hLoad.code);
 }
 
+ATTRIBUTE	Layout_Card_Idle_Attr[] = LAYOUT_CARD_IDLE_ATTR;
+ASCII		Layout_Card_Idle_Code[] = LAYOUT_CARD_IDLE_CODE;
+
 void Layout_Card_Idle(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hIdle = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_IDLE_ATTR,
-		.code = LAYOUT_CARD_IDLE_CODE
-	};
+	LayerDeclare(	Layout_Card_Idle, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hIdle);
+
 	LayerCopyAt(layer, hIdle.origin.col, hIdle.origin.row,	\
 			hIdle.length, hIdle.attr, hIdle.code);
 }
 
+ATTRIBUTE	Layout_Card_RAM_Attr[] = LAYOUT_CARD_RAM_ATTR;
+ASCII		Layout_Card_RAM_Code[] = LAYOUT_CARD_RAM_CODE;
+
 void Layout_Card_RAM(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hMem = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_RAM_ATTR,
-		.code = LAYOUT_CARD_RAM_CODE
-	};
+	LayerDeclare(	Layout_Card_RAM, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hMem);
 
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 	unsigned long totalRAM, totalDimm = 0;
@@ -6853,17 +6816,15 @@ void Layout_Card_RAM(Layer *layer, Card* card)
 	card->data.dword.hi = RENDER_KO;
 }
 
+ATTRIBUTE	Layout_Card_Task_Attr[] = LAYOUT_CARD_TASK_ATTR;
+ASCII		Layout_Card_Task_Code[] = LAYOUT_CARD_TASK_CODE;
+
 void Layout_Card_Task(Layer *layer, Card* card)
 {
-	LayerDeclare(4 * INTER_WIDTH) hSystem = {
-		.origin = {
-			.col = card->origin.col,
-			.row = (card->origin.row + 3)
-		},
-		.length = (4 * INTER_WIDTH),
-		.attr = LAYOUT_CARD_TASK_ATTR,
-		.code = LAYOUT_CARD_TASK_CODE
-	};
+	LayerDeclare(	Layout_Card_Task, (4 * INTER_WIDTH),
+			card->origin.col, (card->origin.row + 3),
+			hSystem);
+
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		LayerCopyAt(layer, hSystem.origin.col, hSystem.origin.row, \
 				hSystem.length, hSystem.attr, hSystem.code);
