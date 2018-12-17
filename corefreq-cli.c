@@ -27,17 +27,12 @@
 #include "corefreq-cli-json.h"
 
 /* >>> GLOBALS >>> */
-char hSpace[]	= HSPACE;
-char hBar[]	= HBAR;
-char hLine[]	= HLINE;
-
 SHM_STRUCT *Shm = NULL;
 
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
 /* <<< GLOBALS <<< */
-
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 {
@@ -82,7 +77,6 @@ void TrapSignal(int operation)
 	}
 }
 
-/* >>> GLOBALS >>> */
 ATTRIBUTE	runColor[]	= RUN_STATE_COLOR,
 		unintColor[]	= UNINT_STATE_COLOR,
 		zombieColor[]	= ZOMBIE_STATE_COLOR,
@@ -90,7 +84,6 @@ ATTRIBUTE	runColor[]	= RUN_STATE_COLOR,
 		waitColor[]	= WAIT_STATE_COLOR,
 		otherColor[]	= OTHER_STATE_COLOR,
 		trackerColor[]	= TRACKER_STATE_COLOR;
-/* <<< GLOBALS <<< */
 
 ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 {
@@ -5073,10 +5066,9 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	len = strlen(Shm->Proc.Brand);
 
-	if (BITVAL(Shm->Proc.Sync, 31))
-		hProc0.code[10] = '.';
+	hProc0.code[10] = BITVAL(Shm->Proc.Sync, 31) ? '.' : 0x20;
 
-	LayerCopyAt(layer, hProc0.origin.col, hProc0.origin.row,
+	LayerCopyAt(	layer, hProc0.origin.col, hProc0.origin.row,
 			hProc0.length, hProc0.attr, hProc0.code);
 
 	LayerFillAt(layer,(hProc0.origin.col + hProc0.length),hProc0.origin.row,
@@ -5089,12 +5081,12 @@ void Layout_Header(Layer *layer, CUINT row)
 				(hProc1.origin.col - len), hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	}
-	LayerCopyAt(layer, hProc1.origin.col, hProc1.origin.row,
+	LayerCopyAt(	layer, hProc1.origin.col, hProc1.origin.row,
 			hProc1.length, hProc1.attr, hProc1.code);
 
 	len = strlen(Shm->Proc.Architecture);
 
-	LayerCopyAt(layer, hArch0.origin.col, hArch0.origin.row,
+	LayerCopyAt(	layer, hArch0.origin.col, hArch0.origin.row,
 			hArch0.length, hArch0.attr, hArch0.code);
 
 	LayerFillAt(layer,(hArch0.origin.col + hArch0.length),hArch0.origin.row,
@@ -5107,10 +5099,10 @@ void Layout_Header(Layer *layer, CUINT row)
 				(hArch1.origin.col - len), hSpace,
 				MakeAttr(BLACK, 0, BLACK, 1));
 	}
-	LayerCopyAt(layer, hArch1.origin.col, hArch1.origin.row,
+	LayerCopyAt(	layer, hArch1.origin.col, hArch1.origin.row,
 			hArch1.length, hArch1.attr, hArch1.code);
 
-	LayerCopyAt(layer, hBClk0.origin.col, hBClk0.origin.row,
+	LayerCopyAt(	layer, hBClk0.origin.col, hBClk0.origin.row,
 			hBClk0.length, hBClk0.attr, hBClk0.code);
 
 	LayerFillAt(layer,(hBClk0.origin.col + hBClk0.length),hBClk0.origin.row,
@@ -5118,7 +5110,7 @@ void Layout_Header(Layer *layer, CUINT row)
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 
-	LayerCopyAt(layer, hArch2.origin.col, hArch2.origin.row,
+	LayerCopyAt(	layer, hArch2.origin.col, hArch2.origin.row,
 			hArch2.length, hArch2.attr, hArch2.code);
 }
 
@@ -5128,6 +5120,8 @@ ASCII		Layout_Ruller_Load_Code[] = LAYOUT_RULLER_LOAD_CODE;
 void Layout_Ruller_Load(Layer *layer, CUINT row)
 {
 	LayerDeclare(Layout_Ruller_Load, draw.Size.width, 0, row, hLoad0);
+	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
+			hLoad0.length, hLoad0.attr, hLoad0.code);
 	/* Alternate the color of the frequency ratios			*/
 	int idx = ratio.Count, bright = 1;
 	while (idx-- > 0) {
@@ -5135,17 +5129,25 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 		int hPos=ratio.Uniq[idx] * draw.Area.LoadWidth / ratio.Maximum;
 		sprintf(tabStop, "%2u", ratio.Uniq[idx]);
 
-		if (tabStop[0] != 0x20) {
-			hLoad0.code[hPos + 2]=tabStop[0];
-			hLoad0.attr[hPos + 2]=MakeAttr(CYAN, 0, BLACK, bright);
-		}
-		hLoad0.code[hPos + 3] = tabStop[1];
-		hLoad0.attr[hPos + 3] = MakeAttr(CYAN, 0, BLACK, bright);
+	    if (tabStop[0] != 0x20) {
+		LayerAt(layer, code,
+			(hLoad0.origin.col + hPos + 2),
+			hLoad0.origin.row) = tabStop[0];
+
+		LayerAt(layer, attr,
+			(hLoad0.origin.col + hPos + 2),
+			hLoad0.origin.row) = MakeAttr(CYAN, 0, BLACK, bright);
+	    }
+		LayerAt(layer, code,
+			(hLoad0.origin.col + hPos + 3),
+			hLoad0.origin.row) = tabStop[1];
+
+		LayerAt(layer, attr,
+			(hLoad0.origin.col + hPos + 3),
+			hLoad0.origin.row) = MakeAttr(CYAN, 0, BLACK, bright);
 
 		bright = !bright;
 	}
-	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
-			hLoad0.length, hLoad0.attr, hLoad0.code);
 }
 
 ATTRIBUTE	Layout_Monitor_Frequency_Attr[] = LAYOUT_MONITOR_FREQUENCY_ATTR;
@@ -5157,10 +5159,10 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
-	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
-	LayerFillAt(layer, (hMon0.origin.col + hMon0.length),
+	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
 			(draw.Size.width - hMon0.length),
 			hSpace,
@@ -5177,10 +5179,10 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
-	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
-	LayerFillAt(layer, (hMon0.origin.col + hMon0.length),
+	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
 			(draw.Size.width - hMon0.length),
 			hSpace,
@@ -5197,10 +5199,10 @@ CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
-	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
-	LayerFillAt(layer, (hMon0.origin.col + hMon0.length),
+	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
 			(draw.Size.width - hMon0.length),
 			hSpace,
@@ -5222,7 +5224,7 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
-	LayerCopyAt(layer, hMon0.origin.col, hMon0.origin.row,
+	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code);
 
 	cTask[cpu].col = LOAD_LEAD + 8;
@@ -5244,7 +5246,7 @@ CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(Layout_Ruller_Frequency, draw.Size.width, 0, row, hFreq0);
 
-	LayerCopyAt(layer, hFreq0.origin.col, hFreq0.origin.row,
+	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code);
 
 	if (!draw.Flag.avgOrPC) {
@@ -5252,27 +5254,29 @@ CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				0, (row + draw.Area.MaxRows + 1),
 				hAvg0);
 
-		LayerCopyAt(layer, hAvg0.origin.col, hAvg0.origin.row,
+		LayerCopyAt(	layer, hAvg0.origin.col, hAvg0.origin.row,
 				hAvg0.length, hAvg0.attr, hAvg0.code);
 	} else {
 		LayerDeclare(	Layout_Ruller_Freq_Pkg, draw.Size.width,
 				0, (row + draw.Area.MaxRows + 1),
 				hPkg0);
 
-		LayerCopyAt(layer, hPkg0.origin.col, hPkg0.origin.row,
+		LayerCopyAt(	layer, hPkg0.origin.col, hPkg0.origin.row,
 				hPkg0.length, hPkg0.attr, hPkg0.code);
 	}
 	row += draw.Area.MaxRows + 2;
 	return(row);
 }
 
+ASCII	Layout_Ruller_Inst_Code[] = LAYOUT_RULLER_INST_CODE;
+
 CUINT Layout_Ruller_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
-	LayerFillAt(layer, 0, row, draw.Size.width,
-			LAYOUT_RULLER_INST_CODE,
+	LayerFillAt(	layer, 0, row, draw.Size.width,
+			Layout_Ruller_Inst_Code,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
@@ -5280,26 +5284,30 @@ CUINT Layout_Ruller_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 	return(row);
 }
 
+ASCII	Layout_Ruller_Cycles_Code[] = LAYOUT_RULLER_CYCLES_CODE;
+
 CUINT Layout_Ruller_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(layer, 0, row, draw.Size.width,
-			LAYOUT_RULLER_CYCLES_CODE,
+	LayerFillAt(	layer, 0, row, draw.Size.width,
+			Layout_Ruller_Cycles_Code,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 
 	row += draw.Area.MaxRows + 2;
 	return(row);
 }
 
+ASCII	Layout_Ruller_CStates_Code[] = LAYOUT_RULLER_CSTATES_CODE;
+
 CUINT Layout_Ruller_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(layer, 0, row, draw.Size.width,
-			LAYOUT_RULLER_CSTATES_CODE,
+	LayerFillAt(	layer, 0, row, draw.Size.width,
+			Layout_Ruller_CStates_Code,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 
 	row += draw.Area.MaxRows + 2;
@@ -5313,53 +5321,56 @@ CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(Layout_Ruller_Interrupts, draw.Size.width, 0, row, hIntr0);
 
-	LayerCopyAt(layer, hIntr0.origin.col, hIntr0.origin.row,
+	LayerCopyAt(	layer, hIntr0.origin.col, hIntr0.origin.row,
 			hIntr0.length, hIntr0.attr, hIntr0.code);
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 
 	row += draw.Area.MaxRows + 2;
 	return(row);
 }
 
+ASCII		Layout_Ruller_Package_Code[] = LAYOUT_RULLER_PACKAGE_CODE;
+
 ATTRIBUTE	Layout_Package_Uncore_Attr[] = LAYOUT_PACKAGE_UNCORE_ATTR;
 ASCII		Layout_Package_Uncore_Code[] = LAYOUT_PACKAGE_UNCORE_CODE;
 
+ATTRIBUTE	hPCnnAttr[MAX_WIDTH] = LAYOUT_PACKAGE_PC_ATTR;
+ASCII		hPCnnCode[MAX_WIDTH] = LAYOUT_PACKAGE_PC_CODE;
+ASCII		hCState[7][2] = {
+		{'0', '2'},
+		{'0', '3'},
+		{'0', '6'},
+		{'0', '7'},
+		{'0', '8'},
+		{'0', '9'},
+		{'1', '0'}
+};
+
 CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(layer, 0, row, draw.Size.width,
-			LAYOUT_RULLER_PACKAGE_CODE,
+	LayerFillAt(	layer, 0, row, draw.Size.width,
+			Layout_Ruller_Package_Code,
 			MakeAttr(WHITE, 0, BLACK, 0));
-
-	ATTRIBUTE	hPCnnAttr[MAX_WIDTH] = LAYOUT_PACKAGE_PC_ATTR;
-	ASCII		hPCnnCode[MAX_WIDTH] = LAYOUT_PACKAGE_PC_CODE;
-	ASCII		hCState[7][2] = {
-			{'0', '2'},
-			{'0', '3'},
-			{'0', '6'},
-			{'0', '7'},
-			{'0', '8'},
-			{'0', '9'},
-			{'1', '0'}
-	};
 
 	unsigned int idx;
 	for (idx = 0; idx < 7; idx++)
 	{
-		hPCnnCode[2] = hCState[idx][0];
-		hPCnnCode[3] = hCState[idx][1];
 		LayerCopyAt(	layer, 0, (row + idx + 1),
 				draw.Size.width, hPCnnAttr, hPCnnCode);
+
+		LayerAt(layer, code, 2, (row + idx + 1)) = hCState[idx][0];
+		LayerAt(layer, code, 3, (row + idx + 1)) = hCState[idx][1];
 	}
 
 	LayerDeclare(Layout_Package_Uncore,draw.Size.width,0,(row + 8),hUncore);
 
-	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,
-		hUncore.length, hUncore.attr, hUncore.code);
+	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
+			hUncore.length, hUncore.attr, hUncore.code);
 
-	LayerFillAt(layer, 0, (row + 9),
-		draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	LayerFillAt	(layer, 0, (row + 9),
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
 
 	row += 2 + 8;
 	return(row);
@@ -5532,6 +5543,13 @@ ASCII		Layout_Ruller_Voltage_Code[] = LAYOUT_RULLER_VOLTAGE_CODE;
 ATTRIBUTE	Layout_Power_Monitor_Attr[] = LAYOUT_POWER_MONITOR_ATTR;
 ASCII		Layout_Power_Monitor_Code[] = LAYOUT_POWER_MONITOR_CODE;
 
+ASCII	Layout_Power_Domain_Code[PWR_DOMAIN(SIZE)][7] = {
+		{'P','a','c','k','a','g','e'},
+		{'C','o','r','e','s',' ',' '},
+		{'U','n','c','o','r','e',' '},
+		{'M','e','m','o','r','y',' '}
+	};
+
 CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	const CUINT tab = LOAD_LEAD + 24 + 6;
@@ -5539,15 +5557,9 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerDeclare(Layout_Ruller_Voltage, draw.Size.width, 0, row, hVolt0);
 
-	LayerCopyAt(layer, hVolt0.origin.col, hVolt0.origin.row,
+	LayerCopyAt(	layer, hVolt0.origin.col, hVolt0.origin.row,
 			hVolt0.length, hVolt0.attr, hVolt0.code);
 
-	ASCII hDomain[PWR_DOMAIN(SIZE)][7] = {
-		{'P','a','c','k','a','g','e'},
-		{'C','o','r','e','s',' ',' '},
-		{'U','n','c','o','r','e',' '},
-		{'M','e','m','o','r','y',' '}
-	};
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
@@ -5555,9 +5567,9 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 				tab, (row + pw + 1),
 				hPower0);
 
-		memcpy(&hPower0.code[0], hDomain[pw], 7);
+		memcpy(&hPower0.code[0], Layout_Power_Domain_Code[pw], 7);
 
-		LayerCopyAt(layer, hPower0.origin.col, hPower0.origin.row,
+		LayerCopyAt(	layer, hPower0.origin.col, hPower0.origin.row,
 				hPower0.length, hPower0.attr, hPower0.code);
 	}
 	if (draw.Area.MaxRows > 4)
@@ -5576,10 +5588,10 @@ CUINT Layout_Ruller_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(Layout_Ruller_Slice, draw.Size.width, 0, row, hSlice0);
 
-	LayerCopyAt(layer, hSlice0.origin.col, hSlice0.origin.row,
+	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code);
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0));
 
@@ -5611,8 +5623,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 		MakeAttr(GREEN, 0, BLACK, 1),
 		MakeAttr(BLUE,  0, BLACK, 1)
 	};
-	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
-		{(ASCII *) "  TSC  ",  MakeAttr(BLACK, 0, BLACK, 1)},
+	const struct {  ASCII *code  ; ATTRIBUTE attr; } TSC[] = {
+		{(ASCII *) "  TSC  " , MakeAttr(BLACK, 0, BLACK, 1)},
 		{(ASCII *) "TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1)},
 		{(ASCII *) "TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)}
 	};
@@ -5629,7 +5641,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech0.attr[ 9] = hTech0.attr[10]=hTech0.attr[11] =
 	hTech0.attr[12] = TSC[Shm->Proc.Features.InvariantTSC].attr;
 
-	LayerCopyAt(layer, hTech0.origin.col, hTech0.origin.row,
+	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code);
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -5689,10 +5701,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1.length, hTech1.attr, hTech1.code);
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
-				hTech1.origin.row,
-				(draw.Size.width - hTech0.length-hTech1.length),
-				hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
+			hTech1.origin.row,
+			(draw.Size.width - hTech0.length-hTech1.length),
+			hSpace,
+			MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
 	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  {
@@ -5738,10 +5750,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1.length, hTech1.attr, hTech1.code);
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
-				hTech1.origin.row,
-				(draw.Size.width - hTech0.length-hTech1.length),
-				hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
+			hTech1.origin.row,
+			(draw.Size.width - hTech0.length-hTech1.length),
+			hSpace,
+			MakeAttr(BLACK, 0, BLACK, 1));
 	  }
 	}
 	row++;
@@ -5789,12 +5801,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerDeclare(Layout_Footer_System,42,(draw.Size.width - 42),row, hSys1);
 
 	len = hSys1.origin.col - col;
-	if ((signed int)len  > 0)
+	if ((signed int) len  > 0) {
 	    LayerFillAt(layer, col, hSys1.origin.row,
 			len, hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
-
-	LayerCopyAt(layer, hSys1.origin.col, hSys1.origin.row,
+	}
+	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
 	/* Reset Tasks count & Memory usage				*/
@@ -6651,7 +6663,7 @@ void Layout_Card_CLK(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hCLK);
 
-	LayerCopyAt(layer, hCLK.origin.col, hCLK.origin.row,	\
+	LayerCopyAt(	layer, hCLK.origin.col, hCLK.origin.row,	\
 			hCLK.length, hCLK.attr, hCLK.code);
 }
 
@@ -6669,7 +6681,7 @@ void Layout_Card_Uncore(Layer *layer, Card* card)
 	hUncore.code[ 9] = buffer[1];
 	hUncore.code[10] = buffer[2];
 
-	LayerCopyAt(layer, hUncore.origin.col, hUncore.origin.row,	\
+	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,	\
 			hUncore.length, hUncore.attr, hUncore.code);
 }
 
@@ -6703,10 +6715,10 @@ void Layout_Card_Bus(Layer *layer, Card* card)
 		break;
 	}
 
-	LayerCopyAt(layer, hBus.origin.col, hBus.origin.row,	\
+	LayerCopyAt(	layer, hBus.origin.col, hBus.origin.row,	\
 			hBus.length, hBus.attr, hBus.code);
 
-	Counter2LCD(layer, card->origin.col, card->origin.row,
+	Counter2LCD(	layer, card->origin.col, card->origin.row,
 			(double) Shm->Uncore.Bus.Speed);
 }
 
@@ -6740,7 +6752,7 @@ void Layout_Card_MC(Layer *layer, Card* card)
 	for (sdx = 0, ldx = 10 - bdx; sdx < bdx; sdx++, ldx++)
 		hRAM.code[ldx] = buffer[sdx];
 
-	LayerCopyAt(layer, hRAM.origin.col, hRAM.origin.row,	\
+	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,	\
 			hRAM.length, hRAM.attr, hRAM.code);
 	if (Shm->Uncore.CtrlCount > 0) {
 		Counter2LCD(layer, card->origin.col, card->origin.row,
@@ -6757,7 +6769,7 @@ void Layout_Card_Load(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hLoad);
 
-	LayerCopyAt(layer, hLoad.origin.col, hLoad.origin.row,	\
+	LayerCopyAt(	layer, hLoad.origin.col, hLoad.origin.row,	\
 			hLoad.length, hLoad.attr, hLoad.code);
 }
 
@@ -6770,7 +6782,7 @@ void Layout_Card_Idle(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hIdle);
 
-	LayerCopyAt(layer, hIdle.origin.col, hIdle.origin.row,	\
+	LayerCopyAt(	layer, hIdle.origin.col, hIdle.origin.row,	\
 			hIdle.length, hIdle.attr, hIdle.code);
 }
 
@@ -6810,7 +6822,7 @@ void Layout_Card_RAM(Layer *layer, Card* card)
 	sprintf(buffer, "%2lu%c", totalRAM, symbol);
 	memcpy(&hMem.code[8], buffer, 3);
 
-	LayerCopyAt(layer, hMem.origin.col, hMem.origin.row,	\
+	LayerCopyAt(	layer, hMem.origin.col, hMem.origin.row,	\
 			hMem.length, hMem.attr, hMem.code);
     } else
 	card->data.dword.hi = RENDER_KO;
@@ -6826,7 +6838,7 @@ void Layout_Card_Task(Layer *layer, Card* card)
 			hSystem);
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-		LayerCopyAt(layer, hSystem.origin.col, hSystem.origin.row, \
+		LayerCopyAt(	layer, hSystem.origin.col, hSystem.origin.row,\
 				hSystem.length, hSystem.attr, hSystem.code);
 	else
 		card->data.dword.hi = RENDER_KO;
@@ -7133,9 +7145,7 @@ void AllocDashboard(void)
 		StoreCard(card, .Draw, Draw_Card_Task);
 	}
 }
-
-void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
-{
+/*TODO: LCD test. To be removed.
 	char *mir[] = {
 		" ! \" # $ % & \' () * + , -./",
 		"  0123456789 : ; < = > ?",
@@ -7144,12 +7154,19 @@ void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
 		"` abcdefghijklmno",
 		"  pqrstuvwxyz { | } ~ \x7f"
 	};
+
+void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
+{
 	PrintLCD(layer, 0, 1, strlen(mir[0]), mir[0], _WHITE);
 	PrintLCD(layer, 0, 5, strlen(mir[1]), mir[1], _WHITE);
 	PrintLCD(layer, 0, 9, strlen(mir[2]), mir[2], _WHITE);
 	PrintLCD(layer, 0,13, strlen(mir[3]), mir[3], _WHITE);
 	PrintLCD(layer, 0,17, strlen(mir[4]), mir[4], _WHITE);
 	PrintLCD(layer, 0,21, strlen(mir[5]), mir[5], _WHITE);
+}
+*/
+void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
+{
 }
 
 void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
@@ -7285,9 +7302,9 @@ void Top(char option)
 
 int Help(char *appName)
 {
-	printf(	"CoreFreq."						\
+	printf( "CoreFreq."						\
 		"  Copyright (C) 2015-2018 CYRIL INGENIERIE\n\n");
-	printf(	"usage:\t%s [-option <arguments>]\n"			\
+	printf( "usage:\t%s [-option <arguments>]\n"			\
 		"\t-t\tShow Top (default)\n"				\
 		"\t-d\tShow Dashboard\n"				\
 		"\t-V\tMonitor Power and Voltage\n"			\

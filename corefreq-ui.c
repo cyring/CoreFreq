@@ -506,6 +506,10 @@ const char LCD[0x6][0x10][3][3] = {
 	}
 };
 
+char hSpace[]	= HSPACE;
+char hBar[]	= HBAR;
+char hLine[]	= HLINE;
+
 Layer	*sLayer = NULL,
 	*dLayer = NULL,
 	*wLayer = NULL,
@@ -778,10 +782,6 @@ void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
 
 void ForEachCellPrint(Window *win, WinList *list)
 {
-	char hLine[] =	"--------""--------""--------""--------""--------" \
-			"--------""--------""--------""--------""--------" \
-			"--------""--------""--------""--------""--------" \
-			"--------""----";
 	CUINT col, row;
 	ATTRIBUTE border = win->hook.color[(GetFocus(list) == win)].border;
 
