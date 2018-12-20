@@ -6063,8 +6063,6 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	switch (Shm->Proc.voltageFormula) {
 	case VOLTAGE_FORMULA_INTEL:
 	case VOLTAGE_FORMULA_INTEL_CORE2:
-	case VOLTAGE_FORMULA_INTEL_SNB:
-	case VOLTAGE_FORMULA_INTEL_SKL_X:
 	case VOLTAGE_FORMULA_AMD:
 	case VOLTAGE_FORMULA_AMD_0Fh:
 		len = sprintf(buffer,	"%7.2f "	\
@@ -6073,6 +6071,8 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 					CFlop->Voltage.VID,
 					CFlop->Voltage.Vcore);
 		break;
+	case VOLTAGE_FORMULA_INTEL_SNB:
+	case VOLTAGE_FORMULA_INTEL_SKL_X:
 	case VOLTAGE_FORMULA_AMD_17h:
 	    if (cpu == Shm->Proc.Service.Core)
 		len = sprintf(buffer,	"%7.2f "	\
