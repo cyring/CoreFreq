@@ -6029,7 +6029,11 @@ CUINT Draw_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	len = sprintf(buffer, "%7.2f", CFlop->Relative.Freq);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
-
+	/* Clear the trailing garbage left by last drawing.		*/
+	if ((len = draw.Size.width - cTask[cpu].col) > 0) {
+		LayerFillAt(	layer, cTask[cpu].col, row,
+				len, hSpace, MakeAttr(BLACK, 0, BLACK, 0));
+	}
 	cTask[cpu].col = LOAD_LEAD + 8;
 
 	return(0);
@@ -6225,22 +6229,23 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-    row += 2 + draw.Area.MaxRows;
-    if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+  row += 2 + draw.Area.MaxRows;
+  if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 	size_t len = 0;
 	unsigned int idx;
 	char stateStr[16];
 	ATTRIBUTE *stateAttr;
 
-     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
+    for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
+    {
       if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
 	&& (Shm->SysGate.taskList[idx].wake_cpu >= draw.cpuScroll)
 	&& (Shm->SysGate.taskList[idx].wake_cpu < (	draw.cpuScroll
 							+ draw.Area.MaxRows) ))
-	{
+      {
 	unsigned int ldx = 2;
-	CSINT dif	= draw.Size.width
-			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
+	CSINT dif = draw.Size.width
+		  - cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
 
 	if (dif > 0)
 	{
@@ -6252,7 +6257,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	  if (!draw.Flag.taskVal) {
 		len = sprintf(buffer, "%s",
 				Shm->SysGate.taskList[idx].comm);
-	    } else {
+	  } else {
 	      switch (Shm->SysGate.sortByField) {
 	      case F_STATE:
 		len = sprintf(buffer, "%s(%s)",
@@ -6283,26 +6288,26 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 				Shm->SysGate.taskList[idx].pid);
 		break;
 	      }
-	    }
-	    if (dif >= len) {
+	  }
+	  if (dif >= len) {
 		LayerCopyAt(layer,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
 			len, stateAttr, buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
-	    } else if (dif > 0) {
+	  } else {
 		LayerCopyAt(layer,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
 			dif, stateAttr, buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
-	    }
-	    while ((dif = draw.Size.width
+	  }
+	  while ((dif = draw.Size.width
 			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col) > 0
 		&& ldx--)
-	    {
+	  {
 		LayerAt(layer, attr,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = \
@@ -6312,12 +6317,13 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = 0x20;
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col++;
-	    }
+	  }
 	}
       }
     }
-    row += 1;
-    return(row);
+  }
+  row += 1;
+  return(row);
 }
 
 CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
