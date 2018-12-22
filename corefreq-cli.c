@@ -748,9 +748,9 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
 		" AVX-512      [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX_512 ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.AVX_512F ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
 			|  Shm->Proc.Features.ExtFeature.EBX.BMI2)
@@ -1338,17 +1338,20 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"MWAIT States:%.*sC0      C1      C2      C3      C4",
+		"MWAIT States:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
 		06, hSpace);
 
-	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1:0,
-		"%.*s%2d      %2d      %2d      %2d      %2d",
+	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
+		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
 		21, hSpace,
 		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
 		Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT,
 		Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT,
 		Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT);
+		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C5_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C6_MWAIT,
+		Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
 
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
