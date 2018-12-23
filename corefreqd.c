@@ -410,6 +410,8 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.CPU.Count	= Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
 	Shm->Proc.Service.Proc	= Proc->Service.Proc;
+	/* Hypervisor identifier.					*/
+	Shm->Proc.HypervisorID = Proc->HypervisorID;
 	/* Copy the Architecture name.					*/
 	len = KMIN(strlen(Proc->Architecture), CODENAME_LEN - 1);
 	memcpy(Shm->Proc.Architecture, Proc->Architecture, len);

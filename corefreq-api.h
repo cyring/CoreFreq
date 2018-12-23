@@ -21,8 +21,8 @@ typedef struct {
 		struct
 		{
 			unsigned int
-			SHRbits	:  5-0,
-			Unused1	: 32-5;
+			SHRbits :  5-0,
+			Unused1 : 32-5;
 		};
 		unsigned int Register;
 	} AX;
@@ -30,8 +30,8 @@ typedef struct {
 		struct
 		{
 			unsigned int
-			Threads	: 16-0,
-			Unused1	: 32-16;
+			Threads : 16-0,
+			Unused1 : 32-16;
 		};
 		unsigned int Register;
 	} BX;
@@ -422,7 +422,7 @@ typedef struct
 			struct {
 	/* 4000h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
 	/* 4004h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
-	/* 4298h */		SNB_IMC_TC_RFTP		RFTP;	/* 32 bits    */
+	/* 4298h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 			} SNB;
 			struct {
 	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits    */
@@ -456,11 +456,11 @@ typedef struct
 	/* 200h */	P945_MC_DCC		DCC;		/* 32 bits    */
 		} P955;
 		struct {
-	/* 260h */	P965_MC_CKECTRL		CKE0,		/* 32 bits    */
+	/* 260h */	P965_MC_CKECTRL 	CKE0,		/* 32 bits    */
 						CKE1;		/* 32 bits    */
 		} P965;
 		struct {
-	/* 1200h */	G965_MC_DRB_0_1		DRB0,	/* 32 bits @ channel0 */
+	/* 1200h */	G965_MC_DRB_0_1 	DRB0,	/* 32 bits @ channel0 */
 	/* 1300h */				DRB1;	/* 32 bits @ channel1 */
 		} G965;
 		struct {
@@ -468,7 +468,7 @@ typedef struct
 						CKE1;		/* 32 bits    */
 		} P35;
 		struct {
-	/* 3:0-48h */	NHM_IMC_CONTROL		CONTROL;	/* 32 bits    */
+	/* 3:0-48h */	NHM_IMC_CONTROL 	CONTROL;	/* 32 bits    */
 	/* 3:0 4Ch */	NHM_IMC_STATUS		STATUS;		/* 32 bits    */
 		} NHM;
 		struct {
@@ -489,7 +489,7 @@ typedef struct
 
 	union {
 		struct {
-	/* 64h */	NHM_IMC_MAX_DOD		DOD;		/* 32 bits    */
+	/* 64h */	NHM_IMC_MAX_DOD 	DOD;		/* 32 bits    */
 		} NHM;
 		struct {
 	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits    */
@@ -657,7 +657,7 @@ typedef struct
 			size_t	Size;
 			int	Order;
 		} ReqMem;
-		SYSGATE		*Gate;
+		SYSGATE 	*Gate;
 	} OS;
 
 	struct {
@@ -668,5 +668,6 @@ typedef struct
 				nmi;
 	} Registration;
 
+	enum HYPERVISOR 	HypervisorID;
 	char			Architecture[CODENAME_LEN];
 } PROC;

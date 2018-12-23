@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.39.4"
+#define COREFREQ_VERSION	"1.39.5"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -102,6 +102,14 @@ enum CHIPSET {
 	CHIPSETS
 };
 
+enum HYPERVISOR {
+	HYPERV_BARE,
+	HYPERV_XEN,
+	HYPERV_KVM,
+	HYPERV_VBOX,
+	HYPERVISORS
+};
+
 #define CODENAME_LEN	32
 
 enum SYS_REG {
@@ -128,18 +136,18 @@ enum SYS_REG {
 	CR0_CD		= 30,
 	CR0_PG		= 31,
 
-	CR3_PWT		= 3,
-	CR3_PCD		= 4,
+	CR3_PWT 	= 3,
+	CR3_PCD 	= 4,
 
-	CR4_VME		= 0,
-	CR4_PVI		= 1,
-	CR4_TSD		= 2,
+	CR4_VME 	= 0,
+	CR4_PVI 	= 1,
+	CR4_TSD 	= 2,
 	CR4_DE		= 3,
-	CR4_PSE		= 4,
-	CR4_PAE		= 5,
-	CR4_MCE		= 6,
-	CR4_PGE		= 7,
-	CR4_PCE		= 8,
+	CR4_PSE 	= 4,
+	CR4_PAE 	= 5,
+	CR4_MCE 	= 6,
+	CR4_PGE 	= 7,
+	CR4_PCE 	= 8,
 	CR4_OSFXSR	= 9,
 	CR4_OSXMMEXCPT	= 10,
 	CR4_UMIP	= 11,

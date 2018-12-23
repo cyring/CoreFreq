@@ -8154,6 +8154,8 @@ static int __init CoreFreqK_init(void)
 
 			if (Proc->Features.Std.ECX.Hyperv == 0)
 				Proc->Features.Std.ECX.Hyperv = 1;
+
+			Proc->HypervisorID = HYPERV_XEN;
 		    }
 		#endif
 		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))

@@ -247,6 +247,7 @@ typedef struct
 		} Unit;
 	} Power;
 
+	enum HYPERVISOR 		HypervisorID;
 	char				Brand[64],
 					Architecture[CODENAME_LEN];
 } PROC_STRUCT;
