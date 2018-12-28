@@ -223,7 +223,7 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 
 void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	Slice_Atomic(Shm, cpu, 0x9fffffff);
+	Slice_Atomic(Shm, cpu, 0x17fffffff);
 }
 
 RING_SLICE order_list[] = {
