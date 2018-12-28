@@ -251,6 +251,15 @@ typedef union {
 
 typedef unsigned char	ASCII;
 
+enum {
+	LOC_EN,
+	LOC_FR,
+	LOCALES
+};
+
+#define LOC()								\
+	(LOC_EN)
+
 #define LayerDeclare(_rsc, _len, _col, _row, _var)			\
 	struct {							\
 		Coordinate	origin;					\

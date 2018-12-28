@@ -263,12 +263,17 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 
 #define LAYOUT_HEADER_PROC_ATTR 					\
 {									\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HRK,HDK 		\
+	HRK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK 		\
 }
 
-#define LAYOUT_HEADER_PROC_CODE 					\
+#define LAYOUT_HEADER_PROC_CODE_EN					\
 {									\
 	' ','P','r','o','c','e','s','s','o','r',' ','[' 		\
+}
+
+#define LAYOUT_HEADER_PROC_CODE_FR					\
+{									\
+	' ','P','r','o','c','e','s','s','e','u','r','[' 		\
 }
 
 #define LAYOUT_HEADER_CPU_ATTR						\
@@ -311,9 +316,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,HYK,LWK,LWK,LWK \
 }
 
-#define LAYOUT_HEADER_BCLK_CODE 					\
+#define LAYOUT_HEADER_BCLK_CODE_EN					\
 {									\
 	' ','B','a','s','e',' ','C','l','o','c','k',' ',		\
+	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
+}
+
+#define LAYOUT_HEADER_BCLK_CODE_FR					\
+{									\
+	' ','H','o','r','l','o','g','e',' ',' ',' ',' ',		\
 	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
 }
 
@@ -535,9 +546,33 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define LAYOUT_RULLER_FREQUENCY_AVG_CODE				\
+#define LAYOUT_RULLER_FREQUENCY_AVG_CODE_EN				\
 {									\
 	'-','-','-','-','-','-',' ','%',' ','A','v','e','r','a','g','e',\
+	's',' ','[',' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
+	' ',' ',0x0,' ',']','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
+}
+
+#define LAYOUT_RULLER_FREQUENCY_AVG_CODE_FR				\
+{									\
+	'-','-','-','-','-','-',' ','%',' ','M','o','y','e','n','n','e',\
 	's',' ','[',' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
 	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
 	' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,\
@@ -663,8 +698,16 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	"------------------------------------------------------------"	\
 	"--------------------"
 
-#define LAYOUT_RULLER_PACKAGE_CODE					\
+#define LAYOUT_RULLER_PACKAGE_CODE_EN					\
 	"------------ Cycles ---- State -------------------- TSC Rati"	\
+	"o ----------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define LAYOUT_RULLER_PACKAGE_CODE_FR					\
+	"------------ Cycles ----  Etat -------------------- TSC Rati"	\
 	"o ----------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -791,8 +834,16 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define LAYOUT_RULLER_TASKS_CODE					\
+#define LAYOUT_RULLER_TASKS_CODE_EN					\
 	"--- Freq(MHz) --- Tasks                    -----------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define LAYOUT_RULLER_TASKS_CODE_FR					\
+	"--- Freq(MHz) ---Taches                    -----------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -805,10 +856,16 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,LCK,LCK,HDK,LWK, LWK,LWK,LWK			\
 }
 
-#define LAYOUT_TASKS_STATE_SORTED_CODE					\
+#define LAYOUT_TASKS_STATE_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
 	' ','S','t','a','t','e',')',' ', '-','-','-'			\
+}
+
+#define LAYOUT_TASKS_STATE_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
+	' ','E','t','a','t',' ',')',' ', '-','-','-'			\
 }
 
 #define LAYOUT_TASKS_RUNTIME_SORTED_ATTR				\
@@ -817,9 +874,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
 }
 
-#define LAYOUT_TASKS_RUNTIME_SORTED_CODE				\
+#define LAYOUT_TASKS_RUNTIME_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','R','u','n','T','i','m','e', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_RUNTIME_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
 	' ','R','u','n','T','i','m','e', ')',' ','-'			\
 }
 
@@ -829,9 +892,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, LCK,HDK,LWK			\
 }
 
-#define LAYOUT_TASKS_USRTIME_SORTED_CODE				\
+#define LAYOUT_TASKS_USRTIME_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','U','s','e','r','T','i','m', 'e',')',' '			\
+}
+
+#define LAYOUT_TASKS_USRTIME_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
 	' ','U','s','e','r','T','i','m', 'e',')',' '			\
 }
 
@@ -841,9 +910,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
 }
 
-#define LAYOUT_TASKS_SYSTIME_SORTED_CODE				\
+#define LAYOUT_TASKS_SYSTIME_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','S','y','s','T','i','m','e', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_SYSTIME_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
 	' ','S','y','s','T','i','m','e', ')',' ','-'			\
 }
 
@@ -853,9 +928,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,HDK,LWK,LWK,LWK, LWK,LWK,LWK			\
 }
 
-#define LAYOUT_TASKS_PROCESS_SORTED_CODE				\
+#define LAYOUT_TASKS_PROCESS_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','P','I','D',')',' ','-','-', '-','-','-'			\
+}
+
+#define LAYOUT_TASKS_PROCESS_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
 	' ','P','I','D',')',' ','-','-', '-','-','-'			\
 }
 
@@ -865,9 +946,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK, HDK,LWK,LWK			\
 }
 
-#define LAYOUT_TASKS_COMMAND_SORTED_CODE				\
+#define LAYOUT_TASKS_COMMAND_SORTED_CODE_EN				\
 {									\
 	'(','s','o','r','t','e','d',' ', 'b','y',			\
+	' ','C','o','m','m','a','n','d', ')',' ','-'			\
+}
+
+#define LAYOUT_TASKS_COMMAND_SORTED_CODE_FR				\
+{									\
+	'(','t','r','i','e','r',' ','[', 'b',']',			\
 	' ','C','o','m','m','a','n','d', ')',' ','-'			\
 }
 
@@ -876,9 +963,14 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK	\
 }
 
-#define LAYOUT_TASKS_REVERSE_SORT_OFF_CODE				\
+#define LAYOUT_TASKS_REVERSE_SORT_OFF_CODE_EN				\
 {									\
 	' ', 'R','e','v','e','r','s','e',' ','[','O','F','F',']',' '	\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_OFF_CODE_FR				\
+{									\
+	' ', 'I','n','v','e','r','s','e',' ','[','O','F','F',']',' '	\
 }
 
 #define LAYOUT_TASKS_REVERSE_SORT_ON_ATTR				\
@@ -886,9 +978,14 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LCK,LCK,LCK,HDK,LWK	\
 }
 
-#define LAYOUT_TASKS_REVERSE_SORT_ON_CODE				\
+#define LAYOUT_TASKS_REVERSE_SORT_ON_CODE_EN				\
 {									\
 	' ', 'R','e','v','e','r','s','e',' ','[',' ','O','N',']',' '	\
+}
+
+#define LAYOUT_TASKS_REVERSE_SORT_ON_CODE_FR				\
+{									\
+	' ', 'I','n','v','e','r','s','e',' ','[',' ','O','N',']',' '	\
 }
 
 #define LAYOUT_TASKS_VALUE_SWITCH_ATTR					\
@@ -896,9 +993,14 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,_HCK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK		\
 }
 
-#define LAYOUT_TASKS_VALUE_SWITCH_CODE					\
+#define LAYOUT_TASKS_VALUE_SWITCH_CODE_EN				\
 {									\
 	' ', 'V','a','l','u','e',' ','[',' ',' ',' ',']',' '		\
+}
+
+#define LAYOUT_TASKS_VALUE_SWITCH_CODE_FR				\
+{									\
+	' ', 'V','a','l','e','u','r','[',' ',' ',' ',']',' '		\
 }
 
 #define LAYOUT_TASKS_VALUE_OFF_ATTR					\
@@ -927,9 +1029,15 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LWK,LWK,LWK,HDK,LWK						\
 }
 
-#define LAYOUT_TASKS_TRACKING_CODE					\
+#define LAYOUT_TASKS_TRACKING_CODE_EN					\
 {									\
 	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
+	'O','F','F',' ',']',' '						\
+}
+
+#define LAYOUT_TASKS_TRACKING_CODE_FR					\
+{									\
+	'S','u','i','v','i',' ','[', 'n',']',' ','P','I','D',' ','[',' ',\
 	'O','F','F',' ',']',' '						\
 }
 
@@ -957,9 +1065,17 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define LAYOUT_RULLER_VOLTAGE_CODE					\
+#define LAYOUT_RULLER_VOLTAGE_CODE_EN					\
 	"--- Freq(MHz) - VID - Vcore ------------------ Energy(J) ---"	\
 	"-- Power(W) ------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define LAYOUT_RULLER_VOLTAGE_CODE_FR					\
+	"--- Freq(MHz) - VID - Vcore ----------------- Energie(J) - P"	\
+	"uissance(W) ------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -1062,9 +1178,16 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	HWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,HDK 	\
 }
 
-#define LAYOUT_FOOTER_SYSTEM_CODE					\
+#define LAYOUT_FOOTER_SYSTEM_CODE_EN					\
 {									\
 	'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']',	\
+	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
+	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
+}
+
+#define LAYOUT_FOOTER_SYSTEM_CODE_FR					\
+{									\
+	'T','a','c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
 	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
 }
@@ -1131,22 +1254,32 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 
 #define LAYOUT_CARD_LOAD_ATTR						\
 {									\
-	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK 		\
+	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK 		\
 }
 
-#define LAYOUT_CARD_LOAD_CODE						\
+#define LAYOUT_CARD_LOAD_CODE_EN					\
 {									\
 	'[',' ',' ','%','L','O','A','D',' ',' ',' ',']' 		\
 }
 
-#define LAYOUT_CARD_IDLE_ATTR						\
+#define LAYOUT_CARD_LOAD_CODE_FR					\
 {									\
-	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK 		\
+	'[',' ',' ','%','A','C','T','I','F',' ',' ',']' 		\
 }
 
-#define LAYOUT_CARD_IDLE_CODE						\
+#define LAYOUT_CARD_IDLE_ATTR						\
+{									\
+	HDK,HDK,HDK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK 		\
+}
+
+#define LAYOUT_CARD_IDLE_CODE_EN					\
 {									\
 	'[',' ',' ','%','I','D','L','E',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_IDLE_CODE_FR					\
+{									\
+	'[',' ',' ','%','R','E','P','O','S',' ',' ',']' 		\
 }
 
 #define LAYOUT_CARD_RAM_ATTR						\
@@ -1164,9 +1297,14 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 	HDK,LWK,LWK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HDK 		\
 }
 
-#define LAYOUT_CARD_TASK_CODE						\
+#define LAYOUT_CARD_TASK_CODE_EN					\
 {									\
 	'[','T','a','s','k','s',' ',' ',' ',' ',' ',']' 		\
+}
+
+#define LAYOUT_CARD_TASK_CODE_FR					\
+{									\
+	'[','T','a','c','h','e',' ',' ',' ',' ',' ',']' 		\
 }
 
 #define WIN_COND0_SYSINFO_CPUID_ATTR					\
