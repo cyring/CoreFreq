@@ -517,6 +517,8 @@ Layer	*sLayer = NULL,
 
 WinList winList = {.head = NULL};
 
+enum LOCALES locale = LOC_EN;
+
 char *console = NULL;
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)

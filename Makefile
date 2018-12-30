@@ -89,6 +89,10 @@ corefreq-ui.o: corefreq-ui.c
 corefreq-cli.o: corefreq-cli.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli.c -o corefreq-cli.o
 
+corefreq-cli-rsc.o: corefreq-cli-rsc.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
+		-o corefreq-cli-rsc.o
+
 corefreq-cli-json.o: corefreq-cli-json.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-json.c \
 		-o corefreq-cli-json.o
@@ -97,10 +101,10 @@ corefreq-cli-extra.o: corefreq-cli-extra.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-extra.c \
 		-o corefreq-cli-extra.o
 
-corefreq-cli: corefreq-cli.o corefreq-ui.o \
+corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		corefreq-cli-json.o corefreq-cli-extra.o
 	$(CC) $(OPTIM_FLG) $(WARNING) \
-		corefreq-cli.c corefreq-ui.c \
+		corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		-o corefreq-cli -lm -lrt
 

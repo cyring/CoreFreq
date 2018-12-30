@@ -24,6 +24,7 @@
 #include "corefreq.h"
 #include "corefreq-ui.h"
 #include "corefreq-cli.h"
+#include "corefreq-cli-rsc.h"
 #include "corefreq-cli-json.h"
 
 SHM_STRUCT *Shm = NULL;
@@ -31,573 +32,6 @@ SHM_STRUCT *Shm = NULL;
 static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
-
-enum {
-	RSC_LAYOUT_HEADER_PROC,
-	RSC_LAYOUT_HEADER_CPU,
-	RSC_LAYOUT_HEADER_ARCH,
-	RSC_LAYOUT_HEADER_CACHE_L1,
-	RSC_LAYOUT_HEADER_BCLK,
-	RSC_LAYOUT_HEADER_CACHES,
-	RSC_LAYOUT_RULLER_LOAD,
-	RSC_LAYOUT_MONITOR_FREQUENCY,
-	RSC_LAYOUT_MONITOR_INST,
-	RSC_LAYOUT_MONITOR_COMMON,
-	RSC_LAYOUT_MONITOR_TASKS,
-	RSC_LAYOUT_RULLER_FREQUENCY,
-	RSC_LAYOUT_RULLER_FREQUENCY_AVG,
-	RSC_LAYOUT_RULLER_FREQUENCY_PKG,
-	RSC_LAYOUT_RULLER_INST,
-	RSC_LAYOUT_RULLER_CYCLES,
-	RSC_LAYOUT_RULLER_CSTATES,
-	RSC_LAYOUT_RULLER_INTERRUPTS,
-	RSC_LAYOUT_RULLER_PACKAGE,
-	RSC_LAYOUT_PACKAGE_UNCORE,
-	RSC_LAYOUT_RULLER_TASKS,
-	RSC_LAYOUT_TASKS_TRACKING,
-	RSC_LAYOUT_TASKS_STATE_SORTED,
-	RSC_LAYOUT_TASKS_RUNTIME_SORTED,
-	RSC_LAYOUT_TASKS_USRTIME_SORTED,
-	RSC_LAYOUT_TASKS_SYSTIME_SORTED,
-	RSC_LAYOUT_TASKS_PROCESS_SORTED,
-	RSC_LAYOUT_TASKS_COMMAND_SORTED,
-	RSC_LAYOUT_TASKS_VALUE_SWITCH,
-	RSC_LAYOUT_RULLER_VOLTAGE,
-	RSC_LAYOUT_POWER_MONITOR,
-	RSC_LAYOUT_RULLER_SLICE,
-	RSC_LAYOUT_FOOTER_TECH_X86,
-	RSC_LAYOUT_FOOTER_TECH_INTEL,
-	RSC_LAYOUT_FOOTER_TECH_AMD,
-	RSC_LAYOUT_FOOTER_SYSTEM,
-	RSC_LAYOUT_CARD_CORE_ONLINE,
-	RSC_LAYOUT_CARD_CORE_OFFLINE,
-	RSC_LAYOUT_CARD_CLK,
-	RSC_LAYOUT_CARD_UNCORE,
-	RSC_LAYOUT_CARD_BUS,
-	RSC_LAYOUT_CARD_MC,
-	RSC_LAYOUT_CARD_LOAD,
-	RSC_LAYOUT_CARD_IDLE,
-	RSC_LAYOUT_CARD_RAM,
-	RSC_LAYOUT_CARD_TASK
-};
-
-ATTRIBUTE Layout_Header_Proc_Attr[] = LAYOUT_HEADER_PROC_ATTR;
-ASCII	Layout_Header_Proc_Code_En[] = LAYOUT_HEADER_PROC_CODE_EN,
-	Layout_Header_Proc_Code_Fr[] = LAYOUT_HEADER_PROC_CODE_FR;
-
-ATTRIBUTE Layout_Header_CPU_Attr[] = LAYOUT_HEADER_CPU_ATTR;
-ASCII	Layout_Header_CPU_Code_En[] = LAYOUT_HEADER_CPU_CODE;
-#define Layout_Header_CPU_Code_Fr Layout_Header_CPU_Code_En
-
-ATTRIBUTE Layout_Header_Arch_Attr[] = LAYOUT_HEADER_ARCH_ATTR;
-ASCII	Layout_Header_Arch_Code_En[] = LAYOUT_HEADER_ARCH_CODE;
-#define Layout_Header_Arch_Code_Fr Layout_Header_Arch_Code_En
-
-ATTRIBUTE Layout_Header_Cache_L1_Attr[] = LAYOUT_HEADER_CACHE_L1_ATTR;
-ASCII	Layout_Header_Cache_L1_Code_En[] = LAYOUT_HEADER_CACHE_L1_CODE;
-#define Layout_Header_Cache_L1_Code_Fr Layout_Header_Cache_L1_Code_En
-
-ATTRIBUTE Layout_Header_BClk_Attr[] = LAYOUT_HEADER_BCLK_ATTR;
-ASCII	Layout_Header_BClk_Code_En[] = LAYOUT_HEADER_BCLK_CODE_EN,
-	Layout_Header_BClk_Code_Fr[] = LAYOUT_HEADER_BCLK_CODE_FR;
-
-ATTRIBUTE Layout_Header_Caches_Attr[] = LAYOUT_HEADER_CACHES_ATTR;
-ASCII	Layout_Header_Caches_Code_En[] = LAYOUT_HEADER_CACHES_CODE;
-#define Layout_Header_Caches_Code_Fr Layout_Header_Caches_Code_En
-
-ATTRIBUTE Layout_Ruller_Load_Attr[] = LAYOUT_RULLER_LOAD_ATTR;
-ASCII	Layout_Ruller_Load_Code_En[] = LAYOUT_RULLER_LOAD_CODE;
-#define Layout_Ruller_Load_Code_Fr Layout_Ruller_Load_Code_En
-
-ATTRIBUTE Layout_Monitor_Frequency_Attr[] = LAYOUT_MONITOR_FREQUENCY_ATTR;
-ASCII	Layout_Monitor_Frequency_Code_En[] = LAYOUT_MONITOR_FREQUENCY_CODE;
-#define Layout_Monitor_Frequency_Code_Fr Layout_Monitor_Frequency_Code_En
-
-ATTRIBUTE Layout_Monitor_Inst_Attr[] = LAYOUT_MONITOR_INST_ATTR;
-ASCII	Layout_Monitor_Inst_Code_En[] = LAYOUT_MONITOR_INST_CODE;
-#define Layout_Monitor_Inst_Code_Fr Layout_Monitor_Inst_Code_En
-
-ATTRIBUTE Layout_Monitor_Common_Attr[] = LAYOUT_MONITOR_COMMON_ATTR;
-ASCII	Layout_Monitor_Common_Code_En[] = LAYOUT_MONITOR_COMMON_CODE;
-#define Layout_Monitor_Common_Code_Fr Layout_Monitor_Common_Code_En
-
-ATTRIBUTE Layout_Monitor_Tasks_Attr[] = LAYOUT_MONITOR_TASKS_ATTR;
-ASCII	Layout_Monitor_Tasks_Code_En[] = LAYOUT_MONITOR_TASKS_CODE;
-#define Layout_Monitor_Tasks_Code_Fr Layout_Monitor_Tasks_Code_En
-
-ATTRIBUTE Layout_Ruller_Frequency_Attr[] = LAYOUT_RULLER_FREQUENCY_ATTR;
-ASCII	Layout_Ruller_Frequency_Code_En[] = LAYOUT_RULLER_FREQUENCY_CODE;
-#define Layout_Ruller_Frequency_Code_Fr Layout_Ruller_Frequency_Code_En
-
-ATTRIBUTE Layout_Ruller_Freq_Avg_Attr[] = LAYOUT_RULLER_FREQUENCY_AVG_ATTR;
-ASCII	Layout_Ruller_Freq_Avg_Code_En[] = LAYOUT_RULLER_FREQUENCY_AVG_CODE_EN,
-	Layout_Ruller_Freq_Avg_Code_Fr[] = LAYOUT_RULLER_FREQUENCY_AVG_CODE_FR;
-
-ATTRIBUTE Layout_Ruller_Freq_Pkg_Attr[] = LAYOUT_RULLER_FREQUENCY_PKG_ATTR;
-ASCII	Layout_Ruller_Freq_Pkg_Code_En[] = LAYOUT_RULLER_FREQUENCY_PKG_CODE;
-#define Layout_Ruller_Freq_Pkg_Code_Fr Layout_Ruller_Freq_Pkg_Code_En
-
-ATTRIBUTE Layout_Ruller_Inst_Attr[] = {LWK};
-ASCII	Layout_Ruller_Inst_Code_En[] = LAYOUT_RULLER_INST_CODE;
-#define Layout_Ruller_Inst_Code_Fr Layout_Ruller_Inst_Code_En
-
-ATTRIBUTE Layout_Ruller_Cycles_Attr[] = {LWK};
-ASCII	Layout_Ruller_Cycles_Code_En[] = LAYOUT_RULLER_CYCLES_CODE;
-#define Layout_Ruller_Cycles_Code_Fr Layout_Ruller_Cycles_Code_En
-
-ATTRIBUTE Layout_Ruller_CStates_Attr[] = {LWK};
-ASCII	Layout_Ruller_CStates_Code_En[] = LAYOUT_RULLER_CSTATES_CODE;
-#define Layout_Ruller_CStates_Code_Fr Layout_Ruller_CStates_Code_En
-
-ATTRIBUTE Layout_Ruller_Interrupts_Attr[] = LAYOUT_RULLER_INTERRUPTS_ATTR;
-ASCII	Layout_Ruller_Interrupts_Code_En[] = LAYOUT_RULLER_INTERRUPTS_CODE;
-#define Layout_Ruller_Interrupts_Code_Fr Layout_Ruller_Interrupts_Code_En
-
-ATTRIBUTE Layout_Ruller_Package_Attr[] = {LWK};
-ASCII	Layout_Ruller_Package_Code_En[] = LAYOUT_RULLER_PACKAGE_CODE_EN,
-	Layout_Ruller_Package_Code_Fr[] = LAYOUT_RULLER_PACKAGE_CODE_FR;
-
-ATTRIBUTE Layout_Package_Uncore_Attr[] = LAYOUT_PACKAGE_UNCORE_ATTR;
-ASCII	Layout_Package_Uncore_Code_En[] = LAYOUT_PACKAGE_UNCORE_CODE;
-#define Layout_Package_Uncore_Code_Fr Layout_Package_Uncore_Code_En
-
-ATTRIBUTE Layout_Ruller_Tasks_Attr[] = LAYOUT_RULLER_TASKS_ATTR;
-ASCII	Layout_Ruller_Tasks_Code_En[] = LAYOUT_RULLER_TASKS_CODE_EN,
-	Layout_Ruller_Tasks_Code_Fr[] = LAYOUT_RULLER_TASKS_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_Tracking_Attr[] = LAYOUT_TASKS_TRACKING_ATTR;
-ASCII	Layout_Tasks_Tracking_Code_En[] = LAYOUT_TASKS_TRACKING_CODE_EN,
-	Layout_Tasks_Tracking_Code_Fr[] = LAYOUT_TASKS_TRACKING_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_State_Sorted_Attr[] = LAYOUT_TASKS_STATE_SORTED_ATTR;
-ASCII   Layout_Tasks_State_Sorted_Code_En[] = LAYOUT_TASKS_STATE_SORTED_CODE_EN,
-	Layout_Tasks_State_Sorted_Code_Fr[] = LAYOUT_TASKS_STATE_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_RunTime_Sorted_Attr[] = LAYOUT_TASKS_RUNTIME_SORTED_ATTR;
-ASCII Layout_Tasks_RunTime_Sorted_Code_En[]=LAYOUT_TASKS_RUNTIME_SORTED_CODE_EN,
-      Layout_Tasks_RunTime_Sorted_Code_Fr[]=LAYOUT_TASKS_RUNTIME_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_UsrTime_Sorted_Attr[] = LAYOUT_TASKS_USRTIME_SORTED_ATTR;
-ASCII Layout_Tasks_UsrTime_Sorted_Code_En[]=LAYOUT_TASKS_USRTIME_SORTED_CODE_EN,
-      Layout_Tasks_UsrTime_Sorted_Code_Fr[]=LAYOUT_TASKS_USRTIME_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_SysTime_Sorted_Attr[] = LAYOUT_TASKS_SYSTIME_SORTED_ATTR;
-ASCII Layout_Tasks_SysTime_Sorted_Code_En[]=LAYOUT_TASKS_SYSTIME_SORTED_CODE_EN,
-      Layout_Tasks_SysTime_Sorted_Code_Fr[]=LAYOUT_TASKS_SYSTIME_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_Process_Sorted_Attr[] = LAYOUT_TASKS_PROCESS_SORTED_ATTR;
-ASCII Layout_Tasks_Process_Sorted_Code_En[]=LAYOUT_TASKS_PROCESS_SORTED_CODE_EN,
-      Layout_Tasks_Process_Sorted_Code_Fr[]=LAYOUT_TASKS_PROCESS_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_Command_Sorted_Attr[] = LAYOUT_TASKS_COMMAND_SORTED_ATTR;
-ASCII Layout_Tasks_Command_Sorted_Code_En[]=LAYOUT_TASKS_COMMAND_SORTED_CODE_EN,
-      Layout_Tasks_Command_Sorted_Code_Fr[]=LAYOUT_TASKS_COMMAND_SORTED_CODE_FR;
-
-ATTRIBUTE Layout_Tasks_Value_Switch_Attr[] = LAYOUT_TASKS_VALUE_SWITCH_ATTR;
-ASCII	Layout_Tasks_Value_Switch_Code_En[] = LAYOUT_TASKS_VALUE_SWITCH_CODE_EN,
-	Layout_Tasks_Value_Switch_Code_Fr[] = LAYOUT_TASKS_VALUE_SWITCH_CODE_FR;
-
-ATTRIBUTE Layout_Ruller_Voltage_Attr[] = LAYOUT_RULLER_VOLTAGE_ATTR;
-ASCII	Layout_Ruller_Voltage_Code_En[] = LAYOUT_RULLER_VOLTAGE_CODE_EN,
-	Layout_Ruller_Voltage_Code_Fr[] = LAYOUT_RULLER_VOLTAGE_CODE_FR;
-
-ATTRIBUTE Layout_Power_Monitor_Attr[] = LAYOUT_POWER_MONITOR_ATTR;
-ASCII	Layout_Power_Monitor_Code_En[] = LAYOUT_POWER_MONITOR_CODE;
-#define Layout_Power_Monitor_Code_Fr Layout_Power_Monitor_Code_En
-
-ATTRIBUTE Layout_Ruller_Slice_Attr[] = LAYOUT_RULLER_SLICE_ATTR;
-ASCII	Layout_Ruller_Slice_Code_En[] = LAYOUT_RULLER_SLICE_CODE;
-#define Layout_Ruller_Slice_Code_Fr Layout_Ruller_Slice_Code_En
-
-ATTRIBUTE Layout_Footer_Tech_x86_Attr[] = LAYOUT_FOOTER_TECH_X86_ATTR;
-ASCII	Layout_Footer_Tech_x86_Code_En[] = LAYOUT_FOOTER_TECH_X86_CODE;
-#define Layout_Footer_Tech_x86_Code_Fr Layout_Footer_Tech_x86_Code_En
-
-ATTRIBUTE Layout_Footer_Tech_Intel_Attr[] = LAYOUT_FOOTER_TECH_INTEL_ATTR;
-ASCII	Layout_Footer_Tech_Intel_Code_En[] = LAYOUT_FOOTER_TECH_INTEL_CODE;
-#define Layout_Footer_Tech_Intel_Code_Fr Layout_Footer_Tech_Intel_Code_En
-
-ATTRIBUTE Layout_Footer_Tech_AMD_Attr[] = LAYOUT_FOOTER_TECH_AMD_ATTR;
-ASCII	Layout_Footer_Tech_AMD_Code_En[] = LAYOUT_FOOTER_TECH_AMD_CODE;
-#define Layout_Footer_Tech_AMD_Code_Fr Layout_Footer_Tech_AMD_Code_En
-
-ATTRIBUTE Layout_Footer_System_Attr[] = LAYOUT_FOOTER_SYSTEM_ATTR;
-ASCII	Layout_Footer_System_Code_En[] = LAYOUT_FOOTER_SYSTEM_CODE_EN,
-	Layout_Footer_System_Code_Fr[] = LAYOUT_FOOTER_SYSTEM_CODE_FR;
-
-ATTRIBUTE Layout_Card_Core_Online_Attr[] = LAYOUT_CARD_CORE_ONLINE_ATTR;
-ASCII	Layout_Card_Core_Online_Code_En[] = LAYOUT_CARD_CORE_ONLINE_CODE;
-#define Layout_Card_Core_Online_Code_Fr Layout_Card_Core_Online_Code_En
-
-ATTRIBUTE Layout_Card_Core_Offline_Attr[] = LAYOUT_CARD_CORE_OFFLINE_ATTR;
-ASCII	Layout_Card_Core_Offline_Code_En[] = LAYOUT_CARD_CORE_OFFLINE_CODE;
-#define Layout_Card_Core_Offline_Code_Fr Layout_Card_Core_Offline_Code_En
-
-ATTRIBUTE Layout_Card_CLK_Attr[] = LAYOUT_CARD_CLK_ATTR;
-ASCII	Layout_Card_CLK_Code_En[] = LAYOUT_CARD_CLK_CODE;
-#define Layout_Card_CLK_Code_Fr Layout_Card_CLK_Code_En
-
-ATTRIBUTE Layout_Card_Uncore_Attr[] = LAYOUT_CARD_UNCORE_ATTR;
-ASCII	Layout_Card_Uncore_Code_En[] = LAYOUT_CARD_UNCORE_CODE;
-#define Layout_Card_Uncore_Code_Fr Layout_Card_Uncore_Code_En
-
-ATTRIBUTE Layout_Card_Bus_Attr[] = LAYOUT_CARD_BUS_ATTR;
-ASCII	Layout_Card_Bus_Code_En[] = LAYOUT_CARD_BUS_CODE;
-#define Layout_Card_Bus_Code_Fr Layout_Card_Bus_Code_En
-
-ATTRIBUTE Layout_Card_MC_Attr[] = LAYOUT_CARD_MC_ATTR;
-ASCII   Layout_Card_MC_Code_En[] = LAYOUT_CARD_MC_CODE;
-#define Layout_Card_MC_Code_Fr Layout_Card_MC_Code_En
-
-ATTRIBUTE Layout_Card_Load_Attr[] = LAYOUT_CARD_LOAD_ATTR;
-ASCII	Layout_Card_Load_Code_En[] = LAYOUT_CARD_LOAD_CODE_EN,
-	Layout_Card_Load_Code_Fr[] = LAYOUT_CARD_LOAD_CODE_FR;
-
-ATTRIBUTE Layout_Card_Idle_Attr[] = LAYOUT_CARD_IDLE_ATTR;
-ASCII	Layout_Card_Idle_Code_En[] = LAYOUT_CARD_IDLE_CODE_EN,
-	Layout_Card_Idle_Code_Fr[] = LAYOUT_CARD_IDLE_CODE_FR;
-
-ATTRIBUTE Layout_Card_RAM_Attr[] = LAYOUT_CARD_RAM_ATTR;
-ASCII   Layout_Card_RAM_Code_En[] = LAYOUT_CARD_RAM_CODE;
-#define Layout_Card_RAM_Code_Fr Layout_Card_RAM_Code_En
-
-ATTRIBUTE Layout_Card_Task_Attr[] = LAYOUT_CARD_TASK_ATTR;
-ASCII	Layout_Card_Task_Code_En[] = LAYOUT_CARD_TASK_CODE_EN,
-	Layout_Card_Task_Code_Fr[] = LAYOUT_CARD_TASK_CODE_FR;
-
-struct {
-	ATTRIBUTE *Attr;
-	ASCII	  *Code[2];
-} Resource[] = {
-	[RSC_LAYOUT_HEADER_PROC] = {
-		.Attr = Layout_Header_Proc_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_Proc_Code_En,
-			[LOC_FR] = Layout_Header_Proc_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_HEADER_CPU] = {
-		.Attr = Layout_Header_CPU_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_CPU_Code_En,
-			[LOC_FR] = Layout_Header_CPU_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_HEADER_ARCH] = {
-		.Attr = Layout_Header_Arch_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_Arch_Code_En,
-			[LOC_FR] = Layout_Header_Arch_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_HEADER_CACHE_L1] = {
-		.Attr = Layout_Header_Cache_L1_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_Cache_L1_Code_En,
-			[LOC_FR] = Layout_Header_Cache_L1_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_HEADER_BCLK] = {
-		.Attr = Layout_Header_BClk_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_BClk_Code_En,
-			[LOC_FR] = Layout_Header_BClk_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_HEADER_CACHES] = {
-		.Attr = Layout_Header_Caches_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Header_Caches_Code_En,
-			[LOC_FR] = Layout_Header_Caches_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_LOAD] = {
-		.Attr = Layout_Ruller_Load_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Load_Code_En,
-			[LOC_FR] = Layout_Ruller_Load_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_MONITOR_FREQUENCY] = {
-		.Attr = Layout_Monitor_Frequency_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Monitor_Frequency_Code_En,
-			[LOC_FR] = Layout_Monitor_Frequency_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_MONITOR_INST] = {
-		.Attr = Layout_Monitor_Inst_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Monitor_Inst_Code_En,
-			[LOC_FR] = Layout_Monitor_Inst_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_MONITOR_COMMON] = {
-		.Attr = Layout_Monitor_Common_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Monitor_Common_Code_En,
-			[LOC_FR] = Layout_Monitor_Common_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_MONITOR_TASKS] = {
-		.Attr = Layout_Monitor_Tasks_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Monitor_Tasks_Code_En,
-			[LOC_FR] = Layout_Monitor_Tasks_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_FREQUENCY] = {
-		.Attr = Layout_Ruller_Frequency_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Frequency_Code_En,
-			[LOC_FR] = Layout_Ruller_Frequency_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_FREQUENCY_AVG] = {
-		.Attr = Layout_Ruller_Freq_Avg_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Freq_Avg_Code_En,
-			[LOC_FR] = Layout_Ruller_Freq_Avg_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_FREQUENCY_PKG] = {
-		.Attr = Layout_Ruller_Freq_Pkg_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Freq_Pkg_Code_En,
-			[LOC_FR] = Layout_Ruller_Freq_Pkg_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_INST] = {
-		.Attr = Layout_Ruller_Inst_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Inst_Code_En,
-			[LOC_FR] = Layout_Ruller_Inst_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_CYCLES] = {
-		.Attr = Layout_Ruller_Cycles_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Cycles_Code_En,
-			[LOC_FR] = Layout_Ruller_Cycles_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_CSTATES] = {
-		.Attr = Layout_Ruller_CStates_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_CStates_Code_En,
-			[LOC_FR] = Layout_Ruller_CStates_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_INTERRUPTS] = {
-		.Attr = Layout_Ruller_Interrupts_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Interrupts_Code_En,
-			[LOC_FR] = Layout_Ruller_Interrupts_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_PACKAGE] = {
-		.Attr = Layout_Ruller_Package_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Package_Code_En,
-			[LOC_FR] = Layout_Ruller_Package_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_PACKAGE_UNCORE] = {
-		.Attr = Layout_Package_Uncore_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Package_Uncore_Code_En,
-			[LOC_FR] = Layout_Package_Uncore_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_TASKS] = {
-		.Attr = Layout_Ruller_Tasks_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Tasks_Code_En,
-			[LOC_FR] = Layout_Ruller_Tasks_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_TRACKING] = {
-		.Attr = Layout_Tasks_Tracking_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_Tracking_Code_En,
-			[LOC_FR] = Layout_Tasks_Tracking_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_STATE_SORTED] = {
-		.Attr = Layout_Tasks_State_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_State_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_State_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_RUNTIME_SORTED] = {
-		.Attr = Layout_Tasks_RunTime_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_RunTime_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_RunTime_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_USRTIME_SORTED] = {
-		.Attr = Layout_Tasks_UsrTime_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_UsrTime_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_UsrTime_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_SYSTIME_SORTED] = {
-		.Attr = Layout_Tasks_SysTime_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_SysTime_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_SysTime_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_PROCESS_SORTED] = {
-		.Attr = Layout_Tasks_Process_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_Process_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_Process_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_COMMAND_SORTED] = {
-		.Attr = Layout_Tasks_Command_Sorted_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_Command_Sorted_Code_En,
-			[LOC_FR] = Layout_Tasks_Command_Sorted_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_TASKS_VALUE_SWITCH] = {
-		.Attr = Layout_Tasks_Value_Switch_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Tasks_Value_Switch_Code_En,
-			[LOC_FR] = Layout_Tasks_Value_Switch_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_VOLTAGE] = {
-		.Attr = Layout_Ruller_Voltage_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Voltage_Code_En,
-			[LOC_FR] = Layout_Ruller_Voltage_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_POWER_MONITOR] = {
-		.Attr = Layout_Power_Monitor_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Power_Monitor_Code_En,
-			[LOC_FR] = Layout_Power_Monitor_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_RULLER_SLICE] = {
-		.Attr = Layout_Ruller_Slice_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Ruller_Slice_Code_En,
-			[LOC_FR] = Layout_Ruller_Slice_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_FOOTER_TECH_X86] = {
-		.Attr = Layout_Footer_Tech_x86_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Footer_Tech_x86_Code_En,
-			[LOC_FR] = Layout_Footer_Tech_x86_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_FOOTER_TECH_INTEL] = {
-		.Attr = Layout_Footer_Tech_Intel_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Footer_Tech_Intel_Code_En,
-			[LOC_FR] = Layout_Footer_Tech_Intel_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_FOOTER_TECH_AMD] = {
-		.Attr = Layout_Footer_Tech_AMD_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Footer_Tech_AMD_Code_En,
-			[LOC_FR] = Layout_Footer_Tech_AMD_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_FOOTER_SYSTEM] = {
-		.Attr = Layout_Footer_System_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Footer_System_Code_En,
-			[LOC_FR] = Layout_Footer_System_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_CORE_ONLINE] = {
-		.Attr = Layout_Card_Core_Online_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Core_Online_Code_En,
-			[LOC_FR] = Layout_Card_Core_Online_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_CORE_OFFLINE] = {
-		.Attr = Layout_Card_Core_Offline_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Core_Offline_Code_En,
-			[LOC_FR] = Layout_Card_Core_Offline_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_CLK] = {
-		.Attr = Layout_Card_CLK_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_CLK_Code_En,
-			[LOC_FR] = Layout_Card_CLK_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_UNCORE] = {
-		.Attr = Layout_Card_Uncore_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Uncore_Code_En,
-			[LOC_FR] = Layout_Card_Uncore_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_BUS] = {
-		.Attr = Layout_Card_Bus_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Bus_Code_En,
-			[LOC_FR] = Layout_Card_Bus_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_MC] = {
-		.Attr = Layout_Card_MC_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_MC_Code_En,
-			[LOC_FR] = Layout_Card_MC_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_LOAD] = {
-		.Attr = Layout_Card_Load_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Load_Code_En,
-			[LOC_FR] = Layout_Card_Load_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_IDLE] = {
-		.Attr = Layout_Card_Idle_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Idle_Code_En,
-			[LOC_FR] = Layout_Card_Idle_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_RAM] = {
-		.Attr = Layout_Card_RAM_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_RAM_Code_En,
-			[LOC_FR] = Layout_Card_RAM_Code_Fr
-		}
-	},
-	[RSC_LAYOUT_CARD_TASK] = {
-		.Attr = Layout_Card_Task_Attr,
-		.Code = {
-			[LOC_EN] = Layout_Card_Task_Code_En,
-			[LOC_FR] = Layout_Card_Task_Code_Fr
-		}
-	},
-};
-
-#define ATTR() Attr
-
-#define CODE() Code[LOC()]
-
-#define RSC(_ID) (Resource[RSC_##_ID])
 
 #define _LayerDeclare(_ID, _len, _col, _row, _var)			\
 	struct {							\
@@ -659,33 +93,35 @@ void TrapSignal(int operation)
 	}
 }
 
-ATTRIBUTE	runColor[]	= RUN_STATE_COLOR,
-		unintColor[]	= UNINT_STATE_COLOR,
-		zombieColor[]	= ZOMBIE_STATE_COLOR,
-		sleepColor[]	= SLEEP_STATE_COLOR,
-		waitColor[]	= WAIT_STATE_COLOR,
-		otherColor[]	= OTHER_STATE_COLOR,
-		trackerColor[]	= TRACKER_STATE_COLOR;
-
 ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 {
-	ATTRIBUTE *attrib[14] = {
-	/* R */runColor,/* S */sleepColor,/* D */unintColor,/* T */waitColor,
-	/* t */waitColor,/* X */waitColor,/* Z */zombieColor,/* P*/waitColor,
-	/* I */waitColor,/* K */sleepColor,/* W */runColor,/* i */waitColor,
-	/* N */runColor,/* m */otherColor
-	}, *stateAttr = otherColor;
+	ATTRIBUTE *symbAttr[14] = {
+	/* R */ RSC(RUN_STATE_COLOR).ATTR(),
+	/* S */ RSC(SLEEP_STATE_COLOR).ATTR(),
+	/* D */ RSC(UNINT_STATE_COLOR).ATTR(),
+	/* T */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* t */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* X */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* Z */ RSC(ZOMBIE_STATE_COLOR).ATTR(),
+	/* P */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* I */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* K */ RSC(SLEEP_STATE_COLOR).ATTR(),
+	/* W */ RSC(RUN_STATE_COLOR).ATTR(),
+	/* i */ RSC(WAIT_STATE_COLOR).ATTR(),
+	/* N */ RSC(RUN_STATE_COLOR).ATTR(),
+	/* m */ RSC(OTHER_STATE_COLOR).ATTR()
+	}, *stateAttr = RSC(OTHER_STATE_COLOR).ATTR();
 	const char symbol[14] = "RSDTtXZPIKWiNm";
 	unsigned short idx, jdx = 0;
 
 	if (BITBSR(state, idx) == 1) {
 		stateStr[jdx++] = symbol[0];
-		stateAttr = attrib[0];
+		stateAttr = symbAttr[0];
 	} else
 		do {
 			BITCLR(LOCKLESS, state, idx);
 			stateStr[jdx++] = symbol[1 + idx];
-			stateAttr = attrib[1 + idx];
+			stateAttr = symbAttr[1 + idx];
 		} while (!BITBSR(state, idx));
 	stateStr[jdx] = '\0';
 	return(stateAttr);
@@ -809,30 +245,29 @@ void Print_v3(	CELL_FUNC OutFunc,
 #define PRT(FUN, attrib, ...)	\
 	Print_##FUN(OutFunc, win, &nl, attrib, __VA_ARGS__)
 
-ATTRIBUTE SysInfoCPUID_Attr[4][74] = {
-	WIN_COND0_SYSINFO_CPUID_ATTR,
-	WIN_COND1_SYSINFO_CPUID_ATTR,
-	WIN_COND2_SYSINFO_CPUID_ATTR,
-	WIN_COND3_SYSINFO_CPUID_ATTR
-};
-
 void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[4] = {
+		RSC(WIN_SYSINFO_CPUID_COND0).ATTR(),
+		RSC(WIN_SYSINFO_CPUID_COND1).ATTR(),
+		RSC(WIN_SYSINFO_CPUID_COND2).ATTR(),
+		RSC(WIN_SYSINFO_CPUID_COND3).ATTR()
+	};
 	char format[] = "%08x:%08x%.*s%08x     %08x     %08x     %08x";
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (OutFunc == NULL) {
-		PUT(SCANKEY_NULL, SysInfoCPUID_Attr[0], width, 0,
+		PUT(SCANKEY_NULL, attrib[0], width, 0,
 			"CPU #%-2u function"				\
 			"          EAX          EBX          ECX          EDX",
 			cpu);
 	    } else {
 		PUT(SCANKEY_NULL,
-			SysInfoCPUID_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+			attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 			width, 0, "CPU #%-2u", cpu);
 	    }
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PUT(SCANKEY_NULL, SysInfoCPUID_Attr[3], width, 2, format,
+		PUT(SCANKEY_NULL, attrib[3], width, 2, format,
 			0x00000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc,
@@ -840,11 +275,11 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.StdFunc.CX,
 			Shm->Cpu[cpu].Query.StdFunc.DX);
 
-		PUT(SCANKEY_NULL, SysInfoCPUID_Attr[2], width, 3,
+		PUT(SCANKEY_NULL, attrib[2], width, 3,
 			"Largest Standard Function=%08x",
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc);
 
-		PUT(SCANKEY_NULL, SysInfoCPUID_Attr[3], width, 2, format,
+		PUT(SCANKEY_NULL, attrib[3], width, 2, format,
 			0x80000000, 0x00000000,
 			4, hSpace,
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc,
@@ -852,14 +287,14 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.ExtFunc.ECX,
 			Shm->Cpu[cpu].Query.ExtFunc.EDX);
 
-		PUT(SCANKEY_NULL, SysInfoCPUID_Attr[2], width, 3,
+		PUT(SCANKEY_NULL, attrib[2], width, 3,
 			"Largest Extended Function=%08x",
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
 		int i;
 		for (i = 0; i < CPUID_MAX_FUNC; i++)
 		    if (Shm->Cpu[cpu].CpuID[i].func) {
-			PUT(SCANKEY_NULL, SysInfoCPUID_Attr[3], width, 2,
+			PUT(SCANKEY_NULL, attrib[3], width, 2,
 				format,
 				Shm->Cpu[cpu].CpuID[i].func,
 				Shm->Cpu[cpu].CpuID[i].sub,
@@ -872,12 +307,6 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 	    }
 	}
 }
-
-ATTRIBUTE SystemRegisters_Attr[3][4] = {
-	WIN_COND0_SYSTEM_REGISTERS_ATTR,
-	WIN_COND1_SYSTEM_REGISTERS_ATTR,
-	WIN_COND2_SYSTEM_REGISTERS_ATTR
-};
 
 const struct {
 	enum SYS_REG bit;
@@ -949,6 +378,11 @@ const struct {
 
 void SystemRegisters(Window *win, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[3] = {
+		RSC(WIN_SYSTEM_REGISTERS_COND0).ATTR(),
+		RSC(WIN_SYSTEM_REGISTERS_COND1).ATTR(),
+		RSC(WIN_SYSTEM_REGISTERS_COND2).ATTR()
+	};
 	const struct {
 		unsigned int Start, Stop;
 	} tabRFLAGS = {0, 10},
@@ -963,124 +397,124 @@ void SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	CUINT nl = win->matrix.size.wth;
 
 /* Section Mark */
-	PRT(REG, SystemRegisters_Attr[0], "CPU ");
-	PRT(REG, SystemRegisters_Attr[0], "FLAG");
+	PRT(REG, attrib[0], "CPU ");
+	PRT(REG, attrib[0], "FLAG");
     for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
-	PRT(REG, SystemRegisters_Attr[0], "    ");
-	PRT(REG, SystemRegisters_Attr[0], "CR3:");
+	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], "CR3:");
     for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, SystemRegisters_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 		"#%-2u ", cpu);
 
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
 	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
-	PRT(REG, SystemRegisters_Attr[0], "    ");
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], "    ");
 	for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
     }
 /* Section Mark */
-	PRT(REG, SystemRegisters_Attr[0], "CR0:");
+	PRT(REG, attrib[0], "CR0:");
     for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
-	PRT(REG, SystemRegisters_Attr[0], "CR4:");
+	PRT(REG, attrib[0], "CR4:");
     for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, SystemRegisters_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 		"#%-2u ", cpu);
 
 	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
 	for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
     }
 /* Section Mark */
-	PRT(REG, SystemRegisters_Attr[0], "CR4:");
+	PRT(REG, attrib[0], "CR4:");
     for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, SystemRegisters_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 		"#%-2u ", cpu);
 	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
     }
 /* Section Mark */
-	PRT(REG, SystemRegisters_Attr[0], "EFCR");
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "EFCR");
+	PRT(REG, attrib[0], "    ");
     for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
-	PRT(REG, SystemRegisters_Attr[0], "    ");
-	PRT(REG, SystemRegisters_Attr[0], "EFER");
+	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], "EFER");
     for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	PRT(REG, SystemRegisters_Attr[0], "%s", SR[idx].flag);
+	PRT(REG, attrib[0], "%s", SR[idx].flag);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, SystemRegisters_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 		"#%-2u ", cpu);
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
 
 	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)
 	    &&  ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
-	PRT(REG, SystemRegisters_Attr[0], "    ");
-	PRT(REG, SystemRegisters_Attr[0], "    ");
+	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], "    ");
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(REG, SystemRegisters_Attr[2], "%3llx ",
+		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
 				SR[idx].bit, SR[idx].len));
 	    else
-		PRT(REG, SystemRegisters_Attr[1], "  - ");
+		PRT(REG, attrib[1], "  - ");
 	}
     }
 }
@@ -1121,63 +555,67 @@ void PrintUncoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
     }
 }
 
-ATTRIBUTE SysInfoProc_Attr[4][76] = {
-	WIN_COND0_SYSINFO_PROC_ATTR,
-	WIN_COND1_SYSINFO_PROC_ATTR,
-	WIN_COND2_SYSINFO_PROC_ATTR,
-	WIN_COND3_SYSINFO_PROC_ATTR
-};
-
 void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[4] = {
+		RSC(WIN_SYSINFO_PROC_COND0).ATTR(),
+		RSC(WIN_SYSINFO_PROC_COND1).ATTR(),
+		RSC(WIN_SYSINFO_PROC_COND2).ATTR(),
+		RSC(WIN_SYSINFO_PROC_COND3).ATTR()
+	};
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 
 	unsigned int activeCores, boost = 0;
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 0,
-		"Processor%.*s[%s]",
-		width - 11 - strlen(Shm->Proc.Brand), hSpace, Shm->Proc.Brand);
+	PUT(SCANKEY_NULL, attrib[0], width, 0,
+		"%s""%.*s[%s]", RSC(PROCESSOR).CODE(),
+		width - 2 - RSZ(PROCESSOR) - strlen(Shm->Proc.Brand),
+		hSpace, Shm->Proc.Brand);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2,
-		"Architecture%.*s[%s]",
-		width - 17 - strlen(Shm->Proc.Architecture), hSpace,
-		Shm->Proc.Architecture);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s[%s]", RSC(ARCHITECTURE).CODE(),
+		width - 5 - RSZ(ARCHITECTURE) - strlen(Shm->Proc.Architecture),
+		hSpace, Shm->Proc.Architecture);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2,
-		"Vendor ID%.*s[%s]",
-		width - 14 - strlen(Shm->Proc.Features.Info.Vendor.ID), hSpace,
-		Shm->Proc.Features.Info.Vendor.ID);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s[%s]", RSC(VENDOR_ID).CODE(),
+	width - 5 - RSZ(VENDOR_ID) - strlen(Shm->Proc.Features.Info.Vendor.ID),
+		hSpace, Shm->Proc.Features.Info.Vendor.ID);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2,
-		"Microcode%.*s[%10u]",
-		width - 24, hSpace,
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s[%10u]", RSC(MICROCODE).CODE(),
+		width - 15 - RSZ(MICROCODE), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[2], width, 2,
-		"Signature%.*s[%2X%1X_%1X%1X]",
-		width - 20, hSpace,
+	PUT(SCANKEY_NULL, attrib[2], width, 2,
+		"%s""%.*s[%2X%1X_%1X%1X]", RSC(SIGNATURE).CODE(),
+		width - 11 - RSZ(SIGNATURE), hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
 		Shm->Proc.Features.Std.EAX.Family,
 		Shm->Proc.Features.Std.EAX.ExtModel,
 		Shm->Proc.Features.Std.EAX.Model);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[2], width, 2,
-		"Stepping%.*s[%6u]",
-		width - 19, hSpace, Shm->Proc.Features.Std.EAX.Stepping);
+	PUT(SCANKEY_NULL, attrib[2], width, 2,
+		"%s""%.*s[%6u]", RSC(STEPPING).CODE(),
+		width - 11 - RSZ(STEPPING), hSpace,
+		Shm->Proc.Features.Std.EAX.Stepping);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[2], width, 2,
-		"Online CPU%.*s[ %2u/%-2u]",
-		width - 21, hSpace, Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+	PUT(SCANKEY_NULL, attrib[2], width, 2,
+		"%s""%.*s[ %2u/%-2u]", RSC(ONLINE_CPU).CODE(),
+		width - 11 - RSZ(ONLINE_CPU), hSpace,
+		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[2], width, 2,
-		"Base Clock%.*s[%6.2f]",
-		width - 21, hSpace,
+	PUT(SCANKEY_NULL, attrib[2], width, 2,
+		"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
+		width - 11 - RSZ(BASE_CLOCK), hSpace,
 		CFlop->Clock.Hz / 1000000.0);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2,
-		"Frequency%.*s(Mhz)%.*sRatio",
-		12, hSpace, 23 - (OutFunc == NULL), hSpace);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s(MHz)%.*s""%s", RSC(FREQUENCY).CODE(),
+		21 - RSZ(FREQUENCY), hSpace,
+		23 - (OutFunc == NULL), hSpace,
+		RSC(RATIO).CODE());
 
     if (Shm->Proc.Features.MinRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
@@ -1186,11 +624,11 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PrintCoreBoost(win, CFlop,
 			"Min", BOOST(MIN), 1, coreClock.sllong,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     } else {
 	PrintCoreBoost(win, CFlop,
 			"Min", BOOST(MIN), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     }
     if (Shm->Proc.Features.MaxRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
@@ -1199,23 +637,24 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PrintCoreBoost(win, CFlop,
 			"Max", BOOST(MAX), 1, coreClock.sllong,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     } else {
 	PrintCoreBoost(win, CFlop,
 			"Max", BOOST(MAX), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     }
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2, "Factory%.*s[%6.2f]",
-		(OutFunc == NULL) ? 62 : 58, hSpace,
+	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%6.2f]",
+		RSC(FACTORY).CODE(),
+		(OutFunc == NULL ? 69 : 65) - RSZ(FACTORY), hSpace,
 			Shm->Proc.Features.Factory.Clock.Hz / 1000000.0);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[3], width, 0,
+	PUT(SCANKEY_NULL, attrib[3], width, 0,
 		"%.*s""%5u""%.*s""[%4d ]",
 		22, hSpace, Shm->Proc.Features.Factory.Freq,
 		23, hSpace, Shm->Proc.Features.Factory.Ratio);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[Shm->Proc.Features.Turbo_Unlock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
 		"Turbo Boost%.*s[%6s]", width - 22, hSpace,
 		Shm->Proc.Features.Turbo_Unlock ? "UNLOCK" : "LOCK");
@@ -1230,7 +669,7 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sprintf(pfx, "%2uC", activeCores);
 	PrintCoreBoost(win, CFlop,
 			pfx, boost, 1, clockMod.sllong,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
       }
     else
       for (boost = BOOST(1C), activeCores = 1;
@@ -1240,10 +679,10 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sprintf(pfx, "%2uC", activeCores);
 	PrintCoreBoost(win, CFlop,
 			pfx, boost, 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
       }
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[Shm->Proc.Features.Uncore_Unlock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
 		width, 2, "Uncore%.*s[%6s]", width - 17, hSpace,
 		Shm->Proc.Features.Uncore_Unlock ? "UNLOCK" : "LOCK");
 
@@ -1253,69 +692,98 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
 	PrintUncoreBoost(win, CFlop,
 			"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	PrintUncoreBoost(win, CFlop,
 			"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     } else {
 	PrintUncoreBoost(win, CFlop,
 			"Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
 	PrintUncoreBoost(win, CFlop,
 			"Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
     }
 
     if (Shm->Proc.Features.TDP_Levels > 0) {
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[0], width, 2,
-		"TDP%.*sLevel [%3d:%-2d]",
-		width - 20, hSpace,
+	const size_t len = RSZ(LEVEL) + 1 + 1;
+	char *pfx = malloc(len);
+
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"TDP%.*s""%s"" [%3d:%-2d]",
+		width - 15 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[Shm->Proc.Features.TDP_Unlock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
 		width, 3, "Programmable%.*s[%6s]",
 		width - (OutFunc == NULL ? 26 : 24), hSpace,
 		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[!Shm->Proc.Features.TDP_Cfg_Lock],
+	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],
 		width, 3, "Configuration%.*s[%6s]",
 		width - (OutFunc == NULL ? 27 : 25), hSpace,
 		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
 
-	PUT(SCANKEY_NULL, SysInfoProc_Attr[!Shm->Proc.Features.TurboActivation],
+	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboActivation],
 		width, 3, "Turbo Activation%.*s[%6s]",
 		width - (OutFunc == NULL ? 30 : 28), hSpace,
 		Shm->Proc.Features.TurboActivation ? "LOCK" : "UNLOCK");
 
 	PrintCoreBoost(win, CFlop,
 			"Nominal", BOOST(TDP), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
+
+	sprintf(pfx, "%s""1", RSC(LEVEL).CODE());
 	PrintCoreBoost(win, CFlop,
-			"Level1", BOOST(TDP1), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			pfx, BOOST(TDP1), 0, SCANKEY_NULL,
+			width, OutFunc, attrib[3]);
+
+	sprintf(pfx, "%s""2", RSC(LEVEL).CODE());
 	PrintCoreBoost(win, CFlop,
-			"Level2", BOOST(TDP2), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			pfx, BOOST(TDP2), 0, SCANKEY_NULL,
+			width, OutFunc, attrib[3]);
+
 	PrintCoreBoost(win, CFlop,
 			"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
-			width, OutFunc, SysInfoProc_Attr[3]);
+			width, OutFunc, attrib[3]);
+	free(pfx);
     }
 }
 
-ATTRIBUTE SysInfoISA_Attr[4][5][17] = {
-	WIN_COND0_SYSINFO_ISA_ATTR,
-	WIN_COND1_SYSINFO_ISA_ATTR,
-	WIN_COND2_SYSINFO_ISA_ATTR,
-	WIN_COND3_SYSINFO_ISA_ATTR
-};
-
 void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[4][5] = {
+		{
+			RSC(WIN_SYSINFO_ISA_COND_0_0).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_0_1).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_0_2).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_0_3).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_0_4).ATTR()
+		}, {
+			RSC(WIN_SYSINFO_ISA_COND_1_0).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_1_1).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_1_2).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_1_3).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_1_4).ATTR()
+		}, {
+			RSC(WIN_SYSINFO_ISA_COND_2_0).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_2_1).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_2_2).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_2_3).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_2_4).ATTR()
+		}, {
+			RSC(WIN_SYSINFO_ISA_COND_3_0).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_3_1).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_3_2).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_3_3).ATTR(),
+			RSC(WIN_SYSINFO_ISA_COND_3_4).ATTR()
+		}
+	};
 	CUINT nl = win->matrix.size.wth;
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
+	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
 				|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
 				+ (Shm->Proc.Features.ExtInfo.EDX._3DNow
 				<< Shm->Proc.Features.ExtInfo.EDX._3DNowEx)],
@@ -1323,15 +791,15 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtFeature.EBX.ADX],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.ADX],
 		"          ADX [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.ADX ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.AES],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.AES],
 		"          AES [%c]",
 		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][2 * (Shm->Proc.Features.Std.ECX.AVX
+	PRT(ISA, attrib[3][2 * (Shm->Proc.Features.Std.ECX.AVX
 			|  Shm->Proc.Features.ExtFeature.EBX.AVX2)
 			+ (Shm->Proc.Features.Std.ECX.AVX
 			<< Shm->Proc.Features.ExtFeature.EBX.AVX2)],
@@ -1339,11 +807,11 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
 		" AVX-512      [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.AVX_512F ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
+	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
 				|  Shm->Proc.Features.ExtFeature.EBX.BMI2)
 				+ (Shm->Proc.Features.ExtFeature.EBX.BMI1
 				<< Shm->Proc.Features.ExtFeature.EBX.BMI2)],
@@ -1351,39 +819,39 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.EDX.CLFSH],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CLFSH],
 		"        CLFSH [%c]",
 		Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.EDX.CMOV],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.CMOV],
 		"        CMOV [%c] ",
 		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.EDX.CMPXCH8],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCH8],
 		" CMPXCH8      [%c]",
 		Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.CMPXCH16],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.CMPXCH16],
 		"     CMPXCH16 [%c]",
 		Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.F16C],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
 		"         F16C [%c]",
 		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.EDX.FPU],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.FPU],
 		"         FPU [%c] ",
 		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.EDX.FXSR],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FXSR],
 		" FXSR         [%c]",
 		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
 		"    LAHF/SAHF [%c]",
 		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][2 * (Shm->Proc.Features.Std.EDX.MMX
+	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
 			|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
 			+ (Shm->Proc.Features.Std.EDX.MMX
 			<< Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)],
@@ -1391,63 +859,63 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.ECX.MONITOR],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.MONITOR],
 		"     MONITOR [%c] ",
 		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.MOVBE],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.MOVBE],
 		" MOVBE        [%c]",
 		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtFeature.EBX.MPX],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.MPX],
 		"          MPX [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.MPX ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.PCLMULDQ],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.PCLMULDQ],
 		"     PCLMULDQ [%c]",
 		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.ECX.POPCNT],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.POPCNT],
 		"      POPCNT [%c] ",
 		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.RDRAND],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.RDRAND],
 		" RDRAND       [%c]",
 		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtFeature.EBX.RDSEED],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDSEED],
 		"       RDSEED [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.RDSEED ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
 		"       RDTSCP [%c]",
 		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.EDX.SEP],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.SEP],
 		"         SEP [%c] ",
 		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.ExtFeature.EBX.SGX],
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX],
 		" SGX          [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.SGX ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.EDX.SSE],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE],
 		"          SSE [%c]",
 		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.EDX.SSE2],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE2],
 		"         SSE2 [%c]",
 		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.Std.ECX.SSE3],
+	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.SSE3],
 		"        SSE3 [%c] ",
 		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.SSSE3],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
 		" SSSE3        [%c]",
 		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][2 * (Shm->Proc.Features.Std.ECX.SSE41
+	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.SSE41
 			|  Shm->Proc.Features.ExtInfo.ECX.SSE4A)
 			+ (Shm->Proc.Features.Std.ECX.SSE41
 			<< Shm->Proc.Features.ExtInfo.ECX.SSE4A)],
@@ -1455,23 +923,22 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[0][Shm->Proc.Features.Std.ECX.SSE42],
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSE42],
 		"       SSE4.2 [%c]",
 		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
 
-	PRT(ISA, SysInfoISA_Attr[3][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
+	PRT(ISA, attrib[3][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
 		"     SYSCALL [%c] ",
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
 }
 
-ATTRIBUTE SysInfoFeat_Attr[3][72] = {
-	WIN_COND0_SYSINFO_FEATURES_ATTR,
-	WIN_COND1_SYSINFO_FEATURES_ATTR,
-	WIN_COND2_SYSINFO_FEATURES_ATTR
-};
-
 void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[3] = {
+		RSC(WIN_SYSINFO_FEATURES_COND0).ATTR(),
+		RSC(WIN_SYSINFO_FEATURES_COND1).ATTR(),
+		RSC(WIN_SYSINFO_FEATURES_COND2).ATTR()
+	};
 	const char *TSC[] = {
 		"Missing",
 		"Variant",
@@ -1485,229 +952,228 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	int bix;
 /* Section Mark */
 	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"1 GB Pages Support%.*s1GB-PAGES   [%7s]",
 		width - 42, hSpace, powered(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"100 MHz multiplier Control%.*s100MHzSteps   [%7s]",
 		width - 52, hSpace, powered(bix));
     }
 
 	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		/* Intel */
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	/* AMD   */
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Advanced Configuration & Power Interface%.*sACPI   [%7s]",
 		width - 59, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.APIC == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Advanced Programmable Interrupt Controller%.*sAPIC   [%7s]",
 		width - 61, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Core Multi-Processing%.*sCMP Legacy   [%7s]",
 		width - 46, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.CNXT_ID == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"L1 Data Cache Context ID%.*sCNXT-ID   [%7s]",
 		width - 46, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DCA == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Direct Cache Access%.*sDCA   [%7s]",
 		width - 37, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Debugging Extension%.*sDE   [%7s]",
 		width - 36, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DS_PEBS == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Debug Store & Precise Event Based Sampling"
 					"%.*sDS, PEBS   [%7s]",
 		width - 65, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DS_CPL == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"CPL Qualified Debug Store%.*sDS-CPL   [%7s]",
 		width - 46, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DTES64 == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"64-Bit Debug Store%.*sDTES64   [%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Fast-String Operation%.*sFast-Strings   [%7s]",
 		width - 48, hSpace, powered(bix));
 
 	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
 	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Fused Multiply Add%.*sFMA|FMA4   [%7s]",
 		width - 41, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware Lock Elision%.*sHLE   [%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Long Mode 64 bits%.*sIA64|LM   [%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"LightWeight Profiling%.*sLWP   [%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MCA == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Machine-Check Architecture%.*sMCA   [%7s]",
 		width - 44, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Model Specific Registers%.*sMSR   [%7s]",
 		width - 42, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MTRR == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Memory Type Range Registers%.*sMTRR   [%7s]",
 		width - 46, hSpace, powered(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.ExtInfo.EDX.NX == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"No-Execute Page Protection%.*sNX   [%7s]",
 		width - 43, hSpace, powered(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.OSXSAVE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]",
 		width - 54,hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Physical Address Extension%.*sPAE   [%7s]",
 		width - 44, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAT == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Attribute Table%.*sPAT   [%7s]",
 		width - 38, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PBE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Pending Break Enable%.*sPBE   [%7s]",
 		width - 38, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PCID == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Process Context Identifiers%.*sPCID   [%7s]",
 		width - 46, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PDCM == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Perfmon and Debug Capability%.*sPDCM   [%7s]",
 		width - 47, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PGE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Global Enable%.*sPGE   [%7s]",
 		width - 36, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Page Size Extension%.*sPSE   [%7s]",
 		width - 37, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE36 == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"36-bit Page Size Extension%.*sPSE36   [%7s]",
 		width - 46, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSN == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Processor Serial Number%.*sPSN   [%7s]",
 		width - 41, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Restricted Transactional Memory%.*sRTM   [%7s]",
 		width - 49, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.SMX == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Safer Mode Extensions%.*sSMX   [%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.SS == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Self-Snoop%.*sSS   [%7s]",
 		width - 27, hSpace, powered(bix));
 
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[Shm->Proc.Features.InvariantTSC],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.InvariantTSC],
 		width, 2,
 		"Time Stamp Counter%.*sTSC [%9s]",
 		width - 36, hSpace, TSC[Shm->Proc.Features.InvariantTSC]);
 
 	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]",
 		width - 54,hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.VME == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtual Mode Extension%.*sVME   [%7s]",
 		width - 40, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.VMX == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtual Machine Extensions%.*sVMX   [%7s]",
 		width - 44, hSpace, powered(bix));
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC > 0;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Extended xAPIC Support%.*sx2APIC   [%7s]",
 		width - 43, hSpace,
 		x2APIC[Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC]);
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 	bix = Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Execution Disable Bit Support%.*sXD-Bit   [%7s]",
 		width - 50, hSpace, powered(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.XSAVE == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"XSAVE/XSTOR States%.*sXSAVE   [%7s]",
 		width - 38, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.xTPR == 1;
-	PUT(SCANKEY_NULL, SysInfoFeat_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"xTPR Update Control%.*sxTPR   [%7s]",
 		width - 38, hSpace, powered(bix));
 }
 
-ATTRIBUTE SysInfoTech_Attr[2][50] = {
-	WIN_COND0_SYSINFO_TECH_ATTR,
-	WIN_COND1_SYSINFO_TECH_ATTR
-};
-
 void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
-	char *hypervisor[HYPERVISORS] = {
+	ATTRIBUTE *attrib[2] = {
+		RSC(WIN_SYSINFO_TECH_COND0).ATTR(),
+		RSC(WIN_SYSINFO_TECH_COND1).ATTR()
+	};
+		char *hypervisor[HYPERVISORS] = {
 		[HYPERV_BARE]	= "    ",
 		[HYPERV_XEN]	= " Xen",
 		[HYPERV_KVM]	= " KVM",
@@ -1718,107 +1184,106 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"System Management Mode%.*sSMM-Dual       [%3s]",
 		width - 45, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Hyper-Threading%.*sHTT       [%3s]",
 		width - 33, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
-	PUT(BOXKEY_EIST, SysInfoTech_Attr[bix], width, 2,
+	PUT(BOXKEY_EIST, attrib[bix], width, 2,
 		"SpeedStep%.*sEIST       <%3s>",
 		width - 28, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Dynamic Acceleration%.*sIDA       [%3s]",
 		width - 38, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
-	PUT(BOXKEY_TURBO, SysInfoTech_Attr[bix], width, 2,
+	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"Turbo Boost%.*sTURBO       <%3s>",
 		width - 31, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.VM == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtualization%.*sVMX       [%3s]",
 		width - 32, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 3,
+	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"I/O MMU%.*sVT-d       [%3s]",
 		width - (OutFunc ? 27 : 29), hSpace, enabled(bix));
     }
     else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"System Management Mode%.*sSMM-Lock       [%3s]",
 		width - 45, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Simultaneous Multithreading%.*sSMT       [%3s]",
 		width - 45, hSpace, enabled(bix));
 
 	bix = Shm->Proc.PowerNow == 0b11;	/*	VID + FID	*/
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"PowerNow!%.*sCnQ       [%3s]",
 		width - 27, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
-	PUT(BOXKEY_TURBO, SysInfoTech_Attr[bix], width, 2,
+	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"Core Performance Boost%.*sCPB       <%3s>",
 		width - 40, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.VM == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Virtualization%.*sSVM       [%3s]",
 		width - 32, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 3,
+	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"I/O MMU%.*sAMD-V       [%3s]",
 		width - (OutFunc? 28 : 30), hSpace, enabled(bix));
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
-	PUT(SCANKEY_NULL, SysInfoTech_Attr[bix], width, 3,
+	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"Hypervisor%.*s""%s       [%3s]",
 		width - (OutFunc? 30 : 32), hSpace,
 		hypervisor[Shm->Proc.HypervisorID], enabled(bix));
 }
 
-ATTRIBUTE SysInfoPerf_Attr[4][74] = {
-	WIN_COND0_SYSINFO_PERFMON_ATTR,
-	WIN_COND1_SYSINFO_PERFMON_ATTR,
-	WIN_COND2_SYSINFO_PERFMON_ATTR,
-	WIN_COND3_SYSINFO_PERFMON_ATTR
-};
-
 void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[4] = {
+		RSC(WIN_SYSINFO_PERFMON_COND0).ATTR(),
+		RSC(WIN_SYSINFO_PERFMON_COND1).ATTR(),
+		RSC(WIN_SYSINFO_PERFMON_COND2).ATTR(),
+		RSC(WIN_SYSINFO_PERFMON_COND3).ATTR()
+	};
 	int bix;
 /* Section Mark */
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Version%.*sPM       [%3d]",
 		width - 24, hSpace, Shm->Proc.PM_version);
 
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Counters:%.*sGeneral%.*sFixed",
 		10, hSpace, width - 61, hSpace);
 
     if (OutFunc == NULL) {
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 1,
+	PUT(SCANKEY_NULL, attrib[0], width, 1,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
 		11, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
 				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     } else {
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 0,
+	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
@@ -1826,123 +1291,123 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     }
 	bix = Shm->Proc.Technology.C1E == 1;
-	PUT(BOXKEY_C1E, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_C1E, attrib[bix], width, 2,
 		"Enhanced Halt State%.*sC1E       <%3s>",
 		width - 37, hSpace, enabled(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.C1A == 1;
-	PUT(BOXKEY_C1A, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_C1A, attrib[bix], width, 2,
 		"C1 Auto Demotion%.*sC1A       <%3s>",
 		width - 34, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C3A == 1;
-	PUT(BOXKEY_C3A, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_C3A, attrib[bix], width, 2,
 		"C3 Auto Demotion%.*sC3A       <%3s>",
 		width - 34, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C1U == 1;
-	PUT(BOXKEY_C1U, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_C1U, attrib[bix], width, 2,
 		"C1 UnDemotion%.*sC1U       <%3s>",
 		width - 31, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C3U == 1;
-	PUT(BOXKEY_C3U, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_C3U, attrib[bix], width, 2,
 		"C3 UnDemotion%.*sC3U       <%3s>",
 		width - 31, hSpace, enabled(bix));
     }
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.CC6 == 1;
-	PUT(BOXKEY_CC6, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_CC6, attrib[bix], width, 2,
 		"Core C6 State%.*sCC6       <%3s>",
 		width - 31, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.PC6 == 1;
-	PUT(BOXKEY_PC6, SysInfoPerf_Attr[bix], width, 2,
+	PUT(BOXKEY_PC6, attrib[bix], width, 2,
 		"Package C6 State%.*sPC6       <%3s>",
 		width - 34, hSpace, enabled(bix));
     }
 	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Frequency ID control%.*sFID       [%3s]",
 		width - 38, hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Voltage ID control%.*sVID       [%3s]",
 		width - 36, hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"P-State Hardware Coordination Feedback"	\
 			"%.*sMPERF/APERF       [%3s]",
 		width - 64, hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware-Controlled Performance States%.*sHWP       [%3s]",
 		width - 56, hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.HDC_Reg == 1;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Hardware Duty Cycling%.*sHDC       [%3s]",
 		width - 39, hSpace, enabled(bix));
 
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 2,"Package C-State",NULL);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,"Package C-State",NULL);
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 3,
+	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"Configuration Control%.*sCONFIG   [%7s]",
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
 		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
 			"UNLOCK" : "LOCK");
 
 	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
-		PUT(BOXKEY_PKGCST, SysInfoPerf_Attr[0], width, 3,
+		PUT(BOXKEY_PKGCST, attrib[0], width, 3,
 			"Lowest C-State%.*sLIMIT   <%7d>",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
 		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
-		PUT(BOXKEY_IOMWAIT, SysInfoPerf_Attr[bix], width, 3,
+		PUT(BOXKEY_IOMWAIT, attrib[bix], width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				" ENABLE" : "DISABLE");
 
-		PUT(BOXKEY_IORCST, SysInfoPerf_Attr[0], width, 3,
+		PUT(BOXKEY_IORCST, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   <%7d>",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	} else {
-		PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 3,
+		PUT(SCANKEY_NULL, attrib[0], width, 3,
 			"Lowest C-State%.*sLIMIT   [%7d]",
 			width - (OutFunc == NULL ? 37 : 35), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
-		PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 3,
+		PUT(SCANKEY_NULL, attrib[0], width, 3,
 			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				" ENABLE" : "DISABLE");
 
-		PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 3,
+		PUT(SCANKEY_NULL, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   [%7d]",
 			width - (OutFunc == NULL ? 44 : 42), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"MWAIT States:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
 		04, hSpace);
 
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[0], width, (OutFunc == NULL) ? 1 : 0,
+	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
 		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
 		19, hSpace,
 		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
@@ -1955,50 +1420,49 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
 
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Core Cycles%.*s[%7s]",
 		width - 23, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.InstrRetired == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Instructions Retired%.*s[%7s]",
 		width - 32, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.RefCycles == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Reference Cycles%.*s[%7s]",
 		width - 28, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Ref == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Last Level Cache References%.*s[%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Last Level Cache Misses%.*s[%7s]",
 		width - 35, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchRetired == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Branch Instructions Retired%.*s[%7s]",
 		width - 39, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchMispred == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, SysInfoPerf_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Branch Mispredicts Retired%.*s[%7s]",
 		width - 38, hSpace, powered(bix));
 }
 
-ATTRIBUTE SysInfoPwrThermal_Attr[4][50] = {
-	WIN_COND0_SYSINFO_PWR_THERMAL_ATTR,
-	WIN_COND1_SYSINFO_PWR_THERMAL_ATTR,
-	WIN_COND2_SYSINFO_PWR_THERMAL_ATTR,
-	WIN_COND3_SYSINFO_PWR_THERMAL_ATTR
-};
-
 void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[4] = {
+		RSC(WIN_SYSINFO_PWR_THERMAL_COND0).ATTR(),
+		RSC(WIN_SYSINFO_PWR_THERMAL_COND1).ATTR(),
+		RSC(WIN_SYSINFO_PWR_THERMAL_COND2).ATTR(),
+		RSC(WIN_SYSINFO_PWR_THERMAL_COND3).ATTR()
+	};
 	const char *TM[] = {
 		"Missing",
 		"Present",
@@ -2011,50 +1475,50 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	int bix;
 /* Section Mark */
 	bix = Shm->Proc.Technology.ODCM == 1 ? 3 : 1;
-	PUT(BOXKEY_ODCM, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(BOXKEY_ODCM, attrib[bix], width, 2,
 		"Clock Modulation%.*sODCM   <%7s>", width - 35, hSpace,
 		Shm->Proc.Technology.ODCM ? " Enable" : "Disable");
 
-	PUT(BOXKEY_DUTYCYCLE, SysInfoPwrThermal_Attr[0], width, 3,
+	PUT(BOXKEY_DUTYCYCLE, attrib[0], width, 3,
 	"DutyCycle%.*s<%6.2f%%>", width - (OutFunc == NULL ? 24: 22), hSpace,
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
 	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
 
 	bix = Shm->Proc.Technology.PowerMgmt == 1 ? 3 : 0;
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Power Management%.*sPWR MGMT   [%7s]",
 		width - 39, hSpace, Unlock[Shm->Proc.Technology.PowerMgmt]);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"Energy Policy%.*sBias Hint   [%7u]",
 		width - (OutFunc == NULL ? 40 : 38), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"Junction Temperature%.*sTjMax   [%3u:%3u]", width - 40, hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Digital Thermal Sensor%.*sDTS   [%7s]",
 		width - 40, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PLN == 1;
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Power Limit Notification%.*sPLN   [%7s]",
 		width - 42, hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PTM == 1;
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Package Thermal Management%.*sPTM   [%7s]",
 		width - 44, hSpace, powered(bix));
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 	    | Shm->Proc.Features.AdvPower.EDX.TTP;
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Thermal Monitor 1%.*sTM1|TTP   [%7s]",
 		width - 39, hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
@@ -2062,33 +1526,29 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 	    | Shm->Proc.Features.AdvPower.EDX.TM;
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
 		width - 39, hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 			| Shm->Proc.Features.AdvPower.EDX.TM ]);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 2, "Units", NULL);
+	PUT(SCANKEY_NULL, attrib[0], width, 2, "Units", NULL);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"Power%.*swatt   [%13.9f]",
 		width - (OutFunc == NULL ? 33 : 31), hSpace,
 		Shm->Proc.Power.Unit.Watts);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"Energy%.*sjoule   [%13.9f]",
 		width - (OutFunc == NULL ? 35 : 33), hSpace,
 		Shm->Proc.Power.Unit.Joules);
 
-	PUT(SCANKEY_NULL, SysInfoPwrThermal_Attr[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"Window%.*ssecond   [%13.9f]",
 		width - (OutFunc == NULL ? 36 : 34), hSpace,
 		Shm->Proc.Power.Unit.Times);
 }
-
-ATTRIBUTE SysInfoKernel_Attr[1][76] = {
-	WIN_SYSINFO_KERNEL_ATTR
-};
 
 void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
@@ -2097,52 +1557,52 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		*str = malloc(width + 1);
 	int	idx = 0;
 /* Section Mark */
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 0,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
 
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Release%.*s[%s]", width - 12 - strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Version%.*s[%s]", width - 12 - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Machine%.*s[%s]", width - 12 - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 0,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
 		"Memory:%.*s", width - 7, hSpace);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Total RAM" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Shared RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Free RAM" "%.*s" "%s KB", width - 14 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Buffer RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Total High" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 2,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
 		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 /* Section Mark */
   if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
   {
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 0,
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
 		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
@@ -2153,7 +1613,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
     }
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -2162,7 +1622,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
     }
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -2171,7 +1631,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
     }
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -2180,7 +1640,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
     }
-	PUT(SCANKEY_NULL, SysInfoKernel_Attr[0], width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
   }
 	free(row);
 	free(str);
@@ -2372,51 +1832,50 @@ void Instructions()
 	}
 }
 
-ATTRIBUTE Topology_Attr[3][13] = {
-	WIN_COND0_TOPOLOGY_ATTR,
-	WIN_COND1_TOPOLOGY_ATTR,
-	WIN_COND2_TOPOLOGY_ATTR
-};
-
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
+	ATTRIBUTE *attrib[3] = {
+		RSC(WIN_TOPOLOGY_COND0).ATTR(),
+		RSC(WIN_TOPOLOGY_COND1).ATTR(),
+		RSC(WIN_TOPOLOGY_COND2).ATTR()
+	};
 	unsigned int cpu = 0, level = 0;
 	CUINT nl = win->matrix.size.wth;
 
-	PRT(MAP, Topology_Attr[2], "CPU Pkg  Apic");
-	PRT(MAP, Topology_Attr[2], "  Core Thread");
-	PRT(MAP, Topology_Attr[2], "  Caches     ");
-	PRT(MAP, Topology_Attr[2], " (w)rite-Back");
-	PRT(MAP, Topology_Attr[2], " (i)nclusive ");
-	PRT(MAP, Topology_Attr[2], "             ");
-	PRT(MAP, Topology_Attr[2], " #   ID   ID ");
-	PRT(MAP, Topology_Attr[2], "   ID     ID ");
-	PRT(MAP, Topology_Attr[2], " L1-Inst Way ");
-	PRT(MAP, Topology_Attr[2], " L1-Data Way ");
-	PRT(MAP, Topology_Attr[2], "     L2  Way ");
-	PRT(MAP, Topology_Attr[2], "     L3  Way ");
+	PRT(MAP, attrib[2], "CPU Pkg  Apic");
+	PRT(MAP, attrib[2], "  Core Thread");
+	PRT(MAP, attrib[2], "  Caches     ");
+	PRT(MAP, attrib[2], " (w)rite-Back");
+	PRT(MAP, attrib[2], " (i)nclusive ");
+	PRT(MAP, attrib[2], "             ");
+	PRT(MAP, attrib[2], " #   ID   ID ");
+	PRT(MAP, attrib[2], "   ID     ID ");
+	PRT(MAP, attrib[2], " L1-Inst Way ");
+	PRT(MAP, attrib[2], " L1-Data Way ");
+	PRT(MAP, attrib[2], "     L2  Way ");
+	PRT(MAP, attrib[2], "     L3  Way ");
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 		if (Shm->Cpu[cpu].Topology.MP.BSP)
-			PRT(MAP,Topology_Attr[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
+			PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
 				"%02u: BSP%6d",
 				cpu,
 				Shm->Cpu[cpu].Topology.ApicID);
 		else
-			PRT(MAP,Topology_Attr[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
+			PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
 				"%02u:%4d%6d",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
 				Shm->Cpu[cpu].Topology.ApicID);
 
-		PRT(MAP, Topology_Attr[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+		PRT(MAP, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
 			"%6d %6d",
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
 
 	  for (level = 0; level < CACHE_MAX_LEVEL; level++)
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		PRT(MAP, Topology_Attr[0], "%8u%3u%c%c",
+		PRT(MAP, attrib[0], "%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
@@ -2424,7 +1883,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 				'i' : 0x20);
 	    else
-		PRT(MAP, Topology_Attr[1], "       -  -  ");
+		PRT(MAP, attrib[1], "       -  -  ");
 	}
 }
 
@@ -2439,13 +1898,13 @@ void MemoryController(Window *win, CELL_FUNC OutFunc)
 {
 	#define MATX 14
 	#define MATY 5
+	ATTRIBUTE *attrib[2] = {
+		RSC(WIN_MEMORY_CONTROLLER_COND0).ATTR(),
+		RSC(WIN_MEMORY_CONTROLLER_COND1).ATTR()
+	};
 	size_t len = strlen(Shm->Uncore.Chipset.CodeName);
 	CUINT nl = win->matrix.size.wth, ni, nr, nc;
 	unsigned short mc, cha, slot;
-	ATTRIBUTE attrib[2][MATY] = {
-		WIN_COND0_MEMORYCONTROLLER_ATTR,
-		WIN_COND1_MEMORYCONTROLLER_ATTR
-	};
 	char hInt[16], **codeName = malloc(MATX * sizeof(char *));
 
   if (codeName != NULL) {
@@ -4615,6 +4074,14 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case SCANKEY_SHIFT_l:
+    {
+	if (++locale >= LOC_CNT) {
+		locale = LOC_EN;
+	}
+	draw.Flag.layout = 1;
+    }
+    break;
     case SCANKEY_SHIFT_m:
 	if (Shm->Uncore.CtrlCount > 0) {
 		Window *win = SearchWinListById(scan->key, &winList);
@@ -5933,21 +5400,6 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 ATTRIBUTE	Layout_Task1_Attr[21], Layout_Task2_Attr[15];
 ASCII		Layout_Task1_Code[21], Layout_Task2_Code[15];
 
-ATTRIBUTE	Layout_Tasks_Reverse_Sort_Attr[2][15] = {
-			[0] = LAYOUT_TASKS_REVERSE_SORT_OFF_ATTR,
-			[1] = LAYOUT_TASKS_REVERSE_SORT_ON_ATTR
-		};
-ASCII		Layout_Tasks_Reverse_Sort_Code[LOCALES][2][15] = {
-			[LOC_EN] = {
-				[0] = LAYOUT_TASKS_REVERSE_SORT_OFF_CODE_EN,
-				[1] = LAYOUT_TASKS_REVERSE_SORT_ON_CODE_EN
-			},
-			[LOC_FR] = {
-				[0] = LAYOUT_TASKS_REVERSE_SORT_OFF_CODE_FR,
-				[1] = LAYOUT_TASKS_REVERSE_SORT_ON_CODE_FR
-			}
-		};
-
 ATTRIBUTE	Layout_Tasks_Value_Attr[2][3] = {
 			[0] = LAYOUT_TASKS_VALUE_OFF_ATTR,
 			[1] = LAYOUT_TASKS_VALUE_ON_ATTR
@@ -6005,12 +5457,12 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		ASCII	  *code;
 	} hReverse[2] = {
 		{
-		.attr = Layout_Tasks_Reverse_Sort_Attr[0],
-		.code = Layout_Tasks_Reverse_Sort_Code[LOC()][0]
+		.attr = RSC(LAYOUT_TASKS_REVERSE_SORT_OFF).ATTR(),
+		.code = RSC(LAYOUT_TASKS_REVERSE_SORT_OFF).CODE()
 		},
 		{
-		.attr = Layout_Tasks_Reverse_Sort_Attr[1],
-		.code = Layout_Tasks_Reverse_Sort_Code[LOC()][1]
+		.attr = RSC(LAYOUT_TASKS_REVERSE_SORT_ON).ATTR(),
+		.code = RSC(LAYOUT_TASKS_REVERSE_SORT_ON).CODE()
 		}
 	};
 
@@ -6767,7 +6219,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	  stateAttr = StateToSymbol(Shm->SysGate.taskList[idx].state, stateStr);
 
 	    if (Shm->SysGate.taskList[idx].pid == Shm->SysGate.trackTask) {
-		stateAttr = trackerColor;
+		stateAttr = RSC(TRACKER_STATE_COLOR).ATTR();
 	    }
 	    if (!draw.Flag.taskVal) {
 		len = sprintf(	buffer, "%s",
