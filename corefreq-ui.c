@@ -506,14 +506,16 @@ const char LCD[0x6][0x10][3][3] = {
 	}
 };
 
-char hSpace[]	= HSPACE;
-char hBar[]	= HBAR;
-char hLine[]	= HLINE;
+ATTRIBUTE vColor[] = VOID_COLOR;
+
+ASCII	hSpace[] = HSPACE,
+	hBar[]   = HBAR,
+	hLine[]  = HLINE;
 
 Layer	*sLayer = NULL,
 	*dLayer = NULL,
 	*wLayer = NULL,
-	*fuse = NULL;
+	*fuse   = NULL;
 
 WinList winList = {.head = NULL};
 

@@ -1646,7 +1646,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	free(str);
 }
 
-void Package()
+void Package(void)
 {
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
@@ -1682,7 +1682,7 @@ void Package()
     }
 }
 
-void Counters()
+void Counters(void)
 {
     unsigned int cpu = 0;
     while (!BITVAL(Shutdown, 0)) {
@@ -1751,7 +1751,7 @@ void Counters()
     }
 }
 
-void Voltage()
+void Voltage(void)
 {
     enum PWR_DOMAIN pw;
     unsigned int cpu = 0;
@@ -1797,7 +1797,7 @@ void Voltage()
     }
 }
 
-void Instructions()
+void Instructions(void)
 {
 	unsigned int cpu = 0;
 
@@ -1815,21 +1815,21 @@ void Instructions()
 		printf("CPU     IPS            IPC            CPI\n");
 
 	for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
-			cpu,
-			CFlop->State.IPS,
-			CFlop->State.IPC,
-			CFlop->State.CPI);
-	    else
-		printf("#%02u\n", cpu);
-	  }
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+			printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
+				cpu,
+				CFlop->State.IPS,
+				CFlop->State.IPC,
+				CFlop->State.CPI);
+		else
+			printf("#%02u\n", cpu);
+	    }
 		printf("\n");
-	}
+    }
 }
 
 void Topology(Window *win, CELL_FUNC OutFunc)
@@ -1855,36 +1855,37 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], "     L2  Way ");
 	PRT(MAP, attrib[2], "     L3  Way ");
 
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-		if (Shm->Cpu[cpu].Topology.MP.BSP)
-			PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
-				"%02u: BSP%6d",
-				cpu,
-				Shm->Cpu[cpu].Topology.ApicID);
-		else
-			PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
-				"%02u:%4d%6d",
-				cpu,
-				Shm->Cpu[cpu].Topology.PackageID,
-				Shm->Cpu[cpu].Topology.ApicID);
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	if (Shm->Cpu[cpu].Topology.MP.BSP)
+		PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
+			"%02u: BSP%6d",
+			cpu,
+			Shm->Cpu[cpu].Topology.ApicID);
+	else
+		PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
+			"%02u:%4d%6d",
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.ApicID);
 
-		PRT(MAP, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-			"%6d %6d",
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	PRT(MAP, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
+		"%6d %6d",
+		Shm->Cpu[cpu].Topology.CoreID,
+		Shm->Cpu[cpu].Topology.ThreadID);
 
-	  for (level = 0; level < CACHE_MAX_LEVEL; level++)
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(MAP, attrib[0], "%8u%3u%c%c",
-			Shm->Cpu[cpu].Topology.Cache[level].Size,
-			Shm->Cpu[cpu].Topology.Cache[level].Way,
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
-				'w' : 0x20,
-			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
-				'i' : 0x20);
-	    else
+		Shm->Cpu[cpu].Topology.Cache[level].Size,
+		Shm->Cpu[cpu].Topology.Cache[level].Way,
+		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
+			'w' : 0x20,
+		Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
+			'i' : 0x20);
+	    } else
 		PRT(MAP, attrib[1], "       -  -  ");
 	}
+    }
 }
 
 void iSplit(unsigned int sInt, char hInt[]) {
@@ -2342,26 +2343,18 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 
 Window *CreateMenu(unsigned long long id)
 {
-      Window *wMenu = CreateWindow(wLayer, id, 3, 12, 3, 0);
-      if (wMenu != NULL) {
-	ATTRIBUTE sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
-		voidAttr = {.value = 0}, gateAttr[24], ctrlAttr[24],
-		stopAttr[24] = {
-			HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,
-			HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW
-		},
-		fkeyAttr[24] = {
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW, LKW,LKW,LKW,LKW,
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW
-		},
-		skeyAttr[24] = {
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW, LKW,LKW,LKW,
-			LKW,LKW,LKW,LKW,LKW,LKW,LKW,LKW,HKW,_LKW,HKW,LKW
-		};
-
-	memcpy(gateAttr, BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-			skeyAttr : stopAttr, 24);
-	memcpy(ctrlAttr, (Shm->Uncore.CtrlCount > 0) ? skeyAttr : stopAttr, 24);
+	Window *wMenu = CreateWindow(wLayer, id, 3, 12, 3, 0);
+    if (wMenu != NULL) {
+	ATTRIBUTE voidAttr = {.value = 0},
+		sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
+		*fkeyAttr = RSC(WIN_CREATE_MENU_FN_KEY).ATTR(),
+		*skeyAttr = RSC(WIN_CREATE_MENU_SHORTKEY).ATTR(),
+		*gateAttr = BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
+				RSC(WIN_CREATE_MENU_SHORTKEY).ATTR()
+				: RSC(WIN_CREATE_MENU_STOP).ATTR(),
+		*ctrlAttr = (Shm->Uncore.CtrlCount > 0) ?
+				RSC(WIN_CREATE_MENU_SHORTKEY).ATTR()
+				: RSC(WIN_CREATE_MENU_STOP).ATTR();
 
 	StoreTCell(wMenu, SCANKEY_NULL,   "          Menu          ", sameAttr);
 	StoreTCell(wMenu, SCANKEY_NULL,   "          View          ", sameAttr);
@@ -2423,64 +2416,22 @@ Window *CreateMenu(unsigned long long id)
 	StoreWindow(wMenu,	.key.Up,	MotionUp_Menu);
 	StoreWindow(wMenu,	.key.Home,	MotionHome_Menu);
 	StoreWindow(wMenu,	.key.End,	MotionEnd_Menu);
-      }
-      return(wMenu);
+    }
+	return(wMenu);
 }
 
 Window *CreateSettings(unsigned long long id)
 {
-      Window *wSet = CreateWindow(wLayer, id, 1, 14,
+	Window *wSet = CreateWindow(wLayer, id, 1, 14,
 				8, (TOP_HEADER_ROW + 14 + 3 < draw.Size.height)?
 					TOP_HEADER_ROW + 3 : 1);
-      if (wSet != NULL) {
-	char	intervStr[16], tickStr[16], pollStr[16], ringStr[16],
-		childStr[16], sliceStr[16], autoStr[16],
-		experStr[16], cpuhpStr[16], pciRegStr[16], nmiRegStr[16];
-
-	int intervLen = sprintf(intervStr, "%.*s<%4u>",
-				9, hSpace, Shm->Sleep.Interval),
-
-	    tickLen = sprintf(tickStr,     "%14u ",
-				Shm->Sleep.Interval * Shm->SysGate.tickReset),
-
-	    pollLen = sprintf(pollStr,     "%14ld ",
-				Shm->Sleep.pollingWait.tv_nsec / 1000000L),
-
-	    ringLen = sprintf(ringStr,     "%14ld ",
-				Shm->Sleep.ringWaiting.tv_nsec / 1000000L),
-
-	    childLen = sprintf(childStr,   "%14ld ",
-				Shm->Sleep.childWaiting.tv_nsec / 1000000L),
-
-	    sliceLen = sprintf(sliceStr,   "%14ld ",
-				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L),
-
-	    autoLen = sprintf(autoStr,     "<%3s>",
-			   enabled((Shm->Registration.AutoClock & 0b10) != 0)),
-
-	    experLen = sprintf(experStr,   "<%3s>",
-				enabled((Shm->Registration.Experimental != 0))),
-
-	    cpuhpLen = sprintf(cpuhpStr,   "[%3s]",
-				enabled(!(Shm->Registration.hotplug < 0))),
-
-	    pciRegLen = sprintf(pciRegStr, "[%3s]",
-				enabled((Shm->Registration.pci == 1))),
-
-	    nmiRegLen = sprintf(nmiRegStr, "<%3s>",
-				enabled(Shm->Registration.nmi));
-
-	size_t appLen = strlen(Shm->ShmName);
-	ATTRIBUTE attribute[2][32] = {
-	    {
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK
-	    },
-	    {
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HGK,HGK,HGK,HDK,LWK
-	    }
+    if (wSet != NULL) {
+	ATTRIBUTE *attrib[2] = {
+		RSC(WIN_CREATE_SETTINGS_COND0).ATTR(),
+		RSC(WIN_CREATE_SETTINGS_COND1).ATTR()
 	};
+	size_t subLen = strlen(Shm->ShmName);
+	char subStr[16];
 
 	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
 							MAKE_PRINT_UNFOCUS);
@@ -2507,35 +2458,68 @@ Window *CreateSettings(unsigned long long id)
 							MAKE_PRINT_UNFOCUS);
 
 	StoreTCell(wSet, OPS_AUTOCLOCK,  " Auto Clock                     ",
-		attribute[((Shm->Registration.AutoClock & 0b10) != 0)]);
+			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]);
 
 	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
-			attribute[Shm->Registration.Experimental != 0]);
+				attrib[Shm->Registration.Experimental != 0]);
 
 	StoreTCell(wSet, SCANKEY_NULL,   " CPU Hot-Plug                   ",
-				attribute[!(Shm->Registration.hotplug < 0)]);
+				attrib[!(Shm->Registration.hotplug < 0)]);
 
 	StoreTCell(wSet, SCANKEY_NULL,   " PCI enablement                 ",
-				attribute[(Shm->Registration.pci == 1)]);
+					attrib[(Shm->Registration.pci == 1)]);
 
 	StoreTCell(wSet, OPS_INTERRUPTS, " NMI registered                 ",
-					attribute[Shm->Registration.nmi]);
+						attrib[Shm->Registration.nmi]);
 
 	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
 							MAKE_PRINT_UNFOCUS);
 
-	memcpy(&TCellAt(wSet, 0, 1).item[31 -    appLen], Shm->ShmName, appLen);
-	memcpy(&TCellAt(wSet, 0, 2).item[31 - intervLen], intervStr, intervLen);
-	memcpy(&TCellAt(wSet, 0, 3).item[31 -   tickLen], tickStr  ,   tickLen);
-	memcpy(&TCellAt(wSet, 0, 4).item[31 -   pollLen], pollStr  ,   pollLen);
-	memcpy(&TCellAt(wSet, 0, 5).item[31 -   ringLen], ringStr  ,   ringLen);
-	memcpy(&TCellAt(wSet, 0, 6).item[31 -  childLen], childStr ,  childLen);
-	memcpy(&TCellAt(wSet, 0, 7).item[31 -  sliceLen], sliceStr ,  sliceLen);
-	memcpy(&TCellAt(wSet, 0, 8).item[31 -   autoLen], autoStr  ,   autoLen);
-	memcpy(&TCellAt(wSet, 0, 9).item[31 -  experLen], experStr ,  experLen);
-	memcpy(&TCellAt(wSet, 0,10).item[31 -  cpuhpLen], cpuhpStr ,  cpuhpLen);
-	memcpy(&TCellAt(wSet, 0,11).item[31 - pciRegLen], pciRegStr, pciRegLen);
-	memcpy(&TCellAt(wSet, 0,12).item[31 - nmiRegLen], nmiRegStr, nmiRegLen);
+	memcpy(&TCellAt(wSet, 0, 1).item[31 - subLen], Shm->ShmName, subLen);
+
+	subLen = sprintf(subStr, "%.*s<%4u>",
+				9, hSpace, Shm->Sleep.Interval);;
+	memcpy(&TCellAt(wSet, 0, 2).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "%14u ",
+				Shm->Sleep.Interval * Shm->SysGate.tickReset);
+	memcpy(&TCellAt(wSet, 0, 3).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "%14ld ",
+				Shm->Sleep.pollingWait.tv_nsec / 1000000L);
+	memcpy(&TCellAt(wSet, 0, 4).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "%14ld ",
+				Shm->Sleep.ringWaiting.tv_nsec / 1000000L);
+	memcpy(&TCellAt(wSet, 0, 5).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "%14ld ",
+				Shm->Sleep.childWaiting.tv_nsec / 1000000L);
+	memcpy(&TCellAt(wSet, 0, 6).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "%14ld ",
+				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L);
+	memcpy(&TCellAt(wSet, 0, 7).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "<%3s>",
+			enabled((Shm->Registration.AutoClock & 0b10) != 0));
+	memcpy(&TCellAt(wSet, 0, 8).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "<%3s>",
+				enabled((Shm->Registration.Experimental != 0)));
+	memcpy(&TCellAt(wSet, 0, 9).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "[%3s]",
+				enabled(!(Shm->Registration.hotplug < 0)));
+	memcpy(&TCellAt(wSet, 0,10).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "[%3s]",
+				enabled((Shm->Registration.pci == 1)));
+	memcpy(&TCellAt(wSet, 0,11).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "<%3s>",
+				enabled(Shm->Registration.nmi));
+	memcpy(&TCellAt(wSet, 0,12).item[31 - subLen], subStr, subLen);
 
 	StoreWindow(wSet, .title, " Settings ");
 
@@ -2548,16 +2532,16 @@ Window *CreateSettings(unsigned long long id)
 	StoreWindow(wSet,	.key.Up,	MotionUp_Win);
 	StoreWindow(wSet,	.key.Home,	MotionReset_Win);
 	StoreWindow(wSet,	.key.End,	MotionEnd_Cell);
-      }
-      return(wSet);
+    }
+	return(wSet);
 }
 
 Window *CreateHelp(unsigned long long id)
 {
-      Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2,
+	Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2,
 				(TOP_HEADER_ROW + 19 + 1 < draw.Size.height) ?
 					TOP_HEADER_ROW + 1 : 1);
-      if (wHelp != NULL) {
+    if (wHelp != NULL) {
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL," [F2]             ",MAKE_PRINT_FOCUS);
@@ -2605,31 +2589,21 @@ Window *CreateHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
-      }
-      return(wHelp);
+    }
+	return(wHelp);
 }
 
 Window *CreateAdvHelp(unsigned long long id)
 {
-      ATTRIBUTE attribute[2][38] = {
-		{
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		},
-		{
-		LWK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,HCK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,
-		LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		}
-      };
-      struct ADV_HELP_ST {
+    ATTRIBUTE *attrib[2] = {
+	RSC(WIN_CREATE_ADV_HELP_COND0).ATTR(),
+	RSC(WIN_CREATE_ADV_HELP_COND1).ATTR()
+    };
+    struct ADV_HELP_ST {
 	short theme;
 	char *item;
 	SCANKEY quick;
-      } advHelp[] = {
+    } advHelp[] = {
 	{0,"                                      ", {SCANKEY_NULL}	},
 	{0," Frequency view:                      ", {SCANKEY_NULL}	},
 	{1," %        Averages or Package C-States", {SCANKEY_PERCENT}	},
@@ -2649,18 +2623,18 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1,"  Up  PgUp                     Scroll ", {SCANKEY_NULL}	},
 	{1," Down PgDw                       CPU  ", {SCANKEY_NULL}	},
 	{0,"                                      ", {SCANKEY_NULL}	},
-      };
+    };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
 	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
 				(TOP_HEADER_ROW + nmemb + 1 < draw.Size.height)?
 					TOP_HEADER_ROW + 1 : 1);
-      if (wHelp != NULL) {
+    if (wHelp != NULL) {
 	unsigned int idx;
 	for (idx = 0; idx < nmemb; idx++)
 		StoreTCell(	wHelp,
 				advHelp[idx].quick.key,
 				advHelp[idx].item,
-				attribute[advHelp[idx].theme] );
+				attrib[advHelp[idx].theme] );
 
 	StoreWindow(wHelp, .title, " Keys ");
 
@@ -2673,8 +2647,8 @@ Window *CreateAdvHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.Up,	MotionUp_Win);
 	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
 	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
-      }
-      return(wHelp);
+    }
+	return(wHelp);
 }
 
 Window *CreateAbout(unsigned long long id)
@@ -2981,7 +2955,7 @@ Window *CreateMemCtrl(unsigned long long id)
 {
 	unsigned short mc, cha, slot, rows = 0;
 	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-		rows+=7;
+		rows += 7;
 	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
 		rows++;
 	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
@@ -3013,7 +2987,7 @@ Window *CreateMemCtrl(unsigned long long id)
 		StoreWindow(wIMC,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wIMC,	.key.WinUp,	MotionOriginUp_Win);
 	    }
-	    return(wIMC);
+		return(wIMC);
 	}
 	else
 	    return(NULL);
@@ -3074,13 +3048,13 @@ int SortTaskListByForest(const void *p1, const void *p2)
 
 Window *CreateTracking(unsigned long long id)
 {
-	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-	  size_t tc = Shm->SysGate.taskCount;
-	  if (tc > 0) {
-	    const CUINT margin = 12;	/*	@ "Freq(MHz)"		*/
-	    int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
+    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+	size_t tc = Shm->SysGate.taskCount;
+	if (tc > 0) {
+		const CUINT margin = 12;	/*	@ "Freq(MHz)"	*/
+		int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
 
-	    Window *wTrack = CreateWindow(wLayer, id,
+		Window *wTrack = CreateWindow(wLayer, id,
 				1, TOP_HEADER_ROW + draw.Area.MaxRows * 2,
 				margin, TOP_HEADER_ROW);
 	    if (wTrack != NULL) {
@@ -3126,7 +3100,7 @@ Window *CreateTracking(unsigned long long id)
 		StoreWindow(wTrack, .color[0].title, MAKE_PRINT_DROP);
 		StoreWindow(wTrack, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
 
-		StoreWindow(wTrack,	.Print,		ForEachCellPrint_Drop);
+		StoreWindow(wTrack,	.Print, 	ForEachCellPrint_Drop);
 		StoreWindow(wTrack,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wTrack,	.key.Down,	MotionDown_Win);
 		StoreWindow(wTrack,	.key.Up,	MotionUp_Win);
@@ -3138,13 +3112,13 @@ Window *CreateTracking(unsigned long long id)
 		free(trackList);
 		free(item);
 	    }
-	    return(wTrack);
-	  }
-	  else
-	    return(NULL);
+		return(wTrack);
 	}
 	else
-	  return(NULL);
+	    return(NULL);
+    }
+    else
+	return(NULL);
 }
 
 Window *CreateHotPlugCPU(unsigned long long id)
@@ -3152,25 +3126,23 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	Window *wCPU = CreateWindow(	wLayer, id, 2, draw.Area.MaxRows,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1);
 	if (wCPU != NULL) {
-		ATTRIBUTE enAttr[12] = {
-			LWK,LGK,LGK,LGK,LGK,LGK,LGK,LGK,LWK,LDK,LDK,LDK
-		}, disAttr[12] = {
-			LWK,LCK,LCK,LCK,LCK,LCK,LCK,LCK,LWK,LDK,LDK,LDK
-		};
 		ASCII item[12];
 		unsigned int cpu;
-
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	  for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		sprintf((char*) item, " %02u  Off ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
-		StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]", enAttr);
+
+		StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]",
+				RSC(WIN_CREATE_HOTPLUG_CPU_ENABLE).ATTR());
 	    } else {
 		sprintf((char*) item, " %02u  On  ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
-		StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]", disAttr);
+
+		StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]",
+				RSC(WIN_CREATE_HOTPLUG_CPU_DISABLE).ATTR());
 	    }
-	}
+	  }
 		wCPU->matrix.select.col = 1;
 
 		StoreWindow(wCPU,	.title,		" CPU ");
@@ -3204,19 +3176,10 @@ Window *CreateCoreClock(unsigned long long id,
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
 
-	ATTRIBUTE attribute[3][28] = {
-		{
-		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
-		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		},
-		{
-		LWK,HBK,HBK,HBK,HBK,LBK,HBK,HBK,LWK,HDK,HDK,HDK,LWK,LWK,
-		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		},
-		{
-		LWK,HRK,HRK,HRK,HRK,LRK,HRK,HRK,LWK,HDK,HDK,HDK,LWK,LWK,
-		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		}
+	ATTRIBUTE *attrib[3] = {
+		RSC(WIN_CREATE_CORE_CLOCK_COND0).ATTR(),
+		RSC(WIN_CREATE_CORE_CLOCK_COND1).ATTR(),
+		RSC(WIN_CREATE_CORE_CLOCK_COND2).ATTR()
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
@@ -3259,9 +3222,9 @@ Window *CreateCoreClock(unsigned long long id,
 			multiplier, offset);
 
 		StoreTCell(wCK, clockMod.sllong, item,
-			attribute[multiplier < medianColdZone ?
-					1 : multiplier > startingHotZone ?
-						2 : 0]);
+			attrib[multiplier < medianColdZone ?
+				1 : multiplier > startingHotZone ?
+					2 : 0]);
 	}
 
 	TitleCallback(nc, (char*) item);
@@ -3320,15 +3283,9 @@ Window *CreateUncoreClock(unsigned long long id)
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
 
-	ATTRIBUTE attribute[2][28] = {
-		{
-		LWK,HWK,HWK,HWK,HWK,LWK,HWK,HWK,LWK,HDK,HDK,HDK,LWK,LWK,
-		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		},
-		{
-		LWK,HRK,HRK,HRK,HRK,LRK,HRK,HRK,LWK,HDK,HDK,HDK,LWK,LWK,
-		LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK
-		}
+	ATTRIBUTE *attrib[2] = {
+		RSC(WIN_CREATE_UNCORE_CLOCK_COND0).ATTR(),
+		RSC(WIN_CREATE_UNCORE_CLOCK_COND1).ATTR()
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
@@ -3341,21 +3298,21 @@ Window *CreateUncoreClock(unsigned long long id)
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-        CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
-        CUINT oRow;
+	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
+	CUINT oRow;
 
-        if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
-                hthMin = draw.Size.height -     ( TOP_HEADER_ROW
-                                                + TOP_FOOTER_ROW
-                                                + TOP_SEPARATOR);
-                oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
-        } else {
-                hthMin = draw.Size.height - 2;
-                oRow = 1;
-        }
-        hthWin = CUMIN(hthMin, hthMax);
+	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
+		hthMin = draw.Size.height -	( TOP_HEADER_ROW
+						+ TOP_FOOTER_ROW
+						+ TOP_SEPARATOR );
+		oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
+	} else {
+		hthMin = draw.Size.height - 2;
+		oRow = 1;
+	}
+	hthWin = CUMIN(hthMin, hthMax);
 
-        Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 42, oRow);
+	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 42, oRow);
 
     if (wUC != NULL) {
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
@@ -3370,7 +3327,7 @@ Window *CreateUncoreClock(unsigned long long id)
 			multiplier, offset);
 
 		StoreTCell(wUC, clockMod.sllong, item,
-			attribute[multiplier > startingHotZone ? 1 : 0]);
+			attrib[multiplier > startingHotZone ? 1 : 0]);
 	}
 	sprintf((char*) item, " %s Clock Uncore ", nc == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);
@@ -3419,7 +3376,7 @@ Window *_CreateBox(	unsigned long long id,
 	va_list ap;
 	va_start(ap, button);
 	ASCII *item = button;
-	ATTRIBUTE attr = va_arg(ap, ATTRIBUTE);
+	ATTRIBUTE attrib = va_arg(ap, ATTRIBUTE);
 	unsigned long long aKey = va_arg(ap, unsigned long long);
 	do {
 	    if (item != NULL) {
@@ -3431,28 +3388,28 @@ Window *_CreateBox(	unsigned long long id,
 			size_t len = KMIN(strlen((char *) item), MIN_WIDTH);
 			memcpy((char*)pBox->btn[cnt - 1].item,(char *)item,len);
 			pBox->btn[cnt - 1].item[len] = '\0';
-			pBox->btn[cnt - 1].attr = attr;
+			pBox->btn[cnt - 1].attr = attrib;
 			pBox->btn[cnt - 1].key = aKey;
 			pBox->cnt = cnt;
 		}
 		item = va_arg(ap, ASCII*);
-		attr = va_arg(ap, ATTRIBUTE);
+		attrib = va_arg(ap, ATTRIBUTE);
 		aKey = va_arg(ap, unsigned long long);
 	    }
 	} while (item != NULL) ;
 	va_end(ap);
 
 	Window *wBox = NULL;
-	if (pBox != NULL) {
-	    CUINT cHeight = pBox->cnt, oRow = origin.row;
-	    if (oRow + cHeight >= draw.Size.height) {
+    if (pBox != NULL) {
+	CUINT cHeight = pBox->cnt, oRow = origin.row;
+	if (oRow + cHeight >= draw.Size.height) {
 		cHeight = CUMIN(cHeight, (draw.Size.height - 2));
 		oRow = 1;
-	    }
-	    wBox = CreateWindow(wLayer, id,
+	}
+	wBox = CreateWindow(wLayer, id,
 				1, cHeight,
 				origin.col, oRow);
-	    if (wBox != NULL) {
+	if (wBox != NULL) {
 		wBox->matrix.select.col = select.col;
 		wBox->matrix.select.row = select.row;
 
@@ -3469,9 +3426,9 @@ Window *_CreateBox(	unsigned long long id,
 		StoreWindow(wBox,	.key.Up,	MotionUp_Win);
 		StoreWindow(wBox,	.key.Home,	MotionReset_Win);
 		StoreWindow(wBox,	.key.End,	MotionEnd_Cell);
-	    }
-	    free(pBox);
 	}
+	free(pBox);
+    }
 	return(wBox);
 }
 

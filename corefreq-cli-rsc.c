@@ -67,15 +67,15 @@ ATTRIBUTE Layout_Ruller_Freq_Pkg_Attr[] = LAYOUT_RULLER_FREQUENCY_PKG_ATTR;
 ASCII	Layout_Ruller_Freq_Pkg_Code_En[] = LAYOUT_RULLER_FREQUENCY_PKG_CODE;
 #define Layout_Ruller_Freq_Pkg_Code_Fr Layout_Ruller_Freq_Pkg_Code_En
 
-ATTRIBUTE Layout_Ruller_Inst_Attr[] = {LWK};
+#define Layout_Ruller_Inst_Attr vColor
 ASCII	Layout_Ruller_Inst_Code_En[] = LAYOUT_RULLER_INST_CODE;
 #define Layout_Ruller_Inst_Code_Fr Layout_Ruller_Inst_Code_En
 
-ATTRIBUTE Layout_Ruller_Cycles_Attr[] = {LWK};
+#define Layout_Ruller_Cycles_Attr vColor
 ASCII	Layout_Ruller_Cycles_Code_En[] = LAYOUT_RULLER_CYCLES_CODE;
 #define Layout_Ruller_Cycles_Code_Fr Layout_Ruller_Cycles_Code_En
 
-ATTRIBUTE Layout_Ruller_CStates_Attr[] = {LWK};
+#define Layout_Ruller_CStates_Attr vColor
 ASCII	Layout_Ruller_CStates_Code_En[] = LAYOUT_RULLER_CSTATES_CODE;
 #define Layout_Ruller_CStates_Code_Fr Layout_Ruller_CStates_Code_En
 
@@ -83,7 +83,7 @@ ATTRIBUTE Layout_Ruller_Interrupts_Attr[] = LAYOUT_RULLER_INTERRUPTS_ATTR;
 ASCII	Layout_Ruller_Interrupts_Code_En[] = LAYOUT_RULLER_INTERRUPTS_CODE;
 #define Layout_Ruller_Interrupts_Code_Fr Layout_Ruller_Interrupts_Code_En
 
-ATTRIBUTE Layout_Ruller_Package_Attr[] = {LWK};
+#define Layout_Ruller_Package_Attr vColor
 ASCII	Layout_Ruller_Package_Code_En[] = LAYOUT_RULLER_PACKAGE_CODE_EN,
 	Layout_Ruller_Package_Code_Fr[] = LAYOUT_RULLER_PACKAGE_CODE_FR;
 
@@ -277,6 +277,34 @@ ATTRIBUTE Win_Topology_Cond_Attr[3][13] = {
 ATTRIBUTE Win_MemoryController_Cond_Attr[2][14] = {
 	WIN_MEMORY_CONTROLLER_COND0_ATTR,
 	WIN_MEMORY_CONTROLLER_COND1_ATTR
+};
+
+ATTRIBUTE Win_CreateMenu_Stop_Attr[] = WIN_CREATE_MENU_STOP_ATTR,
+	  Win_CreateMenu_FnKey_Attr[] = WIN_CREATE_MENU_FN_KEY_ATTR,
+	  Win_CreateMenu_ShortKey_Attr[] = WIN_CREATE_MENU_SHORTKEY_ATTR;
+
+ATTRIBUTE Win_CreateSettings_Cond_Attr[2][32] = {
+	WIN_CREATE_SETTINGS_COND0_ATTR,
+	WIN_CREATE_SETTINGS_COND1_ATTR
+};
+
+ATTRIBUTE Win_CreateAdvHelp_Cond_Attr[2][38] = {
+	WIN_CREATE_ADV_HELP_COND0_ATTR,
+	WIN_CREATE_ADV_HELP_COND1_ATTR
+};
+
+ATTRIBUTE Win_CreateHotPlugCPU_Enable_Attr[]=WIN_CREATE_HOTPLUG_CPU_ENABLE_ATTR,
+	Win_CreateHotPlugCPU_Disable_Attr[]=WIN_CREATE_HOTPLUG_CPU_DISABLE_ATTR;
+
+ATTRIBUTE Win_CreateCoreClock_Cond_Attr[3][28] = {
+	WIN_CREATE_CORE_CLOCK_COND0_ATTR,
+	WIN_CREATE_CORE_CLOCK_COND1_ATTR,
+	WIN_CREATE_CORE_CLOCK_COND2_ATTR
+};
+
+ATTRIBUTE Win_CreateUncoreClock_Cond_Attr[2][28] = {
+	WIN_CREATE_UNCORE_CLOCK_COND0_ATTR,
+	WIN_CREATE_UNCORE_CLOCK_COND1_ATTR
 };
 
 RESOURCE_ST Resource[] = {
@@ -616,247 +644,374 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = Layout_Card_Task_Code_Fr
 		}
 	},
+/* ATTRIBUTE */
+	[RSC_RUN_STATE_COLOR] = {
+		.Attr = SymbolRunColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_UNINT_STATE_COLOR] = {
+		.Attr = SymbolUnIntColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_ZOMBIE_STATE_COLOR] = {
+		.Attr = SymbolZombieColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_SLEEP_STATE_COLOR] = {
+		.Attr = SymbolSleepColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WAIT_STATE_COLOR] = {
+		.Attr = SymbolWaitColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_OTHER_STATE_COLOR] = {
+		.Attr = SymbolOtherColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_TRACKER_STATE_COLOR] = {
+		.Attr = SymbolTrackerColor_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_CPUID_COND0] = {
+		.Attr = Win_SysInfoCPUID_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_CPUID_COND1] = {
+		.Attr = Win_SysInfoCPUID_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_CPUID_COND2] = {
+		.Attr = Win_SysInfoCPUID_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_CPUID_COND3] = {
+		.Attr = Win_SysInfoCPUID_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSTEM_REGISTERS_COND0] = {
+		.Attr = Win_SystemRegisters_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSTEM_REGISTERS_COND1] = {
+		.Attr = Win_SystemRegisters_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSTEM_REGISTERS_COND2] = {
+		.Attr = Win_SystemRegisters_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PROC_COND0] = {
+		.Attr = Win_SysInfoProc_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PROC_COND1] = {
+		.Attr = Win_SysInfoProc_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PROC_COND2] = {
+		.Attr = Win_SysInfoProc_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PROC_COND3] = {
+		.Attr = Win_SysInfoProc_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_0_0] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[0][0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_0_1] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[0][1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_0_2] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[0][2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_0_3] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[0][3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_0_4] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[0][4],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_1_0] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[1][0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_1_1] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[1][1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_1_2] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[1][2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_1_3] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[1][3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_1_4] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[1][4],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_2_0] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[2][0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_2_1] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[2][1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_2_2] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[2][2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_2_3] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[2][3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_2_4] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[2][4],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_3_0] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[3][0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_3_1] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[3][1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_3_2] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[3][2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_3_3] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[3][3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_ISA_COND_3_4] = {
+		.Attr = Win_SysInfoISA_Cond_Attr[3][4],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_FEATURES_COND0] = {
+		.Attr = Win_SysInfoFeatures_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_FEATURES_COND1] = {
+		.Attr = Win_SysInfoFeatures_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_FEATURES_COND2] = {
+		.Attr = Win_SysInfoFeatures_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_TECH_COND0] = {
+		.Attr = Win_SysInfoTech_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_TECH_COND1] = {
+		.Attr = Win_SysInfoTech_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PERFMON_COND0] = {
+		.Attr = Win_SysInfoPerfMon_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PERFMON_COND1] = {
+		.Attr = Win_SysInfoPerfMon_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PERFMON_COND2] = {
+		.Attr = Win_SysInfoPerfMon_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PERFMON_COND3] = {
+		.Attr = Win_SysInfoPerfMon_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PWR_THERMAL_COND0] = {
+		.Attr = Win_SysInfoPwrThermal_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PWR_THERMAL_COND1] = {
+		.Attr = Win_SysInfoPwrThermal_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PWR_THERMAL_COND2] = {
+		.Attr = Win_SysInfoPwrThermal_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_PWR_THERMAL_COND3] = {
+		.Attr = Win_SysInfoPwrThermal_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_SYSINFO_KERNEL] = {
+		.Attr = Win_SysInfoKernel_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_TOPOLOGY_COND0] = {
+		.Attr = Win_Topology_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_TOPOLOGY_COND1] = {
+		.Attr = Win_Topology_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_TOPOLOGY_COND2] = {
+		.Attr = Win_Topology_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_MEMORY_CONTROLLER_COND0] = {
+		.Attr = Win_MemoryController_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_MEMORY_CONTROLLER_COND1] = {
+		.Attr = Win_MemoryController_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_MENU_STOP] = {
+		.Attr = Win_CreateMenu_Stop_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_MENU_FN_KEY] = {
+		.Attr = Win_CreateMenu_FnKey_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_MENU_SHORTKEY] = {
+		.Attr = Win_CreateMenu_ShortKey_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_SETTINGS_COND0] = {
+		.Attr = Win_CreateSettings_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_SETTINGS_COND1] = {
+		.Attr = Win_CreateSettings_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_ADV_HELP_COND0] = {
+		.Attr = Win_CreateAdvHelp_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_ADV_HELP_COND1] = {
+		.Attr = Win_CreateAdvHelp_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_HOTPLUG_CPU_ENABLE] = {
+		.Attr = Win_CreateHotPlugCPU_Enable_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_HOTPLUG_CPU_DISABLE] = {
+		.Attr = Win_CreateHotPlugCPU_Disable_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_CORE_CLOCK_COND0] = {
+		.Attr = Win_CreateCoreClock_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_CORE_CLOCK_COND1] = {
+		.Attr = Win_CreateCoreClock_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_CORE_CLOCK_COND2] = {
+		.Attr = Win_CreateCoreClock_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_UNCORE_CLOCK_COND0] = {
+		.Attr = Win_CreateUncoreClock_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_WIN_CREATE_UNCORE_CLOCK_COND1] = {
+		.Attr = Win_CreateUncoreClock_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+/* ASCII */
 	[RSC_PROCESSOR] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Processor",
 			[LOC_FR] = (ASCII*) "Processeur"
 		}
 	},
 	[RSC_ARCHITECTURE] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Architecture",
 			[LOC_FR] = (ASCII*) "Architecture"
 		}
 	},
 	[RSC_VENDOR_ID] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Vendor ID",
 			[LOC_FR] = (ASCII*) "ID vendeur"
 		}
 	},
 	[RSC_MICROCODE] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Microcode",
 			[LOC_FR] = (ASCII*) "Microcode"
 		}
 	},
 	[RSC_SIGNATURE] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Signature",
 			[LOC_FR] = (ASCII*) "Signature"
 		}
 	},
 	[RSC_STEPPING] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Stepping",
 			[LOC_FR] = (ASCII*) "Stepping"
 		}
 	},
 	[RSC_ONLINE_CPU] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Online CPU",
 			[LOC_FR] = (ASCII*) "CPU en ligne"
 		}
 	},
 	[RSC_BASE_CLOCK] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Base Clock",
 			[LOC_FR] = (ASCII*) "Horloge de base"
 		}
 	},
 	[RSC_FREQUENCY] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Frequency",
 			[LOC_FR] = (ASCII*) "Frequence"
 		}
 	},
 	[RSC_RATIO] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Ratio",
 			[LOC_FR] = (ASCII*) "Ratio"
 		}
 	},
 	[RSC_FACTORY] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Factory",
 			[LOC_FR] = (ASCII*) "Usine"
 		}
 	},
 	[RSC_LEVEL] = {
+		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = (ASCII*) "Level",
 			[LOC_FR] = (ASCII*) "Niveau"
 		}
 	},
-	[RSC_RUN_STATE_COLOR] = {
-		.Attr = SymbolRunColor_Attr
-	},
-	[RSC_UNINT_STATE_COLOR] = {
-		.Attr = SymbolUnIntColor_Attr
-	},
-	[RSC_ZOMBIE_STATE_COLOR] = {
-		.Attr = SymbolZombieColor_Attr
-	},
-	[RSC_SLEEP_STATE_COLOR] = {
-		.Attr = SymbolSleepColor_Attr
-	},
-	[RSC_WAIT_STATE_COLOR] = {
-		.Attr = SymbolWaitColor_Attr
-	},
-	[RSC_OTHER_STATE_COLOR] = {
-		.Attr = SymbolOtherColor_Attr
-	},
-	[RSC_TRACKER_STATE_COLOR] = {
-		.Attr = SymbolTrackerColor_Attr
-	},
-	[RSC_WIN_SYSINFO_CPUID_COND0] = {
-		.Attr = Win_SysInfoCPUID_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_CPUID_COND1] = {
-		.Attr = Win_SysInfoCPUID_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_CPUID_COND2] = {
-		.Attr = Win_SysInfoCPUID_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_CPUID_COND3] = {
-		.Attr = Win_SysInfoCPUID_Cond_Attr[3]
-	},
-	[RSC_WIN_SYSTEM_REGISTERS_COND0] = {
-		.Attr = Win_SystemRegisters_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSTEM_REGISTERS_COND1] = {
-		.Attr = Win_SystemRegisters_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSTEM_REGISTERS_COND2] = {
-		.Attr = Win_SystemRegisters_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_PROC_COND0] = {
-		.Attr = Win_SysInfoProc_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_PROC_COND1] = {
-		.Attr = Win_SysInfoProc_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_PROC_COND2] = {
-		.Attr = Win_SysInfoProc_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_PROC_COND3] = {
-		.Attr = Win_SysInfoProc_Cond_Attr[3]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_0_0] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[0][0]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_0_1] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[0][1]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_0_2] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[0][2]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_0_3] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[0][3]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_0_4] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[0][4]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_1_0] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[1][0]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_1_1] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[1][1]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_1_2] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[1][2]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_1_3] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[1][3]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_1_4] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[1][4]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_2_0] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[2][0]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_2_1] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[2][1]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_2_2] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[2][2]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_2_3] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[2][3]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_2_4] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[2][4]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_3_0] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[3][0]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_3_1] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[3][1]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_3_2] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[3][2]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_3_3] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[3][3]
-	},
-	[RSC_WIN_SYSINFO_ISA_COND_3_4] = {
-		.Attr = Win_SysInfoISA_Cond_Attr[3][4]
-	},
-	[RSC_WIN_SYSINFO_FEATURES_COND0] = {
-		.Attr = Win_SysInfoFeatures_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_FEATURES_COND1] = {
-		.Attr = Win_SysInfoFeatures_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_FEATURES_COND2] = {
-		.Attr = Win_SysInfoFeatures_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_TECH_COND0] = {
-		.Attr = Win_SysInfoTech_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_TECH_COND1] = {
-		.Attr = Win_SysInfoTech_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_PERFMON_COND0] = {
-		.Attr = Win_SysInfoPerfMon_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_PERFMON_COND1] = {
-		.Attr = Win_SysInfoPerfMon_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_PERFMON_COND2] = {
-		.Attr = Win_SysInfoPerfMon_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_PERFMON_COND3] = {
-		.Attr = Win_SysInfoPerfMon_Cond_Attr[3]
-	},
-	[RSC_WIN_SYSINFO_PWR_THERMAL_COND0] = {
-		.Attr = Win_SysInfoPwrThermal_Cond_Attr[0]
-	},
-	[RSC_WIN_SYSINFO_PWR_THERMAL_COND1] = {
-		.Attr = Win_SysInfoPwrThermal_Cond_Attr[1]
-	},
-	[RSC_WIN_SYSINFO_PWR_THERMAL_COND2] = {
-		.Attr = Win_SysInfoPwrThermal_Cond_Attr[2]
-	},
-	[RSC_WIN_SYSINFO_PWR_THERMAL_COND3] = {
-		.Attr = Win_SysInfoPwrThermal_Cond_Attr[3]
-	},
-	[RSC_WIN_SYSINFO_KERNEL] = {
-		.Attr = Win_SysInfoKernel_Attr
-	},
-	[RSC_WIN_TOPOLOGY_COND0] = {
-		.Attr = Win_Topology_Cond_Attr[0]
-	},
-	[RSC_WIN_TOPOLOGY_COND1] = {
-		.Attr = Win_Topology_Cond_Attr[1]
-	},
-	[RSC_WIN_TOPOLOGY_COND2] = {
-		.Attr = Win_Topology_Cond_Attr[2]
-	},
-	[RSC_WIN_MEMORY_CONTROLLER_COND0] = {
-		.Attr = Win_MemoryController_Cond_Attr[0]
-	},
-	[RSC_WIN_MEMORY_CONTROLLER_COND1] = {
-		.Attr = Win_MemoryController_Cond_Attr[1]
-	}
 };
