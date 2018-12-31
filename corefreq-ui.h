@@ -276,22 +276,6 @@ typedef union {
 
 typedef unsigned char	ASCII;
 
-#define LayerDeclare(_rsc, _len, _col, _row, _var)			\
-	struct {							\
-		Coordinate	origin;					\
-		CUINT		length;					\
-		ATTRIBUTE	*attr;					\
-		ASCII		*code;					\
-	} _var = {							\
-		.origin = {						\
-			.col = _col,					\
-			.row = _row					\
-		},							\
-		.length = _len,						\
-		.attr = _rsc ## _Attr,					\
-		.code = _rsc ## _Code					\
-	}
-
 typedef struct {
 	ASCII		*code;
 	ATTRIBUTE	*attr;

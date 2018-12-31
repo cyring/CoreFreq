@@ -148,7 +148,9 @@
 
 #define CLOCKMOD_RATIO_MASK	0x0000ffff
 
-#define powered(bit)	((bit) ? "Present" : "Missing")
+#define powered(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
+				: (char*) RSC(MISSING).CODE() )
+
 #define enabled(bit)	((bit) ? "ON" : "OFF")
 
 #define MARGIN_WIDTH	2
@@ -159,6 +161,22 @@
 #define LEADING_TOP	1
 
 #define LOAD_LEAD	4
+
+#define LayerDeclare(_ID, _len, _col, _row, _var)			\
+	struct {							\
+		Coordinate	origin;					\
+		CUINT		length;					\
+		ATTRIBUTE	*attr;					\
+		ASCII		*code;					\
+	} _var = {							\
+		.origin = {						\
+			.col = _col,					\
+			.row = _row					\
+		},							\
+		.length = _len,						\
+		.attr = RSC(_ID).ATTR(),				\
+		.code = RSC(_ID).CODE() 				\
+	}
 
 typedef char HBCLK[11 + 1];
 
@@ -181,6 +199,7 @@ enum VIEW {
 	V_VOLTAGE,
 	V_SLICE
 };
+
 #define VIEW_SIZE	(1 + V_SLICE)
 
 typedef void (*DISPOSAL_FUNC)(Layer*);

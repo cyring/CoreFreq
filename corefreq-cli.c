@@ -33,22 +33,6 @@ static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
 
-#define _LayerDeclare(_ID, _len, _col, _row, _var)			\
-	struct {							\
-		Coordinate	origin;					\
-		CUINT		length;					\
-		ATTRIBUTE	*attr;					\
-		ASCII		*code;					\
-	} _var = {							\
-		.origin = {						\
-			.col = _col,					\
-			.row = _row					\
-		},							\
-		.length = _len,						\
-		.attr = RSC(_ID).ATTR(),				\
-		.code = RSC(_ID).CODE() 				\
-	}
-
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 {
@@ -248,19 +232,19 @@ void Print_v3(	CELL_FUNC OutFunc,
 void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[4] = {
-		RSC(WIN_SYSINFO_CPUID_COND0).ATTR(),
-		RSC(WIN_SYSINFO_CPUID_COND1).ATTR(),
-		RSC(WIN_SYSINFO_CPUID_COND2).ATTR(),
-		RSC(WIN_SYSINFO_CPUID_COND3).ATTR()
+		RSC(SYSINFO_CPUID_COND0).ATTR(),
+		RSC(SYSINFO_CPUID_COND1).ATTR(),
+		RSC(SYSINFO_CPUID_COND2).ATTR(),
+		RSC(SYSINFO_CPUID_COND3).ATTR()
 	};
 	char format[] = "%08x:%08x%.*s%08x     %08x     %08x     %08x";
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (OutFunc == NULL) {
 		PUT(SCANKEY_NULL, attrib[0], width, 0,
-			"CPU #%-2u function"				\
+			"CPU #%-2u ""%.*s"				\
 			"          EAX          EBX          ECX          EDX",
-			cpu);
+			cpu, 8, RSC(FUNCTION).CODE());
 	    } else {
 		PUT(SCANKEY_NULL,
 			attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
@@ -276,7 +260,8 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.StdFunc.DX);
 
 		PUT(SCANKEY_NULL, attrib[2], width, 3,
-			"Largest Standard Function=%08x",
+			"%.*s""=%08x",
+			25, RSC(LARGEST_STD_FUNC).CODE(),
 			Shm->Cpu[cpu].Query.StdFunc.LargestStdFunc);
 
 		PUT(SCANKEY_NULL, attrib[3], width, 2, format,
@@ -288,7 +273,8 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Query.ExtFunc.EDX);
 
 		PUT(SCANKEY_NULL, attrib[2], width, 3,
-			"Largest Extended Function=%08x",
+			"%.*s""=%08x",
+			25, RSC(LARGEST_EXT_FUNC).CODE(),
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
 		int i;
@@ -379,9 +365,9 @@ const struct {
 void SystemRegisters(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[3] = {
-		RSC(WIN_SYSTEM_REGISTERS_COND0).ATTR(),
-		RSC(WIN_SYSTEM_REGISTERS_COND1).ATTR(),
-		RSC(WIN_SYSTEM_REGISTERS_COND2).ATTR()
+		RSC(SYSTEM_REGISTERS_COND0).ATTR(),
+		RSC(SYSTEM_REGISTERS_COND1).ATTR(),
+		RSC(SYSTEM_REGISTERS_COND2).ATTR()
 	};
 	const struct {
 		unsigned int Start, Stop;
@@ -558,10 +544,10 @@ void PrintUncoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
 void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[4] = {
-		RSC(WIN_SYSINFO_PROC_COND0).ATTR(),
-		RSC(WIN_SYSINFO_PROC_COND1).ATTR(),
-		RSC(WIN_SYSINFO_PROC_COND2).ATTR(),
-		RSC(WIN_SYSINFO_PROC_COND3).ATTR()
+		RSC(SYSINFO_PROC_COND0).ATTR(),
+		RSC(SYSINFO_PROC_COND1).ATTR(),
+		RSC(SYSINFO_PROC_COND2).ATTR(),
+		RSC(SYSINFO_PROC_COND3).ATTR()
 	};
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
@@ -656,8 +642,9 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
-		"Turbo Boost%.*s[%6s]", width - 22, hSpace,
-		Shm->Proc.Features.Turbo_Unlock ? "UNLOCK" : "LOCK");
+		"Turbo Boost%.*s[%.*s]", width - 22, hSpace, 6,
+			Shm->Proc.Features.Turbo_Unlock ?
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
     if (Shm->Proc.Features.Turbo_Unlock)
       for (boost = BOOST(1C), activeCores = 1;
@@ -683,8 +670,9 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
-		width, 2, "Uncore%.*s[%6s]", width - 17, hSpace,
-		Shm->Proc.Features.Uncore_Unlock ? "UNLOCK" : "LOCK");
+		width, 2, "Uncore%.*s[%.*s]", width - 17, hSpace, 6,
+			Shm->Proc.Features.Uncore_Unlock ?
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
     if (Shm->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
@@ -717,19 +705,22 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
-		width, 3, "Programmable%.*s[%6s]",
-		width - (OutFunc == NULL ? 26 : 24), hSpace,
-		Shm->Proc.Features.TDP_Unlock ? "UNLOCK" : "LOCK");
+		width, 3, "Programmable%.*s[%.*s]",
+		width - (OutFunc == NULL ? 26 : 24), hSpace, 6,
+			Shm->Proc.Features.TDP_Unlock ?
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],
-		width, 3, "Configuration%.*s[%6s]",
-		width - (OutFunc == NULL ? 27 : 25), hSpace,
-		Shm->Proc.Features.TDP_Cfg_Lock ? "LOCK" : "UNLOCK");
+		width, 3, "Configuration%.*s[%.*s]",
+		width - (OutFunc == NULL ? 27 : 25), hSpace, 6,
+			Shm->Proc.Features.TDP_Cfg_Lock ?
+				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboActivation],
-		width, 3, "Turbo Activation%.*s[%6s]",
-		width - (OutFunc == NULL ? 30 : 28), hSpace,
-		Shm->Proc.Features.TurboActivation ? "LOCK" : "UNLOCK");
+		width, 3, "Turbo Activation%.*s[%.*s]",
+		width - (OutFunc == NULL ? 30 : 28), hSpace, 6,
+			Shm->Proc.Features.TurboActivation ?
+				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
 	PrintCoreBoost(win, CFlop,
 			"Nominal", BOOST(TDP), 0, SCANKEY_NULL,
@@ -756,29 +747,29 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[4][5] = {
 		{
-			RSC(WIN_SYSINFO_ISA_COND_0_0).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_0_1).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_0_2).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_0_3).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_0_4).ATTR()
+			RSC(SYSINFO_ISA_COND_0_0).ATTR(),
+			RSC(SYSINFO_ISA_COND_0_1).ATTR(),
+			RSC(SYSINFO_ISA_COND_0_2).ATTR(),
+			RSC(SYSINFO_ISA_COND_0_3).ATTR(),
+			RSC(SYSINFO_ISA_COND_0_4).ATTR()
 		}, {
-			RSC(WIN_SYSINFO_ISA_COND_1_0).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_1_1).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_1_2).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_1_3).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_1_4).ATTR()
+			RSC(SYSINFO_ISA_COND_1_0).ATTR(),
+			RSC(SYSINFO_ISA_COND_1_1).ATTR(),
+			RSC(SYSINFO_ISA_COND_1_2).ATTR(),
+			RSC(SYSINFO_ISA_COND_1_3).ATTR(),
+			RSC(SYSINFO_ISA_COND_1_4).ATTR()
 		}, {
-			RSC(WIN_SYSINFO_ISA_COND_2_0).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_2_1).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_2_2).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_2_3).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_2_4).ATTR()
+			RSC(SYSINFO_ISA_COND_2_0).ATTR(),
+			RSC(SYSINFO_ISA_COND_2_1).ATTR(),
+			RSC(SYSINFO_ISA_COND_2_2).ATTR(),
+			RSC(SYSINFO_ISA_COND_2_3).ATTR(),
+			RSC(SYSINFO_ISA_COND_2_4).ATTR()
 		}, {
-			RSC(WIN_SYSINFO_ISA_COND_3_0).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_3_1).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_3_2).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_3_3).ATTR(),
-			RSC(WIN_SYSINFO_ISA_COND_3_4).ATTR()
+			RSC(SYSINFO_ISA_COND_3_0).ATTR(),
+			RSC(SYSINFO_ISA_COND_3_1).ATTR(),
+			RSC(SYSINFO_ISA_COND_3_2).ATTR(),
+			RSC(SYSINFO_ISA_COND_3_3).ATTR(),
+			RSC(SYSINFO_ISA_COND_3_4).ATTR()
 		}
 	};
 	CUINT nl = win->matrix.size.wth;
@@ -935,19 +926,19 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[3] = {
-		RSC(WIN_SYSINFO_FEATURES_COND0).ATTR(),
-		RSC(WIN_SYSINFO_FEATURES_COND1).ATTR(),
-		RSC(WIN_SYSINFO_FEATURES_COND2).ATTR()
+		RSC(SYSINFO_FEATURES_COND0).ATTR(),
+		RSC(SYSINFO_FEATURES_COND1).ATTR(),
+		RSC(SYSINFO_FEATURES_COND2).ATTR()
 	};
-	const char *TSC[] = {
-		"Missing",
-		"Variant",
-		"Invariant"
+	const ASCII *TSC[] = {
+		RSC(MISSING).CODE(),
+		RSC(VARIANT).CODE(),
+		RSC(INVARIANT).CODE()
 	};
-	const char *x2APIC[] = {
-		"Missing",
-		"  xAPIC",
-		" x2APIC"
+	const ASCII *x2APIC[] = {
+		RSC(MISSING).CODE(),
+		(ASCII*) "  xAPIC",
+		(ASCII*) " x2APIC"
 	};
 	int bix;
 /* Section Mark */
@@ -1170,8 +1161,8 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[2] = {
-		RSC(WIN_SYSINFO_TECH_COND0).ATTR(),
-		RSC(WIN_SYSINFO_TECH_COND1).ATTR()
+		RSC(SYSINFO_TECH_COND0).ATTR(),
+		RSC(SYSINFO_TECH_COND1).ATTR()
 	};
 		char *hypervisor[HYPERVISORS] = {
 		[HYPERV_BARE]	= "    ",
@@ -1260,10 +1251,10 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[4] = {
-		RSC(WIN_SYSINFO_PERFMON_COND0).ATTR(),
-		RSC(WIN_SYSINFO_PERFMON_COND1).ATTR(),
-		RSC(WIN_SYSINFO_PERFMON_COND2).ATTR(),
-		RSC(WIN_SYSINFO_PERFMON_COND3).ATTR()
+		RSC(SYSINFO_PERFMON_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_COND1).ATTR(),
+		RSC(SYSINFO_PERFMON_COND2).ATTR(),
+		RSC(SYSINFO_PERFMON_COND3).ATTR()
 	};
 	int bix;
 /* Section Mark */
@@ -1458,19 +1449,19 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[4] = {
-		RSC(WIN_SYSINFO_PWR_THERMAL_COND0).ATTR(),
-		RSC(WIN_SYSINFO_PWR_THERMAL_COND1).ATTR(),
-		RSC(WIN_SYSINFO_PWR_THERMAL_COND2).ATTR(),
-		RSC(WIN_SYSINFO_PWR_THERMAL_COND3).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR()
 	};
-	const char *TM[] = {
-		"Missing",
-		"Present",
-		"Disable",
-		" Enable",
+	const ASCII *TM[] = {
+		RSC(MISSING).CODE(),
+		RSC(PRESENT).CODE(),
+		(ASCII*) "Disable",
+		(ASCII*) " Enable",
 	}, *Unlock[] = {
-		"  LOCK",
-		"UNLOCK",
+		RSC(LOCK).CODE(),
+		RSC(UNLOCK).CODE()
 	};
 	int bix;
 /* Section Mark */
@@ -1557,52 +1548,52 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		*str = malloc(width + 1);
 	int	idx = 0;
 /* Section Mark */
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
 
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Release%.*s[%s]", width - 12 - strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Version%.*s[%s]", width - 12 - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Machine%.*s[%s]", width - 12 - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"Memory:%.*s", width - 7, hSpace);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Total RAM" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Shared RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Free RAM" "%.*s" "%s KB", width - 14 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Buffer RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Total High" "%.*s" "%s KB", width - 16 - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
 		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
 /* Section Mark */
   if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
   {
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 0,
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
@@ -1613,7 +1604,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
     }
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Power:%.*s", 10, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -1622,7 +1613,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
     }
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Latency:%.*s", 8, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -1631,7 +1622,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
     }
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
 	len = sprintf(row, "Residency:%.*s", 6, hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
@@ -1640,7 +1631,7 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
     }
-	PUT(SCANKEY_NULL, RSC(WIN_SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
   }
 	free(row);
 	free(str);
@@ -1835,9 +1826,9 @@ void Instructions(void)
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[3] = {
-		RSC(WIN_TOPOLOGY_COND0).ATTR(),
-		RSC(WIN_TOPOLOGY_COND1).ATTR(),
-		RSC(WIN_TOPOLOGY_COND2).ATTR()
+		RSC(TOPOLOGY_COND0).ATTR(),
+		RSC(TOPOLOGY_COND1).ATTR(),
+		RSC(TOPOLOGY_COND2).ATTR()
 	};
 	unsigned int cpu = 0, level = 0;
 	CUINT nl = win->matrix.size.wth;
@@ -1900,8 +1891,8 @@ void MemoryController(Window *win, CELL_FUNC OutFunc)
 	#define MATX 14
 	#define MATY 5
 	ATTRIBUTE *attrib[2] = {
-		RSC(WIN_MEMORY_CONTROLLER_COND0).ATTR(),
-		RSC(WIN_MEMORY_CONTROLLER_COND1).ATTR()
+		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
+		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
 	size_t len = strlen(Shm->Uncore.Chipset.CodeName);
 	CUINT nl = win->matrix.size.wth, ni, nr, nc;
@@ -2347,14 +2338,14 @@ Window *CreateMenu(unsigned long long id)
     if (wMenu != NULL) {
 	ATTRIBUTE voidAttr = {.value = 0},
 		sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
-		*fkeyAttr = RSC(WIN_CREATE_MENU_FN_KEY).ATTR(),
-		*skeyAttr = RSC(WIN_CREATE_MENU_SHORTKEY).ATTR(),
+		*fkeyAttr = RSC(CREATE_MENU_FN_KEY).ATTR(),
+		*skeyAttr = RSC(CREATE_MENU_SHORTKEY).ATTR(),
 		*gateAttr = BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-				RSC(WIN_CREATE_MENU_SHORTKEY).ATTR()
-				: RSC(WIN_CREATE_MENU_STOP).ATTR(),
+				RSC(CREATE_MENU_SHORTKEY).ATTR()
+				: RSC(CREATE_MENU_STOP).ATTR(),
 		*ctrlAttr = (Shm->Uncore.CtrlCount > 0) ?
-				RSC(WIN_CREATE_MENU_SHORTKEY).ATTR()
-				: RSC(WIN_CREATE_MENU_STOP).ATTR();
+				RSC(CREATE_MENU_SHORTKEY).ATTR()
+				: RSC(CREATE_MENU_STOP).ATTR();
 
 	StoreTCell(wMenu, SCANKEY_NULL,   "          Menu          ", sameAttr);
 	StoreTCell(wMenu, SCANKEY_NULL,   "          View          ", sameAttr);
@@ -2427,8 +2418,8 @@ Window *CreateSettings(unsigned long long id)
 					TOP_HEADER_ROW + 3 : 1);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
-		RSC(WIN_CREATE_SETTINGS_COND0).ATTR(),
-		RSC(WIN_CREATE_SETTINGS_COND1).ATTR()
+		RSC(CREATE_SETTINGS_COND0).ATTR(),
+		RSC(CREATE_SETTINGS_COND1).ATTR()
 	};
 	size_t subLen = strlen(Shm->ShmName);
 	char subStr[16];
@@ -2521,7 +2512,7 @@ Window *CreateSettings(unsigned long long id)
 				enabled(Shm->Registration.nmi));
 	memcpy(&TCellAt(wSet, 0,12).item[31 - subLen], subStr, subLen);
 
-	StoreWindow(wSet, .title, " Settings ");
+	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
 
 	StoreWindow(wSet,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
@@ -2581,7 +2572,7 @@ Window *CreateHelp(unsigned long long id)
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
 
-	StoreWindow(wHelp, .title, " Help ");
+	StoreWindow(wHelp, .title, (char*) RSC(HELP_TITLE).CODE());
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
 	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_UNFOCUS);
 
@@ -2596,8 +2587,8 @@ Window *CreateHelp(unsigned long long id)
 Window *CreateAdvHelp(unsigned long long id)
 {
     ATTRIBUTE *attrib[2] = {
-	RSC(WIN_CREATE_ADV_HELP_COND0).ATTR(),
-	RSC(WIN_CREATE_ADV_HELP_COND1).ATTR()
+	RSC(CREATE_ADV_HELP_COND0).ATTR(),
+	RSC(CREATE_ADV_HELP_COND1).ATTR()
     };
     struct ADV_HELP_ST {
 	short theme;
@@ -2636,7 +2627,7 @@ Window *CreateAdvHelp(unsigned long long id)
 				advHelp[idx].item,
 				attrib[advHelp[idx].theme] );
 
-	StoreWindow(wHelp, .title, " Keys ");
+	StoreWindow(wHelp, .title, (char*) RSC(ADV_HELP_TITLE).CODE());
 
 	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
@@ -2718,14 +2709,14 @@ void AddSysInfoCell(CELL_ARGS)
 
 Window *CreateSysInfo(unsigned long long id)
 {
+	void (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
+	char *paddedTitle = NULL;
 	CoordSize matrixSize = {
 		.wth = 1,
 		.hth = CUMIN(18, (draw.Size.height - TOP_HEADER_ROW - 2))
 	};
 	Coordinate winOrigin = {.col = 3, .row = TOP_HEADER_ROW + 2};
 	CUINT winWidth = 74;
-	void (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
-	char *title = NULL;
 
 	switch (id) {
 	case SCANKEY_p:
@@ -2735,7 +2726,8 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 2;
 		winWidth = 76;
 		SysInfoFunc = SysInfoProc;
-		title = " Processor ";
+		paddedTitle = malloc(1 + RSZ(PROCESSOR) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(PROCESSOR).CODE());
 		}
 		break;
 	case SCANKEY_e:
@@ -2745,7 +2737,8 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 4;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
-		title = " Features ";
+		paddedTitle = malloc(1 + RSZ(FEATURES) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(FEATURES).CODE());
 		}
 		break;
 	case SCANKEY_t:
@@ -2761,7 +2754,8 @@ Window *CreateSysInfo(unsigned long long id)
 		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
-		title = " Technologies ";
+		paddedTitle = malloc(1 + RSZ(TECHNOLOGIES) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(TECHNOLOGIES).CODE());
 		}
 		break;
 	case SCANKEY_o:
@@ -2769,7 +2763,8 @@ Window *CreateSysInfo(unsigned long long id)
 		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= draw.Size.height)
 			winOrigin.row = TOP_HEADER_ROW + 1;
 		SysInfoFunc = SysInfoPerfMon;
-		title = " Performance Monitoring ";
+		paddedTitle = malloc(1 + RSZ(PERF_MONITORING) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(PERF_MONITORING).CODE());
 		}
 		break;
 	case SCANKEY_w:
@@ -2784,7 +2779,8 @@ Window *CreateSysInfo(unsigned long long id)
 		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;
-		title = " Power & Thermal ";
+		paddedTitle = malloc(1 + RSZ(POWER_THERMAL) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(POWER_THERMAL).CODE());
 		}
 		break;
 	case SCANKEY_u:
@@ -2793,8 +2789,10 @@ Window *CreateSysInfo(unsigned long long id)
 			winOrigin.row = TOP_HEADER_ROW + 1;
 		winWidth = 74;
 		SysInfoFunc = SysInfoCPUID;
-		title = " function           "				\
-			"EAX          EBX          ECX          EDX ";
+		paddedTitle = malloc(1 + RSZ(FUNCTION) + 11 + 43 + 1);
+		sprintf(paddedTitle, " %s           "			\
+				"EAX          EBX          ECX          EDX ",
+				RSC(FUNCTION).CODE());
 		}
 		break;
 	case SCANKEY_k:
@@ -2809,7 +2807,8 @@ Window *CreateSysInfo(unsigned long long id)
 			winOrigin.row = 1;
 		}
 		SysInfoFunc = SysInfoKernel;
-		title = " Kernel ";
+		paddedTitle = malloc(1 + RSZ(KERNEL) + 1 + 1);
+		sprintf(paddedTitle, " %s ", RSC(KERNEL).CODE());
 		}
 		break;
 	}
@@ -2841,8 +2840,9 @@ Window *CreateSysInfo(unsigned long long id)
 		default:
 			break;
 		}
-		StoreWindow(wSysInfo,	.title,		title);
-
+		if (paddedTitle != NULL) {
+			StoreWindow(wSysInfo, .title, paddedTitle);
+		}
 		StoreWindow(wSysInfo,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wSysInfo,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wSysInfo,	.key.Right,	MotionRight_Win);
@@ -2857,6 +2857,9 @@ Window *CreateSysInfo(unsigned long long id)
 		StoreWindow(wSysInfo,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wSysInfo,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wSysInfo,	.key.WinUp,	MotionOriginUp_Win);
+	}
+	if (paddedTitle != NULL) {
+		free(paddedTitle);
 	}
 	return(wSysInfo);
 }
@@ -2875,10 +2878,16 @@ Window *CreateTopology(unsigned long long id)
 		wTopology->matrix.select.row = 2;
 
 	if (wTopology != NULL) {
+		char *paddedTitle = NULL;
+
 		Topology(wTopology, AddCell);
 
-		StoreWindow(wTopology,	.title, " Topology ");
-
+		paddedTitle = malloc(1 + RSZ(TOPOLOGY) + 1 + 1);
+		if (paddedTitle != NULL) {
+			sprintf(paddedTitle, " %s ", RSC(TOPOLOGY).CODE());
+			StoreWindow(wTopology,	.title, paddedTitle);
+			free(paddedTitle);
+		}
 		StoreWindow(wTopology,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);
@@ -2905,7 +2914,7 @@ Window *CreateISA(unsigned long long id)
 	if (wISA != NULL) {
 		SysInfoISA(wISA, AddCell);
 
-		StoreWindow(wISA,	.title, " Instruction Set Extensions ");
+		StoreWindow(wISA,	.title, (char*) RSC(ISA_TITLE).CODE());
 
 		StoreWindow(wISA,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wISA,	.key.Right,	MotionRight_Win);
@@ -2932,7 +2941,7 @@ Window *CreateSysRegs(unsigned long long id)
 	if (wSR != NULL) {
 		SystemRegisters(wSR, AddCell);
 
-		StoreWindow(wSR,	.title, " System Registers ");
+		StoreWindow(wSR, .title, (char*) RSC(SYS_REGS_TITLE).CODE());
 
 		StoreWindow(wSR,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wSR,	.key.Right,	MotionRight_Win);
@@ -2971,7 +2980,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	    if (wIMC != NULL) {
 		MemoryController(wIMC, AddCell);
 
-		StoreWindow(wIMC, .title, " Memory Controller ");
+		StoreWindow(wIMC, .title, (char*) RSC(MEM_CTRL_TITLE).CODE());
 
 		StoreWindow(wIMC,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wIMC,	.key.Right,	MotionRight_Win);
@@ -3134,13 +3143,13 @@ Window *CreateHotPlugCPU(unsigned long long id)
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
 
 		StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]",
-				RSC(WIN_CREATE_HOTPLUG_CPU_ENABLE).ATTR());
+				RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR());
 	    } else {
 		sprintf((char*) item, " %02u  On  ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
 
 		StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]",
-				RSC(WIN_CREATE_HOTPLUG_CPU_DISABLE).ATTR());
+				RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR());
 	    }
 	  }
 		wCPU->matrix.select.col = 1;
@@ -3177,9 +3186,9 @@ Window *CreateCoreClock(unsigned long long id,
 					.Toggle];
 
 	ATTRIBUTE *attrib[3] = {
-		RSC(WIN_CREATE_CORE_CLOCK_COND0).ATTR(),
-		RSC(WIN_CREATE_CORE_CLOCK_COND1).ATTR(),
-		RSC(WIN_CREATE_CORE_CLOCK_COND2).ATTR()
+		RSC(CREATE_CORE_CLOCK_COND0).ATTR(),
+		RSC(CREATE_CORE_CLOCK_COND1).ATTR(),
+		RSC(CREATE_CORE_CLOCK_COND2).ATTR()
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
@@ -3284,8 +3293,8 @@ Window *CreateUncoreClock(unsigned long long id)
 					.Toggle];
 
 	ATTRIBUTE *attrib[2] = {
-		RSC(WIN_CREATE_UNCORE_CLOCK_COND0).ATTR(),
-		RSC(WIN_CREATE_UNCORE_CLOCK_COND1).ATTR()
+		RSC(CREATE_UNCORE_CLOCK_COND0).ATTR(),
+		RSC(CREATE_UNCORE_CLOCK_COND1).ATTR()
 	};
 	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
@@ -5022,18 +5031,18 @@ void Layout_Header(Layer *layer, CUINT row)
 
 		Load2LCD(layer, 0, row, percent);
 	}
-	_LayerDeclare(LAYOUT_HEADER_PROC, 12, 12, row, hProc0);
-	_LayerDeclare(LAYOUT_HEADER_CPU, 11,(draw.Size.width - 11),row, hProc1);
+	LayerDeclare(LAYOUT_HEADER_PROC, 12, 12, row, hProc0);
+	LayerDeclare(LAYOUT_HEADER_CPU, 11,(draw.Size.width - 11), row, hProc1);
 
 	row++;
 
-	_LayerDeclare(LAYOUT_HEADER_ARCH, 15, 12, row, hArch0);
-	_LayerDeclare(LAYOUT_HEADER_CACHE_L1,30,(draw.Size.width-30),row,hArch1);
+	LayerDeclare(LAYOUT_HEADER_ARCH, 15, 12, row, hArch0);
+	LayerDeclare(LAYOUT_HEADER_CACHE_L1,30,(draw.Size.width-30),row,hArch1);
 
 	row++;
 
-	_LayerDeclare(LAYOUT_HEADER_BCLK, 28, 12, row, hBClk0);
-	_LayerDeclare(LAYOUT_HEADER_CACHES,21,(draw.Size.width-21),row, hArch2);
+	LayerDeclare(LAYOUT_HEADER_BCLK, 28, 12, row, hBClk0);
+	LayerDeclare(LAYOUT_HEADER_CACHES,21,(draw.Size.width-21), row, hArch2);
 
 	row++;
 
@@ -5129,7 +5138,7 @@ void Layout_Header(Layer *layer, CUINT row)
 
 void Layout_Ruller_Load(Layer *layer, CUINT row)
 {
-	_LayerDeclare(LAYOUT_RULLER_LOAD, draw.Size.width, 0, row, hLoad0);
+	LayerDeclare(LAYOUT_RULLER_LOAD, draw.Size.width, 0, row, hLoad0);
 	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 	/* Alternate the color of the frequency ratios			*/
@@ -5162,7 +5171,7 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, 77,
+	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, 77,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -5179,7 +5188,7 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
-	_LayerDeclare(	LAYOUT_MONITOR_INST, 76,
+	LayerDeclare(	LAYOUT_MONITOR_INST, 76,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -5196,7 +5205,7 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(	LAYOUT_MONITOR_COMMON, 77,
+	LayerDeclare(	LAYOUT_MONITOR_COMMON, 77,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -5218,7 +5227,7 @@ CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(	LAYOUT_MONITOR_TASKS, (MAX_WIDTH - LOAD_LEAD + 1),
+	LayerDeclare(	LAYOUT_MONITOR_TASKS, (MAX_WIDTH - LOAD_LEAD + 1),
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -5233,21 +5242,21 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(	LAYOUT_RULLER_FREQUENCY, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULLER_FREQUENCY, draw.Size.width,
 			0, row, hFreq0);
 
 	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code);
 
 	if (!draw.Flag.avgOrPC) {
-		_LayerDeclare(	LAYOUT_RULLER_FREQUENCY_AVG, draw.Size.width,
+		LayerDeclare(	LAYOUT_RULLER_FREQUENCY_AVG, draw.Size.width,
 				0, (row + draw.Area.MaxRows + 1),
 				hAvg0);
 
 		LayerCopyAt(	layer, hAvg0.origin.col, hAvg0.origin.row,
 				hAvg0.length, hAvg0.attr, hAvg0.code);
 	} else {
-		_LayerDeclare(	LAYOUT_RULLER_FREQUENCY_PKG, draw.Size.width,
+		LayerDeclare(	LAYOUT_RULLER_FREQUENCY_PKG, draw.Size.width,
 				0, (row + draw.Area.MaxRows + 1),
 				hPkg0);
 
@@ -5300,7 +5309,7 @@ CUINT Layout_Ruller_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(	LAYOUT_RULLER_INTERRUPTS, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULLER_INTERRUPTS, draw.Size.width,
 			0, row, hIntr0);
 
 	LayerCopyAt(	layer, hIntr0.origin.col, hIntr0.origin.row,
@@ -5313,9 +5322,9 @@ CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-ATTRIBUTE	hPCnnAttr[MAX_WIDTH] = LAYOUT_PACKAGE_PC_ATTR;
-ASCII		hPCnnCode[MAX_WIDTH] = LAYOUT_PACKAGE_PC_CODE;
-ASCII		hCState[7][2] = {
+CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	ASCII	hCState[7][2] = {
 		{'0', '2'},
 		{'0', '3'},
 		{'0', '6'},
@@ -5323,10 +5332,8 @@ ASCII		hCState[7][2] = {
 		{'0', '8'},
 		{'0', '9'},
 		{'1', '0'}
-};
+	};
 
-CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
-{
 	LayerFillAt(	layer, 0, row, draw.Size.width,
 			RSC(LAYOUT_RULLER_PACKAGE).CODE(),
 			RSC(LAYOUT_RULLER_PACKAGE).ATTR()[0]);
@@ -5335,13 +5342,15 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	for (idx = 0; idx < 7; idx++)
 	{
 		LayerCopyAt(	layer, 0, (row + idx + 1),
-				draw.Size.width, hPCnnAttr, hPCnnCode);
+				draw.Size.width,
+				RSC(LAYOUT_PACKAGE_PC).ATTR(),
+				RSC(LAYOUT_PACKAGE_PC).CODE());
 
 		LayerAt(layer, code, 2, (row + idx + 1)) = hCState[idx][0];
 		LayerAt(layer, code, 3, (row + idx + 1)) = hCState[idx][1];
 	}
 
-	_LayerDeclare(	LAYOUT_PACKAGE_UNCORE, draw.Size.width,
+	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, draw.Size.width,
 			0, (row + 8), hUncore);
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
@@ -5354,23 +5363,9 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-ATTRIBUTE	Layout_Task1_Attr[21], Layout_Task2_Attr[15];
-ASCII		Layout_Task1_Code[21], Layout_Task2_Code[15];
-
-ATTRIBUTE	Layout_Tasks_Value_Attr[2][3] = {
-			[0] = LAYOUT_TASKS_VALUE_OFF_ATTR,
-			[1] = LAYOUT_TASKS_VALUE_ON_ATTR
-		};
-ASCII		Layout_Tasks_Value_Code[2][3] = {
-		[0] = LAYOUT_TASKS_VALUE_OFF_CODE,
-		[1] = LAYOUT_TASKS_VALUE_ON_CODE
-	};
-
 CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(LAYOUT_RULLER_TASKS, draw.Size.width, 0, row, hTask0);
-
-	LayerDeclare(Layout_Task1, 21, 23, row, hTask1);
+	LayerDeclare(LAYOUT_RULLER_TASKS, draw.Size.width, 0, row, hTask0);
 
 	struct {
 		ATTRIBUTE *attr;
@@ -5402,12 +5397,20 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		}
 	};
 
-	memcpy(hTask1.attr, hSort[Shm->SysGate.sortByField].attr,hTask1.length);
-	memcpy(hTask1.code, hSort[Shm->SysGate.sortByField].code,hTask1.length);
-
-	LayerDeclare(	Layout_Task2, 15,
-			(draw.Size.width - 18), (row + draw.Area.MaxRows + 1),
-			hTask2);
+	struct {							\
+		Coordinate	origin;					\
+		CUINT		length;					\
+		ATTRIBUTE	*attr;					\
+		ASCII		*code;					\
+	} hTask1 = {							\
+		.origin = {						\
+			.col = 23,					\
+			.row = row					\
+		},							\
+		.length = 21,						\
+		.attr = hSort[Shm->SysGate.sortByField].attr,		\
+		.code = hSort[Shm->SysGate.sortByField].code		\
+	};
 
 	struct {
 		ATTRIBUTE *attr;
@@ -5423,12 +5426,22 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		}
 	};
 
-	memcpy(hTask2.attr, hReverse[Shm->SysGate.reverseOrder].attr,
-			hTask2.length);
-	memcpy(hTask2.code, hReverse[Shm->SysGate.reverseOrder].code,
-			hTask2.length);
+	struct {							\
+		Coordinate	origin;					\
+		CUINT		length;					\
+		ATTRIBUTE	*attr;					\
+		ASCII		*code;					\
+	} hTask2 = {							\
+		.origin = {						\
+			.col = (draw.Size.width - 18),			\
+			.row = (row + draw.Area.MaxRows + 1)		\
+		},							\
+		.length = 15,						\
+		.attr = hReverse[Shm->SysGate.reverseOrder].attr,	\
+		.code = hReverse[Shm->SysGate.reverseOrder].code	\
+	};
 
-	_LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH, 13,
+	LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH, 13,
 			(draw.Size.width - 34), (row + draw.Area.MaxRows + 1),
 			hTask3);
 
@@ -5437,19 +5450,19 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		ASCII	  *code;
 	} hTaskVal[2] = {
 		{
-		.attr = Layout_Tasks_Value_Attr[0],
-		.code = Layout_Tasks_Value_Code[0]
+		.attr = RSC(LAYOUT_TASKS_VALUE_OFF).ATTR(),
+		.code = RSC(LAYOUT_TASKS_VALUE_OFF).CODE()
 		},
 		{
-		.attr = Layout_Tasks_Value_Attr[1],
-		.code = Layout_Tasks_Value_Code[1]
+		.attr = RSC(LAYOUT_TASKS_VALUE_ON).ATTR(),
+		.code = RSC(LAYOUT_TASKS_VALUE_ON).CODE()
 		}
 	};
 
 	memcpy(&hTask3.attr[8], hTaskVal[draw.Flag.taskVal].attr, 3);
 	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
 
-	_LayerDeclare(LAYOUT_TASKS_TRACKING, 22, 55, row, hTrack0);
+	LayerDeclare(LAYOUT_TASKS_TRACKING, 22, 55, row, hTrack0);
 
 	if (Shm->SysGate.trackTask) {
 		memset(&hTrack0.attr[15], MakeAttr(CYAN, 0, BLACK, 0).value, 5);
@@ -5491,7 +5504,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	const CUINT tab = LOAD_LEAD + 24 + 6;
 	CUINT vsh = row + PWR_DOMAIN(SIZE) + 1;
 
-	_LayerDeclare(LAYOUT_RULLER_VOLTAGE, draw.Size.width, 0, row, hVolt0);
+	LayerDeclare(LAYOUT_RULLER_VOLTAGE, draw.Size.width, 0, row, hVolt0);
 
 	LayerCopyAt(	layer, hVolt0.origin.col, hVolt0.origin.row,
 			hVolt0.length, hVolt0.attr, hVolt0.code);
@@ -5499,7 +5512,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
-		_LayerDeclare(	LAYOUT_POWER_MONITOR, 39,
+		LayerDeclare(	LAYOUT_POWER_MONITOR, 39,
 				tab, (row + pw + 1),
 				hPower0);
 
@@ -5519,7 +5532,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruller_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	_LayerDeclare(LAYOUT_RULLER_SLICE, draw.Size.width, 0, row, hSlice0);
+	LayerDeclare(LAYOUT_RULLER_SLICE, draw.Size.width, 0, row, hSlice0);
 
 	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code);
@@ -5537,7 +5550,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	CUINT col = 0;
 	size_t len;
 
-	_LayerDeclare(LAYOUT_FOOTER_TECH_X86, 14, 0, row, hTech0);
+	LayerDeclare(LAYOUT_FOOTER_TECH_X86, 14, 0, row, hTech0);
 
 	const ATTRIBUTE Pwr[] = {
 		MakeAttr(BLACK, 0, BLACK, 1),
@@ -5567,7 +5580,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	    _LayerDeclare(LAYOUT_FOOTER_TECH_INTEL, 66,
+	    LayerDeclare(LAYOUT_FOOTER_TECH_INTEL, 66,
 			hTech0.length, hTech0.origin.row,
 			hTech1);
 
@@ -5629,7 +5642,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	} else {
 	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  {
-	    _LayerDeclare(LAYOUT_FOOTER_TECH_AMD, 66,
+	    LayerDeclare(LAYOUT_FOOTER_TECH_AMD, 66,
 			hTech0.length, hTech0.origin.row,
 			hTech1);
 
@@ -5719,7 +5732,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	col++;
 
-	_LayerDeclare(	LAYOUT_FOOTER_SYSTEM, 42,
+	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, 42,
 			(draw.Size.width - 42), row, hSys1);
 
 	len = hSys1.origin.col - col;
@@ -6549,14 +6562,14 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
-		_LayerDeclare(	LAYOUT_CARD_CORE_ONLINE, (4 * INTER_WIDTH),
+		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE, (4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
 
 		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
 				hOnLine.length, hOnLine.attr, hOnLine.code);
 	} else {
-		_LayerDeclare(	LAYOUT_CARD_CORE_OFFLINE, (4 * INTER_WIDTH),
+		LayerDeclare(	LAYOUT_CARD_CORE_OFFLINE, (4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOffLine);
 
@@ -6579,7 +6592,7 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 void Layout_Card_CLK(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_CLK, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_CLK, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hCLK);
 
@@ -6589,7 +6602,7 @@ void Layout_Card_CLK(Layer *layer, Card* card)
 
 void Layout_Card_Uncore(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_UNCORE, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_UNCORE, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hUncore);
 
@@ -6604,7 +6617,7 @@ void Layout_Card_Uncore(Layer *layer, Card* card)
 
 void Layout_Card_Bus(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_BUS, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_BUS, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hBus);
 
@@ -6638,7 +6651,7 @@ void Layout_Card_Bus(Layer *layer, Card* card)
 
 void Layout_Card_MC(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_MC, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_MC, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hRAM);
 
@@ -6673,7 +6686,7 @@ void Layout_Card_MC(Layer *layer, Card* card)
 
 void Layout_Card_Load(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_LOAD, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_LOAD, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hLoad);
 
@@ -6683,7 +6696,7 @@ void Layout_Card_Load(Layer *layer, Card* card)
 
 void Layout_Card_Idle(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_IDLE, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_IDLE, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hIdle);
 
@@ -6693,7 +6706,7 @@ void Layout_Card_Idle(Layer *layer, Card* card)
 
 void Layout_Card_RAM(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_RAM, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_RAM, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hMem);
 
@@ -6732,7 +6745,7 @@ void Layout_Card_RAM(Layer *layer, Card* card)
 
 void Layout_Card_Task(Layer *layer, Card* card)
 {
-	_LayerDeclare(	LAYOUT_CARD_TASK, (4 * INTER_WIDTH),
+	LayerDeclare(	LAYOUT_CARD_TASK, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hSystem);
 
