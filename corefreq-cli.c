@@ -2348,53 +2348,53 @@ Window *CreateMenu(unsigned long long id)
 				RSC(CREATE_MENU_SHORTKEY).ATTR()
 				: RSC(CREATE_MENU_STOP).ATTR();
 
-	StoreTCell(wMenu, SCANKEY_NULL,   "          Menu          ", sameAttr);
-	StoreTCell(wMenu, SCANKEY_NULL,   "          View          ", sameAttr);
-	StoreTCell(wMenu, SCANKEY_NULL,   "         Window         ", sameAttr);
+  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_MENU).CODE()	, sameAttr);
+  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE()	, sameAttr);
+  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_WINDOW).CODE()	, sameAttr);
 
-	StoreTCell(wMenu, SCANKEY_s,      " Settings           [s] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_d,      " Dashboard          [d] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_p,      " Processor          [p] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_s, RSC(MENU_ITEM_SETTINGS).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_d, RSC(MENU_ITEM_DASHBOARD).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_p, RSC(MENU_ITEM_PROCESSOR).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_k,      " Kernel Data        [k] ", gateAttr);
-	StoreTCell(wMenu, SCANKEY_f,      " Frequency          [f] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_m,      " Topology           [m] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE()	, gateAttr);
+  StoreTCell(wMenu, SCANKEY_f, RSC(MENU_ITEM_FREQUENCY).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_m, RSC(MENU_ITEM_TOPOLOGY).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_HASH,   " HotPlug CPU        [#] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_i,      " Inst cycles        [i] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_e,      " Features           [e] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_HASH,RSC(MENU_ITEM_HOTPLUG).CODE()	,skeyAttr);
+  StoreTCell(wMenu, SCANKEY_i, RSC(MENU_ITEM_INST_CYCLES).CODE(), skeyAttr);
+  StoreTCell(wMenu, SCANKEY_e, RSC(MENU_ITEM_FEATURES).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F3,     " Tools             [F3] ", fkeyAttr);
-	StoreTCell(wMenu, SCANKEY_c,      " Core cycles        [c] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_i," ISA Extensions     [I] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_F3, RSC(MENU_ITEM_TOOLS).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_c, RSC(MENU_ITEM_CORE_CYCLES).CODE(), skeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_i,RSC(MENU_ITEM_ISA_EXT).CODE(), skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_a,      " About              [a] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_l,      " Idle C-States      [l] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_t,      " Technologies       [t] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_l, RSC(MENU_ITEM_IDLE_STATES).CODE(), skeyAttr);
+  StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_h,      " Help               [h] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_g,      " Package cycles     [g] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_o,      " Perf. Monitoring   [o] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(), skeyAttr);
+  StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F1,     " Keys              [F1] ", fkeyAttr);
-	StoreTCell(wMenu, SCANKEY_x,      " Tasks Monitoring   [x] ", gateAttr);
-	StoreTCell(wMenu, SCANKEY_w,      " Power & Thermal    [w] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_F1, RSC(MENU_ITEM_KEYS).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE() , gateAttr);
+  StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE() , skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_F4,     " Quit              [F4] ", fkeyAttr);
-	StoreTCell(wMenu, SCANKEY_q,      " System Interrupts  [q] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_u,      " CPUID Hexa Dump    [u] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_l, RSC(MENU_ITEM_LANG).CODE() , skeyAttr);
+  StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE() , skeyAttr);
+  StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE()	, skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_v," Power & Voltage    [V] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_r," System Registers   [R] ", skeyAttr);
+  StoreTCell(wMenu, SCANKEY_F4, RSC(MENU_ITEM_QUIT).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_v,RSC(MENU_ITEM_POW_VOLT).CODE(),skeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_r,RSC(MENU_ITEM_SYS_REGS).CODE(),skeyAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_t," Slice counters     [T] ", skeyAttr);
-	StoreTCell(wMenu, SCANKEY_SHIFT_m," Memory Controller  [M] ", ctrlAttr);
+  StoreTCell(wMenu, SCANKEY_VOID,			""	, voidAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_t,RSC(MENU_ITEM_SLICE_CTRS).CODE(),skeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_m,RSC(MENU_ITEM_MEM_CTRL).CODE(),ctrlAttr);
 
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
-	StoreTCell(wMenu, SCANKEY_VOID,   "", voidAttr);
+  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
+  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
+  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
 
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
 	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK, 0, WHITE, 0));

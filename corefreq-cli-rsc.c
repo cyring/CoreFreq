@@ -1273,6 +1273,230 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_MEM_CTRL_TITLE_CODE_FR
 		}
 	},
+	[RSC_MENU_ITEM_MENU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_MENU_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_MENU_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_VIEW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_VIEW_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_VIEW_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_WINDOW_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_SETTINGS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SETTINGS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SETTINGS_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_KERNEL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_KERNEL_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_KERNEL_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_HOTPLUG] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_HOTPLUG_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_HOTPLUG_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_TOOLS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_TOOLS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_TOOLS_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_ABOUT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_ABOUT_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_ABOUT_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_HELP] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_HELP_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_HELP_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_KEYS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_KEYS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_KEYS_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_LANG] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_LANG_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_LANG_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_QUIT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_QUIT_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_QUIT_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_DASHBOARD] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_DASHBOARD_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_DASHBOARD_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_FREQUENCY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_FREQUENCY_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_FREQUENCY_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_INST_CYCLES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_INST_CYCLE_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_INST_CYCLE_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_CORE_CYCLES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_CORE_CYCLE_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_CORE_CYCLE_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_IDLE_STATES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_IDLE_STATE_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_IDLE_STATE_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_PKG_CYCLES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_PKG_CYCLE_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_PKG_CYCLE_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_TASKS_MON] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_TASKS_MON_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_TASKS_MON_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_SYS_INTER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SYS_INTER_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SYS_INTER_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_POW_VOLT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_POW_VOLT_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_POW_VOLT_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_SLICE_CTRS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SLICE_CTR_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SLICE_CTR_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_PROCESSOR] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_PROCESSOR_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_PROCESSOR_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_TOPOLOGY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_TOPOLOGY_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_TOPOLOGY_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_FEATURES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_FEATURES_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_FEATURES_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_ISA_EXT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_ISA_EXT_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_ISA_EXT_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_TECH] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_TECH_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_TECH_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_PERF_MON] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_PERF_MON_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_PERF_MON_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_POW_THERM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_POW_THERM_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_POW_THERM_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_CPUID] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_CPUID_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_CPUID_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_SYS_REGS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SYS_REGS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SYS_REGS_CODE_FR
+		}
+	},
+	[RSC_MENU_ITEM_MEM_CTRL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_MEM_CTRL_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_MEM_CTRL_CODE_FR
+		}
+	},
 	[RSC_SETTINGS_TITLE] = {
 		.Attr = vColor,
 		.Code = {
