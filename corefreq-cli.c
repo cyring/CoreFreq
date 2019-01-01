@@ -242,9 +242,9 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (OutFunc == NULL) {
 		PUT(SCANKEY_NULL, attrib[0], width, 0,
-			"CPU #%-2u ""%.*s"				\
+			"CPU #%-2u function"				\
 			"          EAX          EBX          ECX          EDX",
-			cpu, 8, RSC(FUNCTION).CODE());
+			cpu);
 	    } else {
 		PUT(SCANKEY_NULL,
 			attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
@@ -705,25 +705,25 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
-		width, 3, "Programmable%.*s[%.*s]",
-		width - (OutFunc == NULL ? 26 : 24), hSpace, 6,
-			Shm->Proc.Features.TDP_Unlock ?
+		width, 3, "%s%.*s[%.*s]", RSC(PROGRAMMABLE).CODE(),
+		width - (OutFunc == NULL ? 14:12) - RSZ(PROGRAMMABLE), hSpace,
+			6, Shm->Proc.Features.TDP_Unlock ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],
-		width, 3, "Configuration%.*s[%.*s]",
-		width - (OutFunc == NULL ? 27 : 25), hSpace, 6,
-			Shm->Proc.Features.TDP_Cfg_Lock ?
+		width, 3, "%s%.*s[%.*s]", RSC(CONFIGURATION).CODE(),
+		width - (OutFunc == NULL ? 14:12) - RSZ(CONFIGURATION),hSpace,
+			6, Shm->Proc.Features.TDP_Cfg_Lock ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboActivation],
-		width, 3, "Turbo Activation%.*s[%.*s]",
-		width - (OutFunc == NULL ? 30 : 28), hSpace, 6,
-			Shm->Proc.Features.TurboActivation ?
+		width, 3, "%s%.*s[%.*s]", RSC(TURBO_ACTIVATION).CODE(),
+		width - (OutFunc == NULL ? 14:12)-RSZ(TURBO_ACTIVATION),hSpace,
+			6, Shm->Proc.Features.TurboActivation ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
-	PrintCoreBoost(win, CFlop,
-			"Nominal", BOOST(TDP), 0, SCANKEY_NULL,
+	PrintCoreBoost(win, CFlop, (char*) RSC(NOMINAL).CODE(),
+			BOOST(TDP), 0, SCANKEY_NULL,
 			width, OutFunc, attrib[3]);
 
 	sprintf(pfx, "%s""1", RSC(LEVEL).CODE());
@@ -1259,12 +1259,13 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	int bix;
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"Version%.*sPM       [%3d]",
-		width - 24, hSpace, Shm->Proc.PM_version);
+		"%s%.*sPM       [%3d]", RSC(VERSION).CODE(),
+		width - 17 - RSZ(VERSION), hSpace, Shm->Proc.PM_version);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"Counters:%.*sGeneral%.*sFixed",
-		10, hSpace, width - 61, hSpace);
+		"%s:%.*s%s%.*s%s",
+		RSC(COUNTERS).CODE(),10, hSpace, RSC(GENERAL_CTRS).CODE(),
+		width - 61, hSpace, RSC(FIXED_CTRS).CODE());
 
     if (OutFunc == NULL) {
 	PUT(SCANKEY_NULL, attrib[0], width, 1,
@@ -2710,7 +2711,7 @@ void AddSysInfoCell(CELL_ARGS)
 Window *CreateSysInfo(unsigned long long id)
 {
 	void (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
-	char *paddedTitle = NULL;
+	ASCII *title = NULL;
 	CoordSize matrixSize = {
 		.wth = 1,
 		.hth = CUMIN(18, (draw.Size.height - TOP_HEADER_ROW - 2))
@@ -2726,8 +2727,7 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 2;
 		winWidth = 76;
 		SysInfoFunc = SysInfoProc;
-		paddedTitle = malloc(1 + RSZ(PROCESSOR) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(PROCESSOR).CODE());
+		title = RSC(PROCESSOR_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_e:
@@ -2737,8 +2737,7 @@ Window *CreateSysInfo(unsigned long long id)
 		winOrigin.col = 4;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
-		paddedTitle = malloc(1 + RSZ(FEATURES) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(FEATURES).CODE());
+		title = RSC(FEATURES_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_t:
@@ -2754,8 +2753,7 @@ Window *CreateSysInfo(unsigned long long id)
 		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
-		paddedTitle = malloc(1 + RSZ(TECHNOLOGIES) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(TECHNOLOGIES).CODE());
+		title = RSC(TECHNOLOGIES_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_o:
@@ -2763,8 +2761,7 @@ Window *CreateSysInfo(unsigned long long id)
 		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= draw.Size.height)
 			winOrigin.row = TOP_HEADER_ROW + 1;
 		SysInfoFunc = SysInfoPerfMon;
-		paddedTitle = malloc(1 + RSZ(PERF_MONITORING) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(PERF_MONITORING).CODE());
+		title = RSC(PERF_MON_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_w:
@@ -2779,8 +2776,7 @@ Window *CreateSysInfo(unsigned long long id)
 		}
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;
-		paddedTitle = malloc(1 + RSZ(POWER_THERMAL) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(POWER_THERMAL).CODE());
+		title = RSC(POWER_THERMAL_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_u:
@@ -2789,10 +2785,7 @@ Window *CreateSysInfo(unsigned long long id)
 			winOrigin.row = TOP_HEADER_ROW + 1;
 		winWidth = 74;
 		SysInfoFunc = SysInfoCPUID;
-		paddedTitle = malloc(1 + RSZ(FUNCTION) + 11 + 43 + 1);
-		sprintf(paddedTitle, " %s           "			\
-				"EAX          EBX          ECX          EDX ",
-				RSC(FUNCTION).CODE());
+		title = RSC(CPUID_TITLE).CODE();
 		}
 		break;
 	case SCANKEY_k:
@@ -2807,8 +2800,7 @@ Window *CreateSysInfo(unsigned long long id)
 			winOrigin.row = 1;
 		}
 		SysInfoFunc = SysInfoKernel;
-		paddedTitle = malloc(1 + RSZ(KERNEL) + 1 + 1);
-		sprintf(paddedTitle, " %s ", RSC(KERNEL).CODE());
+		title = RSC(KERNEL_TITLE).CODE();
 		}
 		break;
 	}
@@ -2840,8 +2832,8 @@ Window *CreateSysInfo(unsigned long long id)
 		default:
 			break;
 		}
-		if (paddedTitle != NULL) {
-			StoreWindow(wSysInfo, .title, paddedTitle);
+		if (title != NULL) {
+			StoreWindow(wSysInfo, .title, (char*) title);
 		}
 		StoreWindow(wSysInfo,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wSysInfo,	.key.Left,	MotionLeft_Win);
@@ -2857,9 +2849,6 @@ Window *CreateSysInfo(unsigned long long id)
 		StoreWindow(wSysInfo,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wSysInfo,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wSysInfo,	.key.WinUp,	MotionOriginUp_Win);
-	}
-	if (paddedTitle != NULL) {
-		free(paddedTitle);
 	}
 	return(wSysInfo);
 }
@@ -2878,16 +2867,10 @@ Window *CreateTopology(unsigned long long id)
 		wTopology->matrix.select.row = 2;
 
 	if (wTopology != NULL) {
-		char *paddedTitle = NULL;
-
 		Topology(wTopology, AddCell);
 
-		paddedTitle = malloc(1 + RSZ(TOPOLOGY) + 1 + 1);
-		if (paddedTitle != NULL) {
-			sprintf(paddedTitle, " %s ", RSC(TOPOLOGY).CODE());
-			StoreWindow(wTopology,	.title, paddedTitle);
-			free(paddedTitle);
-		}
+		StoreWindow(wTopology,.title,(char*)RSC(TOPOLOGY_TITLE).CODE());
+
 		StoreWindow(wTopology,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wTopology,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTopology,	.key.Down,	MotionDown_Win);

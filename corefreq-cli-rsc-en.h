@@ -142,6 +142,7 @@
 	'[','T','a','s','k','s',' ',' ',' ',' ',' ',']' 		\
 }
 
+#define RSC_PROCESSOR_TITLE_CODE_EN	(ASCII*) " Processor "
 #define RSC_PROCESSOR_CODE_EN		(ASCII*) "Processor"
 #define RSC_ARCHITECTURE_CODE_EN	(ASCII*) "Architecture"
 #define RSC_VENDOR_ID_CODE_EN		(ASCII*) "Vendor ID"
@@ -154,10 +155,16 @@
 #define RSC_RATIO_CODE_EN		(ASCII*) "Ratio"
 #define RSC_FACTORY_CODE_EN		(ASCII*) "Factory"
 #define RSC_LEVEL_CODE_EN		(ASCII*) "Level"
+#define RSC_PROGRAMMABLE_CODE_EN	(ASCII*) "Programmable"
+#define RSC_CONFIGURATION_CODE_EN	(ASCII*) "Configuration"
+#define RSC_TURBO_ACTIVATION_CODE_EN	(ASCII*) "Turbo Activation"
+#define RSC_NOMINAL_CODE_EN		(ASCII*) "Nominal"
 #define RSC_UNLOCK_CODE_EN		(ASCII*) "UNLOCK"
 #define RSC_LOCK_CODE_EN		(ASCII*) "  LOCK"
 
-#define RSC_FUNCTION_EN 		(ASCII*) "function"
+#define RSC_CPUID_TITLE_EN		\
+(ASCII*) " function           EAX          EBX          ECX          EDX "
+
 #define RSC_LARGEST_STD_FUNC_CODE_EN	(ASCII*) "Largest Standard Function"
 #define RSC_LARGEST_EXT_FUNC_CODE_EN	(ASCII*) "Largest Extended Function"
 
@@ -165,21 +172,25 @@
 
 #define RSC_ISA_TITLE_CODE_EN		(ASCII*) " Instruction Set Extensions "
 
-#define RSC_FEATURES_CODE_EN		(ASCII*) "Features"
+#define RSC_FEATURES_TITLE_CODE_EN	(ASCII*) " Features "
 #define RSC_MISSING_CODE_EN		(ASCII*) "Missing"
 #define RSC_PRESENT_CODE_EN		(ASCII*) "Present"
 #define RSC_VARIANT_CODE_EN		(ASCII*) "Variant"
 #define RSC_INVARIANT_CODE_EN		(ASCII*) "Invariant"
 
-#define RSC_TECHNOLOGIES_CODE_EN	(ASCII*) "Technologies"
+#define RSC_TECHNOLOGIES_TITLE_CODE_EN	(ASCII*) " Technologies "
 
-#define RSC_PERF_MONITORING_CODE_EN	(ASCII*) "Performance Monitoring"
+#define RSC_PERF_MON_TITLE_CODE_EN	(ASCII*) " Performance Monitoring "
+#define RSC_VERSION_CODE_EN		(ASCII*) "Version"
+#define RSC_COUNTERS_CODE_EN		(ASCII*) "Counters"
+#define RSC_GENERAL_CTRS_CODE_EN	(ASCII*) "General"
+#define RSC_FIXED_CTRS_CODE_EN		(ASCII*) "Fixed"
 
-#define RSC_POWER_THERMAL_CODE_EN	(ASCII*) "Power & Thermal"
+#define RSC_POWER_THERMAL_TITLE_CODE_EN (ASCII*) " Power & Thermal "
 
-#define RSC_KERNEL_CODE_EN		(ASCII*) "Kernel"
+#define RSC_KERNEL_TITLE_CODE_EN	(ASCII*) " Kernel "
 
-#define RSC_TOPOLOGY_CODE_EN		(ASCII*) "Topology"
+#define RSC_TOPOLOGY_TITLE_CODE_EN	(ASCII*) " Topology "
 
 #define RSC_MEM_CTRL_TITLE_CODE_EN	(ASCII*) " Memory Controller "
 #define RSC_SETTINGS_TITLE_CODE_EN	(ASCII*) " Settings "
