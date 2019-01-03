@@ -189,6 +189,21 @@
 #define RSC_POWER_THERMAL_TITLE_CODE_EN (ASCII*) " Power & Thermal "
 
 #define RSC_KERNEL_TITLE_CODE_EN	(ASCII*) " Kernel "
+#define RSC_KERNEL_TOTAL_RAM_CODE_EN	(ASCII*) "Total RAM"
+#define RSC_KERNEL_SHARED_RAM_CODE_EN	(ASCII*) "Shared RAM"
+#define RSC_KERNEL_FREE_RAM_CODE_EN	(ASCII*) "Free RAM"
+#define RSC_KERNEL_BUFFER_RAM_CODE_EN	(ASCII*) "Buffer RAM"
+#define RSC_KERNEL_TOTAL_HIGH_CODE_EN	(ASCII*) "Total High"
+#define RSC_KERNEL_FREE_HIGH_CODE_EN	(ASCII*) "Free High"
+#define RSC_KERNEL_IDLE_DRIVER_CODE_EN	(ASCII*) "Idle driver"
+
+#define RSC_RELEASE_CODE_EN		(ASCII*) "Release"
+#define RSC_MACHINE_CODE_EN		(ASCII*) "Machine"
+#define RSC_MEMORY_CODE_EN		(ASCII*) "Memory"
+#define RSC_STATE_CODE_EN		(ASCII*) "State"
+#define RSC_POWER_CODE_EN		(ASCII*) "Power"
+#define RSC_LATENCY_CODE_EN		(ASCII*) "Latency"
+#define RSC_RESIDENCY_CODE_EN		(ASCII*) "Residency"
 
 #define RSC_TOPOLOGY_TITLE_CODE_EN	(ASCII*) " Topology "
 

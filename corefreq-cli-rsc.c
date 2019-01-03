@@ -1259,6 +1259,104 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_KERNEL_TITLE_CODE_FR
 		}
 	},
+	[RSC_KERNEL_TOTAL_RAM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_TOTAL_RAM_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_TOTAL_RAM_CODE_FR
+		}
+	},
+	[RSC_KERNEL_SHARED_RAM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_SHARED_RAM_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_SHARED_RAM_CODE_FR
+		}
+	},
+	[RSC_KERNEL_FREE_RAM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_FREE_RAM_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_FREE_RAM_CODE_FR
+		}
+	},
+	[RSC_KERNEL_BUFFER_RAM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_BUFFER_RAM_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_BUFFER_RAM_CODE_FR
+		}
+	},
+	[RSC_KERNEL_TOTAL_HIGH] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_TOTAL_HIGH_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_TOTAL_HIGH_CODE_FR
+		}
+	},
+	[RSC_KERNEL_FREE_HIGH] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_FREE_HIGH_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_FREE_HIGH_CODE_FR
+		}
+	},
+	[RSC_KERNEL_IDLE_DRIVER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_IDLE_DRIVER_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_IDLE_DRIVER_CODE_FR
+		}
+	},
+	[RSC_RELEASE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_RELEASE_CODE_EN,
+			[LOC_FR] = RSC_RELEASE_CODE_FR
+		}
+	},
+	[RSC_MACHINE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MACHINE_CODE_EN,
+			[LOC_FR] = RSC_MACHINE_CODE_FR
+		}
+	},
+	[RSC_MEMORY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MEMORY_CODE_EN,
+			[LOC_FR] = RSC_MEMORY_CODE_FR
+		}
+	},
+	[RSC_STATE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_STATE_CODE_EN,
+			[LOC_FR] = RSC_STATE_CODE_FR
+		}
+	},
+	[RSC_POWER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_CODE_EN,
+			[LOC_FR] = RSC_POWER_CODE_FR
+		}
+	},
+	[RSC_LATENCY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_LATENCY_CODE_EN,
+			[LOC_FR] = RSC_LATENCY_CODE_FR
+		}
+	},
+	[RSC_RESIDENCY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_RESIDENCY_CODE_EN,
+			[LOC_FR] = RSC_RESIDENCY_CODE_FR
+		}
+	},
 	[RSC_TOPOLOGY_TITLE] = {
 		.Attr = vColor,
 		.Code = {

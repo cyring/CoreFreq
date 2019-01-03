@@ -40,8 +40,8 @@
 }
 
 #define RSC_LAYOUT_RULLER_PACKAGE_CODE_FR				\
-	"------------ Cycles ----  Etat -------------------- TSC Rati"	\
-	"o ----------------------------------------------------------"	\
+	"------------ Cycles ----  Etat -------------------- Ratio TS"	\
+	"C ----------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -189,6 +189,21 @@
 #define RSC_POWER_THERMAL_TITLE_CODE_FR (ASCII*) " Puissance et thermique "
 
 #define RSC_KERNEL_TITLE_CODE_FR	(ASCII*) " Noyau "
+#define RSC_KERNEL_TOTAL_RAM_CODE_FR	(ASCII*) "RAM totale"
+#define RSC_KERNEL_SHARED_RAM_CODE_FR	(ASCII*) "RAM partagee"
+#define RSC_KERNEL_FREE_RAM_CODE_FR	(ASCII*) "RAM libre"
+#define RSC_KERNEL_BUFFER_RAM_CODE_FR	(ASCII*) "RAM Tampon"
+#define RSC_KERNEL_TOTAL_HIGH_CODE_FR	(ASCII*) "Memoire haute totale"
+#define RSC_KERNEL_FREE_HIGH_CODE_FR	(ASCII*) "Memoire haute libre"
+#define RSC_KERNEL_IDLE_DRIVER_CODE_FR	(ASCII*) "Pilote d'etats"
+
+#define RSC_RELEASE_CODE_FR		(ASCII*) "Edition"
+#define RSC_MACHINE_CODE_FR		(ASCII*) "Machine"
+#define RSC_MEMORY_CODE_FR		(ASCII*) "Memoire"
+#define RSC_STATE_CODE_FR		(ASCII*) "Etat"
+#define RSC_POWER_CODE_FR		(ASCII*) "Puissance"
+#define RSC_LATENCY_CODE_FR		(ASCII*) "Latence"
+#define RSC_RESIDENCY_CODE_FR		(ASCII*) "Periode"
 
 #define RSC_TOPOLOGY_TITLE_CODE_FR	(ASCII*) " Topologie "
 

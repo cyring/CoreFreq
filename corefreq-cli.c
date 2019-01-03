@@ -1553,52 +1553,63 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s:", Shm->SysGate.sysname);
 
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Release%.*s[%s]", width - 12 - strlen(Shm->SysGate.release),
+		"%s%.*s[%s]", RSC(RELEASE).CODE(),
+		width - 5 - RSZ(RELEASE)- strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Version%.*s[%s]", width - 12 - strlen(Shm->SysGate.version),
+		"%s%.*s[%s]", RSC(VERSION).CODE(),
+		width - 5 - RSZ(VERSION) - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Machine%.*s[%s]", width - 12 - strlen(Shm->SysGate.machine),
+		"%s%.*s[%s]", RSC(MACHINE).CODE(),
+		width - 5 - RSZ(MACHINE) - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
-		"Memory:%.*s", width - 7, hSpace);
+		"%s:%.*s", RSC(MEMORY).CODE(), width - 1 - RSZ(MEMORY), hSpace);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Total RAM" "%.*s" "%s KB", width - 15 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
+		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Shared RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
+		width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Free RAM" "%.*s" "%s KB", width - 14 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
+		width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Buffer RAM" "%.*s" "%s KB", width - 16 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
+		width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Total High" "%.*s" "%s KB", width - 16 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
+		width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"Free High" "%.*s" "%s KB", width - 15 - len, hSpace, str);
+		"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
+		width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str);
 /* Section Mark */
   if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
   {
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
-		"Idle driver%.*s[%s@%s]", width - 14 - len, hSpace,
+		"%s%.*s[%s@%s]", RSC(KERNEL_IDLE_DRIVER).CODE(),
+		width - 3 - RSZ(KERNEL_IDLE_DRIVER) - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
-	len = sprintf(row, "States:%.*s", 9, hSpace);
+	len = sprintf(row, "%s:%.*s",	RSC(STATE).CODE(),
+					15 - (int) RSZ(STATE), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(row, str, sln))
@@ -1607,7 +1618,8 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
-	len = sprintf(row, "Power:%.*s", 10, hSpace);
+	len = sprintf(row, "%s:%.*s",	RSC(POWER).CODE(),
+					15 - (int) RSZ(POWER), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(row, str, sln))
@@ -1616,7 +1628,8 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
-	len = sprintf(row, "Latency:%.*s", 8, hSpace);
+	len = sprintf(row, "%s:%.*s",	RSC(LATENCY).CODE(),
+					15 - (int) RSZ(LATENCY), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(row, str, sln))
@@ -1625,7 +1638,8 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
 /* Row Mark */
-	len = sprintf(row, "Residency:%.*s", 6, hSpace);
+	len = sprintf(row, "%s:%.*s",	RSC(RESIDENCY).CODE(),
+					15 - (int) RSZ(RESIDENCY), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(row, str, sln))
