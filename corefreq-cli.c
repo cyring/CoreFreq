@@ -1545,110 +1545,111 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	size_t	len = 0, sln;
-	char	*row = malloc(width + 1),
+	char	*item = malloc(width + 1),
 		*str = malloc(width + 1);
 	int	idx = 0;
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
 
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"%s%.*s[%s]", RSC(RELEASE).CODE(),
-		width - 5 - RSZ(RELEASE)- strlen(Shm->SysGate.release),
+	PUT(SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
+		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
+		width - 5 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"%s%.*s[%s]", RSC(VERSION).CODE(),
-		width - 5 - RSZ(VERSION) - strlen(Shm->SysGate.version),
+	PUT(SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
+		"%s%.*s[%s]", RSC(KERNEL_VERSION).CODE(),
+		width - 5 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
-		"%s%.*s[%s]", RSC(MACHINE).CODE(),
-		width - 5 - RSZ(MACHINE) - strlen(Shm->SysGate.machine),
+	PUT(SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
+		"%s%.*s[%s]", RSC(KERNEL_MACHINE).CODE(),
+		width - 5 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
-		"%s:%.*s", RSC(MEMORY).CODE(), width - 1 - RSZ(MEMORY), hSpace);
+	PUT(SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
+		"%s:%.*s", RSC(KERNEL_MEMORY).CODE(),
+		width - 1 - RSZ(KERNEL_MEMORY), hSpace);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalram);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
 		width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
 		width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 2,
+	PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
 		width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str);
 /* Section Mark */
   if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
   {
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
+	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		"%s%.*s[%s@%s]", RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - 3 - RSZ(KERNEL_IDLE_DRIVER) - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
-	len = sprintf(row, "%s:%.*s",	RSC(STATE).CODE(),
-					15 - (int) RSZ(STATE), hSpace);
+	len = sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
+			15 - (int) RSZ(KERNEL_STATE), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(row, str, sln))
+				idx++, len += sln, strncat(item, str, sln))
     {
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
     }
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3, item, NULL);
 /* Row Mark */
-	len = sprintf(row, "%s:%.*s",	RSC(POWER).CODE(),
-					15 - (int) RSZ(POWER), hSpace);
+	len = sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
+			15 - (int) RSZ(KERNEL_POWER), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(row, str, sln))
+				idx++, len += sln, strncat(item, str, sln))
     {
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
     }
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3, item, NULL);
 /* Row Mark */
-	len = sprintf(row, "%s:%.*s",	RSC(LATENCY).CODE(),
-					15 - (int) RSZ(LATENCY), hSpace);
+	len = sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
+			15 - (int) RSZ(KERNEL_LATENCY), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(row, str, sln))
+				idx++, len += sln, strncat(item, str, sln))
     {
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
     }
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3, item, NULL);
 /* Row Mark */
-	len = sprintf(row, "%s:%.*s",	RSC(RESIDENCY).CODE(),
-					15 - (int) RSZ(RESIDENCY), hSpace);
+	len = sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
+			15 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
     for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(row, str, sln))
+				idx++, len += sln, strncat(item, str, sln))
     {
     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
     }
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 3, row, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3, item, NULL);
   }
-	free(row);
+	free(item);
 	free(str);
 }
 
@@ -2439,13 +2440,13 @@ Window *CreateSettings(unsigned long long id)
 	size_t subLen = strlen(Shm->ShmName);
 	char subStr[16];
 
-	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
+	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Daemon gate                    ",
+	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_DAEMON).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, OPS_INTERVAL,   " Interval(ms)                   ",
+	StoreTCell(wSet, OPS_INTERVAL,   RSC(SETTINGS_INTERVAL).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
 	StoreTCell(wSet, SCANKEY_NULL,   " Sys. Tick(ms)                  ",
@@ -2463,22 +2464,22 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, OPS_AUTOCLOCK,  " Auto Clock                     ",
+	StoreTCell(wSet, OPS_AUTOCLOCK,  RSC(SETTINGS_AUTO_CLOCK).CODE(),
 			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]);
 
-	StoreTCell(wSet,OPS_EXPERIMENTAL," Experimental                   ",
+	StoreTCell(wSet,OPS_EXPERIMENTAL,RSC(SETTINGS_EXPERIMENTAL).CODE(),
 				attrib[Shm->Registration.Experimental != 0]);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " CPU Hot-Plug                   ",
+	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_CPU_HOTPLUG).CODE(),
 				attrib[!(Shm->Registration.hotplug < 0)]);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " PCI enablement                 ",
+	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_PCI_ENABLED).CODE(),
 					attrib[(Shm->Registration.pci == 1)]);
 
-	StoreTCell(wSet, OPS_INTERRUPTS, " NMI registered                 ",
+	StoreTCell(wSet, OPS_INTERRUPTS, RSC(SETTINGS_NMI_REGISTERED).CODE(),
 						attrib[Shm->Registration.nmi]);
 
-	StoreTCell(wSet, SCANKEY_NULL,   "                                ",
+	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
 	memcpy(&TCellAt(wSet, 0, 1).item[31 - subLen], Shm->ShmName, subLen);
@@ -2548,44 +2549,82 @@ Window *CreateHelp(unsigned long long id)
 				(TOP_HEADER_ROW + 19 + 1 < draw.Size.height) ?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [F2]             ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"             Menu ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Escape]         ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"     Close window ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Shift]+[Tab]    ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"  Previous window ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Tab]            ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"      Next window ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"       [A|Z]      ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [W|Q]  [S]  [D]  ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"      Move window ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"       [Up]       ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Left]    [Right]",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"   Move selection ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"      [Down]      ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [End]            ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"        Last cell ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Home]           ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"       First cell ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Enter]          ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"Trigger selection ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Page-Up]        ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"    Previous page ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Page-Dw]        ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"        Next page ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Minus]          ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"  Scroll CPU down ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL," [Plus]           ",MAKE_PRINT_FOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"    Scroll CPU up ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL,"                  ",MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [F2]             ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MENU).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Escape]         ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_CLOSE_WINDOW).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Shift]+[Tab]    ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_PREV_WINDOW).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Tab]            ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_WINDOW).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       [A|Z]      ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [W|Q]  [S]  [D]  ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MOVE_WINDOW).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "       [Up]       ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Left]    [Right]",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MOVE_SELECT).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, "      [Down]      ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [End]            ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_LAST_CELL).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_FIRST_CELL).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_TRIGGER_SELECT).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Up]        ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_PREV_PAGE).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Dw]        ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_PAGE).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Minus]          ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SCROLL_DOWN).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, " [Plus]           ",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SCROLL_UP).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
 	StoreWindow(wHelp, .title, (char*) RSC(HELP_TITLE).CODE());
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
@@ -2607,28 +2646,28 @@ Window *CreateAdvHelp(unsigned long long id)
     };
     struct ADV_HELP_ST {
 	short theme;
-	char *item;
+	ASCII *item;
 	SCANKEY quick;
     } advHelp[] = {
-	{0,"                                      ", {SCANKEY_NULL}	},
-	{0," Frequency view:                      ", {SCANKEY_NULL}	},
-	{1," %        Averages or Package C-States", {SCANKEY_PERCENT}	},
-	{0,"                                      ", {SCANKEY_NULL}	},
-	{0," Task Monitoring view:                ", {SCANKEY_NULL}	},
-	{1," b                Sorting tasks order ", {SCANKEY_b}	},
-	{1," n               Select task tracking ", {SCANKEY_n}	},
-	{1," r              Reverse tasks sorting ", {SCANKEY_r}	},
-	{1," v         Show|Hide contextual value ", {SCANKEY_v}	},
-	{0,"                                      ", {SCANKEY_NULL}	},
-	{0," Any view:                            ", {SCANKEY_NULL}	},
-	{1," .             Top frequency or Usage ", {SCANKEY_DOT}	},
-	{1," {             Start CoreFreq Machine ", {SCANKEY_OPEN_BRACE}},
-	{1," }              Stop CoreFreq Machine ", {SCANKEY_CLOSE_BRACE}},
-	{1," F10            Stop tools processing ", {SCANKEY_F10}	},
-	{0,"                                      ", {SCANKEY_NULL}	},
-	{1,"  Up  PgUp                     Scroll ", {SCANKEY_NULL}	},
-	{1," Down PgDw                       CPU  ", {SCANKEY_NULL}	},
-	{0,"                                      ", {SCANKEY_NULL}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(ADV_HELP_ITEM_1).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_2).CODE(),	{SCANKEY_PERCENT}},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(ADV_HELP_ITEM_3).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_4).CODE(),	{SCANKEY_b}	},
+	{1, RSC(ADV_HELP_ITEM_5).CODE(),	{SCANKEY_n}	},
+	{1, RSC(ADV_HELP_ITEM_6).CODE(),	{SCANKEY_r}	},
+	{1, RSC(ADV_HELP_ITEM_7).CODE(),	{SCANKEY_v}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(ADV_HELP_ITEM_8).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOT}	},
+	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
+	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
+	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
 	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,

@@ -196,14 +196,14 @@
 #define RSC_KERNEL_TOTAL_HIGH_CODE_EN	(ASCII*) "Total High"
 #define RSC_KERNEL_FREE_HIGH_CODE_EN	(ASCII*) "Free High"
 #define RSC_KERNEL_IDLE_DRIVER_CODE_EN	(ASCII*) "Idle driver"
-
-#define RSC_RELEASE_CODE_EN		(ASCII*) "Release"
-#define RSC_MACHINE_CODE_EN		(ASCII*) "Machine"
-#define RSC_MEMORY_CODE_EN		(ASCII*) "Memory"
-#define RSC_STATE_CODE_EN		(ASCII*) "State"
-#define RSC_POWER_CODE_EN		(ASCII*) "Power"
-#define RSC_LATENCY_CODE_EN		(ASCII*) "Latency"
-#define RSC_RESIDENCY_CODE_EN		(ASCII*) "Residency"
+#define RSC_KERNEL_RELEASE_CODE_EN	(ASCII*) "Release"
+#define RSC_KERNEL_VERSION_CODE_EN	(ASCII*) "Version"
+#define RSC_KERNEL_MACHINE_CODE_EN	(ASCII*) "Machine"
+#define RSC_KERNEL_MEMORY_CODE_EN	(ASCII*) "Memory"
+#define RSC_KERNEL_STATE_CODE_EN	(ASCII*) "State"
+#define RSC_KERNEL_POWER_CODE_EN	(ASCII*) "Power"
+#define RSC_KERNEL_LATENCY_CODE_EN	(ASCII*) "Latency"
+#define RSC_KERNEL_RESIDENCY_CODE_EN	(ASCII*) "Residency"
 
 #define RSC_TOPOLOGY_TITLE_CODE_EN	(ASCII*) " Topology "
 
@@ -243,5 +243,62 @@
 #define RSC_MENU_ITEM_MEM_CTRL_CODE_EN	(ASCII*) " Memory Controller  [M] "
 
 #define RSC_SETTINGS_TITLE_CODE_EN	(ASCII*) " Settings "
+#define RSC_SETTINGS_DAEMON_CODE_EN					\
+				(ASCII*) " Daemon gate                    "
+#define RSC_SETTINGS_INTERVAL_CODE_EN					\
+				(ASCII*) " Interval(ms)                   "
+#define RSC_SETTINGS_AUTO_CLOCK_CODE_EN 				\
+				(ASCII*) " Auto Clock                     "
+#define RSC_SETTINGS_EXPERIMENTAL_CODE_EN				\
+				(ASCII*) " Experimental                   "
+#define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN				\
+				(ASCII*) " CPU Hot-Plug                   "
+#define RSC_SETTINGS_PCI_ENABLED_CODE_EN				\
+				(ASCII*) " PCI enablement                 "
+#define RSC_SETTINGS_NMI_REGISTERED_CODE_EN				\
+				(ASCII*) " NMI registered                 "
+
 #define RSC_HELP_TITLE_CODE_EN		(ASCII*) " Help "
+#define RSC_HELP_MENU_CODE_EN		(ASCII*) "             Menu "
+#define RSC_HELP_CLOSE_WINDOW_CODE_EN	(ASCII*) "     Close window "
+#define RSC_HELP_PREV_WINDOW_CODE_EN	(ASCII*) "  Previous window "
+#define RSC_HELP_NEXT_WINDOW_CODE_EN	(ASCII*) "      Next window "
+#define RSC_HELP_MOVE_WINDOW_CODE_EN	(ASCII*) "      Move window "
+#define RSC_HELP_MOVE_SELECT_CODE_EN	(ASCII*) "   Move selection "
+#define RSC_HELP_LAST_CELL_CODE_EN	(ASCII*) "        Last cell "
+#define RSC_HELP_FIRST_CELL_CODE_EN	(ASCII*) "       First cell "
+#define RSC_HELP_TRIGGER_SELECT_CODE_EN (ASCII*) "Trigger selection "
+#define RSC_HELP_PREV_PAGE_CODE_EN	(ASCII*) "    Previous page "
+#define RSC_HELP_NEXT_PAGE_CODE_EN	(ASCII*) "        Next page "
+#define RSC_HELP_SCROLL_DOWN_CODE_EN	(ASCII*) "  Scroll CPU down "
+#define RSC_HELP_SCROLL_UP_CODE_EN	(ASCII*) "    Scroll CPU up "
+
 #define RSC_ADV_HELP_TITLE_CODE_EN	(ASCII*) " Shortcuts "
+#define RSC_ADV_HELP_ITEM_1_CODE_EN					\
+			(ASCII*) " Frequency view:                      "
+#define RSC_ADV_HELP_ITEM_2_CODE_EN					\
+			(ASCII*) " %        Averages or Package C-States"
+#define RSC_ADV_HELP_ITEM_3_CODE_EN					\
+			(ASCII*) " Task Monitoring view:                "
+#define RSC_ADV_HELP_ITEM_4_CODE_EN					\
+			(ASCII*) " b                Sorting tasks order "
+#define RSC_ADV_HELP_ITEM_5_CODE_EN					\
+			(ASCII*) " n               Select task tracking "
+#define RSC_ADV_HELP_ITEM_6_CODE_EN					\
+			(ASCII*) " r              Reverse tasks sorting "
+#define RSC_ADV_HELP_ITEM_7_CODE_EN					\
+			(ASCII*) " v         Show|Hide contextual value "
+#define RSC_ADV_HELP_ITEM_8_CODE_EN					\
+			(ASCII*) " Any view:                            "
+#define RSC_ADV_HELP_ITEM_9_CODE_EN					\
+			(ASCII*) " .             Top frequency or Usage "
+#define RSC_ADV_HELP_ITEM_10_CODE_EN					\
+			(ASCII*) " {             Start CoreFreq Machine "
+#define RSC_ADV_HELP_ITEM_11_CODE_EN					\
+			(ASCII*) " }              Stop CoreFreq Machine "
+#define RSC_ADV_HELP_ITEM_12_CODE_EN					\
+			(ASCII*) " F10            Stop tools processing "
+#define RSC_ADV_HELP_ITEM_13_CODE_EN					\
+			(ASCII*) "  Up  PgUp                     Scroll "
+#define RSC_ADV_HELP_ITEM_14_CODE_EN					\
+			(ASCII*) " Down PgDw                       CPU  "

@@ -337,10 +337,16 @@ ATTRIBUTE Rsc_CreateSettings_Cond_Attr[2][32] = {
 	RSC_CREATE_SETTINGS_COND1_ATTR
 };
 
+ASCII	Rsc_CreateSettings_Blank_Code[] = "                                ";
+
+ASCII	Rsc_CreateHelp_Blank_Code[] = "                  ";
+
 ATTRIBUTE Rsc_CreateAdvHelp_Cond_Attr[2][38] = {
 	RSC_CREATE_ADV_HELP_COND0_ATTR,
 	RSC_CREATE_ADV_HELP_COND1_ATTR
 };
+
+ASCII Rsc_CreateAdvHelp_Blank_Code[] = "                                      ";
 
 ATTRIBUTE Rsc_CreateHotPlugCPU_Enable_Attr[]=RSC_CREATE_HOTPLUG_CPU_ENABLE_ATTR,
 	Rsc_CreateHotPlugCPU_Disable_Attr[]=RSC_CREATE_HOTPLUG_CPU_DISABLE_ATTR;
@@ -957,19 +963,31 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_CREATE_SETTINGS_COND0] = {
 		.Attr = Rsc_CreateSettings_Cond_Attr[0],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = Rsc_CreateSettings_Blank_Code,
+			[LOC_FR] = Rsc_CreateSettings_Blank_Code
+		}
 	},
 	[RSC_CREATE_SETTINGS_COND1] = {
 		.Attr = Rsc_CreateSettings_Cond_Attr[1],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = Rsc_CreateSettings_Blank_Code,
+			[LOC_FR] = Rsc_CreateSettings_Blank_Code
+		}
 	},
 	[RSC_CREATE_ADV_HELP_COND0] = {
 		.Attr = Rsc_CreateAdvHelp_Cond_Attr[0],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = Rsc_CreateAdvHelp_Blank_Code,
+			[LOC_FR] = Rsc_CreateAdvHelp_Blank_Code
+		}
 	},
 	[RSC_CREATE_ADV_HELP_COND1] = {
 		.Attr = Rsc_CreateAdvHelp_Cond_Attr[1],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = Rsc_CreateAdvHelp_Blank_Code,
+			[LOC_FR] = Rsc_CreateAdvHelp_Blank_Code
+		}
 	},
 	[RSC_CREATE_HOTPLUG_CPU_ENABLE] = {
 		.Attr = Rsc_CreateHotPlugCPU_Enable_Attr,
@@ -1260,101 +1278,108 @@ RESOURCE_ST Resource[] = {
 		}
 	},
 	[RSC_KERNEL_TOTAL_RAM] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_TOTAL_RAM_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_TOTAL_RAM_CODE_FR
 		}
 	},
 	[RSC_KERNEL_SHARED_RAM] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_SHARED_RAM_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_SHARED_RAM_CODE_FR
 		}
 	},
 	[RSC_KERNEL_FREE_RAM] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_FREE_RAM_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_FREE_RAM_CODE_FR
 		}
 	},
 	[RSC_KERNEL_BUFFER_RAM] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_BUFFER_RAM_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_BUFFER_RAM_CODE_FR
 		}
 	},
 	[RSC_KERNEL_TOTAL_HIGH] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_TOTAL_HIGH_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_TOTAL_HIGH_CODE_FR
 		}
 	},
 	[RSC_KERNEL_FREE_HIGH] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_FREE_HIGH_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_FREE_HIGH_CODE_FR
 		}
 	},
 	[RSC_KERNEL_IDLE_DRIVER] = {
-		.Attr = vColor,
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_IDLE_DRIVER_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_IDLE_DRIVER_CODE_FR
 		}
 	},
-	[RSC_RELEASE] = {
-		.Attr = vColor,
+	[RSC_KERNEL_RELEASE] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_RELEASE_CODE_EN,
-			[LOC_FR] = RSC_RELEASE_CODE_FR
+			[LOC_EN] = RSC_KERNEL_RELEASE_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_RELEASE_CODE_FR
 		}
 	},
-	[RSC_MACHINE] = {
-		.Attr = vColor,
+	[RSC_KERNEL_VERSION] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_MACHINE_CODE_EN,
-			[LOC_FR] = RSC_MACHINE_CODE_FR
+			[LOC_EN] = RSC_KERNEL_VERSION_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_VERSION_CODE_FR
 		}
 	},
-	[RSC_MEMORY] = {
-		.Attr = vColor,
+	[RSC_KERNEL_MACHINE] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_MEMORY_CODE_EN,
-			[LOC_FR] = RSC_MEMORY_CODE_FR
+			[LOC_EN] = RSC_KERNEL_MACHINE_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_MACHINE_CODE_FR
 		}
 	},
-	[RSC_STATE] = {
-		.Attr = vColor,
+	[RSC_KERNEL_MEMORY] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_STATE_CODE_EN,
-			[LOC_FR] = RSC_STATE_CODE_FR
+			[LOC_EN] = RSC_KERNEL_MEMORY_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_MEMORY_CODE_FR
 		}
 	},
-	[RSC_POWER] = {
-		.Attr = vColor,
+	[RSC_KERNEL_STATE] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_POWER_CODE_EN,
-			[LOC_FR] = RSC_POWER_CODE_FR
+			[LOC_EN] = RSC_KERNEL_STATE_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_STATE_CODE_FR
 		}
 	},
-	[RSC_LATENCY] = {
-		.Attr = vColor,
+	[RSC_KERNEL_POWER] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_LATENCY_CODE_EN,
-			[LOC_FR] = RSC_LATENCY_CODE_FR
+			[LOC_EN] = RSC_KERNEL_POWER_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_POWER_CODE_FR
 		}
 	},
-	[RSC_RESIDENCY] = {
-		.Attr = vColor,
+	[RSC_KERNEL_LATENCY] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
-			[LOC_EN] = RSC_RESIDENCY_CODE_EN,
-			[LOC_FR] = RSC_RESIDENCY_CODE_FR
+			[LOC_EN] = RSC_KERNEL_LATENCY_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_LATENCY_CODE_FR
+		}
+	},
+	[RSC_KERNEL_RESIDENCY] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_RESIDENCY_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_RESIDENCY_CODE_FR
 		}
 	},
 	[RSC_TOPOLOGY_TITLE] = {
@@ -1602,6 +1627,55 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_SETTINGS_TITLE_CODE_FR
 		}
 	},
+	[RSC_SETTINGS_DAEMON] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_DAEMON_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_DAEMON_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_INTERVAL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_INTERVAL_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_INTERVAL_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_AUTO_CLOCK] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_AUTO_CLOCK_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_AUTO_CLOCK_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_EXPERIMENTAL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_EXPERIMENTAL_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_EXPERIMENTAL_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_CPU_HOTPLUG] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_CPU_HOTPLUG_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_CPU_HOTPLUG_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_PCI_ENABLED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_PCI_ENABLED_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_PCI_ENABLED_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_NMI_REGISTERED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_NMI_REGISTERED_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_NMI_REGISTERED_CODE_FR
+		}
+	},
 	[RSC_HELP_TITLE] = {
 		.Attr = vColor,
 		.Code = {
@@ -1609,11 +1683,207 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_HELP_TITLE_CODE_FR
 		}
 	},
+	[RSC_HELP_BLANK] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = Rsc_CreateHelp_Blank_Code,
+			[LOC_FR] = Rsc_CreateHelp_Blank_Code
+		}
+	},
+	[RSC_HELP_MENU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_MENU_CODE_EN,
+			[LOC_FR] = RSC_HELP_MENU_CODE_FR
+		}
+	},
+	[RSC_HELP_CLOSE_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_CLOSE_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_HELP_CLOSE_WINDOW_CODE_FR
+		}
+	},
+	[RSC_HELP_PREV_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_PREV_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_HELP_PREV_WINDOW_CODE_FR
+		}
+	},
+	[RSC_HELP_NEXT_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_NEXT_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_HELP_NEXT_WINDOW_CODE_FR
+		}
+	},
+	[RSC_HELP_MOVE_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_MOVE_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_HELP_MOVE_WINDOW_CODE_FR
+		}
+	},
+	[RSC_HELP_MOVE_SELECT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_MOVE_SELECT_CODE_EN,
+			[LOC_FR] = RSC_HELP_MOVE_SELECT_CODE_FR
+		}
+	},
+	[RSC_HELP_LAST_CELL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_LAST_CELL_CODE_EN,
+			[LOC_FR] = RSC_HELP_LAST_CELL_CODE_FR
+		}
+	},
+	[RSC_HELP_FIRST_CELL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_FIRST_CELL_CODE_EN,
+			[LOC_FR] = RSC_HELP_FIRST_CELL_CODE_FR
+		}
+	},
+	[RSC_HELP_TRIGGER_SELECT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_TRIGGER_SELECT_CODE_EN,
+			[LOC_FR] = RSC_HELP_TRIGGER_SELECT_CODE_FR
+		}
+	},
+	[RSC_HELP_PREV_PAGE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_PREV_PAGE_CODE_EN,
+			[LOC_FR] = RSC_HELP_PREV_PAGE_CODE_FR
+		}
+	},
+	[RSC_HELP_NEXT_PAGE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_NEXT_PAGE_CODE_EN,
+			[LOC_FR] = RSC_HELP_NEXT_PAGE_CODE_FR
+		}
+	},
+	[RSC_HELP_SCROLL_DOWN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_SCROLL_DOWN_CODE_EN,
+			[LOC_FR] = RSC_HELP_SCROLL_DOWN_CODE_FR
+		}
+	},
+	[RSC_HELP_SCROLL_UP] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_SCROLL_UP_CODE_EN,
+			[LOC_FR] = RSC_HELP_SCROLL_UP_CODE_FR
+		}
+	},
 	[RSC_ADV_HELP_TITLE] = {
 		.Attr = vColor,
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_TITLE_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_TITLE_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_1_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_1_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_2] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_2_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_2_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_3] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_3_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_3_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_4] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_4_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_4_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_5] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_5_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_5_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_6] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_6_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_6_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_7] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_7_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_7_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_8] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_8_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_8_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_9] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_9_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_9_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_10] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_10_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_10_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_11] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_11_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_11_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_12] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_12_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_12_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_13] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_13_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_13_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_14] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_14_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_14_CODE_FR
 		}
 	}
 };
