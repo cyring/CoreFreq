@@ -3044,12 +3044,18 @@ Window *CreateSortByField(unsigned long long id)
 				1, SORTBYCOUNT,
 				33, TOP_HEADER_ROW + draw.Area.MaxRows + 2);
 	if (wSortBy != NULL) {
-		StoreTCell(wSortBy,SORTBY_STATE, " State    ", MAKE_PRINT_DROP);
-		StoreTCell(wSortBy,SORTBY_RTIME, " RunTime  ", MAKE_PRINT_DROP);
-		StoreTCell(wSortBy,SORTBY_UTIME, " UserTime ", MAKE_PRINT_DROP);
-		StoreTCell(wSortBy,SORTBY_STIME, " SysTime  ", MAKE_PRINT_DROP);
-		StoreTCell(wSortBy,SORTBY_PID,   " PID      ", MAKE_PRINT_DROP);
-		StoreTCell(wSortBy,SORTBY_COMM,  " Command  ", MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_STATE,RSC(TASKS_SORTBY_STATE).CODE(),
+						MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_RTIME,RSC(TASKS_SORTBY_RTIME).CODE(),
+						MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_UTIME,RSC(TASKS_SORTBY_UTIME).CODE(),
+						MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_STIME,RSC(TASKS_SORTBY_STIME).CODE(),
+						MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_PID,  RSC(TASKS_SORTBY_PID).CODE(),
+						MAKE_PRINT_DROP);
+		StoreTCell(wSortBy,SORTBY_COMM, RSC(TASKS_SORTBY_COMM).CODE(),
+						MAKE_PRINT_DROP);
 
 		wSortBy->matrix.select.row = Shm->SysGate.sortByField;
 
@@ -3170,42 +3176,46 @@ Window *CreateHotPlugCPU(unsigned long long id)
 {
 	Window *wCPU = CreateWindow(	wLayer, id, 2, draw.Area.MaxRows,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1);
-	if (wCPU != NULL) {
-		ASCII item[12];
-		unsigned int cpu;
-	  for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+    if (wCPU != NULL) {
+	ASCII *item = malloc(12 + 1);
+	unsigned int cpu;
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		sprintf((char*) item, " %02u  Off ", cpu);
+		sprintf((char*) item, " %02u   Off   ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
 
-		StoreTCell(wCPU, CPU_ONLINE | cpu , "[ ENABLE]",
-				RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR());
+		StoreTCell(wCPU, CPU_ONLINE | cpu ,
+					RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
+					RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR());
 	    } else {
-		sprintf((char*) item, " %02u  On  ", cpu);
+		sprintf((char*) item, " %02u    On   ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
 
-		StoreTCell(wCPU, CPU_OFFLINE | cpu, "[DISABLE]",
-				RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR());
+		StoreTCell(wCPU, CPU_OFFLINE | cpu,
+					RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
+					RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR());
 	    }
-	  }
-		wCPU->matrix.select.col = 1;
-
-		StoreWindow(wCPU,	.title,		" CPU ");
-		StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
-
-		StoreWindow(wCPU,	.key.Enter,	MotionEnter_Cell);
-		StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
-		StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
-		StoreWindow(wCPU,	.key.PgUp,	MotionPgUp_Win);
-		StoreWindow(wCPU,	.key.PgDw,	MotionPgDw_Win);
-		StoreWindow(wCPU,	.key.Home,	MotionTop_Win);
-		StoreWindow(wCPU,	.key.End,	MotionBottom_Win);
-
-		StoreWindow(wCPU,	.key.WinLeft,	MotionOriginLeft_Win);
-		StoreWindow(wCPU,	.key.WinRight,	MotionOriginRight_Win);
-		StoreWindow(wCPU,	.key.WinDown,	MotionOriginDown_Win);
-		StoreWindow(wCPU,	.key.WinUp,	MotionOriginUp_Win);
 	}
+	wCPU->matrix.select.col = 1;
+
+	StoreWindow(wCPU,	.title, 	" CPU ");
+	StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
+
+	StoreWindow(wCPU,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
+	StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
+	StoreWindow(wCPU,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wCPU,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wCPU,	.key.Home,	MotionTop_Win);
+	StoreWindow(wCPU,	.key.End,	MotionBottom_Win);
+
+	StoreWindow(wCPU,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wCPU,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wCPU,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wCPU,	.key.WinUp,	MotionOriginUp_Win);
+
+	free(item);
+    }
 	return(wCPU);
 }
 
@@ -3226,7 +3236,6 @@ Window *CreateCoreClock(unsigned long long id,
 		RSC(CREATE_CORE_CLOCK_COND1).ATTR(),
 		RSC(CREATE_CORE_CLOCK_COND2).ATTR()
 	};
-	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
 	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
@@ -3256,6 +3265,7 @@ Window *CreateCoreClock(unsigned long long id,
 	Window *wCK = CreateWindow(wLayer, id, 1, hthWin, oCol, oRow);
 
     if (wCK != NULL) {
+	ASCII *item = malloc(32);
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
 		clockMod.NC = nc | boxKey;
@@ -3296,6 +3306,8 @@ Window *CreateCoreClock(unsigned long long id,
 	StoreWindow(wCK,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wCK,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wCK,	.key.WinUp,	MotionOriginUp_Win);
+
+	free(item);
     }
 	return(wCK);
 }
@@ -3332,7 +3344,6 @@ Window *CreateUncoreClock(unsigned long long id)
 		RSC(CREATE_UNCORE_CLOCK_COND0).ATTR(),
 		RSC(CREATE_UNCORE_CLOCK_COND1).ATTR()
 	};
-	ASCII item[32];
 	CLOCK_ARG clockMod  = {.sllong = id};
 	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
@@ -3360,6 +3371,7 @@ Window *CreateUncoreClock(unsigned long long id)
 	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 42, oRow);
 
     if (wUC != NULL) {
+	ASCII *item = malloc(32);
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
 		clockMod.NC = nc | BOXKEY_UNCORE_CLOCK;
@@ -3398,6 +3410,8 @@ Window *CreateUncoreClock(unsigned long long id)
 	StoreWindow(wUC,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wUC,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wUC,	.key.WinUp,	MotionOriginUp_Win);
+
+	free(item);
     }
 	return(wUC);
 }
@@ -3554,26 +3568,26 @@ int Shortcut(SCANKEY *scan)
 	descAttr =  MakeAttr(CYAN , 0, BLACK, 0);
 	ASCII *stateStr[2][2] = {
 		{
-			(ASCII*)"              Disable               ",
-			(ASCII*)"            < Disable >             "
+			RSC(BOX_DISABLE_COND0).CODE(),
+			RSC(BOX_DISABLE_COND1).CODE()
 		},{
-			(ASCII*)"              Enable                ",
-			(ASCII*)"            < Enable >              "
+			RSC(BOX_ENABLE_COND0).CODE(),
+			RSC(BOX_ENABLE_COND1).CODE()
 		}
 	},
-	*blankStr =	(ASCII*)"                                    ",
+	*blankStr =	RSC(BOX_BLANK_DESC).CODE(),
 	*descStr[] = {
-			(ASCII*)"             SpeedStep              ",
-			(ASCII*)"        Enhanced Halt State         ",
-			(ASCII*)" Turbo Boost/Core Performance Boost ",
-			(ASCII*)"          C1 Auto Demotion          ",
-			(ASCII*)"          C3 Auto Demotion          ",
-			(ASCII*)"            C1 UnDemotion           ",
-			(ASCII*)"            C3 UnDemotion           ",
-			(ASCII*)"        I/O MWAIT Redirection       ",
-			(ASCII*)"          Clock Modulation          ",
-			(ASCII*)"           Core C6 State            ",
-			(ASCII*)"          Package C6 State          "
+			RSC(BOX_EIST_DESC).CODE(),
+			RSC(BOX_C1E_DESC).CODE(),
+			RSC(BOX_TURBO_DESC).CODE(),
+			RSC(BOX_C1A_DESC).CODE(),
+			RSC(BOX_C3A_DESC).CODE(),
+			RSC(BOX_C1U_DESC).CODE(),
+			RSC(BOX_C3U_DESC).CODE(),
+			RSC(BOX_IO_MWAIT_DESC).CODE(),
+			RSC(BOX_ODCM_DESC).CODE(),
+			RSC(BOX_CC6_DESC).CODE(),
+			RSC(BOX_PC6_DESC).CODE()
 	};
 
     switch (scan->key) {
@@ -3669,16 +3683,18 @@ int Shortcut(SCANKEY *scan)
     case OPS_INTERVAL:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = 43,
-		.row = TOP_HEADER_ROW + 4
-	}, select = {
-		.col = 0,
-		.row = 5
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " Interval ",
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = 43,
+			.row = TOP_HEADER_ROW + 4
+		}, select = {
+			.col = 0,
+			.row = 5
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_INTERVAL_TITLE).CODE(),
 	(ASCII*)"    100   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_100,
 	(ASCII*)"    150   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_150,
 	(ASCII*)"    250   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_250,
@@ -3690,7 +3706,7 @@ int Shortcut(SCANKEY *scan)
 	(ASCII*)"   2500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2500,
 	(ASCII*)"   3000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_3000),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -3757,23 +3773,25 @@ int Shortcut(SCANKEY *scan)
     case OPS_AUTOCLOCK:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
+	if (win == NULL)
 	{
-	const int bON = ((Shm->Registration.AutoClock & 0b10) != 0);
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 4
-	}, select = {
-		.col = 0,
-		.row = bON ? 2 : 1
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " Auto Clock ",
+		const int bON = ((Shm->Registration.AutoClock & 0b10) != 0);
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 4
+		}, select = {
+			.col = 0,
+			.row = bON ? 2 : 1
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_AUTO_CLOCK_TITLE).CODE(),
 		blankStr, blankAttr, SCANKEY_NULL,
 		stateStr[1][bON], stateAttr[bON] , OPS_AUTOCLOCK_ON,
 		stateStr[0][!bON],stateAttr[!bON], OPS_AUTOCLOCK_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -3792,41 +3810,43 @@ int Shortcut(SCANKEY *scan)
     case OPS_EXPERIMENTAL:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	ATTRIBUTE exp_Attr[2] = {
-		MakeAttr(RED , 0, BLACK, 1),
-		MakeAttr(CYAN, 0, BLACK, 1)
-	};
-	ASCII *ops_Str[2][2] = {
-		{
-			(ASCII*)"       Nominal operating mode       ",
-			(ASCII*)"     < Nominal operating mode >     ",
-		},{
-			(ASCII*)"     Experimental operating mode    ",
-			(ASCII*)"   < Experimental operating mode >  "
-		}
-	};
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 3
-	}, select = {
-		.col = 0,
-		.row = 3
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " Experimental ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		"       CoreFreq Operation Mode       ", descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
-		ops_Str[0][Shm->Registration.Experimental == 0],
-			stateAttr[Shm->Registration.Experimental == 0],
-			OPS_EXPERIMENTAL_OFF,
-		ops_Str[1][Shm->Registration.Experimental != 0] ,
-			exp_Attr[Shm->Registration.Experimental != 0],
-			OPS_EXPERIMENTAL_ON,
-		blankStr, blankAttr, SCANKEY_NULL),
+	if (win == NULL)
+	{
+		ATTRIBUTE exp_Attr[2] = {
+			MakeAttr(RED , 0, BLACK, 1),
+			MakeAttr(CYAN, 0, BLACK, 1)
+		};
+		ASCII *ops_Str[2][2] = {
+			{
+				RSC(BOX_NOMINAL_MODE_COND0).CODE(),
+				RSC(BOX_NOMINAL_MODE_COND1).CODE(),
+			},{
+				RSC(BOX_EXPERIMENT_MODE_COND0).CODE(),
+				RSC(BOX_EXPERIMENT_MODE_COND1).CODE()
+			}
+		};
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = 3
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_MODE_TITLE).CODE(),
+				blankStr, blankAttr, SCANKEY_NULL,
+			RSC(BOX_MODE_DESC).CODE(), descAttr, SCANKEY_NULL,
+				blankStr, blankAttr, SCANKEY_NULL,
+			ops_Str[0][Shm->Registration.Experimental == 0],
+				stateAttr[Shm->Registration.Experimental == 0],
+					OPS_EXPERIMENTAL_OFF,
+			ops_Str[1][Shm->Registration.Experimental != 0] ,
+				exp_Attr[Shm->Registration.Experimental != 0],
+					OPS_EXPERIMENTAL_ON,
+				blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -3845,25 +3865,27 @@ int Shortcut(SCANKEY *scan)
     case OPS_INTERRUPTS:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	ASCII *ops_Str[2][2] = {
-		{
-			(ASCII*)"              Register              ",
-			(ASCII*)"            < Register >            ",
-		},{
-			(ASCII*)"             Unregister             ",
-			(ASCII*)"           < Unregister >           "
-		}
-	};
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 5
-	}, select = {
-		.col = 0,
-		.row = Shm->Registration.nmi == 0 ? 1 : 2
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " NMI Interrupts ",
+	if (win == NULL)
+	{
+		ASCII *ops_Str[2][2] = {
+			{
+				RSC(BOX_INT_REGISTER_COND0).CODE(),
+				RSC(BOX_INT_REGISTER_COND1).CODE(),
+			},{
+				RSC(BOX_INT_UNREGISTER_COND0).CODE(),
+				RSC(BOX_INT_UNREGISTER_COND1).CODE()
+			}
+		};
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 5
+		}, select = {
+			.col = 0,
+			.row = Shm->Registration.nmi == 0 ? 1 : 2
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_INTERRUPT_TITLE).CODE(),
 		blankStr, blankAttr, SCANKEY_NULL,
 		ops_Str[0][Shm->Registration.nmi != 0],
 			stateAttr[Shm->Registration.nmi != 0],
@@ -3873,7 +3895,7 @@ int Shortcut(SCANKEY *scan)
 			OPS_INTERRUPTS_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4027,43 +4049,45 @@ int Shortcut(SCANKEY *scan)
 		MakeAttr(YELLOW,  0, BLACK, 1)
 	};
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = 53,
-		.row = TOP_HEADER_ROW + 3
-	}, select = {
-		.col = 0,
-		.row = 0
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = 53,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = 0
+		};
+
 	Window *wBox = CreateBox(scan->key, origin, select,
-		" Clear Event ",
-    (ASCII*)"     Thermal Sensor     ",
+		(char*) RSC(BOX_EVENT_TITLE).CODE(),
+		RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
 		eventAttr[(processorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
 		BOXKEY_CLR_THM_SENSOR,
-    (ASCII*)"     PROCHOT# Agent     ",
+		RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
 		eventAttr[(processorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
 		BOXKEY_CLR_THM_PROCHOT,
-    (ASCII*)"  Critical Temperature  ",
+		RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
 		eventAttr[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
 		BOXKEY_CLR_THM_CRIT,
-    (ASCII*)"   Thermal Threshold    ",
+		RSC(BOX_EVENT_THERMAL_THRESHOLD).CODE(),
 		eventAttr[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
 		BOXKEY_CLR_THM_THOLD,
-    (ASCII*)"    Power Limitation    ",
+		RSC(BOX_EVENT_POWER_LIMITATION).CODE(),
 		eventAttr[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
 		BOXKEY_CLR_PWR_LIMIT,
-    (ASCII*)"   Current Limitation   ",
+		RSC(BOX_EVENT_CURRENT_LIMITATION).CODE(),
 		eventAttr[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
 		BOXKEY_CLR_CUR_LIMIT,
-    (ASCII*)"   Cross Domain Limit.  ",
+		RSC(BOX_EVENT_CROSS_DOMAIN_LIMIT).CODE(),
 		eventAttr[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
 		BOXKEY_CLR_X_DOMAIN);
-	if (wBox != NULL) {
-		AppendWindow(wBox, &winList);
+
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
 	} else
-		SetHead(&winList, win);
-      } else
 		SetHead(&winList, win);
     }
     break;
@@ -4195,15 +4219,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_EIST:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
+	if (win == NULL)
 	{
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 3
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.EIST ? 4 : 3
-	};
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.EIST ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " EIST ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[0], descAttr, SCANKEY_NULL,
@@ -4214,7 +4239,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.EIST], BOXKEY_EIST_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4233,15 +4258,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_C1E:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
+	if (win == NULL)
 	{
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 2
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.C1E ? 4 : 3
-	};
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 2
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.C1E ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " C1E ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[1], descAttr, SCANKEY_NULL,
@@ -4252,7 +4278,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.C1E], BOXKEY_C1E_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4271,15 +4297,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_TURBO:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
+	if (win == NULL)
 	{
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 4
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.Turbo ? 4 : 3
-	};
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 4
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.Turbo ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " Turbo ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[2], descAttr, SCANKEY_NULL,
@@ -4309,15 +4336,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_C1A:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 5
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.C1A ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 5
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.C1A ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " C1A ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[3], descAttr, SCANKEY_NULL,
@@ -4328,7 +4356,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.C1A], BOXKEY_C1A_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4347,15 +4375,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_C3A:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 6
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.C3A ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 6
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.C3A ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " C3A ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[4], descAttr, SCANKEY_NULL,
@@ -4385,15 +4414,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_C1U:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 7
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.C1U ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 7
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.C1U ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " C1U ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[5], descAttr, SCANKEY_NULL,
@@ -4404,7 +4434,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.C1U], BOXKEY_C1U_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4423,15 +4453,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_C3U:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 8
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.C3U ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 8
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.C3U ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " C3U ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[6], descAttr, SCANKEY_NULL,
@@ -4442,7 +4473,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.C3U], BOXKEY_C3U_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4461,15 +4492,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CC6:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 9
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.CC6 ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 9
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.CC6 ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " CC6 ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[9], descAttr, SCANKEY_NULL,
@@ -4480,7 +4512,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.CC6], BOXKEY_CC6_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4499,15 +4531,16 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PC6:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 10
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.PC6 ? 4 : 3
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 10
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.PC6 ? 4 : 3
+		};
+
 	AppendWindow(CreateBox(scan->key, origin, select, " PC6 ",
 		blankStr, blankAttr, SCANKEY_NULL,
 		descStr[10], descAttr, SCANKEY_NULL,
@@ -4518,7 +4551,7 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Technology.PC6], BOXKEY_PC6_OFF,
 		blankStr, blankAttr, SCANKEY_NULL),
 		&winList);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4537,19 +4570,20 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PKGCST:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0}; /* Row indexes */
-	const Coordinate origin = {
-	.col = (draw.Size.width - (44 - 17)) / 2,
-	.row = TOP_HEADER_ROW + 2
-	}, select = {
-	.col=0,
+	if (win == NULL)
+	{				/* Row indexes */
+		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0};
+		const Coordinate origin = {
+		.col = (draw.Size.width - (44 - 17)) / 2,
+		.row = TOP_HEADER_ROW + 2
+		}, select = {
+		.col=0,
 	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] != -1 ?
 		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] : 0
-	};
+		};
+
 		Window *wBox = CreateBox(scan->key, origin, select,
-					" Package C-State Limit ",
+			(char*) RSC(BOX_PACKAGE_STATE_LIMIT_TITLE).CODE(),
 	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
 	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
 	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
@@ -4569,7 +4603,7 @@ int Shortcut(SCANKEY *scan)
 			AppendWindow(wBox, &winList);
 		} else
 			SetHead(&winList, win);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4588,27 +4622,29 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IOMWAIT:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const unsigned int isIORedir = (
+	if (win == NULL)
+	{
+		const unsigned int isIORedir = (
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1
-	);
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 9
-	}, select = {
-		.col = 0,
-		.row = isIORedir ? 4 : 3
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " I/O MWAIT ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[7], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		);
+		const Coordinate origin = {
+			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 9
+		}, select = {
+			.col = 0,
+			.row = isIORedir ? 4 : 3
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_IO_MWAIT_TITLE).CODE(),
+				blankStr, blankAttr, SCANKEY_NULL,
+				descStr[7], descAttr, SCANKEY_NULL,
+				blankStr, blankAttr, SCANKEY_NULL,
 	stateStr[1][isIORedir] , stateAttr[isIORedir] , BOXKEY_IOMWAIT_ON,
 	stateStr[0][!isIORedir], stateAttr[!isIORedir], BOXKEY_IOMWAIT_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
-		&winList);
-      } else
+				blankStr, blankAttr, SCANKEY_NULL),
+			&winList);
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4627,23 +4663,25 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IORCST:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const CSINT thisCST[]={-1, -1, -1, 3, 2, -1, 1, 0}; /* Row indexes */
-	const Coordinate origin = {
-	.col = (draw.Size.width - (44 - 17)) / 2,
-	.row = TOP_HEADER_ROW + 3
-	}, select = {
-	.col = 0,
+	if (win == NULL)
+	{				/* Row indexes */
+		const CSINT thisCST[] = {-1, -1, -1, 3, 2, -1, 1, 0};
+		const Coordinate origin = {
+			.col = (draw.Size.width - (44 - 17)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
 	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]!=-1 ?
 		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]:0
-	};
+		};
+
 		Window *wBox = CreateBox(scan->key, origin, select,
-					" I/O MWAIT Max C-State ",
+				(char*) RSC(BOX_MWAIT_MAX_STATE_TITLE).CODE(),
 	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_IORCST_C7,
 	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_IORCST_C6,
 	(ASCII*)"             C4            ", stateAttr[0], BOXKEY_IORCST_C4,
 	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_IORCST_C3);
+
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
 			TCellAt(wBox, 0, select.row).attr[12] = 	\
@@ -4657,7 +4695,7 @@ int Shortcut(SCANKEY *scan)
 			AppendWindow(wBox, &winList);
 		} else
 			SetHead(&winList, win);
-      } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4674,26 +4712,28 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_ODCM:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = (draw.Size.width - strlen((char *) blankStr)) / 2,
-		.row = TOP_HEADER_ROW + 6
-	}, select = {
-		.col = 0,
-		.row = Shm->Proc.Technology.ODCM ? 4 : 3
-	};
-	AppendWindow(CreateBox(scan->key, origin, select, " ODCM ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[8], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col =(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.row = TOP_HEADER_ROW + 6
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.ODCM ? 4 : 3
+		};
+
+		AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_ODCM_TITLE).CODE(),
+				blankStr, blankAttr, SCANKEY_NULL,
+				descStr[8], descAttr, SCANKEY_NULL,
+				blankStr, blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.ODCM] ,
 			stateAttr[Shm->Proc.Technology.ODCM] , BOXKEY_ODCM_ON,
 		stateStr[0][!Shm->Proc.Technology.ODCM],
 			stateAttr[!Shm->Proc.Technology.ODCM],BOXKEY_ODCM_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
-		&winList);
-      } else
+				blankStr, blankAttr, SCANKEY_NULL),
+			&winList);
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4712,26 +4752,27 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_DUTYCYCLE:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-     if (win == NULL)
-     {
-	const CSINT maxCM = 7 << Shm->Cpu[Shm->Proc.Service.Core]	\
+	if (win == NULL)
+	{
+		const CSINT maxCM = 7 << Shm->Cpu[Shm->Proc.Service.Core] \
 					.PowerThermal.DutyCycle.Extended;
-	const Coordinate origin = {
-		.col = (draw.Size.width - (44 - 17)) / 2,
-		.row = TOP_HEADER_ROW + 3
-     }, select = {
-	.col = 0, .row = (
+		const Coordinate origin = {
+			.col = (draw.Size.width - (44 - 17)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0, .row = (
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod >= 0
 	) && (
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod <=maxCM
 	) ? Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod : 1
-     };
+		};
 	Window *wBox = NULL;
 
-      if (Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended)
+	  if (Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended)
+	  {
 		wBox = CreateBox(scan->key, origin, select,
-		" Extended Duty Cycle ",
-	(ASCII*)"          Reserved         ", blankAttr,    BOXKEY_ODCM_DC00,
+			(char*) RSC(BOX_EXTENDED_DUTY_CYCLE_TITLE).CODE(),
+		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr,BOXKEY_ODCM_DC00,
 	(ASCII*)"            6.25%          ", stateAttr[0], BOXKEY_ODCM_DC01,
 	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC02,
 	(ASCII*)"           18.75%          ", stateAttr[0], BOXKEY_ODCM_DC03,
@@ -4746,10 +4787,10 @@ int Shortcut(SCANKEY *scan)
 	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC12,
 	(ASCII*)"           81.25%          ", stateAttr[0], BOXKEY_ODCM_DC13,
 	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC14);
-      else
+	  } else {
 		wBox = CreateBox(scan->key, origin, select,
-			" Duty Cycle ",
-	(ASCII*)"          Reserved         ", blankAttr,    BOXKEY_ODCM_DC00,
+				(char*) RSC(BOX_DUTY_CYCLE_TITLE).CODE(),
+		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr,BOXKEY_ODCM_DC00,
 	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC01,
 	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC02,
 	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC03,
@@ -4757,8 +4798,8 @@ int Shortcut(SCANKEY *scan)
 	(ASCII*)"           62.50%          ", stateAttr[0], BOXKEY_ODCM_DC05,
 	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC06,
 	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC07);
-
-	if (wBox != NULL) {
+	  }
+	  if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
 		TCellAt(wBox, 0, select.row).attr[10] = 	\
@@ -4775,9 +4816,9 @@ int Shortcut(SCANKEY *scan)
 		TCellAt(wBox, 0, select.row).item[19] = '>';
 
 		AppendWindow(wBox, &winList);
-	} else
+	  } else
 		SetHead(&winList, win);
-     } else
+	} else
 		SetHead(&winList, win);
     }
     break;
@@ -4862,31 +4903,33 @@ int Shortcut(SCANKEY *scan)
     case SCANCON_F3:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = 13,
-		.row = TOP_HEADER_ROW + 2
-	}, select = {
-		.col = 0,
-		.row = 0
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = 13,
+			.row = TOP_HEADER_ROW + 2
+		}, select = {
+			.col = 0,
+			.row = 0
+		};
+
 	Window *wBox = CreateBox(scan->key, origin, select,
-			" Tools ",
-    (ASCII*)"            STOP           ", BITVAL(Shm->Proc.Sync, 31) ?
-					   MakeAttr(YELLOW,0,BLACK,0):blankAttr,
-					   BITVAL(Shm->Proc.Sync, 31) ?
-					   BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
-    (ASCII*)"        Atomic Burn        ", stateAttr[0], BOXKEY_TOOLS_ATOMIC,
-    (ASCII*)"       CRC32 Compute       ", stateAttr[0], BOXKEY_TOOLS_CRC32,
-    (ASCII*)"       Conic Compute...    ", stateAttr[0], BOXKEY_TOOLS_CONIC,
-    (ASCII*)"      Turbo Random CPU     ", stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
-    (ASCII*)"      Turbo Round Robin    ", stateAttr[0], BOXKEY_TOOLS_TURBO_RR);
-	if (wBox != NULL) {
-		AppendWindow(wBox, &winList);
+				(char*) RSC(BOX_TOOLS_TITLE).CODE(),
+		RSC(BOX_TOOLS_STOP_BURN).CODE(), BITVAL(Shm->Proc.Sync, 31) ?
+					MakeAttr(YELLOW,0,BLACK,0):blankAttr,
+				BITVAL(Shm->Proc.Sync, 31) ?
+					BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
+	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(), stateAttr[0],BOXKEY_TOOLS_ATOMIC,
+	RSC(BOX_TOOLS_CRC32_BURN).CODE(), stateAttr[0], BOXKEY_TOOLS_CRC32,
+	RSC(BOX_TOOLS_CONIC_BURN).CODE(), stateAttr[0], BOXKEY_TOOLS_CONIC,
+	RSC(BOX_TOOLS_RANDOM_CPU).CODE(), stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
+    RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(), stateAttr[0],BOXKEY_TOOLS_TURBO_RR);
+
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
 	} else
-		SetHead(&winList, win);
-      } else
 		SetHead(&winList, win);
     }
     break;
@@ -4905,28 +4948,30 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_TOOLS_CONIC:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-      if (win == NULL)
-      {
-	const Coordinate origin = {
-		.col = 13 + 27 + 3,
-		.row = TOP_HEADER_ROW + 2 + 4
-	}, select = {
-		.col = 0,
-		.row = 0
-	};
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = 13 + 27 + 3,
+			.row = TOP_HEADER_ROW + 2 + 4
+		}, select = {
+			.col = 0,
+			.row = 0
+		};
+
 	Window *wBox = CreateBox(scan->key, origin, select,
-		" Conic variations ",
-    (ASCII*)"         Ellipsoid         ", stateAttr[0], BOXKEY_TOOLS_CONIC0,
-    (ASCII*)" Hyperboloid of one sheet  ", stateAttr[0], BOXKEY_TOOLS_CONIC1,
-    (ASCII*)" Hyperboloid of two sheets ", stateAttr[0], BOXKEY_TOOLS_CONIC2,
-    (ASCII*)"    Elliptical cylinder    ", stateAttr[0], BOXKEY_TOOLS_CONIC3,
-    (ASCII*)"    Hyperbolic cylinder    ", stateAttr[0], BOXKEY_TOOLS_CONIC4,
-    (ASCII*)"    Two parallel planes    ", stateAttr[0], BOXKEY_TOOLS_CONIC5);
-	if (wBox != NULL) {
-		AppendWindow(wBox, &winList);
+				(char*) RSC(BOX_CONIC_TITLE).CODE(),
+		RSC(BOX_CONIC_ITEM_1).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC0,
+		RSC(BOX_CONIC_ITEM_2).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC1,
+		RSC(BOX_CONIC_ITEM_3).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC2,
+		RSC(BOX_CONIC_ITEM_4).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC3,
+		RSC(BOX_CONIC_ITEM_5).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC4,
+		RSC(BOX_CONIC_ITEM_6).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC5);
+
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
 	} else
-		SetHead(&winList, win);
-      } else
 		SetHead(&winList, win);
     }
     break;

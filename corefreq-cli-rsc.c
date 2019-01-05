@@ -991,11 +991,17 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_CREATE_HOTPLUG_CPU_ENABLE] = {
 		.Attr = Rsc_CreateHotPlugCPU_Enable_Attr,
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN,
+			[LOC_FR] = RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR
+		}
 	},
 	[RSC_CREATE_HOTPLUG_CPU_DISABLE] = {
 		.Attr = Rsc_CreateHotPlugCPU_Disable_Attr,
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+		.Code = {
+			[LOC_EN] = RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN,
+			[LOC_FR] = RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR
+			}
 	},
 	[RSC_CREATE_CORE_CLOCK_COND0] = {
 		.Attr = Rsc_CreateCoreClock_Cond_Attr[0],
@@ -1394,6 +1400,48 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_MEM_CTRL_TITLE_CODE_EN,
 			[LOC_FR] = RSC_MEM_CTRL_TITLE_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_STATE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_STATE_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_STATE_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_RTIME] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_RTIME_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_RTIME_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_UTIME] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_UTIME_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_UTIME_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_STIME] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_STIME_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_STIME_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_PID] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_PID_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_PID_CODE_FR
+		}
+	},
+	[RSC_TASKS_SORTBY_COMM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TASKS_SORTBY_COMM_CODE_EN,
+			[LOC_FR] = RSC_TASKS_SORTBY_COMM_CODE_FR
 		}
 	},
 	[RSC_MENU_ITEM_MENU] = {
@@ -1884,6 +1932,412 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_ITEM_14_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_ITEM_14_CODE_FR
+		}
+	},
+	[RSC_BOX_DISABLE_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_DISABLE_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_DISABLE_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_DISABLE_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_DISABLE_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_DISABLE_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_ENABLE_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_ENABLE_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_ENABLE_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_ENABLE_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_ENABLE_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_ENABLE_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_INTERVAL_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INTERVAL_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_INTERVAL_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_AUTO_CLOCK_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_AUTOCLOCK_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_AUTOCLOCK_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_MODE_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_MODE_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_MODE_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_MODE_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_MODE_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_MODE_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_EIST_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EIST_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_EIST_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_C1E_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_C1E_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_C1E_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_TURBO_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TURBO_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_TURBO_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_C1A_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_C1A_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_C1A_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_C3A_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_C3A_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_C3A_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_C1U_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_C1U_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_C1U_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_C3U_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_C3U_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_C3U_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_CC6_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CC6_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_CC6_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_PC6_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_PC6_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_PC6_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_BLANK_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_BLANK_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_BLANK_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_NOMINAL_MODE_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_NOMINAL_MODE_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_NOMINAL_MODE_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_NOMINAL_MODE_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_NOMINAL_MODE_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_NOMINAL_MODE_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_EXPERIMENT_MODE_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EXPERIMENT_MODE_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_EXPERIMENT_MODE_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_EXPERIMENT_MODE_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EXPERIMENT_MODE_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_EXPERIMENT_MODE_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_INTERRUPT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INTERRUPT_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_INTERRUPT_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_INT_REGISTER_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INT_REGISTER_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_INT_REGISTER_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_INT_REGISTER_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INT_REGISTER_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_INT_REGISTER_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_INT_UNREGISTER_COND0] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INT_UNREGISTER_COND0_CODE_EN,
+			[LOC_FR] = RSC_BOX_INT_UNREGISTER_COND0_CODE_FR
+		}
+	},
+	[RSC_BOX_INT_UNREGISTER_COND1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_INT_UNREGISTER_COND1_CODE_EN,
+			[LOC_FR] = RSC_BOX_INT_UNREGISTER_COND1_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_THERMAL_SENSOR] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_THERMAL_SENSOR_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_PROCHOT_AGENT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_PROCHOT_AGENT_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_CRITICAL_TEMP] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_CRITICAL_TEMP_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_THERMAL_THRESHOLD] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_THERMAL_THRESHOLD_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_THERMAL_THRESHOLD_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_POWER_LIMITATION] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_POWER_LIMITATION_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_POWER_LIMITATION_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_CURRENT_LIMITATION] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_CURRENT_LIMITATION_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_CURRENT_LIMITATION_CODE_FR
+		}
+	},
+	[RSC_BOX_EVENT_CROSS_DOMAIN_LIMIT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EVENT_CROSS_DOMAIN_LIMIT_CODE_EN,
+			[LOC_FR] = RSC_BOX_EVENT_CROSS_DOMAIN_LIMIT_CODE_FR
+		}
+	},
+	[RSC_BOX_PACKAGE_STATE_LIMIT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_PKG_STATE_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_PKG_STATE_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_IO_MWAIT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_IO_MWAIT_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_IO_MWAIT_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_IO_MWAIT_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_IO_MWAIT_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_IO_MWAIT_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_MWAIT_MAX_STATE_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_MWAIT_MAX_STATE_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_MWAIT_MAX_STATE_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_ODCM_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_ODCM_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_ODCM_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_ODCM_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_ODCM_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_ODCM_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_EXTENDED_DUTY_CYCLE_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_DUTY_CYCLE_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_DUTY_CYCLE_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_DUTY_CYCLE_RESERVED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_DUTY_CYCLE_RESERVED_CODE_EN,
+			[LOC_FR] = RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_STOP_BURN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_STOP_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_STOP_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_ATOMIC_BURN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_ATOMIC_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_ATOMIC_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_CRC32_BURN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_CRC32_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_CRC32_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_CONIC_BURN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_CONIC_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_CONIC_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_RANDOM_CPU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_RAND_CPU_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_RAND_CPU_CODE_FR
+		}
+	},
+	[RSC_BOX_TOOLS_ROUND_ROBIN_CPU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_RR_CPU_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_RR_CPU_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_1_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_1_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_2] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_2_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_2_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_3] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_3_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_3_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_4] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_4_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_4_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_5] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_5_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_5_CODE_FR
+		}
+	},
+	[RSC_BOX_CONIC_ITEM_6] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_CONIC_ITEM_6_CODE_EN,
+			[LOC_FR] = RSC_BOX_CONIC_ITEM_6_CODE_FR
 		}
 	}
 };

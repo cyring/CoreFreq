@@ -127,6 +127,9 @@
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
 }
 
+#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR	(ASCII*) "[  ACTIVER ]"
+#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR	(ASCII*) "[DESACTIVER]"
+
 #define RSC_LAYOUT_CARD_LOAD_CODE_FR					\
 {									\
 	'[',' ',' ','%','A','C','T','I','F',' ',' ',']' 		\
@@ -208,6 +211,13 @@
 #define RSC_TOPOLOGY_TITLE_CODE_FR	(ASCII*) " Topologie "
 
 #define RSC_MEM_CTRL_TITLE_CODE_FR	(ASCII*) " Controleur Memoire "
+
+#define RSC_TASKS_SORTBY_STATE_CODE_FR	(ASCII*) " Etat     "
+#define RSC_TASKS_SORTBY_RTIME_CODE_FR	(ASCII*) " RunTime  "
+#define RSC_TASKS_SORTBY_UTIME_CODE_FR	(ASCII*) " UserTime "
+#define RSC_TASKS_SORTBY_STIME_CODE_FR	(ASCII*) " SysTime  "
+#define RSC_TASKS_SORTBY_PID_CODE_FR	(ASCII*) " PID      "
+#define RSC_TASKS_SORTBY_COMM_CODE_FR	(ASCII*) " Commande "
 
 #define RSC_MENU_ITEM_MENU_CODE_FR	(ASCII*) "          Menu          "
 #define RSC_MENU_ITEM_VIEW_CODE_FR	(ASCII*) "           Vue          "
@@ -302,3 +312,110 @@
 			(ASCII*) "  Up  PgUp                 Defilement "
 #define RSC_ADV_HELP_ITEM_14_CODE_FR					\
 			(ASCII*) " Down PgDw                       CPU  "
+
+#define RSC_BOX_DISABLE_COND0_CODE_FR					\
+			(ASCII*) "             Desactiver             "
+#define RSC_BOX_DISABLE_COND1_CODE_FR					\
+			(ASCII*) "           < Desactiver >           "
+#define RSC_BOX_ENABLE_COND0_CODE_FR					\
+			(ASCII*) "               Activer              "
+#define RSC_BOX_ENABLE_COND1_CODE_FR					\
+			(ASCII*) "           <   Activer  >           "
+
+#define RSC_BOX_INTERVAL_TITLE_CODE_FR	(ASCII*) " Interval "
+#define RSC_BOX_AUTOCLOCK_TITLE_CODE_FR (ASCII*) " Auto Clock "
+#define RSC_BOX_MODE_TITLE_CODE_FR	(ASCII*) " Experimental "
+
+#define RSC_BOX_MODE_DESC_CODE_FR					\
+			(ASCII*) "     CoreFreq mode operationnel     "
+#define RSC_BOX_EIST_DESC_CODE_FR					\
+			(ASCII*) "             SpeedStep              "
+#define RSC_BOX_C1E_DESC_CODE_FR					\
+			(ASCII*) "        Etat de Pause etendu        "
+#define RSC_BOX_TURBO_DESC_CODE_FR					\
+			(ASCII*) " Turbo Boost/Core Performance Boost "
+#define RSC_BOX_C1A_DESC_CODE_FR					\
+			(ASCII*) "       Auto retrogradation C1       "
+#define RSC_BOX_C3A_DESC_CODE_FR					\
+			(ASCII*) "       Auto retrogradation C3       "
+#define RSC_BOX_C1U_DESC_CODE_FR					\
+			(ASCII*) "        Non-retrogradation C1       "
+#define RSC_BOX_C3U_DESC_CODE_FR					\
+			(ASCII*) "        Non-retrogradation C3       "
+#define RSC_BOX_CC6_DESC_CODE_FR					\
+			(ASCII*) "            Core Etat C6            "
+#define RSC_BOX_PC6_DESC_CODE_FR					\
+			(ASCII*) "           Package Etat C6          "
+#define RSC_BOX_BLANK_DESC_CODE_FR					\
+			(ASCII*) "                                    "
+
+#define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR				\
+			(ASCII*) "       Fonctionnement nominal       "
+#define RSC_BOX_NOMINAL_MODE_COND1_CODE_FR				\
+			(ASCII*) "     < Fonctionnement nominal >     "
+#define RSC_BOX_EXPERIMENT_MODE_COND0_CODE_FR				\
+			(ASCII*) "     Fonctionnement experimental    "
+#define RSC_BOX_EXPERIMENT_MODE_COND1_CODE_FR				\
+			(ASCII*) "   < Fonctionnement experimental >  "
+
+#define RSC_BOX_INTERRUPT_TITLE_CODE_FR (ASCII*) " Interruptions NMI "
+
+#define RSC_BOX_INT_REGISTER_COND0_CODE_FR				\
+			(ASCII*) "             Enregistrer            "
+#define RSC_BOX_INT_REGISTER_COND1_CODE_FR				\
+			(ASCII*) "         <   Enregistrer  >         "
+#define RSC_BOX_INT_UNREGISTER_COND0_CODE_FR				\
+			(ASCII*) "           Desenregistrer           "
+#define RSC_BOX_INT_UNREGISTER_COND1_CODE_FR				\
+			(ASCII*) "         < Desenregistrer >         "
+
+#define RSC_BOX_EVENT_TITLE_CODE_FR	(ASCII*) " Effacer Evenement "
+
+#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_FR				\
+					(ASCII*) "    Capteur thermique    "
+#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR				\
+					(ASCII*) "      Agent PROCHOT#     "
+#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR				\
+					(ASCII*) "   Temperature critique  "
+#define RSC_BOX_EVENT_THERMAL_THRESHOLD_CODE_FR 			\
+					(ASCII*) "     Seuil thermique     "
+#define RSC_BOX_EVENT_POWER_LIMITATION_CODE_FR				\
+					(ASCII*) " Limitation de puissance "
+#define RSC_BOX_EVENT_CURRENT_LIMITATION_CODE_FR			\
+					(ASCII*) "  Limitation de courant  "
+#define RSC_BOX_EVENT_CROSS_DOMAIN_LIMIT_CODE_FR			\
+					(ASCII*) " Limitation interdomaine "
+
+#define RSC_BOX_PKG_STATE_TITLE_CODE_FR (ASCII*) " Limite Etats Package "
+
+#define RSC_BOX_IO_MWAIT_TITLE_CODE_FR	(ASCII*) " E/S MWAIT "
+#define RSC_BOX_IO_MWAIT_DESC_CODE_FR					\
+			(ASCII*) "        Redirection E/S MWAIT       "
+
+#define RSC_BOX_MWAIT_MAX_STATE_TITLE_CODE_FR (ASCII*) " E/S MWAIT Etat Max "
+
+#define RSC_BOX_ODCM_TITLE_CODE_FR	(ASCII*) " ODCM "
+#define RSC_BOX_ODCM_DESC_CODE_FR					\
+			(ASCII*) "        Modulation Frequence        "
+
+#define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR	(ASCII*)" Extended Duty Cycle "
+#define RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR	(ASCII*) " Duty Cycle "
+
+#define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR				\
+				(ASCII*) "           Reserve         "
+
+#define RSC_BOX_TOOLS_TITLE_CODE_FR	(ASCII*) " Outils "
+#define RSC_BOX_TOOLS_STOP_CODE_FR	(ASCII*) "          ARRETER          "
+#define RSC_BOX_TOOLS_ATOMIC_CODE_FR	(ASCII*) "       Stress Atomic       "
+#define RSC_BOX_TOOLS_CRC32_CODE_FR	(ASCII*) "        Calcul CRC32       "
+#define RSC_BOX_TOOLS_CONIC_CODE_FR	(ASCII*) "      Calcul Conique...    "
+#define RSC_BOX_TOOLS_RAND_CPU_CODE_FR	(ASCII*) "    Turbo CPU aleatoire    "
+#define RSC_BOX_TOOLS_RR_CPU_CODE_FR	(ASCII*) "    Turbo CPU circulaire   "
+
+#define RSC_BOX_CONIC_TITLE_CODE_FR	(ASCII*) " Variations Coniques "
+#define RSC_BOX_CONIC_ITEM_1_CODE_FR	(ASCII*) "         Ellipsoide         "
+#define RSC_BOX_CONIC_ITEM_2_CODE_FR	(ASCII*) "  Hyperboloide a une nappe  "
+#define RSC_BOX_CONIC_ITEM_3_CODE_FR	(ASCII*) " Hyperboloide a deux nappes "
+#define RSC_BOX_CONIC_ITEM_4_CODE_FR	(ASCII*) "     Cylindre elliptique    "
+#define RSC_BOX_CONIC_ITEM_5_CODE_FR	(ASCII*) "     Cylindre hyperbolique  "
+#define RSC_BOX_CONIC_ITEM_6_CODE_FR	(ASCII*) "    Deux plans paralleles   "

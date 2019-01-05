@@ -127,6 +127,9 @@
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
 }
 
+#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	(ASCII*) "[   ENABLE ]"
+#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	(ASCII*) "[  DISABLE ]"
+
 #define RSC_LAYOUT_CARD_LOAD_CODE_EN					\
 {									\
 	'[',' ',' ','%','L','O','A','D',' ',' ',' ',']' 		\
@@ -208,6 +211,13 @@
 #define RSC_TOPOLOGY_TITLE_CODE_EN	(ASCII*) " Topology "
 
 #define RSC_MEM_CTRL_TITLE_CODE_EN	(ASCII*) " Memory Controller "
+
+#define RSC_TASKS_SORTBY_STATE_CODE_EN	(ASCII*) " State    "
+#define RSC_TASKS_SORTBY_RTIME_CODE_EN	(ASCII*) " RunTime  "
+#define RSC_TASKS_SORTBY_UTIME_CODE_EN	(ASCII*) " UserTime "
+#define RSC_TASKS_SORTBY_STIME_CODE_EN	(ASCII*) " SysTime  "
+#define RSC_TASKS_SORTBY_PID_CODE_EN	(ASCII*) " PID      "
+#define RSC_TASKS_SORTBY_COMM_CODE_EN	(ASCII*) " Command  "
 
 #define RSC_MENU_ITEM_MENU_CODE_EN	(ASCII*) "          Menu          "
 #define RSC_MENU_ITEM_VIEW_CODE_EN	(ASCII*) "          View          "
@@ -302,3 +312,110 @@
 			(ASCII*) "  Up  PgUp                     Scroll "
 #define RSC_ADV_HELP_ITEM_14_CODE_EN					\
 			(ASCII*) " Down PgDw                       CPU  "
+
+#define RSC_BOX_DISABLE_COND0_CODE_EN					\
+			(ASCII*) "               Disable              "
+#define RSC_BOX_DISABLE_COND1_CODE_EN					\
+			(ASCII*) "           <   Disable  >           "
+#define RSC_BOX_ENABLE_COND0_CODE_EN					\
+			(ASCII*) "               Enable               "
+#define RSC_BOX_ENABLE_COND1_CODE_EN					\
+			(ASCII*) "           <   Enable   >           "
+
+#define RSC_BOX_INTERVAL_TITLE_CODE_EN	(ASCII*) " Interval "
+#define RSC_BOX_AUTOCLOCK_TITLE_CODE_EN (ASCII*) " Auto Clock "
+#define RSC_BOX_MODE_TITLE_CODE_EN	(ASCII*) " Experimental "
+
+#define RSC_BOX_MODE_DESC_CODE_EN					\
+			(ASCII*) "       CoreFreq Operation Mode       "
+#define RSC_BOX_EIST_DESC_CODE_EN					\
+			(ASCII*) "             SpeedStep              "
+#define RSC_BOX_C1E_DESC_CODE_EN					\
+			(ASCII*) "        Enhanced Halt State         "
+#define RSC_BOX_TURBO_DESC_CODE_EN					\
+			(ASCII*) " Turbo Boost/Core Performance Boost "
+#define RSC_BOX_C1A_DESC_CODE_EN					\
+			(ASCII*) "          C1 Auto Demotion          "
+#define RSC_BOX_C3A_DESC_CODE_EN					\
+			(ASCII*) "          C3 Auto Demotion          "
+#define RSC_BOX_C1U_DESC_CODE_EN					\
+			(ASCII*) "            C1 UnDemotion           "
+#define RSC_BOX_C3U_DESC_CODE_EN					\
+			(ASCII*) "            C3 UnDemotion           "
+#define RSC_BOX_CC6_DESC_CODE_EN					\
+			(ASCII*) "           Core C6 State            "
+#define RSC_BOX_PC6_DESC_CODE_EN					\
+			(ASCII*) "          Package C6 State          "
+#define RSC_BOX_BLANK_DESC_CODE_EN					\
+			(ASCII*) "                                    "
+
+#define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN				\
+			(ASCII*) "       Nominal operating mode       "
+#define RSC_BOX_NOMINAL_MODE_COND1_CODE_EN				\
+			(ASCII*) "     < Nominal operating mode >     "
+#define RSC_BOX_EXPERIMENT_MODE_COND0_CODE_EN				\
+			(ASCII*) "     Experimental operating mode    "
+#define RSC_BOX_EXPERIMENT_MODE_COND1_CODE_EN				\
+			(ASCII*) "   < Experimental operating mode >  "
+
+#define RSC_BOX_INTERRUPT_TITLE_CODE_EN (ASCII*) " NMI Interrupts "
+
+#define RSC_BOX_INT_REGISTER_COND0_CODE_EN				\
+			(ASCII*) "              Register              "
+#define RSC_BOX_INT_REGISTER_COND1_CODE_EN				\
+			(ASCII*) "            < Register >            "
+#define RSC_BOX_INT_UNREGISTER_COND0_CODE_EN				\
+			(ASCII*) "             Unregister             "
+#define RSC_BOX_INT_UNREGISTER_COND1_CODE_EN				\
+			(ASCII*) "           < Unregister >           "
+
+#define RSC_BOX_EVENT_TITLE_CODE_EN	(ASCII*) " Clear Event "
+
+#define RSC_BOX_EVENT_THERMAL_SENSOR_CODE_EN				\
+					(ASCII*) "     Thermal Sensor     "
+#define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_EN				\
+					(ASCII*) "     PROCHOT# Agent     "
+#define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_EN				\
+					(ASCII*) "  Critical Temperature  "
+#define RSC_BOX_EVENT_THERMAL_THRESHOLD_CODE_EN 			\
+					(ASCII*) "   Thermal Threshold    "
+#define RSC_BOX_EVENT_POWER_LIMITATION_CODE_EN				\
+					(ASCII*) "    Power Limitation    "
+#define RSC_BOX_EVENT_CURRENT_LIMITATION_CODE_EN			\
+					(ASCII*) "   Current Limitation   "
+#define RSC_BOX_EVENT_CROSS_DOMAIN_LIMIT_CODE_EN			\
+					(ASCII*) "   Cross Domain Limit.  "
+
+#define RSC_BOX_PKG_STATE_TITLE_CODE_EN (ASCII*) " Package C-State Limit "
+
+#define RSC_BOX_IO_MWAIT_TITLE_CODE_EN	(ASCII*) " I/O MWAIT "
+#define RSC_BOX_IO_MWAIT_DESC_CODE_EN					\
+			(ASCII*) "        I/O MWAIT Redirection       "
+
+#define RSC_BOX_MWAIT_MAX_STATE_TITLE_CODE_EN (ASCII*)" I/O MWAIT Max C-State "
+
+#define RSC_BOX_ODCM_TITLE_CODE_EN	(ASCII*) " ODCM "
+#define RSC_BOX_ODCM_DESC_CODE_EN					\
+			(ASCII*) "          Clock Modulation          "
+
+#define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_EN	(ASCII*)" Extended Duty Cycle "
+#define RSC_BOX_DUTY_CYCLE_TITLE_CODE_EN	(ASCII*) " Duty Cycle "
+
+#define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_EN				\
+				(ASCII*) "          Reserved         "
+
+#define RSC_BOX_TOOLS_TITLE_CODE_EN	(ASCII*) " Tools "
+#define RSC_BOX_TOOLS_STOP_CODE_EN	(ASCII*) "            STOP           "
+#define RSC_BOX_TOOLS_ATOMIC_CODE_EN	(ASCII*) "        Atomic Burn        "
+#define RSC_BOX_TOOLS_CRC32_CODE_EN	(ASCII*) "       CRC32 Compute       "
+#define RSC_BOX_TOOLS_CONIC_CODE_EN	(ASCII*) "       Conic Compute...    "
+#define RSC_BOX_TOOLS_RAND_CPU_CODE_EN	(ASCII*) "      Turbo Random CPU     "
+#define RSC_BOX_TOOLS_RR_CPU_CODE_EN	(ASCII*) "      Turbo Round Robin    "
+
+#define RSC_BOX_CONIC_TITLE_CODE_EN	(ASCII*) " Conic variations "
+#define RSC_BOX_CONIC_ITEM_1_CODE_EN	(ASCII*) "         Ellipsoid         "
+#define RSC_BOX_CONIC_ITEM_2_CODE_EN	(ASCII*) " Hyperboloid of one sheet  "
+#define RSC_BOX_CONIC_ITEM_3_CODE_EN	(ASCII*) " Hyperboloid of two sheets "
+#define RSC_BOX_CONIC_ITEM_4_CODE_EN	(ASCII*) "    Elliptical cylinder    "
+#define RSC_BOX_CONIC_ITEM_5_CODE_EN	(ASCII*) "    Hyperbolic cylinder    "
+#define RSC_BOX_CONIC_ITEM_6_CODE_EN	(ASCII*) "    Two parallel planes    "
