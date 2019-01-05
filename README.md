@@ -106,7 +106,7 @@ CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 
 ### Daemon
 ```
-CoreFreq Daemon.  Copyright (C) 2015-2018 CYRIL INGENIERIE
+CoreFreq Daemon.  Copyright (C) 2015-2019 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
@@ -215,5 +215,5 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2018 CYRIL INGENIERIE
+Copyright (C) 2015-2019 CYRIL INGENIERIE
  -------

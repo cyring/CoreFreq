@@ -1,10 +1,10 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2018 CYRIL INGENIERIE
+ * Copyright (C) 2015-2019 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.39.7"
+#define COREFREQ_VERSION	"1.39.8"
 
 enum {	GenuineIntel,
 	Core_Yonah,
