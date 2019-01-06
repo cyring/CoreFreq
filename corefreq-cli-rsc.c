@@ -1157,6 +1157,20 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_LOCK_CODE_FR
 		}
 	},
+	[RSC_ENABLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ENABLE_CODE_EN,
+			[LOC_FR] = RSC_ENABLE_CODE_FR
+		}
+	},
+	[RSC_DISABLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_DISABLE_CODE_EN,
+			[LOC_FR] = RSC_DISABLE_CODE_FR
+		}
+	},
 	[RSC_CPUID_TITLE] = {
 		.Attr = vColor,
 		.Code = {
@@ -1234,6 +1248,83 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_TECHNOLOGIES_TITLE_CODE_FR
 		}
 	},
+	[RSC_TECHNOLOGIES_SMM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_SMM_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_SMM_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_HTT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_HTT_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_HTT_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_EIST] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_EIST_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_EIST_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_IDA] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_IDA_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_IDA_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_TURBO] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_TURBO_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_TURBO_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_VM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_VM_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_VM_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_IOMMU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_IOMMU_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_IOMMU_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_SMT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_SMT_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_SMT_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_CNQ] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_CNQ_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_CNQ_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_CPB] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_CPB_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_CPB_CODE_FR
+		}
+	},
+	[RSC_TECHNOLOGIES_HYPERV] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TECHNOLOGIES_HYPERV_CODE_EN,
+			[LOC_FR] = RSC_TECHNOLOGIES_HYPERV_CODE_FR
+		}
+	},
 	[RSC_PERF_MON_TITLE] = {
 		.Attr = vColor,
 		.Code = {
@@ -1274,6 +1365,125 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_POWER_THERMAL_TITLE_CODE_EN,
 			[LOC_FR] = RSC_POWER_THERMAL_TITLE_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_ODCM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_ODCM_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_ODCM_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_DUTY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_DUTY_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_DUTY_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_MGMT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_MGMT_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_MGMT_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_BIAS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_BIAS_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_BIAS_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_TJMAX] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_TJMAX_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_TJMAX_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_DTS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_DTS_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_DTS_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_PLN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_PLN_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_PLN_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_PTM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_PTM_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_PTM_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_TM1] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_TM1_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_TM1_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_TM2] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_TM2_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_TM2_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_UNITS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_UNITS_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_UNITS_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_POWER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_POWER_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_POWER_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_ENERGY] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_ENERGY_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_ENERGY_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_WINDOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_WINDOW_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_WINDOW_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_WATT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_WATT_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_WATT_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_JOULE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_JOULE_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_JOULE_CODE_FR
+		}
+	},
+	[RSC_POWER_THERMAL_SECOND] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_POWER_THERMAL_SECOND_CODE_EN,
+			[LOC_FR] = RSC_POWER_THERMAL_SECOND_CODE_FR
 		}
 	},
 	[RSC_KERNEL_TITLE] = {

@@ -1158,17 +1158,18 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 38, hSpace, powered(bix));
 }
 
+char *Hypervisor[HYPERVISORS] = {
+	[HYPERV_BARE]	= "    ",
+	[HYPERV_XEN]	= " Xen",
+	[HYPERV_KVM]	= " KVM",
+	[HYPERV_VBOX]	= "VBOX"
+};
+
 void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[2] = {
 		RSC(SYSINFO_TECH_COND0).ATTR(),
 		RSC(SYSINFO_TECH_COND1).ATTR()
-	};
-		char *hypervisor[HYPERVISORS] = {
-		[HYPERV_BARE]	= "    ",
-		[HYPERV_XEN]	= " Xen",
-		[HYPERV_KVM]	= " KVM",
-		[HYPERV_VBOX]	= "VBOX"
 	};
 	int bix;
 /* Section Mark */
@@ -1176,76 +1177,78 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"System Management Mode%.*sSMM-Dual       [%3s]",
-		width - 45, hSpace, enabled(bix));
+		"%s%.*sSMM-Dual       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
+		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Hyper-Threading%.*sHTT       [%3s]",
-		width - 33, hSpace, enabled(bix));
+		"%s%.*sHTT       [%3s]", RSC(TECHNOLOGIES_HTT).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_HTT), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
 	PUT(BOXKEY_EIST, attrib[bix], width, 2,
-		"SpeedStep%.*sEIST       <%3s>",
-		width - 28, hSpace, enabled(bix));
+		"%s%.*sEIST       <%3s>", RSC(TECHNOLOGIES_EIST).CODE(),
+		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Dynamic Acceleration%.*sIDA       [%3s]",
-		width - 38, hSpace, enabled(bix));
+		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
 	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
-		"Turbo Boost%.*sTURBO       <%3s>",
-		width - 31, hSpace, enabled(bix));
+		"%s%.*sTURBO       <%3s>", RSC(TECHNOLOGIES_TURBO).CODE(),
+		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtualization%.*sVMX       [%3s]",
-		width - 32, hSpace, enabled(bix));
+		"%s%.*sVMX       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"I/O MMU%.*sVT-d       [%3s]",
-		width - (OutFunc ? 27 : 29), hSpace, enabled(bix));
+		"%s%.*sVT-d       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
+		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
+		hSpace, enabled(bix));
     }
     else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"System Management Mode%.*sSMM-Lock       [%3s]",
-		width - 45, hSpace, enabled(bix));
+		"%s%.*sSMM-Lock       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
+		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Simultaneous Multithreading%.*sSMT       [%3s]",
-		width - 45, hSpace, enabled(bix));
+		"%s%.*sSMT       [%3s]", RSC(TECHNOLOGIES_SMT).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_SMT), hSpace, enabled(bix));
 
 	bix = Shm->Proc.PowerNow == 0b11;	/*	VID + FID	*/
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"PowerNow!%.*sCnQ       [%3s]",
-		width - 27, hSpace, enabled(bix));
+		"%s%.*sCnQ       [%3s]", RSC(TECHNOLOGIES_CNQ).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
 	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
-		"Core Performance Boost%.*sCPB       <%3s>",
-		width - 40, hSpace, enabled(bix));
+		"%s%.*sCPB       <%3s>", RSC(TECHNOLOGIES_CPB).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtualization%.*sSVM       [%3s]",
-		width - 32, hSpace, enabled(bix));
+		"%s%.*sSVM       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"I/O MMU%.*sAMD-V       [%3s]",
-		width - (OutFunc? 28 : 30), hSpace, enabled(bix));
+		"%s%.*sAMD-V       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
+		width - (OutFunc? 21 : 23) - RSZ(TECHNOLOGIES_IOMMU),
+		hSpace, enabled(bix));
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"Hypervisor%.*s""%s       [%3s]",
-		width - (OutFunc? 30 : 32), hSpace,
-		hypervisor[Shm->Proc.HypervisorID], enabled(bix));
+		"%s%.*s""%s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
+		width - (OutFunc? 20 : 22) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
+		Hypervisor[Shm->Proc.HypervisorID], enabled(bix));
 }
 
 void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -1359,7 +1362,7 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"Configuration Control%.*sCONFIG   [%7s]",
 		width - (OutFunc == NULL ? 45 : 43), hSpace,
 		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
-			"UNLOCK" : "LOCK");
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
 		PUT(BOXKEY_PKGCST, attrib[0], width, 3,
@@ -1372,7 +1375,7 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
-				" ENABLE" : "DISABLE");
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
 		PUT(BOXKEY_IORCST, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   <%7d>",
@@ -1388,7 +1391,7 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
 			width - (OutFunc == NULL ? 46 : 44), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
-				" ENABLE" : "DISABLE");
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
 		PUT(SCANKEY_NULL, attrib[0], width, 3,
 			"Max C-State Inclusion%.*sRANGE   [%7d]",
@@ -1458,8 +1461,8 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	const ASCII *TM[] = {
 		RSC(MISSING).CODE(),
 		RSC(PRESENT).CODE(),
-		(ASCII*) "Disable",
-		(ASCII*) " Enable",
+		RSC(DISABLE).CODE(),
+		RSC(ENABLE).CODE(),
 	}, *Unlock[] = {
 		RSC(LOCK).CODE(),
 		RSC(UNLOCK).CODE()
@@ -1468,78 +1471,88 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Section Mark */
 	bix = Shm->Proc.Technology.ODCM == 1 ? 3 : 1;
 	PUT(BOXKEY_ODCM, attrib[bix], width, 2,
-		"Clock Modulation%.*sODCM   <%7s>", width - 35, hSpace,
-		Shm->Proc.Technology.ODCM ? " Enable" : "Disable");
+		"%s%.*sODCM   <%7s>", RSC(POWER_THERMAL_ODCM).CODE(),
+		width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
+		Shm->Proc.Technology.ODCM ?
+			RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
 	PUT(BOXKEY_DUTYCYCLE, attrib[0], width, 3,
-	"DutyCycle%.*s<%6.2f%%>", width - (OutFunc == NULL ? 24: 22), hSpace,
+		"%s%.*s<%6.2f%%>", RSC(POWER_THERMAL_DUTY).CODE(),
+	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
 	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
 
 	bix = Shm->Proc.Technology.PowerMgmt == 1 ? 3 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Power Management%.*sPWR MGMT   [%7s]",
-		width - 39, hSpace, Unlock[Shm->Proc.Technology.PowerMgmt]);
+		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
+		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
+		Unlock[Shm->Proc.Technology.PowerMgmt]);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"Energy Policy%.*sBias Hint   [%7u]",
-		width - (OutFunc == NULL ? 40 : 38), hSpace,
+		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
+	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"Junction Temperature%.*sTjMax   [%3u:%3u]", width - 40, hSpace,
+		"%s%.*sTjMax   [%3u:%3u]", RSC(POWER_THERMAL_TJMAX).CODE(),
+		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Digital Thermal Sensor%.*sDTS   [%7s]",
-		width - 40, hSpace, powered(bix));
+		"%s%.*sDTS   [%7s]", RSC(POWER_THERMAL_DTS).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_DTS), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PLN == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Power Limit Notification%.*sPLN   [%7s]",
-		width - 42, hSpace, powered(bix));
+		"%s%.*sPLN   [%7s]", RSC(POWER_THERMAL_PLN).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PLN), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PTM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Package Thermal Management%.*sPTM   [%7s]",
-		width - 44, hSpace, powered(bix));
+		"%s%.*sPTM   [%7s]", RSC(POWER_THERMAL_PTM).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace, powered(bix));
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 	    | Shm->Proc.Features.AdvPower.EDX.TTP;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Thermal Monitor 1%.*sTM1|TTP   [%7s]",
-		width - 39, hSpace,
+		"%s%.*sTM1|TTP   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
+		width - 22 - RSZ(POWER_THERMAL_TM1), hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 			| Shm->Proc.Features.AdvPower.EDX.TTP ]);
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 	    | Shm->Proc.Features.AdvPower.EDX.TM;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Thermal Monitor 2%.*sTM2|HTC   [%7s]",
-		width - 39, hSpace,
+		"%s%.*sTM2|HTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
+		width - 22 - RSZ(POWER_THERMAL_TM2), hSpace,
 		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
 			| Shm->Proc.Features.AdvPower.EDX.TM ]);
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2, "Units", NULL);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"Power%.*swatt   [%13.9f]",
-		width - (OutFunc == NULL ? 33 : 31), hSpace,
-		Shm->Proc.Power.Unit.Watts);
+		"%s%.*s%s   [%13.9f]",
+		RSC(POWER_THERMAL_POWER).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		 - RSZ(POWER_THERMAL_POWER) - RSZ(POWER_THERMAL_WATT), hSpace,
+		RSC(POWER_THERMAL_WATT).CODE(), Shm->Proc.Power.Unit.Watts);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"Energy%.*sjoule   [%13.9f]",
-		width - (OutFunc == NULL ? 35 : 33), hSpace,
-		Shm->Proc.Power.Unit.Joules);
+		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_ENERGY).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		- RSZ(POWER_THERMAL_ENERGY) - RSZ(POWER_THERMAL_JOULE), hSpace,
+		RSC(POWER_THERMAL_JOULE).CODE(), Shm->Proc.Power.Unit.Joules);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"Window%.*ssecond   [%13.9f]",
-		width - (OutFunc == NULL ? 36 : 34), hSpace,
-		Shm->Proc.Power.Unit.Times);
+		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_WINDOW).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
+		RSC(POWER_THERMAL_SECOND).CODE(), Shm->Proc.Power.Unit.Times);
 }
 
 void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)

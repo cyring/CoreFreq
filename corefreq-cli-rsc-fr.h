@@ -164,6 +164,8 @@
 #define RSC_NOMINAL_CODE_FR		(ASCII*) "Nominal"
 #define RSC_UNLOCK_CODE_FR		(ASCII*) "OUVERT"
 #define RSC_LOCK_CODE_FR		(ASCII*) "BLOQUE"
+#define RSC_ENABLE_CODE_FR		(ASCII*) "  Actif"
+#define RSC_DISABLE_CODE_FR		(ASCII*) "Inactif"
 
 #define RSC_CPUID_TITLE_FR 		\
 (ASCII*) " fonction           EAX          EBX          ECX          EDX "
@@ -182,6 +184,17 @@
 #define RSC_INVARIANT_CODE_FR		(ASCII*) "Invariant"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_FR	(ASCII*) " Technologies "
+#define RSC_TECHNOLOGIES_SMM_CODE_FR	(ASCII*) "Mode de Gestion Systeme"
+#define RSC_TECHNOLOGIES_HTT_CODE_FR	(ASCII*) "Hyper-Threading"
+#define RSC_TECHNOLOGIES_EIST_CODE_FR	(ASCII*) "SpeedStep"
+#define RSC_TECHNOLOGIES_IDA_CODE_FR	(ASCII*) "Acceleration dynamique"
+#define RSC_TECHNOLOGIES_TURBO_CODE_FR	(ASCII*) "Turbo Boost"
+#define RSC_TECHNOLOGIES_VM_CODE_FR	(ASCII*) "Virtualisation"
+#define RSC_TECHNOLOGIES_IOMMU_CODE_FR	(ASCII*) "MMU E/S"
+#define RSC_TECHNOLOGIES_SMT_CODE_FR	(ASCII*) "Multithreading simultane"
+#define RSC_TECHNOLOGIES_CNQ_CODE_FR	(ASCII*) "PowerNow!"
+#define RSC_TECHNOLOGIES_CPB_CODE_FR	(ASCII*) "Core Performance Boost"
+#define RSC_TECHNOLOGIES_HYPERV_CODE_FR (ASCII*) "Hyperviseur"
 
 #define RSC_PERF_MON_TITLE_CODE_FR	(ASCII*) " Gestion de la performance "
 #define RSC_VERSION_CODE_FR		(ASCII*) "Version"
@@ -190,6 +203,23 @@
 #define RSC_FIXED_CTRS_CODE_FR		(ASCII*) "Fixes"
 
 #define RSC_POWER_THERMAL_TITLE_CODE_FR (ASCII*) " Puissance et thermique "
+#define RSC_POWER_THERMAL_ODCM_CODE_FR	(ASCII*) "Modulation d'horloge"
+#define RSC_POWER_THERMAL_DUTY_CODE_FR	(ASCII*) "Cycle de service"
+#define RSC_POWER_THERMAL_MGMT_CODE_FR	(ASCII*) "Gestion de la puissance"
+#define RSC_POWER_THERMAL_BIAS_CODE_FR	(ASCII*) "Regle energitique"
+#define RSC_POWER_THERMAL_TJMAX_CODE_FR (ASCII*) "Temperature de jonction"
+#define RSC_POWER_THERMAL_DTS_CODE_FR	(ASCII*) "Capteur thermique numerique"
+#define RSC_POWER_THERMAL_PLN_CODE_FR	(ASCII*) "Notification de puissance"
+#define RSC_POWER_THERMAL_PTM_CODE_FR	(ASCII*) "Gestion thermique du Package"
+#define RSC_POWER_THERMAL_TM1_CODE_FR	(ASCII*) "Controle Temperature 1"
+#define RSC_POWER_THERMAL_TM2_CODE_FR	(ASCII*) "Controle Temperature 2"
+#define RSC_POWER_THERMAL_UNITS_CODE_FR (ASCII*) "Unites"
+#define RSC_POWER_THERMAL_POWER_CODE_FR (ASCII*) "Puissance"
+#define RSC_POWER_THERMAL_ENERGY_CODE_FR (ASCII*)"Energie"
+#define RSC_POWER_THERMAL_WINDOW_CODE_FR (ASCII*)"Intervalle"
+#define RSC_POWER_THERMAL_WATT_CODE_FR	(ASCII*) "watt"
+#define RSC_POWER_THERMAL_JOULE_CODE_FR (ASCII*) "joule"
+#define RSC_POWER_THERMAL_SECOND_CODE_FR (ASCII*)"seconde"
 
 #define RSC_KERNEL_TITLE_CODE_FR	(ASCII*) " Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	(ASCII*) "RAM totale"
@@ -234,7 +264,7 @@
 #define RSC_MENU_ITEM_DASHBOARD_CODE_FR (ASCII*) " Tableau de bord    [d] "
 #define RSC_MENU_ITEM_FREQUENCY_CODE_FR (ASCII*) " Frequence          [f] "
 #define RSC_MENU_ITEM_INST_CYCLE_CODE_FR (ASCII*)" Cycles Instruction [i] "
-#define RSC_MENU_ITEM_CORE_CYCLE_CODE_FR (ASCII*)" Cycles des Cores   [c] "
+#define RSC_MENU_ITEM_CORE_CYCLE_CODE_FR (ASCII*)" Cycles des Coeurs  [c] "
 #define RSC_MENU_ITEM_IDLE_STATE_CODE_FR (ASCII*)" Etats de sommeil   [l] "
 #define RSC_MENU_ITEM_PKG_CYCLE_CODE_FR (ASCII*) " Cycles du Package  [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_FR (ASCII*) " Suivi des taches   [x] "
@@ -256,7 +286,7 @@
 #define RSC_SETTINGS_DAEMON_CODE_FR					\
 				(ASCII*) " Acces demon                    "
 #define RSC_SETTINGS_INTERVAL_CODE_FR					\
-				(ASCII*) " Interval(ms)                   "
+				(ASCII*) " Intervalle(ms)                 "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_FR 				\
 				(ASCII*) " Auto Clock                     "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_FR				\
@@ -322,7 +352,7 @@
 #define RSC_BOX_ENABLE_COND1_CODE_FR					\
 			(ASCII*) "           <   Activer  >           "
 
-#define RSC_BOX_INTERVAL_TITLE_CODE_FR	(ASCII*) " Interval "
+#define RSC_BOX_INTERVAL_TITLE_CODE_FR	(ASCII*) "Intervalle"
 #define RSC_BOX_AUTOCLOCK_TITLE_CODE_FR (ASCII*) " Auto Clock "
 #define RSC_BOX_MODE_TITLE_CODE_FR	(ASCII*) " Experimental "
 
@@ -396,10 +426,11 @@
 
 #define RSC_BOX_ODCM_TITLE_CODE_FR	(ASCII*) " ODCM "
 #define RSC_BOX_ODCM_DESC_CODE_FR					\
-			(ASCII*) "        Modulation Frequence        "
+			(ASCII*) "        Modulation d'horloge        "
 
-#define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR	(ASCII*)" Extended Duty Cycle "
-#define RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR	(ASCII*) " Duty Cycle "
+#define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR				\
+					(ASCII*)" Cycle de service etendu "
+#define RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR	(ASCII*) " Cycle de service "
 
 #define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR				\
 				(ASCII*) "           Reserve         "
