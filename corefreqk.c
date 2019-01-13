@@ -3418,7 +3418,7 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 
 	/* Enable or Disable the Core C6 State. Bit[22,14,16] */
-	RDMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
+	RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
 	switch (CC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
 		BITCLR(LOCKLESS, CC6, 22);
@@ -3437,8 +3437,8 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 		break;
 	}
 	if (ToggleFeature == 1) {
-		WRMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
-		RDMSR64(CC6, MSR_AMD_CC6_F17_STATUS);
+		WRMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
+		RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
 	}
 	if (BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU)
 		BITSET(LOCKLESS, Proc->CC6, Core->Bind);
@@ -3449,7 +3449,7 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 
 	/* Enable or Disable the Package C6 State. Bit[32] */
 	if (Core->Bind == Proc->Service.Core) {
-		RDMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
+		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
 		switch (PC6_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 			BITCLR(LOCKLESS, PC6, 32);
@@ -3464,8 +3464,8 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 			break;
 		}
 		if (ToggleFeature == 1) {
-			WRMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
-			RDMSR64(PC6, MSR_AMD_PC6_F17_STATUS);
+			WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+			RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
 		}
 		if (BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
 			BITSET(LOCKLESS, Proc->PC6, Core->Bind);
@@ -5347,18 +5347,18 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 	}
 }
 
-void Core_AMD_Family_17h_Temp(CORE *Core)
+void Core_AMD_SMU_Thermal(CORE *Core, const unsigned int TctlRegister,
+				const unsigned int SMU_IndexRegister,
+				const unsigned int SMU_DataRegister)
 {
-/* Source: BKDG for AMD Family 16h
-	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
-	59800h : undocumented AMD 17h
-*/
-	unsigned int indexRegister = 0x00059800, sensor = 0;
+	unsigned int sensor = 0;
 
-	WRPCI(indexRegister, PCI_CONFIG_ADDRESS(0, 0, 0, 0x60));
-	RDPCI(sensor, PCI_CONFIG_ADDRESS(0, 0, 0, 0x64));
+	WRPCI(TctlRegister, SMU_IndexRegister);
+	RDPCI(sensor, SMU_DataRegister);
 
 	Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
+/*
+	TODO: To change for SMU D0F0xBC_xD820_0CE4 Thermtrip Status
 
 	if (Proc->Registration.Experimental)
 		if (Proc->Features.AdvPower.EDX.TTP == 1) {
@@ -5366,6 +5366,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 			RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
 			Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 		}
+*/
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
@@ -6962,6 +6963,61 @@ static void Stop_AMD_Family_10h(void *arg)
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
+{
+	CORE *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE *) KPublic->Core[cpu];
+
+	Mark_OVH(Core);
+
+	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Counters_Generic(Core, 1);
+
+		if (Core->Bind == Proc->Service.Core) {
+			PKG_Counters_Generic(Core, 1);
+
+			Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_REGISTER_F15H,
+						SMU_AMD_INDEX_REGISTER_F15H,
+						SMU_AMD_DATA_REGISTER_F15H);
+
+			Delta_PTSC_OVH(Proc, Core);
+
+			Save_PTSC(Proc);
+
+			Sys_Tick(Proc);
+		}
+
+		Delta_C0(Core);
+
+		Delta_TSC_OVH(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, Core->Sync.V, 63);
+
+		return(HRTIMER_RESTART);
+	} else
+		return(HRTIMER_NORESTART);
+}
+
+void InitTimer_AMD_Family_15h(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_15h, 1);
+}
+
 static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 {
 	PSTATESTAT PstateStat;
@@ -6986,7 +7042,9 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Core_AMD_Family_17h_Temp(Core);
+			Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_REGISTER_F17H,
+						SMU_AMD_INDEX_REGISTER_F16H,
+						SMU_AMD_DATA_REGISTER_F16H);
 
 			PWR_ACCU_AMD_Family_17h(Proc, 1);
 

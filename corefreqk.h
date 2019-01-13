@@ -796,6 +796,7 @@ extern void Query_AMD_Family_14h(void) ;
 
 extern void Query_AMD_Family_15h(void) ;
 #define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
+extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 
 extern void Query_AMD_Family_17h(void) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
@@ -3415,11 +3416,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AuthenticAMD,
 	.Stop = Stop_AuthenticAMD,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_15h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_AMD,
+	.thermalFormula = THERMAL_FORMULA_AMD_17h,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
 	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids,
