@@ -51,17 +51,39 @@
 #endif
 
 /* UNDOCUMENTED REGISTERS */
-#ifndef MSR_AMD_PC6_F17_STATUS
-	#define MSR_AMD_PC6_F17_STATUS		0xc0010292
+#ifndef MSR_AMD_PC6_F17H_STATUS
+	#define MSR_AMD_PC6_F17H_STATUS		0xc0010292
 #endif
 
-#ifndef MSR_AMD_PSTATE_F17_BOOST
-	#define MSR_AMD_PSTATE_F17_BOOST	0xc0010293
+#ifndef MSR_AMD_PSTATE_F17H_BOOST
+	#define MSR_AMD_PSTATE_F17H_BOOST	0xc0010293
 #endif
 
-#ifndef MSR_AMD_CC6_F17_STATUS
-	#define MSR_AMD_CC6_F17_STATUS		0xc0010296
+#ifndef MSR_AMD_CC6_F17H_STATUS
+	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
 #endif
+
+/* Sources:
+ * BKDG for AMD Family 15h
+	SMU index/data pair registers, D0F0xB8 and D0F0xBC
+ * BKDG for AMD Family 16h
+	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
+*/
+#define SMU_AMD_INDEX_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xb8)
+#define SMU_AMD_DATA_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xbc)
+
+#define SMU_AMD_INDEX_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
+#define SMU_AMD_DATA_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
+
+/* Sources:
+ * BKDG for AMD Family 15h
+	D0F0xBC_xD820_0CA4 Reported Temperature Control
+ * OSRR for AMD Family 17h processors / Memory Map - SMN
+	59800h: SMU::THM
+*/
+#define SMU_AMD_THM_REGISTER_F15H		0xd8200ca4
+#define SMU_AMD_THM_REGISTER_F17H		0x00059800
+
 
 const struct {
 	unsigned int	MCF,
