@@ -197,6 +197,13 @@ static void *Core_Cycle(void *arg)
 				Cpu->PowerThermal.Param,
 				CFlip->Thermal.Sensor);
 		break;
+	case THERMAL_FORMULA_AMD_15h:
+	    if (cpu == Shm->Proc.Service.Core)
+		COMPUTE_THERMAL(AMD_15h,
+				CFlip->Thermal.Temp,
+				Cpu->PowerThermal.Param,
+				CFlip->Thermal.Sensor);
+		break;
 	case THERMAL_FORMULA_AMD_17h:
 	    if (cpu == Shm->Proc.Service.Core)
 		COMPUTE_THERMAL(AMD_17h,
@@ -2839,6 +2846,16 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
 	break;
+    case THERMAL_FORMULA_AMD_15h:
+      if (cpu == Proc->Service.Core) {
+	COMPUTE_THERMAL(AMD_15h,
+			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Core[cpu]->PowerThermal.Param,
+			Core[cpu]->PowerThermal.Sensor);
+      } else {
+      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target;
+      }
+	break;
     case THERMAL_FORMULA_AMD_17h:
       if (cpu == Proc->Service.Core) {
 	COMPUTE_THERMAL(AMD_17h,
@@ -3422,6 +3439,7 @@ void Core_Manager(REF *Ref)
 			break;
 		    case THERMAL_FORMULA_AMD:
 		    case THERMAL_FORMULA_AMD_0Fh:
+		    case THERMAL_FORMULA_AMD_15h:
 		    case THERMAL_FORMULA_AMD_17h:
 			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
@@ -3506,6 +3524,12 @@ void Core_Manager(REF *Ref)
 		break;
 	    case THERMAL_FORMULA_AMD_0Fh:
 		COMPUTE_THERMAL(AMD_0Fh,
+			PFlip->Thermal.Temp,
+			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+			PFlip->Thermal.Sensor);
+		break;
+	    case THERMAL_FORMULA_AMD_15h:
+		COMPUTE_THERMAL(AMD_15h,
 			PFlip->Thermal.Temp,
 			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
 			PFlip->Thermal.Sensor);

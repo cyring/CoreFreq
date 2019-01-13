@@ -1472,13 +1472,9 @@ void HyperThreading_Technology(void)
 
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
-  unsigned short codeNameIdx = pSpecific->CodeNameIdx;
-  size_t len = KMIN(CODENAME_LEN - 1,
-		strlen(Arch[Proc->ArchID].Architecture[codeNameIdx].CodeName));
-
-	memcpy( Proc->Architecture,
-		Arch[Proc->ArchID].Architecture[codeNameIdx].CodeName, len);
-	Proc->Architecture[len] = '\0';
+    StrCopy(Proc->Architecture,
+	    Arch[Proc->ArchID].Architecture[pSpecific->CodeNameIdx].CodeName,
+	    CODENAME_LEN);
 }
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
@@ -3078,6 +3074,42 @@ void Query_AMD_Family_15h(void)
 	Proc->Features.SpecTurboRatio = 6;
 
 	HyperThreading_Technology();
+
+  /* Find micro-architecture based on the CPUID model. Bulldozer initialized */
+    switch (Proc->Features.Std.EAX.ExtModel) {
+    case 0x0:
+	if (Proc->Features.Std.EAX.Model == 0x2) {
+		StrCopy(Proc->Architecture,
+			Arch[Proc->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+			CODENAME_LEN);
+	}
+	break;
+    case 0x1:
+	if ((Proc->Features.Std.EAX.Model >= 0x0)
+	 && (Proc->Features.Std.EAX.Model <= 0xf)) {
+		StrCopy(Proc->Architecture,
+			Arch[Proc->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+			CODENAME_LEN);
+	}
+	break;
+    case 0x3:
+	if ((Proc->Features.Std.EAX.Model >= 0x0)
+	 && (Proc->Features.Std.EAX.Model <= 0xf)) {
+		StrCopy(Proc->Architecture,
+		    Arch[Proc->ArchID].Architecture[CN_STEAMROLLER].CodeName,
+			CODENAME_LEN);
+	}
+	break;
+    case 0x6:
+    case 0x7:
+	if ((Proc->Features.Std.EAX.Model >= 0x0)
+	 && (Proc->Features.Std.EAX.Model <= 0xf)) {
+		StrCopy(Proc->Architecture,
+			Arch[Proc->ArchID].Architecture[CN_EXCAVATOR].CodeName,
+			CODENAME_LEN);
+	}
+	break;
+    };
 }
 
 unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
@@ -5347,27 +5379,41 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 	}
 }
 
-void Core_AMD_SMU_Thermal(CORE *Core, const unsigned int TctlRegister,
-				const unsigned int SMU_IndexRegister,
-				const unsigned int SMU_DataRegister)
+#define Core_AMD_SMU_Thermal(Core,	TctlRegister,			\
+					SMU_IndexRegister,		\
+					SMU_DataRegister)		\
+({									\
+	TCTL_REGISTER TctlSensor = {0};					\
+									\
+	WRPCI(TctlRegister, SMU_IndexRegister) ;			\
+	RDPCI(TctlSensor, SMU_DataRegister);				\
+									\
+	Core->PowerThermal.Sensor = TctlSensor.CurTmp;			\
+})
+
+void Core_AMD_Family_15h_Temp(CORE *Core)
 {
-	TCTL_REGISTER TctlSensor = {0};
-
-	WRPCI(TctlRegister, SMU_IndexRegister);
-	RDPCI(TctlSensor, SMU_DataRegister);
-
-	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
+	Core_AMD_SMU_Thermal(Core,	SMU_AMD_THM_TCTL_REGISTER_F15H,
+					SMU_AMD_INDEX_REGISTER_F15H,
+					SMU_AMD_DATA_REGISTER_F15H);
 
     if (Proc->Registration.Experimental)
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
-		const unsigned int StatusReg = SMU_AMD_THM_TRIP_REGISTER_F15H;
 		THERMTRIP_STATUS ThermTrip = {0};
 
-		WRPCI(StatusReg, SMU_IndexRegister);
-		RDPCI(ThermTrip, SMU_DataRegister);
+		WRPCI(	SMU_AMD_THM_TRIP_REGISTER_F15H,
+			SMU_AMD_INDEX_REGISTER_F15H);
+		RDPCI(ThermTrip, SMU_AMD_DATA_REGISTER_F15H);
 
 		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
+}
+
+void Core_AMD_Family_17h_Temp(CORE *Core)
+{
+	Core_AMD_SMU_Thermal(Core,	SMU_AMD_THM_TCTL_REGISTER_F17H,
+					SMU_AMD_INDEX_REGISTER_F16H,
+					SMU_AMD_DATA_REGISTER_F16H);
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
@@ -6984,9 +7030,7 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-		     Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_TCTL_REGISTER_F15H,
-						SMU_AMD_INDEX_REGISTER_F15H,
-						SMU_AMD_DATA_REGISTER_F15H);
+			Core_AMD_Family_15h_Temp(Core);
 
 			Delta_PTSC_OVH(Proc, Core);
 
@@ -7043,9 +7087,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-		     Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_TCTL_REGISTER_F17H,
-						SMU_AMD_INDEX_REGISTER_F16H,
-						SMU_AMD_DATA_REGISTER_F16H);
+			Core_AMD_Family_17h_Temp(Core);
 
 			PWR_ACCU_AMD_Family_17h(Proc, 1);
 
@@ -8236,7 +8278,7 @@ static int __init CoreFreqK_init(void)
 			Proc->powerFormula = Arch[Proc->ArchID].powerFormula;
 
 			/* Set the uArch's name with the first found codename */
-			memcpy( Proc->Architecture,
+			StrCopy(Proc->Architecture,
 				Arch[Proc->ArchID].Architecture[0].CodeName,
 				CODENAME_LEN);
 

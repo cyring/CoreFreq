@@ -480,10 +480,17 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 		"movl	$0xcfc,	%%edx"	"\n\t"				\
 		"outl	%%eax,	%%dx"					\
 		:							\
-		: "m"	(_data),					\
+		: "irm" (_data),					\
 		  "ir"	(_reg)						\
 		: "%rax", "%rdx", "memory"				\
 	);								\
+})
+
+#define StrCopy(_dest, _src, _max)					\
+({									\
+	size_t _min = KMIN((_max - 1), strlen(_src));			\
+	memcpy(_dest, _src, _min);					\
+	_dest[_min] = '\0';						\
 })
 
 typedef struct {
@@ -1358,12 +1365,26 @@ static MICRO_ARCH Arch_Kabylake_UY[] = {{"Kaby Lake/UY"}, {NULL}};
 static MICRO_ARCH Arch_Cannonlake[] = {{"Cannon Lake"}, {NULL}};
 static MICRO_ARCH Arch_Geminilake[] = {{"Atom/Gemini Lake"}, {NULL}};
 static MICRO_ARCH Arch_Icelake_UY[] = {{"Ice Lake/UY"}, {NULL}};
+
+enum {
+	CN_BULLDOZER,
+	CN_PILEDRIVER,
+	CN_STEAMROLLER,
+	CN_EXCAVATOR
+};
+
 static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Hammer"}, {NULL}};
 static MICRO_ARCH Arch_AMD_Family_10h[] = {{"K10"}, {NULL}};
 static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Turion"}, {NULL}};
 static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Fusion"}, {NULL}};
 static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Bobcat"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_15h[] = {{"Bulldozer"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_15h[] = {
+	[CN_BULLDOZER]		= {"Bulldozer"},
+	[CN_PILEDRIVER] 	= {"Bulldozer/Piledriver"},
+	[CN_STEAMROLLER]	= {"Bulldozer/Steamroller"},
+	[CN_EXCAVATOR]		= {"Bulldozer/Excavator"},
+	{NULL}
+};
 static MICRO_ARCH Arch_AMD_Family_16h[] = {{"Jaguar"}, {NULL}};
 
 enum {
@@ -3420,7 +3441,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
-	.thermalFormula = THERMAL_FORMULA_AMD_17h,
+	.thermalFormula = THERMAL_FORMULA_AMD_15h,
 	.voltageFormula = VOLTAGE_FORMULA_AMD,
 	.powerFormula   = POWER_FORMULA_AMD,
 	.PCI_ids = PCI_Void_ids,

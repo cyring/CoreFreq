@@ -5920,6 +5920,7 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Thermal.Temp,
 			Shm->Cpu[cpu].PowerThermal.Limit[1]);
 		break;
+	case THERMAL_FORMULA_AMD_15h:
 	case THERMAL_FORMULA_AMD_17h:
 	    if (cpu == Shm->Proc.Service.Core)
 		len = sprintf(buffer,
