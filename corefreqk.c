@@ -5329,7 +5329,7 @@ void Core_Intel_Temp(CORE *Core)
 void Core_AMD_Family_0Fh_Temp(CORE *Core)
 {
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
-		THERMTRIP_STATUS ThermTrip;
+		THERMTRIP_STATUS ThermTrip = {0};
 
 		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
 
@@ -5351,22 +5351,23 @@ void Core_AMD_SMU_Thermal(CORE *Core, const unsigned int TctlRegister,
 				const unsigned int SMU_IndexRegister,
 				const unsigned int SMU_DataRegister)
 {
-	unsigned int sensor = 0;
+	TCTL_REGISTER TctlSensor = {0};
 
 	WRPCI(TctlRegister, SMU_IndexRegister);
-	RDPCI(sensor, SMU_DataRegister);
+	RDPCI(TctlSensor, SMU_DataRegister);
 
-	Core->PowerThermal.Sensor = (sensor >> 21) & 0x7ff;
-/*
-	TODO: To change for SMU D0F0xBC_xD820_0CE4 Thermtrip Status
+	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
-	if (Proc->Registration.Experimental)
-		if (Proc->Features.AdvPower.EDX.TTP == 1) {
-			THERMTRIP_STATUS ThermTrip;
-			RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
-			Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
-		}
-*/
+    if (Proc->Registration.Experimental)
+	if (Proc->Features.AdvPower.EDX.TTP == 1) {
+		const unsigned int StatusReg = SMU_AMD_THM_TRIP_REGISTER_F15H;
+		THERMTRIP_STATUS ThermTrip = {0};
+
+		WRPCI(StatusReg, SMU_IndexRegister);
+		RDPCI(ThermTrip, SMU_DataRegister);
+
+		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
+	}
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
@@ -6983,7 +6984,7 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_REGISTER_F15H,
+		     Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_TCTL_REGISTER_F15H,
 						SMU_AMD_INDEX_REGISTER_F15H,
 						SMU_AMD_DATA_REGISTER_F15H);
 
@@ -7042,7 +7043,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_REGISTER_F17H,
+		     Core_AMD_SMU_Thermal(Core, SMU_AMD_THM_TCTL_REGISTER_F17H,
 						SMU_AMD_INDEX_REGISTER_F16H,
 						SMU_AMD_DATA_REGISTER_F16H);
 

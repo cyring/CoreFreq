@@ -81,8 +81,9 @@
  * OSRR for AMD Family 17h processors / Memory Map - SMN
 	59800h: SMU::THM
 */
-#define SMU_AMD_THM_REGISTER_F15H		0xd8200ca4
-#define SMU_AMD_THM_REGISTER_F17H		0x00059800
+#define SMU_AMD_THM_TRIP_REGISTER_F15H		0xd8200ce4
+#define SMU_AMD_THM_TCTL_REGISTER_F15H		0xd8200ca4
+#define SMU_AMD_THM_TCTL_REGISTER_F17H		0x00059800
 
 
 const struct {
@@ -549,3 +550,16 @@ typedef union
 		LinkFreqCap	: 32-16;
 	};
 } AMD_0F_HTT_FREQUENCY;
+
+typedef struct
+{
+	unsigned int
+	PerStepTimeUp	:  5-0,  /* Family: 12h, 14h, 15h		*/
+	TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h		*/
+	TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h		*/
+	PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h		*/
+	ReservedBits1	: 16-13,
+	CurTempTJselect : 18-16, /* Family: 15h				*/
+	ReservedBits2	: 21-18,
+	CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h		*/
+} TCTL_REGISTER;
