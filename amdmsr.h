@@ -63,8 +63,12 @@
 	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
 #endif
 
+/* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
+#define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
+#define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
+
 /* Sources:
- * BKDG for AMD Family 15h
+ * BKDG for AMD Family 15_60h , 15_70h
 	SMU index/data pair registers, D0F0xB8 and D0F0xBC
  * BKDG for AMD Family 16h
 	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
@@ -76,7 +80,7 @@
 #define SMU_AMD_DATA_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
 /* Sources:
- * BKDG for AMD Family 15h
+ * BKDG for AMD Family 15_60h , 15_70h
 	D0F0xBC_xD820_0CA4 Reported Temperature Control
  * OSRR for AMD Family 17h processors / Memory Map - SMN
 	59800h: SMU::THM

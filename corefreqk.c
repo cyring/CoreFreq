@@ -5363,17 +5363,33 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip = {0};
 
-		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+		RDPCI(ThermTrip, PCI_AMD_THERMTRIP_STATUS);
 
 		/* Select Core to read sensor from: */
 		ThermTrip.SensorCoreSelect = Core->Bind;
 
-		WRPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
-		RDPCI(ThermTrip, PCI_CONFIG_ADDRESS(0, 24, 3, 0xe4));
+		WRPCI(ThermTrip, PCI_AMD_THERMTRIP_STATUS);
+		RDPCI(ThermTrip, PCI_AMD_THERMTRIP_STATUS);
 
 		/* Formula is " CurTmp - (TjOffset * 2) - 49 " */
 		Core->PowerThermal.Param.Target = ThermTrip.TjOffset;
 		Core->PowerThermal.Sensor = ThermTrip.CurrentTemp;
+
+		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
+	}
+}
+
+void Core_AMD_Family_15h_Temp(CORE *Core)
+{
+	TCTL_REGISTER TctlSensor = {0};
+
+	RDPCI(TctlSensor, PCI_AMD_TEMPERATURE_TCTL);
+	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
+
+	if (Proc->Features.AdvPower.EDX.TTP == 1) {
+		THERMTRIP_STATUS ThermTrip = {0};
+
+		RDPCI(ThermTrip, PCI_AMD_THERMTRIP_STATUS);
 
 		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
@@ -5391,13 +5407,14 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;			\
 })
 
-void Core_AMD_Family_15h_Temp(CORE *Core)
+/*TODO:	Bulldozer/Excavator [need hardware to test with]
+void Core_AMD_Family_15_60h_Temp(CORE *Core)
 {
+    if (Proc->Registration.Experimental) {
 	Core_AMD_SMU_Thermal(Core,	SMU_AMD_THM_TCTL_REGISTER_F15H,
 					SMU_AMD_INDEX_REGISTER_F15H,
 					SMU_AMD_DATA_REGISTER_F15H);
 
-    if (Proc->Registration.Experimental)
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip = {0};
 
@@ -5407,7 +5424,9 @@ void Core_AMD_Family_15h_Temp(CORE *Core)
 
 		Core->PowerThermal.Events = ThermTrip.SensorTrip << 0;
 	}
+    }
 }
+*/
 
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
