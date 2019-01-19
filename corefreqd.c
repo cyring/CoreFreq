@@ -2793,6 +2793,12 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	}
 	/* Apply various architecture size unit.			*/
 	switch (Proc->ArchID) {
+	case AMD_Family_15h:
+	/*TODO: do models 60h & 70h need a 512 KB size unit adjustment ? */
+		if ((Shm->Proc.Features.Std.EAX.ExtModel == 0x6)
+		 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7))
+			break;
+		/* Fallthrough */
 	case AMD_Family_17h:
 		Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
 		break;

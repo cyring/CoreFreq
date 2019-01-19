@@ -67,8 +67,11 @@
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
 
+/* BKDG for AMD Family [15_00h - 15_0Fh]: D18F3x1D4 Probe Filter Control */
+#define PCI_AMD_PROBE_FILTER_CTRL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0x1d4)
+
 /* Sources:
- * BKDG for AMD Family 15_60h , 15_70h
+ * BKDG for AMD Family [15_60h - 15_70h]
 	SMU index/data pair registers, D0F0xB8 and D0F0xBC
  * BKDG for AMD Family 16h
 	D0F0x60: miscellaneous index to access the registers at D0F0x64_x[FF:00]
@@ -80,7 +83,7 @@
 #define SMU_AMD_DATA_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
 /* Sources:
- * BKDG for AMD Family 15_60h , 15_70h
+ * BKDG for AMD Family [15_60h - 15_70h]
 	D0F0xBC_xD820_0CA4 Reported Temperature Control
  * OSRR for AMD Family 17h processors / Memory Map - SMN
 	59800h: SMU::THM
@@ -567,3 +570,28 @@ typedef struct
 	ReservedBits2	: 21-18,
 	CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h		*/
 } TCTL_REGISTER;
+
+typedef struct
+{	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1D4h */
+	unsigned int
+	Mode		:  2-0,  /* 00b: Disabled , 01b: Enabled	*/
+	WayNum		:  4-2,  /* 00b: 1-way , 01b: 2-way		*/
+	SubCacheSize0	:  6-4,  /* 00b: 1MB , 01b: 2MB 		*/
+	SubCacheSize1	:  8-6,
+	SubCacheSize2	: 10-8,
+	SubCacheSize3	: 12-10,
+	SubCache0En	: 13-12, /* Subcache bitmask #0, #1, #2 and #3	*/
+	SubCache1En	: 14-13,
+	SubCache2En	: 15-14,
+	SubCache3En	: 16-15,
+	DisDirectedPrb	: 17-16,
+	WayHashEn	: 18-17,
+	ReservedBits1	: 19-18,
+	InitDone	: 20-19,
+	PreferedSORepl	: 22-20,
+	ErrInt		: 24-22,
+	LvtOffset	: 28-24,
+	EccError	: 29-28,
+	LoIndexHashEn	: 30-29,
+	ReservedBits2	: 32-30;
+} PROBE_FILTER_CTRL;

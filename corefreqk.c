@@ -1144,6 +1144,8 @@ static void Map_AMD_Topology(void *arg)
 
 	CPUID_0x80000008 leaf80000008;
 
+	Cache_Topology(Core);
+
 	RDMSR(Core->T.Base, MSR_IA32_APICBASE);
 
 	__asm__ volatile
@@ -1183,8 +1185,28 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Family_11h:
 	case AMD_Family_12h:
 	case AMD_Family_14h:
-	case AMD_Family_15h:
 	case AMD_Family_16h:
+		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
+		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
+				  >> leaf80000008.ECX.ApicIdCoreIdSize;
+		break;
+	case AMD_Family_15h:
+	  if ((Proc->Features.Std.EAX.ExtModel == 0x0)
+	   && (Proc->Features.Std.EAX.Model >= 0x0)
+	   && (Proc->Features.Std.EAX.Model <= 0xf))
+	  {
+		PROBE_FILTER_CTRL PF;
+		RDPCI(PF, PCI_AMD_PROBE_FILTER_CTRL);
+	    if (PF.Mode != 0b00) {
+		/* Add to L3 the Sub Caches in 512 KB unit size.	*/
+		Core->T.Cache[3].Size = Core->T.Cache[3].Size
+		+ PF.SubCache0En ? (1 << (1 + (PF.SubCacheSize0 & 0b01))) : 0
+		+ PF.SubCache1En ? (1 << (1 + (PF.SubCacheSize1 & 0b01))) : 0
+		+ PF.SubCache2En ? (1 << (1 + (PF.SubCacheSize2 & 0b01))) : 0
+		+ PF.SubCache3En ? (1 << (1 + (PF.SubCacheSize3 & 0b01))) : 0;
+	    }
+	  }
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
@@ -1229,8 +1251,6 @@ static void Map_AMD_Topology(void *arg)
 	    }
 	    break;
 	}
-
-	Cache_Topology(Core);
     }
 }
 
@@ -3078,7 +3098,8 @@ void Query_AMD_Family_15h(void)
   /* Find micro-architecture based on the CPUID model. Bulldozer initialized */
     switch (Proc->Features.Std.EAX.ExtModel) {
     case 0x0:
-	if (Proc->Features.Std.EAX.Model == 0x2) {
+	if ((Proc->Features.Std.EAX.Model >= 0x0)
+	 && (Proc->Features.Std.EAX.Model <= 0xf)) {
 		StrCopy(Proc->Architecture,
 			Arch[Proc->ArchID].Architecture[CN_PILEDRIVER].CodeName,
 			CODENAME_LEN);
