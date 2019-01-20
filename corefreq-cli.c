@@ -1950,52 +1950,58 @@ IMC_FREE:
   }
   for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
   {
-	PRT(IMC, attrib[0], "Contr");		PRT(IMC, attrib[0], "oller");
-	PRT(IMC, attrib[1], " #%-3u",mc);	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");		PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");		PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");		PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT1_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT1_1).CODE());
+	PRT(IMC, attrib[1], RSC(MEM_CTRL_SUBSECT1_2).CODE(), mc);
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
 	switch (Shm->Uncore.MC[mc].ChannelCount) {
 	case 1:
-		PRT(IMC, attrib[1], "Singl");
-		PRT(IMC, attrib[1], "e Cha");
-		PRT(IMC, attrib[1], "nnel ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SINGLE_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SINGLE_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SINGLE_CHA_2).CODE());
 		break;
 	case 2:
-		PRT(IMC, attrib[1], " Dual");
-		PRT(IMC, attrib[1], " Chan");
-		PRT(IMC, attrib[1], "nel  ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_DUAL_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_DUAL_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_DUAL_CHA_2).CODE());
 		break;
 	case 3:
-		PRT(IMC, attrib[1], "Tripl");
-		PRT(IMC, attrib[1], "e Cha");
-		PRT(IMC, attrib[1], "nnel ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TRIPLE_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TRIPLE_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_TRIPLE_CHA_2).CODE());
 		break;
 	case 4:
-		PRT(IMC, attrib[1], " Quad");
-		PRT(IMC, attrib[1], " Chan");
-		PRT(IMC, attrib[1], "nel  ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_QUAD_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_QUAD_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_QUAD_CHA_2).CODE());
 		break;
 	case 6:
-		PRT(IMC, attrib[1], "  Six");
-		PRT(IMC, attrib[1], " Chan");
-		PRT(IMC, attrib[1], "nel  ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SIX_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SIX_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_SIX_CHA_2).CODE());
 		break;
 	case 8:
-		PRT(IMC, attrib[1], "Eight");
-		PRT(IMC, attrib[1], " Chan");
-		PRT(IMC, attrib[1], "nel  ");
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_0).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_1).CODE());
+		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_2).CODE());
 		break;
 	default:
-		PRT(IMC, attrib[0], "     ");
-		PRT(IMC, attrib[0], "     ");
-		PRT(IMC, attrib[0], "     ");
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 		break;
 	}
 
-	PRT(IMC, attrib[0], " Bus ");	PRT(IMC, attrib[0], "Rate ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Rate);
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
@@ -2009,12 +2015,13 @@ IMC_FREE:
 		PRT(IMC, attrib[0], " MB/s");
 		break;
 	case 0b11:
-		PRT(IMC, attrib[0], "     ");
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 		break;
 	}
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
-	PRT(IMC, attrib[0], " Bus ");	PRT(IMC, attrib[0], "Speed");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Speed);
 
 	switch (Shm->Uncore.Unit.BusSpeed) {
@@ -2028,12 +2035,13 @@ IMC_FREE:
 		PRT(IMC, attrib[0], " MB/s");
 		break;
 	case 0b11:
-		PRT(IMC, attrib[0], "     ");
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 		break;
 	}
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
-	PRT(IMC, attrib[0], "DRAM ");	PRT(IMC, attrib[0], "Speed");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.CtrlSpeed);
 
 	switch (Shm->Uncore.Unit.DDRSpeed) {
@@ -2047,17 +2055,24 @@ IMC_FREE:
 		PRT(IMC, attrib[0], " MB/s");
 		break;
 	case 0b11:
-		PRT(IMC, attrib[0], "     ");
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 		break;
 	}
 
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
 	PRT(IMC, attrib[0], " Cha ");
 	PRT(IMC, attrib[0], "   CL");	PRT(IMC, attrib[0], "  RCD");
@@ -2085,7 +2100,7 @@ IMC_FREE:
 	PRT(IMC, attrib[1], "%4uN",
 			Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
     }
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[0], " ddWR");	PRT(IMC, attrib[0], " drWR");
 	PRT(IMC, attrib[0], " srWR");	PRT(IMC, attrib[0], " ddRW");
 	PRT(IMC, attrib[0], " drRW");	PRT(IMC, attrib[0], " srRW");
@@ -2114,34 +2129,55 @@ IMC_FREE:
 
       PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
     }
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
     for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
     {
-	PRT(IMC, attrib[0], " DIMM");	PRT(IMC, attrib[0], " Geom");
-	PRT(IMC, attrib[0], "etry ");	PRT(IMC, attrib[0], "for c");
-	PRT(IMC, attrib[0], "hanne");	PRT(IMC, attrib[0], "l #%-2u", cha);
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_1).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_2).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_3).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_4).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_5).CODE(), cha);
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], " Slot");
-	PRT(IMC, attrib[0], " Bank");	PRT(IMC, attrib[0], " Rank");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "Rows ");
-	PRT(IMC, attrib[0], "  Col");	PRT(IMC, attrib[0], "umns ");
-	PRT(IMC, attrib[0], "   Me");	PRT(IMC, attrib[0], "mory ");
-	PRT(IMC, attrib[0], "Size ");	PRT(IMC, attrib[0], "(MB) ");
-	PRT(IMC, attrib[0], "     ");	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SLOT).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_BANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_RANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_ROW).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN1).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_0).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_1).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_2).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_3).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
       for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[1], "\x20\x20#%-2u", slot);
 	PRT(IMC, attrib[1],
 		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
@@ -2153,13 +2189,13 @@ IMC_FREE:
 	iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, hInt);
 	PRT(IMC, attrib[1], "%5s", &hInt[0]);
 	PRT(IMC, attrib[1], "%5s", &hInt[8]);
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, hInt);
 	PRT(IMC, attrib[1], "%5s", &hInt[0]);
 	PRT(IMC, attrib[1], "%5s", &hInt[8]);
-	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");
-	PRT(IMC, attrib[0], "     ");
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
       }
     }
   }
@@ -4115,10 +4151,44 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_SHIFT_l:
     {
-	if (++locale >= LOC_CNT) {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col = 30,
+			.row = TOP_HEADER_ROW + 6
+		}, select = {
+			.col = 0,
+			.row = (locale >=0) && (locale < LOC_CNT) ? locale : 0
+		};
+
+	Window *wBox = CreateBox(scan->key, origin, select,
+		(char*) RSC(BOX_LANG_TITLE).CODE(),
+		RSC(BOX_LANG_ENGLISH).CODE(), stateAttr[0], BOXKEY_LANG_ENGLISH,
+		RSC(BOX_LANG_FRENCH).CODE(), stateAttr[0], BOXKEY_LANG_FRENCH);
+
+		if (wBox != NULL) {
+			AppendWindow(wBox, &winList);
+		} else
+			SetHead(&winList, win);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_LANG_ENGLISH:
+    {
+	if (locale != LOC_EN) {
 		locale = LOC_EN;
+		draw.Flag.layout = 1;
 	}
-	draw.Flag.layout = 1;
+    }
+    break;
+    case BOXKEY_LANG_FRENCH:
+    {
+	if (locale != LOC_FR) {
+		locale = LOC_FR;
+		draw.Flag.layout = 1;
+	}
     }
     break;
     case SCANKEY_SHIFT_m:
