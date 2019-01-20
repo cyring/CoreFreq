@@ -109,7 +109,7 @@
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_EN				\
 {									\
 	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
-	'O','F','F',' ',']',' '						\
+	'O','F','F',' ',']',' ' 					\
 }
 
 #define RSC_LAYOUT_RULLER_VOLTAGE_CODE_EN				\
@@ -119,6 +119,26 @@
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
+
+#define RSC_LAYOUT_DOMAIN_PACKAGE_CODE_EN				\
+{									\
+	'P','a','c','k','a','g','e'					\
+}
+
+#define RSC_LAYOUT_DOMAIN_CORES_CODE_EN 				\
+{									\
+	'C','o','r','e','s',' ',' '					\
+}
+
+#define RSC_LAYOUT_DOMAIN_UNCORE_CODE_EN				\
+{									\
+	'U','n','c','o','r','e',' '					\
+}
+
+#define RSC_LAYOUT_DOMAIN_MEMORY_CODE_EN				\
+{									\
+	'M','e','m','o','r','y',' '					\
+}
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN				\
 {									\
@@ -299,6 +319,19 @@
 				(ASCII*) " NMI registered                 "
 
 #define RSC_HELP_TITLE_CODE_EN		(ASCII*) " Help "
+#define RSC_HELP_KEY_ESCAPE_CODE_EN	(ASCII*) " [Escape]         "
+#define RSC_HELP_KEY_SHIFT_TAB_CODE_EN	(ASCII*) " [Shift]+[Tab]    "
+#define RSC_HELP_KEY_TAB_CODE_EN	(ASCII*) " [Tab]            "
+#define RSC_HELP_KEY_UP_CODE_EN 	(ASCII*) "       [Up]       "
+#define RSC_HELP_KEY_LEFT_RIGHT_CODE_EN (ASCII*) " [Left]    [Right]"
+#define RSC_HELP_KEY_DOWN_CODE_EN	(ASCII*) "      [Down]      "
+#define RSC_HELP_KEY_END_CODE_EN	(ASCII*) " [End]            "
+#define RSC_HELP_KEY_HOME_CODE_EN	(ASCII*) " [Home]           "
+#define RSC_HELP_KEY_ENTER_CODE_EN	(ASCII*) " [Enter]          "
+#define RSC_HELP_KEY_PAGE_UP_CODE_EN	(ASCII*) " [Page-Up]        "
+#define RSC_HELP_KEY_PAGE_DOWN_CODE_EN	(ASCII*) " [Page-Dw]        "
+#define RSC_HELP_KEY_MINUS_CODE_EN	(ASCII*) " [Minus]          "
+#define RSC_HELP_KEY_PLUS_CODE_EN	(ASCII*) " [Plus]           "
 #define RSC_HELP_MENU_CODE_EN		(ASCII*) "             Menu "
 #define RSC_HELP_CLOSE_WINDOW_CODE_EN	(ASCII*) "     Close window "
 #define RSC_HELP_PREV_WINDOW_CODE_EN	(ASCII*) "  Previous window "

@@ -1462,7 +1462,7 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(MISSING).CODE(),
 		RSC(PRESENT).CODE(),
 		RSC(DISABLE).CODE(),
-		RSC(ENABLE).CODE(),
+		RSC(ENABLE).CODE()
 	}, *Unlock[] = {
 		RSC(LOCK).CODE(),
 		RSC(UNLOCK).CODE()
@@ -2570,15 +2570,15 @@ Window *CreateHelp(unsigned long long id)
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MENU).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Escape]         ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_ESCAPE).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_CLOSE_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Shift]+[Tab]    ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_SHIFT_TAB).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_PREV_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Tab]            ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_TAB).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -2594,43 +2594,43 @@ Window *CreateHelp(unsigned long long id)
 					MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       [Up]       ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_UP).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Left]    [Right]",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_LEFT_RIGHT).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MOVE_SELECT).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "      [Down]      ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_DOWN).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [End]            ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_END).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_LAST_CELL).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Home]           ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_HOME).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_FIRST_CELL).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Enter]          ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_ENTER).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_TRIGGER_SELECT).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Up]        ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_PAGE_UP).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_PREV_PAGE).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Page-Dw]        ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_PAGE_DOWN).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_PAGE).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Minus]          ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_MINUS).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SCROLL_DOWN).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [Plus]           ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_PLUS).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SCROLL_UP).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -2680,7 +2680,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
-	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	}
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
 	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
@@ -3832,7 +3832,7 @@ int Shortcut(SCANKEY *scan)
 		ASCII *ops_Str[2][2] = {
 			{
 				RSC(BOX_NOMINAL_MODE_COND0).CODE(),
-				RSC(BOX_NOMINAL_MODE_COND1).CODE(),
+				RSC(BOX_NOMINAL_MODE_COND1).CODE()
 			},{
 				RSC(BOX_EXPERIMENT_MODE_COND0).CODE(),
 				RSC(BOX_EXPERIMENT_MODE_COND1).CODE()
@@ -3883,7 +3883,7 @@ int Shortcut(SCANKEY *scan)
 		ASCII *ops_Str[2][2] = {
 			{
 				RSC(BOX_INT_REGISTER_COND0).CODE(),
-				RSC(BOX_INT_REGISTER_COND1).CODE(),
+				RSC(BOX_INT_REGISTER_COND1).CODE()
 			},{
 				RSC(BOX_INT_UNREGISTER_COND0).CODE(),
 				RSC(BOX_INT_UNREGISTER_COND1).CODE()
@@ -5586,15 +5586,14 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-ASCII	Layout_Power_Domain_Code[PWR_DOMAIN(SIZE)][7] = {
-		{'P','a','c','k','a','g','e'},
-		{'C','o','r','e','s',' ',' '},
-		{'U','n','c','o','r','e',' '},
-		{'M','e','m','o','r','y',' '}
-	};
-
 CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	ASCII *hDomain[PWR_DOMAIN(SIZE)] = {
+		RSC(LAYOUT_DOMAIN_PACKAGE).CODE(),
+		RSC(LAYOUT_DOMAIN_CORES).CODE(),
+		RSC(LAYOUT_DOMAIN_UNCORE).CODE(),
+		RSC(LAYOUT_DOMAIN_MEMORY).CODE()
+	};
 	const CUINT tab = LOAD_LEAD + 24 + 6;
 	CUINT vsh = row + PWR_DOMAIN(SIZE) + 1;
 
@@ -5610,7 +5609,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 				tab, (row + pw + 1),
 				hPower0);
 
-		memcpy(&hPower0.code[0], Layout_Power_Domain_Code[pw], 7);
+		memcpy(&hPower0.code[0], hDomain[pw], 7);
 
 		LayerCopyAt(	layer, hPower0.origin.col, hPower0.origin.row,
 				hPower0.length, hPower0.attr, hPower0.code);

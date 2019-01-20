@@ -109,7 +109,7 @@
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_FR				\
 {									\
 	'S','u','i','v','i',' ','[', 'n',']',' ','P','I','D',' ','[',' ',\
-	'O','F','F',' ',']',' '						\
+	'O','F','F',' ',']',' ' 					\
 }
 
 #define RSC_LAYOUT_RULLER_VOLTAGE_CODE_FR				\
@@ -119,6 +119,26 @@
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
+
+#define RSC_LAYOUT_DOMAIN_PACKAGE_CODE_FR				\
+{									\
+	'P','a','c','k','a','g','e'					\
+}
+
+#define RSC_LAYOUT_DOMAIN_CORES_CODE_FR 				\
+{									\
+	'C','o','r','e','s',' ',' '					\
+}
+
+#define RSC_LAYOUT_DOMAIN_UNCORE_CODE_FR				\
+{									\
+	'U','n','c','o','r','e',' '					\
+}
+
+#define RSC_LAYOUT_DOMAIN_MEMORY_CODE_FR				\
+{									\
+	'M','e','m','o','i','r','e'					\
+}
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
@@ -206,7 +226,7 @@
 #define RSC_POWER_THERMAL_ODCM_CODE_FR	(ASCII*) "Modulation d'horloge"
 #define RSC_POWER_THERMAL_DUTY_CODE_FR	(ASCII*) "Cycle de service"
 #define RSC_POWER_THERMAL_MGMT_CODE_FR	(ASCII*) "Gestion de la puissance"
-#define RSC_POWER_THERMAL_BIAS_CODE_FR	(ASCII*) "Regle energitique"
+#define RSC_POWER_THERMAL_BIAS_CODE_FR	(ASCII*) "Regle energetique"
 #define RSC_POWER_THERMAL_TJMAX_CODE_FR (ASCII*) "Temperature de jonction"
 #define RSC_POWER_THERMAL_DTS_CODE_FR	(ASCII*) "Capteur thermique numerique"
 #define RSC_POWER_THERMAL_PLN_CODE_FR	(ASCII*) "Notification de puissance"
@@ -299,6 +319,19 @@
 				(ASCII*) " Activation NMI                 "
 
 #define RSC_HELP_TITLE_CODE_FR		(ASCII*) " Aide "
+#define RSC_HELP_KEY_ESCAPE_CODE_FR	(ASCII*) " [Echap]          "
+#define RSC_HELP_KEY_SHIFT_TAB_CODE_FR	(ASCII*) " [Maj]+[Tab]      "
+#define RSC_HELP_KEY_TAB_CODE_FR	(ASCII*) " [Tab]            "
+#define RSC_HELP_KEY_UP_CODE_FR 	(ASCII*) "      [Haut]      "
+#define RSC_HELP_KEY_LEFT_RIGHT_CODE_FR (ASCII*) " [Gauche] [Droite]"
+#define RSC_HELP_KEY_DOWN_CODE_FR	(ASCII*) "      [Bas]       "
+#define RSC_HELP_KEY_END_CODE_FR	(ASCII*) " [Fin]            "
+#define RSC_HELP_KEY_HOME_CODE_FR	(ASCII*) " [Debut]          "
+#define RSC_HELP_KEY_ENTER_CODE_FR	(ASCII*) " [Entree]         "
+#define RSC_HELP_KEY_PAGE_UP_CODE_FR	(ASCII*) " [Page-Prec]      "
+#define RSC_HELP_KEY_PAGE_DOWN_CODE_FR	(ASCII*) " [Page-Suiv]      "
+#define RSC_HELP_KEY_MINUS_CODE_FR	(ASCII*) " [Moins]          "
+#define RSC_HELP_KEY_PLUS_CODE_FR	(ASCII*) " [Plus]           "
 #define RSC_HELP_MENU_CODE_FR		(ASCII*) "             Menu "
 #define RSC_HELP_CLOSE_WINDOW_CODE_FR	(ASCII*) "   Fermer fenetre "
 #define RSC_HELP_PREV_WINDOW_CODE_FR	(ASCII*) "  Fenetre arriere "
@@ -308,7 +341,7 @@
 #define RSC_HELP_LAST_CELL_CODE_FR	(ASCII*) " Derniere cellule "
 #define RSC_HELP_FIRST_CELL_CODE_FR	(ASCII*) " Premiere cellule "
 #define RSC_HELP_TRIGGER_SELECT_CODE_FR (ASCII*) " Executer cellule "
-#define RSC_HELP_PREV_PAGE_CODE_FR	(ASCII*) "     Page arriere "
+#define RSC_HELP_PREV_PAGE_CODE_FR	(ASCII*) "  Page precedente "
 #define RSC_HELP_NEXT_PAGE_CODE_FR	(ASCII*) "    Page suivante "
 #define RSC_HELP_SCROLL_DOWN_CODE_FR	(ASCII*) "    Decroitre CPU "
 #define RSC_HELP_SCROLL_UP_CODE_FR	(ASCII*) "    Accroitre CPU "
@@ -339,9 +372,9 @@
 #define RSC_ADV_HELP_ITEM_12_CODE_FR					\
 			(ASCII*) " F10               Arreter les outils "
 #define RSC_ADV_HELP_ITEM_13_CODE_FR					\
-			(ASCII*) "  Up  PgUp                 Defilement "
+			(ASCII*) " Haut Prec                 Defilement "
 #define RSC_ADV_HELP_ITEM_14_CODE_FR					\
-			(ASCII*) " Down PgDw                       CPU  "
+			(ASCII*) " Bas  Suiv                       CPU  "
 
 #define RSC_BOX_DISABLE_COND0_CODE_FR					\
 			(ASCII*) "             Desactiver             "

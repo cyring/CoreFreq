@@ -187,6 +187,19 @@ ATTRIBUTE Rsc_Layout_Ruller_Voltage_Attr[] = RSC_LAYOUT_RULLER_VOLTAGE_ATTR;
 ASCII	Rsc_Layout_Ruller_Voltage_Code_En[] = RSC_LAYOUT_RULLER_VOLTAGE_CODE_EN,
 	Rsc_Layout_Ruller_Voltage_Code_Fr[] = RSC_LAYOUT_RULLER_VOLTAGE_CODE_FR;
 
+#define Rsc_Layout_Domain_Package_Attr vColor
+#define Rsc_Layout_Domain_Cores_Attr vColor
+#define Rsc_Layout_Domain_Uncore_Attr vColor
+#define Rsc_Layout_Domain_Memory_Attr vColor
+ASCII	Rsc_Layout_Domain_Package_Code_En[7]= RSC_LAYOUT_DOMAIN_PACKAGE_CODE_EN,
+	Rsc_Layout_Domain_Package_Code_Fr[7]= RSC_LAYOUT_DOMAIN_PACKAGE_CODE_FR,
+	Rsc_Layout_Domain_Cores_Code_En[7]  = RSC_LAYOUT_DOMAIN_CORES_CODE_EN,
+	Rsc_Layout_Domain_Cores_Code_Fr[7]  = RSC_LAYOUT_DOMAIN_CORES_CODE_FR,
+	Rsc_Layout_Domain_Uncore_Code_En[7] = RSC_LAYOUT_DOMAIN_UNCORE_CODE_EN,
+	Rsc_Layout_Domain_Uncore_Code_Fr[7] = RSC_LAYOUT_DOMAIN_UNCORE_CODE_FR,
+	Rsc_Layout_Domain_Memory_Code_En[7] = RSC_LAYOUT_DOMAIN_MEMORY_CODE_EN,
+	Rsc_Layout_Domain_Memory_Code_Fr[7] = RSC_LAYOUT_DOMAIN_MEMORY_CODE_FR;
+
 ATTRIBUTE Rsc_Layout_Power_Monitor_Attr[] = RSC_LAYOUT_POWER_MONITOR_ATTR;
 ASCII	Rsc_Layout_Power_Monitor_Code_En[] = RSC_LAYOUT_POWER_MONITOR_CODE;
 #define Rsc_Layout_Power_Monitor_Code_Fr Rsc_Layout_Power_Monitor_Code_En
@@ -606,6 +619,34 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = Rsc_Layout_Ruller_Voltage_Code_En,
 			[LOC_FR] = Rsc_Layout_Ruller_Voltage_Code_Fr
+		}
+	},
+	[RSC_LAYOUT_DOMAIN_PACKAGE] = {
+		.Attr = Rsc_Layout_Domain_Package_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Domain_Package_Code_En,
+			[LOC_FR] = Rsc_Layout_Domain_Package_Code_Fr
+		}
+	},
+	[RSC_LAYOUT_DOMAIN_CORES] = {
+		.Attr = Rsc_Layout_Domain_Cores_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Domain_Cores_Code_En,
+			[LOC_FR] = Rsc_Layout_Domain_Cores_Code_Fr
+		}
+	},
+	[RSC_LAYOUT_DOMAIN_UNCORE] = {
+		.Attr = Rsc_Layout_Domain_Uncore_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Domain_Uncore_Code_En,
+			[LOC_FR] = Rsc_Layout_Domain_Uncore_Code_Fr
+		}
+	},
+	[RSC_LAYOUT_DOMAIN_MEMORY] = {
+		.Attr = Rsc_Layout_Domain_Memory_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Domain_Memory_Code_En,
+			[LOC_FR] = Rsc_Layout_Domain_Memory_Code_Fr
 		}
 	},
 	[RSC_LAYOUT_POWER_MONITOR] = {
@@ -1939,6 +1980,97 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_HELP_TITLE_CODE_EN,
 			[LOC_FR] = RSC_HELP_TITLE_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_ESCAPE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_ESCAPE_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_ESCAPE_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_SHIFT_TAB] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_SHIFT_TAB_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_SHIFT_TAB_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_TAB] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_TAB_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_TAB_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_UP] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_UP_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_UP_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_LEFT_RIGHT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_LEFT_RIGHT_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_LEFT_RIGHT_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_DOWN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_DOWN_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_DOWN_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_END] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_END_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_END_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_HOME] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_HOME_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_HOME_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_ENTER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_ENTER_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_ENTER_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_PAGE_UP] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_PAGE_UP_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_PAGE_UP_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_PAGE_DOWN] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_PAGE_DOWN_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_PAGE_DOWN_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_MINUS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_MINUS_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_MINUS_CODE_FR
+		}
+	},
+	[RSC_HELP_KEY_PLUS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HELP_KEY_PLUS_CODE_EN,
+			[LOC_FR] = RSC_HELP_KEY_PLUS_CODE_FR
 		}
 	},
 	[RSC_HELP_BLANK] = {
