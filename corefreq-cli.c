@@ -3047,20 +3047,19 @@ Window *CreateSysRegs(unsigned long long id)
 
 Window *CreateMemCtrl(unsigned long long id)
 {
-	unsigned short mc, cha, slot, rows = 0;
-	for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-		rows += 7;
-	    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-		rows++;
-	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-		rows++;
-	}
+	unsigned int mc, rows = 1;
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+	rows += 6 * Shm->Uncore.CtrlCount;
+	rows += 4 * Shm->Uncore.MC[mc].ChannelCount;
+	rows += Shm->Uncore.MC[mc].SlotCount * Shm->Uncore.MC[mc].ChannelCount;
+    }
 	if (rows > 0) {
 	    Window *wIMC = CreateWindow(wLayer, id,
-					14, CUMIN((rows + 3),
-					  (draw.Size.height-TOP_HEADER_ROW-3)),
+					14, CUMIN(rows, ( draw.Size.height
+							- TOP_HEADER_ROW - 3 )),
 					1, TOP_HEADER_ROW + 2);
-		wIMC->matrix.select.row = 5;
+		wIMC->matrix.select.col = 2;
+		wIMC->matrix.select.row = 1;
 
 	    if (wIMC != NULL) {
 		MemoryController(wIMC, AddCell);
