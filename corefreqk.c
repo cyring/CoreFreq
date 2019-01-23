@@ -1192,26 +1192,53 @@ static void Map_AMD_Topology(void *arg)
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
 		break;
 	case AMD_Family_15h:
-	  if ((Proc->Features.Std.EAX.ExtModel == 0x0)
-	   && (Proc->Features.Std.EAX.Model >= 0x0)
-	   && (Proc->Features.Std.EAX.Model <= 0xf))
-	  {
+	    if ((Proc->Features.Std.EAX.ExtModel == 0x0)
+		&& (Proc->Features.Std.EAX.Model >= 0x0)
+		&& (Proc->Features.Std.EAX.Model <= 0xf))
+	    {
 		PROBE_FILTER_CTRL PF;
 		RDPCI(PF, PCI_AMD_PROBE_FILTER_CTRL);
-	    if (PF.Mode != 0b00) {
+/*		if (PF.Mode != 0b00) {	*/
 		/* Add to L3 the Sub Caches in 512 KB unit size.	*/
 		Core->T.Cache[3].Size = Core->T.Cache[3].Size
 		+ PF.SubCache0En ? (1 << (1 + (PF.SubCacheSize0 & 0b01))) : 0
 		+ PF.SubCache1En ? (1 << (1 + (PF.SubCacheSize1 & 0b01))) : 0
 		+ PF.SubCache2En ? (1 << (1 + (PF.SubCacheSize2 & 0b01))) : 0
 		+ PF.SubCache3En ? (1 << (1 + (PF.SubCacheSize3 & 0b01))) : 0;
+/*		}	*/
 	    }
-	  }
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
-		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
-		break;
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID
+				  - (Core->T.PackageID
+					<< leaf80000008.ECX.ApicIdCoreIdSize);
+
+	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
+	    {
+		CPUID_0x8000001e leaf8000001e;
+
+		__asm__ volatile
+		(
+			"movq	$0x8000001e, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (leaf8000001e.EAX),
+			  "=r" (leaf8000001e.EBX),
+			  "=r" (leaf8000001e.ECX),
+			  "=r" (leaf8000001e.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+		Core->T.ThreadID  = leaf8000001e.EBX.CompUnitId;
+	    }
+	    break;
 	case AMD_Family_17h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {

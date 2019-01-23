@@ -942,12 +942,20 @@ typedef struct	/* AMD Extended ID Leaf.				*/
 		unsigned int
 		ExtApicId	: 32-0;/* Valid if MSR(APIC_BAR[ApicEn]) != 0 */
 	} EAX;
-	struct
+    union
 	{
+	struct {	/* Family 15h					*/
+		unsigned int
+		CompUnitId	:  8-0,
+		CoresPerCU	: 16-8, /* CoresPerComputeUnit + 1	*/
+		Reserved_F15h	: 32-16;
+		};
+	struct {	/* Family 17h					*/
 		unsigned int
 		CoreId		:  8-0,
 		ThreadsPerCore	: 16-8,
-		Reserved	: 32-16;
+		Reserved_F17h	: 32-16;
+		};
 	} EBX;
 	struct {
 		unsigned int
