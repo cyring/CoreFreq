@@ -3567,13 +3567,26 @@ void Core_Manager(REF *Ref)
 		break;
 	    }
 		/* Tasks collection					*/
+/*--
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+		Shm->SysGate.tickStep = Proc->tickStep;
+		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+			// Update OS tasks and memory usage.
+			if (SysGate_OnDemand(Ref, 1) == 0) {
+				SysGate_Update(Ref);
+			}
+		}
+	    }
+*/
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 			/* Update OS tasks and memory usage.		*/
-			if (SysGate_OnDemand(Ref, 1) == 0) {
+		    if (SysGate_OnDemand(Ref, 1) == 0) {
+			if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSUPDT) == 0) {
 				SysGate_Update(Ref);
 			}
+		    }
 		}
 	    }
 		/* Notify Client.					*/

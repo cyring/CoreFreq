@@ -4656,9 +4656,9 @@ void Sys_MemInfo(SYSGATE *SysGate)
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset;		\
-								\
+/*++								\
 			Sys_DumpTask(Pkg->OS.Gate);		\
-			Sys_MemInfo(Pkg->OS.Gate);		\
+			Sys_MemInfo(Pkg->OS.Gate);	*/	\
 		}						\
 	}							\
 })
