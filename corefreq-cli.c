@@ -944,218 +944,218 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Section Mark */
 	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"1 GB Pages Support%.*s1GB-PAGES   [%7s]",
-		width - 42, hSpace, powered(bix));
+		"%s%.*s1GB-PAGES   [%7s]", RSC(FEATURES_1GB_PAGES).CODE(),
+		width - 24 - RSZ(FEATURES_1GB_PAGES), hSpace, powered(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"100 MHz multiplier Control%.*s100MHzSteps   [%7s]",
-		width - 52, hSpace, powered(bix));
+		"%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
+		width - 26 - RSZ(FEATURES_100MHZ), hSpace, powered(bix));
     }
 
 	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		/* Intel */
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	/* AMD   */
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Advanced Configuration & Power Interface%.*sACPI   [%7s]",
-		width - 59, hSpace, powered(bix));
+		"%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
+		width - 19 - RSZ(FEATURES_ACPI), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.APIC == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Advanced Programmable Interrupt Controller%.*sAPIC   [%7s]",
-		width - 61, hSpace, powered(bix));
+		"%s%.*sAPIC   [%7s]", RSC(FEATURES_APIC).CODE(),
+		width - 19 - RSZ(FEATURES_APIC), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Core Multi-Processing%.*sCMP Legacy   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sCMP Legacy   [%7s]", RSC(FEATURES_CORE_MP).CODE(),
+		width - 25 - RSZ(FEATURES_CORE_MP), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.CNXT_ID == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"L1 Data Cache Context ID%.*sCNXT-ID   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sCNXT-ID   [%7s]", RSC(FEATURES_CNXT_ID).CODE(),
+		width - 22 - RSZ(FEATURES_CNXT_ID), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DCA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Direct Cache Access%.*sDCA   [%7s]",
-		width - 37, hSpace, powered(bix));
+		"%s%.*sDCA   [%7s]", RSC(FEATURES_DCA).CODE(),
+		width - 18 - RSZ(FEATURES_DCA), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Debugging Extension%.*sDE   [%7s]",
-		width - 36, hSpace, powered(bix));
+		"%s%.*sDE   [%7s]", RSC(FEATURES_DE).CODE(),
+		width - 17 - RSZ(FEATURES_DE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DS_PEBS == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Debug Store & Precise Event Based Sampling"
-					"%.*sDS, PEBS   [%7s]",
-		width - 65, hSpace, powered(bix));
+		"%s%.*sDS, PEBS   [%7s]", RSC(FEATURES_DS_PEBS).CODE(),
+		width - 23 - RSZ(FEATURES_DS_PEBS), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DS_CPL == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"CPL Qualified Debug Store%.*sDS-CPL   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sDS-CPL   [%7s]", RSC(FEATURES_DS_CPL).CODE(),
+		width - 21 - RSZ(FEATURES_DS_CPL), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DTES64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"64-Bit Debug Store%.*sDTES64   [%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*sDTES64   [%7s]", RSC(FEATURES_DTES_64).CODE(),
+		width - 21 - RSZ(FEATURES_DTES_64), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Fast-String Operation%.*sFast-Strings   [%7s]",
-		width - 48, hSpace, powered(bix));
+		"%s%.*sFast-Strings   [%7s]", RSC(FEATURES_FAST_STR).CODE(),
+		width - 27 - RSZ(FEATURES_FAST_STR), hSpace, powered(bix));
 
 	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
 	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Fused Multiply Add%.*sFMA|FMA4   [%7s]",
-		width - 41, hSpace, powered(bix));
+		"%s%.*sFMA|FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
+		width - 23 - RSZ(FEATURES_FMA), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Hardware Lock Elision%.*sHLE   [%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*sHLE   [%7s]", RSC(FEATURES_HLE).CODE(),
+		width - 18 - RSZ(FEATURES_HLE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Long Mode 64 bits%.*sIA64|LM   [%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*sIA64|LM   [%7s]", RSC(FEATURES_LM).CODE(),
+		width - 22 - RSZ(FEATURES_LM), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"LightWeight Profiling%.*sLWP   [%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*sLWP   [%7s]", RSC(FEATURES_LWP).CODE(),
+		width - 18 - RSZ(FEATURES_LWP), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MCA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Machine-Check Architecture%.*sMCA   [%7s]",
-		width - 44, hSpace, powered(bix));
+		"%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
+		width - 18 - RSZ(FEATURES_MCA), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Model Specific Registers%.*sMSR   [%7s]",
-		width - 42, hSpace, powered(bix));
+		"%s%.*sMSR   [%7s]", RSC(FEATURES_MSR).CODE(),
+		width - 18 - RSZ(FEATURES_MSR), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MTRR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Memory Type Range Registers%.*sMTRR   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sMTRR   [%7s]", RSC(FEATURES_MTRR).CODE(),
+		width - 19 - RSZ(FEATURES_MTRR), hSpace, powered(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.ExtInfo.EDX.NX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"No-Execute Page Protection%.*sNX   [%7s]",
-		width - 43, hSpace, powered(bix));
+		"%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
+		width - 17 - RSZ(FEATURES_NX), hSpace, powered(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.OSXSAVE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"OS-Enabled Ext. State Management%.*sOSXSAVE   [%7s]",
-		width - 54,hSpace, powered(bix));
+		"%s%.*sOSXSAVE   [%7s]", RSC(FEATURES_OSXSAVE).CODE(),
+		width - 22 - RSZ(FEATURES_OSXSAVE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Physical Address Extension%.*sPAE   [%7s]",
-		width - 44, hSpace, powered(bix));
+		"%s%.*sPAE   [%7s]", RSC(FEATURES_PAE).CODE(),
+		width - 18 - RSZ(FEATURES_PAE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAT == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Page Attribute Table%.*sPAT   [%7s]",
-		width - 38, hSpace, powered(bix));
+		"%s%.*sPAT   [%7s]", RSC(FEATURES_PAT).CODE(),
+		width - 18 - RSZ(FEATURES_PAT), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PBE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Pending Break Enable%.*sPBE   [%7s]",
-		width - 38, hSpace, powered(bix));
+		"%s%.*sPBE   [%7s]", RSC(FEATURES_PBE).CODE(),
+		width - 18 - RSZ(FEATURES_PBE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PCID == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Process Context Identifiers%.*sPCID   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sPCID   [%7s]", RSC(FEATURES_PCID).CODE(),
+		width - 19 - RSZ(FEATURES_PCID), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PDCM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Perfmon and Debug Capability%.*sPDCM   [%7s]",
-		width - 47, hSpace, powered(bix));
+		"%s%.*sPDCM   [%7s]", RSC(FEATURES_PDCM).CODE(),
+		width - 19 - RSZ(FEATURES_PDCM), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PGE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Page Global Enable%.*sPGE   [%7s]",
-		width - 36, hSpace, powered(bix));
+		"%s%.*sPGE   [%7s]", RSC(FEATURES_PGE).CODE(),
+		width - 18 - RSZ(FEATURES_PGE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Page Size Extension%.*sPSE   [%7s]",
-		width - 37, hSpace, powered(bix));
+		"%s%.*sPSE   [%7s]", RSC(FEATURES_PSE).CODE(),
+		width - 18 - RSZ(FEATURES_PSE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE36 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"36-bit Page Size Extension%.*sPSE36   [%7s]",
-		width - 46, hSpace, powered(bix));
+		"%s%.*sPSE36   [%7s]", RSC(FEATURES_PSE36).CODE(),
+		width - 20 - RSZ(FEATURES_PSE36), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSN == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Processor Serial Number%.*sPSN   [%7s]",
-		width - 41, hSpace, powered(bix));
+		"%s%.*sPSN   [%7s]", RSC(FEATURES_PSN).CODE(),
+		width - 18 - RSZ(FEATURES_PSN), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Restricted Transactional Memory%.*sRTM   [%7s]",
-		width - 49, hSpace, powered(bix));
+		"%s%.*sRTM   [%7s]", RSC(FEATURES_RTM).CODE(),
+		width - 18 - RSZ(FEATURES_RTM), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.SMX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Safer Mode Extensions%.*sSMX   [%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*sSMX   [%7s]", RSC(FEATURES_SMX).CODE(),
+		width - 18 - RSZ(FEATURES_SMX), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.SS == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Self-Snoop%.*sSS   [%7s]",
-		width - 27, hSpace, powered(bix));
+		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
+		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, powered(bix));
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.InvariantTSC],
 		width, 2,
-		"Time Stamp Counter%.*sTSC [%9s]",
-		width - 36, hSpace, TSC[Shm->Proc.Features.InvariantTSC]);
+		"%s%.*sTSC [%9s]", RSC(FEATURES_TSC).CODE(),
+		width - 18 - RSZ(FEATURES_TSC), hSpace,
+		TSC[Shm->Proc.Features.InvariantTSC]);
 
 	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Time Stamp Counter Deadline%.*sTSC-DEADLINE   [%7s]",
-		width - 54,hSpace, powered(bix));
+		"%s%.*sTSC-DEADLINE   [%7s]", RSC(FEATURES_TSC_DEADLN).CODE(),
+		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.VME == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtual Mode Extension%.*sVME   [%7s]",
-		width - 40, hSpace, powered(bix));
+		"%s%.*sVME   [%7s]", RSC(FEATURES_VME).CODE(),
+		width - 18 - RSZ(FEATURES_VME), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.VMX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Virtual Machine Extensions%.*sVMX   [%7s]",
-		width - 44, hSpace, powered(bix));
+		"%s%.*sVMX   [%7s]", RSC(FEATURES_VMX).CODE(),
+		width - 18 - RSZ(FEATURES_VMX), hSpace, powered(bix));
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC > 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Extended xAPIC Support%.*sx2APIC   [%7s]",
-		width - 43, hSpace,
+		"%s%.*sx2APIC   [%7s]", RSC(FEATURES_X2APIC).CODE(),
+		width - 21 - RSZ(FEATURES_X2APIC), hSpace,
 		x2APIC[Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC]);
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 	bix = Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Execution Disable Bit Support%.*sXD-Bit   [%7s]",
-		width - 50, hSpace, powered(bix));
+		"%s%.*sXD-Bit   [%7s]", RSC(FEATURES_XD_BIT).CODE(),
+		width - 21 - RSZ(FEATURES_XD_BIT), hSpace, powered(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.XSAVE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"XSAVE/XSTOR States%.*sXSAVE   [%7s]",
-		width - 38, hSpace, powered(bix));
+		"%s%.*sXSAVE   [%7s]", RSC(FEATURES_XSAVE).CODE(),
+		width - 20 - RSZ(FEATURES_XSAVE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.xTPR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"xTPR Update Control%.*sxTPR   [%7s]",
-		width - 38, hSpace, powered(bix));
+		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
+		width - 19 - RSZ(FEATURES_XTPR), hSpace, powered(bix));
 }
 
 char *Hypervisor[HYPERVISORS] = {
@@ -1287,120 +1287,127 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	bix = Shm->Proc.Technology.C1E == 1;
 	PUT(BOXKEY_C1E, attrib[bix], width, 2,
-		"Enhanced Halt State%.*sC1E       <%3s>",
-		width - 37, hSpace, enabled(bix));
+		"%s%.*sC1E       <%3s>", RSC(PERF_MON_C1E).CODE(),
+		width - 18 - RSZ(PERF_MON_C1E), hSpace, enabled(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.C1A == 1;
 	PUT(BOXKEY_C1A, attrib[bix], width, 2,
-		"C1 Auto Demotion%.*sC1A       <%3s>",
-		width - 34, hSpace, enabled(bix));
+		"%s%.*sC1A       <%3s>", RSC(PERF_MON_C1A).CODE(),
+		width - 18 - RSZ(PERF_MON_C1A), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C3A == 1;
 	PUT(BOXKEY_C3A, attrib[bix], width, 2,
-		"C3 Auto Demotion%.*sC3A       <%3s>",
-		width - 34, hSpace, enabled(bix));
+		"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
+		width - 18 - RSZ(PERF_MON_C3A), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C1U == 1;
 	PUT(BOXKEY_C1U, attrib[bix], width, 2,
-		"C1 UnDemotion%.*sC1U       <%3s>",
-		width - 31, hSpace, enabled(bix));
+		"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
+		width - 18 - RSZ(PERF_MON_C1U), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.C3U == 1;
 	PUT(BOXKEY_C3U, attrib[bix], width, 2,
-		"C3 UnDemotion%.*sC3U       <%3s>",
-		width - 31, hSpace, enabled(bix));
+		"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
+		width - 18 - RSZ(PERF_MON_C3U), hSpace, enabled(bix));
     }
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.CC6 == 1;
 	PUT(BOXKEY_CC6, attrib[bix], width, 2,
-		"Core C6 State%.*sCC6       <%3s>",
-		width - 31, hSpace, enabled(bix));
+		"%s%.*sCC6       <%3s>", RSC(PERF_MON_CC6).CODE(),
+		width - 18 - RSZ(PERF_MON_CC6), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.PC6 == 1;
 	PUT(BOXKEY_PC6, attrib[bix], width, 2,
-		"Package C6 State%.*sPC6       <%3s>",
-		width - 34, hSpace, enabled(bix));
+		"%s%.*sPC6       <%3s>", RSC(PERF_MON_PC6).CODE(),
+		width - 18 - RSZ(PERF_MON_PC6), hSpace, enabled(bix));
     }
 	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Frequency ID control%.*sFID       [%3s]",
-		width - 38, hSpace, enabled(bix));
+		"%s%.*sFID       [%3s]", RSC(PERF_MON_FID).CODE(),
+		width - 18 - RSZ(PERF_MON_FID), hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Voltage ID control%.*sVID       [%3s]",
-		width - 36, hSpace, enabled(bix));
+		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
+		width - 18 - RSZ(PERF_MON_VID), hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"P-State Hardware Coordination Feedback"	\
-			"%.*sMPERF/APERF       [%3s]",
-		width - 64, hSpace, enabled(bix));
+		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
+		width - 26 - RSZ(PERF_MON_HWCF), hSpace, enabled(bix));
 
 	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Hardware-Controlled Performance States%.*sHWP       [%3s]",
-		width - 56, hSpace, enabled(bix));
+		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
+		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.HDC_Reg == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Hardware Duty Cycling%.*sHDC       [%3s]",
-		width - 39, hSpace, enabled(bix));
+		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
+		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2,"Package C-State",NULL);
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"Configuration Control%.*sCONFIG   [%7s]",
-		width - (OutFunc == NULL ? 45 : 43), hSpace,
+		"%s%.*sCONFIG   [%7s]", RSC(PERF_MON_CFG_CTRL).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		- RSZ(PERF_MON_CFG_CTRL), hSpace,
 		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
 		PUT(BOXKEY_PKGCST, attrib[0], width, 3,
-			"Lowest C-State%.*sLIMIT   <%7d>",
-			width - (OutFunc == NULL ? 37 : 35), hSpace,
+			"%s%.*sLIMIT   <%7d>", RSC(PERF_MON_LOW_CSTATE).CODE(),
+			width - (OutFunc == NULL ? 23 : 21)
+			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
 		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
 		PUT(BOXKEY_IOMWAIT, attrib[bix], width, 3,
-			"I/O MWAIT Redirection%.*sIOMWAIT   <%7s>",
-			width - (OutFunc == NULL ? 46 : 44), hSpace,
+			"%s%.*sIOMWAIT   <%7s>", RSC(PERF_MON_IOMWAIT).CODE(),
+			width - (OutFunc == NULL ? 25 : 23)
+			- RSZ(PERF_MON_IOMWAIT), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
 		PUT(BOXKEY_IORCST, attrib[0], width, 3,
-			"Max C-State Inclusion%.*sRANGE   <%7d>",
-			width - (OutFunc == NULL ? 44 : 42), hSpace,
+			"%s%.*sRANGE   <%7d>", RSC(PERF_MON_MAX_CSTATE).CODE(),
+			width - (OutFunc == NULL ? 23 : 21)
+			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	} else {
 		PUT(SCANKEY_NULL, attrib[0], width, 3,
-			"Lowest C-State%.*sLIMIT   [%7d]",
-			width - (OutFunc == NULL ? 37 : 35), hSpace,
+			"%s%.*sLIMIT   [%7d]", RSC(PERF_MON_LOW_CSTATE).CODE(),
+			width - (OutFunc == NULL ? 23 : 21)
+			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
 		PUT(SCANKEY_NULL, attrib[0], width, 3,
-			"I/O MWAIT Redirection%.*sIOMWAIT   [%7s]",
-			width - (OutFunc == NULL ? 46 : 44), hSpace,
+			"%s%.*sIOMWAIT   [%7s]", RSC(PERF_MON_IOMWAIT).CODE(),
+			width - (OutFunc == NULL ? 25 : 23)
+			- RSZ(PERF_MON_IOMWAIT), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
 		PUT(SCANKEY_NULL, attrib[0], width, 3,
-			"Max C-State Inclusion%.*sRANGE   [%7d]",
-			width - (OutFunc == NULL ? 44 : 42), hSpace,
+			"%s%.*sRANGE   [%7d]", RSC(PERF_MON_MAX_CSTATE).CODE(),
+			width - (OutFunc == NULL ? 23 : 21)
+			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"MWAIT States:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
-		04, hSpace);
+		"%s:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
+		RSC(PERF_MON_MWAIT_CTRS).CODE(), 04, hSpace);
 
 	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
 		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
@@ -1416,38 +1423,38 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Core Cycles%.*s[%7s]",
-		width - 23, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
+		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.InstrRetired == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Instructions Retired%.*s[%7s]",
-		width - 32, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
+		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.RefCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Reference Cycles%.*s[%7s]",
-		width - 28, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_REF_CYCLE).CODE(),
+		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Ref == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Last Level Cache References%.*s[%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
+		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Last Level Cache Misses%.*s[%7s]",
-		width - 35, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_MISS_LLC).CODE(),
+		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchRetired == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Branch Instructions Retired%.*s[%7s]",
-		width - 39, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_RET).CODE(),
+		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchMispred == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"Branch Mispredicts Retired%.*s[%7s]",
-		width - 38, hSpace, powered(bix));
+		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
+		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, powered(bix));
 }
 
 void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
