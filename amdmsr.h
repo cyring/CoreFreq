@@ -67,8 +67,12 @@
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
 
-/* BKDG for AMD Family [15_00h - 15_0Fh]: D18F3x1D4 Probe Filter Control */
+/* BKDG for AMD Family [15_00h - 15_0Fh]
+	D18F3x1D4 Probe Filter Control
+	D18F3x1C4 L3 Cache Parameter
+*/
 #define PCI_AMD_PROBE_FILTER_CTRL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0x1d4)
+#define PCI_AMD_L3_CACHE_PARAMETER	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0x1c4)
 
 /* Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
@@ -595,3 +599,15 @@ typedef struct
 	LoIndexHashEn	: 30-29,
 	ReservedBits2	: 32-30;
 } PROBE_FILTER_CTRL;
+
+typedef struct
+{	/* Family: [15_00h - 15_0Fh]	Bus:0h,Dev:18h,Func:3h,Reg:1C4h */
+	unsigned int
+	SubCacheSize0	:  4-0,  /* 0x0c: 2MB , 0x0d: 1 MB , 0xe: 1 MB	*/
+	SubCacheSize1	:  8-4,
+	SubCacheSize2	: 12-8,
+	SubCacheSize3	: 16-12,
+	ReservedBits	: 31-16,
+	L3TagInit	: 32-31;
+} L3_CACHE_PARAMETER;
+

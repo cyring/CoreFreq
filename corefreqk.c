@@ -1135,6 +1135,19 @@ void Cache_Topology(CORE *Core)
 	}
 }
 
+unsigned int L3_SubCache_AMD_Piledriver(unsigned int bits)
+{	/* Return the AMD Piledriver L3 Sub-Cache size in unit of 512 KB  */
+	switch (bits) {
+	case 0xc:
+		return(4);
+	case 0xd:
+	case 0xe:
+		return(2);
+	default:
+		return(0);
+	}
+}
+
 static void Map_AMD_Topology(void *arg)
 {
     if (arg != NULL) {
@@ -1193,19 +1206,16 @@ static void Map_AMD_Topology(void *arg)
 		break;
 	case AMD_Family_15h:
 	    if ((Proc->Features.Std.EAX.ExtModel == 0x0)
-		&& (Proc->Features.Std.EAX.Model >= 0x0)
-		&& (Proc->Features.Std.EAX.Model <= 0xf))
+	     && (Proc->Features.Std.EAX.Model >= 0x0)
+	     && (Proc->Features.Std.EAX.Model <= 0xf))
 	    {
-		PROBE_FILTER_CTRL PF;
-		RDPCI(PF, PCI_AMD_PROBE_FILTER_CTRL);
-/*		if (PF.Mode != 0b00) {	*/
-		/* Add to L3 the Sub Caches in 512 KB unit size.	*/
-		Core->T.Cache[3].Size = Core->T.Cache[3].Size
-		+ PF.SubCache0En ? (1 << (1 + (PF.SubCacheSize0 & 0b01))) : 0
-		+ PF.SubCache1En ? (1 << (1 + (PF.SubCacheSize1 & 0b01))) : 0
-		+ PF.SubCache2En ? (1 << (1 + (PF.SubCacheSize2 & 0b01))) : 0
-		+ PF.SubCache3En ? (1 << (1 + (PF.SubCacheSize3 & 0b01))) : 0;
-/*		}	*/
+		L3_CACHE_PARAMETER L3;
+		RDPCI(L3, PCI_AMD_L3_CACHE_PARAMETER);
+
+	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize0);
+	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize1);
+	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize2);
+	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize3);
 	    }
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
@@ -1214,6 +1224,7 @@ static void Map_AMD_Topology(void *arg)
 				  - (Core->T.PackageID
 					<< leaf80000008.ECX.ApicIdCoreIdSize);
 
+/*TODO: Map the Bulldozer extended topology
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
 		CPUID_0x8000001e leaf8000001e;
@@ -1236,8 +1247,11 @@ static void Map_AMD_Topology(void *arg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		Core->T.ThreadID  = leaf8000001e.EBX.CompUnitId;
+		leaf8000001e.EAX.ExtApicId;
+		leaf8000001e.EBX.CompUnitId;
+		leaf8000001e.ECX.NodeId;
 	    }
+*/
 	    break;
 	case AMD_Family_17h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
@@ -1270,10 +1284,13 @@ static void Map_AMD_Topology(void *arg)
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
 		else
 			Core->T.ThreadID  = 0;
-	    } else {
+	    } else {	/* Fallback algorithm. */
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
-		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
-		Core->T.PackageID = 0;
+		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
+				  >> leaf80000008.ECX.ApicIdCoreIdSize;
+		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID
+				  - (Core->T.PackageID
+					<< leaf80000008.ECX.ApicIdCoreIdSize);
 		Core->T.ThreadID  = 0;
 	    }
 	    break;
@@ -4655,8 +4672,8 @@ void Sys_MemInfo(SYSGATE *SysGate)
 	if (Pkg->OS.Gate != NULL) {				\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
-			Pkg->tickStep = Pkg->tickReset;		\
-/*++								\
+			Pkg->tickStep = Pkg->tickReset ;	\
+/*TODO: Has to be called from a preemptible context		\
 			Sys_DumpTask(Pkg->OS.Gate);		\
 			Sys_MemInfo(Pkg->OS.Gate);	*/	\
 		}						\
