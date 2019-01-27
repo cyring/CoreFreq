@@ -3566,22 +3566,20 @@ void Core_Manager(REF *Ref)
 	    case VOLTAGE_FORMULA_NONE:
 		break;
 	    }
-		/* Tasks collection					*/
-/*--
+		/* Tasks collection: Update OS tasks and memory usage.	*/
+#if FEAT_DBG > 1
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-			// Update OS tasks and memory usage.
 			if (SysGate_OnDemand(Ref, 1) == 0) {
 				SysGate_Update(Ref);
 			}
 		}
 	    }
-*/
+#else
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-			/* Update OS tasks and memory usage.		*/
 		    if (SysGate_OnDemand(Ref, 1) == 0) {
 			if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSUPDT) == 0) {
 				SysGate_Update(Ref);
@@ -3589,6 +3587,7 @@ void Core_Manager(REF *Ref)
 		    }
 		}
 	    }
+#endif
 		/* Notify Client.					*/
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}

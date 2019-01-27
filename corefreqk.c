@@ -4629,8 +4629,6 @@ void Sys_DumpTask(SYSGATE *SysGate)
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
-		task_lock(thread);
-
 #ifdef CONFIG_SCHED_MUQSS
 		SysGate->taskList[cnt].runtime  = tsk_seruntime(thread);
 #else
@@ -4645,7 +4643,6 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
-		task_unlock(thread);
 		if (cnt < TASK_LIMIT)
 			cnt++;
 	}
@@ -4667,18 +4664,29 @@ void Sys_MemInfo(SYSGATE *SysGate)
 	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
-#define Sys_Tick(Pkg)						\
-({								\
+#if FEAT_DBG > 1
+    #define Sys_Tick(Pkg)					\
+    ({								\
 	if (Pkg->OS.Gate != NULL) {				\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset ;	\
-/*TODO: Has to be called from a preemptible context		\
 			Sys_DumpTask(Pkg->OS.Gate);		\
-			Sys_MemInfo(Pkg->OS.Gate);	*/	\
+			Sys_MemInfo(Pkg->OS.Gate);		\
 		}						\
 	}							\
-})
+    })
+#else
+    #define Sys_Tick(Pkg)					\
+    ({								\
+	if (Pkg->OS.Gate != NULL) {				\
+		Pkg->tickStep--;				\
+		if (!Pkg->tickStep) {				\
+			Pkg->tickStep = Pkg->tickReset ;	\
+		}						\
+	}							\
+    })
+#endif
 
 static void InitTimer(void *Cycle_Function)
 {
