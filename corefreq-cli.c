@@ -6174,6 +6174,7 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	case VOLTAGE_FORMULA_INTEL_CORE2:
 	case VOLTAGE_FORMULA_AMD:
 	case VOLTAGE_FORMULA_AMD_0Fh:
+	case VOLTAGE_FORMULA_AMD_15h:
 		len = sprintf(	buffer,
 				"%7.2f "				\
 				"%7d   %5.4f",

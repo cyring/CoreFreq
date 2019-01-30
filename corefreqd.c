@@ -198,7 +198,7 @@ static void *Core_Cycle(void *arg)
 				CFlip->Thermal.Sensor);
 		break;
 	case THERMAL_FORMULA_AMD_15h:
-	    if (cpu == Shm->Proc.Service.Core)
+	    if (Shm->Cpu[cpu].Topology.CoreID == 0)
 		COMPUTE_THERMAL(AMD_15h,
 				CFlip->Thermal.Temp,
 				Cpu->PowerThermal.Param,
@@ -242,6 +242,11 @@ static void *Core_Cycle(void *arg)
 	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
 	case VOLTAGE_FORMULA_AMD_0Fh:
 		COMPUTE_VOLTAGE(AMD_0Fh,
+				CFlip->Voltage.Vcore,
+				CFlip->Voltage.VID);
+		break;
+	case VOLTAGE_FORMULA_AMD_15h:
+		COMPUTE_VOLTAGE(AMD_15h,
 				CFlip->Voltage.Vcore,
 				CFlip->Voltage.VID);
 		break;
@@ -2853,7 +2858,7 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Sensor);
 	break;
     case THERMAL_FORMULA_AMD_15h:
-      if (cpu == Proc->Service.Core) {
+      if (Shm->Cpu[cpu].Topology.CoreID == 0) {
 	COMPUTE_THERMAL(AMD_15h,
 			Shm->Cpu[cpu].PowerThermal.Limit[0],
 			Core[cpu]->PowerThermal.Param,
@@ -3562,6 +3567,7 @@ void Core_Manager(REF *Ref)
 	    case VOLTAGE_FORMULA_INTEL_SKL_X:
 	    case VOLTAGE_FORMULA_AMD:
 	    case VOLTAGE_FORMULA_AMD_0Fh:
+	    case VOLTAGE_FORMULA_AMD_15h:
 	    case VOLTAGE_FORMULA_AMD_17h:
 	    case VOLTAGE_FORMULA_NONE:
 		break;

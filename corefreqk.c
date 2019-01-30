@@ -7104,7 +7104,10 @@ static void Stop_AMD_Family_10h(void *arg)
 
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 {
+	PSTATESTAT PstateStat;
+	PSTATEDEF PstateDef;
 	CORE *Core;
+	unsigned int pstate;
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
@@ -7122,14 +7125,22 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
 
-			Core_AMD_Family_15h_Temp(Core);
-
 			Delta_PTSC_OVH(Proc, Core);
 
 			Save_PTSC(Proc);
 
 			Sys_Tick(Proc);
 		}
+		if (Core->T.CoreID == 0) {
+			Core_AMD_Family_15h_Temp(Core);
+		}
+		/* Read the current P-State number. */
+		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
+		/* Offset the P-State base register. */
+		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
+		/* Read the voltage ID at the offset */
+		RDMSR(PstateDef, pstate);
+		Core->PowerThermal.VID = PstateDef.Family_15h.CpuVid;
 
 		Delta_C0(Core);
 
