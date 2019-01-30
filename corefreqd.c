@@ -3567,7 +3567,7 @@ void Core_Manager(REF *Ref)
 		break;
 	    }
 		/* Tasks collection: Update OS tasks and memory usage.	*/
-#if FEAT_DBG > 1
+#if FEAT_DBG > 0
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {

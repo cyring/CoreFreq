@@ -4616,7 +4616,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
 }
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
 void Sys_DumpTask(SYSGATE *SysGate)
 {
         SysGate->taskCount = 0;
@@ -4664,7 +4664,7 @@ void Sys_MemInfo(SYSGATE *SysGate)
 	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
-#if FEAT_DBG > 1
+#if FEAT_DBG > 0
     #define Sys_Tick(Pkg)					\
     ({								\
 	if (Pkg->OS.Gate != NULL) {				\
