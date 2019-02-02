@@ -6334,19 +6334,15 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-  row += 2 + draw.Area.MaxRows;
   if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 	size_t len = 0;
 	unsigned int idx;
 	char stateStr[16];
 	ATTRIBUTE *stateAttr;
 
-	/* Clear the trailing garbage left by previous drawing. 	*/
-    for (idx=draw.cpuScroll; idx < (draw.cpuScroll + draw.Area.MaxRows); idx++)
-	LayerFillAt(	layer,
-			cTask[idx].col,
-			cTask[idx].row,
-			(draw.Size.width - cTask[idx].col),
+	/* Clear the trailing garbage chars left by the previous drawing. */
+	FillLayerArea(	layer, (LOAD_LEAD + 8), (row + 2),
+			(draw.Size.width - (LOAD_LEAD + 8)), draw.Area.MaxRows,
 			hSpace, MakeAttr(BLACK, 0, BLACK, 0) );
 
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
@@ -6408,18 +6404,11 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			len, stateAttr, buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
-	    } else {
-		LayerCopyAt(layer,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
-			dif, stateAttr, buffer);
-
-		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
-	    }
-	    while ((dif = draw.Size.width
+	      /* Add a blank spacing between items: up to (ldx) chars	*/
+	      while ((dif = draw.Size.width
 			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col) > 0
 		&& ldx--)
-	    {
+	      {
 		LayerAt(layer, attr,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = \
@@ -6429,12 +6418,20 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = 0x20;
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col++;
+	      }
+	    } else {
+		LayerCopyAt(layer,
+			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
+			dif, stateAttr, buffer);
+
+		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
 	    }
 	}
       }
     }
   }
-  row += 1;
+  row += 3 + draw.Area.MaxRows;
   return(row);
 }
 
