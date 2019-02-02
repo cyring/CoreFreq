@@ -3369,7 +3369,7 @@ Window *CreateCoreClock(unsigned long long id,
 
 void TitleForTurboClock(unsigned int nc, char *title)
 {
-	sprintf(title, " Turbo Clock %1dC ", nc);
+	sprintf(title, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), nc);
 }
 
 Window *CreateTurboClock(unsigned long long id)
@@ -3380,7 +3380,8 @@ Window *CreateTurboClock(unsigned long long id)
 
 void TitleForRatioClock(unsigned int nc, char *title)
 {
-	sprintf(title, " %s Clock Ratio ", nc == 1 ? "Max" : "Min");
+	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
+			nc == 1 ? "Max" : "Min");
 }
 
 Window *CreateRatioClock(unsigned long long id)
@@ -3441,7 +3442,8 @@ Window *CreateUncoreClock(unsigned long long id)
 		StoreTCell(wUC, clockMod.sllong, item,
 			attrib[multiplier > startingHotZone ? 1 : 0]);
 	}
-	sprintf((char*) item, " %s Clock Uncore ", nc == 1 ? "Max" : "Min");
+	sprintf((char*) item, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
+				nc == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
@@ -5634,12 +5636,6 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerDeclare(LAYOUT_TASKS_TRACKING, 22, 55, row, hTrack0);
 
-	if (Shm->SysGate.trackTask) {
-		memset(&hTrack0.attr[15], MakeAttr(CYAN, 0, BLACK, 0).value, 5);
-		sprintf(buffer, "%5d", Shm->SysGate.trackTask);
-		memcpy(&hTrack0.code[15], buffer, 5);
-	}
-
 	LayerCopyAt(layer, hTask0.origin.col, hTask0.origin.row,
 			hTask0.length, hTask0.attr, hTask0.code);
 
@@ -5658,6 +5654,12 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(layer, hTrack0.origin.col, hTrack0.origin.row,
 			hTrack0.length, hTrack0.attr, hTrack0.code);
 
+	if (Shm->SysGate.trackTask) {
+		sprintf(buffer, "%5d", Shm->SysGate.trackTask);
+		LayerFillAt(	layer,
+				(hTrack0.origin.col + 15), hTrack0.origin.row,
+				5, buffer, MakeAttr(CYAN, 0, BLACK, 0) );
+	}
 	row += draw.Area.MaxRows + 2;
 	return(row);
 }
@@ -6134,11 +6136,6 @@ CUINT Draw_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	len = sprintf(buffer, "%7.2f", CFlop->Relative.Freq);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
-	/* Clear the trailing garbage left by last drawing.		*/
-	if ((len = draw.Size.width - cTask[cpu].col) > 0) {
-		LayerFillAt(	layer, cTask[cpu].col, row,
-				len, hSpace, MakeAttr(BLACK, 0, BLACK, 0));
-	}
 	cTask[cpu].col = LOAD_LEAD + 8;
 
 	return(0);
@@ -6343,6 +6340,14 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	unsigned int idx;
 	char stateStr[16];
 	ATTRIBUTE *stateAttr;
+
+	/* Clear the trailing garbage left by previous drawing. 	*/
+    for (idx=draw.cpuScroll; idx < (draw.cpuScroll + draw.Area.MaxRows); idx++)
+	LayerFillAt(	layer,
+			cTask[idx].col,
+			cTask[idx].row,
+			(draw.Size.width - cTask[idx].col),
+			hSpace, MakeAttr(BLACK, 0, BLACK, 0) );
 
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {

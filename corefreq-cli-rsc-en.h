@@ -493,6 +493,10 @@
 #define RSC_ADV_HELP_ITEM_14_CODE_EN					\
 			(ASCII*) " Down PgDw                       CPU  "
 
+#define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
+#define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "
+#define RSC_UNCORE_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Uncore "
+
 #define RSC_BOX_DISABLE_COND0_CODE_EN					\
 			(ASCII*) "               Disable              "
 #define RSC_BOX_DISABLE_COND1_CODE_EN					\

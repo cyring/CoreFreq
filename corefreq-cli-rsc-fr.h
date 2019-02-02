@@ -493,6 +493,10 @@
 #define RSC_ADV_HELP_ITEM_14_CODE_FR					\
 			(ASCII*) " Bas  Suiv                       CPU  "
 
+#define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
+#define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
+#define RSC_UNCORE_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Uncore Freq. "
+
 #define RSC_BOX_DISABLE_COND0_CODE_FR					\
 			(ASCII*) "             Desactiver             "
 #define RSC_BOX_DISABLE_COND1_CODE_FR					\

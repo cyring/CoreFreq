@@ -3046,6 +3046,27 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_ADV_HELP_ITEM_14_CODE_FR
 		}
 	},
+	[RSC_TURBO_CLOCK_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TURBO_CLOCK_TITLE_CODE_EN,
+			[LOC_FR] = RSC_TURBO_CLOCK_TITLE_CODE_FR
+		}
+	},
+	[RSC_RATIO_CLOCK_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_RATIO_CLOCK_TITLE_CODE_EN,
+			[LOC_FR] = RSC_RATIO_CLOCK_TITLE_CODE_FR
+		}
+	},
+	[RSC_UNCORE_CLOCK_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_UNCORE_CLOCK_TITLE_CODE_EN,
+			[LOC_FR] = RSC_UNCORE_CLOCK_TITLE_CODE_FR
+		}
+	},
 	[RSC_BOX_DISABLE_COND0] = {
 		.Attr = vColor,
 		.Code = {
