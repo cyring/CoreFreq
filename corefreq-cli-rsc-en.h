@@ -607,3 +607,29 @@
 #define RSC_BOX_LANG_TITLE_CODE_EN	(ASCII*) " Languages "
 #define RSC_BOX_LANG_ENGLISH_CODE_EN	(ASCII*) "     English     "
 #define RSC_BOX_LANG_FRENCH_CODE_EN	(ASCII*) "     French      "
+
+#define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
+		(ASCII*)"CoreFreq."					\
+			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
+			"usage:\t%s [-option <arguments>]\n"		\
+			"\t-t\tShow Top (default)\n"			\
+			"\t-d\tShow Dashboard\n"			\
+			"\t-V\tMonitor Power and Voltage\n"		\
+			"\t-g\tMonitor Package\n"			\
+			"\t-c\tMonitor Counters\n"			\
+			"\t-i\tMonitor Instructions\n"			\
+			"\t-s\tPrint System Information\n"		\
+			"\t-j\tPrint System Information (json-encoded)\n"\
+			"\t-M\tPrint Memory Controller\n"		\
+			"\t-R\tPrint System Registers\n"		\
+			"\t-m\tPrint Topology\n"			\
+			"\t-u\tPrint CPUID\n"				\
+			"\t-k\tPrint Kernel\n"				\
+			"\t-h\tPrint out this message\n"		\
+			"\nExit status:\n"				\
+				"0\tif OK,\n"				\
+				"1\tif problems,\n"			\
+				">1\tif serious trouble.\n"		\
+			"\nReport bugs to labs[at]cyring.fr\n"
+#define RSC_ERROR_SHARED_MEM_CODE_EN					\
+			(ASCII*) "Daemon connection error code %d\n%s: %s\n"

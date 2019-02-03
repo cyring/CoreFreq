@@ -3493,5 +3493,19 @@ RESOURCE_ST Resource[] = {
 			[LOC_EN] = RSC_BOX_LANG_FRENCH_CODE_EN,
 			[LOC_FR] = RSC_BOX_LANG_FRENCH_CODE_FR
 		}
+	},
+	[RSC_ERROR_CMD_SYNTAX] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ERROR_CMD_SYNTAX_CODE_EN,
+			[LOC_FR] = RSC_ERROR_CMD_SYNTAX_CODE_FR
+		}
+	},
+	[RSC_ERROR_SHARED_MEM] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ERROR_SHARED_MEM_CODE_EN,
+			[LOC_FR] = RSC_ERROR_SHARED_MEM_CODE_FR
+		}
 	}
 };

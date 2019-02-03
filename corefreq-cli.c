@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <sched.h>
 
 #include "bitasm.h"
@@ -4167,7 +4168,9 @@ int Shortcut(SCANKEY *scan)
 			.row = TOP_HEADER_ROW + 6
 		}, select = {
 			.col = 0,
-			.row = (locale >=0) && (locale < LOC_CNT) ? locale : 0
+			.row = (GET_LOCALE() >= LOC_EN)
+				&& (GET_LOCALE() < LOC_CNT) ?
+					GET_LOCALE() : LOC_EN
 		};
 
 	Window *wBox = CreateBox(scan->key, origin, select,
@@ -4185,16 +4188,16 @@ int Shortcut(SCANKEY *scan)
     break;
     case BOXKEY_LANG_ENGLISH:
     {
-	if (locale != LOC_EN) {
-		locale = LOC_EN;
+	if (GET_LOCALE() != LOC_EN) {
+		SET_LOCALE(LOC_EN);
 		draw.Flag.layout = 1;
 	}
     }
     break;
     case BOXKEY_LANG_FRENCH:
     {
-	if (locale != LOC_FR) {
-		locale = LOC_FR;
+	if (GET_LOCALE() != LOC_FR) {
+		SET_LOCALE(LOC_FR);
 		draw.Flag.layout = 1;
 	}
     }
@@ -7385,44 +7388,48 @@ void Top(char option)
   DestroyAllCards(&cardList);
 }
 
-int Help(char *appName)
+enum REASON_CODE Help(enum REASON_CODE rc, ...)
 {
-	printf( "CoreFreq."						\
-		"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n");
-	printf( "usage:\t%s [-option <arguments>]\n"			\
-		"\t-t\tShow Top (default)\n"				\
-		"\t-d\tShow Dashboard\n"				\
-		"\t-V\tMonitor Power and Voltage\n"			\
-		"\t-g\tMonitor Package\n"				\
-		"\t-c\tMonitor Counters\n"				\
-		"\t-i\tMonitor Instructions\n"				\
-		"\t-s\tPrint System Information\n"			\
-		"\t-j\tPrint System Information (json-encoded)\n" 	\
-		"\t-M\tPrint Memory Controller\n"			\
-		"\t-R\tPrint System Registers\n"			\
-		"\t-m\tPrint Topology\n"				\
-		"\t-u\tPrint CPUID\n"					\
-		"\t-k\tPrint Kernel\n"					\
-		"\t-h\tPrint out this message\n"			\
-		"\nExit status:\n"					\
-			"0\tif OK,\n"					\
-			"1\tif problems,\n"				\
-			">1\tif serious trouble.\n"			\
-		"\nReport bugs to labs[at]cyring.fr\n", appName);
-	return(1);
+	va_list ap;
+	va_start(ap, rc);
+	switch (rc) {
+	case RC_SUCCESS:
+		break;
+	case RC_CMD_SYNTAX: {
+		char *appName = va_arg(ap, char *);
+		printf((char *) RSC(ERROR_CMD_SYNTAX).CODE(), appName);
+		}
+		break;
+	case RC_SHM_OPEN:
+	case RC_SHM_STAT:
+	case RC_SHM_MMAP: {
+		char *shmFileName = va_arg(ap, char *);
+		typeof (errno) errCode = va_arg(ap, typeof (errno));
+		char *sysMsg = strerror_l(errCode,SYS_LOCALE());
+		printf((char *) RSC(ERROR_SHARED_MEM).CODE(),
+				errCode, shmFileName, sysMsg);
+		}
+		break;
+	}
+	va_end(ap);
+	return(rc);
 }
 
 int main(int argc, char *argv[])
 {
 	struct stat shmStat = {0};
-	int fd = -1, rc = EXIT_SUCCESS;
+	int fd = -1;
+	enum REASON_CODE rc = RC_SUCCESS;
 
 	char *program = strdup(argv[0]), *appName=basename(program);
 	char option = 't';
+
+	LOCALE(IN);
+
   if ((argc >= 2) && (argv[1][0] == '-'))
 	option = argv[1][1];
   if (option == 'h')
-	Help(appName);
+	Help(RC_CMD_SYNTAX, appName);
   else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
   {
@@ -7527,18 +7534,19 @@ int main(int argc, char *argv[])
 		}
 		break;
 	default:
-		rc = Help(appName);
+		rc = Help(RC_CMD_SYNTAX, appName);
 		break;
 	}
 	munmap(Shm, shmStat.st_size);
 	close(fd);
       } else
-	rc = 4;
+	rc = Help(RC_SHM_MMAP,SHM_FILENAME, errno);
     } else
-	rc = 3;
+	rc = Help(RC_SHM_STAT,SHM_FILENAME, errno);
   } else
-	rc = 2;
+	rc = Help(RC_SHM_OPEN,SHM_FILENAME, errno);
 
+    LOCALE(OUT);
     free(program);
     return(rc);
 }

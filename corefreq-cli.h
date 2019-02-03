@@ -219,3 +219,11 @@ typedef void (*CELL_FUNC)(CELL_ARGS);
 #define RENDER_OK	0x000
 #define RENDER_KO	0x010
 #define RENDER_OFF	0x100
+
+enum REASON_CODE {
+	RC_SUCCESS	= 0,
+	RC_CMD_SYNTAX	= 1,
+	RC_SHM_OPEN	= 2,
+	RC_SHM_STAT	= 3,
+	RC_SHM_MMAP	= 4
+};

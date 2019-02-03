@@ -4,6 +4,8 @@
  * Licenses: GPL2
  */
 
+#include <locale.h>
+
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3
@@ -364,16 +366,6 @@ extern Layer	*sLayer,
 
 extern WinList winList;
 
-enum LOCALES {
-	LOC_EN,
-	LOC_FR,
-	LOC_CNT
-};
-
-extern enum LOCALES locale;
-
-#define LOC()	(locale)
-
 int GetKey(SCANKEY *scan, struct timespec *tsec) ;
 
 SCREEN_SIZE GetScreenSize(void) ;
@@ -641,7 +633,25 @@ void AllocAll(char **buffer) ;
 void WriteConsole(SCREEN_SIZE drawSize, char *buffer) ;
 
 void _TERMINAL_IN(void) ;
-
 void _TERMINAL_OUT(void) ;
-
 #define TERMINAL(IO)	_TERMINAL_##IO()
+
+void _LOCALE_IN(void) ;
+void _LOCALE_OUT(void) ;
+#define LOCALE(IO)	_LOCALE_##IO()
+
+enum LOCALES {
+	LOC_EN,
+	LOC_FR,
+	LOC_CNT
+};
+
+extern enum LOCALES	AppLoc;
+extern  locale_t	SysLoc;
+
+#define SYS_LOCALE()		(SysLoc)
+#define GET_LOCALE()		(AppLoc)
+#define SET_LOCALE(_apploc)						\
+({									\
+	AppLoc = _apploc;						\
+})

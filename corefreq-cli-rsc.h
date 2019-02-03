@@ -479,7 +479,9 @@ enum {
 	RSC_BOX_CONIC_ITEM_6,
 	RSC_BOX_LANG_TITLE,
 	RSC_BOX_LANG_ENGLISH,
-	RSC_BOX_LANG_FRENCH
+	RSC_BOX_LANG_FRENCH,
+	RSC_ERROR_CMD_SYNTAX,
+	RSC_ERROR_SHARED_MEM
 };
 
 typedef struct {
@@ -491,7 +493,7 @@ extern RESOURCE_ST Resource[];
 
 #define ATTR() Attr
 
-#define CODE() Code[LOC()]
+#define CODE() Code[GET_LOCALE()]
 
 #define RSC(_ID) (Resource[RSC_##_ID])
 

@@ -608,3 +608,29 @@
 #define RSC_BOX_LANG_TITLE_CODE_FR	(ASCII*) " Langues "
 #define RSC_BOX_LANG_ENGLISH_CODE_FR	(ASCII*) "     Anglais     "
 #define RSC_BOX_LANG_FRENCH_CODE_FR	(ASCII*) "     Francais    "
+
+#define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
+		(ASCII*)"CoreFreq."					\
+			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
+			"usage:\t%s [-option <arguments>]\n"		\
+			"\t-t\tAfficher Top (par défault)\n"		\
+			"\t-d\tAfficher le tableau de bord\n"		\
+			"\t-V\tMoniteur de Puissance et Voltage\n"	\
+			"\t-g\tMoniteur du Package\n"			\
+			"\t-c\tMoniteur des Compteurs\n"		\
+			"\t-i\tMoniteur des Instructions\n"		\
+			"\t-s\tImprimer les Informations du système\n"	\
+			"\t-j\tImprimer les Informations (format json)\n"\
+			"\t-M\tImprimer le Controlleur mémoire\n"	\
+			"\t-R\tImprimer les Registres du système\n"	\
+			"\t-m\tImprimer la Topologie\n"			\
+			"\t-u\tImprimer CPUID\n"			\
+			"\t-k\tImprimer les données du Kernel\n"	\
+			"\t-h\tAfficher ce message\n"			\
+			"\nCode d'exécution:\n"				\
+				"0\tsi OK,\n"				\
+				"1\tsi des problèmes,\n"		\
+				">1\tsi de graves problèmes.\n"		\
+			"\nSignaler les bugs à labs[at]cyring.fr\n"
+#define RSC_ERROR_SHARED_MEM_CODE_FR					\
+		(ASCII*) "Erreur code %d de connexion au démon.\n%s: %s\n"

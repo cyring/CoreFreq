@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <locale.h>
 
 #include "corefreq-ui.h"
 
@@ -518,8 +519,6 @@ Layer	*sLayer = NULL,
 	*fuse   = NULL;
 
 WinList winList = {.head = NULL};
-
-enum LOCALES locale = LOC_EN;
 
 char *console = NULL;
 
@@ -1473,4 +1472,66 @@ void _TERMINAL_OUT(void)
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
 	printf(SHOW SCR0 RCP COLOR(0,9,9));
+}
+
+enum LOCALES	AppLoc = LOC_EN;
+locale_t	SysLoc = (locale_t) 0;
+
+typedef char I18N[5];
+
+I18N	i18n_FR[] = {
+	"br_FR",
+	"ca_FR",
+	"fr_BE",
+	"fr_CA",
+	"fr_CH",
+	"fr_FR",
+	"fr_LU",
+	"ia_FR",
+	"oc_FR",
+	{0,0,0,0,0}
+};
+
+struct LOCALE_LOOKUP {
+	enum LOCALES	apploc;
+	I18N		*i18n;
+} LocaleLookUp[] = {
+		{
+			.apploc = LOC_FR,
+			.i18n	= i18n_FR
+		},
+		{
+			.apploc = LOC_EN,
+			.i18n	= NULL
+		}
+};
+
+void _LOCALE_IN(void)
+{
+	SysLoc = newlocale(LC_MESSAGES_MASK, "", (locale_t) 0);
+
+	if (SysLoc != NULL) {
+		const char *s18n = SysLoc->__names[5];
+		struct LOCALE_LOOKUP *lookUp = LocaleLookUp;
+		while (lookUp->i18n != NULL) {
+			I18N *i18n = lookUp->i18n;
+			while (i18n[0][0] != 0) {
+				if (!strncmp((char *) i18n, s18n, sizeof(I18N)))
+				{
+					SET_LOCALE(lookUp->apploc);
+					return;
+				}
+				i18n++;
+			}
+			lookUp++;
+		}
+	}
+	return;
+}
+
+void _LOCALE_OUT(void)
+{
+	if (SysLoc != (locale_t) 0) {
+		freelocale(SysLoc);
+	}
 }
