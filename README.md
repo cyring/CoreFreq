@@ -144,11 +144,11 @@ CPU     IPS            IPC            CPI
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 ## Debian, Ubuntu
- * Development packages.  
+ * Development packages prerequisites.  
 :hash:`apt-get install libpthread-stubs0-dev`  
 
 ## Red Hat, CentOS
- * Development packages.  
+ * Development packages prerequisites.  
 :hash:`yum install kernel-devel`  
 :hash:`yum group install "Development Tools"`  
 
@@ -195,7 +195,7 @@ intel_idle.max_cstate=value
 ```
 MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 ```  
-  If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
+&nbsp;&nbsp;&nbsp;&nbsp;If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
 
 * Q: The menu option "Memory Ctrl" does not open any window ?  
@@ -207,6 +207,11 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
   A: The PCE bit of control register CR4 allows RDPMC in ring 3  
 :hash:`echo 2 > /sys/devices/cpu/rdpmc`  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
+
+
+* Q: The CPU freeze or the System crash.  
+  A: This Processor is not or partially implemented in _CoreFreq_.  
+     Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
 
 ## Algorithm
