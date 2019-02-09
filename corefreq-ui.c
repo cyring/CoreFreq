@@ -8,12 +8,12 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <locale.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <locale.h>
 
 #include "corefreq-ui.h"
 

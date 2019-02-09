@@ -4,8 +4,6 @@
  * Licenses: GPL2
  */
 
-#include <locale.h>
-
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3

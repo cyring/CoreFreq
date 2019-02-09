@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <signal.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7481,8 +7482,8 @@ enum REASON_CODE Help(enum REASON_CODE rc, ...)
 	case RC_SHM_STAT:
 	case RC_SHM_MMAP: {
 		char *shmFileName = va_arg(ap, char *);
-		typeof (errno) errCode = va_arg(ap, typeof (errno));
-		char *sysMsg = strerror_l(errCode,SYS_LOCALE());
+		__typeof__ (errno) errCode = va_arg(ap, __typeof__ (errno));
+		char *sysMsg = strerror_l(errCode, SYS_LOCALE());
 		printf((char *) RSC(ERROR_SHARED_MEM).CODE(),
 				errCode, shmFileName, sysMsg);
 		}

@@ -4,7 +4,10 @@
  * Licenses: GPL2
  */
 
+#define _GNU_SOURCE
 #include <sys/types.h>
+#include <locale.h>
+#include <sched.h>
 
 #include "corefreq-ui.h"
 #include "corefreq-cli-rsc.h"
