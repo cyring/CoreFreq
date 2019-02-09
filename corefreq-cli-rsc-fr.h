@@ -596,6 +596,7 @@
 #define RSC_BOX_TOOLS_CONIC_CODE_FR	(ASCII*) "      Calcul Conique...    "
 #define RSC_BOX_TOOLS_RAND_CPU_CODE_FR	(ASCII*) "    Turbo CPU aleatoire    "
 #define RSC_BOX_TOOLS_RR_CPU_CODE_FR	(ASCII*) "    Turbo CPU circulaire   "
+#define RSC_BOX_TOOLS_USR_CPU_CODE_FR	(ASCII*) "    Turbo Choisir CPU...   "
 
 #define RSC_BOX_CONIC_TITLE_CODE_FR	(ASCII*) " Variations Coniques "
 #define RSC_BOX_CONIC_ITEM_1_CODE_FR	(ASCII*) "         Ellipsoide         "
@@ -627,6 +628,7 @@
 			"\t-u\tImprimer CPUID\n"			\
 			"\t-k\tImprimer les données du Kernel\n"	\
 			"\t-h\tAfficher ce message\n"			\
+			"\t-v\tAfficher le numéro de version\n"		\
 			"\nCode d'exécution:\n"				\
 				"0\tsi OK,\n"				\
 				"1\tsi des problèmes,\n"		\

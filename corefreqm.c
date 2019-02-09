@@ -227,48 +227,41 @@ void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 }
 
 RING_SLICE order_list[] = {
-	{
-		{.cmd=COREFREQ_ORDER_ATOMIC, .arg=COREFREQ_TOGGLE_ON},
-		 .func = Slice_Atomic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CRC32,  .arg=COREFREQ_TOGGLE_ON},
-		 .func = Slice_CRC32,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_ELLIPSOID},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLOID_ONE_SHEET},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLOID_TWO_SHEETS},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_ELLIPTICAL_CYLINDER},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_HYPERBOLIC_CYLINDER},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_CONIC,  .arg=CONIC_TWO_PARALLEL_PLANES},
-		 .func = Slice_Conic,
-		 .pattern = ALL_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_TURBO,  .arg=RAND_SMT},
-		 .func = Slice_Turbo,
-		 .pattern = RAND_SMT
-	},{
-		{.cmd=COREFREQ_ORDER_TURBO,  .arg=RR_SMT},
-		 .func = Slice_Turbo,
-		 .pattern = RR_SMT
-	},{
-		{},
-		 .func = NULL
-	}
+    {
+	{.cmd=COREFREQ_ORDER_ATOMIC, .hi=0, .lo=COREFREQ_TOGGLE_ON},
+	 .func = Slice_Atomic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CRC32,  .hi=0, .lo=COREFREQ_TOGGLE_ON},
+	 .func = Slice_CRC32, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_ELLIPSOID},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLOID_ONE_SHEET},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLOID_TWO_SHEETS},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_ELLIPTICAL_CYLINDER},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLIC_CYLINDER},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_TWO_PARALLEL_PLANES},
+	 .func = Slice_Conic, .pattern = ALL_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_TURBO,  .hi=0, .lo=RAND_SMT},
+	 .func = Slice_Turbo, .pattern = RAND_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_TURBO,  .hi=0, .lo=RR_SMT},
+	 .func = Slice_Turbo, .pattern = RR_SMT
+    },{
+	{.cmd=COREFREQ_ORDER_USR_CPU,.hi=0, .lo=USR_CPU},
+	 .func = Slice_Turbo, .pattern = USR_CPU
+    },{
+	{},
+	 .func = NULL
+    }
 };

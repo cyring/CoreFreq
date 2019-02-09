@@ -300,7 +300,13 @@ typedef struct
 
 	struct {
 		struct RING_CTRL {
+		    union {
 			unsigned long	arg;
+			struct {
+			unsigned short	lo,
+					hi;
+			};
+		    };
 			unsigned int	cmd;
 		} buffer[RING_SIZE];
 		unsigned int		head, tail;

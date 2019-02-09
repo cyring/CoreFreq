@@ -317,6 +317,9 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 		BITCLR(LOCKLESS, roomSched, cpu);
 		BITSET(LOCKLESS, roomSched, seek);
 		break;
+	case USR_CPU:
+		BITSET(LOCKLESS, roomSched, cpu);
+		break;
 	}
 }
 
@@ -3202,7 +3205,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
      while (porder->func != NULL)
      {
-      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.arg == ctrl.arg))
+      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.lo == ctrl.lo))
       {
        if (!BITVAL(Ref->Shm->Proc.Sync, 31))
        {
@@ -3211,7 +3214,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		if (BITVAL(Shutdown, 0))	/* SpinLock */
 			break;
 	}
-	SliceScheduling(Ref->Shm, Ref->Shm->Proc.Service.Core, porder->pattern);
+	SliceScheduling(Ref->Shm, ctrl.hi, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
 	Ref->Slice.arg  = porder->ctrl.arg;
@@ -3230,7 +3233,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
     break;
    }
     if (Quiet & 0x100)
-	printf("\tRING[%u](%x,%lx)\n", rid, ctrl.cmd, ctrl.arg);
+	printf("\tRING[%u](%x,%hx:%hx)\n", rid, ctrl.cmd, ctrl.hi, ctrl.lo);
   }
 }
 
@@ -3723,7 +3726,7 @@ int Shm_Manager(FD *fd, PROC *Proc)
 
 		/* Welcomes with brand and per CPU base clock.		*/
 		if (Quiet & 0x001)
-		 printf("CoreFreq Daemon."				\
+		 printf("CoreFreq Daemon "COREFREQ_VERSION		\
 			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n");
 		if (Quiet & 0x010)
 		 printf("\n"						\

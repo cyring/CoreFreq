@@ -3424,6 +3424,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_BOX_TOOLS_RR_CPU_CODE_FR
 		}
 	},
+	[RSC_BOX_TOOLS_USER_CPU] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_TOOLS_USR_CPU_CODE_EN,
+			[LOC_FR] = RSC_BOX_TOOLS_USR_CPU_CODE_FR
+		}
+	},
 	[RSC_BOX_CONIC_TITLE] = {
 		.Attr = vColor,
 		.Code = {

@@ -3474,6 +3474,37 @@ Window *CreateUncoreClock(unsigned long long id)
 	return(wUC);
 }
 
+Window *CreateSelectCPU(unsigned long long id)
+{
+	Window *wUSR = CreateWindow(wLayer, id,
+				1, CUMIN(Shm->Proc.CPU.Count,
+					(draw.Size.height-TOP_HEADER_ROW-2)),
+				13 + 27 + 3, TOP_HEADER_ROW + 1);
+    if (wUSR != NULL) {
+	ASCII *item = malloc(10 + 1);
+	unsigned int cpu;
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+		sprintf((char*) item, "    %02u    ", cpu);
+	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+		StoreTCell(wUSR, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
+	    else
+		StoreTCell(wUSR, CPU_SELECT|cpu,item,MakeAttr(WHITE,0,BLACK,0));
+	}
+	StoreWindow(wUSR,	.title, (char*) RSC(BOX_TOOLS_TITLE).CODE());
+
+	StoreWindow(wUSR,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wUSR,	.key.Down,	MotionDown_Win);
+	StoreWindow(wUSR,	.key.Up,	MotionUp_Win);
+	StoreWindow(wUSR,	.key.PgUp,	MotionPgUp_Win);
+	StoreWindow(wUSR,	.key.PgDw,	MotionPgDw_Win);
+	StoreWindow(wUSR,	.key.Home,	MotionTop_Win);
+	StoreWindow(wUSR,	.key.End,	MotionBottom_Win);
+
+	free(item);
+    }
+	return(wUSR);
+}
+
 Window *_CreateBox(	unsigned long long id,
 			Coordinate origin,
 			Coordinate select,
@@ -5013,11 +5044,12 @@ int Shortcut(SCANKEY *scan)
 					MakeAttr(YELLOW,0,BLACK,0):blankAttr,
 				BITVAL(Shm->Proc.Sync, 31) ?
 					BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
-	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(), stateAttr[0],BOXKEY_TOOLS_ATOMIC,
-	RSC(BOX_TOOLS_CRC32_BURN).CODE(), stateAttr[0], BOXKEY_TOOLS_CRC32,
-	RSC(BOX_TOOLS_CONIC_BURN).CODE(), stateAttr[0], BOXKEY_TOOLS_CONIC,
-	RSC(BOX_TOOLS_RANDOM_CPU).CODE(), stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
-    RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(), stateAttr[0],BOXKEY_TOOLS_TURBO_RR);
+	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0], BOXKEY_TOOLS_ATOMIC,
+	RSC(BOX_TOOLS_CRC32_BURN).CODE() ,stateAttr[0], BOXKEY_TOOLS_CRC32,
+	RSC(BOX_TOOLS_CONIC_BURN).CODE() ,stateAttr[0], BOXKEY_TOOLS_CONIC,
+	RSC(BOX_TOOLS_RANDOM_CPU).CODE() ,stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
+    RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(),stateAttr[0], BOXKEY_TOOLS_TURBO_RR,
+	RSC(BOX_TOOLS_USER_CPU).CODE()   ,stateAttr[0], BOXKEY_TOOLS_TURBO_CPU);
 
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
@@ -5029,14 +5061,20 @@ int Shortcut(SCANKEY *scan)
     break;
     case BOXKEY_TOOLS_ATOMIC:
     {
-      if (!RING_FULL(Shm->Ring[1]))
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_ATOMIC, COREFREQ_TOGGLE_ON);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = COREFREQ_TOGGLE_ON
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_ATOMIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CRC32:
     {
-      if (!RING_FULL(Shm->Ring[1]))
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CRC32, COREFREQ_TOGGLE_ON);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = COREFREQ_TOGGLE_ON
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CRC32, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC:
@@ -5071,50 +5109,83 @@ int Shortcut(SCANKEY *scan)
     break;
     case BOXKEY_TOOLS_CONIC0:
     {
-    if (!RING_FULL(Shm->Ring[1]))
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_ELLIPSOID);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_ELLIPSOID
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC1:
     {
-  if (!RING_FULL(Shm->Ring[1]))
-    RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLOID_ONE_SHEET);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_HYPERBOLOID_ONE_SHEET
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC2:
     {
-  if (!RING_FULL(Shm->Ring[1]))
-   RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLOID_TWO_SHEETS);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_HYPERBOLOID_TWO_SHEETS
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC3:
     {
-  if (!RING_FULL(Shm->Ring[1]))
-      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_ELLIPTICAL_CYLINDER);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_ELLIPTICAL_CYLINDER
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC4:
     {
-  if (!RING_FULL(Shm->Ring[1]))
-      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_HYPERBOLIC_CYLINDER);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_HYPERBOLIC_CYLINDER
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_CONIC5:
     {
-  if (!RING_FULL(Shm->Ring[1]))
-      RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, CONIC_TWO_PARALLEL_PLANES);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = CONIC_TWO_PARALLEL_PLANES
+				|(unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_TURBO_RND:
     {
-      if (!RING_FULL(Shm->Ring[1]))
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, RAND_SMT);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = RAND_SMT
+				| (unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+      }
     }
     break;
     case BOXKEY_TOOLS_TURBO_RR:
     {
-      if (!RING_FULL(Shm->Ring[1]))
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, RR_SMT);
+      if (!RING_FULL(Shm->Ring[1])) {
+	const unsigned long arg = RR_SMT
+				| (unsigned long)(Shm->Proc.Service.Core << 16);
+	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+      }
+    }
+    break;
+    case BOXKEY_TOOLS_TURBO_CPU:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateSelectCPU(scan->key), &winList);
+	else
+		SetHead(&winList, win);
     }
     break;
     case SCANKEY_k:
@@ -5137,18 +5208,24 @@ int Shortcut(SCANKEY *scan)
     break;
     default:
       if (scan->key & TRACK_TASK) {
-		Shm->SysGate.trackTask = scan->key & TRACK_MASK;
-		draw.Flag.layout = 1;
+	Shm->SysGate.trackTask = scan->key & TRACK_MASK;
+	draw.Flag.layout = 1;
       }
       else if (scan->key & CPU_ONLINE) {
-		const unsigned long cpu = scan->key & CPUID_MASK;
-		if (!RING_FULL(Shm->Ring[0]))
-			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
+	const unsigned long cpu = scan->key & CPU_MASK;
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
       }
       else if (scan->key & CPU_OFFLINE) {
-		const unsigned long cpu = scan->key & CPUID_MASK;
-		if (!RING_FULL(Shm->Ring[0]))
-			RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
+	const unsigned long cpu = scan->key & CPU_MASK;
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
+      }
+      else if (scan->key & CPU_SELECT) {
+	const unsigned short cpu = scan->key & CPU_MASK;
+	const unsigned long arg = USR_CPU | (unsigned long) (cpu << 16);
+	if (!RING_FULL(Shm->Ring[1]))
+		RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_USR_CPU, arg);
       }
       else {
 	CLOCK_ARG clockMod  = {.sllong = scan->key};
@@ -7430,6 +7507,8 @@ int main(int argc, char *argv[])
 	option = argv[1][1];
   if (option == 'h')
 	Help(RC_CMD_SYNTAX, appName);
+  else if (option == 'v')
+	printf(COREFREQ_VERSION"\n");
   else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
   {
