@@ -16,6 +16,7 @@ enum {
 	RSC_LAYOUT_MONITOR_INST,
 	RSC_LAYOUT_MONITOR_COMMON,
 	RSC_LAYOUT_MONITOR_TASKS,
+	RSC_LAYOUT_MONITOR_SLICE,
 	RSC_LAYOUT_RULLER_FREQUENCY,
 	RSC_LAYOUT_RULLER_FREQUENCY_AVG,
 	RSC_LAYOUT_RULLER_FREQUENCY_PKG,
@@ -132,6 +133,8 @@ enum {
 	RSC_CREATE_CORE_CLOCK_COND2,
 	RSC_CREATE_UNCORE_CLOCK_COND0,
 	RSC_CREATE_UNCORE_CLOCK_COND1,
+	RSC_CREATE_SELECT_CPU_COND0,
+	RSC_CREATE_SELECT_CPU_COND1,
 /* ASCII */
 	RSC_PROCESSOR_TITLE,
 	RSC_PROCESSOR,
@@ -419,6 +422,7 @@ enum {
 	RSC_TURBO_CLOCK_TITLE,
 	RSC_RATIO_CLOCK_TITLE,
 	RSC_UNCORE_CLOCK_TITLE,
+	RSC_SELECT_CPU_TITLE,
 	RSC_BOX_DISABLE_COND0,
 	RSC_BOX_DISABLE_COND1,
 	RSC_BOX_ENABLE_COND0,
@@ -768,6 +772,26 @@ extern RESOURCE_ST Resource[];
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
+}
+
+#define RSC_LAYOUT_MONITOR_SLICE_ATTR					\
+{									\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
+	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HRK,HRK,HRK,\
+	HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK	\
+}
+
+#define RSC_LAYOUT_MONITOR_SLICE_CODE					\
+{									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '	\
 }
 
 #define RSC_LAYOUT_RULLER_FREQUENCY_ATTR				\
@@ -1184,14 +1208,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
-
-#define RSC_LAYOUT_RULLER_SLICE_CODE					\
-	"--- Freq(MHz) ------ Cycles -- Instructions ------------ TSC"	\
-	" ------------ PMC0 -----------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"--------------------"
 
 #define RSC_LAYOUT_FOOTER_TECH_X86_ATTR					\
 {									\
@@ -1759,4 +1775,16 @@ extern RESOURCE_ST Resource[];
 {									\
 	LWK,HRK,HRK,HRK,HRK,LRK,HRK,HRK,LWK,HDK,HDK,HDK,LWK,LWK,	\
 	LWK,LWK,HWK,HWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK 	\
+}
+
+#define RSC_CREATE_SELECT_CPU_COND0_ATTR				\
+{									\
+	LWK,LWK,LWK,HWK,HWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,		\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK		\
+}
+
+#define RSC_CREATE_SELECT_CPU_COND1_ATTR				\
+{									\
+	LBK,LBK,LBK,HBK,HBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,		\
+	LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK		\
 }

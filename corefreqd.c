@@ -3217,7 +3217,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	SliceScheduling(Ref->Shm, ctrl.hi, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
-	Ref->Slice.arg  = porder->ctrl.arg;
+	Ref->Slice.arg  = porder->ctrl.hi;
 	Ref->Slice.pattern = porder->pattern;
 
 	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);

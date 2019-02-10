@@ -59,6 +59,10 @@ ATTRIBUTE Rsc_Layout_Monitor_Tasks_Attr[] = RSC_LAYOUT_MONITOR_TASKS_ATTR;
 ASCII	Rsc_Layout_Monitor_Tasks_Code_En[] = RSC_LAYOUT_MONITOR_TASKS_CODE;
 #define Rsc_Layout_Monitor_Tasks_Code_Fr Rsc_Layout_Monitor_Tasks_Code_En
 
+ATTRIBUTE Rsc_Layout_Monitor_Slice_Attr[] = RSC_LAYOUT_MONITOR_SLICE_ATTR;
+ASCII	Rsc_Layout_Monitor_Slice_Code_En[] = RSC_LAYOUT_MONITOR_SLICE_CODE;
+#define Rsc_Layout_Monitor_Slice_Code_Fr Rsc_Layout_Monitor_Slice_Code_En
+
 ATTRIBUTE Rsc_Layout_Ruller_Frequency_Attr[] = RSC_LAYOUT_RULLER_FREQUENCY_ATTR;
 ASCII Rsc_Layout_Ruller_Frequency_Code_En[] = RSC_LAYOUT_RULLER_FREQUENCY_CODE;
 #define Rsc_Layout_Ruller_Frequency_Code_Fr Rsc_Layout_Ruller_Frequency_Code_En
@@ -208,8 +212,8 @@ ASCII	Rsc_Layout_Power_Monitor_Code_En[] = RSC_LAYOUT_POWER_MONITOR_CODE;
 #define Rsc_Layout_Power_Monitor_Code_Fr Rsc_Layout_Power_Monitor_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruller_Slice_Attr[] = RSC_LAYOUT_RULLER_SLICE_ATTR;
-ASCII	Rsc_Layout_Ruller_Slice_Code_En[] = RSC_LAYOUT_RULLER_SLICE_CODE;
-#define Rsc_Layout_Ruller_Slice_Code_Fr Rsc_Layout_Ruller_Slice_Code_En
+ASCII	Rsc_Layout_Ruller_Slice_Code_En[] = RSC_LAYOUT_RULLER_SLICE_CODE_EN,
+	Rsc_Layout_Ruller_Slice_Code_Fr[] = RSC_LAYOUT_RULLER_SLICE_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Footer_Tech_x86_Attr[] = RSC_LAYOUT_FOOTER_TECH_X86_ATTR;
 ASCII	Rsc_Layout_Footer_Tech_x86_Code_En[] = RSC_LAYOUT_FOOTER_TECH_X86_CODE;
@@ -378,6 +382,11 @@ ATTRIBUTE Rsc_CreateUncoreClock_Cond_Attr[2][28] = {
 	RSC_CREATE_UNCORE_CLOCK_COND1_ATTR
 };
 
+ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[2][26] = {
+	RSC_CREATE_SELECT_CPU_COND0_ATTR,
+	RSC_CREATE_SELECT_CPU_COND1_ATTR
+};
+
 RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_PROC] = {
 		.Attr = Rsc_Layout_Header_Proc_Attr,
@@ -454,6 +463,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = Rsc_Layout_Monitor_Tasks_Code_En,
 			[LOC_FR] = Rsc_Layout_Monitor_Tasks_Code_Fr
+		}
+	},
+	[RSC_LAYOUT_MONITOR_SLICE] = {
+		.Attr = Rsc_Layout_Monitor_Slice_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Monitor_Slice_Code_En,
+			[LOC_FR] = Rsc_Layout_Monitor_Slice_Code_Fr
 		}
 	},
 	[RSC_LAYOUT_RULLER_FREQUENCY] = {
@@ -1065,6 +1081,14 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_CREATE_UNCORE_CLOCK_COND1] = {
 		.Attr = Rsc_CreateUncoreClock_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_CREATE_SELECT_CPU_COND0] = {
+		.Attr = Rsc_CreateSelectCPU_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_CREATE_SELECT_CPU_COND1] = {
+		.Attr = Rsc_CreateSelectCPU_Cond_Attr[1],
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 /* ASCII */
@@ -3068,6 +3092,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_UNCORE_CLOCK_TITLE_CODE_EN,
 			[LOC_FR] = RSC_UNCORE_CLOCK_TITLE_CODE_FR
+		}
+	},
+	[RSC_SELECT_CPU_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SELECT_CPU_TITLE_CODE_EN,
+			[LOC_FR] = RSC_SELECT_CPU_TITLE_CODE_FR
 		}
 	},
 	[RSC_BOX_DISABLE_COND0] = {

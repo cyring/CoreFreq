@@ -56,6 +56,17 @@ void CallWith_RDTSC_No_RDPMC(	SHM_STRUCT*,
 	Slice.Counter[2].INST= 0;					\
 	Slice.Delta.TSC = 0;						\
 	Slice.Delta.INST= 0;						\
+	Slice.Error = 0;						\
 })
+
+#define SLICE_XCHG	0x436f757274696174LLU
+#define SLICE_ATOM	0x436f726546726571LLU
+
+#define TURBO_LOOP	0x17fffffffUL
+
+#define CRC32_SRC	"CYRIL_INGENIERIE"
+#define CRC32_EXP	0x44f9d7bc
+
+#define CONIC_ERROR	1e-07
 
 #define UNUSED(expr) do { (void)(expr); } while (0)

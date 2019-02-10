@@ -3482,16 +3482,24 @@ Window *CreateSelectCPU(unsigned long long id)
 					(draw.Size.height-TOP_HEADER_ROW-2)),
 				13 + 27 + 3, TOP_HEADER_ROW + 1);
     if (wUSR != NULL) {
-	ASCII *item = malloc(10 + 1);
+	ASCII *item = malloc(26 + 1);
 	unsigned int cpu;
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-		sprintf((char*) item, "    %02u    ", cpu);
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+	{
+		sprintf((char*) item, 	"   %02u  %4u  %4u  %4u   ",
+					cpu,
+					Shm->Cpu[cpu].Topology.PackageID,
+					Shm->Cpu[cpu].Topology.CoreID,
+					Shm->Cpu[cpu].Topology.ThreadID);
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		StoreTCell(wUSR, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
+		StoreTCell(wUSR, SCANKEY_NULL,
+				item, RSC(CREATE_SELECT_CPU_COND1).ATTR());
 	    else
-		StoreTCell(wUSR, CPU_SELECT|cpu,item,MakeAttr(WHITE,0,BLACK,0));
+		StoreTCell(wUSR, CPU_SELECT | cpu,
+				item, RSC(CREATE_SELECT_CPU_COND0).ATTR());
 	}
-	StoreWindow(wUSR,	.title, (char*) RSC(BOX_TOOLS_TITLE).CODE());
+	StoreWindow(wUSR,	.title, (char*) RSC(SELECT_CPU_TITLE).CODE());
+	StoreWindow(wUSR,	.color[1].title, wUSR->hook.color[1].border);
 
 	StoreWindow(wUSR,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wUSR,	.key.Down,	MotionDown_Win);
@@ -5493,6 +5501,23 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return(0);
 }
 
+CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	LayerDeclare(	LAYOUT_MONITOR_SLICE, 95,
+			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			hMon0);
+
+	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
+			hMon0.length, hMon0.attr, hMon0.code);
+
+	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
+			hMon0.origin.row,
+			(draw.Size.width - hMon0.length),
+			hSpace,
+			MakeAttr(BLACK, 0, BLACK, 1));
+	return(0);
+}
+
 CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_RULLER_FREQUENCY, draw.Size.width,
@@ -6287,14 +6312,27 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = sprintf(	buffer,
-			"%7.2f "					\
-			"%16llu%16llu%18llu%18llu",
-			CFlop->Relative.Freq,
-			Shm->Cpu[cpu].Slice.Delta.TSC,
-			Shm->Cpu[cpu].Slice.Delta.INST,
-			Shm->Cpu[cpu].Slice.Counter[1].TSC,
-			Shm->Cpu[cpu].Slice.Counter[1].INST);
+	if (Shm->Cpu[cpu].Slice.Error > 0) {
+		len = sprintf(	buffer,
+				"%7.2f "				\
+				"%16llu%16llu%18llu%18llu%18llu",
+				CFlop->Relative.Freq,
+				Shm->Cpu[cpu].Slice.Delta.TSC,
+				Shm->Cpu[cpu].Slice.Delta.INST,
+				Shm->Cpu[cpu].Slice.Counter[1].TSC,
+				Shm->Cpu[cpu].Slice.Counter[1].INST,
+				Shm->Cpu[cpu].Slice.Error);
+	} else {
+		len = sprintf(	buffer,
+				"%7.2f "				\
+				"%16llu%16llu%18llu%18llu%.*s",
+				CFlop->Relative.Freq,
+				Shm->Cpu[cpu].Slice.Delta.TSC,
+				Shm->Cpu[cpu].Slice.Delta.INST,
+				Shm->Cpu[cpu].Slice.Counter[1].TSC,
+				Shm->Cpu[cpu].Slice.Counter[1].INST,
+				18, hSpace);
+	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
@@ -6665,7 +6703,7 @@ VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Tasks,
 	Layout_Monitor_Common,
 	Layout_Monitor_Common,
-	Layout_Monitor_Common
+	Layout_Monitor_Slice
 };
 
 VIEW_FUNC Matrix_Layout_Ruller[VIEW_SIZE] = {

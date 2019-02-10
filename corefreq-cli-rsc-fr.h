@@ -140,6 +140,14 @@
 	'M','e','m','o','i','r','e'					\
 }
 
+#define RSC_LAYOUT_RULLER_SLICE_CODE_FR 				\
+	"--- Freq(MHz) ------ Cycles -- Instructions ------------ TSC"	\
+	" ------------ PMC0 ---------- Erreur -----------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
 	'T','a','c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
@@ -496,6 +504,8 @@
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
 #define RSC_UNCORE_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Uncore Freq. "
+
+#define RSC_SELECT_CPU_TITLE_CODE_FR	(ASCII*) " CPU   Pkg  Core Thread "
 
 #define RSC_BOX_DISABLE_COND0_CODE_FR					\
 			(ASCII*) "             Desactiver             "

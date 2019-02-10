@@ -122,22 +122,28 @@ void Slice_NOP(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 
 void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	unsigned long long xchg = 0x436f757274696174LLU;
-	unsigned long long atom = 0x436f726546726571LLU;
-
 	__asm__ volatile
 	(
+		"movq %[_atom], %%r14"	"\n\t"
+		"movq %[_xchg], %%r15"	"\n\t"
+		"movq %[_loop], %%rcx"	"\n\t"
+		"movq %[i_err], %%r11"	"\n\t"
 		"1:"			"\n\t"
-		"push	%0"		"\n\t"
-		"push	%1"		"\n\t"
-		"xchg	%0,%1"		"\n\t"
-		"pop	%1"		"\n\t"
-		"pop	%0"		"\n\t"
-		"loop	1b"
-		: "=r"(xchg)
-		: "r" (*(volatile long long *) &atom), "r" (xchg),
-		  "c" (arg)
-		:
+		"movq	%%r14, %%r12"	"\n\t"
+		"movq	%%r15, %%r13"	"\n\t"
+		"xchg	%%r12, %%r13"	"\n\t"
+		"cmpq	%%r13, %%r14"	"\n\t"
+		"jz 2f"			"\n\t"
+		"incq	%%r11"		"\n\t"
+		"2:"			"\n\t"
+		"loop	1b"		"\n\t"
+		"movq	%%r11, %[o_err]"
+		: [o_err] "=m" (Shm->Cpu[cpu].Slice.Error)
+		: [_loop] "m" (arg),
+		  [_atom] "i" (SLICE_ATOM),
+		  [_xchg] "i" (SLICE_XCHG),
+		  [i_err] "m" (Shm->Cpu[cpu].Slice.Error)
+		: "memory", "%rcx", "%r11", "%r12", "%r13", "%r14", "%r15"
 	);
 }
 
@@ -178,10 +184,11 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 
 void Slice_CRC32(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	unsigned char *data = (unsigned char *) "CYRIL_INGENIERIE";
+	unsigned char *data = (unsigned char *) CRC32_SRC;
 	unsigned int len = 16;
 
-	CRC32vASM(data, len);
+	if (CRC32vASM(data, len) != CRC32_EXP)
+		Shm->Cpu[cpu].Slice.Error++ ;
 }
 
 /*
@@ -208,7 +215,7 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 		{.a=-0.5 , .b=+0.0, .c=+0.75, .k=  +500.0},
 		{.a=+0.0 , .b=+0.0, .c=+1.0 , .k= +3000.0}
 	};
-	double X, Y, Z, Q;
+	double X, Y, Z, Q, k;
 
 	const double step = (double) Shm->Proc.CPU.Count;
 
@@ -217,48 +224,51 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 		Q=(p[v].k - p[v].a * pow(X,2.0) - p[v].b * pow(Y,2.0)) / p[v].c;
 		Z = sqrt(Q);
 
-		UNUSED(Z);
+		k = p[v].a*pow(X,2.0) + p[v].b*pow(Y,2.0) + p[v].c*pow(Z,2.0);
+
+		if (fabs(k - p[v].k) > CONIC_ERROR)
+			Shm->Cpu[cpu].Slice.Error++ ;
 	    }
 }
 
 void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
-	Slice_Atomic(Shm, cpu, 0x17fffffff);
+	Slice_Atomic(Shm, cpu, TURBO_LOOP);
 }
 
 RING_SLICE order_list[] = {
     {
-	{.cmd=COREFREQ_ORDER_ATOMIC, .hi=0, .lo=COREFREQ_TOGGLE_ON},
+	{.cmd=COREFREQ_ORDER_ATOMIC, .hi=1, .lo=COREFREQ_TOGGLE_ON},
 	 .func = Slice_Atomic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CRC32,  .hi=0, .lo=COREFREQ_TOGGLE_ON},
+	{.cmd=COREFREQ_ORDER_CRC32,  .hi=1, .lo=COREFREQ_TOGGLE_ON},
 	 .func = Slice_CRC32, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_ELLIPSOID},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_ELLIPSOID},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLOID_ONE_SHEET},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_HYPERBOLOID_ONE_SHEET},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLOID_TWO_SHEETS},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_HYPERBOLOID_TWO_SHEETS},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_ELLIPTICAL_CYLINDER},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_ELLIPTICAL_CYLINDER},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_HYPERBOLIC_CYLINDER},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_HYPERBOLIC_CYLINDER},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_CONIC,  .hi=0, .lo=CONIC_TWO_PARALLEL_PLANES},
+	{.cmd=COREFREQ_ORDER_CONIC,  .hi=1, .lo=CONIC_TWO_PARALLEL_PLANES},
 	 .func = Slice_Conic, .pattern = ALL_SMT
     },{
-	{.cmd=COREFREQ_ORDER_TURBO,  .hi=0, .lo=RAND_SMT},
+	{.cmd=COREFREQ_ORDER_TURBO,  .hi=1, .lo=RAND_SMT},
 	 .func = Slice_Turbo, .pattern = RAND_SMT
     },{
-	{.cmd=COREFREQ_ORDER_TURBO,  .hi=0, .lo=RR_SMT},
+	{.cmd=COREFREQ_ORDER_TURBO,  .hi=1, .lo=RR_SMT},
 	 .func = Slice_Turbo, .pattern = RR_SMT
     },{
-	{.cmd=COREFREQ_ORDER_USR_CPU,.hi=0, .lo=USR_CPU},
+	{.cmd=COREFREQ_ORDER_USR_CPU,.hi=1, .lo=USR_CPU},
 	 .func = Slice_Turbo, .pattern = USR_CPU
     },{
 	{},

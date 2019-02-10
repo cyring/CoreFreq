@@ -145,6 +145,8 @@ typedef struct
 		unsigned long long	TSC,
 					INST;
 		} Counter[3];
+
+		unsigned long long	Error;
 	} Slice;
 } CPU_STRUCT;
 
