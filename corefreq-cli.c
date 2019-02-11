@@ -3486,7 +3486,7 @@ Window *CreateSelectCPU(unsigned long long id)
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-		sprintf((char*) item, 	"   %02u  %4u  %4u  %4u   ",
+		sprintf((char*) item, 	"   %02u  %4d%6d%6d   ",
 					cpu,
 					Shm->Cpu[cpu].Topology.PackageID,
 					Shm->Cpu[cpu].Topology.CoreID,
@@ -5441,7 +5441,7 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
-			(draw.Size.width - hMon0.length),
+			abs(draw.Size.width - hMon0.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	return(0);
@@ -5458,7 +5458,7 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 
 	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
-			(draw.Size.width - hMon0.length),
+			abs(draw.Size.width - hMon0.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	return(0);
@@ -5475,7 +5475,7 @@ CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
-			(draw.Size.width - hMon0.length),
+			abs(draw.Size.width - hMon0.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	return(0);
@@ -5512,7 +5512,7 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
 			hMon0.origin.row,
-			(draw.Size.width - hMon0.length),
+			abs(draw.Size.width - hMon0.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	return(0);
@@ -5913,7 +5913,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
-			(draw.Size.width - hTech0.length-hTech1.length),
+			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	} else {
@@ -5962,7 +5962,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
-			(draw.Size.width - hTech0.length-hTech1.length),
+			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
 	  }
