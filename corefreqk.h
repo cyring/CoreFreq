@@ -25,7 +25,8 @@
 		:							\
 		: "c" (_cnt),						\
 		  "a" ((unsigned int) _val & 0xFFFFFFFF),		\
-		  "d" ((unsigned int) (_val >> 32))			\
+		  "d" ((_val > 0xFFFFFFFF) ?				\
+			(unsigned int) (_val >> 32) : 0)		\
 	);
 
 #define RDMSR(_data, _reg)						\
