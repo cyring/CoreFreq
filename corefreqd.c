@@ -3800,6 +3800,7 @@ int help(char *appName)
 		"\t-gon\t\tEnable SysGate\n"				\
 		"\t-goff\t\tDisable SysGate\n"				\
 		"\t-h\t\tPrint out this message\n"			\
+		"\t-v\t\tPrint the version number\n"			\
 		"\nExit status:\n"					\
 			"0\tif OK,\n"					\
 			"1\tif problems,\n"				\
@@ -3839,6 +3840,9 @@ int main(int argc, char *argv[])
 					SysGateStartUp = 1;
 			  else
 					rc = help(appName);
+				break;
+			case 'v':
+				rc = !!printf(COREFREQ_VERSION"\n");
 				break;
 			case 'h':
 			default:
