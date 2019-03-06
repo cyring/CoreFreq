@@ -4705,8 +4705,9 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-	{				/* Row indexes */
-		const CSINT thisCST[] = {5, 4, 3, 2, -1, -1, 1, 0};
+		{			/* Row indexes (reverse order)
+					C0 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 */
+		const CSINT thisCST[] = {8, 7, 6, 5,-1,-1, 4, 3, 2, 1, 0};
 		const Coordinate origin = {
 		.col = (draw.Size.width - (44 - 17)) / 2,
 		.row = TOP_HEADER_ROW + 2
@@ -4718,12 +4719,15 @@ int Shortcut(SCANKEY *scan)
 
 		Window *wBox = CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_PACKAGE_STATE_LIMIT_TITLE).CODE(),
-	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
-	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
-	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
-	(ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
-	(ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
-	(ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+/* 0 */ (ASCII*)"            C10            ", stateAttr[0], BOXKEY_PKGCST_C10,
+/* 1 */ (ASCII*)"             C9            ", stateAttr[0], BOXKEY_PKGCST_C9,
+/* 2 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_PKGCST_C8,
+/* 3 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
+/* 4 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
+/* 5 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
+/* 6 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
+/* 7 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
+/* 8 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
 			TCellAt(wBox, 0, select.row).attr[12] = 	\
@@ -4741,6 +4745,9 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_PKGCST_C10:
+    case BOXKEY_PKGCST_C9:
+    case BOXKEY_PKGCST_C8:
     case BOXKEY_PKGCST_C7:
     case BOXKEY_PKGCST_C6:
     case BOXKEY_PKGCST_C3:
@@ -4798,8 +4805,9 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-	{				/* Row indexes */
-		const CSINT thisCST[] = {-1, -1, -1, 3, 2, -1, 1, 0};
+	{				/* Row indexes (reverse order)
+					 C0 C1 C2 C3 C4 C5 C6 C7 C8	*/
+		const CSINT thisCST[] = {-1,-1,-1, 4, 3,-1, 2, 1, 0};
 		const Coordinate origin = {
 			.col = (draw.Size.width - (44 - 17)) / 2,
 			.row = TOP_HEADER_ROW + 3
@@ -4811,10 +4819,11 @@ int Shortcut(SCANKEY *scan)
 
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_MWAIT_MAX_STATE_TITLE).CODE(),
-	(ASCII*)"             C7            ", stateAttr[0], BOXKEY_IORCST_C7,
-	(ASCII*)"             C6            ", stateAttr[0], BOXKEY_IORCST_C6,
-	(ASCII*)"             C4            ", stateAttr[0], BOXKEY_IORCST_C4,
-	(ASCII*)"             C3            ", stateAttr[0], BOXKEY_IORCST_C3);
+/* 0 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_IORCST_C8,
+/* 1 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_IORCST_C7,
+/* 2 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_IORCST_C6,
+/* 3 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_IORCST_C4,
+/* 4 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_IORCST_C3);
 
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
@@ -4837,6 +4846,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IORCST_C4:
     case BOXKEY_IORCST_C6:
     case BOXKEY_IORCST_C7:
+    case BOXKEY_IORCST_C8:
     {
 	const unsigned long newCST = (scan->key - BOXKEY_IORCST_C0) >> 4;
 	if (!RING_FULL(Shm->Ring[0]))

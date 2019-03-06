@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.41.3"
+#define COREFREQ_VERSION	"1.41.4"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -100,6 +100,13 @@ enum CHIPSET {
 	IC_K8,
 	IC_ZEN,
 	CHIPSETS
+};
+
+enum CSTATES_CLASS {
+	CSTATES_NHM	= 0x1,
+	CSTATES_SNB	= 0x2,
+	CSTATES_ULT	= 0x4,
+	CSTATES_SKL	= 0x6
 };
 
 enum HYPERVISOR {

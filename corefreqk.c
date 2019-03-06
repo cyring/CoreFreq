@@ -3906,7 +3906,7 @@ void PowerThermal(CORE *Core)
   BITSET(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 }
 
-void Intel_CStatesConfiguration(int encoding, CORE *Core)
+void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE *Core)
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
@@ -3928,7 +3928,7 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 			ToggleFeature = 1;
 		break;
 	}
-	if (encoding == 0x062A) {
+	if ((encoding == CSTATES_SNB) || (encoding == CSTATES_SKL)) {
 		switch (C3U_Enable) {
 			case COREFREQ_TOGGLE_OFF:
 			case COREFREQ_TOGGLE_ON:
@@ -3950,14 +3950,16 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 	}
 	if (CStateConfig.CFG_Lock == 0) {
 		ToggleFeature = 0;
-		if (encoding == 0x061A) { /* NHM encoding compatibility. */
-			switch (IOMWAIT_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-				ToggleFeature = 1;
-				break;
-			}
+
+		switch (IOMWAIT_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
+			ToggleFeature = 1;
+			break;
+		}
+
+		if (encoding == CSTATES_NHM) {	/* NHM encoding */
 			switch (PkgCStateLimit) {
 			case 7:
 				CStateConfig.Pkg_CStateLimit = 0b100;
@@ -3980,8 +3982,13 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 				ToggleFeature = 1;
 				break;
 			}
-		} else if (encoding == 0x062A) { /*SNB encoding compatibility*/
+		} else if ((encoding == CSTATES_SNB)	/* SNB encoding */
+			|| (encoding == CSTATES_SKL)) { /* SKL encoding */
 			switch (PkgCStateLimit) {
+			case 8:
+				CStateConfig.Pkg_CStateLimit = 0b110;
+				ToggleFeature = 1;
+				break;
 			case 7:
 				CStateConfig.Pkg_CStateLimit = 0b100;
 				ToggleFeature = 1;
@@ -4004,7 +4011,7 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 				ToggleFeature = 1;
 				break;
 			}
-		} else if (encoding == 0x0645) {/* HSW_ULT compatibility */
+		} else if (encoding == CSTATES_ULT) {	/* Haswell ULT */
 			switch (PkgCStateLimit) {
 			case 10:
 				CStateConfig.Pkg_CStateLimit = 0b1000;
@@ -4060,7 +4067,7 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
-	if (encoding == 0x061A) {
+	if (encoding == CSTATES_NHM) {
 		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
 		case 0b100:
 			Core->Query.CStateLimit = 7;
@@ -4079,7 +4086,7 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 			Core->Query.CStateLimit = 0;
 			break;
 		}
-	} else if (encoding == 0x062A) {
+	} else if ((encoding == CSTATES_SNB) || (encoding == CSTATES_SKL)) {
 		if (CStateConfig.C3undemotion)
 			BITSET(LOCKLESS, Proc->C3U, Core->Bind);
 		else
@@ -4091,6 +4098,9 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 			BITCLR(LOCKLESS, Proc->C1U, Core->Bind);
 
 		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
+		case 0b110:
+			Core->Query.CStateLimit = 8;
+			break;
 		case 0b101:
 		case 0b100:
 			Core->Query.CStateLimit = 7;
@@ -4109,7 +4119,7 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 			Core->Query.CStateLimit = 0;
 			break;
 		}
-	} else if (encoding == 0x0645) {
+	} else if (encoding == CSTATES_ULT) {
 		if (CStateConfig.C3undemotion)
 			BITSET(LOCKLESS, Proc->C3U, Core->Bind);
 		else
@@ -4154,10 +4164,23 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 	BITSET(LOCKLESS, Proc->C3U_Mask, Core->Bind);
 	BITSET(LOCKLESS, Proc->C1U_Mask, Core->Bind);
 
+
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
+/*TODO: Atom (Avoton, Goldmont, Merrifield, Moorefield, SoFIA), Silvermont
+	Not Atom Airmont [06_4Ch]
+
+	0b100: C4	[ATOM, SVM]
+	0b110: C6	[ATOM, SVM]
+	0b111: C7	[ATOM, SVM]
+*/
 
 	if (CStateConfig.IO_MWAIT_Redir) {
 		switch (CStateIORedir) {
+		case 8:
+			CState_IO_MWAIT.CStateRange = 0b011;
+			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			break;
 		case 7:
 			CState_IO_MWAIT.CStateRange = 0b010;
 			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
@@ -4177,6 +4200,9 @@ void Intel_CStatesConfiguration(int encoding, CORE *Core)
 	}
 
 	switch (CState_IO_MWAIT.CStateRange) {
+	case 0b011:
+		Core->Query.CStateInclude = 8;
+		break;
 	case 0b010:
 		Core->Query.CStateInclude = 7;
 		break;
@@ -4448,7 +4474,7 @@ static void PerCore_Nehalem_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
-		Intel_CStatesConfiguration(0x061A, Core);
+		Intel_CStatesConfiguration(CSTATES_NHM, Core);
 	}
 
 	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
@@ -4476,7 +4502,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
-		Intel_CStatesConfiguration(0x062A, Core);
+		Intel_CStatesConfiguration(CSTATES_SNB, Core);
 	}
 
 	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
@@ -4505,7 +4531,7 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
-		Intel_CStatesConfiguration(0x062A, Core);
+		Intel_CStatesConfiguration(CSTATES_SNB, Core);
 	}
 
 	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
@@ -4533,7 +4559,35 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
-		Intel_CStatesConfiguration(0x0645, Core);
+		Intel_CStatesConfiguration(CSTATES_ULT, Core);
+	}
+
+	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);
+	BITSET(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
+
+	PowerThermal(Core);
+
+	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_Skylake_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	SystemRegisters(Core);
+
+	Intel_VirtualMachine(Core);
+
+	Intel_Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	SpeedStep_Technology(Core);
+	TurboBoost_Technology(Core);
+	Query_Intel_C1E(Core);
+
+	if (Core->T.ThreadID == 0) {				/* Per Core */
+		Intel_CStatesConfiguration(CSTATES_SKL, Core);
 	}
 
 	BITSET(LOCKLESS, Proc->CC6_Mask, Core->Bind);

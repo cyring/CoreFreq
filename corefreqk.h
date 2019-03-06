@@ -765,7 +765,7 @@ extern void Query_Broadwell(void) ;
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
 
-#define     PerCore_Skylake_Query PerCore_SandyBridge_Query
+static void PerCore_Skylake_Query(void *arg) ;
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
 extern void InitTimer_Skylake(unsigned int cpu) ;
@@ -773,7 +773,7 @@ static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
 extern void Query_Skylake_X(void) ;
-#define     PerCore_Skylake_X_Query PerCore_SandyBridge_Query
+#define     PerCore_Skylake_X_Query PerCore_Skylake_Query
 static void Start_Skylake_X(void *arg) ;
 static void Stop_Skylake_X(void *arg) ;
 extern void InitTimer_Skylake_X(unsigned int cpu) ;
