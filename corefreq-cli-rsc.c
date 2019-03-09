@@ -3409,6 +3409,27 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR
 		}
 	},
+	[RSC_BOX_POWER_POLICY_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_POWER_POLICY_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_POWER_POLICY_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_POWER_POLICY_LOW] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_POWER_POLICY_LOW_CODE_EN,
+			[LOC_FR] = RSC_BOX_POWER_POLICY_LOW_CODE_FR
+		}
+	},
+	[RSC_BOX_POWER_POLICY_HIGH] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_POWER_POLICY_HIGH_CODE_EN,
+			[LOC_FR] = RSC_BOX_POWER_POLICY_HIGH_CODE_FR
+		}
+	},
 	[RSC_BOX_TOOLS_TITLE] = {
 		.Attr = vColor,
 		.Code = {

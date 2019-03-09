@@ -1478,12 +1478,12 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	int bix;
 /* Section Mark */
-	bix = Shm->Proc.Technology.ODCM == 1 ? 3 : 1;
-	PUT(BOXKEY_ODCM, attrib[bix], width, 2,
+	bix = (Shm->Proc.Technology.ODCM == 1);
+    if (bix) {
+	PUT(BOXKEY_ODCM, attrib[3], width, 2,
 		"%s%.*sODCM   <%7s>", RSC(POWER_THERMAL_ODCM).CODE(),
 		width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
-		Shm->Proc.Technology.ODCM ?
-			RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
+		RSC(ENABLE).CODE());
 
 	PUT(BOXKEY_DUTYCYCLE, attrib[0], width, 3,
 		"%s%.*s<%6.2f%%>", RSC(POWER_THERMAL_DUTY).CODE(),
@@ -1491,9 +1491,32 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
 	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
+    } else {
+	PUT(BOXKEY_ODCM, attrib[1], width, 2,
+		"%s%.*sODCM   <%7s>", RSC(POWER_THERMAL_ODCM).CODE(),
+		width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
+		RSC(DISABLE).CODE());
 
-	bix = Shm->Proc.Technology.PowerMgmt == 1 ? 3 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s[%6.2f%%]", RSC(POWER_THERMAL_DUTY).CODE(),
+	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
+	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
+		6.25f : 12.5f
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
+    }
+	bix = (Shm->Proc.Technology.PowerMgmt == 1);
+    if (bix) {
+	PUT(SCANKEY_NULL, attrib[3], width, 2,
+		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
+		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
+		Unlock[Shm->Proc.Technology.PowerMgmt]);
+
+	PUT(BOXKEY_PWR_POLICY, attrib[0], width, 3,
+		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
+	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
 		Unlock[Shm->Proc.Technology.PowerMgmt]);
@@ -1502,6 +1525,7 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+    }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTjMax   [%3u:%3u]", RSC(POWER_THERMAL_TJMAX).CODE(),
@@ -4901,7 +4925,7 @@ int Shortcut(SCANKEY *scan)
 		const CSINT maxCM = 7 << Shm->Cpu[Shm->Proc.Service.Core] \
 					.PowerThermal.DutyCycle.Extended;
 		const Coordinate origin = {
-			.col = (draw.Size.width - (44 - 17)) / 2,
+			.col = (draw.Size.width - 27) / 2,
 			.row = TOP_HEADER_ROW + 3
 		}, select = {
 			.col = 0, .row = (
@@ -4966,6 +4990,59 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_PWR_POLICY:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
+		.row = TOP_HEADER_ROW + 2
+	    }, select = {
+		.col = 0,
+		.row = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy
+	    };
+		Window *wBox = CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
+	RSC(BOX_POWER_POLICY_LOW).CODE()  , stateAttr[0], BOXKEY_PWR_POL00,
+	(ASCII*)"            1           ", stateAttr[0], BOXKEY_PWR_POL01,
+	(ASCII*)"            2           ", stateAttr[0], BOXKEY_PWR_POL02,
+	(ASCII*)"            3           ", stateAttr[0], BOXKEY_PWR_POL03,
+	(ASCII*)"            4           ", stateAttr[0], BOXKEY_PWR_POL04,
+	(ASCII*)"            5           ", stateAttr[0], BOXKEY_PWR_POL05,
+	(ASCII*)"            6           ", stateAttr[0], BOXKEY_PWR_POL06,
+	(ASCII*)"            7           ", stateAttr[0], BOXKEY_PWR_POL07,
+	(ASCII*)"            8           ", stateAttr[0], BOXKEY_PWR_POL08,
+	(ASCII*)"            9           ", stateAttr[0], BOXKEY_PWR_POL09,
+	(ASCII*)"           10           ", stateAttr[0], BOXKEY_PWR_POL10,
+	(ASCII*)"           11           ", stateAttr[0], BOXKEY_PWR_POL11,
+	(ASCII*)"           12           ", stateAttr[0], BOXKEY_PWR_POL12,
+	(ASCII*)"           13           ", stateAttr[0], BOXKEY_PWR_POL13,
+	(ASCII*)"           14           ", stateAttr[0], BOXKEY_PWR_POL14,
+	RSC(BOX_POWER_POLICY_HIGH).CODE() , stateAttr[0], BOXKEY_PWR_POL15);
+	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
+		TCellAt(wBox, 0, select.row).attr[10] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = 	\
+		TCellAt(wBox, 0, select.row).attr[12] = 	\
+		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[14] = 	\
+		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 8] = '<';
+		if (select.row > 9)
+			TCellAt(wBox, 0, select.row).item[15] = '>';
+		else
+			TCellAt(wBox, 0, select.row).item[16] = '>';
+
+		AppendWindow(wBox, &winList);
+	    } else
+		SetHead(&winList, win);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_ODCM_DC00:
     case BOXKEY_ODCM_DC01:
     case BOXKEY_ODCM_DC02:
@@ -4985,6 +5062,28 @@ int Shortcut(SCANKEY *scan)
 	const unsigned long newDC = (scan->key - BOXKEY_ODCM_DC00) >> 4;
 	if (!RING_FULL(Shm->Ring[0]))
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM_DC, newDC);
+    }
+    break;
+    case BOXKEY_PWR_POL00:
+    case BOXKEY_PWR_POL01:
+    case BOXKEY_PWR_POL02:
+    case BOXKEY_PWR_POL03:
+    case BOXKEY_PWR_POL04:
+    case BOXKEY_PWR_POL05:
+    case BOXKEY_PWR_POL06:
+    case BOXKEY_PWR_POL07:
+    case BOXKEY_PWR_POL08:
+    case BOXKEY_PWR_POL09:
+    case BOXKEY_PWR_POL10:
+    case BOXKEY_PWR_POL11:
+    case BOXKEY_PWR_POL12:
+    case BOXKEY_PWR_POL13:
+    case BOXKEY_PWR_POL14:
+    case BOXKEY_PWR_POL15:
+    {
+	const unsigned long newPolicy = (scan->key - BOXKEY_PWR_POL00) >> 4;
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
     }
     break;
     case BOXKEY_CLR_THM_SENSOR:

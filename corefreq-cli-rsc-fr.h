@@ -599,6 +599,11 @@
 #define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR				\
 				(ASCII*) "           Reserve         "
 
+#define RSC_BOX_POWER_POLICY_TITLE_CODE_FR	(ASCII*) " Regle energetique "
+
+#define RSC_BOX_POWER_POLICY_LOW_CODE_FR  (ASCII*) "            0       BAS "
+#define RSC_BOX_POWER_POLICY_HIGH_CODE_FR (ASCII*) "           15      HAUT "
+
 #define RSC_BOX_TOOLS_TITLE_CODE_FR	(ASCII*) " Outils "
 #define RSC_BOX_TOOLS_STOP_CODE_FR	(ASCII*) "          ARRETER          "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_FR	(ASCII*) "       Stress Atomic       "

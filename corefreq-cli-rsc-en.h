@@ -598,6 +598,12 @@
 #define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_EN				\
 				(ASCII*) "          Reserved         "
 
+
+#define RSC_BOX_POWER_POLICY_TITLE_CODE_EN	(ASCII*) " Energy Policy "
+
+#define RSC_BOX_POWER_POLICY_LOW_CODE_EN  (ASCII*) "            0       LOW "
+#define RSC_BOX_POWER_POLICY_HIGH_CODE_EN (ASCII*) "           15      HIGH "
+
 #define RSC_BOX_TOOLS_TITLE_CODE_EN	(ASCII*) " Tools "
 #define RSC_BOX_TOOLS_STOP_CODE_EN	(ASCII*) "            STOP           "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_EN	(ASCII*) "        Atomic Burn        "

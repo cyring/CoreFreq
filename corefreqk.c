@@ -3779,7 +3779,7 @@ void PowerThermal(CORE *Core)
 	{_Core_Conroe_616,	0, 1},
 	{_Core_Penryn,		0, 1},
 	{_Core_Dunnington,	0, 1},
-	{_Atom_Bonnell,		0, 1},	/* 06_1C */
+	{_Atom_Bonnell ,	0, 1},	/* 06_1C */
 	{_Atom_Silvermont,	0, 1},	/* 06_26 */
 	{_Atom_Lincroft,	0, 1},	/* 06_27 */
 	{_Atom_Clovertrail,	0, 1},	/* 06_35 */
@@ -3794,13 +3794,28 @@ void PowerThermal(CORE *Core)
 	{_Nehalem_Lynnfield,	1, 1},	/* 06_1E */
 	{_Nehalem_MB,		1, 1},	/* 06_1F */
 	{_Nehalem_EX,		1, 1},	/* 06_2E */
-	{_Westmere,		0, 1},	/* 06_25 */
-	{_Westmere_EP,		0, 1},	/* 06_2C */
-	{_Westmere_EX,		0, 1},	/* 06_2F */
+	{_Westmere,		1, 1},	/* 06_25 */
+	{_Westmere_EP,		1, 1},	/* 06_2C */
+	{_Westmere_EX,		1, 1},	/* 06_2F */
 	{_SandyBridge,		1, 1},	/* 06_2A */
 	{_SandyBridge_EP,	1, 1},	/* 06_2D */
+	{_IvyBridge_EP ,	1, 1},	/* 06_3E */
+	{_Haswell_DT,		1, 1},	/* 06_3C */
+	{_Haswell_EP,		1, 1},	/* 06_3F */
+	{_Haswell_ULT,		1, 1},	/* 06_45 */
+	{_Haswell_ULX,		1, 1},	/* 06_46 */
+	{_Broadwell,		1, 1},	/* 06_3D */
+	{_Broadwell_D,		1, 1},	/* 06_56 */
+	{_Broadwell_H,		1, 1},	/* 06_47 */
+	{_Broadwell_EP ,	1, 1},	/* 06_4F */
+	{_Skylake_UY,		1, 1},	/* 06_4E */
+	{_Skylake_S,		1, 1},	/* 06_5E */
+	{_Skylake_X,		1, 1},	/* 06_55 */
 	{_Xeon_Phi,		0, 1},	/* 06_57 */
+	{_Kabylake_UY,		1, 1},	/* 06_8E */
+	{_Cannonlake,		1, 1},	/* 06_66 */
 	{_Geminilake,		1, 0},	/* 06_7A */
+	{_Icelake_UY,		1, 1},	/* 06_7E */
   };
   unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
   for (id = 0; id < ids; id++) {
@@ -7902,6 +7917,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	ODCM_DutyCycle = arg;
 	Controller_Start(1);
 	ODCM_DutyCycle = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_PWR_POLICY:
+	Controller_Stop(1);
+	PowerPolicy = arg;
+	Controller_Start(1);
+	PowerPolicy = -1;
 	rc = 0;
 	break;
     case COREFREQ_IOCTL_CPU_OFF:
