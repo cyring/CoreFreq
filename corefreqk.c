@@ -3762,16 +3762,11 @@ void ThermalMonitor_Set(CORE *Core)
 void PowerThermal(CORE *Core)
 {
   CLOCK_MODULATION ClockModulation = {.value = 0};
-  /* blackList :			ODCM
-	_Atom_Airmont,			06_4C
-	_IvyBridge			06_3A
-	_Kabylake,			06_9E
-  */
   struct {
 	struct SIGNATURE Arch;
-	unsigned int	grantPWR_MGMT	:  1-0,
+	unsigned short	grantPWR_MGMT	:  1-0,
 			grantODCM	:  2-1,
-			freeToUse	: 32-2;
+			freeToUse	: 16-2;
   } whiteList[] = {
 	{_Core_Yonah,		0, 1},
 	{_Core_Conroe,		0, 1},
@@ -3779,40 +3774,56 @@ void PowerThermal(CORE *Core)
 	{_Core_Conroe_616,	0, 1},
 	{_Core_Penryn,		0, 1},
 	{_Core_Dunnington,	0, 1},
+
 	{_Atom_Bonnell ,	0, 1},	/* 06_1C */
 	{_Atom_Silvermont,	0, 1},	/* 06_26 */
 	{_Atom_Lincroft,	0, 1},	/* 06_27 */
 	{_Atom_Clovertrail,	0, 1},	/* 06_35 */
 	{_Atom_Saltwell,	0, 1},	/* 06_36 */
+
 	{_Silvermont_637,	0, 1},	/* 06_37 */
-	{_Atom_Merrifield,	0, 1},	/* 06_4A */
+
 	{_Atom_Avoton,		0, 1},	/* 06_4D */
-	{_Atom_Moorefield,	0, 1},	/* 06_5A */
+	{_Atom_Airmont ,	0, 0},	/* 06_4C */
 	{_Atom_Goldmont,	1, 0},	/* 06_5C */
 	{_Atom_Sofia,		0, 1},	/* 06_5D */
+	{_Atom_Merrifield,	0, 1},	/* 06_4A */
+	{_Atom_Moorefield,	0, 1},	/* 06_5A */
+
 	{_Nehalem_Bloomfield,	1, 1},	/* 06_1A */
 	{_Nehalem_Lynnfield,	1, 1},	/* 06_1E */
 	{_Nehalem_MB,		1, 1},	/* 06_1F */
 	{_Nehalem_EX,		1, 1},	/* 06_2E */
+
 	{_Westmere,		1, 1},	/* 06_25 */
 	{_Westmere_EP,		1, 1},	/* 06_2C */
 	{_Westmere_EX,		1, 1},	/* 06_2F */
+
 	{_SandyBridge,		1, 1},	/* 06_2A */
 	{_SandyBridge_EP,	1, 1},	/* 06_2D */
+
+	{_IvyBridge,		1, 0},	/* 06_3A */
 	{_IvyBridge_EP ,	1, 1},	/* 06_3E */
+
 	{_Haswell_DT,		1, 1},	/* 06_3C */
 	{_Haswell_EP,		1, 1},	/* 06_3F */
 	{_Haswell_ULT,		1, 1},	/* 06_45 */
 	{_Haswell_ULX,		1, 1},	/* 06_46 */
+
 	{_Broadwell,		1, 1},	/* 06_3D */
 	{_Broadwell_D,		1, 1},	/* 06_56 */
 	{_Broadwell_H,		1, 1},	/* 06_47 */
 	{_Broadwell_EP ,	1, 1},	/* 06_4F */
+
 	{_Skylake_UY,		1, 1},	/* 06_4E */
-	{_Skylake_S,		1, 1},	/* 06_5E */
+	{_Skylake_S,		1, 0},	/* 06_5E */
 	{_Skylake_X,		1, 1},	/* 06_55 */
+
 	{_Xeon_Phi,		0, 1},	/* 06_57 */
+
+	{_Kabylake,		1, 0},	/* 06_9E */
 	{_Kabylake_UY,		1, 1},	/* 06_8E */
+
 	{_Cannonlake,		1, 1},	/* 06_66 */
 	{_Geminilake,		1, 0},	/* 06_7A */
 	{_Icelake_UY,		1, 1},	/* 06_7E */
@@ -3826,7 +3837,8 @@ void PowerThermal(CORE *Core)
 		break;
 	}
   }
-  if (Proc->Features.Info.LargestStdFunc >= 0x6) {
+  if (Proc->Features.Info.LargestStdFunc >= 0x6)
+  {
     struct THERMAL_POWER_LEAF Power = {{0}};
 
     __asm__ volatile
@@ -3848,7 +3860,8 @@ void PowerThermal(CORE *Core)
 	: "%rax", "%rbx", "%rcx", "%rdx"
     );
     if (Power.ECX.SETBH == 1) {
-      if ((id < ids) && (whiteList[id].grantPWR_MGMT == 1)){
+      if ((id < ids) && (whiteList[id].grantPWR_MGMT == 1))
+      {
 	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
 	RDMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
 
@@ -3879,7 +3892,9 @@ void PowerThermal(CORE *Core)
     else
 	BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 
-    if (Proc->Features.Std.EDX.ACPI == 1) {
+    if ((Proc->Features.Std.EDX.ACPI == 1)
+     && (id < ids) && (whiteList[id].grantODCM == 1))
+    {
 	int ToggleFeature = 0;
 
 	RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
@@ -3898,7 +3913,7 @@ void PowerThermal(CORE *Core)
 	    ClockModulation.DutyCycle = ODCM_DutyCycle << !ClockModulation.ECMD;
 	    ToggleFeature = 1;
 	}
-	if((ToggleFeature == 1) && (id < ids) && (whiteList[id].grantODCM == 1))
+	if (ToggleFeature == 1)
 	{
 	    WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
 	    RDMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
@@ -3910,8 +3925,9 @@ void PowerThermal(CORE *Core)
 	else
 		BITCLR(LOCKLESS, Proc->ODCM, Core->Bind);
     }
-    else
+    else {
 	BITCLR(LOCKLESS, Proc->ODCM, Core->Bind);
+    }
   }
   else {
 	BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);

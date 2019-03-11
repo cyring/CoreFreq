@@ -2027,22 +2027,24 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 unsigned int SKL_DimmWidthToRows(unsigned int width)
 {
+	unsigned int rows = 0;
 	switch (width) {
 	case 0b00:
-		return(1 << 14);
+		rows = 8;
+		break;
 	case 0b01:
-		return(1 << 15);
+		rows = 16;
+		break;
 	case 0b10:
-		return(1 << 16);
-	case 0b11:
-		return(1 << 0);
+		rows = 32;
+		break;
 	}
-	return(1 << 0);
+	return(8 * 1024 * rows);
 }
 
 void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
-    unsigned short mc, cha, slot;
+    unsigned short mc, cha;
 
     Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
@@ -2098,15 +2100,16 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 
-      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Banks =			\
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Banks =			\
+	Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.DRAM_Tech == 0b00 ? 16 : 8;
 
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols =
-			Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.Dimm_x8 ?
-				  (1 << 13)
-				: (1 << 10);
-      }
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[0].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm0 ?
+			1024 : 0;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
+		Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm1 ?
+			1024 : 0;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
 				Proc->Uncore.MC[mc].SKL.MADC0.ECC;

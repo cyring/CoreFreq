@@ -2209,23 +2209,29 @@ IMC_FREE:
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 
-      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+      {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[1], "\x20\x20#%-2u", slot);
-	PRT(IMC, attrib[1],
+	    if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0) {
+		PRT(IMC, attrib[1],
 		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
-	PRT(IMC, attrib[1],
+		PRT(IMC, attrib[1],
 		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
-	iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows, hInt);
-	PRT(IMC, attrib[1], "%5s", &hInt[0]);
-	PRT(IMC, attrib[1], "%5s", &hInt[8]);
-	iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, hInt);
-	PRT(IMC, attrib[1], "%5s", &hInt[0]);
-	PRT(IMC, attrib[1], "%5s", &hInt[8]);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
-	iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, hInt);
-	PRT(IMC, attrib[1], "%5s", &hInt[0]);
-	PRT(IMC, attrib[1], "%5s", &hInt[8]);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows, hInt);
+		PRT(IMC, attrib[1], "%5s", &hInt[0]);
+		PRT(IMC, attrib[1], "%5s", &hInt[8]);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, hInt);
+		PRT(IMC, attrib[1], "%5s", &hInt[0]);
+		PRT(IMC, attrib[1], "%5s", &hInt[8]);
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, hInt);
+		PRT(IMC, attrib[1], "%5s", &hInt[0]);
+		PRT(IMC, attrib[1], "%5s", &hInt[8]);
+	    }
+	    else for (nc = 0; nc < 9; nc++) {
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+	    }
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());

@@ -1790,7 +1790,7 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tRP		:  6-0, /* Holds parameter tRP (and tRCD) ! */
+		tRP		:  6-0,  /* Holds parameter tRP (and tRCD) ! */
 		tRPab_ext	:  8-6,
 		tRAS		: 15-8,
 		ReservedBits1	: 16-15,
@@ -1807,11 +1807,12 @@ typedef union
 	struct {
 		unsigned int
 		DRAM_Tech	:  2-0,/* 00:DDR4 01:DDR3 10:LPDDR3 11:Illegal*/
-		CMD_Stretch	:  4-2, /* 00:1N , 01:2N , 10:3N , 11:1N */
+		CMD_Stretch	:  4-2,  /* 00:1N , 01:2N , 10:3N , 11:1N */
 		N_to_1_ratio	:  7-4,
 		ReservedBits	:  8-7,
 		Addr_Mirroring	: 10-8,
-		Dimm_x8		: 12-11,
+		x8_device_Dimm0	: 11-10, /* LSB is for DIMM 0		*/
+		x8_device_Dimm1	: 12-11, /* MSB is for DIMM 1		*/
 		tCPDED		: 15-12,
 		LPDDR_2N_CS	: 16-15,
 		Reset_OnCmd	: 20-16,
