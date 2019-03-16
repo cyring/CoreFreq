@@ -7619,51 +7619,63 @@ void Top(char option)
   DestroyAllCards(&cardList);
 }
 
-enum REASON_CODE Help(enum REASON_CODE rc, ...)
+REASON_CODE Help(REASON_CODE reason, ...)
 {
 	va_list ap;
-	va_start(ap, rc);
-	switch (rc) {
+	va_start(ap, reason);
+	switch (reason.rc) {
 	case RC_SUCCESS:
+	case RC_PERM_ERR:
+	case RC_MEM_ERR:
+	case RC_EXEC_ERR:
 		break;
 	case RC_CMD_SYNTAX: {
 		char *appName = va_arg(ap, char *);
 		printf((char *) RSC(ERROR_CMD_SYNTAX).CODE(), appName);
 		}
 		break;
-	case RC_SHM_OPEN:
-	case RC_SHM_STAT:
+	case RC_SHM_FILE:
 	case RC_SHM_MMAP: {
 		char *shmFileName = va_arg(ap, char *);
-		__typeof__ (errno) errCode = va_arg(ap, __typeof__ (errno));
-		char *sysMsg = strerror_l(errCode, SYS_LOCALE());
+		char *sysMsg = strerror_l(reason.no, SYS_LOCALE());
 		printf((char *) RSC(ERROR_SHARED_MEM).CODE(),
-				errCode, shmFileName, sysMsg);
+				reason.no, shmFileName, sysMsg, reason.ln);
+		}
+		break;
+	case RC_SYS_CALL: {
+		char *sysMsg = strerror(reason.no);
+		printf((char *) RSC(ERROR_SYS_CALL).CODE(),
+				reason.no, sysMsg, reason.ln);
 		}
 		break;
 	}
 	va_end(ap);
-	return(rc);
+	return(reason);
 }
 
 int main(int argc, char *argv[])
 {
 	struct stat shmStat = {0};
 	int fd = -1;
-	enum REASON_CODE rc = RC_SUCCESS;
 
-	char *program = strdup(argv[0]), *appName=basename(program);
+	char *program = strdup(argv[0]),
+		*appName = program != NULL ? basename(program) : argv[0];
+
+	REASON_INIT(reason);
+
 	char option = 't';
 
 	LOCALE(IN);
 
-  if ((argc >= 2) && (argv[1][0] == '-'))
+  if ((argc >= 2) && (argv[1][0] == '-')) {
 	option = argv[1][1];
-  if (option == 'h')
-	Help(RC_CMD_SYNTAX, appName);
-  else if (option == 'v')
+  }
+  if (option == 'h') {
+	REASON_SET(reason, RC_CMD_SYNTAX, 0);
+	reason = Help(reason, appName);
+  } else if (option == 'v') {
 	printf(COREFREQ_VERSION"\n");
-  else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
+  } else if ((fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
   {
     if (fstat(fd, &shmStat) != -1)
@@ -7766,20 +7778,36 @@ int main(int argc, char *argv[])
 		TERMINAL(OUT);
 		}
 		break;
-	default:
-		rc = Help(RC_CMD_SYNTAX, appName);
+	default: {
+		REASON_SET(reason, RC_CMD_SYNTAX, 0);
+		reason = Help(reason, appName);
+		}
 		break;
 	}
-	munmap(Shm, shmStat.st_size);
-	close(fd);
-      } else
-	rc = Help(RC_SHM_MMAP,SHM_FILENAME, errno);
-    } else
-	rc = Help(RC_SHM_STAT,SHM_FILENAME, errno);
-  } else
-	rc = Help(RC_SHM_OPEN,SHM_FILENAME, errno);
-
+	if (munmap(Shm, shmStat.st_size) == -1) {
+		REASON_SET(reason, RC_SHM_MMAP);
+		reason = Help(reason, SHM_FILENAME);
+	}
+      } else {
+		REASON_SET(reason, RC_SHM_MMAP);
+		reason = Help(reason, SHM_FILENAME);
+      }
+    } else {
+		REASON_SET(reason, RC_SHM_FILE);
+		reason = Help(reason, SHM_FILENAME);
+    }
+    if (close(fd) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+		reason = Help(reason, SHM_FILENAME);
+    }
+  } else {
+		REASON_SET(reason, RC_SHM_FILE);
+		reason = Help(reason, SHM_FILENAME);
+  }
     LOCALE(OUT);
-    free(program);
-    return(rc);
+
+    if (program != NULL) {
+	free(program);
+    }
+    return(reason.rc);
 }

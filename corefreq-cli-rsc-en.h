@@ -649,5 +649,9 @@
 				"1\tif problems,\n"			\
 				">1\tif serious trouble.\n"		\
 			"\nReport bugs to labs[at]cyring.fr\n"
+
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
-			(ASCII*) "Daemon connection error code %d\n%s: %s\n"
+		(ASCII*) "Daemon connection error code %d\n%s: %s @ line %d\n"
+
+#define RSC_ERROR_SYS_CALL_CODE_EN					\
+				(ASCII*) "System error code %d\n%s @ line %d\n"

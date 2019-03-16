@@ -354,3 +354,52 @@ typedef struct
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;
+
+
+enum REASON_CLASS {
+	RC_SUCCESS	= 0,
+	RC_CMD_SYNTAX	= 1,
+	RC_SHM_FILE	= 2,
+	RC_SHM_MMAP	= 3,
+	RC_PERM_ERR	= 4,
+	RC_MEM_ERR	= 5,
+	RC_EXEC_ERR	= 6,
+	RC_SYS_CALL	= 15
+};
+
+typedef struct {
+	__typeof__ (errno)	no: 32;
+	__typeof__ (__LINE__)	ln: 28;
+	enum REASON_CLASS	rc: 4;
+} REASON_CODE;
+
+#define REASON_SET_3xARG(_reason, _rc, _no)				\
+({									\
+	_reason.no = _no;						\
+	_reason.ln = __LINE__;						\
+	_reason.rc = _rc;						\
+})
+
+#define REASON_SET_2xARG(_reason, _rc)					\
+({									\
+	_reason.no = errno;						\
+	_reason.ln = __LINE__;						\
+	_reason.rc = _rc;						\
+})
+
+#define REASON_SET_1xARG(_reason)					\
+({									\
+	_reason.no = errno;						\
+	_reason.ln = __LINE__;						\
+	_reason.rc = RC_SYS_CALL;					\
+})
+
+#define REASON_DISPATCH(_1,_2,_3,_CURSOR, ... ) _CURSOR
+
+#define REASON_SET( ... )						\
+	REASON_DISPATCH( __VA_ARGS__ ,	REASON_SET_3xARG,		\
+					REASON_SET_2xARG,		\
+					REASON_SET_1xARG)( __VA_ARGS__ )
+
+#define REASON_INIT(_reason)		\
+	REASON_CODE _reason = {.no = 0, .ln = 0, .rc = RC_SUCCESS}

@@ -649,5 +649,9 @@
 				"1\tsi des problèmes,\n"		\
 				">1\tsi de graves problèmes.\n"		\
 			"\nSignaler les bugs à labs[at]cyring.fr\n"
+
 #define RSC_ERROR_SHARED_MEM_CODE_FR					\
-		(ASCII*) "Erreur code %d de connexion au démon.\n%s: %s\n"
+	(ASCII*) "Erreur code %d de connexion au démon.\n%s: %s @ ligne %d\n"
+
+#define RSC_ERROR_SYS_CALL_CODE_FR					\
+			(ASCII*) "Erreur Système code %d\n%s @ ligne %d\n"

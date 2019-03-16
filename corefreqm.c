@@ -6,6 +6,7 @@
 
 #include <sys/ioctl.h>
 #include <pthread.h>
+#include <errno.h>
 #include <math.h>
 
 #include "bitasm.h"

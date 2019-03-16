@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <time.h>
+#include <errno.h>
 
 #include "bitasm.h"
 #include "coretypes.h"

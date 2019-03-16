@@ -3569,5 +3569,12 @@ RESOURCE_ST Resource[] = {
 			[LOC_EN] = RSC_ERROR_SHARED_MEM_CODE_EN,
 			[LOC_FR] = RSC_ERROR_SHARED_MEM_CODE_FR
 		}
+	},
+	[RSC_ERROR_SYS_CALL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ERROR_SYS_CALL_CODE_EN,
+			[LOC_FR] = RSC_ERROR_SYS_CALL_CODE_FR
+		}
 	}
 };

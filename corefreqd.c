@@ -17,6 +17,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <pthread.h>
 
@@ -3337,7 +3338,7 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	}
 }
 
-void Core_Manager(REF *Ref)
+REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
 	PROC			*Proc = Ref->Proc;
@@ -3346,6 +3347,7 @@ void Core_Manager(REF *Ref)
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
 	double			maxRelFreq;
+	REASON_INIT		(reason);
 	unsigned int		cpu = 0;
 
 	pthread_t tid = pthread_self();
@@ -3355,7 +3357,8 @@ void Core_Manager(REF *Ref)
 		pthread_setname_np(tid, "corefreqd-pmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
-
+  if (Arg != NULL)
+  {
     while (!BITVAL(Shutdown, 0))
     {	/* Loop while all the cpu room bits are not cleared.		*/
 	while (!BITVAL(Shutdown, 0)
@@ -3611,12 +3614,17 @@ void Core_Manager(REF *Ref)
 		pthread_join(Arg[cpu].TID, NULL);
     }
 	free(Arg);
+  } else {
+	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
+  }
+	return(reason);
 }
 
-void Child_Manager(REF *Ref)
+REASON_CODE Child_Manager(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
 	SERVICE_PROC localService = {.Proc = -1};
+	REASON_INIT(reason);
 	unsigned int cpu = 0;
 
 	pthread_t tid = pthread_self();
@@ -3625,9 +3633,11 @@ void Child_Manager(REF *Ref)
 		pthread_setname_np(tid, "corefreqd-cmgr");
 
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
-
+  if (Arg != NULL)
+  {
     do {
-	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++) {
+	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++)
+	{
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
 			/* Remove this child thread.			*/
@@ -3649,50 +3659,62 @@ void Child_Manager(REF *Ref)
 	ServerFollowService(&localService, &Shm->Proc.Service, tid);
 
 	nanosleep(&Shm->Sleep.childWaiting, NULL);
-    } while (!BITVAL(Shutdown, 0)) ;
+    }
+    while (!BITVAL(Shutdown, 0)) ;
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 		if (Arg[cpu].TID)
 			pthread_join(Arg[cpu].TID, NULL);
 	free(Arg);
+  } else {
+	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
+  }
+	return(reason);
 }
 
-int Shm_Manager(FD *fd, PROC *Proc)
+REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 {
-	int		rc = 0;
 	unsigned int	cpu = 0;
 	CORE		**Core;
 	SHM_STRUCT	*Shm = NULL;
 	const size_t	CoreSize  = ROUND_TO_PAGES(sizeof(CORE));
+	REASON_INIT(reason);
 
-	Core = calloc(Proc->CPU.Count, sizeof(Core));
-	for (cpu = 0; !rc && (cpu < Proc->CPU.Count); cpu++) {
-		const off_t offset = (10 + cpu) * PAGE_SIZE;
+    if ((Core = calloc(Proc->CPU.Count, sizeof(Core))) == NULL) {
+	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
+    }
+    for (cpu = 0; (reason.rc == RC_SUCCESS) && (cpu < Proc->CPU.Count); cpu++)
+    {
+	const off_t offset = (10 + cpu) * PAGE_SIZE;
 
-		if ((Core[cpu] = mmap(NULL, CoreSize,
-					PROT_READ|PROT_WRITE,
-					MAP_SHARED,
-					fd->Drv, offset)) == MAP_FAILED)
-			rc = 4;
+	if ((Core[cpu] = mmap(	NULL, CoreSize,
+				PROT_READ|PROT_WRITE,
+				MAP_SHARED,
+				fd->Drv, offset)) == MAP_FAILED)
+	{
+		REASON_SET(reason, RC_SHM_MMAP);
 	}
+    }
+    if (reason.rc == RC_SUCCESS)
+    {	/* Initialize shared memory.					*/
 	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count,
-		ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT) + ShmCpuSize));
+			ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT)
+				+ ShmCpuSize));
 
 	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
 
-	if (!rc)
-	{	/* Initialize shared memory.				*/
-	  if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+	if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
+	{
+	  if (ftruncate(fd->Svr, ShmSize) != -1)
 	  {
-	    if (ftruncate(fd->Svr, ShmSize) != -1)
-	    {
-	      if ((Shm = mmap(NULL, ShmSize,
+	    if ((Shm = mmap(NULL, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED)
-	      {
+	    {
+		__typeof__ (errno) fork_err = 0;
 		size_t len;
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
@@ -3749,79 +3771,135 @@ int Shm_Manager(FD *fd, PROC *Proc)
 			fflush(stdout);
 
 		Ref.CPID = fork();
+		fork_err = errno;
 
 		Emergency_Command(&Ref, 1);
 
 		switch (Ref.CPID) {
 		case 0:
-			Child_Manager(&Ref);
+			reason = Child_Manager(&Ref);
 			break;
 		case -1:
-			rc = 6;
+			REASON_SET(reason, RC_EXEC_ERR, fork_err);
 			break;
 		default:
-			{
-			Core_Manager(&Ref);
+			reason = Core_Manager(&Ref);
 
-			if (Shm->AppCli)
-				kill(Shm->AppCli, SIGCHLD);
-
+			if (Shm->AppCli) {
+			    if (kill(Shm->AppCli, SIGCHLD) == -1) {
+				REASON_SET(reason, RC_EXEC_ERR);
+			    }
+			}
 			SysGate_OnDemand(&Ref, 0);
 
-			if (!kill(Ref.CPID, SIGQUIT))
-				waitpid(Ref.CPID, NULL, 0);
+			if (kill(Ref.CPID, SIGQUIT) == 0) {
+			    if (waitpid(Ref.CPID, NULL, 0) == -1) {
+				REASON_SET(reason, RC_EXEC_ERR);
+			    }
+			} else {
+				REASON_SET(reason, RC_EXEC_ERR);
 			}
 			break;
 		}
 		Emergency_Command(&Ref, 0);
 
-		munmap(Shm, ShmSize);
-		shm_unlink(SHM_FILENAME);
-	      }
-	      else
-		rc = 7;
+		if (munmap(Shm, ShmSize) == -1) {
+			REASON_SET(reason, RC_SHM_MMAP);
+		}
+		if (shm_unlink(SHM_FILENAME) == -1) {
+			REASON_SET(reason, RC_SHM_MMAP);
+		}
+	    } else {
+		REASON_SET(reason, RC_SHM_MMAP);
 	    }
-	    else
-		rc = 6;
+	  } else {
+		REASON_SET(reason, RC_SHM_FILE);
 	  }
-	  else
-		rc = 5;
+	} else {
+		REASON_SET(reason, RC_SHM_FILE);
 	}
-	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		if (Core[cpu] != NULL)
-			munmap(Core[cpu], CoreSize);
+    }
+    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+    {
+	if (Core[cpu] != NULL) {
+	    if (munmap(Core[cpu], CoreSize) == -1) {
+		REASON_SET(reason, RC_SHM_MMAP);
+	    }
+	}
+    }
+    if (Core != NULL) {
 	free(Core);
-	return(rc);
+    }
+	return(reason);
 }
 
-int help(char *appName)
+REASON_CODE Help(REASON_CODE reason, ...)
 {
-	printf( "usage:\t%s [-option <arguments>]\n"			\
-		"\t-q\t\tQuiet\n"					\
-		"\t-i\t\tInfo\n"					\
-		"\t-d\t\tDebug\n"					\
-		"\t-gon\t\tEnable SysGate\n"				\
-		"\t-goff\t\tDisable SysGate\n"				\
-		"\t-h\t\tPrint out this message\n"			\
-		"\t-v\t\tPrint the version number\n"			\
-		"\nExit status:\n"					\
-			"0\tif OK,\n"					\
-			"1\tif problems,\n"				\
-			">1\tif serious trouble.\n"			\
-		"\nReport bugs to labs[at]cyring.fr\n", appName);
-	return(1);
+	va_list ap;
+	va_start(ap, reason);
+	switch (reason.rc) {
+	case RC_SUCCESS:
+		break;
+	case RC_CMD_SYNTAX: {
+		char *appName = va_arg(ap, char *);
+		printf( "usage:\t%s [-option <arguments>]\n"		\
+			"\t-q\t\tQuiet\n"				\
+			"\t-i\t\tInfo\n"				\
+			"\t-d\t\tDebug\n"				\
+			"\t-gon\t\tEnable SysGate\n"			\
+			"\t-goff\t\tDisable SysGate\n"			\
+			"\t-h\t\tPrint out this message\n"		\
+			"\t-v\t\tPrint the version number\n"		\
+			"\nExit status:\n"				\
+				"0\tif OK,\n"				\
+				"1\tif problems,\n"			\
+				">1\tif serious trouble.\n"		\
+			"\nReport bugs to labs[at]cyring.fr\n", appName);
+		}
+		break;
+	case RC_PERM_ERR:
+	case RC_MEM_ERR:
+	case RC_EXEC_ERR: {
+		char *appName = va_arg(ap, char *);
+		char *sysMsg = strerror(reason.no);
+		printf("%s execution error code %d\n%s @ line %d\n",
+			appName, reason.no, sysMsg, reason.ln);
+		}
+		break;
+	case RC_SHM_FILE:
+	case RC_SHM_MMAP: {
+		char *shmFileName = va_arg(ap, char *);
+		char *sysMsg = strerror(reason.no);
+		printf("Driver connection error code %d\n%s: %s @ line %d\n",
+			reason.no, shmFileName, sysMsg, reason.ln);
+		}
+		break;
+	case RC_SYS_CALL: {
+		char *sysMsg = strerror(reason.no);
+		printf("System error code %d\n%s @ line %d\n",
+			reason.no, sysMsg, reason.ln);
+		}
+		break;
+	}
+	va_end(ap);
+	return(reason);
 }
 
 int main(int argc, char *argv[])
 {
 	FD   fd = {0, 0};
 	PROC *Proc = NULL;	/* Kernel module anchor point.		*/
-	int   rc = 0, i = 0;
-	char *program = strdup(argv[0]), *appName = basename(program);
 
-	for (i = 1; i < argc; i++) {
-	    if (strlen(argv[i]) > 1) {
-		if (argv[i][0] == '-') {
+	char *program = strdup(argv[0]),
+		*appName = program != NULL ? basename(program) : argv[0];
+
+	REASON_INIT(reason);
+	int  i;
+    for (i = 1; i < argc; i++)
+    {
+	if (strlen(argv[i]) > 1) {
+		if (argv[i][0] == '-')
+		{
 			char option = argv[i][1];
 			switch (option) {
 			case 'q':
@@ -3841,48 +3919,85 @@ int main(int argc, char *argv[])
 			  else if (argv[i][2]=='o'
 				&& argv[i][3]=='n')
 					SysGateStartUp = 1;
-			  else
-					rc = help(appName);
+			  else {
+				REASON_SET(reason, RC_CMD_SYNTAX, 0);
+				reason = Help(reason, appName);
+				}
 				break;
 			case 'v':
-				rc = !!printf(COREFREQ_VERSION"\n");
+				printf(COREFREQ_VERSION"\n");
+				reason.rc = RC_CMD_SYNTAX;
 				break;
 			case 'h':
-			default:
-				rc = help(appName);
+			default: {
+				REASON_SET(reason, RC_CMD_SYNTAX, 0);
+				reason = Help(reason, appName);
+				}
 				break;
 			}
+		} else {
+			REASON_SET(reason, RC_CMD_SYNTAX, 0);
+			reason = Help(reason, appName);
 		}
-		else
-			rc = help(appName);
-	    }
-	    else
-		rc = help(appName);
+	} else {
+		REASON_SET(reason, RC_CMD_SYNTAX, 0);
+		reason = Help(reason, appName);
 	}
-	if (!rc) {
-	  if (geteuid() == 0) {
-	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1) {
+    }
+    if (reason.rc == RC_SUCCESS)
+    {
+	if (geteuid() == 0)
+	{
+	    if ((fd.Drv = open(DRV_FILENAME, O_RDWR|O_SYNC)) != -1)
+	    {
 		const size_t packageSize = ROUND_TO_PAGES(sizeof(PROC));
 
 		if ((Proc = mmap(NULL, packageSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
-				fd.Drv, 0)) != MAP_FAILED) {
+				fd.Drv, 0)) != MAP_FAILED)
+		{
+			reason = Shm_Manager(&fd, Proc);
 
-			rc = Shm_Manager(&fd, Proc);
-
-			munmap(Proc, packageSize);
+			switch (reason.rc) {
+			case RC_SUCCESS:
+			case RC_CMD_SYNTAX:
+			case RC_PERM_ERR:
+				break;
+			case RC_SHM_FILE:
+			case RC_SHM_MMAP:
+				reason = Help(reason, SHM_FILENAME);
+				break;
+			case RC_MEM_ERR:
+			case RC_EXEC_ERR:
+				reason = Help(reason, appName);
+				break;
+			case RC_SYS_CALL:
+				reason = Help(reason);
+				break;
+			}
+			if (munmap(Proc, packageSize) == -1) {
+				REASON_SET(reason, RC_SHM_MMAP);
+				reason = Help(reason, DRV_FILENAME);
+			}
+		} else {
+			REASON_SET(reason, RC_SHM_MMAP);
+			reason = Help(reason, DRV_FILENAME);
 		}
-		else
-			rc = 3;
-		close(fd.Drv);
+		if (close(fd.Drv) == -1) {
+			REASON_SET(reason, RC_SHM_FILE);
+			reason = Help(reason, DRV_FILENAME);
+		}
+	    } else {
+		REASON_SET(reason, RC_SHM_FILE);
+		reason = Help(reason, DRV_FILENAME);
 	    }
-	    else
-		rc = 3;
-	  } else {
-	    printf("Insufficient permissions. Need root to start daemon.\n");
-	    rc = 2;
-	  }
+	} else {
+		REASON_SET(reason, RC_PERM_ERR, EACCES);
+		reason = Help(reason, appName);
 	}
+    }
+    if (program != NULL) {
 	free(program);
-	return(rc);
+    }
+	return(reason.rc);
 }
