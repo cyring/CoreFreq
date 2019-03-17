@@ -3711,6 +3711,8 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
 	{
+	  pid_t CPID = -1;
+
 	  if (ftruncate(fd->Svr, ShmSize) != -1)
 	  {
 	    if ((Shm = mmap(NULL, ShmSize,
@@ -3773,7 +3775,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 		if (Quiet)
 			fflush(stdout);
 
-		Ref.CPID = fork();
+		CPID = Ref.CPID = fork();
 		fork_err = errno;
 
 		Emergency_Command(&Ref, 1);
@@ -3809,14 +3811,19 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 		if (munmap(Shm, ShmSize) == -1) {
 			REASON_SET(reason, RC_SHM_MMAP);
 		}
-		if (shm_unlink(SHM_FILENAME) == -1) {
-			REASON_SET(reason, RC_SHM_MMAP);
-		}
 	    } else {
 		REASON_SET(reason, RC_SHM_MMAP);
 	    }
 	  } else {
 		REASON_SET(reason, RC_SHM_FILE);
+	  }
+	  if (close(fd->Svr) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	  }
+	  if (CPID != 0) {
+	    if (shm_unlink(SHM_FILENAME) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	    }
 	  }
 	} else {
 		REASON_SET(reason, RC_SHM_FILE);

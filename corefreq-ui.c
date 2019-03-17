@@ -1314,17 +1314,29 @@ void FreeAll(char *buffer)
 {
 	DestroyAllWindows(&winList);
 
-	free(console);
-	free(buffer);
-
+	if (console != NULL) {
+		free(console);
+	}
+	if (buffer != NULL) {
+		free(buffer);
+	}
 	DestroyLayer(sLayer);
 	DestroyLayer(dLayer);
 	DestroyLayer(wLayer);
 	DestroyLayer(fuse);
-	free(sLayer);
-	free(dLayer);
-	free(wLayer);
-	free(fuse);
+
+	if (sLayer != NULL) {
+		free(sLayer);
+	}
+	if (dLayer != NULL) {
+		free(dLayer);
+	}
+	if (wLayer != NULL) {
+		free(wLayer);
+	}
+	if (fuse != NULL) {
+		free(fuse);
+	}
 }
 
 __typeof__ (errno) AllocAll(char **buffer)
