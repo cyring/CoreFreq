@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <locale.h>
 #include <sched.h>
+#include <errno.h>
 
 #include "corefreq-ui.h"
 #include "corefreq-cli-rsc.h"

@@ -3315,9 +3315,11 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	switch (cmd) {
 	case 0:
 		if (Ref->Started) {
-			if (!pthread_kill(Ref->KID, SIGCHLD))
-				if (!pthread_join(Ref->KID, NULL))
+			if (!pthread_kill(Ref->KID, SIGCHLD)) {
+				if (!pthread_join(Ref->KID, NULL)) {
 					Ref->Started = 0;
+				}
+			}
 		}
 		break;
 	case 1: {
@@ -3331,9 +3333,10 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		sigaddset(&Ref->Signal, SIGCHLD);	/* Exit Ring Thread */
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
-		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
+		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref)) {
 			Ref->Started = 1;
 		}
+	    }
 		break;
 	}
 }
@@ -3842,7 +3845,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 		break;
 	case RC_CMD_SYNTAX: {
 		char *appName = va_arg(ap, char *);
-		printf( "usage:\t%s [-option <arguments>]\n"		\
+		printf( "Usage:\t%s [-option <arguments>]\n"		\
 			"\t-q\t\tQuiet\n"				\
 			"\t-i\t\tInfo\n"				\
 			"\t-d\t\tDebug\n"				\
@@ -3851,9 +3854,14 @@ REASON_CODE Help(REASON_CODE reason, ...)
 			"\t-h\t\tPrint out this message\n"		\
 			"\t-v\t\tPrint the version number\n"		\
 			"\nExit status:\n"				\
-				"0\tif OK,\n"				\
-				"1\tif problems,\n"			\
-				">1\tif serious trouble.\n"		\
+			"\t0\tSUCCESS\t\tSuccessful execution\n"	\
+			"\t1\tCMD_SYNTAX\tCommand syntax error\n"	\
+			"\t2\tSHM_FILE\tShared memory file error\n"	\
+			"\t3\tSHM_MMAP\tShared memory mapping error\n"	\
+			"\t4\tPERM_ERR\tExecution not permitted\n"	\
+			"\t5\tMEM_ERR\t\tMemory operation error\n"	\
+			"\t6\tEXEC_ERR\tGeneral execution error\n"	\
+			"\t15\tSYS_CALL\tSystem call error\n"		\
 			"\nReport bugs to labs[at]cyring.fr\n", appName);
 		}
 		break;
@@ -3862,22 +3870,23 @@ REASON_CODE Help(REASON_CODE reason, ...)
 	case RC_EXEC_ERR: {
 		char *appName = va_arg(ap, char *);
 		char *sysMsg = strerror(reason.no);
-		printf("%s execution error code %d\n%s @ line %d\n",
-			appName, reason.no, sysMsg, reason.ln);
+		fprintf(stderr, "%s execution error code %d\n%s @ line %d\n",
+				appName, reason.no, sysMsg, reason.ln);
 		}
 		break;
 	case RC_SHM_FILE:
 	case RC_SHM_MMAP: {
 		char *shmFileName = va_arg(ap, char *);
 		char *sysMsg = strerror(reason.no);
-		printf("Driver connection error code %d\n%s: %s @ line %d\n",
-			reason.no, shmFileName, sysMsg, reason.ln);
+		fprintf(stderr , "Driver connection error code %d\n"	\
+				"%s: '%s' @ line %d\n",
+				reason.no, shmFileName, sysMsg, reason.ln);
 		}
 		break;
 	case RC_SYS_CALL: {
 		char *sysMsg = strerror(reason.no);
-		printf("System error code %d\n%s @ line %d\n",
-			reason.no, sysMsg, reason.ln);
+		fprintf(stderr, "System error code %d\n%s @ line %d\n",
+				reason.no, sysMsg, reason.ln);
 		}
 		break;
 	}

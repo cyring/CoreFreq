@@ -626,32 +626,37 @@
 #define RSC_BOX_LANG_FRENCH_CODE_FR	(ASCII*) "     Francais    "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
-		(ASCII*)"CoreFreq."					\
-			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
-			"usage:\t%s [-option <arguments>]\n"		\
-			"\t-t\tAfficher Top (par défault)\n"		\
-			"\t-d\tAfficher le tableau de bord\n"		\
-			"\t-V\tMoniteur de Puissance et Voltage\n"	\
-			"\t-g\tMoniteur du Package\n"			\
-			"\t-c\tMoniteur des Compteurs\n"		\
-			"\t-i\tMoniteur des Instructions\n"		\
-			"\t-s\tImprimer les Informations du système\n"	\
-			"\t-j\tImprimer les Informations (format json)\n"\
-			"\t-M\tImprimer le Controlleur mémoire\n"	\
-			"\t-R\tImprimer les Registres du système\n"	\
-			"\t-m\tImprimer la Topologie\n"			\
-			"\t-u\tImprimer CPUID\n"			\
-			"\t-k\tImprimer les données du Kernel\n"	\
-			"\t-h\tAfficher ce message\n"			\
-			"\t-v\tAfficher le numéro de version\n"		\
-			"\nCode d'exécution:\n"				\
-				"0\tsi OK,\n"				\
-				"1\tsi des problèmes,\n"		\
-				">1\tsi de graves problèmes.\n"		\
-			"\nSignaler les bugs à labs[at]cyring.fr\n"
+	(ASCII*)"CoreFreq."						\
+		"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"	\
+		"Usage:\t%s [-option <arguments>]\n"			\
+		"\t-t\tAfficher Top (par défault)\n"			\
+		"\t-d\tAfficher le tableau de bord\n"			\
+		"\t-V\tMoniteur de Puissance et Voltage\n"		\
+		"\t-g\tMoniteur du Package\n"				\
+		"\t-c\tMoniteur des Compteurs\n"			\
+		"\t-i\tMoniteur des Instructions\n"			\
+		"\t-s\tImprimer les Informations du système\n"		\
+		"\t-j\tImprimer les Informations (format json)\n"	\
+		"\t-M\tImprimer le Controlleur mémoire\n"		\
+		"\t-R\tImprimer les Registres du système\n"		\
+		"\t-m\tImprimer la Topologie\n"				\
+		"\t-u\tImprimer CPUID\n"				\
+		"\t-k\tImprimer les données du Kernel\n"		\
+		"\t-h\tAfficher ce message\n"				\
+		"\t-v\tAfficher le numéro de version\n"			\
+		"\nCode d'exécution:\n"					\
+		"\t0\tSUCCESS\t\tExécution réussie\n"			\
+		"\t1\tCMD_SYNTAX\tErreur de syntaxe de la commande\n"	\
+		"\t2\tSHM_FILE\tErreur du fichier de la mémoire partagée\n"\
+		"\t3\tSHM_MMAP\tErreur de mappage de la mémoire partagée\n"\
+		"\t4\tPERM_ERR\tExécution non autorisée\n"		\
+		"\t5\tMEM_ERR\t\tErreur de fonctionnement de la mémoire\n"\
+		"\t6\tEXEC_ERR\tErreur d'exécution générale\n"		\
+		"\t15\tSYS_CALL\tErreur d’appel système\n"		\
+		"\nSignaler toutes anomalies à labs[at]cyring.fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_FR					\
-	(ASCII*) "Erreur code %d de connexion au démon.\n%s: %s @ ligne %d\n"
+	(ASCII*) "Erreur code %d de connexion au démon.\n%s: '%s' @ ligne %d\n"
 
 #define RSC_ERROR_SYS_CALL_CODE_FR					\
 			(ASCII*) "Erreur Système code %d\n%s @ ligne %d\n"

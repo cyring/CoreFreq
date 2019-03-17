@@ -628,7 +628,7 @@
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		(ASCII*)"CoreFreq."					\
 			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
-			"usage:\t%s [-option <arguments>]\n"		\
+			"Usage:\t%s [-option <arguments>]\n"		\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
 			"\t-V\tMonitor Power and Voltage\n"		\
@@ -645,13 +645,18 @@
 			"\t-h\tPrint out this message\n"		\
 			"\t-v\tPrint the version number\n"		\
 			"\nExit status:\n"				\
-				"0\tif OK,\n"				\
-				"1\tif problems,\n"			\
-				">1\tif serious trouble.\n"		\
+			"\t0\tSUCCESS\t\tSuccessful execution\n"	\
+			"\t1\tCMD_SYNTAX\tCommand syntax error\n"	\
+			"\t2\tSHM_FILE\tShared memory file error\n"	\
+			"\t3\tSHM_MMAP\tShared memory mapping error\n"	\
+			"\t4\tPERM_ERR\tExecution not permitted\n"	\
+			"\t5\tMEM_ERR\t\tMemory operation error\n"	\
+			"\t6\tEXEC_ERR\tGeneral execution error\n"	\
+			"\t15\tSYS_CALL\tSystem call error\n"		\
 			"\nReport bugs to labs[at]cyring.fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
-		(ASCII*) "Daemon connection error code %d\n%s: %s @ line %d\n"
+		(ASCII*) "Daemon connection error code %d\n%s: '%s' @ line %d\n"
 
 #define RSC_ERROR_SYS_CALL_CODE_EN					\
 				(ASCII*) "System error code %d\n%s @ line %d\n"

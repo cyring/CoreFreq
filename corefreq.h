@@ -403,3 +403,5 @@ typedef struct {
 
 #define REASON_INIT(_reason)		\
 	REASON_CODE _reason = {.no = 0, .ln = 0, .rc = RC_SUCCESS}
+
+#define IS_REASON_SUCCESSFUL(_reason) (_reason.rc == RC_SUCCESS)

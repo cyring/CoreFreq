@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <errno.h>
 
 #include "corefreq-ui.h"
 
@@ -1326,24 +1327,33 @@ void FreeAll(char *buffer)
 	free(fuse);
 }
 
-void AllocAll(char **buffer)
-{
-	*buffer = malloc(10 * MAX_WIDTH); /* 10 times for ANSI cursor string. */
-	console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT);
+__typeof__ (errno) AllocAll(char **buffer)
+{	/* Alloc 10 times to include the ANSI cursor strings.		*/
+	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL)
+		return(ENOMEM);
+	if ((console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL)
+		return(ENOMEM);
 
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
 		.hth = MAX_HEIGHT
 	};
 
-	sLayer = calloc(1, sizeof(Layer));
-	dLayer = calloc(1, sizeof(Layer));
-	wLayer = calloc(1, sizeof(Layer));
-	fuse   = calloc(1, sizeof(Layer));
+	if ((sLayer = calloc(1, sizeof(Layer))) == NULL)
+		return(ENOMEM);
+	if ((dLayer = calloc(1, sizeof(Layer))) == NULL)
+		return(ENOMEM);
+	if ((wLayer = calloc(1, sizeof(Layer))) == NULL)
+		return(ENOMEM);
+	if ((fuse   = calloc(1, sizeof(Layer))) == NULL)
+		return(ENOMEM);
+
 	CreateLayer(sLayer, layerSize);
 	CreateLayer(dLayer, layerSize);
 	CreateLayer(wLayer, layerSize);
 	CreateLayer(fuse, layerSize);
+
+	return(0);
 }
 
 unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)

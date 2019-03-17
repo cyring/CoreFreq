@@ -626,7 +626,7 @@ void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
 
 void FreeAll(char *buffer) ;
 
-void AllocAll(char **buffer) ;
+__typeof__ (errno) AllocAll(char **buffer) ;
 
 void WriteConsole(SCREEN_SIZE drawSize, char *buffer) ;
 

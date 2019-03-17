@@ -231,8 +231,9 @@ void Print_v3(	CELL_FUNC OutFunc,
 #define PRT(FUN, attrib, ...)	\
 	Print_##FUN(OutFunc, win, &nl, attrib, __VA_ARGS__)
 
-void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
 		RSC(SYSINFO_CPUID_COND0).ATTR(),
 		RSC(SYSINFO_CPUID_COND1).ATTR(),
@@ -294,6 +295,7 @@ void SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 		    }
 	    }
 	}
+	return(reason);
 }
 
 const struct {
@@ -364,8 +366,9 @@ const struct {
 	{EXFER_SVME,	1,	" SVM"}
 };
 
-void SystemRegisters(Window *win, CELL_FUNC OutFunc)
+REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[3] = {
 		RSC(SYSTEM_REGISTERS_COND0).ATTR(),
 		RSC(SYSTEM_REGISTERS_COND1).ATTR(),
@@ -505,6 +508,7 @@ void SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		PRT(REG, attrib[1], "  - ");
 	}
     }
+	return(reason);
 }
 
 void PrintCoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
@@ -543,8 +547,9 @@ void PrintUncoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
     }
 }
 
-void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
 		RSC(SYSINFO_PROC_COND0).ATTR(),
 		RSC(SYSINFO_PROC_COND1).ATTR(),
@@ -700,7 +705,8 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.TDP_Levels > 0) {
 	const size_t len = RSZ(LEVEL) + 1 + 1;
 	char *pfx = malloc(len);
-
+      if (pfx != NULL)
+      {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"TDP%.*s""%s"" [%3d:%-2d]",
 		width - 15 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
@@ -742,11 +748,16 @@ void SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
 			width, OutFunc, attrib[3]);
 	free(pfx);
+      } else {
+	REASON_SET(reason, RC_MEM_ERR);
+      }
     }
+	return(reason);
 }
 
-void SysInfoISA(Window *win, CELL_FUNC OutFunc)
+REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4][5] = {
 		{
 			RSC(SYSINFO_ISA_COND_0_0).ATTR(),
@@ -923,10 +934,13 @@ void SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	PRT(ISA, attrib[3][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
 		"     SYSCALL [%c] ",
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
+
+	return(reason);
 }
 
-void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[3] = {
 		RSC(SYSINFO_FEATURES_COND0).ATTR(),
 		RSC(SYSINFO_FEATURES_COND1).ATTR(),
@@ -1158,6 +1172,8 @@ void SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
 		width - 19 - RSZ(FEATURES_XTPR), hSpace, powered(bix));
+
+	return(reason);
 }
 
 char *Hypervisor[HYPERVISORS] = {
@@ -1167,8 +1183,9 @@ char *Hypervisor[HYPERVISORS] = {
 	[HYPERV_VBOX]	= "VBOX"
 };
 
-void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[2] = {
 		RSC(SYSINFO_TECH_COND0).ATTR(),
 		RSC(SYSINFO_TECH_COND1).ATTR()
@@ -1251,10 +1268,13 @@ void SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s""%s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
 		width - (OutFunc? 20 : 22) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
 		Hypervisor[Shm->Proc.HypervisorID], enabled(bix));
+
+	return(reason);
 }
 
-void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
 		RSC(SYSINFO_PERFMON_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_COND1).ATTR(),
@@ -1457,10 +1477,13 @@ void SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
 		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, powered(bix));
+
+	return(reason);
 }
 
-void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	ATTRIBUTE *attrib[4] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
@@ -1586,14 +1609,24 @@ void SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
 		RSC(POWER_THERMAL_SECOND).CODE(), Shm->Proc.Power.Unit.Times);
+
+	return(reason);
 }
 
-void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
+REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	REASON_INIT(reason);
 	size_t	len = 0, sln;
-	char	*item = malloc(width + 1),
-		*str = malloc(width + 1);
+	char	*item = NULL, *str = NULL;
 	int	idx = 0;
+
+  if ((item = malloc(width + 1)) == NULL) {
+	REASON_SET(reason, RC_MEM_ERR);
+  } else if ((str = malloc(width + 1)) == NULL) {
+	REASON_SET(reason, RC_MEM_ERR);
+	free(item);
+  } else
+  {
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
@@ -1647,9 +1680,9 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
 		width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str);
 /* Section Mark */
-  if ((len = strlen(Shm->SysGate.IdleDriver.Name)
+    if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
-  {
+    {
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		"%s%.*s[%s@%s]", RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - 3 - RSZ(KERNEL_IDLE_DRIVER) - len, hSpace,
@@ -1657,46 +1690,48 @@ void SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Row Mark */
 	len = sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
 			15 - (int) RSZ(KERNEL_STATE), hSpace);
-    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(item, str, sln))
-    {
+      {
 	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
-    }
+      }
 	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3, item, NULL);
 /* Row Mark */
 	len = sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
 			15 - (int) RSZ(KERNEL_POWER), hSpace);
-    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(item, str, sln))
-    {
+      {
 	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
-    }
+      }
 	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3, item, NULL);
 /* Row Mark */
 	len = sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
 			15 - (int) RSZ(KERNEL_LATENCY), hSpace);
-    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(item, str, sln))
-    {
+      {
 	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
-    }
+      }
 	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3, item, NULL);
 /* Row Mark */
 	len = sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
 			15 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
-    for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
+      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
 			 && (3 + len + sln <= width);
 				idx++, len += sln, strncat(item, str, sln))
-    {
-    sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
-    }
+      {
+     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
+      }
 	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3, item, NULL);
-  }
+    }
 	free(item);
 	free(str);
+  }
+	return(reason);
 }
 
 void Package(void)
@@ -2851,7 +2886,7 @@ void AddSysInfoCell(CELL_ARGS)
 
 Window *CreateSysInfo(unsigned long long id)
 {
-	void (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
+	REASON_CODE (*SysInfoFunc)(Window*, CUINT, CELL_FUNC OutFunc) = NULL;
 	ASCII *title = NULL;
 	CoordSize matrixSize = {
 		.wth = 1,
@@ -7493,7 +7528,7 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 }
 
 
-void Top(char option)
+REASON_CODE Top(char option)
 {
 /*
            SCREEN
@@ -7517,14 +7552,20 @@ void Top(char option)
 `__________________________'
 */
 
+	REASON_INIT(reason);
+
 	SortUniqRatio();
 
 	TrapScreenSize(SIGWINCH);
-	signal(SIGWINCH, TrapScreenSize);
 
-	cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate));
-
-	AllocAll(&buffer);
+	if (signal(SIGWINCH, TrapScreenSize) == SIG_ERR) {
+		REASON_SET(reason);
+  } else if((cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate))) == NULL) {
+		REASON_SET(reason, RC_MEM_ERR);
+  } else if (AllocAll(&buffer) == ENOMEM) {
+		REASON_SET(reason, RC_MEM_ERR, ENOMEM);
+  } else
+  {
 	AllocDashboard();
 
 	DISPOSAL_FUNC LayoutView[DISPOSAL_SIZE] = {
@@ -7541,10 +7582,10 @@ void Top(char option)
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
 
 	/* MAIN LOOP */
-  while (!BITVAL(Shutdown, 0))
-  {
-    do
+    while (!BITVAL(Shutdown, 0))
     {
+      do
+      {
 	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
 	    SCANKEY scan = {.key = 0};
 
@@ -7573,13 +7614,13 @@ void Top(char option)
 		draw.Flag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	}
-    } while (	!BITVAL(Shutdown, 0)
+      } while ( !BITVAL(Shutdown, 0)
 		&& !draw.Flag.daemon
 		&& !draw.Flag.layout
 		&& !draw.Flag.clear ) ;
 
-    if (draw.Flag.height & draw.Flag.width)
-    {
+      if (draw.Flag.height & draw.Flag.width)
+      {
 	if (draw.Flag.clear) {
 		draw.Flag.clear  = 0;
 		draw.Flag.layout = 1;
@@ -7607,16 +7648,19 @@ void Top(char option)
 	}
 	/* Write to the standard output					*/
 	WriteConsole(draw.Size, buffer);
-    } else
+      } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
+    }
   }
-
   FreeAll(buffer);
 
-  free(cTask);
-
+  if (cTask != NULL) {
+	free(cTask);
+  }
   DestroyAllCards(&cardList);
+
+  return(reason);
 }
 
 REASON_CODE Help(REASON_CODE reason, ...)
@@ -7638,13 +7682,13 @@ REASON_CODE Help(REASON_CODE reason, ...)
 	case RC_SHM_MMAP: {
 		char *shmFileName = va_arg(ap, char *);
 		char *sysMsg = strerror_l(reason.no, SYS_LOCALE());
-		printf((char *) RSC(ERROR_SHARED_MEM).CODE(),
+		fprintf(stderr, (char *) RSC(ERROR_SHARED_MEM).CODE(),
 				reason.no, shmFileName, sysMsg, reason.ln);
 		}
 		break;
 	case RC_SYS_CALL: {
 		char *sysMsg = strerror(reason.no);
-		printf((char *) RSC(ERROR_SYS_CALL).CODE(),
+		fprintf(stderr, (char *) RSC(ERROR_SYS_CALL).CODE(),
 				reason.no, sysMsg, reason.ln);
 		}
 		break;
@@ -7689,42 +7733,48 @@ int main(int argc, char *argv[])
 	switch (option) {
 	case 'k':
 		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-			SysInfoKernel(NULL, 80, NULL);
+			reason = SysInfoKernel(NULL, 80, NULL);
 		}
 		break;
 	case 'u':
-		SysInfoCPUID(NULL, 80, NULL);
+		reason = SysInfoCPUID(NULL, 80, NULL);
 		break;
 	case 's':
 	{
 		Window tty = {.matrix.size.wth = 4};
 
-		SysInfoProc(NULL, 80, NULL);
+		reason = SysInfoProc(NULL, 80, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
-			80, 0, "ISA Extensions:");
-		SysInfoISA(&tty, NULL);
+			80, 0, (char *) &(RSC(ISA_TITLE).CODE()[1]));
+		reason = SysInfoISA(&tty, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
-			80, 0, "Features:");
-		SysInfoFeatures(NULL, 80, NULL);
+			80, 0, (char *) &(RSC(FEATURES_TITLE).CODE()[1]));
+		reason = SysInfoFeatures(NULL, 80, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
-			80, 0, "Technologies:");
-		SysInfoTech(NULL, 80, NULL);
+			80, 0, (char *) &(RSC(TECHNOLOGIES_TITLE).CODE()[1]));
+		reason = SysInfoTech(NULL, 80, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
-			80, 0, "Performance Monitoring:");
-		SysInfoPerfMon(NULL, 80, NULL);
+			80, 0, (char *) &(RSC(PERF_MON_TITLE).CODE()[1]));
+		reason = SysInfoPerfMon(NULL, 80, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL, 80, 0, "");
 		Print_v1(NULL, NULL, SCANKEY_VOID, NULL,
-			80, 0, "Power & Thermal Monitoring:");
-		SysInfoPwrThermal(NULL, 80, NULL);
+			80, 0, (char *) &(RSC(POWER_THERMAL_TITLE).CODE()[1]));
+		reason = SysInfoPwrThermal(NULL, 80, NULL);
+		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
 	}
 		break;
 	case 'j':
@@ -7772,7 +7822,7 @@ int main(int argc, char *argv[])
 		TERMINAL(IN);
 
 		TrapSignal(1);
-		Top(option);
+		reason = Top(option);
 		TrapSignal(0);
 
 		TERMINAL(OUT);
