@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.43.3"
+#define COREFREQ_VERSION	"1.43.4"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1222,6 +1222,10 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
 #endif
+/* Source: Intel Xeon Processor E3-1200 v5 Product Family		*/
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA	0x1918
+#endif
 /* Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2*/
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
@@ -1237,6 +1241,9 @@ typedef struct	/* BSP CPUID features.					*/
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ	0x5910
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA	0x5918
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ
 	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914

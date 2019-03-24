@@ -1209,6 +1209,10 @@ static struct pci_device_id PCI_Skylake_ids[] = {
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
 	{0, }
 };
 
@@ -1236,6 +1240,10 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ),
+		.driver_data = (kernel_ulong_t) SKL_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
 	{

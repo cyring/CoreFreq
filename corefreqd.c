@@ -2633,6 +2633,11 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_SUNRISEPOINT);
 		break;
+	case PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA:	/* Skylake/DT Server */
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_SUNRISEPOINT);
+		break;
 	case PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA:	/* BGA 1356	*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
@@ -2643,17 +2648,22 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD: /* Kabylake/H Dual Core */
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD: /* Kaby Lake/H Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD: /* Kabylake/S Dual Core */
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD: /* Kaby Lake/S Dual Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ: /* Kabylake/H Quad Core */
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ: /* Kaby Lake/H Quad Core */
+		SKL_CAP(Shm, Proc, Core);
+		SKL_IMC(Shm, Proc);
+		SET_CHIPSET(IC_UNIONPOINT);
+		break;
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA: /* Kaby Lake/DT Server */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
@@ -2663,7 +2673,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ: /* Kabylake/S Quad Core */
+	case PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ: /* Kaby Lake/S Quad Core */
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
@@ -2673,12 +2683,12 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_UNIONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:/* CoffeeLake Quad Core */
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ:/* Coffee Lake Quad Core*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:/* CoffeeLake Hexa Core */
+	case PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAH:/* Coffee Lake Hexa Core*/
 		SKL_CAP(Shm, Proc, Core);
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
