@@ -241,7 +241,7 @@ typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 			ATTRIBUTE *attrib,				\
 			ASCII *item
 
-typedef void (*CELL_FUNC)(CELL_ARGS);
+typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 
 #define RENDER_OK	0x000
 #define RENDER_KO	0x010

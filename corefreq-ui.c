@@ -620,15 +620,15 @@ void AllocCopyItem(TCell *cell, ASCII *item)
 
 void FreeAllTCells(Window *win)
 {
-	if (win->cell != NULL) {
+	if (win->grid != NULL) {
 		CUINT i;
 		for (i = 0; i < win->dim; i++)
 		{
-			free(win->cell[i].attr);
-			free(win->cell[i].item);
+			free(win->grid[i].cell.attr);
+			free(win->grid[i].cell.item);
 		}
-		free(win->cell);
-		win->cell = NULL;
+		free(win->grid);
+		win->grid = NULL;
 	}
 }
 
@@ -736,50 +736,39 @@ Window *SearchWinListById(unsigned long long id, WinList *list)
 
 void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
 {
+	CUINT	horzCol = win->matrix.scroll.horz + col,
+		vertRow = win->matrix.scroll.vert + row;
+
+    if (TGridAt(win, horzCol, vertRow).Update != NULL) {
+	TGridAt(win, horzCol, vertRow).Update(
+					&TGridAt(win, horzCol, vertRow),
+					TGridAt(win, horzCol, vertRow).data
+					);
+    }
     if ((win->matrix.select.col == col)
-     && (win->matrix.select.row == row))
+     && (win->matrix.select.row == row)) {
 	LayerFillAt(win->layer,
 		(win->matrix.origin.col
-		+ (col * TCellAt(win,
-				(win->matrix.scroll.horz + col),
-				(win->matrix.scroll.vert + row)).length)),
+		+ (col * TCellAt(win, horzCol, vertRow).length)),
 		(win->matrix.origin.row + row),
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).length,
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).item,
+		TCellAt(win, horzCol, vertRow).length,
+		TCellAt(win, horzCol, vertRow).item,
 		win->hook.color[(GetFocus(list) == win)].select);
-    else if (GetFocus(list) == win)
+    } else if (GetFocus(list) == win) {
 	LayerCopyAt(win->layer,
 		(win->matrix.origin.col
-		+ (col * TCellAt(win,
-				(win->matrix.scroll.horz + col),
-				(win->matrix.scroll.vert + row)).length)),
+		+ (col * TCellAt(win, horzCol, vertRow).length)),
 		(win->matrix.origin.row + row),
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).length,
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).attr,
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).item);
-    else {
+		TCellAt(win, horzCol, vertRow).length,
+		TCellAt(win, horzCol, vertRow).attr,
+		TCellAt(win, horzCol, vertRow).item);
+    } else {
 	LayerFillAt(win->layer,
 		(win->matrix.origin.col
-		+ (col * TCellAt(win,
-				(win->matrix.scroll.horz + col),
-				(win->matrix.scroll.vert + row)).length)),
+		+ (col * TCellAt(win, horzCol, vertRow).length)),
 		(win->matrix.origin.row + row),
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).length,
-		TCellAt(win,
-			(win->matrix.scroll.horz + col),
-			(win->matrix.scroll.vert + row)).item,
+		TCellAt(win, horzCol, vertRow).length,
+		TCellAt(win, horzCol, vertRow).item,
 		win->hook.color[0].select);
     }
 }

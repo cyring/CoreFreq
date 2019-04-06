@@ -124,7 +124,12 @@ unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
 	return(9 - j);
 }
 
-void Print_v1(	CELL_FUNC OutFunc,
+const char *Indent[2][4] = {
+	{"",	"|",	"|- ",	"   |- "},
+	{"",	" ",	"  ",	"   "}
+};
+
+TGrid *Print_v1(CELL_FUNC OutFunc,
 		Window *win,
 		unsigned long long key,
 		ATTRIBUTE *attrib,
@@ -132,10 +137,7 @@ void Print_v1(	CELL_FUNC OutFunc,
 		int tab,
 		char *fmt, ...)
 {
-	const char *indent[2][4] = {
-		{"",	"|",	"|- ",	"   |- "},
-		{"",	" ",	"  ",	"   "}
-	};
+	TGrid *pGrid = NULL;
 	char *line = malloc(width + 1);
   if (line != NULL)
   {
@@ -144,27 +146,31 @@ void Print_v1(	CELL_FUNC OutFunc,
 	vsprintf(line, fmt, ap);
 
     if (OutFunc == NULL)
-	printf("%s%s%.*s\n", indent[0][tab], line,
-		(int)(width - strlen(line) - strlen(indent[0][tab])), hSpace);
+	printf("%s%s%.*s\n", Indent[0][tab], line,
+		(int)(width - strlen(line) - strlen(Indent[0][tab])), hSpace);
     else {
 	ASCII *item = malloc(width + 1);
       if (item != NULL) {
-	sprintf((char *)item, "%s%s%.*s", indent[1][tab], line,
-		(int)(width - strlen(line) - strlen(indent[1][tab])), hSpace);
-	OutFunc(win, key, attrib, item);
+	sprintf((char *)item, "%s%s%.*s", Indent[1][tab], line,
+		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace);
+
+	pGrid = OutFunc(win, key, attrib, item);
+
 	free(item);
       }
     }
 	va_end(ap);
 	free(line);
   }
+	return(pGrid);
 }
 
-void Print_v2(	CELL_FUNC OutFunc,
+TGrid *Print_v2(CELL_FUNC OutFunc,
 		Window *win,
 		CUINT *nl,
 		ATTRIBUTE *attrib, ...)
 {
+	TGrid *pGrid = NULL;
 	ASCII *item = malloc(32);
     if (item != NULL)
     {
@@ -182,18 +188,20 @@ void Print_v2(	CELL_FUNC OutFunc,
 			} else
 				printf("%s", item);
 		} else
-			OutFunc(win, SCANKEY_NULL, attrib, item);
+			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
 	}
 	va_end(ap);
 	free(item);
     }
+	return(pGrid);
 }
 
-void Print_v3(	CELL_FUNC OutFunc,
+TGrid *Print_v3(CELL_FUNC OutFunc,
 		Window *win,
 		CUINT *nl,
 		ATTRIBUTE *attrib, ...)
 {
+	TGrid *pGrid = NULL;
 	ASCII *item = malloc(32);
     if (item != NULL)
     {
@@ -213,14 +221,15 @@ void Print_v3(	CELL_FUNC OutFunc,
 			} else
 				printf("%s", item);
 		} else
-			OutFunc(win, SCANKEY_NULL, attrib, item);
+			pGrid = OutFunc(win, SCANKEY_NULL, attrib, item);
 	}
 	va_end(ap);
 	free(item);
     }
+	return(pGrid);
 }
 
-#define PUT(key, attrib, width, tab, fmt, ...)	\
+#define PUT(key, attrib, width, tab, fmt, ...)				\
 	Print_v1(OutFunc, win, key, attrib, width, tab, fmt, __VA_ARGS__)
 
 #define Print_REG	Print_v2
@@ -228,7 +237,7 @@ void Print_v3(	CELL_FUNC OutFunc,
 #define Print_IMC	Print_v2
 #define Print_ISA	Print_v3
 
-#define PRT(FUN, attrib, ...)	\
+#define PRT(FUN, attrib, ...)						\
 	Print_##FUN(OutFunc, win, &nl, attrib, __VA_ARGS__)
 
 REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -511,40 +520,83 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	return(reason);
 }
 
-void PrintCoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
+char SymbUnlock[2][2] = {{'[', ']'}, {'<', '>'}};
+
+TGrid *PrintCoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
 			char *pfx, int _boost, int syc, unsigned long long _key,
 			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
 {
-	char symb[2][2] = {{'[', ']'}, {'<', '>'}};
+	TGrid *pGrid = NULL;
 
-    if (Shm->Proc.Boost[_boost] > 0) {
-	PUT(	_key, attrib, width, 0,
+    if (Shm->Proc.Boost[_boost] > 0)
+    {
+	pGrid = PUT(_key, attrib, width, 0,
 		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 	(double) ( Shm->Proc.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
 		20, hSpace,
-		symb[syc][0],
+		SymbUnlock[syc][0],
 		Shm->Proc.Boost[_boost],
-		symb[syc][1]);
+		SymbUnlock[syc][1]);
     }
+	return(pGrid);
 }
 
-void PrintUncoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
+TGrid *PrintUncoreBoost(Window *win, struct FLIP_FLOP *CFlop,
 			char *pfx, int _boost, int syc, unsigned long long _key,
 			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
 {
-	char symb[2][2] = {{'[', ']'}, {'<', '>'}};
+	TGrid *pGrid = NULL;
 
-    if (Shm->Uncore.Boost[_boost] > 0) {
-	PUT(	_key, attrib, width, 0,
+    if (Shm->Uncore.Boost[_boost] > 0)
+    {
+	pGrid = PUT(_key, attrib, width, 0,
 		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
 	(double) ( Shm->Uncore.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
 		20, hSpace,
-		symb[syc][0],
+		SymbUnlock[syc][0],
 		Shm->Uncore.Boost[_boost],
-		symb[syc][1]);
+		SymbUnlock[syc][1]);
     }
+	return(pGrid);
+}
+
+void SysInfoProc_BaseClock(TGrid *grid, DATA_CELL data)
+{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+
+	char item[8];
+	sprintf(item, "%6.2f", CFlop->Clock.Hz / 1000000.0);
+
+	memcpy(&grid->cell.item[68], item, 6);
+}
+
+void SysInfoProc_CoreBoost(TGrid *grid, DATA_CELL data)
+{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+
+	int boost = (int) data.qword;
+	char item[8];
+	sprintf(item, "%7.2f", (double) ( Shm->Proc.Boost[boost]
+					* CFlop->Clock.Hz) / 1000000.0 );
+
+	memcpy(&grid->cell.item[23], item, 7);
+}
+
+void SysInfoProc_UncoreBoost(TGrid *grid, DATA_CELL data)
+{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+
+	int boost = (int) data.qword;
+	char item[8];
+	sprintf(item, "%7.2f", (double) ( Shm->Uncore.Boost[boost]
+					* CFlop->Clock.Hz) / 1000000.0 );
+
+	memcpy(&grid->cell.item[23], item, 7);
 }
 
 REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -599,10 +651,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 11 - RSZ(ONLINE_CPU), hSpace,
 		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	PUT(SCANKEY_NULL, attrib[2], width, 2,
-		"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
-		width - 11 - RSZ(BASE_CLOCK), hSpace,
-		CFlop->Clock.Hz / 1000000.0);
+	GridCall(PUT(SCANKEY_NULL, attrib[2], width, 2,
+			"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
+			width - 11 - RSZ(BASE_CLOCK), hSpace,
+			CFlop->Clock.Hz / 1000000.0),
+		SysInfoProc_BaseClock);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s(MHz)%.*s""%s", RSC(FREQUENCY).CODE(),
@@ -615,26 +668,30 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
 
-	PrintCoreBoost(win, CFlop,
-			"Min", BOOST(MIN), 1, coreClock.sllong,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				"Min", BOOST(MIN), 1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(MIN));
     } else {
-	PrintCoreBoost(win, CFlop,
-			"Min", BOOST(MIN), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				"Min", BOOST(MIN), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(MIN));
     }
     if (Shm->Proc.Features.MaxRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
-	PrintCoreBoost(win, CFlop,
-			"Max", BOOST(MAX), 1, coreClock.sllong,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				"Max", BOOST(MAX), 1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(MAX));
     } else {
-	PrintCoreBoost(win, CFlop,
-			"Max", BOOST(MAX), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				"Max", BOOST(MAX), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(MAX));
     }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%6.2f]",
@@ -661,9 +718,10 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[4];
 	sprintf(pfx, "%2uC", activeCores);
-	PrintCoreBoost(win, CFlop,
-			pfx, boost, 1, clockMod.sllong,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				pfx, boost, 1, clockMod.sllong,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, boost);
       }
     else
       for (boost = BOOST(1C), activeCores = 1;
@@ -671,9 +729,10 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			boost--, activeCores++) {
 	char pfx[4];
 	sprintf(pfx, "%2uC", activeCores);
-	PrintCoreBoost(win, CFlop,
-			pfx, boost, 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				pfx, boost, 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, boost);
       }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
@@ -685,21 +744,25 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
-	PrintUncoreBoost(win, CFlop,
-			"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintUncoreBoost(win, CFlop,
+				"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_UncoreBoost, UNCORE_BOOST(MIN));
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
-	PrintUncoreBoost(win, CFlop,
-			"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintUncoreBoost(win, CFlop,
+				"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_UncoreBoost, UNCORE_BOOST(MAX));
     } else {
-	PrintUncoreBoost(win, CFlop,
-			"Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
-	PrintUncoreBoost(win, CFlop,
-			"Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintUncoreBoost(win, CFlop,
+				"Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_UncoreBoost, UNCORE_BOOST(MIN));
+	GridCall(PrintUncoreBoost(win, CFlop,
+				"Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_UncoreBoost, UNCORE_BOOST(MAX));
     }
 
     if (Shm->Proc.Features.TDP_Levels > 0) {
@@ -730,23 +793,27 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			6, Shm->Proc.Features.TurboActivation ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
-	PrintCoreBoost(win, CFlop, (char*) RSC(NOMINAL).CODE(),
-			BOOST(TDP), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop, (char*) RSC(NOMINAL).CODE(),
+				BOOST(TDP), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(TDP));
 
 	sprintf(pfx, "%s""1", RSC(LEVEL).CODE());
-	PrintCoreBoost(win, CFlop,
-			pfx, BOOST(TDP1), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				pfx, BOOST(TDP1), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(TDP1));
 
 	sprintf(pfx, "%s""2", RSC(LEVEL).CODE());
-	PrintCoreBoost(win, CFlop,
-			pfx, BOOST(TDP2), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				pfx, BOOST(TDP2), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(TDP2));
 
-	PrintCoreBoost(win, CFlop,
-			"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
-			width, OutFunc, attrib[3]);
+	GridCall(PrintCoreBoost(win, CFlop,
+				"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		SysInfoProc_CoreBoost, BOOST(ACT));
 	free(pfx);
       } else {
 	REASON_SET(reason, RC_MEM_ERR);
@@ -2878,10 +2945,10 @@ Window *CreateAbout(unsigned long long id)
 int SysInfoCellPadding;
 /* <<< GLOBALS <<< */
 
-void AddSysInfoCell(CELL_ARGS)
+TGrid *AddSysInfoCell(CELL_ARGS)
 {
 	SysInfoCellPadding++;
-	StoreTCell(win, key, item, attrib);
+	return(StoreTCell(win, key, item, attrib));
 }
 
 Window *CreateSysInfo(unsigned long long id)
@@ -3029,9 +3096,9 @@ Window *CreateSysInfo(unsigned long long id)
 	return(wSysInfo);
 }
 
-void AddCell(CELL_ARGS)
+TGrid *AddCell(CELL_ARGS)
 {
-	StoreTCell(win, key, item, attrib);
+	return(StoreTCell(win, key, item, attrib));
 }
 
 Window *CreateTopology(unsigned long long id)
@@ -7597,8 +7664,6 @@ REASON_CODE Top(char option)
 		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
 			Shortcut(&scan);
 		}
-		PrintWindowStack(&winList);
-
 		break;
 	    }
 	} else {
@@ -7646,7 +7711,8 @@ REASON_CODE Top(char option)
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
-	/* Write to the standard output					*/
+	/* Update the windows data and write to the standard output	*/
+	PrintWindowStack(&winList);
 	WriteConsole(draw.Size, buffer);
       } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",

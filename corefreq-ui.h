@@ -296,6 +296,29 @@ typedef struct {
 	size_t		length;
 } TCell;
 
+typedef union {
+	unsigned long long	qword;
+	struct {
+		unsigned int	dword[2];
+	};
+	struct {
+		unsigned int	_dword;
+		unsigned short	_word[2];
+	};
+	struct {
+		unsigned short	word[4];
+	};
+	struct {
+		char		byte[8];
+	};
+} DATA_CELL;
+
+typedef struct _Grid {
+	TCell		cell;
+	DATA_CELL	data;
+	void		(*Update)(struct _Grid *grid, DATA_CELL data);
+} TGrid;
+
 typedef struct _Win {
 	Layer		*layer;
 
@@ -332,7 +355,7 @@ typedef struct _Win {
 	} hook;
 
 	Matrix		matrix;
-	TCell		*cell;
+	TGrid		*grid;
 	size_t		dim;
 
 	struct {
@@ -398,7 +421,82 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 	(&(win->hook with), what)					\
 )
 
-#define LayerAt(layer, plane, col, row)					\
+#define GridCall_2xArg(gridCall, updateFunc)				\
+({									\
+	TGrid *pGrid = gridCall;					\
+	if(pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		pGrid->data.qword = 0;					\
+	}								\
+})
+
+#define GridCall_3xArg(gridCall, updateFunc,	arg0)			\
+({									\
+	TGrid *pGrid = gridCall;					\
+	if(pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		pGrid->data.qword = arg0;				\
+	}								\
+})
+
+#define GridCall_4xArg(gridCall, updateFunc,	arg0, arg1)		\
+({									\
+	TGrid *pGrid = gridCall;					\
+	if(pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		pGrid->data.dword[0]	= arg0 ;			\
+		pGrid->data.dword[1]	= arg1 ;			\
+	}								\
+})
+
+#define GridCall_5xArg(gridCall, updateFunc,	arg0, arg1, arg2)	\
+({									\
+	TGrid *pGrid = gridCall;					\
+	if(pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		pGrid->data._dword	= arg0 ;			\
+		pGrid->data._word[0]	= arg1 ;			\
+		pGrid->data._word[1]	= arg2 ;			\
+	}								\
+})
+
+#define GridCall_10xArg(gridCall, updateFunc,	arg0, arg1, arg2, arg3, \
+						arg4, arg5, arg6, arg7) \
+({									\
+	TGrid *pGrid = gridCall;					\
+	if(pGrid != NULL)						\
+	{								\
+		pGrid->Update = updateFunc;				\
+		pGrid->data.byte[0]	= arg0 ;			\
+		pGrid->data.byte[1]	= arg1 ;			\
+		pGrid->data.byte[2]	= arg2 ;			\
+		pGrid->data.byte[3]	= arg3 ;			\
+		pGrid->data.byte[4]	= arg4 ;			\
+		pGrid->data.byte[5]	= arg5 ;			\
+		pGrid->data.byte[6]	= arg6 ;			\
+		pGrid->data.byte[7]	= arg7 ;			\
+	}								\
+})
+
+#define _DISPATCH(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_CURSOR, ... ) _CURSOR
+
+#define GridCall( ... )							\
+	_DISPATCH( __VA_ARGS__ ,	GridCall_10xArg,		\
+					GridCall_9xArg,			\
+					GridCall_8xArg,			\
+					GridCall_7xArg,			\
+					GridCall_6xArg,			\
+					GridCall_5xArg,			\
+					GridCall_4xArg,			\
+					GridCall_3xArg,			\
+					GridCall_2xArg,			\
+					GridCall_1xArg)( __VA_ARGS__ )
+
+#define LayerAt( layer, plane, col, row )				\
 	layer->plane[col + (row * layer->size.wth)]
 
 #define LayerFillAt(layer, col, row, len, source, attrib)		\
@@ -413,8 +511,11 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 	memcpy(&LayerAt(layer, code, col, row), source, len);		\
 })
 
+#define TGridAt(win, col, row)						\
+	win->grid[col + (row * win->matrix.size.wth)]
+
 #define TCellAt(win, col, row)						\
-	win->cell[col + (row * win->matrix.size.wth)]
+	TGridAt(win, col, row).cell
 
 #define GetHead(list)		(list)->head
 #define SetHead(list, win)	GetHead(list) = win
@@ -447,17 +548,23 @@ void AllocCopyItem(TCell *cell, ASCII *item) ;
 
 void FreeAllTCells(Window *win) ;
 
-#define StoreTCell(win, shortkey, item, attrib)				\
+#define StoreTCell(win, shortkey, item, attrib) 			\
 ({									\
-    if (item != NULL) {							\
+	TGrid *pGrid = NULL;						\
+  if (item != NULL)							\
+  {									\
 	win->dim++;							\
 	win->lazyComp.bottomRow = (win->dim / win->matrix.size.wth)	\
-				- win->matrix.size.hth;			\
+				- win->matrix.size.hth ;		\
 									\
-      if ((win->cell = realloc(win->cell,sizeof(TCell) * win->dim)) != NULL)\
-      {									\
-	win->cell[win->dim - 1].quick.key = shortkey;			\
-	win->cell[win->dim - 1].length = strlen((char *)item);		\
+	win->grid = realloc(win->grid, sizeof(TGrid) * win->dim);	\
+    if (win->grid != NULL)						\
+    {									\
+	pGrid = &win->grid[win->dim - 1];				\
+	pGrid->cell.quick.key = shortkey;				\
+	pGrid->cell.length = strlen((char *) item);			\
+	pGrid->data.qword = 0;						\
+	pGrid->Update = NULL;						\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		__typeof__(attrib),__typeof__(ATTRIBUTE[])),AllocCopyAttr,\
@@ -466,11 +573,12 @@ void FreeAllTCells(Window *win) ;
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
 		__typeof__(attrib),__typeof__(ATTRIBUTE)),AllocFillAttr,\
 	(void)0)))							\
-		(&(win->cell[win->dim - 1]), attrib);			\
+		(&pGrid->cell, attrib);					\
 									\
-	AllocCopyItem(&win->cell[win->dim - 1], (ASCII *)item);		\
-      }									\
+	AllocCopyItem(&pGrid->cell, (ASCII *) item);			\
     }									\
+  }									\
+	pGrid;								\
 })
 
 void DestroyWindow(Window *win) ;
