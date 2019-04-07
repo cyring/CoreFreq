@@ -297,27 +297,73 @@ typedef struct {
 } TCell;
 
 typedef union {
-	unsigned long long	qword;
+	void			*pvoid;
+	unsigned long long	*pullong;
+	unsigned long		*pulong;
+	unsigned int		*puint;
+
+	unsigned long long	ullong;
+	signed long long	sllong;
+	unsigned long		ulong;
+	signed long		slong;
+
 	struct {
-		unsigned int	dword[2];
+		unsigned int	uint[2];
 	};
 	struct {
-		unsigned int	_dword;
-		unsigned short	_word[2];
+		signed int	sint[2];
 	};
-	struct {
-		unsigned short	word[4];
-	};
-	struct {
-		char		byte[8];
-	};
-} DATA_CELL;
+} DATA_TYPE;
 
 typedef struct _Grid {
 	TCell		cell;
-	DATA_CELL	data;
-	void		(*Update)(struct _Grid *grid, DATA_CELL data);
+	DATA_TYPE	data;
+	void		(*Update)(struct _Grid *grid, DATA_TYPE data);
 } TGrid;
+
+void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
+void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
+void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
+void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
+void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
+void Set_SLLONG(TGrid *pGrid	, signed long long _SLLONG) ;
+void Set_ULONG(TGrid *pGrid	, unsigned long _ULONG) ;
+void Set_SLONG(TGrid *pGrid	, signed long _SLONG) ;
+void Set_UINT(TGrid *pGrid	, unsigned int _UINT) ;
+void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
+
+#define SET_DATA(_pGrid , _data)					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(void *)) ,		\
+			Set_pVOID,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned long long *)),	\
+			Set_pULLONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned long *)) ,	\
+			Set_pULONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned int *)) ,	\
+			Set_pUINT,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned long long)) ,	\
+			Set_ULLONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed long long)) ,	\
+			Set_SLLONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned long)) , 	\
+			Set_ULONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed long)) ,		\
+			Set_SLONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(unsigned int)) ,		\
+			Set_UINT,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed int)) ,		\
+			Set_SINT,					\
+	(void)0))))))))))(_pGrid, _data)
 
 typedef struct _Win {
 	Layer		*layer;
@@ -405,18 +451,18 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 
 #define StoreWindow(win, with, what)					\
 (									\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
 	__typeof__(win->hook with), __typeof__(TCELLFUNC)),HookCellFunc,\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
 	__typeof__(win->hook with), __typeof__(KEYFUNC)), HookKeyFunc,	\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
 	__typeof__(win->hook with), __typeof__(WINFUNC)), HookWinFunc,	\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
-	__typeof__(win->hook with), __typeof__(ATTRIBUTE)), HookAttrib,	\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
-	__typeof__(win->hook with), __typeof__(REGSTR)), HookString,	\
-    __builtin_choose_expr(__builtin_types_compatible_p(			\
-	__typeof__(win->hook with), __typeof__(REGPTR)), HookPointer,	\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
+	__typeof__(win->hook with), __typeof__(ATTRIBUTE)), HookAttrib ,\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
+	__typeof__(win->hook with), __typeof__(REGSTR) ), HookString,	\
+    __builtin_choose_expr(__builtin_types_compatible_p (		\
+	__typeof__(win->hook with), __typeof__(REGPTR) ), HookPointer,	\
     (void)0))))))							\
 	(&(win->hook with), what)					\
 )
@@ -427,7 +473,7 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 	if(pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
-		pGrid->data.qword = 0;					\
+		pGrid->data.pvoid = NULL;				\
 	}								\
 })
 
@@ -437,64 +483,16 @@ void HookPointer(REGPTR *with, REGPTR what) ;
 	if(pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
-		pGrid->data.qword = arg0;				\
+		SET_DATA(pGrid, arg0);					\
 	}								\
 })
 
-#define GridCall_4xArg(gridCall, updateFunc,	arg0, arg1)		\
-({									\
-	TGrid *pGrid = gridCall;					\
-	if(pGrid != NULL)						\
-	{								\
-		pGrid->Update = updateFunc;				\
-		pGrid->data.dword[0]	= arg0 ;			\
-		pGrid->data.dword[1]	= arg1 ;			\
-	}								\
-})
+#define DISPATCH_GridCall(_1,_2,_3,_CURSOR, ... ) _CURSOR
 
-#define GridCall_5xArg(gridCall, updateFunc,	arg0, arg1, arg2)	\
-({									\
-	TGrid *pGrid = gridCall;					\
-	if(pGrid != NULL)						\
-	{								\
-		pGrid->Update = updateFunc;				\
-		pGrid->data._dword	= arg0 ;			\
-		pGrid->data._word[0]	= arg1 ;			\
-		pGrid->data._word[1]	= arg2 ;			\
-	}								\
-})
-
-#define GridCall_10xArg(gridCall, updateFunc,	arg0, arg1, arg2, arg3, \
-						arg4, arg5, arg6, arg7) \
-({									\
-	TGrid *pGrid = gridCall;					\
-	if(pGrid != NULL)						\
-	{								\
-		pGrid->Update = updateFunc;				\
-		pGrid->data.byte[0]	= arg0 ;			\
-		pGrid->data.byte[1]	= arg1 ;			\
-		pGrid->data.byte[2]	= arg2 ;			\
-		pGrid->data.byte[3]	= arg3 ;			\
-		pGrid->data.byte[4]	= arg4 ;			\
-		pGrid->data.byte[5]	= arg5 ;			\
-		pGrid->data.byte[6]	= arg6 ;			\
-		pGrid->data.byte[7]	= arg7 ;			\
-	}								\
-})
-
-#define _DISPATCH(_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_CURSOR, ... ) _CURSOR
-
-#define GridCall( ... )							\
-	_DISPATCH( __VA_ARGS__ ,	GridCall_10xArg,		\
-					GridCall_9xArg,			\
-					GridCall_8xArg,			\
-					GridCall_7xArg,			\
-					GridCall_6xArg,			\
-					GridCall_5xArg,			\
-					GridCall_4xArg,			\
-					GridCall_3xArg,			\
-					GridCall_2xArg,			\
-					GridCall_1xArg)( __VA_ARGS__ )
+#define GridCall(...)							\
+	DISPATCH_GridCall( __VA_ARGS__ ,GridCall_3xArg ,		\
+					GridCall_2xArg ,		\
+					NULL)( __VA_ARGS__ )
 
 #define LayerAt( layer, plane, col, row )				\
 	layer->plane[col + (row * layer->size.wth)]
@@ -563,7 +561,7 @@ void FreeAllTCells(Window *win) ;
 	pGrid = &win->grid[win->dim - 1];				\
 	pGrid->cell.quick.key = shortkey;				\
 	pGrid->cell.length = strlen((char *) item);			\
-	pGrid->data.qword = 0;						\
+	pGrid->data.pvoid = NULL;					\
 	pGrid->Update = NULL;						\
 									\
 	__builtin_choose_expr(__builtin_types_compatible_p(		\
@@ -653,6 +651,8 @@ void MotionOriginDown_Win(Window *win) ;
 int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;
 
 void PrintWindowStack(WinList *winList) ;
+
+void WindowsUpdate(WinList *winList) ;
 
 #define EraseTCell_Menu(win)						\
 ({									\

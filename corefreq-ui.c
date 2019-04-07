@@ -549,6 +549,58 @@ SCREEN_SIZE GetScreenSize(void)
 	return(_screenSize);
 }
 
+inline void Set_pVOID(TGrid *pGrid, void *pVOID)
+{
+	pGrid->data.pvoid = pVOID;
+}
+
+inline void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
+{
+	pGrid->data.pullong = pULLONG;
+}
+
+inline void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
+{
+	pGrid->data.pulong = pULONG;
+}
+
+inline void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
+{
+	pGrid->data.puint = pUINT;
+}
+
+inline void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
+{
+	pGrid->data.ullong = _ULLONG;
+}
+
+inline void Set_SLLONG(TGrid *pGrid, signed long long _SLLONG)
+{
+	pGrid->data.sllong = _SLLONG;
+}
+
+inline void Set_ULONG(TGrid *pGrid, unsigned long _ULONG)
+{
+	pGrid->data.ulong = _ULONG;
+}
+
+inline void Set_SLONG(TGrid *pGrid, signed long _SLONG)
+{
+	pGrid->data.slong = _SLONG;
+}
+
+inline void Set_UINT(TGrid *pGrid, unsigned int _UINT)
+{
+	pGrid->data.uint[0] = _UINT;
+	pGrid->data.uint[1] = 0;
+}
+
+inline void Set_SINT(TGrid *pGrid, signed int _SINT)
+{
+	pGrid->data.sint[0] = _SINT;
+	pGrid->data.sint[1] = 0;
+}
+
 void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) { *with=what; }
 
 void HookKeyFunc(KEYFUNC *with, KEYFUNC what) { *with=what; }
@@ -739,12 +791,6 @@ void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
 	CUINT	horzCol = win->matrix.scroll.horz + col,
 		vertRow = win->matrix.scroll.vert + row;
 
-    if (TGridAt(win, horzCol, vertRow).Update != NULL) {
-	TGridAt(win, horzCol, vertRow).Update(
-					&TGridAt(win, horzCol, vertRow),
-					TGridAt(win, horzCol, vertRow).data
-					);
-    }
     if ((win->matrix.select.col == col)
      && (win->matrix.select.row == row)) {
 	LayerFillAt(win->layer,
@@ -1263,6 +1309,47 @@ void PrintWindowStack(WinList *winList)
 				ForEachCellPrint(walker, winList);
 		} while (!IsHead(winList, walker)) ;
 	}
+}
+
+void WindowsUpdate(WinList *winList)
+{
+	Window *walker, *marker = NULL;
+  if ((walker = GetFocus(winList)) != NULL)
+  {
+	CUINT col, row;
+    do
+    {
+	walker = walker->next;
+	for (row = 0; row < walker->matrix.size.hth; row++) {
+	  for (col = 0; col < walker->matrix.size.wth; col++)
+	  {
+		CUINT	horzCol = walker->matrix.scroll.horz + col,
+			vertRow = walker->matrix.scroll.vert + row;
+
+	    if (TGridAt(walker, horzCol, vertRow).Update != NULL)
+	    {
+		TGridAt(walker, horzCol, vertRow).Update(
+					&TGridAt(walker, horzCol, vertRow),
+					TGridAt(walker, horzCol, vertRow).data);
+		if (marker == NULL)
+			marker = walker->prev;
+	    }
+	  }
+	}
+    } while (!IsHead(winList, walker)) ;
+  }
+  if ((walker = marker) != NULL)
+  {
+    do
+    {
+	walker = walker->next;
+
+	if (walker->hook.Print != NULL)
+		walker->hook.Print(walker, winList);
+	else
+		ForEachCellPrint(walker, winList);
+    } while (!IsHead(winList, walker)) ;
+  }
 }
 
 void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }

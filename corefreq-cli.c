@@ -562,38 +562,33 @@ TGrid *PrintUncoreBoost(Window *win, struct FLIP_FLOP *CFlop,
 	return(pGrid);
 }
 
-void SysInfoProc_BaseClock(TGrid *grid, DATA_CELL data)
+void SysInfoProc_BaseClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-
 	char item[8];
 	sprintf(item, "%6.2f", CFlop->Clock.Hz / 1000000.0);
 
-	memcpy(&grid->cell.item[68], item, 6);
+	memcpy(&grid->cell.item[grid->cell.length - 8], item, 6);
 }
 
-void SysInfoProc_CoreBoost(TGrid *grid, DATA_CELL data)
+void SysInfoProc_CoreBoost(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-
-	int boost = (int) data.qword;
 	char item[8];
-	sprintf(item, "%7.2f", (double) ( Shm->Proc.Boost[boost]
+	sprintf(item, "%7.2f", (double) ( Shm->Proc.Boost[data.sint[0]]
 					* CFlop->Clock.Hz) / 1000000.0 );
 
 	memcpy(&grid->cell.item[23], item, 7);
 }
 
-void SysInfoProc_UncoreBoost(TGrid *grid, DATA_CELL data)
+void SysInfoProc_UncoreBoost(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-
-	int boost = (int) data.qword;
 	char item[8];
-	sprintf(item, "%7.2f", (double) ( Shm->Uncore.Boost[boost]
+	sprintf(item, "%7.2f", (double) ( Shm->Uncore.Boost[data.sint[0]]
 					* CFlop->Clock.Hz) / 1000000.0 );
 
 	memcpy(&grid->cell.item[23], item, 7);
@@ -1680,6 +1675,14 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
+void SysInfoKernel_Update(TGrid *grid, DATA_TYPE data)
+{
+	char item[24];
+	size_t len = sprintf(item, "%18lu KB", (*data.pulong));
+
+	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
+}
+
 REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
@@ -1723,29 +1726,34 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.sharedram);
-	PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
-		"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
-		width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str);
+	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
+			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
+			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
+		SysInfoKernel_Update, &Shm->SysGate.memInfo.sharedram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
-	PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
-		"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
-		width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str);
+	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
+			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
+			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
+		SysInfoKernel_Update, &Shm->SysGate.memInfo.freeram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
-	PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
-		"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
-		width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str);
+	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
+			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
+			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
+		SysInfoKernel_Update, &Shm->SysGate.memInfo.bufferram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
-	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
-		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
-		width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str);
+	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
+			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
+			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
+		SysInfoKernel_Update, &Shm->SysGate.memInfo.totalhigh);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
-	PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
-		"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
-		width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str);
+	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
+			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
+			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
+		SysInfoKernel_Update, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
     if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
@@ -3408,6 +3416,18 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	return(wCPU);
 }
 
+void UpdateCoreClock(TGrid *grid, DATA_TYPE data)
+{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+	char item[8];
+	sprintf(item, "%7.2f", (double) (data.uint[0] * CFlop->Clock.Hz)
+					/ 1000000.0);
+
+	memcpy(&grid->cell.item[1], item, 7);
+}
+
 typedef void (*TITLE_CALLBACK)(unsigned int, char *);
 
 Window *CreateCoreClock(unsigned long long id,
@@ -3465,10 +3485,11 @@ Window *CreateCoreClock(unsigned long long id,
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wCK, clockMod.sllong, item,
-			attrib[multiplier < medianColdZone ?
-				1 : multiplier > startingHotZone ?
-					2 : 0]);
+		GridCall(StoreTCell(wCK, clockMod.sllong, item,
+				attrib[multiplier < medianColdZone ?
+					1 : multiplier > startingHotZone ?
+						2 : 0]),
+			UpdateCoreClock, multiplier);
 	}
 
 	TitleCallback(nc, (char*) item);
@@ -3524,6 +3545,17 @@ Window *CreateRatioClock(unsigned long long id)
 					TitleForRatioClock, 38));
 }
 
+void UpdateUncoreClock(TGrid *grid, DATA_TYPE data)
+{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+	char item[8];
+	sprintf(item, "%7.2f", (double) (data.uint[0] * CFlop->Clock.Hz)
+					/ 1000000.0);
+	memcpy(&grid->cell.item[1], item, 7);
+}
+
 Window *CreateUncoreClock(unsigned long long id)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
@@ -3573,8 +3605,9 @@ Window *CreateUncoreClock(unsigned long long id)
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
-		StoreTCell(wUC, clockMod.sllong, item,
-			attrib[multiplier > startingHotZone ? 1 : 0]);
+		GridCall(StoreTCell(wUC, clockMod.sllong, item,
+				attrib[multiplier > startingHotZone ? 1 : 0]),
+			UpdateUncoreClock, multiplier);
 	}
 	sprintf((char*) item, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
 				nc == 1 ? "Max" : "Min");
@@ -7664,7 +7697,11 @@ REASON_CODE Top(char option)
 		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
 			Shortcut(&scan);
 		}
+		PrintWindowStack(&winList);
+
 		break;
+	    } else {
+		WindowsUpdate(&winList);
 	    }
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
@@ -7711,8 +7748,7 @@ REASON_CODE Top(char option)
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
-	/* Update the windows data and write to the standard output	*/
-	PrintWindowStack(&winList);
+	/* Write to the standard output.				*/
 	WriteConsole(draw.Size, buffer);
       } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
