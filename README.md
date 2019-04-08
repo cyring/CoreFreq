@@ -156,13 +156,17 @@ CPU     IPS            IPC            CPI
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 * Q: The CPU ratio does not go above its minimum value ?  
-* Q: *The UI crashes frequently* with segmentation faults ?  
+* Q: The UI shows erratic counters values !  
 
   A: In the kernel boot command argument line, *disable the NMI Watchdog*  
 ```
 nmi_watchdog=0
 ```  
-
+  A: The NMI alternative is proposed by the `Makefile` to make use of the `APERF/MPERF` registers  
+```
+make help	# for instructions usage
+make info	# for current settings
+```  
 
 * Q: The deep sleep states do not produce any value ?  
   A: Check if the intel_idle module is running.  
@@ -198,14 +202,14 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 &nbsp;&nbsp;&nbsp;&nbsp;If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
 
-* Q: The menu option "Memory Ctrl" does not open any window ?  
+* Q: The menu option "Memory Controller" does not open any window ?  
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
 :hash:`insmod corefreqk.ko Experimental=1`  
 
 
 * Q: The Instructions and PMC0 counters are stuck to zero ?  
   A: The PCE bit of control register CR4 allows RDPMC in ring 3  
-:hash:`echo 2 > /sys/devices/cpu/rdpmc`  
+:hash:`echo "2" > /sys/devices/cpu/rdpmc`  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
