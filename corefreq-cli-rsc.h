@@ -135,6 +135,12 @@ enum {
 	RSC_CREATE_UNCORE_CLOCK_COND1,
 	RSC_CREATE_SELECT_CPU_COND0,
 	RSC_CREATE_SELECT_CPU_COND1,
+	RSC_HOT_EVENT_COND0,
+	RSC_HOT_EVENT_COND1,
+	RSC_HOT_EVENT_COND2,
+	RSC_HOT_EVENT_COND3,
+	RSC_HOT_EVENT_COND4,
+	RSC_BOX_EVENT,
 /* ASCII */
 	RSC_PROCESSOR_TITLE,
 	RSC_PROCESSOR,
@@ -1791,4 +1797,40 @@ extern RESOURCE_ST Resource[];
 {									\
 	LBK,LBK,LBK,HBK,HBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,		\
 	LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK,LBK		\
+}
+
+#define RSC_HOT_EVENT_COND0_ATTR					\
+{									\
+	HDK,HDK,HDK							\
+}
+
+#define RSC_HOT_EVENT_COND1_ATTR					\
+{									\
+	HRK,HRK,HRK							\
+}
+
+#define RSC_HOT_EVENT_COND2_ATTR					\
+{									\
+	{.fg=CYAN,.bg=YELLOW,.bf=1,.un=1},				\
+	{.fg=CYAN,.bg=YELLOW,.bf=0,.un=0},				\
+	{.fg=CYAN,.bg=YELLOW,.bf=0,.un=0}				\
+}
+
+#define RSC_HOT_EVENT_COND3_ATTR					\
+{									\
+	HWK,HWK,HWK							\
+}
+
+#define RSC_HOT_EVENT_COND4_ATTR					\
+{									\
+	{.fg=BLUE,.bg=RED,.bf=0,.un=1} ,				\
+	{.fg=BLUE,.bg=RED,.bf=0,.un=0} ,				\
+	{.fg=BLUE,.bg=RED,.bf=0,.un=0}					\
+}
+
+#define RSC_BOX_EVENT_ATTR						\
+{									\
+	LWK,								\
+	LMK,								\
+	HYK								\
 }

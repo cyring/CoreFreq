@@ -3707,10 +3707,11 @@ Window *CreateCoreClock(unsigned long long id,
 	CUINT oRow;
 
 	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
-		hthMin = draw.Size.height - 	( TOP_HEADER_ROW
+		hthMin = draw.Size.height - 	( 1
+						+ TOP_HEADER_ROW
 						+ TOP_FOOTER_ROW
 						+ TOP_SEPARATOR);
-		oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
+		oRow = 1 + TOP_HEADER_ROW + TOP_FOOTER_ROW;
 	} else {
 		hthMin = draw.Size.height - 2;
 		oRow = 1;
@@ -3826,10 +3827,11 @@ Window *CreateUncoreClock(unsigned long long id)
 	CUINT oRow;
 
 	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
-		hthMin = draw.Size.height -	( TOP_HEADER_ROW
+		hthMin = draw.Size.height -	( 1
+						+ TOP_HEADER_ROW
 						+ TOP_FOOTER_ROW
 						+ TOP_SEPARATOR );
-		oRow = TOP_HEADER_ROW + TOP_FOOTER_ROW;
+		oRow = 1 + TOP_HEADER_ROW + TOP_FOOTER_ROW;
 	} else {
 		hthMin = draw.Size.height - 2;
 		oRow = 1;
@@ -4552,51 +4554,46 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_SHIFT_h:
     {
-	ATTRIBUTE eventAttr[3] = {
-		MakeAttr(WHITE,   0, BLACK, 0),
-		MakeAttr(MAGENTA, 0, BLACK, 0),
-		MakeAttr(YELLOW,  0, BLACK, 1)
-	};
 	Window *win = SearchWinListById(scan->key, &winList);
-	if (win == NULL)
-	{
-		const Coordinate origin = {
-			.col = 53,
-			.row = TOP_HEADER_ROW + 3
-		}, select = {
-			.col = 0,
-			.row = 0
-		};
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = 53,
+		.row = TOP_HEADER_ROW + 3
+	}, select = {
+		.col = 0,
+		.row = 0
+	};
 
 	Window *wBox = CreateBox(scan->key, origin, select,
-		(char*) RSC(BOX_EVENT_TITLE).CODE(),
-		RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
-		eventAttr[(processorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
-		BOXKEY_CLR_THM_SENSOR,
-		RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
-		eventAttr[(processorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
-		BOXKEY_CLR_THM_PROCHOT,
-		RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
-		eventAttr[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
-		BOXKEY_CLR_THM_CRIT,
-		RSC(BOX_EVENT_THERMAL_THRESHOLD).CODE(),
-		eventAttr[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
-		BOXKEY_CLR_THM_THOLD,
-		RSC(BOX_EVENT_POWER_LIMITATION).CODE(),
-		eventAttr[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
-		BOXKEY_CLR_PWR_LIMIT,
-		RSC(BOX_EVENT_CURRENT_LIMITATION).CODE(),
-		eventAttr[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
-		BOXKEY_CLR_CUR_LIMIT,
-		RSC(BOX_EVENT_CROSS_DOMAIN_LIMIT).CODE(),
-		eventAttr[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
-		BOXKEY_CLR_X_DOMAIN);
+			(char*) RSC(BOX_EVENT_TITLE).CODE(),
+				RSC(BOX_EVENT_THERMAL_SENSOR).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_SENSOR) ? 1 : 0],
+				BOXKEY_CLR_THM_SENSOR,
+				RSC(BOX_EVENT_PROCHOT_AGENT).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_PROCHOT) ? 1 : 0],
+				BOXKEY_CLR_THM_PROCHOT,
+				RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
+				BOXKEY_CLR_THM_CRIT,
+				RSC(BOX_EVENT_THERMAL_THRESHOLD).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
+				BOXKEY_CLR_THM_THOLD,
+				RSC(BOX_EVENT_POWER_LIMITATION).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
+				BOXKEY_CLR_PWR_LIMIT,
+				RSC(BOX_EVENT_CURRENT_LIMITATION).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
+				BOXKEY_CLR_CUR_LIMIT,
+				RSC(BOX_EVENT_CROSS_DOMAIN_LIMIT).CODE(),
+	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
+				BOXKEY_CLR_X_DOMAIN);
 
-		if (wBox != NULL) {
-			AppendWindow(wBox, &winList);
-		} else
-			SetHead(&winList, win);
+	if (wBox != NULL) {
+		AppendWindow(wBox, &winList);
 	} else
+		SetHead(&winList, win);
+      } else
 		SetHead(&winList, win);
     }
     break;
@@ -7094,11 +7091,12 @@ void Draw_Footer(Layer *layer, CUINT row)
 	struct FLIP_FLOP *SProc = &Shm->Cpu[Shm->Proc.Service.Core]	\
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 
-	ATTRIBUTE eventAttr[4] = {
-		MakeAttr(BLACK,  0, BLACK, 1),
-		MakeAttr(RED,    0, BLACK, 1),
-		MakeAttr(YELLOW, 0, BLACK, 1),
-		MakeAttr(WHITE,  0, BLACK, 1)
+	ATTRIBUTE *eventAttr[] = {
+		RSC(HOT_EVENT_COND0).ATTR(),
+		RSC(HOT_EVENT_COND1).ATTR(),
+		RSC(HOT_EVENT_COND2).ATTR(),
+		RSC(HOT_EVENT_COND3).ATTR(),
+		RSC(HOT_EVENT_COND4).ATTR()
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
@@ -7110,23 +7108,23 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_hot = 2;
 		_tmp = 3;
 	    } else {
-		_hot = 1;
+		_hot = 4;
 		_tmp = 1;
 	    }
 	}
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-		LayerAt(layer, attr, 14+46, row) = \
-		LayerAt(layer, attr, 14+47, row) = \
-		LayerAt(layer, attr, 14+48, row) = eventAttr[_hot];
-	else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		LayerAt(layer, attr, 14+43, row) = \
-		LayerAt(layer, attr, 14+44, row) = \
-		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot];
-
-	LayerAt(layer, attr, 14+62, row) = \
-	LayerAt(layer, attr, 14+63, row) = \
-	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp];
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+		LayerAt(layer, attr, 14+46, row) = eventAttr[_hot][0];
+		LayerAt(layer, attr, 14+47, row) = eventAttr[_hot][1];
+		LayerAt(layer, attr, 14+48, row) = eventAttr[_hot][2];
+	} else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+		LayerAt(layer, attr, 14+43, row) = eventAttr[_hot][0];
+		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][1];
+		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot][2];
+	}
+	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][0];
+	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][1];
+	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp][2];
 
 	sprintf(buffer, "%3u%4.2f", PFlop->Thermal.Temp, SProc->Voltage.Vcore);
 	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);

@@ -237,6 +237,7 @@ typedef union {
 #define HGK	{.fg = GREEN,	.bg = BLACK,	.bf = 1}
 #define HYK	{.fg = YELLOW,	.bg = BLACK,	.bf = 1}
 #define HBK	{.fg = BLUE,	.bg = BLACK,	.bf = 1}
+#define HMK	{.fg = MAGENTA, .bg = BLACK,	.bf = 1}
 #define HCK	{.fg = CYAN,	.bg = BLACK,	.bf = 1}
 #define HWK	{.fg = WHITE,	.bg = BLACK,	.bf = 1}
 #define HKB	{.fg = BLACK,	.bg = BLUE,	.bf = 1}
@@ -252,6 +253,7 @@ typedef union {
 #define LGK	{.fg = GREEN,	.bg = BLACK}
 #define LYK	{.fg = YELLOW,	.bg = BLACK}
 #define LBK	{.fg = BLUE,	.bg = BLACK}
+#define LMK	{.fg = MAGENTA, .bg = BLACK}
 #define LCK	{.fg = CYAN,	.bg = BLACK}
 #define LWK	{.fg = WHITE,	.bg = BLACK}
 #define LWB	{.fg = WHITE,	.bg = BLUE}

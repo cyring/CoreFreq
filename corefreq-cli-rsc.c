@@ -388,6 +388,16 @@ ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[2][26] = {
 	RSC_CREATE_SELECT_CPU_COND1_ATTR
 };
 
+ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
+	RSC_HOT_EVENT_COND0_ATTR,
+	RSC_HOT_EVENT_COND1_ATTR,
+	RSC_HOT_EVENT_COND2_ATTR,
+	RSC_HOT_EVENT_COND3_ATTR,
+	RSC_HOT_EVENT_COND4_ATTR
+};
+
+ATTRIBUTE Rsc_BoxEvent_Attr[] = RSC_BOX_EVENT_ATTR;
+
 RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_PROC] = {
 		.Attr = Rsc_Layout_Header_Proc_Attr,
@@ -1090,6 +1100,30 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_CREATE_SELECT_CPU_COND1] = {
 		.Attr = Rsc_CreateSelectCPU_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_HOT_EVENT_COND0] = {
+		.Attr = Rsc_HotEvent_Cond_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_HOT_EVENT_COND1] = {
+		.Attr = Rsc_HotEvent_Cond_Attr[1],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_HOT_EVENT_COND2] = {
+		.Attr = Rsc_HotEvent_Cond_Attr[2],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_HOT_EVENT_COND3] = {
+		.Attr = Rsc_HotEvent_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_HOT_EVENT_COND4] = {
+		.Attr = Rsc_HotEvent_Cond_Attr[4],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_BOX_EVENT] = {
+		.Attr = Rsc_BoxEvent_Attr,
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 /* ASCII */
