@@ -562,36 +562,40 @@ TGrid *PrintUncoreBoost(Window *win, struct FLIP_FLOP *CFlop,
 	return(pGrid);
 }
 
-void SysInfoProc_BaseClock(TGrid *grid, DATA_TYPE data)
+void UpdateBaseClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[8];
+	char item[6+1];
 	sprintf(item, "%6.2f", CFlop->Clock.Hz / 1000000.0);
 
 	memcpy(&grid->cell.item[grid->cell.length - 8], item, 6);
 }
 
-void SysInfoProc_CoreBoost(TGrid *grid, DATA_TYPE data)
+void UpdateCoreBoost(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[8];
-	sprintf(item, "%7.2f", (double) ( Shm->Proc.Boost[data.sint[0]]
-					* CFlop->Clock.Hz) / 1000000.0 );
+	char item[4+7+1];
+	sprintf(item, "%4d%7.2f", Shm->Proc.Boost[data.sint[0]],
+			(double)( Shm->Proc.Boost[data.sint[0]]
+				* CFlop->Clock.Hz) / 1000000.0 );
 
-	memcpy(&grid->cell.item[23], item, 7);
+	memcpy(&grid->cell.item[23], &item[4], 7);
+	memcpy(&grid->cell.item[51], &item[0], 4);
 }
 
-void SysInfoProc_UncoreBoost(TGrid *grid, DATA_TYPE data)
+void UpdateUncoreBoost(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[8];
-	sprintf(item, "%7.2f", (double) ( Shm->Uncore.Boost[data.sint[0]]
-					* CFlop->Clock.Hz) / 1000000.0 );
+	char item[4+7+1];
+	sprintf(item, "%4d%7.2f", Shm->Uncore.Boost[data.sint[0]],
+			(double)( Shm->Uncore.Boost[data.sint[0]]
+				* CFlop->Clock.Hz) / 1000000.0 );
 
-	memcpy(&grid->cell.item[23], item, 7);
+	memcpy(&grid->cell.item[23], &item[4], 7);
+	memcpy(&grid->cell.item[51], &item[0], 4);
 }
 
 REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -650,7 +654,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
 			width - 11 - RSZ(BASE_CLOCK), hSpace,
 			CFlop->Clock.Hz / 1000000.0),
-		SysInfoProc_BaseClock);
+		UpdateBaseClock);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s(MHz)%.*s""%s", RSC(FREQUENCY).CODE(),
@@ -666,12 +670,12 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Min", BOOST(MIN), 1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(MIN));
+		UpdateCoreBoost, BOOST(MIN));
     } else {
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Min", BOOST(MIN), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(MIN));
+		UpdateCoreBoost, BOOST(MIN));
     }
     if (Shm->Proc.Features.MaxRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
@@ -681,12 +685,12 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Max", BOOST(MAX), 1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(MAX));
+		UpdateCoreBoost, BOOST(MAX));
     } else {
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Max", BOOST(MAX), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(MAX));
+		UpdateCoreBoost, BOOST(MAX));
     }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%6.2f]",
@@ -716,7 +720,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintCoreBoost(win, CFlop,
 				pfx, boost, 1, clockMod.sllong,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, boost);
+		UpdateCoreBoost, boost);
       }
     else
       for (boost = BOOST(1C), activeCores = 1;
@@ -727,7 +731,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintCoreBoost(win, CFlop,
 				pfx, boost, 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, boost);
+		UpdateCoreBoost, boost);
       }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
@@ -742,22 +746,22 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintUncoreBoost(win, CFlop,
 				"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_UncoreBoost, UNCORE_BOOST(MIN));
+		UpdateUncoreBoost, UNCORE_BOOST(MIN));
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	GridCall(PrintUncoreBoost(win, CFlop,
 				"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_UncoreBoost, UNCORE_BOOST(MAX));
+		UpdateUncoreBoost, UNCORE_BOOST(MAX));
     } else {
 	GridCall(PrintUncoreBoost(win, CFlop,
 				"Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_UncoreBoost, UNCORE_BOOST(MIN));
+		UpdateUncoreBoost, UNCORE_BOOST(MIN));
 	GridCall(PrintUncoreBoost(win, CFlop,
 				"Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_UncoreBoost, UNCORE_BOOST(MAX));
+		UpdateUncoreBoost, UNCORE_BOOST(MAX));
     }
 
     if (Shm->Proc.Features.TDP_Levels > 0) {
@@ -791,24 +795,24 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PrintCoreBoost(win, CFlop, (char*) RSC(NOMINAL).CODE(),
 				BOOST(TDP), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(TDP));
+		UpdateCoreBoost, BOOST(TDP));
 
 	sprintf(pfx, "%s""1", RSC(LEVEL).CODE());
 	GridCall(PrintCoreBoost(win, CFlop,
 				pfx, BOOST(TDP1), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(TDP1));
+		UpdateCoreBoost, BOOST(TDP1));
 
 	sprintf(pfx, "%s""2", RSC(LEVEL).CODE());
 	GridCall(PrintCoreBoost(win, CFlop,
 				pfx, BOOST(TDP2), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(TDP2));
+		UpdateCoreBoost, BOOST(TDP2));
 
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		SysInfoProc_CoreBoost, BOOST(ACT));
+		UpdateCoreBoost, BOOST(ACT));
 	free(pfx);
       } else {
 	REASON_SET(reason, RC_MEM_ERR);
@@ -1238,6 +1242,33 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
+void TechUpdate(TGrid *grid,	const int bix, const int pos,
+				const size_t len, const char *item)
+{
+	ATTRIBUTE *attrib[2] = {
+		RSC(SYSINFO_TECH_COND0).ATTR(),
+		RSC(SYSINFO_TECH_COND1).ATTR()
+	};
+	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
+	memcpy(&grid->cell.item[pos], item, len);
+}
+
+void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.EIST == 1,
+		  pos = grid->cell.length - 5;
+
+	TechUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void TurboUpdate(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.Turbo == 1,
+		  pos = grid->cell.length - 5;
+
+	TechUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 char *Hypervisor[HYPERVISORS] = {
 	[HYPERV_BARE]	= "    ",
 	[HYPERV_XEN]	= " Xen",
@@ -1267,9 +1298,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(TECHNOLOGIES_HTT), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
-	PUT(BOXKEY_EIST, attrib[bix], width, 2,
+    GridCall(PUT(BOXKEY_EIST, attrib[bix], width, 2,
 		"%s%.*sEIST       <%3s>", RSC(TECHNOLOGIES_EIST).CODE(),
-		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, enabled(bix));
+		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, enabled(bix)),
+	SpeedStepUpdate);
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1277,9 +1309,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
-	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
+    GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"%s%.*sTURBO       <%3s>", RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, enabled(bix));
+		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, enabled(bix)),
+	TurboUpdate);
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1310,9 +1343,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, enabled(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
-	PUT(BOXKEY_TURBO, attrib[bix], width, 2,
+    GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"%s%.*sCPB       <%3s>", RSC(TECHNOLOGIES_CPB).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, enabled(bix)),
+	TurboUpdate);
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1332,6 +1366,98 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Hypervisor[Shm->Proc.HypervisorID], enabled(bix));
 
 	return(reason);
+}
+
+void PerfMonUpdate(TGrid *grid, const int bix, const int pos,
+				const size_t len, const char *item)
+{
+	ATTRIBUTE *attrib[4] = {
+		RSC(SYSINFO_PERFMON_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_COND1).ATTR(),
+		RSC(SYSINFO_PERFMON_COND2).ATTR(),
+		RSC(SYSINFO_PERFMON_COND3).ATTR()
+	};
+	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
+	memcpy(&grid->cell.item[pos], item, len);
+}
+
+void C1E_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.C1E == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void C1A_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.C1A == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void C3A_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.C3A == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void C1U_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.C1U == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void C3U_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.C3U == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void CC6_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.CC6 == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void PC6_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.PC6 == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1,
+		  pos = grid->cell.length - 9;
+
+	PerfMonUpdate( grid, bix ? 3 : 2, pos, 7,
+		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
+}
+
+void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
+{
+	char item[7+1];
+	sprintf(item, "%7d",Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+}
+
+void CStateRange_Update(TGrid *grid, DATA_TYPE data)
+{
+	char item[7+1];
+     sprintf(item, "%7d", Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
 REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -1370,43 +1496,50 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 				Shm->Proc.Features.PerfMon.EDX.FixWidth);
     }
 	bix = Shm->Proc.Technology.C1E == 1;
-	PUT(BOXKEY_C1E, attrib[bix], width, 2,
-		"%s%.*sC1E       <%3s>", RSC(PERF_MON_C1E).CODE(),
-		width - 18 - RSZ(PERF_MON_C1E), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_C1E, attrib[bix], width, 2,
+			"%s%.*sC1E       <%3s>", RSC(PERF_MON_C1E).CODE(),
+			width - 18 - RSZ(PERF_MON_C1E), hSpace, enabled(bix)),
+		C1E_Update);
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.C1A == 1;
-	PUT(BOXKEY_C1A, attrib[bix], width, 2,
-		"%s%.*sC1A       <%3s>", RSC(PERF_MON_C1A).CODE(),
-		width - 18 - RSZ(PERF_MON_C1A), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_C1A, attrib[bix], width, 2,
+			"%s%.*sC1A       <%3s>", RSC(PERF_MON_C1A).CODE(),
+			width - 18 - RSZ(PERF_MON_C1A), hSpace, enabled(bix)),
+		C1A_Update);
 
 	bix = Shm->Proc.Technology.C3A == 1;
-	PUT(BOXKEY_C3A, attrib[bix], width, 2,
-		"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
-		width - 18 - RSZ(PERF_MON_C3A), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_C3A, attrib[bix], width, 2,
+			"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
+			width - 18 - RSZ(PERF_MON_C3A), hSpace, enabled(bix)),
+		C3A_Update);
 
 	bix = Shm->Proc.Technology.C1U == 1;
-	PUT(BOXKEY_C1U, attrib[bix], width, 2,
-		"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
-		width - 18 - RSZ(PERF_MON_C1U), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
+			"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
+			width - 18 - RSZ(PERF_MON_C1U), hSpace, enabled(bix)),
+		C1U_Update);
 
 	bix = Shm->Proc.Technology.C3U == 1;
-	PUT(BOXKEY_C3U, attrib[bix], width, 2,
-		"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
-		width - 18 - RSZ(PERF_MON_C3U), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_C3U, attrib[bix], width, 2,
+			"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
+			width - 18 - RSZ(PERF_MON_C3U), hSpace, enabled(bix)),
+		C3U_Update);
     }
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.CC6 == 1;
-	PUT(BOXKEY_CC6, attrib[bix], width, 2,
-		"%s%.*sCC6       <%3s>", RSC(PERF_MON_CC6).CODE(),
-		width - 18 - RSZ(PERF_MON_CC6), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_CC6, attrib[bix], width, 2,
+			"%s%.*sCC6       <%3s>", RSC(PERF_MON_CC6).CODE(),
+			width - 18 - RSZ(PERF_MON_CC6), hSpace, enabled(bix)),
+		CC6_Update);
 
 	bix = Shm->Proc.Technology.PC6 == 1;
-	PUT(BOXKEY_PC6, attrib[bix], width, 2,
-		"%s%.*sPC6       <%3s>", RSC(PERF_MON_PC6).CODE(),
-		width - 18 - RSZ(PERF_MON_PC6), hSpace, enabled(bix));
+	GridCall(PUT(BOXKEY_PC6, attrib[bix], width, 2,
+			"%s%.*sPC6       <%3s>", RSC(PERF_MON_PC6).CODE(),
+			width - 18 - RSZ(PERF_MON_PC6), hSpace, enabled(bix)),
+		PC6_Update);
     }
 	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
@@ -1450,25 +1583,28 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
-		PUT(BOXKEY_PKGCST, attrib[0], width, 3,
+	    GridCall(PUT(BOXKEY_PKGCST, attrib[0], width, 3,
 			"%s%.*sLIMIT   <%7d>", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit),
+		CStateLimit_Update);
 
 		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
-		PUT(BOXKEY_IOMWAIT, attrib[bix], width, 3,
+	    GridCall(PUT(BOXKEY_IOMWAIT, attrib[bix], width, 3,
 			"%s%.*sIOMWAIT   <%7s>", RSC(PERF_MON_IOMWAIT).CODE(),
 			width - (OutFunc == NULL ? 25 : 23)
 			- RSZ(PERF_MON_IOMWAIT), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
-				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE()),
+		IOMWAIT_Update);
 
-		PUT(BOXKEY_IORCST, attrib[0], width, 3,
+	    GridCall(PUT(BOXKEY_IORCST, attrib[0], width, 3,
 			"%s%.*sRANGE   <%7d>", RSC(PERF_MON_MAX_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
+			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude),
+		CStateRange_Update);
 	} else {
 		PUT(SCANKEY_NULL, attrib[0], width, 3,
 			"%s%.*sLIMIT   [%7d]", RSC(PERF_MON_LOW_CSTATE).CODE(),
@@ -1543,6 +1679,53 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
+void PwrThermalUpdate(TGrid *grid, const int bix, const int pos,
+				const size_t len, const char *item)
+{
+	ATTRIBUTE *attrib[4] = {
+		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR()
+	};
+	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
+	memcpy(&grid->cell.item[pos], item, len);
+}
+
+void ODCM_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Technology.ODCM == 1,
+		  pos = grid->cell.length - 9;
+
+	PwrThermalUpdate( grid, bix ? 3 : 1, pos, 7,
+		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
+}
+
+void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
+{
+	int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
+	       && (Shm->Proc.Technology.ODCM == 1);
+	char item[9+1];
+
+	sprintf(item, "%c%6.2f%%%c",
+		bix ? '<' : '[',
+	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
+		6.25f : 12.5f
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod),
+		bix ? '>' : ']');
+
+	memcpy(&grid->cell.item[grid->cell.length - 10], item, 9);
+	grid->cell.quick.key = bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL;
+}
+
+void BiasHint_Update(TGrid *grid, DATA_TYPE data)
+{
+	char item[7+1];
+	sprintf(item, "%7u",
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+}
+
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
@@ -1563,49 +1746,43 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	int bix;
 /* Section Mark */
-	bix = (Shm->Proc.Technology.ODCM == 1);
-    if (bix) {
-	PUT(BOXKEY_ODCM, attrib[3], width, 2,
-		"%s%.*sODCM   <%7s>", RSC(POWER_THERMAL_ODCM).CODE(),
-		width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
-		RSC(ENABLE).CODE());
+	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
+	GridCall(PUT(bix ? BOXKEY_ODCM : SCANKEY_NULL,
+			attrib[bix ? 3 : 1], width, 2,
+			"%s%.*sODCM   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
+			width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
+			bix ? '<' : '[',
+			(Shm->Proc.Technology.ODCM == 1) ?
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE(),
+			bix ? '>' : ']'),
+		ODCM_Update);
 
-	PUT(BOXKEY_DUTYCYCLE, attrib[0], width, 3,
-		"%s%.*s<%6.2f%%>", RSC(POWER_THERMAL_DUTY).CODE(),
+	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
+	   && (Shm->Proc.Technology.ODCM == 1);
+
+      GridCall(PUT(bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%c%6.2f%%%c", RSC(POWER_THERMAL_DUTY).CODE(),
 	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
+		bix ? '<' : '[',
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f
-	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
-    } else {
-	PUT(BOXKEY_ODCM, attrib[1], width, 2,
-		"%s%.*sODCM   <%7s>", RSC(POWER_THERMAL_ODCM).CODE(),
-		width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
-		RSC(DISABLE).CODE());
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod),
+		bix ? '>' : ']'),
+      DutyCycle_Update);
 
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*s[%6.2f%%]", RSC(POWER_THERMAL_DUTY).CODE(),
-	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
-	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
-		6.25f : 12.5f
-	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod));
-    }
-	bix = (Shm->Proc.Technology.PowerMgmt == 1);
-    if (bix) {
-	PUT(SCANKEY_NULL, attrib[3], width, 2,
+	bix = Shm->Proc.Technology.PowerMgmt == 1;
+	PUT(SCANKEY_NULL, attrib[bix ? 3 : 0], width, 2,
 		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
 		Unlock[Shm->Proc.Technology.PowerMgmt]);
 
-	PUT(BOXKEY_PWR_POLICY, attrib[0], width, 3,
+    if (bix) {
+      GridCall(PUT(BOXKEY_PWR_POLICY, attrib[0], width, 3,
 		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy),
+      BiasHint_Update);
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
-		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
-		Unlock[Shm->Proc.Technology.PowerMgmt]);
-
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
@@ -1675,9 +1852,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
-void SysInfoKernel_Update(TGrid *grid, DATA_TYPE data)
+void KernelUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[24];
+	char item[18+3+1];
 	size_t len = sprintf(item, "%18lu KB", (*data.pulong));
 
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
@@ -1729,31 +1906,31 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
-		SysInfoKernel_Update, &Shm->SysGate.memInfo.sharedram);
+		KernelUpdate, &Shm->SysGate.memInfo.sharedram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freeram);
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
-		SysInfoKernel_Update, &Shm->SysGate.memInfo.freeram);
+		KernelUpdate, &Shm->SysGate.memInfo.freeram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.bufferram);
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
 			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
-		SysInfoKernel_Update, &Shm->SysGate.memInfo.bufferram);
+		KernelUpdate, &Shm->SysGate.memInfo.bufferram);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.totalhigh);
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
 			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
-		SysInfoKernel_Update, &Shm->SysGate.memInfo.totalhigh);
+		KernelUpdate, &Shm->SysGate.memInfo.totalhigh);
 
 	len = sprintf(str, "%lu", Shm->SysGate.memInfo.freehigh);
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
 			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
-		SysInfoKernel_Update, &Shm->SysGate.memInfo.freehigh);
+		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
     if ((len = strlen(Shm->SysGate.IdleDriver.Name)
 		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
@@ -2625,6 +2802,62 @@ Window *CreateMenu(unsigned long long id)
 	return(wMenu);
 }
 
+void IntervalUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[4+1];
+	sprintf(item, "%4u", Shm->Sleep.Interval);
+	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+}
+
+void SysTickUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[4+1];
+	sprintf(item, "%4u", Shm->Sleep.Interval * Shm->SysGate.tickReset);
+	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+}
+
+void PollWaitUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[4+1];
+	sprintf(item, "%4ld", Shm->Sleep.pollingWait.tv_nsec / 1000000L);
+	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+}
+
+void SettingUpdate(TGrid *grid, const int bix, const int pos,
+				const size_t len, const char *item)
+{
+	ATTRIBUTE *attrib[2] = {
+		RSC(CREATE_SETTINGS_COND0).ATTR(),
+		RSC(CREATE_SETTINGS_COND1).ATTR()
+	};
+	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
+	memcpy(&grid->cell.item[pos], item, len);
+}
+
+void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = (Shm->Registration.AutoClock & 0b10) != 0,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.Experimental != 0,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.nmi == 1,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 Window *CreateSettings(unsigned long long id)
 {
 	Window *wSet = CreateWindow(wLayer, id, 1, 14,
@@ -2644,14 +2877,17 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_DAEMON).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, OPS_INTERVAL,   RSC(SETTINGS_INTERVAL).CODE(),
-							MAKE_PRINT_UNFOCUS);
+  GridCall(StoreTCell(wSet, OPS_INTERVAL,RSC(SETTINGS_INTERVAL).CODE(),
+							MAKE_PRINT_UNFOCUS),
+		IntervalUpdate);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Sys. Tick(ms)                  ",
-							MAKE_PRINT_UNFOCUS);
+  GridCall(StoreTCell(wSet, SCANKEY_NULL," Sys. Tick(ms)                  ",
+							MAKE_PRINT_UNFOCUS),
+		SysTickUpdate);
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Poll Wait(ms)                  ",
-							MAKE_PRINT_UNFOCUS);
+  GridCall(StoreTCell(wSet, SCANKEY_NULL," Poll Wait(ms)                  ",
+							MAKE_PRINT_UNFOCUS),
+		PollWaitUpdate);
 
 	StoreTCell(wSet, SCANKEY_NULL,   " Ring Wait(ms)                  ",
 							MAKE_PRINT_UNFOCUS);
@@ -2662,11 +2898,13 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
 							MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, OPS_AUTOCLOCK,  RSC(SETTINGS_AUTO_CLOCK).CODE(),
-			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]);
+  GridCall(StoreTCell(wSet, OPS_AUTOCLOCK,  RSC(SETTINGS_AUTO_CLOCK).CODE(),
+			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]),
+		AutoClockUpdate);
 
-	StoreTCell(wSet,OPS_EXPERIMENTAL,RSC(SETTINGS_EXPERIMENTAL).CODE(),
-				attrib[Shm->Registration.Experimental != 0]);
+  GridCall(StoreTCell(wSet,OPS_EXPERIMENTAL,RSC(SETTINGS_EXPERIMENTAL).CODE(),
+				attrib[Shm->Registration.Experimental != 0]),
+		ExperimentalUpdate);
 
 	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_CPU_HOTPLUG).CODE(),
 				attrib[!(Shm->Registration.hotplug < 0)]);
@@ -2674,8 +2912,9 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_PCI_ENABLED).CODE(),
 					attrib[(Shm->Registration.pci == 1)]);
 
-	StoreTCell(wSet, OPS_INTERRUPTS, RSC(SETTINGS_NMI_REGISTERED).CODE(),
-						attrib[Shm->Registration.nmi]);
+  GridCall(StoreTCell(wSet,OPS_INTERRUPTS,RSC(SETTINGS_NMI_REGISTERED).CODE(),
+						attrib[Shm->Registration.nmi]),
+		NMI_Registration_Update);
 
 	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
 							MAKE_PRINT_UNFOCUS);
@@ -2732,7 +2971,7 @@ Window *CreateSettings(unsigned long long id)
 	StoreWindow(wSet,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wSet,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wSet,	.key.WinUp,	MotionOriginUp_Win);
-	StoreWindow(wSet,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wSet,	.key.Enter,	Enter_StickyCell);
 	StoreWindow(wSet,	.key.Down,	MotionDown_Win);
 	StoreWindow(wSet,	.key.Up,	MotionUp_Win);
 	StoreWindow(wSet,	.key.Home,	MotionReset_Win);
@@ -3075,18 +3314,25 @@ Window *CreateSysInfo(unsigned long long id)
 		}
 
 		switch (id) {
+		case SCANKEY_p:
+		case SCANKEY_t:
+		case SCANKEY_o:
+		case SCANKEY_w:
+			StoreWindow(wSysInfo,	.key.Enter, Enter_StickyCell);
+			break;
 		case SCANKEY_u:
 			wSysInfo->matrix.select.row = 1;
 			StoreWindow(wSysInfo,	.color[1].title,
 						wSysInfo->hook.color[1].border);
+			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
 		default:
+			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
 		}
 		if (title != NULL) {
 			StoreWindow(wSysInfo, .title, (char*) title);
 		}
-		StoreWindow(wSysInfo,	.key.Enter,	MotionEnter_Cell);
 		StoreWindow(wSysInfo,	.key.Left,	MotionLeft_Win);
 		StoreWindow(wSysInfo,	.key.Right,	MotionRight_Win);
 		StoreWindow(wSysInfo,	.key.Down,	MotionDown_Win);
@@ -4522,7 +4768,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const Coordinate origin = {
 			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
-			.row = TOP_HEADER_ROW + 3
+			.row = TOP_HEADER_ROW + 2
 		}, select = {
 			.col = 0,
 			.row = Shm->Proc.Technology.EIST ? 4 : 3
@@ -4561,7 +4807,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const Coordinate origin = {
 			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
-			.row = TOP_HEADER_ROW + 2
+			.row = TOP_HEADER_ROW + 3
 		}, select = {
 			.col = 0,
 			.row = Shm->Proc.Technology.C1E ? 4 : 3
@@ -4600,7 +4846,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const Coordinate origin = {
 			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
-			.row = TOP_HEADER_ROW + 4
+			.row = TOP_HEADER_ROW + 2
 		}, select = {
 			.col = 0,
 			.row = Shm->Proc.Technology.Turbo ? 4 : 3
@@ -4875,7 +5121,7 @@ int Shortcut(SCANKEY *scan)
 		const CSINT thisCST[] = {8, 7, 6, 5,-1,-1, 4, 3, 2, 1, 0};
 		const Coordinate origin = {
 		.col = (draw.Size.width - (44 - 17)) / 2,
-		.row = TOP_HEADER_ROW + 2
+		.row = TOP_HEADER_ROW + 3
 		}, select = {
 		.col=0,
 	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] != -1 ?
@@ -4975,7 +5221,7 @@ int Shortcut(SCANKEY *scan)
 		const CSINT thisCST[] = {-1,-1,-1, 4, 3,-1, 2, 1, 0};
 		const Coordinate origin = {
 			.col = (draw.Size.width - (44 - 17)) / 2,
-			.row = TOP_HEADER_ROW + 3
+			.row = TOP_HEADER_ROW + 4
 		}, select = {
 			.col = 0,
 	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]!=-1 ?

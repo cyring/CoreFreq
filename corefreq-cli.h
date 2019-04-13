@@ -181,7 +181,7 @@ enum {
 #define powered(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
 				: (char*) RSC(MISSING).CODE() )
 
-#define enabled(bit)	((bit) ? "ON" : "OFF")
+#define enabled(bit)	((bit) ? " ON" : "OFF")
 
 #define MARGIN_WIDTH	2
 #define MARGIN_HEIGHT	1

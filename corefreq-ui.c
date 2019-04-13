@@ -1199,6 +1199,19 @@ void ForEachCellPrint_Drop(Window *win, void *plist)
 			PrintContent(win, list, win->matrix.select.col, row);
 }
 
+int Enter_StickyCell(SCANKEY *scan, Window *win)
+{
+	if ((scan->key = TCellAt(win,
+				( win->matrix.select.col
+				+ win->matrix.scroll.horz),
+				( win->matrix.select.row
+				+ win->matrix.scroll.vert)
+				).quick.key) != SCANKEY_NULL) {
+					return(1);
+				} else
+					return(0);
+}
+
 int MotionEnter_Cell(SCANKEY *scan, Window *win)
 {
 	if ((scan->key = TCellAt(win,

@@ -674,6 +674,8 @@ void WindowsUpdate(WinList *winList) ;
 
 void ForEachCellPrint_Drop(Window *win, void *plist) ;
 
+int Enter_StickyCell(SCANKEY *scan, Window *win) ;
+
 int MotionEnter_Cell(SCANKEY *scan, Window *win) ;
 
 void MotionEnd_Cell(Window *win) ;
