@@ -2939,6 +2939,7 @@ void Query_Haswell_EP(void)
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
+	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 }
 
@@ -2948,6 +2949,7 @@ void Query_Broadwell(void)
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
+	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 }
 
@@ -2957,6 +2959,7 @@ void Query_Skylake_X(void)
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
+	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 }
 
@@ -8106,7 +8109,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	return(0);
 }
 
-static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
+static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one daemon instance. */
 
 static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {

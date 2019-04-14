@@ -435,7 +435,8 @@ typedef union
 	};
 } TURBO_RATIO_CONFIG2;
 
-/* Config TDP MSRs: 06_3A/06_3C/06_45/06_46/06_57/06_5C/06_7A		*/
+/* Config TDP MSRs:	06_3A/06_3C/06_3F/06_45/06_46/06_4E/
+			06_55/06_57/06_5C/06_5E/06_66/06_7A/06_8E	*/
 typedef union
 {
 	unsigned long long	value;
