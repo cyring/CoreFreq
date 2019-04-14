@@ -3452,7 +3452,8 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-	if (MiscFeatures.Turbo_IDA == 0) {
+	if ((MiscFeatures.Turbo_IDA == 0)
+	 && (Proc->Features.Power.EAX.TurboIDA)) {
 		PERF_CONTROL PerfControl = {.value = 0};
 		RDMSR(PerfControl, MSR_IA32_PERF_CTL);
 
