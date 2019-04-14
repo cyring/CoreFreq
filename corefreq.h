@@ -335,7 +335,8 @@ typedef struct
 	    } MC[MC_MAX_CTRL];
 
 	unsigned long long		CtrlSpeed;
-	unsigned short			CtrlCount;
+	unsigned short			CtrlCount,
+					ChipID;
 
 	    struct {
 		unsigned char	/* 00:MHz , 01:MT/s , 10:MB/s , 11:VOID */

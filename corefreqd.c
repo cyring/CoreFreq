@@ -596,7 +596,6 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
     {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
@@ -689,7 +688,6 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
     {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
@@ -844,9 +842,8 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -1040,9 +1037,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -1354,9 +1350,8 @@ void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -1392,9 +1387,8 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -1425,7 +1419,6 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
     {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
@@ -1719,8 +1712,8 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       unsigned short dimmSize[2][2] = {
 	{
 		Proc->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
@@ -1926,9 +1919,8 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha, slot;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -2047,7 +2039,6 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 {
     unsigned short mc, cha;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
     {
 	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
@@ -2233,9 +2224,8 @@ void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
     unsigned int mask;
     unsigned short mc, cha, slot, shift, index;
 
-    Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++) {
-
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -2467,8 +2457,11 @@ static char *Chipset[CHIPSETS] = {
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 {
 	size_t len;
-
-	switch (Proc->Uncore.ChipID) {
+	/* Copy the # of controllers and the chipset ID.		*/
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	Shm->Uncore.ChipID = Proc->Uncore.ChipID;
+	/* Decode the Memory Controller per architecture.		*/
+	switch (Shm->Uncore.ChipID) {
 	case PCI_DEVICE_ID_INTEL_82945P_HB:
 		P945_CLK(Shm, Proc, Core);
 		P945_MCH(Shm, Proc);

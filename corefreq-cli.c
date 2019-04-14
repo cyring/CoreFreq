@@ -2243,30 +2243,32 @@ void MemoryController(Window *win, CELL_FUNC OutFunc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	size_t len = strlen(Shm->Uncore.Chipset.CodeName);
-	CUINT nl = win->matrix.size.wth, ni, nr, nc;
+	char hInt[16], item[MATY + 1], chipStr[1 + CODENAME_LEN + 2 * MATY];
+	CUINT nl = win->matrix.size.wth, ni, nc, li;
 	unsigned short mc, cha, slot;
-	char hInt[16], **codeName = malloc(MATX * sizeof(char *));
 
-  if (codeName != NULL) {
-	for (nc = 0; nc < MATX; nc++) {
-		if ((codeName[nc] = malloc(MATY + 1)) != NULL) {
-			memset(codeName[nc], 0x20, MATY);
-			codeName[nc][MATY] = '\0';
-		} else
-			goto IMC_FREE;
-	}
-	for (ni = 0; ni < len; ni++) {
-		nc = (MATX + len + ni) / MATY;
-		nr = (MATX + len + ni) % MATY;
-		codeName[nc][nr] = Shm->Uncore.Chipset.CodeName[ni];
-	}
-	for (nc = 0; nc < MATX; nc++)
-		PRT(IMC, attrib[1], codeName[nc]);
-IMC_FREE:
-	while (nc > 0)
-		free(codeName[--nc]);
-	free(codeName);
+  for (nc = 0; nc < MATY; nc++) {
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
+  }
+	li = sprintf(chipStr, "%s  [%4hX]",
+				Shm->Uncore.Chipset.CodeName,
+				Shm->Uncore.ChipID);
+	li = MATY * (1 + (li / MATY));
+  for (ni = 0; ni < li; ni += MATY, nc++) {
+	CUINT nr = 0;
+    while ((nr < MATY) && (chipStr[ni + nr] != '\0')) {
+	item[nr] = chipStr[ni + nr];
+	nr++;
+    }
+    while (nr < MATY) {
+	item[nr] = 0x20;
+	nr++;
+    }
+	item[MATY] = '\0';
+	PRT(IMC, attrib[1], item);
+  }
+  for (; nc < MATX; nc++) {
+	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE());
   }
   for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
   {
