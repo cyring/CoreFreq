@@ -244,7 +244,7 @@ typedef	union
 		ReservedBits2	: 40-32,
 		MaxBusRatio	: 45-40, /* Architectural		*/
 		ReservedBits3	: 46-45,
-		NonInt_BusRatio	: 47-46,
+		NonInt_BusRatio : 47-46,
 		ReservedBits4	: 64-47;
 	} CORE;
 	struct
@@ -285,13 +285,14 @@ typedef union
 		ReservedBits1	:  8-0,
 		MaxNonTurboRatio: 16-8,
 		ReservedBits2	: 28-16,
-		ProgrammableTurbo:29-28, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GDM */
-		ProgrammableTDP	: 30-29,
-		ReservedBits3	: 32-30,
-		LowPowerMode	: 33-32,
-		ConfigTDPlevels	: 35-33, /* Ivy Bridge, Haswell(-E), Phy */
+		ProgrammableTurbo:29-28, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GLM */
+		ProgrammableTDP : 30-29,
+		ProgrammableTj	: 31-30, /* R/O: 1 = TjOffset is writable */
+		ReservedBits3	: 32-31,
+		LowPowerMode	: 33-32, /* R/O: 1 = LPM is supported.	*/
+		ConfigTDPlevels : 35-33, /* Ivy Bridge, Haswell(-E), Phy */
 		ReservedBits4	: 40-35,
-		MinimumRatio	: 48-40, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GDM */
+		MinimumRatio	: 48-40, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GLM */
 		MinOperatRatio	: 56-48, /* Ivy Bridge, Haswell(-E)	*/
 		ReservedBits5	: 64-56;
 	};
@@ -325,7 +326,7 @@ typedef union
 	{
 		unsigned long long
 		LVL2_BaseAddr	: 16-0,
-		CStateRange	: 19-16, /* R/W				*/
+		CStateRange	: 19-16, /*  R/W			*/
 		ReservedBits	: 64-19;
 	};
 } CSTATE_IO_MWAIT;
@@ -503,11 +504,11 @@ typedef union
 		TCC		:  4-3,  /* Automatic Thermal Control Circuit */
 		SplitLockDisable:  5-4,  /* Pentium4, Xeon		*/
 		ReservedBits2	:  6-5,
-		L3Cache_Disable	:  7-6,  /* Pentium4, Xeon		*/
+		L3Cache_Disable :  7-6,  /* Pentium4, Xeon		*/
 		PerfMonitoring	:  8-7,  /* Performance Monitoring Available */
 		SupprLock_Enable:  9-8,  /* Pentium4, Xeon		*/
 		PrefetchQueueDis: 10-9,  /* Pentium4, Xeon		*/
-		Int_FERR_Enable	: 11-10, /* Pentium4, Xeon		*/
+		Int_FERR_Enable : 11-10, /* Pentium4, Xeon		*/
 		BTS		: 12-11, /* Branch Trace Storage Unavailable */
 		PEBS		: 13-12, /* No Precise Event Based Sampling */
 		TM2_Enable	: 14-13,
@@ -519,7 +520,7 @@ typedef union
 		ReservedBits5	: 22-20,
 		CPUID_MaxVal	: 23-22,
 		xTPR		: 24-23,
-		L1DataCacheMode	: 25-24, /* Pentium4, Xeon		*/
+		L1DataCacheMode : 25-24, /* Pentium4, Xeon		*/
 		ReservedBits6	: 34-25,
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
@@ -611,11 +612,11 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Overflow_PMC0	:  1-0,		/* PM2			*/
-		Overflow_PMC1	:  2-1,		/* PM2			*/
-		Overflow_PMC2	:  3-2,		/* PM3			*/
-		Overflow_PMC3	:  4-3,		/* PM3			*/
-		Overflow_PMCn	: 32-4,		/* PM3			*/
+		Overflow_PMC0	:  1-0 ,	/* PM2			*/
+		Overflow_PMC1	:  2-1 ,	/* PM2			*/
+		Overflow_PMC2	:  3-2 ,	/* PM3			*/
+		Overflow_PMC3	:  4-3 ,	/* PM3			*/
+		Overflow_PMCn	: 32-4 ,	/* PM3			*/
 		Overflow_CTR0	: 33-32,	/* PM2			*/
 		Overflow_CTR1	: 34-33,	/* PM2			*/
 		Overflow_CTR2	: 35-34,	/* PM2			*/
@@ -637,12 +638,12 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Clear_Ovf_PMC0	:  1-0,		/* PM2			*/
-		Clear_Ovf_PMC1	:  2-1,		/* PM2			*/
-		Clear_Ovf_PMC2	:  3-2,		/* PM3			*/
-		Clear_Ovf_PMC3	:  4-3,		/* PM3			*/
-		Clear_Ovf_PMCn	: 32-4,		/* PM3			*/
-		Clear_Ovf_CTR0 	: 33-32,	/* PM2			*/
+		Clear_Ovf_PMC0	:  1-0 ,	/* PM2			*/
+		Clear_Ovf_PMC1	:  2-1 ,	/* PM2			*/
+		Clear_Ovf_PMC2	:  3-2 ,	/* PM3			*/
+		Clear_Ovf_PMC3	:  4-3 ,	/* PM3			*/
+		Clear_Ovf_PMCn	: 32-4 ,	/* PM3			*/
+		Clear_Ovf_CTR0	: 33-32,	/* PM2			*/
 		Clear_Ovf_CTR1	: 34-33,	/* PM2			*/
 		Clear_Ovf_CTR2	: 35-34,	/* PM2			*/
 		ReservedBits1	: 55-35,
@@ -660,11 +661,11 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMC0		:  1-0,		/* PM2			*/
-		EN_PMC1		:  2-1,		/* PM2			*/
-		EN_PMC2		:  3-2,		/* PM3			*/
-		EN_PMC3		:  4-3,		/* PM3			*/
-		EN_PMCn		: 32-4,		/* PM3			*/
+		EN_PMC0		:  1-0 ,	/* PM2			*/
+		EN_PMC1		:  2-1 ,	/* PM2			*/
+		EN_PMC2		:  3-2 ,	/* PM3			*/
+		EN_PMC3		:  4-3 ,	/* PM3			*/
+		EN_PMCn		: 32-4 ,	/* PM3			*/
 		EN_FIXED_CTR0	: 33-32,	/* PM2			*/
 		EN_FIXED_CTR1	: 34-33,	/* PM2			*/
 		EN_FIXED_CTR2	: 35-34,	/* PM2			*/
@@ -678,18 +679,18 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN0_OS		:  1-0,		/* PM2			*/
-		EN0_Usr		:  2-1,		/* PM2			*/
-		AnyThread_EN0	:  3-2,		/* PM3			*/
-		EN0_PMI		:  4-3,		/* PM2			*/
-		EN1_OS		:  5-4,		/* PM2			*/
-		EN1_Usr		:  6-5,		/* PM2			*/
-		AnyThread_EN1	:  7-6,		/* PM3			*/
-		EN1_PMI		:  8-7,		/* PM2			*/
-		EN2_OS		:  9-8,		/* PM2			*/
-		EN2_Usr		: 10-9,		/* PM2			*/
+		EN0_OS		:  1-0 ,	/* PM2			*/
+		EN0_Usr		:  2-1 ,	/* PM2			*/
+		AnyThread_EN0	:  3-2 ,	/* PM3			*/
+		EN0_PMI		:  4-3 ,	/* PM2			*/
+		EN1_OS		:  5-4 ,	/* PM2			*/
+		EN1_Usr		:  6-5 ,	/* PM2			*/
+		AnyThread_EN1	:  7-6 ,	/* PM3			*/
+		EN1_PMI 	:  8-7 ,	/* PM2			*/
+		EN2_OS		:  9-8 ,	/* PM2			*/
+		EN2_Usr 	: 10-9 ,	/* PM2			*/
 		AnyThread_EN2	: 11-10,	/* PM3			*/
-		EN2_PMI		: 12-11,	/* PM2			*/
+		EN2_PMI 	: 12-11,	/* PM2			*/
 		ReservedBits	: 64-12;
 	};
 } CORE_FIXED_PERF_CONTROL;
@@ -700,27 +701,27 @@ typedef union
 	struct
 	{
 		unsigned long long
-		StatusBit       :  1-0,
-		StatusLog       :  2-1,
-		PROCHOT         :  3-2,
-		PROCHOTLog      :  4-3,
-		CriticalTemp    :  5-4,
+		StatusBit	:  1-0,
+		StatusLog	:  2-1,
+		PROCHOT 	:  3-2,
+		PROCHOTLog	:  4-3,
+		CriticalTemp	:  5-4,
 		CriticalTempLog :  6-5,
-		Threshold1      :  7-6,
-		Threshold1Log   :  8-7,
-		Threshold2      :  9-8,
-		Threshold2Log   : 10-9,
+		Threshold1	:  7-6,
+		Threshold1Log	:  8-7,
+		Threshold2	:  9-8,
+		Threshold2Log	: 10-9,
 		PwrLimitStatus	: 11-10,
 		PwrLimitLog	: 12-11,
 		CurLimitStatus	: 13-12,	/* HWP Feedback 	*/
 		CurLimitLog	: 14-13,	/* HWP Feedback 	*/
 		XDomLimitStatus : 15-14,	/* HWP Feedback 	*/
 		XDomLimitLog	: 16-15,	/* HWP Feedback 	*/
-		DTS             : 23-16,
-		ReservedBits1   : 27-23,
-		Resolution      : 31-27,
-		ReadingValid    : 32-31,
-		ReservedBits2   : 64-32;
+		DTS		: 23-16,
+		ReservedBits1	: 27-23,
+		Resolution	: 31-27,
+		ReadingValid	: 32-31,
+		ReservedBits2	: 64-32;
 	};
 } THERM_STATUS;
 
@@ -737,16 +738,35 @@ typedef union
 } THERM2_CONTROL;
 
 typedef union
-{
+{	/* MSR_TEMPERATURE_TARGET(1A2h) Package scope			*/
 	unsigned long long	value;
 	struct
 	{
 		unsigned long long
-		ReservedBits1   : 16-0,
-		Target          : 24-16,
-		ReservedBits2   : 64-24;
-	};
+		ReservedBits1	: 16-0,
+		Target		: 24-16,	/* R/O: Thread scope	*/
+		ReservedBits2	: 64-24;
+	} Core; /* Core, NHM, SNB and superior architectures		*/
+	struct
+	{
+		unsigned long long
+		ReservedBits1	: 16-0,
+		Target		: 24-16,
+		Offset		: 30-24,	/*  R/W*		*/
+		ReservedBits2	: 64-30;
+	} Atom; /* SLM, Xeon Phi [06_57/06_85]				*/
+	struct
+	{
+		unsigned long long
+		ReservedBits1	: 16-0,
+		Target		: 24-16,
+		Offset		: 28-24,	/*  R/W*		*/
+		ReservedBits2	: 64-28;
+	} EP; /* GLM, IVB-E, BDW-E, SKL-X				*/
 } TJMAX;
+/*
+	*) if MSR_PLATFORM_INFO[30] == 1 then Tj Offset is programmable.
+*/
 
 typedef union
 {	/* 06_3D/06_3F/06_47/06_4F/06_55/06_56/06_57/06_66/06_85/06_8E/06_9E */
@@ -767,15 +787,15 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Overflow_PMC0	:  1-0,		/* R/O , NHM		*/
-		Overflow_PMC1	:  2-1,		/* R/O , NHM		*/
-		Overflow_PMC2	:  3-2,		/* R/O , NHM		*/
-		Overflow_PMC3	:  4-3,		/* R/O , NHM		*/
-		Overflow_PMC4	:  5-4,		/* R/O , NHM, *CPUID(0xa) */
-		Overflow_PMC5	:  6-5,		/* R/O , NHM, *CPUID(0xa) */
-		Overflow_PMC6	:  7-6,		/* R/O , NHM, *CPUID(0xa) */
-		Overflow_PMC7	:  8-7,		/* R/O , NHM, *CPUID(0xa) */
-		ReservedBits1	: 32-8,
+		Overflow_PMC0	:  1-0 ,	/* R/O , NHM		*/
+		Overflow_PMC1	:  2-1 ,	/* R/O , NHM		*/
+		Overflow_PMC2	:  3-2 ,	/* R/O , NHM		*/
+		Overflow_PMC3	:  4-3 ,	/* R/O , NHM		*/
+		Overflow_PMC4	:  5-4 ,	/* R/O , NHM, *CPUID(0xa) */
+		Overflow_PMC5	:  6-5 ,	/* R/O , NHM, *CPUID(0xa) */
+		Overflow_PMC6	:  7-6 ,	/* R/O , NHM, *CPUID(0xa) */
+		Overflow_PMC7	:  8-7 ,	/* R/O , NHM, *CPUID(0xa) */
+		ReservedBits1	: 32-8 ,
 		Overflow_CTR0	: 33-32,	/* R/O , NHM		*/
 		ReservedBits2	: 61-33,
 		Overflow_PMI	: 62-61,	/* R/W , NHM		*/
@@ -808,18 +828,18 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Clear_Ovf_PMC0	:  1-0, 	/* NHM, SNB		*/
-		Clear_Ovf_PMC1	:  2-1, 	/* NHM, SNB		*/
-		Clear_Ovf_PMC2	:  3-2, 	/* NHM, SNB		*/
-		Clear_Ovf_PMC3	:  4-3, 	/* NHM, SNB		*/
-		Clear_Ovf_PMC4	:  5-4, 	/* NHM, SNB		*/
-		Clear_Ovf_PMC5	:  6-5, 	/* NHM, *CPUID(0xa)	*/
-		Clear_Ovf_PMC6	:  7-6, 	/* NHM, *CPUID(0xa)	*/
-		Clear_Ovf_PMC7	:  8-7, 	/* NHM, *CPUID(0xa)	*/
-		ReservedBits1	: 32-8,
+		Clear_Ovf_PMC0	:  1-0 ,	/* NHM, SNB		*/
+		Clear_Ovf_PMC1	:  2-1 ,	/* NHM, SNB		*/
+		Clear_Ovf_PMC2	:  3-2 ,	/* NHM, SNB		*/
+		Clear_Ovf_PMC3	:  4-3 ,	/* NHM, SNB		*/
+		Clear_Ovf_PMC4	:  5-4 ,	/* NHM, SNB		*/
+		Clear_Ovf_PMC5	:  6-5 ,	/* NHM, *CPUID(0xa)	*/
+		Clear_Ovf_PMC6	:  7-6 ,	/* NHM, *CPUID(0xa)	*/
+		Clear_Ovf_PMC7	:  8-7 ,	/* NHM, *CPUID(0xa)	*/
+		ReservedBits1	: 32-8 ,
 		Clear_Ovf_CTR0 	: 33-32,	/* NHM, SNB		*/
 		ReservedBits2	: 61-33,
-		Clear_Ovf_PMI 	: 62-61,	/* NHM, SNB		*/
+		Clear_Ovf_PMI	: 62-61,	/* NHM, SNB		*/
 		Clear_Ovf_DSBuf : 63-62,	/* SNB			*/
 		Clear_CondChg	: 64-63;	/* NHM, SNB		*/
 	};
@@ -831,15 +851,15 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMC0 	:  1-0, 	/* R/W , NHM		*/
-		EN_PMC1 	:  2-1, 	/* R/W			*/
-		EN_PMC2 	:  3-2, 	/* R/W			*/
-		EN_PMC3 	:  4-3, 	/* R/W			*/
-		EN_PMC4 	:  5-4, 	/* R/W , NHM, *CPUID(0xa) */
-		EN_PMC5 	:  6-5, 	/* R/W , NHM, *CPUID(0xa) */
-		EN_PMC6 	:  7-6, 	/* R/W , NHM, *CPUID(0xa) */
-		EN_PMC7 	:  8-7, 	/* R/W , NHM, *CPUID(0xa) */
-		ReservedBits1	: 32-8,
+		EN_PMC0 	:  1-0 ,	/* R/W , NHM		*/
+		EN_PMC1 	:  2-1 ,	/* R/W			*/
+		EN_PMC2 	:  3-2 ,	/* R/W			*/
+		EN_PMC3 	:  4-3 ,	/* R/W			*/
+		EN_PMC4 	:  5-4 ,	/* R/W , NHM, *CPUID(0xa) */
+		EN_PMC5 	:  6-5 ,	/* R/W , NHM, *CPUID(0xa) */
+		EN_PMC6 	:  7-6 ,	/* R/W , NHM, *CPUID(0xa) */
+		EN_PMC7 	:  8-7 ,	/* R/W , NHM, *CPUID(0xa) */
+		ReservedBits1	: 32-8 ,
 		EN_FIXED_CTR0	: 33-32,	/* R/W , NHM		*/
 		ReservedBits2	: 48-33,
 		EN_PMI_CORE0	: 49-48,	/* R/W , NHM		*/
@@ -847,16 +867,16 @@ typedef union
 		EN_PMI_CORE2	: 51-50,	/* R/W , NHM		*/
 		EN_PMI_CORE3	: 52-51,	/* R/W , NHM		*/
 		ReservedBits3	: 63-52,
-		PMI_FRZ		: 64-63;	/* R/W , NHM		*/
+		PMI_FRZ 	: 64-63;	/* R/W , NHM		*/
 	} NHM;	/* PMU: 06_1AH						*/
 	struct
 	{
 		unsigned long long
-		EN_PMI_CORE0	:  1-0, 	/* Slice 0		*/
-		EN_PMI_CORE1	:  2-1, 	/* Slice 1		*/
-		EN_PMI_CORE2	:  3-2, 	/* Slice 2		*/
-		EN_PMI_CORE3	:  4-3, 	/* Slice 3		*/
-		ReservedBits1	: 29-4, 	/* Slice 4		*/
+		EN_PMI_CORE0	:  1-0 ,	/* Slice 0		*/
+		EN_PMI_CORE1	:  2-1 ,	/* Slice 1		*/
+		EN_PMI_CORE2	:  3-2 ,	/* Slice 2		*/
+		EN_PMI_CORE3	:  4-3 ,	/* Slice 3		*/
+		ReservedBits1	: 29-4 ,	/* Slice 4		*/
 		EN_FIXED_CTR0	: 30-29,
 		EN_WakeOn_PMI	: 31-30,
 		PMI_FRZ 	: 32-31,
@@ -865,11 +885,11 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMI_CORE0	:  1-0, 	/* Slice 0		*/
-		EN_PMI_CORE1	:  2-1, 	/* Slice 1		*/
-		EN_PMI_CORE2	:  3-2, 	/* Slice 2		*/
-		EN_PMI_CORE3	:  4-3, 	/* Slice 3		*/
-		ReservedBits1	: 29-4, 	/* Slice 4		*/
+		EN_PMI_CORE0	:  1-0 ,	/* Slice 0		*/
+		EN_PMI_CORE1	:  2-1 ,	/* Slice 1		*/
+		EN_PMI_CORE2	:  3-2 ,	/* Slice 2		*/
+		EN_PMI_CORE3	:  4-3 ,	/* Slice 3		*/
+		ReservedBits1	: 29-4 ,	/* Slice 4		*/
 		EN_FIXED_CTR0	: 30-29,
 		EN_WakeOn_PMI	: 31-30,
 		PMI_FRZ 	: 32-31,
@@ -1249,7 +1269,7 @@ typedef union
 		tRD_WR		:  4-0,
 		tWR_WR_DR	:  8-4,
 		tWR_WR_SR	: 12-8,
-		tRCD_WR		: 16-12;
+		tRCD_WR 	: 16-12;
 	};
 } P965_MC_CYCTRK_WR;
 
@@ -1339,7 +1359,7 @@ typedef union
 		tRD_WR		:  4-0,
 		tWR_WR_DR	:  8-4,
 		tWR_WR_SR	: 12-8,
-		tRCD_WR		: 16-12;
+		tRCD_WR 	: 16-12;
 	};
 } P35_MC_CYCTRK_WR;
 
@@ -1352,7 +1372,7 @@ typedef union
 		tRD_RD_SR	:  8-4,
 		tWR_RD		: 12-8,
 		tWTR		: 17-12,
-		tRCD_RD		: 21-17,
+		tRCD_RD 	: 21-17,
 		ReservedBits	: 24-21,
 		tREF		: 32-24;	/* Offset 25Bh		*/
 	};
@@ -1505,7 +1525,7 @@ typedef union	/* Nehalem						*/
 	struct {
 		unsigned int
 		tRFC		:  9-0,
-		tREFI_8		: 19-9,
+		tREFI_8 	: 19-9,
 		tTHROT_OPPREF	: 30-19,
 		ReservedBits	: 32-30;
 	};
@@ -1662,7 +1682,7 @@ typedef union
 		unsigned int
 		tREFI		: 16-0,
 		tRFC		: 25-16,
-		tREFIx9		: 32-25;
+		tREFIx9 	: 32-25;
 	};
 } SNB_IMC_TC_RFTP;
 
@@ -1781,7 +1801,7 @@ typedef union
 		unsigned int
 		tREFI		: 16-0,
 		tRFC		: 25-16,
-		tREFIx9		: 32-25;
+		tREFIx9 	: 32-25;
 	};
 } HSW_TC_REFRESH_TIMING;
 
@@ -1812,13 +1832,13 @@ typedef union
 		N_to_1_ratio	:  7-4,
 		ReservedBits	:  8-7,
 		Addr_Mirroring	: 10-8,
-		x8_device_Dimm0	: 11-10, /* LSB is for DIMM 0		*/
-		x8_device_Dimm1	: 12-11, /* MSB is for DIMM 1		*/
+		x8_device_Dimm0 : 11-10, /* LSB is for DIMM 0		*/
+		x8_device_Dimm1 : 12-11, /* MSB is for DIMM 1		*/
 		tCPDED		: 15-12,
 		LPDDR_2N_CS	: 16-15,
 		Reset_OnCmd	: 20-16,
 		Reset_Delay	: 23-20,
-		CMD_3st		: 24-23,
+		CMD_3st 	: 24-23,
 		tCKE		: 27-24,
 		EN_ODT_Matrix	: 28-27,
 		ProbelessLowFreq: 29-28,
@@ -1937,7 +1957,7 @@ typedef union
 		ReservedBits2	:  4-3,
 		DMFC_DDR3	:  7-4,
 		ReservedBits3	:  8-7,
-		GMM_DIS		:  9-8,  /* Device 8 associated memory spaces */
+		GMM_DIS 	:  9-8,  /* Device 8 associated memory spaces */
 		ReservedBits4	: 15-9,
 		DMIG3DIS	: 16-15, /* DMI Gen 3 Disable fuse	*/
 		ReservedBits5	: 17-16,
@@ -1947,7 +1967,7 @@ typedef union
 		PEGG3_DIS	: 21-20,
 		PLL_REF100_CFG	: 24-21,
 		ReservedBits7	: 25-24,
-		CACHESZ		: 28-25,
+		CACHESZ 	: 28-25,
 		SMTCAP		: 29-28,
 		ReservedBits8	: 31-29,
 		IMGU_DIS	: 32-31; /* Device 5 associated memory spaces */

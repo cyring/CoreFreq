@@ -2925,7 +2925,6 @@ void Query_IvyBridge_EP(void)
 
 void Query_Haswell(void)
 {
-	Proc->Features.Uncore_Unlock = 1;
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
@@ -2935,7 +2934,6 @@ void Query_Haswell(void)
 
 void Query_Haswell_EP(void)
 {
-	Proc->Features.Uncore_Unlock = 1;
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2945,7 +2943,6 @@ void Query_Haswell_EP(void)
 
 void Query_Broadwell(void)
 {
-	Proc->Features.Uncore_Unlock = 1;
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2955,7 +2952,6 @@ void Query_Broadwell(void)
 
 void Query_Skylake_X(void)
 {
-	Proc->Features.Uncore_Unlock = 1;
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -3664,7 +3660,7 @@ void ThermalMonitor_Set(CORE *Core)
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->PowerThermal.Param.Target = TjMax.Target;
+	Core->PowerThermal.Param.Target = TjMax.Core.Target;
 	if (Core->PowerThermal.Param.Target == 0)
 		Core->PowerThermal.Param.Target = 100; /*TODO: TjMax database.*/
 
@@ -4217,9 +4213,9 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE *Core)
 /*TODO: Atom (Avoton, Goldmont, Merrifield, Moorefield, SoFIA), Silvermont
 	Not Atom Airmont [06_4Ch]
 
-	0b100: C4	[ATOM, SVM]
-	0b110: C6	[ATOM, SVM]
-	0b111: C7	[ATOM, SVM]
+	0b100: C4	[ATOM, SLM]
+	0b110: C6	[ATOM, SLM]
+	0b111: C7	[ATOM, SLM]
 */
 
 	if (CStateConfig.IO_MWAIT_Redir) {
