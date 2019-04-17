@@ -1710,8 +1710,8 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	sprintf(item, "%c%6.2f%%%c",
 		bix ? '<' : '[',
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
-		6.25f : 12.5f
-	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod),
+		6.25f : 12.5f)
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod,
 		bix ? '>' : ']');
 
 	memcpy(&grid->cell.item[grid->cell.length - 10], item, 9);
@@ -1765,8 +1765,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
 		bix ? '<' : '[',
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
-		6.25f : 12.5f
-	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod),
+		6.25f : 12.5f)
+	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod,
 		bix ? '>' : ']'),
       DutyCycle_Update);
 
@@ -5336,7 +5336,7 @@ int Shortcut(SCANKEY *scan)
 	(ASCII*)"           43.75%          ", stateAttr[0], BOXKEY_ODCM_DC07,
 	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC08,
 	(ASCII*)"           56.25%          ", stateAttr[0], BOXKEY_ODCM_DC09,
-	(ASCII*)"           63.50%          ", stateAttr[0], BOXKEY_ODCM_DC10,
+	(ASCII*)"           62.50%          ", stateAttr[0], BOXKEY_ODCM_DC10,
 	(ASCII*)"           68.75%          ", stateAttr[0], BOXKEY_ODCM_DC11,
 	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC12,
 	(ASCII*)"           81.25%          ", stateAttr[0], BOXKEY_ODCM_DC13,
