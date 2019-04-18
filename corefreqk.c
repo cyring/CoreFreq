@@ -3859,7 +3859,8 @@ void PowerThermal(CORE *Core)
 	:
 	: "%rax", "%rbx", "%rcx", "%rdx"
     );
-    if (Power.ECX.SETBH == 1) {
+    if (Power.ECX.SETBH == 1)
+    {
       if ((id < ids) && (whiteList[id].grantPWR_MGMT == 1))
       {
 	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
@@ -3877,25 +3878,23 @@ void PowerThermal(CORE *Core)
 	  }
 	     break;
 	}
-
-	if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable
-	&& (PowerPolicy >= 0) && (PowerPolicy <= 15))
-	{
-	  if (!whiteList[id].experimental
-	   || (whiteList[id].experimental && Proc->Registration.Experimental))
-	  {
-	    Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
-	    WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	    RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
-	  }
-	}
-
 	if (Core->PowerThermal.PwrManagement.Perf_BIAS_Enable)
 		BITSET(LOCKLESS, Proc->PowerMgmt, Core->Bind);
 	else
 		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
       } else
 		BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);
+
+      if ((PowerPolicy >= 0) && (PowerPolicy <= 15))
+      {
+	if (!whiteList[id].experimental
+	 || (whiteList[id].experimental && Proc->Registration.Experimental))
+	{
+	Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
+	WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	RDMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
+	}
+      }
     }
     else
 	BITCLR(LOCKLESS, Proc->PowerMgmt, Core->Bind);

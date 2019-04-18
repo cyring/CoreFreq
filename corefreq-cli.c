@@ -1776,6 +1776,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
 		Unlock[Shm->Proc.Technology.PowerMgmt]);
 
+	bix = Shm->Proc.Features.Power.ECX.SETBH == 1;
     if (bix) {
       GridCall(PUT(BOXKEY_PWR_POLICY, attrib[0], width, 3,
 		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
