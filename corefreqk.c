@@ -2925,6 +2925,9 @@ void Query_IvyBridge_EP(void)
 
 void Query_Haswell(void)
 {
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		Proc->Features.Uncore_Unlock = 1;
+	}
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
@@ -2934,6 +2937,9 @@ void Query_Haswell(void)
 
 void Query_Haswell_EP(void)
 {
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		Proc->Features.Uncore_Unlock = 1;
+	}
 	Haswell_EP_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2943,6 +2949,9 @@ void Query_Haswell_EP(void)
 
 void Query_Broadwell(void)
 {
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		Proc->Features.Uncore_Unlock = 1;
+	}
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
@@ -2952,6 +2961,9 @@ void Query_Broadwell(void)
 
 void Query_Skylake_X(void)
 {
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		Proc->Features.Uncore_Unlock = 1;
+	}
 	Skylake_X_Platform_Info();
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
