@@ -246,6 +246,7 @@ typedef struct
 					TM2_Enable:  2-1,
 					Unused    : 32-2;
 	};
+	PERF_CONTROL			PerfControl;
 	CLOCK_MODULATION		ClockModulation;
 	ENERGY_PERF_BIAS		PerfEnergyBias;
 	MISC_PWR_MGMT			PwrManagement;

@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.46.5"
+#define COREFREQ_VERSION	"1.47.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -343,6 +343,7 @@ enum POWER_FORMULAS {
 enum RATIO_BOOST {
 	RATIO_MIN,
 	RATIO_MAX,
+	RATIO_PERF,
 	RATIO_ACT,
 	RATIO_TDP,
 	RATIO_TDP1,

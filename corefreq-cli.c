@@ -662,7 +662,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		23 - (OutFunc == NULL), hSpace,
 		RSC(RATIO).CODE());
 
-    if (Shm->Proc.Features.MinRatio_Unlock) {
+    if (Shm->Proc.Features.MinRatio_Unlock && Shm->Registration.Experimental) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
@@ -677,15 +677,15 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		UpdateCoreBoost, BOOST(MIN));
     }
-    if (Shm->Proc.Features.MaxRatio_Unlock) {
+    if (Shm->Proc.Features.MaxRatio_Unlock && Shm->Registration.Experimental) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
 	GridCall(PrintCoreBoost(win, CFlop,
-				"Max", BOOST(MAX), 1, coreClock.sllong,
+				"Max", BOOST(PERF), 1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(MAX));
+		UpdateCoreBoost, BOOST(PERF));
     } else {
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Max", BOOST(MAX), 0, SCANKEY_NULL,
