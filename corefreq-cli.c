@@ -1560,13 +1560,13 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace, enabled(bix));
 
-	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
+	bix = (Shm->Proc.Features.HWP_Enable == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
 
-	bix = Shm->Proc.Features.Power.EAX.HDC_Reg == 1;
+	bix = Shm->Proc.Features.HDC_Enable == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
 		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));

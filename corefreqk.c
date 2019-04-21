@@ -1980,6 +1980,22 @@ void Intel_Turbo_TDP_Config(void)
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 }
 
+void Intel_Hardware_Performance(void)
+{
+	PM_ENABLE PM_Enable = {.value = 0};
+	HDC_CONTROL HDC_Control = {.value = 0};
+
+	if (Proc->Features.Power.EAX.HWP_Reg) {
+		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+	}
+	Proc->Features.HWP_Enable = PM_Enable.HWP_Enable;
+
+	if (Proc->Features.Power.EAX.HDC_Reg) {
+		RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
+	}
+	Proc->Features.HDC_Enable = HDC_Control.HDC_Enable;
+}
+
 void SandyBridge_Uncore_Ratio(void)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
@@ -2959,6 +2975,7 @@ void Query_Broadwell(void)
 	Haswell_Uncore_Ratio(NULL);
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
+	Intel_Hardware_Performance();
 }
 
 void Query_Skylake_X(void)
@@ -2971,6 +2988,7 @@ void Query_Skylake_X(void)
 	Haswell_Uncore_Ratio(NULL);
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
+	Intel_Hardware_Performance();
 }
 
 void Query_AuthenticAMD(void)
@@ -3503,7 +3521,12 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
     if (!Core->PowerThermal.PerfControl.Turbo_IDA) {
+      if(Core->PowerThermal.PerfControl.TargetRatio ==Proc->Boost[BOOST(MAX)]+1)
+      {
 	BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+      } else {	/*TODO: HWP architectures */
+	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+      }
     } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
     }
@@ -3547,7 +3570,7 @@ static void Perf_Ratio_Intel_PerCore(void *arg)
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 }
 
-long ClockMod_Intel_IDA(CLOCK_ARG *pClockMod)
+long ClockMod_Intel_PPC(CLOCK_ARG *pClockMod)
 {
   if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
 	unsigned int cpu = Proc->CPU.Count;
@@ -3566,6 +3589,14 @@ long ClockMod_Intel_IDA(CLOCK_ARG *pClockMod)
 
 	return(2);	/* Report a platform change */
   }
+	return(0);
+}
+
+long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
+{
+	if (Proc->Features.HWP_Enable) {
+	/*TODO: HWP Programming Interfaces				*/
+	}
 	return(0);
 }
 

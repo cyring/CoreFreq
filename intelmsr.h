@@ -180,6 +180,18 @@
 	#define MSR_IA32_VMX_BASIC		0x00000480
 #endif
 
+#ifndef MSR_PM_ENABLE
+	#define MSR_PM_ENABLE			0x00000770
+#endif
+
+#ifndef MSR_IA32_PM_ENABLE
+	#define MSR_IA32_PM_ENABLE		MSR_PM_ENABLE
+#endif
+
+#ifndef MSR_IA32_PKG_HDC_CTL
+	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
+#endif
+
 typedef union
 {
 	unsigned long long	value;
@@ -237,8 +249,8 @@ typedef	union
 	struct
 	{
 		unsigned long long
-		CurrVID		:  8-0,
-		CurrFID		: 16-8,
+		CurrVID 	:  8-0,
+		CurrFID 	: 16-8,
 		ReservedBits1	: 31-16,
 		XE_Enable	: 32-31, /* Intel Core			*/
 		ReservedBits2	: 40-32,
@@ -258,7 +270,7 @@ typedef	union
 		unsigned long long
 		CurrentRatio	: 16-0,
 		ReservedBits1	: 32-16,
-		CurrVID		: 48-32, /* Core Voltage ID (Sandy Bridge) */
+		CurrVID 	: 48-32, /* Core Voltage ID (Sandy Bridge) */
 		ReservedBits2	: 64-48;
 	} SNB;
 } PERF_STATUS;
@@ -607,6 +619,28 @@ typedef union
 */
 
 typedef union
+{	/* 06_4E/06_4F/06_5E/06_55/06_56/06_8E/06_9E			*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		HWP_Enable	:  1-0,  /* Pkg: R/W-Once; 1=Enable	*/
+		ReservedBits	: 64-1;
+	};
+} PM_ENABLE;
+
+typedef union
+{	/* 06_4E/06_5E/06_55/06_8E/06_9E				*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		HDC_Enable	:  1-0,  /* Pkg: R/W; 1=Enable		*/
+		ReservedBits	: 64-1;
+	};
+} HDC_CONTROL;
+
+typedef union
 {
 	unsigned long long	value;
 	struct
@@ -623,8 +657,8 @@ typedef union
 		ReservedBits1	: 55-35,
 		TraceToPAPMI	: 56-55,	/* PM4, PM3(Broadwell)	*/
 		ReservedBits2	: 58-56,
-		LBR_Frz		: 59-58,	/* PM4			*/
-		CTR_Frz		: 60-59,	/* PM4			*/
+		LBR_Frz 	: 59-58,	/* PM4			*/
+		CTR_Frz 	: 60-59,	/* PM4			*/
 		ASCI		: 61-60,	/* PM4			*/
 		Overflow_UNC	: 62-61,	/* PM3			*/
 		Overflow_Buf	: 63-62,	/* PM2			*/
@@ -661,11 +695,11 @@ typedef union
 	struct
 	{
 		unsigned long long
-		EN_PMC0		:  1-0 ,	/* PM2			*/
-		EN_PMC1		:  2-1 ,	/* PM2			*/
-		EN_PMC2		:  3-2 ,	/* PM3			*/
-		EN_PMC3		:  4-3 ,	/* PM3			*/
-		EN_PMCn		: 32-4 ,	/* PM3			*/
+		EN_PMC0 	:  1-0 ,	/* PM2			*/
+		EN_PMC1 	:  2-1 ,	/* PM2			*/
+		EN_PMC2 	:  3-2 ,	/* PM3			*/
+		EN_PMC3 	:  4-3 ,	/* PM3			*/
+		EN_PMCn 	: 32-4 ,	/* PM3			*/
 		EN_FIXED_CTR0	: 33-32,	/* PM2			*/
 		EN_FIXED_CTR1	: 34-33,	/* PM2			*/
 		EN_FIXED_CTR2	: 35-34,	/* PM2			*/
@@ -680,11 +714,11 @@ typedef union
 	{
 		unsigned long long
 		EN0_OS		:  1-0 ,	/* PM2			*/
-		EN0_Usr		:  2-1 ,	/* PM2			*/
+		EN0_Usr 	:  2-1 ,	/* PM2			*/
 		AnyThread_EN0	:  3-2 ,	/* PM3			*/
-		EN0_PMI		:  4-3 ,	/* PM2			*/
+		EN0_PMI 	:  4-3 ,	/* PM2			*/
 		EN1_OS		:  5-4 ,	/* PM2			*/
-		EN1_Usr		:  6-5 ,	/* PM2			*/
+		EN1_Usr 	:  6-5 ,	/* PM2			*/
 		AnyThread_EN1	:  7-6 ,	/* PM3			*/
 		EN1_PMI 	:  8-7 ,	/* PM2			*/
 		EN2_OS		:  9-8 ,	/* PM2			*/
@@ -837,7 +871,7 @@ typedef union
 		Clear_Ovf_PMC6	:  7-6 ,	/* NHM, *CPUID(0xa)	*/
 		Clear_Ovf_PMC7	:  8-7 ,	/* NHM, *CPUID(0xa)	*/
 		ReservedBits1	: 32-8 ,
-		Clear_Ovf_CTR0 	: 33-32,	/* NHM, SNB		*/
+		Clear_Ovf_CTR0	: 33-32,	/* NHM, SNB		*/
 		ReservedBits2	: 61-33,
 		Clear_Ovf_PMI	: 62-61,	/* NHM, SNB		*/
 		Clear_Ovf_DSBuf : 63-62,	/* SNB			*/
