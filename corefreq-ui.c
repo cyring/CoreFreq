@@ -740,7 +740,7 @@ void RemoveWindow(Window *win, WinList *list)
 	if (IsCycling(GetHead(list)))
 		SetDead(list);
 	else if (IsHead(list, win))
-	/*Auto shift*/	SetHead(list, win->next);
+	/*Auto shift*/	SetHead(list, win->prev);
 
 	DestroyWindow(win);
 }
