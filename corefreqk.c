@@ -3478,18 +3478,24 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
     switch (TurboBoost_Enable) {
     case COREFREQ_TOGGLE_OFF:
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
-	/* Restore the nominal P-State			*/
+	/* Restore the nominal P-State					*/
 	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MAX)];
 	ToggleFeature = 1;
 	break;
     case COREFREQ_TOGGLE_ON:
 	Core->PowerThermal.PerfControl.Turbo_IDA = 0;
-	/* Request the Turbo P-State			*/
+	/* Request the Turbo P-State					*/
 	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MAX)] + 1;
 	ToggleFeature = 1;
 	break;
     default:
+      if (Core->PowerThermal.PerfControl.TargetRatio < Proc->Boost[BOOST(MIN)])
+      { /* Fix the P-State if it is lower than the operating ratio	*/
+	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MIN)];
+	ToggleFeature = 1;
+      } else {
 	ToggleFeature = 0;
+      }
 	break;
     }
     if (ToggleFeature == 1) {
@@ -7909,10 +7915,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			TurboBoost_Enable = -1;
 			if (Proc->ArchID == AMD_Family_17h) {
 				Compute_AMD_Zen_Boost();
-				rc = 2;
-			} else {
-				rc = 0;
 			}
+			rc = 2;
 			break;
 	}
 	break;

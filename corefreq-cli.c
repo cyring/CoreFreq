@@ -3786,7 +3786,7 @@ Window *CreateTurboClock(unsigned long long id)
 void TitleForRatioClock(unsigned int nc, char *title)
 {
 	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
-			nc == 1 ? "Max" : "Min");
+			nc == CLOCK_MOD_MAX ? "Max" : "Min");
 }
 
 Window *CreateRatioClock(unsigned long long id)
