@@ -662,7 +662,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		23 - (OutFunc == NULL), hSpace,
 		RSC(RATIO).CODE());
 
-    if (Shm->Proc.Features.MinRatio_Unlock && Shm->Registration.Experimental) {
+    if (Shm->Proc.Features.ClkRatio_Unlock && Shm->Registration.Experimental) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
@@ -677,15 +677,15 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		UpdateCoreBoost, BOOST(MIN));
     }
-    if (Shm->Proc.Features.MaxRatio_Unlock && Shm->Registration.Experimental) {
+    if (Shm->Proc.Features.ClkRatio_Unlock && Shm->Registration.Experimental) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
 	GridCall(PrintCoreBoost(win, CFlop,
-				"Max", BOOST(PERF), 1, coreClock.sllong,
+				"Max", BOOST(MAX), 1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(PERF));
+		UpdateCoreBoost, BOOST(MAX));
     } else {
 	GridCall(PrintCoreBoost(win, CFlop,
 				"Max", BOOST(MAX), 0, SCANKEY_NULL,
@@ -702,6 +702,24 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%.*s""%5u""%.*s""[%4d ]",
 		22, hSpace, Shm->Proc.Features.Factory.Freq,
 		23, hSpace, Shm->Proc.Features.Factory.Ratio);
+
+	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
+
+    if (Shm->Proc.Features.TgtRatio_Unlock && Shm->Registration.Experimental) {
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_TGT;
+
+	GridCall(PrintCoreBoost(win, CFlop,
+				"TGT", BOOST(TGT), 1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		UpdateCoreBoost, BOOST(TGT));
+    } else {
+	GridCall(PrintCoreBoost(win, CFlop,
+				"TGT", BOOST(TGT), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		UpdateCoreBoost, BOOST(TGT));
+    }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
@@ -3786,7 +3804,9 @@ Window *CreateTurboClock(unsigned long long id)
 void TitleForRatioClock(unsigned int nc, char *title)
 {
 	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
-			nc == CLOCK_MOD_MAX ? "Max" : "Min");
+			nc == CLOCK_MOD_TGT ? (char *) RSC(TARGET).CODE() :
+			nc == CLOCK_MOD_MAX ? "Max" :
+			nc == CLOCK_MOD_MIN ? "Min" : "");
 }
 
 Window *CreateRatioClock(unsigned long long id)
@@ -5502,6 +5522,7 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_RATIO_CLOCK_TGT:
     case BOXKEY_RATIO_CLOCK_MAX:
     case BOXKEY_RATIO_CLOCK_MIN:
     {

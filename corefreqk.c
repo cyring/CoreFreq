@@ -1543,11 +1543,11 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
-	if (pSpecific->Latch & LATCH_MIN_RATIO_UNLOCK)
-		Proc->Features.MinRatio_Unlock = pSpecific->MinRatioUnlocked;
+	if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK)
+		Proc->Features.TgtRatio_Unlock = pSpecific->TgtRatioUnlocked;
 
-	if (pSpecific->Latch & LATCH_MAX_RATIO_UNLOCK)
-		Proc->Features.MaxRatio_Unlock = pSpecific->MaxRatioUnlocked;
+	if (pSpecific->Latch & LATCH_CLK_RATIO_UNLOCK)
+		Proc->Features.ClkRatio_Unlock = pSpecific->ClkRatioUnlocked;
 
 	if (pSpecific->Latch & LATCH_TURBO_UNLOCK)
 		Proc->Features.Turbo_Unlock = pSpecific->TurboUnlocked;
@@ -1627,7 +1627,7 @@ void Intel_Core_Platform_Info(void)
 	}
 	Proc->Boost[BOOST(MIN)] = KMIN(ratio0, ratio1);
 	Proc->Boost[BOOST(MAX)] = KMAX(ratio0, ratio1);
-	Proc->Boost[BOOST(PERF)]= Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	if ((pSpecific = LookupProcessor()) != NULL) {
 		OverrideCodeNameString(pSpecific);
@@ -1658,7 +1658,7 @@ void Intel_Platform_Turbo(void)
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
-	Proc->Boost[BOOST(PERF)]= Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	if ((pSpecific = LookupProcessor()) != NULL) {
 		OverrideCodeNameString(pSpecific);
@@ -3022,7 +3022,7 @@ void Query_AuthenticAMD(void)
 	} else { /* No Solution! */
 		Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
 	}
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)]= Proc->Boost[BOOST(MAX)];
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.SpecTurboRatio = 0;
@@ -3064,7 +3064,7 @@ void Query_AMD_Family_0Fh(void)
 
 	Proc->Features.SpecTurboRatio = 1;
     }
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3083,7 +3083,7 @@ void Query_AMD_Family_10h(void)
 					  / (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 3;
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3103,7 +3103,7 @@ void Query_AMD_Family_11h(void)
 					  / (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3123,7 +3123,7 @@ void Query_AMD_Family_12h(void)
 					  /  PstateDef.Family_12h.CpuDid;
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3153,7 +3153,7 @@ void Query_AMD_Family_14h(void)
 		Proc->Boost[sort[pstate]] = (MaxFreq * 4) / ClockDiv;
 	}	/* @ MainPllOpFidMax MHz */
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3173,7 +3173,7 @@ void Query_AMD_Family_15h(void)
 					  / (1 << PstateDef.Family_15h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 
@@ -3289,7 +3289,7 @@ void Compute_AMD_Zen_Boost(void)
 	    }
 		Proc->Features.SpecTurboRatio += 2;
 	}
-	Proc->Boost[BOOST(PERF)] = Proc->Boost[BOOST(MAX)];
+	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 }
 
 typedef struct {
@@ -3530,11 +3530,11 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
     } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
     }
-    if (Proc->Features.MaxRatio_Unlock == 0) {
-	Proc->Features.MaxRatio_Unlock = 1;
+    if (Proc->Features.TgtRatio_Unlock == 0) {
+	Proc->Features.TgtRatio_Unlock = 1;
     }
     if (Core->Bind == Proc->Service.Core) {
-	Proc->Boost[BOOST(PERF)] = Core->PowerThermal.PerfControl.TargetRatio;
+	Proc->Boost[BOOST(TGT)] = Core->PowerThermal.PerfControl.TargetRatio;
     }
   } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
@@ -3563,7 +3563,7 @@ static void Perf_Ratio_Intel_PerCore(void *arg)
 	Core = (CORE *) KPublic->Core[cpu];
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	Core->PowerThermal.PerfControl.TargetRatio = Proc->Boost[BOOST(PERF)]
+	Core->PowerThermal.PerfControl.TargetRatio = Proc->Boost[BOOST(TGT)]
 						   + pClockMod->Offset;
 
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
@@ -3573,6 +3573,8 @@ static void Perf_Ratio_Intel_PerCore(void *arg)
 long ClockMod_Intel_PPC(CLOCK_ARG *pClockMod)
 {
   if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
+   if (pClockMod->NC == CLOCK_MOD_TGT)
+   {
 	unsigned int cpu = Proc->CPU.Count;
     do {
 	cpu--;	/* From last AP to BSP */
@@ -3583,20 +3585,24 @@ long ClockMod_Intel_PPC(CLOCK_ARG *pClockMod)
       }
     } while (cpu != 0) ;
 
-	Proc->Boost[BOOST(PERF)] = KPublic->Core[
+	Proc->Boost[BOOST(TGT)] = KPublic->Core[
 					Proc->Service.Core
 				   ]->PowerThermal.PerfControl.TargetRatio;
 
 	return(2);	/* Report a platform change */
+   }
   }
 	return(0);
 }
 
 long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 {
-	if (Proc->Features.HWP_Enable) {
+    if (Proc->Features.HWP_Enable  && (pClockMod != NULL)) {
+	if (pClockMod->NC == CLOCK_MOD_TGT)
+	{
 	/*TODO: HWP Programming Interfaces				*/
 	}
+    }
 	return(0);
 }
 

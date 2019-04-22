@@ -1211,6 +1211,20 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_FACTORY_CODE_FR
 		}
 	},
+	[RSC_PERFORMANCE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_PERFORMANCE_CODE_EN,
+			[LOC_FR] = RSC_PERFORMANCE_CODE_FR
+		}
+	},
+	[RSC_TARGET] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_TARGET_CODE_EN,
+			[LOC_FR] = RSC_TARGET_CODE_FR
+		}
+	},
 	[RSC_LEVEL] = {
 		.Attr = vColor,
 		.Code = {

@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.48.1"
+#define COREFREQ_VERSION	"1.48.2"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -343,7 +343,7 @@ enum POWER_FORMULAS {
 enum RATIO_BOOST {
 	RATIO_MIN,
 	RATIO_MAX,
-	RATIO_PERF,
+	RATIO_TGT,
 	RATIO_ACT,
 	RATIO_TDP,
 	RATIO_TDP1,
@@ -437,8 +437,9 @@ typedef union {
 } CLOCK_ARG;
 
 enum CLOCK_MOD_INDEX {
-	CLOCK_MOD_MIN = 2,
-	CLOCK_MOD_MAX = 1
+	CLOCK_MOD_MIN = 3,
+	CLOCK_MOD_MAX = 2,
+	CLOCK_MOD_TGT = 1
 };
 
 typedef union
@@ -1006,8 +1007,8 @@ typedef struct	/* BSP CPUID features.					*/
 		Bit32	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
 			HTT_Enable	: 10-9,
-			MinRatio_Unlock : 11-10,
-			MaxRatio_Unlock : 12-11,
+			TgtRatio_Unlock : 11-10,
+			ClkRatio_Unlock : 12-11,
 			Turbo_Unlock	: 13-12,
 			TDP_Unlock	: 14-13,
 			TDP_Levels	: 16-14,
