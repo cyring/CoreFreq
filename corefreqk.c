@@ -3272,25 +3272,26 @@ void Compute_AMD_Zen_Boost(void)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	if (!HwCfgRegister.Family_17h.CpbDis)
 	{
-		Proc->Boost[BOOST(8C)] = Proc->Boost[BOOST(MAX)];
-		Proc->Boost[BOOST(9C)] = Proc->Boost[BOOST(MAX)];
+		Proc->Boost[BOOST(CPB)] = Proc->Boost[BOOST(MAX)];
+		Proc->Boost[BOOST(XFR)] = Proc->Boost[BOOST(MAX)];
 
 		Proc->Features.TgtRatio_Unlock = 0;
+
 	    if ((pSpecific = LookupProcessor()) != NULL) {
 		/* Save thermal parameters to compute per Core temperature */
 		Arch[Proc->ArchID].Specific[0].Param = pSpecific->Param;
 
-		Proc->Boost[BOOST(8C)] += pSpecific->Boost[0]; /* Boost */
+		Proc->Boost[BOOST(CPB)] += pSpecific->Boost[0]; /* Boost */
 
-		Proc->Boost[BOOST(9C)] += pSpecific->Boost[0]; /* Boost */
-		Proc->Boost[BOOST(9C)] += pSpecific->Boost[1]; /* XFR */
+		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[0]; /* Boost */
+		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[1]; /* XFR */
 
 		OverrideCodeNameString(pSpecific);
 		OverrideUnlockCapability(pSpecific);
 	    } else {
 		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
 	    }
-		Proc->Features.SpecTurboRatio += 2;
+		Proc->Features.TDP_Levels = 2; /* Count the Xtra Boost ratios */
 	}
 	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 }
@@ -3701,7 +3702,6 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	/* Package C-State: I/O MWAIT Redirection. */
 	Core->Query.IORedir = 0;
 
-    if (Proc->Registration.Experimental) {
 	if (Core->Bind == Proc->Service.Core) {
 		PSTATEDEF PstateDef = {.value = 0};
 		PSTATECTRL PStateCtl = {.value = 0};
@@ -3716,7 +3716,6 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 			Proc->Boost[BOOST(TGT)] = COF;
 	    }
 	}
-    }
 }
 
 void Query_Intel_C1E(CORE *Core)				/*Per Package*/

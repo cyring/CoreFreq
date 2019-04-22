@@ -727,6 +727,21 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Proc.Features.Turbo_Unlock ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    {
+      if (Shm->Proc.Features.TDP_Levels >= 2)
+	GridCall(PrintCoreBoost(win, CFlop,
+				"XFR", BOOST(XFR), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		UpdateCoreBoost, BOOST(XFR));
+
+      if (Shm->Proc.Features.TDP_Levels >= 1)
+	GridCall(PrintCoreBoost(win, CFlop,
+				"CPB", BOOST(CPB), 0, SCANKEY_NULL,
+				width, OutFunc, attrib[3]),
+		UpdateCoreBoost, BOOST(CPB));
+    }
+
     if (Shm->Proc.Features.Turbo_Unlock)
       for (boost = BOOST(1C), activeCores = 1;
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
@@ -782,7 +797,9 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		UpdateUncoreBoost, UNCORE_BOOST(MAX));
     }
 
-    if (Shm->Proc.Features.TDP_Levels > 0) {
+    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+     && (Shm->Proc.Features.TDP_Levels > 0))
+    {
 	const size_t len = RSZ(LEVEL) + 1 + 1;
 	char *pfx = malloc(len);
       if (pfx != NULL)
