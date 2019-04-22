@@ -3700,6 +3700,23 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	Core->Query.CfgLock = 1;
 	/* Package C-State: I/O MWAIT Redirection. */
 	Core->Query.IORedir = 0;
+
+    if (Proc->Registration.Experimental) {
+	if (Core->Bind == Proc->Service.Core) {
+		PSTATEDEF PstateDef = {.value = 0};
+		PSTATECTRL PStateCtl = {.value = 0};
+		/* Convert the non-boosted P-state into the Target Ratio */
+		RDMSR(PStateCtl, MSR_AMD_PERF_CTL);
+		RDMSR(PstateDef,(MSR_AMD_PSTATE_DEF_BASE+PStateCtl.PstateCmd));
+		/* Is this an enabled P-States ?			*/
+	    if (PstateDef.Family_17h.PstateEn) {
+		unsigned int COF=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
+						PstateDef.Family_17h.CpuDfsId);
+
+			Proc->Boost[BOOST(TGT)] = COF;
+	    }
+	}
+    }
 }
 
 void Query_Intel_C1E(CORE *Core)				/*Per Package*/
