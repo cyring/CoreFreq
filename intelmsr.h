@@ -243,8 +243,8 @@ typedef union
 	};
 } FSB_FREQ;
 
-typedef	union
-{
+typedef union
+{	/* MSR IA32_PERF_STATUS(0x198): 0F_03 [NetBurst]		*/
 	unsigned long long value;
 	struct
 	{
@@ -275,8 +275,8 @@ typedef	union
 	} SNB;
 } PERF_STATUS;
 
-typedef	union
-{
+typedef union
+{	/* MSR IA32_PERF_CTL(0x199): 0F_03 [NetBurst]			*/
 	unsigned long long value;
 	struct
 	{

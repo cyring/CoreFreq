@@ -1629,6 +1629,7 @@ void Intel_Core_Platform_Info(void)
 	Proc->Boost[BOOST(MAX)] = KMAX(ratio0, ratio1);
 	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
+	Proc->Features.TgtRatio_Unlock = 1;
 	if ((pSpecific = LookupProcessor()) != NULL) {
 		OverrideCodeNameString(pSpecific);
 		OverrideUnlockCapability(pSpecific);
@@ -1660,6 +1661,7 @@ void Intel_Platform_Turbo(void)
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
 	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
+	Proc->Features.TgtRatio_Unlock = 1;
 	if ((pSpecific = LookupProcessor()) != NULL) {
 		OverrideCodeNameString(pSpecific);
 		OverrideUnlockCapability(pSpecific);
@@ -3273,6 +3275,7 @@ void Compute_AMD_Zen_Boost(void)
 		Proc->Boost[BOOST(8C)] = Proc->Boost[BOOST(MAX)];
 		Proc->Boost[BOOST(9C)] = Proc->Boost[BOOST(MAX)];
 
+		Proc->Features.TgtRatio_Unlock = 0;
 	    if ((pSpecific = LookupProcessor()) != NULL) {
 		/* Save thermal parameters to compute per Core temperature */
 		Arch[Proc->ArchID].Specific[0].Param = pSpecific->Param;
@@ -3530,9 +3533,6 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
     } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
     }
-    if (Proc->Features.TgtRatio_Unlock == 0) {
-	Proc->Features.TgtRatio_Unlock = 1;
-    }
     if (Core->Bind == Proc->Service.Core) {
 	Proc->Boost[BOOST(TGT)] = Core->PowerThermal.PerfControl.TargetRatio;
     }
@@ -3572,7 +3572,7 @@ static void Perf_Ratio_Intel_PerCore(void *arg)
 
 long ClockMod_Intel_PPC(CLOCK_ARG *pClockMod)
 {
-  if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
+  if (pClockMod != NULL) {
    if (pClockMod->NC == CLOCK_MOD_TGT)
    {
 	unsigned int cpu = Proc->CPU.Count;
