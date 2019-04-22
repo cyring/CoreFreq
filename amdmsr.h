@@ -18,6 +18,10 @@
 	#define MSR_AMD_F17H_IRPERF		MSR_F17H_IRPERF
 #endif
 
+#ifndef MSR_AMD_PERF_CTL
+	#define MSR_AMD_PERF_CTL		0xc0010062
+#endif
+
 #ifndef MSR_AMD_PERF_STATUS
 	#define MSR_AMD_PERF_STATUS		0xc0010063
 #endif
@@ -118,13 +122,13 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock		:  1-0,  /* SMM Configuration Lock.		*/
+	SmmLock 	:  1-0,  /* SMM Configuration Lock.		*/
 	Reserved1	:  3-1,
 	TlbCacheDis	:  4-3,  /* Cacheable Memory Disable.		*/
 	INVDWBINVD	:  5-4,  /* INVD to WBINVD Conversion.		*/
 	Reserved2	:  7-5,
 	AllowFerrOnNe	:  8-7,  /* Allow FERR on NE..			*/
-	IgnneEm		:  9-8,  /* IGNNE port emulation enable.	*/
+	IgnneEm 	:  9-8,  /* IGNNE port emulation enable.	*/
 	MonMwaitDis	: 10-9,  /* 1=MONITOR & MWAIT opcodes become invalid. */
 	MonMwaitUserEn	: 11-10, /* MONITOR/MWAIT user mode enable. 0=pl0 only*/
 	Reserved3	: 12-11,
@@ -143,7 +147,7 @@ typedef union
 	EffFreqCntMwait : 27-26, /* Effective frequency counting during mwait.*/
 	/* Family 15h */
 	EffFreqROLock	: 28-27, /* Read-only effective frequency counter lock*/
-	SmuLock		: 29-28,
+	SmuLock 	: 29-28,
 	CSEnable	: 30-29, /* Connected standby enable.		*/
 	Reserved7	: 32-30,
 	Reserved	: 64-32;
@@ -151,13 +155,13 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock		:  1-0,
+	SmmLock 	:  1-0,
 	Reserved1	:  3-1,
 	TlbCacheDis	:  4-3,
 	INVDWBINVD	:  5-4,
 	Reserved2	:  7-5,
 	AllowFerrOnNe	:  8-7,
-	IgnneEm		:  9-8,
+	IgnneEm 	:  9-8,
 	MonMwaitDis	: 10-9,
 	MonMwaitUserEn	: 11-10,
 	Reserved3	: 13-11,
@@ -182,15 +186,15 @@ typedef union
     struct
     {
 	unsigned long long
-	SmmLock		:  1-0,
+	SmmLock 	:  1-0,
 	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable.			*/
 	Reserved1	:  3-2,
 	TlbCacheDis	:  4-3,
 	INVDWBINVD	:  5-4,
 	Reserved2	:  6-5,
 	FFDIS		:  7-6,  /* TLB Flush Filter Disable.		*/
-	DISLOCK		:  8-7,  /* Disable x86 LOCK prefix functionality. */
-	IgnneEm		:  9-8,
+	DISLOCK 	:  8-7,  /* Disable x86 LOCK prefix functionality. */
+	IgnneEm 	:  9-8,
 	Reserved3	: 12-9,
 	HltXSpCycEn	: 13-12,
 	SmiSpCycDis	: 14-13,
@@ -229,7 +233,7 @@ typedef union
     struct
     {
 	unsigned long long
-	CurrFID		:  6-0,  /* Current FID				*/
+	CurrFID 	:  6-0,  /* Current FID				*/
 	Reserved1	:  8-6,
 	StartFID	: 14-8,  /* Startup FID				*/
 	Reserved2	: 16-14,
@@ -238,7 +242,7 @@ typedef union
 	MaxRampVID	: 30-24, /* Max Ramp VID			*/
 	Reserved4	: 31-30,
 	FidVidPending	: 32-31, /* 0b when the FID/VID change has completed.*/
-	CurrVID		: 38-32, /* Current VID				*/
+	CurrVID 	: 38-32, /* Current VID				*/
 	Reserved5	: 40-38,
 	StartVID	: 46-40, /* Startup VID				*/
 	Reserved6	: 48-46,
@@ -327,8 +331,19 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_0063			*/
-	Current		:  3-0,
+	unsigned long long	 /* MSRC001_0062 : Family 10h up to 17h */
+	PstateCmd	:  3-0,
+	Reserved	: 64-3;
+    };
+} PSTATECTRL;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSRC001_0063 : Family 10h up to 17h */
+	Current 	:  3-0,
 	Reserved	: 64-3;
     };
 } PSTATESTAT;
@@ -402,7 +417,7 @@ typedef union
 	unsigned long long
 	DPD		:  1-0,  /* Debug Port Disable. ReservedBits: F17h */
 	InterceptInit	:  2-1,
-	DisA20m		:  3-2,  /* Disable A20 Masking. ReservedBits: F17h */
+	DisA20m 	:  3-2,  /* Disable A20 Masking. ReservedBits: F17h */
 	SVM_Lock	:  4-3,  /* 0=SvmeDisable is read-write, 1=read-only */
 	SVME_Disable	:  5-4,  /* 0 = Msr::EFER[SVME] is RW, 1 = read-only */
 	Reserved1	: 32-5,
@@ -418,7 +433,7 @@ typedef union
 	unsigned long long
 	SvmLockKey	: 64-0; /* Write if (Core::X86::Msr::VM_CR[Lock] == 0)*/
     };
-} SVM_LOCK_KEY;	/* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h		*/
+} SVM_LOCK_KEY; /* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h		*/
 
 typedef struct
 {
@@ -610,4 +625,3 @@ typedef struct
 	ReservedBits	: 31-16,
 	L3TagInit	: 32-31;
 } L3_CACHE_PARAMETER;
-
