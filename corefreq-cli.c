@@ -3699,6 +3699,11 @@ typedef void (*TITLE_CALLBACK)(unsigned int, char *);
 
 Window *CreateCoreClock(unsigned long long id,
 			unsigned int boostBase,
+			unsigned int NC,
+			signed int lowestOperating,
+			signed int highestOperating,
+			signed int medianColdZone,
+			signed int startingHotZone,
 			unsigned long long boxKey,
 			TITLE_CALLBACK TitleCallback,
 			CUINT oCol)
@@ -3712,18 +3717,9 @@ Window *CreateCoreClock(unsigned long long id,
 		RSC(CREATE_CORE_CLOCK_COND1).ATTR(),
 		RSC(CREATE_CORE_CLOCK_COND2).ATTR()
 	};
-	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
-	signed int offset,
-	lowestOperating = abs((int)Shm->Proc.Boost[boostBase - nc]
-			- (signed) Shm->Proc.Boost[BOOST(MIN)]),
-	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			 - Shm->Proc.Boost[boostBase - nc],
-	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
+	CLOCK_ARG clockMod = {.sllong = id};
+	unsigned int multiplier;
+	signed int offset;
 	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
 	CUINT oRow;
 
@@ -3745,9 +3741,9 @@ Window *CreateCoreClock(unsigned long long id,
 	ASCII *item = malloc(32);
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
-		clockMod.NC = nc | boxKey;
+		clockMod.NC = NC | boxKey;
 		clockMod.Offset = offset;
-		multiplier = Shm->Proc.Boost[boostBase - nc] + offset;
+		multiplier = Shm->Proc.Boost[boostBase - NC] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
@@ -3760,7 +3756,7 @@ Window *CreateCoreClock(unsigned long long id,
 			UpdateCoreClock, multiplier);
 	}
 
-	TitleCallback(nc, (char*) item);
+	TitleCallback(NC, (char*) item);
 	StoreWindow(wCK, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
@@ -3790,29 +3786,117 @@ Window *CreateCoreClock(unsigned long long id,
 	return(wCK);
 }
 
-void TitleForTurboClock(unsigned int nc, char *title)
+void TitleForTurboClock(unsigned int NC, char *title)
 {
-	sprintf(title, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), nc);
+	sprintf(title, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
 }
 
 Window *CreateTurboClock(unsigned long long id)
 {
-	return(CreateCoreClock(id, BOOST(SIZE), BOXKEY_TURBO_CLOCK,
-					TitleForTurboClock, 34));
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
+	CLOCK_ARG clockMod  = {.sllong = id};
+	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+	signed int	lowestOperating, highestOperating,
+			medianColdZone, startingHotZone;
+
+	lowestOperating = abs((int)Shm->Proc.Boost[BOOST(SIZE) - NC]
+			- (signed) Shm->Proc.Boost[BOOST(MIN)]);
+
+	highestOperating= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Boost[BOOST(SIZE) - NC];
+
+	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1;
+
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
+
+	return( CreateCoreClock(id,
+				BOOST(SIZE),
+				NC,
+				lowestOperating,
+				highestOperating,
+				medianColdZone,
+				startingHotZone,
+				BOXKEY_TURBO_CLOCK,
+				TitleForTurboClock,
+				34) );
 }
 
-void TitleForRatioClock(unsigned int nc, char *title)
+void TitleForRatioClock(unsigned int NC, char *title)
 {
 	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
-			nc == CLOCK_MOD_TGT ? (char *) RSC(TARGET).CODE() :
-			nc == CLOCK_MOD_MAX ? "Max" :
-			nc == CLOCK_MOD_MIN ? "Min" : "");
+			NC == CLOCK_MOD_TGT ? (char *) RSC(TARGET).CODE() :
+			NC == CLOCK_MOD_MAX ? "Max" :
+			NC == CLOCK_MOD_MIN ? "Min" : "");
 }
 
 Window *CreateRatioClock(unsigned long long id)
 {
-	return(CreateCoreClock(id, BOOST(ACT), BOXKEY_RATIO_CLOCK,
-					TitleForRatioClock, 38));
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
+					.Toggle];
+
+	CLOCK_ARG clockMod  = {.sllong = id};
+	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+	signed int	lowestOperating, highestOperating,
+			medianColdZone, startingHotZone;
+
+	lowestOperating = abs((int)Shm->Proc.Boost[BOOST(ACT) - NC]
+			- (signed) Shm->Proc.Boost[BOOST(MIN)]);
+
+    switch (NC) {
+    case CLOCK_MOD_TGT:
+	highestOperating=(Shm->Proc.Boost[BOOST(MAX)] + 1)
+			- Shm->Proc.Boost[BOOST(ACT) - NC];
+
+	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1;
+
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
+	break;
+    case CLOCK_MOD_MAX:
+	highestOperating= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Boost[BOOST(ACT) - NC];
+
+	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1;
+
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
+	break;
+    case CLOCK_MOD_MIN:
+	highestOperating= Shm->Proc.Boost[BOOST(MAX)]
+			- Shm->Proc.Boost[BOOST(ACT) - NC];
+
+	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1;
+
+	startingHotZone = Shm->Proc.Features.Factory.Ratio
+			+ ( ( Shm->Proc.Boost[BOOST(MAX)]
+			- Shm->Proc.Features.Factory.Ratio ) >> 1);
+	break;
+    }
+
+	return( CreateCoreClock(id,
+				BOOST(ACT),
+				NC,
+				lowestOperating,
+				highestOperating,
+				medianColdZone,
+				startingHotZone,
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				38) );
 }
 
 void UpdateUncoreClock(TGrid *grid, DATA_TYPE data)
@@ -3837,12 +3921,12 @@ Window *CreateUncoreClock(unsigned long long id)
 		RSC(CREATE_UNCORE_CLOCK_COND1).ATTR()
 	};
 	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int nc = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
+	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
 	signed int offset,
-	lowestOperating = abs((int)Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc]
+	lowestOperating = abs((int)Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC]
 			- (int) Shm->Proc.Boost[BOOST(MIN)]),
 	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc],
+				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC],
 	startingHotZone = Shm->Proc.Features.Factory.Ratio
 			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
 			- Shm->Proc.Features.Factory.Ratio ) >> 1);
@@ -3867,9 +3951,9 @@ Window *CreateUncoreClock(unsigned long long id)
 	ASCII *item = malloc(32);
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
-		clockMod.NC = nc | BOXKEY_UNCORE_CLOCK;
+		clockMod.NC = NC | BOXKEY_UNCORE_CLOCK;
 		clockMod.Offset = offset;
-		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - nc];
+		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC];
 		multiplier += offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
@@ -3881,7 +3965,7 @@ Window *CreateUncoreClock(unsigned long long id)
 			UpdateUncoreClock, multiplier);
 	}
 	sprintf((char*) item, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
-				nc == 1 ? "Max" : "Min");
+				NC == 1 ? "Max" : "Min");
 	StoreWindow(wUC, .title, (char*) item);
 
 	if (lowestOperating >= hthWin) {
