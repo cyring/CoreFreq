@@ -100,7 +100,7 @@ static signed short C1E_Enable = -1;
 module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
 
-static signed short TurboBoost_Enable = -1;
+static signed short TurboBoost_Enable = 1;	/*TODO: -1; */
 module_param(TurboBoost_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
 
