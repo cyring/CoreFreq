@@ -3870,7 +3870,7 @@ Window *CreateRatioClock(unsigned long long id)
 
     switch (NC) {
     case CLOCK_MOD_TGT:
-	highestOperating=(Shm->Proc.Boost[BOOST(MAX)] + 1)
+	highestOperating= Shm->Proc.Boost[BOOST(1C)]
 			- Shm->Proc.Boost[BOOST(ACT) - NC];
 
 	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]

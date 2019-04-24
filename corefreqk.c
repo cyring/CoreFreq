@@ -100,7 +100,7 @@ static signed short C1E_Enable = -1;
 module_param(C1E_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(C1E_Enable, "Enable SpeedStep C1E");
 
-static signed short TurboBoost_Enable = 1;	/*TODO: -1; */
+static signed short TurboBoost_Enable = -1;
 module_param(TurboBoost_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(TurboBoost_Enable, "Enable Turbo Boost");
 
@@ -3487,8 +3487,63 @@ void SpeedStep_Technology(CORE *Core)				/*Per Package*/
 	}
 }
 
-void TurboBoost_Technology(CORE *Core)				/* Per SMT */
+typedef void (*SET_TARGET)(CORE*, unsigned int);
+
+static void Set_Core2_Target(CORE *Core, unsigned int ratio)
 {
+	Core->PowerThermal.PerfControl.CORE.TargetRatio = ratio;
+}
+
+static void Set_Nehalem_Target(CORE *Core, unsigned int ratio)
+{
+	Core->PowerThermal.PerfControl.NHM.TargetRatio = ratio;
+}
+
+static void Set_SandyBridge_Target(CORE *Core, unsigned int ratio)
+{
+	Core->PowerThermal.PerfControl.SNB.TargetRatio = ratio;
+}
+
+typedef unsigned int (*GET_TARGET)(CORE*);
+
+static unsigned int Get_Core2_Target(CORE *Core)
+{
+	return(Core->PowerThermal.PerfControl.CORE.TargetRatio);
+}
+
+static unsigned int Get_Nehalem_Target(CORE *Core)
+{
+	return(Core->PowerThermal.PerfControl.NHM.TargetRatio);
+}
+
+static unsigned int Get_SandyBridge_Target(CORE *Core)
+{
+	return(Core->PowerThermal.PerfControl.SNB.TargetRatio);
+}
+
+typedef int (*TEST_TARGET)(CORE*, unsigned int);
+
+static int Test_Core2_Target(CORE *Core, unsigned int ratio)
+{
+	return(Core->PowerThermal.PerfControl.CORE.TargetRatio == ratio);
+}
+
+static int Test_Nehalem_Target(CORE *Core, unsigned int ratio)
+{
+	return(Core->PowerThermal.PerfControl.NHM.TargetRatio == ratio);
+}
+
+static int Test_SandyBridge_Target(CORE *Core, unsigned int ratio)
+{
+	return(Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
+}
+
+void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
+					GET_TARGET GetTarget,
+					TEST_TARGET TestTarget,
+					unsigned int TurboRatio,
+					unsigned int ValidRatio)
+{								/* Per SMT */
 	int ToggleFeature;
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
@@ -3500,42 +3555,37 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
     switch (TurboBoost_Enable) {
     case COREFREQ_TOGGLE_OFF:
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
-	/* Restore the nominal P-State					*/
-	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MAX)];
+	SetTarget(Core, Proc->Boost[BOOST(MAX)]); /* Restore nominal P-state */
 	ToggleFeature = 1;
 	break;
     case COREFREQ_TOGGLE_ON:
 	Core->PowerThermal.PerfControl.Turbo_IDA = 0;
-	/* Request the Turbo P-State					*/
-	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MAX)] + 1;
+	SetTarget(Core, TurboRatio);	/* Request the Turbo P-state	*/
 	ToggleFeature = 1;
-	break;
-    default:
-      if (Core->PowerThermal.PerfControl.TargetRatio < Proc->Boost[BOOST(MIN)])
-      { /* Fix the P-State if it is lower than the operating ratio	*/
-	Core->PowerThermal.PerfControl.TargetRatio=Proc->Boost[BOOST(MIN)];
-	ToggleFeature = 1;
-      } else {
-	ToggleFeature = 0;
-      }
 	break;
     }
     if (ToggleFeature == 1) {
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
-    if (!Core->PowerThermal.PerfControl.Turbo_IDA) {
-      if(Core->PowerThermal.PerfControl.TargetRatio ==Proc->Boost[BOOST(MAX)]+1)
-      {
+
+    if ((Core->PowerThermal.PerfControl.Turbo_IDA == 0)
+      && TestTarget(Core, ValidRatio)) {
 	BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
-      } else {	/*TODO: HWP architectures */
-	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
-      }
     } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
     }
+
     if (Core->Bind == Proc->Service.Core) {
-	Proc->Boost[BOOST(TGT)] = Core->PowerThermal.PerfControl.TargetRatio;
+      if (Proc->Features.HWP_Enable)
+      {
+	HWP_CAPABILITIES HWP_Perf = {.value = 0};
+	RDMSR(HWP_Perf, MSR_IA32_HWP_CAPABILITIES);
+
+	Proc->Boost[BOOST(TGT)] = HWP_Perf.Guaranteed;
+      } else {
+	Proc->Boost[BOOST(TGT)] = GetTarget(Core);
+      }
     }
   } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
@@ -3546,63 +3596,132 @@ void TurboBoost_Technology(CORE *Core)				/* Per SMT */
 void DynamicAcceleration(CORE *Core)				/* Unique */
 {
 	if (Proc->Features.Power.EAX.TurboIDA) {
-		TurboBoost_Technology(Core);
+		TurboBoost_Technology(	Core,
+					Set_Core2_Target,
+					Get_Core2_Target,
+					Test_Core2_Target,
+					1 + Proc->Boost[BOOST(MAX)],
+					1 + Proc->Boost[BOOST(MAX)] );
 	} else {
 		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 		BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 	}
 }
 
-static void Perf_Ratio_Intel_PerCore(void *arg)
-{
+typedef struct {
 	CLOCK_ARG *pClockMod;
+	SET_TARGET SetTarget;
+} CLOCK_PPC_ARG;
+
+static void ClockMod_PPC_PerCore(void *arg)
+{
+	CLOCK_PPC_ARG *pClockPPC;
 	CORE *Core;
 	unsigned int cpu;
 
-	pClockMod = (CLOCK_ARG *) arg;
+	pClockPPC = (CLOCK_PPC_ARG *) arg;
 	cpu = smp_processor_id();
 	Core = (CORE *) KPublic->Core[cpu];
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	Core->PowerThermal.PerfControl.TargetRatio = Proc->Boost[BOOST(TGT)]
-						   + pClockMod->Offset;
+
+	pClockPPC->SetTarget(Core, Proc->Boost[BOOST(TGT)]
+				   + pClockPPC->pClockMod->Offset);
 
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 }
 
-long ClockMod_Intel_PPC(CLOCK_ARG *pClockMod)
+void For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 {
-  if (pClockMod != NULL) {
-   if (pClockMod->NC == CLOCK_MOD_TGT)
-   {
 	unsigned int cpu = Proc->CPU.Count;
     do {
 	cpu--;	/* From last AP to BSP */
 
       if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
       {
-	smp_call_function_single(cpu, Perf_Ratio_Intel_PerCore, pClockMod, 1);
+	smp_call_function_single(cpu, ClockMod_PPC_PerCore, pClockPPC, 1);
       }
     } while (cpu != 0) ;
+}
+
+long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
+{
+    if (pClockMod != NULL) {
+	if (pClockMod->NC == CLOCK_MOD_TGT)
+	{
+	CLOCK_PPC_ARG ClockPPC = {
+		.pClockMod = pClockMod,
+		.SetTarget = Set_Core2_Target
+	};
+
+	For_All_PPC_Clock(&ClockPPC);
 
 	Proc->Boost[BOOST(TGT)] = KPublic->Core[
 					Proc->Service.Core
-				   ]->PowerThermal.PerfControl.TargetRatio;
+				]->PowerThermal.PerfControl.CORE.TargetRatio;
 
 	return(2);	/* Report a platform change */
-   }
-  }
+	}
+    }
 	return(0);
 }
 
-long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
+long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 {
-    if (Proc->Features.HWP_Enable  && (pClockMod != NULL)) {
+    if (pClockMod != NULL) {
 	if (pClockMod->NC == CLOCK_MOD_TGT)
 	{
-	/*TODO: HWP Programming Interfaces				*/
+	CLOCK_PPC_ARG ClockPPC = {
+		.pClockMod = pClockMod,
+		.SetTarget = Set_Nehalem_Target
+	};
+
+	For_All_PPC_Clock(&ClockPPC);
+
+	Proc->Boost[BOOST(TGT)] = KPublic->Core[
+					Proc->Service.Core
+				]->PowerThermal.PerfControl.NHM.TargetRatio;
+
+	return(2);
 	}
+    }
+	return(0);
+}
+
+long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
+{
+    if (pClockMod != NULL) {
+	if (pClockMod->NC == CLOCK_MOD_TGT)
+	{
+	CLOCK_PPC_ARG ClockPPC = {
+		.pClockMod = pClockMod,
+		.SetTarget = Set_SandyBridge_Target
+	};
+
+	For_All_PPC_Clock(&ClockPPC);
+
+	Proc->Boost[BOOST(TGT)] = KPublic->Core[
+					Proc->Service.Core
+				]->PowerThermal.PerfControl.SNB.TargetRatio;
+
+	return(2);
+	}
+    }
+	return(0);
+}
+
+long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod)
+{
+    if (Proc->Features.HWP_Enable) {
+	if (pClockMod != NULL) {
+	    if (pClockMod->NC == CLOCK_MOD_TGT)
+	    {
+	/*TODO: HWP Programming Interfaces				*/
+	    }
+	}
+    } else {
+	return(ClockMod_SandyBridge_PPC(pClockMod));
     }
 	return(0);
 }
@@ -4653,7 +4772,14 @@ static void PerCore_Nehalem_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_Nehalem_Target,
+				Get_Nehalem_Target,
+				Test_Nehalem_Target,
+				1 + Proc->Boost[BOOST(MAX)],
+				1 + Proc->Boost[BOOST(MAX)] );
+
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
@@ -4681,7 +4807,14 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Test_SandyBridge_Target,
+				Proc->Boost[BOOST(1C)],
+				Proc->Boost[BOOST(MAX)] );
+
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
@@ -4710,7 +4843,14 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Test_SandyBridge_Target,
+				Proc->Boost[BOOST(1C)],
+				Proc->Boost[BOOST(MAX)] );
+
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
@@ -4738,7 +4878,14 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Test_SandyBridge_Target,
+				Proc->Boost[BOOST(1C)],
+				Proc->Boost[BOOST(MAX)] );
+
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
@@ -4766,7 +4913,14 @@ static void PerCore_Skylake_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-	TurboBoost_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Test_SandyBridge_Target,
+				Proc->Boost[BOOST(1C)],
+				Proc->Boost[BOOST(MAX)] );
+
 	Query_Intel_C1E(Core);
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */

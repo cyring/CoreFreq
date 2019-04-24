@@ -188,6 +188,14 @@
 	#define MSR_IA32_PM_ENABLE		MSR_PM_ENABLE
 #endif
 
+#ifndef MSR_HWP_CAPABILITIES
+	#define MSR_HWP_CAPABILITIES		0x00000771
+#endif
+
+#ifndef MSR_IA32_HWP_CAPABILITIES
+	#define MSR_IA32_HWP_CAPABILITIES	MSR_HWP_CAPABILITIES
+#endif
+
 #ifndef MSR_IA32_PKG_HDC_CTL
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
 #endif
@@ -268,10 +276,11 @@ typedef union
 	struct
 	{
 		unsigned long long
-		CurrentRatio	: 16-0,
-		ReservedBits1	: 32-16,
+		ReservedBits1	:  8-0,
+		CurrentRatio	: 16-8,
+		ReservedBits2	: 32-16,
 		CurrVID 	: 48-32, /* Core Voltage ID (Sandy Bridge) */
-		ReservedBits2	: 64-48;
+		ReservedBits3	: 64-48;
 	} SNB;
 } PERF_STATUS;
 
@@ -280,11 +289,30 @@ typedef union
 	unsigned long long value;
 	struct
 	{
-		unsigned long long
+	  union {
+	    struct {
+		unsigned int
+		TargetVoltage	:  8-0,
+		TargetRatio	: 16-8,
+		ReservedBits2	: 32-16;
+	    } CORE;
+	    struct {
+		unsigned int
 		TargetRatio	: 16-0,
-		ReservedBits1	: 32-16,
-		Turbo_IDA	: 33-32, /* IDA Disengage bit: Mobile [06_0F] */
-		ReservedBits2	: 64-33;
+		ReservedBits	: 32-16;
+	    } NHM;
+	    struct {
+		unsigned int
+		ReservedBits1	:  8-0,
+		TargetRatio	: 16-8,
+		ReservedBits2	: 32-16;
+	    } SNB;
+	  };
+	    struct {
+		unsigned int
+		Turbo_IDA	:  1-0, /* IDA Disengage bit: Mobile [06_0F] */
+		ReservedBits	: 32-1;
+	    };
 	};
 } PERF_CONTROL;
 
@@ -628,6 +656,20 @@ typedef union
 		ReservedBits	: 64-1;
 	};
 } PM_ENABLE;
+
+typedef union
+{	/* 06_4E/06_4F/06_5E/06_55/06_56/06_66/06_8E/06_9E		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Highest 	:  8-0,
+		Guaranteed	: 16-8,
+		Most_Efficient	: 24-16,
+		Lowest		: 32-24,
+		ReservedBits	: 64-32;
+	};
+} HWP_CAPABILITIES;	/* SMT: If CPUID.06H:EAX.[7] = 1		*/
 
 typedef union
 {	/* 06_4E/06_5E/06_55/06_8E/06_9E				*/
