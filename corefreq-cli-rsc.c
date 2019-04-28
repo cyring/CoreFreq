@@ -372,17 +372,11 @@ ASCII Rsc_CreateAdvHelp_Blank_Code[] = "                                      ";
 ATTRIBUTE Rsc_CreateHotPlugCPU_Enable_Attr[]=RSC_CREATE_HOTPLUG_CPU_ENABLE_ATTR,
 	Rsc_CreateHotPlugCPU_Disable_Attr[]=RSC_CREATE_HOTPLUG_CPU_DISABLE_ATTR;
 
-ATTRIBUTE Rsc_CreateCoreClock_Cond_Attr[3][28] = {
-	RSC_CREATE_CORE_CLOCK_COND0_ATTR,
-	RSC_CREATE_CORE_CLOCK_COND1_ATTR,
-	RSC_CREATE_CORE_CLOCK_COND2_ATTR
+ATTRIBUTE Rsc_CreateRatioClock_Cond_Attr[3][28] = {
+	RSC_CREATE_RATIO_CLOCK_COND0_ATTR,
+	RSC_CREATE_RATIO_CLOCK_COND1_ATTR,
+	RSC_CREATE_RATIO_CLOCK_COND2_ATTR
 };
-
-ATTRIBUTE Rsc_CreateUncoreClock_Cond_Attr[2][28] = {
-	RSC_CREATE_UNCORE_CLOCK_COND0_ATTR,
-	RSC_CREATE_UNCORE_CLOCK_COND1_ATTR
-};
-
 ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[2][26] = {
 	RSC_CREATE_SELECT_CPU_COND0_ATTR,
 	RSC_CREATE_SELECT_CPU_COND1_ATTR
@@ -1074,24 +1068,16 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR
 			}
 	},
-	[RSC_CREATE_CORE_CLOCK_COND0] = {
-		.Attr = Rsc_CreateCoreClock_Cond_Attr[0],
+	[RSC_CREATE_RATIO_CLOCK_COND0] = {
+		.Attr = Rsc_CreateRatioClock_Cond_Attr[0],
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
-	[RSC_CREATE_CORE_CLOCK_COND1] = {
-		.Attr = Rsc_CreateCoreClock_Cond_Attr[1],
+	[RSC_CREATE_RATIO_CLOCK_COND1] = {
+		.Attr = Rsc_CreateRatioClock_Cond_Attr[1],
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
-	[RSC_CREATE_CORE_CLOCK_COND2] = {
-		.Attr = Rsc_CreateCoreClock_Cond_Attr[2],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
-	},
-	[RSC_CREATE_UNCORE_CLOCK_COND0] = {
-		.Attr = Rsc_CreateUncoreClock_Cond_Attr[0],
-		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
-	},
-	[RSC_CREATE_UNCORE_CLOCK_COND1] = {
-		.Attr = Rsc_CreateUncoreClock_Cond_Attr[1],
+	[RSC_CREATE_RATIO_CLOCK_COND2] = {
+		.Attr = Rsc_CreateRatioClock_Cond_Attr[2],
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 	[RSC_CREATE_SELECT_CPU_COND0] = {
@@ -1286,6 +1272,41 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_DISABLE_CODE_EN,
 			[LOC_FR] = RSC_DISABLE_CODE_FR
+		}
+	},
+	[RSC_CAPABILITIES] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_CAPABILITIES_CODE_EN,
+			[LOC_FR] = RSC_CAPABILITIES_CODE_FR
+		}
+	},
+	[RSC_LOWEST] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_LOWEST_CODE_EN,
+			[LOC_FR] = RSC_LOWEST_CODE_FR
+		}
+	},
+	[RSC_EFFICIENT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_EFFICIENT_CODE_EN,
+			[LOC_FR] = RSC_EFFICIENT_CODE_FR
+		}
+	},
+	[RSC_GUARANTEED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_GUARANTEED_CODE_EN,
+			[LOC_FR] = RSC_GUARANTEED_CODE_FR
+		}
+	},
+	[RSC_HIGHEST] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_HIGHEST_CODE_EN,
+			[LOC_FR] = RSC_HIGHEST_CODE_FR
 		}
 	},
 	[RSC_CPUID_TITLE] = {
@@ -3267,6 +3288,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_BOX_PC6_DESC_CODE_EN,
 			[LOC_FR] = RSC_BOX_PC6_DESC_CODE_FR
+		}
+	},
+	[RSC_BOX_HWP_DESC] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_HWP_DESC_CODE_EN,
+			[LOC_FR] = RSC_BOX_HWP_DESC_CODE_FR
 		}
 	},
 	[RSC_BOX_BLANK_DESC] = {

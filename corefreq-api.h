@@ -250,6 +250,8 @@ typedef struct
 	CLOCK_MODULATION		ClockModulation;
 	ENERGY_PERF_BIAS		PerfEnergyBias;
 	MISC_PWR_MGMT			PwrManagement;
+	HWP_CAPABILITIES		HWP_Capabilities;
+	HWP_REQUEST			HWP_Request;
 } POWER_THERMAL;
 
 typedef struct

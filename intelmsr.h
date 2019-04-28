@@ -196,6 +196,14 @@
 	#define MSR_IA32_HWP_CAPABILITIES	MSR_HWP_CAPABILITIES
 #endif
 
+#ifndef MSR_HWP_REQUEST
+	#define MSR_HWP_REQUEST 		0x00000774
+#endif
+
+#ifndef MSR_IA32_HWP_REQUEST
+	#define MSR_IA32_HWP_REQUEST		MSR_HWP_REQUEST
+#endif
+
 #ifndef MSR_IA32_PKG_HDC_CTL
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
 #endif
@@ -670,6 +678,22 @@ typedef union
 		ReservedBits	: 64-32;
 	};
 } HWP_CAPABILITIES;	/* SMT: If CPUID.06H:EAX.[7] = 1		*/
+
+typedef union
+{	/* 06_4E/06_4F/06_5E/06_55/06_56/06_66/06_8E/06_9E		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Minimum_Perf	:  8-0,  /* BDW, SKL, KBL, CFL & Superior	*/
+		Maximum_Perf	: 16-8,  /* BDW, SKL, KBL, CFL & Superior	*/
+		Desired_Perf	: 24-16, /* BDW, SKL, KBL, CFL & Superior	*/
+		Energy_Pref	: 32-24, /* SKL, KBL, CFL & Superior	*/
+		Activity_Window : 42-32, /* SKL, KBL, CFL & Superior	*/
+		Package_Control : 43-42, /* SKL, KBL, CFL & Superior	*/
+		ReservedBits	: 64-43;
+	};
+} HWP_REQUEST;	/* SMT:If CPUID.06H:EAX.[7] = 1 && PM_ENABLE.HWP_Enable */
 
 typedef union
 {	/* 06_4E/06_5E/06_55/06_8E/06_9E				*/

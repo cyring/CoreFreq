@@ -196,6 +196,11 @@
 #define RSC_LOCK_CODE_EN		(ASCII*) "  LOCK"
 #define RSC_ENABLE_CODE_EN		(ASCII*) " Enable"
 #define RSC_DISABLE_CODE_EN		(ASCII*) "Disable"
+#define RSC_CAPABILITIES_CODE_EN	(ASCII*) "Capabilities"
+#define RSC_LOWEST_CODE_EN		(ASCII*) "Lowest"
+#define RSC_EFFICIENT_CODE_EN		(ASCII*) "Efficient"
+#define RSC_GUARANTEED_CODE_EN		(ASCII*) "Guaranteed"
+#define RSC_HIGHEST_CODE_EN		(ASCII*) "Highest"
 
 #define RSC_CPUID_TITLE_EN		\
 (ASCII*) " function           EAX          EBX          ECX          EDX "
@@ -542,6 +547,8 @@
 			(ASCII*) "           Core C6 State            "
 #define RSC_BOX_PC6_DESC_CODE_EN					\
 			(ASCII*) "          Package C6 State          "
+#define RSC_BOX_HWP_DESC_CODE_EN					\
+			(ASCII*) "   Hardware-Controlled Performance  "
 #define RSC_BOX_BLANK_DESC_CODE_EN					\
 			(ASCII*) "                                    "
 

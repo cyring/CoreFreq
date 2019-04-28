@@ -152,6 +152,10 @@ static signed int PState_VID = -1;
 module_param(PState_VID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_VID, "P-State Voltage Id");
 
+static signed short HWP_Enable = -1;
+module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
+
 static unsigned int Clear_Events = 0;
 module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
@@ -1984,11 +1988,18 @@ void Intel_Turbo_TDP_Config(void)
 
 void Intel_Hardware_Performance(void)
 {
+    if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {
 	PM_ENABLE PM_Enable = {.value = 0};
 	HDC_CONTROL HDC_Control = {.value = 0};
 
 	if (Proc->Features.Power.EAX.HWP_Reg) {
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+
+		if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0)) {
+			PM_Enable.HWP_Enable = 1;
+			WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+			RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+		}
 	}
 	Proc->Features.HWP_Enable = PM_Enable.HWP_Enable;
 
@@ -1996,6 +2007,7 @@ void Intel_Hardware_Performance(void)
 		RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
 	}
 	Proc->Features.HDC_Enable = HDC_Control.HDC_Enable;
+    }
 }
 
 void SandyBridge_Uncore_Ratio(void)
@@ -3468,12 +3480,12 @@ void SpeedStep_Technology(CORE *Core)				/*Per Package*/
 			RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 			switch (SpeedStep_Enable) {
-			    case COREFREQ_TOGGLE_OFF:
-			    case COREFREQ_TOGGLE_ON:
+			case COREFREQ_TOGGLE_OFF:
+			case COREFREQ_TOGGLE_ON:
 				MiscFeatures.EIST = SpeedStep_Enable;
 				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 				RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-			    break;
+				break;
 			}
 			if (MiscFeatures.EIST)
 				BITSET(LOCKLESS, Proc->SpeedStep, Core->Bind);
@@ -3521,26 +3533,26 @@ static unsigned int Get_SandyBridge_Target(CORE *Core)
 	return(Core->PowerThermal.PerfControl.SNB.TargetRatio);
 }
 
-typedef int (*TEST_TARGET)(CORE*, unsigned int);
+typedef int (*CMP_TARGET)(CORE*, unsigned int);
 
-static int Test_Core2_Target(CORE *Core, unsigned int ratio)
+static int Cmp_Core2_Target(CORE *Core, unsigned int ratio)
 {
 	return(Core->PowerThermal.PerfControl.CORE.TargetRatio == ratio);
 }
 
-static int Test_Nehalem_Target(CORE *Core, unsigned int ratio)
+static int Cmp_Nehalem_Target(CORE *Core, unsigned int ratio)
 {
 	return(Core->PowerThermal.PerfControl.NHM.TargetRatio == ratio);
 }
 
-static int Test_SandyBridge_Target(CORE *Core, unsigned int ratio)
+static int Cmp_SandyBridge_Target(CORE *Core, unsigned int ratio)
 {
 	return(Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
 void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 					GET_TARGET GetTarget,
-					TEST_TARGET TestTarget,
+					CMP_TARGET CmpTarget,
 					unsigned int TurboRatio,
 					unsigned int ValidRatio)
 {								/* Per SMT */
@@ -3570,22 +3582,23 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
     }
 
     if ((Core->PowerThermal.PerfControl.Turbo_IDA == 0)
-      && TestTarget(Core, ValidRatio)) {
+      && CmpTarget(Core, ValidRatio)) {
 	BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
     } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
     }
 
-    if (Core->Bind == Proc->Service.Core) {
-      if (Proc->Features.HWP_Enable)
-      {
-	HWP_CAPABILITIES HWP_Perf = {.value = 0};
-	RDMSR(HWP_Perf, MSR_IA32_HWP_CAPABILITIES);
+    if (Proc->Features.HWP_Enable)
+    {
+	RDMSR(Core->PowerThermal.HWP_Capabilities, MSR_IA32_HWP_CAPABILITIES);
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+    }
 
-	Proc->Boost[BOOST(TGT)] = HWP_Perf.Guaranteed;
-      } else {
+    if (Core->Bind == Proc->Service.Core) {
 	Proc->Boost[BOOST(TGT)] = GetTarget(Core);
-      }
+	Proc->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
+	Proc->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Proc->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
     }
   } else {
 	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
@@ -3599,7 +3612,7 @@ void DynamicAcceleration(CORE *Core)				/* Unique */
 		TurboBoost_Technology(	Core,
 					Set_Core2_Target,
 					Get_Core2_Target,
-					Test_Core2_Target,
+					Cmp_Core2_Target,
 					1 + Proc->Boost[BOOST(MAX)],
 					1 + Proc->Boost[BOOST(MAX)] );
 	} else {
@@ -3711,14 +3724,71 @@ long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 	return(0);
 }
 
+static void ClockMod_HWP_PerCore(void *arg)
+{
+	CLOCK_ARG *pClockMod;
+	CORE *Core;
+	unsigned int cpu;
+	unsigned short WrRdHWP = 0;
+
+	pClockMod = (CLOCK_ARG *) arg;
+	cpu = smp_processor_id();
+	Core = (CORE *) KPublic->Core[cpu];
+
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+
+    switch (pClockMod->NC) {
+    case CLOCK_MOD_HWP_MIN:
+	Core->PowerThermal.HWP_Request.Minimum_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+    case CLOCK_MOD_HWP_MAX:
+	Core->PowerThermal.HWP_Request.Maximum_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+    case CLOCK_MOD_HWP_TGT:
+	Core->PowerThermal.HWP_Request.Desired_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+    }
+    if (WrRdHWP == 1) {
+	WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+    }
+}
+
+void For_All_HWP_Clock(CLOCK_ARG *pClockMod)
+{
+	unsigned int cpu = Proc->CPU.Count;
+    do {
+	cpu--;	/* From last AP to BSP */
+
+      if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+      {
+	smp_call_function_single(cpu, ClockMod_HWP_PerCore, pClockMod, 1);
+      }
+    } while (cpu != 0) ;
+}
+
 long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod)
 {
     if (Proc->Features.HWP_Enable) {
 	if (pClockMod != NULL) {
-	    if (pClockMod->NC == CLOCK_MOD_TGT)
-	    {
-	/*TODO: HWP Programming Interfaces				*/
-	    }
+		For_All_HWP_Clock(pClockMod);
+
+		Proc->Boost[BOOST(HWP_MIN)] = KPublic->Core[
+						Proc->Service.Core
+				]->PowerThermal.HWP_Request.Minimum_Perf;
+
+		Proc->Boost[BOOST(HWP_MAX)] = KPublic->Core[
+						Proc->Service.Core
+				]->PowerThermal.HWP_Request.Maximum_Perf;
+
+		Proc->Boost[BOOST(HWP_TGT)] = KPublic->Core[
+						Proc->Service.Core
+				]->PowerThermal.HWP_Request.Desired_Perf;
+
+		return(2);
 	}
     } else {
 	return(ClockMod_SandyBridge_PPC(pClockMod));
@@ -4776,7 +4846,7 @@ static void PerCore_Nehalem_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_Nehalem_Target,
 				Get_Nehalem_Target,
-				Test_Nehalem_Target,
+				Cmp_Nehalem_Target,
 				1 + Proc->Boost[BOOST(MAX)],
 				1 + Proc->Boost[BOOST(MAX)] );
 
@@ -4811,7 +4881,7 @@ static void PerCore_SandyBridge_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Test_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
 
@@ -4847,7 +4917,7 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Test_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
 
@@ -4882,7 +4952,7 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Test_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
 
@@ -4917,7 +4987,7 @@ static void PerCore_Skylake_Query(void *arg)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
-				Test_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
 
@@ -8244,6 +8314,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	PowerPolicy = arg;
 	Controller_Start(1);
 	PowerPolicy = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_HWP:
+	Controller_Stop(1);
+	HWP_Enable = arg;
+	Controller_Start(1);
+	HWP_Enable = -1;
 	rc = 0;
 	break;
     case COREFREQ_IOCTL_CPU_OFF:

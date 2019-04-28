@@ -224,5 +224,5 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2019 CYRIL INGENIERIE
+Copyright (C) 2015-2019 CYRIL INGENIERIE  
  -------

@@ -196,6 +196,11 @@
 #define RSC_LOCK_CODE_FR		(ASCII*) "BLOQUE"
 #define RSC_ENABLE_CODE_FR		(ASCII*) "  Actif"
 #define RSC_DISABLE_CODE_FR		(ASCII*) "Inactif"
+#define RSC_CAPABILITIES_CODE_FR	(ASCII*) "Capacites"
+#define RSC_LOWEST_CODE_FR		(ASCII*) "Faible"
+#define RSC_EFFICIENT_CODE_FR		(ASCII*) "Efficace"
+#define RSC_GUARANTEED_CODE_FR		(ASCII*) "Guarantie"
+#define RSC_HIGHEST_CODE_FR		(ASCII*) "Elevee"
 
 #define RSC_CPUID_TITLE_FR 		\
 (ASCII*) " fonction           EAX          EBX          ECX          EDX "
@@ -542,6 +547,8 @@
 			(ASCII*) "            Core Etat C6            "
 #define RSC_BOX_PC6_DESC_CODE_FR					\
 			(ASCII*) "           Package Etat C6          "
+#define RSC_BOX_HWP_DESC_CODE_FR					\
+			(ASCII*) " Controle Materiel de la Performance"
 #define RSC_BOX_BLANK_DESC_CODE_FR					\
 			(ASCII*) "                                    "
 

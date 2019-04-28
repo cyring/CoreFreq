@@ -2922,6 +2922,30 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			(Core[cpu]->PowerThermal.TM2_Enable << 1);   /* 00v0 */
 
 	Shm->Cpu[cpu].PowerThermal.Param = Core[cpu]->PowerThermal.Param;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest =
+			Core[cpu]->PowerThermal.HWP_Capabilities.Highest;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Guaranteed =
+			Core[cpu]->PowerThermal.HWP_Capabilities.Guaranteed;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Most_Efficient =
+			Core[cpu]->PowerThermal.HWP_Capabilities.Most_Efficient;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Lowest =
+			Core[cpu]->PowerThermal.HWP_Capabilities.Lowest;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf =
+			Core[cpu]->PowerThermal.HWP_Request.Minimum_Perf;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf =
+			Core[cpu]->PowerThermal.HWP_Request.Maximum_Perf;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf =
+			Core[cpu]->PowerThermal.HWP_Request.Desired_Perf;
+
+	Shm->Cpu[cpu].PowerThermal.HWP.Request.Energy_Pref =
+			Core[cpu]->PowerThermal.HWP_Request.Energy_Pref;
 }
 
 void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)

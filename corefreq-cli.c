@@ -522,47 +522,28 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 
 char SymbUnlock[2][2] = {{'[', ']'}, {'<', '>'}};
 
-TGrid *PrintCoreBoost(	Window *win, struct FLIP_FLOP *CFlop,
-			char *pfx, int _boost, int syc, unsigned long long _key,
+TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
+			int zerobase, char *pfx, unsigned int *pRatio,
+			int syc, unsigned long long _key,
 			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
 {
 	TGrid *pGrid = NULL;
 
-    if (Shm->Proc.Boost[_boost] > 0)
+    if ((( (*pRatio) > 0)  && !zerobase) || (( (*pRatio) >= 0) && zerobase))
     {
 	pGrid = PUT(_key, attrib, width, 0,
 		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-	(double) ( Shm->Proc.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
+	(double) ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0,
 		20, hSpace,
 		SymbUnlock[syc][0],
-		Shm->Proc.Boost[_boost],
+		(*pRatio),
 		SymbUnlock[syc][1]);
     }
 	return(pGrid);
 }
 
-TGrid *PrintUncoreBoost(Window *win, struct FLIP_FLOP *CFlop,
-			char *pfx, int _boost, int syc, unsigned long long _key,
-			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
-{
-	TGrid *pGrid = NULL;
-
-    if (Shm->Uncore.Boost[_boost] > 0)
-    {
-	pGrid = PUT(_key, attrib, width, 0,
-		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-	(double) ( Shm->Uncore.Boost[_boost] * CFlop->Clock.Hz) / 1000000.0,
-		20, hSpace,
-		SymbUnlock[syc][0],
-		Shm->Uncore.Boost[_boost],
-		SymbUnlock[syc][1]);
-    }
-	return(pGrid);
-}
-
-void UpdateBaseClock(TGrid *grid, DATA_TYPE data)
+void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
@@ -572,27 +553,13 @@ void UpdateBaseClock(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 8], item, 6);
 }
 
-void UpdateCoreBoost(TGrid *grid, DATA_TYPE data)
+void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	char item[4+7+1];
-	sprintf(item, "%4d%7.2f", Shm->Proc.Boost[data.sint[0]],
-			(double)( Shm->Proc.Boost[data.sint[0]]
-				* CFlop->Clock.Hz) / 1000000.0 );
-
-	memcpy(&grid->cell.item[23], &item[4], 7);
-	memcpy(&grid->cell.item[51], &item[0], 4);
-}
-
-void UpdateUncoreBoost(TGrid *grid, DATA_TYPE data)
-{
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[4+7+1];
-	sprintf(item, "%4d%7.2f", Shm->Uncore.Boost[data.sint[0]],
-			(double)( Shm->Uncore.Boost[data.sint[0]]
-				* CFlop->Clock.Hz) / 1000000.0 );
+	sprintf(item, "%4d%7.2f",(*data.puint),
+			(double)((*data.puint) * CFlop->Clock.Hz) / 1000000.0);
 
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
@@ -654,7 +621,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
 			width - 11 - RSZ(BASE_CLOCK), hSpace,
 			CFlop->Clock.Hz / 1000000.0),
-		UpdateBaseClock);
+		RefreshBaseClock);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s(MHz)%.*s""%s", RSC(FREQUENCY).CODE(),
@@ -662,35 +629,39 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		23 - (OutFunc == NULL), hSpace,
 		RSC(RATIO).CODE());
 
-    if (Shm->Proc.Features.ClkRatio_Unlock && Shm->Registration.Experimental) {
+    if (Shm->Proc.Features.ClkRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MIN;
 
-	GridCall(PrintCoreBoost(win, CFlop,
-				"Min", BOOST(MIN), 1, coreClock.sllong,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "Min", &Shm->Proc.Boost[BOOST(MIN)],
+				1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(MIN));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MIN)]);
     } else {
-	GridCall(PrintCoreBoost(win, CFlop,
-				"Min", BOOST(MIN), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "Min", &Shm->Proc.Boost[BOOST(MIN)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(MIN));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MIN)]);
     }
-    if (Shm->Proc.Features.ClkRatio_Unlock && Shm->Registration.Experimental) {
+    if (Shm->Proc.Features.ClkRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
-	GridCall(PrintCoreBoost(win, CFlop,
-				"Max", BOOST(MAX), 1, coreClock.sllong,
+	GridCall(PrintRatioFreq(win, CFlop, 0,
+				"Max", &Shm->Proc.Boost[BOOST(MAX)],
+				1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(MAX));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MAX)]);
     } else {
-	GridCall(PrintCoreBoost(win, CFlop,
-				"Max", BOOST(MAX), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "Max", &Shm->Proc.Boost[BOOST(MAX)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(MAX));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MAX)]);
     }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%6.2f]",
@@ -705,20 +676,50 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
-    if (Shm->Proc.Features.TgtRatio_Unlock && Shm->Registration.Experimental) {
+	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", "OSPM");
+    if (Shm->Proc.Features.TgtRatio_Unlock) {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_TGT;
 
-	GridCall(PrintCoreBoost(win, CFlop,
-				"TGT", BOOST(TGT), 1, coreClock.sllong,
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "TGT", &Shm->Proc.Boost[BOOST(TGT)],
+				1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(TGT));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(TGT)]);
     } else {
-	GridCall(PrintCoreBoost(win, CFlop,
-				"TGT", BOOST(TGT), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "TGT", &Shm->Proc.Boost[BOOST(TGT)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(TGT));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(TGT)]);
+    }
+
+    if (Shm->Proc.Features.HWP_Enable) {
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+
+	PUT(SCANKEY_NULL, attrib[0], width, 3, "%s", "HWP");
+
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_MIN;
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Min", &Shm->Proc.Boost[BOOST(HWP_MIN)],
+				1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(HWP_MIN)]);
+
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_MAX;
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Max", &Shm->Proc.Boost[BOOST(HWP_MAX)],
+				1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(HWP_MAX)]);
+
+	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_HWP_TGT;
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "TGT", &Shm->Proc.Boost[BOOST(HWP_TGT)],
+				1, coreClock.sllong,
+				width, OutFunc, attrib[3]),
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(HWP_TGT)]);
     }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
@@ -730,16 +731,18 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
       if (Shm->Proc.Features.TDP_Levels >= 2)
-	GridCall(PrintCoreBoost(win, CFlop,
-				"XFR", BOOST(XFR), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "XFR", &Shm->Proc.Boost[BOOST(XFR)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(XFR));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(XFR)]);
 
       if (Shm->Proc.Features.TDP_Levels >= 1)
-	GridCall(PrintCoreBoost(win, CFlop,
-				"CPB", BOOST(CPB), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "CPB", &Shm->Proc.Boost[BOOST(CPB)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(CPB));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(CPB)]);
     }
 
     if (Shm->Proc.Features.Turbo_Unlock)
@@ -750,10 +753,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[4];
 	sprintf(pfx, "%2uC", activeCores);
-	GridCall(PrintCoreBoost(win, CFlop,
-				pfx, boost, 1, clockMod.sllong,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, pfx, &Shm->Proc.Boost[boost],
+				1, clockMod.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, boost);
+		RefreshRatioFreq, &Shm->Proc.Boost[boost]);
       }
     else
       for (boost = BOOST(1C), activeCores = 1;
@@ -761,10 +765,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			boost--, activeCores++) {
 	char pfx[4];
 	sprintf(pfx, "%2uC", activeCores);
-	GridCall(PrintCoreBoost(win, CFlop,
-				pfx, boost, 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, pfx, &Shm->Proc.Boost[boost],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, boost);
+		RefreshRatioFreq, &Shm->Proc.Boost[boost]);
       }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
@@ -776,25 +781,30 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
-	GridCall(PrintUncoreBoost(win, CFlop,
-				"Min", UNCORE_BOOST(MIN), 1, uncoreClock.sllong,
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
+				1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateUncoreBoost, UNCORE_BOOST(MIN));
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
-	GridCall(PrintUncoreBoost(win, CFlop,
-				"Max", UNCORE_BOOST(MAX), 1, uncoreClock.sllong,
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
+				1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
-		UpdateUncoreBoost, UNCORE_BOOST(MAX));
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
     } else {
-	GridCall(PrintUncoreBoost(win, CFlop,
-				"Min", UNCORE_BOOST(MIN), 0,SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateUncoreBoost, UNCORE_BOOST(MIN));
-	GridCall(PrintUncoreBoost(win, CFlop,
-				"Max", UNCORE_BOOST(MAX), 0,SCANKEY_NULL,
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
+
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateUncoreBoost, UNCORE_BOOST(MAX));
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
     }
 
     if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -827,27 +837,32 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			6, Shm->Proc.Features.TurboActivation ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
-	GridCall(PrintCoreBoost(win, CFlop, (char*) RSC(NOMINAL).CODE(),
-				BOOST(TDP), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, (char*) RSC(NOMINAL).CODE(),
+				&Shm->Proc.Boost[BOOST(TDP)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(TDP));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(TDP)]);
 
 	sprintf(pfx, "%s""1", RSC(LEVEL).CODE());
-	GridCall(PrintCoreBoost(win, CFlop,
-				pfx, BOOST(TDP1), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, pfx, &Shm->Proc.Boost[BOOST(TDP1)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(TDP1));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(TDP1)]);
 
 	sprintf(pfx, "%s""2", RSC(LEVEL).CODE());
-	GridCall(PrintCoreBoost(win, CFlop,
-				pfx, BOOST(TDP2), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, pfx, &Shm->Proc.Boost[BOOST(TDP2)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(TDP2));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(TDP2)]);
 
-	GridCall(PrintCoreBoost(win, CFlop,
-				"Turbo", BOOST(ACT), 0, SCANKEY_NULL,
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "Turbo", &Shm->Proc.Boost[BOOST(ACT)],
+				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		UpdateCoreBoost, BOOST(ACT));
+		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(ACT)]);
 	free(pfx);
       } else {
 	REASON_SET(reason, RC_MEM_ERR);
@@ -1595,11 +1610,63 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace, enabled(bix));
 
-	bix = (Shm->Proc.Features.HWP_Enable == 1)
+	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
+    if (bix)
+	PUT(BOXKEY_HWP, attrib[bix], width, 2,
+		"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
+		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
+    else
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
+
+	bix = Shm->Proc.Features.HWP_Enable == 1;
+    if (bix)
+    {
+	CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
+
+	PUT(SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
+		"%s""%.*s(MHz)%.*s""%s", RSC(CAPABILITIES).CODE(),
+		21 - 3*(OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
+		22, hSpace,
+		RSC(RATIO).CODE());
+
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, (char*) RSC(LOWEST).CODE(),
+				&SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0, SCANKEY_NULL, width, OutFunc,
+				RSC(SYSINFO_PROC_COND0).ATTR()),
+		RefreshRatioFreq,
+			&SProc->PowerThermal.HWP.Capabilities.Lowest);
+
+	GridCall(PrintRatioFreq(win, CFlop,
+			1, (char*) RSC(EFFICIENT).CODE(),
+			&SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
+			0, SCANKEY_NULL, width, OutFunc,
+			RSC(SYSINFO_PROC_COND0).ATTR()),
+		RefreshRatioFreq,
+			&SProc->PowerThermal.HWP.Capabilities.Most_Efficient);
+
+	GridCall(PrintRatioFreq(win, CFlop,
+			1, (char*) RSC(GUARANTEED).CODE(),
+			&SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+			0, SCANKEY_NULL, width, OutFunc,
+			RSC(SYSINFO_PROC_COND0).ATTR()),
+		RefreshRatioFreq,
+			&SProc->PowerThermal.HWP.Capabilities.Guaranteed);
+
+	GridCall(PrintRatioFreq(win, CFlop,
+				1, (char*) RSC(HIGHEST).CODE(),
+				&SProc->PowerThermal.HWP.Capabilities.Highest,
+				0, SCANKEY_NULL, width, OutFunc,
+				RSC(SYSINFO_PROC_COND0).ATTR()),
+		RefreshRatioFreq,
+			&SProc->PowerThermal.HWP.Capabilities.Highest);
+    }
 
 	bix = Shm->Proc.Features.HDC_Enable == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -3700,7 +3767,7 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	return(wCPU);
 }
 
-void UpdateCoreClock(TGrid *grid, DATA_TYPE data)
+void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
@@ -3714,8 +3781,31 @@ void UpdateCoreClock(TGrid *grid, DATA_TYPE data)
 
 typedef void (*TITLE_CALLBACK)(unsigned int, char *);
 
-Window *CreateCoreClock(unsigned long long id,
-			unsigned int boostBase,
+void TitleForTurboClock(unsigned int NC, char *title)
+{
+	sprintf(title, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
+}
+
+void TitleForRatioClock(unsigned int NC, char *title)
+{
+	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
+			(NC == CLOCK_MOD_TGT) || (NC == CLOCK_MOD_HWP_TGT) ?
+		(char *) RSC(TARGET).CODE() :
+			(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
+		"Max" :
+			(NC == CLOCK_MOD_MIN) || (NC == CLOCK_MOD_HWP_MIN) ?
+		"Min" : "");
+}
+
+void TitleForUncoreClock(unsigned int NC, char *title)
+{
+	sprintf(title, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
+			(NC == CLOCK_MOD_MAX) ? "Max" :
+			(NC == CLOCK_MOD_MIN) ? "Min" : "");
+}
+
+Window *CreateRatioClock(unsigned long long id,
+			unsigned int COF,
 			unsigned int NC,
 			signed int lowestOperating,
 			signed int highestOperating,
@@ -3730,13 +3820,11 @@ Window *CreateCoreClock(unsigned long long id,
 					.Toggle];
 
 	ATTRIBUTE *attrib[3] = {
-		RSC(CREATE_CORE_CLOCK_COND0).ATTR(),
-		RSC(CREATE_CORE_CLOCK_COND1).ATTR(),
-		RSC(CREATE_CORE_CLOCK_COND2).ATTR()
+		RSC(CREATE_RATIO_CLOCK_COND0).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND1).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND2).ATTR()
 	};
 	CLOCK_ARG clockMod = {.sllong = id};
-	unsigned int multiplier;
-	signed int offset;
 	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
 	CUINT oRow;
 
@@ -3756,11 +3844,14 @@ Window *CreateCoreClock(unsigned long long id,
 
     if (wCK != NULL) {
 	ASCII *item = malloc(32);
+	signed int multiplier, offset;
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
+		multiplier = COF + offset;
+	    if (multiplier > 0)
+	    {
 		clockMod.NC = NC | boxKey;
 		clockMod.Offset = offset;
-		multiplier = Shm->Proc.Boost[boostBase - NC] + offset;
 
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
@@ -3770,7 +3861,11 @@ Window *CreateCoreClock(unsigned long long id,
 				attrib[multiplier < medianColdZone ?
 					1 : multiplier > startingHotZone ?
 						2 : 0]),
-			UpdateCoreClock, multiplier);
+			UpdateRatioClock, multiplier);
+	    } else {
+		sprintf((char*) item, "%.*s", 28, hSpace);
+		StoreTCell(wCK, SCANKEY_NULL, item, MakeAttr(BLACK,0,BLACK,0));
+	    }
 	}
 
 	TitleCallback(NC, (char*) item);
@@ -3783,7 +3878,7 @@ Window *CreateCoreClock(unsigned long long id,
 		wCK->matrix.select.row  = lowestOperating
 					- wCK->matrix.scroll.vert;
 	} else {
-		wCK->matrix.select.row  = lowestOperating;
+		wCK->matrix.select.row  = COF > 0 ? lowestOperating : 0;
 	}
 	StoreWindow(wCK,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wCK,	.key.Down,	MotionDown_Win);
@@ -3801,215 +3896,6 @@ Window *CreateCoreClock(unsigned long long id,
 	free(item);
     }
 	return(wCK);
-}
-
-void TitleForTurboClock(unsigned int NC, char *title)
-{
-	sprintf(title, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
-}
-
-Window *CreateTurboClock(unsigned long long id)
-{
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
-
-	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-
-	signed int	lowestOperating, highestOperating,
-			medianColdZone, startingHotZone;
-
-	lowestOperating = abs((int)Shm->Proc.Boost[BOOST(SIZE) - NC]
-			- (signed) Shm->Proc.Boost[BOOST(MIN)]);
-
-	highestOperating= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Boost[BOOST(SIZE) - NC];
-
-	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1;
-
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-
-	return( CreateCoreClock(id,
-				BOOST(SIZE),
-				NC,
-				lowestOperating,
-				highestOperating,
-				medianColdZone,
-				startingHotZone,
-				BOXKEY_TURBO_CLOCK,
-				TitleForTurboClock,
-				34) );
-}
-
-void TitleForRatioClock(unsigned int NC, char *title)
-{
-	sprintf(title, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
-			NC == CLOCK_MOD_TGT ? (char *) RSC(TARGET).CODE() :
-			NC == CLOCK_MOD_MAX ? "Max" :
-			NC == CLOCK_MOD_MIN ? "Min" : "");
-}
-
-Window *CreateRatioClock(unsigned long long id)
-{
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
-
-	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-
-	signed int	lowestOperating, highestOperating,
-			medianColdZone, startingHotZone;
-
-	lowestOperating = abs((int)Shm->Proc.Boost[BOOST(ACT) - NC]
-			- (signed) Shm->Proc.Boost[BOOST(MIN)]);
-
-    switch (NC) {
-    case CLOCK_MOD_TGT:
-	highestOperating= Shm->Proc.Boost[BOOST(1C)]
-			- Shm->Proc.Boost[BOOST(ACT) - NC];
-
-	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1;
-
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	break;
-    case CLOCK_MOD_MAX:
-	highestOperating= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Boost[BOOST(ACT) - NC];
-
-	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1;
-
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	break;
-    case CLOCK_MOD_MIN:
-	highestOperating= Shm->Proc.Boost[BOOST(MAX)]
-			- Shm->Proc.Boost[BOOST(ACT) - NC];
-
-	medianColdZone =( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1;
-
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( Shm->Proc.Boost[BOOST(MAX)]
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	break;
-    }
-
-	return( CreateCoreClock(id,
-				BOOST(ACT),
-				NC,
-				lowestOperating,
-				highestOperating,
-				medianColdZone,
-				startingHotZone,
-				BOXKEY_RATIO_CLOCK,
-				TitleForRatioClock,
-				38) );
-}
-
-void UpdateUncoreClock(TGrid *grid, DATA_TYPE data)
-{
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
-	char item[8];
-	sprintf(item, "%7.2f", (double) (data.uint[0] * CFlop->Clock.Hz)
-					/ 1000000.0);
-	memcpy(&grid->cell.item[1], item, 7);
-}
-
-Window *CreateUncoreClock(unsigned long long id)
-{
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
-				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
-
-	ATTRIBUTE *attrib[2] = {
-		RSC(CREATE_UNCORE_CLOCK_COND0).ATTR(),
-		RSC(CREATE_UNCORE_CLOCK_COND1).ATTR()
-	};
-	CLOCK_ARG clockMod  = {.sllong = id};
-	unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, multiplier;
-	signed int offset,
-	lowestOperating = abs((int)Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC]
-			- (int) Shm->Proc.Boost[BOOST(MIN)]),
-	highestOperating = MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-				- Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC],
-	startingHotZone = Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1);
-	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
-	CUINT oRow;
-
-	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
-		hthMin = draw.Size.height -	( 1
-						+ TOP_HEADER_ROW
-						+ TOP_FOOTER_ROW
-						+ TOP_SEPARATOR );
-		oRow = 1 + TOP_HEADER_ROW + TOP_FOOTER_ROW;
-	} else {
-		hthMin = draw.Size.height - 2;
-		oRow = 1;
-	}
-	hthWin = CUMIN(hthMin, hthMax);
-
-	Window *wUC = CreateWindow(wLayer, id, 1, hthWin, 42, oRow);
-
-    if (wUC != NULL) {
-	ASCII *item = malloc(32);
-	for (offset = -lowestOperating; offset <= highestOperating; offset++)
-	{
-		clockMod.NC = NC | BOXKEY_UNCORE_CLOCK;
-		clockMod.Offset = offset;
-		multiplier = Shm->Uncore.Boost[UNCORE_BOOST(SIZE) - NC];
-		multiplier += offset;
-
-		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
-			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
-			multiplier, offset);
-
-		GridCall(StoreTCell(wUC, clockMod.sllong, item,
-				attrib[multiplier > startingHotZone ? 1 : 0]),
-			UpdateUncoreClock, multiplier);
-	}
-	sprintf((char*) item, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
-				NC == 1 ? "Max" : "Min");
-	StoreWindow(wUC, .title, (char*) item);
-
-	if (lowestOperating >= hthWin) {
-		wUC->matrix.scroll.vert = hthMax
-					- hthWin * (1 + (highestOperating
-							/ hthWin));
-		wUC->matrix.select.row  = lowestOperating
-					- wUC->matrix.scroll.vert;
-	} else {
-		wUC->matrix.select.row  = lowestOperating;
-	}
-	StoreWindow(wUC,	.key.Enter,	MotionEnter_Cell);
-	StoreWindow(wUC,	.key.Down,	MotionDown_Win);
-	StoreWindow(wUC,	.key.Up,	MotionUp_Win);
-	StoreWindow(wUC,	.key.PgUp,	MotionPgUp_Win);
-	StoreWindow(wUC,	.key.PgDw,	MotionPgDw_Win);
-	StoreWindow(wUC,	.key.Home,	MotionTop_Win);
-	StoreWindow(wUC,	.key.End,	MotionBottom_Win);
-
-	StoreWindow(wUC,	.key.WinLeft,	MotionOriginLeft_Win);
-	StoreWindow(wUC,	.key.WinRight,	MotionOriginRight_Win);
-	StoreWindow(wUC,	.key.WinDown,	MotionOriginDown_Win);
-	StoreWindow(wUC,	.key.WinUp,	MotionOriginUp_Win);
-
-	free(item);
-    }
-	return(wUC);
 }
 
 Window *CreateSelectCPU(unsigned long long id)
@@ -4209,20 +4095,6 @@ int Shortcut(SCANKEY *scan)
 			RSC(BOX_ENABLE_COND0).CODE(),
 			RSC(BOX_ENABLE_COND1).CODE()
 		}
-	},
-	*blankStr =	RSC(BOX_BLANK_DESC).CODE(),
-	*descStr[] = {
-			RSC(BOX_EIST_DESC).CODE(),
-			RSC(BOX_C1E_DESC).CODE(),
-			RSC(BOX_TURBO_DESC).CODE(),
-			RSC(BOX_C1A_DESC).CODE(),
-			RSC(BOX_C3A_DESC).CODE(),
-			RSC(BOX_C1U_DESC).CODE(),
-			RSC(BOX_C3U_DESC).CODE(),
-			RSC(BOX_IO_MWAIT_DESC).CODE(),
-			RSC(BOX_ODCM_DESC).CODE(),
-			RSC(BOX_CC6_DESC).CODE(),
-			RSC(BOX_PC6_DESC).CODE()
 	};
 
     switch (scan->key) {
@@ -4412,7 +4284,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const int bON = ((Shm->Registration.AutoClock & 0b10) != 0);
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 4
 		}, select = {
 			.col = 0,
@@ -4421,10 +4293,10 @@ int Shortcut(SCANKEY *scan)
 
 	AppendWindow(CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_AUTO_CLOCK_TITLE).CODE(),
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][bON], stateAttr[bON] , OPS_AUTOCLOCK_ON,
 		stateStr[0][!bON],stateAttr[!bON], OPS_AUTOCLOCK_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -4461,7 +4333,7 @@ int Shortcut(SCANKEY *scan)
 			}
 		};
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 3
 		}, select = {
 			.col = 0,
@@ -4469,17 +4341,17 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_MODE_TITLE).CODE(),
-				blankStr, blankAttr, SCANKEY_NULL,
+			(char*) RSC(BOX_MODE_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 			RSC(BOX_MODE_DESC).CODE(), descAttr, SCANKEY_NULL,
-				blankStr, blankAttr, SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 			ops_Str[0][Shm->Registration.Experimental == 0],
 				stateAttr[Shm->Registration.Experimental == 0],
 					OPS_EXPERIMENTAL_OFF,
 			ops_Str[1][Shm->Registration.Experimental != 0] ,
 				exp_Attr[Shm->Registration.Experimental != 0],
 					OPS_EXPERIMENTAL_ON,
-				blankStr, blankAttr, SCANKEY_NULL),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -4512,7 +4384,7 @@ int Shortcut(SCANKEY *scan)
 			}
 		};
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 5
 		}, select = {
 			.col = 0,
@@ -4521,14 +4393,14 @@ int Shortcut(SCANKEY *scan)
 
 	AppendWindow(CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_INTERRUPT_TITLE).CODE(),
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		ops_Str[0][Shm->Registration.nmi != 0],
 			stateAttr[Shm->Registration.nmi != 0],
 			OPS_INTERRUPTS_ON,
 		ops_Str[1][Shm->Registration.nmi == 0] ,
 			stateAttr[Shm->Registration.nmi == 0],
 			OPS_INTERRUPTS_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -4888,7 +4760,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 2
 		}, select = {
 			.col = 0,
@@ -4896,14 +4768,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " EIST ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[0], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_EIST_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.EIST],
 			stateAttr[Shm->Proc.Technology.EIST] , BOXKEY_EIST_ON,
 		stateStr[0][!Shm->Proc.Technology.EIST],
 			stateAttr[!Shm->Proc.Technology.EIST], BOXKEY_EIST_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -4927,7 +4799,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 3
 		}, select = {
 			.col = 0,
@@ -4935,14 +4807,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " C1E ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[1], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_C1E_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C1E],
 			stateAttr[Shm->Proc.Technology.C1E] , BOXKEY_C1E_ON,
 		stateStr[0][!Shm->Proc.Technology.C1E],
 			stateAttr[!Shm->Proc.Technology.C1E], BOXKEY_C1E_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -4966,7 +4838,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 2
 		}, select = {
 			.col = 0,
@@ -4974,14 +4846,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " Turbo ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[2], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_TURBO_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.Turbo],
 			stateAttr[Shm->Proc.Technology.Turbo] ,BOXKEY_TURBO_ON,
 		stateStr[0][!Shm->Proc.Technology.Turbo],
 			stateAttr[!Shm->Proc.Technology.Turbo],BOXKEY_TURBO_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5005,7 +4877,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 5
 		}, select = {
 			.col = 0,
@@ -5013,14 +4885,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " C1A ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[3], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_C1A_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C1A],
 			stateAttr[Shm->Proc.Technology.C1A] , BOXKEY_C1A_ON,
 		stateStr[0][!Shm->Proc.Technology.C1A],
 			stateAttr[!Shm->Proc.Technology.C1A], BOXKEY_C1A_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5044,7 +4916,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 6
 		}, select = {
 			.col = 0,
@@ -5052,14 +4924,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " C3A ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[4], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_C3A_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C3A] ,
 			stateAttr[Shm->Proc.Technology.C3A] , BOXKEY_C3A_ON,
 		stateStr[0][!Shm->Proc.Technology.C3A],
 			stateAttr[!Shm->Proc.Technology.C3A], BOXKEY_C3A_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5083,7 +4955,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 7
 		}, select = {
 			.col = 0,
@@ -5091,14 +4963,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " C1U ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[5], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_C1U_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C1U] ,
 			stateAttr[Shm->Proc.Technology.C1U] , BOXKEY_C1U_ON,
 		stateStr[0][!Shm->Proc.Technology.C1U],
 			stateAttr[!Shm->Proc.Technology.C1U], BOXKEY_C1U_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5122,7 +4994,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 8
 		}, select = {
 			.col = 0,
@@ -5130,14 +5002,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " C3U ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[6], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_C3U_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C3U] ,
 			stateAttr[Shm->Proc.Technology.C3U] , BOXKEY_C3U_ON,
 		stateStr[0][!Shm->Proc.Technology.C3U],
 			stateAttr[!Shm->Proc.Technology.C3U], BOXKEY_C3U_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5161,7 +5033,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 9
 		}, select = {
 			.col = 0,
@@ -5169,14 +5041,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " CC6 ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[9], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_CC6_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.CC6] ,
 			stateAttr[Shm->Proc.Technology.CC6] , BOXKEY_CC6_ON,
 		stateStr[0][!Shm->Proc.Technology.CC6],
 			stateAttr[!Shm->Proc.Technology.CC6], BOXKEY_CC6_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5200,7 +5072,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 10
 		}, select = {
 			.col = 0,
@@ -5208,14 +5080,14 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select, " PC6 ",
-		blankStr, blankAttr, SCANKEY_NULL,
-		descStr[10], descAttr, SCANKEY_NULL,
-		blankStr, blankAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_PC6_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.PC6] ,
 			stateAttr[Shm->Proc.Technology.PC6] , BOXKEY_PC6_ON,
 		stateStr[0][!Shm->Proc.Technology.PC6],
 			stateAttr[!Shm->Proc.Technology.PC6], BOXKEY_PC6_OFF,
-		blankStr, blankAttr, SCANKEY_NULL),
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
 	} else
 		SetHead(&winList, win);
@@ -5301,7 +5173,7 @@ int Shortcut(SCANKEY *scan)
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1
 		);
 		const Coordinate origin = {
-			.col=(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 9
 		}, select = {
 			.col = 0,
@@ -5309,13 +5181,13 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_IO_MWAIT_TITLE).CODE(),
-				blankStr, blankAttr, SCANKEY_NULL,
-				descStr[7], descAttr, SCANKEY_NULL,
-				blankStr, blankAttr, SCANKEY_NULL,
+			(char*) RSC(BOX_IO_MWAIT_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+			RSC(BOX_IO_MWAIT_DESC).CODE(), descAttr, SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 	stateStr[1][isIORedir] , stateAttr[isIORedir] , BOXKEY_IOMWAIT_ON,
 	stateStr[0][!isIORedir], stateAttr[!isIORedir], BOXKEY_IOMWAIT_OFF,
-				blankStr, blankAttr, SCANKEY_NULL),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 			&winList);
 	} else
 		SetHead(&winList, win);
@@ -5391,7 +5263,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col =(draw.Size.width - strlen((char *) blankStr)) / 2,
+			.col =(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 6
 		}, select = {
 			.col = 0,
@@ -5399,15 +5271,15 @@ int Shortcut(SCANKEY *scan)
 		};
 
 		AppendWindow(CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_ODCM_TITLE).CODE(),
-				blankStr, blankAttr, SCANKEY_NULL,
-				descStr[8], descAttr, SCANKEY_NULL,
-				blankStr, blankAttr, SCANKEY_NULL,
+			(char*) RSC(BOX_ODCM_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+			RSC(BOX_ODCM_DESC).CODE(),descAttr,SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.ODCM] ,
 			stateAttr[Shm->Proc.Technology.ODCM] , BOXKEY_ODCM_ON,
 		stateStr[0][!Shm->Proc.Technology.ODCM],
 			stateAttr[!Shm->Proc.Technology.ODCM],BOXKEY_ODCM_OFF,
-				blankStr, blankAttr, SCANKEY_NULL),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 			&winList);
 	} else
 		SetHead(&winList, win);
@@ -5594,6 +5466,37 @@ int Shortcut(SCANKEY *scan)
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
     }
     break;
+    case BOXKEY_HWP:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 11
+		}, select = {
+			.col = 0,
+			.row = 3
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select, " HWP ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_HWP_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Features.HWP_Enable] ,
+			stateAttr[Shm->Proc.Features.HWP_Enable],BOXKEY_HWP_ON,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_HWP_ON:
+    {
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP, COREFREQ_TOGGLE_ON);
+    }
+    break;
     case BOXKEY_CLR_THM_SENSOR:
     case BOXKEY_CLR_THM_PROCHOT:
     case BOXKEY_CLR_THM_CRIT:
@@ -5617,30 +5520,283 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_TURBO_CLOCK_8C:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-	if (win == NULL)
-		AppendWindow(CreateTurboClock(scan->key), &winList);
-	else
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+		];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
+			boost = BOOST(SIZE) - NC;
+
+		AppendWindow(CreateRatioClock(scan->key,
+				Shm->Proc.Boost[boost],
+				NC,
+
+			    abs( (signed) Shm->Proc.Boost[boost]
+				-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+
+				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Proc.Boost[boost],
+
+				( Shm->Proc.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+				Shm->Proc.Features.Factory.Ratio
+				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio ) >> 1),
+
+				BOXKEY_TURBO_CLOCK,
+				TitleForTurboClock,
+				34), &winList);
+	} else
 		SetHead(&winList, win);
     }
     break;
     case BOXKEY_RATIO_CLOCK_TGT:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(TGT)],
+			NC,
+
+		    abs( (signed) Shm->Proc.Boost[BOOST(TGT)]
+			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+
+			Shm->Proc.Boost[BOOST(1C)]
+			- Shm->Proc.Boost[BOOST(TGT)],
+
+			( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1,
+
+			Shm->Proc.Features.Factory.Ratio
+			+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1),
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			35), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_RATIO_CLOCK_MAX:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+		];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(MAX)],
+			NC,
+
+		    abs( (signed) Shm->Proc.Boost[BOOST(MAX)]
+			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+
+			MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Boost[BOOST(MAX)],
+
+			( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+			Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1),
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			36), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_RATIO_CLOCK_MIN:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-	if (win == NULL)
-		AppendWindow(CreateRatioClock(scan->key), &winList);
-	else
+	if (win == NULL) {
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(MIN)],
+			NC,
+
+			0,
+
+			Shm->Proc.Features.Factory.Ratio
+			- Shm->Proc.Boost[BOOST(MIN)],
+
+			( Shm->Proc.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+			Shm->Proc.Features.Factory.Ratio - 1,
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			37), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_RATIO_CLOCK_HWP_TGT:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(HWP_TGT)],
+			NC,
+
+		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_TGT)]
+			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
+
+			  SProc->PowerThermal.HWP.Capabilities.Highest
+			- Shm->Proc.Boost[BOOST(HWP_TGT)],
+
+			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
+			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
+
+			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			38), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_RATIO_CLOCK_HWP_MAX:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(HWP_MAX)],
+			NC,
+
+		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MAX)]
+			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
+
+			SProc->PowerThermal.HWP.Capabilities.Highest
+			- Shm->Proc.Boost[BOOST(HWP_MAX)],
+
+			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
+			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
+
+			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			39), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_RATIO_CLOCK_HWP_MIN:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Proc.Boost[BOOST(HWP_MIN)],
+			NC,
+
+		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MIN)]
+			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
+
+			SProc->PowerThermal.HWP.Capabilities.Highest
+			- Shm->Proc.Boost[BOOST(HWP_MIN)],
+
+			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
+			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
+
+			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+
+			BOXKEY_RATIO_CLOCK,
+			TitleForRatioClock,
+			40), &winList);
+	} else
 		SetHead(&winList, win);
     }
     break;
     case BOXKEY_UNCORE_CLOCK_MAX:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+		];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Uncore.Boost[BOOST(MAX)],
+			NC,
+
+		    abs( (signed) Shm->Uncore.Boost[BOOST(MAX)]
+			-(signed) Shm->Uncore.Boost[BOOST(MIN)]),
+
+			MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Uncore.Boost[BOOST(MAX)],
+
+			( Shm->Uncore.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+			Shm->Proc.Features.Factory.Ratio
+			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			- Shm->Proc.Features.Factory.Ratio ) >> 1),
+
+			BOXKEY_UNCORE_CLOCK,
+			TitleForUncoreClock,
+			36), &winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_UNCORE_CLOCK_MIN:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
-	if (win == NULL)
-		AppendWindow(CreateUncoreClock(scan->key), &winList);
-	else
+	if (win == NULL) {
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		AppendWindow(CreateRatioClock(scan->key,
+			Shm->Uncore.Boost[BOOST(MIN)],
+			NC,
+
+			0,
+
+			Shm->Proc.Features.Factory.Ratio
+			- Shm->Uncore.Boost[BOOST(MIN)],
+
+			( Shm->Uncore.Boost[BOOST(MIN)]
+			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+			Shm->Proc.Features.Factory.Ratio - 1,
+
+			BOXKEY_UNCORE_CLOCK,
+			TitleForUncoreClock,
+			37), &winList);
+	} else
 		SetHead(&winList, win);
     }
     break;

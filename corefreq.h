@@ -61,6 +61,20 @@ typedef struct
 					Extended : 32-16;
 			} DutyCycle;
 		unsigned int		PowerPolicy;
+		struct {
+			struct {
+			unsigned int	Highest,
+					Guaranteed,
+					Most_Efficient,
+					Lowest;
+			} Capabilities;
+			struct {
+			unsigned int	Minimum_Perf,
+					Maximum_Perf,
+					Desired_Perf,
+					Energy_Pref;
+			} Request;
+		} HWP;
 	} PowerThermal;
 
 	struct FLIP_FLOP {
