@@ -1612,16 +1612,18 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
-    if (bix)
+    if (bix) {
+	bix = Shm->Proc.Features.HWP_Enable == 1;
 	PUT(BOXKEY_HWP, attrib[bix], width, 2,
 		"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
-    else
+    } else {
+	bix = Shm->Proc.Features.HWP_Enable == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
+    }
 
-	bix = Shm->Proc.Features.HWP_Enable == 1;
     if (bix)
     {
 	CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
@@ -1820,11 +1822,10 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	grid->cell.quick.key = bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL;
 }
 
-void BiasHint_Update(TGrid *grid, DATA_TYPE data)
+void Hint_Update(TGrid *grid, DATA_TYPE data)
 {
 	char item[7+1];
-	sprintf(item, "%7u",
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+	sprintf(item, "%7u", (*data.puint));
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
@@ -1884,12 +1885,28 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy),
-      BiasHint_Update);
+	Hint_Update,
+		&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+    }
+
+	bix = Shm->Proc.Features.HWP_Enable == 1;
+    if (bix) {
+      GridCall(PUT(BOXKEY_HWP_EPP, attrib[0], width, 3,
+		"%s%.*sHWP EPP   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
+	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
+	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref),
+	Hint_Update,
+	&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*sHWP EPP   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
+	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
+	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
     }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -3362,11 +3379,11 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		if (TOP_HEADER_ROW + 2 + 14 < draw.Size.height) {
-			matrixSize.hth = 14;
+		if (TOP_HEADER_ROW + 2 + 15 < draw.Size.height) {
+			matrixSize.hth = 15;
 			winOrigin.row = TOP_HEADER_ROW + 2;
 		} else {
-			matrixSize.hth = CUMIN((draw.Size.height - 2), 14);
+			matrixSize.hth = CUMIN((draw.Size.height - 2), 15);
 			winOrigin.row = 1;
 		}
 		winWidth = 50;
@@ -5465,6 +5482,64 @@ int Shortcut(SCANKEY *scan)
 	if (!RING_FULL(Shm->Ring[0]))
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
     }
+    break;
+    case BOXKEY_HWP_EPP:
+    {
+	CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
+		.row = TOP_HEADER_ROW + 2
+	    }, select = {
+		.col = 0,
+		.row = SProc->PowerThermal.HWP.Request.Energy_Pref == 0xff ?
+		   3 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0xc0 ?
+		   2 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x80 ?
+		   1 : 0
+	    };
+		Window *wBox = CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
+	(ASCII*)"         MINIMUM        ", stateAttr[0], BOXKEY_HWP_EPP_MIN,
+	(ASCII*)"         MEDIUM         ", stateAttr[0], BOXKEY_HWP_EPP_MED,
+	(ASCII*)"         POWER          ", stateAttr[0], BOXKEY_HWP_EPP_PWR,
+	(ASCII*)"         MAXIMUM        ", stateAttr[0], BOXKEY_HWP_EPP_MAX);
+	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
+		TCellAt(wBox, 0, select.row).attr[10] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = 	\
+		TCellAt(wBox, 0, select.row).attr[12] = 	\
+		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[14] = 	\
+		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 7] = '<';
+		TCellAt(wBox, 0, select.row).item[17] = '>';
+
+		AppendWindow(wBox, &winList);
+	    } else
+		SetHead(&winList, win);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_HWP_EPP_MIN:
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x0);
+    break;
+    case BOXKEY_HWP_EPP_MED:
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x80);
+    break;
+    case BOXKEY_HWP_EPP_PWR:
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xc0);
+    break;
+    case BOXKEY_HWP_EPP_MAX:
+	if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xff);
     break;
     case BOXKEY_HWP:
     {

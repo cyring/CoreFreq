@@ -156,6 +156,10 @@ static signed short HWP_Enable = -1;
 module_param(HWP_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_Enable, "Hardware-Controlled Performance States");
 
+static signed short HWP_EPP = -1;
+module_param(HWP_EPP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
+
 static unsigned int Clear_Events = 0;
 module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
@@ -3581,17 +3585,30 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
 
-    if ((Core->PowerThermal.PerfControl.Turbo_IDA == 0)
-      && CmpTarget(Core, ValidRatio)) {
-	BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
-    } else {
-	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
-    }
-
     if (Proc->Features.HWP_Enable)
     {
 	RDMSR(Core->PowerThermal.HWP_Capabilities, MSR_IA32_HWP_CAPABILITIES);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+
+	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
+		Core->PowerThermal.HWP_Request.Energy_Pref = HWP_EPP;
+		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+	}
+		/* HWP: Turbo is a function of MSR IA32_PERF_CTL	*/
+	if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
+		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	} else {
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	}
+    } else {
+		/* OSPM: Turbo is a function of the Target P-state	*/
+	if ((Core->PowerThermal.PerfControl.Turbo_IDA == 0)
+	  && CmpTarget(Core, ValidRatio)) {
+		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	} else {
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	}
     }
 
     if (Core->Bind == Proc->Service.Core) {
@@ -3773,7 +3790,11 @@ void For_All_HWP_Clock(CLOCK_ARG *pClockMod)
 long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod)
 {
     if (Proc->Features.HWP_Enable) {
-	if (pClockMod != NULL) {
+	if (pClockMod != NULL)
+	    switch (pClockMod->NC) {
+	    case CLOCK_MOD_HWP_MIN:
+	    case CLOCK_MOD_HWP_MAX:
+	    case CLOCK_MOD_HWP_TGT:
 		For_All_HWP_Clock(pClockMod);
 
 		Proc->Boost[BOOST(HWP_MIN)] = KPublic->Core[
@@ -3789,7 +3810,9 @@ long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod)
 				]->PowerThermal.HWP_Request.Desired_Perf;
 
 		return(2);
-	}
+	    case CLOCK_MOD_TGT:
+		return(ClockMod_SandyBridge_PPC(pClockMod));
+	    }
     } else {
 	return(ClockMod_SandyBridge_PPC(pClockMod));
     }
@@ -8319,8 +8342,16 @@ static long CoreFreqK_ioctl(	struct file *filp,
     case COREFREQ_IOCTL_HWP:
 	Controller_Stop(1);
 	HWP_Enable = arg;
+	Intel_Hardware_Performance();
 	Controller_Start(1);
 	HWP_Enable = -1;
+	rc = 0;
+	break;
+    case COREFREQ_IOCTL_HWP_EPP:
+	Controller_Stop(1);
+	HWP_EPP = arg;
+	Controller_Start(1);
+	HWP_EPP = -1;
 	rc = 0;
 	break;
     case COREFREQ_IOCTL_CPU_OFF:
