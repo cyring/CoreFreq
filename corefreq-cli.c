@@ -531,10 +531,11 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 
     if ((( (*pRatio) > 0)  && !zerobase) || (( (*pRatio) >= 0) && zerobase))
     {
+	double freq = ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0;
 	pGrid = PUT(_key, attrib, width, 0,
 		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-	(double) ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0,
+		freq < 10000.0 ? freq : NAN,
 		20, hSpace,
 		SymbUnlock[syc][0],
 		(*pRatio),
@@ -557,9 +558,9 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
+	double freq = ((*data.puint) * CFlop->Clock.Hz) / 1000000.0;
 	char item[4+7+1];
-	sprintf(item, "%4d%7.2f",(*data.puint),
-			(double)((*data.puint) * CFlop->Clock.Hz) / 1000000.0);
+	sprintf(item, "%4d%7.2f", (*data.puint), freq < 10000.0 ? freq : NAN);
 
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
