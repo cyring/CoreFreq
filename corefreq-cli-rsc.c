@@ -372,7 +372,7 @@ ASCII Rsc_CreateAdvHelp_Blank_Code[] = "                                      ";
 ATTRIBUTE Rsc_CreateHotPlugCPU_Enable_Attr[]=RSC_CREATE_HOTPLUG_CPU_ENABLE_ATTR,
 	Rsc_CreateHotPlugCPU_Disable_Attr[]=RSC_CREATE_HOTPLUG_CPU_DISABLE_ATTR;
 
-ATTRIBUTE Rsc_CreateRatioClock_Cond_Attr[3][28] = {
+ATTRIBUTE Rsc_CreateRatioClock_Cond_Attr[3][29] = {
 	RSC_CREATE_RATIO_CLOCK_COND0_ATTR,
 	RSC_CREATE_RATIO_CLOCK_COND1_ATTR,
 	RSC_CREATE_RATIO_CLOCK_COND2_ATTR

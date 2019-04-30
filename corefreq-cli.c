@@ -3865,12 +3865,13 @@ Window *CreateRatioClock(unsigned long long id,
 	for (offset = -lowestOperating; offset <= highestOperating; offset++)
 	{
 		multiplier = COF + offset;
-	    if (multiplier > 0)
+	    if ((multiplier > 0)
+	     && (multiplier <= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)))
 	    {
 		clockMod.NC = NC | boxKey;
 		clockMod.Offset = offset;
 
-		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+3d ",
+		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+4d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 
@@ -3880,7 +3881,7 @@ Window *CreateRatioClock(unsigned long long id,
 						2 : 0]),
 			UpdateRatioClock, multiplier);
 	    } else {
-		sprintf((char*) item, "%.*s", 28, hSpace);
+		sprintf((char*) item, "%.*s", 29, hSpace);
 		StoreTCell(wCK, SCANKEY_NULL, item, MakeAttr(BLACK,0,BLACK,0));
 	    }
 	}
@@ -5611,8 +5612,8 @@ int Shortcut(SCANKEY *scan)
 			    abs( (signed) Shm->Proc.Boost[boost]
 				-(signed) Shm->Proc.Boost[BOOST(MIN)]),
 
-				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-				- Shm->Proc.Boost[boost],
+			    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				-(signed) Shm->Proc.Boost[boost]),
 
 				( Shm->Proc.Boost[BOOST(MIN)]
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
@@ -5642,8 +5643,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Proc.Boost[BOOST(TGT)]
 			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
 
-			Shm->Proc.Boost[BOOST(1C)]
-			- Shm->Proc.Boost[BOOST(TGT)],
+		    abs( (signed) Shm->Proc.Boost[BOOST(1C)]
+			-(signed) Shm->Proc.Boost[BOOST(TGT)]),
 
 			( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1,
@@ -5677,8 +5678,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Proc.Boost[BOOST(MAX)]
 			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
 
-			MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Boost[BOOST(MAX)],
+		    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			-(signed) Shm->Proc.Boost[BOOST(MAX)]),
 
 			( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
@@ -5707,8 +5708,8 @@ int Shortcut(SCANKEY *scan)
 
 			0,
 
-			Shm->Proc.Features.Factory.Ratio
-			- Shm->Proc.Boost[BOOST(MIN)],
+		    abs( (signed) Shm->Proc.Features.Factory.Ratio
+			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
 
 			( Shm->Proc.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
@@ -5737,8 +5738,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_TGT)]
 			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
 
-			  SProc->PowerThermal.HWP.Capabilities.Highest
-			- Shm->Proc.Boost[BOOST(HWP_TGT)],
+		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
+			-(signed) Shm->Proc.Boost[BOOST(HWP_TGT)]),
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
@@ -5767,8 +5768,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MAX)]
 			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
 
-			SProc->PowerThermal.HWP.Capabilities.Highest
-			- Shm->Proc.Boost[BOOST(HWP_MAX)],
+		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
+			-(signed) Shm->Proc.Boost[BOOST(HWP_MAX)]),
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
@@ -5797,8 +5798,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MIN)]
 			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
 
-			SProc->PowerThermal.HWP.Capabilities.Highest
-			- Shm->Proc.Boost[BOOST(HWP_MIN)],
+		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
+			-(signed) Shm->Proc.Boost[BOOST(HWP_MIN)]),
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
@@ -5830,8 +5831,8 @@ int Shortcut(SCANKEY *scan)
 		    abs( (signed) Shm->Uncore.Boost[BOOST(MAX)]
 			-(signed) Shm->Uncore.Boost[BOOST(MIN)]),
 
-			MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Uncore.Boost[BOOST(MAX)],
+		    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			-(signed) Shm->Uncore.Boost[BOOST(MAX)]),
 
 			( Shm->Uncore.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
@@ -5860,8 +5861,8 @@ int Shortcut(SCANKEY *scan)
 
 			0,
 
-			Shm->Proc.Features.Factory.Ratio
-			- Shm->Uncore.Boost[BOOST(MIN)],
+		    abs( (signed) Shm->Proc.Features.Factory.Ratio
+			-(signed) Shm->Uncore.Boost[BOOST(MIN)]),
 
 			( Shm->Uncore.Boost[BOOST(MIN)]
 			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
