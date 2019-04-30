@@ -212,10 +212,15 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 :hash:`echo "2" > /sys/devices/cpu/rdpmc`  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
+* Q: How to control the OSPM or the HWP Performance P-States ?  
+  A: Disable the CPU frequency scaling in the Kernel boot command line.  
+```
+cpufreq.off=1
+```
 
 * Q: The CPU freeze or the System crash.  
   A: This Processor is not or partially implemented in _CoreFreq_.  
-     Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
+  Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
 
 ## Algorithm
