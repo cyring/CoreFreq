@@ -4152,7 +4152,7 @@ void PowerThermal(CORE *Core)
 	{_Westmere_EP,		1, 1, 0},	/* 06_2C */
 	{_Westmere_EX,		1, 1, 0},	/* 06_2F */
 
-	{_SandyBridge,		1, 1, 1},	/* 06_2A */
+	{_SandyBridge,		1, 1, 0},	/* 06_2A */
 	{_SandyBridge_EP,	1, 1, 1},	/* 06_2D */
 
 	{_IvyBridge,		1, 0, 1},	/* 06_3A */
@@ -4169,7 +4169,7 @@ void PowerThermal(CORE *Core)
 	{_Broadwell_EP ,	1, 1, 1},	/* 06_4F */
 
 	{_Skylake_UY,		1, 1, 1},	/* 06_4E */
-	{_Skylake_S,		1, 0, 1},	/* 06_5E */
+	{_Skylake_S,		1, 0, 0},	/* 06_5E */
 	{_Skylake_X,		1, 1, 1},	/* 06_55 */
 
 	{_Xeon_Phi,		0, 1, 1},	/* 06_57 */
