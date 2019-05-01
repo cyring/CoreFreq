@@ -3512,7 +3512,7 @@ static void Set_Core2_Target(CORE *Core, unsigned int ratio)
 
 static void Set_Nehalem_Target(CORE *Core, unsigned int ratio)
 {
-	Core->PowerThermal.PerfControl.NHM.TargetRatio = ratio;
+	Core->PowerThermal.PerfControl.NHM.TargetRatio = ratio & 0xff;
 }
 
 static void Set_SandyBridge_Target(CORE *Core, unsigned int ratio)
@@ -3529,7 +3529,7 @@ static unsigned int Get_Core2_Target(CORE *Core)
 
 static unsigned int Get_Nehalem_Target(CORE *Core)
 {
-	return(Core->PowerThermal.PerfControl.NHM.TargetRatio);
+	return(Core->PowerThermal.PerfControl.NHM.TargetRatio & 0xff);
 }
 
 static unsigned int Get_SandyBridge_Target(CORE *Core)

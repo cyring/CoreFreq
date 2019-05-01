@@ -535,7 +535,7 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 	pGrid = PUT(_key, attrib, width, 0,
 		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-		freq < 10000.0 ? freq : NAN,
+		(freq > 0.0) && (freq < 10000.0) ? freq : NAN,
 		20, hSpace,
 		SymbUnlock[syc][0],
 		(*pRatio),
@@ -560,7 +560,8 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	double freq = ((*data.puint) * CFlop->Clock.Hz) / 1000000.0;
 	char item[4+7+1];
-	sprintf(item, "%4d%7.2f", (*data.puint), freq < 10000.0 ? freq : NAN);
+	sprintf(item, "%4d%7.2f", (*data.puint),
+		(freq > 0.0) && (freq < 10000.0) ? freq : NAN);
 
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
@@ -3836,14 +3837,29 @@ Window *CreateRatioClock(unsigned long long id,
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
-
+	/* Validation pass						*/
+	signed int multiplier, offset, first = -1, last = 0;
+	for (offset = -lowestOperating; offset <= highestOperating; offset++)
+	{
+		multiplier = COF + offset;
+	    if ((multiplier >= 0)
+	     && (multiplier <= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)))
+	    {
+		if (first == -1) {
+			first = abs(offset);
+		}
+		last = offset;
+	    }
+	}
+	/* Rendering pass						*/
 	ATTRIBUTE *attrib[3] = {
 		RSC(CREATE_RATIO_CLOCK_COND0).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND1).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND2).ATTR()
 	};
 	CLOCK_ARG clockMod = {.sllong = id};
-	CUINT hthMin, hthMax = 1 + lowestOperating + highestOperating, hthWin;
+
+	CUINT hthMin, hthMax = 1 + first + last, hthWin;
 	CUINT oRow;
 
 	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
@@ -3862,16 +3878,19 @@ Window *CreateRatioClock(unsigned long long id,
 
     if (wCK != NULL) {
 	ASCII *item = malloc(32);
-	signed int multiplier, offset;
-	for (offset = -lowestOperating; offset <= highestOperating; offset++)
+	for (offset = -first; offset <= last; offset++)
 	{
 		multiplier = COF + offset;
-	    if ((multiplier > 0)
-	     && (multiplier <= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)))
-	    {
+
 		clockMod.NC = NC | boxKey;
 		clockMod.Offset = offset;
 
+	    if (multiplier == 0) {
+		sprintf((char*) item, "    AUTO       [%4d ]  %+4d ",
+			multiplier, offset);
+
+		StoreTCell(wCK, clockMod.sllong, item, attrib[0]);
+	    } else {
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+4d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
@@ -3881,23 +3900,19 @@ Window *CreateRatioClock(unsigned long long id,
 					1 : multiplier > startingHotZone ?
 						2 : 0]),
 			UpdateRatioClock, multiplier);
-	    } else {
-		sprintf((char*) item, "%.*s", 29, hSpace);
-		StoreTCell(wCK, SCANKEY_NULL, item, MakeAttr(BLACK,0,BLACK,0));
 	    }
 	}
 
 	TitleCallback(NC, (char*) item);
 	StoreWindow(wCK, .title, (char*) item);
 
-	if (lowestOperating >= hthWin) {
+	if (first >= hthWin) {
 		wCK->matrix.scroll.vert = hthMax
-					- hthWin * (1 + (highestOperating
-							/ hthWin));
-		wCK->matrix.select.row  = lowestOperating
+					- hthWin * (1 + (last / hthWin));
+		wCK->matrix.select.row  = first
 					- wCK->matrix.scroll.vert;
 	} else {
-		wCK->matrix.select.row  = COF > 0 ? lowestOperating : 0;
+		wCK->matrix.select.row  = COF > 0 ? first : 0;
 	}
 	StoreWindow(wCK,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wCK,	.key.Down,	MotionDown_Win);
