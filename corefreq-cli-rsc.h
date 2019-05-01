@@ -1805,9 +1805,9 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_HOT_EVENT_COND2_ATTR					\
 {									\
-	{.fg=CYAN,.bg=YELLOW,.bf=1,.un=1},				\
-	{.fg=CYAN,.bg=YELLOW,.bf=0,.un=0},				\
-	{.fg=CYAN,.bg=YELLOW,.bf=0,.un=0}				\
+	{.fg=CYAN,.bg=BLACK,.bf=1,.un=1},				\
+	{.fg=CYAN,.bg=BLACK,.bf=0,.un=0},				\
+	{.fg=CYAN,.bg=BLACK,.bf=0,.un=0}				\
 }
 
 #define RSC_HOT_EVENT_COND3_ATTR					\
@@ -1817,9 +1817,9 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_HOT_EVENT_COND4_ATTR					\
 {									\
-	{.fg=BLUE,.bg=RED,.bf=0,.un=1} ,				\
-	{.fg=BLUE,.bg=RED,.bf=0,.un=0} ,				\
-	{.fg=BLUE,.bg=RED,.bf=0,.un=0}					\
+	{.fg=CYAN,.bg=MAGENTA,.bf=0,.un=1},				\
+	{.fg=CYAN,.bg=MAGENTA,.bf=0,.un=0},				\
+	{.fg=CYAN,.bg=MAGENTA,.bf=0,.un=0}				\
 }
 
 #define RSC_BOX_EVENT_ATTR						\
