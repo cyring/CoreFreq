@@ -2996,6 +2996,12 @@ void Query_Broadwell(void)
 	Intel_Hardware_Performance();
 }
 
+void Query_Broadwell_EP(void)
+{
+	Query_Haswell_EP();
+	Intel_Hardware_Performance();
+}
+
 void Query_Skylake_X(void)
 {
 	if (Proc->Features.Power.EAX.TurboIDA) {
@@ -3787,7 +3793,7 @@ void For_All_HWP_Clock(CLOCK_ARG *pClockMod)
     } while (cpu != 0) ;
 }
 
-long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod)
+long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 {
     if (Proc->Features.HWP_Enable) {
 	if (pClockMod != NULL)

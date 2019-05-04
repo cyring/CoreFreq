@@ -693,7 +693,9 @@ extern long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
 extern long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod) ;
 extern long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod) ;
 extern long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod) ;
-extern long ClockMod_Skylake_HWP(CLOCK_ARG *pClockMod) ;
+extern long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod) ;
+#define     ClockMod_Broadwell_EP_HWP ClockMod_Intel_HWP
+#define     ClockMod_Skylake_HWP ClockMod_Intel_HWP
 extern long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
 extern long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
@@ -768,6 +770,8 @@ extern void Query_Broadwell(void) ;
 #define     InitTimer_Broadwell InitTimer_SandyBridge
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
+
+extern void Query_Broadwell_EP(void) ;
 
 static void PerCore_Skylake_Query(void *arg) ;
 static void Start_Skylake(void *arg) ;
@@ -3099,14 +3103,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Broadwell_D] = {							/* 35*/
 	.Signature = _Broadwell_D,
-	.Query = Query_Haswell_EP,
+	.Query = Query_Broadwell_EP,
 	.Update = PerCore_Haswell_EP_Query,
 	.Start = Start_Haswell_EP,
 	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
-	.ClockMod = ClockMod_SandyBridge_PPC,
+	.ClockMod = ClockMod_Broadwell_EP_HWP,
 	.TurboClock = TurboClock_Haswell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
@@ -3145,14 +3149,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Broadwell_EP] = {							/* 37*/
 	.Signature = _Broadwell_EP,
-	.Query = Query_Haswell_EP,
+	.Query = Query_Broadwell_EP,
 	.Update = PerCore_Haswell_EP_Query,
 	.Start = Start_Haswell_EP,
 	.Stop = Stop_Haswell_EP,
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
-	.ClockMod = ClockMod_SandyBridge_PPC,
+	.ClockMod = ClockMod_Broadwell_EP_HWP,
 	.TurboClock = TurboClock_Haswell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
