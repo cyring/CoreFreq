@@ -613,6 +613,11 @@
 #define RSC_BOX_POWER_POLICY_LOW_CODE_FR  (ASCII*) "            0       BAS "
 #define RSC_BOX_POWER_POLICY_HIGH_CODE_FR (ASCII*) "           15      HAUT "
 
+#define RSC_BOX_HWP_POLICY_MIN_CODE_FR	(ASCII*) "        Minimale        "
+#define RSC_BOX_HWP_POLICY_MED_CODE_FR	(ASCII*) "        Moyenne         "
+#define RSC_BOX_HWP_POLICY_PWR_CODE_FR	(ASCII*) "        Puissance       "
+#define RSC_BOX_HWP_POLICY_MAX_CODE_FR	(ASCII*) "        Maximale        "
+
 #define RSC_BOX_TOOLS_TITLE_CODE_FR	(ASCII*) " Outils "
 #define RSC_BOX_TOOLS_STOP_CODE_FR	(ASCII*) "          ARRETER          "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_FR	(ASCII*) "       Stress Atomic       "

@@ -784,26 +784,26 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
+				0, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
 				1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
+				0, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
 				1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
     } else {
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
+				0, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
 
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
+				0, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
@@ -3792,7 +3792,9 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
 	char item[8];
-	sprintf(item, "%7.2f", (double) (data.uint[0] * CFlop->Clock.Hz)
+	sprintf(item, "%7.2f",
+		data.uint[0] > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz) ?
+			NAN : (double) (data.uint[0] * CFlop->Clock.Hz)
 					/ 1000000.0);
 
 	memcpy(&grid->cell.item[1], item, 7);
@@ -3823,11 +3825,35 @@ void TitleForUncoreClock(unsigned int NC, char *title)
 			(NC == CLOCK_MOD_MIN) ? "Min" : "");
 }
 
+void ComputeRatioShifts(unsigned int COF,
+			unsigned int lowestOperating,
+			unsigned int highestOperating,
+			signed int *lowestShift,
+			signed int *highestShift)
+{
+	unsigned int minRatio, maxRatio;
+	if (highestOperating < lowestOperating) {
+		minRatio = highestOperating;
+		maxRatio = lowestOperating;
+	} else {
+		minRatio = lowestOperating;
+		maxRatio = highestOperating;
+	}
+	if (COF < minRatio) {
+		minRatio = COF;
+	}
+	if (COF > maxRatio) {
+		maxRatio = COF;
+	}
+	(*lowestShift)	= COF - minRatio;
+	(*highestShift) = maxRatio - COF;
+}
+
 Window *CreateRatioClock(unsigned long long id,
 			unsigned int COF,
 			unsigned int NC,
-			signed int lowestOperating,
-			signed int highestOperating,
+			signed int lowestShift,
+			signed int highestShift,
 			signed int medianColdZone,
 			signed int startingHotZone,
 			unsigned long long boxKey,
@@ -3837,29 +3863,15 @@ Window *CreateRatioClock(unsigned long long id,
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
-	/* Validation pass						*/
-	signed int multiplier, offset, first = -1, last = 0;
-	for (offset = -lowestOperating; offset <= highestOperating; offset++)
-	{
-		multiplier = COF + offset;
-	    if ((multiplier >= 0)
-	     && (multiplier <= MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)))
-	    {
-		if (first == -1) {
-			first = abs(offset);
-		}
-		last = offset;
-	    }
-	}
-	/* Rendering pass						*/
-	ATTRIBUTE *attrib[3] = {
+	ATTRIBUTE *attrib[4] = {
 		RSC(CREATE_RATIO_CLOCK_COND0).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND1).ATTR(),
-		RSC(CREATE_RATIO_CLOCK_COND2).ATTR()
+		RSC(CREATE_RATIO_CLOCK_COND2).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND3).ATTR()
 	};
 	CLOCK_ARG clockMod = {.sllong = id};
 
-	CUINT hthMin, hthMax = 1 + first + last, hthWin;
+	CUINT hthMin, hthMax = 1 + lowestShift + highestShift, hthWin;
 	CUINT oRow;
 
 	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
@@ -3876,43 +3888,54 @@ Window *CreateRatioClock(unsigned long long id,
 
 	Window *wCK = CreateWindow(wLayer, id, 1, hthWin, oCol, oRow);
 
-    if (wCK != NULL) {
+    if (wCK != NULL)
+    {
+	signed int multiplier, offset;
 	ASCII *item = malloc(32);
-	for (offset = -first; offset <= last; offset++)
+	for (offset = -lowestShift; offset <= highestShift; offset++)
 	{
+		ATTRIBUTE *attr = attrib[0];
+
 		multiplier = COF + offset;
 
 		clockMod.NC = NC | boxKey;
 		clockMod.Offset = offset;
 
-	    if (multiplier == 0) {
+	  if (multiplier == 0) {
 		sprintf((char*) item, "    AUTO       [%4d ]  %+4d ",
 			multiplier, offset);
 
-		StoreTCell(wCK, clockMod.sllong, item, attrib[0]);
+		StoreTCell(wCK, clockMod.sllong, item, attr);
+	  } else {
+	    if (multiplier > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz))
+	    {
+		attr = attrib[3];
+
+		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+4d ",
+			NAN, multiplier, offset);
 	    } else {
+		attr = attrib[multiplier < medianColdZone ?
+				1 : multiplier > startingHotZone ? 2 : 0];
+
 		sprintf((char*) item, " %7.2f MHz   [%4d ]  %+4d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
-
-		GridCall(StoreTCell(wCK, clockMod.sllong, item,
-				attrib[multiplier < medianColdZone ?
-					1 : multiplier > startingHotZone ?
-						2 : 0]),
-			UpdateRatioClock, multiplier);
 	    }
+		GridCall(StoreTCell(wCK, clockMod.sllong, item, attr),
+			UpdateRatioClock, multiplier);
+	  }
 	}
 
 	TitleCallback(NC, (char*) item);
 	StoreWindow(wCK, .title, (char*) item);
 
-	if (first >= hthWin) {
+	if (lowestShift >= hthWin) {
 		wCK->matrix.scroll.vert = hthMax
-					- hthWin * (1 + (last / hthWin));
-		wCK->matrix.select.row  = first
+					- hthWin * (1+(highestShift / hthWin));
+		wCK->matrix.select.row  = lowestShift
 					- wCK->matrix.scroll.vert;
 	} else {
-		wCK->matrix.select.row  = COF > 0 ? first : 0;
+		wCK->matrix.select.row  = COF > 0 ? lowestShift : 0;
 	}
 	StoreWindow(wCK,	.key.Enter,	MotionEnter_Cell);
 	StoreWindow(wCK,	.key.Down,	MotionDown_Win);
@@ -5166,6 +5189,7 @@ int Shortcut(SCANKEY *scan)
 /* 6 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
 /* 7 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
 /* 8 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
 			TCellAt(wBox, 0, select.row).attr[12] = 	\
@@ -5411,7 +5435,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const Coordinate origin = {
 		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
-		.row = TOP_HEADER_ROW + 2
+		.row = TOP_HEADER_ROW + 3
 	    }, select = {
 		.col = 0,
 		.row = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy
@@ -5434,6 +5458,7 @@ int Shortcut(SCANKEY *scan)
 	(ASCII*)"           13           ", stateAttr[0], BOXKEY_PWR_POL13,
 	(ASCII*)"           14           ", stateAttr[0], BOXKEY_PWR_POL14,
 	RSC(BOX_POWER_POLICY_HIGH).CODE() , stateAttr[0], BOXKEY_PWR_POL15);
+
 	    if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
@@ -5508,7 +5533,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		const Coordinate origin = {
 		.col = (draw.Size.width - (2 + RSZ(BOX_POWER_POLICY_LOW))) / 2,
-		.row = TOP_HEADER_ROW + 2
+		.row = TOP_HEADER_ROW + 3
 	    }, select = {
 		.col = 0,
 		.row = SProc->PowerThermal.HWP.Request.Energy_Pref == 0xff ?
@@ -5518,11 +5543,14 @@ int Shortcut(SCANKEY *scan)
 	    };
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
-	(ASCII*)"         MINIMUM        ", stateAttr[0], BOXKEY_HWP_EPP_MIN,
-	(ASCII*)"         MEDIUM         ", stateAttr[0], BOXKEY_HWP_EPP_MED,
-	(ASCII*)"         POWER          ", stateAttr[0], BOXKEY_HWP_EPP_PWR,
-	(ASCII*)"         MAXIMUM        ", stateAttr[0], BOXKEY_HWP_EPP_MAX);
+	RSC(BOX_HWP_POLICY_MIN).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MIN,
+	RSC(BOX_HWP_POLICY_MED).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MED,
+	RSC(BOX_HWP_POLICY_PWR).CODE(), stateAttr[0], BOXKEY_HWP_EPP_PWR,
+	RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MAX);
+
 	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 7] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
 		TCellAt(wBox, 0, select.row).attr[10] = 	\
@@ -5531,9 +5559,11 @@ int Shortcut(SCANKEY *scan)
 		TCellAt(wBox, 0, select.row).attr[13] = 	\
 		TCellAt(wBox, 0, select.row).attr[14] = 	\
 		TCellAt(wBox, 0, select.row).attr[15] = 	\
-		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
-		TCellAt(wBox, 0, select.row).item[ 7] = '<';
-		TCellAt(wBox, 0, select.row).item[17] = '>';
+		TCellAt(wBox, 0, select.row).attr[16] = 	\
+		TCellAt(wBox, 0, select.row).attr[17] = 	\
+		TCellAt(wBox, 0, select.row).attr[18] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 6] = '<';
+		TCellAt(wBox, 0, select.row).item[18] = '>';
 
 		AppendWindow(wBox, &winList);
 	    } else
@@ -5621,15 +5651,18 @@ int Shortcut(SCANKEY *scan)
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
 			boost = BOOST(SIZE) - NC;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[boost],
+				Shm->Proc.Boost[BOOST(MIN)],
+				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
 				Shm->Proc.Boost[boost],
 				NC,
-
-			    abs( (signed) Shm->Proc.Boost[boost]
-				-(signed) Shm->Proc.Boost[BOOST(MIN)]),
-
-			    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-				-(signed) Shm->Proc.Boost[boost]),
+				lowestShift,
+				highestShift,
 
 				( Shm->Proc.Boost[BOOST(MIN)]
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
@@ -5652,26 +5685,29 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(TGT)],
+				Shm->Proc.Boost[BOOST(MIN)],
+				Shm->Proc.Boost[BOOST(1C)],
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(TGT)],
-			NC,
+				Shm->Proc.Boost[BOOST(TGT)],
+				NC,
+				lowestShift,
+				highestShift,
 
-		    abs( (signed) Shm->Proc.Boost[BOOST(TGT)]
-			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+				( Shm->Proc.Boost[BOOST(MIN)]
+				+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1,
 
-		    abs( (signed) Shm->Proc.Boost[BOOST(1C)]
-			-(signed) Shm->Proc.Boost[BOOST(TGT)]),
+				Shm->Proc.Features.Factory.Ratio
+				+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
+				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
-			( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1,
-
-			Shm->Proc.Features.Factory.Ratio
-			+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1),
-
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			35), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				35), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5687,26 +5723,29 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(MAX)],
+				Shm->Proc.Boost[BOOST(MIN)],
+				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(MAX)],
-			NC,
+				Shm->Proc.Boost[BOOST(MAX)],
+				NC,
+				lowestShift,
+				highestShift,
 
-		    abs( (signed) Shm->Proc.Boost[BOOST(MAX)]
-			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+				( Shm->Proc.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
-		    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			-(signed) Shm->Proc.Boost[BOOST(MAX)]),
+				Shm->Proc.Features.Factory.Ratio
+				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
-			( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-
-			Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1),
-
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			36), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				36), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5718,23 +5757,27 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(MIN)],
+				0,
+				Shm->Proc.Features.Factory.Ratio,
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(MIN)],
-			NC,
+				Shm->Proc.Boost[BOOST(MIN)],
+				NC,
+				lowestShift,
+				highestShift,
 
-			0,
+				( Shm->Proc.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
-		    abs( (signed) Shm->Proc.Features.Factory.Ratio
-			-(signed) Shm->Proc.Boost[BOOST(MIN)]),
+				Shm->Proc.Features.Factory.Ratio - 1,
 
-			( Shm->Proc.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-
-			Shm->Proc.Features.Factory.Ratio - 1,
-
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			37), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				37), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5747,24 +5790,27 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
+				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(HWP_TGT)],
-			NC,
-
-		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_TGT)]
-			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
-
-		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
-			-(signed) Shm->Proc.Boost[BOOST(HWP_TGT)]),
+				Shm->Proc.Boost[BOOST(HWP_TGT)],
+				NC,
+				lowestShift,
+				highestShift,
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
 
-			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
 
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			38), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				38), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5777,24 +5823,27 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MAX)],
+				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(HWP_MAX)],
-			NC,
-
-		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MAX)]
-			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
-
-		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
-			-(signed) Shm->Proc.Boost[BOOST(HWP_MAX)]),
+				Shm->Proc.Boost[BOOST(HWP_MAX)],
+				NC,
+				lowestShift,
+				highestShift,
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
 
-			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
 
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			39), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				39), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5807,24 +5856,27 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MIN)],
+				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Proc.Boost[BOOST(HWP_MIN)],
-			NC,
-
-		    abs( (signed) Shm->Proc.Boost[BOOST(HWP_MIN)]
-			-(signed) SProc->PowerThermal.HWP.Capabilities.Lowest),
-
-		    abs( (signed) SProc->PowerThermal.HWP.Capabilities.Highest
-			-(signed) Shm->Proc.Boost[BOOST(HWP_MIN)]),
+				Shm->Proc.Boost[BOOST(HWP_MIN)],
+				NC,
+				lowestShift,
+				highestShift,
 
 			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
 			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
 
-			SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
 
-			BOXKEY_RATIO_CLOCK,
-			TitleForRatioClock,
-			40), &winList);
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				40), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5840,26 +5892,29 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MAX)],
+				Shm->Uncore.Boost[BOOST(MIN)],
+				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Uncore.Boost[BOOST(MAX)],
-			NC,
+				Shm->Uncore.Boost[BOOST(MAX)],
+				NC,
+				lowestShift,
+				highestShift,
 
-		    abs( (signed) Shm->Uncore.Boost[BOOST(MAX)]
-			-(signed) Shm->Uncore.Boost[BOOST(MIN)]),
+				( Shm->Uncore.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
-		    abs( (signed) MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			-(signed) Shm->Uncore.Boost[BOOST(MAX)]),
+				Shm->Proc.Features.Factory.Ratio
+				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
-			( Shm->Uncore.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-
-			Shm->Proc.Features.Factory.Ratio
-			+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
-			- Shm->Proc.Features.Factory.Ratio ) >> 1),
-
-			BOXKEY_UNCORE_CLOCK,
-			TitleForUncoreClock,
-			36), &winList);
+				BOXKEY_UNCORE_CLOCK,
+				TitleForUncoreClock,
+				36), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -5871,23 +5926,27 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MIN)],
+				0,
+				Shm->Proc.Features.Factory.Ratio,
+				&lowestShift,
+				&highestShift);
+
 		AppendWindow(CreateRatioClock(scan->key,
-			Shm->Uncore.Boost[BOOST(MIN)],
-			NC,
+				Shm->Uncore.Boost[BOOST(MIN)],
+				NC,
+				lowestShift,
+				highestShift,
 
-			0,
+				( Shm->Uncore.Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
-		    abs( (signed) Shm->Proc.Features.Factory.Ratio
-			-(signed) Shm->Uncore.Boost[BOOST(MIN)]),
+				Shm->Proc.Features.Factory.Ratio - 1,
 
-			( Shm->Uncore.Boost[BOOST(MIN)]
-			+ Shm->Proc.Features.Factory.Ratio ) >> 1,
-
-			Shm->Proc.Features.Factory.Ratio - 1,
-
-			BOXKEY_UNCORE_CLOCK,
-			TitleForUncoreClock,
-			37), &winList);
+				BOXKEY_UNCORE_CLOCK,
+				TitleForUncoreClock,
+				37), &winList);
 	} else
 		SetHead(&winList, win);
     }

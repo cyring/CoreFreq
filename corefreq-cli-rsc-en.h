@@ -613,6 +613,11 @@
 #define RSC_BOX_POWER_POLICY_LOW_CODE_EN  (ASCII*) "            0       LOW "
 #define RSC_BOX_POWER_POLICY_HIGH_CODE_EN (ASCII*) "           15      HIGH "
 
+#define RSC_BOX_HWP_POLICY_MIN_CODE_EN	(ASCII*) "         Minimum        "
+#define RSC_BOX_HWP_POLICY_MED_CODE_EN	(ASCII*) "         Medium         "
+#define RSC_BOX_HWP_POLICY_PWR_CODE_EN	(ASCII*) "         Power          "
+#define RSC_BOX_HWP_POLICY_MAX_CODE_EN	(ASCII*) "         Maximum        "
+
 #define RSC_BOX_TOOLS_TITLE_CODE_EN	(ASCII*) " Tools "
 #define RSC_BOX_TOOLS_STOP_CODE_EN	(ASCII*) "            STOP           "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_EN	(ASCII*) "        Atomic Burn        "
