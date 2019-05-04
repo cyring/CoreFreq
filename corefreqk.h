@@ -2073,7 +2073,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1950X",
 	.Boost = {+6, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2084,7 +2084,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1920X",
 	.Boost = {+5, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2095,7 +2095,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1900X",
 	.Boost = {+2, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2106,7 +2106,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2990",
 	.Boost = {+12, 0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2117,7 +2117,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2970",
 	.Boost = {+12, 0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2128,7 +2128,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2950",
 	.Boost = {+9,  0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2139,7 +2139,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2920",
 	.Boost = {+8,  0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {27,49},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
