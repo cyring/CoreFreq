@@ -1,6 +1,6 @@
 # CoreFreq
 ## Purpose
-CoreFreq is a CPU monitoring software with BIOS like features designed for the 64-bits Processors of architectures Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh, 17h (Zen)  
+CoreFreq is a CPU monitoring software with BIOS like functionnalities, designed for the 64-bits Processors of architectures Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh, 17h (Zen)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
@@ -13,7 +13,8 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state, Vcore
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
-* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking  
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings,  
+  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -24,12 +25,11 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 * a shared memory to protect kernel from the user-space part of the software;
 * atomic synchronization of threads to avoid mutexes and deadlock.
 
-
 ## Build & Run
 
 ### Prerequisites
 
- a- For a better accuracy, *disable* the Kernel *NMI Watchdog*  
+**a-** For a better accuracy, *disable* the Kernel *NMI Watchdog*  
 
 Add the below parameter in the kernel boot loader (Grub, SysLinux)  
 The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counters  
@@ -38,24 +38,31 @@ The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the
 nmi_watchdog=0
 ```
 
- b- No Virtualization  
+**b-** No Virtualization  
 
-VMs don't provide access to the registers that the CoreFreq driver employs : 
+VMs don't provide access to the registers that the CoreFreq driver employs :
 * Fixed Performance Counters 
 * Model Specific Registers 
 * PCI Registers 
 
- c- Rendering  
+**c-** Rendering  
 
 The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI colors support 
 
+### Dependencies
+* The Linux Kernel with a minimum version 3.3
+* The GNU C Library
 
 ### Build
+0. Software needed:  
+* GNU C Compiler
+* GNU Make tool
+* Header files for building modules for Linux kernel
 
- 1- Clone the source code into a working directory.  
+1. Clone the source code into a working directory.  
  :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
  
- 2- Build the programs.  
+2. Build the programs.  
 :heavy_dollar_sign:`cd CoreFreq`  
 :heavy_dollar_sign:`make`  
 ```
@@ -77,20 +84,20 @@ make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
 
 ### Start
 
- 3- Load the kernel module, as root.  
+3. Load the kernel module, as root.  
 :hash:`insmod corefreqk.ko`  
- 4- Start the daemon, as root.  
+4. Start the daemon, as root.  
 :hash:`corefreqd`  
- 5- Start the client, as a user (_in another terminal or console_).  
+5. Start the client, as a user (_in another terminal or console_).  
 :heavy_dollar_sign:`corefreq-cli`  
 
 ### Stop
 
- 6- Press [CTRL]+[C] to stop the client.
+6. Press [CTRL]+[C] to stop the client.
 
- 7- Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
+7. Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
 
- 8- Unload the kernel module  
+8. Unload the kernel module  
 :hash:`rmmod corefreqk.ko`  
 
 ### Try
@@ -115,15 +122,15 @@ CoreFreq Daemon.  Copyright (C) 2015-2019 CYRIL INGENIERIE
 ### Client
 Without arguments, the corefreq-cli program displays Top Monitoring  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Tour_2017-12-06.gif "CoreFreq UI")  
- * _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
+  _Remark_: Drawing will stall if the terminal width is lower than 80 columns, or its height is less than required.
 
- * With the option '-c', the client traces counters.
+* With the option '-c', the client traces counters.
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Counters.gif "CoreFreq Counters")
 
- * Using option '-m' corefreq-cli shows the CPU topology
+* Using option '-m' corefreq-cli shows the CPU topology
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Topology.png "CoreFreq CPU & caches topology")
 
- * With the option '-i' corefreq-cli traces the number of instructions per second / cycle  
+* With the option '-i' corefreq-cli traces the number of instructions per second / cycle  
 ```
 CPU     IPS            IPC            CPI
 #00     0.000579/s     0.059728/c    16.742698/i
@@ -136,7 +143,7 @@ CPU     IPS            IPC            CPI
 #07     0.000088/s     0.150406/c     6.648674/i
 ```
 
- * Use the option '-s' to show the Processor information (BSP)  
+* Use the option '-s' to show the Processor information (BSP)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
@@ -161,19 +168,21 @@ CPU     IPS            IPC            CPI
   A: In the kernel boot command argument line, *disable the NMI Watchdog*  
 ```
 nmi_watchdog=0
-```  
-  A: The NMI alternative is proposed by the `Makefile` to make use of the `APERF/MPERF` registers  
+```
+
+  A: a NMI alternative is proposed in the `Makefile` to make use of the `APERF/MPERF` registers  
+
 ```
 make help	# for instructions usage
-make info	# for current settings
-```  
+make info	# for the current settings
+```
 
 * Q: The deep sleep states do not produce any value ?  
   A: Check if the intel_idle module is running.  
      Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 ```
 intel_idle.max_cstate=value
-```  
+```
 
 
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
@@ -184,22 +193,23 @@ intel_idle.max_cstate=value
 
 * Q: The base clock reports a wrong frequency value ?  
   A: CoreFreq uses various algorithms to estimate the base clock.  
-1. The delta of two TimeStamp counters during a defined interval  
-2. The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
-3. A static value advertised by the manufacturer specs.  
-4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
+  
+  1. The delta of two TimeStamp counters during a defined interval  
+  2. The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
+  3. A static value advertised by the manufacturer specs.  
+  4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
 
-     The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
+  The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
 :hash:`insmod corefreqk.ko AutoClock=0`  
-     _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
+  _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
 
 
 * Q: The CPU temperature is wrong ?  
   A: CoreFreq employs two msr to calculate the temperature.  
 ```
 MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
-```  
-&nbsp;&nbsp;&nbsp;&nbsp;If the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
+```
+  _Remark_: if the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
 
 * Q: The menu option "Memory Controller" does not open any window ?  
