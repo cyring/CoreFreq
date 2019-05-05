@@ -809,8 +809,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
     }
 
-    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-     && (Shm->Proc.Features.TDP_Levels > 0))
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	const size_t len = RSZ(LEVEL) + 1 + 1;
 	char *pfx = malloc(len);
@@ -821,22 +820,22 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 15 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
 		width, 3, "%s%.*s[%.*s]", RSC(PROGRAMMABLE).CODE(),
 		width - (OutFunc == NULL ? 14:12) - RSZ(PROGRAMMABLE), hSpace,
-			6, Shm->Proc.Features.TDP_Unlock ?
+			6, Shm->Proc.Features.TDP_Unlock == 1 ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
-	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TDP_Cfg_Lock],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Cfg_Lock == 0],
 		width, 3, "%s%.*s[%.*s]", RSC(CONFIGURATION).CODE(),
 		width - (OutFunc == NULL ? 14:12) - RSZ(CONFIGURATION),hSpace,
-			6, Shm->Proc.Features.TDP_Cfg_Lock ?
+			6, Shm->Proc.Features.TDP_Cfg_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
-	PUT(SCANKEY_NULL, attrib[!Shm->Proc.Features.TurboActivation],
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TurboActiv_Lock == 0],
 		width, 3, "%s%.*s[%.*s]", RSC(TURBO_ACTIVATION).CODE(),
 		width - (OutFunc == NULL ? 14:12)-RSZ(TURBO_ACTIVATION),hSpace,
-			6, Shm->Proc.Features.TurboActivation ?
+			6, Shm->Proc.Features.TurboActiv_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
 	GridCall(PrintRatioFreq(win, CFlop,

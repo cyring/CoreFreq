@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.49.8"
+#define COREFREQ_VERSION	"1.50.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1022,7 +1022,7 @@ typedef struct	/* BSP CPUID features.					*/
 			TDP_Levels	: 16-14,
 			TDP_Cfg_Lock	: 17-16,
 			TDP_Cfg_Level	: 19-17,
-			TurboActivation : 20-19,
+			TurboActiv_Lock : 20-19,
 			Uncore_Unlock	: 21-20,
 			HWP_Enable	: 22-21,
 			HDC_Enable	: 23-22,

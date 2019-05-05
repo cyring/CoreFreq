@@ -1542,6 +1542,14 @@ void HyperThreading_Technology(void)
 		Proc->CPU.OnLine = Proc->CPU.Count;
 }
 
+void Package_Reset(void)
+{
+	Proc->Features.TDP_Unlock = 0;
+	Proc->Features.Turbo_Unlock = 0;
+	Proc->Features.TurboActiv_Lock = 1;
+	Proc->Features.TDP_Cfg_Lock = 1;
+}
+
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
     StrCopy(Proc->Architecture,
@@ -1972,7 +1980,7 @@ void Intel_Turbo_TDP_Config(void)
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
-	Proc->Features.TurboActivation = TurboActivation.Ratio_Lock;
+	Proc->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
 	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
@@ -2545,7 +2553,7 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 
 	TurboActivation.value = readl(mchmap + 0x5f54);
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
-	Proc->Features.TurboActivation = TurboActivation.Ratio_Lock;
+	Proc->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	Proc->Features.TDP_Levels = 3;
 }
@@ -5196,6 +5204,8 @@ void Controller_Init(void)
 {
 	CLOCK clock = {.Q = 0, .R = 0, .Hz = 0};
 	unsigned int cpu = Proc->CPU.Count, ratio = 0;
+
+	Package_Reset();
 
 	if (Arch[Proc->ArchID].Query != NULL) {
 		Arch[Proc->ArchID].Query();
@@ -8548,7 +8558,12 @@ static int CoreFreqK_suspend(struct device *dev)
 
 static int CoreFreqK_resume(struct device *dev)
 {
+	if (Proc->Registration.pci) {		/* Probe PCI again	*/
+		Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+	}
 	Controller_Start(0);
+
+	BITSET(BUS_LOCK, Proc->OS.Signal, 63);	/* Notify Daemon	*/
 
 	printk(KERN_NOTICE "CoreFreq: Resume\n");
 

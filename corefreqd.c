@@ -3686,9 +3686,19 @@ REASON_CODE Core_Manager(REF *Ref)
 	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-			if (SysGate_OnDemand(Ref, 1) == 0) {
-				SysGate_Update(Ref);
-			}
+		    if (SysGate_OnDemand(Ref, 1) == 0) {
+			SysGate_Update(Ref);
+		    }
+		    if (BITVAL(Proc->OS.Signal, 63)) {
+			BITCLR(BUS_LOCK, Proc->OS.Signal, 63);
+
+			UpdateFeatures(Ref);
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+
+			if (Quiet & 0x100)
+				printf("  CoreFreq: Resume\n");
+		    }
 		}
 	    }
 #else
@@ -3699,6 +3709,16 @@ REASON_CODE Core_Manager(REF *Ref)
 			if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSUPDT) == 0) {
 				SysGate_Update(Ref);
 			}
+		    }
+		    if (BITVAL(Proc->OS.Signal, 63)) {
+			BITCLR(BUS_LOCK, Proc->OS.Signal, 63);
+
+			UpdateFeatures(Ref);
+			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+
+			if (Quiet & 0x100)
+				printf("  CoreFreq: Resume\n");
 		    }
 		}
 	    }

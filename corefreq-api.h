@@ -656,6 +656,7 @@ typedef struct
 	} PowerThermal;
 
 	struct {
+		Bit64		Signal __attribute__ ((aligned (64)));
 		struct {
 			size_t	Size;
 			int	Order;

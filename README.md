@@ -1,6 +1,6 @@
 # CoreFreq
 ## Purpose
-CoreFreq is a CPU monitoring software designed for 64-bits Processors w/ architectures Intel Atom, Core2, Nehalem, SandyBridge and superior; AMD Families 0Fh, 17h (Zen)
+CoreFreq is a CPU monitoring software with BIOS like features designed for the 64-bits Processors of architectures Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh, 17h (Zen)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
@@ -10,10 +10,10 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * Performance counters including Time Stamp Counter (TSC), Unhalted Core Cycles (UCC), Unhalted Reference Cycles (URC)
 * Number of instructions per cycle or second, IPS, IPC, or CPI
 * CPU C-States C0 C1 C3 C6 C7 - C1E - Auto/UnDemotion of C1 C3
-* DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state
+* DTS Temperature and Tjunction Max, Thermal Monitoring TM1 TM2 state, Vcore
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
-* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL), Overclocking  
+* In progress: Uncore, Memory Controller channels & geometry, DIMM timings, Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:

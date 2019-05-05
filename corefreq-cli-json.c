@@ -1111,7 +1111,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_key(&s, "TDP_Cfg_Level");
 			json_literal(&s, "%u", Shm->Proc.Features.TDP_Cfg_Level);
 			json_key(&s, "TurboActivation_Lock");
-			json_literal(&s, "%u", Shm->Proc.Features.TurboActivation);
+			json_literal(&s, "%u", Shm->Proc.Features.TurboActiv_Lock);
 			json_key(&s, "TargetRatio_Unlock");
 			json_literal(&s, "%u", Shm->Proc.Features.TgtRatio_Unlock);
 			json_key(&s, "ClockRatio_Unlock");
