@@ -196,6 +196,14 @@
 	#define MSR_IA32_HWP_CAPABILITIES	MSR_HWP_CAPABILITIES
 #endif
 
+#ifndef MSR_HWP_REQUEST_PKG
+	#define MSR_HWP_REQUEST_PKG		0x00000772
+#endif
+
+#ifndef MSR_IA32_HWP_REQUEST_PKG
+	#define MSR_IA32_HWP_REQUEST_PKG	MSR_HWP_REQUEST_PKG
+#endif
+
 #ifndef MSR_HWP_REQUEST
 	#define MSR_HWP_REQUEST 		0x00000774
 #endif
@@ -685,15 +693,24 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Minimum_Perf	:  8-0,  /* BDW, SKL, KBL, CFL & Superior	*/
-		Maximum_Perf	: 16-8,  /* BDW, SKL, KBL, CFL & Superior	*/
-		Desired_Perf	: 24-16, /* BDW, SKL, KBL, CFL & Superior	*/
-		Energy_Pref	: 32-24, /* SKL, KBL, CFL & Superior	*/
-		Activity_Window : 42-32, /* SKL, KBL, CFL & Superior	*/
-		Package_Control : 43-42, /* SKL, KBL, CFL & Superior	*/
-		ReservedBits	: 64-43;
+		Minimum_Perf	:  8-0,  /* BDW, SKL, KBL, CFL & Superiors */
+		Maximum_Perf	: 16-8,  /* BDW, SKL, KBL, CFL & Superiors */
+		Desired_Perf	: 24-16, /* BDW, SKL, KBL, CFL & Superiors */
+		Energy_Pref	: 32-24, /* SKL, KBL, CFL & Superiors	*/
+		Activity_Window : 42-32, /* SKL, KBL, CFL & Superiors	*/
+		Package_Control : 43-42, /* SKL, KBL, CFL & Superiors	*/
+		ReservedBits	: 59-43,
+		Act_Window_Valid: 60-59, /* Activity_Window Valid; Default=0 */
+		EPP_Valid	: 61-60, /*1:[HWP_REQUEST];0:[HWP_REQUEST_PKG]*/
+		Desired_Valid	: 62-61, /* -> Desired_Perf		*/
+		Maximum_Valid	: 63-62, /* -> Maximum_Perf		*/
+		Minimum_Valid	: 64-63; /* -> Minimum_Perf		*/
 	};
-} HWP_REQUEST;	/* SMT:If CPUID.06H:EAX.[7] = 1 && PM_ENABLE.HWP_Enable */
+} HWP_REQUEST;
+/*
+	Per Thread: If (CPUID.06H:EAX.[7] == 1) && (PM_ENABLE.HWP_Enable == 1)
+	MSR IA32_HWP_REQUEST_PKG has same bit layout as IA32_HWP_REQUEST[41-0]
+*/
 
 typedef union
 {	/* 06_4E/06_5E/06_55/06_8E/06_9E				*/
