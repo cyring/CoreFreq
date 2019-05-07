@@ -329,6 +329,11 @@ ATTRIBUTE Rsc_SysInfoPerfMon_Cond_Attr[4][74] = {
 	RSC_SYSINFO_PERFMON_COND3_ATTR
 };
 
+ATTRIBUTE Rsc_SysInfoPerfMon_HWP_Cap_Attr[2][76] = {
+	RSC_SYSINFO_PERFMON_HWP_CAP_COND0_ATTR,
+	RSC_SYSINFO_PERFMON_HWP_CAP_COND1_ATTR
+};
+
 ATTRIBUTE Rsc_SysInfoPwrThermal_Cond_Attr[4][50] = {
 	RSC_SYSINFO_PWR_THERMAL_COND0_ATTR,
 	RSC_SYSINFO_PWR_THERMAL_COND1_ATTR,
@@ -973,6 +978,14 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_SYSINFO_PERFMON_COND3] = {
 		.Attr = Rsc_SysInfoPerfMon_Cond_Attr[3],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_SYSINFO_PERFMON_HWP_CAP_COND0] = {
+		.Attr = Rsc_SysInfoPerfMon_HWP_Cap_Attr[0],
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_SYSINFO_PERFMON_HWP_CAP_COND1] = {
+		.Attr = Rsc_SysInfoPerfMon_HWP_Cap_Attr[1],
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 	[RSC_SYSINFO_PWR_THERMAL_COND0] = {

@@ -1488,6 +1488,26 @@ void PC6_Update(TGrid *grid, DATA_TYPE data)
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
+void HWP_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Proc.Features.HWP_Enable == 1,
+		  pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
+{
+	ATTRIBUTE *HWP_Cap_Attr[2] = {
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
+	};
+	const int bix = Shm->Proc.Features.HWP_Enable == 1;
+	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], 76);
+
+	RefreshRatioFreq(grid, data);
+}
+
 void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 {
 	const int bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1,
@@ -1613,24 +1633,22 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
-    if (bix) {
-	bix = Shm->Proc.Features.HWP_Enable == 1;
-	PUT(BOXKEY_HWP, attrib[bix], width, 2,
-		"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
-		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
-    } else {
-	bix = Shm->Proc.Features.HWP_Enable == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
-		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
-    }
-
     if (bix)
     {
 	CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
 	struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
 				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
+	ATTRIBUTE *HWP_Cap_Attr[2] = {
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
+		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
+	};
+	bix = Shm->Proc.Features.HWP_Enable == 1;
+
+	GridCall(PUT(BOXKEY_HWP, attrib[bix], width, 2,
+			"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
+			width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix)),
+		HWP_Update);
 
 	PUT(SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
 		"%s""%.*s(MHz)%.*s""%s", RSC(CAPABILITIES).CODE(),
@@ -1639,36 +1657,41 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(RATIO).CODE());
 
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, (char*) RSC(LOWEST).CODE(),
-				&SProc->PowerThermal.HWP.Capabilities.Lowest,
-				0, SCANKEY_NULL, width, OutFunc,
-				RSC(SYSINFO_PROC_COND0).ATTR()),
-		RefreshRatioFreq,
+			1, (char*) RSC(LOWEST).CODE(),
+			&SProc->PowerThermal.HWP.Capabilities.Lowest,
+			0, SCANKEY_NULL, width, OutFunc,
+			HWP_Cap_Attr[bix]),
+		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Lowest);
 
 	GridCall(PrintRatioFreq(win, CFlop,
 			1, (char*) RSC(EFFICIENT).CODE(),
 			&SProc->PowerThermal.HWP.Capabilities.Most_Efficient,
 			0, SCANKEY_NULL, width, OutFunc,
-			RSC(SYSINFO_PROC_COND0).ATTR()),
-		RefreshRatioFreq,
+			HWP_Cap_Attr[bix]),
+		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Most_Efficient);
 
 	GridCall(PrintRatioFreq(win, CFlop,
 			1, (char*) RSC(GUARANTEED).CODE(),
 			&SProc->PowerThermal.HWP.Capabilities.Guaranteed,
 			0, SCANKEY_NULL, width, OutFunc,
-			RSC(SYSINFO_PROC_COND0).ATTR()),
-		RefreshRatioFreq,
+			HWP_Cap_Attr[bix]),
+		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Guaranteed);
 
 	GridCall(PrintRatioFreq(win, CFlop,
-				1, (char*) RSC(HIGHEST).CODE(),
-				&SProc->PowerThermal.HWP.Capabilities.Highest,
-				0, SCANKEY_NULL, width, OutFunc,
-				RSC(SYSINFO_PROC_COND0).ATTR()),
-		RefreshRatioFreq,
+			1, (char*) RSC(HIGHEST).CODE(),
+			&SProc->PowerThermal.HWP.Capabilities.Highest,
+			0, SCANKEY_NULL, width, OutFunc,
+			HWP_Cap_Attr[bix]),
+		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Highest);
+    } else {
+	bix = Shm->Proc.Features.HWP_Enable == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
+		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
     }
 
 	bix = Shm->Proc.Features.HDC_Enable == 1;
