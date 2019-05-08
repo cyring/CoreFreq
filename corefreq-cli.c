@@ -579,7 +579,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 
-	unsigned int activeCores, boost = 0;
+	unsigned int activeCores;
+	enum RATIO_BOOST boost = 0;
 
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"%s""%.*s[%s]", RSC(PROCESSOR).CODE(),
@@ -2749,7 +2750,7 @@ enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
 
 void SortUniqRatio()
 {
-	unsigned int idx, jdx;
+	enum RATIO_BOOST idx, jdx;
 	ratio.Minimum = ratio.Maximum = (double) Shm->Proc.Boost[BOOST(MIN)];
 	ratio.Count = 0;
 	for (idx = BOOST(MIN); idx < BOOST(SIZE); idx++)
@@ -2776,6 +2777,16 @@ void SortUniqRatio()
 	ratio.Median = (Shm->Proc.Boost[BOOST(ACT)] > 0) ?
 		Shm->Proc.Boost[BOOST(ACT)]
 		: (ratio.Minimum + ratio.Maximum) / 2;
+}
+
+unsigned int MaxBoostRatio(void)
+{
+	unsigned int maxRatio = Shm->Proc.Boost[BOOST(MIN)];
+	enum RATIO_BOOST idx;
+	for (idx = BOOST(MIN); idx < BOOST(SIZE); idx++) {
+		maxRatio = KMAX(Shm->Proc.Boost[idx], maxRatio);
+	}
+	return(maxRatio);
 }
 
 int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
@@ -5670,8 +5681,8 @@ int Shortcut(SCANKEY *scan)
 					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 		];
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
-			boost = BOOST(SIZE) - NC;
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		enum RATIO_BOOST boost = BOOST(SIZE) - NC;
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[boost],
@@ -5705,12 +5716,13 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-
 		signed int lowestShift, highestShift;
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
+				maxRatio = MaxBoostRatio();
+
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(TGT)],
 				Shm->Proc.Boost[BOOST(MIN)],
-				Shm->Proc.Boost[BOOST(1C)],
+				maxRatio,
 				&lowestShift,
 				&highestShift);
 
@@ -5721,10 +5733,10 @@ int Shortcut(SCANKEY *scan)
 				highestShift,
 
 				( Shm->Proc.Boost[BOOST(MIN)]
-				+ Shm->Proc.Boost[BOOST(MAX)] + 1 ) >> 1,
+				+ maxRatio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-				+ ( ( (Shm->Proc.Boost[BOOST(MAX)] + 1)
+				+ ( ( maxRatio
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_RATIO_CLOCK,
