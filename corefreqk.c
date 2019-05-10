@@ -3578,6 +3578,7 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
+	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
   if ((MiscFeatures.Turbo_IDA == 0) && (Proc->Features.Power.EAX.TurboIDA))
   {
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
@@ -3598,43 +3599,44 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
+    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
+	BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
+    } else {
+	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+    }
+  } else {
+	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+  }
 
-    if (Proc->Features.HWP_Enable)
-    {
+  if (Proc->Features.HWP_Enable)
+  {
 	RDMSR(Core->PowerThermal.HWP_Capabilities, MSR_IA32_HWP_CAPABILITIES);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
+    if (Proc->Features.Power.EAX.HWP_EPP) {		/* EPP mode	*/
 	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
 		Core->PowerThermal.HWP_Request.Energy_Pref = HWP_EPP;
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	}
-		/* HWP: Turbo is a function of MSR IA32_PERF_CTL	*/
-	if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
-		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
-	} else {
-		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
-	}
-    } else {
-		/* OSPM: Turbo is a function of the Target P-state	*/
-	if ((Core->PowerThermal.PerfControl.Turbo_IDA == 0)
-	  && CmpTarget(Core, ValidRatio)) {
-		BITSET(LOCKLESS, Proc->TurboBoost, Core->Bind);
-	} else {
+    } else {					/* EPB fallback mode	*/
+	/* Turbo is a function of the Target P-state			*/
+	if (!CmpTarget(Core, ValidRatio)) {
 		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
 	}
     }
+  } else {						/* EPB mode	*/
+	if (!CmpTarget(Core, ValidRatio)) {
+		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	}
+  }
 
-    if (Core->Bind == Proc->Service.Core) {
+  if (Core->Bind == Proc->Service.Core) {
 	Proc->Boost[BOOST(TGT)] = GetTarget(Core);
 	Proc->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
 	Proc->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
 	Proc->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
-    }
-  } else {
-	BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
   }
-	BITSET(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
 }
 
 void DynamicAcceleration(CORE *Core)				/* Unique */
@@ -3853,8 +3855,6 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
 		HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
-		HwCfgRegister.Family_17h.LockTscToCurrP0 =		\
-						HwCfgRegister.Family_17h.CpbDis;
 		WRMSR(HwCfgRegister, MSR_K7_HWCR);
 		RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;

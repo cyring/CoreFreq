@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.50.2"
+#define COREFREQ_VERSION	"1.50.3"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -634,8 +634,8 @@ typedef struct THERMAL_POWER_LEAF
 		HWP_Reg :  8-7, /* Hardware Performance registers	*/
 		HWP_Int :  9-8, /* IA32_HWP_INTERRUPT HWP_Notification. */
 		HWP_Act : 10-9, /* IA32_HWP_REQUEST Activity_Window	*/
-		HWP_EPrf: 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.	*/
-		HWP_Lvl : 12-11,/* IA32_HWP_REQUEST_PKG			*/
+		HWP_EPP : 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.	*/
+		HWP_Pkg : 12-11,/* IA32_HWP_REQUEST_PKG 		*/
 		Unused2 : 13-12,
 		HDC_Reg : 14-13,/* Hardware Duty Cycling registers	*/
 		Turbo_V3: 15-14,/* Intel Turbo Boost Max Technology 3.0 */
