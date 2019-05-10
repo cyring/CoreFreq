@@ -5127,7 +5127,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
-#ifdef CONFIG_SCHED_MUQSS
+#if defined(CONFIG_SCHED_MUQSS) || defined(CONFIG_SCHED_BMQ)
 		SysGate->taskList[cnt].runtime  = tsk_seruntime(thread);
 #else
 		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
