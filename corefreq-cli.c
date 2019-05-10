@@ -7425,14 +7425,14 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
-      if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
-	&& (Shm->SysGate.taskList[idx].wake_cpu >= draw.cpuScroll)
-	&& (Shm->SysGate.taskList[idx].wake_cpu < (	draw.cpuScroll
+      if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].on_cpu].OffLine, OS)
+	&& (Shm->SysGate.taskList[idx].on_cpu >= draw.cpuScroll)
+	&& (Shm->SysGate.taskList[idx].on_cpu < (	draw.cpuScroll
 							+ draw.Area.MaxRows) ))
       {
 	unsigned int ldx = 2;
 	CSINT dif = draw.Size.width
-		  - cTask[Shm->SysGate.taskList[idx].wake_cpu].col;
+		  - cTask[Shm->SysGate.taskList[idx].on_cpu].col;
 
 	if (dif > 0)
 	{
@@ -7477,33 +7477,33 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	    }
 	    if (dif >= len) {
 		LayerCopyAt(layer,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].row,
 			len, stateAttr, buffer);
 
-		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
+		cTask[Shm->SysGate.taskList[idx].on_cpu].col += len;
 	      /* Add a blank spacing between items: up to (ldx) chars	*/
 	      while ((dif = draw.Size.width
-			- cTask[Shm->SysGate.taskList[idx].wake_cpu].col) > 0
+			- cTask[Shm->SysGate.taskList[idx].on_cpu].col) > 0
 		&& ldx--)
 	      {
 		LayerAt(layer, attr,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = \
+			cTask[Shm->SysGate.taskList[idx].on_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].row) = \
 						MakeAttr(WHITE, 0, BLACK, 0);
 		LayerAt(layer, code,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = 0x20;
+			cTask[Shm->SysGate.taskList[idx].on_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].row) = 0x20;
 
-		cTask[Shm->SysGate.taskList[idx].wake_cpu].col++;
+		cTask[Shm->SysGate.taskList[idx].on_cpu].col++;
 	      }
 	    } else {
 		LayerCopyAt(layer,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].col,
+			cTask[Shm->SysGate.taskList[idx].on_cpu].row,
 			dif, stateAttr, buffer);
 
-		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
+		cTask[Shm->SysGate.taskList[idx].on_cpu].col += dif;
 	    }
 	}
       }

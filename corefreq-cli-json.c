@@ -85,8 +85,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 			json_key(&s, "state");
 			json_literal(&s, "%hu", Shm->SysGate.taskList[i].state);
-			json_key(&s, "wake_cpu");
-			json_literal(&s, "%hu", Shm->SysGate.taskList[i].wake_cpu);
+			json_key(&s, "on_cpu");
+			json_literal(&s, "%hu", Shm->SysGate.taskList[i].on_cpu);
 			json_key(&s, "comm");
 			json_string(&s, Shm->SysGate.taskList[i].comm);
 
