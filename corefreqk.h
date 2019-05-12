@@ -644,6 +644,14 @@ typedef struct {
 				Latch		: 16-12; /* Bits 8-9-10-11 */
 } PROCESSOR_SPECIFIC;
 
+typedef struct {
+	char			*Name,
+				*Desc;
+	unsigned long		flags;
+	unsigned short		Latency,
+				Residency;
+} IDLE_STATE;
+
 typedef struct
 {
 	struct	SIGNATURE	Signature;
@@ -666,6 +674,7 @@ typedef struct
 		long		(*ClockMod)(CLOCK_ARG *pClockMod);
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
+	IDLE_STATE		*IdleState;
 	MICRO_ARCH		*Architecture;
 } ARCH;
 
@@ -2286,6 +2295,39 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{NULL}
 };
 
+/* Source: /drivers/idle/intel_idle.c					*/
+static IDLE_STATE NHM_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "NHM-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 3,
+	.Residency	= 6
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "NHM-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "NHM-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 20,
+	.Residency	= 80
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "NHM-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 200,
+	.Residency	= 800
+	},
+	{NULL}
+};
+
 static ARCH Arch[ARCHITECTURES] = {
 [GenuineIntel] = {							/*  0*/
 	.Signature = _Void_Signature,
@@ -2308,6 +2350,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Void
 	},
 [Core_Yonah] = {							/*  1*/
@@ -2331,6 +2374,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Yonah
 	},
 [Core_Conroe] = {							/*  2*/
@@ -2354,6 +2398,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Conroe
 	},
 [Core_Kentsfield] = {							/*  3*/
@@ -2377,6 +2422,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Kentsfield
 	},
 [Core_Conroe_616] = {							/*  4*/
@@ -2400,6 +2446,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Conroe_616
 	},
 [Core_Penryn] = {							/*  5*/
@@ -2423,6 +2470,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Core_Penryn_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Penryn
 	},
 [Core_Dunnington] = {							/*  6*/
@@ -2446,6 +2494,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Core_Dunnington
 	},
 
@@ -2470,6 +2519,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Bonnell
 	},
 [Atom_Silvermont] = {							/*  8*/
@@ -2493,6 +2543,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Silvermont
 	},
 [Atom_Lincroft] = {							/*  9*/
@@ -2516,6 +2567,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Lincroft
 	},
 [Atom_Clovertrail] = {							/* 10*/
@@ -2539,6 +2591,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Clovertrail
 	},
 [Atom_Saltwell] = {							/* 11*/
@@ -2562,6 +2615,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Saltwell
 	},
 
@@ -2586,6 +2640,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Silvermont_637
 	},
 [Atom_Avoton] = {							/* 13*/
@@ -2609,6 +2664,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Avoton
 	},
 
@@ -2633,6 +2689,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Airmont
 	},
 [Atom_Goldmont] = {							/* 15*/
@@ -2656,6 +2713,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Goldmont
 	},
 [Atom_Sofia] = {							/* 16*/
@@ -2679,6 +2737,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Sofia
 	},
 [Atom_Merrifield] = {							/* 17*/
@@ -2702,6 +2761,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Merrifield
 	},
 [Atom_Moorefield] = {							/* 18*/
@@ -2725,6 +2785,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Atom_Moorefield
 	},
 
@@ -2749,9 +2810,10 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Nehalem_Bloomfield_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Nehalem_Bloomfield
 	},
-[Nehalem_Lynnfield] = {							/* 20*/
+[Nehalem_Lynnfield] = { 						/* 20*/
 	.Signature = _Nehalem_Lynnfield,
 	.Query = Query_Nehalem,
 	.Update = PerCore_Nehalem_Query,
@@ -2772,6 +2834,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Nehalem_Lynnfield
 	},
 [Nehalem_MB] = {							/* 21*/
@@ -2795,6 +2858,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Nehalem_MB
 	},
 [Nehalem_EX] = {							/* 22*/
@@ -2818,6 +2882,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Nehalem_EX
 	},
 
@@ -2842,6 +2907,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Westmere
 	},
 [Westmere_EP] = {							/* 24*/
@@ -2865,6 +2931,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Westmere_EP_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Westmere_EP
 	},
 [Westmere_EX] = {							/* 25*/
@@ -2888,6 +2955,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NHM_IdleState,
 	.Architecture = Arch_Westmere_EX
 	},
 
@@ -2912,6 +2980,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_SandyBridge
 	},
 [SandyBridge_EP] = {							/* 27*/
@@ -2935,6 +3004,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_SandyBridge_EP
 	},
 
@@ -2959,6 +3029,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_IvyBridge
 	},
 [IvyBridge_EP] = {							/* 29*/
@@ -2982,6 +3053,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_IvyBridge_EP
 	},
 
@@ -3006,6 +3078,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Haswell_DT
 	},
 [Haswell_EP] = {							/* 31*/
@@ -3029,6 +3102,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Haswell_EP
 	},
 [Haswell_ULT] = {							/* 32*/
@@ -3052,6 +3126,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Haswell_ULT
 	},
 [Haswell_ULX] = {							/* 33*/
@@ -3075,6 +3150,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Haswell_ULX
 	},
 
@@ -3099,6 +3175,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Broadwell
 	},
 [Broadwell_D] = {							/* 35*/
@@ -3122,6 +3199,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Broadwell_D
 	},
 [Broadwell_H] = {							/* 36*/
@@ -3145,6 +3223,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Broadwell_H
 	},
 [Broadwell_EP] = {							/* 37*/
@@ -3168,6 +3247,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Broadwell_EP
 	},
 
@@ -3192,6 +3272,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Skylake_UY
 	},
 [Skylake_S]  = {							/* 39*/
@@ -3215,6 +3296,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Skylake_S
 	},
 [Skylake_X]  = {							/* 40*/
@@ -3238,6 +3320,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Skylake_X
 	},
 
@@ -3262,6 +3345,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Xeon_Phi
 	},
 
@@ -3286,6 +3370,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Kabylake_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Kabylake
 	},
 [Kabylake_UY] = {							/* 43*/
@@ -3309,6 +3394,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Kabylake_UY
 	},
 
@@ -3333,6 +3419,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Cannonlake
 	},
 
@@ -3357,6 +3444,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Geminilake
 	},
 
@@ -3381,6 +3469,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_Icelake_UY
 	},
 
@@ -3405,6 +3494,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_0Fh
 	},
 
@@ -3429,6 +3519,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_10h
 	},
 
@@ -3453,6 +3544,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_11h
 	},
 
@@ -3477,6 +3569,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_12h
 	},
 
@@ -3501,6 +3594,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_14h
 	},
 
@@ -3525,6 +3619,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_15h
 	},
 
@@ -3549,6 +3644,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_16h
 	},
 
@@ -3573,6 +3669,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Family_17h_Specific,
+	.IdleState = NULL,
 	.Architecture = Arch_AMD_Family_17h
 	}
 };

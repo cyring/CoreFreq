@@ -25,6 +25,7 @@
 #ifdef CONFIG_XEN
 #include <xen/xen.h>
 #endif
+#include <asm/mwait.h>
 
 #include "bitasm.h"
 #include "amdmsr.h"
@@ -40,11 +41,19 @@ MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
 static struct {
-	signed int	Major;
-	struct cdev	*kcdev;
-	dev_t		nmdev, mkdev;
-	struct class	*clsdev;
-} CoreFreqK;
+	signed int		Major;
+	struct cdev		*kcdev;
+	dev_t			nmdev, mkdev;
+	struct class		*clsdev;
+	struct cpuidle_driver	IdleDriver;
+} CoreFreqK = {
+	.IdleDriver = {
+			.name	= "corefreqk-idle",
+			.owner	= THIS_MODULE
+	}
+};
+
+DEFINE_PER_CPU(struct cpuidle_device, IdleDevice);
 
 static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -7878,6 +7887,99 @@ long SysGate_OnDemand(void)
 	return(rc);
 }
 
+#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+/* Source: /drivers/cpuidle/cpuidle.c					*/
+static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
+	mwait_idle_with_hints(MWAIT, 1UL);
+	return index;
+}
+
+static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
+	mwait_idle_with_hints(MWAIT, 1UL);
+}
+
+static void CoreFreqK_IdleDriver_UnInit(void)
+{
+	struct cpuidle_device *device;
+	unsigned int cpu;
+	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+	    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
+		device = &per_cpu(IdleDevice, cpu);
+		cpuidle_unregister_device(device);
+	    }
+	}
+	cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
+}
+
+static int CoreFreqK_IdleDriver_Init(void)
+{
+	IDLE_STATE *pIdleState = Arch[Proc->ArchID].IdleState;
+	int rc = -EPERM;
+  if (pIdleState != NULL)
+  {
+	/* Performance State						*/
+	cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
+	CoreFreqK.IdleDriver.state_count = 1;
+	/* Idle States							*/
+    while (pIdleState->Name != NULL)
+    {
+	strcpy(CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].name, pIdleState->Name);
+
+	strcpy(CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc, pIdleState->Desc);
+
+	CoreFreqK.IdleDriver.states[
+		CoreFreqK.IdleDriver.state_count
+	].flags = pIdleState->flags;
+
+	CoreFreqK.IdleDriver.states[
+		CoreFreqK.IdleDriver.state_count
+	].exit_latency = pIdleState->Latency;
+
+	CoreFreqK.IdleDriver.states[
+		CoreFreqK.IdleDriver.state_count
+	].target_residency = pIdleState->Residency;
+
+	CoreFreqK.IdleDriver.states[
+		CoreFreqK.IdleDriver.state_count
+	].enter = CoreFreqK_IdleHandler;
+
+	CoreFreqK.IdleDriver.states[
+		CoreFreqK.IdleDriver.state_count
+	].enter_s2idle = CoreFreqK_S2IdleHandler;
+
+	CoreFreqK.IdleDriver.state_count++;
+	pIdleState++;
+    }
+    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
+	struct cpuidle_device *device;
+	unsigned int cpu;
+	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+	    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
+		device = &per_cpu(IdleDevice, cpu);
+		device->cpu = cpu;
+		if ((rc = cpuidle_register_device(device)) == 0)
+			continue;
+
+		cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
+		break;
+	    }
+	}
+    }
+  }
+	return(rc);
+}
+#endif /* FEAT_DBG */
+
 signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 {
 	unsigned int seek;
@@ -8020,7 +8122,7 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
-static int CoreFreqK_NMI_handler(unsigned int type, struct pt_regs *pRegs)
+static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
 
@@ -8171,19 +8273,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		Proc->Registration.nmi = !(
 		  register_nmi_handler( NMI_LOCAL,
-					CoreFreqK_NMI_handler,
+					CoreFreqK_NMI_Handler,
 					0,
 					"corefreqk")
 		| register_nmi_handler( NMI_UNKNOWN,
-					CoreFreqK_NMI_handler,
+					CoreFreqK_NMI_Handler,
 					0,
 					"corefreqk")
 		| register_nmi_handler( NMI_SERR,
-					CoreFreqK_NMI_handler,
+					CoreFreqK_NMI_Handler,
 					0,
 					"corefreqk")
 		| register_nmi_handler( NMI_IO_CHECK,
-					CoreFreqK_NMI_handler,
+					CoreFreqK_NMI_Handler,
 					0,
 					"corefreqk")
 		);
@@ -8949,23 +9051,26 @@ static int __init CoreFreqK_init(void)
 		    if (!NMI_Disable) {
 			Proc->Registration.nmi = !(
 				register_nmi_handler(	NMI_LOCAL,
-							CoreFreqK_NMI_handler,
+							CoreFreqK_NMI_Handler,
 							0,
 							"corefreqk")
 			    |	register_nmi_handler(	NMI_UNKNOWN,
-							CoreFreqK_NMI_handler,
+							CoreFreqK_NMI_Handler,
 							0,
 							"corefreqk")
 			    |	register_nmi_handler(	NMI_SERR,
-							CoreFreqK_NMI_handler,
+							CoreFreqK_NMI_Handler,
 							0,
 							"corefreqk")
 			    |	register_nmi_handler(	NMI_IO_CHECK,
-							CoreFreqK_NMI_handler,
+							CoreFreqK_NMI_Handler,
 							0,
 							"corefreqk")
 			);
 		    }
+	#endif
+	#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+		    Proc->Registration.cpuidle=CoreFreqK_IdleDriver_Init() == 0;
 	#endif
 		  }
 		  else
@@ -9066,6 +9171,12 @@ static void __exit CoreFreqK_cleanup(void)
 {
 	if (Proc != NULL) {
 		unsigned int cpu = 0;
+
+#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+		if (Proc->Registration.cpuidle) {
+			CoreFreqK_IdleDriver_UnInit();
+		}
+#endif
 #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
 		if (Proc->Registration.nmi) {
 			unregister_nmi_handler(NMI_LOCAL,    "corefreqk");

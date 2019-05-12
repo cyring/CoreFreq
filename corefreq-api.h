@@ -669,7 +669,8 @@ typedef struct
 				Experimental,
 				hotplug,
 				pci,
-				nmi;
+				nmi,
+				cpuidle;
 	} Registration;
 
 	enum HYPERVISOR 	HypervisorID;
