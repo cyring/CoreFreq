@@ -669,8 +669,12 @@ typedef struct
 				Experimental,
 				hotplug,
 				pci,
-				nmi,
-				cpuidle;
+				nmi;
+		struct {
+		unsigned int
+				cpuidle: 1-0,
+				cpufreq: 2-1;
+		} Driver;
 	} Registration;
 
 	enum HYPERVISOR 	HypervisorID;

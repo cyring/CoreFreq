@@ -2328,6 +2328,105 @@ static IDLE_STATE NHM_IdleState[] = {
 	{NULL}
 };
 
+static IDLE_STATE SNB_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "SNB-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 2,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "SNB-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "SNB-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 80,
+	.Residency	= 211
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "SNB-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 104,
+	.Residency	= 345
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "SNB-C7",
+	.flags		= (0x30 << 24) | 0x10000,
+	.Latency	= 109,
+	.Residency	= 345
+	},
+	{NULL}
+};
+
+static IDLE_STATE SKL_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "SKL-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 2,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "SKL-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "SKL-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 70,
+	.Residency	= 100
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "SKL-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 85,
+	.Residency	= 200
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "SKL-C7",
+	.flags		= (0x33 << 24) | 0x10000,
+	.Latency	= 124,
+	.Residency	= 800
+	},
+	{
+	.Name		= "C8",
+	.Desc		= "SKL-C8",
+	.flags		= (0x40 << 24) | 0x10000,
+	.Latency	= 200,
+	.Residency	= 800
+	},
+	{
+	.Name		= "C9",
+	.Desc		= "SKL-C9",
+	.flags		= (0x50 << 24) | 0x10000,
+	.Latency	= 480,
+	.Residency	= 5000
+	},
+	{
+	.Name		= "C10",
+	.Desc		= "SKL-C10",
+	.flags		= (0x60 << 24) | 0x10000,
+	.Latency	= 890,
+	.Residency	= 5000
+	},
+	{NULL}
+};
+
 static ARCH Arch[ARCHITECTURES] = {
 [GenuineIntel] = {							/*  0*/
 	.Signature = _Void_Signature,
@@ -2980,7 +3079,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.IdleState = SNB_IdleState,
 	.Architecture = Arch_SandyBridge
 	},
 [SandyBridge_EP] = {							/* 27*/
@@ -3296,7 +3395,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.IdleState = SKL_IdleState,
 	.Architecture = Arch_Skylake_S
 	},
 [Skylake_X]  = {							/* 40*/

@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.51.0"
+#define COREFREQ_VERSION	"1.51.1"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -608,16 +608,17 @@ typedef struct	/* MONITOR & MWAIT Leaf.				*/
 	struct
 	{	/* Intel reseved.					*/
 		unsigned int
-		Num_C0_MWAIT	:  4-0,
-		Num_C1_MWAIT	:  8-4,
-		Num_C2_MWAIT	: 12-8,
-		Num_C3_MWAIT	: 16-12,
-		Num_C4_MWAIT	: 20-16,
-		Num_C5_MWAIT	: 24-20,
-		Num_C6_MWAIT	: 28-24,
-		Num_C7_MWAIT	: 32-28;
+		SubCstate_MWAIT0:  4-0,
+		SubCstate_MWAIT1:  8-4,
+		SubCstate_MWAIT2: 12-8,
+		SubCstate_MWAIT3: 16-12,
+		SubCstate_MWAIT4: 20-16,
+		SubCstate_MWAIT5: 24-20,
+		SubCstate_MWAIT6: 28-24,
+		SubCstate_MWAIT7: 32-28;
 	} EDX;
-}  CPUID_0x00000005;
+} CPUID_0x00000005;
+
 
 typedef struct THERMAL_POWER_LEAF
 {	/* Thermal and Power Management Leaf.				*/
@@ -1392,7 +1393,8 @@ typedef struct {
 		unsigned int	exitLatency;		/* in US	*/
 			int	powerUsage;		/* in mW	*/
 		unsigned int	targetResidency;	/* in US	*/
-			char	Name[CPUIDLE_NAME_LEN];
+			char	Name[CPUIDLE_NAME_LEN],
+				Desc[CPUIDLE_NAME_LEN];
 	} State[CPUIDLE_STATE_MAX];
 	char			Name[CPUIDLE_NAME_LEN],
 				Governor[CPUIDLE_NAME_LEN];

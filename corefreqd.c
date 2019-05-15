@@ -3019,6 +3019,12 @@ void SysGate_IdleDriver(REF *Ref)
 			SysGate->IdleDriver.State[idx].Name, len);
 		Shm->SysGate.IdleDriver.State[idx].Name[len] = '\0';
 
+		len=KMIN(strlen(SysGate->IdleDriver.State[idx].Desc),
+			CPUIDLE_NAME_LEN - 1);
+		memcpy( Shm->SysGate.IdleDriver.State[idx].Desc,
+			SysGate->IdleDriver.State[idx].Desc, len);
+		Shm->SysGate.IdleDriver.State[idx].Desc[len] = '\0';
+
 		Shm->SysGate.IdleDriver.State[idx].exitLatency =
 			SysGate->IdleDriver.State[idx].exitLatency;
 

@@ -534,22 +534,22 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Num_C0_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT);
-					json_key(&s, "Num_C1_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT);
-					json_key(&s, "Num_C2_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT);
-					json_key(&s, "Num_C3_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT);
-					json_key(&s, "Num_C4_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT);
-					json_key(&s, "Num_C5_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C5_MWAIT);
-					json_key(&s, "Num_C6_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C6_MWAIT);
-					json_key(&s, "Num_C7_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
+					json_key(&s, "SubCstate_C0_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT0);
+					json_key(&s, "SubCstate_C1_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT1);
+					json_key(&s, "SubCstate_C2_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT2);
+					json_key(&s, "SubCstate_C3_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT3);
+					json_key(&s, "SubCstate_C4_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT4);
+					json_key(&s, "SubCstate_C5_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5);
+					json_key(&s, "SubCstate_C6_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6);
+					json_key(&s, "SubCstate_C7_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
 
 					json_end_object(&s);
 				}

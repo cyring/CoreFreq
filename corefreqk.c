@@ -40,21 +40,6 @@ MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD [0Fh, 17h]");
 MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
-static struct {
-	signed int		Major;
-	struct cdev		*kcdev;
-	dev_t			nmdev, mkdev;
-	struct class		*clsdev;
-	struct cpuidle_driver	IdleDriver;
-} CoreFreqK = {
-	.IdleDriver = {
-			.name	= "corefreqk-idle",
-			.owner	= THIS_MODULE
-	}
-};
-
-DEFINE_PER_CPU(struct cpuidle_device, IdleDevice);
-
 static signed int ArchID = -1;
 module_param(ArchID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
@@ -87,7 +72,7 @@ MODULE_PARM_DESC(RDPMC_Enable, "Enable RDPMC bit in CR4 register");
 
 static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(NMI_Disable, "Disable the NMI handler");
+MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
 static signed short PkgCStateLimit = -1;
 module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -172,6 +157,51 @@ MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
 static unsigned int Clear_Events = 0;
 module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
+
+static signed short CPU_Idle_Register = -1;
+module_param(CPU_Idle_Register, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(CPU_Idle_Register, "Register the Kernel cpuidle driver");
+
+static signed short CPU_Freq_Register = -1;
+module_param(CPU_Freq_Register, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(CPU_Freq_Register, "Register the Kernel cpufreq driver");
+
+#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy) ;
+static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy) ;
+static unsigned int CoreFreqK_GetFreq(unsigned int cpu) ;
+#endif /* FEAT_DBG */
+
+static struct {
+	signed int		Major;
+	struct cdev		*kcdev;
+	dev_t			nmdev, mkdev;
+	struct class		*clsdev;
+#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+	struct cpuidle_driver	IdleDriver;
+	struct cpufreq_driver	FreqDriver;
+#endif /* FEAT_DBG */
+} CoreFreqK = {
+#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
+	.IdleDriver = {
+			.name	= "corefreqk-idle",
+			.owner	= THIS_MODULE
+	},
+	.FreqDriver = {
+			.name	= "corefreqk-perf",
+			.flags	= CPUFREQ_CONST_LOOPS,
+			.exit	= CoreFreqK_Policy_Exit,
+	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
+	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
+	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
+			.get	= CoreFreqK_GetFreq
+	}
+#endif /* FEAT_DBG */
+};
+
+DEFINE_PER_CPU(struct cpuidle_device, IdleDevice);
 
 static PROC *Proc = NULL;
 static KPUBLIC *KPublic = NULL;
@@ -7821,6 +7851,11 @@ long Sys_IdleDriver_Query(SYSGATE *SysGate)
 			CPUIDLE_NAME_LEN);
 		SysGate->IdleDriver.State[i].Name[CPUIDLE_NAME_LEN - 1] = 0;
 
+		memcpy( SysGate->IdleDriver.State[i].Desc,
+			idleDriver->states[i].desc,
+			CPUIDLE_NAME_LEN);
+		SysGate->IdleDriver.State[i].Desc[CPUIDLE_NAME_LEN - 1] = 0;
+
 		SysGate->IdleDriver.State[i].exitLatency =
 				idleDriver->states[i].exit_latency;
 		SysGate->IdleDriver.State[i].powerUsage =
@@ -7893,7 +7928,7 @@ static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
-	mwait_idle_with_hints(MWAIT, 1UL);
+	mwait_idle_with_hints(MWAIT, Proc->Features.MWait.ECX.IBE_MWAIT);
 	return index;
 }
 
@@ -7901,7 +7936,7 @@ static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
-	mwait_idle_with_hints(MWAIT, 1UL);
+	mwait_idle_with_hints(MWAIT, Proc->Features.MWait.ECX.IBE_MWAIT);
 }
 
 static void CoreFreqK_IdleDriver_UnInit(void)
@@ -7921,7 +7956,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 {
 	IDLE_STATE *pIdleState = Arch[Proc->ArchID].IdleState;
 	int rc = -EPERM;
-  if (pIdleState != NULL)
+  if (Proc->Features.Std.ECX.MONITOR && (pIdleState != NULL))
   {
 	/* Performance State						*/
 	cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
@@ -7929,13 +7964,13 @@ static int CoreFreqK_IdleDriver_Init(void)
 	/* Idle States							*/
     while (pIdleState->Name != NULL)
     {
-	strcpy(CoreFreqK.IdleDriver.states[
+	StrCopy(CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
-		].name, pIdleState->Name);
+		].name, pIdleState->Name, CPUIDLE_NAME_LEN);
 
-	strcpy(CoreFreqK.IdleDriver.states[
+	StrCopy(CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
-		].desc, pIdleState->Desc);
+		].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
 
 	CoreFreqK.IdleDriver.states[
 		CoreFreqK.IdleDriver.state_count
@@ -7976,6 +8011,73 @@ static int CoreFreqK_IdleDriver_Init(void)
 	}
     }
   }
+	return(rc);
+}
+
+static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy)
+{
+	return(0);
+}
+
+static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
+{
+	if (policy != NULL) {
+		unsigned int cpu = policy->cpu;
+	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		policy->cpuinfo.min_freq =(Proc->Boost[BOOST(MIN)]
+					 * KPublic->Core[cpu]->Clock.Hz)
+					 / 1000LLU;
+		policy->cpuinfo.max_freq =(Proc->Boost[BOOST(MAX)]
+					 * KPublic->Core[cpu]->Clock.Hz)
+					 / 1000LLU;
+		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+		policy->min = policy->cpuinfo.min_freq;
+		policy->max = policy->cpuinfo.max_freq;
+	    }
+	}
+	return(0);
+}
+
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
+{
+	if (policy != NULL) {
+		cpufreq_verify_within_cpu_limits(policy);
+	}
+	return(0);
+}
+
+static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
+{
+	if (policy != NULL) {
+	}
+	return(0);
+}
+
+static unsigned int CoreFreqK_GetFreq(unsigned int cpu)
+{
+	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+		if (Proc->Features.HWP_Enable)
+			return((Proc->Boost[BOOST(HWP_TGT)]
+				* KPublic->Core[cpu]->Clock.Hz)
+				/ 1000LLU);
+		else
+			return((Proc->Boost[BOOST(TGT)]
+				* KPublic->Core[cpu]->Clock.Hz)
+				/ 1000LLU);
+	} else {
+		return(0);
+	}
+}
+
+static void CoreFreqK_FreqDriver_UnInit(void)
+{
+	cpufreq_unregister_driver(&CoreFreqK.FreqDriver);
+}
+
+static int CoreFreqK_FreqDriver_Init(void)
+{
+	int rc = -EPERM;
+	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
 	return(rc);
 }
 #endif /* FEAT_DBG */
@@ -9070,7 +9172,12 @@ static int __init CoreFreqK_init(void)
 		    }
 	#endif
 	#if FEAT_DBG > 1 /*TODO: LEVEL 2 */
-		    Proc->Registration.cpuidle=CoreFreqK_IdleDriver_Init() == 0;
+	if (CPU_Idle_Register == 1) {
+	  Proc->Registration.Driver.cpuidle = CoreFreqK_IdleDriver_Init() == 0;
+	}
+	if (CPU_Freq_Register == 1) {
+	  Proc->Registration.Driver.cpufreq = CoreFreqK_FreqDriver_Init() == 0;
+	}
 	#endif
 		  }
 		  else
@@ -9173,7 +9280,10 @@ static void __exit CoreFreqK_cleanup(void)
 		unsigned int cpu = 0;
 
 #if FEAT_DBG > 1 /*TODO: LEVEL 2 */
-		if (Proc->Registration.cpuidle) {
+		if (Proc->Registration.Driver.cpufreq) {
+			CoreFreqK_FreqDriver_UnInit();
+		}
+		if (Proc->Registration.Driver.cpuidle) {
 			CoreFreqK_IdleDriver_UnInit();
 		}
 #endif

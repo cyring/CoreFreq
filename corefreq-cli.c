@@ -1754,21 +1754,22 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
+
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
+		"%s:%.*sC1   C1E    C3    C6    C7    C8    C9   C10",
 		RSC(PERF_MON_MWAIT_CTRS).CODE(), 04, hSpace);
 
 	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
 		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
 		19, hSpace,
-		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C5_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C6_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT0,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT1,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT2,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT3,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT4,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
 
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -2008,13 +2009,14 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	size_t	len = 0, sln;
+	size_t	len = KMAX(1 + width,
+			1 + 16 + (8 * Shm->SysGate.IdleDriver.stateCount));
 	char	*item = NULL, *str = NULL;
 	int	idx = 0;
 
-  if ((item = malloc(width + 1)) == NULL) {
+  if ((item = malloc(len)) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR);
-  } else if ((str = malloc(width + 1)) == NULL) {
+  } else if ((str = malloc(len)) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR);
 	free(item);
   } else
@@ -2085,45 +2087,59 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 3 - RSZ(KERNEL_IDLE_DRIVER) - len, hSpace,
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
+	sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
 			15 - (int) RSZ(KERNEL_STATE), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
+      for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
-	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
+	sprintf(str, "%-8.*s", 8,
+		Shm->SysGate.IdleDriver.State[idx].Name);
+	strcat(item, str);
       }
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3, item, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
+	sprintf(item, "%.*s", 16, hSpace);
+      for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
+      {
+	sprintf(str, "%-8.*s", 8,
+		Shm->SysGate.IdleDriver.State[idx].Desc);
+	strcat(item, str);
+      }
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
+/* Row Mark */
+	sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
 			15 - (int) RSZ(KERNEL_POWER), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
+      for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount;idx++ )
       {
-	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
+	sprintf(str, "%-8d",
+		Shm->SysGate.IdleDriver.State[idx].powerUsage);
+	strcat(item, str);
       }
-	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3, item, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
+	sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
 			15 - (int) RSZ(KERNEL_LATENCY), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
+      for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
-	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
+	sprintf(str, "%-8u",
+		Shm->SysGate.IdleDriver.State[idx].exitLatency);
+	strcat(item, str);
       }
-	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3, item, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
+	sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
 			15 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
+      for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
-     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
+	sprintf(str, "%-8u",
+		Shm->SysGate.IdleDriver.State[idx].targetResidency);
+	strcat(item, str);
       }
-	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3, item, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
     }
 	free(item);
 	free(str);
