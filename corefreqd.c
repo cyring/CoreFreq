@@ -3000,49 +3000,56 @@ void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].SystemRegister.EFCR   = Core[cpu]->SystemRegister.EFCR;
 }
 
-void SysGate_IdleDriver(REF *Ref)
+void SysGate_OS_Driver(REF *Ref)
 {
     SHM_STRUCT *Shm = Ref->Shm;
     SYSGATE *SysGate = Ref->SysGate;
 
-    if (strlen(SysGate->IdleDriver.Name) > 0) {
+    if (strlen(SysGate->OS.IdleDriver.Name) > 0) {
 	int idx;
 
-	memcpy(Shm->SysGate.IdleDriver.Name,
-		SysGate->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
-	Shm->SysGate.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
+	memcpy(Shm->SysGate.OS.IdleDriver.Name,
+		SysGate->OS.IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+	Shm->SysGate.OS.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
 
-	Shm->SysGate.IdleDriver.stateCount = SysGate->IdleDriver.stateCount;
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
+	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
+	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-	size_t len=KMIN(strlen(SysGate->IdleDriver.State[idx].Name),
+	size_t len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Name),
 			CPUIDLE_NAME_LEN - 1);
-		memcpy( Shm->SysGate.IdleDriver.State[idx].Name,
-			SysGate->IdleDriver.State[idx].Name, len);
-		Shm->SysGate.IdleDriver.State[idx].Name[len] = '\0';
+		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Name,
+			SysGate->OS.IdleDriver.State[idx].Name, len);
+		Shm->SysGate.OS.IdleDriver.State[idx].Name[len] = '\0';
 
-		len=KMIN(strlen(SysGate->IdleDriver.State[idx].Desc),
+		len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Desc),
 			CPUIDLE_NAME_LEN - 1);
-		memcpy( Shm->SysGate.IdleDriver.State[idx].Desc,
-			SysGate->IdleDriver.State[idx].Desc, len);
-		Shm->SysGate.IdleDriver.State[idx].Desc[len] = '\0';
+		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Desc,
+			SysGate->OS.IdleDriver.State[idx].Desc, len);
+		Shm->SysGate.OS.IdleDriver.State[idx].Desc[len] = '\0';
 
-		Shm->SysGate.IdleDriver.State[idx].exitLatency =
-			SysGate->IdleDriver.State[idx].exitLatency;
+		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency =
+			SysGate->OS.IdleDriver.State[idx].exitLatency;
 
-		Shm->SysGate.IdleDriver.State[idx].powerUsage =
-			SysGate->IdleDriver.State[idx].powerUsage;
+		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage =
+			SysGate->OS.IdleDriver.State[idx].powerUsage;
 
-		Shm->SysGate.IdleDriver.State[idx].targetResidency =
-			SysGate->IdleDriver.State[idx].targetResidency;
+		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency =
+			SysGate->OS.IdleDriver.State[idx].targetResidency;
 	}
     }
-    if (strlen(SysGate->IdleDriver.Governor) > 0) {
-	size_t len=KMIN(strlen(SysGate->IdleDriver.Governor),
-			CPUIDLE_NAME_LEN - 1);
-	memcpy(Shm->SysGate.IdleDriver.Governor,
-		SysGate->IdleDriver.Governor, len);
-	Shm->SysGate.IdleDriver.Governor[len] = '\0';
+    if (strlen(SysGate->OS.FreqDriver.Name) > 0) {
+	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Name),
+			CPUFREQ_NAME_LEN - 1);
+	memcpy(Shm->SysGate.OS.FreqDriver.Name,
+		SysGate->OS.FreqDriver.Name, len);
+	Shm->SysGate.OS.FreqDriver.Name[len] = '\0';
+    }
+    if (strlen(SysGate->OS.FreqDriver.Governor) > 0) {
+	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Governor),
+			CPUFREQ_NAME_LEN - 1);
+	memcpy(Shm->SysGate.OS.FreqDriver.Governor,
+		SysGate->OS.FreqDriver.Governor, len);
+	Shm->SysGate.OS.FreqDriver.Governor[len] = '\0';
     }
 }
 
@@ -3226,7 +3233,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
 		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
 			/* Aggregate the OS idle driver data.		*/
-			SysGate_IdleDriver(Ref);
+			SysGate_OS_Driver(Ref);
 			/* Copy system information.			*/
 			SysGate_Kernel(Ref);
 			/* Start SysGate				*/

@@ -2153,6 +2153,20 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_KERNEL_FREE_HIGH_CODE_FR
 		}
 	},
+	[RSC_KERNEL_GOVERNOR] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_GOVERNOR_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_GOVERNOR_CODE_FR
+		}
+	},
+	[RSC_KERNEL_FREQ_DRIVER] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_FREQ_DRIVER_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_FREQ_DRIVER_CODE_FR
+		}
+	},
 	[RSC_KERNEL_IDLE_DRIVER] = {
 		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {

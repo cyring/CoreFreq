@@ -287,7 +287,7 @@ typedef struct
 	struct {
 		Bit64		Operation	__attribute__ ((aligned (64)));
 
-		IDLEDRIVER	IdleDriver;
+		OS_DRIVER	OS;
 
 		unsigned int	tickReset,
 				tickStep;

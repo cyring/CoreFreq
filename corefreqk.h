@@ -652,6 +652,11 @@ typedef struct {
 				Residency;
 } IDLE_STATE;
 
+typedef struct {
+	IDLE_STATE		*IdleState;
+	unsigned int		(*GetFreq)(unsigned int cpu);
+} SYSTEM_DRIVER;
+
 typedef struct
 {
 	struct	SIGNATURE	Signature;
@@ -674,7 +679,7 @@ typedef struct
 		long		(*ClockMod)(CLOCK_ARG *pClockMod);
 	} Uncore;
 	PROCESSOR_SPECIFIC	*Specific;
-	IDLE_STATE		*IdleState;
+	SYSTEM_DRIVER		*SystemDriver;
 	MICRO_ARCH		*Architecture;
 } ARCH;
 
@@ -2295,6 +2300,21 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{NULL}
 };
 
+#ifdef CONFIG_CPU_FREQ
+static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy) ;
+static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy) ;
+#endif /* CONFIG_CPU_FREQ */
+static unsigned int Core2_GetFreq(unsigned int cpu) ;
+static unsigned int Nehalem_GetFreq(unsigned int cpu) ;
+static unsigned int SandyBridge_GetFreq(unsigned int cpu) ;
+
+static SYSTEM_DRIVER CORE2_Driver = {
+	.IdleState	= NULL,
+	.GetFreq	= Core2_GetFreq
+};
+
 /* Source: /drivers/idle/intel_idle.c					*/
 static IDLE_STATE NHM_IdleState[] = {
 	{
@@ -2326,6 +2346,11 @@ static IDLE_STATE NHM_IdleState[] = {
 	.Residency	= 800
 	},
 	{NULL}
+};
+
+static SYSTEM_DRIVER NHM_Driver = {
+	.IdleState	= NHM_IdleState,
+	.GetFreq	= Nehalem_GetFreq
 };
 
 static IDLE_STATE SNB_IdleState[] = {
@@ -2365,6 +2390,11 @@ static IDLE_STATE SNB_IdleState[] = {
 	.Residency	= 345
 	},
 	{NULL}
+};
+
+static SYSTEM_DRIVER SNB_Driver = {
+	.IdleState	= SNB_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
 };
 
 static IDLE_STATE SKL_IdleState[] = {
@@ -2427,6 +2457,11 @@ static IDLE_STATE SKL_IdleState[] = {
 	{NULL}
 };
 
+static SYSTEM_DRIVER SKL_Driver = {
+	.IdleState	= SKL_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
+};
+
 static ARCH Arch[ARCHITECTURES] = {
 [GenuineIntel] = {							/*  0*/
 	.Signature = _Void_Signature,
@@ -2449,7 +2484,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Void
 	},
 [Core_Yonah] = {							/*  1*/
@@ -2473,7 +2508,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Core_Yonah
 	},
 [Core_Conroe] = {							/*  2*/
@@ -2497,7 +2532,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Core_Conroe
 	},
 [Core_Kentsfield] = {							/*  3*/
@@ -2521,7 +2556,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Core_Kentsfield
 	},
 [Core_Conroe_616] = {							/*  4*/
@@ -2545,7 +2580,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Core_Conroe_616
 	},
 [Core_Penryn] = {							/*  5*/
@@ -2569,7 +2604,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Core_Penryn_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Core_Penryn
 	},
 [Core_Dunnington] = {							/*  6*/
@@ -2593,7 +2628,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Core_Dunnington
 	},
 
@@ -2618,7 +2653,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Bonnell
 	},
 [Atom_Silvermont] = {							/*  8*/
@@ -2642,7 +2677,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Silvermont
 	},
 [Atom_Lincroft] = {							/*  9*/
@@ -2666,7 +2701,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Lincroft
 	},
 [Atom_Clovertrail] = {							/* 10*/
@@ -2690,7 +2725,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Clovertrail
 	},
 [Atom_Saltwell] = {							/* 11*/
@@ -2714,7 +2749,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Saltwell
 	},
 
@@ -2739,7 +2774,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Silvermont_637
 	},
 [Atom_Avoton] = {							/* 13*/
@@ -2763,7 +2798,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Atom_Avoton
 	},
 
@@ -2788,7 +2823,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Airmont
 	},
 [Atom_Goldmont] = {							/* 15*/
@@ -2812,7 +2847,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &SNB_Driver,
 	.Architecture = Arch_Atom_Goldmont
 	},
 [Atom_Sofia] = {							/* 16*/
@@ -2836,7 +2871,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Sofia
 	},
 [Atom_Merrifield] = {							/* 17*/
@@ -2860,7 +2895,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Merrifield
 	},
 [Atom_Moorefield] = {							/* 18*/
@@ -2884,7 +2919,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Moorefield
 	},
 
@@ -2909,7 +2944,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Nehalem_Bloomfield_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Nehalem_Bloomfield
 	},
 [Nehalem_Lynnfield] = { 						/* 20*/
@@ -2933,7 +2968,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Nehalem_Lynnfield
 	},
 [Nehalem_MB] = {							/* 21*/
@@ -2957,7 +2992,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Nehalem_MB
 	},
 [Nehalem_EX] = {							/* 22*/
@@ -2981,7 +3016,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Nehalem_EX
 	},
 
@@ -3006,7 +3041,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Westmere
 	},
 [Westmere_EP] = {							/* 24*/
@@ -3030,7 +3065,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Westmere_EP_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Westmere_EP
 	},
 [Westmere_EX] = {							/* 25*/
@@ -3054,7 +3089,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NHM_IdleState,
+	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Westmere_EX
 	},
 
@@ -3079,7 +3114,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = SNB_IdleState,
+	.SystemDriver = &SNB_Driver,
 	.Architecture = Arch_SandyBridge
 	},
 [SandyBridge_EP] = {							/* 27*/
@@ -3103,7 +3138,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_SandyBridge_EP
 	},
 
@@ -3128,7 +3163,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_IvyBridge
 	},
 [IvyBridge_EP] = {							/* 29*/
@@ -3152,7 +3187,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_IvyBridge_EP
 	},
 
@@ -3177,7 +3212,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Haswell_DT
 	},
 [Haswell_EP] = {							/* 31*/
@@ -3201,7 +3236,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Haswell_EP
 	},
 [Haswell_ULT] = {							/* 32*/
@@ -3225,7 +3260,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Haswell_ULT
 	},
 [Haswell_ULX] = {							/* 33*/
@@ -3249,7 +3284,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Haswell_ULX
 	},
 
@@ -3274,7 +3309,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Broadwell
 	},
 [Broadwell_D] = {							/* 35*/
@@ -3298,7 +3333,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Broadwell_D
 	},
 [Broadwell_H] = {							/* 36*/
@@ -3322,7 +3357,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Broadwell_H
 	},
 [Broadwell_EP] = {							/* 37*/
@@ -3346,7 +3381,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Broadwell_EP
 	},
 
@@ -3371,7 +3406,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Skylake_UY
 	},
 [Skylake_S]  = {							/* 39*/
@@ -3395,7 +3430,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = SKL_IdleState,
+	.SystemDriver = &SKL_Driver,
 	.Architecture = Arch_Skylake_S
 	},
 [Skylake_X]  = {							/* 40*/
@@ -3419,7 +3454,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Skylake_X
 	},
 
@@ -3444,7 +3479,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Xeon_Phi
 	},
 
@@ -3469,7 +3504,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Kabylake_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Kabylake
 	},
 [Kabylake_UY] = {							/* 43*/
@@ -3493,7 +3528,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Kabylake_UY
 	},
 
@@ -3518,7 +3553,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Cannonlake
 	},
 
@@ -3543,7 +3578,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Geminilake
 	},
 
@@ -3568,7 +3603,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Icelake_UY
 	},
 
@@ -3593,7 +3628,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_0Fh
 	},
 
@@ -3618,7 +3653,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_10h
 	},
 
@@ -3643,7 +3678,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_11h
 	},
 
@@ -3668,7 +3703,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_12h
 	},
 
@@ -3693,7 +3728,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_14h
 	},
 
@@ -3718,7 +3753,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_15h
 	},
 
@@ -3743,7 +3778,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_16h
 	},
 
@@ -3768,7 +3803,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Family_17h_Specific,
-	.IdleState = NULL,
+	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_17h
 	}
 };

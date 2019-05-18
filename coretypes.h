@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.51.2"
+#define COREFREQ_VERSION	"1.51.3"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1381,24 +1381,32 @@ typedef struct
 #define MAX_UTS_LEN		64
 #endif
 
-/* Source: /include/linux/cpuidle.h					*/
+/* Sources: /include/linux/cpuidle.h  &  /include/linux/cpuidle.h	*/
 #ifndef _LINUX_CPUIDLE_H
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
 #endif
+#ifndef _LINUX_CPUFREQ_H
+#define CPUFREQ_NAME_LEN	16
+#endif
 
 typedef struct {
-	int			stateCount;
 	struct {
+		int		stateCount;
+	    struct {
 		unsigned int	exitLatency;		/* in US	*/
 			int	powerUsage;		/* in mW	*/
 		unsigned int	targetResidency;	/* in US	*/
 			char	Name[CPUIDLE_NAME_LEN],
 				Desc[CPUIDLE_NAME_LEN];
-	} State[CPUIDLE_STATE_MAX];
-	char			Name[CPUIDLE_NAME_LEN],
-				Governor[CPUIDLE_NAME_LEN];
-} IDLEDRIVER;
+	    } State[CPUIDLE_STATE_MAX];
+		char		Name[CPUIDLE_NAME_LEN];
+	} IdleDriver;
+	struct {
+		char		Name[CPUFREQ_NAME_LEN],
+				Governor[CPUFREQ_NAME_LEN];
+	} FreqDriver;
+} OS_DRIVER;
 
 #ifndef TASK_COMM_LEN
 #define TASK_COMM_LEN		16
@@ -1428,7 +1436,7 @@ typedef struct {
 				freehigh;
 } MEM_MCB;
 
-#define SYSGATE_STRUCT_SIZE	( sizeof(IDLEDRIVER)			\
+#define SYSGATE_STRUCT_SIZE	( sizeof(OS_DRIVER)			\
 				+ sizeof(int)				\
 				+ sizeof(MEM_MCB)			\
 				+ sizeof(unsigned int)			\

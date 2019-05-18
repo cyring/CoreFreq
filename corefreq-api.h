@@ -533,7 +533,7 @@ typedef union
 
 
 typedef struct {
-		IDLEDRIVER	IdleDriver;
+		OS_DRIVER	OS;
 
 		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
