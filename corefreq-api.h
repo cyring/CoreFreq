@@ -671,9 +671,10 @@ typedef struct
 				pci,
 				nmi;
 		struct {
-		unsigned int
-				cpuidle: 1-0,
-				cpufreq: 2-1;
+		unsigned short
+				cpuidle :  1-0,
+				cpufreq :  2-1,
+				unused	: 16-2;
 		} Driver;
 	} Registration;
 

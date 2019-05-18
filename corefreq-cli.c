@@ -2088,7 +2088,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
 /* Row Mark */
 	sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
-			15 - (int) RSZ(KERNEL_STATE), hSpace);
+			10 - (int) RSZ(KERNEL_STATE), hSpace);
       for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
 	sprintf(str, "%-8.*s", 8,
@@ -2098,7 +2098,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
 		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
-	sprintf(item, "%.*s", 16, hSpace);
+	sprintf(item, "%.*s", 11, hSpace);
       for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
 	sprintf(str, "%-8.*s", 8,
@@ -2109,7 +2109,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
 	sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
-			15 - (int) RSZ(KERNEL_POWER), hSpace);
+			10 - (int) RSZ(KERNEL_POWER), hSpace);
       for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount;idx++ )
       {
 	sprintf(str, "%-8d",
@@ -2120,7 +2120,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
 	sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
-			15 - (int) RSZ(KERNEL_LATENCY), hSpace);
+			10 - (int) RSZ(KERNEL_LATENCY), hSpace);
       for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
 	sprintf(str, "%-8u",
@@ -2131,7 +2131,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
 /* Row Mark */
 	sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
-			15 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
+			10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
       for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
       {
 	sprintf(str, "%-8u",
@@ -3033,9 +3033,9 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 14,
-				8, (TOP_HEADER_ROW + 14 + 3 < draw.Size.height)?
-					TOP_HEADER_ROW + 3 : 1);
+	Window *wSet = CreateWindow(wLayer, id, 1, 16,
+				8, (TOP_HEADER_ROW + 16 + 2 < draw.Size.height)?
+					TOP_HEADER_ROW + 2 : 1);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
@@ -3089,6 +3089,12 @@ Window *CreateSettings(unsigned long long id)
 						attrib[Shm->Registration.nmi]),
 		NMI_Registration_Update);
 
+	StoreTCell(wSet, SCANKEY_NULL, RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpuidle]);
+
+	StoreTCell(wSet, SCANKEY_NULL, RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpufreq]);
+
 	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
 							MAKE_PRINT_UNFOCUS);
 
@@ -3137,6 +3143,14 @@ Window *CreateSettings(unsigned long long id)
 	subLen = sprintf(subStr, "<%3s>",
 				enabled(Shm->Registration.nmi));
 	memcpy(&TCellAt(wSet, 0,12).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "[%3s]",
+				enabled(Shm->Registration.Driver.cpuidle));
+	memcpy(&TCellAt(wSet, 0,13).item[31 - subLen], subStr, subLen);
+
+	subLen = sprintf(subStr, "[%3s]",
+				enabled(Shm->Registration.Driver.cpufreq));
+	memcpy(&TCellAt(wSet, 0,14).item[31 - subLen], subStr, subLen);
 
 	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
 

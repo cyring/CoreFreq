@@ -271,11 +271,17 @@ typedef struct
 typedef struct
 {
 	struct {
-		signed int	AutoClock,   /* 10: Auto, 01: Init, 00: Specs */
-				Experimental,/* 0: Disable, 1: Enable	      */
-				hotplug,     /* < 0: Disable, Other: Enable   */
-				pci,	     /* < 0: Disable, other: Enable   */
-				nmi;	     /* <> 0: Failed, == 0: Enable    */
+		signed int	AutoClock, /* 10: Auto, 01: Init, 00: Specs */
+				Experimental,/* 0: Disable, 1: Enable	*/
+				hotplug, /* < 0: Disable, Other: Enable */
+				pci,	/*  < 0: Disable, other: Enable */
+				nmi;	/* <> 0: Failed, == 0: Enable	*/
+		struct {
+		unsigned short
+				cpuidle :  1-0,/* 0: Disable, 1: Enable */
+				cpufreq :  2-1,/* 0: Disable, 1: Enable */
+				unused	: 16-2;
+		} Driver;
 	} Registration;
 
 	struct {

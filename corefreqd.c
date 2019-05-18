@@ -569,6 +569,8 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Registration.hotplug = Proc->Registration.hotplug;
 	Shm->Registration.pci = Proc->Registration.pci;
 	Shm->Registration.nmi = Proc->Registration.nmi;
+	Shm->Registration.Driver.cpuidle = Proc->Registration.Driver.cpuidle;
+	Shm->Registration.Driver.cpufreq = Proc->Registration.Driver.cpufreq;
 	/* Copy the timer interval delay.				*/
 	Shm->Sleep.Interval = Proc->SleepInterval;
 	/* Compute the polling wait time based on the timer interval.	*/

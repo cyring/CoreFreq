@@ -14,7 +14,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
 * In progress: Uncore, Memory Controller channels & geometry, DIMM timings,  
-  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking  
+  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking, cpuidle & cpufreq driver  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -177,11 +177,20 @@ make help	# for instructions usage
 make info	# for the current settings
 ```
 
-* Q: The deep sleep states do not produce any value ?  
-  A: Check if the intel_idle module is running.  
+* Q: The Processor does not enter the C-States ?  
+  A: Check if at least one Idle driver is running.  
      Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 ```
 intel_idle.max_cstate=value
+```
+  A: CoreFreq can also register itself as a cpuidle driver.  
+  This time, any idle driver will have to be blacklisted in the kernel command line; such as:
+```
+modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0
+```
+  Start the CoreFreq driver with the `Register_CPU_Idle` parameter:  
+```
+insmod corefreqk.ko Register_CPU_Idle=1
 ```
 
 
@@ -222,15 +231,61 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 :hash:`echo "2" > /sys/devices/cpu/rdpmc`  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
-* Q: How to control the OSPM or the HWP Performance P-States ?  
-  A: Disable the CPU frequency scaling in the Kernel boot command line.  
+
+* Q: How to solely control the OSPM or the HWP Performance P-States ?  
+  A: Allow CoreFreq to register as a cpufreq driver.  
+  In the Kernel boot command line, blacklist any P-state driver; such as:  
 ```
-cpufreq.off=1
+modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable
 ```
+  Start the CoreFreq driver with the `Register_CPU_Freq` parameter:  
+```
+insmod corefreqk.ko Register_CPU_Freq=1
+```
+
 
 * Q: The CPU freeze or the System crash.  
   A: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
+
+
+* Q: What are the parameters of the driver ?  
+  A: Use the `modinfo` command to list them:  
+```
+$ modinfo corefreqk.ko
+parm:           ArchID:Force an architecture (ID) (int)
+parm:           AutoClock:Auto estimate the clock frequency (int)
+parm:           SleepInterval:Timer interval (ms) (uint)
+parm:           TickInterval:System requested interval (ms) (uint)
+parm:           Experimental:Enable features under development (int)
+parm:           ServiceProcessor:Select a CPU to run services with (int)
+parm:           RDPMC_Enable:Enable RDPMC bit in CR4 register (ushort)
+parm:           NMI_Disable:Disable the NMI Handler (ushort)
+parm:           PkgCStateLimit:Package C-State Limit (short)
+parm:           IOMWAIT_Enable:I/O MWAIT Redirection Enable (short)
+parm:           CStateIORedir:Power Mgmt IO Redirection C-State (short)
+parm:           SpeedStep_Enable:Enable SpeedStep (short)
+parm:           C1E_Enable:Enable SpeedStep C1E (short)
+parm:           TurboBoost_Enable:Enable Turbo Boost (short)
+parm:           C3A_Enable:Enable C3 Auto Demotion (short)
+parm:           C1A_Enable:Enable C3 Auto Demotion (short)
+parm:           C3U_Enable:Enable C3 UnDemotion (short)
+parm:           C1U_Enable:Enable C1 UnDemotion (short)
+parm:           CC6_Enable:Enable Core C6 State (short)
+parm:           PC6_Enable:Enable Package C6 State (short)
+parm:           ODCM_Enable:Enable On-Demand Clock Modulation (short)
+parm:           ODCM_DutyCycle:ODCM DutyCycle [0-7] | [0-14] (short)
+parm:           PowerMGMT_Unlock:Unlock Power Management (short)
+parm:           PowerPolicy:Power Policy Preference [0-15] (short)
+parm:           PState_FID:P-State Frequency Id (int)
+parm:           PState_VID:P-State Voltage Id (int)
+parm:           HWP_Enable:Hardware-Controlled Performance States (short)
+parm:           HWP_EPP:Energy Performance Preference (short)
+parm:           Clear_Events:Clear Thermal and Power Events (uint)
+parm:           Register_CPU_Idle:Register the Kernel cpuidle driver (short)
+parm:           Register_CPU_Freq:Register the Kernel cpufreq driver (short)
+
+```
 
 
 ## Algorithm

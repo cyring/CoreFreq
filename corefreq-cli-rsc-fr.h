@@ -449,6 +449,10 @@
 				(ASCII*) " Activation PCI                 "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR				\
 				(ASCII*) " Activation NMI                 "
+#define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR 			\
+				(ASCII*) " Pilote CPU-IDLE                "
+#define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_FR 			\
+				(ASCII*) " Pilote CPU-FREQ                "
 
 #define RSC_HELP_TITLE_CODE_FR		(ASCII*) " Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	(ASCII*) " [Echap]          "

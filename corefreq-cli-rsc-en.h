@@ -449,6 +449,10 @@
 				(ASCII*) " PCI enablement                 "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_EN				\
 				(ASCII*) " NMI registered                 "
+#define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN 			\
+				(ASCII*) " CPU-IDLE driver                "
+#define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_EN 			\
+				(ASCII*) " CPU-FREQ driver                "
 
 #define RSC_HELP_TITLE_CODE_EN		(ASCII*) " Help "
 #define RSC_HELP_KEY_ESCAPE_CODE_EN	(ASCII*) " [Escape]         "
