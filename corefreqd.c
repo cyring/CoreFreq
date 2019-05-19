@@ -3264,10 +3264,11 @@ void UpdateFeatures(REF *Ref)
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
-	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
 	if (Quiet & 0x100)
-		printf("\tRING[%u](%x,%lx)>%d\n",rid,ctrl.cmd,ctrl.arg, rc);
+		printf("\tRING[%u](%x,%x)(%lx)>%d\n",
+			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc);
 	switch (rc) {
 	case -EPERM:
 		break;
@@ -3289,7 +3290,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
   if (!RING_NULL(Ref->Shm->Ring[rid]))
   {
-	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
 
    switch (ctrl.cmd)
    {
@@ -3321,7 +3322,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
      while (porder->func != NULL)
      {
-      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.lo == ctrl.lo))
+      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.dl.hi == ctrl.dl.hi))
       {
        if (!BITVAL(Ref->Shm->Proc.Sync, 31))
        {
@@ -3330,10 +3331,10 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		if (BITVAL(Shutdown, 0))	/* SpinLock */
 			break;
 	}
-	SliceScheduling(Ref->Shm, ctrl.hi, porder->pattern);
+	SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
-	Ref->Slice.arg  = porder->ctrl.hi;
+	Ref->Slice.arg  = porder->ctrl.dl.lo;
 	Ref->Slice.pattern = porder->pattern;
 
 	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
@@ -3349,7 +3350,9 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
     break;
    }
     if (Quiet & 0x100)
-	printf("\tRING[%u](%x,%hx:%hx)\n", rid, ctrl.cmd, ctrl.hi, ctrl.lo);
+	printf("\tRING[%u](%x,%x)(%hx:%hx,%hx:%hx)\n",
+		rid, ctrl.cmd, ctrl.sub,
+		ctrl.dh.hi, ctrl.dh.lo, ctrl.dl.hi, ctrl.dl.lo);
   }
 }
 

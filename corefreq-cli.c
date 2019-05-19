@@ -4307,16 +4307,14 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
     case SCANKEY_OPEN_BRACE:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case SCANKEY_CLOSE_BRACE:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_OFF);
-    }
+     if (!RING_FULL(Shm->Ring[0])) {
+       RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_OFF);
+     }
     break;
     case SCANKEY_F2:
     case SCANCON_F2:
@@ -4363,64 +4361,54 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_INTERVAL_100:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 100);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 100);
+      }
     break;
     case OPS_INTERVAL_150:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 150);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 150);
+      }
     break;
     case OPS_INTERVAL_250:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 250);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 250);
+      }
     break;
     case OPS_INTERVAL_500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 500);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 500);
+      }
     break;
     case OPS_INTERVAL_750:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 750);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 750);
+      }
     break;
     case OPS_INTERVAL_1000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1000);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1000);
+      }
     break;
     case OPS_INTERVAL_1500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1500);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1500);
+      }
     break;
     case OPS_INTERVAL_2000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2000);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2000);
+      }
     break;
     case OPS_INTERVAL_2500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2500);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2500);
+      }
     break;
     case OPS_INTERVAL_3000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 3000);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 3000);
+      }
     break;
     case OPS_AUTOCLOCK:
     {
@@ -4448,16 +4436,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_AUTOCLOCK_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-       RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_OFF);
-    }
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_OFF);
+      }
     break;
     case OPS_AUTOCLOCK_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case OPS_EXPERIMENTAL:
     {
@@ -4503,16 +4489,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_EXPERIMENTAL_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
        RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case OPS_EXPERIMENTAL_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case OPS_INTERRUPTS:
     {
@@ -4552,16 +4536,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_INTERRUPTS_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS,COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case OPS_INTERRUPTS_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case SCANKEY_HASH:
     {
@@ -4927,16 +4909,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_EIST_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_EIST_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_C1E:
     {
@@ -4966,16 +4946,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1E_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_C1E_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_TURBO:
     {
@@ -5005,16 +4983,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TURBO_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_TURBO_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_C1A:
     {
@@ -5044,16 +5020,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1A_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_C1A_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_C3A:
     {
@@ -5083,16 +5057,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C3A_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_C3A_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_C1U:
     {
@@ -5122,16 +5094,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1U_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_C1U_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_C3U:
     {
@@ -5161,16 +5131,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C3U_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_C3U_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_CC6:
     {
@@ -5200,16 +5168,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_CC6_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_CC6_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_PC6:
     {
@@ -5239,16 +5205,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_PC6_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_PC6_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_PKGCST:
     {
@@ -5340,16 +5304,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_IOMWAIT_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_IOMWAIT_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_IORCST:
     {
@@ -5432,16 +5394,14 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_ODCM_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case BOXKEY_ODCM_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_DUTYCYCLE:
     {
@@ -5609,8 +5569,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PWR_POL15:
     {
 	const unsigned long newPolicy = (scan->key - BOXKEY_PWR_POL00) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
     }
     break;
     case BOXKEY_HWP_EPP:
@@ -5661,20 +5621,24 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_HWP_EPP_MIN:
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x0);
+	}
     break;
     case BOXKEY_HWP_EPP_MED:
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x80);
+	}
     break;
     case BOXKEY_HWP_EPP_PWR:
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xc0);
+	}
     break;
     case BOXKEY_HWP_EPP_MAX:
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xff);
+	}
     break;
     case BOXKEY_HWP:
     {
@@ -5702,10 +5666,9 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_HWP_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
+      if (!RING_FULL(Shm->Ring[0])) {
 	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP, COREFREQ_TOGGLE_ON);
-    }
+      }
     break;
     case BOXKEY_CLR_THM_SENSOR:
     case BOXKEY_CLR_THM_PROCHOT:
@@ -5716,8 +5679,8 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_X_DOMAIN:
     {
 	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
+      if (!RING_FULL(Shm->Ring[0]))
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
     }
     break;
     case BOXKEY_TURBO_CLOCK_1C:
@@ -6042,10 +6005,9 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_F10:
     case BOXKEY_TOOLS_MACHINE:
-    {
-      if (!RING_FULL(Shm->Ring[1]))
+      if (!RING_FULL(Shm->Ring[1])) {
 	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case SCANKEY_F3:
     case SCANCON_F3:
@@ -6083,21 +6045,19 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TOOLS_ATOMIC:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = COREFREQ_TOGGLE_ON
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_ATOMIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_ATOMIC,
+			Shm->Proc.Service.Core,
+			COREFREQ_TOGGLE_ON);
       }
-    }
     break;
     case BOXKEY_TOOLS_CRC32:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = COREFREQ_TOGGLE_ON
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CRC32, arg);
-      }
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CRC32,
+			Shm->Proc.Service.Core,
+			COREFREQ_TOGGLE_ON);
     }
     break;
     case BOXKEY_TOOLS_CONIC:
@@ -6131,76 +6091,64 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TOOLS_CONIC0:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_ELLIPSOID
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_ELLIPSOID);
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC1:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLOID_ONE_SHEET
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_HYPERBOLOID_ONE_SHEET);
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC2:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLOID_TWO_SHEETS
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_HYPERBOLOID_TWO_SHEETS);
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC3:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_ELLIPTICAL_CYLINDER
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_ELLIPTICAL_CYLINDER);
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC4:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLIC_CYLINDER
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_HYPERBOLIC_CYLINDER);
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC5:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_TWO_PARALLEL_PLANES
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CONIC,
+			Shm->Proc.Service.Core,
+			CONIC_TWO_PARALLEL_PLANES);
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_RND:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = RAND_SMT
-				| (unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+	RING_WRITE(Shm->Ring[1],
+			COREFREQ_ORDER_TURBO, Shm->Proc.Service.Core, RAND_SMT);
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_RR:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = RR_SMT
-				| (unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+	RING_WRITE(Shm->Ring[1],
+			COREFREQ_ORDER_TURBO, Shm->Proc.Service.Core, RR_SMT);
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_CPU:
     {
@@ -6246,32 +6194,35 @@ int Shortcut(SCANKEY *scan)
       }
       else if (scan->key & CPU_SELECT) {
 	const unsigned short cpu = scan->key & CPU_MASK;
-	const unsigned long arg = USR_CPU | (unsigned long) (cpu << 16);
-	if (!RING_FULL(Shm->Ring[1]))
-		RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_USR_CPU, arg);
+	if (!RING_FULL(Shm->Ring[1])) {
+		RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_USR_CPU, cpu, USR_CPU);
+	}
       }
       else {
 	CLOCK_ARG clockMod  = {.sllong = scan->key};
 	if (clockMod.NC & BOXKEY_TURBO_CLOCK)
 	{
-	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
+		clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0],
+				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
 	}
 	else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
 	{
 	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0],
+				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
 	}
 	else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
 	{
 	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0]))
+		RING_WRITE(Shm->Ring[0],
+				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
 	}
 	else
 		return(-1);

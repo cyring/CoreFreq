@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.51.3"
+#define COREFREQ_VERSION	"1.52.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1446,8 +1446,8 @@ typedef struct {
 				/ sizeof(TASK_MCB))
 
 /* Input-Output Control							*/
-#define COREFREQ_TOGGLE_OFF	0x0000000000000000L
-#define COREFREQ_TOGGLE_ON	0x0000000000000001L
+#define COREFREQ_TOGGLE_OFF	0x0
+#define COREFREQ_TOGGLE_ON	0x1
 
 #define COREFREQ_IOCTL_MAGIC 0xc3
 
@@ -1512,23 +1512,93 @@ enum {
 /* Circular buffer							*/
 #define RING_SIZE	16
 
-#define RING_NULL(Ring)							\
+typedef struct {
+	unsigned short	lo: 16,
+			hi: 16;
+} RING_ARG;
+
+typedef struct {
+	union {
+		unsigned long	arg: 64;
+	    struct {
+		RING_ARG	dl;
+		RING_ARG	dh;
+	    };
+	};
+	unsigned int		cmd: 32,
+				sub: 32;
+} RING_CTRL;
+
+#define RING_NULL(Ring) 						\
 ({									\
 	((Ring.head - Ring.tail) == 0);					\
 })
 
-#define RING_FULL(Ring)							\
+#define RING_FULL(Ring) 						\
 ({									\
 	((Ring.head - Ring.tail) == RING_SIZE);				\
 })
 
-#define RING_READ(Ring)							\
+#define RING_READ(Ring) 						\
 ({									\
 	Ring.buffer[Ring.tail++ & (RING_SIZE - 1)];			\
 })
 
-#define RING_WRITE(Ring, _cmd, _arg)					\
+#define RING_WRITE_1xPARAM(Ring, _cmd)					\
 ({									\
-	struct RING_CTRL ctrl = {.arg = _arg, .cmd = _cmd};		\
+	RING_CTRL ctrl = {						\
+			.arg = 0x0LU,					\
+			.cmd = _cmd, .sub = 0x0U			\
+	};								\
 	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
 })
+
+#define RING_WRITE_2xPARAM(Ring, _cmd, _arg)				\
+({									\
+	RING_CTRL ctrl = {						\
+			.arg = _arg,					\
+			.cmd = _cmd, .sub = 0x0U			\
+	};								\
+	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+})
+
+#define RING_WRITE_3xPARAM(Ring, _cmd, _dllo, _dlhi)			\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = 0x0U , .hi = 0x0U },		\
+			.cmd = _cmd, .sub = 0x0U			\
+	};								\
+	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+})
+
+#define RING_WRITE_4xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo)		\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = _dhlo, .hi = 0x0U },		\
+			.cmd = _cmd, .sub = 0x0U			\
+	};								\
+	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+})
+
+#define RING_WRITE_5xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)	\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = _dhlo, .hi = _dhhi},		\
+			.cmd = _cmd, .sub = 0x0U			\
+	};								\
+	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+})
+
+#define RING_WRITE_DISPATCH(_1,_2,_3,_4,_5,_6,RING_WRITE_CURSOR, ... )	\
+	RING_WRITE_CURSOR
+
+#define RING_WRITE( ... )						\
+	RING_WRITE_DISPATCH(__VA_ARGS__,RING_WRITE_5xPARAM,		\
+					RING_WRITE_4xPARAM,		\
+					RING_WRITE_3xPARAM,		\
+					RING_WRITE_2xPARAM,		\
+					RING_WRITE_1xPARAM,		\
+						NULL)( __VA_ARGS__ )
