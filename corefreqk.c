@@ -7923,7 +7923,7 @@ long SysGate_OnDemand(void)
 	return(rc);
 }
 
-#ifdef CONFIG_CPU_IDLE
+#if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/* Source: /drivers/cpuidle/cpuidle.c					*/
@@ -7942,7 +7942,7 @@ static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 
 static void CoreFreqK_IdleDriver_UnInit(void)
 {
-#ifdef CONFIG_CPU_IDLE
+#if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	struct cpuidle_device *device;
 	unsigned int cpu;
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
@@ -7959,7 +7959,7 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 static int CoreFreqK_IdleDriver_Init(void)
 {
 	int rc = -EPERM;
-#ifdef CONFIG_CPU_IDLE
+#if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
   if (Arch[Proc->ArchID].SystemDriver != NULL)
   {
 	IDLE_STATE *pIdleState = Arch[Proc->ArchID].SystemDriver->IdleState;
@@ -8884,7 +8884,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 
 	MatchPeerForUpService(&Proc->Service, cpu);
 
-#ifdef CONFIG_CPU_IDLE
+#if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
    if (Register_CPU_Idle == 1) {
 	struct cpuidle_device *device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
 	if (device->registered == 0) {
