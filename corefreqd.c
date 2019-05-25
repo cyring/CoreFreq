@@ -3264,7 +3264,8 @@ void UpdateFeatures(REF *Ref)
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
-	RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_READ(Ref->Shm->Ring[rid], ctrl);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
 	if (Quiet & 0x100)
 		printf("\tRING[%u](%x,%x)(%lx)>%d\n",
@@ -3290,7 +3291,8 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
   if (!RING_NULL(Ref->Shm->Ring[rid]))
   {
-	RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_READ(Ref->Shm->Ring[rid], ctrl);
 
    switch (ctrl.cmd)
    {

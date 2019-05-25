@@ -321,7 +321,7 @@ typedef struct
 	} Sleep;
 
 	struct {
-		RING_CTRL	buffer[RING_SIZE];
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(128)));
 		unsigned int	head, tail;
 	} Ring[2]; /* [0] Parent ; [1] Child				*/
 

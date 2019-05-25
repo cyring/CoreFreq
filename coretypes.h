@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.52.1"
+#define COREFREQ_VERSION	"1.52.2"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1531,17 +1531,39 @@ typedef struct {
 
 #define RING_NULL(Ring) 						\
 ({									\
-	((Ring.head - Ring.tail) == 0);					\
+	( (Ring.head - Ring.tail) == 0 );				\
 })
 
 #define RING_FULL(Ring) 						\
 ({									\
-	((Ring.head - Ring.tail) == RING_SIZE);				\
+	( (Ring.head - Ring.tail) == RING_SIZE );			\
 })
 
-#define RING_READ(Ring) 						\
+#if FEAT_DBG > 1
+#define RING_MOVE(_dst, _src)						\
 ({									\
-	Ring.buffer[Ring.tail++ & (RING_SIZE - 1)];			\
+	__asm__ volatile						\
+	(								\
+		"movdqa %[src] , %%xmm1"	"\n\t"			\
+		"movdqa %%xmm1 , %[dst]"				\
+		:[dst] "=m" ( _dst )					\
+		:[src]  "m" ( _src )					\
+		: "%xmm1","memory"					\
+	);								\
+})
+#else
+#define RING_MOVE(_dst, _src)						\
+({									\
+	_dst.arg = _src.arg;						\
+	_dst.cmd = _src.cmd;						\
+	_dst.sub = _src.sub;						\
+})
+#endif
+
+#define RING_READ(Ring, _ctrl)						\
+({									\
+	unsigned int tail = Ring.tail++ & (RING_SIZE - 1);		\
+	RING_MOVE(_ctrl, Ring.buffer[tail]);				\
 })
 
 #define RING_WRITE_1xPARAM(Ring, _cmd)					\
@@ -1550,7 +1572,8 @@ typedef struct {
 			.arg = 0x0LU,					\
 			.cmd = _cmd, .sub = 0x0U			\
 	};								\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
 #define RING_WRITE_2xPARAM(Ring, _cmd, _arg)				\
@@ -1559,7 +1582,8 @@ typedef struct {
 			.arg = _arg,					\
 			.cmd = _cmd, .sub = 0x0U			\
 	};								\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
 #define RING_WRITE_3xPARAM(Ring, _cmd, _dllo, _dlhi)			\
@@ -1569,7 +1593,8 @@ typedef struct {
 			.dh = {.lo = 0x0U , .hi = 0x0U },		\
 			.cmd = _cmd, .sub = 0x0U			\
 	};								\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
 #define RING_WRITE_4xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo)		\
@@ -1579,7 +1604,8 @@ typedef struct {
 			.dh = {.lo = _dhlo, .hi = 0x0U },		\
 			.cmd = _cmd, .sub = 0x0U			\
 	};								\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
 #define RING_WRITE_5xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)	\
@@ -1589,7 +1615,8 @@ typedef struct {
 			.dh = {.lo = _dhlo, .hi = _dhhi},		\
 			.cmd = _cmd, .sub = 0x0U			\
 	};								\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
 #define RING_WRITE_DISPATCH(_1,_2,_3,_4,_5,_6,RING_WRITE_CURSOR, ... )	\
