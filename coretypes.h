@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.52.2"
+#define COREFREQ_VERSION	"1.53.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1454,33 +1454,41 @@ typedef struct {
 #define COREFREQ_IOCTL_SYSUPDT		_IO(COREFREQ_IOCTL_MAGIC, 0x1)
 #define COREFREQ_IOCTL_SYSONCE		_IO(COREFREQ_IOCTL_MAGIC, 0x2)
 #define COREFREQ_IOCTL_MACHINE		_IO(COREFREQ_IOCTL_MAGIC, 0x3)
-#define COREFREQ_IOCTL_INTERVAL 	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
-#define COREFREQ_IOCTL_AUTOCLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x5)
-#define COREFREQ_IOCTL_EXPERIMENTAL	_IO(COREFREQ_IOCTL_MAGIC, 0x6)
-#define COREFREQ_IOCTL_INTERRUPTS	_IO(COREFREQ_IOCTL_MAGIC, 0x7)
-#define COREFREQ_IOCTL_EIST		_IO(COREFREQ_IOCTL_MAGIC, 0x8)
-#define COREFREQ_IOCTL_C1E		_IO(COREFREQ_IOCTL_MAGIC, 0x9)
-#define COREFREQ_IOCTL_TURBO		_IO(COREFREQ_IOCTL_MAGIC, 0xa)
-#define COREFREQ_IOCTL_C1A		_IO(COREFREQ_IOCTL_MAGIC, 0xb)
-#define COREFREQ_IOCTL_C3A		_IO(COREFREQ_IOCTL_MAGIC, 0xc)
-#define COREFREQ_IOCTL_C1U		_IO(COREFREQ_IOCTL_MAGIC, 0xd)
-#define COREFREQ_IOCTL_C3U		_IO(COREFREQ_IOCTL_MAGIC, 0xe)
-#define COREFREQ_IOCTL_CC6		_IO(COREFREQ_IOCTL_MAGIC, 0xf)
-#define COREFREQ_IOCTL_PC6		_IO(COREFREQ_IOCTL_MAGIC, 0x10)
-#define COREFREQ_IOCTL_PKGCST		_IO(COREFREQ_IOCTL_MAGIC, 0x11)
-#define COREFREQ_IOCTL_IOMWAIT		_IO(COREFREQ_IOCTL_MAGIC, 0x12)
-#define COREFREQ_IOCTL_IORCST		_IO(COREFREQ_IOCTL_MAGIC, 0x13)
-#define COREFREQ_IOCTL_ODCM		_IO(COREFREQ_IOCTL_MAGIC, 0x14)
-#define COREFREQ_IOCTL_ODCM_DC		_IO(COREFREQ_IOCTL_MAGIC, 0x15)
-#define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
-#define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x17)
-#define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x18)
-#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x19)
-#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x1a)
-#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0x1b)
-#define COREFREQ_IOCTL_PWR_POLICY	_IO(COREFREQ_IOCTL_MAGIC, 0x1c)
-#define COREFREQ_IOCTL_HWP		_IO(COREFREQ_IOCTL_MAGIC, 0x1d)
-#define COREFREQ_IOCTL_HWP_EPP		_IO(COREFREQ_IOCTL_MAGIC, 0x1e)
+#define COREFREQ_IOCTL_TECHNOLOGY	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
+#define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x5)
+#define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x6)
+#define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x7)
+#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x8)
+#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x9)
+#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0xa)
+
+enum {
+	MACHINE_CONTROLLER,
+	MACHINE_INTERVAL,
+	MACHINE_AUTOCLOCK,
+	MACHINE_EXPERIMENTAL,
+	MACHINE_INTERRUPTS
+};
+
+enum {
+	TECHNOLOGY_EIST,
+	TECHNOLOGY_C1E,
+	TECHNOLOGY_TURBO,
+	TECHNOLOGY_C1A,
+	TECHNOLOGY_C3A,
+	TECHNOLOGY_C1U,
+	TECHNOLOGY_C3U,
+	TECHNOLOGY_CC6,
+	TECHNOLOGY_PC6,
+	TECHNOLOGY_PKG_CSTATE,
+	TECHNOLOGY_IO_MWAIT,
+	TECHNOLOGY_IO_MWAIT_REDIR,
+	TECHNOLOGY_ODCM,
+	TECHNOLOGY_ODCM_DUTYCYCLE,
+	TECHNOLOGY_POWER_POLICY,
+	TECHNOLOGY_HWP,
+	TECHNOLOGY_HWP_EPP
+};
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 
@@ -1489,7 +1497,6 @@ typedef struct {
 #define COREFREQ_ORDER_CRC32	_IO(COREFREQ_ORDER_MAGIC, 0x3)
 #define COREFREQ_ORDER_CONIC	_IO(COREFREQ_ORDER_MAGIC, 0x4)
 #define COREFREQ_ORDER_TURBO	_IO(COREFREQ_ORDER_MAGIC, 0x5)
-#define COREFREQ_ORDER_USR_CPU	_IO(COREFREQ_ORDER_MAGIC, 0x6)
 
 enum PATTERN {
 	RESET_CSP,
@@ -1515,14 +1522,22 @@ enum {
 typedef struct {
 	unsigned short	lo: 16,
 			hi: 16;
-} RING_ARG;
+} RING_ARG_DWORD;
+
+typedef union {
+	unsigned long	arg: 64;
+    struct {
+	RING_ARG_DWORD	dl;
+	RING_ARG_DWORD	dh;
+    };
+} RING_ARG_QWORD;
 
 typedef struct {
 	union {
 		unsigned long	arg: 64;
 	    struct {
-		RING_ARG	dl;
-		RING_ARG	dh;
+		RING_ARG_DWORD	dl;
+		RING_ARG_DWORD	dh;
 	    };
 	};
 	unsigned int		cmd: 32,
@@ -1566,66 +1581,70 @@ typedef struct {
 	RING_MOVE(_ctrl, Ring.buffer[tail]);				\
 })
 
-#define RING_WRITE_1xPARAM(Ring, _cmd)					\
+#define RING_WRITE_0xPARAM( _sub, Ring, _cmd)				\
 ({									\
 	RING_CTRL ctrl = {						\
 			.arg = 0x0LU,					\
-			.cmd = _cmd, .sub = 0x0U			\
+			.cmd = _cmd, .sub = _sub			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
-#define RING_WRITE_2xPARAM(Ring, _cmd, _arg)				\
+#define RING_WRITE_1xPARAM( _sub, Ring, _cmd, _arg)			\
 ({									\
 	RING_CTRL ctrl = {						\
 			.arg = _arg,					\
-			.cmd = _cmd, .sub = 0x0U			\
+			.cmd = _cmd, .sub = _sub			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
-#define RING_WRITE_3xPARAM(Ring, _cmd, _dllo, _dlhi)			\
+#define RING_WRITE_2xPARAM( _sub, Ring, _cmd, _dllo, _dlhi)		\
 ({									\
 	RING_CTRL ctrl = {						\
 			.dl = {.lo = _dllo, .hi = _dlhi},		\
 			.dh = {.lo = 0x0U , .hi = 0x0U },		\
-			.cmd = _cmd, .sub = 0x0U			\
+			.cmd = _cmd, .sub = _sub			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
-#define RING_WRITE_4xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo)		\
+#define RING_WRITE_3xPARAM( _sub, Ring, _cmd, _dllo, _dlhi, _dhlo)	\
 ({									\
 	RING_CTRL ctrl = {						\
 			.dl = {.lo = _dllo, .hi = _dlhi},		\
 			.dh = {.lo = _dhlo, .hi = 0x0U },		\
-			.cmd = _cmd, .sub = 0x0U			\
+			.cmd = _cmd, .sub = _sub			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
-#define RING_WRITE_5xPARAM(Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)	\
+#define RING_WRITE_4xPARAM(_sub, Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)\
 ({									\
 	RING_CTRL ctrl = {						\
 			.dl = {.lo = _dllo, .hi = _dlhi},		\
 			.dh = {.lo = _dhlo, .hi = _dhhi},		\
-			.cmd = _cmd, .sub = 0x0U			\
+			.cmd = _cmd, .sub = _sub			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
 
-#define RING_WRITE_DISPATCH(_1,_2,_3,_4,_5,_6,RING_WRITE_CURSOR, ... )	\
+#define RING_WRITE_DISPATCH(_1,_2,_3,_4,_5,_6,_7,RING_WRITE_CURSOR, ...)\
 	RING_WRITE_CURSOR
 
-#define RING_WRITE( ... )						\
-	RING_WRITE_DISPATCH(__VA_ARGS__,RING_WRITE_5xPARAM,		\
-					RING_WRITE_4xPARAM,		\
-					RING_WRITE_3xPARAM,		\
-					RING_WRITE_2xPARAM,		\
-					RING_WRITE_1xPARAM,		\
-						NULL)( __VA_ARGS__ )
+#define RING_WRITE_SUB_CMD( ... )					\
+	RING_WRITE_DISPATCH(__VA_ARGS__,RING_WRITE_4xPARAM,	/*7*/	\
+					RING_WRITE_3xPARAM,	/*6*/	\
+					RING_WRITE_2xPARAM,	/*5*/	\
+					RING_WRITE_1xPARAM,	/*4*/	\
+					RING_WRITE_0xPARAM,	/*3*/	\
+						NULL,		/*2*/	\
+						NULL)		/*1*/	\
+							( __VA_ARGS__ )
+
+#define RING_WRITE( ... ) RING_WRITE_SUB_CMD( 0x0U, __VA_ARGS__ )

@@ -3324,7 +3324,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
      while (porder->func != NULL)
      {
-      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.dl.hi == ctrl.dl.hi))
+      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.sub == ctrl.sub))
       {
        if (!BITVAL(Ref->Shm->Proc.Sync, 31))
        {
