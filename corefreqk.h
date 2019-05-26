@@ -2397,6 +2397,180 @@ static SYSTEM_DRIVER SNB_Driver = {
 	.GetFreq	= SandyBridge_GetFreq
 };
 
+static IDLE_STATE IVB_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "IVB-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 1,
+	.Residency	= 1
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "IVB-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "IVB-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 59,
+	.Residency	= 156
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "IVB-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 80,
+	.Residency	= 300
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "IVB-C7",
+	.flags		= (0x30 << 24) | 0x10000,
+	.Latency	= 87,
+	.Residency	= 300
+	},
+	{NULL}
+};
+
+static SYSTEM_DRIVER IVB_Driver = {
+	.IdleState	= IVB_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
+};
+
+static IDLE_STATE HSW_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "HSW-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 2,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "HSW-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "HSW-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 33,
+	.Residency	= 100
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "HSW-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 133,
+	.Residency	= 400
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "HSW-C7",
+	.flags		= (0x32 << 24) | 0x10000,
+	.Latency	= 166,
+	.Residency	= 500
+	},
+	{
+	.Name		= "C8",
+	.Desc		= "HSW-C8",
+	.flags		= (0x40 << 24) | 0x10000,
+	.Latency	= 300,
+	.Residency	= 900
+	},
+	{
+	.Name		= "C9",
+	.Desc		= "HSW-C9",
+	.flags		= (0x50 << 24) | 0x10000,
+	.Latency	= 600,
+	.Residency	= 1800
+	},
+	{
+	.Name		= "C10",
+	.Desc		= "HSW-C10",
+	.flags		= (0x60 << 24) | 0x10000,
+	.Latency	= 2600,
+	.Residency	= 7700
+	},
+	{NULL}
+};
+
+static SYSTEM_DRIVER HSW_Driver = {
+	.IdleState	= HSW_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
+};
+
+static IDLE_STATE BDW_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "BDW-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 2,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "BDW-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C3",
+	.Desc		= "BDW-C3",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 40,
+	.Residency	= 100
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "BDW-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 133,
+	.Residency	= 400
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "BDW-C7",
+	.flags		= (0x32 << 24) | 0x10000,
+	.Latency	= 166,
+	.Residency	= 500
+	},
+	{
+	.Name		= "C8",
+	.Desc		= "BDW-C8",
+	.flags		= (0x40 << 24) | 0x10000,
+	.Latency	= 300,
+	.Residency	= 900
+	},
+	{
+	.Name		= "C9",
+	.Desc		= "BDW-C9",
+	.flags		= (0x50 << 24) | 0x10000,
+	.Latency	= 600,
+	.Residency	= 1800
+	},
+	{
+	.Name		= "C10",
+	.Desc		= "BDW-C10",
+	.flags		= (0x60 << 24) | 0x10000,
+	.Latency	= 2600,
+	.Residency	= 7700
+	},
+	{NULL}
+};
+
+static SYSTEM_DRIVER BDW_Driver = {
+	.IdleState	= BDW_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
+};
+
 static IDLE_STATE SKL_IdleState[] = {
 	{
 	.Name		= "C1",
@@ -2459,6 +2633,36 @@ static IDLE_STATE SKL_IdleState[] = {
 
 static SYSTEM_DRIVER SKL_Driver = {
 	.IdleState	= SKL_IdleState,
+	.GetFreq	= SandyBridge_GetFreq
+};
+
+static IDLE_STATE SKX_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "SKX-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 2,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C1E",
+	.Desc		= "SKX-C1E",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "SKX-C6",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 133,
+	.Residency	= 600
+	},
+	{NULL}
+};
+
+static SYSTEM_DRIVER SKX_Driver = {
+	.IdleState	= SKX_IdleState,
 	.GetFreq	= SandyBridge_GetFreq
 };
 
@@ -2798,7 +3002,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = &NHM_Driver,
+	.SystemDriver = NULL,
 	.Architecture = Arch_Atom_Avoton
 	},
 
@@ -3163,7 +3367,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &IVB_Driver,
 	.Architecture = Arch_IvyBridge
 	},
 [IvyBridge_EP] = {							/* 29*/
@@ -3212,7 +3416,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_DT
 	},
 [Haswell_EP] = {							/* 31*/
@@ -3236,7 +3440,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_EP
 	},
 [Haswell_ULT] = {							/* 32*/
@@ -3260,7 +3464,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_ULT
 	},
 [Haswell_ULX] = {							/* 33*/
@@ -3284,7 +3488,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_ULX
 	},
 
@@ -3309,7 +3513,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &BDW_Driver,
 	.Architecture = Arch_Broadwell
 	},
 [Broadwell_D] = {							/* 35*/
@@ -3333,7 +3537,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &BDW_Driver,
 	.Architecture = Arch_Broadwell_D
 	},
 [Broadwell_H] = {							/* 36*/
@@ -3357,7 +3561,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &BDW_Driver,
 	.Architecture = Arch_Broadwell_H
 	},
 [Broadwell_EP] = {							/* 37*/
@@ -3381,7 +3585,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &BDW_Driver,
 	.Architecture = Arch_Broadwell_EP
 	},
 
@@ -3406,7 +3610,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &SKL_Driver,
 	.Architecture = Arch_Skylake_UY
 	},
 [Skylake_S]  = {							/* 39*/
@@ -3454,7 +3658,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &SKX_Driver,
 	.Architecture = Arch_Skylake_X
 	},
 
@@ -3504,7 +3708,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Kabylake_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &SKL_Driver,
 	.Architecture = Arch_Kabylake
 	},
 [Kabylake_UY] = {							/* 43*/
@@ -3528,7 +3732,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &SKL_Driver,
 	.Architecture = Arch_Kabylake_UY
 	},
 

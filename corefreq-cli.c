@@ -2110,6 +2110,15 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Row Mark */
     if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
     {
+	PUT(Shm->Registration.Driver.cpuidle ? BOXKEY_LIMIT_IDLE_STATE
+						: SCANKEY_NULL,
+		RSC(KERNEL_LIMIT).ATTR(), width, 2,
+		"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
+		width - (OutFunc == NULL ? 12 : 11) - RSZ(KERNEL_LIMIT), hSpace,
+		Shm->Registration.Driver.cpuidle ? '<' : '[',
+		Shm->SysGate.OS.IdleDriver.stateCount,
+		Shm->Registration.Driver.cpuidle ? '>' : ']');
+/* Row Mark */
 	sprintf(item, "%s%.*s|", RSC(KERNEL_STATE).CODE(),
 			10 - (int) RSZ(KERNEL_STATE), hSpace);
       for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
@@ -3492,13 +3501,18 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_k:
 		{
+		CUINT height = 11
+			+ ( strlen(Shm->SysGate.OS.FreqDriver.Name) > 0 )
+			+ ( strlen(Shm->SysGate.OS.FreqDriver.Governor) > 0 )
+			+ ( strlen(Shm->SysGate.OS.IdleDriver.Name) > 0 )
+			+ ( Shm->SysGate.OS.IdleDriver.stateCount > 0 ) * 6;
 		winOrigin.col = 2;
 		winWidth = 76;
-		if (TOP_HEADER_ROW + 8 + 11 < draw.Size.height) {
-			matrixSize.hth = 11;
-			winOrigin.row = TOP_HEADER_ROW + 8;
+		if (TOP_HEADER_ROW + 1 + height < draw.Size.height) {
+			matrixSize.hth = height;
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		} else {
-			matrixSize.hth = CUMIN((draw.Size.height - 2), 11);
+			matrixSize.hth = CUMIN((draw.Size.height - 2), height);
 			winOrigin.row = 1;
 		}
 		SysInfoFunc = SysInfoKernel;
@@ -5820,6 +5834,76 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_HWP );
 	}
+    break;
+    case BOXKEY_LIMIT_IDLE_STATE:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+		.col = (draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
+		.row = TOP_HEADER_ROW + 2
+	    }, select = { /* Remark: CPUIDLE_STATE_MAX = 10 in cpuidle.h */
+		.col = 0,
+		.row = Shm->SysGate.OS.IdleDriver.stateCount
+	    };
+		Window *wBox = CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE(),
+	(ASCII*)"            0     RESET ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST00,
+	(ASCII*)"            1           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST01,
+	(ASCII*)"            2           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST02,
+	(ASCII*)"            3           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST03,
+	(ASCII*)"            4           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST04,
+	(ASCII*)"            5           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST05,
+	(ASCII*)"            6           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST06,
+	(ASCII*)"            7           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST07,
+	(ASCII*)"            8           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST08,
+	(ASCII*)"            9           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST09,
+	(ASCII*)"           10           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST10);
+
+	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
+		TCellAt(wBox, 0, select.row).attr[10] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = 	\
+		TCellAt(wBox, 0, select.row).attr[12] = 	\
+		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[14] = 	\
+		TCellAt(wBox, 0, select.row).attr[15] = 	\
+		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 8] = '<';
+		if (select.row > 9)
+			TCellAt(wBox, 0, select.row).item[15] = '>';
+		else
+			TCellAt(wBox, 0, select.row).item[16] = '>';
+
+		AppendWindow(wBox, &winList);
+	    } else
+		SetHead(&winList, win);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_LIMIT_IDLE_ST00:
+    case BOXKEY_LIMIT_IDLE_ST01:
+    case BOXKEY_LIMIT_IDLE_ST02:
+    case BOXKEY_LIMIT_IDLE_ST03:
+    case BOXKEY_LIMIT_IDLE_ST04:
+    case BOXKEY_LIMIT_IDLE_ST05:
+    case BOXKEY_LIMIT_IDLE_ST06:
+    case BOXKEY_LIMIT_IDLE_ST07:
+    case BOXKEY_LIMIT_IDLE_ST08:
+    case BOXKEY_LIMIT_IDLE_ST09:
+    case BOXKEY_LIMIT_IDLE_ST10:
+    {
+	const unsigned long newLim = (scan->key - BOXKEY_LIMIT_IDLE_ST00) >> 4;
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				newLim,
+				MACHINE_LIMIT_IDLE );
+	}
+    }
     break;
     case BOXKEY_CLR_THM_SENSOR:
     case BOXKEY_CLR_THM_PROCHOT:

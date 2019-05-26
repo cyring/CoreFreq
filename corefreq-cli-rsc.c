@@ -2230,6 +2230,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_KERNEL_RESIDENCY_CODE_FR
 		}
 	},
+	[RSC_KERNEL_LIMIT] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_LIMIT_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_LIMIT_CODE_FR
+		}
+	},
 	[RSC_TOPOLOGY_TITLE] = {
 		.Attr = vColor,
 		.Code = {
@@ -3726,6 +3733,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ERROR_SYS_CALL_CODE_EN,
 			[LOC_FR] = RSC_ERROR_SYS_CALL_CODE_FR
+		}
+	},
+	[RSC_BOX_IDLE_LIMIT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR
 		}
 	}
 };

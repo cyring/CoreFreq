@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.53.0"
+#define COREFREQ_VERSION	"1.53.1"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1467,7 +1467,8 @@ enum {
 	MACHINE_INTERVAL,
 	MACHINE_AUTOCLOCK,
 	MACHINE_EXPERIMENTAL,
-	MACHINE_INTERRUPTS
+	MACHINE_INTERRUPTS,
+	MACHINE_LIMIT_IDLE
 };
 
 enum {

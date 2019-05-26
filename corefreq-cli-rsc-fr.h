@@ -347,6 +347,7 @@
 #define RSC_KERNEL_POWER_CODE_FR	(ASCII*) "Puissance"
 #define RSC_KERNEL_LATENCY_CODE_FR	(ASCII*) "Latence"
 #define RSC_KERNEL_RESIDENCY_CODE_FR	(ASCII*) "Periode"
+#define RSC_KERNEL_LIMIT_CODE_FR	(ASCII*) "Limite Idle"
 
 #define RSC_TOPOLOGY_TITLE_CODE_FR	(ASCII*) " Topologie "
 
@@ -680,3 +681,5 @@
 
 #define RSC_ERROR_SYS_CALL_CODE_FR					\
 			(ASCII*) "Erreur Système code %d\n%s @ ligne %d\n"
+
+#define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR (ASCII*) " Limite CPU-Idle "

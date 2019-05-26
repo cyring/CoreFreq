@@ -3167,6 +3167,8 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
 	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
 	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
+
+	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)

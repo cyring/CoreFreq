@@ -174,6 +174,7 @@ static struct {
 #ifdef CONFIG_CPU_IDLE
 	struct cpuidle_device __percpu *IdleDevice;
 	struct cpuidle_driver	IdleDriver;
+	signed int		InitialStateCount;
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	struct cpufreq_driver	FreqDriver;
@@ -7833,31 +7834,28 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 #ifdef CONFIG_CPU_IDLE
 	if ((idleDriver = cpuidle_get_driver()) != NULL) {
 		int i;
-		memcpy( SysGate->OS.IdleDriver.Name,
-			idleDriver->name,
-			CPUIDLE_NAME_LEN);
-		SysGate->OS.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = 0;
+		StrCopy(SysGate->OS.IdleDriver.Name,
+			idleDriver->name, CPUIDLE_NAME_LEN);
 
 	    if (idleDriver->state_count < CPUIDLE_STATE_MAX)
 		SysGate->OS.IdleDriver.stateCount = idleDriver->state_count;
 	    else	/* Don't allow an overflow. */
 		SysGate->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
 
-	    for (i = 0; i < SysGate->OS.IdleDriver.stateCount; i++) {
-		memcpy( SysGate->OS.IdleDriver.State[i].Name,
-			idleDriver->states[i].name,
-			CPUIDLE_NAME_LEN);
-		SysGate->OS.IdleDriver.State[i].Name[CPUIDLE_NAME_LEN - 1] = 0;
+	    for (i = 0; i < SysGate->OS.IdleDriver.stateCount; i++)
+	    {
+		StrCopy(SysGate->OS.IdleDriver.State[i].Name,
+			idleDriver->states[i].name, CPUIDLE_NAME_LEN);
 
-		memcpy( SysGate->OS.IdleDriver.State[i].Desc,
-			idleDriver->states[i].desc,
-			CPUIDLE_NAME_LEN);
-		SysGate->OS.IdleDriver.State[i].Desc[CPUIDLE_NAME_LEN - 1] = 0;
+		StrCopy(SysGate->OS.IdleDriver.State[i].Desc,
+			idleDriver->states[i].desc, CPUIDLE_NAME_LEN);
 
 		SysGate->OS.IdleDriver.State[i].exitLatency =
 				idleDriver->states[i].exit_latency;
+
 		SysGate->OS.IdleDriver.State[i].powerUsage =
 				idleDriver->states[i].power_usage;
+
 		SysGate->OS.IdleDriver.State[i].targetResidency =
 				idleDriver->states[i].target_residency;
 	    }
@@ -7865,10 +7863,8 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	if ((pFreqDriver = cpufreq_get_current_driver()) != NULL) {
-		memcpy( SysGate->OS.FreqDriver.Name,
-			pFreqDriver,
-			CPUFREQ_NAME_LEN);
-		SysGate->OS.FreqDriver.Name[CPUFREQ_NAME_LEN - 1] = 0;
+		StrCopy(SysGate->OS.FreqDriver.Name,
+			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
 	cpu = get_cpu();
@@ -7877,10 +7873,8 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 	if (rc == 0) {
 		struct cpufreq_governor *pGovernor = freqPolicy.governor;
 		if (pGovernor != NULL) {
-			memcpy( SysGate->OS.FreqDriver.Governor,
-				pGovernor->name,
-				CPUIDLE_NAME_LEN);
-			SysGate->OS.FreqDriver.Governor[CPUFREQ_NAME_LEN-1] = 0;
+			StrCopy(SysGate->OS.FreqDriver.Governor,
+				pGovernor->name, CPUFREQ_NAME_LEN);
 		}
 	}
 #endif /* CONFIG_CPU_FREQ */
@@ -7945,6 +7939,11 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 	struct cpuidle_device *device;
 	unsigned int cpu;
+
+	if (CoreFreqK.InitialStateCount != -1)
+	{	/* Restore the states count before unregistering the driver */
+		CoreFreqK.IdleDriver.state_count = CoreFreqK.InitialStateCount;
+	}
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 	    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
 		device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
@@ -8018,6 +8017,12 @@ static int CoreFreqK_IdleDriver_Init(void)
 			break;
 		    }
 		}
+	    }
+	    if (rc == 0)
+	    {	/* Save the initial states count for a safe unregistration */
+		CoreFreqK.InitialStateCount = CoreFreqK.IdleDriver.state_count;
+	    } else {
+		CoreFreqK.InitialStateCount = -1;
 	    }
 	}
     }
@@ -8466,6 +8471,32 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -EINVAL;
 	    #endif
 		break;
+	}
+	break;
+
+      case MACHINE_LIMIT_IDLE:
+	if (Proc->Registration.Driver.cpuidle) {
+	    if ((prm.dl.lo > 0) && (prm.dl.lo <= CoreFreqK.InitialStateCount))
+	    {
+		CoreFreqK.IdleDriver.state_count = prm.dl.lo;
+
+		if (Proc->OS.Gate != NULL) {
+			Proc->OS.Gate->OS.IdleDriver.stateCount = \
+					CoreFreqK.IdleDriver.state_count;
+		}
+		rc = 0;
+	    }
+	    else if (prm.dl.lo == 0)
+	    {
+		CoreFreqK.IdleDriver.state_count = CoreFreqK.InitialStateCount;
+
+		if (Proc->OS.Gate != NULL) {
+			Proc->OS.Gate->OS.IdleDriver.stateCount = \
+					CoreFreqK.IdleDriver.state_count;
+		}
+		rc = 0;
+	    } else
+		rc = -EINVAL;
 	}
 	break;
       }
