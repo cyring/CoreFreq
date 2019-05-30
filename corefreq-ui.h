@@ -303,6 +303,7 @@ typedef union {
 	unsigned long long	*pullong;
 	unsigned long		*pulong;
 	unsigned int		*puint;
+	signed int		*psint;
 
 	unsigned long long	ullong;
 	signed long long	sllong;
@@ -327,6 +328,7 @@ void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
 void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
 void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
 void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
+void Set_pSINT(TGrid *pGrid	, signed int *pSINT) ;
 void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
 void Set_SLLONG(TGrid *pGrid	, signed long long _SLLONG) ;
 void Set_ULONG(TGrid *pGrid	, unsigned long _ULONG) ;
@@ -348,6 +350,9 @@ void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 		__typeof__(_data), __typeof__(unsigned int *)) ,	\
 			Set_pUINT,					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed int *)),		\
+			Set_pSINT,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(unsigned long long)) ,	\
 			Set_ULLONG,					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
@@ -365,7 +370,7 @@ void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(signed int)) ,		\
 			Set_SINT,					\
-	(void)0))))))))))(_pGrid, _data)
+	(void)0)))))))))))(_pGrid, _data)
 
 typedef struct _Win {
 	Layer		*layer;

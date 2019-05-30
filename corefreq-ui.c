@@ -569,6 +569,11 @@ inline void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
 	pGrid->data.puint = pUINT;
 }
 
+inline void Set_pSINT(TGrid *pGrid, signed int *pSINT)
+{
+	pGrid->data.psint = pSINT;
+}
+
 inline void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
 {
 	pGrid->data.ullong = _ULLONG;
