@@ -3013,6 +3013,8 @@ void SysGate_OS_Driver(REF *Ref)
 	Shm->SysGate.OS.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
 
 	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
+	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
+
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
 	size_t len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Name),
@@ -3168,7 +3170,7 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
 	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
 
-	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
+	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)

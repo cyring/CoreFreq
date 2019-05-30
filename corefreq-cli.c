@@ -2006,21 +2006,32 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
+void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[8];
+	size_t len = sprintf(item, "%6d", (*data.psint));
+
+	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
+}
+
 REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	size_t	len = KMAX(1 + width,
-			1 + 16 + (8 * Shm->SysGate.OS.IdleDriver.stateCount));
-	char	*item = NULL, *str = NULL;
-	int	idx = 0;
+	size_t	len = (1 + width) * 5;
+	char	*item[5], str[1 + CPUFREQ_NAME_LEN];
+	int	idx;
+	for (idx = 0; idx < 5; idx++) {
+		if ((item[idx] = malloc(len)) != NULL)
+			continue;
+		else {
+			do {
+				free(item[idx]);
+			} while (idx-- != 0);
 
-  if ((item = malloc(len)) == NULL) {
-	REASON_SET(reason, RC_MEM_ERR);
-  } else if ((str = malloc(len)) == NULL) {
-	REASON_SET(reason, RC_MEM_ERR);
-	free(item);
-  } else
-  {
+			REASON_SET(reason, RC_MEM_ERR);
+			return(reason);
+		}
+	}
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
@@ -2079,12 +2090,12 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
-	sprintf(item, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
+	sprintf(item[0], "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
     if (len > 0)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
-		item, RSC(KERNEL_FREQ_DRIVER).CODE(),
+		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
 		width - 2 - RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.FreqDriver.Name);
     }
@@ -2093,91 +2104,103 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (len > 0)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
-		item, RSC(KERNEL_GOVERNOR).CODE(),
+		item[0], RSC(KERNEL_GOVERNOR).CODE(),
 		width - 2 - RSZ(KERNEL_GOVERNOR) - CPUFREQ_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.FreqDriver.Governor);
     }
-/* Section Mark */
+/* Row Mark */
     len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
     if (len > 0)
     {
-	sprintf(item, "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
+	sprintf(item[0], "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
-		item, RSC(KERNEL_IDLE_DRIVER).CODE(),
+		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - 2 - RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.IdleDriver.Name);
     }
-/* Row Mark */
-    if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
-    {
-	PUT(Shm->Registration.Driver.cpuidle ? BOXKEY_LIMIT_IDLE_STATE
-						: SCANKEY_NULL,
-		RSC(KERNEL_LIMIT).ATTR(), width, 2,
-		"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
-		width - (OutFunc == NULL ? 12 : 11) - RSZ(KERNEL_LIMIT), hSpace,
-		Shm->Registration.Driver.cpuidle ? '<' : '[',
-		Shm->SysGate.OS.IdleDriver.stateCount,
-		Shm->Registration.Driver.cpuidle ? '>' : ']');
-/* Row Mark */
-	sprintf(item, "%s%.*s|", RSC(KERNEL_STATE).CODE(),
+/* Section Mark */
+	GridCall(PUT(Shm->Registration.Driver.cpuidle ? BOXKEY_LIMIT_IDLE_STATE
+							: SCANKEY_NULL,
+			RSC(KERNEL_LIMIT).ATTR(), width, 2,
+			"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
+			width - (OutFunc == NULL ? 12 : 11) - RSZ(KERNEL_LIMIT),
+			hSpace,
+			Shm->Registration.Driver.cpuidle ? '<' : '[',
+			Shm->SysGate.OS.IdleDriver.stateLimit,
+			Shm->Registration.Driver.cpuidle ? '>' : ']'),
+		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
+
+	sprintf(item[0], "%s%.*s", RSC(KERNEL_STATE).CODE(),
 			10 - (int) RSZ(KERNEL_STATE), hSpace);
-      for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
+
+	sprintf(item[1], "%.*s", 10, hSpace);
+
+	sprintf(item[2], "%s%.*s", RSC(KERNEL_POWER).CODE(),
+			10 - (int) RSZ(KERNEL_POWER), hSpace);
+
+	sprintf(item[3], "%s%.*s", RSC(KERNEL_LATENCY).CODE(),
+			10 - (int) RSZ(KERNEL_LATENCY), hSpace);
+
+	sprintf(item[4], "%s%.*s", RSC(KERNEL_RESIDENCY).CODE(),
+			10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
+
+    for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++) {
+      if (idx < Shm->SysGate.OS.IdleDriver.stateCount)
       {
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Name), 7);
-	sprintf(str, "%-7.*s|", (int) len,
+	sprintf(str, "%7.*s", (int) len,
 		Shm->SysGate.OS.IdleDriver.State[idx].Name);
-	strcat(item, str);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
-		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item);
-/* Row Mark */
-	sprintf(item, "%.*s|", 10, hSpace);
-      for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
-      {
+	strcat(item[0], str);
+
 	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Desc), 7);
-	sprintf(str, "%7.*s|", (int) len,
+	sprintf(str, "%7.*s", (int) len,
 		Shm->SysGate.OS.IdleDriver.State[idx].Desc);
-	strcat(item, str);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
-/* Row Mark */
-	sprintf(item, "%s%.*s|", RSC(KERNEL_POWER).CODE(),
-			10 - (int) RSZ(KERNEL_POWER), hSpace);
-      for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount;idx++ )
-      {
-	sprintf(str, "%7d|",
+	strcat(item[1], str);
+
+	sprintf(str, "%7d",
 		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage);
-	strcat(item, str);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
-/* Row Mark */
-	sprintf(item, "%s%.*s|", RSC(KERNEL_LATENCY).CODE(),
-			10 - (int) RSZ(KERNEL_LATENCY), hSpace);
-      for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
-      {
-	sprintf(str, "%7u|",
+	strcat(item[2], str);
+
+	sprintf(str, "%7u",
 		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency);
-	strcat(item, str);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
-/* Row Mark */
-	sprintf(item, "%s%.*s|", RSC(KERNEL_RESIDENCY).CODE(),
-			10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
-      for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
-      {
-	sprintf(str, "%7u|",
+	strcat(item[3], str);
+
+	sprintf(str, "%7u",
 		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency);
-	strcat(item, str);
+	strcat(item[4], str);
+      } else {
+	strcat(item[0], "\x20n/a");
+	strcat(item[1], "\x20\x20\x20\x20");
+	strcat(item[2], "\x20\x20\x20\x20");
+	strcat(item[3], "\x20\x20\x20\x20");
+	strcat(item[4], "\x20\x20\x20\x20");
       }
-	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item);
+      if (idx < (CPUIDLE_STATE_MAX - 1)) {
+	strcat(item[0], "\x20");
+	strcat(item[1], "\x20");
+	strcat(item[2], "\x20");
+	strcat(item[3], "\x20");
+	strcat(item[4], "\x20");
+      }
     }
-	free(item);
-	free(str);
-  }
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item[0]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[1]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[2]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[3]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[4]);
+/* Section Mark */
+    for (idx = 0; idx < 5; idx++) {
+	free(item[idx]);
+    }
 	return(reason);
 }
 
@@ -3506,8 +3529,8 @@ Window *CreateSysInfo(unsigned long long id)
 			+ ( strlen(Shm->SysGate.OS.FreqDriver.Governor) > 0 )
 			+ ( strlen(Shm->SysGate.OS.IdleDriver.Name) > 0 )
 			+ ( Shm->SysGate.OS.IdleDriver.stateCount > 0 ) * 6;
-		winOrigin.col = 2;
-		winWidth = 76;
+		winOrigin.col = 1;
+		winWidth = 78;
 		if (TOP_HEADER_ROW + 1 + height < draw.Size.height) {
 			matrixSize.hth = height;
 			winOrigin.row = TOP_HEADER_ROW + 1;
@@ -3544,6 +3567,7 @@ Window *CreateSysInfo(unsigned long long id)
 		case SCANKEY_t:
 		case SCANKEY_o:
 		case SCANKEY_w:
+		case SCANKEY_k:
 			StoreWindow(wSysInfo,	.key.Enter, Enter_StickyCell);
 			break;
 		case SCANKEY_u:
@@ -4094,6 +4118,62 @@ Window *CreateSelectCPU(unsigned long long id)
 	free(item);
     }
 	return(wUSR);
+}
+
+Window *CreateSelectIdle(unsigned long long id)
+{
+	Window *wIdle = CreateWindow(wLayer, id,
+			1, 1 + Shm->SysGate.OS.IdleDriver.stateCount,
+			(draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
+			TOP_HEADER_ROW + 2);
+    if (wIdle != NULL)
+    {
+	ASCII item[24+1];
+	int idx;
+
+	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
+			(ASCII*) "            0     RESET ",
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
+	{
+		sprintf((char*) item, "           %2d%10.*s ", 1 + idx,
+			10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
+
+		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
+				item, MakeAttr(WHITE, 0, BLACK, 0));
+	}
+	StoreWindow(wIdle, .title, (char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE());
+
+	wIdle->matrix.select.row  = Shm->SysGate.OS.IdleDriver.stateLimit;
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 8] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 9] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[10] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[11] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[12] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[13] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[14] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[15] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[16] =		\
+						MakeAttr(CYAN , 0, BLACK, 1);
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).item[ 8] = '<';
+	if (wIdle->matrix.select.row > 9)
+		TCellAt(wIdle, 0, wIdle->matrix.select.row).item[15] = '>';
+	else
+		TCellAt(wIdle, 0, wIdle->matrix.select.row).item[16] = '>';
+
+	StoreWindow(wIdle,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wIdle,	.key.Down,	MotionDown_Win);
+	StoreWindow(wIdle,	.key.Up,	MotionUp_Win);
+	StoreWindow(wIdle,	.key.Home,	MotionTop_Win);
+	StoreWindow(wIdle,	.key.End,	MotionBottom_Win);
+
+	StoreWindow(wIdle,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wIdle,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wIdle,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wIdle,	.key.WinUp,	MotionOriginUp_Win);
+    }
+	return(wIdle);
 }
 
 Window *_CreateBox(	unsigned long long id,
@@ -5839,48 +5919,8 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-	{
-		const Coordinate origin = {
-		.col = (draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
-		.row = TOP_HEADER_ROW + 2
-	    }, select = { /* Remark: CPUIDLE_STATE_MAX = 10 in cpuidle.h */
-		.col = 0,
-		.row = Shm->SysGate.OS.IdleDriver.stateCount
-	    };
-		Window *wBox = CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE(),
-	(ASCII*)"            0     RESET ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST00,
-	(ASCII*)"            1           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST01,
-	(ASCII*)"            2           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST02,
-	(ASCII*)"            3           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST03,
-	(ASCII*)"            4           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST04,
-	(ASCII*)"            5           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST05,
-	(ASCII*)"            6           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST06,
-	(ASCII*)"            7           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST07,
-	(ASCII*)"            8           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST08,
-	(ASCII*)"            9           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST09,
-	(ASCII*)"           10           ",stateAttr[0],BOXKEY_LIMIT_IDLE_ST10);
-
-	    if (wBox != NULL) {
-		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
-		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
-		TCellAt(wBox, 0, select.row).attr[10] = 	\
-		TCellAt(wBox, 0, select.row).attr[11] = 	\
-		TCellAt(wBox, 0, select.row).attr[12] = 	\
-		TCellAt(wBox, 0, select.row).attr[13] = 	\
-		TCellAt(wBox, 0, select.row).attr[14] = 	\
-		TCellAt(wBox, 0, select.row).attr[15] = 	\
-		TCellAt(wBox, 0, select.row).attr[16] = stateAttr[1];
-		TCellAt(wBox, 0, select.row).item[ 8] = '<';
-		if (select.row > 9)
-			TCellAt(wBox, 0, select.row).item[15] = '>';
-		else
-			TCellAt(wBox, 0, select.row).item[16] = '>';
-
-		AppendWindow(wBox, &winList);
-	    } else
-		SetHead(&winList, win);
-	} else
+		AppendWindow(CreateSelectIdle(scan->key), &winList);
+	else
 		SetHead(&winList, win);
     }
     break;

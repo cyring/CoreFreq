@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.53.1"
+#define COREFREQ_VERSION	"1.53.2"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1392,7 +1392,8 @@ typedef struct
 
 typedef struct {
 	struct {
-		int		stateCount;
+		int		stateCount,
+				stateLimit;
 	    struct {
 		unsigned int	exitLatency;		/* in US	*/
 			int	powerUsage;		/* in mW	*/
