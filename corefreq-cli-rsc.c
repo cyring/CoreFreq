@@ -10,6 +10,7 @@
 #include <sched.h>
 #include <errno.h>
 
+#include "bitasm.h"
 #include "corefreq-ui.h"
 #include "corefreq-cli-rsc.h"
 #include "corefreq-cli-rsc-en.h"
@@ -3194,6 +3195,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_ITEM_14_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_ITEM_14_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_PRTSCR] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_PRTSCR_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_PRTSCR_CODE_FR
 		}
 	},
 	[RSC_TURBO_CLOCK_TITLE] = {

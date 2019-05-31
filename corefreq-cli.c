@@ -3345,6 +3345,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
+	{1, RSC(ADV_HELP_ITEM_PRTSCR).CODE(),	{SCANKEY_CTRL_p}},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
@@ -6457,6 +6458,15 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case SCANKEY_CTRL_p:
+	if (!BITWISEAND(BUS_LOCK, Screenshot, 0x8000000000000000LLU))
+	{
+		Bit64 tsc;
+		RDTSC64(tsc);
+		tsc = BITWISEOR(LOCKLESS, tsc, 0x8000000000000000LLU);
+		BITSTOR(BUS_LOCK, Screenshot, tsc);
+	}
+    break;
     default:
       if (scan->key & TRACK_TASK) {
 	Shm->SysGate.trackTask = scan->key & TRACK_MASK;
@@ -8693,20 +8703,22 @@ REASON_CODE Top(char option)
 	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
 	    SCANKEY scan = {.key = 0};
 
-	    if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
-		if (Shortcut(&scan) == -1) {
-		  if (IsDead(&winList))
+	  if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
+	    if (Shortcut(&scan) == -1) {
+		if (IsDead(&winList)) {
 			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
-		  else
-		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+		}
+		else if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+		{
 			Shortcut(&scan);
 		}
+	    }
 		PrintWindowStack(&winList);
 
 		break;
-	    } else {
+	  } else {
 		WindowsUpdate(&winList);
-	    }
+	  }
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}

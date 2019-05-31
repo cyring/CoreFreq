@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#include "bitasm.h"
 #include "corefreq-ui.h"
 
 const char LCD[0x6][0x10][3][3] = {
@@ -522,6 +523,8 @@ Layer	*sLayer = NULL,
 WinList winList = {.head = NULL};
 
 char *console = NULL;
+
+Bit64 Screenshot __attribute__ ((aligned (64))) = 0x0;
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -1566,6 +1569,17 @@ void WriteConsole(SCREEN_SIZE drawSize, char *buffer)
 	if (writeSize > 0) {
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
+
+	    if (BITWISEAND(BUS_LOCK, Screenshot, 0x8000000000000000LLU))
+	    {
+		FILE *dump;
+		sprintf(buffer, "corefreq_%llx.asc", Screenshot);
+		if ((dump =fopen(buffer, "w")) != NULL) {
+			fwrite(console, (size_t) writeSize, 1, dump);
+			fclose(dump);
+		}
+		BITSTOR(BUS_LOCK, Screenshot, 0x0);
+	    }
 	}
 }
 

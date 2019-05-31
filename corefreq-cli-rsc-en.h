@@ -489,7 +489,7 @@
 #define RSC_ADV_HELP_ITEM_1_CODE_EN					\
 			(ASCII*) " Frequency view:                      "
 #define RSC_ADV_HELP_ITEM_2_CODE_EN					\
-			(ASCII*) " %        Averages or Package C-States"
+			(ASCII*) " %         Averages | Package C-States"
 #define RSC_ADV_HELP_ITEM_3_CODE_EN					\
 			(ASCII*) " Task Monitoring view:                "
 #define RSC_ADV_HELP_ITEM_4_CODE_EN					\
@@ -499,7 +499,7 @@
 #define RSC_ADV_HELP_ITEM_6_CODE_EN					\
 			(ASCII*) " r              Reverse tasks sorting "
 #define RSC_ADV_HELP_ITEM_7_CODE_EN					\
-			(ASCII*) " v         Show|Hide contextual value "
+			(ASCII*) " v          Show | Hide Kernel values "
 #define RSC_ADV_HELP_ITEM_8_CODE_EN					\
 			(ASCII*) " Any view:                            "
 #define RSC_ADV_HELP_ITEM_9_CODE_EN					\
@@ -514,6 +514,8 @@
 			(ASCII*) "  Up  PgUp                     Scroll "
 #define RSC_ADV_HELP_ITEM_14_CODE_EN					\
 			(ASCII*) " Down PgDw                       CPU  "
+#define RSC_ADV_HELP_ITEM_PRTSCR_CODE_EN				\
+			(ASCII*) " [Ctrl]+[p]                Screenshot "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "

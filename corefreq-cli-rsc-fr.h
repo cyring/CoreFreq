@@ -489,7 +489,7 @@
 #define RSC_ADV_HELP_ITEM_1_CODE_FR					\
 			(ASCII*) " Vue Frequence:                       "
 #define RSC_ADV_HELP_ITEM_2_CODE_FR					\
-			(ASCII*) " %          Moyennes ou Etats-Package "
+			(ASCII*) " %           Moyennes | Etats-Package "
 #define RSC_ADV_HELP_ITEM_3_CODE_FR					\
 			(ASCII*) " Vue Suivi des taches:                "
 #define RSC_ADV_HELP_ITEM_4_CODE_FR					\
@@ -499,7 +499,7 @@
 #define RSC_ADV_HELP_ITEM_6_CODE_FR					\
 			(ASCII*) " r         Inverser le tri des taches "
 #define RSC_ADV_HELP_ITEM_7_CODE_FR					\
-			(ASCII*) " v        Afficher|Cacher les valeurs "
+			(ASCII*) " v          Afficher | Cacher valeurs "
 #define RSC_ADV_HELP_ITEM_8_CODE_FR					\
 			(ASCII*) " Vue quelconque:                      "
 #define RSC_ADV_HELP_ITEM_9_CODE_FR					\
@@ -514,6 +514,8 @@
 			(ASCII*) " Haut Prec                 Defilement "
 #define RSC_ADV_HELP_ITEM_14_CODE_FR					\
 			(ASCII*) " Bas  Suiv                       CPU  "
+#define RSC_ADV_HELP_ITEM_PRTSCR_CODE_FR				\
+			(ASCII*) " [Ctrl]+[p]               Copie ecran "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "

@@ -164,6 +164,7 @@ typedef union {
 #define SCANKEY_SHIFT_v 	0x0000000000000056
 #define SCANKEY_SHIFT_w 	0x0000000000000057
 #define SCANKEY_SHIFT_z 	0x000000000000005a
+#define SCANKEY_CTRL_p		0x0000000000000010
 #define SCANKEY_a		0x0000000000000061
 #define SCANKEY_b		0x0000000000000062
 #define SCANKEY_c		0x0000000000000063
@@ -770,3 +771,5 @@ extern  locale_t	SysLoc;
 ({									\
 	AppLoc = _apploc;						\
 })
+
+extern Bit64 Screenshot;
