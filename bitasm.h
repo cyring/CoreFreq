@@ -17,7 +17,7 @@ typedef unsigned int		Bit32;
 __asm__ volatile							\
 (									\
 	"lfence"		"\n\t"					\
-	"rdtsc"								\
+	"rdtsc" 							\
 	: "=a" (_lo),							\
 	  "=d" (_hi)							\
 )
@@ -67,9 +67,9 @@ __asm__ volatile							\
 	"shlq	$32,	%%rdx"	"\n\t"					\
 	"orq	%%rdx,	%%rax"	"\n\t"					\
 	"movq	%%rax,	%0"						\
-	: "=m" (_val64)							\
+	: "=m" (_val64) 						\
 	:								\
-	: "%rax","%rcx","%rdx","memory"					\
+	: "%rax","%rcx","%rdx","memory" 				\
 )
 
 #define RDTSCP64(_val64)						\
@@ -79,13 +79,13 @@ __asm__ volatile							\
 	"shlq	$32,	%%rdx"	"\n\t"					\
 	"orq	%%rdx,	%%rax"	"\n\t"					\
 	"movq	%%rax,	%0"						\
-	: "=m" (_val64)							\
+	: "=m" (_val64) 						\
 	:								\
-	: "%rax","%rcx","%rdx","memory"					\
+	: "%rax","%rcx","%rdx","memory" 				\
 )
 
 #define ASM_RDTSCP(_reg)						\
-	"# Read invariant TSC."		"\n\t"				\
+	"# Read invariant TSC." 	"\n\t"				\
 	"rdtscp"			"\n\t"				\
 	"shlq	$32, %%rdx"		"\n\t"				\
 	"orq	%%rdx, %%rax"		"\n\t"				\
@@ -104,10 +104,10 @@ __asm__ volatile							\
 #define ASM_CODE_RDPMC(_ctr, _reg)					\
 	"# Read PMC counter."		"\n\t"				\
 	"movq	$" #_ctr ", %%rcx"	"\n\t"				\
-	"rdpmc"				"\n\t"				\
+	"rdpmc" 			"\n\t"				\
 	"shlq	$32, %%rdx"		"\n\t"				\
 	"orq	%%rdx, %%rax"		"\n\t"				\
-	"# Save counter value."		"\n\t"				\
+	"# Save counter value." 	"\n\t"				\
 	"movq	%%rax, %%" #_reg	"\n\t"
 
 #define ASM_RDPMC(_ctr, _reg) ASM_CODE_RDPMC(_ctr, _reg)
@@ -131,7 +131,7 @@ __asm__ volatile							\
 __asm__ volatile							\
 (									\
 	_tsc_inst(_reg0)						\
-	ASM_RDPMC(_ctr1, _reg1)						\
+	ASM_RDPMC(_ctr1, _reg1) 					\
 	"# Store values into memory."	"\n\t"				\
 	"movq	%%" #_reg0 ", %0"	"\n\t"				\
 	"movq	%%" #_reg1 ", %1"					\
@@ -153,7 +153,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 ({									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btsq	%%rdx, %[base]"					\
+	_lock	"btsq	%%rdx, %[base]" 				\
 		: [base] "=m" (_base)					\
 		: "d" (_offset)						\
 		: "cc", "memory"					\
@@ -199,7 +199,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 	_lock	"btcq	%%rdx,	%[base]"				\
 		: [base] "=m" (_base)					\
-		: "d" (_offset)						\
+		: "d" (_offset) 					\
 		: "cc", "memory"					\
 	);								\
 })
@@ -220,8 +220,8 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	register unsigned char _ret = 0;				\
 	__asm__ volatile						\
 	(								\
-		"btq	%%rdx, %[base]"	"\n\t"				\
-		"setc	%[ret]"						\
+		"btq	%%rdx, %[base]" "\n\t"				\
+		"setc	%[ret]" 					\
 		: [ret]	"+r" (_ret)					\
 		: [base] "m" (_base),					\
 		  "d" (_offset)						\
@@ -235,8 +235,8 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	register unsigned char _ret = 0;				\
 	__asm__ volatile						\
 	(								\
-		"btq	%[imm8], %[base]""\n\t" 			\
-		"setc	%[ret]"						\
+		"btq	%[imm8], %[base]" "\n\t"			\
+		"setc	%[ret]" 					\
 		: [ret]	"+r" (_ret)					\
 		: [base] "m" (_base),					\
 		  [imm8] "i" (_imm8)					\
@@ -298,28 +298,28 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define BITSET(_lock, _base, _offset)					\
 (									\
-	__builtin_constant_p(_offset) ?					\
+	__builtin_constant_p(_offset) ? 				\
 		_BITSET_IMM(_lock, _base, _offset)			\
 	:	_BITSET_GPR(_lock, _base, _offset)			\
 )
 
 #define BITCLR(_lock, _base, _offset)					\
 (									\
-	__builtin_constant_p(_offset) ?					\
+	__builtin_constant_p(_offset) ? 				\
 		_BITCLR_IMM(_lock, _base, _offset)			\
 	:	_BITCLR_GPR(_lock, _base, _offset)			\
 )
 
 #define BITBTC(_lock, _base, _offset)					\
 (									\
-	__builtin_constant_p(_offset) ?					\
+	__builtin_constant_p(_offset) ? 				\
 		_BITBTC_IMM(_lock, _base, _offset)			\
 	:	_BITBTC_GPR(_lock, _base, _offset)			\
 )
 
 #define BITVAL(_base, _offset)						\
 (									\
-	__builtin_constant_p(_offset) ?					\
+	__builtin_constant_p(_offset) ? 				\
 		_BIT_TEST_IMM(_base, _offset)				\
 	:	_BIT_TEST_GPR(_base, _offset)				\
 )
@@ -351,7 +351,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	__asm__ volatile						\
 	(								\
 		"bsf	%[base], %[index]"	"\n\t"			\
-		"setz	%[ret]"						\
+		"setz	%[ret]" 					\
 		: [ret]   "+r" (_ret),					\
 		  [index] "=r" (_index) 				\
 		: [base]  "rm" (_base)					\
@@ -366,7 +366,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	__asm__ volatile						\
 	(								\
 		"bsr	%[base], %[index]"	"\n\t"			\
-		"setz	%[ret]"						\
+		"setz	%[ret]" 					\
 		: [ret]   "+r" (_ret),					\
 		  [index] "=r" (_index) 				\
 		: [base]  "rm" (_base)					\
@@ -388,10 +388,10 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"shlq	%%cl, %%rdx"		"\n\t"			\
 		"andq	%[src], %%rdx"		"\n\t"			\
 		"shrq	%%cl, %%rdx"		"\n\t"			\
-		"movq	%%rdx, %[dest]"					\
+		"movq	%%rdx, %[dest]" 				\
 		: [dest] "=m" (_dest)					\
 		: [src] "ir" (_src),					\
-		  [ofs] "ir" (_offset),					\
+		  [ofs] "ir" (_offset), 				\
 		  [len] "ir" (_length)					\
 		: "%ecx", "%rdx", "memory"				\
 	);								\
