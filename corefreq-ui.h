@@ -33,6 +33,8 @@ typedef signed short int	CSINT;
 #define CLS	"\033[J"
 #define CUH	"\033[H"
 #define CUP(col, row) "\033["#row";"#col"H"
+#define _LF	"\x0a"
+#define _FF	"\x0c"
 
 enum PALETTE {
 	_BLACK,
@@ -165,6 +167,7 @@ typedef union {
 #define SCANKEY_SHIFT_w 	0x0000000000000057
 #define SCANKEY_SHIFT_z 	0x000000000000005a
 #define SCANKEY_CTRL_p		0x0000000000000010
+#define SCANKEY_ALT_p		0x000000000000b0c3
 #define SCANKEY_a		0x0000000000000061
 #define SCANKEY_b		0x0000000000000062
 #define SCANKEY_c		0x0000000000000063
@@ -325,17 +328,17 @@ typedef struct _Grid {
 	void		(*Update)(struct _Grid *grid, DATA_TYPE data);
 } TGrid;
 
-void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
-void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
-void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
-void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
-void Set_pSINT(TGrid *pGrid	, signed int *pSINT) ;
-void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
-void Set_SLLONG(TGrid *pGrid	, signed long long _SLLONG) ;
-void Set_ULONG(TGrid *pGrid	, unsigned long _ULONG) ;
-void Set_SLONG(TGrid *pGrid	, signed long _SLONG) ;
-void Set_UINT(TGrid *pGrid	, unsigned int _UINT) ;
-void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
+extern void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
+extern void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
+extern void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
+extern void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
+extern void Set_pSINT(TGrid *pGrid	, signed int *pSINT) ;
+extern void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
+extern void Set_SLLONG(TGrid *pGrid	, signed long long _SLLONG) ;
+extern void Set_ULONG(TGrid *pGrid	, unsigned long _ULONG) ;
+extern void Set_SLONG(TGrid *pGrid	, signed long _SLONG) ;
+extern void Set_UINT(TGrid *pGrid	, unsigned int _UINT) ;
+extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 
 #define SET_DATA(_pGrid , _data)					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
@@ -441,21 +444,21 @@ extern Layer	*sLayer,
 
 extern WinList winList;
 
-int GetKey(SCANKEY *scan, struct timespec *tsec) ;
+extern int GetKey(SCANKEY *scan, struct timespec *tsec) ;
 
 SCREEN_SIZE GetScreenSize(void) ;
 
-void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) ;
+extern void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) ;
 
-void HookKeyFunc(KEYFUNC *with, KEYFUNC what) ;
+extern void HookKeyFunc(KEYFUNC *with, KEYFUNC what) ;
 
-void HookWinFunc(WINFUNC *with, WINFUNC what) ;
+extern void HookWinFunc(WINFUNC *with, WINFUNC what) ;
 
-void HookAttrib(ATTRIBUTE *with, ATTRIBUTE what) ;
+extern void HookAttrib(ATTRIBUTE *with, ATTRIBUTE what) ;
 
-void HookString(REGSTR *with, REGSTR what) ;
+extern void HookString(REGSTR *with, REGSTR what) ;
 
-void HookPointer(REGPTR *with, REGPTR what) ;
+extern void HookPointer(REGPTR *with, REGPTR what) ;
 
 #define StoreWindow(win, with, what)					\
 (									\
@@ -542,15 +545,15 @@ void CreateLayer(Layer *layer, CoordSize size) ;
 #define ClearGarbage(_layer, _plane, _col, _row, _len)			\
 	memset(&LayerAt(_layer, _plane, _col, _row), 0, _len)
 
-void FillLayerArea(Layer *layer,CUINT col, CUINT row,
+extern void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				CUINT width, CUINT height,
 				ASCII *source, ATTRIBUTE attrib) ;
 
-void AllocCopyAttr(TCell *cell, ATTRIBUTE attrib[]) ;
+extern void AllocCopyAttr(TCell *cell, ATTRIBUTE attrib[]) ;
 
-void AllocFillAttr(TCell *cell, ATTRIBUTE attrib) ;
+extern void AllocFillAttr(TCell *cell, ATTRIBUTE attrib) ;
 
-void AllocCopyItem(TCell *cell, ASCII *item) ;
+extern void AllocCopyItem(TCell *cell, ASCII *item) ;
 
 void FreeAllTCells(Window *win) ;
 
@@ -589,13 +592,13 @@ void FreeAllTCells(Window *win) ;
 
 void DestroyWindow(Window *win) ;
 
-Window *CreateWindow(	Layer *layer, unsigned long long id,
-			CUINT width, CUINT height,
-			CUINT oCol, CUINT oRow) ;
+extern Window *CreateWindow(	Layer *layer, unsigned long long id,
+				CUINT width, CUINT height,
+				CUINT oCol, CUINT oRow) ;
 
 void RemoveWindow(Window *win, WinList *list) ;
 
-void AppendWindow(Window *win, WinList *list) ;
+extern void AppendWindow(Window *win, WinList *list) ;
 
 void DestroyAllWindows(WinList *list) ;
 
@@ -615,52 +618,52 @@ void DestroyAllWindows(WinList *list) ;
 
 void AnimateWindow(int rotate, WinList *list) ;
 
-Window *SearchWinListById(unsigned long long id, WinList *list) ;
+extern Window *SearchWinListById(unsigned long long id, WinList *list) ;
 
-void PrintContent(Window *win, WinList *list, CUINT col, CUINT row) ;
+extern void PrintContent(Window *win, WinList *list, CUINT col, CUINT row) ;
 
-void ForEachCellPrint(Window *win, WinList *list) ;
+extern void ForEachCellPrint(Window *win, WinList *list) ;
 
 void EraseWindowWithBorder(Window *win) ;
 
-void PrintLCD(	Layer *layer, CUINT col, CUINT row,
-		int len, char *pStr, enum PALETTE lcdColor) ;
+extern void PrintLCD(	Layer *layer, CUINT col, CUINT row,
+			int len, char *pStr, enum PALETTE lcdColor) ;
 
-void MotionReset_Win(Window *win) ;
+extern void MotionReset_Win(Window *win) ;
 
-void MotionLeft_Win(Window *win) ;
+extern void MotionLeft_Win(Window *win) ;
 
-void MotionRight_Win(Window *win) ;
+extern void MotionRight_Win(Window *win) ;
 
-void MotionUp_Win(Window *win) ;
+extern void MotionUp_Win(Window *win) ;
 
-void MotionDown_Win(Window *win) ;
+extern void MotionDown_Win(Window *win) ;
 
-void MotionHome_Win(Window *win) ;
+extern void MotionHome_Win(Window *win) ;
 
-void MotionEnd_Win(Window *win) ;
+extern void MotionEnd_Win(Window *win) ;
 
-void MotionTop_Win(Window *win) ;
+extern void MotionTop_Win(Window *win) ;
 
-void MotionBottom_Win(Window *win) ;
+extern void MotionBottom_Win(Window *win) ;
 
-void MotionPgUp_Win(Window *win) ;
+extern void MotionPgUp_Win(Window *win) ;
 
-void MotionPgDw_Win(Window *win) ;
+extern void MotionPgDw_Win(Window *win) ;
 
-void MotionOriginLeft_Win(Window *win) ;
+extern void MotionOriginLeft_Win(Window *win) ;
 
-void MotionOriginRight_Win(Window *win) ;
+extern void MotionOriginRight_Win(Window *win) ;
 
-void MotionOriginUp_Win(Window *win) ;
+extern void MotionOriginUp_Win(Window *win) ;
 
-void MotionOriginDown_Win(Window *win) ;
+extern void MotionOriginDown_Win(Window *win) ;
 
-int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;
+extern int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;
 
-void PrintWindowStack(WinList *winList) ;
+extern void PrintWindowStack(WinList *winList) ;
 
-void WindowsUpdate(WinList *winList) ;
+extern void WindowsUpdate(WinList *winList) ;
 
 #define EraseTCell_Menu(win)						\
 ({									\
@@ -680,25 +683,25 @@ void WindowsUpdate(WinList *winList) ;
 		TCellAt(win, shift.horz, shift.vert).length);		\
 })
 
-void ForEachCellPrint_Drop(Window *win, void *plist) ;
+extern void ForEachCellPrint_Drop(Window *win, void *plist) ;
 
-int Enter_StickyCell(SCANKEY *scan, Window *win) ;
+extern int Enter_StickyCell(SCANKEY *scan, Window *win) ;
 
-int MotionEnter_Cell(SCANKEY *scan, Window *win) ;
+extern int MotionEnter_Cell(SCANKEY *scan, Window *win) ;
 
-void MotionEnd_Cell(Window *win) ;
+extern void MotionEnd_Cell(Window *win) ;
 
-void MotionLeft_Menu(Window *win) ;
+extern void MotionLeft_Menu(Window *win) ;
 
-void MotionRight_Menu(Window *win) ;
+extern void MotionRight_Menu(Window *win) ;
 
-void MotionUp_Menu(Window *win) ;
+extern void MotionUp_Menu(Window *win) ;
 
-void MotionDown_Menu(Window *win) ;
+extern void MotionDown_Menu(Window *win) ;
 
-void MotionHome_Menu(Window *win) ;
+extern void MotionHome_Menu(Window *win) ;
 
-void MotionEnd_Menu(Window *win) ;
+extern void MotionEnd_Menu(Window *win) ;
 
 typedef union {
 	unsigned long long	qword;
@@ -726,13 +729,13 @@ typedef struct {
 
 typedef void (*CARDFUNC)(Layer*, Card*);
 
-Card *CreateCard(void) ;
+extern Card *CreateCard(void) ;
 
-void AppendCard(Card *card, CardList *list) ;
+extern void AppendCard(Card *card, CardList *list) ;
 
-void DestroyAllCards(CardList *list) ;
+extern void DestroyAllCards(CardList *list) ;
 
-void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
+extern void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
 
 #define StoreCard(card, with, what)					\
 (									\
@@ -742,18 +745,18 @@ void HookCardFunc(CARDFUNC *with, CARDFUNC what) ;
 	(&(card->hook with), what)					\
 )
 
-void FreeAll(char *buffer) ;
+extern void FreeAll(char *buffer) ;
 
 __typeof__ (errno) AllocAll(char **buffer) ;
 
-void WriteConsole(SCREEN_SIZE drawSize, char *buffer) ;
+extern unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer) ;
 
-void _TERMINAL_IN(void) ;
-void _TERMINAL_OUT(void) ;
+extern void _TERMINAL_IN(void) ;
+extern void _TERMINAL_OUT(void) ;
 #define TERMINAL(IO)	_TERMINAL_##IO()
 
-void _LOCALE_IN(void) ;
-void _LOCALE_OUT(void) ;
+extern void _LOCALE_IN(void) ;
+extern void _LOCALE_OUT(void) ;
 #define LOCALE(IO)	_LOCALE_##IO()
 
 enum LOCALES {
@@ -772,4 +775,8 @@ extern  locale_t	SysLoc;
 	AppLoc = _apploc;						\
 })
 
-extern Bit64 Screenshot;
+extern void StopDump(void) ;
+extern void SingleDump(char *dumpFormat) ;
+extern void MultiDump(char *dumpFormat) ;
+extern void AbortDump(void) ;
+extern Bit64 DumpStatus(void) ;

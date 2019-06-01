@@ -524,7 +524,9 @@ WinList winList = {.head = NULL};
 
 char *console = NULL;
 
-Bit64 Screenshot __attribute__ ((aligned (64))) = 0x0;
+Bit64 dumpStatus __attribute__ ((aligned (64))) = 0b00;
+
+FILE *dumpHandle = NULL;
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -1434,6 +1436,9 @@ void FreeAll(char *buffer)
 	if (fuse != NULL) {
 		free(fuse);
 	}
+	if (dumpHandle != NULL) {
+		fclose(dumpHandle);
+	}
 }
 
 __typeof__ (errno) AllocAll(char **buffer)
@@ -1562,25 +1567,90 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	return(sdx);
 }
 
-void WriteConsole(SCREEN_SIZE drawSize, char *buffer)
+__typeof__ (errno) StartDump(char *dumpFormat)
 {
-	unsigned int writeSize = FuseAll(console, drawSize, buffer);
+	__typeof__ (errno) rc = -EBUSY;
+
+	if (!BITWISEAND(LOCKLESS, dumpStatus, 0b11))
+	{
+		char *dumpFileName = malloc(64);
+		if (dumpFileName != NULL)
+		{
+			Bit64 tsc;
+			RDTSC64(tsc);
+
+			sprintf(dumpFileName, dumpFormat, tsc);
+			if ((dumpHandle = fopen(dumpFileName, "w")) != NULL) {
+				rc = 0;
+			} else {
+				rc = errno;
+			}
+			free(dumpFileName);
+		} else {
+			rc = -ENOMEM;
+		}
+	}
+	return(rc);
+}
+
+void SingleDump(char *dumpFormat)
+{
+	if (StartDump(dumpFormat) == 0) {
+		BITSTOR(LOCKLESS, dumpStatus, 0b01);
+	}
+}
+
+void MultiDump(char *dumpFormat)
+{
+	if (StartDump(dumpFormat) == 0) {
+		BITSTOR(LOCKLESS, dumpStatus, 0b11);
+	}
+}
+
+void AbortDump(void)
+{
+	BITCLR(LOCKLESS, dumpStatus, 1);
+}
+
+Bit64 DumpStatus(void)
+{
+	return(BITWISEAND(LOCKLESS, dumpStatus, 0b11));
+}
+
+unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
+{
+	unsigned int writeSize = FuseAll(console, drawSize, buffer), rc = 0;
 
 	if (writeSize > 0) {
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 
-	    if (BITWISEAND(BUS_LOCK, Screenshot, 0x8000000000000000LLU))
-	    {
-		FILE *dump;
-		sprintf(buffer, "corefreq_%llx.asc", Screenshot);
-		if ((dump =fopen(buffer, "w")) != NULL) {
-			fwrite(console, (size_t) writeSize, 1, dump);
-			fclose(dump);
+	/* XX */if (BITWISEAND(LOCKLESS, dumpStatus, 0b11))
+		{
+			fwrite(console, (size_t) writeSize, 1, dumpHandle);
+
+	/* 1X */	if (BITVAL(dumpStatus, 1)) {
+	/* 10 */	    if(!BITVAL(dumpStatus, 0)) {
+				BITCLR(LOCKLESS, dumpStatus, 1);
+
+				if (fclose(dumpHandle) == 0) {
+					dumpHandle = NULL;
+				}
+				rc = 1;
+	/* 11 */	    } else {
+					fwrite( _LF _FF, 1, 1, dumpHandle);
+			    }
+	/* 01 */	} else {
+				BITCLR(LOCKLESS, dumpStatus, 0);
+
+				if (fclose(dumpHandle) == 0) {
+					dumpHandle = NULL;
+				}
+				rc = 1;
+			}
 		}
-		BITSTOR(BUS_LOCK, Screenshot, 0x0);
-	    }
 	}
+	return(rc);
 }
 
 struct termios oldt, newt;

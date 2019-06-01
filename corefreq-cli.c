@@ -6459,13 +6459,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case SCANKEY_CTRL_p:
-	if (!BITWISEAND(BUS_LOCK, Screenshot, 0x8000000000000000LLU))
-	{
-		Bit64 tsc;
-		RDTSC64(tsc);
-		tsc = BITWISEOR(LOCKLESS, tsc, 0x8000000000000000LLU);
-		BITSTOR(BUS_LOCK, Screenshot, tsc);
+	if (DumpStatus() & 0b10) {
+		AbortDump();
+	} else {
+		SingleDump("corefreq_%llx.asc");
 	}
+	draw.Flag.layout = 1;
+    break;
+    case SCANKEY_ALT_p:
+	if (DumpStatus() & 0b10) {
+		AbortDump();
+	} else {
+		MultiDump("corefreq_%llx.asc");
+	}
+	draw.Flag.layout = 1;
     break;
     default:
       if (scan->key & TRACK_TASK) {
@@ -6631,6 +6638,8 @@ void Layout_Header(Layer *layer, CUINT row)
 			hProc1.length, hProc1.attr, hProc1.code);
 
 	len = strlen(Shm->Proc.Architecture);
+	/* BLUE DOT */
+	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hArch0.origin.col, hArch0.origin.row,
 			hArch0.length, hArch0.attr, hArch0.code);
@@ -8765,7 +8774,7 @@ REASON_CODE Top(char option)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
 	/* Write to the standard output.				*/
-	WriteConsole(draw.Size, buffer);
+	draw.Flag.layout = WriteConsole(draw.Size, buffer);
       } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
