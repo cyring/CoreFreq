@@ -441,21 +441,23 @@
 #define RSC_SETTINGS_DAEMON_CODE_FR					\
 				(ASCII*) " Acces demon                    "
 #define RSC_SETTINGS_INTERVAL_CODE_FR					\
-				(ASCII*) " Intervalle(ms)                 "
+				(ASCII*) " Intervalle(ms)          <    > "
+#define RSC_SETTINGS_RECORDER_CODE_FR					\
+				(ASCII*) " Enregistreur(sec)       <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_FR 				\
-				(ASCII*) " Auto Clock                     "
+				(ASCII*) " Auto Clock               <   > "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_FR				\
-				(ASCII*) " Experimental                   "
+				(ASCII*) " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR				\
-				(ASCII*) " Hot-Plug CPU                   "
+				(ASCII*) " Hot-Plug CPU             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_FR				\
-				(ASCII*) " Activation PCI                 "
+				(ASCII*) " Activation PCI           [   ] "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR				\
-				(ASCII*) " Activation NMI                 "
+				(ASCII*) " Activation NMI           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR 			\
-				(ASCII*) " Pilote CPU-IDLE                "
+				(ASCII*) " Pilote CPU-IDLE          [   ] "
 #define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_FR 			\
-				(ASCII*) " Pilote CPU-FREQ                "
+				(ASCII*) " Pilote CPU-FREQ          [   ] "
 
 #define RSC_HELP_TITLE_CODE_FR		(ASCII*) " Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	(ASCII*) " [Echap]          "
@@ -514,8 +516,12 @@
 			(ASCII*) " Haut Prec                 Defilement "
 #define RSC_ADV_HELP_ITEM_14_CODE_FR					\
 			(ASCII*) " Bas  Suiv                       CPU  "
-#define RSC_ADV_HELP_ITEM_PRTSCR_CODE_FR				\
-			(ASCII*) " [Ctrl]+[p]               Copie ecran "
+#define RSC_ADV_HELP_ITEM_TERMINAL_CODE_FR				\
+			(ASCII*) " Terminal:                            "
+#define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_FR				\
+			(ASCII*) " [Ctrl]+[p]                    Copier "
+#define RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR				\
+			(ASCII*) " [Alt]+[p]                Enregistrer "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
@@ -685,3 +691,5 @@
 			(ASCII*) "Erreur Système code %d\n%s @ ligne %d\n"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR (ASCII*) " Limite CPU-Idle "
+
+#define RSC_BOX_RECORDER_TITLE_CODE_FR (ASCII*) " Enregistreur "

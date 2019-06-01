@@ -524,9 +524,19 @@ WinList winList = {.head = NULL};
 
 char *console = NULL;
 
-Bit64 dumpStatus __attribute__ ((aligned (64))) = 0b00;
-
-FILE *dumpHandle = NULL;
+struct {
+    union {
+		Bit64	Reset;
+	struct {
+		Bit32	Status;
+		int	Tick;
+	};
+    };
+		FILE	*Handle;
+} dump __attribute__ ((aligned (64))) = {
+	.Reset = 0x0,
+	.Handle = NULL
+};
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
@@ -564,9 +574,19 @@ inline void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
 	pGrid->data.pullong = pULLONG;
 }
 
+inline void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG)
+{
+	pGrid->data.psllong = pSLLONG;
+}
+
 inline void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
 {
 	pGrid->data.pulong = pULONG;
+}
+
+inline void Set_pSLONG(TGrid *pGrid, signed long *pSLONG)
+{
+	pGrid->data.pslong = pSLONG;
 }
 
 inline void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
@@ -1436,8 +1456,8 @@ void FreeAll(char *buffer)
 	if (fuse != NULL) {
 		free(fuse);
 	}
-	if (dumpHandle != NULL) {
-		fclose(dumpHandle);
+	if (dump.Handle != NULL) {
+		fclose(dump.Handle);
 	}
 }
 
@@ -1567,11 +1587,11 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	return(sdx);
 }
 
-__typeof__ (errno) StartDump(char *dumpFormat)
+__typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 {
 	__typeof__ (errno) rc = -EBUSY;
 
-	if (!BITWISEAND(LOCKLESS, dumpStatus, 0b11))
+	if (!BITVAL(dump.Status, 0))
 	{
 		char *dumpFileName = malloc(64);
 		if (dumpFileName != NULL)
@@ -1580,7 +1600,10 @@ __typeof__ (errno) StartDump(char *dumpFormat)
 			RDTSC64(tsc);
 
 			sprintf(dumpFileName, dumpFormat, tsc);
-			if ((dumpHandle = fopen(dumpFileName, "w")) != NULL) {
+			if ((dump.Handle = fopen(dumpFileName, "w")) != NULL)
+			{
+				dump.Tick = tickReset;
+				BITSET(LOCKLESS, dump.Status, 0);
 				rc = 0;
 			} else {
 				rc = errno;
@@ -1593,64 +1616,43 @@ __typeof__ (errno) StartDump(char *dumpFormat)
 	return(rc);
 }
 
-void SingleDump(char *dumpFormat)
-{
-	if (StartDump(dumpFormat) == 0) {
-		BITSTOR(LOCKLESS, dumpStatus, 0b01);
-	}
-}
-
-void MultiDump(char *dumpFormat)
-{
-	if (StartDump(dumpFormat) == 0) {
-		BITSTOR(LOCKLESS, dumpStatus, 0b11);
-	}
-}
-
 void AbortDump(void)
 {
-	BITCLR(LOCKLESS, dumpStatus, 1);
+	dump.Tick = 0;
 }
 
-Bit64 DumpStatus(void)
+unsigned char DumpStatus(void)
 {
-	return(BITWISEAND(LOCKLESS, dumpStatus, 0b11));
+	return(BITVAL(dump.Status, 0));
 }
 
 unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
 {
-	unsigned int writeSize = FuseAll(console, drawSize, buffer), rc = 0;
+	unsigned int writeSize = FuseAll(console, drawSize, buffer), layout = 0;
 
 	if (writeSize > 0) {
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 
-	/* XX */if (BITWISEAND(LOCKLESS, dumpStatus, 0b11))
+		if (BITVAL(dump.Status, 0))
 		{
-			fwrite(console, (size_t) writeSize, 1, dumpHandle);
+			fwrite(console, (size_t) writeSize, 1, dump.Handle);
 
-	/* 1X */	if (BITVAL(dumpStatus, 1)) {
-	/* 10 */	    if(!BITVAL(dumpStatus, 0)) {
-				BITCLR(LOCKLESS, dumpStatus, 1);
+			if (dump.Tick > 0) {
+				dump.Tick--;
 
-				if (fclose(dumpHandle) == 0) {
-					dumpHandle = NULL;
+				fwrite( _LF _FF, 1, 1, dump.Handle);
+			} else {
+				BITCLR(LOCKLESS, dump.Status, 0);
+
+				if (fclose(dump.Handle) == 0) {
+					dump.Handle = NULL;
 				}
-				rc = 1;
-	/* 11 */	    } else {
-					fwrite( _LF _FF, 1, 1, dumpHandle);
-			    }
-	/* 01 */	} else {
-				BITCLR(LOCKLESS, dumpStatus, 0);
-
-				if (fclose(dumpHandle) == 0) {
-					dumpHandle = NULL;
-				}
-				rc = 1;
+				layout = 1;
 			}
 		}
 	}
-	return(rc);
+	return(layout);
 }
 
 struct termios oldt, newt;

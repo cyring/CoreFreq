@@ -2819,6 +2819,15 @@ struct {
 };
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
+
+struct {
+	int	Reset,
+		Ratio;
+} recorder = {
+		.Reset = 0,
+		.Ratio = 1
+};
+
 /* <<< GLOBALS <<< */
 
 void SortUniqRatio()
@@ -3046,11 +3055,21 @@ void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
-void PollWaitUpdate(TGrid *grid, DATA_TYPE data)
+void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[4+1];
-	sprintf(item, "%4ld", Shm->Sleep.pollingWait.tv_nsec / 1000000L);
+	sprintf(item, "%4ld", (*data.pslong) / 1000000L);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+}
+
+void RecorderUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[4+1];
+	int seconds = (Shm->Sleep.Interval * (*data.psint)) / 1000;
+	if (seconds <= 9999) {
+		sprintf(item, "%4d", seconds);
+		memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+	}
 }
 
 void SettingUpdate(TGrid *grid, const int bix, const int pos,
@@ -3080,6 +3099,22 @@ void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
+void HotPlug_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = !(Shm->Registration.hotplug < 0),
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.pci == 1,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 {
 	const int bix = Shm->Registration.nmi == 1,
@@ -3088,126 +3123,118 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
+void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.Driver.cpuidle,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.Driver.cpufreq,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 16,
-				8, (TOP_HEADER_ROW + 16 + 2 < draw.Size.height)?
+	Window *wSet = CreateWindow(wLayer, id,
+				1, CUMIN(18, draw.Size.height - 2),
+				8, (TOP_HEADER_ROW + 18 + 2 < draw.Size.height)?
 					TOP_HEADER_ROW + 2 : 1);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
 		RSC(CREATE_SETTINGS_COND1).ATTR()
 	};
-	size_t subLen = strlen(Shm->ShmName);
-	char subStr[16];
+	size_t length = strlen(Shm->ShmName);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_DAEMON).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(SETTINGS_DAEMON).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-  GridCall(StoreTCell(wSet, OPS_INTERVAL,RSC(SETTINGS_INTERVAL).CODE(),
-							MAKE_PRINT_UNFOCUS),
-		IntervalUpdate);
+	GridCall( StoreTCell(	wSet, OPS_INTERVAL,
+				RSC(SETTINGS_INTERVAL).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		IntervalUpdate );
 
-  GridCall(StoreTCell(wSet, SCANKEY_NULL," Sys. Tick(ms)                  ",
-							MAKE_PRINT_UNFOCUS),
-		SysTickUpdate);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Sys. Tick(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SysTickUpdate );
 
-  GridCall(StoreTCell(wSet, SCANKEY_NULL," Poll Wait(ms)                  ",
-							MAKE_PRINT_UNFOCUS),
-		PollWaitUpdate);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Poll Wait(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.pollingWait.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Ring Wait(ms)                  ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Ring Wait(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.ringWaiting.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Child Wait(ms)                 ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Child Wait(ms)                 ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.childWaiting.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Slice Wait(ms)                 ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.sliceWaiting.tv_nsec );
 
-  GridCall(StoreTCell(wSet, OPS_AUTOCLOCK,  RSC(SETTINGS_AUTO_CLOCK).CODE(),
-			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]),
-		AutoClockUpdate);
+	GridCall( StoreTCell(	wSet, OPS_RECORDER,
+				RSC(SETTINGS_RECORDER).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		RecorderUpdate, &recorder.Reset );
 
-  GridCall(StoreTCell(wSet,OPS_EXPERIMENTAL,RSC(SETTINGS_EXPERIMENTAL).CODE(),
-				attrib[Shm->Registration.Experimental != 0]),
-		ExperimentalUpdate);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_CPU_HOTPLUG).CODE(),
-				attrib[!(Shm->Registration.hotplug < 0)]);
+	GridCall( StoreTCell( wSet, OPS_AUTOCLOCK,
+			RSC(SETTINGS_AUTO_CLOCK).CODE(),
+			attrib[((Shm->Registration.AutoClock & 0b10) != 0)] ),
+		AutoClockUpdate );
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_PCI_ENABLED).CODE(),
-					attrib[(Shm->Registration.pci == 1)]);
+	GridCall( StoreTCell(	wSet, OPS_EXPERIMENTAL,
+				RSC(SETTINGS_EXPERIMENTAL).CODE(),
+				attrib[Shm->Registration.Experimental != 0] ),
+		ExperimentalUpdate );
 
-  GridCall(StoreTCell(wSet,OPS_INTERRUPTS,RSC(SETTINGS_NMI_REGISTERED).CODE(),
-						attrib[Shm->Registration.nmi]),
-		NMI_Registration_Update);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPU_HOTPLUG).CODE(),
+				attrib[!(Shm->Registration.hotplug < 0)] ),
+		HotPlug_Update );
 
-	StoreTCell(wSet, SCANKEY_NULL, RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
-				attrib[Shm->Registration.Driver.cpuidle]);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_PCI_ENABLED).CODE(),
+				attrib[(Shm->Registration.pci == 1)] ),
+		PCI_Probe_Update );
 
-	StoreTCell(wSet, SCANKEY_NULL, RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
-				attrib[Shm->Registration.Driver.cpufreq]);
+	GridCall( StoreTCell(	wSet, OPS_INTERRUPTS,
+				RSC(SETTINGS_NMI_REGISTERED).CODE(),
+				attrib[Shm->Registration.nmi] ),
+		NMI_Registration_Update );
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpuidle] ),
+		CPU_Idle_Update );
 
-	memcpy(&TCellAt(wSet, 0, 1).item[31 - subLen], Shm->ShmName, subLen);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpufreq] ),
+		CPU_Freq_Update );
 
-	subLen = sprintf(subStr, "%.*s<%4u>",
-				9, hSpace, Shm->Sleep.Interval);;
-	memcpy(&TCellAt(wSet, 0, 2).item[31 - subLen], subStr, subLen);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	subLen = sprintf(subStr, "%14u ",
-				Shm->Sleep.Interval * Shm->SysGate.tickReset);
-	memcpy(&TCellAt(wSet, 0, 3).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.pollingWait.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 4).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.ringWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 5).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.childWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 6).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 7).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-			enabled((Shm->Registration.AutoClock & 0b10) != 0));
-	memcpy(&TCellAt(wSet, 0, 8).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-				enabled((Shm->Registration.Experimental != 0)));
-	memcpy(&TCellAt(wSet, 0, 9).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled(!(Shm->Registration.hotplug < 0)));
-	memcpy(&TCellAt(wSet, 0,10).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled((Shm->Registration.pci == 1)));
-	memcpy(&TCellAt(wSet, 0,11).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-				enabled(Shm->Registration.nmi));
-	memcpy(&TCellAt(wSet, 0,12).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled(Shm->Registration.Driver.cpuidle));
-	memcpy(&TCellAt(wSet, 0,13).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled(Shm->Registration.Driver.cpufreq));
-	memcpy(&TCellAt(wSet, 0,14).item[31 - subLen], subStr, subLen);
+	memcpy(&TCellAt(wSet, 0, 1).item[31 - length], Shm->ShmName, length);
 
 	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
 
@@ -3226,7 +3253,8 @@ Window *CreateSettings(unsigned long long id)
 
 Window *CreateHelp(unsigned long long id)
 {
-	Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2,
+	Window *wHelp = CreateWindow(wLayer, id,
+					2, CUMIN(19, draw.Size.height - 2), 2,
 				(TOP_HEADER_ROW + 19 + 1 < draw.Size.height) ?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
@@ -3315,6 +3343,10 @@ Window *CreateHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wHelp,	.key.Down,	MotionDown_Win);
+	StoreWindow(wHelp,	.key.Up,	MotionUp_Win);
+	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
+	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
     }
 	return(wHelp);
 }
@@ -3345,14 +3377,18 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
-	{1, RSC(ADV_HELP_ITEM_PRTSCR).CODE(),	{SCANKEY_CTRL_p}},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(ADV_HELP_ITEM_TERMINAL).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_PRT_SCR).CODE(),	{SCANKEY_CTRL_p}},
+	{1, RSC(ADV_HELP_ITEM_REC_SCR).CODE(),	{SCANKEY_ALT_p} },
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	}
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
-	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
+	Window *wHelp = CreateWindow(wLayer, id, 1,
+				CUMIN(nmemb, draw.Size.height - 2), 41,
 				(TOP_HEADER_ROW + nmemb + 1 < draw.Size.height)?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
@@ -6459,20 +6495,87 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case SCANKEY_CTRL_p:
-	if (DumpStatus() & 0b10) {
+	if (DumpStatus())
+	{
 		AbortDump();
-	} else {
-		SingleDump("corefreq_%llx.asc");
 	}
-	draw.Flag.layout = 1;
+	else if (StartDump("corefreq_%llx.asc", 0) == 0)
+	{
+		draw.Flag.layout = 1;
+	}
     break;
     case SCANKEY_ALT_p:
-	if (DumpStatus() & 0b10) {
+	if (DumpStatus())
+	{
 		AbortDump();
-	} else {
-		MultiDump("corefreq_%llx.asc");
 	}
-	draw.Flag.layout = 1;
+	else if (StartDump("corefreq_%llx.asc", recorder.Reset - 1) == 0)
+	{
+		draw.Flag.layout = 1;
+	}
+    break;
+    case OPS_RECORDER_RESET:
+	recorder.Ratio = 1;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X002:
+	recorder.Ratio = 2;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X010:
+	recorder.Ratio = 10;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X020:
+	recorder.Ratio = 20;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X060:
+	recorder.Ratio = 60;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X090:
+	recorder.Ratio = 90;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X120:
+	recorder.Ratio = 120;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER_X240:
+	recorder.Ratio = 240;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    break;
+    case OPS_RECORDER:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+		.col = 50,
+		.row = TOP_HEADER_ROW + 4
+	    }, select = {
+		.col = 0,
+		.row = 0
+	    };
+		Window *wBox = CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_RECORDER_TITLE).CODE(),
+	(ASCII*)"          RESET         ", stateAttr[0], OPS_RECORDER_RESET,
+	(ASCII*)"             x2         ", stateAttr[0], OPS_RECORDER_X002,
+	(ASCII*)"            x10         ", stateAttr[0], OPS_RECORDER_X010,
+	(ASCII*)"            x20         ", stateAttr[0], OPS_RECORDER_X020,
+	(ASCII*)"            x60         ", stateAttr[0], OPS_RECORDER_X060,
+	(ASCII*)"            x90         ", stateAttr[0], OPS_RECORDER_X090,
+	(ASCII*)"           x120         ", stateAttr[0], OPS_RECORDER_X120,
+	(ASCII*)"           x240         ", stateAttr[0], OPS_RECORDER_X240);
+
+	    if (wBox != NULL) {
+		AppendWindow(wBox, &winList);
+	    } else
+		SetHead(&winList, win);
+	} else
+		SetHead(&winList, win);
+    }
     break;
     default:
       if (scan->key & TRACK_TASK) {
@@ -6638,7 +6741,7 @@ void Layout_Header(Layer *layer, CUINT row)
 			hProc1.length, hProc1.attr, hProc1.code);
 
 	len = strlen(Shm->Proc.Architecture);
-	/* BLUE DOT */
+	/* DUMP DOT */
 	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hArch0.origin.col, hArch0.origin.row,
@@ -8704,6 +8807,8 @@ REASON_CODE Top(char option)
 
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
 
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, 0))
     {
@@ -8738,6 +8843,7 @@ REASON_CODE Top(char option)
 	}
 	if (BITVAL(Shm->Proc.Sync, 63)) {/* Platform changed,redraw the layout*/
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 		draw.Flag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	}

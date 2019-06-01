@@ -305,7 +305,9 @@ typedef struct {
 typedef union {
 	void			*pvoid;
 	unsigned long long	*pullong;
+	signed long long	*psllong;
 	unsigned long		*pulong;
+	signed long		*pslong;
 	unsigned int		*puint;
 	signed int		*psint;
 
@@ -330,7 +332,9 @@ typedef struct _Grid {
 
 extern void Set_pVOID(TGrid *pGrid	, void *pVOID) ;
 extern void Set_pULLONG(TGrid *pGrid	, unsigned long long *pULLONG) ;
+extern void Set_pSLLONG(TGrid *pGrid	, signed long long *pSLLONG) ;
 extern void Set_pULONG(TGrid *pGrid	, unsigned long *pULONG) ;
+extern void Set_pSLONG(TGrid *pGrid	, signed long *pSLONG) ;
 extern void Set_pUINT(TGrid *pGrid	, unsigned int *pUINT) ;
 extern void Set_pSINT(TGrid *pGrid	, signed int *pSINT) ;
 extern void Set_ULLONG(TGrid *pGrid	, unsigned long long _ULLONG) ;
@@ -348,8 +352,14 @@ extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 		__typeof__(_data), __typeof__(unsigned long long *)),	\
 			Set_pULLONG,					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed long long *)),	\
+			Set_pSLLONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(unsigned long *)) ,	\
 			Set_pULONG,					\
+	__builtin_choose_expr(__builtin_types_compatible_p (		\
+		__typeof__(_data), __typeof__(signed long *)),		\
+			Set_pSLONG,					\
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(unsigned int *)) ,	\
 			Set_pUINT,					\
@@ -374,7 +384,7 @@ extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 	__builtin_choose_expr(__builtin_types_compatible_p (		\
 		__typeof__(_data), __typeof__(signed int)) ,		\
 			Set_SINT,					\
-	(void)0)))))))))))(_pGrid, _data)
+	(void)0)))))))))))))(_pGrid, _data)
 
 typedef struct _Win {
 	Layer		*layer;
@@ -776,7 +786,6 @@ extern  locale_t	SysLoc;
 })
 
 extern void StopDump(void) ;
-extern void SingleDump(char *dumpFormat) ;
-extern void MultiDump(char *dumpFormat) ;
+extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
 extern void AbortDump(void) ;
-extern Bit64 DumpStatus(void) ;
+extern unsigned char DumpStatus(void) ;

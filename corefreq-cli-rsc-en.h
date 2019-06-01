@@ -441,21 +441,23 @@
 #define RSC_SETTINGS_DAEMON_CODE_EN					\
 				(ASCII*) " Daemon gate                    "
 #define RSC_SETTINGS_INTERVAL_CODE_EN					\
-				(ASCII*) " Interval(ms)                   "
+				(ASCII*) " Interval(ms)            <    > "
+#define RSC_SETTINGS_RECORDER_CODE_EN					\
+				(ASCII*) " Recorder(sec)           <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_EN 				\
-				(ASCII*) " Auto Clock                     "
+				(ASCII*) " Auto Clock               <   > "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN				\
-				(ASCII*) " Experimental                   "
+				(ASCII*) " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN				\
-				(ASCII*) " CPU Hot-Plug                   "
+				(ASCII*) " CPU Hot-Plug             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_EN				\
-				(ASCII*) " PCI enablement                 "
+				(ASCII*) " PCI enablement           [   ] "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_EN				\
-				(ASCII*) " NMI registered                 "
+				(ASCII*) " NMI registered           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN 			\
-				(ASCII*) " CPU-IDLE driver                "
+				(ASCII*) " CPU-IDLE driver          [   ] "
 #define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_EN 			\
-				(ASCII*) " CPU-FREQ driver                "
+				(ASCII*) " CPU-FREQ driver          [   ] "
 
 #define RSC_HELP_TITLE_CODE_EN		(ASCII*) " Help "
 #define RSC_HELP_KEY_ESCAPE_CODE_EN	(ASCII*) " [Escape]         "
@@ -514,8 +516,12 @@
 			(ASCII*) "  Up  PgUp                     Scroll "
 #define RSC_ADV_HELP_ITEM_14_CODE_EN					\
 			(ASCII*) " Down PgDw                       CPU  "
-#define RSC_ADV_HELP_ITEM_PRTSCR_CODE_EN				\
-			(ASCII*) " [Ctrl]+[p]                Screenshot "
+#define RSC_ADV_HELP_ITEM_TERMINAL_CODE_EN				\
+			(ASCII*) " Terminal:                            "
+#define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_EN				\
+			(ASCII*) " [Ctrl]+[p]                      Copy "
+#define RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN				\
+			(ASCII*) " [Alt]+[p]                     Record "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "
@@ -685,3 +691,5 @@
 				(ASCII*) "System error code %d\n%s @ line %d\n"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN (ASCII*) " CPU-Idle Limit "
+
+#define RSC_BOX_RECORDER_TITLE_CODE_EN (ASCII*) " Recorder "
