@@ -456,7 +456,7 @@ extern WinList winList;
 
 extern int GetKey(SCANKEY *scan, struct timespec *tsec) ;
 
-SCREEN_SIZE GetScreenSize(void) ;
+extern SCREEN_SIZE GetScreenSize(void) ;
 
 extern void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) ;
 
@@ -544,9 +544,9 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 #define IsCycling(win)		((win->next == win) && (win->prev == win))
 #define GetFocus(list)		GetHead(list)
 
-void DestroyLayer(Layer *layer) ;
+extern void DestroyLayer(Layer *layer) ;
 
-void CreateLayer(Layer *layer, CoordSize size) ;
+extern void CreateLayer(Layer *layer, CoordSize size) ;
 
 #define ResetLayer(layer)						\
 	memset(layer->attr, 0, layer->size.wth * layer->size.hth);	\
@@ -565,7 +565,7 @@ extern void AllocFillAttr(TCell *cell, ATTRIBUTE attrib) ;
 
 extern void AllocCopyItem(TCell *cell, ASCII *item) ;
 
-void FreeAllTCells(Window *win) ;
+extern void FreeAllTCells(Window *win) ;
 
 #define StoreTCell(win, shortkey, item, attrib) 			\
 ({									\
@@ -600,17 +600,17 @@ void FreeAllTCells(Window *win) ;
 	pGrid;								\
 })
 
-void DestroyWindow(Window *win) ;
+extern void DestroyWindow(Window *win) ;
 
 extern Window *CreateWindow(	Layer *layer, unsigned long long id,
 				CUINT width, CUINT height,
 				CUINT oCol, CUINT oRow) ;
 
-void RemoveWindow(Window *win, WinList *list) ;
+extern void RemoveWindow(Window *win, WinList *list) ;
 
 extern void AppendWindow(Window *win, WinList *list) ;
 
-void DestroyAllWindows(WinList *list) ;
+extern void DestroyAllWindows(WinList *list) ;
 
 #define RemoveWinList(win, list)					\
 ({									\
@@ -626,7 +626,7 @@ void DestroyAllWindows(WinList *list) ;
 	GetHead(list)->next = win;					\
 })
 
-void AnimateWindow(int rotate, WinList *list) ;
+extern void AnimateWindow(int rotate, WinList *list) ;
 
 extern Window *SearchWinListById(unsigned long long id, WinList *list) ;
 
@@ -634,7 +634,7 @@ extern void PrintContent(Window *win, WinList *list, CUINT col, CUINT row) ;
 
 extern void ForEachCellPrint(Window *win, WinList *list) ;
 
-void EraseWindowWithBorder(Window *win) ;
+extern void EraseWindowWithBorder(Window *win) ;
 
 extern void PrintLCD(	Layer *layer, CUINT col, CUINT row,
 			int len, char *pStr, enum PALETTE lcdColor) ;
