@@ -692,4 +692,4 @@
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN (ASCII*) " CPU-Idle Limit "
 
-#define RSC_BOX_RECORDER_TITLE_CODE_EN (ASCII*) " Recorder "
+#define RSC_BOX_RECORDER_TITLE_CODE_EN (ASCII*) " Duration "

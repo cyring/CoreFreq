@@ -25,6 +25,8 @@
 
 #define CLOCKMOD_RATIO_MASK	0x0000ffff
 
+#define OPS_RECORDER_MASK	0x00000000000000f0LLU
+
 enum {
 	SORTBY_STATE		= 0x010000000000000e,
 	SORTBY_RTIME		= 0x010000000000000d,
@@ -285,7 +287,10 @@ typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 
 #define RECORDER_COMPUTE(_recorder, _interval)				\
 ({									\
-	_recorder.Reset = (	(_recorder.Ratio			\
+	_recorder.Reset = (	(_recorder.Ratios[_recorder.Select]	\
 				* RECORDER_DEFAULT			\
 				* 1000) / _interval );			\
 })
+
+#define RECORDER_SECONDS(_tick, _interval)				\
+	((_interval * _tick) / 1000)

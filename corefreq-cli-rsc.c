@@ -399,6 +399,8 @@ ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
 
 ATTRIBUTE Rsc_BoxEvent_Attr[] = RSC_BOX_EVENT_ATTR;
 
+ATTRIBUTE Rsc_CreateRecorder_Attr[] = RSC_CREATE_RECORDER_ATTR;
+
 RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_PROC] = {
 		.Attr = Rsc_Layout_Header_Proc_Attr,
@@ -1129,6 +1131,10 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_BOX_EVENT] = {
 		.Attr = Rsc_BoxEvent_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_CREATE_RECORDER] = {
+		.Attr = Rsc_CreateRecorder_Attr,
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 /* ASCII */

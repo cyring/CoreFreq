@@ -2822,10 +2822,12 @@ enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
 
 struct {
 	int	Reset,
-		Ratio;
+		Select,
+		Ratios[];
 } recorder = {
 		.Reset = 0,
-		.Ratio = 1
+		.Select = 1,
+		.Ratios = {0, 1, 2, 10, 20, 60, 90, 120, 240, 0}
 };
 
 /* <<< GLOBALS <<< */
@@ -3065,9 +3067,9 @@ void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 void RecorderUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[4+1];
-	int seconds = (Shm->Sleep.Interval * (*data.psint)) / 1000;
-	if (seconds <= 9999) {
-		sprintf(item, "%4d", seconds);
+	int duration = RECORDER_SECONDS((*data.psint), Shm->Sleep.Interval);
+	if (duration <= 9999) {
+		sprintf(item, "%4d", duration);
 		memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 	}
 }
@@ -3387,8 +3389,8 @@ Window *CreateAdvHelp(unsigned long long id)
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	}
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
-	Window *wHelp = CreateWindow(wLayer, id, 1,
-				CUMIN(nmemb, draw.Size.height - 2), 41,
+	Window *wHelp = CreateWindow(wLayer, id,
+				1, CUMIN(nmemb, draw.Size.height - 2), 41,
 				(TOP_HEADER_ROW + nmemb + 1 < draw.Size.height)?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
@@ -4211,6 +4213,53 @@ Window *CreateSelectIdle(unsigned long long id)
 	StoreWindow(wIdle,	.key.WinUp,	MotionOriginUp_Win);
     }
 	return(wIdle);
+}
+
+Window *CreateRecorder(unsigned long long id)
+{
+	Window *wRec = CreateWindow(wLayer, id,
+				1, CUMIN(8, draw.Size.height - 2),
+				43,
+				(TOP_HEADER_ROW + 4 + 8 < draw.Size.height)?
+					TOP_HEADER_ROW + 4 : 1);
+    if (wRec != NULL)
+    {
+	char item[24+1];
+	unsigned int idx = 1;
+	do {
+		unsigned long long key = OPS_RECORDER | (idx << 4);
+		int	duration = recorder.Ratios[idx] * RECORDER_DEFAULT,
+			remainder = duration % (60 * 60),
+			hours	= duration / (60 * 60),
+			minutes = remainder / 60,
+			seconds = remainder % 60;
+
+		sprintf(item,	"\x20\x20%02d:%02d:%02d\x20\x20",
+				hours, minutes, seconds);
+
+		StoreTCell(	wRec,
+				key,
+				item,
+				RSC(CREATE_RECORDER).ATTR() );
+
+	} while (recorder.Ratios[++idx] != 0);
+
+	if (recorder.Select > 0) {
+		wRec->matrix.select.row  = recorder.Select - 1;
+	}
+	StoreWindow(wRec, .title, (char*) RSC(BOX_RECORDER_TITLE).CODE());
+
+	StoreWindow(wRec,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wRec,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wRec,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wRec,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wRec,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wRec,	.key.Down,	MotionDown_Win);
+	StoreWindow(wRec,	.key.Up,	MotionUp_Win);
+	StoreWindow(wRec,	.key.Home,	MotionReset_Win);
+	StoreWindow(wRec,	.key.End,	MotionEnd_Cell);
+    }
+	return(wRec);
 }
 
 Window *_CreateBox(	unsigned long long id,
@@ -6515,65 +6564,25 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
     case OPS_RECORDER_RESET:
-	recorder.Ratio = 1;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X002:
-	recorder.Ratio = 2;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X010:
-	recorder.Ratio = 10;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X020:
-	recorder.Ratio = 20;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X060:
-	recorder.Ratio = 60;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X090:
-	recorder.Ratio = 90;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X120:
-	recorder.Ratio = 120;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-    break;
     case OPS_RECORDER_X240:
-	recorder.Ratio = 240;
+    {
+	typeof(recorder.Select) select = (scan->key & OPS_RECORDER_MASK) >> 4;
+	recorder.Select = select;
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    }
     break;
     case OPS_RECORDER:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-	{
-		const Coordinate origin = {
-		.col = 50,
-		.row = TOP_HEADER_ROW + 4
-	    }, select = {
-		.col = 0,
-		.row = 0
-	    };
-		Window *wBox = CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_RECORDER_TITLE).CODE(),
-	(ASCII*)"          RESET         ", stateAttr[0], OPS_RECORDER_RESET,
-	(ASCII*)"             x2         ", stateAttr[0], OPS_RECORDER_X002,
-	(ASCII*)"            x10         ", stateAttr[0], OPS_RECORDER_X010,
-	(ASCII*)"            x20         ", stateAttr[0], OPS_RECORDER_X020,
-	(ASCII*)"            x60         ", stateAttr[0], OPS_RECORDER_X060,
-	(ASCII*)"            x90         ", stateAttr[0], OPS_RECORDER_X090,
-	(ASCII*)"           x120         ", stateAttr[0], OPS_RECORDER_X120,
-	(ASCII*)"           x240         ", stateAttr[0], OPS_RECORDER_X240);
-
-	    if (wBox != NULL) {
-		AppendWindow(wBox, &winList);
-	    } else
-		SetHead(&winList, win);
-	} else
+		AppendWindow(CreateRecorder(scan->key), &winList);
+	else
 		SetHead(&winList, win);
     }
     break;

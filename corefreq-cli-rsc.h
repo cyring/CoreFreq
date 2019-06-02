@@ -142,6 +142,7 @@ enum {
 	RSC_HOT_EVENT_COND3,
 	RSC_HOT_EVENT_COND4,
 	RSC_BOX_EVENT,
+	RSC_CREATE_RECORDER,
 /* ASCII */
 	RSC_PROCESSOR_TITLE,
 	RSC_PROCESSOR,
@@ -1869,4 +1870,9 @@ extern RESOURCE_ST Resource[];
 	LWK,								\
 	LMK,								\
 	HYK								\
+}
+
+#define RSC_CREATE_RECORDER_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,HDK,LWK,LWK,HDK,LWK,LWK,LWK,LWK 		\
 }
