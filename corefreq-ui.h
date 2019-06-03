@@ -274,7 +274,7 @@ typedef union {
 #define MAKE_TITLE_FOCUS	MakeAttr(WHITE, 0, CYAN , 1)
 #define MAKE_BORDER_UNFOCUS	MakeAttr(BLACK, 0, BLUE , 1)
 #define MAKE_BORDER_FOCUS	MakeAttr(WHITE, 0, BLUE , 1)
-#define MAKE_SELECT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
+#define MAKE_SELECT_UNFOCUS	MakeAttr(BLACK, 0, BLACK, 1)
 #define MAKE_SELECT_FOCUS	MakeAttr(BLACK, 0, CYAN , 0)
 #define MAKE_PRINT_UNFOCUS	MakeAttr(WHITE, 0, BLACK, 0)
 #define MAKE_PRINT_FOCUS	MakeAttr(WHITE, 0, BLACK, 1)
