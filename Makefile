@@ -7,6 +7,7 @@ KVERSION ?= $(shell uname -r)
 CC ?= cc
 FEAT_DBG = 1
 WARNING = -Wall
+PREFIX ?= /usr
 
 obj-m := corefreqk.o
 ccflags-y := -D FEAT_DBG=$(FEAT_DBG)
@@ -64,8 +65,18 @@ endif
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
+.PHONY: all
 all: corefreqd corefreq-cli
 	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+
+.PHONY: install
+install: module-install
+	install -Dm 0755 corefreq-cli corefreqd -t $(PREFIX)/bin
+	install -Dm 0644 corefreqd.service $(PREFIX)/lib/systemd/system/corefreqd.service
+
+.PHONY: module-install
+module-install:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 
 .PHONY: clean
 clean:
