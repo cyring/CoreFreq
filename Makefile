@@ -130,7 +130,7 @@ info:
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] [info] [help]                             |\n"\
+	"|  make [all] [clean] [info] [help] [install] [module-install]  |\n"\
 	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is cc, gcc or clang                       |\n"\
@@ -149,4 +149,7 @@ help:
 	"|                                                               |\n"\
 	"|  MSR_CORE_PERF_URC=<REG>                                      |\n"\
 	"|    where <REG> is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |\n"\
+	"|                                                               |\n"\
+	"|  KERNELDIR=<PATH>                                             |\n"\
+	"|    where <PATH> is the Kernel source directory                |\n"\
 	"o---------------------------------------------------------------o"
