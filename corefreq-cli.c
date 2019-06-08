@@ -1756,7 +1756,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s:%.*sC1   C1E    C3    C6    C7    C8    C9   C10",
+		"%s:%.*sC0    C1    C3    C6    C7    C8    C9   C10",
 		RSC(PERF_MON_MWAIT_CTRS).CODE(), 04, hSpace);
 
 	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,

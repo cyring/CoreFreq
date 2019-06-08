@@ -7963,41 +7963,67 @@ static int CoreFreqK_IdleDriver_Init(void)
     {
 	if((CoreFreqK.IdleDevice = alloc_percpu(struct cpuidle_device)) == NULL)
 		rc = -ENOMEM;
-	else {	/* Polling loop						*/
+	else {
+		unsigned int subState[] = {
+			Proc->Features.MWait.EDX.SubCstate_MWAIT0,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT1,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT2,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT3,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT4,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT5,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT6,
+			Proc->Features.MWait.EDX.SubCstate_MWAIT7
+		}, subStateLoop, subStateIdx;
+		const unsigned int subStateCount = sizeof(subState)
+						 / sizeof(subState[0]);
+		/* Kernel polling loop					*/
 		cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
+
 		CoreFreqK.IdleDriver.state_count = 1;
+		subStateIdx = CoreFreqK.IdleDriver.state_count;
 		/* Idle States						*/
 	    while (pIdleState->Name != NULL)
 	    {
-		StrCopy(CoreFreqK.IdleDriver.states[
+		for (subStateLoop = 1;
+			(pIdleState->Name != NULL)
+			&& (subStateIdx < subStateCount)
+			&& (subStateLoop <= subState[subStateIdx]);
+				subStateLoop++)
+		{
+			StrCopy(CoreFreqK.IdleDriver.states[
+					CoreFreqK.IdleDriver.state_count
+				].name, pIdleState->Name, CPUIDLE_NAME_LEN);
+
+			StrCopy(CoreFreqK.IdleDriver.states[
+					CoreFreqK.IdleDriver.state_count
+				].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
+
+			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].name, pIdleState->Name, CPUIDLE_NAME_LEN);
+			].flags = pIdleState->flags;
 
-		StrCopy(CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
+			].exit_latency = pIdleState->Latency;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].flags = pIdleState->flags;
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].target_residency = pIdleState->Residency;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].exit_latency = pIdleState->Latency;
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_IdleHandler;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].target_residency = pIdleState->Residency;
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2IdleHandler;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter = CoreFreqK_IdleHandler;
+			CoreFreqK.IdleDriver.state_count++;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter_s2idle = CoreFreqK_S2IdleHandler;
-
-		CoreFreqK.IdleDriver.state_count++;
+			if (subStateLoop < subState[subStateIdx])
+				pIdleState++;
+		}
+		subStateIdx++;
 		pIdleState++;
 	    }
 	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
