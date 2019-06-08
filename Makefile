@@ -3,7 +3,7 @@
 # Licenses: GPL2
 
 PWD ?= $(shell pwd)
-KVERSION ?= $(shell uname -r)
+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 CC ?= cc
 FEAT_DBG = 1
 WARNING = -Wall
@@ -65,12 +65,12 @@ ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
 all: corefreqd corefreq-cli
-	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
 
 .PHONY: clean
 clean:
 	rm -f corefreqd corefreq-cli
-	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
 
 corefreqm.o: corefreqm.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c -o corefreqm.o
