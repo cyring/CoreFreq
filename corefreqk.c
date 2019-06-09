@@ -5145,6 +5145,111 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Query_AMD_Zen(Core);
 
 	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
+
+    if (Proc->Registration.Experimental)
+    {
+	union
+	{
+		unsigned int	value;
+	} TestRegister = {.value = 0};
+	/* Channel 0							*/
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_DIMM_CFG,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_DIMM_CFG[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CFG,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CFG[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_SDP_CTRL,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_SDP_CTRL[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_ECC_CTRL,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_ECC_CTRL[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CAP,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CAP_HI,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP_HI[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	/* Channel 1							*/
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_DIMM_CFG,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_DIMM_CFG[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CFG,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CFG[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_SDP_CTRL,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_SDP_CTRL[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_ECC_CTRL,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_ECC_CTRL[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CAP,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP[%u]\n",
+		Core->Bind, TestRegister.value);
+
+	Core_AMD_SMN_Read(Core, TestRegister,
+				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CAP_HI,
+				SMU_AMD_INDEX_REGISTER_F16H,
+				SMU_AMD_DATA_REGISTER_F16H);
+
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP_HI[%u]\n",
+		Core->Bind, TestRegister.value);
+    }
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
@@ -6001,25 +6106,18 @@ void Core_AMD_Family_15h_Temp(CORE *Core)
 	}
 }
 
-#define Core_AMD_SMU_Thermal(Core,	TctlRegister,			\
-					SMU_IndexRegister,		\
-					SMU_DataRegister)		\
-({									\
-	TCTL_REGISTER TctlSensor = {0};					\
-									\
-	WRPCI(TctlRegister, SMU_IndexRegister) ;			\
-	RDPCI(TctlSensor, SMU_DataRegister);				\
-									\
-	Core->PowerThermal.Sensor = TctlSensor.CurTmp;			\
-})
-
-/*TODO:	Bulldozer/Excavator [need hardware to test with]
+/*TODO: Bulldozer/Excavator [need hardware to test with]
 void Core_AMD_Family_15_60h_Temp(CORE *Core)
 {
     if (Proc->Registration.Experimental) {
-	Core_AMD_SMU_Thermal(Core,	SMU_AMD_THM_TCTL_REGISTER_F15H,
+	TCTL_REGISTER TctlSensor = {.value = 0};
+
+	Core_AMD_SMN_Read(Core ,	TctlSensor,
+					SMU_AMD_THM_TCTL_REGISTER_F15H,
 					SMU_AMD_INDEX_REGISTER_F15H,
 					SMU_AMD_DATA_REGISTER_F15H);
+
+	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
 	if (Proc->Features.AdvPower.EDX.TTP == 1) {
 		THERMTRIP_STATUS ThermTrip = {0};
@@ -6036,9 +6134,14 @@ void Core_AMD_Family_15_60h_Temp(CORE *Core)
 
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
-	Core_AMD_SMU_Thermal(Core,	SMU_AMD_THM_TCTL_REGISTER_F17H,
+	TCTL_REGISTER TctlSensor = {.value = 0};
+
+	Core_AMD_SMN_Read(Core ,	TctlSensor,
+					SMU_AMD_THM_TCTL_REGISTER_F17H,
 					SMU_AMD_INDEX_REGISTER_F16H,
 					SMU_AMD_DATA_REGISTER_F16H);
+
+	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
