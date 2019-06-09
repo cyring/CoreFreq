@@ -5300,9 +5300,8 @@ void Sys_MemInfo(SYSGATE *SysGate)
 	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
-#if FEAT_DBG > 0
-    #define Sys_Tick(Pkg)					\
-    ({								\
+#define Sys_Tick(Pkg)						\
+({								\
 	if (Pkg->OS.Gate != NULL) {				\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
@@ -5311,18 +5310,7 @@ void Sys_MemInfo(SYSGATE *SysGate)
 			Sys_MemInfo(Pkg->OS.Gate);		\
 		}						\
 	}							\
-    })
-#else
-    #define Sys_Tick(Pkg)					\
-    ({								\
-	if (Pkg->OS.Gate != NULL) {				\
-		Pkg->tickStep--;				\
-		if (!Pkg->tickStep) {				\
-			Pkg->tickStep = Pkg->tickReset ;	\
-		}						\
-	}							\
-    })
-#endif
+})
 
 static void InitTimer(void *Cycle_Function)
 {
