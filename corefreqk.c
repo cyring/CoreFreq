@@ -5146,109 +5146,44 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
 
-    if (Proc->Registration.Experimental)
+    if (Proc->Registration.Experimental && (Core->Bind == 0))
     {
-	union
-	{
-		unsigned int	value;
-	} TestRegister = {.value = 0};
+	unsigned int offset;
 	/* Channel 0							*/
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_DIMM_CFG,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
+	printk("--- DUMP CHANNEL[0] ---\n");
+	for (offset = 0x80; offset < 0x230; offset = offset + 4)
+	{
+		union
+		{
+			unsigned int	value;
+		} TestRegister = {.value = 0};
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_DIMM_CFG[%x]\n",
-		Core->Bind, TestRegister.value);
+		Core_AMD_SMN_Read(Core, TestRegister,
+					SMU_AMD_UMC_BASE_CH0_F17H + offset,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H);
 
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CFG,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CFG[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_SDP_CTRL,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[0] UMCCH_SDP_CTRL[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_ECC_CTRL,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[0] UMCCH_ECC_CTRL[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CAP,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH0_F17H + UMCCH_UMC_CAP_HI,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP_HI[%x]\n",
-		Core->Bind, TestRegister.value);
-
+		printk("OFFSET[%x] VALUE[%x]\n",
+			offset, TestRegister.value);
+	}
 	/* Channel 1							*/
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_DIMM_CFG,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
+	printk("--- DUMP CHANNEL[1] ---\n");
+	for (offset = 0x80; offset < 0x230; offset = offset + 4)
+	{
+		union
+		{
+			unsigned int	value;
+		} TestRegister = {.value = 0};
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_DIMM_CFG[%x]\n",
-		Core->Bind, TestRegister.value);
+		Core_AMD_SMN_Read(Core, TestRegister,
+					SMU_AMD_UMC_BASE_CH1_F17H + offset,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H);
 
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CFG,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CFG[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_SDP_CTRL,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[1] UMCCH_SDP_CTRL[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_ECC_CTRL,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[1] UMCCH_ECC_CTRL[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CAP,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP[%x]\n",
-		Core->Bind, TestRegister.value);
-
-	Core_AMD_SMN_Read(Core, TestRegister,
-				SMU_AMD_UMC_BASE_CH1_F17H + UMCCH_UMC_CAP_HI,
-				SMU_AMD_INDEX_REGISTER_F16H,
-				SMU_AMD_DATA_REGISTER_F16H);
-
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP_HI[%x]\n",
-		Core->Bind, TestRegister.value);
+		printk("OFFSET[%x] VALUE[%x]\n",
+			offset, TestRegister.value);
+	}
+	printk("--- END OF DUMP ---\n");
     }
 }
 
@@ -6126,8 +6061,8 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
 					SMU_AMD_THM_TCTL_REGISTER_F17H,
-					SMU_AMD_INDEX_REGISTER_F16H,
-					SMU_AMD_DATA_REGISTER_F16H);
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H);
 
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 }

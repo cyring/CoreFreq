@@ -74,8 +74,8 @@
 #define SMU_AMD_INDEX_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xb8)
 #define SMU_AMD_DATA_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xbc)
 
-#define SMU_AMD_INDEX_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
-#define SMU_AMD_DATA_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
+#define SMU_AMD_INDEX_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
+#define SMU_AMD_DATA_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
 #define Core_AMD_SMN_Read(Core ,	SMN_Register,			\
 					SMN_Address,			\
@@ -117,13 +117,6 @@
 #ifndef SMU_AMD_UMC_BASE_CH1_F17H
 	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
 #endif
-/* Sources: drivers/edac/amd64_edac.c					*/
-#define UMCCH_DIMM_CFG			0x80
-#define UMCCH_UMC_CFG			0x100
-#define UMCCH_SDP_CTRL			0x104
-#define UMCCH_ECC_CTRL			0x14C
-#define UMCCH_UMC_CAP			0xDF0
-#define UMCCH_UMC_CAP_HI		0xDF4
 
 
 const struct {
