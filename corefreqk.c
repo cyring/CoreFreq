@@ -5158,7 +5158,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_DIMM_CFG[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_DIMM_CFG[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5166,7 +5166,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CFG[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CFG[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5174,7 +5174,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_SDP_CTRL[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_SDP_CTRL[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5182,7 +5182,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_ECC_CTRL[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_ECC_CTRL[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5190,7 +5190,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5198,7 +5198,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP_HI[%u]\n",
+	printk("TEST: Core[%u] Channel[0] UMCCH_UMC_CAP_HI[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	/* Channel 1							*/
@@ -5207,7 +5207,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_DIMM_CFG[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_DIMM_CFG[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5215,7 +5215,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CFG[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CFG[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5223,7 +5223,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_SDP_CTRL[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_SDP_CTRL[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5231,7 +5231,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_ECC_CTRL[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_ECC_CTRL[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5239,7 +5239,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP[%x]\n",
 		Core->Bind, TestRegister.value);
 
 	Core_AMD_SMN_Read(Core, TestRegister,
@@ -5247,7 +5247,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 				SMU_AMD_INDEX_REGISTER_F16H,
 				SMU_AMD_DATA_REGISTER_F16H);
 
-	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP_HI[%u]\n",
+	printk("TEST: Core[%u] Channel[1] UMCCH_UMC_CAP_HI[%x]\n",
 		Core->Bind, TestRegister.value);
     }
 }
