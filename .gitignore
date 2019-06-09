@@ -1,0 +1,18 @@
+
+#make output
+.cache.mk
+.corefreqk.ko.cmd
+.corefreqk.mod.o.cmd
+.corefreqk.o.cmd
+corefreqd
+corefreqk.ko
+corefreqk.mod.c
+.tmp_versions/
+Module.symvers
+modules.order
+
+#cli
+corefreq-cli
+
+# output files
+*.o
