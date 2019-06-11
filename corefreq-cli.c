@@ -6653,11 +6653,12 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 			unsigned long freeRAM,
 			unsigned long totalRAM)
 {
-	double gigabyte_freeRAM = freeRAM/(1024^2);
-	double gigabyte_totalRAM = totalRAM/(1024^2);
+	double gigabyte_freeRAM = freeRAM / (1024^2);
+	double gigabyte_totalRAM = totalRAM / (1024^2);
+	
+	gigabyte_freeRAM = gigabyte_freeRAM / 10;
 
-	// Had to divide by 1000 here rather than above to keep the decimal places
-	sprintf(buffer, "%6u" "%9g" "%-9g", taskCount, (gigabyte_freeRAM/10000), (gigabyte_totalRAM/1000));
+	sprintf(buffer, "%6u" "%9g" "%-9g", taskCount, (round(gigabyte_freeRAM) / 1000), (round(gigabyte_totalRAM) / 1000));
 
 	memcpy(&LayerAt(layer, code, (draw.Size.width-35), row), &buffer[0], 6);
 	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &buffer[6], 9);
