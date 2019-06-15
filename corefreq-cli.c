@@ -1699,7 +1699,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
 		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));
-
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
@@ -1754,14 +1754,18 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
-
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s:%.*sC0    C1    C3    C6    C7    C8    C9   C10",
-		RSC(PERF_MON_MWAIT_CTRS).CODE(), 04, hSpace);
+		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE());
 
-	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
-		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
-		19, hSpace,
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s:%.*s#0    #1    #2    #3    #4    #5    #6    #7",
+		RSC(PERF_MON_MWAIT_IDX_CSTATE).CODE(), 04, hSpace);
+
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s:%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
+		RSC(PERF_MON_MWAIT_SUB_CSTATE).CODE(),
+		15 - RSZ(PERF_MON_MWAIT_SUB_CSTATE), hSpace,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT0,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT1,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT2,
@@ -1770,7 +1774,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
-
+/* Section Mark */
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),

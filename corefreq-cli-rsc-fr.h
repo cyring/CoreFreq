@@ -301,7 +301,14 @@
 #define RSC_PERF_MON_LOW_CSTATE_CODE_FR (ASCII*) "Lowest C-State"
 #define RSC_PERF_MON_IOMWAIT_CODE_FR	(ASCII*) "I/O MWAIT Redirection"
 #define RSC_PERF_MON_MAX_CSTATE_CODE_FR (ASCII*) "Max C-State Inclusion"
-#define RSC_PERF_MON_MWAIT_CTRS_CODE_FR (ASCII*) "MWAIT States"
+
+#define RSC_PERF_MON_MONITOR_MWAIT_CODE_FR				\
+					(ASCII*) "MONITOR/MWAIT"
+#define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_FR				\
+					(ASCII*) "State index"
+#define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_FR				\
+					(ASCII*) "Sub C-State"
+
 #define RSC_PERF_MON_CORE_CYCLE_CODE_FR (ASCII*) "Core Cycles"
 #define RSC_PERF_MON_INST_RET_CODE_FR	(ASCII*) "Instructions Retired"
 #define RSC_PERF_MON_REF_CYCLE_CODE_FR	(ASCII*) "Reference Cycles"
