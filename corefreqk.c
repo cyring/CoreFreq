@@ -7991,30 +7991,27 @@ static int CoreFreqK_IdleDriver_Init(void)
 		rc = -ENOMEM;
 	else {
 		unsigned int subState[] = {
-			Proc->Features.MWait.EDX.SubCstate_MWAIT0,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT1,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT2,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT3,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT4,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT5,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT6,
-			Proc->Features.MWait.EDX.SubCstate_MWAIT7
-		}, subStateLoop, subStateIdx;
+			Proc->Features.MWait.EDX.SubCstate_MWAIT0,  /*   C0  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT1,  /*   C1  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT1,  /*  C1E  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT2,  /*   C3  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT3,  /*   C6  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT4,  /*   C7  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT5,  /*   C8  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT6,  /*   C9  */
+			Proc->Features.MWait.EDX.SubCstate_MWAIT7   /*  C10  */
+		};
 		const unsigned int subStateCount = sizeof(subState)
 						 / sizeof(subState[0]);
 		/* Kernel polling loop					*/
 		cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
 
 		CoreFreqK.IdleDriver.state_count = 1;
-		subStateIdx = CoreFreqK.IdleDriver.state_count;
 		/* Idle States						*/
 	    while (pIdleState->Name != NULL)
 	    {
-		for (subStateLoop = 1;
-			(pIdleState->Name != NULL)
-			&& (subStateIdx < subStateCount)
-			&& (subStateLoop <= subState[subStateIdx]);
-				subStateLoop++)
+		if ((CoreFreqK.IdleDriver.state_count < subStateCount)
+		&& (subState[CoreFreqK.IdleDriver.state_count] > 0))
 		{
 			StrCopy(CoreFreqK.IdleDriver.states[
 					CoreFreqK.IdleDriver.state_count
@@ -8045,11 +8042,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 			].enter_s2idle = CoreFreqK_S2IdleHandler;
 
 			CoreFreqK.IdleDriver.state_count++;
-
-			if (subStateLoop < subState[subStateIdx])
-				pIdleState++;
 		}
-		subStateIdx++;
 		pIdleState++;
 	    }
 	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
