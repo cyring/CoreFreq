@@ -6558,6 +6558,7 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
     case SCANKEY_ALT_p:
+    case SCANCON_ALT_p:
 	if (DumpStatus())
 	{
 		AbortDump();

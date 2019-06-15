@@ -202,6 +202,7 @@ typedef union {
 #define SCANCON_F3		0x00000000435b5b1b
 #define SCANCON_F4		0x00000000445b5b1b
 #define SCANCON_SHIFT_TAB	0x000000000000091b
+#define SCANCON_ALT_p		0x000000000000701b
 
 typedef struct {
 	int	width,
