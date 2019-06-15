@@ -5145,46 +5145,6 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Query_AMD_Zen(Core);
 
 	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
-
-    if (Proc->Registration.Experimental && (Core->Bind == 0))
-    {
-	unsigned int offset;
-	/* Channel 0							*/
-	printk("--- DUMP CHANNEL[0] ---\n");
-	for (offset = 0x80; offset < 0x230; offset = offset + 4)
-	{
-		union
-		{
-			unsigned int	value;
-		} TestRegister = {.value = 0};
-
-		Core_AMD_SMN_Read(Core, TestRegister,
-					SMU_AMD_UMC_BASE_CH0_F17H + offset,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H);
-
-		printk("OFFSET[%x] VALUE[%x]\n",
-			offset, TestRegister.value);
-	}
-	/* Channel 1							*/
-	printk("--- DUMP CHANNEL[1] ---\n");
-	for (offset = 0x80; offset < 0x230; offset = offset + 4)
-	{
-		union
-		{
-			unsigned int	value;
-		} TestRegister = {.value = 0};
-
-		Core_AMD_SMN_Read(Core, TestRegister,
-					SMU_AMD_UMC_BASE_CH1_F17H + offset,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H);
-
-		printk("OFFSET[%x] VALUE[%x]\n",
-			offset, TestRegister.value);
-	}
-	printk("--- END OF DUMP ---\n");
-    }
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
