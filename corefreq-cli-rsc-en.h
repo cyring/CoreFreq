@@ -150,6 +150,8 @@
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN				\
 {									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
 	'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']',	\
 	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
@@ -415,7 +417,8 @@
 #define RSC_MENU_ITEM_VIEW_CODE_EN	(ASCII*) "          View          "
 #define RSC_MENU_ITEM_WINDOW_CODE_EN	(ASCII*) "         Window         "
 #define RSC_MENU_ITEM_SETTINGS_CODE_EN	(ASCII*) " Settings           [s] "
-#define RSC_MENU_ITEM_KERNEL_CODE_EN	(ASCII*) " Kernel Data        [k] "
+#define RSC_MENU_ITEM_SMBIOS_CODE_EN	(ASCII*) " SMBIOS data        [B] "
+#define RSC_MENU_ITEM_KERNEL_CODE_EN	(ASCII*) " Kernel data        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_EN	(ASCII*) " HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_EN	(ASCII*) " Tools             [F3] "
 #define RSC_MENU_ITEM_ABOUT_CODE_EN	(ASCII*) " About              [a] "
@@ -677,6 +680,7 @@
 			"\t-R\tPrint System Registers\n"		\
 			"\t-m\tPrint Topology\n"			\
 			"\t-u\tPrint CPUID\n"				\
+			"\t-B\tPrint SMBIOS\n"				\
 			"\t-k\tPrint Kernel\n"				\
 			"\t-h\tPrint out this message\n"		\
 			"\t-v\tPrint the version number\n"		\
@@ -700,3 +704,5 @@
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN (ASCII*) " CPU-Idle Limit "
 
 #define RSC_BOX_RECORDER_TITLE_CODE_EN (ASCII*) " Duration "
+
+#define RSC_SMBIOS_TITLE_CODE_EN	(ASCII*) " SMBIOS "

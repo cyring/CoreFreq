@@ -150,6 +150,8 @@
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR				\
 {									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
 	'T','a','c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
 	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
@@ -415,6 +417,7 @@
 #define RSC_MENU_ITEM_VIEW_CODE_FR	(ASCII*) "           Vue          "
 #define RSC_MENU_ITEM_WINDOW_CODE_FR	(ASCII*) "         Fenetre        "
 #define RSC_MENU_ITEM_SETTINGS_CODE_FR	(ASCII*) " Reglages           [s] "
+#define RSC_MENU_ITEM_SMBIOS_CODE_FR	(ASCII*) " Infos SMBIOS       [B] "
 #define RSC_MENU_ITEM_KERNEL_CODE_FR	(ASCII*) " Infos Noyau        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_FR	(ASCII*) " HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_FR	(ASCII*) " Outils            [F3] "
@@ -675,7 +678,8 @@
 		"\t-j\tImprimer les Informations (format json)\n"	\
 		"\t-M\tImprimer le Controlleur mémoire\n"		\
 		"\t-R\tImprimer les Registres du système\n"		\
-		"\t-m\tImprimer la Topologie\n"				\
+		"\t-m\tImprimer la Topologie\n" 			\
+		"\t-B\tImprimer SMBIOS\n"				\
 		"\t-u\tImprimer CPUID\n"				\
 		"\t-k\tImprimer les données du Kernel\n"		\
 		"\t-h\tAfficher ce message\n"				\
@@ -700,3 +704,5 @@
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR (ASCII*) " Limite CPU-Idle "
 
 #define RSC_BOX_RECORDER_TITLE_CODE_FR (ASCII*) " Duree "
+
+#define RSC_SMBIOS_TITLE_CODE_FR	(ASCII*) " SMBIOS "

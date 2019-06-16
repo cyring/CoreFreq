@@ -8,6 +8,7 @@
 #include <linux/module.h>
 #include <linux/cpu.h>
 #include <linux/pci.h>
+#include <linux/dmi.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/cdev.h>
@@ -9069,6 +9070,35 @@ static struct notifier_block CoreFreqK_notifier_block = {
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
+void SMBIOS_Collect(void)
+{
+	struct {
+		enum dmi_field field;
+		char *recipient;
+	} dmi_collect[] = {
+		{ DMI_BIOS_VENDOR,	Proc->SMB.BIOS.Vendor	},
+		{ DMI_BIOS_VERSION,	Proc->SMB.BIOS.Version	},
+		{ DMI_BIOS_DATE,	Proc->SMB.BIOS.Release	},
+		{ DMI_SYS_VENDOR,	Proc->SMB.System.Vendor },
+		{ DMI_PRODUCT_NAME,	Proc->SMB.Product.Name	},
+		{ DMI_PRODUCT_VERSION,	Proc->SMB.Product.Version},
+		{ DMI_PRODUCT_SERIAL,	Proc->SMB.Product.Serial},
+		{ DMI_PRODUCT_SKU,	Proc->SMB.Product.SKU	},
+		{ DMI_PRODUCT_FAMILY,	Proc->SMB.Product.Family},
+		{ DMI_BOARD_NAME,	Proc->SMB.Board.Name	},
+		{ DMI_BOARD_VERSION,	Proc->SMB.Board.Version },
+		{ DMI_BOARD_SERIAL,	Proc->SMB.Board.Serial	}
+	};
+	size_t count = sizeof(dmi_collect) / sizeof(dmi_collect[0]), idx;
+
+	for (idx = 0; idx < count; idx++) {
+		const char *pInfo = dmi_get_system_info(dmi_collect[idx].field);
+		if ((pInfo != NULL) && (strlen(pInfo) > 0)) {
+			StrCopy(dmi_collect[idx].recipient, pInfo, MAX_UTS_LEN);
+		}
+	}
+}
+
 static int __init CoreFreqK_init(void)
 {
 	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
@@ -9269,6 +9299,10 @@ static int __init CoreFreqK_init(void)
 				Arch[Proc->ArchID].Architecture[0].CodeName,
 				CODENAME_LEN);
 
+			/* Copy various SMBIOS data [version 3.2]	*/
+			SMBIOS_Collect();
+
+			/* Initialize the CoreFreq controller		*/
 			Controller_Init();
 
 			MatchPeerForDefaultService(&Proc->Service,

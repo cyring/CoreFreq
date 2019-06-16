@@ -363,6 +363,8 @@ typedef struct
 	    } Chipset;
 	} Uncore;
 
+	SMBIOS_ST		SMB;
+
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;

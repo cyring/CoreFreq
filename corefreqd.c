@@ -3867,6 +3867,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 
 		Package_Update(Shm, Proc);
 		Uncore(Shm, Proc, Core[Proc->Service.Core]);
+		memcpy(&Shm->SMB, &Proc->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notification.				*/
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);

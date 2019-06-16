@@ -2650,6 +2650,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_MENU_ITEM_SETTINGS_CODE_FR
 		}
 	},
+	[RSC_MENU_ITEM_SMBIOS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SMBIOS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SMBIOS_CODE_FR
+		}
+	},
 	[RSC_MENU_ITEM_KERNEL] = {
 		.Attr = vColor,
 		.Code = {
@@ -3798,4 +3805,11 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_BOX_RECORDER_TITLE_CODE_FR
 		}
 	},
+	[RSC_SMBIOS_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SMBIOS_TITLE_CODE_EN,
+			[LOC_FR] = RSC_SMBIOS_TITLE_CODE_FR
+		}
+	}
 };

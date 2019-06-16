@@ -680,4 +680,6 @@ typedef struct
 
 	enum HYPERVISOR 	HypervisorID;
 	char			Architecture[CODENAME_LEN];
+
+	SMBIOS_ST		SMB;
 } PROC;

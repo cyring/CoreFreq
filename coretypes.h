@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.55.3"
+#define COREFREQ_VERSION	"1.56.0"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1650,3 +1650,26 @@ typedef struct {
 							( __VA_ARGS__ )
 
 #define RING_WRITE( ... ) RING_WRITE_SUB_CMD( 0x0U, __VA_ARGS__ )
+
+typedef struct {
+	struct {
+		char	Vendor[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Release[MAX_UTS_LEN];
+	} BIOS;
+	struct {
+		char	Vendor[MAX_UTS_LEN];
+	} System;
+	struct {
+		char	Name[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Serial[MAX_UTS_LEN],
+			SKU[MAX_UTS_LEN],
+			Family[MAX_UTS_LEN];
+	} Product;
+	struct {
+		char	Name[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Serial[MAX_UTS_LEN];
+	} Board;
+} SMBIOS_ST;
