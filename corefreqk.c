@@ -6026,6 +6026,15 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 					SMU_AMD_DATA_REGISTER_F17H);
 
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
+
+	if (TctlSensor.CurTempRangeSel == 1)
+	{
+	/* Register: SMU::THM::THM_TCON_CUR_TMP - Bit 19: CUR_TEMP_RANGE_SEL
+		0 = Report on 0C to 225C scale range.
+		1 = Report on -49C to 206C scale range.
+	*/
+		Core->PowerThermal.Param.Offset[1] = 49;
+	}
 }
 
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)

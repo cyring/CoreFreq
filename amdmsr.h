@@ -606,8 +606,10 @@ typedef union
 		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
 		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
 		ReservedBits1	: 16-13,
-		CurTempTJselect : 18-16, /* Family: 15h			*/
-		ReservedBits2	: 21-18,
+		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
+		ReservedBits2	: 19-18,
+		CurTempRangeSel : 20-19, /* Family: 17h 		*/
+		ReservedBits3	: 21-20,
 		CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h	*/
 	};
 } TCTL_REGISTER;
