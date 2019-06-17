@@ -6034,6 +6034,8 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 		1 = Report on -49C to 206C scale range.
 	*/
 		Core->PowerThermal.Param.Offset[1] = 49;
+	} else {
+		Core->PowerThermal.Param.Offset[1] = 0;
 	}
 }
 
