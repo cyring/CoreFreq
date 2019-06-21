@@ -3342,7 +3342,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &SNB_Driver,
 	.Architecture = Arch_SandyBridge_EP
 	},
 
@@ -3391,7 +3391,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &IVB_Driver,
 	.Architecture = Arch_IvyBridge_EP
 	},
 

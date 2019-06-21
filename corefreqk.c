@@ -5662,6 +5662,16 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	MSR_SNB_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);	\
 })
 
+#define PKG_Counters_SandyBridge_EP(Core, T)				\
+({									\
+	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+	MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0, Proc->Counter[T].Uncore.FC0);\
+})
+
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
 	RDTSCP_COUNTERx5(Proc->Counter[T].PTSC,				\
@@ -6652,7 +6662,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 		SMT_Counters_SandyBridge(Core, 1);
 
 		if (Core->Bind == Proc->Service.Core) {
-			PKG_Counters_SandyBridge(Core, 1);
+			PKG_Counters_SandyBridge_EP(Core, 1);
 
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -6754,7 +6764,7 @@ static void Start_SandyBridge_EP(void *arg)
 
 	if (Core->Bind == Proc->Service.Core) {
 		Start_Uncore_SandyBridge_EP(NULL);
-		PKG_Counters_SandyBridge(Core, 0);
+		PKG_Counters_SandyBridge_EP(Core, 0);
 		PWR_ACCU_SandyBridge_EP(Proc, 0);
 	}
 
