@@ -8,7 +8,9 @@
 #include <linux/module.h>
 #include <linux/cpu.h>
 #include <linux/pci.h>
+#ifdef CONFIG_DMI
 #include <linux/dmi.h>
+#endif /* CONFIG_DMI */
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <linux/cdev.h>
@@ -9156,6 +9158,7 @@ static struct notifier_block CoreFreqK_notifier_block = {
 
 void SMBIOS_Collect(void)
 {
+#ifdef CONFIG_DMI
 	struct {
 		enum dmi_field field;
 		char *recipient;
@@ -9167,8 +9170,12 @@ void SMBIOS_Collect(void)
 		{ DMI_PRODUCT_NAME,	Proc->SMB.Product.Name	},
 		{ DMI_PRODUCT_VERSION,	Proc->SMB.Product.Version},
 		{ DMI_PRODUCT_SERIAL,	Proc->SMB.Product.Serial},
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
 		{ DMI_PRODUCT_SKU,	Proc->SMB.Product.SKU	},
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		{ DMI_PRODUCT_FAMILY,	Proc->SMB.Product.Family},
+#endif
 		{ DMI_BOARD_NAME,	Proc->SMB.Board.Name	},
 		{ DMI_BOARD_VERSION,	Proc->SMB.Board.Version },
 		{ DMI_BOARD_SERIAL,	Proc->SMB.Board.Serial	}
@@ -9181,6 +9188,7 @@ void SMBIOS_Collect(void)
 			StrCopy(dmi_collect[idx].recipient, pInfo, MAX_UTS_LEN);
 		}
 	}
+#endif /* CONFIG_DMI */
 }
 
 static int __init CoreFreqK_init(void)

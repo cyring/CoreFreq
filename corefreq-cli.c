@@ -7464,10 +7464,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
-	len = KMIN(22, strlen(Shm->SMB.Board.Name));
-	memcpy(&LayerAt(layer, code, hSys1.origin.col, hSys1.origin.row),
-		Shm->SMB.Board.Name, len);
-
+	if ((len = strlen(Shm->SMB.Board.Name)) > 0) {
+		len = KMIN(22, len);
+		memcpy(&LayerAt(layer, code,hSys1.origin.col,hSys1.origin.row),
+			Shm->SMB.Board.Name, len);
+	}
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		PrintTaskMemory(layer, row,
