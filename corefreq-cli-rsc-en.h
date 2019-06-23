@@ -532,6 +532,8 @@
 			(ASCII*) " [Ctrl]+[p]                      Copy "
 #define RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN				\
 			(ASCII*) " [Alt]+[p]                     Record "
+#define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN				\
+			(ASCII*) " F              Fahrenheit or Celsius "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "
@@ -668,6 +670,7 @@
 		(ASCII*)"CoreFreq."					\
 			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
 			"Usage:\t%s [-option <arguments>]\n"		\
+			"\t-F\tTemperature in Fahrenheit\n"		\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
 			"\t-V\tMonitor Power and Voltage\n"		\

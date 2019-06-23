@@ -532,6 +532,8 @@
 			(ASCII*) " [Ctrl]+[p]                    Copier "
 #define RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR				\
 			(ASCII*) " [Alt]+[p]                Enregistrer "
+#define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR				\
+			(ASCII*) " F              Fahrenheit ou Celsius "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
@@ -668,6 +670,7 @@
 	(ASCII*)"CoreFreq."						\
 		"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
+		"\t-F\tTemperature en Fahrenheit\n"			\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-V\tMoniteur de Puissance et Voltage\n"		\

@@ -237,7 +237,10 @@ ASCII	Rsc_Layout_Footer_System_Code_En[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN,
 	Rsc_Layout_Footer_System_Code_Fr[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Card_Core_Online_Attr[] = RSC_LAYOUT_CARD_CORE_ONLINE_ATTR;
-ASCII	Rsc_Layout_Card_Core_Online_Code_En[]= RSC_LAYOUT_CARD_CORE_ONLINE_CODE;
+ASCII	Rsc_Layout_Card_Core_Online_Code_En[2][12] = {
+					RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE,
+					RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE
+	};
 #define Rsc_Layout_Card_Core_Online_Code_Fr Rsc_Layout_Card_Core_Online_Code_En
 
 ATTRIBUTE Rsc_Layout_Card_Core_Offline_Attr[]=RSC_LAYOUT_CARD_CORE_OFFLINE_ATTR;
@@ -724,11 +727,18 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = Rsc_Layout_Footer_System_Code_Fr
 		}
 	},
-	[RSC_LAYOUT_CARD_CORE_ONLINE] = {
+	[RSC_LAYOUT_CARD_CORE_ONLINE_COND0] = {
 		.Attr = Rsc_Layout_Card_Core_Online_Attr,
 		.Code = {
-			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En,
-			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr
+			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En[0],
+			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr[0]
+		}
+	},
+	[RSC_LAYOUT_CARD_CORE_ONLINE_COND1] = {
+		.Attr = Rsc_Layout_Card_Core_Online_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En[1],
+			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr[1]
 		}
 	},
 	[RSC_LAYOUT_CARD_CORE_OFFLINE] = {
@@ -3250,6 +3260,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_FAHR_CELS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR
 		}
 	},
 	[RSC_TURBO_CLOCK_TITLE] = {

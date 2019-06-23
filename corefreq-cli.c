@@ -124,6 +124,11 @@ unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
 	return(9 - j);
 }
 
+int Cels2Fahr(unsigned int cels)
+{
+	return(((cels * 117965) >> 16) + 32);
+}
+
 const char *Indent[2][4] = {
 	{"",	"|",	"|- ",	"   |- "},
 	{"",	" ",	"  ",	"   "}
@@ -2826,15 +2831,16 @@ struct {
 struct {
 	struct {
 	unsigned int
-		layout	:  1-0,		/* Draw layout			*/
-		clear	:  2-1,		/* Clear screen			*/
-		height	:  3-2,		/* Valid height			*/
-		width	:  4-3,		/* Valid width			*/
-		daemon	:  5-4,		/* Draw dynamic			*/
-		taskVal :  6-5,		/* Display task's value		*/
-		avgOrPC :  7-6,		/* C-states average || % pkg states */
-		clkOrLd :  8-7,		/* Relative freq. || % load	*/
-		_padding: 32-8;
+		layout	:  1-0 ,	/* Draw layout			*/
+		clear	:  2-1 ,	/* Clear screen 		*/
+		height	:  3-2 ,	/* Valid height 		*/
+		width	:  4-3 ,	/* Valid width			*/
+		daemon	:  5-4 ,	/* Draw dynamic 		*/
+		taskVal :  6-5 ,	/* Display task's value		*/
+		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
+		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
+		fahrCels:  9-8 ,	/* 0:Celsius || 1:Fahrenheit	*/
+		_padding: 32-9 ;
 	} Flag;
 	enum VIEW	View;
 	enum DISPOSAL	Disposal;
@@ -2855,7 +2861,8 @@ struct {
 		.daemon = 0,
 		.taskVal= 0,
 		.avgOrPC= 0,
-		.clkOrLd= 0
+		.clkOrLd= 0,
+		.fahrCels=0
 	},
 	.View		= V_FREQ,
 	.Disposal	= D_MAINVIEW,
@@ -3423,6 +3430,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(ADV_HELP_ITEM_8).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOT}	},
+	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
 	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
@@ -4965,6 +4973,11 @@ int Shortcut(SCANKEY *scan)
 	else
 		SetHead(&winList, win);
     }
+    break;
+    case SCANKEY_SHIFT_f:
+	draw.Flag.fahrCels = !draw.Flag.fahrCels;
+	if (draw.Disposal == D_DASHBOARD)
+		draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_h:
     {
@@ -7525,84 +7538,92 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 }
 
+size_t Draw_Frequency_Fahrenheit(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cels2Fahr(Cpu->PowerThermal.Limit[0]),
+		Cels2Fahr(CFlop->Thermal.Temp),
+		Cels2Fahr(Cpu->PowerThermal.Limit[1])));
+}
+
+size_t Draw_Frequency_Celsius(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cpu->PowerThermal.Limit[0],
+		CFlop->Thermal.Temp,
+		Cpu->PowerThermal.Limit[1]));
+}
+
+size_t Draw_Frequency_Spaces(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%.*s",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		11, hSpace));
+}
+
 CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len = 0;
+	size_t (*Draw_Frequency_Temp[])(struct FLIP_FLOP*, CPU_STRUCT*) = {
+			Draw_Frequency_Celsius,
+			Draw_Frequency_Fahrenheit,
+			Draw_Frequency_Spaces
+	}, len = 0;
 
-	switch (Shm->Proc.thermalFormula) {
-	case THERMAL_FORMULA_INTEL:
-	case THERMAL_FORMULA_AMD:
-	case THERMAL_FORMULA_AMD_0Fh:
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%-3u" "/" "%3u" "/" "%3u",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			CFlop->Thermal.Temp,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
-		break;
-	case THERMAL_FORMULA_AMD_15h:
-	case THERMAL_FORMULA_AMD_17h:
-	    if (cpu == Shm->Proc.Service.Core)
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%-3u" "/" "%3u" "/" "%3u",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			CFlop->Thermal.Temp,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
-	    else
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%.*s",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			11, hSpace);
-	    break;
-	case THERMAL_FORMULA_NONE:
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%.*s",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			11, hSpace);
-		break;
-	}
+    switch (Shm->Proc.thermalFormula) {
+    case THERMAL_FORMULA_INTEL:
+    case THERMAL_FORMULA_AMD:
+    case THERMAL_FORMULA_AMD_0Fh:
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+	break;
+    case THERMAL_FORMULA_AMD_15h:
+    case THERMAL_FORMULA_AMD_17h:
+      if (cpu == Shm->Proc.Service.Core) {
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+      } else {
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+      }
+	break;
+    case THERMAL_FORMULA_NONE:
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+	break;
+    }
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -8040,6 +8061,22 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop,
+					struct FLIP_FLOP *SProc)
+{
+	sprintf(buffer, "%3u%4.2f",
+			Cels2Fahr(PFlop->Thermal.Temp),
+			SProc->Voltage.Vcore);
+}
+
+void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop,
+				struct FLIP_FLOP *SProc)
+{
+	sprintf(buffer, "%3u%4.2f",
+			PFlop->Thermal.Temp,
+			SProc->Voltage.Vcore);
+}
+
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -8052,6 +8089,11 @@ void Draw_Footer(Layer *layer, CUINT row)
 		RSC(HOT_EVENT_COND2).ATTR(),
 		RSC(HOT_EVENT_COND3).ATTR(),
 		RSC(HOT_EVENT_COND4).ATTR()
+	};
+	void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
+						struct FLIP_FLOP*) = {
+		Draw_Footer_Voltage_Celsius,
+		Draw_Footer_Voltage_Fahrenheit
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
@@ -8081,7 +8123,8 @@ void Draw_Footer(Layer *layer, CUINT row)
 	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][1];
 	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp][2];
 
-	sprintf(buffer, "%3u%4.2f", PFlop->Thermal.Temp, SProc->Voltage.Vcore);
+	Draw_Footer_Voltage_Temp[draw.Flag.fahrCels](PFlop, SProc);
+
 	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);
 	memcpy(&LayerAt(layer, code, 68, row), &buffer[3], 4);
 
@@ -8303,12 +8346,21 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
-		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE, (4 * INTER_WIDTH),
+	    if (draw.Flag.fahrCels) {
+		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND1,(4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
 
 		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
 				hOnLine.length, hOnLine.attr, hOnLine.code);
+	    } else {
+		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND0,(4 * INTER_WIDTH),
+				card->origin.col, (card->origin.row + 3),
+				hOnLine);
+
+		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
+				hOnLine.length, hOnLine.attr, hOnLine.code);
+	    }
 	} else {
 		LayerDeclare(	LAYOUT_CARD_CORE_OFFLINE, (4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
@@ -8554,7 +8606,8 @@ void Draw_Card_Core(Layer *layer, Card* card)
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 
-	Dec2Digit(CFlop->Thermal.Temp, digit);
+	Dec2Digit( draw.Flag.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
 	LayerAt(layer, attr, (card->origin.col + 7), (card->origin.row + 3)) = \
@@ -8827,7 +8880,7 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 }
 
 
-REASON_CODE Top(char option)
+REASON_CODE Top(char option, int fahrCels)
 {
 /*
            SCREEN
@@ -8879,6 +8932,7 @@ REASON_CODE Top(char option)
 	};
 
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
+	draw.Flag.fahrCels = fahrCels;
 
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 
@@ -9006,19 +9060,17 @@ REASON_CODE Help(REASON_CODE reason, ...)
 int main(int argc, char *argv[])
 {
 	struct stat shmStat = {0};
-	int fd = -1;
-
-	char *program = strdup(argv[0]),
-		*appName = program != NULL ? basename(program) : argv[0];
+	int	fd = -1, idx = 0, fahrCels = 0;
+	char	*program = strdup(argv[0]),
+		*appName = program != NULL ? basename(program) : argv[idx],
+		option = 't';
 
 	REASON_INIT(reason);
 
-	char option = 't';
-
 	LOCALE(IN);
 
-  if ((argc >= 2) && (argv[1][0] == '-')) {
-	option = argv[1][1];
+  if ((argc >= 2) && (argv[++idx][0] == '-')) {
+	option = argv[idx][1];
   }
   if (option == 'h') {
 	REASON_SET(reason, RC_CMD_SYNTAX, 0);
@@ -9036,20 +9088,24 @@ int main(int argc, char *argv[])
       {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	switch (option) {
-	case 'B':
+	do {
+	    switch (option) {
+	    case 'F':
+		fahrCels = 1;
+		break;
+	    case 'B':
 		reason = SysInfoSMBIOS(NULL, 80, NULL);
 		break;
-	case 'k':
+	    case 'k':
 		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 			reason = SysInfoKernel(NULL, 80, NULL);
 		}
 		break;
-	case 'u':
+	    case 'u':
 		reason = SysInfoCPUID(NULL, 80, NULL);
 		break;
-	case 's':
-	{
+	    case 's':
+		{
 		Window tty = {.matrix.size.wth = 4};
 
 		reason = SysInfoProc(NULL, 80, NULL);
@@ -9084,65 +9140,73 @@ int main(int argc, char *argv[])
 			80, 0, (char *) &(RSC(POWER_THERMAL_TITLE).CODE()[1]));
 		reason = SysInfoPwrThermal(NULL, 80, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
-	}
+		}
 		break;
-	case 'j':
+	    case 'j':
 		JsonSysInfo(Shm, NULL);
 		break;
-	case 'm': {
+	    case 'm':
+		{
 		Window tty = {.matrix.size.wth = 6};
 		Topology(&tty, NULL);
 		}
 		break;
-	case 'M': {
+	    case 'M':
+		{
 		Window tty = {.matrix.size.wth = 14};
 		MemoryController(&tty, NULL);
 		}
 		break;
-	case 'R': {
+	    case 'R':
+		{
 		Window tty = {.matrix.size.wth = 17};
 		SystemRegisters(&tty, NULL);
 		}
 		break;
-	case 'i':
+	    case 'i':
 		TrapSignal(1);
 		Instructions();
 		TrapSignal(0);
 		break;
-	case 'c':
+	    case 'c':
 		TrapSignal(1);
 		Counters();
 		TrapSignal(0);
 		break;
-	case 'V':
+	    case 'V':
 		TrapSignal(1);
 		Voltage();
 		TrapSignal(0);
 		break;
-	case 'g':
+	    case 'g':
 		TrapSignal(1);
 		Package();
 		TrapSignal(0);
 		break;
-	case 'd':
+	    case 'd':
 		/* Fallthrough */
-	case 't':
+	    case 't':
 		{
 		TERMINAL(IN);
 
 		TrapSignal(1);
-		reason = Top(option);
+		reason = Top(option, fahrCels);
 		TrapSignal(0);
 
 		TERMINAL(OUT);
 		}
 		break;
-	default: {
+	    default:
+		{
 		REASON_SET(reason, RC_CMD_SYNTAX, 0);
 		reason = Help(reason, appName);
 		}
 		break;
-	}
+	    }
+	} while (  (++idx < argc)
+		&& (argv[idx][0] == '-')
+		&& ((option = argv[idx][1]) != '\0') );
+
 	if (munmap(Shm, shmStat.st_size) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 		reason = Help(reason, SHM_FILENAME);
