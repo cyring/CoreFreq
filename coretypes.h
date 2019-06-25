@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.50.2"
+#define COREFREQ_VERSION	"1.57.1"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -608,16 +608,17 @@ typedef struct	/* MONITOR & MWAIT Leaf.				*/
 	struct
 	{	/* Intel reseved.					*/
 		unsigned int
-		Num_C0_MWAIT	:  4-0,
-		Num_C1_MWAIT	:  8-4,
-		Num_C2_MWAIT	: 12-8,
-		Num_C3_MWAIT	: 16-12,
-		Num_C4_MWAIT	: 20-16,
-		Num_C5_MWAIT	: 24-20,
-		Num_C6_MWAIT	: 28-24,
-		Num_C7_MWAIT	: 32-28;
+		SubCstate_MWAIT0:  4-0,
+		SubCstate_MWAIT1:  8-4,
+		SubCstate_MWAIT2: 12-8,
+		SubCstate_MWAIT3: 16-12,
+		SubCstate_MWAIT4: 20-16,
+		SubCstate_MWAIT5: 24-20,
+		SubCstate_MWAIT6: 28-24,
+		SubCstate_MWAIT7: 32-28;
 	} EDX;
-}  CPUID_0x00000005;
+} CPUID_0x00000005;
+
 
 typedef struct THERMAL_POWER_LEAF
 {	/* Thermal and Power Management Leaf.				*/
@@ -634,8 +635,8 @@ typedef struct THERMAL_POWER_LEAF
 		HWP_Reg :  8-7, /* Hardware Performance registers	*/
 		HWP_Int :  9-8, /* IA32_HWP_INTERRUPT HWP_Notification. */
 		HWP_Act : 10-9, /* IA32_HWP_REQUEST Activity_Window	*/
-		HWP_EPrf: 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.	*/
-		HWP_Lvl : 12-11,/* IA32_HWP_REQUEST_PKG			*/
+		HWP_EPP : 11-10,/* IA32_HWP_REQUEST Energy Perf. pref.	*/
+		HWP_Pkg : 12-11,/* IA32_HWP_REQUEST_PKG 		*/
 		Unused2 : 13-12,
 		HDC_Reg : 14-13,/* Hardware Duty Cycling registers	*/
 		Turbo_V3: 15-14,/* Intel Turbo Boost Max Technology 3.0 */
@@ -1380,23 +1381,33 @@ typedef struct
 #define MAX_UTS_LEN		64
 #endif
 
-/* Source: /include/linux/cpuidle.h					*/
+/* Sources: /include/linux/cpuidle.h  &  /include/linux/cpuidle.h	*/
 #ifndef _LINUX_CPUIDLE_H
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
 #endif
+#ifndef _LINUX_CPUFREQ_H
+#define CPUFREQ_NAME_LEN	16
+#endif
 
 typedef struct {
-	int			stateCount;
 	struct {
+		int		stateCount,
+				stateLimit;
+	    struct {
 		unsigned int	exitLatency;		/* in US	*/
 			int	powerUsage;		/* in mW	*/
 		unsigned int	targetResidency;	/* in US	*/
-			char	Name[CPUIDLE_NAME_LEN];
-	} State[CPUIDLE_STATE_MAX];
-	char			Name[CPUIDLE_NAME_LEN],
-				Governor[CPUIDLE_NAME_LEN];
-} IDLEDRIVER;
+			char	Name[CPUIDLE_NAME_LEN],
+				Desc[CPUIDLE_NAME_LEN];
+	    } State[CPUIDLE_STATE_MAX];
+		char		Name[CPUIDLE_NAME_LEN];
+	} IdleDriver;
+	struct {
+		char		Name[CPUFREQ_NAME_LEN],
+				Governor[CPUFREQ_NAME_LEN];
+	} FreqDriver;
+} OS_DRIVER;
 
 #ifndef TASK_COMM_LEN
 #define TASK_COMM_LEN		16
@@ -1426,7 +1437,7 @@ typedef struct {
 				freehigh;
 } MEM_MCB;
 
-#define SYSGATE_STRUCT_SIZE	( sizeof(IDLEDRIVER)			\
+#define SYSGATE_STRUCT_SIZE	( sizeof(OS_DRIVER)			\
 				+ sizeof(int)				\
 				+ sizeof(MEM_MCB)			\
 				+ sizeof(unsigned int)			\
@@ -1436,41 +1447,50 @@ typedef struct {
 				/ sizeof(TASK_MCB))
 
 /* Input-Output Control							*/
-#define COREFREQ_TOGGLE_OFF	0x0000000000000000L
-#define COREFREQ_TOGGLE_ON	0x0000000000000001L
+#define COREFREQ_TOGGLE_OFF	0x0
+#define COREFREQ_TOGGLE_ON	0x1
 
 #define COREFREQ_IOCTL_MAGIC 0xc3
 
 #define COREFREQ_IOCTL_SYSUPDT		_IO(COREFREQ_IOCTL_MAGIC, 0x1)
 #define COREFREQ_IOCTL_SYSONCE		_IO(COREFREQ_IOCTL_MAGIC, 0x2)
 #define COREFREQ_IOCTL_MACHINE		_IO(COREFREQ_IOCTL_MAGIC, 0x3)
-#define COREFREQ_IOCTL_INTERVAL 	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
-#define COREFREQ_IOCTL_AUTOCLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x5)
-#define COREFREQ_IOCTL_EXPERIMENTAL	_IO(COREFREQ_IOCTL_MAGIC, 0x6)
-#define COREFREQ_IOCTL_INTERRUPTS	_IO(COREFREQ_IOCTL_MAGIC, 0x7)
-#define COREFREQ_IOCTL_EIST		_IO(COREFREQ_IOCTL_MAGIC, 0x8)
-#define COREFREQ_IOCTL_C1E		_IO(COREFREQ_IOCTL_MAGIC, 0x9)
-#define COREFREQ_IOCTL_TURBO		_IO(COREFREQ_IOCTL_MAGIC, 0xa)
-#define COREFREQ_IOCTL_C1A		_IO(COREFREQ_IOCTL_MAGIC, 0xb)
-#define COREFREQ_IOCTL_C3A		_IO(COREFREQ_IOCTL_MAGIC, 0xc)
-#define COREFREQ_IOCTL_C1U		_IO(COREFREQ_IOCTL_MAGIC, 0xd)
-#define COREFREQ_IOCTL_C3U		_IO(COREFREQ_IOCTL_MAGIC, 0xe)
-#define COREFREQ_IOCTL_CC6		_IO(COREFREQ_IOCTL_MAGIC, 0xf)
-#define COREFREQ_IOCTL_PC6		_IO(COREFREQ_IOCTL_MAGIC, 0x10)
-#define COREFREQ_IOCTL_PKGCST		_IO(COREFREQ_IOCTL_MAGIC, 0x11)
-#define COREFREQ_IOCTL_IOMWAIT		_IO(COREFREQ_IOCTL_MAGIC, 0x12)
-#define COREFREQ_IOCTL_IORCST		_IO(COREFREQ_IOCTL_MAGIC, 0x13)
-#define COREFREQ_IOCTL_ODCM		_IO(COREFREQ_IOCTL_MAGIC, 0x14)
-#define COREFREQ_IOCTL_ODCM_DC		_IO(COREFREQ_IOCTL_MAGIC, 0x15)
-#define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x16)
-#define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x17)
-#define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x18)
-#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x19)
-#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x1a)
-#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0x1b)
-#define COREFREQ_IOCTL_PWR_POLICY	_IO(COREFREQ_IOCTL_MAGIC, 0x1c)
-#define COREFREQ_IOCTL_HWP		_IO(COREFREQ_IOCTL_MAGIC, 0x1d)
-#define COREFREQ_IOCTL_HWP_EPP		_IO(COREFREQ_IOCTL_MAGIC, 0x1e)
+#define COREFREQ_IOCTL_TECHNOLOGY	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
+#define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x5)
+#define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x6)
+#define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x7)
+#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x8)
+#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x9)
+#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0xa)
+
+enum {
+	MACHINE_CONTROLLER,
+	MACHINE_INTERVAL,
+	MACHINE_AUTOCLOCK,
+	MACHINE_EXPERIMENTAL,
+	MACHINE_INTERRUPTS,
+	MACHINE_LIMIT_IDLE
+};
+
+enum {
+	TECHNOLOGY_EIST,
+	TECHNOLOGY_C1E,
+	TECHNOLOGY_TURBO,
+	TECHNOLOGY_C1A,
+	TECHNOLOGY_C3A,
+	TECHNOLOGY_C1U,
+	TECHNOLOGY_C3U,
+	TECHNOLOGY_CC6,
+	TECHNOLOGY_PC6,
+	TECHNOLOGY_PKG_CSTATE,
+	TECHNOLOGY_IO_MWAIT,
+	TECHNOLOGY_IO_MWAIT_REDIR,
+	TECHNOLOGY_ODCM,
+	TECHNOLOGY_ODCM_DUTYCYCLE,
+	TECHNOLOGY_POWER_POLICY,
+	TECHNOLOGY_HWP,
+	TECHNOLOGY_HWP_EPP
+};
 
 #define COREFREQ_ORDER_MAGIC 0xc6
 
@@ -1479,7 +1499,6 @@ typedef struct {
 #define COREFREQ_ORDER_CRC32	_IO(COREFREQ_ORDER_MAGIC, 0x3)
 #define COREFREQ_ORDER_CONIC	_IO(COREFREQ_ORDER_MAGIC, 0x4)
 #define COREFREQ_ORDER_TURBO	_IO(COREFREQ_ORDER_MAGIC, 0x5)
-#define COREFREQ_ORDER_USR_CPU	_IO(COREFREQ_ORDER_MAGIC, 0x6)
 
 enum PATTERN {
 	RESET_CSP,
@@ -1502,23 +1521,155 @@ enum {
 /* Circular buffer							*/
 #define RING_SIZE	16
 
-#define RING_NULL(Ring)							\
+typedef struct {
+	unsigned short	lo: 16,
+			hi: 16;
+} RING_ARG_DWORD;
+
+typedef union {
+	unsigned long	arg: 64;
+    struct {
+	RING_ARG_DWORD	dl;
+	RING_ARG_DWORD	dh;
+    };
+} RING_ARG_QWORD;
+
+typedef struct {
+	union {
+		unsigned long	arg: 64;
+	    struct {
+		RING_ARG_DWORD	dl;
+		RING_ARG_DWORD	dh;
+	    };
+	};
+	unsigned int		cmd: 32,
+				sub: 32;
+} RING_CTRL;
+
+#define RING_NULL(Ring) 						\
 ({									\
-	((Ring.head - Ring.tail) == 0);					\
+	( (Ring.head - Ring.tail) == 0 );				\
 })
 
-#define RING_FULL(Ring)							\
+#define RING_FULL(Ring) 						\
 ({									\
-	((Ring.head - Ring.tail) == RING_SIZE);				\
+	( (Ring.head - Ring.tail) == RING_SIZE );			\
 })
 
-#define RING_READ(Ring)							\
+#if FEAT_DBG > 1
+#define RING_MOVE(_dst, _src)						\
 ({									\
-	Ring.buffer[Ring.tail++ & (RING_SIZE - 1)];			\
+	__asm__ volatile						\
+	(								\
+		"movdqa %[src] , %%xmm1"	"\n\t"			\
+		"movdqa %%xmm1 , %[dst]"				\
+		:[dst] "=m" ( _dst )					\
+		:[src]  "m" ( _src )					\
+		: "%xmm1","memory"					\
+	);								\
+})
+#else
+#define RING_MOVE(_dst, _src)						\
+({									\
+	_dst.arg = _src.arg;						\
+	_dst.cmd = _src.cmd;						\
+	_dst.sub = _src.sub;						\
+})
+#endif
+
+#define RING_READ(Ring, _ctrl)						\
+({									\
+	unsigned int tail = Ring.tail++ & (RING_SIZE - 1);		\
+	RING_MOVE(_ctrl, Ring.buffer[tail]);				\
 })
 
-#define RING_WRITE(Ring, _cmd, _arg)					\
+#define RING_WRITE_0xPARAM( _sub, Ring, _cmd)				\
 ({									\
-	struct RING_CTRL ctrl = {.arg = _arg, .cmd = _cmd};		\
-	Ring.buffer[Ring.head++ & (RING_SIZE - 1)] = ctrl;		\
+	RING_CTRL ctrl = {						\
+			.arg = 0x0LU,					\
+			.cmd = _cmd, .sub = _sub			\
+	};								\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
 })
+
+#define RING_WRITE_1xPARAM( _sub, Ring, _cmd, _arg)			\
+({									\
+	RING_CTRL ctrl = {						\
+			.arg = _arg,					\
+			.cmd = _cmd, .sub = _sub			\
+	};								\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
+})
+
+#define RING_WRITE_2xPARAM( _sub, Ring, _cmd, _dllo, _dlhi)		\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = 0x0U , .hi = 0x0U },		\
+			.cmd = _cmd, .sub = _sub			\
+	};								\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
+})
+
+#define RING_WRITE_3xPARAM( _sub, Ring, _cmd, _dllo, _dlhi, _dhlo)	\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = _dhlo, .hi = 0x0U },		\
+			.cmd = _cmd, .sub = _sub			\
+	};								\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
+})
+
+#define RING_WRITE_4xPARAM(_sub, Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)\
+({									\
+	RING_CTRL ctrl = {						\
+			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dh = {.lo = _dhlo, .hi = _dhhi},		\
+			.cmd = _cmd, .sub = _sub			\
+	};								\
+	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
+	RING_MOVE(Ring.buffer[head], ctrl);				\
+})
+
+#define RING_WRITE_DISPATCH(_1,_2,_3,_4,_5,_6,_7,RING_WRITE_CURSOR, ...)\
+	RING_WRITE_CURSOR
+
+#define RING_WRITE_SUB_CMD( ... )					\
+	RING_WRITE_DISPATCH(__VA_ARGS__,RING_WRITE_4xPARAM,	/*7*/	\
+					RING_WRITE_3xPARAM,	/*6*/	\
+					RING_WRITE_2xPARAM,	/*5*/	\
+					RING_WRITE_1xPARAM,	/*4*/	\
+					RING_WRITE_0xPARAM,	/*3*/	\
+						NULL,		/*2*/	\
+						NULL)		/*1*/	\
+							( __VA_ARGS__ )
+
+#define RING_WRITE( ... ) RING_WRITE_SUB_CMD( 0x0U, __VA_ARGS__ )
+
+typedef struct {
+	struct {
+		char	Vendor[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Release[MAX_UTS_LEN];
+	} BIOS;
+	struct {
+		char	Vendor[MAX_UTS_LEN];
+	} System;
+	struct {
+		char	Name[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Serial[MAX_UTS_LEN],
+			SKU[MAX_UTS_LEN],
+			Family[MAX_UTS_LEN];
+	} Product;
+	struct {
+		char	Name[MAX_UTS_LEN],
+			Version[MAX_UTS_LEN],
+			Serial[MAX_UTS_LEN];
+	} Board;
+} SMBIOS_ST;

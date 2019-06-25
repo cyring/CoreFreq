@@ -54,19 +54,6 @@
 	#define MSR_AMD_PP0_ENERGY_STATUS	0xc001029a
 #endif
 
-/* UNDOCUMENTED REGISTERS */
-#ifndef MSR_AMD_PC6_F17H_STATUS
-	#define MSR_AMD_PC6_F17H_STATUS		0xc0010292
-#endif
-
-#ifndef MSR_AMD_PSTATE_F17H_BOOST
-	#define MSR_AMD_PSTATE_F17H_BOOST	0xc0010293
-#endif
-
-#ifndef MSR_AMD_CC6_F17H_STATUS
-	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
-#endif
-
 /* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
@@ -87,8 +74,17 @@
 #define SMU_AMD_INDEX_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xb8)
 #define SMU_AMD_DATA_REGISTER_F15H	PCI_CONFIG_ADDRESS(0, 0, 0, 0xbc)
 
-#define SMU_AMD_INDEX_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
-#define SMU_AMD_DATA_REGISTER_F16H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
+#define SMU_AMD_INDEX_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
+#define SMU_AMD_DATA_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
+
+#define Core_AMD_SMN_Read(Core ,	SMN_Register,			\
+					SMN_Address,			\
+					SMU_IndexRegister,		\
+					SMU_DataRegister)		\
+({									\
+	WRPCI(SMN_Address, SMU_IndexRegister);				\
+	RDPCI(SMN_Register.value, SMU_DataRegister);			\
+})
 
 /* Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
@@ -99,6 +95,28 @@
 #define SMU_AMD_THM_TRIP_REGISTER_F15H		0xd8200ce4
 #define SMU_AMD_THM_TCTL_REGISTER_F15H		0xd8200ca4
 #define SMU_AMD_THM_TCTL_REGISTER_F17H		0x00059800
+
+/* UNDOCUMENTED REGISTERS */
+#ifndef MSR_AMD_PC6_F17H_STATUS
+	#define MSR_AMD_PC6_F17H_STATUS 	0xc0010292
+#endif
+
+#ifndef MSR_AMD_PSTATE_F17H_BOOST
+	#define MSR_AMD_PSTATE_F17H_BOOST	0xc0010293
+#endif
+
+#ifndef MSR_AMD_CC6_F17H_STATUS
+	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
+#endif
+
+/* Sources: drivers/edac/amd64_edac.h					*/
+#ifndef SMU_AMD_UMC_BASE_CH0_F17H
+	#define SMU_AMD_UMC_BASE_CH0_F17H	0x00050000
+#endif
+
+#ifndef SMU_AMD_UMC_BASE_CH1_F17H
+	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
+#endif
 
 
 const struct {
@@ -577,17 +595,23 @@ typedef union
 	};
 } AMD_0F_HTT_FREQUENCY;
 
-typedef struct
+typedef union
 {
-	unsigned int
-	PerStepTimeUp	:  5-0,  /* Family: 12h, 14h, 15h		*/
-	TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h		*/
-	TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h		*/
-	PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h		*/
-	ReservedBits1	: 16-13,
-	CurTempTJselect : 18-16, /* Family: 15h				*/
-	ReservedBits2	: 21-18,
-	CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h		*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		PerStepTimeUp	:  5-0,  /* Family: 12h, 14h, 15h	*/
+		TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h	*/
+		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/
+		PerStepTimeDn	: 13-8,  /* Family: 12h, 14h, 15h	*/
+		ReservedBits1	: 16-13,
+		CurTempTJselect : 18-16, /* Family: 15h, 16h		*/
+		ReservedBits2	: 19-18,
+		CurTempRangeSel : 20-19, /* Family: 17h 		*/
+		ReservedBits3	: 21-20,
+		CurTmp		: 32-21; /* Family: 12h, 14h, 15h, 17h	*/
+	};
 } TCTL_REGISTER;
 
 typedef struct

@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#include "bitasm.h"
 #include "corefreq-ui.h"
 
 const char LCD[0x6][0x10][3][3] = {
@@ -523,6 +524,20 @@ WinList winList = {.head = NULL};
 
 char *console = NULL;
 
+struct {
+    union {
+		Bit64	Reset;
+	struct {
+		Bit32	Status;
+		int	Tick;
+	};
+    };
+		FILE	*Handle;
+} dump __attribute__ ((aligned (64))) = {
+	.Reset = 0x0,
+	.Handle = NULL
+};
+
 int GetKey(SCANKEY *scan, struct timespec *tsec)
 {
 	struct pollfd fds = {.fd = STDIN_FILENO, .events = POLLIN};
@@ -559,14 +574,29 @@ inline void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
 	pGrid->data.pullong = pULLONG;
 }
 
+inline void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG)
+{
+	pGrid->data.psllong = pSLLONG;
+}
+
 inline void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
 {
 	pGrid->data.pulong = pULONG;
 }
 
+inline void Set_pSLONG(TGrid *pGrid, signed long *pSLONG)
+{
+	pGrid->data.pslong = pSLONG;
+}
+
 inline void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
 {
 	pGrid->data.puint = pUINT;
+}
+
+inline void Set_pSINT(TGrid *pGrid, signed int *pSINT)
+{
+	pGrid->data.psint = pSINT;
 }
 
 inline void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
@@ -1426,6 +1456,9 @@ void FreeAll(char *buffer)
 	if (fuse != NULL) {
 		free(fuse);
 	}
+	if (dump.Handle != NULL) {
+		fclose(dump.Handle);
+	}
 }
 
 __typeof__ (errno) AllocAll(char **buffer)
@@ -1554,14 +1587,72 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	return(sdx);
 }
 
-void WriteConsole(SCREEN_SIZE drawSize, char *buffer)
+__typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 {
-	unsigned int writeSize = FuseAll(console, drawSize, buffer);
+	__typeof__ (errno) rc = -EBUSY;
+
+	if (!BITVAL(dump.Status, 0))
+	{
+		char *dumpFileName = malloc(64);
+		if (dumpFileName != NULL)
+		{
+			Bit64 tsc;
+			RDTSC64(tsc);
+
+			sprintf(dumpFileName, dumpFormat, tsc);
+			if ((dump.Handle = fopen(dumpFileName, "w")) != NULL)
+			{
+				dump.Tick = tickReset;
+				BITSET(LOCKLESS, dump.Status, 0);
+				rc = 0;
+			} else {
+				rc = errno;
+			}
+			free(dumpFileName);
+		} else {
+			rc = -ENOMEM;
+		}
+	}
+	return(rc);
+}
+
+void AbortDump(void)
+{
+	dump.Tick = 0;
+}
+
+unsigned char DumpStatus(void)
+{
+	return(BITVAL(dump.Status, 0));
+}
+
+unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
+{
+	unsigned int writeSize = FuseAll(console, drawSize, buffer), layout = 0;
 
 	if (writeSize > 0) {
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
+
+		if (BITVAL(dump.Status, 0))
+		{
+			fwrite(console, (size_t) writeSize, 1, dump.Handle);
+
+			if (dump.Tick > 0) {
+				dump.Tick--;
+
+				fwrite( _LF _FF, 1, 1, dump.Handle);
+			} else {
+				BITCLR(LOCKLESS, dump.Status, 0);
+
+				if (fclose(dump.Handle) == 0) {
+					dump.Handle = NULL;
+				}
+				layout = 1;
+			}
+		}
 	}
+	return(layout);
 }
 
 struct termios oldt, newt;

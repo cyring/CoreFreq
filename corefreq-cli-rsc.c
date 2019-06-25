@@ -10,6 +10,7 @@
 #include <sched.h>
 #include <errno.h>
 
+#include "bitasm.h"
 #include "corefreq-ui.h"
 #include "corefreq-cli-rsc.h"
 #include "corefreq-cli-rsc-en.h"
@@ -236,7 +237,10 @@ ASCII	Rsc_Layout_Footer_System_Code_En[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN,
 	Rsc_Layout_Footer_System_Code_Fr[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Card_Core_Online_Attr[] = RSC_LAYOUT_CARD_CORE_ONLINE_ATTR;
-ASCII	Rsc_Layout_Card_Core_Online_Code_En[]= RSC_LAYOUT_CARD_CORE_ONLINE_CODE;
+ASCII	Rsc_Layout_Card_Core_Online_Code_En[2][12] = {
+					RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE,
+					RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE
+	};
 #define Rsc_Layout_Card_Core_Online_Code_Fr Rsc_Layout_Card_Core_Online_Code_En
 
 ATTRIBUTE Rsc_Layout_Card_Core_Offline_Attr[]=RSC_LAYOUT_CARD_CORE_OFFLINE_ATTR;
@@ -397,6 +401,8 @@ ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
 };
 
 ATTRIBUTE Rsc_BoxEvent_Attr[] = RSC_BOX_EVENT_ATTR;
+
+ATTRIBUTE Rsc_CreateRecorder_Attr[] = RSC_CREATE_RECORDER_ATTR;
 
 RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_PROC] = {
@@ -721,11 +727,18 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = Rsc_Layout_Footer_System_Code_Fr
 		}
 	},
-	[RSC_LAYOUT_CARD_CORE_ONLINE] = {
+	[RSC_LAYOUT_CARD_CORE_ONLINE_COND0] = {
 		.Attr = Rsc_Layout_Card_Core_Online_Attr,
 		.Code = {
-			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En,
-			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr
+			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En[0],
+			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr[0]
+		}
+	},
+	[RSC_LAYOUT_CARD_CORE_ONLINE_COND1] = {
+		.Attr = Rsc_Layout_Card_Core_Online_Attr,
+		.Code = {
+			[LOC_EN] = Rsc_Layout_Card_Core_Online_Code_En[1],
+			[LOC_FR] = Rsc_Layout_Card_Core_Online_Code_Fr[1]
 		}
 	},
 	[RSC_LAYOUT_CARD_CORE_OFFLINE] = {
@@ -1128,6 +1141,10 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_BOX_EVENT] = {
 		.Attr = Rsc_BoxEvent_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_CREATE_RECORDER] = {
+		.Attr = Rsc_CreateRecorder_Attr,
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 /* ASCII */
@@ -1922,11 +1939,25 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_PERF_MON_MAX_CSTATE_CODE_FR
 		}
 	},
-	[RSC_PERF_MON_MWAIT_CTRS] = {
+	[RSC_PERF_MON_MONITOR_MWAIT] = {
 		.Attr = vColor,
 		.Code = {
-			[LOC_EN] = RSC_PERF_MON_MWAIT_CTRS_CODE_EN,
-			[LOC_FR] = RSC_PERF_MON_MWAIT_CTRS_CODE_FR
+			[LOC_EN] = RSC_PERF_MON_MONITOR_MWAIT_CODE_EN,
+			[LOC_FR] = RSC_PERF_MON_MONITOR_MWAIT_CODE_FR
+		}
+	},
+	[RSC_PERF_MON_MWAIT_IDX_CSTATE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_EN,
+			[LOC_FR] = RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_FR
+		}
+	},
+	[RSC_PERF_MON_MWAIT_SUB_CSTATE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_EN,
+			[LOC_FR] = RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_FR
 		}
 	},
 	[RSC_PERF_MON_CORE_CYCLE] = {
@@ -2153,6 +2184,20 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_KERNEL_FREE_HIGH_CODE_FR
 		}
 	},
+	[RSC_KERNEL_GOVERNOR] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_GOVERNOR_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_GOVERNOR_CODE_FR
+		}
+	},
+	[RSC_KERNEL_FREQ_DRIVER] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_FREQ_DRIVER_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_FREQ_DRIVER_CODE_FR
+		}
+	},
 	[RSC_KERNEL_IDLE_DRIVER] = {
 		.Attr = Rsc_SysInfoKernel_Attr,
 		.Code = {
@@ -2214,6 +2259,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_KERNEL_RESIDENCY_CODE_EN,
 			[LOC_FR] = RSC_KERNEL_RESIDENCY_CODE_FR
+		}
+	},
+	[RSC_KERNEL_LIMIT] = {
+		.Attr = Rsc_SysInfoKernel_Attr,
+		.Code = {
+			[LOC_EN] = RSC_KERNEL_LIMIT_CODE_EN,
+			[LOC_FR] = RSC_KERNEL_LIMIT_CODE_FR
 		}
 	},
 	[RSC_TOPOLOGY_TITLE] = {
@@ -2608,6 +2660,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_MENU_ITEM_SETTINGS_CODE_FR
 		}
 	},
+	[RSC_MENU_ITEM_SMBIOS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_MENU_ITEM_SMBIOS_CODE_EN,
+			[LOC_FR] = RSC_MENU_ITEM_SMBIOS_CODE_FR
+		}
+	},
 	[RSC_MENU_ITEM_KERNEL] = {
 		.Attr = vColor,
 		.Code = {
@@ -2825,6 +2884,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_SETTINGS_INTERVAL_CODE_FR
 		}
 	},
+	[RSC_SETTINGS_RECORDER] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_RECORDER_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_RECORDER_CODE_FR
+		}
+	},
 	[RSC_SETTINGS_AUTO_CLOCK] = {
 		.Attr = vColor,
 		.Code = {
@@ -2858,6 +2924,20 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_SETTINGS_NMI_REGISTERED_CODE_EN,
 			[LOC_FR] = RSC_SETTINGS_NMI_REGISTERED_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_CPUIDLE_REGISTERED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_FR
+		}
+	},
+	[RSC_SETTINGS_CPUFREQ_REGISTERED] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_EN,
+			[LOC_FR] = RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_FR
 		}
 	},
 	[RSC_HELP_TITLE] = {
@@ -3159,6 +3239,34 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_ITEM_14_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_ITEM_14_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_TERMINAL] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_TERMINAL_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_TERMINAL_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_PRT_SCR] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_PRT_SCR_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_PRT_SCR_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_REC_SCR] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_REC_SCR_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_FAHR_CELS] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR
 		}
 	},
 	[RSC_TURBO_CLOCK_TITLE] = {
@@ -3698,6 +3806,27 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ERROR_SYS_CALL_CODE_EN,
 			[LOC_FR] = RSC_ERROR_SYS_CALL_CODE_FR
+		}
+	},
+	[RSC_BOX_IDLE_LIMIT_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR
+		}
+	},
+	[RSC_BOX_RECORDER_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_BOX_RECORDER_TITLE_CODE_EN,
+			[LOC_FR] = RSC_BOX_RECORDER_TITLE_CODE_FR
+		}
+	},
+	[RSC_SMBIOS_TITLE] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_SMBIOS_TITLE_CODE_EN,
+			[LOC_FR] = RSC_SMBIOS_TITLE_CODE_FR
 		}
 	}
 };

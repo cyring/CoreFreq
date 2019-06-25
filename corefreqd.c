@@ -569,6 +569,8 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Registration.hotplug = Proc->Registration.hotplug;
 	Shm->Registration.pci = Proc->Registration.pci;
 	Shm->Registration.nmi = Proc->Registration.nmi;
+	Shm->Registration.Driver.cpuidle = Proc->Registration.Driver.cpuidle;
+	Shm->Registration.Driver.cpufreq = Proc->Registration.Driver.cpufreq;
 	/* Copy the timer interval delay.				*/
 	Shm->Sleep.Interval = Proc->SleepInterval;
 	/* Compute the polling wait time based on the timer interval.	*/
@@ -2998,43 +3000,58 @@ void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].SystemRegister.EFCR   = Core[cpu]->SystemRegister.EFCR;
 }
 
-void SysGate_IdleDriver(REF *Ref)
+void SysGate_OS_Driver(REF *Ref)
 {
     SHM_STRUCT *Shm = Ref->Shm;
     SYSGATE *SysGate = Ref->SysGate;
 
-    if (strlen(SysGate->IdleDriver.Name) > 0) {
+    if (strlen(SysGate->OS.IdleDriver.Name) > 0) {
 	int idx;
 
-	memcpy(Shm->SysGate.IdleDriver.Name,
-		SysGate->IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
-	Shm->SysGate.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
+	memcpy(Shm->SysGate.OS.IdleDriver.Name,
+		SysGate->OS.IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
+	Shm->SysGate.OS.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
 
-	Shm->SysGate.IdleDriver.stateCount = SysGate->IdleDriver.stateCount;
-	for (idx = 0; idx < Shm->SysGate.IdleDriver.stateCount; idx++)
+	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
+	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
+
+	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-	size_t len=KMIN(strlen(SysGate->IdleDriver.State[idx].Name),
+	size_t len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Name),
 			CPUIDLE_NAME_LEN - 1);
-		memcpy( Shm->SysGate.IdleDriver.State[idx].Name,
-			SysGate->IdleDriver.State[idx].Name, len);
-		Shm->SysGate.IdleDriver.State[idx].Name[len] = '\0';
+		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Name,
+			SysGate->OS.IdleDriver.State[idx].Name, len);
+		Shm->SysGate.OS.IdleDriver.State[idx].Name[len] = '\0';
 
-		Shm->SysGate.IdleDriver.State[idx].exitLatency =
-			SysGate->IdleDriver.State[idx].exitLatency;
+		len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Desc),
+			CPUIDLE_NAME_LEN - 1);
+		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Desc,
+			SysGate->OS.IdleDriver.State[idx].Desc, len);
+		Shm->SysGate.OS.IdleDriver.State[idx].Desc[len] = '\0';
 
-		Shm->SysGate.IdleDriver.State[idx].powerUsage =
-			SysGate->IdleDriver.State[idx].powerUsage;
+		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency =
+			SysGate->OS.IdleDriver.State[idx].exitLatency;
 
-		Shm->SysGate.IdleDriver.State[idx].targetResidency =
-			SysGate->IdleDriver.State[idx].targetResidency;
+		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage =
+			SysGate->OS.IdleDriver.State[idx].powerUsage;
+
+		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency =
+			SysGate->OS.IdleDriver.State[idx].targetResidency;
 	}
     }
-    if (strlen(SysGate->IdleDriver.Governor) > 0) {
-	size_t len=KMIN(strlen(SysGate->IdleDriver.Governor),
-			CPUIDLE_NAME_LEN - 1);
-	memcpy(Shm->SysGate.IdleDriver.Governor,
-		SysGate->IdleDriver.Governor, len);
-	Shm->SysGate.IdleDriver.Governor[len] = '\0';
+    if (strlen(SysGate->OS.FreqDriver.Name) > 0) {
+	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Name),
+			CPUFREQ_NAME_LEN - 1);
+	memcpy(Shm->SysGate.OS.FreqDriver.Name,
+		SysGate->OS.FreqDriver.Name, len);
+	Shm->SysGate.OS.FreqDriver.Name[len] = '\0';
+    }
+    if (strlen(SysGate->OS.FreqDriver.Governor) > 0) {
+	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Governor),
+			CPUFREQ_NAME_LEN - 1);
+	memcpy(Shm->SysGate.OS.FreqDriver.Governor,
+		SysGate->OS.FreqDriver.Governor, len);
+	Shm->SysGate.OS.FreqDriver.Governor[len] = '\0';
     }
 }
 
@@ -3152,6 +3169,8 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
 	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
 	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
+
+	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
 }
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
@@ -3218,7 +3237,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
 		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
 			/* Aggregate the OS idle driver data.		*/
-			SysGate_IdleDriver(Ref);
+			SysGate_OS_Driver(Ref);
 			/* Copy system information.			*/
 			SysGate_Kernel(Ref);
 			/* Start SysGate				*/
@@ -3249,10 +3268,12 @@ void UpdateFeatures(REF *Ref)
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
-	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_READ(Ref->Shm->Ring[rid], ctrl);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
 	if (Quiet & 0x100)
-		printf("\tRING[%u](%x,%lx)>%d\n",rid,ctrl.cmd,ctrl.arg, rc);
+		printf("\tRING[%u](%x,%x)(%lx)>%d\n",
+			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc);
 	switch (rc) {
 	case -EPERM:
 		break;
@@ -3274,7 +3295,8 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
   if (!RING_NULL(Ref->Shm->Ring[rid]))
   {
-	struct RING_CTRL ctrl = RING_READ(Ref->Shm->Ring[rid]);
+	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_READ(Ref->Shm->Ring[rid], ctrl);
 
    switch (ctrl.cmd)
    {
@@ -3306,7 +3328,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
      while (porder->func != NULL)
      {
-      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.lo == ctrl.lo))
+      if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.sub == ctrl.sub))
       {
        if (!BITVAL(Ref->Shm->Proc.Sync, 31))
        {
@@ -3315,10 +3337,10 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		if (BITVAL(Shutdown, 0))	/* SpinLock */
 			break;
 	}
-	SliceScheduling(Ref->Shm, ctrl.hi, porder->pattern);
+	SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
-	Ref->Slice.arg  = porder->ctrl.hi;
+	Ref->Slice.arg  = porder->ctrl.dl.lo;
 	Ref->Slice.pattern = porder->pattern;
 
 	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
@@ -3334,7 +3356,9 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
     break;
    }
     if (Quiet & 0x100)
-	printf("\tRING[%u](%x,%hx:%hx)\n", rid, ctrl.cmd, ctrl.hi, ctrl.lo);
+	printf("\tRING[%u](%x,%x)(%hx:%hx,%hx:%hx)\n",
+		rid, ctrl.cmd, ctrl.sub,
+		ctrl.dh.hi, ctrl.dh.lo, ctrl.dl.hi, ctrl.dl.lo);
   }
 }
 
@@ -3682,8 +3706,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	    }
 		/* Tasks collection: Update OS tasks and memory usage.	*/
-#if FEAT_DBG > 0
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+	    {
 		Shm->SysGate.tickStep = Proc->tickStep;
 		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
 		    if (SysGate_OnDemand(Ref, 1) == 0) {
@@ -3701,28 +3725,6 @@ REASON_CODE Core_Manager(REF *Ref)
 		    }
 		}
 	    }
-#else
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		Shm->SysGate.tickStep = Proc->tickStep;
-		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-		    if (SysGate_OnDemand(Ref, 1) == 0) {
-			if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSUPDT) == 0) {
-				SysGate_Update(Ref);
-			}
-		    }
-		    if (BITVAL(Proc->OS.Signal, 63)) {
-			BITCLR(BUS_LOCK, Proc->OS.Signal, 63);
-
-			UpdateFeatures(Ref);
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
-
-			if (Quiet & 0x100)
-				printf("  CoreFreq: Resume\n");
-		    }
-		}
-	    }
-#endif
 		/* Notify Client.					*/
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
@@ -3865,6 +3867,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 
 		Package_Update(Shm, Proc);
 		Uncore(Shm, Proc, Core[Proc->Service.Core]);
+		memcpy(&Shm->SMB, &Proc->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notification.				*/
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);

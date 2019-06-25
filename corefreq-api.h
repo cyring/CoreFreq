@@ -533,7 +533,7 @@ typedef union
 
 
 typedef struct {
-		IDLEDRIVER	IdleDriver;
+		OS_DRIVER	OS;
 
 		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
@@ -670,8 +670,16 @@ typedef struct
 				hotplug,
 				pci,
 				nmi;
+		struct {
+		unsigned short
+				cpuidle :  1-0,
+				cpufreq :  2-1,
+				unused	: 16-2;
+		} Driver;
 	} Registration;
 
 	enum HYPERVISOR 	HypervisorID;
 	char			Architecture[CODENAME_LEN];
+
+	SMBIOS_ST		SMB;
 } PROC;

@@ -3,10 +3,11 @@
 # Licenses: GPL2
 
 PWD ?= $(shell pwd)
-KVERSION ?= $(shell uname -r)
+KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 CC ?= cc
 FEAT_DBG = 1
 WARNING = -Wall
+PREFIX ?= /usr
 
 obj-m := corefreqk.o
 ccflags-y := -D FEAT_DBG=$(FEAT_DBG)
@@ -64,13 +65,23 @@ endif
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
+.PHONY: all
 all: corefreqd corefreq-cli
-	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
+
+.PHONY: install
+install: module-install
+	install -Dm 0755 corefreq-cli corefreqd -t $(PREFIX)/bin
+	install -Dm 0644 corefreqd.service $(PREFIX)/lib/systemd/system/corefreqd.service
+
+.PHONY: module-install
+module-install:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 
 .PHONY: clean
 clean:
 	rm -f corefreqd corefreq-cli
-	$(MAKE) -j1 -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
+	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
 
 corefreqm.o: corefreqm.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c -o corefreqm.o
@@ -119,7 +130,7 @@ info:
 help:
 	@echo -e \
 	"o---------------------------------------------------------------o\n"\
-	"|  make [all] [clean] [info] [help]                             |\n"\
+	"|  make [all] [clean] [info] [help] [install] [module-install]  |\n"\
 	"|                                                               |\n"\
 	"|  CC=<COMPILER>                                                |\n"\
 	"|    where <COMPILER> is cc, gcc or clang                       |\n"\
@@ -138,4 +149,7 @@ help:
 	"|                                                               |\n"\
 	"|  MSR_CORE_PERF_URC=<REG>                                      |\n"\
 	"|    where <REG> is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |\n"\
+	"|                                                               |\n"\
+	"|  KERNELDIR=<PATH>                                             |\n"\
+	"|    where <PATH> is the Kernel source directory                |\n"\
 	"o---------------------------------------------------------------o"

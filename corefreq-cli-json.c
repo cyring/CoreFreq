@@ -534,22 +534,22 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "EDX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Num_C0_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT);
-					json_key(&s, "Num_C1_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT);
-					json_key(&s, "Num_C2_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT);
-					json_key(&s, "Num_C3_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT);
-					json_key(&s, "Num_C4_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT);
-					json_key(&s, "Num_C5_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C5_MWAIT);
-					json_key(&s, "Num_C6_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C6_MWAIT);
-					json_key(&s, "Num_C7_MWAIT");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
+					json_key(&s, "SubCstate_C0_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT0);
+					json_key(&s, "SubCstate_C1_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT1);
+					json_key(&s, "SubCstate_C2_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT2);
+					json_key(&s, "SubCstate_C3_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT3);
+					json_key(&s, "SubCstate_C4_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT4);
+					json_key(&s, "SubCstate_C5_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5);
+					json_key(&s, "SubCstate_C6_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6);
+					json_key(&s, "SubCstate_C7_MWAIT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
 
 					json_end_object(&s);
 				}
@@ -574,21 +574,21 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.ECMD);
 			json_key(&s, "PTM");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.PTM);
-			json_key(&s, "HWP_Reg");
+			json_key(&s, "HWP_Registers");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Reg);
-			json_key(&s, "HWP_Int");
+			json_key(&s, "HWP_Interrupt");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Int);
-			json_key(&s, "HWP_Act");
+			json_key(&s, "HWP_Activity");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Act);
-			json_key(&s, "HWP_EPerf");
-			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_EPrf);
-			json_key(&s, "HWP_Lvl");
-			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Lvl);
-			json_key(&s, "HDC_Reg");
+			json_key(&s, "HWP_EPP");
+			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_EPP);
+			json_key(&s, "HWP_Package");
+			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Pkg);
+			json_key(&s, "HDC_Registers");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HDC_Reg);
 			json_key(&s, "Turbo_V3");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.Turbo_V3);
-			json_key(&s, "HWP_HPerf");
+			json_key(&s, "HWP_Highest_Pref_Cap");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_HPrf);
 			json_key(&s, "HWP_PECI");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_PECI);
@@ -596,7 +596,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Flex);
 			json_key(&s, "HWP_Fast");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Fast);
-			json_key(&s, "HWP_Idle");
+			json_key(&s, "HWP_Idle_SMT");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.EAX.HWP_Idle);
 
 			json_end_object(&s);

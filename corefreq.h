@@ -271,17 +271,23 @@ typedef struct
 typedef struct
 {
 	struct {
-		signed int	AutoClock,   /* 10: Auto, 01: Init, 00: Specs */
-				Experimental,/* 0: Disable, 1: Enable	      */
-				hotplug,     /* < 0: Disable, Other: Enable   */
-				pci,	     /* < 0: Disable, other: Enable   */
-				nmi;	     /* <> 0: Failed, == 0: Enable    */
+		signed int	AutoClock, /* 10: Auto, 01: Init, 00: Specs */
+				Experimental,/* 0: Disable, 1: Enable	*/
+				hotplug, /* < 0: Disable, Other: Enable */
+				pci,	/*  < 0: Disable, other: Enable */
+				nmi;	/* <> 0: Failed, == 0: Enable	*/
+		struct {
+		unsigned short
+				cpuidle :  1-0,/* 0: Disable, 1: Enable */
+				cpufreq :  2-1,/* 0: Disable, 1: Enable */
+				unused	: 16-2;
+		} Driver;
 	} Registration;
 
 	struct {
 		Bit64		Operation	__attribute__ ((aligned (64)));
 
-		IDLEDRIVER	IdleDriver;
+		OS_DRIVER	OS;
 
 		unsigned int	tickReset,
 				tickStep;
@@ -315,17 +321,8 @@ typedef struct
 	} Sleep;
 
 	struct {
-		struct RING_CTRL {
-		    union {
-			unsigned long	arg;
-			struct {
-			unsigned short	lo,
-					hi;
-			};
-		    };
-			unsigned int	cmd;
-		} buffer[RING_SIZE];
-		unsigned int		head, tail;
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(128)));
+		unsigned int	head, tail;
 	} Ring[2]; /* [0] Parent ; [1] Child				*/
 
 	char				ShmName[TASK_COMM_LEN];
@@ -366,6 +363,8 @@ typedef struct
 	    } Chipset;
 	} Uncore;
 
+	SMBIOS_ST		SMB;
+
 	PROC_STRUCT		Proc;
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;
@@ -388,33 +387,33 @@ typedef struct {
 	enum REASON_CLASS	rc: 4;
 } REASON_CODE;
 
-#define REASON_SET_3xARG(_reason, _rc, _no)				\
+#define REASON_SET_2xARG(_reason, _rc, _no)				\
 ({									\
 	_reason.no = _no;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = _rc;						\
 })
 
-#define REASON_SET_2xARG(_reason, _rc)					\
+#define REASON_SET_1xARG(_reason, _rc)					\
 ({									\
 	_reason.no = errno;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = _rc;						\
 })
 
-#define REASON_SET_1xARG(_reason)					\
+#define REASON_SET_0xARG(_reason)					\
 ({									\
 	_reason.no = errno;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = RC_SYS_CALL;					\
 })
 
-#define REASON_DISPATCH(_1,_2,_3,_CURSOR, ... ) _CURSOR
+#define REASON_DISPATCH(_1,_2,_3,REASON_CURSOR, ... ) REASON_CURSOR
 
 #define REASON_SET( ... )						\
-	REASON_DISPATCH( __VA_ARGS__ ,	REASON_SET_3xARG,		\
-					REASON_SET_2xARG,		\
-					REASON_SET_1xARG)( __VA_ARGS__ )
+	REASON_DISPATCH( __VA_ARGS__ ,	REASON_SET_2xARG,		\
+					REASON_SET_1xARG,		\
+					REASON_SET_0xARG)( __VA_ARGS__ )
 
 #define REASON_INIT(_reason)		\
 	REASON_CODE _reason = {.no = 0, .ln = 0, .rc = RC_SUCCESS}

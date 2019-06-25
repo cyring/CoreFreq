@@ -124,6 +124,11 @@ unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
 	return(9 - j);
 }
 
+int Cels2Fahr(unsigned int cels)
+{
+	return(((cels * 117965) >> 16) + 32);
+}
+
 const char *Indent[2][4] = {
 	{"",	"|",	"|- ",	"   |- "},
 	{"",	" ",	"  ",	"   "}
@@ -1699,7 +1704,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
 		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));
-
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
@@ -1754,22 +1759,27 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
 	}
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s:%.*sC0    C1    C2    C3    C4    C5    C6    C7",
-		RSC(PERF_MON_MWAIT_CTRS).CODE(), 04, hSpace);
+		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE());
 
-	PUT(SCANKEY_NULL, attrib[0], width, (OutFunc == NULL) ? 1 : 0,
-		"%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
-		19, hSpace,
-		Shm->Proc.Features.MWait.EDX.Num_C0_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C1_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C2_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C3_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C4_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C5_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C6_MWAIT,
-		Shm->Proc.Features.MWait.EDX.Num_C7_MWAIT);
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s:%.*s#0    #1    #2    #3    #4    #5    #6    #7",
+		RSC(PERF_MON_MWAIT_IDX_CSTATE).CODE(), 04, hSpace);
 
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s:%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
+		RSC(PERF_MON_MWAIT_SUB_CSTATE).CODE(),
+		15 - RSZ(PERF_MON_MWAIT_SUB_CSTATE), hSpace,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT0,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT1,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT2,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT3,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT4,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
+/* Section Mark */
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
@@ -2005,20 +2015,32 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
+void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[8];
+	size_t len = sprintf(item, "%6d", (*data.psint));
+
+	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
+}
+
 REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	size_t	len = 0, sln;
-	char	*item = NULL, *str = NULL;
-	int	idx = 0;
+	size_t	len = (1 + width) * 5;
+	char	*item[5], str[1 + CPUFREQ_NAME_LEN];
+	int	idx;
+	for (idx = 0; idx < 5; idx++) {
+		if ((item[idx] = malloc(len)) != NULL)
+			continue;
+		else {
+			do {
+				free(item[idx]);
+			} while (idx-- != 0);
 
-  if ((item = malloc(width + 1)) == NULL) {
-	REASON_SET(reason, RC_MEM_ERR);
-  } else if ((str = malloc(width + 1)) == NULL) {
-	REASON_SET(reason, RC_MEM_ERR);
-	free(item);
-  } else
-  {
+			REASON_SET(reason, RC_MEM_ERR);
+			return(reason);
+		}
+	}
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
 		"%s:", Shm->SysGate.sysname);
@@ -2077,57 +2099,160 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
-    if ((len = strlen(Shm->SysGate.IdleDriver.Name)
-		+ strlen(Shm->SysGate.IdleDriver.Governor)) > 0)
+	sprintf(item[0], "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
+    len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
+    if (len > 0)
     {
-	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
-		"%s%.*s[%s@%s]", RSC(KERNEL_IDLE_DRIVER).CODE(),
-		width - 3 - RSZ(KERNEL_IDLE_DRIVER) - len, hSpace,
-		Shm->SysGate.IdleDriver.Governor, Shm->SysGate.IdleDriver.Name);
-/* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_STATE).CODE(),
-			15 - (int) RSZ(KERNEL_STATE), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
-      {
-	sln = sprintf(str, "%-8s", Shm->SysGate.IdleDriver.State[idx].Name);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3, item, NULL);
-/* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_POWER).CODE(),
-			15 - (int) RSZ(KERNEL_POWER), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
-      {
-	sln=sprintf(str,"%-8d",Shm->SysGate.IdleDriver.State[idx].powerUsage);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3, item, NULL);
-/* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_LATENCY).CODE(),
-			15 - (int) RSZ(KERNEL_LATENCY), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
-      {
-	sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].exitLatency);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3, item, NULL);
-/* Row Mark */
-	len = sprintf(item, "%s:%.*s", RSC(KERNEL_RESIDENCY).CODE(),
-			15 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
-      for (idx = 0, sln = 0; (idx < Shm->SysGate.IdleDriver.stateCount)
-			 && (3 + len + sln <= width);
-				idx++, len += sln, strncat(item, str, sln))
-      {
-     sln=sprintf(str,"%-8u",Shm->SysGate.IdleDriver.State[idx].targetResidency);
-      }
-	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3, item, NULL);
+	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
+		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
+		width - 2 - RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.FreqDriver.Name);
     }
-	free(item);
-	free(str);
-  }
+/* Row Mark */
+    len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Governor), CPUFREQ_NAME_LEN);
+    if (len > 0)
+    {
+	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
+		item[0], RSC(KERNEL_GOVERNOR).CODE(),
+		width - 2 - RSZ(KERNEL_GOVERNOR) - CPUFREQ_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.FreqDriver.Governor);
+    }
+/* Row Mark */
+    len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
+    if (len > 0)
+    {
+	sprintf(item[0], "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
+	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
+		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
+		width - 2 - RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.IdleDriver.Name);
+    }
+/* Section Mark */
+	GridCall(PUT(Shm->Registration.Driver.cpuidle ? BOXKEY_LIMIT_IDLE_STATE
+							: SCANKEY_NULL,
+			RSC(KERNEL_LIMIT).ATTR(), width, 2,
+			"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
+			width - (OutFunc == NULL ? 12 : 11) - RSZ(KERNEL_LIMIT),
+			hSpace,
+			Shm->Registration.Driver.cpuidle ? '<' : '[',
+			Shm->SysGate.OS.IdleDriver.stateLimit,
+			Shm->Registration.Driver.cpuidle ? '>' : ']'),
+		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
+
+	sprintf(item[0], "%s%.*s", RSC(KERNEL_STATE).CODE(),
+			10 - (int) RSZ(KERNEL_STATE), hSpace);
+
+	sprintf(item[1], "%.*s", 10, hSpace);
+
+	sprintf(item[2], "%s%.*s", RSC(KERNEL_POWER).CODE(),
+			10 - (int) RSZ(KERNEL_POWER), hSpace);
+
+	sprintf(item[3], "%s%.*s", RSC(KERNEL_LATENCY).CODE(),
+			10 - (int) RSZ(KERNEL_LATENCY), hSpace);
+
+	sprintf(item[4], "%s%.*s", RSC(KERNEL_RESIDENCY).CODE(),
+			10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
+
+    for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++) {
+      if (idx < Shm->SysGate.OS.IdleDriver.stateCount)
+      {
+	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Name), 7);
+	sprintf(str, "%7.*s", (int) len,
+		Shm->SysGate.OS.IdleDriver.State[idx].Name);
+	strcat(item[0], str);
+
+	len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.State[idx].Desc), 7);
+	sprintf(str, "%7.*s", (int) len,
+		Shm->SysGate.OS.IdleDriver.State[idx].Desc);
+	strcat(item[1], str);
+
+	sprintf(str, "%7d",
+		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage);
+	strcat(item[2], str);
+
+	sprintf(str, "%7u",
+		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency);
+	strcat(item[3], str);
+
+	sprintf(str, "%7u",
+		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency);
+	strcat(item[4], str);
+      } else {
+	strcat(item[0], "\x20n/a");
+	strcat(item[1], "\x20\x20\x20\x20");
+	strcat(item[2], "\x20\x20\x20\x20");
+	strcat(item[3], "\x20\x20\x20\x20");
+	strcat(item[4], "\x20\x20\x20\x20");
+      }
+      if (idx < (CPUIDLE_STATE_MAX - 1)) {
+	strcat(item[0], "\x20");
+	strcat(item[1], "\x20");
+	strcat(item[2], "\x20");
+	strcat(item[3], "\x20");
+	strcat(item[4], "\x20");
+      }
+    }
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item[0]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[1]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[2]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[3]);
+
+	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[4]);
+/* Section Mark */
+    for (idx = 0; idx < 5; idx++) {
+	free(item[idx]);
+    }
+	return(reason);
+}
+
+REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
+{
+	REASON_INIT(reason);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
+		"%s", Shm->SMB.BIOS.Vendor);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.BIOS.Version);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.BIOS.Release);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
+		"%s", Shm->SMB.System.Vendor);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
+		"%s", Shm->SMB.Product.Name);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Product.Version);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Product.Serial);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Product.SKU);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Product.Family);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
+		"%s", Shm->SMB.Board.Name);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Board.Version);
+
+	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+		"%s", Shm->SMB.Board.Serial);
+
 	return(reason);
 }
 
@@ -2706,15 +2831,16 @@ struct {
 struct {
 	struct {
 	unsigned int
-		layout	:  1-0,		/* Draw layout			*/
-		clear	:  2-1,		/* Clear screen			*/
-		height	:  3-2,		/* Valid height			*/
-		width	:  4-3,		/* Valid width			*/
-		daemon	:  5-4,		/* Draw dynamic			*/
-		taskVal :  6-5,		/* Display task's value		*/
-		avgOrPC :  7-6,		/* C-states average || % pkg states */
-		clkOrLd :  8-7,		/* Relative freq. || % load	*/
-		_padding: 32-8;
+		layout	:  1-0 ,	/* Draw layout			*/
+		clear	:  2-1 ,	/* Clear screen 		*/
+		height	:  3-2 ,	/* Valid height 		*/
+		width	:  4-3 ,	/* Valid width			*/
+		daemon	:  5-4 ,	/* Draw dynamic 		*/
+		taskVal :  6-5 ,	/* Display task's value		*/
+		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
+		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
+		fahrCels:  9-8 ,	/* 0:Celsius || 1:Fahrenheit	*/
+		_padding: 32-9 ;
 	} Flag;
 	enum VIEW	View;
 	enum DISPOSAL	Disposal;
@@ -2735,7 +2861,8 @@ struct {
 		.daemon = 0,
 		.taskVal= 0,
 		.avgOrPC= 0,
-		.clkOrLd= 0
+		.clkOrLd= 0,
+		.fahrCels=0
 	},
 	.View		= V_FREQ,
 	.Disposal	= D_MAINVIEW,
@@ -2746,6 +2873,17 @@ struct {
 };
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
+
+struct {
+	int	Reset,
+		Select,
+		Ratios[];
+} recorder = {
+		.Reset = 0,
+		.Select = 1,
+		.Ratios = {0, 1, 2, 10, 20, 60, 90, 120, 240, 0}
+};
+
 /* <<< GLOBALS <<< */
 
 void SortUniqRatio()
@@ -2903,39 +3041,39 @@ Window *CreateMenu(unsigned long long id)
   StoreTCell(wMenu, SCANKEY_d, RSC(MENU_ITEM_DASHBOARD).CODE()	, skeyAttr);
   StoreTCell(wMenu, SCANKEY_p, RSC(MENU_ITEM_PROCESSOR).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE()	, gateAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_b,RSC(MENU_ITEM_SMBIOS).CODE(), skeyAttr);
   StoreTCell(wMenu, SCANKEY_f, RSC(MENU_ITEM_FREQUENCY).CODE()	, skeyAttr);
   StoreTCell(wMenu, SCANKEY_m, RSC(MENU_ITEM_TOPOLOGY).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_HASH,RSC(MENU_ITEM_HOTPLUG).CODE()	,skeyAttr);
+  StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE()	, gateAttr);
   StoreTCell(wMenu, SCANKEY_i, RSC(MENU_ITEM_INST_CYCLES).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_e, RSC(MENU_ITEM_FEATURES).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_e,	RSC(MENU_ITEM_FEATURES).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_F3, RSC(MENU_ITEM_TOOLS).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_HASH,RSC(MENU_ITEM_HOTPLUG).CODE()	,skeyAttr);
   StoreTCell(wMenu, SCANKEY_c, RSC(MENU_ITEM_CORE_CYCLES).CODE(), skeyAttr);
   StoreTCell(wMenu, SCANKEY_SHIFT_i,RSC(MENU_ITEM_ISA_EXT).CODE(), skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_F3, RSC(MENU_ITEM_TOOLS).CODE()	, fkeyAttr);
   StoreTCell(wMenu, SCANKEY_l, RSC(MENU_ITEM_IDLE_STATES).CODE(), skeyAttr);
   StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE()	, skeyAttr);
+  StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE()	, skeyAttr);
   StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(), skeyAttr);
   StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_F1, RSC(MENU_ITEM_KEYS).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE()	, skeyAttr);
   StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE() , gateAttr);
   StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE() , skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_SHIFT_l, RSC(MENU_ITEM_LANG).CODE() , skeyAttr);
+  StoreTCell(wMenu, SCANKEY_F1, RSC(MENU_ITEM_KEYS).CODE()	, fkeyAttr);
   StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE() , skeyAttr);
   StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE()	, skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_F4, RSC(MENU_ITEM_QUIT).CODE()	, fkeyAttr);
+  StoreTCell(wMenu, SCANKEY_SHIFT_l, RSC(MENU_ITEM_LANG).CODE() , skeyAttr);
   StoreTCell(wMenu, SCANKEY_SHIFT_v,RSC(MENU_ITEM_POW_VOLT).CODE(),skeyAttr);
   StoreTCell(wMenu, SCANKEY_SHIFT_r,RSC(MENU_ITEM_SYS_REGS).CODE(),skeyAttr);
 
-  StoreTCell(wMenu, SCANKEY_VOID,			""	, voidAttr);
+  StoreTCell(wMenu, SCANKEY_F4, RSC(MENU_ITEM_QUIT).CODE()	, fkeyAttr);
   StoreTCell(wMenu, SCANKEY_SHIFT_t,RSC(MENU_ITEM_SLICE_CTRS).CODE(),skeyAttr);
   StoreTCell(wMenu, SCANKEY_SHIFT_m,RSC(MENU_ITEM_MEM_CTRL).CODE(),ctrlAttr);
 
@@ -2973,11 +3111,21 @@ void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
-void PollWaitUpdate(TGrid *grid, DATA_TYPE data)
+void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[4+1];
-	sprintf(item, "%4ld", Shm->Sleep.pollingWait.tv_nsec / 1000000L);
+	sprintf(item, "%4ld", (*data.pslong) / 1000000L);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+}
+
+void RecorderUpdate(TGrid *grid, DATA_TYPE data)
+{
+	char item[4+1];
+	int duration = RECORDER_SECONDS((*data.psint), Shm->Sleep.Interval);
+	if (duration <= 9999) {
+		sprintf(item, "%4d", duration);
+		memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+	}
 }
 
 void SettingUpdate(TGrid *grid, const int bix, const int pos,
@@ -3007,6 +3155,22 @@ void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
+void HotPlug_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = !(Shm->Registration.hotplug < 0),
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.pci == 1,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 {
 	const int bix = Shm->Registration.nmi == 1,
@@ -3015,112 +3179,118 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
+void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.Driver.cpuidle,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
+void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	const int bix = Shm->Registration.Driver.cpufreq,
+		  pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+}
+
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 14,
-				8, (TOP_HEADER_ROW + 14 + 3 < draw.Size.height)?
-					TOP_HEADER_ROW + 3 : 1);
+	Window *wSet = CreateWindow(wLayer, id,
+				1, CUMIN(18, draw.Size.height - 2),
+				8, (TOP_HEADER_ROW + 18 + 2 < draw.Size.height)?
+					TOP_HEADER_ROW + 2 : 1);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
 		RSC(CREATE_SETTINGS_COND1).ATTR()
 	};
-	size_t subLen = strlen(Shm->ShmName);
-	char subStr[16];
+	size_t length = strlen(Shm->ShmName);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_DAEMON).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(SETTINGS_DAEMON).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-  GridCall(StoreTCell(wSet, OPS_INTERVAL,RSC(SETTINGS_INTERVAL).CODE(),
-							MAKE_PRINT_UNFOCUS),
-		IntervalUpdate);
+	GridCall( StoreTCell(	wSet, OPS_INTERVAL,
+				RSC(SETTINGS_INTERVAL).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		IntervalUpdate );
 
-  GridCall(StoreTCell(wSet, SCANKEY_NULL," Sys. Tick(ms)                  ",
-							MAKE_PRINT_UNFOCUS),
-		SysTickUpdate);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Sys. Tick(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SysTickUpdate );
 
-  GridCall(StoreTCell(wSet, SCANKEY_NULL," Poll Wait(ms)                  ",
-							MAKE_PRINT_UNFOCUS),
-		PollWaitUpdate);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Poll Wait(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.pollingWait.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Ring Wait(ms)                  ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Ring Wait(ms)                  ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.ringWaiting.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Child Wait(ms)                 ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Child Wait(ms)                 ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.childWaiting.tv_nsec );
 
-	StoreTCell(wSet, SCANKEY_NULL,   " Slice Wait(ms)                 ",
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				" Slice Wait(ms)                 ",
+				MAKE_PRINT_UNFOCUS ),
+		SvrWaitUpdate, &Shm->Sleep.sliceWaiting.tv_nsec );
 
-  GridCall(StoreTCell(wSet, OPS_AUTOCLOCK,  RSC(SETTINGS_AUTO_CLOCK).CODE(),
-			attrib[((Shm->Registration.AutoClock & 0b10) != 0)]),
-		AutoClockUpdate);
+	GridCall( StoreTCell(	wSet, OPS_RECORDER,
+				RSC(SETTINGS_RECORDER).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		RecorderUpdate, &recorder.Reset );
 
-  GridCall(StoreTCell(wSet,OPS_EXPERIMENTAL,RSC(SETTINGS_EXPERIMENTAL).CODE(),
-				attrib[Shm->Registration.Experimental != 0]),
-		ExperimentalUpdate);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_CPU_HOTPLUG).CODE(),
-				attrib[!(Shm->Registration.hotplug < 0)]);
+	GridCall( StoreTCell( wSet, OPS_AUTOCLOCK,
+			RSC(SETTINGS_AUTO_CLOCK).CODE(),
+			attrib[((Shm->Registration.AutoClock & 0b10) != 0)] ),
+		AutoClockUpdate );
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(SETTINGS_PCI_ENABLED).CODE(),
-					attrib[(Shm->Registration.pci == 1)]);
+	GridCall( StoreTCell(	wSet, OPS_EXPERIMENTAL,
+				RSC(SETTINGS_EXPERIMENTAL).CODE(),
+				attrib[Shm->Registration.Experimental != 0] ),
+		ExperimentalUpdate );
 
-  GridCall(StoreTCell(wSet,OPS_INTERRUPTS,RSC(SETTINGS_NMI_REGISTERED).CODE(),
-						attrib[Shm->Registration.nmi]),
-		NMI_Registration_Update);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPU_HOTPLUG).CODE(),
+				attrib[!(Shm->Registration.hotplug < 0)] ),
+		HotPlug_Update );
 
-	StoreTCell(wSet, SCANKEY_NULL,   RSC(CREATE_SETTINGS_COND0).CODE(),
-							MAKE_PRINT_UNFOCUS);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_PCI_ENABLED).CODE(),
+				attrib[(Shm->Registration.pci == 1)] ),
+		PCI_Probe_Update );
 
-	memcpy(&TCellAt(wSet, 0, 1).item[31 - subLen], Shm->ShmName, subLen);
+	GridCall( StoreTCell(	wSet, OPS_INTERRUPTS,
+				RSC(SETTINGS_NMI_REGISTERED).CODE(),
+				attrib[Shm->Registration.nmi] ),
+		NMI_Registration_Update );
 
-	subLen = sprintf(subStr, "%.*s<%4u>",
-				9, hSpace, Shm->Sleep.Interval);;
-	memcpy(&TCellAt(wSet, 0, 2).item[31 - subLen], subStr, subLen);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpuidle] ),
+		CPU_Idle_Update );
 
-	subLen = sprintf(subStr, "%14u ",
-				Shm->Sleep.Interval * Shm->SysGate.tickReset);
-	memcpy(&TCellAt(wSet, 0, 3).item[31 - subLen], subStr, subLen);
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
+				attrib[Shm->Registration.Driver.cpufreq] ),
+		CPU_Freq_Update );
 
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.pollingWait.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 4).item[31 - subLen], subStr, subLen);
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
 
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.ringWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 5).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.childWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 6).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "%14ld ",
-				Shm->Sleep.sliceWaiting.tv_nsec / 1000000L);
-	memcpy(&TCellAt(wSet, 0, 7).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-			enabled((Shm->Registration.AutoClock & 0b10) != 0));
-	memcpy(&TCellAt(wSet, 0, 8).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-				enabled((Shm->Registration.Experimental != 0)));
-	memcpy(&TCellAt(wSet, 0, 9).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled(!(Shm->Registration.hotplug < 0)));
-	memcpy(&TCellAt(wSet, 0,10).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "[%3s]",
-				enabled((Shm->Registration.pci == 1)));
-	memcpy(&TCellAt(wSet, 0,11).item[31 - subLen], subStr, subLen);
-
-	subLen = sprintf(subStr, "<%3s>",
-				enabled(Shm->Registration.nmi));
-	memcpy(&TCellAt(wSet, 0,12).item[31 - subLen], subStr, subLen);
+	memcpy(&TCellAt(wSet, 0, 1).item[31 - length], Shm->ShmName, length);
 
 	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
 
@@ -3139,7 +3309,8 @@ Window *CreateSettings(unsigned long long id)
 
 Window *CreateHelp(unsigned long long id)
 {
-	Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2,
+	Window *wHelp = CreateWindow(wLayer, id,
+					2, CUMIN(19, draw.Size.height - 2), 2,
 				(TOP_HEADER_ROW + 19 + 1 < draw.Size.height) ?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
@@ -3228,6 +3399,10 @@ Window *CreateHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wHelp,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wHelp,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wHelp,	.key.Down,	MotionDown_Win);
+	StoreWindow(wHelp,	.key.Up,	MotionUp_Win);
+	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
+	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
     }
 	return(wHelp);
 }
@@ -3255,16 +3430,22 @@ Window *CreateAdvHelp(unsigned long long id)
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(ADV_HELP_ITEM_8).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOT}	},
+	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
 	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
+	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
+	{0, RSC(ADV_HELP_ITEM_TERMINAL).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_PRT_SCR).CODE(),	{SCANKEY_CTRL_p}},
+	{1, RSC(ADV_HELP_ITEM_REC_SCR).CODE(),	{SCANKEY_ALT_p} },
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	}
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
-	Window *wHelp = CreateWindow(wLayer, id, 1, nmemb, 41,
+	Window *wHelp = CreateWindow(wLayer, id,
+				1, CUMIN(nmemb, draw.Size.height - 2), 41,
 				(TOP_HEADER_ROW + nmemb + 1 < draw.Size.height)?
 					TOP_HEADER_ROW + 1 : 1);
     if (wHelp != NULL) {
@@ -3437,17 +3618,32 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_k:
 		{
-		winOrigin.col = 2;
-		winWidth = 76;
-		if (TOP_HEADER_ROW + 8 + 11 < draw.Size.height) {
-			matrixSize.hth = 11;
-			winOrigin.row = TOP_HEADER_ROW + 8;
+		CUINT height = 11
+			+ ( strlen(Shm->SysGate.OS.FreqDriver.Name) > 0 )
+			+ ( strlen(Shm->SysGate.OS.FreqDriver.Governor) > 0 )
+			+ ( strlen(Shm->SysGate.OS.IdleDriver.Name) > 0 )
+			+ ( Shm->SysGate.OS.IdleDriver.stateCount > 0 ) * 6;
+		winOrigin.col = 1;
+		winWidth = 78;
+		if (TOP_HEADER_ROW + 1 + height < draw.Size.height) {
+			matrixSize.hth = height;
+			winOrigin.row = TOP_HEADER_ROW + 1;
 		} else {
-			matrixSize.hth = CUMIN((draw.Size.height - 2), 11);
+			matrixSize.hth = CUMIN((draw.Size.height - 2), height);
 			winOrigin.row = 1;
 		}
 		SysInfoFunc = SysInfoKernel;
 		title = RSC(KERNEL_TITLE).CODE();
+		}
+		break;
+	case SCANKEY_SHIFT_b:
+		{
+		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= draw.Size.height)
+			winOrigin.row = TOP_HEADER_ROW + 1;
+		winOrigin.col = 6;
+		winWidth = 66;
+		SysInfoFunc = SysInfoSMBIOS;
+		title = RSC(SMBIOS_TITLE).CODE();
 		}
 		break;
 	}
@@ -3475,6 +3671,7 @@ Window *CreateSysInfo(unsigned long long id)
 		case SCANKEY_t:
 		case SCANKEY_o:
 		case SCANKEY_w:
+		case SCANKEY_k:
 			StoreWindow(wSysInfo,	.key.Enter, Enter_StickyCell);
 			break;
 		case SCANKEY_u:
@@ -4027,6 +4224,109 @@ Window *CreateSelectCPU(unsigned long long id)
 	return(wUSR);
 }
 
+Window *CreateSelectIdle(unsigned long long id)
+{
+	Window *wIdle = CreateWindow(wLayer, id,
+			1, 1 + Shm->SysGate.OS.IdleDriver.stateCount,
+			(draw.Size.width - (2 + RSZ(BOX_IDLE_LIMIT_TITLE))) / 2,
+			TOP_HEADER_ROW + 2);
+    if (wIdle != NULL)
+    {
+	ASCII item[24+1];
+	int idx;
+
+	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
+			(ASCII*) "            0     RESET ",
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
+	{
+		sprintf((char*) item, "           %2d%10.*s ", 1 + idx,
+			10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
+
+		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
+				item, MakeAttr(WHITE, 0, BLACK, 0));
+	}
+	StoreWindow(wIdle, .title, (char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE());
+
+	wIdle->matrix.select.row  = Shm->SysGate.OS.IdleDriver.stateLimit;
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 8] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[ 9] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[10] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[11] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[12] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[13] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[14] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[15] =		\
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[16] =		\
+						MakeAttr(CYAN , 0, BLACK, 1);
+	TCellAt(wIdle, 0, wIdle->matrix.select.row).item[ 8] = '<';
+	if (wIdle->matrix.select.row > 9)
+		TCellAt(wIdle, 0, wIdle->matrix.select.row).item[15] = '>';
+	else
+		TCellAt(wIdle, 0, wIdle->matrix.select.row).item[16] = '>';
+
+	StoreWindow(wIdle,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wIdle,	.key.Down,	MotionDown_Win);
+	StoreWindow(wIdle,	.key.Up,	MotionUp_Win);
+	StoreWindow(wIdle,	.key.Home,	MotionTop_Win);
+	StoreWindow(wIdle,	.key.End,	MotionBottom_Win);
+
+	StoreWindow(wIdle,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wIdle,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wIdle,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wIdle,	.key.WinUp,	MotionOriginUp_Win);
+    }
+	return(wIdle);
+}
+
+Window *CreateRecorder(unsigned long long id)
+{
+	Window *wRec = CreateWindow(wLayer, id,
+				1, CUMIN(8, draw.Size.height - 2),
+				43,
+				(TOP_HEADER_ROW + 4 + 8 < draw.Size.height)?
+					TOP_HEADER_ROW + 4 : 1);
+    if (wRec != NULL)
+    {
+	char item[24+1];
+	unsigned int idx = 1;
+	do {
+		unsigned long long key = OPS_RECORDER | (idx << 4);
+		int	duration = recorder.Ratios[idx] * RECORDER_DEFAULT,
+			remainder = duration % (60 * 60),
+			hours	= duration / (60 * 60),
+			minutes = remainder / 60,
+			seconds = remainder % 60;
+
+		sprintf(item,	"\x20\x20%02d:%02d:%02d\x20\x20",
+				hours, minutes, seconds);
+
+		StoreTCell(	wRec,
+				key,
+				item,
+				RSC(CREATE_RECORDER).ATTR() );
+
+	} while (recorder.Ratios[++idx] != 0);
+
+	if (recorder.Select > 0) {
+		wRec->matrix.select.row  = recorder.Select - 1;
+	}
+	StoreWindow(wRec, .title, (char*) RSC(BOX_RECORDER_TITLE).CODE());
+
+	StoreWindow(wRec,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wRec,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wRec,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wRec,	.key.WinUp,	MotionOriginUp_Win);
+	StoreWindow(wRec,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wRec,	.key.Down,	MotionDown_Win);
+	StoreWindow(wRec,	.key.Up,	MotionUp_Win);
+	StoreWindow(wRec,	.key.Home,	MotionReset_Win);
+	StoreWindow(wRec,	.key.End,	MotionEnd_Cell);
+    }
+	return(wRec);
+}
+
 Window *_CreateBox(	unsigned long long id,
 			Coordinate origin,
 			Coordinate select,
@@ -4252,16 +4552,20 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
     case SCANKEY_OPEN_BRACE:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_CONTROLLER );
+	}
     break;
     case SCANKEY_CLOSE_BRACE:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_MACHINE, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_CONTROLLER );
+	}
     break;
     case SCANKEY_F2:
     case SCANCON_F2:
@@ -4308,64 +4612,84 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_INTERVAL_100:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 100);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				100,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_150:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 150);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				150,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_250:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 250);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				250,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 500);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				500,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_750:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 750);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				750,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_1000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1000);
-    }
+	if (!RING_FULL( Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				1000,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_1500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 1500);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				1500,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_2000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2000);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				2000,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_2500:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 2500);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				2500,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_INTERVAL_3000:
-    {
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERVAL, 3000);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				3000,
+				MACHINE_INTERVAL );
+	}
     break;
     case OPS_AUTOCLOCK:
     {
@@ -4393,16 +4717,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_AUTOCLOCK_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-       RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_AUTOCLOCK );
+	}
     break;
     case OPS_AUTOCLOCK_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_AUTOCLOCK, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_AUTOCLOCK );
+	}
     break;
     case OPS_EXPERIMENTAL:
     {
@@ -4448,16 +4776,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_EXPERIMENTAL_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-       RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_EXPERIMENTAL );
+	}
     break;
     case OPS_EXPERIMENTAL_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_EXPERIMENTAL,COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_EXPERIMENTAL );
+	}
     break;
     case OPS_INTERRUPTS:
     {
@@ -4497,16 +4829,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case OPS_INTERRUPTS_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS,COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_INTERRUPTS );
+	}
     break;
     case OPS_INTERRUPTS_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_INTERRUPTS, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_INTERRUPTS );
+	}
     break;
     case SCANKEY_HASH:
     {
@@ -4637,6 +4973,11 @@ int Shortcut(SCANKEY *scan)
 	else
 		SetHead(&winList, win);
     }
+    break;
+    case SCANKEY_SHIFT_f:
+	draw.Flag.fahrCels = !draw.Flag.fahrCels;
+	if (draw.Disposal == D_DASHBOARD)
+		draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_h:
     {
@@ -4872,16 +5213,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_EIST_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_EIST );
+	}
     break;
     case BOXKEY_EIST_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_EIST, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_EIST );
+	}
     break;
     case BOXKEY_C1E:
     {
@@ -4911,16 +5256,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1E_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_C1E );
+	}
     break;
     case BOXKEY_C1E_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1E, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_C1E );
+	}
     break;
     case BOXKEY_TURBO:
     {
@@ -4950,16 +5299,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TURBO_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_TURBO );
+	}
     break;
     case BOXKEY_TURBO_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_TURBO, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_TURBO );
+	}
     break;
     case BOXKEY_C1A:
     {
@@ -4989,16 +5342,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1A_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_C1A );
+	}
     break;
     case BOXKEY_C1A_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1A, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_C1A );
+	}
     break;
     case BOXKEY_C3A:
     {
@@ -5028,16 +5385,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C3A_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_C3A );
+	}
     break;
     case BOXKEY_C3A_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3A, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_C3A );
+	}
     break;
     case BOXKEY_C1U:
     {
@@ -5067,16 +5428,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C1U_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_C1U );
+	}
     break;
     case BOXKEY_C1U_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C1U, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_C1U );
+	}
     break;
     case BOXKEY_C3U:
     {
@@ -5106,16 +5471,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_C3U_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_C3U );
+	}
     break;
     case BOXKEY_C3U_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_C3U, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_C3U );
+	}
     break;
     case BOXKEY_CC6:
     {
@@ -5145,16 +5514,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_CC6_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_CC6 );
+	}
     break;
     case BOXKEY_CC6_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CC6, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_CC6 );
+	}
     break;
     case BOXKEY_PC6:
     {
@@ -5184,16 +5557,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_PC6_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_PC6 );
+	}
     break;
     case BOXKEY_PC6_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PC6, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_PC6 );
+	}
     break;
     case BOXKEY_PKGCST:
     {
@@ -5251,8 +5628,12 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PKGCST_C0:
     {
 	const unsigned long newCST = (scan->key - BOXKEY_PKGCST_C0) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PKGCST, newCST);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				newCST,
+				TECHNOLOGY_PKG_CSTATE );
+	}
     }
     break;
     case BOXKEY_IOMWAIT:
@@ -5285,16 +5666,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_IOMWAIT_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_IO_MWAIT );
+	}
     break;
     case BOXKEY_IOMWAIT_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_IOMWAIT, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_IO_MWAIT );
+	}
     break;
     case BOXKEY_IORCST:
     {
@@ -5344,8 +5729,12 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IORCST_C8:
     {
 	const unsigned long newCST = (scan->key - BOXKEY_IORCST_C0) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_IORCST, newCST);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				newCST,
+				TECHNOLOGY_IO_MWAIT_REDIR );
+	}
     }
     break;
     case BOXKEY_ODCM:
@@ -5377,16 +5766,20 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_ODCM_OFF:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_OFF);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_ODCM );
+	}
     break;
     case BOXKEY_ODCM_ON:
-    {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM, COREFREQ_TOGGLE_ON);
-    }
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_ODCM );
+	}
     break;
     case BOXKEY_DUTYCYCLE:
     {
@@ -5532,8 +5925,12 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_ODCM_DC14:
     {
 	const unsigned long newDC = (scan->key - BOXKEY_ODCM_DC00) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_ODCM_DC, newDC);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				newDC,
+				TECHNOLOGY_ODCM_DUTYCYCLE );
+	}
     }
     break;
     case BOXKEY_PWR_POL00:
@@ -5554,8 +5951,12 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PWR_POL15:
     {
 	const unsigned long newPolicy = (scan->key - BOXKEY_PWR_POL00) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_PWR_POLICY, newPolicy);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				newPolicy,
+				TECHNOLOGY_POWER_POLICY );
+	}
     }
     break;
     case BOXKEY_HWP_EPP:
@@ -5606,20 +6007,36 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_HWP_EPP_MIN:
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x0);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0x0,
+				TECHNOLOGY_HWP_EPP );
+	}
     break;
     case BOXKEY_HWP_EPP_MED:
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0x80);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0x80,
+				TECHNOLOGY_HWP_EPP );
+	}
     break;
     case BOXKEY_HWP_EPP_PWR:
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xc0);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0xc0,
+				TECHNOLOGY_HWP_EPP );
+	}
     break;
     case BOXKEY_HWP_EPP_MAX:
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP_EPP, 0xff);
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0xff,
+				TECHNOLOGY_HWP_EPP );
+	}
     break;
     case BOXKEY_HWP:
     {
@@ -5647,9 +6064,41 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_HWP_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_HWP );
+	}
+    break;
+    case BOXKEY_LIMIT_IDLE_STATE:
     {
-      if (!RING_FULL(Shm->Ring[0]))
-	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_HWP, COREFREQ_TOGGLE_ON);
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateSelectIdle(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
+    case BOXKEY_LIMIT_IDLE_ST00:
+    case BOXKEY_LIMIT_IDLE_ST01:
+    case BOXKEY_LIMIT_IDLE_ST02:
+    case BOXKEY_LIMIT_IDLE_ST03:
+    case BOXKEY_LIMIT_IDLE_ST04:
+    case BOXKEY_LIMIT_IDLE_ST05:
+    case BOXKEY_LIMIT_IDLE_ST06:
+    case BOXKEY_LIMIT_IDLE_ST07:
+    case BOXKEY_LIMIT_IDLE_ST08:
+    case BOXKEY_LIMIT_IDLE_ST09:
+    case BOXKEY_LIMIT_IDLE_ST10:
+    {
+	const unsigned long newLim = (scan->key - BOXKEY_LIMIT_IDLE_ST00) >> 4;
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				newLim,
+				MACHINE_LIMIT_IDLE );
+	}
     }
     break;
     case BOXKEY_CLR_THM_SENSOR:
@@ -5661,8 +6110,9 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_CLR_X_DOMAIN:
     {
 	const enum THERM_PWR_EVENTS events=(scan->key & CLEAR_EVENT_MASK) >> 4;
-	if (!RING_FULL(Shm->Ring[0]))
-		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
+      if (!RING_FULL(Shm->Ring[0])) {
+	RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CLEAR_EVENTS, events);
+      }
     }
     break;
     case BOXKEY_TURBO_CLOCK_1C:
@@ -5826,7 +6276,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
@@ -5859,7 +6309,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MAX)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
@@ -5892,7 +6342,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MIN)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
@@ -5987,10 +6437,9 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_F10:
     case BOXKEY_TOOLS_MACHINE:
-    {
-      if (!RING_FULL(Shm->Ring[1]))
+      if (!RING_FULL(Shm->Ring[1])) {
 	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
-    }
+      }
     break;
     case SCANKEY_F3:
     case SCANCON_F3:
@@ -6028,21 +6477,19 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TOOLS_ATOMIC:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = COREFREQ_TOGGLE_ON
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_ATOMIC, arg);
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_ATOMIC,
+			Shm->Proc.Service.Core,
+			COREFREQ_TOGGLE_ON);
       }
-    }
     break;
     case BOXKEY_TOOLS_CRC32:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = COREFREQ_TOGGLE_ON
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CRC32, arg);
-      }
+	RING_WRITE(	Shm->Ring[1],
+			COREFREQ_ORDER_CRC32,
+			Shm->Proc.Service.Core,
+			COREFREQ_TOGGLE_ON);
     }
     break;
     case BOXKEY_TOOLS_CONIC:
@@ -6076,76 +6523,68 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case BOXKEY_TOOLS_CONIC0:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_ELLIPSOID
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_ELLIPSOID,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC1:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLOID_ONE_SHEET
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLOID_ONE_SHEET,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC2:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLOID_TWO_SHEETS
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLOID_TWO_SHEETS,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC3:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_ELLIPTICAL_CYLINDER
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_ELLIPTICAL_CYLINDER,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC4:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_HYPERBOLIC_CYLINDER
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_HYPERBOLIC_CYLINDER,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_CONIC5:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = CONIC_TWO_PARALLEL_PLANES
-				|(unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_CONIC, arg);
+	RING_WRITE_SUB_CMD(	CONIC_TWO_PARALLEL_PLANES,
+				Shm->Ring[1],
+				COREFREQ_ORDER_CONIC,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_RND:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = RAND_SMT
-				| (unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+	RING_WRITE_SUB_CMD(	RAND_SMT,
+				Shm->Ring[1],
+				COREFREQ_ORDER_TURBO,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_RR:
-    {
       if (!RING_FULL(Shm->Ring[1])) {
-	const unsigned long arg = RR_SMT
-				| (unsigned long)(Shm->Proc.Service.Core << 16);
-	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_TURBO, arg);
+	RING_WRITE_SUB_CMD(	RR_SMT,
+				Shm->Ring[1],
+				COREFREQ_ORDER_TURBO,
+				Shm->Proc.Service.Core );
       }
-    }
     break;
     case BOXKEY_TOOLS_TURBO_CPU:
     {
@@ -6166,10 +6605,55 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_t:
     case SCANKEY_u:
     case SCANKEY_w:
+    case SCANKEY_SHIFT_b:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 		AppendWindow(CreateSysInfo(scan->key), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
+    case SCANKEY_CTRL_p:
+	if (DumpStatus())
+	{
+		AbortDump();
+	}
+	else if (StartDump("corefreq_%llx.asc", 0) == 0)
+	{
+		draw.Flag.layout = 1;
+	}
+    break;
+    case SCANKEY_ALT_p:
+    case SCANCON_ALT_p:
+	if (DumpStatus())
+	{
+		AbortDump();
+	}
+	else if (StartDump("corefreq_%llx.asc", recorder.Reset - 1) == 0)
+	{
+		draw.Flag.layout = 1;
+	}
+    break;
+    case OPS_RECORDER_RESET:
+    case OPS_RECORDER_X002:
+    case OPS_RECORDER_X010:
+    case OPS_RECORDER_X020:
+    case OPS_RECORDER_X060:
+    case OPS_RECORDER_X090:
+    case OPS_RECORDER_X120:
+    case OPS_RECORDER_X240:
+    {
+	typeof(recorder.Select) select = (scan->key & OPS_RECORDER_MASK) >> 4;
+	recorder.Select = select;
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+    }
+    break;
+    case OPS_RECORDER:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+		AppendWindow(CreateRecorder(scan->key), &winList);
 	else
 		SetHead(&winList, win);
     }
@@ -6181,42 +6665,53 @@ int Shortcut(SCANKEY *scan)
       }
       else if (scan->key & CPU_ONLINE) {
 	const unsigned long cpu = scan->key & CPU_MASK;
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_ON, cpu);
+	}
       }
       else if (scan->key & CPU_OFFLINE) {
 	const unsigned long cpu = scan->key & CPU_MASK;
-	if (!RING_FULL(Shm->Ring[0]))
+	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_CPU_OFF, cpu);
+	}
       }
       else if (scan->key & CPU_SELECT) {
 	const unsigned short cpu = scan->key & CPU_MASK;
-	const unsigned long arg = USR_CPU | (unsigned long) (cpu << 16);
-	if (!RING_FULL(Shm->Ring[1]))
-		RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_USR_CPU, arg);
+	if (!RING_FULL(Shm->Ring[1])) {
+		RING_WRITE_SUB_CMD(	USR_CPU,
+					Shm->Ring[1],
+					COREFREQ_ORDER_TURBO,
+					cpu );
+	}
       }
       else {
 	CLOCK_ARG clockMod  = {.sllong = scan->key};
 	if (clockMod.NC & BOXKEY_TURBO_CLOCK)
 	{
-	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
+		clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
+	    }
 	}
 	else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
 	{
 	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	   RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
+	    }
 	}
 	else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
 	{
 	  clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-	 if (!RING_FULL(Shm->Ring[0]))
-	  RING_WRITE(Shm->Ring[0],COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
+	    if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
+	    }
 	}
 	else
 		return(-1);
@@ -6327,6 +6822,8 @@ void Layout_Header(Layer *layer, CUINT row)
 			hProc1.length, hProc1.attr, hProc1.code);
 
 	len = strlen(Shm->Proc.Architecture);
+	/* DUMP DOT */
+	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hArch0.origin.col, hArch0.origin.row,
 			hArch0.length, hArch0.attr, hArch0.code);
@@ -6968,8 +7465,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	col++;
 
-	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, 42,
-			(draw.Size.width - 42), row, hSys1);
+	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, 64,
+			(draw.Size.width - 64), row, hSys1);
 
 	len = hSys1.origin.col - col;
 	if ((signed int) len  > 0) {
@@ -6980,6 +7477,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
+	if ((len = strlen(Shm->SMB.Board.Name)) > 0) {
+		len = KMIN(22, len);
+		memcpy(&LayerAt(layer, code,hSys1.origin.col,hSys1.origin.row),
+			Shm->SMB.Board.Name, len);
+	}
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
 		PrintTaskMemory(layer, row,
@@ -7036,84 +7538,92 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 }
 
+size_t Draw_Frequency_Fahrenheit(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cels2Fahr(Cpu->PowerThermal.Limit[0]),
+		Cels2Fahr(CFlop->Thermal.Temp),
+		Cels2Fahr(Cpu->PowerThermal.Limit[1])));
+}
+
+size_t Draw_Frequency_Celsius(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cpu->PowerThermal.Limit[0],
+		CFlop->Thermal.Temp,
+		Cpu->PowerThermal.Limit[1]));
+}
+
+size_t Draw_Frequency_Spaces(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+{
+	return(sprintf(buffer,
+		"%7.2f" " (" "%5.2f" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%.*s",
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		11, hSpace));
+}
+
 CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len = 0;
+	size_t (*Draw_Frequency_Temp[])(struct FLIP_FLOP*, CPU_STRUCT*) = {
+			Draw_Frequency_Celsius,
+			Draw_Frequency_Fahrenheit,
+			Draw_Frequency_Spaces
+	}, len = 0;
 
-	switch (Shm->Proc.thermalFormula) {
-	case THERMAL_FORMULA_INTEL:
-	case THERMAL_FORMULA_AMD:
-	case THERMAL_FORMULA_AMD_0Fh:
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%-3u" "/" "%3u" "/" "%3u",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			CFlop->Thermal.Temp,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
-		break;
-	case THERMAL_FORMULA_AMD_15h:
-	case THERMAL_FORMULA_AMD_17h:
-	    if (cpu == Shm->Proc.Service.Core)
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%-3u" "/" "%3u" "/" "%3u",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			CFlop->Thermal.Temp,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
-	    else
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%.*s",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			11, hSpace);
-	    break;
-	case THERMAL_FORMULA_NONE:
-		len = sprintf(buffer,
-			"%7.2f" " (" "%5.2f" ") "			\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
-			"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-			"%.*s",
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			11, hSpace);
-		break;
-	}
+    switch (Shm->Proc.thermalFormula) {
+    case THERMAL_FORMULA_INTEL:
+    case THERMAL_FORMULA_AMD:
+    case THERMAL_FORMULA_AMD_0Fh:
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+	break;
+    case THERMAL_FORMULA_AMD_15h:
+    case THERMAL_FORMULA_AMD_17h:
+      if (cpu == Shm->Proc.Service.Core) {
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+      } else {
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+      }
+	break;
+    case THERMAL_FORMULA_NONE:
+	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+	break;
+    }
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -7551,6 +8061,22 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
+void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop,
+					struct FLIP_FLOP *SProc)
+{
+	sprintf(buffer, "%3u%4.2f",
+			Cels2Fahr(PFlop->Thermal.Temp),
+			SProc->Voltage.Vcore);
+}
+
+void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop,
+				struct FLIP_FLOP *SProc)
+{
+	sprintf(buffer, "%3u%4.2f",
+			PFlop->Thermal.Temp,
+			SProc->Voltage.Vcore);
+}
+
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -7563,6 +8089,11 @@ void Draw_Footer(Layer *layer, CUINT row)
 		RSC(HOT_EVENT_COND2).ATTR(),
 		RSC(HOT_EVENT_COND3).ATTR(),
 		RSC(HOT_EVENT_COND4).ATTR()
+	};
+	void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
+						struct FLIP_FLOP*) = {
+		Draw_Footer_Voltage_Celsius,
+		Draw_Footer_Voltage_Fahrenheit
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
@@ -7592,7 +8123,8 @@ void Draw_Footer(Layer *layer, CUINT row)
 	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][1];
 	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp][2];
 
-	sprintf(buffer, "%3u%4.2f", PFlop->Thermal.Temp, SProc->Voltage.Vcore);
+	Draw_Footer_Voltage_Temp[draw.Flag.fahrCels](PFlop, SProc);
+
 	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);
 	memcpy(&LayerAt(layer, code, 68, row), &buffer[3], 4);
 
@@ -7814,12 +8346,21 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
-		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE, (4 * INTER_WIDTH),
+	    if (draw.Flag.fahrCels) {
+		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND1,(4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
 
 		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
 				hOnLine.length, hOnLine.attr, hOnLine.code);
+	    } else {
+		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND0,(4 * INTER_WIDTH),
+				card->origin.col, (card->origin.row + 3),
+				hOnLine);
+
+		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
+				hOnLine.length, hOnLine.attr, hOnLine.code);
+	    }
 	} else {
 		LayerDeclare(	LAYOUT_CARD_CORE_OFFLINE, (4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
@@ -8065,7 +8606,8 @@ void Draw_Card_Core(Layer *layer, Card* card)
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 
-	Dec2Digit(CFlop->Thermal.Temp, digit);
+	Dec2Digit( draw.Flag.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
 	LayerAt(layer, attr, (card->origin.col + 7), (card->origin.row + 3)) = \
@@ -8338,7 +8880,7 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 }
 
 
-REASON_CODE Top(char option)
+REASON_CODE Top(char option, int fahrCels)
 {
 /*
            SCREEN
@@ -8390,6 +8932,9 @@ REASON_CODE Top(char option)
 	};
 
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
+	draw.Flag.fahrCels = fahrCels;
+
+	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, 0))
@@ -8399,20 +8944,22 @@ REASON_CODE Top(char option)
 	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
 	    SCANKEY scan = {.key = 0};
 
-	    if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
-		if (Shortcut(&scan) == -1) {
-		  if (IsDead(&winList))
+	  if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
+	    if (Shortcut(&scan) == -1) {
+		if (IsDead(&winList)) {
 			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
-		  else
-		    if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+		}
+		else if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
+		{
 			Shortcut(&scan);
 		}
+	    }
 		PrintWindowStack(&winList);
 
 		break;
-	    } else {
+	  } else {
 		WindowsUpdate(&winList);
-	    }
+	  }
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
 	}
@@ -8423,6 +8970,7 @@ REASON_CODE Top(char option)
 	}
 	if (BITVAL(Shm->Proc.Sync, 63)) {/* Platform changed,redraw the layout*/
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 		draw.Flag.layout = 1;
 		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
 	}
@@ -8459,7 +9007,7 @@ REASON_CODE Top(char option)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
 	/* Write to the standard output.				*/
-	WriteConsole(draw.Size, buffer);
+	draw.Flag.layout = WriteConsole(draw.Size, buffer);
       } else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
@@ -8512,19 +9060,17 @@ REASON_CODE Help(REASON_CODE reason, ...)
 int main(int argc, char *argv[])
 {
 	struct stat shmStat = {0};
-	int fd = -1;
-
-	char *program = strdup(argv[0]),
-		*appName = program != NULL ? basename(program) : argv[0];
+	int	fd = -1, idx = 0, fahrCels = 0;
+	char	*program = strdup(argv[0]),
+		*appName = program != NULL ? basename(program) : argv[idx],
+		option = 't';
 
 	REASON_INIT(reason);
 
-	char option = 't';
-
 	LOCALE(IN);
 
-  if ((argc >= 2) && (argv[1][0] == '-')) {
-	option = argv[1][1];
+  if ((argc >= 2) && (argv[++idx][0] == '-')) {
+	option = argv[idx][1];
   }
   if (option == 'h') {
 	REASON_SET(reason, RC_CMD_SYNTAX, 0);
@@ -8542,17 +9088,24 @@ int main(int argc, char *argv[])
       {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	switch (option) {
-	case 'k':
+	do {
+	    switch (option) {
+	    case 'F':
+		fahrCels = 1;
+		break;
+	    case 'B':
+		reason = SysInfoSMBIOS(NULL, 80, NULL);
+		break;
+	    case 'k':
 		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 			reason = SysInfoKernel(NULL, 80, NULL);
 		}
 		break;
-	case 'u':
+	    case 'u':
 		reason = SysInfoCPUID(NULL, 80, NULL);
 		break;
-	case 's':
-	{
+	    case 's':
+		{
 		Window tty = {.matrix.size.wth = 4};
 
 		reason = SysInfoProc(NULL, 80, NULL);
@@ -8587,65 +9140,73 @@ int main(int argc, char *argv[])
 			80, 0, (char *) &(RSC(POWER_THERMAL_TITLE).CODE()[1]));
 		reason = SysInfoPwrThermal(NULL, 80, NULL);
 		if (IS_REASON_SUCCESSFUL(reason) == 0) break;
-	}
+		}
 		break;
-	case 'j':
+	    case 'j':
 		JsonSysInfo(Shm, NULL);
 		break;
-	case 'm': {
+	    case 'm':
+		{
 		Window tty = {.matrix.size.wth = 6};
 		Topology(&tty, NULL);
 		}
 		break;
-	case 'M': {
+	    case 'M':
+		{
 		Window tty = {.matrix.size.wth = 14};
 		MemoryController(&tty, NULL);
 		}
 		break;
-	case 'R': {
+	    case 'R':
+		{
 		Window tty = {.matrix.size.wth = 17};
 		SystemRegisters(&tty, NULL);
 		}
 		break;
-	case 'i':
+	    case 'i':
 		TrapSignal(1);
 		Instructions();
 		TrapSignal(0);
 		break;
-	case 'c':
+	    case 'c':
 		TrapSignal(1);
 		Counters();
 		TrapSignal(0);
 		break;
-	case 'V':
+	    case 'V':
 		TrapSignal(1);
 		Voltage();
 		TrapSignal(0);
 		break;
-	case 'g':
+	    case 'g':
 		TrapSignal(1);
 		Package();
 		TrapSignal(0);
 		break;
-	case 'd':
+	    case 'd':
 		/* Fallthrough */
-	case 't':
+	    case 't':
 		{
 		TERMINAL(IN);
 
 		TrapSignal(1);
-		reason = Top(option);
+		reason = Top(option, fahrCels);
 		TrapSignal(0);
 
 		TERMINAL(OUT);
 		}
 		break;
-	default: {
+	    default:
+		{
 		REASON_SET(reason, RC_CMD_SYNTAX, 0);
 		reason = Help(reason, appName);
 		}
 		break;
-	}
+	    }
+	} while (  (++idx < argc)
+		&& (argv[idx][0] == '-')
+		&& ((option = argv[idx][1]) != '\0') );
+
 	if (munmap(Shm, shmStat.st_size) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 		reason = Help(reason, SHM_FILENAME);

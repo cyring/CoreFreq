@@ -150,6 +150,8 @@
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN				\
 {									\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
 	'T','a','s','k','s',' ','[',' ',' ',' ',' ',' ',' ',']',	\
 	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
@@ -301,7 +303,14 @@
 #define RSC_PERF_MON_LOW_CSTATE_CODE_EN (ASCII*) "Lowest C-State"
 #define RSC_PERF_MON_IOMWAIT_CODE_EN	(ASCII*) "I/O MWAIT Redirection"
 #define RSC_PERF_MON_MAX_CSTATE_CODE_EN (ASCII*) "Max C-State Inclusion"
-#define RSC_PERF_MON_MWAIT_CTRS_CODE_EN (ASCII*) "MWAIT States"
+
+#define RSC_PERF_MON_MONITOR_MWAIT_CODE_EN				\
+					(ASCII*) "MONITOR/MWAIT"
+#define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_EN				\
+					(ASCII*) "State index"
+#define RSC_PERF_MON_MWAIT_SUB_CSTATE_CODE_EN				\
+					(ASCII*) "Sub C-State"
+
 #define RSC_PERF_MON_CORE_CYCLE_CODE_EN (ASCII*) "Core Cycles"
 #define RSC_PERF_MON_INST_RET_CODE_EN	(ASCII*) "Instructions Retired"
 #define RSC_PERF_MON_REF_CYCLE_CODE_EN	(ASCII*) "Reference Cycles"
@@ -336,7 +345,9 @@
 #define RSC_KERNEL_BUFFER_RAM_CODE_EN	(ASCII*) "Buffer RAM"
 #define RSC_KERNEL_TOTAL_HIGH_CODE_EN	(ASCII*) "Total High"
 #define RSC_KERNEL_FREE_HIGH_CODE_EN	(ASCII*) "Free High"
-#define RSC_KERNEL_IDLE_DRIVER_CODE_EN	(ASCII*) "Idle driver"
+#define RSC_KERNEL_GOVERNOR_CODE_EN	(ASCII*) "Governor"
+#define RSC_KERNEL_FREQ_DRIVER_CODE_EN	(ASCII*) "CPU-Freq driver"
+#define RSC_KERNEL_IDLE_DRIVER_CODE_EN	(ASCII*) "CPU-Idle driver"
 #define RSC_KERNEL_RELEASE_CODE_EN	(ASCII*) "Release"
 #define RSC_KERNEL_VERSION_CODE_EN	(ASCII*) "Version"
 #define RSC_KERNEL_MACHINE_CODE_EN	(ASCII*) "Machine"
@@ -345,6 +356,7 @@
 #define RSC_KERNEL_POWER_CODE_EN	(ASCII*) "Power"
 #define RSC_KERNEL_LATENCY_CODE_EN	(ASCII*) "Latency"
 #define RSC_KERNEL_RESIDENCY_CODE_EN	(ASCII*) "Residency"
+#define RSC_KERNEL_LIMIT_CODE_EN	(ASCII*) "Idle Limit"
 
 #define RSC_TOPOLOGY_TITLE_CODE_EN	(ASCII*) " Topology "
 
@@ -405,7 +417,8 @@
 #define RSC_MENU_ITEM_VIEW_CODE_EN	(ASCII*) "          View          "
 #define RSC_MENU_ITEM_WINDOW_CODE_EN	(ASCII*) "         Window         "
 #define RSC_MENU_ITEM_SETTINGS_CODE_EN	(ASCII*) " Settings           [s] "
-#define RSC_MENU_ITEM_KERNEL_CODE_EN	(ASCII*) " Kernel Data        [k] "
+#define RSC_MENU_ITEM_SMBIOS_CODE_EN	(ASCII*) " SMBIOS data        [B] "
+#define RSC_MENU_ITEM_KERNEL_CODE_EN	(ASCII*) " Kernel data        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_EN	(ASCII*) " HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_EN	(ASCII*) " Tools             [F3] "
 #define RSC_MENU_ITEM_ABOUT_CODE_EN	(ASCII*) " About              [a] "
@@ -438,17 +451,23 @@
 #define RSC_SETTINGS_DAEMON_CODE_EN					\
 				(ASCII*) " Daemon gate                    "
 #define RSC_SETTINGS_INTERVAL_CODE_EN					\
-				(ASCII*) " Interval(ms)                   "
+				(ASCII*) " Interval(ms)            <    > "
+#define RSC_SETTINGS_RECORDER_CODE_EN					\
+				(ASCII*) " Recorder(sec)           <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_EN 				\
-				(ASCII*) " Auto Clock                     "
+				(ASCII*) " Auto Clock               <   > "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN				\
-				(ASCII*) " Experimental                   "
+				(ASCII*) " Experimental             <   > "
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_EN				\
-				(ASCII*) " CPU Hot-Plug                   "
+				(ASCII*) " CPU Hot-Plug             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_EN				\
-				(ASCII*) " PCI enablement                 "
+				(ASCII*) " PCI enablement           [   ] "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_EN				\
-				(ASCII*) " NMI registered                 "
+				(ASCII*) " NMI registered           <   > "
+#define RSC_SETTINGS_CPUIDLE_REGISTERED_CODE_EN 			\
+				(ASCII*) " CPU-IDLE driver          [   ] "
+#define RSC_SETTINGS_CPUFREQ_REGISTERED_CODE_EN 			\
+				(ASCII*) " CPU-FREQ driver          [   ] "
 
 #define RSC_HELP_TITLE_CODE_EN		(ASCII*) " Help "
 #define RSC_HELP_KEY_ESCAPE_CODE_EN	(ASCII*) " [Escape]         "
@@ -482,7 +501,7 @@
 #define RSC_ADV_HELP_ITEM_1_CODE_EN					\
 			(ASCII*) " Frequency view:                      "
 #define RSC_ADV_HELP_ITEM_2_CODE_EN					\
-			(ASCII*) " %        Averages or Package C-States"
+			(ASCII*) " %         Averages | Package C-States"
 #define RSC_ADV_HELP_ITEM_3_CODE_EN					\
 			(ASCII*) " Task Monitoring view:                "
 #define RSC_ADV_HELP_ITEM_4_CODE_EN					\
@@ -492,7 +511,7 @@
 #define RSC_ADV_HELP_ITEM_6_CODE_EN					\
 			(ASCII*) " r              Reverse tasks sorting "
 #define RSC_ADV_HELP_ITEM_7_CODE_EN					\
-			(ASCII*) " v         Show|Hide contextual value "
+			(ASCII*) " v          Show | Hide Kernel values "
 #define RSC_ADV_HELP_ITEM_8_CODE_EN					\
 			(ASCII*) " Any view:                            "
 #define RSC_ADV_HELP_ITEM_9_CODE_EN					\
@@ -507,6 +526,14 @@
 			(ASCII*) "  Up  PgUp                     Scroll "
 #define RSC_ADV_HELP_ITEM_14_CODE_EN					\
 			(ASCII*) " Down PgDw                       CPU  "
+#define RSC_ADV_HELP_ITEM_TERMINAL_CODE_EN				\
+			(ASCII*) " Terminal:                            "
+#define RSC_ADV_HELP_ITEM_PRT_SCR_CODE_EN				\
+			(ASCII*) " [Ctrl]+[p]                      Copy "
+#define RSC_ADV_HELP_ITEM_REC_SCR_CODE_EN				\
+			(ASCII*) " [Alt]+[p]                     Record "
+#define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN				\
+			(ASCII*) " F              Fahrenheit or Celsius "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "
@@ -643,6 +670,7 @@
 		(ASCII*)"CoreFreq."					\
 			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"\
 			"Usage:\t%s [-option <arguments>]\n"		\
+			"\t-F\tTemperature in Fahrenheit\n"		\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
 			"\t-V\tMonitor Power and Voltage\n"		\
@@ -655,6 +683,7 @@
 			"\t-R\tPrint System Registers\n"		\
 			"\t-m\tPrint Topology\n"			\
 			"\t-u\tPrint CPUID\n"				\
+			"\t-B\tPrint SMBIOS\n"				\
 			"\t-k\tPrint Kernel\n"				\
 			"\t-h\tPrint out this message\n"		\
 			"\t-v\tPrint the version number\n"		\
@@ -674,3 +703,9 @@
 
 #define RSC_ERROR_SYS_CALL_CODE_EN					\
 				(ASCII*) "System error code %d\n%s @ line %d\n"
+
+#define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN (ASCII*) " CPU-Idle Limit "
+
+#define RSC_BOX_RECORDER_TITLE_CODE_EN (ASCII*) " Duration "
+
+#define RSC_SMBIOS_TITLE_CODE_EN	(ASCII*) " SMBIOS "
