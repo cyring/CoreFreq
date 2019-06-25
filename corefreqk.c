@@ -5138,7 +5138,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
 		SysGate->taskList[cnt].state    = (short int) thread->state;
-		SysGate->taskList[cnt].on_cpu = (short int) thread->on_cpu;
+		SysGate->taskList[cnt].on_cpu   = (short int) thread->cpu;
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		if (cnt < TASK_LIMIT)
