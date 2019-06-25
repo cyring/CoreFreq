@@ -6276,7 +6276,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
@@ -6309,7 +6309,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MAX)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
@@ -6342,7 +6342,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_MIN)],
-				SProc->PowerThermal.HWP.Capabilities.Lowest,
+				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
 				&lowestShift,
 				&highestShift);
