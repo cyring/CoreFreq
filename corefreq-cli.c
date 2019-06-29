@@ -2852,6 +2852,9 @@ struct {
 	} Area;
 	unsigned int	iClock,
 			cpuScroll;
+	struct {
+	unsigned int	Memory;
+	} Unit;
 } draw = {
 	.Flag = {
 		.layout = 0,
@@ -2869,7 +2872,8 @@ struct {
 	.Size		= {.width = 0, .height = 0},
 	.Area		= {.MinHeight = 0, .MaxRows = 0, .LoadWidth = 0},
 	.iClock 	= 0,
-	.cpuScroll	= 0
+	.cpuScroll	= 0,
+	.Unit		= {.Memory = 0}
 };
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
@@ -6725,7 +6729,10 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 			unsigned long freeRAM,
 			unsigned long totalRAM)
 {
-	sprintf(buffer, "%6u" "%9lu" "%-9lu", taskCount, freeRAM, totalRAM);
+	sprintf(buffer, "%6u" "%9lu" "%-9lu",
+			taskCount,
+			freeRAM >> draw.Unit.Memory,
+			totalRAM >> draw.Unit.Memory);
 
 	memcpy(&LayerAt(layer, code, (draw.Size.width-35), row), &buffer[0], 6);
 	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &buffer[6], 9);
@@ -7488,6 +7495,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 				Shm->SysGate.taskCount,
 				Shm->SysGate.memInfo.freeram,
 				Shm->SysGate.memInfo.totalram);
+	/* Print the memory unit character				*/
+	LayerAt(layer, code, hSys1.origin.col + 61, hSys1.origin.row) = \
+		draw.Unit.Memory ==  0 ? 'K'
+	:	draw.Unit.Memory == 10 ? 'M'
+	:	draw.Unit.Memory == 20 ? 'G' : 0x20;
 }
 
 void Layout_Load_UpperView(Layer *layer, const unsigned int cpu, CUINT row)
@@ -8880,7 +8892,7 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 }
 
 
-REASON_CODE Top(char option, int fahrCels)
+REASON_CODE Top(char option)
 {
 /*
            SCREEN
@@ -8932,7 +8944,6 @@ REASON_CODE Top(char option, int fahrCels)
 	};
 
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
-	draw.Flag.fahrCels = fahrCels;
 
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 
@@ -9060,7 +9071,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 int main(int argc, char *argv[])
 {
 	struct stat shmStat = {0};
-	int	fd = -1, idx = 0, fahrCels = 0;
+	int	fd = -1, idx = 0;
 	char	*program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[idx],
 		option = 't';
@@ -9090,8 +9101,11 @@ int main(int argc, char *argv[])
 
 	do {
 	    switch (option) {
+	    case '0' ... '2':
+		draw.Unit.Memory = 10 * (option - '0');
+		break;
 	    case 'F':
-		fahrCels = 1;
+		draw.Flag.fahrCels = 1;
 		break;
 	    case 'B':
 		reason = SysInfoSMBIOS(NULL, 80, NULL);
@@ -9190,7 +9204,7 @@ int main(int argc, char *argv[])
 		TERMINAL(IN);
 
 		TrapSignal(1);
-		reason = Top(option, fahrCels);
+		reason = Top(option);
 		TrapSignal(0);
 
 		TERMINAL(OUT);

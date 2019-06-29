@@ -1367,7 +1367,7 @@ extern RESOURCE_ST Resource[];
 	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK 		\
 }
 
-#define RSC_LAYOUT_CARD_MC_CODE						\
+#define RSC_LAYOUT_CARD_MC_CODE 					\
 {									\
 	'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']' 		\
 }

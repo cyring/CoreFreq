@@ -154,7 +154,7 @@
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',			\
 	'T','a','c','h','e','s','[',' ',' ',' ',' ',' ',' ',']',	\
 	' ','M','e','m',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',	\
-	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ','K','B',']' 	\
+	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','B',']' 	\
 }
 
 #define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR	(ASCII*) "[  ACTIVER ]"
@@ -670,6 +670,7 @@
 	(ASCII*)"CoreFreq."						\
 		"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
+		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
