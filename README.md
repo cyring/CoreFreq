@@ -55,7 +55,7 @@ The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI col
 
 ### Build
 0. Software needed:  
-* GNU C Compiler
+* GNU C Compiler with GNU extensions
 * GNU Make tool
 * Header files for building modules for Linux kernel
 
