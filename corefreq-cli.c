@@ -6648,7 +6648,7 @@ int Shortcut(SCANKEY *scan)
     case OPS_RECORDER_X120:
     case OPS_RECORDER_X240:
     {
-	typeof(recorder.Select) select = (scan->key & OPS_RECORDER_MASK) >> 4;
+	__typeof__(recorder.Select) select=(scan->key & OPS_RECORDER_MASK) >> 4;
 	recorder.Select = select;
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
     }

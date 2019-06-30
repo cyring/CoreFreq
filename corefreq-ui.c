@@ -564,68 +564,68 @@ SCREEN_SIZE GetScreenSize(void)
 	return(_screenSize);
 }
 
-inline void Set_pVOID(TGrid *pGrid, void *pVOID)
+__inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
 {
 	pGrid->data.pvoid = pVOID;
 }
 
-inline void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
+__inline__ void Set_pULLONG(TGrid *pGrid, unsigned long long *pULLONG)
 {
 	pGrid->data.pullong = pULLONG;
 }
 
-inline void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG)
+__inline__ void Set_pSLLONG(TGrid *pGrid, signed long long *pSLLONG)
 {
 	pGrid->data.psllong = pSLLONG;
 }
 
-inline void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
+__inline__ void Set_pULONG(TGrid *pGrid, unsigned long *pULONG)
 {
 	pGrid->data.pulong = pULONG;
 }
 
-inline void Set_pSLONG(TGrid *pGrid, signed long *pSLONG)
+__inline__ void Set_pSLONG(TGrid *pGrid, signed long *pSLONG)
 {
 	pGrid->data.pslong = pSLONG;
 }
 
-inline void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
+__inline__ void Set_pUINT(TGrid *pGrid, unsigned int *pUINT)
 {
 	pGrid->data.puint = pUINT;
 }
 
-inline void Set_pSINT(TGrid *pGrid, signed int *pSINT)
+__inline__ void Set_pSINT(TGrid *pGrid, signed int *pSINT)
 {
 	pGrid->data.psint = pSINT;
 }
 
-inline void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
+__inline__ void Set_ULLONG(TGrid *pGrid, unsigned long long _ULLONG)
 {
 	pGrid->data.ullong = _ULLONG;
 }
 
-inline void Set_SLLONG(TGrid *pGrid, signed long long _SLLONG)
+__inline__ void Set_SLLONG(TGrid *pGrid, signed long long _SLLONG)
 {
 	pGrid->data.sllong = _SLLONG;
 }
 
-inline void Set_ULONG(TGrid *pGrid, unsigned long _ULONG)
+__inline__ void Set_ULONG(TGrid *pGrid, unsigned long _ULONG)
 {
 	pGrid->data.ulong = _ULONG;
 }
 
-inline void Set_SLONG(TGrid *pGrid, signed long _SLONG)
+__inline__ void Set_SLONG(TGrid *pGrid, signed long _SLONG)
 {
 	pGrid->data.slong = _SLONG;
 }
 
-inline void Set_UINT(TGrid *pGrid, unsigned int _UINT)
+__inline__ void Set_UINT(TGrid *pGrid, unsigned int _UINT)
 {
 	pGrid->data.uint[0] = _UINT;
 	pGrid->data.uint[1] = 0;
 }
 
-inline void Set_SINT(TGrid *pGrid, signed int _SINT)
+__inline__ void Set_SINT(TGrid *pGrid, signed int _SINT)
 {
 	pGrid->data.sint[0] = _SINT;
 	pGrid->data.sint[1] = 0;
