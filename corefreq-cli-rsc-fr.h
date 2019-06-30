@@ -672,6 +672,7 @@
 		"Usage:\t%s [-option <arguments>]\n"			\
 		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\
+		"\t-J <#>\tNuméro d'index de chaîne SMBIOS\n"		\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-V\tMoniteur de Puissance et Voltage\n"		\

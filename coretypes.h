@@ -1651,25 +1651,44 @@ typedef struct {
 
 #define RING_WRITE( ... ) RING_WRITE_SUB_CMD( 0x0U, __VA_ARGS__ )
 
-typedef struct {
+enum SMB_STRING {
+	SMB_BIOS_VENDOR,
+	SMB_BIOS_VERSION,
+	SMB_BIOS_RELEASE,
+	SMB_SYSTEM_VENDOR,
+	SMB_PRODUCT_NAME,
+	SMB_PRODUCT_VERSION,
+	SMB_PRODUCT_SERIAL,
+	SMB_PRODUCT_SKU,
+	SMB_PRODUCT_FAMILY,
+	SMB_BOARD_NAME,
+	SMB_BOARD_VERSION,
+	SMB_BOARD_SERIAL,
+	SMB_STRING_COUNT
+};
+
+typedef union {
+		char String[SMB_STRING_COUNT][MAX_UTS_LEN];
 	struct {
-		char	Vendor[MAX_UTS_LEN],
-			Version[MAX_UTS_LEN],
-			Release[MAX_UTS_LEN];
-	} BIOS;
-	struct {
-		char	Vendor[MAX_UTS_LEN];
-	} System;
-	struct {
-		char	Name[MAX_UTS_LEN],
-			Version[MAX_UTS_LEN],
-			Serial[MAX_UTS_LEN],
-			SKU[MAX_UTS_LEN],
-			Family[MAX_UTS_LEN];
-	} Product;
-	struct {
-		char	Name[MAX_UTS_LEN],
-			Version[MAX_UTS_LEN],
-			Serial[MAX_UTS_LEN];
-	} Board;
+		struct {
+			char	Vendor[MAX_UTS_LEN],
+				Version[MAX_UTS_LEN],
+				Release[MAX_UTS_LEN];
+		} BIOS;
+		struct {
+			char	Vendor[MAX_UTS_LEN];
+		} System;
+		struct {
+			char	Name[MAX_UTS_LEN],
+				Version[MAX_UTS_LEN],
+				Serial[MAX_UTS_LEN],
+				SKU[MAX_UTS_LEN],
+				Family[MAX_UTS_LEN];
+		} Product;
+		struct {
+			char	Name[MAX_UTS_LEN],
+				Version[MAX_UTS_LEN],
+				Serial[MAX_UTS_LEN];
+		} Board;
+	};
 } SMBIOS_ST;

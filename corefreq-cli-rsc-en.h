@@ -672,6 +672,7 @@
 			"Usage:\t%s [-option <arguments>]\n"		\
 			"\t-0,1,2\tMemory unit in K,M,G Byte\n" 	\
 			"\t-F\tTemperature in Fahrenheit\n"		\
+			"\t-J <#>\tSMBIOS string index number\n"	\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
 			"\t-V\tMonitor Power and Voltage\n"		\

@@ -2217,40 +2217,40 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
-		"%s", Shm->SMB.BIOS.Vendor);
+	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_VENDOR, RSC(SMBIOS_TITLE).ATTR(),
+		width, 0, "%s", Shm->SMB.BIOS.Vendor);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.BIOS.Version);
+	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_VERSION, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.BIOS.Version);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.BIOS.Release);
+	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_RELEASE, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.BIOS.Release);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
-		"%s", Shm->SMB.System.Vendor);
+	PUT(SMBIOS_STRING_INDEX|SMB_SYSTEM_VENDOR, RSC(SMBIOS_TITLE).ATTR(),
+		width, 0, "%s", Shm->SMB.System.Vendor);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
-		"%s", Shm->SMB.Product.Name);
+	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_NAME, RSC(SMBIOS_TITLE).ATTR(),
+		width, 0, "%s", Shm->SMB.Product.Name);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Product.Version);
+	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_VERSION, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.Product.Version);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Product.Serial);
+	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_SERIAL, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.Product.Serial);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Product.SKU);
+	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_SKU, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.Product.SKU);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Product.Family);
+	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_FAMILY, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.Product.Family);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 0,
-		"%s", Shm->SMB.Board.Name);
+	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_NAME, RSC(SMBIOS_TITLE).ATTR(),
+		width, 0, "%s", Shm->SMB.Board.Name);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Board.Version);
+	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_VERSION, RSC(SMBIOS_TITLE).ATTR(),
+		width, 2, "%s", Shm->SMB.Board.Version);
 
-	PUT(SCANKEY_NULL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
+	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_SERIAL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
 		"%s", Shm->SMB.Board.Serial);
 
 	return(reason);
@@ -2855,6 +2855,7 @@ struct {
 	struct {
 	unsigned int	Memory;
 	} Unit;
+	enum SMB_STRING SmbIndex;
 } draw = {
 	.Flag = {
 		.layout = 0,
@@ -2873,7 +2874,8 @@ struct {
 	.Area		= {.MinHeight = 0, .MaxRows = 0, .LoadWidth = 0},
 	.iClock 	= 0,
 	.cpuScroll	= 0,
-	.Unit		= {.Memory = 0}
+	.Unit		= {.Memory = 0},
+	.SmbIndex	= SMB_BOARD_NAME
 };
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
@@ -3684,6 +3686,9 @@ Window *CreateSysInfo(unsigned long long id)
 						wSysInfo->hook.color[1].border);
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
+		case SCANKEY_SHIFT_b:
+			wSysInfo->matrix.select.row = draw.SmbIndex;
+			/* fallthrough */
 		default:
 			StoreWindow(wSysInfo,	.key.Enter, MotionEnter_Cell);
 			break;
@@ -6667,6 +6672,15 @@ int Shortcut(SCANKEY *scan)
 	Shm->SysGate.trackTask = scan->key & TRACK_MASK;
 	draw.Flag.layout = 1;
       }
+      else if (scan->key & SMBIOS_STRING_INDEX) {
+	if (draw.Disposal == D_MAINVIEW) {
+		enum SMB_STRING usrIdx = scan->key & SMBIOS_STRING_MASK;
+		if (usrIdx < SMB_STRING_COUNT) {
+			draw.SmbIndex = usrIdx;
+			draw.Flag.layout = 1;
+		}
+	}
+      }
       else if (scan->key & CPU_ONLINE) {
 	const unsigned long cpu = scan->key & CPU_MASK;
 	if (!RING_FULL(Shm->Ring[0])) {
@@ -7484,10 +7498,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
 
-	if ((len = strlen(Shm->SMB.Board.Name)) > 0) {
-		len = KMIN(22, len);
+	if ((len = strlen(Shm->SMB.String[draw.SmbIndex])) > 0) {
+		len = KMIN(21, len);
 		memcpy(&LayerAt(layer, code,hSys1.origin.col,hSys1.origin.row),
-			Shm->SMB.Board.Name, len);
+			Shm->SMB.String[draw.SmbIndex], len);
 	}
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
@@ -9106,6 +9120,15 @@ int main(int argc, char *argv[])
 		break;
 	    case 'F':
 		draw.Flag.fahrCels = 1;
+		break;
+	    case 'J':
+		if (++idx < argc) {
+			enum SMB_STRING usrIdx = SMB_BOARD_NAME;
+			if ((sscanf(argv[idx], "%u", &usrIdx) == 1)
+			 && (usrIdx < SMB_STRING_COUNT)) {
+				draw.SmbIndex = usrIdx;
+			}
+		}
 		break;
 	    case 'B':
 		reason = SysInfoSMBIOS(NULL, 80, NULL);
