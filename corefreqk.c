@@ -6865,12 +6865,20 @@ static void Stop_SandyBridge_EP(void *arg)
 
 static void Start_Uncore_SandyBridge_EP(void *arg)
 {
-/*TODO:	Uncore_Counters_Set(SNB_EP);*/
+	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
+
+	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	Proc->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;
+	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
+
+	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
 {
-/*TODO:	Uncore_Counters_Clear(SNB_EP);*/
+	WRMSR(	Proc->SaveArea.Uncore_FixedPerfControl,
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
 
 
@@ -7211,7 +7219,6 @@ static void Stop_Haswell_EP(void *arg)
 
 static void Start_Uncore_Haswell_EP(void *arg)
 {
-    if (Proc->Registration.Experimental) {
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
 
 	RDMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
@@ -7220,15 +7227,12 @@ static void Start_Uncore_Haswell_EP(void *arg)
 	Uncore_FixedPerfControl.HSW_EP.EN_CTR0 = 1;
 
 	WRMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
-    }
 }
 
 static void Stop_Uncore_Haswell_EP(void *arg)
 {
-    if (Proc->Registration.Experimental) {
 	WRMSR(	Proc->SaveArea.Uncore_FixedPerfControl,
 		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
-    }
 }
 
 
