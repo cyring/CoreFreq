@@ -590,7 +590,10 @@ typedef struct
 
 	struct
 	{
+	    union {
 		UNCORE_GLOBAL_PERF_CONTROL Uncore_GlobalPerfControl;
+		UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
+	    };
 		UNCORE_FIXED_PERF_CONTROL  Uncore_FixedPerfControl;
 	} SaveArea;
 

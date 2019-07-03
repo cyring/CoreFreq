@@ -48,6 +48,9 @@
 #define MSR_SNB_UNCORE_PERF_GLOBAL_CTRL 	0x00000391
 #define MSR_SKL_UNCORE_PERF_GLOBAL_CTRL 	0x00000e01
 
+#define MSR_SNB_EP_PMON_GLOBAL_CTRL		0x00000c00
+#define MSR_IVB_EP_PMON_GLOBAL_CTRL		0x00000700
+
 #define MSR_NHM_UNCORE_PERF_GLOBAL_STATUS	0x00000392
 #define MSR_SNB_UNCORE_PERF_GLOBAL_STATUS	0x00000392
 #define MSR_SKL_UNCORE_PERF_GLOBAL_STATUS	0x00000e02
@@ -1055,6 +1058,20 @@ typedef union
 		ReservedBits3	: 64-23;
 	} HSW_EP; /* 06_3FH/06-4FH					*/
 } UNCORE_FIXED_PERF_CONTROL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct {
+		unsigned long long		/* Pkg: R/W		*/
+		PMI_Core_Select : 15-0,
+		ReservedBits1	: 29-15,
+		Unfreeze_All	: 30-29,
+		WakeOnPMI	: 31-30,
+		Freeze_All	: 32-31,
+		ReservedBits2	: 64-32;
+	};	/* 06_3EH/06_3FH					*/
+} UNCORE_PMON_GLOBAL_CONTROL;
 
 typedef union
 {

@@ -6866,6 +6866,7 @@ static void Stop_SandyBridge_EP(void *arg)
 static void Start_Uncore_SandyBridge_EP(void *arg)
 {
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
+	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
@@ -6873,10 +6874,23 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
 
 	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
+
+	Proc->SaveArea.Uncore_PMonGlobalControl = Uncore_PMonGlobalControl;
+	Uncore_PMonGlobalControl.Unfreeze_All = 1;
+
+	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
-{
+{	/* If fixed counter was disable at entry, force freezing	*/
+	if (Proc->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0) {
+		Proc->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
+	}
+	WRMSR(	Proc->SaveArea.Uncore_PMonGlobalControl,
+		MSR_SNB_EP_PMON_GLOBAL_CTRL);
+
 	WRMSR(	Proc->SaveArea.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
