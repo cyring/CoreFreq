@@ -164,7 +164,9 @@ CPU     IPS            IPC            CPI
 [corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
 
 ## Debian, Ubuntu
- * Development packages prerequisites.  
+ * Installing the DKMS package will pull the Kernel development packages  
+:hash:`apt-get install dkms`  
+ * Or, install selectively the development packages prerequisites.  
 :hash:`apt-get install libpthread-stubs0-dev`  
 
 ## Red Hat, CentOS
