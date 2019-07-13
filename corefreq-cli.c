@@ -7643,11 +7643,11 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
       if (cpu == Shm->Proc.Service.Core) {
 	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
       } else {
-	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+	len = Draw_Frequency_Temp[2](CFlop, NULL);
       }
 	break;
     case THERMAL_FORMULA_NONE:
-	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, NULL);
+	len = Draw_Frequency_Temp[2](CFlop, NULL);
 	break;
     }
 
