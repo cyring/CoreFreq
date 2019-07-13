@@ -2795,7 +2795,7 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 
 	pci_read_config_dword(dev, 0x180, &base);
 	if (base) {
-		Proc->Uncore.Bus.QuickPath.VT_d = 0;
+		Proc->Uncore.Bus.QuickPath.X58.VT_d = 0;
 /* IOMMU Bug:	{
 			void __iomem *mmio;
 			unsigned int version = 0;
@@ -2808,7 +2808,7 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 				rc = -ENOMEM;
 		}	*/
 	} else
-		Proc->Uncore.Bus.QuickPath.VT_d = 1;
+		Proc->Uncore.Bus.QuickPath.X58.VT_d = 1;
 
 	return((PCI_CALLBACK) rc);
 }
@@ -2826,6 +2826,140 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
 
 	return(Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
+}
+
+static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev)
+{
+	pci_read_config_dword(dev, 0x84, &Proc->Uncore.Bus.SNB_EP_Cap0.value);
+	pci_read_config_dword(dev, 0x88, &Proc->Uncore.Bus.SNB_EP_Cap1.value);
+	pci_read_config_dword(dev, 0x8c, &Proc->Uncore.Bus.SNB_EP_Cap2.value);
+	pci_read_config_dword(dev, 0x90, &Proc->Uncore.Bus.SNB_EP_Cap3.value);
+	pci_read_config_dword(dev, 0x94, &Proc->Uncore.Bus.SNB_EP_Cap4.value);
+
+	return((PCI_CALLBACK) 0);
+}
+
+static PCI_CALLBACK SNB_EP_CTRL0(struct pci_dev *dev)
+{
+	if (Proc->Uncore.CtrlCount < 1) {
+		Proc->Uncore.CtrlCount = 1;
+		Proc->Uncore.ChipID = dev->device;
+	}
+	Proc->Uncore.MC[0].SlotCount = 2;
+
+	return(0);
+}
+
+static PCI_CALLBACK SNB_EP_CTRL1(struct pci_dev *dev)
+{
+	if (Proc->Uncore.CtrlCount < 2) {
+		Proc->Uncore.CtrlCount = 2;
+		Proc->Uncore.ChipID = dev->device;
+	}
+	Proc->Uncore.MC[1].SlotCount = 2;
+
+	return(0);
+}
+
+kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev,	unsigned short mc,
+						unsigned short cha)
+{
+	unsigned short channelCount = cha + 1;
+
+	if (Proc->Uncore.MC[mc].ChannelCount < channelCount) {
+		Proc->Uncore.MC[mc].ChannelCount = channelCount;
+	}
+	pci_read_config_dword(dev, 0x200,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.value);
+
+	pci_read_config_dword(dev, 0x204,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.value);
+
+	pci_read_config_dword(dev, 0x214,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
+
+	return(0);
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA0(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 0, 0));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA1(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 0, 1));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA2(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 0, 2));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA3(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 0, 3));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA0(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 1, 0));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA1(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 1, 1));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA2(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 1, 2));
+}
+
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA3(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_IMC(dev, 1, 3));
+}
+
+kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
+						unsigned short cha)
+{
+	pci_read_config_dword(dev, 0x80,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[0].value);
+
+	pci_read_config_dword(dev, 0x84,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[1].value);
+
+	pci_read_config_dword(dev, 0x88,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[2].value);
+	return(0);
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA0(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 0, 0));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA1(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 0, 1));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA2(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 0, 2));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA3(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 0, 3));
+}
+
+static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
+{
+	pci_read_config_dword(dev, 0xd4, &Proc->Uncore.Bus.QuickPath.value);
+
+	return(0);
 }
 
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)

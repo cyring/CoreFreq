@@ -974,6 +974,22 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_CTRL0(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_CTRL1(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL0_CHA3(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_IMC_CTRL1_CHA3(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
@@ -1158,10 +1174,6 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	Ivy Bridge ix-3xxx, Xeon E7/E5 v2: IMC_HA=0x0ea0 / IMC_TA=0x0ea8
 	TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead		*/
 static struct pci_device_id PCI_IvyBridge_ids[] = {
-	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
-		.driver_data = (kernel_ulong_t) IVB_IMC
-	},
 	{	/* Desktop: IMC_SystemAgent=0x0150			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
 		.driver_data = (kernel_ulong_t) IVB_IMC
@@ -1169,6 +1181,74 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{	/* Mobile i5-3337U: IMC=0x0154				*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0),
+		.driver_data = (kernel_ulong_t) SNB_EP_QPI
+	},
+	{
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY),
+		.driver_data = (kernel_ulong_t) SNB_EP_CAP
+	},
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
+		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
+	},
+	{
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1),
+		.driver_data = (kernel_ulong_t) SNB_EP_CTRL1
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA0
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA1
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA2
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA3
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA0
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL ,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA1
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA2
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA3
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA0
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA1
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA2
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA3
 	},
 	{0, }
 };
@@ -1479,6 +1559,7 @@ enum {
 	CN_SUMMIT_RIDGE,
 	CN_RAVEN_RIDGE,
 	CN_PINNACLE_RIDGE,
+	CN_MATISSE,
 	CN_WHITEHAVEN,
 	CN_COLFAX,
 	CN_NAPLES
@@ -1488,6 +1569,7 @@ static MICRO_ARCH Arch_AMD_Family_17h[] = {
 	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
 	[CN_RAVEN_RIDGE]	= {"Zen/Raven Ridge"},
 	[CN_PINNACLE_RIDGE]	= {"Zen+ Pinnacle Ridge"},
+	[CN_MATISSE]		= {"Zen2/Matisse"},
 	[CN_WHITEHAVEN] 	= {"Zen/Whitehaven"},
 	[CN_COLFAX]		= {"Zen+ Colfax"},
 	[CN_NAPLES]		= {"EPYC/Naples"},
@@ -2082,6 +2164,61 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Boost = {+8, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 3600X",
+	.Boost = {+6, +1},
+	.Param.Offset = {10, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 5 3600",
+	.Boost = {+6, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 3700X",
+	.Boost = {+7, +1},
+	.Param.Offset = {10, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 7 3800X",
+	.Boost = {+5, +1},
+	.Param.Offset = {10, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen 9 3900X",
+	.Boost = {+7, +1},
+	.Param.Offset = {10, 0},
+	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
 	.TurboUnlocked = 1,
@@ -3335,7 +3472,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_SandyBridge_ids,
+	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
 		.Stop = Stop_Uncore_SandyBridge_EP,
@@ -3384,7 +3521,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
-	.PCI_ids = PCI_IvyBridge_ids,
+	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge_EP,
 		.Stop = Stop_Uncore_SandyBridge_EP,

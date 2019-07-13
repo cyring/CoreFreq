@@ -428,6 +428,12 @@ typedef struct
 	/* 4298h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 			} SNB;
 			struct {
+	/*  200h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
+	/*  204h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
+	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
+	/*   80h */		SNB_EP_DIMMMTR		DIMM[MC_MAX_DIMM];
+			} SNB_EP;
+			struct {
 	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits    */
 	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits    */
 	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits    */
@@ -510,11 +516,18 @@ typedef union
 		};
 		struct {
 			NHM_IMC_CLK_RATIO_STATUS DimmClock;
-			X58_QPI_FREQUENCY	QuickPath;
+			QPI_FREQUENCY		QuickPath;
 		};
 		struct {
 			SNB_CAPID		SNB_Cap;
 			IVB_CAPID		IVB_Cap;
+		};
+		struct {
+			SNB_EP_CAPID0		SNB_EP_Cap0;
+			SNB_EP_CAPID1		SNB_EP_Cap1;
+			SNB_EP_CAPID2		SNB_EP_Cap2;
+			SNB_EP_CAPID3		SNB_EP_Cap3;
+			SNB_EP_CAPID4		SNB_EP_Cap4;
 		};
 		struct {
 			SKL_CAPID_A		SKL_Cap_A;
