@@ -3269,6 +3269,13 @@ RESOURCE_ST Resource[] = {
 			[LOC_FR] = RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR
 		}
 	},
+	[RSC_ADV_HELP_ITEM_PROC_EVENT] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR
+		}
+	},
 	[RSC_TURBO_CLOCK_TITLE] = {
 		.Attr = vColor,
 		.Code = {

@@ -3853,14 +3853,18 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	}
     } else {					/* EPB fallback mode	*/
-	/* Turbo is a function of the Target P-state			*/
-	if (!CmpTarget(Core, ValidRatio)) {
-		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	if (Proc->Registration.Driver.cpufreq) {
+		/* Turbo is a function of the Target P-state		*/
+		if (!CmpTarget(Core, ValidRatio)) {
+			BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
 	}
     }
   } else {						/* EPB mode	*/
-	if (!CmpTarget(Core, ValidRatio)) {
-		BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+	if (Proc->Registration.Driver.cpufreq) {
+		if (!CmpTarget(Core, ValidRatio)) {
+			BITCLR(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
 	}
   }
 
@@ -9579,17 +9583,26 @@ static int __init CoreFreqK_init(void)
 				Proc->CPU.OnLine,
 				Proc->CPU.Count);
 
+		    if (Register_CPU_Idle == 1) {
+			Proc->Registration.Driver.cpuidle =		\
+					CoreFreqK_IdleDriver_Init() == 0;
+		    }
+		    if (Register_CPU_Freq == 1) {
+			Proc->Registration.Driver.cpufreq =		\
+					CoreFreqK_FreqDriver_Init() == 0;
+		    }
+
 			Controller_Start(0);
 
 			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
 
 	#ifdef CONFIG_HOTPLUG_CPU
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
-		/* Always returns zero (kernel/notifier.c) */
-		Proc->Registration.hotplug = register_hotcpu_notifier(
+			/* Always returns zero (kernel/notifier.c) */
+			Proc->Registration.hotplug = register_hotcpu_notifier(
 						&CoreFreqK_notifier_block);
 		#else	/* Continue with or without cpu hot-plugging. */
-		Proc->Registration.hotplug = cpuhp_setup_state_nocalls(
+			Proc->Registration.hotplug = cpuhp_setup_state_nocalls(
 						CPUHP_AP_ONLINE_DYN,
 						"corefreqk/cpu:online",
 						CoreFreqK_hotplug_cpu_online,
@@ -9618,14 +9631,6 @@ static int __init CoreFreqK_init(void)
 			);
 		    }
 	#endif /* KERNEL_VERSION(3, 5, 0) */
-
-	if (Register_CPU_Idle == 1) {
-	  Proc->Registration.Driver.cpuidle = CoreFreqK_IdleDriver_Init() == 0;
-	}
-	if (Register_CPU_Freq == 1) {
-	  Proc->Registration.Driver.cpufreq = CoreFreqK_FreqDriver_Init() == 0;
-	}
-
 		  }
 		  else
 		  {

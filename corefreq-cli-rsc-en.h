@@ -534,6 +534,8 @@
 			(ASCII*) " [Alt]+[p]                     Record "
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_EN				\
 			(ASCII*) " F              Fahrenheit or Celsius "
+#define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN				\
+			(ASCII*) " H            Manage Processor Events "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "

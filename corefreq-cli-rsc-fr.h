@@ -534,6 +534,8 @@
 			(ASCII*) " [Alt]+[p]                Enregistrer "
 #define RSC_ADV_HELP_ITEM_FAHR_CELS_CODE_FR				\
 			(ASCII*) " F              Fahrenheit ou Celsius "
+#define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR				\
+			(ASCII*) " H           Gerer Alertes Processeur "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
