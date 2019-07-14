@@ -7487,22 +7487,18 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	col++;
 
-	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, 64,
-			(draw.Size.width - 64), row, hSys1);
+	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, RSZ(LAYOUT_FOOTER_SYSTEM),
+			(draw.Size.width - RSZ(LAYOUT_FOOTER_SYSTEM)),row,hSys1);
 
-	len = hSys1.origin.col - col;
-	if ((signed int) len  > 0) {
-		LayerFillAt(	layer, col, hSys1.origin.row,
-				len, hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
-	}
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
-
+	/* Center the DMI string					*/
 	if ((len = strlen(Shm->SMB.String[draw.SmbIndex])) > 0) {
-		len = KMIN(21, len);
-		memcpy(&LayerAt(layer, code,hSys1.origin.col,hSys1.origin.row),
-			Shm->SMB.String[draw.SmbIndex], len);
+		CUINT	can = CUMIN(hSys1.origin.col - col - 1, len),
+			ctr = ((hSys1.origin.col + col) - can) / 2;
+		LayerFillAt(	layer, ctr, hSys1.origin.row,
+				can, Shm->SMB.String[draw.SmbIndex],
+				MakeAttr(BLUE, 0, BLACK, 1) );
 	}
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
@@ -7511,10 +7507,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 				Shm->SysGate.memInfo.freeram,
 				Shm->SysGate.memInfo.totalram);
 	/* Print the memory unit character				*/
-	LayerAt(layer, code, hSys1.origin.col + 61, hSys1.origin.row) = \
-		draw.Unit.Memory ==  0 ? 'K'
-	:	draw.Unit.Memory == 10 ? 'M'
-	:	draw.Unit.Memory == 20 ? 'G' : 0x20;
+	LayerAt(layer, code,
+		hSys1.origin.col + (RSZ(LAYOUT_FOOTER_SYSTEM) - 3),
+		hSys1.origin.row) =	draw.Unit.Memory ==  0 ? 'K'
+				:	draw.Unit.Memory == 10 ? 'M'
+				:	draw.Unit.Memory == 20 ? 'G' : 0x20;
 }
 
 void Layout_Load_UpperView(Layer *layer, const unsigned int cpu, CUINT row)
