@@ -287,6 +287,11 @@ typedef struct
 					TSC;
 
 		unsigned long long	C1;
+
+		struct
+		{
+		unsigned long long	ACCU;
+		} Power;
 	} Counter[2];
 
 	struct
@@ -305,6 +310,11 @@ typedef struct
 					C7,
 					TSC,
 					C1;
+
+		struct
+		{
+		unsigned long long	ACCU;
+		} Power;
 
 		unsigned int		SMI;
 	} Delta;

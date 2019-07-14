@@ -6112,15 +6112,6 @@ void AMD_Core_Counters_Clear(CORE *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
-#define PWR_ACCU_AMD_Family_17h(Pkg, T) 				\
-({									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
-					MSR_AMD_PKG_ENERGY_STATUS);	\
-									\
-	RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
-					MSR_AMD_PP0_ENERGY_STATUS);	\
-})
-
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
 	Pkg->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =			\
@@ -7968,19 +7959,16 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			Core_AMD_Family_17h_Temp(Core);
 
-			PWR_ACCU_AMD_Family_17h(Proc, 1);
+			RDCOUNTER(Proc->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
+					MSR_AMD_PKG_ENERGY_STATUS);
 
 			Delta_PTSC_OVH(Proc, Core);
 
 			Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, CORES);
-
 			Save_PTSC(Proc);
 
 			Save_PWR_ACCU(Proc, PKG);
-
-			Save_PWR_ACCU(Proc, CORES);
 
 			Sys_Tick(Proc);
 		}
@@ -7988,10 +7976,21 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
 		/* Offset the P-State base register. */
 		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-		/* Read the voltage ID at the offset */
+		/* Read the voltage ID at the offset. */
 		RDMSR(PstateDef, pstate);
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 
+		/* Read the Physical Core RAPL counter. */
+	    if (Core->T.ThreadID == 0)
+	    {
+		RDCOUNTER(Core->Counter[1].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
+		Core->Counter[1].Power.ACCU &= 0xffffffff;
+
+		Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
+					- Core->Counter[0].Power.ACCU;
+
+		Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+	    }
 		Delta_INST(Core);
 
 		Delta_C0(Core);
@@ -8030,9 +8029,17 @@ static void Start_AMD_Family_17h(void *arg)
 	AMD_Core_Counters_Set(Core, Family_17h);
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
-	if (Core->Bind == Proc->Service.Core) {
+	if (Core->Bind == Proc->Service.Core)
+	{
 		PKG_Counters_Generic(Core, 0);
-		PWR_ACCU_AMD_Family_17h(Proc, 0);
+
+		RDCOUNTER(Proc->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
+				MSR_AMD_PKG_ENERGY_STATUS );
+	}
+	if (Core->T.ThreadID == 0)
+	{
+		RDCOUNTER(Core->Counter[0].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
+		Core->Counter[0].Power.ACCU &= 0xffffffff;
 	}
 
 	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);

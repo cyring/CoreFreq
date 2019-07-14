@@ -471,6 +471,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     switch (Proc->powerFormula) {
       case POWER_FORMULA_INTEL:
       case POWER_FORMULA_AMD:
+      case POWER_FORMULA_AMD_17h:
 	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
 			1.0 / (double) (1 << Proc->PowerThermal.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
@@ -481,20 +482,6 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 			0.001 / (double)(1 << Proc->PowerThermal.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
 			0.001 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
-	break;
-      case POWER_FORMULA_AMD_17h: {
-	unsigned int maxCoreCount = (Shm->Proc.Features.leaf80000008.ECX.NC + 1)
-					>> Shm->Proc.Features.HTT_Enable;
-
-	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
-			1.0 / (double) (1 << Proc->PowerThermal.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
-			1.0 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
-	if (maxCoreCount != 0) {
-		Shm->Proc.Power.Unit.Watts  /= maxCoreCount;
-		Shm->Proc.Power.Unit.Joules /= maxCoreCount;
-	}
-      }
 	break;
       case POWER_FORMULA_NONE:
 	break;
@@ -3651,6 +3638,18 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq	    = 0.0;
 
+	switch (Shm->Proc.thermalFormula) {
+	case THERMAL_FORMULA_AMD_17h:
+		Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
+		break;
+	case THERMAL_FORMULA_INTEL:
+	case THERMAL_FORMULA_AMD:
+	case THERMAL_FORMULA_AMD_0Fh:
+	case THERMAL_FORMULA_AMD_15h:
+	case THERMAL_FORMULA_NONE:
+		break;
+	}
+
 	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++)
 	{
 	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
@@ -3717,22 +3716,33 @@ REASON_CODE Core_Manager(REF *Ref)
 			Shm->Proc.Top = cpu;
 		}
 		/* Workaround to Package Thermal Management: the hottest Core */
-		if (!Shm->Proc.Features.Power.EAX.PTM) {
-		    switch (Shm->Proc.thermalFormula) {
-		    case THERMAL_FORMULA_INTEL:
+		switch (Shm->Proc.thermalFormula) {
+		case THERMAL_FORMULA_INTEL:
+		    if (!Shm->Proc.Features.Power.EAX.PTM) {
 			if (CFlop->Thermal.Sensor < PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+		    }
 			break;
-		    case THERMAL_FORMULA_AMD:
-		    case THERMAL_FORMULA_AMD_0Fh:
-		    case THERMAL_FORMULA_AMD_15h:
-		    case THERMAL_FORMULA_AMD_17h:
+		case THERMAL_FORMULA_AMD:
+		case THERMAL_FORMULA_AMD_0Fh:
+		case THERMAL_FORMULA_AMD_15h:
+		    if (!Shm->Proc.Features.Power.EAX.PTM) {
 			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
-			break;
-		    case THERMAL_FORMULA_NONE:
-			break;
 		    }
+			break;
+		case THERMAL_FORMULA_AMD_17h:
+		    if (!Shm->Proc.Features.Power.EAX.PTM) {
+			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
+				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+		    }
+			/* Workaround to sum the RAPL counter of each Core */
+			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
+				Core[cpu]->Delta.Power.ACCU;
+
+			break;
+		case THERMAL_FORMULA_NONE:
+			break;
 		}
 		/* Sum counters.					*/
 		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
