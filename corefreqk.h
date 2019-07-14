@@ -2173,7 +2173,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen 7 3600X",
 	.Boost = {+6, +1},
-	.Param.Offset = {10, 0},
+	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2195,7 +2195,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen 7 3700X",
 	.Boost = {+7, +1},
-	.Param.Offset = {10, 0},
+	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2206,7 +2206,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen 7 3800X",
 	.Boost = {+5, +1},
-	.Param.Offset = {10, 0},
+	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
@@ -2217,7 +2217,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{
 	.BrandSubStr = "AMD Ryzen 9 3900X",
 	.Boost = {+7, +1},
-	.Param.Offset = {10, 0},
+	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
