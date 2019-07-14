@@ -29,7 +29,7 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 
 ### Prerequisites
 
-**a-** For a better accuracy, *disable* the Kernel *NMI Watchdog*  
+**a-** _Intel only_: For a better accuracy, *disable* the Kernel *NMI Watchdog*  
 
 Add the below parameter in the kernel boot loader (Grub, SysLinux)  
 The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counters  
@@ -38,7 +38,7 @@ The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the
 nmi_watchdog=0
 ```
 
-**b-** No Virtualization  
+**b-** _AMD and Intel_: No Virtualization  
 
 VMs don't provide access to the registers that the CoreFreq driver employs :
 * Fixed Performance Counters 
@@ -185,7 +185,7 @@ CPU     IPS            IPC            CPI
 nmi_watchdog=0
 ```
 
-  A: a NMI alternative is proposed in the `Makefile` to make use of the `APERF/MPERF` registers  
+  A: _Intel only_: a NMI alternative is proposed in the `Makefile` to make use of the `APERF/MPERF` registers  
 
 ```
 make help	# for instructions usage
