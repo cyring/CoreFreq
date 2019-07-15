@@ -7936,7 +7936,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
       if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
-	&& (Shm->SysGate.taskList[idx].wake_cpu>= draw.cpuScroll)
+	&& (Shm->SysGate.taskList[idx].wake_cpu >= draw.cpuScroll)
 	&& (Shm->SysGate.taskList[idx].wake_cpu < (	draw.cpuScroll
 							+ draw.Area.MaxRows) ))
       {
