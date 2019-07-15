@@ -1424,7 +1424,7 @@ typedef struct {
 				tgid,
 				ppid;
 	short int		state;		/* TASK_STATE_MAX = 0x1000 */
-	short int		on_cpu;	/* limited to 64K CPUs	*/
+	short int		wake_cpu;	/* limited to 64K CPUs	*/
 	char			comm[TASK_COMM_LEN];
 } TASK_MCB;
 
