@@ -5237,7 +5237,13 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
 		SysGate->taskList[cnt].state    = (short int) thread->state;
+
+#if defined(CONFIG_SCHED_BMQ)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
+#else
+		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
+#endif
+
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		if (cnt < TASK_LIMIT)
