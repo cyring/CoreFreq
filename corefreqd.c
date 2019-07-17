@@ -488,8 +488,6 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     }
 	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
 			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
-	/* Scale window unit time to the driver monitoring interval.	*/
-	Shm->Proc.Power.Unit.Times *= 1000.0 / (double) Shm->Sleep.Interval;
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
@@ -3796,9 +3794,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		Shm->Proc.State.Energy[pw] = (double) PFlip->Delta.ACCU[pw]
 					   * Shm->Proc.Power.Unit.Joules;
 
-		Shm->Proc.State.Power[pw] =(double) PFlip->Delta.ACCU[pw]
-					  * Shm->Proc.Power.Unit.Watts
-					  * Shm->Proc.Power.Unit.Times;
+		Shm->Proc.State.Power[pw] = (1000.0*Shm->Proc.State.Energy[pw])
+					  / (double) Shm->Sleep.Interval;
 	    }
 		/* Package thermal formulas				*/
 	    if (Shm->Proc.Features.Power.EAX.PTM) {

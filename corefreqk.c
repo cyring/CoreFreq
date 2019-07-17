@@ -4404,10 +4404,10 @@ void PowerThermal(CORE *Core)
 	{_Westmere_EX,		1, 1, 0},	/* 06_2F */
 
 	{_SandyBridge,		1, 1, 0},	/* 06_2A */
-	{_SandyBridge_EP,	1, 1, 1},	/* 06_2D */
+	{_SandyBridge_EP,	1, 1, 0},	/* 06_2D */
 
 	{_IvyBridge,		1, 0, 1},	/* 06_3A */
-	{_IvyBridge_EP ,	1, 1, 1},	/* 06_3E */
+	{_IvyBridge_EP ,	1, 1, 0},	/* 06_3E */
 
 	{_Haswell_DT,		1, 1, 1},	/* 06_3C */
 	{_Haswell_EP,		1, 1, 1},	/* 06_3F */
