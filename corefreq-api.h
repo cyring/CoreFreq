@@ -440,6 +440,7 @@ typedef struct
 			struct {
 	/*  200h */		SNB_IMC_TC_DBP		DBP;	/* 32 bits    */
 	/*  204h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
+	/*  208h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
 	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 	/*   80h */		SNB_EP_DIMMMTR		DIMM[MC_MAX_DIMM];
 			} SNB_EP;

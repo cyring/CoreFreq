@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.59.1"
+#define COREFREQ_VERSION	"1.59.2"
 
 enum {	GenuineIntel,
 	Core_Yonah,

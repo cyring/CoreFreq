@@ -1799,7 +1799,7 @@ typedef union
 		tRAS		: 24-16, /* IVB 			*/
 		ReservedBits	: 32-24;
 	};
-	/* Device: 16,30 - Function: 0,1,4,5 - Offset 0200h */
+	/* Device: 16,30 - Function: 0,1,4,5 - Offset 0200h		*/
 	struct {
 		unsigned int
 		tRCD		:  5-0,
@@ -1827,7 +1827,40 @@ typedef union
 		CMD_3ST 	: 30-29, /* IVB 			*/
 		CMD_Stretch	: 32-30; /* IVB: 00 = 1N , 10 = 2N , 11 = 3N */
 	};
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 204h		*/
+	struct {
+		unsigned int
+		tRRD		:  4-0,
+		tRTPr		:  8-4,
+		tCKE		: 12-8,
+		tWTPr		: 16-12,
+		tFAW		: 22-16,
+		T_PRPDEN	: 24-22,
+		tWR		: 29-24,
+		CMD_3ST 	: 30-29,
+		CMD_Stretch	: 32-30; /* 00=1N, 01=N/A, 10=2N, 11=3N */
+	} EP;
 } SNB_IMC_TC_RAP;
+
+typedef union
+{
+	unsigned int		value;
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 208h		*/
+	struct {
+		unsigned int
+		tRRDR		:  3-0,
+		tRRDD		:  6-3,
+		tWWDR		:  9-6,
+		tWWDD		: 12-9,
+		tRWDR		: 15-12,
+		tRWDD		: 18-15,
+		tWRDR		: 21-18,
+		tWRDD		: 24-21,
+		tRWSR		: 27-24,
+		tCCD		: 30-27,
+		tWRDR_UPPER	: 32-30;
+	} EP;
+} SNB_IMC_TC_RWP;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4298h & Channel1: 4698h */
@@ -1838,6 +1871,13 @@ typedef union
 		tRFC		: 25-16,
 		tREFIx9 	: 32-25;
 	};
+	/* Device 16,30 - Function: 0,1,4,5 - Offset 214h		*/
+	struct {
+		unsigned int
+		tREFI		: 15-0,
+		tRFC		: 25-15,
+		tREFIx9 	: 32-25;
+	} EP;
 } SNB_IMC_TC_RFTP;
 
 typedef union

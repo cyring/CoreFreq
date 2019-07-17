@@ -2875,6 +2875,9 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev,	unsigned short mc,
 	pci_read_config_dword(dev, 0x204,
 			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.value);
 
+	pci_read_config_dword(dev, 0x208,
+			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.value);
+
 	pci_read_config_dword(dev, 0x214,
 			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
 

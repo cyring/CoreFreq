@@ -1871,24 +1871,64 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tRAS;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.tRRD;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tRRD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.tRFC;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.EP.tRFC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.tWR;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.tRTPr;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tRTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.tWTPr;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWTPr;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.tFAW;
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tFAW;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.CMD_Stretch) {
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd =
+		4 + Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.EP.tCWL
+			+ Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWTPr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWDR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRWSR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDR;
+/*TODO
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRSR;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDR;
+/*TODO
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWSR;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tCCD;
+
+	switch(Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
