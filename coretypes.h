@@ -4,7 +4,7 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.59.2"
+#define COREFREQ_VERSION	"1.59.3"
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -1205,8 +1205,17 @@ typedef struct	/* BSP CPUID features.					*/
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
 #endif
 /* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
+#endif
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0	0x0e80
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC 0x0e68
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0 0x0eb0

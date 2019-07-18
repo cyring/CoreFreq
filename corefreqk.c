@@ -2828,6 +2828,13 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 	return(Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
 }
 
+static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
+{
+	Proc->Uncore.ChipID = dev->device;
+
+	return((PCI_CALLBACK) 0);
+}
+
 static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0x84, &Proc->Uncore.Bus.SNB_EP_Cap0.value);
@@ -2839,13 +2846,25 @@ static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev)
 	return((PCI_CALLBACK) 0);
 }
 
+kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
+{
+	pci_read_config_dword(dev, 0x7c,&Proc->Uncore.MC[mc].SNB_EP.TECH.value);
+	pci_read_config_dword(dev, 0x80,&Proc->Uncore.MC[mc].SNB_EP.TAD.value);
+
+	Proc->Uncore.MC[mc].ChannelCount=Proc->Uncore.MC[mc].SNB_EP.TAD.CH_WAY;
+	Proc->Uncore.MC[mc].ChannelCount++;
+
+	Proc->Uncore.MC[0].SlotCount = 2;
+
+	return(0);
+}
+
 static PCI_CALLBACK SNB_EP_CTRL0(struct pci_dev *dev)
 {
 	if (Proc->Uncore.CtrlCount < 1) {
 		Proc->Uncore.CtrlCount = 1;
-		Proc->Uncore.ChipID = dev->device;
 	}
-	Proc->Uncore.MC[0].SlotCount = 2;
+	SNB_EP_CTRL(dev, 0);
 
 	return(0);
 }
@@ -2854,21 +2873,15 @@ static PCI_CALLBACK SNB_EP_CTRL1(struct pci_dev *dev)
 {
 	if (Proc->Uncore.CtrlCount < 2) {
 		Proc->Uncore.CtrlCount = 2;
-		Proc->Uncore.ChipID = dev->device;
 	}
-	Proc->Uncore.MC[1].SlotCount = 2;
+	SNB_EP_CTRL(dev, 1);
 
 	return(0);
 }
 
-kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev,	unsigned short mc,
+kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev ,unsigned short mc,
 						unsigned short cha)
 {
-	unsigned short channelCount = cha + 1;
-
-	if (Proc->Uncore.MC[mc].ChannelCount < channelCount) {
-		Proc->Uncore.MC[mc].ChannelCount = channelCount;
-	}
 	pci_read_config_dword(dev, 0x200,
 			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.value);
 
@@ -2928,13 +2941,13 @@ kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
 						unsigned short cha)
 {
 	pci_read_config_dword(dev, 0x80,
-			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[0].value);
+			&Proc->Uncore.MC[mc].Channel[cha].DIMM[0].MTR.value);
 
 	pci_read_config_dword(dev, 0x84,
-			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[1].value);
+			&Proc->Uncore.MC[mc].Channel[cha].DIMM[1].MTR.value);
 
 	pci_read_config_dword(dev, 0x88,
-			&Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[2].value);
+			&Proc->Uncore.MC[mc].Channel[cha].DIMM[2].MTR.value);
 	return(0);
 }
 
@@ -5378,7 +5391,11 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].tgid     = thread->tgid;
 		SysGate->taskList[cnt].ppid     = thread->parent->pid;
 		SysGate->taskList[cnt].state    = (short int) thread->state;
+#if defined(CONFIG_SCHED_BMQ)
+		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
+#else
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
+#endif
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		if (cnt < TASK_LIMIT)

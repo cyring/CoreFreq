@@ -2046,6 +2046,41 @@ typedef union
 } SNB_EP_CAPID4;
 
 typedef union
+{	/* Device: 15,29 - Function: 0 - Offset: 7Ch			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		CLOSE_PG	:  1-0,
+		LS_EN		:  2-1,
+		ECC_EN		:  3-2,
+		DIR_EN		:  4-3,
+		ReservedBits1	:  8-4,
+		Mode		:  9-8,
+		BANK_XOR_EN	: 10-9,
+		CPGC_IOSAV	: 12-10,
+		IMC_MODE	: 14-12,
+		ReservedBits2	: 16-14,
+		CHN_DISABLE	: 20-16,
+		ReservedBits3	: 32-20;
+	};
+} SNB_EP_MC_TECH;
+
+typedef union
+{	/* Device: 15,29 - Function: 0 - Offset: 80h, 84h ... A8h, ACh	*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		CH_TGT0 	:  2-0,
+		CH_TGT1 	:  4-2,
+		CH_TGT2 	:  6-4,
+		CH_TGT3 	:  8-6,
+		CH_WAY		: 10-8,
+		SKT_WAY 	: 12-10,
+		LIMIT		: 32-12;
+	};
+} SNB_EP_TADWAYNESS;
+
+typedef union
 {	/* Device: 15,29 - Function: 2,3,4,5 - Offset: 80h, 84h, 88h	*/
 	unsigned int		value;
 	struct {
@@ -2061,7 +2096,7 @@ typedef union
 		RANK_DISABLE	: 20-16,
 		ReservedBits3	: 32-20;
 	};
-} SNB_EP_DIMMMTR;
+} SNB_EP_DIMM_MTR;
 
 typedef union
 {	/* Device: 0 - Function: 0 - Offset E8h 			*/

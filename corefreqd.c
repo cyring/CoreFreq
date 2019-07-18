@@ -1945,19 +1945,19 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
-	    if (Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[slot].DIMM_POP)
+	    if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DIMM_POP)
 	    {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4 <<
-		Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[slot].DDR3_WIDTH;
+		Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DDR3_WIDTH;
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 1 <<
-		Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[slot].RANK_CNT;
+		Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.RANK_CNT;
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << ( 13
-		+ Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[slot].RA_WIDTH );
+		+ Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.RA_WIDTH );
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << ( 10
-		+ Proc->Uncore.MC[mc].Channel[cha].SNB_EP.DIMM[slot].CA_WIDTH );
+		+ Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.CA_WIDTH );
 
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
@@ -1969,7 +1969,8 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	}
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =			\
-				!Proc->Uncore.Bus.SNB_EP_Cap3.ECC_DIS;
+				Proc->Uncore.MC[mc].SNB_EP.TECH.ECC_EN
+				& !Proc->Uncore.Bus.SNB_EP_Cap3.ECC_DIS;
       }
     }
 }
@@ -2010,7 +2011,7 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	  Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 010 ? 5600
 	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 011 ? 6400
 	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 100 ? 7200
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 101 ? 8000 : 0;
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 101 ? 8000 : 2500;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
@@ -2050,7 +2051,6 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	case 0b000:
 		switch (Proc->ArchID) {
 		case IvyBridge:
-		case IvyBridge_EP:		/*TODO: To be removed	*/
 			Shm->Uncore.CtrlSpeed = 2933;
 			break;
 		case Haswell_DT:
@@ -2732,8 +2732,7 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK_M);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0:   /* Xeon E5 & E7 v2 */
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1:
+	case PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE:  /* Xeon E5 & E7 v2 */
 		SNB_EP_CAP(Shm, Proc, Core);
 		SNB_EP_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CAVECREEK);

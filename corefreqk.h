@@ -974,6 +974,7 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev) ;
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_CTRL0(struct pci_dev *dev) ;
@@ -1187,6 +1188,10 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 
 static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE),
+		.driver_data = (kernel_ulong_t) SNB_EP_HB
+	},
+	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0),
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
@@ -1195,11 +1200,11 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		.driver_data = (kernel_ulong_t) SNB_EP_CAP
 	},
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0),
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
 	},
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1),
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL1
 	},
 	{

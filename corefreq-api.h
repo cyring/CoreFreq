@@ -442,7 +442,6 @@ typedef struct
 	/*  204h */		SNB_IMC_TC_RAP		RAP;	/* 32 bits    */
 	/*  208h */		SNB_IMC_TC_RWP		RWP;	/* 32 bits    */
 	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
-	/*   80h */		SNB_EP_DIMMMTR		DIMM[MC_MAX_DIMM];
 			} SNB_EP;
 			struct {
 	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits    */
@@ -464,6 +463,7 @@ typedef struct
 		union {
 	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits    */
 	/* 48h */	NHM_IMC_DOD_CHANNEL		DOD;	/* 32 bits    */
+	/* 80h */	SNB_EP_DIMM_MTR 		MTR;	/* 32 bits    */
 	/* 40h */	AMD_0F_DRAM_CS_BASE_ADDR	MBA;	/* 32 bits    */
 		} DIMM[MC_MAX_DIMM];
 	} Channel[MC_MAX_CHA];
@@ -495,6 +495,10 @@ typedef struct
 	/* 5004h */	SNB_IMC_MAD_CHANNEL	MAD0,		/* 32 bits    */
 	/* 5008h */				MAD1;		/* 32 bits    */
 		} SNB;
+		struct {
+			SNB_EP_MC_TECH		TECH;		/* 32 bits    */
+	/* 80h */	SNB_EP_TADWAYNESS	TAD;		/* 12x32 bits */
+		} SNB_EP;
 		struct {
 	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
 	/* 5008h */				MADC1;		/* 32 bits    */
