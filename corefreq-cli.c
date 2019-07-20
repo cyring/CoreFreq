@@ -3024,72 +3024,126 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 			win->hook.color[0].title);
 }
 
-Window *CreateMenu(unsigned long long id)
+Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(wLayer, id, 3, 12, 3, 0);
-    if (wMenu != NULL) {
-	ATTRIBUTE voidAttr = {.value = 0},
-		sameAttr = {.fg = BLACK, .bg = WHITE, .bf = 0},
-		*fkeyAttr = RSC(CREATE_MENU_FN_KEY).ATTR(),
-		*skeyAttr = RSC(CREATE_MENU_SHORTKEY).ATTR(),
-		*gateAttr = BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
-				RSC(CREATE_MENU_SHORTKEY).ATTR()
-				: RSC(CREATE_MENU_STOP).ATTR(),
-		*ctrlAttr = (Shm->Uncore.CtrlCount > 0) ?
-				RSC(CREATE_MENU_SHORTKEY).ATTR()
-				: RSC(CREATE_MENU_STOP).ATTR();
+    if (wMenu != NULL)
+    {
+/* Top Menu */
+	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_MENU).CODE(),
+					RSC(MENU_ITEM_MENU).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_MENU).CODE()	, sameAttr);
-  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE()	, sameAttr);
-  StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_WINDOW).CODE()	, sameAttr);
+	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_VIEW).CODE(),
+					RSC(MENU_ITEM_VIEW).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_s, RSC(MENU_ITEM_SETTINGS).CODE()	, skeyAttr);
-  StoreTCell(wMenu, SCANKEY_d, RSC(MENU_ITEM_DASHBOARD).CODE()	, skeyAttr);
-  StoreTCell(wMenu, SCANKEY_p, RSC(MENU_ITEM_PROCESSOR).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_NULL, RSC(MENU_ITEM_WINDOW).CODE(),
+					RSC(MENU_ITEM_WINDOW).ATTR());
+/* Row  1 */
+	StoreTCell(wMenu, SCANKEY_F1,	RSC(MENU_ITEM_KEYS).CODE(),
+					RSC(CREATE_MENU_FN_KEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_SHIFT_b,RSC(MENU_ITEM_SMBIOS).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_f, RSC(MENU_ITEM_FREQUENCY).CODE()	, skeyAttr);
-  StoreTCell(wMenu, SCANKEY_m, RSC(MENU_ITEM_TOPOLOGY).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_d,	RSC(MENU_ITEM_DASHBOARD).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE()	, gateAttr);
-  StoreTCell(wMenu, SCANKEY_i, RSC(MENU_ITEM_INST_CYCLES).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_e,	RSC(MENU_ITEM_FEATURES).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_p,	RSC(MENU_ITEM_PROCESSOR).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  2 */
+	StoreTCell(wMenu, SCANKEY_SHIFT_l, RSC(MENU_ITEM_LANG).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_HASH,RSC(MENU_ITEM_HOTPLUG).CODE()	,skeyAttr);
-  StoreTCell(wMenu, SCANKEY_c, RSC(MENU_ITEM_CORE_CYCLES).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_SHIFT_i,RSC(MENU_ITEM_ISA_EXT).CODE(), skeyAttr);
+	StoreTCell(wMenu, SCANKEY_f,	RSC(MENU_ITEM_FREQUENCY).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_F3, RSC(MENU_ITEM_TOOLS).CODE()	, fkeyAttr);
-  StoreTCell(wMenu, SCANKEY_l, RSC(MENU_ITEM_IDLE_STATES).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_m,	RSC(MENU_ITEM_TOPOLOGY).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  3 */
+	StoreTCell(wMenu, SCANKEY_s,	RSC(MENU_ITEM_SETTINGS).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE()	, skeyAttr);
-  StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(), skeyAttr);
-  StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_i,	RSC(MENU_ITEM_INST_CYCLES).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE()	, skeyAttr);
-  StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE() , gateAttr);
-  StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE() , skeyAttr);
+	StoreTCell(wMenu, SCANKEY_e,	RSC(MENU_ITEM_FEATURES).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  4 */
+	StoreTCell(wMenu, SCANKEY_SHIFT_b, RSC(MENU_ITEM_SMBIOS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_F1, RSC(MENU_ITEM_KEYS).CODE()	, fkeyAttr);
-  StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE() , skeyAttr);
-  StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE()	, skeyAttr);
+	StoreTCell(wMenu, SCANKEY_c,	RSC(MENU_ITEM_CORE_CYCLES).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_SHIFT_l, RSC(MENU_ITEM_LANG).CODE() , skeyAttr);
-  StoreTCell(wMenu, SCANKEY_SHIFT_v,RSC(MENU_ITEM_POW_VOLT).CODE(),skeyAttr);
-  StoreTCell(wMenu, SCANKEY_SHIFT_r,RSC(MENU_ITEM_SYS_REGS).CODE(),skeyAttr);
+	StoreTCell(wMenu, SCANKEY_SHIFT_i, RSC(MENU_ITEM_ISA_EXT).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  5 */
+	StoreTCell(wMenu, SCANKEY_k,	RSC(MENU_ITEM_KERNEL).CODE(),
+			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
+					RSC(CREATE_MENU_SHORTKEY).ATTR()
+					: RSC(CREATE_MENU_DISABLE).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_F4, RSC(MENU_ITEM_QUIT).CODE()	, fkeyAttr);
-  StoreTCell(wMenu, SCANKEY_SHIFT_t,RSC(MENU_ITEM_SLICE_CTRS).CODE(),skeyAttr);
-  StoreTCell(wMenu, SCANKEY_SHIFT_m,RSC(MENU_ITEM_MEM_CTRL).CODE(),ctrlAttr);
+	StoreTCell(wMenu, SCANKEY_l,	RSC(MENU_ITEM_IDLE_STATES).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
-  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
-  StoreTCell(wMenu, SCANKEY_VOID,	""			, voidAttr);
+	StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  6 */
+	StoreTCell(wMenu, SCANKEY_HASH, RSC(MENU_ITEM_HOTPLUG).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
+	StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  7 */
+	StoreTCell(wMenu, SCANKEY_SHIFT_o, RSC(MENU_ITEM_TOOLS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE(),
+			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
+					RSC(CREATE_MENU_SHORTKEY).ATTR()
+					: RSC(CREATE_MENU_DISABLE).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  8 */
+	StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row  9 */
+	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_POW_VOLT).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+/* Row 10 */
+	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
+					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
+				Shm->Uncore.CtrlCount > 0 ?
+					RSC(CREATE_MENU_SHORTKEY).ATTR()
+					: RSC(CREATE_MENU_DISABLE).ATTR());
+/* Row 11 */
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+/* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
 	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK, 0, WHITE, 0));
 	StoreWindow(wMenu, .color[1].title,	MakeAttr(BLACK, 0, WHITE, 1));
+
+	wMenu->matrix.select.col = matrixSelectCol;
 
 	StoreWindow(wMenu,	.Print,		ForEachCellPrint_Menu);
 	StoreWindow(wMenu,	.key.Enter,	MotionEnter_Cell);
@@ -4582,13 +4636,32 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(SCANKEY_F2, &winList);
 	if (win == NULL)
-		AppendWindow(CreateMenu(SCANKEY_F2), &winList);
+		AppendWindow(CreateMenu(SCANKEY_F2, 0), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
+    case SCANKEY_F3:
+    case SCANCON_F3:
+    {
+	Window *win = SearchWinListById(SCANKEY_F2, &winList);
+	if (win == NULL)
+		AppendWindow(CreateMenu(SCANKEY_F2, 1), &winList);
 	else
 		SetHead(&winList, win);
     }
     break;
     case SCANKEY_F4:
     case SCANCON_F4:
+    {
+	Window *win = SearchWinListById(SCANKEY_F2, &winList);
+	if (win == NULL)
+		AppendWindow(CreateMenu(SCANKEY_F2, 2), &winList);
+	else
+		SetHead(&winList, win);
+    }
+    break;
+    case SCANKEY_CTRL_x:
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
     case OPS_INTERVAL:
@@ -6451,8 +6524,7 @@ int Shortcut(SCANKEY *scan)
 	RING_WRITE(Shm->Ring[1], COREFREQ_ORDER_MACHINE, COREFREQ_TOGGLE_OFF);
       }
     break;
-    case SCANKEY_F3:
-    case SCANCON_F3:
+    case SCANKEY_SHIFT_o:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
@@ -8970,7 +9042,7 @@ REASON_CODE Top(char option)
 	  if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
 	    if (Shortcut(&scan) == -1) {
 		if (IsDead(&winList)) {
-			AppendWindow(CreateMenu(SCANKEY_F2), &winList);
+			AppendWindow(CreateMenu(SCANKEY_F2, 0), &winList);
 		}
 		else if (Motion_Trigger(&scan,GetFocus(&winList),&winList) > 0)
 		{
