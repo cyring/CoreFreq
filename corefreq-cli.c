@@ -1966,21 +1966,29 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sPTM   [%7s]", RSC(POWER_THERMAL_PTM).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace, powered(bix));
 
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
-	    | Shm->Proc.Features.AdvPower.EDX.TTP;
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTM1|TTP   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
-		width - 22 - RSZ(POWER_THERMAL_TM1), hSpace,
-		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
-			| Shm->Proc.Features.AdvPower.EDX.TTP ]);
+		"%s%.*sTM1   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace, TM[bix]);
 
-	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
-	    | Shm->Proc.Features.AdvPower.EDX.TM;
+	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTM2|HTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
-		width - 22 - RSZ(POWER_THERMAL_TM2), hSpace,
-		TM[  Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2
-			| Shm->Proc.Features.AdvPower.EDX.TM ]);
+		"%s%.*sTM2   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
+    }
+    else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    {
+	bix = Shm->Proc.Features.AdvPower.EDX.TTP;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sTTP   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace, TM[bix]);
+
+	bix = Shm->Proc.Features.AdvPower.EDX.TM;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sHTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
+    }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
