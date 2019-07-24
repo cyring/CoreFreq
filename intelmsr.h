@@ -1665,13 +1665,13 @@ typedef union	/* Nehalem						*/
 	};
 } NHM_IMC_REFRESH_TIMING;
 
-typedef union	/* Nehalem						*/
+typedef union	/* Nehalem, Westmere					*/
 {	/* Device: 3 - Function: 0 - Offset: 48h			*/
 	unsigned int		value;
 	struct {
 		unsigned int
 		CLOSED_PAGE	:  1-0,
-		EN_ECC		:  2-1, /* Bloomfield			*/
+		ECC_ENABLED	:  2-1, /* Bloomfield			*/
 		AUTOPRECHARGE	:  3-2,
 		CHANNELRESET0	:  4-3,
 		CHANNELRESET1	:  5-4,
@@ -1685,7 +1685,7 @@ typedef union	/* Nehalem						*/
 	};
 } NHM_IMC_CONTROL;
 
-typedef union	/* Nehalem						*/
+typedef union	/* Nehalem, Westmere					*/
 {	/* Device: 3 - Function: 0 - Offset: 4Ch			*/
 	unsigned int		value;
 	struct {
@@ -1693,8 +1693,9 @@ typedef union	/* Nehalem						*/
 		CHANNEL0_DISABLE:  1-0,
 		CHANNEL1_DISABLE:  2-1,
 		CHANNEL2_DISABLE:  3-2, /* Bloomfield			*/
-		ReservedBits	:  4-3,
-		ECC_ENABLED	:  5-4; /* Bloomfield			*/
+		ReservedBits1	:  4-3,
+		ECC_ENABLED	:  5-4, /* Bloomfield			*/
+		ReservedBits2	: 32-5;
 	};
 } NHM_IMC_STATUS;
 

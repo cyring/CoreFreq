@@ -1604,7 +1604,8 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	    }
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
-				Proc->Uncore.MC[mc].NHM.STATUS.ECC_ENABLED;
+				Proc->Uncore.MC[mc].NHM.STATUS.ECC_ENABLED
+				& Proc->Uncore.MC[mc].NHM.CONTROL.ECC_ENABLED;
       }
     }
 }
