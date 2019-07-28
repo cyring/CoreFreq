@@ -34,8 +34,10 @@ typedef struct
 					ThreadID,
 					PackageID;
 		struct {
-			Bit32		BSP,
-					x2APIC;
+			unsigned short	x2APIC	:  8-0,
+					CCX	: 12-8,
+					_pad8	: 15-12,
+					BSP	: 16-15;
 		} MP;
 		struct {
 		unsigned int		Set,

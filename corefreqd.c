@@ -2998,6 +2998,10 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.MP.x2APIC = ((Proc->Features.Std.ECX.x2APIC
 					    & Core[cpu]->T.Base.EN)
 					   << Core[cpu]->T.Base.EXTD);
+	/* AMD Core Complex ID						*/
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+		Shm->Cpu[cpu].Topology.MP.CCX=(Core[cpu]->T.ApicID & 0b1000)>>3;
+	}
 	unsigned int loop;
 	for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
 	{
@@ -3007,7 +3011,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		if (Core[cpu]->T.Cache[loop].Type == 2) /* Instruction	*/
 			level = 0;
 
-		if(Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+		if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 		{
 			Shm->Cpu[cpu].Topology.Cache[level].Set =
 				Core[cpu]->T.Cache[loop].Set + 1;
@@ -3028,7 +3032,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			* Shm->Cpu[cpu].Topology.Cache[level].Way;
 		}
 		else {
-		    if(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		    {
 			Shm->Cpu[cpu].Topology.Cache[level].Way =
 			    (loop != 2) ?

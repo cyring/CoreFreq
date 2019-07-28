@@ -1351,6 +1351,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_start_object(&s);
 			json_key(&s, "ApicID");
 			json_literal(&s, "%d", Shm->Cpu[i].Topology.ApicID);
+		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+			json_key(&s, "CCX");
+			json_literal(&s, "%d", Shm->Cpu[i].Topology.MP.CCX);
+		    }
 			json_key(&s, "CoreID");
 			json_literal(&s, "%d", Shm->Cpu[i].Topology.CoreID);
 			json_key(&s, "ThreadID");

@@ -2467,43 +2467,59 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], " (i)nclusive ");
 	PRT(MAP, attrib[2], "             ");
 	PRT(MAP, attrib[2], " #   ID   ID ");
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+	PRT(MAP, attrib[2], " CCX ID    ID");
+    } else {
 	PRT(MAP, attrib[2], "   ID     ID ");
+    }
 	PRT(MAP, attrib[2], " L1-Inst Way ");
 	PRT(MAP, attrib[2], " L1-Data Way ");
 	PRT(MAP, attrib[2], "     L2  Way ");
 	PRT(MAP, attrib[2], "     L3  Way ");
 
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+      if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 	if (Shm->Cpu[cpu].Topology.MP.BSP)
-		PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
-			"%02u: BSP%6d",
+		PRT(MAP, attrib[0], "%02u: BSP%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.ApicID);
 	else
-		PRT(MAP,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS)],
-			"%02u:%4d%6d",
+		PRT(MAP, attrib[0], "%02u:%4d%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
 
-	PRT(MAP, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-		"%6d %6d",
-		Shm->Cpu[cpu].Topology.CoreID,
-		Shm->Cpu[cpu].Topology.ThreadID);
-
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+		PRT(MAP, attrib[0], "%3d%4d%6d",
+			Shm->Cpu[cpu].Topology.MP.CCX,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+	} else {
+		PRT(MAP, attrib[0], "%6d %6d",
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+	}
 	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(MAP, attrib[0], "%8u%3u%c%c",
-		Shm->Cpu[cpu].Topology.Cache[level].Size,
-		Shm->Cpu[cpu].Topology.Cache[level].Way,
-		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
-			'w' : 0x20,
-		Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
-			'i' : 0x20);
-	    } else
+			Shm->Cpu[cpu].Topology.Cache[level].Size,
+			Shm->Cpu[cpu].Topology.Cache[level].Way,
+			Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack ?
+				'w' : 0x20,
+			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
+				'i' : 0x20);
+	}
+      } else {
+		PRT(MAP, attrib[1], "%02u:   -     -", cpu);
+
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+		PRT(MAP, attrib[1], "  -   -     -");
+	} else {
+		PRT(MAP, attrib[1], "     -      -");
+	}
+	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
 		PRT(MAP, attrib[1], "       -  -  ");
 	}
-    }
+      }
 }
 
 void iSplit(unsigned int sInt, char hInt[]) {
