@@ -2966,7 +2966,7 @@ void CPUID_Dump(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 	}
 }
 
-unsigned int Compute_Way(unsigned int value)
+unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
 {
 	switch (value) {
 	case 0x6:
@@ -2999,68 +2999,67 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 					    & Core[cpu]->T.Base.EN)
 					   << Core[cpu]->T.Base.EXTD);
 	/* AMD Core Complex ID						*/
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
-		Shm->Cpu[cpu].Topology.MP.CCX=(Core[cpu]->T.ApicID & 0b1000)>>3;
-	}
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+	Shm->Cpu[cpu].Topology.MP.CCX = (Core[cpu]->T.ApicID & 0b1000) >> 3;
+    }
 	unsigned int loop;
-	for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
+    for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
+    {
+      if (Core[cpu]->T.Cache[loop].Type > 0)
+      {
+	unsigned int level = Core[cpu]->T.Cache[loop].Level;
+	if (Core[cpu]->T.Cache[loop].Type == 2) /* Instruction	*/
+		level = 0;
+
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
-	    if (Core[cpu]->T.Cache[loop].Type > 0)
+		Shm->Cpu[cpu].Topology.Cache[level].Set =		\
+					Core[cpu]->T.Cache[loop].Set + 1;
+
+		Shm->Cpu[cpu].Topology.Cache[level].LineSz =		\
+					Core[cpu]->T.Cache[loop].LineSz + 1;
+
+		Shm->Cpu[cpu].Topology.Cache[level].Part =		\
+					Core[cpu]->T.Cache[loop].Part + 1;
+
+		Shm->Cpu[cpu].Topology.Cache[level].Way =		\
+					Core[cpu]->T.Cache[loop].Way + 1;
+
+		Shm->Cpu[cpu].Topology.Cache[level].Size =		\
+				  Shm->Cpu[cpu].Topology.Cache[level].Set
+				* Shm->Cpu[cpu].Topology.Cache[level].LineSz
+				* Shm->Cpu[cpu].Topology.Cache[level].Part
+				* Shm->Cpu[cpu].Topology.Cache[level].Way;
+	} else {
+	    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	    {
-		unsigned int level=Core[cpu]->T.Cache[loop].Level;
-		if (Core[cpu]->T.Cache[loop].Type == 2) /* Instruction	*/
-			level = 0;
+		Shm->Cpu[cpu].Topology.Cache[level].Way=(loop == 2)||(loop == 3)?
+			AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
+			: Core[cpu]->T.Cache[loop].Way;
 
-		if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-		{
-			Shm->Cpu[cpu].Topology.Cache[level].Set =
-				Core[cpu]->T.Cache[loop].Set + 1;
-
-			Shm->Cpu[cpu].Topology.Cache[level].LineSz =
-				Core[cpu]->T.Cache[loop].LineSz + 1;
-
-			Shm->Cpu[cpu].Topology.Cache[level].Part =
-				Core[cpu]->T.Cache[loop].Part + 1;
-
-			Shm->Cpu[cpu].Topology.Cache[level].Way =
-				Core[cpu]->T.Cache[loop].Way + 1;
-
-			Shm->Cpu[cpu].Topology.Cache[level].Size =
-			  Shm->Cpu[cpu].Topology.Cache[level].Set
-			* Shm->Cpu[cpu].Topology.Cache[level].LineSz
-			* Shm->Cpu[cpu].Topology.Cache[level].Part
-			* Shm->Cpu[cpu].Topology.Cache[level].Way;
-		}
-		else {
-		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		    {
-			Shm->Cpu[cpu].Topology.Cache[level].Way =
-			    (loop != 2) ?
-				  Core[cpu]->T.Cache[loop].Way
-				: Compute_Way(Core[cpu]->T.Cache[loop].Way);
-
-			Shm->Cpu[cpu].Topology.Cache[level].Size =
-				Core[cpu]->T.Cache[loop].Size;
-		    }
-		}
-		Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack =
-			Core[cpu]->T.Cache[loop].WrBack;
-		Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive =
-			Core[cpu]->T.Cache[loop].Inclus;
+		Shm->Cpu[cpu].Topology.Cache[level].Size =		\
+						Core[cpu]->T.Cache[loop].Size;
 	    }
 	}
+	Shm->Cpu[cpu].Topology.Cache[level].Feature.WriteBack = 	\
+						Core[cpu]->T.Cache[loop].WrBack;
+
+	Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive = 	\
+						Core[cpu]->T.Cache[loop].Inclus;
+      }
+    }
 	/* Apply various architecture size unit.			*/
-	switch (Proc->ArchID) {
-	case AMD_Family_15h:
+    switch (Proc->ArchID) {
+    case AMD_Family_15h:
 	/*TODO: do models 60h & 70h need a 512 KB size unit adjustment ? */
-		if ((Shm->Proc.Features.Std.EAX.ExtModel == 0x6)
-		 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7))
-			break;
-		/* Fallthrough */
-	case AMD_Family_17h:
-		Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+	if ((Shm->Proc.Features.Std.EAX.ExtModel == 0x6)
+	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7))
 		break;
-	}
+	/* Fallthrough */
+    case AMD_Family_17h:
+	Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+	break;
+    }
 }
 
 void CStates(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -3680,15 +3679,14 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq	    = 0.0;
 
-	switch (Shm->Proc.thermalFormula) {
-	case THERMAL_FORMULA_AMD_17h:
+	switch (Shm->Proc.powerFormula) {
+	case POWER_FORMULA_AMD_17h:
 		Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
 		break;
-	case THERMAL_FORMULA_INTEL:
-	case THERMAL_FORMULA_AMD:
-	case THERMAL_FORMULA_AMD_0Fh:
-	case THERMAL_FORMULA_AMD_15h:
-	case THERMAL_FORMULA_NONE:
+	case POWER_FORMULA_INTEL:
+	case POWER_FORMULA_INTEL_ATOM:
+	case POWER_FORMULA_AMD:
+	case POWER_FORMULA_NONE:
 		break;
 	}
 
@@ -3778,12 +3776,20 @@ REASON_CODE Core_Manager(REF *Ref)
 			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
 				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
 		    }
-			/* Workaround to sum the RAPL counter of each Core */
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
-				Core[cpu]->Delta.Power.ACCU;
-
 			break;
 		case THERMAL_FORMULA_NONE:
+			break;
+		}
+		/* Workaround to RAPL Package counter: sum of all Cores */
+		switch (Shm->Proc.powerFormula) {
+		case POWER_FORMULA_AMD_17h:
+			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
+				Core[cpu]->Delta.Power.ACCU;
+			break;
+		case POWER_FORMULA_INTEL:
+		case POWER_FORMULA_INTEL_ATOM:
+		case POWER_FORMULA_AMD:
+		case POWER_FORMULA_NONE:
 			break;
 		}
 		/* Sum counters.					*/
