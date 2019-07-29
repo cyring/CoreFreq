@@ -3057,7 +3057,8 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		break;
 	/* Fallthrough */
     case AMD_Family_17h:
-	Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
+	Shm->Cpu[cpu].Topology.Cache[3].Size *= (512 / 2);
 	break;
     }
 }
