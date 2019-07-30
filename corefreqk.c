@@ -1302,6 +1302,29 @@ static void Map_AMD_Topology(void *arg)
 	    {
 		CPUID_0x8000001e leaf8000001e;
 
+		/* Fn8000_001D Cache Properties. */
+		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
+		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
+		    __asm__ volatile
+		    (
+			"movq	$0x8000001d, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"movq	%4,    %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (Core->T.Cache[level[idx]].AX),
+			  "=r" (Core->T.Cache[level[idx]].BX),
+			  "=r" (Core->T.Cache[level[idx]].CX),
+			  "=r" (Core->T.Cache[level[idx]].DX)
+			: "r" (idx)
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		    );
+		}
+		/* Fn8000_001E {ExtApic, Core, Node} Identifiers. */
 		__asm__ volatile
 		(
 			"movq	$0x8000001e, %%rax	\n\t"
