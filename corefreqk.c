@@ -9461,8 +9461,11 @@ static int __init CoreFreqK_init(void)
 	    if ((Proc = kmalloc(packageSize, GFP_KERNEL)) != NULL)
 	    {
 		memset(Proc, 0, packageSize);
-		Proc->CPU.Count = iArg.SMT_Count;
+		SET_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR, \
+						COREFREQ_MINOR, \
+						COREFREQ_REV	);
 
+		Proc->CPU.Count = iArg.SMT_Count;
 		/* PreCompute SysGate memory allocation. */
 		Proc->OS.ReqMem.Size = sizeof(SYSGATE);
 		Proc->OS.ReqMem.Order = get_order(Proc->OS.ReqMem.Size);

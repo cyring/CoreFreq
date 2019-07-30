@@ -713,4 +713,6 @@ typedef struct
 	char			Architecture[CODENAME_LEN];
 
 	SMBIOS_ST		SMB;
+
+	FOOTPRINT		FootPrint;
 } PROC;

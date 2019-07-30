@@ -9205,6 +9205,10 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
+       if (CHK_FOOTPRINT(Shm->FootPrint,COREFREQ_MAJOR, \
+					COREFREQ_MINOR, \
+					COREFREQ_REV)	)
+       {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 	do {
@@ -9342,6 +9346,16 @@ int main(int argc, char *argv[])
 		REASON_SET(reason, RC_SHM_MMAP);
 		reason = Help(reason, SHM_FILENAME);
 	}
+       } else {
+		char wrongVersion[24];
+		sprintf(wrongVersion, "Version %d.%d.%d",
+			Shm->FootPrint.major,
+			Shm->FootPrint.minor,
+			Shm->FootPrint.rev);
+		munmap(Shm, shmStat.st_size);
+		REASON_SET(reason, RC_SHM_MMAP, EPERM);
+		reason = Help(reason, wrongVersion);
+       }
       } else {
 		REASON_SET(reason, RC_SHM_MMAP);
 		reason = Help(reason, SHM_FILENAME);

@@ -272,6 +272,8 @@ typedef struct
 
 typedef struct
 {
+	FOOTPRINT		FootPrint;
+
 	struct {
 		signed int	AutoClock, /* 10: Auto, 01: Init, 00: Specs */
 				Experimental,/* 0: Disable, 1: Enable	*/

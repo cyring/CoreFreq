@@ -4,7 +4,41 @@
  * Licenses: GPL2
  */
 
-#define COREFREQ_VERSION	"1.60.2"
+#define COREFREQ_MAJOR	1
+#define COREFREQ_MINOR	61
+#define COREFREQ_REV	0
+
+#define COREFREQ_STRINGIFY(_number)	#_number
+
+#define COREFREQ_SERIALIZE(_major, _minor, _rev)			\
+	COREFREQ_STRINGIFY(_major)	"."				\
+	COREFREQ_STRINGIFY(_minor)	"."				\
+	COREFREQ_STRINGIFY(_rev)
+
+#define COREFREQ_VERSION	COREFREQ_SERIALIZE(	COREFREQ_MAJOR, \
+							COREFREQ_MINOR, \
+							COREFREQ_REV	)
+
+typedef struct {
+	unsigned short	major,
+			minor,
+			rev;
+} FOOTPRINT;
+
+#define SET_FOOTPRINT(_place, _major, _minor, _rev)			\
+({									\
+	_place.major	= _major;					\
+	_place.minor	= _minor;					\
+	_place.rev	= _rev ;					\
+})
+
+#define CHK_FOOTPRINT(_place, _major, _minor, _rev)			\
+(									\
+	(_place.major	== _major) &&					\
+	(_place.minor	== _minor) &&					\
+	(_place.rev	== _rev)					\
+)
+
 
 enum {	GenuineIntel,
 	Core_Yonah,

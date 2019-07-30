@@ -4042,6 +4042,10 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 		size_t len;
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
+		/* Store version footprint into SHM			*/
+		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR, \
+						COREFREQ_MINOR, \
+						COREFREQ_REV	);
 		/* Store the daemon gate name.				*/
 		len = KMIN(sizeof(SHM_FILENAME), TASK_COMM_LEN - 1);
 		memcpy(Shm->ShmName, SHM_FILENAME, len);
@@ -4076,8 +4080,9 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 
 		/* Welcomes with brand and per CPU base clock.		*/
 		if (Quiet & 0x001)
-		 printf("CoreFreq Daemon "COREFREQ_VERSION		\
-			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n");
+		 printf("CoreFreq Daemon %s"		\
+			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n",
+			COREFREQ_VERSION);
 		if (Quiet & 0x010)
 		 printf("\n"						\
 			"  Processor [%s]\n"				\
@@ -4261,7 +4266,7 @@ int main(int argc, char *argv[])
 				}
 				break;
 			case 'v':
-				printf(COREFREQ_VERSION"\n");
+				printf("%s\n", COREFREQ_VERSION);
 				reason.rc = RC_CMD_SYNTAX;
 				break;
 			case 'h':
@@ -4292,6 +4297,10 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, 0)) != MAP_FAILED)
 		{
+		    if (CHK_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR, \
+							COREFREQ_MINOR, \
+							COREFREQ_REV)	)
+		    {
 			reason = Shm_Manager(&fd, Proc);
 
 			switch (reason.rc) {
@@ -4315,6 +4324,16 @@ int main(int argc, char *argv[])
 				REASON_SET(reason, RC_SHM_MMAP);
 				reason = Help(reason, DRV_FILENAME);
 			}
+		    } else {
+			char wrongVersion[24];
+			sprintf(wrongVersion, "Version %d.%d.%d",
+				Proc->FootPrint.major,
+				Proc->FootPrint.minor,
+				Proc->FootPrint.rev);
+			munmap(Proc, packageSize);
+			REASON_SET(reason, RC_SHM_MMAP, EACCES);
+			reason = Help(reason, wrongVersion);
+		    }
 		} else {
 			REASON_SET(reason, RC_SHM_MMAP);
 			reason = Help(reason, DRV_FILENAME);
