@@ -534,6 +534,8 @@
 			(ASCII*) " F              Fahrenheit ou Celsius "
 #define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR				\
 			(ASCII*) " H           Gerer Alertes Processeur "
+#define RSC_ADV_HELP_ITEM_SECRET_CODE_FR				\
+			(ASCII*) " Y          Basculer donnees secretes "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_FR	(ASCII*) " Freq. Turbo %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	(ASCII*) " %s Ratio Freq. "
@@ -673,6 +675,7 @@
 		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\
 		"\t-J <#>\tNuméro d'index de chaîne SMBIOS\n"		\
+		"\t-Y\tAfficher les données secrètes\n" 		\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-V\tMoniteur de Puissance et Voltage\n"		\

@@ -534,6 +534,8 @@
 			(ASCII*) " F              Fahrenheit or Celsius "
 #define RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN				\
 			(ASCII*) " H            Manage Processor Events "
+#define RSC_ADV_HELP_ITEM_SECRET_CODE_EN				\
+			(ASCII*) " Y            Show | Hide Secret Data "
 
 #define RSC_TURBO_CLOCK_TITLE_CODE_EN	(ASCII*) " Turbo Clock %1dC "
 #define RSC_RATIO_CLOCK_TITLE_CODE_EN	(ASCII*) " %s Clock Ratio "
@@ -673,6 +675,7 @@
 			"\t-0,1,2\tMemory unit in K,M,G Byte\n" 	\
 			"\t-F\tTemperature in Fahrenheit\n"		\
 			"\t-J <#>\tSMBIOS string index number\n"	\
+			"\t-Y\tShow Secret Data\n"			\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
 			"\t-V\tMonitor Power and Voltage\n"		\

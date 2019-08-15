@@ -35,6 +35,16 @@ static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
 
+struct {
+	unsigned int
+	fahrCels:  1-0, /* 0:Celsius || 1:Fahrenheit	*/
+	secret	:  2-1, /* 0:Show || 1:Hide Secret Data */
+	_padding: 32-2;
+} Setting = {
+	.fahrCels=0,
+	.secret = 1,
+	._padding=0
+};
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 {
@@ -2221,46 +2231,49 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
+char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
+{
+	struct {
+		char		*pString;
+		unsigned short	secret;
+	} smb[SMB_STRING_COUNT] = {
+		{.pString = Shm->SMB.BIOS.Vendor,	.secret = 0},
+		{.pString = Shm->SMB.BIOS.Version,	.secret = 0},
+		{.pString = Shm->SMB.BIOS.Release,	.secret = 0},
+		{.pString = Shm->SMB.System.Vendor,	.secret = 0},
+		{.pString = Shm->SMB.Product.Name,	.secret = 0},
+		{.pString = Shm->SMB.Product.Version,	.secret = 0},
+		{.pString = Shm->SMB.Product.Serial,	.secret = 1},
+		{.pString = Shm->SMB.Product.SKU,	.secret = 0},
+		{.pString = Shm->SMB.Product.Family,	.secret = 0},
+		{.pString = Shm->SMB.Board.Name,	.secret = 0},
+		{.pString = Shm->SMB.Board.Version,	.secret = 0},
+		{.pString = Shm->SMB.Board.Serial,	.secret = 1}
+	};
+	if (smb[idx].secret & Setting.secret) {
+		static char outStr[MAX_UTS_LEN];
+		size_t len = strlen(smb[idx].pString);
+		int i;
+		for (i = 0; i < len; i++) {
+			outStr[i] = (i % mod) ? thing : smb[idx].pString[i];
+		}
+		outStr[i] = '\0';
+		return(outStr);
+	} else {
+		return(smb[idx].pString);
+	}
+}
+
 REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
+	enum SMB_STRING idx;
+
 	REASON_INIT(reason);
 
-	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_VENDOR, RSC(SMBIOS_TITLE).ATTR(),
-		width, 0, "%s", Shm->SMB.BIOS.Vendor);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_VERSION, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.BIOS.Version);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_BIOS_RELEASE, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.BIOS.Release);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_SYSTEM_VENDOR, RSC(SMBIOS_TITLE).ATTR(),
-		width, 0, "%s", Shm->SMB.System.Vendor);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_NAME, RSC(SMBIOS_TITLE).ATTR(),
-		width, 0, "%s", Shm->SMB.Product.Name);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_VERSION, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.Product.Version);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_SERIAL, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.Product.Serial);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_SKU, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.Product.SKU);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_PRODUCT_FAMILY, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.Product.Family);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_NAME, RSC(SMBIOS_TITLE).ATTR(),
-		width, 0, "%s", Shm->SMB.Board.Name);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_VERSION, RSC(SMBIOS_TITLE).ATTR(),
-		width, 2, "%s", Shm->SMB.Board.Version);
-
-	PUT(SMBIOS_STRING_INDEX|SMB_BOARD_SERIAL, RSC(SMBIOS_TITLE).ATTR(), width, 2,
-		"%s", Shm->SMB.Board.Serial);
-
+	for (idx = 0; idx < SMB_STRING_COUNT; idx ++) {
+		PUT(	SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
+			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-') );
+	}
 	return(reason);
 }
 
@@ -2300,8 +2313,104 @@ void Package(void)
     }
 }
 
+void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
+{
+	printf( "#%02u %7.2f (%5.2f)"				\
+		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+		"  %-3u/%3u:%-3u/%3u\n",
+		cpu,
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Shm->Cpu[cpu].PowerThermal.Limit[0],
+		CFlop->Thermal.Temp,
+		CFlop->Thermal.Sensor,
+		Shm->Cpu[cpu].PowerThermal.Limit[1] );
+}
+
+void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
+{
+	printf( "#%02u %7.2f (%5.2f)"				\
+		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+		"  %-3u/%3u:%-3u/%3u\n",
+		cpu,
+		CFlop->Relative.Freq,
+		CFlop->Relative.Ratio,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[0]),
+		Cels2Fahr(CFlop->Thermal.Temp),
+		Cels2Fahr(CFlop->Thermal.Sensor),
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[1]) );
+}
+
+void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
+{
+printf( "\n"							\
+	"%.*s" "Averages:"					\
+	"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+	"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
+	"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+	"%.*s" "%3u C" "%.*s" "%3u C\n\n",
+	4, hSpace,
+	8, hSpace,
+	4, hSpace,
+	4, hSpace,
+	20, hSpace,
+	100.f * Shm->Proc.Avg.Turbo,
+	100.f * Shm->Proc.Avg.C0,
+	100.f * Shm->Proc.Avg.C1,
+	100.f * Shm->Proc.Avg.C3,
+	100.f * Shm->Proc.Avg.C6,
+	100.f * Shm->Proc.Avg.C7,
+	5, hSpace,
+	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0],
+	3, hSpace,
+	PFlop->Thermal.Temp );
+}
+
+void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
+{
+printf( "\n"							\
+	"%.*s" "Averages:"					\
+	"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+	"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
+	"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+	"%.*s" "%3u C" "%.*s" "%3u C\n\n",
+	4, hSpace,
+	8, hSpace,
+	4, hSpace,
+	4, hSpace,
+	20, hSpace,
+	100.f * Shm->Proc.Avg.Turbo,
+	100.f * Shm->Proc.Avg.C0,
+	100.f * Shm->Proc.Avg.C1,
+	100.f * Shm->Proc.Avg.C3,
+	100.f * Shm->Proc.Avg.C6,
+	100.f * Shm->Proc.Avg.C7,
+	5, hSpace,
+	Cels2Fahr(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
+	3, hSpace,
+	Cels2Fahr(PFlop->Thermal.Temp) );
+}
+
 void Counters(void)
 {
+    void (*Core_Temp)(struct FLIP_FLOP *, unsigned int) =	\
+	Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
+
+    void (*Pkg_Temp)(struct PKG_FLIP_FLOP *) =			\
+	Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
+
     unsigned int cpu = 0;
     while (!BITVAL(Shutdown, 0)) {
 	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
@@ -2324,48 +2433,14 @@ void Counters(void)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf( "#%02u %7.2f (%5.2f)"				\
-			" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-			"  %-3u/%3u:%-3u/%3u\n",
-			cpu,
-			CFlop->Relative.Freq,
-			CFlop->Relative.Ratio,
-			100.f * CFlop->State.Turbo,
-			100.f * CFlop->State.C0,
-			100.f * CFlop->State.C1,
-			100.f * CFlop->State.C3,
-			100.f * CFlop->State.C6,
-			100.f * CFlop->State.C7,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
-			CFlop->Thermal.Temp,
-			CFlop->Thermal.Sensor,
-			Shm->Cpu[cpu].PowerThermal.Limit[1]);
+		Core_Temp(CFlop, cpu);
 	    else
 		printf("#%02u        OFF\n", cpu);
 	  }
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	printf( "\n"							\
-		"%.*s" "Averages:"					\
-		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
-		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-		"%.*s" "%3u C" "%.*s" "%3u C\n\n",
-		4, hSpace,
-		8, hSpace,
-		4, hSpace,
-		4, hSpace,
-		20, hSpace,
-		100.f * Shm->Proc.Avg.Turbo,
-		100.f * Shm->Proc.Avg.C0,
-		100.f * Shm->Proc.Avg.C1,
-		100.f * Shm->Proc.Avg.C3,
-		100.f * Shm->Proc.Avg.C6,
-		100.f * Shm->Proc.Avg.C7,
-		5, hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0],
-		3, hSpace,
-		PFlop->Thermal.Temp);
+
+	Pkg_Temp(PFlop);
     }
 }
 
@@ -2863,8 +2938,7 @@ struct {
 		taskVal :  6-5 ,	/* Display task's value		*/
 		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
 		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
-		fahrCels:  9-8 ,	/* 0:Celsius || 1:Fahrenheit	*/
-		_padding: 32-9 ;
+		_padding: 32-8 ;
 	} Flag;
 	enum VIEW	View;
 	enum DISPOSAL	Disposal;
@@ -2890,7 +2964,7 @@ struct {
 		.taskVal= 0,
 		.avgOrPC= 0,
 		.clkOrLd= 0,
-		.fahrCels=0
+		._padding=0
 	},
 	.View		= V_FREQ,
 	.Disposal	= D_MAINVIEW,
@@ -3516,6 +3590,7 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOT}	},
 	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
 	{1, RSC(ADV_HELP_ITEM_PROC_EVENT).CODE(),{SCANKEY_SHIFT_h}},
+	{1, RSC(ADV_HELP_ITEM_SECRET).CODE(),	{SCANKEY_SHIFT_y}},
 	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
 	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
@@ -3725,8 +3800,8 @@ Window *CreateSysInfo(unsigned long long id)
 		{
 		if (TOP_HEADER_ROW + 2 + matrixSize.hth >= draw.Size.height)
 			winOrigin.row = TOP_HEADER_ROW + 1;
-		winOrigin.col = 6;
-		winWidth = 66;
+		winOrigin.col = 4;
+		winWidth = MAX_UTS_LEN + 4 + 1;
 		SysInfoFunc = SysInfoSMBIOS;
 		title = RSC(SMBIOS_TITLE).CODE();
 		}
@@ -5082,9 +5157,13 @@ int Shortcut(SCANKEY *scan)
     }
     break;
     case SCANKEY_SHIFT_f:
-	draw.Flag.fahrCels = !draw.Flag.fahrCels;
+	Setting.fahrCels = !Setting.fahrCels;
 	if (draw.Disposal == D_DASHBOARD)
 		draw.Flag.layout = 1;
+    break;
+    case SCANKEY_SHIFT_y:
+	Setting.secret = !Setting.secret;
+	draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_h:
     {
@@ -7593,7 +7672,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 		CUINT	can = CUMIN(hSys1.origin.col - col - 1, len),
 			ctr = ((hSys1.origin.col + col) - can) / 2;
 		LayerFillAt(	layer, ctr, hSys1.origin.row,
-				can, Shm->SMB.String[draw.SmbIndex],
+				can, ScrambleSMBIOS(draw.SmbIndex, 4, '-'),
 				MakeAttr(BLUE, 0, BLACK, 1) );
 	}
 	/* Reset Tasks count & Memory usage				*/
@@ -7729,12 +7808,12 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
     case THERMAL_FORMULA_INTEL:
     case THERMAL_FORMULA_AMD:
     case THERMAL_FORMULA_AMD_0Fh:
-	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+	len = Draw_Frequency_Temp[Setting.fahrCels](CFlop, &Shm->Cpu[cpu]);
 	break;
     case THERMAL_FORMULA_AMD_15h:
     case THERMAL_FORMULA_AMD_17h:
       if (cpu == Shm->Proc.Service.Core) {
-	len = Draw_Frequency_Temp[draw.Flag.fahrCels](CFlop, &Shm->Cpu[cpu]);
+	len = Draw_Frequency_Temp[Setting.fahrCels](CFlop, &Shm->Cpu[cpu]);
       } else {
 	len = Draw_Frequency_Temp[2](CFlop, NULL);
       }
@@ -8243,7 +8322,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][1];
 	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp][2];
 
-	Draw_Footer_Voltage_Temp[draw.Flag.fahrCels](PFlop, SProc);
+	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop, SProc);
 
 	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);
 	memcpy(&LayerAt(layer, code, 68, row), &buffer[3], 4);
@@ -8466,7 +8545,7 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
-	    if (draw.Flag.fahrCels) {
+	    if (Setting.fahrCels) {
 		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND1,(4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
@@ -8726,7 +8805,7 @@ void Draw_Card_Core(Layer *layer, Card* card)
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 
-	Dec2Digit( draw.Flag.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+	Dec2Digit( Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
@@ -9217,7 +9296,7 @@ int main(int argc, char *argv[])
 		draw.Unit.Memory = 10 * (option - '0');
 		break;
 	    case 'F':
-		draw.Flag.fahrCels = 1;
+		Setting.fahrCels = 1;
 		break;
 	    case 'J':
 		if (++idx < argc) {
@@ -9227,6 +9306,9 @@ int main(int argc, char *argv[])
 				draw.SmbIndex = usrIdx;
 			}
 		}
+		break;
+	    case 'Y':
+		Setting.secret = 0;
 		break;
 	    case 'B':
 		reason = SysInfoSMBIOS(NULL, 80, NULL);

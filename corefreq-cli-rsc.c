@@ -408,6 +408,8 @@ ATTRIBUTE Rsc_BoxEvent_Attr[] = RSC_BOX_EVENT_ATTR;
 
 ATTRIBUTE Rsc_CreateRecorder_Attr[] = RSC_CREATE_RECORDER_ATTR;
 
+ATTRIBUTE Rsc_SMBIOS_Item_Attr[] = RSC_SMBIOS_ITEM_ATTR;
+
 RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_PROC] = {
 		.Attr = Rsc_Layout_Header_Proc_Attr,
@@ -1153,6 +1155,10 @@ RESOURCE_ST Resource[] = {
 	},
 	[RSC_CREATE_RECORDER] = {
 		.Attr = Rsc_CreateRecorder_Attr,
+		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
+	},
+	[RSC_SMBIOS_ITEM] = {
+		.Attr = Rsc_SMBIOS_Item_Attr,
 		.Code = {[LOC_EN] = hSpace, [LOC_FR] = hSpace}
 	},
 /* ASCII */
@@ -3282,6 +3288,13 @@ RESOURCE_ST Resource[] = {
 		.Code = {
 			[LOC_EN] = RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_EN,
 			[LOC_FR] = RSC_ADV_HELP_ITEM_PROC_EVENT_CODE_FR
+		}
+	},
+	[RSC_ADV_HELP_ITEM_SECRET] = {
+		.Attr = vColor,
+		.Code = {
+			[LOC_EN] = RSC_ADV_HELP_ITEM_SECRET_CODE_EN,
+			[LOC_FR] = RSC_ADV_HELP_ITEM_SECRET_CODE_FR
 		}
 	},
 	[RSC_TURBO_CLOCK_TITLE] = {
