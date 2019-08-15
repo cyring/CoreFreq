@@ -365,7 +365,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_start_object(&s);
 					json_key(&s, "SSE3");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.SSE3);
-					json_key(&s, "PCLMULDQ");
+					json_key(&s, "PCLMULQDQ");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.PCLMULDQ);
 					json_key(&s, "DTES64");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.DTES64);
@@ -389,8 +389,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.Unused1);
 					json_key(&s, "FMA");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.FMA);
-					json_key(&s, "CMPXCH16");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.CMPXCH16);
+					json_key(&s, "CMPXCHG16B");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.CMPXCHG16);
 					json_key(&s, "xTPR");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.ECX.xTPR);
 					json_key(&s, "PDCM");
@@ -446,8 +446,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.PAE);
 					json_key(&s, "MCE");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.MCE);
-					json_key(&s, "CMPXCH8");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.CMPXCH8);
+					json_key(&s, "CMPXCHG8B");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.CMPXCHG8);
 					json_key(&s, "APIC");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.APIC);
 					json_key(&s, "Unused1");
@@ -468,8 +468,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.PSE36);
 					json_key(&s, "PSN");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.PSN);
-					json_key(&s, "CLFSH");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.CLFSH);
+					json_key(&s, "CLFLUSH");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.CLFLUSH);
 					json_key(&s, "Unused2");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Std.EDX.Unused2);
 					json_key(&s, "DS_PEBS");

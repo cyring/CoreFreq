@@ -924,7 +924,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 				|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
 				+ (Shm->Proc.Features.ExtInfo.EDX._3DNow
 				<< Shm->Proc.Features.ExtInfo.EDX._3DNowEx)],
-		" 3DNow!/Ext [%c,%c]",
+		" 3DNow!/Ext [%c/%c]",
 		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
 
@@ -956,21 +956,21 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CLFSH],
-		"        CLFSH [%c]",
-		Shm->Proc.Features.Std.EDX.CLFSH ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CLFLUSH],
+		"      CLFLUSH [%c]",
+		Shm->Proc.Features.Std.EDX.CLFLUSH ? 'Y' : 'N');
 
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.CMOV],
 		"        CMOV [%c] ",
 		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCH8],
-		" CMPXCH8      [%c]",
-		Shm->Proc.Features.Std.EDX.CMPXCH8 ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCHG8],
+		" CMPXCHG8B    [%c]",
+		Shm->Proc.Features.Std.EDX.CMPXCHG8 ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.CMPXCH16],
-		"     CMPXCH16 [%c]",
-		Shm->Proc.Features.Std.ECX.CMPXCH16 ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.CMPXCHG16],
+		"   CMPXCHG16B [%c]",
+		Shm->Proc.Features.Std.ECX.CMPXCHG16 ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
 		"         F16C [%c]",
@@ -996,9 +996,13 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.MONITOR],
-		"     MONITOR [%c] ",
-		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N');
+	PRT(ISA, attrib[3][2 * (Shm->Proc.Features.Std.ECX.MONITOR
+			|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt)
+			+ (Shm->Proc.Features.Std.ECX.MONITOR
+			<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt)],
+		"  MONITOR/X[%c/%c] ",
+		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N',
+		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N');
 /* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.MOVBE],
 		" MOVBE        [%c]",
@@ -1009,7 +1013,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtFeature.EBX.MPX ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.PCLMULDQ],
-		"     PCLMULDQ [%c]",
+		"    PCLMULQDQ [%c]",
 		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
 
 	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.POPCNT],

@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	62
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -560,7 +560,7 @@ typedef struct
 		CNXT_ID : 11-10,
 		Unused1 : 12-11,
 		FMA	: 13-12,
-		CMPXCH16: 14-13,
+		CMPXCHG16:14-13,
 		xTPR	: 15-14,
 		PDCM	: 16-15,
 		Unused2 : 17-16,
@@ -591,7 +591,7 @@ typedef struct
 		MSR	:  6-5,
 		PAE	:  7-6,
 		MCE	:  8-7,
-		CMPXCH8 :  9-8,
+		CMPXCHG8:  9-8,
 		APIC	: 10-9,
 		Unused1 : 11-10,
 		SEP	: 12-11,
@@ -602,7 +602,7 @@ typedef struct
 		PAT	: 17-16,
 		PSE36	: 18-17,
 		PSN	: 19-18, /* Intel				*/
-		CLFSH	: 20-19,
+		CLFLUSH : 20-19,
 		Unused2 : 21-20,
 		DS_PEBS : 22-21,
 		ACPI	: 23-22,
