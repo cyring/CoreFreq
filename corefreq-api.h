@@ -523,7 +523,7 @@ typedef struct
 	unsigned short		SlotCount, ChannelCount;
 } MC_REGISTERS;
 
-typedef union
+typedef struct
 {
 	union {
 		struct {
@@ -553,9 +553,9 @@ typedef union
 			AMD_0F_HTT_UNIT_ID	UnitID;
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];
 		};
-		struct {
-			unsigned long long	IOMMU_CR;
-		};
+	};
+	struct {
+		unsigned long long	IOMMU_CR;
 	};
 } BUS_REGISTERS;
 
