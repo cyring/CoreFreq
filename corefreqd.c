@@ -3994,7 +3994,7 @@ REASON_CODE Child_Manager(REF *Ref)
 	return(reason);
 }
 
-REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
+REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 {
 	unsigned int	cpu = 0;
 	CORE		**Core;
@@ -4017,23 +4017,38 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 		REASON_SET(reason, RC_SHM_MMAP);
 	}
     }
+    if (reason.rc == RC_SUCCESS) {
+	if (gid != 0) {
+		if (setregid(-1, gid) != 0) {
+			REASON_SET(reason, RC_SYS_CALL);
+		}
+	}
+    }
+    if (reason.rc == RC_SUCCESS) {
+	if (uid != 0) {
+		if (setreuid(-1, uid) != 0) {
+			REASON_SET(reason, RC_SYS_CALL);
+		}
+	}
+    }
+    if (reason.rc == RC_SUCCESS) {
+	umask(cmask);
+    }
     if (reason.rc == RC_SUCCESS)
     {	/* Initialize shared memory.					*/
 	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count,
 			ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT)
 				+ ShmCpuSize));
 
-	umask(!S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH);
-
-	if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
+      if ((fd->Svr = shm_open(SHM_FILENAME, O_CREAT|O_TRUNC|O_RDWR,
 					 S_IRUSR|S_IWUSR
 					|S_IRGRP|S_IWGRP
 					|S_IROTH|S_IWOTH)) != -1)
-	{
-	  pid_t CPID = -1;
+      {
+	pid_t CPID = -1;
 
-	  if (ftruncate(fd->Svr, ShmSize) != -1)
-	  {
+	if (ftruncate(fd->Svr, ShmSize) != -1)
+	{
 	    if ((Shm = mmap(NULL, ShmSize,
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd->Svr, 0)) != MAP_FAILED)
@@ -4115,17 +4130,27 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 		default:
 			reason = Core_Manager(&Ref);
 
+			if (gid != 0) {
+				if (setregid(-1, 0) != 0) {
+					REASON_SET(reason, RC_SYS_CALL);
+				}
+			}
+			if (uid != 0) {
+				if (setreuid(-1, 0) != 0) {
+					REASON_SET(reason, RC_SYS_CALL);
+				}
+			}
 			if (Shm->AppCli) {
-			    if (kill(Shm->AppCli, SIGCHLD) == -1) {
-				REASON_SET(reason, RC_EXEC_ERR);
-			    }
+				if (kill(Shm->AppCli, SIGCHLD) == -1) {
+					REASON_SET(reason, RC_EXEC_ERR);
+				}
 			}
 			SysGate_OnDemand(&Ref, 0);
 
 			if (kill(Ref.CPID, SIGQUIT) == 0) {
-			    if (waitpid(Ref.CPID, NULL, 0) == -1) {
-				REASON_SET(reason, RC_EXEC_ERR);
-			    }
+				if (waitpid(Ref.CPID, NULL, 0) == -1) {
+					REASON_SET(reason, RC_EXEC_ERR);
+				}
 			} else {
 				REASON_SET(reason, RC_EXEC_ERR);
 			}
@@ -4139,20 +4164,20 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc)
 	    } else {
 		REASON_SET(reason, RC_SHM_MMAP);
 	    }
-	  } else {
-		REASON_SET(reason, RC_SHM_FILE);
-	  }
-	  if (close(fd->Svr) == -1) {
-		REASON_SET(reason, RC_SHM_FILE);
-	  }
-	  if (CPID != 0) {
-	    if (shm_unlink(SHM_FILENAME) == -1) {
-		REASON_SET(reason, RC_SHM_FILE);
-	    }
-	  }
 	} else {
 		REASON_SET(reason, RC_SHM_FILE);
 	}
+	if (close(fd->Svr) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	}
+	if (CPID != 0) {
+	    if (shm_unlink(SHM_FILENAME) == -1) {
+		REASON_SET(reason, RC_SHM_FILE);
+	    }
+	}
+      } else {
+		REASON_SET(reason, RC_SHM_FILE);
+      }
     }
     for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
     {
@@ -4183,6 +4208,9 @@ REASON_CODE Help(REASON_CODE reason, ...)
 			"\t-d\t\tDebug\n"				\
 			"\t-gon\t\tEnable SysGate\n"			\
 			"\t-goff\t\tDisable SysGate\n"			\
+			"\t-U <decimal>\tSet the effective user ID\n"	\
+			"\t-G <decimal>\tSet the effective group ID\n"	\
+			"\t-M <octal>\tSet the mode creation mask\n"	\
 			"\t-h\t\tPrint out this message\n"		\
 			"\t-v\t\tPrint the version number\n"		\
 			"\nExit status:\n"				\
@@ -4230,6 +4258,8 @@ int main(int argc, char *argv[])
 {
 	FD   fd = {0, 0};
 	PROC *Proc = NULL;	/* Kernel module anchor point.		*/
+	uid_t uid = 0, gid = 0;
+	mode_t cmask = !S_IRUSR|!S_IWUSR|!S_IRGRP|!S_IWGRP|!S_IROTH|!S_IWOTH;
 
 	char *program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[0];
@@ -4269,6 +4299,45 @@ int main(int argc, char *argv[])
 				printf("%s\n", COREFREQ_VERSION);
 				reason.rc = RC_CMD_SYNTAX;
 				break;
+			case 'U': {
+				char trailing =  '\0';
+			    if (argv[++i] == NULL) {
+					REASON_SET(reason, RC_CMD_SYNTAX, 0);
+					reason = Help(reason, appName);
+			    } else if (sscanf(argv[i], "%d%c",
+							&uid,
+							&trailing) != 1) {
+					REASON_SET(reason, RC_CMD_SYNTAX);
+					reason = Help(reason, appName);
+			    }
+			}
+				break;
+			case 'G': {
+				char trailing =  '\0';
+			    if (argv[++i] == NULL) {
+					REASON_SET(reason, RC_CMD_SYNTAX, 0);
+					reason = Help(reason, appName);
+			    } else if (sscanf(argv[i], "%d%c",
+							&gid,
+							&trailing) != 1) {
+					REASON_SET(reason, RC_CMD_SYNTAX);
+					reason = Help(reason, appName);
+			    }
+			}
+				break;
+			case 'M': {
+				char trailing =  '\0';
+			    if (argv[++i] == NULL) {
+				REASON_SET(reason, RC_CMD_SYNTAX, 0);
+				reason = Help(reason, appName);
+			    } else if (sscanf(argv[i] , "%o%c",
+							&cmask,
+							&trailing) != 1) {
+					REASON_SET(reason, RC_CMD_SYNTAX);
+					reason = Help(reason, appName);
+			    }
+			}
+				break;
 			case 'h':
 			default: {
 				REASON_SET(reason, RC_CMD_SYNTAX, 0);
@@ -4301,7 +4370,7 @@ int main(int argc, char *argv[])
 							COREFREQ_MINOR, \
 							COREFREQ_REV)	)
 		    {
-			reason = Shm_Manager(&fd, Proc);
+			reason = Shm_Manager(&fd, Proc, uid, gid, cmask);
 
 			switch (reason.rc) {
 			case RC_SUCCESS:
