@@ -262,7 +262,7 @@ typedef struct
 					_pad[7];
 	} Sync;
 
-	Bit64				OffLine __attribute__ ((aligned (64)));
+	Bit64				OffLine __attribute__ ((aligned (8)));
 
 #if FEAT_DBG > 0
 	struct
@@ -627,32 +627,32 @@ typedef struct
 
 	FEATURES		Features;
 
-	Bit64			CR_Mask 	__attribute__ ((aligned (64)));
-	Bit64			ODCM_Mask	__attribute__ ((aligned (64)));
-	Bit64			PowerMgmt_Mask	__attribute__ ((aligned (64)));
-	Bit64			SpeedStep_Mask	__attribute__ ((aligned (64)));
-	Bit64			TurboBoost_Mask __attribute__ ((aligned (64)));
-	Bit64			C1E_Mask __attribute__ ((aligned (64)));
-	Bit64	/* NHM */	C3A_Mask __attribute__ ((aligned (64)));
-	Bit64	/* NHM */	C1A_Mask __attribute__ ((aligned (64)));
-	Bit64	/* SNB */	C3U_Mask __attribute__ ((aligned (64)));
-	Bit64	/* SNB */	C1U_Mask __attribute__ ((aligned (64)));
-	Bit64	/* AMD */	CC6_Mask __attribute__ ((aligned (64)));
-	Bit64	/* AMD */	PC6_Mask __attribute__ ((aligned (64)));
+	Bit256			CR_Mask 	__attribute__ ((aligned (16)));
+	Bit256			ODCM_Mask	__attribute__ ((aligned (16)));
+	Bit256			PowerMgmt_Mask	__attribute__ ((aligned (16)));
+	Bit256			SpeedStep_Mask	__attribute__ ((aligned (16)));
+	Bit256			TurboBoost_Mask __attribute__ ((aligned (16)));
+	Bit256			C1E_Mask __attribute__ ((aligned (16)));
+	Bit256	/* NHM */	C3A_Mask __attribute__ ((aligned (16)));
+	Bit256	/* NHM */	C1A_Mask __attribute__ ((aligned (16)));
+	Bit256	/* SNB */	C3U_Mask __attribute__ ((aligned (16)));
+	Bit256	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
+	Bit256	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
+	Bit256	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
 
-	Bit64			ODCM		__attribute__ ((aligned (64)));
-	Bit64			PowerMgmt	__attribute__ ((aligned (64)));
-	Bit64			SpeedStep	__attribute__ ((aligned (64)));
-	Bit64			TurboBoost	__attribute__ ((aligned (64)));
-	Bit64			C1E		__attribute__ ((aligned (64)));
-	Bit64			C3A		__attribute__ ((aligned (64)));
-	Bit64			C1A		__attribute__ ((aligned (64)));
-	Bit64			C3U		__attribute__ ((aligned (64)));
-	Bit64			C1U		__attribute__ ((aligned (64)));
-	Bit64			CC6		__attribute__ ((aligned (64)));
-	Bit64			PC6		__attribute__ ((aligned (64)));
-	Bit64			SMM		__attribute__ ((aligned (64)));
-	Bit64			VM		__attribute__ ((aligned (64)));
+	Bit256			ODCM		__attribute__ ((aligned (16)));
+	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
+	Bit256			SpeedStep	__attribute__ ((aligned (16)));
+	Bit256			TurboBoost	__attribute__ ((aligned (16)));
+	Bit256			C1E		__attribute__ ((aligned (16)));
+	Bit256			C3A		__attribute__ ((aligned (16)));
+	Bit256			C1A		__attribute__ ((aligned (16)));
+	Bit256			C3U		__attribute__ ((aligned (16)));
+	Bit256			C1U		__attribute__ ((aligned (16)));
+	Bit256			CC6		__attribute__ ((aligned (16)));
+	Bit256			PC6		__attribute__ ((aligned (16)));
+	Bit256			SMM		__attribute__ ((aligned (16)));
+	Bit256			VM		__attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -687,7 +687,7 @@ typedef struct
 	} PowerThermal;
 
 	struct {
-		Bit64		Signal __attribute__ ((aligned (64)));
+		Bit64		Signal __attribute__ ((aligned (8)));
 		struct {
 			size_t	Size;
 			int	Order;
@@ -716,3 +716,4 @@ typedef struct
 
 	FOOTPRINT		FootPrint;
 } PROC;
+

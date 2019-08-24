@@ -8,7 +8,7 @@
 
 typedef struct
 {
-	Bit64				OffLine __attribute__ ((aligned (64)));
+	Bit64				OffLine __attribute__ ((aligned (8)));
 
 	unsigned int			Toggle;
 
@@ -168,11 +168,11 @@ typedef struct
 
 typedef struct
 {
-	volatile unsigned long long	Sync __attribute__ ((aligned (128)));
+	volatile unsigned long long	Sync __attribute__ ((aligned (16)));
 
 	FEATURES			Features;
 
-	Bit64			PowerNow	__attribute__ ((aligned (64)));
+	Bit64			PowerNow	__attribute__ ((aligned (8)));
 
 	struct {
 		unsigned long long
@@ -289,7 +289,7 @@ typedef struct
 	} Registration;
 
 	struct {
-		Bit64		Operation	__attribute__ ((aligned (64)));
+		Bit64		Operation	__attribute__ ((aligned (8)));
 
 		OS_DRIVER	OS;
 
@@ -325,7 +325,7 @@ typedef struct
 	} Sleep;
 
 	struct {
-		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(128)));
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
 		unsigned int	head, tail;
 	} Ring[2]; /* [0] Parent ; [1] Child				*/
 
@@ -423,3 +423,4 @@ typedef struct {
 	REASON_CODE _reason = {.no = 0, .ln = 0, .rc = RC_SUCCESS}
 
 #define IS_REASON_SUCCESSFUL(_reason) (_reason.rc == RC_SUCCESS)
+

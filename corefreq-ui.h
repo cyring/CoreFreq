@@ -7,9 +7,8 @@
 #define TOP_HEADER_ROW	3
 #define TOP_FOOTER_ROW	2
 #define TOP_SEPARATOR	3
-#define MAX_CPU_ROW	64
 
-#define MAX_HEIGHT	((2 * MAX_CPU_ROW)				\
+#define MAX_HEIGHT	((2 * CORE_COUNT)				\
 			+ TOP_HEADER_ROW				\
 			+ TOP_SEPARATOR					\
 			+ TOP_FOOTER_ROW)
@@ -795,3 +794,4 @@ extern void StopDump(void) ;
 extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
 extern void AbortDump(void) ;
 extern unsigned char DumpStatus(void) ;
+

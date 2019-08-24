@@ -7,6 +7,12 @@
 #define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
 #define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
 
+#define CORE_COUNT_MASK 	(CORE_COUNT -1)
+#define CORE_WORD_TOP		(CORE_COUNT_MASK >> 6)
+#define CORE_WORD_MOD(_offset_) ((_offset_ & CORE_COUNT_MASK) & 0x3f)
+#define CORE_WORD_POS(_offset_) ((_offset_ & CORE_COUNT_MASK) >> 6)
+
+typedef unsigned long long int	Bit256[4];
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
@@ -222,9 +228,9 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 		"btq	%%rdx, %[base]" "\n\t"				\
 		"setc	%[ret]" 					\
-		: [ret]	"+r" (_ret)					\
+		: [ret] "+r" (_ret)					\
 		: [base] "m" (_base),					\
-		  "d" (_offset)						\
+		  "d" ( _offset )					\
 		: "cc", "memory"					\
 	);								\
 	_ret;								\
@@ -237,7 +243,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 		"btq	%[imm8], %[base]" "\n\t"			\
 		"setc	%[ret]" 					\
-		: [ret]	"+r" (_ret)					\
+		: [ret] "+r" (_ret)					\
 		: [base] "m" (_base),					\
 		  [imm8] "i" (_imm8)					\
 		: "cc", "memory"					\
@@ -247,7 +253,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _ret __attribute__ ((aligned (64)))=_opl;	\
+	volatile Bit64 _ret __attribute__ ((aligned (8))) = _opl;	\
 	__asm__ volatile						\
 	(								\
 	_lock	"andq %[opr], %[ret]"					\
@@ -260,7 +266,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _ret __attribute__ ((aligned (64))) = _opl;	\
+	volatile Bit64 _ret __attribute__ ((aligned (8))) = _opl;	\
 	__asm__ volatile						\
 	(								\
 	_lock	"orq %[opr], %[ret]"					\
@@ -273,7 +279,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEXOR(_lock, _opl, _opr)					\
 ({									\
-	volatile Bit64 _ret __attribute__ ((aligned (64))) = _opl;	\
+	volatile Bit64 _ret __attribute__ ((aligned (8))) = _opl;	\
 	__asm__ volatile						\
 	(								\
 	_lock	"xorq %[opr], %[ret]"					\
@@ -282,18 +288,6 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: "memory"						\
 	);								\
 	_ret;								\
-})
-
-#define BITMSK(_lock, _base, _offset)					\
-({									\
-	__asm__ volatile						\
-	(								\
-	_lock	"orq	$0xffffffffffffffff, %[base]"	"\n\t"		\
-	_lock	"btc	%[offset], %[base]"				\
-		: [base] "=m" (_base)					\
-		: [offset] "Jr" (_offset)				\
-		: "cc", "memory"					\
-	);								\
 })
 
 #define BITSET(_lock, _base, _offset)					\
@@ -343,7 +337,52 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define BITWISEXOR(_lock, _opl, _opr)	_BITWISEXOR(_lock, _opl, _opr)
 
 #define BITSTOR(_lock, _dest, _src)					\
-	_dest = BITWISEAND(_lock, _src, 0xffffffffffffffff)
+({									\
+	__asm__ volatile						\
+	(								\
+		"movq	$0xffffffffffffffff, %%rdi"	"\n\t"		\
+		"andq	%[src], %%rdi"			"\n\t"		\
+	_lock	"orq	$0xffffffffffffffff, %[dest]"	"\n\t"		\
+	_lock	"andq	%%rdi , %[dest]"				\
+		: [dest] "=m" (_dest)					\
+		: [src]  "Jr" (_src)					\
+		: "memory", "%rdi"					\
+	);								\
+})
+
+#define BITZERO(_lock, _src)						\
+({									\
+	Bit64 _tmp __attribute__ ((aligned (8))) = _src;		\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+	_lock	"orq	$0x0, %[tmp]"		"\n\t"			\
+		"setz	%[ret]" 					\
+		: [ret] "+m" (_ret)					\
+		: [tmp] "m" (_tmp)					\
+		: "cc", "memory"					\
+	);								\
+	_ret;								\
+})
+
+#define BITCMP(_lock, _opl, _opr)					\
+({									\
+	Bit64 _tmp __attribute__ ((aligned (8))) = _opl;		\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	%[opr], %%rax"		"\n\t"			\
+	_lock	"xorq	%%rax, %[tmp]"		"\n\t"			\
+		"setz	%[ret]" 					\
+		: [ret] "+m" (_ret)					\
+		: [tmp] "m" (_tmp),					\
+		  [opr] "m" (_opr)					\
+		: "cc", "memory", "%rax"				\
+	);								\
+	_ret;								\
+})
 
 #define BITBSF(_base, _index)						\
 ({									\
@@ -397,3 +436,77 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	);								\
 	_dest;								\
 })
+
+#define BITSET_CC(_lock, _base, _offset)				\
+(									\
+	BITSET(_lock,	_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],	\
+			CORE_WORD_MOD(_offset) )			\
+)
+
+#define BITCLR_CC(_lock, _base, _offset)				\
+(									\
+	BITCLR(_lock,	_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],	\
+			CORE_WORD_MOD(_offset) )			\
+)
+
+#define BITVAL_CC(_base, _offset)					\
+(									\
+	BITVAL(_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],		\
+		CORE_WORD_MOD(_offset) )				\
+)
+
+#define BITWISEAND_CC(_lock, _opl, _opr)				\
+({									\
+	volatile Bit64 _ret __attribute__ ((aligned (8))) = 0;		\
+	unsigned int cw = 0;						\
+	do {								\
+		_ret |= _BITWISEAND(_lock, _opl[cw], _opr[cw]) ;	\
+	} while (++cw <= CORE_WORD_TOP) ;				\
+	_ret;								\
+})
+
+#define BITSTOR_CC(_lock, _dest, _src)					\
+({									\
+	unsigned int cw = 0;						\
+	do {								\
+		BITSTOR(_lock, _dest[cw], _src[cw]);			\
+	} while (++cw <= CORE_WORD_TOP) ;				\
+})
+
+#define BITCMP_CC(_cct, _lock, _opl, _opr)				\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq		$0x1, %%rsi"		"\n\t"		\
+		"xorq		%%rdi, %%rdi"		"\n\t"		\
+		"movl		%[cct], %%ecx"		"\n\t"		\
+		"shll		$25, %%ecx"		"\n\t"		\
+		"jc		1f"			"\n\t"		\
+		"movq		16+%[opr], %%rax"	"\n\t"		\
+		"movq		24+%[opr], %%rdx"	"\n\t"		\
+		"movq		16+%[opl], %%rbx"	"\n\t"		\
+		"movq		24+%[opl], %%rcx"	"\n\t"		\
+	_lock	"rex cmpxchg16b 16+%[opl]"		"\n\t"		\
+		"setz		%%sil"			"\n\t"		\
+	"1:"						"\n\t"		\
+		"movq		0+%[opr], %%rax"	"\n\t"		\
+		"movq		8+%[opr], %%rdx"	"\n\t"		\
+		"movq		0+%[opl], %%rbx"	"\n\t"		\
+		"movq		8+%[opl], %%rcx"	"\n\t"		\
+	_lock	"rex cmpxchg16b 0+%[opl]"		"\n\t"		\
+		"setz		%%dil"			"\n\t"		\
+		"andq		%%rsi, %%rdi"		"\n\t"		\
+		"mov		%%dil, %[ret]"				\
+		: [ret] "+m" (_ret),					\
+		  [opl] "=m" (_opl)					\
+		: [cct] "irm"(_cct),					\
+		  [opr]  "m" (_opr)					\
+		: "cc", "memory",					\
+		  "%rax", "%rbx", "%rcx", "%rdx", "%rdi", "%rsi"	\
+	);								\
+									\
+	_ret;								\
+})
+

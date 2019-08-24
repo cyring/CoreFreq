@@ -17,6 +17,7 @@
 #include <errno.h>
 
 #include "bitasm.h"
+#include "coretypes.h"
 #include "corefreq-ui.h"
 
 const char LCD[0x6][0x10][3][3] = {
@@ -533,7 +534,7 @@ struct {
 	};
     };
 		FILE	*Handle;
-} dump __attribute__ ((aligned (64))) = {
+} dump __attribute__ ((aligned (8))) = {
 	.Reset = 0x0,
 	.Handle = NULL
 };
@@ -1737,3 +1738,4 @@ void _LOCALE_OUT(void)
 		freelocale(SysLoc);
 	}
 }
+

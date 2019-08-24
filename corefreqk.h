@@ -531,7 +531,7 @@ typedef struct
 			STARTED: 2-1
 			MUSTFWD: 3-2
 */
-	Bit64			TSM __attribute__ ((aligned (64)));
+	Bit64			TSM __attribute__ ((aligned (8)));
 } JOIN;
 
 typedef struct
@@ -4153,3 +4153,4 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_AMD_Family_17h
 	}
 };
+

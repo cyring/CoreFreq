@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	62
-#define COREFREQ_REV	3
+#define COREFREQ_MINOR	63
+#define COREFREQ_REV	0
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -39,6 +39,7 @@ typedef struct {
 	(_place.rev	== _rev)					\
 )
 
+#define CORE_COUNT	256
 
 enum {	GenuineIntel,
 	Core_Yonah,
@@ -529,10 +530,10 @@ typedef struct
 		Model		:  8-4,
 		Family		: 12-8,
 		ProcType	: 14-12,
-		Unused1		: 16-14,
+		Unused1 	: 16-14,
 		ExtModel	: 20-16,
 		ExtFamily	: 28-20,
-		Unused2		: 32-28;
+		Unused2 	: 32-28;
 	    } EAX;
 		unsigned int Signature;
 	};
@@ -1532,7 +1533,9 @@ typedef struct {
 				+ sizeof(unsigned int)			\
 				+ 4 * MAX_UTS_LEN )
 
-#define TASK_LIMIT		(((4096 << 5) - SYSGATE_STRUCT_SIZE)	\
+#define TASK_ORDER		6
+
+#define TASK_LIMIT		(((4096 << TASK_ORDER) - SYSGATE_STRUCT_SIZE) \
 				/ sizeof(TASK_MCB))
 
 /* Input-Output Control							*/
@@ -1781,3 +1784,4 @@ typedef union {
 		} Board;
 	};
 } SMBIOS_ST;
+

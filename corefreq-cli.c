@@ -31,7 +31,7 @@
 
 SHM_STRUCT *Shm = NULL;
 
-static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
+static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
 
@@ -269,13 +269,13 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (OutFunc == NULL) {
 		PUT(SCANKEY_NULL, attrib[0], width, 0,
-			"CPU #%-2u function"				\
-			"          EAX          EBX          ECX          EDX",
+			"CPU #%-3u function"				\
+			"         EAX          EBX          ECX          EDX",
 			cpu);
 	    } else {
 		PUT(SCANKEY_NULL,
 			attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-			width, 0, "CPU #%-2u", cpu);
+			width, 0, "CPU #%-3u", cpu);
 	    }
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PUT(SCANKEY_NULL, attrib[3], width, 2, format,
@@ -563,10 +563,10 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[6+1];
-	sprintf(item, "%6.2f", CFlop->Clock.Hz / 1000000.0);
+	char item[7+1];
+	sprintf(item, "%7.3f", CFlop->Clock.Hz / 1000000.0);
 
-	memcpy(&grid->cell.item[grid->cell.length - 8], item, 6);
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
 void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
@@ -618,26 +618,26 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
-		"%s""%.*s[%2X%1X_%1X%1X]", RSC(SIGNATURE).CODE(),
-		width - 11 - RSZ(SIGNATURE), hSpace,
+		"%s""%.*s[%3X%1X_%1X%1X]", RSC(SIGNATURE).CODE(),
+		width - 12 - RSZ(SIGNATURE), hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
 		Shm->Proc.Features.Std.EAX.Family,
 		Shm->Proc.Features.Std.EAX.ExtModel,
 		Shm->Proc.Features.Std.EAX.Model);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
-		"%s""%.*s[%6u]", RSC(STEPPING).CODE(),
-		width - 11 - RSZ(STEPPING), hSpace,
+		"%s""%.*s[%7u]", RSC(STEPPING).CODE(),
+		width - 12 - RSZ(STEPPING), hSpace,
 		Shm->Proc.Features.Std.EAX.Stepping);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
-		"%s""%.*s[ %2u/%-2u]", RSC(ONLINE_CPU).CODE(),
-		width - 11 - RSZ(ONLINE_CPU), hSpace,
+		"%s""%.*s[%3u/%3u]", RSC(ONLINE_CPU).CODE(),
+		width - 12 - RSZ(ONLINE_CPU), hSpace,
 		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
 	GridCall(PUT(SCANKEY_NULL, attrib[2], width, 2,
-			"%s""%.*s[%6.2f]", RSC(BASE_CLOCK).CODE(),
-			width - 11 - RSZ(BASE_CLOCK), hSpace,
+			"%s""%.*s[%7.3f]", RSC(BASE_CLOCK).CODE(),
+			width - 12 - RSZ(BASE_CLOCK), hSpace,
 			CFlop->Clock.Hz / 1000000.0),
 		RefreshBaseClock);
 
@@ -682,9 +682,9 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MAX)]);
     }
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%6.2f]",
+	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
 		RSC(FACTORY).CODE(),
-		(OutFunc == NULL ? 69 : 65) - RSZ(FACTORY), hSpace,
+		(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
 			Shm->Proc.Features.Factory.Clock.Hz / 1000000.0);
 
 	PUT(SCANKEY_NULL, attrib[3], width, 0,
@@ -742,7 +742,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
-		"Turbo Boost%.*s[%.*s]", width - 22, hSpace, 6,
+		"Turbo Boost%.*s[%7.*s]", width - 23, hSpace, 6,
 			Shm->Proc.Features.Turbo_Unlock ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
@@ -791,7 +791,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       }
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
-		width, 2, "Uncore%.*s[%.*s]", width - 17, hSpace, 6,
+		width, 2, "Uncore%.*s[%7.*s]", width - 18, hSpace, 6,
 			Shm->Proc.Features.Uncore_Unlock ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
@@ -832,25 +832,25 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       if (pfx != NULL)
       {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"TDP%.*s""%s"" [%3d:%-2d]",
-		width - 15 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
+		"TDP%.*s""%s"" [%3d:%-3d]",
+		width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
 		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
-		width, 3, "%s%.*s[%.*s]", RSC(PROGRAMMABLE).CODE(),
-		width - (OutFunc == NULL ? 14:12) - RSZ(PROGRAMMABLE), hSpace,
+		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(PROGRAMMABLE), hSpace,
 			6, Shm->Proc.Features.TDP_Unlock == 1 ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Cfg_Lock == 0],
-		width, 3, "%s%.*s[%.*s]", RSC(CONFIGURATION).CODE(),
-		width - (OutFunc == NULL ? 14:12) - RSZ(CONFIGURATION),hSpace,
+		width, 3, "%s%.*s[%7.*s]", RSC(CONFIGURATION).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(CONFIGURATION),hSpace,
 			6, Shm->Proc.Features.TDP_Cfg_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TurboActiv_Lock == 0],
-		width, 3, "%s%.*s[%.*s]", RSC(TURBO_ACTIVATION).CODE(),
-		width - (OutFunc == NULL ? 14:12)-RSZ(TURBO_ACTIVATION),hSpace,
+		width, 3, "%s%.*s[%7.*s]", RSC(TURBO_ACTIVATION).CODE(),
+		width - (OutFunc == NULL ? 15:13)-RSZ(TURBO_ACTIVATION),hSpace,
 			6, Shm->Proc.Features.TurboActiv_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
 
@@ -2319,7 +2319,7 @@ void Package(void)
 
 void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
 {
-	printf( "#%02u %7.2f (%5.2f)"				\
+	printf( "%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
 		cpu,
@@ -2339,7 +2339,7 @@ void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
 
 void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
 {
-	printf( "#%02u %7.2f (%5.2f)"				\
+	printf( "%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
 		cpu,
@@ -2439,7 +2439,7 @@ void Counters(void)
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 		Core_Temp(CFlop, cpu);
 	    else
-		printf("#%02u        OFF\n", cpu);
+		printf("%03u        OFF\n", cpu);
 	  }
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -2470,13 +2470,13 @@ void Voltage(void)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf("#%02u %7.2f %5d  %5.4f\n",
+		printf("%03u %7.2f %5d  %5.4f\n",
 			cpu,
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore);
 	    else
-		printf("#%02u        OFF\n", cpu);
+		printf("%03u        OFF\n", cpu);
 	  }
 
 	printf("\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory",
@@ -2517,13 +2517,13 @@ void Instructions(void)
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-			printf("#%02u %12.6f/s %12.6f/c %12.6f/i\n",
+			printf("%03u %12.6f/s %12.6f/c %12.6f/i\n",
 				cpu,
 				CFlop->State.IPS,
 				CFlop->State.IPC,
 				CFlop->State.CPI);
 		else
-			printf("#%02u\n", cpu);
+			printf("%03u\n", cpu);
 	    }
 		printf("\n");
     }
@@ -2559,11 +2559,11 @@ void Topology(Window *win, CELL_FUNC OutFunc)
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
       if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 	if (Shm->Cpu[cpu].Topology.MP.BSP)
-		PRT(MAP, attrib[0], "%02u: BSP%6d",
+		PRT(MAP, attrib[0], "%03u:BSP%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.ApicID);
 	else
-		PRT(MAP, attrib[0], "%02u:%4d%6d",
+		PRT(MAP, attrib[0], "%03u:%3d%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
@@ -2588,7 +2588,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 				'i' : 0x20);
 	}
       } else {
-		PRT(MAP, attrib[1], "%02u:   -     -", cpu);
+		PRT(MAP, attrib[1], "%03u:  -     -", cpu);
 
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 		PRT(MAP, attrib[1], "  -   -     -");
@@ -4145,14 +4145,14 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		sprintf((char*) item, " %02u   Off   ", cpu);
+		sprintf((char*) item, " %03u  Off   ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
 
 		StoreTCell(wCPU, CPU_ONLINE | cpu ,
 					RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
 					RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR());
 	    } else {
-		sprintf((char*) item, " %02u    On   ", cpu);
+		sprintf((char*) item, " %03u   On   ", cpu);
 		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
 
 		StoreTCell(wCPU, CPU_OFFLINE | cpu,
@@ -4363,7 +4363,7 @@ Window *CreateSelectCPU(unsigned long long id)
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-		sprintf((char*) item, 	"   %02u  %4d%6d%6d   ",
+		sprintf((char*) item, 	"  %03u  %4d%6d%6d   ",
 					cpu,
 					Shm->Cpu[cpu].Topology.PackageID,
 					Shm->Cpu[cpu].Topology.CoreID,
@@ -4698,24 +4698,26 @@ int Shortcut(SCANKEY *scan)
 	if (!IsDead(&winList))
 		return(-1);
 	else if (draw.Disposal == D_MAINVIEW) {
-		CUINT offset = Shm->Proc.CPU.Count / 4;
-		if((draw.cpuScroll + offset) < ( Shm->Proc.CPU.Count
-						- draw.Area.MaxRows) )
-		{
-			draw.cpuScroll += offset;
-			draw.Flag.layout = 1;
-		}
+	    if ( (draw.cpuScroll + draw.Area.MaxRows) < ( Shm->Proc.CPU.Count
+							- draw.Area.MaxRows ) )
+	    {
+		draw.cpuScroll += draw.Area.MaxRows;
+	    } else {
+		draw.cpuScroll = Shm->Proc.CPU.Count - draw.Area.MaxRows;
+	    }
+		draw.Flag.layout = 1;
 	}
     break;
     case SCANKEY_PGUP:
 	if (!IsDead(&winList))
 		return(-1);
 	else if (draw.Disposal == D_MAINVIEW) {
-		CUINT offset = Shm->Proc.CPU.Count / 4;
-		if (draw.cpuScroll >= offset) {
-			draw.cpuScroll -= offset;
-			draw.Flag.layout = 1;
-		}
+	    if (draw.cpuScroll >= draw.Area.MaxRows) {
+		draw.cpuScroll -= draw.Area.MaxRows;
+	    } else {
+		draw.cpuScroll = 0;
+	    }
+		draw.Flag.layout = 1;
 	}
     break;
     case SCANKEY_OPEN_BRACE:
@@ -6962,12 +6964,14 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	row++;
 
-	sprintf(buffer,"%2u" "%-2u", Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+	sprintf(buffer,"%3u" "%-3u", Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
 
-	hProc1.code[2] = buffer[0];
-	hProc1.code[3] = buffer[1];
-	hProc1.code[5] = buffer[2];
-	hProc1.code[6] = buffer[3];
+	hProc1.code[1] = buffer[0];
+	hProc1.code[2] = buffer[1];
+	hProc1.code[3] = buffer[2];
+	hProc1.code[5] = buffer[3];
+	hProc1.code[6] = buffer[4];
+	hProc1.code[7] = buffer[5];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
@@ -7332,19 +7336,19 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		}
 	};
 
-	struct {							\
-		Coordinate	origin;					\
-		CUINT		length;					\
-		ATTRIBUTE	*attr;					\
-		ASCII		*code;					\
-	} hTask1 = {							\
-		.origin = {						\
-			.col = 23,					\
-			.row = row					\
-		},							\
-		.length = 21,						\
-		.attr = hSort[Shm->SysGate.sortByField].attr,		\
-		.code = hSort[Shm->SysGate.sortByField].code		\
+	struct {
+		Coordinate	origin;
+		CUINT		length;
+		ATTRIBUTE	*attr;
+		ASCII		*code;
+	} hTask1 = {
+		.origin = {
+			.col = 23,
+			.row = row
+		},
+		.length = 21,
+		.attr = hSort[Shm->SysGate.sortByField].attr,
+		.code = hSort[Shm->SysGate.sortByField].code
 	};
 
 	struct {
@@ -7361,19 +7365,19 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		}
 	};
 
-	struct {							\
-		Coordinate	origin;					\
-		CUINT		length;					\
-		ATTRIBUTE	*attr;					\
-		ASCII		*code;					\
-	} hTask2 = {							\
-		.origin = {						\
-			.col = (draw.Size.width - 18),			\
-			.row = (row + draw.Area.MaxRows + 1)		\
-		},							\
-		.length = 15,						\
-		.attr = hReverse[Shm->SysGate.reverseOrder].attr,	\
-		.code = hReverse[Shm->SysGate.reverseOrder].code	\
+	struct {
+		Coordinate	origin;
+		CUINT		length;
+		ATTRIBUTE	*attr;
+		ASCII		*code;
+	} hTask2 = {
+		.origin = {
+			.col = (draw.Size.width - 18),
+			.row = (row + draw.Area.MaxRows + 1)
+		},
+		.length = 15,
+		.attr = hReverse[Shm->SysGate.reverseOrder].attr,
+		.code = hReverse[Shm->SysGate.reverseOrder].code
 	};
 
 	LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH, 13,
@@ -7695,11 +7699,10 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 void Layout_Load_UpperView(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	sprintf(buffer, "%-2u", cpu);
-	LayerAt(layer, attr, 0, row) = MakeAttr(WHITE, 0, BLACK, 0);
-	LayerAt(layer, code, 0, row) = '#';
-	LayerAt(layer, code, 1, row) = buffer[0];
-	LayerAt(layer, code, 2, row) = buffer[1];
+	sprintf(buffer, "%03u", cpu);
+	LayerAt(layer, code, 0, row) = buffer[0];
+	LayerAt(layer, code, 1, row) = buffer[1];
+	LayerAt(layer, code, 2, row) = buffer[2];
 
 	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
 	LayerAt(layer, code, 3, row) = 0x20;
@@ -7707,11 +7710,9 @@ void Layout_Load_UpperView(Layer *layer, const unsigned int cpu, CUINT row)
 
 void Layout_Load_LowerView(Layer *layer, CUINT row)
 {
-	LayerAt(layer, attr, 0, (1 + row + draw.Area.MaxRows)) =	\
-						MakeAttr(WHITE,0,BLACK,0);
-	LayerAt(layer, code, 0, (1 + row + draw.Area.MaxRows)) = '#';
-	LayerAt(layer, code, 1, (1 + row + draw.Area.MaxRows)) = buffer[0];
-	LayerAt(layer, code, 2, (1 + row + draw.Area.MaxRows)) = buffer[1];
+	LayerAt(layer, code, 0, (1 + row + draw.Area.MaxRows)) = buffer[0];
+	LayerAt(layer, code, 1, (1 + row + draw.Area.MaxRows)) = buffer[1];
+	LayerAt(layer, code, 2, (1 + row + draw.Area.MaxRows)) = buffer[2];
 }
 
 void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
@@ -7725,7 +7726,7 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 				* draw.Area.LoadWidth) / ratio.Maximum,
 			bar1 = draw.Area.LoadWidth - bar0;
 		/* Print the Per Core BCLK indicator (yellow)		*/
-		LayerAt(layer, code, (LOAD_LEAD - 1), row) =		\
+		LayerAt(layer, code, (LOAD_LEAD - 1), row) =
 			(draw.iClock == (cpu - draw.cpuScroll)) ? '~' : 0x20;
 		/* Draw the relative Core frequency ratio		*/
 		LayerFillAt(layer, LOAD_LEAD, row,
@@ -7844,8 +7845,8 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	{
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
-	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =			\
-		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =		\
+	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =
+		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =
 			LayerAt(layer, attr, (LOAD_LEAD + 71), row) = warning;
 
 	return(0);
@@ -8202,7 +8203,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	      {
 		LayerAt(layer, attr,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
-			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = \
+			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) =
 						MakeAttr(WHITE, 0, BLACK, 0);
 		LayerAt(layer, code,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
@@ -8440,6 +8441,10 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 
 #define Illuminates_CPU(_layer, _row, fg, bg, hi)			\
 ({									\
+	LayerAt(_layer, attr, 0, _row) =				\
+		LayerAt(_layer, attr, 0, (1 + _row + draw.Area.MaxRows)) =\
+						MakeAttr(fg, 0, bg, hi);\
+									\
 	LayerAt(_layer, attr, 1, _row) =				\
 		LayerAt(_layer, attr, 1, (1 + _row + draw.Area.MaxRows)) =\
 						MakeAttr(fg, 0, bg, hi);\
@@ -8554,14 +8559,14 @@ void Layout_Card_Core(Layer *layer, Card* card)
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
 
-		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
+		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row,
 				hOnLine.length, hOnLine.attr, hOnLine.code);
 	    } else {
 		LayerDeclare(	LAYOUT_CARD_CORE_ONLINE_COND0,(4 * INTER_WIDTH),
 				card->origin.col, (card->origin.row + 3),
 				hOnLine);
 
-		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row, \
+		LayerCopyAt(layer, hOnLine.origin.col, hOnLine.origin.row,
 				hOnLine.length, hOnLine.attr, hOnLine.code);
 	    }
 	} else {
@@ -8571,18 +8576,22 @@ void Layout_Card_Core(Layer *layer, Card* card)
 
 		card->data.dword.hi = RENDER_KO;
 
-		LayerFillAt(layer, card->origin.col, (card->origin.row + 1), \
+		LayerFillAt(layer, card->origin.col, (card->origin.row + 1),
 		(4 * INTER_WIDTH), " _  _  _  _ ", MakeAttr(BLACK,0,BLACK,1));
 
-		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row, \
+		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row,
 				hOffLine.length, hOffLine.attr, hOffLine.code);
 	}
 	LayerAt(layer, code,
-		(card->origin.col + 3),			\
+		(card->origin.col + 2),
+		(card->origin.row + 3)) = digit[6] + '0';
+
+	LayerAt(layer, code,
+		(card->origin.col + 3),
 		(card->origin.row + 3)) = digit[7] + '0';
 
-	LayerAt(layer, code,				\
-		(card->origin.col + 4),			\
+	LayerAt(layer, code,
+		(card->origin.col + 4),
 		(card->origin.row + 3)) = digit[8] + '0';
 }
 
@@ -8592,7 +8601,7 @@ void Layout_Card_CLK(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hCLK);
 
-	LayerCopyAt(	layer, hCLK.origin.col, hCLK.origin.row,	\
+	LayerCopyAt(	layer, hCLK.origin.col, hCLK.origin.row,
 			hCLK.length, hCLK.attr, hCLK.code);
 }
 
@@ -8607,7 +8616,7 @@ void Layout_Card_Uncore(Layer *layer, Card* card)
 	hUncore.code[ 9] = buffer[1];
 	hUncore.code[10] = buffer[2];
 
-	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,	\
+	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
 }
 
@@ -8638,7 +8647,7 @@ void Layout_Card_Bus(Layer *layer, Card* card)
 		break;
 	}
 
-	LayerCopyAt(	layer, hBus.origin.col, hBus.origin.row,	\
+	LayerCopyAt(	layer, hBus.origin.col, hBus.origin.row,
 			hBus.length, hBus.attr, hBus.code);
 
 	Counter2LCD(	layer, card->origin.col, card->origin.row,
@@ -8672,7 +8681,7 @@ void Layout_Card_MC(Layer *layer, Card* card)
 	for (sdx = 0, ldx = 10 - bdx; sdx < bdx; sdx++, ldx++)
 		hRAM.code[ldx] = buffer[sdx];
 
-	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,	\
+	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
 			hRAM.length, hRAM.attr, hRAM.code);
 	if (Shm->Uncore.CtrlCount > 0) {
 		Counter2LCD(layer, card->origin.col, card->origin.row,
@@ -8686,7 +8695,7 @@ void Layout_Card_Load(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hLoad);
 
-	LayerCopyAt(	layer, hLoad.origin.col, hLoad.origin.row,	\
+	LayerCopyAt(	layer, hLoad.origin.col, hLoad.origin.row,
 			hLoad.length, hLoad.attr, hLoad.code);
 }
 
@@ -8696,7 +8705,7 @@ void Layout_Card_Idle(Layer *layer, Card* card)
 			card->origin.col, (card->origin.row + 3),
 			hIdle);
 
-	LayerCopyAt(	layer, hIdle.origin.col, hIdle.origin.row,	\
+	LayerCopyAt(	layer, hIdle.origin.col, hIdle.origin.row,
 			hIdle.length, hIdle.attr, hIdle.code);
 }
 
@@ -8733,7 +8742,7 @@ void Layout_Card_RAM(Layer *layer, Card* card)
 	sprintf(buffer, "%2lu%c", totalRAM, symbol);
 	memcpy(&hMem.code[8], buffer, 3);
 
-	LayerCopyAt(	layer, hMem.origin.col, hMem.origin.row,	\
+	LayerCopyAt(	layer, hMem.origin.col, hMem.origin.row,
 			hMem.length, hMem.attr, hMem.code);
     } else
 	card->data.dword.hi = RENDER_KO;
@@ -8746,7 +8755,7 @@ void Layout_Card_Task(Layer *layer, Card* card)
 			hSystem);
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-		LayerCopyAt(	layer, hSystem.origin.col, hSystem.origin.row,\
+		LayerCopyAt(	layer, hSystem.origin.col, hSystem.origin.row,
 				hSystem.length, hSystem.attr, hSystem.code);
 	else
 		card->data.dword.hi = RENDER_KO;
@@ -8795,7 +8804,7 @@ void Draw_Card_Core(Layer *layer, Card* card)
 	struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
 
-	ATTRIBUTE warning = {.fg=WHITE, .un=0, .bg=BLACK, .bf=1};
+	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
 
 	Clock2LCD(layer, card->origin.col, card->origin.row,
 			CFlop->Relative.Freq, CFlop->Relative.Ratio);
@@ -8928,20 +8937,20 @@ void Draw_Card_Task(Layer *layer, Card* card)
 			Shm->SysGate.taskList[0].comm,
 			hr, hSpace);
 
-	LayerCopyAt(layer,	(card->origin.col + 0) ,		\
-				(card->origin.row + 1) ,		\
-				12 ,					\
-				stateAttr ,				\
+	LayerCopyAt(layer,	(card->origin.col + 0),
+				(card->origin.row + 1),
+				12,
+				stateAttr,
 				buffer);
 
 	len = sprintf(buffer, "%5u (%c)",
 				Shm->SysGate.taskList[0].pid,
 				stateStr[0]);
 
-	LayerFillAt(layer,	(card->origin.col + 2) ,		\
-				(card->origin.row + 2) ,		\
-				len ,					\
-				buffer ,				\
+	LayerFillAt(layer,	(card->origin.col + 2),
+				(card->origin.row + 2),
+				len,
+				buffer,
 				MakeAttr(WHITE, 0, BLACK, 0));
 
 	sprintf(buffer, "%5u", Shm->SysGate.taskCount);
@@ -9288,8 +9297,8 @@ int main(int argc, char *argv[])
 			PROT_READ|PROT_WRITE, MAP_SHARED,
 			fd, 0)) != MAP_FAILED)
       {
-       if (CHK_FOOTPRINT(Shm->FootPrint,COREFREQ_MAJOR, \
-					COREFREQ_MINOR, \
+       if (CHK_FOOTPRINT(Shm->FootPrint,COREFREQ_MAJOR,
+					COREFREQ_MINOR,
 					COREFREQ_REV)	)
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
@@ -9465,3 +9474,4 @@ int main(int argc, char *argv[])
     }
     return(reason.rc);
 }
+

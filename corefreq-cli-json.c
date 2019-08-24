@@ -47,7 +47,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	json_key(&s, "SysGate");
 	{
 		json_start_object(&s);
-		/* TODO:
+	/* TODO:
 		Bit64		Operation
 		IDLEDRIVER	IdleDriver;
 	*/
@@ -298,8 +298,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	json_key(&s, "Proc");
 	{
 		json_start_object(&s);
-		/* TODO:
-	 volatile unsigned long long	Sync __attribute__ ((aligned (128)));
+	/* TODO: CleanUp
+	 volatile unsigned long long	Sync __attribute__ ((aligned (16)));
 	*/
 		json_key(&s, "Features");
 		{
@@ -1607,3 +1607,4 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	json_end_object(&s);
 }
+

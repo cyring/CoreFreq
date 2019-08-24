@@ -32,10 +32,11 @@
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 /* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
-static Bit64 roomSeed __attribute__ ((aligned (64))) = 0x0;
-static Bit64 roomCore __attribute__ ((aligned (64))) = 0x0;
-static Bit64 roomSched __attribute__ ((aligned (64))) = 0x0;
-static Bit64 Shutdown __attribute__ ((aligned (64))) = 0x0;
+static Bit256 roomSeed	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static Bit256 roomCore	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static Bit256 roomSched __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
 typedef struct
@@ -90,8 +91,8 @@ static void *Core_Cycle(void *arg)
 		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
 		fflush(stdout);
 	}
-	BITSET(BUS_LOCK, roomSeed, cpu);
-	BITSET(BUS_LOCK, roomCore, cpu);
+	BITSET_CC(BUS_LOCK, roomSeed, cpu);
+	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
     while (!BITVAL(Core->Sync.V, 63)
@@ -103,9 +104,9 @@ static void *Core_Cycle(void *arg)
 
     if (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS))
     {
-	if (BITVAL(roomCore, cpu)) {
+	if (BITVAL_CC(roomCore, cpu)) {
 		Cpu->Toggle = !Cpu->Toggle;
-		BITCLR(BUS_LOCK, roomCore, cpu);
+		BITCLR_CC(BUS_LOCK, roomCore, cpu);
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -273,8 +274,8 @@ static void *Core_Cycle(void *arg)
     }
   } while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
 
-	BITCLR(BUS_LOCK, roomCore, cpu);
-	BITCLR(BUS_LOCK, roomSeed, cpu);
+	BITCLR_CC(BUS_LOCK, roomCore, cpu);
+	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 EXIT:
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] %s CYCLE %03u\n", tid,
@@ -291,22 +292,22 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 	case RESET_CSP:
 		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
 			if (seek == Shm->Proc.Service.Core)
-				BITSET(LOCKLESS, roomSched, seek);
+				BITSET_CC(LOCKLESS, roomSched, seek);
 			else
-				BITCLR(LOCKLESS, roomSched, seek);
+				BITCLR_CC(LOCKLESS, roomSched, seek);
 		}
 		break;
 	case ALL_SMT:
 		if (cpu == Shm->Proc.Service.Core)
-			roomSched = roomSeed;
+			BITSTOR_CC(LOCKLESS, roomSched, roomSeed);
 		break;
 	case RAND_SMT:
 		do {
 			seek = (unsigned int) rand();
 			seek = seek % Shm->Proc.CPU.Count;
 		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR(LOCKLESS, roomSched, cpu);
-		BITSET(LOCKLESS, roomSched, seek);
+		BITCLR_CC(LOCKLESS, roomSched, cpu);
+		BITSET_CC(LOCKLESS, roomSched, seek);
 		break;
 	case RR_SMT:
 		seek = cpu;
@@ -315,11 +316,11 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 			if (seek >= Shm->Proc.CPU.Count)
 				seek = 0;
 		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR(LOCKLESS, roomSched, cpu);
-		BITSET(LOCKLESS, roomSched, seek);
+		BITCLR_CC(LOCKLESS, roomSched, cpu);
+		BITSET_CC(LOCKLESS, roomSched, seek);
 		break;
 	case USR_CPU:
-		BITSET(LOCKLESS, roomSched, cpu);
+		BITSET_CC(LOCKLESS, roomSched, cpu);
 		break;
 	}
 }
@@ -359,7 +360,7 @@ static void *Child_Thread(void *arg)
 		fflush(stdout);
 	}
 
-	BITSET(BUS_LOCK, roomSeed, cpu);
+	BITSET_CC(BUS_LOCK, roomSeed, cpu);
 
 	do {
 		while (!BITVAL(Shm->Proc.Sync, 31)
@@ -368,14 +369,14 @@ static void *Child_Thread(void *arg)
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 		}
 
-		BITSET(BUS_LOCK, roomCore, cpu);
+		BITSET_CC(BUS_LOCK, roomCore, cpu);
 
 		RESET_Slice(Cpu->Slice);
 
 		while ( BITVAL(Shm->Proc.Sync, 31)
 		    && !BITVAL(Shutdown, 0) )
 		{
-		    if (BITVAL(roomSched, cpu)) {
+		    if (BITVAL_CC(roomSched, cpu)) {
 			CallSliceFunc(	Shm, cpu,
 					Arg->Ref->Slice.Func,
 					Arg->Ref->Slice.arg);
@@ -394,11 +395,11 @@ static void *Child_Thread(void *arg)
 		    }
 		}
 
-		BITCLR(BUS_LOCK, roomCore, cpu);
+		BITCLR_CC(BUS_LOCK, roomCore, cpu);
 
 	} while (!BITVAL(Shutdown, 0) && !BITVAL(Cpu->OffLine, OS)) ;
 
-	BITCLR(BUS_LOCK, roomSeed, cpu);
+	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 
 	RESET_Slice(Cpu->Slice);
 EXIT:
@@ -494,55 +495,55 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 {	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
 
-	Shm->Proc.Technology.ODCM = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.ODCM = BITWISEAND_CC(LOCKLESS,
 						Proc->ODCM,
 						Proc->ODCM_Mask) != 0;
 
-	Shm->Proc.Technology.PowerMgmt = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.PowerMgmt = BITWISEAND_CC(LOCKLESS,
 						Proc->PowerMgmt,
 						Proc->PowerMgmt_Mask) != 0;
 
-	Shm->Proc.Technology.EIST = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.EIST = BITWISEAND_CC(LOCKLESS,
 						Proc->SpeedStep,
 						Proc->SpeedStep_Mask) != 0;
 
-	Shm->Proc.Technology.Turbo = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
 						Proc->TurboBoost,
 						Proc->TurboBoost_Mask) != 0;
 
-	Shm->Proc.Technology.C1E = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.C1E = BITWISEAND_CC(LOCKLESS,
 						Proc->C1E,
 						Proc->C1E_Mask) != 0;
 
-	Shm->Proc.Technology.C3A = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.C3A = BITWISEAND_CC(LOCKLESS,
 						Proc->C3A,
 						Proc->C3A_Mask) != 0;
 
-	Shm->Proc.Technology.C1A = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.C1A = BITWISEAND_CC(LOCKLESS,
 						Proc->C1A,
 						Proc->C1A_Mask) != 0;
 
-	Shm->Proc.Technology.C3U = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.C3U = BITWISEAND_CC(LOCKLESS,
 						Proc->C3U,
 						Proc->C3U_Mask) != 0;
 
-	Shm->Proc.Technology.C1U = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.C1U = BITWISEAND_CC(LOCKLESS,
 						Proc->C1U,
 						Proc->C1U_Mask) != 0;
 
-	Shm->Proc.Technology.CC6 = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.CC6 = BITWISEAND_CC(LOCKLESS,
 						Proc->CC6,
 						Proc->CC6_Mask) != 0;
 
-	Shm->Proc.Technology.PC6 = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.PC6 = BITWISEAND_CC(LOCKLESS,
 						Proc->PC6,
 						Proc->PC6_Mask) != 0;
 
-	Shm->Proc.Technology.SMM = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.SMM = BITWISEAND_CC(LOCKLESS,
 						Proc->SMM,
 						Proc->CR_Mask) != 0;
 
-	Shm->Proc.Technology.VM = BITWISEAND(LOCKLESS,
+	Shm->Proc.Technology.VM = BITWISEAND_CC(LOCKLESS,
 						Proc->VM,
 						Proc->CR_Mask) != 0;
 }
@@ -3439,7 +3440,7 @@ void UpdateFeatures(REF *Ref)
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
     if (!RING_NULL(Ref->Shm->Ring[rid])) {
-	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
 	if (Quiet & 0x100)
@@ -3466,7 +3467,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 {
   if (!RING_NULL(Ref->Shm->Ring[rid]))
   {
-	RING_CTRL ctrl __attribute__ ((aligned(128)));
+	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
 
    switch (ctrl.cmd)
@@ -3474,15 +3475,17 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
    case COREFREQ_ORDER_MACHINE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
-	    if (BITVAL(Ref->Shm->Proc.Sync, 31)) {
+	    if (BITVAL(Ref->Shm->Proc.Sync, 31))
+	    {
 		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
 
-		while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+		while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
 		{
 			if (BITVAL(Shutdown, 0))	/* SpinLock */
 				break;
 		}
-		roomSched = 0;
+		BITSTOR_CC(BUS_LOCK, roomSched, roomClear);
+
 		Ref->Slice.Func = Slice_NOP;
 		Ref->Slice.arg = 0;
 		Ref->Slice.pattern = RESET_CSP;
@@ -3503,7 +3506,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
       {
        if (!BITVAL(Ref->Shm->Proc.Sync, 31))
        {
-	while (BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+	while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
 	{
 		if (BITVAL(Shutdown, 0))	/* SpinLock */
 			break;
@@ -3656,8 +3659,9 @@ REASON_CODE Core_Manager(REF *Ref)
   {
     while (!BITVAL(Shutdown, 0))
     {	/* Loop while all the cpu room bits are not cleared.		*/
-	while (!BITVAL(Shutdown, 0)
-	    && BITWISEAND(BUS_LOCK, roomCore, roomSeed))
+	while ( !BITVAL(Shutdown, 0) && !(Shm->Proc.Features.Std.ECX.CMPXCHG16 ?
+	    BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)
+	    : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP])) )
 	{
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
@@ -3929,7 +3933,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	/* Reset the Room mask						*/
-	BITMSK(BUS_LOCK, roomCore, Shm->Proc.CPU.Count);
+	BITSTOR_CC(BUS_LOCK, roomCore, roomSeed);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	if (Arg[cpu].TID)
@@ -4058,8 +4062,8 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
 		/* Store version footprint into SHM			*/
-		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR, \
-						COREFREQ_MINOR, \
+		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR,
+						COREFREQ_MINOR,
 						COREFREQ_REV	);
 		/* Store the daemon gate name.				*/
 		len = KMIN(sizeof(SHM_FILENAME), TASK_COMM_LEN - 1);
@@ -4366,8 +4370,8 @@ int main(int argc, char *argv[])
 				PROT_READ|PROT_WRITE, MAP_SHARED,
 				fd.Drv, 0)) != MAP_FAILED)
 		{
-		    if (CHK_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR, \
-							COREFREQ_MINOR, \
+		    if (CHK_FOOTPRINT(Proc->FootPrint,	COREFREQ_MAJOR,
+							COREFREQ_MINOR,
 							COREFREQ_REV)	)
 		    {
 			reason = Shm_Manager(&fd, Proc, uid, gid, cmask);
@@ -4425,3 +4429,4 @@ int main(int argc, char *argv[])
     }
 	return(reason.rc);
 }
+
