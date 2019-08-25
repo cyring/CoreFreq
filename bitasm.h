@@ -7,10 +7,10 @@
 #define MAXCOUNTER(M, m)	((M) > (m) ? (M) : (m))
 #define MINCOUNTER(m, M)	((m) < (M) ? (m) : (M))
 
-#define CORE_COUNT_MASK 	(CORE_COUNT -1)
-#define CORE_WORD_TOP		(CORE_COUNT_MASK >> 6)
-#define CORE_WORD_MOD(_offset_) ((_offset_ & CORE_COUNT_MASK) & 0x3f)
-#define CORE_WORD_POS(_offset_) ((_offset_ & CORE_COUNT_MASK) >> 6)
+#define CORE_COUNT_MASK(_cc)	(_cc - 1)
+#define CORE_WORD_TOP(_cc)	(CORE_COUNT_MASK(_cc) >> 6)
+#define CORE_WORD_MOD(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) & 0x3f)
+#define CORE_WORD_POS(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) >> 6)
 
 typedef unsigned long long int	Bit256[4];
 typedef unsigned long long int	Bit64;
@@ -221,12 +221,44 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	);								\
 })
 
+#define _BITVAL_GPR(_lock,_base, _offset)				\
+({									\
+	volatile Bit64 _tmp __attribute__ ((aligned (8))) = _base;	\
+	register unsigned char _ret = 0;				\
+	__asm__ volatile						\
+	(								\
+	_lock	"btcq	%%rdx, %[tmp]"		"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+r" (_ret)					\
+		: [tmp] "m" (_tmp),					\
+		  "d" (_offset) 					\
+		: "cc", "memory"					\
+	);								\
+	_ret;								\
+})
+
+#define _BITVAL_IMM(_lock, _base, _imm8)				\
+({									\
+	volatile Bit64 _tmp __attribute__ ((aligned (8))) = _base;	\
+	register unsigned char _ret = 0;				\
+	__asm__ volatile						\
+	(								\
+	_lock	"btcq	%[imm8], %[tmp]"	"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+r" (_ret)					\
+		: [tmp] "m"  (_tmp),					\
+		  [imm8] "i" (_imm8)					\
+		: "cc", "memory"					\
+	);								\
+	_ret;								\
+})
+
 #define _BIT_TEST_GPR(_base, _offset)					\
 ({									\
 	register unsigned char _ret = 0;				\
 	__asm__ volatile						\
 	(								\
-		"btq	%%rdx, %[base]" "\n\t"				\
+		"btq	%%rdx, %[base]" 	"\n\t"			\
 		"setc	%[ret]" 					\
 		: [ret] "+r" (_ret)					\
 		: [base] "m" (_base),					\
@@ -241,7 +273,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	register unsigned char _ret = 0;				\
 	__asm__ volatile						\
 	(								\
-		"btq	%[imm8], %[base]" "\n\t"			\
+		"btq	%[imm8], %[base]"	"\n\t"			\
 		"setc	%[ret]" 					\
 		: [ret] "+r" (_ret)					\
 		: [base] "m" (_base),					\
@@ -311,12 +343,27 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	:	_BITBTC_GPR(_lock, _base, _offset)			\
 )
 
-#define BITVAL(_base, _offset)						\
+#define BITVAL_2xPARAM(_base, _offset)					\
 (									\
 	__builtin_constant_p(_offset) ? 				\
 		_BIT_TEST_IMM(_base, _offset)				\
 	:	_BIT_TEST_GPR(_base, _offset)				\
 )
+
+#define BITVAL_3xPARAM(_lock, _base, _offset)				\
+(									\
+	__builtin_constant_p(_offset) ? 				\
+		_BITVAL_IMM(_lock, _base, _offset)			\
+	:	_BITVAL_GPR(_lock, _base, _offset)			\
+)
+
+#define BITVAL_DISPATCH(_1,_2,_3,BITVAL_CURSOR, ...)			\
+	BITVAL_CURSOR
+
+#define BITVAL(...)							\
+	BITVAL_DISPATCH( __VA_ARGS__ ,	BITVAL_3xPARAM ,		\
+					BITVAL_2xPARAM ,		\
+					NULL)( __VA_ARGS__ )
 
 #define BITCPL(_src)							\
 ({									\
@@ -439,20 +486,23 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define BITSET_CC(_lock, _base, _offset)				\
 (									\
-	BITSET(_lock,	_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],	\
-			CORE_WORD_MOD(_offset) )			\
+	BITSET(_lock,	_base[ CORE_WORD_TOP(CORE_COUNT)		\
+				- CORE_WORD_POS(CORE_COUNT, _offset) ] ,\
+			CORE_WORD_MOD(CORE_COUNT, _offset) )		\
 )
 
 #define BITCLR_CC(_lock, _base, _offset)				\
 (									\
-	BITCLR(_lock,	_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],	\
-			CORE_WORD_MOD(_offset) )			\
+	BITCLR(_lock,	_base[ CORE_WORD_TOP(CORE_COUNT)		\
+				- CORE_WORD_POS(CORE_COUNT, _offset) ] ,\
+			CORE_WORD_MOD(CORE_COUNT, _offset) )		\
 )
 
 #define BITVAL_CC(_base, _offset)					\
 (									\
-	BITVAL(_base[CORE_WORD_TOP - CORE_WORD_POS(_offset)],		\
-		CORE_WORD_MOD(_offset) )				\
+	BITVAL(_base[CORE_WORD_TOP(CORE_COUNT)				\
+		- CORE_WORD_POS(CORE_COUNT, _offset)],			\
+		CORE_WORD_MOD(CORE_COUNT, _offset) )			\
 )
 
 #define BITWISEAND_CC(_lock, _opl, _opr)				\
@@ -461,7 +511,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	unsigned int cw = 0;						\
 	do {								\
 		_ret |= _BITWISEAND(_lock, _opl[cw], _opr[cw]) ;	\
-	} while (++cw <= CORE_WORD_TOP) ;				\
+	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	_ret;								\
 })
 
@@ -470,7 +520,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	unsigned int cw = 0;						\
 	do {								\
 		BITSTOR(_lock, _dest[cw], _src[cw]);			\
-	} while (++cw <= CORE_WORD_TOP) ;				\
+	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 })
 
 #define BITCMP_CC(_cct, _lock, _opl, _opr)				\

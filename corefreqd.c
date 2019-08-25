@@ -3661,7 +3661,7 @@ REASON_CODE Core_Manager(REF *Ref)
     {	/* Loop while all the cpu room bits are not cleared.		*/
 	while ( !BITVAL(Shutdown, 0) && !(Shm->Proc.Features.Std.ECX.CMPXCHG16 ?
 	    BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)
-	    : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP])) )
+	    : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])) )
 	{
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
