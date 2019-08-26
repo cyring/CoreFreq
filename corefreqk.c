@@ -1594,17 +1594,7 @@ unsigned int Proc_Topology(void)
     }
 	return(CountEnabledCPU);
 }
-/*TODO: CleanUp
-void HyperThreading_Technology(void)
-{
-	unsigned int CountEnabledCPU = Proc_Topology();
 
-	if (Proc->Features.Std.EDX.HTT)
-		Proc->CPU.OnLine = CountEnabledCPU;
-	else
-		Proc->CPU.OnLine = Proc->CPU.Count;
-}
-*/
 #define HyperThreading_Technology()					\
 (									\
 	Proc->CPU.OnLine = Proc_Topology()				\
@@ -9626,6 +9616,16 @@ static int __init CoreFreqK_init(void)
 			/* Copy various SMBIOS data [version 3.2]	*/
 			SMBIOS_Collect();
 
+			/* Register the Idle & Frequency sub-drivers	*/
+		    if (Register_CPU_Idle == 1) {
+			Proc->Registration.Driver.cpuidle =		\
+					CoreFreqK_IdleDriver_Init() == 0;
+		    }
+		    if (Register_CPU_Freq == 1) {
+			Proc->Registration.Driver.cpufreq =		\
+					CoreFreqK_FreqDriver_Init() == 0;
+		    }
+
 			/* Initialize the CoreFreq controller		*/
 			Controller_Init();
 
@@ -9644,15 +9644,6 @@ static int __init CoreFreqK_init(void)
 				Proc->Features.HTT_Enable ? "SMT" : "CPU",
 				Proc->CPU.OnLine,
 				Proc->CPU.Count);
-
-		    if (Register_CPU_Idle == 1) {
-			Proc->Registration.Driver.cpuidle =		\
-					CoreFreqK_IdleDriver_Init() == 0;
-		    }
-		    if (Register_CPU_Freq == 1) {
-			Proc->Registration.Driver.cpufreq =		\
-					CoreFreqK_FreqDriver_Init() == 0;
-		    }
 
 			Controller_Start(0);
 
