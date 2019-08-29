@@ -2056,20 +2056,61 @@ void Intel_Turbo_TDP_Config(void)
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 }
 
+static void PerCore_Intel_HWP_Quirk(void *arg)
+{
+    if ((arg != NULL) && Proc->Features.Power.EAX.HWP_EPP) {
+	CORE *Core = (CORE *) arg;
+
+	RDMSR(Core->PowerThermal.HWP_Capabilities, MSR_IA32_HWP_CAPABILITIES);
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+
+	Core->PowerThermal.HWP_Request.Minimum_Perf =
+				Core->PowerThermal.HWP_Capabilities.Lowest;
+
+	Core->PowerThermal.HWP_Request.Maximum_Perf =
+				Core->PowerThermal.HWP_Capabilities.Highest;
+
+	Core->PowerThermal.HWP_Request.Desired_Perf =
+				Core->PowerThermal.HWP_Capabilities.Guaranteed;
+
+	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
+		Core->PowerThermal.HWP_Request.Energy_Pref = HWP_EPP;
+	}
+	WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+    }
+}
+
 void Intel_Hardware_Performance(void)
 {
     if (Proc->Features.Info.Vendor.CRC == CRC_INTEL) {
 	PM_ENABLE PM_Enable = {.value = 0};
 	HDC_CONTROL HDC_Control = {.value = 0};
 
-	if (Proc->Features.Power.EAX.HWP_Reg) {
+	if (Proc->Features.Power.EAX.HWP_Reg)
+	{
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 
-		if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0)) {
-			PM_Enable.HWP_Enable = 1;
-			WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
-			RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+	    if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
+	    {
+		PM_Enable.HWP_Enable = 1;
+		WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
+
+		if (PM_Enable.HWP_Enable)
+		{
+			unsigned int cpu = Proc->CPU.Count;
+		do {
+			cpu--;	/* From last AP to BSP */
+
+		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+			smp_call_function_single(cpu,
+						PerCore_Intel_HWP_Quirk,
+						&KPublic->Core[cpu], 0);
+		    }
+		  } while (cpu != 0) ;
 		}
+	    }
 	}
 	Proc->Features.HWP_Enable = PM_Enable.HWP_Enable;
 
@@ -4447,7 +4488,7 @@ void PowerThermal(CORE *Core)
 	{_IvyBridge,		1, 0, 1},	/* 06_3A */
 	{_IvyBridge_EP ,	1, 1, 0},	/* 06_3E */
 
-	{_Haswell_DT,		1, 1, 1},	/* 06_3C */
+	{_Haswell_DT,		1, 1, 0},	/* 06_3C */
 	{_Haswell_EP,		1, 1, 1},	/* 06_3F */
 	{_Haswell_ULT,		1, 1, 1},	/* 06_45 */
 	{_Haswell_ULX,		1, 1, 1},	/* 06_46 */

@@ -2200,7 +2200,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency);
 	strcat(item[4], str);
       } else {
-	strcat(item[0], "\x20n/a");
+	strcat(item[0], "\x20\x20\x20\x20");
 	strcat(item[1], "\x20\x20\x20\x20");
 	strcat(item[2], "\x20\x20\x20\x20");
 	strcat(item[3], "\x20\x20\x20\x20");
@@ -9314,8 +9314,11 @@ int main(int argc, char *argv[])
 	    case 'J':
 		if (++idx < argc) {
 			enum SMB_STRING usrIdx = SMB_BOARD_NAME;
-			if ((sscanf(argv[idx], "%u", &usrIdx) == 1)
-			 && (usrIdx < SMB_STRING_COUNT)) {
+			char trailing =  '\0';
+			if ((sscanf(argv[idx], "%u%c", &usrIdx, &trailing) != 1)
+			 || (usrIdx >= SMB_STRING_COUNT)) {
+				goto SYNTAX_ERROR;
+			} else {
 				draw.SmbIndex = usrIdx;
 			}
 		}
@@ -9427,9 +9430,11 @@ int main(int argc, char *argv[])
 		}
 		break;
 	    default:
+	    SYNTAX_ERROR:
 		{
 		REASON_SET(reason, RC_CMD_SYNTAX, 0);
 		reason = Help(reason, appName);
+		idx = argc;
 		}
 		break;
 	    }
