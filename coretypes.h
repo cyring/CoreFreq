@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	64
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -1243,15 +1243,18 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
 #endif
+/*	QPIMISCSTAT							*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0	0x0e80
 #endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC 0x0e68
 #endif
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0 0x0eb0
 #endif
@@ -1276,6 +1279,7 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3 0x0eb7
 #endif
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0 0x0eaa
 #endif
@@ -1288,6 +1292,20 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3 0x0ead
 #endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0 0x0e6a
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1 0x0e6b
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2 0x0e6c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3 0x0e6d
+#endif
+/*	Power Control Unit						*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY	0x0ec3
 #endif

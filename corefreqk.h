@@ -991,6 +991,10 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA0(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA1(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA2(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA3(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA0(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA1(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev) ;
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
@@ -1192,14 +1196,17 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		.driver_data = (kernel_ulong_t) SNB_EP_HB
 	},
 	{
+/*	QPIMISCSTAT							*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0),
 		.driver_data = (kernel_ulong_t) SNB_EP_QPI
 	},
 	{
+/*	Power Control Unit						*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY),
 		.driver_data = (kernel_ulong_t) SNB_EP_CAP
 	},
 	{
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
       PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC),
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL0
 	},
@@ -1208,6 +1215,7 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 		.driver_data = (kernel_ulong_t) SNB_EP_CTRL1
 	},
 	{
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL0_CHA0
 	},
@@ -1239,6 +1247,7 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_IMC_CTRL1_CHA3
 	},
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA0
@@ -1254,6 +1263,23 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL0_CHA3
+	},
+	{
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA0
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA1
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA2
+	},
+	{
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3),
+		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA3
 	},
 	{0, }
 };

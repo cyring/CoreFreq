@@ -2916,8 +2916,8 @@ kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 
 	Proc->Uncore.MC[mc].ChannelCount=Proc->Uncore.MC[mc].SNB_EP.TAD.CH_WAY;
 	Proc->Uncore.MC[mc].ChannelCount++;
-
-	Proc->Uncore.MC[0].SlotCount = 2;
+/* TODO */
+	Proc->Uncore.MC[mc].SlotCount = 2;
 
 	return(0);
 }
@@ -3034,6 +3034,26 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL0_CHA3(struct pci_dev *dev)
 	return((PCI_CALLBACK) SNB_EP_TAD(dev, 0, 3));
 }
 
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA0(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 1, 0));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA1(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 1, 1));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 1, 2));
+}
+
+static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev)
+{
+	return((PCI_CALLBACK) SNB_EP_TAD(dev, 1, 3));
+}
+
 static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xd4, &Proc->Uncore.Bus.QuickPath.value);
@@ -3054,7 +3074,7 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 
 	return(Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
-/* TODO:
+/* TODO
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 {
 	SKL_SA_PLL_RATIOS PllRatios = {.value = 0};

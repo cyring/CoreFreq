@@ -1914,7 +1914,7 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRDR;
-/*TODO
+/* TODO
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tRRSR;
 */
@@ -1923,7 +1923,7 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWDR;
-/*TODO
+/* TODO
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWWSR;
 */
@@ -1981,7 +1981,7 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 {
 	switch (Proc->Uncore.Bus.SNB_EP_Cap1.DMFC) {
 	case 0b111:
-		Shm->Uncore.CtrlSpeed = 1067;
+		Shm->Uncore.CtrlSpeed = 1066;
 		break;
 	case 0b110:
 		Shm->Uncore.CtrlSpeed = 1333;
@@ -1990,7 +1990,7 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		Shm->Uncore.CtrlSpeed = 1600;
 		break;
 	case 0b100:
-		Shm->Uncore.CtrlSpeed = 1867;
+		Shm->Uncore.CtrlSpeed = 1866;
 		break;
 	case 0b011:
 		Shm->Uncore.CtrlSpeed = 2133;
@@ -1999,7 +1999,7 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		Shm->Uncore.CtrlSpeed = 2400;
 		break;
 	case 0b001:
-		Shm->Uncore.CtrlSpeed = 2667;
+		Shm->Uncore.CtrlSpeed = 2666;
 		break;
 	case 0b000:
 		Shm->Uncore.CtrlSpeed = 2933;
@@ -2022,7 +2022,7 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
-
+/* TODO */
 	Shm->Proc.Technology.IOMMU = 0;
 }
 
