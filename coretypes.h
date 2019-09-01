@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	64
-#define COREFREQ_REV	1
+#define COREFREQ_MINOR	65
+#define COREFREQ_REV	0
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -1802,4 +1802,38 @@ typedef union {
 		} Board;
 	};
 } SMBIOS_ST;
+
+#if defined(UBENCH) && UBENCH == 1
+#define UBENCH_DECLARE()						\
+static volatile unsigned long long uBenchCounter[3]			\
+					__attribute__ ((aligned(8))) = {\
+								0, 0, 0 \
+};									\
+inline static void UBENCH_RDCOUNTER_VOID(unsigned int idx) {}		\
+inline static void UBENCH_RDCOUNTER_INV(unsigned int idx)		\
+{									\
+	RDTSCP64(uBenchCounter[idx]);					\
+}									\
+inline static void UBENCH_RDCOUNTER_VAR(unsigned int idx)		\
+{									\
+	RDTSC64(uBenchCounter[idx]);					\
+}									\
+static void (*UBENCH_RDCOUNTER)(unsigned int) = UBENCH_RDCOUNTER_VOID;
+
+#define UBENCH_COMPUTE() (uBenchCounter[0] = uBenchCounter[2] - uBenchCounter[1])
+
+#define UBENCH_METRIC() (uBenchCounter[0])
+
+#define UBENCH_SETUP(architectureFlag)					\
+(									\
+	UBENCH_RDCOUNTER = ( architectureFlag ) ? UBENCH_RDCOUNTER_INV	\
+						: UBENCH_RDCOUNTER_VAR	\
+)
+#else
+#define UBENCH_DECLARE()	/* UBENCH_DECLARE() */
+#define UBENCH_RDCOUNTER(idx)	/* UBENCH_RDCOUNTER() */
+#define UBENCH_COMPUTE()	/* UBENCH_COMPUTE() */
+#define UBENCH_METRIC() 	/* UBENCH_METRIC() */
+#define UBENCH_SETUP(flag)	/* UBENCH_SETUP() */
+#endif /* UBENCH */
 

@@ -2127,8 +2127,9 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
-		width - 2 - RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.FreqDriver.Name);
+		width - (OutFunc == NULL ? 2 : 3)
+		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN,
+		hSpace, len, Shm->SysGate.OS.FreqDriver.Name);
     }
 /* Row Mark */
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Governor), CPUFREQ_NAME_LEN);
@@ -2136,8 +2137,9 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
-		width - 2 - RSZ(KERNEL_GOVERNOR) - CPUFREQ_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.FreqDriver.Governor);
+		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
+		- CPUFREQ_NAME_LEN,
+		hSpace, len, Shm->SysGate.OS.FreqDriver.Governor);
     }
 /* Row Mark */
     len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
@@ -2146,16 +2148,16 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	sprintf(item[0], "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
-		width - 2 - RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.IdleDriver.Name);
+		width - (OutFunc == NULL ? 2 : 3)
+		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN,
+		hSpace, len, Shm->SysGate.OS.IdleDriver.Name);
     }
 /* Section Mark */
 	GridCall(PUT(Shm->Registration.Driver.cpuidle ? BOXKEY_LIMIT_IDLE_STATE
 							: SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
 			"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
-			width - (OutFunc == NULL ? 12 : 11) - RSZ(KERNEL_LIMIT),
-			hSpace,
+			width - 11 - RSZ(KERNEL_LIMIT),hSpace,
 			Shm->Registration.Driver.cpuidle ? '<' : '[',
 			Shm->SysGate.OS.IdleDriver.stateLimit,
 			Shm->Registration.Driver.cpuidle ? '>' : ']'),
@@ -2939,10 +2941,13 @@ struct {
 		height	:  3-2 ,	/* Valid height 		*/
 		width	:  4-3 ,	/* Valid width			*/
 		daemon	:  5-4 ,	/* Draw dynamic 		*/
-		taskVal :  6-5 ,	/* Display task's value		*/
+		taskVal :  6-5 ,	/* Display task's value 	*/
 		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
 		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
-		_padding: 32-8 ;
+	    #if defined(UBENCH) && UBENCH == 1
+		uBench	:  9-8 ,	/* Display UI micro-benchmark	*/
+	    #endif
+		_padding: 32-9 ;
 	} Flag;
 	enum VIEW	View;
 	enum DISPOSAL	Disposal;
@@ -2968,6 +2973,9 @@ struct {
 		.taskVal= 0,
 		.avgOrPC= 0,
 		.clkOrLd= 0,
+	    #if defined(UBENCH) && UBENCH == 1
+		.uBench = 0,
+	    #endif
 		._padding=0
 	},
 	.View		= V_FREQ,
@@ -3880,7 +3888,7 @@ Window *CreateTopology(unsigned long long id)
 {
 	Window *wTopology = CreateWindow(wLayer, id,
 					6, CUMIN(2 + Shm->Proc.CPU.Count,
-					  (draw.Size.height-TOP_HEADER_ROW-5)),
+					(draw.Size.height - TOP_HEADER_ROW - 5)),
 					1, TOP_HEADER_ROW + 3);
 		wTopology->matrix.select.row = 2;
 
@@ -3935,9 +3943,9 @@ Window *CreateISA(unsigned long long id)
 Window *CreateSysRegs(unsigned long long id)
 {
 	Window *wSR = CreateWindow(wLayer, id,
-			17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
-				(draw.Size.height - TOP_HEADER_ROW - 3)),
-			6, TOP_HEADER_ROW + 2);
+					17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
+					(draw.Size.height - TOP_HEADER_ROW - 3)),
+					6, TOP_HEADER_ROW + 2);
 
 	if (wSR != NULL) {
 		SystemRegisters(wSR, AddCell);
@@ -4766,6 +4774,11 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case SCANKEY_CTRL_u:
+    #if defined(UBENCH) && UBENCH == 1
+	draw.Flag.uBench = !draw.Flag.uBench;
+    #endif
+	break;
     case SCANKEY_CTRL_x:
 	BITSET(LOCKLESS, Shutdown, 0);
 	break;
@@ -6358,10 +6371,10 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		signed int lowestShift, highestShift;
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
 				maxRatio = MaxBoostRatio();
 
+		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(TGT)],
 				Shm->Proc.Boost[BOOST(MIN)],
 				maxRatio,
@@ -9091,6 +9104,20 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 {
 }
 
+UBENCH_DECLARE()
+
+#if defined(UBENCH) && UBENCH == 1
+    #define Draw_uBenchmark(layer)					\
+    ({									\
+	if (draw.Flag.uBench) {						\
+		size_t len = sprintf(buffer, "%llu", UBENCH_METRIC());	\
+		LayerFillAt(	layer, 0, 0, len, buffer,		\
+				MakeAttr(MAGENTA, 0, BLACK, 1) );	\
+	}								\
+    })
+#else
+    #define Draw_uBenchmark(layer) {}
+#endif /* UBENCH */
 
 REASON_CODE Top(char option)
 {
@@ -9192,6 +9219,8 @@ REASON_CODE Top(char option)
 
       if (draw.Flag.height & draw.Flag.width)
       {
+	UBENCH_RDCOUNTER(1);
+
 	if (draw.Flag.clear) {
 		draw.Flag.clear  = 0;
 		draw.Flag.layout = 1;
@@ -9217,9 +9246,14 @@ REASON_CODE Top(char option)
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
+	Draw_uBenchmark(dLayer);
 	/* Write to the standard output.				*/
 	draw.Flag.layout = WriteConsole(draw.Size, buffer);
-      } else
+
+	UBENCH_RDCOUNTER(2);
+	UBENCH_COMPUTE();
+      }
+      else
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
     }
@@ -9302,6 +9336,9 @@ int main(int argc, char *argv[])
 					COREFREQ_REV)	)
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
+
+	UBENCH_SETUP((Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
+		    || (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1));
 
 	do {
 	    switch (option) {

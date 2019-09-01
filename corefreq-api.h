@@ -260,16 +260,14 @@ typedef struct
 	{
 		unsigned long long	V,
 					_pad[7];
-	} Sync;
+	} Sync __attribute__ ((aligned (8)));
 
 	Bit64				OffLine __attribute__ ((aligned (8)));
 
-#if FEAT_DBG > 0
 	struct
 	{
 		unsigned long long	TSC;
-	} Overhead;
-#endif
+	} Overhead __attribute__ ((aligned (8)));
 
 	struct
 	{
@@ -292,7 +290,7 @@ typedef struct
 		{
 		unsigned long long	ACCU;
 		} Power;
-	} Counter[2];
+	} Counter[2] __attribute__ ((aligned (8)));
 
 	struct
 	{
@@ -317,7 +315,7 @@ typedef struct
 		} Power;
 
 		unsigned int		SMI;
-	} Delta;
+	} Delta __attribute__ ((aligned (8)));
 
 	POWER_THERMAL			PowerThermal;
 
@@ -595,7 +593,7 @@ typedef struct
 	  struct {
 	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
 	  } Power;
-	} Counter[2];
+	} Counter[2] __attribute__ ((aligned (8)));
 
 	struct
 	{
@@ -614,7 +612,7 @@ typedef struct
 	  struct {
 	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
 	  } Power;
-	} Delta;
+	} Delta __attribute__ ((aligned (8)));
 
 	struct
 	{

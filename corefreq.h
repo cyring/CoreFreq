@@ -96,7 +96,7 @@ typedef struct
 					C7,
 					TSC,
 					C1;
-		} Delta;
+		} Delta __attribute__ ((aligned (8)));
 
 		CLOCK			Clock;
 
@@ -163,12 +163,12 @@ typedef struct
 		} Counter[3];
 
 		unsigned long long	Error;
-	} Slice;
+	} Slice __attribute__ ((aligned (8)));
 } CPU_STRUCT;
 
 typedef struct
 {
-	volatile unsigned long long	Sync __attribute__ ((aligned (16)));
+	volatile unsigned long long	Sync __attribute__ ((aligned (8)));
 
 	FEATURES			Features;
 
@@ -234,7 +234,7 @@ typedef struct
 					Temp;
 		enum THERM_PWR_EVENTS	Events;
 		} Thermal;
-	} FlipFlop[2];
+	} FlipFlop[2] __attribute__ ((aligned (8)));
 
 	struct {
 		double			PC02,

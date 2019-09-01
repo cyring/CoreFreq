@@ -1493,23 +1493,23 @@ __typeof__ (errno) AllocAll(char **buffer)
 
 unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 {
-	ATTRIBUTE	*fa, *sa, *da, *wa;
-	ASCII		*fc, *sc, *dc, *wc;
-	unsigned int	sdx = 0, _bix, _bdx, _idx;
+	register ATTRIBUTE	*fa, *sa, *da, *wa;
+	register ASCII		*fc, *sc, *dc, *wc;
+	register unsigned int	sdx = 0, _bix, _bdx, _idx;
 	struct {
 	   unsigned int flag;
 	   CUINT	col, row;
-	} cursor;
-	CUINT		_col, _row, _wth;
-	ATTRIBUTE	attr = {.value = 0};
+	} register cursor;
+	register CUINT		_col, _row, _wth;
+	register ATTRIBUTE	attr = {.value = 0};
 
-	for (_row = 0; _row < drawSize.height; _row++)
+    for (_row = 0; _row < drawSize.height; _row++)
+    {
+	cursor.flag = 0;
+	_wth = _row * fuse->size.wth;
+
+	for (_col = 0, _bix = 0; _col < drawSize.width; _col++)
 	{
-	  cursor.flag = 0;
-	  _wth = _row * fuse->size.wth;
-
-	  for (_col = 0, _bix = 0; _col < drawSize.width; _col++)
-	  {
 		_idx = _col + _wth;
 		fa =   &fuse->attr[_idx];
 		sa = &sLayer->attr[_idx];
@@ -1577,14 +1577,14 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 			buffer[_bix++] = 'H';
 		}
 		buffer[_bix++] = *fc;
-	    }
-	    else
+	    } else {
 		if (cursor.flag != 0)
 			cursor.flag = 0;
-	  }
-	  memcpy(&stream[sdx], buffer, _bix);
-	  sdx += _bix;
+	    }
 	}
+	memcpy(&stream[sdx], buffer, _bix);
+	sdx += _bix;
+    }
 	return(sdx);
 }
 

@@ -31,11 +31,14 @@ To reach this goal, CoreFreq implements a Linux Kernel module which employs the 
 
 **a-** _Intel only_: For a better accuracy, *disable* the Kernel *NMI Watchdog*  
 
-Add the below parameter in the kernel boot loader (Grub, SysLinux)  
-The NMI Watchdog and the CoreFreq driver are conflicting on the ownership of the fixed performance counters  
+Add the below parameter in the kernel boot loader (Grub, SysLinux) ...  
 
 ```
 nmi_watchdog=0
+```
+... and build with the fixed performance counters  
+```
+make MSR_CORE_PERF_UC=MSR_CORE_PERF_FIXED_CTR1 MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2
 ```
 
 **b-** _AMD and Intel_: No Virtualization  
@@ -185,12 +188,6 @@ CPU     IPS            IPC            CPI
 nmi_watchdog=0
 ```
 
-  A: _Intel only_: a NMI alternative is proposed in the `Makefile` to make use of the `APERF/MPERF` registers  
-
-```
-make help	# for instructions usage
-make info	# for the current settings
-```
 
 * Q: The Processor does not enter the C-States ?  
   A: Check if at least one Idle driver is running.  

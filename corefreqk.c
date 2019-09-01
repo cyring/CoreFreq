@@ -5658,29 +5658,49 @@ void Intel_Core_Counters_Set(CORE *Core)
 	RDMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
 	Core->SaveArea.Core_GlobalPerfControl = Core_GlobalPerfControl;
 	Core_GlobalPerfControl.EN_FIXED_CTR0  = 1;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	Core_GlobalPerfControl.EN_FIXED_CTR1  = 1;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 	Core_GlobalPerfControl.EN_FIXED_CTR2  = 1;
+#endif
 	WRMSR(Core_GlobalPerfControl, MSR_CORE_PERF_GLOBAL_CTRL);
 
 	RDMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
 	Core->SaveArea.Core_FixedPerfControl = Core_FixedPerfControl;
 	Core_FixedPerfControl.EN0_OS = 1;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	Core_FixedPerfControl.EN1_OS = 1;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 	Core_FixedPerfControl.EN2_OS = 1;
+#endif
 	Core_FixedPerfControl.EN0_Usr = 1;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	Core_FixedPerfControl.EN1_Usr = 1;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 	Core_FixedPerfControl.EN2_Usr = 1;
+#endif
 
 	if (Proc->Features.PerfMon.EAX.Version >= 3) {
 		if (!Proc->Features.HTT_Enable) {
 			Core_FixedPerfControl.AnyThread_EN0 = 1;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 			Core_FixedPerfControl.AnyThread_EN1 = 1;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 			Core_FixedPerfControl.AnyThread_EN2 = 1;
+#endif
 		} else {
 			/* Per Thread */
 			Core_FixedPerfControl.AnyThread_EN0 = 0;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 			Core_FixedPerfControl.AnyThread_EN1 = 0;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 			Core_FixedPerfControl.AnyThread_EN2 = 0;
+#endif
 		}
 	}
 	WRMSR(Core_FixedPerfControl, MSR_CORE_PERF_FIXED_CTR_CTRL);
@@ -5689,10 +5709,14 @@ void Intel_Core_Counters_Set(CORE *Core)
 	RDMSR(Core_PerfOvfControl, MSR_CORE_PERF_GLOBAL_OVF_CTRL);
 	if (Core_PerfOverflow.Overflow_CTR0)
 		Core_PerfOvfControl.Clear_Ovf_CTR0 = 1;
+#if defined(MSR_CORE_PERF_UCC) && MSR_CORE_PERF_UCC == MSR_CORE_PERF_FIXED_CTR1
 	if (Core_PerfOverflow.Overflow_CTR1)
 		Core_PerfOvfControl.Clear_Ovf_CTR1 = 1;
+#endif
+#if defined(MSR_CORE_PERF_URC) && MSR_CORE_PERF_URC == MSR_CORE_PERF_FIXED_CTR2
 	if (Core_PerfOverflow.Overflow_CTR2)
 		Core_PerfOvfControl.Clear_Ovf_CTR2 = 1;
+#endif
 	if (Core_PerfOverflow.Overflow_CTR0
 	  | Core_PerfOverflow.Overflow_CTR1
 	  | Core_PerfOverflow.Overflow_CTR2)
@@ -5860,20 +5884,15 @@ void AMD_Core_Counters_Clear(CORE *Core)
 	    : 0;							\
 })
 
-#if FEAT_DBG > 0
-    #define Mark_OVH(Core)						\
-    ({									\
+#define Mark_OVH(Core)							\
+({									\
 	RDTSCP64(Core->Overhead.TSC);					\
-    })
+})
 
-    #define Core_OVH(Core)						\
-    ({									\
+#define Core_OVH(Core)							\
+({									\
 	Core->Delta.TSC -= (Core->Counter[1].TSC - Core->Overhead.TSC); \
-    })
-#else
-    #define Mark_OVH(Core) {}
-    #define Core_OVH(Core) {}
-#endif
+})
 
 #define Delta_TSC(Core) 						\
 ({									\
@@ -6019,14 +6038,10 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07);	\
 })
 
-#if FEAT_DBG > 0
-    #define Pkg_OVH(Pkg, Core)						\
-    ({									\
+#define Pkg_OVH(Pkg, Core)						\
+({									\
 	Pkg->Delta.PTSC -= (Pkg->Counter[1].PTSC - Core->Overhead.TSC); \
-    })
-#else
-    #define Pkg_OVH(Pkg, Core) {}
-#endif
+})
 
 #define Delta_PTSC(Pkg) 						\
 ({									\
@@ -6354,12 +6369,10 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 	cpu = smp_processor_id();
 	Core = (CORE *) KPublic->Core[cpu];
 
-    #if FEAT_DBG > 0
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
-    #endif
 
 	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
@@ -6448,12 +6461,10 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 	cpu = smp_processor_id();
 	Core = (CORE *) KPublic->Core[cpu];
 
-    #if FEAT_DBG > 0
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
-    #endif
 
 	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
@@ -6539,12 +6550,10 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	cpu = smp_processor_id();
 	Core = (CORE *) KPublic->Core[cpu];
 
-    #if FEAT_DBG > 0
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
-    #endif
 
 	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
@@ -9486,6 +9495,7 @@ static int __init CoreFreqK_init(void)
 	iArg.localProcessor = get_cpu();
 	Query_Features(&iArg);
 	put_cpu();
+	rc = iArg.rc;
     } else {
 	if (ServiceProcessor >= 0) {
 		iArg.localProcessor = ServiceProcessor;
