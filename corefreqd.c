@@ -83,8 +83,8 @@ static void *Core_Cycle(void *arg)
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
 		goto EXIT;
 
-	char comm[TASK_COMM_LEN];
-	sprintf(comm, "corefreqd/%d", cpu);
+	char comm[TASK_COMM_LEN+4+1];
+	sprintf(comm, "corefreqd/%u", cpu);
 	pthread_setname_np(tid, comm);
 
 	if (Quiet & 0x100) {
@@ -351,8 +351,8 @@ static void *Child_Thread(void *arg)
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
 		goto EXIT;
 
-	char comm[TASK_COMM_LEN];
-	sprintf(comm, "corefreqd#%d", cpu);
+	char comm[TASK_COMM_LEN+4+1];
+	sprintf(comm, "corefreqd#%u", cpu);
 	pthread_setname_np(tid, comm);
 
 	if (Quiet & 0x100) {
@@ -4398,8 +4398,8 @@ int main(int argc, char *argv[])
 				reason = Help(reason, DRV_FILENAME);
 			}
 		    } else {
-			char wrongVersion[24];
-			sprintf(wrongVersion, "Version %d.%d.%d",
+			char wrongVersion[22+1];
+			sprintf(wrongVersion, "Version %hhd.%hhd.%hhd",
 				Proc->FootPrint.major,
 				Proc->FootPrint.minor,
 				Proc->FootPrint.rev);

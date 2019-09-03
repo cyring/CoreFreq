@@ -166,7 +166,7 @@ TGrid *Print_v1(CELL_FUNC OutFunc,
     else {
 	ASCII *item = malloc(width + 1);
       if (item != NULL) {
-	sprintf((char *)item, "%s%s%.*s", Indent[1][tab], line,
+	snprintf((char *)item, width + 1, "%s%s%.*s", Indent[1][tab], line,
 		(int)(width - strlen(line) - strlen(Indent[1][tab])), hSpace);
 
 	pGrid = OutFunc(win, key, attrib, item);
@@ -563,8 +563,8 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	char item[7+1];
-	sprintf(item, "%7.3f", CFlop->Clock.Hz / 1000000.0);
+	char item[8+1];
+	snprintf(item, 8+1, "%7.3f", CFlop->Clock.Hz / 1000000.0);
 
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
@@ -574,9 +574,9 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	double freq = ((*data.puint) * CFlop->Clock.Hz) / 1000000.0;
-	char item[4+7+1];
-	sprintf(item, "%4d%7.2f", (*data.puint),
-		(freq > 0.0) && (freq < 10000.0) ? freq : NAN);
+	char item[10+8+1];
+	snprintf(item, 10+8+1, "%4d%7.2f",
+		(*data.puint), (freq > 0.0) && (freq < 10000.0) ? freq : NAN);
 
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
@@ -769,7 +769,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			boost--, activeCores++)
 	{
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
-	char pfx[4];
+	char pfx[11+1];
 	sprintf(pfx, "%2uC", activeCores);
 	GridCall(PrintRatioFreq(win, CFlop,
 				0, pfx, &Shm->Proc.Boost[boost],
@@ -781,7 +781,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       for (boost = BOOST(1C), activeCores = 1;
 		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
 			boost--, activeCores++) {
-	char pfx[4];
+	char pfx[11+1];
 	sprintf(pfx, "%2uC", activeCores);
 	GridCall(PrintRatioFreq(win, CFlop,
 				0, pfx, &Shm->Proc.Boost[boost],
@@ -1858,9 +1858,9 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 {
 	int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
 	       && (Shm->Proc.Technology.ODCM == 1);
-	char item[9+1];
+	char item[10+1];
 
-	sprintf(item, "%c%6.2f%%%c",
+	snprintf(item, 10+1, "%c%6.2f%%%c",
 		bix ? '<' : '[',
 	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
 		6.25f : 12.5f)
@@ -1873,7 +1873,7 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 
 void Hint_Update(TGrid *grid, DATA_TYPE data)
 {
-	char item[7+1];
+	char item[10+1];
 	sprintf(item, "%7u", (*data.puint));
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
@@ -2031,7 +2031,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 void KernelUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[18+3+1];
+	char item[20+3+1];
 	size_t len = sprintf(item, "%18lu KB", (*data.pulong));
 
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
@@ -2039,7 +2039,7 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 
 void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[8];
+	char item[11+1];
 	size_t len = sprintf(item, "%6d", (*data.psint));
 
 	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
@@ -2049,7 +2049,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
 	size_t	len = (1 + width) * 5;
-	char	*item[5], str[1 + CPUFREQ_NAME_LEN];
+	char	*item[5], str[CPUFREQ_NAME_LEN+4+1];
 	int	idx;
 	for (idx = 0; idx < 5; idx++) {
 		if ((item[idx] = malloc(len)) != NULL)
@@ -2163,19 +2163,19 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Registration.Driver.cpuidle ? '>' : ']'),
 		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
 
-	sprintf(item[0], "%s%.*s", RSC(KERNEL_STATE).CODE(),
-			10 - (int) RSZ(KERNEL_STATE), hSpace);
+	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
+				10 - (int) RSZ(KERNEL_STATE), hSpace);
 
 	sprintf(item[1], "%.*s", 10, hSpace);
 
-	sprintf(item[2], "%s%.*s", RSC(KERNEL_POWER).CODE(),
-			10 - (int) RSZ(KERNEL_POWER), hSpace);
+	snprintf(item[2], 10+1, "%s%.*s" , RSC(KERNEL_POWER).CODE(),
+				10 - (int) RSZ(KERNEL_POWER), hSpace);
 
-	sprintf(item[3], "%s%.*s", RSC(KERNEL_LATENCY).CODE(),
-			10 - (int) RSZ(KERNEL_LATENCY), hSpace);
+	snprintf(item[3], 10+1, "%s%.*s" , RSC(KERNEL_LATENCY).CODE(),
+				10 - (int) RSZ(KERNEL_LATENCY), hSpace);
 
-	sprintf(item[4], "%s%.*s", RSC(KERNEL_RESIDENCY).CODE(),
-			10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
+	snprintf(item[4], 10+1, "%s%.*s" , RSC(KERNEL_RESIDENCY).CODE(),
+				10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
 
     for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++) {
       if (idx < Shm->SysGate.OS.IdleDriver.stateCount)
@@ -2278,7 +2278,7 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	for (idx = 0; idx < SMB_STRING_COUNT; idx ++) {
 		PUT(	SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
-			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-') );
+			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-'));
 	}
 	return(reason);
 }
@@ -2404,7 +2404,7 @@ printf( "\n"							\
 	100.f * Shm->Proc.Avg.C6,
 	100.f * Shm->Proc.Avg.C7,
 	5, hSpace,
-	Cels2Fahr(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
+      Cels2Fahr(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
 	3, hSpace,
 	Cels2Fahr(PFlop->Thermal.Temp) );
 }
@@ -3070,7 +3070,7 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 #define frtostr(r, d, pStr)						\
 ({									\
 	int p = d - ((int) log10(fabs(r))) - 2;				\
-	sprintf(pStr, "%*.*f", d, p, r);				\
+	snprintf(pStr, d+1, "%*.*f", d, p, r);				\
 	pStr;								\
 })
 
@@ -3269,28 +3269,28 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 
 void IntervalUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[4+1];
+	char item[10+1];
 	sprintf(item, "%4u", Shm->Sleep.Interval);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
 void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[4+1];
+	char item[10+1];
 	sprintf(item, "%4u", Shm->Sleep.Interval * Shm->SysGate.tickReset);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
 void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[4+1];
+	char item[20+1];
 	sprintf(item, "%4ld", (*data.pslong) / 1000000L);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
 void RecorderUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[4+1];
+	char item[11+1];
 	int duration = RECORDER_SECONDS((*data.psint), Shm->Sleep.Interval);
 	if (duration <= 9999) {
 		sprintf(item, "%4d", duration);
@@ -4103,7 +4103,7 @@ Window *CreateTracking(unsigned long long id)
 			else
 				qi = si + 2;
 
-			sprintf(item,
+			snprintf(item, MAX_WIDTH-1,
 				"%.*s" "%-16s" "%.*s" "(%5d)",
 				qi,
 				hSpace,
@@ -4196,8 +4196,8 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
-	char item[8];
-	sprintf(item, "%7.2f",
+	char item[10+1];
+	snprintf(item, 10+1, "%7.2f",
 		data.uint[0] > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz) ?
 			NAN : (double) (data.uint[0] * CFlop->Clock.Hz)
 					/ 1000000.0);
@@ -4407,7 +4407,7 @@ Window *CreateSelectIdle(unsigned long long id)
 			TOP_HEADER_ROW + 2);
     if (wIdle != NULL)
     {
-	ASCII item[24+1];
+	ASCII item[33+1];
 	int idx;
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
@@ -4464,7 +4464,7 @@ Window *CreateRecorder(unsigned long long id)
 					TOP_HEADER_ROW + 4 : 1);
     if (wRec != NULL)
     {
-	char item[24+1];
+	char item[39+1];
 	unsigned int idx = 1;
 	do {
 		unsigned long long key = OPS_RECORDER | (idx << 4);
@@ -7079,7 +7079,7 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 	/* Alternate the color of the frequency ratios			*/
 	int idx = ratio.Count, bright = 1;
 	while (idx-- > 0) {
-		char tabStop[] = "00";
+		char tabStop[10+1] = "00";
 		int hPos=ratio.Uniq[idx] * draw.Area.LoadWidth / ratio.Maximum;
 		sprintf(tabStop, "%2u", ratio.Uniq[idx]);
 
@@ -8945,10 +8945,10 @@ void Draw_Card_Task(Layer *layer, Card* card)
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
 
-	sprintf(buffer, "%.*s%s%.*s",
-			hl, hSpace,
-			Shm->SysGate.taskList[0].comm,
-			hr, hSpace);
+	snprintf(buffer, 12+1, "%.*s%s%.*s",
+				hl, hSpace,
+				Shm->SysGate.taskList[0].comm,
+				hr, hSpace);
 
 	LayerCopyAt(layer,	(card->origin.col + 0),
 				(card->origin.row + 1),
@@ -9484,8 +9484,8 @@ int main(int argc, char *argv[])
 		reason = Help(reason, SHM_FILENAME);
 	}
        } else {
-		char wrongVersion[24];
-		sprintf(wrongVersion, "Version %d.%d.%d",
+		char wrongVersion[22+1];
+		sprintf(wrongVersion, "Version %hhd.%hhd.%hhd",
 			Shm->FootPrint.major,
 			Shm->FootPrint.minor,
 			Shm->FootPrint.rev);
