@@ -7529,118 +7529,118 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
 			hTech0.length, hTech0.attr, hTech0.code);
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-	{
-	    LayerDeclare(LAYOUT_FOOTER_TECH_INTEL, 66,
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	LayerDeclare(	LAYOUT_FOOTER_TECH_INTEL, 66,
 			hTech0.length, hTech0.origin.row,
-			hTech1);
+			hTech1 );
 
-	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
+	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-		const ATTRIBUTE TM[] = {
-			MakeAttr(BLACK, 0, BLACK, 1),
-			MakeAttr(BLUE,  0, BLACK, 1),
-			MakeAttr(WHITE, 0, BLACK, 1),
-			MakeAttr(GREEN, 0, BLACK, 1)
-		};
+	const ATTRIBUTE TM[] = {
+		MakeAttr(BLACK, 0, BLACK, 1),
+		MakeAttr(BLUE,  0, BLACK, 1),
+		MakeAttr(WHITE, 0, BLACK, 1),
+		MakeAttr(GREEN, 0, BLACK, 1)
+	};
 
-	    hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
-	    hTech1.attr[7] = Pwr[Shm->Proc.Technology.EIST];
+	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
+	hTech1.attr[7] = Pwr[Shm->Proc.Technology.EIST];
 
-	    hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =	\
+	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =		\
 				Pwr[Shm->Proc.Features.Power.EAX.TurboIDA];
 
-	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =	\
-	    hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
+	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =		\
+	hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =	\
+	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
 						Pwr[Shm->Proc.Technology.C1E];
 
-	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
+	sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
-	    hTech1.code[23] = buffer[0];
-	    hTech1.code[24] = buffer[1];
-	    hTech1.code[25] = buffer[2];
+	hTech1.code[23] = buffer[0];
+	hTech1.code[24] = buffer[1];
+	hTech1.code[25] = buffer[2];
 
-	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =	\
+	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
 						Pwr[(Shm->Proc.PM_version > 0)];
 
-	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =	\
+	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =		\
 						Pwr[Shm->Proc.Technology.C3A];
 
-	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
+	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =		\
 						Pwr[Shm->Proc.Technology.C1A];
 
-	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
+	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =		\
 						Pwr[Shm->Proc.Technology.C3U];
 
-	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =	\
+	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =		\
 						Pwr[Shm->Proc.Technology.C1U];
 
-	    hTech1.attr[43] = hTech1.attr[44] = 			\
+	hTech1.attr[43] = hTech1.attr[44] = 				\
 			TM[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
 			  |Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2];
 
-	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
+	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
-	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
+	LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
 			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
-	} else {
-	  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	  {
-	    LayerDeclare(LAYOUT_FOOTER_TECH_AMD, 66,
+    } else {
+      if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+      {
+	LayerDeclare(	LAYOUT_FOOTER_TECH_AMD, 66,
 			hTech0.length, hTech0.origin.row,
-			hTech1);
+			hTech1 );
 
-	    hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
+	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-	  hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]= \
-	  hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]= \
+	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]= \
+	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]= \
 					Pwr[(Shm->Proc.PowerNow == 0b11)];
 
-	    hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =	\
-	    hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
+	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =		\
+	hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
 
-	    hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =	\
+	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
 						Pwr[Shm->Proc.Technology.C1E];
 
-	    hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =	\
+	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
 						Pwr[Shm->Proc.Technology.CC6];
 
-	    hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =	\
+	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =		\
 						Pwr[Shm->Proc.Technology.PC6];
 
-	    sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
+	sprintf(buffer, "PM%1d", Shm->Proc.PM_version);
 
-	    hTech1.code[31] = buffer[0];
-	    hTech1.code[32] = buffer[1];
-	    hTech1.code[33] = buffer[2];
+	hTech1.code[31] = buffer[0];
+	hTech1.code[32] = buffer[1];
+	hTech1.code[33] = buffer[2];
 
-	    hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =	\
+	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =		\
 						Pwr[(Shm->Proc.PM_version > 0)];
 
-	    hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =	\
+	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =		\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	    hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =	\
+	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =		\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
-	    LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
+	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
 
-	    LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
+	LayerFillAt(layer, (hTech1.origin.col + hTech1.length),
 			hTech1.origin.row,
 			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
-	  }
-	}
+      }
+    }
 	row++;
 
 	len = sprintf(	buffer, "%s",
@@ -7813,14 +7813,16 @@ size_t Draw_Frequency_Spaces(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
 		11, hSpace));
 }
 
-CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
-{
-	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t (*Draw_Frequency_Temp[])(struct FLIP_FLOP*, CPU_STRUCT*) = {
+size_t (*Draw_Frequency_Temp[])(struct FLIP_FLOP*, CPU_STRUCT*) = {
 			Draw_Frequency_Celsius,
 			Draw_Frequency_Fahrenheit,
 			Draw_Frequency_Spaces
-	}, len = 0;
+};
+
+CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	size_t len = 0;
 
     switch (Shm->Proc.thermalFormula) {
     case THERMAL_FORMULA_INTEL:
@@ -7840,7 +7842,6 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	len = Draw_Frequency_Temp[2](CFlop, NULL);
 	break;
     }
-
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -7851,15 +7852,15 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 		if (CFlop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
 			warning = MakeAttr(YELLOW, 0, BLACK, 0);
 	}
-	if (CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
-				      |	EVENT_THERM_PROCHOT
-				      |	EVENT_THERM_CRIT
-				      |	EVENT_THERM_THOLD ))
+	if ( CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
+				     |	EVENT_THERM_PROCHOT
+				     |	EVENT_THERM_CRIT
+				     |	EVENT_THERM_THOLD ) )
 	{
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
-	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =
-		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =
+	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =			\
+		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =		\
 			LayerAt(layer, attr, (LOAD_LEAD + 71), row) = warning;
 
 	return(0);
@@ -8075,7 +8076,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, row), buffer, len);
@@ -8083,7 +8085,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC03 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 1)), buffer, len);
@@ -8091,7 +8094,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 2)), buffer, len);
@@ -8099,7 +8103,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 3)), buffer, len);
@@ -8107,7 +8112,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 4)), buffer, len);
@@ -8115,7 +8121,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 5)), buffer, len);
@@ -8123,15 +8130,16 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
 
-	len = sprintf(	buffer, "%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace);
 	memcpy(&LayerAt(layer, code, 5, (row + 6)), buffer, len);
 /* TSC & UNCORE */
-	len = sprintf(buffer, "%18llu", PFlop->Delta.PTSC);
-	memcpy(&LayerAt(layer, code, 5,(row+7)), buffer, len);
-	len = sprintf(buffer, "UNCORE:%18llu", PFlop->Uncore.FC0);
-	memcpy(&LayerAt(layer, code, 50, (row + 7)), buffer, len);
+	len = snprintf(	buffer, draw.Area.LoadWidth,
+			"%18llu" "%.*s" "UNCORE:%18llu",
+			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0);
+	memcpy(&LayerAt(layer, code, 5, (row + 7)), buffer, len);
 
 	row += 1 + 8;
 	return(row);
@@ -8278,21 +8286,27 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop,
-					struct FLIP_FLOP *SProc)
+void Draw_Footer_Voltage_Fahrenheit(	struct PKG_FLIP_FLOP *PFlop,
+					struct FLIP_FLOP *SProc )
 {
 	sprintf(buffer, "%3u%4.2f",
 			Cels2Fahr(PFlop->Thermal.Temp),
 			SProc->Voltage.Vcore);
 }
 
-void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop,
-				struct FLIP_FLOP *SProc)
+void Draw_Footer_Voltage_Celsius(	struct PKG_FLIP_FLOP *PFlop,
+					struct FLIP_FLOP *SProc )
 {
 	sprintf(buffer, "%3u%4.2f",
 			PFlop->Thermal.Temp,
 			SProc->Voltage.Vcore);
 }
+
+void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
+					struct FLIP_FLOP* ) = {
+	Draw_Footer_Voltage_Celsius,
+	Draw_Footer_Voltage_Fahrenheit
+};
 
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
@@ -8306,11 +8320,6 @@ void Draw_Footer(Layer *layer, CUINT row)
 		RSC(HOT_EVENT_COND2).ATTR(),
 		RSC(HOT_EVENT_COND3).ATTR(),
 		RSC(HOT_EVENT_COND4).ATTR()
-	};
-	void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
-						struct FLIP_FLOP*) = {
-		Draw_Footer_Voltage_Celsius,
-		Draw_Footer_Voltage_Fahrenheit
 	};
 	unsigned int _hot = 0, _tmp = 0;
 
@@ -8342,8 +8351,14 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop, SProc);
 
-	memcpy(&LayerAt(layer, code, 76, row), &buffer[0], 3);
-	memcpy(&LayerAt(layer, code, 68, row), &buffer[3], 4);
+	LayerAt(layer, code, 76, row) = buffer[0];
+	LayerAt(layer, code, 77, row) = buffer[1];
+	LayerAt(layer, code, 78, row) = buffer[2];
+
+	LayerAt(layer, code, 68, row) = buffer[3];
+	LayerAt(layer, code, 69, row) = buffer[4];
+	LayerAt(layer, code, 70, row) = buffer[5];
+	LayerAt(layer, code, 71, row) = buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
