@@ -69,7 +69,6 @@ void Emergency(int caught)
 	case SIGQUIT:
 	case SIGTERM:
 	case SIGTSTP:
-	case SIGCHLD:
 		BITSET(LOCKLESS, Shutdown, 0);
 		break;
 	}
@@ -85,7 +84,6 @@ void TrapSignal(int operation)
 		signal(SIGQUIT, Emergency);
 		signal(SIGTERM, Emergency);
 		signal(SIGTSTP, Emergency);	/* [CTRL] + [Z]		*/
-		signal(SIGCHLD, Emergency);
 	}
 }
 

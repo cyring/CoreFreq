@@ -12,9 +12,9 @@
 #define CORE_WORD_MOD(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) & 0x3f)
 #define CORE_WORD_POS(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) >> 6)
 
-typedef volatile unsigned long long int Bit256[4];
-typedef volatile unsigned long long int Bit64;
-typedef volatile unsigned int		Bit32;
+typedef unsigned long long int	Bit256[4];
+typedef unsigned long long int	Bit64;
+typedef unsigned int		Bit32;
 
 #define LOCKLESS " "
 #define BUS_LOCK "lock "
@@ -289,7 +289,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEAND(_lock, _opl, _opr)					\
 ({									\
-	Bit64 _dest __attribute__ ((aligned (8))) = _opl;		\
+	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
 									\
 	__asm__ volatile						\
 	(								\
@@ -303,7 +303,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEOR(_lock, _opl, _opr)					\
 ({									\
-	Bit64 _dest __attribute__ ((aligned (8))) = _opl;		\
+	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
 									\
 	__asm__ volatile						\
 	(								\
@@ -317,7 +317,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITWISEXOR(_lock, _opl, _opr)					\
 ({									\
-	Bit64 _dest __attribute__ ((aligned (8))) = _opl;		\
+	volatile Bit64 _dest __attribute__ ((aligned (8))) = _opl;	\
 									\
 	__asm__ volatile						\
 	(								\
@@ -517,7 +517,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define BITWISEAND_CC(_lock, _opl, _opr)				\
 ({									\
-	Bit64 _ret __attribute__ ((aligned (8))) = 0;			\
+	volatile Bit64 _ret __attribute__ ((aligned (8))) = 0;		\
 	unsigned int cw = 0;						\
 	do {								\
 		_ret |= _BITWISEAND(_lock, _opl[cw], _opr[cw]) ;	\

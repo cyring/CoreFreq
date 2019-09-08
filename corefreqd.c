@@ -3586,11 +3586,10 @@ static void *Emergency_Handler(void *pRef)
 			if (Ref->CPID)
 				SysGate_Toggle(Ref, 1);
 			break;
-		case SIGCHLD:
+		case SIGTERM:
 			leave = 0x1;
 			break;
 		case SIGSEGV:
-		case SIGTERM:
 		case SIGINT:	/* [CTRL] + [C] */
 			/* Fallthrough */
 		case SIGQUIT:
@@ -3614,7 +3613,7 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	switch (cmd) {
 	case 0:
 		if (Ref->Started) {
-			if (!pthread_kill(Ref->KID, SIGCHLD)) {
+			if (!pthread_kill(Ref->KID, SIGTERM)) {
 				if (!pthread_join(Ref->KID, NULL)) {
 					Ref->Started = 0;
 				}
@@ -3625,11 +3624,10 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		sigemptyset(&Ref->Signal);
 		sigaddset(&Ref->Signal, SIGUSR1);	/* Start SysGate    */
 		sigaddset(&Ref->Signal, SIGUSR2);	/* Stop  SysGate    */
+		sigaddset(&Ref->Signal, SIGTERM);	/* Exit Ring Thread */
 		sigaddset(&Ref->Signal, SIGINT);	/* Shutdown	    */
 		sigaddset(&Ref->Signal, SIGQUIT);	/* Shutdown	    */
-		sigaddset(&Ref->Signal, SIGTERM);	/* Shutdown	    */
 		sigaddset(&Ref->Signal, SIGSEGV);	/* Shutdown	    */
-		sigaddset(&Ref->Signal, SIGCHLD);	/* Exit Ring Thread */
 
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL))
 		{
@@ -4131,6 +4129,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 			fflush(stdout);
 
 		CPID = Ref.CPID = fork();
+	/*-----[ Resources inherited ]----------------------------------*/
 		fork_err = errno;
 
 		Emergency_Command(&Ref, 1);
@@ -4156,7 +4155,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 				}
 			}
 			if (Shm->AppCli) {
-				if (kill(Shm->AppCli, SIGCHLD) == -1) {
+				if (kill(Shm->AppCli, SIGTERM) == -1) {
 					REASON_SET(reason, RC_EXEC_ERR);
 				}
 			}
@@ -4404,10 +4403,6 @@ int main(int argc, char *argv[])
 				reason = Help(reason);
 				break;
 			}
-			if (munmap(Proc, packageSize) == -1) {
-				REASON_SET(reason, RC_SHM_MMAP);
-				reason = Help(reason, DRV_FILENAME);
-			}
 		    } else {
 			char *wrongVersion = malloc(10+5+5+5+1);
 			REASON_SET(reason, RC_SHM_MMAP, EACCES);
@@ -4420,7 +4415,10 @@ int main(int argc, char *argv[])
 				reason = Help(reason, wrongVersion);
 				free(wrongVersion);
 			}
-			munmap(Proc, packageSize);
+		    }
+		    if (munmap(Proc, packageSize) == -1) {
+			REASON_SET(reason, RC_SHM_MMAP);
+			reason = Help(reason, DRV_FILENAME);
 		    }
 		} else {
 			REASON_SET(reason, RC_SHM_MMAP);
