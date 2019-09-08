@@ -83,10 +83,12 @@ static void *Core_Cycle(void *arg)
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
 		goto EXIT;
 
-	char comm[TASK_COMM_LEN+4+1];
-	sprintf(comm, "corefreqd/%u", cpu);
-	pthread_setname_np(tid, comm);
-
+	char *comm = malloc(TASK_COMM_LEN+10+1);
+	if (comm != NULL) {
+		snprintf(comm, TASK_COMM_LEN+10+1, "corefreqd/%u", cpu);
+		pthread_setname_np(tid, comm);
+		free(comm);
+	}
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
 		fflush(stdout);
@@ -351,10 +353,12 @@ static void *Child_Thread(void *arg)
 	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
 		goto EXIT;
 
-	char comm[TASK_COMM_LEN+4+1];
-	sprintf(comm, "corefreqd#%u", cpu);
-	pthread_setname_np(tid, comm);
-
+	char *comm = malloc(TASK_COMM_LEN+10+1);
+	if (comm != NULL) {
+		snprintf(comm, TASK_COMM_LEN+10+1, "corefreqd#%u", cpu);
+		pthread_setname_np(tid, comm);
+		free(comm);
+	}
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] Init CHILD %03u\n", tid, cpu);
 		fflush(stdout);
@@ -3627,9 +3631,12 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		sigaddset(&Ref->Signal, SIGSEGV);	/* Shutdown	    */
 		sigaddset(&Ref->Signal, SIGCHLD);	/* Exit Ring Thread */
 
-		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL)
-		 && !pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref)) {
+		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL))
+		{
+		    if(!pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
+		    {
 			Ref->Started = 1;
+		    }
 		}
 	    }
 		break;
@@ -3909,15 +3916,20 @@ REASON_CODE Core_Manager(REF *Ref)
 	    case VOLTAGE_FORMULA_NONE:
 		break;
 	    }
-		/* Tasks collection: Update OS tasks and memory usage.	*/
-	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-	    {
+		/*
+		The Driver tick is bound to the Service Core:
+		1- Tasks collection; Tasks count; and Memory usage.
+		2- Processor has resumed from Suspend To RAM.
+		*/
 		Shm->SysGate.tickStep = Proc->tickStep;
-		if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+	    if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+		{
 		    if (SysGate_OnDemand(Ref, 1) == 0) {
 			SysGate_Update(Ref);
 		    }
-		    if (BITVAL(Proc->OS.Signal, 63)) {
+		}
+		if (BITVAL(Proc->OS.Signal, 63)) {
 			BITCLR(BUS_LOCK, Proc->OS.Signal, 63);
 
 			UpdateFeatures(Ref);
@@ -3926,10 +3938,9 @@ REASON_CODE Core_Manager(REF *Ref)
 
 			if (Quiet & 0x100)
 				printf("  CoreFreq: Resume\n");
-		    }
 		}
 	    }
-		/* Notify Client.					*/
+		/* All aggregations done: Notify Client.		*/
 		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
 	}
 	/* Reset the Room mask						*/
@@ -4398,14 +4409,18 @@ int main(int argc, char *argv[])
 				reason = Help(reason, DRV_FILENAME);
 			}
 		    } else {
-			char wrongVersion[22+1];
-			sprintf(wrongVersion, "Version %hhd.%hhd.%hhd",
-				Proc->FootPrint.major,
-				Proc->FootPrint.minor,
-				Proc->FootPrint.rev);
-			munmap(Proc, packageSize);
+			char *wrongVersion = malloc(10+5+5+5+1);
 			REASON_SET(reason, RC_SHM_MMAP, EACCES);
-			reason = Help(reason, wrongVersion);
+			if (wrongVersion != NULL) {
+				snprintf(wrongVersion, 10+5+5+5+1,
+					"Version %hu.%hu.%hu",
+					Proc->FootPrint.major,
+					Proc->FootPrint.minor,
+					Proc->FootPrint.rev);
+				reason = Help(reason, wrongVersion);
+				free(wrongVersion);
+			}
+			munmap(Proc, packageSize);
 		    }
 		} else {
 			REASON_SET(reason, RC_SHM_MMAP);

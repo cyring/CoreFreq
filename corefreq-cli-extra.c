@@ -182,7 +182,7 @@ void json_literal(struct json_state *state, char * format, ...)
 	va_list args;
 	va_start(args, format);
 	char buf[JSON_MAX_VALUE];
-	size_t bufsz = vsprintf(buf, format, args);
+	size_t bufsz = vsnprintf(buf, JSON_MAX_VALUE, format, args);
 	state->write(state, buf, bufsz);
 	va_end(args);
 }
