@@ -80,6 +80,8 @@ void TrapSignal(int operation)
 		Shm->AppCli = 0;
 	} else {
 		Shm->AppCli = getpid();
+		signal(SIGUSR1, SIG_IGN);
+		signal(SIGUSR2, SIG_IGN);
 		signal(SIGINT,  Emergency);
 		signal(SIGQUIT, Emergency);
 		signal(SIGTERM, Emergency);
