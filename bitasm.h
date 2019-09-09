@@ -295,7 +295,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 	_lock	"andq %[opr], %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr] "Jmr" (_opr)					\
+		: [opr]  "Jr" (_opr)					\
 		: "memory"						\
 	);								\
 	_dest;								\
@@ -309,7 +309,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 	_lock	"orq %[opr], %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr] "Jmr" (_opr)					\
+		: [opr]  "Jr" (_opr)					\
 		: "memory"						\
 	);								\
 	_dest;								\
@@ -323,7 +323,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	(								\
 	_lock	"xorq %[opr], %[dest]"					\
 		: [dest] "=m" (_dest)					\
-		: [opr] "Jmr" (_opr)					\
+		: [opr]  "Jr" (_opr)					\
 		: "memory"						\
 	);								\
 	_dest;								\
