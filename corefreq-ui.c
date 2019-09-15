@@ -991,9 +991,9 @@ void EraseWindowWithBorder(Window *win)
 void PrintLCD(	Layer *layer, CUINT col, CUINT row,
 		int len, char *pStr, enum PALETTE lcdColor)
 {
-	int j = len;
+	register int j = len;
 	do {
-		int offset = col + (len - j) * 3,
+		register int offset = col + (len - j) * 3,
 			lo = pStr[len - j] & 0b00001111,
 			hi = pStr[len - j] & 0b11110000;
 			hi = (hi >> 4) - 0x2;

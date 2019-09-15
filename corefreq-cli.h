@@ -233,8 +233,8 @@ enum {
 
 #define LayerDeclare(_ID, _len, _col, _row, _var)			\
 	struct {							\
-		Coordinate	origin;					\
-		CUINT		length;					\
+		Coordinate	origin ;				\
+		CUINT		length ;				\
 		ATTRIBUTE	*attr;					\
 		ASCII		*code;					\
 	} _var = {							\

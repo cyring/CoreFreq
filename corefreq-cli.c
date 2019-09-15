@@ -123,15 +123,16 @@ ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 	return(stateAttr);
 }
 
-unsigned int Dec2Digit(unsigned int decimal, unsigned int thisDigit[])
+unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
+			unsigned int thisDigit[] )
 {
-	memset(thisDigit, 0, 9 * sizeof(unsigned int));
-	unsigned int j = 9;
+	memset(thisDigit, 0, length * sizeof(unsigned int));
+	register unsigned int j = length;
 	while (decimal > 0) {
 		thisDigit[--j] = decimal % 10;
 		decimal /= 10;
 	}
-	return(9 - j);
+	return(length - j);
 }
 
 int Cels2Fahr(unsigned int cels)
@@ -1556,11 +1557,12 @@ void CStateRange_Update(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[4] = {
+	ATTRIBUTE *attrib[5] = {
 		RSC(SYSINFO_PERFMON_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_COND1).ATTR(),
 		RSC(SYSINFO_PERFMON_COND2).ATTR(),
-		RSC(SYSINFO_PERFMON_COND3).ATTR()
+		RSC(SYSINFO_PERFMON_COND3).ATTR(),
+		RSC(SYSINFO_PERFMON_COND4).ATTR()
 	};
 	int bix;
 /* Section Mark */
@@ -1710,14 +1712,17 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Highest);
     } else {
-	bix = Shm->Proc.Features.HWP_Enable == 1;
+	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 0 ?
+		4 : Shm->Proc.Features.HWP_Enable == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
-		width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix));
+		width - 18 - RSZ(PERF_MON_HWP), hSpace,
+		enabled(Shm->Proc.Features.HWP_Enable == 1));
     }
 
 	bix = Shm->Proc.Features.HDC_Enable == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 : 4],
+		width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
 		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));
 /* Section Mark */
@@ -1883,11 +1888,12 @@ void Hint_Update(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[4] = {
+	ATTRIBUTE *attrib[5] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR()
 	};
 	const ASCII *TM[] = {
 		RSC(MISSING).CODE(),
@@ -1954,7 +1960,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	Hint_Update,
 	&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HWP_Reg ? 0 : 4],
+		width, 3,
 		"%s%.*sHWP EPP   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
@@ -6987,9 +6994,15 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 
 void Layout_Header(Layer *layer, CUINT row)
 {
-	size_t len;
 	struct FLIP_FLOP *CFlop = \
 	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
+	size_t len;
+	const CUINT lProc0=RSZ(LAYOUT_HEADER_PROC),	xProc0=12,
+		lProc1=RSZ(LAYOUT_HEADER_CPU), xProc1=draw.Size.width - lProc1,
+		lArch0=RSZ(LAYOUT_HEADER_ARCH) ,	xArch0=12,
+		lArch1=RSZ(LAYOUT_HEADER_CACHE_L1),xArch1=draw.Size.width-lArch1,
+		lBClk0=RSZ(LAYOUT_HEADER_BCLK) ,	xBClk0=12,
+		lArch2=RSZ(LAYOUT_HEADER_CACHES), xArch2=draw.Size.width-lArch2;
 
 	/* Reset the Top Frequency					*/
 	if (!draw.Flag.clkOrLd) {
@@ -6999,18 +7012,18 @@ void Layout_Header(Layer *layer, CUINT row)
 
 		Load2LCD(layer, 0, row, percent);
 	}
-	LayerDeclare(LAYOUT_HEADER_PROC, 12, 12, row, hProc0);
-	LayerDeclare(LAYOUT_HEADER_CPU, 11,(draw.Size.width - 11), row, hProc1);
+	LayerDeclare(LAYOUT_HEADER_PROC, lProc0, xProc0, row, hProc0);
+	LayerDeclare(LAYOUT_HEADER_CPU , lProc1, xProc1, row, hProc1);
 
 	row++;
 
-	LayerDeclare(LAYOUT_HEADER_ARCH, 15, 12, row, hArch0);
-	LayerDeclare(LAYOUT_HEADER_CACHE_L1,30,(draw.Size.width-30),row,hArch1);
+	LayerDeclare(LAYOUT_HEADER_ARCH, lArch0, xArch0, row, hArch0);
+	LayerDeclare(LAYOUT_HEADER_CACHE_L1,lArch1,xArch1,row,hArch1);
 
 	row++;
 
-	LayerDeclare(LAYOUT_HEADER_BCLK, 28, 12, row, hBClk0);
-	LayerDeclare(LAYOUT_HEADER_CACHES,21,(draw.Size.width-21), row, hArch2);
+	LayerDeclare(LAYOUT_HEADER_BCLK, lBClk0, xBClk0, row, hBClk0);
+	LayerDeclare(LAYOUT_HEADER_CACHES,lArch2,xArch2, row, hArch2);
 
 	row++;
 
@@ -7019,12 +7032,12 @@ void Layout_Header(Layer *layer, CUINT row)
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count);
 
-	hProc1.code[1] = buffer[0];
-	hProc1.code[2] = buffer[1];
-	hProc1.code[3] = buffer[2];
-	hProc1.code[5] = buffer[3];
-	hProc1.code[6] = buffer[4];
-	hProc1.code[7] = buffer[5];
+	hProc1.code[2] = buffer[0];
+	hProc1.code[3] = buffer[1];
+	hProc1.code[4] = buffer[2];
+	hProc1.code[6] = buffer[3];
+	hProc1.code[7] = buffer[4];
+	hProc1.code[8] = buffer[5];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
@@ -7059,7 +7072,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	hArch2.code[16] = buffer[7];
 	hArch2.code[17] = buffer[8];
 
-	len = strlen(Shm->Proc.Brand);
+	len = CUMIN(xProc1 - lProc0 - xProc0, strlen(Shm->Proc.Brand));
 	/* RED DOT */
 	hProc0.code[0] = BITVAL(Shm->Proc.Sync, 31) ? '.' : 0x20;
 
@@ -7079,7 +7092,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hProc1.origin.col, hProc1.origin.row,
 			hProc1.length, hProc1.attr, hProc1.code);
 
-	len = strlen(Shm->Proc.Architecture);
+	len = CUMIN(xArch1 - lArch0 - xArch0, strlen(Shm->Proc.Architecture));
 	/* DUMP DOT */
 	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
@@ -8444,7 +8457,7 @@ void Draw_Header(Layer *layer, CUINT row)
 	CFlop = &Shm->Cpu[ draw.iClock + draw.cpuScroll ]		\
 		.FlipFlop[ !Shm->Cpu[draw.iClock + draw.cpuScroll].Toggle ];
 
-	Dec2Digit(CFlop->Clock.Hz, digit);
+	Dec2Digit(9, CFlop->Clock.Hz, digit);
 
 	LayerAt(layer, code, 26 +  0, row) = digit[0] + '0';
 	LayerAt(layer, code, 26 +  1, row) = digit[1] + '0';
@@ -8615,10 +8628,10 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 
 void Layout_Card_Core(Layer *layer, Card* card)
 {
-	unsigned int digit[9];
+	unsigned int digit[3];
 	unsigned int _cpu = card->data.dword.lo;
 
-	Dec2Digit(_cpu, digit);
+	Dec2Digit(3, _cpu, digit);
 
 	if (!BITVAL(Shm->Cpu[_cpu].OffLine, OS))
 	{
@@ -8652,15 +8665,15 @@ void Layout_Card_Core(Layer *layer, Card* card)
 	}
 	LayerAt(layer, code,
 		(card->origin.col + 2),
-		(card->origin.row + 3)) = digit[6] + '0';
+		(card->origin.row + 3)) = digit[0] + '0';
 
 	LayerAt(layer, code,
 		(card->origin.col + 3),
-		(card->origin.row + 3)) = digit[7] + '0';
+		(card->origin.row + 3)) = digit[1] + '0';
 
 	LayerAt(layer, code,
 		(card->origin.col + 4),
-		(card->origin.row + 3)) = digit[8] + '0';
+		(card->origin.row + 3)) = digit[2] + '0';
 }
 
 void Layout_Card_CLK(Layer *layer, Card* card)
@@ -8866,7 +8879,7 @@ void Draw_Card_Core(Layer *layer, Card* card)
 {
     if (card->data.dword.hi == RENDER_OK)
     {
-	unsigned int digit[9];
+	unsigned int digit[3];
 	unsigned int _cpu = card->data.dword.lo;
 
 	struct FLIP_FLOP *CFlop = \
@@ -8886,7 +8899,7 @@ void Draw_Card_Core(Layer *layer, Card* card)
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 
-	Dec2Digit( Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+	Dec2Digit( 3, Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
@@ -8895,13 +8908,13 @@ void Draw_Card_Core(Layer *layer, Card* card)
 									warning;
 
 	LayerAt(layer, code, (card->origin.col + 6), (card->origin.row + 3)) = \
-					digit[6] ? digit[6] + '0' : 0x20;
+					digit[0] ? digit[0] + '0' : 0x20;
 
 	LayerAt(layer, code, (card->origin.col + 7), (card->origin.row + 3)) = \
-				(digit[6] | digit[7]) ? digit[7] + '0' : 0x20;
+				(digit[0] | digit[1]) ? digit[1] + '0' : 0x20;
 
 	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
-								digit[8] + '0';
+								digit[2] + '0';
     }
     else if (card->data.dword.hi == RENDER_KO) {
 	CUINT row;
