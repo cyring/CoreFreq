@@ -2040,9 +2040,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 void KernelUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[20+3+1];
-	size_t len = snprintf(item, 20+3+1, "%18lu KB", (*data.pulong));
-
+	char item[CPUFREQ_NAME_LEN+4+3];
+	size_t len = snprintf(  item, CPUFREQ_NAME_LEN+4+3,
+				"%18lu KB", (*data.pulong) );
 	memcpy(&grid->cell.item[grid->cell.length - len - 1], item, len);
 }
 
@@ -2078,67 +2078,73 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
-		width - 5 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
+		width - 4 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_VERSION).CODE(),
-		width - 5 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
+		width - 4 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_MACHINE).CODE(),
-		width - 5 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
+		width - 4 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
 		"%s:%.*s", RSC(KERNEL_MEMORY).CODE(),
-		width - 1 - RSZ(KERNEL_MEMORY), hSpace);
+		width - RSZ(KERNEL_MEMORY), hSpace);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.totalram);
+	len = snprintf( str,CPUFREQ_NAME_LEN+4+1, "%lu",
+			Shm->SysGate.memInfo.totalram );
 	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
-		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
+		width - 5 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.sharedram);
+	len = snprintf( str, CPUFREQ_NAME_LEN+4+1, "%lu",
+			Shm->SysGate.memInfo.sharedram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
+			width - 5 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.sharedram);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.freeram);
+	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.freeram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
+			width - 5 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freeram);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.bufferram);
+	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.bufferram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
+			width - 5 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.bufferram);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.totalhigh);
+	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.totalhigh );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
-			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
+			width - 5 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.totalhigh);
 
-	len = snprintf(str, 20+1, "%lu", Shm->SysGate.memInfo.freehigh);
+	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
+			"%lu", Shm->SysGate.memInfo.freehigh );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
-			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
+			width - 5 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
 	snprintf(item[0], CPUFREQ_NAME_LEN+4+1,
-			"%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
+		"%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
 
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
     if (len > 0)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 2 : 3)
+		width - (OutFunc == NULL ? 1 : 2)
 		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN,
 		hSpace, len, Shm->SysGate.OS.FreqDriver.Name);
     }
@@ -2148,7 +2154,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
-		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
+		width - (OutFunc == NULL ? 1 : 2) - RSZ(KERNEL_GOVERNOR)
 		- CPUFREQ_NAME_LEN,
 		hSpace, len, Shm->SysGate.OS.FreqDriver.Governor);
     }
@@ -2157,11 +2163,11 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (len > 0)
     {
 	snprintf(item[0], CPUFREQ_NAME_LEN+4+1,
-			"%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
+		"%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 2 : 3)
+		width - (OutFunc == NULL ? 1 : 2)
 		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN,
 		hSpace, len, Shm->SysGate.OS.IdleDriver.Name);
     }
@@ -2170,7 +2176,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 							: SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
 			"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
-			width - 11 - RSZ(KERNEL_LIMIT),hSpace,
+			width - 10 - RSZ(KERNEL_LIMIT),hSpace,
 			Shm->Registration.Driver.cpuidle ? '<' : '[',
 			Shm->SysGate.OS.IdleDriver.stateLimit,
 			Shm->Registration.Driver.cpuidle ? '>' : ']'),
@@ -2179,7 +2185,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
 				10 - (int) RSZ(KERNEL_STATE), hSpace);
 
-	snprintf(item[1], 10+1, "%.*s", 10, hSpace);
+	snprintf(item[1], 10+1, "%.*s", 9, hSpace);
 
 	snprintf(item[2], 10+1, "%s%.*s" , RSC(KERNEL_POWER).CODE(),
 				10 - (int) RSZ(KERNEL_POWER), hSpace);
@@ -5251,16 +5257,16 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_EVENT_CRITICAL_TEMP).CODE(),
 	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_CRIT) ? 1 : 0],
 				BOXKEY_CLR_THM_CRIT,
-				RSC(BOX_EVENT_THERMAL_THRESHOLD).CODE(),
+				RSC(BOX_EVENT_THERM_THRESHOLD).CODE(),
 	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_THERM_THOLD) ? 1 : 0],
 				BOXKEY_CLR_THM_THOLD,
-				RSC(BOX_EVENT_POWER_LIMITATION).CODE(),
+				RSC(BOX_EVENT_POWER_LIMIT).CODE(),
 	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_POWER_LIMIT) ? 2 : 0],
 				BOXKEY_CLR_PWR_LIMIT,
-				RSC(BOX_EVENT_CURRENT_LIMITATION).CODE(),
+				RSC(BOX_EVENT_CURRENT_LIMIT).CODE(),
 	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CURRENT_LIMIT) ? 2 : 0],
 				BOXKEY_CLR_CUR_LIMIT,
-				RSC(BOX_EVENT_CROSS_DOMAIN_LIMIT).CODE(),
+				RSC(BOX_EVENT_CROSS_DOM_LIMIT).CODE(),
 	RSC(BOX_EVENT).ATTR()[(processorEvents & EVENT_CROSS_DOMAIN) ? 1 : 0],
 				BOXKEY_CLR_X_DOMAIN);
 
@@ -5837,7 +5843,7 @@ int Shortcut(SCANKEY *scan)
 		};
 
 		Window *wBox = CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_PACKAGE_STATE_LIMIT_TITLE).CODE(),
+				(char*) RSC(BOX_PKG_STATE_LIMIT_TITLE).CODE(),
 /* 0 */ (ASCII*)"            C10            ", stateAttr[0], BOXKEY_PKGCST_C10,
 /* 1 */ (ASCII*)"             C9            ", stateAttr[0], BOXKEY_PKGCST_C9,
 /* 2 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_PKGCST_C8,
@@ -6051,7 +6057,7 @@ int Shortcut(SCANKEY *scan)
 	  if (Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended)
 	  {
 		wBox = CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_EXTENDED_DUTY_CYCLE_TITLE).CODE(),
+				(char*) RSC(BOX_EXT_DUTY_CYCLE_TITLE).CODE(),
 		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr,BOXKEY_ODCM_DC00,
 	(ASCII*)"            6.25%          ", stateAttr[0], BOXKEY_ODCM_DC01,
 	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC02,
