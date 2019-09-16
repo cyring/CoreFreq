@@ -1200,7 +1200,7 @@ static void Map_AMD_Topology(void *arg)
 
 	struct CPUID_0x00000001_EBX leaf1_ebx = {0};
 
-	CPUID_0x80000008 leaf80000008 = {0};
+	CPUID_0x80000008 leaf80000008 = {{0}};
 
 	Cache_Topology(Core);
 
@@ -1301,8 +1301,8 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Family_17h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
-		struct CACHE_INFO CacheInfo = {0};
-		CPUID_0x8000001e leaf8000001e = {0};
+		struct CACHE_INFO CacheInfo = {{{0}}};
+		CPUID_0x8000001e leaf8000001e = {{0}};
 
 		/* Fn8000_001D Cache Properties. */
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};

@@ -442,8 +442,8 @@ ATTRIBUTE Rsc_SMBIOS_Item_Attr[] = RSC_SMBIOS_ITEM_ATTR;
 {									\
 	LDV(attr_var, (ASCII*) en_var, (ASCII*) fr_var),		\
 	.Size = {							\
-		[LOC_EN] = strlen(en_var),				\
-		[LOC_FR] = strlen(fr_var)				\
+		[LOC_EN] = __builtin_strlen(en_var),			\
+		[LOC_FR] = __builtin_strlen(fr_var)			\
 	}								\
 }
 

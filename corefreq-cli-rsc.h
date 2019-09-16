@@ -539,7 +539,7 @@ enum {
 typedef struct {
 	ATTRIBUTE	*Attr;
 	ASCII		*Code[LOC_CNT];
-	int		Size[LOC_CNT];
+	const int	Size[LOC_CNT];
 } RESOURCE_ST;
 
 extern RESOURCE_ST Resource[];
