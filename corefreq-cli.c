@@ -7167,7 +7167,7 @@ void Layout_Ruller_Load(Layer *layer, CUINT row)
 
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, 77,
+	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, RSZ(LAYOUT_MONITOR_FREQUENCY),
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -7184,7 +7184,7 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
-	LayerDeclare(	LAYOUT_MONITOR_INST, 76,
+	LayerDeclare(	LAYOUT_MONITOR_INST, RSZ(LAYOUT_MONITOR_INST),
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -7201,7 +7201,7 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_MONITOR_COMMON, 77,
+	LayerDeclare(	LAYOUT_MONITOR_COMMON, RSZ(LAYOUT_MONITOR_COMMON),
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -7238,7 +7238,7 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_MONITOR_SLICE, 95,
+	LayerDeclare(	LAYOUT_MONITOR_SLICE, RSZ(LAYOUT_MONITOR_SLICE),
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			hMon0);
 
@@ -7454,7 +7454,7 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		.code = hReverse[Shm->SysGate.reverseOrder].code
 	};
 
-	LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH, 13,
+	LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH,RSZ(LAYOUT_TASKS_VALUE_SWITCH),
 			(draw.Size.width - 34), (row + draw.Area.MaxRows + 1),
 			hTask3);
 
@@ -7475,7 +7475,8 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&hTask3.attr[8], hTaskVal[draw.Flag.taskVal].attr, 3);
 	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
 
-	LayerDeclare(LAYOUT_TASKS_TRACKING, 22, 55, row, hTrack0);
+	LayerDeclare(	LAYOUT_TASKS_TRACKING, RSZ(LAYOUT_TASKS_TRACKING),
+			55, row, hTrack0 );
 
 	LayerCopyAt(layer, hTask0.origin.col, hTask0.origin.row,
 			hTask0.length, hTask0.attr, hTask0.code);
@@ -7524,7 +7525,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
-		LayerDeclare(	LAYOUT_POWER_MONITOR, 39,
+		LayerDeclare(	LAYOUT_POWER_MONITOR, RSZ(LAYOUT_POWER_MONITOR),
 				tab, (row + pw + 1),
 				hPower0);
 
@@ -7562,7 +7563,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 	CUINT col = 0;
 	size_t len;
 
-	LayerDeclare(LAYOUT_FOOTER_TECH_X86, 14, 0, row, hTech0);
+	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
+			0, row, hTech0 );
 
 	const ATTRIBUTE Pwr[] = {
 		MakeAttr(BLACK, 0, BLACK, 1),
@@ -7592,7 +7594,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	LayerDeclare(	LAYOUT_FOOTER_TECH_INTEL, 66,
+	LayerDeclare(	LAYOUT_FOOTER_TECH_INTEL, RSZ(LAYOUT_FOOTER_TECH_INTEL),
 			hTech0.length, hTech0.origin.row,
 			hTech1 );
 
@@ -7654,7 +7656,7 @@ void Layout_Footer(Layer *layer, CUINT row)
     } else {
       if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
       {
-	LayerDeclare(	LAYOUT_FOOTER_TECH_AMD, 66,
+	LayerDeclare(	LAYOUT_FOOTER_TECH_AMD, RSZ(LAYOUT_FOOTER_TECH_AMD),
 			hTech0.length, hTech0.origin.row,
 			hTech1 );
 
