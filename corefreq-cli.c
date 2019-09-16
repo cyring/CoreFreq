@@ -7078,7 +7078,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	hArch2.code[16] = buffer[7];
 	hArch2.code[17] = buffer[8];
 
-	len = CUMIN(xProc1 - (hProc0.length + hProc0.length),
+	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			strlen(Shm->Proc.Brand));
 	/* RED DOT */
 	hProc0.code[0] = BITVAL(Shm->Proc.Sync, 31) ? '.' : 0x20;
