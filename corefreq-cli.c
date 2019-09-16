@@ -7078,7 +7078,8 @@ void Layout_Header(Layer *layer, CUINT row)
 	hArch2.code[16] = buffer[7];
 	hArch2.code[17] = buffer[8];
 
-	len = CUMIN(xProc1 - lProc0 - xProc0, strlen(Shm->Proc.Brand));
+	len = CUMIN(xProc1 - (hProc0.length + hProc0.length),
+			strlen(Shm->Proc.Brand));
 	/* RED DOT */
 	hProc0.code[0] = BITVAL(Shm->Proc.Sync, 31) ? '.' : 0x20;
 
@@ -7098,7 +7099,8 @@ void Layout_Header(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hProc1.origin.col, hProc1.origin.row,
 			hProc1.length, hProc1.attr, hProc1.code);
 
-	len = CUMIN(xArch1 - lArch0 - xArch0, strlen(Shm->Proc.Architecture));
+	len = CUMIN(xArch1 - (hArch0.origin.col + hArch0.length),
+			strlen(Shm->Proc.Architecture));
 	/* DUMP DOT */
 	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
