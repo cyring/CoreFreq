@@ -3605,7 +3605,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &HSW_Driver,
@@ -3678,7 +3678,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
 		.Stop = Stop_Uncore_Broadwell,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &BDW_Driver,
@@ -3702,7 +3702,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &BDW_Driver,
@@ -3726,7 +3726,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Broadwell,
 		.Stop = Stop_Uncore_Broadwell,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &BDW_Driver,
@@ -3750,7 +3750,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_EP,
 		.Stop = Stop_Uncore_Haswell_EP,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &BDW_Driver,
@@ -3775,7 +3775,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &SKL_Driver,
@@ -3799,7 +3799,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &SKL_Driver,
@@ -3823,7 +3823,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake_X,
 		.Stop = Stop_Uncore_Skylake_X,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &SKX_Driver,
@@ -3848,7 +3848,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_SandyBridge,
 		.Stop = Stop_Uncore_SandyBridge,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
@@ -3897,7 +3897,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &SKL_Driver,
@@ -3922,7 +3922,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
@@ -3947,7 +3947,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
 		.Stop = Stop_Uncore_Haswell_ULT,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
@@ -3972,7 +3972,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Uncore = {
 		.Start = Start_Uncore_Skylake,
 		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = NULL
+		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,

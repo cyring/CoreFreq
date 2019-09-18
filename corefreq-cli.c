@@ -3606,7 +3606,7 @@ Window *CreateHelp(unsigned long long id)
 
 	StoreWindow(wHelp, .title, (char*) RSC(HELP_TITLE).CODE());
 	StoreWindow(wHelp, .color[0].select, MAKE_PRINT_UNFOCUS);
-	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_UNFOCUS);
+	StoreWindow(wHelp, .color[1].select, MAKE_PRINT_FOCUS);
 
 	StoreWindow(wHelp,	.key.WinLeft,	MotionOriginLeft_Win);
 	StoreWindow(wHelp,	.key.WinRight,	MotionOriginRight_Win);
@@ -6666,7 +6666,7 @@ int Shortcut(SCANKEY *scan)
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MIN)],
-				0,
+				1,
 				Shm->Proc.Features.Factory.Ratio,
 				&lowestShift,
 				&highestShift);

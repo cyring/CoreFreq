@@ -374,16 +374,10 @@ ATTRIBUTE Rsc_CreateSettings_Cond_Attr[2][32] = {
 	RSC_CREATE_SETTINGS_COND1_ATTR
 };
 
-ASCII	Rsc_CreateSettings_Blank_Code[] = "                                ";
-
-ASCII	Rsc_CreateHelp_Blank_Code[] = "                  ";
-
 ATTRIBUTE Rsc_CreateAdvHelp_Cond_Attr[2][38] = {
 	RSC_CREATE_ADV_HELP_COND0_ATTR,
 	RSC_CREATE_ADV_HELP_COND1_ATTR
 };
-
-ASCII Rsc_CreateAdvHelp_Blank_Code[] = "                                      ";
 
 ATTRIBUTE Rsc_CreateHotPlugCPU_Enable_Attr[]=RSC_CREATE_HOTPLUG_CPU_ENABLE_ATTR,
 	Rsc_CreateHotPlugCPU_Disable_Attr[]=RSC_CREATE_HOTPLUG_CPU_DISABLE_ATTR;
@@ -416,13 +410,13 @@ ATTRIBUTE Rsc_SMBIOS_Item_Attr[] = RSC_SMBIOS_ITEM_ATTR;
 #define LDV(attr_var, en_var, fr_var)					\
 	.Attr = attr_var,						\
 	.Code = {							\
-		[LOC_EN] = en_var,					\
-		[LOC_FR] = fr_var					\
+		[LOC_EN] = (ASCII*) en_var,				\
+		[LOC_FR] = (ASCII*) fr_var				\
 	}								\
 
 #define LDA(attr_var, en_var, fr_var)					\
 {									\
-	LDV(attr_var, (ASCII*) en_var, (ASCII*) fr_var),		\
+	LDV(attr_var, en_var, fr_var),					\
 	.Size = {							\
 		[LOC_EN] = sizeof(en_var),				\
 		[LOC_FR] = sizeof(fr_var)				\
@@ -440,7 +434,7 @@ ATTRIBUTE Rsc_SMBIOS_Item_Attr[] = RSC_SMBIOS_ITEM_ATTR;
 
 #define LDS(attr_var, en_var, fr_var)					\
 {									\
-	LDV(attr_var, (ASCII*) en_var, (ASCII*) fr_var),		\
+	LDV(attr_var, en_var, fr_var),					\
 	.Size = {							\
 		[LOC_EN] = __builtin_strlen(en_var),			\
 		[LOC_FR] = __builtin_strlen(fr_var)			\
@@ -687,18 +681,18 @@ RESOURCE_ST Resource[] = {
     [RSC_CREATE_MENU_FN_KEY]	= LDB(	Rsc_CreateMenu_FnKey_Attr),
     [RSC_CREATE_MENU_SHORTKEY]	= LDB(	Rsc_CreateMenu_ShortKey_Attr),
     [RSC_CREATE_MENU_CTRL_KEY]	= LDB(	Rsc_CreateMenu_CtrlKey_Attr),
-    [RSC_CREATE_SETTINGS_COND0] = LDA(	Rsc_CreateSettings_Cond_Attr[0],
-					Rsc_CreateSettings_Blank_Code,
-					Rsc_CreateSettings_Blank_Code),
-    [RSC_CREATE_SETTINGS_COND1] = LDA(	Rsc_CreateSettings_Cond_Attr[1],
-					Rsc_CreateSettings_Blank_Code,
-					Rsc_CreateSettings_Blank_Code),
-    [RSC_CREATE_ADV_HELP_COND0] = LDA(	Rsc_CreateAdvHelp_Cond_Attr[0],
-					Rsc_CreateAdvHelp_Blank_Code,
-					Rsc_CreateAdvHelp_Blank_Code),
-    [RSC_CREATE_ADV_HELP_COND1] = LDA(	Rsc_CreateAdvHelp_Cond_Attr[1],
-					Rsc_CreateAdvHelp_Blank_Code,
-					Rsc_CreateAdvHelp_Blank_Code),
+    [RSC_CREATE_SETTINGS_COND0] = LDS(	Rsc_CreateSettings_Cond_Attr[0],
+					RSC_CREATE_SETTINGS_COND_CODE,
+					RSC_CREATE_SETTINGS_COND_CODE),
+    [RSC_CREATE_SETTINGS_COND1] = LDS(	Rsc_CreateSettings_Cond_Attr[1],
+					RSC_CREATE_SETTINGS_COND_CODE,
+					RSC_CREATE_SETTINGS_COND_CODE),
+    [RSC_CREATE_ADV_HELP_COND0] = LDS(	Rsc_CreateAdvHelp_Cond_Attr[0],
+					RSC_CREATE_ADV_HELP_BLANK_CODE,
+					RSC_CREATE_ADV_HELP_BLANK_CODE),
+    [RSC_CREATE_ADV_HELP_COND1] = LDS(	Rsc_CreateAdvHelp_Cond_Attr[1],
+					RSC_CREATE_ADV_HELP_BLANK_CODE,
+					RSC_CREATE_ADV_HELP_BLANK_CODE),
     [RSC_CREATE_HOTPLUG_CPU_ENABLE]=LDA(Rsc_CreateHotPlugCPU_Enable_Attr,
 					RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN,
 					RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR),
@@ -1281,9 +1275,9 @@ RESOURCE_ST Resource[] = {
 					RSC_HELP_KEY_MINUS_CODE_FR),
 	[RSC_HELP_KEY_PLUS]	= LDT(	RSC_HELP_KEY_PLUS_CODE_EN,
 					RSC_HELP_KEY_PLUS_CODE_FR),
-	[RSC_HELP_BLANK]	= LDA(	vColor,
-					Rsc_CreateHelp_Blank_Code,
-					Rsc_CreateHelp_Blank_Code),
+	[RSC_HELP_BLANK]	= LDS(	vColor,
+					RSC_CREATE_HELP_BLANK_CODE,
+					RSC_CREATE_HELP_BLANK_CODE),
 	[RSC_HELP_MENU] 	= LDT(	RSC_HELP_MENU_CODE_EN,
 					RSC_HELP_MENU_CODE_FR),
 	[RSC_HELP_CLOSE_WINDOW] = LDT(	RSC_HELP_CLOSE_WINDOW_CODE_EN,

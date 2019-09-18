@@ -2136,11 +2136,11 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	if (pClockMod != NULL) {
 		unsigned short WrRdMSR = 0;
 		switch (pClockMod->NC) {
-		case 1:
+		case CLOCK_MOD_MAX:
 			UncoreRatio.MaxRatio += pClockMod->Offset;
 			WrRdMSR = 1;
 			break;
-		case 2:
+		case CLOCK_MOD_MIN:
 			UncoreRatio.MinRatio += pClockMod->Offset;
 			WrRdMSR = 1;
 			break;
