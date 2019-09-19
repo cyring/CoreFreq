@@ -65,7 +65,7 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 void Emergency(int caught)
 {
 	switch (caught) {
-	case SIGINT:
+	case SIGINT:	/* [CTRL] + [Z]		*/
 	case SIGQUIT:
 	case SIGTERM:
 	case SIGTSTP:
@@ -79,13 +79,27 @@ void TrapSignal(int operation)
 	if (operation == 0) {
 		Shm->AppCli = 0;
 	} else {
+		const int ignored[] = {
+			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGIO, SIGHUP,
+			SIGILL, SIGBUS, SIGFPE, SIGPWR, SIGSYS, SIGTRAP,
+			SIGALRM, SIGPROF, SIGPIPE, SIGABRT, SIGSEGV,
+			SIGXCPU, SIGXFSZ, SIGSTKFLT, SIGVTALRM, SIGCHLD
+		}, handled[] = {
+			SIGINT, SIGQUIT, SIGTERM, SIGTSTP
+		};
+		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG,SIGWINCH: Reserved	*/
+		int signo;
+
 		Shm->AppCli = getpid();
-		signal(SIGUSR1, SIG_IGN);
-		signal(SIGUSR2, SIG_IGN);
-		signal(SIGINT,  Emergency);
-		signal(SIGQUIT, Emergency);
-		signal(SIGTERM, Emergency);
-		signal(SIGTSTP, Emergency);	/* [CTRL] + [Z]		*/
+		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
+			signal(signo, SIG_IGN);
+		}
+		for (signo = 0; signo < sizeof(ignored)/sizeof(int); signo++) {
+			signal(ignored[signo], SIG_IGN);
+		}
+		for (signo = 0; signo < sizeof(handled)/sizeof(int); signo++) {
+			signal(handled[signo],  Emergency);
+		}
 	}
 }
 

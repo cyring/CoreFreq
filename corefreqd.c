@@ -3579,21 +3579,42 @@ static void *Emergency_Handler(void *pRef)
 	if (caught != -1) {
 		switch (caught) {
 		case SIGUSR2:
-			if (Ref->CPID)
+			if (Ref->CPID) /* Stop  SysGate */
 				SysGate_Toggle(Ref, 0);
 			break;
 		case SIGUSR1:
-			if (Ref->CPID)
+			if (Ref->CPID) /* Start SysGate */
 				SysGate_Toggle(Ref, 1);
 			break;
-		case SIGTERM:
+		case SIGCHLD: /* Exit Ring Thread  */
 			leave = 0x1;
-			break;
-		case SIGSEGV:
-		case SIGINT:	/* [CTRL] + [C] */
 			/* Fallthrough */
+		case SIGVTALRM:
+		case SIGSTKFLT:
+		case SIGXFSZ:
+		case SIGXCPU:
+		case SIGSEGV:
+		case SIGTERM:
 		case SIGQUIT:
+		case SIGALRM:
+		case SIGABRT:
+		case SIGPIPE:
+		case SIGTRAP:
+		case SIGPROF:
+		case SIGSYS:
+		case SIGPWR:
+		case SIGFPE:
+		case SIGBUS:
+		case SIGHUP:
+		case SIGILL:
+		case SIGINT:	/* [CTRL] + [C] */
+		case SIGIO:
 			BITSET(LOCKLESS, Shutdown, 0);
+			break;
+		case SIGTTOU:
+		case SIGTTIN:
+		case SIGTSTP:
+		default:	/* RTMIN ... RTMAX */
 			break;
 		}
 	} else if (errno == EAGAIN) {
@@ -3613,7 +3634,7 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	switch (cmd) {
 	case 0:
 		if (Ref->Started) {
-			if (!pthread_kill(Ref->KID, SIGTERM)) {
+			if (!pthread_kill(Ref->KID, SIGCHLD)) {
 				if (!pthread_join(Ref->KID, NULL)) {
 					Ref->Started = 0;
 				}
@@ -3621,14 +3642,28 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		}
 		break;
 	case 1: {
-		sigemptyset(&Ref->Signal);
-		sigaddset(&Ref->Signal, SIGUSR1);	/* Start SysGate    */
-		sigaddset(&Ref->Signal, SIGUSR2);	/* Stop  SysGate    */
-		sigaddset(&Ref->Signal, SIGTERM);	/* Exit Ring Thread */
-		sigaddset(&Ref->Signal, SIGINT);	/* Shutdown	    */
-		sigaddset(&Ref->Signal, SIGQUIT);	/* Shutdown	    */
-		sigaddset(&Ref->Signal, SIGSEGV);	/* Shutdown	    */
+		const int ignored[] = {
+			SIGTSTP, SIGTTIN, SIGTTOU
+		}, handled[] = {
+			SIGUSR1, SIGUSR2, SIGCHLD,
+			SIGIO, SIGHUP, SIGINT, SIGILL, SIGBUS, SIGFPE,
+			SIGPWR, SIGSYS, SIGTRAP, SIGALRM, SIGPROF,
+			SIGPIPE, SIGABRT, SIGQUIT, SIGTERM, SIGSEGV,
+			SIGXCPU, SIGXFSZ, SIGSTKFLT, SIGVTALRM
+		};
+		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG,SIGWINCH: Reserved	*/
+		int signo;
 
+		sigemptyset(&Ref->Signal);
+		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
+			sigaddset(&Ref->Signal, signo);
+		}
+		for (signo = 0; signo < sizeof(ignored)/sizeof(int); signo++) {
+			sigaddset(&Ref->Signal, ignored[signo]);
+		}
+		for (signo = 0; signo < sizeof(handled)/sizeof(int); signo++) {
+			sigaddset(&Ref->Signal, handled[signo]);
+		}
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL))
 		{
 		    if(!pthread_create(&Ref->KID, NULL, Emergency_Handler, Ref))
