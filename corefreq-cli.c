@@ -65,10 +65,19 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 void Emergency(int caught)
 {
 	switch (caught) {
-	case SIGINT:	/* [CTRL] + [Z]		*/
+	case SIGBUS:
+	case SIGFPE:
+	case SIGHUP:	/* Terminal lost */
+	case SIGILL:
+	case SIGINT:	/* [CTRL] + [C] */
+	case SIGSYS:
 	case SIGQUIT:
 	case SIGTERM:
-	case SIGTSTP:
+	case SIGSEGV:
+	case SIGTSTP:	/* [CTRL] + [Z] */
+	case SIGXCPU:
+	case SIGXFSZ:
+	case SIGSTKFLT:
 		BITSET(LOCKLESS, Shutdown, 0);
 		break;
 	}
@@ -80,14 +89,15 @@ void TrapSignal(int operation)
 		Shm->AppCli = 0;
 	} else {
 		const int ignored[] = {
-			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGIO, SIGHUP,
-			SIGILL, SIGBUS, SIGFPE, SIGPWR, SIGSYS, SIGTRAP,
-			SIGALRM, SIGPROF, SIGPIPE, SIGABRT, SIGSEGV,
-			SIGXCPU, SIGXFSZ, SIGSTKFLT, SIGVTALRM, SIGCHLD
+			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
+			SIGTRAP, SIGALRM, SIGPROF, SIGPIPE, SIGABRT,
+			SIGVTALRM, SIGCHLD, SIGWINCH, SIGIO
 		}, handled[] = {
-			SIGINT, SIGQUIT, SIGTERM, SIGTSTP
+			SIGBUS, SIGFPE, SIGHUP, SIGILL, SIGINT,
+			SIGQUIT, SIGSYS, SIGTERM, SIGSEGV, SIGTSTP,
+			SIGXCPU, SIGXFSZ, SIGSTKFLT
 		};
-		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG,SIGWINCH: Reserved	*/
+		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG	: Reserved	*/
 		int signo;
 
 		Shm->AppCli = getpid();

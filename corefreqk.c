@@ -3911,10 +3911,10 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
 	BITSET_CC(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
-  if ((MiscFeatures.Turbo_IDA == 0) && (Proc->Features.Power.EAX.TurboIDA))
-  {
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
+  if ((MiscFeatures.Turbo_IDA == 0) && (Proc->Features.Power.EAX.TurboIDA))
+  {
     switch (TurboBoost_Enable) {
     case COREFREQ_TOGGLE_OFF:
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;

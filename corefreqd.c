@@ -3589,7 +3589,6 @@ static void *Emergency_Handler(void *pRef)
 		case SIGCHLD: /* Exit Ring Thread  */
 			leave = 0x1;
 			/* Fallthrough */
-		case SIGVTALRM:
 		case SIGSTKFLT:
 		case SIGXFSZ:
 		case SIGXCPU:
@@ -3600,20 +3599,22 @@ static void *Emergency_Handler(void *pRef)
 		case SIGABRT:
 		case SIGPIPE:
 		case SIGTRAP:
-		case SIGPROF:
 		case SIGSYS:
-		case SIGPWR:
 		case SIGFPE:
 		case SIGBUS:
-		case SIGHUP:
 		case SIGILL:
 		case SIGINT:	/* [CTRL] + [C] */
-		case SIGIO:
 			BITSET(LOCKLESS, Shutdown, 0);
 			break;
+		case SIGVTALRM:
+		case SIGWINCH:
 		case SIGTTOU:
 		case SIGTTIN:
 		case SIGTSTP:
+		case SIGPROF:
+		case SIGHUP:
+		case SIGPWR:
+		case SIGIO:
 		default:	/* RTMIN ... RTMAX */
 			break;
 		}
@@ -3643,15 +3644,14 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 		break;
 	case 1: {
 		const int ignored[] = {
-			SIGTSTP, SIGTTIN, SIGTTOU
+			SIGIO, SIGPROF, SIGPWR, SIGHUP, SIGTSTP,
+			SIGTTIN, SIGTTOU, SIGVTALRM, SIGWINCH
 		}, handled[] = {
-			SIGUSR1, SIGUSR2, SIGCHLD,
-			SIGIO, SIGHUP, SIGINT, SIGILL, SIGBUS, SIGFPE,
-			SIGPWR, SIGSYS, SIGTRAP, SIGALRM, SIGPROF,
-			SIGPIPE, SIGABRT, SIGQUIT, SIGTERM, SIGSEGV,
-			SIGXCPU, SIGXFSZ, SIGSTKFLT, SIGVTALRM
+			SIGUSR1, SIGUSR2, SIGCHLD, SIGINT, SIGILL, SIGBUS,
+			SIGFPE, SIGSYS, SIGTRAP, SIGPIPE, SIGABRT, SIGALRM,
+			SIGQUIT, SIGTERM, SIGSEGV, SIGXCPU, SIGXFSZ, SIGSTKFLT
 		};
-		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG,SIGWINCH: Reserved	*/
+		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG:	Reserved	*/
 		int signo;
 
 		sigemptyset(&Ref->Signal);
