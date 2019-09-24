@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	66
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 

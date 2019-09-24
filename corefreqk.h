@@ -1593,7 +1593,8 @@ enum {
 	CN_MATISSE,
 	CN_WHITEHAVEN,
 	CN_COLFAX,
-	CN_NAPLES
+	CN_NAPLES,
+	CN_ROME,
 };
 
 static MICRO_ARCH Arch_AMD_Family_17h[] = {
@@ -1604,6 +1605,7 @@ static MICRO_ARCH Arch_AMD_Family_17h[] = {
 	[CN_WHITEHAVEN] 	= {"Zen/Whitehaven"},
 	[CN_COLFAX]		= {"Zen+ Colfax"},
 	[CN_NAPLES]		= {"EPYC/Naples"},
+	[CN_ROME]		= {"EPYC/Rome"},
 	{NULL}
 };
 
@@ -2257,6 +2259,17 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.BrandSubStr = "AMD Ryzen 9 3950X",
+	.Boost = {+11, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.BrandSubStr = "AMD Ryzen Threadripper 1950X",
 	.Boost = {+6, +2},
 	.Param.Offset = {27, 0},
@@ -2378,6 +2391,17 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.BrandSubStr = "AMD EPYC 7261",
+	.Boost = {+4,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_NAPLES,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.BrandSubStr = "AMD EPYC 7281",
 	.Boost = {+6,  0},
 	.Param.Offset = { 0, 0},
@@ -2459,6 +2483,237 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Boost = {+5, +5},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7232P",
+	.Boost = {+1,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7252P",
+	.Boost = {+4,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7302P",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7402P",
+	.Boost = {+6,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7502P",
+	.Boost = {+9,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7702P",
+	.Boost = {+14,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7252",
+	.Boost = {+4,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7262",
+	.Boost = {+2,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7272",
+	.Boost = {+6,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7282",
+	.Boost = {+12,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7302",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7352",
+	.Boost = {+9,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7402",
+	.Boost = {+6,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7452",
+	.Boost = {+10,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7502",
+	.Boost = {+9,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7542",
+	.Boost = {+5,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7552",
+	.Boost = {+12,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7642",
+	.Boost = {+10,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7702",
+	.Boost = {+14,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7742",
+	.Boost = {+12,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD EPYC 7H12",
+	.Boost = {+7,  0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
 	.TurboUnlocked = 1,
