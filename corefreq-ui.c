@@ -1493,19 +1493,17 @@ __typeof__ (errno) AllocAll(char **buffer)
 
 unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 {
-	ATTRIBUTE	*fa, *sa, *da, *wa;
-	ASCII		*fc, *sc, *dc, *wc;
+	register ATTRIBUTE	*fa, *sa, *da, *wa;
+	register ASCII		*fc, *sc, *dc, *wc;
 	register unsigned int	sdx = 0, _bix, _bdx, _idx;
-	struct {
-	   unsigned int flag;
-	   CUINT	col, row;
-	} register cursor;
-	register CUINT	_col, _row, _wth;
-	ATTRIBUTE	attr = {.value = 0};
+	register unsigned int	cursor_flag;
+	register unsigned int	cursor_col, cursor_row;
+	register unsigned int	_col, _row, _wth;
+	register ATTRIBUTE	attr = {.value = 0};
 
     for (_row = 0; _row < drawSize.height; _row++)
     {
-	cursor.flag = 0;
+	cursor_flag = 0;
 	_wth = _row * fuse->size.wth;
 
 	for (_col = 0, _bix = 0; _col < drawSize.width; _col++)
@@ -1529,7 +1527,8 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 		fa->value = wa->value ? wa->value : fa->value;
 		*fc = *wc ? *wc : *fc;
 	/* FUSED LAYER */
-	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf)) {
+	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf))
+	    {
 		buffer[_bix++] = 0x1b;
 		buffer[_bix++] = '[';
 		buffer[_bix++] = '0' + fa->bf;
@@ -1541,7 +1540,8 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 		buffer[_bix++] = '0' + fa->bg;
 		buffer[_bix++] = 'm';
 	    }
-	    if (fa->un ^ attr.un) {
+	    if (fa->un ^ attr.un)
+	    {
 		buffer[_bix++] = 0x1b;
 		buffer[_bix++] = '[';
 		if (fa->un) {
@@ -1556,30 +1556,31 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	    attr.value = fa->value;
 
 	    if (*fc != 0) {
-		if (cursor.flag == 0) {
-			cursor.flag = 1;
-			cursor.row = _row + 1;
-			cursor.col = _col + 1;
+		if (cursor_flag == 0)
+		{
+			cursor_flag = 1;
+			cursor_row = _row + 1;
+			cursor_col = _col + 1;
 
 			buffer[_bix++] = 0x1b;
 			buffer[_bix++] = '[';
 
-			_bix += cursor.row >= 100 ? 3 : cursor.row >= 10 ? 2:1;
-			for(_bdx = _bix; cursor.row > 0; cursor.row /= 10)
-				buffer[--_bdx] = '0' + (cursor.row % 10);
+			_bix += cursor_row >= 100 ? 3 : cursor_row >= 10 ? 2:1;
+			for(_bdx = _bix; cursor_row > 0; cursor_row /= 10)
+				buffer[--_bdx] = '0' + (cursor_row % 10);
 
 			buffer[_bix++] = ';';
 
-			_bix += cursor.col >= 100 ? 3 : cursor.col >= 10 ? 2:1;
-			for(_bdx = _bix; cursor.col > 0; cursor.col /= 10)
-				buffer[--_bdx] = '0' + (cursor.col % 10);
+			_bix += cursor_col >= 100 ? 3 : cursor_col >= 10 ? 2:1;
+			for(_bdx = _bix; cursor_col > 0; cursor_col /= 10)
+				buffer[--_bdx] = '0' + (cursor_col % 10);
 
 			buffer[_bix++] = 'H';
 		}
 		buffer[_bix++] = *fc;
 	    } else {
-		if (cursor.flag != 0)
-			cursor.flag = 0;
+		if (cursor_flag != 0)
+			cursor_flag = 0;
 	    }
 	}
 	memcpy(&stream[sdx], buffer, _bix);
