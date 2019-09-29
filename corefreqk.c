@@ -6405,7 +6405,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -6495,7 +6495,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -6593,7 +6593,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -6715,7 +6715,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -6880,7 +6880,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7046,7 +7046,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7246,7 +7246,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7414,7 +7414,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7606,7 +7606,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7771,7 +7771,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -7901,7 +7901,7 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 				Core->Delta.TSC,
 				Proc->SleepInterval);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -8033,7 +8033,7 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -8119,7 +8119,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 		Save_C1(Core);
 
-		BITSET(LOCKLESS, Core->Sync.V, 63);
+		BITSET(LOCKLESS, Core->Sync.V, NTFY);
 
 		return(HRTIMER_RESTART);
 	} else
@@ -9288,7 +9288,7 @@ static int CoreFreqK_resume(struct device *dev)
 	}
 	Controller_Start(0);
 
-	BITSET(BUS_LOCK, Proc->OS.Signal, 63);	/* Notify Daemon	*/
+	BITSET(BUS_LOCK, Proc->OS.Signal, NTFY); /* Notify Daemon	*/
 
 	printk(KERN_NOTICE "CoreFreq: Resume\n");
 
@@ -9609,7 +9609,7 @@ static int __init CoreFreqK_init(void)
 		  if (allocPerCPU)
 		  {
 		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-			BITCLR(LOCKLESS, KPublic->Core[cpu]->Sync.V, 63);
+			BITCLR(LOCKLESS, KPublic->Core[cpu]->Sync.V, NTFY);
 
 			KPublic->Core[cpu]->Bind = cpu;
 

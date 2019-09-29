@@ -35,6 +35,8 @@ static Bit64 Shutdown __attribute__ ((aligned (8))) = 0x0;
 
 SERVICE_PROC localService = {.Proc = -1};
 
+UBENCH_DECLARE()
+
 struct {
 	unsigned int
 	fahrCels:  1-0, /* 0:Celsius || 1:Fahrenheit	*/
@@ -78,7 +80,7 @@ void Emergency(int caught)
 	case SIGXCPU:
 	case SIGXFSZ:
 	case SIGSTKFLT:
-		BITSET(LOCKLESS, Shutdown, 0);
+		BITSET(LOCKLESS, Shutdown, SYNC);
 		break;
 	}
 }
@@ -2352,14 +2354,14 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 void Package(void)
 {
-    while (!BITVAL(Shutdown, 0)) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 
-	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
@@ -2485,21 +2487,21 @@ void Counters(void)
 	Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
 
     unsigned int cpu = 0;
-    while (!BITVAL(Shutdown, 0)) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 
-	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
 
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
+	ClientFollowService(&localService, &Shm->Proc.Service, SYNC);
 
 		printf( "CPU Freq(MHz) Ratio  Turbo"			\
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 			"  Min TMP:TS  Max\n");
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *CFlop = \
@@ -2521,19 +2523,19 @@ void Voltage(void)
 {
     enum PWR_DOMAIN pw;
     unsigned int cpu = 0;
-    while (!BITVAL(Shutdown, 0)) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 
-	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 		printf("CPU Freq(MHz) VID  Vcore\n");
-	for (cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
@@ -2567,20 +2569,20 @@ void Instructions(void)
 {
 	unsigned int cpu = 0;
 
-    while (!BITVAL(Shutdown, 0)) {
-	while (!BITVAL(Shm->Proc.Sync, 0) && !BITVAL(Shutdown, 0))
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 
-	if (BITVAL(Shm->Proc.Sync, 63))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 		printf("CPU     IPS            IPC            CPI\n");
 
-	for (cpu=0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown,0); cpu++)
+	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
@@ -3344,7 +3346,7 @@ void IntervalUpdate(TGrid *grid, DATA_TYPE data)
 void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[10+1];
-	snprintf(item, 10+1, "%4u", Shm->Sleep.Interval * Shm->SysGate.tickReset);
+	snprintf(item, 10+1,"%4u",Shm->Sleep.Interval * Shm->SysGate.tickReset);
 	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
 }
 
@@ -3955,7 +3957,7 @@ Window *CreateTopology(unsigned long long id)
 {
 	Window *wTopology = CreateWindow(wLayer, id,
 					6, CUMIN(2 + Shm->Proc.CPU.Count,
-					(draw.Size.height - TOP_HEADER_ROW - 5)),
+					(draw.Size.height - TOP_HEADER_ROW-5)),
 					1, TOP_HEADER_ROW + 3);
 		wTopology->matrix.select.row = 2;
 
@@ -4010,8 +4012,8 @@ Window *CreateISA(unsigned long long id)
 Window *CreateSysRegs(unsigned long long id)
 {
 	Window *wSR = CreateWindow(wLayer, id,
-					17,CUMIN((2 * (1 + Shm->Proc.CPU.Count)),
-					(draw.Size.height - TOP_HEADER_ROW - 3)),
+					17,CUMIN((2 * (1+Shm->Proc.CPU.Count)),
+					(draw.Size.height - TOP_HEADER_ROW-3)),
 					6, TOP_HEADER_ROW + 2);
 
 	if (wSR != NULL) {
@@ -4853,7 +4855,7 @@ int Shortcut(SCANKEY *scan)
     #endif
 	break;
     case SCANKEY_CTRL_x:
-	BITSET(LOCKLESS, Shutdown, 0);
+	BITSET(LOCKLESS, Shutdown, SYNC);
 	break;
     case OPS_INTERVAL:
     {
@@ -6734,9 +6736,9 @@ int Shortcut(SCANKEY *scan)
 
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_TOOLS_TITLE).CODE(),
-		RSC(BOX_TOOLS_STOP_BURN).CODE(), BITVAL(Shm->Proc.Sync, 31) ?
+		RSC(BOX_TOOLS_STOP_BURN).CODE(), BITVAL(Shm->Proc.Sync, BURN) ?
 					MakeAttr(YELLOW,0,BLACK,0):blankAttr,
-				BITVAL(Shm->Proc.Sync, 31) ?
+				BITVAL(Shm->Proc.Sync, BURN) ?
 					BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
 	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0], BOXKEY_TOOLS_ATOMIC,
 	RSC(BOX_TOOLS_CRC32_BURN).CODE() ,stateAttr[0], BOXKEY_TOOLS_CRC32,
@@ -7027,12 +7029,18 @@ void Layout_Header(Layer *layer, CUINT row)
 	struct FLIP_FLOP *CFlop = \
 	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 	size_t len;
-	const CUINT lProc0=RSZ(LAYOUT_HEADER_PROC),	xProc0=12,
-		lProc1=RSZ(LAYOUT_HEADER_CPU), xProc1=draw.Size.width - lProc1,
-		lArch0=RSZ(LAYOUT_HEADER_ARCH) ,	xArch0=12,
-		lArch1=RSZ(LAYOUT_HEADER_CACHE_L1),xArch1=draw.Size.width-lArch1,
-		lBClk0=RSZ(LAYOUT_HEADER_BCLK) ,	xBClk0=12,
-		lArch2=RSZ(LAYOUT_HEADER_CACHES), xArch2=draw.Size.width-lArch2;
+	const CUINT	lProc0 = RSZ(LAYOUT_HEADER_PROC),
+			xProc0 = 12,
+			lProc1 = RSZ(LAYOUT_HEADER_CPU),
+			xProc1 = draw.Size.width - lProc1,
+			lArch0 = RSZ(LAYOUT_HEADER_ARCH),
+			xArch0 = 12,
+			lArch1 = RSZ(LAYOUT_HEADER_CACHE_L1),
+			xArch1 = draw.Size.width-lArch1,
+			lBClk0 = RSZ(LAYOUT_HEADER_BCLK),
+			xBClk0 = 12,
+			lArch2 = RSZ(LAYOUT_HEADER_CACHES),
+			xArch2 = draw.Size.width-lArch2;
 
 	/* Reset the Top Frequency					*/
 	if (!draw.Flag.clkOrLd) {
@@ -7105,7 +7113,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			strlen(Shm->Proc.Brand));
 	/* RED DOT */
-	hProc0.code[0] = BITVAL(Shm->Proc.Sync, 31) ? '.' : 0x20;
+	hProc0.code[0] = BITVAL(Shm->Proc.Sync, BURN) ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hProc0.origin.col, hProc0.origin.row,
 			hProc0.length, hProc0.attr, hProc0.code);
@@ -7478,7 +7486,7 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		.code = hReverse[Shm->SysGate.reverseOrder].code
 	};
 
-	LayerDeclare(	LAYOUT_TASKS_VALUE_SWITCH,RSZ(LAYOUT_TASKS_VALUE_SWITCH),
+	LayerDeclare(LAYOUT_TASKS_VALUE_SWITCH, RSZ(LAYOUT_TASKS_VALUE_SWITCH),
 			(draw.Size.width - 34), (row + draw.Area.MaxRows + 1),
 			hTask3);
 
@@ -7771,7 +7779,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	col++;
 
 	LayerDeclare(	LAYOUT_FOOTER_SYSTEM, RSZ(LAYOUT_FOOTER_SYSTEM),
-			(draw.Size.width - RSZ(LAYOUT_FOOTER_SYSTEM)),row,hSys1);
+			(draw.Size.width-RSZ(LAYOUT_FOOTER_SYSTEM)),row, hSys1);
 
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
 			hSys1.length, hSys1.attr, hSys1.code);
@@ -9102,7 +9110,7 @@ void AllocDashboard(void)
 {
 	unsigned int cpu;
 	Card *card = NULL;
-	for(cpu = 0; (cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, 0); cpu++)
+	for(cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
 		if ((card = CreateCard()) != NULL) {
 			card->data.dword.lo = cpu;
@@ -9206,21 +9214,6 @@ void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 {
 }
 
-UBENCH_DECLARE()
-
-#if defined(UBENCH) && UBENCH == 1
-  #define Draw_uBenchmark(layer)					\
-  ({									\
-    if (draw.Flag.uBench) {						\
-	size_t len = snprintf(buffer, 20+1, "%llu", UBENCH_METRIC());	\
-	LayerFillAt(	layer, 0, 0, len, buffer,			\
-			MakeAttr(MAGENTA, 0, BLACK, 1) );		\
-    }									\
-  })
-#else
-  #define Draw_uBenchmark(layer) {}
-#endif /* UBENCH */
-
 REASON_CODE Top(char option)
 {
 /*
@@ -9277,11 +9270,11 @@ REASON_CODE Top(char option)
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 
 	/* MAIN LOOP */
-    while (!BITVAL(Shutdown, 0))
+    while (!BITVAL(Shutdown, SYNC))
     {
       do
       {
-	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, 0)) == 0) {
+	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, SYNC)) == 0) {
 	    SCANKEY scan = {.key = 0};
 
 	  if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
@@ -9301,20 +9294,20 @@ REASON_CODE Top(char option)
 		WindowsUpdate(&winList);
 	  }
 	} else {
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 	}
-	if (BITVAL(Shm->Proc.Sync, 62)) {/* Compute required, clear the layout*/
+	if (BITVAL(Shm->Proc.Sync, DRAW)) {/*Compute required,clear the layout*/
 		SortUniqRatio();
 		draw.Flag.clear = 1;
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 62);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, DRAW);
 	}
-	if (BITVAL(Shm->Proc.Sync, 63)) {/* Platform changed,redraw the layout*/
+	if (BITVAL(Shm->Proc.Sync, NTFY)) { /* Platform changed,redraw layout*/
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 		draw.Flag.layout = 1;
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 63);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
 	}
-      } while ( !BITVAL(Shutdown, 0)
+      } while ( !BITVAL(Shutdown, SYNC)
 		&& !draw.Flag.daemon
 		&& !draw.Flag.layout
 		&& !draw.Flag.clear ) ;
@@ -9439,8 +9432,7 @@ int main(int argc, char *argv[])
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	UBENCH_SETUP((Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)
-		    || (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1));
+	UBENCH_SETUP(STRUCT_SHM_RDTSCP(), STRUCT_CPU_RDPMC());
 
 	do {
 	    switch (option) {

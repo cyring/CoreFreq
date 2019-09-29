@@ -47,7 +47,7 @@ void CallWith_RDTSCP_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 	RDTSCP_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
 
-	if (BITVAL(Shm->Proc.Sync, 31)) {
+	if (BITVAL(Shm->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		DeltaINST(pSlice);
 	}
@@ -66,7 +66,7 @@ void CallWith_RDTSC_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 	RDTSC_PMCx1(pSlice->Counter[2].TSC,0x40000000,pSlice->Counter[2].INST);
 
-	if (BITVAL(Shm->Proc.Sync, 31)) {
+	if (BITVAL(Shm->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		DeltaINST(pSlice);
 	}
@@ -85,7 +85,7 @@ void CallWith_RDTSCP_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 	RDTSCP64(pSlice->Counter[2].TSC);
 
-	if (BITVAL(Shm->Proc.Sync, 31)) {
+	if (BITVAL(Shm->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		pSlice->Delta.INST = 0;
 	}
@@ -104,7 +104,7 @@ void CallWith_RDTSC_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 	RDTSC64(pSlice->Counter[2].TSC);
 
-	if (BITVAL(Shm->Proc.Sync, 31)) {
+	if (BITVAL(Shm->Proc.Sync, BURN)) {
 		DeltaTSC(pSlice);
 		pSlice->Delta.INST = 0;
 	}
@@ -144,7 +144,8 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 		  [_atom] "i" (SLICE_ATOM),
 		  [_xchg] "i" (SLICE_XCHG),
 		  [i_err] "m" (Shm->Cpu[cpu].Slice.Error)
-		: "memory", "%rcx", "%r11", "%r12", "%r13", "%r14", "%r15"
+		: "%rcx", "%r11", "%r12", "%r13", "%r14", "%r15",
+		  "cc", "memory"
 	);
 }
 
@@ -178,7 +179,8 @@ void Slice_Atomic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 		: [_rem] "+m" (rem)					\
 		: [_data] "m" (data),					\
 		  [_len] "im" (len)					\
-		: "memory", "%rdx", "%r8", "%r9", "%r10", "%r11", "%r12"\
+		: "%rdx", "%r8", "%r9", "%r10", "%r11", "%r12" ,	\
+		  "cc", "memory"					\
 	);								\
 	rem;								\
 })

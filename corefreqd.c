@@ -39,6 +39,8 @@ static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
+UBENCH_DECLARE()
+
 typedef struct
 {
 	int	Drv,
@@ -97,14 +99,14 @@ static void *Core_Cycle(void *arg)
 	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
-    while (!BITVAL(Core->Sync.V, 63)
-	&& !BITVAL(Shutdown, 0)
+    while (!BITVAL(Core->Sync.V, NTFY)
+	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
     }
-	BITCLR(LOCKLESS, Core->Sync.V, 63);
+	BITCLR(LOCKLESS, Core->Sync.V, NTFY);
 
-    if (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS))
+    if (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS))
     {
 	if (BITVAL_CC(roomCore, cpu)) {
 		Cpu->Toggle = !Cpu->Toggle;
@@ -274,7 +276,7 @@ static void *Core_Cycle(void *arg)
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
     }
-  } while (!BITVAL(Shutdown, 0) && !BITVAL(Core->OffLine, OS)) ;
+  } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
 	BITCLR_CC(BUS_LOCK, roomCore, cpu);
 	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
@@ -367,8 +369,8 @@ static void *Child_Thread(void *arg)
 	BITSET_CC(BUS_LOCK, roomSeed, cpu);
 
 	do {
-		while (!BITVAL(Shm->Proc.Sync, 31)
-		    && !BITVAL(Shutdown, 0)
+		while (!BITVAL(Shm->Proc.Sync, BURN)
+		    && !BITVAL(Shutdown, SYNC)
 		    && !BITVAL(Cpu->OffLine, OS)) {
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 		}
@@ -377,8 +379,8 @@ static void *Child_Thread(void *arg)
 
 		RESET_Slice(Cpu->Slice);
 
-		while ( BITVAL(Shm->Proc.Sync, 31)
-		    && !BITVAL(Shutdown, 0) )
+		while ( BITVAL(Shm->Proc.Sync, BURN)
+		    && !BITVAL(Shutdown, SYNC) )
 		{
 		    if (BITVAL_CC(roomSched, cpu)) {
 			CallSliceFunc(	Shm, cpu,
@@ -401,7 +403,7 @@ static void *Child_Thread(void *arg)
 
 		BITCLR_CC(BUS_LOCK, roomCore, cpu);
 
-	} while (!BITVAL(Shutdown, 0) && !BITVAL(Cpu->OffLine, OS)) ;
+	} while (!BITVAL(Shutdown, SYNC) && !BITVAL(Cpu->OffLine, OS)) ;
 
 	BITCLR_CC(BUS_LOCK, roomSeed, cpu);
 
@@ -3405,8 +3407,8 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		/* Stop SysGate 					*/
 		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 		/* Notify						*/
-		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+		if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
@@ -3419,8 +3421,8 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 			/* Start SysGate				*/
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 			/* Notify					*/
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+			if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
 		}
 	    }
 	}
@@ -3455,13 +3457,13 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		break;
 	case 0: /* Update SHM and notify a platform changed.		*/
 		UpdateFeatures(Ref);
-		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+		if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
 		break;
 	case 2: /* Update SHM and notify to re-compute.			*/
 		UpdateFeatures(Ref);
-		if (!BITVAL(Ref->Shm->Proc.Sync, 62))
-			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 62);
+		if (!BITVAL(Ref->Shm->Proc.Sync, DRAW))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, DRAW);
 		break;
 	}
     }
@@ -3479,13 +3481,13 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
    case COREFREQ_ORDER_MACHINE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
-	    if (BITVAL(Ref->Shm->Proc.Sync, 31))
+	    if (BITVAL(Ref->Shm->Proc.Sync, BURN))
 	    {
-		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
 
 		while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
 		{
-			if (BITVAL(Shutdown, 0))	/* SpinLock */
+			if (BITVAL(Shutdown, SYNC))	/* SpinLock */
 				break;
 		}
 		BITSTOR_CC(BUS_LOCK, roomSched, roomClear);
@@ -3494,8 +3496,8 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		Ref->Slice.arg = 0;
 		Ref->Slice.pattern = RESET_CSP;
 		/* Notify						*/
-		if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+		if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+			BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
 	    }
 	    break;
 	}
@@ -3508,11 +3510,11 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
      {
       if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.sub == ctrl.sub))
       {
-       if (!BITVAL(Ref->Shm->Proc.Sync, 31))
+       if (!BITVAL(Ref->Shm->Proc.Sync, BURN))
        {
 	while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
 	{
-		if (BITVAL(Shutdown, 0))	/* SpinLock */
+		if (BITVAL(Shutdown, SYNC))	/* SpinLock */
 			break;
 	}
 	SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
@@ -3521,10 +3523,10 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	Ref->Slice.arg  = porder->ctrl.dl.lo;
 	Ref->Slice.pattern = porder->pattern;
 
-	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, 31);
+	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
 	/* Notify							*/
-	if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-		BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+	if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+		BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
        }
        break;
       }
@@ -3604,7 +3606,7 @@ static void *Emergency_Handler(void *pRef)
 		case SIGBUS:
 		case SIGILL:
 		case SIGINT:	/* [CTRL] + [C] */
-			BITSET(LOCKLESS, Shutdown, 0);
+			BITSET(LOCKLESS, Shutdown, SYNC);
 			break;
 		case SIGVTALRM:
 		case SIGWINCH:
@@ -3697,14 +3699,20 @@ REASON_CODE Core_Manager(REF *Ref)
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
-    while (!BITVAL(Shutdown, 0))
+	UBENCH_SETUP(STRUCT_PROC_RDTSCP(), STRUCT_CORE_RDPMC());
+	Print_uBenchmark();
+
+    while (!BITVAL(Shutdown, SYNC))
     {	/* Loop while all the cpu room bits are not cleared.		*/
-	while ( !BITVAL(Shutdown, 0) && !(Shm->Proc.Features.Std.ECX.CMPXCHG16 ?
-	    BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)
-	    : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])) )
+	while ( !BITVAL(Shutdown, SYNC)
+		&& !(Shm->Proc.Features.Std.ECX.CMPXCHG16 ?
+		    BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore,roomClear)
+		  : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])) )
 	{
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
+
+	UBENCH_RDCOUNTER(1);
 
 	Shm->Proc.Toggle = !Shm->Proc.Toggle;
 	PFlip = &Shm->Proc.FlipFlop[Shm->Proc.Toggle];
@@ -3735,7 +3743,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	}
 
-	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++)
+	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
 	{
 	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
@@ -3755,8 +3763,8 @@ REASON_CODE Core_Manager(REF *Ref)
 				];
 			}
 			/* Raise this bit up to notify a platform change. */
-			if (!BITVAL(Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
+			if (!BITVAL(Shm->Proc.Sync, NTFY))
+				BITSET(LOCKLESS, Shm->Proc.Sync, NTFY);
 		}
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
@@ -3790,8 +3798,8 @@ REASON_CODE Core_Manager(REF *Ref)
 					* Shm->Proc.Boost[BOOST(MAX)])
 					/ 1000000L );
 			/* Notify					*/
-			if (!BITVAL(Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Shm->Proc.Sync, 63);
+			if (!BITVAL(Shm->Proc.Sync, NTFY))
+				BITSET(LOCKLESS, Shm->Proc.Sync, NTFY);
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
@@ -3846,7 +3854,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C1    += CFlop->State.C1;
 	    }
 	}
-	if (!BITVAL(Shutdown, 0)) {
+
+	if (!BITVAL(Shutdown, SYNC)) {
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -3962,22 +3971,27 @@ REASON_CODE Core_Manager(REF *Ref)
 			SysGate_Update(Ref);
 		    }
 		}
-		if (BITVAL(Proc->OS.Signal, 63)) {
-			BITCLR(BUS_LOCK, Proc->OS.Signal, 63);
+		if (BITVAL(Proc->OS.Signal, NTFY)) {
+			BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY);
 
 			UpdateFeatures(Ref);
-			if (!BITVAL(Ref->Shm->Proc.Sync, 63))
-				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, 63);
+			if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
+				BITSET(LOCKLESS, Ref->Shm->Proc.Sync, NTFY);
 
 			if (Quiet & 0x100)
 				printf("  CoreFreq: Resume\n");
 		}
 	    }
 		/* All aggregations done: Notify Client.		*/
-		BITSET(LOCKLESS, Shm->Proc.Sync, 0);
+		BITSET(LOCKLESS, Shm->Proc.Sync, SYNC);
 	}
 	/* Reset the Room mask						*/
 	BITSTOR_CC(BUS_LOCK, roomCore, roomSeed);
+
+	UBENCH_RDCOUNTER(2);
+
+	UBENCH_COMPUTE();
+	Print_uBenchmark();
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	if (Arg[cpu].TID)
@@ -4006,7 +4020,7 @@ REASON_CODE Child_Manager(REF *Ref)
   if (Arg != NULL)
   {
     do {
-	for (cpu=0; !BITVAL(Shutdown,0) && (cpu < Shm->Proc.CPU.Count); cpu++)
+	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
 	{
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS) == 1) {
 		if (Arg[cpu].TID) {
@@ -4030,7 +4044,7 @@ REASON_CODE Child_Manager(REF *Ref)
 
 	nanosleep(&Shm->Sleep.childWaiting, NULL);
     }
-    while (!BITVAL(Shutdown, 0)) ;
+    while (!BITVAL(Shutdown, SYNC)) ;
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 		if (Arg[cpu].TID)
@@ -4137,7 +4151,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		memcpy(&Shm->SMB, &Proc->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notification.				*/
-		BITCLR(LOCKLESS, Shm->Proc.Sync, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
 
 		SysGate_Toggle(&Ref, SysGateStartUp);
 

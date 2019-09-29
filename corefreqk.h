@@ -107,7 +107,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"",					\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 
@@ -127,7 +127,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 
@@ -149,7 +149,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 
@@ -176,7 +176,7 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"",							\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 
@@ -205,7 +205,7 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"",					\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 #define ASM_COUNTERx5_STACK(_reg0, _reg1, _reg2, _reg3, 		\
@@ -236,7 +236,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 
@@ -267,7 +267,7 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"",			\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 #define ASM_COUNTERx6_STACK(_reg0, _reg1, _reg2, _reg3, 		\
@@ -302,7 +302,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 #define ASM_COUNTERx7(	_reg0, _reg1, _reg2, _reg3,			\
@@ -336,7 +336,7 @@ __asm__ volatile							\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"", "%" #_reg3"",	\
 	  "%" #_reg4"", "%" #_reg5"", "%" #_reg6"", "%" #_reg7"",	\
-	  "memory" \
+	  "cc", "memory"						\
 );
 
 #define ASM_COUNTERx7_STACK(_reg0, _reg1, _reg2,			\
@@ -378,7 +378,7 @@ __asm__ volatile							\
 	:								\
 	: "%rax", "%rcx", "%rdx",					\
 	  "%" #_reg0"", "%" #_reg1"", "%" #_reg2"",			\
-	  "memory"							\
+	  "cc", "memory"						\
 );
 
 

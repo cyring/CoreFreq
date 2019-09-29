@@ -298,3 +298,26 @@ typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 #define RECORDER_SECONDS(_tick, _interval)				\
 	((_interval * _tick) / 1000)
 
+#if defined(UBENCH) && UBENCH == 1
+  #define Draw_uBenchmark(layer)					\
+  ({									\
+    if (draw.Flag.uBench) {						\
+	size_t len = snprintf(buffer, 20+1, "%llu", UBENCH_METRIC(0));	\
+	LayerFillAt(	layer, 0, 0, len, buffer,			\
+			MakeAttr(MAGENTA, 0, BLACK, 1) );		\
+    }									\
+  })
+
+  #define STRUCT_SHM_RDTSCP()						\
+	(  (Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)		\
+	|| (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1) )
+
+  #define STRUCT_CPU_RDPMC()						\
+	(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)		\
+	&& (Shm->Proc.PM_version >= 1)					\
+	&& (BITVAL(Shm->Cpu[Shm->Proc.Service.Core].SystemRegister.CR4, \
+							CR4_PCE) == 1) )
+#else
+  #define Draw_uBenchmark(layer) {}
+#endif /* UBENCH */
+
