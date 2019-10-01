@@ -3299,7 +3299,7 @@ static int SortByCommand(const void *p1, const void *p2, void *arg)
 {
 	TASK_MCB *task1 = (TASK_MCB*) p1, *task2 = (TASK_MCB*) p2;
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
-	int sort = strcmp(task1->comm, task2->comm);
+	int sort = strncmp(task1->comm, task2->comm, TASK_COMM_LEN);
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
 	return(sort);
 }
