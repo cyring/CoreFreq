@@ -1532,7 +1532,28 @@ static MICRO_ARCH Arch_SandyBridge[] = {{"SandyBridge"}, {NULL}};
 static MICRO_ARCH Arch_SandyBridge_EP[] = {{"SandyBridge/eXtreme.EP"}, {NULL}};
 static MICRO_ARCH Arch_IvyBridge[] = {{"IvyBridge"}, {NULL}};
 static MICRO_ARCH Arch_IvyBridge_EP[] = {{"IvyBridge/EP"}, {NULL}};
-static MICRO_ARCH Arch_Haswell_DT[] = {{"Haswell/Desktop"}, {NULL}};
+
+enum {
+	CN_HASWELL_DESKTOP,
+	CN_HASWELL_MOBILE_EX,
+	CN_HASWELL_CRYSTALWELL,
+	CN_HASWELL_CANYON,
+	CN_HASWELL_DENLOW,
+	CN_HASWELL_EMBEDDED,
+	CN_HASWELL_MOBILE
+};
+
+static MICRO_ARCH Arch_Haswell_DT[] = {
+	[CN_HASWELL_DESKTOP]	= {"Haswell/Desktop"},
+	[CN_HASWELL_MOBILE_EX]	= {"Haswell/Mobile/eXtreme"},
+	[CN_HASWELL_CRYSTALWELL]= {"Haswell/Crystal Well"},
+	[CN_HASWELL_CANYON]	= {"Haswell/Canyon"},
+	[CN_HASWELL_DENLOW]	= {"Haswell/Denlow"},
+	[CN_HASWELL_EMBEDDED]	= {"Haswell/Embedded"},
+	[CN_HASWELL_MOBILE]	= {"Haswell/Mobile"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Haswell_EP[] = {{"Haswell/EP/Mobile"}, {NULL}};
 static MICRO_ARCH Arch_Haswell_ULT[] = {{"Haswell/Ultra Low TDP"}, {NULL}};
 static MICRO_ARCH Arch_Haswell_ULX[] = {{"Haswell/Ultra Low eXtreme"}, {NULL}};
@@ -1866,6 +1887,197 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{NULL}
+};
+
+static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4940MX",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE_EX,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4930MX",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE_EX,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4910MQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4900MQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4810MQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4800MQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4710HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-4700HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-47",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CANYON,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-46",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_CANYON,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Xeon(R) CPU E3-12",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_DENLOW,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) 4th Gen Core(TM) i",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_EMBEDDED,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-4300M",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-4200H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-4000M",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Pentium(R) CPU 3",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Celeron(R) CPU 2",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_HASWELL_MOBILE,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 0,
 	.TurboUnlocked = 0,
@@ -3838,7 +4050,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_SandyBridge,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = Haswell_DT_Specific,
 	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_DT
 	},
