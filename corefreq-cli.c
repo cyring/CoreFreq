@@ -40,12 +40,14 @@ UBENCH_DECLARE()
 struct {
 	unsigned int
 	fahrCels:  1-0, /* 0:Celsius || 1:Fahrenheit	*/
-	secret	:  2-1, /* 0:Show || 1:Hide Secret Data */
-	_padding: 32-2;
+	jouleWatt: 2-1, /* 0:Joule || 1:Watt		*/
+	secret	:  3-2, /* 0:Show || 1:Hide Secret Data */
+	_padding: 32-3;
 } Setting = {
-	.fahrCels=0,
-	.secret = 1,
-	._padding=0
+	.fahrCels = 0,
+	.jouleWatt= 1,
+	.secret   = 1,
+	._padding = 0
 };
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
@@ -5250,6 +5252,11 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case SCANKEY_DOLLAR:
+	Setting.jouleWatt = !Setting.jouleWatt;
+	if (draw.Disposal == D_MAINVIEW)
+		draw.Flag.layout = 1;
+    break;
     case SCANKEY_SHIFT_f:
 	Setting.fahrCels = !Setting.fahrCels;
 	if (draw.Disposal == D_DASHBOARD)
@@ -7540,38 +7547,25 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	ASCII *hDomain[PWR_DOMAIN(SIZE)] = {
-		RSC(LAYOUT_DOMAIN_PACKAGE).CODE(),
-		RSC(LAYOUT_DOMAIN_CORES).CODE(),
-		RSC(LAYOUT_DOMAIN_UNCORE).CODE(),
-		RSC(LAYOUT_DOMAIN_MEMORY).CODE()
-	};
-	const CUINT tab = LOAD_LEAD + 24 + 6;
-	CUINT vsh = row + PWR_DOMAIN(SIZE) + 1;
+	LayerDeclare(LAYOUT_RULLER_VOLTAGE_COND0,draw.Size.width,0,row,hVolt0);
+	LayerDeclare(LAYOUT_RULLER_VOLTAGE_COND1,draw.Size.width,0,row,hVolt1);
+	LAYER_DECL_ST *hVolt[2] = {&hVolt0, &hVolt1};
 
-	LayerDeclare(LAYOUT_RULLER_VOLTAGE, draw.Size.width, 0, row, hVolt0);
+	LayerCopyAt(	layer,
+			hVolt[Setting.jouleWatt]->origin.col,
+			hVolt[Setting.jouleWatt]->origin.row,
+			hVolt[Setting.jouleWatt]->length,
+			hVolt[Setting.jouleWatt]->attr,
+			hVolt[Setting.jouleWatt]->code );
 
-	LayerCopyAt(	layer, hVolt0.origin.col, hVolt0.origin.row,
-			hVolt0.length, hVolt0.attr, hVolt0.code);
+	LayerDeclare(	LAYOUT_RULLER_POWER, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1),
+			hPwr0 );
 
-	enum PWR_DOMAIN pw;
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-	{
-		LayerDeclare(	LAYOUT_POWER_MONITOR, RSZ(LAYOUT_POWER_MONITOR),
-				tab, (row + pw + 1),
-				hPower0);
+	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
+			hPwr0.length, hPwr0.attr, hPwr0.code );
 
-		memcpy(&hPower0.code[0], hDomain[pw], 7);
-
-		LayerCopyAt(	layer, hPower0.origin.col, hPower0.origin.row,
-				hPower0.length, hPower0.attr, hPower0.code);
-	}
-	if (draw.Area.MaxRows > 4)
-		vsh += draw.Area.MaxRows - 4;
-
-    LayerFillAt(layer, 0, vsh,draw.Size.width, hLine,MakeAttr(WHITE,0,BLACK,0));
-
-	row += CUMAX(draw.Area.MaxRows, 4) + 2;
+	row += draw.Area.MaxRows + 2;
 	return(row);
 }
 
@@ -8049,9 +8043,69 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	return(0);
 }
 
-CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Monitor_WO_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+11+6+(3)+10+(4+4+18+13)+1,
+			"%7.2f "					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s%3u%.*s",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(3), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp,
+			(4+4+18+13), hSpace) );
+}
+
+size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+			"%7.2f "					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s%3u%.*s"					\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(3), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp,
+			(4), hSpace,
+			CFlop->Delta.Power.ACCU,
+			(4), hSpace,
+			CFlop->State.Energy) );
+}
+
+size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+			"%7.2f "					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s%3u%.*s"					\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(3), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp,
+			(4), hSpace,
+			CFlop->Delta.Power.ACCU,
+			(4), hSpace,
+			CFlop->State.Power) );
+}
+
+size_t (*Draw_Monitor_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
+	Draw_Monitor_Energy_Joule,
+	Draw_Monitor_Power_Watt
+};
+
+CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+{
 	size_t len = 0;
 
 	switch (Shm->Proc.voltageFormula) {
@@ -8061,27 +8115,20 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	case VOLTAGE_FORMULA_AMD:
 	case VOLTAGE_FORMULA_AMD_0Fh:
 	case VOLTAGE_FORMULA_AMD_15h:
-		len = snprintf( buffer, 4+8+11+6+1,
-				"%7.2f "				\
-				"%7d   %5.4f",
-				CFlop->Relative.Freq,
-				CFlop->Voltage.VID,
-				CFlop->Voltage.Vcore );
+	WT_CORE_ENERGY:
+		len=Draw_Monitor_Power_Matrix[Setting.jouleWatt](layer,cpu,row);
+		break;
+	case VOLTAGE_FORMULA_NONE:
+	WO_CORE_ENERGY:
+		len = Draw_Monitor_WO_Energy(layer,cpu,row);
 		break;
 	case VOLTAGE_FORMULA_INTEL_SNB:
 	case VOLTAGE_FORMULA_AMD_17h:
-	    if (cpu == Shm->Proc.Service.Core)
-		len = snprintf( buffer, 4+8+11+6+1,
-				"%7.2f "				\
-				"%7d   %5.4f",
-				CFlop->Relative.Freq,
-				CFlop->Voltage.VID,
-				CFlop->Voltage.Vcore );
-	    else
-		len = snprintf(buffer, 1+8+1, "%7.2f ", CFlop->Relative.Freq);
-	    break;
-	case VOLTAGE_FORMULA_NONE:
-		len = snprintf(buffer, 1+8+1, "%7.2f ", CFlop->Relative.Freq);
+		if (cpu == Shm->Proc.Service.Core) {
+			goto WT_CORE_ENERGY;
+		} else {
+			goto WO_CORE_ENERGY;
+		}
 		break;
 	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
@@ -8343,41 +8390,44 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
   return(row);
 }
 
-CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
+void Draw_AltMonitor_Energy_Joule(Layer *layer, CUINT row)
 {
-	const CUINT col = LOAD_LEAD + 24 + 16;
-	const CUINT tab = 13 + 3;
-
-	row += 2;
-    switch (Shm->Proc.powerFormula) {
-    case POWER_FORMULA_INTEL:
-    case POWER_FORMULA_INTEL_ATOM:
-    case POWER_FORMULA_AMD:
-    case POWER_FORMULA_AMD_17h:
-	snprintf(buffer, 14+14+14+14+14+14+14+14+1,
-		"%13.9f" "%13.9f" "%13.9f" "%13.9f"			\
-		"%13.9f" "%13.9f" "%13.9f" "%13.9f",
+	snprintf(buffer, 9+9+9+9+1,
+		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],
 		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)],
 		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],
-		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)],
+		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)]);
+}
+
+void Draw_AltMonitor_Power_Watt(Layer *layer, CUINT row)
+{
+	snprintf(buffer, 9+9+9+9+1,
+		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Power[PWR_DOMAIN(PKG)],
 		Shm->Proc.State.Power[PWR_DOMAIN(CORES)],
 		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],
 		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);
-	memcpy(&LayerAt(layer, code, col     , row)   , &buffer[ 0], 13);
-	memcpy(&LayerAt(layer, code,(col+tab), row)   , &buffer[52], 13);
-	memcpy(&LayerAt(layer, code, col     ,(row+1)), &buffer[13], 13);
-	memcpy(&LayerAt(layer, code,(col+tab),(row+1)), &buffer[65], 13);
-	memcpy(&LayerAt(layer, code, col     ,(row+2)), &buffer[26], 13);
-	memcpy(&LayerAt(layer, code,(col+tab),(row+2)), &buffer[78], 13);
-	memcpy(&LayerAt(layer, code, col     ,(row+3)), &buffer[39], 13);
-	memcpy(&LayerAt(layer, code,(col+tab),(row+3)), &buffer[91], 13);
-	break;
-    case POWER_FORMULA_NONE:
-	break;
-    }
-	row += 1 + CUMAX(draw.Area.MaxRows, 4);
+}
+
+void (*Draw_AltMonitor_Power_Matrix[])(Layer*, CUINT) = {
+	Draw_AltMonitor_Energy_Joule,
+	Draw_AltMonitor_Power_Watt
+};
+
+CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	const CUINT col = LOAD_LEAD;
+	row += 2 + draw.Area.MaxRows;
+
+	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
+
+	memcpy(&LayerAt(layer, code, col + 12,	row), &buffer[ 0], 8);
+	memcpy(&LayerAt(layer, code, col + 29,	row), &buffer[ 8], 8);
+	memcpy(&LayerAt(layer, code, col + 47,	row), &buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col + 65,	row), &buffer[24], 8);
+
+	row += 1;
 	return(row);
 }
 

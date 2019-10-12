@@ -231,20 +231,22 @@ enum {
 
 #define LOAD_LEAD	4
 
+typedef struct {
+	Coordinate	origin;
+	CUINT		length;
+	ATTRIBUTE	*attr;
+	ASCII		*code;
+} LAYER_DECL_ST;
+
 #define LayerDeclare(_ID, _len, _col, _row, _var)			\
-	struct {							\
-		Coordinate	origin ;				\
-		CUINT		length ;				\
-		ATTRIBUTE	*attr;					\
-		ASCII		*code;					\
-	} _var = {							\
-		.origin = {						\
-			.col = _col,					\
-			.row = _row					\
+	LAYER_DECL_ST _var = {						\
+			.origin = {					\
+				.col = _col,				\
+				.row = _row				\
 		},							\
-		.length = _len,						\
-		.attr = RSC(_ID).ATTR(),				\
-		.code = RSC(_ID).CODE() 				\
+			.length = _len,					\
+			.attr = RSC(_ID).ATTR(),			\
+			.code = RSC(_ID).CODE() 			\
 	}
 
 typedef char HBCLK[11 + 1];

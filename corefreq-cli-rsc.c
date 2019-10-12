@@ -194,25 +194,18 @@ ASCII	Rsc_Layout_Tasks_Value_On_Code_En[] = RSC_LAYOUT_TASKS_VALUE_ON_CODE;
 #define Rsc_Layout_Tasks_Value_On_Code_Fr Rsc_Layout_Tasks_Value_On_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruller_Voltage_Attr[] = RSC_LAYOUT_RULLER_VOLTAGE_ATTR;
-ASCII	Rsc_Layout_Ruller_Voltage_Code_En[] = RSC_LAYOUT_RULLER_VOLTAGE_CODE_EN,
-	Rsc_Layout_Ruller_Voltage_Code_Fr[] = RSC_LAYOUT_RULLER_VOLTAGE_CODE_FR;
+ASCII	Rsc_Layout_Ruller_Voltage_Code_En[2][320] = {
+					RSC_LAYOUT_RULLER_VOLTAGE_COND0_CODE_EN,
+					RSC_LAYOUT_RULLER_VOLTAGE_COND1_CODE_EN
+	},
+	Rsc_Layout_Ruller_Voltage_Code_Fr[2][320] = {
+					RSC_LAYOUT_RULLER_VOLTAGE_COND0_CODE_FR,
+					RSC_LAYOUT_RULLER_VOLTAGE_COND1_CODE_FR
+	};
 
-#define Rsc_Layout_Domain_Package_Attr vColor
-#define Rsc_Layout_Domain_Cores_Attr vColor
-#define Rsc_Layout_Domain_Uncore_Attr vColor
-#define Rsc_Layout_Domain_Memory_Attr vColor
-ASCII	Rsc_Layout_Domain_Package_Code_En[7]= RSC_LAYOUT_DOMAIN_PACKAGE_CODE_EN,
-	Rsc_Layout_Domain_Package_Code_Fr[7]= RSC_LAYOUT_DOMAIN_PACKAGE_CODE_FR,
-	Rsc_Layout_Domain_Cores_Code_En[7]  = RSC_LAYOUT_DOMAIN_CORES_CODE_EN,
-	Rsc_Layout_Domain_Cores_Code_Fr[7]  = RSC_LAYOUT_DOMAIN_CORES_CODE_FR,
-	Rsc_Layout_Domain_Uncore_Code_En[7] = RSC_LAYOUT_DOMAIN_UNCORE_CODE_EN,
-	Rsc_Layout_Domain_Uncore_Code_Fr[7] = RSC_LAYOUT_DOMAIN_UNCORE_CODE_FR,
-	Rsc_Layout_Domain_Memory_Code_En[7] = RSC_LAYOUT_DOMAIN_MEMORY_CODE_EN,
-	Rsc_Layout_Domain_Memory_Code_Fr[7] = RSC_LAYOUT_DOMAIN_MEMORY_CODE_FR;
-
-ATTRIBUTE Rsc_Layout_Power_Monitor_Attr[] = RSC_LAYOUT_POWER_MONITOR_ATTR;
-ASCII	Rsc_Layout_Power_Monitor_Code_En[] = RSC_LAYOUT_POWER_MONITOR_CODE;
-#define Rsc_Layout_Power_Monitor_Code_Fr Rsc_Layout_Power_Monitor_Code_En
+ATTRIBUTE Rsc_Layout_Ruller_Power_Attr[] = RSC_LAYOUT_RULLER_POWER_ATTR;
+ASCII	Rsc_Layout_Ruller_Power_Code_En[] = RSC_LAYOUT_RULLER_POWER_CODE_EN,
+	Rsc_Layout_Ruller_Power_Code_Fr[] = RSC_LAYOUT_RULLER_POWER_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruller_Slice_Attr[] = RSC_LAYOUT_RULLER_SLICE_ATTR;
 ASCII	Rsc_Layout_Ruller_Slice_Code_En[] = RSC_LAYOUT_RULLER_SLICE_CODE_EN,
@@ -549,24 +542,15 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_TASKS_VALUE_ON] = LDA(	Rsc_Layout_Tasks_Value_On_Attr,
 					Rsc_Layout_Tasks_Value_On_Code_En,
 					Rsc_Layout_Tasks_Value_On_Code_Fr),
-    [RSC_LAYOUT_RULLER_VOLTAGE] = LDA(	Rsc_Layout_Ruller_Voltage_Attr,
-					Rsc_Layout_Ruller_Voltage_Code_En,
-					Rsc_Layout_Ruller_Voltage_Code_Fr),
-    [RSC_LAYOUT_DOMAIN_PACKAGE] = LDA(	Rsc_Layout_Domain_Package_Attr,
-					Rsc_Layout_Domain_Package_Code_En,
-					Rsc_Layout_Domain_Package_Code_Fr),
-    [RSC_LAYOUT_DOMAIN_CORES]	= LDA(	Rsc_Layout_Domain_Cores_Attr,
-					Rsc_Layout_Domain_Cores_Code_En,
-					Rsc_Layout_Domain_Cores_Code_Fr),
-    [RSC_LAYOUT_DOMAIN_UNCORE]	= LDA(	Rsc_Layout_Domain_Uncore_Attr,
-					Rsc_Layout_Domain_Uncore_Code_En,
-					Rsc_Layout_Domain_Uncore_Code_Fr),
-    [RSC_LAYOUT_DOMAIN_MEMORY]	= LDA(	Rsc_Layout_Domain_Memory_Attr,
-					Rsc_Layout_Domain_Memory_Code_En,
-					Rsc_Layout_Domain_Memory_Code_Fr),
-    [RSC_LAYOUT_POWER_MONITOR]	= LDA(	Rsc_Layout_Power_Monitor_Attr,
-					Rsc_Layout_Power_Monitor_Code_En,
-					Rsc_Layout_Power_Monitor_Code_Fr),
+[RSC_LAYOUT_RULLER_VOLTAGE_COND0] = LDA(Rsc_Layout_Ruller_Voltage_Attr,
+					Rsc_Layout_Ruller_Voltage_Code_En[0],
+					Rsc_Layout_Ruller_Voltage_Code_Fr[0]),
+[RSC_LAYOUT_RULLER_VOLTAGE_COND1] = LDA(Rsc_Layout_Ruller_Voltage_Attr,
+					Rsc_Layout_Ruller_Voltage_Code_En[1],
+					Rsc_Layout_Ruller_Voltage_Code_Fr[1]),
+    [RSC_LAYOUT_RULLER_POWER]	= LDA(	Rsc_Layout_Ruller_Power_Attr,
+					Rsc_Layout_Ruller_Power_Code_En,
+					Rsc_Layout_Ruller_Power_Code_Fr),
     [RSC_LAYOUT_RULLER_SLICE]	= LDA(	Rsc_Layout_Ruller_Slice_Attr,
 					Rsc_Layout_Ruller_Slice_Code_En,
 					Rsc_Layout_Ruller_Slice_Code_Fr),

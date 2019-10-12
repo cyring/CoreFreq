@@ -122,11 +122,11 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.INST	= Core->Delta.INST;
 	CFlip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 	CFlip->Delta.C0.URC	= Core->Delta.C0.URC;
-	CFlip->Delta.C3		= Core->Delta.C3;
-	CFlip->Delta.C6		= Core->Delta.C6;
-	CFlip->Delta.C7		= Core->Delta.C7;
+	CFlip->Delta.C3 	= Core->Delta.C3;
+	CFlip->Delta.C6 	= Core->Delta.C6;
+	CFlip->Delta.C7 	= Core->Delta.C7;
 	CFlip->Delta.TSC	= Core->Delta.TSC;
-	CFlip->Delta.C1		= Core->Delta.C1;
+	CFlip->Delta.C1 	= Core->Delta.C1;
 
 	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = (double) (CFlip->Delta.INST)
@@ -264,6 +264,23 @@ static void *Core_Cycle(void *arg)
 	case VOLTAGE_FORMULA_INTEL:
 	case VOLTAGE_FORMULA_INTEL_SNB:
 	case VOLTAGE_FORMULA_NONE:
+		break;
+	}
+	/* RAPL accumulator per Core					*/
+	switch (Shm->Proc.powerFormula) {
+	case POWER_FORMULA_AMD_17h:
+		CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
+
+		CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
+					   * Shm->Proc.Power.Unit.Joules;
+
+		CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
+					  / (double) Shm->Sleep.Interval;
+		break;
+	case POWER_FORMULA_INTEL:
+	case POWER_FORMULA_INTEL_ATOM:
+	case POWER_FORMULA_AMD:
+	case POWER_FORMULA_NONE:
 		break;
 	}
 	/* Interrupts counters						*/
@@ -3836,8 +3853,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		/* Workaround to RAPL Package counter: sum of all Cores */
 		switch (Shm->Proc.powerFormula) {
 		case POWER_FORMULA_AMD_17h:
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
-				Core[cpu]->Delta.Power.ACCU;
+			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += 
+							CFlop->Delta.Power.ACCU;
 			break;
 		case POWER_FORMULA_INTEL:
 		case POWER_FORMULA_INTEL_ATOM:
