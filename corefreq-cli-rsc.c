@@ -41,9 +41,9 @@ ATTRIBUTE Rsc_Layout_Header_Caches_Attr[] = RSC_LAYOUT_HEADER_CACHES_ATTR;
 ASCII	Rsc_Layout_Header_Caches_Code_En[] = RSC_LAYOUT_HEADER_CACHES_CODE;
 #define Rsc_Layout_Header_Caches_Code_Fr Rsc_Layout_Header_Caches_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Load_Attr[] = RSC_LAYOUT_RULLER_LOAD_ATTR;
-ASCII	Rsc_Layout_Ruller_Load_Code_En[] = RSC_LAYOUT_RULLER_LOAD_CODE;
-#define Rsc_Layout_Ruller_Load_Code_Fr Rsc_Layout_Ruller_Load_Code_En
+ATTRIBUTE Rsc_Layout_Ruler_Load_Attr[] = RSC_LAYOUT_RULER_LOAD_ATTR;
+ASCII	Rsc_Layout_Ruler_Load_Code_En[] = RSC_LAYOUT_RULER_LOAD_CODE;
+#define Rsc_Layout_Ruler_Load_Code_Fr Rsc_Layout_Ruler_Load_Code_En
 
 ATTRIBUTE Rsc_Layout_Monitor_Frequency_Attr[]=RSC_LAYOUT_MONITOR_FREQUENCY_ATTR;
 ASCII Rsc_Layout_Monitor_Frequency_Code_En[]=RSC_LAYOUT_MONITOR_FREQUENCY_CODE;
@@ -66,45 +66,45 @@ ATTRIBUTE Rsc_Layout_Monitor_Slice_Attr[] = RSC_LAYOUT_MONITOR_SLICE_ATTR;
 ASCII	Rsc_Layout_Monitor_Slice_Code_En[] = RSC_LAYOUT_MONITOR_SLICE_CODE;
 #define Rsc_Layout_Monitor_Slice_Code_Fr Rsc_Layout_Monitor_Slice_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Frequency_Attr[] = RSC_LAYOUT_RULLER_FREQUENCY_ATTR;
-ASCII Rsc_Layout_Ruller_Frequency_Code_En[] = RSC_LAYOUT_RULLER_FREQUENCY_CODE;
-#define Rsc_Layout_Ruller_Frequency_Code_Fr Rsc_Layout_Ruller_Frequency_Code_En
+ATTRIBUTE Rsc_Layout_Ruler_Frequency_Attr[] = RSC_LAYOUT_RULER_FREQUENCY_ATTR;
+ASCII Rsc_Layout_Ruler_Frequency_Code_En[] = RSC_LAYOUT_RULER_FREQUENCY_CODE;
+#define Rsc_Layout_Ruler_Frequency_Code_Fr Rsc_Layout_Ruler_Frequency_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Freq_Avg_Attr[] = \
-					RSC_LAYOUT_RULLER_FREQUENCY_AVG_ATTR;
-ASCII	Rsc_Layout_Ruller_Freq_Avg_Code_En[] = \
-					RSC_LAYOUT_RULLER_FREQUENCY_AVG_CODE_EN,
-	Rsc_Layout_Ruller_Freq_Avg_Code_Fr[] = \
-					RSC_LAYOUT_RULLER_FREQUENCY_AVG_CODE_FR;
+ATTRIBUTE Rsc_Layout_Ruler_Freq_Avg_Attr[] = \
+					RSC_LAYOUT_RULER_FREQUENCY_AVG_ATTR;
+ASCII	Rsc_Layout_Ruler_Freq_Avg_Code_En[] = \
+					RSC_LAYOUT_RULER_FREQUENCY_AVG_CODE_EN,
+	Rsc_Layout_Ruler_Freq_Avg_Code_Fr[] = \
+					RSC_LAYOUT_RULER_FREQUENCY_AVG_CODE_FR;
 
-ATTRIBUTE Rsc_Layout_Ruller_Freq_Pkg_Attr[] = \
-					RSC_LAYOUT_RULLER_FREQUENCY_PKG_ATTR;
-ASCII	Rsc_Layout_Ruller_Freq_Pkg_Code_En[] = \
-					RSC_LAYOUT_RULLER_FREQUENCY_PKG_CODE;
-#define Rsc_Layout_Ruller_Freq_Pkg_Code_Fr Rsc_Layout_Ruller_Freq_Pkg_Code_En
+ATTRIBUTE Rsc_Layout_Ruler_Freq_Pkg_Attr[] = \
+					RSC_LAYOUT_RULER_FREQUENCY_PKG_ATTR;
+ASCII	Rsc_Layout_Ruler_Freq_Pkg_Code_En[] = \
+					RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE;
+#define Rsc_Layout_Ruler_Freq_Pkg_Code_Fr Rsc_Layout_Ruler_Freq_Pkg_Code_En
 
-#define Rsc_Layout_Ruller_Inst_Attr vColor
-ASCII	Rsc_Layout_Ruller_Inst_Code_En[] = RSC_LAYOUT_RULLER_INST_CODE;
-#define Rsc_Layout_Ruller_Inst_Code_Fr Rsc_Layout_Ruller_Inst_Code_En
+#define Rsc_Layout_Ruler_Inst_Attr vColor
+ASCII	Rsc_Layout_Ruler_Inst_Code_En[] = RSC_LAYOUT_RULER_INST_CODE;
+#define Rsc_Layout_Ruler_Inst_Code_Fr Rsc_Layout_Ruler_Inst_Code_En
 
-#define Rsc_Layout_Ruller_Cycles_Attr vColor
-ASCII	Rsc_Layout_Ruller_Cycles_Code_En[] = RSC_LAYOUT_RULLER_CYCLES_CODE;
-#define Rsc_Layout_Ruller_Cycles_Code_Fr Rsc_Layout_Ruller_Cycles_Code_En
+#define Rsc_Layout_Ruler_Cycles_Attr vColor
+ASCII	Rsc_Layout_Ruler_Cycles_Code_En[] = RSC_LAYOUT_RULER_CYCLES_CODE;
+#define Rsc_Layout_Ruler_Cycles_Code_Fr Rsc_Layout_Ruler_Cycles_Code_En
 
-#define Rsc_Layout_Ruller_CStates_Attr vColor
-ASCII	Rsc_Layout_Ruller_CStates_Code_En[] = RSC_LAYOUT_RULLER_CSTATES_CODE;
-#define Rsc_Layout_Ruller_CStates_Code_Fr Rsc_Layout_Ruller_CStates_Code_En
+#define Rsc_Layout_Ruler_CStates_Attr vColor
+ASCII	Rsc_Layout_Ruler_CStates_Code_En[] = RSC_LAYOUT_RULER_CSTATES_CODE;
+#define Rsc_Layout_Ruler_CStates_Code_Fr Rsc_Layout_Ruler_CStates_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Interrupts_Attr[] = \
-					RSC_LAYOUT_RULLER_INTERRUPTS_ATTR;
-ASCII	Rsc_Layout_Ruller_Interrupts_Code_En[] = \
-					RSC_LAYOUT_RULLER_INTERRUPTS_CODE;
-#define Rsc_Layout_Ruller_Interrupts_Code_Fr \
-					Rsc_Layout_Ruller_Interrupts_Code_En
+ATTRIBUTE Rsc_Layout_Ruler_Interrupts_Attr[] = \
+					RSC_LAYOUT_RULER_INTERRUPTS_ATTR;
+ASCII	Rsc_Layout_Ruler_Interrupts_Code_En[] = \
+					RSC_LAYOUT_RULER_INTERRUPTS_CODE;
+#define Rsc_Layout_Ruler_Interrupts_Code_Fr \
+					Rsc_Layout_Ruler_Interrupts_Code_En
 
-#define Rsc_Layout_Ruller_Package_Attr vColor
-ASCII	Rsc_Layout_Ruller_Package_Code_En[] = RSC_LAYOUT_RULLER_PACKAGE_CODE_EN,
-	Rsc_Layout_Ruller_Package_Code_Fr[] = RSC_LAYOUT_RULLER_PACKAGE_CODE_FR;
+#define Rsc_Layout_Ruler_Package_Attr vColor
+ASCII	Rsc_Layout_Ruler_Package_Code_En[] = RSC_LAYOUT_RULER_PACKAGE_CODE_EN,
+	Rsc_Layout_Ruler_Package_Code_Fr[] = RSC_LAYOUT_RULER_PACKAGE_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Package_PC_Attr[] = RSC_LAYOUT_PACKAGE_PC_ATTR;
 ASCII	Rsc_Layout_Package_PC_Code_En[] = RSC_LAYOUT_PACKAGE_PC_CODE;
@@ -114,9 +114,9 @@ ATTRIBUTE Rsc_Layout_Package_Uncore_Attr[] = RSC_LAYOUT_PACKAGE_UNCORE_ATTR;
 ASCII	Rsc_Layout_Package_Uncore_Code_En[] = RSC_LAYOUT_PACKAGE_UNCORE_CODE;
 #define Rsc_Layout_Package_Uncore_Code_Fr Rsc_Layout_Package_Uncore_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Tasks_Attr[] = RSC_LAYOUT_RULLER_TASKS_ATTR;
-ASCII	Rsc_Layout_Ruller_Tasks_Code_En[] = RSC_LAYOUT_RULLER_TASKS_CODE_EN,
-	Rsc_Layout_Ruller_Tasks_Code_Fr[] = RSC_LAYOUT_RULLER_TASKS_CODE_FR;
+ATTRIBUTE Rsc_Layout_Ruler_Tasks_Attr[] = RSC_LAYOUT_RULER_TASKS_ATTR;
+ASCII	Rsc_Layout_Ruler_Tasks_Code_En[] = RSC_LAYOUT_RULER_TASKS_CODE_EN,
+	Rsc_Layout_Ruler_Tasks_Code_Fr[] = RSC_LAYOUT_RULER_TASKS_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Tasks_Tracking_Attr[] = RSC_LAYOUT_TASKS_TRACKING_ATTR;
 ASCII	Rsc_Layout_Tasks_Tracking_Code_En[] = RSC_LAYOUT_TASKS_TRACKING_CODE_EN,
@@ -193,23 +193,23 @@ ATTRIBUTE Rsc_Layout_Tasks_Value_On_Attr[] = RSC_LAYOUT_TASKS_VALUE_ON_ATTR;
 ASCII	Rsc_Layout_Tasks_Value_On_Code_En[] = RSC_LAYOUT_TASKS_VALUE_ON_CODE;
 #define Rsc_Layout_Tasks_Value_On_Code_Fr Rsc_Layout_Tasks_Value_On_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruller_Voltage_Attr[] = RSC_LAYOUT_RULLER_VOLTAGE_ATTR;
-ASCII	Rsc_Layout_Ruller_Voltage_Code_En[2][320] = {
-					RSC_LAYOUT_RULLER_VOLTAGE_COND0_CODE_EN,
-					RSC_LAYOUT_RULLER_VOLTAGE_COND1_CODE_EN
+ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
+ASCII	Rsc_Layout_Ruler_Voltage_Code_En[2][320] = {
+					RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_EN,
+					RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_EN
 	},
-	Rsc_Layout_Ruller_Voltage_Code_Fr[2][320] = {
-					RSC_LAYOUT_RULLER_VOLTAGE_COND0_CODE_FR,
-					RSC_LAYOUT_RULLER_VOLTAGE_COND1_CODE_FR
+	Rsc_Layout_Ruler_Voltage_Code_Fr[2][320] = {
+					RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_FR,
+					RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_FR
 	};
 
-ATTRIBUTE Rsc_Layout_Ruller_Power_Attr[] = RSC_LAYOUT_RULLER_POWER_ATTR;
-ASCII	Rsc_Layout_Ruller_Power_Code_En[] = RSC_LAYOUT_RULLER_POWER_CODE_EN,
-	Rsc_Layout_Ruller_Power_Code_Fr[] = RSC_LAYOUT_RULLER_POWER_CODE_FR;
+ATTRIBUTE Rsc_Layout_Ruler_Power_Attr[] = RSC_LAYOUT_RULER_POWER_ATTR;
+ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN,
+	Rsc_Layout_Ruler_Power_Code_Fr[] = RSC_LAYOUT_RULER_POWER_CODE_FR;
 
-ATTRIBUTE Rsc_Layout_Ruller_Slice_Attr[] = RSC_LAYOUT_RULLER_SLICE_ATTR;
-ASCII	Rsc_Layout_Ruller_Slice_Code_En[] = RSC_LAYOUT_RULLER_SLICE_CODE_EN,
-	Rsc_Layout_Ruller_Slice_Code_Fr[] = RSC_LAYOUT_RULLER_SLICE_CODE_FR;
+ATTRIBUTE Rsc_Layout_Ruler_Slice_Attr[] = RSC_LAYOUT_RULER_SLICE_ATTR;
+ASCII	Rsc_Layout_Ruler_Slice_Code_En[] = RSC_LAYOUT_RULER_SLICE_CODE_EN,
+	Rsc_Layout_Ruler_Slice_Code_Fr[] = RSC_LAYOUT_RULER_SLICE_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Footer_Tech_x86_Attr[] = RSC_LAYOUT_FOOTER_TECH_X86_ATTR;
 ASCII	Rsc_Layout_Footer_Tech_x86_Code_En[] = RSC_LAYOUT_FOOTER_TECH_X86_CODE;
@@ -455,9 +455,9 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_HEADER_CACHES]	= LDA(	Rsc_Layout_Header_Caches_Attr,
 					Rsc_Layout_Header_Caches_Code_En,
 					Rsc_Layout_Header_Caches_Code_Fr),
-    [RSC_LAYOUT_RULLER_LOAD]	= LDA(	Rsc_Layout_Ruller_Load_Attr,
-					Rsc_Layout_Ruller_Load_Code_En,
-					Rsc_Layout_Ruller_Load_Code_Fr),
+    [RSC_LAYOUT_RULER_LOAD]	= LDA(	Rsc_Layout_Ruler_Load_Attr,
+					Rsc_Layout_Ruler_Load_Code_En,
+					Rsc_Layout_Ruler_Load_Code_Fr),
     [RSC_LAYOUT_MONITOR_FREQUENCY]=LDA( Rsc_Layout_Monitor_Frequency_Attr,
 					Rsc_Layout_Monitor_Frequency_Code_En,
 					Rsc_Layout_Monitor_Frequency_Code_Fr),
@@ -473,39 +473,39 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_MONITOR_SLICE]	= LDA(	Rsc_Layout_Monitor_Slice_Attr,
 					Rsc_Layout_Monitor_Slice_Code_En,
 					Rsc_Layout_Monitor_Slice_Code_Fr),
-    [RSC_LAYOUT_RULLER_FREQUENCY] = LDA(Rsc_Layout_Ruller_Frequency_Attr,
-					Rsc_Layout_Ruller_Frequency_Code_En,
-					Rsc_Layout_Ruller_Frequency_Code_Fr),
-  [RSC_LAYOUT_RULLER_FREQUENCY_AVG]=LDA(Rsc_Layout_Ruller_Freq_Avg_Attr,
-					Rsc_Layout_Ruller_Freq_Avg_Code_En,
-					Rsc_Layout_Ruller_Freq_Avg_Code_Fr),
-  [RSC_LAYOUT_RULLER_FREQUENCY_PKG]=LDA(Rsc_Layout_Ruller_Freq_Pkg_Attr,
-					Rsc_Layout_Ruller_Freq_Pkg_Code_En,
-					Rsc_Layout_Ruller_Freq_Pkg_Code_Fr),
-    [RSC_LAYOUT_RULLER_INST]	= LDA(	Rsc_Layout_Ruller_Inst_Attr,
-					Rsc_Layout_Ruller_Inst_Code_En,
-					Rsc_Layout_Ruller_Inst_Code_Fr),
-    [RSC_LAYOUT_RULLER_CYCLES]	= LDA(	Rsc_Layout_Ruller_Cycles_Attr,
-					Rsc_Layout_Ruller_Cycles_Code_En,
-					Rsc_Layout_Ruller_Cycles_Code_Fr),
-    [RSC_LAYOUT_RULLER_CSTATES] = LDA(	Rsc_Layout_Ruller_CStates_Attr,
-					Rsc_Layout_Ruller_CStates_Code_En,
-					Rsc_Layout_Ruller_CStates_Code_Fr),
-    [RSC_LAYOUT_RULLER_INTERRUPTS]=LDA( Rsc_Layout_Ruller_Interrupts_Attr,
-					Rsc_Layout_Ruller_Interrupts_Code_En,
-					Rsc_Layout_Ruller_Interrupts_Code_Fr),
-    [RSC_LAYOUT_RULLER_PACKAGE] = LDA(	Rsc_Layout_Ruller_Package_Attr,
-					Rsc_Layout_Ruller_Package_Code_En,
-					Rsc_Layout_Ruller_Package_Code_Fr),
+    [RSC_LAYOUT_RULER_FREQUENCY] = LDA( Rsc_Layout_Ruler_Frequency_Attr,
+					Rsc_Layout_Ruler_Frequency_Code_En,
+					Rsc_Layout_Ruler_Frequency_Code_Fr),
+  [RSC_LAYOUT_RULER_FREQUENCY_AVG]= LDA(Rsc_Layout_Ruler_Freq_Avg_Attr,
+					Rsc_Layout_Ruler_Freq_Avg_Code_En,
+					Rsc_Layout_Ruler_Freq_Avg_Code_Fr),
+  [RSC_LAYOUT_RULER_FREQUENCY_PKG]= LDA(Rsc_Layout_Ruler_Freq_Pkg_Attr,
+					Rsc_Layout_Ruler_Freq_Pkg_Code_En,
+					Rsc_Layout_Ruler_Freq_Pkg_Code_Fr),
+    [RSC_LAYOUT_RULER_INST]	= LDA(	Rsc_Layout_Ruler_Inst_Attr,
+					Rsc_Layout_Ruler_Inst_Code_En,
+					Rsc_Layout_Ruler_Inst_Code_Fr),
+    [RSC_LAYOUT_RULER_CYCLES]	= LDA(	Rsc_Layout_Ruler_Cycles_Attr,
+					Rsc_Layout_Ruler_Cycles_Code_En,
+					Rsc_Layout_Ruler_Cycles_Code_Fr),
+    [RSC_LAYOUT_RULER_CSTATES] = LDA(	Rsc_Layout_Ruler_CStates_Attr,
+					Rsc_Layout_Ruler_CStates_Code_En,
+					Rsc_Layout_Ruler_CStates_Code_Fr),
+    [RSC_LAYOUT_RULER_INTERRUPTS]= LDA( Rsc_Layout_Ruler_Interrupts_Attr,
+					Rsc_Layout_Ruler_Interrupts_Code_En,
+					Rsc_Layout_Ruler_Interrupts_Code_Fr),
+    [RSC_LAYOUT_RULER_PACKAGE] = LDA(	Rsc_Layout_Ruler_Package_Attr,
+					Rsc_Layout_Ruler_Package_Code_En,
+					Rsc_Layout_Ruler_Package_Code_Fr),
     [RSC_LAYOUT_PACKAGE_PC]	= LDA(	Rsc_Layout_Package_PC_Attr,
 					Rsc_Layout_Package_PC_Code_En,
 					Rsc_Layout_Package_PC_Code_Fr),
     [RSC_LAYOUT_PACKAGE_UNCORE] = LDA(	Rsc_Layout_Package_Uncore_Attr,
 					Rsc_Layout_Package_Uncore_Code_En,
 					Rsc_Layout_Package_Uncore_Code_Fr),
-    [RSC_LAYOUT_RULLER_TASKS]	= LDA(	Rsc_Layout_Ruller_Tasks_Attr,
-					Rsc_Layout_Ruller_Tasks_Code_En,
-					Rsc_Layout_Ruller_Tasks_Code_Fr),
+    [RSC_LAYOUT_RULER_TASKS]	= LDA(	Rsc_Layout_Ruler_Tasks_Attr,
+					Rsc_Layout_Ruler_Tasks_Code_En,
+					Rsc_Layout_Ruler_Tasks_Code_Fr),
     [RSC_LAYOUT_TASKS_TRACKING] = LDA(	Rsc_Layout_Tasks_Tracking_Attr,
 					Rsc_Layout_Tasks_Tracking_Code_En,
 					Rsc_Layout_Tasks_Tracking_Code_Fr),
@@ -542,18 +542,18 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_TASKS_VALUE_ON] = LDA(	Rsc_Layout_Tasks_Value_On_Attr,
 					Rsc_Layout_Tasks_Value_On_Code_En,
 					Rsc_Layout_Tasks_Value_On_Code_Fr),
-[RSC_LAYOUT_RULLER_VOLTAGE_COND0] = LDA(Rsc_Layout_Ruller_Voltage_Attr,
-					Rsc_Layout_Ruller_Voltage_Code_En[0],
-					Rsc_Layout_Ruller_Voltage_Code_Fr[0]),
-[RSC_LAYOUT_RULLER_VOLTAGE_COND1] = LDA(Rsc_Layout_Ruller_Voltage_Attr,
-					Rsc_Layout_Ruller_Voltage_Code_En[1],
-					Rsc_Layout_Ruller_Voltage_Code_Fr[1]),
-    [RSC_LAYOUT_RULLER_POWER]	= LDA(	Rsc_Layout_Ruller_Power_Attr,
-					Rsc_Layout_Ruller_Power_Code_En,
-					Rsc_Layout_Ruller_Power_Code_Fr),
-    [RSC_LAYOUT_RULLER_SLICE]	= LDA(	Rsc_Layout_Ruller_Slice_Attr,
-					Rsc_Layout_Ruller_Slice_Code_En,
-					Rsc_Layout_Ruller_Slice_Code_Fr),
+   [RSC_LAYOUT_RULER_VOLTAGE_COND0]=LDA(Rsc_Layout_Ruler_Voltage_Attr,
+					Rsc_Layout_Ruler_Voltage_Code_En[0],
+					Rsc_Layout_Ruler_Voltage_Code_Fr[0]),
+   [RSC_LAYOUT_RULER_VOLTAGE_COND1]=LDA(Rsc_Layout_Ruler_Voltage_Attr,
+					Rsc_Layout_Ruler_Voltage_Code_En[1],
+					Rsc_Layout_Ruler_Voltage_Code_Fr[1]),
+    [RSC_LAYOUT_RULER_POWER]	= LDA(	Rsc_Layout_Ruler_Power_Attr,
+					Rsc_Layout_Ruler_Power_Code_En,
+					Rsc_Layout_Ruler_Power_Code_Fr),
+    [RSC_LAYOUT_RULER_SLICE]	= LDA(	Rsc_Layout_Ruler_Slice_Attr,
+					Rsc_Layout_Ruler_Slice_Code_En,
+					Rsc_Layout_Ruler_Slice_Code_Fr),
     [RSC_LAYOUT_FOOTER_TECH_X86]= LDA(	Rsc_Layout_Footer_Tech_x86_Attr,
 					Rsc_Layout_Footer_Tech_x86_Code_En,
 					Rsc_Layout_Footer_Tech_x86_Code_Fr),

@@ -7171,9 +7171,9 @@ void Layout_Header(Layer *layer, CUINT row)
 			hArch2.length, hArch2.attr, hArch2.code);
 }
 
-void Layout_Ruller_Load(Layer *layer, CUINT row)
+void Layout_Ruler_Load(Layer *layer, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULLER_LOAD, draw.Size.width, 0, row, hLoad0);
+	LayerDeclare(LAYOUT_RULER_LOAD, draw.Size.width, 0, row, hLoad0);
 	LayerCopyAt(layer, hLoad0.origin.col, hLoad0.origin.row,
 			hLoad0.length, hLoad0.attr, hLoad0.code);
 	/* Alternate the color of the frequency ratios			*/
@@ -7292,23 +7292,23 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	return(0);
 }
 
-CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULLER_FREQUENCY, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_FREQUENCY, draw.Size.width,
 			0, row, hFreq0);
 
 	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code);
 
 	if (!draw.Flag.avgOrPC) {
-		LayerDeclare(	LAYOUT_RULLER_FREQUENCY_AVG, draw.Size.width,
+		LayerDeclare(	LAYOUT_RULER_FREQUENCY_AVG, draw.Size.width,
 				0, (row + draw.Area.MaxRows + 1),
 				hAvg0);
 
 		LayerCopyAt(	layer, hAvg0.origin.col, hAvg0.origin.row,
 				hAvg0.length, hAvg0.attr, hAvg0.code);
 	} else {
-		LayerDeclare(	LAYOUT_RULLER_FREQUENCY_PKG, draw.Size.width,
+		LayerDeclare(	LAYOUT_RULER_FREQUENCY_PKG, draw.Size.width,
 				0, (row + draw.Area.MaxRows + 1),
 				hPkg0);
 
@@ -7319,11 +7319,11 @@ CUINT Layout_Ruller_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
+CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULLER_INST).CODE(),
-			RSC(LAYOUT_RULLER_INST).ATTR()[0]);
+			RSC(LAYOUT_RULER_INST).CODE(),
+			RSC(LAYOUT_RULER_INST).ATTR()[0]);
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
@@ -7333,11 +7333,11 @@ CUINT Layout_Ruller_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULLER_CYCLES).CODE(),
-			RSC(LAYOUT_RULLER_CYCLES).ATTR()[0]);
+			RSC(LAYOUT_RULER_CYCLES).CODE(),
+			RSC(LAYOUT_RULER_CYCLES).ATTR()[0]);
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
@@ -7346,11 +7346,11 @@ CUINT Layout_Ruller_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_CStates(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULLER_CSTATES).CODE(),
-			RSC(LAYOUT_RULLER_CSTATES).ATTR()[0]);
+			RSC(LAYOUT_RULER_CSTATES).CODE(),
+			RSC(LAYOUT_RULER_CSTATES).ATTR()[0]);
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
@@ -7359,9 +7359,9 @@ CUINT Layout_Ruller_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(	LAYOUT_RULLER_INTERRUPTS, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_INTERRUPTS, draw.Size.width,
 			0, row, hIntr0);
 
 	LayerCopyAt(	layer, hIntr0.origin.col, hIntr0.origin.row,
@@ -7374,7 +7374,7 @@ CUINT Layout_Ruller_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	ASCII	hCState[7][2] = {
 		{'0', '2'},
@@ -7387,8 +7387,8 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	};
 
 	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULLER_PACKAGE).CODE(),
-			RSC(LAYOUT_RULLER_PACKAGE).ATTR()[0]);
+			RSC(LAYOUT_RULER_PACKAGE).CODE(),
+			RSC(LAYOUT_RULER_PACKAGE).ATTR()[0]);
 
 	unsigned int idx;
 	for (idx = 0; idx < 7; idx++)
@@ -7415,9 +7415,9 @@ CUINT Layout_Ruller_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULLER_TASKS, draw.Size.width, 0, row, hTask0);
+	LayerDeclare(LAYOUT_RULER_TASKS, draw.Size.width, 0, row, hTask0);
 
 	struct {
 		ATTRIBUTE *attr;
@@ -7545,10 +7545,10 @@ CUINT Layout_Ruller_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULLER_VOLTAGE_COND0,draw.Size.width,0,row,hVolt0);
-	LayerDeclare(LAYOUT_RULLER_VOLTAGE_COND1,draw.Size.width,0,row,hVolt1);
+	LayerDeclare(LAYOUT_RULER_VOLTAGE_COND0,draw.Size.width,0,row,hVolt0);
+	LayerDeclare(LAYOUT_RULER_VOLTAGE_COND1,draw.Size.width,0,row,hVolt1);
 	LAYER_DECL_ST *hVolt[2] = {&hVolt0, &hVolt1};
 
 	LayerCopyAt(	layer,
@@ -7558,7 +7558,7 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			hVolt[Setting.jouleWatt]->attr,
 			hVolt[Setting.jouleWatt]->code );
 
-	LayerDeclare(	LAYOUT_RULLER_POWER, draw.Size.width,
+	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
 			0, (row + draw.Area.MaxRows + 1),
 			hPwr0 );
 
@@ -7569,9 +7569,9 @@ CUINT Layout_Ruller_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	return(row);
 }
 
-CUINT Layout_Ruller_Slice(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULLER_SLICE, draw.Size.width, 0, row, hSlice0);
+	LayerDeclare(LAYOUT_RULER_SLICE, draw.Size.width, 0, row, hSlice0);
 
 	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code);
@@ -8108,27 +8108,15 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len = 0;
 
-	switch (Shm->Proc.voltageFormula) {
-	case VOLTAGE_FORMULA_INTEL:
-	case VOLTAGE_FORMULA_INTEL_CORE2:
-	case VOLTAGE_FORMULA_INTEL_SKL_X:
-	case VOLTAGE_FORMULA_AMD:
-	case VOLTAGE_FORMULA_AMD_0Fh:
-	case VOLTAGE_FORMULA_AMD_15h:
-	WT_CORE_ENERGY:
+	switch (Shm->Proc.powerFormula) {
+	case POWER_FORMULA_INTEL:
+	case POWER_FORMULA_INTEL_ATOM:
+	case POWER_FORMULA_AMD:
+	case POWER_FORMULA_AMD_17h:
 		len=Draw_Monitor_Power_Matrix[Setting.jouleWatt](layer,cpu,row);
 		break;
-	case VOLTAGE_FORMULA_NONE:
-	WO_CORE_ENERGY:
+	case POWER_FORMULA_NONE:
 		len = Draw_Monitor_WO_Energy(layer,cpu,row);
-		break;
-	case VOLTAGE_FORMULA_INTEL_SNB:
-	case VOLTAGE_FORMULA_AMD_17h:
-		if (cpu == Shm->Proc.Service.Core) {
-			goto WT_CORE_ENERGY;
-		} else {
-			goto WO_CORE_ENERGY;
-		}
 		break;
 	}
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
@@ -8422,9 +8410,9 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
 
-	memcpy(&LayerAt(layer, code, col + 12,	row), &buffer[ 0], 8);
-	memcpy(&LayerAt(layer, code, col + 29,	row), &buffer[ 8], 8);
-	memcpy(&LayerAt(layer, code, col + 47,	row), &buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col +  9,	row), &buffer[ 0], 8);
+	memcpy(&LayerAt(layer, code, col + 27,	row), &buffer[ 8], 8);
+	memcpy(&LayerAt(layer, code, col + 46,	row), &buffer[16], 8);
 	memcpy(&LayerAt(layer, code, col + 65,	row), &buffer[24], 8);
 
 	row += 1;
@@ -8575,16 +8563,16 @@ VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Slice
 };
 
-VIEW_FUNC Matrix_Layout_Ruller[VIEW_SIZE] = {
-	Layout_Ruller_Frequency,
-	Layout_Ruller_Instructions,
-	Layout_Ruller_Cycles,
-	Layout_Ruller_CStates,
-	Layout_Ruller_Package,
-	Layout_Ruller_Tasks,
-	Layout_Ruller_Interrupts,
-	Layout_Ruller_Voltage,
-	Layout_Ruller_Slice
+VIEW_FUNC Matrix_Layout_Ruler[VIEW_SIZE] = {
+	Layout_Ruler_Frequency,
+	Layout_Ruler_Instructions,
+	Layout_Ruler_Cycles,
+	Layout_Ruler_CStates,
+	Layout_Ruler_Package,
+	Layout_Ruler_Tasks,
+	Layout_Ruler_Interrupts,
+	Layout_Ruler_Voltage,
+	Layout_Ruler_Slice
 };
 
 VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
@@ -8638,7 +8626,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
 
 	row += TOP_HEADER_ROW;
 
-	Layout_Ruller_Load(layer, row);
+	Layout_Ruler_Load(layer, row);
 
     for(cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
     {
@@ -8677,7 +8665,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
     }
 	row++;
 
-	row = Matrix_Layout_Ruller[draw.View](layer, 0, row);
+	row = Matrix_Layout_Ruler[draw.View](layer, 0, row);
 
 	Layout_Footer(layer, row);
 }
