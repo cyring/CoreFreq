@@ -266,7 +266,7 @@ static void *Core_Cycle(void *arg)
 	case VOLTAGE_FORMULA_NONE:
 		break;
 	}
-	/* RAPL accumulator per Core					*/
+	/* TODO(RAPL accumulator per Core)
 	switch (Shm->Proc.powerFormula) {
 	case POWER_FORMULA_AMD_17h:
 		CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
@@ -282,7 +282,7 @@ static void *Core_Cycle(void *arg)
 	case POWER_FORMULA_AMD:
 	case POWER_FORMULA_NONE:
 		break;
-	}
+	}								*/
 	/* Interrupts counters						*/
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
 	/* Registered NMI counters					*/
@@ -3853,8 +3853,12 @@ REASON_CODE Core_Manager(REF *Ref)
 		/* Workaround to RAPL Package counter: sum of all Cores */
 		switch (Shm->Proc.powerFormula) {
 		case POWER_FORMULA_AMD_17h:
+/*TODO(RAPL)
 			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += 
 							CFlop->Delta.Power.ACCU;
+*/
+			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
+				Core[cpu]->Delta.Power.ACCU;
 			break;
 		case POWER_FORMULA_INTEL:
 		case POWER_FORMULA_INTEL_ATOM:

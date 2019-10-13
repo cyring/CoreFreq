@@ -8062,6 +8062,7 @@ size_t Draw_Monitor_WO_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+/*TODO(RAPL)
 	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
 			"%7.2f "					\
 			"%7d\x20\x20\x20%5.4f"				\
@@ -8077,11 +8078,28 @@ size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
 			CFlop->State.Energy) );
+*/
+	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+			"%7.2f "					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s%3u%.*s"					\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(3), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp,
+			(4), hSpace,
+			0LLU,
+			(4), hSpace,
+			0.0) );
 }
 
 size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+/*TODO(RAPL)
 	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
 			"%7.2f "					\
 			"%7d\x20\x20\x20%5.4f"				\
@@ -8097,6 +8115,22 @@ size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
 			CFlop->State.Power) );
+*/
+	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+			"%7.2f "					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s%3u%.*s"					\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(3), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp,
+			(4), hSpace,
+			0LLU,
+			(4), hSpace,
+			0.0) );
 }
 
 size_t (*Draw_Monitor_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
