@@ -96,9 +96,9 @@ typedef struct
 					C7,
 					TSC,
 					C1;
-/*TODO(RAPL)		struct {
+			struct {
 		unsigned long long	ACCU;
-			} Power;					*/
+			} Power;
 		} Delta __attribute__ ((aligned (8)));
 
 		CLOCK			Clock;
@@ -112,9 +112,9 @@ typedef struct
 					C3,
 					C6,
 					C7,
-					C1;
-/*TODO(RAPL)				Energy,
-					Power;				*/
+					C1,
+					Energy,
+					Power;
 		} State;
 
 		struct {

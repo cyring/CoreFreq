@@ -4677,13 +4677,9 @@ void TrapScreenSize(int caught)
 		case V_CSTATES:
 		case V_TASKS:
 		case V_INTR:
+		case V_VOLTAGE:
 		case V_SLICE:
 	/*10*/		draw.Area.MinHeight = 2 + TOP_HEADER_ROW
-						+ TOP_SEPARATOR
-						+ TOP_FOOTER_ROW;
-			break;
-		case V_VOLTAGE:
-	/*16*/		draw.Area.MinHeight = 8 + TOP_HEADER_ROW
 						+ TOP_SEPARATOR
 						+ TOP_FOOTER_ROW;
 			break;
@@ -5259,7 +5255,8 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_SHIFT_f:
 	Setting.fahrCels = !Setting.fahrCels;
-	if (draw.Disposal == D_DASHBOARD)
+	if((draw.Disposal == D_DASHBOARD)
+	||((draw.Disposal == D_MAINVIEW) && (draw.View == V_VOLTAGE)))
 		draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_y:
@@ -7558,6 +7555,9 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			hVolt[Setting.jouleWatt]->attr,
 			hVolt[Setting.jouleWatt]->code );
 
+	LayerAt(layer, code, 35, hVolt[Setting.jouleWatt]->origin.row) = \
+						Setting.fahrCels ? 'F' : 'C';
+
 	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
 			0, (row + draw.Area.MaxRows + 1),
 			hPwr0 );
@@ -8046,24 +8046,24 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Monitor_WO_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return( snprintf(buffer, 4+8+11+6+(3)+10+(4+4+18+13)+1,
+	return( snprintf(buffer, 4+8+11+6+(4)+10+(3+4+18+13)+1,
 			"%7.2f "					\
 			"%7d\x20\x20\x20%5.4f"				\
 			"%.*s%3u%.*s",
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(3), hSpace,
+			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp,
-			(4+4+18+13), hSpace) );
+			(3+4+18+13), hSpace) );
 }
 
 size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-/*TODO(RAPL)
-	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+
+	return( snprintf(buffer, 4+8+11+6+(4)+10+(3)+20+(4)+14+1,
 			"%7.2f "					\
 			"%7d\x20\x20\x20%5.4f"				\
 			"%.*s%3u%.*s"					\
@@ -8071,36 +8071,20 @@ size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(3), hSpace,
+			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp,
-			(4), hSpace,
+			(3), hSpace,
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
 			CFlop->State.Energy) );
-*/
-	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
-			"%7.2f "					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s%3u%.*s"					\
-			"%18llu%.*s%13.9f",
-			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
-			CFlop->Voltage.Vcore,
-			(3), hSpace,
-			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp,
-			(4), hSpace,
-			0LLU,
-			(4), hSpace,
-			0.0) );
 }
 
 size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-/*TODO(RAPL)
-	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
+
+	return( snprintf(buffer, 4+8+11+6+(4)+10+(3)+20+(4)+14+1,
 			"%7.2f "					\
 			"%7d\x20\x20\x20%5.4f"				\
 			"%.*s%3u%.*s"					\
@@ -8108,29 +8092,13 @@ size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(3), hSpace,
+			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					: CFlop->Thermal.Temp,
-			(4), hSpace,
+			(3), hSpace,
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
 			CFlop->State.Power) );
-*/
-	return( snprintf(buffer, 4+8+11+6+(3)+10+(4)+20+(4)+14+1,
-			"%7.2f "					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s%3u%.*s"					\
-			"%18llu%.*s%13.9f",
-			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
-			CFlop->Voltage.Vcore,
-			(3), hSpace,
-			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp,
-			(4), hSpace,
-			0LLU,
-			(4), hSpace,
-			0.0) );
 }
 
 size_t (*Draw_Monitor_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
