@@ -3855,10 +3855,6 @@ REASON_CODE Core_Manager(REF *Ref)
 		case POWER_FORMULA_AMD_17h:
 			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += 
 							CFlop->Delta.Power.ACCU;
-/*TODO(RAPL:CleanUp)
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += \
-				Core[cpu]->Delta.Power.ACCU;
-*/
 			break;
 		case POWER_FORMULA_INTEL:
 		case POWER_FORMULA_INTEL_ATOM:

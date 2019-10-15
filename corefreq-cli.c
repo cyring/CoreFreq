@@ -8412,10 +8412,10 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
 
-	memcpy(&LayerAt(layer, code, col +  9,	row), &buffer[ 0], 8);
-	memcpy(&LayerAt(layer, code, col + 27,	row), &buffer[ 8], 8);
-	memcpy(&LayerAt(layer, code, col + 46,	row), &buffer[16], 8);
-	memcpy(&LayerAt(layer, code, col + 65,	row), &buffer[24], 8);
+	memcpy(&LayerAt(layer, code, col +  8,	row), &buffer[24], 8);
+	memcpy(&LayerAt(layer, code, col + 27,	row), &buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col + 47,	row), &buffer[ 0], 8);
+	memcpy(&LayerAt(layer, code, col + 65,	row), &buffer[ 8], 8);
 
 	row += 1;
 	return(row);
