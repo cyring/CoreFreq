@@ -432,7 +432,8 @@ typedef struct {
 #if defined(UBENCH) && UBENCH == 1
     #define Print_uBenchmark()						\
     ({									\
-	printf("%llu\t%llu\n", UBENCH_METRIC(0), UBENCH_METRIC(1));	\
+	if (Quiet & 0x100)						\
+		printf("%llu\t%llu\n",UBENCH_METRIC(0),UBENCH_METRIC(1));\
     })
 
     #define STRUCT_PROC_RDTSCP()					\
