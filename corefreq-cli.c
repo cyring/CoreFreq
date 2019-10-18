@@ -8042,12 +8042,81 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 	return(0);
 }
+/*TODO(Temp Matrix)
+size_t Draw_Monitor_NoVoltage_NoTemp_NoPower(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+(7+3+6+4)+(3)+(3+4+18+13)+1,
+			"%7.2f\x20"					\
+			"%.*s",
+			CFlop->Relative.Freq,
+			(7+3+6+4)+(3)+(3+4+18+13), hSpace) );
+}
 
-size_t Draw_Monitor_WO_Energy(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Monitor_Voltage_NoTemp_NoPower(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+11+6+(4)+(3)+(3+4+18+13)+1,
+			"%7.2f\x20"					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(4)+(3)+(3+4+18+13), hSpace) );
+}
+
+size_t Draw_Monitor_NoVoltage_NoTemp_PowerUnit(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+(7+3+6+4)+(3)+(3)+20+(4)+14+1,
+			"%7.2f\x20"					\
+			"%.*s"						\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			(7+3+6+4)+(3)+(3), hSpace,
+			CFlop->Delta.Power.ACCU,
+			(4), hSpace,
+			Setting.jouleWatt ? CFlop->State.Energy
+					  : CFlop->State.Power) );
+}
+
+size_t Draw_Monitor_Voltage_NoTemp_PowerUnit(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+11+6+(4)+(3)+(3)+20+(4)+14+1,
+			"%7.2f\x20"					\
+			"%7d\x20\x20\x20%5.4f"				\
+			"%.*s"						\
+			"%18llu%.*s%13.9f",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			CFlop->Voltage.Vcore,
+			(4)+(3)+(3), hSpace,
+			CFlop->Delta.Power.ACCU,
+			(4), hSpace,
+			Setting.jouleWatt ? CFlop->State.Energy
+					  : CFlop->State.Power) );
+}
+*/
+size_t Draw_Monitor_NoVoltage_Temp_NoPower(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return( snprintf(buffer, 4+8+(7+3+6+4)+10+(3+4+18+13)+1,
+			"%7.2f\x20"					\
+			"%.*s%3u%.*s",
+			CFlop->Relative.Freq,
+			(7+3+6+4), hSpace,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					 : CFlop->Thermal.Temp,
+			(3+4+18+13), hSpace) );
+}
+
+size_t Draw_Monitor_Voltage_Temp_NoPower(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	return( snprintf(buffer, 4+8+11+6+(4)+10+(3+4+18+13)+1,
-			"%7.2f "					\
+			"%7.2f\x20"					\
 			"%7d\x20\x20\x20%5.4f"				\
 			"%.*s%3u%.*s",
 			CFlop->Relative.Freq,
@@ -8055,37 +8124,33 @@ size_t Draw_Monitor_WO_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Voltage.Vcore,
 			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp,
+					 : CFlop->Thermal.Temp,
 			(3+4+18+13), hSpace) );
 }
 
-size_t Draw_Monitor_Energy_Joule(Layer *layer,const unsigned int cpu,CUINT row)
+size_t Draw_Monitor_NoVoltage_Temp_PowerUnit(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
-	return( snprintf(buffer, 4+8+11+6+(4)+10+(3)+20+(4)+14+1,
-			"%7.2f "					\
-			"%7d\x20\x20\x20%5.4f"				\
+	return( snprintf(buffer, 4+8+(7+3+6+4)+10+(3)+20+(4)+14+1,
+			"%7.2f\x20"					\
 			"%.*s%3u%.*s"					\
 			"%18llu%.*s%13.9f",
 			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
-			CFlop->Voltage.Vcore,
-			(4), hSpace,
+			(7+3+6+4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp,
+					 : CFlop->Thermal.Temp,
 			(3), hSpace,
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
-			CFlop->State.Energy) );
+			Setting.jouleWatt ? CFlop->State.Energy
+					  : CFlop->State.Power) );
 }
 
-size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Monitor_Voltage_Temp_PowerUnit(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
 	return( snprintf(buffer, 4+8+11+6+(4)+10+(3)+20+(4)+14+1,
-			"%7.2f "					\
+			"%7.2f\x20"					\
 			"%7d\x20\x20\x20%5.4f"				\
 			"%.*s%3u%.*s"					\
 			"%18llu%.*s%13.9f",
@@ -8094,33 +8159,54 @@ size_t Draw_Monitor_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->Voltage.Vcore,
 			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp,
+					 : CFlop->Thermal.Temp,
 			(3), hSpace,
 			CFlop->Delta.Power.ACCU,
 			(4), hSpace,
-			CFlop->State.Power) );
+			Setting.jouleWatt ? CFlop->State.Energy
+					  : CFlop->State.Power) );
 }
 
 size_t (*Draw_Monitor_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
-	Draw_Monitor_Energy_Joule,
-	Draw_Monitor_Power_Watt
+	[FORMULA_SCOPE_NONE]	= Draw_Monitor_Voltage_Temp_NoPower,
+	[FORMULA_SCOPE_SMT]	= Draw_Monitor_Voltage_Temp_PowerUnit,
+	[FORMULA_SCOPE_CORE]	= Draw_Monitor_Voltage_Temp_PowerUnit,
+	[FORMULA_SCOPE_PKG]	= Draw_Monitor_Voltage_Temp_PowerUnit
+};
+
+size_t Draw_Monitor_Voltage_Temp_Power(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	const enum FORMULA_SCOPE powerScope = Shm->Proc.powerFormula & 0b1111;
+	return(Draw_Monitor_Power_Matrix[powerScope](layer, cpu, row));
+}
+
+size_t (*Draw_Monitor_NoVoltage_Matrix[])(Layer*, const unsigned int, CUINT) = {
+	[FORMULA_SCOPE_NONE]	= Draw_Monitor_NoVoltage_Temp_NoPower,
+	[FORMULA_SCOPE_SMT]	= Draw_Monitor_NoVoltage_Temp_PowerUnit,
+	[FORMULA_SCOPE_CORE]	= Draw_Monitor_NoVoltage_Temp_PowerUnit,
+	[FORMULA_SCOPE_PKG]	= Draw_Monitor_NoVoltage_Temp_PowerUnit
+};
+
+size_t Draw_Monitor_NoVoltage_Temp_Power(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	const enum FORMULA_SCOPE powerScope = Shm->Proc.powerFormula & 0b1111;
+	return(Draw_Monitor_NoVoltage_Matrix[powerScope](layer, cpu, row));
+}
+
+size_t (*Draw_Monitor_Voltage_Matrix[])(Layer*, const unsigned int, CUINT) = {
+	[FORMULA_SCOPE_NONE]	= Draw_Monitor_NoVoltage_Temp_Power,
+	[FORMULA_SCOPE_SMT]	= Draw_Monitor_Voltage_Temp_Power,
+	[FORMULA_SCOPE_CORE]	= Draw_Monitor_Voltage_Temp_Power,
+	[FORMULA_SCOPE_PKG]	= Draw_Monitor_Voltage_Temp_Power
 };
 
 CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	size_t len = 0;
+	size_t len;
+	const enum FORMULA_SCOPE voltageScope=Shm->Proc.voltageFormula & 0b1111;
 
-	switch (Shm->Proc.powerFormula) {
-	case POWER_FORMULA_INTEL:
-	case POWER_FORMULA_INTEL_ATOM:
-	case POWER_FORMULA_AMD:
-	case POWER_FORMULA_AMD_17h:
-		len=Draw_Monitor_Power_Matrix[Setting.jouleWatt](layer,cpu,row);
-		break;
-	case POWER_FORMULA_NONE:
-		len = Draw_Monitor_WO_Energy(layer,cpu,row);
-		break;
-	}
+	len = Draw_Monitor_Voltage_Matrix[voltageScope](layer, cpu, row);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	return(0);
