@@ -309,16 +309,6 @@ typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 			MakeAttr(MAGENTA, 0, BLACK, 1) );		\
     }									\
   })
-
-  #define STRUCT_SHM_RDTSCP()						\
-	(  (Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)		\
-	|| (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1) )
-
-  #define STRUCT_CPU_RDPMC()						\
-	(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)		\
-	&& (Shm->Proc.PM_version >= 1)					\
-	&& (BITVAL(Shm->Cpu[Shm->Proc.Service.Core].SystemRegister.CR4, \
-							CR4_PCE) == 1) )
 #else
   #define Draw_uBenchmark(layer) {}
 #endif /* UBENCH */

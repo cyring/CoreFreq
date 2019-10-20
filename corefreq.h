@@ -430,22 +430,12 @@ typedef struct {
 #define IS_REASON_SUCCESSFUL(_reason) (_reason.rc == RC_SUCCESS)
 
 #if defined(UBENCH) && UBENCH == 1
-    #define Print_uBenchmark()						\
+    #define Print_uBenchmark(quiet)					\
     ({									\
-	if (Quiet & 0x100)						\
+	if (quiet)							\
 		printf("%llu\t%llu\n",UBENCH_METRIC(0),UBENCH_METRIC(1));\
     })
-
-    #define STRUCT_PROC_RDTSCP()					\
-	(  (Proc->Features.AdvPower.EDX.Inv_TSC == 1)			\
-	|| (Proc->Features.ExtInfo.EDX.RDTSCP == 1) )
-
-    #define STRUCT_CORE_RDPMC() 					\
-	(  (Proc->Features.Info.Vendor.CRC == CRC_INTEL)		\
-	&& (Proc->Features.PerfMon.EAX.Version >= 1)			\
-	&& (BITVAL(Core[Proc->Service.Core]->SystemRegister.CR4,	\
-							CR4_PCE) == 1) )
 #else
-	#define Print_uBenchmark() {}
+	#define Print_uBenchmark(quiet) {}
 #endif /* UBENCH */
 

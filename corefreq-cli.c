@@ -2536,18 +2536,27 @@ void Voltage(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf("CPU Freq(MHz) VID  Vcore\n");
+		printf( "CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
+			"    Accumulator       Energy(J)     Power(W)\n",
+			Setting.fahrCels ? 'F' : 'C' );
+
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 	    struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf("%03u %7.2f %5d  %5.4f\n",
+		printf( "%03u %7.2f %5d  %5.4f  %3u"			\
+			"  %018llu  %13.9f %13.9f\n",
 			cpu,
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
-			CFlop->Voltage.Vcore);
+			CFlop->Voltage.Vcore,
+			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
+					 : CFlop->Thermal.Temp,
+			CFlop->Delta.Power.ACCU,
+			CFlop->State.Energy,
+			CFlop->State.Power );
 	    else
 		printf("%03u        OFF\n", cpu);
 	  }
@@ -10168,7 +10177,17 @@ int main(int argc, char *argv[])
        {
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-	UBENCH_SETUP(STRUCT_SHM_RDTSCP(), STRUCT_CPU_RDPMC());
+  #define CONDITION_RDTSCP()						\
+	(  (Shm->Proc.Features.AdvPower.EDX.Inv_TSC == 1)		\
+	|| (Shm->Proc.Features.ExtInfo.EDX.RDTSCP == 1) )
+
+  #define CONDITION_RDPMC()						\
+	(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)		\
+	&& (Shm->Proc.PM_version >= 1)					\
+	&& (BITVAL(Shm->Cpu[Shm->Proc.Service.Core].SystemRegister.CR4, \
+							CR4_PCE) == 1) )
+
+	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
 
 	do {
 	    switch (option) {

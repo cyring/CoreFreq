@@ -4102,8 +4102,18 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	}
 
-	UBENCH_SETUP(STRUCT_PROC_RDTSCP(), STRUCT_CORE_RDPMC());
-	Print_uBenchmark();
+    #define CONDITION_RDTSCP()						\
+	(  (Proc->Features.AdvPower.EDX.Inv_TSC == 1)			\
+	|| (Proc->Features.ExtInfo.EDX.RDTSCP == 1) )
+
+    #define CONDITION_RDPMC()						\
+	(  (Proc->Features.Info.Vendor.CRC == CRC_INTEL)		\
+	&& (Proc->Features.PerfMon.EAX.Version >= 1)			\
+	&& (BITVAL(Core[Proc->Service.Core]->SystemRegister.CR4,	\
+							CR4_PCE) == 1) )
+
+	UBENCH_SETUP(CONDITION_RDTSCP(), CONDITION_RDPMC());
+	Print_uBenchmark((Quiet & 0x100));
 
     while (!BITVAL(Shutdown, SYNC))
     {	/* Loop while all the cpu room bits are not cleared.		*/
@@ -4308,7 +4318,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	UBENCH_RDCOUNTER(2);
 
 	UBENCH_COMPUTE();
-	Print_uBenchmark();
+	Print_uBenchmark((Quiet & 0x100));
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
 	if (Arg[cpu].TID)
