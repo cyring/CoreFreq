@@ -128,10 +128,19 @@ help:
 	"|  OPTIM_LVL=<N>                                                |\n"\
 	"|    where <N> is 0,1,2, or 3 for OPTIMIZATION level            |\n"\
 	"|                                                               |\n"\
-	"|  MSR_CORE_PERF_UCC=<REG>                                      |\n"\
-	"|    where <REG> is MSR_IA32_APERF or MSR_CORE_PERF_FIXED_CTR1  |\n"\
+	"|  Performance Counters:                                        |\n"\
+	"|    -------------------------------------------------------    |\n"\
+	"|   |     MSR_CORE_PERF_UCC     |     MSR_CORE_PERF_URC     |   |\n"\
+	"|   |----------- REG -----------|----------- REG -----------|   |\n"\
+	"|   | MSR_IA32_APERF            |  MSR_IA32_MPERF           |   |\n"\
+	"|   | MSR_CORE_PERF_FIXED_CTR1  |  MSR_CORE_PERF_FIXED_CTR2 |   |\n"\
+	"|   | MSR_PPERF                 |  MSR_PPERF                |   |\n"\
+	"|    -------------------------------------------------------    |\n"\
 	"|                                                               |\n"\
-	"|  MSR_CORE_PERF_URC=<REG>                                      |\n"\
-	"|    where <REG> is MSR_IA32_MPERF or MSR_CORE_PERF_FIXED_CTR2  |\n"\
+	"|  Example:                                                     |\n"\
+	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1              \\          |\n"\
+	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1 \\          |\n"\
+	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2 \\          |\n"\
+	"|         clean all                                             |\n"\
 	"o---------------------------------------------------------------o"
 
