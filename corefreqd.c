@@ -64,6 +64,146 @@ typedef struct {
 	SYSGATE			*SysGate;
 } REF;
 
+static inline void Core_ComputeThermal_None(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+}
+
+static inline void Core_ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+	COMPUTE_THERMAL(INTEL,
+			CFlip->Thermal.Temp,
+			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Sensor);
+}
+
+static inline void Core_ComputeThermal_AMD(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+	COMPUTE_THERMAL(AMD,
+			CFlip->Thermal.Temp,
+			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Sensor);
+}
+
+static inline void Core_ComputeThermal_AMD_0Fh(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+	COMPUTE_THERMAL(AMD_0Fh,
+			CFlip->Thermal.Temp,
+			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Sensor);
+}
+
+static inline void Core_ComputeThermal_AMD_15h(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+    if (Cpu->Topology.CoreID == 0)
+	COMPUTE_THERMAL(AMD_15h,
+			CFlip->Thermal.Temp,
+			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Sensor);
+}
+
+static inline void Core_ComputeThermal_AMD_17h(struct FLIP_FLOP *CFlip,
+						CPU_STRUCT *Cpu,
+						SHM_STRUCT *Shm,
+						unsigned int cpu)
+{
+    if (cpu == Shm->Proc.Service.Core)
+	COMPUTE_THERMAL(AMD_17h,
+			CFlip->Thermal.Temp,
+			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Sensor);
+}
+
+static inline void Core_ComputeVoltage_None(struct FLIP_FLOP *CFlip)
+{
+}
+
+#define Core_ComputeVoltage_Intel	Core_ComputeVoltage_None
+
+static inline void Core_ComputeVoltage_Intel_Core2(struct FLIP_FLOP *CFlip)
+{	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
+	COMPUTE_VOLTAGE(INTEL_CORE2,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+#define Core_ComputeVoltage_Intel_SNB	Core_ComputeVoltage_None
+
+static inline void Core_ComputeVoltage_Intel_SKL_X(struct FLIP_FLOP *CFlip)
+{
+	COMPUTE_VOLTAGE(INTEL_SKL_X,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+static inline void Core_ComputeVoltage_AMD(struct FLIP_FLOP *CFlip)
+{
+	COMPUTE_VOLTAGE(AMD,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+static inline void Core_ComputeVoltage_AMD_0Fh(struct FLIP_FLOP *CFlip)
+{	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
+	COMPUTE_VOLTAGE(AMD_0Fh,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+static inline void Core_ComputeVoltage_AMD_15h(struct FLIP_FLOP *CFlip)
+{
+	COMPUTE_VOLTAGE(AMD_15h,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+static inline void Core_ComputeVoltage_AMD_17h(struct FLIP_FLOP *CFlip)
+{
+	COMPUTE_VOLTAGE(AMD_17h,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+}
+
+static inline void Core_ComputePower_None(struct FLIP_FLOP *CFlip,
+						CORE *Core,
+						SHM_STRUCT *Shm)
+{
+}
+
+#define Core_ComputePower_Intel 	Core_ComputePower_None
+
+#define Core_ComputePower_Intel_Atom	Core_ComputePower_None
+
+#define Core_ComputePower_AMD		Core_ComputePower_None
+
+static inline void Core_ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
+						CORE *Core,
+						SHM_STRUCT *Shm)
+{
+	CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
+
+	CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
+				* Shm->Proc.Power.Unit.Joules;
+
+	CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
+				/ (double) Shm->Sleep.Interval;
+}
+
+
 typedef struct {
 	REF		*Ref;
 	unsigned int	Bind;
@@ -91,6 +231,90 @@ static void *Core_Cycle(void *arg)
 		pthread_setname_np(tid, comm);
 		free(comm);
 	}
+
+	void (*Core_ComputeThermalFormula)(struct FLIP_FLOP*,
+						CPU_STRUCT*,
+						SHM_STRUCT*,
+						unsigned int);
+
+	void (*Core_ComputeVoltageFormula)(struct FLIP_FLOP*);
+
+	void (*Core_ComputePowerFormula)(struct FLIP_FLOP*,
+						CORE*,
+						SHM_STRUCT*);
+
+	switch (Shm->Proc.thermalFormula) {
+	case THERMAL_FORMULA_INTEL:
+		Core_ComputeThermalFormula = Core_ComputeThermal_Intel;
+		break;
+	case THERMAL_FORMULA_AMD:
+		Core_ComputeThermalFormula = Core_ComputeThermal_AMD;
+		break;
+	case THERMAL_FORMULA_AMD_0Fh:
+		Core_ComputeThermalFormula = Core_ComputeThermal_AMD_0Fh;
+		break;
+	case THERMAL_FORMULA_AMD_15h:
+		Core_ComputeThermalFormula = Core_ComputeThermal_AMD_15h;
+		break;
+	case THERMAL_FORMULA_AMD_17h:
+		Core_ComputeThermalFormula = Core_ComputeThermal_AMD_17h;
+		break;
+	case THERMAL_FORMULA_NONE:
+	default:
+		Core_ComputeThermalFormula = Core_ComputeThermal_None;
+		break;
+	}
+
+	switch (Shm->Proc.voltageFormula) {
+	case VOLTAGE_FORMULA_INTEL:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_Intel;
+		break;
+	case VOLTAGE_FORMULA_INTEL_CORE2:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_Intel_Core2;
+		break;
+	case VOLTAGE_FORMULA_INTEL_SNB:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_Intel_SNB;
+		break;
+	case VOLTAGE_FORMULA_INTEL_SKL_X:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_Intel_SKL_X;
+		break;
+	case VOLTAGE_FORMULA_AMD:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_AMD;
+		break;
+	case VOLTAGE_FORMULA_AMD_0Fh:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_AMD_0Fh;
+		break;
+	case VOLTAGE_FORMULA_AMD_15h:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_AMD_15h;
+		break;
+	case VOLTAGE_FORMULA_AMD_17h:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_AMD_17h;
+		break;
+	case VOLTAGE_FORMULA_NONE:
+	default:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_None;
+		break;
+	}
+
+	switch (Shm->Proc.powerFormula) {
+	case POWER_FORMULA_INTEL:
+		Core_ComputePowerFormula = Core_ComputePower_Intel;
+		break;
+	case POWER_FORMULA_INTEL_ATOM:
+		Core_ComputePowerFormula = Core_ComputePower_Intel_Atom;
+		break;
+	case POWER_FORMULA_AMD:
+		Core_ComputePowerFormula = Core_ComputePower_AMD;
+		break;
+	case POWER_FORMULA_AMD_17h:
+		Core_ComputePowerFormula = Core_ComputePower_AMD_17h;
+		break;
+	case POWER_FORMULA_NONE:
+	default:
+		Core_ComputePowerFormula = Core_ComputePower_None;
+		break;
+	}
+
 	if (Quiet & 0x100) {
 		printf("    Thread [%lx] Init CYCLE %03u\n", tid, cpu);
 		fflush(stdout);
@@ -119,6 +343,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Clock.R  = Core->Clock.R;
 	CFlip->Clock.Hz = Core->Clock.Hz;
 
+	/* Copy the Performance & C-States Counters.			*/
 	CFlip->Delta.INST	= Core->Delta.INST;
 	CFlip->Delta.C0.UCC	= Core->Delta.C0.UCC;
 	CFlip->Delta.C0.URC	= Core->Delta.C0.URC;
@@ -133,23 +358,24 @@ static void *Core_Cycle(void *arg)
 			 / (double) (CFlip->Delta.TSC);
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
-	   (Protect against a division by zero)				*/
+	   ( Protect against a division by zero )			*/
 	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ?
 			  (double) (CFlip->Delta.INST)
 			 / (double) CFlip->Delta.C0.URC
 			 : 0.0f;
 
 	/* Compute CPI=Non-halted reference cycles per instruction.
-	   (Protect against a division by zero)				*/
+	   ( Protect against a division by zero )			*/
 	CFlip->State.CPI = (CFlip->Delta.INST != 0) ?
 			  (double) CFlip->Delta.C0.URC
 			 / (double) (CFlip->Delta.INST)
 			 : 0.0f;
 
-	/* Compute Turbo State.						*/
+	/* Compute the Turbo State.					*/
 	CFlip->State.Turbo = (double) (CFlip->Delta.C0.UCC)
 			   / (double) (CFlip->Delta.TSC);
-	/* Compute C-States.						*/
+
+	/* Compute the C-States.					*/
 	CFlip->State.C0 = (double) (CFlip->Delta.C0.URC)
 			/ (double) (CFlip->Delta.TSC);
 	CFlip->State.C3 = (double) (CFlip->Delta.C3)
@@ -161,18 +387,18 @@ static void *Core_Cycle(void *arg)
 	CFlip->State.C1 = (double) (CFlip->Delta.C1)
 			/ (double) (CFlip->Delta.TSC);
 
-	/* Relative Ratio formula.					*/
+	/* Apply the relative Ratio formula.				*/
 	CFlip->Relative.Ratio	= (double) (CFlip->Delta.C0.UCC
 					  * Shm->Proc.Boost[BOOST(MAX)])
 				/ (double) (CFlip->Delta.TSC);
 
 	if ((Shm->Proc.PM_version >= 2) && !Shm->Proc.Features.Std.ECX.Hyperv)
 	{
-		/* Relative Frequency equals UCC per second.		*/
+	/* Case: Relative Frequency = UCC per second.			*/
 		CFlip->Relative.Freq = (double) (CFlip->Delta.C0.UCC)
 				     / (Shm->Sleep.Interval * 1000);
 	} else {
-	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
+	/* Case: Relative Frequency = Relative Ratio x Bus Clock Frequency */
 	  CFlip->Relative.Freq=(double)REL_FREQ(Shm->Proc.Boost[BOOST(MAX)], \
 						CFlip->Relative.Ratio,	\
 						Core->Clock,		\
@@ -180,112 +406,30 @@ static void *Core_Cycle(void *arg)
 				/ (Shm->Sleep.Interval * 1000);
 	}
 
-	/* Per Core thermal formulas					*/
+	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events = Core->PowerThermal.Events;
 
-	switch (Shm->Proc.thermalFormula) {
-	case THERMAL_FORMULA_INTEL:
-		COMPUTE_THERMAL(INTEL,
-				CFlip->Thermal.Temp,
-				Cpu->PowerThermal.Param,
-				CFlip->Thermal.Sensor);
-		break;
-	case THERMAL_FORMULA_AMD:
-		COMPUTE_THERMAL(AMD,
-				CFlip->Thermal.Temp,
-				Cpu->PowerThermal.Param,
-				CFlip->Thermal.Sensor);
-		break;
-	case THERMAL_FORMULA_AMD_0Fh:
-		COMPUTE_THERMAL(AMD_0Fh,
-				CFlip->Thermal.Temp,
-				Cpu->PowerThermal.Param,
-				CFlip->Thermal.Sensor);
-		break;
-	case THERMAL_FORMULA_AMD_15h:
-	    if (Shm->Cpu[cpu].Topology.CoreID == 0)
-		COMPUTE_THERMAL(AMD_15h,
-				CFlip->Thermal.Temp,
-				Cpu->PowerThermal.Param,
-				CFlip->Thermal.Sensor);
-		break;
-	case THERMAL_FORMULA_AMD_17h:
-	    if (cpu == Shm->Proc.Service.Core)
-		COMPUTE_THERMAL(AMD_17h,
-				CFlip->Thermal.Temp,
-				Cpu->PowerThermal.Param,
-				CFlip->Thermal.Sensor);
-		break;
-	case THERMAL_FORMULA_NONE:
-		break;
-	}
-	/* Min and Max temperatures per Core				*/
+	Core_ComputeThermalFormula(CFlip, Cpu, Shm, cpu);
+
+	/* Per Core, store the Min and Max temperatures.		*/
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
 		Cpu->PowerThermal.Limit[0] = CFlip->Thermal.Temp;
 	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
 		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
-	/* Per Core voltage formulas					*/
+
+	/* Per Core, evaluate the voltage properties.			*/
 	CFlip->Voltage.VID = Core->PowerThermal.VID;
 
-	switch (Shm->Proc.voltageFormula) {
-	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
-	case VOLTAGE_FORMULA_INTEL_CORE2:
-		COMPUTE_VOLTAGE(INTEL_CORE2,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	case VOLTAGE_FORMULA_INTEL_SKL_X:
-		COMPUTE_VOLTAGE(INTEL_SKL_X,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	case VOLTAGE_FORMULA_AMD:
-		COMPUTE_VOLTAGE(AMD,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
-	case VOLTAGE_FORMULA_AMD_0Fh:
-		COMPUTE_VOLTAGE(AMD_0Fh,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	case VOLTAGE_FORMULA_AMD_15h:
-		COMPUTE_VOLTAGE(AMD_15h,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	case VOLTAGE_FORMULA_AMD_17h:
-		COMPUTE_VOLTAGE(AMD_17h,
-				CFlip->Voltage.Vcore,
-				CFlip->Voltage.VID);
-		break;
-	case VOLTAGE_FORMULA_INTEL:
-	case VOLTAGE_FORMULA_INTEL_SNB:
-	case VOLTAGE_FORMULA_NONE:
-		break;
-	}
-	/* RAPL accumulator per Core					*/
-	switch (Shm->Proc.powerFormula) {
-	case POWER_FORMULA_AMD_17h:
-		CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
+	Core_ComputeVoltageFormula(CFlip);
 
-		CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
-					   * Shm->Proc.Power.Unit.Joules;
+	/* Per Core, evaluate the Power properties.			*/
+	Core_ComputePowerFormula(CFlip, Core, Shm);
 
-		CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
-					  / (double) Shm->Sleep.Interval;
-		break;
-	case POWER_FORMULA_INTEL:
-	case POWER_FORMULA_INTEL_ATOM:
-	case POWER_FORMULA_AMD:
-	case POWER_FORMULA_NONE:
-		break;
-	}
-	/* Interrupts counters						*/
+	/* Copy the Interrupts counters.				*/
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
-	/* Registered NMI counters					*/
+
+	/* If driver registered, copy any NMI counter.			*/
 	if (Shm->Registration.nmi) {
 		CFlip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
 		CFlip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
@@ -3695,6 +3839,153 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	}
 }
 
+static inline void Pkg_ComputeThermal_None(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+}
+
+static inline void Pkg_ComputeThermal_Intel(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+	COMPUTE_THERMAL(INTEL,
+		PFlip->Thermal.Temp,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		PFlip->Thermal.Sensor);
+}
+
+static inline void Pkg_ComputeThermal_AMD(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+	COMPUTE_THERMAL(AMD,
+		PFlip->Thermal.Temp,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		PFlip->Thermal.Sensor);
+}
+
+static inline void Pkg_ComputeThermal_AMD_0Fh(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+	COMPUTE_THERMAL(AMD_0Fh,
+		PFlip->Thermal.Temp,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		PFlip->Thermal.Sensor);
+}
+
+static inline void Pkg_ComputeThermal_AMD_15h(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+	COMPUTE_THERMAL(AMD_15h,
+		PFlip->Thermal.Temp,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		PFlip->Thermal.Sensor);
+}
+
+static inline void Pkg_ComputeThermal_AMD_17h(struct PKG_FLIP_FLOP *PFlip,
+						SHM_STRUCT *Shm)
+{
+	COMPUTE_THERMAL(AMD_17h,
+		PFlip->Thermal.Temp,
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		PFlip->Thermal.Sensor);
+}
+
+static inline void Pkg_ComputeHotCore_None(struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *CFlop,
+							SHM_STRUCT *Shm)
+{
+}
+
+static inline void Pkg_ComputeHotCore_Intel(struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *CFlop,
+							SHM_STRUCT *Shm)
+{
+	if (!Shm->Proc.Features.Power.EAX.PTM) {
+		if (CFlop->Thermal.Sensor < PFlip->Thermal.Sensor)
+			PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+	}
+}
+
+static inline void Pkg_ComputeHotCore_AMD(struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *CFlop,
+							SHM_STRUCT *Shm)
+{
+	if (!Shm->Proc.Features.Power.EAX.PTM) {
+		if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
+			PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+	}
+}
+
+#define Pkg_ComputeHotCore_AMD_0Fh	Pkg_ComputeHotCore_AMD
+
+#define Pkg_ComputeHotCore_AMD_15h	Pkg_ComputeHotCore_AMD
+
+static inline void Pkg_ComputeHotCore_AMD_17h(struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *CFlop,
+							SHM_STRUCT *Shm)
+{
+    if (!Shm->Proc.Features.Power.EAX.PTM) {
+	if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
+		PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
+    }
+}
+
+static inline void Pkg_ComputeVoltage_None(struct FLIP_FLOP *SProc)
+{
+}
+
+#define Pkg_ComputeVoltage_Intel	Pkg_ComputeVoltage_None
+
+#define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
+
+static inline void Pkg_ComputeVoltage_Intel_SNB(struct FLIP_FLOP *SProc)
+{	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
+	COMPUTE_VOLTAGE(INTEL_SNB,
+			SProc->Voltage.Vcore,
+			SProc->Voltage.VID);
+}
+
+#define Pkg_ComputeVoltage_Intel_SKL_X	Pkg_ComputeVoltage_None
+
+#define Pkg_ComputeVoltage_AMD		Pkg_ComputeVoltage_None
+
+#define Pkg_ComputeVoltage_AMD_0Fh	Pkg_ComputeVoltage_None
+
+#define Pkg_ComputeVoltage_AMD_15h	Pkg_ComputeVoltage_None
+
+#define Pkg_ComputeVoltage_AMD_17h	Pkg_ComputeVoltage_None
+
+static inline void Pkg_ComputePower_None(PROC *Proc,
+					struct FLIP_FLOP *CFlop)
+{
+}
+
+#define Pkg_ComputePower_Intel		Pkg_ComputePower_None
+
+#define Pkg_ComputePower_Intel_Atom	Pkg_ComputePower_None
+
+#define Pkg_ComputePower_AMD		Pkg_ComputePower_None
+
+static inline void Pkg_ComputePower_AMD_17h(PROC *Proc,
+					struct FLIP_FLOP *CFlop)
+{
+	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
+}
+
+static inline void Pkg_ResetPower_None(PROC *Proc)
+{
+}
+
+#define Pkg_ResetPower_Intel		Pkg_ResetPower_None
+
+#define Pkg_ResetPower_Intel_Atom	Pkg_ResetPower_None
+
+#define Pkg_ResetPower_AMD		Pkg_ResetPower_None
+
+static inline void Pkg_ResetPower_AMD_17h(PROC *Proc)
+{
+	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
+}
+
 REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
@@ -3716,6 +4007,101 @@ REASON_CODE Core_Manager(REF *Ref)
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
+	void (*Pkg_ComputeThermalFormula)(struct PKG_FLIP_FLOP*,
+						SHM_STRUCT*);
+
+	void (*Pkg_ComputeHotCoreFormula)(struct PKG_FLIP_FLOP*,
+						struct FLIP_FLOP*,
+						SHM_STRUCT*);
+
+	void (*Pkg_ComputeVoltageFormula)(struct FLIP_FLOP*);
+
+	void (*Pkg_ComputePowerFormula)(PROC*, struct FLIP_FLOP*);
+
+	void (*Pkg_ResetPowerFormula)(PROC*);
+
+	switch (Shm->Proc.thermalFormula) {
+	case THERMAL_FORMULA_INTEL:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_Intel;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_Intel;
+		break;
+	case THERMAL_FORMULA_AMD:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_AMD;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_AMD;
+		break;
+	case THERMAL_FORMULA_AMD_0Fh:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_AMD_0Fh;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_AMD_0Fh;
+		break;
+	case THERMAL_FORMULA_AMD_15h:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_AMD_15h;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_AMD_15h;
+		break;
+	case THERMAL_FORMULA_AMD_17h:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_AMD_17h;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_AMD_17h;
+		break;
+	case THERMAL_FORMULA_NONE:
+	default:
+		Pkg_ComputeThermalFormula = Pkg_ComputeThermal_None;
+		Pkg_ComputeHotCoreFormula = Pkg_ComputeHotCore_None;
+	}
+
+	switch (Shm->Proc.voltageFormula) {
+	case VOLTAGE_FORMULA_INTEL:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel;
+		break;
+	case VOLTAGE_FORMULA_INTEL_CORE2:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_Core2;
+		break;
+	case VOLTAGE_FORMULA_INTEL_SNB:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SNB;
+		break;
+	case VOLTAGE_FORMULA_INTEL_SKL_X:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SKL_X;
+		break;
+	case VOLTAGE_FORMULA_AMD:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD;
+		break;
+	case VOLTAGE_FORMULA_AMD_0Fh:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_0Fh;
+		break;
+	case VOLTAGE_FORMULA_AMD_15h:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_15h;
+		break;
+	case VOLTAGE_FORMULA_AMD_17h:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_17h;
+		break;
+	case VOLTAGE_FORMULA_NONE:
+	default:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_None;
+		break;
+	}
+
+	switch (Shm->Proc.powerFormula) {
+	case POWER_FORMULA_INTEL:
+		Pkg_ComputePowerFormula = Pkg_ComputePower_Intel;
+		Pkg_ResetPowerFormula	= Pkg_ResetPower_Intel;
+		break;
+	case POWER_FORMULA_INTEL_ATOM:
+		Pkg_ComputePowerFormula = Pkg_ComputePower_Intel_Atom;
+		Pkg_ResetPowerFormula	= Pkg_ResetPower_Intel_Atom;
+		break;
+	case POWER_FORMULA_AMD:
+		Pkg_ComputePowerFormula = Pkg_ComputePower_AMD;
+		Pkg_ResetPowerFormula	= Pkg_ResetPower_AMD;
+		break;
+	case POWER_FORMULA_AMD_17h:
+		Pkg_ComputePowerFormula = Pkg_ComputePower_AMD_17h;
+		Pkg_ResetPowerFormula	= Pkg_ResetPower_AMD_17h;
+		break;
+	case POWER_FORMULA_NONE:
+	default:
+		Pkg_ComputePowerFormula = Pkg_ComputePower_None;
+		Pkg_ResetPowerFormula	= Pkg_ResetPower_None;
+		break;
+	}
+
 	UBENCH_SETUP(STRUCT_PROC_RDTSCP(), STRUCT_CORE_RDPMC());
 	Print_uBenchmark();
 
@@ -3749,22 +4135,13 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq	    = 0.0;
 
-	switch (Shm->Proc.powerFormula) {
-	case POWER_FORMULA_AMD_17h:
-		Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
-		break;
-	case POWER_FORMULA_INTEL:
-	case POWER_FORMULA_INTEL_ATOM:
-	case POWER_FORMULA_AMD:
-	case POWER_FORMULA_NONE:
-		break;
-	}
+	Pkg_ResetPowerFormula(Proc);
 
 	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
 	{
 	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
-		if (Arg[cpu].TID) {
-			/* Remove this cpu.				*/
+		if (Arg[cpu].TID)
+		{	/* Remove this cpu.				*/
 			pthread_join(Arg[cpu].TID, NULL);
 			Arg[cpu].TID = 0;
 
@@ -3788,8 +4165,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		struct FLIP_FLOP *CFlop = \
 				&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!Arg[cpu].TID) {
-			/* Add this cpu.				*/
+		if (!Arg[cpu].TID)
+		{	/* Add this cpu.				*/
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
@@ -3825,43 +4202,13 @@ REASON_CODE Core_Manager(REF *Ref)
 			maxRelFreq = CFlop->Relative.Freq;
 			Shm->Proc.Top = cpu;
 		}
+
 		/* Workaround to Package Thermal Management: the hottest Core */
-		switch (Shm->Proc.thermalFormula) {
-		case THERMAL_FORMULA_INTEL:
-		    if (!Shm->Proc.Features.Power.EAX.PTM) {
-			if (CFlop->Thermal.Sensor < PFlip->Thermal.Sensor)
-				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
-		    }
-			break;
-		case THERMAL_FORMULA_AMD:
-		case THERMAL_FORMULA_AMD_0Fh:
-		case THERMAL_FORMULA_AMD_15h:
-		    if (!Shm->Proc.Features.Power.EAX.PTM) {
-			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
-				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
-		    }
-			break;
-		case THERMAL_FORMULA_AMD_17h:
-		    if (!Shm->Proc.Features.Power.EAX.PTM) {
-			if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
-				PFlip->Thermal.Sensor = CFlop->Thermal.Sensor;
-		    }
-			break;
-		case THERMAL_FORMULA_NONE:
-			break;
-		}
+		Pkg_ComputeHotCoreFormula(PFlip, CFlop, Shm);
+
 		/* Workaround to RAPL Package counter: sum of all Cores */
-		switch (Shm->Proc.powerFormula) {
-		case POWER_FORMULA_AMD_17h:
-			Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += 
-							CFlop->Delta.Power.ACCU;
-			break;
-		case POWER_FORMULA_INTEL:
-		case POWER_FORMULA_INTEL_ATOM:
-		case POWER_FORMULA_AMD:
-		case POWER_FORMULA_NONE:
-			break;
-		}
+		Pkg_ComputePowerFormula(Proc, CFlop);
+
 		/* Sum counters.					*/
 		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
 		Shm->Proc.Avg.C0    += CFlop->State.C0;
@@ -3923,58 +4270,11 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Thermal.Sensor = Proc->PowerThermal.Sensor;
 		PFlip->Thermal.Events = Proc->PowerThermal.Events;
 	    }
-	    switch (Shm->Proc.thermalFormula) {
-	    case THERMAL_FORMULA_INTEL:
-		COMPUTE_THERMAL(INTEL,
-			PFlip->Thermal.Temp,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
-			PFlip->Thermal.Sensor);
-		break;
-	    case THERMAL_FORMULA_AMD:
-		COMPUTE_THERMAL(AMD,
-			PFlip->Thermal.Temp,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
-			PFlip->Thermal.Sensor);
-		break;
-	    case THERMAL_FORMULA_AMD_0Fh:
-		COMPUTE_THERMAL(AMD_0Fh,
-			PFlip->Thermal.Temp,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
-			PFlip->Thermal.Sensor);
-		break;
-	    case THERMAL_FORMULA_AMD_15h:
-		COMPUTE_THERMAL(AMD_15h,
-			PFlip->Thermal.Temp,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
-			PFlip->Thermal.Sensor);
-		break;
-	    case THERMAL_FORMULA_AMD_17h:
-		COMPUTE_THERMAL(AMD_17h,
-			PFlip->Thermal.Temp,
-			Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
-			PFlip->Thermal.Sensor);
-		break;
-	    case THERMAL_FORMULA_NONE:
-		break;
-	    }
-		/* Package voltage formulas				*/
-	    switch (Shm->Proc.voltageFormula) {
-		/* Intel 2nd Gen Datasheet Vol-1 §7.4 Table 7-1		*/
-	    case VOLTAGE_FORMULA_INTEL_SNB:
-		COMPUTE_VOLTAGE(INTEL_SNB,
-				SProc->Voltage.Vcore,
-				SProc->Voltage.VID);
-		break;
-	    case VOLTAGE_FORMULA_INTEL:
-	    case VOLTAGE_FORMULA_INTEL_CORE2:
-	    case VOLTAGE_FORMULA_INTEL_SKL_X:
-	    case VOLTAGE_FORMULA_AMD:
-	    case VOLTAGE_FORMULA_AMD_0Fh:
-	    case VOLTAGE_FORMULA_AMD_15h:
-	    case VOLTAGE_FORMULA_AMD_17h:
-	    case VOLTAGE_FORMULA_NONE:
-		break;
-	    }
+
+		Pkg_ComputeThermalFormula(PFlip, Shm);
+
+		Pkg_ComputeVoltageFormula(SProc);
+
 		/*
 		The Driver tick is bound to the Service Core:
 		1- Tasks collection; Tasks count; and Memory usage.
