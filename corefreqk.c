@@ -9358,7 +9358,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	MatchPeerForUpService(&Proc->Service, cpu);
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-   if (Register_CPU_Idle == 1) {
+   if (Proc->Registration.Driver.cpuidle) {
 	struct cpuidle_device *device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
 	if (device->registered == 0) {
 		device->cpu = cpu;
