@@ -7853,13 +7853,15 @@ void Draw_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 }
 
-size_t Draw_Frequency_Fahrenheit(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
+			CPU_STRUCT *Cpu,
+			const unsigned int cpu)
 {
-	return(snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	return(snprintf(buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-		"%-3u" "/" "%3u" "/" "%3u",
+		"%.*s",
 		CFlop->Relative.Freq,
 		CFlop->Relative.Ratio,
 		100.f * CFlop->State.Turbo,
@@ -7868,12 +7870,12 @@ size_t Draw_Frequency_Fahrenheit(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		Cels2Fahr(Cpu->PowerThermal.Limit[0]),
-		Cels2Fahr(CFlop->Thermal.Temp),
-		Cels2Fahr(Cpu->PowerThermal.Limit[1])));
+		11, hSpace));
 }
 
-size_t Draw_Frequency_Celsius(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+size_t Draw_Freq_Celsius(struct FLIP_FLOP *CFlop,
+			CPU_STRUCT *Cpu,
+			const unsigned int cpu)
 {
 	return(snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
@@ -7893,13 +7895,15 @@ size_t Draw_Frequency_Celsius(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
 		Cpu->PowerThermal.Limit[1]));
 }
 
-size_t Draw_Frequency_Spaces(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
+size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
+				CPU_STRUCT *Cpu,
+				const unsigned int cpu)
 {
-	return(snprintf(buffer, 17+8+6+7+7+7+7+7+7+11+1,
+	return(snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
-		"%.*s",
+		"%-3u" "/" "%3u" "/" "%3u",
 		CFlop->Relative.Freq,
 		CFlop->Relative.Ratio,
 		100.f * CFlop->State.Turbo,
@@ -7908,38 +7912,91 @@ size_t Draw_Frequency_Spaces(struct FLIP_FLOP *CFlop, CPU_STRUCT *Cpu)
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		11, hSpace));
+		Cels2Fahr(Cpu->PowerThermal.Limit[0]),
+		Cels2Fahr(CFlop->Thermal.Temp),
+		Cels2Fahr(Cpu->PowerThermal.Limit[1])));
 }
 
-size_t (*Draw_Frequency_Temp[])(struct FLIP_FLOP*, CPU_STRUCT*) = {
-			Draw_Frequency_Celsius,
-			Draw_Frequency_Fahrenheit,
-			Draw_Frequency_Spaces
+size_t Draw_Freq_Celsius_PerCore(struct FLIP_FLOP *CFlop,
+				CPU_STRUCT *Cpu,
+				const unsigned int cpu)
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+		return(Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
+	} else {
+		return(Draw_Freq_Spaces(CFlop, NULL, cpu));
+	}
+}
+
+size_t Draw_Freq_Fahrenheit_PerCore(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu)
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+		return(Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
+	} else {
+		return(Draw_Freq_Spaces(CFlop, NULL, cpu));
+	}
+}
+
+size_t Draw_Freq_Celsius_PerPkg(struct FLIP_FLOP *CFlop,
+				CPU_STRUCT *Cpu,
+				const unsigned int cpu)
+{
+	if (cpu == Shm->Proc.Service.Core) {
+		return(Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
+	} else {
+		return(Draw_Freq_Spaces(CFlop, NULL, cpu));
+	}
+}
+
+size_t Draw_Freq_Fahrenheit_PerPkg(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu)
+{
+	if (cpu == Shm->Proc.Service.Core) {
+		return(Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
+	} else {
+		return(Draw_Freq_Spaces(CFlop, NULL, cpu));
+	}
+}
+
+size_t (*Draw_Freq_Temp_Matrix[4][2])(	struct FLIP_FLOP*,
+					CPU_STRUCT*,
+					const unsigned int) = \
+{
+	[FORMULA_SCOPE_NONE] = {
+		[0] = Draw_Freq_Spaces,
+		[1] = Draw_Freq_Spaces
+	},
+	[FORMULA_SCOPE_SMT ] = {
+		[0] = Draw_Freq_Celsius,
+		[1] = Draw_Freq_Fahrenheit
+	},
+	[FORMULA_SCOPE_CORE] = {
+		[0] = Draw_Freq_Celsius_PerCore,
+		[1] = Draw_Freq_Fahrenheit_PerCore
+	},
+	[FORMULA_SCOPE_PKG ] = {
+		[0] = Draw_Freq_Celsius_PerPkg,
+		[1] = Draw_Freq_Fahrenheit_PerPkg
+	}
 };
 
 CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	size_t len = 0;
 
-    switch (Shm->Proc.thermalFormula) {
-    case THERMAL_FORMULA_INTEL:
-    case THERMAL_FORMULA_AMD:
-    case THERMAL_FORMULA_AMD_0Fh:
-	len = Draw_Frequency_Temp[Setting.fahrCels](CFlop, &Shm->Cpu[cpu]);
-	break;
-    case THERMAL_FORMULA_AMD_15h:
-    case THERMAL_FORMULA_AMD_17h:
-      if (cpu == Shm->Proc.Service.Core) {
-	len = Draw_Frequency_Temp[Setting.fahrCels](CFlop, &Shm->Cpu[cpu]);
-      } else {
-	len = Draw_Frequency_Temp[2](CFlop, NULL);
-      }
-	break;
-    case THERMAL_FORMULA_NONE:
-	len = Draw_Frequency_Temp[2](CFlop, NULL);
-	break;
-    }
+	const enum FORMULA_SCOPE
+		thermalScope = SCOPE_OF_FORMULA(Shm->Proc.thermalFormula);
+
+	size_t len=Draw_Freq_Temp_Matrix[thermalScope]
+					[Setting.fahrCels](CFlop,
+							&Shm->Cpu[cpu],
+							cpu);
+
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -8708,7 +8765,8 @@ size_t Draw_Monitor_V3_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 }
 
-size_t (*Draw_Monitor_VTP_Matrix[4][4][4])(Layer*, const unsigned int, CUINT)={
+size_t (*Draw_Monitor_VTP_Matrix[4][4][4])(Layer*, const unsigned int, CUINT)=\
+{
 [FORMULA_SCOPE_NONE] = {
     [FORMULA_SCOPE_NONE] = {
 	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V0_T0_P0,
@@ -8818,9 +8876,10 @@ size_t (*Draw_Monitor_VTP_Matrix[4][4][4])(Layer*, const unsigned int, CUINT)={
 CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len;
-	const enum FORMULA_SCOPE voltageScope=Shm->Proc.voltageFormula & 0b1111;
-	const enum FORMULA_SCOPE thermalScope=Shm->Proc.thermalFormula & 0b1111;
-	const enum FORMULA_SCOPE powerScope  =Shm->Proc.powerFormula   & 0b1111;
+	const enum FORMULA_SCOPE
+		voltageScope	= SCOPE_OF_FORMULA(Shm->Proc.voltageFormula),
+		thermalScope	= SCOPE_OF_FORMULA(Shm->Proc.thermalFormula),
+		powerScope	= SCOPE_OF_FORMULA(Shm->Proc.powerFormula);
 
 	len = Draw_Monitor_VTP_Matrix	[voltageScope]
 					[thermalScope]

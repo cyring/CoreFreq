@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	67
-#define COREFREQ_REV	8
+#define COREFREQ_REV	9
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -351,6 +351,8 @@ enum POWER_FORMULAS {
 	POWER_FORMULA_AMD_17h =						\
 	(0b000100000001000000000000 << 8) | FORMULA_SCOPE_CORE
 };
+
+#define SCOPE_OF_FORMULA(formula)	(formula & 0b0011)
 
 #define ROUND_TO_PAGES(Size)	PAGE_SIZE * ((Size / PAGE_SIZE) 	\
 				+ ((Size % PAGE_SIZE)? 1:0))
