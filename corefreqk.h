@@ -877,6 +877,8 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Moorefield]	06_5Ah						*/
 #define _Atom_Moorefield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
+/*	[Tremont]	06_86h						*/
+#define _Atom_Tremont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0x6}
 
 /*	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh			*/
 #define _Nehalem_Bloomfield \
@@ -920,7 +922,8 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
 /*	[Kaby Lake]	06_8Eh Stepping 9, 06_9Eh,
-	[Whiskey Lake]	06_8Eh Stepping 11				*/
+	[Whiskey Lake]	06_8Eh Stepping 11
+	[Comet Lake]	06_8Eh Stepping 12				*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 
