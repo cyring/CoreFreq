@@ -8,6 +8,26 @@
 	#define MSR_SMI_COUNT			0x00000034
 #endif
 
+#ifndef MSR_IA32_SPEC_CTRL
+	#define MSR_IA32_SPEC_CTRL		0x00000048
+#endif
+
+#ifndef MSR_IA32_PRED_CMD
+	#define MSR_IA32_PRED_CMD		0x00000049
+#endif
+
+#ifndef MSR_IA32_FLUSH_CMD
+	#define MSR_IA32_FLUSH_CMD		0x0000010b
+#endif
+
+#ifndef MSR_IA32_ARCH_CAPABILITIES
+	#define MSR_IA32_ARCH_CAPABILITIES	0x0000010a
+#endif
+
+#ifndef MSR_IA32_CORE_CAPABILITIES
+	#define MSR_IA32_CORE_CAPABILITIES	0x000000cf
+#endif
+
 #ifndef MSR_PLATFORM_INFO
 	#define MSR_PLATFORM_INFO		0x000000ce
 #endif
@@ -269,6 +289,68 @@ typedef union
 		ReservedBits	: 64-3;
 	};
 } FSB_FREQ;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		IBRS		:  1-0, /* CPUID(EAX=07H,ECX=0):EDX[26] == 1 */
+		STIBP		:  2-1, /* CPUID(EAX=07H,ECX=0):EDX[27] == 1 */
+		SSBD		:  3-2, /* CPUID(EAX=07H,ECX=0):EDX[31] == 1 */
+		ReservedBits	: 64-3;
+	};
+} SPEC_CTRL;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		IBPB		:  1-0, /* CPUID(EAX=07H,ECX=0):EDX[26] == 1 */
+		ReservedBits	: 64-1;
+	};
+} PRED_CMD;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		L1D_FLUSH_CMD	:  1-0, /* CPUID(EAX=07H,ECX=0):EDX[28] == 1 */
+		ReservedBits	: 64-1;
+	};
+} FLUSH_CMD;
+
+typedef union
+{	/* CPUID.(EAX=07H,ECX=0):EDX[29] == 1				*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		RDCL_NO 	:  1-0,
+		IBRS_ALL	:  2-1,
+		RSBA		:  3-2,
+		L1DFL_VMENTRY_NO:  4-3,
+		SSB_NO		:  5-4,
+		ReservedBits	: 64-5;
+	};
+} ARCH_CAPABILITIES;
+
+typedef union
+{	/* 06_86 [TREMONT]						*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ReservedBits1	:  5-0,
+		SPLA_EXCEPTION	:  6-5, /*Exception for split locked accesses*/
+		ReservedBits2	: 64-6;
+	};
+} CORE_CAPABILITIES;
 
 typedef union
 {	/* MSR IA32_PERF_STATUS(0x198): 0F_03 [NetBurst]		*/

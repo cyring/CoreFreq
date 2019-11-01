@@ -797,7 +797,9 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		Reserved1	:  1-0,
 		AVX512_4VNNIW	:  2-1, /* Intel Xeon Phi		*/
 		AVX512_4FMAPS	:  3-2, /* Intel Xeon Phi		*/
-		Reserved2	: 26-4,
+		Reserved2	: 10-3,
+		MD_CLEAR_Cap	: 11-10,
+		Reserved3	: 26-11,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
 		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/

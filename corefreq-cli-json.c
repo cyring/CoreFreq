@@ -757,6 +757,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW);
 					json_key(&s, "AVX512_4FMAPS");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS);
+					json_key(&s, "MD_CLEAR");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap);
 					json_key(&s, "IBRS_IBPB");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap);
 					json_key(&s, "STIBP");
