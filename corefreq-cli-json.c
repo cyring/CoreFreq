@@ -728,17 +728,50 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.PKU);
 					json_key(&s, "OSPKE");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.OSPKE);
+					json_key(&s, "WAITPKG");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.WAITPKG);
+					json_key(&s, "GFNI");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.GFNI);
+					json_key(&s, "AVX512_VPOPCNTDQ");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ);
 					json_key(&s, "MAWAU");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.MAWAU);
 					json_key(&s, "RDPID");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.RDPID);
+					json_key(&s, "CLDEMOTE");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.CLDEMOTE);
+					json_key(&s, "MOVDIRI");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.MOVDIRI);
+					json_key(&s, "MOVDIR64B");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.MOVDIR64B);
 					json_key(&s, "SGX_LC");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.ECX.SGX_LC);
 
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
-				json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX);
+//				json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX);
+				{
+					json_start_object(&s);
+					json_key(&s, "AVX512_4VNNIW");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW);
+					json_key(&s, "AVX512_4FMAPS");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS);
+					json_key(&s, "IBRS_IBPB");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap);
+					json_key(&s, "STIBP");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap);
+					json_key(&s, "L1D_FLUSH");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap);
+					json_key(&s, "IA32_ARCH_CAPABILITIES");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP);
+					json_key(&s, "IA32_CORE_CAPABILITIES");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.IA32_CORE_CAP);
+					json_key(&s, "SSBD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap);
+
+					json_end_object(&s);
+				}
 
 				json_end_object(&s);
 			}

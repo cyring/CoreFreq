@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	67
-#define COREFREQ_REV	9
+#define COREFREQ_MINOR	68
+#define COREFREQ_REV	0
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -734,8 +734,8 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 	{
 		unsigned int
 		FSGSBASE	:  1-0, /* Common x86			*/
-		TSC_ADJUST	:  2-1,
-		SGX		:  3-2,
+		TSC_ADJUST	:  2-1, /* IA32_TSC_ADJUST		*/
+		SGX		:  3-2, /* Software Guard Extensions	*/
 		BMI1		:  4-3, /* Common x86			*/
 		HLE		:  5-4, /* Hardware Lock Elision	*/
 		AVX2		:  6-5, /* Common x86			*/
@@ -755,10 +755,10 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		ADX		: 20-19, /* Arbitrary-Precision Arithmetic */
 		SMAP		: 21-20, /*Supervisor-Mode Access & CLAC/STAC*/
 		AVX512_IFMA	: 22-21,
-		Unused1 	: 23-22,
-		CLFLUSHOPT	: 24-23,
-		CLWB		: 25-24,
-		ProcessorTrace	: 26-25,
+		Reserved1	: 23-22,
+		CLFLUSHOPT	: 24-23, /* Flush Cache Line Optimized	*/
+		CLWB		: 25-24, /* Cache Line Write Back	*/
+		ProcessorTrace	: 26-25, /* CPUID.(EAX=14H, ECX=0)	*/
 		AVX512PF	: 27-26, /* Intel Xeon Phi		*/
 		AVX512ER	: 28-27, /* Intel Xeon Phi		*/
 		AVX512CD	: 29-28,
@@ -773,16 +773,38 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX512_VBMI	:  2-1,
 		UMIP		:  3-2, /* User-Mode Instruction Prevention */
 		PKU		:  4-3, /* Protection Keys User-Mode pages */
-		OSPKE		:  5-4,
-		Unused1 	: 17-5,
+		OSPKE		:  5-4, /* RDPKRU/WRPKRU instructions	*/
+		WAITPKG 	:  6-5, /* TPAUSE, UMONITOR, UMWAIT	*/
+		Reserved1	:  8-6,
+		GFNI		:  9-8, /* Galois Field SSE instructions*/
+		Reserved2	: 14-9,
+		AVX512_VPOPCNTDQ: 15-14, /* Intel Xeon Phi		*/
+		Reserved3	: 17-15,
 		MAWAU		: 22-17, /* for BNDLDX & BNDSTX instructions*/
-		RDPID		: 23-22, /*RDPID & IA32_TSC_AUX availability*/
-		Unused2 	: 30-23,
+		RDPID		: 23-22, /* RDPID & IA32_TSC_AUX availability*/
+		Reserved4	: 25-23,
+		CLDEMOTE	: 26-25, /* Support of cache line demote */
+		Reserved5	: 27-26,
+		MOVDIRI 	: 28-27, /* Move Doubleword as Direct Store*/
+		MOVDIR64B	: 29-28, /* Move 64 Bytes as Direct Store*/
+		Reserved6	: 30-29,
 		SGX_LC		: 31-30, /* SGX Launch Configuration support*/
-		Unused3 	: 32-31;
+		Reserved7	: 32-31;
 	} ECX;
+	struct
+	{	/* Intel reserved.					*/
 		unsigned int
-	EDX			: 32-0; /* Intel reserved.		*/
+		Reserved1	:  1-0,
+		AVX512_4VNNIW	:  2-1, /* Intel Xeon Phi		*/
+		AVX512_4FMAPS	:  3-2, /* Intel Xeon Phi		*/
+		Reserved2	: 26-4,
+		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
+		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
+		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
+		IA32_ARCH_CAP	: 30-29, /* IA32_ARCH_CAPABILITIES	*/
+		IA32_CORE_CAP	: 31-30, /* IA32_CORE_CAPABILITIES	*/
+		SSBD_Cap	: 32-31; /* IA32_SPEC_CTRL[2]		*/
+	} EDX;
 } CPUID_0x00000007;
 
 typedef struct	/* Architectural Performance Monitoring Leaf.		*/
