@@ -1419,7 +1419,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
-void TechUpdate(TGrid *grid,	const int bix, const int pos,
+void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
 				const size_t len, const char *item)
 {
 	ATTRIBUTE *attrib[2] = {
@@ -1432,16 +1432,16 @@ void TechUpdate(TGrid *grid,	const int bix, const int pos,
 
 void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.EIST == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.EIST == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	TechUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void TurboUpdate(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.Turbo == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.Turbo == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	TechUpdate(grid, bix, pos, 3, enabled(bix));
 }
@@ -1460,7 +1460,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(SYSINFO_TECH_COND0).ATTR(),
 		RSC(SYSINFO_TECH_COND1).ATTR()
 	};
-	int bix;
+	unsigned int bix;
 /* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
@@ -1545,7 +1545,7 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
-void PerfMonUpdate(TGrid *grid, const int bix, const int pos,
+void PerfMonUpdate(TGrid *grid, const unsigned int bix, const signed int pos,
 				const size_t len, const char *item)
 {
 	ATTRIBUTE *attrib[4] = {
@@ -1560,64 +1560,64 @@ void PerfMonUpdate(TGrid *grid, const int bix, const int pos,
 
 void C1E_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.C1E == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.C1E == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void C1A_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.C1A == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.C1A == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void C3A_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.C3A == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.C3A == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void C1U_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.C1U == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.C1U == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void C3U_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.C3U == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.C3U == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void CC6_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.CC6 == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.CC6 == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void PC6_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.PC6 == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Technology.PC6 == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
 
 void HWP_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Features.HWP_Enable == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Proc.Features.HWP_Enable == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
 }
@@ -1628,7 +1628,7 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND0).ATTR(),
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
 	};
-	const int bix = Shm->Proc.Features.HWP_Enable == 1;
+	const unsigned int bix = Shm->Proc.Features.HWP_Enable == 1;
 	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], 76);
 
 	RefreshRatioFreq(grid, data);
@@ -1636,8 +1636,8 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
 
 void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1,
-		  pos = grid->cell.length - 9;
+    const unsigned int bix=Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1;
+	const signed int pos = grid->cell.length - 9;
 
 	PerfMonUpdate( grid, bix ? 3 : 2, pos, 7,
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
@@ -1669,7 +1669,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(SYSINFO_PERFMON_COND3).ATTR(),
 		RSC(SYSINFO_PERFMON_COND4).ATTR()
 	};
-	int bix;
+	unsigned int bix;
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPM       [%3d]", RSC(VERSION).CODE(),
@@ -1944,7 +1944,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return(reason);
 }
 
-void PwrThermalUpdate(TGrid *grid, const int bix, const int pos,
+void PwrThermalUpdate(TGrid *grid, const unsigned int bix,const signed int pos,
 				const size_t len, const char *item)
 {
 	ATTRIBUTE *attrib[4] = {
@@ -1959,8 +1959,8 @@ void PwrThermalUpdate(TGrid *grid, const int bix, const int pos,
 
 void ODCM_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Proc.Technology.ODCM == 1,
-		  pos = grid->cell.length - 9;
+	const unsigned int bix = Shm->Proc.Technology.ODCM == 1;
+	const signed int pos = grid->cell.length - 9;
 
 	PwrThermalUpdate( grid, bix ? 3 : 1, pos, 7,
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
@@ -1968,8 +1968,8 @@ void ODCM_Update(TGrid *grid, DATA_TYPE data)
 
 void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 {
-	int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
-	       && (Shm->Proc.Technology.ODCM == 1);
+	const unsigned int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
+				&& (Shm->Proc.Technology.ODCM == 1);
 	char item[10+1];
 
 	snprintf(item, 10+1, "%c%6.2f%%%c",
@@ -2009,7 +2009,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(LOCK).CODE(),
 		RSC(UNLOCK).CODE()
 	};
-	int bix;
+	unsigned int bix;
 /* Section Mark */
 	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
 	GridCall(PUT(bix ? BOXKEY_ODCM : SCANKEY_NULL,
@@ -2351,16 +2351,19 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	int d;
 	for (d = 0; d < 5; d++) {
 		len = strlen(item[d]);
-		item[d][len]=item[d][len+1]=item[d][len+2]=item[d][len+3]='\x20';
-		item[d][len+4] = '\0';
+		item[d][len    ] = \
+		item[d][len + 1] = \
+		item[d][len + 2] = \
+		item[d][len + 3] = '\x20';
+		item[d][len + 4] = '\0';
 	}
       }
       if (idx < (CPUIDLE_STATE_MAX - 1)) {
 	int d;
 	for (d = 0; d < 5; d++) {
 		len = strlen(item[d]);
-		item[d][len] = '\x20';
-		item[d][len+1] = '\0';
+		item[d][len    ] = '\x20';
+		item[d][len + 1] = '\0';
 	}
       }
     }
