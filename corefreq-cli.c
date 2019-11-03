@@ -1107,12 +1107,18 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[3] = {
+	ATTRIBUTE *attrib[4] = {
 		RSC(SYSINFO_FEATURES_COND0).ATTR(),
 		RSC(SYSINFO_FEATURES_COND1).ATTR(),
-		RSC(SYSINFO_FEATURES_COND2).ATTR()
+		RSC(SYSINFO_FEATURES_COND2).ATTR(),
+		RSC(SYSINFO_FEATURES_COND3).ATTR()
 	};
-	const ASCII *TSC[] = {
+	ATTRIBUTE *attr_TSC[3] = {
+		RSC(SYSINFO_FEATURES_COND0).ATTR(),
+		RSC(SYSINFO_FEATURES_COND1).ATTR(),
+		RSC(SYSINFO_FEATURES_COND4).ATTR()
+	};
+	const ASCII *code_TSC[] = {
 		RSC(MISSING).CODE(),
 		RSC(VARIANT).CODE(),
 		RSC(INVARIANT).CODE()
@@ -1122,7 +1128,13 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(ASCII*) "  xAPIC",
 		(ASCII*) " x2APIC"
 	};
-	int bix;
+	const ASCII *MECH[] = {
+		RSC(MISSING).CODE(),
+		RSC(PRESENT).CODE(),
+		RSC(DISABLE).CODE(),
+		RSC(ENABLE).CODE()
+	};
+	unsigned int bix;
 /* Section Mark */
 	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1190,8 +1202,8 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
 	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sFMA|FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
-		width - 23 - RSZ(FEATURES_FMA), hSpace, powered(bix));
+		"%s%.*sFMA | FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
+		width - 25 - RSZ(FEATURES_FMA), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1200,8 +1212,8 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIA64|LM   [%7s]", RSC(FEATURES_LM).CODE(),
-		width - 22 - RSZ(FEATURES_LM), hSpace, powered(bix));
+		"%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),
+		width - 24 - RSZ(FEATURES_LM), hSpace, powered(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1295,11 +1307,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
 		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, powered(bix));
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.InvariantTSC],
+	PUT(SCANKEY_NULL, attr_TSC[Shm->Proc.Features.InvariantTSC],
 		width, 2,
 		"%s%.*sTSC [%9s]", RSC(FEATURES_TSC).CODE(),
 		width - 18 - RSZ(FEATURES_TSC), hSpace,
-		TSC[Shm->Proc.Features.InvariantTSC]);
+		code_TSC[Shm->Proc.Features.InvariantTSC]);
 
 	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1338,7 +1350,72 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
 		width - 19 - RSZ(FEATURES_XTPR), hSpace, powered(bix));
+/* Section Mark */
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+	PUT(SCANKEY_NULL, attrib[0], width, 0,
+		"%s", RSC(FEAT_SECTION_MECH).CODE());
 
+	bix = Shm->Proc.Mechanisms.IBRS;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sIBRS   [%7s]", RSC(MECH_IBRS).CODE(),
+		width - 19 - RSZ(MECH_IBRS), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.IBPB;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
+		width - 19 - RSZ(MECH_IBPB), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.STIBP;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sSTIBP   [%7s]", RSC(MECH_STIBP).CODE(),
+		width - 20 - RSZ(MECH_STIBP), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.SSBD;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
+		width - 19 - RSZ(MECH_SSBD), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.L1D_FLUSH_CMD;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
+		width - 24 - RSZ(MECH_L1D_FLUSH), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.L1DFL_VMENTRY_NO == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sL1DFL_VMENTRY_NO   [%7s]",
+		RSC(MECH_L1DFL_VMENTRY_NO).CODE(),
+		width - 31 - RSZ(MECH_L1DFL_VMENTRY_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
+		width - 23 - RSZ(MECH_MD_CLEAR), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.RDCL_NO == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sRDCL_NO   [%7s]", RSC(MECH_RDCL_NO).CODE(),
+		width - 22 - RSZ(MECH_RDCL_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.IBRS_ALL == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sIBRS_ALL   [%7s]", RSC(MECH_IBRS_ALL).CODE(),
+		width - 23 - RSZ(MECH_IBRS_ALL), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.RSBA == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sRSBA   [%7s]", RSC(MECH_RSBA).CODE(),
+		width - 19 - RSZ(MECH_RSBA), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.SSB_NO == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sSSB_NO   [%7s]", RSC(MECH_SSB_NO).CODE(),
+		width - 21 - RSZ(MECH_SSB_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Features.Mechanisms.MDS_NO == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sMDS_NO   [%7s]", RSC(MECH_MDS_NO).CODE(),
+		width - 21 - RSZ(MECH_MDS_NO), hSpace, MECH[bix]);
+    }
 	return(reason);
 }
 

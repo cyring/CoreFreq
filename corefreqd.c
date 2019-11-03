@@ -715,6 +715,30 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 						Proc->CR_Mask) != 0;
 }
 
+void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
+{
+	Shm->Proc.Mechanisms.IBRS = (
+		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
+		+ (1 << Shm->Proc.Features.Mechanisms.IBRS)
+	);
+	Shm->Proc.Mechanisms.IBPB = (
+		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
+		+ (1 << Shm->Proc.Features.Mechanisms.IBPB)
+	);
+	Shm->Proc.Mechanisms.STIBP = (
+		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap
+		+ (1 << Shm->Proc.Features.Mechanisms.STIBP)
+	);
+	Shm->Proc.Mechanisms.SSBD = (
+		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap
+		+ (1 << Shm->Proc.Features.Mechanisms.SSBD)
+	);
+	Shm->Proc.Mechanisms.L1D_FLUSH_CMD = (
+		Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap
+		+ (1 << Shm->Proc.Features.Mechanisms.L1D_FLUSH_CMD)
+	);
+}
+
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 {	/* Copy the operational settings.				*/
 	Shm->Registration.AutoClock = Proc->Registration.AutoClock;
@@ -740,6 +764,8 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	HyperThreading(Shm, Proc);
 
 	PowerInterface(Shm, Proc);
+
+	Mitigation_Mechanisms(Shm, Proc);
 }
 
 typedef struct {

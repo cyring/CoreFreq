@@ -210,7 +210,7 @@
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_MISSING_CODE_EN		"Missing"
-#define RSC_PRESENT_CODE_EN		"Present"
+#define RSC_PRESENT_CODE_EN		"Capable"
 #define RSC_VARIANT_CODE_EN		"Variant"
 #define RSC_INVARIANT_CODE_EN		"Invariant"
 #define RSC_FEATURES_1GB_PAGES_CODE_EN	"1 GB Pages Support"
@@ -254,6 +254,7 @@
 #define RSC_FEATURES_XD_BIT_CODE_EN	"Execution Disable Bit Support"
 #define RSC_FEATURES_XSAVE_CODE_EN	"XSAVE/XSTOR States"
 #define RSC_FEATURES_XTPR_CODE_EN	"xTPR Update Control"
+#define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
 #define RSC_TECHNOLOGIES_SMM_CODE_EN	"System Management Mode"
@@ -634,4 +635,19 @@
 #define RSC_BOX_RECORDER_TITLE_CODE_EN	" Duration "
 
 #define RSC_SMBIOS_TITLE_CODE_EN	" SMBIOS "
+
+#define RSC_MECH_IBRS_CODE_EN		"Indirect Branch Restricted Speculation"
+#define RSC_MECH_IBPB_CODE_EN		"Indirect Branch Prediction Barrier"
+#define RSC_MECH_STIBP_CODE_EN	    "Single Thread Indirect Branch Predictor"
+#define RSC_MECH_SSBD_CODE_EN		"Speculative Store Bypass Disable"
+#define RSC_MECH_L1D_FLUSH_CODE_EN  "Writeback & invalidate the L1 data cache"
+#define RSC_MECH_MD_CLEAR_CODE_EN	"Architectural - Buffer Overwriting"
+#define RSC_MECH_RDCL_NO_CODE_EN	"Architectural - Rogue Data Cache Load"
+#define RSC_MECH_IBRS_ALL_CODE_EN	"Architectural - Enhanced IBRS"
+#define RSC_MECH_RSBA_CODE_EN		"Architectural - RSB Alternate"
+#define RSC_MECH_L1DFL_VMENTRY_NO_CODE_EN \
+					"Hypervisor - No flush L1D on VM entry"
+#define RSC_MECH_SSB_NO_CODE_EN    "Architectural - Speculative Store Bypass"
+#define RSC_MECH_MDS_NO_CODE_EN \
+			"Architectural - Microarchitectural Data Sampling"
 

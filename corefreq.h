@@ -273,6 +273,15 @@ typedef struct
 	enum HYPERVISOR 		HypervisorID;
 	char				Brand[64],
 					Architecture[CODENAME_LEN];
+
+	struct {
+	unsigned short	IBRS		:  2-0,
+			STIBP		:  4-2,
+			SSBD		:  6-4,
+			IBPB		:  8-4,
+			L1D_FLUSH_CMD	: 10-8,
+			_UnusedMechBits	: 16-10;
+	} Mechanisms;
 } PROC_STRUCT;
 
 typedef struct

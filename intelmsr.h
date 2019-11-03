@@ -336,7 +336,8 @@ typedef union
 		RSBA		:  3-2,
 		L1DFL_VMENTRY_NO:  4-3,
 		SSB_NO		:  5-4,
-		ReservedBits	: 64-5;
+		MDS_NO		:  6-5,
+		ReservedBits	: 64-6;
 	};
 } ARCH_CAPABILITIES;
 

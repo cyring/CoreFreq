@@ -2121,6 +2121,52 @@ void Intel_Hardware_Performance(void)
     }
 }
 
+void Intel_Mitigation_Mechanisms(void)
+{
+  if (Proc->Registration.Experimental)
+  {
+	SPEC_CTRL Spec_Ctrl = {.value = 0};
+	PRED_CMD  Pred_Cmd  = {.value = 0};
+	FLUSH_CMD Flush_Cmd = {.value = 0};
+
+    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap)
+    {
+	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	Proc->Features.Mechanisms.IBRS = Spec_Ctrl.IBRS;
+
+	RDMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
+	Proc->Features.Mechanisms.IBPB = Pred_Cmd.IBPB;
+    }
+    if (Proc->Features.ExtFeature.EDX.STIBP_Cap)
+    {
+	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
+    }
+    if (Proc->Features.ExtFeature.EDX.SSBD_Cap)
+    {
+	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	Proc->Features.Mechanisms.SSBD = Spec_Ctrl.SSBD;
+    }
+    if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap)
+    {
+	RDMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
+	Proc->Features.Mechanisms.L1D_FLUSH_CMD = Flush_Cmd.L1D_FLUSH_CMD;
+    }
+    if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
+    {
+	ARCH_CAPABILITIES Arch_Cap = {.value = 0};
+
+	RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
+	Proc->Features.Mechanisms.RDCL_NO	= Arch_Cap.RDCL_NO;
+	Proc->Features.Mechanisms.IBRS_ALL	= Arch_Cap.IBRS_ALL;
+	Proc->Features.Mechanisms.RSBA		= Arch_Cap.RSBA;
+	Proc->Features.Mechanisms.L1DFL_VMENTRY_NO = Arch_Cap.L1DFL_VMENTRY_NO;
+	Proc->Features.Mechanisms.SSB_NO	= Arch_Cap.SSB_NO;
+	Proc->Features.Mechanisms.MDS_NO	= Arch_Cap.MDS_NO;
+    }
+  }
+}
+
 void SandyBridge_Uncore_Ratio(void)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
@@ -3210,6 +3256,7 @@ void Query_Nehalem(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_SandyBridge(void)
@@ -3218,6 +3265,7 @@ void Query_SandyBridge(void)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
 	SandyBridge_PowerInterface();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_IvyBridge(void)
@@ -3227,6 +3275,7 @@ void Query_IvyBridge(void)
 	SandyBridge_Uncore_Ratio();
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_IvyBridge_EP(void)
@@ -3234,6 +3283,7 @@ void Query_IvyBridge_EP(void)
 	IvyBridge_EP_Platform_Info();
 	HyperThreading_Technology();
 	SandyBridge_PowerInterface();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Haswell(void)
@@ -3246,6 +3296,7 @@ void Query_Haswell(void)
 	SandyBridge_Uncore_Ratio();
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Haswell_EP(void)
@@ -3258,6 +3309,7 @@ void Query_Haswell_EP(void)
 	Haswell_Uncore_Ratio(NULL);
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Broadwell(void)
@@ -3271,12 +3323,14 @@ void Query_Broadwell(void)
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Broadwell_EP(void)
 {
 	Query_Haswell_EP();
 	Intel_Hardware_Performance();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Skylake_X(void)
@@ -3290,6 +3344,7 @@ void Query_Skylake_X(void)
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
+	Intel_Mitigation_Mechanisms();
 }
 
 void Query_AuthenticAMD(void)
