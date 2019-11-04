@@ -169,6 +169,26 @@ static signed short Register_CPU_Freq = -1;
 module_param(Register_CPU_Freq, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Freq, "Register the Kernel cpufreq driver");
 
+static signed short Mech_IBRS = -1;
+module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_IBRS, "Mitigation Mechanism IBRS");
+
+static signed short Mech_STIBP = -1;
+module_param(Mech_STIBP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_STIBP, "Mitigation Mechanism STIBP");
+
+static signed short Mech_SSBD = -1;
+module_param(Mech_SSBD, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_SSBD, "Mitigation Mechanism SSBD");
+
+static signed short Mech_IBPB = -1;
+module_param(Mech_IBPB, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_IBPB, "Mitigation Mechanism IBPB");
+
+static signed short Mech_L1D_FLUSH = -1;
+module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
+
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -2121,52 +2141,6 @@ void Intel_Hardware_Performance(void)
     }
 }
 
-void Intel_Mitigation_Mechanisms(void)
-{
-  if (Proc->Registration.Experimental)
-  {
-	SPEC_CTRL Spec_Ctrl = {.value = 0};
-	PRED_CMD  Pred_Cmd  = {.value = 0};
-	FLUSH_CMD Flush_Cmd = {.value = 0};
-
-    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap)
-    {
-	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-	Proc->Features.Mechanisms.IBRS = Spec_Ctrl.IBRS;
-
-	RDMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
-	Proc->Features.Mechanisms.IBPB = Pred_Cmd.IBPB;
-    }
-    if (Proc->Features.ExtFeature.EDX.STIBP_Cap)
-    {
-	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
-    }
-    if (Proc->Features.ExtFeature.EDX.SSBD_Cap)
-    {
-	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-	Proc->Features.Mechanisms.SSBD = Spec_Ctrl.SSBD;
-    }
-    if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap)
-    {
-	RDMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
-	Proc->Features.Mechanisms.L1D_FLUSH_CMD = Flush_Cmd.L1D_FLUSH_CMD;
-    }
-    if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
-    {
-	ARCH_CAPABILITIES Arch_Cap = {.value = 0};
-
-	RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
-	Proc->Features.Mechanisms.RDCL_NO	= Arch_Cap.RDCL_NO;
-	Proc->Features.Mechanisms.IBRS_ALL	= Arch_Cap.IBRS_ALL;
-	Proc->Features.Mechanisms.RSBA		= Arch_Cap.RSBA;
-	Proc->Features.Mechanisms.L1DFL_VMENTRY_NO = Arch_Cap.L1DFL_VMENTRY_NO;
-	Proc->Features.Mechanisms.SSB_NO	= Arch_Cap.SSB_NO;
-	Proc->Features.Mechanisms.MDS_NO	= Arch_Cap.MDS_NO;
-    }
-  }
-}
-
 void SandyBridge_Uncore_Ratio(void)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
@@ -3256,7 +3230,6 @@ void Query_Nehalem(void)
 {
 	Nehalem_Platform_Info();
 	HyperThreading_Technology();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_SandyBridge(void)
@@ -3265,7 +3238,6 @@ void Query_SandyBridge(void)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio();
 	SandyBridge_PowerInterface();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_IvyBridge(void)
@@ -3275,7 +3247,6 @@ void Query_IvyBridge(void)
 	SandyBridge_Uncore_Ratio();
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_IvyBridge_EP(void)
@@ -3283,7 +3254,6 @@ void Query_IvyBridge_EP(void)
 	IvyBridge_EP_Platform_Info();
 	HyperThreading_Technology();
 	SandyBridge_PowerInterface();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Haswell(void)
@@ -3296,7 +3266,6 @@ void Query_Haswell(void)
 	SandyBridge_Uncore_Ratio();
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Haswell_EP(void)
@@ -3309,7 +3278,6 @@ void Query_Haswell_EP(void)
 	Haswell_Uncore_Ratio(NULL);
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Broadwell(void)
@@ -3323,14 +3291,12 @@ void Query_Broadwell(void)
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Broadwell_EP(void)
 {
 	Query_Haswell_EP();
 	Intel_Hardware_Performance();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_Skylake_X(void)
@@ -3344,7 +3310,6 @@ void Query_Skylake_X(void)
 	Intel_Turbo_TDP_Config();
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
-	Intel_Mitigation_Mechanisms();
 }
 
 void Query_AuthenticAMD(void)
@@ -5123,6 +5088,84 @@ void SystemRegisters(CORE *Core)
 	BITSET_CC(LOCKLESS, Proc->CR_Mask, Core->Bind);
 }
 
+void Intel_Mitigation_Mechanisms(CORE *Core)
+{
+  if (Proc->Registration.Experimental)
+  {
+	SPEC_CTRL Spec_Ctrl = {.value = 0};
+	PRED_CMD  Pred_Cmd  = {.value = 0};
+	FLUSH_CMD Flush_Cmd = {.value = 0};
+	unsigned short WrRdMSR = 0;
+
+    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+     || Proc->Features.ExtFeature.EDX.STIBP_Cap
+     || Proc->Features.ExtFeature.EDX.SSBD_Cap)
+    {
+	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	Proc->Features.Mechanisms.IBRS  = Spec_Ctrl.IBRS;
+	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
+	Proc->Features.Mechanisms.SSBD  = Spec_Ctrl.SSBD;
+    }
+    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+    && ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
+     || (Mech_IBRS == COREFREQ_TOGGLE_ON)))
+    {
+	Spec_Ctrl.IBRS = Mech_IBRS;
+	WrRdMSR = 1;
+    }
+    if (Proc->Features.ExtFeature.EDX.STIBP_Cap
+    && ((Mech_STIBP == COREFREQ_TOGGLE_OFF)
+     || (Mech_STIBP == COREFREQ_TOGGLE_ON)))
+    {
+	Spec_Ctrl.STIBP = Mech_STIBP;
+	WrRdMSR = 1;
+    }
+    if (Proc->Features.ExtFeature.EDX.SSBD_Cap
+    && ((Mech_SSBD == COREFREQ_TOGGLE_OFF)
+     || (Mech_SSBD == COREFREQ_TOGGLE_ON)))
+    {
+	Spec_Ctrl.SSBD = Mech_SSBD;
+	WrRdMSR = 1;
+    }
+    if (WrRdMSR == 1)
+    {
+	WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	Proc->Features.Mechanisms.IBRS  = Spec_Ctrl.IBRS;
+	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
+	Proc->Features.Mechanisms.SSBD  = Spec_Ctrl.SSBD;
+    }
+    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+    && ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
+     || (Mech_IBPB == COREFREQ_TOGGLE_ON)))
+    {
+	Pred_Cmd.IBPB = Mech_IBPB;
+	WRMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
+	Proc->Features.Mechanisms.IBPB = Pred_Cmd.IBPB;
+    }
+    if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap
+    && ((Mech_L1D_FLUSH == COREFREQ_TOGGLE_OFF)
+     || (Mech_L1D_FLUSH == COREFREQ_TOGGLE_ON)))
+    {
+	Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
+	WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
+	Proc->Features.Mechanisms.L1D_FLUSH_CMD = Flush_Cmd.L1D_FLUSH_CMD;
+    }
+    if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
+    {
+	ARCH_CAPABILITIES Arch_Cap = {.value = 0};
+
+	RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
+	Proc->Features.Mechanisms.RDCL_NO	= Arch_Cap.RDCL_NO;
+	Proc->Features.Mechanisms.IBRS_ALL	= Arch_Cap.IBRS_ALL;
+	Proc->Features.Mechanisms.RSBA		= Arch_Cap.RSBA;
+	Proc->Features.Mechanisms.L1DFL_VMENTRY_NO = Arch_Cap.L1DFL_VMENTRY_NO;
+	Proc->Features.Mechanisms.SSB_NO	= Arch_Cap.SSB_NO;
+	Proc->Features.Mechanisms.MDS_NO	= Arch_Cap.MDS_NO;
+    }
+  }
+}
+
 void Intel_VirtualMachine(CORE *Core)
 {
 	if (Proc->Features.Std.ECX.VMX) {
@@ -5263,6 +5306,8 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	Intel_Mitigation_Mechanisms(Core);
+
 	Intel_VirtualMachine(Core);
 
 	Intel_Microcode(Core);
@@ -5298,6 +5343,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	Intel_Mitigation_Mechanisms(Core);
+
 	Intel_VirtualMachine(Core);
 
 	Intel_Microcode(Core);
@@ -5332,6 +5379,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	CORE *Core = (CORE*) arg;
 
 	SystemRegisters(Core);
+
+	Intel_Mitigation_Mechanisms(Core);
 
 	Intel_VirtualMachine(Core);
 
@@ -5369,6 +5418,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	Intel_Mitigation_Mechanisms(Core);
+
 	Intel_VirtualMachine(Core);
 
 	Intel_Microcode(Core);
@@ -5403,6 +5454,8 @@ static void PerCore_Skylake_Query(void *arg)
 	CORE *Core = (CORE*) arg;
 
 	SystemRegisters(Core);
+
+	Intel_Mitigation_Mechanisms(Core);
 
 	Intel_VirtualMachine(Core);
 

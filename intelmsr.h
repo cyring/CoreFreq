@@ -291,7 +291,7 @@ typedef union
 } FSB_FREQ;
 
 typedef union
-{
+{	/* R/W								*/
 	unsigned long long	value;
 	struct
 	{
@@ -304,7 +304,7 @@ typedef union
 } SPEC_CTRL;
 
 typedef union
-{
+{	/* W/O								*/
 	unsigned long long	value;
 	struct
 	{
@@ -315,7 +315,7 @@ typedef union
 } PRED_CMD;
 
 typedef union
-{
+{	/* W/O								*/
 	unsigned long long	value;
 	struct
 	{
@@ -326,7 +326,7 @@ typedef union
 } FLUSH_CMD;
 
 typedef union
-{	/* CPUID.(EAX=07H,ECX=0):EDX[29] == 1				*/
+{	/* R/O && CPUID.(EAX=07H,ECX=0):EDX[29] == 1			*/
 	unsigned long long	value;
 	struct
 	{

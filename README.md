@@ -14,7 +14,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
 * In progress: Uncore, Memory Controller channels & geometry, DIMM timings,  
-  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking, cpuidle & cpufreq driver  
+  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking, cpuidle & cpufreq driver, Mitigation Mechanisms  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -296,6 +296,11 @@ parm:           HWP_EPP:Energy Performance Preference (short)
 parm:           Clear_Events:Clear Thermal and Power Events (uint)
 parm:           Register_CPU_Idle:Register the Kernel cpuidle driver (short)
 parm:           Register_CPU_Freq:Register the Kernel cpufreq driver (short)
+parm:           Mech_IBRS:Mitigation Mechanism IBRS (short)
+parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
+parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)
+parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
+parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
 
 ```
 
