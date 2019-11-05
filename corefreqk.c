@@ -5090,44 +5090,45 @@ void SystemRegisters(CORE *Core)
 
 void Intel_Mitigation_Mechanisms(CORE *Core)
 {
-  if (Proc->Registration.Experimental)
-  {
+    if (Proc->Registration.Experimental)
+    {
 	SPEC_CTRL Spec_Ctrl = {.value = 0};
 	PRED_CMD  Pred_Cmd  = {.value = 0};
 	FLUSH_CMD Flush_Cmd = {.value = 0};
 	unsigned short WrRdMSR = 0;
 
-    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
-    && ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
-     || (Mech_IBRS == COREFREQ_TOGGLE_ON)))
-    {
-	Spec_Ctrl.IBRS = Mech_IBRS;
-	WrRdMSR = 1;
-    }
-    if (Proc->Features.ExtFeature.EDX.STIBP_Cap
-    && ((Mech_STIBP == COREFREQ_TOGGLE_OFF)
-     || (Mech_STIBP == COREFREQ_TOGGLE_ON)))
-    {
-	Spec_Ctrl.STIBP = Mech_STIBP;
-	WrRdMSR = 1;
-    }
-    if (Proc->Features.ExtFeature.EDX.SSBD_Cap
-    && ((Mech_SSBD == COREFREQ_TOGGLE_OFF)
-     || (Mech_SSBD == COREFREQ_TOGGLE_ON)))
-    {
-	Spec_Ctrl.SSBD = Mech_SSBD;
-	WrRdMSR = 1;
-    }
-    if (WrRdMSR == 1)
-    {
-	WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-    }
-    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
-     || Proc->Features.ExtFeature.EDX.STIBP_Cap
-     || Proc->Features.ExtFeature.EDX.SSBD_Cap)
-    {
-	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-
+	if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+	 || Proc->Features.ExtFeature.EDX.STIBP_Cap
+	 || Proc->Features.ExtFeature.EDX.SSBD_Cap)
+	{
+		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	}
+	if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+	&& ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
+	 || (Mech_IBRS == COREFREQ_TOGGLE_ON)))
+	{
+		Spec_Ctrl.IBRS = Mech_IBRS;
+		WrRdMSR = 1;
+	}
+	if (Proc->Features.ExtFeature.EDX.STIBP_Cap
+	&& ((Mech_STIBP == COREFREQ_TOGGLE_OFF)
+	 || (Mech_STIBP == COREFREQ_TOGGLE_ON)))
+	{
+		Spec_Ctrl.STIBP = Mech_STIBP;
+		WrRdMSR = 1;
+	}
+	if (Proc->Features.ExtFeature.EDX.SSBD_Cap
+	&& ((Mech_SSBD == COREFREQ_TOGGLE_OFF)
+	 || (Mech_SSBD == COREFREQ_TOGGLE_ON)))
+	{
+		Spec_Ctrl.SSBD = Mech_SSBD;
+		WrRdMSR = 1;
+	}
+	if (WrRdMSR == 1)
+	{
+		WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+	}
 	if (Spec_Ctrl.IBRS) {
 		BITSET_CC(LOCKLESS, Proc->IBRS, Core->Bind);
 	} else {
@@ -5143,59 +5144,60 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, Proc->SSBD, Core->Bind);
 	}
-    }
-    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
-    && ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
-     || (Mech_IBPB == COREFREQ_TOGGLE_ON)))
-    {
-	Pred_Cmd.IBPB = Mech_IBPB;
-	WRMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
-    }
-    if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap
-    && ((Mech_L1D_FLUSH == COREFREQ_TOGGLE_OFF)
-     || (Mech_L1D_FLUSH == COREFREQ_TOGGLE_ON)))
-    {
-	Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
-	WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
-    }
-    if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
-    {
-	ARCH_CAPABILITIES Arch_Cap = {.value = 0};
+	if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+	&& ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
+	 || (Mech_IBPB == COREFREQ_TOGGLE_ON)))
+	{
+		Pred_Cmd.IBPB = Mech_IBPB;
+		WRMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
+	}
+	if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap
+	&& ((Mech_L1D_FLUSH == COREFREQ_TOGGLE_OFF)
+	 || (Mech_L1D_FLUSH == COREFREQ_TOGGLE_ON)))
+	{
+		Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
+		WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
+	}
+	if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
+	{
+		ARCH_CAPABILITIES Arch_Cap = {.value = 0};
 
-	RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
+		RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
 
-	if (Arch_Cap.RDCL_NO) {
-		BITSET_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
+		if (Arch_Cap.RDCL_NO) {
+			BITSET_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
+		}
+		if (Arch_Cap.IBRS_ALL) {
+			BITSET_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
+		}
+		if (Arch_Cap.RSBA) {
+			BITSET_CC(LOCKLESS, Proc->RSBA, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->RSBA, Core->Bind);
+		}
+		if (Arch_Cap.L1DFL_VMENTRY_NO) {
+			BITSET_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO,Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO,Core->Bind);
+		}
+		if (Arch_Cap.SSB_NO) {
+			BITSET_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
+		}
+		if (Arch_Cap.MDS_NO) {
+			BITSET_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
+		}
 	}
-	if (Arch_Cap.IBRS_ALL) {
-		BITSET_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
-	}
-	if (Arch_Cap.RSBA) {
-		BITSET_CC(LOCKLESS, Proc->RSBA, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->RSBA, Core->Bind);
-	}
-	if (Arch_Cap.L1DFL_VMENTRY_NO) {
-		BITSET_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO, Core->Bind);
-	}
-	if (Arch_Cap.SSB_NO) {
-		BITSET_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
-	}
-	if (Arch_Cap.MDS_NO) {
-		BITSET_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
-	} else {
-		BITCLR_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
-	}
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask, Core->Bind);
     }
-  }
 }
 
 void Intel_VirtualMachine(CORE *Core)
