@@ -717,25 +717,68 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 
 void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
 {
+	unsigned short	IBRS = BITWISEAND_CC(LOCKLESS,
+						Proc->IBRS,
+						Proc->SPEC_CTRL_Mask) != 0,
+
+			STIBP = BITWISEAND_CC(LOCKLESS,
+						Proc->STIBP,
+						Proc->SPEC_CTRL_Mask) != 0,
+
+			SSBD = BITWISEAND_CC(LOCKLESS,
+						Proc->SSBD,
+						Proc->SPEC_CTRL_Mask) != 0,
+
+			RDCL_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->RDCL_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			IBRS_ALL = BITWISEAND_CC(LOCKLESS,
+						Proc->RDCL_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			RSBA = BITWISEAND_CC(LOCKLESS,
+						Proc->RSBA,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			L1DFL_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->L1DFL_VMENTRY_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			SSB_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->SSB_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			MDS_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->MDS_NO,
+						Proc->ARCH_CAP_Mask) != 0;
+
 	Shm->Proc.Mechanisms.IBRS = (
-		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
-		+ (1 << Shm->Proc.Features.Mechanisms.IBRS)
-	);
-	Shm->Proc.Mechanisms.IBPB = (
-		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
-		+ (1 << Shm->Proc.Features.Mechanisms.IBPB)
+		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap+(2 * IBRS)
 	);
 	Shm->Proc.Mechanisms.STIBP = (
-		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap
-		+ (1 << Shm->Proc.Features.Mechanisms.STIBP)
+		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap + (2 * STIBP)
 	);
 	Shm->Proc.Mechanisms.SSBD = (
-		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap
-		+ (1 << Shm->Proc.Features.Mechanisms.SSBD)
+		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap + (2 * SSBD)
 	);
-	Shm->Proc.Mechanisms.L1D_FLUSH_CMD = (
-		Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap
-		+ (1 << Shm->Proc.Features.Mechanisms.L1D_FLUSH_CMD)
+	Shm->Proc.Mechanisms.RDCL_NO = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * RDCL_NO)
+	);
+	Shm->Proc.Mechanisms.IBRS_ALL = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * IBRS_ALL)
+	);
+	Shm->Proc.Mechanisms.RSBA = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * RSBA)
+	);
+	Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * L1DFL_NO)
+	);
+	Shm->Proc.Mechanisms.SSB_NO = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * SSB_NO)
+	);
+	Shm->Proc.Mechanisms.MDS_NO = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * MDS_NO)
 	);
 }
 

@@ -5098,15 +5098,6 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
 	unsigned short WrRdMSR = 0;
 
     if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
-     || Proc->Features.ExtFeature.EDX.STIBP_Cap
-     || Proc->Features.ExtFeature.EDX.SSBD_Cap)
-    {
-	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-	Proc->Features.Mechanisms.IBRS  = Spec_Ctrl.IBRS;
-	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
-	Proc->Features.Mechanisms.SSBD  = Spec_Ctrl.SSBD;
-    }
-    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
     && ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
      || (Mech_IBRS == COREFREQ_TOGGLE_ON)))
     {
@@ -5130,10 +5121,28 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
     if (WrRdMSR == 1)
     {
 	WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
+    }
+    if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
+     || Proc->Features.ExtFeature.EDX.STIBP_Cap
+     || Proc->Features.ExtFeature.EDX.SSBD_Cap)
+    {
 	RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
-	Proc->Features.Mechanisms.IBRS  = Spec_Ctrl.IBRS;
-	Proc->Features.Mechanisms.STIBP = Spec_Ctrl.STIBP;
-	Proc->Features.Mechanisms.SSBD  = Spec_Ctrl.SSBD;
+
+	if (Spec_Ctrl.IBRS) {
+		BITSET_CC(LOCKLESS, Proc->IBRS, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->IBRS, Core->Bind);
+	}
+	if (Spec_Ctrl.STIBP) {
+		BITSET_CC(LOCKLESS, Proc->STIBP, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->STIBP, Core->Bind);
+	}
+	if (Spec_Ctrl.SSBD) {
+		BITSET_CC(LOCKLESS, Proc->SSBD, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->SSBD, Core->Bind);
+	}
     }
     if (Proc->Features.ExtFeature.EDX.IBRS_IBPB_Cap
     && ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
@@ -5141,7 +5150,6 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
     {
 	Pred_Cmd.IBPB = Mech_IBPB;
 	WRMSR(Pred_Cmd, MSR_IA32_PRED_CMD);
-	Proc->Features.Mechanisms.IBPB = Pred_Cmd.IBPB;
     }
     if (Proc->Features.ExtFeature.EDX.L1D_FLUSH_Cap
     && ((Mech_L1D_FLUSH == COREFREQ_TOGGLE_OFF)
@@ -5149,19 +5157,43 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
     {
 	Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
 	WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
-	Proc->Features.Mechanisms.L1D_FLUSH_CMD = Flush_Cmd.L1D_FLUSH_CMD;
     }
     if (Proc->Features.ExtFeature.EDX.IA32_ARCH_CAP)
     {
 	ARCH_CAPABILITIES Arch_Cap = {.value = 0};
 
 	RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
-	Proc->Features.Mechanisms.RDCL_NO	= Arch_Cap.RDCL_NO;
-	Proc->Features.Mechanisms.IBRS_ALL	= Arch_Cap.IBRS_ALL;
-	Proc->Features.Mechanisms.RSBA		= Arch_Cap.RSBA;
-	Proc->Features.Mechanisms.L1DFL_VMENTRY_NO = Arch_Cap.L1DFL_VMENTRY_NO;
-	Proc->Features.Mechanisms.SSB_NO	= Arch_Cap.SSB_NO;
-	Proc->Features.Mechanisms.MDS_NO	= Arch_Cap.MDS_NO;
+
+	if (Arch_Cap.RDCL_NO) {
+		BITSET_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->RDCL_NO, Core->Bind);
+	}
+	if (Arch_Cap.IBRS_ALL) {
+		BITSET_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->IBRS_ALL, Core->Bind);
+	}
+	if (Arch_Cap.RSBA) {
+		BITSET_CC(LOCKLESS, Proc->RSBA, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->RSBA, Core->Bind);
+	}
+	if (Arch_Cap.L1DFL_VMENTRY_NO) {
+		BITSET_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO, Core->Bind);
+	}
+	if (Arch_Cap.SSB_NO) {
+		BITSET_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->SSB_NO, Core->Bind);
+	}
+	if (Arch_Cap.MDS_NO) {
+		BITSET_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
+	}
     }
   }
 }
@@ -5209,6 +5241,9 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->CC6_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->PC6_Mask	, Core->Bind);
 
+	BITCLR_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
+
 	BITCLR_CC(LOCKLESS, Proc->ODCM		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->PowerMgmt	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->SpeedStep	, Core->Bind);
@@ -5220,6 +5255,16 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->C1U		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->CC6		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->PC6		, Core->Bind);
+
+	BITCLR_CC(LOCKLESS, Proc->IBRS		, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->STIBP 	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->SSBD		, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->RDCL_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->IBRS_ALL	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->RSBA		, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO,Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->SSB_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->MDS_NO	, Core->Bind);
 }
 
 static void PerCore_Intel_Query(void *arg)
@@ -5243,6 +5288,9 @@ static void PerCore_Intel_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PC6_Mask	, Proc->Service.Core);
+
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 
 	PowerThermal(Core);
 
@@ -5270,6 +5318,9 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PC6_Mask	, Proc->Service.Core);
+
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -5294,6 +5345,9 @@ static void PerCore_Core2_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->C1U_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PC6_Mask, Proc->Service.Core);
+
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 
 	PowerThermal(Core);				/* Shared | Unique */
 
@@ -5507,6 +5561,9 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PC6_Mask	, Proc->Service.Core);
 
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
+
 	PerCore_AMD_Family_0Fh_PStates(Core);
 }
 
@@ -5532,6 +5589,9 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PC6_Mask	, Proc->Service.Core);
+
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 }
 
 static void PerCore_AMD_Family_17h_Query(void *arg)
@@ -5552,6 +5612,9 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->C1A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->C3U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->C1U_Mask	, Core->Bind);
+
+	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 
 	Query_AMD_Zen(Core);
 

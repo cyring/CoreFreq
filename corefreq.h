@@ -199,6 +199,20 @@ typedef struct
 				_pad64		: 64-15;
 	} Technology;
 
+	struct {
+		unsigned long long
+				IBRS		:  2-0,
+				STIBP		:  4-2,
+				SSBD		:  6-4,
+				RDCL_NO 	:  8-6,
+				IBRS_ALL	: 10-8,
+				RSBA		: 12-10,
+				L1DFL_VMENTRY_NO: 14-12,
+				SSB_NO		: 16-14,
+				MDS_NO		: 18-16,
+				_UnusedMechBits : 64-18;
+	} Mechanisms;
+
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
 	enum POWER_FORMULAS	powerFormula;
@@ -273,15 +287,6 @@ typedef struct
 	enum HYPERVISOR 		HypervisorID;
 	char				Brand[64],
 					Architecture[CODENAME_LEN];
-
-	struct {
-	unsigned short	IBRS		:  2-0,
-			STIBP		:  4-2,
-			SSBD		:  6-4,
-			IBPB		:  8-4,
-			L1D_FLUSH_CMD	: 10-8,
-			_UnusedMechBits	: 16-10;
-	} Mechanisms;
 } PROC_STRUCT;
 
 typedef struct

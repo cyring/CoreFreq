@@ -291,7 +291,7 @@ typedef union
 } FSB_FREQ;
 
 typedef union
-{	/* R/W								*/
+{	/* R/W: bits are defined as SMT or Core scope.			*/
 	unsigned long long	value;
 	struct
 	{
@@ -304,7 +304,7 @@ typedef union
 } SPEC_CTRL;
 
 typedef union
-{	/* W/O								*/
+{	/* W/O: on-demand,issue commands that affect the state of predictors.*/
 	unsigned long long	value;
 	struct
 	{
@@ -315,7 +315,7 @@ typedef union
 } PRED_CMD;
 
 typedef union
-{	/* W/O								*/
+{	/* W/O: writeback & invalidate the L1 data cache, previous cachelines*/
 	unsigned long long	value;
 	struct
 	{

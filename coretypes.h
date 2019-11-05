@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	68
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -1098,20 +1098,6 @@ typedef struct	/* BSP CPUID features.					*/
 			_UnusedFeatBits : 24-23,
 			SpecTurboRatio	: 32-24;
 	};
-	struct {
-	unsigned short	IBRS		:  1-0,
-			STIBP		:  2-1,
-			SSBD		:  3-2,
-			IBPB		:  4-3,
-			L1D_FLUSH_CMD	:  5-4,
-			RDCL_NO 	:  6-5,
-			IBRS_ALL	:  7-6,
-			RSBA		:  8-7,
-			L1DFL_VMENTRY_NO:  9-8,
-			SSB_NO		: 10-9,
-			MDS_NO		: 11-10,
-			_UnusedMechBits : 16-11;
-	} Mechanisms;
 } FEATURES;
 
 #define MC_MAX_CTRL	2

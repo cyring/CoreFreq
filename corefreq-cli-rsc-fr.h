@@ -636,18 +636,22 @@
 
 #define RSC_SMBIOS_TITLE_CODE_FR	" SMBIOS "
 
-#define RSC_MECH_IBRS_CODE_FR		"Indirect Branch Restricted Speculation"
-#define RSC_MECH_IBPB_CODE_FR		"Indirect Branch Prediction Barrier"
-#define RSC_MECH_STIBP_CODE_FR	    "Single Thread Indirect Branch Predictor"
-#define RSC_MECH_SSBD_CODE_FR		"Speculative Store Bypass Disable"
-#define RSC_MECH_L1D_FLUSH_CODE_FR  "Writeback & invalidate the L1 data cache"
-#define RSC_MECH_MD_CLEAR_CODE_FR	"Architectural - Buffer Overwriting"
-#define RSC_MECH_RDCL_NO_CODE_FR	"Architectural - Rogue Data Cache Load"
-#define RSC_MECH_IBRS_ALL_CODE_FR	"Architectural - Enhanced IBRS"
-#define RSC_MECH_RSBA_CODE_FR		"Architectural - RSB Alternate"
+#define RSC_MECH_IBRS_CODE_FR	"Indirect Branch Restricted Speculation"
+/*TODO(Clean-Up)
+#define RSC_MECH_IBPB_CODE_FR	"Indirect Branch Prediction Barrier"
+*/
+#define RSC_MECH_STIBP_CODE_FR	"Single Thread Indirect Branch Predictor"
+#define RSC_MECH_SSBD_CODE_FR	"Speculative Store Bypass Disable"
+/*TODO(Clean-Up)
+#define RSC_MECH_L1D_FLUSH_CODE_FR "Writeback & invalidate the L1 data cache"
+*/
+#define RSC_MECH_MD_CLEAR_CODE_FR  "Architectural - Buffer Overwriting"
+#define RSC_MECH_RDCL_NO_CODE_FR   "Architectural - Rogue Data Cache Load"
+#define RSC_MECH_IBRS_ALL_CODE_FR  "Architectural - Enhanced IBRS"
+#define RSC_MECH_RSBA_CODE_FR	"Architectural - Return Stack Buffer Alternate"
 #define RSC_MECH_L1DFL_VMENTRY_NO_CODE_FR \
-					"Hypervisor - No flush L1D on VM entry"
-#define RSC_MECH_SSB_NO_CODE_FR    "Architectural - Speculative Store Bypass"
+				"Hypervisor - No flush L1D on VM entry"
+#define RSC_MECH_SSB_NO_CODE_FR "Architectural - Speculative Store Bypass"
 #define RSC_MECH_MDS_NO_CODE_FR \
 			"Architectural - Microarchitectural Data Sampling"
 

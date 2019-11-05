@@ -637,6 +637,8 @@ typedef struct
 	Bit256	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
 	Bit256	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
 	Bit256	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
+	Bit256			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
+	Bit256			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
 
 	Bit256			ODCM		__attribute__ ((aligned (16)));
 	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
@@ -651,6 +653,15 @@ typedef struct
 	Bit256			PC6		__attribute__ ((aligned (16)));
 	Bit256			SMM		__attribute__ ((aligned (16)));
 	Bit256			VM		__attribute__ ((aligned (16)));
+	Bit256			IBRS		__attribute__ ((aligned (16)));
+	Bit256			STIBP		__attribute__ ((aligned (16)));
+	Bit256			SSBD		__attribute__ ((aligned (16)));
+	Bit256			RDCL_NO 	__attribute__ ((aligned (16)));
+	Bit256			IBRS_ALL	__attribute__ ((aligned (16)));
+	Bit256			RSBA		__attribute__ ((aligned (16)));
+	Bit256			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
+	Bit256			SSB_NO		__attribute__ ((aligned (16)));
+	Bit256			MDS_NO		__attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
