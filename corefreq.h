@@ -282,6 +282,7 @@ typedef struct
 					Joules,
 					Times;
 		} Unit;
+		unsigned int		TDP;
 	} Power;
 
 	enum HYPERVISOR 		HypervisorID;

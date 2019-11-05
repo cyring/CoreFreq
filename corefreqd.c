@@ -632,10 +632,9 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
 	else
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
-    }
-    else
+    } else {
 	Shm->Proc.PowerNow = 0;
-
+    }
     switch (Proc->powerFormula) {
       case POWER_FORMULA_INTEL:
       case POWER_FORMULA_AMD:
@@ -656,6 +655,13 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     }
 	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
 			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
+
+	Shm->Proc.Power.TDP = 2 << (Proc->PowerThermal.Unit.PU - 1);
+    if (Shm->Proc.Power.TDP != 0)
+    {
+	Shm->Proc.Power.TDP	= Proc->PowerThermal.PowerInfo.ThermalSpecPower
+				/ Shm->Proc.Power.TDP;
+    }
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)

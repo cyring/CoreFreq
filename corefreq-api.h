@@ -693,6 +693,7 @@ typedef struct
 		unsigned int	Sensor;
 	enum THERM_PWR_EVENTS	Events;
 		RAPL_POWER_UNIT Unit;
+		PKG_POWER_INFO	PowerInfo;
 	} PowerThermal;
 
 	struct {

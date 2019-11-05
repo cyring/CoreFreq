@@ -1344,6 +1344,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%f", Shm->Proc.Power.Unit.Times);
 				json_end_object(&s);
 			}
+			json_key(&s, "TDP");
+			json_literal(&s, "%u", Shm->Proc.Power.TDP);
 
 			json_end_object(&s);
 		}

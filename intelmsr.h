@@ -123,6 +123,10 @@
 	#define MSR_PKG_PERF_STATUS		0x00000613
 #endif
 
+#ifndef MSR_PKG_POWER_INFO
+	#define MSR_PKG_POWER_INFO		0x00000614
+#endif
+
 #ifndef MSR_DRAM_ENERGY_STATUS
 	#define MSR_DRAM_ENERGY_STATUS		0x00000619
 #endif
@@ -1169,6 +1173,23 @@ typedef union
 		ReservedBits3	: 64-20;
 	};
 } RAPL_POWER_UNIT;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ThermalSpecPower: 15-0,
+		ReservedBits1	: 16-15,
+		MinimumPower	: 31-16,
+		ReservedBits2	: 32-31,
+		MaximumPower	: 47-32,
+		ReservedBits3	: 48-47,
+		MaxTimeWindow	: 55-48,
+		ReservedBits4	: 64-55;
+	};
+} PKG_POWER_INFO;
 
 /* TODO
 typedef struct

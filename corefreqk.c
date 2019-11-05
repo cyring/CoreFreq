@@ -2181,6 +2181,7 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 void SandyBridge_PowerInterface(void)
 {
 	RDMSR(Proc->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
+	RDMSR(Proc->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
 void Nehalem_Platform_Info(void)
