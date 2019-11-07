@@ -246,6 +246,7 @@
 #define RSC_FEATURES_RTM_CODE_EN	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_EN	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_EN "Self-Snoop"
+#define RSC_FEATURES_SMEP_CODE_EN	"Supervisor-Mode Execution Prevention"
 #define RSC_FEATURES_TSC_CODE_EN	"Time Stamp Counter"
 #define RSC_FEATURES_TSC_DEADLN_CODE_EN "Time Stamp Counter Deadline"
 #define RSC_FEATURES_VME_CODE_EN	"Virtual Mode Extension"
@@ -638,14 +639,10 @@
 #define RSC_SMBIOS_TITLE_CODE_EN	" SMBIOS "
 
 #define RSC_MECH_IBRS_CODE_EN	"Indirect Branch Restricted Speculation"
-/*TODO(Clean-Up)
 #define RSC_MECH_IBPB_CODE_EN	"Indirect Branch Prediction Barrier"
-*/
 #define RSC_MECH_STIBP_CODE_EN	"Single Thread Indirect Branch Predictor"
 #define RSC_MECH_SSBD_CODE_EN	"Speculative Store Bypass Disable"
-/*TODO(Clean-Up)
 #define RSC_MECH_L1D_FLUSH_CODE_EN "Writeback & invalidate the L1 data cache"
-*/
 #define RSC_MECH_MD_CLEAR_CODE_EN  "Architectural - Buffer Overwriting"
 #define RSC_MECH_RDCL_NO_CODE_EN   "Architectural - Rogue Data Cache Load"
 #define RSC_MECH_IBRS_ALL_CODE_EN  "Architectural - Enhanced IBRS"
