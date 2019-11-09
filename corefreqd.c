@@ -877,7 +877,9 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
-	    unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
+		unsigned long long DIMM_Size;
+		unsigned short rank, rankCount = (cha == 0) ? 4 : 2;
+
 	    for (rank = 0; rank < rankCount; rank++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
 		    Proc->Uncore.MC[mc].Channel[cha].P945.DRB[rank].Boundary;
@@ -902,12 +904,12 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	    }
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
-			  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+		DIMM_Size=Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /=(1024 * 1024);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -951,7 +953,9 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
-	    unsigned short rank;
+		unsigned long long DIMM_Size;
+		unsigned short rank;
+
 	    for (rank = 0; rank < 4; rank++) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
 		    Proc->Uncore.MC[mc].Channel[cha].P955.DRB[rank].Boundary;
@@ -976,11 +980,12 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	    }
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
-			  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+		DIMM_Size=Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -1092,7 +1097,7 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT2.tRRD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT4.tRCD_RD;
-/* TODO
+/* TODO(Timings)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT_.tFAW;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
@@ -1100,19 +1105,22 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL = ?
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  += 3;
-/* TODO */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+/* TODO(Geometry):Hardware missing! */
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -1393,7 +1401,10 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tCL - 1;
 		break;
 	}
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+
 	    switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DRA.Rank1Bank)
 	    {
 	    case 0b00:
@@ -1434,12 +1445,12 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 4096;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1024;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -1567,7 +1578,7 @@ void P3S_MCH(SHM_STRUCT *Shm, PROC *Proc, unsigned short mc, unsigned short cha)
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRT4.tRCD_RD;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRT5.tRAS;
-/* TODO
+/* TODO(Timings)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tFAW;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
@@ -1589,19 +1600,23 @@ void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 9;
-/* TODO */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+/* TODO(Timings) */
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+/* TODO(Geometry):Hardware missing! */
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -1626,19 +1641,23 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 6;
-/* TODO */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+/* TODO(Timings) */
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+/* TODO(Geometry):Hardware missing! */
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
@@ -1782,7 +1801,10 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	}
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-	    if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.DIMMPRESENT) {
+	    if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.DIMMPRESENT)
+	    {
+		unsigned long long DIMM_Size;
+
 		switch (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.NUMBANK)
 		{
 		case 0b00:
@@ -1838,12 +1860,13 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 			break;
 		}
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	    }
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
@@ -2007,8 +2030,9 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
-		unsigned int width;
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned int width, DIMM_Banks;
 
 	    if (slot == 0) {
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
@@ -2034,11 +2058,14 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
 						dimmSize[cha][slot] * 256;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks =
-			(8 * dimmSize[cha][slot] * 1024 * 1024)
+		DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
+
+		DIMM_Banks = DIMM_Banks
 			/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
 					Proc->Uncore.MC[mc].SNB.MAD0.ECC
@@ -2191,6 +2218,8 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	{
 	    if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DIMM_POP)
 	    {
+		unsigned long long DIMM_Size;
+
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4 <<
 		Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.DDR3_WIDTH;
 
@@ -2203,12 +2232,13 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << ( 10
 		+ Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MTR.CA_WIDTH );
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	    }
 	}
 
@@ -2410,18 +2440,21 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 /* TODO */
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+/* TODO(Geometry):Hardware missing! */
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
 
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = 8
+		DIMM_Size = 8LLU
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
 			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size /= (1024 *1024);
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
       }
