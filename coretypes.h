@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	68
-#define COREFREQ_REV	5
+#define COREFREQ_REV	6
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -503,7 +503,7 @@ typedef union
 	};
 } SERVICE_PROC;
 
-#define CPUID_MAX_FUNC	60
+#define CPUID_MAX_FUNC	62
 
 typedef struct
 {

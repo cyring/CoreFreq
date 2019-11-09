@@ -569,6 +569,8 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC]={
 	{.func=0x0000000d, .sub=0x00000001},	/* Ext. State Sub-leaf	*/
 /* AMD */
 	{.func=0x0000000d, .sub=0x00000002},	/* Ext. State Sub-leaf	*/
+	{.func=0x0000000d, .sub=0x00000003},	/* BNDREGS state	*/
+	{.func=0x0000000d, .sub=0x00000004},	/* BNDCSR state 	*/
 /* AMD Family 15h */
 	{.func=0x0000000d, .sub=0x0000003e},	/* Ext. State Sub-leaf	*/
 /* Intel */
