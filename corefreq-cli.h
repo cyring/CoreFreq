@@ -217,10 +217,10 @@ enum {
 	BOXKEY_UNCORE_CLOCK_MIN =((BOXKEY_UNCORE_CLOCK_OR|CLOCK_MOD_MIN) << 32)
 };
 
-#define powered(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
+#define POWERED(bit)	( (bit) ? (char*) RSC(PRESENT).CODE()		\
 				: (char*) RSC(MISSING).CODE() )
 
-#define enabled(bit)	((bit) ? " ON" : "OFF")
+#define ENABLED(bit)	((bit) ? " ON" : "OFF")
 
 #define MARGIN_WIDTH	2
 #define MARGIN_HEIGHT	1

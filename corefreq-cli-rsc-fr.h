@@ -209,6 +209,7 @@
 #define RSC_ISA_TITLE_CODE_FR		" Jeu d'instructions etendu "
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caracteristiques "
+#define RSC_NOT_AVAILABLE_CODE_FR	"N/A"
 #define RSC_MISSING_CODE_FR		"Absent"
 #define RSC_PRESENT_CODE_FR		"Capable"
 #define RSC_VARIANT_CODE_FR		"Variant"

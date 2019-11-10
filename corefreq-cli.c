@@ -576,14 +576,26 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
     if ((( (*pRatio) > 0)  && !zerobase) || (( (*pRatio) >= 0) && zerobase))
     {
 	double freq = ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0;
-	pGrid = PUT(_key, attrib, width, 0,
-		"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
-	(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-		(freq > 0.0) && (freq < 10000.0) ? freq : NAN,
-		20, hSpace,
-		SymbUnlock[syc][0],
-		(*pRatio),
-		SymbUnlock[syc][1]);
+
+	if ((freq > 0.0) && (freq < 10000.0)) {
+		pGrid = PUT(_key, attrib, width, 0,
+			"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
+		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
+			freq,
+			20, hSpace,
+			SymbUnlock[syc][0],
+			(*pRatio),
+			SymbUnlock[syc][1]);
+	} else {
+		pGrid = PUT(_key, attrib, width, 0,
+			"%.*s""%s""%.*s""%7s""%.*s""%c%4d %c",
+		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
+			RSC(NOT_AVAILABLE).CODE(),
+			20, hSpace,
+			SymbUnlock[syc][0],
+			(*pRatio),
+			SymbUnlock[syc][1]);
+	}
     }
 	return(pGrid);
 }
@@ -604,9 +616,12 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	double freq = ((*data.puint) * CFlop->Clock.Hz) / 1000000.0;
 	char item[11+8+1];
-	snprintf(item, 11+8+1, "%4d%7.2f",
-		(*data.puint), (freq > 0.0) && (freq < 10000.0) ? freq : NAN);
 
+    if ((freq > 0.0) && (freq < 10000.0)) {
+	snprintf(item,11+8+1,"%4d%7.2f",(*data.puint),freq);
+    } else {
+	snprintf(item,11+7+1,"%4d%7s",(*data.puint),RSC(NOT_AVAILABLE).CODE());
+    }
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
 }
@@ -1139,178 +1154,178 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s1GB-PAGES   [%7s]", RSC(FEATURES_1GB_PAGES).CODE(),
-		width - 24 - RSZ(FEATURES_1GB_PAGES), hSpace, powered(bix));
+		width - 24 - RSZ(FEATURES_1GB_PAGES), hSpace, POWERED(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
-		width - 26 - RSZ(FEATURES_100MHZ), hSpace, powered(bix));
+		width - 26 - RSZ(FEATURES_100MHZ), hSpace, POWERED(bix));
     }
 
 	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		/* Intel */
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	/* AMD   */
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
-		width - 19 - RSZ(FEATURES_ACPI), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_ACPI), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.APIC == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sAPIC   [%7s]", RSC(FEATURES_APIC).CODE(),
-		width - 19 - RSZ(FEATURES_APIC), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_APIC), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sCMP Legacy   [%7s]", RSC(FEATURES_CORE_MP).CODE(),
-		width - 25 - RSZ(FEATURES_CORE_MP), hSpace, powered(bix));
+		width - 25 - RSZ(FEATURES_CORE_MP), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.CNXT_ID == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sCNXT-ID   [%7s]", RSC(FEATURES_CNXT_ID).CODE(),
-		width - 22 - RSZ(FEATURES_CNXT_ID), hSpace, powered(bix));
+		width - 22 - RSZ(FEATURES_CNXT_ID), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DCA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDCA   [%7s]", RSC(FEATURES_DCA).CODE(),
-		width - 18 - RSZ(FEATURES_DCA), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_DCA), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDE   [%7s]", RSC(FEATURES_DE).CODE(),
-		width - 17 - RSZ(FEATURES_DE), hSpace, powered(bix));
+		width - 17 - RSZ(FEATURES_DE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.DS_PEBS == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDS, PEBS   [%7s]", RSC(FEATURES_DS_PEBS).CODE(),
-		width - 23 - RSZ(FEATURES_DS_PEBS), hSpace, powered(bix));
+		width - 23 - RSZ(FEATURES_DS_PEBS), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DS_CPL == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDS-CPL   [%7s]", RSC(FEATURES_DS_CPL).CODE(),
-		width - 21 - RSZ(FEATURES_DS_CPL), hSpace, powered(bix));
+		width - 21 - RSZ(FEATURES_DS_CPL), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.DTES64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDTES64   [%7s]", RSC(FEATURES_DTES_64).CODE(),
-		width - 21 - RSZ(FEATURES_DTES_64), hSpace, powered(bix));
+		width - 21 - RSZ(FEATURES_DTES_64), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sFast-Strings   [%7s]", RSC(FEATURES_FAST_STR).CODE(),
-		width - 27 - RSZ(FEATURES_FAST_STR), hSpace, powered(bix));
+		width - 27 - RSZ(FEATURES_FAST_STR), hSpace, POWERED(bix));
 
 	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
 	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sFMA | FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
-		width - 25 - RSZ(FEATURES_FMA), hSpace, powered(bix));
+		width - 25 - RSZ(FEATURES_FMA), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHLE   [%7s]", RSC(FEATURES_HLE).CODE(),
-		width - 18 - RSZ(FEATURES_HLE), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_HLE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),
-		width - 24 - RSZ(FEATURES_LM), hSpace, powered(bix));
+		width - 24 - RSZ(FEATURES_LM), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sLWP   [%7s]", RSC(FEATURES_LWP).CODE(),
-		width - 18 - RSZ(FEATURES_LWP), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_LWP), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MCA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
-		width - 18 - RSZ(FEATURES_MCA), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_MCA), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMSR   [%7s]", RSC(FEATURES_MSR).CODE(),
-		width - 18 - RSZ(FEATURES_MSR), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_MSR), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.MTRR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMTRR   [%7s]", RSC(FEATURES_MTRR).CODE(),
-		width - 19 - RSZ(FEATURES_MTRR), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_MTRR), hSpace, POWERED(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
 	bix = Shm->Proc.Features.ExtInfo.EDX.NX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
-		width - 17 - RSZ(FEATURES_NX), hSpace, powered(bix));
+		width - 17 - RSZ(FEATURES_NX), hSpace, POWERED(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.OSXSAVE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sOSXSAVE   [%7s]", RSC(FEATURES_OSXSAVE).CODE(),
-		width - 22 - RSZ(FEATURES_OSXSAVE), hSpace, powered(bix));
+		width - 22 - RSZ(FEATURES_OSXSAVE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPAE   [%7s]", RSC(FEATURES_PAE).CODE(),
-		width - 18 - RSZ(FEATURES_PAE), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PAE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PAT == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPAT   [%7s]", RSC(FEATURES_PAT).CODE(),
-		width - 18 - RSZ(FEATURES_PAT), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PAT), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PBE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPBE   [%7s]", RSC(FEATURES_PBE).CODE(),
-		width - 18 - RSZ(FEATURES_PBE), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PBE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PCID == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPCID   [%7s]", RSC(FEATURES_PCID).CODE(),
-		width - 19 - RSZ(FEATURES_PCID), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_PCID), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.PDCM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPDCM   [%7s]", RSC(FEATURES_PDCM).CODE(),
-		width - 19 - RSZ(FEATURES_PDCM), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_PDCM), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PGE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPGE   [%7s]", RSC(FEATURES_PGE).CODE(),
-		width - 18 - RSZ(FEATURES_PGE), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PGE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPSE   [%7s]", RSC(FEATURES_PSE).CODE(),
-		width - 18 - RSZ(FEATURES_PSE), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PSE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSE36 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPSE36   [%7s]", RSC(FEATURES_PSE36).CODE(),
-		width - 20 - RSZ(FEATURES_PSE36), hSpace, powered(bix));
+		width - 20 - RSZ(FEATURES_PSE36), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.PSN == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPSN   [%7s]", RSC(FEATURES_PSN).CODE(),
-		width - 18 - RSZ(FEATURES_PSN), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_PSN), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sRTM   [%7s]", RSC(FEATURES_RTM).CODE(),
-		width - 18 - RSZ(FEATURES_RTM), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_RTM), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.SMX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMX   [%7s]", RSC(FEATURES_SMX).CODE(),
-		width - 18 - RSZ(FEATURES_SMX), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_SMX), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.SS == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
-		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, powered(bix));
+		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.ExtFeature.EBX.SMEP == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMEP   [%7s]", RSC(FEATURES_SMEP).CODE(),
-		width - 19 - RSZ(FEATURES_SMEP), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_SMEP), hSpace, POWERED(bix));
 
 	PUT(SCANKEY_NULL, attr_TSC[Shm->Proc.Features.InvariantTSC],
 		width, 2,
@@ -1321,17 +1336,17 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sTSC-DEADLINE   [%7s]", RSC(FEATURES_TSC_DEADLN).CODE(),
-		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, powered(bix));
+		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.VME == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVME   [%7s]", RSC(FEATURES_VME).CODE(),
-		width - 18 - RSZ(FEATURES_VME), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_VME), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.VMX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVMX   [%7s]", RSC(FEATURES_VMX).CODE(),
-		width - 18 - RSZ(FEATURES_VMX), hSpace, powered(bix));
+		width - 18 - RSZ(FEATURES_VMX), hSpace, POWERED(bix));
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC > 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1343,18 +1358,18 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sXD-Bit   [%7s]", RSC(FEATURES_XD_BIT).CODE(),
-		width - 21 - RSZ(FEATURES_XD_BIT), hSpace, powered(bix));
+		width - 21 - RSZ(FEATURES_XD_BIT), hSpace, POWERED(bix));
     }
 
 	bix = Shm->Proc.Features.Std.ECX.XSAVE == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sXSAVE   [%7s]", RSC(FEATURES_XSAVE).CODE(),
-		width - 20 - RSZ(FEATURES_XSAVE), hSpace, powered(bix));
+		width - 20 - RSZ(FEATURES_XSAVE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.ECX.xTPR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
-		width - 19 - RSZ(FEATURES_XTPR), hSpace, powered(bix));
+		width - 19 - RSZ(FEATURES_XTPR), hSpace, POWERED(bix));
 /* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
@@ -1440,7 +1455,7 @@ void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.EIST == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	TechUpdate(grid, bix, pos, 3, enabled(bix));
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void TurboUpdate(TGrid *grid, DATA_TYPE data)
@@ -1448,7 +1463,7 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.Turbo == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	TechUpdate(grid, bix, pos, 3, enabled(bix));
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 char *Hypervisor[HYPERVISORS] = {
@@ -1472,80 +1487,80 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Technology.SMM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMM-Dual       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, enabled(bix));
+		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHTT       [%3s]", RSC(TECHNOLOGIES_HTT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_HTT), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_HTT), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.EIST == 1;
     GridCall(PUT(BOXKEY_EIST, attrib[bix], width, 2,
 		"%s%.*sEIST       <%3s>", RSC(TECHNOLOGIES_EIST).CODE(),
-		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, enabled(bix)),
+		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, ENABLED(bix)),
 	SpeedStepUpdate);
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
     GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"%s%.*sTURBO       <%3s>", RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, enabled(bix)),
+		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, ENABLED(bix)),
 	TurboUpdate);
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVMX       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*sVT-d       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
 		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
-		hSpace, enabled(bix));
+		hSpace, ENABLED(bix));
     }
     else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     {
 	bix = Shm->Proc.Technology.SMM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMM-Lock       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, enabled(bix));
+		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Features.HyperThreading == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMT       [%3s]", RSC(TECHNOLOGIES_SMT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_SMT), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_SMT), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.PowerNow == 0b11;	/*	VID + FID	*/
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sCnQ       [%3s]", RSC(TECHNOLOGIES_CNQ).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
     GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"%s%.*sCPB       <%3s>", RSC(TECHNOLOGIES_CPB).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, enabled(bix)),
+		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, ENABLED(bix)),
 	TurboUpdate);
 
 	bix = Shm->Proc.Technology.VM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSVM       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, enabled(bix));
+		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.IOMMU == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*sAMD-V       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
 		width - (OutFunc? 21 : 23) - RSZ(TECHNOLOGIES_IOMMU),
-		hSpace, enabled(bix));
+		hSpace, ENABLED(bix));
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*s""%s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
 		width - (OutFunc? 20 : 22) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
-		Hypervisor[Shm->Proc.HypervisorID], enabled(bix));
+		Hypervisor[Shm->Proc.HypervisorID], ENABLED(bix));
 
 	return(reason);
 }
@@ -1568,7 +1583,7 @@ void C1E_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.C1E == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void C1A_Update(TGrid *grid, DATA_TYPE data)
@@ -1576,7 +1591,7 @@ void C1A_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.C1A == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void C3A_Update(TGrid *grid, DATA_TYPE data)
@@ -1584,7 +1599,7 @@ void C3A_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.C3A == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void C1U_Update(TGrid *grid, DATA_TYPE data)
@@ -1592,7 +1607,7 @@ void C1U_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.C1U == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void C3U_Update(TGrid *grid, DATA_TYPE data)
@@ -1600,7 +1615,7 @@ void C3U_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.C3U == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void CC6_Update(TGrid *grid, DATA_TYPE data)
@@ -1608,7 +1623,7 @@ void CC6_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.CC6 == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void PC6_Update(TGrid *grid, DATA_TYPE data)
@@ -1616,7 +1631,7 @@ void PC6_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Technology.PC6 == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void HWP_Update(TGrid *grid, DATA_TYPE data)
@@ -1624,7 +1639,7 @@ void HWP_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = Shm->Proc.Features.HWP_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
 
-	PerfMonUpdate(grid, bix, pos, 3, enabled(bix));
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
@@ -1703,7 +1718,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Technology.C1E == 1;
 	GridCall(PUT(BOXKEY_C1E, attrib[bix], width, 2,
 			"%s%.*sC1E       <%3s>", RSC(PERF_MON_C1E).CODE(),
-			width - 18 - RSZ(PERF_MON_C1E), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_C1E), hSpace, ENABLED(bix)),
 		C1E_Update);
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -1711,25 +1726,25 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Technology.C1A == 1;
 	GridCall(PUT(BOXKEY_C1A, attrib[bix], width, 2,
 			"%s%.*sC1A       <%3s>", RSC(PERF_MON_C1A).CODE(),
-			width - 18 - RSZ(PERF_MON_C1A), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_C1A), hSpace, ENABLED(bix)),
 		C1A_Update);
 
 	bix = Shm->Proc.Technology.C3A == 1;
 	GridCall(PUT(BOXKEY_C3A, attrib[bix], width, 2,
 			"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
-			width - 18 - RSZ(PERF_MON_C3A), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_C3A), hSpace, ENABLED(bix)),
 		C3A_Update);
 
 	bix = Shm->Proc.Technology.C1U == 1;
 	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
-			width - 18 - RSZ(PERF_MON_C1U), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_C1U), hSpace, ENABLED(bix)),
 		C1U_Update);
 
 	bix = Shm->Proc.Technology.C3U == 1;
 	GridCall(PUT(BOXKEY_C3U, attrib[bix], width, 2,
 			"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
-			width - 18 - RSZ(PERF_MON_C3U), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_C3U), hSpace, ENABLED(bix)),
 		C3U_Update);
     }
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -1737,33 +1752,33 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Technology.CC6 == 1;
 	GridCall(PUT(BOXKEY_CC6, attrib[bix], width, 2,
 			"%s%.*sCC6       <%3s>", RSC(PERF_MON_CC6).CODE(),
-			width - 18 - RSZ(PERF_MON_CC6), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_CC6), hSpace, ENABLED(bix)),
 		CC6_Update);
 
 	bix = Shm->Proc.Technology.PC6 == 1;
 	GridCall(PUT(BOXKEY_PC6, attrib[bix], width, 2,
 			"%s%.*sPC6       <%3s>", RSC(PERF_MON_PC6).CODE(),
-			width - 18 - RSZ(PERF_MON_PC6), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_PC6), hSpace, ENABLED(bix)),
 		PC6_Update);
     }
 	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sFID       [%3s]", RSC(PERF_MON_FID).CODE(),
-		width - 18 - RSZ(PERF_MON_FID), hSpace, enabled(bix));
+		width - 18 - RSZ(PERF_MON_FID), hSpace, ENABLED(bix));
 
 	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
-		width - 18 - RSZ(PERF_MON_VID), hSpace, enabled(bix));
+		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix));
 
 	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
-		width - 26 - RSZ(PERF_MON_HWCF), hSpace, enabled(bix));
+		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
 
 	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
@@ -1781,7 +1796,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	GridCall(PUT(BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
-			width - 18 - RSZ(PERF_MON_HWP), hSpace, enabled(bix)),
+			width - 18 - RSZ(PERF_MON_HWP), hSpace, ENABLED(bix)),
 		HWP_Update);
 
 	PUT(SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
@@ -1827,14 +1842,14 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
-		enabled(Shm->Proc.Features.HWP_Enable == 1));
+		ENABLED(Shm->Proc.Features.HWP_Enable == 1));
     }
 
 	bix = Shm->Proc.Features.HDC_Enable == 1;
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 : 4],
 		width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
-		width - 18 - RSZ(PERF_MON_HDC), hSpace, enabled(bix));
+		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix));
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
@@ -1914,37 +1929,37 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.InstrRetired == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.RefCycles == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Ref == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
-		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_MISS_LLC).CODE(),
-		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchRetired == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchMispred == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
-		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, powered(bix));
+		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, POWERED(bix));
 
 	return(reason);
 }
@@ -2087,17 +2102,17 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sDTS   [%7s]", RSC(POWER_THERMAL_DTS).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_DTS), hSpace, powered(bix));
+		width - 18 - RSZ(POWER_THERMAL_DTS), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PLN == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPLN   [%7s]", RSC(POWER_THERMAL_PLN).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PLN), hSpace, powered(bix));
+		width - 18 - RSZ(POWER_THERMAL_PLN), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Power.EAX.PTM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPTM   [%7s]", RSC(POWER_THERMAL_PTM).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace, powered(bix));
+		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace, POWERED(bix));
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
@@ -2122,32 +2137,59 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sHTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
     }
+    if (Shm->Proc.Power.TDP > 0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTDP   [%7u]", RSC(POWER_THERMAL_TDP).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TDP),hSpace,Shm->Proc.Power.TDP);
-
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sTDP   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDP),hSpace, POWERED(0));
+    }
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
 
+    if (Shm->Proc.Power.Unit.Watts > 0.0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]",
 		RSC(POWER_THERMAL_POWER).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		 - RSZ(POWER_THERMAL_POWER) - RSZ(POWER_THERMAL_WATT), hSpace,
 		RSC(POWER_THERMAL_WATT).CODE(), Shm->Proc.Power.Unit.Watts);
-
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%13s]",
+		RSC(POWER_THERMAL_POWER).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		 - RSZ(POWER_THERMAL_POWER) - RSZ(POWER_THERMAL_WATT), hSpace,
+		RSC(POWER_THERMAL_WATT).CODE(), POWERED(0));
+    }
+    if (Shm->Proc.Power.Unit.Joules > 0.0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_ENERGY).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_ENERGY) - RSZ(POWER_THERMAL_JOULE), hSpace,
 		RSC(POWER_THERMAL_JOULE).CODE(), Shm->Proc.Power.Unit.Joules);
-
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%13s]", RSC(POWER_THERMAL_ENERGY).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		- RSZ(POWER_THERMAL_ENERGY) - RSZ(POWER_THERMAL_JOULE), hSpace,
+		RSC(POWER_THERMAL_JOULE).CODE(), POWERED(0));
+    }
+    if (Shm->Proc.Power.Unit.Times > 0.0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_WINDOW).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
 		RSC(POWER_THERMAL_SECOND).CODE(), Shm->Proc.Power.Unit.Times);
-
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%13s]", RSC(POWER_THERMAL_WINDOW).CODE(),
+		width - (OutFunc == NULL ? 24 : 22)
+		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
+		RSC(POWER_THERMAL_SECOND).CODE(), POWERED(0));
+    }
 	return(reason);
 }
 
@@ -3482,7 +3524,7 @@ void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
 	const int bix = (Shm->Registration.AutoClock & 0b10) != 0,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
@@ -3490,7 +3532,7 @@ void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 	const int bix = Shm->Registration.Experimental != 0,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void HotPlug_Update(TGrid *grid, DATA_TYPE data)
@@ -3498,7 +3540,7 @@ void HotPlug_Update(TGrid *grid, DATA_TYPE data)
 	const int bix = !(Shm->Registration.hotplug < 0),
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
@@ -3506,7 +3548,7 @@ void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 	const int bix = Shm->Registration.pci == 1,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
@@ -3514,7 +3556,7 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 	const int bix = Shm->Registration.nmi == 1,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
@@ -3522,7 +3564,7 @@ void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 	const int bix = Shm->Registration.Driver.cpuidle,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
@@ -3530,7 +3572,7 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 	const int bix = Shm->Registration.Driver.cpufreq,
 		  pos = grid->cell.length - 5;
 
-	SettingUpdate(grid, bix, pos, 3, enabled(bix));
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 Window *CreateSettings(unsigned long long id)
@@ -4365,11 +4407,13 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
 	char item[8+1];
-	snprintf(item, 8+1, "%7.2f",
-		data.uint[0] > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz) ?
-			NAN : (double) (data.uint[0] * CFlop->Clock.Hz)
-					/ 1000000.0);
 
+	if (data.uint[0] > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)) {
+		snprintf(item, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
+	} else {
+		snprintf(item, 8+1, "%7.2f",
+			(double) (data.uint[0] * CFlop->Clock.Hz) / 1000000.0);
+	}
 	memcpy(&grid->cell.item[1], item, 7);
 }
 
@@ -4485,9 +4529,9 @@ Window *CreateRatioClock(unsigned long long id,
 	    {
 		attr = attrib[3];
 
-		snprintf((char*) item, 14+8+11+11+1,
-			" %7.2f MHz   [%4d ]  %+4d ",
-			NAN, multiplier, offset);
+		snprintf((char*) item, 15+6+11+11+1,
+			"  %-6s MHz   [%4d ]  %+4d ",
+			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
 		attr = attrib[multiplier < medianColdZone ?
 				1 : multiplier > startingHotZone ? 2 : 0];
