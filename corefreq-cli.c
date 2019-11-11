@@ -3855,25 +3855,23 @@ Window *CreateAdvHelp(unsigned long long id)
 
 Window *CreateAbout(unsigned long long id)
 {
-      char *C[] = {
-	"   ""   ______                ______               ""   ",
-	"   ""  / ____/___  ________  / ____/_______  ____ _""   ",
-	"   "" / /   / __ \\/ ___/ _ \\/ /_  / ___/ _ \\/ __ `/""   ",
-	"   ""/ /___/ /_/ / /  /  __/ __/ / /  /  __/ /_/ / ""   ",
-	"   ""\\____/\\____/_/   \\___/_/   /_/   \\___/\\__, /  ""   ",
-	"   ""                                        /_/   ""   "
-      };
-      char *F[] = {
-	"   ""   by CyrIng                                  ""   ",
-	"   ""                                              ""   ",
-	"   ""         (C)2015-2019 CYRIL INGENIERIE        ""   "
-      };
+	ASCII *C[] = {
+		RSC(LOGO_ROW_0).CODE(),
+		RSC(LOGO_ROW_1).CODE(),
+		RSC(LOGO_ROW_2).CODE(),
+		RSC(LOGO_ROW_3).CODE(),
+		RSC(LOGO_ROW_4).CODE(),
+		RSC(LOGO_ROW_5).CODE()
+	} , *F[] = {
+		RSC(COPY_ROW_0).CODE(),
+		RSC(COPY_ROW_1).CODE(),
+		RSC(COPY_ROW_2).CODE()
+	};
 	size_t	c = sizeof(C) / sizeof(C[0]),
 		f = sizeof(F) / sizeof(F[0]),
-		l = strlen(C[0]), v = strlen(COREFREQ_VERSION);
-
+		v = strlen(COREFREQ_VERSION);
 	CUINT	cHeight = c + f,
-		oCol = (draw.Size.width-l)/2,
+		oCol = (draw.Size.width - RSZ(LOGO_ROW_0)) / 2,
 		oRow = TOP_HEADER_ROW + 4;
 
 	if (cHeight >= (draw.Size.height - 1)) {

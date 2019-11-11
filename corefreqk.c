@@ -37,6 +37,11 @@
 #include "corefreq-api.h"
 #include "corefreqk.h"
 
+#if FEAT_DBG > 1
+FEAT_MSG("Including:Header:amd_nb.h")
+#include <asm/amd_nb.h>
+#endif
+
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
 MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD [0Fh, 17h]");
@@ -3165,6 +3170,16 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 
 	return(0);
 }
+#if FEAT_DBG > 1
+FEAT_MSG("Compiling:Function:AMD_17h_ZenIF")
+static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
+{
+	if (KPrivate->ZenIF_dev == NULL) {
+		KPrivate->ZenIF_dev = dev;
+	}
+	return(0);
+}
+#endif
 /* TODO
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 {
@@ -6515,12 +6530,24 @@ void Core_AMD_Family_15_60h_Temp(CORE *Core)
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
-
+#if (FEAT_DBG > 1) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0))
+FEAT_MSG("Compiling:Function:Core_AMD_Family_17h_Temp(amd_smn_read)")
+    if (KPrivate->ZenIF_dev != NULL)
+    {
+	if (amd_smn_read(amd_pci_dev_to_node_id(KPrivate->ZenIF_dev),
+			SMU_AMD_THM_TCTL_REGISTER_F17H, &TctlSensor.value))
+	{
+		pr_warn("CoreFreq: Failed to read TctlSensor\n");
+	}
+    } else {
+		pr_warn("CoreFreq: No AMD Family 17h probed device\n");
+    }
+#else
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
 					SMU_AMD_THM_TCTL_REGISTER_F17H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H);
-
+#endif
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
 	if (TctlSensor.CurTempRangeSel == 1)

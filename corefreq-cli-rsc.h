@@ -548,7 +548,16 @@ enum {
 	RSC_MECH_RSBA,
 	RSC_MECH_L1DFL_VMENTRY_NO,
 	RSC_MECH_SSB_NO,
-	RSC_MECH_MDS_NO
+	RSC_MECH_MDS_NO,
+	RSC_LOGO_ROW_0,
+	RSC_LOGO_ROW_1,
+	RSC_LOGO_ROW_2,
+	RSC_LOGO_ROW_3,
+	RSC_LOGO_ROW_4,
+	RSC_LOGO_ROW_5,
+	RSC_COPY_ROW_0,
+	RSC_COPY_ROW_1,
+	RSC_COPY_ROW_2
 };
 
 typedef struct {
@@ -2087,4 +2096,14 @@ extern RESOURCE_ST Resource[];
 #define RSC_CREATE_HELP_BLANK_CODE	"                  "
 
 #define RSC_CREATE_ADV_HELP_BLANK_CODE	"                                      "
+
+#define RSC_LOGO_R0 "      ______                ______                  "
+#define RSC_LOGO_R1 "     / ____/___  ________  / ____/_______  ____ _   "
+#define RSC_LOGO_R2 "    / /   / __ \\/ ___/ _ \\/ /_  / ___/ _ \\/ __ `/   "
+#define RSC_LOGO_R3 "   / /___/ /_/ / /  /  __/ __/ / /  /  __/ /_/ /    "
+#define RSC_LOGO_R4 "   \\____/\\____/_/   \\___/_/   /_/   \\___/\\__, /     "
+#define RSC_LOGO_R5 "                                           /_/      "
+#define RSC_COPY_R0 "      by CyrIng                                     "
+#define RSC_COPY_R1 "                                                    "
+#define RSC_COPY_R2 "            (C)2015-2019 CYRIL INGENIERIE           "
 

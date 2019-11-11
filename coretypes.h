@@ -6,7 +6,10 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	68
-#define COREFREQ_REV	7
+#define COREFREQ_REV	8
+
+#define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
+#define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
@@ -1470,6 +1473,16 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_IOMMU		0x1451
 #endif
+/* Source: /include/linux/pci_ids.h					*/
+#ifndef PCI_DEVICE_ID_AMD_17H_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_DF_F3		0x1463
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_M10H_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_M10H_DF_F3	0x15eb
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_M30H_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_M30H_DF_F3	0x1493
+#endif
 
 typedef struct
 {
@@ -1699,7 +1712,8 @@ typedef struct {
 	( (Ring.head - Ring.tail) == RING_SIZE );			\
 })
 
-#if FEAT_DBG > 1
+#if FEAT_DBG > 2
+FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_MOVE(_dst, _src)						\
 ({									\
 	__asm__ volatile						\
