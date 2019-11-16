@@ -757,6 +757,14 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
 
 			MDS_NO = BITWISEAND_CC(LOCKLESS,
 						Proc->MDS_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			PSCHANGE_MC_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->PSCHANGE_MC_NO,
+						Proc->ARCH_CAP_Mask) != 0,
+
+			TAA_NO = BITWISEAND_CC(LOCKLESS,
+						Proc->TAA_NO,
 						Proc->ARCH_CAP_Mask) != 0;
 
 	Shm->Proc.Mechanisms.IBRS = (
@@ -785,6 +793,12 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
 	);
 	Shm->Proc.Mechanisms.MDS_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * MDS_NO)
+	);
+	Shm->Proc.Mechanisms.PSCHANGE_MC_NO = (
+	    Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2*PSCHANGE_MC_NO)
+	);
+	Shm->Proc.Mechanisms.TAA_NO = (
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * TAA_NO)
 	);
 }
 

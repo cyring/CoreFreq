@@ -28,6 +28,10 @@
 	#define MSR_IA32_CORE_CAPABILITIES	0x000000cf
 #endif
 
+#ifndef MSR_IA32_TSX_CTRL
+	#define MSR_IA32_TSX_CTRL		0x00000122
+#endif
+
 #ifndef MSR_PLATFORM_INFO
 	#define MSR_PLATFORM_INFO		0x000000ce
 #endif
@@ -341,7 +345,10 @@ typedef union
 		L1DFL_VMENTRY_NO:  4-3,
 		SSB_NO		:  5-4,
 		MDS_NO		:  6-5,
-		ReservedBits	: 64-6;
+		PSCHANGE_MC_NO	:  7-6,
+		TSX_CTRL	:  8-7,
+		TAA_NO		:  9-8,
+		ReservedBits	: 64-9;
 	};
 } ARCH_CAPABILITIES;
 
@@ -356,6 +363,18 @@ typedef union
 		ReservedBits2	: 64-6;
 	};
 } CORE_CAPABILITIES;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		RTM_DISABLE	:  1-0, /*1:XBEGIN aborts w/ EAX=0	*/
+		TSX_CPUID_CLEAR :  2-1, /*0:if TSX capable then RTM=0 & HLE=0*/
+		ReservedBits	: 64-2;
+	};
+} TSX_CTRL;
 
 typedef union
 {	/* MSR IA32_PERF_STATUS(0x198): 0F_03 [NetBurst]		*/

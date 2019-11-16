@@ -662,6 +662,8 @@ typedef struct
 	Bit256			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
 	Bit256			SSB_NO		__attribute__ ((aligned (16)));
 	Bit256			MDS_NO		__attribute__ ((aligned (16)));
+	Bit256			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
+	Bit256			TAA_NO		__attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;

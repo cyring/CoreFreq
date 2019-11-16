@@ -1361,14 +1361,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_start_object(&s);
 			json_key(&s, "IBRS");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.IBRS);
-/*TODO(Clean-Up)	json_key(&s, "IBPB");
-			json_literal(&s, "%llu", Shm->Proc.Mechanisms.IBPB);*/
 			json_key(&s, "STIBP");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.STIBP);
 			json_key(&s, "SSBD");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SSBD);
-/*TODO(Clean-Up)	json_key(&s, "L1D_FLUSH");
-			json_literal(&s, "%llu", Shm->Proc.Mechanisms.L1D_FLUSH_CMD);*/
 			json_key(&s, "L1DFL_VMENTRY_NO");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO);
 			json_key(&s, "RDCL_NO");
@@ -1381,6 +1377,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SSB_NO);
 			json_key(&s, "MDS_NO");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.MDS_NO);
+			json_key(&s, "PSCHANGE_MC_NO");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSCHANGE_MC_NO);
+			json_key(&s, "TAA_NO");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.TAA_NO);
 
 			json_end_object(&s);
 		}

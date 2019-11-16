@@ -5210,6 +5210,16 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
 		} else {
 			BITCLR_CC(LOCKLESS, Proc->MDS_NO, Core->Bind);
 		}
+		if (Arch_Cap.PSCHANGE_MC_NO) {
+			BITSET_CC(LOCKLESS, Proc->PSCHANGE_MC_NO, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->PSCHANGE_MC_NO, Core->Bind);
+		}
+		if (Arch_Cap.TAA_NO) {
+			BITSET_CC(LOCKLESS, Proc->TAA_NO, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TAA_NO, Core->Bind);
+		}
 	}
 	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask, Core->Bind);
@@ -5283,6 +5293,8 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->L1DFL_VMENTRY_NO,Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->SSB_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->MDS_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->PSCHANGE_MC_NO, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->TAA_NO	, Core->Bind);
 }
 
 static void PerCore_Intel_Query(void *arg)

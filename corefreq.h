@@ -210,7 +210,9 @@ typedef struct
 				L1DFL_VMENTRY_NO: 14-12,
 				SSB_NO		: 16-14,
 				MDS_NO		: 18-16,
-				_UnusedMechBits : 64-18;
+				PSCHANGE_MC_NO	: 20-18,
+				TAA_NO		: 22-20,
+				_UnusedMechBits : 64-22;
 	} Mechanisms;
 
 	enum THERMAL_FORMULAS	thermalFormula;

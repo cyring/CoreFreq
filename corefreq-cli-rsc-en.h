@@ -653,4 +653,6 @@
 #define RSC_MECH_SSB_NO_CODE_EN "Architectural - Speculative Store Bypass"
 #define RSC_MECH_MDS_NO_CODE_EN \
 			"Architectural - Microarchitectural Data Sampling"
+#define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
+#define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
 

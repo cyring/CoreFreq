@@ -1435,6 +1435,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMDS_NO   [%7s]", RSC(MECH_MDS_NO).CODE(),
 		width - 21 - RSZ(MECH_MDS_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.TAA_NO;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sTAA_NO   [%7s]", RSC(MECH_TAA_NO).CODE(),
+		width - 21 - RSZ(MECH_TAA_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.PSCHANGE_MC_NO;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sPSCHANGE_MC_NO   [%7s]",RSC(MECH_PSCHANGE_MC_NO).CODE(),
+		width - 29 - RSZ(MECH_PSCHANGE_MC_NO), hSpace, MECH[bix]);
     }
 	return(reason);
 }
