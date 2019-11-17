@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	69
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -496,6 +496,15 @@ enum CLOCK_MOD_INDEX {
 	CLOCK_MOD_MAX = 2,
 	CLOCK_MOD_TGT = 1
 };
+
+enum {	/* Stick to the Kernel enumeration in include/asm/nmi.h		*/
+	BIT_NMI_LOCAL = 0,
+	BIT_NMI_UNKNOWN,
+	BIT_NMI_SERR,
+	BIT_NMI_IO_CHECK
+};
+
+#define BIT_NMI_MASK	0x0fLLU
 
 typedef union
 {

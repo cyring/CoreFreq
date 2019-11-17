@@ -3531,56 +3531,58 @@ void SettingUpdate(TGrid *grid, const int bix, const int pos,
 
 void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = (Shm->Registration.AutoClock & 0b10) != 0,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = (Shm->Registration.AutoClock & 0b10) != 0;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Registration.Experimental != 0,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Registration.Experimental != 0;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void HotPlug_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = !(Shm->Registration.hotplug < 0),
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = !(Shm->Registration.hotplug < 0);
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Registration.pci == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Registration.pci == 1;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Registration.nmi == 1,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = BITWISEAND(	LOCKLESS,
+						Shm->Registration.nmi,
+						BIT_NMI_MASK ) != 0;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Registration.Driver.cpuidle,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Registration.Driver.cpuidle;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
 void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	const int bix = Shm->Registration.Driver.cpufreq,
-		  pos = grid->cell.length - 5;
+	const unsigned int bix = Shm->Registration.Driver.cpufreq;
+	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -3597,6 +3599,7 @@ Window *CreateSettings(unsigned long long id)
 		RSC(CREATE_SETTINGS_COND1).ATTR()
 	};
 	size_t length = strlen(Shm->ShmName);
+	unsigned int bix;
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -3642,39 +3645,46 @@ Window *CreateSettings(unsigned long long id)
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
 
+	bix = ((Shm->Registration.AutoClock & 0b10) != 0);
 	GridCall( StoreTCell( wSet, OPS_AUTOCLOCK,
 			RSC(SETTINGS_AUTO_CLOCK).CODE(),
-			attrib[((Shm->Registration.AutoClock & 0b10) != 0)] ),
+			attrib[bix] ),
 		AutoClockUpdate );
 
+	bix = (Shm->Registration.Experimental != 0);
 	GridCall( StoreTCell(	wSet, OPS_EXPERIMENTAL,
 				RSC(SETTINGS_EXPERIMENTAL).CODE(),
-				attrib[Shm->Registration.Experimental != 0] ),
+				attrib[bix] ),
 		ExperimentalUpdate );
 
+	bix = !(Shm->Registration.hotplug < 0);
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_CPU_HOTPLUG).CODE(),
-				attrib[!(Shm->Registration.hotplug < 0)] ),
+				attrib[bix] ),
 		HotPlug_Update );
 
+	bix = (Shm->Registration.pci == 1);
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_PCI_ENABLED).CODE(),
-				attrib[(Shm->Registration.pci == 1)] ),
+				attrib[bix] ),
 		PCI_Probe_Update );
 
+	bix = BITWISEAND(LOCKLESS, Shm->Registration.nmi, BIT_NMI_MASK) != 0;
 	GridCall( StoreTCell(	wSet, OPS_INTERRUPTS,
 				RSC(SETTINGS_NMI_REGISTERED).CODE(),
-				attrib[Shm->Registration.nmi] ),
+				attrib[bix] ),
 		NMI_Registration_Update );
 
+	bix = Shm->Registration.Driver.cpuidle;
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
-				attrib[Shm->Registration.Driver.cpuidle] ),
+				attrib[bix] ),
 		CPU_Idle_Update );
 
+	bix = Shm->Registration.Driver.cpufreq;
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
-				attrib[Shm->Registration.Driver.cpufreq] ),
+				attrib[bix] ),
 		CPU_Freq_Update );
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
@@ -5228,22 +5238,25 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_INT_UNREGISTER_COND1).CODE()
 			}
 		};
+		const unsigned int bix = BITWISEAND(	LOCKLESS,
+							Shm->Registration.nmi,
+							BIT_NMI_MASK ) != 0;
 		const Coordinate origin = {
 			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 5
 		}, select = {
 			.col = 0,
-			.row = Shm->Registration.nmi == 0 ? 1 : 2
+			.row = bix == 0 ? 1 : 2
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_INTERRUPT_TITLE).CODE(),
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		ops_Str[0][Shm->Registration.nmi != 0],
-			stateAttr[Shm->Registration.nmi != 0],
+		ops_Str[0][bix != 0],
+			stateAttr[bix != 0],
 			OPS_INTERRUPTS_ON,
-		ops_Str[1][Shm->Registration.nmi == 0] ,
-			stateAttr[Shm->Registration.nmi == 0],
+		ops_Str[1][bix == 0] ,
+			stateAttr[bix == 0],
 			OPS_INTERRUPTS_OFF,
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
@@ -8237,14 +8250,29 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	len = snprintf(buffer, 10+1, "%10u", CFlop->Counter.SMI);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
-	if (Shm->Registration.nmi) {
-		len = snprintf( buffer, 10+10+10+10+1,
-				"%10u%10u%10u%10u",
-				CFlop->Counter.NMI.LOCAL,
-				CFlop->Counter.NMI.UNKNOWN,
-				CFlop->Counter.NMI.PCISERR,
-				CFlop->Counter.NMI.IOCHECK );
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_LOCAL) == 1) {
+		len = snprintf(buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), buffer, len);
+	} else {
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), hSpace, 10);
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_UNKNOWN) == 1) {
+		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), buffer, len);
+	} else {
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), hSpace, 10);
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_SERR) == 1) {
+		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), buffer, len);
+	} else {
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), hSpace, 10);
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_IO_CHECK) == 1) {
+		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), buffer, len);
+	} else {
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), hSpace, 10);
 	}
 	return(0);
 }

@@ -708,11 +708,11 @@ typedef struct
 	} OS;
 
 	struct {
+		Bit64		nmi;
 		signed int	AutoClock,
 				Experimental,
 				hotplug,
-				pci,
-				nmi;
+				pci;
 		struct {
 		unsigned short
 				cpuidle :  1-0,

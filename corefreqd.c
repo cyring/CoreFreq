@@ -430,10 +430,16 @@ static void *Core_Cycle(void *arg)
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
 
 	/* If driver registered, copy any NMI counter.			*/
-	if (Shm->Registration.nmi) {
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_LOCAL) == 1) {
 		CFlip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_UNKNOWN) == 1) {
 		CFlip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_SERR) == 1) {
 		CFlip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
+	}
+	if (BITVAL(Shm->Registration.nmi, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
     }
@@ -808,7 +814,7 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Registration.Experimental = Proc->Registration.Experimental;
 	Shm->Registration.hotplug = Proc->Registration.hotplug;
 	Shm->Registration.pci = Proc->Registration.pci;
-	Shm->Registration.nmi = Proc->Registration.nmi;
+	BITSTOR(LOCKLESS, Shm->Registration.nmi, Proc->Registration.nmi);
 	Shm->Registration.Driver.cpuidle = Proc->Registration.Driver.cpuidle;
 	Shm->Registration.Driver.cpufreq = Proc->Registration.Driver.cpufreq;
 	/* Copy the timer interval delay.				*/
