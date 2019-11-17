@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
@@ -36,21 +37,35 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_start_object(&s);
 		json_key(&s, "Experimental");
 		json_literal(&s, "%d", Shm->Registration.Experimental);
-		json_key(&s, "hotplug");
-		json_literal(&s, "%d", Shm->Registration.hotplug);
-		json_key(&s, "pci");
-		json_literal(&s, "%d", Shm->Registration.pci);
-		json_key(&s, "nmi");
-		json_literal(&s, "%d", Shm->Registration.nmi);
+		json_key(&s, "HotPlug");
+		json_literal(&s, "%d", Shm->Registration.HotPlug);
+		json_key(&s, "PCI");
+		json_literal(&s, "%d", Shm->Registration.PCI);
+		json_key(&s, "Interrupt");
+		{
+			json_start_object(&s);
+			json_key(&s, "NMI_LOCAL");
+			json_literal(&s, "%u", BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL));
+			json_key(&s, "NMI_UNKNOWN");
+			json_literal(&s, "%u", BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN));
+			json_key(&s, "NMI_SERR");
+			json_literal(&s, "%u", BITVAL(Shm->Registration.NMI, BIT_NMI_SERR));
+			json_key(&s, "NMI_IO_CHECK");
+			json_literal(&s, "%u", BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK));
+			json_end_object(&s);
+		}
+		json_key(&s, "CPUidle");
+		json_literal(&s, "%hu", Shm->Registration.Driver.CPUidle);
+		json_key(&s, "CPUfreq");
+		json_literal(&s, "%hu", Shm->Registration.Driver.CPUfreq);
 		json_end_object(&s);
 	}
+    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+    {
 	json_key(&s, "SysGate");
 	{
 		json_start_object(&s);
-	/* TODO:
-		Bit64		Operation
-		IDLEDRIVER	IdleDriver;
-	*/
+
 		json_key(&s, "tickReset");
 		json_literal(&s, "%u", Shm->SysGate.tickReset);
 		json_key(&s, "tickStep");
@@ -132,9 +147,29 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_key(&s, "machine");
 		json_string(&s, Shm->SysGate.machine);
 
+		json_key(&s, "SubDriver");
+		{
+			json_start_object(&s);
+
+		    if (strlen(Shm->SysGate.OS.FreqDriver.Name) > 0) {
+			json_key(&s, "CPU_Freq");
+			json_string(&s, Shm->SysGate.OS.FreqDriver.Name);
+		    }
+		    if (strlen(Shm->SysGate.OS.FreqDriver.Governor) > 0) {
+			json_key(&s, "Governor");
+			json_string(&s, Shm->SysGate.OS.FreqDriver.Governor);
+		    }
+		    if (strlen(Shm->SysGate.OS.IdleDriver.Name) > 0) {
+			json_key(&s, "CPU_Idle");
+			json_string(&s, Shm->SysGate.OS.IdleDriver.Name);
+		    }
+
+			json_end_object(&s);
+		}
 
 		json_end_object(&s);
 	}
+    }
 	json_key(&s, "Sleep");
 	{
 		json_start_object(&s);
@@ -298,9 +333,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	json_key(&s, "Proc");
 	{
 		json_start_object(&s);
-	/* TODO: CleanUp
-	 volatile unsigned long long	Sync __attribute__ ((aligned (16)));
-	*/
+
 		json_key(&s, "Features");
 		{
 			json_start_object(&s);

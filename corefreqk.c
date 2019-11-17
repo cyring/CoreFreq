@@ -3988,7 +3988,7 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	}
     } else {					/* EPB fallback mode	*/
-	if (Proc->Registration.Driver.cpufreq) {
+	if (Proc->Registration.Driver.CPUfreq) {
 		/* Turbo is a function of the Target P-state		*/
 		if (!CmpTarget(Core, ValidRatio)) {
 			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
@@ -3996,7 +3996,7 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	}
     }
   } else {						/* EPB mode	*/
-	if (Proc->Registration.Driver.cpufreq) {
+	if (Proc->Registration.Driver.CPUfreq) {
 		if (!CmpTarget(Core, ValidRatio)) {
 			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
 		}
@@ -8919,77 +8919,77 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 
 static void CoreFreqK_Register_NMI(void)
 {
-    if (BITVAL(Proc->Registration.nmi, BIT_NMI_LOCAL) == 0)
+    if (BITVAL(Proc->Registration.NMI, BIT_NMI_LOCAL) == 0)
     {
 	if(register_nmi_handler(NMI_LOCAL,
 				CoreFreqK_NMI_Handler,
 				0,
 				"corefreqk") == 0)
 	{
-		BITSET(LOCKLESS, Proc->Registration.nmi, BIT_NMI_LOCAL);
+		BITSET(LOCKLESS, Proc->Registration.NMI, BIT_NMI_LOCAL);
 	} else {
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_LOCAL);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_LOCAL);
 	}
     }
-    if (BITVAL(Proc->Registration.nmi, BIT_NMI_UNKNOWN) == 0)
+    if (BITVAL(Proc->Registration.NMI, BIT_NMI_UNKNOWN) == 0)
     {
 	if(register_nmi_handler(NMI_UNKNOWN,
 				CoreFreqK_NMI_Handler,
 				0,
 				"corefreqk") == 0)
 	{
-		BITSET(LOCKLESS, Proc->Registration.nmi, BIT_NMI_UNKNOWN);
+		BITSET(LOCKLESS, Proc->Registration.NMI, BIT_NMI_UNKNOWN);
 	} else {
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_UNKNOWN);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_UNKNOWN);
 	}
     }
-    if (BITVAL(Proc->Registration.nmi, BIT_NMI_SERR) == 0)
+    if (BITVAL(Proc->Registration.NMI, BIT_NMI_SERR) == 0)
     {
 	if(register_nmi_handler(NMI_SERR,
 				CoreFreqK_NMI_Handler,
 				0,
 				"corefreqk") == 0)
 	{
-		BITSET(LOCKLESS, Proc->Registration.nmi, BIT_NMI_SERR);
+		BITSET(LOCKLESS, Proc->Registration.NMI, BIT_NMI_SERR);
 	} else {
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_SERR);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_SERR);
 	}
     }
-    if (BITVAL(Proc->Registration.nmi, BIT_NMI_IO_CHECK) == 0)
+    if (BITVAL(Proc->Registration.NMI, BIT_NMI_IO_CHECK) == 0)
     {
 	if(register_nmi_handler(NMI_IO_CHECK,
 				CoreFreqK_NMI_Handler,
 				0,
 				"corefreqk") == 0)
 	{
-		BITSET(LOCKLESS, Proc->Registration.nmi, BIT_NMI_IO_CHECK);
+		BITSET(LOCKLESS, Proc->Registration.NMI, BIT_NMI_IO_CHECK);
 	} else {
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_IO_CHECK);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_IO_CHECK);
 	}
     }
 }
 
 static void CoreFreqK_UnRegister_NMI(void)
 {
-	if (BITVAL(Proc->Registration.nmi, BIT_NMI_LOCAL) == 1)
+	if (BITVAL(Proc->Registration.NMI, BIT_NMI_LOCAL) == 1)
 	{
 		unregister_nmi_handler(NMI_LOCAL, "corefreqk");
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_LOCAL);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_LOCAL);
 	}
-	if (BITVAL(Proc->Registration.nmi, BIT_NMI_UNKNOWN) == 1)
+	if (BITVAL(Proc->Registration.NMI, BIT_NMI_UNKNOWN) == 1)
 	{
 		unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_UNKNOWN);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_UNKNOWN);
 	}
-	if (BITVAL(Proc->Registration.nmi, BIT_NMI_SERR) == 1)
+	if (BITVAL(Proc->Registration.NMI, BIT_NMI_SERR) == 1)
 	{
 		unregister_nmi_handler(NMI_SERR, "corefreqk");
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_SERR);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_SERR);
 	}
-	if (BITVAL(Proc->Registration.nmi, BIT_NMI_IO_CHECK) == 1)
+	if (BITVAL(Proc->Registration.NMI, BIT_NMI_IO_CHECK) == 1)
 	{
 		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
-		BITCLR(LOCKLESS, Proc->Registration.nmi, BIT_NMI_IO_CHECK);
+		BITCLR(LOCKLESS, Proc->Registration.NMI, BIT_NMI_IO_CHECK);
 	}
 }
 #else
@@ -9109,9 +9109,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		Proc->Registration.Experimental = prm.dl.lo;
 		Controller_Start(1);
-	    if( Proc->Registration.Experimental && !Proc->Registration.pci )
+	    if( Proc->Registration.Experimental && !Proc->Registration.PCI )
 	    {
-		Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	    }
 		rc = 2;
 		break;
@@ -9137,7 +9137,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	break;
 
       case MACHINE_LIMIT_IDLE:
-	if (Proc->Registration.Driver.cpuidle) {
+	if (Proc->Registration.Driver.CPUidle) {
 		rc = CoreFreqK_Limit_Idle(prm.dl.lo);
 	}
 	break;
@@ -9539,8 +9539,8 @@ static int CoreFreqK_suspend(struct device *dev)
 
 static int CoreFreqK_resume(struct device *dev)
 {
-	if (Proc->Registration.pci) {		/* Probe PCI again	*/
-		Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+	if (Proc->Registration.PCI) {		/* Probe PCI again	*/
+		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	}
 	Controller_Start(0);
 
@@ -9614,7 +9614,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	MatchPeerForUpService(&Proc->Service, cpu);
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-   if (Proc->Registration.Driver.cpuidle) {
+   if (Proc->Registration.Driver.CPUidle) {
 	struct cpuidle_device *device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
 	if (device->registered == 0) {
 		device->cpu = cpu;
@@ -9945,11 +9945,11 @@ static int __init CoreFreqK_init(void)
 
 			/* Register the Idle & Frequency sub-drivers	*/
 		    if (Register_CPU_Idle == 1) {
-			Proc->Registration.Driver.cpuidle =		\
+			Proc->Registration.Driver.CPUidle =		\
 					CoreFreqK_IdleDriver_Init() == 0;
 		    }
 		    if (Register_CPU_Freq == 1) {
-			Proc->Registration.Driver.cpufreq =		\
+			Proc->Registration.Driver.CPUfreq =		\
 					CoreFreqK_FreqDriver_Init() == 0;
 		    }
 
@@ -9974,15 +9974,15 @@ static int __init CoreFreqK_init(void)
 
 			Controller_Start(0);
 
-			Proc->Registration.pci = CoreFreqK_ProbePCI() == 0;
+			Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 
 	#ifdef CONFIG_HOTPLUG_CPU
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
 			/* Always returns zero (kernel/notifier.c) */
-			Proc->Registration.hotplug = register_hotcpu_notifier(
+			Proc->Registration.HotPlug = register_hotcpu_notifier(
 						&CoreFreqK_notifier_block);
 		#else	/* Continue with or without cpu hot-plugging. */
-			Proc->Registration.hotplug = cpuhp_setup_state_nocalls(
+			Proc->Registration.HotPlug = cpuhp_setup_state_nocalls(
 						CPUHP_AP_ONLINE_DYN,
 						"corefreqk/cpu:online",
 						CoreFreqK_hotplug_cpu_online,
@@ -10092,10 +10092,10 @@ static void __exit CoreFreqK_cleanup(void)
 	if (Proc != NULL) {
 		unsigned int cpu = 0;
 
-		if (Proc->Registration.Driver.cpufreq) {
+		if (Proc->Registration.Driver.CPUfreq) {
 			CoreFreqK_FreqDriver_UnInit();
 		}
-		if (Proc->Registration.Driver.cpuidle) {
+		if (Proc->Registration.Driver.CPUidle) {
 			CoreFreqK_IdleDriver_UnInit();
 		}
 		CoreFreqK_UnRegister_NMI();
@@ -10103,8 +10103,8 @@ static void __exit CoreFreqK_cleanup(void)
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
 	#else /* KERNEL_VERSION(4, 10, 0) */
-		if (!(Proc->Registration.hotplug < 0))
-			cpuhp_remove_state_nocalls(Proc->Registration.hotplug);
+		if (!(Proc->Registration.HotPlug < 0))
+			cpuhp_remove_state_nocalls(Proc->Registration.HotPlug);
 	#endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 		Controller_Stop(1);

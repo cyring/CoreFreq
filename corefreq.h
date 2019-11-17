@@ -145,12 +145,12 @@ typedef struct
 	} FlipFlop[2];
 
 	struct {
-		Bit64			RFLAGS,
-					CR0,
-					CR3,
-					CR4,
-					EFCR,
-					EFER;
+		Bit64			RFLAGS	__attribute__ ((aligned (8))),
+					CR0	__attribute__ ((aligned (8))),
+					CR3	__attribute__ ((aligned (8))),
+					CR4	__attribute__ ((aligned (8))),
+					EFCR	__attribute__ ((aligned (8))),
+					EFER	__attribute__ ((aligned (8)));
 	} SystemRegister;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
@@ -296,16 +296,16 @@ typedef struct
 {
 	FOOTPRINT		FootPrint;
 
-	struct {
-		Bit64		nmi;	/* 0: Unregistered, 1: Registered*/
+	struct {	/*	NMI bits: 0 is Unregistered; 1 is Registered */
+		Bit64		NMI	__attribute__ ((aligned (8)));
 		signed int	AutoClock, /* 10: Auto, 01: Init, 00: Specs */
 				Experimental,/* 0: Disable, 1: Enable	*/
-				hotplug, /* < 0: Disable, Other: Enable */
-				pci;	/*  < 0: Disable, other: Enable */
+				HotPlug, /* < 0: Disable, Other: Enable */
+				PCI;	/*  < 0: Disable, other: Enable */
 		struct {
 		unsigned short
-				cpuidle :  1-0,/* 0: Disable, 1: Enable */
-				cpufreq :  2-1,/* 0: Disable, 1: Enable */
+				CPUidle :  1-0,/* 0: Disable, 1: Enable */
+				CPUfreq :  2-1,/* 0: Disable, 1: Enable */
 				unused	: 16-2;
 		} Driver;
 	} Registration;

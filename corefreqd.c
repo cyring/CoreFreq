@@ -430,16 +430,16 @@ static void *Core_Cycle(void *arg)
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
 
 	/* If driver registered, copy any NMI counter.			*/
-	if (BITVAL(Shm->Registration.nmi, BIT_NMI_LOCAL) == 1) {
+	if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
 		CFlip->Counter.NMI.LOCAL   = Core->Interrupt.NMI.LOCAL;
 	}
-	if (BITVAL(Shm->Registration.nmi, BIT_NMI_UNKNOWN) == 1) {
+	if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
 		CFlip->Counter.NMI.UNKNOWN = Core->Interrupt.NMI.UNKNOWN;
 	}
-	if (BITVAL(Shm->Registration.nmi, BIT_NMI_SERR) == 1) {
+	if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
 		CFlip->Counter.NMI.PCISERR = Core->Interrupt.NMI.PCISERR;
 	}
-	if (BITVAL(Shm->Registration.nmi, BIT_NMI_IO_CHECK) == 1) {
+	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
     }
@@ -812,11 +812,11 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 {	/* Copy the operational settings.				*/
 	Shm->Registration.AutoClock = Proc->Registration.AutoClock;
 	Shm->Registration.Experimental = Proc->Registration.Experimental;
-	Shm->Registration.hotplug = Proc->Registration.hotplug;
-	Shm->Registration.pci = Proc->Registration.pci;
-	BITSTOR(LOCKLESS, Shm->Registration.nmi, Proc->Registration.nmi);
-	Shm->Registration.Driver.cpuidle = Proc->Registration.Driver.cpuidle;
-	Shm->Registration.Driver.cpufreq = Proc->Registration.Driver.cpufreq;
+	Shm->Registration.HotPlug = Proc->Registration.HotPlug;
+	Shm->Registration.PCI = Proc->Registration.PCI;
+	BITSTOR(LOCKLESS, Shm->Registration.NMI, Proc->Registration.NMI);
+	Shm->Registration.Driver.CPUidle = Proc->Registration.Driver.CPUidle;
+	Shm->Registration.Driver.CPUfreq = Proc->Registration.Driver.CPUfreq;
 	/* Copy the timer interval delay.				*/
 	Shm->Sleep.Interval = Proc->SleepInterval;
 	/* Compute the polling wait time based on the timer interval.	*/

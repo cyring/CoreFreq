@@ -527,7 +527,7 @@ char *console = NULL;
 
 struct {
     union {
-		Bit64	Reset;
+		Bit64	Reset __attribute__ ((aligned (8)));
 	struct {
 		Bit32	Status;
 		int	Tick;
@@ -1598,7 +1598,7 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 		char *dumpFileName = malloc(64);
 		if (dumpFileName != NULL)
 		{
-			Bit64 tsc;
+			Bit64 tsc __attribute__ ((aligned (8)));
 			RDTSC64(tsc);
 
 			snprintf(dumpFileName, 64, dumpFormat, tsc);

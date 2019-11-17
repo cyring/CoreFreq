@@ -363,13 +363,13 @@ typedef struct
 	CACHE_TOPOLOGY			T;
 
 	struct {
-		Bit64			RFLAGS,
-					CR0,
-					CR3,
-					CR4,
-					EFER;
+		Bit64			RFLAGS	__attribute__ ((aligned (8))),
+					CR0	__attribute__ ((aligned (8))),
+					CR3	__attribute__ ((aligned (8))),
+					CR4	__attribute__ ((aligned (8))),
+					EFER	__attribute__ ((aligned (8)));
 		union {
-			Bit64		EFCR;
+			Bit64		EFCR	__attribute__ ((aligned (8)));
 			VM_CR		VMCR;
 
 		};
@@ -699,7 +699,7 @@ typedef struct
 	} PowerThermal;
 
 	struct {
-		Bit64		Signal __attribute__ ((aligned (8)));
+		Bit64		Signal	__attribute__ ((aligned (8)));
 		struct {
 			size_t	Size;
 			int	Order;
@@ -708,15 +708,15 @@ typedef struct
 	} OS;
 
 	struct {
-		Bit64		nmi;
+		Bit64		NMI;
 		signed int	AutoClock,
 				Experimental,
-				hotplug,
-				pci;
+				HotPlug,
+				PCI;
 		struct {
 		unsigned short
-				cpuidle :  1-0,
-				cpufreq :  2-1,
+				CPUidle :  1-0,
+				CPUfreq :  2-1,
 				unused	: 16-2;
 		} Driver;
 	} Registration;
