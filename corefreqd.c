@@ -407,6 +407,7 @@ static void *Core_Cycle(void *arg)
 	}
 
 	/* Per Core, evaluate thermal properties.			*/
+	Cpu->PowerThermal.Param = Core->PowerThermal.Param;
 	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events = Core->PowerThermal.Events;
 
@@ -3389,8 +3390,6 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 
 	Shm->Cpu[cpu].PowerThermal.TM2 |=
 			(Core[cpu]->PowerThermal.TM2_Enable << 1);   /* 00v0 */
-
-	Shm->Cpu[cpu].PowerThermal.Param = Core[cpu]->PowerThermal.Param;
 
 	Shm->Cpu[cpu].PowerThermal.HWP.Capabilities.Highest =
 			Core[cpu]->PowerThermal.HWP_Capabilities.Highest;
