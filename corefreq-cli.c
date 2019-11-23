@@ -2032,12 +2032,17 @@ void Hint_Update(TGrid *grid, DATA_TYPE data)
 
 void TjMax_Update(TGrid *grid, DATA_TYPE data)
 {
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
 	const signed int pos = grid->cell.length - 9;
 	char item[10+1+10+1];
 
 	snprintf(item, 3+1+3+1, "%3u:%3u",
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
+		SFlop->Thermal.Param.Offset[1],
+		SFlop->Thermal.Param.Offset[0]);
 
 	memcpy(&grid->cell.item[pos], item, 7);
 }
@@ -2061,6 +2066,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(LOCK).CODE(),
 		RSC(UNLOCK).CODE()
 	};
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
 	unsigned int bix;
 /* Section Mark */
 	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
@@ -2127,8 +2137,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
       GridCall(PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTjMax   [%3u:%3u]", RSC(POWER_THERMAL_TJMAX).CODE(),
 		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
+		SFlop->Thermal.Param.Offset[1],
+		SFlop->Thermal.Param.Offset[0]),
 	TjMax_Update);
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
@@ -2595,52 +2605,64 @@ void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
 
 void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
 {
-printf( "\n"							\
-	"%.*s" "Averages:"					\
-	"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-	"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
-	"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-	"%.*s" "%3u C" "%.*s" "%3u C\n\n",
-	4, hSpace,
-	8, hSpace,
-	4, hSpace,
-	4, hSpace,
-	20, hSpace,
-	100.f * Shm->Proc.Avg.Turbo,
-	100.f * Shm->Proc.Avg.C0,
-	100.f * Shm->Proc.Avg.C1,
-	100.f * Shm->Proc.Avg.C3,
-	100.f * Shm->Proc.Avg.C6,
-	100.f * Shm->Proc.Avg.C7,
-	5, hSpace,
-	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0],
-	3, hSpace,
-	PFlop->Thermal.Temp );
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
+
+	printf( "\n"							\
+		"%.*s" "Averages:"					\
+		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
+		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+		"%.*s" "%3u C" "%.*s" "%3u C\n\n",
+		4, hSpace,
+		8, hSpace,
+		4, hSpace,
+		4, hSpace,
+		20, hSpace,
+		100.f * Shm->Proc.Avg.Turbo,
+		100.f * Shm->Proc.Avg.C0,
+		100.f * Shm->Proc.Avg.C1,
+		100.f * Shm->Proc.Avg.C3,
+		100.f * Shm->Proc.Avg.C6,
+		100.f * Shm->Proc.Avg.C7,
+		5, hSpace,
+		SFlop->Thermal.Param.Offset[0],
+		3, hSpace,
+		PFlop->Thermal.Temp );
 }
 
 void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 {
-printf( "\n"							\
-	"%.*s" "Averages:"					\
-	"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-	"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
-	"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
-	"%.*s" "%3u C" "%.*s" "%3u C\n\n",
-	4, hSpace,
-	8, hSpace,
-	4, hSpace,
-	4, hSpace,
-	20, hSpace,
-	100.f * Shm->Proc.Avg.Turbo,
-	100.f * Shm->Proc.Avg.C0,
-	100.f * Shm->Proc.Avg.C1,
-	100.f * Shm->Proc.Avg.C3,
-	100.f * Shm->Proc.Avg.C6,
-	100.f * Shm->Proc.Avg.C7,
-	5, hSpace,
-      Cels2Fahr(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
-	3, hSpace,
-	Cels2Fahr(PFlop->Thermal.Temp) );
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
+
+	printf( "\n"							\
+		"%.*s" "Averages:"					\
+		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
+		"%.*s" "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
+		"%.*s" "%3u C" "%.*s" "%3u C\n\n",
+		4, hSpace,
+		8, hSpace,
+		4, hSpace,
+		4, hSpace,
+		20, hSpace,
+		100.f * Shm->Proc.Avg.Turbo,
+		100.f * Shm->Proc.Avg.C0,
+		100.f * Shm->Proc.Avg.C1,
+		100.f * Shm->Proc.Avg.C3,
+		100.f * Shm->Proc.Avg.C6,
+		100.f * Shm->Proc.Avg.C7,
+		5, hSpace,
+		SFlop->Thermal.Param.Offset[0],
+		3, hSpace,
+		Cels2Fahr(PFlop->Thermal.Temp) );
 }
 
 void Counters(void)

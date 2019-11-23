@@ -54,7 +54,6 @@ typedef struct
 	} Topology;
 
 	struct {
-		THERMAL_PARAM		Param;
 		unsigned int		TM1,
 					TM2,
 					Limit[2];
@@ -126,6 +125,7 @@ typedef struct
 		unsigned int		Sensor,
 					Temp;
 		enum THERM_PWR_EVENTS	Events;
+		THERMAL_PARAM		Param;
 		} Thermal;
 
 		struct {

@@ -64,67 +64,61 @@ typedef struct {
 	SYSGATE			*SysGate;
 } REF;
 
-static inline void Core_ComputeThermal_None(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_None(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 }
 
-static inline void Core_ComputeThermal_Intel(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_Intel(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	COMPUTE_THERMAL(INTEL,
 			CFlip->Thermal.Temp,
-			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 }
 
-static inline void Core_ComputeThermal_AMD(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD,
 			CFlip->Thermal.Temp,
-			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 }
 
-static inline void Core_ComputeThermal_AMD_0Fh(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 			CFlip->Thermal.Temp,
-			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 }
 
-static inline void Core_ComputeThermal_AMD_15h(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
-    if (Cpu->Topology.CoreID == 0)
+    if (Shm->Cpu[cpu].Topology.CoreID == 0)
 	COMPUTE_THERMAL(AMD_15h,
 			CFlip->Thermal.Temp,
-			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 }
 
-static inline void Core_ComputeThermal_AMD_17h(struct FLIP_FLOP *CFlip,
-						CPU_STRUCT *Cpu,
+static inline void Core_ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
-						unsigned int cpu)
+						unsigned int cpu )
 {
     if (cpu == Shm->Proc.Service.Core)
 	COMPUTE_THERMAL(AMD_17h,
 			CFlip->Thermal.Temp,
-			Cpu->PowerThermal.Param,
+			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
 }
 
@@ -178,9 +172,9 @@ static inline void Core_ComputeVoltage_AMD_17h(struct FLIP_FLOP *CFlip)
 			CFlip->Voltage.VID);
 }
 
-static inline void Core_ComputePower_None(struct FLIP_FLOP *CFlip,
+static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
 						CORE *Core,
-						SHM_STRUCT *Shm)
+						SHM_STRUCT *Shm )
 {
 }
 
@@ -190,9 +184,9 @@ static inline void Core_ComputePower_None(struct FLIP_FLOP *CFlip,
 
 #define Core_ComputePower_AMD		Core_ComputePower_None
 
-static inline void Core_ComputePower_AMD_17h(struct FLIP_FLOP *CFlip,
+static inline void Core_ComputePower_AMD_17h(	struct FLIP_FLOP *CFlip,
 						CORE *Core,
-						SHM_STRUCT *Shm)
+						SHM_STRUCT *Shm )
 {
 	CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
 
@@ -232,16 +226,15 @@ static void *Core_Cycle(void *arg)
 		free(comm);
 	}
 
-	void (*Core_ComputeThermalFormula)(struct FLIP_FLOP*,
-						CPU_STRUCT*,
+	void (*Core_ComputeThermalFormula)(	struct FLIP_FLOP*,
 						SHM_STRUCT*,
-						unsigned int);
+						unsigned int );
 
 	void (*Core_ComputeVoltageFormula)(struct FLIP_FLOP*);
 
-	void (*Core_ComputePowerFormula)(struct FLIP_FLOP*,
+	void (*Core_ComputePowerFormula)(	struct FLIP_FLOP*,
 						CORE*,
-						SHM_STRUCT*);
+						SHM_STRUCT* );
 
 	switch (Shm->Proc.thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
@@ -407,11 +400,11 @@ static void *Core_Cycle(void *arg)
 	}
 
 	/* Per Core, evaluate thermal properties.			*/
-	Cpu->PowerThermal.Param = Core->PowerThermal.Param;
-	CFlip->Thermal.Sensor = Core->PowerThermal.Sensor;
-	CFlip->Thermal.Events = Core->PowerThermal.Events;
+	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
+	CFlip->Thermal.Events	= Core->PowerThermal.Events;
+	CFlip->Thermal.Param	= Core->PowerThermal.Param;
 
-	Core_ComputeThermalFormula(CFlip, Cpu, Shm, cpu);
+	Core_ComputeThermalFormula(CFlip, Shm, cpu);
 
 	/* Per Core, store the Min and Max temperatures.		*/
 	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
@@ -3966,65 +3959,65 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 	}
 }
 
-static inline void Pkg_ComputeThermal_None(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 }
 
-static inline void Pkg_ComputeThermal_Intel(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(INTEL,
 		PFlip->Thermal.Temp,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		SProc->Thermal.Param,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_AMD(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD,
 		PFlip->Thermal.Temp,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		SProc->Thermal.Param,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_0Fh(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_AMD_0Fh(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_0Fh,
 		PFlip->Thermal.Temp,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		SProc->Thermal.Param,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_15h(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_AMD_15h(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_15h,
 		PFlip->Thermal.Temp,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		SProc->Thermal.Param,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeThermal_AMD_17h(struct PKG_FLIP_FLOP *PFlip,
-						SHM_STRUCT *Shm)
+static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
+						struct FLIP_FLOP *SProc )
 {
 	COMPUTE_THERMAL(AMD_17h,
 		PFlip->Thermal.Temp,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param,
+		SProc->Thermal.Param,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeHotCore_None(struct PKG_FLIP_FLOP *PFlip,
+static inline void Pkg_ComputeHotCore_None(	struct PKG_FLIP_FLOP *PFlip,
 						struct FLIP_FLOP *CFlop,
-							SHM_STRUCT *Shm)
+							SHM_STRUCT *Shm )
 {
 }
 
-static inline void Pkg_ComputeHotCore_Intel(struct PKG_FLIP_FLOP *PFlip,
+static inline void Pkg_ComputeHotCore_Intel(	struct PKG_FLIP_FLOP *PFlip,
 						struct FLIP_FLOP *CFlop,
-							SHM_STRUCT *Shm)
+							SHM_STRUCT *Shm )
 {
 	if (!Shm->Proc.Features.Power.EAX.PTM) {
 		if (CFlop->Thermal.Sensor < PFlip->Thermal.Sensor)
@@ -4032,9 +4025,9 @@ static inline void Pkg_ComputeHotCore_Intel(struct PKG_FLIP_FLOP *PFlip,
 	}
 }
 
-static inline void Pkg_ComputeHotCore_AMD(struct PKG_FLIP_FLOP *PFlip,
+static inline void Pkg_ComputeHotCore_AMD(	struct PKG_FLIP_FLOP *PFlip,
 						struct FLIP_FLOP *CFlop,
-							SHM_STRUCT *Shm)
+							SHM_STRUCT *Shm )
 {
 	if (!Shm->Proc.Features.Power.EAX.PTM) {
 		if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
@@ -4046,9 +4039,9 @@ static inline void Pkg_ComputeHotCore_AMD(struct PKG_FLIP_FLOP *PFlip,
 
 #define Pkg_ComputeHotCore_AMD_15h	Pkg_ComputeHotCore_AMD
 
-static inline void Pkg_ComputeHotCore_AMD_17h(struct PKG_FLIP_FLOP *PFlip,
+static inline void Pkg_ComputeHotCore_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
 						struct FLIP_FLOP *CFlop,
-							SHM_STRUCT *Shm)
+							SHM_STRUCT *Shm )
 {
     if (!Shm->Proc.Features.Power.EAX.PTM) {
 	if (CFlop->Thermal.Sensor > PFlip->Thermal.Sensor)
@@ -4081,8 +4074,7 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(struct FLIP_FLOP *SProc)
 
 #define Pkg_ComputeVoltage_AMD_17h	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputePower_None(PROC *Proc,
-					struct FLIP_FLOP *CFlop)
+static inline void Pkg_ComputePower_None(PROC *Proc, struct FLIP_FLOP *CFlop)
 {
 }
 
@@ -4092,8 +4084,7 @@ static inline void Pkg_ComputePower_None(PROC *Proc,
 
 #define Pkg_ComputePower_AMD		Pkg_ComputePower_None
 
-static inline void Pkg_ComputePower_AMD_17h(PROC *Proc,
-					struct FLIP_FLOP *CFlop)
+static inline void Pkg_ComputePower_AMD_17h(PROC *Proc, struct FLIP_FLOP *CFlop)
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
 }
@@ -4134,12 +4125,12 @@ REASON_CODE Core_Manager(REF *Ref)
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
-	void (*Pkg_ComputeThermalFormula)(struct PKG_FLIP_FLOP*,
-						SHM_STRUCT*);
+	void (*Pkg_ComputeThermalFormula)(	struct PKG_FLIP_FLOP*,
+						struct FLIP_FLOP* );
 
-	void (*Pkg_ComputeHotCoreFormula)(struct PKG_FLIP_FLOP*,
+	void (*Pkg_ComputeHotCoreFormula)(	struct PKG_FLIP_FLOP*,
 						struct FLIP_FLOP*,
-						SHM_STRUCT*);
+						SHM_STRUCT* );
 
 	void (*Pkg_ComputeVoltageFormula)(struct FLIP_FLOP*);
 
@@ -4408,7 +4399,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Thermal.Events = Proc->PowerThermal.Events;
 	    }
 
-		Pkg_ComputeThermalFormula(PFlip, Shm);
+		Pkg_ComputeThermalFormula(PFlip, SProc);
 
 		Pkg_ComputeVoltageFormula(SProc);
 

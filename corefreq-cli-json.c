@@ -1502,13 +1502,6 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.TM1);
 			json_key(&s, "TM2");
 			json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.TM2);
-			json_key(&s, "Target");
-			json_start_arr(&s);
-			{
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Param.Offset[0]);
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Param.Offset[1]);
-			}
-			json_end_arr(&s);
 			json_key(&s, "Limit");
 			json_start_arr(&s);
 			{
@@ -1600,6 +1593,13 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Temp);
 				json_key(&s, "Events");
 				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Events);
+				json_key(&s, "Target");
+				json_start_arr(&s);
+				{
+					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Param.Offset[0]);
+					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Param.Offset[1]);
+				}
+				json_end_arr(&s);
 				json_end_object(&s);
 			}
 			json_key(&s, "Voltage");
