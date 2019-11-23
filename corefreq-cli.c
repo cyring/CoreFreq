@@ -1659,6 +1659,7 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
 		RSC(SYSINFO_PERFMON_HWP_CAP_COND1).ATTR()
 	};
 	const unsigned int bix = Shm->Proc.Features.HWP_Enable == 1;
+
 	memcpy(grid->cell.attr, HWP_Cap_Attr[bix], 76);
 
 	RefreshRatioFreq(grid, data);
@@ -1675,18 +1676,24 @@ void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 
 void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
 {
+	const signed int pos = grid->cell.length - 9;
 	char item[11+1];
+
 	snprintf(item, 11+1,
 		"%7d", Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
-	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+
+	memcpy(&grid->cell.item[pos], item, 7);
 }
 
 void CStateRange_Update(TGrid *grid, DATA_TYPE data)
 {
+	const signed int pos = grid->cell.length - 9;
 	char item[11+1];
+
 	snprintf(item, 11+1,
 		"%7d", Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
-	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+
+	memcpy(&grid->cell.item[pos], item, 7);
 }
 
 REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -1998,6 +2005,7 @@ void ODCM_Update(TGrid *grid, DATA_TYPE data)
 
 void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 {
+	const signed int pos = grid->cell.length - 10;
 	const unsigned int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
 				&& (Shm->Proc.Technology.ODCM == 1);
 	char item[10+1];
@@ -2009,15 +2017,29 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod,
 		bix ? '>' : ']');
 
-	memcpy(&grid->cell.item[grid->cell.length - 10], item, 9);
+	memcpy(&grid->cell.item[pos], item, 9);
 	grid->cell.quick.key = bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL;
 }
 
 void Hint_Update(TGrid *grid, DATA_TYPE data)
 {
+	const signed int pos = grid->cell.length - 9;
 	char item[10+1];
+
 	snprintf(item, 10+1, "%7u", (*data.puint));
-	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+	memcpy(&grid->cell.item[pos], item, 7);
+}
+
+void TjMax_Update(TGrid *grid, DATA_TYPE data)
+{
+	const signed int pos = grid->cell.length - 9;
+	char item[10+1+10+1];
+
+	snprintf(item, 3+1+3+1, "%3u:%3u",
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
+
+	memcpy(&grid->cell.item[pos], item, 7);
 }
 
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -2102,11 +2124,12 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
     }
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+      GridCall(PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTjMax   [%3u:%3u]", RSC(POWER_THERMAL_TJMAX).CODE(),
 		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[1],
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]);
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.Param.Offset[0]),
+	TjMax_Update);
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
