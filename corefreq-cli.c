@@ -2180,6 +2180,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sHTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
     }
+
     if (Shm->Proc.Power.TDP > 0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTDP   [%7u]", RSC(POWER_THERMAL_TDP).CODE(),
@@ -2187,8 +2188,31 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sTDP   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDP),hSpace, POWERED(0));
+		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace, POWERED(0));
     }
+    if (Shm->Proc.Power.Min > 0) {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*sMin   [%7u]", RSC(POWER_THERMAL_MIN).CODE(),
+		width - (OutFunc == NULL ? 21 : 19)
+		 - RSZ(POWER_THERMAL_MIN), hSpace,Shm->Proc.Power.Min);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*sMin   [%7s]", RSC(POWER_THERMAL_MIN).CODE(),
+		width - (OutFunc == NULL ? 21 : 19)
+		 - RSZ(POWER_THERMAL_MIN), hSpace, POWERED(0));
+    }
+    if (Shm->Proc.Power.Max > 0) {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*sMax   [%7u]", RSC(POWER_THERMAL_MAX).CODE(),
+		width - (OutFunc == NULL ? 21 : 19)
+		 - RSZ(POWER_THERMAL_MAX), hSpace,Shm->Proc.Power.Max);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*sMax   [%7s]", RSC(POWER_THERMAL_MAX).CODE(),
+		width - (OutFunc == NULL ? 21 : 19)
+		 - RSZ(POWER_THERMAL_MAX), hSpace, POWERED(0));
+    }
+
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
 
@@ -4040,11 +4064,11 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		if (TOP_HEADER_ROW + 2 + 16 < draw.Size.height) {
-			matrixSize.hth = 16;
+		if (TOP_HEADER_ROW + 2 + 18 < draw.Size.height) {
+			matrixSize.hth = 18;
 			winOrigin.row = TOP_HEADER_ROW + 2;
 		} else {
-			matrixSize.hth = CUMIN((draw.Size.height - 2), 16);
+			matrixSize.hth = CUMIN((draw.Size.height - 2), 18);
 			winOrigin.row = 1;
 		}
 		winWidth = 50;

@@ -325,6 +325,8 @@
 #define RSC_POWER_THERMAL_JOULE_CODE_EN "joule"
 #define RSC_POWER_THERMAL_SECOND_CODE_EN "second"
 #define RSC_POWER_THERMAL_TDP_CODE_EN	"Thermal Design Power"
+#define RSC_POWER_THERMAL_MIN_CODE_EN	"Minimum Power"
+#define RSC_POWER_THERMAL_MAX_CODE_EN	"Maximum Power"
 
 #define RSC_KERNEL_TITLE_CODE_EN	" Kernel "
 #define RSC_KERNEL_TOTAL_RAM_CODE_EN	"Total RAM"

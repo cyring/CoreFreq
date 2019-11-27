@@ -325,6 +325,8 @@
 #define RSC_POWER_THERMAL_JOULE_CODE_FR "joule"
 #define RSC_POWER_THERMAL_SECOND_CODE_FR "seconde"
 #define RSC_POWER_THERMAL_TDP_CODE_FR	"Dissipation thermique"
+#define RSC_POWER_THERMAL_MIN_CODE_FR	"Puissance minimale"
+#define RSC_POWER_THERMAL_MAX_CODE_FR	"Puissance maximum"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"

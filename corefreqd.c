@@ -622,6 +622,8 @@ void HyperThreading(SHM_STRUCT *Shm, PROC *Proc)
 
 void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 {
+	unsigned int PowerUnits;
+
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) { /* AMD PowerNow */
 	if (Proc->Features.AdvPower.EDX.FID)
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
@@ -656,11 +658,15 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
 			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
 
-	Shm->Proc.Power.TDP = 2 << (Proc->PowerThermal.Unit.PU - 1);
-    if (Shm->Proc.Power.TDP != 0)
+	PowerUnits = 2 << (Proc->PowerThermal.Unit.PU - 1);
+    if (PowerUnits != 0)
     {
 	Shm->Proc.Power.TDP	= Proc->PowerThermal.PowerInfo.ThermalSpecPower
-				/ Shm->Proc.Power.TDP;
+				/ PowerUnits;
+	Shm->Proc.Power.Min	= Proc->PowerThermal.PowerInfo.MinimumPower
+				/ PowerUnits;
+	Shm->Proc.Power.Max	= Proc->PowerThermal.PowerInfo.MaximumPower
+				/ PowerUnits;
     }
 }
 
