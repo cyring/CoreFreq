@@ -1647,6 +1647,7 @@ enum {
 	CN_MATISSE,
 	CN_WHITEHAVEN,
 	CN_COLFAX,
+	CN_CASTLE_PEAK,
 	CN_NAPLES,
 	CN_ROME,
 };
@@ -1658,6 +1659,7 @@ static MICRO_ARCH Arch_AMD_Family_17h[] = {
 	[CN_MATISSE]		= {"Zen2/Matisse"},
 	[CN_WHITEHAVEN] 	= {"Zen/Whitehaven"},
 	[CN_COLFAX]		= {"Zen+ Colfax"},
+	[CN_CASTLE_PEAK]	= {"Zen2/Castle Peak"},
 	[CN_NAPLES]		= {"EPYC/Naples"},
 	[CN_ROME]		= {"EPYC/Rome"},
 	{NULL}
@@ -2449,7 +2451,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.BrandSubStr = "AMD Ryzen 7 3600X",
+	.BrandSubStr = "AMD Ryzen 5 3600X",
 	.Boost = {+6, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
@@ -2585,6 +2587,28 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Boost = {+8,  0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 3960X",
+	.Boost = {+7, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 3970X",
+	.Boost = {+8, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
 	.TurboUnlocked = 1,
