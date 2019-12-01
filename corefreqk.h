@@ -536,8 +536,7 @@ typedef struct
 
 typedef struct
 {
-#if FEAT_DBG > 1
-FEAT_MSG("Adding:Structure-Pointer:ZenIF_dev")
+#ifdef CONFIG_AMD_NB
 	struct pci_dev		*ZenIF_dev;
 #endif
 	struct kmem_cache	*Cache;
@@ -1008,8 +1007,7 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
-#if FEAT_DBG > 1
-FEAT_MSG("Prototyping:Function:AMD_17h_ZenIF")
+#ifdef CONFIG_AMD_NB
 static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #endif
 /* TODO:
@@ -1486,8 +1484,7 @@ static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 };
 
 /* AMD Family 17h							*/
-#if FEAT_DBG > 1
-FEAT_MSG("Adding:Structure-Array:PCI_AMD_17h_ids")
+#ifdef CONFIG_AMD_NB
 static struct pci_device_id PCI_AMD_17h_ids[] = {
 	/* Source: /drivers/hwmon/k10temp.c				*/
 	{
@@ -1508,7 +1505,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 static struct pci_device_id PCI_AMD_17h_ids[] = {
 	{0, }
 };
-#endif
+#endif /* CONFIG_AMD_NB */
 
 
 static MICRO_ARCH Arch_Void[] = {{NULL}};

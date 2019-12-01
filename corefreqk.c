@@ -37,8 +37,7 @@
 #include "corefreq-api.h"
 #include "corefreqk.h"
 
-#if FEAT_DBG > 1
-FEAT_MSG("Including:Header:amd_nb.h")
+#ifdef CONFIG_AMD_NB
 #include <asm/amd_nb.h>
 #endif
 
@@ -3170,8 +3169,7 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 
 	return(0);
 }
-#if FEAT_DBG > 1
-FEAT_MSG("Compiling:Function:AMD_17h_ZenIF")
+#ifdef CONFIG_AMD_NB
 static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 {
 	if (KPrivate->ZenIF_dev == NULL) {
@@ -3179,7 +3177,7 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 	}
 	return(0);
 }
-#endif
+#endif /* CONFIG_AMD_NB */
 /* TODO
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 {
@@ -5656,7 +5654,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 {
         SysGate->taskCount = 0;
 }
-#else
+#else /* KERNEL_VERSION(3, 10, 56) */
 void Sys_DumpTask(SYSGATE *SysGate)
 {	/* Source: /include/linux/sched.h */
 	struct task_struct *process, *thread;
@@ -5668,7 +5666,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].runtime  = tsk_seruntime(thread);
 #else
 		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
-#endif
+#endif /* CONFIG_SCHED_MUQSS */
 		SysGate->taskList[cnt].usertime = thread->utime;
 		SysGate->taskList[cnt].systime  = thread->stime;
 		SysGate->taskList[cnt].pid      = thread->pid;
@@ -5679,7 +5677,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
 #else
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
-#endif
+#endif /* CONFIG_SCHED_BMQ */
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		if (cnt < TASK_LIMIT)
@@ -5688,7 +5686,7 @@ void Sys_DumpTask(SYSGATE *SysGate)
 	rcu_read_unlock();
 	SysGate->taskCount = cnt;
 }
-#endif
+#endif /* KERNEL_VERSION(3, 10, 56) */
 
 void Sys_MemInfo(SYSGATE *SysGate)
 {	/* Source: /include/uapi/linux/sysinfo.h */
@@ -6542,8 +6540,7 @@ void Core_AMD_Family_15_60h_Temp(CORE *Core)
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
-#if (FEAT_DBG > 1) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0))
-FEAT_MSG("Compiling:Function:Core_AMD_Family_17h_Temp(amd_smn_read)")
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0))
     if (KPrivate->ZenIF_dev != NULL)
     {
 	if (amd_smn_read(amd_pci_dev_to_node_id(KPrivate->ZenIF_dev),
@@ -6554,12 +6551,12 @@ FEAT_MSG("Compiling:Function:Core_AMD_Family_17h_Temp(amd_smn_read)")
     } else {
 		pr_warn("CoreFreq: No AMD Family 17h probed device\n");
     }
-#else
+#else /* CONFIG_AMD_NB */
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
 					SMU_AMD_THM_TCTL_REGISTER_F17H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H);
-#endif
+#endif /* CONFIG_AMD_NB */
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
 	if (TctlSensor.CurTempRangeSel == 1)

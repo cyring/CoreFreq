@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	69
-#define COREFREQ_REV	6
+#define COREFREQ_REV	7
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -1484,13 +1484,13 @@ typedef struct	/* BSP CPUID features.					*/
 #endif
 /* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_DF_F3		0x1463
+	#define PCI_DEVICE_ID_AMD_17H_DF_F3		0x1463	/* Zen	*/
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_M10H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_M10H_DF_F3	0x15eb
+	#define PCI_DEVICE_ID_AMD_17H_M10H_DF_F3	0x15eb	/* Raven */
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_M30H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_M30H_DF_F3	0x1493
+	#define PCI_DEVICE_ID_AMD_17H_M30H_DF_F3	0x1493	/* Zen2 */
 #endif
 
 typedef struct
