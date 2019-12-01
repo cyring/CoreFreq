@@ -1488,15 +1488,35 @@ static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 static struct pci_device_id PCI_AMD_17h_ids[] = {
 	/* Source: /drivers/hwmon/k10temp.c				*/
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_DF_F3),
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_M10H_DF_F3),
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_M30H_DF_F3),
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
 	{0, }

@@ -1485,14 +1485,29 @@ typedef struct	/* BSP CPUID features.					*/
 	#define PCI_DEVICE_ID_AMD_17H_IOMMU		0x1451
 #endif
 /* Source: /include/linux/pci_ids.h					*/
-#ifndef PCI_DEVICE_ID_AMD_17H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_DF_F3		0x1463	/* Zen	*/
+#ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3	0x1463	/* Zeppelin */
 #endif
-#ifndef PCI_DEVICE_ID_AMD_17H_M10H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_M10H_DF_F3	0x15eb	/* Raven */
+#ifndef PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3	0x15eb	/* Raven */
 #endif
-#ifndef PCI_DEVICE_ID_AMD_17H_M30H_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_M30H_DF_F3	0x1493	/* Zen2 */
+#ifndef PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3	0x1443	/* Zen2 */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3	0x1493	/* Zen2 */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3	0x144b	/* Renoir */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3	0x13f3	/* Ariel */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3	0x15f3	/* FireFlight*/
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3	0x160b	/* Arden */
 #endif
 
 typedef struct

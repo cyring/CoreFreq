@@ -6548,8 +6548,11 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 	{
 		pr_warn("CoreFreq: Failed to read TctlSensor\n");
 	}
-    } else {
-		pr_warn("CoreFreq: No AMD Family 17h probed device\n");
+    } else {	/* Fallback to the CoreFreq SMU implementation		*/
+	Core_AMD_SMN_Read(Core ,	TctlSensor,
+					SMU_AMD_THM_TCTL_REGISTER_F17H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H);
     }
 #else /* CONFIG_AMD_NB */
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
