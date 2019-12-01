@@ -3420,7 +3420,8 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
     switch (Proc->thermalFormula) {
     case THERMAL_FORMULA_INTEL:
     case THERMAL_FORMULA_AMD:
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target;
+      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
+	Core[cpu]->PowerThermal.Param.Target : 100;
 	break;
     case THERMAL_FORMULA_AMD_0Fh:
 	COMPUTE_THERMAL(AMD_0Fh,
@@ -3435,7 +3436,8 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
       } else {
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target;
+      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
+	Core[cpu]->PowerThermal.Param.Target : 100;
       }
 	break;
     case THERMAL_FORMULA_AMD_17h:
@@ -3445,7 +3447,8 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
       } else {
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target;
+      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
+	Core[cpu]->PowerThermal.Param.Target : 100;
       }
 	break;
     case THERMAL_FORMULA_NONE:
