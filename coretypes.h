@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	69
-#define COREFREQ_REV	7
+#define COREFREQ_REV	8
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -21,6 +21,8 @@
 #define COREFREQ_VERSION	COREFREQ_SERIALIZE(	COREFREQ_MAJOR, \
 							COREFREQ_MINOR, \
 							COREFREQ_REV	)
+
+#define COREFREQ_FORMAT_STR(_length) "%" COREFREQ_STRINGIFY(_length) "s"
 
 typedef struct {
 	unsigned short	major,

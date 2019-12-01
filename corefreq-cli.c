@@ -2270,9 +2270,11 @@ void KernelUpdate(TGrid *grid, DATA_TYPE data)
 
 void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[11+1];
-	size_t len = snprintf(item, 11+1, "%6d", (*data.psint));
-
+	char item[CPUIDLE_NAME_LEN+1];
+	unsigned int idx = (*data.psint) - 1;
+	size_t len = snprintf(	item, CPUIDLE_NAME_LEN+1,
+				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
+				Shm->SysGate.OS.IdleDriver.State[idx].Name );
 	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
 }
 
@@ -2281,7 +2283,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	REASON_INIT(reason);
 	size_t	len = (1 + width) * 5;
 	char	*item[5], str[CPUFREQ_NAME_LEN+4+1];
-	int	idx;
+	unsigned int idx;
 	for (idx = 0; idx < 5; idx++) {
 		if ((item[idx] = malloc(len)) != NULL)
 			continue;
@@ -2358,8 +2360,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 5 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
-	snprintf(item[0], CPUFREQ_NAME_LEN+4+1,
-		"%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
+	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
 
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
     if (len > 0)
@@ -2367,8 +2368,14 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 1 : 2)
-		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN,
-		hSpace, len, Shm->SysGate.OS.FreqDriver.Name);
+		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.FreqDriver.Name);
+    } else {
+	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
+		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
+		width - (OutFunc == NULL ? 1 : 2)
+		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
+		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
     }
 /* Row Mark */
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Governor), CPUFREQ_NAME_LEN);
@@ -2377,33 +2384,50 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
 		width - (OutFunc == NULL ? 1 : 2) - RSZ(KERNEL_GOVERNOR)
-		- CPUFREQ_NAME_LEN,
-		hSpace, len, Shm->SysGate.OS.FreqDriver.Governor);
+		- CPUFREQ_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.FreqDriver.Governor);
+    } else {
+	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
+		item[0], RSC(KERNEL_GOVERNOR).CODE(),
+		width - (OutFunc == NULL ? 1 : 2) - RSZ(KERNEL_GOVERNOR)
+		- CPUFREQ_NAME_LEN, hSpace,
+		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
     }
 /* Row Mark */
+	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
+
     len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
     if (len > 0)
     {
-	snprintf(item[0], CPUFREQ_NAME_LEN+4+1,
-		"%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
-
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 1 : 2)
-		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN,
-		hSpace, len, Shm->SysGate.OS.IdleDriver.Name);
+		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
+		len, Shm->SysGate.OS.IdleDriver.Name);
+    } else {
+	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
+		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
+		width - (OutFunc == NULL ? 1 : 2)
+		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
+		CPUIDLE_NAME_LEN, RSC(MISSING).CODE());
     }
 /* Section Mark */
+  if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
+  {
+	snprintf(item[0], 2+4+1+4+1+1, "%%s%%.*s%c%%%ds%c",
+		Shm->Registration.Driver.CPUidle ? '<' : '[',
+		CPUIDLE_NAME_LEN,
+		Shm->Registration.Driver.CPUidle ? '>' : ']');
+
+	idx = Shm->SysGate.OS.IdleDriver.stateLimit - 1;
 	GridCall(PUT(Shm->Registration.Driver.CPUidle ? BOXKEY_LIMIT_IDLE_STATE
 							: SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
-			"%s%.*s%c%6d%c", RSC(KERNEL_LIMIT).CODE(),
-			width - 10 - RSZ(KERNEL_LIMIT),hSpace,
-			Shm->Registration.Driver.CPUidle ? '<' : '[',
-			Shm->SysGate.OS.IdleDriver.stateLimit,
-			Shm->Registration.Driver.CPUidle ? '>' : ']'),
+			item[0], RSC(KERNEL_LIMIT).CODE(),
+			width - RSZ(KERNEL_LIMIT) - CPUIDLE_NAME_LEN-4, hSpace,
+			Shm->SysGate.OS.IdleDriver.State[idx].Name),
 		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
-
+/* Row Mark */
 	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
 				10 - (int) RSZ(KERNEL_STATE), hSpace);
 
@@ -2418,7 +2442,8 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	snprintf(item[4], 10+1, "%s%.*s" , RSC(KERNEL_RESIDENCY).CODE(),
 				10 - (int) RSZ(KERNEL_RESIDENCY), hSpace);
 
-    for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++) {
+    for (idx = 0; idx < CPUIDLE_STATE_MAX; idx++)
+    {
       if (idx < Shm->SysGate.OS.IdleDriver.stateCount)
       {
 	int n, cat;
@@ -2498,6 +2523,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
 		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[4]);
+  }
 /* Section Mark */
     for (idx = 0; idx < 5; idx++) {
 	free(item[idx]);
@@ -4087,10 +4113,7 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_k:
 		{
-		CUINT height = 11
-			+ ( strlen(Shm->SysGate.OS.FreqDriver.Name) > 0 )
-			+ ( strlen(Shm->SysGate.OS.FreqDriver.Governor) > 0 )
-			+ ( strlen(Shm->SysGate.OS.IdleDriver.Name) > 0 )
+		CUINT height = 14
 			+ ( Shm->SysGate.OS.IdleDriver.stateCount > 0 ) * 6;
 		winOrigin.col = 1;
 		winWidth = 78;
