@@ -6540,7 +6540,7 @@ void Core_AMD_Family_15_60h_Temp(CORE *Core)
 void Core_AMD_Family_17h_Temp(CORE *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
-#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))
     if (KPrivate->ZenIF_dev != NULL)
     {
 	if (amd_smn_read(amd_pci_dev_to_node_id(KPrivate->ZenIF_dev),

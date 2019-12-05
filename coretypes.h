@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	69
-#define COREFREQ_REV	9
+#define COREFREQ_MINOR	70
+#define COREFREQ_REV	0
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
