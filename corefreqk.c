@@ -404,6 +404,8 @@ static void Query_Features(void *pArg)
 		iArg->Features->Info.Vendor.CRC = CRC_INTEL;
 	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_AMD, 12))
 		iArg->Features->Info.Vendor.CRC = CRC_AMD;
+	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_HYGON, 12))
+		iArg->Features->Info.Vendor.CRC = CRC_HYGON;
 	else {
 		iArg->rc = -ENXIO;
 		return;
@@ -1323,6 +1325,7 @@ static void Map_AMD_Topology(void *arg)
 */
 	    break;
 	case AMD_Family_17h:
+	case AMD_Family_18h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
 		struct CACHE_INFO CacheInfo = {{{0}}};
@@ -9185,7 +9188,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				TurboBoost_Enable = prm.dl.lo;
 				Controller_Start(1);
 				TurboBoost_Enable = -1;
-				if (Proc->ArchID == AMD_Family_17h) {
+				if((Proc->ArchID == AMD_Family_17h)
+				|| (Proc->ArchID == AMD_Family_18h)) {
 					Compute_AMD_Zen_Boost();
 				}
 				rc = 2;

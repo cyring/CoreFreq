@@ -965,6 +965,9 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Family 17h]	8F_00h						*/
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
+/*	[Family 18h]	9F_00h						*/
+#define _AMD_Family_18h {.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
+
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -1681,6 +1684,8 @@ static MICRO_ARCH Arch_AMD_Family_17h[] = {
 	[CN_ROME]		= {"EPYC/Rome"},
 	{NULL}
 };
+
+static MICRO_ARCH Arch_AMD_Family_18h[] = {{"Dhyana"}, {NULL}};
 
 static PROCESSOR_SPECIFIC Void_Specific[] = {
 	{
@@ -4718,6 +4723,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Family_17h_Specific,
 	.SystemDriver = NULL,
 	.Architecture = Arch_AMD_Family_17h
+	},
+
+[AMD_Family_18h] = {
+	.Signature = _AMD_Family_18h,
+	.Query = Query_AMD_Family_17h,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_Family_17h,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_17h,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_AMD_Family_18h
 	}
 };
 

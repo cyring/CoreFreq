@@ -101,6 +101,7 @@ enum {	GenuineIntel,
 	AMD_Family_15h,
 	AMD_Family_16h,
 	AMD_Family_17h,
+	AMD_Family_18h,
 	ARCHITECTURES
 };
 
@@ -450,8 +451,10 @@ enum PWR_DOMAIN {
 
 #define VENDOR_INTEL	"GenuineIntel"
 #define VENDOR_AMD	"AuthenticAMD"
+#define VENDOR_HYGON	"HygonGenuine"
 #define CRC_INTEL	0x75a2ba39
 #define CRC_AMD 	0x3485bbd3
+#define CRC_HYGON	0x18044630
 
 enum OFFLINE
 {

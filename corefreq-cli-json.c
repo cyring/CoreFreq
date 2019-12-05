@@ -648,7 +648,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.ECX.SETBH);
 						json_key(&s, "Unused2");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.ECX.Unused2);
-					} else if (vendor == CRC_AMD) {
+					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "EffFreq");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.Power.ECX.EffFreq);
 						json_key(&s, "NotUsed");
@@ -878,7 +878,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					if (vendor == CRC_INTEL) {
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF);
-					} else if (vendor == CRC_AMD) {
+					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.LahfSahf);
 						json_key(&s, "MP_Mode");
@@ -966,7 +966,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.EDX.IA64);
 						json_key(&s, "Unused5");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.EDX.Unused5);
-					} else if (vendor == CRC_AMD) {
+					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "FPU");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.EDX.FPU);
 						json_key(&s, "VME");
@@ -1068,7 +1068,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					if (vendor == CRC_INTEL) {
 			json_key(&s, "Inv_TSC");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.Inv_TSC);
-					} else if (vendor == CRC_AMD) {
+					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "TS");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.TS);
 			json_key(&s, "FID");
@@ -1451,7 +1451,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_start_object(&s);
 			json_key(&s, "ApicID");
 			json_literal(&s, "%d", Shm->Cpu[i].Topology.ApicID);
-		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+		    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+		    {
 			json_key(&s, "CCX");
 			json_literal(&s, "%d", Shm->Cpu[i].Topology.MP.CCX);
 		    }

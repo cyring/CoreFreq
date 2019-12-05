@@ -1,6 +1,6 @@
 # CoreFreq
 ## Purpose
-CoreFreq, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh, 17h (Zen)  
+CoreFreq, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh ... 17h (Zen), 18h (Hygon Dhyana)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 

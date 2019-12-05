@@ -624,7 +624,9 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
 {
 	unsigned int PowerUnits;
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) { /* AMD PowerNow */
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    { /* AMD PowerNow */
 	if (Proc->Features.AdvPower.EDX.FID)
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 	else
@@ -3295,7 +3297,9 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 					    & Core[cpu]->T.Base.EN)
 					   << Core[cpu]->T.Base.EXTD);
 	/* AMD Core Complex ID						*/
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
 	Shm->Cpu[cpu].Topology.MP.CCX = (Core[cpu]->T.ApicID & 0b1000) >> 3;
     }
 	unsigned int loop;
@@ -3327,7 +3331,8 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 				* Shm->Cpu[cpu].Topology.Cache[level].Part
 				* Shm->Cpu[cpu].Topology.Cache[level].Way;
 	} else {
-	    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
 		Shm->Cpu[cpu].Topology.Cache[level].Way=(loop == 2)||(loop == 3)?
 			AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
@@ -3353,6 +3358,7 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		break;
 	/* Fallthrough */
     case AMD_Family_17h:
+    case AMD_Family_18h:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
 	Shm->Cpu[cpu].Topology.Cache[3].Size *= (512 / 2);
 	break;

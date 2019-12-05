@@ -790,7 +790,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Proc.Features.Turbo_Unlock ?
 				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
       if (Shm->Proc.Features.TDP_Levels >= 2)
 	GridCall(PrintRatioFreq(win, CFlop,
@@ -1156,7 +1157,9 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s1GB-PAGES   [%7s]", RSC(FEATURES_1GB_PAGES).CODE(),
 		width - 24 - RSZ(FEATURES_1GB_PAGES), hSpace, POWERED(bix));
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
 	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
@@ -1250,7 +1253,9 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sMTRR   [%7s]", RSC(FEATURES_MTRR).CODE(),
 		width - 19 - RSZ(FEATURES_MTRR), hSpace, POWERED(bix));
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
 	bix = Shm->Proc.Features.ExtInfo.EDX.NX == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
@@ -1532,7 +1537,8 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
 		hSpace, ENABLED(bix));
     }
-    else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = Shm->Proc.Technology.SMM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -1764,7 +1770,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_C3U), hSpace, ENABLED(bix)),
 		C3U_Update);
     }
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = Shm->Proc.Technology.CC6 == 1;
 	GridCall(PUT(BOXKEY_CC6, attrib[bix], width, 2,
@@ -1792,6 +1799,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
@@ -2168,7 +2177,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sTM2   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
     }
-    else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = Shm->Proc.Features.AdvPower.EDX.TTP;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
@@ -2863,7 +2873,9 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], " (i)nclusive ");
 	PRT(MAP, attrib[2], "             ");
 	PRT(MAP, attrib[2], " #   ID   ID ");
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
 	PRT(MAP, attrib[2], " CCX ID    ID");
     } else {
 	PRT(MAP, attrib[2], "   ID     ID ");
@@ -2885,7 +2897,9 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+	if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	{
 		PRT(MAP, attrib[0], "%3d%4d%6d",
 			Shm->Cpu[cpu].Topology.MP.CCX,
 			Shm->Cpu[cpu].Topology.CoreID,
@@ -2907,7 +2921,9 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       } else {
 		PRT(MAP, attrib[1], "%03u:  -     -", cpu);
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+	if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	{
 		PRT(MAP, attrib[1], "  -   -     -");
 	} else {
 		PRT(MAP, attrib[1], "     -      -");
@@ -7336,12 +7352,16 @@ void Layout_Header(Layer *layer, CUINT row)
 	hProc1.code[8] = buffer[5];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
 	L1I_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[0].Size / 1024;
 	L1D_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[1].Size / 1024;
 	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size / 1024;
 	L3U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[3].Size / 1024;
-    } else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+    }
+    else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
 	L1I_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[0].Size;
 	L1D_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[1].Size;
 	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size;
@@ -7933,8 +7953,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
 			MakeAttr(BLACK, 0, BLACK, 1));
-    } else {
-      if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    }
+    else
+    {
+      if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+      || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
       {
 	LayerDeclare(	LAYOUT_FOOTER_TECH_AMD, RSZ(LAYOUT_FOOTER_TECH_AMD),
 			hTech0.length, hTech0.origin.row,
@@ -9495,11 +9518,15 @@ void Draw_Footer(Layer *layer, CUINT row)
 	    }
 	}
 
-	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	{
 		LayerAt(layer, attr, 14+46, row) = eventAttr[_hot][0];
 		LayerAt(layer, attr, 14+47, row) = eventAttr[_hot][1];
 		LayerAt(layer, attr, 14+48, row) = eventAttr[_hot][2];
-	} else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD) {
+	}
+	else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	{
 		LayerAt(layer, attr, 14+43, row) = eventAttr[_hot][0];
 		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][1];
 		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot][2];
