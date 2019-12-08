@@ -393,6 +393,26 @@ extern void Set_SINT(TGrid *pGrid	, signed int _SINT) ;
 			Set_SINT,					\
 	(void)0)))))))))))))(_pGrid, _data)
 
+typedef struct _Stock {
+	struct _Stock	*next;
+
+	unsigned long long id;
+	Coordinate	origin;
+} Stock;
+
+typedef struct {
+	Stock	*head,
+		*tail;
+} StockList;
+
+typedef enum {
+	WINFLAG_NO_FLAGS = 0,
+	WINMASK_NO_STOCK = 0,
+	WINFLAG_NO_STOCK = 1,
+	WINMASK_NO_SCALE = 1,
+	WINFLAG_NO_SCALE = 2
+} WINDOW_FLAG;
+
 typedef struct _Win {
 	Layer		*layer;
 
@@ -428,6 +448,7 @@ typedef struct _Win {
 		char	*title;
 	} hook;
 
+	Stock		*stock;
 	Matrix		matrix;
 	TGrid		*grid;
 	size_t		dim;
@@ -437,6 +458,8 @@ typedef struct _Win {
 			titleLen;
 		CUINT	bottomRow;
 	} lazyComp;
+
+	WINDOW_FLAG	flag;
 } Window;
 
 typedef struct {
@@ -609,9 +632,26 @@ extern void FreeAllTCells(Window *win) ;
 
 extern void DestroyWindow(Window *win) ;
 
-extern Window *CreateWindow(	Layer *layer, unsigned long long id,
+
+extern Window *CreateWindow_6xArg(Layer *layer, unsigned long long id,
 				CUINT width, CUINT height,
 				CUINT oCol, CUINT oRow) ;
+
+extern Window *CreateWindow_7xArg(Layer *layer, unsigned long long id,
+				CUINT width, CUINT height,
+				CUINT oCol, CUINT oRow, WINDOW_FLAG flag) ;
+
+#define DISPATCH_CreateWindow(_1,_2,_3,_4,_5,_6,_7, _CURSOR, ... ) _CURSOR
+
+#define CreateWindow(...)						\
+	DISPATCH_CreateWindow( __VA_ARGS__ ,				\
+				CreateWindow_7xArg ,			\
+				CreateWindow_6xArg ,			\
+				NULL,					\
+				NULL,					\
+				NULL,					\
+				NULL,					\
+				NULL)( __VA_ARGS__ )
 
 extern void RemoveWindow(Window *win, WinList *list) ;
 
@@ -675,6 +715,10 @@ extern void MotionOriginRight_Win(Window *win) ;
 extern void MotionOriginUp_Win(Window *win) ;
 
 extern void MotionOriginDown_Win(Window *win) ;
+
+void MotionReScale(Window *win, WinList *list) ;
+
+extern void ReScaleAllWindows(WinList *list) ;
 
 extern int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list) ;
 

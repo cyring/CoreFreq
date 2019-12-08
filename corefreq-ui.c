@@ -521,6 +521,8 @@ Layer	*sLayer = NULL,
 	*wLayer = NULL,
 	*fuse   = NULL;
 
+StockList stockList = {.head = NULL, .tail = NULL};
+
 WinList winList = {.head = NULL};
 
 char *console = NULL;
@@ -550,7 +552,7 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 			for (rz = lc; rz < 8; rz++)
 				scan->code[rz] = 0;
 		}
-	return(rp);
+	return (rp);
 }
 
 SCREEN_SIZE GetScreenSize(void)
@@ -562,7 +564,7 @@ SCREEN_SIZE GetScreenSize(void)
 	_screenSize.width  = (int) ts.ws_col;
 	_screenSize.height = (int) ts.ws_row;
 
-	return(_screenSize);
+	return (_screenSize);
 }
 
 __inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
@@ -715,34 +717,80 @@ void FreeAllTCells(Window *win)
 	}
 }
 
-void DestroyWindow(Window *win)
+Stock *CreateStock(unsigned long long id, Coordinate origin)
 {
-	if (win != NULL) {
-		if (win->hook.title != NULL) {
-			free(win->hook.title);
-			win->hook.title = NULL;
-			win->lazyComp.titleLen = 0;
-		}
-		FreeAllTCells(win);
-		free(win);
-		win = NULL;
+	Stock *stock = malloc(sizeof(Stock));
+	if (stock != NULL) {
+		stock->next = NULL;
+		stock->id = id;
+		stock->origin = origin;
 	}
+	return (stock);
 }
 
-Window *CreateWindow(	Layer *layer, unsigned long long id,
-			CUINT width, CUINT height,
-			CUINT oCol, CUINT oRow)
+Stock *AppendStock(Stock *stock)
 {
-	Window *win = calloc(1, sizeof(Window));
-	if (win != NULL) {
-		win->layer = layer;
-		win->id = id;
-		win->matrix.size.wth = width;
-		win->matrix.size.hth = height;
-		win->matrix.origin.col = oCol;
-		win->matrix.origin.row = oRow;
+	if (stock != NULL) {
+		if (stockList.head == NULL) {
+			stockList.head = stockList.tail = stock;
+		} else {
+			stockList.tail->next = stock;
+			stockList.tail = stock;
+		}
+	}
+	return (stock);
+}
 
-	    ATTRIBUTE	select[2] = {
+void DestroyFullStock(void)
+{
+	Stock *stock = stockList.head;
+	while (stock != NULL) {
+		Stock *next = stock->next;
+		free(stock);
+		stock = next;
+	}
+	stockList.head = stockList.tail = NULL;
+}
+
+Stock *SearchStockById(unsigned long long id)
+{
+	Stock *walker = stockList.head;
+	while (walker != NULL) {
+		if (walker->id == id) {
+			break;
+		}
+		walker = walker->next;
+	}
+	return (walker);
+}
+
+void DestroyWindow(Window *win)
+{
+    if (win != NULL) {
+	if (BITVAL(win->flag, WINMASK_NO_STOCK) == 0) {
+	    if (win->stock == NULL)
+	    {
+		win->stock=AppendStock(CreateStock(win->id,win->matrix.origin));
+	    } else {
+		win->stock->origin = win->matrix.origin;
+	    }
+	}
+	if (win->hook.title != NULL) {
+		free(win->hook.title);
+		win->hook.title = NULL;
+		win->lazyComp.titleLen = 0;
+	}
+	FreeAllTCells(win);
+	free(win);
+	win = NULL;
+    }
+}
+
+Window *_CreateWindow(	Layer *layer, unsigned long long id,
+			CUINT width, CUINT height,
+			CUINT oCol, CUINT oRow, WINDOW_FLAG flag )
+{
+	ATTRIBUTE	select[2] = {
 				MAKE_SELECT_UNFOCUS,
 				MAKE_SELECT_FOCUS
 			},
@@ -754,14 +802,51 @@ Window *CreateWindow(	Layer *layer, unsigned long long id,
 				MAKE_TITLE_UNFOCUS,
 				MAKE_TITLE_FOCUS
 			};
-	    int i;
-	    for (i = 0; i < 2; i++) {
-		win->hook.color[i].select = select[i];
-		win->hook.color[i].border = border[i];
-		win->hook.color[i].title  = title[i];
+	unsigned int idx;
+
+	Window *win = calloc(1, sizeof(Window));
+	if (win != NULL) {
+		win->layer = layer;
+		win->id = id;
+
+		win->matrix.size.wth = width;
+		win->matrix.size.hth = height;
+
+		win->flag = flag;
+	    if ((BITVAL(win->flag, WINMASK_NO_STOCK) == 0)
+	    && ((win->stock = SearchStockById(win->id)) != NULL))
+	    {
+		win->matrix.origin = win->stock->origin;
+	    } else {
+		win->matrix.origin.col = oCol;
+		win->matrix.origin.row = oRow;
+	    }
+		MotionReScale(win, NULL);
+
+	    for (idx = 0; idx < 2; idx++) {
+		win->hook.color[idx].select = select[idx];
+		win->hook.color[idx].border = border[idx];
+		win->hook.color[idx].title  = title[idx];
 	    }
 	}
-	return(win);
+	return (win);
+}
+
+Window *CreateWindow_7xArg(	Layer *layer, unsigned long long id,
+				CUINT width, CUINT height,
+				CUINT oCol, CUINT oRow, WINDOW_FLAG flag )
+{
+	return ( _CreateWindow(layer, id,
+				width, height, oCol, oRow, flag) );
+}
+
+Window *CreateWindow_6xArg(	Layer *layer, unsigned long long id,
+				CUINT width, CUINT height,
+				CUINT oCol, CUINT oRow )
+{
+	return ( _CreateWindow(layer, id,
+				width, height, oCol, oRow,
+				WINFLAG_NO_FLAGS) );
 }
 
 void RemoveWindow(Window *win, WinList *list)
@@ -814,7 +899,7 @@ Window *SearchWinListById(unsigned long long id, WinList *list)
 			walker = walker->prev;
 		} while (!IsHead(list, walker) && (win == NULL));
 	}
-	return(win);
+	return (win);
 }
 
 void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
@@ -1098,7 +1183,7 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	/* Care about the right-side window border.			*/
-	CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1,GetScreenSize().width)
+	CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1, GetScreenSize().width)
 			    - win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
@@ -1123,6 +1208,71 @@ void MotionOriginDown_Win(Window *win)
 	if (win->matrix.origin.row < maxVisibleRow) {
 		EraseWindowWithBorder(win);
 		win->matrix.origin.row++;
+	}
+}
+
+void MotionReScale(Window *win, WinList *list)
+{
+    if (BITVAL(win->flag, WINMASK_NO_SCALE) == 0)
+    {
+	CSINT	rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
+				- win->lazyComp.rowLen,
+		scaledHeight = GetScreenSize().height - win->matrix.size.hth,
+	col = -1, row = -1, height = -1;
+
+	if ((rightSide > 0) && (win->matrix.origin.col > rightSide))
+	{
+		col = rightSide - win->matrix.size.wth + 2;
+	}
+	if (scaledHeight > 0) {
+		if (win->matrix.origin.row >= scaledHeight)
+		{
+			row = scaledHeight;
+		    if (row <= 2) {
+			row = 1;
+			height = GetScreenSize().height - 2;
+		    } else {
+			row--;
+		    }
+		}
+	} else {
+		row = 1;
+		height = GetScreenSize().height - 2;
+	}
+	if ((col > 0) || (row > 0) || (height > 0))
+	{
+		if (list != NULL) {
+			EraseWindowWithBorder(win);
+		}
+		if (col > 0) {
+			win->matrix.origin.col = col;
+		}
+		if (row > 0) {
+			win->matrix.origin.row = row;
+		}
+		if (height > 0) {
+			win->matrix.size.hth = height;
+		}
+		if (list != NULL) {
+			if (win->hook.Print != NULL)
+				win->hook.Print(win, list);
+			else
+				ForEachCellPrint(win, list);
+		}
+	}
+    }
+}
+
+void ReScaleAllWindows(WinList *list)
+{
+	if (!IsDead(list)) {
+		Window *walker = GetHead(list);
+		do
+		{
+			MotionReScale(walker, list);
+
+			walker = walker->next;
+		} while (!IsHead(list, walker)) ;
 	}
 }
 
@@ -1206,12 +1356,12 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		break;
 	case SCANKEY_ENTER:
 		if (win->hook.key.Enter != NULL)
-			return(win->hook.key.Enter(scan, win));
+			return (win->hook.key.Enter(scan, win));
 		/* fallthrough */
 	default:
-		return(-1);
+		return (-1);
 	}
-	return(0);
+	return (0);
 }
 
 void ForEachCellPrint_Drop(Window *win, void *plist)
@@ -1238,9 +1388,9 @@ int Enter_StickyCell(SCANKEY *scan, Window *win)
 				( win->matrix.select.row
 				+ win->matrix.scroll.vert)
 				).quick.key) != SCANKEY_NULL) {
-					return(1);
+					return (1);
 				} else
-					return(0);
+					return (0);
 }
 
 int MotionEnter_Cell(SCANKEY *scan, Window *win)
@@ -1253,9 +1403,9 @@ int MotionEnter_Cell(SCANKEY *scan, Window *win)
 				).quick.key) != SCANKEY_NULL) {
 					SCANKEY closeKey = {.key = SCANKEY_ESC};
 					Motion_Trigger(&closeKey, win,&winList);
-					return(1);
+					return (1);
 				} else
-					return(0);
+					return (0);
 }
 
 void MotionEnd_Cell(Window *win)
@@ -1404,7 +1554,7 @@ Card *CreateCard(void)
 	if (card != NULL) {
 		card->next = NULL;
 	}
-	return(card);
+	return (card);
 }
 
 void AppendCard(Card *card, CardList *list)
@@ -1433,6 +1583,7 @@ void DestroyAllCards(CardList *list)
 void FreeAll(char *buffer)
 {
 	DestroyAllWindows(&winList);
+	DestroyFullStock();
 
 	if (console != NULL) {
 		free(console);
@@ -1465,9 +1616,9 @@ void FreeAll(char *buffer)
 __typeof__ (errno) AllocAll(char **buffer)
 {	/* Alloc 10 times to include the ANSI cursor strings.		*/
 	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 	if ((console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
@@ -1475,20 +1626,20 @@ __typeof__ (errno) AllocAll(char **buffer)
 	};
 
 	if ((sLayer = calloc(1, sizeof(Layer))) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 	if ((dLayer = calloc(1, sizeof(Layer))) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 	if ((wLayer = calloc(1, sizeof(Layer))) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 	if ((fuse   = calloc(1, sizeof(Layer))) == NULL)
-		return(ENOMEM);
+		return (ENOMEM);
 
 	CreateLayer(sLayer, layerSize);
 	CreateLayer(dLayer, layerSize);
 	CreateLayer(wLayer, layerSize);
 	CreateLayer(fuse, layerSize);
 
-	return(0);
+	return (0);
 }
 
 unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
@@ -1586,7 +1737,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	memcpy(&stream[sdx], buffer, _bix);
 	sdx += _bix;
     }
-	return(sdx);
+	return (sdx);
 }
 
 __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
@@ -1615,7 +1766,7 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 			rc = -ENOMEM;
 		}
 	}
-	return(rc);
+	return (rc);
 }
 
 void AbortDump(void)
@@ -1625,7 +1776,7 @@ void AbortDump(void)
 
 unsigned char DumpStatus(void)
 {
-	return(BITVAL(dump.Status, 0));
+	return (BITVAL(dump.Status, 0));
 }
 
 unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
@@ -1654,7 +1805,7 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
 			}
 		}
 	}
-	return(layout);
+	return (layout);
 }
 
 struct termios oldt, newt;
