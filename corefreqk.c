@@ -3723,7 +3723,7 @@ void For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 
 long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 {
-	if (Proc->Registration.Experimental && (pClockMod != NULL)) {
+	if (pClockMod != NULL) {
 	    if ((pClockMod->NC >= 1) && (pClockMod->NC <= 7))
 	    {
 		CLOCK_ZEN_ARG ClockZen = {	/* P[1..7]-States */
@@ -3743,7 +3743,7 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 
 long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 {
-    if (Proc->Registration.Experimental  && (pClockMod != NULL)) {
+    if (pClockMod != NULL) {
 	switch (pClockMod->NC) {
 	case CLOCK_MOD_MAX:
 	    {
@@ -5107,8 +5107,6 @@ void SystemRegisters(CORE *Core)
 
 void Intel_Mitigation_Mechanisms(CORE *Core)
 {
-    if (Proc->Registration.Experimental)
-    {
 	SPEC_CTRL Spec_Ctrl = {.value = 0};
 	PRED_CMD  Pred_Cmd  = {.value = 0};
 	FLUSH_CMD Flush_Cmd = {.value = 0};
@@ -5224,7 +5222,6 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
 	}
 	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask, Core->Bind);
-    }
 }
 
 void Intel_VirtualMachine(CORE *Core)
@@ -8263,10 +8260,8 @@ void InitTimer_AMD_Family_15h(unsigned int cpu)
 
 static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 {
-	PSTATESTAT PstateStat;
-	PSTATEDEF PstateDef;
 	CORE *Core;
-	unsigned int pstate;
+	PSTATEDEF PstateDef;
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
@@ -8280,7 +8275,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 				RearmTheTimer);
 
 		SMT_Counters_AMD_Family_17h(Core, 1);
-		/*TODO:	Compute Core Performance Boost */
 
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Generic(Core, 1);
@@ -8300,12 +8294,23 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			Sys_Tick(Proc);
 		}
-		/* Read the current P-State number. */
+
+		/* TODO(CleanUp)
+		{
+		PSTATESTAT PstateStat;
+		unsigned int pstate;
+		// Read the current P-State number. //
 		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-		/* Offset the P-State base register. */
+		// Offset the P-State base register. //
 		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-		/* Read the voltage ID at the offset. */
+		// Read the voltage ID at the offset. //
 		RDMSR(PstateDef, pstate);
+		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
+		}
+		*/
+
+		/* Read the boosted voltage VID. TODO(boosted FID)	*/
+		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 
 		/* Read the Physical Core RAPL counter. */
