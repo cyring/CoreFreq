@@ -521,7 +521,7 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 #define GridCall_2xArg(gridCall, updateFunc)				\
 ({									\
 	TGrid *pGrid = gridCall;					\
-	if(pGrid != NULL)						\
+	if (pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
 		pGrid->data.pvoid = NULL;				\
@@ -531,7 +531,7 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 #define GridCall_3xArg(gridCall, updateFunc,	arg0)			\
 ({									\
 	TGrid *pGrid = gridCall;					\
-	if(pGrid != NULL)						\
+	if (pGrid != NULL)						\
 	{								\
 		pGrid->Update = updateFunc;				\
 		SET_DATA(pGrid, arg0);					\

@@ -853,11 +853,11 @@ void RemoveWindow(Window *win, WinList *list)
 {
 	RemoveWinList(win, list);
 
-	if (IsCycling(GetHead(list)))
+	if (IsCycling(GetHead(list))) {
 		SetDead(list);
-	else if (IsHead(list, win))
+	} else if (IsHead(list, win)) {
 	/*Auto shift*/	SetHead(list, win->prev);
-
+	}
 	DestroyWindow(win);
 }
 
@@ -940,9 +940,10 @@ void ForEachCellPrint(Window *win, WinList *list)
 	CUINT col, row;
 	ATTRIBUTE border = win->hook.color[(GetFocus(list) == win)].border;
 
-	if (win->lazyComp.rowLen == 0)
-	  for (col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
+    if (win->lazyComp.rowLen == 0) {
+	for (col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
 		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
+    }
 	/* Top, Left Border Corner					*/
 	LayerAt(win->layer, attr,
 		(win->matrix.origin.col - 1),
@@ -952,38 +953,38 @@ void ForEachCellPrint(Window *win, WinList *list)
 		(win->matrix.origin.col - 1),
 		(win->matrix.origin.row - 1)) = 0x20;
 	/* Top Border Line						*/
-	if (win->hook.title == NULL)
-	    LayerFillAt(win->layer,
+    if (win->hook.title == NULL) {
+	LayerFillAt(	win->layer,
 			win->matrix.origin.col,
 			(win->matrix.origin.row - 1),
-			(win->lazyComp.rowLen - 2), hLine, border);
-	else {
-	    if (win->lazyComp.titleLen == 0)
-			win->lazyComp.titleLen=strlen(win->hook.title);
-
-	    size_t halfLeft=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
-	    size_t halfRight = halfLeft
+			(win->lazyComp.rowLen - 2), hLine, border );
+    } else {
+	if (win->lazyComp.titleLen == 0) {
+		win->lazyComp.titleLen=strlen(win->hook.title);
+	}
+	size_t halfLeft=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
+	size_t halfRight = halfLeft
 			+ (win->lazyComp.rowLen - win->lazyComp.titleLen) % 2;
-	    /* Top, Half-Left Border Line				*/
-	    LayerFillAt(win->layer,
+	/* Top, Half-Left Border Line					*/
+	LayerFillAt(	win->layer,
 			win->matrix.origin.col,
 			(win->matrix.origin.row - 1),
-			halfLeft, hLine, border);
-	    /* Top, Centered Border Title				*/
-	    LayerFillAt(win->layer,
+			halfLeft, hLine, border );
+	/* Top, Centered Border Title					*/
+	LayerFillAt(	win->layer,
 			(halfLeft + (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
 			win->lazyComp.titleLen, win->hook.title,
 			((GetFocus(list) == win) ?
 				win->hook.color[1].title
-			:	win->hook.color[0].title));
-	    /* Top, Half-Right Border Line				*/
-	    LayerFillAt(win->layer,
+			:	win->hook.color[0].title) );
+	/* Top, Half-Right Border Line					*/
+	LayerFillAt(	win->layer,
 			(halfLeft + win->lazyComp.titleLen
 			+ (win->matrix.origin.col - 1)),
 			(win->matrix.origin.row - 1),
-			(halfRight - 1), hLine, border);
-	}
+			(halfRight - 1), hLine, border );
+    }
 	/* Top, Right Border Corner					*/
 	LayerAt(win->layer, attr,
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
@@ -993,28 +994,28 @@ void ForEachCellPrint(Window *win, WinList *list)
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 		(win->matrix.origin.row - 1)) = 0x20;
 
-	for (row = 0; row < win->matrix.size.hth; row++) {
-	    /* Left Side Border Column					*/
-	    LayerAt(	win->layer, attr,
-			(win->matrix.origin.col - 1),
-			(win->matrix.origin.row + row)) = border;
-	    LayerAt(	win->layer, code,
-			(win->matrix.origin.col - 1),
-			(win->matrix.origin.row + row)) = 0x20;
+    for (row = 0; row < win->matrix.size.hth; row++) {
+	/* Left Side Border Column					*/
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row + row)) = border;
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col - 1),
+		(win->matrix.origin.row + row)) = 0x20;
 
-	    for (col = 0; col < win->matrix.size.wth; col++)
-			PrintContent(win, list, col, row);
-
-	    /* Right Side Border Column					*/
-	    LayerAt(	win->layer, attr,
-			(win->matrix.origin.col
-			+ col * TCellAt(win, 0, 0).length),
-			(win->matrix.origin.row + row)) = border;
-	    LayerAt(	win->layer, code,
-			(win->matrix.origin.col
-			+ col * TCellAt(win, 0, 0).length),
-			(win->matrix.origin.row + row)) = 0x20;
+	for (col = 0; col < win->matrix.size.wth; col++) {
+		PrintContent(win, list, col, row);
 	}
+	/* Right Side Border Column					*/
+	LayerAt(win->layer, attr,
+		(win->matrix.origin.col
+		+ col * TCellAt(win, 0, 0).length),
+		(win->matrix.origin.row + row)) = border;
+	LayerAt(win->layer, code,
+		(win->matrix.origin.col
+		+ col * TCellAt(win, 0, 0).length),
+		(win->matrix.origin.row + row)) = 0x20;
+    }
 	/* Bottom, Left Border Corner					*/
 	LayerAt(win->layer, attr,
 		(win->matrix.origin.col - 1),
@@ -1106,34 +1107,38 @@ void MotionReset_Win(Window *win)
 
 void MotionLeft_Win(Window *win)
 {
-	if (win->matrix.select.col > 0)
+	if (win->matrix.select.col > 0) {
 		win->matrix.select.col--;
-	else
+	} else {
 		win->matrix.select.col = win->matrix.size.wth - 1;
+	}
 }
 
 void MotionRight_Win(Window *win)
 {
-	if (win->matrix.select.col < win->matrix.size.wth - 1)
+	if (win->matrix.select.col < win->matrix.size.wth - 1) {
 		win->matrix.select.col++;
-	else
+	} else {
 		win->matrix.select.col = 0;
+	}
 }
 
 void MotionUp_Win(Window *win)
 {
-	if (win->matrix.select.row > 0)
+	if (win->matrix.select.row > 0) {
 		win->matrix.select.row--;
-	else if (win->matrix.scroll.vert > 0)
+	} else if (win->matrix.scroll.vert > 0) {
 		win->matrix.scroll.vert--;
+	}
 }
 
 void MotionDown_Win(Window *win)
 {
-	if (win->matrix.select.row < win->matrix.size.hth - 1)
+	if (win->matrix.select.row < win->matrix.size.hth - 1) {
 		win->matrix.select.row++;
-	else if (win->matrix.scroll.vert < win->lazyComp.bottomRow)
+	} else if (win->matrix.scroll.vert < win->lazyComp.bottomRow) {
 		win->matrix.scroll.vert++;
+	}
 }
 
 void MotionHome_Win(Window *win)
@@ -1159,18 +1164,21 @@ void MotionBottom_Win(Window *win)
 
 void MotionPgUp_Win(Window *win)
 {
-	if (win->matrix.scroll.vert >= win->matrix.size.hth)
+	if (win->matrix.scroll.vert >= win->matrix.size.hth) {
 		win->matrix.scroll.vert -= win->matrix.size.hth;
-	else
+	} else {
 		win->matrix.scroll.vert = 0;
+	}
 }
 
 void MotionPgDw_Win(Window *win)
 {
   if(win->matrix.scroll.vert < (win->lazyComp.bottomRow - win->matrix.size.hth))
+  {
 	win->matrix.scroll.vert += win->matrix.size.hth;
-  else
+  } else {
 	win->matrix.scroll.vert = win->lazyComp.bottomRow;
+  }
 }
 
 void MotionOriginLeft_Win(Window *win)
@@ -1369,15 +1377,18 @@ void ForEachCellPrint_Drop(Window *win, void *plist)
 	WinList *list = (WinList *) plist;
 	CUINT col, row;
 
-	if (win->lazyComp.rowLen == 0)
-	  for (col = 0; col < win->matrix.size.wth; col++)
-		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
-
-	for (row = 0; row < win->matrix.size.hth; row++)
+	if (win->lazyComp.rowLen == 0) {
+		for (col = 0; col < win->matrix.size.wth; col++)
+			win->lazyComp.rowLen += TCellAt(win, col, 0).length;
+	}
+	for (row = 0; row < win->matrix.size.hth; row++) {
 	    if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
-			PrintContent(win, list, win->matrix.select.col, row);
+	    {
+		PrintContent(win, list, win->matrix.select.col, row);
+	    }
+	}
 }
 
 int Enter_StickyCell(SCANKEY *scan, Window *win)
@@ -1387,10 +1398,12 @@ int Enter_StickyCell(SCANKEY *scan, Window *win)
 				+ win->matrix.scroll.horz),
 				( win->matrix.select.row
 				+ win->matrix.scroll.vert)
-				).quick.key) != SCANKEY_NULL) {
+				).quick.key) != SCANKEY_NULL)
+				{
 					return (1);
-				} else
+				} else {
 					return (0);
+				}
 }
 
 int MotionEnter_Cell(SCANKEY *scan, Window *win)
@@ -1400,12 +1413,14 @@ int MotionEnter_Cell(SCANKEY *scan, Window *win)
 				+ win->matrix.scroll.horz),
 				( win->matrix.select.row
 				+ win->matrix.scroll.vert)
-				).quick.key) != SCANKEY_NULL) {
+				).quick.key) != SCANKEY_NULL)
+				{
 					SCANKEY closeKey = {.key = SCANKEY_ESC};
 					Motion_Trigger(&closeKey, win,&winList);
 					return (1);
-				} else
+				} else {
 					return (0);
+				}
 }
 
 void MotionEnd_Cell(Window *win)
@@ -1417,28 +1432,28 @@ void MotionEnd_Cell(Window *win)
 void MotionLeft_Menu(Window *win)
 {
 	CUINT row;
-	for (row = 1; row < win->matrix.size.hth; row++)
+	for (row = 1; row < win->matrix.size.hth; row++) {
 		EraseTCell_Menu(win);
-
-	if (win->matrix.select.col > 0)
+	}
+	if (win->matrix.select.col > 0) {
 		win->matrix.select.col--;
-	else
+	} else {
 		win->matrix.select.col = win->matrix.size.wth - 1;
-
+	}
 	win->matrix.select.row = 0;
 }
 
 void MotionRight_Menu(Window *win)
 {
 	CUINT row;
-	for (row = 1; row < win->matrix.size.hth; row++)
+	for (row = 1; row < win->matrix.size.hth; row++) {
 		EraseTCell_Menu(win);
-
-	if (win->matrix.select.col < win->matrix.size.wth - 1)
+	}
+	if (win->matrix.select.col < win->matrix.size.wth - 1) {
 		win->matrix.select.col++;
-	else
+	} else {
 		win->matrix.select.col = 0;
-
+	}
 	win->matrix.select.row = 0;
 }
 
@@ -1446,26 +1461,30 @@ void MotionUp_Menu(Window *win)
 {
 	CUINT row = win->matrix.select.row;
 
-	if (win->matrix.select.row > 0)
+	if (win->matrix.select.row > 0) {
 		row--;
-
+	}
 	if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
-			win->matrix.select.row = row;
+	{
+		win->matrix.select.row = row;
+	}
 }
 
 void MotionDown_Menu(Window *win)
 {
 	CUINT row = win->matrix.select.row;
 
-	if (row < win->matrix.size.hth - 1)
+	if (row < win->matrix.size.hth - 1) {
 		row++;
-
+	}
 	if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
-			win->matrix.select.row = row;
+	{
+		win->matrix.select.row = row;
+	}
 }
 
 void MotionHome_Menu(Window *win)
@@ -1473,20 +1492,24 @@ void MotionHome_Menu(Window *win)
 	if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + 1)).quick.key != SCANKEY_VOID)
+	{
 			win->matrix.select.row = 1;
-	else
+	} else {
 			win->matrix.select.row = 0;
+	}
 }
 
 void MotionEnd_Menu(Window *win)
 {
 	CUINT row = 0;
-	for (row = win->matrix.size.hth - 1; row > 1; row--)
+	for (row = win->matrix.size.hth - 1; row > 1; row--) {
 	    if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
+	    {
 			break;
-
+	    }
+	}
 	win->matrix.select.row = row;
 }
 
@@ -1497,10 +1520,11 @@ void PrintWindowStack(WinList *winList)
 		do {
 			walker = walker->next;
 
-			if (walker->hook.Print != NULL)
+			if (walker->hook.Print != NULL) {
 				walker->hook.Print(walker, winList);
-			else
+			} else {
 				ForEachCellPrint(walker, winList);
+			}
 		} while (!IsHead(winList, walker)) ;
 	}
 }
@@ -1525,8 +1549,9 @@ void WindowsUpdate(WinList *winList)
 		TGridAt(walker, horzCol, vertRow).Update(
 					&TGridAt(walker, horzCol, vertRow),
 					TGridAt(walker, horzCol, vertRow).data);
-		if (marker == NULL)
+		if (marker == NULL) {
 			marker = walker->prev;
+		}
 	    }
 	  }
 	}
@@ -1538,10 +1563,11 @@ void WindowsUpdate(WinList *winList)
     {
 	walker = walker->next;
 
-	if (walker->hook.Print != NULL)
+	if (walker->hook.Print != NULL) {
 		walker->hook.Print(walker, winList);
-	else
+	} else {
 		ForEachCellPrint(walker, winList);
+	}
     } while (!IsHead(winList, walker)) ;
   }
 }
@@ -1678,7 +1704,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 		fa->value = wa->value ? wa->value : fa->value;
 		*fc = *wc ? *wc : *fc;
 	/* FUSED LAYER */
-	    if((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf))
+	    if ((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf))
 	    {
 		buffer[_bix++] = 0x1b;
 		buffer[_bix++] = '[';
@@ -1717,13 +1743,13 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 			buffer[_bix++] = '[';
 
 			_bix += cursor_row >= 100 ? 3 : cursor_row >= 10 ? 2:1;
-			for(_bdx = _bix; cursor_row > 0; cursor_row /= 10)
+			for (_bdx = _bix; cursor_row > 0; cursor_row /= 10)
 				buffer[--_bdx] = '0' + (cursor_row % 10);
 
 			buffer[_bix++] = ';';
 
 			_bix += cursor_col >= 100 ? 3 : cursor_col >= 10 ? 2:1;
-			for(_bdx = _bix; cursor_col > 0; cursor_col /= 10)
+			for (_bdx = _bix; cursor_col > 0; cursor_col /= 10)
 				buffer[--_bdx] = '0' + (cursor_col % 10);
 
 			buffer[_bix++] = 'H';

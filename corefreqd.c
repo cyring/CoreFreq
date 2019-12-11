@@ -447,7 +447,7 @@ EXIT:
 			BITVAL(Core->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
-	return(NULL);
+	return (NULL);
 }
 
 void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
@@ -575,7 +575,7 @@ EXIT:
 			BITVAL(Cpu->OffLine, OS) ? "Offline" : "Shutdown",cpu);
 		fflush(stdout);
 	}
-	return(NULL);
+	return (NULL);
 }
 
 void Architecture(SHM_STRUCT *Shm, PROC *Proc)
@@ -906,7 +906,7 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
 		    Proc->Uncore.MC[mc].Channel[cha].P945.DRB[rank].Boundary;
 	    }
-	    switch(Proc->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
+	    switch (Proc->Uncore.MC[mc].Channel[cha].P945.BANK.Rank0)
 	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
@@ -915,7 +915,7 @@ void P945_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
 	    }
-	    switch(Proc->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
+	    switch (Proc->Uncore.MC[mc].Channel[cha].P945.WIDTH.Rank0)
 	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
@@ -982,7 +982,7 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks +=
 		    Proc->Uncore.MC[mc].Channel[cha].P955.DRB[rank].Boundary;
 	    }
-	    switch(Proc->Uncore.MC[mc].Channel[cha].P955.BANK.Rank0)
+	    switch (Proc->Uncore.MC[mc].Channel[cha].P955.BANK.Rank0)
 	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 4;
@@ -991,7 +991,7 @@ void P955_MCH(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 8;
 		break;
 	    }
-	    switch(Proc->Uncore.MC[mc].Channel[cha].P955.WIDTH.Rank0)
+	    switch (Proc->Uncore.MC[mc].Channel[cha].P955.WIDTH.Rank0)
 	    {
 	    case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 16384;
@@ -1809,7 +1809,7 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		break;
 	}
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
+	switch (Proc->Uncore.MC[mc].Channel[cha].NHM.Params.ENABLE_2N_3N)
 	{
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
@@ -2037,7 +2037,7 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.CMD_Stretch) {
+	switch (Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -2221,7 +2221,7 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tCCD;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.CMD_Stretch) {
+	switch (Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -2447,7 +2447,7 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank_B.tddRdTWr;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
+	switch (Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.CMD_Stretch) {
 	case 0b00:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
 		break;
@@ -2497,7 +2497,7 @@ unsigned int SKL_DimmWidthToRows(unsigned int width)
 		rows = 32;
 		break;
 	}
-	return(8 * 1024 * rows);
+	return (8 * 1024 * rows);
 }
 
 void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
@@ -2544,7 +2544,7 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL;
 
-	switch(Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.CMD_Stretch) {
+	switch (Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.CMD_Stretch) {
 	case 0b00:
 	case 0b11:
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
@@ -2846,7 +2846,8 @@ void AMD_0F_HTT(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.CtrlSpeed = (Ratio.Q * 2) + Ratio.R;	/* DDR2 */
 
 	if ((link = Proc->Uncore.Bus.UnitID.McUnit) < 0b11) {
-		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax) {/*"MHz"*/
+		switch (Proc->Uncore.Bus.LDTi_Freq[link].LinkFreqMax)/*"MHz"*/
+		{
 		case 0b0000:
 			HTT_Clock = 200;
 			break;
@@ -3268,21 +3269,21 @@ unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
 {
 	switch (value) {
 	case 0x6:
-		return(8);
+		return (8);
 	case 0x8:
-		return(16);
+		return (16);
 	case 0xa:
-		return(32);
+		return (32);
 	case 0xb:
-		return(48);
+		return (48);
 	case 0xc:
-		return(64);
+		return (64);
 	case 0xd:
-		return(96);
+		return (96);
 	case 0xe:
-		return(128);
+		return (128);
 	default:
-		return(value);
+		return (value);
 	}
 }
 
@@ -3552,7 +3553,7 @@ static int SortByRuntime(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = task1->runtime < task2->runtime ? +1 : -1;
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 static int SortByUsertime(const void *p1, const void *p2, void *arg)
@@ -3561,7 +3562,7 @@ static int SortByUsertime(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = task1->usertime < task2->usertime ? +1 : -1;
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 static int SortBySystime(const void *p1, const void *p2, void *arg)
@@ -3570,7 +3571,7 @@ static int SortBySystime(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = task1->systime < task2->systime ? +1 : -1;
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 static int SortByState(const void *p1, const void *p2, void *arg)
@@ -3579,7 +3580,7 @@ static int SortByState(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = task1->state < task2->state ? -1 : +1;
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 static int SortByPID(const void *p1, const void *p2, void *arg)
@@ -3588,7 +3589,7 @@ static int SortByPID(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = task1->pid < task2->pid ? -1 : +1;
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 static int SortByCommand(const void *p1, const void *p2, void *arg)
@@ -3597,7 +3598,7 @@ static int SortByCommand(const void *p1, const void *p2, void *arg)
 	SHM_STRUCT *Shm = (SHM_STRUCT *) arg;
 	int sort = strncmp(task1->comm, task2->comm, TASK_COMM_LEN);
 	sort *= reverseSign[Shm->SysGate.reverseOrder];
-	return(sort);
+	return (sort);
 }
 
 typedef int (*SORTBYFUNC)(const void *, const void *, void *);
@@ -3619,7 +3620,7 @@ static int SortByTracker(const void *p1, const void *p2, void *arg)
 	int sort = (task1->pid == Shm->SysGate.trackTask) ?
 		-1 : (task2->pid == Shm->SysGate.trackTask) ?
 		+1 :  SortByFunc[Shm->SysGate.sortByField](p1, p2, Shm);
-	return(sort);
+	return (sort);
 }
 
 void SysGate_Update(REF *Ref)
@@ -3693,7 +3694,7 @@ int SysGate_OnDemand(REF *Ref, int operation)
 	    else
 		rc = 0;
 	}
-	return(rc);
+	return (rc);
 }
 
 void SysGate_Toggle(REF *Ref, unsigned int state)
@@ -3851,9 +3852,9 @@ int ServerFollowService(SERVICE_PROC *pSlave,
 		if (pSlave->Thread != -1)
 			CPU_SET(pSlave->Thread, &cpuset);
 
-		return(pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
+		return (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
 	}
-	return(-1);
+	return (-1);
 }
 
 static void *Emergency_Handler(void *pRef)
@@ -3925,7 +3926,7 @@ static void *Emergency_Handler(void *pRef)
 	}
 	ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid);
     }
-	return(NULL);
+	return (NULL);
 }
 
 void Emergency_Command(REF *Ref, unsigned int cmd)
@@ -4461,7 +4462,7 @@ REASON_CODE Core_Manager(REF *Ref)
   } else {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
   }
-	return(reason);
+	return (reason);
 }
 
 REASON_CODE Child_Manager(REF *Ref)
@@ -4513,7 +4514,7 @@ REASON_CODE Child_Manager(REF *Ref)
   } else {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
   }
-	return(reason);
+	return (reason);
 }
 
 REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
@@ -4713,7 +4714,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
     if (Core != NULL) {
 	free(Core);
     }
-	return(reason);
+	return (reason);
 }
 
 REASON_CODE Help(REASON_CODE reason, ...)
@@ -4774,7 +4775,7 @@ REASON_CODE Help(REASON_CODE reason, ...)
 		break;
 	}
 	va_end(ap);
-	return(reason);
+	return (reason);
 }
 
 int main(int argc, char *argv[])
@@ -4949,6 +4950,6 @@ int main(int argc, char *argv[])
     if (program != NULL) {
 	free(program);
     }
-	return(reason.rc);
+	return (reason.rc);
 }
 
