@@ -153,6 +153,8 @@ typedef union {
 #define SCANKEY_SHIFT_DOWN	0x000042323b315b1b
 #define SCANKEY_SHIFT_RIGHT	0x000043323b315b1b
 #define SCANKEY_SHIFT_LEFT	0x000044323b315b1b
+#define SCANKEY_ALT_UP		0x000041333b315b1b
+#define SCANKEY_ALT_DOWN	0x000042333b315b1b
 #define SCANKEY_SHIFT_a 	0x0000000000000041
 #define SCANKEY_SHIFT_b 	0x0000000000000042
 #define SCANKEY_SHIFT_d 	0x0000000000000044
@@ -173,7 +175,13 @@ typedef union {
 #define SCANKEY_CTRL_p		0x0000000000000010
 #define SCANKEY_CTRL_u		0x0000000000000015
 #define SCANKEY_CTRL_x		0x0000000000000018
+#define SCANKEY_ALT_SHIFT_a	0x00000000000081c3
+#define SCANKEY_ALT_SHIFT_s	0x00000000000093c3
+#define SCANKEY_ALT_SHIFT_z	0x0000000000009ac3
+#define SCANKEY_ALT_a		0x000000000000a1c3
 #define SCANKEY_ALT_p		0x000000000000b0c3
+#define SCANKEY_ALT_s		0x000000000000b3c3
+#define SCANKEY_ALT_z		0x000000000000bac3
 #define SCANKEY_a		0x0000000000000061
 #define SCANKEY_b		0x0000000000000062
 #define SCANKEY_c		0x0000000000000063
@@ -208,7 +216,10 @@ typedef union {
 #define SCANCON_F3		0x00000000435b5b1b
 #define SCANCON_F4		0x00000000445b5b1b
 #define SCANCON_SHIFT_TAB	0x000000000000091b
+#define SCANCON_ALT_a		0x000000000000611b
 #define SCANCON_ALT_p		0x000000000000701b
+#define SCANCON_ALT_s		0x000000000000731b
+#define SCANCON_ALT_z		0x0000000000007a1b
 
 typedef struct {
 	int	width,
@@ -397,7 +408,7 @@ typedef struct _Stock {
 	struct _Stock	*next;
 
 	unsigned long long id;
-	Coordinate	origin;
+	Matrix		matrix;
 } Stock;
 
 typedef struct {
@@ -437,6 +448,8 @@ typedef struct _Win {
 		void	(*WinRight)(struct _Win *win);
 		void	(*WinDown)(struct _Win *win);
 		void	(*WinUp)(struct _Win *win);
+		void	(*Shrink)(struct _Win *win);
+		void	(*Expand)(struct _Win *win);
 	    } key;
 
 	    struct {
@@ -715,6 +728,10 @@ extern void MotionOriginRight_Win(Window *win) ;
 extern void MotionOriginUp_Win(Window *win) ;
 
 extern void MotionOriginDown_Win(Window *win) ;
+
+extern void MotionShrink_Win(Window *win) ;
+
+extern void MotionExpand_Win(Window *win) ;
 
 void MotionReScale(Window *win, WinList *list) ;
 

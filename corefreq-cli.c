@@ -3815,6 +3815,8 @@ Window *CreateSettings(unsigned long long id)
 	StoreWindow(wSet,	.key.PgDw,	MotionPgDw_Win);
 	StoreWindow(wSet,	.key.Home,	MotionReset_Win);
 	StoreWindow(wSet,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wSet,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wSet,	.key.Expand,	MotionExpand_Win);
     }
 	return (wSet);
 }
@@ -3843,17 +3845,17 @@ Window *CreateHelp(unsigned long long id)
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       [A|Z]      ",
+	StoreTCell(wHelp, SCANKEY_NULL, "       [a|z]      ",
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [W|Q]  [S]  [D]  ",
+	StoreTCell(wHelp, SCANKEY_NULL, " [w|q]  [s]  [d] +",
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MOVE_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
-					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
+	StoreTCell(wHelp, SCANKEY_NULL, "                 +",
+					MAKE_PRINT_FOCUS);
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SIZE_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_UP).CODE(),
 					MAKE_PRINT_FOCUS);
@@ -3914,6 +3916,8 @@ Window *CreateHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.PgDw,	MotionPgDw_Win);
 	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
 	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wHelp,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wHelp,	.key.Expand,	MotionExpand_Win);
     }
 	return (wHelp);
 }
@@ -3979,6 +3983,8 @@ Window *CreateAdvHelp(unsigned long long id)
 	StoreWindow(wHelp,	.key.PgDw,	MotionPgDw_Win);
 	StoreWindow(wHelp,	.key.Home,	MotionReset_Win);
 	StoreWindow(wHelp,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wHelp,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wHelp,	.key.Expand,	MotionExpand_Win);
     }
 	return (wHelp);
 }
@@ -4010,7 +4016,9 @@ Window *CreateAbout(unsigned long long id)
 	if (oRow + cHeight >= draw.Size.height) {
 		oRow = abs(draw.Size.height - (1 + cHeight));
 	}
-	Window *wAbout = CreateWindow(wLayer, id, 1, cHeight, oCol, oRow);
+	Window *wAbout = CreateWindow(	wLayer, id, 1, cHeight,
+					oCol, oRow,
+					WINFLAG_NO_SCALE );
 	if (wAbout != NULL) {
 		unsigned int i;
 
@@ -4191,6 +4199,9 @@ Window *CreateSysInfo(unsigned long long id)
 		StoreWindow(wSysInfo,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wSysInfo,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wSysInfo,	.key.WinUp,	MotionOriginUp_Win);
+
+		StoreWindow(wSysInfo,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wSysInfo,	.key.Expand,	MotionExpand_Win);
 	}
 	return (wSysInfo);
 }
@@ -4226,6 +4237,9 @@ Window *CreateTopology(unsigned long long id)
 		StoreWindow(wTopology,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wTopology,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wTopology,	.key.WinUp,	MotionOriginUp_Win);
+
+		StoreWindow(wTopology,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wTopology,	.key.Expand,	MotionExpand_Win);
 	}
 	return (wTopology);
 }
@@ -4278,6 +4292,9 @@ Window *CreateSysRegs(unsigned long long id)
 		StoreWindow(wSR,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wSR,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wSR,	.key.WinUp,	MotionOriginUp_Win);
+
+		StoreWindow(wSR,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wSR,	.key.Expand,	MotionExpand_Win);
 	}
 	return (wSR);
 }
@@ -4313,6 +4330,9 @@ Window *CreateMemCtrl(unsigned long long id)
 		StoreWindow(wIMC,	.key.WinRight,	MotionOriginRight_Win);
 		StoreWindow(wIMC,	.key.WinDown,	MotionOriginDown_Win);
 		StoreWindow(wIMC,	.key.WinUp,	MotionOriginUp_Win);
+
+		StoreWindow(wIMC,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wIMC,	.key.Expand,	MotionExpand_Win);
 	    }
 		return (wIMC);
 	}
@@ -4444,6 +4464,8 @@ Window *CreateTracking(unsigned long long id)
 		StoreWindow(wTrack,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wTrack,	.key.Home,	MotionReset_Win);
 		StoreWindow(wTrack,	.key.End,	MotionEnd_Cell);
+		StoreWindow(wTrack,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wTrack,	.key.Expand,	MotionExpand_Win);
 
 		free(trackList);
 		free(item);
@@ -4499,6 +4521,9 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	StoreWindow(wCPU,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wCPU,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wCPU,	.key.WinUp,	MotionOriginUp_Win);
+
+	StoreWindow(wCPU,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wCPU,	.key.Expand,	MotionExpand_Win);
 
 	free(item);
     }
@@ -4676,6 +4701,9 @@ Window *CreateRatioClock(unsigned long long id,
 	StoreWindow(wCK,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wCK,	.key.WinUp,	MotionOriginUp_Win);
 
+	StoreWindow(wCK,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wCK,	.key.Expand,	MotionExpand_Win);
+
 	free(item);
     }
 	return (wCK);
@@ -4715,6 +4743,8 @@ Window *CreateSelectCPU(unsigned long long id)
 	StoreWindow(wUSR,	.key.PgDw,	MotionPgDw_Win);
 	StoreWindow(wUSR,	.key.Home,	MotionTop_Win);
 	StoreWindow(wUSR,	.key.End,	MotionBottom_Win);
+	StoreWindow(wUSR,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wUSR,	.key.Expand,	MotionExpand_Win);
 
 	free(item);
     }
@@ -4776,6 +4806,9 @@ Window *CreateSelectIdle(unsigned long long id)
 	StoreWindow(wIdle,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wIdle,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wIdle,	.key.WinUp,	MotionOriginUp_Win);
+
+	StoreWindow(wIdle,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wIdle,	.key.Expand,	MotionExpand_Win);
     }
 	return (wIdle);
 }
@@ -4822,6 +4855,8 @@ Window *CreateRecorder(unsigned long long id)
 	StoreWindow(wRec,	.key.Up,	MotionUp_Win);
 	StoreWindow(wRec,	.key.Home,	MotionReset_Win);
 	StoreWindow(wRec,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wRec,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wRec,	.key.Expand,	MotionExpand_Win);
     }
 	return (wRec);
 }
@@ -4891,6 +4926,8 @@ Window *_CreateBox(	unsigned long long id,
 		StoreWindow(wBox,	.key.Up,	MotionUp_Win);
 		StoreWindow(wBox,	.key.Home,	MotionReset_Win);
 		StoreWindow(wBox,	.key.End,	MotionEnd_Cell);
+		StoreWindow(wBox,	.key.Shrink,	MotionShrink_Win);
+		StoreWindow(wBox,	.key.Expand,	MotionExpand_Win);
 	}
 	free(pBox);
     }

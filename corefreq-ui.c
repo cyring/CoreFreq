@@ -717,13 +717,13 @@ void FreeAllTCells(Window *win)
 	}
 }
 
-Stock *CreateStock(unsigned long long id, Coordinate origin)
+Stock *CreateStock(unsigned long long id, Matrix *matrix)
 {
 	Stock *stock = malloc(sizeof(Stock));
 	if (stock != NULL) {
 		stock->next = NULL;
 		stock->id = id;
-		stock->origin = origin;
+		memcpy(&stock->matrix, matrix, sizeof(Matrix));
 	}
 	return (stock);
 }
@@ -770,9 +770,9 @@ void DestroyWindow(Window *win)
 	if (BITVAL(win->flag, WINMASK_NO_STOCK) == 0) {
 	    if (win->stock == NULL)
 	    {
-		win->stock=AppendStock(CreateStock(win->id,win->matrix.origin));
+		win->stock=AppendStock(CreateStock(win->id, &win->matrix));
 	    } else {
-		win->stock->origin = win->matrix.origin;
+		memcpy(&win->stock->matrix, &win->matrix, sizeof(Matrix));
 	    }
 	}
 	if (win->hook.title != NULL) {
@@ -809,17 +809,16 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 		win->layer = layer;
 		win->id = id;
 
-		win->matrix.size.wth = width;
-		win->matrix.size.hth = height;
-
 		win->flag = flag;
 	    if ((BITVAL(win->flag, WINMASK_NO_STOCK) == 0)
 	    && ((win->stock = SearchStockById(win->id)) != NULL))
 	    {
-		win->matrix.origin = win->stock->origin;
+		memcpy(&win->matrix, &win->stock->matrix, sizeof(Matrix));
 	    } else {
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
+		win->matrix.size.wth = width;
+		win->matrix.size.hth = height;
 	    }
 		MotionReScale(win, NULL);
 
@@ -1099,6 +1098,19 @@ void PrintLCD(	Layer *layer, CUINT col, CUINT row,
 	} while (j > 0) ;
 }
 
+void LazyCompWindow(Window *win)
+{
+	win->lazyComp.bottomRow = (win->dim / win->matrix.size.wth)
+				- win->matrix.size.hth;
+
+	if (win->matrix.scroll.vert > win->lazyComp.bottomRow) {
+		win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	}
+	if (win->matrix.select.row > win->matrix.size.hth - 1) {
+		win->matrix.select.row = win->matrix.size.hth - 1;
+	}
+}
+
 void MotionReset_Win(Window *win)
 {
 	win->matrix.scroll.horz = win->matrix.select.col = 0;
@@ -1173,12 +1185,14 @@ void MotionPgUp_Win(Window *win)
 
 void MotionPgDw_Win(Window *win)
 {
-  if(win->matrix.scroll.vert < (win->lazyComp.bottomRow - win->matrix.size.hth))
-  {
-	win->matrix.scroll.vert += win->matrix.size.hth;
-  } else {
-	win->matrix.scroll.vert = win->lazyComp.bottomRow;
-  }
+	const CUINT lastScrolledRow = win->lazyComp.bottomRow
+				    - win->matrix.size.hth;
+
+	if(win->matrix.scroll.vert < lastScrolledRow) {
+		win->matrix.scroll.vert += win->matrix.size.hth;
+	} else {
+		win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	}
 }
 
 void MotionOriginLeft_Win(Window *win)
@@ -1191,8 +1205,8 @@ void MotionOriginLeft_Win(Window *win)
 
 void MotionOriginRight_Win(Window *win)
 {	/* Care about the right-side window border.			*/
-	CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1, GetScreenSize().width)
-			    - win->lazyComp.rowLen;
+	const CUINT maxVisibleCol = CUMIN(MAX_WIDTH - 1, GetScreenSize().width)
+				  - win->lazyComp.rowLen;
 
 	if (win->matrix.origin.col <= maxVisibleCol) {
 		EraseWindowWithBorder(win);
@@ -1209,9 +1223,9 @@ void MotionOriginUp_Win(Window *win)
 }
 
 void MotionOriginDown_Win(Window *win)
-{	/* Care about the bottom window border.				*/
-	CUINT maxVisibleRow = CUMIN(MAX_HEIGHT - 1, GetScreenSize().height)
-			    - win->matrix.size.hth - 1;
+{	/* Care about the bottom window border				*/
+	const CUINT maxVisibleRow = CUMIN(MAX_HEIGHT-1, GetScreenSize().height)
+				  - win->matrix.size.hth - 1;
 
 	if (win->matrix.origin.row < maxVisibleRow) {
 		EraseWindowWithBorder(win);
@@ -1219,14 +1233,37 @@ void MotionOriginDown_Win(Window *win)
 	}
 }
 
+void MotionShrink_Win(Window *win)
+{
+	if (win->matrix.size.hth > 1) {
+		EraseWindowWithBorder(win);
+		win->matrix.size.hth--;
+		LazyCompWindow(win);
+	}
+}
+
+void MotionExpand_Win(Window *win)
+{
+	const CUINT maxVisibleRow = GetScreenSize().height - 1,
+		winBottomRow = win->matrix.origin.row + win->matrix.size.hth,
+		winMaxHeight = win->dim / win->matrix.size.wth;
+
+    if ((winBottomRow < maxVisibleRow)&&(win->matrix.size.hth < winMaxHeight))
+    {
+		EraseWindowWithBorder(win);
+		win->matrix.size.hth++;
+		LazyCompWindow(win);
+    }
+}
+
 void MotionReScale(Window *win, WinList *list)
 {
     if (BITVAL(win->flag, WINMASK_NO_SCALE) == 0)
     {
-	CSINT	rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
+	CSINT col = -1, row = -1, height = -1;
+	const CSINT rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
 				- win->lazyComp.rowLen,
-		scaledHeight = GetScreenSize().height - win->matrix.size.hth,
-	col = -1, row = -1, height = -1;
+		scaledHeight = GetScreenSize().height - win->matrix.size.hth;
 
 	if ((rightSide > 0) && (win->matrix.origin.col > rightSide))
 	{
@@ -1260,6 +1297,7 @@ void MotionReScale(Window *win, WinList *list)
 		}
 		if (height > 0) {
 			win->matrix.size.hth = height;
+			LazyCompWindow(win);
 		}
 		if (list != NULL) {
 			if (win->hook.Print != NULL)
@@ -1361,6 +1399,23 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 	case SCANKEY_SHIFT_s:
 		if (win->hook.key.WinDown != NULL)
 			win->hook.key.WinDown(win);
+		break;
+	case SCANKEY_ALT_UP:
+	case SCANKEY_ALT_SHIFT_a:
+	case SCANKEY_ALT_SHIFT_z:
+	case SCANKEY_ALT_a:
+	case SCANKEY_ALT_z:
+	case SCANCON_ALT_a:
+	case SCANCON_ALT_z:
+		if (win->hook.key.Shrink !=  NULL)
+			win->hook.key.Shrink(win);
+		break;
+	case SCANKEY_ALT_DOWN:
+	case SCANKEY_ALT_SHIFT_s:
+	case SCANKEY_ALT_s:
+	case SCANCON_ALT_s:
+		if (win->hook.key.Expand != NULL)
+			win->hook.key.Expand(win);
 		break;
 	case SCANKEY_ENTER:
 		if (win->hook.key.Enter != NULL)
