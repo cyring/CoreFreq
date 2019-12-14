@@ -620,7 +620,8 @@ static void Query_Features(void *pArg)
 	    }
 	  iArg->Features->Factory.Freq=Intel_Brand(iArg->Features->Info.Brand);
 
-	} else if (iArg->Features->Info.Vendor.CRC == CRC_AMD) {
+	} else if ((iArg->Features->Info.Vendor.CRC == CRC_AMD)
+		|| (iArg->Features->Info.Vendor.CRC == CRC_HYGON)) {
 		/* Core Performance 64 bits General Counters. */
 		iArg->Features->PerfMon.EAX.MonWidth = 64;
 	    if (iArg->Features->ExtInfo.ECX.PerfCore) {
@@ -1135,10 +1136,13 @@ void Cache_Topology(CORE *Core)
 			break;
 	    }
 	}
-	else if (Proc->Features.Info.Vendor.CRC == CRC_AMD) {
+	else if ( (Proc->Features.Info.Vendor.CRC == CRC_AMD)
+		||(Proc->Features.Info.Vendor.CRC == CRC_HYGON) )
+	{
 	    struct CACHE_INFO CacheInfo; /* Employ the Intel algorithm. */
 
-	    if (Proc->Features.Info.LargestExtFunc >= 0x80000005) {
+	    if (Proc->Features.Info.LargestExtFunc >= 0x80000005)
+	    {
 		Core->T.Cache[0].Level = 1;
 		Core->T.Cache[0].Type  = 2;		/* Inst. */
 		Core->T.Cache[1].Level = 1;
@@ -1170,7 +1174,8 @@ void Cache_Topology(CORE *Core)
 		Core->T.Cache[1].Way  = CacheInfo.CPUID_0x80000005_L1D.Assoc;
 		Core->T.Cache[1].Size = CacheInfo.CPUID_0x80000005_L1D.Size;
 	    }
-	    if (Proc->Features.Info.LargestExtFunc >= 0x80000006) {
+	    if (Proc->Features.Info.LargestExtFunc >= 0x80000006)
+	    {
 		Core->T.Cache[2].Level = 2;
 		Core->T.Cache[2].Type  = 3;		/* Unified! */
 		Core->T.Cache[3].Level = 3;
@@ -1579,17 +1584,18 @@ static void Map_Intel_Extended_Topology(void *arg)
 int Core_Topology(unsigned int cpu)
 {
 	int rc = smp_call_function_single(cpu,
-		(Proc->Features.Info.Vendor.CRC == CRC_AMD) ?
+		( (Proc->Features.Info.Vendor.CRC == CRC_AMD)
+		||(Proc->Features.Info.Vendor.CRC == CRC_HYGON) ) ?
 			Map_AMD_Topology
-			: (Proc->Features.Info.LargestStdFunc >= 0xb) ?
+		: (Proc->Features.Info.LargestStdFunc >= 0xb) ?
 			Map_Intel_Extended_Topology : Map_Intel_Topology,
 		KPublic->Core[cpu], 1); /* Synchronous call. */
 
 	if (	!rc
 		&& (Proc->Features.HTT_Enable == 0)
-		&& (KPublic->Core[cpu]->T.ThreadID > 0))
+		&& (KPublic->Core[cpu]->T.ThreadID > 0) ) {
 			Proc->Features.HTT_Enable = 1;
-
+	}
 	return (rc);
 }
 
@@ -5094,7 +5100,8 @@ void SystemRegisters(CORE *Core)
 		  | BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
 			BITSET_CC(LOCKLESS, Proc->VM, Core->Bind);
 	}
-	else if (Proc->Features.Info.Vendor.CRC == CRC_AMD)
+	else if ( (Proc->Features.Info.Vendor.CRC == CRC_AMD)
+		||(Proc->Features.Info.Vendor.CRC == CRC_HYGON) )
 	{
 		RDMSR(Core->SystemRegister.VMCR, MSR_VM_CR);
 		/* Secure Virtual Machine. */
@@ -9898,6 +9905,8 @@ static int __init CoreFreqK_init(void)
 			Arch[0].powerFormula = POWER_FORMULA_INTEL;
 			}
 			break;
+		    case CRC_HYGON:
+			/* Fallthrough */
 		    case CRC_AMD: {
 			Arch[0].Query	= Query_AuthenticAMD;
 			Arch[0].Update	= PerCore_AuthenticAMD_Query;
