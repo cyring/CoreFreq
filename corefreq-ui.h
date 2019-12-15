@@ -862,6 +862,6 @@ extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
 extern void AbortDump(void) ;
 extern unsigned char DumpStatus(void) ;
 
-extern __typeof__ (errno) SaveGeometries(char *cfgPath) ;
-extern __typeof__ (errno) LoadGeometries(char *cfgPath) ;
+extern __typeof__ (errno) SaveGeometries(char*) ;
+extern __typeof__ (errno) LoadGeometries(char*) ;
 
