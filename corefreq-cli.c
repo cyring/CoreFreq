@@ -20,6 +20,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sched.h>
+#include <pwd.h>
 
 #include "bitasm.h"
 #include "coretypes.h"
@@ -49,6 +50,33 @@ struct {
 	.secret   = 1,
 	._padding = 0
 };
+
+char ConfigFQN[1+4096] = {[0] = 0};
+
+char *BuildConfigFQN(void)
+{
+    if (ConfigFQN[0] == 0)
+    {
+	char *dirPath, *dotted;
+	if ((dirPath = secure_getenv("XDG_CONFIG_HOME")) == NULL) {
+		if ((dirPath = secure_getenv("HOME")) == NULL) {
+			struct passwd *pwd = getpwuid(getuid());
+			if (pwd != NULL) {
+				dirPath = pwd->pw_dir;
+			} else {
+				dirPath = ".";
+			}
+		}
+		dotted = "/.";
+	} else {
+		dotted = "/";
+	}
+	snprintf(&ConfigFQN[1], 4096, "%s%scorefreq.cfg", dirPath, dotted);
+
+	ConfigFQN[0] = 1;
+    }
+	return (&ConfigFQN[1]);
+}
 
 int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 {
@@ -10377,6 +10405,8 @@ REASON_CODE Top(char option)
 
 	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
 
+	LoadGeometries(BuildConfigFQN());
+
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, SYNC))
     {
@@ -10460,6 +10490,7 @@ REASON_CODE Top(char option)
 	printf( CUH RoK "Term(%u x %u) < View(%u x %u)\n",
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
     }
+    SaveGeometries(BuildConfigFQN());
   }
   FreeAll(buffer);
 

@@ -717,13 +717,14 @@ void FreeAllTCells(Window *win)
 	}
 }
 
-Stock *CreateStock(unsigned long long id, Matrix *matrix)
+Stock *CreateStock(unsigned long long id, CoordSize size, Coordinate origin)
 {
 	Stock *stock = malloc(sizeof(Stock));
 	if (stock != NULL) {
 		stock->next = NULL;
 		stock->id = id;
-		memcpy(&stock->matrix, matrix, sizeof(Matrix));
+		stock->geometry.size = size;
+		stock->geometry.origin = origin;
 	}
 	return (stock);
 }
@@ -770,9 +771,12 @@ void DestroyWindow(Window *win)
 	if (BITVAL(win->flag, WINMASK_NO_STOCK) == 0) {
 	    if (win->stock == NULL)
 	    {
-		win->stock=AppendStock(CreateStock(win->id, &win->matrix));
+		win->stock = AppendStock( CreateStock(	win->id,
+							win->matrix.size,
+							win->matrix.origin) );
 	    } else {
-		memcpy(&win->stock->matrix, &win->matrix, sizeof(Matrix));
+		win->stock->geometry.size = win->matrix.size;
+		win->stock->geometry.origin = win->matrix.origin;
 	    }
 	}
 	if (win->hook.title != NULL) {
@@ -813,7 +817,8 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 	    if ((BITVAL(win->flag, WINMASK_NO_STOCK) == 0)
 	    && ((win->stock = SearchStockById(win->id)) != NULL))
 	    {
-		memcpy(&win->matrix, &win->stock->matrix, sizeof(Matrix));
+		win->matrix.size = win->stock->geometry.size;
+		win->matrix.origin = win->stock->geometry.origin;
 	    } else {
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
@@ -1267,7 +1272,7 @@ void MotionReScale(Window *win, WinList *list)
 
 	if ((rightSide > 0) && (win->matrix.origin.col > rightSide))
 	{
-		col = rightSide - win->matrix.size.wth + 2;
+		col = rightSide + 1;
 	}
 	if (scaledHeight > 0) {
 		if (win->matrix.origin.row >= scaledHeight)
@@ -1823,7 +1828,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 
 __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 {
-	__typeof__ (errno) rc = -EBUSY;
+	__typeof__ (errno) rc = EBUSY;
 
 	if (!BITVAL(dump.Status, 0))
 	{
@@ -1844,7 +1849,7 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 			}
 			free(dumpFileName);
 		} else {
-			rc = -ENOMEM;
+			rc = ENOMEM;
 		}
 	}
 	return (rc);
@@ -1970,5 +1975,71 @@ void _LOCALE_OUT(void)
 	if (SysLoc != (locale_t) 0) {
 		freelocale(SysLoc);
 	}
+}
+
+__typeof__ (errno) SaveGeometries(char *cfgFQN)
+{
+	__typeof__ (errno) rc = 0;
+	FILE *cfgHandle;
+    if ((cfgHandle = fopen(cfgFQN, "w")) != NULL)
+    {
+	Stock *walker = stockList.head;
+	while (walker != NULL) {
+	    if (fprintf(cfgHandle, "%llu,%hu,%hu,%hu,%hu\n",
+			walker->id,
+			walker->geometry.size.wth,
+			walker->geometry.size.hth,
+			walker->geometry.origin.col,
+			walker->geometry.origin.row) < 0)
+	    {
+		rc = errno;
+		break;
+	    } else {
+		walker = walker->next;
+	    }
+	}
+	fclose(cfgHandle);
+    } else {
+	rc = errno;
+    }
+	return (rc);
+}
+
+__typeof__ (errno) LoadGeometries(char *cfgFQN)
+{
+	__typeof__ (errno) rc = 0;
+	FILE *cfgHandle;
+    if ((cfgHandle = fopen(cfgFQN, "r")) != NULL)
+    {
+      while (!feof(cfgHandle))
+      {
+	unsigned long long id;
+	struct Geometry geometry;
+	int match = fscanf(cfgHandle, "%llu,%hu,%hu,%hu,%hu\n",
+			&id,
+			&geometry.size.wth,
+			&geometry.size.hth,
+			&geometry.origin.col,
+			&geometry.origin.row);
+
+	if ((match != EOF) && (match == 5))
+	{
+	    if (AppendStock(CreateStock(id,
+					geometry.size,
+					geometry.origin)) == NULL)
+	    {
+		rc = ENOMEM;
+		break;
+	    }
+	} else {
+		rc = errno;
+		break;
+	}
+      }
+	fclose(cfgHandle);
+    } else {
+	rc = errno;
+    }
+	return (rc);
 }
 

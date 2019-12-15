@@ -408,7 +408,11 @@ typedef struct _Stock {
 	struct _Stock	*next;
 
 	unsigned long long id;
-	Matrix		matrix;
+
+	struct Geometry {
+		CoordSize  size;
+		Coordinate origin;
+	} geometry;
 } Stock;
 
 typedef struct {
@@ -857,4 +861,7 @@ extern void StopDump(void) ;
 extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
 extern void AbortDump(void) ;
 extern unsigned char DumpStatus(void) ;
+
+extern __typeof__ (errno) SaveGeometries(char *cfgPath) ;
+extern __typeof__ (errno) LoadGeometries(char *cfgPath) ;
 
