@@ -8554,6 +8554,8 @@ static int CoreFreqK_IdleDriver_Init(void)
 	if((CoreFreqK.IdleDevice = alloc_percpu(struct cpuidle_device)) == NULL)
 		rc = -ENOMEM;
 	else {
+		struct cpuidle_device *device;
+		unsigned int cpu, enroll = 0;
 		unsigned int subState[] = {
 			Proc->Features.MWait.EDX.SubCstate_MWAIT0,  /*   C0  */
 			Proc->Features.MWait.EDX.SubCstate_MWAIT1,  /*   C1  */
@@ -8610,19 +8612,26 @@ static int CoreFreqK_IdleDriver_Init(void)
 		pIdleState++;
 	    }
 	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
-		struct cpuidle_device *device;
-		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 		    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
 			device->cpu = cpu;
-			if ((rc = cpuidle_register_device(device)) == 0)
+			if ((rc = cpuidle_register_device(device)) == 0) {
 				continue;
-
-			cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
+			}
 			break;
 		    }
 		}
+		enroll = cpu;
+	    }
+	    if (rc != 0)
+	    {/* Cancel the registration if the driver and/or a device failed */
+		for (cpu = 0; cpu < enroll; cpu++) {
+			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
+			cpuidle_unregister_device(device);
+		}
+		cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
+		free_percpu(CoreFreqK.IdleDevice);
 	    }
 	}
     }
