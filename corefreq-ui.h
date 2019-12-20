@@ -410,7 +410,6 @@ typedef struct _Stock {
 	unsigned long long id;
 
 	struct Geometry {
-		CoordSize  size;
 		Coordinate origin;
 	} geometry;
 } Stock;

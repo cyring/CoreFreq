@@ -717,13 +717,12 @@ void FreeAllTCells(Window *win)
 	}
 }
 
-Stock *CreateStock(unsigned long long id, CoordSize size, Coordinate origin)
+Stock *CreateStock(unsigned long long id, Coordinate origin)
 {
 	Stock *stock = malloc(sizeof(Stock));
 	if (stock != NULL) {
 		stock->next = NULL;
 		stock->id = id;
-		stock->geometry.size = size;
 		stock->geometry.origin = origin;
 	}
 	return (stock);
@@ -771,11 +770,8 @@ void DestroyWindow(Window *win)
 	if (BITVAL(win->flag, WINMASK_NO_STOCK) == 0) {
 	    if (win->stock == NULL)
 	    {
-		win->stock = AppendStock( CreateStock(	win->id,
-							win->matrix.size,
-							win->matrix.origin) );
+		win->stock=AppendStock(CreateStock(win->id,win->matrix.origin));
 	    } else {
-		win->stock->geometry.size = win->matrix.size;
 		win->stock->geometry.origin = win->matrix.origin;
 	    }
 	}
@@ -813,17 +809,17 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 		win->layer = layer;
 		win->id = id;
 
+		win->matrix.size.wth = width;
+		win->matrix.size.hth = height;
+
 		win->flag = flag;
 	    if ((BITVAL(win->flag, WINMASK_NO_STOCK) == 0)
 	    && ((win->stock = SearchStockById(win->id)) != NULL))
 	    {
-		win->matrix.size = win->stock->geometry.size;
 		win->matrix.origin = win->stock->geometry.origin;
 	    } else {
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
-		win->matrix.size.wth = width;
-		win->matrix.size.hth = height;
 	    }
 		MotionReScale(win, NULL);
 
@@ -1985,10 +1981,8 @@ __typeof__ (errno) SaveGeometries(char *cfgFQN)
     {
 	Stock *walker = stockList.head;
 	while (walker != NULL) {
-	    if (fprintf(cfgHandle, "%llu,%hu,%hu,%hu,%hu\n",
+	    if (fprintf(cfgHandle, "%llx,%hu,%hu\n",
 			walker->id,
-			walker->geometry.size.wth,
-			walker->geometry.size.hth,
 			walker->geometry.origin.col,
 			walker->geometry.origin.row) < 0)
 	    {
@@ -2015,18 +2009,14 @@ __typeof__ (errno) LoadGeometries(char *cfgFQN)
       {
 	unsigned long long id;
 	struct Geometry geometry;
-	int match = fscanf(cfgHandle, "%llu,%hu,%hu,%hu,%hu\n",
-			&id,
-			&geometry.size.wth,
-			&geometry.size.hth,
-			&geometry.origin.col,
-			&geometry.origin.row);
+	int match = fscanf(cfgHandle, "%llx,%hu,%hu\n",
+				&id,
+				&geometry.origin.col,
+				&geometry.origin.row);
 
-	if ((match != EOF) && (match == 5))
+	if ((match != EOF) && (match == 3))
 	{
-	    if (AppendStock(CreateStock(id,
-					geometry.size,
-					geometry.origin)) == NULL)
+	    if (AppendStock(CreateStock(id, geometry.origin)) == NULL)
 	    {
 		rc = ENOMEM;
 		break;
