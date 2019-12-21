@@ -449,17 +449,19 @@ typedef union
 		unsigned long long
 		ReservedBits1	:  8-0,
 		MaxNonTurboRatio: 16-8,
-		ReservedBits2	: 28-16,
+		ReservedBits2	: 23-16, /* Bit[16]=1 in Westmere ?	*/
+		PPIN_CAP	: 24-23, /* R/O:IVB-E,BDW-E,SKL-S : MSR_PPIN */
+		ReservedBits3	: 28-24,
 		ProgrammableTurbo:29-28, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GLM */
 		ProgrammableTDP : 30-29,
 		ProgrammableTj	: 31-30, /* R/O: 1 = TjOffset is writable */
-		ReservedBits3	: 32-31,
+		ReservedBits4	: 32-31,
 		LowPowerMode	: 33-32, /* R/O: 1 = LPM is supported.	*/
 		ConfigTDPlevels : 35-33, /* Ivy Bridge, Haswell(-E), Phy */
-		ReservedBits4	: 40-35,
+		ReservedBits5	: 40-35,
 		MinimumRatio	: 48-40, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GLM */
 		MinOperatRatio	: 56-48, /* Ivy Bridge, Haswell(-E)	*/
-		ReservedBits5	: 64-56;
+		ReservedBits6	: 64-56;
 	};
 } PLATFORM_INFO;
 
