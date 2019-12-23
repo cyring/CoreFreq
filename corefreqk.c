@@ -6883,7 +6883,11 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Nehalem(Core, 1);
-
+#if FEAT_DBG > 1
+FEAT_MSG("Including:Winbond(CPUVCORE)")
+			outb_p(0x20, 0x295);
+			Core->PowerThermal.VID = inb_p(0x295 + 1);
+#endif
 			Delta_PC03(Proc);
 
 			Delta_PC06(Proc);

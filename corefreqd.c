@@ -172,6 +172,8 @@ static inline void Core_ComputeVoltage_AMD_17h(struct FLIP_FLOP *CFlip)
 			CFlip->Voltage.VID);
 }
 
+#define Core_ComputeVoltage_Winbond_IO	Core_ComputeVoltage_None
+
 static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
 						CORE *Core,
 						SHM_STRUCT *Shm )
@@ -282,6 +284,9 @@ static void *Core_Cycle(void *arg)
 		break;
 	case VOLTAGE_FORMULA_AMD_17h:
 		Core_ComputeVoltageFormula = Core_ComputeVoltage_AMD_17h;
+		break;
+	case VOLTAGE_FORMULA_WINBOND_IO:
+		Core_ComputeVoltageFormula = Core_ComputeVoltage_Winbond_IO;
 		break;
 	case VOLTAGE_FORMULA_NONE:
 	default:
@@ -4090,6 +4095,13 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(struct FLIP_FLOP *SProc)
 
 #define Pkg_ComputeVoltage_AMD_17h	Pkg_ComputeVoltage_None
 
+static inline void Pkg_ComputeVoltage_Winbond_IO(struct FLIP_FLOP *SProc)
+{	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
+	COMPUTE_VOLTAGE(WINBOND_IO,
+			SProc->Voltage.Vcore,
+			SProc->Voltage.VID);
+}
+
 static inline void Pkg_ComputePower_None(PROC *Proc, struct FLIP_FLOP *CFlop)
 {
 }
@@ -4205,6 +4217,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_FORMULA_AMD_17h:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_AMD_17h;
+		break;
+	case VOLTAGE_FORMULA_WINBOND_IO:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Winbond_IO;
 		break;
 	case VOLTAGE_FORMULA_NONE:
 	default:
