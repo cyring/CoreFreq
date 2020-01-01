@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -2110,5 +2110,5 @@ extern RESOURCE_ST Resource[];
 #define RSC_LOGO_R5 "                                           /_/      "
 #define RSC_COPY_R0 "      by CyrIng                                     "
 #define RSC_COPY_R1 "                                                    "
-#define RSC_COPY_R2 "            (C)2015-2019 CYRIL INGENIERIE           "
+#define RSC_COPY_R2 "            (C)2015-2020 CYRIL INGENIERIE           "
 

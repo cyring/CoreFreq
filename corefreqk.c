@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -6883,10 +6883,10 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		if (Core->Bind == Proc->Service.Core) {
 			PKG_Counters_Nehalem(Core, 1);
-#if FEAT_DBG > 1
-FEAT_MSG("Including:Winbond(CPUVCORE)")
-			outb_p(0x20, 0x295);
-			Core->PowerThermal.VID = inb_p(0x295 + 1);
+
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+			outb_p(HWM_W83627_CPUVCORE, HWM_W83627_INDEX_PORT);
+			Core->PowerThermal.VID = inb_p(HWM_W83627_DATA_PORT);
 #endif
 			Delta_PC03(Proc);
 

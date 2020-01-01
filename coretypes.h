@@ -1,12 +1,12 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	70
-#define COREFREQ_REV	7
+#define COREFREQ_MINOR	71
+#define COREFREQ_REV	0
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -1517,6 +1517,14 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3	0x160b	/* Arden */
 #endif
+
+/* Hardware Monitoring: Super I/O chipsets				*/
+#define W83627			0x5ca3
+
+/* Source: Winbond W83627 datasheet					*/
+#define HWM_W83627_INDEX_PORT	0x295
+#define HWM_W83627_DATA_PORT	0x296
+#define HWM_W83627_CPUVCORE	0x20
 
 typedef struct
 {

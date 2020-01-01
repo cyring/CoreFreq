@@ -129,7 +129,7 @@ CoreFreq: Processor [06_1A] Architecture [Nehalem/Bloomfield] CPU [8/8]
 
 ### Daemon
 ```
-CoreFreq Daemon.  Copyright (C) 2015-2019 CYRIL INGENIERIE
+CoreFreq Daemon.  Copyright (C) 2015-2020 CYRIL INGENIERIE
 
   Processor [Intel(R) Core(TM) i7 CPU 920 @ 2.67GHz]
   Architecture [Nehalem/Bloomfield] 8/8 CPU Online.
@@ -311,5 +311,5 @@ parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
 # About
 [CyrIng](https://github.com/cyring)
 
-Copyright (C) 2015-2019 CYRIL INGENIERIE  
+Copyright (C) 2015-2020 CYRIL INGENIERIE  
  -------

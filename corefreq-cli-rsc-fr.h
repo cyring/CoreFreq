@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -598,7 +598,7 @@
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
-		"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n\n"	\
+		"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
 		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\

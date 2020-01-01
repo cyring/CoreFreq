@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -3853,7 +3853,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
@@ -3877,7 +3881,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
@@ -3901,7 +3909,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
@@ -3925,7 +3937,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
@@ -3950,7 +3966,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
@@ -3974,7 +3994,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
+	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
@@ -3998,7 +4022,11 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {

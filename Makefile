@@ -1,5 +1,5 @@
 # CoreFreq
-# Copyright (C) 2015-2019 CYRIL INGENIERIE
+# Copyright (C) 2015-2020 CYRIL INGENIERIE
 # Licenses: GPL2
 
 CC ?= cc
@@ -23,6 +23,10 @@ endif
 
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
+
+ifneq ($(HWM_CHIPSET),)
+	ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
+endif
 
 .PHONY: all
 all: corefreqd corefreq-cli
@@ -122,6 +126,9 @@ help:
 	"|  UBENCH=<N>                                                   |\n"\
 	"|    where <N> is 0 to disable or 1 to enable micro-benchmark   |\n"\
 	"|                                                               |\n"\
+	"|  HWM_CHIPSET=<chipset>                                        |\n"\
+	"|    where <chipset> is W83627                                  |\n"\
+	"|                                                               |\n"\
 	"|  FEAT_DBG=<N>                                                 |\n"\
 	"|    where <N> is 0 or 1 for FEATURE DEBUG level                |\n"\
 	"|                                                               |\n"\
@@ -141,6 +148,7 @@ help:
 	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1              \\          |\n"\
 	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1 \\          |\n"\
 	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2 \\          |\n"\
+	"|         HWM_CHIPSET=W83627                         \\          |\n"\
 	"|         clean all                                             |\n"\
 	"o---------------------------------------------------------------o"
 

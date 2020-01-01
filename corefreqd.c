@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2019 CYRIL INGENIERIE
+ * Copyright (C) 2015-2020 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -4634,7 +4634,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		/* Welcomes with brand and per CPU base clock.		*/
 		if (Quiet & 0x001)
 		 printf("CoreFreq Daemon %s"		\
-			"  Copyright (C) 2015-2019 CYRIL INGENIERIE\n",
+			"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n",
 			COREFREQ_VERSION);
 		if (Quiet & 0x010)
 		 printf("\n"						\
