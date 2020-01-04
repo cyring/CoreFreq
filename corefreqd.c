@@ -321,6 +321,8 @@ static void *Core_Cycle(void *arg)
 	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
+	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
+
     while (!BITVAL(Core->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
@@ -335,6 +337,15 @@ static void *Core_Cycle(void *arg)
 		BITCLR_CC(BUS_LOCK, roomCore, cpu);
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
+
+	dTSC	= (double) CFlip->Delta.TSC;
+	dUCC	= (double) CFlip->Delta.C0.UCC;
+	dURC	= (double) CFlip->Delta.C0.URC;
+	dINST	= (double) CFlip->Delta.INST;
+	dC3	= (double) CFlip->Delta.C3;
+	dC6	= (double) CFlip->Delta.C6;
+	dC7	= (double) CFlip->Delta.C7;
+	dC1	= (double) CFlip->Delta.C1;
 
 	/* Refresh this Base Clock.					*/
 	CFlip->Clock.Q  = Core->Clock.Q;
@@ -352,49 +363,33 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C1 	= Core->Delta.C1;
 
 	/* Compute IPS=Instructions per TSC				*/
-	CFlip->State.IPS = (double) (CFlip->Delta.INST)
-			 / (double) (CFlip->Delta.TSC);
+	CFlip->State.IPS = dINST / dTSC;
 
 	/* Compute IPC=Instructions per non-halted reference cycle.
 	   ( Protect against a division by zero )			*/
-	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ?
-			  (double) (CFlip->Delta.INST)
-			 / (double) CFlip->Delta.C0.URC
-			 : 0.0f;
+	CFlip->State.IPC = (CFlip->Delta.C0.URC != 0) ? dINST / dURC : 0.0f;
 
 	/* Compute CPI=Non-halted reference cycles per instruction.
 	   ( Protect against a division by zero )			*/
-	CFlip->State.CPI = (CFlip->Delta.INST != 0) ?
-			  (double) CFlip->Delta.C0.URC
-			 / (double) (CFlip->Delta.INST)
-			 : 0.0f;
+	CFlip->State.CPI = (CFlip->Delta.INST != 0) ? dURC / dINST : 0.0f;
 
 	/* Compute the Turbo State.					*/
-	CFlip->State.Turbo = (double) (CFlip->Delta.C0.UCC)
-			   / (double) (CFlip->Delta.TSC);
+	CFlip->State.Turbo = dUCC / dTSC;
 
 	/* Compute the C-States.					*/
-	CFlip->State.C0 = (double) (CFlip->Delta.C0.URC)
-			/ (double) (CFlip->Delta.TSC);
-	CFlip->State.C3 = (double) (CFlip->Delta.C3)
-			/ (double) (CFlip->Delta.TSC);
-	CFlip->State.C6 = (double) (CFlip->Delta.C6)
-			/ (double) (CFlip->Delta.TSC);
-	CFlip->State.C7 = (double) (CFlip->Delta.C7)
-			/ (double) (CFlip->Delta.TSC);
-	CFlip->State.C1 = (double) (CFlip->Delta.C1)
-			/ (double) (CFlip->Delta.TSC);
+	CFlip->State.C0 = dURC / dTSC;
+	CFlip->State.C3 = dC3  / dTSC;
+	CFlip->State.C6 = dC6  / dTSC;
+	CFlip->State.C7 = dC7  / dTSC;
+	CFlip->State.C1 = dC1  / dTSC;
 
 	/* Apply the relative Ratio formula.				*/
-	CFlip->Relative.Ratio	= (double) (CFlip->Delta.C0.UCC
-					  * Shm->Proc.Boost[BOOST(MAX)])
-				/ (double) (CFlip->Delta.TSC);
+	CFlip->Relative.Ratio = (dUCC * Shm->Proc.Boost[BOOST(MAX)]) / dTSC;
 
 	if ((Shm->Proc.PM_version >= 2) && !Shm->Proc.Features.Std.ECX.Hyperv)
 	{
 	/* Case: Relative Frequency = UCC per second.			*/
-		CFlip->Relative.Freq = (double) (CFlip->Delta.C0.UCC)
-				     / (Shm->Sleep.Interval * 1000);
+		CFlip->Relative.Freq = dUCC / (Shm->Sleep.Interval * 1000);
 	} else {
 	/* Case: Relative Frequency = Relative Ratio x Bus Clock Frequency */
 	  CFlip->Relative.Freq=(double)REL_FREQ(Shm->Proc.Boost[BOOST(MAX)], \
@@ -4378,7 +4373,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	}
 
-	if (!BITVAL(Shutdown, SYNC)) {
+	if (!BITVAL(Shutdown, SYNC))
+	{
+		double dPTSC;
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -4396,20 +4393,15 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Delta.PC09 = Proc->Delta.PC09;
 		PFlip->Delta.PC10 = Proc->Delta.PC10;
 		/* Package C-state Residency counters			*/
-		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC09	= (double) PFlip->Delta.PC09
-					/ (double) PFlip->Delta.PTSC;
-		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10
-					/ (double) PFlip->Delta.PTSC;
+		dPTSC = (double) PFlip->Delta.PTSC;
+
+		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02 / dPTSC;
+		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03 / dPTSC;
+		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06 / dPTSC;
+		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07 / dPTSC;
+		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08 / dPTSC;
+		Shm->Proc.State.PC09	= (double) PFlip->Delta.PC09 / dPTSC;
+		Shm->Proc.State.PC10	= (double) PFlip->Delta.PC10 / dPTSC;
 		/* Uncore scope counters				*/
 		PFlip->Uncore.FC0 = Proc->Delta.Uncore.FC0;
 		/* Power & Energy counters				*/
