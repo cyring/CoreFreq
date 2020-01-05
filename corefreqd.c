@@ -407,10 +407,10 @@ static void *Core_Cycle(void *arg)
 	Core_ComputeThermalFormula(CFlip, Shm, cpu);
 
 	/* Per Core, store the Min and Max temperatures.		*/
-	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[0])
-		Cpu->PowerThermal.Limit[0] = CFlip->Thermal.Temp;
-	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[1])
-		Cpu->PowerThermal.Limit[1] = CFlip->Thermal.Temp;
+	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])
+		Cpu->PowerThermal.Limit[SENSOR_LOWEST] = CFlip->Thermal.Temp;
+	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = CFlip->Thermal.Temp;
 
 	/* Per Core, evaluate the voltage properties.			*/
 	CFlip->Voltage.VID = Core->PowerThermal.VID;
@@ -3427,42 +3427,41 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
     switch (Proc->thermalFormula) {
     case THERMAL_FORMULA_INTEL:
     case THERMAL_FORMULA_AMD:
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
-	Core[cpu]->PowerThermal.Param.Target : 100;
+	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = \
+		Core[cpu]->PowerThermal.Param.Target != 0 ?
+			Core[cpu]->PowerThermal.Param.Target : 100;
 	break;
     case THERMAL_FORMULA_AMD_0Fh:
 	COMPUTE_THERMAL(AMD_0Fh,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
 	break;
     case THERMAL_FORMULA_AMD_15h:
       if (Shm->Cpu[cpu].Topology.CoreID == 0) {
 	COMPUTE_THERMAL(AMD_15h,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
       } else {
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
-	Core[cpu]->PowerThermal.Param.Target : 100;
+	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
       }
 	break;
     case THERMAL_FORMULA_AMD_17h:
       if (cpu == Proc->Service.Core) {
 	COMPUTE_THERMAL(AMD_17h,
-			Shm->Cpu[cpu].PowerThermal.Limit[0],
+			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 			Core[cpu]->PowerThermal.Param,
 			Core[cpu]->PowerThermal.Sensor);
       } else {
-      Shm->Cpu[cpu].PowerThermal.Limit[0]=Core[cpu]->PowerThermal.Param.Target?
-	Core[cpu]->PowerThermal.Param.Target : 100;
+	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
       }
 	break;
     case THERMAL_FORMULA_NONE:
-	Shm->Cpu[cpu].PowerThermal.Limit[0] = 0;
+	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 0;
 	break;
     }
-	Shm->Cpu[cpu].PowerThermal.Limit[1] = 0;
+	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST] = 0;
 }
 
 void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)

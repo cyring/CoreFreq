@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	71
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -235,6 +235,12 @@ enum THERM_PWR_EVENTS {
 	EVENT_POWER_LIMIT	= 0b0010000,
 	EVENT_CURRENT_LIMIT	= 0b0100000,
 	EVENT_CROSS_DOMAIN	= 0b1000000
+};
+
+enum {
+	SENSOR_LOWEST,
+	SENSOR_HIGHEST,
+	SENSOR_LIMITS_DIM
 };
 
 typedef union

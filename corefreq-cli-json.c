@@ -1511,8 +1511,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_key(&s, "Limit");
 			json_start_arr(&s);
 			{
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[0]);
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[1]);
+				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[SENSOR_LOWEST]);
+				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[SENSOR_HIGHEST]);
 			}
 			json_end_arr(&s);
 			json_key(&s, "DutyCycle");

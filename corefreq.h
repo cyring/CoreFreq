@@ -56,7 +56,7 @@ typedef struct
 	struct {
 		unsigned int		TM1,
 					TM2,
-					Limit[2];
+					Limit[SENSOR_LIMITS_DIM];
 		struct {
 			unsigned int	ClockMod : 16-0,
 					Extended : 32-16;

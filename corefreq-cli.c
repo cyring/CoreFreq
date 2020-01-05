@@ -2665,10 +2665,10 @@ void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		Shm->Cpu[cpu].PowerThermal.Limit[0],
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
 		CFlop->Thermal.Sensor,
-		Shm->Cpu[cpu].PowerThermal.Limit[1] );
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST] );
 }
 
 void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
@@ -2685,10 +2685,10 @@ void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[0]),
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
 		Cels2Fahr(CFlop->Thermal.Sensor),
-		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[1]) );
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]) );
 }
 
 void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
@@ -8203,9 +8203,9 @@ size_t Draw_Freq_Celsius(struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		Cpu->PowerThermal.Limit[0],
+		Cpu->PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
-		Cpu->PowerThermal.Limit[1]));
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
 }
 
 size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
@@ -8225,9 +8225,9 @@ size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		100.f * CFlop->State.C3,
 		100.f * CFlop->State.C6,
 		100.f * CFlop->State.C7,
-		Cels2Fahr(Cpu->PowerThermal.Limit[0]),
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
-		Cels2Fahr(Cpu->PowerThermal.Limit[1])));
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])));
 }
 
 size_t Draw_Freq_Celsius_PerCore(struct FLIP_FLOP *CFlop,
@@ -8314,12 +8314,12 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
 
-	if (CFlop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[0])
-			warning = MakeAttr(BLUE, 0, BLACK, 1);
-	else {
-		if (CFlop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[1])
-			warning = MakeAttr(YELLOW, 0, BLACK, 0);
-	}
+  if (CFlop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]) {
+		warning = MakeAttr(BLUE, 0, BLACK, 1);
+  } else {
+    if (CFlop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST])
+		warning = MakeAttr(YELLOW, 0, BLACK, 0);
+  }
 	if ( CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
 				     |	EVENT_THERM_PROCHOT
 				     |	EVENT_THERM_CRIT
@@ -10055,8 +10055,8 @@ void Layout_Dashboard(Layer *layer)
 
 void Draw_Card_Core(Layer *layer, Card* card)
 {
-    if (card->data.dword.hi == RENDER_OK)
-    {
+  if (card->data.dword.hi == RENDER_OK)
+  {
 	unsigned int digit[3];
 	unsigned int _cpu = card->data.dword.lo;
 
@@ -10068,11 +10068,12 @@ void Draw_Card_Core(Layer *layer, Card* card)
 	Clock2LCD(layer, card->origin.col, card->origin.row,
 			CFlop->Relative.Freq, CFlop->Relative.Ratio);
 
-	if (CFlop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[0]) {
+   if(CFlop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[SENSOR_LOWEST]) {
 		warning = MakeAttr(BLUE, 0, BLACK, 1);
-	} else if(CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[1]) {
+   } else {
+    if(CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[SENSOR_HIGHEST])
 		warning = MakeAttr(YELLOW, 0, BLACK, 0);
-	}
+   }
 	if (CFlop->Thermal.Events) {
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
@@ -10093,17 +10094,18 @@ void Draw_Card_Core(Layer *layer, Card* card)
 
 	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
 								digit[2] + '0';
-    }
-    else if (card->data.dword.hi == RENDER_KO) {
+  }
+  else if (card->data.dword.hi == RENDER_KO)
+  {
 	CUINT row;
 
 	card->data.dword.hi = RENDER_OFF;
 
-      for (row = card->origin.row; row < card->origin.row + 4; row++) {
+    for (row = card->origin.row; row < card->origin.row + 4; row++) {
 	memset(&LayerAt(layer, attr, card->origin.col, row), 0, 4*INTER_WIDTH);
 	memset(&LayerAt(layer, code, card->origin.col, row), 0, 4*INTER_WIDTH);
-      }
     }
+  }
 }
 
 void Draw_Card_CLK(Layer *layer, Card* card)
