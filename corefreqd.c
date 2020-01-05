@@ -64,6 +64,16 @@ typedef struct {
 	SYSGATE			*SysGate;
 } REF;
 
+void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, unsigned int Temp)
+{	/* Per Core, computes the Min and Max temperatures.		*/
+	if (Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST]) {
+		Cpu->PowerThermal.Limit[SENSOR_LOWEST] = Temp;
+	}
+	if (Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST]) {
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = Temp;
+	}
+}
+
 static inline void Core_ComputeThermal_None(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
@@ -78,6 +88,8 @@ static inline void Core_ComputeThermal_Intel(	struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip->Thermal.Temp);
 }
 
 static inline void Core_ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
@@ -88,6 +100,8 @@ static inline void Core_ComputeThermal_AMD(	struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip->Thermal.Temp);
 }
 
 static inline void Core_ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
@@ -98,6 +112,8 @@ static inline void Core_ComputeThermal_AMD_0Fh( struct FLIP_FLOP *CFlip,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip->Thermal.Temp);
 }
 
 static inline void Core_ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
@@ -105,10 +121,14 @@ static inline void Core_ComputeThermal_AMD_15h( struct FLIP_FLOP *CFlip,
 						unsigned int cpu )
 {
     if (Shm->Cpu[cpu].Topology.CoreID == 0)
+    {
 	COMPUTE_THERMAL(AMD_15h,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip->Thermal.Temp);
+    }
 }
 
 static inline void Core_ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
@@ -116,60 +136,100 @@ static inline void Core_ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
 						unsigned int cpu )
 {
     if (cpu == Shm->Proc.Service.Core)
+    {
 	COMPUTE_THERMAL(AMD_17h,
 			CFlip->Thermal.Temp,
 			CFlip->Thermal.Param,
 			CFlip->Thermal.Sensor);
+
+	Core_ComputeThermalLimits(&Shm->Cpu[cpu], CFlip->Thermal.Temp);
+    }
 }
 
-static inline void Core_ComputeVoltage_None(struct FLIP_FLOP *CFlip)
+void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, double Vcore)
+{	/* Per Core, computes the Min and Max CPU voltage.		*/
+	if (Vcore && Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST]) {
+		Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] = Vcore;
+	}
+	if (Vcore > Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST]) {
+		Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST] = Vcore;
+	}
+}
+
+static inline void Core_ComputeVoltage_None(	struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 }
 
 #define Core_ComputeVoltage_Intel	Core_ComputeVoltage_None
 
-static inline void Core_ComputeVoltage_Intel_Core2(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_Intel_Core2(struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {	/* Intel Core 2 Extreme Datasheet §3.3-Table 2			*/
 	COMPUTE_VOLTAGE(INTEL_CORE2,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
 #define Core_ComputeVoltage_Intel_SNB	Core_ComputeVoltage_None
 
-static inline void Core_ComputeVoltage_Intel_SKL_X(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_Intel_SKL_X(struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(INTEL_SKL_X,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
-static inline void Core_ComputeVoltage_AMD(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_AMD(	struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
-static inline void Core_ComputeVoltage_AMD_0Fh(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_AMD_0Fh( struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {	/* AMD BKDG Family 0Fh §10.6 Table 70				*/
 	COMPUTE_VOLTAGE(AMD_0Fh,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
-static inline void Core_ComputeVoltage_AMD_15h(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_AMD_15h( struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_15h,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
-static inline void Core_ComputeVoltage_AMD_17h(struct FLIP_FLOP *CFlip)
+static inline void Core_ComputeVoltage_AMD_17h( struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 	COMPUTE_VOLTAGE(AMD_17h,
 			CFlip->Voltage.Vcore,
 			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip->Voltage.Vcore);
 }
 
 #define Core_ComputeVoltage_Winbond_IO	Core_ComputeVoltage_None
@@ -232,7 +292,9 @@ static void *Core_Cycle(void *arg)
 						SHM_STRUCT*,
 						unsigned int );
 
-	void (*Core_ComputeVoltageFormula)(struct FLIP_FLOP*);
+	void (*Core_ComputeVoltageFormula)(	struct FLIP_FLOP*,
+						SHM_STRUCT*,
+						unsigned int );
 
 	void (*Core_ComputePowerFormula)(	struct FLIP_FLOP*,
 						CORE*,
@@ -406,16 +468,10 @@ static void *Core_Cycle(void *arg)
 
 	Core_ComputeThermalFormula(CFlip, Shm, cpu);
 
-	/* Per Core, store the Min and Max temperatures.		*/
-	if (CFlip->Thermal.Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])
-		Cpu->PowerThermal.Limit[SENSOR_LOWEST] = CFlip->Thermal.Temp;
-	if (CFlip->Thermal.Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
-		Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = CFlip->Thermal.Temp;
-
 	/* Per Core, evaluate the voltage properties.			*/
 	CFlip->Voltage.VID = Core->PowerThermal.VID;
 
-	Core_ComputeVoltageFormula(CFlip);
+	Core_ComputeVoltageFormula(CFlip, Shm, cpu);
 
 	/* Per Core, evaluate the Power properties.			*/
 	Core_ComputePowerFormula(CFlip, Core, Shm);
@@ -3462,6 +3518,31 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	break;
     }
 	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST] = 0;
+
+    switch (SCOPE_OF_FORMULA(Shm->Proc.voltageFormula)) {
+    case FORMULA_SCOPE_NONE:
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
+	break;
+    case FORMULA_SCOPE_SMT:
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
+	break;
+    case FORMULA_SCOPE_CORE:
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
+      } else {
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
+      }
+	break;
+    case FORMULA_SCOPE_PKG:
+      if (cpu == Proc->Service.Core) {
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
+      } else {
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
+      }
+	break;
+    }
+	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST] = 0;
 }
 
 void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -4064,7 +4145,8 @@ static inline void Pkg_ComputeHotCore_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
     }
 }
 
-static inline void Pkg_ComputeVoltage_None(struct FLIP_FLOP *SProc)
+static inline void Pkg_ComputeVoltage_None(	CPU_STRUCT *Cpu,
+						struct FLIP_FLOP *SProc )
 {
 }
 
@@ -4072,11 +4154,14 @@ static inline void Pkg_ComputeVoltage_None(struct FLIP_FLOP *SProc)
 
 #define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_Intel_SNB(struct FLIP_FLOP *SProc)
+static inline void Pkg_ComputeVoltage_Intel_SNB(CPU_STRUCT *Cpu,
+						struct FLIP_FLOP *SProc)
 {	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
 			SProc->Voltage.Vcore,
 			SProc->Voltage.VID);
+
+	Core_ComputeVoltageLimits(Cpu, SProc->Voltage.Vcore);
 }
 
 #define Pkg_ComputeVoltage_Intel_SKL_X	Pkg_ComputeVoltage_None
@@ -4089,11 +4174,14 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(struct FLIP_FLOP *SProc)
 
 #define Pkg_ComputeVoltage_AMD_17h	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_Winbond_IO(struct FLIP_FLOP *SProc)
+static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
+						struct FLIP_FLOP *SProc)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
 			SProc->Voltage.Vcore,
 			SProc->Voltage.VID);
+
+	Core_ComputeVoltageLimits(Cpu, SProc->Voltage.Vcore);
 }
 
 static inline void Pkg_ComputePower_None(PROC *Proc, struct FLIP_FLOP *CFlop)
@@ -4154,7 +4242,8 @@ REASON_CODE Core_Manager(REF *Ref)
 						struct FLIP_FLOP*,
 						SHM_STRUCT* );
 
-	void (*Pkg_ComputeVoltageFormula)(struct FLIP_FLOP*);
+	void (*Pkg_ComputeVoltageFormula)(	CPU_STRUCT*,
+						struct FLIP_FLOP* );
 
 	void (*Pkg_ComputePowerFormula)(PROC*, struct FLIP_FLOP*);
 
@@ -4423,7 +4512,7 @@ REASON_CODE Core_Manager(REF *Ref)
 
 		Pkg_ComputeThermalFormula(PFlip, SProc);
 
-		Pkg_ComputeVoltageFormula(SProc);
+	    Pkg_ComputeVoltageFormula(&Shm->Cpu[Shm->Proc.Service.Core], SProc);
 
 		/*
 		The Driver tick is bound to the Service Core:

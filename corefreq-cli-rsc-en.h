@@ -606,7 +606,8 @@
 			"\t-Y\tShow Secret Data\n"			\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
-			"\t-V\tMonitor Power and Voltage\n"		\
+			"\t-S\tMonitor Sensors\n"			\
+			"\t-V\tMonitor Voltage\n"			\
 			"\t-g\tMonitor Package\n"			\
 			"\t-c\tMonitor Counters\n"			\
 			"\t-i\tMonitor Instructions\n"			\

@@ -2794,7 +2794,7 @@ void Counters(void)
     }
 }
 
-void Voltage(void)
+void Sensors(void)
 {
     enum PWR_DOMAIN pw;
     unsigned int cpu = 0;
@@ -2845,6 +2845,43 @@ void Voltage(void)
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 		printf("%.*s" "%13.9f", 2, hSpace, Shm->Proc.State.Power[pw]);
 
+	printf("\n\n");
+    }
+}
+
+void Voltage(void)
+{
+    enum PWR_DOMAIN pw;
+    unsigned int cpu = 0;
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+		nanosleep(&Shm->Sleep.pollingWait, NULL);
+
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
+
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
+
+		printf( "CPU Freq(MHz) VID  Min     Vcore   Max\n");
+
+	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	    struct FLIP_FLOP *CFlop = \
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+		printf( "%03u %7.2f %5d  %5.4f  %5.4f  %5.4f\n",
+			cpu,
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
+			CFlop->Voltage.Vcore,
+			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST] );
+	    else
+		printf("%03u        OFF\n", cpu);
+	  }
 	printf("\n\n");
     }
 }
@@ -10686,6 +10723,11 @@ int main(int argc, char *argv[])
 	    case 'c':
 		TrapSignal(1);
 		Counters();
+		TrapSignal(0);
+		break;
+	    case 'S':
+		TrapSignal(1);
+		Sensors();
 		TrapSignal(0);
 		break;
 	    case 'V':

@@ -78,6 +78,12 @@ typedef struct
 		} HWP;
 	} PowerThermal;
 
+	struct {
+		struct {
+			double		Limit[SENSOR_LIMITS_DIM];
+		} Voltage;
+	} Sensors;
+
 	struct FLIP_FLOP {
 
 		struct

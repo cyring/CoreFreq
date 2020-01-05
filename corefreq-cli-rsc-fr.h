@@ -606,7 +606,8 @@
 		"\t-Y\tAfficher les données secrètes\n" 		\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
-		"\t-V\tMoniteur de Puissance et Voltage\n"		\
+		"\t-S\tMoniteur des Capteurs\n" 			\
+		"\t-V\tMoniteur de Voltage\n"				\
 		"\t-g\tMoniteur du Package\n"				\
 		"\t-c\tMoniteur des Compteurs\n"			\
 		"\t-i\tMoniteur des Instructions\n"			\
