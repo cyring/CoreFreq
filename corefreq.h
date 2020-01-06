@@ -82,6 +82,12 @@ typedef struct
 		struct {
 			double		Limit[SENSOR_LIMITS_DIM];
 		} Voltage;
+		struct {
+			double		Limit[SENSOR_LIMITS_DIM];
+		} Energy;
+		struct {
+			double		Limit[SENSOR_LIMITS_DIM];
+		} Power;
 	} Sensors;
 
 	struct FLIP_FLOP {
@@ -270,9 +276,16 @@ typedef struct
 					PC07,
 					PC08,
 					PC09,
-					PC10,
-					Energy[PWR_DOMAIN(SIZE)],
-					Power[PWR_DOMAIN(SIZE)];
+					PC10;
+		struct {
+			double		Current,
+					Limit[SENSOR_LIMITS_DIM];
+		} Energy[PWR_DOMAIN(SIZE)];
+
+		struct {
+			double		Current,
+					Limit[SENSOR_LIMITS_DIM];
+		} Power[PWR_DOMAIN(SIZE)];
 	} State;
 
 	struct {

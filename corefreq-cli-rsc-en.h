@@ -608,6 +608,7 @@
 			"\t-d\tShow Dashboard\n"			\
 			"\t-S\tMonitor Sensors\n"			\
 			"\t-V\tMonitor Voltage\n"			\
+			"\t-W\tMonitor Power\n" 			\
 			"\t-g\tMonitor Package\n"			\
 			"\t-c\tMonitor Counters\n"			\
 			"\t-i\tMonitor Instructions\n"			\

@@ -129,7 +129,7 @@
 	"--------------------"
 
 #define RSC_LAYOUT_RULER_POWER_CODE_FR					\
-	"-- $ -- MEV:   .     -- Uncore:   .     -- Package:   .     "	\
+	"-- $ -- RAM:   .     -- Uncore:   .     -- Package:   .     "	\
 	"-- Cores:   .     ------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -608,6 +608,7 @@
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-S\tMoniteur des Capteurs\n" 			\
 		"\t-V\tMoniteur de Voltage\n"				\
+		"\t-W\tMoniteur de Puissance\n" 			\
 		"\t-g\tMoniteur du Package\n"				\
 		"\t-c\tMoniteur des Compteurs\n"			\
 		"\t-i\tMoniteur des Instructions\n"			\

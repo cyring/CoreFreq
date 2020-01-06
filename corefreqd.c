@@ -234,9 +234,26 @@ static inline void Core_ComputeVoltage_AMD_17h( struct FLIP_FLOP *CFlip,
 
 #define Core_ComputeVoltage_Winbond_IO	Core_ComputeVoltage_None
 
+void Core_ComputePowerLimits(CPU_STRUCT *Cpu, double Energy, double Power)
+{	/* Per Core, computes the Min and Max CPU energy & power consumed. */
+	if (Energy && Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST]) {
+		Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] = Energy;
+	}
+	if (Energy > Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]) {
+		Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST] = Energy;
+	}
+	if (Power && Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST]) {
+		Cpu->Sensors.Power.Limit[SENSOR_LOWEST] = Power;
+	}
+	if (Power > Cpu->Sensors.Power.Limit[SENSOR_HIGHEST]) {
+		Cpu->Sensors.Power.Limit[SENSOR_HIGHEST] = Power;
+	}
+}
+
 static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
 						CORE *Core,
-						SHM_STRUCT *Shm )
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 }
 
@@ -248,7 +265,8 @@ static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
 
 static inline void Core_ComputePower_AMD_17h(	struct FLIP_FLOP *CFlip,
 						CORE *Core,
-						SHM_STRUCT *Shm )
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
 {
 	CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
 
@@ -257,6 +275,10 @@ static inline void Core_ComputePower_AMD_17h(	struct FLIP_FLOP *CFlip,
 
 	CFlip->State.Power	= (1000.0 * CFlip->State.Energy)
 				/ (double) Shm->Sleep.Interval;
+
+	Core_ComputePowerLimits(&Shm->Cpu[cpu],
+				CFlip->State.Energy,
+				CFlip->State.Power);
 }
 
 
@@ -298,7 +320,8 @@ static void *Core_Cycle(void *arg)
 
 	void (*Core_ComputePowerFormula)(	struct FLIP_FLOP*,
 						CORE*,
-						SHM_STRUCT* );
+						SHM_STRUCT*,
+						unsigned int );
 
 	switch (Shm->Proc.thermalFormula) {
 	case THERMAL_FORMULA_INTEL:
@@ -474,7 +497,7 @@ static void *Core_Cycle(void *arg)
 	Core_ComputeVoltageFormula(CFlip, Shm, cpu);
 
 	/* Per Core, evaluate the Power properties.			*/
-	Core_ComputePowerFormula(CFlip, Core, Shm);
+	Core_ComputePowerFormula(CFlip, Core, Shm, cpu);
 
 	/* Copy the Interrupts counters.				*/
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
@@ -3478,8 +3501,20 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.HWP_Request.Energy_Pref;
 }
 
-void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+void InitPackagePowerLimits(PROC_STRUCT *Proc, double lowest, double highest)
 {
+	enum PWR_DOMAIN pw;
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+	{
+		Proc->State.Energy[pw].Limit[SENSOR_LOWEST]	= lowest;
+		Proc->State.Energy[pw].Limit[SENSOR_HIGHEST]	= highest;
+		Proc->State.Power[pw].Limit[SENSOR_LOWEST]	= lowest;
+		Proc->State.Power[pw].Limit[SENSOR_HIGHEST]	= highest;
+	}
+}
+
+void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
+{/* TODO( Replace with SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) )	*/
     switch (Proc->thermalFormula) {
     case THERMAL_FORMULA_INTEL:
     case THERMAL_FORMULA_AMD:
@@ -3494,24 +3529,24 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.Sensor);
 	break;
     case THERMAL_FORMULA_AMD_15h:
-      if (Shm->Cpu[cpu].Topology.CoreID == 0) {
-	COMPUTE_THERMAL(AMD_15h,
-			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
-			Core[cpu]->PowerThermal.Param,
-			Core[cpu]->PowerThermal.Sensor);
-      } else {
-	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
-      }
+	if (Shm->Cpu[cpu].Topology.CoreID == 0) {
+		COMPUTE_THERMAL(AMD_15h,
+				Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
+				Core[cpu]->PowerThermal.Param,
+				Core[cpu]->PowerThermal.Sensor);
+	} else {
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
+	}
 	break;
     case THERMAL_FORMULA_AMD_17h:
-      if (cpu == Proc->Service.Core) {
-	COMPUTE_THERMAL(AMD_17h,
-			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
-			Core[cpu]->PowerThermal.Param,
-			Core[cpu]->PowerThermal.Sensor);
-      } else {
-	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
-      }
+	if (cpu == Proc->Service.Core) {
+		COMPUTE_THERMAL(AMD_17h,
+				Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
+				Core[cpu]->PowerThermal.Param,
+				Core[cpu]->PowerThermal.Sensor);
+	} else {
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
+	}
 	break;
     case THERMAL_FORMULA_NONE:
 	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 0;
@@ -3529,20 +3564,56 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
     case FORMULA_SCOPE_CORE:
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
-      } else {
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
-      }
+		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
+	} else {
+		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
+	}
 	break;
     case FORMULA_SCOPE_PKG:
-      if (cpu == Proc->Service.Core) {
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
-      } else {
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
-      }
+	if (cpu == Proc->Service.Core) {
+		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
+	} else {
+		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
+	}
 	break;
     }
 	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST] = 0;
+
+    switch (SCOPE_OF_FORMULA(Shm->Proc.powerFormula)) {
+    case FORMULA_SCOPE_NONE:
+	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
+	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
+	InitPackagePowerLimits(&Shm->Proc, 0, 0);
+	break;
+    case FORMULA_SCOPE_SMT:
+	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
+	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
+	InitPackagePowerLimits(&Shm->Proc, 0, 0);
+	break;
+    case FORMULA_SCOPE_CORE:
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
+		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
+	} else {
+		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
+		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
+	}
+	InitPackagePowerLimits(&Shm->Proc, 0, 0);
+	break;
+    case FORMULA_SCOPE_PKG:
+	if (cpu == Proc->Service.Core) {
+		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
+		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
+	} else {
+		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
+		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
+	}
+	InitPackagePowerLimits(&Shm->Proc, 999.99, 999.99);
+	break;
+    }
+	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST] = 0;
+	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST] = 0;
 }
 
 void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
@@ -4184,6 +4255,36 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
 	Core_ComputeVoltageLimits(Cpu, SProc->Voltage.Vcore);
 }
 
+#define Pkg_ComputePowerLimits(pw)					\
+{ /* Package scope, computes Min and Max CPU energy & power consumed. */\
+    if (Shm->Proc.State.Energy[pw].Current				\
+	&& Shm->Proc.State.Energy[pw].Current				\
+	< Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST])		\
+    {									\
+	Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST] =		\
+				Shm->Proc.State.Energy[pw].Current;	\
+    }									\
+    if (Shm->Proc.State.Energy[pw].Current				\
+	> Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST])		\
+    {									\
+	Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST] =		\
+				Shm->Proc.State.Energy[pw].Current;	\
+    }									\
+    if (Shm->Proc.State.Power[pw].Current				\
+	&& Shm->Proc.State.Power[pw].Current				\
+	< Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST])		\
+    {									\
+	Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST] =		\
+				Shm->Proc.State.Power[pw].Current;	\
+    }									\
+    if (Shm->Proc.State.Power[pw].Current				\
+	> Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST])		\
+    {									\
+	Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST] =		\
+				Shm->Proc.State.Power[pw].Current;	\
+    }									\
+}
+
 static inline void Pkg_ComputePower_None(PROC *Proc, struct FLIP_FLOP *CFlop)
 {
 }
@@ -4498,11 +4599,15 @@ REASON_CODE Core_Manager(REF *Ref)
 	    {
 		PFlip->Delta.ACCU[pw] = Proc->Delta.Power.ACCU[pw];
 
-		Shm->Proc.State.Energy[pw] = (double) PFlip->Delta.ACCU[pw]
-					   * Shm->Proc.Power.Unit.Joules;
+		Shm->Proc.State.Energy[pw].Current = \
+						(double) PFlip->Delta.ACCU[pw]
+						* Shm->Proc.Power.Unit.Joules;
 
-		Shm->Proc.State.Power[pw] = (1000.0*Shm->Proc.State.Energy[pw])
-					  / (double) Shm->Sleep.Interval;
+		Shm->Proc.State.Power[pw].Current = \
+				(1000.0 * Shm->Proc.State.Energy[pw].Current)
+						/ (double) Shm->Sleep.Interval;
+
+		Pkg_ComputePowerLimits(pw);
 	    }
 		/* Package thermal formulas				*/
 	    if (Shm->Proc.Features.Power.EAX.PTM) {

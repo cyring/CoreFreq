@@ -2755,13 +2755,13 @@ void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 
 void Counters(void)
 {
-    void (*Core_Temp)(struct FLIP_FLOP *, unsigned int) =	\
-	Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
+	void (*Core_Temp)(struct FLIP_FLOP *, unsigned int) =		\
+		Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
 
-    void (*Pkg_Temp)(struct PKG_FLIP_FLOP *) =			\
-	Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
+	void (*Pkg_Temp)(struct PKG_FLIP_FLOP *) =			\
+		Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
 
-    unsigned int cpu = 0;
+	unsigned int cpu = 0;
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2796,8 +2796,8 @@ void Counters(void)
 
 void Sensors(void)
 {
-    enum PWR_DOMAIN pw;
-    unsigned int cpu = 0;
+	enum PWR_DOMAIN pw;
+	unsigned int cpu = 0;
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2838,21 +2838,22 @@ void Sensors(void)
 		14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
 
 	printf("\n" "Energy(J):");
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-		printf("%.*s" "%13.9f", 2, hSpace, Shm->Proc.State.Energy[pw]);
-
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+		printf( "%.*s" "%13.9f", 2, hSpace,
+			Shm->Proc.State.Energy[pw].Current );
+	}
 	printf("\n" "Power(W) :");
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-		printf("%.*s" "%13.9f", 2, hSpace, Shm->Proc.State.Power[pw]);
-
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+		printf( "%.*s" "%13.9f", 2, hSpace,
+			Shm->Proc.State.Power[pw].Current );
+	}
 	printf("\n\n");
     }
 }
 
 void Voltage(void)
 {
-    enum PWR_DOMAIN pw;
-    unsigned int cpu = 0;
+	unsigned int cpu = 0;
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2882,6 +2883,68 @@ void Voltage(void)
 	    else
 		printf("%03u        OFF\n", cpu);
 	  }
+	printf("\n");
+    }
+}
+
+void Power(void)
+{
+    enum PWR_DOMAIN pw;
+    unsigned int cpu = 0;
+    while (!BITVAL(Shutdown, SYNC)) {
+	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+		nanosleep(&Shm->Sleep.pollingWait, NULL);
+
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+
+	if (BITVAL(Shm->Proc.Sync, NTFY))
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
+
+	ClientFollowService(&localService, &Shm->Proc.Service, 0);
+
+		printf( "CPU Freq(MHz)" 				\
+			"    Accumulator      Min  Energy(J) Max"	\
+			"    Min  Power(W)  Max\n" );
+
+	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+	    struct FLIP_FLOP *CFlop = \
+			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+		printf( "%03u %7.2f"					\
+			"  %018llu  %6.2f %6.2f %6.2f  %6.2f %6.2f %6.2f\n",
+			cpu,
+			CFlop->Relative.Freq,
+			CFlop->Delta.Power.ACCU,
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
+			CFlop->State.Energy,
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST],
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
+			CFlop->State.Power,
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST] );
+	    else
+		printf("%03u        OFF\n", cpu);
+	  }
+
+	printf( "\n" "Energy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
+		12, hSpace, 15, hSpace, 14, hSpace );
+
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+		printf( "%.*s" "%6.2f%6.2f%6.2f",
+			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
+			Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST],
+			Shm->Proc.State.Energy[pw].Current,
+			Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST] );
+	}
+	printf("\n" "Power(W)\n");
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+		printf( "%.*s" "%6.2f%6.2f%6.2f",
+			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
+			Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST],
+			Shm->Proc.State.Power[pw].Current,
+			Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST] );
+	}
 	printf("\n\n");
     }
 }
@@ -9513,20 +9576,20 @@ void Draw_AltMonitor_Energy_Joule(Layer *layer, CUINT row)
 {
 	snprintf(buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
-		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)],
-		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)],
-		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)],
-		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)]);
+		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)].Current,
+		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
+		Shm->Proc.State.Energy[PWR_DOMAIN(UNCORE)].Current,
+		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)].Current);
 }
 
 void Draw_AltMonitor_Power_Watt(Layer *layer, CUINT row)
 {
 	snprintf(buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
-		Shm->Proc.State.Power[PWR_DOMAIN(PKG)],
-		Shm->Proc.State.Power[PWR_DOMAIN(CORES)],
-		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)],
-		Shm->Proc.State.Power[PWR_DOMAIN(RAM)]);
+		Shm->Proc.State.Power[PWR_DOMAIN(PKG)].Current,
+		Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current,
+		Shm->Proc.State.Power[PWR_DOMAIN(UNCORE)].Current,
+		Shm->Proc.State.Power[PWR_DOMAIN(RAM)].Current);
 }
 
 void (*Draw_AltMonitor_Power_Matrix[])(Layer*, CUINT) = {
@@ -10733,6 +10796,11 @@ int main(int argc, char *argv[])
 	    case 'V':
 		TrapSignal(1);
 		Voltage();
+		TrapSignal(0);
+		break;
+	    case 'W':
+		TrapSignal(1);
+		Power();
 		TrapSignal(0);
 		break;
 	    case 'g':
