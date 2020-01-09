@@ -6439,8 +6439,8 @@ void AMD_Core_Counters_Clear(CORE *Core)
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
 	Pkg->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =			\
-		Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]	\
-		- Pkg->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)];	\
+	(Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]		\
+	- Pkg->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)]) & 0x7fffffffU;\
 })
 
 #define Save_PWR_ACCU(Pkg, PwrDomain)					\

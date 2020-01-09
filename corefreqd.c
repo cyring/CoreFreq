@@ -3501,18 +3501,6 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.HWP_Request.Energy_Pref;
 }
 
-void InitPackagePowerLimits(PROC_STRUCT *Proc, double lowest, double highest)
-{
-	enum PWR_DOMAIN pw;
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-	{
-		Proc->State.Energy[pw].Limit[SENSOR_LOWEST]	= lowest;
-		Proc->State.Energy[pw].Limit[SENSOR_HIGHEST]	= highest;
-		Proc->State.Power[pw].Limit[SENSOR_LOWEST]	= lowest;
-		Proc->State.Power[pw].Limit[SENSOR_HIGHEST]	= highest;
-	}
-}
-
 void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {/* TODO( Replace with SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) )	*/
     switch (Proc->thermalFormula) {
@@ -3583,12 +3571,10 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
     case FORMULA_SCOPE_NONE:
 	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
 	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
-	InitPackagePowerLimits(&Shm->Proc, 0, 0);
 	break;
     case FORMULA_SCOPE_SMT:
 	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
 	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
-	InitPackagePowerLimits(&Shm->Proc, 0, 0);
 	break;
     case FORMULA_SCOPE_CORE:
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
@@ -3599,7 +3585,6 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
 		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
 	}
-	InitPackagePowerLimits(&Shm->Proc, 0, 0);
 	break;
     case FORMULA_SCOPE_PKG:
 	if (cpu == Proc->Service.Core) {
@@ -3609,7 +3594,6 @@ void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
 		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
 	}
-	InitPackagePowerLimits(&Shm->Proc, 999.99, 999.99);
 	break;
     }
 	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST] = 0;
@@ -4257,9 +4241,11 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
 
 #define Pkg_ComputePowerLimits(pw)					\
 { /* Package scope, computes Min and Max CPU energy & power consumed. */\
-    if (Shm->Proc.State.Energy[pw].Current				\
-	&& Shm->Proc.State.Energy[pw].Current				\
-	< Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST])		\
+    if ( ( (Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST] == 0)	\
+	&& (Shm->Proc.State.Energy[pw].Current != 0) )			\
+    || ( (Shm->Proc.State.Energy[pw].Current != 0)			\
+	&& (Shm->Proc.State.Energy[pw].Current				\
+		< Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST]) ) )	\
     {									\
 	Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST] =		\
 				Shm->Proc.State.Energy[pw].Current;	\
@@ -4270,9 +4256,11 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
 	Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST] =		\
 				Shm->Proc.State.Energy[pw].Current;	\
     }									\
-    if (Shm->Proc.State.Power[pw].Current				\
-	&& Shm->Proc.State.Power[pw].Current				\
-	< Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST])		\
+    if ( ( (Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST] == 0)	\
+	&& (Shm->Proc.State.Power[pw].Current != 0) )			\
+    || ( (Shm->Proc.State.Power[pw].Current != 0)			\
+	&& (Shm->Proc.State.Power[pw].Current				\
+		< Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST]) ) )	\
     {									\
 	Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST] =		\
 				Shm->Proc.State.Power[pw].Current;	\
