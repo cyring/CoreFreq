@@ -6793,6 +6793,8 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 			Save_PTSC(Proc);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -6909,6 +6911,10 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 			Save_UNCORE_FC0(Proc);
 
 			Sys_Tick(Proc);
+		} else {
+#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+			Core->PowerThermal.VID = 0;
+#endif
 		}
 
 		Core_Intel_Temp(Core);
@@ -7070,6 +7076,8 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, UNCORE);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -7236,6 +7244,8 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -7436,6 +7446,8 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, UNCORE);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -7604,6 +7616,8 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -7796,6 +7810,8 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			Save_PWR_ACCU(Proc, RAM);
 
 			Sys_Tick(Proc);
+		} else {
+			Core->PowerThermal.VID = 0;
 		}
 
 		Core_Intel_Temp(Core);
@@ -8305,20 +8321,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 			Sys_Tick(Proc);
 		}
-
-		/* TODO(CleanUp)
-		{
-		PSTATESTAT PstateStat;
-		unsigned int pstate;
-		// Read the current P-State number. //
-		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-		// Offset the P-State base register. //
-		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-		// Read the voltage ID at the offset. //
-		RDMSR(PstateDef, pstate);
-		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
-		}
-		*/
 
 		/* Read the boosted voltage VID. TODO(boosted FID)	*/
 		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);

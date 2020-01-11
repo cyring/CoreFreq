@@ -66,12 +66,15 @@ typedef struct {
 
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, unsigned int Temp)
 {	/* Per Core, computes the Min and Max temperatures.		*/
-	if (Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST]) {
-		Cpu->PowerThermal.Limit[SENSOR_LOWEST] = Temp;
-	}
-	if (Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST]) {
-		Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = Temp;
-	}
+    if (((Cpu->PowerThermal.Limit[SENSOR_LOWEST] == 0) && (Temp != 0))
+    || ((Temp != 0) && (Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])))
+    {
+	Cpu->PowerThermal.Limit[SENSOR_LOWEST] = Temp;
+    }
+    if (Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
+    {
+	Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = Temp;
+    }
 }
 
 static inline void Core_ComputeThermal_None(	struct FLIP_FLOP *CFlip,
@@ -148,12 +151,15 @@ static inline void Core_ComputeThermal_AMD_17h( struct FLIP_FLOP *CFlip,
 
 void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, double Vcore)
 {	/* Per Core, computes the Min and Max CPU voltage.		*/
-	if (Vcore && Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST]) {
-		Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] = Vcore;
-	}
-	if (Vcore > Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST]) {
-		Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST] = Vcore;
-	}
+    if (((Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] == 0) && (Vcore != 0))
+    || ((Vcore != 0) && (Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST])))
+    {
+	Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] = Vcore;
+    }
+    if (Vcore > Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST])
+    {
+	Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST] = Vcore;
+    }
 }
 
 static inline void Core_ComputeVoltage_None(	struct FLIP_FLOP *CFlip,
@@ -3501,105 +3507,6 @@ void PowerThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 			Core[cpu]->PowerThermal.HWP_Request.Energy_Pref;
 }
 
-void InitThermal(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
-{/* TODO( Replace with SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) )	*/
-    switch (Proc->thermalFormula) {
-    case THERMAL_FORMULA_INTEL:
-    case THERMAL_FORMULA_AMD:
-	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = \
-		Core[cpu]->PowerThermal.Param.Target != 0 ?
-			Core[cpu]->PowerThermal.Param.Target : 100;
-	break;
-    case THERMAL_FORMULA_AMD_0Fh:
-	COMPUTE_THERMAL(AMD_0Fh,
-			Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
-			Core[cpu]->PowerThermal.Param,
-			Core[cpu]->PowerThermal.Sensor);
-	break;
-    case THERMAL_FORMULA_AMD_15h:
-	if (Shm->Cpu[cpu].Topology.CoreID == 0) {
-		COMPUTE_THERMAL(AMD_15h,
-				Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
-				Core[cpu]->PowerThermal.Param,
-				Core[cpu]->PowerThermal.Sensor);
-	} else {
-		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
-	}
-	break;
-    case THERMAL_FORMULA_AMD_17h:
-	if (cpu == Proc->Service.Core) {
-		COMPUTE_THERMAL(AMD_17h,
-				Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
-				Core[cpu]->PowerThermal.Param,
-				Core[cpu]->PowerThermal.Sensor);
-	} else {
-		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 100;
-	}
-	break;
-    case THERMAL_FORMULA_NONE:
-	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST] = 0;
-	break;
-    }
-	Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST] = 0;
-
-    switch (SCOPE_OF_FORMULA(Shm->Proc.voltageFormula)) {
-    case FORMULA_SCOPE_NONE:
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
-	break;
-    case FORMULA_SCOPE_SMT:
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
-	break;
-    case FORMULA_SCOPE_CORE:
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
-	} else {
-		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
-	}
-	break;
-    case FORMULA_SCOPE_PKG:
-	if (cpu == Proc->Service.Core) {
-		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 3.3;
-	} else {
-		Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST] = 0;
-	}
-	break;
-    }
-	Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST] = 0;
-
-    switch (SCOPE_OF_FORMULA(Shm->Proc.powerFormula)) {
-    case FORMULA_SCOPE_NONE:
-	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
-	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
-	break;
-    case FORMULA_SCOPE_SMT:
-	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
-	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
-	break;
-    case FORMULA_SCOPE_CORE:
-	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
-		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
-	} else {
-		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
-		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
-	}
-	break;
-    case FORMULA_SCOPE_PKG:
-	if (cpu == Proc->Service.Core) {
-		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 999.99;
-		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 999.99;
-	} else {
-		Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST] = 0;
-		Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST] = 0;
-	}
-	break;
-    }
-	Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST] = 0;
-	Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST] = 0;
-}
-
 void SystemRegisters(SHM_STRUCT *Shm, CORE **Core, unsigned int cpu)
 {
 	Shm->Cpu[cpu].SystemRegister.RFLAGS = Core[cpu]->SystemRegister.RFLAGS;
@@ -4505,7 +4412,6 @@ REASON_CODE Core_Manager(REF *Ref)
 					Core_Cycle,
 					&Arg[cpu]);
 
-			InitThermal(Shm, Proc, Core, cpu);
 			PerCore_Update(Shm, Proc, Core, cpu);
 			Technology_Update(Shm, Proc);
 

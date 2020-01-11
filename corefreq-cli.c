@@ -51,7 +51,7 @@ struct {
 	._padding = 0
 };
 
-char ConfigFQN[1+4096] = {[0] = 0};
+char ConfigFQN[1+4095] = {[0] = 0};
 
 char *BuildConfigFQN(void)
 {
@@ -71,7 +71,7 @@ char *BuildConfigFQN(void)
 	} else {
 		dotted = "/";
 	}
-	snprintf(&ConfigFQN[1], 4096, "%s%scorefreq.cfg", dirPath, dotted);
+	snprintf(&ConfigFQN[1], 4095, "%s%scorefreq.cfg", dirPath, dotted);
 
 	ConfigFQN[0] = 1;
     }
@@ -2617,6 +2617,13 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 void Package(void)
 {
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 10) * MIN_WIDTH);
+  if (out != NULL)
+  {
+	unsigned int sdx, idx;
+
+	sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
+
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2629,7 +2636,8 @@ void Package(void)
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	printf( "\t\t" "Cycles" "\t\t" "State(%%)" "\n"	\
+	idx = sdx;
+	idx+= sprintf(&out[idx],
 		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC03" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC06" "\t" "%18llu" "\t" "%7.2f" "\n"	\
@@ -2648,12 +2656,17 @@ void Package(void)
 		PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 		PFlop->Delta.PTSC,
 		PFlop->Uncore.FC0);
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+	free(out);
+  }
 }
 
-void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
+unsigned int Core_Celsius(char *out, struct FLIP_FLOP *CFlop, unsigned int cpu)
 {
-	printf( "%03u %7.2f (%5.2f)"				\
+	return(sprintf(out,
+		"%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
 		cpu,
@@ -2668,12 +2681,13 @@ void Core_Celsius(struct FLIP_FLOP *CFlop, unsigned int cpu)
 		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST],
 		CFlop->Thermal.Temp,
 		CFlop->Thermal.Sensor,
-		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST] );
+		Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]));
 }
 
-void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
+unsigned int Core_Fahrenheit(char *out,struct FLIP_FLOP *CFlop,unsigned int cpu)
 {
-	printf( "%03u %7.2f (%5.2f)"				\
+	return(sprintf(out,
+		"%03u %7.2f (%5.2f)"				\
 		" %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"		\
 		"  %-3u/%3u:%-3u/%3u\n",
 		cpu,
@@ -2688,10 +2702,10 @@ void Core_Fahrenheit(struct FLIP_FLOP *CFlop, unsigned int cpu)
 		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]),
 		Cels2Fahr(CFlop->Thermal.Temp),
 		Cels2Fahr(CFlop->Thermal.Sensor),
-		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]) );
+		Cels2Fahr(Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST])));
 }
 
-void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
+unsigned int Pkg_Celsius(char *out, struct PKG_FLIP_FLOP *PFlop)
 {
 	struct FLIP_FLOP *SFlop = &Shm->Cpu[
 		Shm->Proc.Service.Core
@@ -2699,7 +2713,7 @@ void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
 
-	printf( "\n"							\
+	return(sprintf(out, "\n"					\
 		"%.*s" "Averages:"					\
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
@@ -2719,10 +2733,10 @@ void Pkg_Celsius(struct PKG_FLIP_FLOP *PFlop)
 		5, hSpace,
 		SFlop->Thermal.Param.Offset[0],
 		3, hSpace,
-		PFlop->Thermal.Temp );
+		PFlop->Thermal.Temp));
 }
 
-void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
+unsigned int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 {
 	struct FLIP_FLOP *SFlop = &Shm->Cpu[
 		Shm->Proc.Service.Core
@@ -2730,7 +2744,7 @@ void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 	];
 
-	printf( "\n"							\
+	return(sprintf(out, "\n"					\
 		"%.*s" "Averages:"					\
 		"%.*s" "Turbo  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 		"%.*s" "TjMax:" "%.*s" "Pkg:\n"				\
@@ -2750,18 +2764,26 @@ void Pkg_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 		5, hSpace,
 		SFlop->Thermal.Param.Offset[0],
 		3, hSpace,
-		Cels2Fahr(PFlop->Thermal.Temp) );
+		Cels2Fahr(PFlop->Thermal.Temp)));
 }
 
 void Counters(void)
 {
-	void (*Core_Temp)(struct FLIP_FLOP *, unsigned int) =		\
+	unsigned int (*Core_Temp)(char *, struct FLIP_FLOP *, unsigned int) = \
 		Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
 
-	void (*Pkg_Temp)(struct PKG_FLIP_FLOP *) =			\
+	unsigned int (*Pkg_Temp)(char *, struct PKG_FLIP_FLOP *) =	\
 		Setting.fahrCels ? Pkg_Fahrenheit : Pkg_Celsius;
 
-	unsigned int cpu = 0;
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 3) * MIN_WIDTH);
+  if (out != NULL)
+  {
+	unsigned int cpu, sdx, idx;
+
+	sdx=sprintf(out,"CPU Freq(MHz) Ratio  Turbo"			\
+			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
+			"  Min TMP:TS  Max\n");
+
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2773,31 +2795,47 @@ void Counters(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, SYNC);
 
-		printf( "CPU Freq(MHz) Ratio  Turbo"			\
-			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
-			"  Min TMP:TS  Max\n");
+	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *CFlop = \
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
+		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		Core_Temp(CFlop, cpu);
-	    else
-		printf("%03u        OFF\n", cpu);
-	  }
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+			idx += Core_Temp(&out[idx], CFlop, cpu);
+		} else {
+			idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
+		}
+	    }
 	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	Pkg_Temp(PFlop);
+	idx += Pkg_Temp(&out[idx], PFlop);
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+	free(out);
+  }
 }
 
 void Sensors(void)
 {
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 4) * MIN_WIDTH);
+	char *row = malloc(MIN_WIDTH + 16);
+  if (out && row)
+  {
 	enum PWR_DOMAIN pw;
-	unsigned int cpu = 0;
+	unsigned int cpu, sdx, ldx, idx;
+
+	sdx=sprintf(out,"CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
+			"    Accumulator       Energy(J)     Power(W)\n",
+			Setting.fahrCels ? 'F' : 'C' );
+
+	ldx=sprintf(row,"\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory" \
+			"\n" "Energy(J):",
+			14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
+
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2809,17 +2847,17 @@ void Sensors(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf( "CPU Freq(MHz) VID  Vcore  TMP(%c)"		\
-			"    Accumulator       Energy(J)     Power(W)\n",
-			Setting.fahrCels ? 'F' : 'C' );
-
+	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *CFlop = \
+	{
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	  {
+		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf( "%03u %7.2f %5d  %5.4f  %3u"			\
+	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+	    idx+=sprintf(&out[idx],
+			"%03u %7.2f %5d  %5.4f  %3u"			\
 			"  %018llu  %13.9f %13.9f\n",
 			cpu,
 			CFlop->Relative.Freq,
@@ -2829,31 +2867,47 @@ void Sensors(void)
 					 : CFlop->Thermal.Temp,
 			CFlop->Delta.Power.ACCU,
 			CFlop->State.Energy,
-			CFlop->State.Power );
-	    else
-		printf("%03u        OFF\n", cpu);
+			CFlop->State.Power);
+	   } else {
+		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
+	   }
 	  }
-
-	printf("\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory",
-		14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
-
-	printf("\n" "Energy(J):");
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		printf( "%.*s" "%13.9f", 2, hSpace,
-			Shm->Proc.State.Energy[pw].Current );
 	}
-	printf("\n" "Power(W) :");
+	memcpy(&out[idx], row, ldx);
+	idx += ldx;
+
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		printf( "%.*s" "%13.9f", 2, hSpace,
-			Shm->Proc.State.Power[pw].Current );
+		idx += sprintf(&out[idx], "%.*s" "%13.9f", 2, hSpace,
+				Shm->Proc.State.Energy[pw].Current);
 	}
-	printf("\n\n");
+	memcpy(&out[idx], "\n" "Power(W) :", 11);
+	idx += 11;
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+		idx += sprintf(&out[idx], "%.*s" "%13.9f", 2, hSpace,
+				Shm->Proc.State.Power[pw].Current);
+	}
+	out[idx++] = '\n'; out[idx++] = '\n';
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+  }
+  if (out != NULL) {
+	free(out);
+  }
+  if (row != NULL) {
+	free(row);
+  }
 }
 
 void Voltage(void)
 {
-	unsigned int cpu = 0;
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
+  if (out != NULL)
+  {
+	unsigned int cpu, sdx, idx;
+
+	sdx = sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
+
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2865,32 +2919,52 @@ void Voltage(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf( "CPU Freq(MHz) VID  Min     Vcore   Max\n");
-
+	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *CFlop = \
+	{
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	  {
+		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf( "%03u %7.2f %5d  %5.4f  %5.4f  %5.4f\n",
+	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+	    idx+=sprintf(&out[idx],
+			"%03u %7.2f %5d  %5.4f  %5.4f  %5.4f\n",
 			cpu,
 			CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
-			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST] );
-	    else
-		printf("%03u        OFF\n", cpu);
+			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST]);
+	   } else {
+		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
+	   }
 	  }
-	printf("\n");
+	}
+	out[idx++] = '\n';
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+	free(out);
+  }
 }
 
 void Power(void)
 {
-    enum PWR_DOMAIN pw;
-    unsigned int cpu = 0;
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 5) * MIN_WIDTH);
+	char *row = malloc(MIN_WIDTH + 8);
+  if (out && row)
+  {
+	enum PWR_DOMAIN pw;
+	unsigned int cpu, sdx, ldx, idx;
+
+	sdx=sprintf(out,"CPU Freq(MHz)" 				\
+			"    Accumulator      Min  Energy(J) Max"	\
+			"    Min  Power(W)  Max\n" );
+
+	ldx=sprintf(row,"\nEnergy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
+			12, hSpace, 15, hSpace, 14, hSpace);
+
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -2902,17 +2976,17 @@ void Power(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf( "CPU Freq(MHz)" 				\
-			"    Accumulator      Min  Energy(J) Max"	\
-			"    Min  Power(W)  Max\n" );
-
+	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
-	    struct FLIP_FLOP *CFlop = \
+	{
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+	  {
+		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-		printf( "%03u %7.2f"					\
+	   if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+	    idx+=sprintf(&out[idx],
+			"%03u %7.2f"					\
 			"  %018llu  %6.2f %6.2f %6.2f  %6.2f %6.2f %6.2f\n",
 			cpu,
 			CFlop->Relative.Freq,
@@ -2922,36 +2996,52 @@ void Power(void)
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST],
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
-			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST] );
-	    else
-		printf("%03u        OFF\n", cpu);
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]);
+	   } else {
+		idx += sprintf(&out[idx], "%03u        OFF\n", cpu);
+	   }
 	  }
-
-	printf( "\n" "Energy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
-		12, hSpace, 15, hSpace, 14, hSpace );
+	}
+	memcpy(&out[idx], row, ldx);
+	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		printf( "%.*s" "%6.2f%6.2f%6.2f",
+		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST],
 			Shm->Proc.State.Energy[pw].Current,
-			Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST] );
+			Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST]);
 	}
-	printf("\n" "Power(W)\n");
+	memcpy(&out[idx], "\n" "Power(W)\n", 11);
+	idx += 11;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		printf( "%.*s" "%6.2f%6.2f%6.2f",
+		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST],
 			Shm->Proc.State.Power[pw].Current,
-			Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST] );
+			Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST]);
 	}
-	printf("\n\n");
+	out[idx++] = '\n'; out[idx++] = '\n';
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+  }
+  if (out != NULL) {
+	free(out);
+  }
+  if (row != NULL) {
+	free(row);
+  }
 }
 
 void Instructions(void)
 {
-	unsigned int cpu = 0;
+	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
+  if (out != NULL)
+  {
+	unsigned int cpu, sdx, idx;
+
+	sdx = sprintf(out, "CPU     IPS            IPC            CPI\n");
 
     while (!BITVAL(Shutdown, SYNC)) {
 	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
@@ -2964,24 +3054,31 @@ void Instructions(void)
 
 	ClientFollowService(&localService, &Shm->Proc.Service, 0);
 
-		printf("CPU     IPS            IPC            CPI\n");
-
+	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
+	{
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, HW)) {
 		struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-			printf("%03u %12.6f/s %12.6f/c %12.6f/i\n",
-				cpu,
-				CFlop->State.IPS,
-				CFlop->State.IPC,
-				CFlop->State.CPI);
-		else
-			printf("%03u\n", cpu);
+		if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+			idx += sprintf(&out[idx],
+					"%03u %12.6f/s %12.6f/c %12.6f/i\n",
+					cpu,
+					CFlop->State.IPS,
+					CFlop->State.IPC,
+					CFlop->State.CPI);
+		} else {
+			idx += sprintf(&out[idx], "%03u\n", cpu);
+		}
 	    }
-		printf("\n");
+	}
+	out[idx++] = '\n';
+
+	fwrite(out, (size_t) idx, 1, stdout);
     }
+	free(out);
+  }
 }
 
 void Topology(Window *win, CELL_FUNC OutFunc)
