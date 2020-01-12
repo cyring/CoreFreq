@@ -1139,6 +1139,10 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
+	{ /* Clarksfield Processor Uncore Device 0, Function 0		*/
+      PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_CLARKSFIELD_NON_CORE),
+		.driver_data = (kernel_ulong_t) NHM_NON_CORE
+	},
 	{ /* Westmere/Clarkdale QuickPath Architecture Non-core Registers */
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
