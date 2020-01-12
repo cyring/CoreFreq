@@ -764,6 +764,14 @@ Stock *SearchStockById(unsigned long long id)
 	return (walker);
 }
 
+CUINT LazyCompBottomRow(Window *win)
+{
+    if ((win->dim > 0) && win->matrix.size.wth)
+	return ((win->dim / win->matrix.size.wth) - win->matrix.size.hth);
+    else
+	return (1);
+}
+
 void DestroyWindow(Window *win)
 {
     if (win != NULL) {
@@ -1038,13 +1046,12 @@ void ForEachCellPrint(Window *win, WinList *list)
 		(win->matrix.origin.col + win->lazyComp.rowLen - 2),
 		(win->matrix.origin.row + win->matrix.size.hth)) = 0x20;
 	/* Vertical Scrolling Bar					*/
-	if ((win->dim / win->matrix.size.wth > win->matrix.size.hth)
-		&& win->lazyComp.bottomRow)
+	if (win->dim / win->matrix.size.wth > win->matrix.size.hth)
 	{
 		CUINT vScrollbar = win->matrix.origin.row
 				 + (win->matrix.size.hth - 1)
 				 * win->matrix.scroll.vert
-				 / win->lazyComp.bottomRow;
+				 / LazyCompBottomRow(win);
 
 		ATTRIBUTE attrBar=GetFocus(list) == win ? MAKE_TITLE_FOCUS
 							: border;
@@ -1101,11 +1108,8 @@ void PrintLCD(	Layer *layer, CUINT col, CUINT row,
 
 void LazyCompWindow(Window *win)
 {
-	win->lazyComp.bottomRow = (win->dim / win->matrix.size.wth)
-				- win->matrix.size.hth;
-
-	if (win->matrix.scroll.vert > win->lazyComp.bottomRow) {
-		win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	if (win->matrix.scroll.vert > LazyCompBottomRow(win)) {
+		win->matrix.scroll.vert = LazyCompBottomRow(win);
 	}
 	if (win->matrix.select.row > win->matrix.size.hth - 1) {
 		win->matrix.select.row = win->matrix.size.hth - 1;
@@ -1149,7 +1153,7 @@ void MotionDown_Win(Window *win)
 {
 	if (win->matrix.select.row < win->matrix.size.hth - 1) {
 		win->matrix.select.row++;
-	} else if (win->matrix.scroll.vert < win->lazyComp.bottomRow) {
+	} else if (win->matrix.scroll.vert < LazyCompBottomRow(win)) {
 		win->matrix.scroll.vert++;
 	}
 }
@@ -1171,7 +1175,7 @@ void MotionTop_Win(Window *win)
 
 void MotionBottom_Win(Window *win)
 {
-	win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	win->matrix.scroll.vert = LazyCompBottomRow(win);
 	win->matrix.select.row = win->matrix.size.hth - 1;
 }
 
@@ -1186,14 +1190,12 @@ void MotionPgUp_Win(Window *win)
 
 void MotionPgDw_Win(Window *win)
 {
-	const CUINT lastScrolledRow = win->lazyComp.bottomRow
-				    - win->matrix.size.hth;
-
-	if(win->matrix.scroll.vert < lastScrolledRow) {
-		win->matrix.scroll.vert += win->matrix.size.hth;
-	} else {
-		win->matrix.scroll.vert = win->lazyComp.bottomRow;
-	}
+    if(win->matrix.scroll.vert + win->matrix.size.hth < LazyCompBottomRow(win))
+    {
+	win->matrix.scroll.vert += win->matrix.size.hth;
+    } else {
+	win->matrix.scroll.vert = LazyCompBottomRow(win);
+    }
 }
 
 void MotionOriginLeft_Win(Window *win)
@@ -1481,7 +1483,7 @@ int MotionEnter_Cell(SCANKEY *scan, Window *win)
 
 void MotionEnd_Cell(Window *win)
 {
-	win->matrix.scroll.vert = win->lazyComp.bottomRow;
+	win->matrix.scroll.vert = LazyCompBottomRow(win);
 	win->matrix.select.row  = win->matrix.size.hth - 1;
 }
 

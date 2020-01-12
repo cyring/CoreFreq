@@ -472,7 +472,6 @@ typedef struct _Win {
 	struct {
 		size_t	rowLen,
 			titleLen;
-		CUINT	bottomRow;
 	} lazyComp;
 
 	WINDOW_FLAG	flag;
@@ -619,8 +618,6 @@ extern void FreeAllTCells(Window *win) ;
   if (item != NULL)							\
   {									\
 	win->dim++;							\
-	win->lazyComp.bottomRow = (win->dim / win->matrix.size.wth)	\
-				- win->matrix.size.hth ;		\
 									\
 	win->grid = realloc(win->grid, sizeof(TGrid) * win->dim);	\
     if (win->grid != NULL)						\

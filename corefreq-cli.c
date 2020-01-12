@@ -4305,7 +4305,7 @@ Window *CreateSysInfo(unsigned long long id)
 		{
 		winOrigin.row = TOP_HEADER_ROW + 1;
 		winOrigin.col = 4;
-		matrixSize.hth = 39;
+		matrixSize.hth = 24;
 		winWidth = 72;
 		SysInfoFunc = SysInfoFeatures;
 		title = RSC(FEATURES_TITLE).CODE();
@@ -4341,7 +4341,8 @@ Window *CreateSysInfo(unsigned long long id)
 		break;
 	case SCANKEY_u:
 		{
-		winOrigin.row = TOP_HEADER_ROW + 1;
+		winOrigin.row = 2;
+		matrixSize.hth = 66;
 		winWidth = 74;
 		SysInfoFunc = SysInfoCPUID;
 		title = RSC(CPUID_TITLE).CODE();
