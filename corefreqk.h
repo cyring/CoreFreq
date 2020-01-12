@@ -1564,7 +1564,18 @@ static MICRO_ARCH Arch_Atom_Sofia[] = {{"Atom/Sofia"}, {NULL}};
 static MICRO_ARCH Arch_Atom_Merrifield[] = {{"Atom/Merrifield"}, {NULL}};
 static MICRO_ARCH Arch_Atom_Moorefield[] = {{"Atom/Moorefield"}, {NULL}};
 static MICRO_ARCH Arch_Nehalem_Bloomfield[] = {{"Nehalem/Bloomfield"}, {NULL}};
-static MICRO_ARCH Arch_Nehalem_Lynnfield[] = {{"Nehalem/Lynnfield"}, {NULL}};
+
+enum {
+	CN_LYNNFIELD,
+	CN_CLARKSFIELD
+};
+
+static MICRO_ARCH Arch_Nehalem_Lynnfield[] = {
+	[CN_LYNNFIELD]		= {"Nehalem/Lynnfield"},
+	[CN_CLARKSFIELD]	= {"Nehalem/Clarksfield"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Nehalem_MB[] = {{"Nehalem/Mobile"}, {NULL}};
 static MICRO_ARCH Arch_Nehalem_EX[] = {{"Nehalem/eXtreme.EP"}, {NULL}};
 static MICRO_ARCH Arch_Westmere[] = {{"Westmere"}, {NULL}};
@@ -1890,6 +1901,32 @@ static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{NULL}
+};
+
+static PROCESSOR_SPECIFIC Nehalem_Lynnfield_Specific[] = {
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7 CPU Q",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CLARKSFIELD,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7 CPU X",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CLARKSFIELD,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
 	},
 	{NULL}
 };
@@ -4355,7 +4392,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Nehalem,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = Nehalem_Lynnfield_Specific,
 	.SystemDriver = &NHM_Driver,
 	.Architecture = Arch_Nehalem_Lynnfield
 	},
