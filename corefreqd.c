@@ -257,7 +257,6 @@ void Core_ComputePowerLimits(CPU_STRUCT *Cpu, double Energy, double Power)
 }
 
 static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
-						CORE *Core,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
@@ -270,12 +269,9 @@ static inline void Core_ComputePower_None(	struct FLIP_FLOP *CFlip,
 #define Core_ComputePower_AMD		Core_ComputePower_None
 
 static inline void Core_ComputePower_AMD_17h(	struct FLIP_FLOP *CFlip,
-						CORE *Core,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
 {
-	CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
-
 	CFlip->State.Energy	= (double) CFlip->Delta.Power.ACCU
 				* Shm->Proc.Power.Unit.Joules;
 
@@ -325,7 +321,6 @@ static void *Core_Cycle(void *arg)
 						unsigned int );
 
 	void (*Core_ComputePowerFormula)(	struct FLIP_FLOP*,
-						CORE*,
 						SHM_STRUCT*,
 						unsigned int );
 
@@ -429,15 +424,6 @@ static void *Core_Cycle(void *arg)
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
-	dTSC	= (double) CFlip->Delta.TSC;
-	dUCC	= (double) CFlip->Delta.C0.UCC;
-	dURC	= (double) CFlip->Delta.C0.URC;
-	dINST	= (double) CFlip->Delta.INST;
-	dC3	= (double) CFlip->Delta.C3;
-	dC6	= (double) CFlip->Delta.C6;
-	dC7	= (double) CFlip->Delta.C7;
-	dC1	= (double) CFlip->Delta.C1;
-
 	/* Refresh this Base Clock.					*/
 	CFlip->Clock.Q  = Core->Clock.Q;
 	CFlip->Clock.R  = Core->Clock.R;
@@ -452,6 +438,15 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C7 	= Core->Delta.C7;
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1 	= Core->Delta.C1;
+
+	dTSC	= (double) CFlip->Delta.TSC;
+	dUCC	= (double) CFlip->Delta.C0.UCC;
+	dURC	= (double) CFlip->Delta.C0.URC;
+	dINST	= (double) CFlip->Delta.INST;
+	dC3	= (double) CFlip->Delta.C3;
+	dC6	= (double) CFlip->Delta.C6;
+	dC7	= (double) CFlip->Delta.C7;
+	dC1	= (double) CFlip->Delta.C1;
 
 	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = dINST / dTSC;
@@ -503,7 +498,9 @@ static void *Core_Cycle(void *arg)
 	Core_ComputeVoltageFormula(CFlip, Shm, cpu);
 
 	/* Per Core, evaluate the Power properties.			*/
-	Core_ComputePowerFormula(CFlip, Core, Shm, cpu);
+	CFlip->Delta.Power.ACCU = Core->Delta.Power.ACCU;
+
+	Core_ComputePowerFormula(CFlip, Shm, cpu);
 
 	/* Copy the Interrupts counters.				*/
 	CFlip->Counter.SMI = Core->Interrupt.SMI;
