@@ -3097,6 +3097,9 @@ static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
 
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 {
+	pci_read_config_dword(dev, 0xe4, &Proc->Uncore.Bus.SNB_Cap.value);
+	pci_read_config_dword(dev, 0xe8, &Proc->Uncore.Bus.IVB_Cap.value);
+
 	return (Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC));
 }
 

@@ -3130,19 +3130,25 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		SET_CHIPSET(IC_PANTHERPOINT_M);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA:    /* HSW & BDW Desktop */
+	case PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0:/* HSW Mobile M/H	*/
+	case PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0:/* HSW Mobile U/Y	*/
 		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT_M);
 		break;
 	case PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0:   /* Haswell		*/
+		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_LYNXPOINT);
 		break;
 	case PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0: /* Broadwell/Y/U Core m */
+		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WILDCATPOINT_M);
 		break;
+	case PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0:/* BDW/Desktop	*/
 	case PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0:/* Broadwell/H	*/
+		IVB_CAP(Shm, Proc, Core);
 		HSW_IMC(Shm, Proc);
 		SET_CHIPSET(IC_WELLSBURG);
 		break;

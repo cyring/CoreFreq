@@ -1314,6 +1314,14 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
+	{	/* Mobile M/H: Host Agent=0x0c04			*/
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0),
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+	{	/* Mobile U/Y: Host Agent=0x0a04			*/
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0),
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
 	{0, }
 };
 
@@ -1322,6 +1330,10 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 static struct pci_device_id PCI_Broadwell_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0),
+		.driver_data = (kernel_ulong_t) HSW_IMC
+	},
+	{
+	PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
 	{
