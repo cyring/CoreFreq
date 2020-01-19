@@ -2693,20 +2693,26 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 
 void Query_HSW_IMC(void __iomem *mchmap)
 {	/*Source: Desktop 4th & 5th Generation Intel® Core™ Processor Family.*/
-	unsigned short cha;
+	unsigned short cha, dimmCount[2];
 
 	Proc->Uncore.CtrlCount = 1;
 
 	Proc->Uncore.MC[0].SNB.MAD0.value = readl(mchmap + 0x5004);
 	Proc->Uncore.MC[0].SNB.MAD1.value = readl(mchmap + 0x5008);
 
-	Proc->Uncore.MC[0].ChannelCount =
-		  ((Proc->Uncore.MC[0].SNB.MAD0.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].SNB.MAD0.Dimm_B_Size != 0))
-		+ ((Proc->Uncore.MC[0].SNB.MAD1.Dimm_A_Size != 0)
-		|| (Proc->Uncore.MC[0].SNB.MAD1.Dimm_B_Size != 0));
+	Proc->Uncore.MC[0].ChannelCount = 0;
 
-	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++) {
+	dimmCount[0] = (Proc->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
+		     + (Proc->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1] = (Proc->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
+		     + (Proc->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+
+	for (cha = 0; cha < 2; cha++)
+		Proc->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
+
+	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++)
+	{
+/*TODO( CleanUp: What is the channel #1 offset of Haswell registers ? )
 		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
 					readl(mchmap + 0x4c04 + 0x400 * cha);
 
@@ -2721,9 +2727,25 @@ void Query_HSW_IMC(void __iomem *mchmap)
 
 		Proc->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
 					readl(mchmap + 0x4e98 + 0x400 * cha);
+*/
+		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
+					readl(mchmap + 0x4c04);
+
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_A.value =
+					readl(mchmap + 0x4c08);
+
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_B.value =
+					readl(mchmap + 0x4c0c);
+
+		Proc->Uncore.MC[0].Channel[cha].HSW.Rank.value =
+					readl(mchmap + 0x4c14);
+
+		Proc->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
+					readl(mchmap + 0x4e98);
 	}
-	/* DIMM A & DIMM B */
-	Proc->Uncore.MC[0].SlotCount = 2;
+	/* Is Dual DIMM Per Channel Disable ? */
+	Proc->Uncore.MC[0].SlotCount = (Proc->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
+					1 : Proc->Uncore.MC[0].ChannelCount;
 
 	Query_Turbo_TDP_Config(mchmap);
 }
@@ -6890,8 +6912,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 			PKG_Counters_Nehalem(Core, 1);
 
 #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-			outb_p(HWM_W83627_CPUVCORE, HWM_W83627_INDEX_PORT);
-			Core->PowerThermal.VID = inb_p(HWM_W83627_DATA_PORT);
+			RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
+				HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
 #endif
 			Delta_PC03(Proc);
 

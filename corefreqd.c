@@ -2429,11 +2429,11 @@ void IVB_CAP(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 	case 0b000:
 		switch (Proc->ArchID) {
 		case IvyBridge:
+		case Haswell_ULT:
 			Shm->Uncore.CtrlSpeed = 2933;
 			break;
 		case Haswell_DT:
 		case Haswell_EP:
-		case Haswell_ULT:
 		case Haswell_ULX:
 			Shm->Uncore.CtrlSpeed = 2667;
 			break;
@@ -2465,6 +2465,16 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
     for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
     {
+      unsigned short dimmSize[2][2] = {
+	{
+		Proc->Uncore.MC[mc].SNB.MAD0.Dimm_A_Size,
+		Proc->Uncore.MC[mc].SNB.MAD0.Dimm_B_Size
+	}, {
+		Proc->Uncore.MC[mc].SNB.MAD1.Dimm_A_Size,
+		Proc->Uncore.MC[mc].SNB.MAD1.Dimm_B_Size
+	}
+      };
+
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
@@ -2474,7 +2484,7 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Rank.tCWL;
-/* TODO
+/*TODO(Not Found)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
@@ -2543,24 +2553,47 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
 		break;
 	}
-/* TODO */
+
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
-		unsigned long long DIMM_Size;
-/* TODO(Geometry):Hardware missing! */
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
+		unsigned int width, DIMM_Banks;
 
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
+	    if (slot == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SNB.MAD0.DANOR;
+
+		width = Proc->Uncore.MC[mc].SNB.MAD0.DAW;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SNB.MAD0.DBNOR;
+
+		width = Proc->Uncore.MC[mc].SNB.MAD0.DBW;
+	    }
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks++;
+
+	    if (width == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 14;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 15;
+	    }
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size =
+						dimmSize[cha][slot] * 256;
+
+		DIMM_Banks = 8 * dimmSize[cha][slot] * 1024 * 1024;
+
+		DIMM_Banks = DIMM_Banks
+			/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			*  Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Banks;
 	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = (cha == 0) ?
+					Proc->Uncore.MC[mc].SNB.MAD0.ECC
+				:	Proc->Uncore.MC[mc].SNB.MAD1.ECC;
       }
     }
 }

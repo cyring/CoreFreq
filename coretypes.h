@@ -1303,22 +1303,110 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154
 	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
 #endif
+/* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_HOST_BRIDGE	0x3c00
+#endif
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_QPI_LINK0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_QPI_LINK0	0x3c80
+#endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CPGC 0x3ca8
+#endif
+/*TODO( Nehalem/Xeon E7 - CPGC: Device=?? - Function=? )
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CPGC 0x0
+#endif									*/
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*	Controller #0: Device=16 - Function=0,1,2,3			*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH0 0x3cb0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH1 0x3cb1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH2 0x3cb2
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH3 0x3cb3
+#endif
+/*	Controller #1: Device=16 - Function=4,5,6,7			*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH0 0x3cb4
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH1 0x3cb5
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH2 0x3cb6
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH3 0x3cb7
+#endif
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5,6	*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH0 0x3caa
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH1 0x3cab
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH2 0x3cac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH3 0x3cad
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH4
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH4 0x3cae
+#endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*TODO( Nehalem/Xeon E7 - TAD Controller #1: Device=?? - Function=? )
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH3 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH4
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH4 0x0
+#endif									*/
+/*	Power Control Unit						*/
+/*TODO( PCU: Device=10 - Function=3 )					*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_CAPABILITY
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_CAPABILITY	0x3cd0
+#endif
 /* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
 #endif
-/*	QPIMISCSTAT							*/
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0	0x0e80
 #endif
 /*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
 #endif
+/*	Xeon E7 - CPGC: Device=29 - Function=0				*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC 0x0e68
 #endif
 /*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*	Controller #0: Device=16 - Function=0,1,2,3			*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0 0x0eb0
 #endif
@@ -1331,6 +1419,7 @@ typedef struct	/* BSP CPUID features.					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3 0x0eb3
 #endif
+/*	Controller #1: Device=16 - Function=4,5,6,7			*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0 0x0eb4
 #endif
@@ -1344,6 +1433,7 @@ typedef struct	/* BSP CPUID features.					*/
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3 0x0eb7
 #endif
 /*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5	*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0 0x0eaa
 #endif
@@ -1357,6 +1447,7 @@ typedef struct	/* BSP CPUID features.					*/
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3 0x0ead
 #endif
 /*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*	Xeon E7 - TAD Controller #1: Device=29 - Function=2,3,4,5	*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0 0x0e6a
 #endif
@@ -1370,8 +1461,87 @@ typedef struct	/* BSP CPUID features.					*/
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3 0x0e6d
 #endif
 /*	Power Control Unit						*/
+/*	PCU: Device=10 - Function=3					*/
 #ifndef PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY
 	#define PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY	0x0ec3
+#endif
+/* Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_HOST_BRIDGE	0x2f00
+#endif
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_QPI_LINK0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_QPI_LINK0	0x2f80
+#endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=19 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CPGC 0x2fa8
+#endif
+/*	Xeon E7 - CPGC: Device=22 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CPGC 0x2f68
+#endif
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*TODO( Controller #0: Device=?? - Function=0,1,2,3 )
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH3 0x0
+#endif									*/
+/*TODO( Controller #1: Device=?? - Function=4,5,6,7 )
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH3 0x0
+#endif									*/
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=19 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH0 0x2faa
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH1 0x2fab
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH2 0x2fac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH3 0x2fad
+#endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*	Xeon E7 - TAD Controller #1: Device=22 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH0 0x2f6a
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH1 0x2f6b
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH2 0x2f6c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH3 0x2f6d
+#endif
+/*	Power Control Unit						*/
+/*	PCU: Device=30 - Function=3					*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_CAPABILITY
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_CAPABILITY	0x2fc0
 #endif
 /* Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	*/
 #ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0

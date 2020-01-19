@@ -487,6 +487,24 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
+#define RDSIO(_data, _reg, _index_port, _data_port)			\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movw	%1,	%%ax"	"\n\t"				\
+		"movw	%2,	%%dx"	"\n\t"				\
+		"outw	%%ax,	%%dx"	"\n\t"				\
+		"movw	%3,	%%dx"	"\n\t"				\
+		"inb	%%dx,	%%al"	"\n\t"				\
+		"movb	%%al,	%0"					\
+		: "=m"	(_data) 					\
+		: "i"	(_reg) ,					\
+		  "i"	(_index_port),					\
+		  "i"	(_data_port)					\
+		: "%ax", "%dx", "memory"				\
+	);								\
+})
+
 #define StrCopy(_dest, _src, _max)					\
 ({									\
 	size_t _min = KMIN((_max - 1), strlen(_src));			\

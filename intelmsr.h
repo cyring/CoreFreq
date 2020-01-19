@@ -1909,7 +1909,7 @@ typedef union
 		ReservedBits1	:  4-3,
 		Slow_Mode	:  5-4,
 		ReservedBits2	: 32-5;
-	} IVB_EP;
+	} IVB_EP; /*TODO( was first defined in SNB_EP as QPIMISCSTAT )	*/
 } QPI_FREQUENCY;
 
 
