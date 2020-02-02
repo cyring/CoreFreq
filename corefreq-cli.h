@@ -267,11 +267,12 @@ enum VIEW {
 	V_PACKAGE,
 	V_TASKS,
 	V_INTR,
+	V_SENSORS,
 	V_VOLTAGE,
-	V_SLICE
+	V_ENERGY,
+	V_SLICE,
+	VIEW_SIZE
 };
-
-#define VIEW_SIZE	(1 + V_SLICE)
 
 typedef void (*DISPOSAL_FUNC)(Layer*);
 

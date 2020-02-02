@@ -112,25 +112,33 @@
 	'O','F','F',' ',']',' ' 					\
 }
 
-#define RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_EN				\
-	"--- Freq(MHz) - VID - Vcore -- TMP( ) ------ Accumulator ---"	\
-	"--- Energy(J) ----------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"--------------------"
-
-#define RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_EN				\
-	"--- Freq(MHz) - VID - Vcore -- TMP( ) ------ Accumulator ---"	\
-	"---- Power(W) ----------------------------------------------"	\
+#define RSC_LAYOUT_RULER_SENSORS_CODE_EN				\
+	"--- Freq(MHz) --- Vcore --- TMP( ) --- Energy(J) --- Power(W"	\
+	") ----------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
 
 #define RSC_LAYOUT_RULER_POWER_CODE_EN					\
-	"-- $ -- RAM:   .     -- Uncore:   .     -- Package:   .     "	\
-	"-- Cores:   .     ------------------------------------------"	\
+	"---- RAM:   .     -- Uncore:   .     -- Package:   .     -- "	\
+	"Cores:   .    ( ) ------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define RSC_LAYOUT_RULER_VOLTAGE_CODE_EN				\
+	"--- Freq(MHz) - VID --- Min ---- Vcore -- Max --------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define RSC_LAYOUT_RULER_ENERGY_CODE_EN 				\
+	"--- Freq(MHz) -- Accumulator --- Min - Energy(J) - Max -- Mi"	\
+	"n - Power(W) - Max -----------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -424,7 +432,9 @@
 #define RSC_MENU_ITEM_PKG_CYCLE_CODE_EN 	" Package cycles     [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_EN 	" Tasks Monitoring   [x] "
 #define RSC_MENU_ITEM_SYS_INTER_CODE_EN 	" System Interrupts  [q] "
-#define RSC_MENU_ITEM_POW_VOLT_CODE_EN		" Power & Voltage    [V] "
+#define RSC_MENU_ITEM_SENSORS_CODE_EN		" Sensors            [S] "
+#define RSC_MENU_ITEM_VOLTAGE_CODE_EN		"   Voltage          [V] "
+#define RSC_MENU_ITEM_POWER_CODE_EN		"   Power            [W] "
 #define RSC_MENU_ITEM_SLICE_CTR_CODE_EN 	" Slice counters     [T] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_EN 	" Processor          [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_EN		" Topology           [m] "
@@ -487,12 +497,13 @@
 #define RSC_ADV_HELP_ITEM_6_CODE_EN	" r              Reverse tasks sorting "
 #define RSC_ADV_HELP_ITEM_7_CODE_EN	" v          Show | Hide Kernel values "
 #define RSC_ADV_HELP_ITEM_8_CODE_EN	" Any view:                            "
-#define RSC_ADV_HELP_ITEM_9_CODE_EN	" .             Top frequency or Usage "
-#define RSC_ADV_HELP_ITEM_10_CODE_EN	" {             Start CoreFreq Machine "
-#define RSC_ADV_HELP_ITEM_11_CODE_EN	" }              Stop CoreFreq Machine "
-#define RSC_ADV_HELP_ITEM_12_CODE_EN	" F10            Stop tools processing "
-#define RSC_ADV_HELP_ITEM_13_CODE_EN	"  Up  PgUp                     Scroll "
-#define RSC_ADV_HELP_ITEM_14_CODE_EN	" Down PgDw                       CPU  "
+#define RSC_ADV_HELP_ITEM_9_CODE_EN	" $            Energy in Joule or Watt "
+#define RSC_ADV_HELP_ITEM_10_CODE_EN	" .             Top frequency or Usage "
+#define RSC_ADV_HELP_ITEM_11_CODE_EN	" {             Start CoreFreq Machine "
+#define RSC_ADV_HELP_ITEM_12_CODE_EN	" }              Stop CoreFreq Machine "
+#define RSC_ADV_HELP_ITEM_13_CODE_EN	" F10            Stop tools processing "
+#define RSC_ADV_HELP_ITEM_14_CODE_EN	"  Up  PgUp                     Scroll "
+#define RSC_ADV_HELP_ITEM_15_CODE_EN	" Down PgDw                       CPU  "
 #define RSC_ADV_HELP_TERMINAL_CODE_EN	" Terminal:                            "
 #define RSC_ADV_HELP_PRT_SCR_CODE_EN	" [Ctrl]+[p]                      Copy "
 #define RSC_ADV_HELP_REC_SCR_CODE_EN	" [Alt]+[p]                     Record "

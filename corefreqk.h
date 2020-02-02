@@ -487,6 +487,11 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
+/* Source: Winbond W83627 datasheet					*/
+#define HWM_W83627_INDEX_PORT	0x295
+#define HWM_W83627_DATA_PORT	0x296
+#define HWM_W83627_CPUVCORE	0x20
+
 #define RDSIO(_data, _reg, _index_port, _data_port)			\
 ({									\
 	__asm__ volatile						\

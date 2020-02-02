@@ -3693,7 +3693,7 @@ void ForEachCellPrint_Menu(Window *win, void *plist)
 Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(	wLayer, id,
-					3, 12, 3, 0,
+					3, 13, 3, 0,
 					WINFLAG_NO_STOCK|WINFLAG_NO_SCALE );
     if (wMenu != NULL)
     {
@@ -3786,7 +3786,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_POW_VOLT).CODE(),
+	StoreTCell(wMenu, SCANKEY_SHIFT_s, RSC(MENU_ITEM_SENSORS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
@@ -3795,7 +3795,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
 					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
+	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_VOLTAGE).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
@@ -3804,7 +3804,17 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					: RSC(CREATE_MENU_DISABLE).ATTR());
 /* Row 11 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+/* Row 12 */
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+
+	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
+					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
 /* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
@@ -4169,20 +4179,21 @@ Window *CreateAdvHelp(unsigned long long id)
 	{1, RSC(ADV_HELP_ITEM_7).CODE(),	{SCANKEY_v}	},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(ADV_HELP_ITEM_8).CODE(),	{SCANKEY_NULL}	},
-	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOT}	},
+	{1, RSC(ADV_HELP_ITEM_9).CODE(),	{SCANKEY_DOLLAR}},
+	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_DOT}	},
 	{1, RSC(ADV_HELP_ITEM_FAHR_CELS).CODE(),{SCANKEY_SHIFT_f}},
 	{1, RSC(ADV_HELP_ITEM_PROC_EVENT).CODE(),{SCANKEY_SHIFT_h}},
 	{1, RSC(ADV_HELP_ITEM_SECRET).CODE(),	{SCANKEY_SHIFT_y}},
-	{1, RSC(ADV_HELP_ITEM_10).CODE(),	{SCANKEY_OPEN_BRACE}},
-	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_CLOSE_BRACE}},
-	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_F10}	},
+	{1, RSC(ADV_HELP_ITEM_11).CODE(),	{SCANKEY_OPEN_BRACE}},
+	{1, RSC(ADV_HELP_ITEM_12).CODE(),	{SCANKEY_CLOSE_BRACE}},
+	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_F10}	},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(ADV_HELP_ITEM_TERMINAL).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_PRT_SCR).CODE(),	{SCANKEY_CTRL_p}},
 	{1, RSC(ADV_HELP_ITEM_REC_SCR).CODE(),	{SCANKEY_ALT_p} },
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	},
-	{1, RSC(ADV_HELP_ITEM_13).CODE(),	{SCANKEY_NULL}	},
 	{1, RSC(ADV_HELP_ITEM_14).CODE(),	{SCANKEY_NULL}	},
+	{1, RSC(ADV_HELP_ITEM_15).CODE(),	{SCANKEY_NULL}	},
 	{0, RSC(CREATE_ADV_HELP_COND0).CODE(),	{SCANKEY_NULL}	}
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
@@ -5183,7 +5194,9 @@ void TrapScreenSize(int caught)
 		case V_CSTATES:
 		case V_TASKS:
 		case V_INTR:
+		case V_SENSORS:
 		case V_VOLTAGE:
+		case V_ENERGY:
 		case V_SLICE:
 	/*10*/		draw.Area.MinHeight = 2 + TOP_HEADER_ROW
 						+ TOP_SEPARATOR
@@ -5769,7 +5782,7 @@ int Shortcut(SCANKEY *scan)
     case SCANKEY_SHIFT_f:
 	Setting.fahrCels = !Setting.fahrCels;
 	if((draw.Disposal == D_DASHBOARD)
-	||((draw.Disposal == D_MAINVIEW) && (draw.View == V_VOLTAGE)))
+	||((draw.Disposal == D_MAINVIEW) && (draw.View == V_SENSORS)))
 		draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_y:
@@ -5900,10 +5913,26 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+    case SCANKEY_SHIFT_s:
+    {
+	draw.Disposal = D_MAINVIEW;
+	draw.View = V_SENSORS;
+	draw.Size.height = 0;
+	TrapScreenSize(SIGWINCH);
+    }
+    break;
     case SCANKEY_SHIFT_v:
     {
 	draw.Disposal = D_MAINVIEW;
 	draw.View = V_VOLTAGE;
+	draw.Size.height = 0;
+	TrapScreenSize(SIGWINCH);
+    }
+    break;
+    case SCANKEY_SHIFT_w:
+    {
+	draw.Disposal = D_MAINVIEW;
+	draw.View = V_ENERGY;
 	draw.Size.height = 0;
 	TrapScreenSize(SIGWINCH);
     }
@@ -8059,21 +8088,14 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	return (row);
 }
 
-CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULER_VOLTAGE_COND0,draw.Size.width,0,row,hVolt0);
-	LayerDeclare(LAYOUT_RULER_VOLTAGE_COND1,draw.Size.width,0,row,hVolt1);
-	LAYER_DECL_ST *hVolt[2] = {&hVolt0, &hVolt1};
+	LayerDeclare(LAYOUT_RULER_SENSORS, draw.Size.width, 0, row, hSensors);
 
-	LayerCopyAt(	layer,
-			hVolt[Setting.jouleWatt]->origin.col,
-			hVolt[Setting.jouleWatt]->origin.row,
-			hVolt[Setting.jouleWatt]->length,
-			hVolt[Setting.jouleWatt]->attr,
-			hVolt[Setting.jouleWatt]->code );
+	LayerCopyAt(	layer, hSensors.origin.col, hSensors.origin.row,
+			hSensors.length, hSensors.attr, hSensors.code );
 
-	LayerAt(layer, code, 35, hVolt[Setting.jouleWatt]->origin.row) = \
-						Setting.fahrCels ? 'F' : 'C';
+	LayerAt(layer,code,32,hSensors.origin.row)=Setting.fahrCels ? 'F':'C';
 
 	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
 			0, (row + draw.Area.MaxRows + 1),
@@ -8081,6 +8103,47 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
 			hPwr0.length, hPwr0.attr, hPwr0.code );
+
+	LayerAt(layer,code,75,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
+
+	row += draw.Area.MaxRows + 2;
+	return (row);
+}
+
+CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	LayerDeclare(LAYOUT_RULER_VOLTAGE, draw.Size.width, 0, row, hVolt);
+
+	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
+			hVolt.length, hVolt.attr, hVolt.code );
+
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
+			draw.Size.width, hLine,
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	row += draw.Area.MaxRows + 2;
+	return (row);
+}
+
+CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
+
+	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
+			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
+
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
+			draw.Size.width, hLine,
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1),
+			hPwr1 );
+
+	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
+			hPwr1.length, hPwr1.attr, hPwr1.code );
+
+	LayerAt(layer,code,75,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -8635,771 +8698,759 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	return (0);
 }
 
-size_t Draw_Monitor_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+(7+3+6+4)+(3)+(3+4+18+13)+1,
-			"%7.2f\x20"					\
-			"%.*s",
+	return (snprintf(buffer, 80+1,
+			"%7.2f%.*s",
 			CFlop->Relative.Freq,
-			(7+3+6+4)+(3)+(3+4+18+13), hSpace) );
+			69, hSpace) );
 }
 
-size_t Draw_Monitor_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+(7+3+6+4)+(3)+(3)+20+(4)+14+1,
-			"%7.2f\x20"					\
-			"%.*s"						\
-			"%18llu%.*s%13.9f",
+	return (snprintf(buffer, 80+1,
+			"%7.2f%.*s"		\
+			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
+			"%6.4f%.*s",
 			CFlop->Relative.Freq,
-			(7+3+6+4)+(3)+(3), hSpace,
-			CFlop->Delta.Power.ACCU,
-			(4), hSpace,
-			Setting.jouleWatt ? CFlop->State.Energy
-					  : CFlop->State.Power) );
+			28, hSpace,
+			CFlop->State.Energy,
+			CFlop->State.Power,
+			21, hSpace) );
 }
 
-size_t Draw_Monitor_V0_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+(7+3+6+4)+10+(3+4+18+13)+1,
-			"%7.2f\x20"					\
-			"%.*s%3u%.*s",
+	return (snprintf(buffer, 80+1,
+			"%7.2f%.*s"					\
+			"%3u%.*s",
 			CFlop->Relative.Freq,
-			(7+3+6+4), hSpace,
+			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			(3+4+18+13), hSpace) );
+			49, hSpace) );
 }
 
-size_t Draw_Monitor_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+(7+3+6+4)+10+(3)+20+(4)+14+1,
-			"%7.2f\x20"					\
-			"%.*s%3u%.*s"					\
-			"%18llu%.*s%13.9f",
+	return (snprintf(buffer, 80+1,
+			"%7.2f%.*s"		\
+			"%3u\x20\x20\x20\x20\x20\x20\x20\x20"		\
+			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
+			"%6.4f%.*s",
 			CFlop->Relative.Freq,
-			(7+3+6+4), hSpace,
+			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			(3), hSpace,
-			CFlop->Delta.Power.ACCU,
-			(4), hSpace,
-			Setting.jouleWatt ? CFlop->State.Energy
-					  : CFlop->State.Power) );
+			CFlop->State.Energy,
+			CFlop->State.Power,
+			21, hSpace) );
 }
 
-size_t Draw_Monitor_V0_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V0_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V0_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V0_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V0_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+11+6+(4)+(3)+(3+4+18+13)+1,
-			"%7.2f\x20"					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s",
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
+			"%5.4f%.*s",
 			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(4)+(3)+(3+4+18+13), hSpace) );
+			56, hSpace) );
 }
 
-size_t Draw_Monitor_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+11+6+(4)+(3)+(3)+20+(4)+14+1,
-			"%7.2f\x20"					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s"						\
-			"%18llu%.*s%13.9f",
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
+			"%5.4f\x20\x20\x20\x20" 			\
+			"\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"	\
+			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
+			"%6.4f%.*s",
 			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(4)+(3)+(3), hSpace,
-			CFlop->Delta.Power.ACCU,
-			(4), hSpace,
-			Setting.jouleWatt ? CFlop->State.Energy
-					  : CFlop->State.Power) );
+			CFlop->State.Energy,
+			CFlop->State.Power,
+			21, hSpace) );
 }
 
-size_t Draw_Monitor_V1_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+11+6+(4)+10+(3+4+18+13)+1,
-			"%7.2f\x20"					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s%3u%.*s",
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
+			"%5.4f\x20\x20\x20\x20" 			\
+			"%3u%.*s",					\
 			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			(3+4+18+13), hSpace) );
+			49, hSpace) );
 }
 
-size_t Draw_Monitor_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 4+8+11+6+(4)+10+(3)+20+(4)+14+1,
-			"%7.2f\x20"					\
-			"%7d\x20\x20\x20%5.4f"				\
-			"%.*s%3u%.*s"					\
-			"%18llu%.*s%13.9f",
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
+			"%5.4f\x20\x20\x20\x20" 			\
+			"%3u\x20\x20\x20\x20\x20\x20\x20\x20"		\
+			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
+			"%6.4f%.*s",
 			CFlop->Relative.Freq,
-			CFlop->Voltage.VID,
 			CFlop->Voltage.Vcore,
-			(4), hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
-			(3), hSpace,
-			CFlop->Delta.Power.ACCU,
-			(4), hSpace,
-			Setting.jouleWatt ? CFlop->State.Energy
-					  : CFlop->State.Power) );
+			CFlop->State.Energy,
+			CFlop->State.Power,
+			21, hSpace) );
 }
 
-size_t Draw_Monitor_V1_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V1_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V1_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V1_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T2_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T2_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T2_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T2_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T3_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T3_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T3_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V2_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V2_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
-		return (Draw_Monitor_V1_T3_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T0_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T0_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T0_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T0_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T1_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T1_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T1_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T1_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T1_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T2_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T2_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T2_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T2_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T2_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T2_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T2_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T2_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T2_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T2_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T2_P3(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T3_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T3_P0(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P0(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P0(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P0(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T3_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T3_P1(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P1(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P1(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P1(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T3_P2(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T3_P2(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P2(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P2(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P2(layer, cpu, row));
 	}
 }
 
-size_t Draw_Monitor_V3_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Sensors_V3_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	if (cpu == Shm->Proc.Service.Core) {
-		return (Draw_Monitor_V1_T3_P3(layer, cpu, row));
+		return (Draw_Sensors_V1_T3_P3(layer, cpu, row));
 	} else {
-		return (Draw_Monitor_V0_T3_P3(layer, cpu, row));
+		return (Draw_Sensors_V0_T3_P3(layer, cpu, row));
 	}
 }
 
-size_t (*Draw_Monitor_VTP_Matrix[4][4][4])(Layer*, const unsigned int, CUINT)=\
+size_t (*Draw_Sensors_VTP_Matrix[4][4][4])(Layer*, const unsigned int, CUINT)=\
 {
 [FORMULA_SCOPE_NONE] = {
     [FORMULA_SCOPE_NONE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V0_T0_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V0_T0_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V0_T0_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V0_T0_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V0_T0_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V0_T0_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V0_T0_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V0_T0_P3
     },
     [FORMULA_SCOPE_SMT ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V0_T1_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V0_T1_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V0_T1_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V0_T1_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V0_T1_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V0_T1_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V0_T1_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V0_T1_P3
     },
     [FORMULA_SCOPE_CORE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V0_T2_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V0_T2_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V0_T2_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V0_T2_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V0_T2_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V0_T2_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V0_T2_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V0_T2_P3
     },
     [FORMULA_SCOPE_PKG ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V0_T3_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V0_T3_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V0_T3_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V0_T3_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V0_T3_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V0_T3_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V0_T3_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V0_T3_P3
     }
   },
 [FORMULA_SCOPE_SMT ] = {
     [FORMULA_SCOPE_NONE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V1_T0_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V1_T0_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V1_T0_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V1_T0_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V1_T0_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V1_T0_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V1_T0_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V1_T0_P3
     },
     [FORMULA_SCOPE_SMT ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V1_T1_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V1_T1_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V1_T1_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V1_T1_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V1_T1_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V1_T1_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V1_T1_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V1_T1_P3
     },
     [FORMULA_SCOPE_CORE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V1_T2_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V1_T2_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V1_T2_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V1_T2_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V1_T2_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V1_T2_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V1_T2_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V1_T2_P3
     },
     [FORMULA_SCOPE_PKG ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V1_T3_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V1_T3_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V1_T3_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V1_T3_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V1_T3_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V1_T3_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V1_T3_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V1_T3_P3
     }
   },
 [FORMULA_SCOPE_CORE] = {
     [FORMULA_SCOPE_NONE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V2_T0_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V2_T0_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V2_T0_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V2_T0_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V2_T0_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V2_T0_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V2_T0_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V2_T0_P3
     },
     [FORMULA_SCOPE_SMT ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V2_T1_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V2_T1_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V2_T1_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V2_T1_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V2_T1_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V2_T1_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V2_T1_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V2_T1_P3
     },
     [FORMULA_SCOPE_CORE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V2_T2_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V2_T2_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V2_T2_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V2_T2_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V2_T2_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V2_T2_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V2_T2_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V2_T2_P3
     },
     [FORMULA_SCOPE_PKG ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V2_T3_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V2_T3_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V2_T3_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V2_T3_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V2_T3_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V2_T3_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V2_T3_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V2_T3_P3
     }
   },
 [FORMULA_SCOPE_PKG ] = {
     [FORMULA_SCOPE_NONE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V3_T0_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V3_T0_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V3_T0_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V3_T0_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V3_T0_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V3_T0_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V3_T0_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V3_T0_P3
     },
     [FORMULA_SCOPE_SMT ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V3_T1_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V3_T1_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V3_T1_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V3_T1_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V3_T1_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V3_T1_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V3_T1_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V3_T1_P3
     },
     [FORMULA_SCOPE_CORE] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V3_T2_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V3_T2_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V3_T2_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V3_T2_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V3_T2_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V3_T2_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V3_T2_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V3_T2_P3
     },
     [FORMULA_SCOPE_PKG ] = {
-	[FORMULA_SCOPE_NONE]	= Draw_Monitor_V3_T3_P0,
-	[FORMULA_SCOPE_SMT ]	= Draw_Monitor_V3_T3_P1,
-	[FORMULA_SCOPE_CORE]	= Draw_Monitor_V3_T3_P2,
-	[FORMULA_SCOPE_PKG ]	= Draw_Monitor_V3_T3_P3
+	[FORMULA_SCOPE_NONE]	= Draw_Sensors_V3_T3_P0,
+	[FORMULA_SCOPE_SMT ]	= Draw_Sensors_V3_T3_P1,
+	[FORMULA_SCOPE_CORE]	= Draw_Sensors_V3_T3_P2,
+	[FORMULA_SCOPE_PKG ]	= Draw_Sensors_V3_T3_P3
     }
   }
 };
 
-CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+CUINT Draw_Monitor_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len;
 	const enum FORMULA_SCOPE
@@ -9407,9 +9458,127 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 		thermalScope	= SCOPE_OF_FORMULA(Shm->Proc.thermalFormula),
 		powerScope	= SCOPE_OF_FORMULA(Shm->Proc.powerFormula);
 
-	len = Draw_Monitor_VTP_Matrix	[voltageScope]
+	len = Draw_Sensors_VTP_Matrix	[voltageScope]
 					[thermalScope]
 					[powerScope]	(layer, cpu, row);
+
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+
+	return (0);
+}
+
+#define Draw_Voltage_None	Draw_Sensors_V0_T0_P0
+
+size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20%7d"					\
+			"\x20\x20\x20\x20\x20%5.4f"			\
+			"\x20\x20\x20%5.4f"				\
+			"\x20\x20\x20%5.4f"				\
+			"%.*s",
+			CFlop->Relative.Freq,
+			CFlop->Voltage.VID,
+			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
+			CFlop->Voltage.Vcore,
+			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_HIGHEST],
+			32, hSpace) );
+}
+
+size_t Draw_Voltage_Core(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+		return (Draw_Voltage_SMT(layer, cpu, row));
+	} else {
+		return (Draw_Voltage_None(layer, cpu, row));
+	}
+}
+
+size_t Draw_Voltage_Pkg(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	if (cpu == Shm->Proc.Service.Core) {
+		return (Draw_Voltage_SMT(layer, cpu, row));
+	} else {
+		return (Draw_Voltage_None(layer, cpu, row));
+	}
+}
+
+size_t (*Draw_Voltage_Matrix[4])(Layer*, const unsigned int, CUINT) = \
+{
+	[FORMULA_SCOPE_NONE] = Draw_Voltage_None,
+	[FORMULA_SCOPE_SMT ] = Draw_Voltage_SMT,
+	[FORMULA_SCOPE_CORE] = Draw_Voltage_Core,
+	[FORMULA_SCOPE_PKG ] = Draw_Voltage_Pkg
+};
+
+CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	size_t len;
+	const enum FORMULA_SCOPE
+		voltageScope = SCOPE_OF_FORMULA(Shm->Proc.voltageFormula);
+
+	len = Draw_Voltage_Matrix[voltageScope](layer, cpu, row);
+
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+
+	return (0);
+}
+
+#define Draw_Energy_None	Draw_Sensors_V0_T0_P0
+
+size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	return (snprintf(buffer, 80+1,
+			"%7.2f\x20\x20%018llu\x20\x20"			\
+			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20\x20"	\
+			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20",
+			CFlop->Relative.Freq,
+			CFlop->Delta.Power.ACCU,
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
+			CFlop->State.Energy,
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST],
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
+			CFlop->State.Power,
+			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]) );
+}
+
+size_t Draw_Energy_Core(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
+		return (Draw_Energy_SMT(layer, cpu, row));
+	} else {
+		return (Draw_Energy_None(layer, cpu, row));
+	}
+}
+
+size_t Draw_Energy_Pkg(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	if (cpu == Shm->Proc.Service.Core) {
+		return (Draw_Energy_SMT(layer, cpu, row));
+	} else {
+		return (Draw_Energy_None(layer, cpu, row));
+	}
+}
+
+size_t (*Draw_Energy_Matrix[4])(Layer*, const unsigned int, CUINT) = \
+{
+	[FORMULA_SCOPE_NONE] = Draw_Energy_None,
+	[FORMULA_SCOPE_SMT ] = Draw_Energy_SMT,
+	[FORMULA_SCOPE_CORE] = Draw_Energy_Core,
+	[FORMULA_SCOPE_PKG ] = Draw_Energy_Pkg
+};
+
+CUINT Draw_Monitor_Energy(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	size_t len;
+	const enum FORMULA_SCOPE
+		powerScope = SCOPE_OF_FORMULA(Shm->Proc.powerFormula);
+
+	len = Draw_Energy_Matrix[powerScope](layer, cpu, row);
 
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
@@ -9702,10 +9871,10 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
 
-	memcpy(&LayerAt(layer, code, col +  8,	row), &buffer[24], 8);
-	memcpy(&LayerAt(layer, code, col + 27,	row), &buffer[16], 8);
-	memcpy(&LayerAt(layer, code, col + 47,	row), &buffer[ 0], 8);
-	memcpy(&LayerAt(layer, code, col + 65,	row), &buffer[ 8], 8);
+	memcpy(&LayerAt(layer, code, col +  5,	row), &buffer[24], 8);
+	memcpy(&LayerAt(layer, code, col + 24,	row), &buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col + 44,	row), &buffer[ 0], 8);
+	memcpy(&LayerAt(layer, code, col + 62,	row), &buffer[ 8], 8);
 
 	row += 1;
 	return (row);
@@ -9856,6 +10025,8 @@ VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Tasks,
 	Layout_Monitor_Common,
 	Layout_Monitor_Common,
+	Layout_Monitor_Common,
+	Layout_Monitor_Common,
 	Layout_Monitor_Slice
 };
 
@@ -9867,7 +10038,9 @@ VIEW_FUNC Matrix_Layout_Ruler[VIEW_SIZE] = {
 	Layout_Ruler_Package,
 	Layout_Ruler_Tasks,
 	Layout_Ruler_Interrupts,
+	Layout_Ruler_Sensors,
 	Layout_Ruler_Voltage,
+	Layout_Ruler_Energy,
 	Layout_Ruler_Slice
 };
 
@@ -9879,7 +10052,9 @@ VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
 	Draw_Monitor_Package,
 	Draw_Monitor_Tasks,
 	Draw_Monitor_Interrupts,
+	Draw_Monitor_Sensors,
 	Draw_Monitor_Voltage,
+	Draw_Monitor_Energy,
 	Draw_Monitor_Slice
 };
 
@@ -9890,6 +10065,8 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Draw_AltMonitor_Common,
 	Draw_AltMonitor_Package,
 	Draw_AltMonitor_Tasks,
+	Draw_AltMonitor_Common,
+	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Common,
 	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Common

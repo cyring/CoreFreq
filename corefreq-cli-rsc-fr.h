@@ -112,25 +112,17 @@
 	'O','F','F',' ',']',' ' 					\
 }
 
-#define RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_FR				\
-	"--- Freq(MHz) - VID - Vcore -- TMP( ) ----- Accumulateur ---"	\
-	"-- Energie(J) ----------------------------------------------"	\
+#define RSC_LAYOUT_RULER_SENSORS_CODE_FR				\
+	"--- Freq(MHz) --- Vcore --- TMP( ) -- Energie(J) Puissance(W"	\
+	") ----------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"--------------------"
 
-#define RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_FR				\
-	"--- Freq(MHz) - VID - Vcore -- TMP( ) ----- Accumulateur ---"	\
-	" Puissance(W) ----------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"------------------------------------------------------------"	\
-	"--------------------"
-
-#define RSC_LAYOUT_RULER_POWER_CODE_FR					\
-	"-- $ -- RAM:   .     -- Uncore:   .     -- Package:   .     "	\
-	"-- Cores:   .     ------------------------------------------"	\
+#define RSC_LAYOUT_RULER_ENERGY_CODE_FR 				\
+	"--- Freq(MHz) -- Accumulateur -- Min   Energie(J)  Max -- Mi"	\
+	"n Puissance(W) Max -----------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -424,7 +416,9 @@
 #define RSC_MENU_ITEM_PKG_CYCLE_CODE_FR 	" Cycles du Package  [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_FR 	" Suivi des taches   [x] "
 #define RSC_MENU_ITEM_SYS_INTER_CODE_FR 	" Interruptions      [q] "
-#define RSC_MENU_ITEM_POW_VOLT_CODE_FR		" Puissance-Voltage  [V] "
+#define RSC_MENU_ITEM_SENSORS_CODE_FR		" Capteurs           [S] "
+#define RSC_MENU_ITEM_VOLTAGE_CODE_FR		"   Voltage          [V] "
+#define RSC_MENU_ITEM_POWER_CODE_FR		"   Puissance        [W] "
 #define RSC_MENU_ITEM_SLICE_CTR_CODE_FR 	" Compteurs tranche  [T] "
 #define RSC_MENU_ITEM_PROCESSOR_CODE_FR 	" Processeur         [p] "
 #define RSC_MENU_ITEM_TOPOLOGY_CODE_FR		" Topologie          [m] "
@@ -487,12 +481,13 @@
 #define RSC_ADV_HELP_ITEM_6_CODE_FR	" r         Inverser le tri des taches "
 #define RSC_ADV_HELP_ITEM_7_CODE_FR	" v          Afficher | Cacher valeurs "
 #define RSC_ADV_HELP_ITEM_8_CODE_FR	" Vue quelconque:                      "
-#define RSC_ADV_HELP_ITEM_9_CODE_FR	" .             Frequence top ou Usage "
-#define RSC_ADV_HELP_ITEM_10_CODE_FR	" {                  Demarrer CoreFreq "
-#define RSC_ADV_HELP_ITEM_11_CODE_FR	" }                   Arreter CoreFreq "
-#define RSC_ADV_HELP_ITEM_12_CODE_FR	" F10               Arreter les outils "
-#define RSC_ADV_HELP_ITEM_13_CODE_FR	" Haut Prec                 Defilement "
-#define RSC_ADV_HELP_ITEM_14_CODE_FR	" Bas  Suiv                       CPU  "
+#define RSC_ADV_HELP_ITEM_9_CODE_FR	" $            Energie en Joule | Watt "
+#define RSC_ADV_HELP_ITEM_10_CODE_FR	" .             Frequence Top ou Usage "
+#define RSC_ADV_HELP_ITEM_11_CODE_FR	" {                  Demarrer CoreFreq "
+#define RSC_ADV_HELP_ITEM_12_CODE_FR	" }                   Arreter CoreFreq "
+#define RSC_ADV_HELP_ITEM_13_CODE_FR	" F10               Arreter les outils "
+#define RSC_ADV_HELP_ITEM_14_CODE_FR	" Haut Prec                 Defilement "
+#define RSC_ADV_HELP_ITEM_15_CODE_FR	" Bas  Suiv                       CPU  "
 #define RSC_ADV_HELP_TERMINAL_CODE_FR	" Terminal:                            "
 #define RSC_ADV_HELP_PRT_SCR_CODE_FR	" [Ctrl]+[p]                    Copier "
 #define RSC_ADV_HELP_REC_SCR_CODE_FR	" [Alt]+[p]                Enregistrer "

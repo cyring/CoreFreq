@@ -193,19 +193,21 @@ ATTRIBUTE Rsc_Layout_Tasks_Value_On_Attr[] = RSC_LAYOUT_TASKS_VALUE_ON_ATTR;
 ASCII	Rsc_Layout_Tasks_Value_On_Code_En[] = RSC_LAYOUT_TASKS_VALUE_ON_CODE;
 #define Rsc_Layout_Tasks_Value_On_Code_Fr Rsc_Layout_Tasks_Value_On_Code_En
 
-ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
-ASCII	Rsc_Layout_Ruler_Voltage_Code_En[2][320] = {
-					RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_EN,
-					RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_EN
-	},
-	Rsc_Layout_Ruler_Voltage_Code_Fr[2][320] = {
-					RSC_LAYOUT_RULER_VOLTAGE_COND0_CODE_FR,
-					RSC_LAYOUT_RULER_VOLTAGE_COND1_CODE_FR
-	};
+ATTRIBUTE Rsc_Layout_Ruler_Sensors_Attr[] = RSC_LAYOUT_RULER_SENSORS_ATTR;
+ASCII	Rsc_Layout_Ruler_Sensors_Code_En[] = RSC_LAYOUT_RULER_SENSORS_CODE_EN,
+	Rsc_Layout_Ruler_Sensors_Code_Fr[] = RSC_LAYOUT_RULER_SENSORS_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruler_Power_Attr[] = RSC_LAYOUT_RULER_POWER_ATTR;
-ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN,
-	Rsc_Layout_Ruler_Power_Code_Fr[] = RSC_LAYOUT_RULER_POWER_CODE_FR;
+ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN;
+#define Rsc_Layout_Ruler_Power_Code_Fr Rsc_Layout_Ruler_Power_Code_En
+
+ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
+ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN;
+#define Rsc_Layout_Ruler_Voltage_Code_Fr Rsc_Layout_Ruler_Voltage_Code_En
+
+ATTRIBUTE Rsc_Layout_Ruler_Energy_Attr[] = RSC_LAYOUT_RULER_ENERGY_ATTR;
+ASCII	Rsc_Layout_Ruler_Energy_Code_En[] = RSC_LAYOUT_RULER_ENERGY_CODE_EN,
+	Rsc_Layout_Ruler_Energy_Code_Fr[] = RSC_LAYOUT_RULER_ENERGY_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruler_Slice_Attr[] = RSC_LAYOUT_RULER_SLICE_ATTR;
 ASCII	Rsc_Layout_Ruler_Slice_Code_En[] = RSC_LAYOUT_RULER_SLICE_CODE_EN,
@@ -544,19 +546,22 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_TASKS_VALUE_ON] = LDA(	Rsc_Layout_Tasks_Value_On_Attr,
 					Rsc_Layout_Tasks_Value_On_Code_En,
 					Rsc_Layout_Tasks_Value_On_Code_Fr),
-   [RSC_LAYOUT_RULER_VOLTAGE_COND0]=LDA(Rsc_Layout_Ruler_Voltage_Attr,
-					Rsc_Layout_Ruler_Voltage_Code_En[0],
-					Rsc_Layout_Ruler_Voltage_Code_Fr[0]),
-   [RSC_LAYOUT_RULER_VOLTAGE_COND1]=LDA(Rsc_Layout_Ruler_Voltage_Attr,
-					Rsc_Layout_Ruler_Voltage_Code_En[1],
-					Rsc_Layout_Ruler_Voltage_Code_Fr[1]),
-    [RSC_LAYOUT_RULER_POWER]	= LDA(	Rsc_Layout_Ruler_Power_Attr,
+	[RSC_LAYOUT_RULER_SENSORS]=LDA( Rsc_Layout_Ruler_Sensors_Attr,
+					Rsc_Layout_Ruler_Sensors_Code_En,
+					Rsc_Layout_Ruler_Sensors_Code_Fr),
+	[RSC_LAYOUT_RULER_POWER] = LDA( Rsc_Layout_Ruler_Power_Attr,
 					Rsc_Layout_Ruler_Power_Code_En,
 					Rsc_Layout_Ruler_Power_Code_Fr),
-    [RSC_LAYOUT_RULER_SLICE]	= LDA(	Rsc_Layout_Ruler_Slice_Attr,
+	[RSC_LAYOUT_RULER_VOLTAGE]=LDA( Rsc_Layout_Ruler_Voltage_Attr,
+					Rsc_Layout_Ruler_Voltage_Code_En,
+					Rsc_Layout_Ruler_Voltage_Code_Fr),
+	[RSC_LAYOUT_RULER_ENERGY]=LDA(	Rsc_Layout_Ruler_Energy_Attr,
+					Rsc_Layout_Ruler_Energy_Code_En,
+					Rsc_Layout_Ruler_Energy_Code_Fr),
+	[RSC_LAYOUT_RULER_SLICE] = LDA( Rsc_Layout_Ruler_Slice_Attr,
 					Rsc_Layout_Ruler_Slice_Code_En,
 					Rsc_Layout_Ruler_Slice_Code_Fr),
-    [RSC_LAYOUT_FOOTER_TECH_X86]= LDA(	Rsc_Layout_Footer_Tech_x86_Attr,
+    [RSC_LAYOUT_FOOTER_TECH_X86] = LDA( Rsc_Layout_Footer_Tech_x86_Attr,
 					Rsc_Layout_Footer_Tech_x86_Code_En,
 					Rsc_Layout_Footer_Tech_x86_Code_Fr),
     [RSC_LAYOUT_FOOTER_TECH_INTEL]= LDA(Rsc_Layout_Footer_Tech_Intel_Attr,
@@ -577,28 +582,28 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_CARD_CORE_OFFLINE]= LDA(Rsc_Layout_Card_Core_Offline_Attr,
 					Rsc_Layout_Card_Core_Offline_Code_En,
 					Rsc_Layout_Card_Core_Offline_Code_Fr),
-    [RSC_LAYOUT_CARD_CLK]	= LDA(	Rsc_Layout_Card_CLK_Attr,
+	[RSC_LAYOUT_CARD_CLK]	= LDA(	Rsc_Layout_Card_CLK_Attr,
 					Rsc_Layout_Card_CLK_Code_En,
 					Rsc_Layout_Card_CLK_Code_Fr),
-    [RSC_LAYOUT_CARD_UNCORE]	= LDA(	Rsc_Layout_Card_Uncore_Attr,
+	[RSC_LAYOUT_CARD_UNCORE] = LDA( Rsc_Layout_Card_Uncore_Attr,
 					Rsc_Layout_Card_Uncore_Code_En,
 					Rsc_Layout_Card_Uncore_Code_Fr),
-    [RSC_LAYOUT_CARD_BUS]	= LDA(	Rsc_Layout_Card_Bus_Attr,
+	[RSC_LAYOUT_CARD_BUS]	= LDA(	Rsc_Layout_Card_Bus_Attr,
 					Rsc_Layout_Card_Bus_Code_En,
 					Rsc_Layout_Card_Bus_Code_Fr),
-    [RSC_LAYOUT_CARD_MC]	= LDA(	Rsc_Layout_Card_MC_Attr,
+	[RSC_LAYOUT_CARD_MC]	= LDA(	Rsc_Layout_Card_MC_Attr,
 					Rsc_Layout_Card_MC_Code_En,
 					Rsc_Layout_Card_MC_Code_Fr),
-    [RSC_LAYOUT_CARD_LOAD]	= LDA(	Rsc_Layout_Card_Load_Attr,
+	[RSC_LAYOUT_CARD_LOAD]	= LDA(	Rsc_Layout_Card_Load_Attr,
 					Rsc_Layout_Card_Load_Code_En,
 					Rsc_Layout_Card_Load_Code_Fr),
-    [RSC_LAYOUT_CARD_IDLE]	= LDA(	Rsc_Layout_Card_Idle_Attr,
+	[RSC_LAYOUT_CARD_IDLE]	= LDA(	Rsc_Layout_Card_Idle_Attr,
 					Rsc_Layout_Card_Idle_Code_En,
 					Rsc_Layout_Card_Idle_Code_Fr),
-    [RSC_LAYOUT_CARD_RAM]	= LDA(	Rsc_Layout_Card_RAM_Attr,
+	[RSC_LAYOUT_CARD_RAM]	= LDA(	Rsc_Layout_Card_RAM_Attr,
 					Rsc_Layout_Card_RAM_Code_En,
 					Rsc_Layout_Card_RAM_Code_Fr),
-    [RSC_LAYOUT_CARD_TASK]	= LDA(	Rsc_Layout_Card_Task_Attr,
+	[RSC_LAYOUT_CARD_TASK]	= LDA(	Rsc_Layout_Card_Task_Attr,
 					Rsc_Layout_Card_Task_Code_En,
 					Rsc_Layout_Card_Task_Code_Fr),
 /* ATTRIBUTE */
@@ -1201,8 +1206,12 @@ RESOURCE_ST Resource[] = {
 					RSC_MENU_ITEM_TASKS_MON_CODE_FR),
 	[RSC_MENU_ITEM_SYS_INTER]=LDT(	RSC_MENU_ITEM_SYS_INTER_CODE_EN,
 					RSC_MENU_ITEM_SYS_INTER_CODE_FR),
-	[RSC_MENU_ITEM_POW_VOLT]= LDT(	RSC_MENU_ITEM_POW_VOLT_CODE_EN,
-					RSC_MENU_ITEM_POW_VOLT_CODE_FR),
+	[RSC_MENU_ITEM_SENSORS] = LDT(	RSC_MENU_ITEM_SENSORS_CODE_EN,
+					RSC_MENU_ITEM_SENSORS_CODE_FR),
+	[RSC_MENU_ITEM_VOLTAGE] = LDT(	RSC_MENU_ITEM_VOLTAGE_CODE_EN,
+					RSC_MENU_ITEM_VOLTAGE_CODE_FR),
+	[RSC_MENU_ITEM_POWER] = LDT(	RSC_MENU_ITEM_POWER_CODE_EN,
+					RSC_MENU_ITEM_POWER_CODE_FR),
 	[RSC_MENU_ITEM_SLICE_CTRS]=LDT( RSC_MENU_ITEM_SLICE_CTR_CODE_EN,
 					RSC_MENU_ITEM_SLICE_CTR_CODE_FR),
 	[RSC_MENU_ITEM_PROCESSOR]=LDT(	RSC_MENU_ITEM_PROCESSOR_CODE_EN,
@@ -1336,6 +1345,8 @@ RESOURCE_ST Resource[] = {
 					RSC_ADV_HELP_ITEM_13_CODE_FR),
 	[RSC_ADV_HELP_ITEM_14]	= LDT(	RSC_ADV_HELP_ITEM_14_CODE_EN,
 					RSC_ADV_HELP_ITEM_14_CODE_FR),
+	[RSC_ADV_HELP_ITEM_15]	= LDT(	RSC_ADV_HELP_ITEM_15_CODE_EN,
+					RSC_ADV_HELP_ITEM_15_CODE_FR),
        [RSC_ADV_HELP_ITEM_TERMINAL]=LDT(RSC_ADV_HELP_TERMINAL_CODE_EN,
 					RSC_ADV_HELP_TERMINAL_CODE_FR),
 	[RSC_ADV_HELP_ITEM_PRT_SCR]=LDT(RSC_ADV_HELP_PRT_SCR_CODE_EN,
