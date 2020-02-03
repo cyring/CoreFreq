@@ -9481,6 +9481,39 @@ static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
 #endif
 
+static long CoreFreqK_Thermal_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	Proc->thermalFormula=(KIND_OF_FORMULA(Proc->thermalFormula)<<8)|scope;
+	return (0);
+    } else {
+	return (-EINVAL);
+    }
+}
+
+static long CoreFreqK_Voltage_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	Proc->voltageFormula=(KIND_OF_FORMULA(Proc->voltageFormula)<<8)|scope;
+	return (0);
+} else {
+	return (-EINVAL);
+}
+}
+
+static long CoreFreqK_Power_Scope(int scope)
+{
+    if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
+    {
+	Proc->powerFormula = (KIND_OF_FORMULA(Proc->powerFormula) << 8)|scope;
+	return (0);
+} else {
+	return (-EINVAL);
+}
+}
+
 static void Compute_Clock_SMT(void)
 {
 	unsigned int cpu = Proc->CPU.Count;
@@ -9623,6 +9656,21 @@ static long CoreFreqK_ioctl(	struct file *filp,
       case MACHINE_LIMIT_IDLE:
 	if (Proc->Registration.Driver.CPUidle) {
 		rc = CoreFreqK_Limit_Idle(prm.dl.lo);
+	}
+	break;
+
+      case MACHINE_FORMULA_SCOPE:
+	switch (prm.dl.lo)
+	{
+	    case 0:
+		rc = CoreFreqK_Thermal_Scope(prm.dh.lo);
+		break;
+	    case 1:
+		rc = CoreFreqK_Voltage_Scope(prm.dh.lo);
+		break;
+	    case 2:
+		rc = CoreFreqK_Power_Scope(prm.dh.lo);
+		break;
 	}
 	break;
       }
@@ -10417,34 +10465,12 @@ static int __init CoreFreqK_init(void)
 			Proc->ArchID = SearchArchitectureID();
 		    }
 			Proc->thermalFormula=Arch[Proc->ArchID].thermalFormula;
-
-			if ((ThermalScope >= FORMULA_SCOPE_NONE)
-			 && (ThermalScope <= FORMULA_SCOPE_PKG))
-			{
-				Proc->thermalFormula =			\
-				( KIND_OF_FORMULA(Proc->thermalFormula) << 8 )
-				| ThermalScope;
-			}
-
 			Proc->voltageFormula=Arch[Proc->ArchID].voltageFormula;
-
-			if ((VoltageScope >= FORMULA_SCOPE_NONE)
-			 && (VoltageScope <= FORMULA_SCOPE_PKG))
-			{
-				Proc->voltageFormula =			\
-				( KIND_OF_FORMULA(Proc->voltageFormula) << 8 )
-				| VoltageScope;
-			}
-
 			Proc->powerFormula = Arch[Proc->ArchID].powerFormula;
 
-			if ((PowerScope >= FORMULA_SCOPE_NONE)
-			 && (PowerScope <= FORMULA_SCOPE_PKG))
-			{
-				Proc->powerFormula =			\
-				( KIND_OF_FORMULA(Proc->powerFormula) << 8 )
-				| PowerScope;
-			}
+			CoreFreqK_Thermal_Scope(ThermalScope);
+			CoreFreqK_Voltage_Scope(VoltageScope);
+			CoreFreqK_Power_Scope(PowerScope);
 
 			/* Set the uArch's name with the first found codename */
 			StrCopy(Proc->Architecture,

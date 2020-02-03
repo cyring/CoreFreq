@@ -190,6 +190,11 @@
 #define RSC_GUARANTEED_CODE_FR		"Guarantie"
 #define RSC_HIGHEST_CODE_FR		"Elevee"
 
+#define RSC_SCOPE_NONE_CODE_FR		"Sans"
+#define RSC_SCOPE_THREAD_CODE_FR	" SMT"
+#define RSC_SCOPE_CORE_CODE_FR		"Core"
+#define RSC_SCOPE_PACKAGE_CODE_FR	" Pkg"
+
 #define RSC_CPUID_TITLE_FR 		\
 	" fonction           EAX          EBX          ECX          EDX "
 
@@ -442,6 +447,9 @@
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR   " Activation NMI           <   > "
 #define RSC_SETTINGS_CPUIDLE_REGISTER_CODE_FR " Pilote CPU-IDLE          [   ] "
 #define RSC_SETTINGS_CPUFREQ_REGISTER_CODE_FR " Pilote CPU-FREQ          [   ] "
+#define RSC_SETTINGS_THERMAL_SCOPE_CODE_FR    " Portee thermique        <    > "
+#define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_FR    " Portee de tension       <    > "
+#define RSC_SETTINGS_POWER_SCOPE_CODE_FR      " Portee de puissance     <    > "
 
 #define RSC_HELP_TITLE_CODE_FR		" Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	" [Echap]          "
@@ -590,6 +598,12 @@
 #define RSC_BOX_LANG_TITLE_CODE_FR		" Langues "
 #define RSC_BOX_LANG_ENGLISH_CODE_FR		"     Anglais     "
 #define RSC_BOX_LANG_FRENCH_CODE_FR		"     Francais    "
+
+#define RSC_BOX_SCOPE_TITLE_CODE_FR		" Portee "
+#define RSC_BOX_SCOPE_NONE_CODE_FR		"       Sans       "
+#define RSC_BOX_SCOPE_THREAD_CODE_FR		"      Thread      "
+#define RSC_BOX_SCOPE_CORE_CODE_FR		"       Coeur      "
+#define RSC_BOX_SCOPE_PACKAGE_CODE_FR		"      Package     "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\

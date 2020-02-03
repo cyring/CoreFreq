@@ -3935,9 +3935,22 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void ScopeUpdate(TGrid *grid, DATA_TYPE data)
+{
+	ASCII *code[] = {
+		RSC(SCOPE_NONE).CODE(),
+		RSC(SCOPE_THREAD).CODE(),
+		RSC(SCOPE_CORE).CODE(),
+		RSC(SCOPE_PACKAGE).CODE()
+	};
+	const enum FORMULA_SCOPE scope = SCOPE_OF_FORMULA(*data.psint);
+	memcpy(&grid->cell.item[grid->cell.length - RSZ(SCOPE_NONE) - 2],
+		code[scope], RSZ(SCOPE_NONE));
+}
+
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 18, 8, TOP_HEADER_ROW+2);
+	Window *wSet = CreateWindow(wLayer, id, 1, 22, 8, TOP_HEADER_ROW+2);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
@@ -4031,6 +4044,24 @@ Window *CreateSettings(unsigned long long id)
 				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Freq_Update );
+
+	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
+					MAKE_PRINT_UNFOCUS);
+
+	GridCall( StoreTCell(	wSet, OPS_THERMAL_SCOPE,
+				RSC(SETTINGS_THERMAL_SCOPE).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		ScopeUpdate, &Shm->Proc.thermalFormula );
+
+	GridCall( StoreTCell(	wSet, OPS_VOLTAGE_SCOPE,
+				RSC(SETTINGS_VOLTAGE_SCOPE).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		ScopeUpdate, &Shm->Proc.voltageFormula );
+
+	GridCall( StoreTCell(	wSet, OPS_POWER_SCOPE,
+				RSC(SETTINGS_POWER_SCOPE).CODE(),
+				MAKE_PRINT_UNFOCUS ),
+		ScopeUpdate, &Shm->Proc.powerFormula );
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -5642,6 +5673,67 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_INTERRUPTS );
+	}
+    break;
+    case OPS_THERMAL_SCOPE:
+    case OPS_VOLTAGE_SCOPE:
+    case OPS_POWER_SCOPE:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const int index = (scan->key & 0x000000000000f000) >> 12;
+		const union {
+			int			*pInteger;
+			enum THERMAL_FORMULAS	*pThermal;
+			enum VOLTAGE_FORMULAS	*pVoltage;
+			enum POWER_FORMULAS	*pPower;
+		} formula[] = {
+			{ .pThermal	= &Shm->Proc.thermalFormula	},
+			{ .pVoltage	= &Shm->Proc.voltageFormula	},
+			{ .pPower	= &Shm->Proc.powerFormula	}
+		};
+		const Coordinate origin = {
+			.col = 43,
+			.row = TOP_HEADER_ROW + 20
+		}, select = {
+			.col = 0,
+			.row = SCOPE_OF_FORMULA((*formula[index].pInteger))
+		};
+
+		AppendWindow(CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_SCOPE_TITLE).CODE(),
+			RSC(BOX_SCOPE_NONE).CODE(), stateAttr[0],
+		(scan->key & 0x100000000002f000) | (7 ^ FORMULA_SCOPE_NONE),
+			RSC(BOX_SCOPE_THREAD).CODE(), stateAttr[0],
+		(scan->key & 0x100000000002f000) | (7 ^ FORMULA_SCOPE_SMT),
+			RSC(BOX_SCOPE_CORE).CODE(), stateAttr[0],
+		(scan->key & 0x100000000002f000) | (7 ^ FORMULA_SCOPE_CORE),
+			RSC(BOX_SCOPE_PACKAGE).CODE(), stateAttr[0],
+		(scan->key & 0x100000000002f000) | (7 ^ FORMULA_SCOPE_PKG)),
+			&winList);
+	} else
+		SetHead(&winList, win);
+    }
+    break;
+    case OPS_THERMAL_SCOPE_NONE:
+    case OPS_THERMAL_SCOPE_SMT:
+    case OPS_THERMAL_SCOPE_CORE:
+    case OPS_THERMAL_SCOPE_PKG:
+    case OPS_VOLTAGE_SCOPE_NONE:
+    case OPS_VOLTAGE_SCOPE_SMT:
+    case OPS_VOLTAGE_SCOPE_CORE:
+    case OPS_VOLTAGE_SCOPE_PKG:
+    case OPS_POWER_SCOPE_NONE:
+    case OPS_POWER_SCOPE_SMT:
+    case OPS_POWER_SCOPE_CORE:
+    case OPS_POWER_SCOPE_PKG:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				(scan->key & 0x000000000000f000) >> 12,
+				MACHINE_FORMULA_SCOPE,
+				(scan->key & 0x000000000000000f) ^ 7 );
 	}
     break;
     case SCANKEY_HASH:
