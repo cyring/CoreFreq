@@ -2381,6 +2381,20 @@ typedef union
 } SKL_IMC_REFRESH_TC;	/* Refresh timing parameters			*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset 5000h			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		DDR_TYPE	:  2-0,  /* 00:DDR4, 01:DDR3, 10:LPDDR3 */
+		ReservedBits1	:  4-2,
+		CH_L_MAP	:  5-4,  /* 0:Channel0 , 1:Channel1	*/
+		ReservedBits2	: 12-5,
+		CH_S_SIZE	: 19-12,/*Channel S size in multiplies of 1GB*/
+		ReservedBits3	: 32-19;
+	};
+} SKL_IMC_MAD_MAPPING;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 5004h & Channel1: 5008h */
 	unsigned int		value;
 	struct {
@@ -2488,3 +2502,4 @@ typedef union
 		ReservedBits2	: 32-20;
 	};
 } SKL_CAPID_C;	/* §3.41 CAPID0_C Capabilities C Register		*/
+
