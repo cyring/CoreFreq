@@ -3,7 +3,7 @@
 # Licenses: GPL2
 
 CC ?= cc
-WARNING = -Wall
+WARNING = -Wall -Wextra -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Wformat-security -Wdate-time -Wno-unused-parameter
 PWD ?= $(shell pwd)
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
