@@ -28,6 +28,7 @@ double timespecFloat(struct timespec time)
 void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
 	unsigned i = 0, i2 = 0, i3 = 0;
+        int  j = 0; /* for loop line 84 -Wsign-compare */
 	unsigned int vendor = Shm->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = {.depth = 0, .nested_state =
 		{}, .write = json_writer_stdout};
@@ -81,29 +82,29 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_key(&s, "taskList");
 
 		json_start_arr(&s);
-		for (i = 0; i < Shm->SysGate.taskCount; i++) {
+		for (j = 0; j < Shm->SysGate.taskCount; j++) {
 			json_start_object(&s);
 
 			json_key(&s, "runtime");
-			json_literal(&s, "%llu", Shm->SysGate.taskList[i].runtime);
+			json_literal(&s, "%llu", Shm->SysGate.taskList[j].runtime);
 			json_key(&s, "usertime");
-			json_literal(&s, "%llu", Shm->SysGate.taskList[i].usertime);
+			json_literal(&s, "%llu", Shm->SysGate.taskList[j].usertime);
 			json_key(&s, "systime");
-			json_literal(&s, "%llu", Shm->SysGate.taskList[i].systime);
+			json_literal(&s, "%llu", Shm->SysGate.taskList[j].systime);
 
 			json_key(&s, "pid");
-			json_literal(&s, "%d", Shm->SysGate.taskList[i].pid);
+			json_literal(&s, "%d", Shm->SysGate.taskList[j].pid);
 			json_key(&s, "tgid");
-			json_literal(&s, "%d", Shm->SysGate.taskList[i].tgid);
+			json_literal(&s, "%d", Shm->SysGate.taskList[j].tgid);
 			json_key(&s, "ppid");
-			json_literal(&s, "%d", Shm->SysGate.taskList[i].ppid);
+			json_literal(&s, "%d", Shm->SysGate.taskList[j].ppid);
 
 			json_key(&s, "state");
-			json_literal(&s, "%hu", Shm->SysGate.taskList[i].state);
+			json_literal(&s, "%hu", Shm->SysGate.taskList[j].state);
 			json_key(&s, "wake_cpu");
-			json_literal(&s, "%hu", Shm->SysGate.taskList[i].wake_cpu);
+			json_literal(&s, "%hu", Shm->SysGate.taskList[j].wake_cpu);
 			json_key(&s, "comm");
-			json_string(&s, Shm->SysGate.taskList[i].comm);
+			json_string(&s, Shm->SysGate.taskList[j].comm);
 
 			json_end_object(&s);
 		}
