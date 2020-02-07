@@ -7,3 +7,4 @@ Module.symvers
 modules.order
 corefreq-cli
 corefreqd
+*.keep

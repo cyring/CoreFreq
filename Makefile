@@ -4,6 +4,8 @@
 
 CC ?= cc
 WARNING = -Wall -Wextra -D_FORTIFY_SOURCE=2 -fstack-protector-strong -Wformat -Wformat-security -Wdate-time -Wno-unused-parameter
+WARNING += -Wunreachable-code -Wstrict-prototypes
+#WARNING +=-Wno-sign-compare
 PWD ?= $(shell pwd)
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
