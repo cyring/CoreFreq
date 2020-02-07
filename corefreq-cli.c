@@ -600,8 +600,8 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
 {
 	TGrid *pGrid = NULL;
-
-    if ((( (*pRatio) > 0)  && !zerobase) || (( (*pRatio) >= 0) && zerobase))
+	        /*EGA: *pRatio is unsigned (*pRatio) >= 0) is always true*/
+    if ((( (*pRatio) > 0)  && !zerobase) || ( /* /(*pRatio) >= 0)  && */ zerobase))
     {
 	double freq = ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0;
 
@@ -6710,9 +6710,11 @@ int Shortcut(SCANKEY *scan)
 			.col = (draw.Size.width - 27) / 2,
 			.row = TOP_HEADER_ROW + 3
 		}, select = {
-			.col = 0, .row = (
-	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod >= 0
-	) && (
+			.col = 0, .row =
+	/* EGA: ClockMod is unsigned => unsigned >= 0 is always true */
+	/*(
+	 Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod >= 0
+	) && */ (
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod <=maxCM
 	) ? Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod : 1
 		};
