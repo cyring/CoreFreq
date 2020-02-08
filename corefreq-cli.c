@@ -5682,7 +5682,11 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	{
-		const int index = (scan->key & 0x000000000000f000) >> 12;
+		const ASCII *title[] = {
+			RSC(BOX_SCOPE_THERMAL_TITLE).CODE(),
+			RSC(BOX_SCOPE_VOLTAGE_TITLE).CODE(),
+			RSC(BOX_SCOPE_POWER_TITLE).CODE()
+		};
 		const union {
 			int			*pInteger;
 			enum THERMAL_FORMULAS	*pThermal;
@@ -5693,6 +5697,7 @@ int Shortcut(SCANKEY *scan)
 			{ .pVoltage	= &Shm->Proc.voltageFormula	},
 			{ .pPower	= &Shm->Proc.powerFormula	}
 		};
+		const int index = (scan->key & 0x000000000000f000) >> 12;
 		const Coordinate origin = {
 			.col = 43,
 			.row = TOP_HEADER_ROW + 20
@@ -5702,7 +5707,7 @@ int Shortcut(SCANKEY *scan)
 		};
 
 		AppendWindow(CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_SCOPE_TITLE).CODE(),
+			(char*) title[index],
 			RSC(BOX_SCOPE_NONE).CODE(), stateAttr[0],
 		(scan->key & 0x100000000002f000) | (7 ^ FORMULA_SCOPE_NONE),
 			RSC(BOX_SCOPE_THREAD).CODE(), stateAttr[0],

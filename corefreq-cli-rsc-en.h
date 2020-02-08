@@ -615,7 +615,9 @@
 #define RSC_BOX_LANG_ENGLISH_CODE_EN		"     English     "
 #define RSC_BOX_LANG_FRENCH_CODE_EN		"     French      "
 
-#define RSC_BOX_SCOPE_TITLE_CODE_EN		" Scope "
+#define RSC_BOX_SCOPE_THERMAL_TITLE_CODE_EN	" Thermal scope "
+#define RSC_BOX_SCOPE_VOLTAGE_TITLE_CODE_EN	" Voltage scope "
+#define RSC_BOX_SCOPE_POWER_TITLE_CODE_EN	" Power scope "
 #define RSC_BOX_SCOPE_NONE_CODE_EN		"       None       "
 #define RSC_BOX_SCOPE_THREAD_CODE_EN		"      Thread      "
 #define RSC_BOX_SCOPE_CORE_CODE_EN		"       Core       "
