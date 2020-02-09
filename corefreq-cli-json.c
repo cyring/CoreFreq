@@ -27,8 +27,8 @@ double timespecFloat(struct timespec time)
 
 void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
-	unsigned i = 0, i2 = 0, i3 = 0;
-	unsigned int vendor = Shm->Proc.Features.Info.Vendor.CRC;
+	signed int i = 0, i2 = 0, i3 = 0;
+	unsigned int cpu, vendor = Shm->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = {.depth = 0, .nested_state =
 		{}, .write = json_writer_stdout};
 	json_start_object(&s);
@@ -1426,12 +1426,13 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	json_key(&s, "Cpu");
 	json_start_arr(&s);
-	for (i = 0; (i < Shm->Proc.CPU.Count); i++) {
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[i].FlipFlop[!Shm->Cpu[i].Toggle];
+	for (cpu = 0; (cpu < Shm->Proc.CPU.Count); cpu++)
+	{
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 		json_start_object(&s);
 		json_key(&s, "OffLine");
-		json_literal(&s, "%llu", Shm->Cpu[i].OffLine);
+		json_literal(&s, "%llu", Shm->Cpu[cpu].OffLine);
 		json_key(&s, "Clock");
 		{
 			json_start_object(&s);
@@ -1444,32 +1445,32 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_end_object(&s);
 		}
 		json_key(&s, "Toggle");
-		json_literal(&s, "%u", Shm->Cpu[i].Toggle);
+		json_literal(&s, "%u", Shm->Cpu[cpu].Toggle);
 		/* TODO: ... Query */
 		json_key(&s, "Topology");
 		{
 			json_start_object(&s);
 			json_key(&s, "ApicID");
-			json_literal(&s, "%d", Shm->Cpu[i].Topology.ApicID);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.ApicID);
 		    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 		    {
 			json_key(&s, "CCX");
-			json_literal(&s, "%d", Shm->Cpu[i].Topology.MP.CCX);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.MP.CCX);
 		    }
 			json_key(&s, "CoreID");
-			json_literal(&s, "%d", Shm->Cpu[i].Topology.CoreID);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.CoreID);
 			json_key(&s, "ThreadID");
-			json_literal(&s, "%d", Shm->Cpu[i].Topology.ThreadID);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.ThreadID);
 			json_key(&s, "PackageID");
-			json_literal(&s, "%d", Shm->Cpu[i].Topology.PackageID);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.PackageID);
 			json_key(&s, "MP");
 			{
 				json_start_object(&s);
 				json_key(&s, "BSP");
-				json_literal(&s, "%d", Shm->Cpu[i].Topology.MP.BSP);
+				json_literal(&s, "%d", Shm->Cpu[cpu].Topology.MP.BSP);
 				json_key(&s, "x2APIC");
-				json_literal(&s, "%d", Shm->Cpu[i].Topology.MP.x2APIC);
+				json_literal(&s, "%d", Shm->Cpu[cpu].Topology.MP.x2APIC);
 				json_end_object(&s);
 			}
 			json_key(&s, "Cache");
@@ -1477,22 +1478,22 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			for (i2 = 0; i2 < CACHE_MAX_LEVEL; i2++) {
 				json_start_object(&s);
 				json_key(&s, "Set");
-				json_literal(&s, "%u", Shm->Cpu[i].Topology.Cache[i2].Set);
+				json_literal(&s, "%u", Shm->Cpu[cpu].Topology.Cache[i2].Set);
 				json_key(&s, "Size");
-				json_literal(&s, "%u", Shm->Cpu[i].Topology.Cache[i2].Size);
+				json_literal(&s, "%u", Shm->Cpu[cpu].Topology.Cache[i2].Size);
 				json_key(&s, "LineSz");
-				json_literal(&s, "%hu", Shm->Cpu[i].Topology.Cache[i2].LineSz);
+				json_literal(&s, "%hu", Shm->Cpu[cpu].Topology.Cache[i2].LineSz);
 				json_key(&s, "Part");
-				json_literal(&s, "%hu", Shm->Cpu[i].Topology.Cache[i2].Part);
+				json_literal(&s, "%hu", Shm->Cpu[cpu].Topology.Cache[i2].Part);
 				json_key(&s, "Way");
-				json_literal(&s, "%hu", Shm->Cpu[i].Topology.Cache[i2].Way);
+				json_literal(&s, "%hu", Shm->Cpu[cpu].Topology.Cache[i2].Way);
 				json_key(&s, "Feature");
 				{
 					json_start_object(&s);
 					json_key(&s, "WriteBack");
-					json_literal(&s, "%hu", Shm->Cpu[i].Topology.Cache[i2].Feature.WriteBack);
+					json_literal(&s, "%hu", Shm->Cpu[cpu].Topology.Cache[i2].Feature.WriteBack);
 					json_key(&s, "Inclusive");
-					json_literal(&s, "%hu", Shm->Cpu[i].Topology.Cache[i2].Feature.Inclusive);
+					json_literal(&s, "%hu", Shm->Cpu[cpu].Topology.Cache[i2].Feature.Inclusive);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -1505,27 +1506,27 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		{
 			json_start_object(&s);
 			json_key(&s, "TM1");
-			json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.TM1);
+			json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.TM1);
 			json_key(&s, "TM2");
-			json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.TM2);
+			json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.TM2);
 			json_key(&s, "Limit");
 			json_start_arr(&s);
 			{
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[SENSOR_LOWEST]);
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.Limit[SENSOR_HIGHEST]);
+				json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]);
+				json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST]);
 			}
 			json_end_arr(&s);
 			json_key(&s, "DutyCycle");
 			{
 				json_start_object(&s);
 				json_key(&s, "ClockMod");
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.DutyCycle.ClockMod);
+				json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.DutyCycle.ClockMod);
 				json_key(&s, "Extended");
-				json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.DutyCycle.Extended);
+				json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended);
 				json_end_object(&s);
 			}
 			json_key(&s, "PowerPolicy");
-			json_literal(&s, "%u", Shm->Cpu[i].PowerThermal.PowerPolicy);
+			json_literal(&s, "%u", Shm->Cpu[cpu].PowerThermal.PowerPolicy);
 			json_end_object(&s);
 		}
 		json_key(&s, "FlipFlop");
@@ -1536,74 +1537,74 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{
 				json_start_object(&s);
 				json_key(&s, "INST");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.INST);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.INST);
 				json_key(&s, "C0");
 				{
 					json_start_object(&s);
 					json_key(&s, "UCC");
-					json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C0.UCC);
+					json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C0.UCC);
 					json_key(&s, "URC");
-					json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C0.URC);
+					json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C0.URC);
 					json_end_object(&s);
 				}
 				json_key(&s, "C3");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C3);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C3);
 				json_key(&s, "C6");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C6);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C6);
 				json_key(&s, "C7");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C7);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C7);
 				json_key(&s, "TSC");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.TSC);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.TSC);
 				json_key(&s, "C1");
-				json_literal(&s, "%llu", Shm->Cpu[i].FlipFlop[i2].Delta.C1);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C1);
 				json_end_object(&s);
 			}
 			json_key(&s, "State");
 			{
 				json_start_object(&s);
 				json_key(&s, "IPS");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.IPS);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.IPS);
 				json_key(&s, "IPC");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.IPC);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.IPC);
 				json_key(&s, "CPI");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.CPI);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.CPI);
 				json_key(&s, "Turbo");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.Turbo);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.Turbo);
 				json_key(&s, "C0");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.C0);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C0);
 				json_key(&s, "C3");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.C3);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C3);
 				json_key(&s, "C6");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.C6);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C6);
 				json_key(&s, "C7");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.C7);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C7);
 				json_key(&s, "C1");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].State.C1);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C1);
 				json_end_object(&s);
 			}
 			json_key(&s, "Relative");
 			{
 				json_start_object(&s);
 				json_key(&s, "Ratio");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].Relative.Ratio);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Relative.Ratio);
 				json_key(&s, "Freq");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].Relative.Freq);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Relative.Freq);
 				json_end_object(&s);
 			}
 			json_key(&s, "Thermal");
 			{
 				json_start_object(&s);
 				json_key(&s, "Sensor");
-				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Sensor);
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Sensor);
 				json_key(&s, "Temp");
-				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Temp);
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Temp);
 				json_key(&s, "Events");
-				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Events);
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Events);
 				json_key(&s, "Target");
 				json_start_arr(&s);
 				{
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Param.Offset[0]);
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Thermal.Param.Offset[1]);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[0]);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[1]);
 				}
 				json_end_arr(&s);
 				json_end_object(&s);
@@ -1612,9 +1613,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{
 				json_start_object(&s);
 				json_key(&s, "VID");
-				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Voltage.VID);
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Voltage.VID);
 				json_key(&s, "Vcore");
-				json_literal(&s, "%f", Shm->Cpu[i].FlipFlop[i2].Voltage.Vcore);
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Voltage.Vcore);
 
 				json_end_object(&s);
 			}
@@ -1622,18 +1623,18 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{
 				json_start_object(&s);
 				json_key(&s, "SMI");
-				json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Counter.SMI);
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Counter.SMI);
 				json_key(&s, "NMI");
 				{
 					json_start_object(&s);
 					json_key(&s, "LOCAL");
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Counter.NMI.LOCAL);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Counter.NMI.LOCAL);
 					json_key(&s, "UNKNOWN");
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Counter.NMI.UNKNOWN);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Counter.NMI.UNKNOWN);
 					json_key(&s, "PCISERR");
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Counter.NMI.PCISERR);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Counter.NMI.PCISERR);
 					json_key(&s, "IOCHECK");
-					json_literal(&s, "%u", Shm->Cpu[i].FlipFlop[i2].Counter.NMI.IOCHECK);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Counter.NMI.IOCHECK);
 					json_end_object(&s);
 				}
 				json_end_object(&s);
@@ -1646,17 +1647,17 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		{
 			json_start_object(&s);
 			json_key(&s, "RFLAGS");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.RFLAGS);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.RFLAGS);
 			json_key(&s, "CR0");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.CR0);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR0);
 			json_key(&s, "CR3");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.CR3);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR3);
 			json_key(&s, "CR4");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.CR4);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR4);
 			json_key(&s, "EFCR");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.EFCR);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.EFCR);
 			json_key(&s, "EFER");
-			json_literal(&s, "%llu", Shm->Cpu[i].SystemRegister.EFER);
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.EFER);
 			json_end_object(&s);
 		}
 		json_key(&s, "CpuID");
@@ -1664,13 +1665,13 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		for (i2 = 0; i2 < CPUID_MAX_FUNC; i2++) {
 			json_start_object(&s);
 			json_key(&s, "func");
-			json_literal(&s, "%u", Shm->Cpu[i].CpuID[i2].func);
+			json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].func);
 			json_key(&s, "sub");
-			json_literal(&s, "%u", Shm->Cpu[i].CpuID[i2].sub);
+			json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].sub);
 			json_key(&s, "reg");
 			json_start_arr(&s);
 			for (i3 = 0; i3 < 4; i3++) {
-				json_literal(&s, "%u", Shm->Cpu[i].CpuID[i2].reg[i3]);
+				json_literal(&s, "%u", Shm->Cpu[cpu].CpuID[i2].reg[i3]);
 			}
 			json_end_arr(&s);
 			json_end_object(&s);
@@ -1684,9 +1685,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			{
 				json_start_object(&s);
 				json_key(&s, "TSC");
-				json_literal(&s, "%llu", Shm->Cpu[i].Slice.Delta.TSC);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].Slice.Delta.TSC);
 				json_key(&s, "INST");
-				json_literal(&s, "%llu", Shm->Cpu[i].Slice.Delta.INST);
+				json_literal(&s, "%llu", Shm->Cpu[cpu].Slice.Delta.INST);
 				json_end_object(&s);
 			}
 			json_key(&s, "Counter");
@@ -1694,9 +1695,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			for (i3 = 0; i3 < 3; i3++) {
 				json_start_object(&s);
 				json_key(&s, "TSC");
-				json_literal(&s, "%u", Shm->Cpu[i].Slice.Counter[i3].TSC);
+				json_literal(&s, "%u", Shm->Cpu[cpu].Slice.Counter[i3].TSC);
 				json_key(&s, "INST");
-				json_literal(&s, "%u", Shm->Cpu[i].Slice.Counter[i3].INST);
+				json_literal(&s, "%u", Shm->Cpu[cpu].Slice.Counter[i3].INST);
 				json_end_object(&s);
 			}
 			json_end_arr(&s);

@@ -4553,16 +4553,18 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 			SIGQUIT, SIGTERM, SIGSEGV, SIGXCPU, SIGXFSZ, SIGSTKFLT
 		};
 		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG:	Reserved	*/
+		const ssize_t	ignoredCount = sizeof(ignored) / sizeof(int),
+				handledCount = sizeof(handled) / sizeof(int);
 		int signo;
 
 		sigemptyset(&Ref->Signal);
 		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
 			sigaddset(&Ref->Signal, signo);
 		}
-		for (signo = 0; signo < sizeof(ignored)/sizeof(int); signo++) {
+		for (signo = 0; signo < ignoredCount; signo++) {
 			sigaddset(&Ref->Signal, ignored[signo]);
 		}
-		for (signo = 0; signo < sizeof(handled)/sizeof(int); signo++) {
+		for (signo = 0; signo < handledCount; signo++) {
 			sigaddset(&Ref->Signal, handled[signo]);
 		}
 		if (!pthread_sigmask(SIG_BLOCK, &Ref->Signal, NULL))

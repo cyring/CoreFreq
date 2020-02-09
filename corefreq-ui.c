@@ -1733,7 +1733,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	register unsigned int	sdx = 0, _bix, _bdx, _idx;
 	register unsigned int	cursor_flag;
 	register unsigned int	cursor_col, cursor_row;
-	register unsigned int	_col, _row, _wth;
+	register signed int	_col, _row, _wth;
 	register ATTRIBUTE	attr = {.value = 0};
 
     for (_row = 0; _row < drawSize.height; _row++)

@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	73
-#define COREFREQ_REV	3
+#define COREFREQ_REV	4
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -456,8 +456,9 @@ enum UNCORE_BOOST {
 
 #define UNCORE_BOOST(NC) UNCORE_RATIO_##NC
 
-#define MAXCLOCK_TO_RATIO(BaseClock)					\
-	((unsigned int) (5250000000.0 / BaseClock))
+#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
+		5250000000 / BaseClock					\
+) )
 
 enum PWR_DOMAIN {
 	DOMAIN_PKG,

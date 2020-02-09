@@ -145,10 +145,10 @@ help:
 	"|    -------------------------------------------------------    |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
-	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1              \\          |\n"\
-	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1 \\          |\n"\
-	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2 \\          |\n"\
-	"|         HWM_CHIPSET=W83627                         \\          |\n"\
+	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |\n"\
+	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |\n"\
+	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |\n"\
+	"|         HWM_CHIPSET=W83627                                    |\n"\
 	"|         clean all                                             |\n"\
 	"o---------------------------------------------------------------o"
 

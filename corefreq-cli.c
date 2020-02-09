@@ -130,16 +130,18 @@ void TrapSignal(int operation)
 			SIGXCPU, SIGXFSZ, SIGSTKFLT
 		};
 		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG	: Reserved	*/
+		const ssize_t	ignoredCount = sizeof(ignored) / sizeof(int),
+				handledCount = sizeof(handled) / sizeof(int);
 		int signo;
 
 		Shm->AppCli = getpid();
 		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
 			signal(signo, SIG_IGN);
 		}
-		for (signo = 0; signo < sizeof(ignored)/sizeof(int); signo++) {
+		for (signo = 0; signo < ignoredCount; signo++) {
 			signal(ignored[signo], SIG_IGN);
 		}
-		for (signo = 0; signo < sizeof(handled)/sizeof(int); signo++) {
+		for (signo = 0; signo < handledCount; signo++) {
 			signal(handled[signo],  Emergency);
 		}
 	}
@@ -191,7 +193,7 @@ unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
 	return (length - j);
 }
 
-int Cels2Fahr(unsigned int cels)
+unsigned int Cels2Fahr(unsigned int cels)
 {
 	return (((cels * 117965) >> 16) + 32);
 }
@@ -595,13 +597,13 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 char SymbUnlock[2][2] = {{'[', ']'}, {'<', '>'}};
 
 TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
-			int zerobase, char *pfx, unsigned int *pRatio,
+			unsigned int zerobase, char *pfx, unsigned int *pRatio,
 			int syc, unsigned long long _key,
 			CUINT width, CELL_FUNC OutFunc, ATTRIBUTE attrib[])
 {
 	TGrid *pGrid = NULL;
 
-    if ((( (*pRatio) > 0)  && !zerobase) || (( (*pRatio) >= 0) && zerobase))
+    if ((( (*pRatio) > 0)  && !zerobase) || (zerobase))
     {
 	double freq = ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0;
 
@@ -741,8 +743,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	coreClock.NC = BOXKEY_RATIO_CLOCK_OR | CLOCK_MOD_MAX;
 
-	GridCall(PrintRatioFreq(win, CFlop, 0,
-				"Max", &Shm->Proc.Boost[BOOST(MAX)],
+	GridCall(PrintRatioFreq(win, CFlop,
+				0, "Max", &Shm->Proc.Boost[BOOST(MAX)],
 				1, coreClock.sllong,
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(MAX)]);
@@ -836,10 +838,10 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshRatioFreq, &Shm->Proc.Boost[BOOST(CPB)]);
     }
 
-    if (Shm->Proc.Features.Turbo_Unlock)
-      for (boost = BOOST(1C), activeCores = 1;
-		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
-			boost--, activeCores++)
+    if (Shm->Proc.Features.Turbo_Unlock) {
+      for(boost = BOOST(1C), activeCores = 1;
+	  boost > BOOST(1C)-(enum RATIO_BOOST)Shm->Proc.Features.SpecTurboRatio;
+		boost--, activeCores++)
 	{
 	CLOCK_ARG clockMod={.NC=BOXKEY_TURBO_CLOCK_NC | activeCores,.Offset=0};
 	char pfx[10+1+1];
@@ -850,10 +852,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Proc.Boost[boost]);
       }
-    else
-      for (boost = BOOST(1C), activeCores = 1;
-		boost > BOOST(1C) - Shm->Proc.Features.SpecTurboRatio;
-			boost--, activeCores++) {
+    } else {
+      for(boost = BOOST(1C), activeCores = 1;
+	  boost > BOOST(1C)-(enum RATIO_BOOST)Shm->Proc.Features.SpecTurboRatio;
+		boost--, activeCores++)
+      {
 	char pfx[10+1+1];
 	snprintf(pfx, 10+1+1, "%2uC", activeCores);
 	GridCall(PrintRatioFreq(win, CFlop,
@@ -862,7 +865,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Proc.Boost[boost]);
       }
-
+    }
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
 		width, 2, "Uncore%.*s[%7.*s]", width - 18, hSpace, 6,
 			Shm->Proc.Features.Uncore_Unlock ?
@@ -2077,7 +2080,7 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	const signed int pos = grid->cell.length - 9;
 	char item[10+1+10+1];
 
-	snprintf(item, 3+1+3+1, "%3u:%3u",
+	snprintf(item, 10+1+10+1, "%3u:%3u",
 		SFlop->Thermal.Param.Offset[1],
 		SFlop->Thermal.Param.Offset[0]);
 
@@ -2321,7 +2324,7 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	REASON_INIT(reason);
 	size_t	len = (1 + width) * 5;
 	char	*item[5], str[CPUFREQ_NAME_LEN+4+1];
-	unsigned int idx;
+	signed int idx;
 	for (idx = 0; idx < 5; idx++) {
 		if ((item[idx] = malloc(len)) != NULL)
 			continue;
@@ -2590,7 +2593,7 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 	};
 	if (smb[idx].secret & Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
-		size_t len = strlen(smb[idx].pString);
+		ssize_t len = strlen(smb[idx].pString);
 		int i;
 		for (i = 0; i < len; i++) {
 			outStr[i] = (i % mod) ? thing : smb[idx].pString[i];
@@ -3558,7 +3561,7 @@ struct {
 
 /* <<< GLOBALS <<< */
 
-void SortUniqRatio()
+void SortUniqRatio(void)
 {
 	enum RATIO_BOOST idx, jdx;
 	ratio.Minimum = ratio.Maximum = (double) Shm->Proc.Boost[BOOST(MIN)];
@@ -4671,7 +4674,7 @@ int SortTaskListByForest(const void *p1, const void *p2)
 Window *CreateTracking(unsigned long long id)
 {
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-	size_t tc = Shm->SysGate.taskCount;
+	ssize_t tc = Shm->SysGate.taskCount;
 	if (tc > 0) {
 		const CUINT margin = 12;	/*	@ "Freq(MHz)"	*/
 		int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
@@ -4688,7 +4691,7 @@ Window *CreateTracking(unsigned long long id)
 		memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
 		qsort(trackList, tc, sizeof(TASK_MCB), SortTaskListByForest);
 
-		unsigned int ti, si = 0, qi = 0;
+		signed int ti, si = 0, qi = 0;
 		pid_t previd = (pid_t) -1;
 
 		for (ti = 0; ti < tc; ti++) {
@@ -4805,7 +4808,8 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 					.Toggle];
 	char item[8+1];
 
-	if (data.uint[0] > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)) {
+	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz))
+	{
 		snprintf(item, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
 	} else {
 		snprintf(item, 8+1, "%7.2f",
@@ -4924,7 +4928,7 @@ Window *CreateRatioClock(unsigned long long id,
 
 		StoreTCell(wCK, clockMod.sllong, item, attr);
 	  } else {
-	    if (multiplier > MAXCLOCK_TO_RATIO(CFlop->Clock.Hz))
+	    if (multiplier > MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz))
 	    {
 		attr = attrib[3];
 
@@ -5258,10 +5262,11 @@ void TrapScreenSize(int caught)
 		draw.Flag.clear = 1;
 		draw.Flag.width = !(draw.Size.width < MIN_WIDTH);
 	}
-	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, ( draw.Size.height
-						- TOP_HEADER_ROW
-						- TOP_SEPARATOR
-						- TOP_FOOTER_ROW ) / 2);
+	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count,
+				(CUINT)(( draw.Size.height
+					- TOP_HEADER_ROW
+					- TOP_SEPARATOR
+					- TOP_FOOTER_ROW ) / 2));
 
 	draw.cpuScroll = 0;
 
@@ -6716,8 +6721,6 @@ int Shortcut(SCANKEY *scan)
 			.row = TOP_HEADER_ROW + 3
 		}, select = {
 			.col = 0, .row = (
-	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod >= 0
-	) && (
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod <=maxCM
 	) ? Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod : 1
 		};
@@ -7060,7 +7063,7 @@ int Shortcut(SCANKEY *scan)
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[boost],
 				Shm->Proc.Boost[BOOST(MIN)],
-				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift);
 
@@ -7074,7 +7077,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_TURBO_CLOCK,
@@ -7133,7 +7136,7 @@ int Shortcut(SCANKEY *scan)
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(MAX)],
 				Shm->Proc.Boost[BOOST(MIN)],
-				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift);
 
@@ -7147,7 +7150,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_RATIO_CLOCK,
@@ -7302,7 +7305,7 @@ int Shortcut(SCANKEY *scan)
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MAX)],
 				Shm->Uncore.Boost[BOOST(MIN)],
-				MAXCLOCK_TO_RATIO(CFlop->Clock.Hz),
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift);
 
@@ -7316,7 +7319,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-				+ ( ( MAXCLOCK_TO_RATIO(CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_UNCORE_CLOCK,
@@ -7758,7 +7761,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	hArch2.code[17] = buffer[8];
 
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
-			strlen(Shm->Proc.Brand));
+			(CUINT) strlen(Shm->Proc.Brand));
 	/* RED DOT */
 	hProc0.code[0] = BITVAL(Shm->Proc.Sync, BURN) ? '.' : 0x20;
 
@@ -7779,7 +7782,7 @@ void Layout_Header(Layer *layer, CUINT row)
 			hProc1.length, hProc1.attr, hProc1.code);
 
 	len = CUMIN(xArch1 - (hArch0.origin.col + hArch0.length),
-			strlen(Shm->Proc.Architecture));
+			(CUINT) strlen(Shm->Proc.Architecture));
 	/* DUMP DOT */
 	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
@@ -8263,8 +8266,8 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 void Layout_Footer(Layer *layer, CUINT row)
 {
+	ssize_t len;
 	CUINT col = 0;
-	size_t len;
 
 	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
 			0, row, hTech0 );
@@ -8459,7 +8462,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hSys1.length, hSys1.attr, hSys1.code);
 	/* Center the DMI string					*/
 	if ((len = strlen(Shm->SMB.String[draw.SmbIndex])) > 0) {
-		CUINT	can = CUMIN(hSys1.origin.col - col - 1, len),
+		CSINT	can = CUMIN(hSys1.origin.col - col - 1, len),
 			ctr = ((hSys1.origin.col + col) - can) / 2;
 		LayerFillAt(	layer, ctr, hSys1.origin.row,
 				can, ScrambleSMBIOS(draw.SmbIndex, 4, '-'),
@@ -9836,8 +9839,8 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
   if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-	size_t len = 0;
-	unsigned int idx;
+	ssize_t len = 0;
+	signed int idx;
 	char stateStr[TASK_COMM_LEN];
 	ATTRIBUTE *stateAttr;
 
@@ -9849,9 +9852,9 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
       if (!BITVAL(Shm->Cpu[Shm->SysGate.taskList[idx].wake_cpu].OffLine, OS)
-	&& (Shm->SysGate.taskList[idx].wake_cpu >= draw.cpuScroll)
-	&& (Shm->SysGate.taskList[idx].wake_cpu < (	draw.cpuScroll
-							+ draw.Area.MaxRows) ))
+	&& (Shm->SysGate.taskList[idx].wake_cpu >= (short int)draw.cpuScroll)
+	&& (Shm->SysGate.taskList[idx].wake_cpu < (short int)(draw.cpuScroll
+							+ draw.Area.MaxRows)))
       {
 	unsigned int ldx = 2;
 	CSINT dif = draw.Size.width
@@ -10211,7 +10214,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
       {
 	if (cpu == Shm->Proc.Service.Core)
 		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
-	else if (cpu == Shm->Proc.Service.Thread)
+	else if ((signed int) cpu == Shm->Proc.Service.Thread)
 		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
 	else
 		Illuminates_CPU(layer, row, CYAN, BLACK, 0);
