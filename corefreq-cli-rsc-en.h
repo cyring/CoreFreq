@@ -437,7 +437,7 @@
 #define RSC_MENU_ITEM_PKG_CYCLE_CODE_EN 	" Package cycles     [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_EN 	" Tasks Monitoring   [x] "
 #define RSC_MENU_ITEM_SYS_INTER_CODE_EN 	" System Interrupts  [q] "
-#define RSC_MENU_ITEM_SENSORS_CODE_EN		" Sensors            [S] "
+#define RSC_MENU_ITEM_SENSORS_CODE_EN		" Sensors            [C] "
 #define RSC_MENU_ITEM_VOLTAGE_CODE_EN		"   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_EN		"   Power            [W] "
 #define RSC_MENU_ITEM_SLICE_CTR_CODE_EN 	" Slice counters     [T] "
@@ -633,7 +633,7 @@
 			"\t-Y\tShow Secret Data\n"			\
 			"\t-t\tShow Top (default)\n"			\
 			"\t-d\tShow Dashboard\n"			\
-			"\t-S\tMonitor Sensors\n"			\
+			"\t-C\tMonitor Sensors\n"			\
 			"\t-V\tMonitor Voltage\n"			\
 			"\t-W\tMonitor Power\n" 			\
 			"\t-g\tMonitor Package\n"			\

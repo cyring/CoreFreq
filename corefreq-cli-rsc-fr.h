@@ -421,7 +421,7 @@
 #define RSC_MENU_ITEM_PKG_CYCLE_CODE_FR 	" Cycles du Package  [g] "
 #define RSC_MENU_ITEM_TASKS_MON_CODE_FR 	" Suivi des taches   [x] "
 #define RSC_MENU_ITEM_SYS_INTER_CODE_FR 	" Interruptions      [q] "
-#define RSC_MENU_ITEM_SENSORS_CODE_FR		" Capteurs           [S] "
+#define RSC_MENU_ITEM_SENSORS_CODE_FR		" Capteurs           [C] "
 #define RSC_MENU_ITEM_VOLTAGE_CODE_FR		"   Voltage          [V] "
 #define RSC_MENU_ITEM_POWER_CODE_FR		"   Puissance        [W] "
 #define RSC_MENU_ITEM_SLICE_CTR_CODE_FR 	" Compteurs tranche  [T] "
@@ -617,7 +617,7 @@
 		"\t-Y\tAfficher les données secrètes\n" 		\
 		"\t-t\tAfficher Top (par défault)\n"			\
 		"\t-d\tAfficher le tableau de bord\n"			\
-		"\t-S\tMoniteur des Capteurs\n" 			\
+		"\t-C\tMoniteur des Capteurs\n" 			\
 		"\t-V\tMoniteur de Voltage\n"				\
 		"\t-W\tMoniteur de Puissance\n" 			\
 		"\t-g\tMoniteur du Package\n"				\

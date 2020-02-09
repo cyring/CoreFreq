@@ -3789,7 +3789,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
-	StoreTCell(wMenu, SCANKEY_SHIFT_s, RSC(MENU_ITEM_SENSORS).CODE(),
+	StoreTCell(wMenu, SCANKEY_SHIFT_c, RSC(MENU_ITEM_SENSORS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
@@ -6015,7 +6015,7 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
-    case SCANKEY_SHIFT_s:
+    case SCANKEY_SHIFT_c:
     {
 	draw.Disposal = D_MAINVIEW;
 	draw.View = V_SENSORS;
@@ -11163,7 +11163,7 @@ int main(int argc, char *argv[])
 		Counters();
 		TrapSignal(0);
 		break;
-	    case 'S':
+	    case 'C':
 		TrapSignal(1);
 		Sensors();
 		TrapSignal(0);
