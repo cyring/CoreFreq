@@ -8980,8 +8980,9 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 	    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
-		device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-		cpuidle_unregister_device(device);
+		if ((device=per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL) {
+			cpuidle_unregister_device(device);
+		}
 	    }
 	}
 	cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
@@ -9062,10 +9063,12 @@ static int CoreFreqK_IdleDriver_Init(void)
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 		    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
+		      if (device != NULL) {
 			device->cpu = cpu;
 			if ((rc = cpuidle_register_device(device)) == 0) {
 				continue;
 			}
+		      }
 			break;
 		    }
 		}
@@ -9075,7 +9078,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    {/* Cancel the registration if the driver and/or a device failed */
 		for (cpu = 0; cpu < enroll; cpu++) {
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
+		    if (device != NULL) {
 			cpuidle_unregister_device(device);
+		    }
 		}
 		cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
 		free_percpu(CoreFreqK.IdleDevice);
@@ -9087,6 +9092,30 @@ static int CoreFreqK_IdleDriver_Init(void)
 	return (rc);
 }
 
+#ifdef CONFIG_CPU_IDLE
+static void CoreFreqK_Idle_State_Withdraw(int idx, bool disable)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
+	struct cpuidle_device *device;
+	unsigned int cpu;
+  for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+  {
+    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)
+    && ((device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL))
+    {
+      if (disable) {
+	device->states_usage[idx].disable |= CPUIDLE_STATE_DISABLED_BY_DRIVER;
+      } else {
+	device->states_usage[idx].disable &= ~CPUIDLE_STATE_DISABLED_BY_DRIVER;
+      }
+    }
+  }
+#else
+	CoreFreqK.IdleDriver.states[idx].disabled = disable;
+#endif
+}
+#endif
+
 static long CoreFreqK_Limit_Idle(int target)
 {
 	long rc = -EINVAL;
@@ -9097,19 +9126,13 @@ static long CoreFreqK_Limit_Idle(int target)
     {
 	for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
 	{
-	    if (idx < target) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
-		CoreFreqK.IdleDriver.states[idx].flags &= ~CPUIDLE_FLAG_UNUSABLE;
-#else
-		CoreFreqK.IdleDriver.states[idx].disabled = false;
-#endif
+	    if (idx < target)
+	    {
+		CoreFreqK_Idle_State_Withdraw(idx, false);
+
 		floor = idx;
 	    } else {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
-		CoreFreqK.IdleDriver.states[idx].flags |= CPUIDLE_FLAG_UNUSABLE;
-#else
-		CoreFreqK.IdleDriver.states[idx].disabled = true;
-#endif
+		CoreFreqK_Idle_State_Withdraw(idx, true);
 	    }
 	}
 	rc = 0;
@@ -9118,11 +9141,8 @@ static long CoreFreqK_Limit_Idle(int target)
     {
 	for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
 	{
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 0)
-		CoreFreqK.IdleDriver.states[idx].flags &= ~CPUIDLE_FLAG_UNUSABLE;
-#else
-		CoreFreqK.IdleDriver.states[idx].disabled = false;
-#endif
+		CoreFreqK_Idle_State_Withdraw(idx, false);
+
 		floor = idx;
 	}
 	rc = 0;
@@ -10149,9 +10169,11 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
    if (Proc->Registration.Driver.CPUidle) {
 	struct cpuidle_device *device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-	if (device->registered == 0) {
-		device->cpu = cpu;
-		cpuidle_register_device(device);
+	if (device != NULL) {
+		if (device->registered == 0) {
+			device->cpu = cpu;
+			cpuidle_register_device(device);
+		}
 	}
    }
 #endif /* CONFIG_CPU_IDLE */
