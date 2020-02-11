@@ -2352,7 +2352,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	{	/* Index 0 is a placeholder: must be present!		*/
 	.BrandSubStr = VENDOR_AMD,
-	.Boost = {+0,  0},
+	.Boost = {+0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = 0,
 	.TgtRatioUnlocked = 0,
@@ -2382,6 +2382,83 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon Silver",
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_SUMMIT_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon Gold",
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_SUMMIT_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon 3000G",
+	.Boost = {+5, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon 300U",
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon 2",
+	.Boost = {+1, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RAVEN_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon 3",
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.BrandSubStr = "AMD Athlon PRO",
+	.Boost = {+5, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_PINNACLE_RIDGE,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 PRO 1200",
@@ -2429,7 +2506,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 PRO 2200GE",
-	.Boost = {+4,  0},
+	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2440,7 +2517,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 PRO 2200G",
-	.Boost = {+2,  0},
+	.Boost = {+2, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2451,7 +2528,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 2200GE",
-	.Boost = {+4,  0},
+	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2462,7 +2539,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 3 2200G",
-	.Boost = {+2,  0},
+	.Boost = {+2, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2495,7 +2572,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 PRO 2400GE",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2506,7 +2583,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 PRO 2400G",
-	.Boost = {+3,  0},
+	.Boost = {+3, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2517,7 +2594,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2400GE",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -2528,7 +2605,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen 5 2400G",
-	.Boost = {+3,  0},
+	.Boost = {+3, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 0,
@@ -3122,7 +3199,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2950",
-	.Boost = {+9,  0},
+	.Boost = {+9, 0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
@@ -3133,7 +3210,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD Ryzen Threadripper 2920",
-	.Boost = {+8,  0},
+	.Boost = {+8, 0},
 	.Param.Offset = {27, 0},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 0,
@@ -3143,8 +3220,8 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.BrandSubStr = "AMD Ryzen Threadripper 3960X",
-	.Boost = {+7, +1},
+	.BrandSubStr = "AMD Ryzen Threadripper 3990X",
+	.Boost = {+14, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_CASTLE_PEAK,
 	.TgtRatioUnlocked = 0,
@@ -3164,9 +3241,20 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.BrandSubStr = "AMD Ryzen Threadripper 3960X",
+	.Boost = {+7, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{	/* AMD EPYC Embedded Processors 			*/
 	.BrandSubStr = "AMD EPYC 3",
-	.Boost = {+16,  0},
+	.Boost = {+16, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3177,7 +3265,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7351P",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3210,7 +3298,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7251",
-	.Boost = {+8,  0},
+	.Boost = {+8, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3221,7 +3309,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7261",
-	.Boost = {+4,  0},
+	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3232,7 +3320,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7281",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3243,7 +3331,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7301",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3254,7 +3342,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7351",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
@@ -3320,7 +3408,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7232P",
-	.Boost = {+1,  0},
+	.Boost = {+1, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3331,7 +3419,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7252P",
-	.Boost = {+4,  0},
+	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3342,7 +3430,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7302P",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3353,7 +3441,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7402P",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3364,7 +3452,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7502P",
-	.Boost = {+9,  0},
+	.Boost = {+9, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3375,7 +3463,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7702P",
-	.Boost = {+14,  0},
+	.Boost = {+14, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3386,7 +3474,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7252",
-	.Boost = {+4,  0},
+	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3397,7 +3485,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7262",
-	.Boost = {+2,  0},
+	.Boost = {+2, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3408,7 +3496,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7272",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3419,7 +3507,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7282",
-	.Boost = {+12,  0},
+	.Boost = {+12, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3430,7 +3518,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7302",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3441,7 +3529,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7352",
-	.Boost = {+9,  0},
+	.Boost = {+9, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3452,7 +3540,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7402",
-	.Boost = {+6,  0},
+	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3463,7 +3551,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7452",
-	.Boost = {+10,  0},
+	.Boost = {+10, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3474,7 +3562,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7502",
-	.Boost = {+9,  0},
+	.Boost = {+9, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3485,7 +3573,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7542",
-	.Boost = {+5,  0},
+	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3496,7 +3584,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7552",
-	.Boost = {+12,  0},
+	.Boost = {+12, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3507,7 +3595,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7642",
-	.Boost = {+10,  0},
+	.Boost = {+10, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3518,7 +3606,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7702",
-	.Boost = {+14,  0},
+	.Boost = {+14, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3529,7 +3617,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7742",
-	.Boost = {+12,  0},
+	.Boost = {+12, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
@@ -3540,7 +3628,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	},
 	{
 	.BrandSubStr = "AMD EPYC 7H12",
-	.Boost = {+7,  0},
+	.Boost = {+7, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
