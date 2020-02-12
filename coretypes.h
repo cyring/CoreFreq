@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	73
-#define COREFREQ_REV	5
+#define COREFREQ_REV	6
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -1719,6 +1719,7 @@ typedef struct	/* BSP CPUID features.					*/
 #endif
 
 /* Hardware Monitoring: Super I/O chipsets				*/
+#define COMPATIBLE		0xffff
 #define W83627			0x5ca3
 
 typedef struct
@@ -1834,10 +1835,13 @@ typedef struct {
 				+ sizeof(unsigned int)			\
 				+ 4 * MAX_UTS_LEN )
 
-#define TASK_ORDER		6
-
+#if defined(TASK_ORDER) && (TASK_ORDER > 0)
 #define TASK_LIMIT		(((4096 << TASK_ORDER) - SYSGATE_STRUCT_SIZE) \
 				/ sizeof(TASK_MCB))
+#else
+#define TASK_LIMIT		(((4096 << 6) - SYSGATE_STRUCT_SIZE)	\
+				/ sizeof(TASK_MCB))
+#endif
 
 /* Input-Output Control							*/
 #define COREFREQ_TOGGLE_OFF	0x0

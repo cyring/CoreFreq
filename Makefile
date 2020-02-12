@@ -9,11 +9,12 @@ KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
 UBENCH = 0
 FEAT_DBG = 0
+TASK_ORDER = 6
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
 
 obj-m := corefreqk.o
-ccflags-y := -D FEAT_DBG=$(FEAT_DBG)
+ccflags-y := -D FEAT_DBG=$(FEAT_DBG) -D TASK_ORDER=$(TASK_ORDER)
 
 ifneq ($(OPTIM_LVL),)
 	OPTIM_FLG = -O$(OPTIM_LVL)
@@ -50,41 +51,49 @@ clean:
 corefreqm.o: corefreqm.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreqm.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreqm.o
 
 corefreqd.o: corefreqd.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -pthread -c corefreqd.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreqd.o
 
 corefreqd: corefreqd.o corefreqm.o
 	$(CC) $(OPTIM_FLG) $(WARNING) corefreqd.c corefreqm.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreqd -lpthread -lm -lrt
 
 corefreq-ui.o: corefreq-ui.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-ui.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-ui.o
 
 corefreq-cli.o: corefreq-cli.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-cli.o
 
 corefreq-cli-rsc.o: corefreq-cli-rsc.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-cli-rsc.o
 
 corefreq-cli-json.o: corefreq-cli-json.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-json.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-cli-json.o
 
 corefreq-cli-extra.o: corefreq-cli-extra.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-extra.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-cli-extra.o
 
 corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
@@ -93,6 +102,7 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER) \
 		-o corefreq-cli -lm -lrt
 
 .PHONY: info
@@ -126,8 +136,11 @@ help:
 	"|  UBENCH=<N>                                                   |\n"\
 	"|    where <N> is 0 to disable or 1 to enable micro-benchmark   |\n"\
 	"|                                                               |\n"\
+	"|  TASK_ORDER=<N>                                               |\n"\
+	"|    where <N> is a memory page unit of kernel allocation       |\n"\
+	"|                                                               |\n"\
 	"|  HWM_CHIPSET=<chipset>                                        |\n"\
-	"|    where <chipset> is W83627                                  |\n"\
+	"|    where <chipset> is W83627 or COMPATIBLE                    |\n"\
 	"|                                                               |\n"\
 	"|  FEAT_DBG=<N>                                                 |\n"\
 	"|    where <N> is 0 or 1 for FEATURE DEBUG level                |\n"\

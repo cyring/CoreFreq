@@ -6589,7 +6589,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
- && (FEAT_DBG > 1)
+ && (HWM_CHIPSET == COMPATIBLE)
 
     if (KPrivate->ZenIF_dev != NULL)
     {	FEAT_MSG("Building with Kernel amd_smn_read()")
@@ -9179,7 +9179,11 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	return (0);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3)
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data *policy)
+#else
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
+#endif
 {
 	if (policy != NULL) {
 		cpufreq_verify_within_cpu_limits(policy);
