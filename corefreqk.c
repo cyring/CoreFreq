@@ -6589,7 +6589,7 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
- && (HWM_CHIPSET == COMPATIBLE)
+ && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 
     if (KPrivate->ZenIF_dev != NULL)
     {	FEAT_MSG("Building with Kernel amd_smn_read()")

@@ -456,7 +456,7 @@ enum UNCORE_BOOST {
 
 #define UNCORE_BOOST(NC) UNCORE_RATIO_##NC
 
-#if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4050000000)
+#if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4850000000)
 #define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
 		MAX_FREQ_HZ / BaseClock					\
 ) )
