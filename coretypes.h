@@ -456,9 +456,15 @@ enum UNCORE_BOOST {
 
 #define UNCORE_BOOST(NC) UNCORE_RATIO_##NC
 
+#if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4050000000)
+#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
+		MAX_FREQ_HZ / BaseClock					\
+) )
+#else
 #define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
 		5250000000 / BaseClock					\
 ) )
+#endif
 
 enum PWR_DOMAIN {
 	DOMAIN_PKG,
@@ -1839,7 +1845,7 @@ typedef struct {
 #define TASK_LIMIT		(((4096 << TASK_ORDER) - SYSGATE_STRUCT_SIZE) \
 				/ sizeof(TASK_MCB))
 #else
-#define TASK_LIMIT		(((4096 << 6) - SYSGATE_STRUCT_SIZE)	\
+#define TASK_LIMIT		(((4096 << 5) - SYSGATE_STRUCT_SIZE)	\
 				/ sizeof(TASK_MCB))
 #endif
 
