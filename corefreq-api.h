@@ -503,6 +503,7 @@ typedef struct
 	/* 80h */	SNB_EP_TADWAYNESS	TAD;		/* 12x32 bits */
 		} SNB_EP;
 		struct {
+	/* 5000h */	SKL_IMC_MAD_MAPPING	MADCH;		/* 32 bits    */
 	/* 5004h */	SKL_IMC_MAD_CHANNEL	MADC0,		/* 32 bits    */
 	/* 5008h */				MADC1;		/* 32 bits    */
 	/* 500Ch */	SKL_IMC_MAD_DIMM	MADD0,		/* 32 bits    */

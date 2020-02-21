@@ -2773,8 +2773,14 @@ void Query_SKL_IMC(void __iomem *mchmap)
 
 	Proc->Uncore.CtrlCount = 1;
 	/* Intra channel configuration */
-	Proc->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
-	Proc->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
+	Proc->Uncore.MC[0].SKL.MADCH.value = readl(mchmap + 0x5000);
+	if (Proc->Uncore.MC[0].SKL.MADCH.CH_L_MAP) {
+		Proc->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5008);
+		Proc->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5004);
+	} else {
+		Proc->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
+		Proc->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
+	}
 	/* DIMM parameters */
 	Proc->Uncore.MC[0].SKL.MADD0.value = readl(mchmap + 0x500c);
 	Proc->Uncore.MC[0].SKL.MADD1.value = readl(mchmap + 0x5010);

@@ -8670,9 +8670,9 @@ CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	return (0);
 }
 
-size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
-			CPU_STRUCT *Cpu,
-			const unsigned int cpu)
+size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
 {
 	return (snprintf(buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
@@ -8690,9 +8690,44 @@ size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
 		11, hSpace));
 }
 
-size_t Draw_Freq_Celsius(struct FLIP_FLOP *CFlop,
+size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
+{
+	return (snprintf(buffer, 17+8+10+7+7+7+7+7+7+11+1,
+		"%7.2f" " (" "%5u" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%.*s",
+		CFlop->Frequency.Perf,
+		CFlop->Ratio.Perf,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		11, hSpace));
+}
+
+size_t (*Draw_Freq_Spaces_Matrix[2])(	struct FLIP_FLOP*,
+					CPU_STRUCT*,
+					const unsigned int ) = \
+{
+	Draw_Relative_Freq_Spaces,
+	Draw_Absolute_Freq_Spaces
+};
+
+size_t Draw_Freq_Spaces(struct FLIP_FLOP *CFlop,
 			CPU_STRUCT *Cpu,
 			const unsigned int cpu)
+{
+	return (Draw_Freq_Spaces_Matrix[draw.Load](CFlop, Cpu, cpu));
+}
+
+size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
 {
 	return (snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
@@ -8712,9 +8747,46 @@ size_t Draw_Freq_Celsius(struct FLIP_FLOP *CFlop,
 		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
 }
 
-size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
+size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
+{
+	return (snprintf(buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5u" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Frequency.Perf,
+		CFlop->Ratio.Perf,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cpu->PowerThermal.Limit[SENSOR_LOWEST],
+		CFlop->Thermal.Temp,
+		Cpu->PowerThermal.Limit[SENSOR_HIGHEST]));
+}
+
+size_t (*Draw_Freq_Celsius_Matrix[2])(	struct FLIP_FLOP*,
+					CPU_STRUCT*,
+					const unsigned int ) = \
+{
+	Draw_Relative_Freq_Celsius,
+	Draw_Absolute_Freq_Celsius
+};
+
+size_t Draw_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
-				const unsigned int cpu)
+				const unsigned int cpu )
+{
+	return (Draw_Freq_Celsius_Matrix[draw.Load](CFlop, Cpu, cpu));
+};
+
+size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
 {
 	return (snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
@@ -8734,9 +8806,46 @@ size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])));
 }
 
-size_t Draw_Freq_Celsius_PerCore(struct FLIP_FLOP *CFlop,
+size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
+{
+	return (snprintf(buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+		"%7.2f" " (" "%5u" ") "			\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
+		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
+		"%-3u" "/" "%3u" "/" "%3u",
+		CFlop->Frequency.Perf,
+		CFlop->Ratio.Perf,
+		100.f * CFlop->State.Turbo,
+		100.f * CFlop->State.C0,
+		100.f * CFlop->State.C1,
+		100.f * CFlop->State.C3,
+		100.f * CFlop->State.C6,
+		100.f * CFlop->State.C7,
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_LOWEST]),
+		Cels2Fahr(CFlop->Thermal.Temp),
+		Cels2Fahr(Cpu->PowerThermal.Limit[SENSOR_HIGHEST])));
+}
+
+size_t (*Draw_Freq_Fahrenheit_Matrix[2])(	struct FLIP_FLOP*,
+						CPU_STRUCT*,
+						const unsigned int ) = \
+{
+	Draw_Relative_Freq_Fahrenheit,
+	Draw_Absolute_Freq_Fahrenheit
+};
+
+size_t Draw_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 				CPU_STRUCT *Cpu,
-				const unsigned int cpu)
+				const unsigned int cpu )
+{
+	return (Draw_Freq_Fahrenheit_Matrix[draw.Load](CFlop, Cpu, cpu));
+};
+
+size_t Draw_Freq_Celsius_PerCore(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
@@ -8748,7 +8857,7 @@ size_t Draw_Freq_Celsius_PerCore(struct FLIP_FLOP *CFlop,
 
 size_t Draw_Freq_Fahrenheit_PerCore(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
-					const unsigned int cpu)
+					const unsigned int cpu )
 {
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
@@ -8758,9 +8867,9 @@ size_t Draw_Freq_Fahrenheit_PerCore(	struct FLIP_FLOP *CFlop,
 	}
 }
 
-size_t Draw_Freq_Celsius_PerPkg(struct FLIP_FLOP *CFlop,
-				CPU_STRUCT *Cpu,
-				const unsigned int cpu)
+size_t Draw_Freq_Celsius_PerPkg(	struct FLIP_FLOP *CFlop,
+					CPU_STRUCT *Cpu,
+					const unsigned int cpu )
 {
 	if (cpu == Shm->Proc.Service.Core) {
 		return (Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
@@ -8771,7 +8880,7 @@ size_t Draw_Freq_Celsius_PerPkg(struct FLIP_FLOP *CFlop,
 
 size_t Draw_Freq_Fahrenheit_PerPkg(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
-					const unsigned int cpu)
+					const unsigned int cpu )
 {
 	if (cpu == Shm->Proc.Service.Core) {
 		return (Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
