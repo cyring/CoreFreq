@@ -9179,7 +9179,7 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	return (0);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19)
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data *policy)
 #else
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
