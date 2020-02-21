@@ -380,6 +380,11 @@ typedef struct
 	CLOCK				Clock;
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
+
+	struct {
+		unsigned int		Perf,
+					Target;
+	} Ratio;
 } CORE;
 
 typedef struct
@@ -713,12 +718,7 @@ typedef struct
 				Experimental,
 				HotPlug,
 				PCI;
-		struct {
-		unsigned short
-				CPUidle :  1-0,
-				CPUfreq :  2-1,
-				unused	: 16-2;
-		} Driver;
+		KERNEL_DRIVER	Driver;
 	} Registration;
 
 	enum HYPERVISOR 	HypervisorID;

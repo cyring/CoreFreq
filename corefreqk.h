@@ -510,13 +510,6 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
-#define StrCopy(_dest, _src, _max)					\
-({									\
-	size_t _min = KMIN((_max - 1), strlen(_src));			\
-	memcpy(_dest, _src, _min);					\
-	_dest[_min] = '\0';						\
-})
-
 typedef struct {
 	FEATURES	*Features;
 	unsigned int	SMT_Count,
@@ -3641,6 +3634,9 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 };
 
 #ifdef CONFIG_CPU_FREQ
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 19)
+#define CPUFREQ_POLICY_UNKNOWN		(0)
+#endif
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy) ;
 static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy) ;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19)
@@ -4642,7 +4638,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Westmere_EX] = {							/* 25*/
 	.Signature = _Westmere_EX,
-	.Query = Query_Core2,
+	.Query = Query_Core2, /* Xeon processor 7500 series-based platform */
 	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -4650,7 +4646,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
 	.ClockMod = ClockMod_Nehalem_PPC,
-	.TurboClock = NULL,
+	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
 	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,

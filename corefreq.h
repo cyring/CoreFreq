@@ -154,6 +154,16 @@ typedef struct
 					IOCHECK;
 			} NMI;
 		} Counter;
+
+		struct {
+			unsigned int	Perf,
+					Target;
+		} Ratio;
+
+		struct {
+			double		Perf,
+					Target;
+		} Frequency;
 	} FlipFlop[2];
 
 	struct {
@@ -321,12 +331,7 @@ typedef struct
 				Experimental,/* 0: Disable, 1: Enable	*/
 				HotPlug, /* < 0: Disable, Other: Enable */
 				PCI;	/*  < 0: Disable, other: Enable */
-		struct {
-		unsigned short
-				CPUidle :  1-0,/* 0: Disable, 1: Enable */
-				CPUfreq :  2-1,/* 0: Disable, 1: Enable */
-				unused	: 16-2;
-		} Driver;
+		KERNEL_DRIVER	Driver;
 	} Registration;
 
 	struct {

@@ -216,6 +216,7 @@ static struct {
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	struct cpufreq_driver	FreqDriver;
+	struct cpufreq_governor FreqGovernor;
 #endif /* CONFIG_CPU_FREQ */
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
@@ -232,6 +233,10 @@ static struct {
 	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
 	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
 	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy
+	},
+	.FreqGovernor = {
+			.name	= "corefreq",
+			.owner	= THIS_MODULE,
 	}
 #endif /* CONFIG_CPU_FREQ */
 };
@@ -3756,13 +3761,15 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 void For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 {
 	unsigned int cpu = Proc->CPU.Count;
-	do {
-		cpu--;	/* From last AP to BSP */
+  do {
+	cpu--;	/* From last AP to BSP */
 
-		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
-			smp_call_function_single(cpu, PerCore, pClockZen, 1);
-
-	} while (cpu != 0) ;
+    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+    && ((pClockZen->pClockMod->cpu == -1)||(pClockZen->pClockMod->cpu == cpu)))
+    {
+	smp_call_function_single(cpu, PerCore, pClockZen, 1);
+    }
+  } while (cpu != 0) ;
 }
 
 long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
@@ -3947,21 +3954,36 @@ static void Set_SandyBridge_Target(CORE *Core, unsigned int ratio)
 	Core->PowerThermal.PerfControl.SNB.TargetRatio = ratio;
 }
 
+#define GET_CORE2_TARGET(Core)						\
+(									\
+	Core->PowerThermal.PerfControl.CORE.TargetRatio 		\
+)
+
 typedef unsigned int (*GET_TARGET)(CORE*);
 
 static unsigned int Get_Core2_Target(CORE *Core)
 {
-	return (Core->PowerThermal.PerfControl.CORE.TargetRatio);
+	return (GET_CORE2_TARGET(Core));
 }
+
+#define GET_NEHALEM_TARGET(Core)					\
+(									\
+	Core->PowerThermal.PerfControl.NHM.TargetRatio & 0xff		\
+)
 
 static unsigned int Get_Nehalem_Target(CORE *Core)
 {
-	return (Core->PowerThermal.PerfControl.NHM.TargetRatio & 0xff);
+	return (GET_NEHALEM_TARGET(Core));
 }
+
+#define GET_SANDYBRIDGE_TARGET(Core)					\
+(									\
+	Core->PowerThermal.PerfControl.SNB.TargetRatio			\
+)
 
 static unsigned int Get_SandyBridge_Target(CORE *Core)
 {
-	return (Core->PowerThermal.PerfControl.SNB.TargetRatio);
+	return (GET_SANDYBRIDGE_TARGET(Core));
 }
 
 typedef int (*CMP_TARGET)(CORE*, unsigned int);
@@ -4098,14 +4120,15 @@ static void ClockMod_PPC_PerCore(void *arg)
 void For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 {
 	unsigned int cpu = Proc->CPU.Count;
-    do {
+  do {
 	cpu--;	/* From last AP to BSP */
 
-      if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
-      {
+    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+    && ((pClockPPC->pClockMod->cpu == -1)||(pClockPPC->pClockMod->cpu == cpu)))
+    {
 	smp_call_function_single(cpu, ClockMod_PPC_PerCore, pClockPPC, 1);
-      }
-    } while (cpu != 0) ;
+    }
+  } while (cpu != 0) ;
 }
 
 long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
@@ -4213,10 +4236,11 @@ void For_All_HWP_Clock(CLOCK_ARG *pClockMod)
     do {
 	cpu--;	/* From last AP to BSP */
 
-      if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
-      {
+	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+	&& ((pClockMod->cpu == -1) || (pClockMod->cpu == cpu)))
+	{
 	smp_call_function_single(cpu, ClockMod_HWP_PerCore, pClockMod, 1);
-      }
+	}
     } while (cpu != 0) ;
 }
 
@@ -6872,6 +6896,9 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.CORE.CurrFID;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -6886,15 +6913,16 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
 			break;
 		}
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_CORE2_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -6965,6 +6993,7 @@ static void Stop_Core2(void *arg)
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 {
+	PERF_STATUS PerfStatus = {.value = 0};
 	CORE *Core;
 	unsigned int cpu;
 
@@ -7028,6 +7057,9 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		    #endif
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.NHM.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -7057,6 +7089,9 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_NEHALEM_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7230,6 +7265,9 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -7244,17 +7282,18 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7433,6 +7472,9 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -7447,17 +7489,18 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7670,6 +7713,9 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -7684,17 +7730,18 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7875,6 +7922,9 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -7889,17 +7939,18 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8104,6 +8155,9 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -8118,17 +8172,18 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8306,6 +8361,9 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -8320,17 +8378,18 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
 			break;
 		}
 
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8442,11 +8501,12 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 
 		RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-		Core->PowerThermal.VID = FidVidStatus.CurrVID;
+		Core->PowerThermal.VID	= FidVidStatus.CurrVID;
+		Core->Ratio.Perf	= 8 + FidVidStatus.CurrFID;
 
 		/* P-States */
 		Core->Counter[1].C0.UCC = Core->Counter[0].C0.UCC
-					+ (8 + FidVidStatus.CurrFID)
+					+ Core->Ratio.Perf
 					* Core->Clock.Hz;
 
 		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
@@ -8637,6 +8697,12 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
+		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
+		RDMSR(PstateDef, pstate);
+
+		Core->Ratio.Perf = PstateDef.Family_15h.CpuFid;
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if (Core->T.CoreID == 0) {
@@ -8651,16 +8717,10 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-			pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-			RDMSR(PstateDef, pstate);
 			Core->PowerThermal.VID = PstateDef.Family_15h.CpuVid;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-			pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-			RDMSR(PstateDef, pstate);
 			Core->PowerThermal.VID = PstateDef.Family_15h.CpuVid;
 			break;
 		}
@@ -8725,8 +8785,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			break;
 		    }
 
-			/* TODO( Read the boosted frequency FID )	*/
-
 			RDCOUNTER(Proc->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
 					MSR_AMD_PKG_ENERGY_STATUS);
 
@@ -8743,6 +8801,11 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 			Core->PowerThermal.VID = 0;
 		}
 
+		/* Read the boosted frequency FID.			*/
+		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+		Core->Ratio.Perf=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
+						PstateDef.Family_17h.CpuDfsId);
+
 		switch (SCOPE_OF_FORMULA(Proc->thermalFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
@@ -8757,12 +8820,10 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		switch (SCOPE_OF_FORMULA(Proc->voltageFormula)) {
 		case FORMULA_SCOPE_CORE:
 		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
 			Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		    }
 			break;
 		case FORMULA_SCOPE_SMT:
-			RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
 			Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 			break;
 		}
@@ -8857,7 +8918,6 @@ static void Stop_AMD_Family_17h(void *arg)
 long Sys_OS_Driver_Query(SYSGATE *SysGate)
 {
     if (SysGate != NULL) {
-	unsigned int cpu;
 	int rc;
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
@@ -8905,15 +8965,17 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
-	cpu = get_cpu();
-	rc = cpufreq_get_policy(&freqPolicy, cpu);
-	put_cpu();
+	rc = cpufreq_get_policy(&freqPolicy, Proc->Service.Core);
 	if (rc == 0) {
 		struct cpufreq_governor *pGovernor = freqPolicy.governor;
 		if (pGovernor != NULL) {
 			StrCopy(SysGate->OS.FreqDriver.Governor,
 				pGovernor->name, CPUFREQ_NAME_LEN);
+		} else {
+			SysGate->OS.FreqDriver.Governor[0] = '\0';
 		}
+	} else {
+		SysGate->OS.FreqDriver.Governor[0] = '\0';
 	}
 #endif /* CONFIG_CPU_FREQ */
 	return (0);
@@ -9193,6 +9255,36 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
 
 static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
 {
+    if (policy != NULL) {
+	if ((policy->cpu >= 0) && (policy->cpu < Proc->CPU.Count)
+	&& (Arch[Proc->ArchID].ClockMod))
+	{
+		CLOCK_ARG clockMod = {	.Offset = Proc->Boost[BOOST(TGT)],
+					.cpu = policy->cpu,
+					 .NC = CLOCK_MOD_TGT
+		};
+		switch (policy->policy) {
+		case CPUFREQ_POLICY_POWERSAVE:
+			Controller_Stop(1);
+			clockMod.Offset = Proc->Boost[BOOST(MIN)]
+					- clockMod.Offset;
+			Arch[Proc->ArchID].ClockMod(&clockMod);
+			Controller_Start(1);
+			break;
+		case CPUFREQ_POLICY_PERFORMANCE:
+			Controller_Stop(1);
+			clockMod.Offset = Proc->Boost[BOOST(MAX)]
+					- clockMod.Offset;
+			Arch[Proc->ArchID].ClockMod(&clockMod);
+			Controller_Start(1);
+			break;
+		case CPUFREQ_POLICY_UNKNOWN:
+			/* Fallthrough */
+		default:
+			break;
+		}
+	}
+    }
 	return (0);
 }
 #endif /* CONFIG_CPU_FREQ */
@@ -9257,6 +9349,12 @@ static int CoreFreqK_FreqDriver_Init(void)
 						Proc->TurboBoost_Mask) != 0;
 
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
+
+	if (cpufreq_register_governor(&CoreFreqK.FreqGovernor) == 0) {
+		Proc->Registration.Driver.Governor = 1;
+	} else {
+		Proc->Registration.Driver.Governor = 0;
+	}
     }
 #endif /* CONFIG_CPU_FREQ */
 	return (rc);
@@ -9582,11 +9680,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
     switch (cmd)
     {
     case COREFREQ_IOCTL_SYSUPDT:
-	if (Proc->OS.Gate != NULL) {
-		Sys_DumpTask(Proc->OS.Gate);
-		Sys_MemInfo(Proc->OS.Gate);
-		rc = 0;
-	}
+	rc = Sys_OS_Driver_Query(Proc->OS.Gate);
+	rc = rc == 0 ? 1 : rc;
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
@@ -10655,6 +10750,9 @@ static void __exit CoreFreqK_cleanup(void)
 	if (Proc != NULL) {
 		unsigned int cpu = 0;
 
+		if (Proc->Registration.Driver.Governor) {
+			cpufreq_unregister_governor(&CoreFreqK.FreqGovernor);
+		}
 		if (Proc->Registration.Driver.CPUfreq) {
 			CoreFreqK_FreqDriver_UnInit();
 		}

@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	73
-#define COREFREQ_REV	7
+#define COREFREQ_MINOR	74
+#define COREFREQ_REV	0
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -388,6 +388,13 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 #define KMAX(M, m)	((M) > (m) ? (M) : (m))
 #define KMIN(m, M)	((m) < (M) ? (m) : (M))
 
+#define StrCopy(_dest, _src, _max)					\
+({									\
+	size_t _min = KMIN((_max - 1), strlen(_src));			\
+	memcpy(_dest, _src, _min);					\
+	_dest[_min] = '\0';						\
+})
+
 #define DRV_DEVNAME	"corefreqk"
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
 
@@ -514,10 +521,16 @@ typedef struct
 		( ((this_ratio * clock.Q) * 1000LLU * interval) 	\
 		+ ((this_ratio * clock.R) / max_ratio))
 
+#define ABS_FREQ(this_ratio, this_clock)				\
+		(this_ratio * this_clock.Hz) / 1000000.0;
+
 typedef union {
 	signed long long	sllong;
 	struct {
-		signed int	Offset;
+	    struct {
+		signed short	Offset;
+		signed short	cpu;
+	    };
 		unsigned int	NC;
 	};
 } CLOCK_ARG;
@@ -1787,6 +1800,13 @@ typedef struct
 #ifndef _LINUX_CPUFREQ_H
 #define CPUFREQ_NAME_LEN	16
 #endif
+
+typedef struct {			/* 0: Disable, 1: Enable	*/
+	unsigned short	CPUidle :  1-0,
+			CPUfreq :  2-1,
+			Governor:  3-2,
+			unused	: 16-3;
+} KERNEL_DRIVER;
 
 typedef struct {
 	struct {

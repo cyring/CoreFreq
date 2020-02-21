@@ -1042,6 +1042,12 @@ static void *Core_Cycle(void *arg)
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
+
+	CFlip->Ratio.Perf	= Core->Ratio.Perf;
+	CFlip->Ratio.Target	= Core->Ratio.Target;
+
+	CFlip->Frequency.Perf	= ABS_FREQ(Core->Ratio.Perf, CFlip->Clock);
+	CFlip->Frequency.Target = ABS_FREQ(Core->Ratio.Target, CFlip->Clock);
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
@@ -1188,7 +1194,6 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 {
 	Bit32	fTSC = Proc->Features.Std.EDX.TSC,
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
-	size_t	len;
 
 	/* Copy all initial CPUID features.				*/
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
@@ -1203,15 +1208,11 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	/* Hypervisor identifier.					*/
 	Shm->Proc.HypervisorID = Proc->HypervisorID;
 	/* Copy the Architecture name.					*/
-	len = KMIN(strlen(Proc->Architecture), CODENAME_LEN - 1);
-	memcpy(Shm->Proc.Architecture, Proc->Architecture, len);
-	Shm->Proc.Architecture[len] = '\0';
+	StrCopy(Shm->Proc.Architecture, Proc->Architecture, CODENAME_LEN);
 	/* Copy the base clock ratios.					*/
 	memcpy(Shm->Proc.Boost, Proc->Boost,(BOOST(SIZE))*sizeof(unsigned int));
 	/* Copy the processor's brand string.				*/
-	len = KMIN(strlen(Proc->Features.Info.Brand), 48 + 4 - 1);
-	memcpy(Shm->Proc.Brand, Proc->Features.Info.Brand, len);
-	Shm->Proc.Brand[len] = '\0';
+	StrCopy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48 + 4);
 	/* Compute the TSC mode: None, Variant, Invariant		*/
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
@@ -1423,8 +1424,7 @@ void Package_Update(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Registration.HotPlug = Proc->Registration.HotPlug;
 	Shm->Registration.PCI = Proc->Registration.PCI;
 	BITSTOR(LOCKLESS, Shm->Registration.NMI, Proc->Registration.NMI);
-	Shm->Registration.Driver.CPUidle = Proc->Registration.Driver.CPUidle;
-	Shm->Registration.Driver.CPUfreq = Proc->Registration.Driver.CPUfreq;
+	Shm->Registration.Driver = Proc->Registration.Driver;
 	/* Copy the timer interval delay.				*/
 	Shm->Sleep.Interval = Proc->SleepInterval;
 	/* Compute the polling wait time based on the timer interval.	*/
@@ -3561,7 +3561,6 @@ static char *Chipset[CHIPSETS] = {
 
 void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 {
-	size_t len;
 	/* Copy the # of controllers and the chipset ID.		*/
 	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
 	Shm->Uncore.ChipID = Proc->Uncore.ChipID;
@@ -3884,10 +3883,9 @@ void Uncore(SHM_STRUCT *Shm, PROC *Proc, CORE *Core)
 		break;
 	}
 	/* Copy the chipset codename.					*/
-	len = KMIN(strlen(Chipset[Shm->Uncore.Chipset.ArchID]), CODENAME_LEN-1);
-	memcpy( Shm->Uncore.Chipset.CodeName,
-		Chipset[Shm->Uncore.Chipset.ArchID], len);
-	Shm->Uncore.Chipset.CodeName[len] = '\0';
+	StrCopy(Shm->Uncore.Chipset.CodeName,
+		Chipset[Shm->Uncore.Chipset.ArchID],
+		CODENAME_LEN);
 	/* Copy the Uncore clock ratios.				*/
 	memcpy( Shm->Uncore.Boost,
 		Proc->Uncore.Boost,
@@ -4085,26 +4083,22 @@ void SysGate_OS_Driver(REF *Ref)
     if (strlen(SysGate->OS.IdleDriver.Name) > 0) {
 	int idx;
 
-	memcpy(Shm->SysGate.OS.IdleDriver.Name,
-		SysGate->OS.IdleDriver.Name, CPUIDLE_NAME_LEN - 1);
-	Shm->SysGate.OS.IdleDriver.Name[CPUIDLE_NAME_LEN - 1] = '\0';
+	StrCopy(Shm->SysGate.OS.IdleDriver.Name,
+		SysGate->OS.IdleDriver.Name,
+		CPUIDLE_NAME_LEN);
 
 	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
 	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-	size_t len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Name),
-			CPUIDLE_NAME_LEN - 1);
-		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Name,
-			SysGate->OS.IdleDriver.State[idx].Name, len);
-		Shm->SysGate.OS.IdleDriver.State[idx].Name[len] = '\0';
+		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Name,
+			SysGate->OS.IdleDriver.State[idx].Name,
+			CPUIDLE_NAME_LEN);
 
-		len=KMIN(strlen(SysGate->OS.IdleDriver.State[idx].Desc),
-			CPUIDLE_NAME_LEN - 1);
-		memcpy( Shm->SysGate.OS.IdleDriver.State[idx].Desc,
-			SysGate->OS.IdleDriver.State[idx].Desc, len);
-		Shm->SysGate.OS.IdleDriver.State[idx].Desc[len] = '\0';
+		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Desc,
+			SysGate->OS.IdleDriver.State[idx].Desc,
+			CPUIDLE_NAME_LEN);
 
 		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency =
 			SysGate->OS.IdleDriver.State[idx].exitLatency;
@@ -4117,18 +4111,14 @@ void SysGate_OS_Driver(REF *Ref)
 	}
     }
     if (strlen(SysGate->OS.FreqDriver.Name) > 0) {
-	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Name),
-			CPUFREQ_NAME_LEN - 1);
-	memcpy(Shm->SysGate.OS.FreqDriver.Name,
-		SysGate->OS.FreqDriver.Name, len);
-	Shm->SysGate.OS.FreqDriver.Name[len] = '\0';
+	StrCopy(Shm->SysGate.OS.FreqDriver.Name,
+		SysGate->OS.FreqDriver.Name,
+		CPUFREQ_NAME_LEN);
     }
     if (strlen(SysGate->OS.FreqDriver.Governor) > 0) {
-	size_t len=KMIN(strlen(SysGate->OS.FreqDriver.Governor),
-			CPUFREQ_NAME_LEN - 1);
-	memcpy(Shm->SysGate.OS.FreqDriver.Governor,
-		SysGate->OS.FreqDriver.Governor, len);
-	Shm->SysGate.OS.FreqDriver.Governor[len] = '\0';
+	StrCopy(Shm->SysGate.OS.FreqDriver.Governor,
+		SysGate->OS.FreqDriver.Governor,
+		CPUFREQ_NAME_LEN);
     }
 }
 
@@ -4354,6 +4344,9 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	switch (rc) {
 	case -EPERM:
 		break;
+	case 1:
+		SysGate_OS_Driver(Ref);
+	/* Fallthrough */
 	case 0: /* Update SHM and notify a platform changed.		*/
 		UpdateFeatures(Ref);
 		if (!BITVAL(Ref->Shm->Proc.Sync, NTFY))
@@ -5185,7 +5178,6 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 				fd->Svr, 0)) != MAP_FAILED)
 	    {
 		__typeof__ (errno) fork_err = 0;
-		size_t len;
 		/* Clear SHM						*/
 		memset(Shm, 0, ShmSize);
 		/* Store version footprint into SHM			*/
@@ -5193,9 +5185,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 						COREFREQ_MINOR,
 						COREFREQ_REV	);
 		/* Store the daemon gate name.				*/
-		len = KMIN(sizeof(SHM_FILENAME), TASK_COMM_LEN - 1);
-		memcpy(Shm->ShmName, SHM_FILENAME, len);
-		Shm->ShmName[len] = '\0';
+		StrCopy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN);
 		/* Initialize the busy wait times.			*/
 		Shm->Sleep.ringWaiting  = TIMESPEC(SIG_RING_MS);
 		Shm->Sleep.childWaiting = TIMESPEC(CHILD_PS_MS);

@@ -524,6 +524,7 @@
 #define RSC_UNCORE_CLOCK_TITLE_CODE_EN	" %s Clock Uncore "
 
 #define RSC_SELECT_CPU_TITLE_CODE_EN	" CPU   Pkg  Core Thread "
+#define RSC_SELECT_RATIO_TITLE_CODE_EN	" CPU   Pkg  Core Thread  Freq.  "
 
 #define RSC_BOX_DISABLE_COND0_CODE_EN	"               Disable              "
 #define RSC_BOX_DISABLE_COND1_CODE_EN	"           <   Disable  >           "
