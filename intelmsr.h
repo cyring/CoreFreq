@@ -235,6 +235,10 @@
 	#define MSR_IA32_HWP_REQUEST_PKG	MSR_HWP_REQUEST_PKG
 #endif
 
+#ifndef MSR_HWP_INTERRUPT
+	#define MSR_HWP_INTERRUPT		0x00000773
+#endif
+
 #ifndef MSR_HWP_REQUEST
 	#define MSR_HWP_REQUEST 		0x00000774
 #endif
@@ -780,7 +784,7 @@ typedef union
 	{
 		unsigned long long
 		HWP_Enable	:  1-0,  /* Pkg: R/W-Once; 1=Enable	*/
-		ReservedBits	: 64-1;
+		ReservedBits	: 64-1;  /* **Must be zero**		*/
 	};
 } PM_ENABLE;
 
@@ -794,9 +798,23 @@ typedef union
 		Guaranteed	: 16-8,
 		Most_Efficient	: 24-16,
 		Lowest		: 32-24,
-		ReservedBits	: 64-32;
+		ReservedBits	: 64-32; /* **Must be zero**		*/
 	};
 } HWP_CAPABILITIES;	/* SMT: If CPUID.06H:EAX.[7] = 1		*/
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		EN_Guarantee_Chg:  1-0,
+		EN_Excursion_Min:  2-1,
+		EN_Highest_Chg	:  3-2,
+		EN_PECI_OVERRIDE:  4-3,  /* If CPUID[6].EAX[16] = 1	*/
+		ReservedBits	: 64-4;  /* **Must be zero**		*/
+	};
+} HWP_INTERRUPT; /* SMT[SKL,KBL,CFL,CNL] If CPUID.06H:EAX.[8] = 1	*/
 
 typedef union
 {	/* 06_4E/06_4F/06_5E/06_55/06_56/06_66/06_8E/06_9E		*/
@@ -830,7 +848,7 @@ typedef union
 	{
 		unsigned long long
 		HDC_Enable	:  1-0,  /* Pkg: R/W; 1=Enable		*/
-		ReservedBits	: 64-1;
+		ReservedBits	: 64-1;  /* **Must be zero**		*/
 	};
 } HDC_CONTROL;
 
