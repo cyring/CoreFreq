@@ -2101,7 +2101,18 @@ void Intel_Turbo_TDP_Config(void)
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 }
 
-static void PerCore_Intel_HWP_Quirk(void *arg)
+static void PerCore_Intel_HWP_Notification(void *arg)
+{
+    if ((arg != NULL) && Proc->Features.Power.EAX.HWP_Int) {
+	CORE *Core = (CORE *) arg;
+	/* HWP Notifications are fully disabled.			*/
+	Core->PowerThermal.HWP_Interrupt.value = 0;
+	WRMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
+	RDMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
+    }
+}
+
+static void PerCore_Intel_HWP_Ignition(void *arg)
 {
     if ((arg != NULL) && Proc->Features.Power.EAX.HWP_EPP) {
 	CORE *Core = (CORE *) arg;
@@ -2135,22 +2146,38 @@ void Intel_Hardware_Performance(void)
 	if (Proc->Features.Power.EAX.HWP_Reg)
 	{
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
-
+		/* Is the HWP requested and its current state is off ?	*/
 	    if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
 	    {
+		unsigned int cpu;
+		/*	From last AP to BSP				*/
+			cpu = Proc->CPU.Count;
+		do {
+			cpu--;
+
+		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+			/* Synchronous call.				*/
+			smp_call_function_single(cpu,
+						PerCore_Intel_HWP_Notification,
+						&KPublic->Core[cpu], 1);
+		    }
+		  } while (cpu != 0) ;
+
+		/* Enable the Hardware-controlled Performance States.	*/
 		PM_Enable.HWP_Enable = 1;
 		WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 
 		if (PM_Enable.HWP_Enable)
 		{
-			unsigned int cpu = Proc->CPU.Count;
+			cpu = Proc->CPU.Count;
 		do {
-			cpu--;	/* From last AP to BSP */
+			cpu--;
 
 		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+			/* Asynchronous call.				*/
 			smp_call_function_single(cpu,
-						PerCore_Intel_HWP_Quirk,
+						PerCore_Intel_HWP_Ignition,
 						&KPublic->Core[cpu], 0);
 		    }
 		  } while (cpu != 0) ;
@@ -2158,7 +2185,7 @@ void Intel_Hardware_Performance(void)
 	    }
 	}
 	Proc->Features.HWP_Enable = PM_Enable.HWP_Enable;
-
+	/*	Hardware Duty Cycling					*/
 	if (Proc->Features.Power.EAX.HDC_Reg) {
 		RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
 	}
