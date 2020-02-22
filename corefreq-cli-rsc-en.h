@@ -15,6 +15,18 @@
 	'~',' ','0','0','0',' ','0','0','0',' ','0','0','0',' ','H','z' \
 }
 
+#define RSC_LAYOUT_RULER_REL_LOAD_CODE_EN				\
+{									\
+	'R','e','l','a','t','i','v','e',' ','f','r','e','q','u','e','n',\
+	'c','y' 							\
+}
+
+#define RSC_LAYOUT_RULER_ABS_LOAD_CODE_EN				\
+{									\
+	'A','b','s','o','l','u','t','e',' ','f','r','e','q','u','e','n',\
+	'c','y' 							\
+}
+
 #define RSC_LAYOUT_RULER_FREQUENCY_AVG_CODE_EN				\
 {									\
 	'-','-','-','-','-','-',' ','%',' ','A','v','e','r','a','g','e',\

@@ -12,6 +12,8 @@ enum {
 	RSC_LAYOUT_HEADER_BCLK,
 	RSC_LAYOUT_HEADER_CACHES,
 	RSC_LAYOUT_RULER_LOAD,
+	RSC_LAYOUT_RULER_REL_LOAD,
+	RSC_LAYOUT_RULER_ABS_LOAD,
 	RSC_LAYOUT_MONITOR_FREQUENCY,
 	RSC_LAYOUT_MONITOR_INST,
 	RSC_LAYOUT_MONITOR_COMMON,
@@ -724,7 +726,7 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_LAYOUT_RULER_LOAD_ATTR					\
 {									\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -746,10 +748,16 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
+#define RSC_LAYOUT_RULER_VAR_LOAD_ATTR					\
+{									\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK 							\
+}
+
 #define RSC_LAYOUT_RULER_LOAD_CODE					\
 {									\
-	'-','-','-',' ','R','a','t','i','o',' ','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	'-','-','-',' ', '!',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
