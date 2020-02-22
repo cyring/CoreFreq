@@ -1751,7 +1751,6 @@ void Intel_Core_Platform_Info(void)
 	}
 	Proc->Boost[BOOST(MIN)] = KMIN(ratio0, ratio1);
 	Proc->Boost[BOOST(MAX)] = KMAX(ratio0, ratio1);
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.TgtRatio_Unlock = 1;
 	if ((pSpecific = LookupProcessor()) != NULL) {
@@ -1783,7 +1782,6 @@ void Intel_Platform_Turbo(void)
 
 	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.TgtRatio_Unlock = 1;
 	if ((pSpecific = LookupProcessor()) != NULL) {
@@ -3442,7 +3440,7 @@ void Query_AuthenticAMD(void)
 	} else { /* No Solution! */
 		Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
 	}
-	Proc->Boost[BOOST(TGT)]= Proc->Boost[BOOST(MAX)];
+
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
 
 	Proc->Features.SpecTurboRatio = 0;
@@ -3484,7 +3482,6 @@ void Query_AMD_Family_0Fh(void)
 
 	Proc->Features.SpecTurboRatio = 1;
     }
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3503,7 +3500,6 @@ void Query_AMD_Family_10h(void)
 					  / (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 3;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3523,7 +3519,6 @@ void Query_AMD_Family_11h(void)
 					  / (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3543,7 +3538,6 @@ void Query_AMD_Family_12h(void)
 					  /  PstateDef.Family_12h.CpuDid;
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3573,7 +3567,6 @@ void Query_AMD_Family_14h(void)
 		Proc->Boost[sort[pstate]] = (MaxFreq * 4) / ClockDiv;
 	}	/* @ MainPllOpFidMax MHz */
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 }
@@ -3593,7 +3586,6 @@ void Query_AMD_Family_15h(void)
 					  / (1 << PstateDef.Family_15h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
-	Proc->Boost[BOOST(TGT)] = Proc->Boost[BOOST(MAX)];
 
 	HyperThreading_Technology();
 
@@ -4036,6 +4028,19 @@ static int Cmp_SandyBridge_Target(CORE *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
+void Aggregate_Reset(enum RATIO_BOOST boost, unsigned int ratio)
+{
+	Proc->Boost[boost] = ratio;
+}
+
+void Aggregate_Ratio(enum RATIO_BOOST boost, unsigned int ratio)
+{
+	if (ratio > Proc->Boost[boost])
+	{
+		Proc->Boost[boost] = ratio;
+	}
+}
+
 void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 					GET_TARGET GetTarget,
 					CMP_TARGET CmpTarget,
@@ -4103,12 +4108,10 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 	}
   }
 
-  if (Core->Bind == Proc->Service.Core) {
-	Proc->Boost[BOOST(TGT)] = GetTarget(Core);
-	Proc->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
-	Proc->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
-	Proc->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
-  }
+	Aggregate_Ratio(BOOST(TGT), GetTarget(Core));
+    Aggregate_Ratio(BOOST(HWP_MIN),Core->PowerThermal.HWP_Request.Minimum_Perf);
+    Aggregate_Ratio(BOOST(HWP_MAX),Core->PowerThermal.HWP_Request.Maximum_Perf);
+    Aggregate_Ratio(BOOST(HWP_TGT),Core->PowerThermal.HWP_Request.Desired_Perf);
 }
 
 void DynamicAcceleration(CORE *Core)				/* Unique */
@@ -4176,10 +4179,6 @@ long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 
 	For_All_PPC_Clock(&ClockPPC);
 
-	Proc->Boost[BOOST(TGT)] = KPublic->Core[
-					Proc->Service.Core
-				]->PowerThermal.PerfControl.CORE.TargetRatio;
-
 	return (2);	/* Report a platform change */
 	}
     }
@@ -4198,10 +4197,6 @@ long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 
 	For_All_PPC_Clock(&ClockPPC);
 
-	Proc->Boost[BOOST(TGT)] = KPublic->Core[
-					Proc->Service.Core
-				]->PowerThermal.PerfControl.NHM.TargetRatio;
-
 	return (2);
 	}
     }
@@ -4219,10 +4214,6 @@ long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 	};
 
 	For_All_PPC_Clock(&ClockPPC);
-
-	Proc->Boost[BOOST(TGT)] = KPublic->Core[
-					Proc->Service.Core
-				]->PowerThermal.PerfControl.SNB.TargetRatio;
 
 	return (2);
 	}
@@ -5913,6 +5904,11 @@ void Controller_Init(void)
 
 void Controller_Start(int wait)
 {
+	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+	Aggregate_Reset(BOOST(HWP_MIN), 0);
+	Aggregate_Reset(BOOST(HWP_MAX), 0);
+	Aggregate_Reset(BOOST(HWP_TGT), 0);
+
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
