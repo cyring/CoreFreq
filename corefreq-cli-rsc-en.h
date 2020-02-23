@@ -536,7 +536,8 @@
 #define RSC_UNCORE_CLOCK_TITLE_CODE_EN	" %s Clock Uncore "
 
 #define RSC_SELECT_CPU_TITLE_CODE_EN	" CPU   Pkg  Core Thread "
-#define RSC_SELECT_RATIO_TITLE_CODE_EN	" CPU   Pkg  Core Thread  Freq.  "
+#define RSC_SELECT_FREQ_TITLE_CODE_EN	" CPU   Pkg  Core Thread "	\
+					"  Frequency   Ratio "
 
 #define RSC_BOX_DISABLE_COND0_CODE_EN	"               Disable              "
 #define RSC_BOX_DISABLE_COND1_CODE_EN	"           <   Disable  >           "
@@ -700,4 +701,6 @@
 			"Architectural - Microarchitectural Data Sampling"
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
+
+#define RSC_CREATE_SELECT_FREQ_TGT_CODE_EN	"  TGT       Processor     "
 

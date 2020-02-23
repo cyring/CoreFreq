@@ -314,6 +314,10 @@ typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 
 typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
 
+typedef void (*ITEM_CALLBACK)(unsigned int, ASCII*);
+
+typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
+
 #define RENDER_OK	0x000
 #define RENDER_KO	0x010
 #define RENDER_OFF	0x100

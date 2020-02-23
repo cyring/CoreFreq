@@ -4822,16 +4822,15 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[1], item, 7);
 }
 
-typedef void (*TITLE_CALLBACK)(unsigned int, char *);
-
-void TitleForTurboClock(unsigned int NC, char *title)
+void TitleForTurboClock(unsigned int NC, ASCII *title)
 {
-	snprintf(title, 15+11+1, (char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
+	snprintf((char *) title, 15+11+1,
+		(char *) RSC(TURBO_CLOCK_TITLE).CODE(), NC);
 }
 
-void TitleForRatioClock(unsigned int NC, char *title)
+void TitleForRatioClock(unsigned int NC, ASCII *title)
 {
-	snprintf(title, 14+6+1, (char *) RSC(RATIO_CLOCK_TITLE).CODE(),
+	snprintf((char *) title,14+6+1,(char *) RSC(RATIO_CLOCK_TITLE).CODE(),
 			(NC == CLOCK_MOD_TGT) || (NC == CLOCK_MOD_HWP_TGT) ?
 		(char *) RSC(TARGET).CODE() :
 			(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
@@ -4840,9 +4839,9 @@ void TitleForRatioClock(unsigned int NC, char *title)
 		"Min" : "");
 }
 
-void TitleForUncoreClock(unsigned int NC, char *title)
+void TitleForUncoreClock(unsigned int NC, ASCII *title)
 {
-	snprintf(title, 15+3+1, (char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
+	snprintf((char *) title,15+3+1,(char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
 			(NC == CLOCK_MOD_MAX) ? "Max" :
 			(NC == CLOCK_MOD_MIN) ? "Min" : "");
 }
@@ -4880,7 +4879,7 @@ Window *CreateRatioClock(unsigned long long id,
 			signed int medianColdZone,
 			signed int startingHotZone,
 			unsigned long long boxKey,
-			TITLE_CALLBACK TitleCallback,
+			ITEM_CALLBACK TitleCallback,
 			CUINT oCol)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
@@ -4955,7 +4954,7 @@ Window *CreateRatioClock(unsigned long long id,
 	  }
 	}
 
-	TitleCallback(NC, (char*) item);
+	TitleCallback(NC, item);
 	StoreWindow(wCK, .title, (char*) item);
 
 	if (lowestShift >= hthWin) {
@@ -5031,49 +5030,98 @@ Window *CreateSelectCPU(unsigned long long id)
 	return (wUSR);
 }
 
-void Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+void Pkg_Item_Target_Freq(unsigned int cpu, ASCII *item)
 {
-	struct FLIP_FLOP *CFlop = (struct FLIP_FLOP*) data.pvoid;
-	char item[8+1];
-	snprintf(item, 8+1,"%7.2f", CFlop->Frequency.Target);
-	memcpy(&grid->cell.item[grid->cell.length - 8], item, 7);
+	struct FLIP_FLOP *SFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_TGT)+9+8+10+1,
+			"%s" "%7.2f MHz [%4u ] ",
+			RSC(CREATE_SELECT_FREQ_TGT).CODE(),
+			(double)(Shm->Proc.Boost[BOOST(TGT)] * SFlop->Clock.Hz)
+				/ 1000000.0,
+		Shm->Proc.Boost[BOOST(TGT)]);
 }
 
-Window *CreateSelectFreq(unsigned long long id)
+void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
+
+	ASCII item[8+8+10+1];
+	snprintf((char *) item, 8+8+10+1,
+			"%7.2f MHz [%4u ]",
+			(double)(Shm->Proc.Boost[BOOST(TGT)] * SFlop->Clock.Hz)
+			/ 1000000.0,
+			Shm->Proc.Boost[BOOST(TGT)]);
+
+	memcpy(&grid->cell.item[grid->cell.length - 20], item, 19);
+}
+
+void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+			"  %03u  %4d%6d%6d   " "%7.2f MHz [%4u ] ",
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID,
+			CFlop->Frequency.Target,
+			CFlop->Ratio.Target);
+}
+
+void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	struct FLIP_FLOP *CFlop = (struct FLIP_FLOP*) data.pvoid;
+	ASCII item[8+8+10+1];
+	snprintf((char *) item, 8+8+10+1,
+			"%7.2f MHz [%4u ]",
+			CFlop->Frequency.Target,
+			CFlop->Ratio.Target);
+
+	memcpy(&grid->cell.item[grid->cell.length - 20], item, 19);
+}
+
+Window *CreateSelectFreq(unsigned long long id,
+			ITEM_CALLBACK Pkg_Item_Callback,
+			ITEM_CALLBACK CPU_Item_Callback,
+			UPDATE_CALLBACK Pkg_Freq_Update,
+			UPDATE_CALLBACK CPU_Freq_Update)
 {
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, 1 + Shm->Proc.CPU.Count,
 					13 + 27 + 3, TOP_HEADER_ROW );
     if (wFreq != NULL) {
-	ASCII *item = malloc(8+10+11+11+11+8+1);
+	ASCII *item = malloc(26+10+11+11+11+8+1);
 	const unsigned long long all = id | (0xffff ^ CORE_COUNT);
 	unsigned int cpu;
 
-	StoreTCell(wFreq, all, "           [ ALL CORES ]          ",
-				MakeAttr(YELLOW, 0, BLACK, 1));
+	Pkg_Item_Callback(Shm->Proc.Service.Core, item);
+
+	GridCall(StoreTCell(wFreq, all, (char*) item,
+					RSC(CREATE_SELECT_FREQ_PKG).ATTR()),
+		Pkg_Freq_Update);
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		snprintf((char*) item, 8+10+11+11+11+8+1,
-				"  %03u  %4d%6d%6d   %7.2f ",
-				cpu,
-				Shm->Cpu[cpu].Topology.PackageID,
-				Shm->Cpu[cpu].Topology.CoreID,
-				Shm->Cpu[cpu].Topology.ThreadID,
-				CFlop->Frequency.Target);
+		CPU_Item_Callback(cpu, item);
 
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		StoreTCell(wFreq, SCANKEY_NULL,
-				item, RSC(CREATE_SELECT_RATIO_COND1).ATTR());
+				item, RSC(CREATE_SELECT_FREQ_COND1).ATTR());
 	    } else {
 		GridCall( StoreTCell(wFreq, id | (cpu ^ CORE_COUNT),
-				item, RSC(CREATE_SELECT_RATIO_COND0).ATTR()),
-			Target_Freq_Update, (void*) CFlop );
+				item, RSC(CREATE_SELECT_FREQ_COND0).ATTR()),
+			CPU_Freq_Update, (void*) CFlop );
 	    }
 	}
-	StoreWindow(wFreq,	.title, (char*) RSC(SELECT_RATIO_TITLE).CODE());
+	StoreWindow(wFreq,	.title, (char*) RSC(SELECT_FREQ_TITLE).CODE());
 	StoreWindow(wFreq,	.color[1].title, wFreq->hook.color[1].border);
 
 	StoreWindow(wFreq,	.key.Enter,	Enter_StickyCell);
@@ -7185,7 +7233,12 @@ int Shortcut(SCANKEY *scan)
 	unsigned long long id = scan->key | BOXKEY_RATIO_SELECT_OR;
 	Window *win = SearchWinListById(id, &winList);
 	if (win == NULL)
-		AppendWindow(CreateSelectFreq(id), &winList);
+		AppendWindow( CreateSelectFreq( id,
+						Pkg_Item_Target_Freq,
+						CPU_Item_Target_Freq,
+						Pkg_Target_Freq_Update,
+						CPU_Target_Freq_Update ),
+				&winList );
 	else
 		SetHead(&winList, win);
     }
