@@ -4278,18 +4278,6 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 	    case CLOCK_MOD_HWP_TGT:
 		For_All_HWP_Clock(pClockMod);
 
-		Proc->Boost[BOOST(HWP_MIN)] = KPublic->Core[
-						Proc->Service.Core
-				]->PowerThermal.HWP_Request.Minimum_Perf;
-
-		Proc->Boost[BOOST(HWP_MAX)] = KPublic->Core[
-						Proc->Service.Core
-				]->PowerThermal.HWP_Request.Maximum_Perf;
-
-		Proc->Boost[BOOST(HWP_TGT)] = KPublic->Core[
-						Proc->Service.Core
-				]->PowerThermal.HWP_Request.Desired_Perf;
-
 		return (2);
 	    case CLOCK_MOD_TGT:
 		return (ClockMod_SandyBridge_PPC(pClockMod));

@@ -687,4 +687,5 @@
 #define RSC_MECH_TAA_NO_CODE_FR "Architectural - TSX Asynchronous Abort"
 
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_FR	"  TGT       Processeur    "
+#define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_FR	"  HWP-TGT   Processeur    "
 

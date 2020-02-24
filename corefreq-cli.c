@@ -5035,7 +5035,7 @@ void Pkg_Item_Target_Freq(unsigned int cpu, ASCII *item)
 	struct FLIP_FLOP *SFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_TGT)+9+8+10+1,
-			"%s" "%7.2f MHz [%4u ] ",
+			"%s" "%7.2f MHz <%4u > ",
 			RSC(CREATE_SELECT_FREQ_TGT).CODE(),
 			(double)(Shm->Proc.Boost[BOOST(TGT)] * SFlop->Clock.Hz)
 				/ 1000000.0,
@@ -5052,7 +5052,7 @@ void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 	ASCII item[8+8+10+1];
 	snprintf((char *) item, 8+8+10+1,
-			"%7.2f MHz [%4u ]",
+			"%7.2f MHz <%4u >",
 			(double)(Shm->Proc.Boost[BOOST(TGT)] * SFlop->Clock.Hz)
 			/ 1000000.0,
 			Shm->Proc.Boost[BOOST(TGT)]);
@@ -5065,7 +5065,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
-			"  %03u  %4d%6d%6d   " "%7.2f MHz [%4u ] ",
+			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.CoreID,
@@ -5076,12 +5076,74 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	struct FLIP_FLOP *CFlop = (struct FLIP_FLOP*) data.pvoid;
+	unsigned int cpu = data.uint[0];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
 	ASCII item[8+8+10+1];
 	snprintf((char *) item, 8+8+10+1,
-			"%7.2f MHz [%4u ]",
+			"%7.2f MHz <%4u >",
 			CFlop->Frequency.Target,
 			CFlop->Ratio.Target);
+
+	memcpy(&grid->cell.item[grid->cell.length - 20], item, 19);
+}
+
+void Pkg_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
+{
+	struct FLIP_FLOP *SFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_HWP_TGT)+9+8+10+1,
+			"%s" "%7.2f MHz <%4u > ",
+			RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
+		(double)(Shm->Proc.Boost[BOOST(HWP_TGT)] * SFlop->Clock.Hz)
+			/ 1000000.0,
+		Shm->Proc.Boost[BOOST(HWP_TGT)]);
+}
+
+void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	struct FLIP_FLOP *SFlop = &Shm->Cpu[
+		Shm->Proc.Service.Core
+	].FlipFlop[
+		!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+	];
+
+	ASCII item[8+8+10+1];
+	snprintf((char *) item, 8+8+10+1,
+			"%7.2f MHz <%4u >",
+		(double)(Shm->Proc.Boost[BOOST(HWP_TGT)] * SFlop->Clock.Hz)
+			/ 1000000.0,
+			Shm->Proc.Boost[BOOST(HWP_TGT)]);
+
+	memcpy(&grid->cell.item[grid->cell.length - 20], item, 19);
+}
+
+void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID,
+		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf
+			* CFlop->Clock.Hz / 1000000.0,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf);
+}
+
+void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
+{
+	unsigned int cpu = data.uint[0];
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
+	ASCII item[8+8+10+1];
+	snprintf((char *) item, 8+8+10+1,
+			"%7.2f MHz <%4u >",
+		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf
+			* CFlop->Clock.Hz / 1000000.0,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf);
 
 	memcpy(&grid->cell.item[grid->cell.length - 20], item, 19);
 }
@@ -5094,7 +5156,7 @@ Window *CreateSelectFreq(unsigned long long id,
 {
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, 1 + Shm->Proc.CPU.Count,
-					13 + 27 + 3, TOP_HEADER_ROW );
+					30, TOP_HEADER_ROW );
     if (wFreq != NULL) {
 	ASCII *item = malloc(26+10+11+11+11+8+1);
 	const unsigned long long all = id | (0xffff ^ CORE_COUNT);
@@ -5108,8 +5170,6 @@ Window *CreateSelectFreq(unsigned long long id,
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-
 		CPU_Item_Callback(cpu, item);
 
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
@@ -5118,7 +5178,7 @@ Window *CreateSelectFreq(unsigned long long id,
 	    } else {
 		GridCall( StoreTCell(wFreq, id | (cpu ^ CORE_COUNT),
 				item, RSC(CREATE_SELECT_FREQ_COND0).ATTR()),
-			CPU_Freq_Update, (void*) CFlop );
+			CPU_Freq_Update, (unsigned int) cpu );
 	    }
 	}
 	StoreWindow(wFreq,	.title, (char*) RSC(SELECT_FREQ_TITLE).CODE());
@@ -7243,6 +7303,21 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
     }
     break;
+    case BOXKEY_RATIO_CLOCK_HWP_TGT:
+    {
+	unsigned long long id = scan->key | BOXKEY_RATIO_SELECT_OR;
+	Window *win = SearchWinListById(id, &winList);
+	if (win == NULL)
+		AppendWindow( CreateSelectFreq( id,
+						Pkg_Item_HWP_Target_Freq,
+						CPU_Item_HWP_Target_Freq,
+						Pkg_HWP_Target_Freq_Update,
+						CPU_HWP_Target_Freq_Update ),
+				&winList );
+	else
+		SetHead(&winList, win);
+    }
+    break;
     case BOXKEY_RATIO_CLOCK_MAX:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -7311,40 +7386,6 @@ int Shortcut(SCANKEY *scan)
 				BOXKEY_RATIO_CLOCK,
 				TitleForRatioClock,
 				37), &winList);
-	} else
-		SetHead(&winList, win);
-    }
-    break;
-    case BOXKEY_RATIO_CLOCK_HWP_TGT:
-    {
-	Window *win = SearchWinListById(scan->key, &winList);
-	if (win == NULL) {
-		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-
-		signed int lowestShift, highestShift;
-		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
-				0,
-				SProc->PowerThermal.HWP.Capabilities.Highest,
-				&lowestShift,
-				&highestShift);
-
-		AppendWindow(CreateRatioClock(scan->key,
-				Shm->Proc.Boost[BOOST(HWP_TGT)],
-				-1,
-				NC,
-				lowestShift,
-				highestShift,
-
-			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
-			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
-
-				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
-
-				BOXKEY_RATIO_CLOCK,
-				TitleForRatioClock,
-				38), &winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -7785,7 +7826,42 @@ int Shortcut(SCANKEY *scan)
 		SetHead(&winList, win);
 	    }
 	  }
-	    break;
+	  break;
+	case BOXKEY_RATIO_CLOCK_HWP_TGT: {
+		Window *win = SearchWinListById(scan->key, &winList);
+	    if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		signed int lowestShift, highestShift;
+/*TODO:		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;*/
+
+		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
+				0,
+				SProc->PowerThermal.HWP.Capabilities.Highest,
+				&lowestShift,
+				&highestShift);
+
+		AppendWindow(CreateRatioClock(scan->key,
+				Shm->Proc.Boost[BOOST(HWP_TGT)],
+				-1,
+				NC,
+				lowestShift,
+				highestShift,
+
+			(SProc->PowerThermal.HWP.Capabilities.Most_Efficient
+			+SProc->PowerThermal.HWP.Capabilities.Guaranteed ) >> 1,
+
+				SProc->PowerThermal.HWP.Capabilities.Guaranteed,
+
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				38), &winList);
+	    } else {
+		SetHead(&winList, win);
+	    }
+	  }
+	  break;
 	default: {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		if (clockMod.NC & BOXKEY_TURBO_CLOCK)
