@@ -62,7 +62,7 @@ typedef struct
 					Extended : 32-16;
 			} DutyCycle;
 		unsigned int		PowerPolicy;
-		struct {
+		struct HWP_STRUCT {
 			struct {
 			unsigned int	Highest,
 					Guaranteed,

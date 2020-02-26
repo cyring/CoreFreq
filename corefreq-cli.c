@@ -4882,9 +4882,12 @@ Window *CreateRatioClock(unsigned long long id,
 			ITEM_CALLBACK TitleCallback,
 			CUINT oCol)
 {
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
+	struct FLIP_FLOP *CFlop;
+	CFlop=(cpu == -1)? &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
-					.Toggle];
+					.Toggle]
+			: &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+
 	ATTRIBUTE *attrib[4] = {
 		RSC(CREATE_RATIO_CLOCK_COND0).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND1).ATTR(),
@@ -7794,19 +7797,25 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
+		unsigned int COF, NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
 				maxRatio = MaxBoostRatio();
 		signed int lowestShift, highestShift;
+
 		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	      if (cpu == 0xffff) {
+		COF=Shm->Proc.Boost[BOOST(TGT)];
+	      } else {
+		COF=Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle].Ratio.Target;
+	      }
 
-		ComputeRatioShifts(Shm->Proc.Boost[BOOST(TGT)],
-				Shm->Proc.Boost[BOOST(MIN)],
-				maxRatio,
-				&lowestShift,
-				&highestShift);
+		ComputeRatioShifts(	COF,
+					Shm->Proc.Boost[BOOST(MIN)],
+					maxRatio,
+					&lowestShift,
+					&highestShift );
 
-		AppendWindow(CreateRatioClock(scan->key,
-				Shm->Proc.Boost[BOOST(TGT)],
+		AppendWindow(	CreateRatioClock(scan->key,
+				COF,
 				cpu,
 				NC,
 				lowestShift,
@@ -7821,7 +7830,7 @@ int Shortcut(SCANKEY *scan)
 
 				BOXKEY_RATIO_CLOCK,
 				TitleForRatioClock,
-				35), &winList);
+				35), &winList );
 	    } else {
 		SetHead(&winList, win);
 	    }
@@ -7834,8 +7843,40 @@ int Shortcut(SCANKEY *scan)
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		signed int lowestShift, highestShift;
-/*TODO:		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;*/
+/*TODO( Hardware Testing )
+		struct HWP_STRUCT *pHWP;
+		unsigned int COF, Highest, Guaranteed, Most_Efficient;
 
+		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	      if (cpu == 0xffff) {
+		pHWP = &Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP;
+		COF = Shm->Proc.Boost[BOOST(HWP_TGT)];
+	      } else {
+		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
+		COF = pHWP->Request.Desired_Perf;
+	      }
+		Highest = pHWP->Capabilities.Highest;
+		Guaranteed = pHWP->Capabilities.Guaranteed;
+		Most_Efficient = pHWP->Capabilities.Most_Efficient;
+
+		ComputeRatioShifts(	COF,
+					0,
+					Highest,
+					&lowestShift,
+					&highestShift );
+
+		AppendWindow(	CreateRatioClock(scan->key,
+				COF,
+				cpu,
+				NC,
+				lowestShift,
+				highestShift,
+				(Most_Efficient + Guaranteed) >> 1,
+				Guaranteed,
+				BOXKEY_RATIO_CLOCK,
+				TitleForRatioClock,
+				38), &winList );
+*/
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(HWP_TGT)],
 				0,
 				SProc->PowerThermal.HWP.Capabilities.Highest,
@@ -7864,38 +7905,37 @@ int Shortcut(SCANKEY *scan)
 	  break;
 	default: {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		if (clockMod.NC & BOXKEY_TURBO_CLOCK)
-		{
+	    if (clockMod.NC & BOXKEY_TURBO_CLOCK)
+	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;
 
-		    if (!RING_FULL(Shm->Ring[0])) {
-			RING_WRITE(	Shm->Ring[0],
-					COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong);
-		    }
-		}
-		else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
-		{
-			clockMod.NC &= CLOCKMOD_RATIO_MASK;
-
-		    if (!RING_FULL(Shm->Ring[0])) {
-			RING_WRITE(	Shm->Ring[0],
-					COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong);
-		    }
-		}
-		else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
-		{
-			clockMod.NC &= CLOCKMOD_RATIO_MASK;
-
-		    if (!RING_FULL(Shm->Ring[0])) {
-			RING_WRITE(	Shm->Ring[0],
-					COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong);
-		    }
-		}
-		else {
-			return (-1);
+		if (!RING_FULL(Shm->Ring[0])) {
+		    RING_WRITE( Shm->Ring[0],
+				COREFREQ_IOCTL_TURBO_CLOCK, clockMod.sllong );
 		}
 	    }
-	    break;
+	    else if (clockMod.NC & BOXKEY_RATIO_CLOCK)
+	    {
+			clockMod.NC &= CLOCKMOD_RATIO_MASK;
+
+		if (!RING_FULL(Shm->Ring[0])) {
+		    RING_WRITE( Shm->Ring[0],
+				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong );
+		}
+	    }
+	    else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
+	    {
+			clockMod.NC &= CLOCKMOD_RATIO_MASK;
+
+		if (!RING_FULL(Shm->Ring[0])) {
+		    RING_WRITE( Shm->Ring[0],
+				COREFREQ_IOCTL_UNCORE_CLOCK, clockMod.sllong );
+		}
+	    } else {
+		return (-1);
+	    }
+	  }
+	  break;
 	}
       }
     }

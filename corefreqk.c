@@ -4132,6 +4132,7 @@ void DynamicAcceleration(CORE *Core)				/* Unique */
 typedef struct {
 	CLOCK_ARG *pClockMod;
 	SET_TARGET SetTarget;
+	GET_TARGET GetTarget;
 } CLOCK_PPC_ARG;
 
 static void ClockMod_PPC_PerCore(void *arg)
@@ -4146,8 +4147,9 @@ static void ClockMod_PPC_PerCore(void *arg)
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-	pClockPPC->SetTarget(Core, Proc->Boost[BOOST(TGT)]
-				   + pClockPPC->pClockMod->Offset);
+	pClockPPC->SetTarget(Core, (pClockPPC->pClockMod->cpu == -1) ?
+		Proc->Boost[BOOST(TGT)] + pClockPPC->pClockMod->Offset
+	:	pClockPPC->GetTarget(Core) + pClockPPC->pClockMod->Offset);
 
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
@@ -4174,7 +4176,8 @@ long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 	{
 	CLOCK_PPC_ARG ClockPPC = {
 		.pClockMod = pClockMod,
-		.SetTarget = Set_Core2_Target
+		.SetTarget = Set_Core2_Target,
+		.GetTarget = Get_Core2_Target
 	};
 
 	For_All_PPC_Clock(&ClockPPC);
@@ -4192,7 +4195,8 @@ long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 	{
 	CLOCK_PPC_ARG ClockPPC = {
 		.pClockMod = pClockMod,
-		.SetTarget = Set_Nehalem_Target
+		.SetTarget = Set_Nehalem_Target,
+		.GetTarget = Get_Nehalem_Target
 	};
 
 	For_All_PPC_Clock(&ClockPPC);
@@ -4210,7 +4214,8 @@ long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 	{
 	CLOCK_PPC_ARG ClockPPC = {
 		.pClockMod = pClockMod,
-		.SetTarget = Set_SandyBridge_Target
+		.SetTarget = Set_SandyBridge_Target,
+		.GetTarget = Get_SandyBridge_Target
 	};
 
 	For_All_PPC_Clock(&ClockPPC);
@@ -4248,6 +4253,42 @@ static void ClockMod_HWP_PerCore(void *arg)
 	WrRdHWP = 1;
 	break;
     }
+/*TODO( Hardware Testing )
+    if (pClockMod->cpu == -1) {
+      switch (pClockMod->NC) {
+      case CLOCK_MOD_HWP_MIN:
+	Core->PowerThermal.HWP_Request.Minimum_Perf=Proc->Boost[BOOST(HWP_MIN)]
+							+ pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      case CLOCK_MOD_HWP_MAX:
+	Core->PowerThermal.HWP_Request.Maximum_Perf=Proc->Boost[BOOST(HWP_MAX)]
+							+ pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      case CLOCK_MOD_HWP_TGT:
+	Core->PowerThermal.HWP_Request.Desired_Perf=Proc->Boost[BOOST(HWP_TGT)]
+							+ pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      }
+    } else {
+      switch (pClockMod->NC) {
+      case CLOCK_MOD_HWP_MIN:
+	Core->PowerThermal.HWP_Request.Minimum_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      case CLOCK_MOD_HWP_MAX:
+	Core->PowerThermal.HWP_Request.Maximum_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      case CLOCK_MOD_HWP_TGT:
+	Core->PowerThermal.HWP_Request.Desired_Perf += pClockMod->Offset;
+	WrRdHWP = 1;
+	break;
+      }
+    }
+*/
     if (WrRdHWP == 1) {
 	WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
