@@ -4239,21 +4239,6 @@ static void ClockMod_HWP_PerCore(void *arg)
 
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
-    switch (pClockMod->NC) {
-    case CLOCK_MOD_HWP_MIN:
-	Core->PowerThermal.HWP_Request.Minimum_Perf += pClockMod->Offset;
-	WrRdHWP = 1;
-	break;
-    case CLOCK_MOD_HWP_MAX:
-	Core->PowerThermal.HWP_Request.Maximum_Perf += pClockMod->Offset;
-	WrRdHWP = 1;
-	break;
-    case CLOCK_MOD_HWP_TGT:
-	Core->PowerThermal.HWP_Request.Desired_Perf += pClockMod->Offset;
-	WrRdHWP = 1;
-	break;
-    }
-/*TODO( Hardware Testing )
     if (pClockMod->cpu == -1) {
       switch (pClockMod->NC) {
       case CLOCK_MOD_HWP_MIN:
@@ -4288,7 +4273,6 @@ static void ClockMod_HWP_PerCore(void *arg)
 	break;
       }
     }
-*/
     if (WrRdHWP == 1) {
 	WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);

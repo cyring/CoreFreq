@@ -688,4 +688,6 @@
 
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_FR	"  TGT       Processeur    "
 #define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_FR	"  HWP-TGT   Processeur    "
+#define RSC_CREATE_SELECT_FREQ_HWP_MAX_CODE_FR	"  HWP-MAX   Processeur    "
+#define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_FR	"  HWP-MIN   Processeur    "
 
