@@ -4931,7 +4931,7 @@ Window *CreateRatioClock(unsigned long long id,
 
 	  if (multiplier == 0) {
 		snprintf((char*) item, 21+11+11+1,
-			"    AUTO       [%4d ]  %+4d ",
+			"    AUTO       <%4d >  %+4d ",
 			multiplier, offset);
 
 		StoreTCell(wCK, clockMod.sllong, item, attr);
@@ -4941,14 +4941,14 @@ Window *CreateRatioClock(unsigned long long id,
 		attr = attrib[3];
 
 		snprintf((char*) item, 15+6+11+11+1,
-			"  %-6s MHz   [%4d ]  %+4d ",
+			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
 		attr = attrib[multiplier < medianColdZone ?
 				1 : multiplier > startingHotZone ? 2 : 0];
 
 		snprintf((char*) item, 14+8+11+11+1,
-			" %7.2f MHz   [%4d ]  %+4d ",
+			" %7.2f MHz   <%4d >  %+4d ",
 			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
 			multiplier, offset);
 	    }
@@ -5243,12 +5243,19 @@ Window *CreateSelectFreq(unsigned long long id,
 
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-		CPU_Item_Callback(cpu, item);
-
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+		snprintf((char *) item, 27+10+11+11+11+1,
+				"  %03u  %4d%6d%6d       -         Off   ",
+				cpu,
+				Shm->Cpu[cpu].Topology.PackageID,
+				Shm->Cpu[cpu].Topology.CoreID,
+				Shm->Cpu[cpu].Topology.ThreadID);
+
 		StoreTCell(wFreq, SCANKEY_NULL,
 				item, RSC(CREATE_SELECT_FREQ_COND1).ATTR());
 	    } else {
+		CPU_Item_Callback(cpu, item);
+
 		GridCall( StoreTCell(wFreq, id | (cpu ^ CORE_COUNT),
 				item, RSC(CREATE_SELECT_FREQ_COND0).ATTR()),
 			CPU_Freq_Update, (unsigned int) cpu );
@@ -7875,8 +7882,7 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int COF, Highest, Guaranteed, Most_Efficient;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
 
 		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
@@ -7887,13 +7893,10 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Desired_Perf;
 	      }
-		Highest = pHWP->Capabilities.Highest;
-		Guaranteed = pHWP->Capabilities.Guaranteed;
-		Most_Efficient = pHWP->Capabilities.Most_Efficient;
 
 		ComputeRatioShifts(	COF,
 					0,
-					Highest,
+					pHWP->Capabilities.Highest,
 					&lowestShift,
 					&highestShift );
 
@@ -7904,8 +7907,11 @@ int Shortcut(SCANKEY *scan)
 					NC,
 					lowestShift,
 					highestShift,
-					(Most_Efficient + Guaranteed) >> 1,
-					Guaranteed,
+
+					( pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed ) >> 1,
+
+					pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					38),
@@ -7920,8 +7926,7 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int COF, Highest, Guaranteed, Most_Efficient;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
 
 		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
@@ -7932,13 +7937,10 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Maximum_Perf;
 	      }
-		Highest = pHWP->Capabilities.Highest;
-		Guaranteed = pHWP->Capabilities.Guaranteed;
-		Most_Efficient = pHWP->Capabilities.Most_Efficient;
 
 		ComputeRatioShifts(	COF,
 					0,
-					Highest,
+					pHWP->Capabilities.Highest,
 					&lowestShift,
 					&highestShift );
 
@@ -7949,8 +7951,11 @@ int Shortcut(SCANKEY *scan)
 					NC,
 					lowestShift,
 					highestShift,
-					(Most_Efficient + Guaranteed ) >> 1,
-					Guaranteed,
+
+					( pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed ) >> 1,
+
+					pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					39),
@@ -7965,8 +7970,7 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int COF, Highest, Guaranteed, Most_Efficient;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
 
 		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
@@ -7977,13 +7981,10 @@ int Shortcut(SCANKEY *scan)
 		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
 		COF = pHWP->Request.Minimum_Perf;
 	      }
-		Highest = pHWP->Capabilities.Highest;
-		Guaranteed = pHWP->Capabilities.Guaranteed;
-		Most_Efficient = pHWP->Capabilities.Most_Efficient;
 
 		ComputeRatioShifts(	COF,
 					0,
-					Highest,
+					pHWP->Capabilities.Highest,
 					&lowestShift,
 					&highestShift );
 
@@ -7994,8 +7995,11 @@ int Shortcut(SCANKEY *scan)
 					NC,
 					lowestShift,
 					highestShift,
-					(Most_Efficient + Guaranteed ) >> 1,
-					Guaranteed,
+
+					( pHWP->Capabilities.Most_Efficient
+					+ pHWP->Capabilities.Guaranteed ) >> 1,
+
+					pHWP->Capabilities.Guaranteed,
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
 					40),

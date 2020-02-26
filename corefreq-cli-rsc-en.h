@@ -171,8 +171,8 @@
 	' ','/',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','B',']' 	\
 }
 
-#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"[   ENABLE ]"
-#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"[  DISABLE ]"
+#define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"<   ENABLE >"
+#define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"<  DISABLE >"
 
 #define RSC_LAYOUT_CARD_LOAD_CODE_EN					\
 {									\
