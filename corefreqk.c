@@ -2109,6 +2109,7 @@ static void PerCore_Intel_HWP_Notification(void *arg)
 	CORE *Core = (CORE *) arg;
 
     if ((arg != NULL) && Proc->Features.Power.EAX.HWP_Int) {
+	BITSET_CC(LOCKLESS, Proc->HWP_Mask, Core->Bind);
 	/* HWP Notifications are fully disabled.			*/
 	Core->PowerThermal.HWP_Interrupt.value = 0;
 	WRMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
@@ -2119,8 +2120,6 @@ static void PerCore_Intel_HWP_Notification(void *arg)
 	} else {
 		BITCLR_CC(LOCKLESS, Proc->HWP, Core->Bind);
 	}
-    } else {
-		BITCLR_CC(LOCKLESS, Proc->HWP, Core->Bind);
     }
 }
 
@@ -2167,7 +2166,6 @@ void Intel_Hardware_Performance(void)
 			cpu = Proc->CPU.Count;
 		do {
 			cpu--;
-			BITSET_CC(LOCKLESS, Proc->HWP_Mask, cpu);
 
 		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 			/* Synchronous call.				*/
@@ -5379,6 +5377,7 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->TurboBoost_Mask,Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->HWP_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C1E_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C3A_Mask	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C1A_Mask	, Core->Bind);
@@ -5394,6 +5393,7 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->PowerMgmt	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->SpeedStep	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->TurboBoost	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->HWP		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C1E		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C3A		, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->C1A		, Core->Bind);
