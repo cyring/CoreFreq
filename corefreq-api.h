@@ -637,6 +637,7 @@ typedef struct
 	Bit256			PowerMgmt_Mask	__attribute__ ((aligned (16)));
 	Bit256			SpeedStep_Mask	__attribute__ ((aligned (16)));
 	Bit256			TurboBoost_Mask __attribute__ ((aligned (16)));
+	Bit256			HWP_Mask __attribute__ ((aligned (16)));
 	Bit256			C1E_Mask __attribute__ ((aligned (16)));
 	Bit256	/* NHM */	C3A_Mask __attribute__ ((aligned (16)));
 	Bit256	/* NHM */	C1A_Mask __attribute__ ((aligned (16)));
@@ -651,6 +652,7 @@ typedef struct
 	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
 	Bit256			SpeedStep	__attribute__ ((aligned (16)));
 	Bit256			TurboBoost	__attribute__ ((aligned (16)));
+	Bit256			HWP		__attribute__ ((aligned (16)));
 	Bit256			C1E		__attribute__ ((aligned (16)));
 	Bit256			C3A		__attribute__ ((aligned (16)));
 	Bit256			C1A		__attribute__ ((aligned (16)));

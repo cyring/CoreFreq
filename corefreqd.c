@@ -1283,104 +1283,104 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 {	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
 
-	Shm->Proc.Technology.ODCM = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.ODCM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->ODCM,
-						Proc->ODCM_Mask) != 0;
+						Proc->ODCM_Mask );
 
-	Shm->Proc.Technology.PowerMgmt = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(Shm->Proc.CPU.Count,LOCKLESS,
 						Proc->PowerMgmt,
-						Proc->PowerMgmt_Mask) != 0;
+						Proc->PowerMgmt_Mask);
 
-	Shm->Proc.Technology.EIST = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.EIST = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->SpeedStep,
-						Proc->SpeedStep_Mask) != 0;
+						Proc->SpeedStep_Mask );
 
-	Shm->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.Turbo = BITCMP_CC( Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->TurboBoost,
-						Proc->TurboBoost_Mask) != 0;
+						Proc->TurboBoost_Mask );
 
-	Shm->Proc.Technology.C1E = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.C1E = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C1E,
-						Proc->C1E_Mask) != 0;
+						Proc->C1E_Mask );
 
-	Shm->Proc.Technology.C3A = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.C3A = BITCMP_CC( Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C3A,
-						Proc->C3A_Mask) != 0;
+						Proc->C3A_Mask );
 
-	Shm->Proc.Technology.C1A = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.C1A = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C1A,
-						Proc->C1A_Mask) != 0;
+						Proc->C1A_Mask );
 
-	Shm->Proc.Technology.C3U = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.C3U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C3U,
-						Proc->C3U_Mask) != 0;
+						Proc->C3U_Mask );
 
-	Shm->Proc.Technology.C1U = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.C1U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C1U,
-						Proc->C1U_Mask) != 0;
+						Proc->C1U_Mask );
 
-	Shm->Proc.Technology.CC6 = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.CC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->CC6,
-						Proc->CC6_Mask) != 0;
+						Proc->CC6_Mask );
 
-	Shm->Proc.Technology.PC6 = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.PC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->PC6,
-						Proc->PC6_Mask) != 0;
+						Proc->PC6_Mask );
 
-	Shm->Proc.Technology.SMM = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.SMM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->SMM,
-						Proc->CR_Mask) != 0;
+						Proc->CR_Mask );
 
-	Shm->Proc.Technology.VM = BITWISEAND_CC(LOCKLESS,
+	Shm->Proc.Technology.VM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->VM,
-						Proc->CR_Mask) != 0;
+						Proc->CR_Mask );
 }
 
 void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
 {
-	unsigned short	IBRS = BITWISEAND_CC(LOCKLESS,
+	unsigned short	IBRS = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->IBRS,
-						Proc->SPEC_CTRL_Mask) != 0,
+						Proc->SPEC_CTRL_Mask ),
 
-			STIBP = BITWISEAND_CC(LOCKLESS,
+			STIBP = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->STIBP,
-						Proc->SPEC_CTRL_Mask) != 0,
+						Proc->SPEC_CTRL_Mask ),
 
-			SSBD = BITWISEAND_CC(LOCKLESS,
+			SSBD = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->SSBD,
-						Proc->SPEC_CTRL_Mask) != 0,
+						Proc->SPEC_CTRL_Mask ),
 
-			RDCL_NO = BITWISEAND_CC(LOCKLESS,
+			RDCL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->RDCL_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			IBRS_ALL = BITWISEAND_CC(LOCKLESS,
+			IBRS_ALL = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->RDCL_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			RSBA = BITWISEAND_CC(LOCKLESS,
+			RSBA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->RSBA,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			L1DFL_NO = BITWISEAND_CC(LOCKLESS,
+			L1DFL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->L1DFL_VMENTRY_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			SSB_NO = BITWISEAND_CC(LOCKLESS,
+			SSB_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->SSB_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			MDS_NO = BITWISEAND_CC(LOCKLESS,
+			MDS_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->MDS_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask ),
 
-			PSCHANGE_MC_NO = BITWISEAND_CC(LOCKLESS,
+			PSCHANGE_MC_NO=BITCMP_CC(Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->PSCHANGE_MC_NO,
-						Proc->ARCH_CAP_Mask) != 0,
+						Proc->ARCH_CAP_Mask),
 
-			TAA_NO = BITWISEAND_CC(LOCKLESS,
+			TAA_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->TAA_NO,
-						Proc->ARCH_CAP_Mask) != 0;
+						Proc->ARCH_CAP_Mask );
 
 	Shm->Proc.Mechanisms.IBRS = (
 		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap+(2 * IBRS)

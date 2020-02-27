@@ -4921,7 +4921,7 @@ Window *CreateRatioClock(unsigned long long id,
 	ASCII *item = malloc(14+8+11+11+1);
 	for (offset = -lowestShift; offset <= highestShift; offset++)
 	{
-		ATTRIBUTE *attr = attrib[0];
+		ATTRIBUTE *attr = attrib[3];
 
 		multiplier = COF + offset;
 
@@ -4938,8 +4938,6 @@ Window *CreateRatioClock(unsigned long long id,
 	  } else {
 	    if (multiplier > MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz))
 	    {
-		attr = attrib[3];
-
 		snprintf((char*) item, 15+6+11+11+1,
 			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);

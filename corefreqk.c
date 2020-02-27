@@ -2106,12 +2106,21 @@ void Intel_Turbo_TDP_Config(void)
 
 static void PerCore_Intel_HWP_Notification(void *arg)
 {
-    if ((arg != NULL) && Proc->Features.Power.EAX.HWP_Int) {
 	CORE *Core = (CORE *) arg;
+
+    if ((arg != NULL) && Proc->Features.Power.EAX.HWP_Int) {
 	/* HWP Notifications are fully disabled.			*/
 	Core->PowerThermal.HWP_Interrupt.value = 0;
 	WRMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
+
 	RDMSR(Core->PowerThermal.HWP_Interrupt, MSR_HWP_INTERRUPT);
+	if (Core->PowerThermal.HWP_Interrupt.value == 0) {
+		BITSET_CC(LOCKLESS, Proc->HWP, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, Proc->HWP, Core->Bind);
+	}
+    } else {
+		BITCLR_CC(LOCKLESS, Proc->HWP, Core->Bind);
     }
 }
 
@@ -2148,15 +2157,17 @@ void Intel_Hardware_Performance(void)
 
 	if (Proc->Features.Power.EAX.HWP_Reg)
 	{
+		/* MSR_IA32_PM_ENABLE is a Package register.		*/
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 		/* Is the HWP requested and its current state is off ?	*/
-	    if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
-	    {
+	  if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
+	  {
 		unsigned int cpu;
 		/*	From last AP to BSP				*/
 			cpu = Proc->CPU.Count;
 		do {
 			cpu--;
+			BITSET_CC(LOCKLESS, Proc->HWP_Mask, cpu);
 
 		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 			/* Synchronous call.				*/
@@ -2166,6 +2177,8 @@ void Intel_Hardware_Performance(void)
 		    }
 		  } while (cpu != 0) ;
 
+	    if (BITCMP_CC(Proc->CPU.Count,LOCKLESS, Proc->HWP, Proc->HWP_Mask))
+	    {
 		/* Enable the Hardware-controlled Performance States.	*/
 		PM_Enable.HWP_Enable = 1;
 		WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
@@ -2186,6 +2199,7 @@ void Intel_Hardware_Performance(void)
 		  } while (cpu != 0) ;
 		}
 	    }
+	  }
 	}
 	Proc->Features.HWP_Enable = PM_Enable.HWP_Enable;
 	/*	Hardware Duty Cycling					*/
@@ -9386,9 +9400,9 @@ static int CoreFreqK_FreqDriver_Init(void)
 #ifdef CONFIG_CPU_FREQ
     if (Arch[Proc->ArchID].SystemDriver != NULL) {
 	CoreFreqK.FreqDriver.get = Arch[Proc->ArchID].SystemDriver->GetFreq;
-	CoreFreqK.FreqDriver.boost_enabled = BITWISEAND_CC(LOCKLESS,
-						Proc->TurboBoost,
-						Proc->TurboBoost_Mask) != 0;
+	CoreFreqK.FreqDriver.boost_enabled=BITCMP_CC(Proc->CPU.Count,LOCKLESS,
+							Proc->TurboBoost,
+							Proc->TurboBoost_Mask);
 
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
 
