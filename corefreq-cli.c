@@ -4930,9 +4930,9 @@ Window *CreateRatioClock(unsigned long long id,
 		clockMod.cpu = cpu;
 
 	  if (multiplier == 0) {
-		snprintf((char*) item, 21+11+11+1,
-			"    AUTO       <%4d >  %+4d ",
-			multiplier, offset);
+		snprintf((char*) item, 17+RSZ(AUTOMATIC)+11+11+1,
+			"    %s       <%4d >  %+4d ",
+			RSC(AUTOMATIC).CODE(), multiplier, offset);
 
 		StoreTCell(wCK, clockMod.sllong, item, attr);
 	  } else {
@@ -5033,11 +5033,15 @@ Window *CreateSelectCPU(unsigned long long id)
 
 void Pkg_Fmt_Freq(ASCII *item, ASCII *code, CLOCK *clock, unsigned int ratio)
 {
+    if (ratio == 0) {
+	snprintf((char *) item, 26+12+RSZ(AUTOMATIC)+10+1,
+			"%s" "   %s     <%4u > ",
+			code, RSC(AUTOMATIC).CODE(), ratio);
+    } else {
 	snprintf((char *) item, 26+9+8+10+1,
 			"%s" "%7.2f MHz <%4u > ",
-			code,
-			(double )(ratio * clock->Hz) / 1000000.0,
-			ratio);
+			code, (double )(ratio * clock->Hz) / 1000000.0, ratio);
+    }
 }
 
 void Pkg_Item_Target_Freq(unsigned int cpu, ASCII *item)
@@ -5060,10 +5064,25 @@ void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
+void CPU_Item_Auto_Freq(unsigned int cpu, unsigned int ratio, ASCII *item)
+{
+	snprintf((char *) item, 19+RSZ(AUTOMATIC)+10+11+11+11+10+1,
+			"  %03u  %4d%6d%6d   " "   %s     <%4u > ",
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID,
+			RSC(AUTOMATIC).CODE(),
+			ratio);
+}
+
 void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
+    if (CFlop->Ratio.Target == 0) {
+	CPU_Item_Auto_Freq(cpu, CFlop->Ratio.Target, item);
+    } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
 			cpu,
@@ -5072,6 +5091,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.ThreadID,
 			CFlop->Frequency.Target,
 			CFlop->Ratio.Target);
+    }
 }
 
 void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
@@ -5108,6 +5128,11 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
+    if (Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf == 0) {
+	CPU_Item_Auto_Freq(cpu,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
+				item);
+    } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
 			cpu,
@@ -5117,6 +5142,7 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf
 			* CFlop->Clock.Hz / 1000000.0,
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf);
+    }
 }
 
 void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
@@ -5153,6 +5179,11 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
+    if (Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf == 0) {
+	CPU_Item_Auto_Freq(cpu,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
+				item);
+    } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
 			cpu,
@@ -5162,6 +5193,7 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf
 			* CFlop->Clock.Hz / 1000000.0,
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf);
+    }
 }
 
 void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
@@ -5198,6 +5230,11 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
+    if (Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf == 0) {
+	CPU_Item_Auto_Freq(cpu,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
+				item);
+    } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
 			cpu,
@@ -5207,6 +5244,7 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf
 			* CFlop->Clock.Hz / 1000000.0,
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf);
+    }
 }
 
 void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
@@ -8239,9 +8277,12 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 
 	/* Alternate the color of the frequency ratios			*/
 	int idx = ratio.Count, bright = 1;
-	while (idx-- > 0) {
-		char tabStop[10+1] = "00";
+    while (idx-- > 0)
+    {
 		int hPos=ratio.Uniq[idx] * draw.Area.LoadWidth / ratio.Maximum;
+	if((hPos < hLoad1.origin.col)||(hPos > hLoad1.origin.col+hLoad1.length))
+	{
+		char tabStop[10+1] = "00";
 		snprintf(tabStop, 10+1, "%2u", ratio.Uniq[idx]);
 
 	    if (tabStop[0] != 0x20) {
@@ -8263,6 +8304,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 
 		bright = !bright;
 	}
+    }
 }
 
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)

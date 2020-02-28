@@ -219,6 +219,7 @@
 
 #define RSC_FEATURES_TITLE_CODE_FR	" Caracteristiques "
 #define RSC_NOT_AVAILABLE_CODE_FR	"N/A"
+#define RSC_AUTOMATIC_CODE_FR		"AUTO"
 #define RSC_MISSING_CODE_FR		"Absent"
 #define RSC_PRESENT_CODE_FR		"Capable"
 #define RSC_VARIANT_CODE_FR		"Variant"
