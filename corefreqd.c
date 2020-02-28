@@ -1295,9 +1295,9 @@ void Technology_Update(SHM_STRUCT *Shm, PROC *Proc)
 						Proc->SpeedStep,
 						Proc->SpeedStep_Mask );
 
-	Shm->Proc.Technology.Turbo = BITCMP_CC( Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
 						Proc->TurboBoost,
-						Proc->TurboBoost_Mask );
+						Proc->TurboBoost_Mask) != 0;
 
 	Shm->Proc.Technology.C1E = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc->C1E,
