@@ -1046,8 +1046,14 @@ static void *Core_Cycle(void *arg)
 	CFlip->Ratio.Perf	= Core->Ratio.Perf;
 	CFlip->Ratio.Target	= Core->Ratio.Target;
 
-	CFlip->Frequency.Perf	= ABS_FREQ(Core->Ratio.Perf, CFlip->Clock);
-	CFlip->Frequency.Target = ABS_FREQ(Core->Ratio.Target, CFlip->Clock);
+	CFlip->Frequency.Perf	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Frequency.Perf),
+					Core->Ratio.Perf, CFlip->Clock
+				);
+	CFlip->Frequency.Target = ABS_FREQ_MHz(
+					__typeof__(CFlip->Frequency.Target),
+					Core->Ratio.Target, CFlip->Clock
+				);
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
@@ -4929,9 +4935,8 @@ REASON_CODE Core_Manager(REF *Ref)
 			}
 			if (Quiet & 0x100)
 			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
-				(double)( Core[cpu]->Clock.Hz
-					* Shm->Proc.Boost[BOOST(MAX)])
-					/ 1000000L );
+				ABS_FREQ_MHz(double,Shm->Proc.Boost[BOOST(MAX)],
+						Core[cpu]->Clock));
 			/* Notify					*/
 			if (!BITVAL(Shm->Proc.Sync, NTFY))
 				BITSET(LOCKLESS, Shm->Proc.Sync, NTFY);

@@ -410,6 +410,13 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 
 #define PRECISION	100
 
+#define UNIT_KHz(_f)		(_f * 10 * PRECISION)
+#define UNIT_MHz(_f)		(_f * UNIT_KHz(1000))
+#define UNIT_GHz(_f)		(_f * UNIT_MHz(1000))
+#define CLOCK_KHz(_t, _f)	(_f / UNIT_KHz((_t) 1))
+#define CLOCK_MHz(_t, _f)	(_f / UNIT_MHz((_t) 1))
+#define CLOCK_GHz(_t, _f)	(_f / UNIT_GHz((_t) 1))
+
 #define TIMESPEC(nsec)							\
 ({									\
 	struct timespec tsec = {					\
@@ -521,8 +528,10 @@ typedef struct
 		( ((this_ratio * clock.Q) * 1000LLU * interval) 	\
 		+ ((this_ratio * clock.R) / max_ratio))
 
-#define ABS_FREQ(this_ratio, this_clock)				\
-		(this_ratio * this_clock.Hz) / 1000000.0;
+#define ABS_FREQ_MHz(this_type, this_ratio, this_clock) 		\
+(									\
+		CLOCK_MHz(this_type, this_ratio * this_clock.Hz)	\
+)
 
 typedef union {
 	signed long long	sllong;

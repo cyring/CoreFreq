@@ -605,13 +605,14 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 
     if ((( (*pRatio) > 0)  && !zerobase) || (zerobase))
     {
-	double freq = ( (*pRatio) * CFlop->Clock.Hz) / 1000000.0;
+	double Freq_MHz = ABS_FREQ_MHz(double, (*pRatio), CFlop->Clock);
 
-	if ((freq > 0.0) && (freq < 10000.0)) {
+	if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0))))
+	{
 		pGrid = PUT(_key, attrib, width, 0,
 			"%.*s""%s""%.*s""%7.2f""%.*s""%c%4d %c",
 		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-			freq,
+			Freq_MHz,
 			20, hSpace,
 			SymbUnlock[syc][0],
 			(*pRatio),
@@ -635,7 +636,7 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	char item[8+1];
-	snprintf(item, 8+1, "%7.3f", CFlop->Clock.Hz / 1000000.0);
+	snprintf(item, 8+1, "%7.3f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
@@ -644,11 +645,11 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
-	double freq = ((*data.puint) * CFlop->Clock.Hz) / 1000000.0;
+	double Freq_MHz = ABS_FREQ_MHz(double, (*data.puint), CFlop->Clock);
 	char item[11+8+1];
 
-    if ((freq > 0.0) && (freq < 10000.0)) {
-	snprintf(item,11+8+1,"%4d%7.2f",(*data.puint),freq);
+    if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0)))) {
+	snprintf(item,11+8+1,"%4d%7.2f", (*data.puint), Freq_MHz);
     } else {
 	snprintf(item,11+7+1,"%4d%7s",(*data.puint),RSC(NOT_AVAILABLE).CODE());
     }
@@ -712,7 +713,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	GridCall(PUT(SCANKEY_NULL, attrib[2], width, 2,
 			"%s""%.*s[%7.3f]", RSC(BASE_CLOCK).CODE(),
 			width - 12 - RSZ(BASE_CLOCK), hSpace,
-			CFlop->Clock.Hz / 1000000.0),
+			CLOCK_MHz(double, CFlop->Clock.Hz)),
 		RefreshBaseClock);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -759,7 +760,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
 		RSC(FACTORY).CODE(),
 		(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
-			Shm->Proc.Features.Factory.Clock.Hz / 1000000.0);
+			CLOCK_MHz(double,Shm->Proc.Features.Factory.Clock.Hz));
 
 	PUT(SCANKEY_NULL, attrib[3], width, 0,
 		"%.*s""%5u""%.*s""[%4d ]",
@@ -4812,12 +4813,12 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 					.Toggle];
 	char item[8+1];
 
-	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz))
+	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz))
 	{
 		snprintf(item, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
 	} else {
 		snprintf(item, 8+1, "%7.2f",
-			(double) (data.uint[0] * CFlop->Clock.Hz) / 1000000.0);
+			ABS_FREQ_MHz(double, data.uint[0], CFlop->Clock));
 	}
 	memcpy(&grid->cell.item[1], item, 7);
 }
@@ -4947,7 +4948,7 @@ Window *CreateRatioClock(unsigned long long id,
 
 		snprintf((char*) item, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
-			(double)(multiplier * CFlop->Clock.Hz) / 1000000.0,
+			ABS_FREQ_MHz(double, multiplier, CFlop->Clock),
 			multiplier, offset);
 	    }
 		GridCall(StoreTCell(wCK, clockMod.sllong, item, attr),
@@ -5040,7 +5041,7 @@ void Pkg_Fmt_Freq(ASCII *item, ASCII *code, CLOCK *clock, unsigned int ratio)
     } else {
 	snprintf((char *) item, 26+9+8+10+1,
 			"%s" "%7.2f MHz <%4u > ",
-			code, (double )(ratio * clock->Hz) / 1000000.0, ratio);
+			code, ABS_FREQ_MHz(double, ratio, (*clock)), ratio);
     }
 }
 
@@ -5139,8 +5140,10 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
-		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf
-			* CFlop->Clock.Hz / 1000000.0,
+		ABS_FREQ_MHz(double,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
+			CFlop->Clock
+			),
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf);
     }
 }
@@ -5190,8 +5193,10 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
-		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf
-			* CFlop->Clock.Hz / 1000000.0,
+		ABS_FREQ_MHz(double,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
+			CFlop->Clock
+			),
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf);
     }
 }
@@ -5241,8 +5246,10 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
-		(double)Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf
-			* CFlop->Clock.Hz / 1000000.0,
+		ABS_FREQ_MHz(double,
+			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
+			CFlop->Clock
+			),
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf);
     }
 }
@@ -7394,7 +7401,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_TURBO_CLOCK,
@@ -7493,7 +7500,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_RATIO_CLOCK,
@@ -7565,7 +7572,7 @@ int Shortcut(SCANKEY *scan)
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
-			    + ((MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz)
+			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
 				- Shm->Proc.Features.Factory.Ratio ) >> 1),
 
 				BOXKEY_UNCORE_CLOCK,
@@ -7900,9 +7907,9 @@ int Shortcut(SCANKEY *scan)
 					( Shm->Proc.Boost[BOOST(MIN)]
 					+ maxRatio ) >> 1,
 
-				Shm->Proc.Features.Factory.Ratio
-				+ ( ( maxRatio
-				- Shm->Proc.Features.Factory.Ratio ) >> 1),
+					Shm->Proc.Features.Factory.Ratio
+					+ ((maxRatio - \
+					Shm->Proc.Features.Factory.Ratio) >>1),
 
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
@@ -8280,7 +8287,8 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
     while (idx-- > 0)
     {
 		int hPos=ratio.Uniq[idx] * draw.Area.LoadWidth / ratio.Maximum;
-	if((hPos < hLoad1.origin.col)||(hPos > hLoad1.origin.col+hLoad1.length))
+	if (((hPos+6) < hLoad1.origin.col)
+	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
 	{
 		char tabStop[10+1] = "00";
 		snprintf(tabStop, 10+1, "%2u", ratio.Uniq[idx]);
@@ -11260,11 +11268,11 @@ void Draw_Card_CLK(Layer *layer, Card* card)
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	double clock = PFlop->Delta.PTSC / 1000000.f;
+	double clock = CLOCK_MHz(double, PFlop->Delta.PTSC);
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
-	snprintf(buffer, 6+1, "%5.1f", CFlop->Clock.Hz / 1000000.f);
+	snprintf(buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
 		buffer, 5);
@@ -11273,7 +11281,7 @@ void Draw_Card_CLK(Layer *layer, Card* card)
 void Draw_Card_Uncore(Layer *layer, Card* card)
 {
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	double Uncore = PFlop->Uncore.FC0 / 1000000.f;
+	double Uncore = CLOCK_MHz(double, PFlop->Uncore.FC0);
 
 	Idle2LCD(layer, card->origin.col, card->origin.row, Uncore);
 }
