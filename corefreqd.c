@@ -4302,9 +4302,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		/* Stop SysGate 					*/
 		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 		/* Notify						*/
-		Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-						Ref->Shm->Proc.Sync,
-						BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
@@ -4317,9 +4315,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 			/* Start SysGate				*/
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 			/* Notify					*/
-			Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-							Ref->Shm->Proc.Sync,
-							BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
 		}
 	    }
 	}
@@ -4360,16 +4356,12 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	case 0: /* Update SHM and notify a platform changed.		*/
 		UpdateFeatures(Ref);
 
-		Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-						Ref->Shm->Proc.Sync,
-						BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
 		break;
 	case 2: /* Update SHM and notify to re-compute.			*/
 		UpdateFeatures(Ref);
 
-		Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-						Ref->Shm->Proc.Sync,
-						BIT_MASK_COMP);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_COMP);
 		break;
 	}
     }
@@ -4403,9 +4395,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 		Ref->Slice.arg = 0;
 		Ref->Slice.pattern = RESET_CSP;
 		/* Notify the Slice module has stopped			*/
-		Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-						Ref->Shm->Proc.Sync,
-						BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
 	    }
 	    break;
 	}
@@ -4434,9 +4424,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 
 	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
 	/* Notify the Slice module is starting up			*/
-	Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-					Ref->Shm->Proc.Sync,
-					BIT_MASK_NTFY);
+	BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
        }
        break;
       }
@@ -4917,9 +4905,7 @@ REASON_CODE Core_Manager(REF *Ref)
 				];
 			}
 			/* Raise these bits up to notify a platform change. */
-			Shm->Proc.Sync=BITWISEOR(LOCKLESS,
-						Shm->Proc.Sync,
-						BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
 		}
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
@@ -4952,9 +4938,7 @@ REASON_CODE Core_Manager(REF *Ref)
 						Core[cpu]->Clock));
 			}
 			/* Notify a CPU has been brought up		*/
-			Shm->Proc.Sync=BITWISEOR(LOCKLESS,
-						Shm->Proc.Sync,
-						BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
@@ -5058,18 +5042,15 @@ REASON_CODE Core_Manager(REF *Ref)
 
 			UpdateFeatures(Ref);
 
-			Ref->Shm->Proc.Sync = BITWISEOR(LOCKLESS,
-							Ref->Shm->Proc.Sync,
-							BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
+
 			if (Quiet & 0x100) {
 				printf("  CoreFreq: Resume\n");
 			}
 		}
 	    }
 		/* All aggregations done: Notify Clients.		*/
-		Shm->Proc.Sync=BITWISEOR(LOCKLESS,
-					Shm->Proc.Sync,
-					BIT_MASK_SYNC);
+		BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_SYNC);
 	}
 	/* Reset the Room mask						*/
 	BITSTOR_CC(BUS_LOCK, roomCore, roomSeed);

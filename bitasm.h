@@ -497,6 +497,17 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_dest;								\
 })
 
+#define BITWISESET(_lock, _opl, _opr)					\
+({									\
+	__asm__ volatile						\
+	(								\
+	_lock	"orq %[opr], %[dest]"					\
+		: [dest] "=m" (_opl)					\
+		: [opr]  "Jr" (_opr)					\
+		: "cc", "memory"					\
+	);								\
+})
+
 #define BITSET_CC(_lock, _base, _offset)				\
 (									\
 	BITSET(_lock,	_base[ CORE_WORD_TOP(CORE_COUNT)		\
