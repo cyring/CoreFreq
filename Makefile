@@ -49,7 +49,7 @@ module-install:
 
 .PHONY: clean
 clean:
-	rm -f corefreqd corefreq-cli
+	rm -f corefreqd corefreq-cli corefreq-gui
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
 
 corefreqm.o: corefreqm.c
@@ -99,6 +99,17 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		$(DEFINITIONS) \
 		-o corefreq-cli -lm -lrt
+
+corefreq-gui.o: corefreq-gui.c
+	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui.c \
+		$(DEFINITIONS) \
+		-o corefreq-gui.o
+
+corefreq-gui: corefreq-gui.o
+	$(CC) $(OPTIM_FLG) $(WARNING) \
+		corefreq-gui.c \
+		$(DEFINITIONS) \
+		-o corefreq-gui -lX11 -lpthread -lrt
 
 .PHONY: info
 info:

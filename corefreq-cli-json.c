@@ -188,10 +188,17 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	json_key(&s, "ShmName");
 	json_string(&s, Shm->ShmName);
-	json_key(&s, "AppSvr");
-	json_literal(&s, "%d", Shm->AppSvr);
-	json_key(&s, "AppCli");
-	json_literal(&s, "%d", Shm->AppCli);
+	json_key(&s, "App");
+	{
+		json_start_object(&s);
+		json_key(&s, "Svr");
+		json_literal(&s, "%d", Shm->App.Svr);
+		json_key(&s, "Cli");
+		json_literal(&s, "%d", Shm->App.Cli);
+		json_key(&s, "GUI");
+		json_literal(&s, "%d", Shm->App.GUI);
+		json_end_object(&s);
+	}
 	json_key(&s, "Uncore");
 	{
 		json_start_object(&s);

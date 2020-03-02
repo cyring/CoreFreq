@@ -118,7 +118,7 @@ void Emergency(int caught)
 void TrapSignal(int operation)
 {
 	if (operation == 0) {
-		Shm->AppCli = 0;
+		Shm->App.Cli = 0;
 	} else {
 		const int ignored[] = {
 			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
@@ -134,7 +134,7 @@ void TrapSignal(int operation)
 				handledCount = sizeof(handled) / sizeof(int);
 		int signo;
 
-		Shm->AppCli = getpid();
+		Shm->App.Cli = getpid();
 		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
 			signal(signo, SIG_IGN);
 		}
@@ -2629,16 +2629,15 @@ void Package(void)
 	sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	idx = sdx;
 	idx+= sprintf(&out[idx],
@@ -2789,16 +2788,15 @@ void Counters(void)
 			"  Min TMP:TS  Max\n");
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, SYNC);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
@@ -2841,16 +2839,15 @@ void Sensors(void)
 			14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
@@ -2913,16 +2910,15 @@ void Voltage(void)
 	sdx = sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
@@ -2970,16 +2966,15 @@ void Power(void)
 			12, hSpace, 15, hSpace, 14, hSpace);
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
@@ -3048,16 +3043,15 @@ void Instructions(void)
 	sdx = sprintf(out, "CPU     IPS            IPC            CPI\n");
 
     while (!BITVAL(Shutdown, SYNC)) {
-	while (!BITVAL(Shm->Proc.Sync, SYNC) && !BITVAL(Shutdown, SYNC))
+	while (!BITVAL(Shm->Proc.Sync, SYNC0) && !BITVAL(Shutdown, SYNC))
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 
-	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+	BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 
-	if (BITVAL(Shm->Proc.Sync, NTFY))
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
-
-	ClientFollowService(&localService, &Shm->Proc.Service, 0);
-
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
+		ClientFollowService(&localService, &Shm->Proc.Service, 0);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
+	}
 	idx = sdx;
 	for (cpu=0;(cpu < Shm->Proc.CPU.Count) && !BITVAL(Shutdown, SYNC);cpu++)
 	{
@@ -11566,7 +11560,7 @@ REASON_CODE Top(char option)
     {
       do
       {
-	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, SYNC)) == 0) {
+	if ((draw.Flag.daemon = BITVAL(Shm->Proc.Sync, SYNC0)) == 0) {
 	    SCANKEY scan = {.key = 0};
 
 	  if (GetKey(&scan, &Shm->Sleep.pollingWait) > 0) {
@@ -11586,18 +11580,18 @@ REASON_CODE Top(char option)
 		WindowsUpdate(&winList);
 	  }
 	} else {
-		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC);
+		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
 	}
-	if (BITVAL(Shm->Proc.Sync, DRAW)) {/*Compute required,clear the layout*/
+	if (BITVAL(Shm->Proc.Sync, COMP0)) {
 		SortUniqRatio();
-		draw.Flag.clear = 1;
-		BITCLR(LOCKLESS, Shm->Proc.Sync, DRAW);
+		draw.Flag.clear = 1;	/* Compute required,clear the layout */
+		BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0);
 	}
-	if (BITVAL(Shm->Proc.Sync, NTFY)) { /* Platform changed,redraw layout*/
+	if (BITVAL(Shm->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
 		RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
-		draw.Flag.layout = 1;
-		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY);
+		draw.Flag.layout = 1;	 /* Platform changed, redraw layout */
+		BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0);
 	}
       } while ( !BITVAL(Shutdown, SYNC)
 		&& !draw.Flag.daemon
