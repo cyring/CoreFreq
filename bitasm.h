@@ -160,46 +160,66 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 
 #define _BITSET_GPR(_lock, _base, _offset)				\
 ({									\
+	volatile unsigned char _ret;					\
+									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btsq	%%rdx, %[base]" 				\
-		: [base] "=m" (_base)					\
+	_lock	"btsq	%%rdx, %[base]" 	"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+m" (_ret),					\
+		  [base] "=m" (_base)					\
 		: "d" (_offset)						\
 		: "cc", "memory"					\
 	);								\
+	_ret;								\
 })
 
 #define _BITSET_IMM(_lock, _base, _imm8)				\
 ({									\
+	volatile unsigned char _ret;					\
+									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btsq	%[imm8], %[base]"				\
-		: [base] "=m" (_base)					\
+	_lock	"btsq	%[imm8], %[base]"	"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+m" (_ret),					\
+		  [base] "=m" (_base)					\
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory"					\
 	);								\
+	_ret;								\
 })
 
 #define _BITCLR_GPR(_lock, _base, _offset)				\
 ({									\
+	volatile unsigned char _ret;					\
+									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btrq	%%rdx,	%[base]"				\
-		: [base] "=m" (_base)					\
+	_lock	"btrq	%%rdx,	%[base]"	"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+m" (_ret),					\
+		  [base] "=m" (_base)					\
 		: "d" (_offset)						\
 		: "cc", "memory"					\
 	);								\
+	_ret;								\
 })
 
 #define _BITCLR_IMM(_lock, _base, _imm8)				\
 ({									\
+	volatile unsigned char _ret;					\
+									\
 	__asm__ volatile						\
 	(								\
-	_lock	"btrq	%[imm8], %[base]"				\
-		: [base] "=m" (_base)					\
+	_lock	"btrq	%[imm8], %[base]"	"\n\t"			\
+		"setc	%[ret]" 					\
+		: [ret] "+m" (_ret),					\
+		  [base] "=m" (_base)					\
 		: [imm8] "i" (_imm8)					\
 		: "cc", "memory"					\
 	);								\
+	_ret;								\
 })
 
 #define _BITBTC_GPR(_lock,_base, _offset)				\
@@ -501,7 +521,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 ({									\
 	__asm__ volatile						\
 	(								\
-	_lock	"orq %[opr], %[dest]"					\
+	_lock	"orq	%[opr], %[dest]"				\
 		: [dest] "=m" (_opl)					\
 		: [opr]  "Jr" (_opr)					\
 		: "cc", "memory"					\

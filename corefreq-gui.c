@@ -274,16 +274,13 @@ static void *DrawLoop(void *uArg)
 
     while (!BITVAL(A->Shutdown, SYNC))
     {
-	if (BITVAL(A->M.Shm->Proc.Sync, SYNC1) == 0) {
+	if (BITCLR(LOCKLESS, A->M.Shm->Proc.Sync, SYNC1) == 0) {
 		nanosleep(&A->M.Shm->Sleep.pollingWait, NULL);
 	} else {
-		BITCLR(LOCKLESS, A->M.Shm->Proc.Sync, SYNC1);
-
 		Paint(MAIN, FALSE, TRUE);
 	}
-	if (BITVAL(A->M.Shm->Proc.Sync, NTFY1)) {
+	if (BITCLR(LOCKLESS, A->M.Shm->Proc.Sync, NTFY1)) {
 		ClientFollowService(&localService, &A->M.Shm->Proc.Service, 0);
-		BITCLR(LOCKLESS, A->M.Shm->Proc.Sync, NTFY1);
 	}
     }
 	return(NULL);

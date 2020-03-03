@@ -820,9 +820,9 @@ static void *Core_Cycle(void *arg)
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0) {
 		goto EXIT;
-
+	}
 	char *comm = malloc(TASK_COMM_LEN+10+1);
 	if (comm != NULL) {
 		snprintf(comm, TASK_COMM_LEN+10+1, "corefreqd/%u", cpu);
@@ -927,18 +927,16 @@ static void *Core_Cycle(void *arg)
   do {
 	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
 
-    while (!BITVAL(Core->Sync.V, NTFY)
+    while (!BITCLR(LOCKLESS, Core->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
     }
-	BITCLR(LOCKLESS, Core->Sync.V, NTFY);
 
     if (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS))
     {
-	if (BITVAL_CC(roomCore, cpu)) {
+	if (BITCLR_CC(BUS_LOCK, roomCore, cpu)) {
 		Cpu->Toggle = !Cpu->Toggle;
-		BITCLR_CC(BUS_LOCK, roomCore, cpu);
 	}
 	struct FLIP_FLOP *CFlip = &Cpu->FlipFlop[Cpu->Toggle];
 
@@ -1074,15 +1072,17 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 	switch (pattern) {
 	case RESET_CSP:
 		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
-			if (seek == Shm->Proc.Service.Core)
+			if (seek == Shm->Proc.Service.Core) {
 				BITSET_CC(LOCKLESS, roomSched, seek);
-			else
+			} else {
 				BITCLR_CC(LOCKLESS, roomSched, seek);
+			}
 		}
 		break;
 	case ALL_SMT:
-		if (cpu == Shm->Proc.Service.Core)
+		if (cpu == Shm->Proc.Service.Core) {
 			BITSTOR_CC(LOCKLESS, roomSched, roomSeed);
+		}
 		break;
 	case RAND_SMT:
 		do {
@@ -1096,8 +1096,9 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 		seek = cpu;
 		do {
 			seek++;
-			if (seek >= Shm->Proc.CPU.Count)
+			if (seek >= Shm->Proc.CPU.Count) {
 				seek = 0;
+			}
 		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
 		BITCLR_CC(LOCKLESS, roomSched, cpu);
 		BITSET_CC(LOCKLESS, roomSched, seek);
@@ -1131,9 +1132,9 @@ static void *Child_Thread(void *arg)
 	cpu_set_t cpuset;
 	CPU_ZERO(&cpuset);
 	CPU_SET(cpu, &cpuset);
-	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0)
+	if (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset) != 0) {
 		goto EXIT;
-
+	}
 	char *comm = malloc(TASK_COMM_LEN+10+1);
 	if (comm != NULL) {
 		snprintf(comm, TASK_COMM_LEN+10+1, "corefreqd#%u", cpu);
@@ -1175,8 +1176,9 @@ static void *Child_Thread(void *arg)
 		    } else {
 			nanosleep(&Shm->Sleep.sliceWaiting, NULL);
 
-			if (BITVAL(Cpu->OffLine, OS))
+			if (BITVAL(Cpu->OffLine, OS)) {
 				break;
+			}
 		    }
 		}
 
@@ -1240,15 +1242,16 @@ void PowerInterface(SHM_STRUCT *Shm, PROC *Proc)
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     { /* AMD PowerNow */
-	if (Proc->Features.AdvPower.EDX.FID)
+	if (Proc->Features.AdvPower.EDX.FID) {
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
-	else
+	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
-
-	if (Proc->Features.AdvPower.EDX.VID)
+	}
+	if (Proc->Features.AdvPower.EDX.VID) {
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
-	else
+	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
+	}
     } else {
 	Shm->Proc.PowerNow = 0;
     }
@@ -1716,7 +1719,8 @@ void P965_MCH(SHM_STRUCT *Shm, PROC *Proc)
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].P965.DRT0.tCL;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
@@ -1914,7 +1918,8 @@ void G965_MCH(SHM_STRUCT *Shm, PROC *Proc)
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
 			Proc->Uncore.MC[mc].Channel[cha].G965.DRT0.tWR;
 
@@ -2230,7 +2235,8 @@ void P35_MCH(SHM_STRUCT *Shm, PROC *Proc)
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 9;
@@ -2271,7 +2277,8 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC *Proc)
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	P3S_MCH(Shm, Proc, mc, cha);
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL -= 6;
@@ -2615,7 +2622,8 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC *Proc)
       Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
       Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++) {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tCL;
 
@@ -3387,23 +3395,25 @@ void AMD_0F_MCH(SHM_STRUCT *Shm, PROC *Proc)
 
 	switch (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRTPr) {
 	case 0b0:
-		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1) {
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 2;
-		else
+		} else {
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 4;
+		}
 		break;
 	case 0b1:
-		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1)
+		if (Proc->Uncore.MC[mc].AMD0F.DCRL.BurstLength32 == 0b1) {
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 3;
-		else
+		} else {
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr = 5;
+		}
 		break;
 	}
 
-	if (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS >= 0b0010)
+	if (Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS >= 0b0010) {
 		Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRAS + 3;
-
+	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD0F.DTRL.tRC + 11;
 
@@ -3958,9 +3968,9 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
       if (Core[cpu]->T.Cache[loop].Type > 0)
       {
 	unsigned int level = Core[cpu]->T.Cache[loop].Level;
-	if (Core[cpu]->T.Cache[loop].Type == 2) /* Instruction	*/
+	if (Core[cpu]->T.Cache[loop].Type == 2) {/* Instruction	*/
 		level = 0;
-
+	}
 	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
 	{
 		Shm->Cpu[cpu].Topology.Cache[level].Set =		\
@@ -4004,8 +4014,9 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
     case AMD_Family_15h:
 	/*TODO: do models 60h & 70h need a 512 KB size unit adjustment ? */
 	if ((Shm->Proc.Features.Std.EAX.ExtModel == 0x6)
-	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7))
+	 || (Shm->Proc.Features.Std.EAX.ExtModel == 0x7)) {
 		break;
+	}
 	/* Fallthrough */
     case AMD_Family_17h:
     case AMD_Family_18h:
@@ -4248,11 +4259,11 @@ void SysGate_Update(REF *Ref)
 
 void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {
-	if (BITVAL(Core[cpu]->OffLine, HW))
+	if (BITVAL(Core[cpu]->OffLine, HW)) {
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
-	else
+	} else {
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
-
+	}
 	Shm->Cpu[cpu].Query.Microcode = Core[cpu]->Query.Microcode;
 
 	Topology(Shm, Proc, Core, cpu);
@@ -4272,11 +4283,12 @@ int SysGate_OnDemand(REF *Ref, int operation)
 	const size_t allocPages = PAGE_SIZE << Ref->Proc->OS.ReqMem.Order;
 	if (operation == 0) {
 	    if (Ref->SysGate != NULL) {
-		if ((rc = munmap(Ref->SysGate, allocPages)) == 0)
+		if ((rc = munmap(Ref->SysGate, allocPages)) == 0) {
 			Ref->SysGate = NULL;
-	    }
-	    else
+		}
+	    } else {
 		rc = -1;
+	    }
 	} else {
 	    if (Ref->SysGate == NULL) {
 		const off_t vm_pgoff = 1 * PAGE_SIZE;
@@ -4288,9 +4300,9 @@ int SysGate_OnDemand(REF *Ref, int operation)
 			Ref->SysGate = MapGate;
 			rc = 0;
 		}
-	    }
-	    else
+	    } else {
 		rc = 0;
+	    }
 	}
 	return (rc);
 }
@@ -4339,10 +4351,12 @@ void UpdateFeatures(REF *Ref)
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
 {
-    if (!RING_NULL(Ref->Shm->Ring[rid])) {
+    if (!RING_NULL(Ref->Shm->Ring[rid]))
+    {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
 	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
+
 	if (Quiet & 0x100) {
 		printf("\tRING[%u](%x,%x)(%lx)>%d\n",
 			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc);
@@ -4433,10 +4447,11 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
     }
     break;
    }
-    if (Quiet & 0x100)
+    if (Quiet & 0x100) {
 	printf("\tRING[%u](%x,%x)(%hx:%hx,%hx:%hx)\n",
 		rid, ctrl.cmd, ctrl.sub,
 		ctrl.dh.hi, ctrl.dh.lo, ctrl.dl.hi, ctrl.dl.lo);
+    }
   }
 }
 
@@ -4450,9 +4465,9 @@ int ServerFollowService(SERVICE_PROC *pSlave,
 		cpu_set_t cpuset;
 		CPU_ZERO(&cpuset);
 		CPU_SET(pSlave->Core, &cpuset);
-		if (pSlave->Thread != -1)
+		if (pSlave->Thread != -1) {
 			CPU_SET(pSlave->Thread, &cpuset);
-
+		}
 		return (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
 	}
 	return (-1);
@@ -4471,20 +4486,22 @@ static void *Emergency_Handler(void *pRef)
 
 	pthread_t tid = pthread_self();
 
-    if (ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid) == 0)
+    if(ServerFollowService(&localService, &Ref->Shm->Proc.Service, tid) == 0) {
 	pthread_setname_np(tid, handlerName);
-
+    }
     while (!leave) {
 	caught = sigtimedwait(&Ref->Signal, NULL, &Ref->Shm->Sleep.ringWaiting);
 	if (caught != -1) {
 		switch (caught) {
 		case SIGUSR2:
-			if (Ref->CPID) /* Stop  SysGate */
+			if (Ref->CPID) { /* Stop  SysGate */
 				SysGate_Toggle(Ref, 0);
+			}
 			break;
 		case SIGUSR1:
-			if (Ref->CPID) /* Start SysGate */
+			if (Ref->CPID) { /* Start SysGate */
 				SysGate_Toggle(Ref, 1);
+			}
 			break;
 		case SIGCHLD: /* Exit Ring Thread  */
 			leave = 0x1;
@@ -4746,9 +4763,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	pthread_t tid = pthread_self();
 	Shm->App.Svr = tid;
 
-	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0)
+	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0) {
 		pthread_setname_np(tid, "corefreqd-pmgr");
-
+	}
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
@@ -4896,14 +4913,13 @@ REASON_CODE Core_Manager(REF *Ref)
 			PerCore_Update(Shm, Proc, Core, cpu);
 			Technology_Update(Shm, Proc);
 
-			if (ServerFollowService(&localService,
+		    if (ServerFollowService(	&localService,
 						&Shm->Proc.Service,
-						tid) == 0)
-			{
-			  SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
-				];
-			}
+						tid ) == 0)
+		    {
+			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
+		    }
 			/* Raise these bits up to notify a platform change. */
 			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
 		}
@@ -4924,19 +4940,18 @@ REASON_CODE Core_Manager(REF *Ref)
 			PerCore_Update(Shm, Proc, Core, cpu);
 			Technology_Update(Shm, Proc);
 
-			if (ServerFollowService(&localService,
+		    if (ServerFollowService(&localService,
 						&Shm->Proc.Service,
 						tid) == 0)
-			{
-			  SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
-				];
-			}
-			if (Quiet & 0x100) {
-			    printf("    CPU #%03u @ %.2f MHz\n", cpu,
+		    {
+			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
+		    }
+		    if (Quiet & 0x100) {
+			printf( "    CPU #%03u @ %.2f MHz\n", cpu,
 				ABS_FREQ_MHz(double,Shm->Proc.Boost[BOOST(MAX)],
-						Core[cpu]->Clock));
-			}
+				Core[cpu]->Clock) );
+		    }
 			/* Notify a CPU has been brought up		*/
 			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
 		}
@@ -5061,8 +5076,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	Print_uBenchmark((Quiet & 0x100));
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	if (Arg[cpu].TID)
+	if (Arg[cpu].TID) {
 		pthread_join(Arg[cpu].TID, NULL);
+	}
     }
 	free(Arg);
   } else {
@@ -5080,9 +5096,9 @@ REASON_CODE Child_Manager(REF *Ref)
 
 	pthread_t tid = pthread_self();
 
-	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0)
+	if (ServerFollowService(&localService, &Shm->Proc.Service, tid) == 0) {
 		pthread_setname_np(tid, "corefreqd-cmgr");
-
+	}
 	ARG *Arg = calloc(Shm->Proc.CPU.Count, sizeof(ARG));
   if (Arg != NULL)
   {
@@ -5113,9 +5129,11 @@ REASON_CODE Child_Manager(REF *Ref)
     }
     while (!BITVAL(Shutdown, SYNC)) ;
 
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-		if (Arg[cpu].TID)
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+		if (Arg[cpu].TID) {
 			pthread_join(Arg[cpu].TID, NULL);
+		}
+	}
 	free(Arg);
   } else {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
@@ -5221,27 +5239,30 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		SysGate_Toggle(&Ref, SysGateStartUp);
 
 		/* Welcomes with brand and per CPU base clock.		*/
-		if (Quiet & 0x001)
-		 printf("CoreFreq Daemon %s"		\
-			"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n",
-			COREFREQ_VERSION);
-		if (Quiet & 0x010)
-		 printf("\n"						\
+	      if (Quiet & 0x001) {
+		printf( "CoreFreq Daemon %s"		\
+				"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n",
+			COREFREQ_VERSION );
+	      }
+	      if (Quiet & 0x010) {
+		printf( "\n"						\
 			"  Processor [%s]\n"				\
 			"  Architecture [%s] %u/%u CPU Online.\n",
 			Shm->Proc.Brand,
 			Shm->Proc.Architecture,
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count );
-		if (Quiet & 0x100)
-		 printf("  SleepInterval(%u), SysGate(%u), %ld tasks\n\n",
+	      }
+	      if (Quiet & 0x100) {
+		printf( "  SleepInterval(%u), SysGate(%u), %ld tasks\n\n",
 			Shm->Sleep.Interval,
 			!BITVAL(Shm->SysGate.Operation, 0) ?
 				0:Shm->Sleep.Interval * Shm->SysGate.tickReset,
-			TASK_LIMIT);
-		if (Quiet)
-			fflush(stdout);
-
+			TASK_LIMIT );
+		}
+	      if (Quiet) {
+		fflush(stdout);
+	      }
 		CPID = Ref.CPID = fork();
 	/*-----[ Resources inherited ]----------------------------------*/
 		fork_err = errno;
@@ -5416,16 +5437,16 @@ int main(int argc, char *argv[])
 				Quiet = 0x111;
 				break;
 			case 'g':
-				if (argv[i][2]=='o'
-				 && argv[i][3]=='f'
-				 && argv[i][4]=='f')
-					SysGateStartUp = 0;
-			  else if (argv[i][2]=='o'
-				&& argv[i][3]=='n')
-					SysGateStartUp = 1;
-			  else {
-				REASON_SET(reason, RC_CMD_SYNTAX, 0);
-				reason = Help(reason, appName);
+					if (argv[i][2]=='o'
+					 && argv[i][3]=='f'
+					 && argv[i][4]=='f') {
+						SysGateStartUp = 0;
+				} else if ( argv[i][2]=='o'
+					 && argv[i][3]=='n') {
+						SysGateStartUp = 1;
+				} else {
+					REASON_SET(reason, RC_CMD_SYNTAX, 0);
+					reason = Help(reason, appName);
 				}
 				break;
 			case 'v':
