@@ -185,6 +185,10 @@ static signed short Register_CPU_Freq = -1;
 module_param(Register_CPU_Freq, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_CPU_Freq, "Register the Kernel cpufreq driver");
 
+static signed short Register_Governor = -1;
+module_param(Register_Governor, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Register_Governor, "Register the Kernel governor");
+
 static signed short Mech_IBRS = -1;
 module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBRS, "Mitigation Mechanism IBRS");
@@ -217,6 +221,7 @@ static struct {
 #ifdef CONFIG_CPU_FREQ
 	struct cpufreq_driver	FreqDriver;
 	struct cpufreq_governor FreqGovernor;
+	Bit256			FreqBitReady __attribute__ ((aligned (16)));
 #endif /* CONFIG_CPU_FREQ */
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
@@ -232,11 +237,12 @@ static struct {
 			.exit	= CoreFreqK_Policy_Exit,
 	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
 	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
-	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy
+	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
+			.ready	= CoreFreqK_Policy_Ready
 	},
 	.FreqGovernor = {
-			.name	= "corefreq",
-			.owner	= THIS_MODULE,
+			.name	= "corefreq-policy",
+			.owner	= THIS_MODULE
 	}
 #endif /* CONFIG_CPU_FREQ */
 };
@@ -9021,8 +9027,8 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
-	rc = cpufreq_get_policy(&freqPolicy, Proc->Service.Core);
-	if (rc == 0) {
+	if ((rc = cpufreq_get_policy(&freqPolicy, Proc->Service.Core)) == 0)
+	{
 		struct cpufreq_governor *pGovernor = freqPolicy.governor;
 		if (pGovernor != NULL) {
 			StrCopy(SysGate->OS.FreqDriver.Governor,
@@ -9273,6 +9279,30 @@ static long CoreFreqK_Limit_Idle(int target)
 }
 
 #ifdef CONFIG_CPU_FREQ
+
+void Call_GovernorToFrequency(struct cpufreq_policy *policy, unsigned int cpu)
+{
+    if (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL)
+    {
+	switch (policy->policy) {
+	case CPUFREQ_POLICY_POWERSAVE:
+		smp_call_function_single(cpu,
+				Arch[Proc->ArchID].SystemDriver->SetTarget,
+					&Proc->Boost[BOOST(MIN)], 0);
+		break;
+	case CPUFREQ_POLICY_PERFORMANCE:
+		smp_call_function_single(cpu,
+				Arch[Proc->ArchID].SystemDriver->SetTarget,
+					&Proc->Boost[BOOST(MAX)], 0);
+		break;
+	case CPUFREQ_POLICY_UNKNOWN:
+		/* Fallthrough */
+	default:
+		break;
+	}
+    }
+}
+
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy)
 {
 	return (0);
@@ -9280,20 +9310,30 @@ static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy)
 
 static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 {
-	if (policy != NULL) {
-		unsigned int cpu = policy->cpu;
-	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+    if (policy != NULL) {
+	if (policy->cpu < Proc->CPU.Count)
+	{
+		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
+
 		policy->cpuinfo.min_freq =(Proc->Boost[BOOST(MIN)]
-					 * KPublic->Core[cpu]->Clock.Hz)
-					 / 1000LLU;
+					 * Core->Clock.Hz) / 1000LLU;
+
 		policy->cpuinfo.max_freq =(Proc->Boost[BOOST(MAX)]
-					 * KPublic->Core[cpu]->Clock.Hz)
-					 / 1000LLU;
+					 * Core->Clock.Hz) / 1000LLU;
+		/* MANDATORY Per-CPU Initialization			*/
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+		policy->cur = policy->cpuinfo.max_freq;
 		policy->min = policy->cpuinfo.min_freq;
 		policy->max = policy->cpuinfo.max_freq;
+		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+	    if (Register_Governor == 1) {
+		policy->governor = &CoreFreqK.FreqGovernor;
+	    } else {
+		policy->governor = NULL;
 	    }
+		BITCLR_CC(LOCKLESS, CoreFreqK.FreqBitReady, policy->cpu);
 	}
+    }
 	return (0);
 }
 
@@ -9311,80 +9351,108 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
 
 static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
 {
-    if (policy != NULL) {
-	if ((policy->cpu >= 0) && (policy->cpu < Proc->CPU.Count)
-	&& (Arch[Proc->ArchID].ClockMod))
-	{
-		CLOCK_ARG clockMod = {	.Offset = Proc->Boost[BOOST(TGT)],
-					.cpu = policy->cpu,
-					 .NC = CLOCK_MOD_TGT
-		};
-		switch (policy->policy) {
-		case CPUFREQ_POLICY_POWERSAVE:
-			Controller_Stop(1);
-			clockMod.Offset = Proc->Boost[BOOST(MIN)]
-					- clockMod.Offset;
-			Arch[Proc->ArchID].ClockMod(&clockMod);
-			Controller_Start(1);
-			break;
-		case CPUFREQ_POLICY_PERFORMANCE:
-			Controller_Stop(1);
-			clockMod.Offset = Proc->Boost[BOOST(MAX)]
-					- clockMod.Offset;
-			Arch[Proc->ArchID].ClockMod(&clockMod);
-			Controller_Start(1);
-			break;
-		case CPUFREQ_POLICY_UNKNOWN:
-			/* Fallthrough */
-		default:
-			break;
+	if (policy != NULL) {
+	    if (policy->cpu < Proc->CPU.Count)
+	    {
+		if (BITVAL_CC(CoreFreqK.FreqBitReady, policy->cpu) == 1)
+		{
+			Call_GovernorToFrequency(policy, policy->cpu);
 		}
+	    }
 	}
-    }
-	return (0);
-}
-#endif /* CONFIG_CPU_FREQ */
-
-static unsigned int Core2_GetFreq(unsigned int cpu)
-{
-#ifdef CONFIG_CPU_FREQ
-    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-	PERF_STATUS PerfStatus = {.value = 0};
-	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-
-	return ( (PerfStatus.CORE.CurrFID * KPublic->Core[cpu]->Clock.Hz)
-		/ 1000LLU );
-    }
-#endif /* CONFIG_CPU_FREQ */
 	return (0);
 }
 
-static unsigned int Nehalem_GetFreq(unsigned int cpu)
+static void CoreFreqK_Policy_Ready(struct cpufreq_policy *policy)
+{
+	if (policy != NULL) {
+	    if (policy->cpu < Proc->CPU.Count)
+	    {
+		BITSET_CC(LOCKLESS, CoreFreqK.FreqBitReady, policy->cpu);
+	    }
+	}
+}
+#endif /* CONFIG_CPU_FREQ */
+
+static unsigned int Policy_Core2_GetFreq(unsigned int cpu)
 {
 #ifdef CONFIG_CPU_FREQ
-    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+    if (cpu < Proc->CPU.Count)
+    {
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 	PERF_STATUS PerfStatus = {.value = 0};
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 
-	return ( (PerfStatus.NHM.CurrentRatio * KPublic->Core[cpu]->Clock.Hz)
-		/ 1000LLU );
+	return ( (PerfStatus.CORE.CurrFID * Core->Clock.Hz) / 1000LLU );
     }
 #endif /* CONFIG_CPU_FREQ */
 	return (0);
 }
 
-static unsigned int SandyBridge_GetFreq(unsigned int cpu)
+static unsigned int Policy_Nehalem_GetFreq(unsigned int cpu)
 {
 #ifdef CONFIG_CPU_FREQ
-    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+    if (cpu < Proc->CPU.Count)
+    {
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 	PERF_STATUS PerfStatus = {.value = 0};
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 
-	return ( (PerfStatus.SNB.CurrentRatio * KPublic->Core[cpu]->Clock.Hz)
-		/ 1000LLU );
+	return ( (PerfStatus.NHM.CurrentRatio * Core->Clock.Hz) / 1000LLU );
     }
 #endif /* CONFIG_CPU_FREQ */
 	return (0);
+}
+
+static unsigned int Policy_SandyBridge_GetFreq(unsigned int cpu)
+{
+#ifdef CONFIG_CPU_FREQ
+    if (cpu < Proc->CPU.Count)
+    {
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+	PERF_STATUS PerfStatus = {.value = 0};
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+
+	return ( (PerfStatus.SNB.CurrentRatio * Core->Clock.Hz) / 1000LLU );
+    }
+#endif /* CONFIG_CPU_FREQ */
+	return (0);
+}
+
+static void Policy_Core2_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+	unsigned int *pRatio = (unsigned int*) arg, cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	Set_Core2_Target(Core, (*pRatio));
+
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+#endif /* CONFIG_CPU_FREQ */
+}
+
+static void Policy_Nehalem_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+	unsigned int *pRatio = (unsigned int*) arg, cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	Set_Nehalem_Target(Core, (*pRatio));
+
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+#endif /* CONFIG_CPU_FREQ */
+}
+
+static void Policy_SandyBridge_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+	unsigned int *pRatio = (unsigned int*) arg, cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	Set_SandyBridge_Target(Core, (*pRatio));
+
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+#endif /* CONFIG_CPU_FREQ */
 }
 
 static void CoreFreqK_FreqDriver_UnInit(void)
@@ -9398,18 +9466,32 @@ static int CoreFreqK_FreqDriver_Init(void)
 {
 	int rc = -EPERM;
 #ifdef CONFIG_CPU_FREQ
-    if (Arch[Proc->ArchID].SystemDriver != NULL) {
+  if (Arch[Proc->ArchID].SystemDriver != NULL)
+  {
+    if (Arch[Proc->ArchID].SystemDriver->GetFreq != NULL)
+    {
 	CoreFreqK.FreqDriver.get = Arch[Proc->ArchID].SystemDriver->GetFreq;
+
 	CoreFreqK.FreqDriver.boost_enabled=BITCMP_CC(Proc->CPU.Count,LOCKLESS,
 							Proc->TurboBoost,
 							Proc->TurboBoost_Mask);
 
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
+    }
+  }
+#endif /* CONFIG_CPU_FREQ */
+	return (rc);
+}
 
-	if (cpufreq_register_governor(&CoreFreqK.FreqGovernor) == 0) {
-		Proc->Registration.Driver.Governor = 1;
-	} else {
-		Proc->Registration.Driver.Governor = 0;
+static int CoreFreqK_Governor_Init(void)
+{
+	int rc = -EPERM;
+#ifdef CONFIG_CPU_FREQ
+    if (Arch[Proc->ArchID].SystemDriver != NULL)
+    {
+	if (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL)
+	{
+		rc = cpufreq_register_governor(&CoreFreqK.FreqGovernor);
 	}
     }
 #endif /* CONFIG_CPU_FREQ */
@@ -10058,7 +10140,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	unsigned int cpu = (unsigned int) arg;
 
-	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+	if (cpu < Proc->CPU.Count) {
 		if (!cpu_is_hotpluggable(cpu))
 			rc = -EINVAL;
 		else
@@ -10075,7 +10157,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	unsigned int cpu = (unsigned int) arg;
 
-	if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+	if (cpu < Proc->CPU.Count) {
 		if (!cpu_is_hotpluggable(cpu))
 			rc = -EINVAL;
 		else
@@ -10181,7 +10263,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	    else
 		return (-EIO);
 	} else if (vma->vm_pgoff >= 10) {
-	  unsigned int cpu = vma->vm_pgoff - 10;
+		signed int cpu = vma->vm_pgoff - 10;
 
 	  if (Proc != NULL) {
 	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
@@ -10269,7 +10351,7 @@ static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
 #ifdef CONFIG_HOTPLUG_CPU
 static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 {
-  if ((cpu >= 0) && (cpu < Proc->CPU.Count))
+  if (cpu < Proc->CPU.Count)
   {
 	/* Is this the very first time the processor is online ? */
    if (KPublic->Core[cpu]->T.ApicID == -1)
@@ -10340,7 +10422,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 
 static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 {
-    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+    if (cpu < Proc->CPU.Count) {
 	/* Stop the associated collect timer. */
 	if((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
 	&& (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1)
@@ -10657,16 +10739,6 @@ static int __init CoreFreqK_init(void)
 			/* Copy various SMBIOS data [version 3.2]	*/
 			SMBIOS_Collect();
 
-			/* Register the Idle & Frequency sub-drivers	*/
-		    if (Register_CPU_Idle == 1) {
-			Proc->Registration.Driver.CPUidle =		\
-					CoreFreqK_IdleDriver_Init() == 0;
-		    }
-		    if (Register_CPU_Freq == 1) {
-			Proc->Registration.Driver.CPUfreq =		\
-					CoreFreqK_FreqDriver_Init() == 0;
-		    }
-
 			/* Initialize the CoreFreq controller		*/
 			Controller_Init();
 
@@ -10705,6 +10777,19 @@ static int __init CoreFreqK_init(void)
 	#endif /* CONFIG_HOTPLUG_CPU */
 		    if (!NMI_Disable) {
 			CoreFreqK_Register_NMI();
+		    }
+			/* Register the Idle & Frequency sub-drivers	*/
+		    if (Register_CPU_Idle == 1) {
+			Proc->Registration.Driver.CPUidle =		\
+					CoreFreqK_IdleDriver_Init() == 0;
+		    }
+		    if (Register_CPU_Freq == 1) {
+			Proc->Registration.Driver.CPUfreq =		\
+					CoreFreqK_FreqDriver_Init() == 0;
+		    }
+		    if (Register_Governor == 1) {
+			Proc->Registration.Driver.Governor =		\
+					CoreFreqK_Governor_Init() == 0;
 		    }
 		  }
 		  else

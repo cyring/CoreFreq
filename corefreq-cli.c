@@ -3945,6 +3945,14 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void Governor_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Registration.Driver.Governor;
+	const signed int pos = grid->cell.length - 5;
+
+	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 {
 	ASCII *code[] = {
@@ -3960,7 +3968,7 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 22, 8, TOP_HEADER_ROW+2);
+	Window *wSet = CreateWindow(wLayer, id, 1, 23, 8, TOP_HEADER_ROW+2);
     if (wSet != NULL) {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
@@ -4054,6 +4062,12 @@ Window *CreateSettings(unsigned long long id)
 				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Freq_Update );
+
+	bix = Shm->Registration.Driver.Governor;
+	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+				RSC(SETTINGS_GOVERNOR_REGISTERED).CODE(),
+				attrib[bix] ),
+		Governor_Update );
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);

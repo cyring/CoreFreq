@@ -674,8 +674,9 @@ typedef struct {
 } IDLE_STATE;
 
 typedef struct {
-	IDLE_STATE		*IdleState;
-	unsigned int		(*GetFreq)(unsigned int cpu);
+	IDLE_STATE	*IdleState;
+	unsigned int	(*GetFreq)(unsigned int cpu);
+	void		(*SetTarget)(void *arg);
 } SYSTEM_DRIVER;
 
 typedef struct
@@ -3645,14 +3646,19 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data *policy) ;
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy) ;
 #endif
 static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy) ;
+static void CoreFreqK_Policy_Ready(struct cpufreq_policy *policy) ;
 #endif /* CONFIG_CPU_FREQ */
-static unsigned int Core2_GetFreq(unsigned int cpu) ;
-static unsigned int Nehalem_GetFreq(unsigned int cpu) ;
-static unsigned int SandyBridge_GetFreq(unsigned int cpu) ;
+static unsigned int Policy_Core2_GetFreq(unsigned int cpu) ;
+static unsigned int Policy_Nehalem_GetFreq(unsigned int cpu) ;
+static unsigned int Policy_SandyBridge_GetFreq(unsigned int cpu) ;
+static void Policy_Core2_SetTarget(void *arg) ;
+static void Policy_Nehalem_SetTarget(void *arg) ;
+static void Policy_SandyBridge_SetTarget(void *arg) ;
 
 static SYSTEM_DRIVER CORE2_Driver = {
 	.IdleState	= NULL,
-	.GetFreq	= Core2_GetFreq
+	.GetFreq	= Policy_Core2_GetFreq,
+	.SetTarget	= Policy_Core2_SetTarget
 };
 
 /* Source: /drivers/idle/intel_idle.c					*/
@@ -3690,7 +3696,8 @@ static IDLE_STATE NHM_IdleState[] = {
 
 static SYSTEM_DRIVER NHM_Driver = {
 	.IdleState	= NHM_IdleState,
-	.GetFreq	= Nehalem_GetFreq
+	.GetFreq	= Policy_Nehalem_GetFreq,
+	.SetTarget	= Policy_Nehalem_SetTarget
 };
 
 static IDLE_STATE SNB_IdleState[] = {
@@ -3734,7 +3741,8 @@ static IDLE_STATE SNB_IdleState[] = {
 
 static SYSTEM_DRIVER SNB_Driver = {
 	.IdleState	= SNB_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static IDLE_STATE IVB_IdleState[] = {
@@ -3778,7 +3786,8 @@ static IDLE_STATE IVB_IdleState[] = {
 
 static SYSTEM_DRIVER IVB_Driver = {
 	.IdleState	= IVB_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static IDLE_STATE HSW_IdleState[] = {
@@ -3843,7 +3852,8 @@ static IDLE_STATE HSW_IdleState[] = {
 
 static SYSTEM_DRIVER HSW_Driver = {
 	.IdleState	= HSW_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static IDLE_STATE BDW_IdleState[] = {
@@ -3908,7 +3918,8 @@ static IDLE_STATE BDW_IdleState[] = {
 
 static SYSTEM_DRIVER BDW_Driver = {
 	.IdleState	= BDW_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static IDLE_STATE SKL_IdleState[] = {
@@ -3973,7 +3984,8 @@ static IDLE_STATE SKL_IdleState[] = {
 
 static SYSTEM_DRIVER SKL_Driver = {
 	.IdleState	= SKL_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static IDLE_STATE SKX_IdleState[] = {
@@ -4003,7 +4015,8 @@ static IDLE_STATE SKX_IdleState[] = {
 
 static SYSTEM_DRIVER SKX_Driver = {
 	.IdleState	= SKX_IdleState,
-	.GetFreq	= SandyBridge_GetFreq
+	.GetFreq	= Policy_SandyBridge_GetFreq,
+	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static ARCH Arch[ARCHITECTURES] = {
