@@ -3638,15 +3638,18 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 19)
 #define CPUFREQ_POLICY_UNKNOWN		(0)
 #endif
-static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy) ;
-static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Exit(struct cpufreq_policy*) ;
+static int CoreFreqK_Policy_Init(struct cpufreq_policy*) ;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19)
-static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data *policy) ;
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data*) ;
 #else
-static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy) ;
+static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
 #endif
-static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy) ;
-static void CoreFreqK_Policy_Ready(struct cpufreq_policy *policy) ;
+static int CoreFreqK_SetPolicy(struct cpufreq_policy*) ;
+static void CoreFreqK_Policy_Ready(struct cpufreq_policy*) ;
+static int CoreFreqK_Bios_Limit(int, unsigned int*) ;
+static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy*, char*);
+static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy*, unsigned int) ;
 #endif /* CONFIG_CPU_FREQ */
 static unsigned int Policy_Intel_GetFreq(unsigned int cpu) ;
 static void Policy_Core2_SetTarget(void *arg) ;

@@ -238,11 +238,14 @@ static struct {
 	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
 	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
 	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
-			.ready	= CoreFreqK_Policy_Ready
+			.ready	= CoreFreqK_Policy_Ready,
+			.bios_limit= CoreFreqK_Bios_Limit
 	},
 	.FreqGovernor = {
 			.name	= "corefreq-policy",
-			.owner	= THIS_MODULE
+			.owner	= THIS_MODULE,
+			.show_setspeed	= CoreFreqK_Show_SetSpeed,
+			.store_setspeed = CoreFreqK_Store_SetSpeed
 	}
 #endif /* CONFIG_CPU_FREQ */
 };
@@ -9327,72 +9330,99 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
 
 static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
 {
-  if (policy != NULL) {
-    if (policy->cpu < Proc->CPU.Count) {
-	if ((BITVAL_CC(CoreFreqK.PolicyBitReady, policy->cpu) == 1)
-	 && (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL))
-	{
-	smp_call_function_single(policy->cpu,
-				Arch[Proc->ArchID].SystemDriver->SetTarget,
-				policy, 0);
-	}
-    }
-  }
 	return (0);
 }
 
 static void CoreFreqK_Policy_Ready(struct cpufreq_policy *policy)
 {
-	if (policy != NULL) {
-	    if (policy->cpu < Proc->CPU.Count)
-	    {
+    if (policy != NULL) {
+	if (policy->cpu < Proc->CPU.Count)
+	{
 		BITSET_CC(LOCKLESS, CoreFreqK.PolicyBitReady, policy->cpu);
+	}
+    }
+}
+
+static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
+{
+    if ((cpu >= 0) && (cpu < Proc->CPU.Count) && (limit != NULL))
+    {
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	(*limit) = (Proc->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
+    }
+	return (0);
+}
+
+static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
+{
+  if (policy != NULL) {
+	CORE *Core;
+    if (policy->cpu < Proc->CPU.Count)
+    {
+	Core = (CORE *) KPublic->Core[policy->cpu];
+    } else {
+	Core = (CORE *) KPublic->Core[Proc->Service.Core];
+    }
+	return ( sprintf(buf, "%7llu\n",
+			(Core->Ratio.Target * Core->Clock.Hz) / 1000LLU) );
+  }
+	return (0);
+}
+
+static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
+					unsigned int freq)
+{
+  if (policy != NULL) {
+    if (policy->cpu < Proc->CPU.Count)
+    {
+	if ((BITVAL_CC(CoreFreqK.PolicyBitReady, policy->cpu) == 1)
+	 && (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL))
+	{
+		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
+		unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
+
+	    if (ratio > 0) {
+		smp_call_function_single(policy->cpu,
+				Arch[Proc->ArchID].SystemDriver->SetTarget,
+				&ratio, 1);
 	    }
 	}
+    }
+  }
+	return (-EINVAL);
 }
-#endif /* CONFIG_CPU_FREQ */
 
 static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
 {
-#ifdef CONFIG_CPU_FREQ
+	unsigned int CPU_Freq = Proc->Features.Factory.Freq * 1000U;
+
     if (cpu < Proc->CPU.Count)
     {
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	return ( Core->Delta.C0.UCC / Proc->SleepInterval );
+	unsigned int Core_Freq = Core->Delta.C0.UCC / Proc->SleepInterval;
+	if (Core_Freq > 0) {	/* at least 1 interval must have elapsed */
+		CPU_Freq = Core_Freq;
+	}
     }
-#endif /* CONFIG_CPU_FREQ */
-	return (0);
+	return (CPU_Freq);
 }
+#endif /* CONFIG_CPU_FREQ */
 
 static void Policy_Core2_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
-	struct cpufreq_policy *policy = (struct cpufreq_policy*) arg;
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	unsigned int *ratio = (unsigned int*) arg;
 
-	switch (policy->policy) {
-	case CPUFREQ_POLICY_POWERSAVE:
+	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
+		unsigned int cpu = smp_processor_id();
+		CORE *Core = (CORE *) KPublic->Core[cpu];
+
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_Core2_Target(Core, Proc->Boost[BOOST(MIN)]);
+		Set_Core2_Target(Core, (*ratio));
 		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_PERFORMANCE:
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
-		Set_Core2_Target(Core, 1 + Proc->Boost[BOOST(MAX)]);
-	    } else {
-		Set_Core2_Target(Core, Proc->Boost[BOOST(MAX)]);
-	    }
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_UNKNOWN:
-		/* Fallthrough */
-	default:
-		break;
 	}
 #endif /* CONFIG_CPU_FREQ */
 }
@@ -9400,31 +9430,16 @@ static void Policy_Core2_SetTarget(void *arg)
 static void Policy_Nehalem_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
-	struct cpufreq_policy *policy = (struct cpufreq_policy*) arg;
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	unsigned int *ratio = (unsigned int*) arg;
 
-	switch (policy->policy) {
-	case CPUFREQ_POLICY_POWERSAVE:
+	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
+		unsigned int cpu = smp_processor_id();
+		CORE *Core = (CORE *) KPublic->Core[cpu];
+
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_Nehalem_Target(Core, Proc->Boost[BOOST(MIN)]);
+		Set_Nehalem_Target(Core, (*ratio));
 		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_PERFORMANCE:
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
-		Set_Nehalem_Target(Core, 1 + Proc->Boost[BOOST(MAX)]);
-	    } else {
-		Set_Nehalem_Target(Core, Proc->Boost[BOOST(MAX)]);
-	    }
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_UNKNOWN:
-		/* Fallthrough */
-	default:
-		break;
 	}
 #endif /* CONFIG_CPU_FREQ */
 }
@@ -9432,31 +9447,16 @@ static void Policy_Nehalem_SetTarget(void *arg)
 static void Policy_SandyBridge_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
-	struct cpufreq_policy *policy = (struct cpufreq_policy*) arg;
-	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	unsigned int *ratio = (unsigned int*) arg;
 
-	switch (policy->policy) {
-	case CPUFREQ_POLICY_POWERSAVE:
+	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
+		unsigned int cpu = smp_processor_id();
+		CORE *Core = (CORE *) KPublic->Core[cpu];
+
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_SandyBridge_Target(Core, Proc->Boost[BOOST(MIN)]);
+		Set_SandyBridge_Target(Core, (*ratio));
 		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_PERFORMANCE:
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
-		Set_SandyBridge_Target(Core, Proc->Boost[BOOST(1C)]);
-	    } else {
-		Set_SandyBridge_Target(Core, Proc->Boost[BOOST(MAX)]);
-	    }
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		break;
-	case CPUFREQ_POLICY_UNKNOWN:
-		/* Fallthrough */
-	default:
-		break;
 	}
 #endif /* CONFIG_CPU_FREQ */
 }
@@ -9466,31 +9466,22 @@ static void Policy_HWP_SetTarget(void *arg)
 #ifdef CONFIG_CPU_FREQ
     if (Proc->Features.HWP_Enable)
     {
-	struct cpufreq_policy *policy = (struct cpufreq_policy*) arg;
+	unsigned int *ratio = (unsigned int*) arg;
 	unsigned int cpu = smp_processor_id();
 	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	switch (policy->policy) {
-	case CPUFREQ_POLICY_POWERSAVE:
-		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-		Core->PowerThermal.HWP_Request.Energy_Pref = 0xff;
+	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+	if (((*ratio) >= Core->PowerThermal.HWP_Capabilities.Lowest)
+	 && ((*ratio) <= Core->PowerThermal.HWP_Capabilities.Highest))
+	{
+		Core->PowerThermal.HWP_Request.Maximum_Perf =	\
+		Core->PowerThermal.HWP_Request.Desired_Perf = (*ratio);
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-		break;
-	case CPUFREQ_POLICY_PERFORMANCE:
-		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-		Core->PowerThermal.HWP_Request.Energy_Pref = 0x0;
-		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-		break;
-	case CPUFREQ_POLICY_UNKNOWN:
-		/* Fallthrough */
-	default:
-		break;
 	}
     }
     else {
-		Policy_SandyBridge_SetTarget(arg);
+	Policy_SandyBridge_SetTarget(arg);
     }
 #endif /* CONFIG_CPU_FREQ */
 }
