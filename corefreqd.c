@@ -5058,10 +5058,6 @@ REASON_CODE Core_Manager(REF *Ref)
 			UpdateFeatures(Ref);
 
 			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
-
-			if (Quiet & 0x100) {
-				printf("  CoreFreq: Resume\n");
-			}
 		}
 	    }
 		/* All aggregations done: Notify Clients.		*/

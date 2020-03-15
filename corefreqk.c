@@ -4031,6 +4031,36 @@ static unsigned int Get_SandyBridge_Target(CORE *Core)
 	return (GET_SANDYBRIDGE_TARGET(Core));
 }
 
+#define GET_HWP_MINIMUM(Core)						\
+(									\
+	Core->PowerThermal.HWP_Request.Minimum_Perf			\
+)
+
+static unsigned int Get_HWP_Min(CORE *Core)
+{
+	return (GET_HWP_MINIMUM(Core));
+}
+
+#define GET_HWP_MAXIMUM(Core)						\
+(									\
+	Core->PowerThermal.HWP_Request.Maximum_Perf			\
+)
+
+static unsigned int Get_HWP_Max(CORE *Core)
+{
+	return (GET_HWP_MAXIMUM(Core));
+}
+
+#define GET_HWP_DESIRED(Core)						\
+(									\
+	Core->PowerThermal.HWP_Request.Desired_Perf			\
+)
+
+static unsigned int Get_HWP_Target(CORE *Core)
+{
+	return (GET_HWP_DESIRED(Core));
+}
+
 typedef int (*CMP_TARGET)(CORE*, unsigned int);
 
 static int Cmp_Core2_Target(CORE *Core, unsigned int ratio)
@@ -4127,11 +4157,10 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 		}
 	}
   }
-
-	Aggregate_Ratio(BOOST(TGT), GetTarget(Core));
-    Aggregate_Ratio(BOOST(HWP_MIN),Core->PowerThermal.HWP_Request.Minimum_Perf);
-    Aggregate_Ratio(BOOST(HWP_MAX),Core->PowerThermal.HWP_Request.Maximum_Perf);
-    Aggregate_Ratio(BOOST(HWP_TGT),Core->PowerThermal.HWP_Request.Desired_Perf);
+	Aggregate_Ratio(BOOST(TGT)	, GetTarget(Core));
+	Aggregate_Ratio(BOOST(HWP_MIN)	, Get_HWP_Min(Core));
+	Aggregate_Ratio(BOOST(HWP_MAX)	, Get_HWP_Max(Core));
+	Aggregate_Ratio(BOOST(HWP_TGT)	, Get_HWP_Target(Core));
 }
 
 void DynamicAcceleration(CORE *Core)				/* Unique */
@@ -9358,6 +9387,7 @@ static int CoreFreqK_SetBoost(int state)
 	Controller_Start(1);
 	TurboBoost_Enable = -1;
 	Policy_Aggregate_Turbo();
+	BITSET(BUS_LOCK, Proc->OS.Signal, NTFY); /* Notify Daemon	*/
 	return (0);
 }
 
@@ -9388,9 +9418,12 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 		unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
 
 	    if (ratio > 0) {
-		smp_call_function_single(policy->cpu,
+		if (smp_call_function_single(policy->cpu,
 				Arch[Proc->ArchID].SystemDriver->SetTarget,
-				&ratio, 1);
+				&ratio, 1) == 0)
+		{
+			BITSET(BUS_LOCK, Proc->OS.Signal, NTFY);
+		}
 	    }
 		return (0);
 	}
@@ -9413,22 +9446,49 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
     }
 	return (CPU_Freq);
 }
+
+void For_All_CPU_Aggregate_Ratio(enum RATIO_BOOST boost,
+				unsigned int ratio,
+				unsigned int reset,
+				GET_TARGET GetTarget)
+{
+	if (ratio > Proc->Boost[boost]) {
+		Proc->Boost[boost] = ratio;
+	} else {
+		unsigned int cpu;
+
+		Aggregate_Reset(boost, reset);
+
+		for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+			CORE *Core = (CORE *) KPublic->Core[cpu];
+
+			if (!BITVAL(Core->OffLine, OS)) {
+				Aggregate_Ratio(boost, GetTarget(Core));
+			}
+		}
+	}
+}
 #endif /* CONFIG_CPU_FREQ */
 
 static void Policy_Core2_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
+    if ((*ratio) <= Proc->Boost[BOOST(1C)])
+    {
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
-		unsigned int cpu = smp_processor_id();
-		CORE *Core = (CORE *) KPublic->Core[cpu];
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_Core2_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_Core2_Target(Core, (*ratio));
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	}
+	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+					(*ratio),
+					Proc->Boost[BOOST(MIN)],
+					Get_Core2_Target );
+    }
 #endif /* CONFIG_CPU_FREQ */
 }
 
@@ -9436,16 +9496,21 @@ static void Policy_Nehalem_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
+    if ((*ratio) <= Proc->Boost[BOOST(1C)])
+    {
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
-		unsigned int cpu = smp_processor_id();
-		CORE *Core = (CORE *) KPublic->Core[cpu];
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_Nehalem_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_Nehalem_Target(Core, (*ratio));
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	}
+	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+					(*ratio),
+					Proc->Boost[BOOST(MIN)],
+					Get_Nehalem_Target );
+    }
 #endif /* CONFIG_CPU_FREQ */
 }
 
@@ -9453,16 +9518,21 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
+    if ((*ratio) <= Proc->Boost[BOOST(1C)])
+    {
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
 
-	if ((*ratio) <= Proc->Boost[BOOST(1C)]) {
-		unsigned int cpu = smp_processor_id();
-		CORE *Core = (CORE *) KPublic->Core[cpu];
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_SandyBridge_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Set_SandyBridge_Target(Core, (*ratio));
-		WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-	}
+	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+					(*ratio),
+					Proc->Boost[BOOST(MIN)],
+					Get_SandyBridge_Target );
+    }
 #endif /* CONFIG_CPU_FREQ */
 }
 
@@ -9483,6 +9553,16 @@ static void Policy_HWP_SetTarget(void *arg)
 		Core->PowerThermal.HWP_Request.Desired_Perf = (*ratio);
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
+
+		For_All_CPU_Aggregate_Ratio(	BOOST(HWP_MAX),
+						(*ratio),
+						0,
+						Get_HWP_Max );
+
+		For_All_CPU_Aggregate_Ratio(	BOOST(HWP_TGT),
+						(*ratio),
+						0,
+						Get_HWP_Target );
 	}
     }
     else {
