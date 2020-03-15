@@ -3646,8 +3646,8 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data*) ;
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
 #endif
 static int CoreFreqK_SetPolicy(struct cpufreq_policy*) ;
-static void CoreFreqK_Policy_Ready(struct cpufreq_policy*) ;
 static int CoreFreqK_Bios_Limit(int, unsigned int*) ;
+static int CoreFreqK_SetBoost(int) ;
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy*, char*);
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy*, unsigned int) ;
 #endif /* CONFIG_CPU_FREQ */

@@ -221,7 +221,6 @@ static struct {
 #ifdef CONFIG_CPU_FREQ
 	struct cpufreq_driver	FreqDriver;
 	struct cpufreq_governor FreqGovernor;
-	Bit256			PolicyBitReady __attribute__ ((aligned (16)));
 #endif /* CONFIG_CPU_FREQ */
 } CoreFreqK = {
 #ifdef CONFIG_CPU_IDLE
@@ -238,8 +237,8 @@ static struct {
 	/*MANDATORY*/	.init	= CoreFreqK_Policy_Init,
 	/*MANDATORY*/	.verify = CoreFreqK_Policy_Verify,
 	/*MANDATORY*/	.setpolicy = CoreFreqK_SetPolicy,
-			.ready	= CoreFreqK_Policy_Ready,
-			.bios_limit= CoreFreqK_Bios_Limit
+			.bios_limit= CoreFreqK_Bios_Limit,
+			.set_boost = CoreFreqK_SetBoost
 	},
 	.FreqGovernor = {
 			.name	= "corefreq-policy",
@@ -5940,11 +5939,6 @@ void Controller_Init(void)
 
 void Controller_Start(int wait)
 {
-	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
-	Aggregate_Reset(BOOST(HWP_MIN), 0);
-	Aggregate_Reset(BOOST(HWP_MAX), 0);
-	Aggregate_Reset(BOOST(HWP_TGT), 0);
-
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
@@ -9310,7 +9304,6 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	    } else {
 		policy->governor = NULL;
 	    }
-		BITCLR_CC(LOCKLESS, CoreFreqK.PolicyBitReady, policy->cpu);
 	}
     }
 	return (0);
@@ -9333,16 +9326,6 @@ static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
 	return (0);
 }
 
-static void CoreFreqK_Policy_Ready(struct cpufreq_policy *policy)
-{
-    if (policy != NULL) {
-	if (policy->cpu < Proc->CPU.Count)
-	{
-		BITSET_CC(LOCKLESS, CoreFreqK.PolicyBitReady, policy->cpu);
-	}
-    }
-}
-
 static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 {
     if ((cpu >= 0) && (cpu < Proc->CPU.Count) && (limit != NULL))
@@ -9351,6 +9334,30 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 
 	(*limit) = (Proc->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
     }
+	return (0);
+}
+
+void Policy_Aggregate_Turbo(void)
+{
+    if (Proc->Registration.Driver.CPUfreq == 1) {
+	CoreFreqK.FreqDriver.boost_enabled = (
+				BITWISEAND_CC(	LOCKLESS,
+						Proc->TurboBoost,
+						Proc->TurboBoost_Mask ) != 0 );
+    }
+}
+
+static int CoreFreqK_SetBoost(int state)
+{
+	Controller_Stop(1);
+	TurboBoost_Enable = (state != 0);
+	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+	Aggregate_Reset(BOOST(HWP_MIN), 0);
+	Aggregate_Reset(BOOST(HWP_MAX), 0);
+	Aggregate_Reset(BOOST(HWP_TGT), 0);
+	Controller_Start(1);
+	TurboBoost_Enable = -1;
+	Policy_Aggregate_Turbo();
 	return (0);
 }
 
@@ -9373,10 +9380,8 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 					unsigned int freq)
 {
-  if (policy != NULL) {
-    if (policy->cpu < Proc->CPU.Count)
-    {
-	if ((BITVAL_CC(CoreFreqK.PolicyBitReady, policy->cpu) == 1)
+    if (policy != NULL) {
+	if ((policy->cpu < Proc->CPU.Count)
 	 && (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL))
 	{
 		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
@@ -9387,9 +9392,9 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 				Arch[Proc->ArchID].SystemDriver->SetTarget,
 				&ratio, 1);
 	    }
+		return (0);
 	}
     }
-  }
 	return (-EINVAL);
 }
 
@@ -9503,10 +9508,6 @@ static int CoreFreqK_FreqDriver_Init(void)
     {
 	CoreFreqK.FreqDriver.get = Arch[Proc->ArchID].SystemDriver->GetFreq;
 
-	CoreFreqK.FreqDriver.boost_enabled=BITCMP_CC(Proc->CPU.Count,LOCKLESS,
-							Proc->TurboBoost,
-							Proc->TurboBoost_Mask);
-
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
     }
   }
@@ -9540,8 +9541,9 @@ signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
 	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
 	&& (KPublic->Core[seek]->T.ThreadID == 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS)) {
 		return ((signed int) seek);
+	}
     }
 	return (-1);
 }
@@ -9557,8 +9559,9 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
 	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
 	&& (KPublic->Core[seek]->T.ThreadID > 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS))
+	&& !BITVAL(KPublic->Core[seek]->OffLine, OS)) {
 		return ((signed int) seek);
+	}
     }
 	return (-1);
 }
@@ -9842,7 +9845,7 @@ static void Compute_Clock_SMT(void)
 
 static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
-				unsigned long arg)
+				unsigned long arg )
 {
 	long rc = -EPERM;
 
@@ -9872,7 +9875,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = 0;
 		break;
 	case COREFREQ_TOGGLE_ON:
+		Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+		Aggregate_Reset(BOOST(HWP_MIN), 0);
+		Aggregate_Reset(BOOST(HWP_MAX), 0);
+		Aggregate_Reset(BOOST(HWP_TGT), 0);
 		Controller_Start(1);
+	#ifdef CONFIG_CPU_FREQ
+		Policy_Aggregate_Turbo();
+	#endif /* CONFIG_CPU_FREQ */
 		rc = 2;
 		break;
 	}
@@ -10003,12 +10013,20 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_ON:
 				Controller_Stop(1);
 				TurboBoost_Enable = prm.dl.lo;
+				Aggregate_Reset(BOOST(TGT),
+						Proc->Boost[BOOST(MIN)]);
+				Aggregate_Reset(BOOST(HWP_MIN), 0);
+				Aggregate_Reset(BOOST(HWP_MAX), 0);
+				Aggregate_Reset(BOOST(HWP_TGT), 0);
 				Controller_Start(1);
 				TurboBoost_Enable = -1;
 				if((Proc->ArchID == AMD_Family_17h)
 				|| (Proc->ArchID == AMD_Family_18h)) {
 					Compute_AMD_Zen_Boost();
 				}
+			#ifdef CONFIG_CPU_FREQ
+				Policy_Aggregate_Turbo();
+			#endif /* CONFIG_CPU_FREQ */
 				rc = 2;
 				break;
 		}
@@ -10214,7 +10232,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		CLOCK_ARG clockMod = {.sllong = arg};
 		Controller_Stop(1);
 		rc = Arch[Proc->ArchID].ClockMod(&clockMod);
+		Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+		Aggregate_Reset(BOOST(HWP_MIN), 0);
+		Aggregate_Reset(BOOST(HWP_MAX), 0);
+		Aggregate_Reset(BOOST(HWP_TGT), 0);
 		Controller_Start(1);
+	#ifdef CONFIG_CPU_FREQ
+		Policy_Aggregate_Turbo();
+	#endif /* CONFIG_CPU_FREQ */
 	}
 	break;
 
@@ -10363,7 +10388,17 @@ static int CoreFreqK_resume(struct device *dev)
 	if (Proc->Registration.PCI) {		/* Probe PCI again	*/
 		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	}
-	Controller_Start(0);
+
+	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+	Aggregate_Reset(BOOST(HWP_MIN), 0);
+	Aggregate_Reset(BOOST(HWP_MAX), 0);
+	Aggregate_Reset(BOOST(HWP_TGT), 0);
+
+	Controller_Start(1);
+
+#ifdef CONFIG_CPU_FREQ
+	Policy_Aggregate_Turbo();
+#endif /* CONFIG_CPU_FREQ */
 
 	BITSET(BUS_LOCK, Proc->OS.Signal, NTFY); /* Notify Daemon	*/
 
@@ -10446,6 +10481,10 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
    }
 #endif /* CONFIG_CPU_IDLE */
 
+#ifdef CONFIG_CPU_FREQ
+	Policy_Aggregate_Turbo();
+#endif /* CONFIG_CPU_FREQ */
+
 	return (0);
   } else
 	return (-EINVAL);
@@ -10490,6 +10529,9 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 #endif /* CONFIG_HAVE_PERF_EVENTS */
 	  }
 	}
+#ifdef CONFIG_CPU_FREQ
+	Policy_Aggregate_Turbo();
+#endif /* CONFIG_CPU_FREQ */
 	return (0);
     } else
 	return (-EINVAL);
@@ -10776,6 +10818,23 @@ static int __init CoreFreqK_init(void)
 			MatchPeerForDefaultService(&Proc->Service,
 						iArg.localProcessor);
 
+			/* Register the Idle & Frequency sub-drivers	*/
+		    if (Register_CPU_Idle == 1) {
+			Proc->Registration.Driver.CPUidle =		\
+					CoreFreqK_IdleDriver_Init() == 0;
+		    }
+		    if (Register_CPU_Freq == 1) {
+			Proc->Registration.Driver.CPUfreq =		\
+					CoreFreqK_FreqDriver_Init() == 0;
+		    }
+		    if (Register_Governor == 1) {
+			Proc->Registration.Driver.Governor =		\
+					CoreFreqK_Governor_Init() == 0;
+		    }
+		    if (NMI_Disable == 0) {
+			CoreFreqK_Register_NMI();
+		    }
+
 			printk(KERN_INFO "CoreFreq(%u:%d):"	\
 				" Processor [%2X%1X_%1X%1X]"	\
 				" Architecture [%s] %3s [%u/%u]\n",
@@ -10806,22 +10865,10 @@ static int __init CoreFreqK_init(void)
 						CoreFreqK_hotplug_cpu_offline);
 		#endif /* KERNEL_VERSION(4, 6, 0) */
 	#endif /* CONFIG_HOTPLUG_CPU */
-		    if (!NMI_Disable) {
-			CoreFreqK_Register_NMI();
-		    }
-			/* Register the Idle & Frequency sub-drivers	*/
-		    if (Register_CPU_Idle == 1) {
-			Proc->Registration.Driver.CPUidle =		\
-					CoreFreqK_IdleDriver_Init() == 0;
-		    }
-		    if (Register_CPU_Freq == 1) {
-			Proc->Registration.Driver.CPUfreq =		\
-					CoreFreqK_FreqDriver_Init() == 0;
-		    }
-		    if (Register_Governor == 1) {
-			Proc->Registration.Driver.Governor =		\
-					CoreFreqK_Governor_Init() == 0;
-		    }
+
+		#ifdef CONFIG_CPU_FREQ
+			Policy_Aggregate_Turbo();
+		#endif /* CONFIG_CPU_FREQ */
 		  }
 		  else
 		  {
