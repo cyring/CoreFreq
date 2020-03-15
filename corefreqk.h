@@ -3640,7 +3640,9 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 #endif
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy*) ;
 static int CoreFreqK_Policy_Init(struct cpufreq_policy*) ;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19)
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19))   \
+  && (LINUX_VERSION_CODE <= KERNEL_VERSION(5, 4, 25)))  \
+  || (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3))
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data*) ;
 #else
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
