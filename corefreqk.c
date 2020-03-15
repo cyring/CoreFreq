@@ -9447,10 +9447,10 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
 	return (CPU_Freq);
 }
 
-void For_All_CPU_Aggregate_Ratio(enum RATIO_BOOST boost,
-				unsigned int ratio,
-				unsigned int reset,
-				GET_TARGET GetTarget)
+void For_All_Policy_Aggregate_Ratio( enum RATIO_BOOST boost,
+					unsigned int ratio,
+					unsigned int reset,
+					GET_TARGET GetTarget )
 {
 	if (ratio > Proc->Boost[boost]) {
 		Proc->Boost[boost] = ratio;
@@ -9484,7 +9484,14 @@ static void Policy_Core2_SetTarget(void *arg)
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_Core2_Target(Core, 1 + Proc->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
 					Proc->Boost[BOOST(MIN)],
 					Get_Core2_Target );
@@ -9506,7 +9513,14 @@ static void Policy_Nehalem_SetTarget(void *arg)
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_Nehalem_Target(Core, 1 + Proc->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
 					Proc->Boost[BOOST(MIN)],
 					Get_Nehalem_Target );
@@ -9528,7 +9542,14 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-	For_All_CPU_Aggregate_Ratio(	BOOST(TGT),
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_SandyBridge_Target(Core, Proc->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
 					Proc->Boost[BOOST(MIN)],
 					Get_SandyBridge_Target );
@@ -9554,12 +9575,12 @@ static void Policy_HWP_SetTarget(void *arg)
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
-		For_All_CPU_Aggregate_Ratio(	BOOST(HWP_MAX),
+		For_All_Policy_Aggregate_Ratio( BOOST(HWP_MAX),
 						(*ratio),
 						0,
 						Get_HWP_Max );
 
-		For_All_CPU_Aggregate_Ratio(	BOOST(HWP_TGT),
+		For_All_Policy_Aggregate_Ratio( BOOST(HWP_TGT),
 						(*ratio),
 						0,
 						Get_HWP_Target );
