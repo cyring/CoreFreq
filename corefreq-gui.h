@@ -19,6 +19,7 @@ enum {
 #define _BACKGROUND_MAIN	0x2a0308
 #define _FOREGROUND_MAIN	0x8fcefa
 #define _COLOR_FOCUS		0xffffff
+#define _COLOR_BAR		0xff0efa
 
 typedef struct
 {
@@ -36,7 +37,14 @@ typedef struct
 		Pixmap	B,
 			F;
 	} pixmap;
+
+	struct {
+	unsigned long int	background,
+				foreground;
+	} color;
+
 	GC		gc;
+
 	int		x,
 			y,
 			width,
@@ -80,22 +88,32 @@ typedef struct
 				".1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0" \
 				".1.2.3.4.5.6.7.8.9.0.1.2.3.4.5.6.7.8.9.0"
 
-#define One_Char_Height(N)	(A->W[N].extents.charHeight)
+#define Quarter_Char_Width(N)	(A->W[N].extents.charWidth >> 2)
+#define Half_Char_Width(N)	(A->W[N].extents.charWidth >> 1)
+#define One_Char_Width(N)	(A->W[N].extents.charWidth)
+#define One_Half_Char_Width(N)	(One_Char_Width(N) + Half_Char_Width(N))
+#define Twice_Char_Width(N)	(A->W[N].extents.charWidth << 1)
+#define Twice_Half_Char_Width(N) (Twice_Char_Width(N) + Half_Char_Width(N))
 
-#define GEOMETRY_MAIN_COLS	84
-#define GEOMETRY_MAIN_ROWS	36
+#define Quarter_Char_Height(N)	(A->W[N].extents.charHeight >> 2)
+#define Half_Char_Height(N)	(A->W[N].extents.charHeight >> 1)
+#define One_Char_Height(N)	(A->W[N].extents.charHeight)
+#define One_Half_Char_Height(N) (One_Char_Height(N) + Half_Char_Height(N))
+#define Twice_Char_Height(N)	(A->W[N].extents.charHeight << 1)
+#define Twice_Half_Char_Height(N) (Twice_Char_Height(N) + Half_Char_Height(N))
+
+#define Header_Height(N)	(One_Char_Height(N) + Quarter_Char_Height(N))
+#define Footer_Height(N)	(One_Char_Height(N) + Half_Char_Height(N))
+
+#define GEOMETRY_MAIN_COLS	80
+#define GEOMETRY_MAIN_ROWS	32
+
 #define MAIN_TEXT_WIDTH 	GEOMETRY_MAIN_COLS
 #define MAIN_TEXT_HEIGHT	GEOMETRY_MAIN_ROWS
 
 #define KEYINPUT_DEPTH		256
 
 typedef enum {MAIN, WIDGETS} LAYOUTS;
-
-typedef struct
-{
-	unsigned long int	globalBackground,
-				globalForeground;
-} LAYOUT;
 
 typedef struct
 {
@@ -108,7 +126,6 @@ typedef struct
 
 	Display		*display;
 	Screen		*screen;
-/*	char		*Geometries;	*/
     struct
     {
 	char		**List,
@@ -117,34 +134,16 @@ typedef struct
 	int		Count,
 			Index;
     } font;
-/*	Atom		atom[5];	*/
 	Cursor		MouseCursor[MC_COUNT];
-/*	XSPLASH		Splash;	*/
 	XWINDOW		W[WIDGETS];
-/*	XTARGET		T;	*/
-	LAYOUT		L;
-/*	sigset_t	Signal;	*/
 	pthread_t	TID_SigHandler,
 			TID_Draw;
-/*	Bool32		MDI,
-			LOOP,
-			RESTART,
-			PAUSE[WIDGETS];
-
-	unsigned int	Room;
-
-	char		*configFile,
-			*scrShotPath;
-	OPTIONS		Options[OPTIONS_COUNT];
-	COMMANDS	Commands[COMMANDS_COUNT];	*/
 	char		xACL;
 } uARG;
 
 /*
-	Definition of the Widgets drawing functions.
-	The triple buffering is as the following sequence:
+	The bouble buffering is as the following sequence:
 */
-
 /* step 1 : draw the static graphics into the background pixmap.	*/
 void	BuildLayout(uARG *A, int G) ;
 /* step 2 : copy the background into the foreground pixmap.		*/

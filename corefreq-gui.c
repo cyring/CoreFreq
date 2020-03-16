@@ -124,9 +124,9 @@ BOOL OpenWidgets(uARG *A)
 
 	XSetWindowAttributes swa = {
 	.background_pixmap = None,
-	.background_pixel = A->L.globalBackground,
+	.background_pixel = A->W[MAIN].color.background,
 	.border_pixmap	= CopyFromParent,
-	.border_pixel	= A->L.globalForeground,
+	.border_pixel	= A->W[MAIN].color.foreground,
 	.bit_gravity	= 0,
 	.win_gravity	= 0,
 	.backing_store	= DoesBackingStore(DefaultScreenOfDisplay(A->display)),
@@ -158,16 +158,13 @@ BOOL OpenWidgets(uARG *A)
 	XTextExtents(	A->font.Info, DEFAULT_HEADER_STR, MAIN_TEXT_WIDTH,
 			&A->W[MAIN].extents.dir, &A->W[MAIN].extents.ascent,
 			&A->W[MAIN].extents.descent,&A->W[MAIN].extents.overall);
-/*
+
 	A->W[MAIN].extents.charWidth = A->font.Info->max_bounds.rbearing
 					- A->font.Info->min_bounds.lbearing;
 
 	A->W[MAIN].extents.charHeight = A->W[MAIN].extents.ascent
 					+ A->W[MAIN].extents.descent;
 
-	A->W[MAIN].width	= A->W[MAIN].extents.overall.width;
-	A->W[MAIN].height	= One_Char_Height(MAIN) * MAIN_TEXT_HEIGHT;
-*/
 	if ((A->W[MAIN].pixmap.B = XCreatePixmap(
 					A->display, A->W[MAIN].window,
 					A->W[MAIN].width, A->W[MAIN].height,
@@ -194,19 +191,31 @@ BOOL OpenWidgets(uARG *A)
 
 void BuildLayout(uARG *A, int G)
 {
-	XSetBackground(A->display, A->W[G].gc, A->L.globalBackground);
-	XSetForeground(A->display, A->W[G].gc, A->L.globalBackground);
+	size_t len = strlen(A->M.Shm->Proc.Brand);
+	const int x = ( A->W[MAIN].extents.overall.width
+			- (One_Char_Width(MAIN) * len) ) / 2;
+
+	XSetBackground(A->display, A->W[G].gc, A->W[MAIN].color.background);
+	XSetForeground(A->display, A->W[G].gc, A->W[MAIN].color.background);
 	/* Clear entirely the background.				*/
 	XFillRectangle(A->display, A->W[G].pixmap.B, A->W[G].gc,
 			0, 0, A->W[G].width, A->W[G].height);
 	/* Processor specification.					*/
-	size_t len = strlen(A->M.Shm->Proc.Brand);
-
-	XSetForeground(A->display, A->W[G].gc, A->L.globalForeground);
+	XSetForeground(A->display, A->W[G].gc, A->W[MAIN].color.foreground);
 
 	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
-			(A->W[MAIN].extents.overall.width - (7*len)) / 2, 32,
+			x, One_Char_Height(G),
 			A->M.Shm->Proc.Brand, len );
+	/* Columns header						*/
+	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
+			One_Char_Width(MAIN), Twice_Half_Char_Height(G),
+			"CPU", 3 );
+
+	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
+			A->W[MAIN].extents.overall.width-((8+1)
+			* One_Char_Width(MAIN)),
+			Twice_Half_Char_Height(G),
+			"Freq[Mhz]", 9 );
 }
 
 void MapLayout(uARG *A, int G)
@@ -219,6 +228,7 @@ void FlushLayout(uARG *A, int G)
 {
 	XCopyArea(A->display, A->W[G].pixmap.F, A->W[G].window, A->W[G].gc,
 			0, 0, A->W[G].width, A->W[G].height, 0, 0);
+
 	XFlush(A->display);
 }
 
@@ -227,25 +237,26 @@ void DrawLayout(uARG *A, int G)
 	char str[16];
 	unsigned int cpu;
 
-    for (cpu = 0; cpu < A->M.Shm->Proc.CPU.Count; cpu++)
-    {
+  for (cpu = 0; cpu < A->M.Shm->Proc.CPU.Count; cpu++)
+  {
 	struct FLIP_FLOP *CFlop = \
 		&A->M.Shm->Cpu[cpu].FlipFlop[
 			!A->M.Shm->Cpu[cpu].Toggle
 	];
-	const int x = 32, y = 32 + ( 32 * (cpu + 1) ),
-		width = ( (A->W[MAIN].extents.overall.width - 32)
-			* CFlop->Relative.Ratio )
-			/ A->M.Shm->Proc.Boost[BOOST(1C)],
-		height = 24;
+	const int x = One_Char_Width(MAIN),
+	y = One_Char_Height(MAIN) + (Twice_Char_Height(MAIN) * (cpu + 1)),
+	width = ( (A->W[MAIN].extents.overall.width - Twice_Char_Width(MAIN))
+		* CFlop->Relative.Ratio ) / A->M.Shm->Proc.Boost[BOOST(1C)],
+	height = One_Half_Char_Height(MAIN);
 
-	snprintf(str, 16, "%03u%07.2f", cpu, CFlop->Relative.Freq);
+	snprintf(str, 16, "%03u%7.2f", cpu, CFlop->Relative.Freq);
 
-	if (CFlop->Relative.Ratio >= A->M.Shm->Proc.Boost[BOOST(MAX)]) {
-		XSetForeground(A->display, A->W[MAIN].gc, 0xff0efa);
-	} else {
-		XSetForeground(A->display, A->W[MAIN].gc, A->L.globalForeground);
-	}
+    if (CFlop->Relative.Ratio >= A->M.Shm->Proc.Boost[BOOST(MAX)]) {
+	XSetForeground(A->display, A->W[MAIN].gc, _COLOR_BAR);
+    } else {
+	XSetForeground(A->display, A->W[MAIN].gc, A->W[MAIN].color.foreground);
+    }
+
 	XFillRectangle( A->display,
 			A->W[MAIN].pixmap.F,
 			A->W[MAIN].gc,
@@ -256,14 +267,18 @@ void DrawLayout(uARG *A, int G)
 	XDrawString(	A->display,
 			A->W[MAIN].pixmap.F,
 			A->W[MAIN].gc,
-			8, y + 16, str, 3);
+			One_Char_Width(MAIN),
+			y + One_Char_Height(MAIN),
+			str, 3 );
 
 	XDrawString(	A->display,
 			A->W[MAIN].pixmap.F,
 			A->W[MAIN].gc,
-			A->W[MAIN].extents.overall.width-(6*8), y + 16,
+			A->W[MAIN].extents.overall.width-((7+1)
+			* One_Char_Width(MAIN)),
+			y + One_Char_Height(MAIN),
 			&str[3], 7);
-    }
+  }
 }
 
 static void *DrawLoop(void *uArg)
@@ -304,21 +319,11 @@ static void *EventLoop(uARG *A)
 		    }
 		    break;
 		case KeyPress: {
-
-			KeySym KeySymPressed;
-			XComposeStatus ComposeStatus = {0};
-			char xkBuffer[KEYINPUT_DEPTH];
-/*			int  xkLength;	*/
-
-/*			xkLength =*/ XLookupString(&E.xkey,
-						xkBuffer,
-						KEYINPUT_DEPTH,
-						&KeySymPressed,
-						&ComposeStatus);
-
-			switch (KeySymPressed) {
-			case XK_Escape:
+			switch (XLookupKeysym(&E.xkey, 0)) {
+			case XK_x:
+			    if (E.xkey.state & ControlMask) {
 				BITSET(LOCKLESS, A->Shutdown, SYNC);
+			    }
 				break;
 			}
 		    }
@@ -354,11 +359,11 @@ static void *EventLoop(uARG *A)
 		    break;
 		case FocusIn:
 			XSetWindowBorder(A->display, A->W[MAIN].window,
-					A->L.globalForeground);
+					A->W[MAIN].color.foreground);
 		    break;
 		case FocusOut:
 			XSetWindowBorder(A->display, A->W[MAIN].window,
-					A->L.globalForeground);
+					A->W[MAIN].color.foreground);
 		    break;
 		case DestroyNotify:
 			BITSET(LOCKLESS, A->Shutdown, SYNC);
@@ -386,7 +391,7 @@ int main(int argc, char *argv[])
 	.screen = NULL,
 	.TID_SigHandler = 0,
 	.TID_Draw = 0,
-	.font= {
+	.font = {
 		.List = NULL,
 		.Name = calloc(256, sizeof(char)),
 		.Info = NULL,
@@ -398,11 +403,15 @@ int main(int argc, char *argv[])
 	[MAIN] = {
 		.window = 0,
 		.pixmap ={ .B = 0, .F = 0 },
+		.color = {
+			.background = _BACKGROUND_GLOBAL,
+			.foreground = _FOREGROUND_GLOBAL
+		},
 		.gc = 0,
 		.x = +0,
 		.y = +0,
 		.width = (GEOMETRY_MAIN_COLS * DEFAULT_FONT_CHAR_WIDTH),
-		.height=((1+GEOMETRY_MAIN_ROWS+1) * DEFAULT_FONT_CHAR_HEIGHT),
+		.height= (3 * DEFAULT_FONT_CHAR_HEIGHT),
 		.border_width = 1,
 		.Position = {.bitmask = 0x0, .xoffset = 0, .yoffset = 0},
 		.extents = {
@@ -411,65 +420,65 @@ int main(int argc, char *argv[])
 			.ascent = DEFAULT_FONT_ASCENT,
 			.descent= DEFAULT_FONT_DESCENT,
 			.charWidth = DEFAULT_FONT_CHAR_WIDTH,
-			.charHeight= DEFAULT_FONT_CHAR_HEIGHT,
+			.charHeight= DEFAULT_FONT_CHAR_HEIGHT
 		    },
-		},
+	    },
 	},
-	.L = {
-		.globalBackground = _BACKGROUND_GLOBAL,
-		.globalForeground = _FOREGROUND_GLOBAL,
-	},
-	.xACL = 'N',
+	.xACL = 'N'
     };
 
-    if ((XInitThreads() != 0) && (OpenDisplay(&A) == TRUE))
-    {
-      if (OpenWidgets(&A) == TRUE)
-      {
-	const char *winTitle = "CoreFreq";
-
-	XStoreName(A.display, A.W[MAIN].window, winTitle);
-	XSetIconName(A.display, A.W[MAIN].window, winTitle);
-	XMapWindow(A.display, A.W[MAIN].window);
-
-	if ((A.M.fd = shm_open(SHM_FILENAME, O_RDWR,
+  if ((XInitThreads() != 0) && (OpenDisplay(&A) == TRUE))
+  {
+    if ((A.M.fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
-	{
+    {
 		struct stat shmStat = {0};
-	  if (fstat(A.M.fd, &shmStat) != -1)
-	  {
-	    if ((A.M.Shm = mmap(NULL, shmStat.st_size,
+	if (fstat(A.M.fd, &shmStat) != -1)
+	{
+	  if ((A.M.Shm = mmap(NULL, shmStat.st_size,
 					PROT_READ|PROT_WRITE,MAP_SHARED,
 					A.M.fd, 0)) != MAP_FAILED)
-	    {
-	      if (CHK_FOOTPRINT(A.M.Shm->FootPrint,	COREFREQ_MAJOR,
+	  {
+	    if (CHK_FOOTPRINT(A.M.Shm->FootPrint,	COREFREQ_MAJOR,
 							COREFREQ_MINOR,
 							COREFREQ_REV))
-	      {
+	    {
 		ClientFollowService(	&localService,
 					&A.M.Shm->Proc.Service, 0 );
 
 		A.M.Shm->App.GUI = getpid();
 
-		if (pthread_create(&A.TID_Draw, NULL, DrawLoop, &A) == 0)
+		A.W[MAIN].height = A.W[MAIN].height
+				+ (A.M.Shm->Proc.CPU.Count
+				* (2 * DEFAULT_FONT_CHAR_HEIGHT));
+
+		if (OpenWidgets(&A) == TRUE)
 		{
+			const char *winTitle = "CoreFreq";
+
+			XStoreName(A.display, A.W[MAIN].window, winTitle);
+			XSetIconName(A.display, A.W[MAIN].window, winTitle);
+			XMapWindow(A.display, A.W[MAIN].window);
+
+		    if (pthread_create(&A.TID_Draw, NULL, DrawLoop, &A) == 0)
+		    {
 			EventLoop(&A);
 
 			pthread_join(A.TID_Draw, NULL);
+		    }
+			CloseWidgets(&A);
 		}
 		A.M.Shm->App.GUI = 0;
-	      }
-		munmap(A.M.Shm, shmStat.st_size);
 	    }
+		munmap(A.M.Shm, shmStat.st_size);
 	  }
 	}
-	CloseWidgets(&A);
-      }
+    }
 	CloseDisplay(&A);
-    }
-    if (A.font.Name != NULL) {
+  }
+  if (A.font.Name != NULL) {
 	free(A.font.Name);
-    }
+  }
 	return (0);
 }
 
