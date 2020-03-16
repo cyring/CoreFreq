@@ -5240,7 +5240,7 @@ void SystemRegisters(CORE *Core)
 			"orq	%%rdx, %%rax"	"\n\t"
 			"movq	%%rax, %0"
 			: "=r" (Core->SystemRegister.EFCR)
-			: "i" (MSR_IA32_FEATURE_CONTROL)
+			: "i" (MSR_IA32_FEAT_CTL)
 			: "%rax", "%rcx", "%rdx"
 		);
 		/* Virtualization Technology. */
@@ -9470,6 +9470,27 @@ void For_All_Policy_Aggregate_Ratio( enum RATIO_BOOST boost,
 		}
 	}
 }
+
+void For_All_Policy_Aggregate_HWP(	unsigned int count,
+					enum RATIO_BOOST boost[],
+					unsigned int ratio[],
+					unsigned int reset[],
+					GET_TARGET GetTarget[] )
+{
+	unsigned int idx, cpu;
+	for (idx = 0; idx < count; idx++) {
+		Aggregate_Reset(boost[idx], reset[idx]);
+	}
+	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
+		CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	    if (!BITVAL(Core->OffLine, OS)) {
+		for (idx = 0; idx < count; idx++) {
+			Aggregate_Ratio(boost[idx], GetTarget[idx](Core));
+		}
+	    }
+	}
+}
 #endif /* CONFIG_CPU_FREQ */
 
 static void Policy_Core2_SetTarget(void *arg)
@@ -9572,20 +9593,17 @@ static void Policy_HWP_SetTarget(void *arg)
 	if (((*ratio) >= Core->PowerThermal.HWP_Capabilities.Lowest)
 	 && ((*ratio) <= Core->PowerThermal.HWP_Capabilities.Highest))
 	{
+		enum RATIO_BOOST boost[]= { BOOST(HWP_MAX), BOOST(HWP_TGT) };
+		unsigned int ratios[]	= { (*ratio), (*ratio) };
+		unsigned int reset[]	= { 0, 0 };
+		GET_TARGET GetFunc[]	= { Get_HWP_Max, Get_HWP_Target };
+
 		Core->PowerThermal.HWP_Request.Maximum_Perf =	\
 		Core->PowerThermal.HWP_Request.Desired_Perf = (*ratio);
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
-		For_All_Policy_Aggregate_Ratio( BOOST(HWP_MAX),
-						(*ratio),
-						0,
-						Get_HWP_Max );
-
-		For_All_Policy_Aggregate_Ratio( BOOST(HWP_TGT),
-						(*ratio),
-						0,
-						Get_HWP_Target );
+		For_All_Policy_Aggregate_HWP(2, boost, ratios, reset, GetFunc);
 	}
     }
     else {

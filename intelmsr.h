@@ -8,6 +8,10 @@
 	#define MSR_SMI_COUNT			0x00000034
 #endif
 
+#ifndef MSR_IA32_FEAT_CTL
+	#define MSR_IA32_FEAT_CTL		MSR_IA32_FEATURE_CONTROL
+#endif
+
 #ifndef MSR_IA32_SPEC_CTRL
 	#define MSR_IA32_SPEC_CTRL		0x00000048
 #endif
