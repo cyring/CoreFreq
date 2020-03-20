@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <signal.h>
 #include <pthread.h>
 #include <sched.h>
 
@@ -60,28 +61,28 @@ void CloseDisplay(uARG *A)
 	if (A->font.List != NULL)
 	{
 		XFreeFontNames(A->font.List);
-		A->font.List = NULL;
-		A->font.Count=0;
-		A->font.Index=0;
+		A->font.List	= NULL;
+		A->font.Count	= 0;
+		A->font.Index	= 0;
 	}
 	if (A->font.Info)
 	{
 		XFreeFont(A->display, A->font.Info);
-		A->font.Info = NULL;
+		A->font.Info	= NULL;
 	}
 	if (A->display) {
 		XCloseDisplay(A->display);
 	}
 }
 
-BOOL OpenDisplay(uARG *A)
+BOOL OpenDisplay(uARG *A, char xACL)
 {
 	BOOL noerr = TRUE;
 
     if ( (A->display = XOpenDisplay(NULL))
       && (A->screen = DefaultScreenOfDisplay(A->display)) )
     {
-      switch (A->xACL) {
+      switch (xACL) {
       case 'Y':
       case 'y':
 		XEnableAccessControl(A->display);
@@ -91,7 +92,7 @@ BOOL OpenDisplay(uARG *A)
 		XDisableAccessControl(A->display);
 		break;
       }
-	// Try to load the requested font.
+	/* Try to load the requested font.				*/
       if (strlen(A->font.Name) == 0) {
 		strcpy(A->font.Name, "fixed");
       }
@@ -118,7 +119,7 @@ void	CloseWidgets(uARG *A)
 	XDestroyWindow(A->display, A->W[MAIN].window);
 }
 
-BOOL OpenWidgets(uARG *A)
+BOOL OpenWidgets(uARG *A, const char *winTitle)
 {
 	BOOL noerr = TRUE;
 
@@ -178,7 +179,33 @@ BOOL OpenWidgets(uARG *A)
 	{
 		const long EventProfile = BASE_EVENTS|CLICK_EVENTS|MOVE_EVENTS;
 
+		#define _COUNT (sizeof(A->atom) / sizeof(Atom))
+		const struct {
+			char	*property;
+			Bool	only_if_exists;
+		} atoms[_COUNT] = {
+			{	"WM_DELETE_WINDOW",		False	},
+			{	"_MOTIF_WM_HINTS",		True	},
+			{	"_NET_WM_STATE",		False	},
+			{	"_NET_WM_STATE_ABOVE",		False	},
+			{	"_NET_WM_STATE_SKIP_TASKBAR",	False	}
+		};
+		int idx;
+	    for (idx = 0; idx < _COUNT; idx++)
+	    {
+		A->atom[idx] = XInternAtom(	A->display,
+						atoms[idx].property,
+						atoms[idx].only_if_exists );
+	    }
+		XSetWMProtocols(A->display, A->W[MAIN].window, A->atom, _COUNT);
+		#undef _COUNT
+
 		XSelectInput(A->display, A->W[MAIN].window, EventProfile);
+
+		XStoreName(A->display, A->W[MAIN].window, winTitle);
+		XSetIconName(A->display, A->W[MAIN].window, winTitle);
+
+		XMapWindow(A->display, A->W[MAIN].window);
 	}
       } else {
 	noerr = FALSE;
@@ -192,28 +219,28 @@ BOOL OpenWidgets(uARG *A)
 void BuildLayout(uARG *A, int G)
 {
 	size_t len = strlen(A->M.Shm->Proc.Brand);
-	const int x = ( A->W[MAIN].extents.overall.width
-			- (One_Char_Width(MAIN) * len) ) / 2;
+	const int x = ( A->W[G].extents.overall.width
+			- (One_Char_Width(G) * len) ) / 2;
 
-	XSetBackground(A->display, A->W[G].gc, A->W[MAIN].color.background);
-	XSetForeground(A->display, A->W[G].gc, A->W[MAIN].color.background);
+	XSetBackground(A->display, A->W[G].gc, A->W[G].color.background);
+	XSetForeground(A->display, A->W[G].gc, A->W[G].color.background);
 	/* Clear entirely the background.				*/
 	XFillRectangle(A->display, A->W[G].pixmap.B, A->W[G].gc,
 			0, 0, A->W[G].width, A->W[G].height);
 	/* Processor specification.					*/
-	XSetForeground(A->display, A->W[G].gc, A->W[MAIN].color.foreground);
+	XSetForeground(A->display, A->W[G].gc, A->W[G].color.foreground);
 
 	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
 			x, One_Char_Height(G),
 			A->M.Shm->Proc.Brand, len );
 	/* Columns header						*/
 	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
-			One_Char_Width(MAIN), Twice_Half_Char_Height(G),
+			One_Char_Width(G), Twice_Half_Char_Height(G),
 			"CPU", 3 );
 
 	XDrawString(	A->display, A->W[G].pixmap.B, A->W[G].gc,
-			A->W[MAIN].extents.overall.width-((8+1)
-			* One_Char_Width(MAIN)),
+			A->W[G].extents.overall.width-((8+1)
+			* One_Char_Width(G)),
 			Twice_Half_Char_Height(G),
 			"Freq[Mhz]", 9 );
 }
@@ -243,40 +270,40 @@ void DrawLayout(uARG *A, int G)
 		&A->M.Shm->Cpu[cpu].FlipFlop[
 			!A->M.Shm->Cpu[cpu].Toggle
 	];
-	const int x = One_Char_Width(MAIN),
-	y = One_Char_Height(MAIN) + (Twice_Char_Height(MAIN) * (cpu + 1)),
-	width = ( (A->W[MAIN].extents.overall.width - Twice_Char_Width(MAIN))
+	const int x = One_Char_Width(G),
+	y = One_Char_Height(G) + (Twice_Char_Height(G) * (cpu + 1)),
+	width = ( (A->W[G].extents.overall.width - Twice_Char_Width(G))
 		* CFlop->Relative.Ratio ) / A->M.Shm->Proc.Boost[BOOST(1C)],
-	height = One_Half_Char_Height(MAIN);
+	height = One_Half_Char_Height(G);
 
 	snprintf(str, 16, "%03u%7.2f", cpu, CFlop->Relative.Freq);
 
     if (CFlop->Relative.Ratio >= A->M.Shm->Proc.Boost[BOOST(MAX)]) {
-	XSetForeground(A->display, A->W[MAIN].gc, _COLOR_BAR);
+	XSetForeground(A->display, A->W[G].gc, _COLOR_BAR);
     } else {
-	XSetForeground(A->display, A->W[MAIN].gc, A->W[MAIN].color.foreground);
+	XSetForeground(A->display, A->W[G].gc, A->W[G].color.foreground);
     }
 
 	XFillRectangle( A->display,
-			A->W[MAIN].pixmap.F,
-			A->W[MAIN].gc,
+			A->W[G].pixmap.F,
+			A->W[G].gc,
 			x, y, width, height );
 
-	XSetForeground(A->display, A->W[MAIN].gc, _COLOR_FOCUS);
+	XSetForeground(A->display, A->W[G].gc, _COLOR_FOCUS);
 
 	XDrawString(	A->display,
-			A->W[MAIN].pixmap.F,
-			A->W[MAIN].gc,
-			One_Char_Width(MAIN),
-			y + One_Char_Height(MAIN),
+			A->W[G].pixmap.F,
+			A->W[G].gc,
+			One_Char_Width(G),
+			y + One_Char_Height(G),
 			str, 3 );
 
 	XDrawString(	A->display,
-			A->W[MAIN].pixmap.F,
-			A->W[MAIN].gc,
-			A->W[MAIN].extents.overall.width-((7+1)
-			* One_Char_Width(MAIN)),
-			y + One_Char_Height(MAIN),
+			A->W[G].pixmap.F,
+			A->W[G].gc,
+			A->W[G].extents.overall.width-((7+1)
+			* One_Char_Width(G)),
+			y + One_Char_Height(G),
 			&str[3], 7);
   }
 }
@@ -284,6 +311,8 @@ void DrawLayout(uARG *A, int G)
 static void *DrawLoop(void *uArg)
 {
 	uARG *A = (uARG *) uArg;
+
+	pthread_setname_np(A->TID.Drawing, "corefreq-gui-dw");
 
 	ClientFollowService(&localService, &A->M.Shm->Proc.Service, 0);
 
@@ -365,6 +394,11 @@ static void *EventLoop(uARG *A)
 			XSetWindowBorder(A->display, A->W[MAIN].window,
 					A->W[MAIN].color.foreground);
 		    break;
+		case ClientMessage:
+			if(E.xclient.data.l[0] != A->atom[0]) {
+				break;
+			}
+			/* Fallthrough */
 		case DestroyNotify:
 			BITSET(LOCKLESS, A->Shutdown, SYNC);
 		    break;
@@ -381,16 +415,53 @@ static void *EventLoop(uARG *A)
 	return (NULL);
 }
 
+static void *Emergency(void *uArg)
+{
+	uARG *A=(uARG *) uArg;
+
+	pthread_setname_np(A->TID.SigHandler, "corefreq-gui-sg");
+
+	ClientFollowService(&localService, &A->M.Shm->Proc.Service, 0);
+
+	int caught = 0;
+    while (!BITVAL(A->Shutdown, SYNC) && !sigwait(&A->TID.Signal, &caught))
+    {
+	if (BITVAL(LOCKLESS, A->M.Shm->Proc.Sync, NTFY1)) {
+		ClientFollowService(&localService, &A->M.Shm->Proc.Service, 0);
+	}
+	switch (caught) {
+	case SIGINT:
+	case SIGQUIT:
+	case SIGUSR1:
+	case SIGTERM: {
+		XClientMessageEvent E = {
+			.type	= ClientMessage,
+			.serial = 0,
+			.send_event = FALSE,
+			.display = A->display,
+			.window = A->W[MAIN].window,
+			.message_type = A->atom[0],
+			.format = 32,
+			.data	= { .l = {A->atom[0]} }
+		};
+		XSendEvent(A->display, A->W[MAIN].window, 0, 0, (XEvent *) &E);
+		XFlush(A->display);
+	}
+		break;
+	}
+    }
+	return (NULL);
+}
+
 int main(int argc, char *argv[])
 {
 	uARG A =	\
     {
 	.Shutdown = 0x0,
 	.M = { .Shm = NULL, .fd = -1 },
+	.TID = { .SigHandler = 0, .Drawing = 0 },
 	.display = NULL,
 	.screen = NULL,
-	.TID_SigHandler = 0,
-	.TID_Draw = 0,
 	.font = {
 		.List = NULL,
 		.Name = calloc(256, sizeof(char)),
@@ -424,10 +495,9 @@ int main(int argc, char *argv[])
 		    },
 	    },
 	},
-	.xACL = 'N'
     };
 
-  if ((XInitThreads() != 0) && (OpenDisplay(&A) == TRUE))
+  if ((XInitThreads() != 0) && (OpenDisplay(&A, 'N') == TRUE))
   {
     if ((A.M.fd = shm_open(SHM_FILENAME, O_RDWR,
 			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
@@ -452,19 +522,28 @@ int main(int argc, char *argv[])
 				+ (A.M.Shm->Proc.CPU.Count
 				* (2 * DEFAULT_FONT_CHAR_HEIGHT));
 
-		if (OpenWidgets(&A) == TRUE)
+		if (OpenWidgets(&A, "CoreFreq") == TRUE)
 		{
-			const char *winTitle = "CoreFreq";
+			sigemptyset(&A.TID.Signal);
+			sigaddset(&A.TID.Signal, SIGINT);  /* [CTRL] + [C] */
+			sigaddset(&A.TID.Signal, SIGQUIT);
+			sigaddset(&A.TID.Signal, SIGUSR1);
+			sigaddset(&A.TID.Signal, SIGTERM);
 
-			XStoreName(A.display, A.W[MAIN].window, winTitle);
-			XSetIconName(A.display, A.W[MAIN].window, winTitle);
-			XMapWindow(A.display, A.W[MAIN].window);
+		    if (pthread_sigmask(SIG_BLOCK, &A.TID.Signal, NULL) == 0) {
+			pthread_create(&A.TID.SigHandler, NULL, Emergency, &A);
+		    }
 
-		    if (pthread_create(&A.TID_Draw, NULL, DrawLoop, &A) == 0)
+		    if (pthread_create(&A.TID.Drawing, NULL, DrawLoop, &A) == 0)
 		    {
 			EventLoop(&A);
 
-			pthread_join(A.TID_Draw, NULL);
+			pthread_join(A.TID.Drawing, NULL);
+		    }
+		    if (A.TID.SigHandler != 0)
+		    {
+			pthread_kill(A.TID.SigHandler, SIGUSR1);
+			pthread_join(A.TID.SigHandler, NULL);
 		    }
 			CloseWidgets(&A);
 		}

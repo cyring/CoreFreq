@@ -123,6 +123,12 @@ typedef struct
 	SHM_STRUCT	*Shm;
 	int		fd;
     } M;
+    struct
+    {
+	sigset_t	Signal;
+	pthread_t	SigHandler,
+			Drawing;
+    } TID;
 
 	Display		*display;
 	Screen		*screen;
@@ -134,11 +140,9 @@ typedef struct
 	int		Count,
 			Index;
     } font;
+	Atom		atom[5];
 	Cursor		MouseCursor[MC_COUNT];
 	XWINDOW		W[WIDGETS];
-	pthread_t	TID_SigHandler,
-			TID_Draw;
-	char		xACL;
 } uARG;
 
 /*
