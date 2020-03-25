@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="1024"
+   height="768"
+   viewBox="0 0 270.93332 203.19998"
+   version="1.1"
+   id="svg5222"
+   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   sodipodi:docname="corefreq-gui-main.svg">
+  <title
+     id="title7676">CoreFreq</title>
+  <defs
+     id="defs5216">
+    <linearGradient
+       id="linearGradient7601"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#2a0308;stop-opacity:1;"
+         offset="0"
+         id="stop7599" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient7493"
+       osb:paint="solid">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop7491" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#f0f0f0"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1"
+     inkscape:cx="500.13846"
+     inkscape:cy="327.99989"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:pagecheckerboard="false"
+     inkscape:snap-page="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata5219">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>CoreFreq</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>CyrIng</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>(C)2020 CYRIL INGENIERIE</dc:title>
+          </cc:Agent>
+        </dc:rights>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer Main"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(71.966652,-148.83331)">
+    <rect
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#2a0308;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.68550622;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:0;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;enable-background:accumulate"
+       id="rect5224"
+       width="270.93332"
+       height="203.19998"
+       x="-71.966652"
+       y="148.83331"
+       inkscape:label="Fill Background" />
+    <text
+       xml:space="preserve"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.93333244px;line-height:6.61458302px;font-family:Sans;-inkscape-font-specification:'Sans, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="24.746809"
+       y="254.9726"
+       id="text8043"
+       inkscape:label="Print Logo"><tspan
+         sodipodi:role="line"
+         id="tspan8041"
+         x="24.746809"
+         y="254.9726"
+         style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:16.93333244px;font-family:Sans;-inkscape-font-specification:'Sans, Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke-width:0.26458332px">CoreFreq</tspan></text>
+  </g>
+</svg>
