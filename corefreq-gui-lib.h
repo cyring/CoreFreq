@@ -94,10 +94,10 @@ typedef struct
 	    XCharStruct overall;
 		int	dir,
 			ascent,
-			descent,
-			charWidth,
+			descent;
+		double	charWidth,
 			charHeight;
-	} extents;
+	} metrics;
     } font[THEMES];
 	char		Xacl;
 } xARG;
@@ -112,26 +112,26 @@ typedef struct
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"	\
 				"abcdefghijklmnopqrstuvwxyz{|}~"
 
-#define Quarter_Char_Width(A,N) 	(A->font[N].extents.charWidth >> 2)
-#define Half_Char_Width(A,N)		(A->font[N].extents.charWidth >> 1)
-#define One_Char_Width(A,N)		(A->font[N].extents.charWidth)
+#define Quarter_Char_Width(A,N) 	(A->font[N].metrics.charWidth / 4.0)
+#define Half_Char_Width(A,N)		(A->font[N].metrics.charWidth / 2.0)
+#define One_Char_Width(A,N)		(A->font[N].metrics.charWidth)
 
 #define One_Half_Char_Width(A,N)	 (One_Char_Width(A,N)		\
 					+ Half_Char_Width(A,N))
 
-#define Twice_Char_Width(A,N)		(A->font[N].extents.charWidth << 1)
+#define Twice_Char_Width(A,N)		(A->font[N].metrics.charWidth * 2.0)
 
 #define Twice_Half_Char_Width(A,N)	 (Twice_Char_Width(A,N) 	\
 					+ Half_Char_Width(A,N))
 
-#define Quarter_Char_Height(A,N)	(A->font[N].extents.charHeight >> 2)
-#define Half_Char_Height(A,N)		(A->font[N].extents.charHeight >> 1)
-#define One_Char_Height(A,N)		(A->font[N].extents.charHeight)
+#define Quarter_Char_Height(A,N)	(A->font[N].metrics.charHeight / 4.0)
+#define Half_Char_Height(A,N)		(A->font[N].metrics.charHeight / 2.0)
+#define One_Char_Height(A,N)		(A->font[N].metrics.charHeight)
 
 #define One_Half_Char_Height(A,N)	 (One_Char_Height(A,N)		\
 					+ Half_Char_Height(A,N))
 
-#define Twice_Char_Height(A,N)		(A->font[N].extents.charHeight << 1)
+#define Twice_Char_Height(A,N)		(A->font[N].metrics.charHeight * 2.0)
 
 #define Twice_Half_Char_Height(A,N)	 (Twice_Char_Height(A,N)	\
 					+ Half_Char_Height(A,N))

@@ -38,11 +38,19 @@ void CloseDisplay(xARG *A)
 	idx = THEMES;
 	do {
 		idx--;
+#ifdef HAVE_XFT
+		if (A->font[idx].xft != NULL)
+		{
+			XftFontClose(A->display, A->font[idx].xft);
+			A->font[idx].xft = NULL;
+		}
+#else
 		if (A->font[idx].info != NULL)
 		{
 			XFreeFont(A->display, A->font[idx].info);
 			A->font[idx].info = NULL;
 		}
+#endif /* HAVE_XFT */
 	} while (idx);
 
 	if (A->display) {
@@ -108,7 +116,7 @@ int OpenDisplay(xARG *A)
 	if (A->font[idx].info == NULL) {
 		rc = 3;
 	}
-#endif
+#endif /* HAVE_XFT */
       }
     } else {
 	rc = 3;
@@ -189,7 +197,7 @@ int OpenWidgets(xARG *A, const char *winTitle)
 				CWBorderPixel | CWOverrideRedirect | CWCursor,
 				&swa)) )
   {
-	const int trainingSize = sizeof(FONT_TRAINING_EXTENT);
+	const int trainingLength = sizeof(FONT_TRAINING_EXTENT);
 
    for (idx = 0; (rc == 0) && (idx < THEMES); idx++)
    {
@@ -200,12 +208,18 @@ int OpenWidgets(xARG *A, const char *winTitle)
       if (A->font[idx].xft != NULL)
       {
 	XftTextExtents8(A->display, A->font[idx].xft,
-			(FcChar8 *) FONT_TRAINING_EXTENT, trainingSize,
+			(FcChar8 *) FONT_TRAINING_EXTENT, trainingLength,
 			&A->font[idx].glyphInfo);
 
-	A->font[idx].extents.ascent = A->font[idx].xft->ascent;
-	A->font[idx].extents.descent = A->font[idx].xft->descent;
-	A->font[idx].extents.charWidth = A->font[idx].xft->max_advance_width;
+	A->font[idx].metrics.ascent = A->font[idx].xft->ascent;
+	A->font[idx].metrics.descent = A->font[idx].xft->descent;
+
+	A->font[idx].metrics.overall.lbearing	= A->font[idx].glyphInfo.x;
+	A->font[idx].metrics.overall.rbearing	= A->font[idx].glyphInfo.xOff;
+	A->font[idx].metrics.overall.width	= A->font[idx].glyphInfo.width;
+	A->font[idx].metrics.overall.ascent	= A->font[idx].xft->ascent;
+	A->font[idx].metrics.overall.descent	= A->font[idx].xft->descent;
+	A->font[idx].metrics.overall.attributes = 0;
       } else {
 	rc = 3;
       }
@@ -213,23 +227,22 @@ int OpenWidgets(xARG *A, const char *winTitle)
       if (A->font[idx].info != NULL)
       {
 	XTextExtents(	A->font[idx].info,
-			FONT_TRAINING_EXTENT, trainingSize,
-			&A->font[idx].extents.dir,
-			&A->font[idx].extents.ascent,
-			&A->font[idx].extents.descent,
-			&A->font[idx].extents.overall );
-
-	A->font[idx].extents.charWidth = A->font[idx].info->max_bounds.rbearing
-					- A->font[idx].info->min_bounds.lbearing;
+			FONT_TRAINING_EXTENT, trainingLength,
+			&A->font[idx].metrics.dir,
+			&A->font[idx].metrics.ascent,
+			&A->font[idx].metrics.descent,
+			&A->font[idx].metrics.overall );
 
 	XSetFont(A->display,A->W.gc[idx], A->font[idx].info->fid);
       } else {
 	rc = 3;
       }
 #endif /* HAVE_XFT */
+	A->font[idx].metrics.charWidth = A->font[idx].metrics.overall.width;
+	A->font[idx].metrics.charWidth /= trainingLength;
 
-	A->font[idx].extents.charHeight = A->font[idx].extents.ascent
-					+ A->font[idx].extents.descent;
+	A->font[idx].metrics.charHeight = A->font[idx].metrics.ascent
+					+ A->font[idx].metrics.descent;
     } else {
 	rc = 3;
     }
@@ -336,7 +349,7 @@ xARG *AllocGUI(void)
 	[SMALL] = {
 		.name = calloc(256, sizeof(char)),
 		.info = NULL,
-		.extents = {
+		.metrics = {
 		.overall = {
 			.lbearing = DEFAULT_FONT_LBEARING,
 			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
@@ -358,7 +371,7 @@ xARG *AllocGUI(void)
 	[MEDIUM] = {
 		.name = calloc(256, sizeof(char)),
 		.info = NULL,
-		.extents = {
+		.metrics = {
 		.overall = {
 			.lbearing = DEFAULT_FONT_LBEARING,
 			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
@@ -380,7 +393,7 @@ xARG *AllocGUI(void)
 	[LARGE] = {
 		.name = calloc(256, sizeof(char)),
 		.info = NULL,
-		.extents = {
+		.metrics = {
 		.overall = {
 			.lbearing = DEFAULT_FONT_LBEARING,
 			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
