@@ -17,54 +17,124 @@
 #include <X11/Xft/Xft.h>
 #endif
 
-#include "bitasm.h"
-#include "coretypes.h"
-#include "corefreq.h"
 #include "corefreq-gui-lib.h"
 #include "corefreq_gui_main.xbm"
 
 void CloseDisplay(xARG *A)
 {
-	int idx = MC_COUNT;
+	enum MOUSE_CURSOR mc = MC_COUNT;
 	do {
-		idx--;
-		if (A->mouseCursor[idx] != 0)
+		mc--;
+		if (A->mouseCursor[mc] != 0)
 		{
-			XFreeCursor(A->display, A->mouseCursor[idx]);
-			A->mouseCursor[idx] = 0;
+			XFreeCursor(A->display, A->mouseCursor[mc]);
+			A->mouseCursor[mc] = 0;
 		}
-	} while (idx);
+	} while (mc);
 
-	idx = THEMES;
+	enum THEME thm = THEMES;
 	do {
-		idx--;
+		thm--;
 #ifdef HAVE_XFT
-		if (A->font[idx].xft != NULL)
+		if (A->font[thm].xft != NULL)
 		{
-			XftFontClose(A->display, A->font[idx].xft);
-			A->font[idx].xft = NULL;
-		}
-#else
-		if (A->font[idx].info != NULL)
-		{
-			XFreeFont(A->display, A->font[idx].info);
-			A->font[idx].info = NULL;
+			XftFontClose(A->display, A->font[thm].xft);
+			A->font[thm].xft = NULL;
 		}
 #endif /* HAVE_XFT */
-	} while (idx);
+		if (A->font[thm].info != NULL)
+		{
+			XFreeFont(A->display, A->font[thm].info);
+			A->font[thm].info = NULL;
+		}
+	} while (thm);
 
 	if (A->display) {
 		XCloseDisplay(A->display);
 	}
 }
 
-int OpenDisplay(xARG *A)
+GUI_REASON OpenXftFont(xARG *A, enum THEME thm,char *fontName,double *pointSize)
 {
-	int rc = 0, idx;
+#ifdef HAVE_XFT
+	A->font[thm].xft = XftFontOpen( A->display, A->_screen,
+					XFT_FAMILY, XftTypeString,
+					fontName,
+					XFT_SIZE, XftTypeDouble,
+					(*pointSize), NULL );
+
+	return (A->font[thm].xft == NULL ? GUI_DISPLAY : GUI_SUCCESS);
+#else
+	return (GUI_DISPLAY);
+#endif /* HAVE_XFT */
+}
+
+GUI_REASON OpenX11Font(xARG *A, enum THEME thm,char *fontName,double *pointSize)
+{
+	A->font[thm].info = XLoadQueryFont(A->display, fontName);
+
+	return (A->font[thm].info == NULL ? GUI_DISPLAY : GUI_SUCCESS);
+}
+
+void FixFontPattern(xARG *A,enum THEME thm,char *pKind,char *pName,double *pPt)
+{
+	char *defaultKind[FT_COUNT] = {
+		[FT_X11] = "x11"	, [FT_XFT] = "xft"
+	};
+	char *defaultName[FT_COUNT] = {
+		[FT_X11] = "fixed"	, [FT_XFT] = "dejavu"
+	};
+	double defaultSize[FT_COUNT][THEMES] = {
+		[FT_X11] = {
+			[SMALL]  = DEFAULT_FONT_CHAR_WIDTH,
+			[MEDIUM] = DEFAULT_FONT_CHAR_WIDTH,
+			[LARGE]  = DEFAULT_FONT_CHAR_WIDTH
+		},
+		[FT_XFT] = {
+			[SMALL]  = 8.0,
+			[MEDIUM] = 12.0,
+			[LARGE]  = 16.0
+		}
+	};
+	char *fontKind = pKind;
+	char *fontName = pName;
+	double *pointSize = pPt;
+
+	if (fontKind == NULL) {
+#ifdef HAVE_XFT
+		fontKind = defaultKind[A->font[thm].kind];
+#else
+		fontKind = defaultKind[FT_X11];
+#endif /* HAVE_XFT */
+	}
+	if (fontName == NULL) {
+#ifdef HAVE_XFT
+		fontName = defaultName[A->font[thm].kind];
+#else
+		fontName = defaultName[FT_X11];
+#endif /* HAVE_XFT */
+	}
+	if (pointSize == NULL) {
+#ifdef HAVE_XFT
+		pointSize = &(defaultSize[A->font[thm].kind][thm]);
+#else
+		pointSize = &(defaultSize[FT_X11][thm]);
+#endif /* HAVE_XFT */
+	}
+	sprintf(A->font[thm].name,"%s:%s:%.1lf", fontKind,fontName,(*pointSize));
+}
+
+GUI_REASON OpenDisplay(xARG *A)
+{
+	GUI_REASON rc = GUI_SUCCESS;
 
     if ( (A->display = XOpenDisplay(NULL))
       && (A->screen = DefaultScreenOfDisplay(A->display)) )
     {
+	GUI_REASON (*OpenFont[FT_COUNT])(xARG*, enum THEME, char*, double*) = {
+			OpenX11Font,	OpenXftFont
+	};
+
 	A->_screen  =	DefaultScreen(A->display);
 	A->_depth   =	DefaultDepthOfScreen(A->screen);
 	A->visual   =	DefaultVisual(A->display, A->_screen);
@@ -86,48 +156,65 @@ int OpenDisplay(xARG *A)
 		XDisableAccessControl(A->display);
 		break;
 	default:
-		rc = 1;
+		rc = GUI_SYNTAX;
 		/* Fallthrough */
 	case '\0':
 		break;
 	}
 	/* Try to load the requested fonts such as "fixed"	*/
-      for (idx = 0; (rc == 0) && (idx < THEMES); idx++)
-      {
-#ifdef HAVE_XFT
-	if (strlen(A->font[idx].name) == 0) {
-		strcpy(A->font[idx].name, "dejavu");
+	enum THEME thm;
+	for (thm = SMALL; (rc == GUI_SUCCESS) && (thm < THEMES); thm++)
+	{
+		char *fontKind = NULL, *fontName = NULL;
+		double pointSize = 8.0;
+		int cnt = 0;
+RETRY_PATTERN:
+		cnt = sscanf(	A->font[thm].name, "%m[^:]:%m[^:]:%lf",
+				&fontKind, &fontName, &pointSize );
+		switch(cnt)
+		{
+		case 3:
+			if ((fontKind != NULL) && (fontName != NULL)) {
+				if (strncmp(fontKind, "xft", 3) == 0)
+				{
+					A->font[thm].kind = FT_XFT;
+				}
+				else if (strncmp(fontKind, "x11", 3) == 0)
+				{
+					A->font[thm].kind = FT_X11;
+				}
+				else {
+					rc = GUI_SYNTAX;
+				}
+			} else {
+					rc = GUI_SYSTEM;
+				}
+			break;
+		case 2:
+			FixFontPattern(A, thm, fontKind, fontName, &pointSize);
+			goto RETRY_PATTERN;
+		default:
+			rc = GUI_SYNTAX;
+			break;
+		}
+	    if (rc == GUI_SUCCESS) {
+		rc = OpenFont[A->font[thm].kind](A, thm, fontName, &pointSize);
+	    }
+		if (fontKind != NULL) {
+			free(fontKind);
+		}
+		if (fontName != NULL) {
+			free(fontName);
+		}
 	}
-	A->font[idx].xft = XftFontOpen( A->display, A->_screen,
-					XFT_FAMILY, XftTypeString,
-					A->font[idx].name,
-					XFT_SIZE, XftTypeDouble,
-					idx == SMALL ?	 8.0 : \
-					idx == MEDIUM ? 12.0 : \
-					idx == LARGE ?	16.0 : 8.0, NULL );
-	if (A->font[idx].xft == NULL) {
-		rc = 3;
-	}
-#else
-	if (strlen(A->font[idx].name) == 0) {
-		strcpy(A->font[idx].name, "fixed");
-	}
-	A->font[idx].info = XLoadQueryFont(A->display, A->font[idx].name);
-	if (A->font[idx].info == NULL) {
-		rc = 3;
-	}
-#endif /* HAVE_XFT */
-      }
     } else {
-	rc = 3;
+	rc = GUI_DISPLAY;
     }
 	return (rc);
 }
 
 void CloseWidgets(xARG *A)
 {
-	int idx;
-
 #ifdef HAVE_XFT
 	if (A->W.drawable.P != NULL) {
 		XftDrawDestroy(A->W.drawable.P);
@@ -148,15 +235,17 @@ void CloseWidgets(xARG *A)
 	if (A->W.pixmap.F) {
 		XFreePixmap(A->display, A->W.pixmap.F);
 	}
-	for (idx = 0; idx < THEMES; idx++) {
+
+	enum THEME thm;
+	for (thm = SMALL; thm < THEMES; thm++) {
 #ifdef HAVE_XFT
-		if (A->W.xft[idx].allocated == True) {
+		if (A->W.xft[thm].allocated == True) {
 			XftColorFree(	A->display, A->visual, A->colormap,
-					&A->W.xft[idx].color );
+					&A->W.xft[thm].color );
 		}
 #endif /* HAVE_XFT */
-		if (A->W.gc[idx]) {
-			XFreeGC(A->display, A->W.gc[idx]);
+		if (A->W.gc[thm]) {
+			XFreeGC(A->display, A->W.gc[thm]);
 		}
 	}
 	if (A->W.window) {
@@ -164,9 +253,55 @@ void CloseWidgets(xARG *A)
 	}
 }
 
-int OpenWidgets(xARG *A, const char *winTitle)
+GUI_REASON ComputeXftMetrics(xARG *A, enum THEME thm, const int trainingLength)
 {
-	int rc = 0, idx;
+#ifdef HAVE_XFT
+    if (A->font[thm].xft != NULL)
+    {
+	XftTextExtents8(A->display, A->font[thm].xft,
+			(FcChar8 *) FONT_TRAINING_EXTENT, trainingLength,
+			&A->font[thm].glyph);
+
+	A->font[thm].metrics.ascent = A->font[thm].xft->ascent;
+	A->font[thm].metrics.descent = A->font[thm].xft->descent;
+
+	A->font[thm].metrics.overall.lbearing	= A->font[thm].glyph.x;
+	A->font[thm].metrics.overall.rbearing	= A->font[thm].glyph.xOff;
+	A->font[thm].metrics.overall.width	= A->font[thm].glyph.width;
+	A->font[thm].metrics.overall.ascent	= A->font[thm].xft->ascent;
+	A->font[thm].metrics.overall.descent	= A->font[thm].xft->descent;
+	A->font[thm].metrics.overall.attributes = 0;
+
+	return (GUI_SUCCESS);
+    } else {
+	return (GUI_DISPLAY);
+    }
+#else
+	return (GUI_DISPLAY);
+#endif /* HAVE_XFT */
+}
+
+GUI_REASON ComputeX11Metrics(xARG *A, enum THEME thm, const int trainingLength)
+{
+    if (A->font[thm].info != NULL)
+    {
+	if (XTextExtents(A->font[thm].info,
+			FONT_TRAINING_EXTENT, trainingLength,
+			&A->font[thm].metrics.dir,
+			&A->font[thm].metrics.ascent,
+			&A->font[thm].metrics.descent,
+			&A->font[thm].metrics.overall) == Success)
+	{
+		XSetFont(A->display,A->W.gc[thm], A->font[thm].info->fid);
+		return (GUI_SUCCESS);
+	}
+    }
+	return (GUI_DISPLAY);
+}
+
+GUI_REASON OpenWidgets(xARG *A, const char *winTitle)
+{
+	GUI_REASON rc = GUI_SUCCESS;
 
 	XSetWindowAttributes swa = {
 	.background_pixmap = None,
@@ -199,58 +334,34 @@ int OpenWidgets(xARG *A, const char *winTitle)
   {
 	const int trainingLength = sizeof(FONT_TRAINING_EXTENT);
 
-   for (idx = 0; (rc == 0) && (idx < THEMES); idx++)
+	enum THEME thm;
+   for (thm = SMALL; (rc == GUI_SUCCESS) && (thm < THEMES); thm++)
    {
-	A->W.gc[idx] = XCreateGC(A->display, A->W.window, 0, NULL);
-    if (A->W.gc[idx])
+	A->W.gc[thm] = XCreateGC(A->display, A->W.window, 0, NULL);
+    if (A->W.gc[thm])
     {
 #ifdef HAVE_XFT
-      if (A->font[idx].xft != NULL)
-      {
-	XftTextExtents8(A->display, A->font[idx].xft,
-			(FcChar8 *) FONT_TRAINING_EXTENT, trainingLength,
-			&A->font[idx].glyphInfo);
-
-	A->font[idx].metrics.ascent = A->font[idx].xft->ascent;
-	A->font[idx].metrics.descent = A->font[idx].xft->descent;
-
-	A->font[idx].metrics.overall.lbearing	= A->font[idx].glyphInfo.x;
-	A->font[idx].metrics.overall.rbearing	= A->font[idx].glyphInfo.xOff;
-	A->font[idx].metrics.overall.width	= A->font[idx].glyphInfo.width;
-	A->font[idx].metrics.overall.ascent	= A->font[idx].xft->ascent;
-	A->font[idx].metrics.overall.descent	= A->font[idx].xft->descent;
-	A->font[idx].metrics.overall.attributes = 0;
-      } else {
-	rc = 3;
-      }
+	if (A->font[thm].kind == FT_XFT) {
+		rc = ComputeXftMetrics(A, thm, trainingLength);
+	} else {
+		rc = ComputeX11Metrics(A, thm, trainingLength);
+	}
 #else
-      if (A->font[idx].info != NULL)
-      {
-	XTextExtents(	A->font[idx].info,
-			FONT_TRAINING_EXTENT, trainingLength,
-			&A->font[idx].metrics.dir,
-			&A->font[idx].metrics.ascent,
-			&A->font[idx].metrics.descent,
-			&A->font[idx].metrics.overall );
-
-	XSetFont(A->display,A->W.gc[idx], A->font[idx].info->fid);
-      } else {
-	rc = 3;
-      }
+	rc = ComputeX11Metrics(A, thm, trainingLength);
 #endif /* HAVE_XFT */
-	A->font[idx].metrics.charWidth = A->font[idx].metrics.overall.width;
-	A->font[idx].metrics.charWidth /= trainingLength;
+	A->font[thm].metrics.charWidth = A->font[thm].metrics.overall.width;
+	A->font[thm].metrics.charWidth /= trainingLength;
 
-	A->font[idx].metrics.charHeight = A->font[idx].metrics.ascent
-					+ A->font[idx].metrics.descent;
+	A->font[thm].metrics.charHeight = A->font[thm].metrics.ascent
+					+ A->font[thm].metrics.descent;
     } else {
-	rc = 3;
+	rc = GUI_DISPLAY;
     }
    }
   } else {
-	rc = 3;
+	rc = GUI_DISPLAY;
   }
-  if (rc == 0)
+  if (rc == GUI_SUCCESS)
   {
     if ((A->W.pixmap.B = XCreatePixmap( A->display, A->W.window,
 					A->W.width, A->W.height,
@@ -276,12 +387,12 @@ int OpenWidgets(xARG *A, const char *winTitle)
 		{	"_NET_WM_STATE_ABOVE",		False	},
 		{	"_NET_WM_STATE_SKIP_TASKBAR",	False	}
 	};
-
-	for (idx = 0; idx < _COUNT; idx++)
+	int _atom;
+	for (_atom = 0; _atom < _COUNT; _atom++)
 	{
-		A->atom[idx] = XInternAtom(	A->display,
-						atoms[idx].property,
-						atoms[idx].only_if_exists );
+		A->atom[_atom] = XInternAtom(	A->display,
+						atoms[_atom].property,
+						atoms[_atom].only_if_exists );
 	}
 	XSetWMProtocols(A->display, A->W.window, A->atom, _COUNT);
 	#undef _COUNT
@@ -296,10 +407,10 @@ int OpenWidgets(xARG *A, const char *winTitle)
 	|| ((A->W.drawable.F = XftDrawCreate(A->display, A->W.pixmap.F,
 					A->visual, A->colormap)) == NULL))
 	{
-		rc = 3;
+		rc = GUI_DISPLAY;
 	}
 #endif /* HAVE_XFT */
-	if (rc == 0)
+	if (rc == GUI_SUCCESS)
 	{
 		XSelectInput(A->display, A->W.window, EventProfile);
 
@@ -309,7 +420,7 @@ int OpenWidgets(xARG *A, const char *winTitle)
 		XMapWindow(A->display, A->W.window);
 	}
     } else {
-	rc = 3;
+	rc = GUI_DISPLAY;
     }
   }
 	return (rc);
@@ -333,115 +444,57 @@ void FreeGUI(xARG *A)
 
 xARG *AllocGUI(void)
 {
-	xARG *pARG = malloc(sizeof(xARG));
-  if (pARG != NULL)
-  {
-	xARG A = \
-    {
-	.display  = NULL,
-	.screen   = NULL,
-	._screen  = 0,
-	._depth   = 0,
-	.visual   = NULL,
-	.colormap = 0,
+	xARG *A = calloc(1, sizeof(xARG));
 
-	.font = {
-	[SMALL] = {
-		.name = calloc(256, sizeof(char)),
-		.info = NULL,
-		.metrics = {
-		.overall = {
-			.lbearing = DEFAULT_FONT_LBEARING,
-			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
-			.width = corefreq_gui_main_width,
-			.ascent = DEFAULT_FONT_ASCENT - DEFAULT_FONT_DESCENT,
-			.descent = DEFAULT_FONT_DESCENT,
-			.attributes = 0
-		    },
-			.dir = DEFAULT_FONT_EXT_DIR,
-			.ascent = DEFAULT_FONT_ASCENT,
-			.descent= DEFAULT_FONT_DESCENT,
-			.charWidth = DEFAULT_FONT_CHAR_WIDTH,
-			.charHeight= DEFAULT_FONT_CHAR_HEIGHT
-		},
+	enum THEME thm;
+    for (thm = SMALL; (thm < THEMES) && (A != NULL); thm++)
+    {
+	if ((A->font[thm].name = calloc(256, sizeof(char))) != NULL)
+	{
+		A->font[thm].metrics.overall.lbearing = DEFAULT_FONT_LBEARING;
+
+		A->font[thm].metrics.overall.rbearing = corefreq_gui_main_width
+							- DEFAULT_FONT_LBEARING;
+
+		A->font[thm].metrics.overall.width = corefreq_gui_main_width;
+
+		A->font[thm].metrics.overall.ascent	= DEFAULT_FONT_ASCENT
+							- DEFAULT_FONT_DESCENT;
+
+		A->font[thm].metrics.overall.descent	= DEFAULT_FONT_DESCENT;
+
+		A->font[thm].metrics.dir	= DEFAULT_FONT_EXT_DIR;
+		A->font[thm].metrics.ascent	= DEFAULT_FONT_ASCENT;
+		A->font[thm].metrics.descent	= DEFAULT_FONT_DESCENT;
+		A->font[thm].metrics.charWidth	= DEFAULT_FONT_CHAR_WIDTH;
+		A->font[thm].metrics.charHeight = DEFAULT_FONT_CHAR_HEIGHT;
 #ifdef HAVE_XFT
-		.xft	= NULL,
+		A->font[thm].kind = FT_XFT;
+#else
+		A->font[thm].kind = FT_X11;
 #endif
-	    },
-	[MEDIUM] = {
-		.name = calloc(256, sizeof(char)),
-		.info = NULL,
-		.metrics = {
-		.overall = {
-			.lbearing = DEFAULT_FONT_LBEARING,
-			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
-			.width = corefreq_gui_main_width,
-			.ascent = DEFAULT_FONT_ASCENT - DEFAULT_FONT_DESCENT,
-			.descent = DEFAULT_FONT_DESCENT,
-			.attributes = 0
-		    },
-			.dir = DEFAULT_FONT_EXT_DIR,
-			.ascent = DEFAULT_FONT_ASCENT,
-			.descent= DEFAULT_FONT_DESCENT,
-			.charWidth = DEFAULT_FONT_CHAR_WIDTH,
-			.charHeight= DEFAULT_FONT_CHAR_HEIGHT
-		},
-#ifdef HAVE_XFT
-		.xft	= NULL,
-#endif
-	    },
-	[LARGE] = {
-		.name = calloc(256, sizeof(char)),
-		.info = NULL,
-		.metrics = {
-		.overall = {
-			.lbearing = DEFAULT_FONT_LBEARING,
-			.rbearing=corefreq_gui_main_width-DEFAULT_FONT_LBEARING,
-			.width = corefreq_gui_main_width,
-			.ascent = DEFAULT_FONT_ASCENT - DEFAULT_FONT_DESCENT,
-			.descent = DEFAULT_FONT_DESCENT,
-			.attributes = 0
-		    },
-			.dir = DEFAULT_FONT_EXT_DIR,
-			.ascent = DEFAULT_FONT_ASCENT,
-			.descent= DEFAULT_FONT_DESCENT,
-			.charWidth = DEFAULT_FONT_CHAR_WIDTH,
-			.charHeight= DEFAULT_FONT_CHAR_HEIGHT
-		},
-#ifdef HAVE_XFT
-		.xft	= NULL,
-#endif
-	    },
-	 },
-	.mouseCursor = { [MC_DEFAULT] = 0, [MC_MOVE] = 0, [MC_WAIT] = 0 },
-	.W = {
-		.window = 0,
-		.pixmap = { .P = 0, .B = 0, .F = 0 },
-#ifdef HAVE_XFT
-		.drawable = { .P = NULL, .B = NULL, .F = NULL },
-		.xft = {
-			[SMALL]  = { .rgba={0}, .color={0}, .allocated=False },
-			[MEDIUM] = { .rgba={0}, .color={0}, .allocated=False },
-			[LARGE]  = { .rgba={0}, .color={0}, .allocated=False }
-		},
-#endif
-		.color = {
-			.background = _BACKGROUND_GLOBAL,
-			.foreground = _FOREGROUND_GLOBAL
-		},
-		.gc = { [SMALL] = 0, [MEDIUM] = 0, [LARGE] = 0 },
-		.x = +0,
-		.y = +0,
-		.width = corefreq_gui_main_width,
-		.height= corefreq_gui_main_height,
-		.border_width = 1,
-		.Position = {.bitmask = 0x0, .xoffset = 0, .yoffset = 0}
-	},
-	.Xacl = '\0'
-    };
-	memcpy(pARG, &A, sizeof(xARG));
-  }
-	return (pARG);
+		A->W.color.background = _BACKGROUND_GLOBAL;
+		A->W.color.foreground = _FOREGROUND_GLOBAL;
+
+		A->W.width =	corefreq_gui_main_width;
+		A->W.height =	corefreq_gui_main_height;
+		A->W.border_width = 1;
+
+		FixFontPattern(A, thm, NULL, NULL, NULL);
+
+		continue;
+	} else {
+		do {
+			free(A->font[thm].name);
+		} while (thm-- != SMALL);
+
+		free(A);
+		A = NULL;
+
+		break;
+	}
+    }
+	return (A);
 }
 
 GUI_STEP EventGUI(xARG *A)

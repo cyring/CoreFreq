@@ -31,8 +31,7 @@ ifneq ($(FREETYPEDIR),)
 endif
 
 DEFINITIONS =	-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
-		-D TASK_ORDER=$(TASK_ORDER) -D MAX_FREQ_HZ=$(MAX_FREQ_HZ) \
-		$(CONFIG_XFT)
+		-D TASK_ORDER=$(TASK_ORDER) -D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
 
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
@@ -114,18 +113,18 @@ corefreq_gui_main.xbm: corefreq-gui-main.svg
 
 corefreq-gui-lib.o: corefreq-gui-lib.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui-lib.c \
-		$(DEFINITIONS) $(FREETYPEDIR) \
+		$(CONFIG_XFT) $(FREETYPEDIR) \
 		-o corefreq-gui-lib.o
 
 corefreq-gui.o: corefreq-gui.c corefreq_gui_main.xbm
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui.c \
-		$(DEFINITIONS) $(FREETYPEDIR) \
+		$(CONFIG_XFT) $(FREETYPEDIR) \
 		-o corefreq-gui.o
 
 corefreq-gui: corefreq-gui.o corefreq-gui-lib.o
 	$(CC) $(OPTIM_FLG) $(WARNING) \
 		corefreq-gui.c corefreq-gui-lib.c \
-		$(DEFINITIONS) $(FREETYPEDIR) \
+		$(CONFIG_XFT) $(FREETYPEDIR) \
 		-o corefreq-gui -lX11 $(LIBRARY_XFT) -lpthread -lrt
 
 .PHONY: info

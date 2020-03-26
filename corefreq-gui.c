@@ -107,7 +107,7 @@ void Draw_CPU_Frequency(const int x, const int y, const int w, const int h,
 	char str[16];
 	snprintf(str, 16, "%03u%7.2f", cpu, CFlop->Relative.Freq);
 
-	int r	= ( (w - Twice_Char_Width(U->A, SMALL)) * CFlop->Relative.Ratio )
+	int r	= ((w - Twice_Char_Width(U->A, SMALL)) * CFlop->Relative.Ratio)
 		/ U->M.Shm->Proc.Boost[BOOST(1C)];
 
 	int p = y + (Twice_Char_Height(U->A, SMALL) * (cpu + 1));
@@ -121,7 +121,7 @@ void Draw_CPU_Frequency(const int x, const int y, const int w, const int h,
 
 	SetFG(U->A, SMALL, _COLOR_TEXT);
 
-	DrawStr(U->A, F, SMALL, x, p + One_Char_Height(U->A, SMALL), str, 3 );
+	DrawStr(U->A, F, SMALL, x, p + One_Char_Height(U->A, SMALL), str, 3);
 
 	DrawStr(U->A, F, SMALL,
 		x + w - ((7+1) * One_Char_Width(U->A, SMALL)),
@@ -291,15 +291,18 @@ void Help(uARG *U)
 
 int Command(int argc, char *argv[], uARG *U)
 {
-	int rc = 0;
+	GUI_REASON rc = GUI_SUCCESS;
 
     if (argc > 1)
     {
 	OPTION *pOpt = NULL;
 	int idx = 1, jdx;
 
-	while ((rc == 0) && (idx < argc)) {
-	    for (jdx = 0; (rc == 0) && ((pOpt = Option(jdx, U)) != NULL); jdx++)
+	while ((rc == GUI_SUCCESS) && (idx < argc))
+	{
+	    for (jdx = 0;
+		(rc == GUI_SUCCESS) && ((pOpt = Option(jdx, U)) != NULL);
+			jdx++)
 	    {
 		ssize_t len = strlen(pOpt->opt) - strlen(argv[idx]);
 		if (len == 0)
@@ -310,17 +313,18 @@ int Command(int argc, char *argv[], uARG *U)
 			if ((++idx < argc) && (pOpt->var != NULL)) {
 			    if (sscanf(argv[idx++], pOpt->fmt, pOpt->var) != 1)
 			    {
-				rc = 1;
+				rc = GUI_SYNTAX;
 			    }
 			} else {
-				rc = 1;
+				rc = GUI_SYNTAX;
 			}
 			break;
 		    }
 		}
 	    }
-	    if ((jdx == sizeof(Options) / sizeof(OPTION)) && (rc == 0)) {
-		rc = 1;
+	    if((jdx == sizeof(Options) / sizeof(OPTION)) && (rc == GUI_SUCCESS))
+	    {
+		rc = GUI_SYNTAX;
 	    }
 	}
     }
@@ -329,6 +333,8 @@ int Command(int argc, char *argv[], uARG *U)
 
 int main(int argc, char *argv[])
 {
+	GUI_REASON rc = GUI_SUCCESS;
+
 	uARG U = {
 		.Shutdown = 0x0,
 		.M = { .Shm = NULL, .fd = -1 },
@@ -336,17 +342,18 @@ int main(int argc, char *argv[])
 
 		.A = AllocGUI()
 	};
-	int rc = 0;
 
   if (U.A != NULL) {
 	rc = Command(argc, argv, &U);
   } else {
-	rc = 2;
+	rc = GUI_SYSTEM;
   }
-  if ((rc == 0) && (XInitThreads() != 0) && ((rc = OpenDisplay(U.A)) == 0))
+  if ((rc == GUI_SUCCESS)
+	&& (XInitThreads() != 0)
+		&& ((rc = OpenDisplay(U.A)) == GUI_SUCCESS))
   {
     if ((U.M.fd = shm_open(SHM_FILENAME, O_RDWR,
-			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) !=-1)
+			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)) != -1)
     {
 		struct stat shmStat = {0};
 	if (fstat(U.M.fd, &shmStat) != -1)
@@ -364,7 +371,7 @@ int main(int argc, char *argv[])
 
 		U.M.Shm->App.GUI = getpid();
 
-		if ((rc = OpenWidgets(U.A, "CoreFreq")) == 0)
+		if ((rc = OpenWidgets(U.A, "CoreFreq")) == GUI_SUCCESS)
 		{
 			sigemptyset(&U.TID.Signal);
 			sigaddset(&U.TID.Signal, SIGINT);  /* [CTRL] + [C] */
@@ -375,7 +382,7 @@ int main(int argc, char *argv[])
 		    if (pthread_sigmask(SIG_BLOCK, &U.TID.Signal, NULL) == 0) {
 			pthread_create(&U.TID.SigHandler, NULL, Emergency, &U);
 		    } else {
-			rc = 2; /* Run without it however... */
+			rc = GUI_SYSTEM; /* Run without it however... */
 		    }
 		    if (pthread_create(&U.TID.Drawing, NULL, DrawLoop, &U) == 0)
 		    {
@@ -383,7 +390,7 @@ int main(int argc, char *argv[])
 
 			pthread_join(U.TID.Drawing, NULL);
 		    } else {
-			rc = 2;
+			rc = GUI_SYSTEM;
 		    }
 		    if (U.TID.SigHandler != 0)
 		    {
@@ -394,21 +401,21 @@ int main(int argc, char *argv[])
 		}
 		U.M.Shm->App.GUI = 0;
 	    } else {
-		rc = 4;
+		rc = GUI_VERSION;
 	    }
 		munmap(U.M.Shm, shmStat.st_size);
 	  } else {
-		rc = 2;
+		rc = GUI_SYSTEM;
 	  }
 	} else {
-		rc = 2;
+		rc = GUI_SYSTEM;
 	}
     } else {
-	rc = 2;
+	rc = GUI_SYSTEM;
     }
 	CloseDisplay(U.A);
   }
-  if (rc != 0) {
+  if ((rc != GUI_SUCCESS) && (U.A != NULL)) {
 	Help(&U);
   }
 	FreeGUI(U.A);
