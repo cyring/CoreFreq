@@ -11298,7 +11298,7 @@ void Layout_Dashboard(Layer *layer)
 		walker->data.dword.hi = MoveDashboardCursor(&coord);
 		if (walker->data.dword.hi == RENDER_OK)
 			walker->hook.Layout(layer, walker);
-		walker = walker->next;
+		walker = GetNext(walker);
 	}
 }
 
@@ -11489,7 +11489,7 @@ void Draw_Dashboard(Layer *layer)
 	Card *walker = cardList.head;
 	while (walker != NULL) {
 		walker->hook.Draw(layer, walker);
-		walker = walker->next;
+		walker = GetNext(walker);
 	}
 }
 

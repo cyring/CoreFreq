@@ -721,7 +721,7 @@ Stock *CreateStock(unsigned long long id, Coordinate origin)
 {
 	Stock *stock = malloc(sizeof(Stock));
 	if (stock != NULL) {
-		stock->next = NULL;
+		GetNext(stock) = NULL;
 		stock->id = id;
 		stock->geometry.origin = origin;
 	}
@@ -734,7 +734,7 @@ Stock *AppendStock(Stock *stock)
 		if (stockList.head == NULL) {
 			stockList.head = stockList.tail = stock;
 		} else {
-			stockList.tail->next = stock;
+			GetNext(stockList.tail) = stock;
 			stockList.tail = stock;
 		}
 	}
@@ -745,9 +745,9 @@ void DestroyFullStock(void)
 {
 	Stock *stock = stockList.head;
 	while (stock != NULL) {
-		Stock *next = stock->next;
+		Stock *_next = GetNext(stock);
 		free(stock);
-		stock = next;
+		stock = _next;
 	}
 	stockList.head = stockList.tail = NULL;
 }
@@ -759,7 +759,7 @@ Stock *SearchStockById(unsigned long long id)
 		if (walker->id == id) {
 			break;
 		}
-		walker = walker->next;
+		walker = GetNext(walker);
 	}
 	return (walker);
 }
@@ -864,7 +864,7 @@ void RemoveWindow(Window *win, WinList *list)
 	if (IsCycling(GetHead(list))) {
 		SetDead(list);
 	} else if (IsHead(list, win)) {
-	/*Auto shift*/	SetHead(list, win->prev);
+	/*Auto shift*/	SetHead(list, GetPrev(win));
 	}
 	DestroyWindow(win);
 }
@@ -876,8 +876,8 @@ void AppendWindow(Window *win, WinList *list)
 			AppendWinList(win, list);
 		else {
 			/* Dead head, now cycling			*/
-			win->prev = win;
-			win->next = win;
+			GetPrev(win) = win;
+			GetNext(win) = win;
 		}
 		SetHead(list, win);
 	}
@@ -891,8 +891,10 @@ void DestroyAllWindows(WinList *list)
 
 void AnimateWindow(int rotate, WinList *list)
 {
-    if (!IsDead(list))
-	SetHead(list, rotate == 1 ? GetHead(list)->next : GetHead(list)->prev);
+	if (!IsDead(list)) {
+		SetHead( list,	rotate == 1	? GetNext(GetHead(list))
+						: GetPrev(GetHead(list)) );
+	}
 }
 
 Window *SearchWinListById(unsigned long long id, WinList *list)
@@ -904,7 +906,7 @@ Window *SearchWinListById(unsigned long long id, WinList *list)
 			if (walker->id == id)
 				win = walker;
 
-			walker = walker->prev;
+			walker = GetPrev(walker);
 		} while (!IsHead(list, walker) && (win == NULL));
 	}
 	return (win);
@@ -1320,7 +1322,7 @@ void ReScaleAllWindows(WinList *list)
 		{
 			MotionReScale(walker, list);
 
-			walker = walker->next;
+			walker = GetNext(walker);
 		} while (!IsHead(list, walker)) ;
 	}
 }
@@ -1576,7 +1578,7 @@ void PrintWindowStack(WinList *winList)
 	Window *walker;
 	if ((walker = GetHead(winList)) != NULL) {
 		do {
-			walker = walker->next;
+			walker = GetNext(walker);
 
 			if (walker->hook.Print != NULL) {
 				walker->hook.Print(walker, winList);
@@ -1595,7 +1597,7 @@ void WindowsUpdate(WinList *winList)
 	CUINT col, row;
     do
     {
-	walker = walker->next;
+	walker = GetNext(walker);
 	for (row = 0; row < walker->matrix.size.hth; row++) {
 	  for (col = 0; col < walker->matrix.size.wth; col++)
 	  {
@@ -1608,7 +1610,7 @@ void WindowsUpdate(WinList *winList)
 					&TGridAt(walker, horzCol, vertRow),
 					TGridAt(walker, horzCol, vertRow).data);
 		if (marker == NULL) {
-			marker = walker->prev;
+			marker = GetPrev(walker);
 		}
 	    }
 	  }
@@ -1619,7 +1621,7 @@ void WindowsUpdate(WinList *winList)
   {
     do
     {
-	walker = walker->next;
+	walker = GetNext(walker);
 
 	if (walker->hook.Print != NULL) {
 		walker->hook.Print(walker, winList);
@@ -1636,7 +1638,7 @@ Card *CreateCard(void)
 {
 	Card *card = calloc(1, sizeof(Card));
 	if (card != NULL) {
-		card->next = NULL;
+		GetNext(card) = NULL;
 	}
 	return (card);
 }
@@ -1644,24 +1646,24 @@ Card *CreateCard(void)
 void AppendCard(Card *card, CardList *list)
 {
 	if (card != NULL) {
-		if (list->head == NULL) {
-			list->head = list->tail = card;
+		if (GetHead(list) == NULL) {
+			GetHead(list) = GetTail(list) = card;
 		} else {
-			list->tail->next = card;
-			list->tail = card;
+			GetNext(GetTail(list)) = card;
+			GetTail(list) = card;
 		}
 	}
 }
 
 void DestroyAllCards(CardList *list)
 {
-	Card *card = list->head;
+	Card *card = GetHead(list);
 	while (card != NULL) {
-		Card *next = card->next;
+		Card *_next = GetNext(card);
 		free(card);
-		card = next;
+		card = _next;
 	}
-	list->head = list->tail = NULL;
+	GetHead(list) = GetTail(list) = NULL;
 }
 
 void FreeAll(char *buffer)
@@ -1991,7 +1993,7 @@ __typeof__ (errno) SaveGeometries(char *cfgFQN)
 		rc = errno;
 		break;
 	    } else {
-		walker = walker->next;
+		walker = GetNext(walker);
 	    }
 	}
 	fclose(cfgHandle);

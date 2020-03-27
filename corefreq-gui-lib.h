@@ -24,8 +24,11 @@ enum THEME { SMALL, MEDIUM, LARGE, THEMES };
 
 enum FT_KIND { FT_X11, FT_XFT, FT_COUNT };
 
-typedef struct
+typedef struct _XWINDOW
 {
+	struct _XWINDOW *prev,
+			*next;
+
 	Window		window;
 	struct {
 		Pixmap	P,	/* Picture	*/

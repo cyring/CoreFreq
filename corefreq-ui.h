@@ -584,14 +584,6 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 #define TCellAt(win, col, row)						\
 	TGridAt(win, col, row).cell
 
-#define GetHead(list)		(list)->head
-#define SetHead(list, win)	GetHead(list) = win
-#define SetDead(list)		SetHead(list, NULL)
-#define IsHead(list, win)	(GetHead(list) == win)
-#define IsDead(list)		(GetHead(list) == NULL)
-#define IsCycling(win)		((win->next == win) && (win->prev == win))
-#define GetFocus(list)		GetHead(list)
-
 extern void DestroyLayer(Layer *layer) ;
 
 extern void CreateLayer(Layer *layer, CoordSize size) ;
@@ -675,19 +667,9 @@ extern void AppendWindow(Window *win, WinList *list) ;
 
 extern void DestroyAllWindows(WinList *list) ;
 
-#define RemoveWinList(win, list)					\
-({									\
-	win->prev->next = win->next;					\
-	win->next->prev = win->prev;					\
-})
+#define RemoveWinList(win, list)	RemoveNodeFromList(win, list)
 
-#define AppendWinList(win, list)					\
-({									\
-	win->prev = GetHead(list);					\
-	win->next = GetHead(list)->next;				\
-	GetHead(list)->next->prev = win;				\
-	GetHead(list)->next = win;					\
-})
+#define AppendWinList(win, list)	AppendNodeToList(win, list)
 
 extern void AnimateWindow(int rotate, WinList *list) ;
 

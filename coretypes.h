@@ -1951,6 +1951,43 @@ enum {
 	CONIC_VARIATIONS
 };
 
+/* Linked list								*/
+#define GetPrev(node)		(node->prev)
+
+#define GetNext(node)		(node->next)
+
+#define GetHead(list)		(list)->head
+
+#define SetHead(list, node)	GetHead(list) = node
+
+#define GetTail(list)		(list)->tail
+
+#define SetDead(list)		SetHead(list, NULL)
+
+#define IsHead(list, node)	(GetHead(list) == node)
+
+#define IsDead(list)		(GetHead(list) == NULL)
+
+#define IsCycling(node) (						\
+	(GetNext(node) == node) && (GetPrev(node) == node)		\
+)
+
+#define GetFocus(list)		GetHead(list)
+
+#define RemoveNodeFromList(node, list)					\
+({									\
+	GetNext(GetPrev(node)) = GetNext(node); 			\
+	GetPrev(GetNext(node)) = GetPrev(node); 			\
+})
+
+#define AppendNodeToList(node, list)					\
+({									\
+	GetPrev(node) = GetHead(list);					\
+	GetNext(node) = GetNext(GetHead(list)); 			\
+	GetPrev(GetNext(GetHead(list))) = node; 			\
+	GetNext(GetHead(list)) = node;					\
+})
+
 /* Circular buffer							*/
 #define RING_SIZE	16
 
