@@ -3,7 +3,6 @@
 # Licenses: GPL2
 
 CC ?= cc
-CONVERT = convert
 WARNING = -Wall
 PWD ?= $(shell pwd)
 FREETYPEDIR ?= $(shell pkg-config --cflags freetype2 2>/dev/null)
@@ -56,7 +55,7 @@ module-install:
 
 .PHONY: clean
 clean:
-	rm -f corefreqd corefreq-cli corefreq-gui corefreq_gui_main.xbm
+	rm -f corefreqd corefreq-cli corefreq-gui
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
 
 corefreqm.o: corefreqm.c
@@ -107,16 +106,12 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		$(DEFINITIONS) \
 		-o corefreq-cli -lm -lrt
 
-corefreq_gui_main.xbm: corefreq-gui-main.svg
-	$(CONVERT) -quiet "SVG:corefreq-gui-main.svg" \
-			"XBM:corefreq_gui_main.xbm"
-
 corefreq-gui-lib.o: corefreq-gui-lib.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui-lib.c \
 		$(CONFIG_XFT) $(FREETYPEDIR) \
 		-o corefreq-gui-lib.o
 
-corefreq-gui.o: corefreq-gui.c corefreq_gui_main.xbm
+corefreq-gui.o: corefreq-gui.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui.c \
 		$(CONFIG_XFT) $(FREETYPEDIR) \
 		-o corefreq-gui.o
@@ -130,7 +125,6 @@ corefreq-gui: corefreq-gui.o corefreq-gui-lib.o
 .PHONY: info
 info:
 	$(info CC [$(shell whereis -b $(CC))])
-	$(info CONVERT [$(shell whereis -b $(CONVERT))])
 	$(info WARNING [$(WARNING)])
 	$(info PWD [$(PWD)])
 	$(info FREETYPEDIR [$(FREETYPEDIR)])

@@ -24,21 +24,23 @@ enum THEME { SMALL, MEDIUM, LARGE, THEMES };
 
 enum FT_KIND { FT_X11, FT_XFT, FT_COUNT };
 
+struct _xARG;
+
 typedef struct _XWINDOW
 {
 	struct _XWINDOW *prev,
 			*next;
 
+	struct _xARG	*A;
+
 	Window		window;
 	struct {
-		Pixmap	P,	/* Picture	*/
-			B,	/* Background	*/
+		Pixmap	B,	/* Background	*/
 			F;	/* Foreground	*/
 	} pixmap;
 #ifdef HAVE_XFT
 	struct {
-		XftDraw *P,
-			*B,
+		XftDraw *B,
 			*F;
 	} drawable;
 	struct {
@@ -82,7 +84,7 @@ typedef struct _XWINDOW
 
 #define KEYINPUT_DEPTH	256
 
-typedef struct
+typedef struct _xARG
 {
 	Display 	*display;
 	Screen		*screen;
@@ -91,7 +93,7 @@ typedef struct
 	Visual		*visual;
 	Colormap	colormap;
 	XWINDOW 	W;
-	Cursor		mouseCursor[MC_COUNT];
+	Cursor		mouse[MC_COUNT];
 	Atom		atom[5];
 
     struct
@@ -116,6 +118,7 @@ typedef struct
     } font[THEMES];
 
 	char		Xacl;
+	char		Xroot;
 } xARG;
 
 #define DEFAULT_FONT_LBEARING	1
@@ -124,42 +127,46 @@ typedef struct
 #define DEFAULT_FONT_DESCENT	2
 #define DEFAULT_FONT_CHAR_WIDTH 6
 #define DEFAULT_FONT_CHAR_HEIGHT (DEFAULT_FONT_ASCENT + DEFAULT_FONT_DESCENT)
+
 #define FONT_TRAINING_EXTENT	" !\"#$%&'()*+,-./0123456789:;<=>?@"	\
 				"ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"	\
 				"abcdefghijklmnopqrstuvwxyz{|}~"
 
-#define Quarter_Char_Width(A,N) 	(A->font[N].metrics.charWidth / 4.0)
-#define Half_Char_Width(A,N)		(A->font[N].metrics.charWidth / 2.0)
-#define One_Char_Width(A,N)		(A->font[N].metrics.charWidth)
+#define One_Char_Width(X, N)		(X->A->font[N].metrics.charWidth)
+#define Quarter_Char_Width(X, N) 	(One_Char_Width(X, N) / 4.0)
+#define Half_Char_Width(X, N)		(One_Char_Width(X, N) / 2.0)
 
-#define One_Half_Char_Width(A,N)	 (One_Char_Width(A,N)		\
-					+ Half_Char_Width(A,N))
+#define One_Half_Char_Width(X, N)	 (One_Char_Width(X, N)		\
+					+ Half_Char_Width(X, N))
 
-#define Twice_Char_Width(A,N)		(A->font[N].metrics.charWidth * 2.0)
+#define Twice_Char_Width(X, N)		(One_Char_Width(X, N) * 2.0)
 
-#define Twice_Half_Char_Width(A,N)	 (Twice_Char_Width(A,N) 	\
-					+ Half_Char_Width(A,N))
+#define Twice_Half_Char_Width(X, N)	 (Twice_Char_Width(X, N) 	\
+					+ Half_Char_Width(X, N))
 
-#define Quarter_Char_Height(A,N)	(A->font[N].metrics.charHeight / 4.0)
-#define Half_Char_Height(A,N)		(A->font[N].metrics.charHeight / 2.0)
-#define One_Char_Height(A,N)		(A->font[N].metrics.charHeight)
+#define One_Char_Height(X, N)		(X->A->font[N].metrics.charHeight)
+#define Quarter_Char_Height(X, N)	(One_Char_Height(X, N) / 4.0)
+#define Half_Char_Height(X, N)		(One_Char_Height(X, N) / 2.0)
 
-#define One_Half_Char_Height(A,N)	 (One_Char_Height(A,N)		\
-					+ Half_Char_Height(A,N))
+#define One_Half_Char_Height(X, N)	 (One_Char_Height(X, N)		\
+					+ Half_Char_Height(X, N))
 
-#define Twice_Char_Height(A,N)		(A->font[N].metrics.charHeight * 2.0)
+#define Twice_Char_Height(X, N)		(One_Char_Height(X, N) * 2.0)
 
-#define Twice_Half_Char_Height(A,N)	 (Twice_Char_Height(A,N)	\
-					+ Half_Char_Height(A,N))
+#define Twice_Half_Char_Height(X, N)	 (Twice_Char_Height(X, N)	\
+					+ Half_Char_Height(X, N))
 
-#define Header_Height(A,N)		 (One_Char_Height(A,N)		\
-					+ Quarter_Char_Height(A,N))
+#define Header_Height(X, N)		 (One_Char_Height(X, N)		\
+					+ Quarter_Char_Height(X, N))
 
-#define Footer_Height(A,N)		 (One_Char_Height(A,N)		\
-					+ Half_Char_Height(A,N))
+#define Footer_Height(X, N)		 (One_Char_Height(X, N)		\
+					+ Half_Char_Height(X, N))
 
-#define GEOMETRY_DEFAULT_COLS	80
-#define GEOMETRY_DEFAULT_ROWS	32
+#define GEOMETRY_DEFAULT_COLS	172
+#define GEOMETRY_DEFAULT_ROWS	60
+
+#define GEOMETRY_WIDTH	(GEOMETRY_DEFAULT_COLS * DEFAULT_FONT_CHAR_WIDTH)
+#define GEOMETRY_HEIGHT (GEOMETRY_DEFAULT_ROWS * DEFAULT_FONT_CHAR_HEIGHT)
 
 typedef enum {
 	GUI_NONE,
@@ -173,8 +180,8 @@ typedef enum {
 
 extern void CloseDisplay(xARG *) ;
 extern GUI_REASON OpenDisplay(xARG *) ;
-extern void CloseWidgets(xARG *) ;
-extern GUI_REASON OpenWidgets(xARG *, const char *) ;
+extern void StopGUI(xARG *) ;
+extern GUI_REASON StartGUI(xARG *, const char *) ;
 extern void FreeGUI(xARG *) ;
 extern xARG *AllocGUI(void) ;
 extern GUI_STEP EventGUI(xARG *) ;
@@ -193,99 +200,99 @@ extern GUI_STEP EventGUI(xARG *) ;
 	_RGB = ( _rgba.red << 8) | ( _rgba.green) | ( _rgba.blue >> 8)	\
 )
 
-#define ConditionFree( _A , _T )					\
+#define ConditionFree( _W , _T )					\
 ({									\
-	if (_A->W.xft[_T].allocated == True) {				\
-		XftColorFree(	_A->display, _A->visual, _A->colormap,	\
-				&_A->W.xft[_T].color ) ;		\
+    if ( _W->xft[_T].allocated == True ) {				\
+	XftColorFree( _W->A->display, _W->A->visual, _W->A->colormap,	\
+				&_W->xft[_T].color );			\
 									\
-		_A->W.xft[_T].allocated = False;			\
-	}								\
+		_W->xft[_T].allocated = False;				\
+    }									\
 })
 #endif /* HAVE_XFT */
 
 
-#define _SetFG_2xP( _A, _T, _RGB )					\
-	XSetForeground( _A->display, _A->W.gc[_T], _RGB )
+#define _SetFG_2xP( _W, _T, _RGB )					\
+	XSetForeground( _W->A->display, _W->gc[_T], _RGB )
 
 #ifdef HAVE_XFT
-#define SetFG_2xP( _A, _T, _RGB )					\
+#define SetFG_2xP( _W, _T, _RGB )					\
 ({									\
-    if ( _A->font[_T].kind == FT_XFT )					\
+    if ( _W->A->font[_T].kind == FT_XFT )				\
     {									\
-	ConditionFree( _A , _T );					\
-	ConvertToRGBA( _A->W.xft[_T].rgba, _RGB );			\
+	ConditionFree( _W , _T );					\
+	ConvertToRGBA( _W->xft[_T].rgba, _RGB );			\
 									\
-	_A->W.xft[_T].allocated = XftColorAllocValue(	_A->display,	\
-							_A->visual,	\
-							_A->colormap,	\
-						&_A->W.xft[_T].rgba,	\
-						&_A->W.xft[_T].color ); \
+	_W->xft[_T].allocated = XftColorAllocValue(	_W->A->display,	\
+							_W->A->visual,	\
+							_W->A->colormap,\
+						&_W->xft[_T].rgba,	\
+						&_W->xft[_T].color );	\
 									\
-	_SetFG_2xP( _A, _T, _RGB );					\
+	_SetFG_2xP( _W, _T, _RGB );					\
     } else {								\
-	_SetFG_2xP( _A, _T, _RGB );					\
+	_SetFG_2xP( _W, _T, _RGB );					\
     }									\
 })
 #else
-#define SetFG_2xP( _A, _T, _RGB )					\
-	_SetFG_2xP( _A, _T, _RGB )
+#define SetFG_2xP( _W, _T, _RGB )					\
+	_SetFG_2xP( _W, _T, _RGB )
 #endif /* HAVE_XFT */
 
 
-#define _SetFG_1xP( _A, _RGB )						\
-	XSetForeground( _A->display, _A->W.gc[SMALL], _RGB )
+#define _SetFG_1xP( _W, _RGB )						\
+	XSetForeground( _W->A->display, _W->gc[SMALL], _RGB )
 
 #ifdef HAVE_XFT
-#define SetFG_1xP( _A, _RGB )						\
+#define SetFG_1xP( _W, _RGB )						\
 ({									\
-    if ( _A->font[SMALL].kind == FT_XFT )				\
+    if ( _W->A->font[SMALL].kind == FT_XFT )				\
     {									\
-	ConditionFree( _A , SMALL );					\
-	ConvertToRGBA( _A->W.xft[SMALL].rgba, _RGB );			\
+	ConditionFree( _W , SMALL );					\
+	ConvertToRGBA( _W->xft[SMALL].rgba, _RGB );			\
 									\
-	_A->W.xft[SMALL].allocated = XftColorAllocValue(_A->display,	\
-							_A->visual,	\
-							_A->colormap,	\
-						&_A->W.xft[SMALL].rgba, \
-						&_A->W.xft[SMALL].color);\
+	_W->xft[SMALL].allocated = XftColorAllocValue(	_W->A->display, \
+							_W->A->visual,	\
+							_W->A->colormap,\
+						&_W->xft[SMALL].rgba,	\
+						&_W->xft[SMALL].color); \
 									\
-	_SetFG_1xP( _A, _RGB ) ;					\
+	_SetFG_1xP( _W, _RGB ) ;					\
     } else {								\
-	_SetFG_1xP( _A, _RGB ) ;					\
+	_SetFG_1xP( _W, _RGB ) ;					\
     }									\
 })
 #else
-#define SetFG_1xP( _A, _RGB )						\
-	_SetFG_1xP( _A, _RGB )
+#define SetFG_1xP( _W, _RGB )						\
+	_SetFG_1xP( _W, _RGB )
 #endif /* HAVE_XFT */
 
 
-#define _SetFG_0xP( _A ) 						\
-	XSetForeground( _A->display, _A->W.gc[SMALL], _A->W.color.foreground)
+#define _SetFG_0xP( _W ) 						\
+	XSetForeground( _W->A->display, _W->gc[SMALL], _W->color.foreground)
 
 #ifdef HAVE_XFT
-#define SetFG_0xP( _A ) 						\
+#define SetFG_0xP( _W ) 						\
 ({									\
-    if ( _A->font[SMALL].kind == FT_XFT )				\
+    if ( _W->A->font[SMALL].kind == FT_XFT )				\
     {									\
-	ConditionFree( _A , SMALL );					\
-	ConvertToRGBA( _A->W.xft[SMALL].rgba, _A->W.color.foreground ); \
+	ConditionFree( _W , SMALL );					\
+	ConvertToRGBA( _W->xft[SMALL].rgba, _W->color.foreground );	\
 									\
-	_A->W.xft[SMALL].allocated = XftColorAllocValue(_A->display,	\
-							_A->visual,	\
-							_A->colormap,	\
-						&_A->W.xft[SMALL].rgba, \
-						&_A->W.xft[SMALL].color);\
+	_W->xft[SMALL].allocated = XftColorAllocValue(	_W->A->display,	\
+							_W->A->visual,	\
+							_W->A->colormap,\
+						&_W->xft[SMALL].rgba,	\
+						&_W->xft[SMALL].color); \
 									\
-	_SetFG_0xP( _A );						\
+	_SetFG_0xP( _W );						\
     } else {								\
-	_SetFG_0xP( _A );						\
+	_SetFG_0xP( _W );						\
     }									\
 })
 #else
-#define SetFG_0xP( _A ) 						\
-	_SetFG_0xP( _A)
+#define SetFG_0xP( _W ) 						\
+	_SetFG_0xP( _W )
 #endif /* HAVE_XFT */
 
 #define DISPATCH_SetFG(_1,_2,_3, _CURSOR, ... ) _CURSOR
@@ -297,14 +304,14 @@ extern GUI_STEP EventGUI(xARG *) ;
 							( __VA_ARGS__ )
 
 
-#define SetBG_2xP( _A, _T, _RGB )					\
-	XSetBackground( _A->display, _A->W.gc[_T], _RGB )
+#define SetBG_2xP( _W, _T, _RGB )					\
+	XSetBackground( _W->A->display, _W->gc[_T], _RGB )
 
-#define SetBG_1xP( _A, _RGB )						\
-	XSetBackground( _A->display, _A->W.gc[SMALL], _RGB )
+#define SetBG_1xP( _W, _RGB )						\
+	XSetBackground( _W->A->display, _W->gc[SMALL], _RGB )
 
-#define SetBG_0xP( _A )							\
-	XSetBackground( _A->display, _A->W.gc[SMALL], _A->W.color.background )
+#define SetBG_0xP( _W )							\
+	XSetBackground( _W->A->display, _W->gc[SMALL], _W->color.background )
 
 #define DISPATCH_SetBG(_1,_2,_3, _CURSOR, ... ) _CURSOR
 
@@ -315,63 +322,68 @@ extern GUI_STEP EventGUI(xARG *) ;
 							( __VA_ARGS__ )
 
 
-#define _DrawStr_6xP( _A, _P, _T, _x, _y, _txt, _len )			\
-  XDrawString(_A->display, _A->W.pixmap._P, _A->W.gc[_T], _x, _y, _txt, _len)
+#define _DrawStr_6xP( _W, _P, _T, _x, _y, _txt, _len )			\
+	XDrawString( _W->A->display, _W->pixmap._P, _W->gc[_T],		\
+			_x, _y, _txt, _len )
 
 #ifdef HAVE_XFT
-#define DrawStr_6xP( _A, _P, _T, _x, _y, _txt, _len )			\
+#define DrawStr_6xP( _W, _P, _T, _x, _y, _txt, _len )			\
 ({									\
-    if ( _A->font[_T].kind == FT_XFT )					\
+    if ( _W->A->font[_T].kind == FT_XFT )				\
     {									\
-	XftDrawString8( _A->W.drawable._P, &_A->W.xft[_T].color,	\
-			_A->font[_T].xft, _x, _y, (FcChar8 *) _txt, _len);\
+	XftDrawString8( _W->drawable._P, &_W->xft[_T].color,		\
+			_W->A->font[_T].xft,				\
+			_x, _y, (FcChar8 *) _txt, _len );		\
     } else {								\
-	_DrawStr_6xP(_A, _P, _T, _x, _y, _txt, _len);			\
+	_DrawStr_6xP( _W, _P, _T, _x, _y, _txt, _len );			\
     }									\
 })
 #else
-#define DrawStr_6xP( _A, _P, _T, _x, _y, _txt, _len )			\
-	_DrawStr_6xP(_A, _P, _T, _x, _y, _txt, _len)
+#define DrawStr_6xP( _W, _P, _T, _x, _y, _txt, _len )			\
+	_DrawStr_6xP( _W, _P, _T, _x, _y, _txt, _len )
 #endif /* HAVE_XFT */
 
 
-#define _DrawStr_5xP( _A, _P, _x, _y, _txt, _len )			\
-  XDrawString(_A->display, _A->W.pixmap._P, _A->W.gc[SMALL], _x, _y, _txt, _len)
+#define _DrawStr_5xP( _W, _P, _x, _y, _txt, _len )			\
+	XDrawString( _W->A->display, _W->pixmap._P, _W->gc[SMALL],	\
+			_x, _y, _txt, _len )
 
 #ifdef HAVE_XFT
-#define DrawStr_5xP( _A, _P, _x, _y, _txt, _len )			\
+#define DrawStr_5xP( _W, _P, _x, _y, _txt, _len )			\
 ({									\
-    if ( _A->font[SMALL].kind == FT_XFT )				\
+    if ( _W->A->font[SMALL].kind == FT_XFT )				\
     {									\
-	XftDrawString8( _A->W.drawable._P, &_A->W.xft[SMALL].color,	\
-			_A->font[SMALL].xft, _x, _y, (FcChar8 *) _txt, _len);\
+	XftDrawString8( _W->drawable._P, &_W->xft[SMALL].color, 	\
+			_W->A->font[SMALL].xft, 			\
+			_x, _y, (FcChar8 *) _txt, _len );		\
     } else {								\
-	_DrawStr_5xP(_A, _P, _x, _y, _txt, _len);			\
+	_DrawStr_5xP( _W, _P, _x, _y, _txt, _len );			\
     }									\
 })
 #else
-#define DrawStr_5xP( _A, _P, _x, _y, _txt, _len )			\
-	_DrawStr_5xP(_A, _P, _x, _y, _txt, _len)
+#define DrawStr_5xP( _W, _P, _x, _y, _txt, _len )			\
+	_DrawStr_5xP( _W, _P, _x, _y, _txt, _len )
 #endif /* HAVE_XFT */
 
 
-#define _DrawStr_4xP( _A, _x, _y, _txt, _len )				\
-  XDrawString(_A->display, _A->W.pixmap.B, _A->W.gc[SMALL], _x, _y, _txt, _len)
+#define _DrawStr_4xP( _W, _x, _y, _txt, _len )				\
+	XDrawString( _W->A->display, _W->pixmap.B, _W->gc[SMALL],	\
+			_x, _y, _txt, _len )
 
 #ifdef HAVE_XFT
-#define DrawStr_4xP( _A, _x, _y, _txt, _len )				\
+#define DrawStr_4xP( _W, _x, _y, _txt, _len )				\
 ({									\
-    if ( _A->font[SMALL].kind == FT_XFT )				\
+    if ( _W->A->font[SMALL].kind == FT_XFT )				\
     {									\
-	XftDrawString8( _A->W.drawable.B, &_A->W.xft[SMALL].color,	\
-			_A->font[SMALL].xft, _x, _y, (FcChar8 *) _txt, _len);\
+	XftDrawString8( _W->drawable.B, &_W->xft[SMALL].color,		\
+		_W->A->font[SMALL].xft, _x, _y, (FcChar8 *) _txt, _len);\
     } else {								\
-	_DrawStr_4xP(_A, _x, _y, _txt, _len);				\
+	_DrawStr_4xP( _W, _x, _y, _txt, _len );				\
     }									\
 })
 #else
-#define DrawStr_4xP( _A, _x, _y, _txt, _len )				\
-	_DrawStr_4xP(_A, _x, _y, _txt, _len)
+#define DrawStr_4xP( _W, _x, _y, _txt, _len )				\
+	_DrawStr_4xP( _W, _x, _y, _txt, _len )
 #endif /* HAVE_XFT */
 
 #define DISPATCH_DrawStr(_1,_2,_3,_4,_5,_6,_7, _CURSOR, ... ) _CURSOR
@@ -387,14 +399,17 @@ extern GUI_STEP EventGUI(xARG *) ;
 							( __VA_ARGS__ )
 
 
-#define FillRect_6xP( _A, _P, _T, _x, _y, _w, _h )			\
-  XFillRectangle(_A->display, _A->W.pixmap._P, _A->W.gc[_T], _x, _y, _w, _h)
+#define FillRect_6xP( _W, _P, _T, _x, _y, _w, _h )			\
+	XFillRectangle( _W->A->display, _W->pixmap._P, _W->gc[_T],	\
+			_x, _y, _w, _h )
 
-#define FillRect_5xP( _A, _P, _x, _y, _w, _h )				\
-  XFillRectangle(_A->display, _A->W.pixmap._P, _A->W.gc[SMALL], _x, _y, _w, _h)
+#define FillRect_5xP( _W, _P, _x, _y, _w, _h )				\
+	XFillRectangle( _W->A->display, _W->pixmap._P, _W->gc[SMALL],	\
+			_x, _y, _w, _h )
 
-#define FillRect_4xP( _A, _P, _x, _y, _w, _h )				\
-  XFillRectangle(_A->display, _A->W.pixmap.B, _A->W.gc[SMALL], _x, _y, _w, _h)
+#define FillRect_4xP( _W, _P, _x, _y, _w, _h )				\
+	XFillRectangle( _W->A->display, _W->pixmap.B, _W->gc[SMALL],	\
+			_x, _y, _w, _h )
 
 #define DISPATCH_FillRect(_1,_2,_3,_4,_5,_6,_7, _CURSOR, ... ) _CURSOR
 

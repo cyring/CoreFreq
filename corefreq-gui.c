@@ -47,43 +47,79 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 }
 
 void Build_CPU_Frequency(const int x, const int y, const int w, const int h,
-			const xARG *A)
+			const XWINDOW *W)
 {	/* Columns header						*/
-	DrawStr(A, B, MEDIUM, x, y, "CPU", 3);
+	DrawStr(W, B, MEDIUM, x, y, "CPU", 3);
 
-	DrawStr(A, B, MEDIUM, x + w - ((8+1) * One_Char_Width(A, SMALL)), y,
+	DrawStr(W, B, MEDIUM, x + w - ((8+1) * One_Char_Width(W, SMALL)), y,
 		"Freq[Mhz]", 9 );
 }
 
 void BuildLayout(uARG *U)
 {
-	size_t len = strlen(U->M.Shm->Proc.Brand);
-	/* Each bit set to one is map in the pixmap.			*/
-	SetFG(U->A);
-	SetFG(U->A, MEDIUM, U->A->W.color.foreground);
-	SetFG(U->A, LARGE, U->A->W.color.background);
-	/* All Inkscape colors are ORing into the graphic context.	*/
-	SetBG(U->A, SMALL, U->A->W.color.background | _COLOR_TEXT);
-	SetBG(U->A, MEDIUM, U->A->W.color.background | _COLOR_TEXT);
-	SetBG(U->A, LARGE, U->A->W.color.background | _COLOR_TEXT);
-	/* Copy the Picture to the background pixmap.			*/
-	XCopyPlane(	U->A->display, U->A->W.pixmap.P, U->A->W.pixmap.B,
-			U->A->W.gc[LARGE],
-			0, 0, U->A->W.width, U->A->W.height,
-			0, 0, 0x1 );
-
+	XWINDOW *W = &U->A->W;
+	const size_t len = strlen(U->M.Shm->Proc.Brand);
+	/* Reset the color context.					*/
+	SetFG(W, SMALL, W->color.foreground);
 	/* Processor specification.					*/
-	SetFG(U->A, LARGE, U->A->W.color.foreground);
-
-	DrawStr(U->A, B, LARGE,
-		abs(U->A->W.width - (One_Char_Width(U->A, LARGE) * len)) / 2,
-		One_Char_Height(U->A, LARGE),
+	DrawStr(W, B, LARGE,
+		abs(W->width - (One_Char_Width(W, LARGE) * len)) / 2,
+		One_Char_Height(W, LARGE),
 		U->M.Shm->Proc.Brand, len);
 
-	Build_CPU_Frequency(	One_Char_Width(U->A, SMALL),
-				Twice_Char_Height(U->A, LARGE),
-				42 * One_Char_Width(U->A, SMALL), 0,
-				U->A);
+	Build_CPU_Frequency(	One_Char_Width(W, SMALL),
+				Twice_Char_Height(W, LARGE),
+				42 * One_Char_Width(W, SMALL), 0,
+				W );
+}
+
+void Draw_CPU_Frequency(const int x, const int y, const int w, const int h,
+			const uARG *U,
+			const unsigned int cpu, const struct FLIP_FLOP *CFlop)
+{
+	XWINDOW *W = &U->A->W;
+	char str[16];
+	snprintf(str, 16, "%03u%7.2f", cpu, CFlop->Relative.Freq);
+
+	int r	= ((w - Twice_Char_Width(W, SMALL)) * CFlop->Relative.Ratio)
+		/ U->M.Shm->Proc.Boost[BOOST(1C)];
+
+	int p = y + (Twice_Char_Height(W, SMALL) * (cpu + 1));
+
+    if (CFlop->Relative.Ratio >= U->M.Shm->Proc.Boost[BOOST(MAX)]) {
+	SetFG(W, SMALL, _COLOR_BAR);
+    } else {
+	SetFG(W);
+    }
+	FillRect(W, F, SMALL, x, p, r, h);
+
+	SetFG(W, SMALL, _COLOR_TEXT);
+
+	DrawStr(W, F, SMALL, x, p + One_Char_Height(W, SMALL), str, 3);
+
+	DrawStr(W, F, SMALL,
+		x + w - ((7+1) * One_Char_Width(W, SMALL)),
+		p + One_Char_Height(W, SMALL),
+		&str[3], 7);
+}
+
+void DrawLayout(uARG *U)
+{
+	XWINDOW *W = &U->A->W;
+	unsigned int cpu;
+    for (cpu = 0; cpu < U->M.Shm->Proc.CPU.Count; cpu++)
+    {
+	struct FLIP_FLOP *CFlop = \
+		&U->M.Shm->Cpu[cpu].FlipFlop[
+			!U->M.Shm->Cpu[cpu].Toggle
+		];
+
+	Draw_CPU_Frequency(	One_Char_Width(W, SMALL),
+				One_Half_Char_Height(W, LARGE),
+				42 * One_Char_Width(W, SMALL),
+				One_Half_Char_Height(W, SMALL),
+				U, cpu, CFlop );
+    }
 }
 
 void MapLayout(xARG *A)
@@ -100,53 +136,6 @@ void FlushLayout(xARG *A)
 	XFlush(A->display);
 }
 
-void Draw_CPU_Frequency(const int x, const int y, const int w, const int h,
-			const uARG *U,
-			const unsigned int cpu, const struct FLIP_FLOP *CFlop)
-{
-	char str[16];
-	snprintf(str, 16, "%03u%7.2f", cpu, CFlop->Relative.Freq);
-
-	int r	= ((w - Twice_Char_Width(U->A, SMALL)) * CFlop->Relative.Ratio)
-		/ U->M.Shm->Proc.Boost[BOOST(1C)];
-
-	int p = y + (Twice_Char_Height(U->A, SMALL) * (cpu + 1));
-
-    if (CFlop->Relative.Ratio >= U->M.Shm->Proc.Boost[BOOST(MAX)]) {
-	SetFG(U->A, SMALL, _COLOR_BAR);
-    } else {
-	SetFG(U->A);
-    }
-	FillRect(U->A, F, SMALL, x, p, r, h);
-
-	SetFG(U->A, SMALL, _COLOR_TEXT);
-
-	DrawStr(U->A, F, SMALL, x, p + One_Char_Height(U->A, SMALL), str, 3);
-
-	DrawStr(U->A, F, SMALL,
-		x + w - ((7+1) * One_Char_Width(U->A, SMALL)),
-		p + One_Char_Height(U->A, SMALL),
-		&str[3], 7);
-}
-
-void DrawLayout(uARG *U)
-{
-	unsigned int cpu;
-    for (cpu = 0; cpu < U->M.Shm->Proc.CPU.Count; cpu++)
-    {
-	struct FLIP_FLOP *CFlop = \
-		&U->M.Shm->Cpu[cpu].FlipFlop[
-			!U->M.Shm->Cpu[cpu].Toggle
-		];
-
-	Draw_CPU_Frequency(	One_Char_Width(U->A, SMALL),
-				One_Half_Char_Height(U->A, LARGE),
-				42 * One_Char_Width(U->A, SMALL),
-				One_Half_Char_Height(U->A, SMALL),
-				U, cpu, CFlop );
-    }
-}
-
 static void *DrawLoop(void *uArg)
 {
 	uARG *U = (uARG *) uArg;
@@ -160,7 +149,7 @@ static void *DrawLoop(void *uArg)
 	if (BITCLR(LOCKLESS, U->M.Shm->Proc.Sync, SYNC1) == 0) {
 		nanosleep(&U->M.Shm->Sleep.pollingWait, NULL);
 	} else {
-		Paint(U, False, True);
+		Paint(U, False, True, True, True);
 	}
 	if (BITCLR(LOCKLESS, U->M.Shm->Proc.Sync, NTFY1)) {
 		ClientFollowService(&localService, &U->M.Shm->Proc.Service, 0);
@@ -186,10 +175,10 @@ void *EventLoop(uARG *U)
 		case GUI_DRAW:
 			break;
 		case GUI_FLUSH:
-			FlushLayout(U->A);
+			Paint(U, False, False, False, True);
 			break;
 		case GUI_PAINT:
-			Paint(U, True, False);
+			Paint(U, True, True, False, True);
 			break;
 		}
 	}
@@ -240,6 +229,7 @@ OPTION Options[] = {
 	{ .opt="--medium", .fmt="%s" , .dsc="\tX Medium Font"		},
 	{ .opt="--large" , .fmt="%s" , .dsc="\t\tX Large Font"		},
 	{ .opt="--Xacl"  , .fmt="%c" , .dsc="\t\tXEnableAccessControl"	},
+	{ .opt="--root"  , .fmt="%c" , .dsc="\t\tUse the root window"	},
 	{ .opt="--fg"    , .fmt="%lx", .dsc="\t\tForeground color"	},
 	{ .opt="--bg"    , .fmt="%lx", .dsc="\t\tbackground color"	}
 };
@@ -252,8 +242,9 @@ OPTION *Option(int jdx, uARG *U)
 		{ .var = U->A->font[MEDIUM].name		},
 		{ .var = U->A->font[LARGE].name 		},
 		{ .var = &U->A->Xacl,				},
-		{ .var = &U->A->W.color.foreground	},
-		{ .var = &U->A->W.color.background	}
+		{ .var = &U->A->Xroot,				},
+		{ .var = &U->A->W.color.foreground		},
+		{ .var = &U->A->W.color.background		}
 	};
 	const size_t zdx = sizeof(Options) / sizeof(OPTION);
 
@@ -371,7 +362,7 @@ int main(int argc, char *argv[])
 
 		U.M.Shm->App.GUI = getpid();
 
-		if ((rc = OpenWidgets(U.A, "CoreFreq")) == GUI_SUCCESS)
+		if ( (rc = StartGUI( U.A, "CoreFreq" ) ) == GUI_SUCCESS )
 		{
 			sigemptyset(&U.TID.Signal);
 			sigaddset(&U.TID.Signal, SIGINT);  /* [CTRL] + [C] */
@@ -397,7 +388,7 @@ int main(int argc, char *argv[])
 			pthread_kill(U.TID.SigHandler, SIGUSR1);
 			pthread_join(U.TID.SigHandler, NULL);
 		    }
-			CloseWidgets(U.A);
+			StopGUI(U.A);
 		}
 		U.M.Shm->App.GUI = 0;
 	    } else {

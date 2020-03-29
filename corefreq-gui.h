@@ -43,10 +43,10 @@ void	FlushLayout(xARG *) ;
 /* loop to step 2 to avoid the execution of the building process.	*/
 
 /* All-in-One macro.							*/
-#define Paint(U, DoBuild, DoDraw) {					\
-	if (DoBuild) {	BuildLayout(U); }				\
-	MapLayout(U->A);						\
-	if (DoDraw) {	DrawLayout(U); }				\
-	FlushLayout(U->A);						\
+#define Paint(U, doBuild, doMap, doDraw, doFlush) {			\
+	if (doBuild)	{	BuildLayout(U); 	}		\
+	if (doMap)	{	MapLayout(U->A);	}		\
+	if (doDraw)	{	DrawLayout(U);		}		\
+	if (doFlush)	{	FlushLayout(U->A);	}		\
 }
 
