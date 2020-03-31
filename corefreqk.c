@@ -1781,15 +1781,15 @@ void Intel_Core_Platform_Info(void)
 void Intel_Platform_Turbo(void)
 {
 	PROCESSOR_SPECIFIC *pSpecific = NULL;
-	PLATFORM_INFO Platform = {.value = 0};
-	RDMSR(Platform, MSR_PLATFORM_INFO);
+	PLATFORM_INFO PfInfo = {.value = 0};
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
-	Proc->Features.TDP_Unlock = Platform.ProgrammableTDP;
-	Proc->Features.TDP_Levels = Platform.ConfigTDPlevels;
-	Proc->Features.Turbo_Unlock = Platform.ProgrammableTurbo;
+	Proc->Features.TDP_Unlock = PfInfo.ProgrammableTDP;
+	Proc->Features.TDP_Levels = PfInfo.ConfigTDPlevels;
+	Proc->Features.Turbo_Unlock = PfInfo.ProgrammableTurbo;
 
-	Proc->Boost[BOOST(MIN)] = Platform.MinimumRatio;
-	Proc->Boost[BOOST(MAX)] = Platform.MaxNonTurboRatio;
+	Proc->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
+	Proc->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
 
 	Proc->Features.TgtRatio_Unlock = 1;
 	if ((pSpecific = LookupProcessor()) != NULL) {
@@ -4549,14 +4549,16 @@ void ThermalMonitor_Set(CORE *Core)
 	TJMAX TjMax = {.value = 0};
 	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
 	THERM_STATUS ThermStatus = {.value = 0};
+	PLATFORM_INFO PfInfo = {.value = 0};
 	int ClearBit;
 
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->PowerThermal.Param.Target = TjMax.Core.Target;
-	if (Core->PowerThermal.Param.Target == 0)
-		Core->PowerThermal.Param.Target = 100; /*TODO: TjMax database.*/
+	Core->PowerThermal.Param.Offset[0] = TjMax.Core.Target;
+	if (Core->PowerThermal.Param.Offset[0] == 0) {
+		Core->PowerThermal.Param.Offset[0] = 100;
+	}
 
 	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
@@ -4650,6 +4652,24 @@ void ThermalMonitor_Set(CORE *Core)
 					  | (	(ThermStatus.Threshold1Log
 						|ThermStatus.Threshold2Log)<< 3)
 					  | (ThermStatus.PwrLimitLog << 4);
+	}
+
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+
+	if (PfInfo.ProgrammableTj) {
+		switch (Proc->ArchID) {
+		case Atom_Goldmont:
+		case Xeon_Phi:
+	/*TODO	case (06_85h):	*/
+			Core->PowerThermal.Param.Offset[1] = TjMax.Atom.Offset;
+			break;
+		case IvyBridge_EP:
+		case Broadwell_EP:
+		case Broadwell_D:
+		case Skylake_X:
+			Core->PowerThermal.Param.Offset[1] = TjMax.EP.Offset;
+			break;
+		}
 	}
 }
 

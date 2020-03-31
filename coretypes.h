@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	75
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
 #define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
@@ -275,7 +275,7 @@ THERMAL_FORMULA_AMD_17h = (THERMAL_KIND_AMD_17h << 8)	| FORMULA_SCOPE_PKG
 };
 
 #define COMPUTE_THERMAL_INTEL(Temp, Param, Sensor)			\
-	(Temp = Param.Target - Sensor)
+	(Temp = Param.Offset[0] - Param.Offset[1] - Sensor)
 
 #define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
 	/*( TODO )*/

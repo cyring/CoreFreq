@@ -472,6 +472,11 @@ typedef union
 		ReservedBits6	: 64-56;
 	};
 } PLATFORM_INFO;
+/*
+	MSR_PLATFORM_INFO[0xCE:30] : Programmable TJ OFFSET : R/O : Package
+	06_5Ch [Atom_Goldmont], 06_3Eh [IvyBridge_EP], 06_4Fh [Broadwell_EP],
+	06_56h [Broadwell_D], 06_55h [Skylake_X], 06_57h [Xeon_Phi], 06_85h
+*/
 
 typedef union
 {
