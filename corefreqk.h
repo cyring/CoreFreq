@@ -943,7 +943,8 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-/*	[Kaby Lake]	06_8Eh Stepping 9, 06_9Eh,
+/*	[Kaby Lake]	06_8Eh Stepping 9, 06_9Eh stepping 9
+	[Coffee Lake]	06_9Eh Stepping 10 and 11
 	[Whiskey Lake]	06_8Eh Stepping 11
 	[Comet Lake]	06_8Eh Stepping 12				*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
@@ -1666,14 +1667,28 @@ static MICRO_ARCH Arch_Xeon_Phi[] = {{"Knights Landing"}, {NULL}};
 enum {
 	CN_KABYLAKE,
 	CN_KABYLAKE_S,
+	CN_KABYLAKE_X,
+	CN_KABYLAKE_H,
+	CN_KABYLAKE_U,
+	CN_KABYLAKE_Y,
+	CN_KABYLAKE_R,
+	CN_KABYLAKE_G,
 	CN_COFFEELAKE_S,
+	CN_COFFEELAKE_H,
 	CN_COFFEELAKE_R
 };
 
 static MICRO_ARCH Arch_Kabylake[] = {
 	[CN_KABYLAKE]		= {"Kaby Lake"},
 	[CN_KABYLAKE_S] 	= {"Kaby Lake/S"},
+	[CN_KABYLAKE_X] 	= {"Kaby Lake/X"},
+	[CN_KABYLAKE_H] 	= {"Kaby Lake/H"},
+	[CN_KABYLAKE_U] 	= {"Kaby Lake/U"},
+	[CN_KABYLAKE_Y] 	= {"Kaby Lake/Y"},
+	[CN_KABYLAKE_R] 	= {"Kaby Lake/R"},
+	[CN_KABYLAKE_G] 	= {"Kaby Lake/G"},
 	[CN_COFFEELAKE_S]	= {"Coffee Lake/S"},
+	[CN_COFFEELAKE_H]	= {"Coffee Lake/H"},
 	[CN_COFFEELAKE_R]	= {"Coffee Lake/R"},
 	{NULL}
 };
@@ -2216,7 +2231,51 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 
 static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i3-7",
+	.BrandSubStr = "Intel(R) Core(TM) i7-7700HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-7820HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-7920HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-7740X",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_X,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-770",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
@@ -2227,7 +2286,95 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i5-7",
+	.BrandSubStr = "Intel(R) Core(TM) i7-766",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-760",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-756",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-750",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-7Y7",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_Y,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-7300HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-7440HQ",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-7640X",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_X,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-760",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
@@ -2238,7 +2385,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i7-7",
+	.BrandSubStr = "Intel(R) Core(TM) i5-750",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
@@ -2249,7 +2396,337 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_UNCORE_UNLOCK
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i3-8",
+	.BrandSubStr = "Intel(R) Core(TM) i5-740",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-736",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-730",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-728",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-726",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-720",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-7Y5",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_Y,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-7100H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-7167U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-7130U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-7100U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-7020U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) m3-7Y3",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_Y,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-735",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-732",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-730",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-710",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8650U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8550U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8350U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8250U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8130U",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8809G",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_G,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8709G",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_G,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8706G",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_G,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8705G",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_G,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8305G",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_G,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Pentium(R) CPU G46",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Pentium(R) CPU G45",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Celeron(R) CPU G39",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_KABYLAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Pentium(R) Gold G56",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
@@ -2260,7 +2737,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i5-8",
+	.BrandSubStr = "Intel(R) Pentium(R) Gold G55",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
@@ -2271,7 +2748,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i7-8",
+	.BrandSubStr = "Intel(R) Pentium(R) Gold G54",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
@@ -2282,7 +2759,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Pentium(R) Gold G5",
+	.BrandSubStr = "Intel(R) Celeron(R) G49",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
@@ -2293,7 +2770,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Celeron(R) G4",
+	.BrandSubStr = "Intel(R) Core(TM) i7-8086K",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
@@ -2304,7 +2781,183 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i5-9600K",
+	.BrandSubStr = "Intel(R) Core(TM) i7-8700B",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-8700",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8600",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8500B",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8500",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8400B",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8400H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8400",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8350K",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-8300H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8300",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8100B",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8100H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-8100",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-910",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i3-930",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_S,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-960",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
@@ -2315,7 +2968,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i7-9700K",
+	.BrandSubStr = "Intel(R) Core(TM) i7-970",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
@@ -2326,10 +2979,76 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Latch = LATCH_NONE
 	},
 	{
-	.BrandSubStr = "Intel(R) Core(TM) i9-9900K",
+	.BrandSubStr = "Intel(R) Core(TM) i9-990",
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-9300H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i5-9400H",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-975",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i7-985",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i9-988",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_NONE
+	},
+	{
+	.BrandSubStr = "Intel(R) Core(TM) i9-998",
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COFFEELAKE_H,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 0,
 	.TurboUnlocked = 0,
