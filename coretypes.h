@@ -395,6 +395,8 @@ POWER_FORMULA_AMD_17h	=(POWER_KIND_AMD_17h << 8)	| FORMULA_SCOPE_CORE
 	_dest[_min] = '\0';						\
 })
 
+#define ZLIST( ... ) (char *[]) { __VA_ARGS__ , NULL }
+
 #define DRV_DEVNAME	"corefreqk"
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
 

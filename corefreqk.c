@@ -1690,14 +1690,25 @@ void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 
 PROCESSOR_SPECIFIC *LookupProcessor(void)
 {
-	PROCESSOR_SPECIFIC *pSpecific = Arch[Proc->ArchID].Specific;
+	const	size_t	N = sizeof(Arch[Proc->ArchID].Specific),
+			M = sizeof(PROCESSOR_SPECIFIC);
+	const PROCESSOR_SPECIFIC *pLast = &Arch[Proc->ArchID].Specific[ N/M ];
 
-	while (pSpecific->BrandSubStr != NULL) {
-		if (strstr(Proc->Features.Info.Brand, pSpecific->BrandSubStr))
+	PROCESSOR_SPECIFIC *pSpecific;
+	for (pSpecific = Arch[Proc->ArchID].Specific;
+		(pSpecific != NULL) && (pSpecific < pLast);
+			pSpecific++)
+	{
+		char **brands, *brand;
+		for (brands = pSpecific->Brand, brand = *brands;
+			brand != NULL;
+				brands++, brand = *brands)
 		{
-			break;
+			if (strstr(Proc->Features.Info.Brand, brand))
+			{
+				break;
+			}
 		}
-		pSpecific++;
 	}
 	return (pSpecific);
 }
