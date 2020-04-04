@@ -5,7 +5,6 @@
 CC ?= cc
 WARNING = -Wall
 PWD ?= $(shell pwd)
-FREETYPEDIR ?= $(shell pkg-config --cflags freetype2 2>/dev/null)
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
 UBENCH = 0
@@ -22,11 +21,6 @@ ifneq ($(OPTIM_LVL),)
 	OPTIM_FLG = -O$(OPTIM_LVL)
 	ccflags-y += -D OPTIM_LVL=$(OPTIM_LVL)
 	ccflags-y += $(OPTIM_FLG)
-endif
-
-ifneq ($(FREETYPEDIR),)
-	CONFIG_XFT = -D HAVE_XFT=1
-	LIBRARY_XFT = -lXft
 endif
 
 DEFINITIONS =	-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
@@ -55,7 +49,7 @@ module-install:
 
 .PHONY: clean
 clean:
-	rm -f corefreqd corefreq-cli corefreq-gui
+	rm -f corefreqd corefreq-cli
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) clean
 
 corefreqm.o: corefreqm.c
@@ -106,28 +100,11 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		$(DEFINITIONS) \
 		-o corefreq-cli -lm -lrt
 
-corefreq-gui-lib.o: corefreq-gui-lib.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui-lib.c \
-		$(CONFIG_XFT) $(FREETYPEDIR) \
-		-o corefreq-gui-lib.o
-
-corefreq-gui.o: corefreq-gui.c
-	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-gui.c \
-		$(CONFIG_XFT) $(FREETYPEDIR) \
-		-o corefreq-gui.o
-
-corefreq-gui: corefreq-gui.o corefreq-gui-lib.o
-	$(CC) $(OPTIM_FLG) $(WARNING) \
-		corefreq-gui.c corefreq-gui-lib.c \
-		$(CONFIG_XFT) $(FREETYPEDIR) \
-		-o corefreq-gui -lX11 $(LIBRARY_XFT) -lpthread -lrt
-
 .PHONY: info
 info:
 	$(info CC [$(shell whereis -b $(CC))])
 	$(info WARNING [$(WARNING)])
 	$(info PWD [$(PWD)])
-	$(info FREETYPEDIR [$(FREETYPEDIR)])
 	$(info KERNELDIR [$(KERNELDIR)])
 	$(info PREFIX [$(PREFIX)])
 	$(info UBENCH [$(UBENCH)])
@@ -147,9 +124,6 @@ help:
 	"|                                                               |\n"\
 	"|  WARNING=<ARG>                                                |\n"\
 	"|    where default argument is -Wall                            |\n"\
-	"|                                                               |\n"\
-	"|  FREETYPEDIR=<PATH>                                           |\n"\
-	"|    where <PATH> is the FreeType headers directory             |\n"\
 	"|                                                               |\n"\
 	"|  KERNELDIR=<PATH>                                             |\n"\
 	"|    where <PATH> is the Kernel source directory                |\n"\
