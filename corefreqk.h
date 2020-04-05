@@ -3199,25 +3199,14 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
-	{	/* AMD EPYC Embedded Processors 			*/
-	.Brand = ZLIST("AMD EPYC 3"),
-	.Boost = {+16, 0},
-	.Param.Offset = { 0, 0},
-	.CodeNameIdx = CN_NAPLES,
-	.TgtRatioUnlocked = 0,
-	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
-	.UncoreUnlocked = 0,
-	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
+	{	/* AMD EPYC Server Processors				*/
 	.Brand = ZLIST("AMD EPYC 7251"),
 	.Boost = {+8, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3228,7 +3217,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3239,29 +3228,32 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7351P", "AMD EPYC 7301", "AMD EPYC 7351"),
+	.Brand = ZLIST( "AMD EPYC 7351P",	\
+			"AMD EPYC 7351",	\
+			"AMD EPYC 7301" 	),
 	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7401P", "AMD EPYC 7401"),
+	.Brand = ZLIST( "AMD EPYC 7401P",	\
+			"AMD EPYC 7401" 	),
 	.Boost = {+8, +2},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3272,18 +3264,20 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7551P", "AMD EPYC 7501", "AMD EPYC 7551"),
+	.Brand = ZLIST( "AMD EPYC 7551P",	\
+			"AMD EPYC 7551",	\
+			"AMD EPYC 7501" 	),
 	.Boost = {+6, +4},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3294,29 +3288,19 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7232P"),
+	.Brand = ZLIST( "AMD EPYC 7232P",	\
+			"AMD EPYC 7252" 	),
 	.Boost = {+1, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
-	.UncoreUnlocked = 0,
-	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	},
-	{
-	.Brand = ZLIST("AMD EPYC 7252P", "AMD EPYC 7252"),
-	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
-	.CodeNameIdx = CN_ROME,
-	.TgtRatioUnlocked = 0,
-	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3327,73 +3311,123 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7402P", "AMD EPYC 7272", "AMD EPYC 7402"),
+	.Brand = ZLIST("AMD EPYC 7272"),
+	.Boost = {+3, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD EPYC 7282"),
+	.Boost = {+4, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 7302P",	\
+			"AMD EPYC 7302" 	),
+	.Boost = {+3, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 7402P",	\
+			"AMD EPYC 7402" 	),
 	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7502P", "AMD EPYC 7352", "AMD EPYC 7502"),
+	.Brand = ZLIST( "AMD EPYC 7352",	\
+			"AMD EPYC 7502P",	\
+			"AMD EPYC 7502" 	),
 	.Boost = {+9, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7302P", "AMD EPYC 7302", "AMD EPYC 7542"),
+	.Brand = ZLIST("AMD EPYC 7542"),
 	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7282", "AMD EPYC 7552"),
-	.Boost = {+12, 0},
+	.Brand = ZLIST("AMD EPYC 7552"),
+	.Boost = {+11, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7452", "AMD EPYC 7642"),
+	.Brand = ZLIST( "AMD EPYC 7452",	\
+			"AMD EPYC 7642" 	),
 	.Boost = {+10, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7702P", "AMD EPYC 7702"),
+	.Brand = ZLIST("AMD EPYC 7662"),
+	.Boost = {+13, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_ROME,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD EPYC 7702P",	\
+			"AMD EPYC 7702" 	),
 	.Boost = {+14, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3404,7 +3438,7 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3415,7 +3449,19 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 1,
-	.TurboUnlocked = 1,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{	/* AMD EPYC Embedded Processors 			*/
+	.Brand = ZLIST( "AMD EPYC 31",	\
+			"AMD EPYC 32"	),
+	.Boost = {+0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_NAPLES,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 1,
+	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	}
