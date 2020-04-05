@@ -938,12 +938,14 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Skylake]	06_4Eh, 06_5Eh, 06_55h				*/
 #define _Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
+/*	[Skylake]	06_55h Stepping 4
+	[Cascade Lake]	06_55h Stepping 7				*/
 #define _Skylake_X	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
 /*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-/*	[Kaby Lake]	06_9Eh stepping 9
+/*	[Kaby Lake]	06_9Eh Stepping 9
 	[Coffee Lake]	06_9Eh Stepping 10 and 11
 	[Whiskey Lake]	06_8Eh Stepping 11
 	[Comet Lake]	06_8Eh Stepping 12				*/
@@ -1664,7 +1666,18 @@ static MICRO_ARCH Arch_Broadwell_H[] = {{"Broadwell/H"}, {NULL}};
 static MICRO_ARCH Arch_Broadwell_EP[] = {{"Broadwell/EP/EX"}, {NULL}};
 static MICRO_ARCH Arch_Skylake_UY[] = {{"Skylake/UY"}, {NULL}};
 static MICRO_ARCH Arch_Skylake_S[] = {{"Skylake/S"}, {NULL}};
-static MICRO_ARCH Arch_Skylake_X[] = {{"Skylake/X"}, {NULL}};
+
+enum {
+	CN_SKYLAKE_X,
+	CN_CASCADELAKE_X
+};
+
+static MICRO_ARCH Arch_Skylake_X[] = {
+	[CN_SKYLAKE_X]		= {"Skylake/X"},
+	[CN_CASCADELAKE_X]	= {"Cascade Lake/X"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Xeon_Phi[] = {{"Knights Landing"}, {NULL}};
 
 enum {
@@ -2020,6 +2033,31 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
+	}
+};
+
+static PROCESSOR_SPECIFIC Skylake_X_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i9-10980XE", \
+			"Intel(R) Core(TM) i9-10940X" , \
+			"Intel(R) Core(TM) i9-10920X" , \
+			"Intel(R) Core(TM) i9-10900X" , \
+			"Intel(R) Xeon(R) Platinum 92", \
+			"Intel(R) Xeon(R) Platinum 82", \
+			"Intel(R) Xeon(R) Gold 62",	\
+			"Intel(R) Xeon(R) Gold 52",	\
+			"Intel(R) Xeon(R) Silver 42",	\
+			"Intel(R) Xeon(R) Bronze 32",	\
+			"Intel(R) Xeon(R) W-32",	\
+			"Intel(R) Xeon(R) W-22" 	),
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_CASCADELAKE_X,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
 	}
 };
 
@@ -4686,7 +4724,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Skylake_X,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Skylake_X_Specific,
 	.SystemDriver = &SKX_Driver,
 	.Architecture = Arch_Skylake_X
 	},
