@@ -949,6 +949,7 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 	[Comet Lake]	06_8Eh Stepping 12				*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 /*	[Kaby Lake/UY]	06_8Eh Stepping 9
+	[Whiskey Lake/U] 06_8Eh Stepping 11
 	[Amber Lake/Y]	06_8Eh Stepping 9 and 12			*/
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 
@@ -1701,11 +1702,13 @@ static MICRO_ARCH Arch_Kabylake[] = {
 
 enum {
 	CN_KABYLAKE_UY,
+	CN_WHISKEYLAKE_U,
 	CN_AMBERLAKE_Y
 };
 
 static MICRO_ARCH Arch_Kabylake_UY[] = {
 	[CN_KABYLAKE_UY]	= {"Kaby Lake/UY"},
+	[CN_WHISKEYLAKE_U]	= {"Whiskey Lake/U"},
 	[CN_AMBERLAKE_Y]	= {"Amber Lake/Y"},
 	{NULL}
 };
@@ -2308,6 +2311,24 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 };
 
 static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-8665U",	\
+			"Intel(R) Core(TM) i7-8565U",	\
+			"Intel(R) Core(TM) i5-8365U",	\
+			"Intel(R) Core(TM) i5-8265U",	\
+			"Intel(R) Core(TM) i3-8145U",	\
+			"Intel(R) Pentium(R) CPU 5405U",\
+			"Intel(R) Celeron(R) CPU 4305U",\
+			"Intel(R) Celeron(R) CPU 4205U"	),
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_WHISKEYLAKE_U,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
 	{
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-10510Y",	\
 			"Intel(R) Core(TM) i5-10310Y",	\
