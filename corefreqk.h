@@ -943,11 +943,13 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-/*	[Kaby Lake]	06_8Eh Stepping 9, 06_9Eh stepping 9
+/*	[Kaby Lake]	06_9Eh stepping 9
 	[Coffee Lake]	06_9Eh Stepping 10 and 11
 	[Whiskey Lake]	06_8Eh Stepping 11
 	[Comet Lake]	06_8Eh Stepping 12				*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
+/*	[Kaby Lake/UY]	06_8Eh Stepping 9
+	[Amber Lake/Y]	06_8Eh Stepping 9 and 12			*/
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 
 /*	[Cannon Lake]	06_66h						*/
@@ -1697,7 +1699,17 @@ static MICRO_ARCH Arch_Kabylake[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Kabylake_UY[] = {{"Kaby Lake/UY"}, {NULL}};
+enum {
+	CN_KABYLAKE_UY,
+	CN_AMBERLAKE_Y
+};
+
+static MICRO_ARCH Arch_Kabylake_UY[] = {
+	[CN_KABYLAKE_UY]	= {"Kaby Lake/UY"},
+	[CN_AMBERLAKE_Y]	= {"Amber Lake/Y"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Cannonlake[] = {{"Cannon Lake"}, {NULL}};
 static MICRO_ARCH Arch_Geminilake[] = {{"Atom/Gemini Lake"}, {NULL}};
 static MICRO_ARCH Arch_Icelake_UY[] = {{"Ice Lake/UY"}, {NULL}};
@@ -2287,6 +2299,28 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	}
+};
+
+static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-10510Y",	\
+			"Intel(R) Core(TM) i5-10310Y",	\
+			"Intel(R) Core(TM) i5-10210Y",	\
+			"Intel(R) Core(TM) i3-10110Y",	\
+			"Intel(R) Core(TM) i7-8500Y" ,	\
+			"Intel(R) Core(TM) i5-8310Y" ,	\
+			"Intel(R) Core(TM) i5-8210Y" ,	\
+			"Intel(R) Core(TM) i5-8200Y" ,	\
+			"Intel(R) Core(TM) m3-8100Y"	),
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_AMBERLAKE_Y,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 0,
 	.TurboUnlocked = 0,
@@ -4705,7 +4739,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Skylake,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Kabylake_UY_Specific,
 	.SystemDriver = &SKL_Driver,
 	.Architecture = Arch_Kabylake_UY
 	},
