@@ -513,6 +513,26 @@ static void Query_Features(void *pArg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
+	    if (iArg->Features->ExtFeature.EAX.MaxSubLeaf >= 1) {
+		__asm__ volatile
+		(
+			"movq	$0x7,  %%rax	\n\t"
+			"movq	$0x1,  %%rcx    \n\t"
+			"xorq	%%rbx, %%rbx    \n\t"
+			"xorq	%%rdx, %%rdx    \n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r" (iArg->Features->ExtFeature_Leaf1.EAX),
+			  "=r" (iArg->Features->ExtFeature_Leaf1.EBX),
+			  "=r" (iArg->Features->ExtFeature_Leaf1.ECX),
+			  "=r" (iArg->Features->ExtFeature_Leaf1.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	    }
 	}
 	/* Must have 0x80000000,0x80000001,0x80000002,0x80000003,0x80000004 */
 	__asm__ volatile

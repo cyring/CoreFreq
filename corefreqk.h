@@ -899,8 +899,18 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Moorefield]	06_5Ah						*/
 #define _Atom_Moorefield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
-/*	[Tremont]	06_86h						*/
+
+/*	[C3000] 	06_5Fh Stepping 0={A0,A1} 1={B0,B1}		*/
+#define _Atom_C3000	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xF}
+
+/*	[Tremont]	06_86h
+	[Lakefield, Snow Ridge, Jacobsville, Elkhart Lake, Jasper Lake] */
 #define _Atom_Tremont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0x6}
+
+/*	[Tremont]	06_96h
+	[Elkhart Lake]							*/
+#define _Atom_Tremont_EHL \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0x6}
 
 /*	[Nehalem]	06_1Ah, 06_1Eh, 06_1Fh, 06_2Eh			*/
 #define _Nehalem_Bloomfield \
@@ -945,6 +955,10 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
+/*	[Tiger Lake]	06_8D
+	[Tiger Lake/HS]							*/
+#define _Tigerlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xD}
+
 /*	[Kaby Lake]	06_9Eh Stepping 9
 	[Coffee Lake]	06_9Eh Stepping 10 and 11
 	[Whiskey Lake]	06_8Eh Stepping 11
@@ -958,11 +972,15 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Cannon Lake]	06_66h						*/
 #define _Cannonlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0x6}
 
-/*	[Geminilake]	06_7Ah						*/
+/*	[Gemini Lake]	06_7Ah						*/
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
-/*	[Ice Lake]	06_7Eh						*/
+/*	[Ice Lake]	06_7Eh
+	[Sunny Cove]	06_9Dh
+	[Ice Lake/SP]	06_6Ah						*/
 #define _Icelake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xE}
+#define _Sunny_Cove	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xD}
+#define _Icelake_SP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0xA}
 
 /*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -1729,6 +1747,13 @@ static MICRO_ARCH Arch_Kabylake_UY[] = {
 static MICRO_ARCH Arch_Cannonlake[] = {{"Cannon Lake"}, {NULL}};
 static MICRO_ARCH Arch_Geminilake[] = {{"Atom/Gemini Lake"}, {NULL}};
 static MICRO_ARCH Arch_Icelake_UY[] = {{"Ice Lake/UY"}, {NULL}};
+static MICRO_ARCH Arch_Icelake_SP[] = {{"Ice Lake/SP"}, {NULL}};
+static MICRO_ARCH Arch_Sunny_Cove[] = {{"Sunny Cove"}, {NULL}};
+static MICRO_ARCH Arch_Tigerlake[]  = {{"Tiger Lake"}, {NULL}};
+
+static MICRO_ARCH Arch_Atom_C3000[] = {{"Atom/C3000"}, {NULL}};
+static MICRO_ARCH Arch_Atom_Tremont[] = {{"Atom/Tremont"}, {NULL}};
+static MICRO_ARCH Arch_Atom_Tremont_EHL[] = {{"Atom/Tremont/EHL"}, {NULL}};
 
 enum {
 	CN_BULLDOZER,
@@ -5035,6 +5060,152 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
 	.Architecture = Arch_Icelake_UY
+	},
+[Icelake_SP] = {							/* 47*/
+	.Signature = _Icelake_SP,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Icelake_SP
+	},
+[Sunny_Cove] = {							/* 48*/
+	.Signature = _Sunny_Cove,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Sunny_Cove
+	},
+
+[Tigerlake] = {								/* 49*/
+	.Signature = _Tigerlake,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Tigerlake
+	},
+
+[Atom_C3000] = {
+	.Signature = _Atom_C3000,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Atom_C3000
+	},
+[Atom_Tremont] = {
+	.Signature = _Atom_Tremont,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Atom_Tremont
+	},
+[Atom_Tremont_EHL] = {
+	.Signature = _Atom_Tremont_EHL,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Atom_Tremont_EHL
 	},
 
 [AMD_Family_0Fh] = {
