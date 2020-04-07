@@ -1693,21 +1693,19 @@ PROCESSOR_SPECIFIC *LookupProcessor(void)
 	const	size_t	N = sizeof(Arch[Proc->ArchID].Specific),
 			M = sizeof(PROCESSOR_SPECIFIC);
 	const PROCESSOR_SPECIFIC *pLast = &Arch[Proc->ArchID].Specific[ N/M ];
+	char *lookIn = NULL;
 
 	PROCESSOR_SPECIFIC *pSpecific;
 	for (pSpecific = Arch[Proc->ArchID].Specific;
-		(pSpecific != NULL) && (pSpecific < pLast);
+		(pSpecific != NULL) && (pSpecific < pLast) && (lookIn == NULL);
 			pSpecific++)
 	{
 		char **brands, *brand;
 		for (brands = pSpecific->Brand, brand = *brands;
-			brand != NULL;
+			(brand != NULL) && (lookIn == NULL);
 				brands++, brand = *brands)
 		{
-			if (strstr(Proc->Features.Info.Brand, brand))
-			{
-				break;
-			}
+			lookIn = strstr(Proc->Features.Info.Brand, brand);
 		}
 	}
 	return (pSpecific);
