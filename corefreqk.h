@@ -1925,7 +1925,8 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
@@ -1939,7 +1940,8 @@ static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Nehalem_Lynnfield_Specific[] = {
@@ -1954,7 +1956,8 @@ static PROCESSOR_SPECIFIC Nehalem_Lynnfield_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
@@ -1982,7 +1985,8 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
@@ -2062,7 +2066,8 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_NONE
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Skylake_X_Specific[] = {
@@ -2087,7 +2092,8 @@ static PROCESSOR_SPECIFIC Skylake_X_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
@@ -2374,7 +2380,8 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
-	}
+	},
+	{0}
 };
 
 static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
@@ -2414,7 +2421,8 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 1,
 	.Latch = LATCH_UNCORE_UNLOCK
-	}
+	},
+	{0}
 };
 
 /*	AMD Family 17h
@@ -3489,7 +3497,8 @@ static PROCESSOR_SPECIFIC Family_17h_Specific[] = {
 	.TurboUnlocked = 0,
 	.UncoreUnlocked = 0,
 	.Latch = LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
-	}
+	},
+	{0}
 };
 
 #ifdef CONFIG_CPU_FREQ
