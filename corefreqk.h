@@ -579,6 +579,7 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC]={
 	{.func=0x00000005, .sub=0x00000000},	/* MONITOR/MWAIT	*/
 	{.func=0x00000006, .sub=0x00000000},	/* Power & Thermal Mgmt	*/
 	{.func=0x00000007, .sub=0x00000000},	/* Extended Features	*/
+	{.func=0x00000007, .sub=0x00000001},	/* Ext Features Leaf 1	*/
 /* Intel */
 	{.func=0x00000009, .sub=0x00000000},	/* Direct Cache Access	*/
 	{.func=0x0000000a, .sub=0x00000000},	/* Perf. Monitoring	*/

@@ -579,7 +579,7 @@ typedef union
 	};
 } SERVICE_PROC;
 
-#define CPUID_MAX_FUNC	62
+#define CPUID_MAX_FUNC	63
 
 typedef struct
 {
