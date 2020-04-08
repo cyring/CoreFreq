@@ -3960,7 +3960,7 @@ void Dump_CPUID(CORE *Core)
    If a value is entered for CPUID.EAX is invalid for a particular processor,
    the data for the highest basic information leaf is returned.
 */
-	for (i = 0; (i < CPUID_MAX_FUNC) && (Core->CpuID[i].func != 0x0); i++)
+	for (i = 0; i < CPUID_MAX_FUNC; i++)
 	{	__asm__ volatile
 		(
 			"xorq	%%rax, %%rax	\n\t"
