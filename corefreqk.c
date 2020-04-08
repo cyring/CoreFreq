@@ -10551,8 +10551,12 @@ static int CoreFreqK_suspend(struct device *dev)
 }
 
 static int CoreFreqK_resume(struct device *dev)
-{
-	if (Proc->Registration.PCI) {		/* Probe PCI again	*/
+{	/*	Probe Processor again					*/
+	if (Arch[Proc->ArchID].Query != NULL) {
+		Arch[Proc->ArchID].Query();
+	}
+	/*	Probe PCI again 					*/
+	if (Proc->Registration.PCI) {
 		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	}
 

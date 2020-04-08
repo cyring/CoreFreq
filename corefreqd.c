@@ -5052,11 +5052,11 @@ REASON_CODE Core_Manager(REF *Ref)
 			SysGate_Update(Ref);
 		    }
 		}
-		if (BITVAL(Proc->OS.Signal, NTFY)) {
-			BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY);
-
+		if (BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY))
+		{
 			UpdateFeatures(Ref);
 
+			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_COMP);
 			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
 		}
 	    }
