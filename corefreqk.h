@@ -961,18 +961,13 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Xeon Phi]	06_57h, 06_85h					*/
 #define _Xeon_Phi	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x7}
 
-/*	[Tiger Lake]	06_8D
-	[Tiger Lake/HS]							*/
-#define _Tigerlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xD}
-
 /*	[Kaby Lake]	06_9Eh Stepping 9
-	[Coffee Lake]	06_9Eh Stepping 10 and 11
-	[Whiskey Lake]	06_8Eh Stepping 11
-	[Comet Lake]	06_8Eh Stepping 12				*/
+	[Coffee Lake]	06_9Eh Stepping 10 and 11			*/
 #define _Kabylake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xE}
 /*	[Kaby Lake/UY]	06_8Eh Stepping 9
 	[Whiskey Lake/U] 06_8Eh Stepping 11
-	[Amber Lake/Y]	06_8Eh Stepping 9 and 12			*/
+	[Amber Lake/Y]	06_8Eh Stepping 9
+	[Comet Lake/U]	06_8Eh Stepping 12				*/
 #define _Kabylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xE}
 
 /*	[Cannon Lake]	06_66h						*/
@@ -981,12 +976,27 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 /*	[Gemini Lake]	06_7Ah						*/
 #define _Geminilake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xA}
 
-/*	[Ice Lake]	06_7Eh
-	[Sunny Cove]	06_9Dh
-	[Ice Lake/SP]	06_6Ah						*/
+/*	[Ice Lake]	06_7Dh
+	[Ice Lake/UY]	06_7Eh
+	[Ice Lake/X]	06_6Ah
+	[Ice Lake/D]	06_6Ch						*/
+#define _Icelake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xD}
 #define _Icelake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xE}
+#define _Icelake_X	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0xA}
+#define _Icelake_D	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0xC}
+
+/*	[Sunny Cove]	06_9Dh						*/
 #define _Sunny_Cove	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xD}
-#define _Icelake_SP	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x6, .Model=0xA}
+
+/*	[Tiger Lake]	06_8D
+	[Tiger Lake/U]	06_8C						*/
+#define _Tigerlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xD}
+#define _Tigerlake_U	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x8, .Model=0xC}
+
+/*	[Comet Lake]	06_A5
+	[Comet Lake/UL]	06_A6						*/
+#define _Cometlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x5}
+#define _Cometlake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x6}
 
 /*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
@@ -1595,10 +1605,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 
 
 static MICRO_ARCH Arch_Void[] = {{NULL}};
-static MICRO_ARCH Arch_Core_Yonah[] = {{"Core/Yonah"}, {NULL}};
-static MICRO_ARCH Arch_Core_Conroe[] = {{"Core2/Conroe/Merom"}, {NULL}};
-static MICRO_ARCH Arch_Core_Kentsfield[] = {{"Core2/Kentsfield"}, {NULL}};
-static MICRO_ARCH Arch_Core_Conroe_616[] = {{"Core2/Conroe/Yonah"}, {NULL}};
+
+static MICRO_ARCH Arch_Core_Yonah[]	= {{"Core/Yonah"}	, {NULL}};
+static MICRO_ARCH Arch_Core_Conroe[]	= {{"Core2/Conroe/Merom"},{NULL}};
+static MICRO_ARCH Arch_Core_Kentsfield[]= {{"Core2/Kentsfield"} , {NULL}};
+static MICRO_ARCH Arch_Core_Conroe_616[]= {{"Core2/Conroe/Yonah"},{NULL}};
 
 enum {
 	CN_PENRYN,
@@ -1613,20 +1624,20 @@ static MICRO_ARCH Arch_Core_Penryn[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Core_Dunnington[] = {{"Xeon/Dunnington"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Bonnell[] = {{"Atom/Bonnell"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Silvermont[] = {{"Atom/Silvermont"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Lincroft[] = {{"Atom/Lincroft"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Clovertrail[] = {{"Atom/Clovertrail"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Saltwell[] = {{"Atom/Saltwell"}, {NULL}};
-static MICRO_ARCH Arch_Silvermont_637[] = {{"Silvermont"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Avoton[] = {{"Atom/Avoton"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Airmont[] = {{"Atom/Airmont"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Goldmont[] = {{"Atom/Goldmont"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Sofia[] = {{"Atom/Sofia"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Merrifield[] = {{"Atom/Merrifield"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Moorefield[] = {{"Atom/Moorefield"}, {NULL}};
-static MICRO_ARCH Arch_Nehalem_Bloomfield[] = {{"Nehalem/Bloomfield"}, {NULL}};
+static MICRO_ARCH Arch_Core_Dunnington[]= {{"Xeon/Dunnington"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Bonnell[]	= {{"Atom/Bonnell"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Silvermont[]= {{"Atom/Silvermont"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Lincroft[]	= {{"Atom/Lincroft"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Clovertrail[]={{"Atom/Clovertrail"} , {NULL}};
+static MICRO_ARCH Arch_Atom_Saltwell[]	= {{"Atom/Saltwell"}	, {NULL}};
+static MICRO_ARCH Arch_Silvermont_637[] = {{"Silvermont"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Avoton[]	= {{"Atom/Avoton"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Airmont[]	= {{"Atom/Airmont"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Goldmont[]	= {{"Atom/Goldmont"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Sofia[]	= {{"Atom/Sofia"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Merrifield[]= {{"Atom/Merrifield"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Moorefield[]= {{"Atom/Moorefield"}	, {NULL}};
+static MICRO_ARCH Arch_Nehalem_Bloomfield[]={{"Nehalem/Bloomfield"},{NULL}};
 
 enum {
 	CN_LYNNFIELD,
@@ -1639,9 +1650,9 @@ static MICRO_ARCH Arch_Nehalem_Lynnfield[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Nehalem_MB[] = {{"Nehalem/Mobile"}, {NULL}};
-static MICRO_ARCH Arch_Nehalem_EX[] = {{"Nehalem/eXtreme.EP"}, {NULL}};
-static MICRO_ARCH Arch_Westmere[] = {{"Westmere"}, {NULL}};
+static MICRO_ARCH Arch_Nehalem_MB[]	= {{"Nehalem/Mobile"}	, {NULL}};
+static MICRO_ARCH Arch_Nehalem_EX[]	= {{"Nehalem/eXtreme.EP"},{NULL}};
+static MICRO_ARCH Arch_Westmere[]	= {{"Westmere"} 	, {NULL}};
 
 enum {
 	CN_WESTMERE_EP,
@@ -1654,11 +1665,11 @@ static MICRO_ARCH Arch_Westmere_EP[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Westmere_EX[] = {{"Westmere/eXtreme"}, {NULL}};
-static MICRO_ARCH Arch_SandyBridge[] = {{"SandyBridge"}, {NULL}};
-static MICRO_ARCH Arch_SandyBridge_EP[] = {{"SandyBridge/eXtreme.EP"}, {NULL}};
-static MICRO_ARCH Arch_IvyBridge[] = {{"IvyBridge"}, {NULL}};
-static MICRO_ARCH Arch_IvyBridge_EP[] = {{"IvyBridge/EP"}, {NULL}};
+static MICRO_ARCH Arch_Westmere_EX[]	= {{"Westmere/eXtreme"} , {NULL}};
+static MICRO_ARCH Arch_SandyBridge[]	= {{"SandyBridge"}	, {NULL}};
+static MICRO_ARCH Arch_SandyBridge_EP[] = {{"SandyBridge/eXtreme.EP"},{NULL}};
+static MICRO_ARCH Arch_IvyBridge[]	= {{"IvyBridge"}	, {NULL}};
+static MICRO_ARCH Arch_IvyBridge_EP[]	= {{"IvyBridge/EP"}	, {NULL}};
 
 enum {
 	CN_HASWELL_DESKTOP,
@@ -1681,15 +1692,15 @@ static MICRO_ARCH Arch_Haswell_DT[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Haswell_EP[] = {{"Haswell/EP/Mobile"}, {NULL}};
-static MICRO_ARCH Arch_Haswell_ULT[] = {{"Haswell/Ultra Low TDP"}, {NULL}};
-static MICRO_ARCH Arch_Haswell_ULX[] = {{"Haswell/Ultra Low eXtreme"}, {NULL}};
-static MICRO_ARCH Arch_Broadwell[] = {{"Broadwell/Mobile"}, {NULL}};
-static MICRO_ARCH Arch_Broadwell_D[] = {{"Broadwell/D"}, {NULL}};
-static MICRO_ARCH Arch_Broadwell_H[] = {{"Broadwell/H"}, {NULL}};
-static MICRO_ARCH Arch_Broadwell_EP[] = {{"Broadwell/EP/EX"}, {NULL}};
-static MICRO_ARCH Arch_Skylake_UY[] = {{"Skylake/UY"}, {NULL}};
-static MICRO_ARCH Arch_Skylake_S[] = {{"Skylake/S"}, {NULL}};
+static MICRO_ARCH Arch_Haswell_EP[]	= {{"Haswell/EP/Mobile"}, {NULL}};
+static MICRO_ARCH Arch_Haswell_ULT[]	= {{"Haswell/Ultra Low TDP"},{NULL}};
+static MICRO_ARCH Arch_Haswell_ULX[]	={{"Haswell/Ultra Low eXtreme"},{NULL}};
+static MICRO_ARCH Arch_Broadwell[]	= {{"Broadwell/Mobile"} , {NULL}};
+static MICRO_ARCH Arch_Broadwell_D[]	= {{"Broadwell/D"}	, {NULL}};
+static MICRO_ARCH Arch_Broadwell_H[]	= {{"Broadwell/H"}	, {NULL}};
+static MICRO_ARCH Arch_Broadwell_EP[]	= {{"Broadwell/EP/EX"}	, {NULL}};
+static MICRO_ARCH Arch_Skylake_UY[]	= {{"Skylake/UY"}	, {NULL}};
+static MICRO_ARCH Arch_Skylake_S[]	= {{"Skylake/S"}	, {NULL}};
 
 enum {
 	CN_SKYLAKE_X,
@@ -1740,26 +1751,35 @@ static MICRO_ARCH Arch_Kabylake[] = {
 enum {
 	CN_KABYLAKE_UY,
 	CN_WHISKEYLAKE_U,
-	CN_AMBERLAKE_Y
+	CN_AMBERLAKE_Y,
+	CN_COMETLAKE_H,
+	CN_COMETLAKE_U
 };
 
 static MICRO_ARCH Arch_Kabylake_UY[] = {
 	[CN_KABYLAKE_UY]	= {"Kaby Lake/UY"},
 	[CN_WHISKEYLAKE_U]	= {"Whiskey Lake/U"},
 	[CN_AMBERLAKE_Y]	= {"Amber Lake/Y"},
+	[CN_COMETLAKE_H]	= {"Comet Lake/H"},
+	[CN_COMETLAKE_U]	= {"Comet Lake/U"},
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Cannonlake[] = {{"Cannon Lake"}, {NULL}};
-static MICRO_ARCH Arch_Geminilake[] = {{"Atom/Gemini Lake"}, {NULL}};
-static MICRO_ARCH Arch_Icelake_UY[] = {{"Ice Lake/UY"}, {NULL}};
-static MICRO_ARCH Arch_Icelake_SP[] = {{"Ice Lake/SP"}, {NULL}};
-static MICRO_ARCH Arch_Sunny_Cove[] = {{"Sunny Cove"}, {NULL}};
-static MICRO_ARCH Arch_Tigerlake[]  = {{"Tiger Lake"}, {NULL}};
+static MICRO_ARCH Arch_Cannonlake[]	= {{"Cannon Lake"}	, {NULL}};
+static MICRO_ARCH Arch_Geminilake[]	= {{"Atom/Gemini Lake"} , {NULL}};
+static MICRO_ARCH Arch_Icelake[]	= {{"Ice Lake"} 	, {NULL}};
+static MICRO_ARCH Arch_Icelake_UY[]	= {{"Ice Lake/UY"}	, {NULL}};
+static MICRO_ARCH Arch_Icelake_X[]	= {{"Ice Lake/X"}	, {NULL}};
+static MICRO_ARCH Arch_Icelake_D[]	= {{"Ice Lake/D"}	, {NULL}};
+static MICRO_ARCH Arch_Sunny_Cove[]	= {{"Sunny Cove"}	, {NULL}};
+static MICRO_ARCH Arch_Tigerlake[]	= {{"Tiger Lake"}	, {NULL}};
+static MICRO_ARCH Arch_Tigerlake_U[]	= {{"Tiger Lake/U"}	, {NULL}};
+static MICRO_ARCH Arch_Cometlake[]	= {{"Comet Lake"}	, {NULL}};
+static MICRO_ARCH Arch_Cometlake_UY[]	= {{"Comet Lake/UY"}	, {NULL}};
 
-static MICRO_ARCH Arch_Atom_C3000[] = {{"Atom/C3000"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Tremont[] = {{"Atom/Tremont"}, {NULL}};
-static MICRO_ARCH Arch_Atom_Tremont_EHL[] = {{"Atom/Tremont/EHL"}, {NULL}};
+static MICRO_ARCH Arch_Atom_C3000[]	= {{"Atom/C3000"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Tremont[]	= {{"Atom/Tremont"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Tremont_EHL[]={{"Atom/Tremont/EHL"}	, {NULL}};
 
 enum {
 	CN_BULLDOZER,
@@ -1768,11 +1788,11 @@ enum {
 	CN_EXCAVATOR
 };
 
-static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Hammer"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_10h[] = {{"K10"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Turion"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Fusion"}, {NULL}};
-static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Bobcat"}, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_0Fh[] = {{"Hammer"}	, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_10h[] = {{"K10"}	, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_11h[] = {{"Turion"}	, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_12h[] = {{"Fusion"}	, {NULL}};
+static MICRO_ARCH Arch_AMD_Family_14h[] = {{"Bobcat"}	, {NULL}};
 static MICRO_ARCH Arch_AMD_Family_15h[] = {
 	[CN_BULLDOZER]		= {"Bulldozer"},
 	[CN_PILEDRIVER] 	= {"Bulldozer/Piledriver"},
@@ -2422,6 +2442,38 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_AMBERLAKE_Y,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i9-10980HK", \
+			"Intel(R) Core(TM) i7-10875H",	\
+			"Intel(R) Core(TM) i7-10850H",	\
+			"Intel(R) Core(TM) i7-10750H",	\
+			"Intel(R) Core(TM) i5-10400H",	\
+			"Intel(R) Core(TM) i5-10300H"	),
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COMETLAKE_H,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_UNCORE_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-10710U",	\
+			"Intel(R) Core(TM) i7-10510U",	\
+			"Intel(R) Core(TM) i5-10210U",	\
+			"Intel(R) Core(TM) i3-10110U",	\
+			"Intel(R) Pentium(R) Gold 6405U",\
+			"Intel(R) Celeron(R) CPU 5205U"	),
+	.Boost = {0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_COMETLAKE_U,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 0,
 	.TurboUnlocked = 0,
@@ -5052,7 +5104,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Geminilake
 	},
 
-[Icelake_UY] = {							/* 46*/
+[Icelake] = {								/* 46*/
+	.Signature = _Icelake,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Icelake
+	},
+[Icelake_UY] = {							/* 47*/
 	.Signature = _Icelake_UY,
 	.Query = Query_SandyBridge,
 	.Update = PerCore_Skylake_Query,
@@ -5076,8 +5152,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = NULL,
 	.Architecture = Arch_Icelake_UY
 	},
-[Icelake_SP] = {							/* 47*/
-	.Signature = _Icelake_SP,
+[Icelake_X] = {								/* 48*/
+	.Signature = _Icelake_X,
 	.Query = Query_SandyBridge,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
@@ -5098,9 +5174,34 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
-	.Architecture = Arch_Icelake_SP
+	.Architecture = Arch_Icelake_X
 	},
-[Sunny_Cove] = {							/* 48*/
+[Icelake_D] = {								/* 49*/
+	.Signature = _Icelake_D,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Icelake_D
+	},
+
+[Sunny_Cove] = {							/* 50*/
 	.Signature = _Sunny_Cove,
 	.Query = Query_SandyBridge,
 	.Update = PerCore_Skylake_Query,
@@ -5125,7 +5226,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Sunny_Cove
 	},
 
-[Tigerlake] = {								/* 49*/
+[Tigerlake] = {								/* 51*/
 	.Signature = _Tigerlake,
 	.Query = Query_SandyBridge,
 	.Update = PerCore_Skylake_Query,
@@ -5148,6 +5249,79 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Void_Specific,
 	.SystemDriver = NULL,
 	.Architecture = Arch_Tigerlake
+	},
+[Tigerlake_U] = {							/* 52*/
+	.Signature = _Tigerlake_U,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Tigerlake_U
+	},
+
+[Cometlake] = {								/* 53*/
+	.Signature = _Cometlake,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Cometlake
+	},
+[Cometlake_UY] = {							/* 54*/
+	.Signature = _Cometlake_UY,
+	.Query = Query_SandyBridge,
+	.Update = PerCore_Skylake_Query,
+	.Start = Start_Skylake,
+	.Stop = Stop_Skylake,
+	.Exit = NULL,
+	.Timer = InitTimer_Skylake,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_Skylake_HWP,
+	.TurboClock = Intel_Turbo_Config8C,
+	.thermalFormula = THERMAL_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
+	.powerFormula   = POWER_FORMULA_INTEL,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = Start_Uncore_Skylake,
+		.Stop = Stop_Uncore_Skylake,
+		.ClockMod = Haswell_Uncore_Ratio
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = NULL,
+	.Architecture = Arch_Cometlake_UY
 	},
 
 [Atom_C3000] = {
