@@ -272,13 +272,29 @@ signed int SearchArchitectureID(void)
 	return (id);
 }
 
+void BrandCleanup(char *pBrand, char inOrder[])
+{
+	unsigned long ix, jx;
+	for (jx = 0; jx < 48; jx++) {
+		if (inOrder[jx] != 0x20) {
+			break;
+		}
+	}
+	for (ix = 0; jx < 48; jx++) {
+		if (!(inOrder[jx] == 0x20 && inOrder[jx + 1] == 0x20)) {
+			pBrand[ix++] = inOrder[jx];
+		}
+	}
+}
+
 unsigned int Intel_Brand(char *pBrand)
 {
-	char idString[64] = {0x20};
-	unsigned long ix = 0, jx = 0, px = 0;
+	char idBuffer[48 + 4];
+	unsigned long ix, jx , px = 0;
 	unsigned int frequency = 0, multiplier = 0;
 	BRAND Brand;
 
+	memset(idBuffer, 0x20, 48 + 4);
 	for (ix = 0; ix < 3; ix++) {
 		__asm__ volatile
 		(
@@ -299,16 +315,16 @@ unsigned int Intel_Brand(char *pBrand)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 		for (jx = 0; jx < 4; jx++, px++) {
-			idString[px     ] = Brand.AX.Chr[jx];
-			idString[px +  4] = Brand.BX.Chr[jx];
-			idString[px +  8] = Brand.CX.Chr[jx];
-			idString[px + 12] = Brand.DX.Chr[jx];
+			idBuffer[px     ] = Brand.AX.Chr[jx];
+			idBuffer[px +  4] = Brand.BX.Chr[jx];
+			idBuffer[px +  8] = Brand.CX.Chr[jx];
+			idBuffer[px + 12] = Brand.DX.Chr[jx];
 		}
 		px += 12;
 	}
 	for (ix = 0; ix < 46; ix++)
-		if ((idString[ix+1] == 'H') && (idString[ix+2] == 'z')) {
-			switch (idString[ix]) {
+		if ((idBuffer[ix+1] == 'H') && (idBuffer[ix+2] == 'z')) {
+			switch (idBuffer[ix]) {
 			case 'M':
 					multiplier = 1;
 				break;
@@ -322,34 +338,31 @@ unsigned int Intel_Brand(char *pBrand)
 			break;
 		}
 	if (multiplier > 0) {
-	    if (idString[ix-3] == '.') {
-		frequency  = (int) (idString[ix-4] - '0') * multiplier;
-		frequency += (int) (idString[ix-2] - '0') * (multiplier / 10);
-		frequency += (int) (idString[ix-1] - '0') * (multiplier / 100);
+	    if (idBuffer[ix-3] == '.') {
+		frequency  = (int) (idBuffer[ix-4] - '0') * multiplier;
+		frequency += (int) (idBuffer[ix-2] - '0') * (multiplier / 10);
+		frequency += (int) (idBuffer[ix-1] - '0') * (multiplier / 100);
 	    } else {
-		frequency  = (int) (idString[ix-4] - '0') * 1000;
-		frequency += (int) (idString[ix-3] - '0') * 100;
-		frequency += (int) (idString[ix-2] - '0') * 10;
-		frequency += (int) (idString[ix-1] - '0');
+		frequency  = (int) (idBuffer[ix-4] - '0') * 1000;
+		frequency += (int) (idBuffer[ix-3] - '0') * 100;
+		frequency += (int) (idBuffer[ix-2] - '0') * 10;
+		frequency += (int) (idBuffer[ix-1] - '0');
 		frequency *= frequency;
 	    }
 	}
-	for (jx = 0; jx < 48; jx++)
-		if (idString[jx] != 0x20)
-			break;
-	for (ix = 0; jx < 48; jx++)
-		if (!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
-			pBrand[ix++] = idString[jx];
+
+	BrandCleanup(pBrand, idBuffer);
 
 	return (frequency);
 }
 
 void AMD_Brand(char *pBrand)
 {
-	char idString[64] = {0x20};
-	unsigned long ix = 0, jx = 0, px = 0;
+	char idBuffer[48 + 4];
+	unsigned long ix, jx, px = 0;
 	BRAND Brand;
 
+	memset(idBuffer, 0x20, 48 + 4);
 	for (ix = 0; ix < 3; ix++) {
 		__asm__ volatile
 		(
@@ -370,19 +383,15 @@ void AMD_Brand(char *pBrand)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 		for (jx = 0; jx < 4; jx++, px++) {
-			idString[px     ] = Brand.AX.Chr[jx];
-			idString[px +  4] = Brand.BX.Chr[jx];
-			idString[px +  8] = Brand.CX.Chr[jx];
-			idString[px + 12] = Brand.DX.Chr[jx];
+			idBuffer[px     ] = Brand.AX.Chr[jx];
+			idBuffer[px +  4] = Brand.BX.Chr[jx];
+			idBuffer[px +  8] = Brand.CX.Chr[jx];
+			idBuffer[px + 12] = Brand.DX.Chr[jx];
 		}
 		px += 12;
 	}
-	for (jx = 0; jx < 48; jx++)
-		if (idString[jx] != 0x20)
-			break;
-	for (ix = 0; jx < 48; jx++)
-		if (!(idString[jx] == 0x20 && idString[jx+1] == 0x20))
-			pBrand[ix++] = idString[jx];
+
+	BrandCleanup(pBrand, idBuffer);
 }
 
 /* Retreive the Processor(BSP) features. */
