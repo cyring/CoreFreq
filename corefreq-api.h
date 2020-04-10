@@ -701,6 +701,7 @@ typedef struct
 	} Uncore;
 
 	struct {
+		THERMAL_PARAM	Param;
 		unsigned int	Sensor;
 	enum THERM_PWR_EVENTS	Events;
 		RAPL_POWER_UNIT Unit;

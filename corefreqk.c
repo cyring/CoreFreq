@@ -3708,12 +3708,12 @@ void Compute_AMD_Zen_Boost(void)
 
 	if (pSpecific != NULL) {
 		/* Save thermal parameters for later use in the Daemon	*/
-		Arch[Proc->ArchID].Specific[0].Param = pSpecific->Param;
+		Proc->PowerThermal.Param = pSpecific->Param;
 		/* Override Processor CodeName & Locking capabilities	*/
 		OverrideCodeNameString(pSpecific);
 		OverrideUnlockCapability(pSpecific);
 	} else {
-		Arch[Proc->ArchID].Specific[0].Param.Target = 0;
+		Proc->PowerThermal.Param.Target = 0;
 	}
 	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++)
 		Proc->Boost[pstate] = 0;
@@ -5853,7 +5853,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Query_AMD_Zen(Core);
 
-	Core->PowerThermal.Param = Arch[Proc->ArchID].Specific[0].Param;
+	Core->PowerThermal.Param = Proc->PowerThermal.Param;
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
