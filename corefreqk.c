@@ -1285,7 +1285,7 @@ static void Map_AMD_Topology(void *arg)
 
 	struct CPUID_0x00000001_EBX leaf1_ebx = {0};
 
-	CPUID_0x80000008 leaf80000008 = {{0}};
+	CPUID_0x80000008 leaf80000008 = {0};
 
 	Cache_Topology(Core);
 
@@ -1387,8 +1387,8 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Family_18h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
-		struct CACHE_INFO CacheInfo = {{{0}}};
-		CPUID_0x8000001e leaf8000001e = {{0}};
+		struct CACHE_INFO CacheInfo = {0};
+		CPUID_0x8000001e leaf8000001e = {0};
 
 		/* Fn8000_001D Cache Properties. */
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
@@ -4718,8 +4718,7 @@ void PowerThermal(CORE *Core)
 	struct SIGNATURE Arch;
 	unsigned short	grantPWR_MGMT	:  1-0,
 			grantODCM	:  2-1,
-			experimental	:  3-2,
-			freeToUse	: 16-3;
+			experimental	:  3-2;
   } whiteList[] = {
 	{_Core_Yonah,		0, 1, 1},
 	{_Core_Conroe,		0, 1, 0},
@@ -4792,7 +4791,7 @@ void PowerThermal(CORE *Core)
   }
   if (Proc->Features.Info.LargestStdFunc >= 0x6)
   {
-    struct THERMAL_POWER_LEAF Power = {{0}};
+    struct THERMAL_POWER_LEAF Power = {0};
 
     __asm__ volatile
     (

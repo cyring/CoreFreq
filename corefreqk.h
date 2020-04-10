@@ -1904,7 +1904,7 @@ static PROCESSOR_SPECIFIC Void_Specific[] = {
 	{
 	.Brand = NULL,
 	.Boost = {0, 0},
-	.Param = {0, .Offset = { 0, 0}},
+	.Param.Offset = { 0, 0},
 	.CodeNameIdx = 0,
 	.TgtRatioUnlocked = 0,
 	.ClkRatioUnlocked = 0,
