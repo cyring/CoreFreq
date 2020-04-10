@@ -10867,7 +10867,8 @@ static int __init CoreFreqK_init(void)
 		memcpy(&Proc->Features, iArg.Features, sizeof(FEATURES));
 
 		/* Initialize default uArch's codename with the CPUID brand. */
-		Arch[0].Architecture->CodeName = Proc->Features.Info.Vendor.ID;
+		Arch[GenuineArch].Architecture->CodeName = \
+						Proc->Features.Info.Vendor.ID;
 
 		publicSize  = ROUND_TO_PAGES(sizeof(CORE));
 		privateSize = ROUND_TO_PAGES(sizeof(JOIN));
@@ -10915,54 +10916,48 @@ static int __init CoreFreqK_init(void)
 		    switch (Proc->Features.Info.Vendor.CRC)
 		    {
 		    case CRC_INTEL: {
-			Arch[0].Query	= Query_GenuineIntel;
-			Arch[0].Update	= PerCore_Intel_Query;
-			Arch[0].Start	= Start_GenuineIntel;
-			Arch[0].Stop	= Stop_GenuineIntel;
-			Arch[0].Timer	= InitTimer_GenuineIntel;
-			Arch[0].BaseClock= BaseClock_GenuineIntel;
+			Arch[GenuineArch].Query	= Query_GenuineIntel;
+			Arch[GenuineArch].Update= PerCore_Intel_Query;
+			Arch[GenuineArch].Start	= Start_GenuineIntel;
+			Arch[GenuineArch].Stop	= Stop_GenuineIntel;
+			Arch[GenuineArch].Timer	= InitTimer_GenuineIntel;
+			Arch[GenuineArch].BaseClock = BaseClock_GenuineIntel;
 
-			Arch[0].thermalFormula = THERMAL_FORMULA_INTEL;
+			Arch[GenuineArch].thermalFormula=THERMAL_FORMULA_INTEL;
 
-			Arch[0].voltageFormula = VOLTAGE_FORMULA_INTEL;
+			Arch[GenuineArch].voltageFormula=VOLTAGE_FORMULA_INTEL;
 
-			Arch[0].powerFormula = POWER_FORMULA_INTEL;
+			Arch[GenuineArch].powerFormula = POWER_FORMULA_INTEL;
 			}
 			break;
 		    case CRC_HYGON:
 			/* Fallthrough */
 		    case CRC_AMD: {
-			Arch[0].Query	= Query_AuthenticAMD;
-			Arch[0].Update	= PerCore_AuthenticAMD_Query;
-			Arch[0].Start	= Start_AuthenticAMD;
-			Arch[0].Stop	= Stop_AuthenticAMD;
-			Arch[0].Timer	= InitTimer_AuthenticAMD;
-			Arch[0].BaseClock= BaseClock_AuthenticAMD;
+			Arch[GenuineArch].Query	= Query_AuthenticAMD;
+			Arch[GenuineArch].Update= PerCore_AuthenticAMD_Query;
+			Arch[GenuineArch].Start	= Start_AuthenticAMD;
+			Arch[GenuineArch].Stop	= Stop_AuthenticAMD;
+			Arch[GenuineArch].Timer	= InitTimer_AuthenticAMD;
+			Arch[GenuineArch].BaseClock = BaseClock_AuthenticAMD;
 
-			Arch[0].thermalFormula = THERMAL_FORMULA_AMD;
+			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_AMD;
 
-			Arch[0].voltageFormula = VOLTAGE_FORMULA_AMD;
+			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_AMD;
 
-			Arch[0].powerFormula = POWER_FORMULA_AMD;
+			Arch[GenuineArch].powerFormula = POWER_FORMULA_AMD;
 			}
 			break;
 		    }
 		#ifdef CONFIG_XEN
 		    if (xen_pv_domain() || xen_hvm_domain())
 		    {
-			if (ArchID == -1)
-				ArchID = SearchArchitectureID();
-
-			if (Proc->Features.Std.ECX.Hyperv == 0)
+			if (Proc->Features.Std.ECX.Hyperv == 0) {
 				Proc->Features.Std.ECX.Hyperv = 1;
-
+			}
 			Proc->HypervisorID = HYPERV_XEN;
 		    }
 		#endif /* CONFIG_XEN */
-		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
-		    {
-			ArchID = 0;
-		    }
+			/* Is an architecture identifier requested by user ? */
 		    if((ArchID != -1)&&(ArchID >= 0)&&(ArchID < ARCHITECTURES))
 		    {
 			Proc->ArchID = ArchID;
@@ -10971,6 +10966,17 @@ static int __init CoreFreqK_init(void)
 		    {
 			Proc->ArchID = SearchArchitectureID();
 		    }
+			/* Set the uArch's name with the first found codename*/
+			StrCopy(Proc->Architecture,
+				Arch[Proc->ArchID].Architecture[0].CodeName,
+				CODENAME_LEN);
+			/* Check if the Processor is actually virtualized ? */
+		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
+		    {	/* Xen virtualizes correctly the MSR & PCI registers */
+			if (Proc->HypervisorID != HYPERV_XEN) {
+				Proc->ArchID = GenuineArch;
+			}
+		    }
 			Proc->thermalFormula=Arch[Proc->ArchID].thermalFormula;
 			Proc->voltageFormula=Arch[Proc->ArchID].voltageFormula;
 			Proc->powerFormula = Arch[Proc->ArchID].powerFormula;
@@ -10978,11 +10984,6 @@ static int __init CoreFreqK_init(void)
 			CoreFreqK_Thermal_Scope(ThermalScope);
 			CoreFreqK_Voltage_Scope(VoltageScope);
 			CoreFreqK_Power_Scope(PowerScope);
-
-			/* Set the uArch's name with the first found codename */
-			StrCopy(Proc->Architecture,
-				Arch[Proc->ArchID].Architecture[0].CodeName,
-				CODENAME_LEN);
 
 			/* Copy various SMBIOS data [version 3.2]	*/
 			SMBIOS_Collect();
