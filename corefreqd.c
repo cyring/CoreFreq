@@ -712,14 +712,20 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 };
 
 void Core_ComputePowerLimits(CPU_STRUCT *Cpu, double Energy, double Power)
-{	/* Per Core, computes the Min and Max CPU energy & power consumed. */
-	if (Energy && Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST]) {
+{	/* Per Core, computes the Min and Max CPU Energy consumed.	*/
+    if (((Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] == 0.0) && (Energy != 0.0))
+    || ((Energy != 0.0) && (Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST])))
+	{
 		Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] = Energy;
 	}
+
 	if (Energy > Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]) {
 		Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST] = Energy;
 	}
-	if (Power && Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST]) {
+	/* Per Core, computes the Min and Max CPU Power consumed.	*/
+    if (((Cpu->Sensors.Power.Limit[SENSOR_LOWEST] == 0.0) && (Power != 0.0))
+    || ((Power != 0.0) && (Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST])))
+	{
 		Cpu->Sensors.Power.Limit[SENSOR_LOWEST] = Power;
 	}
 	if (Power > Cpu->Sensors.Power.Limit[SENSOR_HIGHEST]) {
