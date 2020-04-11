@@ -255,6 +255,47 @@ static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
 
+unsigned int VendorFromCPUID( char *pString,	unsigned long leaf,
+						unsigned long subLeaf )
+{
+	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
+
+	__asm__ volatile
+	(
+		"movq	%4, %%rax	\n\t"
+		"movq	%5, %%rcx	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (eax),
+		  "=r" (ebx),
+		  "=r" (ecx),
+		  "=r" (edx)
+		: "ir" (leaf),
+		  "ir" (subLeaf)
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	pString[ 0] = ebx;
+	pString[ 1] = (ebx >> 8);
+	pString[ 2] = (ebx >> 16);
+	pString[ 3] = (ebx >> 24);
+	pString[ 4] = edx;
+	pString[ 5] = (edx >> 8);
+	pString[ 6] = (edx >> 16);
+	pString[ 7] = (edx >> 24);
+	pString[ 8] = ecx;
+	pString[ 9] = (ecx >> 8);
+	pString[10] = (ecx >> 16);
+	pString[11] = (ecx >> 24);
+	pString[12] = '\0';
+
+	return (eax);
+}
+
 signed int SearchArchitectureID(void)
 {
 	signed int id;
@@ -309,7 +350,7 @@ void BrandFromCPUID(char *buffer)
 			  "=r"  (Brand.BX),
 			  "=r"  (Brand.CX),
 			  "=r"  (Brand.DX)
-			: "r"   (0x80000002 + ix)
+			: "r"   (0x80000002LU + ix)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 		for (jx = 0; jx < 4; jx++, px++) {
@@ -380,51 +421,25 @@ void AMD_Brand(char *pBrand)
 
 /* Retreive the Processor(BSP) features. */
 static void Query_Features(void *pArg)
-{
+{	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
-
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
 
-	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
-	__asm__ volatile
-	(
-		"xorq	%%rax, %%rax	\n\t"
-		"xorq	%%rbx, %%rbx	\n\t"
-		"xorq	%%rcx, %%rcx	\n\t"
-		"xorq	%%rdx, %%rdx	\n\t"
-		"cpuid			\n\t"
-		"mov	%%eax, %0	\n\t"
-		"mov	%%ebx, %1	\n\t"
-		"mov	%%ecx, %2	\n\t"
-		"mov	%%edx, %3"
-		: "=r" (iArg->Features->Info.LargestStdFunc),
-		  "=r" (ebx),
-		  "=r" (ecx),
-		  "=r" (edx)
-		:
-		: "%rax", "%rbx", "%rcx", "%rdx"
-	);
-	iArg->Features->Info.Vendor.ID[ 0] = ebx;
-	iArg->Features->Info.Vendor.ID[ 1] = (ebx >> 8);
-	iArg->Features->Info.Vendor.ID[ 2] = (ebx >> 16);
-	iArg->Features->Info.Vendor.ID[ 3] = (ebx >> 24);
-	iArg->Features->Info.Vendor.ID[ 4] = edx;
-	iArg->Features->Info.Vendor.ID[ 5] = (edx >> 8);
-	iArg->Features->Info.Vendor.ID[ 6] = (edx >> 16);
-	iArg->Features->Info.Vendor.ID[ 7] = (edx >> 24);
-	iArg->Features->Info.Vendor.ID[ 8] = ecx;
-	iArg->Features->Info.Vendor.ID[ 9] = (ecx >> 8);
-	iArg->Features->Info.Vendor.ID[10] = (ecx >> 16);
-	iArg->Features->Info.Vendor.ID[11] = (ecx >> 24);
-	iArg->Features->Info.Vendor.ID[12] = '\0';
+	iArg->Features->Info.LargestStdFunc = \
+		VendorFromCPUID(iArg->Features->Info.Vendor.ID, 0x0LU, 0x0LU);
 
 	if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_INTEL, 12))
+	{
 		iArg->Features->Info.Vendor.CRC = CRC_INTEL;
+	}
 	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_AMD, 12))
+	{
 		iArg->Features->Info.Vendor.CRC = CRC_AMD;
+	}
 	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_HYGON, 12))
+	{
 		iArg->Features->Info.Vendor.CRC = CRC_HYGON;
-	else {
+	} else {
 		iArg->rc = -ENXIO;
 		return;
 	}
@@ -447,6 +462,7 @@ static void Query_Features(void *pArg)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
+
 	if (iArg->Features->Info.LargestStdFunc >= 0x5) {
 		__asm__ volatile
 		(
@@ -689,6 +705,45 @@ static void Query_Features(void *pArg)
 	    }
 		AMD_Brand(iArg->Features->Info.Brand);
 	}
+}
+
+static void Query_Hypervisor(void)
+{
+	memset(Proc->Features.Info.Hypervisor.ID, 0x0, 12 + 4);
+
+	Proc->Features.Info.Hypervisor.CRC = 0;
+	Proc->HypervisorID = HYPERV_BARE;
+
+#ifdef CONFIG_XEN
+	if (xen_pv_domain() || xen_hvm_domain())
+	{
+		if (Proc->Features.Std.ECX.Hyperv == 0) {
+			Proc->Features.Std.ECX.Hyperv = 1;
+		}
+		Proc->HypervisorID = HYPERV_XEN;
+	}
+#endif /* CONFIG_XEN */
+
+    if (Proc->Features.Std.ECX.Hyperv == 1)
+    {
+	VendorFromCPUID(Proc->Features.Info.Hypervisor.ID, 0x40000000LU, 0x0);
+
+	if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_KVM, 12))
+	{
+		Proc->Features.Info.Hypervisor.CRC = CRC_KVM;
+		Proc->HypervisorID = HYPERV_KVM;
+	}
+	else if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_VBOX, 12))
+	{
+		Proc->Features.Info.Hypervisor.CRC = CRC_VBOX;
+		Proc->HypervisorID = HYPERV_VBOX;
+	}
+	else if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_KBOX, 5))
+	{
+		Proc->Features.Info.Hypervisor.CRC = CRC_KBOX;
+		Proc->HypervisorID = HYPERV_KBOX;
+	}
+    }
 }
 
 void Compute_Interval(void)
@@ -3708,9 +3763,9 @@ void Compute_AMD_Zen_Boost(void)
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
-	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++)
+	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
 		Proc->Boost[pstate] = 0;
-
+	}
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
 	Proc->Boost[BOOST(MIN)] = 4;
 	/* Loop over all frequency ids. */
@@ -10940,15 +10995,6 @@ static int __init CoreFreqK_init(void)
 			}
 			break;
 		    }
-		#ifdef CONFIG_XEN
-		    if (xen_pv_domain() || xen_hvm_domain())
-		    {
-			if (Proc->Features.Std.ECX.Hyperv == 0) {
-				Proc->Features.Std.ECX.Hyperv = 1;
-			}
-			Proc->HypervisorID = HYPERV_XEN;
-		    }
-		#endif /* CONFIG_XEN */
 			/* Is an architecture identifier requested by user ? */
 		    if((ArchID != -1)&&(ArchID >= 0)&&(ArchID < ARCHITECTURES))
 		    {
@@ -10962,11 +11008,23 @@ static int __init CoreFreqK_init(void)
 			StrCopy(Proc->Architecture,
 				Arch[Proc->ArchID].Architecture[0].CodeName,
 				CODENAME_LEN);
+
 			/* Check if the Processor is actually virtualized ? */
+			Query_Hypervisor();
+
 		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
-		    {	/* Xen virtualizes correctly the MSR & PCI registers */
-			if (Proc->HypervisorID != HYPERV_XEN) {
+		    {
+			switch (Proc->HypervisorID) {
+			case HYPERV_BARE:
+			case HYPERV_KVM:
+			case HYPERV_VBOX:
+			case HYPERV_KBOX:
+			case HYPERVISORS:
 				Proc->ArchID = GenuineArch;
+				break;
+			case HYPERV_XEN:
+			/* Xen virtualizes correctly the MSR & PCI registers */
+				break;
 			}
 		    }
 			Proc->thermalFormula=Arch[Proc->ArchID].thermalFormula;

@@ -360,6 +360,15 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_string(&s, Shm->Proc.Features.Info.Vendor.ID);
 					json_end_object(&s);
 				}
+				json_key(&s, "Hypervisor");
+				{
+					json_start_object(&s);
+					json_key(&s, "CRC");
+					json_literal(&s, "%u", Shm->Proc.Features.Info.Hypervisor.CRC);
+					json_key(&s, "ID");
+					json_string(&s, Shm->Proc.Features.Info.Hypervisor.ID);
+					json_end_object(&s);
+				}
 
 				json_end_object(&s);
 			}
@@ -1229,6 +1238,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 			json_end_object(&s);
 		}
+		json_key(&s, "HypervisorID");
+		json_literal(&s, "%llu", Shm->Proc.HypervisorID);
 		json_key(&s, "PowerNow");
 		json_literal(&s, "%llu", Shm->Proc.PowerNow);
 		json_key(&s, "Technology");

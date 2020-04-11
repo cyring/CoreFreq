@@ -1529,7 +1529,8 @@ char *Hypervisor[HYPERVISORS] = {
 	[HYPERV_BARE]	= "    ",
 	[HYPERV_XEN]	= " Xen",
 	[HYPERV_KVM]	= " KVM",
-	[HYPERV_VBOX]	= "VBOX"
+	[HYPERV_VBOX]	= "VBOX",
+	[HYPERV_KBOX]	= "KBOX"
 };
 
 REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
