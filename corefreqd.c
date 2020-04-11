@@ -5217,6 +5217,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		Shm->Sleep.sliceWaiting = TIMESPEC(CHILD_TH_MS);
 
 		REF Ref = {
+			.Signal		= {{0}},
 			.CPID		= -1,
 			.KID		= 0,
 			.Started	= 0,
@@ -5228,7 +5229,6 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 			.Core		= Core,
 			.SysGate	= NULL
 		};
-		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, Proc);
 		Uncore(Shm, Proc, Core[Proc->Service.Core]);

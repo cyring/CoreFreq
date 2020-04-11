@@ -16,7 +16,6 @@ MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
 
 obj-m := corefreqk.o
 ccflags-y := -D FEAT_DBG=$(FEAT_DBG) -D TASK_ORDER=$(TASK_ORDER)
-ccflags-y += $(WARNING)
 
 ifneq ($(OPTIM_LVL),)
 	OPTIM_FLG = -O$(OPTIM_LVL)
