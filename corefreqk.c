@@ -258,8 +258,8 @@ static ktime_t RearmTheTimer;
 signed int SearchArchitectureID(void)
 {
 	signed int id;
-    for (id = ARCHITECTURES - 1; id > 0; id--) {
-	/* Search for an architecture signature. */
+    for (id = ARCHITECTURES - 1; id > 0; id--)
+    {	/* Search for an architecture signature. */
 	if((Proc->Features.Std.EAX.ExtFamily == Arch[id].Signature.ExtFamily)
 	&& (Proc->Features.Std.EAX.Family == Arch[id].Signature.Family)
 	&& (((Proc->Features.Std.EAX.ExtModel ==  Arch[id].Signature.ExtModel)
@@ -287,16 +287,14 @@ void BrandCleanup(char *pBrand, char inOrder[])
 	}
 }
 
-unsigned int Intel_Brand(char *pBrand)
+void BrandFromCPUID(char *buffer)
 {
-	char idBuffer[48 + 4];
-	unsigned long ix, jx , px = 0;
-	unsigned int frequency = 0, multiplier = 0;
 	BRAND Brand;
+	unsigned long ix;
+	unsigned int jx , px = 0;
 
-	memset(idBuffer, 0x20, 48 + 4);
-	for (ix = 0; ix < 3; ix++) {
-		__asm__ volatile
+	for (ix = 0; ix < 3; ix++)
+	{	__asm__ volatile
 		(
 			"movq	%4,    %%rax	\n\t"
 			"xorq	%%rbx, %%rbx	\n\t"
@@ -315,16 +313,28 @@ unsigned int Intel_Brand(char *pBrand)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 		for (jx = 0; jx < 4; jx++, px++) {
-			idBuffer[px     ] = Brand.AX.Chr[jx];
-			idBuffer[px +  4] = Brand.BX.Chr[jx];
-			idBuffer[px +  8] = Brand.CX.Chr[jx];
-			idBuffer[px + 12] = Brand.DX.Chr[jx];
+			buffer[px     ] = Brand.AX.Chr[jx];
+			buffer[px +  4] = Brand.BX.Chr[jx];
+			buffer[px +  8] = Brand.CX.Chr[jx];
+			buffer[px + 12] = Brand.DX.Chr[jx];
 		}
 		px += 12;
 	}
+}
+
+unsigned int Intel_Brand(char *pBrand)
+{
+	unsigned int ix, frequency = 0, multiplier = 0;
+
+	char buffer[48 + 4];
+	memset(buffer, 0x20, 48 + 4);
+
+	BrandFromCPUID(buffer);
+
 	for (ix = 0; ix < 46; ix++)
-		if ((idBuffer[ix+1] == 'H') && (idBuffer[ix+2] == 'z')) {
-			switch (idBuffer[ix]) {
+	{
+		if ((buffer[ix + 1] == 'H') && (buffer[ix + 2] == 'z')) {
+			switch (buffer[ix]) {
 			case 'M':
 					multiplier = 1;
 				break;
@@ -337,61 +347,35 @@ unsigned int Intel_Brand(char *pBrand)
 			}
 			break;
 		}
-	if (multiplier > 0) {
-	    if (idBuffer[ix-3] == '.') {
-		frequency  = (int) (idBuffer[ix-4] - '0') * multiplier;
-		frequency += (int) (idBuffer[ix-2] - '0') * (multiplier / 10);
-		frequency += (int) (idBuffer[ix-1] - '0') * (multiplier / 100);
+	}
+	if (multiplier > 0)
+	{
+	    if (buffer[ix - 3] == '.') {
+		frequency  = (int) (buffer[ix - 4] - '0') * multiplier;
+		frequency += (int) (buffer[ix - 2] - '0') * (multiplier / 10);
+		frequency += (int) (buffer[ix - 1] - '0') * (multiplier / 100);
 	    } else {
-		frequency  = (int) (idBuffer[ix-4] - '0') * 1000;
-		frequency += (int) (idBuffer[ix-3] - '0') * 100;
-		frequency += (int) (idBuffer[ix-2] - '0') * 10;
-		frequency += (int) (idBuffer[ix-1] - '0');
+		frequency  = (int) (buffer[ix - 4] - '0') * 1000;
+		frequency += (int) (buffer[ix - 3] - '0') * 100;
+		frequency += (int) (buffer[ix - 2] - '0') * 10;
+		frequency += (int) (buffer[ix - 1] - '0');
 		frequency *= frequency;
 	    }
 	}
 
-	BrandCleanup(pBrand, idBuffer);
+	BrandCleanup(pBrand, buffer);
 
 	return (frequency);
 }
 
 void AMD_Brand(char *pBrand)
 {
-	char idBuffer[48 + 4];
-	unsigned long ix, jx, px = 0;
-	BRAND Brand;
+	char buffer[48 + 4];
+	memset(buffer, 0x20, 48 + 4);
 
-	memset(idBuffer, 0x20, 48 + 4);
-	for (ix = 0; ix < 3; ix++) {
-		__asm__ volatile
-		(
-			"movq	%4,    %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r"  (Brand.AX),
-			  "=r"  (Brand.BX),
-			  "=r"  (Brand.CX),
-			  "=r"  (Brand.DX)
-			: "r"   (0x80000002 + ix)
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-		for (jx = 0; jx < 4; jx++, px++) {
-			idBuffer[px     ] = Brand.AX.Chr[jx];
-			idBuffer[px +  4] = Brand.BX.Chr[jx];
-			idBuffer[px +  8] = Brand.CX.Chr[jx];
-			idBuffer[px + 12] = Brand.DX.Chr[jx];
-		}
-		px += 12;
-	}
+	BrandFromCPUID(buffer);
 
-	BrandCleanup(pBrand, idBuffer);
+	BrandCleanup(pBrand, buffer);
 }
 
 /* Retreive the Processor(BSP) features. */
