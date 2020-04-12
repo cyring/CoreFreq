@@ -4760,65 +4760,65 @@ void PowerThermal(CORE *Core)
 			experimental	:  3-2,
 			freeToUse	: 16-3;
   } whiteList[] = {
-	{_Core_Yonah,		0, 1, 1},
-	{_Core_Conroe,		0, 1, 0},
-	{_Core_Kentsfield,	0, 1, 1},
-	{_Core_Conroe_616,	0, 1, 1},
-	{_Core_Penryn,		0, 1, 0},
-	{_Core_Dunnington,	0, 1, 1},
+	{_Core_Yonah,		0, 1, 1, 0},
+	{_Core_Conroe,		0, 1, 0, 0},
+	{_Core_Kentsfield,	0, 1, 1, 0},
+	{_Core_Conroe_616,	0, 1, 1, 0},
+	{_Core_Penryn,		0, 1, 0, 0},
+	{_Core_Dunnington,	0, 1, 1, 0},
 
-	{_Atom_Bonnell ,	0, 1, 1},	/* 06_1C */
-	{_Atom_Silvermont,	0, 1, 1},	/* 06_26 */
-	{_Atom_Lincroft,	0, 1, 1},	/* 06_27 */
-	{_Atom_Clovertrail,	0, 1, 1},	/* 06_35 */
-	{_Atom_Saltwell,	0, 1, 1},	/* 06_36 */
+	{_Atom_Bonnell ,	0, 1, 1, 0},	/* 06_1C */
+	{_Atom_Silvermont,	0, 1, 1, 0},	/* 06_26 */
+	{_Atom_Lincroft,	0, 1, 1, 0},	/* 06_27 */
+	{_Atom_Clovertrail,	0, 1, 1, 0},	/* 06_35 */
+	{_Atom_Saltwell,	0, 1, 1, 0},	/* 06_36 */
 
-	{_Silvermont_637,	0, 1, 1},	/* 06_37 */
+	{_Silvermont_637,	0, 1, 1, 0},	/* 06_37 */
 
-	{_Atom_Avoton,		0, 1, 1},	/* 06_4D */
-	{_Atom_Airmont ,	0, 0, 1},	/* 06_4C */
-	{_Atom_Goldmont,	1, 0, 1},	/* 06_5C */
-	{_Atom_Sofia,		0, 1, 1},	/* 06_5D */
-	{_Atom_Merrifield,	0, 1, 1},	/* 06_4A */
-	{_Atom_Moorefield,	0, 1, 1},	/* 06_5A */
+	{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
+	{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
+	{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
+	{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
+	{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
+	{_Atom_Moorefield,	0, 1, 1, 0},	/* 06_5A */
 
-	{_Nehalem_Bloomfield,	1, 1, 0},	/* 06_1A */
-	{_Nehalem_Lynnfield,	1, 1, 0},	/* 06_1E */
-	{_Nehalem_MB,		1, 1, 0},	/* 06_1F */
-	{_Nehalem_EX,		1, 1, 0},	/* 06_2E */
+	{_Nehalem_Bloomfield,	1, 1, 0, 0},	/* 06_1A */
+	{_Nehalem_Lynnfield,	1, 1, 0, 0},	/* 06_1E */
+	{_Nehalem_MB,		1, 1, 0, 0},	/* 06_1F */
+	{_Nehalem_EX,		1, 1, 0, 0},	/* 06_2E */
 
-	{_Westmere,		1, 1, 0},	/* 06_25 */
-	{_Westmere_EP,		1, 1, 0},	/* 06_2C */
-	{_Westmere_EX,		1, 1, 0},	/* 06_2F */
+	{_Westmere,		1, 1, 0, 0},	/* 06_25 */
+	{_Westmere_EP,		1, 1, 0, 0},	/* 06_2C */
+	{_Westmere_EX,		1, 1, 0, 0},	/* 06_2F */
 
-	{_SandyBridge,		1, 1, 0},	/* 06_2A */
-	{_SandyBridge_EP,	1, 1, 0},	/* 06_2D */
+	{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
+	{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
 
-	{_IvyBridge,		1, 0, 1},	/* 06_3A */
-	{_IvyBridge_EP ,	1, 1, 0},	/* 06_3E */
+	{_IvyBridge,		1, 0, 1, 0},	/* 06_3A */
+	{_IvyBridge_EP ,	1, 1, 0, 0},	/* 06_3E */
 
-	{_Haswell_DT,		1, 1, 0},	/* 06_3C */
-	{_Haswell_EP,		1, 1, 1},	/* 06_3F */
-	{_Haswell_ULT,		1, 1, 1},	/* 06_45 */
-	{_Haswell_ULX,		1, 1, 1},	/* 06_46 */
+	{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
+	{_Haswell_EP,		1, 1, 1, 0},	/* 06_3F */
+	{_Haswell_ULT,		1, 1, 1, 0},	/* 06_45 */
+	{_Haswell_ULX,		1, 1, 1, 0},	/* 06_46 */
 
-	{_Broadwell,		1, 1, 1},	/* 06_3D */
-	{_Broadwell_D,		1, 1, 1},	/* 06_56 */
-	{_Broadwell_H,		1, 1, 1},	/* 06_47 */
-	{_Broadwell_EP ,	1, 1, 1},	/* 06_4F */
+	{_Broadwell,		1, 1, 1, 0},	/* 06_3D */
+	{_Broadwell_D,		1, 1, 1, 0},	/* 06_56 */
+	{_Broadwell_H,		1, 1, 1, 0},	/* 06_47 */
+	{_Broadwell_EP ,	1, 1, 1, 0},	/* 06_4F */
 
-	{_Skylake_UY,		1, 1, 1},	/* 06_4E */
-	{_Skylake_S,		1, 0, 0},	/* 06_5E */
-	{_Skylake_X,		1, 1, 1},	/* 06_55 */
+	{_Skylake_UY,		1, 1, 1, 0},	/* 06_4E */
+	{_Skylake_S,		1, 0, 0, 0},	/* 06_5E */
+	{_Skylake_X,		1, 1, 1, 0},	/* 06_55 */
 
-	{_Xeon_Phi,		0, 1, 1},	/* 06_57 */
+	{_Xeon_Phi,		0, 1, 1, 0},	/* 06_57 */
 
-	{_Kabylake,		1, 0, 1},	/* 06_9E */
-	{_Kabylake_UY,		1, 1, 1},	/* 06_8E */
+	{_Kabylake,		1, 0, 1, 0},	/* 06_9E */
+	{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
 
-	{_Cannonlake,		1, 1, 1},	/* 06_66 */
-	{_Geminilake,		1, 0, 1},	/* 06_7A */
-	{_Icelake_UY,		1, 1, 1},	/* 06_7E */
+	{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
+	{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
+	{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
   };
   unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
   for (id = 0; id < ids; id++) {

@@ -1630,7 +1630,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 #endif /* CONFIG_AMD_NB */
 
 
-static MICRO_ARCH Arch_Void[] = {{NULL}};
+static MICRO_ARCH Arch_Void[] = {{NULL}, {NULL}};
 
 static MICRO_ARCH Arch_Core_Yonah[]	= {{"Core/Yonah"}	, {NULL}};
 static MICRO_ARCH Arch_Core_Conroe[]	= {{"Core2/Conroe/Merom"},{NULL}};
@@ -1900,19 +1900,7 @@ static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
 
 static MICRO_ARCH Arch_AMD_Family_18h[] = {{"Dhyana"}, {NULL}};
 
-static PROCESSOR_SPECIFIC Void_Specific[] = {
-	{
-	.Brand = NULL,
-	.Boost = {0, 0},
-	.Param = {0, .Offset = { 0, 0}},
-	.CodeNameIdx = 0,
-	.TgtRatioUnlocked = 0,
-	.ClkRatioUnlocked = 0,
-	.TurboUnlocked = 0,
-	.UncoreUnlocked = 0,
-	.Latch = LATCH_NONE
-	}
-};
+static PROCESSOR_SPECIFIC Void_Specific[] = { {0} };
 
 static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 /* Yorkfield
