@@ -9038,6 +9038,8 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
 					- Core->Counter[0].Power.ACCU;
 
+		Core->Delta.Power.ACCU &= 0xffffffff;
+
 		Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
 	    }
 		Delta_INST(Core);
