@@ -4024,6 +4024,14 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 		break;
 	}
 	/* Fallthrough */
+    case AMD_Zen:
+    case AMD_Zen_APU:
+    case AMD_ZenPlus:
+    case AMD_ZenPlus_APU:
+    case AMD_EPYC_Rome:
+    case AMD_Zen2_CPK:
+    case AMD_Zen2_APU:
+    case AMD_Zen2_MTS:
     case AMD_Family_17h:
     case AMD_Family_18h:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */

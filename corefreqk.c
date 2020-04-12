@@ -1422,6 +1422,14 @@ static void Map_AMD_Topology(void *arg)
 	    }
 */
 	    break;
+	case AMD_Zen:
+	case AMD_Zen_APU:
+	case AMD_ZenPlus:
+	case AMD_ZenPlus_APU:
+	case AMD_EPYC_Rome:
+	case AMD_Zen2_CPK:
+	case AMD_Zen2_APU:
+	case AMD_Zen2_MTS:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
@@ -10239,9 +10247,20 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				Aggregate_Reset(BOOST(HWP_TGT), 0);
 				Controller_Start(1);
 				TurboBoost_Enable = -1;
-				if((Proc->ArchID == AMD_Family_17h)
-				|| (Proc->ArchID == AMD_Family_18h)) {
+
+				switch (Proc->ArchID) {
+				case AMD_Zen:
+				case AMD_Zen_APU:
+				case AMD_ZenPlus:
+				case AMD_ZenPlus_APU:
+				case AMD_EPYC_Rome:
+				case AMD_Zen2_CPK:
+				case AMD_Zen2_APU:
+				case AMD_Zen2_MTS:
+				case AMD_Family_17h:
+				case AMD_Family_18h:
 					Compute_AMD_Zen_Boost();
+					break;
 				}
 			#ifdef CONFIG_CPU_FREQ
 				Policy_Aggregate_Turbo();
