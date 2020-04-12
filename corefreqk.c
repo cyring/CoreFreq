@@ -1324,7 +1324,9 @@ static void Map_AMD_Topology(void *arg)
 
 	struct CPUID_0x00000001_EBX leaf1_ebx = {0};
 
-	CPUID_0x80000008 leaf80000008 = {{0}};
+	CPUID_0x80000008 leaf80000008 = {
+		.EAX = {0}, .EBX = {0}, .ECX = {0}, .EDX = {0}
+	};
 
 	Cache_Topology(Core);
 
@@ -1434,9 +1436,12 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Family_18h:
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
-		struct CACHE_INFO CacheInfo = {{{0}}};
-		CPUID_0x8000001e leaf8000001e = {{0}};
-
+		struct CACHE_INFO CacheInfo = {
+			.AX = 0, .BX = 0, .CX = 0, .DX = 0, .Size = 0
+		};
+		CPUID_0x8000001e leaf8000001e = {
+			.EAX = {0}, .EBX = {{0}}, .ECX = {0}, .EDX = {0}
+		};
 		/* Fn8000_001D Cache Properties. */
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
 		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
@@ -4839,7 +4844,9 @@ void PowerThermal(CORE *Core)
   }
   if (Proc->Features.Info.LargestStdFunc >= 0x6)
   {
-    struct THERMAL_POWER_LEAF Power = {{0}};
+    struct THERMAL_POWER_LEAF Power = {
+	.EAX = {0}, .EBX = {0}, .ECX = {{0}}, .EDX = {0}
+    };
 
     __asm__ volatile
     (
@@ -6763,7 +6770,7 @@ void Core_AMD_Family_0Fh_Temp(CORE *Core)
 
 void Core_AMD_Family_15h_Temp(CORE *Core)
 {
-	TCTL_REGISTER TctlSensor = {0};
+	TCTL_REGISTER TctlSensor = {.value = 0};
 
 	RDPCI(TctlSensor, PCI_AMD_TEMPERATURE_TCTL);
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
