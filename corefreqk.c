@@ -255,9 +255,24 @@ static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
 
-unsigned int VendorFromCPUID( char *pString,	unsigned long leaf,
-						unsigned long subLeaf )
+void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
+			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
+			unsigned long leaf, unsigned long subLeaf )
 {
+    struct {
+		char		*vendorID;
+		size_t		vendorLen;
+		unsigned int	mfrCRC;
+		enum HYPERVISOR hypervisor;
+    } mfrTbl[] = {
+	{VENDOR_INTEL ,__builtin_strlen(VENDOR_INTEL) ,CRC_INTEL ,  BARE_METAL},
+	{VENDOR_AMD   ,__builtin_strlen(VENDOR_AMD)   ,CRC_AMD   ,  BARE_METAL},
+	{VENDOR_HYGON ,__builtin_strlen(VENDOR_HYGON) ,CRC_HYGON ,  BARE_METAL},
+	{VENDOR_KVM   ,__builtin_strlen(VENDOR_KVM)   ,CRC_KVM   ,  HYPERV_KVM},
+	{VENDOR_VBOX  ,__builtin_strlen(VENDOR_VBOX)  ,CRC_VBOX  , HYPERV_VBOX},
+	{VENDOR_KBOX  ,__builtin_strlen(VENDOR_KBOX)  ,CRC_KBOX  , HYPERV_KBOX},
+	{VENDOR_VMWARE,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE}
+    };
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
 
 	__asm__ volatile
@@ -279,21 +294,31 @@ unsigned int VendorFromCPUID( char *pString,	unsigned long leaf,
 		  "ir" (subLeaf)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	pString[ 0] = ebx;
-	pString[ 1] = (ebx >> 8);
-	pString[ 2] = (ebx >> 16);
-	pString[ 3] = (ebx >> 24);
-	pString[ 4] = edx;
-	pString[ 5] = (edx >> 8);
-	pString[ 6] = (edx >> 16);
-	pString[ 7] = (edx >> 24);
-	pString[ 8] = ecx;
-	pString[ 9] = (ecx >> 8);
-	pString[10] = (ecx >> 16);
-	pString[11] = (ecx >> 24);
-	pString[12] = '\0';
+	pVendorID[ 0] = ebx;
+	pVendorID[ 1] = (ebx >> 8);
+	pVendorID[ 2] = (ebx >> 16);
+	pVendorID[ 3] = (ebx >> 24);
+	pVendorID[ 4] = edx;
+	pVendorID[ 5] = (edx >> 8);
+	pVendorID[ 6] = (edx >> 16);
+	pVendorID[ 7] = (edx >> 24);
+	pVendorID[ 8] = ecx;
+	pVendorID[ 9] = (ecx >> 8);
+	pVendorID[10] = (ecx >> 16);
+	pVendorID[11] = (ecx >> 24);
+	pVendorID[12] = '\0';
 
-	return (eax);
+	(*pLargestFunc) = eax;
+
+    for (eax = 0; eax < sizeof(mfrTbl) / sizeof(mfrTbl[0]); eax++) {
+	if (!strncmp(pVendorID, mfrTbl[eax].vendorID, mfrTbl[eax].vendorLen))
+	{
+		(*pCRC) = mfrTbl[eax].mfrCRC;
+		(*pHypervisor) = mfrTbl[eax].hypervisor;
+
+		return;
+	}
+    }
 }
 
 signed int SearchArchitectureID(void)
@@ -424,22 +449,15 @@ static void Query_Features(void *pArg)
 {	/* Must have x86 CPUID 0x0, 0x1, and Intel CPUID 0x4 */
 	INIT_ARG *iArg = (INIT_ARG *) pArg;
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
+	enum HYPERVISOR hypervisor = HYPERV_NONE;
 
-	iArg->Features->Info.LargestStdFunc = \
-		VendorFromCPUID(iArg->Features->Info.Vendor.ID, 0x0LU, 0x0LU);
+	VendorFromCPUID(iArg->Features->Info.Vendor.ID,
+			&iArg->Features->Info.LargestStdFunc,
+			&iArg->Features->Info.Vendor.CRC,
+			&hypervisor,
+			0x0LU, 0x0LU);
 
-	if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_INTEL, 12))
-	{
-		iArg->Features->Info.Vendor.CRC = CRC_INTEL;
-	}
-	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_AMD, 12))
-	{
-		iArg->Features->Info.Vendor.CRC = CRC_AMD;
-	}
-	else if (!strncmp(iArg->Features->Info.Vendor.ID, VENDOR_HYGON, 12))
-	{
-		iArg->Features->Info.Vendor.CRC = CRC_HYGON;
-	} else {
+	if (hypervisor != BARE_METAL) {
 		iArg->rc = -ENXIO;
 		return;
 	}
@@ -705,45 +723,6 @@ static void Query_Features(void *pArg)
 	    }
 		AMD_Brand(iArg->Features->Info.Brand);
 	}
-}
-
-static void Query_Hypervisor(void)
-{
-	memset(Proc->Features.Info.Hypervisor.ID, 0x0, 12 + 4);
-
-	Proc->Features.Info.Hypervisor.CRC = 0;
-	Proc->HypervisorID = HYPERV_BARE;
-
-#ifdef CONFIG_XEN
-	if (xen_pv_domain() || xen_hvm_domain())
-	{
-		if (Proc->Features.Std.ECX.Hyperv == 0) {
-			Proc->Features.Std.ECX.Hyperv = 1;
-		}
-		Proc->HypervisorID = HYPERV_XEN;
-	}
-#endif /* CONFIG_XEN */
-
-    if (Proc->Features.Std.ECX.Hyperv == 1)
-    {
-	VendorFromCPUID(Proc->Features.Info.Hypervisor.ID, 0x40000000LU, 0x0);
-
-	if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_KVM, 12))
-	{
-		Proc->Features.Info.Hypervisor.CRC = CRC_KVM;
-		Proc->HypervisorID = HYPERV_KVM;
-	}
-	else if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_VBOX, 12))
-	{
-		Proc->Features.Info.Hypervisor.CRC = CRC_VBOX;
-		Proc->HypervisorID = HYPERV_VBOX;
-	}
-	else if (!strncmp(Proc->Features.Info.Hypervisor.ID, VENDOR_KBOX, 5))
-	{
-		Proc->Features.Info.Hypervisor.CRC = CRC_KBOX;
-		Proc->HypervisorID = HYPERV_KBOX;
-	}
-    }
 }
 
 void Compute_Interval(void)
@@ -11039,20 +11018,35 @@ static int __init CoreFreqK_init(void)
 				CODENAME_LEN);
 
 			/* Check if the Processor is actually virtualized ? */
-			Query_Hypervisor();
+		#ifdef CONFIG_XEN
+			if (xen_pv_domain() || xen_hvm_domain())
+			{
+				if (Proc->Features.Std.ECX.Hyperv == 0) {
+					Proc->Features.Std.ECX.Hyperv = 1;
+				}
+				Proc->HypervisorID = HYPERV_XEN;
+			}
+		#endif /* CONFIG_XEN */
 
 		    if((Proc->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
 		    {
+			VendorFromCPUID(Proc->Features.Info.Hypervisor.ID,
+					&Proc->Features.Info.LargestHypFunc,
+					&Proc->Features.Info.Hypervisor.CRC,
+					&Proc->HypervisorID,
+					0x40000000LU, 0x0);
+
 			switch (Proc->HypervisorID) {
-			case HYPERV_BARE:
+			case HYPERV_NONE:
 			case HYPERV_KVM:
 			case HYPERV_VBOX:
 			case HYPERV_KBOX:
-			case HYPERVISORS:
+			case HYPERV_VMWARE:
 				Proc->ArchID = GenuineArch;
 				break;
+			case BARE_METAL:
 			case HYPERV_XEN:
-			/* Xen virtualizes correctly the MSR & PCI registers */
+			/* Xen virtualizes better the MSR & PCI registers */
 				break;
 			}
 		    }

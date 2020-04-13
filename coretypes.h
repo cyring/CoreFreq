@@ -172,13 +172,24 @@ enum CSTATES_CLASS {
 };
 
 enum HYPERVISOR {
-	HYPERV_BARE,
+	HYPERV_NONE,
+	BARE_METAL,
 	HYPERV_XEN,
 	HYPERV_KVM,
 	HYPERV_VBOX,
 	HYPERV_KBOX,
-	HYPERVISORS
+	HYPERV_VMWARE
 };
+
+#define HYPERVISORS	( 1 + HYPERV_VMWARE )
+
+#define CRC_INTEL	0x75a2ba39
+#define CRC_AMD 	0x3485bbd3
+#define CRC_HYGON	0x18044630
+#define CRC_KVM 	0x0e8c8561
+#define CRC_VBOX	0x5091f045
+#define CRC_KBOX	0x02b76f04
+#define CRC_VMWARE	0x2a974552
 
 #define CODENAME_LEN	32
 
@@ -516,20 +527,6 @@ enum PWR_DOMAIN {
 
 #define CACHE_MAX_LEVEL (3 + 1)
 
-#define VENDOR_INTEL	"GenuineIntel"
-#define VENDOR_AMD	"AuthenticAMD"
-#define VENDOR_HYGON	"HygonGenuine"
-#define VENDOR_KVM	"TCGTGTCGCGTC"
-#define VENDOR_VBOX	"VBoxVBoxVBox"
-#define VENDOR_KBOX	"KVMKM"
-
-#define CRC_INTEL	0x75a2ba39
-#define CRC_AMD 	0x3485bbd3
-#define CRC_HYGON	0x18044630
-#define CRC_KVM 	0x0e8c8561
-#define CRC_VBOX	0x5091f045
-#define CRC_KBOX	0x02b76f04
-
 enum OFFLINE
 {
 	HW,
@@ -613,8 +610,9 @@ typedef struct
 
 typedef struct
 {		/* Common x86						*/
-	unsigned int		LargestStdFunc, /* Largest CPUID Standard Func*/
-				LargestExtFunc; /* Largest CPUID Extended Func*/
+	unsigned int		LargestStdFunc, /* Largest Standard CPUID */
+				LargestExtFunc, /* Largest Extended CPUID */
+				LargestHypFunc; /* Largest Hypervisor CPUID */
 	struct {
 		unsigned int	CRC;
 		char		ID[12 + 4];

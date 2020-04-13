@@ -363,6 +363,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "Hypervisor");
 				{
 					json_start_object(&s);
+					json_key(&s, "LargestHypFunc");
+					json_literal(&s, "%u", Shm->Proc.Features.Info.LargestHypFunc);
 					json_key(&s, "CRC");
 					json_literal(&s, "%u", Shm->Proc.Features.Info.Hypervisor.CRC);
 					json_key(&s, "ID");

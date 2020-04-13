@@ -1526,11 +1526,13 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 }
 
 char *Hypervisor[HYPERVISORS] = {
-	[HYPERV_BARE]	= "    ",
-	[HYPERV_XEN]	= " Xen",
-	[HYPERV_KVM]	= " KVM",
-	[HYPERV_VBOX]	= "VBOX",
-	[HYPERV_KBOX]	= "KBOX"
+	[HYPERV_NONE]	= "      ",
+	[BARE_METAL]	= "  Bare",
+	[HYPERV_XEN]	= "   Xen",
+	[HYPERV_KVM]	= "   KVM",
+	[HYPERV_VBOX]	= "  VBOX",
+	[HYPERV_KBOX]	= " KVMKM",
+	[HYPERV_VMWARE] = "VMware"
 };
 
 REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -1619,8 +1621,8 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"%s%.*s""%s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
-		width - (OutFunc? 20 : 22) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
+		"%s%.*s""%6s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
+		width - (OutFunc? 22 : 24) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
 		Hypervisor[Shm->Proc.HypervisorID], ENABLED(bix));
 
 	return (reason);
