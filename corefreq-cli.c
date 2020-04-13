@@ -1526,13 +1526,13 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 }
 
 char *Hypervisor[HYPERVISORS] = {
-	[HYPERV_NONE]	= "      ",
-	[BARE_METAL]	= "  Bare",
-	[HYPERV_XEN]	= "   Xen",
-	[HYPERV_KVM]	= "   KVM",
-	[HYPERV_VBOX]	= "  VBOX",
-	[HYPERV_KBOX]	= " KVMKM",
-	[HYPERV_VMWARE] = "VMware"
+	[HYPERV_NONE]	= "          ",
+	[BARE_METAL]	= "Bare-Metal",
+	[HYPERV_XEN]	= "       Xen",
+	[HYPERV_KVM]	= "       KVM",
+	[HYPERV_VBOX]	= "VirtualBox",
+	[HYPERV_KBOX]	= "  KVM/VBox",
+	[HYPERV_VMWARE] = "    VMware"
 };
 
 REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -1602,6 +1602,11 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sCnQ       [%3s]", RSC(TECHNOLOGIES_CNQ).CODE(),
 		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, ENABLED(bix));
 
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
+		width - (15 + RSZ(NOT_AVAILABLE)) - RSZ(TECHNOLOGIES_IDA),
+		hSpace, RSC(NOT_AVAILABLE).CODE());
+
 	bix = Shm->Proc.Technology.Turbo == 1;
     GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
 		"%s%.*sCPB       <%3s>", RSC(TECHNOLOGIES_CPB).CODE(),
@@ -1621,10 +1626,17 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"%s%.*s""%6s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
-		width - (OutFunc? 22 : 24) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
+		"%s%.*s""%10s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
+		width - (OutFunc? 26 : 28) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
 		Hypervisor[Shm->Proc.HypervisorID], ENABLED(bix));
 
+      if (bix)
+      {
+	PUT(SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s""       [%12s]", RSC(VENDOR_ID).CODE(),
+		width - (OutFunc? 25 : 27) - RSZ(VENDOR_ID), hSpace,
+		Shm->Proc.Features.Info.Hypervisor.ID);
+      }
 	return (reason);
 }
 
@@ -4384,8 +4396,8 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 7;
-		winOrigin.row = TOP_HEADER_ROW + 11;
+		matrixSize.hth = 8;
+		winOrigin.row = TOP_HEADER_ROW + 10;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
 		title = RSC(TECHNOLOGIES_TITLE).CODE();
