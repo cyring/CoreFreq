@@ -1034,8 +1034,72 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
 /* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
-		" AVX-512      [%c]",
+		" AVX512-F     [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.AVX_512F ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ],
+		"    AVX512-DQ [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA],
+		"  AVX512-IFMA [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512PF],
+		"   AVX512-PF [%c] ",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512PF ? 'Y' : 'N');
+/* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512ER],
+		" AVX512-ER    [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512ER ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512CD],
+		"    AVX512-CD [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512CD ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512BW],
+		"    AVX512-BW [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512BW ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512VL],
+		"   AVX512-VL [%c] ",
+		Shm->Proc.Features.ExtFeature.EBX.AVX512VL ? 'Y' : 'N');
+/* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI],
+		" AVX512-VBMI  [%c]",
+		Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2],
+		" AVX512-VBMI2 [%c]",
+		Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI],
+		"  AVX512-VNMI [%c]",
+		Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG],
+		"  AVX512-ALG [%c] ",
+		Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG ? 'Y' : 'N');
+/* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ],
+		" AVX512-VPOP  [%c]",
+		Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ ? 'Y':'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW],
+		" AVX512-VNNIW [%c]",
+		Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS],
+		" AVX512-FMAPS [%c]",
+		Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER],
+		" AVX512-VP2I [%c] ",
+		Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER ? 'Y' : 'N');
+/* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16],
+		" AVX512-BF16  [%c]",
+		Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 ? 'Y':'N');
 
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
 				|  Shm->Proc.Features.ExtFeature.EBX.BMI2)
@@ -4555,7 +4619,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 8, 6, TOP_HEADER_ROW+2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 12, 6, TOP_HEADER_ROW+2);
 
 	if (wISA != NULL) {
 		SysInfoISA(wISA, AddCell);
