@@ -66,8 +66,9 @@ typedef struct {
 
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, unsigned int Temp)
 {	/* Per Core, computes the Min temperature.			*/
-    if (((Cpu->PowerThermal.Limit[SENSOR_LOWEST] == 0) && (Temp != 0))
-    || ((Temp != 0) && (Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])))
+    if ((Temp > THRESHOLD_TEMP_MIN_TRIGGER)
+    && ((Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])
+     || (Cpu->PowerThermal.Limit[SENSOR_LOWEST] <= THRESHOLD_TEMP_MIN_CAP)))
     {
 	Cpu->PowerThermal.Limit[SENSOR_LOWEST] = Temp;
     }
@@ -327,11 +328,12 @@ static void (*ComputeThermal_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 
 void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, double Vcore)
 {	/* Per Core, computes the Min CPU voltage.			*/
-    if (((Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] == 0) && (Vcore != 0))
-    || ((Vcore != 0) && (Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST])))
-    {
+  if ((Vcore > THRESHOLD_VOLTAGE_MIN_TRIGGER)
+  && ((Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST])
+   || (Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] <= THRESHOLD_VOLTAGE_MIN_CAP)))
+  {
 	Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] = Vcore;
-    }
+  }
 	/* Per Core, computes the Max CPU voltage.			*/
     if (Vcore > Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST])
     {
@@ -715,18 +717,20 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 
 void Core_ComputePowerLimits(CPU_STRUCT *Cpu, double Energy, double Power)
 {	/* Per Core, computes the Min CPU Energy consumed.		*/
-    if (((Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] == 0) && (Energy != 0))
-    || ((Energy != 0) && (Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST])))
-    {
+  if ((Energy > THRESHOLD_ENERGY_MIN_TRIGGER)
+  && ((Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST])
+   || (Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] <= THRESHOLD_ENERGY_MIN_CAP)))
+  {
 	Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] = Energy;
-    }
+  }
 	/* Per Core, computes the Max CPU Energy consumed.		*/
     if (Energy > Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]) {
 	Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST] = Energy;
     }
 	/* Per Core, computes the Min CPU Power consumed.		*/
-    if (((Cpu->Sensors.Power.Limit[SENSOR_LOWEST] == 0) && (Power != 0))
-    || ((Power != 0) && (Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST])))
+    if ((Power > THRESHOLD_POWER_MIN_TRIGGER)
+    && ((Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST])
+     || (Cpu->Sensors.Power.Limit[SENSOR_LOWEST] <= THRESHOLD_POWER_MIN_CAP)))
     {
 	Cpu->Sensors.Power.Limit[SENSOR_LOWEST] = Power;
     }

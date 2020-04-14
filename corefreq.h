@@ -467,6 +467,18 @@ typedef struct
 	CPU_STRUCT		Cpu[];
 } SHM_STRUCT;
 
+/* Sensors formulas and definitions.
+  MIN = [SENSOR_CURRENT] > [MIN_TRIGGER]
+  AND ( [SENSOR_CURRENT] < [SENSOR_LOWEST] OR [SENSOR_LOWEST] <= [MIN_CAP] )
+*/
+#define THRESHOLD_TEMP_MIN_CAP		1
+#define THRESHOLD_VOLTAGE_MIN_CAP	0.15
+#define THRESHOLD_ENERGY_MIN_CAP	0.5
+#define THRESHOLD_POWER_MIN_CAP 	0.5
+#define THRESHOLD_TEMP_MIN_TRIGGER	0
+#define THRESHOLD_VOLTAGE_MIN_TRIGGER	0.0
+#define THRESHOLD_ENERGY_MIN_TRIGGER	0.0
+#define THRESHOLD_POWER_MIN_TRIGGER	0.0
 
 #define COMPUTE_THERMAL_INTEL(Temp, Param, Sensor)			\
 	(Temp = Param.Offset[0] - Param.Offset[1] - Sensor)
@@ -530,7 +542,7 @@ typedef struct
 #define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)	\
 		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
 
-
+/* Error Reasons management.						*/
 enum REASON_CLASS {
 	RC_SUCCESS	= 0,
 	RC_CMD_SYNTAX	= 1,
