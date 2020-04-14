@@ -4,6 +4,15 @@
  * Licenses: GPL2
  */
 
+#define DRV_DEVNAME	"corefreqk"
+#define DRV_FILENAME	"/dev/"DRV_DEVNAME
+
+#define WAKEUP_RATIO	4
+#define LOOP_MIN_MS	100
+#define LOOP_MAX_MS	((1000 - 1) * WAKEUP_RATIO)
+#define LOOP_DEF_MS	1000
+#define TICK_DEF_MS	2000
+
 typedef struct
 {
 	struct
@@ -733,4 +742,659 @@ typedef struct
 
 	FOOTPRINT		FootPrint;
 } PROC;
+
+
+#ifndef PCI_DEVICE_ID_INTEL_82945P_HB
+	#define PCI_DEVICE_ID_INTEL_82945P_HB		0x2770
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82945GM_HB
+	#define PCI_DEVICE_ID_INTEL_82945GM_HB		0x27a0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82955_HB
+	#define PCI_DEVICE_ID_INTEL_82955_HB		0x2774
+#endif
+/* Source: /drivers/char/agp/intel-agp.h				*/
+#ifndef PCI_DEVICE_ID_INTEL_82945GME_HB
+	#define PCI_DEVICE_ID_INTEL_82945GME_HB		0x27ac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82946GZ_HB
+	#define PCI_DEVICE_ID_INTEL_82946GZ_HB		0x2970
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965Q_HB
+	#define PCI_DEVICE_ID_INTEL_82965Q_HB		0x2990
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965G_HB
+	#define PCI_DEVICE_ID_INTEL_82965G_HB		0x29a0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965GM_HB
+	#define PCI_DEVICE_ID_INTEL_82965GM_HB		0x2a00
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_82965GME_HB
+	#define PCI_DEVICE_ID_INTEL_82965GME_HB 	0x2a10
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_GM45_HB
+	#define PCI_DEVICE_ID_INTEL_GM45_HB		0x2a40
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_Q35_HB
+	#define PCI_DEVICE_ID_INTEL_Q35_HB		0x29b0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G33_HB
+	#define PCI_DEVICE_ID_INTEL_G33_HB		0x29c0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_Q33_HB
+	#define PCI_DEVICE_ID_INTEL_Q33_HB		0x29d0
+#endif
+/* Source: /drivers/edac/x38_edac.c					*/
+#ifndef PCI_DEVICE_ID_INTEL_X38_HB
+	#define PCI_DEVICE_ID_INTEL_X38_HB		0x29e0
+#endif
+/* Source: /drivers/edac/i3200_edac.c					*/
+#ifndef PCI_DEVICE_ID_INTEL_3200_HB
+	#define PCI_DEVICE_ID_INTEL_3200_HB		0x29f0
+#endif
+/* Source: /drivers/char/agp/intel-agp.h				*/
+#ifndef PCI_DEVICE_ID_INTEL_Q45_HB
+	#define PCI_DEVICE_ID_INTEL_Q45_HB		0x2e10
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G45_HB
+	#define PCI_DEVICE_ID_INTEL_G45_HB		0x2e20
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_G41_HB
+	#define PCI_DEVICE_ID_INTEL_G41_HB		0x2e30
+#endif
+/* Source: /include/linux/pci_ids.h					*/
+#ifndef PCI_DEVICE_ID_INTEL_I7_MCR
+	#define PCI_DEVICE_ID_INTEL_I7_MCR		0x2c18
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH0_CTRL	0x2c20
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH1_CTRL	0x2c28
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH2_CTRL	0x2c30
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_TEST
+	#define PCI_DEVICE_ID_INTEL_I7_MC_TEST		0x2c1c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH0_ADDR	0x2c21
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH1_ADDR	0x2c29
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR
+	#define PCI_DEVICE_ID_INTEL_I7_MC_CH2_ADDR	0x2c31
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_BLOOMFIELD_NON_CORE 0x2c41
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_C5500_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_C5500_NON_CORE	0x2c58
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_LYNNFIELD_NON_CORE	0x2c51
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_CLARKSFIELD_NON_CORE
+    #define PCI_DEVICE_ID_INTEL_CLARKSFIELD_NON_CORE	0x2c52
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE	0x2c61
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR
+	#define PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR	0x2c98
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_CTRL
+    #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_CTRL	0x2ca0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_CTRL
+    #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_CTRL	0x2ca8
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST
+	#define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST	0x2c9c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_ADDR
+    #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH0_ADDR	0x2ca1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR
+    #define PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_CH1_ADDR	0x2ca9
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MCR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MCR		0x2d98
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_CTRL	0x2da0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_CTRL	0x2da8
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_CTRL	0x2db0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST	0x2d9c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH0_ADDR	0x2da1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH1_ADDR	0x2da9
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_MC_CH2_ADDR	0x2db1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE
+	#define PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE	0x2c70
+#endif
+/* Source: Intel X58 Express Chipset Datasheet				*/
+#define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
+#define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
+/* Source: /include/linux/pci_ids.h					*/
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0	0x3ca0
+#endif
+/* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA	0x0100
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104
+	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104	0x0104
+#endif
+/* Source: /drivers/edac/sb_edac.c					*/
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1	0x0e60
+#endif
+/* Source: 3rd Generation Intel® Core™ Processor Family Vol2		*/
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA	0x0150
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154
+	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
+#endif
+/* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_HOST_BRIDGE	0x3c00
+#endif
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_QPI_LINK0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_QPI_LINK0	0x3c80
+#endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CPGC 0x3ca8
+#endif
+/*TODO( Nehalem/Xeon E7 - CPGC: Device=?? - Function=? )
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CPGC 0x0
+#endif									*/
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*	Controller #0: Device=16 - Function=0,1,2,3			*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH0 0x3cb0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH1 0x3cb1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH2 0x3cb2
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL0_CH3 0x3cb3
+#endif
+/*	Controller #1: Device=16 - Function=4,5,6,7			*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH0 0x3cb4
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH1 0x3cb5
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH2 0x3cb6
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_IMC_CTRL1_CH3 0x3cb7
+#endif
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5,6	*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH0 0x3caa
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH1 0x3cab
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH2 0x3cac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH3 0x3cad
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH4
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL0_CH4 0x3cae
+#endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*TODO( Nehalem/Xeon E7 - TAD Controller #1: Device=?? - Function=? )
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH3 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH4
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_TAD_CTRL1_CH4 0x0
+#endif									*/
+/*	Power Control Unit						*/
+/*TODO( PCU: Device=10 - Function=3 )					*/
+#ifndef PCI_DEVICE_ID_INTEL_SNB_EP_CAPABILITY
+	#define PCI_DEVICE_ID_INTEL_SNB_EP_CAPABILITY	0x3cd0
+#endif
+/* Source: Intel Xeon Processor E5 & E7 v2 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_HOST_BRIDGE	0x0e00
+#endif
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_QPI_LINK0	0x0e80
+#endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=15 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CPGC 0x0ea8
+#endif
+/*	Xeon E7 - CPGC: Device=29 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CPGC 0x0e68
+#endif
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*	Controller #0: Device=16 - Function=0,1,2,3			*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH0 0x0eb0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH1 0x0eb1
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH2 0x0eb2
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL0_CH3 0x0eb3
+#endif
+/*	Controller #1: Device=16 - Function=4,5,6,7			*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH0 0x0eb4
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH1 0x0eb5
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH2 0x0eb6
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_IMC_CTRL1_CH3 0x0eb7
+#endif
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=15 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH0 0x0eaa
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH1 0x0eab
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH2 0x0eac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL0_CH3 0x0ead
+#endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*	Xeon E7 - TAD Controller #1: Device=29 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH0 0x0e6a
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH1 0x0e6b
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH2 0x0e6c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3 0x0e6d
+#endif
+/*	Power Control Unit						*/
+/*	PCU: Device=10 - Function=3					*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY
+	#define PCI_DEVICE_ID_INTEL_IVB_EP_CAPABILITY	0x0ec3
+#endif
+/* Source: Intel Xeon Processor E5 & E7 v3 Datasheet Vol 2		*/
+/*	DMI2: Device=0 - Function=0					*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_HOST_BRIDGE
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_HOST_BRIDGE	0x2f00
+#endif
+/*	QPIMISCSTAT: Device=8 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_QPI_LINK0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_QPI_LINK0	0x2f80
+#endif
+/*	Integrated Memory Controller # : General and MemHot Registers	*/
+/*	Xeon E5 - CPGC: Device=19 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CPGC
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CPGC 0x2fa8
+#endif
+/*	Xeon E7 - CPGC: Device=22 - Function=0				*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CPGC
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CPGC 0x2f68
+#endif
+/*	Integrated Memory Controller # : Channel [m-M] Thermal Registers*/
+/*TODO( Controller #0: Device=?? - Function=0,1,2,3 )
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL0_CH3 0x0
+#endif									*/
+/*TODO( Controller #1: Device=?? - Function=4,5,6,7 )
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH0 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH1 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH2 0x0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_IMC_CTRL1_CH3 0x0
+#endif									*/
+/*	Integrated Memory Controller 0 : Channel # TAD Registers	*/
+/*	Xeon E5 - TAD Controller #0: Device=19 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH0 0x2faa
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH1 0x2fab
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH2 0x2fac
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL0_CH3 0x2fad
+#endif
+/*	Integrated Memory Controller 1 : Channel # TAD Registers	*/
+/*	Xeon E7 - TAD Controller #1: Device=22 - Function=2,3,4,5	*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH0
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH0 0x2f6a
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH1
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH1 0x2f6b
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH2
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH2 0x2f6c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH3
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_TAD_CTRL1_CH3 0x2f6d
+#endif
+/*	Power Control Unit						*/
+/*	PCU: Device=30 - Function=3					*/
+#ifndef PCI_DEVICE_ID_INTEL_HSW_EP_CAPABILITY
+	#define PCI_DEVICE_ID_INTEL_HSW_EP_CAPABILITY	0x2fc0
+#endif
+/* Source: 4th, 5th Generation Intel® Core™ Processor Family Vol2 §3.0	*/
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_HA0	0x2fa0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA	0x0c00
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_HASWELL_MH_IMC_HA0	0x0c04
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0	0x0a04
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_BROADWELL_IMC_HA0	0x1604
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_BROADWELL_D_IMC_HA0 0x1610
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_BROADWELL_H_IMC_HA0 0x1614
+#endif
+/* Source: 6th Generation Intel® Processor Datasheet for U/Y-Platforms Vol2 */
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA	0x1904
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA	0x190c
+#endif
+/* Source: 6th Generation Intel® Processor Datasheet for S-Platforms Vol2 */
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD	0x190f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ	0x191f
+#endif
+/* Source: 6th Generation Intel® Processor Datasheet for H-Platforms Vol2 */
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD	0x1900
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ	0x1910
+#endif
+/* Source: Intel Xeon Processor E3-1200 v5 Product Family		*/
+#ifndef PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA	0x1918
+#endif
+/* Source:7th Generation Intel® Processor for S-Platforms & Core X-Series Vol2*/
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD	0x5900
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA	0x5904
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA	0x590c
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD	0x590f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ	0x5910
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA	0x5918
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ	0x5914
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ	0x591f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ	0x5906
+#endif
+/* Source: 8th Generation Intel® Processor for S-Platforms Datasheet Vol2 */
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ 0x3e1f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAS
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAS 0x3ec2
+#endif
+/* Source: 8th and 9th Generation Intel® Core™ and Xeon™ E Processor Families */
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAD 0x3e0f
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAD 0x3ecc
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAQ 0x3ed0
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAQ 0x3e10
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAS
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAS 0x3ec4
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAO
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAO 0x3e30
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAQ 0x3e18
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAS
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAS 0x3ec6
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAO
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAO 0x3e31
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAQ 0x3e33
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAS
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAS 0x3eca
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAO
+	#define PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAO 0x3e32
+#endif
+/* Source: 8th Generation Intel® Core™ Processor Families Datasheet Vol2 */
+#ifndef PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAD
+	#define PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAD 0x3e35
+#endif
+#ifndef PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ
+	#define PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ 0x3e34
+#endif
+/* Source: /include/linux/pci_ids.h					*/
+#ifndef PCI_DEVICE_ID_AMD_K8_NB_MEMCTL
+	#define PCI_DEVICE_ID_AMD_K8_NB_MEMCTL		0x1102
+#endif
+#ifndef PCI_DEVICE_ID_AMD_K8_NB
+	#define PCI_DEVICE_ID_AMD_K8_NB			0x1100
+#endif
+/* Source: AMD I/O Virtualization Technology (IOMMU) Specification	*/
+#ifndef PCI_DEVICE_ID_AMD_17H_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_IOMMU		0x1451
+#endif
+/* Source: /include/linux/pci_ids.h					*/
+#ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3	0x1463	/* Zeppelin */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3	0x15eb	/* Raven */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3	0x1443	/* Zen2 */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3	0x1493	/* Zen2 */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3	0x144b	/* Renoir */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3	0x13f3	/* Ariel */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3	0x15f3	/* FireFlight*/
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3	0x160b	/* Arden */
+#endif
+
+enum {	GenuineArch = 0,
+	AMD_Family_0Fh,
+	AMD_Family_10h,
+	AMD_Family_11h,
+	AMD_Family_12h,
+	AMD_Family_14h,
+	AMD_Family_15h,
+	AMD_Family_16h,
+	AMD_Family_17h,
+	AMD_Family_18h,
+	Core_Yonah,
+	Core_Conroe,
+	Core_Kentsfield,
+	Core_Conroe_616,
+	Core_Penryn,
+	Core_Dunnington,
+	Atom_Bonnell,
+	Atom_Silvermont,
+	Atom_Lincroft,
+	Atom_Clovertrail,
+	Atom_Saltwell,
+	Silvermont_637,
+	Atom_Avoton,
+	Atom_Airmont,
+	Atom_Goldmont,
+	Atom_Sofia,
+	Atom_Merrifield,
+	Atom_Moorefield,
+	Nehalem_Bloomfield,
+	Nehalem_Lynnfield,
+	Nehalem_MB,
+	Nehalem_EX,
+	Westmere,
+	Westmere_EP,
+	Westmere_EX,
+	SandyBridge,
+	SandyBridge_EP,
+	IvyBridge,
+	IvyBridge_EP,
+	Haswell_DT,
+	Haswell_EP,
+	Haswell_ULT,
+	Haswell_ULX,
+	Broadwell,
+	Broadwell_D,
+	Broadwell_H,
+	Broadwell_EP,
+	Skylake_UY,
+	Skylake_S,
+	Skylake_X,
+	Xeon_Phi,
+	Kabylake,
+	Kabylake_UY,
+	Cannonlake,
+	Geminilake,
+	Icelake,
+	Icelake_UY,
+	Icelake_X,
+	Icelake_D,
+	Sunny_Cove,
+	Tigerlake,
+	Tigerlake_U,
+	Cometlake,
+	Cometlake_UY,
+	Atom_C3000,
+	Tremont_Jacobsville,
+	Tremont_Lakefield,
+	Tremont_Elkhartlake,
+	Tremont_Jasperlake,
+	AMD_Zen,
+	AMD_Zen_APU,
+	AMD_ZenPlus,
+	AMD_ZenPlus_APU,
+	AMD_EPYC_Rome,
+	AMD_Zen2_CPK,
+	AMD_Zen2_APU,
+	AMD_Zen2_MTS,
+	ARCHITECTURES
+};
 

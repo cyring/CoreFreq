@@ -487,6 +487,15 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
+/* Manufacturers Identifier Strings.					*/
+#define VENDOR_INTEL	"GenuineIntel"
+#define VENDOR_AMD	"AuthenticAMD"
+#define VENDOR_HYGON	"HygonGenuine"
+#define VENDOR_KVM	"TCGTGTCGCGTC"
+#define VENDOR_VBOX	"VBoxVBoxVBox"
+#define VENDOR_KBOX	"KVMKM"
+#define VENDOR_VMWARE	"VMwawarereVM"
+
 /* Source: Winbond W83627 datasheet					*/
 #define HWM_W83627_INDEX_PORT	0x295
 #define HWM_W83627_DATA_PORT	0x296
@@ -510,13 +519,18 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
-#define VENDOR_INTEL	"GenuineIntel"
-#define VENDOR_AMD	"AuthenticAMD"
-#define VENDOR_HYGON	"HygonGenuine"
-#define VENDOR_KVM	"TCGTGTCGCGTC"
-#define VENDOR_VBOX	"VBoxVBoxVBox"
-#define VENDOR_KBOX	"KVMKM"
-#define VENDOR_VMWARE	"VMwawarereVM"
+/* Hardware Monitoring: Super I/O chipsets				*/
+#define COMPATIBLE		0xffff
+#define W83627			0x5ca3
+
+
+/* Driver' private and public data definitions.				*/
+enum CSTATES_CLASS {
+	CSTATES_NHM	= 0x1,
+	CSTATES_SNB	= 0x2,
+	CSTATES_ULT	= 0x4,
+	CSTATES_SKL	= 0x6
+};
 
 typedef struct {
 	FEATURES	*Features;
