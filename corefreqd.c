@@ -66,17 +66,9 @@ typedef struct {
 
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, unsigned int Temp)
 {	/* Per Core, computes the Min temperature.			*/
-    if ((Temp > THRESHOLD_TEMP_MIN_TRIGGER)
-    && ((Temp < Cpu->PowerThermal.Limit[SENSOR_LOWEST])
-     || (Cpu->PowerThermal.Limit[SENSOR_LOWEST] <= THRESHOLD_TEMP_MIN_CAP)))
-    {
-	Cpu->PowerThermal.Limit[SENSOR_LOWEST] = Temp;
-    }
+	TEST_AND_SET_SENSOR(THERMAL, LOWEST, Temp, Cpu->PowerThermal.Limit);
 	/* Per Core, computes the Max temperature.			*/
-    if (Temp > Cpu->PowerThermal.Limit[SENSOR_HIGHEST])
-    {
-	Cpu->PowerThermal.Limit[SENSOR_HIGHEST] = Temp;
-    }
+	TEST_AND_SET_SENSOR(THERMAL, HIGHEST, Temp, Cpu->PowerThermal.Limit);
 }
 
 static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
@@ -328,17 +320,9 @@ static void (*ComputeThermal_AMD_17h_Matrix[4])(struct FLIP_FLOP*,
 
 void Core_ComputeVoltageLimits(CPU_STRUCT *Cpu, double Vcore)
 {	/* Per Core, computes the Min CPU voltage.			*/
-  if ((Vcore > THRESHOLD_VOLTAGE_MIN_TRIGGER)
-  && ((Vcore < Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST])
-   || (Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] <= THRESHOLD_VOLTAGE_MIN_CAP)))
-  {
-	Cpu->Sensors.Voltage.Limit[SENSOR_LOWEST] = Vcore;
-  }
+	TEST_AND_SET_SENSOR(VOLTAGE,LOWEST, Vcore, Cpu->Sensors.Voltage.Limit);
 	/* Per Core, computes the Max CPU voltage.			*/
-    if (Vcore > Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST])
-    {
-	Cpu->Sensors.Voltage.Limit[SENSOR_HIGHEST] = Vcore;
-    }
+	TEST_AND_SET_SENSOR(VOLTAGE,HIGHEST, Vcore,Cpu->Sensors.Voltage.Limit);
 }
 
 static inline void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
@@ -717,27 +701,13 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 
 void Core_ComputePowerLimits(CPU_STRUCT *Cpu, double Energy, double Power)
 {	/* Per Core, computes the Min CPU Energy consumed.		*/
-  if ((Energy > THRESHOLD_ENERGY_MIN_TRIGGER)
-  && ((Energy < Cpu->Sensors.Energy.Limit[SENSOR_LOWEST])
-   || (Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] <= THRESHOLD_ENERGY_MIN_CAP)))
-  {
-	Cpu->Sensors.Energy.Limit[SENSOR_LOWEST] = Energy;
-  }
+	TEST_AND_SET_SENSOR(ENERGY,LOWEST, Energy, Cpu->Sensors.Energy.Limit);
 	/* Per Core, computes the Max CPU Energy consumed.		*/
-    if (Energy > Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST]) {
-	Cpu->Sensors.Energy.Limit[SENSOR_HIGHEST] = Energy;
-    }
+	TEST_AND_SET_SENSOR(ENERGY,HIGHEST, Energy, Cpu->Sensors.Energy.Limit);
 	/* Per Core, computes the Min CPU Power consumed.		*/
-    if ((Power > THRESHOLD_POWER_MIN_TRIGGER)
-    && ((Power < Cpu->Sensors.Power.Limit[SENSOR_LOWEST])
-     || (Cpu->Sensors.Power.Limit[SENSOR_LOWEST] <= THRESHOLD_POWER_MIN_CAP)))
-    {
-	Cpu->Sensors.Power.Limit[SENSOR_LOWEST] = Power;
-    }
+	TEST_AND_SET_SENSOR(POWER, LOWEST, Power, Cpu->Sensors.Power.Limit);
 	/* Per Core, computes the Max CPU Power consumed.		*/
-    if (Power > Cpu->Sensors.Power.Limit[SENSOR_HIGHEST]) {
-	Cpu->Sensors.Power.Limit[SENSOR_HIGHEST] = Power;
-    }
+	TEST_AND_SET_SENSOR(POWER, HIGHEST, Power, Cpu->Sensors.Power.Limit);
 }
 
 static inline void ComputePower_None(	struct FLIP_FLOP *CFlip,
@@ -4705,40 +4675,6 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
 	Core_ComputeVoltageLimits(Cpu, SProc->Voltage.Vcore);
 }
 
-#define Pkg_ComputePowerLimits(pw)					\
-{ /* Package scope, computes Min and Max CPU energy & power consumed. */\
-    if ( ( (Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST] == 0)	\
-	&& (Shm->Proc.State.Energy[pw].Current != 0) )			\
-    || ( (Shm->Proc.State.Energy[pw].Current != 0)			\
-	&& (Shm->Proc.State.Energy[pw].Current				\
-		< Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST]) ) )	\
-    {									\
-	Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST] =		\
-				Shm->Proc.State.Energy[pw].Current;	\
-    }									\
-    if (Shm->Proc.State.Energy[pw].Current				\
-	> Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST])		\
-    {									\
-	Shm->Proc.State.Energy[pw].Limit[SENSOR_HIGHEST] =		\
-				Shm->Proc.State.Energy[pw].Current;	\
-    }									\
-    if ( ( (Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST] == 0)	\
-	&& (Shm->Proc.State.Power[pw].Current != 0) )			\
-    || ( (Shm->Proc.State.Power[pw].Current != 0)			\
-	&& (Shm->Proc.State.Power[pw].Current				\
-		< Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST]) ) )	\
-    {									\
-	Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST] =		\
-				Shm->Proc.State.Power[pw].Current;	\
-    }									\
-    if (Shm->Proc.State.Power[pw].Current				\
-	> Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST])		\
-    {									\
-	Shm->Proc.State.Power[pw].Limit[SENSOR_HIGHEST] =		\
-				Shm->Proc.State.Power[pw].Current;	\
-    }									\
-}
-
 static inline void Pkg_ComputePower_None(PROC *Proc, struct FLIP_FLOP *CFlop)
 {
 }
@@ -5048,7 +4984,22 @@ REASON_CODE Core_Manager(REF *Ref)
 				(1000.0 * Shm->Proc.State.Energy[pw].Current)
 						/ (double) Shm->Sleep.Interval;
 
-		Pkg_ComputePowerLimits(pw);
+		/* Processor scope: computes Min and Max energy consumed. */
+		TEST_AND_SET_SENSOR(	ENERGY, LOWEST,
+					Shm->Proc.State.Energy[pw].Current,
+					Shm->Proc.State.Energy[pw].Limit );
+
+		TEST_AND_SET_SENSOR(	ENERGY, HIGHEST,
+					Shm->Proc.State.Energy[pw].Current,
+					Shm->Proc.State.Energy[pw].Limit );
+		/* Processor scope: computes Min and Max power consumed. */
+		TEST_AND_SET_SENSOR(	POWER, LOWEST,
+					Shm->Proc.State.Power[pw].Current,
+					Shm->Proc.State.Power[pw].Limit );
+
+		TEST_AND_SET_SENSOR(	POWER, HIGHEST,
+					Shm->Proc.State.Power[pw].Current,
+					Shm->Proc.State.Power[pw].Limit );
 	    }
 		/* Package thermal formulas				*/
 	    if (Shm->Proc.Features.Power.EAX.PTM) {
