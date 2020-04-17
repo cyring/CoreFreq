@@ -862,21 +862,37 @@ extern void Query_AMD_Family_10h(void) ;
 static void PerCore_AMD_Family_10h_Query(void *arg) ;
 static void Start_AMD_Family_10h(void *arg) ;
 static void Stop_AMD_Family_10h(void *arg) ;
+#define     InitTimer_AMD_Family_10h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_11h(void) ;
 #define     PerCore_AMD_Family_11h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_11h Start_AMD_Family_10h
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
+#define     InitTimer_AMD_Family_11h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_12h(void) ;
 #define     PerCore_AMD_Family_12h_Query PerCore_AMD_Family_10h_Query
+#define     Start_AMD_Family_12h Start_AMD_Family_10h
+#define     Stop_AMD_Family_12h Stop_AMD_Family_10h
+#define     InitTimer_AMD_Family_12h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_14h(void) ;
 #define     PerCore_AMD_Family_14h_Query PerCore_AMD_Family_10h_Query
+#define     Start_AMD_Family_14h Start_AMD_Family_10h
+#define     Stop_AMD_Family_14h Stop_AMD_Family_10h
+#define     InitTimer_AMD_Family_14h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_15h(void) ;
 #define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
+#define     Start_AMD_Family_15h Start_AMD_Family_10h
+#define     Stop_AMD_Family_15h Stop_AMD_Family_10h
 extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
+
+#define     Query_AMD_Family_16h Query_AMD_Family_15h
+#define     PerCore_AMD_Family_16h_Query PerCore_AMD_Family_15h_Query
+#define     Start_AMD_Family_16h Start_AMD_Family_15h
+#define     Stop_AMD_Family_16h Stop_AMD_Family_15h
+#define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_17h(void) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
@@ -4112,7 +4128,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_10h,
 	.Stop = Stop_AMD_Family_10h,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_10h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
@@ -4136,7 +4152,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_11h,
 	.Stop = Stop_AMD_Family_11h,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_11h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
@@ -4157,10 +4173,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _AMD_Family_12h,
 	.Query = Query_AMD_Family_12h,
 	.Update = PerCore_AMD_Family_12h_Query,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Start = Start_AMD_Family_12h,
+	.Stop = Stop_AMD_Family_12h,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_12h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
@@ -4181,10 +4197,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _AMD_Family_14h,
 	.Query = Query_AMD_Family_14h,
 	.Update = PerCore_AMD_Family_14h_Query,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Start = Start_AMD_Family_14h,
+	.Stop = Stop_AMD_Family_14h,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_14h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,
@@ -4205,8 +4221,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _AMD_Family_15h,
 	.Query = Query_AMD_Family_15h,
 	.Update = PerCore_AMD_Family_15h_Query,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Start = Start_AMD_Family_15h,
+	.Stop = Stop_AMD_Family_15h,
 	.Exit = NULL,
 	.Timer = InitTimer_AMD_Family_15h,
 	.BaseClock = BaseClock_AuthenticAMD,
@@ -4227,12 +4243,12 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [AMD_Family_16h] = {							/*  7*/
 	.Signature = _AMD_Family_16h,
-	.Query = Query_AMD_Family_15h,
-	.Update = PerCore_AMD_Family_15h_Query,
-	.Start = Start_AuthenticAMD,
-	.Stop = Stop_AuthenticAMD,
+	.Query = Query_AMD_Family_16h,
+	.Update = PerCore_AMD_Family_16h_Query,
+	.Start = Start_AMD_Family_16h,
+	.Stop = Stop_AMD_Family_16h,
 	.Exit = NULL,
-	.Timer = InitTimer_AuthenticAMD,
+	.Timer = InitTimer_AMD_Family_16h,
 	.BaseClock = BaseClock_AuthenticAMD,
 	.ClockMod = NULL,
 	.TurboClock = NULL,

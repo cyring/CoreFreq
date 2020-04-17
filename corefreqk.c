@@ -5589,6 +5589,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(LOCKLESS, Proc->C1E_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->C3A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->C1A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->C3U_Mask	, Core->Bind);
@@ -5854,8 +5855,11 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 
 	Dump_CPUID(Core);
 
+    if (Proc->Registration.Experimental) {
 	Query_AMD_Family_0Fh_C1E(Core);
-
+    } else {
+	BITSET_CC(LOCKLESS, Proc->C1E_Mask	, Core->Bind);
+    }
 	BITSET_CC(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
@@ -5881,6 +5885,11 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Dump_CPUID(Core);
 
+    if (Proc->Registration.Experimental) {
+	Query_AMD_Family_0Fh_C1E(Core);
+    } else {
+	BITSET_CC(LOCKLESS, Proc->C1E_Mask	, Core->Bind);
+    }
 	BITSET_CC(LOCKLESS, Proc->ODCM_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->SpeedStep_Mask, Core->Bind);
