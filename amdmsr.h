@@ -423,9 +423,11 @@ typedef union
 	IntrPndMsg	: 26-25,
 	IORd		: 27-26,
 	SmiOnCmpHalt	: 28-27, /* SMI on Multi-core halt		*/
-	C1eOnCmpHalt	: 29-28, /* C1E on Multi-core halt: Family 0Fh,10h,11h*/
-	Reserved1	: 32-29,
-	Reserved2	: 64-32;
+	C1eOnCmpHalt	: 29-28, /* C1E on Multi-core halt: Fam. 0Fh,10h,11h */
+	BmStsClrOnHaltEn: 30-29, /* BM_STS clear on Halt enable: Fam. 10h,15h*/
+	EnPmTmrCheckLoop: 31-30, /* Enable. Fam. 12h,14h,15h_60h-6Fh	*/
+	Reserved	: 32-31,
+	RAZ		: 64-32; /* [63:29]0Fh, [63:32]10h,11h,15h, [63:0]16h*/
     };
 } INT_PENDING_MSG;
 
@@ -651,3 +653,4 @@ typedef struct
 	ReservedBits	: 31-16,
 	L3TagInit	: 32-31;
 } L3_CACHE_PARAMETER;
+
