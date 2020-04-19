@@ -376,7 +376,7 @@ typedef struct
 				Experimental,/* 0: Disable, 1: Enable	*/
 				HotPlug, /* < 0: Disable, Other: Enable */
 				PCI;	/*  < 0: Disable, other: Enable */
-		KERNEL_DRIVER	Driver;
+		KERNEL_DRIVER	Driver; /*0:Disable, 1:Enable, 2:Full-control*/
 	} Registration;
 
 	struct {

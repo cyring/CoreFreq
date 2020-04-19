@@ -1044,11 +1044,15 @@ typedef struct
 #define CPUFREQ_NAME_LEN	16
 #endif
 
-typedef struct {			/* 0: Disable, 1: Enable	*/
-	unsigned short	CPUidle :  1-0,
-			CPUfreq :  2-1,
-			Governor:  3-2,
-			unused	: 16-3;
+#define REGISTRATION_DISABLE	0b00
+#define REGISTRATION_ENABLE	0b01
+#define REGISTRATION_FULLCTRL	0b10
+
+typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
+	unsigned short	CPUidle :  2-0,
+			CPUfreq :  4-2,
+			Governor:  6-4,
+			unused	: 16-6;
 } KERNEL_DRIVER;
 
 typedef struct {

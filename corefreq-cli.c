@@ -2548,13 +2548,13 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
   if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
   {
 	snprintf(item[0], 2+4+1+4+1+1, "%%s%%.*s%c%%%ds%c",
-		Shm->Registration.Driver.CPUidle ? '<' : '[',
+	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ? '<' : '[',
 		CPUIDLE_NAME_LEN,
-		Shm->Registration.Driver.CPUidle ? '>' : ']');
+	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ? '>' : ']');
 
 	idx = Shm->SysGate.OS.IdleDriver.stateLimit - 1;
-	GridCall(PUT(Shm->Registration.Driver.CPUidle ? BOXKEY_LIMIT_IDLE_STATE
-							: SCANKEY_NULL,
+	GridCall(PUT(Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ?
+			BOXKEY_LIMIT_IDLE_STATE : SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
 			item[0], RSC(KERNEL_LIMIT).CODE(),
 			width - RSZ(KERNEL_LIMIT) - CPUIDLE_NAME_LEN-4, hSpace,
@@ -4010,7 +4010,9 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 
 void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int bix = Shm->Registration.Driver.CPUidle;
+	const unsigned int bix = Shm->Registration.Driver.CPUidle
+				& REGISTRATION_ENABLE;
+
 	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
@@ -4018,7 +4020,9 @@ void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 
 void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int bix = Shm->Registration.Driver.CPUfreq;
+	const unsigned int bix = Shm->Registration.Driver.CPUfreq
+				& REGISTRATION_ENABLE;
+
 	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
@@ -4026,7 +4030,9 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 
 void Governor_Update(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int bix = Shm->Registration.Driver.Governor;
+	const unsigned int bix = Shm->Registration.Driver.Governor
+				& REGISTRATION_ENABLE;
+
 	const signed int pos = grid->cell.length - 5;
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
@@ -4130,19 +4136,19 @@ Window *CreateSettings(unsigned long long id)
 				attrib[bix] ),
 		NMI_Registration_Update );
 
-	bix = Shm->Registration.Driver.CPUidle;
+	bix = Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE;
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Idle_Update );
 
-	bix = Shm->Registration.Driver.CPUfreq;
+	bix = Shm->Registration.Driver.CPUfreq & REGISTRATION_ENABLE;
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Freq_Update );
 
-	bix = Shm->Registration.Driver.Governor;
+	bix = Shm->Registration.Driver.Governor & REGISTRATION_ENABLE;
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
 				RSC(SETTINGS_GOVERNOR_REGISTERED).CODE(),
 				attrib[bix] ),
