@@ -1161,9 +1161,9 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		" MOVBE        [%c]",
 		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.MPX],
-		"          MPX [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.MPX ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.SERIALIZE],
+		"    SERIALIZE [%c]",
+		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.PCLMULDQ],
 		"    PCLMULQDQ [%c]",
@@ -1351,6 +1351,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
 		width - 18 - RSZ(FEATURES_MCA), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtFeature.EBX.MPX == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sMPX   [%7s]", RSC(FEATURES_MPX).CODE(),
+		width - 18 - RSZ(FEATURES_MPX), hSpace, POWERED(bix));
+
 	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMSR   [%7s]", RSC(FEATURES_MSR).CODE(),
@@ -1435,6 +1440,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
 		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtFeature.EBX.SMAP == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sSMAP   [%7s]", RSC(FEATURES_SMAP).CODE(),
+		width - 19 - RSZ(FEATURES_SMAP), hSpace, POWERED(bix));
+
 	bix = Shm->Proc.Features.ExtFeature.EBX.SMEP == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMEP   [%7s]", RSC(FEATURES_SMEP).CODE(),
@@ -1450,6 +1460,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sTSC-DEADLINE   [%7s]", RSC(FEATURES_TSC_DEADLN).CODE(),
 		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, POWERED(bix));
+
+	bix = Shm->Proc.Features.ExtFeature.EDX.TSXLDTRK == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sTSX-LDTRK   [%7s]", RSC(FEATURES_TSXLDTRK).CODE(),
+		width - 24 - RSZ(FEATURES_TSXLDTRK), hSpace, POWERED(bix));
+
+	bix = Shm->Proc.Features.ExtFeature.ECX.UMIP == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
+		width - 19 - RSZ(FEATURES_UMIP), hSpace, POWERED(bix));
 
 	bix = Shm->Proc.Features.Std.EDX.VME == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
