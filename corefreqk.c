@@ -3823,28 +3823,37 @@ void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen)
 static void TargetClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
-	unsigned int pstate , target = Proc->Boost[pClockZen->BoostIndex]
+	unsigned int COF, pstate,target = Proc->Boost[pClockZen->BoostIndex]
 					+ pClockZen->pClockMod->Offset;
+	unsigned short WrRdMSR = 0;
+
+    if (target == 0) {
+	pstate = 0;	/* AUTO Frequency is User requested.	*/
+	WrRdMSR = 1;
+    } else {
     /* Look-up for the first enabled P-State with the same target frequency */
-    for (pstate = 0; pstate <= 7; pstate++) {
-	PSTATEDEF PstateDef = {.value = 0};
-	RDMSR(PstateDef, pClockZen->PstateAddr + pstate);
-
-	if (PstateDef.Family_17h.PstateEn)
+	for (pstate = 0; (pstate <= 7) && (WrRdMSR == 0); pstate++)
 	{
-		unsigned int COF=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
+		PSTATEDEF PstateDef = {.value = 0};
+		RDMSR(PstateDef, pClockZen->PstateAddr + pstate);
 
+	    if (PstateDef.Family_17h.PstateEn)
+	    {
+		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId );
 		if (COF == target) {
-			PSTATECTRL PstateCtrl = {.value = 0};
-			/* Command a new target P-state */
-			RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
-			PstateCtrl.PstateCmd = pstate;
-			WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
-
-			return;
+			WrRdMSR = 1;
 		}
+	    }
 	}
+    }
+    if (WrRdMSR == 1)
+    {
+	PSTATECTRL PstateCtrl = {.value = 0};
+	/* Command a new target P-state */
+	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+	PstateCtrl.PstateCmd = pstate;
+	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
     }
 }
 
@@ -9494,7 +9503,7 @@ static int CoreFreqK_SetBoost(int state)
 {
 	Controller_Stop(1);
 	TurboBoost_Enable = (state != 0);
-	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+	Aggregate_Reset(BOOST(TGT),	0);
 	Aggregate_Reset(BOOST(HWP_MIN), 0);
 	Aggregate_Reset(BOOST(HWP_MAX), 0);
 	Aggregate_Reset(BOOST(HWP_TGT), 0);
@@ -9628,7 +9637,7 @@ static void Policy_Core2_SetTarget(void *arg)
 	}
 	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
-					Proc->Boost[BOOST(MIN)],
+					0,
 					Get_Core2_Target );
     }
 #endif /* CONFIG_CPU_FREQ */
@@ -9657,7 +9666,7 @@ static void Policy_Nehalem_SetTarget(void *arg)
 	}
 	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
-					Proc->Boost[BOOST(MIN)],
+					0,
 					Get_Nehalem_Target );
     }
 #endif /* CONFIG_CPU_FREQ */
@@ -9686,7 +9695,7 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 	}
 	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
 					(*ratio),
-					Proc->Boost[BOOST(MIN)],
+					0,
 					Get_SandyBridge_Target );
     }
 #endif /* CONFIG_CPU_FREQ */
@@ -10199,7 +10208,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = 0;
 		break;
 	case COREFREQ_TOGGLE_ON:
-		Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+		Aggregate_Reset(BOOST(TGT),	0);
 		Aggregate_Reset(BOOST(HWP_MIN), 0);
 		Aggregate_Reset(BOOST(HWP_MAX), 0);
 		Aggregate_Reset(BOOST(HWP_TGT), 0);
@@ -10337,8 +10346,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_ON:
 				Controller_Stop(1);
 				TurboBoost_Enable = prm.dl.lo;
-				Aggregate_Reset(BOOST(TGT),
-						Proc->Boost[BOOST(MIN)]);
+				Aggregate_Reset(BOOST(TGT),	0);
 				Aggregate_Reset(BOOST(HWP_MIN), 0);
 				Aggregate_Reset(BOOST(HWP_MAX), 0);
 				Aggregate_Reset(BOOST(HWP_TGT), 0);
@@ -10567,7 +10575,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		CLOCK_ARG clockMod = {.sllong = arg};
 		Controller_Stop(1);
 		rc = Arch[Proc->ArchID].ClockMod(&clockMod);
-		Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+		Aggregate_Reset(BOOST(TGT),	0);
 		Aggregate_Reset(BOOST(HWP_MIN), 0);
 		Aggregate_Reset(BOOST(HWP_MAX), 0);
 		Aggregate_Reset(BOOST(HWP_TGT), 0);
@@ -10728,7 +10736,7 @@ static int CoreFreqK_resume(struct device *dev)
 		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	}
 
-	Aggregate_Reset(BOOST(TGT), Proc->Boost[BOOST(MIN)]);
+	Aggregate_Reset(BOOST(TGT),	0);
 	Aggregate_Reset(BOOST(HWP_MIN), 0);
 	Aggregate_Reset(BOOST(HWP_MAX), 0);
 	Aggregate_Reset(BOOST(HWP_TGT), 0);

@@ -632,7 +632,7 @@ TGrid *PrintRatioFreq(	Window *win, struct FLIP_FLOP *CFlop,
 		pGrid = PUT(_key, attrib, width, 0,
 			"%.*s""%s""%.*s""%7s""%.*s""%c%4d %c",
 		(int) (20 - strlen(pfx)), hSpace, pfx, 3, hSpace,
-			RSC(NOT_AVAILABLE).CODE(),
+			RSC(AUTOMATIC).CODE(),
 			20, hSpace,
 			SymbUnlock[syc][0],
 			(*pRatio),
@@ -662,7 +662,7 @@ void RefreshRatioFreq(TGrid *grid, DATA_TYPE data)
     if ((Freq_MHz > 0.0) && (Freq_MHz < CLOCK_MHz(double, UNIT_GHz(10.0)))) {
 	snprintf(item,11+8+1,"%4d%7.2f", (*data.puint), Freq_MHz);
     } else {
-	snprintf(item,11+7+1,"%4d%7s",(*data.puint),RSC(NOT_AVAILABLE).CODE());
+	snprintf(item,11+7+1,"%4d%7s",(*data.puint),RSC(AUTOMATIC).CODE());
     }
 	memcpy(&grid->cell.item[23], &item[4], 7);
 	memcpy(&grid->cell.item[51], &item[0], 4);
@@ -8099,7 +8099,7 @@ int Shortcut(SCANKEY *scan)
 	      }
 
 		ComputeRatioShifts(	COF,
-					Shm->Proc.Boost[BOOST(MIN)],
+					0,	/*	AUTO Frequency	*/
 					maxRatio,
 					&lowestShift,
 					&highestShift );
@@ -8113,7 +8113,7 @@ int Shortcut(SCANKEY *scan)
 					highestShift,
 
 					( Shm->Proc.Boost[BOOST(MIN)]
-					+ maxRatio ) >> 1,
+					+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1,
 
 					Shm->Proc.Features.Factory.Ratio
 					+ ((maxRatio - \
