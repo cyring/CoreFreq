@@ -271,6 +271,8 @@
 #define RSC_FEATURES_PSE_CODE_EN	"Page Size Extension"
 #define RSC_FEATURES_PSE36_CODE_EN	"36-bit Page Size Extension"
 #define RSC_FEATURES_PSN_CODE_EN	"Processor Serial Number"
+#define RSC_FEATURES_RDT_PQE_CODE_EN	"Resource Director Technology/PQE"
+#define RSC_FEATURES_RDT_PQM_CODE_EN	"Resource Director Technology/PQM"
 #define RSC_FEATURES_RTM_CODE_EN	"Restricted Transactional Memory"
 #define RSC_FEATURES_SMX_CODE_EN	"Safer Mode Extensions"
 #define RSC_FEATURES_SELF_SNOOP_CODE_EN "Self-Snoop"

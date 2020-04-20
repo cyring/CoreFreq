@@ -1425,6 +1425,16 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sPSN   [%7s]", RSC(FEATURES_PSN).CODE(),
 		width - 18 - RSZ(FEATURES_PSN), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtFeature.EBX.PQE == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sRDT-A   [%7s]", RSC(FEATURES_RDT_PQE).CODE(),
+		width - 20 - RSZ(FEATURES_RDT_PQE), hSpace, POWERED(bix));
+
+	bix = Shm->Proc.Features.ExtFeature.EBX.PQM == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sRDT-M   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
+		width - 20 - RSZ(FEATURES_RDT_PQM), hSpace, POWERED(bix));
+
 	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sRTM   [%7s]", RSC(FEATURES_RTM).CODE(),
