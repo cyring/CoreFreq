@@ -3825,14 +3825,14 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	unsigned int COF, pstate,target = Proc->Boost[pClockZen->BoostIndex]
 					+ pClockZen->pClockMod->Offset;
-	unsigned short WrRdMSR = 0;
+	unsigned short RdWrMSR = 0;
 
     if (target == 0) {
 	pstate = 0;	/* AUTO Frequency is User requested.	*/
-	WrRdMSR = 1;
+	RdWrMSR = 1;
     } else {
     /* Look-up for the first enabled P-State with the same target frequency */
-	for (pstate = 0; (pstate <= 7) && (WrRdMSR == 0); pstate++)
+	for (pstate = 0; pstate <= 7; pstate++)
 	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, pClockZen->PstateAddr + pstate);
@@ -3842,12 +3842,13 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId );
 		if (COF == target) {
-			WrRdMSR = 1;
+			RdWrMSR = 1;
+			break;
 		}
 	    }
 	}
     }
-    if (WrRdMSR == 1)
+    if (RdWrMSR == 1)
     {
 	PSTATECTRL PstateCtrl = {.value = 0};
 	/* Command a new target P-state */
