@@ -3681,7 +3681,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy*) ;
 static int CoreFreqK_Policy_Init(struct cpufreq_policy*) ;
 #if ((LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 19))   \
-  && (LINUX_VERSION_CODE <= KERNEL_VERSION(5, 4, 25)))  \
+  && (LINUX_VERSION_CODE <= KERNEL_VERSION(5, 5, 0)))  \
   || (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 5, 3))
 static int CoreFreqK_Policy_Verify(struct cpufreq_policy_data*) ;
 #else
