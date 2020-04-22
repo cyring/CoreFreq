@@ -57,17 +57,17 @@ The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI col
 * The GNU C Library
 
 ### Build
-0. Software needed:  
+1. Software needed:  
 * GNU C Compiler with GNU extensions
 * GNU Make tool
 * Linux Kernel Header files to build modules
   * Mandatory : `CONFIG_MODULES, CONFIG_SMP, CONFIG_X86_MSR`
   * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_HAVE_PERF_EVENTS, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ`
 
-1. Clone the source code into a working directory.  
+2. Clone the source code into a working directory.  
  :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
  
-2. Build the programs.  
+3. Build the programs.  
 :heavy_dollar_sign:`cd CoreFreq`  
 :heavy_dollar_sign:`make`  
 ```
@@ -86,7 +86,7 @@ make[1]: Entering directory '/usr/lib/modules/x.y.z/build'
   LD [M]  /workdir/CoreFreq/corefreqk.ko
 make[1]: Leaving directory '/usr/lib/modules/x.y.z/build'
 ```
-3. (Optionally) Sign the driver
+4. (Optionally) Sign the driver
 If module signature verification is enabled into Kernel, you will have to sign the `corefreqk.ko` driver.  
 * See [module-signing.rst](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/module-signing.rst) from the Kernel documentation
 * See the [Gentoo Wiki](https://wiki.gentoo.org/wiki/Signed_kernel_module_support#Manually_signing_modules)
@@ -94,18 +94,16 @@ If module signature verification is enabled into Kernel, you will have to sign t
 ### Install
 
 #### Manual
-4. Copying _CoreFreq_ into the binaries directory
+5. Copying _CoreFreq_ into the binaries directory  
 :hash:`make install`  
-or  
-:heavy_dollar_sign:`sudo make install`  
 
 #### Distribution package
-5. Although _CoreFreq_ is released in the ArchLinux AUR ; other sources of distribution may require to reload the systemd daemons:  
+6. Although _CoreFreq_ is released in the ArchLinux AUR ; other sources of distribution may require to reload the systemd daemons:  
 :hash:`systemctl daemon-reload`  
 
 ### Start
 
-6. When built from source code:
+7. When built from source code:
 
 * Load the kernel module, from current directory, as root.  
 :hash:`insmod corefreqk.ko`  
@@ -114,7 +112,7 @@ or
 * Start the client, as a user (_in another terminal or console_).  
 :heavy_dollar_sign:`corefreq-cli`  
 
-7. When manually installed or from a distribution package:  
+8. When manually installed or from a distribution package:  
 
 * Load the kernel module, as root.  
 :hash:`modprobe corefreqk`  
@@ -125,11 +123,11 @@ or
 
 ### Stop
 
-8. Press [CTRL]+[x] or [CTRL]+[C] to stop the client.
+9. Press [CTRL]+[x] or [CTRL]+[C] to stop the client.
 
-9. Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
+10. Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
 
-10. Unload the kernel module  
+11. Unload the kernel module  
 :hash:`rmmod corefreqk.ko`  
 
 ### Try
@@ -204,34 +202,24 @@ CPU     IPS            IPC            CPI
 * Q: The UI shows erratic counters values !  
 
   A: In the kernel boot command argument line, *disable the NMI Watchdog*  
-```
-nmi_watchdog=0
-```  
+`nmi_watchdog=0`  
 
 
 * Q: The Processor does not enter the C-States ?  
 
   A: Check if at least one Idle driver is running.  
      Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
-```
-intel_idle.max_cstate=value
-```  
-
+`intel_idle.max_cstate=value`  
   A: CoreFreq can also register itself as a cpuidle driver.  
   This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
-```
-modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0
-```  
+`modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
   Start the CoreFreq driver with the `Register_CPU_Idle` parameter:  
-```
-insmod corefreqk.ko Register_CPU_Idle=1
-```  
+:hash:`insmod corefreqk.ko Register_CPU_Idle=1`  
 
 
 * Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
 
   A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
-
 :hash:`insmod corefreqk.ko SleepInterval=value`  
   where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
@@ -246,7 +234,6 @@ insmod corefreqk.ko Register_CPU_Idle=1
   4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
 
   The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
-
 :hash:`insmod corefreqk.ko AutoClock=0`  
 
   _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
@@ -255,10 +242,7 @@ insmod corefreqk.ko Register_CPU_Idle=1
 * Q: The CPU temperature is wrong ?  
 
   A: CoreFreq employs two msr to calculate the temperature.  
-
-```
-MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
-```  
+`MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]`  
 
   _Remark_: if the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
 
@@ -266,14 +250,12 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 * Q: The menu option "Memory Controller" does not open any window ?  
 
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
-
 :hash:`insmod corefreqk.ko Experimental=1`  
 
 
 * Q: The Instructions and PMC0 counters are stuck to zero ?  
 
   A: The PCE bit of control register CR4 allows RDPMC in ring 3  
-
 :hash:`echo "2" > /sys/devices/cpu/rdpmc`  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
@@ -285,21 +267,12 @@ MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]
 
   A: With `cpufreq` built into Kernel, allow CoreFreq to register as a cpufreq driver.  
   In the Kernel boot command line, two ways:  
-  1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
-```
-cpufreq.off=1
-```  
-  2. blacklist any P-state driver; such as:  
-
-```
-modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable
-```  
-
-  Next, load the CoreFreq driver with its `Register_CPU_Freq` parameter:  
-
-```
-insmod corefreqk.ko Register_CPU_Freq=1
-```  
+ 1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
+`cpufreq.off=1`  
+ 2. blacklist any P-state driver; such as:  
+`modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
+ next, load the CoreFreq driver with its `Register_CPU_Freq` parameter:  
+:hash:`insmod corefreqk.ko Register_CPU_Freq=1`  
 
 
 * Q: The CPU freeze or the System crash.  
@@ -313,7 +286,6 @@ insmod corefreqk.ko Register_CPU_Freq=1
   A: Use the `modinfo` command to list them:  
 
 ```
-
 $ modinfo corefreqk.ko
 parm:           ArchID:Force an architecture (ID) (int)
 parm:           AutoClock:Auto estimate the clock frequency (int)
@@ -355,7 +327,6 @@ parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
 parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)
 parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
 parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
-
 ```  
 
 ## Algorithm
