@@ -264,6 +264,7 @@
 #define RSC_FEATURES_SMEP_CODE_FR	"Supervisor-Mode Execution Prevention"
 #define RSC_FEATURES_TSC_CODE_FR	"Time Stamp Counter"
 #define RSC_FEATURES_TSC_DEADLN_CODE_FR "Time Stamp Counter Deadline"
+#define RSC_FEATURES_TSXABORT_CODE_FR	"TSX Force Abort MSR Register"
 #define RSC_FEATURES_TSXLDTRK_CODE_FR	"TSX Suspend Load Address Tracking"
 #define RSC_FEATURES_UMIP_CODE_FR	"User-Mode Instruction Prevention"
 #define RSC_FEATURES_VME_CODE_FR	"Virtual Mode Extension"

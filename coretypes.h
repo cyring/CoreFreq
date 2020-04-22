@@ -645,7 +645,8 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX512_VP2INTER :  9-8, /* AVX512_VP2INTERSECT		*/
 		Reserved3	: 10-9,
 		MD_CLEAR_Cap	: 11-10,
-		Reserved4	: 14-11,
+		Reserved4	: 13-11,
+		TSX_FORCE_ABORT : 14-13, /* MSR TSX_FORCE_ABORT capable	*/
 		SERIALIZE	: 15-14, /* SERIALIZE instruction	*/
 		Hybrid		: 16-15, /* Hybrid part processor	*/
 		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/

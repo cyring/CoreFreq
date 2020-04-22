@@ -1471,6 +1471,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sTSC-DEADLINE   [%7s]", RSC(FEATURES_TSC_DEADLN).CODE(),
 		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtFeature.EDX.TSX_FORCE_ABORT == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sTSX-ABORT   [%7s]", RSC(FEATURES_TSXABORT).CODE(),
+		width - 24 - RSZ(FEATURES_TSXABORT), hSpace, POWERED(bix));
+
 	bix = Shm->Proc.Features.ExtFeature.EDX.TSXLDTRK == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sTSX-LDTRK   [%7s]", RSC(FEATURES_TSXLDTRK).CODE(),

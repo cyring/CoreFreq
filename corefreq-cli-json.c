@@ -833,6 +833,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.SERIALIZE);
 					json_key(&s, "Hybrid");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.Hybrid);
+					json_key(&s, "TSX_FORCE_ABORT");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.TSX_FORCE_ABORT);
 					json_key(&s, "TSXLDTRK");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EDX.TSXLDTRK);
 					json_key(&s, "PCONFIG");
