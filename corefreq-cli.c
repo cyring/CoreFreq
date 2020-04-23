@@ -6355,10 +6355,7 @@ int Shortcut(SCANKEY *scan)
     break;
     case SCANKEY_SHIFT_f:
 	Setting.fahrCels = !Setting.fahrCels;
-	if((draw.Disposal == D_DASHBOARD)
-	||((draw.Disposal == D_MAINVIEW) && (draw.View == V_SENSORS))) {
-		draw.Flag.layout = 1;
-	}
+	draw.Flag.layout = 1;
     break;
     case SCANKEY_SHIFT_y:
 	Setting.secret = !Setting.secret;
@@ -9094,6 +9091,8 @@ void Layout_Footer(Layer *layer, CUINT row)
 			MakeAttr(BLACK, 0, BLACK, 1));
       }
     }
+	LayerAt(layer, code, 14+64, row) = Setting.fahrCels ? 'F' : 'C';
+
 	row++;
 
 	len = snprintf( buffer, MAX_UTS_LEN, "%s",
@@ -10925,20 +10924,20 @@ void Draw_Footer(Layer *layer, CUINT row)
 		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][1];
 		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot][2];
 	}
-	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][0];
-	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][1];
-	LayerAt(layer, attr, 14+64, row) = eventAttr[_tmp][2];
+	LayerAt(layer, attr, 14+61, row) = eventAttr[_tmp][0];
+	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][1];
+	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][2];
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop, SProc);
 
-	LayerAt(layer, code, 76, row) = buffer[0];
-	LayerAt(layer, code, 77, row) = buffer[1];
-	LayerAt(layer, code, 78, row) = buffer[2];
+	LayerAt(layer, code, 75, row) = buffer[0];
+	LayerAt(layer, code, 76, row) = buffer[1];
+	LayerAt(layer, code, 77, row) = buffer[2];
 
-	LayerAt(layer, code, 68, row) = buffer[3];
-	LayerAt(layer, code, 69, row) = buffer[4];
-	LayerAt(layer, code, 70, row) = buffer[5];
-	LayerAt(layer, code, 71, row) = buffer[6];
+	LayerAt(layer, code, 67, row) = buffer[3];
+	LayerAt(layer, code, 68, row) = buffer[4];
+	LayerAt(layer, code, 69, row) = buffer[5];
+	LayerAt(layer, code, 70, row) = buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
@@ -11170,7 +11169,7 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	Draw_Footer(layer, row);
 }
 
-void Layout_Card_Core(Layer *layer, Card* card)
+void Layout_Card_Core(Layer *layer, Card *card)
 {
 	unsigned int digit[3];
 	unsigned int _cpu = card->data.dword.lo;
@@ -11220,7 +11219,7 @@ void Layout_Card_Core(Layer *layer, Card* card)
 		(card->origin.row + 3)) = digit[2] + '0';
 }
 
-void Layout_Card_CLK(Layer *layer, Card* card)
+void Layout_Card_CLK(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_CLK, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11230,7 +11229,7 @@ void Layout_Card_CLK(Layer *layer, Card* card)
 			hCLK.length, hCLK.attr, hCLK.code);
 }
 
-void Layout_Card_Uncore(Layer *layer, Card* card)
+void Layout_Card_Uncore(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_UNCORE, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11245,7 +11244,7 @@ void Layout_Card_Uncore(Layer *layer, Card* card)
 			hUncore.length, hUncore.attr, hUncore.code);
 }
 
-void Layout_Card_Bus(Layer *layer, Card* card)
+void Layout_Card_Bus(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_BUS, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11279,7 +11278,7 @@ void Layout_Card_Bus(Layer *layer, Card* card)
 			(double) Shm->Uncore.Bus.Speed);
 }
 
-void Layout_Card_MC(Layer *layer, Card* card)
+void Layout_Card_MC(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_MC, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11315,7 +11314,7 @@ void Layout_Card_MC(Layer *layer, Card* card)
 	}
 }
 
-void Layout_Card_Load(Layer *layer, Card* card)
+void Layout_Card_Load(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_LOAD, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11325,7 +11324,7 @@ void Layout_Card_Load(Layer *layer, Card* card)
 			hLoad.length, hLoad.attr, hLoad.code);
 }
 
-void Layout_Card_Idle(Layer *layer, Card* card)
+void Layout_Card_Idle(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_IDLE, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11335,7 +11334,7 @@ void Layout_Card_Idle(Layer *layer, Card* card)
 			hIdle.length, hIdle.attr, hIdle.code);
 }
 
-void Layout_Card_RAM(Layer *layer, Card* card)
+void Layout_Card_RAM(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_RAM, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11353,19 +11352,25 @@ void Layout_Card_RAM(Layer *layer, Card* card)
 	    for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 		totalDimm += Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size;
 	    }
-	unit = ByteReDim(totalDimm, 2, &totalRAM);
+	unit = ByteReDim(totalDimm, 3, &totalRAM);
 	if ((unit >= 0) && (unit < 4)) {
 		char symbols[4] = {'M', 'G', 'T', 'P'};
 		symbol = symbols[unit];
 	}
       } else {
-	unit = ByteReDim(Shm->SysGate.memInfo.totalram, 2, &totalRAM);
+	unit = ByteReDim(Shm->SysGate.memInfo.totalram, 3, &totalRAM);
 	if ((unit >= 0) && (unit < 4)) {
 		char symbols[4] = {'K', 'M', 'G', 'T'};
 		symbol = symbols[unit];
 	}
       }
+      if (totalRAM > 99) {
+	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 1);
+	snprintf(buffer, 20+1+1, "%3lu", totalRAM);
+      } else {
+	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 0);
 	snprintf(buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
+      }
 	memcpy(&hMem.code[8], buffer, 3);
 
 	LayerCopyAt(	layer, hMem.origin.col, hMem.origin.row,
@@ -11375,7 +11380,7 @@ void Layout_Card_RAM(Layer *layer, Card* card)
     }
 }
 
-void Layout_Card_Task(Layer *layer, Card* card)
+void Layout_Card_Task(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_TASK, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
@@ -11422,11 +11427,13 @@ void Layout_Dashboard(Layer *layer)
 	}
 }
 
-void Draw_Card_Core(Layer *layer, Card* card)
+void Draw_Card_Core(Layer *layer, Card *card)
 {
   if (card->data.dword.hi == RENDER_OK)
   {
-	unsigned int digit[3];
+	const enum FORMULA_SCOPE
+		thermalScope = SCOPE_OF_FORMULA(Shm->Proc.thermalFormula);
+
 	unsigned int _cpu = card->data.dword.lo;
 
 	struct FLIP_FLOP *CFlop = \
@@ -11447,22 +11454,43 @@ void Draw_Card_Core(Layer *layer, Card* card)
 		warning = MakeAttr(RED, 0, BLACK, 1);
 	}
 
-	Dec2Digit( 3, Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
-					: CFlop->Thermal.Temp, digit );
-
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
 	LayerAt(layer, attr, (card->origin.col + 7), (card->origin.row + 3)) = \
 	LayerAt(layer, attr, (card->origin.col + 8), (card->origin.row + 3)) = \
 									warning;
+	LayerAt(layer, code, (card->origin.col + 6), (card->origin.row + 3)) = \
+	LayerAt(layer, code, (card->origin.col + 7), (card->origin.row + 3)) = \
+	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
+									0x20;
+    switch (thermalScope) {
+    case FORMULA_SCOPE_NONE:
+	break;
+    case FORMULA_SCOPE_PKG:
+	if (_cpu == Shm->Proc.Service.Core) {
+		/* Fallthrough */
+	} else { break; }
+    case FORMULA_SCOPE_CORE:
+	if ((Shm->Cpu[_cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[_cpu].Topology.ThreadID == -1)) {
+		/* Fallthrough */
+	} else { break; }
+    case FORMULA_SCOPE_SMT:
+	{
+	unsigned int digit[3];
+	Dec2Digit( 3, Setting.fahrCels	? Cels2Fahr(CFlop->Thermal.Temp)
+					: CFlop->Thermal.Temp, digit );
 
 	LayerAt(layer, code, (card->origin.col + 6), (card->origin.row + 3)) = \
-					digit[0] ? digit[0] + '0' : 0x20;
+						digit[0] ? digit[0] + '0':0x20;
 
 	LayerAt(layer, code, (card->origin.col + 7), (card->origin.row + 3)) = \
 				(digit[0] | digit[1]) ? digit[1] + '0' : 0x20;
 
 	LayerAt(layer, code, (card->origin.col + 8), (card->origin.row + 3)) = \
 								digit[2] + '0';
+	}
+	break;
+    }
   }
   else if (card->data.dword.hi == RENDER_KO)
   {
@@ -11477,7 +11505,7 @@ void Draw_Card_Core(Layer *layer, Card* card)
   }
 }
 
-void Draw_Card_CLK(Layer *layer, Card* card)
+void Draw_Card_CLK(Layer *layer, Card *card)
 {
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
@@ -11495,7 +11523,7 @@ void Draw_Card_CLK(Layer *layer, Card* card)
 		buffer, 5);
 }
 
-void Draw_Card_Uncore(Layer *layer, Card* card)
+void Draw_Card_Uncore(Layer *layer, Card *card)
 {
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	double Uncore = CLOCK_MHz(double, PFlop->Uncore.FC0);
@@ -11520,7 +11548,7 @@ void Draw_Card_Idle(Layer *layer, Card* card)
 	Idle2LCD(layer, card->origin.col, card->origin.row, percent);
 }
 
-void Draw_Card_RAM(Layer *layer, Card* card)
+void Draw_Card_RAM(Layer *layer, Card *card)
 {
     if (card->data.dword.hi == RENDER_OK)
     {
@@ -11551,7 +11579,7 @@ void Draw_Card_RAM(Layer *layer, Card* card)
     }
 }
 
-void Draw_Card_Task(Layer *layer, Card* card)
+void Draw_Card_Task(Layer *layer, Card *card)
 {
     if (card->data.dword.hi == RENDER_OK)
     {
@@ -11600,7 +11628,7 @@ void Draw_Card_Task(Layer *layer, Card* card)
     }
 }
 
-void Dont_Draw_Card(Layer *layer, Card* card)
+void Dont_Draw_Card(Layer *layer, Card *card)
 {
 }
 

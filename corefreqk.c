@@ -10114,6 +10114,7 @@ static long CoreFreqK_Thermal_Scope(int scope)
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
 	Proc->thermalFormula=(KIND_OF_FORMULA(Proc->thermalFormula)<<8)|scope;
+
 	return (0);
     } else {
 	return (-EINVAL);
@@ -10125,10 +10126,11 @@ static long CoreFreqK_Voltage_Scope(int scope)
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
 	Proc->voltageFormula=(KIND_OF_FORMULA(Proc->voltageFormula)<<8)|scope;
+
 	return (0);
-} else {
+    } else {
 	return (-EINVAL);
-}
+    }
 }
 
 static long CoreFreqK_Power_Scope(int scope)
@@ -10136,10 +10138,11 @@ static long CoreFreqK_Power_Scope(int scope)
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
 	Proc->powerFormula = (KIND_OF_FORMULA(Proc->powerFormula) << 8)|scope;
+
 	return (0);
-} else {
+    } else {
 	return (-EINVAL);
-}
+    }
 }
 
 static void Compute_Clock_SMT(void)
