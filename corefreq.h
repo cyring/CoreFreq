@@ -53,9 +53,9 @@ enum CHIPSET {
 
 typedef struct
 {
-	Bit64				OffLine __attribute__ ((aligned (8)));
+	Bit64				Toggle __attribute__ ((aligned (8)));
 
-	unsigned int			Toggle;
+	Bit64				OffLine __attribute__ ((aligned (8)));
 
 	struct
 	{
@@ -242,6 +242,8 @@ typedef struct
 {
 	volatile unsigned long long	Sync __attribute__ ((aligned (8)));
 
+	Bit64				Toggle __attribute__ ((aligned (8)));
+
 	FEATURES			Features;
 
 	Bit64			PowerNow	__attribute__ ((aligned (8)));
@@ -297,8 +299,6 @@ typedef struct
 					PM_version;
 
 	unsigned int			Top;
-
-	unsigned int			Toggle;
 
 	struct PKG_FLIP_FLOP {
 		struct {
@@ -474,8 +474,8 @@ typedef struct
 
 #define THRESHOLD_LOWEST_CAPPED_THERMAL 	1
 #define THRESHOLD_LOWEST_CAPPED_VOLTAGE 	0.15
-#define THRESHOLD_LOWEST_CAPPED_ENERGY		0.5
-#define THRESHOLD_LOWEST_CAPPED_POWER		0.5
+#define THRESHOLD_LOWEST_CAPPED_ENERGY		0.0001
+#define THRESHOLD_LOWEST_CAPPED_POWER		0.0001
 #define THRESHOLD_LOWEST_TRIGGER_THERMAL	0
 #define THRESHOLD_LOWEST_TRIGGER_VOLTAGE	0.0
 #define THRESHOLD_LOWEST_TRIGGER_ENERGY 	0.0
