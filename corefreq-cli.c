@@ -3818,7 +3818,9 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 {
 	Window *wMenu = CreateWindow(	wLayer, id,
 					3, 13, 3, 0,
-					WINFLAG_NO_STOCK|WINFLAG_NO_SCALE );
+					  WINFLAG_NO_STOCK
+					| WINFLAG_NO_SCALE
+					| WINFLAG_NO_BORDER );
     if (wMenu != NULL)
     {
 /* Top Menu */
@@ -4759,7 +4761,9 @@ Window *CreateSortByField(unsigned long long id)
 	Window *wSortBy = CreateWindow( wLayer, id,
 					1, SORTBYCOUNT,
 				33, TOP_HEADER_ROW + draw.Area.MaxRows + 2,
-					WINFLAG_NO_STOCK|WINFLAG_NO_SCALE );
+					WINFLAG_NO_STOCK
+					| WINFLAG_NO_SCALE
+					| WINFLAG_NO_BORDER );
 	if (wSortBy != NULL) {
 		StoreTCell(wSortBy,SORTBY_STATE,RSC(TASKS_SORTBY_STATE).CODE(),
 						MAKE_PRINT_DROP);
@@ -4823,7 +4827,7 @@ Window *CreateTracking(unsigned long long id)
 		Window *wTrack = CreateWindow(wLayer, id,
 				1, TOP_HEADER_ROW + draw.Area.MaxRows * 2,
 				margin, TOP_HEADER_ROW,
-				WINFLAG_NO_STOCK);
+				WINFLAG_NO_STOCK | WINFLAG_NO_BORDER);
 
 	    if (wTrack != NULL)
 	    {

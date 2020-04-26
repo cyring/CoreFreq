@@ -764,6 +764,20 @@ Stock *SearchStockById(unsigned long long id)
 	return (walker);
 }
 
+#define ComputeLazyBottomRow(_win, withBorder)				\
+({									\
+    if (_win->lazyComp.rowLen == 0)					\
+    {									\
+	CUINT	_col;							\
+	for (	_col = 0, _win->lazyComp.rowLen = 2 * withBorder;	\
+		_col < _win->matrix.size.wth;				\
+		_col++ )						\
+	{								\
+		_win->lazyComp.rowLen += TCellAt(_win, _col, 0).length; \
+	}								\
+    }									\
+})
+
 CUINT LazyCompBottomRow(Window *win)
 {
     if ((win->dim > 0) && win->matrix.size.wth)
@@ -775,7 +789,7 @@ CUINT LazyCompBottomRow(Window *win)
 void DestroyWindow(Window *win)
 {
     if (win != NULL) {
-	if (BITVAL(win->flag, WINMASK_NO_STOCK) == 0) {
+	if (!(win->flag & WINFLAG_NO_STOCK)) {
 	    if (win->stock == NULL)
 	    {
 		win->stock=AppendStock(CreateStock(win->id,win->matrix.origin));
@@ -821,16 +835,13 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 		win->matrix.size.hth = height;
 
 		win->flag = flag;
-	    if ((BITVAL(win->flag, WINMASK_NO_STOCK) == 0)
-	    && ((win->stock = SearchStockById(win->id)) != NULL))
+	    if (win->flag & WINFLAG_NO_STOCK)
 	    {
-		win->matrix.origin = win->stock->geometry.origin;
-	    } else {
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
+	    } else if ((win->stock = SearchStockById(win->id)) != NULL) {
+		win->matrix.origin = win->stock->geometry.origin;
 	    }
-		MotionReScale(win, NULL);
-
 	    for (idx = 0; idx < 2; idx++) {
 		win->hook.color[idx].select = select[idx];
 		win->hook.color[idx].border = border[idx];
@@ -950,10 +961,6 @@ void ForEachCellPrint(Window *win, WinList *list)
 	CUINT col, row;
 	ATTRIBUTE border = win->hook.color[(GetFocus(list) == win)].border;
 
-    if (win->lazyComp.rowLen == 0) {
-	for (col=0, win->lazyComp.rowLen=2; col < win->matrix.size.wth; col++)
-		win->lazyComp.rowLen += TCellAt(win, col, 0).length;
-    }
 	/* Top, Left Border Corner					*/
 	LayerAt(win->layer, attr,
 		(win->matrix.origin.col - 1),
@@ -1261,69 +1268,37 @@ void MotionExpand_Win(Window *win)
     }
 }
 
-void MotionReScale(Window *win, WinList *list)
+void MotionReScale(Window *win)
 {
-    if (BITVAL(win->flag, WINMASK_NO_SCALE) == 0)
-    {
-	CSINT col = -1, row = -1, height = -1;
-	const CSINT rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
+	CSINT	col = -1, row = -1, height = -1;
+	CSINT	rightSide = CUMAX(MIN_WIDTH, GetScreenSize().width)
 				- win->lazyComp.rowLen,
-		scaledHeight = GetScreenSize().height - win->matrix.size.hth;
+		bottomSide = GetScreenSize().height - win->matrix.size.hth;
 
-	if ((rightSide > 0) && (win->matrix.origin.col > rightSide))
+	if (rightSide > 0 && win->matrix.origin.col > rightSide)
 	{
-		col = rightSide + 1;
+		col = rightSide + !(win->flag & WINFLAG_NO_BORDER);
 	}
-	if (scaledHeight > 0) {
-		if (win->matrix.origin.row >= scaledHeight)
-		{
-			row = scaledHeight;
-		    if (row <= 2) {
-			row = 1;
-			height = GetScreenSize().height - 2;
-		    } else {
-			row--;
-		    }
-		}
-	} else {
-		row = 1;
-		height = GetScreenSize().height - 2;
-	}
-	if ((col > 0) || (row > 0) || (height > 0))
+	if (bottomSide < 0 && !(win->flag & WINFLAG_NO_SCALE))
 	{
-		if (list != NULL) {
-			EraseWindowWithBorder(win);
-		}
-		if (col > 0) {
-			win->matrix.origin.col = col;
-		}
-		if (row > 0) {
-			win->matrix.origin.row = row;
-		}
-		if (height > 0) {
-			win->matrix.size.hth = height;
-			LazyCompWindow(win);
-		}
-		if (list != NULL) {
-			if (win->hook.Print != NULL)
-				win->hook.Print(win, list);
-			else
-				ForEachCellPrint(win, list);
-		}
+		height	= win->matrix.size.hth + bottomSide
+			- !(win->flag & WINFLAG_NO_BORDER) * 2;
+
+		bottomSide = GetScreenSize().height - height;
 	}
-    }
-}
-
-void ReScaleAllWindows(WinList *list)
-{
-	if (!IsDead(list)) {
-		Window *walker = GetHead(list);
-		do
-		{
-			MotionReScale(walker, list);
-
-			walker = GetNext(walker);
-		} while (!IsHead(list, walker)) ;
+	if (bottomSide > 0 && win->matrix.origin.row >= bottomSide)
+	{
+		row = bottomSide - !(win->flag & WINFLAG_NO_BORDER);
+	}
+	if (col > 0 && win->matrix.origin.col != col) {
+		win->matrix.origin.col = col;
+	}
+	if (row > 0 && win->matrix.origin.row != row) {
+		win->matrix.origin.row = row;
+	}
+	if (height > 0 && win->matrix.size.hth != height) {
+		win->matrix.size.hth = height;
+		LazyCompWindow(win);
 	}
 }
 
@@ -1435,12 +1410,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 void ForEachCellPrint_Drop(Window *win, void *plist)
 {
 	WinList *list = (WinList *) plist;
-	CUINT col, row;
-
-	if (win->lazyComp.rowLen == 0) {
-		for (col = 0; col < win->matrix.size.wth; col++)
-			win->lazyComp.rowLen += TCellAt(win, col, 0).length;
-	}
+	CUINT row;
 	for (row = 0; row < win->matrix.size.hth; row++) {
 	    if (TCellAt(win,
 		(win->matrix.scroll.horz + win->matrix.select.col),
@@ -1573,19 +1543,28 @@ void MotionEnd_Menu(Window *win)
 	win->matrix.select.row = row;
 }
 
+#define Call_PrintHook(_win, _list)					\
+({									\
+	ComputeLazyBottomRow(_win, !(_win->flag & WINFLAG_NO_BORDER));	\
+									\
+	if (_win->hook.Print != NULL) {					\
+		MotionReScale(_win);					\
+		_win->hook.Print(_win, _list);				\
+	} else {							\
+		MotionReScale(_win);					\
+		ForEachCellPrint(_win, _list);				\
+	}								\
+})
+
 void PrintWindowStack(WinList *winList)
 {
 	Window *walker;
 	if ((walker = GetHead(winList)) != NULL) {
 		do {
 			walker = GetNext(walker);
-
-			if (walker->hook.Print != NULL) {
-				walker->hook.Print(walker, winList);
-			} else {
-				ForEachCellPrint(walker, winList);
-			}
-		} while (!IsHead(winList, walker)) ;
+			Call_PrintHook(walker, winList);
+		}
+		while (!IsHead(winList, walker)) ;
 	}
 }
 
@@ -1622,14 +1601,25 @@ void WindowsUpdate(WinList *winList)
     do
     {
 	walker = GetNext(walker);
-
-	if (walker->hook.Print != NULL) {
-		walker->hook.Print(walker, winList);
-	} else {
-		ForEachCellPrint(walker, winList);
-	}
-    } while (!IsHead(winList, walker)) ;
+	Call_PrintHook(walker, winList);
+    }
+    while (!IsHead(winList, walker)) ;
   }
+}
+
+void ReScaleAllWindows(WinList *list)
+{
+	if (!IsDead(list)) {
+		Window *walker = GetHead(list);
+		do
+		{
+			EraseWindowWithBorder(walker);
+			MotionReScale(walker);
+			Call_PrintHook(walker, list);
+
+			walker = GetNext(walker);
+		} while (!IsHead(list, walker)) ;
+	}
 }
 
 void HookCardFunc(CARDFUNC *with, CARDFUNC what) { *with=what; }

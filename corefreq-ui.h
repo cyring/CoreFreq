@@ -424,10 +424,9 @@ typedef struct {
 
 typedef enum {
 	WINFLAG_NO_FLAGS = 0,
-	WINMASK_NO_STOCK = 0,
 	WINFLAG_NO_STOCK = 1,
-	WINMASK_NO_SCALE = 1,
-	WINFLAG_NO_SCALE = 2
+	WINFLAG_NO_SCALE = 2,
+	WINFLAG_NO_BORDER= 4
 } WINDOW_FLAG;
 
 typedef struct _Win {
@@ -717,8 +716,6 @@ extern void MotionOriginDown_Win(Window *win) ;
 extern void MotionShrink_Win(Window *win) ;
 
 extern void MotionExpand_Win(Window *win) ;
-
-void MotionReScale(Window *win, WinList *list) ;
 
 extern void ReScaleAllWindows(WinList *list) ;
 
