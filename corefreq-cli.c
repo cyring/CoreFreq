@@ -1593,6 +1593,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sPSCHANGE_MC_NO   [%7s]",RSC(MECH_PSCHANGE_MC_NO).CODE(),
 		width - 29 - RSZ(MECH_PSCHANGE_MC_NO), hSpace, MECH[bix]);
+
+	bix = Shm->Proc.Mechanisms.SPLA;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
+		width - 19 - RSZ(MECH_SPLA), hSpace, MECH[bix]);
     }
 	return (reason);
 }

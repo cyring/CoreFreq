@@ -1413,6 +1413,9 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.Mechanisms.TAA_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * TAA_NO)
 	);
+	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+						Proc->SPLA,
+						Proc->ARCH_CAP_Mask );
 }
 
 void Package_Update(SHM_STRUCT *Shm, PROC *Proc)

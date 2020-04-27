@@ -1474,6 +1474,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.PSCHANGE_MC_NO);
 			json_key(&s, "TAA_NO");
 			json_literal(&s, "%llu", Shm->Proc.Mechanisms.TAA_NO);
+			json_key(&s, "SPLA");
+			json_literal(&s, "%llu", Shm->Proc.Mechanisms.SPLA);
 
 			json_end_object(&s);
 		}

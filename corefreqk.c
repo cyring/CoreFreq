@@ -5485,6 +5485,39 @@ void Intel_Mitigation_Mechanisms(CORE *Core)
 			BITCLR_CC(LOCKLESS, Proc->TAA_NO, Core->Bind);
 		}
 	}
+	if (Proc->Features.ExtFeature.EDX.IA32_CORE_CAP)
+	{
+		CORE_CAPABILITIES Core_Cap = {.value = 0};
+
+		RDMSR(Core_Cap, MSR_IA32_CORE_CAPABILITIES);
+
+		if (Core_Cap.SPLA_EXCEPTION) {
+			BITSET_CC(LOCKLESS, Proc->SPLA, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->SPLA, Core->Bind);
+		}
+	} else {
+		/* Source: arch/x86/kernel/cpu/intel.c			*/
+		struct SIGNATURE whiteList[] = {
+			_Icelake_UY,		/* 06_7E */
+			_Icelake_X,		/* 06_6A */
+			_Tremont_Jacobsville,	/* 06_86 */
+			_Tremont_Elkhartlake,	/* 06_96 */
+			_Tremont_Jasperlake	/* 06_9C */
+		};
+		const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+		int id;
+	    for (id = 0; id < ids; id++) {
+		if((whiteList[id].ExtFamily == Proc->Features.Std.EAX.ExtFamily)
+		 && (whiteList[id].Family == Proc->Features.Std.EAX.Family)
+		 && (whiteList[id].ExtModel == Proc->Features.Std.EAX.ExtModel)
+		 && (whiteList[id].Model == Proc->Features.Std.EAX.Model))
+		{
+			BITSET_CC(LOCKLESS, Proc->SPLA, Core->Bind);
+			break;
+		}
+	    }
+	}
 	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask, Core->Bind);
 }
@@ -5560,6 +5593,7 @@ void PerCore_Reset(CORE *Core)
 	BITCLR_CC(LOCKLESS, Proc->MDS_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->PSCHANGE_MC_NO, Core->Bind);
 	BITCLR_CC(LOCKLESS, Proc->TAA_NO	, Core->Bind);
+	BITCLR_CC(LOCKLESS, Proc->SPLA		, Core->Bind);
 }
 
 static void PerCore_Intel_Query(void *arg)
