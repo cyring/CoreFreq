@@ -10571,10 +10571,15 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	unsigned int cpu = (unsigned int) arg;
 
 	if (cpu < Proc->CPU.Count) {
-		if (!cpu_is_hotpluggable(cpu))
+		if (!cpu_is_hotpluggable(cpu)) {
 			rc = -EINVAL;
-		else
+		} else {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)
+			rc = remove_cpu(cpu);
+#else
 			rc = cpu_down(cpu);
+#endif
+		}
 	    }
 	}
     #else
@@ -10588,10 +10593,15 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	unsigned int cpu = (unsigned int) arg;
 
 	if (cpu < Proc->CPU.Count) {
-		if (!cpu_is_hotpluggable(cpu))
+		if (!cpu_is_hotpluggable(cpu)) {
 			rc = -EINVAL;
-		else
+		} else {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)
+			rc = add_cpu(cpu);
+#else
 			rc = cpu_up(cpu);
+#endif
+		}
 	    }
 	}
     #else
