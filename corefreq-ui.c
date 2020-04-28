@@ -835,13 +835,18 @@ Window *_CreateWindow(	Layer *layer, unsigned long long id,
 		win->matrix.size.hth = height;
 
 		win->flag = flag;
-	    if (win->flag & WINFLAG_NO_STOCK)
-	    {
+	  if (win->flag & WINFLAG_NO_STOCK)
+	  {
 		win->matrix.origin.col = oCol;
 		win->matrix.origin.row = oRow;
-	    } else if ((win->stock = SearchStockById(win->id)) != NULL) {
+	  } else {
+	    if ((win->stock = SearchStockById(win->id)) != NULL) {
 		win->matrix.origin = win->stock->geometry.origin;
+	    } else {
+		win->matrix.origin.col = oCol;
+		win->matrix.origin.row = oRow;
 	    }
+	  }
 	    for (idx = 0; idx < 2; idx++) {
 		win->hook.color[idx].select = select[idx];
 		win->hook.color[idx].border = border[idx];
