@@ -707,8 +707,13 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.FSGSBASE);
 					json_key(&s, "TSC_ADJUST");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.TSC_ADJUST);
+				    if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+				      || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
+					json_key(&s, "UMIP");
+				    } else {
 					json_key(&s, "SGX");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.SGX);
+				    }
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP);
 					json_key(&s, "BMI1");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.BMI1);
 					json_key(&s, "HLE");
@@ -743,8 +748,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.RDSEED);
 					json_key(&s, "ADX");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.ADX);
-					json_key(&s, "SMAP");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.SMAP);
+					json_key(&s, "SMAP_CLAC_STAC");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC);
 					json_key(&s, "AVX512_IFMA");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA);
 					json_key(&s, "CLFLUSHOPT");

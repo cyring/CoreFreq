@@ -312,11 +312,9 @@ ATTRIBUTE Rsc_SysInfoProc_Cond_Attr[4][76] = {
 	RSC_SYSINFO_PROC_COND3_ATTR
 };
 
-ATTRIBUTE Rsc_SysInfoISA_Cond_Attr[4][5][17] = {
+ATTRIBUTE Rsc_SysInfoISA_Cond_Attr[2][5][17] = {
 	RSC_SYSINFO_ISA_COND0_ATTR,
-	RSC_SYSINFO_ISA_COND1_ATTR,
-	RSC_SYSINFO_ISA_COND2_ATTR,
-	RSC_SYSINFO_ISA_COND3_ATTR
+	RSC_SYSINFO_ISA_COND1_ATTR
 };
 
 ATTRIBUTE Rsc_SysInfoFeatures_Cond_Attr[5][72] = {
@@ -657,16 +655,6 @@ RESOURCE_ST Resource[] = {
     [RSC_SYSINFO_ISA_COND_1_2]	= LDB(	Rsc_SysInfoISA_Cond_Attr[1][2]),
     [RSC_SYSINFO_ISA_COND_1_3]	= LDB(	Rsc_SysInfoISA_Cond_Attr[1][3]),
     [RSC_SYSINFO_ISA_COND_1_4]	= LDB(	Rsc_SysInfoISA_Cond_Attr[1][4]),
-    [RSC_SYSINFO_ISA_COND_2_0]	= LDB(	Rsc_SysInfoISA_Cond_Attr[2][0]),
-    [RSC_SYSINFO_ISA_COND_2_1]	= LDB(	Rsc_SysInfoISA_Cond_Attr[2][1]),
-    [RSC_SYSINFO_ISA_COND_2_2]	= LDB(	Rsc_SysInfoISA_Cond_Attr[2][2]),
-    [RSC_SYSINFO_ISA_COND_2_3]	= LDB(	Rsc_SysInfoISA_Cond_Attr[2][3]),
-    [RSC_SYSINFO_ISA_COND_2_4]	= LDB(	Rsc_SysInfoISA_Cond_Attr[2][4]),
-    [RSC_SYSINFO_ISA_COND_3_0]	= LDB(	Rsc_SysInfoISA_Cond_Attr[3][0]),
-    [RSC_SYSINFO_ISA_COND_3_1]	= LDB(	Rsc_SysInfoISA_Cond_Attr[3][1]),
-    [RSC_SYSINFO_ISA_COND_3_2]	= LDB(	Rsc_SysInfoISA_Cond_Attr[3][2]),
-    [RSC_SYSINFO_ISA_COND_3_3]	= LDB(	Rsc_SysInfoISA_Cond_Attr[3][3]),
-    [RSC_SYSINFO_ISA_COND_3_4]	= LDB(	Rsc_SysInfoISA_Cond_Attr[3][4]),
     [RSC_SYSINFO_FEATURES_COND0]= LDB(	Rsc_SysInfoFeatures_Cond_Attr[0]),
     [RSC_SYSINFO_FEATURES_COND1]= LDB(	Rsc_SysInfoFeatures_Cond_Attr[1]),
     [RSC_SYSINFO_FEATURES_COND2]= LDB(	Rsc_SysInfoFeatures_Cond_Attr[2]),

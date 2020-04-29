@@ -980,31 +980,19 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[4][5] = {
+	ATTRIBUTE *attrib[2][5] = {
 		{
-			RSC(SYSINFO_ISA_COND_0_0).ATTR(),
-			RSC(SYSINFO_ISA_COND_0_1).ATTR(),
-			RSC(SYSINFO_ISA_COND_0_2).ATTR(),
-			RSC(SYSINFO_ISA_COND_0_3).ATTR(),
-			RSC(SYSINFO_ISA_COND_0_4).ATTR()
+	/* [N],[N/N]*/	RSC(SYSINFO_ISA_COND_0_0).ATTR(),
+	/* [Y]   */	RSC(SYSINFO_ISA_COND_0_1).ATTR(),
+	/* [N/Y] */	RSC(SYSINFO_ISA_COND_0_2).ATTR(),
+	/* [Y/N] */	RSC(SYSINFO_ISA_COND_0_3).ATTR(),
+	/* [Y/Y] */	RSC(SYSINFO_ISA_COND_0_4).ATTR()
 		}, {
 			RSC(SYSINFO_ISA_COND_1_0).ATTR(),
 			RSC(SYSINFO_ISA_COND_1_1).ATTR(),
 			RSC(SYSINFO_ISA_COND_1_2).ATTR(),
 			RSC(SYSINFO_ISA_COND_1_3).ATTR(),
 			RSC(SYSINFO_ISA_COND_1_4).ATTR()
-		}, {
-			RSC(SYSINFO_ISA_COND_2_0).ATTR(),
-			RSC(SYSINFO_ISA_COND_2_1).ATTR(),
-			RSC(SYSINFO_ISA_COND_2_2).ATTR(),
-			RSC(SYSINFO_ISA_COND_2_3).ATTR(),
-			RSC(SYSINFO_ISA_COND_2_4).ATTR()
-		}, {
-			RSC(SYSINFO_ISA_COND_3_0).ATTR(),
-			RSC(SYSINFO_ISA_COND_3_1).ATTR(),
-			RSC(SYSINFO_ISA_COND_3_2).ATTR(),
-			RSC(SYSINFO_ISA_COND_3_3).ATTR(),
-			RSC(SYSINFO_ISA_COND_3_4).ATTR()
 		}
 	};
 	CUINT nl = win->matrix.size.wth;
@@ -1025,7 +1013,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		"          AES [%c]",
 		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][2 * (Shm->Proc.Features.Std.ECX.AVX
+	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.ECX.AVX
 			|  Shm->Proc.Features.ExtFeature.EBX.AVX2)
 			+ (Shm->Proc.Features.Std.ECX.AVX
 			<< Shm->Proc.Features.ExtFeature.EBX.AVX2)],
@@ -1045,7 +1033,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		"  AVX512-IFMA [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512PF],
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.AVX512PF],
 		"   AVX512-PF [%c] ",
 		Shm->Proc.Features.ExtFeature.EBX.AVX512PF ? 'Y' : 'N');
 /* Row Mark */
@@ -1061,7 +1049,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		"    AVX512-BW [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.AVX512BW ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512VL],
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.AVX512VL],
 		"   AVX512-VL [%c] ",
 		Shm->Proc.Features.ExtFeature.EBX.AVX512VL ? 'Y' : 'N');
 /* Row Mark */
@@ -1077,7 +1065,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		"  AVX512-VNMI [%c]",
 		Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG],
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG],
 		"  AVX512-ALG [%c] ",
 		Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG ? 'Y' : 'N');
 /* Row Mark */
@@ -1093,7 +1081,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		" AVX512-FMAPS [%c]",
 		Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER],
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER],
 		" AVX512-VP2I [%c] ",
 		Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER ? 'Y' : 'N');
 /* Row Mark */
@@ -1109,104 +1097,112 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CLFLUSH],
-		"      CLFLUSH [%c]",
-		Shm->Proc.Features.Std.EDX.CLFLUSH ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.CLWB],
+		"         CLWB [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.CLWB ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.CMOV],
-		"        CMOV [%c] ",
-		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
+	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.EDX.CLFLUSH
+			|  Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)
+			+ (Shm->Proc.Features.Std.EDX.CLFLUSH
+			<< Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)],
+		" CLFLUSH/O [%c/%c] ",
+		Shm->Proc.Features.Std.EDX.CLFLUSH ? 'Y' : 'N',
+		Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ? 'Y' : 'N');
 /* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC],
+		" CLAC-STAC    [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMOV],
+		"         CMOV [%c]",
+		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
+
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCHG8],
-		" CMPXCHG8B    [%c]",
+		"    CMPXCHG8B [%c]",
 		Shm->Proc.Features.Std.EDX.CMPXCHG8 ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.CMPXCHG16],
-		"   CMPXCHG16B [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.CMPXCHG16],
+		"  CMPXCHG16B [%c] ",
 		Shm->Proc.Features.Std.ECX.CMPXCHG16 ? 'Y' : 'N');
-
+/* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
-		"         F16C [%c]",
+		" F16C         [%c]",
 		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.FPU],
-		"         FPU [%c] ",
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FPU],
+		"          FPU [%c]",
 		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
-/* Row Mark */
+
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FXSR],
-		" FXSR         [%c]",
+		"         FXSR [%c]",
 		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
-		"    LAHF/SAHF [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
+		"   LAHF-SAHF [%c] ",
 		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
-
+/* Row Mark */
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
 			|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
 			+ (Shm->Proc.Features.Std.EDX.MMX
 			<< Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)],
-		"    MMX/Ext [%c/%c]",
+		" MMX/Ext    [%c/%c]",
 		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][2 * (Shm->Proc.Features.Std.ECX.MONITOR
+	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.MONITOR
 			|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt)
 			+ (Shm->Proc.Features.Std.ECX.MONITOR
 			<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt)],
-		"  MONITOR/X[%c/%c] ",
+		"  MONITOR/X [%c/%c]",
 		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N');
-/* Row Mark */
+
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.MOVBE],
-		" MOVBE        [%c]",
+		"        MOVBE [%c]",
 		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.SERIALIZE],
-		"    SERIALIZE [%c]",
-		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.PCLMULDQ],
-		"    PCLMULQDQ [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.PCLMULDQ],
+		"   PCLMULQDQ [%c] ",
 		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
-
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.POPCNT],
-		"      POPCNT [%c] ",
-		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
 /* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.POPCNT],
+		" POPCNT       [%c]",
+		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
+
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.RDRAND],
-		" RDRAND       [%c]",
+		"       RDRAND [%c]",
 		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDSEED],
 		"       RDSEED [%c]",
 		Shm->Proc.Features.ExtFeature.EBX.RDSEED ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
-		"       RDTSCP [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
+		"      RDTSCP [%c] ",
 		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
-
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.EDX.SEP],
-		"         SEP [%c] ",
-		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
 /* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX],
-		" SGX          [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SGX ? 'Y' : 'N');
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SEP],
+		" SEP          [%c]",
+		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
+
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SHA],
+		"          SHA [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.SHA ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE],
 		"          SSE [%c]",
 		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE2],
-		"         SSE2 [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.Std.EDX.SSE2],
+		"        SSE2 [%c] ",
 		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
-
-	PRT(ISA, attrib[3][Shm->Proc.Features.Std.ECX.SSE3],
-		"        SSE3 [%c] ",
-		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
 /* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSE3],
+		" SSE3         [%c]",
+		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
+
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
-		" SSSE3        [%c]",
+		"        SSSE3 [%c]",
 		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
 
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.SSE41
@@ -1217,13 +1213,37 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
 
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSE42],
-		"       SSE4.2 [%c]",
+	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.SSE42],
+		"      SSE4.2 [%c] ",
 		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
+/* Row Mark */
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.SERIALIZE],
+		" SERIALIZE    [%c]",
+		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N');
 
-	PRT(ISA, attrib[3][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
-		"     SYSCALL [%c] ",
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
+		"      SYSCALL [%c]",
 		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
+
+    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDPID],
+		"        RDPID [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.RDPID ? 'Y' : 'N');
+
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
+		"        UMIP [%c] ",
+		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N');
+    } else {	/*	Fallback to Intel CPUID				*/
+	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
+		"          SGX [%c]",
+		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N');
+
+	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.ECX.RDPID],
+		"       RDPID [%c] ",
+		Shm->Proc.Features.ExtFeature.ECX.RDPID ? 'Y' : 'N');
+    }
 
 	return (reason);
 }
@@ -1450,7 +1470,7 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
 		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, POWERED(bix));
 
-	bix = Shm->Proc.Features.ExtFeature.EBX.SMAP == 1;
+	bix = Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sSMAP   [%7s]", RSC(FEATURES_SMAP).CODE(),
 		width - 19 - RSZ(FEATURES_SMAP), hSpace, POWERED(bix));
@@ -1481,7 +1501,12 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sTSX-LDTRK   [%7s]", RSC(FEATURES_TSXLDTRK).CODE(),
 		width - 24 - RSZ(FEATURES_TSXLDTRK), hSpace, POWERED(bix));
 
-	bix = Shm->Proc.Features.ExtFeature.ECX.UMIP == 1;
+	bix = ( (Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP == 1)
+		&& (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD
+		 || Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+	  || (	(Shm->Proc.Features.ExtFeature.ECX.UMIP == 1)
+		&& (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) );
+
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
 		width - 19 - RSZ(FEATURES_UMIP), hSpace, POWERED(bix));
@@ -4667,7 +4692,7 @@ Window *CreateTopology(unsigned long long id)
 
 Window *CreateISA(unsigned long long id)
 {
-	Window *wISA = CreateWindow(wLayer, id, 4, 12, 6, TOP_HEADER_ROW+2);
+	Window *wISA = CreateWindow(wLayer, id, 4, 13, 6, TOP_HEADER_ROW+2);
 
 	if (wISA != NULL) {
 		SysInfoISA(wISA, AddCell);

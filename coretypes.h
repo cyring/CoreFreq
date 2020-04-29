@@ -573,7 +573,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		unsigned int
 		FSGSBASE	:  1-0, /* Common x86			*/
 		TSC_ADJUST	:  2-1, /* IA32_TSC_ADJUST		*/
-		SGX		:  3-2, /* Software Guard Extensions	*/
+		SGX_UMIP	:  3-2, /* Intel SGX Or AMD UMIP	*/
 		BMI1		:  4-3, /* Common x86			*/
 		HLE		:  5-4, /* Hardware Lock Elision	*/
 		AVX2		:  6-5, /* Common x86			*/
@@ -591,16 +591,16 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX_512DQ	: 18-17,
 		RDSEED		: 19-18, /* RDSEED Instruction		*/
 		ADX		: 20-19, /* Arbitrary-Precision Arithmetic */
-		SMAP		: 21-20, /*Supervisor-Mode Access & CLAC/STAC*/
+		SMAP_CLAC_STAC	: 21-20, /*Supervisor-Mode Access & CLAC/STAC*/
 		AVX512_IFMA	: 22-21,
-		Reserved1	: 23-22,
+		RDPID		: 23-22, /* AMD RDPID inst. & TSC_AUX MSR */
 		CLFLUSHOPT	: 24-23, /* Flush Cache Line Optimized	*/
 		CLWB		: 25-24, /* Cache Line Write Back	*/
 		ProcessorTrace	: 26-25, /* CPUID.(EAX=14H, ECX=0)	*/
 		AVX512PF	: 27-26, /* Intel Xeon Phi		*/
 		AVX512ER	: 28-27, /* Intel Xeon Phi		*/
 		AVX512CD	: 29-28,
-		SHA		: 30-29, /* Intel Secure Hash Algorithm */
+		SHA		: 30-29, /* Intel/AMD Secure Hash Algorithm */
 		AVX512BW	: 31-30,
 		AVX512VL	: 32-31;
 	} EBX;
@@ -624,7 +624,7 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		AVX512_VPOPCNTDQ: 15-14, /* Intel Xeon Phi		*/
 		Reserved3	: 17-15,
 		MAWAU		: 22-17, /* for BNDLDX & BNDSTX instructions*/
-		RDPID		: 23-22, /* RDPID & IA32_TSC_AUX availability*/
+		RDPID		: 23-22, /* Intel RDPID inst. & IA32_TSC_AUX */
 		Reserved4	: 25-23,
 		CLDEMOTE	: 26-25, /* Support of cache line demote */
 		Reserved5	: 27-26,
