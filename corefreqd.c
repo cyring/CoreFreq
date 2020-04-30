@@ -1030,16 +1030,17 @@ static void *Core_Cycle(void *arg)
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
 
-	CFlip->Ratio.Perf	= Core->Ratio.Perf;
-	CFlip->Ratio.Target	= Core->Ratio.Target;
+	CFlip->Boost[BOOST(TGT)] = Core->Boost[BOOST(TGT)];
 
-	CFlip->Frequency.Perf	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Frequency.Perf),
+	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
+
+	CFlip->Absolute.Perf	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Perf),
 					Core->Ratio.Perf, CFlip->Clock
 				);
-	CFlip->Frequency.Target = ABS_FREQ_MHz(
-					__typeof__(CFlip->Frequency.Target),
-					Core->Ratio.Target, CFlip->Clock
+	CFlip->Absolute.Target = ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Target),
+					Core->Boost[BOOST(TGT)], CFlip->Clock
 				);
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;

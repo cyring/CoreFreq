@@ -179,6 +179,14 @@ typedef struct
 		} Relative;
 
 		struct {
+			double		Perf,
+					Target;
+		    struct {
+			unsigned int	Perf;
+		    } Ratio;
+		} Absolute;
+
+		struct {
 		unsigned int		Sensor,
 					Temp;
 		enum THERM_PWR_EVENTS	Events;
@@ -200,15 +208,7 @@ typedef struct
 			} NMI;
 		} Counter;
 
-		struct {
-			unsigned int	Perf,
-					Target;
-		} Ratio;
-
-		struct {
-			double		Perf,
-					Target;
-		} Frequency;
+		unsigned int		Boost[BOOST(SIZE)];
 	} FlipFlop[2];
 
 	struct {

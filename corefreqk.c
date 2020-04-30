@@ -7163,7 +7163,7 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 		}
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_CORE2_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_CORE2_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7332,7 +7332,7 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_NEHALEM_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_NEHALEM_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7534,7 +7534,7 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7741,7 +7741,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -7982,7 +7982,7 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8191,7 +8191,7 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8424,7 +8424,7 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -8630,7 +8630,7 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Ratio.Target = GET_SANDYBRIDGE_TARGET(Core);
+		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
 
 		Delta_INST(Core);
 
@@ -9560,7 +9560,7 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 	Core = (CORE *) KPublic->Core[Proc->Service.Core];
     }
 	return ( sprintf(buf, "%7llu\n",
-			(Core->Ratio.Target * Core->Clock.Hz) / 1000LLU) );
+			(Core->Boost[BOOST(TGT)] * Core->Clock.Hz) / 1000LLU) );
   }
 	return (0);
 }

@@ -391,9 +391,9 @@ typedef struct
 
 	CPUID_STRUCT			CpuID[CPUID_MAX_FUNC];
 
+	unsigned int			Boost[BOOST(SIZE)];
 	struct {
-		unsigned int		Perf,
-					Target;
+		unsigned int		Perf;
 	} Ratio;
 } CORE;
 
