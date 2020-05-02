@@ -1870,290 +1870,456 @@ void Intel_Platform_Turbo(void)
 	Proc->Features.SpecTurboRatio = 0;
 }
 
+typedef union {
+	unsigned long long	value;
+} TURBO_RATIO_CFG_MSR;
+
+typedef union {
+	TURBO_RATIO_CFG_MSR	MSR;
+	TURBO_RATIO_CONFIG0	Cfg0;
+	TURBO_RATIO_CONFIG1	Cfg1;
+	TURBO_RATIO_CONFIG2	Cfg2;
+} TURBO_CONFIG;
+
+typedef struct {
+	CLOCK_ARG	*pClockMod;
+	TURBO_CONFIG	Config;
+	long		rc;
+} CLOCK_TURBO_ARG;
+
+void Assign_8C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+{
+	pBoost[BOOST(8C)] = pConfig->Cfg0.MaxRatio_8C;
+	pBoost[BOOST(7C)] = pConfig->Cfg0.MaxRatio_7C;
+	pBoost[BOOST(6C)] = pConfig->Cfg0.MaxRatio_6C;
+	pBoost[BOOST(5C)] = pConfig->Cfg0.MaxRatio_5C;
+	pBoost[BOOST(4C)] = pConfig->Cfg0.MaxRatio_4C;
+	pBoost[BOOST(3C)] = pConfig->Cfg0.MaxRatio_3C;
+	pBoost[BOOST(2C)] = pConfig->Cfg0.MaxRatio_2C;
+	pBoost[BOOST(1C)] = pConfig->Cfg0.MaxRatio_1C;
+}
+
+void Assign_15C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+{
+	pBoost[BOOST(15C)] = pConfig->Cfg1.IVB_EP.MaxRatio_15C;
+	pBoost[BOOST(14C)] = pConfig->Cfg1.IVB_EP.MaxRatio_14C;
+	pBoost[BOOST(13C)] = pConfig->Cfg1.IVB_EP.MaxRatio_13C;
+	pBoost[BOOST(12C)] = pConfig->Cfg1.IVB_EP.MaxRatio_12C;
+	pBoost[BOOST(11C)] = pConfig->Cfg1.IVB_EP.MaxRatio_11C;
+	pBoost[BOOST(10C)] = pConfig->Cfg1.IVB_EP.MaxRatio_10C;
+	pBoost[BOOST(9C) ] = pConfig->Cfg1.IVB_EP.MaxRatio_9C;
+}
+
+void Assign_16C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+{
+	pBoost[BOOST(16C)] = pConfig->Cfg1.HSW_EP.MaxRatio_16C;
+	pBoost[BOOST(15C)] = pConfig->Cfg1.HSW_EP.MaxRatio_15C;
+	pBoost[BOOST(14C)] = pConfig->Cfg1.HSW_EP.MaxRatio_14C;
+	pBoost[BOOST(13C)] = pConfig->Cfg1.HSW_EP.MaxRatio_13C;
+	pBoost[BOOST(12C)] = pConfig->Cfg1.HSW_EP.MaxRatio_12C;
+	pBoost[BOOST(11C)] = pConfig->Cfg1.HSW_EP.MaxRatio_11C;
+	pBoost[BOOST(10C)] = pConfig->Cfg1.HSW_EP.MaxRatio_10C;
+	pBoost[BOOST(9C) ] = pConfig->Cfg1.HSW_EP.MaxRatio_9C;
+}
+
+void Assign_18C_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+{
+	pBoost[BOOST(18C)] = pConfig->Cfg2.MaxRatio_18C;
+	pBoost[BOOST(17C)] = pConfig->Cfg2.MaxRatio_17C;
+}
+
+void Assign_SKL_X_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
+{
+	pBoost[BOOST(16C)] = pConfig->Cfg1.SKL_X.NUMCORE_7;
+	pBoost[BOOST(15C)] = pConfig->Cfg1.SKL_X.NUMCORE_6;
+	pBoost[BOOST(14C)] = pConfig->Cfg1.SKL_X.NUMCORE_5;
+	pBoost[BOOST(13C)] = pConfig->Cfg1.SKL_X.NUMCORE_4;
+	pBoost[BOOST(12C)] = pConfig->Cfg1.SKL_X.NUMCORE_3;
+	pBoost[BOOST(11C)] = pConfig->Cfg1.SKL_X.NUMCORE_2;
+	pBoost[BOOST(10C)] = pConfig->Cfg1.SKL_X.NUMCORE_1;
+	pBoost[BOOST(9C) ] = pConfig->Cfg1.SKL_X.NUMCORE_0;
+}
+
+long For_All_Turbo_Clock(void (*PerCore)(void*),
+			void (*Assign)(unsigned int*, TURBO_CONFIG*) )
+{
+	long rc = 0;
+	unsigned int cpu = Proc->CPU.Count;
+    do {
+	CLOCK_TURBO_ARG ClockTurbo = {
+		.pClockMod = NULL,	/* Read-Only All Cores */
+		.Config = {.MSR = {.value = 0}},
+		.rc = 0
+	};
+
+	cpu--;	/* From last AP to BSP */
+
+	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	{
+		smp_call_function_single(cpu, PerCore, &ClockTurbo, 1);
+		rc = rc | ClockTurbo.rc;
+
+		Assign(KPublic->Core[cpu]->Boost, &ClockTurbo.Config);
+	}
+	if (cpu == Proc->Service.Core) {
+		Assign(Proc->Boost, &ClockTurbo.Config);
+	}
+    } while (cpu != 0) ;
+	return (rc);
+}
+
+#define CLOCK_MOD_CORE( _pClockMod, _Cfg, _PerCore)			\
+({									\
+	long _rc = 0;							\
+	if (_pClockMod->cpu == -1)					\
+	{								\
+		CLOCK_TURBO_ARG ClockArg = {				\
+			.pClockMod = _pClockMod, /* Onto Service Core */\
+			.Config = {._Cfg = {.value = 0}},		\
+			.rc = 0						\
+		};							\
+		smp_call_function_single(Proc->Service.Core,		\
+					_PerCore,			\
+					&ClockArg,			\
+					1);	/* Synchronized */	\
+		_rc = ClockArg.rc;					\
+	}								\
+  else if ((_pClockMod->cpu >= 0) && (_pClockMod->cpu < Proc->CPU.Count))\
+	{								\
+		CLOCK_TURBO_ARG ClockArg = {				\
+			.pClockMod = _pClockMod, /* Onto Any Core */	\
+			.Config = {._Cfg = {.value = 0}},		\
+			.rc = 0						\
+		};							\
+		smp_call_function_single(pClockMod->cpu,		\
+					_PerCore,			\
+					&ClockArg,			\
+					1);	/* Synchronized */	\
+		_rc = ClockArg.rc;					\
+	}								\
+	_rc;								\
+})
+
+static void Intel_Turbo_Cfg8C_PerCore(void *arg)
+{
+	CLOCK_TURBO_ARG *pClockCfg8C = (CLOCK_TURBO_ARG *) arg;
+
+	RDMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
+
+  if (Proc->Features.Turbo_Unlock && pClockCfg8C->pClockMod != NULL)
+  {
+	unsigned short WrRd8C = 0;
+    switch (pClockCfg8C->pClockMod->NC) {
+    case 1:
+	pClockCfg8C->Config.Cfg0.MaxRatio_1C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 2:
+	pClockCfg8C->Config.Cfg0.MaxRatio_2C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 3:
+	pClockCfg8C->Config.Cfg0.MaxRatio_3C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 4:
+	pClockCfg8C->Config.Cfg0.MaxRatio_4C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 5:
+	pClockCfg8C->Config.Cfg0.MaxRatio_5C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 6:
+	pClockCfg8C->Config.Cfg0.MaxRatio_6C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 7:
+	pClockCfg8C->Config.Cfg0.MaxRatio_7C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    case 8:
+	pClockCfg8C->Config.Cfg0.MaxRatio_8C += pClockCfg8C->pClockMod->Offset;
+	WrRd8C = 1;
+	break;
+    }
+    if (WrRd8C) {
+	WRMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
+	RDMSR(pClockCfg8C->Config.Cfg0, MSR_TURBO_RATIO_LIMIT);
+	pClockCfg8C->rc = 2;
+    }
+  }
+}
+
 long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-	TURBO_RATIO_CONFIG0 TurboCfg0 = {.value = 0};
-	RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-
-	if (pClockMod != NULL) {
-		if (Proc->Features.Turbo_Unlock) {
-			unsigned short WrRd8C = 0;
-			switch (pClockMod->NC) {
-			case 1:
-				TurboCfg0.MaxRatio_1C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 2:
-				TurboCfg0.MaxRatio_2C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 3:
-				TurboCfg0.MaxRatio_3C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 4:
-				TurboCfg0.MaxRatio_4C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 5:
-				TurboCfg0.MaxRatio_5C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 6:
-				TurboCfg0.MaxRatio_6C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 7:
-				TurboCfg0.MaxRatio_7C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			case 8:
-				TurboCfg0.MaxRatio_8C += pClockMod->Offset;
-				WrRd8C = 1;
-				break;
-			}
-			if (WrRd8C) {
-				WRMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-				RDMSR(TurboCfg0, MSR_TURBO_RATIO_LIMIT);
-				rc = 2;
-			}
-		}
-	} else
-		Proc->Features.SpecTurboRatio += 8;
-
-	Proc->Boost[BOOST(8C)] = TurboCfg0.MaxRatio_8C;
-	Proc->Boost[BOOST(7C)] = TurboCfg0.MaxRatio_7C;
-	Proc->Boost[BOOST(6C)] = TurboCfg0.MaxRatio_6C;
-	Proc->Boost[BOOST(5C)] = TurboCfg0.MaxRatio_5C;
-	Proc->Boost[BOOST(4C)] = TurboCfg0.MaxRatio_4C;
-	Proc->Boost[BOOST(3C)] = TurboCfg0.MaxRatio_3C;
-	Proc->Boost[BOOST(2C)] = TurboCfg0.MaxRatio_2C;
-	Proc->Boost[BOOST(1C)] = TurboCfg0.MaxRatio_1C;
-
+    if (pClockMod != NULL)
+    {
+	rc |= CLOCK_MOD_CORE(pClockMod, Cfg0, Intel_Turbo_Cfg8C_PerCore);
+    }
+    else
+    {
+	Proc->Features.SpecTurboRatio += 8;
+    }
+	rc |= For_All_Turbo_Clock(Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 	return (rc);
+}
+
+static void Intel_Turbo_Cfg15C_PerCore(void *arg)
+{
+	CLOCK_TURBO_ARG *pClockCfg15C = (CLOCK_TURBO_ARG *) arg;
+
+	RDMSR(pClockCfg15C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+
+    if (Proc->Features.Turbo_Unlock && pClockCfg15C->pClockMod != NULL)
+    {
+	unsigned short WrRd15C = 0;
+	switch (pClockCfg15C->pClockMod->NC) {
+	case 9:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_9C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 10:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_10C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 11:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_11C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 12:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_12C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 13:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_13C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 14:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_14C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	case 15:
+		pClockCfg15C->Config.Cfg1.IVB_EP.MaxRatio_15C += \
+					pClockCfg15C->pClockMod->Offset;
+		WrRd15C = 1;
+		break;
+	}
+	if (WrRd15C) {
+		WRMSR(pClockCfg15C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		RDMSR(pClockCfg15C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		pClockCfg15C->rc = 2;
+	}
+    }
 }
 
 long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-
-	if (pClockMod != NULL) {
-	    if (Proc->Features.Turbo_Unlock) {
-		unsigned short WrRd15C = 0;
-		switch (pClockMod->NC) {
-		case 9:
-			TurboCfg1.IVB_EP.MaxRatio_9C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 10:
-			TurboCfg1.IVB_EP.MaxRatio_10C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 11:
-			TurboCfg1.IVB_EP.MaxRatio_11C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 12:
-			TurboCfg1.IVB_EP.MaxRatio_12C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 13:
-			TurboCfg1.IVB_EP.MaxRatio_13C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 14:
-			TurboCfg1.IVB_EP.MaxRatio_14C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		case 15:
-			TurboCfg1.IVB_EP.MaxRatio_15C += pClockMod->Offset;
-			WrRd15C = 1;
-			break;
-		}
-		if (WrRd15C) {
-			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			rc = 2;
-		}
-	    }
-	} else
-		Proc->Features.SpecTurboRatio += 7;
-
-	Proc->Boost[BOOST(15C)] = TurboCfg1.IVB_EP.MaxRatio_15C;
-	Proc->Boost[BOOST(14C)] = TurboCfg1.IVB_EP.MaxRatio_14C;
-	Proc->Boost[BOOST(13C)] = TurboCfg1.IVB_EP.MaxRatio_13C;
-	Proc->Boost[BOOST(12C)] = TurboCfg1.IVB_EP.MaxRatio_12C;
-	Proc->Boost[BOOST(11C)] = TurboCfg1.IVB_EP.MaxRatio_11C;
-	Proc->Boost[BOOST(10C)] = TurboCfg1.IVB_EP.MaxRatio_10C;
-	Proc->Boost[BOOST(9C) ] = TurboCfg1.IVB_EP.MaxRatio_9C;
-
+    if (pClockMod != NULL) {
+	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg15C_PerCore);
+    } else {
+	Proc->Features.SpecTurboRatio += 7;
+    }
+	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg15C_PerCore,
+					Assign_15C_Boost );
 	return (rc);
+}
+
+static void Intel_Turbo_Cfg16C_PerCore(void *arg)
+{
+	CLOCK_TURBO_ARG *pClockCfg16C = (CLOCK_TURBO_ARG *) arg;
+
+	RDMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+
+    if (Proc->Features.Turbo_Unlock && pClockCfg16C->pClockMod != NULL)
+    {
+	unsigned short WrRd16C = 0;
+	switch (pClockCfg16C->pClockMod->NC) {
+	case 9:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_9C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 10:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_10C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 11:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_11C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 12:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_12C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 13:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_13C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 14:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_14C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 15:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_15C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 16:
+		pClockCfg16C->Config.Cfg1.HSW_EP.MaxRatio_16C += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	}
+	if (WrRd16C) {
+		WRMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		RDMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		pClockCfg16C->rc = 2;
+	}
+    }
 }
 
 long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-
-	if (pClockMod != NULL) {
-	    if (Proc->Features.Turbo_Unlock) {
-		unsigned short WrRd16C = 0;
-		switch (pClockMod->NC) {
-		case 9:
-			TurboCfg1.HSW_EP.MaxRatio_9C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 10:
-			TurboCfg1.HSW_EP.MaxRatio_10C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 11:
-			TurboCfg1.HSW_EP.MaxRatio_11C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 12:
-			TurboCfg1.HSW_EP.MaxRatio_12C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 13:
-			TurboCfg1.HSW_EP.MaxRatio_13C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 14:
-			TurboCfg1.HSW_EP.MaxRatio_14C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 15:
-			TurboCfg1.HSW_EP.MaxRatio_15C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 16:
-			TurboCfg1.HSW_EP.MaxRatio_16C += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		}
-		if (WrRd16C) {
-			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			rc = 2;
-		}
-	    }
-	} else
-		Proc->Features.SpecTurboRatio += 8;
-
-	Proc->Boost[BOOST(16C)] = TurboCfg1.HSW_EP.MaxRatio_16C;
-	Proc->Boost[BOOST(15C)] = TurboCfg1.HSW_EP.MaxRatio_15C;
-	Proc->Boost[BOOST(14C)] = TurboCfg1.HSW_EP.MaxRatio_14C;
-	Proc->Boost[BOOST(13C)] = TurboCfg1.HSW_EP.MaxRatio_13C;
-	Proc->Boost[BOOST(12C)] = TurboCfg1.HSW_EP.MaxRatio_12C;
-	Proc->Boost[BOOST(11C)] = TurboCfg1.HSW_EP.MaxRatio_11C;
-	Proc->Boost[BOOST(10C)] = TurboCfg1.HSW_EP.MaxRatio_10C;
-	Proc->Boost[BOOST(9C) ] = TurboCfg1.HSW_EP.MaxRatio_9C;
-
+    if (pClockMod != NULL) {
+	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg16C_PerCore);
+    } else {
+	Proc->Features.SpecTurboRatio += 8;
+    }
+	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg16C_PerCore,
+					Assign_16C_Boost );
 	return (rc);
+}
+
+static void Intel_Turbo_Cfg18C_PerCore(void *arg)
+{
+	CLOCK_TURBO_ARG *pClockCfg18C = (CLOCK_TURBO_ARG *) arg;
+
+	RDMSR(pClockCfg18C->Config.Cfg2, MSR_TURBO_RATIO_LIMIT2);
+
+    if (Proc->Features.Turbo_Unlock && pClockCfg18C->pClockMod != NULL)
+    {
+	unsigned short WrRd18C = 0;
+	switch (pClockCfg18C->pClockMod->NC) {
+	case 17:
+		pClockCfg18C->Config.Cfg2.MaxRatio_17C += \
+					pClockCfg18C->pClockMod->Offset;
+		WrRd18C = 1;
+		break;
+	case 18:
+		pClockCfg18C->Config.Cfg2.MaxRatio_18C += \
+					pClockCfg18C->pClockMod->Offset;
+		WrRd18C = 1;
+		break;
+	}
+	if (WrRd18C) {
+		WRMSR(pClockCfg18C->Config.Cfg2, MSR_TURBO_RATIO_LIMIT2);
+		RDMSR(pClockCfg18C->Config.Cfg2, MSR_TURBO_RATIO_LIMIT2);
+		pClockCfg18C->rc = 2;
+	}
+    }
 }
 
 long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-	TURBO_RATIO_CONFIG2 TurboCfg2 = {.value = 0};
-	RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
-
-	if (pClockMod != NULL) {
-		if (Proc->Features.Turbo_Unlock) {
-			unsigned short WrRd18C = 0;
-			switch (pClockMod->NC) {
-			case 17:
-				TurboCfg2.MaxRatio_17C += pClockMod->Offset;
-				WrRd18C = 1;
-				break;
-			case 18:
-				TurboCfg2.MaxRatio_18C += pClockMod->Offset;
-				WrRd18C = 1;
-				break;
-			}
-			if (WrRd18C) {
-				WRMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
-				RDMSR(TurboCfg2, MSR_TURBO_RATIO_LIMIT2);
-				rc = 2;
-			}
-		}
-	} else
-		Proc->Features.SpecTurboRatio += 2;
-
-	Proc->Boost[BOOST(18C)] = TurboCfg2.MaxRatio_18C;
-	Proc->Boost[BOOST(17C)] = TurboCfg2.MaxRatio_17C;
-
+    if (pClockMod != NULL) {
+	rc |= CLOCK_MOD_CORE(pClockMod, Cfg2, Intel_Turbo_Cfg18C_PerCore);
+    } else {
+	Proc->Features.SpecTurboRatio += 2;
+    }
+	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg18C_PerCore,
+					Assign_18C_Boost );
 	return (rc);
+}
+
+static void Intel_Turbo_Cfg_SKL_X_PerCore(void *arg)
+{
+	CLOCK_TURBO_ARG *pClockCfg16C = (CLOCK_TURBO_ARG *) arg;
+
+	RDMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+
+    if (Proc->Features.Turbo_Unlock && pClockCfg16C->pClockMod != NULL)
+    {
+	unsigned short WrRd16C = 0;
+	switch (pClockCfg16C->pClockMod->NC) {
+	case 9:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_0 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 10:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_1 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 11:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_2 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 12:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_3 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 13:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_4 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 14:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_5 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 15:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_6 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	case 16:
+		pClockCfg16C->Config.Cfg1.SKL_X.NUMCORE_7 += \
+					pClockCfg16C->pClockMod->Offset;
+		WrRd16C = 1;
+		break;
+	}
+	if (WrRd16C) {
+		WRMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		RDMSR(pClockCfg16C->Config.Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		pClockCfg16C->rc = 2;
+	}
+    }
 }
 
 long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
 	long rc = 0;
-	TURBO_RATIO_CONFIG1 TurboCfg1 = {.value = 0};
-	RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-
-	if (pClockMod != NULL) {
-	    if (Proc->Features.Turbo_Unlock) {
-		unsigned short WrRd16C = 0;
-		switch (pClockMod->NC) {
-		case 9:
-			TurboCfg1.SKL_X.NUMCORE_0 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 10:
-			TurboCfg1.SKL_X.NUMCORE_1 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 11:
-			TurboCfg1.SKL_X.NUMCORE_2 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 12:
-			TurboCfg1.SKL_X.NUMCORE_3 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 13:
-			TurboCfg1.SKL_X.NUMCORE_4 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 14:
-			TurboCfg1.SKL_X.NUMCORE_5 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 15:
-			TurboCfg1.SKL_X.NUMCORE_6 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		case 16:
-			TurboCfg1.SKL_X.NUMCORE_7 += pClockMod->Offset;
-			WrRd16C = 1;
-			break;
-		}
-		if (WrRd16C) {
-			WRMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			RDMSR(TurboCfg1, MSR_TURBO_RATIO_LIMIT1);
-			rc = 2;
-		}
-	    }
-	} else
-		Proc->Features.SpecTurboRatio += 8;
-
-	Proc->Boost[BOOST(16C)] = TurboCfg1.SKL_X.NUMCORE_7;
-	Proc->Boost[BOOST(15C)] = TurboCfg1.SKL_X.NUMCORE_6;
-	Proc->Boost[BOOST(14C)] = TurboCfg1.SKL_X.NUMCORE_5;
-	Proc->Boost[BOOST(13C)] = TurboCfg1.SKL_X.NUMCORE_4;
-	Proc->Boost[BOOST(12C)] = TurboCfg1.SKL_X.NUMCORE_3;
-	Proc->Boost[BOOST(11C)] = TurboCfg1.SKL_X.NUMCORE_2;
-	Proc->Boost[BOOST(10C)] = TurboCfg1.SKL_X.NUMCORE_1;
-	Proc->Boost[BOOST(9C) ] = TurboCfg1.SKL_X.NUMCORE_0;
-
+    if (pClockMod != NULL) {
+	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg_SKL_X_PerCore);
+    } else {
+	Proc->Features.SpecTurboRatio += 8;
+    }
+	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg_SKL_X_PerCore,
+					Assign_SKL_X_Boost );
 	return (rc);
 }
+
+#undef CLOCK_MOD_CORE
 
 void Intel_Turbo_TDP_Config(void)
 {

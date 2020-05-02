@@ -5310,8 +5310,8 @@ void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[		\
 					!Shm->Cpu[cpu].Toggle		\
 				];					\
-    if (CFlop->Boost[BOOST(_NC)] == 0) {				\
-	CPU_Item_Auto_Freq(cpu, CFlop->Boost[BOOST(_NC)], item);	\
+    if (Shm->Cpu[cpu].Boost[BOOST(_NC)] == 0) { 			\
+	CPU_Item_Auto_Freq(cpu, Shm->Cpu[cpu].Boost[BOOST(_NC)], item); \
     } else {								\
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,			\
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",	\
@@ -5319,8 +5319,10 @@ void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 			Shm->Cpu[cpu].Topology.PackageID,		\
 			Shm->Cpu[cpu].Topology.CoreID,			\
 			Shm->Cpu[cpu].Topology.ThreadID,		\
-			CFlop->Absolute.Target ,			\
-			CFlop->Boost[BOOST(_NC)]);			\
+			ABS_FREQ_MHz(double,				\
+					Shm->Cpu[cpu].Boost[BOOST(_NC)],\
+					CFlop->Clock),			\
+			Shm->Cpu[cpu].Boost[BOOST(_NC)]);		\
     }									\
 }
 DECLARE_CPU_Item_Turbo( 1C)
@@ -5395,8 +5397,8 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-    if (CFlop->Boost[BOOST(TGT)] == 0) {
-	CPU_Item_Auto_Freq(cpu, CFlop->Boost[BOOST(TGT)], item);
+    if (Shm->Cpu[cpu].Boost[BOOST(TGT)] == 0) {
+	CPU_Item_Auto_Freq(cpu, Shm->Cpu[cpu].Boost[BOOST(TGT)], item);
     } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz <%4u > ",
@@ -5405,7 +5407,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
 			CFlop->Absolute.Target,
-			CFlop->Boost[BOOST(TGT)]);
+			Shm->Cpu[cpu].Boost[BOOST(TGT)]);
     }
 }
 
@@ -7746,10 +7748,10 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
 		unsigned long long id = scan->key | BOXKEY_RATIO_SELECT_OR,
-					nc = (id >> 32) & RATIO_MASK;
+				i18C = (((id >> 32) & RATIO_MASK) % 18) - 1;
 
-		ITEM_CALLBACK	Pkg_Item_Turbo_Freq[1+18] = {
-			NULL,	Pkg_Item_Turbo_1C,
+		ITEM_CALLBACK	Pkg_Item_Turbo_Freq[18] = {
+				Pkg_Item_Turbo_1C,
 				Pkg_Item_Turbo_2C,
 				Pkg_Item_Turbo_3C,
 				Pkg_Item_Turbo_4C,
@@ -7768,8 +7770,8 @@ int Shortcut(SCANKEY *scan)
 				Pkg_Item_Turbo_17C,
 				Pkg_Item_Turbo_18C
 		};
-		ITEM_CALLBACK	CPU_Item_Turbo_Freq[] = {
-			NULL,	CPU_Item_Turbo_1C,
+		ITEM_CALLBACK	CPU_Item_Turbo_Freq[18] = {
+				CPU_Item_Turbo_1C,
 				CPU_Item_Turbo_2C,
 				CPU_Item_Turbo_3C,
 				CPU_Item_Turbo_4C,
@@ -7788,8 +7790,8 @@ int Shortcut(SCANKEY *scan)
 				CPU_Item_Turbo_17C,
 				CPU_Item_Turbo_18C
 		};
-		UPDATE_CALLBACK Pkg_Turbo_Freq_Update[] = {
-			NULL,	Pkg_Update_Turbo_1C,
+		UPDATE_CALLBACK Pkg_Turbo_Freq_Update[18] = {
+				Pkg_Update_Turbo_1C,
 				Pkg_Update_Turbo_2C,
 				Pkg_Update_Turbo_3C,
 				Pkg_Update_Turbo_4C,
@@ -7808,8 +7810,8 @@ int Shortcut(SCANKEY *scan)
 				Pkg_Update_Turbo_17C,
 				Pkg_Update_Turbo_18C
 		};
-		UPDATE_CALLBACK CPU_Turbo_Freq_Update[] = {
-			NULL,	CPU_Update_Turbo_1C,
+		UPDATE_CALLBACK CPU_Turbo_Freq_Update[18] = {
+				CPU_Update_Turbo_1C,
 				CPU_Update_Turbo_2C,
 				CPU_Update_Turbo_3C,
 				CPU_Update_Turbo_4C,
@@ -7830,10 +7832,10 @@ int Shortcut(SCANKEY *scan)
 		};
 
 		AppendWindow( CreateSelectFreq( id,
-						Pkg_Item_Turbo_Freq[nc],
-						CPU_Item_Turbo_Freq[nc],
-						Pkg_Turbo_Freq_Update[nc],
-						CPU_Turbo_Freq_Update[nc] ),
+						Pkg_Item_Turbo_Freq[i18C],
+						CPU_Item_Turbo_Freq[i18C],
+						Pkg_Turbo_Freq_Update[i18C],
+						CPU_Turbo_Freq_Update[i18C] ),
 				&winList );
 	} else {
 		SetHead(&winList, win);
@@ -8340,29 +8342,44 @@ int Shortcut(SCANKEY *scan)
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL) {
-		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
-		struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
-					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
-		];
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		struct FLIP_FLOP *CFlop;
+		CLOCK_ARG clockMod = {.sllong = scan->key};
+		unsigned int	COF, lowestOperating,
+				NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		enum RATIO_BOOST boost = BOOST(SIZE) - NC;
-
 		signed int lowestShift, highestShift;
-		ComputeRatioShifts(Shm->Proc.Boost[boost],
-				Shm->Proc.Boost[BOOST(MIN)],
+
+		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	    if (cpu == 0xffff) {
+		COF = Shm->Proc.Boost[boost];
+		lowestOperating = Shm->Proc.Boost[BOOST(MIN)];
+		CFlop = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+			];
+	    } else {
+		COF = Shm->Cpu[cpu].Boost[boost];
+		/*TODO(PerCore)
+		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
+		*/
+		lowestOperating = Shm->Proc.Boost[BOOST(MIN)];
+		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	    }
+
+		ComputeRatioShifts(COF,
+				lowestOperating,
 				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
 				&lowestShift,
 				&highestShift);
 
-		AppendWindow(CreateRatioClock(scan->key,
-				Shm->Proc.Boost[boost],
-				-1,
+		AppendWindow(
+			CreateRatioClock(scan->key,
+				COF,
+				cpu,
 				NC,
 				lowestShift,
 				highestShift,
 
-				( Shm->Proc.Boost[BOOST(MIN)]
+				( lowestOperating
 				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
 
 				Shm->Proc.Features.Factory.Ratio
@@ -8371,7 +8388,8 @@ int Shortcut(SCANKEY *scan)
 
 				BOXKEY_TURBO_CLOCK,
 				TitleForTurboClock,
-				34), &winList);
+				34),
+			&winList );
 	    } else {
 		SetHead(&winList, win);
 	    }
@@ -8381,16 +8399,16 @@ int Shortcut(SCANKEY *scan)
 	  {
 		Window *win = SearchWinListById(scan->key, &winList);
 	   if (win == NULL) {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.sllong = scan->key};
 		unsigned int COF, NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
 				maxRatio = MaxBoostRatio();
 		signed int lowestShift, highestShift;
 
 		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	    if (cpu == 0xffff) {
-		COF=Shm->Proc.Boost[BOOST(TGT)];
+		COF = Shm->Proc.Boost[BOOST(TGT)];
 	    } else {
-	    COF=Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle].Boost[BOOST(TGT)];
+		COF = Shm->Cpu[cpu].Boost[BOOST(TGT)];
 	    }
 
 		ComputeRatioShifts(	COF,
@@ -8426,7 +8444,7 @@ int Shortcut(SCANKEY *scan)
 	case BOXKEY_RATIO_CLOCK_HWP_TGT: {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL) {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
@@ -8470,7 +8488,7 @@ int Shortcut(SCANKEY *scan)
 	case BOXKEY_RATIO_CLOCK_HWP_MAX: {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL) {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
@@ -8514,7 +8532,7 @@ int Shortcut(SCANKEY *scan)
 	case BOXKEY_RATIO_CLOCK_HWP_MIN: {
 		Window *win = SearchWinListById(scan->key, &winList);
 	    if (win == NULL) {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
 		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
 		signed int lowestShift, highestShift;
@@ -8556,7 +8574,7 @@ int Shortcut(SCANKEY *scan)
 	  }
 	  break;
 	default: {
-		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		CLOCK_ARG clockMod = {.sllong = scan->key};
 	    if (clockMod.NC & BOXKEY_TURBO_CLOCK)
 	    {
 			clockMod.NC &= CLOCKMOD_RATIO_MASK;

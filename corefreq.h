@@ -57,6 +57,8 @@ typedef struct
 
 	Bit64				OffLine __attribute__ ((aligned (8)));
 
+	unsigned int			Boost[BOOST(SIZE)];
+
 	struct
 	{
 		CPUID_0x00000000	StdFunc;
@@ -207,8 +209,6 @@ typedef struct
 					IOCHECK;
 			} NMI;
 		} Counter;
-
-		unsigned int		Boost[BOOST(SIZE)];
 	} FlipFlop[2];
 
 	struct {

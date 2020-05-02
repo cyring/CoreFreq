@@ -1030,7 +1030,7 @@ static void *Core_Cycle(void *arg)
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
 
-	CFlip->Boost[BOOST(TGT)] = Core->Boost[BOOST(TGT)];
+	Cpu->Boost[BOOST(TGT)] = Core->Boost[BOOST(TGT)];
 
 	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
 
@@ -4265,6 +4265,10 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	} else {
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
 	}
+	/* Copy the base clock ratios.					*/
+	memcpy( Shm->Cpu[cpu].Boost, Core[cpu]->Boost,
+		(BOOST(SIZE)) * sizeof(unsigned int) );
+
 	Shm->Cpu[cpu].Query.Microcode = Core[cpu]->Query.Microcode;
 
 	Topology(Shm, Proc, Core, cpu);
