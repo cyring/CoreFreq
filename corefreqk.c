@@ -3983,7 +3983,17 @@ void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	Proc->Boost[pClockZen->BoostIndex] = COF;
+	if (pClockZen->pClockMod == NULL) {	/* Called once by Query */
+		Proc->Boost[pClockZen->BoostIndex] = COF;
+	} else {				/* Called for each Core */
+		unsigned int cpu = smp_processor_id();
+
+		KPublic->Core[cpu]->Boost[pClockZen->BoostIndex] = COF;
+
+		if (cpu == Proc->Service.Core) {
+			Proc->Boost[pClockZen->BoostIndex] = COF;
+		}
+	}
 }
 
 static void TargetClock_AMD_Zen_PerCore(void *arg)
@@ -4022,6 +4032,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	PstateCtrl.PstateCmd = pstate;
 	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
     }
+	ReCompute_AMD_Zen_Boost(pClockZen);
 }
 
 static void TurboClock_AMD_Zen_PerCore(void *arg)
@@ -4047,6 +4058,7 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 			WRMSR(PstateDef, pClockZen->PstateAddr);
 		}
 	}
+	ReCompute_AMD_Zen_Boost(pClockZen);
 }
 
 void For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
@@ -4076,7 +4088,6 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore);
 
-		ReCompute_AMD_Zen_Boost(&ClockZen);
 		return (2);	/* Report a platform change */
 	    }
 	}
@@ -4097,7 +4108,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore);
 
-		ReCompute_AMD_Zen_Boost(&ClockZen);
 		return (2);
 	    }
 	case CLOCK_MOD_TGT:
@@ -4110,7 +4120,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TargetClock_AMD_Zen_PerCore);
 
-		ReCompute_AMD_Zen_Boost(&ClockZen);
 		return (2);
 	    }
 	default:
