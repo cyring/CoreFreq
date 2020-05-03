@@ -964,17 +964,16 @@ typedef struct	/* BSP CPUID features.					*/
 			HyperThreading	:  9-8,
 			HTT_Enable	: 10-9,
 			TgtRatio_Unlock : 11-10,
-			ClkRatio_Unlock : 12-11,
-			Turbo_Unlock	: 13-12,
-			TDP_Unlock	: 14-13,
-			TDP_Levels	: 16-14,
-			TDP_Cfg_Lock	: 17-16,
-			TDP_Cfg_Level	: 19-17,
-			TurboActiv_Lock : 20-19,
-			Uncore_Unlock	: 21-20,
-			HWP_Enable	: 22-21,
-			HDC_Enable	: 23-22,
-			_UnusedFeatBits : 24-23,
+			ClkRatio_Unlock : 13-11, /* X.Y w/ X=Max and Y=Min */
+			Turbo_Unlock	: 14-13,
+			TDP_Unlock	: 15-14,
+			TDP_Levels	: 17-15,
+			TDP_Cfg_Lock	: 18-17,
+			TDP_Cfg_Level	: 20-18,
+			TurboActiv_Lock : 21-20,
+			Uncore_Unlock	: 22-21,
+			HWP_Enable	: 23-22,
+			HDC_Enable	: 24-23,
 			SpecTurboRatio	: 32-24;
 	};
 } FEATURES;
