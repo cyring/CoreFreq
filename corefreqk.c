@@ -6393,12 +6393,17 @@ void Controller_Start(int wait)
 {
 	if (Arch[Proc->ArchID].Start != NULL) {
 		unsigned int cpu;
-		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
-		     && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0))
+	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+	    {
+		KPublic->Core[cpu]->Boost[BOOST(MIN)]=Proc->Boost[BOOST(MIN)];
+
+		if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
+		 && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)) {
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, wait);
+		}
+	    }
 	}
 }
 

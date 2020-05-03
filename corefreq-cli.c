@@ -8358,10 +8358,7 @@ int Shortcut(SCANKEY *scan)
 			];
 	    } else {
 		COF = Shm->Cpu[cpu].Boost[boost];
-		/*TODO(PerCore)
 		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
-		*/
-		lowestOperating = Shm->Proc.Boost[BOOST(MIN)];
 		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	    }
 
