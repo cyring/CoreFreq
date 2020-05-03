@@ -3737,12 +3737,14 @@ void SortUniqRatio(void)
 		: (ratio.Minimum + ratio.Maximum) / 2;
 }
 
-unsigned int MaxBoostRatio(void)
+unsigned int MaxBoostRatio(const signed short cpu)
 {
-	unsigned int maxRatio = Shm->Proc.Boost[BOOST(MIN)];
+	const unsigned int *pBoost = (cpu == -1) ? Shm->Proc.Boost
+						: Shm->Cpu[cpu].Boost;
+	unsigned int maxRatio = pBoost[BOOST(MIN)];
 	enum RATIO_BOOST idx;
 	for (idx = BOOST(MIN); idx < BOOST(SIZE); idx++) {
-		maxRatio = KMAX(Shm->Proc.Boost[idx], maxRatio);
+		maxRatio = KMAX(pBoost[idx], maxRatio);
 	}
 	return (maxRatio);
 }
@@ -7915,7 +7917,7 @@ int Shortcut(SCANKEY *scan)
 					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 		];
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(MAX)],
@@ -7951,7 +7953,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Proc.Boost[BOOST(MIN)],
@@ -7989,7 +7991,7 @@ int Shortcut(SCANKEY *scan)
 					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 		];
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MAX)],
@@ -8025,7 +8027,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL) {
 		CLOCK_ARG clockMod  = {.sllong = scan->key};
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 
 		signed int lowestShift, highestShift;
 		ComputeRatioShifts(Shm->Uncore.Boost[BOOST(MIN)],
@@ -8344,13 +8346,13 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.sllong = scan->key};
-		unsigned int	COF, lowestOperating,
-				NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
-		enum RATIO_BOOST boost = BOOST(SIZE) - NC;
+		unsigned int COF, lowestOperating;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		const enum RATIO_BOOST boost = BOOST(SIZE) - NC;
 		signed int lowestShift, highestShift;
 
-		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
-	    if (cpu == 0xffff) {
+		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	    if (cpu == -1) {
 		COF = Shm->Proc.Boost[boost];
 		lowestOperating = Shm->Proc.Boost[BOOST(MIN)];
 		CFlop = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[
@@ -8397,16 +8399,21 @@ int Shortcut(SCANKEY *scan)
 		Window *win = SearchWinListById(scan->key, &winList);
 	   if (win == NULL) {
 		CLOCK_ARG clockMod = {.sllong = scan->key};
-		unsigned int COF, NC = clockMod.NC & CLOCKMOD_RATIO_MASK,
-				maxRatio = MaxBoostRatio();
+		unsigned int COF, lowestOperating, highestOperating;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		signed int lowestShift, highestShift;
 
-		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
-	    if (cpu == 0xffff) {
+		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	    if (cpu == -1) {
 		COF = Shm->Proc.Boost[BOOST(TGT)];
+		lowestOperating = Shm->Proc.Boost[BOOST(MIN)];
+		highestOperating = Shm->Proc.Boost[BOOST(MAX)];
 	    } else {
 		COF = Shm->Cpu[cpu].Boost[BOOST(TGT)];
+		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
+		highestOperating = Shm->Cpu[cpu].Boost[BOOST(MAX)];
 	    }
+		const unsigned int maxRatio = MaxBoostRatio(cpu);
 
 		ComputeRatioShifts(	COF,
 					0,	/*	AUTO Frequency	*/
@@ -8422,8 +8429,8 @@ int Shortcut(SCANKEY *scan)
 					lowestShift,
 					highestShift,
 
-					( Shm->Proc.Boost[BOOST(MIN)]
-					+ Shm->Proc.Boost[BOOST(MAX)] ) >> 1,
+					( lowestOperating
+					+ highestOperating ) >> 1,
 
 					Shm->Proc.Features.Factory.Ratio
 					+ ((maxRatio - \
@@ -8443,11 +8450,12 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
-	      if (cpu == 0xffff) {
+		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP;
 		COF = Shm->Proc.Boost[BOOST(HWP_TGT)];
 	      } else {
@@ -8487,11 +8495,12 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
-	      if (cpu == 0xffff) {
+		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP;
 		COF = Shm->Proc.Boost[BOOST(HWP_MAX)];
 	      } else {
@@ -8531,11 +8540,12 @@ int Shortcut(SCANKEY *scan)
 	    if (win == NULL) {
 		CLOCK_ARG clockMod = {.sllong = scan->key};
 		struct HWP_STRUCT *pHWP;
-		unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK, COF;
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+		unsigned int COF;
 		signed int lowestShift, highestShift;
 
-		signed int cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
-	      if (cpu == 0xffff) {
+		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
+	      if (cpu == -1) {
 		pHWP = &Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP;
 		COF = Shm->Proc.Boost[BOOST(HWP_MIN)];
 	      } else {

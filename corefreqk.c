@@ -6396,6 +6396,7 @@ void Controller_Start(int wait)
 	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 	    {
 		KPublic->Core[cpu]->Boost[BOOST(MIN)]=Proc->Boost[BOOST(MIN)];
+		KPublic->Core[cpu]->Boost[BOOST(MAX)]=Proc->Boost[BOOST(MAX)];
 
 		if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
 		 && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)) {
