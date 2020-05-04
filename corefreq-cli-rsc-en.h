@@ -714,11 +714,13 @@
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
-						"   %s     <%4u > "
+						"   %s     %c%4u %c "
 #define RSC_CREATE_SELECT_FREQ_TURBO_CODE_EN	"  %3s       Processor     " \
-						"%7.2f MHz <%4u > "
+						"%7.2f MHz %c%4u %c "
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_EN	"  TGT       Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_EN	"  HWP-TGT   Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_MAX_CODE_EN	"  HWP-MAX   Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_EN	"  HWP-MIN   Processor     "
+#define RSC_CREATE_SELECT_FREQ_MAX_CODE_EN	"  MAX       Processor     "
+#define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
 
