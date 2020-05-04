@@ -6381,13 +6381,19 @@ void Controller_Init(void)
 	}
 	/* Launch a high resolution timer for each online CPU. */
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
-			if (!KPublic->Core[cpu]->Clock.Hz)
-				KPublic->Core[cpu]->Clock = clock;
+	{
+		const size_t fullSz = BOOST(SIZE) * sizeof(unsigned int);
+		memcpy(KPublic->Core[cpu]->Boost, Proc->Boost, fullSz);
 
-			if (Arch[Proc->ArchID].Timer != NULL)
+		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+			if (!KPublic->Core[cpu]->Clock.Hz) {
+				KPublic->Core[cpu]->Clock = clock;
+			}
+			if (Arch[Proc->ArchID].Timer != NULL) {
 				Arch[Proc->ArchID].Timer(cpu);
+			}
 		}
+	}
 }
 
 void Controller_Start(int wait)
@@ -6396,9 +6402,6 @@ void Controller_Start(int wait)
 		unsigned int cpu;
 	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 	    {
-		KPublic->Core[cpu]->Boost[BOOST(MIN)]=Proc->Boost[BOOST(MIN)];
-		KPublic->Core[cpu]->Boost[BOOST(MAX)]=Proc->Boost[BOOST(MAX)];
-
 		if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
 		 && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)) {
 			smp_call_function_single(cpu,
