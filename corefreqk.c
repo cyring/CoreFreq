@@ -4063,7 +4063,7 @@ typedef struct {
 	unsigned int BoostIndex;
 } CLOCK_ZEN_ARG;
 
-void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen)
+void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen, unsigned int cpu)
 {
 	PSTATEDEF PstateDef = {.value = 0};
 	unsigned int COF = 0;
@@ -4078,11 +4078,9 @@ void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	if (pClockZen->pClockMod == NULL) {	/* Called once by Query */
+	if (pClockZen->pClockMod == NULL) { /* Called by Query_AMD_Family_17h*/
 		Proc->Boost[pClockZen->BoostIndex] = COF;
 	} else {				/* Called for each Core */
-		unsigned int cpu = smp_processor_id();
-
 		KPublic->Core[cpu]->Boost[pClockZen->BoostIndex] = COF;
 
 		if (cpu == Proc->Service.Core) {
@@ -4094,8 +4092,10 @@ void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen)
 static void TargetClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
-	unsigned int COF, pstate,target = Proc->Boost[pClockZen->BoostIndex]
-					+ pClockZen->pClockMod->Offset;
+	unsigned int cpu = smp_processor_id();
+	unsigned int COF, pstate,
+		target = KPublic->Core[cpu]->Boost[pClockZen->BoostIndex]
+			+ pClockZen->pClockMod->Offset;
 	unsigned short RdWrMSR = 0;
 
     if (target == 0) {
@@ -4127,12 +4127,13 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	PstateCtrl.PstateCmd = pstate;
 	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
     }
-	ReCompute_AMD_Zen_Boost(pClockZen);
+	ReCompute_AMD_Zen_Boost(pClockZen, cpu);
 }
 
 static void TurboClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
+	unsigned int COF, FID = 0, cpu = smp_processor_id();
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
 	/* Make sure the Core Performance Boost is disabled. */
@@ -4141,19 +4142,18 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	{
 		RDMSR(PstateDef, pClockZen->PstateAddr);
 		/* Apply if and only if the P-State is enabled */
-		if (PstateDef.Family_17h.PstateEn)
-		{
-			unsigned int FID = 0;
-			/* Compute the Frequency ID from the offsetted ratio */
-			FID = AMD_Zen_CoreFID(Proc->Boost[pClockZen->BoostIndex]
-						+ pClockZen->pClockMod->Offset,
-						PstateDef.Family_17h.CpuDfsId);
-			/* Write the P-State MSR with the new FID */
-			PstateDef.Family_17h.CpuFid = FID;
-			WRMSR(PstateDef, pClockZen->PstateAddr);
-		}
+	    if (PstateDef.Family_17h.PstateEn)
+	    {
+		COF = KPublic->Core[cpu]->Boost[pClockZen->BoostIndex]
+			+ pClockZen->pClockMod->Offset;
+		/* Compute the Frequency ID from the offsetted COF */
+		FID = AMD_Zen_CoreFID(COF, PstateDef.Family_17h.CpuDfsId);
+		/* Write the P-State MSR with the new FID */
+		PstateDef.Family_17h.CpuFid = FID;
+		WRMSR(PstateDef, pClockZen->PstateAddr);
+	    }
 	}
-	ReCompute_AMD_Zen_Boost(pClockZen);
+	ReCompute_AMD_Zen_Boost(pClockZen, cpu);
 }
 
 void For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
@@ -4207,7 +4207,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 	    }
 	case CLOCK_MOD_TGT:
 	    {
-		CLOCK_ZEN_ARG ClockZen = {	/* Target non-boosted P-State */
+		CLOCK_ZEN_ARG ClockZen = {	/* Target non-boosted P-State*/
 			.pClockMod  = pClockMod,
 			.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
 			.BoostIndex = BOOST(TGT)
@@ -4227,13 +4227,14 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 void Query_AMD_Family_17h(void)
 {
 	CLOCK_ZEN_ARG ClockZen = {
-		.pClockMod  = NULL,	/* Unused field at this time	*/
+		.pClockMod  = NULL,	/* Unused field during Init	*/
 		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
 		.BoostIndex = BOOST(TGT)
 	};
 
-	Compute_AMD_Zen_Boost(); /* which looks up a specific Zen Processor */
-	ReCompute_AMD_Zen_Boost(&ClockZen); /* Initial Target P-State value */
+	Compute_AMD_Zen_Boost(); /* which will look for a specific Zen Proc. */
+	 /* Compute the initial Target P-State value on the Service processor*/
+	ReCompute_AMD_Zen_Boost(&ClockZen, Proc->Service.Core);
 	/* Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(Proc->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
 
