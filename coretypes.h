@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	77
-#define COREFREQ_REV	1
+#define COREFREQ_REV	2
 
 #define CORE_COUNT	256
 
@@ -1249,8 +1249,14 @@ typedef struct {
 		RING_ARG_DWORD	dh;
 	    };
 	};
-	unsigned int		cmd: 32,
-				sub: 32;
+	unsigned int		cmd: 32;
+	union {
+		unsigned int	sub: 32;
+	    struct {
+		unsigned int	ret:  6-0, /* 64 x errno codes		*/
+				tds: 32-6; /* ~1/2Y x 24 x 60 x 60 x 10ds */
+	    };
+	};
 } RING_CTRL;
 
 #define RING_NULL(Ring) 						\

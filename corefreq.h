@@ -421,6 +421,11 @@ typedef struct
 		unsigned int	head, tail;
 	} Ring[2]; /* [0] Parent ; [1] Child				*/
 
+	struct {
+		RING_CTRL	buffer[RING_SIZE] __attribute__((aligned(16)));
+		unsigned int	head, tail;
+	} Error;
+
 	char				ShmName[TASK_COMM_LEN];
 	struct {
 		pid_t			Svr,

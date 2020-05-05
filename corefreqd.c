@@ -4360,14 +4360,26 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
     {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
-	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
+	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg), rx = errno;
 
 	if (Quiet & 0x100) {
-		printf("\tRING[%u](%x,%x)(%lx)>%d\n",
-			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc);
+		printf("\tRING[%u](%x,%x)(%lx)>(%d,%d)\n",
+			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc, rx);
 	}
 	switch (rc) {
 	case -EPERM:
+	    {
+		RING_CTRL error __attribute__ ((aligned(16))) = {
+			.arg = ctrl.arg,
+			.cmd = ctrl.cmd,
+			.ret = rx,
+			.tds = 0
+		};
+		RING_WRITE_1xPARAM(	error.sub,
+					Ref->Shm->Error,
+					error.cmd,
+					error.arg );
+	    }
 		break;
 	case 1:
 		SysGate_OS_Driver(Ref);

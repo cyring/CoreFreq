@@ -5867,6 +5867,52 @@ Window *CreateRecorder(unsigned long long id)
 	return (wRec);
 }
 
+Window *CreateMessage(char *title, RING_CTRL *pCtrl)
+{
+	char *blank = malloc(78+1), *item = malloc(78+1), *sysMsg;
+	Window *wMsg = NULL;
+  if (blank != NULL) {
+    if (item != NULL)
+    {
+	memset(blank, 0x20, 78);
+	memset(item , 0x20, 78);
+	sysMsg = strerror(pCtrl->ret);
+	if (sysMsg != NULL) {
+		size_t len = strlen(sysMsg);
+		if (len < 78) {
+			memcpy(&item[39-len/2], sysMsg, len);
+		} else {
+			memcpy(item, sysMsg, 78);
+		}
+	}
+	blank[78] = '\0';
+	item[78] = '\0';
+
+	wMsg = CreateWindow(	wLayer, pCtrl->arg,
+				1, 3, 1, draw.Size.height-4,
+				WINFLAG_NO_STOCK );
+      if (wMsg != NULL)
+      {
+	StoreTCell(wMsg, SCANKEY_NULL,	blank,	MakeAttr(WHITE , 0, BLACK, 0));
+	StoreTCell(wMsg, SCANKEY_NULL,	item,	MakeAttr(WHITE , 0, BLACK, 0));
+	StoreTCell(wMsg, SCANKEY_NULL,	blank,	MakeAttr(WHITE , 0, BLACK, 0));
+
+	StoreWindow(wMsg, .color[0].select,	MakeAttr(WHITE , 0, BLACK, 0));
+	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE , 0, BLACK, 0));
+	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE , 0, RED, 1));
+	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE , 0, RED, 1));
+	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE , 0, RED, 1));
+	StoreWindow(wMsg, .color[1].title,	MakeAttr(WHITE , 0, RED, 1));
+
+	StoreWindow(wMsg, .title, title);
+      }
+	free(item);
+    }
+	free(blank);
+  }
+	return (wMsg);
+}
+
 Window *_CreateBox(	unsigned long long id,
 			Coordinate origin,
 			Coordinate select,
@@ -12331,6 +12377,13 @@ REASON_CODE Top(char option)
 		break;
 	  } else {
 		WindowsUpdate(&winList);
+	  }
+	  if (!RING_NULL(Shm->Error))
+	  {
+		RING_CTRL ctrl __attribute__ ((aligned(16)));
+		RING_READ(Shm->Error, ctrl);
+
+		AppendWindow(CreateMessage(" Driver ", &ctrl), &winList );
 	  }
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0)) {
