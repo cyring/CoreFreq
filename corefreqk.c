@@ -71,6 +71,22 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static signed short Target_Ratio_Unlock = -1;
+module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
+
+static signed short Clock_Ratio_Unlock = -1;
+module_param(Clock_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Clock_Ratio_Unlock, "1:MinRatio; 2:MaxRatio; 3:Both Unlock");
+
+static signed short Turbo_Ratio_Unlock = -1;
+module_param(Turbo_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Turbo_Ratio_Unlock, "1:Turbo Ratio Unlock; 0:Lock");
+
+static signed short Uncore_Ratio_Unlock = -1;
+module_param(Uncore_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Uncore_Ratio_Unlock, "1:Uncore Ratio Unlock; 0:Lock");
+
 static signed int ServiceProcessor = -1; /* -1=ANY ; 0=BSP */
 module_param(ServiceProcessor, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(ServiceProcessor, "Select a CPU to run services with");
@@ -1739,17 +1755,44 @@ void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
-	if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK)
+	if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK) {
 		Proc->Features.TgtRatio_Unlock = pSpecific->TgtRatioUnlocked;
-
-	if (pSpecific->Latch & LATCH_CLK_RATIO_UNLOCK)
+	}
+	if (pSpecific->Latch & LATCH_CLK_RATIO_UNLOCK) {
 		Proc->Features.ClkRatio_Unlock = pSpecific->ClkRatioUnlocked;
-
-	if (pSpecific->Latch & LATCH_TURBO_UNLOCK)
+	}
+	if (pSpecific->Latch & LATCH_TURBO_UNLOCK) {
 		Proc->Features.Turbo_Unlock = pSpecific->TurboUnlocked;
-
-	if (pSpecific->Latch & LATCH_UNCORE_UNLOCK)
-		Proc->Features.Uncore_Unlock= pSpecific->UncoreUnlocked;
+	}
+	if (pSpecific->Latch & LATCH_UNCORE_UNLOCK) {
+		Proc->Features.Uncore_Unlock = pSpecific->UncoreUnlocked;
+	}
+	switch (Target_Ratio_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		Proc->Features.TgtRatio_Unlock = Target_Ratio_Unlock;
+		break;
+	}
+	switch (Clock_Ratio_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case 0b01:
+	case 0b10:
+	case 0b11:
+		Proc->Features.ClkRatio_Unlock = Clock_Ratio_Unlock;
+		break;
+	}
+	switch (Turbo_Ratio_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		Proc->Features.Turbo_Unlock = Turbo_Ratio_Unlock;
+		break;
+	}
+	switch (Uncore_Ratio_Unlock) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		Proc->Features.Uncore_Unlock = Uncore_Ratio_Unlock;
+		break;
+	}
 }
 
 PROCESSOR_SPECIFIC *LookupProcessor(void)
@@ -4593,7 +4636,7 @@ long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 	return (2);	/* Report a platform change */
 	}
     }
-	return (0);
+	return (-ENODEV);
 }
 
 long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
@@ -4612,7 +4655,7 @@ long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 	return (2);
 	}
     }
-	return (0);
+	return (-ENODEV);
 }
 
 long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
@@ -4631,7 +4674,7 @@ long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 	return (2);
 	}
     }
-	return (0);
+	return (-ENODEV);
 }
 
 static void ClockMod_HWP_PerCore(void *arg)
@@ -4718,7 +4761,7 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
     } else {
 	return (ClockMod_SandyBridge_PPC(pClockMod));
     }
-	return (0);
+	return (-ENODEV);
 }
 
 void Query_AMD_Zen(CORE *Core)					/* Per SMT */
