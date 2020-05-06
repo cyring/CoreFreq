@@ -4187,9 +4187,12 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 		/* Apply if and only if the P-State is enabled */
 	    if (PstateDef.Family_17h.PstateEn)
 	    {
-		COF = KPublic->Core[cpu]->Boost[pClockZen->BoostIndex]
-			+ pClockZen->pClockMod->Offset;
-		/* Compute the Frequency ID from the offsetted COF */
+		/* Compute the new Frequency ID with the COF offset	*/
+		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId );
+
+		COF = COF + pClockZen->pClockMod->Offset;
+
 		FID = AMD_Zen_CoreFID(COF, PstateDef.Family_17h.CpuDfsId);
 		/* Write the P-State MSR with the new FID */
 		PstateDef.Family_17h.CpuFid = FID;

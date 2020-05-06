@@ -5867,51 +5867,52 @@ Window *CreateRecorder(unsigned long long id)
 	return (wRec);
 }
 
-Window *CreateMessage(char *title, RING_CTRL *pCtrl)
+#define POPUP_ITEMS 5
+#define POPUP_WIDTH (MIN_WIDTH - 2)
+#define POPUP_ALLOC (POPUP_WIDTH + 1)
+Window *PopUpMessage(char *title, RING_CTRL *pCtrl)
 {
-	char *blank = malloc(78+1), *item = malloc(78+1), *sysMsg;
+	char *sysMsg, *item;
 	Window *wMsg = NULL;
-  if (blank != NULL) {
-    if (item != NULL)
-    {
-	memset(blank, 0x20, 78);
-	memset(item , 0x20, 78);
+	unsigned int idx;
+  if ((item = malloc(POPUP_ITEMS * POPUP_ALLOC)) != NULL)
+  {
+	memset(item, 0x20, POPUP_ITEMS * POPUP_ALLOC);
 	sysMsg = strerror(pCtrl->ret);
-	if (sysMsg != NULL) {
-		size_t len = strlen(sysMsg);
-		if (len < 78) {
-			memcpy(&item[39-len/2], sysMsg, len);
-		} else {
-			memcpy(item, sysMsg, 78);
-		}
-	}
-	blank[78] = '\0';
-	item[78] = '\0';
-
-	wMsg = CreateWindow(	wLayer, pCtrl->arg,
-				1, 3, 1, draw.Size.height-4,
-				WINFLAG_NO_STOCK );
-      if (wMsg != NULL)
-      {
-	StoreTCell(wMsg, SCANKEY_NULL,	blank,	MakeAttr(WHITE , 0, BLACK, 0));
-	StoreTCell(wMsg, SCANKEY_NULL,	item,	MakeAttr(WHITE , 0, BLACK, 0));
-	StoreTCell(wMsg, SCANKEY_NULL,	blank,	MakeAttr(WHITE , 0, BLACK, 0));
-
-	StoreWindow(wMsg, .color[0].select,	MakeAttr(WHITE , 0, BLACK, 0));
-	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE , 0, BLACK, 0));
-	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE , 0, RED, 1));
-	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE , 0, RED, 1));
-	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE , 0, RED, 1));
-	StoreWindow(wMsg, .color[1].title,	MakeAttr(WHITE , 0, RED, 1));
-
-	StoreWindow(wMsg, .title, title);
+    if (sysMsg != NULL) {
+	size_t len = strlen(sysMsg);
+      if (len < POPUP_WIDTH) {
+	memcpy(&item[(2*POPUP_ALLOC)+(POPUP_WIDTH/2)-(len/2)], sysMsg, len);
+      } else {
+	memcpy(&item[2*POPUP_ALLOC], sysMsg, POPUP_WIDTH);
       }
-	free(item);
     }
-	free(blank);
+	wMsg = CreateWindow(	wLayer, pCtrl->arg,
+				1, POPUP_ITEMS,
+				1, draw.Size.height - (1 + POPUP_ITEMS),
+				WINFLAG_NO_STOCK );
+    if (wMsg != NULL)
+    {
+	for (idx = 0; idx < POPUP_ITEMS; idx++) {
+		item[(idx * POPUP_ALLOC) + POPUP_WIDTH] = '\0';
+		StoreTCell(wMsg, SCANKEY_NULL,
+			&item[idx * POPUP_ALLOC],MakeAttr(WHITE, 0, BLACK, 0));
+	}
+	StoreWindow(wMsg, .color[0].select,	MakeAttr(WHITE, 0, BLACK, 0));
+	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE, 0, BLACK, 0));
+	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE, 0, RED, 1));
+	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE, 0, RED, 1));
+	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE, 0, RED, 1));
+	StoreWindow(wMsg, .color[1].title,	MakeAttr(WHITE, 0, RED, 1));
+	StoreWindow(wMsg, .title, title);
+    }
+	free(item);
   }
 	return (wMsg);
 }
+#undef POPUP_ALLOC
+#undef POPUP_WIDTH
+#undef POPUP_ITEMS
 
 Window *_CreateBox(	unsigned long long id,
 			Coordinate origin,
@@ -12378,13 +12379,13 @@ REASON_CODE Top(char option)
 	  } else {
 		WindowsUpdate(&winList);
 	  }
-	  if (!RING_NULL(Shm->Error))
-	  {
+	}
+	if (!RING_NULL(Shm->Error))
+	{
 		RING_CTRL ctrl __attribute__ ((aligned(16)));
 		RING_READ(Shm->Error, ctrl);
 
-		AppendWindow(CreateMessage(" Driver ", &ctrl), &winList );
-	  }
+		AppendWindow(PopUpMessage(" Driver ", &ctrl), &winList );
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0)) {
 		SortUniqRatio();
