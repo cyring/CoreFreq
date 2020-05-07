@@ -426,6 +426,8 @@ typedef struct
 		unsigned int	head, tail;
 	} Error;
 
+	time_t				StartedAt;
+
 	char				ShmName[TASK_COMM_LEN];
 	struct {
 		pid_t			Svr,
@@ -632,4 +634,11 @@ typedef struct {
 #else
 	#define Print_uBenchmark(quiet) {}
 #endif /* UBENCH */
+
+#define ELAPSED(ref)							\
+({									\
+	time_t now;							\
+	time(&now);							\
+	now - ref;							\
+})
 

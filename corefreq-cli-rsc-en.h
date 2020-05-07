@@ -724,3 +724,5 @@
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_EN	"  MAX       Processor     "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
 
+#define RSC_POPUP_DRIVER_TITLE_CODE_EN		" Driver Message "
+

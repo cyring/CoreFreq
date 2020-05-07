@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	77
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #define CORE_COUNT	256
 
@@ -1254,7 +1254,7 @@ typedef struct {
 		unsigned int	sub: 32;
 	    struct {
 		unsigned int	ret:  6-0, /* 64 x errno codes		*/
-				tds: 32-6; /* ~1/2Y x 24 x 60 x 60 x 10ds */
+				tds: 32-6; /* Epoch time difference sec */
 	    };
 	};
 } RING_CTRL;

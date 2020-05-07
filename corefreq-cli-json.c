@@ -6,7 +6,6 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 #include <time.h>
@@ -1395,13 +1394,13 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_key(&s, "Energy");
 			json_start_arr(&s);
 			for (i = 0; i < DOMAIN_SIZE; i++) {
-				json_literal(&s, "%f", Shm->Proc.State.Energy[i]);
+				json_literal(&s, "%f", Shm->Proc.State.Energy[i].Current);
 			}
 			json_end_arr(&s);
 			json_key(&s, "Power");
 			json_start_arr(&s);
 			for (i = 0; i < DOMAIN_SIZE; i++) {
-				json_literal(&s, "%f", Shm->Proc.State.Power[i]);
+				json_literal(&s, "%f", Shm->Proc.State.Power[i].Current);
 			}
 			json_end_arr(&s);
 			json_end_object(&s);

@@ -29,6 +29,7 @@
 #include "corefreq-cli.h"
 #include "corefreq-cli-rsc.h"
 #include "corefreq-cli-json.h"
+#include "corefreq-cli-extra.h"
 
 SHM_STRUCT *Shm = NULL;
 
@@ -5867,52 +5868,93 @@ Window *CreateRecorder(unsigned long long id)
 	return (wRec);
 }
 
-#define POPUP_ITEMS 5
 #define POPUP_WIDTH (MIN_WIDTH - 2)
 #define POPUP_ALLOC (POPUP_WIDTH + 1)
-Window *PopUpMessage(char *title, RING_CTRL *pCtrl)
+
+Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 {
-	char *sysMsg, *item;
+	char *sysMsg, *item, *inStr, *outStr;
 	Window *wMsg = NULL;
-	unsigned int idx;
-  if ((item = malloc(POPUP_ITEMS * POPUP_ALLOC)) != NULL)
+
+  if (((item = malloc(POPUP_ALLOC)) != NULL)
+  && ((inStr = malloc(POPUP_ALLOC)) != NULL)
+  && ((outStr = malloc(POPUP_ALLOC)) != NULL))
   {
-	memset(item, 0x20, POPUP_ITEMS * POPUP_ALLOC);
-	sysMsg = strerror(pCtrl->ret);
-    if (sysMsg != NULL) {
-	size_t len = strlen(sysMsg);
-      if (len < POPUP_WIDTH) {
-	memcpy(&item[(2*POPUP_ALLOC)+(POPUP_WIDTH/2)-(len/2)], sysMsg, len);
-      } else {
-	memcpy(&item[2*POPUP_ALLOC], sysMsg, POPUP_WIDTH);
-      }
-    }
+	item[POPUP_WIDTH] = '\0';
+
 	wMsg = CreateWindow(	wLayer, pCtrl->arg,
-				1, POPUP_ITEMS,
-				1, draw.Size.height - (1 + POPUP_ITEMS),
+				1, 5,
+				1, draw.Size.height - (1 + 5),
 				WINFLAG_NO_STOCK );
     if (wMsg != NULL)
     {
-	for (idx = 0; idx < POPUP_ITEMS; idx++) {
-		item[(idx * POPUP_ALLOC) + POPUP_WIDTH] = '\0';
-		StoreTCell(wMsg, SCANKEY_NULL,
-			&item[idx * POPUP_ALLOC],MakeAttr(WHITE, 0, BLACK, 0));
+	struct tm *brokTime, localTime;
+	time_t execTime;
+	size_t len;
+
+	execTime = Shm->StartedAt + pCtrl->tds;
+	brokTime = localtime_r(&execTime, &localTime);
+	sysMsg = strerror_r(pCtrl->ret, inStr, POPUP_ALLOC);
+
+	switch ( GET_LOCALE() ) {
+	case LOC_FR:	/* Convert the local time in ASCII		*/
+		len = strftime(inStr, POPUP_ALLOC, "%c", brokTime);
+		ISO_8859_To_ASCII((ASCII *) inStr, (ASCII *) outStr);
+		/* Convert the System message and reassign to pointer	*/
+		ISO_8859_To_ASCII((ASCII *) sysMsg, (ASCII *) inStr);
+		sysMsg = inStr;
+		break;
+	case LOC_EN:	/* Keep the dafault language. No conversion.	*/
+	default:
+		len = strftime(outStr, POPUP_ALLOC, "%c", brokTime);
+		break;
 	}
+
+	memset(item, 0x20, POPUP_WIDTH);
+	if ((len > 0) && (len < POPUP_WIDTH)) {
+		memcpy(item, outStr, len);
+	}
+	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+
+	memset(item, 0x20, POPUP_WIDTH);
+	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+
+	if (sysMsg != NULL) {
+		len = strlen(sysMsg);
+	    if (len < POPUP_WIDTH) {
+		memcpy(&item[(POPUP_WIDTH / 2) - (len / 2)], sysMsg, len);
+	    } else {
+		memcpy(item, sysMsg, POPUP_WIDTH);
+	    }
+	}
+	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+
+	memset(item, 0x20, POPUP_WIDTH);
+	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+
 	StoreWindow(wMsg, .color[0].select,	MakeAttr(WHITE, 0, BLACK, 0));
-	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE, 0, BLACK, 0));
-	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE, 0, RED, 1));
-	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE, 0, RED, 1));
-	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE, 0, RED, 1));
-	StoreWindow(wMsg, .color[1].title,	MakeAttr(WHITE, 0, RED, 1));
-	StoreWindow(wMsg, .title, title);
+	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE, 0, RED	, 0));
+	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE, 0, RED	, 1));
+	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE, 0, RED	, 0));
+	StoreWindow(wMsg, .color[1].title,	MakeAttr(BLACK, 0, WHITE, 0));
+	StoreWindow(wMsg, .title, (char *) title);
     }
+  }
+  if (outStr != NULL) {
+	free(outStr);
+  }
+  if (inStr != NULL) {
+	free(inStr);
+  }
+  if (item != NULL) {
 	free(item);
   }
 	return (wMsg);
 }
 #undef POPUP_ALLOC
 #undef POPUP_WIDTH
-#undef POPUP_ITEMS
 
 Window *_CreateBox(	unsigned long long id,
 			Coordinate origin,
@@ -12385,7 +12427,9 @@ REASON_CODE Top(char option)
 		RING_CTRL ctrl __attribute__ ((aligned(16)));
 		RING_READ(Shm->Error, ctrl);
 
-		AppendWindow(PopUpMessage(" Driver ", &ctrl), &winList );
+		AppendWindow(
+			PopUpMessage(RSC(POPUP_DRIVER_TITLE).CODE(), &ctrl),
+			&winList );
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, COMP0)) {
 		SortUniqRatio();

@@ -546,12 +546,13 @@ int GetKey(SCANKEY *scan, struct timespec *tsec)
 	struct pollfd fds = {.fd = STDIN_FILENO, .events = POLLIN};
 	int rp = 0, rz = 0;
 
-	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0)
+	if ((rp = ppoll(&fds, 1, tsec, NULL)) > 0) {
 		if (fds.revents & POLLIN) {
 			size_t lc = read(STDIN_FILENO, &scan->key, 8);
 			for (rz = lc; rz < 8; rz++)
 				scan->code[rz] = 0;
 		}
+	}
 	return (rp);
 }
 
@@ -646,8 +647,9 @@ void HookString(REGSTR *with, REGSTR what) { strcpy(*with, what); }
 
 void HookPointer(REGPTR *with, REGPTR what)
 {
-	if ((*with = realloc(*with, 1 + strlen(what))) != NULL)
+	if ((*with = realloc(*with, 1 + strlen(what))) != NULL) {
 		strcpy(*with, what);
+	}
 }
 
 void DestroyLayer(Layer *layer)
@@ -681,26 +683,30 @@ void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				ASCII *source, ATTRIBUTE attrib)
 {
 	CUINT _row;
-	for (_row = row; _row < row + height; _row++)
+	for (_row = row; _row < row + height; _row++) {
 		LayerFillAt(layer, col, _row, width, source, attrib);
+	}
 }
 
 void AllocCopyAttr(TCell *cell, ATTRIBUTE attrib[])
 {
-	if ((attrib != NULL) && (cell->attr = malloc(cell->length)) != NULL)
+	if ((attrib != NULL) && (cell->attr = malloc(cell->length)) != NULL) {
 		memcpy(&cell->attr->value, &attrib->value, cell->length);
+	}
 }
 
 void AllocFillAttr(TCell *cell, ATTRIBUTE attrib)
 {
-	if ((cell->attr = malloc(cell->length)) != NULL)
+	if ((cell->attr = malloc(cell->length)) != NULL) {
 		memset(&cell->attr->value, attrib.value, cell->length);
+	}
 }
 
 void AllocCopyItem(TCell *cell, ASCII *item)
 {
-	if ((cell->item = malloc(cell->length)) != NULL)
+	if ((cell->item = malloc(cell->length)) != NULL) {
 		strncpy((char *)cell->item, (char *)item, cell->length);
+	}
 }
 
 void FreeAllTCells(Window *win)
@@ -780,10 +786,11 @@ Stock *SearchStockById(unsigned long long id)
 
 CUINT LazyCompBottomRow(Window *win)
 {
-    if ((win->dim > 0) && win->matrix.size.wth)
+    if ((win->dim > 0) && win->matrix.size.wth) {
 	return ((win->dim / win->matrix.size.wth) - win->matrix.size.hth);
-    else
+    } else {
 	return (1);
+    }
 }
 
 void DestroyWindow(Window *win)
@@ -901,8 +908,9 @@ void AppendWindow(Window *win, WinList *list)
 
 void DestroyAllWindows(WinList *list)
 {
-	while (!IsDead(list))
+	while (!IsDead(list)) {
 		RemoveWindow(GetHead(list), list);
+	}
 }
 
 void AnimateWindow(int rotate, WinList *list)
@@ -1696,25 +1704,29 @@ void FreeAll(char *buffer)
 
 __typeof__ (errno) AllocAll(char **buffer)
 {	/* Alloc 10 times to include the ANSI cursor strings.		*/
-	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL)
+	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL) {
 		return (ENOMEM);
-	if ((console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL)
+	}
+	if ((console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL) {
 		return (ENOMEM);
-
+	}
 	const CoordSize layerSize = {
 		.wth = MAX_WIDTH,
 		.hth = MAX_HEIGHT
 	};
 
-	if ((sLayer = calloc(1, sizeof(Layer))) == NULL)
+	if ((sLayer = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
-	if ((dLayer = calloc(1, sizeof(Layer))) == NULL)
+	}
+	if ((dLayer = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
-	if ((wLayer = calloc(1, sizeof(Layer))) == NULL)
+	}
+	if ((wLayer = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
-	if ((fuse   = calloc(1, sizeof(Layer))) == NULL)
+	}
+	if ((fuse   = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
-
+	}
 	CreateLayer(sLayer, layerSize);
 	CreateLayer(dLayer, layerSize);
 	CreateLayer(wLayer, layerSize);
@@ -1916,13 +1928,13 @@ locale_t	SysLoc = (locale_t) 0;
 typedef char I18N[5];
 
 I18N	i18n_FR[] = {
+	"fr_FR",
 	"br_FR",
-	"ca_FR",
 	"fr_BE",
 	"fr_CA",
 	"fr_CH",
-	"fr_FR",
 	"fr_LU",
+	"ca_FR",
 	"ia_FR",
 	"oc_FR",
 	{0,0,0,0,0}
@@ -1962,7 +1974,6 @@ void _LOCALE_IN(void)
 			lookUp++;
 		}
 	}
-	return;
 }
 
 void _LOCALE_OUT(void)
@@ -1970,6 +1981,22 @@ void _LOCALE_OUT(void)
 	if (SysLoc != (locale_t) 0) {
 		freelocale(SysLoc);
 	}
+}
+
+void LocaleTo(int category)
+{
+	struct LOCALE_LOOKUP *lookUp = LocaleLookUp;
+	while (lookUp->i18n != NULL) {
+		if (lookUp->apploc == GET_LOCALE()) {
+			char localeStr[sizeof(I18N) + 1];
+			memcpy(localeStr, lookUp->i18n[0], sizeof(I18N));
+			localeStr[sizeof(I18N)] = '\0';
+			setlocale(category, localeStr);
+			return;
+		}
+		lookUp++;
+	}
+	setlocale(category, "C");
 }
 
 __typeof__ (errno) SaveGeometries(char *cfgFQN)

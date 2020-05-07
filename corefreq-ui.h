@@ -819,6 +819,8 @@ extern void _LOCALE_IN(void) ;
 extern void _LOCALE_OUT(void) ;
 #define LOCALE(IO)	_LOCALE_##IO()
 
+extern void LocaleTo(int category) ;
+
 enum LOCALES {
 	LOC_EN,
 	LOC_FR,
@@ -833,6 +835,7 @@ extern  locale_t	SysLoc;
 #define SET_LOCALE(_apploc)						\
 ({									\
 	AppLoc = _apploc;						\
+	LocaleTo(LC_ALL);						\
 })
 
 extern void StopDump(void) ;

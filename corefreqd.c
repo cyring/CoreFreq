@@ -4373,7 +4373,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 			.arg = ctrl.arg,
 			.cmd = ctrl.cmd,
 			.ret = rx,
-			.tds = 0
+			.tds = ELAPSED(Ref->Shm->StartedAt)
 		};
 		RING_WRITE_1xPARAM(	error.sub,
 					Ref->Shm->Error,
@@ -5201,6 +5201,8 @@ REASON_CODE Shm_Manager(FD *fd, PROC *Proc, uid_t uid, uid_t gid, mode_t cmask)
 		SET_FOOTPRINT(Shm->FootPrint,	COREFREQ_MAJOR,
 						COREFREQ_MINOR,
 						COREFREQ_REV	);
+		/* Reference time the Server is starting at.		*/
+		time(&Shm->StartedAt);
 		/* Store the daemon gate name.				*/
 		StrCopy(Shm->ShmName, SHM_FILENAME, TASK_COMM_LEN);
 		/* Initialize the busy wait times.			*/
