@@ -295,9 +295,11 @@ typedef struct
 	} CPU;
 
 	SERVICE_PROC			Service;
-
+/*TODO(CleanUp)
 	unsigned int			Boost[BOOST(SIZE)],
 					PM_version;
+*/
+	unsigned int			PM_version;
 
 	unsigned int			Top;
 

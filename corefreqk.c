@@ -748,10 +748,11 @@ static void Query_Features(void *pArg)
 void Compute_Interval(void)
 {
 	if ( (SleepInterval >= LOOP_MIN_MS)
-	  && (SleepInterval <= LOOP_MAX_MS))
+	  && (SleepInterval <= LOOP_MAX_MS)) {
 		Proc->SleepInterval = SleepInterval;
-	else
+	} else {
 		Proc->SleepInterval = LOOP_DEF_MS;
+	}
 	/* Compute the tick steps. */
 	Proc->tickReset = ((TickInterval >= Proc->SleepInterval)
 			&& (TickInterval <= LOOP_MAX_MS)) ?
@@ -1870,6 +1871,7 @@ void Intel_Core_Platform_Info(void)
 					ratio1 = PfID.MaxBusRatio;
 			}
 	}
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(MIN)] = KMIN(ratio0, ratio1);
 	Proc->Boost[BOOST(MAX)] = KMAX(ratio0, ratio1);
 
@@ -1881,11 +1883,33 @@ void Intel_Core_Platform_Info(void)
 					+ pSpecific->Boost[0]
 					+ pSpecific->Boost[1];
 	} else {
-	    if (Proc->Features.Power.EAX.TurboIDA) { /* Half Ratio capable ? */
+	    if (Proc->Features.Power.EAX.TurboIDA) { // Half Ratio capable ? **
 		Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)] + 2;
 	    }
 		Proc->Features.TgtRatio_Unlock = 1;
 	}
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] =		\
+							KMIN(ratio0, ratio1);
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =		\
+							KMAX(ratio0, ratio1);
+
+	if ((pSpecific = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(pSpecific);
+		OverrideUnlockCapability(pSpecific);
+
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)] =	\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)]
+			+ pSpecific->Boost[0]
+			+ pSpecific->Boost[1];
+	} else {
+	    if (Proc->Features.Power.EAX.TurboIDA) { /* Half Ratio capable ? */
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)] =	\
+			2+KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
+	    }
+		Proc->Features.TgtRatio_Unlock = 1;
+	}
+
 	if (Proc->Features.Turbo_Unlock) {
 		Proc->Features.SpecTurboRatio = 1;
 	} else {
@@ -1902,9 +1926,14 @@ void Intel_Platform_Turbo(void)
 	Proc->Features.TDP_Unlock = PfInfo.ProgrammableTDP;
 	Proc->Features.TDP_Levels = PfInfo.ConfigTDPlevels;
 	Proc->Features.Turbo_Unlock = PfInfo.ProgrammableTurbo;
-
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
 	Proc->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] =		\
+							PfInfo.MinimumRatio;
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =		\
+							PfInfo.MaxNonTurboRatio;
 
 	if ((pSpecific = LookupProcessor()) != NULL) {
 		OverrideCodeNameString(pSpecific);
@@ -2006,9 +2035,11 @@ long For_All_Turbo_Clock(void (*PerCore)(void*),
 
 		Assign(KPublic->Core[cpu]->Boost, &ClockTurbo.Config);
 	}
+/*TODO(CleanUp)
 	if (cpu == Proc->Service.Core) {
 		Assign(Proc->Boost, &ClockTurbo.Config);
 	}
+*/
     } while (cpu != 0) ;
 	return (rc);
 }
@@ -2374,19 +2405,32 @@ void Intel_Turbo_TDP_Config(void)
 	CONFIG_TDP_LEVEL ConfigTDP;
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(ACT)] =		\
+						TurboActivation.MaxRatio;
 	Proc->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
 	ConfigTDP.value = 0;
 	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_2);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
 
 	ConfigTDP.value = 0;
 	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_1);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
 
 	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
 	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
@@ -2499,8 +2543,14 @@ void Intel_Hardware_Performance(void)
 
 void SandyBridge_Uncore_Ratio(void)
 {
+/*TODO(CleanUp)
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = Proc->Boost[BOOST(MIN)];
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = Proc->Boost[BOOST(MAX)];
+*/
+	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = 			\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
+	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = 			\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
 }
 
 long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
@@ -3015,20 +3065,36 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	CONFIG_TDP_LEVEL ConfigTDP;
 
 	NominalTDP.value = readl(mchmap + 0x5f3c);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP)] = NominalTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP)] =		\
+							NominalTDP.Ratio;
 
 	ConfigTDP.value = readq(mchmap + 0x5f40);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP1)] = 	\
+							ConfigTDP.Ratio;
 
 	ConfigTDP.value = readq(mchmap + 0x5f48);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(TDP2)] = 	\
+							ConfigTDP.Ratio;
 
 	ControlTDP.value = readl(mchmap + 0x5f50);
 	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 
 	TurboActivation.value = readl(mchmap + 0x5f54);
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(ACT)] =		\
+						TurboActivation.MaxRatio;
 	Proc->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	Proc->Features.TDP_Levels = 3;
@@ -3722,7 +3788,11 @@ void Query_AuthenticAMD(void)
     } else {
 	Proc->PowerThermal.Param.Target = 0;
     }
-	Proc->Boost[BOOST(MIN)] = 8; /* Lowest frequency according to BKDG */
+/*TODO(CleanUp)
+	Proc->Boost[BOOST(MIN)] = 8;
+*/
+	/* Lowest frequency according to BKDG */
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] = 8;
 
     if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
 	COFVID CofVid = {.value = 0};
@@ -3732,20 +3802,40 @@ void Query_AuthenticAMD(void)
 	case 0x6:
 	case 0x7:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(MAX)] = CofVid.Arch_COF.MaxCpuCof;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =	\
+						CofVid.Arch_COF.MaxCpuCof;
 		break;
 	case 0x2:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
-		if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+		if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
 			Proc->Boost[BOOST(MAX)] += 0x8;
+		}
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =	\
+						CofVid.Arch_Pll.MainPllOpFidMax;
+	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] += 0x8;
+	    }
 		break;
 	case 0x3:
 	case 0x5:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(MAX)]=CofVid.Arch_Pll.MainPllOpFidMax;
-		if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+		if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
 			Proc->Boost[BOOST(MAX)] += 0x10;
+		}
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =	\
+						CofVid.Arch_Pll.MainPllOpFidMax;
+	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] += 0x10;
+	    }
 		break;
 	}
     } else {
@@ -3770,23 +3860,45 @@ void Query_AuthenticAMD(void)
 		kfree(Compute.TSC[0]);
 	}
 	if (vClock.Hz != 0) {
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(MAX)] = vClock.Q;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] = vClock.Q;
 	} else {
 		goto NO_SOLUTION;
 	}
       } else {
 NO_SOLUTION:
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =	\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
       }
     }
     if (pSpecific != NULL) {
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(1C)]  = Proc->Boost[BOOST(MAX)]
 				+ pSpecific->Boost[0];
 	Proc->Boost[BOOST(2C)]  = Proc->Boost[BOOST(1C)]
 				+ pSpecific->Boost[1];
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)] =		\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)]
+			+ pSpecific->Boost[0];
+
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(2C)] =		\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)]
+			+ pSpecific->Boost[1];
+
 	Proc->Features.SpecTurboRatio = 2;
     } else {
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(1C)] = Proc->Boost[BOOST(MAX)];
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)] =		\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
+
 	Proc->Features.SpecTurboRatio = 0;
     }
 	HyperThreading_Technology();
@@ -3807,19 +3919,32 @@ void Query_AMD_Family_0Fh(void)
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
-
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
 	Proc->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] =		\
+						VCO[FidVidStatus.StartFID].MCF;
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =		\
+							8 + FidVidStatus.MaxFID;
 
 	if (FidVidStatus.StartFID < 0b1000) {
-	    unsigned int t;
+		unsigned int t;
 	    for (t = 0; t < 5; t++) {
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(SIZE)-5+t]=VCO[FidVidStatus.StartFID].PCF[t];
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(SIZE)-5+t] = \
+					VCO[FidVidStatus.StartFID].PCF[t];
 	    }
 
-	    Proc->Features.SpecTurboRatio = 5;
+		Proc->Features.SpecTurboRatio = 5;
 	} else {
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C)] =	\
+							8 + FidVidStatus.MaxFID;
 
 		Proc->Features.SpecTurboRatio = 1;
 	}
@@ -3827,10 +3952,19 @@ void Query_AMD_Family_0Fh(void)
 	HWCR HwCfgRegister = {.value = 0};
 
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(MIN)] = 8 + HwCfgRegister.Family_0Fh.StartFID;
 	Proc->Boost[BOOST(MAX)] = Proc->Boost[BOOST(MIN)];
 	Proc->Boost[BOOST(1C) ] = Proc->Boost[BOOST(MIN)];
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] =		\
+					8 + HwCfgRegister.Family_0Fh.StartFID;
+
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] =		\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
+
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(1C) ] =		\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
 
 	Proc->Features.SpecTurboRatio = 1;
     }
@@ -3855,9 +3989,13 @@ void Query_AMD_Family_10h(void)
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-
+/*TODO(CleanUp)
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x10)
 					  / (1 << PstateDef.Family_10h.CpuDid);
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = \
+					(PstateDef.Family_10h.CpuFid + 0x10)
+					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 3;
 
@@ -3882,9 +4020,13 @@ void Query_AMD_Family_11h(void)
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-
+/*TODO(CleanUp)
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_10h.CpuFid + 0x8)
 					  / (1 << PstateDef.Family_10h.CpuDid);
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = \
+					(PstateDef.Family_10h.CpuFid + 0x8)
+					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
@@ -3909,9 +4051,13 @@ void Query_AMD_Family_12h(void)
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-
+/*TODO(CleanUp)
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_12h.CpuFid + 0x10)
 					  /  PstateDef.Family_12h.CpuDid;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = \
+					(PstateDef.Family_12h.CpuFid + 0x10)
+					/  PstateDef.Family_12h.CpuDid;
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
@@ -3947,8 +4093,11 @@ void Query_AMD_Family_14h(void)
 
 		ClockDiv = (PstateDef.Family_14h.CpuDidMSD + 1) * 4;
 		ClockDiv += PstateDef.Family_14h.CpuDidLSD;
-
+/*TODO(CleanUp)
 		Proc->Boost[sort[pstate]] = (MaxFreq * 4) / ClockDiv;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = \
+						(MaxFreq * 4) / ClockDiv;
 	}	/* @ MainPllOpFidMax MHz */
 	Proc->Features.SpecTurboRatio = 6;
 
@@ -3967,9 +4116,13 @@ void Query_AMD_Family_15h(void)
 		PSTATEDEF PstateDef = {.value = 0};
 
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-
+/*TODO(CleanUp)
 		Proc->Boost[sort[pstate]] = (PstateDef.Family_15h.CpuFid + 0x10)
 					  / (1 << PstateDef.Family_15h.CpuDid);
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = \
+					(PstateDef.Family_15h.CpuFid + 0x10)
+					/ (1 << PstateDef.Family_15h.CpuDid);
 	}
 	Proc->Features.SpecTurboRatio = 6;
 
@@ -4064,20 +4217,28 @@ void Compute_AMD_Zen_Boost(void)
 		Proc->Features.TgtRatio_Unlock = 1; /* Default: TGT unlocked */
 	}
 	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
+/*TODO(CleanUp)
 		Proc->Boost[pstate] = 0;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[pstate] = 0;
 	}
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
+/*TODO(CleanUp)
 	Proc->Boost[BOOST(MIN)] = 4;
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)] = 4;
 	/* Loop over all frequency ids. */
 	for (pstate = 0; pstate <= 7; pstate++) {
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 		/* Handle only valid P-States. */
-		if (PstateDef.Family_17h.PstateEn) {
-			COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
-
-			Proc->Boost[sort[pstate]] = COF;
-		}
+	    if (PstateDef.Family_17h.PstateEn) {
+		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId);
+/*TODO(CleanUp)
+		Proc->Boost[sort[pstate]] = COF;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[sort[pstate]] = COF;
+	    }
 	}
 	Proc->Features.SpecTurboRatio = pstate;
 
@@ -4085,15 +4246,34 @@ void Compute_AMD_Zen_Boost(void)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	if (!HwCfgRegister.Family_17h.CpbDis)
 	{
+/*TODO(CleanUp)
 		Proc->Boost[BOOST(CPB)] = Proc->Boost[BOOST(MAX)];
 		Proc->Boost[BOOST(XFR)] = Proc->Boost[BOOST(MAX)];
 
 	    if (pSpecific != NULL) {
-		Proc->Boost[BOOST(CPB)] += pSpecific->Boost[0]; /* Boost */
+		Proc->Boost[BOOST(CPB)] += pSpecific->Boost[0]; // Boost **
 
-		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[0]; /* Boost */
-		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[1]; /* XFR */
+		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[0]; // Boost **
+		Proc->Boost[BOOST(XFR)] += pSpecific->Boost[1]; // XFR **
 	    }
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(CPB)] =	\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
+
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(XFR)] =	\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
+
+	    if (pSpecific != NULL) {
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(CPB)] += \
+						pSpecific->Boost[0]; /* Boost*/
+
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(XFR)] += \
+						pSpecific->Boost[0]; /* Boost*/
+
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(XFR)] += \
+						pSpecific->Boost[1]; /* XFR */
+	    }
+
 		Proc->Features.TDP_Levels = 2; /* Count the Xtra Boost ratios */
 	} else {
 		Proc->Features.TDP_Levels = 0; /* Disabled CPB: Hide ratios */
@@ -4121,15 +4301,19 @@ void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen, unsigned int cpu)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	if (pClockZen->pClockMod == NULL) { /* Called by Query_AMD_Family_17h*/
+    if (pClockZen->pClockMod == NULL) { /* Called by Query_AMD_Family_17h*/
+/*TODO(CleanUp)
 		Proc->Boost[pClockZen->BoostIndex] = COF;
-	} else {				/* Called for each Core */
-		KPublic->Core[cpu]->Boost[pClockZen->BoostIndex] = COF;
-
-		if (cpu == Proc->Service.Core) {
-			Proc->Boost[pClockZen->BoostIndex] = COF;
-		}
+*/
+	KPublic->Core[Proc->Service.Core]->Boost[pClockZen->BoostIndex] = COF;
+    } else {				/* Called for each Core */
+	KPublic->Core[cpu]->Boost[pClockZen->BoostIndex] = COF;
+/*TODO(CleanUp)
+	if (cpu == Proc->Service.Core) {
+		Proc->Boost[pClockZen->BoostIndex] = COF;
 	}
+*/
+    }
 }
 
 static void TargetClock_AMD_Zen_PerCore(void *arg)
@@ -4431,7 +4615,7 @@ static unsigned int Get_SandyBridge_Target(CORE *Core)
 {
 	return (GET_SANDYBRIDGE_TARGET(Core));
 }
-
+/*TODO(CleanUp)
 #define GET_HWP_MINIMUM(Core)						\
 (									\
 	Core->PowerThermal.HWP_Request.Minimum_Perf			\
@@ -4461,7 +4645,7 @@ static unsigned int Get_HWP_Target(CORE *Core)
 {
 	return (GET_HWP_DESIRED(Core));
 }
-
+*/
 typedef int (*CMP_TARGET)(CORE*, unsigned int);
 
 static int Cmp_Core2_Target(CORE *Core, unsigned int ratio)
@@ -4479,11 +4663,14 @@ static int Cmp_SandyBridge_Target(CORE *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
+/*TODO(CleanUp)
 void Aggregate_Reset(enum RATIO_BOOST boost, unsigned int ratio)
 {
 	Proc->Boost[boost] = ratio;
 }
+*/
 
+/*TODO(CleanUp)
 void Aggregate_Ratio(enum RATIO_BOOST boost, unsigned int ratio)
 {
 	if (ratio > Proc->Boost[boost])
@@ -4491,6 +4678,7 @@ void Aggregate_Ratio(enum RATIO_BOOST boost, unsigned int ratio)
 		Proc->Boost[boost] = ratio;
 	}
 }
+*/
 
 void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 					GET_TARGET GetTarget,
@@ -4508,14 +4696,17 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
   if ((MiscFeatures.Turbo_IDA == 0) && (Proc->Features.Power.EAX.TurboIDA))
   {
     switch (TurboBoost_Enable) {
-    case COREFREQ_TOGGLE_OFF:
+    case COREFREQ_TOGGLE_OFF:	/* Restore nominal P-state */
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
-	SetTarget(Core, Proc->Boost[BOOST(MAX)]); /* Restore nominal P-state */
+/*TODO(CleanUp)
+	SetTarget(Core, Proc->Boost[BOOST(MAX)]);
+*/
+	SetTarget(Core, KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)]);
 	ToggleFeature = 1;
 	break;
-    case COREFREQ_TOGGLE_ON:
+    case COREFREQ_TOGGLE_ON:	/* Request the Turbo P-state	*/
 	Core->PowerThermal.PerfControl.Turbo_IDA = 0;
-	SetTarget(Core, TurboRatio);	/* Request the Turbo P-state	*/
+	SetTarget(Core, TurboRatio);
 	ToggleFeature = 1;
 	break;
     }
@@ -4562,21 +4753,37 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
 		}
 	}
   }
+/*TODO(CleanUp)
 	Aggregate_Ratio(BOOST(TGT)	, GetTarget(Core));
 	Aggregate_Ratio(BOOST(HWP_MIN)	, Get_HWP_Min(Core));
 	Aggregate_Ratio(BOOST(HWP_MAX)	, Get_HWP_Max(Core));
 	Aggregate_Ratio(BOOST(HWP_TGT)	, Get_HWP_Target(Core));
+*/
 }
 
 void DynamicAcceleration(CORE *Core)				/* Unique */
 {
 	if (Proc->Features.Power.EAX.TurboIDA) {
+/*TODO(CleanUp)
 		TurboBoost_Technology(	Core,
 					Set_Core2_Target,
 					Get_Core2_Target,
 					Cmp_Core2_Target,
 					1 + Proc->Boost[BOOST(MAX)],
 					1 + Proc->Boost[BOOST(MAX)] );
+*/
+		TurboBoost_Technology(	Core,
+					Set_Core2_Target,
+					Get_Core2_Target,
+					Cmp_Core2_Target,
+
+					1 + KPublic->Core[
+							Proc->Service.Core
+							]->Boost[BOOST(MAX)],
+
+					1 + KPublic->Core[
+							Proc->Service.Core
+							]->Boost[BOOST(MAX)] );
 	} else {
 		BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
 		BITSET_CC(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
@@ -4600,10 +4807,16 @@ static void ClockMod_PPC_PerCore(void *arg)
 	Core = (CORE *) KPublic->Core[cpu];
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-
+/*TODO(CleanUp)
 	pClockPPC->SetTarget(Core, (pClockPPC->pClockMod->cpu == -1) ?
 		Proc->Boost[BOOST(TGT)] + pClockPPC->pClockMod->Offset
 	:	pClockPPC->GetTarget(Core) + pClockPPC->pClockMod->Offset);
+*/
+	pClockPPC->SetTarget(Core, (pClockPPC->pClockMod->cpu == -1) ?
+		pClockPPC->GetTarget(KPublic->Core[Proc->Service.Core])
+						+ pClockPPC->pClockMod->Offset
+	:
+		pClockPPC->GetTarget(Core)	+ pClockPPC->pClockMod->Offset);
 
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
@@ -4696,18 +4909,33 @@ static void ClockMod_HWP_PerCore(void *arg)
     if (pClockMod->cpu == -1) {
       switch (pClockMod->NC) {
       case CLOCK_MOD_HWP_MIN:
+/*TODO(CleanUp)
 	Core->PowerThermal.HWP_Request.Minimum_Perf=Proc->Boost[BOOST(HWP_MIN)]
 							+ pClockMod->Offset;
+*/
+	Core->PowerThermal.HWP_Request.Minimum_Perf =			\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(HWP_MIN)]
+			+ pClockMod->Offset;
 	WrRdHWP = 1;
 	break;
       case CLOCK_MOD_HWP_MAX:
+/*TODO(CleanUp)
 	Core->PowerThermal.HWP_Request.Maximum_Perf=Proc->Boost[BOOST(HWP_MAX)]
 							+ pClockMod->Offset;
+*/
+	Core->PowerThermal.HWP_Request.Maximum_Perf =			\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(HWP_MAX)]
+			+ pClockMod->Offset;
 	WrRdHWP = 1;
 	break;
       case CLOCK_MOD_HWP_TGT:
+/*TODO(CleanUp)
 	Core->PowerThermal.HWP_Request.Desired_Perf=Proc->Boost[BOOST(HWP_TGT)]
 							+ pClockMod->Offset;
+*/
+	Core->PowerThermal.HWP_Request.Desired_Perf =			\
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(HWP_TGT)]
+			+ pClockMod->Offset;
 	WrRdHWP = 1;
 	break;
       }
@@ -4870,8 +5098,10 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	    if (PstateDef.Family_17h.PstateEn) {
 		unsigned int COF=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
 						PstateDef.Family_17h.CpuDfsId);
-
+/*TODO(CleanUp)
 			Proc->Boost[BOOST(TGT)] = COF;
+*/
+		KPublic->Core[Proc->Service.Core]->Boost[BOOST(TGT)] = COF;
 	    }
 	}
 }
@@ -6016,13 +6246,26 @@ static void PerCore_Nehalem_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-
+/*TODO(CleanUp)
 	TurboBoost_Technology(	Core,
 				Set_Nehalem_Target,
 				Get_Nehalem_Target,
 				Cmp_Nehalem_Target,
 				1 + Proc->Boost[BOOST(MAX)],
 				1 + Proc->Boost[BOOST(MAX)] );
+*/
+	TurboBoost_Technology(	Core,
+				Set_Nehalem_Target,
+				Get_Nehalem_Target,
+				Cmp_Nehalem_Target,
+
+				1 + KPublic->Core[
+						Proc->Service.Core
+						]->Boost[BOOST(MAX)],
+
+				1 + KPublic->Core[
+						Proc->Service.Core
+						]->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6053,13 +6296,26 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-
+/*TODO(CleanUp)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
+*/
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(1C)],
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6091,13 +6347,26 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-
+/*TODO(CleanUp)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
+*/
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(1C)],
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6128,13 +6397,26 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-
+/*TODO(CleanUp)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
+*/
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(1C)],
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6165,13 +6447,26 @@ static void PerCore_Skylake_Query(void *arg)
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
-
+/*TODO(CleanUp)
 	TurboBoost_Technology(	Core,
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
 				Proc->Boost[BOOST(1C)],
 				Proc->Boost[BOOST(MAX)] );
+*/
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(1C)],
+
+				KPublic->Core[
+						Proc->Service.Core
+					]->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6364,7 +6659,10 @@ void Controller_Init(void)
 	if (Arch[Proc->ArchID].Query != NULL) {
 		Arch[Proc->ArchID].Query();
 	}
+/*TODO(CleanUp)
 	ratio = Proc->Boost[BOOST(MAX)];
+*/
+	ratio =KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
 
 	if (Arch[Proc->ArchID].BaseClock != NULL) {
 		clock = Arch[Proc->ArchID].BaseClock(ratio);
@@ -6376,9 +6674,14 @@ void Controller_Init(void)
 	}
 
 	if (Proc->Features.Factory.Freq != 0) {
-	    if (ratio == 0) /* Fix ratio. */
+	    if (ratio == 0) {	/* Fix ratio. */
+/*TODO(CleanUp)
 		ratio = Proc->Boost[BOOST(MAX)] = Proc->Features.Factory.Freq
 						/ clock.Q;
+*/
+		ratio = KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)]=\
+					Proc->Features.Factory.Freq / clock.Q;
+	    }
 	} else if (ratio > 0) { /* Fix factory frequency (MHz) */
 		Proc->Features.Factory.Freq = (ratio * clock.Hz) / 1000000;
 	}
@@ -6428,9 +6731,17 @@ void Controller_Init(void)
 	/* Launch a high resolution timer for each online CPU. */
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 	{
+/*TODO(CleanUp)
 		const size_t fullSz = BOOST(SIZE) * sizeof(unsigned int);
 		memcpy(KPublic->Core[cpu]->Boost, Proc->Boost, fullSz);
-
+*/
+		if (cpu != Proc->Service.Core)
+		{
+			const size_t fullSz=BOOST(SIZE) * sizeof(unsigned int);
+			memcpy( KPublic->Core[cpu]->Boost,
+				KPublic->Core[Proc->Service.Core]->Boost,
+				fullSz );
+		}
 		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 			if (!KPublic->Core[cpu]->Clock.Hz) {
 				KPublic->Core[cpu]->Clock = clock;
@@ -6741,9 +7052,14 @@ void AMD_Core_Counters_Clear(CORE *Core)
 									\
 	if (AutoClock & 0b10) { 					\
 		Core_OVH(Core); 					\
-									\
+/*TODO(CleanUp)								\
 		REL_BCLK(Core->Clock,					\
 			Proc->Boost[BOOST(MAX)],			\
+			Core->Delta.TSC,				\
+			Proc->SleepInterval);				\
+*/									\
+		REL_BCLK(Core->Clock,					\
+			Core->Boost[BOOST(MAX)],			\
 			Core->Delta.TSC,				\
 			Proc->SleepInterval);				\
 	}								\
@@ -9077,9 +9393,13 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 					* Core->Clock.Hz;
 
 		Core->Counter[1].C0.URC = Core->Counter[1].C0.UCC;
-
+/*TODO(CleanUp)
 		Core->Counter[1].TSC	= Core->Counter[0].TSC
 				+ (Proc->Boost[BOOST(MAX)] * Core->Clock.Hz);
+*/
+		Core->Counter[1].TSC	= Core->Counter[0].TSC
+					+ (Core->Boost[BOOST(MAX)]
+						* Core->Clock.Hz);
 
 		/* Derive C1 */
 		Core->Counter[1].C1 =
@@ -9128,8 +9448,14 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		Save_C1(Core);
 
 		if (AutoClock & 0b10)
+/*TODO(CleanUp)
 			REL_BCLK(Core->Clock,
 				Proc->Boost[BOOST(MAX)],
+				Core->Delta.TSC,
+				Proc->SleepInterval);
+*/
+			REL_BCLK(Core->Clock,
+				Core->Boost[BOOST(MAX)],
 				Core->Delta.TSC,
 				Proc->SleepInterval);
 
@@ -9798,12 +10124,19 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 	if (policy->cpu < Proc->CPU.Count)
 	{
 		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
-
+/*TODO(CleanUp)
 		policy->cpuinfo.min_freq =(Proc->Boost[BOOST(MIN)]
 					 * Core->Clock.Hz) / 1000LLU;
 
 		policy->cpuinfo.max_freq =(Proc->Boost[BOOST(MAX)]
 					 * Core->Clock.Hz) / 1000LLU;
+*/
+		policy->cpuinfo.min_freq =(Core->Boost[BOOST(MIN)]
+					 * Core->Clock.Hz) / 1000LLU;
+
+		policy->cpuinfo.max_freq =(Core->Boost[BOOST(MAX)]
+					 * Core->Clock.Hz) / 1000LLU;
+
 		/* MANDATORY Per-CPU Initialization			*/
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
 		policy->cur = policy->cpuinfo.max_freq;
@@ -9844,8 +10177,10 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
     if ((cpu >= 0) && (cpu < Proc->CPU.Count) && (limit != NULL))
     {
 	CORE *Core = (CORE *) KPublic->Core[cpu];
-
+/*TODO(CleanUp)
 	(*limit) = (Proc->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
+*/
+	(*limit) = (Core->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
     }
 	return (0);
 }
@@ -9864,10 +10199,12 @@ static int CoreFreqK_SetBoost(int state)
 {
 	Controller_Stop(1);
 	TurboBoost_Enable = (state != 0);
+/*TODO(CleanUp)
 	Aggregate_Reset(BOOST(TGT),	0);
 	Aggregate_Reset(BOOST(HWP_MIN), 0);
 	Aggregate_Reset(BOOST(HWP_MAX), 0);
 	Aggregate_Reset(BOOST(HWP_TGT), 0);
+*/
 	Controller_Start(1);
 	TurboBoost_Enable = -1;
 	Policy_Aggregate_Turbo();
@@ -9915,6 +10252,7 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 	return (-EINVAL);
 }
 
+/*TODO(CleanUp)
 void For_All_Policy_Aggregate_Ratio( enum RATIO_BOOST boost,
 					unsigned int ratio,
 					unsigned int reset,
@@ -9936,7 +10274,9 @@ void For_All_Policy_Aggregate_Ratio( enum RATIO_BOOST boost,
 		}
 	}
 }
+*/
 
+/*TODO(CleanUp)
 void For_All_Policy_Aggregate_HWP(	unsigned int count,
 					enum RATIO_BOOST boost[],
 					unsigned int ratio[],
@@ -9957,6 +10297,7 @@ void For_All_Policy_Aggregate_HWP(	unsigned int count,
 	    }
 	}
 }
+*/
 #endif /* CONFIG_CPU_FREQ */
 
 static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
@@ -9978,6 +10319,7 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
 static void Policy_Core2_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
+/*TODO(CleanUp)
 	unsigned int *ratio = (unsigned int*) arg;
     if ((*ratio) <= Proc->Boost[BOOST(1C)])
     {
@@ -10001,12 +10343,39 @@ static void Policy_Core2_SetTarget(void *arg)
 					0,
 					Get_Core2_Target );
     }
+*/
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+    if ((*ratio) <= Core->Boost[BOOST(1C)])
+    {
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_Core2_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_Core2_Target(Core, 1 + Core->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+/*TODO(CleanUp)
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
+					(*ratio),
+					0,
+					Get_Core2_Target );
+*/
+    }
 #endif /* CONFIG_CPU_FREQ */
 }
 
 static void Policy_Nehalem_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
+/*TODO(CleanUp)
 	unsigned int *ratio = (unsigned int*) arg;
     if ((*ratio) <= Proc->Boost[BOOST(1C)])
     {
@@ -10030,12 +10399,39 @@ static void Policy_Nehalem_SetTarget(void *arg)
 					0,
 					Get_Nehalem_Target );
     }
+*/
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+    if ((*ratio) <= Core->Boost[BOOST(1C)])
+    {
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_Nehalem_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_Nehalem_Target(Core, 1 + Core->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+/*TODO(CleanUp)
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
+					(*ratio),
+					0,
+					Get_Nehalem_Target );
+*/
+    }
 #endif /* CONFIG_CPU_FREQ */
 }
 
 static void Policy_SandyBridge_SetTarget(void *arg)
 {
 #ifdef CONFIG_CPU_FREQ
+/*TODO(CleanUp)
 	unsigned int *ratio = (unsigned int*) arg;
     if ((*ratio) <= Proc->Boost[BOOST(1C)])
     {
@@ -10058,6 +10454,31 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 					(*ratio),
 					0,
 					Get_SandyBridge_Target );
+*/
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+    if ((*ratio) <= Core->Boost[BOOST(1C)])
+    {
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Set_SandyBridge_Target(Core, (*ratio));
+	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+
+	if (Proc->Features.Power.EAX.TurboIDA) {
+		if (Cmp_SandyBridge_Target(Core, Core->Boost[BOOST(MAX)])) {
+			BITSET_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
+		}
+	}
+/*TODO(CleanUp)
+	For_All_Policy_Aggregate_Ratio( BOOST(TGT),
+					(*ratio),
+					0,
+					Get_SandyBridge_Target );
+*/
     }
 #endif /* CONFIG_CPU_FREQ */
 }
@@ -10075,17 +10496,19 @@ static void Policy_HWP_SetTarget(void *arg)
 	if (((*ratio) >= Core->PowerThermal.HWP_Capabilities.Lowest)
 	 && ((*ratio) <= Core->PowerThermal.HWP_Capabilities.Highest))
 	{
+/*TODO(CleanUp)
 		enum RATIO_BOOST boost[]= { BOOST(HWP_MAX), BOOST(HWP_TGT) };
 		unsigned int ratios[]	= { (*ratio), (*ratio) };
 		unsigned int reset[]	= { 0, 0 };
 		GET_TARGET GetFunc[]	= { Get_HWP_Max, Get_HWP_Target };
-
+*/
 		Core->PowerThermal.HWP_Request.Maximum_Perf =	\
 		Core->PowerThermal.HWP_Request.Desired_Perf = (*ratio);
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
-
+/*TODO(CleanUp)
 		For_All_Policy_Aggregate_HWP(2, boost, ratios, reset, GetFunc);
+*/
 	}
     }
     else {
@@ -10521,7 +10944,13 @@ static void Compute_Clock_SMT(void)
     {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
+/*TODO(CleanUp)
 		.Clock = {.Q = Proc->Boost[BOOST(MAX)], .R = 0, .Hz = 0}
+*/
+		.Clock = {
+			.Q = KPublic->Core[cpu]->Boost[BOOST(MAX)],
+			.R = 0, .Hz = 0
+		}
 	};
       if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
       {
@@ -10572,10 +11001,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = 0;
 		break;
 	case COREFREQ_TOGGLE_ON:
+/*TODO(CleanUp)
 		Aggregate_Reset(BOOST(TGT),	0);
 		Aggregate_Reset(BOOST(HWP_MIN), 0);
 		Aggregate_Reset(BOOST(HWP_MAX), 0);
 		Aggregate_Reset(BOOST(HWP_TGT), 0);
+*/
 		Controller_Start(1);
 	#ifdef CONFIG_CPU_FREQ
 		Policy_Aggregate_Turbo();
@@ -10710,10 +11141,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			case COREFREQ_TOGGLE_ON:
 				Controller_Stop(1);
 				TurboBoost_Enable = prm.dl.lo;
+/*TODO(CleanUp)
 				Aggregate_Reset(BOOST(TGT),	0);
 				Aggregate_Reset(BOOST(HWP_MIN), 0);
 				Aggregate_Reset(BOOST(HWP_MAX), 0);
 				Aggregate_Reset(BOOST(HWP_TGT), 0);
+*/
 				Controller_Start(1);
 				TurboBoost_Enable = -1;
 
@@ -10949,10 +11382,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		CLOCK_ARG clockMod = {.sllong = arg};
 		Controller_Stop(1);
 		rc = Arch[Proc->ArchID].ClockMod(&clockMod);
+/*TODO(CleanUp)
 		Aggregate_Reset(BOOST(TGT),	0);
 		Aggregate_Reset(BOOST(HWP_MIN), 0);
 		Aggregate_Reset(BOOST(HWP_MAX), 0);
 		Aggregate_Reset(BOOST(HWP_TGT), 0);
+*/
 		Controller_Start(1);
 	#ifdef CONFIG_CPU_FREQ
 		Policy_Aggregate_Turbo();
@@ -11109,12 +11544,12 @@ static int CoreFreqK_resume(struct device *dev)
 	if (Proc->Registration.PCI) {
 		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
 	}
-
+/*TODO(CleanUp)
 	Aggregate_Reset(BOOST(TGT),	0);
 	Aggregate_Reset(BOOST(HWP_MIN), 0);
 	Aggregate_Reset(BOOST(HWP_MAX), 0);
 	Aggregate_Reset(BOOST(HWP_TGT), 0);
-
+*/
 	Controller_Start(1);
 
 #ifdef CONFIG_CPU_FREQ
@@ -11155,7 +11590,13 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
        {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
+/*TODO(CleanUp)
 		.Clock = {.Q = Proc->Boost[BOOST(MAX)], .R = 0, .Hz = 0}
+*/
+		.Clock = {
+			.Q = KPublic->Core[cpu]->Boost[BOOST(MAX)],
+			.R = 0, .Hz = 0
+		}
 	};
 	if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	{

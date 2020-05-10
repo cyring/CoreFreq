@@ -700,8 +700,9 @@ typedef struct
 	SERVICE_PROC		Service;
 
 	signed int		ArchID;
+/*TODO(CleanUp)
 	unsigned int		Boost[BOOST(SIZE)];
-
+*/
 	struct {
 		unsigned int	Boost[UNCORE_BOOST(SIZE)];
 		BUS_REGISTERS	Bus;
