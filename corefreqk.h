@@ -711,7 +711,7 @@ typedef struct {
 typedef struct
 {
 	struct	SIGNATURE	Signature;
-	void			(*Query)(void);
+	void			(*Query)(unsigned int cpu);
 	void			(*Update)(void *arg);	/* Must be static */
 	void			(*Start)(void *arg);	/* Must be static */
 	void			(*Stop)(void *arg);	/* Must be static */
@@ -765,25 +765,25 @@ extern long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
 extern long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod) ;
 
-extern void Query_GenuineIntel(void) ;
+extern void Query_GenuineIntel(unsigned int cpu) ;
 static void PerCore_Intel_Query(void *arg) ;
 static void Start_GenuineIntel(void *arg) ;
 static void Stop_GenuineIntel(void *arg) ;
 extern void InitTimer_GenuineIntel(unsigned int cpu) ;
 
-extern void Query_AuthenticAMD(void) ;
+extern void Query_AuthenticAMD(unsigned int cpu) ;
 static void PerCore_AuthenticAMD_Query(void *arg) ;
 static void Start_AuthenticAMD(void *arg) ;
 static void Stop_AuthenticAMD(void *arg) ;
 extern void InitTimer_AuthenticAMD(unsigned int cpu) ;
 
-extern void Query_Core2(void) ;
+extern void Query_Core2(unsigned int cpu) ;
 static void PerCore_Core2_Query(void *arg) ;
 static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
 
-extern void Query_Nehalem(void) ;
+extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
@@ -791,7 +791,7 @@ extern void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
 
-extern void Query_SandyBridge(void) ;
+extern void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
 static void Start_SandyBridge(void *arg) ;
 static void Stop_SandyBridge(void *arg) ;
@@ -799,21 +799,22 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
-#define     PerCore_SandyBridge_EP_Query PerCore_SandyBridge_Query
+static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
 extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge_EP(void *arg) ;
 static void Stop_Uncore_SandyBridge_EP(void *arg) ;
 
-extern void Query_IvyBridge(void) ;
-#define     PerCore_IvyBridge_Query PerCore_SandyBridge_Query
-extern void Query_IvyBridge_EP(void) ;
-#define     PerCore_IvyBridge_EP_Query PerCore_SandyBridge_EP_Query
+extern void Query_IvyBridge(unsigned int cpu) ;
+static void PerCore_IvyBridge_Query(void *arg) ;
+extern void Query_IvyBridge_EP(unsigned int cpu) ;
+static void PerCore_IvyBridge_EP_Query(void *arg) ;
 
-extern void Query_Haswell(void) ;
+extern void Query_Haswell(unsigned int cpu) ;
+static void PerCore_Haswell_Query(void *arg) ;
 
-extern void Query_Haswell_EP(void) ;
+extern void Query_Haswell_EP(unsigned int cpu) ;
 static void PerCore_Haswell_EP_Query(void *arg) ;
 static void Start_Haswell_EP(void *arg) ;
 static void Stop_Haswell_EP(void *arg) ;
@@ -821,6 +822,7 @@ extern void InitTimer_Haswell_EP(unsigned int cpu) ;
 static void Start_Uncore_Haswell_EP(void *arg) ;
 static void Stop_Uncore_Haswell_EP(void *arg) ;
 
+extern void Query_Haswell_ULT(unsigned int cpu) ;
 static void PerCore_Haswell_ULT_Query(void *arg) ;
 static void Start_Haswell_ULT(void *arg) ;
 static void Stop_Haswell_ULT(void *arg) ;
@@ -828,15 +830,18 @@ extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
 
-extern void Query_Broadwell(void) ;
-#define     PerCore_Broadwell_Query PerCore_SandyBridge_Query
+extern void Query_Haswell_ULX(unsigned int cpu) ;
+static void PerCore_Haswell_ULX(void *arg) ;
+
+extern void Query_Broadwell(unsigned int cpu) ;
+static void PerCore_Broadwell_Query(void *arg) ;
 #define     Start_Broadwell Start_SandyBridge
 #define     Stop_Broadwell Stop_SandyBridge
 #define     InitTimer_Broadwell InitTimer_SandyBridge
 #define     Start_Uncore_Broadwell Start_Uncore_SandyBridge
 #define     Stop_Uncore_Broadwell Stop_Uncore_SandyBridge
 
-extern void Query_Broadwell_EP(void) ;
+extern void Query_Broadwell_EP(unsigned int cpu) ;
 
 static void PerCore_Skylake_Query(void *arg) ;
 static void Start_Skylake(void *arg) ;
@@ -845,45 +850,45 @@ extern void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
-extern void Query_Skylake_X(void) ;
-#define     PerCore_Skylake_X_Query PerCore_Skylake_Query
+extern void Query_Skylake_X(unsigned int cpu) ;
+static void PerCore_Skylake_X_Query(void *arg) ;
 static void Start_Skylake_X(void *arg) ;
 static void Stop_Skylake_X(void *arg) ;
 extern void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
-extern void Query_AMD_Family_0Fh(void) ;
+extern void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
 static void Start_AMD_Family_0Fh(void *arg) ;
 static void Stop_AMD_Family_0Fh(void *arg) ;
 extern void InitTimer_AMD_Family_0Fh(unsigned int cpu) ;
 
-extern void Query_AMD_Family_10h(void) ;
+extern void Query_AMD_Family_10h(unsigned int cpu) ;
 static void PerCore_AMD_Family_10h_Query(void *arg) ;
 static void Start_AMD_Family_10h(void *arg) ;
 static void Stop_AMD_Family_10h(void *arg) ;
 #define     InitTimer_AMD_Family_10h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_11h(void) ;
+extern void Query_AMD_Family_11h(unsigned int cpu) ;
 #define     PerCore_AMD_Family_11h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_11h Start_AMD_Family_10h
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_11h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_12h(void) ;
+extern void Query_AMD_Family_12h(unsigned int cpu) ;
 #define     PerCore_AMD_Family_12h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_12h Start_AMD_Family_10h
 #define     Stop_AMD_Family_12h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_12h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_14h(void) ;
+extern void Query_AMD_Family_14h(unsigned int cpu) ;
 #define     PerCore_AMD_Family_14h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_14h Start_AMD_Family_10h
 #define     Stop_AMD_Family_14h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_14h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_15h(void) ;
+extern void Query_AMD_Family_15h(unsigned int cpu) ;
 #define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
 #define     Start_AMD_Family_15h Start_AMD_Family_10h
 #define     Stop_AMD_Family_15h Stop_AMD_Family_10h
@@ -895,7 +900,7 @@ extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 #define     Stop_AMD_Family_16h Stop_AMD_Family_15h
 #define     InitTimer_AMD_Family_16h InitTimer_AuthenticAMD
 
-extern void Query_AMD_Family_17h(void) ;
+extern void Query_AMD_Family_17h(unsigned int cpu) ;
 static void PerCore_AMD_Family_17h_Query(void *arg) ;
 static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
@@ -5069,7 +5074,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Haswell_DT] = {							/* 39*/
 	.Signature = _Haswell_DT,
 	.Query = Query_Haswell,
-	.Update = PerCore_IvyBridge_Query,
+	.Update = PerCore_Haswell_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
@@ -5116,7 +5121,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Haswell_ULT] = {							/* 41*/
 	.Signature = _Haswell_ULT,
-	.Query = Query_IvyBridge,
+	.Query = Query_Haswell_ULT,
 	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
@@ -5140,8 +5145,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Haswell_ULX] = {							/* 42*/
 	.Signature = _Haswell_ULX,
-	.Query = Query_IvyBridge,
-	.Update = PerCore_IvyBridge_Query,
+	.Query = Query_Haswell_ULX,
+	.Update = PerCore_Haswell_ULX,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
 	.Exit = NULL,
