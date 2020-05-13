@@ -1844,7 +1844,6 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 
 void Intel_Core_Platform_Info(unsigned int cpu)
 {
-	PROCESSOR_SPECIFIC *pSpecific = NULL;
 	PLATFORM_ID PfID = {.value = 0};
 	PLATFORM_INFO PfInfo = {.value = 0};
 	PERF_STATUS PerfStatus = {.value = 0};
@@ -1875,14 +1874,14 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] =	KMIN(ratio0, ratio1);
 	KPublic->Core[cpu]->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
 
-	if ((pSpecific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
+	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
 
 		KPublic->Core[cpu]->Boost[BOOST(1C)] =	\
 					KPublic->Core[cpu]->Boost[BOOST(MAX)]
-					+ pSpecific->Boost[0]
-					+ pSpecific->Boost[1];
+					+ KPrivate->Specific->Boost[0]
+					+ KPrivate->Specific->Boost[1];
 	} else {
 	    if (Proc->Features.Power.EAX.TurboIDA) { /* Half Ratio capable ? */
 		KPublic->Core[cpu]->Boost[BOOST(1C)] =	\
@@ -1900,7 +1899,6 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 
 void Intel_Platform_Turbo(unsigned int cpu)
 {
-	PROCESSOR_SPECIFIC *pSpecific = NULL;
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
@@ -1911,9 +1909,9 @@ void Intel_Platform_Turbo(unsigned int cpu)
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
 	KPublic->Core[cpu]->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
 
-	if ((pSpecific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
+	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
 	} else {
 		Proc->Features.TgtRatio_Unlock = 1;
 	}
@@ -3657,22 +3655,14 @@ void Query_Skylake_X(unsigned int cpu)
 	Intel_Hardware_Performance();
 }
 
-void Query_AuthenticAMD(unsigned int cpu)
-{	/* Fallback algorithm for unspecified AMD architectures. */
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-    if (pSpecific != NULL) {
-	/* Save thermal parameters for later use in the Daemon	*/
-	Proc->PowerThermal.Param = pSpecific->Param;
-	/* Override Processor CodeName & Locking capabilities	*/
-	OverrideCodeNameString(pSpecific);
-	OverrideUnlockCapability(pSpecific);
-    } else {
-	Proc->PowerThermal.Param.Target = 0;
-    }
+unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
+{
+	unsigned short SpecTurboRatio = 0;
 	/* Lowest frequency according to BKDG */
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] = 8;
 
-    if (Proc->Features.AdvPower.EDX.HwPstate == 1) {
+    if (Proc->Features.AdvPower.EDX.HwPstate == 1)
+    {
 	COFVID CofVid = {.value = 0};
 
 	switch (Arch[Proc->ArchID].Signature.ExtFamily) {
@@ -3726,59 +3716,70 @@ void Query_AuthenticAMD(unsigned int cpu)
 	}
       } else {
 NO_SOLUTION:
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] =	\
+	KPublic->Core[cpu]->Boost[BOOST(MAX)] =	\
 					KPublic->Core[cpu]->Boost[BOOST(MIN)];
       }
     }
-    if (pSpecific != NULL) {
+    if (KPrivate->Specific != NULL)
+    {
 	KPublic->Core[cpu]->Boost[BOOST(1C)] =		\
 					KPublic->Core[cpu]->Boost[BOOST(MAX)]
-					+ pSpecific->Boost[0];
+					+ KPrivate->Specific->Boost[0];
 
 	KPublic->Core[cpu]->Boost[BOOST(2C)] =		\
 					KPublic->Core[cpu]->Boost[BOOST(1C)]
-					+ pSpecific->Boost[1];
-
-	Proc->Features.SpecTurboRatio = 2;
+					+ KPrivate->Specific->Boost[1];
+	SpecTurboRatio = 2;
     } else {
 	KPublic->Core[cpu]->Boost[BOOST(1C)] =		\
 					KPublic->Core[cpu]->Boost[BOOST(MAX)];
-
-	Proc->Features.SpecTurboRatio = 0;
+	SpecTurboRatio = 0;
     }
+	return (SpecTurboRatio);
+}
+
+void Query_AuthenticAMD(unsigned int cpu)
+{	/* Fallback algorithm for unspecified AMD architectures. */
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		/* Save thermal parameters for later use in the Daemon	*/
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		/* Override Processor CodeName & Locking capabilities	*/
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Proc->Features.SpecTurboRatio = Compute_AuthenticAMD_Boost(cpu);
+
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_0Fh(unsigned int cpu)
-{   /* BKDG for AMD NPT Family 0Fh: §13.8 */
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-    if (pSpecific != NULL) {
-	Proc->PowerThermal.Param = pSpecific->Param;
-	OverrideCodeNameString(pSpecific);
-	OverrideUnlockCapability(pSpecific);
-    } else {
-	Proc->PowerThermal.Param.Target = 0;
-    }
-    if (Proc->Features.AdvPower.EDX.FID == 1) {
-	/* Processor supports FID changes. */
+unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
+{	/* BKDG for AMD NPT Family 0Fh: §13.8				*/
+	unsigned short SpecTurboRatio = 0;
+
+    if (Proc->Features.AdvPower.EDX.FID == 1)
+    {	/* Processor supports FID changes. */
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
 	KPublic->Core[cpu]->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
 
-	if (FidVidStatus.StartFID < 0b1000) {
+	if (FidVidStatus.StartFID < 0b1000)
+	{
 		unsigned int t;
 	    for (t = 0; t < 5; t++) {
 		KPublic->Core[cpu]->Boost[BOOST(SIZE)-5+t] = \
 					VCO[FidVidStatus.StartFID].PCF[t];
 	    }
-
-		Proc->Features.SpecTurboRatio = 5;
+		SpecTurboRatio = 5;
 	} else {
 		KPublic->Core[cpu]->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
 
-		Proc->Features.SpecTurboRatio = 1;
+		SpecTurboRatio = 1;
 	}
     } else {
 	HWCR HwCfgRegister = {.value = 0};
@@ -3792,27 +3793,34 @@ void Query_AMD_Family_0Fh(unsigned int cpu)
 
 	KPublic->Core[cpu]->Boost[BOOST(1C) ] = \
 					KPublic->Core[cpu]->Boost[BOOST(MIN)];
-
-	Proc->Features.SpecTurboRatio = 1;
+	SpecTurboRatio = 1;
     }
+	return (SpecTurboRatio);
+}
+
+void Query_AMD_Family_0Fh(unsigned int cpu)
+{
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Proc->Features.SpecTurboRatio = Compute_AMD_Family_0Fh_Boost(cpu);
 
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_10h(unsigned int cpu)
+void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[5] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C), BOOST(MIN)
 	};
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-	if (pSpecific != NULL) {
-		Proc->PowerThermal.Param = pSpecific->Param;
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
-	} else {
-		Proc->PowerThermal.Param.Target = 0;
-	}
-	for (pstate = 0; pstate <= 4; pstate++) {
+	for (pstate = 0; pstate <= 4; pstate++)
+	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
@@ -3820,26 +3828,33 @@ void Query_AMD_Family_10h(unsigned int cpu)
 					(PstateDef.Family_10h.CpuFid + 0x10)
 					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
+}
+
+void Query_AMD_Family_10h(unsigned int cpu)
+{
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Compute_AMD_Family_10h_Boost(cpu);
 	Proc->Features.SpecTurboRatio = 3;
 
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_11h(unsigned int cpu)
+void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
 	};
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-	if (pSpecific != NULL) {
-		Proc->PowerThermal.Param = pSpecific->Param;
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
-	} else {
-		Proc->PowerThermal.Param.Target = 0;
-	}
-	for (pstate = 0; pstate <= 7; pstate++) {
+	for (pstate = 0; pstate <= 7; pstate++)
+	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
@@ -3847,26 +3862,33 @@ void Query_AMD_Family_11h(unsigned int cpu)
 					(PstateDef.Family_10h.CpuFid + 0x8)
 					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
+}
+
+void Query_AMD_Family_11h(unsigned int cpu)
+{
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Compute_AMD_Family_11h_Boost(cpu);
 	Proc->Features.SpecTurboRatio = 6;
 
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_12h(unsigned int cpu)
+void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
 	};
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-	if (pSpecific != NULL) {
-		Proc->PowerThermal.Param = pSpecific->Param;
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
-	} else {
-		Proc->PowerThermal.Param.Target = 0;
-	}
-	for (pstate = 0; pstate <= 7; pstate++) {
+	for (pstate = 0; pstate <= 7; pstate++)
+	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
@@ -3874,12 +3896,26 @@ void Query_AMD_Family_12h(unsigned int cpu)
 					(PstateDef.Family_12h.CpuFid + 0x10)
 					/  PstateDef.Family_12h.CpuDid;
 	}
+}
+
+void Query_AMD_Family_12h(unsigned int cpu)
+{
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Compute_AMD_Family_12h_Boost(cpu);
 	Proc->Features.SpecTurboRatio = 6;
 
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_14h(unsigned int cpu)
+void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 {
 	COFVID CofVid = {.value = 0};
 	unsigned int MaxFreq = 100, ClockDiv;
@@ -3887,21 +3923,13 @@ void Query_AMD_Family_14h(unsigned int cpu)
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
 	};
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-	if (pSpecific != NULL) {
-		Proc->PowerThermal.Param = pSpecific->Param;
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
-	} else {
-		Proc->PowerThermal.Param.Target = 0;
-	}
-
 	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
 
 	if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
 		MaxFreq *= (CofVid.Arch_Pll.MainPllOpFidMax + 0x10);
 
-	for (pstate = 0; pstate <= 7; pstate++) {
+	for (pstate = 0; pstate <= 7; pstate++)
+	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
@@ -3911,20 +3939,33 @@ void Query_AMD_Family_14h(unsigned int cpu)
 		KPublic->Core[cpu]->Boost[sort[pstate]] = (MaxFreq * 4)
 							/ ClockDiv;
 	}	/* @ MainPllOpFidMax MHz */
+}
+
+void Query_AMD_Family_14h(unsigned int cpu)
+{
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+	}
+
+	Compute_AMD_Family_14h_Boost(cpu);
 	Proc->Features.SpecTurboRatio = 6;
 
 	HyperThreading_Technology();
 }
 
-void Query_AMD_Family_15h(unsigned int cpu)
+void Compute_AMD_Family_15h_Boost(unsigned int cpu)
 {
 	unsigned int pstate, sort[8] = {
 		BOOST(1C), BOOST(MAX), BOOST(2C), BOOST(3C),
 		BOOST(4C), BOOST(5C) , BOOST(6C), BOOST(MIN)
 	};
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
-
-	for (pstate = 0; pstate <= 7; pstate++) {
+	for (pstate = 0; pstate <= 7; pstate++)
+	{
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
@@ -3932,11 +3973,17 @@ void Query_AMD_Family_15h(unsigned int cpu)
 					(PstateDef.Family_15h.CpuFid + 0x10)
 					/ (1 << PstateDef.Family_15h.CpuDid);
 	}
+}
+
+void Query_AMD_Family_15h(unsigned int cpu)
+{
+	Compute_AMD_Family_15h_Boost(cpu);
 	Proc->Features.SpecTurboRatio = 6;
 
 	HyperThreading_Technology();
 
   /* Find micro-architecture based on the CPUID model. Bulldozer initialized */
+	KPrivate->Specific = LookupProcessor();
     switch (Proc->Features.Std.EAX.ExtModel) {
     case 0x0:
 	if ((Proc->Features.Std.EAX.Model >= 0x0)
@@ -3972,10 +4019,10 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	}
 	break;
     };
-    if (pSpecific != NULL) {
-	Proc->PowerThermal.Param = pSpecific->Param;
-	OverrideCodeNameString(pSpecific);
-	OverrideUnlockCapability(pSpecific);
+    if (KPrivate->Specific != NULL) {
+	Proc->PowerThermal.Param = KPrivate->Specific->Param;
+	OverrideCodeNameString(KPrivate->Specific);
+	OverrideUnlockCapability(KPrivate->Specific);
     } else {
 	Proc->PowerThermal.Param.Target = 0;
     }
@@ -4004,66 +4051,69 @@ unsigned int AMD_Zen_CoreFID(unsigned int COF, unsigned int DID)
 	return (FID);
 }
 
-void Compute_AMD_Zen_Boost(unsigned int cpu)
+bool Compute_AMD_Zen_Boost(unsigned int cpu)
 {
-	PROCESSOR_SPECIFIC *pSpecific = LookupProcessor();
 	unsigned int COF = 0, pstate, sort[8] = { /* P[0..7]-States */
 		BOOST(MAX), BOOST(1C), BOOST(2C), BOOST(3C),
 		BOOST(4C) , BOOST(5C), BOOST(6C), BOOST(7C)
 	};
 	HWCR HwCfgRegister = {.value = 0};
 	PSTATEDEF PstateDef = {.value = 0};
+	PSTATECTRL PstateCtrl = {.value = 0};
 
-	if (pSpecific != NULL) {
-		/* Save thermal parameters for later use in the Daemon	*/
-		Proc->PowerThermal.Param = pSpecific->Param;
-		/* Override Processor CodeName & Locking capabilities	*/
-		OverrideCodeNameString(pSpecific);
-		OverrideUnlockCapability(pSpecific);
-	} else {
-		Proc->PowerThermal.Param.Target = 0;
-		Proc->Features.TgtRatio_Unlock = 1; /* Default: TGT unlocked */
-	}
-	for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
+    for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
 		KPublic->Core[cpu]->Boost[pstate] = 0;
-	}
+    }
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] = 4;
 	/* Loop over all frequency ids. */
-	for (pstate = 0; pstate <= 7; pstate++) {
-		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
-		/* Handle only valid P-States. */
-	    if (PstateDef.Family_17h.PstateEn) {
+    for (pstate = 0; pstate <= 7; pstate++)
+    {
+	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
+	/* Handle only valid P-States. */
+	if (PstateDef.Family_17h.PstateEn)
+	{
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId);
 
 		KPublic->Core[cpu]->Boost[sort[pstate]] = COF;
-	    }
 	}
+    }
+
+	/*TODO( Should we count the P-States per Core ? )		*/
 	Proc->Features.SpecTurboRatio = pstate;
 
-	/* If CPB is enabled then add Boost + XFR to the P0 ratio. */
+	/* Read the Target P-State					*/
+	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
+
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId );
+	KPublic->Core[cpu]->Boost[BOOST(TGT)] = COF;
+
+	/* If CPB is enabled then add Boost + XFR to the P0 ratio.	*/
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-	if (!HwCfgRegister.Family_17h.CpbDis)
-	{
-		KPublic->Core[cpu]->Boost[BOOST(CPB)] =	\
+    if (!HwCfgRegister.Family_17h.CpbDis)
+    {
+	KPublic->Core[cpu]->Boost[BOOST(CPB)] =	\
 					KPublic->Core[cpu]->Boost[BOOST(MAX)];
 
-		KPublic->Core[cpu]->Boost[BOOST(XFR)] =	\
+	KPublic->Core[cpu]->Boost[BOOST(XFR)] =	\
 					KPublic->Core[cpu]->Boost[BOOST(MAX)];
 
-	    if (pSpecific != NULL) {	/* Add Boost & XFR bins to Max	*/
-		KPublic->Core[cpu]->Boost[BOOST(CPB)] += pSpecific->Boost[0];
+      if (KPrivate->Specific != NULL)
+      {
+	KPublic->Core[cpu]->Boost[BOOST(CPB)] += KPrivate->Specific->Boost[0];
 
-		KPublic->Core[cpu]->Boost[BOOST(XFR)] += pSpecific->Boost[0];
+	KPublic->Core[cpu]->Boost[BOOST(XFR)] += KPrivate->Specific->Boost[0];
 
-		KPublic->Core[cpu]->Boost[BOOST(XFR)] += pSpecific->Boost[1];
-	    }
+	KPublic->Core[cpu]->Boost[BOOST(XFR)] += KPrivate->Specific->Boost[1];
+      }
 
-		Proc->Features.TDP_Levels = 2; /* Count the Xtra Boost ratios */
-	} else {
-		Proc->Features.TDP_Levels = 0; /* Disabled CPB: Hide ratios */
-	}
+	return (true);	/* Have CPB: add the Xtra Boost ratios	*/
+    } else {
+	return (false); /* CPB is disabled			*/
+    }
 }
 
 typedef struct {
@@ -4071,33 +4121,6 @@ typedef struct {
 	unsigned long long PstateAddr;
 	unsigned int BoostIndex;
 } CLOCK_ZEN_ARG;
-
-void ReCompute_AMD_Zen_Boost(CLOCK_ZEN_ARG *pClockZen, unsigned int cpu)
-{
-	PSTATEDEF PstateDef = {.value = 0};
-	unsigned int COF = 0;
-	/* The target frequency P-State figures as an exception */
-	if (pClockZen->BoostIndex == BOOST(TGT)) {
-		PSTATECTRL PstateCtrl = {.value = 0};
-		RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
-		RDMSR(PstateDef, pClockZen->PstateAddr + PstateCtrl.PstateCmd);
-	} else {
-		RDMSR(PstateDef, pClockZen->PstateAddr);
-	}
-	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-				PstateDef.Family_17h.CpuDfsId );
-
-/*TODO(CleanUp)
-    if (pClockZen->pClockMod == NULL) { // Called by Query_AMD_Family_17h**
-		Proc->Boost[pClockZen->BoostIndex] = COF;
-    } else {				// Called for each Core **
-	if (cpu == Proc->Service.Core) {
-		Proc->Boost[pClockZen->BoostIndex] = COF;
-	}
-    }
-*/
-	KPublic->Core[cpu]->Boost[pClockZen->BoostIndex] = COF;
-}
 
 static void TargetClock_AMD_Zen_PerCore(void *arg)
 {
@@ -4137,15 +4160,14 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	PstateCtrl.PstateCmd = pstate;
 	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
     }
-	ReCompute_AMD_Zen_Boost(pClockZen, cpu);
 }
 
 static void TurboClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
-	unsigned int COF, FID = 0, cpu = smp_processor_id();
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
+	unsigned int COF, FID;
 	/* Make sure the Core Performance Boost is disabled. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 	if (HwCfgRegister.Family_17h.CpbDis)
@@ -4166,7 +4188,6 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 		WRMSR(PstateDef, pClockZen->PstateAddr);
 	    }
 	}
-	ReCompute_AMD_Zen_Boost(pClockZen, cpu);
 }
 
 void For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
@@ -4239,15 +4260,22 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 void Query_AMD_Family_17h(unsigned int cpu)
 {
-	CLOCK_ZEN_ARG ClockZen = {
-		.pClockMod  = NULL,	/* Unused field during Init	*/
-		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
-		.BoostIndex = BOOST(TGT)
-	};
-
-	Compute_AMD_Zen_Boost(cpu); /* and look for a specific Zen Proc. */
-	 /* Compute the initial Target P-State value on the Service processor*/
-	ReCompute_AMD_Zen_Boost(&ClockZen, cpu);
+	KPrivate->Specific = LookupProcessor();
+	if (KPrivate->Specific != NULL) {
+		/* Save thermal parameters for later use in the Daemon	*/
+		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		/* Override Processor CodeName & Locking capabilities	*/
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->PowerThermal.Param.Target = 0;
+		Proc->Features.TgtRatio_Unlock = 1; /* Default: TGT unlocked */
+	}
+	if (Compute_AMD_Zen_Boost(cpu) == true) {
+		Proc->Features.TDP_Levels = 2; /* Count the Xtra Boost ratios */
+	} else {
+		Proc->Features.TDP_Levels = 0; /* Disabled CPB: Hide ratios */
+	}
 	/* Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(Proc->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
 
@@ -5929,6 +5957,8 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Compute_AuthenticAMD_Boost(Core->Bind);
+
 	SystemRegisters(Core);
 
 	if (Proc->Features.Std.EAX.ExtFamily >= 1) {
@@ -6270,6 +6300,9 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	PerCore_AMD_Family_0Fh_PStates(Core);		/* Alter P-States */
+	Compute_AMD_Family_0Fh_Boost(Core->Bind);	/* Query P-States */
+
 	SystemRegisters(Core);
 
 	Dump_CPUID(Core);
@@ -6289,11 +6322,9 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
-
-	PerCore_AMD_Family_0Fh_PStates(Core);
 }
 
-static void PerCore_AMD_Family_10h_Query(void *arg)
+static void PerCore_AMD_Family_Same_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
@@ -6323,9 +6354,51 @@ static void PerCore_AMD_Family_10h_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 }
 
+static void PerCore_AMD_Family_10h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Compute_AMD_Family_10h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+}
+
+static void PerCore_AMD_Family_11h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Compute_AMD_Family_11h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+}
+
+static void PerCore_AMD_Family_12h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Compute_AMD_Family_12h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+}
+
+static void PerCore_AMD_Family_14h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Compute_AMD_Family_14h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+}
+
+static void PerCore_AMD_Family_15h_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Compute_AMD_Family_15h_Boost(Core->Bind);
+	PerCore_AMD_Family_Same_Query(Core);
+}
+
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
+	/* Query the Min, Max, Target & Turbo P-States			*/
+	Compute_AMD_Zen_Boost(Core->Bind);
 
 	SystemRegisters(Core);
 
@@ -9301,6 +9374,66 @@ static void Stop_AMD_Family_10h(void *arg)
 	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
+static void Start_AMD_Family_11h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_11h_Query(Core);
+
+	if (Core->Bind == Proc->Service.Core) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_AMD_Family_12h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_12h_Query(Core);
+
+	if (Core->Bind == Proc->Service.Core) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
+static void Start_AMD_Family_14h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_14h_Query(Core);
+
+	if (Core->Bind == Proc->Service.Core) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+}
+
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 {
 	PSTATESTAT PstateStat;
@@ -9402,6 +9535,26 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 void InitTimer_AMD_Family_15h(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_15h, 1);
+}
+
+static void Start_AMD_Family_15h(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE *Core = (CORE *) KPublic->Core[cpu];
+
+	PerCore_AMD_Family_15h_Query(Core);
+
+	if (Core->Bind == Proc->Service.Core) {
+		PKG_Counters_Generic(Core, 0);
+	}
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+
+	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
@@ -10739,21 +10892,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				TurboBoost_Enable = prm.dl.lo;
 				Controller_Start(1);
 				TurboBoost_Enable = -1;
-
-				switch (Proc->ArchID) {
-				case AMD_Zen:
-				case AMD_Zen_APU:
-				case AMD_ZenPlus:
-				case AMD_ZenPlus_APU:
-				case AMD_EPYC_Rome:
-				case AMD_Zen2_CPK:
-				case AMD_Zen2_APU:
-				case AMD_Zen2_MTS:
-				case AMD_Family_17h:
-				case AMD_Family_18h:
-				    Compute_AMD_Zen_Boost(Proc->Service.Core);
-					break;
-				}
 			#ifdef CONFIG_CPU_FREQ
 				Policy_Aggregate_Turbo();
 			#endif /* CONFIG_CPU_FREQ */

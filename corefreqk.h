@@ -532,6 +532,29 @@ enum CSTATES_CLASS {
 	CSTATES_SKL	= 0x6
 };
 
+#define LATCH_NONE		0b0000
+#define LATCH_TGT_RATIO_UNLOCK	0b0001	/* <T>	TgtRatioUnlocked	*/
+#define LATCH_CLK_RATIO_UNLOCK	0b0010	/* <X>	ClkRatioUnlocked	*/
+#define LATCH_TURBO_UNLOCK	0b0100	/* <B>	TurboUnlocked		*/
+#define LATCH_UNCORE_UNLOCK	0b1000	/* <U>	UncoreUnlocked		*/
+
+typedef struct {
+	char			*CodeName;
+} MICRO_ARCH;
+
+typedef struct {
+	char			**Brand;
+	unsigned int		Boost[2];
+	THERMAL_PARAM		Param;
+	unsigned int		CodeNameIdx	:  8-0,
+				TgtRatioUnlocked:  9-8,  /*	<T:1>	*/
+				ClkRatioUnlocked: 11-9,  /*	<X:2>	*/
+				TurboUnlocked	: 12-11, /*	<B:1>	*/
+				UncoreUnlocked	: 13-12, /*	<U:1>	*/
+				_UnusedSpecBits : 28-13,
+				Latch		: 32-28; /* <U>-<B>-<X>-<T> */
+} PROCESSOR_SPECIFIC;
+
 typedef struct {
 	FEATURES	*Features;
 	unsigned int	SMT_Count,
@@ -574,6 +597,7 @@ typedef struct
 
 typedef struct
 {
+	PROCESSOR_SPECIFIC	*Specific;
 #ifdef CONFIG_AMD_NB
 	struct pci_dev		*ZenIF_dev;
 #endif
@@ -670,29 +694,6 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 	{.func=0x40000005, .sub=0x00000000},	/* Hypervisor limits	*/
 	{.func=0x40000006, .sub=0x00000000},	/* Hypervisor exploits	*/
 };
-
-#define LATCH_NONE		0b0000
-#define LATCH_TGT_RATIO_UNLOCK	0b0001	/* <T>	TgtRatioUnlocked	*/
-#define LATCH_CLK_RATIO_UNLOCK	0b0010	/* <X>	ClkRatioUnlocked	*/
-#define LATCH_TURBO_UNLOCK	0b0100	/* <B>	TurboUnlocked		*/
-#define LATCH_UNCORE_UNLOCK	0b1000	/* <U>	UncoreUnlocked		*/
-
-typedef struct {
-	char			*CodeName;
-} MICRO_ARCH;
-
-typedef struct {
-	char			**Brand;
-	unsigned int		Boost[2];
-	THERMAL_PARAM		Param;
-	unsigned int		CodeNameIdx	:  8-0,
-				TgtRatioUnlocked:  9-8,  /*	<T:1>	*/
-				ClkRatioUnlocked: 11-9,  /*	<X:2>	*/
-				TurboUnlocked	: 12-11, /*	<B:1>	*/
-				UncoreUnlocked	: 13-12, /*	<U:1>	*/
-				_UnusedSpecBits : 28-13,
-				Latch		: 32-28; /* <U>-<B>-<X>-<T> */
-} PROCESSOR_SPECIFIC;
 
 typedef struct {
 	char			*Name,
@@ -871,26 +872,26 @@ static void Stop_AMD_Family_10h(void *arg) ;
 #define     InitTimer_AMD_Family_10h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_11h(unsigned int cpu) ;
-#define     PerCore_AMD_Family_11h_Query PerCore_AMD_Family_10h_Query
-#define     Start_AMD_Family_11h Start_AMD_Family_10h
+static void PerCore_AMD_Family_11h_Query(void *arg) ;
+static void Start_AMD_Family_11h(void *arg) ;
 #define     Stop_AMD_Family_11h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_11h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_12h(unsigned int cpu) ;
-#define     PerCore_AMD_Family_12h_Query PerCore_AMD_Family_10h_Query
-#define     Start_AMD_Family_12h Start_AMD_Family_10h
+static void PerCore_AMD_Family_12h_Query(void *arg) ;
+static void Start_AMD_Family_12h(void *arg) ;
 #define     Stop_AMD_Family_12h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_12h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_14h(unsigned int cpu) ;
-#define     PerCore_AMD_Family_14h_Query PerCore_AMD_Family_10h_Query
-#define     Start_AMD_Family_14h Start_AMD_Family_10h
+static void PerCore_AMD_Family_14h_Query(void *arg) ;
+static void Start_AMD_Family_14h(void *arg) ;
 #define     Stop_AMD_Family_14h Stop_AMD_Family_10h
 #define     InitTimer_AMD_Family_14h InitTimer_AuthenticAMD
 
 extern void Query_AMD_Family_15h(unsigned int cpu) ;
-#define     PerCore_AMD_Family_15h_Query PerCore_AMD_Family_10h_Query
-#define     Start_AMD_Family_15h Start_AMD_Family_10h
+static void PerCore_AMD_Family_15h_Query(void *arg) ;
+static void Start_AMD_Family_15h(void *arg) ;
 #define     Stop_AMD_Family_15h Stop_AMD_Family_10h
 extern void InitTimer_AMD_Family_15h(unsigned int cpu) ;
 
