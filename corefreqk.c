@@ -1990,31 +1990,6 @@ void Assign_SKL_X_Boost(unsigned int *pBoost, TURBO_CONFIG *pConfig)
 	pBoost[BOOST(9C) ] = pConfig->Cfg1.SKL_X.NUMCORE_0;
 }
 
-long For_All_Turbo_Clock(void (*PerCore)(void*),
-			void (*Assign)(unsigned int*, TURBO_CONFIG*) )
-{
-	long rc = 0;
-	unsigned int cpu = Proc->CPU.Count;
-    do {
-	CLOCK_TURBO_ARG ClockTurbo = {
-		.pClockMod = NULL,	/* Read-Only All Cores */
-		.Config = {.MSR = {.value = 0}},
-		.rc = 0
-	};
-
-	cpu--;	/* From last AP to BSP */
-
-	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
-	{
-		smp_call_function_single(cpu, PerCore, &ClockTurbo, 1);
-		rc = rc | ClockTurbo.rc;
-
-		Assign(KPublic->Core[cpu]->Boost, &ClockTurbo.Config);
-	}
-    } while (cpu != 0) ;
-	return (rc);
-}
-/*TODO(Remove Service Core)*/
 #define CLOCK_MOD_CORE( _pClockMod, _Cfg, _PerCore)			\
 ({									\
 	long _rc = 0;							\
@@ -2100,16 +2075,8 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 
 long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod)
 {
-	long rc = 0;
-    if (pClockMod != NULL)
-    {
-	rc |= CLOCK_MOD_CORE(pClockMod, Cfg0, Intel_Turbo_Cfg8C_PerCore);
-    }
-    else
-    {
-	Proc->Features.SpecTurboRatio += 8;
-    }
-	rc |= For_All_Turbo_Clock(Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+	long rc = CLOCK_MOD_CORE(pClockMod, Cfg0, Intel_Turbo_Cfg8C_PerCore);
+
 	return (rc);
 }
 
@@ -2169,14 +2136,8 @@ static void Intel_Turbo_Cfg15C_PerCore(void *arg)
 
 long Intel_Turbo_Config15C(CLOCK_ARG *pClockMod)
 {
-	long rc = 0;
-    if (pClockMod != NULL) {
-	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg15C_PerCore);
-    } else {
-	Proc->Features.SpecTurboRatio += 7;
-    }
-	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg15C_PerCore,
-					Assign_15C_Boost );
+	long rc = CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg15C_PerCore);
+
 	return (rc);
 }
 
@@ -2241,14 +2202,8 @@ static void Intel_Turbo_Cfg16C_PerCore(void *arg)
 
 long Intel_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
-	long rc = 0;
-    if (pClockMod != NULL) {
-	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg16C_PerCore);
-    } else {
-	Proc->Features.SpecTurboRatio += 8;
-    }
-	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg16C_PerCore,
-					Assign_16C_Boost );
+	long rc = CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg16C_PerCore);
+
 	return (rc);
 }
 
@@ -2283,14 +2238,8 @@ static void Intel_Turbo_Cfg18C_PerCore(void *arg)
 
 long Intel_Turbo_Config18C(CLOCK_ARG *pClockMod)
 {
-	long rc = 0;
-    if (pClockMod != NULL) {
-	rc |= CLOCK_MOD_CORE(pClockMod, Cfg2, Intel_Turbo_Cfg18C_PerCore);
-    } else {
-	Proc->Features.SpecTurboRatio += 2;
-    }
-	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg18C_PerCore,
-					Assign_18C_Boost );
+	long rc = CLOCK_MOD_CORE(pClockMod, Cfg2, Intel_Turbo_Cfg18C_PerCore);
+
 	return (rc);
 }
 
@@ -2355,14 +2304,30 @@ static void Intel_Turbo_Cfg_SKL_X_PerCore(void *arg)
 
 long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 {
-	long rc = 0;
-    if (pClockMod != NULL) {
-	rc |= CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg_SKL_X_PerCore);
-    } else {
-	Proc->Features.SpecTurboRatio += 8;
-    }
-	rc |= For_All_Turbo_Clock(	Intel_Turbo_Cfg_SKL_X_PerCore,
-					Assign_SKL_X_Boost );
+	long rc=CLOCK_MOD_CORE(pClockMod, Cfg1, Intel_Turbo_Cfg_SKL_X_PerCore);
+
+	return (rc);
+}
+
+long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
+{
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Intel_Turbo_Config15C(pClockMod);
+	return (rc);
+}
+
+long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
+{
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Intel_Turbo_Config16C(pClockMod)
+		| Intel_Turbo_Config18C(pClockMod);
+	return (rc);
+}
+
+long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
+{
+	long rc = Intel_Turbo_Config8C(pClockMod)
+		| Skylake_X_Turbo_Config16C(pClockMod);
 	return (rc);
 }
 
@@ -2520,51 +2485,33 @@ void SandyBridge_PowerInterface(void)
 void Nehalem_Platform_Info(unsigned int cpu)
 {
 	Intel_Platform_Turbo(cpu);
-	Intel_Turbo_Config8C(NULL);
+
+	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
 }
 
 void IvyBridge_EP_Platform_Info(unsigned int cpu)
 {
 	Intel_Platform_Turbo(cpu);
-	Intel_Turbo_Config8C(NULL);
-	Intel_Turbo_Config15C(NULL);
+
+	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
+	Proc->Features.SpecTurboRatio += 7;		/*	15C	*/
 }
 
 void Haswell_EP_Platform_Info(unsigned int cpu)
 {
 	Intel_Platform_Turbo(cpu);
-	Intel_Turbo_Config8C(NULL);
-	Intel_Turbo_Config16C(NULL);
-	Intel_Turbo_Config18C(NULL);
+
+	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
+	Proc->Features.SpecTurboRatio += 8;		/*	16C	*/
+	Proc->Features.SpecTurboRatio += 2;		/*	18C	*/
 }
 
 void Skylake_X_Platform_Info(unsigned int cpu)
 {
 	Intel_Platform_Turbo(cpu);
-	Intel_Turbo_Config8C(NULL);
-	Skylake_X_Turbo_Config16C(NULL);
-}
 
-long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
-{
-	long rc = Intel_Turbo_Config8C(pClockMod)
-		| Intel_Turbo_Config15C(pClockMod);
-	return (rc);
-}
-
-long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
-{
-	long rc = Intel_Turbo_Config8C(pClockMod)
-		| Intel_Turbo_Config16C(pClockMod)
-		| Intel_Turbo_Config18C(pClockMod);
-	return (rc);
-}
-
-long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
-{
-	long rc = Intel_Turbo_Config8C(pClockMod)
-		| Skylake_X_Turbo_Config16C(pClockMod);
-	return (rc);
+	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
+	Proc->Features.SpecTurboRatio += 8;		/*	16C	*/
 }
 
 
@@ -4403,6 +4350,19 @@ void SpeedStep_Technology(CORE *Core)				/*Per Package*/
 	}
 }
 
+void Intel_Turbo_Config(CORE *Core, void (*ConfigFunc)(void*),	/*Per Package*/
+			void (*AssignFunc)(unsigned int*, TURBO_CONFIG*))
+{
+	CLOCK_TURBO_ARG ClockTurbo = {
+		.pClockMod = NULL,	/* Read-Only Operation */
+		.Config = {.MSR = {.value = 0}},
+		.rc = 0
+	};
+
+	ConfigFunc(&ClockTurbo);
+	AssignFunc(Core->Boost, &ClockTurbo.Config);
+}
+
 typedef void (*SET_TARGET)(CORE*, unsigned int);
 
 static void Set_Core2_Target(CORE *Core, unsigned int ratio)
@@ -6027,6 +5987,8 @@ static void PerCore_Nehalem_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
 	SystemRegisters(Core);
 
 	Intel_Mitigation_Mechanisms(Core);
@@ -6069,6 +6031,8 @@ static void PerCore_Nehalem_Query(void *arg)
 static void PerCore_SandyBridge_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
+
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
 
@@ -6122,6 +6086,10 @@ static void PerCore_IvyBridge_Query(void *arg)
 
 static void PerCore_IvyBridge_EP_Query(void *arg)
 {
+	Intel_Turbo_Config(	(CORE*) arg,
+				Intel_Turbo_Cfg15C_PerCore,
+				Assign_15C_Boost );
+
 	PerCore_SandyBridge_EP_Query(arg);
 }
 
@@ -6134,6 +6102,16 @@ static void PerCore_Haswell_Query(void *arg)
 static void PerCore_Haswell_EP_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
+
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
+	Intel_Turbo_Config(	(CORE*) arg,
+				Intel_Turbo_Cfg16C_PerCore,
+				Assign_16C_Boost );
+
+	Intel_Turbo_Config(	(CORE*) arg,
+				Intel_Turbo_Cfg18C_PerCore,
+				Assign_18C_Boost );
 
 	SystemRegisters(Core);
 
@@ -6180,6 +6158,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 static void PerCore_Haswell_ULT_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
+
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
 
@@ -6235,6 +6215,8 @@ static void PerCore_Skylake_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
 	SystemRegisters(Core);
 
 	Intel_Mitigation_Mechanisms(Core);
@@ -6276,6 +6258,10 @@ static void PerCore_Skylake_Query(void *arg)
 
 static void PerCore_Skylake_X_Query(void *arg)
 {
+	Intel_Turbo_Config(	(CORE*) arg,
+				Intel_Turbo_Cfg_SKL_X_PerCore,
+				Assign_SKL_X_Boost );
+
 	PerCore_Skylake_Query(arg);
 	Intel_Turbo_TDP_Config( (CORE*) arg );
 }
@@ -6526,10 +6512,10 @@ void Controller_Init(void)
 	{ /*TODO(Remove this Boost ratios replication when per Core is done) */
 		if (cpu != Proc->Service.Core)
 		{
-			const size_t fullSz=BOOST(SIZE) * sizeof(unsigned int);
-			memcpy( KPublic->Core[cpu]->Boost,
-				KPublic->Core[Proc->Service.Core]->Boost,
-				fullSz );
+			KPublic->Core[cpu]->Boost[BOOST(MIN)] = \
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
+			KPublic->Core[cpu]->Boost[BOOST(MAX)] = \
+			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
 		}
 		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 			if (!KPublic->Core[cpu]->Clock.Hz) {
