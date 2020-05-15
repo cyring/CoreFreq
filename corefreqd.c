@@ -974,14 +974,10 @@ static void *Core_Cycle(void *arg)
 	CFlip->State.C7 = dC7  / dTSC;
 	CFlip->State.C1 = dC1  / dTSC;
 
-/*TODO(Testing)								*/
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
 
 	/* Apply the relative Ratio formula.				*/
-/*TODO(CleanUp)
-	CFlip->Relative.Ratio = (dUCC * Shm->Proc.Boost[BOOST(MAX)]) / dTSC;
-*/
 	CFlip->Relative.Ratio = (dUCC * Cpu->Boost[BOOST(MAX)]) / dTSC;
 
 	if ((Shm->Proc.PM_version >= 2) && !Shm->Proc.Features.Std.ECX.Hyperv)
@@ -990,13 +986,6 @@ static void *Core_Cycle(void *arg)
 		CFlip->Relative.Freq = dUCC / (Shm->Sleep.Interval * 1000);
 	} else {
 	/* Case: Relative Frequency = Relative Ratio x Bus Clock Frequency */
-/*TODO(CleanUp)
-	  CFlip->Relative.Freq=(double)REL_FREQ(Shm->Proc.Boost[BOOST(MAX)], \
-						CFlip->Relative.Ratio,	\
-						Core->Clock,		\
-						Shm->Sleep.Interval)
-				/ (Shm->Sleep.Interval * 1000);
-*/
 	  CFlip->Relative.Freq=(double)REL_FREQ(Cpu->Boost[BOOST(MAX)], \
 						CFlip->Relative.Ratio,	\
 						Core->Clock,		\
@@ -1043,9 +1032,7 @@ static void *Core_Cycle(void *arg)
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
 		CFlip->Counter.NMI.IOCHECK = Core->Interrupt.NMI.IOCHECK;
 	}
-/*TODO(CleanUp)
-	Cpu->Boost[BOOST(TGT)] = Core->Boost[BOOST(TGT)];
-*/
+
 	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
 
 	CFlip->Absolute.Perf	= ABS_FREQ_MHz(
@@ -1221,9 +1208,6 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.HypervisorID = Proc->HypervisorID;
 	/* Copy the Architecture name.					*/
 	StrCopy(Shm->Proc.Architecture, Proc->Architecture, CODENAME_LEN);
-/*TODO(CleanUp) Copy the base clock ratios.
-	memcpy(Shm->Proc.Boost, Proc->Boost,(BOOST(SIZE))*sizeof(unsigned int));
-*/
 	/* Copy the processor's brand string.				*/
 	StrCopy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48 + 4);
 	/* Compute the TSC mode: None, Variant, Invariant		*/
@@ -4947,11 +4931,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		    }
 		    if (Quiet & 0x100) {
 			printf( "    CPU #%03u @ %.2f MHz\n", cpu,
-/*TODO(CleanUp)
-				ABS_FREQ_MHz(double,Shm->Proc.Boost[BOOST(MAX)],
-*/
-			ABS_FREQ_MHz(double, Shm->Cpu[cpu].Boost[BOOST(MAX)],
-					Core[cpu]->Clock) );
+			  ABS_FREQ_MHz(double , Shm->Cpu[cpu].Boost[BOOST(MAX)],
+						Core[cpu]->Clock) );
 		    }
 			/* Notify a CPU has been brought up		*/
 			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);

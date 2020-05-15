@@ -303,7 +303,10 @@ typedef union {
 	signed long long	sllong;
 	struct {
 	    struct {
+		union {
 		signed short	Offset;
+		signed short	Ratio;
+		};
 		signed short	cpu;
 	    };
 		unsigned int	NC;

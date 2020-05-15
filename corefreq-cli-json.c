@@ -1314,10 +1314,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_key(&s, "Boost");
 		{
 			json_start_arr(&s);
-			for (i = 0; i < RATIO_SIZE; i++) {
-/*TODO(CleanUp)
-				json_literal(&s, "%u", Shm->Proc.Boost[i]);
-*/
+			for (i = 0; i < RATIO_SIZE; i++)
+			{
 				json_literal(&s, "%u", Shm->Cpu[Shm->Proc.Service.Core].Boost[i]);
 			}
 			json_end_arr(&s);
