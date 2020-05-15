@@ -1874,48 +1874,29 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] =	KMIN(ratio0, ratio1);
 	KPublic->Core[cpu]->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
 
-	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
-
-		KPublic->Core[cpu]->Boost[BOOST(1C)] =	\
+	if (KPrivate->Specific != NULL)
+	{
+		KPublic->Core[cpu]->Boost[BOOST(1C)] = \
 					KPublic->Core[cpu]->Boost[BOOST(MAX)]
 					+ KPrivate->Specific->Boost[0]
 					+ KPrivate->Specific->Boost[1];
-	} else {
-	    if (Proc->Features.Power.EAX.TurboIDA) { /* Half Ratio capable ? */
-		KPublic->Core[cpu]->Boost[BOOST(1C)] =	\
+	} else {	/* Is Processor half ratio capable ?		*/
+	    if (Proc->Features.Power.EAX.TurboIDA) {
+		KPublic->Core[cpu]->Boost[BOOST(1C)] = \
 				2 + KPublic->Core[cpu]->Boost[BOOST(MAX)];
 	    }
-		Proc->Features.TgtRatio_Unlock = 1;
-	}
-
-	if (Proc->Features.Turbo_Unlock) {
-		Proc->Features.SpecTurboRatio = 1;
-	} else {
-		Proc->Features.SpecTurboRatio = 0;
 	}
 }
 
-void Intel_Platform_Turbo(unsigned int cpu)
+PLATFORM_INFO Intel_Platform_Info(unsigned int cpu)
 {
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
-	Proc->Features.TDP_Unlock = PfInfo.ProgrammableTDP;
-	Proc->Features.TDP_Levels = PfInfo.ConfigTDPlevels;
-	Proc->Features.Turbo_Unlock = PfInfo.ProgrammableTurbo;
-
 	KPublic->Core[cpu]->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
 	KPublic->Core[cpu]->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
 
-	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
-	} else {
-		Proc->Features.TgtRatio_Unlock = 1;
-	}
-	Proc->Features.SpecTurboRatio = 0;
+	return (PfInfo);
 }
 
 typedef union {
@@ -2480,16 +2461,35 @@ void SandyBridge_PowerInterface(void)
 	RDMSR(Proc->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
+void Query_Same_Platform_Features(unsigned int cpu)
+{
+	PLATFORM_INFO PfInfo;
+
+	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {
+		Proc->Features.TgtRatio_Unlock = 1;
+	}
+
+	PfInfo = Intel_Platform_Info(cpu);
+	Proc->Features.TDP_Unlock = PfInfo.ProgrammableTDP;
+	Proc->Features.TDP_Levels = PfInfo.ConfigTDPlevels;
+	Proc->Features.Turbo_Unlock = PfInfo.ProgrammableTurbo;
+
+	Proc->Features.SpecTurboRatio = 0;
+}
+
 void Nehalem_Platform_Info(unsigned int cpu)
 {
-	Intel_Platform_Turbo(cpu);
+	Query_Same_Platform_Features(cpu);
 
 	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
 }
 
 void IvyBridge_EP_Platform_Info(unsigned int cpu)
 {
-	Intel_Platform_Turbo(cpu);
+	Query_Same_Platform_Features(cpu);
 
 	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
 	Proc->Features.SpecTurboRatio += 7;		/*	15C	*/
@@ -2497,7 +2497,7 @@ void IvyBridge_EP_Platform_Info(unsigned int cpu)
 
 void Haswell_EP_Platform_Info(unsigned int cpu)
 {
-	Intel_Platform_Turbo(cpu);
+	Query_Same_Platform_Features(cpu);
 
 	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
 	Proc->Features.SpecTurboRatio += 8;		/*	16C	*/
@@ -2506,7 +2506,7 @@ void Haswell_EP_Platform_Info(unsigned int cpu)
 
 void Skylake_X_Platform_Info(unsigned int cpu)
 {
-	Intel_Platform_Turbo(cpu);
+	Query_Same_Platform_Features(cpu);
 
 	Proc->Features.SpecTurboRatio += 8;		/*	8C	*/
 	Proc->Features.SpecTurboRatio += 8;		/*	16C	*/
@@ -3551,14 +3551,31 @@ static int CoreFreqK_ProbePCI(void)
 	return (rc);
 }
 
+void Query_Same_Genuine_Features(void)
+{
+	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(KPrivate->Specific);
+		OverrideUnlockCapability(KPrivate->Specific);
+	} else {	/* TARGET Ratio is unlocked as default		*/
+		Proc->Features.TgtRatio_Unlock = 1;
+	}
+	if (Proc->Features.Turbo_Unlock) {
+		Proc->Features.SpecTurboRatio = 1;
+	} else {
+		Proc->Features.SpecTurboRatio = 0;
+	}
+}
+
 void Query_GenuineIntel(unsigned int cpu)
 {
+	Query_Same_Genuine_Features();
 	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
 
 void Query_Core2(unsigned int cpu)
 {
+	Query_Same_Genuine_Features();
 	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 }
@@ -4080,7 +4097,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	}
     }
 
-	/*TODO( Should we count the P-States per Core ? )		*/
+/*TODO(Hardware needed: Should we only count the enabled P-States)	*/
 	Proc->Features.SpecTurboRatio = pstate;
 
 	/* Read the Target P-State					*/
@@ -4089,6 +4106,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
+
 	KPublic->Core[cpu]->Boost[BOOST(TGT)] = COF;
 
 	/* If CPB is enabled then add Boost + XFR to the P0 ratio.	*/
@@ -4475,10 +4493,7 @@ void TurboBoost_Technology(CORE *Core,	SET_TARGET SetTarget,
     switch (TurboBoost_Enable) {
     case COREFREQ_TOGGLE_OFF:	/* Restore nominal P-state */
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
-/*TODO(CleanUp)
-	SetTarget(Core, Proc->Boost[BOOST(MAX)]);
-*/
-	SetTarget(Core, KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)]);
+	SetTarget(Core, Core->Boost[BOOST(MAX)]);
 	ToggleFeature = 1;
 	break;
     case COREFREQ_TOGGLE_ON:	/* Request the Turbo P-state	*/
@@ -4540,14 +4555,8 @@ void DynamicAcceleration(CORE *Core)				/* Unique */
 					Set_Core2_Target,
 					Get_Core2_Target,
 					Cmp_Core2_Target,
-
-					1 + KPublic->Core[
-							Proc->Service.Core
-							]->Boost[BOOST(MAX)],
-
-					1 + KPublic->Core[
-							Proc->Service.Core
-							]->Boost[BOOST(MAX)] );
+					1 + Core->Boost[BOOST(MAX)],
+					1 + Core->Boost[BOOST(MAX)] );
 	} else {
 		BITCLR_CC(LOCKLESS, Proc->TurboBoost, Core->Bind);
 		BITSET_CC(LOCKLESS, Proc->TurboBoost_Mask, Core->Bind);
@@ -4743,7 +4752,7 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 	return (-ENODEV);
 }
 
-void Query_AMD_Zen(CORE *Core)					/* Per SMT */
+void PerCore_Query_AMD_Zen_Features(CORE *Core)			/* Per SMT */
 {
 	unsigned long long CC6 = 0, PC6 = 0;
 	int ToggleFeature;
@@ -4805,7 +4814,8 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	BITSET_CC(LOCKLESS, Proc->CC6_Mask, Core->Bind);
 
 	/* Enable or Disable the Package C6 State. Bit[32] */
-	if (Core->Bind == Proc->Service.Core) {
+	if (Core->Bind == Proc->Service.Core)
+	{
 		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
 		switch (PC6_Enable) {
 		case COREFREQ_TOGGLE_OFF:
@@ -4835,21 +4845,6 @@ void Query_AMD_Zen(CORE *Core)					/* Per SMT */
 	Core->Query.CfgLock = 1;
 	/* Package C-State: I/O MWAIT Redirection. */
 	Core->Query.IORedir = 0;
-
-	if (Core->Bind == Proc->Service.Core) {
-		PSTATEDEF PstateDef = {.value = 0};
-		PSTATECTRL PStateCtl = {.value = 0};
-		/* Convert the non-boosted P-state into the Target Ratio */
-		RDMSR(PStateCtl, MSR_AMD_PERF_CTL);
-		RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PStateCtl.PstateCmd);
-		/* Is this an enabled P-States ?			*/
-	    if (PstateDef.Family_17h.PstateEn) {
-		unsigned int COF=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
-
-		KPublic->Core[Proc->Service.Core]->Boost[BOOST(TGT)] = COF;
-	    }
-	}
 }
 
 void Intel_Turbo_TDP_Config(CORE *Core)
@@ -5927,6 +5922,8 @@ static void PerCore_Intel_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Core_Platform_Info(Core->Bind);
+
 	SystemRegisters(Core);
 
 	Intel_VirtualMachine(Core);
@@ -5986,6 +5983,8 @@ static void PerCore_Core2_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Core_Platform_Info(Core->Bind);
+
 	SystemRegisters(Core);
 
 	Intel_VirtualMachine(Core);
@@ -6013,11 +6012,9 @@ static void PerCore_Core2_Query(void *arg)
 	ThermalMonitor_Set(Core);
 }
 
-static void PerCore_Nehalem_Query(void *arg)
+static void PerCore_Nehalem_Same_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
-
-	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
 
@@ -6035,14 +6032,8 @@ static void PerCore_Nehalem_Query(void *arg)
 				Set_Nehalem_Target,
 				Get_Nehalem_Target,
 				Cmp_Nehalem_Target,
-
-				1 + KPublic->Core[
-						Proc->Service.Core
-						]->Boost[BOOST(MAX)],
-
-				1 + KPublic->Core[
-						Proc->Service.Core
-						]->Boost[BOOST(MAX)] );
+				1 + Core->Boost[BOOST(MAX)],
+				1 + Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6058,10 +6049,29 @@ static void PerCore_Nehalem_Query(void *arg)
 	ThermalMonitor_Set(Core);
 }
 
+static void PerCore_Nehalem_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Intel_Platform_Info(Core->Bind);
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+	PerCore_Nehalem_Same_Query(Core);
+}
+
+static void PerCore_Nehalem_EX_Query(void *arg)
+{
+	CORE *Core = (CORE*) arg;
+
+	Intel_Platform_Info(Core->Bind);
+	Intel_Core_Platform_Info(Core->Bind);
+	PerCore_Nehalem_Same_Query(Core);
+}
+
 static void PerCore_SandyBridge_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Platform_Info(Core->Bind);
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
@@ -6080,14 +6090,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(1C)],
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(MAX)] );
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6133,6 +6137,7 @@ static void PerCore_Haswell_EP_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Platform_Info(Core->Bind);
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	Intel_Turbo_Config(	(CORE*) arg,
@@ -6160,14 +6165,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(1C)],
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(MAX)] );
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6189,6 +6188,7 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Platform_Info(Core->Bind);
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
@@ -6207,14 +6207,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(1C)],
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(MAX)] );
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6245,6 +6239,7 @@ static void PerCore_Skylake_Query(void *arg)
 {
 	CORE *Core = (CORE*) arg;
 
+	Intel_Platform_Info(Core->Bind);
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	SystemRegisters(Core);
@@ -6263,14 +6258,8 @@ static void PerCore_Skylake_Query(void *arg)
 				Set_SandyBridge_Target,
 				Get_SandyBridge_Target,
 				Cmp_SandyBridge_Target,
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(1C)],
-
-				KPublic->Core[
-						Proc->Service.Core
-					]->Boost[BOOST(MAX)] );
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
 
 	Query_Intel_C1E(Core);
 
@@ -6423,7 +6412,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	BITSET_CC(LOCKLESS, Proc->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, Proc->ARCH_CAP_Mask , Core->Bind);
 
-	Query_AMD_Zen(Core);
+	PerCore_Query_AMD_Zen_Features(Core);
 
 	Core->PowerThermal.Param = Proc->PowerThermal.Param;
 }
@@ -6582,14 +6571,7 @@ void Controller_Init(void)
 	}
 	/* Launch a high resolution timer for each online CPU. */
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-	{ /*TODO(Remove this Boost ratios replication when per Core is done) */
-		if (cpu != Proc->Service.Core)
-		{
-			KPublic->Core[cpu]->Boost[BOOST(MIN)] = \
-			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MIN)];
-			KPublic->Core[cpu]->Boost[BOOST(MAX)] = \
-			KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
-		}
+	{
 		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
 			if (!KPublic->Core[cpu]->Clock.Hz) {
 				KPublic->Core[cpu]->Clock = clock;
@@ -11223,7 +11205,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	return (0);
 }
 
-static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one daemon instance. */
+static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
 
 static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {

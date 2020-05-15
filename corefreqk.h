@@ -786,6 +786,7 @@ extern void InitTimer_Core2(unsigned int cpu) ;
 
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
+static void PerCore_Nehalem_EX_Query(void *arg) ;
 static void Start_Nehalem(void *arg) ;
 static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
@@ -4863,7 +4864,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Nehalem_EX] = {							/* 31*/
 	.Signature = _Nehalem_EX,
 	.Query = Query_Core2,
-	.Update = PerCore_Nehalem_Query,
+	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -4948,7 +4949,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Westmere_EX] = {							/* 34*/
 	.Signature = _Westmere_EX,
 	.Query = Query_Core2, /* Xeon processor 7500 series-based platform */
-	.Update = PerCore_Nehalem_Query,
+	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
