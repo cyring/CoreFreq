@@ -313,9 +313,6 @@ typedef CUINT (*VIEW_FUNC)(Layer*, const unsigned int, CUINT);
 			ASCII *item
 
 typedef TGrid* (*CELL_FUNC)(CELL_ARGS);
-/*TODO(CleanUp)
-typedef void (*ITEM_CALLBACK)(unsigned int, ASCII*);
-*/
 typedef void (*CPU_ITEM_CALLBACK)(unsigned int, ASCII*);
 typedef void (*PKG_ITEM_CALLBACK)(ASCII*);
 typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
