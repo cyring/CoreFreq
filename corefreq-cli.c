@@ -121,49 +121,39 @@ struct {
 void AggregateRatio(void)
 {
 	enum RATIO_BOOST lt, rt;
-	unsigned int cpu, swap = 0;
-
+	unsigned int cpu, lowest = __INT_MAX__ , highest = 0;
 	Ruler.Count = 0;
-	Ruler.Median = 0.0;
-	Ruler.Minimum = Ruler.Maximum = __DBL_MAX__;
+
+    for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++) {
+	Ruler.Top[lt] = Shm->Proc.Service.Core;
+	Ruler.Uniq[lt] = 0.0;
+    }
 	SetTopOfRuler(Shm->Proc.Service.Core, BOOST(MIN));
 
-    for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
-    {
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-	{
-	    if (Shm->Cpu[cpu].Boost[lt] > swap)
-	    {
-		swap = Shm->Cpu[cpu].Boost[lt];
-		Ruler.Top[lt] = cpu;
-
-		SetTopOfRuler(Ruler.Top[lt], lt);
-	    }
-	}
-    }
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-    {
-	if (Shm->Cpu[cpu].Boost[BOOST(MIN)] > 0)
-	{
-	    if (Shm->Cpu[cpu].Boost[BOOST(MIN)] < Ruler.Minimum)
-	    {
-		Ruler.Minimum = Ruler.Maximum = Shm->Cpu[cpu].Boost[BOOST(MIN)];
-	    }
-	}
-	if (Shm->Cpu[cpu].Boost[BOOST(ACT)] > 0)
-	{
-		if (Shm->Cpu[cpu].Boost[BOOST(ACT)] > Ruler.Median)
-		{
-			Ruler.Median = Shm->Cpu[cpu].Boost[BOOST(ACT)];
-		}
-	}
-    }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
 	for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
 	{
 	    if (Shm->Cpu[cpu].Boost[lt] > 0)
 	    {
+		switch (lt) {
+		case BOOST(HWP_MIN):
+		case BOOST(MIN):
+			if (Shm->Cpu[cpu].Boost[lt] < lowest)
+			{
+				lowest = Shm->Cpu[cpu].Boost[lt];
+			}
+			/* Fallthrough */
+		default:
+			if (Shm->Cpu[cpu].Boost[lt] > highest)
+			{
+				highest = Shm->Cpu[cpu].Boost[lt];
+
+				Ruler.Top[lt] = cpu;
+				SetTopOfRuler(Ruler.Top[lt], lt);
+			}
+			break;
+		}
 		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
 		{
 			if (Ruler.Uniq[rt] == Shm->Cpu[cpu].Boost[lt])
@@ -174,29 +164,15 @@ void AggregateRatio(void)
 		if (rt == Ruler.Count)
 		{
 			Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
-
-			if ((double) Ruler.Uniq[Ruler.Count] > Ruler.Maximum)
-			{
-				Ruler.Maximum = (double)Ruler.Uniq[Ruler.Count];
-			}
 			Ruler.Count++;
 		}
 	    }
 	}
     }
-	for (lt = BOOST(MAX); lt < Ruler.Count; lt++)
-	{
-		swap = Ruler.Uniq[lt];
-		rt = lt;
-		while (rt > BOOST(MIN) && swap < Ruler.Uniq[rt - 1])
-		{
-			Ruler.Uniq[rt] = Ruler.Uniq[rt - 1];
-			--rt;
-		}
-		Ruler.Uniq[rt] = swap;
-	}
-	if (Ruler.Median == 0.0)
-	{
+	Ruler.Minimum = (double) lowest;
+	Ruler.Maximum = (double) highest;
+	Ruler.Median=(double) Shm->Cpu[Ruler.Top[BOOST(ACT)]].Boost[BOOST(ACT)];
+	if (Ruler.Median == 0.0) {
 		Ruler.Median = (Ruler.Minimum + Ruler.Maximum) / 2.0;
 	}
 }
