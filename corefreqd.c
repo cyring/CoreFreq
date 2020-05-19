@@ -36,6 +36,7 @@ static Bit256 roomSeed	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomCore	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomSched __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static Bit64 DaemonSync __attribute__ ((aligned (8))) = 0x0;
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
@@ -4383,15 +4384,11 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	case 1:
 		SysGate_OS_Driver(Ref);
 	/* Fallthrough */
-	case 0: /* Update SHM and notify a platform changed.		*/
-		UpdateFeatures(Ref);
-
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+	case 0: /* Platform changed pending notification.		*/
+		BITWISESET(LOCKLESS, DaemonSync, BIT_MASK_NTFY);
 		break;
-	case 2: /* Update SHM and notify to re-compute.			*/
-		UpdateFeatures(Ref);
-
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_COMP);
+	case 2: /* Compute claimed pending notification.		*/
+		BITWISESET(LOCKLESS, DaemonSync, BIT_MASK_COMP);
 		break;
 	}
     }
@@ -5049,12 +5046,15 @@ REASON_CODE Core_Manager(REF *Ref)
 			SysGate_Update(Ref);
 		    }
 		}
-		if (BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY))
+		/* Sync with the asynchronous notifications.		*/
+		if (BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY)
+		|| BITCLR(LOCKLESS, DaemonSync, COMP0)
+		|| BITCLR(LOCKLESS, DaemonSync, NTFY0))
 		{
 			UpdateFeatures(Ref);
 
-			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_COMP);
-			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_COMP);
+			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
 		}
 	    }
 		/* All aggregations done: Notify Clients.		*/

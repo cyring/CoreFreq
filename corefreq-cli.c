@@ -132,8 +132,10 @@ void AggregateRatio(void)
 
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
-	for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
+	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
 	{
+	  for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
+	  {
 	    if (Shm->Cpu[cpu].Boost[lt] > 0)
 	    {
 		switch (lt) {
@@ -167,6 +169,7 @@ void AggregateRatio(void)
 			Ruler.Count++;
 		}
 	    }
+	  }
 	}
     }
 	Ruler.Minimum = (double) lowest;

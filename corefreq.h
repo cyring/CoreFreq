@@ -240,11 +240,11 @@ typedef struct
 
 typedef struct
 {
-	volatile unsigned long long	Sync __attribute__ ((aligned (8)));
+	Bit64			Sync __attribute__ ((aligned (8)));
 
-	Bit64				Toggle __attribute__ ((aligned (8)));
+	Bit64			Toggle __attribute__ ((aligned (8)));
 
-	FEATURES			Features;
+	FEATURES		Features;
 
 	Bit64			PowerNow	__attribute__ ((aligned (8)));
 
