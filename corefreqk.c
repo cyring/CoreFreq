@@ -4750,6 +4750,8 @@ static void ClockMod_PPC_PerCore(void *arg)
 
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+
+	Core->Boost[BOOST(TGT)] = pClockPPC->GetTarget(Core);
 }
 
 void For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
