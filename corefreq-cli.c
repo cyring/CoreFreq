@@ -3470,7 +3470,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	{
 		PRT(MAP, attrib[0], "%3d%4d%6d",
-			Shm->Cpu[cpu].Topology.MP.CCX,
+			Shm->Cpu[cpu].Topology.Cluster.CCX,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
 	} else {

@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	77
-#define COREFREQ_REV	4
+#define COREFREQ_REV	5
 
 #define CORE_COUNT	256
 
@@ -735,6 +735,23 @@ typedef struct	/* Extended CPUID Function.				*/
 
 typedef struct
 {
+	struct { /* AMD reserved, compatible with CPUID(0x00000001)	*/
+		unsigned int
+		Stepping	:  4-0,
+		Model		:  8-4,
+		Family		: 12-8,
+		Unused1 	: 16-12,
+		ExtModel	: 20-16,
+		ExtFamily	: 28-20,
+		Unused2 	: 32-28;
+	} EAX;
+	struct { /* AMD reserved, same as CPUID(0x00000001)		*/
+		unsigned int
+		Brand_ID	:  8-0,
+		CLFSH_Size	: 16-8,
+		Max_SMT_ID	: 24-16,
+		Init_APIC_ID	: 32-24;
+	} EBX;
     union
     {
 	struct { /* Intel reserved.					*/
@@ -768,17 +785,19 @@ typedef struct
 		LWP	: 16-15, /* Lightweight profiling support.	*/
 		FMA4	: 17-16, /* Four-operand FMA instruction.	*/
 		TCE	: 18-17, /* Translation Cache Extension.	*/
-		NotUsed2: 21-18,
+		NotUsed2: 19-18,
+		NodeId	: 20-19, /* Family 10h				*/
+		NotUsed3: 21-20,
 		TBM	: 22-21, /* Trailing bit manipulation.		*/
 		TopoExt : 23-22, /* Topology extensions support.	*/
 		PerfCore: 24-23, /* PerfCtrExtCore MSR.			*/
 		PerfNB	: 25-24, /* PerfCtrExtNB MSR.			*/
-		NotUsed3: 26-25,
+		NotUsed4: 26-25,
 		Data_BP : 27-26, /* Data access breakpoint extension.	*/
 		PerfTSC : 28-27, /* Performance TSC MSR.		*/
 		PerfL2I : 29-28, /* L2I performance counter extensions support*/
 		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
-		NotUsed4: 32-30;
+		NotUsed5: 32-30;
 	};
     } ECX;
     union

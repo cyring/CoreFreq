@@ -1519,7 +1519,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 		    {
 			json_key(&s, "CCX");
-			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.MP.CCX);
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.Cluster.CCX);
 		    }
 			json_key(&s, "CoreID");
 			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.CoreID);

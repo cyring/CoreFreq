@@ -1366,10 +1366,35 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.PackageID = 0;
 		break;
 	case AMD_Family_10h:
+	    {
+		CPUID_0x80000001 leaf80000001 = {
+			.EAX = {0}, .EBX = {0}, .ECX = {{0}}, .EDX = {{0}}
+		};
+
+		__asm__ volatile
+		(
+			"movq	$0x80000001, %%rax	\n\t"
+			"xorq	%%rbx, %%rbx		\n\t"
+			"xorq	%%rcx, %%rcx		\n\t"
+			"xorq	%%rdx, %%rdx		\n\t"
+			"cpuid				\n\t"
+			"mov	%%eax, %0		\n\t"
+			"mov	%%ebx, %1		\n\t"
+			"mov	%%ecx, %2		\n\t"
+			"mov	%%edx, %3"
+			: "=r" (leaf80000001.EAX),
+			  "=r" (leaf80000001.EBX),
+			  "=r" (leaf80000001.ECX),
+			  "=r" (leaf80000001.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+		Core->T.Cluster.Node = leaf80000001.ECX.NodeId;
+	    }
+		/* Fallthrough */
 	case AMD_Family_11h:
 	case AMD_Family_12h:
 	case AMD_Family_14h:
-	case AMD_Family_16h:
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.CoreID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
@@ -1388,6 +1413,8 @@ static void Map_AMD_Topology(void *arg)
 	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize2);
 	    Core->T.Cache[3].Size+=L3_SubCache_AMD_Piledriver(L3.SubCacheSize3);
 	    }
+		/* Fallthrough */
+	case AMD_Family_16h:
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
@@ -1395,7 +1422,6 @@ static void Map_AMD_Topology(void *arg)
 				  - (Core->T.PackageID
 					<< leaf80000008.ECX.ApicIdCoreIdSize);
 
-/*TODO: Map the Bulldozer extended topology
 	    if (Proc->Features.ExtInfo.ECX.TopoExt == 1)
 	    {
 		CPUID_0x8000001e leaf8000001e;
@@ -1418,11 +1444,10 @@ static void Map_AMD_Topology(void *arg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		leaf8000001e.EAX.ExtApicId;
-		leaf8000001e.EBX.CompUnitId;
-		leaf8000001e.ECX.NodeId;
+		/*	TODO(Case of leaf8000001e.EAX.ExtApicId)	*/
+		Core->T.Cluster.Node= leaf8000001e.ECX.NodeId;
+		Core->T.Cluster.CMP = leaf8000001e.EBX.CompUnitId;
 	    }
-*/
 	    break;
 	case AMD_Zen:
 	case AMD_Zen_APU:
@@ -1489,10 +1514,16 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
 		Core->T.PackageID = leaf8000001e.ECX.NodeId;
 
-		if (leaf8000001e.EBX.ThreadsPerCore > 0)
+		if (leaf8000001e.EBX.ThreadsPerCore > 0) {
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
-		else
+		} else {
 			Core->T.ThreadID  = 0;
+		}
+
+		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
+		Core->T.Cluster.CCX =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
+		Core->T.Cluster.CCD = leaf8000001e.EBX.CoreId >> 2;
+
 	    } else {	/* Fallback algorithm. */
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
@@ -1715,6 +1746,7 @@ unsigned int Proc_Topology(void)
 	KPublic->Core[cpu]->T.CoreID     = -1;
 	KPublic->Core[cpu]->T.ThreadID   = -1;
 	KPublic->Core[cpu]->T.PackageID  = -1;
+	KPublic->Core[cpu]->T.Cluster.ID = 0;
 
 	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, HW);
 	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
@@ -3638,6 +3670,20 @@ static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 {
 	unsigned int link;
+
+	pci_read_config_dword(dev, 0x60, &Proc->Uncore.Bus.NodeID.value);
+	switch ( PCI_SLOT(dev->devfn) ) {
+	case 24:
+		KPublic->Core[0]->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
+		break;
+	case 25:
+	    if ( ( (1 + Proc->Uncore.Bus.NodeID.CPUCnt) >= Proc->CPU.Count)
+		&& (Proc->CPU.Count >= 2) )
+	    {
+		KPublic->Core[1]->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
+	    }
+		break;
+	}
 
 	pci_read_config_dword(dev, 0x64, &Proc->Uncore.Bus.UnitID.value);
 

@@ -80,12 +80,20 @@ typedef struct
 					CoreID,
 					ThreadID,
 					PackageID;
+		union {
+			unsigned int	ID;
+			unsigned int	Node	:  8-0,
+					CCX	: 16-8,
+					CCD	: 24-16,
+					CMP	: 32-24;
+		} Cluster;
 		struct {
 			unsigned short	x2APIC	:  8-0,
-					CCX	: 12-8,
-					_pad8	: 15-12,
+					_pad	: 14-8,
+					BSC	: 15-14,
 					BSP	: 16-15;
 		} MP;
+
 		struct {
 		unsigned int		Set,
 					Size;

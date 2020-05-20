@@ -71,6 +71,13 @@ typedef struct
 			CoreID,
 			ThreadID,
 			PackageID;
+	union {
+	unsigned int	ID;		/* AMD-17h MSR(0x0000002a)	*/
+	unsigned int	Node	:  8-0, /* CPUID(0x8000001e):ECX[8-0]	*/
+			CCX	: 16-8, /* CPUID(0x8000001e):EAX[32-0]:[3] */
+			CCD	: 24-16,
+			CMP	: 32-24;
+	} Cluster;
 
 	struct CACHE_INFO
 	{
@@ -564,6 +571,7 @@ typedef struct
 			SKL_CAPID_C		SKL_Cap_C;
 		};
 		struct {
+			AMD_0F_HTT_NODE_ID	NodeID;
 			AMD_0F_HTT_UNIT_ID	UnitID;
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];
 		};

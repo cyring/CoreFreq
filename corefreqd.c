@@ -3940,20 +3940,16 @@ unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
 
 void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 {	/* Copy each Core topology.					*/
-	Shm->Cpu[cpu].Topology.MP.BSP    = (Core[cpu]->T.Base.BSP) ? 1 : 0;
-	Shm->Cpu[cpu].Topology.ApicID    = Core[cpu]->T.ApicID;
-	Shm->Cpu[cpu].Topology.CoreID    = Core[cpu]->T.CoreID;
-	Shm->Cpu[cpu].Topology.ThreadID  = Core[cpu]->T.ThreadID;
-	Shm->Cpu[cpu].Topology.PackageID = Core[cpu]->T.PackageID;
-	Shm->Cpu[cpu].Topology.MP.x2APIC = ((Proc->Features.Std.ECX.x2APIC
-					    & Core[cpu]->T.Base.EN)
-					   << Core[cpu]->T.Base.EXTD);
-	/* AMD Core Complex ID						*/
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-    {
-	Shm->Cpu[cpu].Topology.MP.CCX = (Core[cpu]->T.ApicID & 0b1000) >> 3;
-    }
+	Shm->Cpu[cpu].Topology.MP.BSP     = (Core[cpu]->T.Base.BSP) ? 1 : 0;
+	Shm->Cpu[cpu].Topology.ApicID     = Core[cpu]->T.ApicID;
+	Shm->Cpu[cpu].Topology.CoreID     = Core[cpu]->T.CoreID;
+	Shm->Cpu[cpu].Topology.ThreadID   = Core[cpu]->T.ThreadID;
+	Shm->Cpu[cpu].Topology.PackageID  = Core[cpu]->T.PackageID;
+	Shm->Cpu[cpu].Topology.Cluster.ID = Core[cpu]->T.Cluster.ID;
+	Shm->Cpu[cpu].Topology.MP.x2APIC  = ((Proc->Features.Std.ECX.x2APIC
+						& Core[cpu]->T.Base.EN)
+						<< Core[cpu]->T.Base.EXTD);
+
 	unsigned int loop;
     for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
     {
