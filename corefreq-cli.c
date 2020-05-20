@@ -6093,6 +6093,10 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 
 	memset(item, 0x20, POPUP_WIDTH);
 	if ((len > 0) && (len < POPUP_WIDTH)) {
+		memcpy(&item[POPUP_WIDTH - len], outStr, len);
+	}
+	len = sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
+	if (len < POPUP_WIDTH) {
 		memcpy(item, outStr, len);
 	}
 	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
@@ -8807,7 +8811,7 @@ int Shortcut(SCANKEY *scan)
 
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
-		pHWP = &Shm->Cpu[Ruler.Top[ BOOST(HWP_TGT)] ].PowerThermal.HWP;
+		pHWP = &Shm->Cpu[ Ruler.Top[BOOST(HWP_TGT)] ].PowerThermal.HWP;
 		COF = pHWP->Request.Desired_Perf;
 	      } else {
 		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
@@ -8899,7 +8903,7 @@ int Shortcut(SCANKEY *scan)
 
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
-		pHWP = &Shm->Cpu[Ruler.Top[ BOOST(HWP_MIN)] ].PowerThermal.HWP;
+		pHWP = &Shm->Cpu[ Ruler.Top[BOOST(HWP_MIN)] ].PowerThermal.HWP;
 		COF = pHWP->Request.Minimum_Perf;
 	      } else {
 		pHWP = &Shm->Cpu[cpu].PowerThermal.HWP;
@@ -8946,12 +8950,12 @@ int Shortcut(SCANKEY *scan)
 
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
-		COF = Shm->Cpu[Ruler.Top[ BOOST(MAX)] ].Boost[BOOST(MAX)];
+		COF = Shm->Cpu[ Ruler.Top[BOOST(MAX)] ].Boost[BOOST(MAX)];
 		lowestOperating = Shm->Cpu[
-					Ruler.Top[ BOOST(MAX) ]
-					].Boost[ BOOST(MIN) ];
+					Ruler.Top[BOOST(MAX)]
+					].Boost[BOOST(MIN)];
 		CFlop = &Shm->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
-					!Shm->Cpu[Ruler.Top[ BOOST(MAX) ]
+					!Shm->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
 		COF = Shm->Cpu[cpu].Boost[BOOST(MAX)];
@@ -9000,10 +9004,10 @@ int Shortcut(SCANKEY *scan)
 
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
-		COF = Shm->Cpu[ Ruler.Top[ BOOST(MIN) ] ].Boost[ BOOST(MIN) ];
+		COF = Shm->Cpu[ Ruler.Top[BOOST(MIN)] ].Boost[BOOST(MIN)];
 		lowestOperating = Shm->Cpu[
-					Ruler.Top[ BOOST(MIN) ]
-					].Boost[ BOOST(MIN) ];
+					Ruler.Top[BOOST(MIN)]
+					].Boost[BOOST(MIN)];
 	      } else {
 		COF = Shm->Cpu[cpu].Boost[BOOST(MIN)];
 		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];

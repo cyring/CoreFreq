@@ -4399,9 +4399,12 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 		For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore);
 
 		return (2);	/* Report a platform change */
+	    } else {
+		return (-ENODEV);
 	    }
+	} else {
+		return (-EINVAL);
 	}
-	return (0);
 }
 
 long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
@@ -4433,10 +4436,11 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		return (2);
 	    }
 	default:
-		break;
+		return (-ENODEV);
 	}
+    } else {
+	return (-EINVAL);
     }
-	return (0);
 }
 
 void Query_AMD_Family_17h(unsigned int cpu)
@@ -4770,59 +4774,68 @@ void For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 
 long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 {
-    if (pClockMod != NULL) {
-	if (pClockMod->NC == CLOCK_MOD_TGT)
-	{
-	CLOCK_PPC_ARG ClockPPC = {
-		.pClockMod = pClockMod,
-		.SetTarget = Set_Core2_Target,
-		.GetTarget = Get_Core2_Target
-	};
+	if (pClockMod != NULL) {
+		if (pClockMod->NC == CLOCK_MOD_TGT)
+		{
+			CLOCK_PPC_ARG ClockPPC = {
+				.pClockMod = pClockMod,
+				.SetTarget = Set_Core2_Target,
+				.GetTarget = Get_Core2_Target
+			};
 
-	For_All_PPC_Clock(&ClockPPC);
+			For_All_PPC_Clock(&ClockPPC);
 
-	return (2);	/* Report a platform change */
+			return (2);	/* Report a platform change */
+		} else {
+			return (-ENODEV);
+		}
+	} else {
+		return (-EINVAL);
 	}
-    }
-	return (-ENODEV);
 }
 
 long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 {
-    if (pClockMod != NULL) {
-	if (pClockMod->NC == CLOCK_MOD_TGT)
-	{
-	CLOCK_PPC_ARG ClockPPC = {
-		.pClockMod = pClockMod,
-		.SetTarget = Set_Nehalem_Target,
-		.GetTarget = Get_Nehalem_Target
-	};
+	if (pClockMod != NULL) {
+		if (pClockMod->NC == CLOCK_MOD_TGT)
+		{
+			CLOCK_PPC_ARG ClockPPC = {
+				.pClockMod = pClockMod,
+				.SetTarget = Set_Nehalem_Target,
+				.GetTarget = Get_Nehalem_Target
+			};
 
-	For_All_PPC_Clock(&ClockPPC);
+			For_All_PPC_Clock(&ClockPPC);
 
-	return (2);
+			return (2);
+		} else {
+			return (-ENODEV);
+		}
+	} else {
+		return (-EINVAL);
 	}
-    }
-	return (-ENODEV);
 }
 
 long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 {
-    if (pClockMod != NULL) {
-	if (pClockMod->NC == CLOCK_MOD_TGT)
-	{
-	CLOCK_PPC_ARG ClockPPC = {
-		.pClockMod = pClockMod,
-		.SetTarget = Set_SandyBridge_Target,
-		.GetTarget = Get_SandyBridge_Target
-	};
+	if (pClockMod != NULL) {
+		if (pClockMod->NC == CLOCK_MOD_TGT)
+		{
+			CLOCK_PPC_ARG ClockPPC = {
+				.pClockMod = pClockMod,
+				.SetTarget = Set_SandyBridge_Target,
+				.GetTarget = Get_SandyBridge_Target
+			};
 
-	For_All_PPC_Clock(&ClockPPC);
+			For_All_PPC_Clock(&ClockPPC);
 
-	return (2);
+			return (2);
+		} else {
+			return (-ENODEV);
+		}
+	} else {
+		return (-EINVAL);
 	}
-    }
-	return (-ENODEV);
 }
 
 static void ClockMod_HWP_PerCore(void *arg)
@@ -4886,22 +4899,26 @@ void For_All_HWP_Clock(CLOCK_ARG *pClockMod)
 
 long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 {
-    if (Proc->Features.HWP_Enable) {
-	if (pClockMod != NULL)
-	    switch (pClockMod->NC) {
-	    case CLOCK_MOD_HWP_MIN:
-	    case CLOCK_MOD_HWP_MAX:
-	    case CLOCK_MOD_HWP_TGT:
-		For_All_HWP_Clock(pClockMod);
+	if (Proc->Features.HWP_Enable) {
+		if (pClockMod != NULL) {
+			switch (pClockMod->NC) {
+			case CLOCK_MOD_HWP_MIN:
+			case CLOCK_MOD_HWP_MAX:
+			case CLOCK_MOD_HWP_TGT:
+				For_All_HWP_Clock(pClockMod);
 
-		return (2);
-	    case CLOCK_MOD_TGT:
+				return (2);
+			case CLOCK_MOD_TGT:
+				return (ClockMod_SandyBridge_PPC(pClockMod));
+			default:
+				return (-ENODEV);
+			}
+		} else {
+			return (-EINVAL);
+		}
+	} else {
 		return (ClockMod_SandyBridge_PPC(pClockMod));
-	    }
-    } else {
-	return (ClockMod_SandyBridge_PPC(pClockMod));
-    }
-	return (-ENODEV);
+	}
 }
 
 void PerCore_Query_AMD_Zen_Features(CORE *Core)			/* Per SMT */
