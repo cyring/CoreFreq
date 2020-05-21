@@ -4355,11 +4355,11 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
     {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
-	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg), rx = errno;
+	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg), drc = errno;
 
 	if (Quiet & 0x100) {
 		printf("\tRING[%u](%x,%x)(%lx)>(%d,%d)\n",
-			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc, rx);
+			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc, drc);
 	}
 	switch (rc) {
 	case -EPERM:
@@ -4367,7 +4367,7 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 		RING_CTRL error __attribute__ ((aligned(16))) = {
 			.arg = ctrl.arg,
 			.cmd = ctrl.cmd,
-			.ret = rx,
+			.drc = drc,
 			.tds = ELAPSED(Ref->Shm->StartedAt)
 		};
 		RING_WRITE_1xPARAM(	error.sub,
@@ -4376,15 +4376,15 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 					error.arg );
 	    }
 		break;
-	case 1:
+	case RC_OK_SYSGATE:
 		SysGate_OS_Driver(Ref);
 	/* Fallthrough */
-	case 0: /* Platform changed pending notification.		*/
+	case RC_SUCCESS: /* Platform changed pending notification.	*/
 		UpdateFeatures(Ref);
 
 		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
 		break;
-	case 2: /* Compute claimed pending notification.		*/
+	case RC_OK_COMPUTE: /* Compute claimed pending notification.	*/
 		UpdateFeatures(Ref);
 
 		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_COMP);
@@ -5345,6 +5345,9 @@ REASON_CODE Help(REASON_CODE reason, ...)
 	va_start(ap, reason);
 	switch (reason.rc) {
 	case RC_SUCCESS:
+	case RC_OK_SYSGATE:
+	case RC_OK_COMPUTE:
+	case RC_DRIVER_BASE ... RC_DRIVER_LAST:
 		break;
 	case RC_CMD_SYNTAX: {
 		char *appName = va_arg(ap, char *);
@@ -5360,15 +5363,23 @@ REASON_CODE Help(REASON_CODE reason, ...)
 			"\t-h\t\tPrint out this message\n"		\
 			"\t-v\t\tPrint the version number\n"		\
 			"\nExit status:\n"				\
-			"\t0\tSUCCESS\t\tSuccessful execution\n"	\
-			"\t1\tCMD_SYNTAX\tCommand syntax error\n"	\
-			"\t2\tSHM_FILE\tShared memory file error\n"	\
-			"\t3\tSHM_MMAP\tShared memory mapping error\n"	\
-			"\t4\tPERM_ERR\tExecution not permitted\n"	\
-			"\t5\tMEM_ERR\t\tMemory operation error\n"	\
-			"\t6\tEXEC_ERR\tGeneral execution error\n"	\
-			"\t15\tSYS_CALL\tSystem call error\n"		\
-			"\nReport bugs to labs[at]cyring.fr\n", appName);
+			"\t%u\tSUCCESS\t\tSuccessful execution\n"	\
+			"\t%u\tCMD_SYNTAX\tCommand syntax error\n"	\
+			"\t%u\tSHM_FILE\tShared memory file error\n"	\
+			"\t%u\tSHM_MMAP\tShared memory mapping error\n"	\
+			"\t%u\tPERM_ERR\tExecution not permitted\n"	\
+			"\t%u\tMEM_ERR\t\tMemory operation error\n"	\
+			"\t%u\tEXEC_ERR\tGeneral execution error\n"	\
+			"\t%u\tSYS_CALL\tSystem call error\n"		\
+			"\nReport bugs to labs[at]cyring.fr\n", appName,
+			RC_SUCCESS,
+			RC_CMD_SYNTAX,
+			RC_SHM_FILE,
+			RC_SHM_MMAP,
+			RC_PERM_ERR,
+			RC_MEM_ERR,
+			RC_EXEC_ERR,
+			RC_SYS_CALL);
 		}
 		break;
 	case RC_PERM_ERR:
@@ -5520,6 +5531,10 @@ int main(int argc, char *argv[])
 
 			switch (reason.rc) {
 			case RC_SUCCESS:
+			case RC_OK_SYSGATE:
+			case RC_OK_COMPUTE:
+			case RC_DRIVER_BASE ... RC_DRIVER_LAST:
+				break;
 			case RC_CMD_SYNTAX:
 			case RC_PERM_ERR:
 				break;

@@ -674,20 +674,21 @@
 			"\t-h\tPrint out this message\n"		\
 			"\t-v\tPrint the version number\n"		\
 			"\nExit status:\n"				\
-			"\t0\tSUCCESS\t\tSuccessful execution\n"	\
-			"\t1\tCMD_SYNTAX\tCommand syntax error\n"	\
-			"\t2\tSHM_FILE\tShared memory file error\n"	\
-			"\t3\tSHM_MMAP\tShared memory mapping error\n"	\
-			"\t4\tPERM_ERR\tExecution not permitted\n"	\
-			"\t5\tMEM_ERR\t\tMemory operation error\n"	\
-			"\t6\tEXEC_ERR\tGeneral execution error\n"	\
-			"\t15\tSYS_CALL\tSystem call error\n"		\
+			"\t%u\tSUCCESS\t\tSuccessful execution\n"	\
+			"\t%u\tCMD_SYNTAX\tCommand syntax error\n"	\
+			"\t%u\tSHM_FILE\tShared memory file error\n"	\
+			"\t%u\tSHM_MMAP\tShared memory mapping error\n"	\
+			"\t%u\tPERM_ERR\tExecution not permitted\n"	\
+			"\t%u\tMEM_ERR\t\tMemory operation error\n"	\
+			"\t%u\tEXEC_ERR\tGeneral execution error\n"	\
+			"\t%u\tSYS_CALL\tSystem call error\n"		\
 			"\nReport bugs to labs[at]cyring.fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
 		"Daemon connection error code %d\n%s: '%s' @ line %d\n"
-
 #define RSC_ERROR_SYS_CALL_CODE_EN	"System error code %d\n%s @ line %d\n"
+#define RSC_ERROR_UNIMPLEMENTED_CODE_EN 	"Feature is not implemented"
+#define RSC_ERROR_EXPERIMENTAL_CODE_EN		"Experimental mode is required"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN " CPU-Idle Limit "
 

@@ -6071,46 +6071,82 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
     {
 	struct tm *brokTime, localTime;
 	time_t execTime;
-	size_t len;
+	size_t hdrLen, sysLen;
 
 	execTime = Shm->StartedAt + pCtrl->tds;
 	brokTime = localtime_r(&execTime, &localTime);
-	sysMsg = strerror_r(pCtrl->ret, inStr, POPUP_ALLOC);
 
 	switch ( GET_LOCALE() ) {
 	case LOC_FR:	/* Convert the local time in ASCII		*/
-		len = strftime(inStr, POPUP_ALLOC, "%c", brokTime);
+		hdrLen = strftime(inStr, POPUP_ALLOC, "%c", brokTime);
 		ISO_8859_To_ASCII((ASCII *) inStr, (ASCII *) outStr);
-		/* Convert the System message and reassign to pointer	*/
-		ISO_8859_To_ASCII((ASCII *) sysMsg, (ASCII *) inStr);
-		sysMsg = inStr;
 		break;
 	case LOC_EN:	/* Keep the dafault language. No conversion.	*/
 	default:
-		len = strftime(outStr, POPUP_ALLOC, "%c", brokTime);
+		hdrLen = strftime(outStr, POPUP_ALLOC, "%c", brokTime);
 		break;
 	}
 
-	memset(item, 0x20, POPUP_WIDTH);
-	if ((len > 0) && (len < POPUP_WIDTH)) {
-		memcpy(&item[POPUP_WIDTH - len], outStr, len);
+	if (pCtrl->drc < RC_DRIVER_BASE)
+	{
+		sysMsg = strerror_r(pCtrl->drc, inStr, POPUP_ALLOC);
+		switch ( GET_LOCALE() ) {
+		case LOC_FR:	/* Convert the System message to locale */
+			ISO_8859_To_ASCII((ASCII *) sysMsg, (ASCII *) inStr);
+			sysMsg = inStr;
+			break;
+		case LOC_EN:
+		default:	/*	No conversion required.		*/
+			break;
+		}
+		sysLen = sysMsg != NULL ? strlen(sysMsg) : 0;
+	} else {
+	    struct {
+		enum REASON_CLASS rc;
+		ASCII		*code;
+		size_t		len;
+	    } drvReason[] = {
+		{
+		RC_UNIMPLEMENTED,
+		RSC(ERROR_UNIMPLEMENTED).CODE() , RSZ(ERROR_UNIMPLEMENTED)
+		},
+		{
+		RC_EXPERIMENTAL,
+		RSC(ERROR_EXPERIMENTAL).CODE()	, RSZ(ERROR_EXPERIMENTAL)
+		}
+	    };
+		const size_t count = sizeof(drvReason) / sizeof(drvReason[0]);
+		size_t idx;
+		for (idx = 0; idx < count; idx++) {
+			if (drvReason[idx].rc == pCtrl->drc) {
+				break;
+			}
+		}
+		if (idx < count) {
+			sysMsg = (char *) drvReason[idx].code;
+			sysLen = drvReason[idx].len;
+		} else {
+			sysMsg = NULL;
+			sysLen = 0;
+		}
 	}
-	len = sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
-	if (len < POPUP_WIDTH) {
-		memcpy(item, outStr, len);
+	memset(item, 0x20, POPUP_WIDTH);
+	if ((hdrLen > 0) && (hdrLen < POPUP_WIDTH)) {
+		memcpy(&item[POPUP_WIDTH - hdrLen], outStr, hdrLen);
+	}
+	hdrLen = sprintf(outStr, "[%x:%lx]", pCtrl->cmd, pCtrl->arg);
+	if (hdrLen < POPUP_WIDTH) {
+		memcpy(item, outStr, hdrLen);
 	}
 	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
 
 	memset(item, 0x20, POPUP_WIDTH);
 	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
 
-	if (sysMsg != NULL) {
-		len = strlen(sysMsg);
-	    if (len < POPUP_WIDTH) {
-		memcpy(&item[(POPUP_WIDTH / 2) - (len / 2)], sysMsg, len);
-	    } else {
+	if ((sysLen > 0) && (sysLen < POPUP_WIDTH)) {
+		memcpy(&item[(POPUP_WIDTH / 2) - (sysLen / 2)], sysMsg,sysLen);
+	} else {
 		memcpy(item, sysMsg, POPUP_WIDTH);
-	    }
 	}
 	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
 
@@ -12688,13 +12724,25 @@ REASON_CODE Help(REASON_CODE reason, ...)
 	va_start(ap, reason);
 	switch (reason.rc) {
 	case RC_SUCCESS:
+	case RC_OK_SYSGATE:
+	case RC_OK_COMPUTE:
+	case RC_DRIVER_BASE ... RC_DRIVER_LAST:
+		break;
 	case RC_PERM_ERR:
 	case RC_MEM_ERR:
 	case RC_EXEC_ERR:
 		break;
 	case RC_CMD_SYNTAX: {
 		char *appName = va_arg(ap, char *);
-		printf((char *) RSC(ERROR_CMD_SYNTAX).CODE(), appName);
+		printf((char *) RSC(ERROR_CMD_SYNTAX).CODE(), appName,
+				RC_SUCCESS,
+				RC_CMD_SYNTAX,
+				RC_SHM_FILE,
+				RC_SHM_MMAP,
+				RC_PERM_ERR,
+				RC_MEM_ERR,
+				RC_EXEC_ERR,
+				RC_SYS_CALL);
 		}
 		break;
 	case RC_SHM_FILE:

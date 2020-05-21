@@ -582,21 +582,10 @@ typedef struct
 		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
 
 /* Error Reasons management.						*/
-enum REASON_CLASS {
-	RC_SUCCESS	= 0,
-	RC_CMD_SYNTAX	= 1,
-	RC_SHM_FILE	= 2,
-	RC_SHM_MMAP	= 3,
-	RC_PERM_ERR	= 4,
-	RC_MEM_ERR	= 5,
-	RC_EXEC_ERR	= 6,
-	RC_SYS_CALL	= 15
-};
-
 typedef struct {
 	__typeof__ (errno)	no: 32;
-	__typeof__ (__LINE__)	ln: 28;
-	enum REASON_CLASS	rc: 4;
+	__typeof__ (__LINE__)	ln: 26;
+	enum REASON_CLASS	rc: 6;
 } REASON_CODE;
 
 #define REASON_SET_2xARG(_reason, _rc, _no)				\

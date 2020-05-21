@@ -573,7 +573,7 @@ typedef union
 } AMD_0F_DRAM_CONFIG_HIGH;
 
 typedef union
-{	/* HTT UNode ID Register: Func: 0 - Off: 60h			*/
+{	/* HTT Node ID Register: Func: 0 - Off: 60h			*/
 	unsigned int		value;
 	struct {
 		unsigned int

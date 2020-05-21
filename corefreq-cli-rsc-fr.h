@@ -658,20 +658,21 @@
 		"\t-h\tAfficher ce message\n"				\
 		"\t-v\tAfficher le numéro de version\n"			\
 		"\nCode d'exécution:\n"					\
-		"\t0\tSUCCESS\t\tExécution réussie\n"			\
-		"\t1\tCMD_SYNTAX\tErreur de syntaxe de la commande\n"	\
-		"\t2\tSHM_FILE\tErreur du fichier de la mémoire partagée\n"\
-		"\t3\tSHM_MMAP\tErreur de mappage de la mémoire partagée\n"\
-		"\t4\tPERM_ERR\tExécution non autorisée\n"		\
-		"\t5\tMEM_ERR\t\tErreur de fonctionnement de la mémoire\n"\
-		"\t6\tEXEC_ERR\tErreur d'exécution générale\n"		\
-		"\t15\tSYS_CALL\tErreur d’appel système\n"		\
+		"\t%u\tSUCCESS\t\tExécution réussie\n"			\
+		"\t%u\tCMD_SYNTAX\tErreur de syntaxe de la commande\n"	\
+		"\t%u\tSHM_FILE\tErreur du fichier de la mémoire partagée\n"\
+		"\t%u\tSHM_MMAP\tErreur de mappage de la mémoire partagée\n"\
+		"\t%u\tPERM_ERR\tExécution non autorisée\n"		\
+		"\t%u\tMEM_ERR\t\tErreur de fonctionnement de la mémoire\n"\
+		"\t%u\tEXEC_ERR\tErreur d'exécution générale\n"		\
+		"\t%u\tSYS_CALL\tErreur d'appel système\n"		\
 		"\nSignaler toutes anomalies à labs[at]cyring.fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_FR					\
 	"Erreur code %d de connexion au démon.\n%s: '%s' @ ligne %d\n"
-
 #define RSC_ERROR_SYS_CALL_CODE_FR	"Erreur Système code %d\n%s @ ligne %d\n"
+#define RSC_ERROR_UNIMPLEMENTED_CODE_FR "Fonctionnalite non implementee"
+#define RSC_ERROR_EXPERIMENTAL_CODE_FR	"Le mode experimental est requis"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR " Limite CPU-Idle "
 

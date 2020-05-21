@@ -1250,6 +1250,26 @@ enum {
 	GetNext(GetHead(list)) = node;					\
 })
 
+/* Error Reasons management: Kernel errno is interleaved into reason codes. */
+enum REASON_CLASS {
+	RC_SUCCESS	= 0,
+	RC_OK_SYSGATE	= 1,
+	RC_OK_COMPUTE	= 2,
+	RC_CMD_SYNTAX	= 3,
+	RC_SHM_FILE	= 4,
+	RC_SHM_MMAP	= 5,
+	RC_PERM_ERR	= 6,
+	RC_MEM_ERR	= 7,
+	RC_EXEC_ERR	= 8,
+	RC_SYS_CALL	= 9,
+	/* Source: /include/uapi/asm-generic/errno-base.h @ ERANGE + 1	*/
+	RC_DRIVER_BASE	= 35,
+	RC_UNIMPLEMENTED= RC_DRIVER_BASE + 1,
+	RC_EXPERIMENTAL = RC_DRIVER_BASE + 2,
+	RC_DRIVER_LAST	= RC_DRIVER_BASE + 2
+};
+
+/* Definition of Ring structures - The message is 128 bits long.	*/
 typedef struct {
 	unsigned short	lo: 16,
 			hi: 16;
@@ -1275,7 +1295,7 @@ typedef struct {
 	union {
 		unsigned int	sub: 32;
 	    struct {
-		unsigned int	ret:  6-0, /* 64 x errno codes		*/
+		unsigned int	drc:  6-0, /* 64 of errno & reason codes */
 				tds: 32-6; /* Epoch time difference sec */
 	    };
 	};

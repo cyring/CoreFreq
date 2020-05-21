@@ -4444,9 +4444,9 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore);
 
-		return (2);	/* Report a platform change */
+		return (RC_OK_COMPUTE); /* Notify Client to compute ratios */
 	    } else {
-		return (-ENODEV);
+		return (-RC_UNIMPLEMENTED);
 	    }
 	} else {
 		return (-EINVAL);
@@ -4467,7 +4467,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore);
 
-		return (2);
+		return (RC_OK_COMPUTE);
 	    }
 	case CLOCK_MOD_TGT:
 	    {
@@ -4479,10 +4479,10 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 		For_All_AMD_Zen_Clock(&ClockZen, TargetClock_AMD_Zen_PerCore);
 
-		return (2);
+		return (RC_OK_COMPUTE);
 	    }
 	default:
-		return (-ENODEV);
+		return (-RC_UNIMPLEMENTED);
 	}
     } else {
 	return (-EINVAL);
@@ -4831,9 +4831,9 @@ long ClockMod_Core2_PPC(CLOCK_ARG *pClockMod)
 
 			For_All_PPC_Clock(&ClockPPC);
 
-			return (2);	/* Report a platform change */
+			return (RC_OK_COMPUTE);
 		} else {
-			return (-ENODEV);
+			return (-RC_UNIMPLEMENTED);
 		}
 	} else {
 		return (-EINVAL);
@@ -4853,9 +4853,9 @@ long ClockMod_Nehalem_PPC(CLOCK_ARG *pClockMod)
 
 			For_All_PPC_Clock(&ClockPPC);
 
-			return (2);
+			return (RC_OK_COMPUTE);
 		} else {
-			return (-ENODEV);
+			return (-RC_UNIMPLEMENTED);
 		}
 	} else {
 		return (-EINVAL);
@@ -4875,9 +4875,9 @@ long ClockMod_SandyBridge_PPC(CLOCK_ARG *pClockMod)
 
 			For_All_PPC_Clock(&ClockPPC);
 
-			return (2);
+			return (RC_OK_COMPUTE);
 		} else {
-			return (-ENODEV);
+			return (-RC_UNIMPLEMENTED);
 		}
 	} else {
 		return (-EINVAL);
@@ -4953,11 +4953,11 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 			case CLOCK_MOD_HWP_TGT:
 				For_All_HWP_Clock(pClockMod);
 
-				return (2);
+				return (RC_OK_COMPUTE);
 			case CLOCK_MOD_TGT:
 				return (ClockMod_SandyBridge_PPC(pClockMod));
 			default:
-				return (-ENODEV);
+				return (-RC_UNIMPLEMENTED);
 			}
 		} else {
 			return (-EINVAL);
@@ -6370,9 +6370,9 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	if (Proc->Registration.Experimental)
+	if (Proc->Registration.Experimental) {
 		Intel_Microcode(Core);
-
+	}
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -8755,14 +8755,16 @@ static void Stop_Haswell_ULT(void *arg)
 
 static void Start_Uncore_Haswell_ULT(void *arg)
 {
-    if (Proc->Registration.Experimental)
+    if (Proc->Registration.Experimental) {
 	Uncore_Counters_Set(SNB);
+    }
 }
 
 static void Stop_Uncore_Haswell_ULT(void *arg)
 {
-    if (Proc->Registration.Experimental)
+    if (Proc->Registration.Experimental) {
 	Uncore_Counters_Clear(SNB);
+    }
 }
 
 
@@ -9925,7 +9927,7 @@ static void Stop_AMD_Family_17h(void *arg)
 
 long Sys_OS_Driver_Query(SYSGATE *SysGate)
 {
-	int rc = 0;
+	int rc = RC_SUCCESS;
     if (SysGate != NULL) {
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
@@ -9987,7 +9989,7 @@ long Sys_OS_Driver_Query(SYSGATE *SysGate)
 	}
 #endif /* CONFIG_CPU_FREQ */
     } else {
-	rc = -1;
+	rc = -EINVAL;
     }
 	return (rc);
 }
@@ -10002,10 +10004,10 @@ long Sys_Kernel(SYSGATE *SysGate)
 		memcpy(SysGate->version, utsname()->version, MAX_UTS_LEN);
 		memcpy(SysGate->machine, utsname()->machine, MAX_UTS_LEN);
 
-		return (0);
+		return (RC_SUCCESS);
 	}
 	else
-		return (-1);
+		return (-EINVAL);
 }
 
 long SysGate_OnDemand(void)
@@ -10854,7 +10856,7 @@ static long CoreFreqK_Thermal_Scope(int scope)
     {
 	Proc->thermalFormula=(KIND_OF_FORMULA(Proc->thermalFormula)<<8)|scope;
 
-	return (0);
+	return (RC_SUCCESS);
     } else {
 	return (-EINVAL);
     }
@@ -10866,7 +10868,7 @@ static long CoreFreqK_Voltage_Scope(int scope)
     {
 	Proc->voltageFormula=(KIND_OF_FORMULA(Proc->voltageFormula)<<8)|scope;
 
-	return (0);
+	return (RC_SUCCESS);
     } else {
 	return (-EINVAL);
     }
@@ -10878,7 +10880,7 @@ static long CoreFreqK_Power_Scope(int scope)
     {
 	Proc->powerFormula = (KIND_OF_FORMULA(Proc->powerFormula) << 8)|scope;
 
-	return (0);
+	return (RC_SUCCESS);
     } else {
 	return (-EINVAL);
     }
@@ -10932,7 +10934,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
     {
     case COREFREQ_IOCTL_SYSUPDT:
 	rc = Sys_OS_Driver_Query(Proc->OS.Gate);
-	rc = rc == 0 ? 1 : rc;
+	rc = rc == RC_SUCCESS ? RC_OK_SYSGATE : rc;
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
@@ -10951,14 +10953,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	case COREFREQ_TOGGLE_OFF:
 		Controller_Stop(1);
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	case COREFREQ_TOGGLE_ON:
 		Controller_Start(1);
 	#ifdef CONFIG_CPU_FREQ
 		Policy_Aggregate_Turbo();
 	#endif /* CONFIG_CPU_FREQ */
-		rc = 2;
+		rc = RC_OK_COMPUTE;
 		break;
 	}
 	break;
@@ -10968,7 +10970,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	SleepInterval = prm.dl.lo;
 	Compute_Interval();
 	Controller_Start(1);
-	rc = 0;
+	rc = RC_SUCCESS;
 	break;
 
       case MACHINE_AUTOCLOCK:
@@ -10980,14 +10982,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		BITCLR(LOCKLESS, AutoClock, 1);
 		Proc->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		BITSET(LOCKLESS, AutoClock, 1);
 		Proc->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	}
 	break;
@@ -11002,8 +11004,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    if( Proc->Registration.Experimental && !Proc->Registration.PCI )
 	    {
 		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+		rc = RC_OK_COMPUTE;
+	    } else {
+		rc = RC_EXPERIMENTAL;
 	    }
-		rc = 2;
 		break;
 	}
 	break;
@@ -11015,13 +11019,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		CoreFreqK_UnRegister_NMI();
 		Controller_Start(1);
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	    case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		CoreFreqK_Register_NMI();
 		Controller_Start(1);
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	}
 	break;
@@ -11064,7 +11068,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			SpeedStep_Enable = prm.dl.lo;
 			Controller_Start(1);
 			SpeedStep_Enable = -1;
-			rc = 0;
+			rc = RC_SUCCESS;
 			break;
 		}
 		break;
@@ -11077,7 +11081,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			C1E_Enable = prm.dl.lo;
 			Controller_Start(1);
 			C1E_Enable = -1;
-			rc = 0;
+			rc = RC_SUCCESS;
 			break;
 		}
 		break;
@@ -11093,7 +11097,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			#ifdef CONFIG_CPU_FREQ
 				Policy_Aggregate_Turbo();
 			#endif /* CONFIG_CPU_FREQ */
-				rc = 2;
+				rc = RC_OK_COMPUTE;
 				break;
 		}
 		break;
@@ -11106,7 +11110,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				C1A_Enable = prm.dl.lo;
 				Controller_Start(1);
 				C1A_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11119,7 +11123,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				C3A_Enable = prm.dl.lo;
 				Controller_Start(1);
 				C3A_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11132,7 +11136,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				C1U_Enable = prm.dl.lo;
 				Controller_Start(1);
 				C1U_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11145,7 +11149,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				C3U_Enable = prm.dl.lo;
 				Controller_Start(1);
 				C3U_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11158,7 +11162,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				CC6_Enable = prm.dl.lo;
 				Controller_Start(1);
 				CC6_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11171,7 +11175,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				PC6_Enable = prm.dl.lo;
 				Controller_Start(1);
 				PC6_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11181,7 +11185,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		PkgCStateLimit = prm.dl.lo;
 		Controller_Start(1);
 		PkgCStateLimit = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_IO_MWAIT:
@@ -11192,7 +11196,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				IOMWAIT_Enable = prm.dl.lo;
 				Controller_Start(1);
 				IOMWAIT_Enable = -1;
-				rc = 0;
+				rc = RC_SUCCESS;
 				break;
 		}
 		break;
@@ -11202,7 +11206,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		CStateIORedir = prm.dl.lo;
 		Controller_Start(1);
 		CStateIORedir = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_ODCM:
@@ -11210,7 +11214,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		ODCM_Enable = prm.dl.lo;
 		Controller_Start(1);
 		ODCM_Enable = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_ODCM_DUTYCYCLE:
@@ -11218,7 +11222,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		ODCM_DutyCycle = prm.dl.lo;
 		Controller_Start(1);
 		ODCM_DutyCycle = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_POWER_POLICY:
@@ -11226,7 +11230,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		PowerPolicy = prm.dl.lo;
 		Controller_Start(1);
 		PowerPolicy = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_HWP:
@@ -11235,7 +11239,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Intel_Hardware_Performance();
 		Controller_Start(1);
 		HWP_Enable = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 
 	case TECHNOLOGY_HWP_EPP:
@@ -11243,7 +11247,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		HWP_EPP = prm.dl.lo;
 		Controller_Start(1);
 		HWP_EPP = -1;
-		rc = 0;
+		rc = RC_SUCCESS;
 		break;
 	}
 	break;
@@ -11337,7 +11341,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			Clear_Events = arg;
 			Controller_Start(1);
 			Clear_Events = 0;
-			rc = 2;
+			rc = RC_OK_COMPUTE;
 			break;
 	}
 	break;
