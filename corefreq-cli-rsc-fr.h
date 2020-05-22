@@ -673,6 +673,8 @@
 #define RSC_ERROR_SYS_CALL_CODE_FR	"Erreur Système code %d\n%s @ ligne %d\n"
 #define RSC_ERROR_UNIMPLEMENTED_CODE_FR "Fonctionnalite non implementee"
 #define RSC_ERROR_EXPERIMENTAL_CODE_FR	"Le mode experimental est requis"
+#define RSC_ERROR_TURBO_PREREQ_CODE_FR	"Prerequis Turbo non valides"
+#define RSC_ERROR_UNCORE_PREREQ_CODE_FR "Prerequis Uncore non valides"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR " Limite CPU-Idle "
 

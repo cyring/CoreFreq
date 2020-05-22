@@ -6113,6 +6113,14 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		{
 		RC_EXPERIMENTAL,
 		RSC(ERROR_EXPERIMENTAL).CODE()	, RSZ(ERROR_EXPERIMENTAL)
+		},
+		{
+		RC_TURBO_PREREQ,
+		RSC(ERROR_TURBO_PREREQ).CODE()	, RSZ(ERROR_TURBO_PREREQ)
+		},
+		{
+		RC_UNCORE_PREREQ,
+		RSC(ERROR_UNCORE_PREREQ).CODE()	, RSZ(ERROR_UNCORE_PREREQ)
 		}
 	    };
 		const size_t count = sizeof(drvReason) / sizeof(drvReason[0]);
