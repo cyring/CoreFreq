@@ -3425,6 +3425,29 @@ void Instructions(void)
   }
 }
 
+void Topology_SMT(char *out, unsigned int cpu)
+{
+	snprintf(out, 11+11+1, "%6d %6d",
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+}
+
+void Topology_CMP(char *out, unsigned int cpu)
+{
+	snprintf(out, 3+11+11+1, "%3d%4d%6d",
+			Shm->Cpu[cpu].Topology.Cluster.CMP,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+}
+
+void Topology_CCX(char *out, unsigned int cpu)
+{
+	snprintf(out, 3+11+11+1, "%3d%4d%6d",
+			Shm->Cpu[cpu].Topology.Cluster.CCX,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+}
+
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[3] = {
@@ -3432,20 +3455,46 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		RSC(TOPOLOGY_COND1).ATTR(),
 		RSC(TOPOLOGY_COND2).ATTR()
 	};
+	char	*ID_STR = malloc(3+11+11+1),
+		*ID_OFF[] = { "     -      -", "  -   -     -" },
+		*pID_OFF = ID_OFF[0];
 	unsigned int cpu = 0, level = 0;
 	CUINT nl = win->matrix.size.wth;
-
+  if (ID_STR != NULL)
+  {
+	void (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
+/* Row Mark */
 	PRT(MAP, attrib[2], "CPU Pkg  Apic");
 	PRT(MAP, attrib[2], "  Core Thread");
 	PRT(MAP, attrib[2], "  Caches     ");
 	PRT(MAP, attrib[2], " (w)rite-Back");
 	PRT(MAP, attrib[2], " (i)nclusive ");
 	PRT(MAP, attrib[2], "             ");
+/* Row Mark */
 	PRT(MAP, attrib[2], " #   ID   ID ");
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
+      switch (Shm->Proc.ArchID) {
+      case AMD_Family_11h:
+      case AMD_Family_12h:
+      case AMD_Family_14h:
+      case AMD_Family_15h:
+      case AMD_Family_16h:
+	TopologyFunc = Topology_CMP;
+	pID_OFF = ID_OFF[1];
+	PRT(MAP, attrib[2], " CMP ID    ID");
+	break;
+      case AMD_Family_17h:
+      case AMD_Family_18h:
+	TopologyFunc = Topology_CCX;
+	pID_OFF = ID_OFF[1];
 	PRT(MAP, attrib[2], " CCX ID    ID");
+	break;
+      default:
+	PRT(MAP, attrib[2], "   ID     ID ");
+	break;
+      }
     } else {
 	PRT(MAP, attrib[2], "   ID     ID ");
     }
@@ -3453,32 +3502,23 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], " L1-Data Way ");
 	PRT(MAP, attrib[2], "     L2  Way ");
 	PRT(MAP, attrib[2], "     L3  Way ");
-
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-      if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-	if (Shm->Cpu[cpu].Topology.MP.BSP) {
+/* Row Mark */
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	  if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
+	    if (Shm->Cpu[cpu].Topology.MP.BSP) {
 		PRT(MAP, attrib[0], "%03u:BSP%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.ApicID);
-	} else {
+	    } else {
 		PRT(MAP, attrib[0], "%03u:%3d%6d",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.ApicID);
-	}
-	if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-	{
-		PRT(MAP, attrib[0], "%3d%4d%6d",
-			Shm->Cpu[cpu].Topology.Cluster.CCX,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
-	} else {
-		PRT(MAP, attrib[0], "%6d %6d",
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
-	}
-	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+	    }
+		TopologyFunc(ID_STR, cpu);
+		PRT(MAP, attrib[0], ID_STR);
+
+	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
 		PRT(MAP, attrib[0], "%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
@@ -3486,22 +3526,18 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 				'w' : 0x20,
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 				'i' : 0x20);
-	}
-      } else {
+	    }
+	  } else {
 		PRT(MAP, attrib[1], "%03u:  -     -", cpu);
+		PRT(MAP, attrib[1], pID_OFF);
 
-	if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-	{
-		PRT(MAP, attrib[1], "  -   -     -");
-	} else {
-		PRT(MAP, attrib[1], "     -      -");
-	}
-	for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
 		PRT(MAP, attrib[1], "       -  -  ");
+	    }
+	  }
 	}
-      }
-    }
+	free(ID_STR);
+  }
 }
 
 void iSplit(unsigned int sInt, char hInt[]) {

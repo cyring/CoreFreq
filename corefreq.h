@@ -369,6 +369,7 @@ typedef struct
 		unsigned int		TDP, Min, Max;
 	} Power;
 
+	signed int			ArchID;
 	enum HYPERVISOR 		HypervisorID;
 	char				Brand[64],
 					Architecture[CODENAME_LEN];

@@ -1204,7 +1204,8 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Proc.CPU.Count	= Proc->CPU.Count;
 	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
 	Shm->Proc.Service.Proc	= Proc->Service.Proc;
-	/* Hypervisor identifier.					*/
+	/* Architecture and Hypervisor identifiers.			*/
+	Shm->Proc.ArchID = Proc->ArchID;
 	Shm->Proc.HypervisorID = Proc->HypervisorID;
 	/* Copy the Architecture name.					*/
 	StrCopy(Shm->Proc.Architecture, Proc->Architecture, CODENAME_LEN);
@@ -4480,7 +4481,7 @@ int ServerFollowService(SERVICE_PROC *pSlave,
 		if (pSlave->Thread != -1) {
 			CPU_SET(pSlave->Thread, &cpuset);
 		}
-		return (pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
+		return(pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset));
 	}
 	return (-1);
 }
@@ -4908,15 +4909,15 @@ REASON_CODE Core_Manager(REF *Ref)
 
 		if (!Arg[cpu].TID)
 		{	/* Add this cpu.				*/
+			PerCore_Update(Shm, Proc, Core, cpu);
+			Technology_Update(Shm, Proc);
+
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
 			pthread_create( &Arg[cpu].TID,
 					NULL,
 					Core_Cycle,
 					&Arg[cpu]);
-
-			PerCore_Update(Shm, Proc, Core, cpu);
-			Technology_Update(Shm, Proc);
 
 		    if (ServerFollowService(&localService,
 						&Shm->Proc.Service,
