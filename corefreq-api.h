@@ -464,9 +464,10 @@ typedef struct
 	/*  214h */		SNB_IMC_TC_RFTP 	RFTP;	/* 32 bits    */
 			} SNB_EP;
 			struct {
-	/* 4C04h */		HSW_DDR_TIMING		Timing;	/* 32 bits    */
-	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A;	/* 32 bits    */
-	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B;	/* 32 bits    */
+	/* 4C00h */		HSW_DDR_TIMING_4C00	REG4C00; /*32 bits    */
+	/* 4C04h */		HSW_DDR_TIMING		Timing; /* 32 bits    */
+	/* 4C08h */		HSW_DDR_RANK_TIMING_A	Rank_A; /* 32 bits    */
+	/* 4C0Ch */		HSW_DDR_RANK_TIMING_B	Rank_B; /* 32 bits    */
 	/* 4C14h */		HSW_DDR_RANK_TIMING	Rank;	/* 32 bits    */
 	/* 4E98h */		HSW_TC_REFRESH_TIMING	Refresh; /*32 bits    */
 			} HSW;

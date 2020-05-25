@@ -3251,22 +3251,10 @@ void Query_HSW_IMC(void __iomem *mchmap)
 
 	for (cha = 0; cha < Proc->Uncore.MC[0].ChannelCount; cha++)
 	{
-/*TODO( Unsolved: What is the channel #1 'X' factor of Haswell registers ? )
-		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
-					readl(mchmap + 0x4c04 + X * cha);
+/*TODO( Unsolved: What is the channel #1 'X' factor of Haswell registers ? )*/
+		Proc->Uncore.MC[0].Channel[cha].HSW.REG4C00.value =
+					readl(mchmap + 0x4c00);
 
-		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_A.value =
-					readl(mchmap + 0x4c08 + X * cha);
-
-		Proc->Uncore.MC[0].Channel[cha].HSW.Rank_B.value =
-					readl(mchmap + 0x4c0c + X * cha);
-
-		Proc->Uncore.MC[0].Channel[cha].HSW.Rank.value =
-					readl(mchmap + 0x4c14 + X * cha);
-
-		Proc->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
-					readl(mchmap + 0x4e98 + X * cha);
-*/
 		Proc->Uncore.MC[0].Channel[cha].HSW.Timing.value =
 					readl(mchmap + 0x4c04);
 

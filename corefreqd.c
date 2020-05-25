@@ -3019,18 +3019,21 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL._.tFAW;
+*/
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
-			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRP;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRP;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRRD;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRRD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRCD;
+			Proc->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRCD;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
-			Proc->Uncore.MC[mc].Channel[cha].HSW._.tRAS;
-*/
+			Proc->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRAS;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
 

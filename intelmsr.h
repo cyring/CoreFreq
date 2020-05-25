@@ -2272,6 +2272,19 @@ typedef union
 } IVB_CAPID;	/* §2.5.39 CAPID0_B Capabilities B Register		*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4C00h		*/
+	unsigned int		value;
+	struct { /*TODO(No specification found: guessed timings position)*/
+		unsigned int
+		tRCD		:  5-0,
+		tRP		: 10-5,
+		tRAS		: 16-10,
+		tRRD		: 20-16,
+		UnknownBits	: 32-20;
+	};
+} HSW_DDR_TIMING_4C00;
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 4C04h		*/
 	unsigned int		value;
 	struct {
