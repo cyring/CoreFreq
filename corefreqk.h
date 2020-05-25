@@ -3320,7 +3320,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7262"),
+	.Brand = ZLIST( "AMD EPYC 7262",	\
+			"AMD EPYC 7F32" 	),
 	.Boost = {+2, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -3342,7 +3343,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7282"),
+	.Brand = ZLIST( "AMD EPYC 7282",	\
+			"AMD EPYC 7F52" 	),
 	.Boost = {+4, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -3390,7 +3392,8 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD EPYC 7542"),
+	.Brand = ZLIST( "AMD EPYC 7542",	\
+			"AMD EPYC 7F72" 	),
 	.Boost = {+5, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_ROME,
@@ -3604,6 +3607,17 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 /*	[Zen2/Matisse]		8F_71h Stepping 0			*/
 	{
+	.Brand = ZLIST("AMD Ryzen 3 3100"),
+	.Boost = {+3, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 3600"),
 	.Boost = {+6, 0},
 	.Param.Offset = { 0, 0},
@@ -3638,7 +3652,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST(	"AMD Ryzen 5 3500X",	\
+	.Brand = ZLIST( "AMD Ryzen 3 3300X",	\
+			"AMD Ryzen 5 3500X",	\
 			"AMD Ryzen 7 3800X"	),
 	.Boost = {+5, +1},
 	.Param.Offset = { 0, 0},
