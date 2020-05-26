@@ -7293,6 +7293,7 @@ void AMD_Core_Counters_Clear(CORE *Core)
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
 ({									\
+    if (Proc->Registration.Experimental) {				\
 	RDTSCP_COUNTERx7(Proc->Counter[T].PTSC,				\
 			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
 			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
@@ -7301,6 +7302,19 @@ void AMD_Core_Counters_Clear(CORE *Core)
 			MSR_PKG_C8_RESIDENCY, Proc->Counter[T].PC08,	\
 			MSR_PKG_C9_RESIDENCY, Proc->Counter[T].PC09,	\
 			MSR_PKG_C10_RESIDENCY,Proc->Counter[T].PC10);	\
+									\
+	RDCOUNTER	(Proc->Counter[T].Uncore.FC0,			\
+			MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0 );		\
+    } else {								\
+	RDTSCP_COUNTERx7(Proc->Counter[T].PTSC,				\
+			MSR_PKG_C2_RESIDENCY, Proc->Counter[T].PC02,	\
+			MSR_PKG_C3_RESIDENCY, Proc->Counter[T].PC03,	\
+			MSR_PKG_C6_RESIDENCY, Proc->Counter[T].PC06,	\
+			MSR_PKG_C7_RESIDENCY, Proc->Counter[T].PC07,	\
+			MSR_PKG_C8_RESIDENCY, Proc->Counter[T].PC08,	\
+			MSR_PKG_C9_RESIDENCY, Proc->Counter[T].PC09,	\
+			MSR_PKG_C10_RESIDENCY,Proc->Counter[T].PC10);	\
+    }									\
 })
 
 #define PKG_Counters_Skylake(Core, T)					\
