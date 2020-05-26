@@ -11360,9 +11360,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			rc = -EBUSY;
 		} else {
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
-			rc = remove_cpu(cpu);
+			if ((rc = remove_cpu(cpu)) == 0) {
+				rc = RC_OK_COMPUTE;
+			}
 	#else
-			rc = cpu_down(cpu);
+			if ((rc = cpu_down(cpu)) == 0) {
+				rc = RC_OK_COMPUTE;
+			}
 	#endif
 		}
 	    }
@@ -11382,9 +11386,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
 			rc = -EBUSY;
 		} else {
 	#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
-			rc = add_cpu(cpu);
+			if ((rc = add_cpu(cpu)) == 0) {
+				rc = RC_OK_COMPUTE;
+			}
 	#else
-			rc = cpu_up(cpu);
+			if ((rc = cpu_up(cpu)) == 0) {
+				rc = RC_OK_COMPUTE;
+			}
 	#endif
 		}
 	    }
