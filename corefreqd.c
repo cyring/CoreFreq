@@ -3930,6 +3930,7 @@ unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
 	case 0x6:
 		return (8);
 	case 0x8:
+	case 0x9:
 		return (16);
 	case 0xa:
 		return (32);
@@ -3990,7 +3991,8 @@ void Topology(SHM_STRUCT *Shm, PROC *Proc, CORE **Core, unsigned int cpu)
 	    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		Shm->Cpu[cpu].Topology.Cache[level].Way=(loop == 2)||(loop == 3)?
+		Shm->Cpu[cpu].Topology.Cache[level].Way=\
+			(loop == 2) || (loop == 3) ?
 			AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
 			: Core[cpu]->T.Cache[loop].Way;
 
