@@ -1094,7 +1094,8 @@ void EraseWindowWithBorder(Window *win)
 	for (row = 0; row < win->matrix.size.hth + 2; row++) {
 		Coordinate origin = {
 			.col = win->matrix.origin.col - 1,
-			.row = (win->matrix.origin.row - 1) + row
+			.row = (win->matrix.origin.row
+				- !(win->flag & WINFLAG_NO_BORDER)) + row
 		};
 		size_t len = win->lazyComp.rowLen + 1;
 
