@@ -37,6 +37,7 @@ static Bit256 roomCore	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomSched __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
+static Bit64 PendingSync __attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
 
 UBENCH_DECLARE()
@@ -3020,7 +3021,10 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC *Proc)
 			Proc->Uncore.MC[mc].Channel[cha].HSW._.tWR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].SKL._.tFAW;
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+			Proc->Uncore.MC[mc].Channel[cha].HSW._.B2B;
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP   =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.REG4C00.tRP;
@@ -4318,7 +4322,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 		/* Stop SysGate 					*/
 		BITCLR(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 		/* Notify						*/
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 	}
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
@@ -4331,7 +4335,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 			/* Start SysGate				*/
 			BITSET(LOCKLESS, Ref->Shm->SysGate.Operation, 0);
 			/* Notify					*/
-			BITWISESET(LOCKLESS,Ref->Shm->Proc.Sync,BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, PendingSync,BIT_MASK_NTFY);
 		}
 	    }
 	}
@@ -4383,15 +4387,11 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
 	case RC_OK_SYSGATE:
 		SysGate_OS_Driver(Ref);
 	/* Fallthrough */
-	case RC_SUCCESS: /* Platform changed pending notification.	*/
-		UpdateFeatures(Ref);
-
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
+	case RC_SUCCESS: /* Platform changed -> pending notification.	*/
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		break;
-	case RC_OK_COMPUTE: /* Compute claimed pending notification.	*/
-		UpdateFeatures(Ref);
-
-		BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_COMP);
+	case RC_OK_COMPUTE: /* Compute claimed -> pending notification.	*/
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP);
 		break;
 	}
     }
@@ -4893,7 +4893,7 @@ REASON_CODE Core_Manager(REF *Ref)
 			Arg[cpu].TID = 0;
 
 			PerCore_Update(Shm, Proc, Core, cpu);
-			Technology_Update(Shm, Proc);
+/* TODO(CleanUp)	Technology_Update(Shm, Proc);	*/
 
 		    if (ServerFollowService(	&localService,
 						&Shm->Proc.Service,
@@ -4903,7 +4903,7 @@ REASON_CODE Core_Manager(REF *Ref)
 				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
 		    }
 			/* Raise these bits up to notify a platform change. */
-			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		}
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 	    } else {
@@ -4913,7 +4913,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		if (!Arg[cpu].TID)
 		{	/* Add this cpu.				*/
 			PerCore_Update(Shm, Proc, Core, cpu);
-			Technology_Update(Shm, Proc);
+/* TODO(CleanUp)	Technology_Update(Shm, Proc);	*/
 
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;
@@ -4935,7 +4935,7 @@ REASON_CODE Core_Manager(REF *Ref)
 						Core[cpu]->Clock) );
 		    }
 			/* Notify a CPU has been brought up		*/
-			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
+			BITWISESET(LOCKLESS, PendingSync, BIT_MASK_NTFY);
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
@@ -5049,17 +5049,25 @@ REASON_CODE Core_Manager(REF *Ref)
 			SysGate_Update(Ref);
 		    }
 		}
-		/* Sync with the asynchronous notifications.		*/
-		if (BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY))
-		{
+		/* OS notifications: Resumed from Suspend.		*/
+	      if (BITCLR(BUS_LOCK, Proc->OS.Signal, NTFY))
+	      {
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY);
+	      }
+	    }
+	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
+	    {
 			UpdateFeatures(Ref);
-
-			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_COMP);
-			BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_NTFY);
-		}
+		    if (Quiet & 0x001) {
+			printf("\t%s || %s\n",
+				BITVAL(PendingSync, NTFY0)?"NTFY":"....",
+				BITVAL(PendingSync, COMP0)?"COMP":"....");
+		    }
 	    }
 		/* All aggregations done: Notify Clients.		*/
-		BITWISESET(LOCKLESS, Shm->Proc.Sync, BIT_MASK_SYNC);
+		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_SYNC);
+		BITWISESET(LOCKLESS, Shm->Proc.Sync, PendingSync);
+		BITWISECLR(LOCKLESS, PendingSync);
 	}
 	/* Reset the Room mask						*/
 	BITSTOR_CC(BUS_LOCK, roomCore, roomSeed);
