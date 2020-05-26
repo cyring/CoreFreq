@@ -3487,6 +3487,14 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	break;
       case AMD_Family_17h:
       case AMD_Family_18h:
+      case AMD_Zen:
+      case AMD_Zen_APU:
+      case AMD_ZenPlus:
+      case AMD_ZenPlus_APU:
+      case AMD_EPYC_Rome:
+      case AMD_Zen2_CPK:
+      case AMD_Zen2_APU:
+      case AMD_Zen2_MTS:
 	TopologyFunc = Topology_CCX;
 	pID_OFF = ID_OFF[1];
 	PRT(MAP, attrib[2], " CCX ID    ID");
