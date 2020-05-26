@@ -11111,12 +11111,16 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		Proc->Registration.Experimental = prm.dl.lo;
 		Controller_Start(1);
-	    if( Proc->Registration.Experimental && !Proc->Registration.PCI )
+	    if (Proc->Registration.Experimental)
 	    {
-		Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
-		rc = RC_OK_COMPUTE;
+		if ( !Proc->Registration.PCI ) {
+			Proc->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+			rc = RC_OK_COMPUTE;
+		} else {
+			rc = RC_SUCCESS;
+		}
 	    } else {
-		rc = RC_EXPERIMENTAL;
+		rc = RC_SUCCESS;
 	    }
 		break;
 	}
