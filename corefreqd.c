@@ -1196,6 +1196,7 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
 
 	/* Copy all initial CPUID features.				*/
+/*TODO:	Proc->Features.ExtInfo.EDX._3DNow=1;	TODO( Hardening )	*/
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
 	/* Copy the fomula identifiers					*/
 	Shm->Proc.thermalFormula = Proc->thermalFormula;

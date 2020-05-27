@@ -11475,24 +11475,31 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	unsigned long reqSize = vma->vm_end - vma->vm_start, secSize = 0;
 
 	if (vma->vm_pgoff == 0) {
-	    if (Proc != NULL) {
-	      secSize = ROUND_TO_PAGES(sizeof(PROC));
-	      if (reqSize != secSize) {
-		return (-EAGAIN);
-	      }
-	      if (remap_pfn_range(vma,
-			vma->vm_start,
+	    if (Proc != NULL)
+	    {
+		int rc = -EIO;
+		secSize = ROUND_TO_PAGES(sizeof(PROC));
+		if (reqSize != secSize) {
+			return (-EAGAIN);
+		}
+		vma->vm_page_prot = PAGE_READONLY;
+		if ((rc = remap_pfn_range(vma,
+					vma->vm_start,
 			virt_to_phys((void *) Proc) >> PAGE_SHIFT,
-			reqSize,
-			vma->vm_page_prot) < 0) {
-				return (-EIO);
-	      }
+					reqSize,
+					vma->vm_page_prot)) != 0)
+		{
+			return (rc);
+		}
 	    } else {
 		return (-EIO);
 	    }
 	} else if (vma->vm_pgoff == 1) {
-	    if (Proc != NULL) {
+	    if (Proc != NULL)
+	    {
+		int rc = -EIO;
 		switch (SysGate_OnDemand()) {
+		default:
 		case -1:
 			return (-EIO);
 		case 1:
@@ -11502,12 +11509,14 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 			if (reqSize != secSize) {
 				return (-EAGAIN);
 			}
-			if (remap_pfn_range(vma,
-				vma->vm_start,
+			vma->vm_page_prot = PAGE_READONLY;
+			if ((rc = remap_pfn_range(vma,
+						vma->vm_start,
 				virt_to_phys((void *)Proc->OS.Gate)>>PAGE_SHIFT,
-				reqSize,
-				vma->vm_page_prot) < 0) {
-					return (-EIO);
+						reqSize,
+						vma->vm_page_prot)) != 0)
+			{
+				return (rc);
 			}
 			break;
 		}
@@ -11519,17 +11528,21 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
 	  if (Proc != NULL) {
 	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-	      if (KPublic->Core[cpu] != NULL) {
+	      if (KPublic->Core[cpu] != NULL)
+	      {
+		int rc = -EIO;
 		secSize = ROUND_TO_PAGES(sizeof(CORE));
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
-		if (remap_pfn_range(vma,
-			vma->vm_start,
+		vma->vm_page_prot = PAGE_READONLY;
+		if ((rc = remap_pfn_range(vma,
+					vma->vm_start,
 			virt_to_phys((void *) KPublic->Core[cpu]) >> PAGE_SHIFT,
-			reqSize,
-			vma->vm_page_prot) < 0) {
-				return (-EIO);
+					reqSize,
+					vma->vm_page_prot)) != 0)
+		{
+			return (rc);
 		}
 	      } else {
 		return (-EIO);
@@ -11805,6 +11818,14 @@ void SMBIOS_Collect(void)
 #endif /* CONFIG_DMI */
 }
 
+static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
+{
+	if (mode != NULL) {
+		(*mode) = 0400 ;	/*	cr-------	*/
+	}
+	return (NULL);
+}
+
 static int __init CoreFreqK_init(void)
 {
 	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
@@ -11858,6 +11879,7 @@ static int __init CoreFreqK_init(void)
 
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
 	CoreFreqK.clsdev->pm = COREFREQ_PM_OPS;
+	CoreFreqK.clsdev->devnode = CoreFreqK_DevNode;
 
 	if ((tmpDev = device_create(	CoreFreqK.clsdev, NULL,
 					CoreFreqK.mkdev, NULL,
