@@ -121,9 +121,11 @@ struct {
 void AggregateRatio(void)
 {
 	enum RATIO_BOOST lt, rt;
-	unsigned int cpu, lowest = __INT_MAX__ , highest = 0;
-	Ruler.Count = 0;
+	unsigned int cpu,
+		lowest = Shm->Cpu[Shm->Proc.Service.Core].Boost[BOOST(MAX)],
+		highest = Shm->Cpu[Shm->Proc.Service.Core].Boost[BOOST(MIN)];
 
+	Ruler.Count = 0;
     for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++) {
 	Ruler.Top[lt] = Shm->Proc.Service.Core;
 	Ruler.Uniq[lt] = 0.0;
@@ -132,45 +134,52 @@ void AggregateRatio(void)
 
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
-	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+      if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+      {
+	for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
 	{
-	  for (lt = BOOST(MIN); lt < BOOST(SIZE); lt++)
+	  if (Shm->Cpu[cpu].Boost[lt] > 0)
 	  {
-	    if (Shm->Cpu[cpu].Boost[lt] > 0)
+	    switch (lt) {
+	    case BOOST(HWP_MIN):
+	    case BOOST(MIN):
+	      if(Shm->Cpu[cpu].Boost[lt] < Shm->Cpu[ Ruler.Top[lt] ].Boost[lt])
+	      {
+		Ruler.Top[lt] = cpu;
+	      }
+	      if (Shm->Cpu[cpu].Boost[lt] < lowest)
+	      {
+		lowest = Shm->Cpu[cpu].Boost[lt];
+		SetTopOfRuler(Ruler.Top[lt], lt);
+	      }
+		break;
+	    default:
+	      if(Shm->Cpu[cpu].Boost[lt] > Shm->Cpu[ Ruler.Top[lt] ].Boost[lt])
+	      {
+		Ruler.Top[lt] = cpu;
+	      }
+	      if (Shm->Cpu[cpu].Boost[lt] > highest)
+	      {
+		highest = Shm->Cpu[cpu].Boost[lt];
+		SetTopOfRuler(Ruler.Top[lt], lt);
+	      }
+		break;
+	    }
+	    for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
 	    {
-		switch (lt) {
-		case BOOST(HWP_MIN):
-		case BOOST(MIN):
-			if (Shm->Cpu[cpu].Boost[lt] < lowest)
-			{
-				lowest = Shm->Cpu[cpu].Boost[lt];
-			}
-			/* Fallthrough */
-		default:
-			if (Shm->Cpu[cpu].Boost[lt] > highest)
-			{
-				highest = Shm->Cpu[cpu].Boost[lt];
-
-				Ruler.Top[lt] = cpu;
-				SetTopOfRuler(Ruler.Top[lt], lt);
-			}
+		if (Ruler.Uniq[rt] == Shm->Cpu[cpu].Boost[lt])
+		{
 			break;
 		}
-		for (rt = BOOST(MIN); rt < Ruler.Count; rt++)
-		{
-			if (Ruler.Uniq[rt] == Shm->Cpu[cpu].Boost[lt])
-			{
-				break;
-			}
-		}
-		if (rt == Ruler.Count)
-		{
-			Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
-			Ruler.Count++;
-		}
+	    }
+	    if (rt == Ruler.Count)
+	    {
+		Ruler.Uniq[Ruler.Count] = Shm->Cpu[cpu].Boost[lt];
+		Ruler.Count++;
 	    }
 	  }
 	}
+      }
     }
 	Ruler.Minimum = (double) lowest;
 	Ruler.Maximum = (double) highest;
@@ -5315,7 +5324,7 @@ Window *CreateRatioClock(unsigned long long id,
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
 		attr = attrib[multiplier < medianColdZone ?
-				1 : multiplier > startingHotZone ? 2 : 0];
+				1 : multiplier >= startingHotZone ? 2 : 0];
 
 		snprintf((char*) item, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
@@ -5522,13 +5531,13 @@ DECLARE_Pkg_Update_Turbo(18C)
 #define DECLARE_CPU_Item_Turbo(_NC)					\
 void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 {									\
-	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[		\
-					!Shm->Cpu[cpu].Toggle		\
-				];					\
     if (Shm->Cpu[cpu].Boost[BOOST(_NC)] == 0) { 			\
 	CPU_Item_Auto_Freq(	cpu, Shm->Cpu[cpu].Boost[BOOST(_NC)],	\
 				Shm->Proc.Features.Turbo_Unlock, item );\
     } else {								\
+	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[		\
+					!Shm->Cpu[cpu].Toggle		\
+				];					\
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,			\
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",	\
 			cpu,						\
@@ -8873,9 +8882,8 @@ int Shortcut(SCANKEY *scan)
 					( lowestOperating
 					+ highestOperating ) >> 1,
 
-					Shm->Proc.Features.Factory.Ratio
-					+ ( (GetTopOfRuler() - \
-					Shm->Proc.Features.Factory.Ratio) >>1),
+					CUMIN(Shm->Proc.Features.Factory.Ratio,
+						GetTopOfRuler() ),
 
 					BOXKEY_RATIO_CLOCK,
 					TitleForRatioClock,
