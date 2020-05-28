@@ -1196,7 +1196,9 @@ void Architecture(SHM_STRUCT *Shm, PROC *Proc)
 		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
 
 	/* Copy all initial CPUID features.				*/
-/*TODO:	Proc->Features.ExtInfo.EDX._3DNow=1;	TODO( Hardening )	*/
+/*TODO(Hardening Example)
+	memcpy(Proc->Architecture, "Chappie Processor", 17);
+*/
 	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
 	/* Copy the fomula identifiers					*/
 	Shm->Proc.thermalFormula = Proc->thermalFormula;
@@ -4896,7 +4898,6 @@ REASON_CODE Core_Manager(REF *Ref)
 			Arg[cpu].TID = 0;
 
 			PerCore_Update(Shm, Proc, Core, cpu);
-/* TODO(CleanUp)	Technology_Update(Shm, Proc);	*/
 
 		    if (ServerFollowService(	&localService,
 						&Shm->Proc.Service,
@@ -4916,7 +4917,6 @@ REASON_CODE Core_Manager(REF *Ref)
 		if (!Arg[cpu].TID)
 		{	/* Add this cpu.				*/
 			PerCore_Update(Shm, Proc, Core, cpu);
-/* TODO(CleanUp)	Technology_Update(Shm, Proc);	*/
 
 			Arg[cpu].Ref  = Ref;
 			Arg[cpu].Bind = cpu;

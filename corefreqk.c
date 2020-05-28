@@ -11473,90 +11473,79 @@ static long CoreFreqK_ioctl(	struct file *filp,
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	unsigned long reqSize = vma->vm_end - vma->vm_start, secSize = 0;
+	int rc = -EIO;
 
-	if (vma->vm_pgoff == 0) {
-	    if (Proc != NULL)
-	    {
-		int rc = -EIO;
-		secSize = ROUND_TO_PAGES(sizeof(PROC));
+  if (vma->vm_pgoff == 0) {
+    if (Proc != NULL)
+    {
+	secSize = ROUND_TO_PAGES(sizeof(PROC));
+	if (reqSize != secSize) {
+		rc = -EAGAIN;
+		goto EXIT_PAGE;
+	}
+/*TODO(Hardening impacts!)
+	vma->vm_flags = VM_READ;
+	vma->vm_page_prot = PAGE_READONLY;
+*/
+	rc = remap_pfn_range(vma,
+				vma->vm_start,
+				virt_to_phys((void *) Proc) >> PAGE_SHIFT,
+				reqSize,
+				vma->vm_page_prot);
+    }
+  } else if (vma->vm_pgoff == 1) {
+    if (Proc != NULL)
+    {
+	switch (SysGate_OnDemand()) {
+	default:
+	case -1:
+		break;
+	case 1:
+		/* Fallthrough */
+	case 0:
+		secSize = PAGE_SIZE << Proc->OS.ReqMem.Order;
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
+/*TODO(Hardening impacts!)
+		vma->vm_flags = VM_READ;
 		vma->vm_page_prot = PAGE_READONLY;
-		if ((rc = remap_pfn_range(vma,
+*/
+		rc = remap_pfn_range(vma,
 					vma->vm_start,
-			virt_to_phys((void *) Proc) >> PAGE_SHIFT,
-					reqSize,
-					vma->vm_page_prot)) != 0)
-		{
-			return (rc);
-		}
-	    } else {
-		return (-EIO);
-	    }
-	} else if (vma->vm_pgoff == 1) {
-	    if (Proc != NULL)
-	    {
-		int rc = -EIO;
-		switch (SysGate_OnDemand()) {
-		default:
-		case -1:
-			return (-EIO);
-		case 1:
-			/* Fallthrough */
-		case 0:
-			secSize = PAGE_SIZE << Proc->OS.ReqMem.Order;
-			if (reqSize != secSize) {
-				return (-EAGAIN);
-			}
-			vma->vm_page_prot = PAGE_READONLY;
-			if ((rc = remap_pfn_range(vma,
-						vma->vm_start,
 				virt_to_phys((void *)Proc->OS.Gate)>>PAGE_SHIFT,
-						reqSize,
-						vma->vm_page_prot)) != 0)
-			{
-				return (rc);
-			}
-			break;
-		}
-	    } else {
-		return (-EIO);
-	    }
-	} else if (vma->vm_pgoff >= 10) {
-		signed int cpu = vma->vm_pgoff - 10;
+					reqSize,
+					vma->vm_page_prot);
+		break;
+	}
+    }
+  } else if (vma->vm_pgoff >= 10) {
+	signed int cpu = vma->vm_pgoff - 10;
 
-	  if (Proc != NULL) {
-	    if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-	      if (KPublic->Core[cpu] != NULL)
-	      {
-		int rc = -EIO;
+    if (Proc != NULL) {
+      if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
+	if (KPublic->Core[cpu] != NULL)
+	{
 		secSize = ROUND_TO_PAGES(sizeof(CORE));
 		if (reqSize != secSize) {
-			return (-EAGAIN);
+			rc = -EAGAIN;
+			goto EXIT_PAGE;
 		}
+/*TODO(Hardening impacts!)
+		vma->vm_flags = VM_READ;
 		vma->vm_page_prot = PAGE_READONLY;
-		if ((rc = remap_pfn_range(vma,
-					vma->vm_start,
-			virt_to_phys((void *) KPublic->Core[cpu]) >> PAGE_SHIFT,
-					reqSize,
-					vma->vm_page_prot)) != 0)
-		{
-			return (rc);
-		}
-	      } else {
-		return (-EIO);
-	      }
-	    } else {
-		return (-EIO);
-	    }
-	  } else {
-		return (-EIO);
-	  }
-	} else {
-		return (-EIO);
+*/
+		rc = remap_pfn_range(vma,
+				vma->vm_start,
+			virt_to_phys((void *)KPublic->Core[cpu]) >> PAGE_SHIFT,
+				reqSize,
+				vma->vm_page_prot);
 	}
-	return (0);
+      }
+    }
+  }
+EXIT_PAGE:
+	return (rc);
 }
 
 static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
@@ -11833,7 +11822,7 @@ static int __init CoreFreqK_init(void)
 
     if ((iArg.Features = kmalloc(sizeof(FEATURES), GFP_KERNEL)) == NULL) {
 	rc = -ENOMEM;
-	goto EXIT;
+	goto EXIT_INIT;
     }
 	memset(iArg.Features, 0, sizeof(FEATURES));
 
@@ -12202,7 +12191,7 @@ static int __init CoreFreqK_init(void)
     }
   }
 	kfree(iArg.Features);
-EXIT:
+EXIT_INIT:
 	return (rc);
 }
 
