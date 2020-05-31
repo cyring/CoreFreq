@@ -275,7 +275,7 @@ typedef struct
 {
 	struct	/* 64-byte cache line size.				*/
 	{
-		unsigned long long	V,
+		Bit64			V,
 					_pad[7];
 	} Sync __attribute__ ((aligned (8)));
 
@@ -732,7 +732,6 @@ typedef struct
 			size_t	Size;
 			int	Order;
 		} ReqMem;
-		SYSGATE 	*Gate;
 	} OS;
 
 	struct {

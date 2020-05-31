@@ -274,6 +274,11 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
+#define AT(_loc_)		[_loc_]
+#define OF(_ptr_, ...)		-> _ptr_ __VA_ARGS__
+#define ADDR(_head_ , _mbr_)	(_head_ _mbr_)
+#define PUBLIC(...)		ADDR(KPublic , __VA_ARGS__)
+#define PRIVATE(...)		ADDR(KPrivate, __VA_ARGS__)
 
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
@@ -1726,11 +1731,11 @@ int Core_Topology(unsigned int cpu)
 			Map_AMD_Topology
 		: (Proc->Features.Info.LargestStdFunc >= 0xb) ?
 			Map_Intel_Extended_Topology : Map_Intel_Topology,
-		KPublic->Core[cpu], 1); /* Synchronous call. */
+		PUBLIC(OF(Core, AT(cpu))), 1); /* Synchronous call. */
 
 	if (	!rc
 		&& (Proc->Features.HTT_Enable == 0)
-		&& (KPublic->Core[cpu]->T.ThreadID > 0) ) {
+		&& (PUBLIC(OF(Core, AT(cpu)))->T.ThreadID > 0) ) {
 			Proc->Features.HTT_Enable = 1;
 	}
 	return (rc);
@@ -1741,25 +1746,25 @@ unsigned int Proc_Topology(void)
 	unsigned int cpu, CountEnabledCPU = 0;
 
     for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-	KPublic->Core[cpu]->T.Base.value = 0;
-	KPublic->Core[cpu]->T.ApicID     = -1;
-	KPublic->Core[cpu]->T.CoreID     = -1;
-	KPublic->Core[cpu]->T.ThreadID   = -1;
-	KPublic->Core[cpu]->T.PackageID  = -1;
-	KPublic->Core[cpu]->T.Cluster.ID = 0;
+	PUBLIC(OF(Core, AT(cpu)))->T.Base.value = 0;
+	PUBLIC(OF(Core, AT(cpu)))->T.ApicID     = -1;
+	PUBLIC(OF(Core, AT(cpu)))->T.CoreID     = -1;
+	PUBLIC(OF(Core, AT(cpu)))->T.ThreadID   = -1;
+	PUBLIC(OF(Core, AT(cpu)))->T.PackageID  = -1;
+	PUBLIC(OF(Core, AT(cpu)))->T.Cluster.ID = 0;
 
-	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, HW);
-	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
+	BITSET(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, HW);
+	BITSET(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, OS);
 
 	if (cpu_present(cpu)) { /* CPU state based on the OS. */
 	    if (Core_Topology(cpu) == 0) {
 		/* CPU state based on the hardware. */
-		if (KPublic->Core[cpu]->T.ApicID >= 0) {
-			BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, HW);
+		if (PUBLIC(OF(Core, AT(cpu)))->T.ApicID >= 0) {
+			BITCLR(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, HW);
 
 			CountEnabledCPU++;
 		}
-		BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
+		BITCLR(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, OS);
 	    }
 	}
     }
@@ -1910,19 +1915,19 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 			}
 	}
 
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] =	KMIN(ratio0, ratio1);
-	KPublic->Core[cpu]->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] =	KMIN(ratio0, ratio1);
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
 
-	if (KPrivate->Specific != NULL)
+	if (PRIVATE(OF(Specific)) != NULL)
 	{
-		KPublic->Core[cpu]->Boost[BOOST(1C)] = \
-					KPublic->Core[cpu]->Boost[BOOST(MAX)]
-					+ KPrivate->Specific->Boost[0]
-					+ KPrivate->Specific->Boost[1];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)] = \
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)]
+				+ PRIVATE(OF(Specific))->Boost[0]
+				+ PRIVATE(OF(Specific))->Boost[1];
 	} else {	/* Is Processor half ratio capable ?		*/
 	    if (Proc->Features.Power.EAX.TurboIDA) {
-		KPublic->Core[cpu]->Boost[BOOST(1C)] = \
-				2 + KPublic->Core[cpu]->Boost[BOOST(MAX)];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)] = \
+			2 + PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)];
 	    }
 	}
 }
@@ -1932,8 +1937,8 @@ PLATFORM_INFO Intel_Platform_Info(unsigned int cpu)
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
-	KPublic->Core[cpu]->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
 
 	return (PfInfo);
 }
@@ -2015,7 +2020,7 @@ long For_All_Turbo_Clock(CLOCK_ARG *pClockMod, void (*ConfigFunc)(void *))
     do {
 	cpu--;	/* From last AP to BSP */
 
-	if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+	if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)
 	&& ((pClockMod->cpu == -1) || (pClockMod->cpu == cpu)))
 	{
 		CLOCK_TURBO_ARG ClockTurbo = {
@@ -2615,11 +2620,11 @@ void Intel_Hardware_Performance(void)
 		do {
 			cpu--;
 
-		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+		    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)) {
 			/* Synchronous call.				*/
 			smp_call_function_single(cpu,
 						PerCore_Intel_HWP_Notification,
-						&KPublic->Core[cpu], 1);
+						&PUBLIC(OF(Core, AT(cpu))), 1);
 		    }
 		  } while (cpu != 0) ;
 
@@ -2636,11 +2641,11 @@ void Intel_Hardware_Performance(void)
 		do {
 			cpu--;
 
-		    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+		    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)) {
 			/* Asynchronous call.				*/
 			smp_call_function_single(cpu,
 						PerCore_Intel_HWP_Ignition,
-						&KPublic->Core[cpu], 0);
+						&PUBLIC(OF(Core, AT(cpu))), 0);
 		    }
 		  } while (cpu != 0) ;
 		}
@@ -2659,9 +2664,9 @@ void Intel_Hardware_Performance(void)
 void SandyBridge_Uncore_Ratio(unsigned int cpu)
 {
 	Proc->Uncore.Boost[UNCORE_BOOST(MIN)] = 			\
-					KPublic->Core[cpu]->Boost[BOOST(MIN)];
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)];
 	Proc->Uncore.Boost[UNCORE_BOOST(MAX)] = 			\
-					KPublic->Core[cpu]->Boost[BOOST(MAX)];
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)];
 }
 
 long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
@@ -2727,9 +2732,9 @@ void Query_Same_Platform_Features(unsigned int cpu)
 	Proc->Features.TDP_Levels = PfInfo.ConfigTDPlevels;
 	Proc->Features.Turbo_Unlock = PfInfo.ProgrammableTurbo;
 
-	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	}
 	Default_Unlock_Reset();
 
@@ -3194,20 +3199,20 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	unsigned int cpu, local = get_cpu();
 
 	NominalTDP.value = readl(mchmap + 0x5f3c);
-	KPublic->Core[local]->Boost[BOOST(TDP)] = NominalTDP.Ratio;
+	PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
 	ConfigTDP.value = readq(mchmap + 0x5f40);
-	KPublic->Core[local]->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+	PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
 
 	ConfigTDP.value = readq(mchmap + 0x5f48);
-	KPublic->Core[local]->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+	PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
 
 	ControlTDP.value = readl(mchmap + 0x5f50);
 	Proc->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	Proc->Features.TDP_Cfg_Level = ControlTDP.Level;
 
 	TurboActivation.value = readl(mchmap + 0x5f54);
-	KPublic->Core[local]->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+	PUBLIC(OF(Core, AT(local)))->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
 	Proc->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	Proc->Features.TDP_Levels = 3;
@@ -3215,17 +3220,17 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	put_cpu();
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 	    if (cpu != local) {
-		KPublic->Core[cpu]->Boost[BOOST(TDP)] = \
-				KPublic->Core[local]->Boost[BOOST(TDP)];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(TDP)] = \
+				PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP)];
 
-		KPublic->Core[cpu]->Boost[BOOST(TDP1)] = \
-				KPublic->Core[local]->Boost[BOOST(TDP1)];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(TDP1)] = \
+				PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP1)];
 
-		KPublic->Core[cpu]->Boost[BOOST(TDP2)] = \
-				KPublic->Core[local]->Boost[BOOST(TDP2)];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(TDP2)] = \
+				PUBLIC(OF(Core, AT(local)))->Boost[BOOST(TDP2)];
 
-		KPublic->Core[cpu]->Boost[BOOST(ACT)] = \
-				KPublic->Core[local]->Boost[BOOST(ACT)];
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(ACT)] = \
+				PUBLIC(OF(Core, AT(local)))->Boost[BOOST(ACT)];
 	    }
 	}
 }
@@ -3730,13 +3735,13 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0x60, &Proc->Uncore.Bus.NodeID.value);
 	switch ( PCI_SLOT(dev->devfn) ) {
 	case 24:
-		KPublic->Core[0]->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
+		PUBLIC(OF(Core, AT(0)))->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
 		break;
 	case 25:
 	    if ( ( (1 + Proc->Uncore.Bus.NodeID.CPUCnt) >= Proc->CPU.Count)
 		&& (Proc->CPU.Count >= 2) )
 	    {
-		KPublic->Core[1]->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
+		PUBLIC(OF(Core, AT(1)))->T.Cluster.Node = Proc->Uncore.Bus.NodeID.Node;
 	    }
 		break;
 	}
@@ -3753,8 +3758,8 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 #ifdef CONFIG_AMD_NB
 static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 {
-	if (KPrivate->ZenIF_dev == NULL) {
-		KPrivate->ZenIF_dev = dev;
+	if (PRIVATE(OF(ZenIF_dev)) == NULL) {
+		PRIVATE(OF(ZenIF_dev)) = dev;
 	}
 	return ((PCI_CALLBACK) 0);
 }
@@ -3811,9 +3816,9 @@ static int CoreFreqK_ProbePCI(void)
 
 void Query_Same_Genuine_Features(void)
 {
-	if ((KPrivate->Specific = LookupProcessor()) != NULL) {
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL) {
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	}
 	Default_Unlock_Reset();
 
@@ -3934,7 +3939,7 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 {
 	unsigned short SpecTurboRatio = 0;
 	/* Lowest frequency according to BKDG */
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] = 8;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
 
     if (Proc->Features.AdvPower.EDX.HwPstate == 1)
     {
@@ -3945,23 +3950,23 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	case 0x6:
 	case 0x7:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		KPublic->Core[cpu]->Boost[BOOST(MAX)]=CofVid.Arch_COF.MaxCpuCof;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)]=CofVid.Arch_COF.MaxCpuCof;
 		break;
 	case 0x2:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] =	\
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
 						CofVid.Arch_Pll.MainPllOpFidMax;
 	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] += 0x8;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x8;
 	    }
 		break;
 	case 0x3:
 	case 0x5:
 		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] =	\
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
 						CofVid.Arch_Pll.MainPllOpFidMax;
 	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] += 0x10;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x10;
 	    }
 		break;
 	}
@@ -3985,29 +3990,29 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 		kfree(Compute.TSC[0]);
 	}
 	if (vClock.Hz != 0) {
-		KPublic->Core[cpu]->Boost[BOOST(MAX)] = vClock.Q;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] = vClock.Q;
 	} else {
 		goto NO_SOLUTION;
 	}
       } else {
 NO_SOLUTION:
-	KPublic->Core[cpu]->Boost[BOOST(MAX)] =	\
-					KPublic->Core[cpu]->Boost[BOOST(MIN)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)];
       }
     }
-    if (KPrivate->Specific != NULL)
+    if (PRIVATE(OF(Specific)) != NULL)
     {
-	KPublic->Core[cpu]->Boost[BOOST(1C)] =		\
-					KPublic->Core[cpu]->Boost[BOOST(MAX)]
-					+ KPrivate->Specific->Boost[0];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)] =		\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)]
+				+ PRIVATE(OF(Specific))->Boost[0];
 
-	KPublic->Core[cpu]->Boost[BOOST(2C)] =		\
-					KPublic->Core[cpu]->Boost[BOOST(1C)]
-					+ KPrivate->Specific->Boost[1];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(2C)] =		\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)]
+				+ PRIVATE(OF(Specific))->Boost[1];
 	SpecTurboRatio = 2;
     } else {
-	KPublic->Core[cpu]->Boost[BOOST(1C)] =		\
-					KPublic->Core[cpu]->Boost[BOOST(MAX)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)] =		\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)];
 	SpecTurboRatio = 0;
     }
 	return (SpecTurboRatio);
@@ -4015,13 +4020,13 @@ NO_SOLUTION:
 
 void Query_AuthenticAMD(unsigned int cpu)
 {	/* Fallback algorithm for unspecified AMD architectures. */
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
 		/* Save thermal parameters for later use in the Daemon	*/
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
 		/* Override Processor CodeName & Locking capabilities	*/
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4041,19 +4046,19 @@ unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
-	KPublic->Core[cpu]->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
 
 	if (FidVidStatus.StartFID < 0b1000)
 	{
 		unsigned int t;
 	    for (t = 0; t < 5; t++) {
-		KPublic->Core[cpu]->Boost[BOOST(SIZE)-5+t] = \
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(SIZE)-5+t] = \
 					VCO[FidVidStatus.StartFID].PCF[t];
 	    }
 		SpecTurboRatio = 5;
 	} else {
-		KPublic->Core[cpu]->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
 
 		SpecTurboRatio = 1;
 	}
@@ -4061,14 +4066,14 @@ unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 	HWCR HwCfgRegister = {.value = 0};
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] =	8
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] =	8
 					+ HwCfgRegister.Family_0Fh.StartFID;
 
-	KPublic->Core[cpu]->Boost[BOOST(MAX)] = \
-					KPublic->Core[cpu]->Boost[BOOST(MIN)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)];
 
-	KPublic->Core[cpu]->Boost[BOOST(1C) ] = \
-					KPublic->Core[cpu]->Boost[BOOST(MIN)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(1C) ] = \
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)];
 	SpecTurboRatio = 1;
     }
 	return (SpecTurboRatio);
@@ -4076,11 +4081,11 @@ unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 
 void Query_AMD_Family_0Fh(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4101,7 +4106,7 @@ void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = \
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = \
 					(PstateDef.Family_10h.CpuFid + 0x10)
 					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
@@ -4109,11 +4114,11 @@ void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 
 void Query_AMD_Family_10h(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4136,7 +4141,7 @@ void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = \
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = \
 					(PstateDef.Family_10h.CpuFid + 0x8)
 					/ (1 << PstateDef.Family_10h.CpuDid);
 	}
@@ -4144,11 +4149,11 @@ void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 
 void Query_AMD_Family_11h(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4171,7 +4176,7 @@ void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = \
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = \
 					(PstateDef.Family_12h.CpuFid + 0x10)
 					/  PstateDef.Family_12h.CpuDid;
 	}
@@ -4179,11 +4184,11 @@ void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 
 void Query_AMD_Family_12h(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4216,18 +4221,18 @@ void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 		ClockDiv = (PstateDef.Family_14h.CpuDidMSD + 1) * 4;
 		ClockDiv += PstateDef.Family_14h.CpuDidLSD;
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = (MaxFreq * 4)
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = (MaxFreq * 4)
 							/ ClockDiv;
 	}	/* @ MainPllOpFidMax MHz */
 }
 
 void Query_AMD_Family_14h(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4250,7 +4255,7 @@ void Compute_AMD_Family_15h_Boost(unsigned int cpu)
 		PSTATEDEF PstateDef = {.value = 0};
 		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE + pstate));
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = \
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = \
 					(PstateDef.Family_15h.CpuFid + 0x10)
 					/ (1 << PstateDef.Family_15h.CpuDid);
 	}
@@ -4264,7 +4269,7 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	HyperThreading_Technology();
 
   /* Find micro-architecture based on the CPUID model. Bulldozer initialized */
-	KPrivate->Specific = LookupProcessor();
+	PRIVATE(OF(Specific)) = LookupProcessor();
     switch (Proc->Features.Std.EAX.ExtModel) {
     case 0x0:
 	if ((Proc->Features.Std.EAX.Model >= 0x0)
@@ -4300,10 +4305,10 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	}
 	break;
     };
-    if (KPrivate->Specific != NULL) {
-	Proc->PowerThermal.Param = KPrivate->Specific->Param;
-	OverrideCodeNameString(KPrivate->Specific);
-	OverrideUnlockCapability(KPrivate->Specific);
+    if (PRIVATE(OF(Specific)) != NULL) {
+	Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
     } else {
 	Proc->PowerThermal.Param.Target = 0;
     }
@@ -4344,10 +4349,10 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	PSTATECTRL PstateCtrl = {.value = 0};
 
     for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
-		KPublic->Core[cpu]->Boost[pstate] = 0;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[pstate] = 0;
     }
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
-	KPublic->Core[cpu]->Boost[BOOST(MIN)] = 4;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
 	/* Loop over all frequency ids. */
     for (pstate = 0; pstate <= 7; pstate++)
     {
@@ -4358,7 +4363,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 					PstateDef.Family_17h.CpuDfsId);
 
-		KPublic->Core[cpu]->Boost[sort[pstate]] = COF;
+		PUBLIC(OF(Core, AT(cpu)))->Boost[sort[pstate]] = COF;
 	}
     }
 
@@ -4372,25 +4377,25 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	KPublic->Core[cpu]->Boost[BOOST(TGT)] = COF;
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
 
 	/* If CPB is enabled then add Boost + XFR to the P0 ratio.	*/
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (!HwCfgRegister.Family_17h.CpbDis)
     {
-	KPublic->Core[cpu]->Boost[BOOST(CPB)] =	\
-					KPublic->Core[cpu]->Boost[BOOST(MAX)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(CPB)] =	\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
-	KPublic->Core[cpu]->Boost[BOOST(XFR)] =	\
-					KPublic->Core[cpu]->Boost[BOOST(MAX)];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(XFR)] =	\
+				PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
-      if (KPrivate->Specific != NULL)
+      if (PRIVATE(OF(Specific)) != NULL)
       {
-	KPublic->Core[cpu]->Boost[BOOST(CPB)] += KPrivate->Specific->Boost[0];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(CPB)] += PRIVATE(OF(Specific))->Boost[0];
 
-	KPublic->Core[cpu]->Boost[BOOST(XFR)] += KPrivate->Specific->Boost[0];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(XFR)] += PRIVATE(OF(Specific))->Boost[0];
 
-	KPublic->Core[cpu]->Boost[BOOST(XFR)] += KPrivate->Specific->Boost[1];
+	PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(XFR)] += PRIVATE(OF(Specific))->Boost[1];
       }
 
 	return (true);	/* Have CPB: add the Xtra Boost ratios	*/
@@ -4414,7 +4419,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 		target	= (pClockZen->pClockMod->cpu == -1) ?
 			pClockZen->pClockMod->Ratio
 		:
-			KPublic->Core[cpu]->Boost[pClockZen->BoostIndex]
+			PUBLIC(OF(Core, AT(cpu)))->Boost[pClockZen->BoostIndex]
 			+ pClockZen->pClockMod->Offset;
 
 	unsigned short RdWrMSR = 0;
@@ -4492,7 +4497,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
   do {
 	cpu--;	/* From last AP to BSP */
 
-    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)
     && ((pClockZen->pClockMod->cpu == -1)||(pClockZen->pClockMod->cpu == cpu)))
     {
 	smp_call_function_single(cpu, PerCore, pClockZen, 1);
@@ -4565,13 +4570,13 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 
 void Query_AMD_Family_17h(unsigned int cpu)
 {
-	KPrivate->Specific = LookupProcessor();
-	if (KPrivate->Specific != NULL) {
+	PRIVATE(OF(Specific)) = LookupProcessor();
+	if (PRIVATE(OF(Specific)) != NULL) {
 		/* Save thermal parameters for later use in the Daemon	*/
-		Proc->PowerThermal.Param = KPrivate->Specific->Param;
+		Proc->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
 		/* Override Processor CodeName & Locking capabilities	*/
-		OverrideCodeNameString(KPrivate->Specific);
-		OverrideUnlockCapability(KPrivate->Specific);
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	} else {
 		Proc->PowerThermal.Param.Target = 0;
 	}
@@ -4866,7 +4871,7 @@ static void ClockMod_PPC_PerCore(void *arg)
 
 	pClockPPC = (CLOCK_PPC_ARG *) arg;
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
@@ -4889,7 +4894,7 @@ long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
   do {
 	cpu--;	/* From last AP to BSP */
 
-    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)
     && ((pClockPPC->pClockMod->cpu == -1)||(pClockPPC->pClockMod->cpu == cpu)))
     {
 	smp_call_function_single(cpu, ClockMod_PPC_PerCore, pClockPPC, 1);
@@ -4973,7 +4978,7 @@ static void ClockMod_HWP_PerCore(void *arg)
 
 	pClockHWP = (CLOCK_HWP_ARG *) arg;
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
@@ -5021,7 +5026,7 @@ long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
   do {
 	cpu--;	/* From last AP to BSP */
 
-    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)
+    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)
     && ((pClockHWP->pClockMod->cpu == -1)||(pClockHWP->pClockMod->cpu == cpu)))
 	{
 	smp_call_function_single(cpu, ClockMod_HWP_PerCore, pClockHWP, 1);
@@ -6779,12 +6784,13 @@ void Sys_MemInfo(SYSGATE *SysGate)
 
 #define Sys_Tick(Pkg)						\
 ({								\
-	if (Pkg->OS.Gate != NULL) {				\
+	if (PUBLIC(OF(Gate)) != NULL)				\
+	{							\
 		Pkg->tickStep--;				\
 		if (!Pkg->tickStep) {				\
 			Pkg->tickStep = Pkg->tickReset ;	\
-			Sys_DumpTask(Pkg->OS.Gate);		\
-			Sys_MemInfo(Pkg->OS.Gate);		\
+			Sys_DumpTask( PUBLIC(OF(Gate)) );	\
+			Sys_MemInfo( PUBLIC(OF(Gate)) );	\
 		}						\
 	}							\
 })
@@ -6793,13 +6799,13 @@ static void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu = smp_processor_id();
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 0) {
-		hrtimer_init(	&KPrivate->Join[cpu]->Timer,
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 0) {
+		hrtimer_init(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 				CLOCK_MONOTONIC,
 				HRTIMER_MODE_REL_PINNED);
 
-		KPrivate->Join[cpu]->Timer.function = Cycle_Function;
-		BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, CREATED);
+		PRIVATE(OF(Join, AT(cpu)))->Timer.function = Cycle_Function;
+		BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
 	}
 }
 
@@ -6814,7 +6820,7 @@ void Controller_Init(void)
 		Arch[Proc->ArchID].Query(Proc->Service.Core);
 	}
 
-	ratio = KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)];
+	ratio = PUBLIC(OF(Core, AT(Proc->Service.Core)))->Boost[BOOST(MAX)];
 
 	if (Arch[Proc->ArchID].BaseClock != NULL) {
 		clock = Arch[Proc->ArchID].BaseClock(ratio);
@@ -6828,7 +6834,7 @@ void Controller_Init(void)
 	if (Proc->Features.Factory.Freq != 0) {
 	    if (ratio == 0)	/* Fix ratio. */
 	    {
-		ratio	= KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)] \
+		ratio	= PUBLIC(OF(Core, AT(Proc->Service.Core)))->Boost[BOOST(MAX)] \
 			= Proc->Features.Factory.Freq / clock.Q;
 	    }
 	} else if (ratio > 0) { /* Fix factory frequency (MHz) */
@@ -6851,7 +6857,7 @@ void Controller_Init(void)
 		do {	/* from last AP to BSP */
 			cpu--;
 
-		  if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+		  if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS))
 		  {
 			COMPUTE_ARG Compute = {
 				.TSC = {NULL, NULL},
@@ -6864,7 +6870,7 @@ void Controller_Init(void)
 			Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
 			if (Compute.TSC[1] != NULL)
 			{
-			KPublic->Core[cpu]->Clock = Compute_Clock(cpu,&Compute);
+			PUBLIC(OF(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
 
 			/* Release resources. */
 			kmem_cache_free(hwCache, Compute.TSC[1]);
@@ -6880,9 +6886,9 @@ void Controller_Init(void)
 	/* Launch a high resolution timer for each online CPU. */
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 	{
-		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
-			if (!KPublic->Core[cpu]->Clock.Hz) {
-				KPublic->Core[cpu]->Clock = clock;
+		if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)) {
+			if (!PUBLIC(OF(Core, AT(cpu)))->Clock.Hz) {
+				PUBLIC(OF(Core, AT(cpu)))->Clock = clock;
 			}
 			if (Arch[Proc->ArchID].Timer != NULL) {
 				Arch[Proc->ArchID].Timer(cpu);
@@ -6897,8 +6903,8 @@ void Controller_Start(int wait)
 		unsigned int cpu;
 	    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 	    {
-		if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
-		 && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)) {
+		if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
+		 && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0)) {
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Start,
 						NULL, wait);
@@ -6912,8 +6918,8 @@ void Controller_Stop(int wait)
 	if (Arch[Proc->ArchID].Stop != NULL) {
 		unsigned int cpu;
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		    if ((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
-		     && (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1))
+		    if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
+		     && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1))
 			smp_call_function_single(cpu,
 						Arch[Proc->ArchID].Stop,
 						NULL, wait);
@@ -6928,7 +6934,7 @@ void Controller_Exit(void)
 		Arch[Proc->ArchID].Exit();
 
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
-		BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, CREATED);
+		BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
 }
 
 void Intel_Core_Counters_Set(CORE *Core)
@@ -7634,9 +7640,9 @@ void Core_AMD_Family_17h_Temp(CORE *Core)
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 
-    if (KPrivate->ZenIF_dev != NULL)
+    if (PRIVATE(OF(ZenIF_dev)) != NULL)
     {	FEAT_MSG("Building with Kernel amd_smn_read()")
-	if (amd_smn_read(amd_pci_dev_to_node_id(KPrivate->ZenIF_dev),
+	if (amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 			SMU_AMD_THM_TCTL_REGISTER_F17H, &TctlSensor.value))
 	{
 		pr_warn("CoreFreq: Failed to read TctlSensor\n");
@@ -7673,14 +7679,14 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -7744,7 +7750,7 @@ void InitTimer_GenuineIntel(unsigned int cpu)
 static void Start_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_Intel_Query(Core);
 
@@ -7754,27 +7760,27 @@ static void Start_GenuineIntel(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_GenuineIntel(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
@@ -7783,14 +7789,14 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -7835,7 +7841,7 @@ void InitTimer_AuthenticAMD(unsigned int cpu)
 static void Start_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AuthenticAMD_Query(Core);
 
@@ -7843,27 +7849,27 @@ static void Start_AuthenticAMD(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_AuthenticAMD(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
@@ -7873,14 +7879,14 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	if (!Proc->Features.AdvPower.EDX.Inv_TSC)
 		RDTSC64(Core->Overhead.TSC);
 	else
 		RDTSCP64(Core->Overhead.TSC);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -7974,7 +7980,7 @@ void InitTimer_Core2(unsigned int cpu)
 static void Start_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_Core2_Query(Core);
 
@@ -7985,29 +7991,29 @@ static void Start_Core2(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Core2(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
@@ -8017,11 +8023,11 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -8151,7 +8157,7 @@ void InitTimer_Nehalem(unsigned int cpu)
 static void Start_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_Nehalem_Query(Core);
 
@@ -8165,23 +8171,23 @@ static void Start_Nehalem(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Nehalem(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -8190,7 +8196,7 @@ static void Stop_Nehalem(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_Nehalem(void *arg)
@@ -8211,11 +8217,11 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -8357,7 +8363,7 @@ void InitTimer_SandyBridge(unsigned int cpu)
 static void Start_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_SandyBridge_Query(Core);
 
@@ -8372,23 +8378,23 @@ static void Start_SandyBridge(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_SandyBridge(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -8397,7 +8403,7 @@ static void Stop_SandyBridge(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_SandyBridge(void *arg)
@@ -8418,11 +8424,11 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -8564,7 +8570,7 @@ void InitTimer_SandyBridge_EP(unsigned int cpu)
 static void Start_SandyBridge_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_SandyBridge_Query(Core);
 
@@ -8579,23 +8585,23 @@ static void Start_SandyBridge_EP(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_SandyBridge_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -8604,7 +8610,7 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_SandyBridge_EP(void *arg)
@@ -8647,11 +8653,11 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -8805,7 +8811,7 @@ void InitTimer_Haswell_ULT(unsigned int cpu)
 static void Start_Haswell_ULT(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_Haswell_ULT_Query(Core);
 
@@ -8820,23 +8826,23 @@ static void Start_Haswell_ULT(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Haswell_ULT(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -8845,7 +8851,7 @@ static void Stop_Haswell_ULT(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_Haswell_ULT(void *arg)
@@ -8870,11 +8876,11 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -9016,7 +9022,7 @@ void InitTimer_Haswell_EP(unsigned int cpu)
 static void Start_Haswell_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_Haswell_EP_Query(Core);
 
@@ -9031,23 +9037,23 @@ static void Start_Haswell_EP(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Haswell_EP(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -9056,7 +9062,7 @@ static void Stop_Haswell_EP(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_Haswell_EP(void *arg)
@@ -9099,11 +9105,11 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -9249,7 +9255,7 @@ void InitTimer_Skylake(unsigned int cpu)
 static void Start_Skylake(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_SandyBridge_Query(Core);
 
@@ -9264,23 +9270,23 @@ static void Start_Skylake(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Skylake(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -9289,7 +9295,7 @@ static void Stop_Skylake(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_Skylake(void *arg)
@@ -9309,11 +9315,11 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -9455,7 +9461,7 @@ void InitTimer_Skylake_X(unsigned int cpu)
 static void Start_Skylake_X(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_SandyBridge_Query(Core);
 
@@ -9470,23 +9476,23 @@ static void Start_Skylake_X(void *arg)
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_Skylake_X(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	Intel_Core_Counters_Clear(Core);
 
@@ -9495,7 +9501,7 @@ static void Stop_Skylake_X(void *arg)
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_Uncore_Skylake_X(void *arg)
@@ -9511,9 +9517,9 @@ static void Stop_Uncore_Skylake_X(void *arg)
 static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		FIDVID_STATUS FidVidStatus = {.value = 0};
 
 		hrtimer_forward(pTimer,
@@ -9604,7 +9610,7 @@ void InitTimer_AMD_Family_0Fh(unsigned int cpu)
 static void Start_AMD_Family_0Fh(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_0Fh_Query(Core);
 
@@ -9612,33 +9618,33 @@ static void Start_AMD_Family_0Fh(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_AMD_Family_0Fh(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_AMD_Family_10h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_10h_Query(Core);
 
@@ -9646,33 +9652,33 @@ static void Start_AMD_Family_10h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_AMD_Family_10h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_AMD_Family_11h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_11h_Query(Core);
 
@@ -9680,19 +9686,19 @@ static void Start_AMD_Family_11h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_AMD_Family_12h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_12h_Query(Core);
 
@@ -9700,19 +9706,19 @@ static void Start_AMD_Family_12h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Start_AMD_Family_14h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_14h_Query(Core);
 
@@ -9720,13 +9726,13 @@ static void Start_AMD_Family_14h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
@@ -9738,11 +9744,11 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -9835,7 +9841,7 @@ void InitTimer_AMD_Family_15h(unsigned int cpu)
 static void Start_AMD_Family_15h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_15h_Query(Core);
 
@@ -9843,13 +9849,13 @@ static void Start_AMD_Family_15h(void *arg)
 		PKG_Counters_Generic(Core, 0);
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
@@ -9859,11 +9865,11 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 	unsigned int cpu;
 
 	cpu = smp_processor_id();
-	Core = (CORE *) KPublic->Core[cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	Mark_OVH(Core);
 
-	if (BITVAL(KPrivate->Join[cpu]->TSM, MUSTFWD) == 1) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
@@ -9975,7 +9981,7 @@ void InitTimer_AMD_Family_17h(unsigned int cpu)
 static void Start_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	PerCore_AMD_Family_17h_Query(Core);
 
@@ -9995,29 +10001,29 @@ static void Start_AMD_Family_17h(void *arg)
 		Core->Counter[0].Power.ACCU &= 0xffffffff;
 	}
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_start(	&KPrivate->Join[cpu]->Timer,
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 			RearmTheTimer,
 			HRTIMER_MODE_REL_PINNED);
 
-	BITSET(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 static void Stop_AMD_Family_17h(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, MUSTFWD);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
-	hrtimer_cancel(&KPrivate->Join[cpu]->Timer);
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
 	AMD_Core_Counters_Clear(Core);
 
 	PerCore_Reset(Core);
 
-	BITCLR(LOCKLESS, KPrivate->Join[cpu]->TSM, STARTED);
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 long Sys_OS_Driver_Query(SYSGATE *SysGate)
@@ -10109,16 +10115,16 @@ long Sys_Kernel(SYSGATE *SysGate)
 long SysGate_OnDemand(void)
 {
 	long rc = -1;
-	if (Proc->OS.Gate == NULL) {			/* Alloc on demand */
-	    Proc->OS.Gate = alloc_pages_exact(Proc->OS.ReqMem.Size, GFP_KERNEL);
-	    if (Proc->OS.Gate != NULL) {
+    if (PUBLIC(OF(Gate)) == NULL) {		/* Alloc on demand	*/
+	PUBLIC(OF(Gate)) = alloc_pages_exact(Proc->OS.ReqMem.Size, GFP_KERNEL);
+	    if (PUBLIC(OF(Gate)) != NULL) {
 		const size_t allocPages = PAGE_SIZE << Proc->OS.ReqMem.Order;
-		memset(Proc->OS.Gate, 0, allocPages);
+		memset(PUBLIC(OF(Gate)), 0, allocPages);
 		rc = 0;
 	    }
-	} else {					/* Already allocated */
+    } else {					/* Already allocated	*/
 		rc = 1;
-	}
+    }
 	return (rc);
 }
 
@@ -10146,7 +10152,7 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 	unsigned int cpu;
 
 	for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-	    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
+	    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, HW)) {
 		if ((device=per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL) {
 			cpuidle_unregister_device(device);
 		}
@@ -10229,7 +10235,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    }
 	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
 		for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-		    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)) {
+		    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, HW)) {
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
 		      if (device != NULL) {
 			device->cpu = cpu;
@@ -10268,7 +10274,7 @@ static void CoreFreqK_Idle_State_Withdraw(int idx, bool disable)
 	unsigned int cpu;
   for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
   {
-    if (!BITVAL(KPublic->Core[cpu]->OffLine, HW)
+    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, HW)
     && ((device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL))
     {
       if (disable) {
@@ -10315,8 +10321,8 @@ static long CoreFreqK_Limit_Idle(int target)
 	}
 	rc = RC_SUCCESS;
     }
-    if ((Proc->OS.Gate != NULL) && (floor != -1)) {
-	Proc->OS.Gate->OS.IdleDriver.stateLimit = 1 + floor;
+    if ((PUBLIC(OF(Gate)) != NULL) && (floor != -1)) {
+	PUBLIC(OF(Gate))->OS.IdleDriver.stateLimit = 1 + floor;
     }
 #endif /* CONFIG_CPU_IDLE */
 	return (rc);
@@ -10333,7 +10339,7 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
     if (policy != NULL) {
 	if (policy->cpu < Proc->CPU.Count)
 	{
-		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
+		CORE *Core = (CORE *) PUBLIC(OF(Core, AT(policy->cpu)));
 
 		policy->cpuinfo.min_freq =(Core->Boost[BOOST(MIN)]
 					 * Core->Clock.Hz) / 1000LLU;
@@ -10380,7 +10386,7 @@ static int CoreFreqK_Bios_Limit(int cpu, unsigned int *limit)
 {
     if ((cpu >= 0) && (cpu < Proc->CPU.Count) && (limit != NULL))
     {
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	(*limit) = (Core->Boost[BOOST(MAX)] * Core->Clock.Hz) / 1000LLU;
     }
@@ -10414,9 +10420,9 @@ static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy *policy,char *buf)
 	CORE *Core;
     if (policy->cpu < Proc->CPU.Count)
     {
-	Core = (CORE *) KPublic->Core[policy->cpu];
+	Core = (CORE *) PUBLIC(OF(Core, AT(policy->cpu)));
     } else {
-	Core = (CORE *) KPublic->Core[Proc->Service.Core];
+	Core = (CORE *) PUBLIC(OF(Core, AT(Proc->Service.Core)));
     }
 	return ( sprintf(buf, "%7llu\n",
 			(Core->Boost[BOOST(TGT)] * Core->Clock.Hz) / 1000LLU) );
@@ -10431,7 +10437,7 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 	if ((policy->cpu < Proc->CPU.Count)
 	 && (Arch[Proc->ArchID].SystemDriver->SetTarget != NULL))
 	{
-		CORE *Core = (CORE *) KPublic->Core[policy->cpu];
+		CORE *Core = (CORE *) PUBLIC(OF(Core, AT(policy->cpu)));
 		unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
 
 	    if (ratio > 0) {
@@ -10455,7 +10461,7 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
 
     if (cpu < Proc->CPU.Count)
     {
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	unsigned int Core_Freq = Core->Delta.C0.UCC / Proc->SleepInterval;
 	if (Core_Freq > 0) {	/* at least 1 interval must have elapsed */
@@ -10470,7 +10476,7 @@ static void Policy_Core2_SetTarget(void *arg)
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
     if ((*ratio) <= Core->Boost[BOOST(1C)])
     {
@@ -10496,7 +10502,7 @@ static void Policy_Nehalem_SetTarget(void *arg)
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
     if ((*ratio) <= Core->Boost[BOOST(1C)])
     {
@@ -10522,7 +10528,7 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 #ifdef CONFIG_CPU_FREQ
 	unsigned int *ratio = (unsigned int*) arg;
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
     if ((*ratio) <= Core->Boost[BOOST(1C)])
     {
@@ -10550,7 +10556,7 @@ static void Policy_HWP_SetTarget(void *arg)
   {
 	unsigned int *ratio = (unsigned int*) arg;
 	unsigned int cpu = smp_processor_id();
-	CORE *Core = (CORE *) KPublic->Core[cpu];
+	CORE *Core = (CORE *) PUBLIC(OF(Core, AT(cpu)));
 
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
     if (((*ratio) >= Core->PowerThermal.HWP_Capabilities.Lowest)
@@ -10622,12 +10628,12 @@ signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 
     for (seek = 0; seek < Proc->CPU.Count; seek++) {
 	if(((exclude ^ cpu) > 0)
-	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
-	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
-	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
-	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
-	&& (KPublic->Core[seek]->T.ThreadID == 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS)) {
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ApicID != PUBLIC(OF(Core, AT(cpu)))->T.ApicID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.CoreID == PUBLIC(OF(Core, AT(cpu)))->T.CoreID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ThreadID != PUBLIC(OF(Core, AT(cpu)))->T.ThreadID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.PackageID == PUBLIC(OF(Core, AT(cpu)))->T.PackageID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ThreadID == 0)
+	&& !BITVAL(PUBLIC(OF(Core, AT(seek)))->OffLine, OS)) {
 		return ((signed int) seek);
 	}
     }
@@ -10640,12 +10646,12 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 
     for (seek = 0; seek < Proc->CPU.Count; seek++) {
 	if(((exclude ^ cpu) > 0)
-	&& (KPublic->Core[seek]->T.ApicID != KPublic->Core[cpu]->T.ApicID)
-	&& (KPublic->Core[seek]->T.CoreID == KPublic->Core[cpu]->T.CoreID)
-	&& (KPublic->Core[seek]->T.ThreadID != KPublic->Core[cpu]->T.ThreadID)
-	&& (KPublic->Core[seek]->T.PackageID == KPublic->Core[cpu]->T.PackageID)
-	&& (KPublic->Core[seek]->T.ThreadID > 0)
-	&& !BITVAL(KPublic->Core[seek]->OffLine, OS)) {
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ApicID != PUBLIC(OF(Core, AT(cpu)))->T.ApicID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.CoreID == PUBLIC(OF(Core, AT(cpu)))->T.CoreID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ThreadID != PUBLIC(OF(Core, AT(cpu)))->T.ThreadID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.PackageID == PUBLIC(OF(Core, AT(cpu)))->T.PackageID)
+	&& (PUBLIC(OF(Core, AT(seek)))->T.ThreadID > 0)
+	&& !BITVAL(PUBLIC(OF(Core, AT(seek)))->OffLine, OS)) {
 		return ((signed int) seek);
 	}
     }
@@ -10658,8 +10664,8 @@ void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
 
     for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 	if(((cpx ^ cpu) > 0)
-	&& (KPublic->Core[cpu]->T.PackageID == KPublic->Core[cpi]->T.PackageID)
-	&& !BITVAL(KPublic->Core[cpu]->OffLine, OS))
+	&& (PUBLIC(OF(Core, AT(cpu)))->T.PackageID == PUBLIC(OF(Core, AT(cpi)))->T.PackageID)
+	&& !BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS))
 	{
 		pService->Core = cpu;
 		pService->Thread = -1;
@@ -10673,7 +10679,7 @@ int MatchPeerForService(SERVICE_PROC *pService, unsigned int cpi,signed int cpx)
 	unsigned int cpu = cpi, cpn = 0;
 	signed int seek;
 MATCH:
-	if (KPublic->Core[cpu]->T.ThreadID == 0)
+	if (PUBLIC(OF(Core, AT(cpu)))->T.ThreadID == 0)
 	{
 		if ((seek = Seek_Topology_Thread_Peer(cpu, cpx)) != -1) {
 			pService->Core = cpu;
@@ -10681,7 +10687,7 @@ MATCH:
 			return (0);
 		}
 	}
-	else if (KPublic->Core[cpu]->T.ThreadID > 0)
+	else if (PUBLIC(OF(Core, AT(cpu)))->T.ThreadID > 0)
 	{
 		if ((seek = Seek_Topology_Core_Peer(cpu, cpx)) != -1) {
 			pService->Core = seek;
@@ -10691,7 +10697,7 @@ MATCH:
 	}
 	while (cpn < Proc->CPU.Count) {
 		cpu = cpn++;
-		if (!BITVAL(KPublic->Core[cpu]->OffLine, OS)) {
+		if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS)) {
 			goto MATCH;
 		}
 	}
@@ -10724,13 +10730,13 @@ void MatchPeerForUpService(SERVICE_PROC *pService, unsigned int cpu)
 	{
 		signed int seek;
 
-		if ((KPublic->Core[cpu]->T.ThreadID == 0)
+		if ((PUBLIC(OF(Core, AT(cpu)))->T.ThreadID == 0)
 		&& ((seek = Seek_Topology_Thread_Peer(cpu, -1)) != -1))
 		{
 			hService.Core = cpu;
 			hService.Thread = seek;
 		} else {
-			if ((KPublic->Core[cpu]->T.ThreadID > 0)
+			if ((PUBLIC(OF(Core, AT(cpu)))->T.ThreadID > 0)
 			&& ((seek = Seek_Topology_Core_Peer(cpu, -1)) != -1))
 			{
 				hService.Core = seek;
@@ -10770,16 +10776,16 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 
 	switch (type) {
 	case NMI_LOCAL:
-		KPublic->Core[cpu]->Interrupt.NMI.LOCAL++;
+		PUBLIC(OF(Core, AT(cpu)))->Interrupt.NMI.LOCAL++;
 		break;
 	case NMI_UNKNOWN:
-		KPublic->Core[cpu]->Interrupt.NMI.UNKNOWN++;
+		PUBLIC(OF(Core, AT(cpu)))->Interrupt.NMI.UNKNOWN++;
 		break;
 	case NMI_SERR:
-		KPublic->Core[cpu]->Interrupt.NMI.PCISERR++;
+		PUBLIC(OF(Core, AT(cpu)))->Interrupt.NMI.PCISERR++;
 		break;
 	case NMI_IO_CHECK:
-		KPublic->Core[cpu]->Interrupt.NMI.IOCHECK++;
+		PUBLIC(OF(Core, AT(cpu)))->Interrupt.NMI.IOCHECK++;
 		break;
 	}
 	return (NMI_DONE);
@@ -10997,12 +11003,12 @@ static void Compute_Clock_SMT(void)
 	/* from last AP to BSP */
 	cpu--;
 
-    if (!BITVAL(KPublic->Core[cpu]->OffLine, OS))
+    if (!BITVAL(PUBLIC(OF(Core, AT(cpu)))->OffLine, OS))
     {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {
-			.Q = KPublic->Core[cpu]->Boost[BOOST(MAX)],
+			.Q = PUBLIC(OF(Core, AT(cpu)))->Boost[BOOST(MAX)],
 			.R = 0, .Hz = 0
 		}
 	};
@@ -11017,9 +11023,9 @@ static void Compute_Clock_SMT(void)
 		kfree(Compute.TSC[0]);
       }
     }
-	KPublic->Core[cpu]->Clock.Q  = Clock.Q;
-	KPublic->Core[cpu]->Clock.R  = Clock.R;
-	KPublic->Core[cpu]->Clock.Hz = Clock.Hz;
+	PUBLIC(OF(Core, AT(cpu)))->Clock.Q  = Clock.Q;
+	PUBLIC(OF(Core, AT(cpu)))->Clock.R  = Clock.R;
+	PUBLIC(OF(Core, AT(cpu)))->Clock.Hz = Clock.Hz;
   } while (cpu != 0) ;
 }
 
@@ -11032,13 +11038,13 @@ static long CoreFreqK_ioctl(	struct file *filp,
     switch (cmd)
     {
     case COREFREQ_IOCTL_SYSUPDT:
-	rc = Sys_OS_Driver_Query(Proc->OS.Gate);
+	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
 	rc = (rc == RC_SUCCESS) ? RC_OK_SYSGATE : rc;
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
-	rc = Sys_OS_Driver_Query(Proc->OS.Gate);
-	rc = (rc == RC_SUCCESS) ? Sys_Kernel(Proc->OS.Gate) : rc;
+	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
+	rc = (rc == RC_SUCCESS) ? Sys_Kernel(PUBLIC(OF(Gate))) : rc;
     break;
 
     case COREFREQ_IOCTL_MACHINE:
@@ -11507,13 +11513,13 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
-/*TODO(Hardening impacts!)
+/*TODO(Hardening impacts!)*/
 		vma->vm_flags = VM_READ;
 		vma->vm_page_prot = PAGE_READONLY;
-*/
+/**/
 		rc = remap_pfn_range(vma,
 					vma->vm_start,
-				virt_to_phys((void *)Proc->OS.Gate)>>PAGE_SHIFT,
+				virt_to_phys((void *) PUBLIC(OF(Gate))) >> PAGE_SHIFT,
 					reqSize,
 					vma->vm_page_prot);
 		break;
@@ -11524,7 +11530,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
     if (Proc != NULL) {
       if ((cpu >= 0) && (cpu < Proc->CPU.Count)) {
-	if (KPublic->Core[cpu] != NULL)
+	if (PUBLIC(OF(Core, AT(cpu))) != NULL)
 	{
 		secSize = ROUND_TO_PAGES(sizeof(CORE));
 		if (reqSize != secSize) {
@@ -11537,7 +11543,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 */
 		rc = remap_pfn_range(vma,
 				vma->vm_start,
-			virt_to_phys((void *)KPublic->Core[cpu]) >> PAGE_SHIFT,
+			virt_to_phys((void *) PUBLIC(OF(Core, AT(cpu)))) >> PAGE_SHIFT,
 				reqSize,
 				vma->vm_page_prot);
 	}
@@ -11617,22 +11623,22 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
   if (cpu < Proc->CPU.Count)
   {
 	/* Is this the very first time the processor is online ? */
-   if (KPublic->Core[cpu]->T.ApicID == -1)
+   if (PUBLIC(OF(Core, AT(cpu)))->T.ApicID == -1)
    {
     if (Core_Topology(cpu) == 0)
     {
-     if (KPublic->Core[cpu]->T.ApicID >= 0)
+     if (PUBLIC(OF(Core, AT(cpu)))->T.ApicID >= 0)
      {
-	BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, HW);
+	BITCLR(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, HW);
 	/* Is the BCLK frequency missing ? */
-      if (KPublic->Core[cpu]->Clock.Hz == 0)
+      if (PUBLIC(OF(Core, AT(cpu)))->Clock.Hz == 0)
       {
        if (AutoClock & 0b01)
        {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {
-			.Q=KPublic->Core[Proc->Service.Core]->Boost[BOOST(MAX)],
+			.Q = PUBLIC(OF(Core, AT(Proc->Service.Core)))->Boost[BOOST(MAX)],
 			.R = 0, .Hz = 0
 		}
 	};
@@ -11640,33 +11646,33 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	{
 	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	    {
-		KPublic->Core[cpu]->Clock = Compute_Clock(cpu, &Compute);
+		PUBLIC(OF(Core, AT(cpu)))->Clock = Compute_Clock(cpu, &Compute);
 
 		kfree(Compute.TSC[1]);
 	    }
 		kfree(Compute.TSC[0]);
 	}
        } else {
-	KPublic->Core[cpu]->Clock = KPublic->Core[Proc->Service.Core]->Clock;
+	PUBLIC(OF(Core, AT(cpu)))->Clock = PUBLIC(OF(Core, AT(Proc->Service.Core)))->Clock;
        }
       }
      }
     } else {
-	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, HW);
+	BITSET(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, HW);
     }
    }
 	/* Start the collect timer dedicated to this CPU. */
    if (Arch[Proc->ArchID].Timer != NULL) {
 	Arch[Proc->ArchID].Timer(cpu);
    }
-   if ((BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 0)
+   if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0)
     && (Arch[Proc->ArchID].Start != NULL)) {
 		smp_call_function_single(cpu,
 					Arch[Proc->ArchID].Start,
 					NULL, 0);
    }
 	Proc->CPU.OnLine++;
-	BITCLR(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
+	BITCLR(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, OS);
 
 	MatchPeerForUpService(&Proc->Service, cpu);
 
@@ -11695,15 +11701,15 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 {
     if (cpu < Proc->CPU.Count) {
 	/* Stop the associated collect timer. */
-	if((BITVAL(KPrivate->Join[cpu]->TSM, CREATED) == 1)
-	&& (BITVAL(KPrivate->Join[cpu]->TSM, STARTED) == 1)
+	if((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
+	&& (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1)
 	&& (Arch[Proc->ArchID].Stop != NULL)) {
 		smp_call_function_single(cpu,
 					Arch[Proc->ArchID].Stop,
 					NULL, 1);
 	}
 	Proc->CPU.OnLine--;
-	BITSET(LOCKLESS, KPublic->Core[cpu]->OffLine, OS);
+	BITSET(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->OffLine, OS);
 
 	/* Seek for an alternate Service Processor. */
 	if ((cpu == Proc->Service.Core) || (cpu == Proc->Service.Thread))
@@ -11716,7 +11722,7 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 	    {
 		smp_call_function_single(Proc->Service.Core,
 					Arch[Proc->ArchID].Update,
-					KPublic->Core[Proc->Service.Core], 1);
+					PUBLIC(OF(Core, AT(Proc->Service.Core))), 1);
 	    }
 #if CONFIG_HAVE_PERF_EVENTS==1
 		/* Reinitialize PMU Uncore counters. */
@@ -11881,11 +11887,11 @@ static int __init CoreFreqK_init(void)
 
 		privateSize = sizeof(KPRIVATE) + sizeof(JOIN*) * iArg.SMT_Count;
 
-	  if (((KPublic = kmalloc(publicSize, GFP_KERNEL)) != NULL)
-	   && ((KPrivate = kmalloc(privateSize, GFP_KERNEL)) != NULL))
+	  if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL)
+	   && ((PRIVATE() = kmalloc(privateSize, GFP_KERNEL)) != NULL))
 	  {
-		memset(KPublic, 0, publicSize);
-		memset(KPrivate, 0, privateSize);
+		memset(PUBLIC(), 0, publicSize);
+		memset(PRIVATE(), 0, privateSize);
 
 		packageSize = ROUND_TO_PAGES(sizeof(PROC));
 	    if ((Proc = kmalloc(packageSize, GFP_KERNEL)) != NULL)
@@ -11914,11 +11920,11 @@ static int __init CoreFreqK_init(void)
 		publicSize  = ROUND_TO_PAGES(sizeof(CORE));
 		privateSize = ROUND_TO_PAGES(sizeof(JOIN));
 
-		if (((KPublic->Cache = kmem_cache_create("corefreqk-pub",
+		if (((PUBLIC(OF(Cache)) = kmem_cache_create("corefreqk-pub",
 							publicSize, 0,
 							SLAB_HWCACHE_ALIGN,
 							NULL)) != NULL)
-		 && ((KPrivate->Cache = kmem_cache_create("corefreqk-priv",
+		 && ((PRIVATE(OF(Cache)) = kmem_cache_create("corefreqk-priv",
 							privateSize, 0,
 							SLAB_HWCACHE_ALIGN,
 							NULL)) != NULL))
@@ -11927,18 +11933,18 @@ static int __init CoreFreqK_init(void)
 			/* Allocation per CPU. */
 		  for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
 			void *kcache = NULL;
-			kcache = kmem_cache_alloc(KPublic->Cache, GFP_KERNEL);
+			kcache = kmem_cache_alloc(PUBLIC(OF(Cache)), GFP_KERNEL);
 			if (kcache != NULL) {
 				memset(kcache, 0, publicSize);
-				KPublic->Core[cpu] = kcache;
+				PUBLIC(OF(Core, AT(cpu))) = kcache;
 			} else {
 				allocPerCPU = 0;
 				break;
 			}
-			kcache = kmem_cache_alloc(KPrivate->Cache, GFP_KERNEL);
+			kcache = kmem_cache_alloc(PRIVATE(OF(Cache)), GFP_KERNEL);
 			if (kcache != NULL) {
 				memset(kcache, 0, privateSize);
-				KPrivate->Join[cpu] = kcache;
+				PRIVATE(OF(Join, AT(cpu))) = kcache;
 			} else {
 				allocPerCPU = 0;
 				break;
@@ -11947,11 +11953,11 @@ static int __init CoreFreqK_init(void)
 		  if (allocPerCPU)
 		  {
 		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++) {
-			BITCLR(LOCKLESS, KPublic->Core[cpu]->Sync.V, NTFY);
+			BITCLR(LOCKLESS, PUBLIC(OF(Core, AT(cpu)))->Sync.V, NTFY);
 
-			KPublic->Core[cpu]->Bind = cpu;
+			PUBLIC(OF(Core, AT(cpu)))->Bind = cpu;
 
-			Define_CPUID(KPublic->Core[cpu], CpuIDforVendor);
+			Define_CPUID(PUBLIC(OF(Core, AT(cpu))), CpuIDforVendor);
 		    }
 
 		    switch (Proc->Features.Info.Vendor.CRC)
@@ -12099,27 +12105,27 @@ static int __init CoreFreqK_init(void)
 		  }
 		  else
 		  {
-		   if (KPublic->Cache != NULL) {
+		   if (PUBLIC(OF(Cache)) != NULL) {
 		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 		    {
-		      if (KPublic->Core[cpu] != NULL) {
-			kmem_cache_free(KPublic->Cache, KPublic->Core[cpu]);
+		      if (PUBLIC(OF(Core, AT(cpu))) != NULL) {
+			kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(OF(Core, AT(cpu))));
 		      }
 		    }
-			kmem_cache_destroy(KPublic->Cache);
+			kmem_cache_destroy(PUBLIC(OF(Cache)));
 		   }
-		   if (KPrivate->Cache != NULL) {
+		   if (PRIVATE(OF(Cache)) != NULL) {
 		    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
 		    {
-		      if (KPrivate->Join[cpu] != NULL) {
-			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
+		      if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
+			kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
 		      }
 		    }
-			kmem_cache_destroy(KPrivate->Cache);
+			kmem_cache_destroy(PRIVATE(OF(Cache)));
 		   }
 			kfree(Proc);
-			kfree(KPublic);
-			kfree(KPrivate);
+			kfree(PUBLIC());
+			kfree(PRIVATE());
 
 			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
 			class_destroy(CoreFreqK.clsdev);
@@ -12129,15 +12135,15 @@ static int __init CoreFreqK_init(void)
 			rc = -ENOMEM;
 		  }
 		} else {
-			if (KPublic->Cache != NULL) {
-				kmem_cache_destroy(KPublic->Cache);
+			if (PUBLIC(OF(Cache)) != NULL) {
+				kmem_cache_destroy(PUBLIC(OF(Cache)));
 			}
-			if (KPrivate->Cache != NULL) {
-				kmem_cache_destroy(KPrivate->Cache);
+			if (PRIVATE(OF(Cache)) != NULL) {
+				kmem_cache_destroy(PRIVATE(OF(Cache)));
 			}
 			kfree(Proc);
-			kfree(KPublic);
-			kfree(KPrivate);
+			kfree(PUBLIC());
+			kfree(PRIVATE());
 
 			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
 			class_destroy(CoreFreqK.clsdev);
@@ -12147,8 +12153,8 @@ static int __init CoreFreqK_init(void)
 			rc = -ENOMEM;
 		}
 	    } else {
-		kfree(KPublic);
-		kfree(KPrivate);
+		kfree(PUBLIC());
+		kfree(PRIVATE());
 
 		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
 		class_destroy(CoreFreqK.clsdev);
@@ -12158,11 +12164,11 @@ static int __init CoreFreqK_init(void)
 		rc = -ENOMEM;
 	    }
 	  } else {
-		if (KPublic != NULL) {
-			kfree(KPublic);
+		if (PUBLIC() != NULL) {
+			kfree(PUBLIC());
 		}
-		if (KPrivate != NULL) {
-			kfree(KPrivate);
+		if (PRIVATE() != NULL) {
+			kfree(PRIVATE());
 		}
 		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
 		class_destroy(CoreFreqK.clsdev);
@@ -12197,61 +12203,61 @@ EXIT_INIT:
 
 static void __exit CoreFreqK_cleanup(void)
 {
-	if (Proc != NULL)
-	{
-		unsigned int cpu = 0;
+  if (Proc != NULL)
+  {
+	unsigned int cpu = 0;
 
-		CoreFreqK_UnRegister_Governor();
-		CoreFreqK_UnRegister_CPU_Freq();
-		CoreFreqK_UnRegister_CPU_Idle();
-		CoreFreqK_UnRegister_NMI();
+	CoreFreqK_UnRegister_Governor();
+	CoreFreqK_UnRegister_CPU_Freq();
+	CoreFreqK_UnRegister_CPU_Idle();
+	CoreFreqK_UnRegister_NMI();
 
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-		unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
+	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
 	#else /* KERNEL_VERSION(4, 10, 0) */
-		if (!(Proc->Registration.HotPlug < 0)) {
-			cpuhp_remove_state_nocalls(Proc->Registration.HotPlug);
-		}
+	if (!(Proc->Registration.HotPlug < 0)) {
+		cpuhp_remove_state_nocalls(Proc->Registration.HotPlug);
+	}
 	#endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
-		Controller_Stop(1);
-		Controller_Exit();
+	Controller_Stop(1);
+	Controller_Exit();
 
-		if (Proc->OS.Gate != NULL) {
-			free_pages_exact(Proc->OS.Gate, Proc->OS.ReqMem.Size);
-		}
-	for (cpu = 0;(KPublic->Cache != NULL) && (cpu < Proc->CPU.Count); cpu++)
-	{
-		if (KPublic->Core[cpu] != NULL) {
-			kmem_cache_free(KPublic->Cache, KPublic->Core[cpu]);
-		}
-		if (KPrivate->Join[cpu] != NULL) {
-			kmem_cache_free(KPrivate->Cache, KPrivate->Join[cpu]);
-		}
+	if (PUBLIC(OF(Gate)) != NULL) {
+		free_pages_exact(PUBLIC(OF(Gate)), Proc->OS.ReqMem.Size);
 	}
-		if (KPublic->Cache != NULL) {
-			kmem_cache_destroy(KPublic->Cache);
-		}
-		if (KPrivate->Cache != NULL) {
-			kmem_cache_destroy(KPrivate->Cache);
-		}
-		if (KPublic != NULL) {
-			kfree(KPublic);
-		}
-		if (KPrivate != NULL) {
-			kfree(KPrivate);
-		}
-		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-		class_destroy(CoreFreqK.clsdev);
-		cdev_del(CoreFreqK.kcdev);
-		unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-		printk(KERN_NOTICE "CoreFreq: Unload\n");
-
-		kfree(Proc);
+    for (cpu = 0;(PUBLIC(OF(Cache)) != NULL) && (cpu < Proc->CPU.Count); cpu++)
+    {
+	if (PUBLIC(OF(Core, AT(cpu))) != NULL) {
+		kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(OF(Core, AT(cpu))));
 	}
+	if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
+		kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
+	}
+    }
+	if (PUBLIC(OF(Cache)) != NULL) {
+		kmem_cache_destroy(PUBLIC(OF(Cache)));
+	}
+	if (PRIVATE(OF(Cache)) != NULL) {
+		kmem_cache_destroy(PRIVATE(OF(Cache)));
+	}
+	if (PUBLIC() != NULL) {
+		kfree(PUBLIC());
+	}
+	if (PRIVATE() != NULL) {
+		kfree(PRIVATE());
+	}
+	device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
+	class_destroy(CoreFreqK.clsdev);
+	cdev_del(CoreFreqK.kcdev);
+	unregister_chrdev_region(CoreFreqK.mkdev, 1);
+
+	printk(KERN_NOTICE "CoreFreq: Unload\n");
+
+	kfree(Proc);
+  }
 }
 
 module_init(CoreFreqK_init);

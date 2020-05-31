@@ -577,6 +577,7 @@ typedef struct {
 
 typedef struct
 {
+	SYSGATE 		*Gate;
 	struct kmem_cache	*Cache;
 	CORE			*Core[];
 } KPUBLIC;
