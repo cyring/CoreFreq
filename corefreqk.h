@@ -577,9 +577,12 @@ typedef struct {
 
 typedef struct
 {
-	SYSGATE 		*Gate;
+	PROC_RO 		*Proc_RO;
+	PROC_RW 		*Proc_RW;
+	SYSGATE_RO		*Gate;
 	struct kmem_cache	*Cache;
-	CORE			*Core[];
+	CORE_RO			**Core; /* as RO */
+	CORE_RW			**Core_RW;
 } KPUBLIC;
 
 enum { CREATED, STARTED, MUSTFWD };

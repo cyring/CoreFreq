@@ -7,6 +7,13 @@
 #define DRV_DEVNAME	"corefreqk"
 #define DRV_FILENAME	"/dev/"DRV_DEVNAME
 
+#define ID_RO_VMA_PROC	(CORE_COUNT + 0)
+#define ID_RW_VMA_PROC	(CORE_COUNT + ID_RO_VMA_PROC)
+#define ID_RO_VMA_GATE	(CORE_COUNT + ID_RW_VMA_PROC)
+#define ID_RO_VMA_CORE	(CORE_COUNT + ID_RO_VMA_GATE)
+#define ID_RW_VMA_CORE	(CORE_COUNT + ID_RO_VMA_CORE)
+#define ID_ANY_VMA_JAIL (CORE_COUNT + ID_RW_VMA_CORE)
+
 #define WAKEUP_RATIO	4
 #define LOOP_MIN_MS	100
 #define LOOP_MAX_MS	((1000 - 1) * WAKEUP_RATIO)
@@ -273,12 +280,6 @@ typedef struct
 
 typedef struct
 {
-	struct	/* 64-byte cache line size.				*/
-	{
-		Bit64			V,
-					_pad[7];
-	} Sync __attribute__ ((aligned (8)));
-
 	Bit64				OffLine __attribute__ ((aligned (8)));
 
 	struct
@@ -402,7 +403,17 @@ typedef struct
 	struct {
 		unsigned int		Perf;
 	} Ratio;
-} CORE;
+} CORE_RO;
+
+typedef struct
+{
+	struct	/* 64-byte cache line size.				*/
+	{
+		Bit64			V,
+					_pad[7];
+	} Sync __attribute__ ((aligned (8)));
+
+} CORE_RW;
 
 typedef struct
 {
@@ -597,7 +608,7 @@ typedef struct {
 				release[MAX_UTS_LEN],
 				version[MAX_UTS_LEN],
 				machine[MAX_UTS_LEN];
-} SYSGATE;
+} SYSGATE_RO; /*		RO Pages				*/
 
 typedef struct
 {
@@ -666,33 +677,6 @@ typedef struct
 	Bit256			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
 	Bit256			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
 
-	Bit256			ODCM		__attribute__ ((aligned (16)));
-	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
-	Bit256			SpeedStep	__attribute__ ((aligned (16)));
-	Bit256			TurboBoost	__attribute__ ((aligned (16)));
-	Bit256			HWP		__attribute__ ((aligned (16)));
-	Bit256			C1E		__attribute__ ((aligned (16)));
-	Bit256			C3A		__attribute__ ((aligned (16)));
-	Bit256			C1A		__attribute__ ((aligned (16)));
-	Bit256			C3U		__attribute__ ((aligned (16)));
-	Bit256			C1U		__attribute__ ((aligned (16)));
-	Bit256			CC6		__attribute__ ((aligned (16)));
-	Bit256			PC6		__attribute__ ((aligned (16)));
-	Bit256			SMM		__attribute__ ((aligned (16)));
-	Bit256			VM		__attribute__ ((aligned (16)));
-	Bit256			IBRS		__attribute__ ((aligned (16)));
-	Bit256			STIBP		__attribute__ ((aligned (16)));
-	Bit256			SSBD		__attribute__ ((aligned (16)));
-	Bit256			RDCL_NO 	__attribute__ ((aligned (16)));
-	Bit256			IBRS_ALL	__attribute__ ((aligned (16)));
-	Bit256			RSBA		__attribute__ ((aligned (16)));
-	Bit256			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
-	Bit256			SSB_NO		__attribute__ ((aligned (16)));
-	Bit256			MDS_NO		__attribute__ ((aligned (16)));
-	Bit256			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
-	Bit256			TAA_NO		__attribute__ ((aligned (16)));
-	Bit256			SPLA		__attribute__ ((aligned (16)));
-
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
 	enum POWER_FORMULAS	powerFormula;
@@ -727,7 +711,6 @@ typedef struct
 	} PowerThermal;
 
 	struct {
-		Bit64		Signal	__attribute__ ((aligned (8)));
 		struct {
 			size_t	Size;
 			int	Order;
@@ -749,7 +732,41 @@ typedef struct
 	SMBIOS_ST		SMB;
 
 	FOOTPRINT		FootPrint;
-} PROC;
+} PROC_RO; /*			RO Pages				*/
+
+typedef struct
+{
+	Bit256			ODCM		__attribute__ ((aligned (16)));
+	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
+	Bit256			SpeedStep	__attribute__ ((aligned (16)));
+	Bit256			TurboBoost	__attribute__ ((aligned (16)));
+	Bit256			HWP		__attribute__ ((aligned (16)));
+	Bit256			C1E		__attribute__ ((aligned (16)));
+	Bit256			C3A		__attribute__ ((aligned (16)));
+	Bit256			C1A		__attribute__ ((aligned (16)));
+	Bit256			C3U		__attribute__ ((aligned (16)));
+	Bit256			C1U		__attribute__ ((aligned (16)));
+	Bit256			CC6		__attribute__ ((aligned (16)));
+	Bit256			PC6		__attribute__ ((aligned (16)));
+	Bit256			SMM		__attribute__ ((aligned (16)));
+	Bit256			VM		__attribute__ ((aligned (16)));
+	Bit256			IBRS		__attribute__ ((aligned (16)));
+	Bit256			STIBP		__attribute__ ((aligned (16)));
+	Bit256			SSBD		__attribute__ ((aligned (16)));
+	Bit256			RDCL_NO 	__attribute__ ((aligned (16)));
+	Bit256			IBRS_ALL	__attribute__ ((aligned (16)));
+	Bit256			RSBA		__attribute__ ((aligned (16)));
+	Bit256			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
+	Bit256			SSB_NO		__attribute__ ((aligned (16)));
+	Bit256			MDS_NO		__attribute__ ((aligned (16)));
+	Bit256			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
+	Bit256			TAA_NO		__attribute__ ((aligned (16)));
+	Bit256			SPLA		__attribute__ ((aligned (16)));
+
+	struct {
+		Bit64		Signal	__attribute__ ((aligned (8)));
+	} OS;
+} PROC_RW; /*			RW Pages				*/
 
 
 #ifndef PCI_DEVICE_ID_INTEL_82945P_HB
