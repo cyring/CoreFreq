@@ -27,6 +27,10 @@ endif
 DEFINITIONS =	-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
 		-D TASK_ORDER=$(TASK_ORDER) -D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
 
+ifneq ($(LEGACY),)
+DEFINITIONS += -D LEGACY=$(LEGACY)
+endif
+
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
 ccflags-y += -D MSR_CORE_PERF_URC=$(MSR_CORE_PERF_URC)
 
@@ -108,6 +112,7 @@ info:
 	$(info PWD [$(PWD)])
 	$(info KERNELDIR [$(KERNELDIR)])
 	$(info PREFIX [$(PREFIX)])
+	$(info LEGACY [$(LEGACY)])
 	$(info UBENCH [$(UBENCH)])
 	$(info FEAT_DBG [$(FEAT_DBG)])
 	$(info OPTIM_LVL [$(OPTIM_LVL)])
@@ -128,6 +133,9 @@ help:
 	"|                                                               |\n"\
 	"|  KERNELDIR=<PATH>                                             |\n"\
 	"|    where <PATH> is the Kernel source directory                |\n"\
+	"|                                                               |\n"\
+	"|  LEGACY=<N>                                                   |\n"\
+	"|    where <N> is 1 when CMPXCHG16 is not available             |\n"\
 	"|                                                               |\n"\
 	"|  UBENCH=<N>                                                   |\n"\
 	"|    where <N> is 0 to disable or 1 to enable micro-benchmark   |\n"\

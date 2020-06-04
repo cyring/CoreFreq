@@ -443,24 +443,6 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	_ret;								\
 })
 
-#define BITCMP(_lock, _opl, _opr)					\
-({									\
-	Bit64 _tmp __attribute__ ((aligned (8))) = _opl;		\
-	volatile unsigned char _ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq	%[opr], %%rax"		"\n\t"			\
-	_lock	"xorq	%%rax, %[tmp]"		"\n\t"			\
-		"setz	%[ret]" 					\
-		: [ret] "+m" (_ret)					\
-		: [tmp] "m" (_tmp),					\
-		  [opr] "m" (_opr)					\
-		: "cc", "memory", "%rax"				\
-	);								\
-	_ret;								\
-})
-
 #define BITBSF(_base, _index)						\
 ({									\
 	volatile unsigned char _ret;					\
@@ -578,6 +560,30 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 })
 
+#if defined(LEGACY) && LEGACY == 1
+#define BITCMP_CC(_cct, _lock, _opl, _opr)				\
+({									\
+	unsigned char ret = 1;						\
+	unsigned int cw = 0;						\
+	do {								\
+		Bit64 _tmp __attribute__ ((aligned (8))) = _opl[cw];	\
+		volatile unsigned char _ret;				\
+									\
+		__asm__ volatile					\
+		(							\
+			"movq	%[opr], %%rbx"		"\n\t"		\
+		_lock	"xorq	%%rbx, %[tmp]"		"\n\t"		\
+			"setz	%[ret]" 				\
+			: [ret] "+m" (_ret)				\
+			: [tmp] "m" (_tmp),				\
+			  [opr] "m" (_opr[cw])				\
+			: "cc", "memory", "%rbx"			\
+		);							\
+		ret &= _ret;						\
+	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
+	ret;								\
+})
+#else
 #define BITCMP_CC(_cct, _lock, _opl, _opr)				\
 ({									\
 	volatile unsigned char _ret;					\
@@ -618,6 +624,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	_ret;								\
 })
+#endif
 
 /* Micro-benchmark. Prerequisites: CPU affinity, RDTSC[P] optionnaly RDPMC */
 #if defined(UBENCH) && UBENCH == 1

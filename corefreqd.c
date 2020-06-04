@@ -4865,10 +4865,13 @@ REASON_CODE Core_Manager(REF *Ref)
 
     while (!BITVAL(Shutdown, SYNC))
     {	/* Loop while all the cpu room bits are not cleared.		*/
-	while ( !BITVAL(Shutdown, SYNC)
-		&& !(Shm->Proc.Features.Std.ECX.CMPXCHG16 ?
-		    BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore,roomClear)
-		  : BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])) )
+	while ( !BITVAL(Shutdown, SYNC) &&
+	    #if defined(LEGACY) && LEGACY == 1
+		!BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])
+	    #else
+		!BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)
+	    #endif
+	)
 	{
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
 	}
