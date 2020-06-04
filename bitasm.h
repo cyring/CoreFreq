@@ -589,18 +589,22 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		"movl		%[cct], %%ecx"		"\n\t"		\
 		"shll		$25, %%ecx"		"\n\t"		\
 		"jc		1f"			"\n\t"		\
-		"movq		16+%[opr], %%rax"	"\n\t"		\
-		"movq		24+%[opr], %%rdx"	"\n\t"		\
-		"movq		16+%[opl], %%rbx"	"\n\t"		\
-		"movq		24+%[opl], %%rcx"	"\n\t"		\
-	_lock	"rex cmpxchg16b 16+%[opl]"		"\n\t"		\
+		"leaq		%[opr], %%r12"		"\n\t"		\
+		"movq		16(%%r12), %%rax"	"\n\t"		\
+		"movq		24(%%r12), %%rdx"	"\n\t"		\
+		"leaq		%[opl], %%r12"		"\n\t"		\
+		"movq		16(%%r12), %%rbx"	"\n\t"		\
+		"movq		24(%%r12), %%rcx"	"\n\t"		\
+	_lock	"rex cmpxchg16b 16(%%r12)"		"\n\t"		\
 		"setz		%%sil"			"\n\t"		\
 	"1:"						"\n\t"		\
-		"movq		0+%[opr], %%rax"	"\n\t"		\
-		"movq		8+%[opr], %%rdx"	"\n\t"		\
-		"movq		0+%[opl], %%rbx"	"\n\t"		\
-		"movq		8+%[opl], %%rcx"	"\n\t"		\
-	_lock	"rex cmpxchg16b 0+%[opl]"		"\n\t"		\
+		"leaq		%[opr], %%r12"		"\n\t"		\
+		"movq		0(%%r12), %%rax"	"\n\t"		\
+		"movq		8(%%r12), %%rdx"	"\n\t"		\
+		"leaq		%[opl], %%r12"		"\n\t"		\
+		"movq		0(%%r12), %%rbx"	"\n\t"		\
+		"movq		8(%%r12), %%rcx"	"\n\t"		\
+	_lock	"rex cmpxchg16b 0(%%r12)"		"\n\t"		\
 		"setz		%%dil"			"\n\t"		\
 		"andq		%%rsi, %%rdi"		"\n\t"		\
 		"mov		%%dil, %[ret]"				\
@@ -609,7 +613,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		: [cct] "irm"(_cct),					\
 		  [opr]  "m" (_opr)					\
 		: "cc", "memory",					\
-		  "%rax", "%rbx", "%rcx", "%rdx", "%rdi", "%rsi"	\
+		  "%rax", "%rbx", "%rcx", "%rdx", "%rdi", "%rsi", "%r12"\
 	);								\
 									\
 	_ret;								\
