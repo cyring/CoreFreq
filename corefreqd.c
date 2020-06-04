@@ -60,9 +60,9 @@ typedef struct {
 	} Slice;
 	FD			*fd;
 	SHM_STRUCT		*Shm;
-	PROC_RO 		*Proc;
+	PROC_RO 		*Proc_RO;
 	PROC_RW			*Proc_RW;
-	CORE_RO			**Core;
+	CORE_RO			**Core_RO;
 	CORE_RW			**Core_RW;
 	SYSGATE_RO		*SysGate;
 } REF;
@@ -805,7 +805,7 @@ static void *Core_Cycle(void *arg)
 	ARG		*Arg		= (ARG *) arg;
 	unsigned int	cpu		= Arg->Bind;
 	SHM_STRUCT	*Shm		= Arg->Ref->Shm;
-	CORE_RO 	*Core		= Arg->Ref->Core[cpu];
+	CORE_RO 	*Core		= Arg->Ref->Core_RO[cpu];
 	CORE_RW 	*Core_RW	= Arg->Ref->Core_RW[cpu];
 	CPU_STRUCT	*Cpu		= &Shm->Cpu[cpu];
 
@@ -1193,58 +1193,59 @@ EXIT:
 	return (NULL);
 }
 
-void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc)
+void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
-	Bit32	fTSC = Proc->Features.Std.EDX.TSC,
-		aTSC = Proc->Features.AdvPower.EDX.Inv_TSC;
+	Bit32	fTSC = Proc_RO->Features.Std.EDX.TSC,
+		aTSC = Proc_RO->Features.AdvPower.EDX.Inv_TSC;
 
+#ifdef CHAPPIE
+	/* Hardening: Segmentation fault because page access is read-only */
+	memcpy(Proc_RO->Architecture, "Chappie Processor", 17);
+#endif
 	/* Copy all initial CPUID features.				*/
-/*TODO(Hardening Example)
-	memcpy(Proc->Architecture, "Chappie Processor", 17);
-*/
-	memcpy(&Shm->Proc.Features, &Proc->Features, sizeof(FEATURES));
+	memcpy(&Shm->Proc.Features, &Proc_RO->Features, sizeof(FEATURES));
 	/* Copy the fomula identifiers					*/
-	Shm->Proc.thermalFormula = Proc->thermalFormula;
-	Shm->Proc.voltageFormula = Proc->voltageFormula;
-	Shm->Proc.powerFormula   = Proc->powerFormula;
+	Shm->Proc.thermalFormula = Proc_RO->thermalFormula;
+	Shm->Proc.voltageFormula = Proc_RO->voltageFormula;
+	Shm->Proc.powerFormula   = Proc_RO->powerFormula;
 	/* Copy the numbers of total & online CPU.			*/
-	Shm->Proc.CPU.Count	= Proc->CPU.Count;
-	Shm->Proc.CPU.OnLine	= Proc->CPU.OnLine;
-	Shm->Proc.Service.Proc	= Proc->Service.Proc;
+	Shm->Proc.CPU.Count	= Proc_RO->CPU.Count;
+	Shm->Proc.CPU.OnLine	= Proc_RO->CPU.OnLine;
+	Shm->Proc.Service.Proc	= Proc_RO->Service.Proc;
 	/* Architecture and Hypervisor identifiers.			*/
-	Shm->Proc.ArchID = Proc->ArchID;
-	Shm->Proc.HypervisorID = Proc->HypervisorID;
+	Shm->Proc.ArchID = Proc_RO->ArchID;
+	Shm->Proc.HypervisorID = Proc_RO->HypervisorID;
 	/* Copy the Architecture name.					*/
-	StrCopy(Shm->Proc.Architecture, Proc->Architecture, CODENAME_LEN);
+	StrCopy(Shm->Proc.Architecture, Proc_RO->Architecture, CODENAME_LEN);
 	/* Copy the processor's brand string.				*/
-	StrCopy(Shm->Proc.Brand, Proc->Features.Info.Brand, 48 + 4);
+	StrCopy(Shm->Proc.Brand, Proc_RO->Features.Info.Brand, 48 + 4);
 	/* Compute the TSC mode: None, Variant, Invariant		*/
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
 
-void PerformanceMonitoring(SHM_STRUCT *Shm, PROC_RO *Proc)
+void PerformanceMonitoring(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
-	Shm->Proc.PM_version = Proc->Features.PerfMon.EAX.Version;
+	Shm->Proc.PM_version = Proc_RO->Features.PerfMon.EAX.Version;
 }
 
-void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc)
+void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {	/* Update the HyperThreading state				*/
-	Shm->Proc.Features.HyperThreading = Proc->Features.HTT_Enable;
+	Shm->Proc.Features.HyperThreading = Proc_RO->Features.HTT_Enable;
 }
 
-void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc)
+void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
 	unsigned int PowerUnits;
 
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     { /* AMD PowerNow */
-	if (Proc->Features.AdvPower.EDX.FID) {
+	if (Proc_RO->Features.AdvPower.EDX.FID) {
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
 	}
-	if (Proc->Features.AdvPower.EDX.VID) {
+	if (Proc_RO->Features.AdvPower.EDX.VID) {
 		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
@@ -1252,141 +1253,141 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc)
     } else {
 	Shm->Proc.PowerNow = 0;
     }
-    switch (KIND_OF_FORMULA(Proc->powerFormula)) {
+    switch (KIND_OF_FORMULA(Proc_RO->powerFormula)) {
       case POWER_KIND_INTEL:
       case POWER_KIND_AMD:
       case POWER_KIND_AMD_17h:
-	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
-			1.0 / (double) (1 << Proc->PowerThermal.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
-			1.0 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
+			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
+			1.0 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU) : 0;
 	break;
       case POWER_KIND_INTEL_ATOM:
-	Shm->Proc.Power.Unit.Watts = Proc->PowerThermal.Unit.PU > 0 ?
-			0.001 / (double)(1 << Proc->PowerThermal.Unit.PU) : 0;
-	Shm->Proc.Power.Unit.Joules= Proc->PowerThermal.Unit.ESU > 0 ?
-			0.001 / (double)(1 << Proc->PowerThermal.Unit.ESU) : 0;
+	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
+			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.PU) : 0;
+	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
+			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU) : 0;
 	break;
       case POWER_KIND_NONE:
 	break;
     }
-	Shm->Proc.Power.Unit.Times = Proc->PowerThermal.Unit.TU > 0 ?
-			1.0 / (double) (1 << Proc->PowerThermal.Unit.TU) : 0;
+	Shm->Proc.Power.Unit.Times = Proc_RO->PowerThermal.Unit.TU > 0 ?
+			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU) : 0;
 
-	PowerUnits = 2 << (Proc->PowerThermal.Unit.PU - 1);
+	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
     if (PowerUnits != 0)
     {
-	Shm->Proc.Power.TDP	= Proc->PowerThermal.PowerInfo.ThermalSpecPower
+	Shm->Proc.Power.TDP	= Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
 				/ PowerUnits;
-	Shm->Proc.Power.Min	= Proc->PowerThermal.PowerInfo.MinimumPower
+	Shm->Proc.Power.Min	= Proc_RO->PowerThermal.PowerInfo.MinimumPower
 				/ PowerUnits;
-	Shm->Proc.Power.Max	= Proc->PowerThermal.PowerInfo.MaximumPower
+	Shm->Proc.Power.Max	= Proc_RO->PowerThermal.PowerInfo.MaximumPower
 				/ PowerUnits;
     }
 }
 
-void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc, PROC_RW *Proc_RW)
+void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
 
 	Shm->Proc.Technology.ODCM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->ODCM,
-						Proc->ODCM_Mask );
+						Proc_RO->ODCM_Mask );
 
 	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->PowerMgmt,
-						Proc->PowerMgmt_Mask);
+						Proc_RO->PowerMgmt_Mask);
 
 	Shm->Proc.Technology.EIST = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SpeedStep,
-						Proc->SpeedStep_Mask );
+						Proc_RO->SpeedStep_Mask );
 
 	Shm->Proc.Technology.Turbo = BITWISEAND_CC(LOCKLESS,
 						Proc_RW->TurboBoost,
-						Proc->TurboBoost_Mask) != 0;
+						Proc_RO->TurboBoost_Mask) != 0;
 
 	Shm->Proc.Technology.C1E = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->C1E,
-						Proc->C1E_Mask );
+						Proc_RO->C1E_Mask );
 
-	Shm->Proc.Technology.C3A = BITCMP_CC( Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C3A = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->C3A,
-						Proc->C3A_Mask );
+						Proc_RO->C3A_Mask );
 
 	Shm->Proc.Technology.C1A = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->C1A,
-						Proc->C1A_Mask );
+						Proc_RO->C1A_Mask );
 
 	Shm->Proc.Technology.C3U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->C3U,
-						Proc->C3U_Mask );
+						Proc_RO->C3U_Mask );
 
 	Shm->Proc.Technology.C1U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->C1U,
-						Proc->C1U_Mask );
+						Proc_RO->C1U_Mask );
 
 	Shm->Proc.Technology.CC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->CC6,
-						Proc->CC6_Mask );
+						Proc_RO->CC6_Mask );
 
 	Shm->Proc.Technology.PC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->PC6,
-						Proc->PC6_Mask );
+						Proc_RO->PC6_Mask );
 
 	Shm->Proc.Technology.SMM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SMM,
-						Proc->CR_Mask );
+						Proc_RO->CR_Mask );
 
 	Shm->Proc.Technology.VM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->VM,
-						Proc->CR_Mask );
+						Proc_RO->CR_Mask );
 }
 
-void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc, PROC_RW *Proc_RW)
+void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {
 	unsigned short	IBRS = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->IBRS,
-						Proc->SPEC_CTRL_Mask ),
+						Proc_RO->SPEC_CTRL_Mask ),
 
 			STIBP = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->STIBP,
-						Proc->SPEC_CTRL_Mask ),
+						Proc_RO->SPEC_CTRL_Mask ),
 
 			SSBD = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SSBD,
-						Proc->SPEC_CTRL_Mask ),
+						Proc_RO->SPEC_CTRL_Mask ),
 
 			RDCL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->RDCL_NO,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			IBRS_ALL = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->RDCL_NO,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			RSBA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->RSBA,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			L1DFL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->L1DFL_VMENTRY_NO,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			SSB_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SSB_NO,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			MDS_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->MDS_NO,
-						Proc->ARCH_CAP_Mask ),
+						Proc_RO->ARCH_CAP_Mask ),
 
 			PSCHANGE_MC_NO=BITCMP_CC(Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->PSCHANGE_MC_NO,
-						Proc->ARCH_CAP_Mask),
+						Proc_RO->ARCH_CAP_Mask),
 
 			TAA_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->TAA_NO,
-						Proc->ARCH_CAP_Mask );
+						Proc_RO->ARCH_CAP_Mask );
 
 	Shm->Proc.Mechanisms.IBRS = (
 		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap+(2 * IBRS)
@@ -1423,35 +1424,35 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc, PROC_RW *Proc_RW)
 	);
 	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SPLA,
-						Proc->ARCH_CAP_Mask );
+						Proc_RO->ARCH_CAP_Mask );
 }
 
-void Package_Update(SHM_STRUCT *Shm, PROC_RO *Proc, PROC_RW *Proc_RW)
+void Package_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {	/* Copy the operational settings.				*/
-	Shm->Registration.AutoClock = Proc->Registration.AutoClock;
-	Shm->Registration.Experimental = Proc->Registration.Experimental;
-	Shm->Registration.HotPlug = Proc->Registration.HotPlug;
-	Shm->Registration.PCI = Proc->Registration.PCI;
-	BITSTOR(LOCKLESS, Shm->Registration.NMI, Proc->Registration.NMI);
-	Shm->Registration.Driver = Proc->Registration.Driver;
+	Shm->Registration.AutoClock = Proc_RO->Registration.AutoClock;
+	Shm->Registration.Experimental = Proc_RO->Registration.Experimental;
+	Shm->Registration.HotPlug = Proc_RO->Registration.HotPlug;
+	Shm->Registration.PCI = Proc_RO->Registration.PCI;
+	BITSTOR(LOCKLESS, Shm->Registration.NMI, Proc_RO->Registration.NMI);
+	Shm->Registration.Driver = Proc_RO->Registration.Driver;
 	/* Copy the timer interval delay.				*/
-	Shm->Sleep.Interval = Proc->SleepInterval;
+	Shm->Sleep.Interval = Proc_RO->SleepInterval;
 	/* Compute the polling wait time based on the timer interval.	*/
 	Shm->Sleep.pollingWait = TIMESPEC((Shm->Sleep.Interval * 1000000L)
 				/ WAKEUP_RATIO);
 	/* Copy the SysGate tick steps.					*/
-	Shm->SysGate.tickReset = Proc->tickReset;
-	Shm->SysGate.tickStep  = Proc->tickStep;
+	Shm->SysGate.tickReset = Proc_RO->tickReset;
+	Shm->SysGate.tickStep  = Proc_RO->tickStep;
 
-	Architecture(Shm, Proc);
+	Architecture(Shm, Proc_RO);
 
-	PerformanceMonitoring(Shm, Proc);
+	PerformanceMonitoring(Shm, Proc_RO);
 
-	HyperThreading(Shm, Proc);
+	HyperThreading(Shm, Proc_RO);
 
-	PowerInterface(Shm, Proc);
+	PowerInterface(Shm, Proc_RO);
 
-	Mitigation_Mechanisms(Shm, Proc, Proc_RW);
+	Mitigation_Mechanisms(Shm, Proc_RO, Proc_RW);
 }
 
 typedef struct {
@@ -4296,7 +4297,7 @@ void PerCore_Update(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int
 int SysGate_OnDemand(REF *Ref, int operation)
 {
 	int rc = -1;
-	const size_t allocPages = PAGE_SIZE << Ref->Proc->OS.ReqMem.Order;
+	const size_t allocPages = PAGE_SIZE << Ref->Proc_RO->OS.ReqMem.Order;
 	if (operation == 0) {
 	    if (Ref->SysGate != NULL) {
 		if ((rc = munmap(Ref->SysGate, allocPages)) == 0) {
@@ -4335,7 +4336,7 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
     } else {
 	if (!BITWISEAND(LOCKLESS, Ref->Shm->SysGate.Operation, 0x1)) {
 	    if (SysGate_OnDemand(Ref, 1) == 0) {
-		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -1) {
+		if (ioctl(Ref->fd->Drv, COREFREQ_IOCTL_SYSONCE) != -EPERM) {
 			/* Aggregate the OS idle driver data.		*/
 			SysGate_OS_Driver(Ref);
 			/* Copy system information.			*/
@@ -4354,15 +4355,15 @@ void UpdateFeatures(REF *Ref)
 {
 	unsigned int cpu;
 
-	Package_Update(Ref->Shm, Ref->Proc, Ref->Proc_RW);
+	Package_Update(Ref->Shm, Ref->Proc_RO, Ref->Proc_RW);
 	for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
-	    if (BITVAL(Ref->Core[cpu]->OffLine, OS) == 0)
+	    if (BITVAL(Ref->Core_RO[cpu]->OffLine, OS) == 0)
 	    {
-		PerCore_Update(Ref->Shm, Ref->Proc, Ref->Core, cpu);
+		PerCore_Update(Ref->Shm, Ref->Proc_RO, Ref->Core_RO, cpu);
 	    }
 	}
-	Uncore(Ref->Shm, Ref->Proc, Ref->Core[Ref->Proc->Service.Core]);
-	Technology_Update(Ref->Shm, Ref->Proc, Ref->Proc_RW);
+	Uncore(Ref->Shm, Ref->Proc_RO, Ref->Core_RO[Ref->Proc_RO->Service.Core]);
+	Technology_Update(Ref->Shm, Ref->Proc_RO, Ref->Proc_RW);
 }
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
@@ -4741,9 +4742,9 @@ static inline void Pkg_ResetPower_AMD_17h(PROC_RO *Proc)
 REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
-	PROC_RO			*Proc = Ref->Proc;
+	PROC_RO			*Proc = Ref->Proc_RO;
 	PROC_RW			*Proc_RW = Ref->Proc_RW;
-	CORE_RO			**Core = Ref->Core;
+	CORE_RO			**Core = Ref->Core_RO;
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
@@ -5150,29 +5151,29 @@ REASON_CODE Child_Manager(REF *Ref)
 	return (reason);
 }
 
-REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc, PROC_RW *Proc_RW,
+REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 			uid_t uid, uid_t gid, mode_t cmask)
 {
 	unsigned int	cpu = 0;
-	CORE_RO 	**Core;
+	CORE_RO 	**Core_RO;
 	CORE_RW 	**Core_RW;
 	SHM_STRUCT	*Shm = NULL;
 	const size_t	Core_RO_Size = ROUND_TO_PAGES(sizeof(CORE_RO)),
 			Core_RW_Size = ROUND_TO_PAGES(sizeof(CORE_RW));
 	REASON_INIT(reason);
 
-    if ((Core = calloc(Proc->CPU.Count, sizeof(Core))) == NULL) {
+    if ((Core_RO = calloc(Proc_RO->CPU.Count, sizeof(Core_RO))) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
     }
-    if ((Core_RW = calloc(Proc->CPU.Count, sizeof(Core_RW))) == NULL) {
+    if ((Core_RW = calloc(Proc_RO->CPU.Count, sizeof(Core_RW))) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
     }
-    for (cpu = 0; (reason.rc == RC_SUCCESS) && (cpu < Proc->CPU.Count); cpu++)
+    for (cpu = 0; (reason.rc == RC_SUCCESS) && (cpu < Proc_RO->CPU.Count); cpu++)
     {
 	const off_t	vm_ro_pgoff = (ID_RO_VMA_CORE + cpu) * PAGE_SIZE,
 			vm_rw_pgoff = (ID_RW_VMA_CORE + cpu) * PAGE_SIZE;
 
-	if ((Core[cpu] = mmap(	NULL, Core_RO_Size,
+	if ((Core_RO[cpu] = mmap(NULL, Core_RO_Size,
 				PROT_READ,
 				MAP_SHARED,
 				fd->Drv, vm_ro_pgoff)) == MAP_FAILED)
@@ -5206,7 +5207,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc, PROC_RW *Proc_RW,
     }
     if (reason.rc == RC_SUCCESS)
     {	/* Initialize shared memory.					*/
-	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc->CPU.Count,
+	const size_t ShmCpuSize = sizeof(CPU_STRUCT) * Proc_RO->CPU.Count,
 			ShmSize = ROUND_TO_PAGES((sizeof(SHM_STRUCT)
 				+ ShmCpuSize));
 
@@ -5247,17 +5248,17 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc, PROC_RW *Proc_RW,
 			.Slice.arg	= 0,
 			.fd		= fd,
 			.Shm		= Shm,
-			.Proc		= Proc,
+			.Proc_RO	= Proc_RO,
 			.Proc_RW	= Proc_RW,
-			.Core		= Core,
+			.Core_RO	= Core_RO,
 			.Core_RW	= Core_RW,
 			.SysGate	= NULL
 		};
 		sigemptyset(&Ref.Signal);
 
-		Package_Update(Shm, Proc, Proc_RW);
-		Uncore(Shm, Proc, Core[Proc->Service.Core]);
-		memcpy(&Shm->SMB, &Proc->SMB, sizeof(SMBIOS_ST));
+		Package_Update(Shm, Proc_RO, Proc_RW);
+		Uncore(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
+		memcpy(&Shm->SMB, &Proc_RO->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notifications.				*/
 		BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0);
@@ -5360,10 +5361,10 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc, PROC_RW *Proc_RW,
 		REASON_SET(reason, RC_SHM_FILE);
       }
     }
-    for (cpu = 0; cpu < Proc->CPU.Count; cpu++)
+    for (cpu = 0; cpu < Proc_RO->CPU.Count; cpu++)
     {
-	if (Core[cpu] != NULL) {
-	    if (munmap(Core[cpu], Core_RO_Size) == -1) {
+	if (Core_RO[cpu] != NULL) {
+	    if (munmap(Core_RO[cpu], Core_RO_Size) == -1) {
 		REASON_SET(reason, RC_SHM_MMAP);
 	    }
 	}
@@ -5373,8 +5374,8 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc, PROC_RW *Proc_RW,
 	    }
 	}
     }
-    if (Core != NULL) {
-	free(Core);
+    if (Core_RO != NULL) {
+	free(Core_RO);
     }
     if (Core_RW != NULL) {
 	free(Core_RW);

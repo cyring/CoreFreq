@@ -581,7 +581,7 @@ typedef struct
 	PROC_RW 		*Proc_RW;
 	SYSGATE_RO		*Gate;
 	struct kmem_cache	*Cache;
-	CORE_RO			**Core; /* as RO */
+	CORE_RO			**Core_RO;
 	CORE_RW			**Core_RW;
 } KPUBLIC;
 
