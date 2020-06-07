@@ -47,7 +47,7 @@
 
 MODULE_AUTHOR ("CYRIL INGENIERIE <labs[at]cyring[dot]fr>");
 MODULE_DESCRIPTION ("CoreFreq Processor Driver");
-MODULE_SUPPORTED_DEVICE ("Intel Core Core2 Atom Xeon i3 i5 i7, AMD [0Fh, 17h]");
+MODULE_SUPPORTED_DEVICE ("Intel,AMD,HYGON");
 MODULE_LICENSE ("GPL");
 MODULE_VERSION (COREFREQ_VERSION);
 
@@ -352,11 +352,16 @@ signed int SearchArchitectureID(void)
 	signed int id;
     for (id = ARCHITECTURES - 1; id > 0; id--)
     {	/* Search for an architecture signature. */
-	if((PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily == Arch[id].Signature.ExtFamily)
-	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Family == Arch[id].Signature.Family)
-	&& (((PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel ==  Arch[id].Signature.ExtModel)
-		&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model ==  Arch[id].Signature.Model))
-		|| (!Arch[id].Signature.ExtModel && !Arch[id].Signature.Model)))
+	if ( (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily \
+		== Arch[id].Signature.ExtFamily)
+	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Family \
+		== Arch[id].Signature.Family)
+	&& ( ( (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel \
+			==  Arch[id].Signature.ExtModel)
+		&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model \
+			==  Arch[id].Signature.Model) )
+		|| (!Arch[id].Signature.ExtModel \
+		&& !Arch[id].Signature.Model) ) )
 	{
 		break;
 	}
@@ -719,10 +724,11 @@ static void Query_Features(void *pArg)
 	  iArg->Features->Factory.Freq=Intel_Brand(iArg->Features->Info.Brand);
 
 	} else if ((iArg->Features->Info.Vendor.CRC == CRC_AMD)
-		|| (iArg->Features->Info.Vendor.CRC == CRC_HYGON)) {
-		/* Core Performance 64 bits General Counters. */
+		|| (iArg->Features->Info.Vendor.CRC == CRC_HYGON))
+	{	/*	Core Performance 64 bits General Counters.	*/
 		iArg->Features->PerfMon.EAX.MonWidth = 64;
-	    if (iArg->Features->ExtInfo.ECX.PerfCore) {
+	    if (iArg->Features->ExtInfo.ECX.PerfCore)
+	    {
 		iArg->Features->PerfMon.EAX.MonCtrs = 6;
 	    } else {
 		iArg->Features->PerfMon.EAX.MonCtrs = 4;
@@ -730,19 +736,22 @@ static void Query_Features(void *pArg)
 		/* Fixed Performance Counters. */
 		iArg->Features->PerfMon.EDX.FixWidth = 64;
 	    if ( iArg->Features->Power.ECX.HCF_Cap
-	       | iArg->Features->AdvPower.EDX.EffFrqRO ) {
+	       | iArg->Features->AdvPower.EDX.EffFrqRO )
+	    {
 		iArg->Features->PerfMon.EBX.CoreCycles = 0;
 		iArg->Features->PerfMon.EBX.RefCycles  = 0;
 		iArg->Features->PerfMon.EDX.FixCtrs += 2;
 	    }
-	    if (iArg->Features->Info.LargestExtFunc >= 0x80000008) {
+	    if (iArg->Features->Info.LargestExtFunc >= 0x80000008)
+	    {
 		iArg->SMT_Count = iArg->Features->leaf80000008.ECX.NC + 1;
 		/* Add the Retired Instructions Perf Counter to the Fixed set */
 		if (iArg->Features->leaf80000008.EBX.IRPerf) {
 			iArg->Features->PerfMon.EBX.InstrRetired = 0;
 			iArg->Features->PerfMon.EDX.FixCtrs++;
 		}
-	    } else if (iArg->Features->Std.EDX.HTT) {
+	    } else if (iArg->Features->Std.EDX.HTT)
+	    {
 		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
 	    } else {
 		iArg->SMT_Count = 1;
@@ -754,20 +763,24 @@ static void Query_Features(void *pArg)
 void Compute_Interval(void)
 {
 	if ( (SleepInterval >= LOOP_MIN_MS)
-	  && (SleepInterval <= LOOP_MAX_MS)) {
+	  && (SleepInterval <= LOOP_MAX_MS))
+	{
 		PUBLIC(RO(Proc))->SleepInterval = SleepInterval;
 	} else {
 		PUBLIC(RO(Proc))->SleepInterval = LOOP_DEF_MS;
 	}
-	/* Compute the tick steps. */
-	PUBLIC(RO(Proc))->tickReset = ((TickInterval >= PUBLIC(RO(Proc))->SleepInterval)
-			&& (TickInterval <= LOOP_MAX_MS)) ?
-				TickInterval
-			    :	KMAX(TICK_DEF_MS, PUBLIC(RO(Proc))->SleepInterval);
+	/*		Compute the tick steps .			*/
+	PUBLIC(RO(Proc))->tickReset = \
+		(  (TickInterval >= PUBLIC(RO(Proc))->SleepInterval)
+		&& (TickInterval <= LOOP_MAX_MS) ) ?
+			TickInterval
+		:	KMAX(TICK_DEF_MS, PUBLIC(RO(Proc))->SleepInterval);
+
 	PUBLIC(RO(Proc))->tickReset /= PUBLIC(RO(Proc))->SleepInterval;
 	PUBLIC(RO(Proc))->tickStep = PUBLIC(RO(Proc))->tickReset;
 
-	RearmTheTimer = ktime_set(0, PUBLIC(RO(Proc))->SleepInterval * 1000000LU);
+	RearmTheTimer = ktime_set( 0,	PUBLIC(RO(Proc))->SleepInterval
+					* 1000000LU );
 }
 
 #define BUSYWAIT 1000
@@ -775,9 +788,9 @@ void Compute_Interval(void)
 static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 {
 	unsigned int loop;
-	/* Writeback and Invalidate Caches */
+	/*		Writeback and Invalidate Caches.		*/
 	WBINVD();
-	/* Warm-up & Overhead */
+	/*		Warm-up & Overhead				*/
 	for (loop = 0; loop < OCCURRENCES; loop++) {
 		RDTSCP64(pCompute->TSC[0][loop].V[0]);
 
@@ -786,7 +799,7 @@ static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 		RDTSCP64(pCompute->TSC[0][loop].V[1]);
 	}
 
-	/* Estimation */
+	/*		Estimation					*/
 	for (loop=0; loop < OCCURRENCES; loop++) {
 		RDTSCP64(pCompute->TSC[1][loop].V[0]);
 
@@ -799,9 +812,9 @@ static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
 {
 	unsigned int loop;
-	/* Writeback and Invalidate Caches */
+	/*		Writeback and Invalidate Caches.		*/
 	WBINVD();
-	/* Warm-up & Overhead */
+	/*		Warm-up & Overhead				*/
 	for (loop = 0; loop < OCCURRENCES; loop++) {
 		RDTSC64(pCompute->TSC[0][loop].V[0]);
 
@@ -809,7 +822,7 @@ static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
 
 		RDTSC64(pCompute->TSC[0][loop].V[1]);
 	}
-	/* Estimation */
+	/*		Estimation					*/
 	for (loop = 0; loop < OCCURRENCES; loop++) {
 		RDTSC64(pCompute->TSC[1][loop].V[0]);
 
@@ -829,14 +842,15 @@ static void Compute_TSC(void *arg)
 	TSC[0] stores the overhead
 	TSC[1] stores the estimation
 */
-	/* Is the TSC invariant or can serialize ? */
+	/*	Is the TSC invariant or can serialize  ?		*/
 	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	{
 		ComputeWithSerializedTSC(pCompute);
-	else
+	} else {
 		ComputeWithUnSerializedTSC(pCompute);
-
-	/* Select the best clock. */
+	}
+	/*		Select the best clock.				*/
 	memset(D, 0, 2 * OCCURRENCES);
 	for (loop = 0; loop < OCCURRENCES; loop++)
 		for (what = 0; what < 2; what++) {
@@ -862,10 +876,10 @@ static void Compute_TSC(void *arg)
 		    }
 		}
 	}
-	/* Substract the overhead. */
+	/*		Substract the overhead .			*/
 	D[1][best[1]] -= D[0][best[0]];
 	D[1][best[1]] *= BUSYWAIT;
-	/* Compute the Base Clock */
+	/*		Compute the Base Clock .			*/
 	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], BUSYWAIT);
 }
 
@@ -887,10 +901,15 @@ CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 {
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 
-	if (PUBLIC(RO(Proc))->Features.Factory.Freq > 0) {
-		clock.Hz = (PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000L) / ratio;
-		clock.Q  = PUBLIC(RO(Proc))->Features.Factory.Freq / ratio;
-		clock.R  = (PUBLIC(RO(Proc))->Features.Factory.Freq % ratio) * PRECISION;
+	if (PUBLIC(RO(Proc))->Features.Factory.Freq > 0)
+	{
+		clock.Hz=(PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000L)
+			/ ratio;
+
+		clock.Q = PUBLIC(RO(Proc))->Features.Factory.Freq / ratio;
+
+		clock.R = (PUBLIC(RO(Proc))->Features.Factory.Freq % ratio)
+			* PRECISION;
 	}
 	return (clock);
 };
@@ -1194,13 +1213,13 @@ CLOCK BaseClock_Skylake(unsigned int ratio)
 };
 
 CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
-{	/* AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz */
+{	/* Source: AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
 	return (clock);
 };
 
 void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
-{	/* Per vendor, define a CPUID dump table to query. */
+{	/*	Per vendor, define a CPUID dump table to query .	*/
 	int i;
 	for (i = 0; i < CPUID_MAX_FUNC; i++) {
 		Core->CpuID[i].func = CpuIDforVendor[i].func;
@@ -1238,7 +1257,7 @@ void Cache_Topology(CORE_RO *Core)
 	else if ( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		||(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
 	{
-	    struct CACHE_INFO CacheInfo; /* Employ the Intel algorithm. */
+	    struct CACHE_INFO CacheInfo; /* Employ same Intel algorithm. */
 
 	    if (PUBLIC(RO(Proc))->Features.Info.LargestExtFunc >= 0x80000005)
 	    {
@@ -1247,7 +1266,7 @@ void Cache_Topology(CORE_RO *Core)
 		Core->T.Cache[1].Level = 1;
 		Core->T.Cache[1].Type  = 1;		/* Data */
 
-		/* Fn8000_0005 L1 Data and Inst. caches. */
+		/*	Fn8000_0005 L1 Data and Inst. caches.		*/
 		__asm__ volatile
 		(
 			"movq	$0x80000005, %%rax	\n\t"
@@ -1280,7 +1299,7 @@ void Cache_Topology(CORE_RO *Core)
 		Core->T.Cache[3].Level = 3;
 		Core->T.Cache[3].Type  = 3;
 
-		/* Fn8000_0006 L2 and L3 caches. */
+		/*	Fn8000_0006 L2 and L3 caches.			*/
 		__asm__ volatile
 		(
 			"movq	$0x80000006, %%rax	\n\t"
@@ -1497,7 +1516,7 @@ static void Map_AMD_Topology(void *arg)
 			Core->T.Cache[level[idx]].WrBack = CacheInfo.WrBack;
 			Core->T.Cache[level[idx]].Inclus = CacheInfo.Inclus;
 		}
-		/* Fn8000_001E {ExtApic, Core, Node} Identifiers. */
+		/*	Fn8000_001E {ExtApic, Core, Node} Identifiers.	*/
 		__asm__ volatile
 		(
 			"movq	$0x8000001e, %%rax	\n\t"
@@ -1530,7 +1549,7 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.Cluster.CCX =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
 		Core->T.Cluster.CCD = leaf8000001e.EBX.CoreId >> 2;
 
-	    } else {	/* Fallback algorithm. */
+	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
 		Core->T.PackageID = leaf1_ebx.Init_APIC_ID
 				  >> leaf80000008.ECX.ApicIdCoreIdSize;
@@ -1562,7 +1581,8 @@ unsigned short FindMaskWidth(unsigned short maxCount)
 
 static void Map_Intel_Topology(void *arg)
 {
-    if (arg != NULL) {
+    if (arg != NULL)
+    {
 	CORE_RO *Core = (CORE_RO *) arg;
 	unsigned short	SMT_Mask_Width, CORE_Mask_Width,
 			SMT_Select_Mask, CORE_Select_Mask, PKG_Select_Mask;
@@ -1681,8 +1701,8 @@ static void Map_Intel_Extended_Topology(void *arg)
 			: "r" (InputLevel)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-		/* Exit from the loop if the BX register equals 0 or
-		   if the requested level exceeds the level of a Core. */
+		/*	Exit from the loop if the BX register equals 0 or
+			if the requested level exceeds the level of a Core. */
 		if (!ExtTopology.BX.Register || (InputLevel > LEVEL_CORE))
 			NoMoreLevels = 1;
 		else {
@@ -1736,7 +1756,8 @@ int Core_Topology(unsigned int cpu)
 
 	if (	!rc
 		&& (PUBLIC(RO(Proc))->Features.HTT_Enable == 0)
-		&& (PUBLIC(RO(Core, AT(cpu)))->T.ThreadID > 0) ) {
+		&& (PUBLIC(RO(Core, AT(cpu)))->T.ThreadID > 0) )
+	{
 			PUBLIC(RO(Proc))->Features.HTT_Enable = 1;
 	}
 	return (rc);
@@ -1757,11 +1778,12 @@ unsigned int Proc_Topology(void)
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
-	if (cpu_present(cpu)) { /* CPU state based on the OS. */
+	if (cpu_present(cpu)) { /*	CPU state probed by the OS.	*/
 	    if (Core_Topology(cpu) == 0) {
 		/* CPU state based on the hardware. */
-		if (PUBLIC(RO(Core, AT(cpu)))->T.ApicID >= 0) {
-			BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
+		if (PUBLIC(RO(Core, AT(cpu)))->T.ApicID >= 0)
+		{
+			BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine,HW);
 
 			CountEnabledCPU++;
 		}
@@ -1774,71 +1796,73 @@ unsigned int Proc_Topology(void)
 
 #define HyperThreading_Technology()					\
 (									\
-	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()				\
+	PUBLIC(RO(Proc))->CPU.OnLine = Proc_Topology()			\
 )
 
 void Package_Init_Reset(void)
 {
-	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock	= 1;
-	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock	= 0;
-	PUBLIC(RO(Proc))->Features.TDP_Unlock	= 0;
-	PUBLIC(RO(Proc))->Features.Turbo_Unlock	= 0;
-	PUBLIC(RO(Proc))->Features.TurboActiv_Lock	= 1;
-	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock	= 1;
-	PUBLIC(RO(Proc))->Features.Uncore_Unlock	= 0;
+	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = 1;
+	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = 0;
+	PUBLIC(RO(Proc))->Features.TDP_Unlock = 0;
+	PUBLIC(RO(Proc))->Features.Turbo_Unlock = 0;
+	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = 1;
+	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock = 1;
+	PUBLIC(RO(Proc))->Features.Uncore_Unlock = 0;
 }
 
 void Default_Unlock_Reset(void)
 {
-	switch (Target_Ratio_Unlock) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-		PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = Target_Ratio_Unlock;
-		break;
-	}
-	switch (Clock_Ratio_Unlock) {
-	case COREFREQ_TOGGLE_OFF:
-	case 0b01:
-	case 0b10:
-	case 0b11:
-		PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = Clock_Ratio_Unlock;
-		break;
-	}
-	switch (Turbo_Ratio_Unlock) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-		PUBLIC(RO(Proc))->Features.Turbo_Unlock = Turbo_Ratio_Unlock;
-		break;
-	}
-	switch (Uncore_Ratio_Unlock) {
-	case COREFREQ_TOGGLE_OFF:
-	case COREFREQ_TOGGLE_ON:
-		PUBLIC(RO(Proc))->Features.Uncore_Unlock = Uncore_Ratio_Unlock;
-		break;
-	}
+    switch (Target_Ratio_Unlock) {
+    case COREFREQ_TOGGLE_OFF:
+    case COREFREQ_TOGGLE_ON:
+	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = Target_Ratio_Unlock;
+	break;
+    }
+    switch (Clock_Ratio_Unlock) {
+    case COREFREQ_TOGGLE_OFF:
+    case 0b01:
+    case 0b10:
+    case 0b11:
+	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = Clock_Ratio_Unlock;
+	break;
+    }
+    switch (Turbo_Ratio_Unlock) {
+    case COREFREQ_TOGGLE_OFF:
+    case COREFREQ_TOGGLE_ON:
+	PUBLIC(RO(Proc))->Features.Turbo_Unlock = Turbo_Ratio_Unlock;
+	break;
+    }
+    switch (Uncore_Ratio_Unlock) {
+    case COREFREQ_TOGGLE_OFF:
+    case COREFREQ_TOGGLE_ON:
+	PUBLIC(RO(Proc))->Features.Uncore_Unlock = Uncore_Ratio_Unlock;
+	break;
+    }
 }
 
 void OverrideCodeNameString(PROCESSOR_SPECIFIC *pSpecific)
 {
-    StrCopy(PUBLIC(RO(Proc))->Architecture,
-	    Arch[PUBLIC(RO(Proc))->ArchID].Architecture[pSpecific->CodeNameIdx].CodeName,
-	    CODENAME_LEN);
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[
+							pSpecific->CodeNameIdx
+						].CodeName,
+		CODENAME_LEN);
 }
 
 void OverrideUnlockCapability(PROCESSOR_SPECIFIC *pSpecific)
 {
-	if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK) {
-		PUBLIC(RO(Proc))->Features.TgtRatio_Unlock = pSpecific->TgtRatioUnlocked;
-	}
-	if (pSpecific->Latch & LATCH_CLK_RATIO_UNLOCK) {
-		PUBLIC(RO(Proc))->Features.ClkRatio_Unlock = pSpecific->ClkRatioUnlocked;
-	}
-	if (pSpecific->Latch & LATCH_TURBO_UNLOCK) {
-		PUBLIC(RO(Proc))->Features.Turbo_Unlock = pSpecific->TurboUnlocked;
-	}
-	if (pSpecific->Latch & LATCH_UNCORE_UNLOCK) {
-		PUBLIC(RO(Proc))->Features.Uncore_Unlock = pSpecific->UncoreUnlocked;
-	}
+    if (pSpecific->Latch & LATCH_TGT_RATIO_UNLOCK) {
+	PUBLIC(RO(Proc))->Features.TgtRatio_Unlock=pSpecific->TgtRatioUnlocked;
+    }
+    if (pSpecific->Latch & LATCH_CLK_RATIO_UNLOCK) {
+	PUBLIC(RO(Proc))->Features.ClkRatio_Unlock=pSpecific->ClkRatioUnlocked;
+    }
+    if (pSpecific->Latch & LATCH_TURBO_UNLOCK) {
+	PUBLIC(RO(Proc))->Features.Turbo_Unlock = pSpecific->TurboUnlocked;
+    }
+    if (pSpecific->Latch & LATCH_UNCORE_UNLOCK) {
+	PUBLIC(RO(Proc))->Features.Uncore_Unlock = pSpecific->UncoreUnlocked;
+    }
 }
 
 PROCESSOR_SPECIFIC *LookupProcessor(void)
@@ -1875,10 +1899,14 @@ int Intel_MaxBusRatio(PLATFORM_ID *PfID)
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
 	for (id = 0; id < ids; id++) {
-		if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-		 && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-		 && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-		 && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+		if ((whiteList[id].ExtFamily \
+			== PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+		 && (whiteList[id].Family \
+			== PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+		 && (whiteList[id].ExtModel \
+			== PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+		 && (whiteList[id].Model \
+			== PUBLIC(RO(Proc))->Features.Std.EAX.Model))
 		{
 			RDMSR((*PfID), MSR_IA32_PLATFORM_ID);
 			return (0);
@@ -1906,13 +1934,17 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 		} else {
 			if (Intel_MaxBusRatio(&PfID) == 0) {
 				if (PfID.value != 0)
+				{
 					ratio1 = PfID.MaxBusRatio;
+				}
 			}
 		}
 	} else {
 			if (Intel_MaxBusRatio(&PfID) == 0) {
 				if (PfID.value != 0)
+				{
 					ratio1 = PfID.MaxBusRatio;
+				}
 			}
 	}
 
@@ -1926,7 +1958,8 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 				+ PRIVATE(OF(Specific))->Boost[0]
 				+ PRIVATE(OF(Specific))->Boost[1];
 	} else {	/* Is Processor half ratio capable ?		*/
-	    if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	    if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+	    {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
 			2 + PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 	    }
@@ -2610,9 +2643,9 @@ void Intel_Hardware_Performance(void)
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.HWP_Reg)
 	{
-		/* MSR_IA32_PM_ENABLE is a Package register.		*/
+		/*	MSR_IA32_PM_ENABLE is a Package register.	*/
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
-		/* Is the HWP requested and its current state is off ?	*/
+		/*	Is the HWP requested and its current state is off ? */
 	  if ((HWP_Enable == 1) && (PM_Enable.HWP_Enable == 0))
 	  {
 		unsigned int cpu;
@@ -2622,16 +2655,17 @@ void Intel_Hardware_Performance(void)
 			cpu--;
 
 		    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)) {
-			/* Synchronous call.				*/
+			/*	Synchronous call.			*/
 			smp_call_function_single(cpu,
 						PerCore_Intel_HWP_Notification,
 						&PUBLIC(RO(Core, AT(cpu))), 1);
 		    }
 		  } while (cpu != 0) ;
 
-	    if (BITCMP_CC(PUBLIC(RO(Proc))->CPU.Count,LOCKLESS, PUBLIC(RW(Proc))->HWP, PUBLIC(RO(Proc))->HWP_Mask))
+	    if (BITCMP_CC(PUBLIC(RO(Proc))->CPU.Count, \
+		LOCKLESS, PUBLIC(RW(Proc))->HWP, PUBLIC(RO(Proc))->HWP_Mask) )
 	    {
-		/* Enable the Hardware-controlled Performance States.	*/
+		/*	Enable the Hardware-controlled Performance States. */
 		PM_Enable.HWP_Enable = 1;
 		WRMSR(PM_Enable, MSR_IA32_PM_ENABLE);
 		RDMSR(PM_Enable, MSR_IA32_PM_ENABLE);
@@ -2643,7 +2677,7 @@ void Intel_Hardware_Performance(void)
 			cpu--;
 
 		    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)) {
-			/* Asynchronous call.				*/
+			/*	Asynchronous call.			*/
 			smp_call_function_single(cpu,
 						PerCore_Intel_HWP_Ignition,
 						&PUBLIC(RO(Core, AT(cpu))), 0);
@@ -2654,8 +2688,9 @@ void Intel_Hardware_Performance(void)
 	  }
 	}
 	PUBLIC(RO(Proc))->Features.HWP_Enable = PM_Enable.HWP_Enable;
-	/*	Hardware Duty Cycling					*/
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.HDC_Reg) {
+	/*		Hardware Duty Cycling				*/
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.HDC_Reg)
+	{
 		RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
 	}
 	PUBLIC(RO(Proc))->Features.HDC_Enable = HDC_Control.HDC_Enable;
@@ -2664,9 +2699,9 @@ void Intel_Hardware_Performance(void)
 
 void SandyBridge_Uncore_Ratio(unsigned int cpu)
 {
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = 			\
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = 			\
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 }
 
@@ -2676,7 +2711,7 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	UNCORE_RATIO_LIMIT UncoreRatio = {.value = 0};
 	RDMSR(UncoreRatio, MSR_HSW_UNCORE_RATIO_LIMIT);
 
-	if (pClockMod != NULL) {	/* Read-Only function called ?	*/
+	if (pClockMod != NULL) {	/* Called as Read-Only ?	*/
 	    if (PUBLIC(RO(Proc))->Features.Uncore_Unlock)
 	    {
 		unsigned short WrRdMSR;
@@ -2712,8 +2747,8 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	    }
 	}
 
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = UncoreRatio.MinRatio;
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreRatio.MaxRatio;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)]=UncoreRatio.MinRatio;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)]=UncoreRatio.MaxRatio;
 
 	return (rc);
 }
@@ -2746,32 +2781,32 @@ void Nehalem_Platform_Info(unsigned int cpu)
 {
 	Query_Same_Platform_Features(cpu);
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	8C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
 }
 
 void IvyBridge_EP_Platform_Info(unsigned int cpu)
 {
 	Query_Same_Platform_Features(cpu);
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	8C	*/
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 7;		/*	15C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 7; /*	15C	*/
 }
 
 void Haswell_EP_Platform_Info(unsigned int cpu)
 {
 	Query_Same_Platform_Features(cpu);
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	8C	*/
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	16C	*/
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 2;		/*	18C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	16C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 2; /*	18C	*/
 }
 
 void Skylake_X_Platform_Info(unsigned int cpu)
 {
 	Query_Same_Platform_Features(cpu);
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	8C	*/
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8;		/*	16C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	16C	*/
 }
 
 
@@ -2820,7 +2855,7 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 }
 
 void Query_P945(void __iomem *mchmap)
-{	/* Source: Mobile Intel 945 Express Chipset Family. */
+{	/* Source: Mobile Intel 945 Express Chipset Family.		*/
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -2842,39 +2877,42 @@ void Query_P945(void __iomem *mchmap)
 
 	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 1;
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
-	{
-		unsigned short rank, rankCount;
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+	unsigned short rank, rankCount;
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT0.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT0.value = \
 					readl(mchmap + 0x110 + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT1.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT1.value = \
 					readw(mchmap + 0x114 + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT2.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRT2.value = \
 					readl(mchmap + 0x118 + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.BANK.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.BANK.value = \
 					readw(mchmap + 0x10e + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value = \
 					readw(mchmap + 0x40c + 0x80 * cha);
-	    if (cha == 0) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b11111111;
-		rankCount = 4;
-	    } else {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b1111;
-		rankCount = 2;
-	    }
-	    for (rank = 0; rank < rankCount; rank++)
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRB[rank].value =
+      if (cha == 0) {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= \
+								0b11111111;
+	rankCount = 4;
+      } else {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.WIDTH.value &= 0b1111;
+	rankCount = 2;
+      }
+      for (rank = 0; rank < rankCount; rank++)
+      {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P945.DRB[rank].value = \
 				readb(mchmap + 0x100 + rank + 0x80 * cha);
-	}
+      }
+    }
 }
 
 void Query_P955(void __iomem *mchmap)
-{	/* Source: Intel 82955X Memory Controller Hub (MCH) */
+{	/* Source: Intel 82955X Memory Controller Hub (MCH)		*/
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -2896,23 +2934,25 @@ void Query_P955(void __iomem *mchmap)
 
 	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = 1;
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
-	{
-		unsigned short rank;
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+	unsigned short rank;
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRT1.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRT1.value = \
 					readw(mchmap + 0x114 + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.BANK.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.BANK.value = \
 					readw(mchmap + 0x10e + 0x80 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.WIDTH.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.WIDTH.value = \
 					readw(mchmap + 0x40c + 0x80 * cha);
 
-	    for (rank = 0; rank < 4; rank++)
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRB[rank].value =
+      for (rank = 0; rank < 4; rank++)
+      {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P955.DRB[rank].value = \
 				readb(mchmap + 0x100 + rank + 0x80 * cha);
-	}
+      }
+    }
 }
 
 void Query_P965(void __iomem *mchmap)
@@ -2926,34 +2966,35 @@ void Query_P965(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.value = readl(mchmap + 0x260);
 	PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.value = readl(mchmap + 0x660);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount =
-				  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.RankPop0 != 0)
-				+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.RankPop0 != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.RankPop0 != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.RankPop0 != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount =
-			  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.SingleDimmPop ? 1 : 2)
-			+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.SingleDimmPop ? 1 : 2);
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE0.SingleDimmPop ?1:2)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P965.CKE1.SingleDimmPop ?1:2);
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT0.value =
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+	{
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT0.value = \
 					readl(mchmap + 0x29c + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT1.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT1.value = \
 					readw(mchmap + 0x250 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT2.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT2.value = \
 					readl(mchmap + 0x252 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT3.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT3.value = \
 					readw(mchmap + 0x256 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT4.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P965.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);
 	}
 }
 
 void Query_G965(void __iomem *mchmap)
-{	/* Source: Mobile Intel 965 Express Chipset Family. */
+{	/* Source: Mobile Intel 965 Express Chipset Family.		*/
 	unsigned short cha, slot;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -2963,30 +3004,33 @@ void Query_G965(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB0.value = readl(mchmap + 0x1200);
 	PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB1.value = readl(mchmap + 0x1300);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount =
-				  (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB0.Rank1Addr != 0)
-				+ (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB1.Rank1Addr != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB0.Rank1Addr != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[0].G965.DRB1.Rank1Addr != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount=PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount > 1 ? 1:2;
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+			PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount > 1 ? 1:2;
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT0.value =
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT0.value = \
 					readl(mchmap + 0x1210 + 0x100 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT1.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT1.value = \
 					readl(mchmap + 0x1214 + 0x100 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT2.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT2.value = \
 					readl(mchmap + 0x1218 + 0x100 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT3.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].G965.DRT3.value = \
 					readl(mchmap + 0x121c + 0x100 * cha);
 
-		for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount; slot++) {
-			PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].DRA.value =
+      for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount; slot++)
+      {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].DRA.value = \
 					readl(mchmap + 0x1208 + 0x100 * cha);
-		}
-	}
+      }
+    }
 }
 
 void Query_P35(void __iomem *mchmap)
@@ -3000,31 +3044,32 @@ void Query_P35(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.value = readl(mchmap + 0x260);
 	PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.value = readl(mchmap + 0x660);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount =
-				  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
-				+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
+		  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.RankPop0 != 0)
+		+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.RankPop0 != 0);
 
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount =
-			  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.SingleDimmPop ? 1 : 2)
-			+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.SingleDimmPop ? 1 : 2);
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+	  (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE0.SingleDimmPop ? 1 : 2)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[0].P35.CKE1.SingleDimmPop ? 1 : 2);
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT0.value =
+	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+	{
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT0.value = \
 					readw(mchmap + 0x265 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT1.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT1.value = \
 					readw(mchmap + 0x250 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT2.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT2.value = \
 					readl(mchmap + 0x252 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT3.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT3.value = \
 					readl(mchmap + 0x256 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT4.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT4.value = \
 					readl(mchmap + 0x258 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT5.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].P35.DRT5.value = \
 					readw(mchmap + 0x25d + 0x400 * cha);
 	}
 }
@@ -3034,27 +3079,28 @@ kernel_ulong_t Query_NHM_Timing(unsigned int did,
 				unsigned short cha)
 {	/*Source: Micron Technical Note DDR3 Power-Up, Initialization, & Reset*/
     struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
-    if (dev != NULL) {
+    if (dev != NULL)
+    {
 	pci_read_config_dword(dev, 0x70,
-			    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.MR0_1.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.MR0_1.value);
 
 	pci_read_config_dword(dev, 0x74,
-			    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.MR2_3.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.MR2_3.value);
 
 	pci_read_config_dword(dev ,0x80,
-			    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Rank_A.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Rank_A.value);
 
 	pci_read_config_dword(dev ,0x84,
-			    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Rank_B.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Rank_B.value);
 
 	pci_read_config_dword(dev ,0x88,
-			      &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Bank.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Bank.value);
 
 	pci_read_config_dword(dev ,0x8c,
-			   &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Refresh.value);
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Refresh.value);
 
 	pci_read_config_dword(dev, 0xb8,
-			    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Params.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Params.value);
 
 	pci_dev_put(dev);
 	return (0);
@@ -3067,23 +3113,25 @@ kernel_ulong_t Query_NHM_DIMM(	unsigned int did,
 				unsigned short cha)
 {
 	struct pci_dev *dev = pci_get_device(PCI_VENDOR_ID_INTEL, did, NULL);
-	if (dev != NULL) {
-		unsigned short slot;
-
-		for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount; slot++) {
-		    pci_read_config_dword(dev, 0x48 + 4 * slot,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.value);
-		}
-		pci_dev_put(dev);
-		return (0);
-	} else
-		return (-ENODEV);
+    if (dev != NULL)
+    {
+	unsigned short slot;
+	for (slot = 0; slot < PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount; slot++)
+	{
+	pci_read_config_dword(dev, 0x48 + 4 * slot,
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[slot].DOD.value);
+	}
+	pci_dev_put(dev);
+	return (0);
+    } else {
+	return (-ENODEV);
+    }
 }
 
 void Query_NHM_MaxDIMMs(struct pci_dev *dev, unsigned short mc)
 {
-	pci_read_config_dword(	dev, 0x64,
-				&PUBLIC(RO(Proc))->Uncore.MC[mc].MaxDIMMs.NHM.DOD.value);
+	pci_read_config_dword(dev, 0x64,
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].MaxDIMMs.NHM.DOD.value);
 
 	switch (PUBLIC(RO(Proc))->Uncore.MC[mc].MaxDIMMs.NHM.DOD.MAXNUMDIMMS) {
 	case 0b00:
@@ -3110,15 +3158,21 @@ kernel_ulong_t Query_NHM_IMC(	struct pci_dev *dev,
 
 	Query_NHM_MaxDIMMs(dev, mc);
 
-	pci_read_config_dword(dev,0x48, &PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.value);
-	pci_read_config_dword(dev,0x4c, &PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.STATUS.value);
+	pci_read_config_dword(dev, 0x48,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.value);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount =
-		  (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL0_ACTIVE != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL2_ACTIVE != 0);
+	pci_read_config_dword(dev, 0x4c,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.STATUS.value);
 
-	for (cha = 0; (cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL0_ACTIVE != 0)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL2_ACTIVE != 0);
+
+	for (cha = 0;
+		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
+			cha++)
+	{
 		rc = Query_NHM_Timing(did[0][cha], mc, cha)
 		   & Query_NHM_DIMM(did[1][cha], mc, cha);
 	}
@@ -3142,23 +3196,29 @@ kernel_ulong_t Query_Lynnfield_IMC(struct pci_dev *dev, unsigned short mc)
 
 	Query_NHM_MaxDIMMs(dev, mc);
 
-	pci_read_config_dword(dev,0x48, &PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.value);
-	pci_read_config_dword(dev,0x4c, &PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.STATUS.value);
+	pci_read_config_dword(dev, 0x48,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.value);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount =
-		  (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL0_ACTIVE != 0)
-		+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0);
+	pci_read_config_dword(dev, 0x4c,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.STATUS.value);
 
-	for (cha = 0; (cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc; cha++) {
-		rc = Query_NHM_Timing(did[0][cha], mc, cha)
-		   & Query_NHM_DIMM(did[1][cha], mc, cha);
-	}
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+	  (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL0_ACTIVE != 0)
+	+ (PUBLIC(RO(Proc))->Uncore.MC[mc].NHM.CONTROL.CHANNEL1_ACTIVE != 0);
+
+    for (cha = 0;
+		(cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount) && !rc;
+			cha++)
+    {
+	rc = Query_NHM_Timing(did[0][cha], mc, cha)
+	   & Query_NHM_DIMM(did[1][cha], mc, cha);
+    }
 	return (rc);
 }
 
 void Query_SNB_IMC(void __iomem *mchmap)
 {	/* Sources:	2nd & 3rd Generation Intel® Core™ Processor Family
-			Intel® Xeon Processor E3-1200 Family	*/
+			Intel® Xeon Processor E3-1200 Family		*/
 	unsigned short cha, dimmCount[2];
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
@@ -3168,27 +3228,30 @@ void Query_SNB_IMC(void __iomem *mchmap)
 
 	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 0;
 
-	dimmCount[0] = (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
-		     + (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
-	dimmCount[1] = (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
-		     + (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+	dimmCount[0] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
+		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
+		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
 
-	for (cha = 0; cha < 2; cha++)
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
-
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.DBP.value =
+    for (cha = 0; cha < 2; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
+    }
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.DBP.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RAP.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RAP.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RFTP.value =
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SNB.RFTP.value = \
 					readl(mchmap + 0x4298 + 0x400 * cha);
-	}
-	/* Is Dual DIMM Per Channel Disable ? */
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = (PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
-					1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
+    }
+	/*		Is Dual DIMM Per Channel Disable ?		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
+			1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
 }
 
 void Query_Turbo_TDP_Config(void __iomem *mchmap)
@@ -3213,14 +3276,15 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Level = ControlTDP.Level;
 
 	TurboActivation.value = readl(mchmap + 0x5f54);
-	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
+	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(ACT)]=TurboActivation.MaxRatio;
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	PUBLIC(RO(Proc))->Features.TDP_Levels = 3;
 
 	put_cpu();
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-	    if (cpu != local) {
+	    if (cpu != local)
+	    {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TDP)] = \
 				PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP)];
 
@@ -3247,38 +3311,40 @@ void Query_HSW_IMC(void __iomem *mchmap)
 
 	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 0;
 
-	dimmCount[0] = (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
-		     + (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
-	dimmCount[1] = (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
-		     + (PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
+	dimmCount[0] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_A_Size > 0)
+		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD0.Dimm_B_Size > 0);
+	dimmCount[1] =(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_A_Size > 0)
+		     +(PUBLIC(RO(Proc))->Uncore.MC[0].SNB.MAD1.Dimm_B_Size > 0);
 
-	for (cha = 0; cha < 2; cha++)
-		PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
-
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
-	{
+    for (cha = 0; cha < 2; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount += (dimmCount[cha] > 0);
+    }
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
 /*TODO( Unsolved: What is the channel #1 'X' factor of Haswell registers ? )*/
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.REG4C00.value =
-					readl(mchmap + 0x4c00);
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.REG4C00.value = \
+							readl(mchmap + 0x4c00);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Timing.value =
-					readl(mchmap + 0x4c04);
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Timing.value = \
+							readl(mchmap + 0x4c04);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_A.value =
-					readl(mchmap + 0x4c08);
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_A.value = \
+							readl(mchmap + 0x4c08);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_B.value =
-					readl(mchmap + 0x4c0c);
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank_B.value = \
+							readl(mchmap + 0x4c0c);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank.value =
-					readl(mchmap + 0x4c14);
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Rank.value = \
+							readl(mchmap + 0x4c14);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Refresh.value =
-					readl(mchmap + 0x4e98);
-	}
-	/* Is Dual DIMM Per Channel Disable ? */
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = (PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
-					1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].HSW.Refresh.value = \
+							readl(mchmap + 0x4e98);
+    }
+	/*		Is Dual DIMM Per Channel Disable ?		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
+			(PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.DDPCD == 1) ?
+			1 : PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount;
 
 	Query_Turbo_TDP_Config(mchmap);
 }
@@ -3288,43 +3354,45 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	unsigned short cha;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	/* Intra channel configuration */
+	/*		Intra channel configuration			*/
 	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADCH.value = readl(mchmap + 0x5000);
-	if (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADCH.CH_L_MAP) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5008);
-		PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5004);
-	} else {
-		PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
-		PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
-	}
-	/* DIMM parameters */
+    if (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADCH.CH_L_MAP)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5008);
+	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5004);
+    } else {
+	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.value = readl(mchmap + 0x5004);
+	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.value = readl(mchmap + 0x5008);
+    }
+	/*		DIMM parameters					*/
 	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.value = readl(mchmap + 0x500c);
 	PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.value = readl(mchmap + 0x5010);
-	/* Sum up any present DIMM per channel. */
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount =
+	/*		Sum up any present DIMM per channel.		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
 		  ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
 		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
 		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
 		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
-	/* Max of populated DIMMs L and DIMMs S */
+	/*		Max of populated DIMMs L and DIMMs S		*/
 	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = KMAX(
-				(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.Dimm_L_Map),
-				(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.Dimm_L_Map)
+		(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.Dimm_L_Map),
+		(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.Dimm_L_Map)
 	);
 
-	for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++) {
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Timing.value =
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
+    {
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Timing.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Sched.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Sched.value = \
 					readl(mchmap + 0x401c + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ODT.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ODT.value = \
 					readl(mchmap + 0x4070 + 0x400 * cha);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value =
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
-	}
+    }
 
 	Query_Turbo_TDP_Config(mchmap);
 }
@@ -3422,7 +3490,8 @@ static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK NHM_IMC_TR(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0x50, &PUBLIC(RO(Proc))->Uncore.Bus.DimmClock.value);
+	pci_read_config_dword(dev, 0x50,
+				&PUBLIC(RO(Proc))->Uncore.Bus.DimmClock.value);
 
 	return ((PCI_CALLBACK) 0);
 }
@@ -3433,15 +3502,16 @@ static PCI_CALLBACK NHM_NON_CORE(struct pci_dev *dev)
 
 	pci_read_config_dword(dev, 0xc0, &UncoreClock.value);
 
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = UncoreClock.UCLK;
-	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = UncoreClock.MinRatio;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)]=UncoreClock.UCLK;
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)]=UncoreClock.MinRatio;
 
 	return ((PCI_CALLBACK) 0);
 }
 
 static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xd0, &PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
+	pci_read_config_dword(dev, 0xd0,
+				&PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
 
 	return ((PCI_CALLBACK) 0);
 }
@@ -3473,15 +3543,19 @@ static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_IMC(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xe4, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
 
 	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
 }
 
 static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xe4, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
-	pci_read_config_dword(dev, 0xe8, &PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
 	return (Router(dev, 0x48, 64, 0x8000, Query_SNB_IMC));
 }
@@ -3495,23 +3569,37 @@ static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_EP_CAP(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0x84, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap0.value);
-	pci_read_config_dword(dev, 0x88, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap1.value);
-	pci_read_config_dword(dev, 0x8c, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap2.value);
-	pci_read_config_dword(dev, 0x90, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap3.value);
-	pci_read_config_dword(dev, 0x94, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap4.value);
+	pci_read_config_dword(dev, 0x84,
+			&PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap0.value);
+
+	pci_read_config_dword(dev, 0x88,
+			&PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap1.value);
+
+	pci_read_config_dword(dev, 0x8c,
+			&PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap2.value);
+
+	pci_read_config_dword(dev, 0x90,
+			&PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap3.value);
+
+	pci_read_config_dword(dev, 0x94,
+			&PUBLIC(RO(Proc))->Uncore.Bus.SNB_EP_Cap4.value);
 
 	return ((PCI_CALLBACK) 0);
 }
 
 kernel_ulong_t SNB_EP_CTRL(struct pci_dev *dev, unsigned short mc)
 {
-	pci_read_config_dword(dev, 0x7c,&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TECH.value);
-	pci_read_config_dword(dev, 0x80,&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.value);
+	pci_read_config_dword(dev, 0x7c,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TECH.value);
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount=PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.CH_WAY;
+	pci_read_config_dword(dev, 0x80,
+			&PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.value);
+
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = \
+			PUBLIC(RO(Proc))->Uncore.MC[mc].SNB_EP.TAD.CH_WAY;
+
 	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
-/* TODO */
+/*TODO(Specs missing)*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 2;
 
 	return (0);
@@ -3541,16 +3629,16 @@ kernel_ulong_t SNB_EP_IMC(struct pci_dev *dev ,unsigned short mc,
 						unsigned short cha)
 {
 	pci_read_config_dword(dev, 0x200,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.DBP.value);
 
 	pci_read_config_dword(dev, 0x204,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.value);
 
 	pci_read_config_dword(dev, 0x208,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.value);
 
 	pci_read_config_dword(dev, 0x214,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.value);
 
 	return (0);
 }
@@ -3599,13 +3687,13 @@ kernel_ulong_t SNB_EP_TAD(struct pci_dev *dev,	unsigned short mc,
 						unsigned short cha)
 {
 	pci_read_config_dword(dev, 0x80,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].MTR.value);
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[0].MTR.value);
 
 	pci_read_config_dword(dev, 0x84,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[1].MTR.value);
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[1].MTR.value);
 
 	pci_read_config_dword(dev, 0x88,
-			&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[2].MTR.value);
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].DIMM[2].MTR.value);
 	return (0);
 }
 
@@ -3651,28 +3739,37 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_EP_QPI(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xd4, &PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
+	pci_read_config_dword(dev, 0xd4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.value);
 
 	return ((PCI_CALLBACK) 0);
 }
 
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xe4, &PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
-	pci_read_config_dword(dev, 0xe8, &PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SNB_Cap.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.IVB_Cap.value);
 
 	return (Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC));
 }
 
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
-	pci_read_config_dword(dev, 0xe4, &PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
-	pci_read_config_dword(dev, 0xe8, &PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
-	pci_read_config_dword(dev, 0xec, &PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
+
+	pci_read_config_dword(dev, 0xec,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
 	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
-/* TODO
+/* TODO(Hardware missing)
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 {
 	SKL_SA_PLL_RATIOS PllRatios = {.value = 0};
@@ -3682,8 +3779,11 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = PllRatios.UCLK;
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = 0;
 
-	pci_read_config_dword(dev, 0xe4, &PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
-	pci_read_config_dword(dev, 0xe8, &PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
+	pci_read_config_dword(dev, 0xe4,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
+
+	pci_read_config_dword(dev, 0xe8,
+				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_B.value);
 
 	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 
@@ -3691,40 +3791,41 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 }
 */
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
-{	/* Source: BKDG for AMD NPT Family 0Fh Processors. */
+{	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-	/* Specs defined. */
+	/*		As defined by specifications.			*/
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	/* DRAM Configuration low register. */
+	/*		DRAM Configuration low register.		*/
 	pci_read_config_dword(dev, 0x90,
 			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRL.value);
-	/* DRAM Configuration high register. */
+	/*		DRAM Configuration high register.		*/
 	pci_read_config_dword(dev, 0x94,
 			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRH.value);
-	/* 1 channel if 64 bits / 2 channels if 128 bits width. */
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRL.Width128
-					+ 1;
-	/* DIMM Geometry. */
-	for (chip = 0; chip < 8; chip++) {
-		cha = chip >> 2;
-		slot = chip % 4;
-		pci_read_config_dword(dev, 0x40 + 4 * chip,
-			&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.value);
+	/*	One channel if 64 bits / two channels if 128 bits width. */
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
+			PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRL.Width128 + 1;
+	/*		DIMM Geometry.					*/
+    for (chip = 0; chip < 8; chip++)
+    {
+	cha = chip >> 2;
+	slot = chip % 4;
+	pci_read_config_dword(dev, 0x40 + 4 * chip,
+	    &PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.value);
 
-		PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount +=
-			PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.CSEnable;
-	}
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount += \
+	  PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].DIMM[slot].MBA.CSEnable;
+    }
 	/* DIMM Size. */
-	pci_read_config_dword(	dev, 0x80,
-				&PUBLIC(RO(Proc))->Uncore.MC[0].MaxDIMMs.AMD0F.CS.value);
+	pci_read_config_dword(dev, 0x80,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].MaxDIMMs.AMD0F.CS.value);
 	/* DRAM Timings. */
 	pci_read_config_dword(dev, 0x88,
-			&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value);
 	/* Assume same timings for both channels. */
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[1].AMD0F.DTRL.value =
-			PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value;
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[1].AMD0F.DTRL.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value;
 
 	return ((PCI_CALLBACK) 0);
 }
@@ -3733,26 +3834,33 @@ static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev)
 {
 	unsigned int link;
 
-	pci_read_config_dword(dev, 0x60, &PUBLIC(RO(Proc))->Uncore.Bus.NodeID.value);
-	switch ( PCI_SLOT(dev->devfn) ) {
-	case 24:
-		PUBLIC(RO(Core, AT(0)))->T.Cluster.Node = PUBLIC(RO(Proc))->Uncore.Bus.NodeID.Node;
-		break;
-	case 25:
-	    if ( ( (1 + PUBLIC(RO(Proc))->Uncore.Bus.NodeID.CPUCnt) >= PUBLIC(RO(Proc))->CPU.Count)
-		&& (PUBLIC(RO(Proc))->CPU.Count >= 2) )
-	    {
-		PUBLIC(RO(Core, AT(1)))->T.Cluster.Node = PUBLIC(RO(Proc))->Uncore.Bus.NodeID.Node;
-	    }
-		break;
-	}
+	pci_read_config_dword(dev, 0x60,
+				&PUBLIC(RO(Proc))->Uncore.Bus.NodeID.value);
 
-	pci_read_config_dword(dev, 0x64, &PUBLIC(RO(Proc))->Uncore.Bus.UnitID.value);
+    switch ( PCI_SLOT(dev->devfn) ) {
+    case 24:
+	PUBLIC(RO(Core, AT(0)))->T.Cluster.Node = \
+				PUBLIC(RO(Proc))->Uncore.Bus.NodeID.Node;
+	break;
+    case 25:
+      if ( ( (1 + PUBLIC(RO(Proc))->Uncore.Bus.NodeID.CPUCnt)
+		>=PUBLIC(RO(Proc))->CPU.Count )
+	&& (PUBLIC(RO(Proc))->CPU.Count >= 2) )
+      {
+	PUBLIC(RO(Core, AT(1)))->T.Cluster.Node = \
+				PUBLIC(RO(Proc))->Uncore.Bus.NodeID.Node;
+      }
+	break;
+    }
 
-	for (link = 0; link < 3; link++) {
-		pci_read_config_dword(dev, 0x88 + 0x20 * link,
-				&PUBLIC(RO(Proc))->Uncore.Bus.LDTi_Freq[link].value);
-	};
+	pci_read_config_dword(dev, 0x64,
+				&PUBLIC(RO(Proc))->Uncore.Bus.UnitID.value);
+
+      for (link = 0; link < 3; link++)
+      {
+	pci_read_config_dword(dev, 0x88 + 0x20 * link,
+			&PUBLIC(RO(Proc))->Uncore.Bus.LDTi_Freq[link].value);
+      };
 
 	return ((PCI_CALLBACK) 0);
 }
@@ -3765,7 +3873,7 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 	return ((PCI_CALLBACK) 0);
 }
 #endif /* CONFIG_AMD_NB */
-/* TODO
+/* TODO(Unsolved)
 static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 {
 	void __iomem *mmio;
@@ -3780,17 +3888,18 @@ static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
 	base = ((low & 0b11111111111111111100000000000000) >> 14)
 		+ ((unsigned long long) high << 32);
 
-	if (BITVAL(low, 0)) {
-		mmio = ioremap(base, 0x4000);
-		if (mmio != NULL) {
-			PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = readq(mmio + 0x18);
+    if (BITVAL(low, 0))
+    {
+	mmio = ioremap(base, 0x4000);
+	if (mmio != NULL) {
+		PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = readq(mmio + 0x18);
 
-			iounmap(mmio);
+		iounmap(mmio);
 
-			return (0);
-		} else
-			return ((PCI_CALLBACK) -ENOMEM);
-	}
+		return (0);
+	} else
+		return ((PCI_CALLBACK) -ENOMEM);
+    }
 	return ((PCI_CALLBACK) -ENOMEM);
 }
 */
@@ -3800,12 +3909,16 @@ static int CoreFreqK_ProbePCI(void)
 	struct pci_dev *dev = NULL;
 	int rc = -ENODEV;
 
-	while (id->vendor || id->subvendor || id->class_mask) {
+	while (id->vendor || id->subvendor || id->class_mask)
+	{
 		dev = pci_get_device(id->vendor, id->device, NULL);
 		if (dev != NULL) {
-		    if (!pci_enable_device(dev)) {
+		    if (!pci_enable_device(dev))
+		    {
 			PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
-				rc =(int) Callback(dev);
+
+			rc =(int) Callback(dev);
+
 			pci_disable_device(dev);
 		    }
 		    pci_dev_put(dev);
@@ -3817,13 +3930,15 @@ static int CoreFreqK_ProbePCI(void)
 
 void Query_Same_Genuine_Features(void)
 {
-	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL) {
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
+	{
 		OverrideCodeNameString(PRIVATE(OF(Specific)));
 		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	}
 	Default_Unlock_Reset();
 
-	if (PUBLIC(RO(Proc))->Features.Turbo_Unlock) {
+	if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
+	{
 		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 1;
 	} else {
 		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
@@ -3876,7 +3991,8 @@ void Query_IvyBridge_EP(unsigned int cpu)
 
 void Query_Haswell(unsigned int cpu)
 {
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+	{
 		PUBLIC(RO(Proc))->Features.Uncore_Unlock = 1;
 	}
 	Nehalem_Platform_Info(cpu);
@@ -3887,7 +4003,8 @@ void Query_Haswell(unsigned int cpu)
 
 void Query_Haswell_EP(unsigned int cpu)
 {
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+	{
 		PUBLIC(RO(Proc))->Features.Uncore_Unlock = 1;
 	}
 	Haswell_EP_Platform_Info(cpu);
@@ -3908,7 +4025,8 @@ void Query_Haswell_ULX(unsigned int cpu)
 
 void Query_Broadwell(unsigned int cpu)
 {
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+	{
 		PUBLIC(RO(Proc))->Features.Uncore_Unlock = 1;
 	}
 	Nehalem_Platform_Info(cpu);
@@ -3926,7 +4044,8 @@ void Query_Broadwell_EP(unsigned int cpu)
 
 void Query_Skylake_X(unsigned int cpu)
 {
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+	{
 		PUBLIC(RO(Proc))->Features.Uncore_Unlock = 1;
 	}
 	Skylake_X_Platform_Info(cpu);
@@ -3942,38 +4061,40 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	/* Lowest frequency according to BKDG */
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
 
-    if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate == 1)
-    {
+  if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate == 1)
+  {
 	COFVID CofVid = {.value = 0};
 
-	switch (Arch[PUBLIC(RO(Proc))->ArchID].Signature.ExtFamily) {
-	case 0x1:
-	case 0x6:
-	case 0x7:
-		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]=CofVid.Arch_COF.MaxCpuCof;
-		break;
-	case 0x2:
-		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
+    switch (Arch[PUBLIC(RO(Proc))->ArchID].Signature.ExtFamily) {
+    case 0x1:
+    case 0x6:
+    case 0x7:
+	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]=CofVid.Arch_COF.MaxCpuCof;
+	break;
+    case 0x2:
+	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
 						CofVid.Arch_Pll.MainPllOpFidMax;
-	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x8;
-	    }
-		break;
-	case 0x3:
-	case 0x5:
-		RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
-						CofVid.Arch_Pll.MainPllOpFidMax;
-	    if (CofVid.Arch_Pll.MainPllOpFidMax > 0) {
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x10;
-	    }
-		break;
-	}
-    } else {
-      if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)
+      if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
       {
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x8;
+      }
+	break;
+    case 0x3:
+    case 0x5:
+	RDMSR(CofVid, MSR_AMD_COFVID_STATUS);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+						CofVid.Arch_Pll.MainPllOpFidMax;
+      if (CofVid.Arch_Pll.MainPllOpFidMax > 0)
+      {
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] += 0x10;
+      }
+	break;
+    }
+  } else {
+    if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)
+    {
 	COMPUTE_ARG Compute = {
 		.TSC = {NULL, NULL},
 		.Clock = {.Q = PRECISION, .R = 0, .Hz = 0}
@@ -3990,77 +4111,81 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	    }
 		kfree(Compute.TSC[0]);
 	}
-	if (vClock.Hz != 0) {
+	if (vClock.Hz != 0)
+	{
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = vClock.Q;
 	} else {
 		goto NO_SOLUTION;
 	}
-      } else {
+    } else {
 NO_SOLUTION:
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
-      }
     }
-    if (PRIVATE(OF(Specific)) != NULL)
-    {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] =		\
+  }
+  if (PRIVATE(OF(Specific)) != NULL)
+  {
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 				+ PRIVATE(OF(Specific))->Boost[0];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(2C)] =		\
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(2C)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)]
 				+ PRIVATE(OF(Specific))->Boost[1];
 	SpecTurboRatio = 2;
-    } else {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] =		\
+  } else {
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 	SpecTurboRatio = 0;
-    }
+  }
 	return (SpecTurboRatio);
 }
 
 void Query_AuthenticAMD(unsigned int cpu)
-{	/* Fallback algorithm for unspecified AMD architectures. */
+{	/*	Fallback algorithm for unspecified AMD architectures.	*/
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		/* Save thermal parameters for later use in the Daemon	*/
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		/* Override Processor CodeName & Locking capabilities	*/
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL) {
+	/*	Save thermal parameters for later use in the Daemon	*/
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	/*	Override Processor CodeName & Locking capabilities	*/
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio = Compute_AuthenticAMD_Boost(cpu);
-
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio = \
+						Compute_AuthenticAMD_Boost(cpu);
 	HyperThreading_Technology();
 }
 
 unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
-{	/* BKDG for AMD NPT Family 0Fh: §13.8				*/
+{	/* Source: BKDG for AMD NPT Family 0Fh: §13.8			*/
 	unsigned short SpecTurboRatio = 0;
 
     if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.FID == 1)
-    {	/* Processor supports FID changes. */
+    {	/*		Processor supports FID changes .		*/
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = VCO[FidVidStatus.StartFID].MCF;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = \
+						VCO[FidVidStatus.StartFID].MCF;
+
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = 8 + FidVidStatus.MaxFID;
 
 	if (FidVidStatus.StartFID < 0b1000)
 	{
 		unsigned int t;
-	    for (t = 0; t < 5; t++) {
+	    for (t = 0; t < 5; t++)
+	    {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(SIZE)-5+t] = \
 					VCO[FidVidStatus.StartFID].PCF[t];
 	    }
 		SpecTurboRatio = 5;
 	} else {
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = 8 + FidVidStatus.MaxFID;
-
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
+							8 + FidVidStatus.MaxFID;
 		SpecTurboRatio = 1;
 	}
     } else {
@@ -4083,17 +4208,18 @@ unsigned short Compute_AMD_Family_0Fh_Boost(unsigned int cpu)
 void Query_AMD_Family_0Fh(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
-	PUBLIC(RO(Proc))->Features.SpecTurboRatio = Compute_AMD_Family_0Fh_Boost(cpu);
-
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio = \
+					Compute_AMD_Family_0Fh_Boost(cpu);
 	HyperThreading_Technology();
 }
 
@@ -4116,13 +4242,14 @@ void Compute_AMD_Family_10h_Boost(unsigned int cpu)
 void Query_AMD_Family_10h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
 	Compute_AMD_Family_10h_Boost(cpu);
@@ -4151,13 +4278,14 @@ void Compute_AMD_Family_11h_Boost(unsigned int cpu)
 void Query_AMD_Family_11h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
 	Compute_AMD_Family_11h_Boost(cpu);
@@ -4186,13 +4314,14 @@ void Compute_AMD_Family_12h_Boost(unsigned int cpu)
 void Query_AMD_Family_12h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
 	Compute_AMD_Family_12h_Boost(cpu);
@@ -4224,19 +4353,20 @@ void Compute_AMD_Family_14h_Boost(unsigned int cpu)
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = (MaxFreq * 4)
 							/ ClockDiv;
-	}	/* @ MainPllOpFidMax MHz */
+	}	/*	Frequency @ MainPllOpFidMax (MHz)		*/
 }
 
 void Query_AMD_Family_14h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
 	Compute_AMD_Family_14h_Boost(cpu);
@@ -4273,40 +4403,45 @@ void Query_AMD_Family_15h(unsigned int cpu)
 	PRIVATE(OF(Specific)) = LookupProcessor();
     switch (PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel) {
     case 0x0:
-	if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
-	 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf)) {
-		StrCopy(PUBLIC(RO(Proc))->Architecture,
-			Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
-			CODENAME_LEN);
-	}
+      if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
+      {
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+		CODENAME_LEN);
+      }
 	break;
     case 0x1:
-	if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
-	 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf)) {
-		StrCopy(PUBLIC(RO(Proc))->Architecture,
-			Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
-			CODENAME_LEN);
-	}
+      if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
+      {
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_PILEDRIVER].CodeName,
+		CODENAME_LEN);
+      }
 	break;
     case 0x3:
-	if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
-	 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf)) {
-		StrCopy(PUBLIC(RO(Proc))->Architecture,
-		    Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER].CodeName,
+      if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
+      {
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_STEAMROLLER].CodeName,
 			CODENAME_LEN);
-	}
+      }
 	break;
     case 0x6:
     case 0x7:
-	if ((PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
-	 && (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf)) {
-		StrCopy(PUBLIC(RO(Proc))->Architecture,
-			Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR].CodeName,
-			CODENAME_LEN);
-	}
+      if ( (PUBLIC(RO(Proc))->Features.Std.EAX.Model >= 0x0)
+	&& (PUBLIC(RO(Proc))->Features.Std.EAX.Model <= 0xf) )
+      {
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	    Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_EXCAVATOR].CodeName,
+		CODENAME_LEN);
+      }
 	break;
     };
-    if (PRIVATE(OF(Specific)) != NULL) {
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
 	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
 	OverrideCodeNameString(PRIVATE(OF(Specific)));
 	OverrideUnlockCapability(PRIVATE(OF(Specific)));
@@ -4318,7 +4453,7 @@ void Query_AMD_Family_15h(unsigned int cpu)
 
 unsigned int AMD_Zen_CoreCOF(unsigned int FID, unsigned int DID)
 {/* Source: PPR for AMD Family 17h Model 01h, Revision B1 Processors
-    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200 */
+    CoreCOF = (PStateDef[CpuFid[7:0]] / PStateDef[CpuDfsId]) * 200	*/
 	unsigned int COF;
 	if (DID != 0) {
 		COF = (FID << 1) / DID;
@@ -4362,7 +4497,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	if (PstateDef.Family_17h.PstateEn)
 	{
 		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-					PstateDef.Family_17h.CpuDfsId);
+					PstateDef.Family_17h.CpuDfsId );
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = COF;
 	}
@@ -4371,7 +4506,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 /*TODO(Hardware needed: Should we only count the enabled P-States)	*/
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = pstate;
 
-	/* Read the Target P-State					*/
+	/*		Read the Target P-State				*/
 	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
 	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
 
@@ -4380,28 +4515,31 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
 
-	/* If CPB is enabled then add Boost + XFR to the P0 ratio.	*/
+	/*	If CPB is enabled then add Boost + XFR to the P0 ratio. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (!HwCfgRegister.Family_17h.CpbDis)
     {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] =	\
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] =	\
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
       if (PRIVATE(OF(Specific)) != NULL)
       {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] += PRIVATE(OF(Specific))->Boost[0];
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] += \
+						PRIVATE(OF(Specific))->Boost[0];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += PRIVATE(OF(Specific))->Boost[0];
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
+						PRIVATE(OF(Specific))->Boost[0];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += PRIVATE(OF(Specific))->Boost[1];
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
+						PRIVATE(OF(Specific))->Boost[1];
       }
 
-	return (true);	/* Have CPB: add the Xtra Boost ratios	*/
+	return (true);	/* Have CPB: inform to add the Xtra Boost ratios */
     } else {
-	return (false); /* CPB is disabled			*/
+	return (false); /* CPB is disabled				*/
     }
 }
 
@@ -4426,7 +4564,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	unsigned short RdWrMSR = 0;
 
     if (target == 0) {
-	pstate = 0;	/* AUTO Frequency is requested by User		*/
+	pstate = 0;	/*	AUTO Frequency is requested by User	*/
 	RdWrMSR = 1;
     } else {
     /* Look-up for the first enabled P-State with the same target frequency */
@@ -4449,7 +4587,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
     if (RdWrMSR == 1)
     {
 	PSTATECTRL PstateCtrl = {.value = 0};
-	/* Command a new target P-state */
+	/*		Command a new target P-state			*/
 	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
 	PstateCtrl.PstateCmd = pstate;
 	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
@@ -4463,15 +4601,16 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PSTATEDEF PstateDef = {.value = 0};
 	HWCR HwCfgRegister = {.value = 0};
 	unsigned int COF, FID;
-	/* Make sure the Core Performance Boost is disabled. */
+	/*	Make sure the Core Performance Boost is disabled.	*/
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
   if (HwCfgRegister.Family_17h.CpbDis)
   {
 	RDMSR(PstateDef, pClockZen->PstateAddr);
-	/* Apply if and only if the P-State is enabled */
+	/*	Apply if and only if the P-State is enabled ?		*/
     if (PstateDef.Family_17h.PstateEn)
     {
-	if (pClockZen->pClockMod->cpu == -1) {
+	if (pClockZen->pClockMod->cpu == -1)
+	{
 		COF = pClockZen->pClockMod->Ratio;
 	} else {
 		/* Compute the new Frequency ID with the COF offset	*/
@@ -4481,9 +4620,10 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 		COF = COF + pClockZen->pClockMod->Offset;
 	}
 	FID = AMD_Zen_CoreFID(COF, PstateDef.Family_17h.CpuDfsId);
-	/* Write the P-State MSR with the new FID */
+	/*		Write the P-State MSR with the new FID		*/
 	PstateDef.Family_17h.CpuFid = FID;
 	WRMSR(PstateDef, pClockZen->PstateAddr);
+
 	pClockZen->rc = RC_OK_COMPUTE;
     }
   } else {
@@ -4515,7 +4655,7 @@ long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod)
     {
       if (PUBLIC(RO(Proc))->Registration.Experimental)
       {
-	CLOCK_ZEN_ARG ClockZen = {	/* P[1..7]-States */
+	CLOCK_ZEN_ARG ClockZen = {	/* P[1..7]-States allowed	*/
 		.pClockMod  = pClockMod,
 		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE + pClockMod->NC,
 		.BoostIndex = BOOST(SIZE) - pClockMod->NC,
@@ -4540,7 +4680,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
     case CLOCK_MOD_MAX:
       if (PUBLIC(RO(Proc))->Registration.Experimental)
       {
-	CLOCK_ZEN_ARG ClockZen = { /* P[0]:Max non-boosted P-State */
+	CLOCK_ZEN_ARG ClockZen = {	/* P[0]:Max non-boosted P-State */
 		.pClockMod  = pClockMod,
 		.PstateAddr = MSR_AMD_PSTATE_DEF_BASE,
 		.BoostIndex = BOOST(MAX),
@@ -4572,23 +4712,26 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 void Query_AMD_Family_17h(unsigned int cpu)
 {
 	PRIVATE(OF(Specific)) = LookupProcessor();
-	if (PRIVATE(OF(Specific)) != NULL) {
-		/* Save thermal parameters for later use in the Daemon	*/
-		PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
-		/* Override Processor CodeName & Locking capabilities	*/
-		OverrideCodeNameString(PRIVATE(OF(Specific)));
-		OverrideUnlockCapability(PRIVATE(OF(Specific)));
-	} else {
-		PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
-	}
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	/*	Save thermal parameters for later use in the Daemon	*/
+	PUBLIC(RO(Proc))->PowerThermal.Param = PRIVATE(OF(Specific))->Param;
+	/*	Override Processor CodeName & Locking capabilities	*/
+	OverrideCodeNameString(PRIVATE(OF(Specific)));
+	OverrideUnlockCapability(PRIVATE(OF(Specific)));
+    } else {
+	PUBLIC(RO(Proc))->PowerThermal.Param.Target = 0;
+    }
 	Default_Unlock_Reset();
 
-	if (Compute_AMD_Zen_Boost(cpu) == true) {
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 2; /* Count the Xtra Boost ratios */
-	} else {
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 0; /* Disabled CPB: Hide ratios */
+	if (Compute_AMD_Zen_Boost(cpu) == true)
+	{	/*	Count the Xtra Boost ratios			*/
+		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
 	}
-	/* Apply same register bit fields as Intel RAPL_POWER_UNIT */
+	else {	/*	Disabled CPB: Hide ratios			*/
+		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+	}
+	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
 
 	HyperThreading_Technology();
@@ -4665,36 +4808,38 @@ void Dump_CPUID(CORE_RO *Core)
 
 void SpeedStep_Technology(CORE_RO *Core)			/*Per Package*/
 {
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		if (PUBLIC(RO(Proc))->Features.Std.ECX.EIST == 1) {
-			MISC_PROC_FEATURES MiscFeatures = {.value = 0};
-			RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+  if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+    if (PUBLIC(RO(Proc))->Features.Std.ECX.EIST == 1)
+    {
+	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 
-			switch (SpeedStep_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				MiscFeatures.EIST = SpeedStep_Enable;
-				WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-				RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
-				break;
-			}
-			if (MiscFeatures.EIST)
-				BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
-			else
-				BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
-
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
-		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	switch (SpeedStep_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatures.EIST = SpeedStep_Enable;
+		WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+		break;
 	}
+	if (MiscFeatures.EIST)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+	}
+    } else {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep, Core->Bind);
+    }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+  }
 }
 
 void Intel_Turbo_Config(CORE_RO *Core, void (*ConfigFunc)(void*),/*Per Package*/
 			void (*AssignFunc)(unsigned int*, TURBO_CONFIG*))
 {
 	CLOCK_TURBO_ARG ClockTurbo = {
-		.pClockMod = NULL,	/* Read-Only Operation */
+		.pClockMod = NULL,	/*	Read-Only Operation	*/
 		.Config = {.MSR = {.value = 0}},
 		.rc = RC_SUCCESS
 	};
@@ -4782,25 +4927,28 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
-  if ((MiscFeatures.Turbo_IDA == 0) && (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA))
+  if ( (MiscFeatures.Turbo_IDA == 0)
+	&& (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) )
   {
     switch (TurboBoost_Enable) {
-    case COREFREQ_TOGGLE_OFF:	/* Restore nominal P-state */
+    case COREFREQ_TOGGLE_OFF:	/*	Restore the nominal P-state	*/
 	Core->PowerThermal.PerfControl.Turbo_IDA = 1;
 	SetTarget(Core, Core->Boost[BOOST(MAX)]);
 	ToggleFeature = 1;
 	break;
-    case COREFREQ_TOGGLE_ON:	/* Request the Turbo P-state	*/
+    case COREFREQ_TOGGLE_ON:	/*	Request the Turbo P-state	*/
 	Core->PowerThermal.PerfControl.Turbo_IDA = 0;
 	SetTarget(Core, TurboRatio);
 	ToggleFeature = 1;
 	break;
     }
-    if (ToggleFeature == 1) {
+    if (ToggleFeature == 1)
+    {
 	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
-    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0) {
+    if (Core->PowerThermal.PerfControl.Turbo_IDA == 0)
+    {
 	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
     } else {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
@@ -4814,47 +4962,51 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 	RDMSR(Core->PowerThermal.HWP_Capabilities, MSR_IA32_HWP_CAPABILITIES);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 
-    if (PUBLIC(RO(Proc))->Features.Power.EAX.HWP_EPP) {		/* EPP mode	*/
-	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff)) {
+    if (PUBLIC(RO(Proc))->Features.Power.EAX.HWP_EPP)
+    {		/*		EPP mode				*/
+	if ((HWP_EPP >= 0) && (HWP_EPP <= 0xff))
+	{
 		Core->PowerThermal.HWP_Request.Energy_Pref = HWP_EPP;
 		WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 		RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	}
-    } else {					/* EPB fallback mode	*/
-	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & ( REGISTRATION_ENABLE
-						| REGISTRATION_FULLCTRL ))
+    } else {	/*		EPB fallback mode			*/
+	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq
+			& (REGISTRATION_ENABLE | REGISTRATION_FULLCTRL) )
 	{
-		/* Turbo is a function of the Target P-state		*/
-		if (!CmpTarget(Core, ValidRatio)) {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		}
+		/*	Turbo is a function of the Target P-state	*/
+	    if (!CmpTarget(Core, ValidRatio))
+	    {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
 	}
     }
-  } else {						/* EPB mode	*/
-	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & ( REGISTRATION_ENABLE
-						| REGISTRATION_FULLCTRL ))
+  } else {	/*			EPB mode			*/
+	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq
+			& (REGISTRATION_ENABLE | REGISTRATION_FULLCTRL) )
 	{
-		if (!CmpTarget(Core, ValidRatio)) {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		}
+	    if (!CmpTarget(Core, ValidRatio))
+	    {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
 	}
   }
 }
 
 void DynamicAcceleration(CORE_RO *Core)				/* Unique */
 {
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
-	{
-		TurboBoost_Technology(	Core,
-					Set_Core2_Target,
-					Get_Core2_Target,
-					Cmp_Core2_Target,
-					1 + Core->Boost[BOOST(MAX)],
-					1 + Core->Boost[BOOST(MAX)] );
-	} else {
-		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
-	}
+    if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
+    {
+	TurboBoost_Technology(	Core,
+				Set_Core2_Target,
+				Get_Core2_Target,
+				Cmp_Core2_Target,
+				1 + Core->Boost[BOOST(MAX)],
+				1 + Core->Boost[BOOST(MAX)] );
+    } else {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+    }
 }
 
 typedef struct {
@@ -4893,7 +5045,7 @@ long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
   do {
-	cpu--;	/* From last AP to BSP */
+	cpu--;	/*		From last AP to BSP			*/
 
     if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)
     && ((pClockPPC->pClockMod->cpu == -1)||(pClockPPC->pClockMod->cpu == cpu)))
@@ -5013,11 +5165,12 @@ static void ClockMod_HWP_PerCore(void *arg)
 	pClockHWP->rc = -RC_UNIMPLEMENTED;
 	break;
   }
-    if (WrRdHWP == 1) {
+  if (WrRdHWP == 1)
+  {
 	WRMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	RDMSR(Core->PowerThermal.HWP_Request, MSR_IA32_HWP_REQUEST);
 	pClockHWP->rc = RC_OK_COMPUTE;
-    }
+  }
 }
 
 long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
@@ -5025,7 +5178,7 @@ long For_All_HWP_Clock(CLOCK_HWP_ARG *pClockHWP)
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
   do {
-	cpu--;	/* From last AP to BSP */
+	cpu--;	/*	From last AP to BSP				*/
 
     if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)
     && ((pClockHWP->pClockMod->cpu == -1)||(pClockHWP->pClockMod->cpu == cpu)))
@@ -5070,17 +5223,17 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	unsigned long long CC6 = 0, PC6 = 0;
 	int ToggleFeature;
 
-	/* Read The Hardware Configuration Register. */
+	/*		Read The Hardware Configuration Register.	*/
 	HWCR HwCfgRegister = {.value = 0};
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
 
 	/* Query the SMM. */
-	if (HwCfgRegister.Family_17h.SmmLock)
+	if (HwCfgRegister.Family_17h.SmmLock) {
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
-	else
+	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
-
-	/* Enable or Disable the Core Performance Boost. */
+	}
+	/*		Enable or Disable the Core Performance Boost.	*/
 	switch (TurboBoost_Enable) {
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
@@ -5089,14 +5242,15 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		RDMSR(HwCfgRegister, MSR_K7_HWCR);
 		break;
 	}
-	if (!HwCfgRegister.Family_17h.CpbDis) {
+	if (!HwCfgRegister.Family_17h.CpbDis)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
 
-	/* Enable or Disable the Core C6 State. Bit[22,14,16] */
+	/*	Enable or Disable the Core C6 State. Bit[22,14,16]	*/
 	RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
 	switch (CC6_Enable) {
 	case COREFREQ_TOGGLE_OFF:
@@ -5115,18 +5269,20 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		ToggleFeature = 0;
 		break;
 	}
-	if (ToggleFeature == 1) {
+	if (ToggleFeature == 1)
+	{
 		WRMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
 		RDMSR64(CC6, MSR_AMD_CC6_F17H_STATUS);
 	}
-	if (BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU) {
+	if (BITWISEAND(LOCKLESS, CC6, 0x404040LLU) == 0x404040LLU)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
-	/* Enable or Disable the Package C6 State. Bit[32] */
+	/*	Enable or Disable the Package C6 State . Bit[32]	*/
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
 		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
@@ -5147,16 +5303,17 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 			WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
 			RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
 		}
-		if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU){
+		if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
 		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
 		}
 		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 	}
-	/* Package C-State: Configuration Control. */
+	/*		Package C-State: Configuration Control .	*/
 	Core->Query.CfgLock = 1;
-	/* Package C-State: I/O MWAIT Redirection. */
+	/*		Package C-State: I/O MWAIT Redirection .	*/
 	Core->Query.IORedir = 0;
 }
 
@@ -5196,7 +5353,8 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 
 void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
 {
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
 		POWER_CONTROL PowerCtrl = {.value = 0};
 		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 
@@ -5209,10 +5367,11 @@ void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
 			break;
 		}
 		if (PowerCtrl.C1E)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
-
+		}
 		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 	}
 }
@@ -5224,10 +5383,11 @@ void Query_AMD_Family_0Fh_C1E(CORE_RO *Core)			/* Per Core */
 	RDMSR(IntPendingMsg, MSR_K8_INT_PENDING_MSG);
 
 	if (IntPendingMsg.C1eOnCmpHalt & !IntPendingMsg.SmiOnCmpHalt)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
-	else
+	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E, Core->Bind);
-
+	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 }
 
@@ -5244,27 +5404,30 @@ void ThermalMonitor2_Set( CORE_RO *Core )	/* Intel Core Solo Duo. */
 		_Atom_Saltwell,		/* 06_36 */
 	};
 	int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
-	for (id = 0; id < ids; id++) {
-		if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-		 && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-		 && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-		 && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model)) {
+  for (id = 0; id < ids; id++)
+  {
+    if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+    && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+    && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+    && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+    {
+	if (Core->PowerThermal.TCC_Enable)
+	{
+		THERM2_CONTROL Therm2Control = {.value = 0};
 
-			if (Core->PowerThermal.TCC_Enable) {
-				THERM2_CONTROL Therm2Control = {.value = 0};
+		RDMSR(Therm2Control, MSR_THERM2_CTL);
 
-				RDMSR(Therm2Control, MSR_THERM2_CTL);
-
-				if (Therm2Control.TM_SELECT) {
-					Core->PowerThermal.TCC_Enable = 0;
-					Core->PowerThermal.TM2_Enable = 1;
-				} else {
-					Core->PowerThermal.TM2_Enable = 0;
-				}
-			}
-			break;
+		if (Therm2Control.TM_SELECT)
+		{
+			Core->PowerThermal.TCC_Enable = 0;
+			Core->PowerThermal.TM2_Enable = 1;
+		} else {
+			Core->PowerThermal.TM2_Enable = 0;
 		}
 	}
+	break;
+    }
+  }
 }
 
 void ThermalMonitor_Set(CORE_RO *Core)
@@ -5279,7 +5442,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
 	Core->PowerThermal.Param.Offset[0] = TjMax.Core.Target;
-	if (Core->PowerThermal.Param.Offset[0] == 0) {
+	if (Core->PowerThermal.Param.Offset[0] == 0)
+	{
 		Core->PowerThermal.Param.Offset[0] = 100;
 	}
 
@@ -5337,7 +5501,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 				  | (ThermStatus.CurLimitLog << 5)
 				  | (ThermStatus.XDomLimitLog << 6);
 
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
+	if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
+	&& (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
 	{
 		ClearBit = 0;
 		ThermStatus.value = 0;
@@ -5379,7 +5544,8 @@ void ThermalMonitor_Set(CORE_RO *Core)
 
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 
-	if (PfInfo.ProgrammableTj) {
+	if (PfInfo.ProgrammableTj)
+	{
 		switch (PUBLIC(RO(Proc))->ArchID) {
 		case Atom_Goldmont:
 		case Xeon_Phi:
@@ -5398,82 +5564,84 @@ void ThermalMonitor_Set(CORE_RO *Core)
 
 void PowerThermal(CORE_RO *Core)
 {
-  struct {
-	struct SIGNATURE Arch;
-	unsigned short	grantPWR_MGMT	:  1-0,
-			grantODCM	:  2-1,
-			experimental	:  3-2,
-			freeToUse	: 16-3;
-  } whiteList[] = {
-	{_Core_Yonah,		0, 1, 1, 0},
-	{_Core_Conroe,		0, 1, 0, 0},
-	{_Core_Kentsfield,	0, 1, 1, 0},
-	{_Core_Conroe_616,	0, 1, 1, 0},
-	{_Core_Penryn,		0, 1, 0, 0},
-	{_Core_Dunnington,	0, 1, 1, 0},
+	struct {
+		struct SIGNATURE Arch;
+		unsigned short	grantPWR_MGMT	:  1-0,
+				grantODCM	:  2-1,
+				experimental	:  3-2,
+				freeToUse	: 16-3;
+	} whiteList[] = {
+		{_Core_Yonah,		0, 1, 1, 0},
+		{_Core_Conroe,		0, 1, 0, 0},
+		{_Core_Kentsfield,	0, 1, 1, 0},
+		{_Core_Conroe_616,	0, 1, 1, 0},
+		{_Core_Penryn,		0, 1, 0, 0},
+		{_Core_Dunnington,	0, 1, 1, 0},
 
-	{_Atom_Bonnell ,	0, 1, 1, 0},	/* 06_1C */
-	{_Atom_Silvermont,	0, 1, 1, 0},	/* 06_26 */
-	{_Atom_Lincroft,	0, 1, 1, 0},	/* 06_27 */
-	{_Atom_Clovertrail,	0, 1, 1, 0},	/* 06_35 */
-	{_Atom_Saltwell,	0, 1, 1, 0},	/* 06_36 */
+		{_Atom_Bonnell ,	0, 1, 1, 0},	/* 06_1C */
+		{_Atom_Silvermont,	0, 1, 1, 0},	/* 06_26 */
+		{_Atom_Lincroft,	0, 1, 1, 0},	/* 06_27 */
+		{_Atom_Clovertrail,	0, 1, 1, 0},	/* 06_35 */
+		{_Atom_Saltwell,	0, 1, 1, 0},	/* 06_36 */
 
-	{_Silvermont_637,	0, 1, 1, 0},	/* 06_37 */
+		{_Silvermont_637,	0, 1, 1, 0},	/* 06_37 */
 
-	{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
-	{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
-	{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
-	{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
-	{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
-	{_Atom_Moorefield,	0, 1, 1, 0},	/* 06_5A */
+		{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
+		{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
+		{_Atom_Goldmont,	1, 0, 1, 0},	/* 06_5C */
+		{_Atom_Sofia,		0, 1, 1, 0},	/* 06_5D */
+		{_Atom_Merrifield,	0, 1, 1, 0},	/* 06_4A */
+		{_Atom_Moorefield,	0, 1, 1, 0},	/* 06_5A */
 
-	{_Nehalem_Bloomfield,	1, 1, 0, 0},	/* 06_1A */
-	{_Nehalem_Lynnfield,	1, 1, 0, 0},	/* 06_1E */
-	{_Nehalem_MB,		1, 1, 0, 0},	/* 06_1F */
-	{_Nehalem_EX,		1, 1, 0, 0},	/* 06_2E */
+		{_Nehalem_Bloomfield,	1, 1, 0, 0},	/* 06_1A */
+		{_Nehalem_Lynnfield,	1, 1, 0, 0},	/* 06_1E */
+		{_Nehalem_MB,		1, 1, 0, 0},	/* 06_1F */
+		{_Nehalem_EX,		1, 1, 0, 0},	/* 06_2E */
 
-	{_Westmere,		1, 1, 0, 0},	/* 06_25 */
-	{_Westmere_EP,		1, 1, 0, 0},	/* 06_2C */
-	{_Westmere_EX,		1, 1, 0, 0},	/* 06_2F */
+		{_Westmere,		1, 1, 0, 0},	/* 06_25 */
+		{_Westmere_EP,		1, 1, 0, 0},	/* 06_2C */
+		{_Westmere_EX,		1, 1, 0, 0},	/* 06_2F */
 
-	{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
-	{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
+		{_SandyBridge,		1, 1, 0, 0},	/* 06_2A */
+		{_SandyBridge_EP,	1, 1, 0, 0},	/* 06_2D */
 
-	{_IvyBridge,		1, 0, 1, 0},	/* 06_3A */
-	{_IvyBridge_EP ,	1, 1, 0, 0},	/* 06_3E */
+		{_IvyBridge,		1, 0, 1, 0},	/* 06_3A */
+		{_IvyBridge_EP ,	1, 1, 0, 0},	/* 06_3E */
 
-	{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
-	{_Haswell_EP,		1, 1, 1, 0},	/* 06_3F */
-	{_Haswell_ULT,		1, 1, 0, 0},	/* 06_45 */
-	{_Haswell_ULX,		1, 1, 1, 0},	/* 06_46 */
+		{_Haswell_DT,		1, 1, 0, 0},	/* 06_3C */
+		{_Haswell_EP,		1, 1, 1, 0},	/* 06_3F */
+		{_Haswell_ULT,		1, 1, 0, 0},	/* 06_45 */
+		{_Haswell_ULX,		1, 1, 1, 0},	/* 06_46 */
 
-	{_Broadwell,		1, 1, 1, 0},	/* 06_3D */
-	{_Broadwell_D,		1, 1, 1, 0},	/* 06_56 */
-	{_Broadwell_H,		1, 1, 1, 0},	/* 06_47 */
-	{_Broadwell_EP ,	1, 1, 1, 0},	/* 06_4F */
+		{_Broadwell,		1, 1, 1, 0},	/* 06_3D */
+		{_Broadwell_D,		1, 1, 1, 0},	/* 06_56 */
+		{_Broadwell_H,		1, 1, 1, 0},	/* 06_47 */
+		{_Broadwell_EP ,	1, 1, 1, 0},	/* 06_4F */
 
-	{_Skylake_UY,		1, 1, 1, 0},	/* 06_4E */
-	{_Skylake_S,		1, 0, 0, 0},	/* 06_5E */
-	{_Skylake_X,		1, 1, 1, 0},	/* 06_55 */
+		{_Skylake_UY,		1, 1, 1, 0},	/* 06_4E */
+		{_Skylake_S,		1, 0, 0, 0},	/* 06_5E */
+		{_Skylake_X,		1, 1, 1, 0},	/* 06_55 */
 
-	{_Xeon_Phi,		0, 1, 1, 0},	/* 06_57 */
+		{_Xeon_Phi,		0, 1, 1, 0},	/* 06_57 */
 
-	{_Kabylake,		1, 0, 1, 0},	/* 06_9E */
-	{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
+		{_Kabylake,		1, 0, 1, 0},	/* 06_9E */
+		{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
 
-	{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
-	{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
-	{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
-  };
-  unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
-  for (id = 0; id < ids; id++) {
-	if((whiteList[id].Arch.ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-	 && (whiteList[id].Arch.Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-	 && (whiteList[id].Arch.ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-	 && (whiteList[id].Arch.Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model)) {
-		break;
-	}
+		{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
+		{_Geminilake,		1, 0, 1, 0},	/* 06_7A */
+		{_Icelake_UY,		1, 1, 1, 0},	/* 06_7E */
+	};
+	unsigned int id, ids = sizeof(whiteList) / sizeof(whiteList[0]);
+ for (id = 0; id < ids; id++)
+ {
+ if((whiteList[id].Arch.ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+  && (whiteList[id].Arch.Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+  && (whiteList[id].Arch.ExtModel==PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+  && (whiteList[id].Arch.Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+  {
+	break;
   }
+ }
   if (PUBLIC(RO(Proc))->Features.Info.LargestStdFunc >= 0x6)
   {
     struct THERMAL_POWER_LEAF Power = {
@@ -5509,7 +5677,8 @@ void PowerThermal(CORE_RO *Core)
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
 	  if (!whiteList[id].experimental
-	   || (whiteList[id].experimental && PUBLIC(RO(Proc))->Registration.Experimental))
+	   || (whiteList[id].experimental
+	   && PUBLIC(RO(Proc))->Registration.Experimental))
 	  {
 	    Core->PowerThermal.PwrManagement.Perf_BIAS_Enable=PowerMGMT_Unlock;
 	    WRMSR(Core->PowerThermal.PwrManagement, MSR_MISC_PWR_MGMT);
@@ -5527,7 +5696,8 @@ void PowerThermal(CORE_RO *Core)
       if ((PowerPolicy >= 0) && (PowerPolicy <= 15))
       {
 	if (!whiteList[id].experimental
-	 || (whiteList[id].experimental && PUBLIC(RO(Proc))->Registration.Experimental))
+	 || (whiteList[id].experimental
+	 && PUBLIC(RO(Proc))->Registration.Experimental))
 	{
 	Core->PowerThermal.PerfEnergyBias.PowerPolicy = PowerPolicy;
 	WRMSR(Core->PowerThermal.PerfEnergyBias, MSR_IA32_ENERGY_PERF_BIAS);
@@ -5563,7 +5733,8 @@ void PowerThermal(CORE_RO *Core)
 	if (ToggleFeature == 1)
 	{
 	  if (!whiteList[id].experimental
-	   || (whiteList[id].experimental && PUBLIC(RO(Proc))->Registration.Experimental))
+	   || (whiteList[id].experimental
+	   && PUBLIC(RO(Proc))->Registration.Experimental))
 	  {
 	    WRMSR(ClockModulation, MSR_IA32_THERM_CONTROL);
 	    RDMSR(Core->PowerThermal.ClockModulation, MSR_IA32_THERM_CONTROL);
@@ -5571,9 +5742,11 @@ void PowerThermal(CORE_RO *Core)
 	}
 	Core->PowerThermal.ClockModulation.ECMD = Power.EAX.ECMD;
 	if (Core->PowerThermal.ClockModulation.ODCM_Enable)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
-	else
+	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
+	}
     }
     else {
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM, Core->Bind);
@@ -5629,7 +5802,8 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 	}
-	if (CStateConfig.CFG_Lock == 0) {
+	if (CStateConfig.CFG_Lock == 0)
+	{
 		ToggleFeature = 0;
 
 		switch (IOMWAIT_Enable) {
@@ -5736,15 +5910,17 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 	}
 
 	if (CStateConfig.C3autoDemotion)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
-	else
+	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
-
+	}
 	if (CStateConfig.C1autoDemotion)
+	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
-	else
+	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
-
+	}
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
@@ -5769,15 +5945,17 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 		}
 	} else if ((encoding == CSTATES_SNB) || (encoding == CSTATES_SKL)) {
 		if (CStateConfig.C3undemotion)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-
+		}
 		if (CStateConfig.C1undemotion)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-
+		}
 		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
 		case 0b110:
 			Core->Query.CStateLimit = 8;
@@ -5802,15 +5980,17 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 		}
 	} else if (encoding == CSTATES_ULT) {
 		if (CStateConfig.C3undemotion)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-
+		}
 		if (CStateConfig.C1undemotion)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-
+		}
 		switch (CStateConfig.Pkg_CStateLimit) {
 		case 0b1000:
 			Core->Query.CStateLimit = 10;
@@ -5844,7 +6024,6 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
-
 
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 
@@ -5925,13 +6104,14 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 
 			WRMSR(FidVidControl, MSR_K7_FID_VID_CTL);
 			loop = 0;
-		} else
+		} else {
 			RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
-
+		}
 		if (loop == 0) {
 			break;
-		} else
+		} else {
 			loop-- ;
+		}
 	} while (FidVidStatus.FidVidPending == 1) ;
 }
 
@@ -5988,7 +6168,7 @@ void SystemRegisters(CORE_RO *Core)
 			: "i" (MSR_IA32_FEAT_CTL)
 			: "%rax", "%rcx", "%rdx"
 		);
-		/* Virtualization Technology. */
+		/*		Virtualization Technology.		*/
 		if (BITVAL(Core->SystemRegister.EFCR, EXFCR_VMX_IN_SMX)
 		  | BITVAL(Core->SystemRegister.EFCR, EXFCR_VMXOUT_SMX))
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
@@ -5997,10 +6177,12 @@ void SystemRegisters(CORE_RO *Core)
 		||(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
 	{
 		RDMSR(Core->SystemRegister.VMCR, MSR_VM_CR);
-		/* Secure Virtual Machine. */
-		if(!Core->SystemRegister.VMCR.SVME_Disable
-		 && Core->SystemRegister.VMCR.SVM_Lock)
+		/*		Secure Virtual Machine .		*/
+		if (!Core->SystemRegister.VMCR.SVME_Disable
+		  && Core->SystemRegister.VMCR.SVM_Lock)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->VM, Core->Bind);
+		}
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CR_Mask, Core->Bind);
 }
@@ -6073,86 +6255,86 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 		Flush_Cmd.L1D_FLUSH_CMD = Mech_L1D_FLUSH;
 		WRMSR(Flush_Cmd, MSR_IA32_FLUSH_CMD);
 	}
-	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_ARCH_CAP)
-	{
+    if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_ARCH_CAP)
+    {
 		ARCH_CAPABILITIES Arch_Cap = {.value = 0};
 
 		RDMSR(Arch_Cap, MSR_IA32_ARCH_CAPABILITIES);
 
-		if (Arch_Cap.RDCL_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
-		}
-		if (Arch_Cap.IBRS_ALL) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
-		}
-		if (Arch_Cap.RSBA) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
-		}
-		if (Arch_Cap.L1DFL_VMENTRY_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
-		}
-		if (Arch_Cap.SSB_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
-		}
-		if (Arch_Cap.MDS_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
-		}
-		if (Arch_Cap.PSCHANGE_MC_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
-		}
-		if (Arch_Cap.TAA_NO) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
-		}
-	}
-	if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
-	{
-		CORE_CAPABILITIES Core_Cap = {.value = 0};
-
-		RDMSR(Core_Cap, MSR_IA32_CORE_CAPABILITIES);
-
-		if (Core_Cap.SPLA_EXCEPTION) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
-		}
+	if (Arch_Cap.RDCL_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
 	} else {
-		/* Source: arch/x86/kernel/cpu/intel.c			*/
-		struct SIGNATURE whiteList[] = {
-			_Icelake_UY,		/* 06_7E */
-			_Icelake_X,		/* 06_6A */
-			_Tremont_Jacobsville,	/* 06_86 */
-			_Tremont_Elkhartlake,	/* 06_96 */
-			_Tremont_Jasperlake	/* 06_9C */
-		};
-		const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
-		int id;
-	    for (id = 0; id < ids; id++) {
-		if((whiteList[id].ExtFamily == PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
-		 && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
-		 && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
-		 && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
-			break;
-		}
-	    }
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RDCL_NO, Core->Bind);
 	}
+	if (Arch_Cap.IBRS_ALL) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS_ALL, Core->Bind);
+	}
+	if (Arch_Cap.RSBA) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->RSBA, Core->Bind);
+	}
+	if (Arch_Cap.L1DFL_VMENTRY_NO) {
+	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
+	} else {
+	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1DFL_VMENTRY_NO,Core->Bind);
+	}
+	if (Arch_Cap.SSB_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSB_NO, Core->Bind);
+	}
+	if (Arch_Cap.MDS_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->MDS_NO, Core->Bind);
+	}
+	if (Arch_Cap.PSCHANGE_MC_NO) {
+	    BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
+	} else {
+	    BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
+	}
+	if (Arch_Cap.TAA_NO) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO, Core->Bind);
+	}
+    }
+    if (PUBLIC(RO(Proc))->Features.ExtFeature.EDX.IA32_CORE_CAP)
+    {
+	CORE_CAPABILITIES Core_Cap = {.value = 0};
+
+	RDMSR(Core_Cap, MSR_IA32_CORE_CAPABILITIES);
+
+	if (Core_Cap.SPLA_EXCEPTION) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+	}
+    } else {
+	/* Source: arch/x86/kernel/cpu/intel.c				*/
+	struct SIGNATURE whiteList[] = {
+		_Icelake_UY,		/* 06_7E */
+		_Icelake_X,		/* 06_6A */
+		_Tremont_Jacobsville,	/* 06_86 */
+		_Tremont_Elkhartlake,	/* 06_96 */
+		_Tremont_Jasperlake	/* 06_9C */
+	};
+	const int ids = sizeof(whiteList) / sizeof(whiteList[0]);
+	int id;
+     for (id = 0; id < ids; id++) {
+      if((whiteList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+      && (whiteList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+      && (whiteList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+      && (whiteList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+      {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA, Core->Bind);
+	break;
+      }
+     }
+    }
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 }
@@ -6161,13 +6343,15 @@ void Intel_VirtualMachine(CORE_RO *Core)
 {
 	if (PUBLIC(RO(Proc))->Features.Std.ECX.VMX) {
 		VMX_BASIC VMX_Basic = {.value = 0};
-		/* Basic VMX Information. */
+		/*		Basic VMX Information.			*/
 		RDMSR(VMX_Basic, MSR_IA32_VMX_BASIC);
 
 		if (VMX_Basic.SMM_DualMon)
+		{
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
-		else
+		} else {
 			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SMM, Core->Bind);
+		}
 	}
 }
 
@@ -6253,7 +6437,9 @@ static void PerCore_Intel_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask	, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
@@ -6286,7 +6472,9 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask	, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
@@ -6315,7 +6503,9 @@ static void PerCore_Core2_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
@@ -6355,7 +6545,9 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -6412,8 +6604,10 @@ static void PerCore_SandyBridge_Query(void *arg)
 		Intel_CStatesConfiguration(CSTATES_SNB, Core);
 	}
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -6468,9 +6662,9 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	Intel_VirtualMachine(Core);
 
-	if (PUBLIC(RO(Proc))->Registration.Experimental) {
-		Intel_Microcode(Core);
-	}
+    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+	Intel_Microcode(Core);
+    }
 	Dump_CPUID(Core);
 
 	SpeedStep_Technology(Core);
@@ -6489,7 +6683,9 @@ static void PerCore_Haswell_EP_Query(void *arg)
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -6531,7 +6727,9 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -6582,7 +6780,9 @@ static void PerCore_Skylake_Query(void *arg)
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -6621,7 +6821,9 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask	, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
@@ -6651,7 +6853,9 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask	, PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
@@ -6700,7 +6904,7 @@ static void PerCore_AMD_Family_15h_Query(void *arg)
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
-	/* Query the Min, Max, Target & Turbo P-States			*/
+	/*		Query the Min, Max, Target & Turbo P-States	*/
 	Compute_AMD_Zen_Boost(Core->Bind);
 
 	SystemRegisters(Core);
@@ -6734,7 +6938,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 10, 56)
 void Sys_DumpTask(SYSGATE_RO *SysGate)
 {
-        SysGate->taskCount = 0;
+	SysGate->taskCount = 0;
 }
 #else /* KERNEL_VERSION(3, 10, 56) */
 void Sys_DumpTask(SYSGATE_RO *SysGate)
@@ -6762,8 +6966,9 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 #endif /* CONFIG_SCHED_BMQ */
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
-		if (cnt < TASK_LIMIT)
+		if (cnt < TASK_LIMIT) {
 			cnt++;
+		}
 	}
 	rcu_read_unlock();
 	SysGate->taskCount = cnt;
@@ -6800,7 +7005,8 @@ static void InitTimer(void *Cycle_Function)
 {
 	unsigned int cpu = smp_processor_id();
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 0) {
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 0)
+	{
 		hrtimer_init(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
 				CLOCK_MONOTONIC,
 				HRTIMER_MODE_REL_PINNED);
@@ -6817,81 +7023,87 @@ void Controller_Init(void)
 
 	Package_Init_Reset();
 
-	if (Arch[PUBLIC(RO(Proc))->ArchID].Query != NULL) {
-		Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
-	}
+    if (Arch[PUBLIC(RO(Proc))->ArchID].Query != NULL)
+    {
+	Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
+    }
 
-	ratio = PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)];
+   ratio=PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)];
 
-	if (Arch[PUBLIC(RO(Proc))->ArchID].BaseClock != NULL) {
-		clock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio);
-	}
-	if (clock.Hz == 0) {	/* Fallback @ 100 MHz */
-		clock.Q = 100;
-		clock.R = 0;
-		clock.Hz = 100000000LLU;
-	}
+    if (Arch[PUBLIC(RO(Proc))->ArchID].BaseClock != NULL)
+    {
+	clock = Arch[PUBLIC(RO(Proc))->ArchID].BaseClock(ratio);
+    }
+    if (clock.Hz == 0) {	/*	Fallback @ 100 MHz		*/
+	clock.Q = 100;
+	clock.R = 0;
+	clock.Hz = 100000000LLU;
+    }
 
-	if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0) {
-	    if (ratio == 0)	/* Fix ratio. */
-	    {
-		ratio	= PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)] \
-			= PUBLIC(RO(Proc))->Features.Factory.Freq / clock.Q;
-	    }
-	} else if (ratio > 0) { /* Fix factory frequency (MHz) */
-		PUBLIC(RO(Proc))->Features.Factory.Freq = (ratio * clock.Hz) / 1000000;
-	}
+    if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0) {
+     if ( ratio == 0 )	/* Fix missing ratio.			*/
+     {
+   ratio=PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]\
+	=PUBLIC(RO(Proc))->Features.Factory.Freq / clock.Q;
+     }
+    } else if (ratio > 0) {	/* Fix the factory frequency (MHz)	*/
+	PUBLIC(RO(Proc))->Features.Factory.Freq = (ratio * clock.Hz) / 1000000;
+    }
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = clock.Q;
 	PUBLIC(RO(Proc))->Features.Factory.Clock.R  = clock.R;
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Hz = clock.Hz;
-	PUBLIC(RO(Proc))->Features.Factory.Ratio=(PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000)
-					/ PUBLIC(RO(Proc))->Features.Factory.Clock.Hz;
+	PUBLIC(RO(Proc))->Features.Factory.Ratio = \
+			(PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000)
+			/ PUBLIC(RO(Proc))->Features.Factory.Clock.Hz;
 
-	if ((AutoClock & 0b01) && (ratio != 0)) {
-		struct kmem_cache *hwCache = NULL;
-		/* Allocate Cache aligned resources. */
-		hwCache = kmem_cache_create(	"CoreFreqCache",
-						STRUCT_SIZE, 0,
-						SLAB_HWCACHE_ALIGN, NULL);
-	    if (hwCache != NULL)
+    if ((AutoClock & 0b01) && (ratio != 0))
+    {
+	struct kmem_cache *hwCache = NULL;
+	/* Allocate Cache aligned resources. */
+	hwCache = kmem_cache_create(	"CoreFreqCache",
+					STRUCT_SIZE, 0,
+					SLAB_HWCACHE_ALIGN, NULL);
+      if (hwCache != NULL)
+      {
+	do {	/*		from last AP to BSP			*/
+		cpu--;
+
+	  if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS))
+	  {
+		COMPUTE_ARG Compute = {
+			.TSC = {NULL, NULL},
+			.Clock = {.Q = ratio, .R = 0, .Hz = 0}
+		};
+
+		Compute.TSC[0] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
+	    if (Compute.TSC[0] != NULL)
 	    {
-		do {	/* from last AP to BSP */
-			cpu--;
+		Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
+		if (Compute.TSC[1] != NULL)
+		{
+		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
 
-		  if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS))
-		  {
-			COMPUTE_ARG Compute = {
-				.TSC = {NULL, NULL},
-				.Clock = {.Q = ratio, .R = 0, .Hz = 0}
-			};
-
-			Compute.TSC[0] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
-		    if (Compute.TSC[0] != NULL)
-		    {
-			Compute.TSC[1] = kmem_cache_alloc(hwCache, GFP_ATOMIC);
-			if (Compute.TSC[1] != NULL)
-			{
-			PUBLIC(RO(Core, AT(cpu)))->Clock = Compute_Clock(cpu,&Compute);
-
-			/* Release resources. */
-			kmem_cache_free(hwCache, Compute.TSC[1]);
-			}
-			kmem_cache_free(hwCache, Compute.TSC[0]);
-		    }
-		  }
-		} while (cpu != 0) ;
-
-		kmem_cache_destroy(hwCache);
+		/*		Release memory resources.		*/
+		kmem_cache_free(hwCache, Compute.TSC[1]);
+		}
+		kmem_cache_free(hwCache, Compute.TSC[0]);
 	    }
-	}
-	/* Launch a high resolution timer for each online CPU. */
+	  }
+	} while (cpu != 0) ;
+
+	kmem_cache_destroy(hwCache);
+      }
+    }
+	/*	Launch a high resolution timer per online CPU.		*/
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
 	{
 		if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS)) {
-			if (!PUBLIC(RO(Core, AT(cpu)))->Clock.Hz) {
+			if (!PUBLIC(RO(Core, AT(cpu)))->Clock.Hz)
+			{
 				PUBLIC(RO(Core, AT(cpu)))->Clock = clock;
 			}
-			if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
+			if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL)
+			{
 				Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
 			}
 		}
@@ -6900,31 +7112,36 @@ void Controller_Init(void)
 
 void Controller_Start(int wait)
 {
-	if (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL) {
-		unsigned int cpu;
-	    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-	    {
-		if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
-		 && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0)) {
-			smp_call_function_single(cpu,
-						Arch[PUBLIC(RO(Proc))->ArchID].Start,
-						NULL, wait);
-		}
-	    }
+    if (Arch[PUBLIC(RO(Proc))->ArchID].Start != NULL)
+    {
+	unsigned int cpu;
+      for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+      {
+	if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
+	 && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 0))
+	{
+		smp_call_function_single(cpu,
+					Arch[PUBLIC(RO(Proc))->ArchID].Start,
+					NULL, wait);
 	}
+      }
+    }
 }
 
 void Controller_Stop(int wait)
 {
-	if (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL) {
-		unsigned int cpu;
-		for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-		    if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
-		     && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1))
-			smp_call_function_single(cpu,
-						Arch[PUBLIC(RO(Proc))->ArchID].Stop,
-						NULL, wait);
-	}
+    if (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)
+    {
+	unsigned int cpu;
+	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+	    if ((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
+	     && (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1))
+	    {
+		smp_call_function_single(cpu,
+					Arch[PUBLIC(RO(Proc))->ArchID].Stop,
+					NULL, wait);
+	    }
+    }
 }
 
 void Controller_Exit(void)
@@ -6932,10 +7149,13 @@ void Controller_Exit(void)
 	unsigned int cpu;
 
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Exit != NULL)
+	{
 		Arch[PUBLIC(RO(Proc))->ArchID].Exit();
-
+	}
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+	{
 		BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
+	}
 }
 
 void Intel_Core_Counters_Set(CORE_RO *Core)
@@ -7017,49 +7237,63 @@ void Intel_Core_Counters_Set(CORE_RO *Core)
 
 #define AMD_Core_Counters_Set(Core, PMU)				\
 ({									\
-	if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0) {		\
-		HWCR HwCfgRegister = {.value = 0};			\
+    if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)	\
+    {									\
+	HWCR HwCfgRegister = {.value = 0};				\
 									\
-		RDMSR(HwCfgRegister, MSR_K7_HWCR);			\
-		Core->SaveArea.Core_HardwareConfiguration = HwCfgRegister;\
-		HwCfgRegister.PMU.IRPerfEn = 1;				\
-		WRMSR(HwCfgRegister, MSR_K7_HWCR);			\
-	}								\
+	RDMSR(HwCfgRegister, MSR_K7_HWCR);				\
+	Core->SaveArea.Core_HardwareConfiguration = HwCfgRegister;	\
+	HwCfgRegister.PMU.IRPerfEn = 1;					\
+	WRMSR(HwCfgRegister, MSR_K7_HWCR);				\
+    }									\
 })
 
 #define Uncore_Counters_Set(PMU)					\
 ({									\
-    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)			\
-    {									\
+  if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)		\
+  {									\
 	UNCORE_GLOBAL_PERF_CONTROL  Uncore_GlobalPerfControl;		\
 	UNCORE_FIXED_PERF_CONTROL   Uncore_FixedPerfControl;		\
 	UNCORE_GLOBAL_PERF_STATUS   Uncore_PerfOverflow = {.value = 0}; \
 	UNCORE_GLOBAL_PERF_OVF_CTRL Uncore_PerfOvfControl = {.value = 0};\
 									\
-	RDMSR(Uncore_GlobalPerfControl, MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);\
-	PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl = Uncore_GlobalPerfControl;\
-	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
-	WRMSR(Uncore_GlobalPerfControl, MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);\
+	RDMSR(	Uncore_GlobalPerfControl,				\
+		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
 									\
-	RDMSR(Uncore_FixedPerfControl, MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;\
+	PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl =		\
+						Uncore_GlobalPerfControl;\
+									\
+	Uncore_GlobalPerfControl.PMU.EN_FIXED_CTR0  = 1;		\
+	WRMSR(	Uncore_GlobalPerfControl,				\
+		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
+									\
+	RDMSR(	Uncore_FixedPerfControl,				\
+		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
+									\
+	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl =		\
+						Uncore_FixedPerfControl;\
+									\
 	Uncore_FixedPerfControl.PMU.EN_CTR0 = 1;			\
-	WRMSR(Uncore_FixedPerfControl, MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
+	WRMSR(	Uncore_FixedPerfControl,				\
+		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
 									\
 	RDMSR(Uncore_PerfOverflow, MSR_##PMU##_UNCORE_PERF_GLOBAL_STATUS);\
-	if (Uncore_PerfOverflow.PMU.Overflow_CTR0) {			\
-		RDMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);\
-		Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;		\
-		WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);\
-	}								\
+									\
+    if (Uncore_PerfOverflow.PMU.Overflow_CTR0) {			\
+	RDMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);	\
+	Uncore_PerfOvfControl.Clear_Ovf_CTR0 = 1;			\
+	WRMSR(Uncore_PerfOvfControl, MSR_UNCORE_PERF_GLOBAL_OVF_CTRL);	\
     }									\
+  }									\
 })
 
 void Intel_Core_Counters_Clear(CORE_RO *Core)
 {
-    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2) {
+    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 2)
+    {
 	WRMSR(Core->SaveArea.Core_FixedPerfControl,
 					MSR_CORE_PERF_FIXED_CTR_CTRL);
+
 	WRMSR(Core->SaveArea.Core_GlobalPerfControl,
 					MSR_CORE_PERF_GLOBAL_CTRL);
     }
@@ -7067,19 +7301,21 @@ void Intel_Core_Counters_Clear(CORE_RO *Core)
 
 void AMD_Core_Counters_Clear(CORE_RO *Core)
 {
-	if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0) {
+	if (PUBLIC(RO(Proc))->Features.PerfMon.EBX.InstrRetired == 0)
+	{
 		WRMSR(Core->SaveArea.Core_HardwareConfiguration, MSR_K7_HWCR);
 	}
 }
 
 #define Uncore_Counters_Clear(PMU)					\
 ({									\
-    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)			\
+    if (PUBLIC(RO(Proc))->Features.PerfMon.EAX.Version >= 3)		\
     {									\
-	WRMSR(PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,			\
-				MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL);\
-	WRMSR(PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl,			\
-				MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL);	\
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,	\
+		MSR_##PMU##_UNCORE_PERF_FIXED_CTR_CTRL );		\
+									\
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_GlobalPerfControl,	\
+		MSR_##PMU##_UNCORE_PERF_GLOBAL_CTRL );			\
     }									\
 })
 
@@ -7097,20 +7333,18 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define Counters_Core2(Core, T)						\
 ({									\
-    if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC)				\
- 	{								\
+    if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC)		\
+    {									\
 	RDTSC_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
-	}								\
-    else								\
-	{								\
+    } else {								\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
-	}								\
+    }									\
 	/* Derive C1 */							\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -7201,7 +7435,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		REL_BCLK(Core->Clock,					\
 			Core->Boost[BOOST(MAX)],			\
 			Core->Delta.TSC,				\
-			PUBLIC(RO(Proc))->SleepInterval);				\
+			PUBLIC(RO(Proc))->SleepInterval);		\
 	}								\
 })
 
@@ -7256,80 +7490,80 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
-	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;			\
+	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
 })
 
 #define PKG_Counters_Nehalem(Core, T)					\
 ({									\
-	RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_NHM_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+      MSR_NHM_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_SandyBridge(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_SNB_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+      MSR_SNB_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_SandyBridge_EP(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+    MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+    MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
 ({									\
-	RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-			MSR_PKG_C8_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC08,	\
-			MSR_PKG_C9_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC09,	\
-			MSR_PKG_C10_RESIDENCY,PUBLIC(RO(Proc))->Counter[T].PC10);	\
+    RDTSCP_COUNTERx7(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+		MSR_PKG_C8_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC08,\
+		MSR_PKG_C9_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC09,\
+		MSR_PKG_C10_RESIDENCY,PUBLIC(RO(Proc))->Counter[T].PC10);\
 									\
-	RDCOUNTER	(PUBLIC(RO(Proc))->Counter[T].Uncore.FC0,			\
+	RDCOUNTER	(PUBLIC(RO(Proc))->Counter[T].Uncore.FC0,	\
 			MSR_SNB_UNCORE_PERF_FIXED_CTR0 );		\
 })
 
 #define PKG_Counters_Skylake(Core, T)					\
 ({									\
-	RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,	\
-	MSR_SKL_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+      MSR_SKL_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
 ({									\
-	RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,				\
-			MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
-			MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
-			MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,	\
-			MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);	\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC,			\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);\
 })
 
 #define Pkg_OVH(Pkg, Core)						\
@@ -7700,7 +7934,8 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
@@ -7900,13 +8135,15 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
@@ -8041,13 +8278,15 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 		    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
 			RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
@@ -8192,9 +8431,9 @@ static void Stop_Nehalem(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_Nehalem(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -8235,13 +8474,15 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -8399,9 +8640,9 @@ static void Stop_SandyBridge(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_SandyBridge(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -8442,13 +8683,15 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -8606,9 +8849,9 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_SandyBridge_EP(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -8621,14 +8864,18 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;
+	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+						Uncore_FixedPerfControl;
+
 	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
 
 	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = Uncore_PMonGlobalControl;
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+						Uncore_PMonGlobalControl;
+
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
 
 	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
@@ -8636,9 +8883,10 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
 {	/* If fixed counter was disable at entry, force freezing	*/
-	if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0) {
-		PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-	}
+    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+    {
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
+    }
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
 		MSR_SNB_EP_PMON_GLOBAL_CTRL);
 
@@ -8671,13 +8919,15 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -8847,9 +9097,9 @@ static void Stop_Haswell_ULT(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_Haswell_ULT(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -8894,13 +9144,15 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -9058,9 +9310,9 @@ static void Stop_Haswell_EP(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_Haswell_EP(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9073,14 +9325,18 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 	RDMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = Uncore_FixedPerfControl;
+	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+						Uncore_FixedPerfControl;
+
 	Uncore_FixedPerfControl.HSW_EP.EN_CTR0 = 1;
 
 	WRMSR(Uncore_FixedPerfControl, MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
 	RDMSR(Uncore_PMonGlobalControl, MSR_HSW_EP_PMON_GLOBAL_CTRL);
 
-	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = Uncore_PMonGlobalControl;
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+						Uncore_PMonGlobalControl;
+
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
 
 	WRMSR(Uncore_PMonGlobalControl, MSR_HSW_EP_PMON_GLOBAL_CTRL);
@@ -9088,14 +9344,15 @@ static void Start_Uncore_Haswell_EP(void *arg)
 
 static void Stop_Uncore_Haswell_EP(void *arg)
 {
-	if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.HSW_EP.EN_CTR0 == 0) {
-		PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
-	}
+    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.HSW_EP.EN_CTR0 == 0)
+    {
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
+    }
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
-		MSR_HSW_EP_PMON_GLOBAL_CTRL);
+		MSR_HSW_EP_PMON_GLOBAL_CTRL );
 
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
-		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR_CTRL );
 }
 
 
@@ -9123,13 +9380,15 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -9291,9 +9550,9 @@ static void Stop_Skylake(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_Skylake(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9333,13 +9592,15 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
@@ -9497,9 +9758,9 @@ static void Stop_Skylake_X(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Stop_Uncore_Skylake_X(NULL);
-
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9553,7 +9814,8 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		{
 			PKG_Counters_Generic(Core, 1);
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_AMD_Family_0Fh_Temp(Core);
 			break;
@@ -9760,13 +10022,15 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		{
 			PKG_Counters_Generic(Core, 1);
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			Core_AMD_Family_15h_Temp(Core);
 			break;
 		    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		    {
 		    case FORMULA_SCOPE_PKG:
 			/* Read the current P-State number. */
 			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
@@ -9870,108 +10134,109 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+  if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+  {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
 
-		SMT_Counters_AMD_Family_17h(Core, 1);
+	SMT_Counters_AMD_Family_17h(Core, 1);
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Generic(Core, 1);
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		PKG_Counters_Generic(Core, 1);
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		    case FORMULA_SCOPE_PKG:
-			Core_AMD_Family_17h_Temp(Core);
-			break;
-		    }
-
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		    case FORMULA_SCOPE_PKG:
-			/* Read the boosted voltage VID.		*/
-			RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
-			Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
-			break;
-		    }
-
-			RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
-					MSR_AMD_PKG_ENERGY_STATUS);
-
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
-
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
-
-			Save_PTSC(PUBLIC(RO(Proc)));
-
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
-
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
-
-		/* Read the boosted frequency FID.			*/
-		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
-		Core->Ratio.Perf=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
-						PstateDef.Family_17h.CpuDfsId);
-
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_AMD_Family_17h_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_AMD_Family_17h_Temp(Core);
-			break;
-		}
-
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
-			break;
-		}
-
-		/* Read the Physical Core RAPL counter. */
-	    if (Core->T.ThreadID == 0)
-	    {
-		RDCOUNTER(Core->Counter[1].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
-		Core->Counter[1].Power.ACCU &= 0xffffffff;
-
-		Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
-					- Core->Counter[0].Power.ACCU;
-
-		Core->Delta.Power.ACCU &= 0xffffffff;
-
-		Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	    case FORMULA_SCOPE_PKG:
+		Core_AMD_Family_17h_Temp(Core);
+		break;
 	    }
-		Delta_INST(Core);
 
-		Delta_C0(Core);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	    case FORMULA_SCOPE_PKG:
+		/* Read the boosted voltage VID.		*/
+		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
+		break;
+	    }
 
-		Delta_TSC_OVH(Core);
+	    RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
+			MSR_AMD_PKG_ENERGY_STATUS);
 
-		Delta_C1(Core);
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-		Save_INST(Core);
+		Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Save_TSC(Core);
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-		Save_C0(Core);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Save_C1(Core);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+	/* Read the boosted frequency FID.			*/
+	RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+	Core->Ratio.Perf=AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId);
 
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_AMD_Family_17h_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_AMD_Family_17h_Temp(Core);
+		break;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
+		break;
+	}
+
+	/* Read the Physical Core RAPL counter. */
+    if (Core->T.ThreadID == 0)
+    {
+	RDCOUNTER(Core->Counter[1].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
+	Core->Counter[1].Power.ACCU &= 0xffffffff;
+
+	Core->Delta.Power.ACCU  = Core->Counter[1].Power.ACCU
+				- Core->Counter[0].Power.ACCU;
+
+	Core->Delta.Power.ACCU &= 0xffffffff;
+
+	Core->Counter[0].Power.ACCU = Core->Counter[1].Power.ACCU;
+    }
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_TSC_OVH(Core);
+
+	Delta_C1(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return (HRTIMER_RESTART);
+ } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_AMD_Family_17h(unsigned int cpu)
@@ -9989,18 +10254,18 @@ static void Start_AMD_Family_17h(void *arg)
 	AMD_Core_Counters_Set(Core, Family_17h);
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-	{
-		PKG_Counters_Generic(Core, 0);
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	PKG_Counters_Generic(Core, 0);
 
-		RDCOUNTER(PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
-				MSR_AMD_PKG_ENERGY_STATUS );
-	}
-	if (Core->T.ThreadID == 0)
-	{
-		RDCOUNTER(Core->Counter[0].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
-		Core->Counter[0].Power.ACCU &= 0xffffffff;
-	}
+	RDCOUNTER(PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
+			MSR_AMD_PKG_ENERGY_STATUS );
+    }
+    if (Core->T.ThreadID == 0)
+    {
+	RDCOUNTER(Core->Counter[0].Power.ACCU,MSR_AMD_PP0_ENERGY_STATUS);
+	Core->Counter[0].Power.ACCU &= 0xffffffff;
+    }
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
 
@@ -10078,18 +10343,18 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
-	if ((rc = cpufreq_get_policy(&freqPolicy, PUBLIC(RO(Proc))->Service.Core)) == 0)
-	{
-		struct cpufreq_governor *pGovernor = freqPolicy.governor;
-		if (pGovernor != NULL) {
-			StrCopy(SysGate->OS.FreqDriver.Governor,
-				pGovernor->name, CPUFREQ_NAME_LEN);
-		} else {
-			SysGate->OS.FreqDriver.Governor[0] = '\0';
-		}
+     if((rc=cpufreq_get_policy(&freqPolicy, PUBLIC(RO(Proc))->Service.Core))==0)
+     {
+	struct cpufreq_governor *pGovernor = freqPolicy.governor;
+	if (pGovernor != NULL) {
+		StrCopy(SysGate->OS.FreqDriver.Governor,
+			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
 		SysGate->OS.FreqDriver.Governor[0] = '\0';
 	}
+     } else {
+	SysGate->OS.FreqDriver.Governor[0] = '\0';
+     }
 #endif /* CONFIG_CPU_FREQ */
     } else {
 	rc = -ENXIO;
@@ -10099,7 +10364,7 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 
 long Sys_Kernel(SYSGATE_RO *SysGate)
 {	/* Sources:	/include/generated/uapi/linux/version.h
-			/include/uapi/linux/utsname.h		*/
+			/include/uapi/linux/utsname.h			*/
 	if (SysGate != NULL) {
 		SysGate->kernelVersionNumber = LINUX_VERSION_CODE;
 		memcpy(SysGate->sysname, utsname()->sysname, MAX_UTS_LEN);
@@ -10116,13 +10381,16 @@ long Sys_Kernel(SYSGATE_RO *SysGate)
 long SysGate_OnDemand(void)
 {
 	long rc = -1;
-    if (PUBLIC(OF(Gate)) == NULL) {		/* Alloc on demand	*/
-	PUBLIC(OF(Gate)) = alloc_pages_exact(PUBLIC(RO(Proc))->OS.ReqMem.Size, GFP_KERNEL);
-	    if (PUBLIC(OF(Gate)) != NULL) {
-		const size_t allocPages = PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+    if (PUBLIC(OF(Gate)) == NULL)
+    {	/*			On-demand allocation.			*/
+	PUBLIC(OF(Gate)) = alloc_pages_exact( PUBLIC(RO(Proc))->OS.ReqMem.Size,
+						GFP_KERNEL );
+      if (PUBLIC(OF(Gate)) != NULL)
+      {
+	const size_t allocPages=PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
 		memset(PUBLIC(OF(Gate)), 0, allocPages);
 		rc = 0;
-	    }
+      }
     } else {					/* Already allocated	*/
 		rc = 1;
     }
@@ -10154,7 +10422,8 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, HW)) {
-		if ((device=per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL) {
+		if ((device=per_cpu_ptr(CoreFreqK.IdleDevice, cpu)) != NULL)
+		{
 			cpuidle_unregister_device(device);
 		}
 	    }
@@ -10170,7 +10439,8 @@ static int CoreFreqK_IdleDriver_Init(void)
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
   if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
   {
-	IDLE_STATE *pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->IdleState;
+	IDLE_STATE *pIdleState;
+	pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->IdleState;
     if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.Std.ECX.MONITOR)
     {
 	if ((CoreFreqK.IdleDevice=alloc_percpu(struct cpuidle_device)) == NULL)
@@ -10180,23 +10450,23 @@ static int CoreFreqK_IdleDriver_Init(void)
 		struct cpuidle_device *device;
 		unsigned int cpu, enroll = 0;
 		unsigned int subState[] = {
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0,  /*   C0  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,  /*   C1  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,  /*  C1E  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2,  /*   C3  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3,  /*   C6  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4,  /*   C7  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5,  /*   C8  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6,  /*   C9  */
-			PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7   /*  C10  */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0, /*  C0 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /*  C1 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /* C1E */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2, /*  C3 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3, /*  C6 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4, /*  C7 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5, /*  C8 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6, /*  C9 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7  /* C10 */
 		};
 		const unsigned int subStateCount = sizeof(subState)
 						 / sizeof(subState[0]);
-		/* Kernel polling loop					*/
+		/*		Kernel polling loop			*/
 		cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
 
 		CoreFreqK.IdleDriver.state_count = 1;
-		/* Idle States						*/
+		/*		Idle States				*/
 	    while (pIdleState->Name != NULL)
 	    {
 		if ((CoreFreqK.IdleDriver.state_count < subStateCount)
@@ -10235,10 +10505,13 @@ static int CoreFreqK_IdleDriver_Init(void)
 		pIdleState++;
 	    }
 	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
-		for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-		    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, HW)) {
+		for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+		{
+		    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, HW))
+		    {
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-		      if (device != NULL) {
+		      if (device != NULL)
+		      {
 			device->cpu = cpu;
 			if ((rc = cpuidle_register_device(device)) == 0) {
 				continue;
@@ -10251,9 +10524,11 @@ static int CoreFreqK_IdleDriver_Init(void)
 	    }
 	    if (rc != 0)
 	    {/* Cancel the registration if the driver and/or a device failed */
-		for (cpu = 0; cpu < enroll; cpu++) {
+		for (cpu = 0; cpu < enroll; cpu++)
+		{
 			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-		    if (device != NULL) {
+		    if (device != NULL)
+		    {
 			cpuidle_unregister_device(device);
 		    }
 		}
@@ -10348,7 +10623,7 @@ static int CoreFreqK_Policy_Init(struct cpufreq_policy *policy)
 		policy->cpuinfo.max_freq =(Core->Boost[BOOST(MAX)]
 					 * Core->Clock.Hz) / 1000LLU;
 
-		/* MANDATORY Per-CPU Initialization			*/
+		/*		MANDATORY Per-CPU Initialization	*/
 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
 		policy->cur = policy->cpuinfo.max_freq;
 		policy->min = policy->cpuinfo.min_freq;
@@ -10398,9 +10673,10 @@ void Policy_Aggregate_Turbo(void)
 {
     if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {
 	CoreFreqK.FreqDriver.boost_enabled = (
-				BITWISEAND_CC(	LOCKLESS,
-						PUBLIC(RW(Proc))->TurboBoost,
-						PUBLIC(RO(Proc))->TurboBoost_Mask ) != 0 );
+			BITWISEAND_CC(	LOCKLESS,
+					PUBLIC(RW(Proc))->TurboBoost,
+					PUBLIC(RO(Proc))->TurboBoost_Mask ) != 0
+	);
     }
 }
 
@@ -10411,7 +10687,7 @@ static int CoreFreqK_SetBoost(int state)
 	Controller_Start(1);
 	TurboBoost_Enable = -1;
 	Policy_Aggregate_Turbo();
-	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon	*/
+	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 	return (0);
 }
 
@@ -10443,8 +10719,8 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 
 	    if (ratio > 0) {
 		if (smp_call_function_single(policy->cpu,
-				Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->SetTarget,
-				&ratio, 1) == 0)
+			Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->SetTarget,
+						&ratio, 1) == 0)
 		{
 			BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY);
 		}
@@ -10464,8 +10740,10 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	unsigned int Core_Freq = Core->Delta.C0.UCC / PUBLIC(RO(Proc))->SleepInterval;
-	if (Core_Freq > 0) {	/* at least 1 interval must have elapsed */
+	unsigned int Core_Freq	= Core->Delta.C0.UCC
+				/ PUBLIC(RO(Proc))->SleepInterval;
+
+	if (Core_Freq > 0) {	/* at least 1 interval must have been elapsed */
 		CPU_Freq = Core_Freq;
 	}
     }
@@ -10487,11 +10765,12 @@ static void Policy_Core2_SetTarget(void *arg)
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
-		if (Cmp_Core2_Target(Core, 1 + Core->Boost[BOOST(MAX)])) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		}
+	    if (Cmp_Core2_Target(Core, 1 + Core->Boost[BOOST(MAX)]))
+	    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_Core2_Target(Core);
     }
@@ -10513,11 +10792,12 @@ static void Policy_Nehalem_SetTarget(void *arg)
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
-		if (Cmp_Nehalem_Target(Core, 1 + Core->Boost[BOOST(MAX)])) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		}
+	    if (Cmp_Nehalem_Target(Core, 1 + Core->Boost[BOOST(MAX)]))
+	    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_Nehalem_Target(Core);
     }
@@ -10539,11 +10819,12 @@ static void Policy_SandyBridge_SetTarget(void *arg)
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
-		if (Cmp_SandyBridge_Target(Core, Core->Boost[BOOST(MAX)])) {
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
-		}
+	    if (Cmp_SandyBridge_Target(Core, Core->Boost[BOOST(MAX)]))
+	    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	    }
 	}
 	Core->Boost[BOOST(TGT)] = Get_SandyBridge_Target(Core);
     }
@@ -10588,15 +10869,15 @@ static int CoreFreqK_FreqDriver_Init(void)
 {
 	int rc = -ENODEV;
 #ifdef CONFIG_CPU_FREQ
-  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
+ if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
+ {
+  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq != NULL)
   {
-    if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq != NULL)
-    {
-	CoreFreqK.FreqDriver.get = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq;
+  CoreFreqK.FreqDriver.get=Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq;
 
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
-    }
   }
+ }
 #endif /* CONFIG_CPU_FREQ */
 	return (rc);
 }
@@ -10628,13 +10909,18 @@ signed int Seek_Topology_Core_Peer(unsigned int cpu, signed int exclude)
 	unsigned int seek;
 
     for (seek = 0; seek < PUBLIC(RO(Proc))->CPU.Count; seek++) {
-	if(((exclude ^ cpu) > 0)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ApicID != PUBLIC(RO(Core, AT(cpu)))->T.ApicID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.CoreID == PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ThreadID != PUBLIC(RO(Core, AT(cpu)))->T.ThreadID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.PackageID == PUBLIC(RO(Core, AT(cpu)))->T.PackageID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ThreadID == 0)
-	&& !BITVAL(PUBLIC(RO(Core, AT(seek)))->OffLine, OS)) {
+	if ( ((exclude ^ cpu) > 0)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ApicID \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.ApicID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.CoreID \
+		== PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.ThreadID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.PackageID \
+		== PUBLIC(RO(Core, AT(cpu)))->T.PackageID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID == 0)
+	  && !BITVAL(PUBLIC(RO(Core, AT(seek)))->OffLine, OS) )
+	{
 		return ((signed int) seek);
 	}
     }
@@ -10646,13 +10932,18 @@ signed int Seek_Topology_Thread_Peer(unsigned int cpu, signed int exclude)
 	unsigned int seek;
 
     for (seek = 0; seek < PUBLIC(RO(Proc))->CPU.Count; seek++) {
-	if(((exclude ^ cpu) > 0)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ApicID != PUBLIC(RO(Core, AT(cpu)))->T.ApicID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.CoreID == PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ThreadID != PUBLIC(RO(Core, AT(cpu)))->T.ThreadID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.PackageID == PUBLIC(RO(Core, AT(cpu)))->T.PackageID)
-	&& (PUBLIC(RO(Core, AT(seek)))->T.ThreadID > 0)
-	&& !BITVAL(PUBLIC(RO(Core, AT(seek)))->OffLine, OS)) {
+	if ( ((exclude ^ cpu) > 0)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ApicID \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.ApicID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.CoreID \
+		== PUBLIC(RO(Core, AT(cpu)))->T.CoreID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID \
+		!= PUBLIC(RO(Core, AT(cpu)))->T.ThreadID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.PackageID \
+		== PUBLIC(RO(Core, AT(cpu)))->T.PackageID)
+	  && (PUBLIC(RO(Core, AT(seek)))->T.ThreadID > 0)
+	  && !BITVAL(PUBLIC(RO(Core, AT(seek)))->OffLine, OS) )
+	{
 		return ((signed int) seek);
 	}
     }
@@ -10664,9 +10955,10 @@ void MatchCoreForService(SERVICE_PROC *pService,unsigned int cpi,signed int cpx)
 	unsigned int cpu;
 
     for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-	if(((cpx ^ cpu) > 0)
-	&& (PUBLIC(RO(Core, AT(cpu)))->T.PackageID == PUBLIC(RO(Core, AT(cpi)))->T.PackageID)
-	&& !BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS))
+	if ( ((cpx ^ cpu) > 0)
+	  && (PUBLIC(RO(Core, AT(cpu)))->T.PackageID \
+		== PUBLIC(RO(Core, AT(cpi)))->T.PackageID)
+	  && !BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, OS) )
 	{
 		pService->Core = cpu;
 		pService->Thread = -1;
@@ -10794,162 +11086,168 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 
 #define CoreFreqK_UnRegister_CPU_Idle() 				\
 {									\
-	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE) {	\
-		CoreFreqK_IdleDriver_UnInit();				\
-	}								\
+    if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)\
+    {									\
+	CoreFreqK_IdleDriver_UnInit();					\
+    }									\
 }
 
 static void CoreFreqK_Register_CPU_Idle(void)
 {
-    if (Register_CPU_Idle == 1) {
-	switch ( CoreFreqK_IdleDriver_Init() ) {
-	default:
-		/* Fallthrough */
-	case -ENODEV:
-	case -ENOMEM:
-		PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
-		break;
-	case 0  :		/*	Registration succeeded.		*/
-		PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_ENABLE;
-		break;
-	}
-    } else {	/* Nothing requested by User.				*/
+  if (Register_CPU_Idle == 1)
+  {
+    switch ( CoreFreqK_IdleDriver_Init() ) {
+    default:
+	/* Fallthrough */
+    case -ENODEV:
+    case -ENOMEM:
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
+	break;
+    case 0  :	/*	Registration succeeded.				*/
+	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_ENABLE;
+	break;
     }
+  } else {	/*	Nothing requested by User.			*/
+	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
+  }
 }
 
 #define CoreFreqK_UnRegister_CPU_Freq() 				\
 {									\
-	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE) {	\
-		CoreFreqK_FreqDriver_UnInit();				\
-	}								\
+    if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE)\
+    {									\
+	CoreFreqK_FreqDriver_UnInit();					\
+    }									\
 }
 
 static void CoreFreqK_Register_CPU_Freq(void)
 { /* Source: cpufreq_register_driver @ /drivers/cpufreq/cpufreq.c	*/
-    if (Register_CPU_Freq == 1) {
-	switch ( CoreFreqK_FreqDriver_Init() ) {
-	default:
-		/* Fallthrough */
-	case -EEXIST:		/*	Another driver is in control.	*/
-		PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_DISABLE;
-		break;
-	case -ENODEV:		/*	Missing CPU-Freq or Interfaces.	*/
-	case -EPROBE_DEFER:	/*	CPU probing failed		*/
-	case -EINVAL:		/*	Missing CPU-Freq prerequisites. */
-		PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
-		break;
-	case 0 :		/*	Registration succeeded.		*/
-		PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_ENABLE;
-		break;
-	}
-    } else {	/* Invalid or no User request.				*/
+  if (Register_CPU_Freq == 1)
+  {
+    switch ( CoreFreqK_FreqDriver_Init() ) {
+    default:
+	/* Fallthrough */
+    case -EEXIST:		/*	Another driver is in control.	*/
+	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_DISABLE;
+	break;
+    case -ENODEV:		/*	Missing CPU-Freq or Interfaces.	*/
+    case -EPROBE_DEFER:	/*	CPU probing failed			*/
+    case -EINVAL:		/*	Missing CPU-Freq prerequisites. */
+	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
+	break;
+    case 0 :		/*	Registration succeeded .		*/
+	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_ENABLE;
+	break;
+    }
+  } else {		/*	Invalid or no User request.		*/
 #ifdef CONFIG_CPU_FREQ
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_DISABLE;
 #else	/* No CPU-FREQ built in Kernel, presume we have the full control. */
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
 #endif /* CONFIG_CPU_FREQ */
-    }
+  }
 }
 
 #define CoreFreqK_UnRegister_Governor() 				\
 {									\
-	if (PUBLIC(RO(Proc))->Registration.Driver.Governor & REGISTRATION_ENABLE) { \
-		CoreFreqK_Governor_UnInit();				\
-	}								\
+    if (PUBLIC(RO(Proc))->Registration.Driver.Governor & REGISTRATION_ENABLE)\
+    {									\
+	CoreFreqK_Governor_UnInit();					\
+    }									\
 }
 
 static void CoreFreqK_Register_Governor(void)
 {
-    if (Register_Governor == 1) {
-	switch ( CoreFreqK_Governor_Init() ) {
-	default:
-	case -ENODEV:
-		PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
-		break;
-	case  0:		/*	Registration succeeded.		*/
-		PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_ENABLE;
-		break;
-	}
-    } else {	/* Nothing requested by User.				*/
+  if (Register_Governor == 1)
+  {
+    switch ( CoreFreqK_Governor_Init() ) {
+    default:
+    case -ENODEV:
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
+	break;
+    case  0:		/*	Registration succeeded .		*/
+	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_ENABLE;
+	break;
     }
+  } else {	/* Nothing requested by User.				*/
+	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
+  }
 }
 
 static void CoreFreqK_Register_NMI(void)
 {
-    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 0)
+  if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 0)
+  {
+    if(register_nmi_handler(NMI_LOCAL,
+			CoreFreqK_NMI_Handler,
+			0,
+			"corefreqk") == 0)
     {
-	if(register_nmi_handler(NMI_LOCAL,
-				CoreFreqK_NMI_Handler,
-				0,
-				"corefreqk") == 0)
-	{
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
-	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
-	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
+    } else {
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
     }
-    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 0)
+  }
+  if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 0)
+  {
+    if(register_nmi_handler(NMI_UNKNOWN,
+			CoreFreqK_NMI_Handler,
+			0,
+			"corefreqk") == 0)
     {
-	if(register_nmi_handler(NMI_UNKNOWN,
-				CoreFreqK_NMI_Handler,
-				0,
-				"corefreqk") == 0)
-	{
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
-	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
-	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
+    } else {
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
     }
-    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 0)
+  }
+  if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 0)
+  {
+    if(register_nmi_handler(NMI_SERR,
+			CoreFreqK_NMI_Handler,
+			0,
+			"corefreqk") == 0)
     {
-	if(register_nmi_handler(NMI_SERR,
-				CoreFreqK_NMI_Handler,
-				0,
-				"corefreqk") == 0)
-	{
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
-	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
-	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
+    } else {
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
     }
-    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 0)
+  }
+  if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 0)
+  {
+    if(register_nmi_handler(NMI_IO_CHECK,
+			CoreFreqK_NMI_Handler,
+			0,
+			"corefreqk") == 0)
     {
-	if(register_nmi_handler(NMI_IO_CHECK,
-				CoreFreqK_NMI_Handler,
-				0,
-				"corefreqk") == 0)
-	{
-		BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
-	} else {
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
-	}
+	BITSET(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
+    } else {
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
     }
+  }
 }
 
 static void CoreFreqK_UnRegister_NMI(void)
 {
-	if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 1)
-	{
-		unregister_nmi_handler(NMI_LOCAL, "corefreqk");
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
-	}
-	if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 1)
-	{
-		unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
-	}
-	if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 1)
-	{
-		unregister_nmi_handler(NMI_SERR, "corefreqk");
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
-	}
-	if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 1)
-	{
-		unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
-		BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
-	}
+    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL) == 1)
+    {
+	unregister_nmi_handler(NMI_LOCAL, "corefreqk");
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_LOCAL);
+    }
+    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN) == 1)
+    {
+	unregister_nmi_handler(NMI_UNKNOWN, "corefreqk");
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_UNKNOWN);
+    }
+    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR) == 1)
+    {
+	unregister_nmi_handler(NMI_SERR, "corefreqk");
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_SERR);
+    }
+    if (BITVAL(PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK) == 1)
+    {
+	unregister_nmi_handler(NMI_IO_CHECK, "corefreqk");
+	BITCLR(LOCKLESS, PUBLIC(RO(Proc))->Registration.NMI, BIT_NMI_IO_CHECK);
+    }
 }
 #else
 static void CoreFreqK_Register_NMI(void) {}
@@ -10960,7 +11258,8 @@ static long CoreFreqK_Thermal_Scope(int scope)
 {
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
-	PUBLIC(RO(Proc))->thermalFormula=(KIND_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)<<8)|scope;
+	PUBLIC(RO(Proc))->thermalFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula) << 8)|scope;
 
 	return (RC_SUCCESS);
     } else {
@@ -10972,7 +11271,8 @@ static long CoreFreqK_Voltage_Scope(int scope)
 {
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
-	PUBLIC(RO(Proc))->voltageFormula=(KIND_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)<<8)|scope;
+	PUBLIC(RO(Proc))->voltageFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula) << 8)|scope;
 
 	return (RC_SUCCESS);
     } else {
@@ -10984,7 +11284,8 @@ static long CoreFreqK_Power_Scope(int scope)
 {
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
     {
-	PUBLIC(RO(Proc))->powerFormula = (KIND_OF_FORMULA(PUBLIC(RO(Proc))->powerFormula) << 8)|scope;
+	PUBLIC(RO(Proc))->powerFormula = \
+		(KIND_OF_FORMULA(PUBLIC(RO(Proc))->powerFormula) << 8)|scope;
 
 	return (RC_SUCCESS);
     } else {
@@ -11109,12 +11410,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Start(1);
 	    if (PUBLIC(RO(Proc))->Registration.Experimental)
 	    {
-		if ( !PUBLIC(RO(Proc))->Registration.PCI ) {
-			PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
-			rc = RC_OK_COMPUTE;
-		} else {
-			rc = RC_SUCCESS;
-		}
+	      if ( !PUBLIC(RO(Proc))->Registration.PCI ) {
+		PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+		rc = RC_OK_COMPUTE;
+	     } else {
+		rc = RC_SUCCESS;
+	     }
 	    } else {
 		rc = RC_SUCCESS;
 	    }
@@ -11141,7 +11442,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	break;
 
       case MACHINE_LIMIT_IDLE:
-	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE) {
+	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
+	{
 		rc = CoreFreqK_Limit_Idle(prm.dl.lo);
 	}
 	break;
@@ -11496,7 +11798,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
 	rc = remap_pfn_range(	vma,
 				vma->vm_start,
-				virt_to_phys((void *) PUBLIC(RO(Proc))) >> PAGE_SHIFT,
+			virt_to_phys((void *) PUBLIC(RO(Proc))) >> PAGE_SHIFT,
 				reqSize,
 				vma->vm_page_prot);
     }
@@ -11511,7 +11813,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 
 	rc = remap_pfn_range(	vma,
 				vma->vm_start,
-				virt_to_phys((void *) PUBLIC(RW(Proc))) >> PAGE_SHIFT,
+			virt_to_phys((void *) PUBLIC(RW(Proc))) >> PAGE_SHIFT,
 				reqSize,
 				vma->vm_page_prot);
     }
@@ -11525,7 +11827,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	case 1:
 		/* Fallthrough */
 	case 0: {
-		const unsigned long secSize = PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+		const unsigned long secSize = \
+				PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
@@ -11542,7 +11845,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 		break;
 	}
     }
-  } else if ((vma->vm_pgoff >= ID_RO_VMA_CORE) && (vma->vm_pgoff < ID_RW_VMA_CORE))
+  } else if ((vma->vm_pgoff >= ID_RO_VMA_CORE)
+	  && (vma->vm_pgoff < ID_RW_VMA_CORE))
   {
 	signed int cpu = vma->vm_pgoff - ID_RO_VMA_CORE;
 
@@ -11567,7 +11871,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	}
       }
     }
-  } else if ((vma->vm_pgoff >= ID_RW_VMA_CORE) && (vma->vm_pgoff < ID_ANY_VMA_JAIL))
+  } else if ((vma->vm_pgoff >= ID_RW_VMA_CORE)
+	  && (vma->vm_pgoff < ID_ANY_VMA_JAIL))
   {
 	signed int cpu = vma->vm_pgoff - ID_RW_VMA_CORE;
 
@@ -11619,7 +11924,7 @@ static struct file_operations CoreFreqK_fops = {
 };
 
 #ifdef CONFIG_PM_SLEEP
-static int CoreFreqK_suspend(struct device *dev)
+static int CoreFreqK_Suspend(struct device *dev)
 {
 	Controller_Stop(1);
 
@@ -11628,29 +11933,29 @@ static int CoreFreqK_suspend(struct device *dev)
 	return (0);
 }
 
-static int CoreFreqK_resume(struct device *dev)
-{	/*	Probe Processor again					*/
-	if (Arch[PUBLIC(RO(Proc))->ArchID].Query != NULL) {
-		Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
-	}
-	/*	Probe PCI again 					*/
-	if (PUBLIC(RO(Proc))->Registration.PCI) {
-		PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
-	}
+static int CoreFreqK_Resume(struct device *dev)
+{	/*		Probe Processor again				*/
+    if (Arch[PUBLIC(RO(Proc))->ArchID].Query != NULL) {
+	Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
+    }
+	/*		Probe PCI again 				*/
+    if (PUBLIC(RO(Proc))->Registration.PCI) {
+	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+    }
 	Controller_Start(1);
 
 #ifdef CONFIG_CPU_FREQ
 	Policy_Aggregate_Turbo();
 #endif /* CONFIG_CPU_FREQ */
 
-	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon	*/
+	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 
 	printk(KERN_NOTICE "CoreFreq: Resume\n");
 
 	return (0);
 }
 
-static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
+static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_Suspend, CoreFreqK_Resume);
 #define COREFREQ_PM_OPS (&CoreFreqK_pm_ops)
 #else /* CONFIG_PM_SLEEP */
 #define COREFREQ_PM_OPS NULL
@@ -11658,11 +11963,11 @@ static SIMPLE_DEV_PM_OPS(CoreFreqK_pm_ops, CoreFreqK_suspend, CoreFreqK_resume);
 
 
 #ifdef CONFIG_HOTPLUG_CPU
-static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
+static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
 {
   if (cpu < PUBLIC(RO(Proc))->CPU.Count)
   {
-	/* Is this the very first time the processor is online ? */
+	/*	Is this the very first time the processor is online ?	*/
    if (PUBLIC(RO(Core, AT(cpu)))->T.ApicID == -1)
    {
     if (Core_Topology(cpu) == 0)
@@ -11670,18 +11975,19 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
      if (PUBLIC(RO(Core, AT(cpu)))->T.ApicID >= 0)
      {
 	BITCLR(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
-	/* Is the BCLK frequency missing ? */
+	/*		Is the BCLK frequency missing  ?		*/
       if (PUBLIC(RO(Core, AT(cpu)))->Clock.Hz == 0)
       {
        if (AutoClock & 0b01)
        {
-	COMPUTE_ARG Compute = {
-		.TSC = {NULL, NULL},
-		.Clock = {
-			.Q = PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)],
-			.R = 0, .Hz = 0
-		}
-	};
+	    COMPUTE_ARG Compute = {
+	    .TSC = {NULL, NULL},
+	    .Clock = {
+	    .Q = \
+	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)],
+	    .R = 0, .Hz = 0
+	    }
+	  };
 	if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	{
 	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
@@ -11693,7 +11999,8 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 		kfree(Compute.TSC[0]);
 	}
        } else {
-	PUBLIC(RO(Core, AT(cpu)))->Clock = PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Clock;
+	PUBLIC(RO(Core, AT(cpu)))->Clock = \
+		PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Clock;
        }
       }
      }
@@ -11701,7 +12008,7 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, HW);
     }
    }
-	/* Start the collect timer dedicated to this CPU. */
+	/*		Start the collect timer dedicated to this CPU.	*/
    if (Arch[PUBLIC(RO(Proc))->ArchID].Timer != NULL) {
 	Arch[PUBLIC(RO(Proc))->ArchID].Timer(cpu);
    }
@@ -11737,10 +12044,10 @@ static int CoreFreqK_hotplug_cpu_online(unsigned int cpu)
 	return (-EINVAL);
 }
 
-static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
+static int CoreFreqK_HotPlug_CPU_Offline(unsigned int cpu)
 {
     if (cpu < PUBLIC(RO(Proc))->CPU.Count) {
-	/* Stop the associated collect timer. */
+	/*		Stop the associated collect timer.		*/
 	if((BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED) == 1)
 	&& (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED) == 1)
 	&& (Arch[PUBLIC(RO(Proc))->ArchID].Stop != NULL)) {
@@ -11751,8 +12058,9 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 	PUBLIC(RO(Proc))->CPU.OnLine--;
 	BITSET(LOCKLESS, PUBLIC(RO(Core, AT(cpu)))->OffLine, OS);
 
-	/* Seek for an alternate Service Processor. */
-	if ((cpu == PUBLIC(RO(Proc))->Service.Core) || (cpu == PUBLIC(RO(Proc))->Service.Thread))
+	/*		Seek for an alternate Service Processor.	*/
+	if ((cpu == PUBLIC(RO(Proc))->Service.Core)
+	 || (cpu == PUBLIC(RO(Proc))->Service.Thread))
 	{
 		MatchPeerForDownService(&PUBLIC(RO(Proc))->Service, cpu);
 
@@ -11762,20 +12070,20 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 	    {
 		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
 					Arch[PUBLIC(RO(Proc))->ArchID].Update,
-					PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))), 1);
+			PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core))),1);
 	    }
 #if CONFIG_HAVE_PERF_EVENTS==1
-		/* Reinitialize PMU Uncore counters. */
+		/*	Reinitialize the PMU Uncore counters.		*/
 	    if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL)
 	    {
 		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
-					Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop,
+				Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop,
 					NULL, 1); /* Must wait! */
 	    }
 	    if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL)
 	    {
 		smp_call_function_single(PUBLIC(RO(Proc))->Service.Core,
-					Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start,
+				Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start,
 					NULL, 0); /* Don't wait */
 	    }
 #endif /* CONFIG_HAVE_PERF_EVENTS */
@@ -11790,7 +12098,7 @@ static int CoreFreqK_hotplug_cpu_offline(unsigned int cpu)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-static int CoreFreqK_hotplug(	struct notifier_block *nfb,
+static int CoreFreqK_HotPlug(	struct notifier_block *nfb,
 				unsigned long action,
 				void *hcpu)
 {
@@ -11800,11 +12108,11 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 	case CPU_ONLINE:
 	case CPU_DOWN_FAILED:
 /*TODO	case CPU_ONLINE_FROZEN: 					*/
-		rc = CoreFreqK_hotplug_cpu_online(cpu);
+		rc = CoreFreqK_HotPlug_CPU_Online(cpu);
 		break;
 	case CPU_DOWN_PREPARE:
 /*TODO	case CPU_DOWN_PREPARE_FROZEN:					*/
-		rc = CoreFreqK_hotplug_cpu_offline(cpu);
+		rc = CoreFreqK_HotPlug_CPU_Offline(cpu);
 		break;
 	default:
 		break;
@@ -11813,7 +12121,7 @@ static int CoreFreqK_hotplug(	struct notifier_block *nfb,
 }
 
 static struct notifier_block CoreFreqK_notifier_block = {
-	.notifier_call = CoreFreqK_hotplug,
+	.notifier_call = CoreFreqK_HotPlug,
 };
 #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
@@ -11825,22 +12133,22 @@ void SMBIOS_Collect(void)
 		enum dmi_field field;
 		char *recipient;
 	} dmi_collect[] = {
-		{ DMI_BIOS_VENDOR,	PUBLIC(RO(Proc))->SMB.BIOS.Vendor	},
-		{ DMI_BIOS_VERSION,	PUBLIC(RO(Proc))->SMB.BIOS.Version	},
-		{ DMI_BIOS_DATE,	PUBLIC(RO(Proc))->SMB.BIOS.Release	},
-		{ DMI_SYS_VENDOR,	PUBLIC(RO(Proc))->SMB.System.Vendor },
-		{ DMI_PRODUCT_NAME,	PUBLIC(RO(Proc))->SMB.Product.Name	},
+		{ DMI_BIOS_VENDOR,	PUBLIC(RO(Proc))->SMB.BIOS.Vendor    },
+		{ DMI_BIOS_VERSION,	PUBLIC(RO(Proc))->SMB.BIOS.Version   },
+		{ DMI_BIOS_DATE,	PUBLIC(RO(Proc))->SMB.BIOS.Release   },
+		{ DMI_SYS_VENDOR,	PUBLIC(RO(Proc))->SMB.System.Vendor  },
+		{ DMI_PRODUCT_NAME,	PUBLIC(RO(Proc))->SMB.Product.Name   },
 		{ DMI_PRODUCT_VERSION,	PUBLIC(RO(Proc))->SMB.Product.Version},
-		{ DMI_PRODUCT_SERIAL,	PUBLIC(RO(Proc))->SMB.Product.Serial},
+		{ DMI_PRODUCT_SERIAL,	PUBLIC(RO(Proc))->SMB.Product.Serial },
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 18, 0)
-		{ DMI_PRODUCT_SKU,	PUBLIC(RO(Proc))->SMB.Product.SKU	},
+		{ DMI_PRODUCT_SKU,	PUBLIC(RO(Proc))->SMB.Product.SKU    },
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
-		{ DMI_PRODUCT_FAMILY,	PUBLIC(RO(Proc))->SMB.Product.Family},
+		{ DMI_PRODUCT_FAMILY,	PUBLIC(RO(Proc))->SMB.Product.Family },
 #endif
-		{ DMI_BOARD_NAME,	PUBLIC(RO(Proc))->SMB.Board.Name	},
-		{ DMI_BOARD_VERSION,	PUBLIC(RO(Proc))->SMB.Board.Version },
-		{ DMI_BOARD_SERIAL,	PUBLIC(RO(Proc))->SMB.Board.Serial	}
+		{ DMI_BOARD_NAME,	PUBLIC(RO(Proc))->SMB.Board.Name     },
+		{ DMI_BOARD_VERSION,	PUBLIC(RO(Proc))->SMB.Board.Version  },
+		{ DMI_BOARD_SERIAL,	PUBLIC(RO(Proc))->SMB.Board.Serial   }
 	};
 	size_t count = sizeof(dmi_collect) / sizeof(dmi_collect[0]), idx;
 
@@ -11856,60 +12164,113 @@ void SMBIOS_Collect(void)
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
 {
 	if (mode != NULL) {
-		(*mode) = 0600 ;	/*	crw------	*/
+		(*mode) = 0600 ; /*	Device access is crw------	*/
 	}
 	return (NULL);
 }
 
-static int __init CoreFreqK_init(void)
+static void CoreFreqK_Alloc_Features_Level_Down(void)
 {
-	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
+	printk(KERN_NOTICE "CoreFreq: Unload\n");
+}
+
+static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
+{
+	pArg->Features = kmalloc(sizeof(FEATURES), GFP_KERNEL);
+	if (pArg->Features == NULL)
+	{
+		return (-ENOMEM);
+	} else {
+		memset(pArg->Features, 0, sizeof(FEATURES));
+	}
+	return (0);
+}
+
+static void CoreFreqK_Query_Features_Level_Down(void)
+{
+}
+
+static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
+{
 	int rc = 0;
-
-    if ((iArg.Features = kmalloc(sizeof(FEATURES), GFP_KERNEL)) == NULL) {
-	rc = -ENOMEM;
-	goto EXIT_INIT;
-    }
-	memset(iArg.Features, 0, sizeof(FEATURES));
-
-    if (ServiceProcessor == -1) {	/* Query features on any processor. */
-	iArg.localProcessor = get_cpu();
-	Query_Features(&iArg);
-	put_cpu();
-	rc = iArg.rc;
-    } else {
-	if (ServiceProcessor >= 0) {
-		iArg.localProcessor = ServiceProcessor;
-		if((rc = smp_call_function_single(iArg.localProcessor,
-						Query_Features,
-						&iArg, 1)) == 0) {
-			rc = iArg.rc;
+	if (ServiceProcessor == -1)
+	{	/*	Query features on any processor.		*/
+		pArg->localProcessor = get_cpu();
+		Query_Features(pArg);
+		put_cpu();
+		rc = pArg->rc;
+	} else { /*	Query features on User selected processor.	*/
+		if (ServiceProcessor >= 0)
+		{
+			pArg->localProcessor = ServiceProcessor;
+			if ((rc = smp_call_function_single(pArg->localProcessor,
+							Query_Features,
+							pArg, 1)) == 0)
+			{
+				rc = pArg->rc;
+			}
+		} else {
+			rc = -ENXIO;
+		}
+	}
+	if (rc == 0)
+	{
+		unsigned int OS_Count = num_present_cpus();
+		/*	Rely on the operating system's cpu counting.	*/
+		if (pArg->SMT_Count != OS_Count) {
+			pArg->SMT_Count = OS_Count;
 		}
 	} else {
 		rc = -ENXIO;
 	}
-    }
-    if (rc == 0) {
-	unsigned int OS_Count = num_present_cpus();
-	/* Rely on the operating system's cpu counting. */
-	if (iArg.SMT_Count != OS_Count)
-		iArg.SMT_Count = OS_Count;
-    } else {
-	rc = -ENXIO;
-    }
-  if (rc == 0)
-  {
+	return (rc);
+}
+
+static void CoreFreqK_Alloc_Device_Level_Down(void)
+{
+	unregister_chrdev_region(CoreFreqK.mkdev, 1);
+}
+
+static int CoreFreqK_Alloc_Device_Level_Up(INIT_ARG *pArg)
+{
 	CoreFreqK.kcdev = cdev_alloc();
 	CoreFreqK.kcdev->ops = &CoreFreqK_fops;
 	CoreFreqK.kcdev->owner = THIS_MODULE;
 
-    if (alloc_chrdev_region(&CoreFreqK.nmdev, 0, 1, DRV_FILENAME) >= 0)
-    {
+	if (alloc_chrdev_region(&CoreFreqK.nmdev, 0, 1, DRV_FILENAME) >= 0)
+	{
+		return (0);
+	} else {
+		return (-EBUSY);
+	}
+}
+
+static void CoreFreqK_Make_Device_Level_Down(void)
+{
+	cdev_del(CoreFreqK.kcdev);
+}
+
+static int CoreFreqK_Make_Device_Level_Up(INIT_ARG *pArg)
+{
 	CoreFreqK.Major = MAJOR(CoreFreqK.nmdev);
 	CoreFreqK.mkdev = MKDEV(CoreFreqK.Major, 0);
 
-      if (cdev_add(CoreFreqK.kcdev, CoreFreqK.mkdev, 1) >= 0)
-      {
+	if (cdev_add(CoreFreqK.kcdev, CoreFreqK.mkdev, 1) >= 0)
+	{
+		return (0);
+	} else {
+		return (-EBUSY);
+	}
+}
+
+static void CoreFreqK_Create_Device_Level_Down(void)
+{
+	device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
+	class_destroy(CoreFreqK.clsdev);
+}
+
+static int CoreFreqK_Create_Device_Level_Up(INIT_ARG *pArg)
+{
 	struct device *tmpDev;
 
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
@@ -11920,429 +12281,529 @@ static int __init CoreFreqK_init(void)
 					CoreFreqK.mkdev, NULL,
 					DRV_DEVNAME)) != NULL)
 	{
-		const unsigned long	publicSize = sizeof(KPUBLIC) + sizeof(CORE_RO*) * iArg.SMT_Count,
-					privateSize = sizeof(KPRIVATE) + sizeof(JOIN*) * iArg.SMT_Count,
-					packageSize[] = {
-						ROUND_TO_PAGES(sizeof(PROC_RO)),
-						ROUND_TO_PAGES(sizeof(PROC_RW))},
-					CoreSize = KMAX(ROUND_TO_PAGES(sizeof(CORE_RO)),
-							ROUND_TO_PAGES(sizeof(CORE_RW))),
-					joinSize = ROUND_TO_PAGES(sizeof(JOIN));
-		unsigned int	cpu = 0;
+		return (0);
+	} else {
+		return (-EBUSY);
+	}
+}
 
-	  if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL)
-	   && ((PRIVATE() = kmalloc(privateSize, GFP_KERNEL)) != NULL))
-	  {
+static void CoreFreqK_Alloc_Public_Level_Down(void)
+{
+	if (PUBLIC() != NULL)
+	{
+		kfree(PUBLIC());
+	}
+}
+
+static int CoreFreqK_Alloc_Public_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long publicSize	= sizeof(KPUBLIC)
+					+ sizeof(CORE_RO*) * pArg->SMT_Count;
+
+	if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL))
+	{
 		memset(PUBLIC(), 0, publicSize);
+
+		PUBLIC(RO(Core))	= (CORE_RO**) &PUBLIC()
+					+ sizeof(KPUBLIC);
+
+		PUBLIC(RW(Core))	= (CORE_RW**) PUBLIC(RO(Core))
+					+ sizeof(CORE_RO*) * pArg->SMT_Count;
+
+		return (0);
+	} else{
+		return (-ENOMEM);
+	}
+}
+
+static void CoreFreqK_Alloc_Private_Level_Down(void)
+{
+	if (PRIVATE() != NULL)
+	{
+		kfree(PRIVATE());
+	}
+}
+
+static int CoreFreqK_Alloc_Private_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long privateSize = sizeof(KPRIVATE)
+					+ sizeof(JOIN*) * pArg->SMT_Count;
+
+	if (((PRIVATE() = kmalloc(privateSize, GFP_KERNEL)) != NULL))
+	{
 		memset(PRIVATE(), 0, privateSize);
 
-		PUBLIC(RO(Core)) = (CORE_RO**) &PUBLIC() + sizeof(KPUBLIC);
-		PUBLIC(RW(Core)) = (CORE_RW**) PUBLIC(RO(Core)) + sizeof(CORE_RO*) * iArg.SMT_Count;
+		return (0);
+	} else {
+		return (-ENOMEM);
+	}
+}
 
-	    if (( (PUBLIC(RO(Proc)) = kmalloc(packageSize[0], GFP_KERNEL)) != NULL )
-	    &&	( (PUBLIC(RW(Proc)) = kmalloc(packageSize[1], GFP_KERNEL)) != NULL ))
-	    {
-		memset(PUBLIC(RO(Proc)), 0, packageSize[0]);
-		memset(PUBLIC(RW(Proc)), 0, packageSize[1]);
+static void CoreFreqK_Alloc_Processor_RO_Level_Down(void)
+{
+	if (PUBLIC(RO(Proc)) != NULL)
+	{
+		kfree(PUBLIC(RO(Proc)));
+	}
+}
 
-		SET_FOOTPRINT(PUBLIC(RO(Proc))->FootPrint,	\
-						COREFREQ_MAJOR, \
-						COREFREQ_MINOR, \
-						COREFREQ_REV	);
+static int CoreFreqK_Alloc_Processor_RO_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long procSize = ROUND_TO_PAGES(sizeof(PROC_RO));
 
-		PUBLIC(RO(Proc))->CPU.Count = iArg.SMT_Count;
-		/* PreCompute SysGate memory allocation. */
-		PUBLIC(RO(Proc))->OS.ReqMem.Size = sizeof(SYSGATE_RO);
-		PUBLIC(RO(Proc))->OS.ReqMem.Order = get_order(PUBLIC(RO(Proc))->OS.ReqMem.Size);
+	if ( (PUBLIC(RO(Proc)) = kmalloc(procSize, GFP_KERNEL)) != NULL)
+	{
+		memset(PUBLIC(RO(Proc)), 0, procSize);
 
-		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
-		PUBLIC(RO(Proc))->Registration.Experimental = Experimental;
+		return (0);
+	} else {
+		return (-ENOMEM);
+	}
+}
 
-		Compute_Interval();
+static void CoreFreqK_Alloc_Processor_RW_Level_Down(void)
+{
+	if (PUBLIC(RW(Proc)) != NULL)
+	{
+		kfree(PUBLIC(RW(Proc)));
+	}
+}
 
-		memcpy(&PUBLIC(RO(Proc))->Features, iArg.Features, sizeof(FEATURES));
+static int CoreFreqK_Alloc_Processor_RW_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long procSize = ROUND_TO_PAGES(sizeof(PROC_RW));
 
-		/* Initialize default uArch's codename with the CPUID brand. */
-		Arch[GenuineArch].Architecture->CodeName = \
-						PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
+	if ( (PUBLIC(RW(Proc)) = kmalloc(procSize, GFP_KERNEL)) != NULL)
+	{
+		memset(PUBLIC(RW(Proc)), 0, procSize);
 
-		if (((PUBLIC(OF(Cache)) = kmem_cache_create("corefreqk-pub",
-							CoreSize, 0,
+		return (0);
+	} else {
+		return (-ENOMEM);
+	}
+}
+
+static void CoreFreqK_Scale_And_Compute_Level_Down(void)
+{
+}
+
+static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
+{
+	SET_FOOTPRINT(PUBLIC(RO(Proc))->FootPrint,	\
+					COREFREQ_MAJOR, \
+					COREFREQ_MINOR, \
+					COREFREQ_REV	);
+
+	PUBLIC(RO(Proc))->CPU.Count = pArg->SMT_Count;
+	/* PreCompute SysGate memory allocation. */
+	PUBLIC(RO(Proc))->OS.ReqMem.Size = sizeof(SYSGATE_RO);
+	PUBLIC(RO(Proc))->OS.ReqMem.Order = \
+				get_order(PUBLIC(RO(Proc))->OS.ReqMem.Size);
+
+	PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
+	PUBLIC(RO(Proc))->Registration.Experimental = Experimental;
+
+	Compute_Interval();
+
+	memcpy(&PUBLIC(RO(Proc))->Features, pArg->Features, sizeof(FEATURES));
+
+	/* Initialize default uArch's codename with the CPUID brand. */
+	Arch[GenuineArch].Architecture->CodeName = \
+				PUBLIC(RO(Proc))->Features.Info.Vendor.ID;
+	return (0);
+}
+
+static void CoreFreqK_Alloc_Public_Cache_Level_Down(void)
+{
+	if (PUBLIC(OF(Cache)) != NULL)
+	{
+		kmem_cache_destroy(PUBLIC(OF(Cache)));
+	}
+}
+
+static int CoreFreqK_Alloc_Public_Cache_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long cacheSize = KMAX( ROUND_TO_PAGES(sizeof(CORE_RO)),
+					      ROUND_TO_PAGES(sizeof(CORE_RW)) );
+
+	if ( (PUBLIC(OF(Cache)) = kmem_cache_create(	"corefreqk-pub",
+							cacheSize, 0,
 							SLAB_HWCACHE_ALIGN,
-							NULL)) != NULL)
-		 && ((PRIVATE(OF(Cache)) = kmem_cache_create("corefreqk-priv",
+							NULL ) ) != NULL)
+	{
+		return (0);
+	} else {
+		return (-ENOMEM);
+	}
+}
+
+static void CoreFreqK_Alloc_Private_Cache_Level_Down(void)
+{
+	if (PRIVATE(OF(Cache)) != NULL)
+	{
+		kmem_cache_destroy(PRIVATE(OF(Cache)));
+	}
+}
+
+static int CoreFreqK_Alloc_Private_Cache_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
+
+	if ( (PRIVATE(OF(Cache)) = kmem_cache_create(	"corefreqk-priv",
 							joinSize, 0,
 							SLAB_HWCACHE_ALIGN,
-							NULL)) != NULL))
-		{
-			int allocPerCPU = 1;
-			/* Allocation per CPU. */
-		  for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-			void *kcache = NULL;
-			kcache = kmem_cache_alloc(PUBLIC(OF(Cache)), GFP_KERNEL);
-			if (kcache != NULL) {
-				memset(kcache, 0, CoreSize);
-				PUBLIC(RO(Core, AT(cpu))) = kcache;
-			} else {
-				allocPerCPU = 0;
-				break;
-			}
-			kcache = kmem_cache_alloc(PUBLIC(OF(Cache)), GFP_KERNEL);
-			if (kcache != NULL) {
-				memset(kcache, 0, CoreSize);
-				PUBLIC(RW(Core, AT(cpu))) = kcache;
-			} else {
-				allocPerCPU = 0;
-				break;
-			}
-			kcache = kmem_cache_alloc(PRIVATE(OF(Cache)), GFP_KERNEL);
-			if (kcache != NULL) {
-				memset(kcache, 0, joinSize);
-				PRIVATE(OF(Join, AT(cpu))) = kcache;
-			} else {
-				allocPerCPU = 0;
-				break;
-			}
-		  }
-		  if (allocPerCPU)
-		  {
-		    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
-			BITCLR(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-			PUBLIC(RO(Core, AT(cpu)))->Bind = cpu;
-
-			Define_CPUID(PUBLIC(RO(Core, AT(cpu))), CpuIDforVendor);
-		    }
-
-		    switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC)
-		    {
-		    case CRC_INTEL: {
-			Arch[GenuineArch].Query	= Query_GenuineIntel;
-			Arch[GenuineArch].Update= PerCore_Intel_Query;
-			Arch[GenuineArch].Start	= Start_GenuineIntel;
-			Arch[GenuineArch].Stop	= Stop_GenuineIntel;
-			Arch[GenuineArch].Timer	= InitTimer_GenuineIntel;
-			Arch[GenuineArch].BaseClock = BaseClock_GenuineIntel;
-
-			Arch[GenuineArch].thermalFormula=THERMAL_FORMULA_INTEL;
-
-			Arch[GenuineArch].voltageFormula=VOLTAGE_FORMULA_INTEL;
-
-			Arch[GenuineArch].powerFormula = POWER_FORMULA_INTEL;
-			}
-			break;
-		    case CRC_HYGON:
-			/* Fallthrough */
-		    case CRC_AMD: {
-			Arch[GenuineArch].Query	= Query_AuthenticAMD;
-			Arch[GenuineArch].Update= PerCore_AuthenticAMD_Query;
-			Arch[GenuineArch].Start	= Start_AuthenticAMD;
-			Arch[GenuineArch].Stop	= Stop_AuthenticAMD;
-			Arch[GenuineArch].Timer	= InitTimer_AuthenticAMD;
-			Arch[GenuineArch].BaseClock = BaseClock_AuthenticAMD;
-
-			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_AMD;
-
-			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_AMD;
-
-			Arch[GenuineArch].powerFormula = POWER_FORMULA_AMD;
-			}
-			break;
-		    }
-			/* Is an architecture identifier requested by user ? */
-		    if((ArchID != -1)&&(ArchID >= 0)&&(ArchID < ARCHITECTURES))
-		    {
-			PUBLIC(RO(Proc))->ArchID = ArchID;
-		    }
-		    else
-		    {
-			PUBLIC(RO(Proc))->ArchID = SearchArchitectureID();
-		    }
-			/* Set the uArch's name with the first found codename*/
-			StrCopy(PUBLIC(RO(Proc))->Architecture,
-				Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0].CodeName,
-				CODENAME_LEN);
-
-			/* Check if the Processor is actually virtualized ? */
-		#ifdef CONFIG_XEN
-			if (xen_pv_domain() || xen_hvm_domain())
-			{
-				if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 0) {
-					PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv = 1;
-				}
-				PUBLIC(RO(Proc))->HypervisorID = HYPERV_XEN;
-			}
-		#endif /* CONFIG_XEN */
-
-		    if((PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
-		    {
-			VendorFromCPUID(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
-					&PUBLIC(RO(Proc))->Features.Info.LargestHypFunc,
-					&PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC,
-					&PUBLIC(RO(Proc))->HypervisorID,
-					0x40000000LU, 0x0);
-
-			switch (PUBLIC(RO(Proc))->HypervisorID) {
-			case HYPERV_NONE:
-			case HYPERV_KVM:
-			case HYPERV_VBOX:
-			case HYPERV_KBOX:
-			case HYPERV_VMWARE:
-				PUBLIC(RO(Proc))->ArchID = GenuineArch;
-				break;
-			case BARE_METAL:
-			case HYPERV_XEN:
-			/* Xen virtualizes better the MSR & PCI registers */
-				break;
-			}
-		    }
-			PUBLIC(RO(Proc))->thermalFormula=Arch[PUBLIC(RO(Proc))->ArchID].thermalFormula;
-			PUBLIC(RO(Proc))->voltageFormula=Arch[PUBLIC(RO(Proc))->ArchID].voltageFormula;
-			PUBLIC(RO(Proc))->powerFormula = Arch[PUBLIC(RO(Proc))->ArchID].powerFormula;
-
-			CoreFreqK_Thermal_Scope(ThermalScope);
-			CoreFreqK_Voltage_Scope(VoltageScope);
-			CoreFreqK_Power_Scope(PowerScope);
-
-			/* Copy various SMBIOS data [version 3.2]	*/
-			SMBIOS_Collect();
-
-			/* Initialize the CoreFreq controller		*/
-			Controller_Init();
-
-			MatchPeerForDefaultService(&PUBLIC(RO(Proc))->Service,
-						iArg.localProcessor);
-
-			/* Register the Idle & Frequency sub-drivers	*/
-			CoreFreqK_Register_CPU_Idle();
-			CoreFreqK_Register_CPU_Freq();
-			CoreFreqK_Register_Governor();
-
-			if (NMI_Disable == 0) {
-				CoreFreqK_Register_NMI();
-			}
-
-			printk(KERN_INFO "CoreFreq(%u:%d):"	\
-				" Processor [%2X%1X_%1X%1X]"	\
-				" Architecture [%s] %3s [%u/%u]\n",
-				PUBLIC(RO(Proc))->Service.Core, PUBLIC(RO(Proc))->Service.Thread,
-				PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
-				PUBLIC(RO(Proc))->Features.Std.EAX.Family,
-				PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel,
-				PUBLIC(RO(Proc))->Features.Std.EAX.Model,
-				PUBLIC(RO(Proc))->Architecture,
-				PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
-				PUBLIC(RO(Proc))->CPU.OnLine,
-				PUBLIC(RO(Proc))->CPU.Count);
-
-			Controller_Start(0);
-
-			PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
-
-	#ifdef CONFIG_HOTPLUG_CPU
-		#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
-			/* Always returns zero (kernel/notifier.c) */
-			PUBLIC(RO(Proc))->Registration.HotPlug = register_hotcpu_notifier(
-						&CoreFreqK_notifier_block);
-		#else	/* Continue with or without cpu hot-plugging. */
-			PUBLIC(RO(Proc))->Registration.HotPlug = cpuhp_setup_state_nocalls(
-						CPUHP_AP_ONLINE_DYN,
-						"corefreqk/cpu:online",
-						CoreFreqK_hotplug_cpu_online,
-						CoreFreqK_hotplug_cpu_offline);
-		#endif /* KERNEL_VERSION(4, 6, 0) */
-	#endif /* CONFIG_HOTPLUG_CPU */
-
-		#ifdef CONFIG_CPU_FREQ
-			Policy_Aggregate_Turbo();
-		#endif /* CONFIG_CPU_FREQ */
-		  }
-		  else
-		  {
-		   if (PUBLIC(OF(Cache)) != NULL) {
-		    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-		    {
-		      if (PUBLIC(RO(Core, AT(cpu))) != NULL) {
-			kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RO(Core, AT(cpu))));
-		      }
-		      if (PUBLIC(RW(Core, AT(cpu))) != NULL) {
-			kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RW(Core, AT(cpu))));
-		      }
-		    }
-			kmem_cache_destroy(PUBLIC(OF(Cache)));
-		   }
-		   if (PRIVATE(OF(Cache)) != NULL) {
-		    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-		    {
-		      if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
-			kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
-		      }
-		    }
-			kmem_cache_destroy(PRIVATE(OF(Cache)));
-		   }
-		   if (PUBLIC(RW(Proc)) != NULL) {
-			kfree(PUBLIC(RW(Proc)));
-		   }
-		   if (PUBLIC(RO(Proc)) != NULL) {
-			kfree(PUBLIC(RO(Proc)));
-		   }
-		   if (PUBLIC() != NULL) {
-			kfree(PUBLIC());
-		   }
-		   if (PRIVATE() != NULL) {
-			kfree(PRIVATE());
-		   }
-			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-			class_destroy(CoreFreqK.clsdev);
-			cdev_del(CoreFreqK.kcdev);
-			unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-			rc = -ENOMEM;
-		  }
-		} else {
-			if (PUBLIC(OF(Cache)) != NULL) {
-				kmem_cache_destroy(PUBLIC(OF(Cache)));
-			}
-			if (PRIVATE(OF(Cache)) != NULL) {
-				kmem_cache_destroy(PRIVATE(OF(Cache)));
-			}
-		    if (PUBLIC(RW(Proc)) != NULL) {
-			kfree(PUBLIC(RW(Proc)));
-		    }
-		    if (PUBLIC(RO(Proc)) != NULL) {
-			kfree(PUBLIC(RO(Proc)));
-		    }
-		    if (PUBLIC() != NULL) {
-			kfree(PUBLIC());
-		    }
-		    if (PRIVATE() != NULL) {
-			kfree(PRIVATE());
-		    }
-			device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-			class_destroy(CoreFreqK.clsdev);
-			cdev_del(CoreFreqK.kcdev);
-			unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-			rc = -ENOMEM;
-		}
-	    } else {
-	      if (PUBLIC() != NULL) {
-		kfree(PUBLIC());
-	      }
-	      if (PRIVATE() != NULL) {
-		kfree(PRIVATE());
-	      }
-		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-		class_destroy(CoreFreqK.clsdev);
-		cdev_del(CoreFreqK.kcdev);
-		unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-		rc = -ENOMEM;
-	    }
-	  } else {
-		if (PUBLIC() != NULL) {
-			kfree(PUBLIC());
-		}
-		if (PRIVATE() != NULL) {
-			kfree(PRIVATE());
-		}
-		device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-		class_destroy(CoreFreqK.clsdev);
-		cdev_del(CoreFreqK.kcdev);
-		unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-		rc = -ENOMEM;
-	  }
+							NULL ) ) != NULL)
+	{
+		return (0);
 	} else {
-		class_destroy(CoreFreqK.clsdev);
-		cdev_del(CoreFreqK.kcdev);
-		unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-		rc = -EBUSY;
+		return (-ENOMEM);
 	}
-      } else {
-	cdev_del(CoreFreqK.kcdev);
-	unregister_chrdev_region(CoreFreqK.mkdev, 1);
+}
 
-	rc = -EBUSY;
-      }
-    } else {
-	cdev_del(CoreFreqK.kcdev);
-
-	rc = -EBUSY;
+static void CoreFreqK_Alloc_Per_CPU_Level_Down(void)
+{
+	unsigned int cpu;
+    for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+    {
+	if (PUBLIC(OF(Cache)) != NULL)
+	{
+	    if (PUBLIC(RO(Core, AT(cpu))) != NULL) {
+		kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RO(Core, AT(cpu))));
+	    }
+	    if (PUBLIC(RW(Core, AT(cpu))) != NULL) {
+		kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RW(Core, AT(cpu))));
+	    }
+	}
+	if (PRIVATE(OF(Cache)) != NULL)
+	{
+	    if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
+		kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
+	    }
+	}
     }
-  }
-	kfree(iArg.Features);
-EXIT_INIT:
+}
+
+static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
+{
+	const unsigned long cacheSize = KMAX( ROUND_TO_PAGES(sizeof(CORE_RO)),
+					      ROUND_TO_PAGES(sizeof(CORE_RW)) );
+	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
+	int rc = 0;
+
+	unsigned int cpu;
+	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+	{
+		void *kcache = NULL;
+
+		kcache = kmem_cache_alloc(PUBLIC(OF(Cache)), GFP_KERNEL);
+		if (kcache != NULL) {
+			memset(kcache, 0, cacheSize);
+			PUBLIC(RO(Core, AT(cpu))) = kcache;
+		} else {
+			rc = -ENOMEM;
+			break;
+		}
+		kcache = kmem_cache_alloc(PUBLIC(OF(Cache)), GFP_KERNEL);
+		if (kcache != NULL) {
+			memset(kcache, 0, cacheSize);
+			PUBLIC(RW(Core, AT(cpu))) = kcache;
+		} else {
+			rc = -ENOMEM;
+			break;
+		}
+		kcache = kmem_cache_alloc(PRIVATE(OF(Cache)), GFP_KERNEL);
+		if (kcache != NULL) {
+			memset(kcache, 0, joinSize);
+			PRIVATE(OF(Join, AT(cpu))) = kcache;
+		} else {
+			rc = -ENOMEM;
+			break;
+		}
+
+		BITCLR(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+		PUBLIC(RO(Core, AT(cpu)))->Bind = cpu;
+
+		Define_CPUID(PUBLIC(RO(Core, AT(cpu))), CpuIDforVendor);
+	}
 	return (rc);
 }
 
-static void __exit CoreFreqK_cleanup(void)
+static void CoreFreqK_Ignition_Level_Down(void)
 {
-  if (PUBLIC(RO(Proc)) != NULL)
-  {
-	unsigned int cpu = 0;
-
 	CoreFreqK_UnRegister_Governor();
 	CoreFreqK_UnRegister_CPU_Freq();
 	CoreFreqK_UnRegister_CPU_Idle();
 	CoreFreqK_UnRegister_NMI();
 
 #ifdef CONFIG_HOTPLUG_CPU
-	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+    #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 	unregister_hotcpu_notifier(&CoreFreqK_notifier_block);
-	#else /* KERNEL_VERSION(4, 10, 0) */
-	if (!(PUBLIC(RO(Proc))->Registration.HotPlug < 0)) {
-		cpuhp_remove_state_nocalls(PUBLIC(RO(Proc))->Registration.HotPlug);
-	}
-	#endif /* KERNEL_VERSION(4, 10, 0) */
+    #else /* KERNEL_VERSION(4, 10, 0) */
+    if ( !(PUBLIC(RO(Proc))->Registration.HotPlug < 0) )
+    {
+	cpuhp_remove_state_nocalls(PUBLIC(RO(Proc))->Registration.HotPlug);
+    }
+    #endif /* KERNEL_VERSION(4, 10, 0) */
 #endif /* CONFIG_HOTPLUG_CPU */
 
 	Controller_Stop(1);
 	Controller_Exit();
 
-	if (PUBLIC(OF(Gate)) != NULL) {
-		free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->OS.ReqMem.Size);
-	}
-    for (cpu = 0;(PUBLIC(OF(Cache)) != NULL) && (cpu < PUBLIC(RO(Proc))->CPU.Count); cpu++)
+    if (PUBLIC(OF(Gate)) != NULL)
     {
-	if (PUBLIC(RO(Core, AT(cpu))) != NULL) {
-		kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RO(Core, AT(cpu))));
-	}
-	if (PUBLIC(RW(Core, AT(cpu))) != NULL) {
-		kmem_cache_free(PUBLIC(OF(Cache)), PUBLIC(RW(Core, AT(cpu))));
-	}
-	if (PRIVATE(OF(Join, AT(cpu))) != NULL) {
-		kmem_cache_free(PRIVATE(OF(Cache)), PRIVATE(OF(Join, AT(cpu))));
-	}
+	free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->OS.ReqMem.Size);
     }
-	if (PUBLIC(OF(Cache)) != NULL) {
-		kmem_cache_destroy(PUBLIC(OF(Cache)));
-	}
-	if (PRIVATE(OF(Cache)) != NULL) {
-		kmem_cache_destroy(PRIVATE(OF(Cache)));
-	}
-	if (PUBLIC(RW(Proc)) != NULL) {
-		kfree(PUBLIC(RW(Proc)));
-	}
-	if (PUBLIC(RO(Proc)) != NULL) {
-		kfree(PUBLIC(RO(Proc)));
-	}
-	if (PUBLIC() != NULL) {
-		kfree(PUBLIC());
-	}
-	if (PRIVATE() != NULL) {
-		kfree(PRIVATE());
-	}
-	device_destroy(CoreFreqK.clsdev, CoreFreqK.mkdev);
-	class_destroy(CoreFreqK.clsdev);
-	cdev_del(CoreFreqK.kcdev);
-	unregister_chrdev_region(CoreFreqK.mkdev, 1);
-
-	printk(KERN_NOTICE "CoreFreq: Unload\n");
-  }
 }
 
-module_init(CoreFreqK_init);
-module_exit(CoreFreqK_cleanup);
+static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
+{
+	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
+	case CRC_INTEL: {
+		Arch[GenuineArch].Query	= Query_GenuineIntel;
+		Arch[GenuineArch].Update= PerCore_Intel_Query;
+		Arch[GenuineArch].Start	= Start_GenuineIntel;
+		Arch[GenuineArch].Stop	= Stop_GenuineIntel;
+		Arch[GenuineArch].Timer	= InitTimer_GenuineIntel;
+		Arch[GenuineArch].BaseClock = BaseClock_GenuineIntel;
+
+		Arch[GenuineArch].thermalFormula=THERMAL_FORMULA_INTEL;
+
+		Arch[GenuineArch].voltageFormula=VOLTAGE_FORMULA_INTEL;
+
+		Arch[GenuineArch].powerFormula = POWER_FORMULA_INTEL;
+		}
+		break;
+	case CRC_HYGON:
+		/* Fallthrough */
+	case CRC_AMD: {
+		Arch[GenuineArch].Query	= Query_AuthenticAMD;
+		Arch[GenuineArch].Update= PerCore_AuthenticAMD_Query;
+		Arch[GenuineArch].Start	= Start_AuthenticAMD;
+		Arch[GenuineArch].Stop	= Stop_AuthenticAMD;
+		Arch[GenuineArch].Timer	= InitTimer_AuthenticAMD;
+		Arch[GenuineArch].BaseClock = BaseClock_AuthenticAMD;
+
+		Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_AMD;
+
+		Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_AMD;
+
+		Arch[GenuineArch].powerFormula = POWER_FORMULA_AMD;
+		}
+		break;
+	}
+	/*	Is an architecture identifier requested by user ?	*/
+	if ( (ArchID != -1) && (ArchID >= 0) && (ArchID < ARCHITECTURES) )
+	{
+		PUBLIC(RO(Proc))->ArchID = ArchID;
+	} else {
+		PUBLIC(RO(Proc))->ArchID = SearchArchitectureID();
+	}
+	/*	Set the uArch's name with the first found codename	*/
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+		Arch[PUBLIC(RO(Proc))->ArchID].Architecture[0].CodeName,
+		CODENAME_LEN);
+
+	/*	Check if the Processor is actually virtualized ?	*/
+	#ifdef CONFIG_XEN
+	if (xen_pv_domain() || xen_hvm_domain())
+	{
+		if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 0) {
+			PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv = 1;
+		}
+		PUBLIC(RO(Proc))->HypervisorID = HYPERV_XEN;
+	}
+	#endif /* CONFIG_XEN */
+
+	if ((PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv == 1) && (ArchID == -1))
+	{
+		VendorFromCPUID(PUBLIC(RO(Proc))->Features.Info.Hypervisor.ID,
+				&PUBLIC(RO(Proc))->Features.Info.LargestHypFunc,
+				&PUBLIC(RO(Proc))->Features.Info.Hypervisor.CRC,
+				&PUBLIC(RO(Proc))->HypervisorID,
+				0x40000000LU, 0x0);
+
+		switch (PUBLIC(RO(Proc))->HypervisorID) {
+		case HYPERV_NONE:
+		case HYPERV_KVM:
+		case HYPERV_VBOX:
+		case HYPERV_KBOX:
+		case HYPERV_VMWARE:
+			PUBLIC(RO(Proc))->ArchID = GenuineArch;
+			break;
+		case BARE_METAL:
+		case HYPERV_XEN:
+		/*	Xen virtualizes better the MSR & PCI registers	*/
+			break;
+		}
+	}
+	PUBLIC(RO(Proc))->thermalFormula = \
+				Arch[PUBLIC(RO(Proc))->ArchID].thermalFormula;
+
+	PUBLIC(RO(Proc))->voltageFormula = \
+				Arch[PUBLIC(RO(Proc))->ArchID].voltageFormula;
+
+	PUBLIC(RO(Proc))->powerFormula = \
+				Arch[PUBLIC(RO(Proc))->ArchID].powerFormula;
+
+	CoreFreqK_Thermal_Scope(ThermalScope);
+	CoreFreqK_Voltage_Scope(VoltageScope);
+	CoreFreqK_Power_Scope(PowerScope);
+
+	/*	Copy various SMBIOS data [version 3.2]			*/
+	SMBIOS_Collect();
+
+	/*	Initialize the CoreFreq controller			*/
+	Controller_Init();
+
+	MatchPeerForDefaultService(	&PUBLIC(RO(Proc))->Service,
+					pArg->localProcessor );
+
+	/*	Register the Idle & Frequency sub-drivers		*/
+	CoreFreqK_Register_CPU_Idle();
+	CoreFreqK_Register_CPU_Freq();
+	CoreFreqK_Register_Governor();
+
+	if (NMI_Disable == 0) {
+		CoreFreqK_Register_NMI();
+	}
+
+	printk(KERN_INFO "CoreFreq(%u:%d):"	\
+		" Processor [%2X%1X_%1X%1X]"	\
+		" Architecture [%s] %3s [%u/%u]\n",
+		PUBLIC(RO(Proc))->Service.Core,PUBLIC(RO(Proc))->Service.Thread,
+		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
+		PUBLIC(RO(Proc))->Features.Std.EAX.Family,
+		PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel,
+		PUBLIC(RO(Proc))->Features.Std.EAX.Model,
+		PUBLIC(RO(Proc))->Architecture,
+		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
+		PUBLIC(RO(Proc))->CPU.OnLine,
+		PUBLIC(RO(Proc))->CPU.Count);
+
+	Controller_Start(0);
+
+	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+
+#ifdef CONFIG_HOTPLUG_CPU
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)
+	/*	Always returns zero (kernel/notifier.c)			*/
+	PUBLIC(RO(Proc))->Registration.HotPlug = \
+			register_hotcpu_notifier(&CoreFreqK_notifier_block);
+	#else	/*	Continue with or without cpu hot-plugging.	*/
+	PUBLIC(RO(Proc))->Registration.HotPlug = \
+			cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+						"corefreqk/cpu:online",
+						CoreFreqK_HotPlug_CPU_Online,
+						CoreFreqK_HotPlug_CPU_Offline);
+	#endif /* KERNEL_VERSION(4, 6, 0) */
+#endif /* CONFIG_HOTPLUG_CPU */
+
+	#ifdef CONFIG_CPU_FREQ
+	Policy_Aggregate_Turbo();
+	#endif /* CONFIG_CPU_FREQ */
+
+	/*	Features initialization is done, release memory.	*/
+	if (pArg->Features != NULL)
+	{
+		kfree(pArg->Features);
+	}
+	return (0);
+}
+
+enum RUN_LEVEL {
+	Alloc_Features_Level,
+	Query_Features_Level,
+	Alloc_Device_Level,
+	Make_Device_Level,
+	Create_Device_Level,
+	Alloc_Public_Level,
+	Alloc_Private_Level,
+	Alloc_Processor_RO_Level,
+	Alloc_Processor_RW_Level,
+	Scale_And_Compute_Level,
+	Alloc_Public_Cache_Level,
+	Alloc_Private_Cache_Level,
+	Alloc_Per_CPU_Level,
+	Ignition_Level,
+	Running_Level
+};
+
+static enum RUN_LEVEL RunLevel = Alloc_Features_Level;
+
+#define COREFREQ_RUN( _level, _action )	CoreFreqK_##_level##_##_action
+
+static void CoreFreqK_ShutDown(void)
+{
+	void (*LevelFunc[])(void) = {
+		COREFREQ_RUN(Alloc_Features_Level, Down),
+		COREFREQ_RUN(Query_Features_Level, Down),
+		COREFREQ_RUN(Alloc_Device_Level, Down),
+		COREFREQ_RUN(Make_Device_Level, Down),
+		COREFREQ_RUN(Create_Device_Level, Down),
+		COREFREQ_RUN(Alloc_Public_Level, Down),
+		COREFREQ_RUN(Alloc_Private_Level, Down),
+		COREFREQ_RUN(Alloc_Processor_RO_Level, Down),
+		COREFREQ_RUN(Alloc_Processor_RW_Level, Down),
+		COREFREQ_RUN(Scale_And_Compute_Level, Down),
+		COREFREQ_RUN(Alloc_Public_Cache_Level, Down),
+		COREFREQ_RUN(Alloc_Private_Cache_Level, Down),
+		COREFREQ_RUN(Alloc_Per_CPU_Level, Down),
+		COREFREQ_RUN(Ignition_Level, Down)
+	};
+
+	do
+	{
+		RunLevel--;
+		LevelFunc[RunLevel]();
+	} while (RunLevel != Alloc_Features_Level) ;
+}
+
+static int CoreFreqK_StartUp(void)
+{
+	int (*LevelFunc[])(INIT_ARG *pArg) = {
+		COREFREQ_RUN(Alloc_Features_Level, Up),
+		COREFREQ_RUN(Query_Features_Level, Up),
+		COREFREQ_RUN(Alloc_Device_Level, Up),
+		COREFREQ_RUN(Make_Device_Level, Up),
+		COREFREQ_RUN(Create_Device_Level, Up),
+		COREFREQ_RUN(Alloc_Public_Level, Up),
+		COREFREQ_RUN(Alloc_Private_Level, Up),
+		COREFREQ_RUN(Alloc_Processor_RO_Level, Up),
+		COREFREQ_RUN(Alloc_Processor_RW_Level, Up),
+		COREFREQ_RUN(Scale_And_Compute_Level, Up),
+		COREFREQ_RUN(Alloc_Public_Cache_Level, Up),
+		COREFREQ_RUN(Alloc_Private_Cache_Level, Up),
+		COREFREQ_RUN(Alloc_Per_CPU_Level, Up),
+		COREFREQ_RUN(Ignition_Level, Up)
+	};
+	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
+	int rc = 0;
+
+	do
+	{
+		rc = LevelFunc[RunLevel](&iArg);
+		RunLevel++;
+	} while (RunLevel != Running_Level && rc == 0) ;
+
+	return (rc);
+}
+
+static int __init CoreFreqK_Init(void)
+{
+	int rc = CoreFreqK_StartUp();
+
+	if (rc != 0) {
+		CoreFreqK_ShutDown();
+	}
+	return (rc);
+}
+
+static void __exit CoreFreqK_Exit(void)
+{
+	CoreFreqK_ShutDown();
+}
+
+module_init(CoreFreqK_Init);
+module_exit(CoreFreqK_Exit);
 
