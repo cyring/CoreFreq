@@ -12298,7 +12298,8 @@ static void CoreFreqK_Alloc_Public_Level_Down(void)
 static int CoreFreqK_Alloc_Public_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long publicSize	= sizeof(KPUBLIC)
-					+ sizeof(CORE_RO*) * pArg->SMT_Count;
+					+ sizeof(CORE_RO*) * pArg->SMT_Count
+					+ sizeof(CORE_RW*) * pArg->SMT_Count;
 
 	if (((PUBLIC() = kmalloc(publicSize, GFP_KERNEL)) != NULL))
 	{
