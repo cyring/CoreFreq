@@ -1198,10 +1198,6 @@ void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	Bit32	fTSC = Proc_RO->Features.Std.EDX.TSC,
 		aTSC = Proc_RO->Features.AdvPower.EDX.Inv_TSC;
 
-#ifdef CHAPPIE
-	/* Hardening: Segmentation fault because page access is read-only */
-	memcpy(Proc_RO->Architecture, "Chappie Processor", 17);
-#endif
 	/* Copy all initial CPUID features.				*/
 	memcpy(&Shm->Proc.Features, &Proc_RO->Features, sizeof(FEATURES));
 	/* Copy the fomula identifiers					*/
@@ -1264,9 +1260,9 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	break;
       case POWER_KIND_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
-			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.PU) : 0;
+			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.PU) :0;
 	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
-			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU) : 0;
+			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU):0;
 	break;
       case POWER_KIND_NONE:
 	break;
@@ -1277,12 +1273,12 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
     if (PowerUnits != 0)
     {
-	Shm->Proc.Power.TDP	= Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
-				/ PowerUnits;
-	Shm->Proc.Power.Min	= Proc_RO->PowerThermal.PowerInfo.MinimumPower
-				/ PowerUnits;
-	Shm->Proc.Power.Max	= Proc_RO->PowerThermal.PowerInfo.MaximumPower
-				/ PowerUnits;
+	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
+			    / PowerUnits;
+	Shm->Proc.Power.Min = Proc_RO->PowerThermal.PowerInfo.MinimumPower
+			    / PowerUnits;
+	Shm->Proc.Power.Max = Proc_RO->PowerThermal.PowerInfo.MaximumPower
+			    / PowerUnits;
     }
 }
 
@@ -2202,7 +2198,7 @@ void G965_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
-void P3S_MCH(SHM_STRUCT *Shm, PROC_RO *Proc, unsigned short mc, unsigned short cha)
+void P3S_MCH(SHM_STRUCT *Shm,PROC_RO *Proc,unsigned short mc,unsigned short cha)
 {
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL   =
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRT0.tCL;
@@ -3998,9 +3994,9 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		Shm->Cpu[cpu].Topology.Cache[level].Way=\
+		Shm->Cpu[cpu].Topology.Cache[level].Way = \
 			(loop == 2) || (loop == 3) ?
-			AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
+		AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
 			: Core[cpu]->T.Cache[loop].Way;
 
 		Shm->Cpu[cpu].Topology.Cache[level].Size =		\
@@ -4048,7 +4044,7 @@ void CStates(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 
-void PowerThermal(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
+void PowerThermal(SHM_STRUCT *Shm,PROC_RO *Proc,CORE_RO **Core,unsigned int cpu)
 {
 	Shm->Cpu[cpu].PowerThermal.DutyCycle.Extended =
 			Core[cpu]->PowerThermal.ClockModulation.ECMD;
@@ -4362,7 +4358,7 @@ void UpdateFeatures(REF *Ref)
 		PerCore_Update(Ref->Shm, Ref->Proc_RO, Ref->Core_RO, cpu);
 	    }
 	}
-	Uncore(Ref->Shm, Ref->Proc_RO, Ref->Core_RO[Ref->Proc_RO->Service.Core]);
+	Uncore(Ref->Shm, Ref->Proc_RO,Ref->Core_RO[Ref->Proc_RO->Service.Core]);
 	Technology_Update(Ref->Shm, Ref->Proc_RO, Ref->Proc_RW);
 }
 
@@ -5171,7 +5167,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
     if ((Core_RW = calloc(Proc_RO->CPU.Count, sizeof(Core_RW))) == NULL) {
 	REASON_SET(reason, RC_MEM_ERR, (errno == 0 ? ENOMEM : errno));
     }
-    for (cpu = 0; (reason.rc == RC_SUCCESS) && (cpu < Proc_RO->CPU.Count); cpu++)
+    for(cpu = 0; (reason.rc == RC_SUCCESS) && (cpu < Proc_RO->CPU.Count); cpu++)
     {
 	const off_t	vm_ro_pgoff = (ID_RO_VMA_CORE + cpu) * PAGE_SIZE,
 			vm_rw_pgoff = (ID_RW_VMA_CORE + cpu) * PAGE_SIZE;
@@ -5585,7 +5581,7 @@ int main(int argc, char *argv[])
 							COREFREQ_MINOR,
 							COREFREQ_REV)	)
 		    {
-			reason = Shm_Manager(&fd, Proc, Proc_RW, uid, gid, cmask);
+			reason=Shm_Manager(&fd, Proc, Proc_RW, uid, gid, cmask);
 
 			switch (reason.rc) {
 			case RC_SUCCESS:

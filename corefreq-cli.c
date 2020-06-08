@@ -1022,7 +1022,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	GridCall(PrintRatioFreq(win, CFlop,
 				0, "CPB",
-				&Shm->Cpu[Ruler.Top[BOOST(CPB)]].Boost[BOOST(CPB)],
+			&Shm->Cpu[Ruler.Top[BOOST(CPB)]].Boost[BOOST(CPB)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(CPB) );
