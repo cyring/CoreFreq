@@ -644,10 +644,6 @@ typedef struct
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;
-
-	  struct {
-	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
-	  } Power;
 	} Delta __attribute__ ((aligned (8)));
 
 	struct
@@ -736,6 +732,13 @@ typedef struct
 
 typedef struct
 {
+	struct
+	{
+	  struct {
+	    unsigned long long	ACCU[PWR_DOMAIN(SIZE)];
+	  } Power;
+	} Delta __attribute__ ((aligned (8)));
+
 	Bit256			ODCM		__attribute__ ((aligned (16)));
 	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
 	Bit256			SpeedStep	__attribute__ ((aligned (16)));

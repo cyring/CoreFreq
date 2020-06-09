@@ -4705,7 +4705,7 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
 	Core_ComputeVoltageLimits(Cpu, SProc);
 }
 
-static inline void Pkg_ComputePower_None(PROC_RO *Proc, struct FLIP_FLOP *CFlop)
+static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 {
 }
 
@@ -4715,12 +4715,13 @@ static inline void Pkg_ComputePower_None(PROC_RO *Proc, struct FLIP_FLOP *CFlop)
 
 #define Pkg_ComputePower_AMD		Pkg_ComputePower_None
 
-static inline void Pkg_ComputePower_AMD_17h(PROC_RO *Proc, struct FLIP_FLOP *CFlop)
+static inline void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
+						struct FLIP_FLOP *CFlop )
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] += CFlop->Delta.Power.ACCU;
 }
 
-static inline void Pkg_ResetPower_None(PROC_RO *Proc)
+static inline void Pkg_ResetPower_None(PROC_RW *Proc)
 {
 }
 
@@ -4730,7 +4731,7 @@ static inline void Pkg_ResetPower_None(PROC_RO *Proc)
 
 #define Pkg_ResetPower_AMD		Pkg_ResetPower_None
 
-static inline void Pkg_ResetPower_AMD_17h(PROC_RO *Proc)
+static inline void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
 {
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
 }
@@ -4763,9 +4764,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	void (*Pkg_ComputeVoltageFormula)(	CPU_STRUCT*,
 						struct FLIP_FLOP* );
 
-	void (*Pkg_ComputePowerFormula)(PROC_RO*, struct FLIP_FLOP*);
+	void (*Pkg_ComputePowerFormula)(PROC_RW*, struct FLIP_FLOP*);
 
-	void (*Pkg_ResetPowerFormula)(PROC_RO*);
+	void (*Pkg_ResetPowerFormula)(PROC_RW*);
 
 	switch (KIND_OF_FORMULA(Shm->Proc.thermalFormula)) {
 	case THERMAL_KIND_INTEL:
@@ -4891,7 +4892,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C1    = 0;
 	maxRelFreq	    = 0.0;
 
-	Pkg_ResetPowerFormula(Proc);
+	Pkg_ResetPowerFormula(Proc_RW);
 
 	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
 	{
@@ -4959,7 +4960,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		}
 
 		/* Workaround to RAPL Package counter: sum of all Cores */
-		Pkg_ComputePowerFormula(Proc, CFlop);
+		Pkg_ComputePowerFormula(Proc_RW, CFlop);
 
 		/* Sum counters.					*/
 		Shm->Proc.Avg.Turbo += CFlop->State.Turbo;
@@ -5006,7 +5007,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		enum PWR_DOMAIN pw;
 	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	    {
-		PFlip->Delta.ACCU[pw] = Proc->Delta.Power.ACCU[pw];
+		PFlip->Delta.ACCU[pw] = Proc_RW->Delta.Power.ACCU[pw];
 
 		Shm->Proc.State.Energy[pw].Current = \
 						(double) PFlip->Delta.ACCU[pw]

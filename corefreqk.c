@@ -7758,11 +7758,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
-#define Delta_PWR_ACCU(Pkg, PwrDomain)					\
+#define Delta_PWR_ACCU(Pkg_RO, Pkg_RW, PwrDomain)			\
 ({									\
-	Pkg->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =			\
-	(Pkg->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]		\
-	- Pkg->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)]) & 0x7fffffffU;\
+	Pkg_RW->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =		\
+	(Pkg_RO->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]		\
+	- Pkg_RO->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)]) & 0x7fffffffU;\
 })
 
 #define Save_PWR_ACCU(Pkg, PwrDomain)					\
@@ -8503,11 +8503,11 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -8712,11 +8712,11 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -8954,11 +8954,11 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9173,11 +9173,11 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9409,13 +9409,13 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9621,11 +9621,11 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
 
-			Delta_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -10165,7 +10165,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-		Delta_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
 
 		Save_PTSC(PUBLIC(RO(Proc)));
 
