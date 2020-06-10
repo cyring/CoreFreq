@@ -3490,6 +3490,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Family_14h:
       case AMD_Family_15h:
       case AMD_Family_16h:
+      TOPOLOGY_CMP:
 	TopologyFunc = Topology_CMP;
 	pID_OFF = ID_OFF[1];
 	PRT(MAP, attrib[2], " CMP ID    ID");
@@ -3509,7 +3510,11 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], " CCX ID    ID");
 	break;
       default:
+       if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /* Virtualized ?	*/
+	goto TOPOLOGY_CMP;
+       }  else  {	/*	AMD_Family_0Fh and AMD_Family_10h	*/
 	PRT(MAP, attrib[2], "   ID     ID ");
+       }
 	break;
       }
     } else {

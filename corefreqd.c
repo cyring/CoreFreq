@@ -4029,8 +4029,14 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen2_MTS:
     case AMD_Family_17h:
     case AMD_Family_18h:
+    VIRTUALIZED_L3:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
 	Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;
+	break;
+    default:
+	if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /*	Virtualized ?	*/
+		goto VIRTUALIZED_L3;
+	}
 	break;
     }
 }
