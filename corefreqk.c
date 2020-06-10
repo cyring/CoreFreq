@@ -4119,7 +4119,7 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	}
     } else {
 NO_SOLUTION:
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	\
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
     }
   }
@@ -7758,11 +7758,12 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
-#define Delta_PWR_ACCU(Pkg_RO, Pkg_RW, PwrDomain)			\
+#define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
-	Pkg_RW->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =		\
-	(Pkg_RO->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]		\
-	- Pkg_RO->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)]) & 0x7fffffffU;\
+	PUBLIC(RW(Pkg))->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =	\
+	(PUBLIC(RO(Pkg))->Counter[1].Power.ACCU[PWR_DOMAIN(PwrDomain)]	\
+	- PUBLIC(RO(Pkg))->Counter[0].Power.ACCU[PWR_DOMAIN(PwrDomain)])\
+	& 0x7fffffffU;							\
 })
 
 #define Save_PWR_ACCU(Pkg, PwrDomain)					\
@@ -8503,11 +8504,11 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
+			Delta_PWR_ACCU(Proc, UNCORE);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -8712,11 +8713,11 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
+			Delta_PWR_ACCU(Proc, RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -8954,11 +8955,11 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
+			Delta_PWR_ACCU(Proc, UNCORE);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9173,11 +9174,11 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
+			Delta_PWR_ACCU(Proc, RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9409,13 +9410,13 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), UNCORE);
+			Delta_PWR_ACCU(Proc, UNCORE);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
+			Delta_PWR_ACCU(Proc, RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -9621,11 +9622,11 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+			Delta_PWR_ACCU(Proc, PKG);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), CORES);
+			Delta_PWR_ACCU(Proc, CORES);
 
-		    Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), RAM);
+			Delta_PWR_ACCU(Proc, RAM);
 
 			Save_PC02(PUBLIC(RO(Proc)));
 
@@ -10165,7 +10166,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-		Delta_PWR_ACCU(PUBLIC(RO(Proc)), PUBLIC(RW(Proc)), PKG);
+		Delta_PWR_ACCU(Proc, PKG);
 
 		Save_PTSC(PUBLIC(RO(Proc)));
 
@@ -11293,7 +11294,7 @@ static long CoreFreqK_Power_Scope(int scope)
     }
 }
 
-static void Compute_Clock_SMT(void)
+static void For_All_SMT_Clock_Compute_Clock(void)
 {
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
   do {
@@ -11385,7 +11386,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	case COREFREQ_TOGGLE_OFF:
 		Controller_Stop(1);
-		Compute_Clock_SMT();
+		For_All_SMT_Clock_Compute_Clock();
 		BITCLR(LOCKLESS, AutoClock, 1);
 		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
@@ -11980,14 +11981,14 @@ static int CoreFreqK_HotPlug_CPU_Online(unsigned int cpu)
       {
        if (AutoClock & 0b01)
        {
-	    COMPUTE_ARG Compute = {
-	    .TSC = {NULL, NULL},
-	    .Clock = {
-	    .Q = \
-	PUBLIC(RO(Core, AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)],
-	    .R = 0, .Hz = 0
-	    }
-	  };
+	COMPUTE_ARG Compute = {
+		.TSC = {NULL, NULL},
+		.Clock = {
+			.Q = PUBLIC(RO(Core, \
+			AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)],
+			.R = 0, .Hz = 0
+		}
+	};
 	if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	{
 	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
@@ -12169,6 +12170,10 @@ static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
 	return (NULL);
 }
 
+static void CoreFreqK_Empty_Func_Level_Down(void)
+{
+}
+
 static void CoreFreqK_Alloc_Features_Level_Down(void)
 {
 	printk(KERN_NOTICE "CoreFreq: Unload\n");
@@ -12186,9 +12191,7 @@ static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
 	return (0);
 }
 
-static void CoreFreqK_Query_Features_Level_Down(void)
-{
-}
+#define CoreFreqK_Query_Features_Level_Down CoreFreqK_Empty_Func_Level_Down
 
 static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
 {
@@ -12384,9 +12387,7 @@ static int CoreFreqK_Alloc_Processor_RW_Level_Up(INIT_ARG *pArg)
 	}
 }
 
-static void CoreFreqK_Scale_And_Compute_Level_Down(void)
-{
-}
+#define CoreFreqK_Scale_And_Compute_Level_Down CoreFreqK_Empty_Func_Level_Down
 
 static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 {
