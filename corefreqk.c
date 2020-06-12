@@ -372,12 +372,12 @@ signed int SearchArchitectureID(void)
 void BrandCleanup(char *pBrand, char inOrder[])
 {
 	unsigned long ix, jx;
-	for (jx = 0; jx < 48; jx++) {
+	for (jx = 0; jx < BRAND_LENGTH; jx++) {
 		if (inOrder[jx] != 0x20) {
 			break;
 		}
 	}
-	for (ix = 0; jx < 48; jx++) {
+	for (ix = 0; jx < BRAND_LENGTH; jx++) {
 		if (!(inOrder[jx] == 0x20 && inOrder[jx + 1] == 0x20)) {
 			pBrand[ix++] = inOrder[jx];
 		}
@@ -415,20 +415,17 @@ void BrandFromCPUID(char *buffer)
 			buffer[px +  8] = Brand.CX.Chr[jx];
 			buffer[px + 12] = Brand.DX.Chr[jx];
 		}
-		px += 12;
+		px += BRAND_PART;
 	}
 }
 
-unsigned int Intel_Brand(char *pBrand)
+unsigned int Intel_Brand(char *pBrand, char buffer[])
 {
 	unsigned int ix, frequency = 0, multiplier = 0;
 
-	char buffer[48 + 4];
-	memset(buffer, 0x20, 48 + 4);
-
 	BrandFromCPUID(buffer);
 
-	for (ix = 0; ix < 46; ix++)
+	for (ix = 0; ix < (BRAND_LENGTH - 2); ix++)
 	{
 		if ((buffer[ix + 1] == 'H') && (buffer[ix + 2] == 'z')) {
 			switch (buffer[ix]) {
@@ -463,16 +460,6 @@ unsigned int Intel_Brand(char *pBrand)
 	BrandCleanup(pBrand, buffer);
 
 	return (frequency);
-}
-
-void AMD_Brand(char *pBrand)
-{
-	char buffer[48 + 4];
-	memset(buffer, 0x20, 48 + 4);
-
-	BrandFromCPUID(buffer);
-
-	BrandCleanup(pBrand, buffer);
 }
 
 /* Retreive the Processor(BSP) features. */
@@ -721,7 +708,8 @@ static void Query_Features(void *pArg)
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
 	    }
-	  iArg->Features->Factory.Freq=Intel_Brand(iArg->Features->Info.Brand);
+		iArg->Features->Factory.Freq = \
+			Intel_Brand(iArg->Features->Info.Brand, iArg->Brand);
 
 	} else if ((iArg->Features->Info.Vendor.CRC == CRC_AMD)
 		|| (iArg->Features->Info.Vendor.CRC == CRC_HYGON))
@@ -756,7 +744,9 @@ static void Query_Features(void *pArg)
 	    } else {
 		iArg->SMT_Count = 1;
 	    }
-		AMD_Brand(iArg->Features->Info.Brand);
+
+		BrandFromCPUID(iArg->Brand);
+		BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
 	}
 }
 
@@ -11294,7 +11284,7 @@ static long CoreFreqK_Power_Scope(int scope)
     }
 }
 
-static void For_All_SMT_Clock_Compute_Clock(void)
+static void For_All_CPU_Compute_Clock(void)
 {
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
   do {
@@ -11386,7 +11376,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	{
 	case COREFREQ_TOGGLE_OFF:
 		Controller_Stop(1);
-		For_All_SMT_Clock_Compute_Clock();
+		For_All_CPU_Compute_Clock();
 		BITCLR(LOCKLESS, AutoClock, 1);
 		PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 		Controller_Start(1);
@@ -12188,6 +12178,13 @@ static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
 	} else {
 		memset(pArg->Features, 0, sizeof(FEATURES));
 	}
+	pArg->Brand = kmalloc(BRAND_SIZE, GFP_KERNEL);
+	if (pArg->Brand == NULL)
+	{
+		return (-ENOMEM);
+	} else {
+		memset(pArg->Brand, 0x20, BRAND_SIZE);
+	}
 	return (0);
 }
 
@@ -12705,11 +12702,6 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	Policy_Aggregate_Turbo();
 	#endif /* CONFIG_CPU_FREQ */
 
-	/*	Features initialization is done, release memory.	*/
-	if (pArg->Features != NULL)
-	{
-		kfree(pArg->Features);
-	}
 	return (0);
 }
 
@@ -12779,7 +12771,10 @@ static int CoreFreqK_StartUp(void)
 		COREFREQ_RUN(Alloc_Per_CPU_Level, Up),
 		COREFREQ_RUN(Ignition_Level, Up)
 	};
-	INIT_ARG iArg={.Features=NULL, .SMT_Count=0, .localProcessor=0, .rc=0};
+	INIT_ARG iArg = {
+		.Features = NULL, .Brand = NULL,
+		.SMT_Count = 0, .localProcessor = 0, .rc = 0
+	};
 	int rc = 0;
 
 	do
@@ -12788,6 +12783,15 @@ static int CoreFreqK_StartUp(void)
 		RunLevel++;
 	} while (RunLevel != Running_Level && rc == 0) ;
 
+	/*	Free any initialization memory allocation.		*/
+	if (iArg.Features != NULL)
+	{
+		kfree(iArg.Features);
+	}
+	if (iArg.Brand != NULL)
+	{
+		kfree(iArg.Brand);
+	}
 	return (rc);
 }
 

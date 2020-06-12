@@ -371,8 +371,8 @@ typedef struct
 
 	signed int			ArchID;
 	enum HYPERVISOR 		HypervisorID;
-	char				Brand[64],
-					Architecture[CODENAME_LEN];
+	char				Architecture[CODENAME_LEN],
+					Brand[BRAND_SIZE];
 } PROC_STRUCT;
 
 typedef struct

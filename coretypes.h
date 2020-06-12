@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	79
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #define CORE_COUNT	256
 
@@ -429,6 +429,10 @@ typedef struct
 			reg[4];
 } CPUID_STRUCT;
 
+#define BRAND_PART	12
+#define BRAND_LENGTH	(4 * BRAND_PART)
+#define BRAND_SIZE	(BRAND_LENGTH + 4)
+
 typedef struct
 {		/* Common x86						*/
 	unsigned int		LargestStdFunc, /* Largest Standard CPUID */
@@ -438,7 +442,7 @@ typedef struct
 		unsigned int	CRC;
 		char		ID[12 + 4];
 	} Vendor, Hypervisor;
-	char			Brand[48 + 4];
+	char			Brand[BRAND_SIZE];
 } CPUID_FUNCTION;
 
 typedef struct	/* Basic CPUID Function.				*/

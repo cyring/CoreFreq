@@ -1213,8 +1213,9 @@ void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	Shm->Proc.HypervisorID = Proc_RO->HypervisorID;
 	/* Copy the Architecture name.					*/
 	StrCopy(Shm->Proc.Architecture, Proc_RO->Architecture, CODENAME_LEN);
-	/* Copy the processor's brand string.				*/
-	StrCopy(Shm->Proc.Brand, Proc_RO->Features.Info.Brand, 48 + 4);
+	/* Make the processor's brand string.				*/
+	memcpy(Shm->Proc.Brand, Proc_RO->Features.Info.Brand, BRAND_LENGTH);
+	Shm->Proc.Brand[BRAND_LENGTH] = '\0';
 	/* Compute the TSC mode: None, Variant, Invariant		*/
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
@@ -5072,7 +5073,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	    {
 			UpdateFeatures(Ref);
-		    if (Quiet & 0x001) {
+		    if (Quiet & 0x100) {
 			printf("\t%s || %s\n",
 				BITVAL(PendingSync, NTFY0)?"NTFY":"....",
 				BITVAL(PendingSync, COMP0)?"COMP":"....");
