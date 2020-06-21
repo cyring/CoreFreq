@@ -7860,7 +7860,7 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 }
 */
 
-void Core_AMD_Family_17h_Temp(CORE_RO *Core)
+void Core_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
@@ -7869,19 +7869,19 @@ void Core_AMD_Family_17h_Temp(CORE_RO *Core)
     if (PRIVATE(OF(ZenIF_dev)) != NULL)
     {	FEAT_MSG("Building with Kernel amd_smn_read()")
 	if (amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-			SMU_AMD_THM_TCTL_REGISTER_F17H, &TctlSensor.value))
+			SMN_Address, &TctlSensor.value))
 	{
 		pr_warn("CoreFreq: Failed to read TctlSensor\n");
 	}
     } else {
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
-					SMU_AMD_THM_TCTL_REGISTER_F17H,
+					SMN_Address,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H);
     }
 #else /* CONFIG_AMD_NB */
 	Core_AMD_SMN_Read(Core ,	TctlSensor,
-					SMU_AMD_THM_TCTL_REGISTER_F17H,
+					SMN_Address,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H);
 #endif /* CONFIG_AMD_NB */
@@ -10139,7 +10139,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	    case FORMULA_SCOPE_PKG:
-		Core_AMD_Family_17h_Temp(Core);
+		Core_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
 		break;
 	    }
 
@@ -10174,12 +10174,19 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-		Core_AMD_Family_17h_Temp(Core);
+	    if ( ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+		&& Core->T.Cluster.Node < 4 ) {
+		Core_AMD_Family_17h_Temp(Core,
+					SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
+					+ 4 * Core->T.Cluster.Node);
 	    }
 		break;
 	case FORMULA_SCOPE_SMT:
-		Core_AMD_Family_17h_Temp(Core);
+	    if (Core->T.Cluster.Node < 4) {
+		Core_AMD_Family_17h_Temp(Core,
+					SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
+					+ 4 * Core->T.Cluster.Node);
+	    }
 		break;
 	}
 
