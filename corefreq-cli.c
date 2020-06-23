@@ -10518,11 +10518,11 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	return (snprintf(buffer, 80+1,
-			"%7.2f%.*s"		\
-			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
-			"%6.4f%.*s",
+			"%7.2f%.*s"					\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
-			28, hSpace,
+			26, hSpace,
 			CFlop->State.Energy,
 			CFlop->State.Power,
 			21, hSpace) );
@@ -10565,9 +10565,9 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	return (snprintf(buffer, 80+1,
 			"%7.2f%.*s"		\
-			"%3u\x20\x20\x20\x20\x20\x20\x20\x20"		\
-			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
-			"%6.4f%.*s",
+			"%3u\x20\x20\x20\x20\x20\x20"			\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
@@ -10689,9 +10689,9 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
-			"\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"	\
-			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
-			"%6.4f%.*s",
+			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
+			"%8.4f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			CFlop->State.Energy,
@@ -10738,9 +10738,9 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
-			"%3u\x20\x20\x20\x20\x20\x20\x20\x20"		\
-			"%6.4f\x20\x20\x20\x20\x20\x20\x20\x20" 	\
-			"%6.4f%.*s",
+			"%3u\x20\x20\x20\x20\x20\x20"			\
+			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
+			"%8.4f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
