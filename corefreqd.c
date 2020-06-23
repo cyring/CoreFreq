@@ -1195,6 +1195,7 @@ EXIT:
 
 void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
+	signed long ix;
 	Bit32	fTSC = Proc_RO->Features.Std.EDX.TSC,
 		aTSC = Proc_RO->Features.AdvPower.EDX.Inv_TSC;
 
@@ -1213,9 +1214,20 @@ void Architecture(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	Shm->Proc.HypervisorID = Proc_RO->HypervisorID;
 	/* Copy the Architecture name.					*/
 	StrCopy(Shm->Proc.Architecture, Proc_RO->Architecture, CODENAME_LEN);
-	/* Make the processor's brand string.				*/
-	memcpy(Shm->Proc.Brand, Proc_RO->Features.Info.Brand, BRAND_LENGTH);
-	Shm->Proc.Brand[BRAND_LENGTH] = '\0';
+	/* Make the processor's brand string with no trailing spaces	*/
+	ix = BRAND_LENGTH;
+	do {
+		if ((Proc_RO->Features.Info.Brand[ix] == 0x20)
+		 || (Proc_RO->Features.Info.Brand[ix] == 0x0)) {
+			ix--;
+		} else {
+			break;
+		}
+	} while (ix != 0);
+	Shm->Proc.Brand[1 + ix] = '\0';
+	for (; ix >= 0; ix--) {
+		Shm->Proc.Brand[ix] = Proc_RO->Features.Info.Brand[ix];
+	}
 	/* Compute the TSC mode: None, Variant, Invariant		*/
 	Shm->Proc.Features.InvariantTSC = fTSC << aTSC;
 }
