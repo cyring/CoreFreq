@@ -5636,12 +5636,13 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 				Shm->Proc.Features.TgtRatio_Unlock, item );
     } else {
 	snprintf((char *) item, 16+10+11+11+11+8+10+1,
-			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
+			"  %03u  %4d%6d  %-3d" "[%3u ]%5.0f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
-			CFlop->Absolute.Target,
+			CFlop->Absolute.Ratio.Perf,
+			CFlop->Absolute.Perf,
 			Shm->Proc.Features.TgtRatio_Unlock ? '<' : '[',
 			Shm->Cpu[cpu].Boost[BOOST(TGT)],
 			Shm->Proc.Features.TgtRatio_Unlock ? '>' : ']');
