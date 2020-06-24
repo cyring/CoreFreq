@@ -18,6 +18,10 @@
 	#define MSR_AMD_F17H_IRPERF		MSR_F17H_IRPERF
 #endif
 
+#ifndef MSR_AMD_PSTATE_CURRENT_LIMIT
+	#define MSR_AMD_PSTATE_CURRENT_LIMIT	0xc0010061
+#endif
+
 #ifndef MSR_AMD_PERF_CTL
 	#define MSR_AMD_PERF_CTL		0xc0010062
 #endif
@@ -345,6 +349,19 @@ typedef union
 	PstateEn	: 64-63; /* RW: Is this Pstate MSR valid ?	*/
     } Family_17h;
 } PSTATEDEF;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* MSRC001_0061 : iff HwPstate == 1	*/
+	CurPstateLimit	:  3-0,  /* Lowest P-State (highest-performance)*/
+	Reserved1	:  4-3,
+	PstateMaxVal	:  7-4,  /* highest P-State (lowest-performance)*/
+	Reserved2	: 64-7;
+    } Family_17h;
+} PSTATELIMIT;
 
 typedef union
 {

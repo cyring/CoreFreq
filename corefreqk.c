@@ -4477,8 +4477,22 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
     for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[pstate] = 0;
     }
+    if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate) {
+	PSTATELIMIT PstateLimit = {.value = 0};
+
+	RDMSR(PstateLimit, MSR_AMD_PSTATE_CURRENT_LIMIT);
+
+	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE
+			+ PstateLimit.Family_17h.PstateMaxVal));
+
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId );
+
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = COF;
+    } else {
 	/*Core & L3 frequencies < 400MHz are not supported by the architecture*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 4;
+    }
 	/* Loop over all frequency ids. */
     for (pstate = 0; pstate <= 7; pstate++)
     {
