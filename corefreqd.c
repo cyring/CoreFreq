@@ -3940,13 +3940,16 @@ void CPUID_Dump(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
 	}
 }
 
-unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
+unsigned int AMD_L2_L3_Way_Associativity(CORE_RO **Core,
+					unsigned int cpu,
+					unsigned int level)
 {
-	switch (value) {
+	switch (Core[cpu]->T.Cache[level].Way) {
+	case 0x9:
+		return ((Core[cpu]->CpuID[55 + level].reg[1] >> 22) + 1);
 	case 0x6:
 		return (8);
 	case 0x8:
-	case 0x9:
 		return (16);
 	case 0xa:
 		return (32);
@@ -3959,7 +3962,7 @@ unsigned int AMD_L2_L3_Way_Associativity(unsigned int value)
 	case 0xe:
 		return (128);
 	default:
-		return (value);
+		return (Core[cpu]->T.Cache[level].Way);
 	}
 }
 
@@ -4007,10 +4010,10 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		Shm->Cpu[cpu].Topology.Cache[level].Way = \
+		Shm->Cpu[cpu].Topology.Cache[level].Way =		\
 			(loop == 2) || (loop == 3) ?
-		AMD_L2_L3_Way_Associativity(Core[cpu]->T.Cache[loop].Way)
-			: Core[cpu]->T.Cache[loop].Way;
+				AMD_L2_L3_Way_Associativity(Core, cpu, loop)
+				: Core[cpu]->T.Cache[loop].Way;
 
 		Shm->Cpu[cpu].Topology.Cache[level].Size =		\
 						Core[cpu]->T.Cache[loop].Size;
