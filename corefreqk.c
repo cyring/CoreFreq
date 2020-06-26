@@ -7935,8 +7935,11 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
+#if FEAT_DBG > 0
+		RDTSC64(Core->Counter[1].TSC);
+#else
 		Counters_Generic(Core, 1);
-
+#endif
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
 			PKG_Counters_Generic(Core, 1);
@@ -8045,9 +8048,11 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 		hrtimer_forward(pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
-
+#if FEAT_DBG > 0
+		RDTSC64(Core->Counter[1].TSC);
+#else
 		Counters_Generic(Core, 1);
-
+#endif
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
 			PKG_Counters_Generic(Core, 1);
