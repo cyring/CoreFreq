@@ -4045,7 +4045,7 @@ void Query_Skylake_X(unsigned int cpu)
 	Intel_Hardware_Performance();
 }
 
-unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
+unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu, bool smpCalled)
 {
 	unsigned short SpecTurboRatio = 0;
 	/* Lowest frequency according to BKDG */
@@ -4095,8 +4095,12 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 	{
 	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
 	    {
-		vClock = Compute_Clock(cpu, &Compute);
-
+		if (smpCalled == false) {
+			vClock = Compute_Clock(cpu, &Compute);
+		} else {
+			Compute_TSC(&Compute);
+			vClock = Compute.Clock;
+		}
 		kfree(Compute.TSC[1]);
 	    }
 		kfree(Compute.TSC[0]);
@@ -4146,7 +4150,7 @@ void Query_AuthenticAMD(unsigned int cpu)
 	Default_Unlock_Reset();
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = \
-						Compute_AuthenticAMD_Boost(cpu);
+					Compute_AuthenticAMD_Boost(cpu, false);
 	HyperThreading_Technology();
 }
 
@@ -6457,7 +6461,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	Compute_AuthenticAMD_Boost(Core->Bind);
+	Compute_AuthenticAMD_Boost(Core->Bind, true);
 
 	SystemRegisters(Core);
 
