@@ -1872,7 +1872,8 @@ char *Hypervisor[HYPERVISORS] = {
 	[HYPERV_KVM]	= "       KVM",
 	[HYPERV_VBOX]	= "VirtualBox",
 	[HYPERV_KBOX]	= "  KVM/VBox",
-	[HYPERV_VMWARE] = "    VMware"
+	[HYPERV_VMWARE] = "    VMware",
+	[HYPERV_HYPERV] = "MS Hyper-V"
 };
 
 REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)

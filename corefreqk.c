@@ -297,7 +297,8 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 	{VENDOR_KVM   ,__builtin_strlen(VENDOR_KVM)   ,CRC_KVM   ,  HYPERV_KVM},
 	{VENDOR_VBOX  ,__builtin_strlen(VENDOR_VBOX)  ,CRC_VBOX  , HYPERV_VBOX},
 	{VENDOR_KBOX  ,__builtin_strlen(VENDOR_KBOX)  ,CRC_KBOX  , HYPERV_KBOX},
-	{VENDOR_VMWARE,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE}
+      {VENDOR_VMWARE ,__builtin_strlen(VENDOR_VMWARE),CRC_VMWARE,HYPERV_VMWARE},
+      {VENDOR_HYPERV ,__builtin_strlen(VENDOR_HYPERV),CRC_HYPERV,HYPERV_HYPERV}
     };
 	unsigned int eax = 0x0, ebx = 0x0, ecx = 0x0, edx = 0x0; /*DWORD Only!*/
 
@@ -12658,6 +12659,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		case HYPERV_VBOX:
 		case HYPERV_KBOX:
 		case HYPERV_VMWARE:
+		case HYPERV_HYPERV:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
 			break;
 		case BARE_METAL:
