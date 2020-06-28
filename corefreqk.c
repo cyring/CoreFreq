@@ -7918,6 +7918,63 @@ void Core_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 	}
 }
 
+static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
+{
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1) {
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		RDTSC64(Core->Counter[1].TSC);
+		/* HV_X64_MSR_VP_RUNTIME:vcpu runtime in 100ns units */
+		RDCOUNTER(Core->Counter[1].C0.URC, 0x40000010);
+
+		Core->Counter[1].C0.URC = Core->Counter[1].C0.URC
+		        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;
+
+		Core->Counter[1].C0.UCC = Core->Counter[1].C0.URC;
+
+		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+		{
+			PKG_Counters_Generic(Core, 1);
+
+			Delta_PTSC(PUBLIC(RO(Proc)));
+
+			Save_PTSC(PUBLIC(RO(Proc)));
+
+			Sys_Tick(PUBLIC(RO(Proc)));
+		}
+
+		Delta_C0(Core);
+
+		Delta_TSC(Core);
+
+		Delta_C1(Core);
+
+		Save_TSC(Core);
+
+		Save_C0(Core);
+
+		Save_C1(Core);
+
+		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+		return (HRTIMER_RESTART);
+	} else
+		return (HRTIMER_NORESTART);
+}
+
+void InitTimer_VirtualMachine(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_VirtualMachine, 1);
+}
+
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
@@ -12664,6 +12721,11 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		case HYPERV_VMWARE:
 		case HYPERV_HYPERV:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
+			Arch[GenuineArch].Timer = InitTimer_VirtualMachine;
+
+			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_NONE;
+			Arch[GenuineArch].voltageFormula = VOLTAGE_FORMULA_NONE;
+			Arch[GenuineArch].powerFormula = POWER_FORMULA_NONE;
 			break;
 		case BARE_METAL:
 		case HYPERV_XEN:
