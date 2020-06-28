@@ -7939,6 +7939,10 @@ static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 		        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;
 
 		Core->Counter[1].C0.UCC = Core->Counter[1].C0.URC;
+		/* Derive C1 */
+		Core->Counter[1].C1 = \
+			Core->Counter[1].TSC > Core->Counter[1].C0.URC ?
+			Core->Counter[1].TSC - Core->Counter[1].C0.URC : 0;
 
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
