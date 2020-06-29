@@ -3929,7 +3929,7 @@ void CPUID_Dump(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.StdFunc = Core[cpu]->Query.StdFunc;
 	Shm->Cpu[cpu].Query.ExtFunc = Core[cpu]->Query.ExtFunc;
 
-	int i;
+	enum CPUID_ENUM i;
 	for (i = 0; i < CPUID_MAX_FUNC; i++) {
 		Shm->Cpu[cpu].CpuID[i].func   = Core[cpu]->CpuID[i].func;
 		Shm->Cpu[cpu].CpuID[i].sub    = Core[cpu]->CpuID[i].sub;
@@ -3946,7 +3946,9 @@ unsigned int AMD_L2_L3_Way_Associativity(CORE_RO **Core,
 {
 	switch (Core[cpu]->T.Cache[level].Way) {
 	case 0x9:
-		return ((Core[cpu]->CpuID[55 + level].reg[1] >> 22) + 1);
+		return ((Core[cpu]->CpuID[
+			CPUID_8000001D_00000000_CACHE_L1D_PROPERTIES + level
+			].reg[1] >> 22) + 1);
 	case 0x6:
 		return (8);
 	case 0x8:

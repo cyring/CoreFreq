@@ -619,86 +619,153 @@ typedef struct
 
 static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 /* x86 */
-	{.func=0x00000001, .sub=0x00000000},	/* Instruction set	*/
+	[CPUID_00000001_00000000_INSTRUCTION_SET]
+	= {.func = 0x00000001, .sub = 0x00000000},
 /* Intel */
-	{.func=0x00000002, .sub=0x00000000},	/* Cache & TLB		*/
-	{.func=0x00000003, .sub=0x00000000},	/* Proc. Serial Number	*/
-	{.func=0x00000004, .sub=0x00000000},	/* Cache L1I		*/
-	{.func=0x00000004, .sub=0x00000001},	/* Cache L1D		*/
-	{.func=0x00000004, .sub=0x00000002},	/* Cache L2		*/
-	{.func=0x00000004, .sub=0x00000003},	/* Cache L3		*/
+	[CPUID_00000002_00000000_CACHE_AND_TLB]
+	= {.func = 0x00000002, .sub = 0x00000000},
+	[CPUID_00000003_00000000_PROC_SERIAL_NUMBER]
+	= {.func = 0x00000003, .sub = 0x00000000},
+	[CPUID_00000004_00000000_CACHE_L1I]
+	= {.func = 0x00000004, .sub = 0x00000000},
+	[CPUID_00000004_00000001_CACHE_L1D]
+	= {.func = 0x00000004, .sub = 0x00000001},
+	[CPUID_00000004_00000002_CACHE_L2]
+	= {.func = 0x00000004, .sub = 0x00000002},
+	[CPUID_00000004_00000003_CACHE_L3]
+	= {.func = 0x00000004, .sub = 0x00000003},
 /* x86 */
-	{.func=0x00000005, .sub=0x00000000},	/* MONITOR/MWAIT	*/
-	{.func=0x00000006, .sub=0x00000000},	/* Power & Thermal Mgmt */
-	{.func=0x00000007, .sub=0x00000000},	/* Extended Features	*/
-	{.func=0x00000007, .sub=0x00000001},	/* Ext Feat. Sub-leaf 1 */
+	[CPUID_00000005_00000000_MONITOR_MWAIT]
+	= {.func = 0x00000005, .sub = 0x00000000},
+	[CPUID_00000006_00000000_POWER_AND_THERMAL_MGMT]
+	= {.func = 0x00000006, .sub = 0x00000000},
+	[CPUID_00000007_00000000_EXTENDED_FEATURES]
+	= {.func = 0x00000007, .sub = 0x00000000},
+	[CPUID_00000007_00000001_EXT_FEAT_SUB_LEAF_1]
+	= {.func = 0x00000007, .sub = 0x00000001},
 /* Intel */
-	{.func=0x00000009, .sub=0x00000000},	/* Direct Cache Access	*/
-	{.func=0x0000000a, .sub=0x00000000},	/* Perf. Monitoring	*/
+	[CPUID_00000009_00000000_DIRECT_CACHE_ACCESS]
+	= {.func = 0x00000009, .sub = 0x00000000},
+	[CPUID_0000000A_00000000_PERF_MONITORING]
+	= {.func = 0x0000000a, .sub = 0x00000000},
 /* x86 */
-	{.func=0x0000000b, .sub=0x00000000},	/* Ext. Topology	*/
-	{.func=0x0000000d, .sub=0x00000000},	/* Ext. State Main leaf */
-	{.func=0x0000000d, .sub=0x00000001},	/* Ext. State Sub-leaf	*/
+	[CPUID_0000000B_00000000_EXT_TOPOLOGY]
+	= {.func = 0x0000000b, .sub = 0x00000000},
+	[CPUID_0000000D_00000000_EXT_STATE_MAIN_LEAF]
+	= {.func = 0x0000000d, .sub = 0x00000000},
+	[CPUID_0000000D_00000001_EXT_STATE_SUB_LEAF]
+	= {.func = 0x0000000d, .sub = 0x00000001},
 /* AMD */
-	{.func=0x0000000d, .sub=0x00000002},	/* Ext. State Sub-leaf	*/
-	{.func=0x0000000d, .sub=0x00000003},	/* BNDREGS state	*/
-	{.func=0x0000000d, .sub=0x00000004},	/* BNDCSR state 	*/
+	[CPUID_0000000D_00000002_EXT_STATE_SUB_LEAF]
+	= {.func = 0x0000000d, .sub = 0x00000002},
+	[CPUID_0000000D_00000003_BNDREGS_STATE]
+	= {.func = 0x0000000d, .sub = 0x00000003},
+	[CPUID_0000000D_00000004_BNDCSR_STATE]
+	= {.func = 0x0000000d, .sub = 0x00000004},
 /* AMD Family 15h */
-	{.func=0x0000000d, .sub=0x0000003e},	/* Ext. State Sub-leaf	*/
+	[CPUID_0000000D_0000003E_EXT_STATE_SUB_LEAF]
+	= {.func = 0x0000000d, .sub = 0x0000003e},
 /* Intel */
-	{.func=0x0000000f, .sub=0x00000000},	/* QoS Monitoring cap.	*/
-	{.func=0x0000000f, .sub=0x00000001},	/* L3 QoS Monitoring	*/
-	{.func=0x00000010, .sub=0x00000000},	/* QoS Enforcement cap. */
-	{.func=0x00000010, .sub=0x00000001},	/* L3 Alloc Enumeration */
-	{.func=0x00000010, .sub=0x00000002},	/* L2 Alloc Enumeration */
-	{.func=0x00000010, .sub=0x00000003},	/* RAM Bandwidth Enum.	*/
-	{.func=0x00000012, .sub=0x00000000},	/* SGX Capability	*/
-	{.func=0x00000012, .sub=0x00000001},	/* SGX Attributes	*/
-	{.func=0x00000012, .sub=0x00000002},	/* SGX EnclavePageCache */
-	{.func=0x00000014, .sub=0x00000000},	/* Processor Trace	*/
-	{.func=0x00000014, .sub=0x00000001},	/* Proc. Trace Sub-leaf */
-	{.func=0x00000015, .sub=0x00000000},	/* Time Stamp Counter	*/
-	{.func=0x00000016, .sub=0x00000000},	/* Processor Frequency	*/
-	{.func=0x00000017, .sub=0x00000000},	/* System-On-Chip	*/
-	{.func=0x00000017, .sub=0x00000001},	/* SOC Attrib. Sub-leaf1*/
-	{.func=0x00000017, .sub=0x00000002},	/* SOC Attrib. Sub-leaf2*/
-	{.func=0x00000017, .sub=0x00000003},	/* SOC Attrib. Sub-leaf3*/
+	[CPUID_0000000F_00000000_QOS_MONITORING_CAP]
+	= {.func = 0x0000000f, .sub = 0x00000000},
+	[CPUID_0000000F_00000001_L3_QOS_MONITORING]
+	= {.func = 0x0000000f, .sub = 0x00000001},
+	[CPUID_00000010_00000000_QOS_ENFORCEMENT_CAP]
+	= {.func = 0x00000010, .sub = 0x00000000},
+	[CPUID_00000010_00000001_L3_ALLOC_ENUMERATION]
+	= {.func = 0x00000010, .sub = 0x00000001},
+	[CPUID_00000010_00000002_L2_ALLOC_ENUMERATION]
+	= {.func = 0x00000010, .sub = 0x00000002},
+	[CPUID_00000010_00000003_RAM_BANDWIDTH_ENUM]
+	= {.func = 0x00000010, .sub = 0x00000003},
+	[CPUID_00000012_00000000_SGX_CAPABILITY]
+	= {.func = 0x00000012, .sub = 0x00000000},
+	[CPUID_00000012_00000001_SGX_ATTRIBUTES]
+	= {.func = 0x00000012, .sub = 0x00000001},
+	[CPUID_00000012_00000002_SGX_ENCLAVE_PAGE_CACHE]
+	= {.func = 0x00000012, .sub = 0x00000002},
+	[CPUID_00000014_00000000_PROCESSOR_TRACE]
+	= {.func = 0x00000014, .sub = 0x00000000},
+	[CPUID_00000014_00000001_PROC_TRACE_SUB_LEAF]
+	= {.func = 0x00000014, .sub = 0x00000001},
+	[CPUID_00000015_00000000_TIME_STAMP_COUNTER]
+	= {.func = 0x00000015, .sub = 0x00000000},
+	[CPUID_00000016_00000000_PROCESSOR_FREQUENCY]
+	= {.func = 0x00000016, .sub = 0x00000000},
+	[CPUID_00000017_00000000_SYSTEM_ON_CHIP]
+	= {.func = 0x00000017, .sub = 0x00000000},
+	[CPUID_00000017_00000001_SOC_ATTRIB_SUB_LEAF_1]
+	= {.func = 0x00000017, .sub = 0x00000001},
+	[CPUID_00000017_00000002_SOC_ATTRIB_SUB_LEAF_2]
+	= {.func = 0x00000017, .sub = 0x00000002},
+	[CPUID_00000017_00000003_SOC_ATTRIB_SUB_LEAF_3]
+	= {.func = 0x00000017, .sub = 0x00000003},
 /* Intel */
-	{.func=0x00000018, .sub=0x00000000},	/* Address Translation	*/
-	{.func=0x00000018, .sub=0x00000001},	/* DAT Sub-leaf 1	*/
-	{.func=0x0000001a, .sub=0x00000000},	/* Hybrid Information	*/
-	{.func=0x0000001b, .sub=0x00000000},	/* PCONFIG Information	*/
-	{.func=0x0000001f, .sub=0x00000000},	/* Ext. Topology V2	*/
+	[CPUID_00000018_00000000_ADDRESS_TRANSLATION]
+	= {.func = 0x00000018, .sub = 0x00000000},
+	[CPUID_00000018_00000001_DAT_SUB_LEAF_1]
+	= {.func = 0x00000018, .sub = 0x00000001},
+	[CPUID_0000001A_00000000_HYBRID_INFORMATION]
+	= {.func = 0x0000001a, .sub = 0x00000000},
+	[CPUID_0000001B_00000000_PCONFIG_INFORMATION]
+	= {.func = 0x0000001b, .sub = 0x00000000},
+	[CPUID_0000001F_00000000_EXT_TOPOLOGY_V2]
+	= {.func = 0x0000001f, .sub = 0x00000000},
 /* x86 */
-	{.func=0x80000001, .sub=0x00000000},	/* Extended Features	*/
-	{.func=0x80000002, .sub=0x00000000},	/* Processor Name Id.	*/
-	{.func=0x80000003, .sub=0x00000000},	/* Processor Name Id.	*/
-	{.func=0x80000004, .sub=0x00000000},	/* Processor Name Id.	*/
+	[CPUID_80000001_00000000_EXTENDED_FEATURES]
+	= {.func = 0x80000001, .sub = 0x00000000},
+	[CPUID_80000002_00000000_PROCESSOR_NAME_ID]
+	= {.func = 0x80000002, .sub = 0x00000000},
+	[CPUID_80000003_00000000_PROCESSOR_NAME_ID]
+	= {.func = 0x80000003, .sub = 0x00000000},
+	[CPUID_80000004_00000000_PROCESSOR_NAME_ID]
+	= {.func = 0x80000004, .sub = 0x00000000},
 /* AMD */
-	{.func=0x80000005, .sub=0x00000000},	/* Caches L1D L1I TLB	*/
+	[CPUID_80000005_00000000_CACHES_L1D_L1I_TLB]
+	= {.func = 0x80000005, .sub=0x00000000},
 /* x86 */
-	{.func=0x80000006, .sub=0x00000000},	/* Cache L2 Size & Way	*/
-	{.func=0x80000007, .sub=0x00000000},	/* Advanced Power Mgmt	*/
-	{.func=0x80000008, .sub=0x00000000},	/* LM Address Size	*/
+	[CPUID_80000006_00000000_CACHE_L2_SIZE_WAY]
+	= {.func = 0x80000006, .sub = 0x00000000},
+	[CPUID_80000007_00000000_ADVANCED_POWER_MGMT]
+	= {.func = 0x80000007, .sub = 0x00000000},
+	[CPUID_80000008_00000000_LM_ADDRESS_SIZE]
+	= {.func = 0x80000008, .sub = 0x00000000},
 /* AMD */
-	{.func=0x8000000a, .sub=0x00000000},	/* SVM Revision		*/
-	{.func=0x80000019, .sub=0x00000000},	/* Caches & TLB 1G	*/
-	{.func=0x8000001a, .sub=0x00000000},	/* Perf. Optimization	*/
-	{.func=0x8000001b, .sub=0x00000000},	/* Inst. Based Sampling */
-	{.func=0x8000001c, .sub=0x00000000},	/* Lightweight Profiling*/
-	{.func=0x8000001d, .sub=0x00000000},	/* Cache L1D Properties */
-	{.func=0x8000001d, .sub=0x00000001},	/* Cache L1I Properties */
-	{.func=0x8000001d, .sub=0x00000002},	/* Cache L2 Properties	*/
-	{.func=0x8000001d, .sub=0x00000003},	/* Cache Properties End */
-	{.func=0x8000001e, .sub=0x00000000},	/* Extended Identifiers */
+	[CPUID_8000000A_00000000_SVM_REVISION]
+	= {.func = 0x8000000a, .sub = 0x00000000},
+	[CPUID_80000019_00000000_CACHES_AND_TLB_1G]
+	= {.func = 0x80000019, .sub = 0x00000000},
+	[CPUID_8000001A_00000000_PERF_OPTIMIZATION]
+	= {.func = 0x8000001a, .sub = 0x00000000},
+	[CPUID_8000001B_00000000_INST_BASED_SAMPLING]
+	= {.func = 0x8000001b, .sub = 0x00000000},
+	[CPUID_8000001C_00000000_LIGHTWEIGHT_PROFILING]
+	= {.func = 0x8000001c, .sub = 0x00000000},
+	[CPUID_8000001D_00000000_CACHE_L1D_PROPERTIES]
+	= {.func = 0x8000001d, .sub = 0x00000000},
+	[CPUID_8000001D_00000001_CACHE_L1I_PROPERTIES]
+	= {.func = 0x8000001d, .sub = 0x00000001},
+	[CPUID_8000001D_00000002_CACHE_L2_PROPERTIES]
+	= {.func = 0x8000001d, .sub = 0x00000002},
+	[CPUID_8000001D_00000003_CACHE_PROPERTIES_END]
+	= {.func = 0x8000001d, .sub = 0x00000003},
+	[CPUID_8000001E_00000000_EXTENDED_IDENTIFIERS]
+	= {.func = 0x8000001e, .sub = 0x00000000},
 /* x86 */
-	{.func=0x40000000, .sub=0x00000000},	/* Hypervisor vendor	*/
-	{.func=0x40000001, .sub=0x00000000},	/* Hypervisor interface */
-	{.func=0x40000002, .sub=0x00000000},	/* Hypervisor version	*/
-	{.func=0x40000003, .sub=0x00000000},	/* Hypervisor features	*/
-	{.func=0x40000004, .sub=0x00000000},	/* Hyperv. requirements */
-	{.func=0x40000005, .sub=0x00000000},	/* Hypervisor limits	*/
-	{.func=0x40000006, .sub=0x00000000},	/* Hypervisor exploits	*/
+	[CPUID_40000000_00000000_HYPERVISOR_VENDOR]
+	= {.func = 0x40000000, .sub = 0x00000000},
+	[CPUID_40000001_00000000_HYPERVISOR_INTERFACE]
+	= {.func = 0x40000001, .sub = 0x00000000},
+	[CPUID_40000002_00000000_HYPERVISOR_VERSION]
+	= {.func = 0x40000002, .sub = 0x00000000},
+	[CPUID_40000003_00000000_HYPERVISOR_FEATURES]
+	= {.func = 0x40000003, .sub = 0x00000000},
+	[CPUID_40000004_00000000_HYPERV_REQUIREMENTS]
+	= {.func = 0x40000004, .sub = 0x00000000},
+	[CPUID_40000005_00000000_HYPERVISOR_LIMITS]
+	= {.func = 0x40000005, .sub = 0x00000000},
+	[CPUID_40000006_00000000_HYPERVISOR_EXPLOITS]
+	= {.func = 0x40000006, .sub = 0x00000000},
 };
 
 typedef struct {

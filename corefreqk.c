@@ -1211,7 +1211,7 @@ CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
 
 void Define_CPUID(CORE_RO *Core, const CPUID_STRUCT CpuIDforVendor[])
 {	/*	Per vendor, define a CPUID dump table to query .	*/
-	int i;
+	enum CPUID_ENUM i;
 	for (i = 0; i < CPUID_MAX_FUNC; i++) {
 		Core->CpuID[i].func = CpuIDforVendor[i].func;
 		Core->CpuID[i].sub  = CpuIDforVendor[i].sub;

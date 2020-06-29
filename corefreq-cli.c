@@ -461,7 +461,7 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 			25, RSC(LARGEST_EXT_FUNC).CODE(),
 			Shm->Cpu[cpu].Query.ExtFunc.LargestExtFunc);
 
-		int i;
+		enum CPUID_ENUM i;
 		for (i = 0; i < CPUID_MAX_FUNC; i++) {
 		    if (Shm->Cpu[cpu].CpuID[i].func) {
 			PUT(SCANKEY_NULL, attrib[3], width, 2,
