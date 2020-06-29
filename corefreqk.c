@@ -4046,7 +4046,48 @@ void Query_Skylake_X(unsigned int cpu)
 	Intel_Hardware_Performance();
 }
 
-unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu, bool smpCalled)
+void Query_Virtual_BaseClock(unsigned int cpu, bool smpCalled)
+{
+	COMPUTE_ARG Compute = {
+		.TSC = {NULL, NULL},
+		.Clock = {.Q = PRECISION, .R = 0, .Hz = 0}
+	};
+	CLOCK vClock;
+	/*	Try to estimate a virtualized Base Clock		*/
+	if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
+	{
+	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
+	    {
+		if (smpCalled == false) {
+			vClock = Compute_Clock(cpu, &Compute);
+		} else {
+			Compute_TSC(&Compute);
+			vClock = Compute.Clock;
+		}
+		kfree(Compute.TSC[1]);
+	    }
+		kfree(Compute.TSC[0]);
+	}
+	if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] == 0) {
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 10;
+	}
+	if (vClock.Hz != 0)
+	{
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = vClock.Q;
+	} else {
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
+	}
+}
+
+void Query_VirtualMachine(unsigned int cpu)
+{
+	Query_Same_Genuine_Features();
+	Query_Virtual_BaseClock(cpu, false);
+	HyperThreading_Technology();
+}
+
+unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu)
 {
 	unsigned short SpecTurboRatio = 0;
 	/* Lowest frequency according to BKDG */
@@ -4084,39 +4125,7 @@ unsigned short Compute_AuthenticAMD_Boost(unsigned int cpu, bool smpCalled)
 	break;
     }
   } else {
-    if (PUBLIC(RO(Proc))->Features.Std.ECX.Hyperv)
-    {
-	COMPUTE_ARG Compute = {
-		.TSC = {NULL, NULL},
-		.Clock = {.Q = PRECISION, .R = 0, .Hz = 0}
-	};
-	CLOCK vClock;
-	/*	Try to estimate a virtualized Base Clock		*/
-	if ((Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
-	{
-	    if ((Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL)) != NULL)
-	    {
-		if (smpCalled == false) {
-			vClock = Compute_Clock(cpu, &Compute);
-		} else {
-			Compute_TSC(&Compute);
-			vClock = Compute.Clock;
-		}
-		kfree(Compute.TSC[1]);
-	    }
-		kfree(Compute.TSC[0]);
-	}
-	if (vClock.Hz != 0)
-	{
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = vClock.Q;
-	} else {
-		goto NO_SOLUTION;
-	}
-    } else {
-NO_SOLUTION:
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
-				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)];
-    }
+	/* TODO */
   }
   if (PRIVATE(OF(Specific)) != NULL)
   {
@@ -4151,7 +4160,7 @@ void Query_AuthenticAMD(unsigned int cpu)
 	Default_Unlock_Reset();
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = \
-					Compute_AuthenticAMD_Boost(cpu, false);
+					Compute_AuthenticAMD_Boost(cpu);
 	HyperThreading_Technology();
 }
 
@@ -6424,6 +6433,53 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
 }
 
+static void PerCore_VirtualMachine(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	{
+		Query_Virtual_BaseClock(Core->Bind, true);
+
+		Intel_VirtualMachine(Core);
+
+		Intel_Microcode(Core);
+	}
+	else if ( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		||(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
+	{
+		Compute_AuthenticAMD_Boost(Core->Bind);
+
+		Query_Virtual_BaseClock(Core->Bind, true);
+
+		if (PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily >= 1) {
+			AMD_Microcode(Core);
+		}
+
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+		BITSET_CC(LOCKLESS,PUBLIC(RO(Proc))->PowerMgmt_Mask,Core->Bind);
+	}
+
+	SystemRegisters(Core);
+
+	Dump_CPUID(Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask	, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+}
+
 static void PerCore_Intel_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
@@ -6462,7 +6518,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	Compute_AuthenticAMD_Boost(Core->Bind, true);
+	Compute_AuthenticAMD_Boost(Core->Bind);
 
 	SystemRegisters(Core);
 
@@ -7328,6 +7384,22 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
     }									\
 })
 
+#define Counters_VirtualMachine(Core, T)				\
+({									\
+	RDTSC64(Core->Counter[T].TSC);					\
+	/* HV_X64_MSR_VP_RUNTIME: vcpu runtime in 100ns units	*/	\
+	RDCOUNTER(Core->Counter[T].C0.URC, 0x40000010);			\
+									\
+	Core->Counter[T].C0.URC = Core->Counter[T].C0.URC		\
+	        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;	\
+									\
+	Core->Counter[T].C0.UCC = Core->Counter[T].C0.URC;		\
+	/* Derive C1 */ 						\
+	Core->Counter[T].C1 =						\
+	    (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
+		Core->Counter[T].TSC - Core->Counter[T].C0.URC : 0;	\
+})
+
 #define Counters_Generic(Core, T)					\
 ({									\
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
@@ -7495,6 +7567,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 ({	/* Delta of Instructions Retired */				\
 	Core->Delta.INST = Core->Counter[1].INST			\
 			 - Core->Counter[0].INST;			\
+})
+
+#define PKG_Counters_VirtualMachine(Core, T)				\
+({									\
+	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
 })
 
 #define PKG_Counters_Generic(Core, T)					\
@@ -7931,22 +8008,11 @@ static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		RDTSC64(Core->Counter[1].TSC);
-		/* HV_X64_MSR_VP_RUNTIME:vcpu runtime in 100ns units */
-		RDCOUNTER(Core->Counter[1].C0.URC, 0x40000010);
-
-		Core->Counter[1].C0.URC = Core->Counter[1].C0.URC
-		        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;
-
-		Core->Counter[1].C0.UCC = Core->Counter[1].C0.URC;
-		/* Derive C1 */
-		Core->Counter[1].C1 = \
-			Core->Counter[1].TSC > Core->Counter[1].C0.URC ?
-			Core->Counter[1].TSC - Core->Counter[1].C0.URC : 0;
+		Counters_VirtualMachine(Core, 1);
 
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
-			PKG_Counters_Generic(Core, 1);
+			PKG_Counters_VirtualMachine(Core, 1);
 
 			Delta_PTSC(PUBLIC(RO(Proc)));
 
@@ -7979,6 +8045,42 @@ void InitTimer_VirtualMachine(unsigned int cpu)
 	smp_call_function_single(cpu, InitTimer, Cycle_VirtualMachine, 1);
 }
 
+static void Start_VirtualMachine(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	PerCore_VirtualMachine(Core);
+
+	Counters_VirtualMachine(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		PKG_Counters_VirtualMachine(Core, 0);
+	}
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
+static void Stop_VirtualMachine(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+
+	PerCore_Reset(Core);
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
 static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 {
 	CORE_RO *Core;
@@ -7997,11 +8099,7 @@ static enum hrtimer_restart Cycle_GenuineIntel(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		if (PUBLIC(RO(Proc))->HypervisorID != HYPERV_HYPERV) {
-			Counters_Generic(Core, 1);
-		} else {
-			RDTSC64(Core->Counter[1].TSC);
-		}
+		Counters_Generic(Core, 1);
 
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
@@ -8112,11 +8210,7 @@ static enum hrtimer_restart Cycle_AuthenticAMD(struct hrtimer *pTimer)
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		if (PUBLIC(RO(Proc))->HypervisorID != HYPERV_HYPERV) {
-			Counters_Generic(Core, 1);
-		} else {
-			RDTSC64(Core->Counter[1].TSC);
-		}
+		Counters_Generic(Core, 1);
 
 		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 		{
@@ -8159,6 +8253,8 @@ static void Start_AuthenticAMD(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	PerCore_AuthenticAMD_Query(Core);
+
+	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
@@ -9990,6 +10086,8 @@ static void Start_AMD_Family_10h(void *arg)
 
 	PerCore_AMD_Family_10h_Query(Core);
 
+	Counters_Generic(Core, 0);
+
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
@@ -10024,6 +10122,8 @@ static void Start_AMD_Family_11h(void *arg)
 
 	PerCore_AMD_Family_11h_Query(Core);
 
+	Counters_Generic(Core, 0);
+
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
@@ -10044,6 +10144,8 @@ static void Start_AMD_Family_12h(void *arg)
 
 	PerCore_AMD_Family_12h_Query(Core);
 
+	Counters_Generic(Core, 0);
+
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
 	}
@@ -10063,6 +10165,8 @@ static void Start_AMD_Family_14h(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	PerCore_AMD_Family_14h_Query(Core);
+
+	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
@@ -10188,6 +10292,8 @@ static void Start_AMD_Family_15h(void *arg)
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	PerCore_AMD_Family_15h_Query(Core);
+
+	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		PKG_Counters_Generic(Core, 0);
@@ -12725,6 +12831,10 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		case HYPERV_VMWARE:
 		case HYPERV_HYPERV:
 			PUBLIC(RO(Proc))->ArchID = GenuineArch;
+			Arch[GenuineArch].Query	= Query_VirtualMachine;
+			Arch[GenuineArch].Update= PerCore_VirtualMachine;
+			Arch[GenuineArch].Start	= Start_VirtualMachine;
+			Arch[GenuineArch].Stop	= Stop_VirtualMachine;
 			Arch[GenuineArch].Timer = InitTimer_VirtualMachine;
 
 			Arch[GenuineArch].thermalFormula = THERMAL_FORMULA_NONE;
