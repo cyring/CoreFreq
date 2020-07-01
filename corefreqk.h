@@ -1217,8 +1217,9 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #endif
 /* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev) ;
 */
+static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
+
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
 };
@@ -1705,8 +1706,8 @@ static struct pci_device_id PCI_AMD_0Fh_ids[] = {
 };
 
 /* AMD Family 17h							*/
-#ifdef CONFIG_AMD_NB
 static struct pci_device_id PCI_AMD_17h_ids[] = {
+#ifdef CONFIG_AMD_NB
 	/* Source: /drivers/hwmon/k10temp.c				*/
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
@@ -1740,13 +1741,17 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
-	{0, }
-};
-#else
-static struct pci_device_id PCI_AMD_17h_ids[] = {
-	{0, }
-};
 #endif /* CONFIG_AMD_NB */
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_MATISSE_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_20H_2FH_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{0, }
+};
 
 
 static MICRO_ARCH Arch_Misc_Processor[] = {

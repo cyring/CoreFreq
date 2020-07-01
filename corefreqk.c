@@ -3864,36 +3864,42 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 	return ((PCI_CALLBACK) 0);
 }
 #endif /* CONFIG_AMD_NB */
-/* TODO(Unsolved)
-static PCI_CALLBACK AMD_IOMMU(struct pci_dev *dev)
+
+static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 {
-	void __iomem *mmio;
-	unsigned long long base;
-	unsigned int low = 0, high = 0;
+/*TODO(Not Used Yet)
+	void __iomem *iommu_mmio = NULL;
+*/
+	unsigned long long iommu_cap_base;
+	unsigned int iommu_cap_base_lo = 0, iommu_cap_base_hi = 0;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 
-	pci_read_config_dword(dev, 0x4, &low);
-	pci_read_config_dword(dev, 0x8, &high);
+	pci_read_config_dword(dev, 0x44, &iommu_cap_base_lo);
+	pci_read_config_dword(dev, 0x48, &iommu_cap_base_hi);
 
-	base = ((low & 0b11111111111111111100000000000000) >> 14)
-		+ ((unsigned long long) high << 32);
+	iommu_cap_base = ((iommu_cap_base_lo & 0xfff80000) >> 19)
+			+ ((unsigned long long) iommu_cap_base_hi << 32);
 
-    if (BITVAL(low, 0))
+    if (BITVAL(iommu_cap_base, 0))
     {
-	mmio = ioremap(base, 0x4000);
-	if (mmio != NULL) {
-		PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = readq(mmio + 0x18);
+/*TODO(Not Used Yet)
+	iommu_mmio = ioremap(iommu_cap_base, 0x200);
+	if (iommu_mmio != NULL) {
+		PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR=readq(iommu_mmio + 0x18);
 
-		iounmap(mmio);
-
-		return (0);
-	} else
+		iounmap(iommu_mmio);
+	} else {
 		return ((PCI_CALLBACK) -ENOMEM);
+	}
+*/
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = 1;
+
+	return (0);
     }
 	return ((PCI_CALLBACK) -ENOMEM);
 }
-*/
+
 static int CoreFreqK_ProbePCI(void)
 {
 	struct pci_device_id *id = Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids;
