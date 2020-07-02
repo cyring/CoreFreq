@@ -1743,11 +1743,15 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 #endif /* CONFIG_AMD_NB */
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_MATISSE_NB_IOMMU),
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_20H_2FH_NB_IOMMU),
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{0, }
