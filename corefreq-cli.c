@@ -1364,7 +1364,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 			|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt)
 			+ (Shm->Proc.Features.Std.ECX.MONITOR
 			<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt)],
-		"  MONITOR/X [%c/%c]",
+		" MON/MWAITX [%c/%c]",
 		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N',
 		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N');
 
@@ -5249,9 +5249,21 @@ void ComputeRatioShifts(unsigned int COF,
 	(*highestShift) = maxRatio - COF;
 }
 
+unsigned int MultiplierIsRatio(unsigned int cpu, signed int multiplier)
+{
+	enum RATIO_BOOST boost;
+	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
+	{
+		if (Shm->Cpu[cpu].Boost[boost] == multiplier) {
+			return (1);
+		}
+	}
+	return (0);
+}
+
 Window *CreateRatioClock(unsigned long long id,
 			unsigned int COF,
-			signed short cpu,
+			signed short any,
 			unsigned int NC,
 			signed int lowestShift,
 			signed int highestShift,
@@ -5261,20 +5273,17 @@ Window *CreateRatioClock(unsigned long long id,
 			CPU_ITEM_CALLBACK TitleCallback,
 			CUINT oCol)
 {
-	struct FLIP_FLOP *CFlop;
-	CFlop = (cpu == -1) ?
-		&Shm->Cpu[
-			Ruler.Top[NC]
-			].FlipFlop[
-			!Shm->Cpu[Ruler.Top[NC] ].Toggle
-			]
-	:	&Shm->Cpu[cpu].FlipFlop[ !Shm->Cpu[cpu].Toggle ];
+	unsigned int cpu = (any == -1) ? Ruler.Top[NC] : any;
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-	ATTRIBUTE *attrib[4] = {
+	ATTRIBUTE *attrib[7] = {
 		RSC(CREATE_RATIO_CLOCK_COND0).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND1).ATTR(),
 		RSC(CREATE_RATIO_CLOCK_COND2).ATTR(),
-		RSC(CREATE_RATIO_CLOCK_COND3).ATTR()
+		RSC(CREATE_RATIO_CLOCK_COND3).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND4).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND5).ATTR(),
+		RSC(CREATE_RATIO_CLOCK_COND6).ATTR()
 	};
 	CLOCK_ARG clockMod = {.sllong = id};
 
@@ -5308,9 +5317,9 @@ Window *CreateRatioClock(unsigned long long id,
 		multiplier = COF + offset;
 
 		clockMod.NC = NC | boxKey;
-		clockMod.cpu = cpu;
+		clockMod.cpu = any;
 
-	    if (cpu == -1) {
+	    if (any == -1) {
 		clockMod.Ratio	= multiplier;
 	    } else {
 		clockMod.Offset = offset;
@@ -5329,8 +5338,12 @@ Window *CreateRatioClock(unsigned long long id,
 			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
-		attr = attrib[multiplier < medianColdZone ?
-				1 : multiplier >= startingHotZone ? 2 : 0];
+		attr = attrib[
+			multiplier < medianColdZone ?
+				1 + 4 * MultiplierIsRatio(cpu, multiplier)
+			: multiplier >= startingHotZone ?
+				2 + 4 * MultiplierIsRatio(cpu, multiplier)
+				: 0 + 4 * MultiplierIsRatio(cpu, multiplier) ];
 
 		snprintf((char*) item, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
@@ -9762,7 +9775,10 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
 			hPwr0.length, hPwr0.attr, hPwr0.code );
 
-	LayerAt(layer,code,75,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
+	LayerAt(layer,code,17,hPwr0.origin.row) = \
+	LayerAt(layer,code,36,hPwr0.origin.row) = \
+	LayerAt(layer,code,56,hPwr0.origin.row) = \
+	LayerAt(layer,code,74,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -9801,7 +9817,10 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
 			hPwr1.length, hPwr1.attr, hPwr1.code );
 
-	LayerAt(layer,code,75,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
+	LayerAt(layer,code,17,hPwr1.origin.row) = \
+	LayerAt(layer,code,36,hPwr1.origin.row) = \
+	LayerAt(layer,code,56,hPwr1.origin.row) = \
+	LayerAt(layer,code,74,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
