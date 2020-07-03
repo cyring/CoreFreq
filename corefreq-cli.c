@@ -2185,14 +2185,12 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_PC6), hSpace, ENABLED(bix)),
 		PC6_Update);
     }
-	bix = (Shm->Proc.Features.AdvPower.EDX.FID == 1)
-	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
+	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sFID       [%3s]", RSC(PERF_MON_FID).CODE(),
 		width - 18 - RSZ(PERF_MON_FID), hSpace, ENABLED(bix));
 
-	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1)
-	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
+	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
 		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix));
@@ -2206,8 +2204,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
 		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
 
-	bix = (Shm->Proc.Features.Power.EAX.HWP_Reg == 1)
-	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);
+	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 1;	/* Intel */
     if (bix)
     {
 	CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
@@ -2263,15 +2260,30 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Refresh_HWP_Cap_Freq,
 			&SProc->PowerThermal.HWP.Capabilities.Highest);
     } else {
-	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 0 ?
-		4 : Shm->Proc.Features.HWP_Enable == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+	unsigned int cix;
+	if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	{
+		bix = Shm->Proc.Features.HWP_Enable == 1;
+		cix = Shm->Proc.Features.Power.EAX.HWP_Reg == 0 ?
+			4 : Shm->Proc.Features.HWP_Enable == 1;
+	}
+	else if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		||(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+	{
+		bix = Shm->Proc.Features.AdvPower.EDX.HwPstate == 1;
+		cix = 1;
+	}
+	else {
+		bix = 0;
+		cix = 4;
+	}
+	PUT(SCANKEY_NULL, attrib[cix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
-		ENABLED(Shm->Proc.Features.HWP_Enable == 1));
+		ENABLED(bix));
     }
 
-	bix = Shm->Proc.Features.HDC_Enable == 1;
+	bix = Shm->Proc.Features.HDC_Enable == 1;		/* Intel */
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 : 4],
 		width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
