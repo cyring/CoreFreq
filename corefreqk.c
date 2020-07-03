@@ -5263,13 +5263,13 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	case COREFREQ_TOGGLE_OFF:
 		BITCLR(LOCKLESS, CC6, 22);
 		BITCLR(LOCKLESS, CC6, 14);
-		BITCLR(LOCKLESS, CC6, 16);
+		BITCLR(LOCKLESS, CC6,  6);
 		ToggleFeature = 1;
 		break;
 	case COREFREQ_TOGGLE_ON:
 		BITSET(LOCKLESS, CC6, 22);
 		BITSET(LOCKLESS, CC6, 14);
-		BITSET(LOCKLESS, CC6, 16);
+		BITSET(LOCKLESS, CC6,  6);
 		ToggleFeature = 1;
 		break;
 	default:
