@@ -214,7 +214,7 @@ typedef union
 	SLOWFENCE	:  2-1,  /* Slow SFENCE Enable.			*/
 	Reserved1	:  3-2,
 	TlbCacheDis	:  4-3,
-	INVDWBINVD	:  5-4,
+	INVDWBINVD	:  5-4,  /* This bit is required to be set for CC6 */
 	Reserved2	:  6-5,
 	FFDIS		:  7-6,  /* TLB Flush Filter Disable.		*/
 	DISLOCK 	:  8-7,  /* Disable x86 LOCK prefix functionality. */
