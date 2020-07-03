@@ -2287,7 +2287,9 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 : 4],
 		width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
-		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix));
+		width - 18 - RSZ(PERF_MON_HDC), hSpace,
+		(Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) ?
+		ENABLED(bix) : (char*) RSC(NOT_AVAILABLE).CODE());
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
