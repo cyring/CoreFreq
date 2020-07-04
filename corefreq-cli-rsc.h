@@ -1507,19 +1507,19 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_ATTR 				\
 {									\
-	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK,		\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
 	HDK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,		\
 	LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
-	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
+	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
 	LWK,HDK,HWK,LWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK 	\
 }
 
 #define RSC_LAYOUT_FOOTER_TECH_AMD_CODE 				\
 {									\
-	'S','M','T',',','P','o','w','e','r','N','o','w',',',		\
+	'S','M','T',',','C','n','Q',',','H','W','P',',',		\
 	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
 	',','P','C','6',',',' ','P','M',',','D','T','S',',',		\
-	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',		\
+	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',		\
 	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
 }
 

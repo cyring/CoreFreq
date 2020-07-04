@@ -2265,13 +2265,13 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		bix = Shm->Proc.Features.HWP_Enable == 1;
 		cix = Shm->Proc.Features.Power.EAX.HWP_Reg == 0 ?
-			4 : Shm->Proc.Features.HWP_Enable == 1;
+			0 : Shm->Proc.Features.HWP_Enable == 1;
 	}
 	else if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		||(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
 	{
 		bix = Shm->Proc.Features.AdvPower.EDX.HwPstate == 1;
-		cix = 1;
+		cix = Shm->Proc.Features.AdvPower.EDX.HwPstate == 1;
 	}
 	else {
 		bix = 0;
@@ -2284,25 +2284,32 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 
 	bix = Shm->Proc.Features.HDC_Enable == 1;		/* Intel */
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 : 4],
+	PUT(SCANKEY_NULL,
+		attrib[ Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 :
+			Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4 ],
 		width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
 		width - 18 - RSZ(PERF_MON_HDC), hSpace,
-		(Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) ?
+		Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
 		ENABLED(bix) : (char*) RSC(NOT_AVAILABLE).CODE());
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
-	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
+	bix = (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	   && (Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0) ? 3 : 4;
+
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*sCONFIG   [%7s]", RSC(PERF_MON_CFG_CTRL).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(PERF_MON_CFG_CTRL), hSpace,
-		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
+		Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
+			!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE()
+			: RSC(NOT_AVAILABLE).CODE());
 
-	if (!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock) {
+	if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	  && !Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ) {
 	    GridCall(PUT(BOXKEY_PKGCST, attrib[0], width, 3,
 			"%s%.*sLIMIT   <%7d>", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
@@ -2326,20 +2333,26 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude),
 		CStateRange_Update);
 	} else {
-		PUT(SCANKEY_NULL, attrib[0], width, 3,
+		PUT(SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
+			width, 3,
 			"%s%.*sLIMIT   [%7d]", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
 
-		PUT(SCANKEY_NULL, attrib[0], width, 3,
+		PUT(SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
+			width, 3,
 			"%s%.*sIOMWAIT   [%7s]", RSC(PERF_MON_IOMWAIT).CODE(),
 			width - (OutFunc == NULL ? 25 : 23)
 			- RSZ(PERF_MON_IOMWAIT), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
 				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
 
-		PUT(SCANKEY_NULL, attrib[0], width, 3,
+		PUT(SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
+			width, 3,
 			"%s%.*sRANGE   [%7d]", RSC(PERF_MON_MAX_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
@@ -9963,35 +9976,37 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
 
-	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[ 6] = hTech1.attr[ 7]= \
-	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11]= \
+	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
 					Pwr[(Shm->Proc.PowerNow == 0b11)];
 
-	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =		\
-	hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
+	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] =		\
+				Pwr[Shm->Proc.Features.AdvPower.EDX.HwPstate];
 
-	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
+	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] =		\
+	hTech1.attr[15] = hTech1.attr[16] = Pwr[Shm->Proc.Technology.Turbo];
+
+	hTech1.attr[18] = hTech1.attr[19] = hTech1.attr[20] =		\
 						Pwr[Shm->Proc.Technology.C1E];
 
-	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
+	hTech1.attr[22] = hTech1.attr[23] = hTech1.attr[24] =		\
 						Pwr[Shm->Proc.Technology.CC6];
 
-	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =		\
+	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] =		\
 						Pwr[Shm->Proc.Technology.PC6];
 
 	snprintf(buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
-	hTech1.code[31] = buffer[0];
-	hTech1.code[32] = buffer[1];
-	hTech1.code[33] = buffer[2];
+	hTech1.code[30] = buffer[0];
+	hTech1.code[31] = buffer[1];
+	hTech1.code[32] = buffer[2];
 
-	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =		\
+	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] =		\
 						Pwr[(Shm->Proc.PM_version > 0)];
 
-	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =		\
+	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] =		\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
-	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =		\
+	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] =		\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
@@ -11833,9 +11848,9 @@ void Draw_Footer(Layer *layer, CUINT row)
 	else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	{
-		LayerAt(layer, attr, 14+43, row) = eventAttr[_hot][0];
-		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][1];
-		LayerAt(layer, attr, 14+45, row) = eventAttr[_hot][2];
+		LayerAt(layer, attr, 14+42, row) = eventAttr[_hot][0];
+		LayerAt(layer, attr, 14+43, row) = eventAttr[_hot][1];
+		LayerAt(layer, attr, 14+44, row) = eventAttr[_hot][2];
 	}
 	LayerAt(layer, attr, 14+61, row) = eventAttr[_tmp][0];
 	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][1];
