@@ -2333,7 +2333,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s", RSC(PERF_MON_CORE_CSTATE).CODE());
 
 	PUT(SCANKEY_NULL,
-	attrib[!Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr ? 4 : 0],
+	attrib[!Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr ? 0 : 2],
 		width, 3,
 		"%s%.*sBAR   [ 0x%-4X]", RSC(PERF_MON_CSTATE_BAR).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
