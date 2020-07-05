@@ -6964,7 +6964,9 @@ static void PerCore_AMD_Family_15h_Query(void *arg)
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
-	/*		Query the Min, Max, Target & Turbo P-States	*/
+	AMD_17_PM_CSTATE CStateEn = {.value = 0};
+
+	/*	Query the Min, Max, Target & Turbo P-States		*/
 	Compute_AMD_Zen_Boost(Core->Bind);
 
 	SystemRegisters(Core);
@@ -6973,10 +6975,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Dump_CPUID(Core);
 
-    if (PUBLIC(RO(Proc))->Registration.Experimental)
-    {
-	AMD_17_PM_CSTATE CStateEn = {.value = 0};
-
+	/*	Query the FCH for various registers			*/
 	Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
 	if (CStateEn.C1eToC2En)
 	{
@@ -6990,7 +6989,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	}
-    }
+
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);

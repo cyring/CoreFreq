@@ -2158,11 +2158,24 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			width - 18 - RSZ(PERF_MON_C3A), hSpace, ENABLED(bix)),
 		C3A_Update);
     }
+
 	bix = Shm->Proc.Technology.C1U == 1;
+
+    if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+     ||  (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
+			"%s%.*sC2U       <%3s>", RSC(PERF_MON_C2U).CODE(),
+			width - 18 - RSZ(PERF_MON_C2U),
+			hSpace, ENABLED(bix)),
+		C1U_Update);
+    } else {
 	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
-			width - 18 - RSZ(PERF_MON_C1U), hSpace, ENABLED(bix)),
+			width - 18 - RSZ(PERF_MON_C1U),
+			hSpace, ENABLED(bix)),
 		C1U_Update);
+    }
 
 	bix = Shm->Proc.Technology.C3U == 1;
 	GridCall(PUT(BOXKEY_C3U, attrib[bix], width, 2,
@@ -7535,9 +7548,15 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.C1U ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " C1U ",
+	AppendWindow(CreateBox(scan->key, origin, select,
+		(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
+		" C2U " : " C1U ",
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_C1U_DESC).CODE(), descAttr, SCANKEY_NULL,
+		(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
+		RSC(BOX_C2U_DESC).CODE() : RSC(BOX_C1U_DESC).CODE(),
+			descAttr, SCANKEY_NULL,
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		stateStr[1][Shm->Proc.Technology.C1U] ,
 			stateAttr[Shm->Proc.Technology.C1U] , BOXKEY_C1U_ON,
