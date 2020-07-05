@@ -128,6 +128,23 @@
 	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
 #endif
 
+#define Core_AMD_PM_Read16(PM_IndexRegister, PM_DataRegister)		\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1,	%%eax"	"\n\t"				\
+		"movl	$0xcd6, %%edx"	"\n\t"				\
+		"outl	%%eax,	%%dx"	"\n\t"				\
+		"movl	$0xcd7, %%edx"	"\n\t"				\
+		"inw	%%dx,	%%ax"	"\n\t"				\
+		"movw	%%ax,	%0"					\
+		: "=m"	( PM_DataRegister.value )			\
+		: "ir"	( PM_IndexRegister )				\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_PM_CSTATE_EN			0x7e
 
 const struct {
 	unsigned int	MCF,
@@ -473,7 +490,7 @@ typedef union
 	InterceptInit	:  2-1,
 	DisA20m 	:  3-2,  /* Disable A20 Masking. ReservedBits: F17h */
 	SVM_Lock	:  4-3,  /* 0=SvmeDisable is read-write, 1=read-only */
-	SVME_Disable	:  5-4,  /* 0 = Msr::EFER[SVME] is RW, 1 = read-only */
+	SVME_Disable	:  5-4,  /* 0 = MSR::EFER[SVME] is RW, 1 = read-only */
 	Reserved1	: 32-5,
 	Reserved2	: 64-32;
     };
@@ -703,4 +720,16 @@ typedef struct
 	ReservedBits	: 31-16,
 	L3TagInit	: 32-31;
 } L3_CACHE_PARAMETER;
+
+typedef union
+{	/* PM CStateEn: 16-bits offset I/O=0x7E or MMIO=0xFED80300	*/
+	unsigned short int	value;
+	struct {
+		unsigned short int
+		Reserved1:  4-0,
+		C1eToC2En:  5-4,  /* RW: 1="Put APU into C2 in C1E"	*/
+		C1eToC3En:  6-5,  /* RW: 1="Put APU into C3 in C1E"	*/
+		Reserved2: 16-6;
+	};
+} AMD_17_PM_CSTATE;
 

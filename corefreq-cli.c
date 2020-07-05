@@ -2157,7 +2157,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
 			width - 18 - RSZ(PERF_MON_C3A), hSpace, ENABLED(bix)),
 		C3A_Update);
-
+    }
 	bix = Shm->Proc.Technology.C1U == 1;
 	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
@@ -2169,7 +2169,7 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
 			width - 18 - RSZ(PERF_MON_C3U), hSpace, ENABLED(bix)),
 		C3U_Update);
-    }
+
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {

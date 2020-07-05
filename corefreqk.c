@@ -6384,7 +6384,7 @@ void AMD_Microcode(CORE_RO *Core)
 
 void PerCore_Reset(CORE_RO *Core)
 {
-	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -6401,8 +6401,8 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt	, Core->Bind);
-	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SpeedStep , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->HWP	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1E	, Core->Bind);
@@ -6872,7 +6872,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	Query_AMD_Family_0Fh_C1E(Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -6904,7 +6904,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
     } else {
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -6973,15 +6973,29 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	Dump_CPUID(Core);
 
-    if (PUBLIC(RO(Proc))->Registration.Experimental) {
-	Query_AMD_Family_0Fh_C1E(Core);
-    } else {
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
+    if (PUBLIC(RO(Proc))->Registration.Experimental)
+    {
+	AMD_17_PM_CSTATE CStateEn = {.value = 0};
+
+	Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+	if (CStateEn.C1eToC2En)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+	}
+	if (CStateEn.C1eToC3En)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+	}
     }
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask	, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask	, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask	, Core->Bind);
