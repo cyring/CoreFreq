@@ -6965,6 +6965,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 	AMD_17_PM_CSTATE CStateEn = {.value = 0};
+	int ToggleFeature = 0;
 
 	/*	Query the Min, Max, Target & Turbo P-States		*/
 	Compute_AMD_Zen_Boost(Core->Bind);
@@ -6977,6 +6978,24 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	/*	Query the FCH for various registers			*/
 	Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+	switch (C3U_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateEn.C1eToC3En = C3U_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+	switch (C1U_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CStateEn.C1eToC2En = C1U_Enable;
+			ToggleFeature = 1;
+		break;
+	}
+	if (ToggleFeature == 1) {
+		Core_AMD_PM_Write16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+		Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+	}
 	if (CStateEn.C1eToC2En)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);

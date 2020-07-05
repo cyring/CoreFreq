@@ -144,6 +144,23 @@
 	);								\
 })
 
+#define Core_AMD_PM_Write16(PM_IndexRegister, PM_DataRegister)		\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1,	%%eax"	"\n\t"				\
+		"movl	$0xcd6, %%edx"	"\n\t"				\
+		"outl	%%eax,	%%dx"	"\n\t"				\
+		"movw	%0,	%%ax"	"\n\t"				\
+		"movl	$0xcd7, %%edx"	"\n\t"				\
+		"outw	%%ax,	%%dx"					\
+		:							\
+		: "irm" ( PM_DataRegister.value ),			\
+		  "ir"	( PM_IndexRegister )				\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
 #define AMD_FCH_PM_CSTATE_EN			0x7e
 
 const struct {
