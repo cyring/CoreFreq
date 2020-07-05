@@ -4067,6 +4067,7 @@ void CStates(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Query.CStateLimit = Core[cpu]->Query.CStateLimit;
 
 	Shm->Cpu[cpu].Query.IORedir = Core[cpu]->Query.IORedir;
+	/* Copy Intel Max C-State Inclusion or AMD C-State Base Addr	*/
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
 }
 

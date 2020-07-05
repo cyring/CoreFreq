@@ -133,8 +133,8 @@
 	"--------------------"
 
 #define RSC_LAYOUT_RULER_POWER_CODE_EN					\
-	"---- RAM:   .      - Uncore:   .      - Package:   .      - "	\
-	"Cores:   .      --------------------------------------------"	\
+	"-RAM:   .    ( ) - Uncore:   .    ( ) - Package:   .    ( ) "	\
+	"- Cores:   .    ( )-----------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -321,11 +321,13 @@
 #define RSC_PERF_MON_HWCF_CODE_EN	"P-State Hardware Coordination Feedback"
 #define RSC_PERF_MON_HWP_CODE_EN	"Hardware-Controlled Performance States"
 #define RSC_PERF_MON_HDC_CODE_EN	"Hardware Duty Cycling"
-#define RSC_PERF_MON_PKG_CSTATE_CODE_EN "Package C-State"
+#define RSC_PERF_MON_PKG_CSTATE_CODE_EN "Package C-States"
+#define RSC_PERF_MON_CORE_CSTATE_CODE_EN "Core C-States"
 #define RSC_PERF_MON_CFG_CTRL_CODE_EN	"Configuration Control"
 #define RSC_PERF_MON_LOW_CSTATE_CODE_EN "Lowest C-State"
 #define RSC_PERF_MON_IOMWAIT_CODE_EN	"I/O MWAIT Redirection"
 #define RSC_PERF_MON_MAX_CSTATE_CODE_EN "Max C-State Inclusion"
+#define RSC_PERF_MON_CSTATE_BAR_CODE_EN "C-States Base Address"
 
 #define RSC_PERF_MON_MONITOR_MWAIT_CODE_EN	"MONITOR/MWAIT"
 #define RSC_PERF_MON_MWAIT_IDX_CSTATE_CODE_EN	"State index"

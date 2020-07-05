@@ -374,8 +374,11 @@ typedef struct
 					Unused	: 32-3,
 					Microcode:64-32; /* Thread	*/
 		};
-		unsigned short int	CStateLimit,
-					CStateInclude;
+		unsigned short int	CStateLimit;
+		union {
+		unsigned short int	CStateInclude;	/* Intel	*/
+		unsigned short int	CStateBaseAddr; /* AMD Fam. 17h */
+		};
 	} Query;
 
 	CACHE_TOPOLOGY			T;

@@ -1943,10 +1943,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sCnQ       [%3s]", RSC(TECHNOLOGIES_CNQ).CODE(),
 		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, ENABLED(bix));
 
+	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
-		width - (15 + RSZ(NOT_AVAILABLE)) - RSZ(TECHNOLOGIES_IDA),
-		hSpace, RSC(NOT_AVAILABLE).CODE());
+		"%s%.*sCCx       [%3s]", RSC(PERF_MON_CORE_CSTATE).CODE(),
+		width - 18 - RSZ(PERF_MON_CORE_CSTATE), hSpace, ENABLED(bix));
 
 	bix = Shm->Proc.Technology.Turbo == 1;
     GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
@@ -2282,34 +2282,27 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
 		ENABLED(bix));
     }
-
-	bix = Shm->Proc.Features.HDC_Enable == 1;		/* Intel */
-	PUT(SCANKEY_NULL,
-		attrib[ Shm->Proc.Features.Power.EAX.HDC_Reg ? 1 :
-			Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4 ],
-		width, 2,
-		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
-		width - 18 - RSZ(PERF_MON_HDC), hSpace,
-		Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-		ENABLED(bix) : (char*) RSC(NOT_AVAILABLE).CODE());
 /* Section Mark */
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	bix = Shm->Proc.Features.HDC_Enable == 1;
+	PUT(SCANKEY_NULL,
+		attrib[ Shm->Proc.Features.Power.EAX.HDC_Reg ? 1:0], width, 2,
+		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
+		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix));
+
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
-	bix = (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-	   && (Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0) ? 3 : 4;
+	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
 
 	PUT(SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*sCONFIG   [%7s]", RSC(PERF_MON_CFG_CTRL).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(PERF_MON_CFG_CTRL), hSpace,
-		Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ?
-			!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
-				RSC(UNLOCK).CODE() : RSC(LOCK).CODE()
-			: RSC(NOT_AVAILABLE).CODE());
+		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
-	if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-	  && !Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ) {
 	    GridCall(PUT(BOXKEY_PKGCST, attrib[0], width, 3,
 			"%s%.*sLIMIT   <%7d>", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
@@ -2332,32 +2325,21 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude),
 		CStateRange_Update);
-	} else {
-		PUT(SCANKEY_NULL,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
-			width, 3,
-			"%s%.*sLIMIT   [%7d]", RSC(PERF_MON_LOW_CSTATE).CODE(),
-			width - (OutFunc == NULL ? 23 : 21)
-			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
+    }
+    else if( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s", RSC(PERF_MON_CORE_CSTATE).CODE());
 
-		PUT(SCANKEY_NULL,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
-			width, 3,
-			"%s%.*sIOMWAIT   [%7s]", RSC(PERF_MON_IOMWAIT).CODE(),
-			width - (OutFunc == NULL ? 25 : 23)
-			- RSZ(PERF_MON_IOMWAIT), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
-				RSC(ENABLE).CODE() : RSC(DISABLE).CODE());
-
-		PUT(SCANKEY_NULL,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL ? 0:4],
-			width, 3,
-			"%s%.*sRANGE   [%7d]", RSC(PERF_MON_MAX_CSTATE).CODE(),
-			width - (OutFunc == NULL ? 23 : 21)
-			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
-	}
+	PUT(SCANKEY_NULL,
+	attrib[!Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr ? 4 : 0],
+		width, 3,
+		"%s%.*sBAR   [ 0x%-4X]", RSC(PERF_MON_CSTATE_BAR).CODE(),
+		width - (OutFunc == NULL ? 21 : 19)
+		- RSZ(PERF_MON_CSTATE_BAR), hSpace,
+		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr);
+    }
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE());
@@ -2511,7 +2493,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Section Mark */
 	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
 	GridCall(PUT(bix ? BOXKEY_ODCM : SCANKEY_NULL,
-			attrib[bix ? 3 : 1], width, 2,
+		attrib[ Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4
+			: bix ? 3 : 1 ],
+			width, 2,
 			"%s%.*sODCM   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
 			width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
 			bix ? '<' : '[',
@@ -2523,7 +2507,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
 	   && (Shm->Proc.Technology.ODCM == 1);
 
-      GridCall(PUT(bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL, attrib[0], width, 3,
+      GridCall(PUT(bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		width, 3,
 		"%s%.*s%c%6.2f%%%c", RSC(POWER_THERMAL_DUTY).CODE(),
 	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
 		bix ? '<' : '[',
@@ -2534,27 +2520,34 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
       DutyCycle_Update);
 
 	bix = Shm->Proc.Technology.PowerMgmt == 1;
-	PUT(SCANKEY_NULL, attrib[bix ? 3 : 0], width, 2,
+	PUT(SCANKEY_NULL,
+		attrib[ Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4
+			: bix ? 3 : 0 ],
+		width, 2,
 		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
 		Unlock[Shm->Proc.Technology.PowerMgmt]);
 
 	bix = Shm->Proc.Features.Power.ECX.SETBH == 1;
     if (bix) {
-      GridCall(PUT(BOXKEY_PWR_POLICY, attrib[0], width, 3,
+      GridCall(PUT(BOXKEY_PWR_POLICY,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		width, 3,
 		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy),
 	Hint_Update,
 		&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		width, 3,
 		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
     }
 
-	bix = Shm->Proc.Features.HWP_Enable == 1;
+	bix = Shm->Proc.Features.HWP_Enable == 1;		/* Intel */
     if (bix) {
       GridCall(PUT(BOXKEY_HWP_EPP, attrib[0], width, 3,
 		"%s%.*sHWP EPP   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
@@ -4745,7 +4738,7 @@ Window *CreateSysInfo(unsigned long long id)
 	switch (id) {
 	case SCANKEY_p:
 		{
-		winOrigin.row = TOP_HEADER_ROW + 1;
+		winOrigin.row = TOP_HEADER_ROW + 2;
 		winOrigin.col = 2;
 		matrixSize.hth = 21;
 		winWidth = 76;
@@ -9802,10 +9795,10 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
 			hPwr0.length, hPwr0.attr, hPwr0.code );
 
-	LayerAt(layer,code,17,hPwr0.origin.row) = \
-	LayerAt(layer,code,36,hPwr0.origin.row) = \
-	LayerAt(layer,code,56,hPwr0.origin.row) = \
-	LayerAt(layer,code,74,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
+	LayerAt(layer,code,14,hPwr0.origin.row) = \
+	LayerAt(layer,code,35,hPwr0.origin.row) = \
+	LayerAt(layer,code,57,hPwr0.origin.row) = \
+	LayerAt(layer,code,77,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -9844,10 +9837,10 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
 			hPwr1.length, hPwr1.attr, hPwr1.code );
 
-	LayerAt(layer,code,17,hPwr1.origin.row) = \
-	LayerAt(layer,code,36,hPwr1.origin.row) = \
-	LayerAt(layer,code,56,hPwr1.origin.row) = \
-	LayerAt(layer,code,74,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
+	LayerAt(layer,code,14,hPwr1.origin.row) = \
+	LayerAt(layer,code,35,hPwr1.origin.row) = \
+	LayerAt(layer,code,57,hPwr1.origin.row) = \
+	LayerAt(layer,code,77,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -9993,15 +9986,15 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] =		\
 						Pwr[Shm->Proc.Technology.PC6];
-
+/*
 	snprintf(buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
 	hTech1.code[30] = buffer[0];
 	hTech1.code[31] = buffer[1];
 	hTech1.code[32] = buffer[2];
-
+*/
 	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] =		\
-						Pwr[(Shm->Proc.PM_version > 0)];
+	Pwr[(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0)];
 
 	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] =		\
 				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
@@ -11780,10 +11773,10 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
 
-	memcpy(&LayerAt(layer, code, col +  5,	row), &buffer[24], 8);
-	memcpy(&LayerAt(layer, code, col + 24,	row), &buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col +  1,	row), &buffer[24], 8);
+	memcpy(&LayerAt(layer, code, col + 22,	row), &buffer[16], 8);
 	memcpy(&LayerAt(layer, code, col + 44,	row), &buffer[ 0], 8);
-	memcpy(&LayerAt(layer, code, col + 62,	row), &buffer[ 8], 8);
+	memcpy(&LayerAt(layer, code, col + 64,	row), &buffer[ 8], 8);
 
 	row += 1;
 	return (row);

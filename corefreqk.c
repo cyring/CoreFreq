@@ -5227,6 +5227,7 @@ long ClockMod_Intel_HWP(CLOCK_ARG *pClockMod)
 
 void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 {
+	CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
 	unsigned long long CC6 = 0, PC6 = 0;
 	int ToggleFeature;
 
@@ -5319,6 +5320,9 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		}
 		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 	}
+	/*		Core C-State					*/
+	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
 	/*		Package C-State: Configuration Control .	*/
 	Core->Query.CfgLock = 1;
 	/*		Package C-State: I/O MWAIT Redirection .	*/

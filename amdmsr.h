@@ -38,6 +38,10 @@
 	#define MSR_AMD_COFVID_STATUS		0xc0010071
 #endif
 
+#ifndef MSR_AMD_CSTATE_BAR
+	#define MSR_AMD_CSTATE_BAR		0xc0010073
+#endif
+
 #ifndef MSR_VM_CR
 	#define MSR_VM_CR			0xc0010114
 #endif
@@ -47,7 +51,7 @@
 #endif
 
 #ifndef MSR_AMD_RAPL_POWER_UNIT
-	#define MSR_AMD_RAPL_POWER_UNIT		0xc0010299
+	#define MSR_AMD_RAPL_POWER_UNIT 	0xc0010299
 #endif
 
 #ifndef MSR_AMD_PKG_ENERGY_STATUS
@@ -285,14 +289,14 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_00[68:64] P-State [4:0]	*/
+	unsigned long long	 /* MSR 0xC001_00[68:64] P-State [4:0]	*/
 	CpuFid		:  6-0,  /* Core Frequency ID. RW: Value <= 2Fh */
 	CpuDid		:  9-6,  /* Core Divisor ID. RW: 0h-4h divide by 1-16 */
 	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	Reserved1	: 22-16,
 	NbDid		: 23-22, /* Northbridge Divisor ID. RW: 0-1 => 0-2 */
 	Reserved2	: 25-23,
-	NbVid		: 32-25, /* NB VID. RW:in MSRC001_0071[MaxVid,MinVid] */
+	NbVid		: 32-25, /* NB VID. RW: MSR 0xC0010071[MaxVid,MinVid]*/
 	IddValue	: 40-32, /* Current Dissipation. RW:00-10b->1,10,100A */
 	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
 	Reserved3	: 63-42,
@@ -300,7 +304,7 @@ typedef union
     } Family_10h;
     struct
     {
-	unsigned long long	 /* MSRC001_00[6B:64] P-State [7:0]	*/
+	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
 	CpuDid		:  4-0,  /* Core Divisor ID. RW			*/
 	CpuFid		:  9-4,  /* Core Frequency ID. RW		*/
 	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
@@ -312,7 +316,7 @@ typedef union
     } Family_12h;
     struct
     {
-	unsigned long long	 /* MSRC001_00[6B:64] P-State [7:0]	*/
+	unsigned long long	 /* MSR 0xC001_00[6B:64] P-State [7:0]	*/
 	CpuDidLSD	:  4-0,  /* Core Divisor ID least significant digit.RW*/
 	CpuDidMSD	:  9-4,  /* Core Divisor ID most significant digit. RW*/
 	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
@@ -324,13 +328,13 @@ typedef union
     } Family_14h;
     struct
     {
-	unsigned long long	 /* MSRC001_00[6B:64] P-state [7:0]	*/
+	unsigned long long	 /* MSR 0xC001_00[6B:64] P-state [7:0]	*/
 	CpuFid		:  6-0,  /* Core Frequency ID. RW		*/
 	CpuDid		:  9-6,  /* Core Divisor ID. RW:0h-4h divide by 1-16 */
 	CpuVid		: 16-9,  /* Core Voltage ID. RW			*/
 	CpuVid_bit	: 17-16,
 	Reserved1	: 22-17,
-	NbPstate	: 23-22, /* Northbr. P-state.MSRC001_0071[NbPstateDis]*/
+	NbPstate	: 23-22, /* Northbrige MSR 0xC001_0071[NbPstateDis] */
 	Reserved2	: 32-23,
 	IddValue	: 40-32, /* Max Current Dissipation:00-10b->1,10,100A */
 	IddDiv		: 42-40, /* Current Dissipation Divisor. RW	*/
@@ -355,7 +359,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_0061 : iff HwPstate == 1	*/
+	unsigned long long	 /* MSR 0xC0010061 : iff HwPstate == 1	*/
 	CurPstateLimit	:  3-0,  /* Lowest P-State (highest-performance)*/
 	Reserved1	:  4-3,
 	PstateMaxVal	:  7-4,  /* highest P-State (lowest-performance)*/
@@ -368,7 +372,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_0062 : Family 10h up to 17h */
+	unsigned long long	 /* MSR 0xC0010062 : Family 10h up to 17h */
 	PstateCmd	:  3-0,
 	Reserved	: 64-3;
     };
@@ -379,7 +383,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_0063 : Family 10h up to 17h */
+	unsigned long long	 /* MSR 0xC0010063 : Family 10h up to 17h */
 	Current 	:  3-0,
 	Reserved	: 64-3;
     };
@@ -390,7 +394,7 @@ typedef union
 	unsigned long long value;
     struct
     {
-	unsigned long long	 /* MSRC001_0071 COFVID Status		*/
+	unsigned long long	 /* MSR 0xC001_0071 COFVID Status	*/
 	CurCpuFid	:  6-0,
 	CurCpuDid	:  9-6,
 	CurCpuVid	: 16-9,
@@ -409,15 +413,15 @@ typedef union
     } Arch_COF;
     struct
     {
-	unsigned long long	 /* MSRC001_0071 COFVID Status		*/
-	CurCpuDidLSD	:  4-0,  /* Current Core Divisor ID. RO		*/
+	unsigned long long	 /* MSR 0xC0010071 COFVID Status	*/
+	CurCpuDidLSD	:  4-0,  /* Current Core Divisor ID. RO 	*/
 	CurCpuDidMSD	:  9-4,
-	CurCpuVid	: 16-9,  /* Current Core Voltage ID. RO		*/
-	CurPstate	: 19-16, /* Current P-state. RO			*/
+	CurCpuVid	: 16-9,  /* Current Core Voltage ID. RO 	*/
+	CurPstate	: 19-16, /* Current P-state. RO 		*/
 	Reserved1	: 20-19,
 	PstateInProgress: 21-20, /* RO: 1=Change, 0=No change		*/
 	Reserved2	: 25-21,
-	CurNbVid	: 32-25, /* Current Northbridge VID. RO		*/
+	CurNbVid	: 32-25, /* Current Northbridge VID. RO 	*/
 	StartupPstate	: 35-32, /* Startup P-state Number. RO		*/
 	MaxVid		: 42-35, /* Maximum Voltage ID. RO		*/
 	MinVid		: 49-42, /* Minimum Voltage ID. RO		*/
@@ -430,7 +434,18 @@ typedef union
 
 typedef union
 {
-	unsigned long long value; /* MSR C001_0055h			*/
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per SMT: MSR 0xC0010073 (RW)	*/
+	IOaddr		: 16-0, /* 0:disabled, [1-0xFFF8]:enabled	*/
+	Reserved	: 64-16;
+    };
+} CSTATE_BASE_ADDR;
+
+typedef union
+{
+	unsigned long long value; /* MSR 0xC0010055			*/
     struct
     {
 	unsigned long long
@@ -450,7 +465,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long value; /* Per SMT: MSR C001_0114h (VM_CR)	*/
+	unsigned long long value; /* Per SMT: MSR 0xC0010114 (VM_CR)	*/
     struct
     {
 	unsigned long long
@@ -466,7 +481,7 @@ typedef union
 
 typedef union
 {
-	unsigned long long value; /* Per SMT: MSR C001_0118h		*/
+	unsigned long long value; /* Per SMT: MSR 0xC0010118		*/
     struct
     {
 	unsigned long long

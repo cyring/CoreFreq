@@ -71,8 +71,11 @@ typedef struct
 					IORedir :  2-1,
 					Unused	: 16-2;
 		};
-		unsigned short int	CStateLimit,
-					CStateInclude;
+		unsigned short int	CStateLimit;
+		union {
+		unsigned short int	CStateInclude;	/* Intel	*/
+		unsigned short int	CStateBaseAddr; /* AMD Fam. 17h */
+		};
 	} Query;
 
 	struct {
