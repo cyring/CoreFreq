@@ -273,6 +273,8 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
+static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8))) = 0x0;
+
 #define AT( _loc_ )		[ _loc_ ]
 #define OF( _ptr_ , ...)	-> _ptr_ __VA_ARGS__
 #define RO( _ptr_ , ...)	OF( _ptr_##_RO , __VA_ARGS__ )
@@ -6977,7 +6979,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Dump_CPUID(Core);
 
 	/*	Query the FCH for various registers			*/
-	Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+	AMD_FCH_PM_READ16(AMD_FCH_PM_CSTATE_EN, CStateEn, AMD_FCH_LOCK);
 	switch (C3U_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
@@ -6993,8 +6995,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		break;
 	}
 	if (ToggleFeature == 1) {
-		Core_AMD_PM_Write16(AMD_FCH_PM_CSTATE_EN, CStateEn);
-		Core_AMD_PM_Read16(AMD_FCH_PM_CSTATE_EN, CStateEn);
+		AMD_FCH_PM_WRITE16(AMD_FCH_PM_CSTATE_EN,CStateEn, AMD_FCH_LOCK);
+		AMD_FCH_PM_READ16(AMD_FCH_PM_CSTATE_EN, CStateEn, AMD_FCH_LOCK);
 	}
 	if (CStateEn.C1eToC2En)
 	{

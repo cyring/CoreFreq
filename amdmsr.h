@@ -128,36 +128,56 @@
 	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
 #endif
 
-#define Core_AMD_PM_Read16(PM_IndexRegister, PM_DataRegister)		\
+#define AMD_FCH_PM_READ16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK) \
 ({									\
 	__asm__ volatile						\
 	(								\
-		"movl	%1,	%%eax"	"\n\t"				\
-		"movl	$0xcd6, %%edx"	"\n\t"				\
-		"outl	%%eax,	%%dx"	"\n\t"				\
-		"movl	$0xcd7, %%edx"	"\n\t"				\
-		"inw	%%dx,	%%ax"	"\n\t"				\
-		"movw	%%ax,	%0"					\
-		: "=m"	( PM_DataRegister.value )			\
-		: "ir"	( PM_IndexRegister )				\
-		: "%rax", "%rdx", "memory"				\
+		"movl		$0x436f7265, %%edx"	"\n\t"		\
+		"movl		$0x46726571, %%eax"	"\n\t"		\
+		"movl		%%edx, %%ecx"		"\n\t"		\
+		"movl		%%eax, %%ebx"		"\n\t"		\
+		"cmpxchg8b	%[_atom]"		"\n\t"		\
+		"jz 1f" 				"\n\t"		\
+		"movl		%[_reg], %%eax" 	"\n\t"		\
+		"movl		$0xcd6, %%edx"		"\n\t"		\
+		"outl		%%eax, %%dx"		"\n\t"		\
+		"movl		$0xcd7, %%edx"		"\n\t"		\
+		"inw		%%dx, %%ax"		"\n\t"		\
+		"movw		%%ax, %[_data]" 	"\n\t"		\
+		"xorq		%%rax, %%rax"		"\n\t"		\
+		"movq		%%rax, %[_atom]"	"\n\t"		\
+		"1:"							\
+		: [_data]	"=m"	( PM_DataRegister.value )	\
+		: [_reg]	"i"	( PM_IndexRegister ),		\
+		  [_atom]	"m"	( _FCH_LOCK )			\
+		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
 	);								\
 })
 
-#define Core_AMD_PM_Write16(PM_IndexRegister, PM_DataRegister)		\
+#define AMD_FCH_PM_WRITE16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK)\
 ({									\
 	__asm__ volatile						\
 	(								\
-		"movl	%1,	%%eax"	"\n\t"				\
-		"movl	$0xcd6, %%edx"	"\n\t"				\
-		"outl	%%eax,	%%dx"	"\n\t"				\
-		"movw	%0,	%%ax"	"\n\t"				\
-		"movl	$0xcd7, %%edx"	"\n\t"				\
-		"outw	%%ax,	%%dx"					\
+		"movl		$0x436f7265, %%edx"	"\n\t"		\
+		"movl		$0x46726571, %%eax"	"\n\t"		\
+		"movl		%%edx, %%ecx"		"\n\t"		\
+		"movl		%%eax, %%ebx"		"\n\t"		\
+		"cmpxchg8b	%[_atom]"		"\n\t"		\
+		"jz 1f" 				"\n\t"		\
+		"movl		%[_reg], %%eax" 	"\n\t"		\
+		"movl		$0xcd6, %%edx"		"\n\t"		\
+		"outl		%%eax, %%dx"		"\n\t"		\
+		"movw		%[_data], %%ax" 	"\n\t"		\
+		"movl		$0xcd7, %%edx"		"\n\t"		\
+		"outw		%%ax, %%dx"		"\n\t"		\
+		"xorq		%%rax, %%rax"		"\n\t"		\
+		"movq		%%rax, %[_atom]"	"\n\t"		\
+		"1:"							\
 		:							\
-		: "irm" ( PM_DataRegister.value ),			\
-		  "ir"	( PM_IndexRegister )				\
-		: "%rax", "%rdx", "memory"				\
+		: [_data]	"im"	( PM_DataRegister.value ),	\
+		  [_reg]	"i"	( PM_IndexRegister ),		\
+		  [_atom]	"m"	( _FCH_LOCK )			\
+		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
 	);								\
 })
 
