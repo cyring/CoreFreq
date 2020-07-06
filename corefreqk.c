@@ -273,7 +273,7 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
-static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8))) = 0x0;
+static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
 
 #define AT( _loc_ )		[ _loc_ ]
 #define OF( _ptr_ , ...)	-> _ptr_ __VA_ARGS__
@@ -6963,10 +6963,36 @@ static void PerCore_AMD_Family_15h_Query(void *arg)
 	PerCore_AMD_Family_Same_Query(Core);
 }
 
+static void AMD_FCH_PM_Read16(unsigned int IndexRegister, PM16 *DataRegister)
+{
+	unsigned int tries = AMD_FCH_RETRIES_COUNT;
+	unsigned char ret;
+    do {
+	ret = AMD_FCH_PM_READ16(IndexRegister, DataRegister, AMD_FCH_LOCK);
+	if (ret == 0) {
+		mdelay(AMD_FCH_TIME_INTERVAL);
+	}
+	tries--;
+    } while ( (tries != 0) && (ret != 1) );
+}
+
+static void AMD_FCH_PM_Write16(unsigned int IndexRegister, PM16 *DataRegister)
+{
+	unsigned int tries = AMD_FCH_RETRIES_COUNT;
+	unsigned char ret;
+    do {
+	ret = AMD_FCH_PM_WRITE16(IndexRegister, DataRegister, AMD_FCH_LOCK);
+	if (ret == 0) {
+		mdelay(AMD_FCH_TIME_INTERVAL);
+	}
+	tries--;
+    } while ( (tries != 0) && (ret != 1) );
+}
+
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
-	AMD_17_PM_CSTATE CStateEn = {.value = 0};
+	PM16 PM = {.value = 0};
 	int ToggleFeature = 0;
 
 	/*	Query the Min, Max, Target & Turbo P-States		*/
@@ -6979,32 +7005,32 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Dump_CPUID(Core);
 
 	/*	Query the FCH for various registers			*/
-	AMD_FCH_PM_READ16(AMD_FCH_PM_CSTATE_EN, CStateEn, AMD_FCH_LOCK);
+	AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, &PM);
 	switch (C3U_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
-			CStateEn.C1eToC3En = C3U_Enable;
+			PM.CStateEn.C1eToC3En = C3U_Enable;
 			ToggleFeature = 1;
 		break;
 	}
 	switch (C1U_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
-			CStateEn.C1eToC2En = C1U_Enable;
+			PM.CStateEn.C1eToC2En = C1U_Enable;
 			ToggleFeature = 1;
 		break;
 	}
 	if (ToggleFeature == 1) {
-		AMD_FCH_PM_WRITE16(AMD_FCH_PM_CSTATE_EN,CStateEn, AMD_FCH_LOCK);
-		AMD_FCH_PM_READ16(AMD_FCH_PM_CSTATE_EN, CStateEn, AMD_FCH_LOCK);
+		AMD_FCH_PM_Write16(AMD_FCH_PM_CSTATE_EN, &PM);
+		AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, &PM);
 	}
-	if (CStateEn.C1eToC2En)
+	if (PM.CStateEn.C1eToC2En)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
 	}
-	if (CStateEn.C1eToC3En)
+	if (PM.CStateEn.C1eToC3En)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
 	} else {
@@ -12830,6 +12856,8 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
+	AMD_FCH_INITIALIZE(AMD_FCH_LOCK);
+
 	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 	case CRC_INTEL: {
 		Arch[GenuineArch].Query = Query_GenuineIntel;

@@ -128,60 +128,98 @@
 	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
 #endif
 
-#define AMD_FCH_PM_READ16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK) \
+#define AMD_FCH_INITIALIZE(_FCH_LOCK)					\
 ({									\
 	__asm__ volatile						\
 	(								\
-		"movl		$0x436f7265, %%edx"	"\n\t"		\
-		"movl		$0x46726571, %%eax"	"\n\t"		\
-		"movl		%%edx, %%ecx"		"\n\t"		\
-		"movl		%%eax, %%ebx"		"\n\t"		\
+		"leaq		%[_atom], %%rdx"	"\n\t"		\
+		"movq		%[_seed], %%rax"	"\n\t"		\
+		"movq		%%rax, (%%rdx)" 			\
+		:							\
+		: [_atom]	"m"	( _FCH_LOCK ),			\
+		  [_seed]	"i"	( ATOMIC_SEED ) 		\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_PM_READ16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK) \
+({									\
+	volatile unsigned char ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq		%[_seed], %%rdx"	"\n\t"		\
+		"movl		%%edx, %%eax"		"\n\t"		\
+		"movq		$0xffffffff, %%rbx"	"\n\t"		\
+		"andq		%%rbx, %%rax"		"\n\t"		\
+		"shrq		$32, %%rdx"		"\n\t"		\
+		"xorq		%%rcx, %%rcx"		"\n\t"		\
+		"xorq		%%rbx, %%rbx"		"\n\t"		\
 		"cmpxchg8b	%[_atom]"		"\n\t"		\
-		"jz 1f" 				"\n\t"		\
+		"setz		%[_ret]"		"\n\t"		\
+		"jnz 1f" 				"\n\t"		\
 		"movl		%[_reg], %%eax" 	"\n\t"		\
 		"movl		$0xcd6, %%edx"		"\n\t"		\
 		"outl		%%eax, %%dx"		"\n\t"		\
 		"movl		$0xcd7, %%edx"		"\n\t"		\
 		"inw		%%dx, %%ax"		"\n\t"		\
 		"movw		%%ax, %[_data]" 	"\n\t"		\
-		"xorq		%%rax, %%rax"		"\n\t"		\
-		"movq		%%rax, %[_atom]"	"\n\t"		\
+		"# Unlock FCH"				"\n\t"		\
+		"leaq		%[_atom], %%rbx"	"\n\t"		\
+		"movq		%[_seed], %%rcx"	"\n\t"		\
+		"movq		%%rcx, (%%rbx)" 	"\n\t"		\
 		"1:"							\
-		: [_data]	"=m"	( PM_DataRegister.value )	\
+		: [_ret]	"+m"	( ret ),			\
+		  [_data]	"=m"	( PM_DataRegister->value )	\
 		: [_reg]	"i"	( PM_IndexRegister ),		\
-		  [_atom]	"m"	( _FCH_LOCK )			\
+		  [_atom]	"m"	( _FCH_LOCK ),			\
+		  [_seed]	"i"	( ATOMIC_SEED ) 		\
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
 	);								\
+	ret;								\
 })
 
 #define AMD_FCH_PM_WRITE16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK)\
 ({									\
+	volatile unsigned char ret;					\
+									\
 	__asm__ volatile						\
 	(								\
-		"movl		$0x436f7265, %%edx"	"\n\t"		\
-		"movl		$0x46726571, %%eax"	"\n\t"		\
-		"movl		%%edx, %%ecx"		"\n\t"		\
-		"movl		%%eax, %%ebx"		"\n\t"		\
+		"movq		%[_seed], %%rdx"	"\n\t"		\
+		"movl		%%edx, %%eax"		"\n\t"		\
+		"movq		$0xffffffff, %%rbx"	"\n\t"		\
+		"andq		%%rbx, %%rax"		"\n\t"		\
+		"shrq		$32, %%rdx"		"\n\t"		\
+		"xorq		%%rcx, %%rcx"		"\n\t"		\
+		"xorq		%%rbx, %%rbx"		"\n\t"		\
 		"cmpxchg8b	%[_atom]"		"\n\t"		\
-		"jz 1f" 				"\n\t"		\
+		"setz		%[_ret]"		"\n\t"		\
+		"jnz 1f" 				"\n\t"		\
 		"movl		%[_reg], %%eax" 	"\n\t"		\
 		"movl		$0xcd6, %%edx"		"\n\t"		\
 		"outl		%%eax, %%dx"		"\n\t"		\
 		"movw		%[_data], %%ax" 	"\n\t"		\
 		"movl		$0xcd7, %%edx"		"\n\t"		\
 		"outw		%%ax, %%dx"		"\n\t"		\
-		"xorq		%%rax, %%rax"		"\n\t"		\
-		"movq		%%rax, %[_atom]"	"\n\t"		\
+		"# Unlock FCH"				"\n\t"		\
+		"leaq		%[_atom], %%rbx"	"\n\t"		\
+		"movq		%[_seed], %%rcx"	"\n\t"		\
+		"movq		%%rcx, (%%rbx)" 	"\n\t"		\
 		"1:"							\
-		:							\
-		: [_data]	"im"	( PM_DataRegister.value ),	\
+		: [_ret]	"+m"	( ret ) 			\
+		: [_data]	"im"	( PM_DataRegister->value ),	\
 		  [_reg]	"i"	( PM_IndexRegister ),		\
-		  [_atom]	"m"	( _FCH_LOCK )			\
+		  [_atom]	"m"	( _FCH_LOCK ),			\
+		  [_seed]	"i"	( ATOMIC_SEED ) 		\
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
 	);								\
+	ret;								\
 })
 
-#define AMD_FCH_PM_CSTATE_EN			0x7e
+#define AMD_FCH_RETRIES_COUNT	10
+#define AMD_FCH_TIME_INTERVAL	5	/*	in mdelay() unit	*/
+
+#define AMD_FCH_PM_CSTATE_EN	0x0000007e
 
 const struct {
 	unsigned int	MCF,
@@ -758,15 +796,18 @@ typedef struct
 	L3TagInit	: 32-31;
 } L3_CACHE_PARAMETER;
 
-typedef union
+typedef struct
 {	/* PM CStateEn: 16-bits offset I/O=0x7E or MMIO=0xFED80300	*/
-	unsigned short int	value;
-	struct {
-		unsigned short int
-		Reserved1:  4-0,
-		C1eToC2En:  5-4,  /* RW: 1="Put APU into C2 in C1E"	*/
-		C1eToC3En:  6-5,  /* RW: 1="Put APU into C3 in C1E"	*/
-		Reserved2: 16-6;
-	};
+	unsigned short int
+	Reserved1	:  4-0,
+	C1eToC2En	:  5-4,  /* RW: 1="Put APU into C2 in C1E"	*/
+	C1eToC3En	:  6-5,  /* RW: 1="Put APU into C3 in C1E"	*/
+	Reserved2	: 16-6;
 } AMD_17_PM_CSTATE;
+
+typedef union
+{
+	unsigned short int	value;
+	AMD_17_PM_CSTATE	CStateEn;
+} PM16;
 

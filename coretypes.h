@@ -413,6 +413,8 @@ enum {	/* Stick to the Kernel enumeration in include/asm/nmi.h		*/
 
 #define BIT_NMI_MASK	0x0fLLU
 
+#define ATOMIC_SEED	0x436f726546726571LLU
+
 typedef union
 {
 	signed long long	Proc;
