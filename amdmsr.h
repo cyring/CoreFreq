@@ -171,7 +171,7 @@
 		"1:"							\
 		: [_ret]	"+m"	( ret ),			\
 		  [_data]	"=m"	( PM_DataRegister->value )	\
-		: [_reg]	"i"	( PM_IndexRegister ),		\
+		: [_reg]	"im"	( PM_IndexRegister ),		\
 		  [_atom]	"m"	( _FCH_LOCK ),			\
 		  [_seed]	"i"	( ATOMIC_SEED ) 		\
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
@@ -208,7 +208,7 @@
 		"1:"							\
 		: [_ret]	"+m"	( ret ) 			\
 		: [_data]	"im"	( PM_DataRegister->value ),	\
-		  [_reg]	"i"	( PM_IndexRegister ),		\
+		  [_reg]	"im"	( PM_IndexRegister ),		\
 		  [_atom]	"m"	( _FCH_LOCK ),			\
 		  [_seed]	"i"	( ATOMIC_SEED ) 		\
 		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
