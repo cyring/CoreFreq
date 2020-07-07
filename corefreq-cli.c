@@ -5282,7 +5282,7 @@ void ComputeRatioShifts(unsigned int COF,
 	(*highestShift) = maxRatio - COF;
 }
 
-unsigned int MultiplierIsRatio(unsigned int cpu, signed int multiplier)
+unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 {
 	enum RATIO_BOOST boost;
 	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
@@ -5306,7 +5306,7 @@ Window *CreateRatioClock(unsigned long long id,
 			CPU_ITEM_CALLBACK TitleCallback,
 			CUINT oCol)
 {
-	unsigned int cpu = (any == -1) ? Ruler.Top[NC] : any;
+	unsigned int cpu = (any == -1) ? Ruler.Top[NC] : (unsigned int) any;
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
 	ATTRIBUTE *attrib[7] = {
@@ -6160,7 +6160,7 @@ Window *CreateRecorder(unsigned long long id)
 
 Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 {
-	char *sysMsg, *item, *inStr, *outStr;
+	char *sysMsg, *item = NULL, *inStr = NULL, *outStr = NULL;
 	Window *wMsg = NULL;
 
   if (((item = malloc(POPUP_ALLOC)) != NULL)
