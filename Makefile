@@ -162,6 +162,7 @@ help:
 	"|   | MSR_IA32_APERF            |  MSR_IA32_MPERF           |   |\n"\
 	"|   | MSR_CORE_PERF_FIXED_CTR1  |  MSR_CORE_PERF_FIXED_CTR2 |   |\n"\
 	"|   | MSR_PPERF                 |  MSR_PPERF                |   |\n"\
+	"|   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |\n"\
 	"|    -------------------------------------------------------    |\n"\
 	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\

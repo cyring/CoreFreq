@@ -7496,8 +7496,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 #define Counters_Generic(Core, T)					\
 ({									\
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
-			MSR_IA32_APERF, Core->Counter[T].C0.UCC,	\
-			MSR_IA32_MPERF, Core->Counter[T].C0.URC);	\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC);	\
 	/* Derive C1 */							\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
@@ -7573,8 +7573,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
-			MSR_AMD_F17H_APERF, Core->Counter[T].C0.UCC,	\
-			MSR_AMD_F17H_MPERF, Core->Counter[T].C0.URC,	\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_AMD_F17H_IRPERF, Core->Counter[T].INST);	\
 	/* Derive C1 */							\
 	Core->Counter[T].C1 =						\
