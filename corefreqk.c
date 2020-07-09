@@ -724,7 +724,7 @@ static void Query_Features(void *pArg)
 	    } else {
 		iArg->Features->PerfMon.EAX.MonCtrs = 4;
 	    }
-		/* Fixed Performance Counters. */
+		/* Fixed Performance Counters. Intel bits as AMD placeholder */
 		iArg->Features->PerfMon.EDX.FixWidth = 64;
 	    if ( iArg->Features->Power.ECX.HCF_Cap
 	       | iArg->Features->AdvPower.EDX.EffFrqRO )
@@ -732,6 +732,10 @@ static void Query_Features(void *pArg)
 		iArg->Features->PerfMon.EBX.CoreCycles = 0;
 		iArg->Features->PerfMon.EBX.RefCycles  = 0;
 		iArg->Features->PerfMon.EDX.FixCtrs += 2;
+	    }
+	    if (iArg->Features->ExtInfo.ECX.PerfLLC)
+	    {/*PerfCtrExtLLC: Last Level Cache performance counter extensions*/
+		iArg->Features->PerfMon.EBX.LLC_Ref = 0;
 	    }
 	    if (iArg->Features->Info.LargestExtFunc >= 0x80000008)
 	    {

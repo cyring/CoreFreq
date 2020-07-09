@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	79
-#define COREFREQ_REV	9
+#define COREFREQ_MINOR	80
+#define COREFREQ_REV	0
 
 #define CORE_COUNT	256
 
@@ -946,7 +946,7 @@ typedef struct
 		SSE4A	:  7-6,
 		AlignSSE:  8-7,  /* Misaligned SSE mode.		*/
 		PREFETCH:  9-8,  /* 3DNow PREFETCH, PREFETCHW instruction. */
-		/* Family 15h :						*/
+		/* Families [15h - 17h]:				*/
 		OSVW	: 10-9,  /* OS-visible workaround support.	*/
 		IBS	: 11-10, /* Instruction based sampling.		*/
 		XOP	: 12-11, /* Extended operation support.		*/
@@ -966,7 +966,7 @@ typedef struct
 		NotUsed4: 26-25,
 		Data_BP : 27-26, /* Data access breakpoint extension.	*/
 		PerfTSC : 28-27, /* Performance TSC MSR.		*/
-		PerfL2I : 29-28, /* L2I performance counter extensions support*/
+		PerfLLC : 29-28, /* Last level Cache perf. counter extensions*/
 		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
 		NotUsed5: 32-30;
 	};
@@ -1028,8 +1028,33 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	struct
 	{
 		unsigned int
-		Unused1 : 32-0;
-	} EAX, EBX, ECX;
+		Reserved: 32-0;
+	} EAX;
+    union
+    {
+	struct { /* Intel reserved.					*/
+		unsigned int
+		Reserved: 32-0;
+	};
+	struct { /* AMD as April 2020					*/
+		unsigned int
+		MCA_Ovf :  1-0,  /* MCA overflow recovery support	*/
+		SUCCOR	:  2-1,  /* SW uncorrectable error & recovery cap. */
+		HWA	:  3-2,  /* Hardware Assert MSR 0xc00110[df:c0].*/
+		Rsvd_AMD: 32-3;
+	};
+    } EBX;
+    union
+    {
+	struct { /* Intel reserved.					*/
+		unsigned int
+		Reserved: 32-0;
+	};
+	struct { /* AMD as April 2020					*/
+		unsigned int		/* Ratio of the compute unit power */
+		CpuPwrSampleTimeRatio;  /* accumulator sample period to */
+	};				/* the TSC counter period.	*/
+    } ECX;
     union
     {
 	struct { /* Intel reserved.					*/
@@ -1054,7 +1079,7 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 	struct { /* AMD Family 15h					*/
 		unsigned int
 		Fam_0Fh :  7-0,  /* Family 0Fh features.		*/
-		HwPstate:  8-7,  /* Hardware P-state control msr exist ? */
+		HwPstate:  8-7,  /* Hardware P-state control MSR 0xc0010061-63*/
 		TscInv	:  9-8,  /* Invariant TSC ?			*/
 		CPB	: 10-9,  /* Core performance boost.		*/
 		EffFrqRO: 11-10, /* Read-only effective freq. interf. msr ?   */

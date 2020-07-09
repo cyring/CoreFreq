@@ -2208,15 +2208,6 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
 		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix));
 
-	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
-	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
-	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
-		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
-		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
-
 	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 1;	/* Intel */
     if (bix)
     {
@@ -2295,6 +2286,15 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
 		ENABLED(bix));
     }
+	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
+		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
+
 /* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
@@ -2394,6 +2394,8 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
 		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix));
 
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_MISS_LLC).CODE(),
@@ -2408,7 +2410,25 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
 		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, POWERED(bix));
+    }
+    else if( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	bix = Shm->Proc.Features.ExtInfo.ECX.PerfTSC == 1 ? 2 : 0;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s[%7s]", RSC(PERF_MON_TSC).CODE(),
+		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtInfo.ECX.PerfNB == 1 ? 2 : 0;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s[%7s]", RSC(PERF_MON_NB_DF).CODE(),
+		width - 12 - RSZ(PERF_MON_NB_DF), hSpace, POWERED(bix));
+
+	bix = Shm->Proc.Features.ExtInfo.ECX.PerfCore == 1 ? 2 : 0;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
+		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix));
+    }
 	return (reason);
 }
 

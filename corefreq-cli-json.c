@@ -930,6 +930,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					if (vendor == CRC_INTEL) {
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF);
+						json_key(&s, "LZCNT");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.LZCNT);
+						json_key(&s, "PREFETCHW");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PREFETCHW);
 					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 						json_key(&s, "LahfSahf");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.LahfSahf);
@@ -969,6 +973,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.TCE);
 						json_key(&s, "NotUsed2");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed2);
+						json_key(&s, "NodeId");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NodeId);
+						json_key(&s, "NotUsed3");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed3);
 						json_key(&s, "TBM");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.TBM);
 						json_key(&s, "TopoExt");
@@ -977,18 +985,18 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfCore);
 						json_key(&s, "PerfNB");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfNB);
-						json_key(&s, "NotUsed3");
-						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed3);
+						json_key(&s, "NotUsed4");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed4);
 						json_key(&s, "Data_BP");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.Data_BP);
 						json_key(&s, "PerfTSC");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfTSC);
-						json_key(&s, "PerfL2I");
-						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfL2I);
+						json_key(&s, "PerfLLC");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfLLC);
 						json_key(&s, "MWaitExt");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.MWaitExt);
-						json_key(&s, "NotUsed4");
-						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed4);
+						json_key(&s, "NotUsed5");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.NotUsed5);
 					} else {
 						fprintf(stderr, "Unknown vendor");
 					}
@@ -1096,22 +1104,28 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_key(&s, "EAX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Unused1");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EAX.Unused1);
+					json_key(&s, "Reserved");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EAX.Reserved);
 					json_end_object(&s);
 				}
 				json_key(&s, "EBX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Unused1");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EBX.Unused1);
+					json_key(&s, "MCA_Ovf");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EBX.MCA_Ovf);
+					json_key(&s, "SUCCOR");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EBX.SUCCOR);
+					json_key(&s, "HWA");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EBX.HWA);
+					json_key(&s, "Rsvd_AMD");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EBX.Rsvd_AMD);
 					json_end_object(&s);
 				}
 				json_key(&s, "ECX");
 				{
 					json_start_object(&s);
-					json_key(&s, "Unused1");
-					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.ECX.Unused1);
+					json_key(&s, "CpuPwrSampleTimeRatio");
+					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.ECX.CpuPwrSampleTimeRatio);
 					json_end_object(&s);
 				}
 				json_key(&s, "EDX");
@@ -1123,9 +1137,9 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					} else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "TS");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.TS);
-			json_key(&s, "FID");
+			json_key(&s, "Legacy_FID");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.FID);
-			json_key(&s, "VID");
+			json_key(&s, "Legacy_VID");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.VID);
 			json_key(&s, "TTP");
 			json_literal(&s, "%u", (unsigned) Shm->Proc.Features.AdvPower.EDX.TTP);
