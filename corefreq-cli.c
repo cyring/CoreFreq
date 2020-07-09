@@ -1567,6 +1567,11 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sHLE   [%7s]", RSC(FEATURES_HLE).CODE(),
 		width - 18 - RSZ(FEATURES_HLE), hSpace, POWERED(bix));
 
+	bix = Shm->Proc.Features.ExtInfo.ECX.IBS == 1;
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sIBS   [%7s]", RSC(FEATURES_IBS).CODE(),
+		width - 18 - RSZ(FEATURES_IBS), hSpace, POWERED(bix));
+
 	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),

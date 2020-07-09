@@ -238,6 +238,7 @@
 #define RSC_FEATURES_FAST_STR_CODE_FR	"Fast-String Operation"
 #define RSC_FEATURES_FMA_CODE_FR	"Fused Multiply Add"
 #define RSC_FEATURES_HLE_CODE_FR	"Hardware Lock Elision"
+#define RSC_FEATURES_IBS_CODE_FR	"Instruction Based Sampling"
 #define RSC_FEATURES_LM_CODE_FR 	"Long Mode 64 bits"
 #define RSC_FEATURES_LWP_CODE_FR	"LightWeight Profiling"
 #define RSC_FEATURES_MCA_CODE_FR	"Machine-Check Architecture"
