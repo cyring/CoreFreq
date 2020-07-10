@@ -404,7 +404,7 @@ typedef struct
 
 	unsigned int			Boost[BOOST(SIZE)];
 	struct {
-		unsigned int		Perf;
+		unsigned int		Perf;	/* STATUS or BOOST P-State */
 	} Ratio;
 } CORE_RO;
 

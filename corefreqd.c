@@ -920,6 +920,10 @@ static void *Core_Cycle(void *arg)
   do {
 	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
 
+	const unsigned int RelativeFreqFromBCLK = \
+				Shm->Proc.Features.Std.ECX.Hyperv
+				| !Shm->Proc.Features.InvariantTSC;
+
     while (!BITCLR(LOCKLESS, Core_RW->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
@@ -984,18 +988,18 @@ static void *Core_Cycle(void *arg)
 	/* Apply the relative Ratio formula.				*/
 	CFlip->Relative.Ratio = (dUCC * Cpu->Boost[BOOST(MAX)]) / dTSC;
 
-	if ((Shm->Proc.PM_version >= 2) && !Shm->Proc.Features.Std.ECX.Hyperv)
-	{
+    if ( __builtin_expect(RelativeFreqFromBCLK, 0))
+    {
 	/* Case: Relative Frequency = UCC per second.			*/
-		CFlip->Relative.Freq = dUCC / (Shm->Sleep.Interval * 1000);
-	} else {
+	CFlip->Relative.Freq = dUCC / (Shm->Sleep.Interval * 1000);
+    } else {
 	/* Case: Relative Frequency = Relative Ratio x Bus Clock Frequency */
-	  CFlip->Relative.Freq=(double)REL_FREQ(Cpu->Boost[BOOST(MAX)], \
+	CFlip->Relative.Freq = (double)REL_FREQ(Cpu->Boost[BOOST(MAX)], \
 						CFlip->Relative.Ratio,	\
 						Core->Clock,		\
 						Shm->Sleep.Interval)
 				/ (Shm->Sleep.Interval * 1000);
-	}
+    }
 
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
@@ -1042,10 +1046,6 @@ static void *Core_Cycle(void *arg)
 	CFlip->Absolute.Perf	= ABS_FREQ_MHz(
 					__typeof__(CFlip->Absolute.Perf),
 					Core->Ratio.Perf, CFlip->Clock
-				);
-	CFlip->Absolute.Target = ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Target),
-					Core->Boost[BOOST(TGT)], CFlip->Clock
 				);
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;

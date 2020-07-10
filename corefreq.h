@@ -192,10 +192,9 @@ typedef struct
 		} Relative;
 
 		struct {
-			double		Perf,
-					Target;
+			double		Perf;
 		    struct {
-			unsigned int	Perf;
+			unsigned int	Perf;	/* STATUS or BOOST P-State */
 		    } Ratio;
 		} Absolute;
 

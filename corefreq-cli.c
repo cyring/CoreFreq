@@ -9294,7 +9294,13 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	/* Reset the Top Frequency					*/
 	if (!draw.Flag.clkOrLd) {
-	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
+	    if (draw.Load) {
+		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
+				Shm->Cpu[Shm->Proc.Top].Boost[BOOST(TGT)]);
+	    } else {
+		Clock2LCD(layer, 0,row, CFlop->Relative.Freq,
+					CFlop->Relative.Ratio);
+	    }
 	} else {
 		double percent = 100.f * Shm->Proc.Avg.C0;
 
@@ -10030,13 +10036,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] =		\
 						Pwr[Shm->Proc.Technology.PC6];
-/*
-	snprintf(buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
-	hTech1.code[30] = buffer[0];
-	hTech1.code[31] = buffer[1];
-	hTech1.code[32] = buffer[2];
-*/
 	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] =		\
 	Pwr[(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0)];
 
@@ -11928,20 +11928,32 @@ void Draw_Header(Layer *layer, CUINT row)
 		.FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 
 	/* Print the Top value if delta exists with the previous one	*/
-	if (!draw.Flag.clkOrLd) { /* Frequency MHz			*/
-	    if (previous.TopFreq != CFlop->Relative.Freq) {
+    if (!draw.Flag.clkOrLd) { /* Frequency MHz			*/
+      if (draw.Load) {
+	if (previous.TopFreq != CFlop->Absolute.Perf)
+	{
+		previous.TopFreq = CFlop->Absolute.Perf;
+
+		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
+				Shm->Cpu[Shm->Proc.Top].Boost[BOOST(TGT)]);
+	}
+      } else {
+	if (previous.TopFreq != CFlop->Relative.Freq)
+	{
 		previous.TopFreq = CFlop->Relative.Freq;
 
-	      Clock2LCD(layer,0,row,CFlop->Relative.Freq,CFlop->Relative.Ratio);
-	    }
-	} else { /* C0 C-State % load					*/
+		Clock2LCD(layer, 0,row, CFlop->Relative.Freq,
+					CFlop->Relative.Ratio);
+	}
+      }
+    } else { /* C0 C-State % load					*/
 		if (previous.TopLoad != Shm->Proc.Avg.C0) {
 			double percent = 100.f * Shm->Proc.Avg.C0;
 			previous.TopLoad = Shm->Proc.Avg.C0;
 
 			Load2LCD(layer, 0, row, percent);
 		}
-	}
+    }
 	/* Print the focused BCLK					*/
 	row += 2;
 
