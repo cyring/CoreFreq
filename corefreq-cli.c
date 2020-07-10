@@ -5445,6 +5445,21 @@ Window *CreateRatioClock(unsigned long long id,
 	return (wCK);
 }
 
+void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int cpu = data.uint[0];
+	const unsigned int bix = BITVAL_CC(Shm->roomSched, cpu);
+	const signed pos = grid->cell.length - 8;
+
+	memcpy( &grid->cell.item[pos],
+		ENABLED(bix), __builtin_strlen(ENABLED(0)) );
+
+	memcpy( &grid->cell.attr[pos],
+		bix ? &RSC(CREATE_SELECT_CPU_COND2).ATTR()[pos]
+		    : &RSC(CREATE_SELECT_CPU_COND1).ATTR()[pos],
+		__builtin_strlen(ENABLED(0)) );
+}
+
 Window *CreateSelectCPU(unsigned long long id)
 {
 	Window *wUSR = CreateWindow(	wLayer, id,
@@ -5453,28 +5468,32 @@ Window *CreateSelectCPU(unsigned long long id)
 					WINFLAG_NO_STOCK );
     if (wUSR != NULL) {
 	ASCII *item = malloc(7+10+11+11+11+1);
-	unsigned int cpu;
+	unsigned int cpu, bix;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
+		bix = BITVAL_CC(Shm->roomSched, cpu);
 		snprintf((char*) item, 7+10+11+11+11+1,
-				"  %03u  %4d%6d%6d   ",
+				"  %03u  %4d%6d%6d    [%3s]    ",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
 				Shm->Cpu[cpu].Topology.CoreID,
-				Shm->Cpu[cpu].Topology.ThreadID);
+				Shm->Cpu[cpu].Topology.ThreadID,
+				ENABLED(bix));
 
 	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		StoreTCell(wUSR, SCANKEY_NULL,
-				item, RSC(CREATE_SELECT_CPU_COND1).ATTR());
-	    } else {
-		StoreTCell(wUSR, CPU_SELECT | cpu,
 				item, RSC(CREATE_SELECT_CPU_COND0).ATTR());
+	    } else {
+		GridCall(StoreTCell(wUSR, CPU_SELECT | cpu,
+				item, bix ? RSC(CREATE_SELECT_CPU_COND2).ATTR()
+					: RSC(CREATE_SELECT_CPU_COND1).ATTR()),
+			UpdateRoomSchedule, (unsigned int) cpu);
 	    }
 	}
 	StoreWindow(wUSR,	.title, (char*) RSC(SELECT_CPU_TITLE).CODE());
 	StoreWindow(wUSR,	.color[1].title, wUSR->hook.color[1].border);
 
-	StoreWindow(wUSR,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wUSR,	.key.Enter,	Enter_StickyCell);
 	StoreWindow(wUSR,	.key.Down,	MotionDown_Win);
 	StoreWindow(wUSR,	.key.Up,	MotionUp_Win);
 	StoreWindow(wUSR,	.key.PgUp,	MotionPgUp_Win);

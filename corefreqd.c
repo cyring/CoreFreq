@@ -34,7 +34,6 @@
 /* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
 static Bit256 roomSeed	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomCore	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
-static Bit256 roomSched __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 static Bit64 PendingSync __attribute__ ((aligned (8))) = 0x0;
@@ -1068,15 +1067,15 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 	case RESET_CSP:
 		for (seek = 0; seek < Shm->Proc.CPU.Count; seek++) {
 			if (seek == Shm->Proc.Service.Core) {
-				BITSET_CC(LOCKLESS, roomSched, seek);
+				BITSET_CC(LOCKLESS, Shm->roomSched, seek);
 			} else {
-				BITCLR_CC(LOCKLESS, roomSched, seek);
+				BITCLR_CC(LOCKLESS, Shm->roomSched, seek);
 			}
 		}
 		break;
 	case ALL_SMT:
 		if (cpu == Shm->Proc.Service.Core) {
-			BITSTOR_CC(LOCKLESS, roomSched, roomSeed);
+			BITSTOR_CC(LOCKLESS, Shm->roomSched, roomSeed);
 		}
 		break;
 	case RAND_SMT:
@@ -1084,8 +1083,8 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 			seek = (unsigned int) rand();
 			seek = seek % Shm->Proc.CPU.Count;
 		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR_CC(LOCKLESS, roomSched, cpu);
-		BITSET_CC(LOCKLESS, roomSched, seek);
+		BITCLR_CC(LOCKLESS, Shm->roomSched, cpu);
+		BITSET_CC(LOCKLESS, Shm->roomSched, seek);
 		break;
 	case RR_SMT:
 		seek = cpu;
@@ -1095,11 +1094,11 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 				seek = 0;
 			}
 		} while (BITVAL(Shm->Cpu[seek].OffLine, OS));
-		BITCLR_CC(LOCKLESS, roomSched, cpu);
-		BITSET_CC(LOCKLESS, roomSched, seek);
+		BITCLR_CC(LOCKLESS, Shm->roomSched, cpu);
+		BITSET_CC(LOCKLESS, Shm->roomSched, seek);
 		break;
 	case USR_CPU:
-		BITSET_CC(LOCKLESS, roomSched, cpu);
+		BITSET_CC(LOCKLESS, Shm->roomSched, cpu);
 		break;
 	}
 }
@@ -1157,7 +1156,7 @@ static void *Child_Thread(void *arg)
 		while ( BITVAL(Shm->Proc.Sync, BURN)
 		    && !BITVAL(Shutdown, SYNC) )
 		{
-		    if (BITVAL_CC(roomSched, cpu)) {
+		    if (BITVAL_CC(Shm->roomSched, cpu)) {
 			CallSliceFunc(	Shm, cpu,
 					Arg->Ref->Slice.Func,
 					Arg->Ref->Slice.arg);
@@ -4451,7 +4450,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 				break;
 			}
 		}
-		BITSTOR_CC(BUS_LOCK, roomSched, roomClear);
+		BITSTOR_CC(BUS_LOCK, Ref->Shm->roomSched, roomClear);
 
 		Ref->Slice.Func = Slice_NOP;
 		Ref->Slice.arg = 0;

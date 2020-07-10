@@ -395,9 +395,10 @@ ATTRIBUTE Rsc_CreateRatioClock_Cond_Attr[7][29] = {
 	RSC_CREATE_RATIO_CLOCK_COND6_ATTR
 };
 
-ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[2][26] = {
+ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[3][36] = {
 	RSC_CREATE_SELECT_CPU_COND0_ATTR,
-	RSC_CREATE_SELECT_CPU_COND1_ATTR
+	RSC_CREATE_SELECT_CPU_COND1_ATTR,
+	RSC_CREATE_SELECT_CPU_COND2_ATTR
 };
 
 ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
@@ -714,6 +715,7 @@ RESOURCE_ST Resource[] = {
     [RSC_CREATE_RATIO_CLOCK_COND6]=LDB( Rsc_CreateRatioClock_Cond_Attr[6]),
     [RSC_CREATE_SELECT_CPU_COND0] = LDB(Rsc_CreateSelectCPU_Cond_Attr[0]),
     [RSC_CREATE_SELECT_CPU_COND1] = LDB(Rsc_CreateSelectCPU_Cond_Attr[1]),
+    [RSC_CREATE_SELECT_CPU_COND2] = LDB(Rsc_CreateSelectCPU_Cond_Attr[2]),
     [RSC_HOT_EVENT_COND0]	= LDB(	Rsc_HotEvent_Cond_Attr[0]),
     [RSC_HOT_EVENT_COND1]	= LDB(	Rsc_HotEvent_Cond_Attr[1]),
     [RSC_HOT_EVENT_COND2]	= LDB(	Rsc_HotEvent_Cond_Attr[2]),

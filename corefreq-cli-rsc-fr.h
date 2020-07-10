@@ -536,7 +536,7 @@
 #define RSC_RATIO_CLOCK_TITLE_CODE_FR	" %s Ratio Freq. "
 #define RSC_UNCORE_CLOCK_TITLE_CODE_FR	" %s Uncore Freq. "
 
-#define RSC_SELECT_CPU_TITLE_CODE_FR	" CPU   Pkg  Core Thread "
+#define RSC_SELECT_CPU_TITLE_CODE_FR	" CPU   Pkg  Core Thread Planifier "
 #define RSC_SELECT_FREQ_TITLE_CODE_FR	" CPU   Pkg  Core Thread "	\
 					"  Frequence   Ratio "
 
