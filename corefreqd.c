@@ -4470,14 +4470,10 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
      {
       if ((porder->ctrl.cmd == ctrl.cmd) &&  (porder->ctrl.sub == ctrl.sub))
       {
-       if (!BITVAL(Ref->Shm->Proc.Sync, BURN))
+       if ( !BITVAL(Ref->Shm->Proc.Sync, BURN)
+	|| ((Ref->Slice.Func == Slice_Turbo) && (Ref->Slice.pattern == USR_CPU)
+		&& (ctrl.cmd == COREFREQ_ORDER_TURBO) && (ctrl.sub == USR_CPU)))
        {
-	while (BITWISEAND_CC(BUS_LOCK, roomCore, roomSeed))
-	{
-		if (BITVAL(Shutdown, SYNC)) {	/* SpinLock */
-			break;
-		}
-	}
 	SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
 
 	Ref->Slice.Func = porder->func;
