@@ -3560,6 +3560,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen_APU:
       case AMD_ZenPlus:
       case AMD_ZenPlus_APU:
+      case AMD_Zen_APU_Rv2:
       case AMD_EPYC_Rome:
       case AMD_Zen2_CPK:
       case AMD_Zen2_APU:

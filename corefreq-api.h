@@ -1331,6 +1331,10 @@ typedef struct
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1
 #endif
+/* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
+#ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631
+#endif
 /* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3	0x1463	/* Zeppelin */
