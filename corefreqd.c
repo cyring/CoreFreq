@@ -1098,7 +1098,7 @@ void SliceScheduling(SHM_STRUCT *Shm, unsigned int cpu, enum PATTERN pattern)
 		BITSET_CC(LOCKLESS, Shm->roomSched, seek);
 		break;
 	case USR_CPU:
-		BITSET_CC(LOCKLESS, Shm->roomSched, cpu);
+		/*	NOP	*/
 		break;
 	}
 }
@@ -4440,6 +4440,7 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
    case COREFREQ_ORDER_MACHINE:
 	switch (ctrl.arg) {
 	case COREFREQ_TOGGLE_OFF:
+	SCHEDULER_STOP:
 	    if (BITVAL(Ref->Shm->Proc.Sync, BURN))
 	    {
 		BITCLR(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
@@ -4473,13 +4474,30 @@ void Child_Ring_Handler(REF *Ref, unsigned int rid)
 	|| ((Ref->Slice.Func == Slice_Turbo) && (Ref->Slice.pattern == USR_CPU)
 		&& (ctrl.cmd == COREFREQ_ORDER_TURBO) && (ctrl.sub == USR_CPU)))
        {
-	SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
+	if (ctrl.sub == USR_CPU) {
+		if (BITVAL_CC(Ref->Shm->roomSched, ctrl.dl.lo))
+		{
+			BITCLR_CC(LOCKLESS, Ref->Shm->roomSched, ctrl.dl.lo);
 
-	Ref->Slice.Func = porder->func;
-	Ref->Slice.arg  = porder->ctrl.dl.lo;
-	Ref->Slice.pattern = porder->pattern;
+		    if (!BITWISEAND_CC(BUS_LOCK, Ref->Shm->roomSched, roomSeed))
+		    {
+			goto SCHEDULER_STOP;
+		    }
+		} else {
+			BITSET_CC(LOCKLESS, Ref->Shm->roomSched, ctrl.dl.lo);
 
-	BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
+			goto SCHEDULER_START;
+		}
+	} else {
+		SliceScheduling(Ref->Shm, ctrl.dl.lo, porder->pattern);
+
+	SCHEDULER_START:
+		Ref->Slice.Func = porder->func;
+		Ref->Slice.arg  = porder->ctrl.dl.lo;
+		Ref->Slice.pattern = porder->pattern;
+
+		BITSET(BUS_LOCK, Ref->Shm->Proc.Sync, BURN);
+	}
 	/* Notify the Slice module is starting up			*/
 	BITWISESET(LOCKLESS, Ref->Shm->Proc.Sync, BIT_MASK_NTFY);
        }

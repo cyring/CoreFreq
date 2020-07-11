@@ -5473,7 +5473,7 @@ Window *CreateSelectCPU(unsigned long long id)
 	{
 		bix = BITVAL_CC(Shm->roomSched, cpu);
 		snprintf((char*) item, 7+10+11+11+11+1,
-				"  %03u  %4d%6d%6d    [%3s]    ",
+				"  %03u  %4d%6d%6d    <%3s>    ",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
 				Shm->Cpu[cpu].Topology.CoreID,
@@ -8624,7 +8624,7 @@ int Shortcut(SCANKEY *scan)
 	Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_TOOLS_TITLE).CODE(),
 		RSC(BOX_TOOLS_STOP_BURN).CODE(), BITVAL(Shm->Proc.Sync, BURN) ?
-					MakeAttr(YELLOW,0,BLACK,0):blankAttr,
+					MakeAttr(RED,0,BLACK,1) : blankAttr,
 				BITVAL(Shm->Proc.Sync, BURN) ?
 					BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
 	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0], BOXKEY_TOOLS_ATOMIC,
