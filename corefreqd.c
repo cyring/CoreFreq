@@ -1398,13 +1398,19 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RO->ARCH_CAP_Mask );
 
 	Shm->Proc.Mechanisms.IBRS = (
-		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap+(2 * IBRS)
+		( Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
+		| Shm->Proc.Features.leaf80000008.EBX.IBRS )
+		+ (2 * IBRS)
 	);
 	Shm->Proc.Mechanisms.STIBP = (
-		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap + (2 * STIBP)
+		( Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap
+		| Shm->Proc.Features.leaf80000008.EBX.STIBP )
+		+ (2 * STIBP)
 	);
 	Shm->Proc.Mechanisms.SSBD = (
-		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap + (2 * SSBD)
+		( Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap
+		| Shm->Proc.Features.leaf80000008.EBX.SSBD )
+		+ (2 * SSBD)
 	);
 	Shm->Proc.Mechanisms.RDCL_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * RDCL_NO)

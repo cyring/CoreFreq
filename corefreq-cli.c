@@ -1760,7 +1760,6 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
 		width - 19 - RSZ(FEATURES_XTPR), hSpace, POWERED(bix));
 /* Section Mark */
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 	PUT(SCANKEY_NULL, attrib[0], width, 0,
 		"%s", RSC(FEAT_SECTION_MECH).CODE());
 
@@ -1769,7 +1768,8 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sIBRS   [%7s]", RSC(MECH_IBRS).CODE(),
 		width - 19 - RSZ(MECH_IBRS), hSpace, MECH[bix]);
 
-	bix = Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1;
+	bix = (Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1)
+	   || (Shm->Proc.Features.leaf80000008.EBX.IBPB == 1);
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
 		width - 19 - RSZ(MECH_IBPB), hSpace, MECH[bix]);
@@ -1784,6 +1784,8 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
 		width - 19 - RSZ(MECH_SSBD), hSpace, MECH[bix]);
 
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
 	bix = Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1;
 	PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),

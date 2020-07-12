@@ -4,6 +4,14 @@
  * Licenses: GPL2
  */
 
+#ifndef MSR_AMD_SPEC_CTRL
+	#define MSR_AMD_SPEC_CTRL		0x00000048
+#endif
+
+#ifndef MSR_AMD_PRED_CMD
+	#define MSR_AMD_PRED_CMD		0x00000049
+#endif
+
 #ifndef MSR_AMD_F17H_MPERF
 	#define MSR_AMD_F17H_MPERF		0xc00000e7
 #endif
@@ -235,6 +243,30 @@ const struct {
 /* 000110b */	{14, {26, 27, 28, 29, 30}},
 /* 000111b */	{15, {28, 29, 30, 31, 32}},
 };
+
+typedef union
+{	/* Speculative Control: SMT MSR 0x00000048			*/
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	IBRS		:  1-0,  /*RW: Indirect Branch Restriction Speculation*/
+	STIBP		:  2-1,  /*RW: Single Thread Indirect Branch Predictor*/
+	SSBD		:  3-2,  /*RW: Speculative Store Bypass Disable */
+	Reserved	: 64-3;
+    };
+} AMD_SPEC_CTRL;
+
+typedef union
+{	/* Speculative Control: Per Core MSR 0x00000049			*/
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	IBPB		:  1-0,  /* WO: Indirect Branch Prediction Barrier */
+	Reserved	: 64-1;
+    };
+} AMD_PRED_CMD;
 
 typedef union
 {

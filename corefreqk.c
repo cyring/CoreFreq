@@ -6262,6 +6262,9 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
 	}
 	if (WrRdMSR == 1)
 	{
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 11)
+		x86_spec_ctrl_base = Spec_Ctrl.value;
+	    #endif
 		WRMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 		RDMSR(Spec_Ctrl, MSR_IA32_SPEC_CTRL);
 	}
@@ -6374,6 +6377,69 @@ void Intel_Mitigation_Mechanisms(CORE_RO *Core)
       }
      }
     }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
+}
+
+void AMD_Mitigation_Mechanisms(CORE_RO *Core)
+{
+	AMD_SPEC_CTRL Spec_Ctrl = {.value = 0};
+	AMD_PRED_CMD  Pred_Cmd  = {.value = 0};
+	unsigned short WrRdMSR = 0;
+
+	RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
+
+	if ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
+	 || (Mech_IBRS == COREFREQ_TOGGLE_ON))
+	{
+		Spec_Ctrl.IBRS = Mech_IBRS;
+		WrRdMSR = 1;
+	}
+	if ((Mech_STIBP == COREFREQ_TOGGLE_OFF)
+	 || (Mech_STIBP == COREFREQ_TOGGLE_ON))
+	{
+		Spec_Ctrl.STIBP = Mech_STIBP;
+		WrRdMSR = 1;
+	}
+	if ((Mech_SSBD == COREFREQ_TOGGLE_OFF)
+	 || (Mech_SSBD == COREFREQ_TOGGLE_ON))
+	{
+		Spec_Ctrl.SSBD = Mech_SSBD;
+		WrRdMSR = 1;
+	}
+	if (WrRdMSR == 1)
+	{
+	    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 11)
+		x86_spec_ctrl_base = Spec_Ctrl.value;
+	    #endif
+		WRMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
+		RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
+	}
+	if (Spec_Ctrl.IBRS) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->IBRS, Core->Bind);
+	}
+	if (Spec_Ctrl.STIBP) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->STIBP, Core->Bind);
+	}
+	if (Spec_Ctrl.SSBD) {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
+	}
+	if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBPB
+	&& ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
+	 || (Mech_IBPB == COREFREQ_TOGGLE_ON)))
+	{
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    {
+		Pred_Cmd.IBPB = Mech_IBPB;
+		WRMSR(Pred_Cmd, MSR_AMD_PRED_CMD);
+	    }
+	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask, Core->Bind);
 }
@@ -7024,6 +7090,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	Compute_AMD_Zen_Boost(Core->Bind);
 
 	SystemRegisters(Core);
+
+	AMD_Mitigation_Mechanisms(Core);
 
 	AMD_Microcode(Core);
 
