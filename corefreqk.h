@@ -3739,7 +3739,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 3600X",	\
+	.Brand = ZLIST( "AMD Ryzen 5 3600XT",	\
+			"AMD Ryzen 5 3600X",	\
 			"AMD Ryzen 5 3600"	),
 	.Boost = {+6, +1},
 	.Param.Offset = { 0, 0},
@@ -3758,6 +3759,17 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 3800XT"),
+	.Boost = {+7, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
@@ -3782,6 +3794,17 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 9 3900XT"),
+	.Boost = {+8, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
