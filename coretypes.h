@@ -922,7 +922,7 @@ typedef struct
 		Brand_ID	:  8-0,
 		CLFSH_Size	: 16-8,
 		Max_SMT_ID	: 24-16,
-		Init_APIC_ID	: 32-24;
+		Init_APIC_ID	: 32-24; /* [31-28] PkgType:0=FP6,2=AM4 */
 	} EBX;
     union
     {
@@ -969,7 +969,8 @@ typedef struct
 		PerfTSC : 28-27, /* Performance TSC MSR.		*/
 		PerfLLC : 29-28, /* Last level Cache perf. counter extensions*/
 		MWaitExt: 30-29, /* MWAITX/MONITORX support.		*/
-		NotUsed5: 32-30;
+		AdMskExt: 31-30, /* Addr Mask Ext support for Inst Breakpoint*/
+		NotUsed5: 32-31;
 	};
     } ECX;
     union
@@ -1042,7 +1043,8 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		MCA_Ovf :  1-0,  /* MCA overflow recovery support	*/
 		SUCCOR	:  2-1,  /* SW uncorrectable error & recovery cap. */
 		HWA	:  3-2,  /* Hardware Assert MSR 0xc00110[df:c0].*/
-		Rsvd_AMD: 32-3;
+		Scal_MCA:  4-3,  /* ScalableMca w/ 1 is supported	*/
+		Rsvd_AMD: 32-4;
 	};
     } EBX;
     union
@@ -1086,7 +1088,9 @@ typedef struct	/* Architectural Performance Monitoring Leaf.		*/
 		EffFrqRO: 11-10, /* Read-only effective freq. interf. msr ?   */
 		ProcFb	: 12-11, /* Processor feedback interf. available if 1 */
 		ProcPwr : 13-12, /* Core power reporting interface supported. */
-		Reserved: 32-13;
+		ConStdBy: 14-13, /* ConnectedStandby			*/
+		RAPL	: 15-14, /* RAPL support ?			*/
+		Reserved: 32-15;
 	};
       };
     } EDX;
@@ -1102,12 +1106,31 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved	: 32-24;
 	} EAX;
 	struct
-	{
+	{	/* AMD Family 17h					*/
 		unsigned int
-		CLZERO		:  1-0,  /* AMD Clear Zero Instruction	*/
-		IRPerf		:  2-1,  /* AMD Inst. Retired Counter support */
-		XSaveErPtr	:  3-2,  /* AMD FX___ error pointers suuport  */
-		Reserved	: 32-3;
+		CLZERO		:  1-0,  /* Clear Zero Instruction	*/
+		IRPerf		:  2-1,  /* Inst. Retired Counter support */
+		XSaveErPtr	:  3-2,  /* FX___ error pointers support */
+		Reserved1	:  4-3,
+		RDPRU		:  5-4,  /* MPERF/APERF at user level	*/
+		Reserved2	:  6-5,
+		MBE		:  7-6,  /* Memory Bandwidth Enforcement */
+		Reserved3	:  8-7,
+		MCOMMIT 	:  9-8,  /* Memory Commit Instruction	*/
+		WBNOINVD	: 10-9,
+		Reserved4	: 12-10,
+		IBPB		: 13-12, /* Indirect Branch Prediction Barrier*/
+		INT_WBINVD	: 14-13, /* Interruptible WBINVD,WBNOINVD */
+		IBRS		: 15-14, /* IBR Speculation		*/
+		STIBP		: 16-15, /* Single Thread Indirect Branch Pred*/
+		Reserved5	: 17-16,
+		STIBP_AlwaysOn	: 18-17,
+		IBRS_Preferred	: 19-18,
+		IBRS_ProtectMode: 20-19,
+		Reserved6	: 23-20,
+		PPIN		: 24-23, /* Protected Processor Inventory Num */
+		SSBD		: 25-24, /* Speculative Store Bypass Disable */
+		Reserved	: 32-25;
 	} EBX;
 	struct { /* AMD reserved					*/
 		unsigned int
@@ -1118,9 +1141,11 @@ typedef struct	/* Processor Capacity Leaf.				*/
 		Reserved2	: 32-18;
 	} ECX;
 	struct
-	{
+	{	/* AMD Family 17h					*/
 		unsigned int
-		Reserved	: 32-0;
+		Reserved1	: 16-0,
+		RdpruMax	: 24-16, /* RDPRU Instruction max input */
+		Reserved2	: 32-24;
 	} EDX;
 } CPUID_0x80000008;
 
