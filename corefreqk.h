@@ -1743,6 +1743,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
+	/* TODO(According to /arch/x86/kernel/amd_nb.c: DF_F3 = 0x1463	*/
+	{
+		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
+	},
 #endif /* CONFIG_AMD_NB */
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
@@ -1758,6 +1763,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	/* TODO(Assumption: PCI Root Device ID = 0x1450)		*/
+	{
+		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	{0, }
