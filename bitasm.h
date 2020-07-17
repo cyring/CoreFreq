@@ -37,6 +37,11 @@ typedef unsigned long long int	Bit256[4];
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
 
+#define ATOMIC_SEED 0x436f726546726571LLU
+
+#define BIT_IO_RETRIES_COUNT	10
+#define BIT_IO_TIME_INTERVAL	5	/*	in mdelay() unit	*/
+
 #define LOCKLESS " "
 #define BUS_LOCK "lock "
 
@@ -481,22 +486,89 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	__asm__ volatile						\
 	(								\
-		"movq	$1, %%rdx"		"\n\t"			\
-		"mov	%[len], %%ecx"		"\n\t"			\
-		"shlq	%%cl, %%rdx"		"\n\t"			\
-		"decq	%%rdx"			"\n\t"			\
-		"mov	%[ofs], %%ecx"		"\n\t"			\
-		"shlq	%%cl, %%rdx"		"\n\t"			\
-		"andq	%[src], %%rdx"		"\n\t"			\
-		"shrq	%%cl, %%rdx"		"\n\t"			\
-		"movq	%%rdx, %[dest]" 				\
-		: [dest] "=m" (_dest)					\
-		: [src] "irm" (_src),					\
-		  [ofs] "irm" (_offset),				\
-		  [len] "irm" (_length) 				\
+		"movq	$1	,	%%rdx"		"\n\t"		\
+		"mov	%[len]	,	%%ecx"		"\n\t"		\
+		"shlq	%%cl	,	%%rdx"		"\n\t"		\
+		"decq	%%rdx"				"\n\t"		\
+		"mov	%[ofs]	,	%%ecx"		"\n\t"		\
+		"shlq	%%cl	,	%%rdx"		"\n\t"		\
+		"andq	%[src]	,	%%rdx"		"\n\t"		\
+		"shrq	%%cl	,	%%rdx"		"\n\t"		\
+		"movq	%%rdx	,	%[dest]" 			\
+		: [dest]	"=m"	(_dest) 			\
+		: [src] 	"irm"	(_src) ,			\
+		  [ofs] 	"irm"	(_offset),			\
+		  [len] 	"irm"	(_length) 			\
 		: "%ecx", "%rdx", "cc", "memory"			\
 	);								\
 	_dest;								\
+})
+
+#define BIT_ATOM_INIT(atom, seed)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		"leaq	%[_atom],	%%rdx"		"\n\t"		\
+		"movq	%[_seed],	%%rax"		"\n\t"		\
+		"movq	%%rax	,	(%%rdx)" 			\
+		:							\
+		: [_atom]	"m"	(atom) ,			\
+		  [_seed]	"i"	(seed)				\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define BIT_ATOM_TRYLOCK(_lock, atom, seed)				\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	%[_seed],	%%rdx"		"\n\t"		\
+		"movl	%%edx	,	%%eax"		"\n\t"		\
+		"movq	$0xffffffff,	%%rbx"		"\n\t"		\
+		"andq	%%rbx	,	%%rax"		"\n\t"		\
+		"shrq	$32	,	%%rdx"		"\n\t"		\
+		"xorq	%%rcx	,	%%rcx"		"\n\t"		\
+		"xorq	%%rbx	,	%%rbx"		"\n\t"		\
+		_lock	"cmpxchg8b	%[_atom]"	"\n\t"		\
+		"setz	%[_ret]"					\
+		: [_ret]	"+m"	(_ret)				\
+		: [_atom]	"m"	(atom) ,			\
+		  [_seed]	"i"	(seed)				\
+		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
+	);								\
+	_ret;								\
+})
+
+#define BIT_ATOM_UNLOCK(_lock, atom, seed)				\
+({									\
+	volatile unsigned long long tries;				\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	%[count],	%%r12"		"\n\t"		\
+	"1:"						"\n\t"		\
+		"subq	$1	,	%%r12"		"\n\t"		\
+		"jz	2f"				"\n\t"		\
+		"movq	%[_seed],	%%rcx"		"\n\t"		\
+		"movl	%%ecx	,	%%ebx"		"\n\t"		\
+		"movq	$0xffffffff,	%%rax"		"\n\t"		\
+		"andq	%%rax	,	%%rbx"		"\n\t"		\
+		"shrq	$32	,	%%rcx"		"\n\t"		\
+		"xorq	%%rdx	,	%%rdx"		"\n\t"		\
+		"xorq	%%rax	,	%%rax"		"\n\t"		\
+		_lock	"cmpxchg8b	%[_atom]"	"\n\t"		\
+		"jnz	1b"				"\n\t"		\
+	"2:"						"\n\t"		\
+		"movq	%%r12	,	%[tries]"			\
+		: [tries]	"+m"	(tries) 			\
+		: [_atom]	"m"	(atom) ,			\
+		  [_seed]	"i"	(seed) ,			\
+		  [count]	"i"	(BIT_IO_RETRIES_COUNT)		\
+		: "%rax", "%rbx", "%rcx", "%rdx", "%r12", "cc", "memory"\
+	);								\
+	tries;								\
 })
 
 #define BITWISESET(_lock, _opl, _opr)					\

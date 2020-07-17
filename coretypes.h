@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	0
+#define COREFREQ_REV	1
 
 #define CORE_COUNT	256
 
@@ -413,8 +413,6 @@ enum {	/* Stick to the Kernel enumeration in include/asm/nmi.h		*/
 };
 
 #define BIT_NMI_MASK	0x0fLLU
-
-#define ATOMIC_SEED	0x436f726546726571LLU
 
 typedef union
 {

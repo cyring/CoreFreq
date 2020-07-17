@@ -273,6 +273,7 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
+static Bit64 AMD_SMN_LOCK __attribute__ ((aligned (8)));
 static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
 
 #define AT( _loc_ )		[ _loc_ ]
@@ -3902,9 +3903,200 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 */
 	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = 1;
 
-	return (0);
+	return ((PCI_CALLBACK) 0);
     }
 	return ((PCI_CALLBACK) -ENOMEM);
+}
+
+static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
+{
+	#define MAX_CHANNELS 2
+
+	AMD_17_UMC_CFG	reg0x30, reg0x80, reg0x100,
+			reg0x104, reg0x14c,
+			reg0xdf0, reg0xdf4;
+
+	struct {
+		unsigned int value;
+	}  ChipReg, MaskReg;
+
+	unsigned int UMC_BAR[MAX_CHANNELS] = {
+		SMU_AMD_UMC_BASE_CH0_F17H,
+		SMU_AMD_UMC_BASE_CH1_F17H
+	}, CHIP_BAR[2][2], ChannelCount = 0, cha, chip, sec;
+
+    for (cha = 0; cha < MAX_CHANNELS; cha++)
+    {
+	reg0x30.value = 0; reg0x80.value = 0; reg0x100.value = 0;
+	reg0x104.value = 0; reg0x14c.value = 0;
+	reg0xdf0.value = 0; reg0xdf4.value = 0;
+
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
+ && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0x30), &reg0x30.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0x80), &reg0x80.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0x100), &reg0x100.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0x104), &reg0x104.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0x14c), &reg0x14c.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0xdf0), &reg0xdf0.value);
+
+	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+			(UMC_BAR[cha] + 0xdf4), &reg0xdf4.value);
+#else
+	Core_AMD_SMN_Read(	reg0x30,
+				(UMC_BAR[cha] + 0x30),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0x80,
+				(UMC_BAR[cha] + 0x80),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0x100,
+				(UMC_BAR[cha] + 0x100),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0x104,
+				(UMC_BAR[cha] + 0x104),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0x14c,
+				(UMC_BAR[cha] + 0x14c),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0xdf0,
+				(UMC_BAR[cha] + 0xdf0),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core_AMD_SMN_Read(	reg0xdf4,
+				(UMC_BAR[cha] + 0xdf4),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+#endif
+	printk( "Welcome to the Data Fabric UMC(%u) @ 0x%08x:\n" \
+		"0x030[0x%08x] 0x080[0x%08x] 0x100[0x%08x]\n" \
+		"0x104[0x%08x] 0x14c[0x%08x]\n" \
+		"0xdf0[0x%08x] 0xdf4[0x%08x]\n", cha, UMC_BAR[cha],
+		reg0x30.value, reg0x80.value, reg0x100.value,
+		reg0x104.value, reg0x14c.value,
+		reg0xdf0.value, reg0xdf4.value );
+
+	if (BITVAL(reg0x104.value, 31)) {
+		ChannelCount++;
+	}
+    }
+//  {
+//	unsigned int reg_d18f3_0xe8 = 0;
+
+//	RDPCI(reg_d18f3_0xe8, PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe8));
+
+//	printk( "0xe8@d18f3[0x%x]\n", reg_d18f3_0xe8);
+//  }
+    for (cha = 0; cha < ChannelCount; cha++)
+    {
+	unsigned long long MemSize = 0;
+
+	CHIP_BAR[0][0] = UMC_BAR[cha] + 0x0;
+
+	CHIP_BAR[0][1] = UMC_BAR[cha] + 0x20;
+
+	CHIP_BAR[1][0] = UMC_BAR[cha] + 0x10;
+
+	CHIP_BAR[1][1] = UMC_BAR[cha] + 0x28;
+
+	printk( "CHA[%u]\tCHIP_BAR[0][0]=0x%08x CHIP_BAR[0][1]=0x%08x\n" \
+		"\t\tCHIP_BAR[1][0]=0x%08x CHIP_BAR[1][1]=0x%08x\n", cha,
+		CHIP_BAR[0][0], CHIP_BAR[0][1],
+		CHIP_BAR[1][0], CHIP_BAR[1][1] );
+
+	for (chip = 0; chip < 4; chip++)
+	{
+	    for (sec = 0; sec < 2; sec++)
+	    {
+		unsigned int addr, state;
+
+		addr = CHIP_BAR[sec][0] + 4 * chip;
+
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
+ && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+				addr, &ChipReg.value);
+#else
+		Core_AMD_SMN_Read(	ChipReg,
+					addr,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+#endif
+		state = BITVAL(ChipReg.value, 0);
+
+		printk( "CHA[%u] CHIP[%u:%u] @ 0x%08x[0x%08x] %sable\n",
+			cha, chip, sec, addr, ChipReg.value,
+			state ? "En":"Dis" );
+
+		addr = CHIP_BAR[sec][1] + 4 * (chip >> 1);
+
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
+ && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+				addr, &MaskReg.value);
+#else
+		Core_AMD_SMN_Read(	MaskReg,
+					addr,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+#endif
+		if (state)
+		{
+			unsigned int chipSize;
+
+			__asm__ volatile
+			(
+				"xorl	%%edx, %%edx"		"\n\t"
+				"bsrl	%[base], %%ecx" 	"\n\t"
+				"jz	1f"			"\n\t"
+				"incl	%%edx"			"\n\t"
+				"shll	%%ecx, %%edx"	 	"\n\t"
+				"negl	%%edx"			"\n\t"
+				"notl	%%edx"			"\n\t"
+				"andl	$0xfffffffe, %%edx"	"\n\t"
+				"shrl	$2, %%edx"		"\n\t"
+				"incl	%%edx"			"\n\t"
+			"1:"					"\n\t"
+				"movl	%%edx, %[dest]"
+				: [dest] "=m" (chipSize)
+				: [base] "m"  (MaskReg.value)
+				: "cc", "memory", "%ecx", "%edx"
+			);
+
+			MemSize += chipSize;
+
+		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x] ChipSize[%u]\n",
+			cha, chip, sec, addr, MaskReg.value, chipSize );
+		} else {
+		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x]\n",
+			cha, chip, sec, addr, MaskReg.value );
+		}
+	    }
+	}
+	printk( "Memory Size[%llu KB] [%llu MB]\n", MemSize, (MemSize >> 10));
+    }
+	return ((PCI_CALLBACK) 0);
 }
 
 static int CoreFreqK_ProbePCI(void)
@@ -6387,6 +6579,10 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	AMD_PRED_CMD  Pred_Cmd  = {.value = 0};
 	unsigned short WrRdMSR = 0;
 
+    if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBRS
+     || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.STIBP
+     || PUBLIC(RO(Proc))->Features.leaf80000008.EBX.SSBD)
+    {
 	RDMSR(Spec_Ctrl, MSR_AMD_SPEC_CTRL);
 
 	if ((Mech_IBRS == COREFREQ_TOGGLE_OFF)
@@ -6430,6 +6626,7 @@ void AMD_Mitigation_Mechanisms(CORE_RO *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SSBD, Core->Bind);
 	}
+    }
 	if (PUBLIC(RO(Proc))->Features.leaf80000008.EBX.IBPB
 	&& ((Mech_IBPB == COREFREQ_TOGGLE_OFF)
 	 || (Mech_IBPB == COREFREQ_TOGGLE_ON)))
@@ -7054,32 +7251,6 @@ static void PerCore_AMD_Family_15h_Query(void *arg)
 	PerCore_AMD_Family_Same_Query(Core);
 }
 
-static void AMD_FCH_PM_Read16(unsigned int IndexRegister, PM16 *DataRegister)
-{
-	unsigned int tries = AMD_FCH_RETRIES_COUNT;
-	unsigned char ret;
-    do {
-	ret = AMD_FCH_PM_READ16(IndexRegister, DataRegister, AMD_FCH_LOCK);
-	if (ret == 0) {
-		mdelay(AMD_FCH_TIME_INTERVAL);
-	}
-	tries--;
-    } while ( (tries != 0) && (ret != 1) );
-}
-
-static void AMD_FCH_PM_Write16(unsigned int IndexRegister, PM16 *DataRegister)
-{
-	unsigned int tries = AMD_FCH_RETRIES_COUNT;
-	unsigned char ret;
-    do {
-	ret = AMD_FCH_PM_WRITE16(IndexRegister, DataRegister, AMD_FCH_LOCK);
-	if (ret == 0) {
-		mdelay(AMD_FCH_TIME_INTERVAL);
-	}
-	tries--;
-    } while ( (tries != 0) && (ret != 1) );
-}
-
 static void PerCore_AMD_Family_17h_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
@@ -7091,14 +7262,14 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	SystemRegisters(Core);
 
-	AMD_Mitigation_Mechanisms(Core);
-
 	AMD_Microcode(Core);
 
 	Dump_CPUID(Core);
 
+	AMD_Mitigation_Mechanisms(Core);
+
 	/*	Query the FCH for various registers			*/
-	AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, &PM);
+	AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, PM);
 	switch (C3U_Enable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
@@ -7114,8 +7285,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		break;
 	}
 	if (ToggleFeature == 1) {
-		AMD_FCH_PM_Write16(AMD_FCH_PM_CSTATE_EN, &PM);
-		AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, &PM);
+		AMD_FCH_PM_Write16(AMD_FCH_PM_CSTATE_EN, PM);
+		AMD_FCH_PM_Read16(AMD_FCH_PM_CSTATE_EN, PM);
 	}
 	if (PM.CStateEn.C1eToC2En)
 	{
@@ -8122,10 +8293,10 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
-	Core_AMD_SMN_Read(Core ,	TctlSensor,
-					SMU_AMD_THM_TCTL_REGISTER_F15H,
-					SMU_AMD_INDEX_REGISTER_F15H,
-					SMU_AMD_DATA_REGISTER_F15H);
+	Core_AMD_SMN_Read(	TctlSensor,
+				SMU_AMD_THM_TCTL_REGISTER_F15H,
+				SMU_AMD_INDEX_REGISTER_F15H,
+				SMU_AMD_DATA_REGISTER_F15H );
 
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
@@ -8156,16 +8327,16 @@ void Core_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 		pr_warn("CoreFreq: Failed to read TctlSensor\n");
 	}
     } else {
-	Core_AMD_SMN_Read(Core ,	TctlSensor,
-					SMN_Address,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H);
+	Core_AMD_SMN_Read(	TctlSensor,
+				SMN_Address,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
     }
 #else /* CONFIG_AMD_NB */
-	Core_AMD_SMN_Read(Core ,	TctlSensor,
-					SMN_Address,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H);
+	Core_AMD_SMN_Read(	TctlSensor,
+				SMN_Address,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
 #endif /* CONFIG_AMD_NB */
 	Core->PowerThermal.Sensor = TctlSensor.CurTmp;
 
@@ -12995,7 +13166,8 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
-	AMD_FCH_INITIALIZE(AMD_FCH_LOCK);
+	BIT_ATOM_INIT(AMD_SMN_LOCK, ATOMIC_SEED);
+	BIT_ATOM_INIT(AMD_FCH_LOCK, ATOMIC_SEED);
 
 	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 	case CRC_INTEL: {

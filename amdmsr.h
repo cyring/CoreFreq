@@ -93,13 +93,17 @@
 #define SMU_AMD_INDEX_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
 #define SMU_AMD_DATA_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
-#define Core_AMD_SMN_Read(Core ,	SMN_Register,			\
-					SMN_Address,			\
-					SMU_IndexRegister,		\
-					SMU_DataRegister)		\
+#define Core_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
 ({									\
+    if ( BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED) )	\
+    {									\
 	WRPCI(SMN_Address, SMU_IndexRegister);				\
 	RDPCI(SMN_Register.value, SMU_DataRegister);			\
+	BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);		\
+    }									\
 })
 
 /* Sources:
@@ -136,20 +140,10 @@
 	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
 #endif
 
-#define AMD_FCH_INITIALIZE(_FCH_LOCK)					\
-({									\
-	__asm__ volatile						\
-	(								\
-		"leaq		%[_atom], %%rdx"	"\n\t"		\
-		"movq		%[_seed], %%rax"	"\n\t"		\
-		"movq		%%rax, (%%rdx)" 			\
-		:							\
-		: [_atom]	"m"	( _FCH_LOCK ),			\
-		  [_seed]	"i"	( ATOMIC_SEED ) 		\
-		: "%rax", "%rdx", "memory"				\
-	);								\
-})
+/* Sources: PPR for AMD Family 17h					*/
+#define AMD_FCH_PM_CSTATE_EN	0x0000007e
 
+/*TODO(CleanUp)
 #define AMD_FCH_PM_READ16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK) \
 ({									\
 	volatile unsigned char ret;					\
@@ -224,10 +218,100 @@
 	ret;								\
 })
 
-#define AMD_FCH_RETRIES_COUNT	10
-#define AMD_FCH_TIME_INTERVAL	5	/*	in mdelay() unit	*/
+static void AMD_FCH_PM_Read16(unsigned int IndexRegister, PM16 *DataRegister)
+{
+	unsigned int tries = AMD_FCH_RETRIES_COUNT;
+	unsigned char ret;
+    do {
+	ret = AMD_FCH_PM_READ16(IndexRegister, DataRegister, AMD_FCH_LOCK);
+	if (ret == 0) {
+		mdelay(AMD_FCH_TIME_INTERVAL);
+	}
+	tries--;
+    } while ( (tries != 0) && (ret != 1) );
+}
 
-#define AMD_FCH_PM_CSTATE_EN	0x0000007e
+static void AMD_FCH_PM_Write16(unsigned int IndexRegister, PM16 *DataRegister)
+{
+	unsigned int tries = AMD_FCH_RETRIES_COUNT;
+	unsigned char ret;
+    do {
+	ret = AMD_FCH_PM_WRITE16(IndexRegister, DataRegister, AMD_FCH_LOCK);
+	if (ret == 0) {
+		mdelay(AMD_FCH_TIME_INTERVAL);
+	}
+	tries--;
+    } while ( (tries != 0) && (ret != 1) );
+}
+*/
+
+#define AMD_FCH_READ16(_data, _reg)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1	,	%%eax"		"\n\t"		\
+		"movl	$0xcd6	,	%%edx"		"\n\t"		\
+		"outl	%%eax	,	%%dx"		"\n\t"		\
+		"movl	$0xcd7	,	%%edx"		"\n\t"		\
+		"inw	%%dx	,	%%ax"		"\n\t"		\
+		"movw	%%ax	,	%0"				\
+		: "=m"	(_data) 					\
+		: "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_WRITE16(_data, _reg)					\
+({									\
+	__asm__ volatile						\
+	(								\
+		"movl	%1	,	%%eax"		"\n\t"		\
+		"movl	$0xcd6	,	%%edx"		"\n\t"		\
+		"outl	%%eax	,	%%dx"		"\n\t"		\
+		"movw	%0	,	%%ax" 		"\n\t"		\
+		"movl	$0xcd7	,	%%edx"		"\n\t"		\
+		"outw	%%ax	,	%%dx"		"\n\t"		\
+		:							\
+		: "im"	(_data),					\
+		  "i"	(_reg)						\
+		: "%rax", "%rdx", "memory"				\
+	);								\
+})
+
+#define AMD_FCH_PM_Read16(IndexRegister, DataRegister)			\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	if (ret == 0) {							\
+		mdelay(BIT_IO_TIME_INTERVAL);				\
+	} else {							\
+		AMD_FCH_READ16(DataRegister.value, IndexRegister);	\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+})
+
+#define AMD_FCH_PM_Write16(IndexRegister , DataRegister)		\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	if (ret == 0) {							\
+		mdelay(BIT_IO_TIME_INTERVAL);				\
+	} else {							\
+		AMD_FCH_WRITE16(DataRegister.value, IndexRegister);	\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+})
+
 
 const struct {
 	unsigned int	MCF,
@@ -843,3 +927,12 @@ typedef union
 	AMD_17_PM_CSTATE	CStateEn;
 } PM16;
 
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 32-0;
+	};
+} AMD_17_UMC_CFG;
