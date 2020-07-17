@@ -1321,19 +1321,31 @@ typedef struct
 #endif
 /* Source: AMD Ryzen 7 2700X [ Zen+ Pinnacle Ridge ]			*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU 0x1451
+	#define PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU 0x1451 /*PinnacleRidge*/
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_ZEPPELIN_NB_IOMMU	0x14a1	/* Zeppelin */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU	0x1629	/* Raven */
 #endif
 /* Source: AMD Ryzen 9 3950X [ Zen2/Matisse ]				*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU 0x1481
+	#define PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU 0x1481	/* Matisse */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_STARSHIP_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_STARSHIP_NB_IOMMU	0x14d1	/* Starship */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RENOIR_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_RENOIR_NB_IOMMU	0x1489	/* Renoir */
 #endif
 /* Source: AMD PPR for AMD Family 17h Models 18h & 20h Processors	*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1
+	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	/* Raven2 */
 #endif
 /* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631
+	#define PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/* Renoir */
 #endif
 /* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3
@@ -1343,10 +1355,10 @@ typedef struct
 	#define PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3	0x15eb	/* Raven */
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3	0x1443	/* Zen2 */
+	#define PCI_DEVICE_ID_AMD_17H_MATISSE_DF_F3	0x1443	/* Matisse */
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3
-	#define PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3	0x1493	/* Zen2 */
+	#define PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3	0x1493	/* Starship */
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3	0x144b	/* Renoir */

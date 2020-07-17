@@ -143,108 +143,6 @@
 /* Sources: PPR for AMD Family 17h					*/
 #define AMD_FCH_PM_CSTATE_EN	0x0000007e
 
-/*TODO(CleanUp)
-#define AMD_FCH_PM_READ16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK) \
-({									\
-	volatile unsigned char ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq		%[_seed], %%rdx"	"\n\t"		\
-		"movl		%%edx, %%eax"		"\n\t"		\
-		"movq		$0xffffffff, %%rbx"	"\n\t"		\
-		"andq		%%rbx, %%rax"		"\n\t"		\
-		"shrq		$32, %%rdx"		"\n\t"		\
-		"xorq		%%rcx, %%rcx"		"\n\t"		\
-		"xorq		%%rbx, %%rbx"		"\n\t"		\
-		"cmpxchg8b	%[_atom]"		"\n\t"		\
-		"setz		%[_ret]"		"\n\t"		\
-		"jnz 1f" 				"\n\t"		\
-		"movl		%[_reg], %%eax" 	"\n\t"		\
-		"movl		$0xcd6, %%edx"		"\n\t"		\
-		"outl		%%eax, %%dx"		"\n\t"		\
-		"movl		$0xcd7, %%edx"		"\n\t"		\
-		"inw		%%dx, %%ax"		"\n\t"		\
-		"movw		%%ax, %[_data]" 	"\n\t"		\
-		"# Unlock FCH"				"\n\t"		\
-		"leaq		%[_atom], %%rbx"	"\n\t"		\
-		"movq		%[_seed], %%rcx"	"\n\t"		\
-		"movq		%%rcx, (%%rbx)" 	"\n\t"		\
-		"1:"							\
-		: [_ret]	"+m"	( ret ),			\
-		  [_data]	"=m"	( PM_DataRegister->value )	\
-		: [_reg]	"im"	( PM_IndexRegister ),		\
-		  [_atom]	"m"	( _FCH_LOCK ),			\
-		  [_seed]	"i"	( ATOMIC_SEED ) 		\
-		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
-	);								\
-	ret;								\
-})
-
-#define AMD_FCH_PM_WRITE16(PM_IndexRegister, PM_DataRegister, _FCH_LOCK)\
-({									\
-	volatile unsigned char ret;					\
-									\
-	__asm__ volatile						\
-	(								\
-		"movq		%[_seed], %%rdx"	"\n\t"		\
-		"movl		%%edx, %%eax"		"\n\t"		\
-		"movq		$0xffffffff, %%rbx"	"\n\t"		\
-		"andq		%%rbx, %%rax"		"\n\t"		\
-		"shrq		$32, %%rdx"		"\n\t"		\
-		"xorq		%%rcx, %%rcx"		"\n\t"		\
-		"xorq		%%rbx, %%rbx"		"\n\t"		\
-		"cmpxchg8b	%[_atom]"		"\n\t"		\
-		"setz		%[_ret]"		"\n\t"		\
-		"jnz 1f" 				"\n\t"		\
-		"movl		%[_reg], %%eax" 	"\n\t"		\
-		"movl		$0xcd6, %%edx"		"\n\t"		\
-		"outl		%%eax, %%dx"		"\n\t"		\
-		"movw		%[_data], %%ax" 	"\n\t"		\
-		"movl		$0xcd7, %%edx"		"\n\t"		\
-		"outw		%%ax, %%dx"		"\n\t"		\
-		"# Unlock FCH"				"\n\t"		\
-		"leaq		%[_atom], %%rbx"	"\n\t"		\
-		"movq		%[_seed], %%rcx"	"\n\t"		\
-		"movq		%%rcx, (%%rbx)" 	"\n\t"		\
-		"1:"							\
-		: [_ret]	"+m"	( ret ) 			\
-		: [_data]	"im"	( PM_DataRegister->value ),	\
-		  [_reg]	"im"	( PM_IndexRegister ),		\
-		  [_atom]	"m"	( _FCH_LOCK ),			\
-		  [_seed]	"i"	( ATOMIC_SEED ) 		\
-		: "%rax", "%rbx", "%rcx", "%rdx", "cc", "memory"	\
-	);								\
-	ret;								\
-})
-
-static void AMD_FCH_PM_Read16(unsigned int IndexRegister, PM16 *DataRegister)
-{
-	unsigned int tries = AMD_FCH_RETRIES_COUNT;
-	unsigned char ret;
-    do {
-	ret = AMD_FCH_PM_READ16(IndexRegister, DataRegister, AMD_FCH_LOCK);
-	if (ret == 0) {
-		mdelay(AMD_FCH_TIME_INTERVAL);
-	}
-	tries--;
-    } while ( (tries != 0) && (ret != 1) );
-}
-
-static void AMD_FCH_PM_Write16(unsigned int IndexRegister, PM16 *DataRegister)
-{
-	unsigned int tries = AMD_FCH_RETRIES_COUNT;
-	unsigned char ret;
-    do {
-	ret = AMD_FCH_PM_WRITE16(IndexRegister, DataRegister, AMD_FCH_LOCK);
-	if (ret == 0) {
-		mdelay(AMD_FCH_TIME_INTERVAL);
-	}
-	tries--;
-    } while ( (tries != 0) && (ret != 1) );
-}
-*/
-
 #define AMD_FCH_READ16(_data, _reg)					\
 ({									\
 	__asm__ volatile						\
@@ -936,3 +834,4 @@ typedef union
 		ReservedBits	: 32-0;
 	};
 } AMD_17_UMC_CFG;
+
