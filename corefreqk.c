@@ -3798,13 +3798,13 @@ static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	/*		DRAM Configuration low register.		*/
 	pci_read_config_dword(dev, 0x90,
-			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRL.value);
+			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0Fh.DCRL.value);
 	/*		DRAM Configuration high register.		*/
 	pci_read_config_dword(dev, 0x94,
-			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRH.value);
+			&PUBLIC(RO(Proc))->Uncore.MC[0].AMD0Fh.DCRH.value);
 	/*	One channel if 64 bits / two channels if 128 bits width. */
 	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = \
-			PUBLIC(RO(Proc))->Uncore.MC[0].AMD0F.DCRL.Width128 + 1;
+			PUBLIC(RO(Proc))->Uncore.MC[0].AMD0Fh.DCRL.Width128 + 1;
 	/*		DIMM Geometry.					*/
     for (chip = 0; chip < 8; chip++)
     {
@@ -3818,13 +3818,13 @@ static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
     }
 	/* DIMM Size. */
 	pci_read_config_dword(dev, 0x80,
-		&PUBLIC(RO(Proc))->Uncore.MC[0].MaxDIMMs.AMD0F.CS.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[0].MaxDIMMs.AMD0Fh.CS.value);
 	/* DRAM Timings. */
 	pci_read_config_dword(dev, 0x88,
-		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0Fh.DTRL.value);
 	/* Assume same timings for both channels. */
-	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[1].AMD0F.DTRL.value = \
-		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0F.DTRL.value;
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[1].AMD0Fh.DTRL.value = \
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD0Fh.DTRL.value;
 
 	return ((PCI_CALLBACK) 0);
 }
@@ -3916,15 +3916,17 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 			reg0x104, reg0x14c,
 			reg0xdf0, reg0xdf4;
 
-	struct {
-		unsigned int value;
-	}  ChipReg, MaskReg;
-
 	unsigned int UMC_BAR[MAX_CHANNELS] = {
 		SMU_AMD_UMC_BASE_CH0_F17H,
 		SMU_AMD_UMC_BASE_CH1_F17H
-	}, CHIP_BAR[2][2], ChannelCount = 0, cha, chip, sec;
+	}, CHIP_BAR[2][2], mc, cha, chip, sec;
 
+	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
+	/*			Number of UMC.				*/
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+  for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
+  {
     for (cha = 0; cha < MAX_CHANNELS; cha++)
     {
 	reg0x30.value = 0; reg0x80.value = 0; reg0x100.value = 0;
@@ -3989,26 +3991,28 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 #endif
-	printk( "Welcome to the Data Fabric UMC(%u) @ 0x%08x:\n" \
+	printk( "Welcome to the Data Fabric UMC(%u) Channel(%u) @ 0x%08x:\n" \
 		"0x030[0x%08x] 0x080[0x%08x] 0x100[0x%08x]\n" \
 		"0x104[0x%08x] 0x14c[0x%08x]\n" \
-		"0xdf0[0x%08x] 0xdf4[0x%08x]\n", cha, UMC_BAR[cha],
+		"0xdf0[0x%08x] 0xdf4[0x%08x]\n", mc, cha, UMC_BAR[cha],
 		reg0x30.value, reg0x80.value, reg0x100.value,
 		reg0x104.value, reg0x14c.value,
 		reg0xdf0.value, reg0xdf4.value );
 
 	if (BITVAL(reg0x104.value, 31)) {
-		ChannelCount++;
+		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
 	}
     }
-//  {
-//	unsigned int reg_d18f3_0xe8 = 0;
+/*
+    {
+	unsigned int reg_d18f3_0xe8 = 0;
 
-//	RDPCI(reg_d18f3_0xe8, PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe8));
+	RDPCI(reg_d18f3_0xe8, PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe8));
 
-//	printk( "0xe8@d18f3[0x%x]\n", reg_d18f3_0xe8);
-//  }
-    for (cha = 0; cha < ChannelCount; cha++)
+	printk( "0xe8@d18f3[0x%x]\n", reg_d18f3_0xe8);
+    }
+*/
+    for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
 	unsigned long long MemSize = 0;
 
@@ -4025,6 +4029,8 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 		CHIP_BAR[0][0], CHIP_BAR[0][1],
 		CHIP_BAR[1][0], CHIP_BAR[1][1] );
 
+	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 4 / 2;
+
 	for (chip = 0; chip < 4; chip++)
 	{
 	    for (sec = 0; sec < 2; sec++)
@@ -4036,17 +4042,17 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-				addr, &ChipReg.value);
+				addr, &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value);
 #else
-		Core_AMD_SMN_Read(	ChipReg,
+		Core_AMD_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip,
 					addr,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 #endif
-		state = BITVAL(ChipReg.value, 0);
+		state = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value, 0);
 
 		printk( "CHA[%u] CHIP[%u:%u] @ 0x%08x[0x%08x] %sable\n",
-			cha, chip, sec, addr, ChipReg.value,
+			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value,
 			state ? "En":"Dis" );
 
 		addr = CHIP_BAR[sec][1] + 4 * (chip >> 1);
@@ -4054,9 +4060,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-				addr, &MaskReg.value);
+				addr, &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value);
 #else
-		Core_AMD_SMN_Read(	MaskReg,
+		Core_AMD_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask,
 					addr,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
@@ -4080,22 +4086,23 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 			"1:"					"\n\t"
 				"movl	%%edx, %[dest]"
 				: [dest] "=m" (chipSize)
-				: [base] "m"  (MaskReg.value)
+				: [base] "m"  (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value)
 				: "cc", "memory", "%ecx", "%edx"
 			);
 
 			MemSize += chipSize;
 
 		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x] ChipSize[%u]\n",
-			cha, chip, sec, addr, MaskReg.value, chipSize );
+			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value, chipSize );
 		} else {
 		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x]\n",
-			cha, chip, sec, addr, MaskReg.value );
+			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value );
 		}
 	    }
 	}
 	printk( "Memory Size[%llu KB] [%llu MB]\n", MemSize, (MemSize >> 10));
     }
+  }
 	return ((PCI_CALLBACK) 0);
 }
 

@@ -493,7 +493,13 @@ typedef struct
 			} SKL;
 			struct {
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
-			} AMD0F;
+			} AMD0Fh;
+			struct {
+			    struct {
+				unsigned int value;
+			    }				Chip,	/* 32 bits   */
+							Mask;	/* 32 bits   */
+			} AMD17h[4][2];
 		};
 		union {
 	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits    */
@@ -544,7 +550,7 @@ typedef struct
 		struct {
 	/* 90h */	AMD_0F_DRAM_CONFIG_LOW	DCRL;		/* 32 bits    */
 	/* 94h */	AMD_0F_DRAM_CONFIG_HIGH DCRH;		/* 32 bits    */
-		} AMD0F;
+		} AMD0Fh;
 	};
 
 	union {
@@ -553,7 +559,7 @@ typedef struct
 		} NHM;
 		struct {
 	/* 80h */	AMD_0F_DRAM_CS_MAPPING	CS;		/* 32 bits    */
-		} AMD0F;
+		} AMD0Fh;
 	} MaxDIMMs;
 
 	unsigned short		SlotCount, ChannelCount;
