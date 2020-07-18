@@ -1351,7 +1351,7 @@ void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RO->CR_Mask );
 }
 
-void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
+void Mitigation_2nd_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {
 	unsigned short	IBRS = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->IBRS,
@@ -1363,9 +1363,18 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 
 			SSBD = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SSBD,
-						Proc_RO->SPEC_CTRL_Mask ),
+						Proc_RO->SPEC_CTRL_Mask );
 
-			RDCL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Mechanisms.IBRS +=	(2 * IBRS);
+	Shm->Proc.Mechanisms.STIBP +=	(2 * STIBP);
+	Shm->Proc.Mechanisms.SSBD +=	(2 * SSBD);
+}
+
+void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
+{
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	unsigned short	RDCL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->RDCL_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
@@ -1398,47 +1407,60 @@ void Mitigation_Mechanisms(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RO->ARCH_CAP_Mask );
 
 	Shm->Proc.Mechanisms.IBRS = (
-		( Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap
-		| Shm->Proc.Features.leaf80000008.EBX.IBRS )
-		+ (2 * IBRS)
+		Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1
 	);
 	Shm->Proc.Mechanisms.STIBP = (
-		( Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap
-		| Shm->Proc.Features.leaf80000008.EBX.STIBP )
-		+ (2 * STIBP)
+		Shm->Proc.Features.ExtFeature.EDX.STIBP_Cap == 1
 	);
 	Shm->Proc.Mechanisms.SSBD = (
-		( Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap
-		| Shm->Proc.Features.leaf80000008.EBX.SSBD )
-		+ (2 * SSBD)
+		Shm->Proc.Features.ExtFeature.EDX.SSBD_Cap == 1
 	);
+
+	Mitigation_2nd_Stage(Shm, Proc_RO, Proc_RW);
+
 	Shm->Proc.Mechanisms.RDCL_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * RDCL_NO)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * RDCL_NO)
 	);
 	Shm->Proc.Mechanisms.IBRS_ALL = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * IBRS_ALL)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * IBRS_ALL)
 	);
 	Shm->Proc.Mechanisms.RSBA = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * RSBA)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * RSBA)
 	);
 	Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * L1DFL_NO)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * L1DFL_NO)
 	);
 	Shm->Proc.Mechanisms.SSB_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * SSB_NO)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * SSB_NO)
 	);
 	Shm->Proc.Mechanisms.MDS_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * MDS_NO)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * MDS_NO)
 	);
 	Shm->Proc.Mechanisms.PSCHANGE_MC_NO = (
-	    Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2*PSCHANGE_MC_NO)
+	    Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2*PSCHANGE_MC_NO)
 	);
 	Shm->Proc.Mechanisms.TAA_NO = (
-		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP+(2 * TAA_NO)
+		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * TAA_NO)
 	);
 	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
 						Proc_RW->SPLA,
 						Proc_RO->ARCH_CAP_Mask );
+    }
+    else if (  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    {
+	Shm->Proc.Mechanisms.IBRS = (
+		Shm->Proc.Features.leaf80000008.EBX.IBRS == 1
+	);
+	Shm->Proc.Mechanisms.STIBP = (
+		Shm->Proc.Features.leaf80000008.EBX.STIBP == 1
+	);
+	Shm->Proc.Mechanisms.SSBD = (
+		Shm->Proc.Features.leaf80000008.EBX.SSBD == 1
+	);
+
+	Mitigation_2nd_Stage(Shm, Proc_RO, Proc_RW);
+    }
 }
 
 void Package_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
@@ -1466,7 +1488,7 @@ void Package_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 
 	PowerInterface(Shm, Proc_RO);
 
-	Mitigation_Mechanisms(Shm, Proc_RO, Proc_RW);
+	Mitigation_1st_Stage(Shm, Proc_RO, Proc_RW);
 }
 
 typedef struct {
