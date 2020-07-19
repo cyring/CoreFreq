@@ -3908,18 +3908,25 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	return ((PCI_CALLBACK) -ENOMEM);
 }
 
-static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
+static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 {
-	#define MAX_CHANNELS 2
-
+	AMD_17_UMC_SDP_CTRL	SDP_CTRL;
+/*TODO(Dump UMC)
 	AMD_17_UMC_CFG	reg0x30, reg0x80, reg0x100,
-			reg0x104, reg0x14c,
-			reg0xdf0, reg0xdf4;
+			reg0x14c, reg0xdf0, reg0xdf4;
+*/
+	unsigned int UMC_BAR[MC_MAX_CHA] = {
+		SMU_AMD_UMC_BASE_CHA_F17H(0),
+		SMU_AMD_UMC_BASE_CHA_F17H(1),
+		SMU_AMD_UMC_BASE_CHA_F17H(2),
+		SMU_AMD_UMC_BASE_CHA_F17H(3),
+		SMU_AMD_UMC_BASE_CHA_F17H(4),
+		SMU_AMD_UMC_BASE_CHA_F17H(5),
+		SMU_AMD_UMC_BASE_CHA_F17H(6),
+		SMU_AMD_UMC_BASE_CHA_F17H(7)
+	}, CHIP_BAR[2][2];
 
-	unsigned int UMC_BAR[MAX_CHANNELS] = {
-		SMU_AMD_UMC_BASE_CH0_F17H,
-		SMU_AMD_UMC_BASE_CH1_F17H
-	}, CHIP_BAR[2][2], mc, cha, chip, sec;
+	unsigned short mc, cha, chip, sec;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 	/*			Number of UMC.				*/
@@ -3927,14 +3934,16 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 
   for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
   {
-    for (cha = 0; cha < MAX_CHANNELS; cha++)
+    for (cha = 0; cha < maxCha; cha++)
     {
+/*TODO(Dump UMC)
 	reg0x30.value = 0; reg0x80.value = 0; reg0x100.value = 0;
-	reg0x104.value = 0; reg0x14c.value = 0;
-	reg0xdf0.value = 0; reg0xdf4.value = 0;
-
+	reg0x14c.value = 0; reg0xdf0.value = 0; reg0xdf4.value = 0;
+*/
+	SDP_CTRL.value = 0; 
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+/*TODO(Dump UMC)
 	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 			(UMC_BAR[cha] + 0x30), &reg0x30.value);
 
@@ -3943,10 +3952,10 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 
 	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 			(UMC_BAR[cha] + 0x100), &reg0x100.value);
-
+*/
 	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-			(UMC_BAR[cha] + 0x104), &reg0x104.value);
-
+			(UMC_BAR[cha] + 0x104), &SDP_CTRL.value);
+/*TODO(Dump UMC)
 	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 			(UMC_BAR[cha] + 0x14c), &reg0x14c.value);
 
@@ -3955,7 +3964,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 
 	amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 			(UMC_BAR[cha] + 0xdf4), &reg0xdf4.value);
+*/
 #else
+/*TODO(Dump UMC)
 	Core_AMD_SMN_Read(	reg0x30,
 				(UMC_BAR[cha] + 0x30),
 				SMU_AMD_INDEX_REGISTER_F17H,
@@ -3970,12 +3981,12 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 				(UMC_BAR[cha] + 0x100),
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
-
-	Core_AMD_SMN_Read(	reg0x104,
+*/
+	Core_AMD_SMN_Read(	SDP_CTRL,
 				(UMC_BAR[cha] + 0x104),
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
-
+/*TODO(Dump UMC)
 	Core_AMD_SMN_Read(	reg0x14c,
 				(UMC_BAR[cha] + 0x14c),
 				SMU_AMD_INDEX_REGISTER_F17H,
@@ -3990,7 +4001,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 				(UMC_BAR[cha] + 0xdf4),
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
+*/
 #endif
+/*TODO(Dump UMC)
 	printk( "Welcome to the Data Fabric UMC(%u) Channel(%u) @ 0x%08x:\n" \
 		"0x030[0x%08x] 0x080[0x%08x] 0x100[0x%08x]\n" \
 		"0x104[0x%08x] 0x14c[0x%08x]\n" \
@@ -3998,12 +4011,12 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 		reg0x30.value, reg0x80.value, reg0x100.value,
 		reg0x104.value, reg0x14c.value,
 		reg0xdf0.value, reg0xdf4.value );
-
-	if (BITVAL(reg0x104.value, 31)) {
+*/
+	if (SDP_CTRL.INIT) {
 		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
 	}
     }
-/*
+/*TODO(Dump DF3)
     {
 	unsigned int reg_d18f3_0xe8 = 0;
 
@@ -4014,8 +4027,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 */
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
+/*TODO(Dump UMC)
 	unsigned long long MemSize = 0;
-
+*/
 	CHIP_BAR[0][0] = UMC_BAR[cha] + 0x0;
 
 	CHIP_BAR[0][1] = UMC_BAR[cha] + 0x20;
@@ -4023,50 +4037,62 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	CHIP_BAR[1][0] = UMC_BAR[cha] + 0x10;
 
 	CHIP_BAR[1][1] = UMC_BAR[cha] + 0x28;
-
+/*TODO(Dump UMC)
 	printk( "CHA[%u]\tCHIP_BAR[0][0]=0x%08x CHIP_BAR[0][1]=0x%08x\n" \
 		"\t\tCHIP_BAR[1][0]=0x%08x CHIP_BAR[1][1]=0x%08x\n", cha,
 		CHIP_BAR[0][0], CHIP_BAR[0][1],
 		CHIP_BAR[1][0], CHIP_BAR[1][1] );
-
+*/
 	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 4 / 2;
 
 	for (chip = 0; chip < 4; chip++)
 	{
 	    for (sec = 0; sec < 2; sec++)
 	    {
+/*TODO(Dump UMC)
 		unsigned int addr, state;
-
+*/
+		unsigned int addr;
 		addr = CHIP_BAR[sec][0] + 4 * chip;
 
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-				addr, &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value);
+				addr,
+				&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h[chip][sec].Chip.value);
 #else
-		Core_AMD_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip,
-					addr,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h[chip][sec].Chip,
+				addr,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
 #endif
-		state = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value, 0);
-
+/*TODO(Dump UMC)
+		state = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h[chip][sec].Chip.value, 0);
 		printk( "CHA[%u] CHIP[%u:%u] @ 0x%08x[0x%08x] %sable\n",
-			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value,
+			cha, chip, sec, addr,
+			PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+			.AMD17h[chip][sec].Chip.value,
 			state ? "En":"Dis" );
-
+*/
 		addr = CHIP_BAR[sec][1] + 4 * (chip >> 1);
 
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)) \
  && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
 		amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
-				addr, &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value);
+			addr,
+			 &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+			.AMD17h[chip][sec].Mask.value);
 #else
-		Core_AMD_SMN_Read(	PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask,
-					addr,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
+		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h[chip][sec].Mask,
+				addr,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
 #endif
+/*TODO(Dump UMC)
 		if (state)
 		{
 			unsigned int chipSize;
@@ -4086,24 +4112,43 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 			"1:"					"\n\t"
 				"movl	%%edx, %[dest]"
 				: [dest] "=m" (chipSize)
-				: [base] "m"  (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value)
+				: [base] "m"
+				(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h[chip][sec].Mask.value)
 				: "cc", "memory", "%ecx", "%edx"
 			);
 
 			MemSize += chipSize;
 
 		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x] ChipSize[%u]\n",
-			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value, chipSize );
+			cha, chip, sec, addr,
+			PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+			.AMD17h[chip][sec].Mask.value, chipSize );
 		} else {
 		printk( "CHA[%u] MASK[%u:%u] @ 0x%08x[0x%08x]\n",
-			cha, chip, sec, addr, PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value );
+			cha, chip, sec, addr,
+			PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+			.AMD17h[chip][sec].Mask.value );
 		}
+*/
 	    }
 	}
+/*TODO(Dump UMC)
 	printk( "Memory Size[%llu KB] [%llu MB]\n", MemSize, (MemSize >> 10));
+*/
     }
   }
 	return ((PCI_CALLBACK) 0);
+}
+
+static PCI_CALLBACK AMD_17h_UMC_DUAL_CHA(struct pci_dev *dev)
+{
+	return (AMD_17h_UMC(dev, 2));
+}
+
+static PCI_CALLBACK AMD_17h_UMC_OCTO_CHA(struct pci_dev *dev)
+{
+	return (AMD_17h_UMC(dev, 8));
 }
 
 static int CoreFreqK_ProbePCI(void)

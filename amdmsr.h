@@ -132,12 +132,8 @@
 #endif
 
 /* Sources: drivers/edac/amd64_edac.h					*/
-#ifndef SMU_AMD_UMC_BASE_CH0_F17H
-	#define SMU_AMD_UMC_BASE_CH0_F17H	0x00050000
-#endif
-
-#ifndef SMU_AMD_UMC_BASE_CH1_F17H
-	#define SMU_AMD_UMC_BASE_CH1_F17H	0x00150000
+#ifndef SMU_AMD_UMC_BASE_CHA_F17H
+	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha)	(0x00050000 + (_cha << 20))
 #endif
 
 /* Sources: PPR for AMD Family 17h					*/
@@ -825,13 +821,30 @@ typedef union
 	AMD_17_PM_CSTATE	CStateEn;
 } PM16;
 
+/* Source: drivers/edac/amd64_edac.c					*/
 typedef union
 {
 	unsigned int		value;
 	struct
 	{
 		unsigned int
-		ReservedBits	: 32-0;
+		ReservedBits1	:  6-0,
+		X4_DIMMS	:  7-6,
+		X16_DIMMS	:  8-7,
+		ReservedBits2	: 12-8,
+		ECC_DIMM_Enable : 13-12,
+		ReservedBits3	: 32-13;
 	};
 } AMD_17_UMC_CFG;
+
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 31-0,
+		INIT		: 32-31;
+	};
+} AMD_17_UMC_SDP_CTRL;
 

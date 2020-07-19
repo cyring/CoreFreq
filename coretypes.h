@@ -1223,7 +1223,7 @@ typedef struct	/* BSP CPUID features.					*/
 
 /* Memory Controller' structures dimensions.				*/
 #define MC_MAX_CTRL	2
-#define MC_MAX_CHA	4
+#define MC_MAX_CHA	8
 #define MC_MAX_DIMM	4
 
 typedef struct
