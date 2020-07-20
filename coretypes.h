@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #define CORE_COUNT	256
 
@@ -1294,7 +1294,8 @@ typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 	unsigned short	CPUidle :  2-0,
 			CPUfreq :  4-2,
 			Governor:  6-4,
-			unused	: 16-6;
+			CS	:  8-6,
+			unused	: 16-8;
 } KERNEL_DRIVER;
 
 typedef struct {

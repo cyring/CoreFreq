@@ -276,6 +276,13 @@ CPU     IPS            IPC            CPI
 
 
 * Q: The CPU freeze or the System crash.  
+  A: With AMD Processors of the Zen architecture, changing the Max ratio (aka P0 P-State) renders a Kernel TSC clock source unstable.
+  1. Boot Kernel with parameters `notsc nowatchdog`
+  2. Register _CoreFreq_ as a new TSC clock source using driver argument `Register_ClockSource=1`
+  3. Switch the system current clock source to _CoreFreq_
+```
+echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource
+```
 
   A: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
@@ -324,8 +331,9 @@ parm:           ThermalScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
 parm:           VoltageScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
 parm:           PowerScope:[0:None; 1:SMT; 2:Core; 3:Package] (int)
 parm:           Register_CPU_Idle:Register the Kernel cpuidle driver (short)
-parm:           Register_Governor:Register the Kernel governor (short)
 parm:           Register_CPU_Freq:Register the Kernel cpufreq driver (short)
+parm:           Register_Governor:Register the Kernel governor (short)
+parm:           Register_ClockSource:Register Clock Source driver (short)
 parm:           Mech_IBRS:Mitigation Mechanism IBRS (short)
 parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
 parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)

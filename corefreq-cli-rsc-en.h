@@ -697,7 +697,7 @@
 #define RSC_ERROR_SYS_CALL_CODE_EN	"System error code %d\n%s @ line %d\n"
 #define RSC_ERROR_UNIMPLEMENTED_CODE_EN "Feature is not implemented"
 #define RSC_ERROR_EXPERIMENTAL_CODE_EN	"Experimental mode is required"
-#define RSC_ERROR_TURBO_PREREQ_CODE_EN	"Invalid Turbo prerequisites"
+#define RSC_ERROR_TURBO_PREREQ_CODE_EN	"Turbo Boost must be disabled"
 #define RSC_ERROR_UNCORE_PREREQ_CODE_EN "Invalid Uncore prerequisites"
 
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN " CPU-Idle Limit "

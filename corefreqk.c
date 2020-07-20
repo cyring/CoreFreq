@@ -18,6 +18,7 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/utsname.h>
+#include <linux/clocksource.h>
 #ifdef CONFIG_CPU_IDLE
 #include <linux/cpuidle.h>
 #endif /* CONFIG_CPU_IDLE */
@@ -208,6 +209,10 @@ MODULE_PARM_DESC(Register_CPU_Freq, "Register the Kernel cpufreq driver");
 static signed short Register_Governor = -1;
 module_param(Register_Governor, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_Governor, "Register the Kernel governor");
+
+static signed short Register_ClockSource = -1;
+module_param(Register_ClockSource, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Register_ClockSource, "Register Clock Source driver");
 
 static signed short Mech_IBRS = -1;
 module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -11906,6 +11911,63 @@ static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
 #endif
 
+unsigned long long CoreFreqK_Read_CS(struct clocksource *cs)
+{
+	unsigned long long TSC;
+
+	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	{
+		RDTSCP64(TSC);
+	}
+	else
+	{
+		RDTSC64(TSC);
+	}
+	return (TSC);
+}
+
+static struct clocksource CoreFreqK_CS = {
+	.name	= "corefreq",
+	.rating = 250,
+	.read	= CoreFreqK_Read_CS,
+	.mask	= CLOCKSOURCE_MASK(64),
+	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
+};
+
+#define CoreFreqK_UnRegister_ClockSource() 				\
+{									\
+    if (PUBLIC(RO(Proc))->Registration.Driver.CS & REGISTRATION_ENABLE) \
+    {									\
+	clocksource_unregister(&CoreFreqK_CS);				\
+    }									\
+}
+
+static void CoreFreqK_Register_ClockSource(void)
+{
+  if (Register_ClockSource == 1)
+  {
+	unsigned int cpu = get_cpu();
+	unsigned int Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
+				* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
+
+    switch ( clocksource_register_hz(&CoreFreqK_CS, Freq_Hz) ) {
+    default:
+	/* Fallthrough */
+    case -EBUSY:
+	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+	break;
+    case 0  :
+	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
+	break;
+    }
+  } else {
+	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+  }
+	put_cpu();
+}
+
+
 static long CoreFreqK_Thermal_Scope(int scope)
 {
     if ((scope >= FORMULA_SCOPE_NONE) && (scope <= FORMULA_SCOPE_PKG))
@@ -13191,6 +13253,7 @@ static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
 
 static void CoreFreqK_Ignition_Level_Down(void)
 {
+	CoreFreqK_UnRegister_ClockSource();
 	CoreFreqK_UnRegister_Governor();
 	CoreFreqK_UnRegister_CPU_Freq();
 	CoreFreqK_UnRegister_CPU_Idle();
@@ -13375,6 +13438,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	#ifdef CONFIG_CPU_FREQ
 	Policy_Aggregate_Turbo();
 	#endif /* CONFIG_CPU_FREQ */
+
+	CoreFreqK_Register_ClockSource();
 
 	return (0);
 }

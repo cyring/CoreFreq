@@ -5319,6 +5319,9 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 			return (1);
 		}
 	}
+	if (Shm->Proc.Features.Factory.Ratio == multiplier) {
+		return (1);
+	}
 	return (0);
 }
 
@@ -8905,15 +8908,17 @@ int Shortcut(SCANKEY *scan)
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	    if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[boost] ].Boost[boost];
-		lowestOperating = Shm->Cpu[
-					Ruler.Top[boost]
-					].Boost[ BOOST(MIN) ];
+		lowestOperating = KMIN( Shm->Cpu[
+						Ruler.Top[boost]
+					].Boost[ BOOST(MIN) ],
+					Shm->Proc.Features.Factory.Ratio);
 		CFlop = &Shm->Cpu[ Ruler.Top[boost] ].FlipFlop[
 				!Shm->Cpu[ Ruler.Top[boost] ].Toggle
 			];
 	    } else {
 		COF = Shm->Cpu[cpu].Boost[boost];
-		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( Shm->Cpu[cpu].Boost[BOOST(MIN)],
+					Shm->Proc.Features.Factory.Ratio );
 		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	    }
 		ComputeRatioShifts(COF,
@@ -9153,15 +9158,17 @@ int Shortcut(SCANKEY *scan)
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[BOOST(MAX)] ].Boost[BOOST(MAX)];
-		lowestOperating = Shm->Cpu[
-					Ruler.Top[BOOST(MAX)]
-					].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( Shm->Cpu[
+						Ruler.Top[BOOST(MAX)]
+					].Boost[BOOST(MIN)],
+					Shm->Proc.Features.Factory.Ratio );
 		CFlop = &Shm->Cpu[Ruler.Top[ BOOST(MAX)] ].FlipFlop[
 					!Shm->Cpu[Ruler.Top[BOOST(MAX)]
 					].Toggle];
 	      } else {
 		COF = Shm->Cpu[cpu].Boost[BOOST(MAX)];
-		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( Shm->Cpu[cpu].Boost[BOOST(MIN)],
+					Shm->Proc.Features.Factory.Ratio );
 		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	      }
 		ComputeRatioShifts(COF,
@@ -9207,12 +9214,14 @@ int Shortcut(SCANKEY *scan)
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	      if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[BOOST(MIN)] ].Boost[BOOST(MIN)];
-		lowestOperating = Shm->Cpu[
-					Ruler.Top[BOOST(MIN)]
-					].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( Shm->Cpu[
+						Ruler.Top[BOOST(MIN)]
+					].Boost[BOOST(MIN)],
+					Shm->Proc.Features.Factory.Ratio );
 	      } else {
 		COF = Shm->Cpu[cpu].Boost[BOOST(MIN)];
-		lowestOperating = Shm->Cpu[cpu].Boost[BOOST(MIN)];
+		lowestOperating = KMIN( Shm->Cpu[cpu].Boost[BOOST(MIN)],
+					Shm->Proc.Features.Factory.Ratio );
 	      }
 		ComputeRatioShifts(COF,
 				0,
