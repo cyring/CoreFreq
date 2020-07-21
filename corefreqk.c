@@ -28,7 +28,6 @@
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
 #include <linux/clocksource.h>
-#include <asm/timer.h>
 #include <asm/msr.h>
 #include <asm/nmi.h>
 #ifdef CONFIG_XEN
@@ -289,6 +288,33 @@ static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
 #define ADDR( _head_ , _mbr_ )	( _head_ _mbr_ )
 #define PUBLIC(...)		ADDR( KPublic , __VA_ARGS__ )
 #define PRIVATE(...)		ADDR( KPrivate, __VA_ARGS__ )
+
+unsigned int FixMissingRatioAndFrequency(unsigned int ratio, CLOCK *pClock)
+{
+  if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
+  {
+   if ((ratio == 0) && (pClock->Q > 0))
+   {	/*	Fix missing ratio.					*/
+   ratio=PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]\
+	=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
+   }
+  }
+  else if (ratio > 0)
+  {	/*	Fix the Factory frequency (unit: MHz)			*/
+	PUBLIC(RO(Proc))->Features.Factory.Freq=(ratio * pClock->Hz) / 1000000;
+  }
+	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
+	PUBLIC(RO(Proc))->Features.Factory.Clock.R  = pClock->R;
+	PUBLIC(RO(Proc))->Features.Factory.Clock.Hz = pClock->Hz;
+
+  if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
+  {
+	PUBLIC(RO(Proc))->Features.Factory.Ratio = \
+	DIV_ROUND_CLOSEST((PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000),
+				PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
+  }
+	return (ratio);
+}
 
 unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 {
@@ -4952,8 +4978,18 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
   if (HwCfgRegister.Family_17h.CpbDis)
   {
-	RDMSR(PstateDef, pClockZen->PstateAddr);
+	COMPUTE_ARG Compute = {	.TSC = { NULL, NULL } };
+
+	Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
+    if (Compute.TSC[0] == NULL) {
+	goto OutOfMemory;
+    }
+	Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
+    if (Compute.TSC[1] == NULL) {
+	goto OutOfMemory;
+    }
 	/*	Apply if and only if the P-State is enabled ?		*/
+	RDMSR(PstateDef, pClockZen->PstateAddr);
     if (PstateDef.Family_17h.PstateEn)
     {
 	if (pClockZen->pClockMod->cpu == -1)
@@ -4971,17 +5007,36 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PstateDef.Family_17h.CpuFid = FID;
 	WRMSR(PstateDef, pClockZen->PstateAddr);
 
-	if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
-		unsigned long new_loops_per_jiffy;
-		unsigned int cpu = smp_processor_id();
+	if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
+	{
+		unsigned long long new_loops_per_jiffy;
+		const unsigned int cpu = smp_processor_id();
 
-		new_loops_per_jiffy=PUBLIC(RO(Proc))->Features.Factory.Clock.Hz;
-		new_loops_per_jiffy=new_loops_per_jiffy * COF;
-		cpu_khz = tsc_khz = new_loops_per_jiffy / 1000;
-		new_loops_per_jiffy=new_loops_per_jiffy / CONFIG_HZ;
+		Compute.Clock = (CLOCK) {.Q = COF, .R = 0, .Hz = 0};
+
+		Compute_TSC(&Compute);
+
+		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute.Clock;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = COF;
+
+		new_loops_per_jiffy = PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
+		new_loops_per_jiffy = new_loops_per_jiffy * COF;
+		new_loops_per_jiffy = new_loops_per_jiffy / CONFIG_HZ;
 		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
 	}
 	pClockZen->rc = RC_OK_COMPUTE;
+    }
+
+OutOfMemory:
+    if (Compute.TSC[1] != NULL) {
+	kfree(Compute.TSC[1]);
+    } else {
+	pClockZen->rc = -ENOMEM;
+    }
+    if (Compute.TSC[0] != NULL) {
+	kfree(Compute.TSC[0]);
+    } else {
+	pClockZen->rc = -ENOMEM;
     }
   } else {
 	pClockZen->rc = -RC_TURBO_PREREQ;
@@ -5014,17 +5069,29 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
     {
 	smp_call_function_single(cpu, PerCore, pClockZen, 1);
 	rc = pClockZen->rc;
-
-	if ( (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
-	  && (rc == RC_OK_COMPUTE) )
-	{
-		Compute_Interval();
-	}
     }
   } while ((cpu != 0) && (rc >= RC_SUCCESS)) ;
 
-  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
-	CoreFreqK_Register_ClockSource(PUBLIC(RO(Proc))->Service.Core);
+  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
+  {
+	cpu = PUBLIC(RO(Proc))->Service.Core;
+
+    if (rc == RC_OK_COMPUTE)
+    {
+	PUBLIC(RO(Proc))->Features.Factory.Clock = (CLOCK) {.Q=0, .R=0, .Hz=0};
+	PUBLIC(RO(Proc))->Features.Factory.Ratio = 0;
+	PUBLIC(RO(Proc))->Features.Factory.Freq = 0;
+
+	FixMissingRatioAndFrequency(PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(MAX)],
+					 &PUBLIC(RO(Core, AT(cpu)))->Clock);
+
+	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
+
+	cpu_khz = tsc_khz = (loops_per_jiffy * CONFIG_HZ) / 1000;
+
+	Compute_Interval();
+    }
+	CoreFreqK_Register_ClockSource(cpu);
   }
 	return (rc);
 }
@@ -7552,33 +7619,6 @@ static void InitTimer(void *Cycle_Function)
 		PRIVATE(OF(Join, AT(cpu)))->Timer.function = Cycle_Function;
 		BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, CREATED);
 	}
-}
-
-unsigned int FixMissingRatioAndFrequency(unsigned int ratio, CLOCK *pClock)
-{
-  if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
-  {
-   if ((ratio == 0) && (pClock->Q > 0))
-   {	/*	Fix missing ratio.					*/
-   ratio=PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]\
-	=PUBLIC(RO(Proc))->Features.Factory.Freq / pClock->Q;
-   }
-  }
-  else if (ratio > 0)
-  {	/*	Fix the Factory frequency (unit: MHz)			*/
-	PUBLIC(RO(Proc))->Features.Factory.Freq=(ratio * pClock->Hz) / 1000000;
-  }
-	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
-	PUBLIC(RO(Proc))->Features.Factory.Clock.R  = pClock->R;
-	PUBLIC(RO(Proc))->Features.Factory.Clock.Hz = pClock->Hz;
-
-  if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
-  {
-	PUBLIC(RO(Proc))->Features.Factory.Ratio = \
-			(PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000)
-			/ PUBLIC(RO(Proc))->Features.Factory.Clock.Hz;
-  }
-	return (ratio);
 }
 
 void Controller_Init(void)
@@ -11919,7 +11959,7 @@ static void CoreFreqK_Register_Governor(void)
     case -ENODEV:
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
 	break;
-    case  0:		/*	Registration succeeded .		*/
+    case 0:		/*	Registration succeeded .		*/
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_ENABLE;
 	break;
     }

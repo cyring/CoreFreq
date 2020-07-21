@@ -747,6 +747,28 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
 }
 
+void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
+{
+	char item[8+1];
+
+	snprintf(item, 8+1, "%7.3f",
+		CLOCK_MHz(double, Shm->Proc.Features.Factory.Clock.Hz));
+
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+}
+
+void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data)
+{
+	char item[11+11+1];
+
+	snprintf(item, 11+11+1, "%5u" "%4d",
+		Shm->Proc.Features.Factory.Freq,
+		Shm->Proc.Features.Factory.Ratio);
+
+	memcpy(&grid->cell.item[22], &item[0], 5);
+	memcpy(&grid->cell.item[51], &item[5], 4);
+}
+
 void RefreshItemFreq(TGrid *grid, unsigned int ratio, double Freq_MHz)
 {
 	char item[11+8+1];
@@ -895,15 +917,17 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshTopFreq, BOOST(MAX) );
     }
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
-		RSC(FACTORY).CODE(),
-		(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
-			CLOCK_MHz(double,Shm->Proc.Features.Factory.Clock.Hz));
+	GridCall(PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
+			RSC(FACTORY).CODE(),
+			(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
+			CLOCK_MHz(double,Shm->Proc.Features.Factory.Clock.Hz)),
+		RefreshFactoryClock);
 
-	PUT(SCANKEY_NULL, attrib[3], width, 0,
-		"%.*s""%5u""%.*s""[%4d ]",
-		22, hSpace, Shm->Proc.Features.Factory.Freq,
-		23, hSpace, Shm->Proc.Features.Factory.Ratio);
+	GridCall(PUT(SCANKEY_NULL, attrib[3], width, 0,
+			"%.*s""%5u""%.*s""[%4d ]",
+			22, hSpace, Shm->Proc.Features.Factory.Freq,
+			23, hSpace, Shm->Proc.Features.Factory.Ratio),
+		RefreshFactoryFreq);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
