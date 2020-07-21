@@ -18,7 +18,6 @@
 #include <linux/delay.h>
 #include <linux/slab.h>
 #include <linux/utsname.h>
-#include <linux/clocksource.h>
 #ifdef CONFIG_CPU_IDLE
 #include <linux/cpuidle.h>
 #endif /* CONFIG_CPU_IDLE */
@@ -28,6 +27,8 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
+#include <linux/clocksource.h>
+#include <asm/timer.h>
 #include <asm/msr.h>
 #include <asm/nmi.h>
 #ifdef CONFIG_XEN
@@ -288,6 +289,69 @@ static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
 #define ADDR( _head_ , _mbr_ )	( _head_ _mbr_ )
 #define PUBLIC(...)		ADDR( KPublic , __VA_ARGS__ )
 #define PRIVATE(...)		ADDR( KPrivate, __VA_ARGS__ )
+
+unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
+{
+	unsigned long long TSC;
+	RDTSCP64(TSC);
+	return (TSC);
+}
+
+unsigned long long CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
+{
+	unsigned long long TSC;
+	RDTSC64(TSC);
+	return (TSC);
+}
+
+static struct clocksource CoreFreqK_CS = {
+	.name	= "corefreq",
+	.rating = 250,
+	.mask	= CLOCKSOURCE_MASK(64),
+	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
+};
+
+#define CoreFreqK_UnRegister_ClockSource() 				\
+{									\
+    if (PUBLIC(RO(Proc))->Registration.Driver.CS & REGISTRATION_ENABLE) \
+    {									\
+	clocksource_unregister(&CoreFreqK_CS);				\
+    }									\
+}
+
+static void CoreFreqK_Register_ClockSource(unsigned int cpu)
+{
+    if (Register_ClockSource == 1)
+    {
+	unsigned int Freq_Hz;
+
+	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	{
+		CoreFreqK_CS.read = CoreFreqK_Read_CS_From_Invariant_TSC;
+	}
+	else
+	{
+		CoreFreqK_CS.read = CoreFreqK_Read_CS_From_Variant_TSC;
+	}
+
+	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
+		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
+
+	switch ( clocksource_register_hz(&CoreFreqK_CS, Freq_Hz) ) {
+	default:
+		/* Fallthrough */
+	case -EBUSY:
+		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+		break;
+	case 0:
+		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
+		break;
+	}
+    } else {
+		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+    }
+}
 
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
@@ -4907,6 +4971,16 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PstateDef.Family_17h.CpuFid = FID;
 	WRMSR(PstateDef, pClockZen->PstateAddr);
 
+	if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
+		unsigned long new_loops_per_jiffy;
+		unsigned int cpu = smp_processor_id();
+
+		new_loops_per_jiffy=PUBLIC(RO(Proc))->Features.Factory.Clock.Hz;
+		new_loops_per_jiffy=new_loops_per_jiffy * COF;
+		cpu_khz = tsc_khz = new_loops_per_jiffy / 1000;
+		new_loops_per_jiffy=new_loops_per_jiffy / CONFIG_HZ;
+		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
+	}
 	pClockZen->rc = RC_OK_COMPUTE;
     }
   } else {
@@ -4914,10 +4988,24 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
   }
 }
 
+/*
+	Kernel:
+	LPJ = INTEGER( ( FREQ(KHz) * 1000 ) / CONFIG_HZ )
+
+	unsigned long loops_per_jiffy per cpu as cpuinfo_x86 structure
+	extern unsigned long lpj_fine;
+	extern unsigned long preset_lpj; from "lpj="
+*/
+
 long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
+
+  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
+	CoreFreqK_UnRegister_ClockSource();
+  }
+
   do {
 	cpu--;	/* From last AP to BSP */
 
@@ -4926,8 +5014,18 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
     {
 	smp_call_function_single(cpu, PerCore, pClockZen, 1);
 	rc = pClockZen->rc;
+
+	if ( (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
+	  && (rc == RC_OK_COMPUTE) )
+	{
+		Compute_Interval();
+	}
     }
   } while ((cpu != 0) && (rc >= RC_SUCCESS)) ;
+
+  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
+	CoreFreqK_Register_ClockSource(PUBLIC(RO(Proc))->Service.Core);
+  }
 	return (rc);
 }
 
@@ -4969,7 +5067,6 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.BoostIndex = BOOST(MAX),
 		.rc = RC_SUCCESS
 	};
-
 	return (For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore));
       } else {
 	return (-RC_EXPERIMENTAL);
@@ -11760,7 +11857,7 @@ static void CoreFreqK_Register_CPU_Idle(void)
     case -ENOMEM:
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
 	break;
-    case 0  :	/*	Registration succeeded.				*/
+    case 0:	/*	Registration succeeded.				*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_ENABLE;
 	break;
     }
@@ -11792,7 +11889,7 @@ static void CoreFreqK_Register_CPU_Freq(void)
     case -EINVAL:		/*	Missing CPU-Freq prerequisites. */
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
 	break;
-    case 0 :		/*	Registration succeeded .		*/
+    case 0:		/*	Registration succeeded .		*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_ENABLE;
 	break;
     }
@@ -11910,62 +12007,6 @@ static void CoreFreqK_UnRegister_NMI(void)
 static void CoreFreqK_Register_NMI(void) {}
 static void CoreFreqK_UnRegister_NMI(void) {}
 #endif
-
-unsigned long long CoreFreqK_Read_CS(struct clocksource *cs)
-{
-	unsigned long long TSC;
-
-	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
-	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
-	{
-		RDTSCP64(TSC);
-	}
-	else
-	{
-		RDTSC64(TSC);
-	}
-	return (TSC);
-}
-
-static struct clocksource CoreFreqK_CS = {
-	.name	= "corefreq",
-	.rating = 250,
-	.read	= CoreFreqK_Read_CS,
-	.mask	= CLOCKSOURCE_MASK(64),
-	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
-};
-
-#define CoreFreqK_UnRegister_ClockSource() 				\
-{									\
-    if (PUBLIC(RO(Proc))->Registration.Driver.CS & REGISTRATION_ENABLE) \
-    {									\
-	clocksource_unregister(&CoreFreqK_CS);				\
-    }									\
-}
-
-static void CoreFreqK_Register_ClockSource(void)
-{
-  if (Register_ClockSource == 1)
-  {
-	unsigned int cpu = get_cpu();
-	unsigned int Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
-				* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
-
-    switch ( clocksource_register_hz(&CoreFreqK_CS, Freq_Hz) ) {
-    default:
-	/* Fallthrough */
-    case -EBUSY:
-	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
-	break;
-    case 0  :
-	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
-	break;
-    }
-  } else {
-	PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
-  }
-	put_cpu();
-}
 
 
 static long CoreFreqK_Thermal_Scope(int scope)
@@ -13406,7 +13447,8 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 	printk(KERN_INFO "CoreFreq(%u:%d):"	\
 		" Processor [%2X%1X_%1X%1X]"	\
-		" Architecture [%s] %3s [%u/%u]\n",
+		" Architecture [%s] %3s [%u/%u]\n" \
+		"Kernel: CPU_KHZ[%u] TSC_KHZ[%u] LPJ[%lu]\n",
 		PUBLIC(RO(Proc))->Service.Core,PUBLIC(RO(Proc))->Service.Thread,
 		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
 		PUBLIC(RO(Proc))->Features.Std.EAX.Family,
@@ -13415,7 +13457,9 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Architecture,
 		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
 		PUBLIC(RO(Proc))->CPU.OnLine,
-		PUBLIC(RO(Proc))->CPU.Count);
+		PUBLIC(RO(Proc))->CPU.Count,
+		cpu_khz, tsc_khz,
+		cpu_data(pArg->localProcessor).loops_per_jiffy);
 
 	Controller_Start(0);
 
@@ -13439,7 +13483,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	Policy_Aggregate_Turbo();
 	#endif /* CONFIG_CPU_FREQ */
 
-	CoreFreqK_Register_ClockSource();
+	CoreFreqK_Register_ClockSource(pArg->localProcessor);
 
 	return (0);
 }
