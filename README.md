@@ -123,9 +123,9 @@ If module signature verification is enabled into Kernel, you will have to sign t
 
 ### Stop
 
-9. Press [CTRL]+[x] or [CTRL]+[C] to stop the client.
+9. Press [CTRL]+[x] or [CTRL]+[c] to stop the client.
 
-10. Press [CTRL]+[C] to stop the daemon (in foreground) or kill its background job.
+10. Press [CTRL]+[c] to stop the daemon (in foreground) or kill its background job.
 
 11. Unload the kernel module  
 :hash:`rmmod corefreqk.ko`  
@@ -295,7 +295,7 @@ CPU     IPS            IPC            CPI
 ```
 $ modinfo corefreqk.ko
 parm:           ArchID:Force an architecture (ID) (int)
-parm:           AutoClock:Auto estimate the clock frequency (int)
+parm:           AutoClock:Estimate Clock Frequency 0:None; 1:Once; 2:Auto (int)
 parm:           SleepInterval:Timer interval (ms) (uint)
 parm:           TickInterval:System requested interval (ms) (uint)
 parm:           Experimental:Enable features under development (int)

@@ -58,7 +58,7 @@ MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
 static signed int AutoClock = 0b11;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(AutoClock, "Auto estimate the clock frequency");
+MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:None; 1:Once; 2:Auto");
 
 static unsigned int SleepInterval = 0;
 module_param(SleepInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -876,7 +876,45 @@ void Compute_Interval(void)
 					* 1000000LU );
 }
 
-#define BUSYWAIT 1000
+#define CLOCK_TSC(loops, _TIMER, CTR)					\
+({									\
+	RD##_TIMER(CTR[0]);						\
+	for (;;) {							\
+		RD##_TIMER(CTR[1]);					\
+		if ((CTR[1] - CTR[0]) >= loops) {			\
+			break;						\
+		}							\
+	}								\
+})
+
+#define CLOCK2LOOPS(_INTERVAL)						\
+({									\
+	unsigned long xloops = _INTERVAL * 0x000010c7;			\
+	unsigned long lpj=this_cpu_read(cpu_info.loops_per_jiffy) ?	\
+			: loops_per_jiffy;				\
+	int d0;								\
+	xloops *= 4;							\
+	__asm__ volatile						\
+	(								\
+		"mull	%%edx"						\
+		:"=d"	(xloops),					\
+		 "=&a"	(d0)						\
+		:"1"	(xloops),					\
+		 "0"	(lpj * (HZ / 4))				\
+	);								\
+	xloops++;							\
+})
+
+#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
+({									\
+	CLOCK_TSC( CLOCK2LOOPS(_INTERVAL), _TIMER, CTR );		\
+})
+/*
+#define CLOCK_DELAY(_INTERVAL)	udelay(_INTERVAL)
+*/
+#define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_DELAY(0, _TIMER, CTR)
+
+#define CLOCK_INTERVAL	1000
 
 static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 {
@@ -884,21 +922,15 @@ static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 	/*		Writeback and Invalidate Caches.		*/
 	WBINVD();
 	/*		Warm-up & Overhead				*/
-	for (loop = 0; loop < OCCURRENCES; loop++) {
-		RDTSCP64(pCompute->TSC[0][loop].V[0]);
-
-		udelay(0);
-
-		RDTSCP64(pCompute->TSC[0][loop].V[1]);
+	for (loop = 0; loop < OCCURRENCES; loop++)
+	{
+		CLOCK_OVERHEAD(TSCP64, pCompute->TSC[0][loop].V);
 	}
 
 	/*		Estimation					*/
-	for (loop=0; loop < OCCURRENCES; loop++) {
-		RDTSCP64(pCompute->TSC[1][loop].V[0]);
-
-		udelay(BUSYWAIT);
-
-		RDTSCP64(pCompute->TSC[1][loop].V[1]);
+	for (loop = 0; loop < OCCURRENCES; loop++)
+	{
+		CLOCK_DELAY(CLOCK_INTERVAL, TSCP64, pCompute->TSC[1][loop].V);
 	}
 }
 
@@ -908,20 +940,14 @@ static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
 	/*		Writeback and Invalidate Caches.		*/
 	WBINVD();
 	/*		Warm-up & Overhead				*/
-	for (loop = 0; loop < OCCURRENCES; loop++) {
-		RDTSC64(pCompute->TSC[0][loop].V[0]);
-
-		udelay(0);
-
-		RDTSC64(pCompute->TSC[0][loop].V[1]);
+	for (loop = 0; loop < OCCURRENCES; loop++)
+	{
+		CLOCK_OVERHEAD(TSC64, pCompute->TSC[0][loop].V);
 	}
 	/*		Estimation					*/
-	for (loop = 0; loop < OCCURRENCES; loop++) {
-		RDTSC64(pCompute->TSC[1][loop].V[0]);
-
-		udelay(BUSYWAIT);
-
-		RDTSC64(pCompute->TSC[1][loop].V[1]);
+	for (loop = 0; loop < OCCURRENCES; loop++)
+	{
+		CLOCK_DELAY(CLOCK_INTERVAL, TSC64, pCompute->TSC[1][loop].V);
 	}
 }
 
@@ -971,13 +997,20 @@ static void Compute_TSC(void *arg)
 	}
 	/*		Substract the overhead .			*/
 	D[1][best[1]] -= D[0][best[0]];
-	D[1][best[1]] *= BUSYWAIT;
+	D[1][best[1]] *= CLOCK_INTERVAL;
 	/*		Compute the Base Clock .			*/
-	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], BUSYWAIT);
+	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], CLOCK_INTERVAL);
 }
 
 CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
-{	/* Synchronous call the Base Clock estimation on a pinned CPU. */
+{
+/*	Synchronously call the Base Clock estimation on a pinned CPU.
+ * 1/ Preemption is disabled by smp_call_function_single() > get_cpu()
+ * 2/ IRQ are suspended by generic_exec_single(func) > local_irq_save()
+ * 3/ Function 'func' is executed
+ * 4/ IRQ are resumed > local_irq_restore()
+ * 5/ Preemption is enabled > put_cpu()
+ */
 	smp_call_function_single(cpu, Compute_TSC, pCompute, 1);
 
 	return (pCompute->Clock);
@@ -3354,7 +3387,7 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
 	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
 	CONFIG_TDP_LEVEL ConfigTDP;
-	unsigned int cpu, local = get_cpu();
+	unsigned int cpu, local = get_cpu();	/* TODO(preempt_disable) */
 
 	NominalTDP.value = readl(mchmap + 0x5f3c);
 	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP)] = NominalTDP.Ratio;
@@ -3373,9 +3406,10 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(ACT)]=TurboActivation.MaxRatio;
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
+	put_cpu();	/* TODO(preempt_enable) */
+
 	PUBLIC(RO(Proc))->Features.TDP_Levels = 3;
 
-	put_cpu();
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++) {
 	    if (cpu != local)
 	    {
@@ -12999,9 +13033,9 @@ static int CoreFreqK_Query_Features_Level_Up(INIT_ARG *pArg)
 	int rc = 0;
 	if (ServiceProcessor == -1)
 	{	/*	Query features on any processor.		*/
-		pArg->localProcessor = get_cpu();
+		pArg->localProcessor = get_cpu(); /* TODO(preempt_disable) */
 		Query_Features(pArg);
-		put_cpu();
+		put_cpu();	/* TODO(preempt_enable) */
 		rc = pArg->rc;
 	} else { /*	Query features on User selected processor.	*/
 		if (ServiceProcessor >= 0)
