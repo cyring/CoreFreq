@@ -1745,7 +1745,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
-	/* TODO(HYGON: According to /arch/x86/kernel/amd_nb.c: DF_F3 = 0x1463*/
+	/* Source: HYGON: /arch/x86/kernel/amd_nb.c: DF_F3 = 0x1463	*/
 	{
 		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
@@ -1783,12 +1783,20 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
-	/* TODO(HYGON: Assumption: PCI Root Device ID = 0x1450)		*/
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
+	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
-	/* TODO( SMU > Data Fabric > UMC )				*/
+	/* Source: SMU > Data Fabric > UMC				*/
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC_DUAL_CHA
@@ -1811,6 +1819,10 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC_DUAL_CHA
+	},
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN2_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC_DUAL_CHA
 	},
 	{

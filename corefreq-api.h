@@ -1353,6 +1353,12 @@ typedef struct
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/* Renoir */
 #endif
+#ifndef PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_NB_IOMMU 0x15f9 /* FireFlight*/
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_ARDEN_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_17H_ARDEN_NB_IOMMU	0x1627	/* Arden */
+#endif
 /* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3	0x1463	/* Zeppelin */
@@ -1371,6 +1377,9 @@ typedef struct
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3	0x13f3	/* Ariel */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_17H_RAVEN2_DF_F3
+	#define PCI_DEVICE_ID_AMD_17H_RAVEN2_DF_F3	0x15eb	/* Raven2 */
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3	0x15f3	/* FireFlight*/
