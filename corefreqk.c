@@ -289,19 +289,23 @@ static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
 #define PUBLIC(...)		ADDR( KPublic , __VA_ARGS__ )
 #define PRIVATE(...)		ADDR( KPrivate, __VA_ARGS__ )
 
-unsigned int FixMissingRatioAndFrequency(unsigned int ratio, CLOCK *pClock)
+unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
+	unsigned long long r64 = r32;
   if (PUBLIC(RO(Proc))->Features.Factory.Freq != 0)
   {
-   if ((ratio == 0) && (pClock->Q > 0))
+   if ((r32 == 0) && (pClock->Q > 0))
    {	/*	Fix missing ratio.					*/
-   ratio=PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]\
-	=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
+      r64=DIV_ROUND_CLOSEST(PUBLIC(RO(Proc))->Features.Factory.Freq, pClock->Q);
+      PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core)))->Boost[BOOST(MAX)]=\
+		(unsigned int) r64;
    }
   }
-  else if (ratio > 0)
+  else if (r32 > 0)
   {	/*	Fix the Factory frequency (unit: MHz)			*/
-	PUBLIC(RO(Proc))->Features.Factory.Freq=(ratio * pClock->Hz) / 1000000;
+	r64 = pClock->Hz * r32;
+	r64 = r64 / 1000000LLU;
+	PUBLIC(RO(Proc))->Features.Factory.Freq = (unsigned int) r64;
   }
 	PUBLIC(RO(Proc))->Features.Factory.Clock.Q  = pClock->Q;
 	PUBLIC(RO(Proc))->Features.Factory.Clock.R  = pClock->R;
@@ -309,11 +313,11 @@ unsigned int FixMissingRatioAndFrequency(unsigned int ratio, CLOCK *pClock)
 
   if (PUBLIC(RO(Proc))->Features.Factory.Clock.Hz > 0)
   {
-	PUBLIC(RO(Proc))->Features.Factory.Ratio = \
-	DIV_ROUND_CLOSEST((PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000),
-				PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
+    r64 = PUBLIC(RO(Proc))->Features.Factory.Freq * 1000000LLU;
+    r64 = DIV_ROUND_CLOSEST(r64, PUBLIC(RO(Proc))->Features.Factory.Clock.Hz);
+    PUBLIC(RO(Proc))->Features.Factory.Ratio = (unsigned int) r64;
   }
-	return (ratio);
+	return ((unsigned int) r64);
 }
 
 unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
@@ -378,7 +382,12 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
     }
 }
-
+/*TODO(sched_clock)
+unsigned long long sched_clock(void)
+{
+	return ((jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ));
+}
+*/
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
 			unsigned long leaf, unsigned long subLeaf )
@@ -887,12 +896,18 @@ void Compute_Interval(void)
 	}								\
 })
 
+#ifdef CONFIG_SMP
+	#define THIS_LPJ	this_cpu_read(cpu_info.loops_per_jiffy)
+#else
+	#define THIS_LPJ	loops_per_jiffy
+#endif
+/* Source: Adapted from arch/x86/kernel/tsc.c				*/
 #define CLOCK2LOOPS(_INTERVAL)						\
 ({									\
 	unsigned long xloops = _INTERVAL * 0x000010c7;			\
-	unsigned long lpj=this_cpu_read(cpu_info.loops_per_jiffy) ?	\
-			: loops_per_jiffy;				\
+	const unsigned long reg = THIS_LPJ * (HZ / 4);			\
 	int d0;								\
+									\
 	xloops *= 4;							\
 	__asm__ volatile						\
 	(								\
@@ -900,7 +915,7 @@ void Compute_Interval(void)
 		:"=d"	(xloops),					\
 		 "=&a"	(d0)						\
 		:"1"	(xloops),					\
-		 "0"	(lpj * (HZ / 4))				\
+		 "0"	(reg)						\
 	);								\
 	xloops++;							\
 })
@@ -910,7 +925,12 @@ void Compute_Interval(void)
 	CLOCK_TSC( CLOCK2LOOPS(_INTERVAL), _TIMER, CTR );		\
 })
 /*
-#define CLOCK_DELAY(_INTERVAL)	udelay(_INTERVAL)
+#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
+({									\
+	RD##_TIMER(CTR[0]);						\
+	udelay(_INTERVAL);						\
+	RD##_TIMER(CTR[1]);						\
+})
 */
 #define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_DELAY(0, _TIMER, CTR)
 
@@ -5046,6 +5066,11 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 		unsigned long long new_loops_per_jiffy;
 		const unsigned int cpu = smp_processor_id();
 
+		new_loops_per_jiffy = PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
+		new_loops_per_jiffy = new_loops_per_jiffy * COF;
+		new_loops_per_jiffy = new_loops_per_jiffy / HZ;
+		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
+
 		Compute.Clock = (CLOCK) {.Q = COF, .R = 0, .Hz = 0};
 
 		Compute_TSC(&Compute);
@@ -5055,7 +5080,7 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 
 		new_loops_per_jiffy = PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
 		new_loops_per_jiffy = new_loops_per_jiffy * COF;
-		new_loops_per_jiffy = new_loops_per_jiffy / CONFIG_HZ;
+		new_loops_per_jiffy = new_loops_per_jiffy / HZ;
 		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
 	}
 	pClockZen->rc = RC_OK_COMPUTE;
@@ -5076,15 +5101,6 @@ OutOfMemory:
 	pClockZen->rc = -RC_TURBO_PREREQ;
   }
 }
-
-/*
-	Kernel:
-	LPJ = INTEGER( ( FREQ(KHz) * 1000 ) / CONFIG_HZ )
-
-	unsigned long loops_per_jiffy per cpu as cpuinfo_x86 structure
-	extern unsigned long lpj_fine;
-	extern unsigned long preset_lpj; from "lpj="
-*/
 
 long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 {
@@ -5121,7 +5137,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
-	cpu_khz = tsc_khz = (loops_per_jiffy * CONFIG_HZ) / 1000;
+	cpu_khz = tsc_khz = (loops_per_jiffy * HZ) / 1000;
 
 	Compute_Interval();
     }
