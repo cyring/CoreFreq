@@ -885,6 +885,14 @@ void Compute_Interval(void)
 					* 1000000LU );
 }
 
+#ifdef CONFIG_SMP
+	#define THIS_LPJ	this_cpu_read(cpu_info.loops_per_jiffy)
+#else
+	#define THIS_LPJ	loops_per_jiffy
+#endif
+
+#define COMPUTE_LPJ(Clock_Hz, COF)	( (Clock_Hz * COF) / HZ )
+
 #define CLOCK_TSC(loops, _TIMER, CTR)					\
 ({									\
 	RD##_TIMER(CTR[0]);						\
@@ -896,12 +904,7 @@ void Compute_Interval(void)
 	}								\
 })
 
-#ifdef CONFIG_SMP
-	#define THIS_LPJ	this_cpu_read(cpu_info.loops_per_jiffy)
-#else
-	#define THIS_LPJ	loops_per_jiffy
-#endif
-/* Source: Adapted from arch/x86/kernel/tsc.c				*/
+/* Source: Adapted from arch/x86/kernel/tsc.c
 #define CLOCK2LOOPS(_INTERVAL)						\
 ({									\
 	unsigned long xloops = _INTERVAL * 0x000010c7;			\
@@ -922,19 +925,22 @@ void Compute_Interval(void)
 
 #define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
 ({									\
-	CLOCK_TSC( CLOCK2LOOPS(_INTERVAL), _TIMER, CTR );		\
-})
-/*
-#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
-({									\
 	RD##_TIMER(CTR[0]);						\
 	udelay(_INTERVAL);						\
 	RD##_TIMER(CTR[1]);						\
 })
 */
+
+#define CLOCK2LOOPS(_INTERVAL) (((_INTERVAL * THIS_LPJ * HZ) / 1000000LLU) + 1)
+
+#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
+({									\
+	CLOCK_TSC( CLOCK2LOOPS(_INTERVAL), _TIMER, CTR );		\
+})
+
 #define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_DELAY(0, _TIMER, CTR)
 
-#define CLOCK_INTERVAL	1000
+#define CLOCK_INTERVAL	1000LLU
 
 static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 {
@@ -5061,28 +5067,32 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PstateDef.Family_17h.CpuFid = FID;
 	WRMSR(PstateDef, pClockZen->PstateAddr);
 
-	if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
-	{
-		unsigned long long new_loops_per_jiffy;
-		const unsigned int cpu = smp_processor_id();
+      if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
+      {
+	const unsigned int cpu = smp_processor_id();
 
-		new_loops_per_jiffy = PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
-		new_loops_per_jiffy = new_loops_per_jiffy * COF;
-		new_loops_per_jiffy = new_loops_per_jiffy / HZ;
-		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
+	RDMSR(PstateDef, pClockZen->PstateAddr);
 
-		Compute.Clock = (CLOCK) {.Q = COF, .R = 0, .Hz = 0};
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+			AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId);
 
-		Compute_TSC(&Compute);
+	cpu_data(cpu).loops_per_jiffy = \
+		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
+				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] );
 
-		PUBLIC(RO(Core, AT(cpu)))->Clock = Compute.Clock;
-		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = COF;
+	Compute.Clock.Q = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
+	Compute.Clock.R = 0;
+	Compute.Clock.Hz = 0;
 
-		new_loops_per_jiffy = PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
-		new_loops_per_jiffy = new_loops_per_jiffy * COF;
-		new_loops_per_jiffy = new_loops_per_jiffy / HZ;
-		cpu_data(cpu).loops_per_jiffy = new_loops_per_jiffy;
-	}
+	Compute_TSC(&Compute);
+
+	PUBLIC(RO(Core, AT(cpu)))->Clock = Compute.Clock;
+
+	cpu_data(cpu).loops_per_jiffy = \
+		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
+				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] );
+      }
 	pClockZen->rc = RC_OK_COMPUTE;
     }
 
@@ -5137,7 +5147,10 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
-	cpu_khz = tsc_khz = (loops_per_jiffy * HZ) / 1000;
+	cpu_khz = tsc_khz = (unsigned int) ((loops_per_jiffy * HZ) / 1000LU);
+
+	pr_warn("CoreFreq: Kernel CPU_KHZ[%u] TSC_KHZ[%u] LPJ[%lu]\n",
+		cpu_khz, tsc_khz, loops_per_jiffy);
 
 	Compute_Interval();
     }
@@ -13548,8 +13561,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
 		PUBLIC(RO(Proc))->CPU.OnLine,
 		PUBLIC(RO(Proc))->CPU.Count,
-		cpu_khz, tsc_khz,
-		cpu_data(pArg->localProcessor).loops_per_jiffy);
+		cpu_khz, tsc_khz, loops_per_jiffy);
 
 	Controller_Start(0);
 
