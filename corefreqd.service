@@ -7,8 +7,10 @@ Description=CoreFreq Daemon
 
 [Service]
 Type=simple
+ExecStartPre=/usr/bin/modprobe corefreqk
 ExecStart=/bin/corefreqd -q
 ExecStop=/bin/kill -QUIT $MAINPID
+ExecStopPost=/usr/bin/modprobe -r corefreqk
 RemainAfterExit=no
 SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
 
