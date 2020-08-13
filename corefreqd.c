@@ -4391,7 +4391,8 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
 }
 
-void PerCore_Update(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
+void PerCore_Update(	SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core,
+			unsigned int cpu )
 {
 	if (BITVAL(Core[cpu]->OffLine, HW)) {
 		BITSET(LOCKLESS, Shm->Cpu[cpu].OffLine, HW);
@@ -4470,21 +4471,6 @@ void SysGate_Toggle(REF *Ref, unsigned int state)
 	    }
 	}
     }
-}
-
-void UpdateFeatures(REF *Ref)
-{
-	unsigned int cpu;
-
-	Package_Update(Ref->Shm, Ref->Proc_RO, Ref->Proc_RW);
-	for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
-	    if (BITVAL(Ref->Core_RO[cpu]->OffLine, OS) == 0)
-	    {
-		PerCore_Update(Ref->Shm, Ref->Proc_RO, Ref->Core_RO, cpu);
-	    }
-	}
-	Uncore(Ref->Shm, Ref->Proc_RO,Ref->Core_RO[Ref->Proc_RO->Service.Core]);
-	Technology_Update(Ref->Shm, Ref->Proc_RO, Ref->Proc_RW);
 }
 
 void Master_Ring_Handler(REF *Ref, unsigned int rid)
@@ -5204,12 +5190,15 @@ REASON_CODE Core_Manager(REF *Ref)
 	    }
 	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	    {
-			UpdateFeatures(Ref);
-		    if (Quiet & 0x100) {
+		Package_Update(Shm, Proc, Proc_RW);
+		Uncore(Shm, Proc, Core[Ref->Proc_RO->Service.Core]);
+		Technology_Update(Shm, Proc, Proc_RW);
+
+		if (Quiet & 0x100) {
 			printf("\t%s || %s\n",
 				BITVAL(PendingSync, NTFY0)?"NTFY":"....",
 				BITVAL(PendingSync, COMP0)?"COMP":"....");
-		    }
+		}
 	    }
 		/* All aggregations done: Notify Clients.		*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_SYNC);

@@ -891,56 +891,52 @@ void Compute_Interval(void)
 	#define THIS_LPJ	loops_per_jiffy
 #endif
 
-#define COMPUTE_LPJ(Clock_Hz, COF)	( (Clock_Hz * COF) / HZ )
+#define COMPUTE_LPJ(BCLK_Hz, COF)	( (BCLK_Hz * COF) / HZ )
 
-#define CLOCK_TSC(loops, _TIMER, CTR)					\
+#if FEAT_DBG > 1
+#define CLOCK_TSC( CYCLES, _TIMER, CTR )				\
 ({									\
-	RD##_TIMER(CTR[0]);						\
-	for (;;) {							\
-		RD##_TIMER(CTR[1]);					\
-		if ((CTR[1] - CTR[0]) >= loops) {			\
-			break;						\
-		}							\
-	}								\
-})
-
-/* Source: Adapted from arch/x86/kernel/tsc.c
-#define CLOCK2LOOPS(_INTERVAL)						\
-({									\
-	unsigned long xloops = _INTERVAL * 0x000010c7;			\
-	const unsigned long reg = THIS_LPJ * (HZ / 4);			\
-	int d0;								\
-									\
-	xloops *= 4;							\
 	__asm__ volatile						\
 	(								\
-		"mull	%%edx"						\
-		:"=d"	(xloops),					\
-		 "=&a"	(d0)						\
-		:"1"	(xloops),					\
-		 "0"	(reg)						\
+		ASM_RD##_TIMER(r14)					\
+		"addq	%[cycles], %%rax"		"\n\t"		\
+		"movq	%%rax	, %%r15"		"\n\t"		\
+	"1:"						"\n\t"		\
+		ASM_RD##_TIMER(r13)					\
+		"cmpq	%%r15	, %%r13"		"\n\t"		\
+		"jc	1b"				"\n\t"		\
+		"movq	%%r14	, %[ctr0]"		"\n\t"		\
+		"movq	%%r13	, %[ctr1]"				\
+		: [ctr0] "=m"	(CTR[0]),				\
+		  [ctr1] "=m"	(CTR[1])				\
+		: [cycles] "ir" (CYCLES)				\
+		: "%rax", "%rbx", "%rcx", "%rdx",			\
+		  "%r13", "%r14", "%r15",				\
+		  "cc", "memory"					\
 	);								\
-	xloops++;							\
 })
 
-#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
+#define CLOCK2CYCLE(INTERVAL_NS) ((INTERVAL_NS * THIS_LPJ * HZ) / 1000000LLU)
+
+#define CLOCK_DELAY(INTERVAL_NS, _TIMER, CTR)				\
 ({									\
-	RD##_TIMER(CTR[0]);						\
-	udelay(_INTERVAL);						\
-	RD##_TIMER(CTR[1]);						\
+	CLOCK_TSC( CLOCK2CYCLE(INTERVAL_NS), _TIMER, CTR );		\
 })
-*/
 
-#define CLOCK2LOOPS(_INTERVAL) (((_INTERVAL * THIS_LPJ * HZ) / 1000000LLU) + 1)
+#define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_TSC( 1LLU, _TIMER, CTR )
 
-#define CLOCK_DELAY(_INTERVAL, _TIMER, CTR)				\
+#else
+
+#define CLOCK_DELAY(INTERVAL_NS, _TIMER, CTR)				\
 ({									\
-	CLOCK_TSC( CLOCK2LOOPS(_INTERVAL), _TIMER, CTR );		\
+	RD##_TIMER##64(CTR[0]);						\
+	udelay(INTERVAL_NS);						\
+	RD##_TIMER##64(CTR[1]);						\
 })
 
-#define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_DELAY(0, _TIMER, CTR)
+#define CLOCK_OVERHEAD(_TIMER, CTR)	CLOCK_DELAY( 0LLU, _TIMER, CTR )
 
-#define CLOCK_INTERVAL	1000LLU
+#endif
 
 static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 {
@@ -950,13 +946,12 @@ static void ComputeWithSerializedTSC(COMPUTE_ARG *pCompute)
 	/*		Warm-up & Overhead				*/
 	for (loop = 0; loop < OCCURRENCES; loop++)
 	{
-		CLOCK_OVERHEAD(TSCP64, pCompute->TSC[0][loop].V);
+		CLOCK_OVERHEAD(TSCP, pCompute->TSC[0][loop].V);
 	}
-
 	/*		Estimation					*/
 	for (loop = 0; loop < OCCURRENCES; loop++)
 	{
-		CLOCK_DELAY(CLOCK_INTERVAL, TSCP64, pCompute->TSC[1][loop].V);
+		CLOCK_DELAY(1000LLU, TSCP, pCompute->TSC[1][loop].V);
 	}
 }
 
@@ -968,12 +963,12 @@ static void ComputeWithUnSerializedTSC(COMPUTE_ARG *pCompute)
 	/*		Warm-up & Overhead				*/
 	for (loop = 0; loop < OCCURRENCES; loop++)
 	{
-		CLOCK_OVERHEAD(TSC64, pCompute->TSC[0][loop].V);
+		CLOCK_OVERHEAD(TSC, pCompute->TSC[0][loop].V);
 	}
 	/*		Estimation					*/
 	for (loop = 0; loop < OCCURRENCES; loop++)
 	{
-		CLOCK_DELAY(CLOCK_INTERVAL, TSC64, pCompute->TSC[1][loop].V);
+		CLOCK_DELAY(1000LLU, TSC, pCompute->TSC[1][loop].V);
 	}
 }
 
@@ -1023,9 +1018,8 @@ static void Compute_TSC(void *arg)
 	}
 	/*		Substract the overhead .			*/
 	D[1][best[1]] -= D[0][best[0]];
-	D[1][best[1]] *= CLOCK_INTERVAL;
 	/*		Compute the Base Clock .			*/
-	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], CLOCK_INTERVAL);
+	REL_BCLK(pCompute->Clock, ratio, D[1][best[1]], 1LLU);
 }
 
 CLOCK Compute_Clock(unsigned int cpu, COMPUTE_ARG *pCompute)
@@ -4301,7 +4295,7 @@ static PCI_CALLBACK AMD_17h_UMC_DUAL_CHA(struct pci_dev *dev)
 	return (AMD_17h_UMC(dev, 2));
 }
 
-static PCI_CALLBACK AMD_17h_UMC_OCTO_CHA(struct pci_dev *dev)
+static PCI_CALLBACK AMD_17h_UMC_OCTA_CHA(struct pci_dev *dev)
 {
 	return (AMD_17h_UMC(dev, 8));
 }
@@ -4950,7 +4944,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 
 	/*	If CPB is enabled then add Boost + XFR to the P0 ratio. */
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
-    if (!HwCfgRegister.Family_17h.CpbDis)
+    if (HwCfgRegister.Family_17h.CpbDis == 0)
     {
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
@@ -5451,6 +5445,9 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 	SetTarget(Core, TurboRatio);
 	ToggleFeature = 1;
 	break;
+    default:
+	ToggleFeature = 0;
+	break;
     }
     if (ToggleFeature == 1)
     {
@@ -5747,13 +5744,23 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	/*		Enable or Disable the Core Performance Boost.	*/
 	switch (TurboBoost_Enable) {
 	case COREFREQ_TOGGLE_OFF:
+		HwCfgRegister.Family_17h.CpbDis = 1;
+		ToggleFeature = 1;
+		break;
 	case COREFREQ_TOGGLE_ON:
-		HwCfgRegister.Family_17h.CpbDis = !TurboBoost_Enable;
-		WRMSR(HwCfgRegister, MSR_K7_HWCR);
-		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+		HwCfgRegister.Family_17h.CpbDis = 0;
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
 		break;
 	}
-	if (!HwCfgRegister.Family_17h.CpbDis)
+	if (ToggleFeature == 1)
+	{
+		WRMSR(HwCfgRegister, MSR_K7_HWCR);
+		RDMSR(HwCfgRegister, MSR_K7_HWCR);
+	}
+	if (HwCfgRegister.Family_17h.CpbDis == 0)
 	{
 		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	} else {
@@ -7542,6 +7549,7 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	int ToggleFeature = 0;
 
 	/*	Query the Min, Max, Target & Turbo P-States		*/
+	PerCore_Query_AMD_Zen_Features(Core);
 	Compute_AMD_Zen_Boost(Core->Bind);
 
 	SystemRegisters(Core);
@@ -7597,8 +7605,6 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
-
-	PerCore_Query_AMD_Zen_Features(Core);
 
 	Core->PowerThermal.Param = PUBLIC(RO(Proc))->PowerThermal.Param;
 }
@@ -13561,7 +13567,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
 		PUBLIC(RO(Proc))->CPU.OnLine,
 		PUBLIC(RO(Proc))->CPU.Count,
-		cpu_khz, tsc_khz, loops_per_jiffy);
+		cpu_khz, tsc_khz, THIS_LPJ);
 
 	Controller_Start(0);
 

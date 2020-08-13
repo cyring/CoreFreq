@@ -1222,7 +1222,7 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev) ;
 #endif
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_17h_UMC_DUAL_CHA(struct pci_dev *dev) ;
-static PCI_CALLBACK AMD_17h_UMC_OCTO_CHA(struct pci_dev *dev) ;
+static PCI_CALLBACK AMD_17h_UMC_OCTA_CHA(struct pci_dev *dev) ;
 
 static struct pci_device_id PCI_Void_ids[] = {
 	{0, }
@@ -1811,7 +1811,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	},
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_STARSHIP_DF_F3),
-		.driver_data = (kernel_ulong_t) AMD_17h_UMC_OCTO_CHA
+		.driver_data = (kernel_ulong_t) AMD_17h_UMC_OCTA_CHA
 	},
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RENOIR_DF_F3),

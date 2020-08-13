@@ -362,15 +362,12 @@ typedef struct
 } CLOCK;
 
 #define REL_BCLK(clock, ratio, delta_tsc, interval)			\
-({	/* Compute Divisor in Interval				*/	\
-	unsigned long long divisor = 1000LLU * ratio * interval;	\
-	/* Compute Quotient					*/	\
-	clock.Q  = delta_tsc / divisor;					\
-	/* Compute Remainder					*/	\
-	clock.R  = delta_tsc % divisor;					\
-	/* Compute full Hertz					*/	\
-	clock.Hz = (clock.Q * 1000000LLU)				\
-		 + (clock.R * 1000000LLU) / divisor;			\
+({	/*		Compute Clock (Hertz)			*/	\
+	clock.Hz = (1000LLU * delta_tsc) / (interval * ratio);		\
+	/*		Compute Quotient (MHz)			*/	\
+	clock.Q  = clock.Hz / (1000LLU * 1000LLU);			\
+	/*		Compute Remainder (MHz)			*/	\
+	clock.R  = clock.Hz % (1000LLU * 1000LLU);			\
 })
 
 #define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
