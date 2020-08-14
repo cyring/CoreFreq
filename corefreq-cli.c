@@ -5339,8 +5339,19 @@ unsigned int MultiplierIsRatio(unsigned int cpu, unsigned int multiplier)
 	enum RATIO_BOOST boost;
 	for (boost = BOOST(MIN); boost < BOOST(SIZE); boost++)
 	{
-		if (Shm->Cpu[cpu].Boost[boost] == multiplier) {
-			return (1);
+		switch (boost) {
+		case BOOST(CPB):
+		case BOOST(XFR):
+			if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+			|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)) {
+				break;
+			}
+			/* Fallthrough */
+		default:
+			if (Shm->Cpu[cpu].Boost[boost] == multiplier) {
+				return (1);
+			}
+			break;
 		}
 	}
 	if (Shm->Proc.Features.Factory.Ratio == multiplier) {
