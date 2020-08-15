@@ -28,7 +28,6 @@
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
 #include <linux/clocksource.h>
-#include <linux/sched_clock.h>
 #include <asm/msr.h>
 #include <asm/nmi.h>
 #ifdef CONFIG_XEN
@@ -5041,16 +5040,6 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
   if (HwCfgRegister.Family_17h.CpbDis)
   {
-	COMPUTE_ARG Compute = {	.TSC = { NULL, NULL } };
-
-	Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
-    if (Compute.TSC[0] == NULL) {
-	goto OutOfMemory;
-    }
-	Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
-    if (Compute.TSC[1] == NULL) {
-	goto OutOfMemory;
-    }
 	/*	Apply if and only if the P-State is enabled ?		*/
 	RDMSR(PstateDef, pClockZen->PstateAddr);
     if (PstateDef.Family_17h.PstateEn)
@@ -5070,10 +5059,35 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	PstateDef.Family_17h.CpuFid = FID;
 	WRMSR(PstateDef, pClockZen->PstateAddr);
 
-      if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
-      {
-	const unsigned int cpu = smp_processor_id();
+	pClockZen->rc = RC_OK_COMPUTE;
+    } else {
+	pClockZen->rc = -ENODEV;
+    }
+  } else {
+	pClockZen->rc = -RC_TURBO_PREREQ;
+  }
+}
 
+static void BaseClock_AMD_Zen_PerCore(void *arg)
+{
+	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
+	PSTATEDEF PstateDef = {.value = 0};
+	COMPUTE_ARG Compute = {	.TSC = { NULL, NULL } };
+
+	Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
+    if (Compute.TSC[0] == NULL) {
+	goto OutOfMemory;
+    }
+	Compute.TSC[1] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
+    if (Compute.TSC[1] == NULL) {
+	goto OutOfMemory;
+    }
+	TurboClock_AMD_Zen_PerCore(arg);
+
+    if (pClockZen->rc == RC_OK_COMPUTE)
+    {
+	const unsigned int cpu = smp_processor_id();
+	/*			Calibration Phase One			*/
 	RDMSR(PstateDef, pClockZen->PstateAddr);
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
@@ -5083,7 +5097,7 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	cpu_data(cpu).loops_per_jiffy = \
 		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] );
-
+	/*			Calibration Phase Two			*/
 	Compute.Clock.Q = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 	Compute.Clock.R = 0;
 	Compute.Clock.Hz = 0;
@@ -5091,14 +5105,17 @@ static void TurboClock_AMD_Zen_PerCore(void *arg)
 	Compute_TSC(&Compute);
 
 	PUBLIC(RO(Core, AT(cpu)))->Clock = Compute.Clock;
+	/*			Calibration Phase Three			*/
+	RDMSR(PstateDef, pClockZen->PstateAddr);
+
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
+			AMD_Zen_CoreCOF(PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId);
 
 	cpu_data(cpu).loops_per_jiffy = \
 		COMPUTE_LPJ(	PUBLIC(RO(Core, AT(cpu)))->Clock.Hz,
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] );
-      }
-	pClockZen->rc = RC_OK_COMPUTE;
     }
-
 OutOfMemory:
     if (Compute.TSC[1] != NULL) {
 	kfree(Compute.TSC[1]);
@@ -5110,19 +5127,12 @@ OutOfMemory:
     } else {
 	pClockZen->rc = -ENOMEM;
     }
-  } else {
-	pClockZen->rc = -RC_TURBO_PREREQ;
-  }
 }
 
 long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 {
 	long rc = RC_SUCCESS;
 	unsigned int cpu = PUBLIC(RO(Proc))->CPU.Count;
-
-  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX) {
-	CoreFreqK_UnRegister_ClockSource();
-  }
 
   do {
 	cpu--;	/* From last AP to BSP */
@@ -5135,9 +5145,17 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
     }
   } while ((cpu != 0) && (rc >= RC_SUCCESS)) ;
 
-  if (pClockZen->pClockMod->NC == CLOCK_MOD_MAX)
-  {
-	cpu = PUBLIC(RO(Proc))->Service.Core;
+	return (rc);
+}
+
+long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
+{
+	long rc;
+	unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
+
+	CoreFreqK_UnRegister_ClockSource();
+
+	rc = For_All_AMD_Zen_Clock(pClockZen, PerCore);
 
     if (rc == RC_OK_COMPUTE)
     {
@@ -5153,7 +5171,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 	cpu_khz = tsc_khz = (unsigned int) ((loops_per_jiffy * HZ) / 1000LU);
     }
 	CoreFreqK_Register_ClockSource(cpu);
-  }
+
 	return (rc);
 }
 
@@ -5195,7 +5213,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 		.BoostIndex = BOOST(MAX),
 		.rc = RC_SUCCESS
 	};
-	return (For_All_AMD_Zen_Clock(&ClockZen, TurboClock_AMD_Zen_PerCore));
+	return(For_All_AMD_Zen_BaseClock(&ClockZen, BaseClock_AMD_Zen_PerCore));
       } else {
 	return (-RC_EXPERIMENTAL);
       }
