@@ -28,6 +28,7 @@
 #include <linux/sched/signal.h>
 #endif /* KERNEL_VERSION(4, 11, 0) */
 #include <linux/clocksource.h>
+#include <linux/sched_clock.h>
 #include <asm/msr.h>
 #include <asm/nmi.h>
 #ifdef CONFIG_XEN
@@ -353,7 +354,8 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
 {
     if (Register_ClockSource == 1)
     {
-	unsigned int Freq_Hz;
+	unsigned long long Freq_Hz;
+	unsigned int Freq_KHz;
 
 	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
@@ -367,8 +369,9 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
 
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
+	Freq_KHz = Freq_Hz / 1000U;
 
-	switch ( clocksource_register_hz(&CoreFreqK_CS, Freq_Hz) ) {
+	switch ( clocksource_register_khz(&CoreFreqK_CS, Freq_KHz) ) {
 	default:
 		/* Fallthrough */
 	case -EBUSY:
@@ -376,18 +379,22 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
 		break;
 	case 0:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
+
+	pr_warn("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
+		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n" \
+		"max:idle[%llu]:adj[%u]:cycles[%llu]\n",
+		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
+		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift,
+		CoreFreqK_CS.max_idle_ns, CoreFreqK_CS.maxadj,
+		CoreFreqK_CS.max_cycles);
+
 		break;
 	}
     } else {
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
     }
 }
-/*TODO(sched_clock)
-unsigned long long sched_clock(void)
-{
-	return ((jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ));
-}
-*/
+
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned int *pCRC, enum HYPERVISOR *pHypervisor,
 			unsigned long leaf, unsigned long subLeaf )
@@ -5144,11 +5151,6 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
 	cpu_khz = tsc_khz = (unsigned int) ((loops_per_jiffy * HZ) / 1000LU);
-
-	pr_warn("CoreFreq: Kernel CPU_KHZ[%u] TSC_KHZ[%u] LPJ[%lu]\n",
-		cpu_khz, tsc_khz, loops_per_jiffy);
-
-	Compute_Interval();
     }
 	CoreFreqK_Register_ClockSource(cpu);
   }
@@ -13558,8 +13560,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 	printk(KERN_INFO "CoreFreq(%u:%d):"	\
 		" Processor [%2X%1X_%1X%1X]"	\
-		" Architecture [%s] %3s [%u/%u]\n" \
-		"Kernel: CPU_KHZ[%u] TSC_KHZ[%u] LPJ[%lu]\n",
+		" Architecture [%s] %3s [%u/%u]\n",
 		PUBLIC(RO(Proc))->Service.Core,PUBLIC(RO(Proc))->Service.Thread,
 		PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily,
 		PUBLIC(RO(Proc))->Features.Std.EAX.Family,
@@ -13568,8 +13569,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		PUBLIC(RO(Proc))->Architecture,
 		PUBLIC(RO(Proc))->Features.HTT_Enable ? "SMT" : "CPU",
 		PUBLIC(RO(Proc))->CPU.OnLine,
-		PUBLIC(RO(Proc))->CPU.Count,
-		cpu_khz, tsc_khz, THIS_LPJ);
+		PUBLIC(RO(Proc))->CPU.Count);
 
 	Controller_Start(0);
 
