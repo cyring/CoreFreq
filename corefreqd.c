@@ -5194,6 +5194,13 @@ REASON_CODE Core_Manager(REF *Ref)
 		Uncore(Shm, Proc, Core[Ref->Proc_RO->Service.Core]);
 		Technology_Update(Shm, Proc, Proc_RW);
 
+		if (ServerFollowService(&localService,
+					&Shm->Proc.Service,
+					tid) == 0)
+		{
+			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
+		}
 		if (Quiet & 0x100) {
 			printf("\t%s || %s\n",
 				BITVAL(PendingSync, NTFY0)?"NTFY":"....",
