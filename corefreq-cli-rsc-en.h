@@ -491,6 +491,7 @@
 #define RSC_SETTINGS_CPUIDLE_REGISTER_CODE_EN " CPU-IDLE driver          [   ] "
 #define RSC_SETTINGS_CPUFREQ_REGISTER_CODE_EN " CPU-FREQ driver          [   ] "
 #define RSC_SETTINGS_GOVERNOR_CPUFREQ_CODE_EN " Governor driver          [   ] "
+#define RSC_SETTINGS_CLOCK_SOURCE_CODE_EN     " Clock Source             [   ] "
 #define RSC_SETTINGS_THERMAL_SCOPE_CODE_EN    " Thermal scope           <    > "
 #define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_EN    " Voltage scope           <    > "
 #define RSC_SETTINGS_POWER_SCOPE_CODE_EN      " Power scope             <    > "

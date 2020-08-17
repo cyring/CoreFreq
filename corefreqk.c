@@ -17,6 +17,7 @@
 #include <linux/device.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
+#include <linux/percpu.h>
 #include <linux/utsname.h>
 #ifdef CONFIG_CPU_IDLE
 #include <linux/cpuidle.h>
@@ -58,7 +59,7 @@ MODULE_PARM_DESC(ArchID, "Force an architecture (ID)");
 
 static signed int AutoClock = 0b11;
 module_param(AutoClock, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:None; 1:Once; 2:Auto");
+MODULE_PARM_DESC(AutoClock, "Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto");
 
 static unsigned int SleepInterval = 0;
 module_param(SleepInterval, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);

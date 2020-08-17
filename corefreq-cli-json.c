@@ -57,6 +57,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_literal(&s, "%hu", Shm->Registration.Driver.CPUidle);
 		json_key(&s, "CPUfreq");
 		json_literal(&s, "%hu", Shm->Registration.Driver.CPUfreq);
+		json_key(&s, "Governor");
+		json_literal(&s, "%hu", Shm->Registration.Driver.Governor);
+		json_key(&s, "ClockSource");
+		json_literal(&s, "%hu", Shm->Registration.Driver.CS);
 		json_end_object(&s);
 	}
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))

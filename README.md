@@ -277,9 +277,9 @@ CPU     IPS            IPC            CPI
 
 * Q: The CPU freezes or the System crashes.  
 
-  A: With AMD Processors of the Zen architecture, changing the Max ratio (aka P0 P-State) renders a Kernel TSC clock source unstable.  
-  1. Boot Kernel with the command line parameters `notsc nowatchdog`  
-  2. Register _CoreFreq_ as a new TSC clock source using driver arguments  
+  A: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
+  1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
+  2. Allow _CoreFreq_ to register a new TSC clock source using driver arguments:  
 :hash:`insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1`  
   3. Switch the current system clock source to `corefreq`  
 :hash:`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
@@ -295,7 +295,7 @@ CPU     IPS            IPC            CPI
 ```
 $ modinfo corefreqk.ko
 parm:           ArchID:Force an architecture (ID) (int)
-parm:           AutoClock:Estimate Clock Frequency 0:None; 1:Once; 2:Auto (int)
+parm:           AutoClock:Estimate Clock Frequency 0:Spec; 1:Once; 2:Auto (int)
 parm:           SleepInterval:Timer interval (ms) (uint)
 parm:           TickInterval:System requested interval (ms) (uint)
 parm:           Experimental:Enable features under development (int)

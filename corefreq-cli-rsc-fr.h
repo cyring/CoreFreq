@@ -475,6 +475,7 @@
 #define RSC_SETTINGS_CPUIDLE_REGISTER_CODE_FR " Pilote CPU-IDLE          [   ] "
 #define RSC_SETTINGS_CPUFREQ_REGISTER_CODE_FR " Pilote CPU-FREQ          [   ] "
 #define RSC_SETTINGS_GOVERNOR_CPUFREQ_CODE_FR " Gouverneur CPU-FREQ      [   ] "
+#define RSC_SETTINGS_CLOCK_SOURCE_CODE_FR     " Source d'Horloge         [   ] "
 #define RSC_SETTINGS_THERMAL_SCOPE_CODE_FR    " Capteur thermique       <    > "
 #define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_FR    " Capteur de tension      <    > "
 #define RSC_SETTINGS_POWER_SCOPE_CODE_FR      " Capteur de puissance    <    > "
