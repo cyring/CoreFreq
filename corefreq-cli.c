@@ -4505,25 +4505,25 @@ Window *CreateSettings(unsigned long long id)
 		NMI_Registration_Update );
 
 	bix = Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE;
-	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+	GridCall( StoreTCell(	wSet, OPS_CPU_IDLE,
 				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Idle_Update );
 
 	bix = Shm->Registration.Driver.CPUfreq & REGISTRATION_ENABLE;
-	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+	GridCall( StoreTCell(	wSet, OPS_CPU_FREQ,
 				RSC(SETTINGS_CPUFREQ_REGISTERED).CODE(),
 				attrib[bix] ),
 		CPU_Freq_Update );
 
 	bix = Shm->Registration.Driver.Governor & REGISTRATION_ENABLE;
-	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+	GridCall( StoreTCell(	wSet, OPS_GOVERNOR,
 				RSC(SETTINGS_GOVERNOR_REGISTERED).CODE(),
 				attrib[bix] ),
 		Governor_Update );
 
 	bix = Shm->Registration.Driver.CS & REGISTRATION_ENABLE;
-	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
+	GridCall( StoreTCell(	wSet, OPS_CLOCK_SOURCE,
 				RSC(SETTINGS_CS_REGISTERED).CODE(),
 				attrib[bix] ),
 		ClockSource_Update );
@@ -6907,22 +6907,57 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
     case OPS_INTERRUPTS:
+    case OPS_CPU_IDLE:
+    case OPS_CPU_FREQ:
+    case OPS_GOVERNOR:
+    case OPS_CLOCK_SOURCE:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
 	{
 		ASCII *ops_Str[2][2] = {
 			{
-				RSC(BOX_INT_REGISTER_COND0).CODE(),
-				RSC(BOX_INT_REGISTER_COND1).CODE()
+				RSC(BOX_OPS_REGISTER_COND0).CODE(),
+				RSC(BOX_OPS_REGISTER_COND1).CODE()
 			},{
-				RSC(BOX_INT_UNREGISTER_COND0).CODE(),
-				RSC(BOX_INT_UNREGISTER_COND1).CODE()
+				RSC(BOX_OPS_UNREGISTER_COND0).CODE(),
+				RSC(BOX_OPS_UNREGISTER_COND1).CODE()
 			}
-		};
-		const unsigned int bix = BITWISEAND(	LOCKLESS,
-							Shm->Registration.NMI,
-							BIT_NMI_MASK ) != 0;
+		}, *ops_title;
+		unsigned long long ops_key_on, ops_key_off;
+		unsigned int bix;
+	    switch (scan->key) {
+	    case OPS_INTERRUPTS:
+		ops_title = RSC(BOX_INTERRUPT_TITLE).CODE();
+		ops_key_on  = OPS_INTERRUPTS_ON;
+		ops_key_off = OPS_INTERRUPTS_OFF;
+		bix=BITWISEAND(LOCKLESS,Shm->Registration.NMI,BIT_NMI_MASK)!=0;
+		break;
+	    case OPS_CPU_IDLE:
+		ops_title = RSC(BOX_CPU_IDLE_TITLE).CODE();
+		ops_key_on  = OPS_CPU_IDLE_ON;
+		ops_key_off = OPS_CPU_IDLE_OFF;
+		bix = Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE;
+		break;
+	    case OPS_CPU_FREQ:
+		ops_title = RSC(BOX_CPU_FREQ_TITLE).CODE();
+		ops_key_on  = OPS_CPU_FREQ_ON;
+		ops_key_off = OPS_CPU_FREQ_OFF;
+		bix = Shm->Registration.Driver.CPUfreq & REGISTRATION_ENABLE;
+		break;
+	    case OPS_GOVERNOR:
+		ops_title = RSC(BOX_GOVERNOR_TITLE).CODE();
+		ops_key_on  = OPS_GOVERNOR_ON;
+		ops_key_off = OPS_GOVERNOR_OFF;
+		bix = Shm->Registration.Driver.Governor & REGISTRATION_ENABLE;
+		break;
+	    case OPS_CLOCK_SOURCE:
+		ops_title = RSC(BOX_CLOCK_SOURCE_TITLE).CODE();
+		ops_key_on  = OPS_CLOCK_SOURCE_ON;
+		ops_key_off = OPS_CLOCK_SOURCE_OFF;
+		bix = Shm->Registration.Driver.CS & REGISTRATION_ENABLE;
+		break;
+	    }
 		const Coordinate origin = {
 			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 			.row = TOP_HEADER_ROW + 5
@@ -6931,17 +6966,12 @@ int Shortcut(SCANKEY *scan)
 			.row = bix == 0 ? 1 : 2
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_INTERRUPT_TITLE).CODE(),
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		ops_Str[0][bix != 0],
-			stateAttr[bix != 0],
-			OPS_INTERRUPTS_ON,
-		ops_Str[1][bix == 0] ,
-			stateAttr[bix == 0],
-			OPS_INTERRUPTS_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select, (char*) ops_title,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+			ops_Str[0][bix != 0], stateAttr[bix != 0], ops_key_on,
+			ops_Str[1][bix == 0], stateAttr[bix == 0], ops_key_off,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+			&winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -6960,6 +6990,70 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_MACHINE,
 				COREFREQ_TOGGLE_ON,
 				MACHINE_INTERRUPTS );
+	}
+    break;
+    case OPS_CPU_IDLE_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_CPU_IDLE );
+	}
+    break;
+    case OPS_CPU_IDLE_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_CPU_IDLE );
+	}
+    break;
+    case OPS_CPU_FREQ_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_CPU_FREQ );
+	}
+    break;
+    case OPS_CPU_FREQ_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_CPU_FREQ );
+	}
+    break;
+    case OPS_GOVERNOR_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_GOVERNOR );
+	}
+    break;
+    case OPS_GOVERNOR_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_GOVERNOR );
+	}
+    break;
+    case OPS_CLOCK_SOURCE_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_OFF,
+				MACHINE_CLOCK_SOURCE );
+	}
+    break;
+    case OPS_CLOCK_SOURCE_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				COREFREQ_TOGGLE_ON,
+				MACHINE_CLOCK_SOURCE );
 	}
     break;
     case OPS_THERMAL_SCOPE:

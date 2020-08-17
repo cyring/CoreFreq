@@ -342,20 +342,33 @@ static struct clocksource CoreFreqK_CS = {
 	.flags	= CLOCK_SOURCE_IS_CONTINUOUS,
 };
 
-#define CoreFreqK_UnRegister_ClockSource() 				\
-{									\
-    if (PUBLIC(RO(Proc))->Registration.Driver.CS & REGISTRATION_ENABLE) \
-    {									\
-	clocksource_unregister(&CoreFreqK_CS);				\
-    }									\
+static long CoreFreqK_UnRegister_ClockSource(void)
+{
+	long rc = -EINVAL;
+    if (PUBLIC(RO(Proc))->Registration.Driver.CS & REGISTRATION_ENABLE)
+    {
+	int rx = clocksource_unregister(&CoreFreqK_CS);
+	switch ( rx ) {
+	case 0:
+		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+		rc = RC_SUCCESS;
+		break;
+	default:
+		rc = (long) rx;
+		break;
+	}
+    }
+	return (rc);
 }
 
-static void CoreFreqK_Register_ClockSource(unsigned int cpu)
+static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 {
+	long rc = -EINVAL;
     if (Register_ClockSource == 1)
     {
 	unsigned long long Freq_Hz;
 	unsigned int Freq_KHz;
+	int rx;
 
 	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
@@ -371,14 +384,17 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
 	Freq_KHz = Freq_Hz / 1000U;
 
-	switch ( clocksource_register_khz(&CoreFreqK_CS, Freq_KHz) ) {
+	rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
+	switch ( rx ) {
 	default:
 		/* Fallthrough */
 	case -EBUSY:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
+		rc = (long) rx;
 		break;
 	case 0:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
+		rc = RC_SUCCESS;
 
 	pr_warn("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
 		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n" \
@@ -393,6 +409,7 @@ static void CoreFreqK_Register_ClockSource(unsigned int cpu)
     } else {
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
     }
+	return (rc);
 }
 
 void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
@@ -11744,11 +11761,13 @@ static void Policy_HWP_SetTarget(void *arg)
 #endif /* CONFIG_CPU_FREQ */
 }
 
-static void CoreFreqK_FreqDriver_UnInit(void)
+static int CoreFreqK_FreqDriver_UnInit(void)
 {
+	int rc = -EINVAL;
 #ifdef CONFIG_CPU_FREQ
-	cpufreq_unregister_driver(&CoreFreqK.FreqDriver);
+	rc = cpufreq_unregister_driver(&CoreFreqK.FreqDriver);
 #endif /* CONFIG_CPU_FREQ */
+	return (rc);
 }
 
 static int CoreFreqK_FreqDriver_Init(void)
@@ -11970,59 +11989,84 @@ static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 	return (NMI_DONE);
 }
 
-#define CoreFreqK_UnRegister_CPU_Idle() 				\
-{									\
-    if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)\
-    {									\
-	CoreFreqK_IdleDriver_UnInit();					\
-    }									\
+static long CoreFreqK_UnRegister_CPU_Idle(void)
+{
+	long rc = -EINVAL;
+    if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
+    {
+	CoreFreqK_IdleDriver_UnInit();
+	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
+	rc = RC_SUCCESS;
+    }
+	return (rc);
 }
 
-static void CoreFreqK_Register_CPU_Idle(void)
+static long CoreFreqK_Register_CPU_Idle(void)
 {
+	long rc = -EINVAL;
   if (Register_CPU_Idle == 1)
   {
-    switch ( CoreFreqK_IdleDriver_Init() ) {
+	int rx = CoreFreqK_IdleDriver_Init();
+    switch ( rx ) {
     default:
 	/* Fallthrough */
     case -ENODEV:
     case -ENOMEM:
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
+	rc = (long) rx;
 	break;
     case 0:	/*	Registration succeeded.				*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_ENABLE;
+	rc = RC_SUCCESS;
 	break;
     }
   } else {	/*	Nothing requested by User.			*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUidle = REGISTRATION_DISABLE;
   }
+	return (rc);
 }
 
-#define CoreFreqK_UnRegister_CPU_Freq() 				\
-{									\
-    if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE)\
-    {									\
-	CoreFreqK_FreqDriver_UnInit();					\
-    }									\
+static long CoreFreqK_UnRegister_CPU_Freq(void)
+{
+	long rc = -EINVAL;
+    if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq & REGISTRATION_ENABLE)
+    {
+	int rx = CoreFreqK_FreqDriver_UnInit();
+	switch ( rx ) {
+	case 0:
+	    PUBLIC(RO(Proc))->Registration.Driver.CPUfreq=REGISTRATION_DISABLE;
+		rc = RC_SUCCESS;
+		break;
+	default:
+		rc = (long) rx;
+		break;
+	}
+    }
+	return (rc);
 }
 
-static void CoreFreqK_Register_CPU_Freq(void)
+static long CoreFreqK_Register_CPU_Freq(void)
 { /* Source: cpufreq_register_driver @ /drivers/cpufreq/cpufreq.c	*/
+	long rc = -EINVAL;
   if (Register_CPU_Freq == 1)
   {
-    switch ( CoreFreqK_FreqDriver_Init() ) {
+	int rx = CoreFreqK_FreqDriver_Init();
+    switch ( rx ) {
     default:
 	/* Fallthrough */
     case -EEXIST:		/*	Another driver is in control.	*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_DISABLE;
+	rc = (long) rx;
 	break;
     case -ENODEV:		/*	Missing CPU-Freq or Interfaces.	*/
     case -EPROBE_DEFER:	/*	CPU probing failed			*/
     case -EINVAL:		/*	Missing CPU-Freq prerequisites. */
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
+	rc = (long) rx;
 	break;
     case 0:		/*	Registration succeeded .		*/
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_ENABLE;
+	rc = RC_SUCCESS;
 	break;
     }
   } else {		/*	Invalid or no User request.		*/
@@ -12032,32 +12076,42 @@ static void CoreFreqK_Register_CPU_Freq(void)
 	PUBLIC(RO(Proc))->Registration.Driver.CPUfreq = REGISTRATION_FULLCTRL;
 #endif /* CONFIG_CPU_FREQ */
   }
+	return (rc);
 }
 
-#define CoreFreqK_UnRegister_Governor() 				\
-{									\
-    if (PUBLIC(RO(Proc))->Registration.Driver.Governor & REGISTRATION_ENABLE)\
-    {									\
-	CoreFreqK_Governor_UnInit();					\
-    }									\
-}
-
-static void CoreFreqK_Register_Governor(void)
+static long CoreFreqK_UnRegister_Governor(void)
 {
+	long rc = EINVAL;
+    if (PUBLIC(RO(Proc))->Registration.Driver.Governor & REGISTRATION_ENABLE)
+    {
+	CoreFreqK_Governor_UnInit();
+	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
+	rc = RC_SUCCESS;
+    }
+	return (rc);
+}
+
+static long CoreFreqK_Register_Governor(void)
+{
+	long rc = -EINVAL;
   if (Register_Governor == 1)
   {
-    switch ( CoreFreqK_Governor_Init() ) {
+	int rx = CoreFreqK_Governor_Init();
+    switch ( rx ) {
     default:
     case -ENODEV:
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
+	rc = (long) rx;
 	break;
     case 0:		/*	Registration succeeded .		*/
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_ENABLE;
+	rc = RC_SUCCESS;
 	break;
     }
   } else {	/* Nothing requested by User.				*/
 	PUBLIC(RO(Proc))->Registration.Driver.Governor = REGISTRATION_DISABLE;
   }
+	return (rc);
 }
 
 static void CoreFreqK_Register_NMI(void)
@@ -12227,6 +12281,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
     switch (cmd)
     {
     case COREFREQ_IOCTL_SYSUPDT:
+    SYSGATE_UPDATE:
 	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
 	rc = (rc != -ENXIO) ? RC_OK_SYSGATE : rc;
     break;
@@ -12332,6 +12387,96 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
 	{
 		rc = CoreFreqK_Limit_Idle(prm.dl.lo);
+	}
+	break;
+
+      case MACHINE_CPU_IDLE:
+	switch (prm.dl.lo)
+	{
+	    case COREFREQ_TOGGLE_OFF:
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_CPU_Idle();
+		Register_CPU_Idle = -1;
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	    case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		Register_CPU_Idle = 1;
+		rc = CoreFreqK_Register_CPU_Idle();
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	}
+	break;
+
+      case MACHINE_CPU_FREQ:
+	switch (prm.dl.lo)
+	{
+	    case COREFREQ_TOGGLE_OFF:
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_CPU_Freq();
+		Register_CPU_Freq = -1;
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	    case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		Register_CPU_Freq = 1;
+		rc = CoreFreqK_Register_CPU_Freq();
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	}
+	break;
+
+      case MACHINE_GOVERNOR:
+	switch (prm.dl.lo)
+	{
+	    case COREFREQ_TOGGLE_OFF:
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_Governor();
+		Register_Governor = -1;
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	    case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		Register_Governor = 1;
+		rc = CoreFreqK_Register_Governor();
+		Controller_Start(1);
+		if (rc == RC_SUCCESS) {
+			goto SYSGATE_UPDATE;
+		}
+		break;
+	}
+	break;
+
+      case MACHINE_CLOCK_SOURCE:
+	switch (prm.dl.lo)
+	{
+	    case COREFREQ_TOGGLE_OFF:
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_ClockSource();
+		Register_ClockSource = -1;
+		Controller_Start(1);
+		break;
+	    case COREFREQ_TOGGLE_ON:
+		Controller_Stop(1);
+		Register_ClockSource = 1;
+	      rc=CoreFreqK_Register_ClockSource(PUBLIC(RO(Proc))->Service.Core);
+		Controller_Start(1);
+		break;
 	}
 	break;
 
