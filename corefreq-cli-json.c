@@ -1343,7 +1343,15 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 		json_literal(&s, "%u", Shm->Proc.PM_version);
 
 		json_key(&s, "Top");
-		json_literal(&s, "%u", Shm->Proc.Top);
+		{
+			json_start_object(&s);
+			json_key(&s, "Relative");
+			json_literal(&s, "%u", Shm->Proc.Top.Rel);
+			json_key(&s, "Absolute");
+			json_literal(&s, "%u", Shm->Proc.Top.Abs);
+			json_end_object(&s);
+		}
+
 		json_key(&s, "Toggle");
 		json_literal(&s, "%u", Shm->Proc.Toggle);
 

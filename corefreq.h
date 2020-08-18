@@ -308,7 +308,10 @@ typedef struct
 
 	unsigned int			PM_version;
 
-	unsigned int			Top;
+	struct {
+		unsigned int		Rel,
+					Abs;
+	} Top;
 
 	struct PKG_FLIP_FLOP {
 		struct {

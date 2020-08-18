@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	4
+#define COREFREQ_REV	5
 
 #define CORE_COUNT	256
 
@@ -370,13 +370,12 @@ typedef struct
 	clock.R  = clock.Hz % (1000LLU * 1000LLU);			\
 })
 
-#define REL_FREQ(max_ratio, this_ratio, clock, interval)		\
-		( ((this_ratio * clock.Q) * 1000LLU * interval) 	\
-		+ ((this_ratio * clock.R) / max_ratio))
+#define REL_FREQ_MHz(this_ratio, clock, interval)			\
+	(clock.Hz * this_ratio * interval) / UNIT_MHz(interval)
 
 #define ABS_FREQ_MHz(this_type, this_ratio, this_clock) 		\
 (									\
-		CLOCK_MHz(this_type, this_ratio * this_clock.Hz)	\
+	CLOCK_MHz(this_type, this_ratio * this_clock.Hz)		\
 )
 
 typedef union {

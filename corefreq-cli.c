@@ -3957,19 +3957,12 @@ Coordinate *cTask = NULL;
 CardList cardList = {.head = NULL, .tail = NULL};
 
 struct {
-	double		TopFreq,
-			TopLoad;
+    struct {
+	double		TopAvg;
 	unsigned long	FreeRAM;
 	int		TaskCount;
-} previous = {
-	.TopFreq = 0.0,
-	.TopLoad = 0.0,
-	.FreeRAM = 0,
-	.TaskCount = 0
-};
-
-struct {
-	struct {
+    } Cache;
+    struct {
 	unsigned int
 		layout	:  1-0 ,	/* Draw layout			*/
 		clear	:  2-1 ,	/* Clear screen 		*/
@@ -3983,23 +3976,28 @@ struct {
 		uBench	:  9-8 ,	/* Display UI micro-benchmark	*/
 	    #endif
 		_padding: 32-9 ;
-	} Flag;
+    } Flag;
 	enum VIEW	View;
 	enum DISPOSAL	Disposal;
 	SCREEN_SIZE	Size;
-	struct {
+    struct {
 		CUINT	MinHeight;
 		CUINT	MaxRows;
 		CUINT	LoadWidth;
-	} Area;
+    } Area;
 	unsigned int	iClock,
 			cpuScroll,
 			Load;
-	struct {
+    struct {
 	unsigned int	Memory;
-	} Unit;
+    } Unit;
 	enum SMB_STRING SmbIndex;
 } draw = {
+	.Cache = {
+		.TopAvg = 0.0,
+		.FreeRAM= 0,
+		.TaskCount = 0
+	},
 	.Flag = {
 		.layout = 0,
 		.clear	= 0,
@@ -9452,8 +9450,6 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 
 void Layout_Header(Layer *layer, CUINT row)
 {
-	struct FLIP_FLOP *CFlop = \
-	    &Shm->Cpu[Shm->Proc.Top].FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
 	size_t len;
 	const CUINT	lProc0 = RSZ(LAYOUT_HEADER_PROC),
 			xProc0 = 12,
@@ -9468,20 +9464,8 @@ void Layout_Header(Layer *layer, CUINT row)
 			lArch2 = RSZ(LAYOUT_HEADER_CACHES),
 			xArch2 = draw.Size.width-lArch2;
 
-	/* Reset the Top Frequency					*/
-	if (!draw.Flag.clkOrLd) {
-	    if (draw.Load) {
-		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
-				Shm->Cpu[Shm->Proc.Top].Boost[BOOST(TGT)]);
-	    } else {
-		Clock2LCD(layer, 0,row, CFlop->Relative.Freq,
-					CFlop->Relative.Ratio);
-	    }
-	} else {
-		double percent = 100.f * Shm->Proc.Avg.C0;
+	PrintLCD(layer, 0, row, 4, "::::", _GREEN);
 
-		Load2LCD(layer, 0, row, percent);
-	}
 	LayerDeclare(LAYOUT_HEADER_PROC, lProc0, xProc0, row, hProc0);
 	LayerDeclare(LAYOUT_HEADER_CPU , lProc1, xProc1, row, hProc1);
 
@@ -12082,10 +12066,10 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
-		if ((previous.TaskCount != Shm->SysGate.taskCount)
-		 || (previous.FreeRAM != Shm->SysGate.memInfo.freeram)) {
-			previous.TaskCount = Shm->SysGate.taskCount;
-			previous.FreeRAM = Shm->SysGate.memInfo.freeram;
+		if ((draw.Cache.TaskCount != Shm->SysGate.taskCount)
+		 || (draw.Cache.FreeRAM != Shm->SysGate.memInfo.freeram)) {
+			draw.Cache.TaskCount = Shm->SysGate.taskCount;
+			draw.Cache.FreeRAM = Shm->SysGate.memInfo.freeram;
 
 			PrintTaskMemory(layer, (row + 1),
 					Shm->SysGate.taskCount,
@@ -12097,38 +12081,32 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 void Draw_Header(Layer *layer, CUINT row)
 {	/* Update Header view area					*/
-	struct FLIP_FLOP *CFlop = NULL;
+	struct FLIP_FLOP *CFlop;
 	unsigned int digit[9];
 
-	CFlop = &Shm->Cpu[Shm->Proc.Top] \
-		.FlipFlop[!Shm->Cpu[Shm->Proc.Top].Toggle];
-
-	/* Print the Top value if delta exists with the previous one	*/
-    if (!draw.Flag.clkOrLd) { /* Frequency MHz			*/
-      if (draw.Load) {
-	if (previous.TopFreq != CFlop->Absolute.Perf)
-	{
-		previous.TopFreq = CFlop->Absolute.Perf;
+	/* Print the Top frequency in MHz Or the C0 C-State % load	*/
+    if (!draw.Flag.clkOrLd)
+    {
+	if (draw.Load) {
+		const unsigned int top = Shm->Proc.Top.Abs;
+		CFlop = &Shm->Cpu[top].FlipFlop[!Shm->Cpu[top].Toggle];
 
 		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
-				Shm->Cpu[Shm->Proc.Top].Boost[BOOST(TGT)]);
-	}
-      } else {
-	if (previous.TopFreq != CFlop->Relative.Freq)
-	{
-		previous.TopFreq = CFlop->Relative.Freq;
+					CFlop->Absolute.Ratio.Perf);
+	} else {
+		const unsigned int top = Shm->Proc.Top.Rel;
+		CFlop = &Shm->Cpu[top].FlipFlop[!Shm->Cpu[top].Toggle];
 
 		Clock2LCD(layer, 0,row, CFlop->Relative.Freq,
 					CFlop->Relative.Ratio);
 	}
-      }
-    } else { /* C0 C-State % load					*/
-		if (previous.TopLoad != Shm->Proc.Avg.C0) {
-			double percent = 100.f * Shm->Proc.Avg.C0;
-			previous.TopLoad = Shm->Proc.Avg.C0;
+    } else {
+	if (draw.Cache.TopAvg != Shm->Proc.Avg.C0) {
+		double percent = 100.f * Shm->Proc.Avg.C0;
+		draw.Cache.TopAvg = Shm->Proc.Avg.C0;
 
-			Load2LCD(layer, 0, row, percent);
-		}
+		Load2LCD(layer, 0, row, percent);
+	}
     }
 	/* Print the focused BCLK					*/
 	row += 2;

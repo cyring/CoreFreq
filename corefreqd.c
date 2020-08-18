@@ -919,10 +919,6 @@ static void *Core_Cycle(void *arg)
   do {
 	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
 
-	const unsigned int RelativeFreqFromBCLK = \
-				Shm->Proc.Features.Std.ECX.Hyperv
-				| !Shm->Proc.Features.InvariantTSC;
-
     while (!BITCLR(LOCKLESS, Core_RW->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
 	&& !BITVAL(Core->OffLine, OS)) {
@@ -984,22 +980,12 @@ static void *Core_Cycle(void *arg)
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
 
-	/* Apply the relative Ratio formula.				*/
+	/* Relative Frequency = Relative Ratio x Bus Clock Frequency	*/
 	CFlip->Relative.Ratio = (dUCC * Cpu->Boost[BOOST(MAX)]) / dTSC;
 
-    if ( __builtin_expect(RelativeFreqFromBCLK, 0))
-    {
-	/* Case: Relative Frequency = UCC per second.			*/
-	CFlip->Relative.Freq = dUCC / (Shm->Sleep.Interval * 1000);
-    } else {
-	/* Case: Relative Frequency = Relative Ratio x Bus Clock Frequency */
-	CFlip->Relative.Freq = (double)REL_FREQ(Cpu->Boost[BOOST(MAX)], \
-						CFlip->Relative.Ratio,	\
-						Core->Clock,		\
-						Shm->Sleep.Interval)
-				/ (Shm->Sleep.Interval * 1000);
-    }
-
+	CFlip->Relative.Freq = (double) REL_FREQ_MHz(	CFlip->Relative.Ratio,
+							Core->Clock,
+							Shm->Sleep.Interval );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
@@ -4871,7 +4857,10 @@ REASON_CODE Core_Manager(REF *Ref)
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
-	double			maxRelFreq;
+	struct {
+		double		RelFreq,
+				AbsFreq;
+	} prevTop;
 	REASON_INIT		(reason);
 	unsigned int		cpu = 0;
 
@@ -5016,7 +5005,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C6    = 0;
 	Shm->Proc.Avg.C7    = 0;
 	Shm->Proc.Avg.C1    = 0;
-	maxRelFreq	    = 0.0;
+
+	prevTop.RelFreq = 0.0;
+	prevTop.AbsFreq = 0.0;
 
 	Pkg_ResetPowerFormula(Proc_RW);
 
@@ -5073,10 +5064,14 @@ REASON_CODE Core_Manager(REF *Ref)
 		}
 		BITCLR(LOCKLESS, Shm->Cpu[cpu].OffLine, OS);
 
-		/* Index cpu with the highest frequency.		*/
-		if (CFlop->Relative.Freq > maxRelFreq) {
-			maxRelFreq = CFlop->Relative.Freq;
-			Shm->Proc.Top = cpu;
+		/* Index CPU with the highest Rel. and Abs frequencies.	*/
+		if (CFlop->Relative.Freq > prevTop.RelFreq) {
+			prevTop.RelFreq = CFlop->Relative.Freq;
+			Shm->Proc.Top.Rel = cpu;
+		}
+		if (CFlop->Absolute.Perf > prevTop.AbsFreq) {
+			prevTop.AbsFreq = CFlop->Absolute.Perf;
+			Shm->Proc.Top.Abs = cpu;
 		}
 
 		/* Workaround to Package Thermal Management: the hottest Core */
