@@ -4231,6 +4231,7 @@ void SysGate_OS_Driver(REF *Ref)
     SHM_STRUCT *Shm = Ref->Shm;
     SYSGATE_RO *SysGate = Ref->SysGate;
 
+	memset(&Shm->SysGate.OS, 0, sizeof(OS_DRIVER));
     if (strlen(SysGate->OS.IdleDriver.Name) > 0) {
 	int idx;
 

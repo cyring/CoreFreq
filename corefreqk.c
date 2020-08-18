@@ -5123,7 +5123,7 @@ static void BaseClock_AMD_Zen_PerCore(void *arg)
 	Compute_TSC(&Compute);
 
 	PUBLIC(RO(Core, AT(cpu)))->Clock = Compute.Clock;
-	/*			Calibration Phase Three			*/
+	/*			Calibration Phase Three 		*/
 	RDMSR(PstateDef, pClockZen->PstateAddr);
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = \
@@ -11338,7 +11338,7 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 
 static int CoreFreqK_IdleDriver_Init(void)
 {
-	int rc = -ENODEV;
+	int rc = -RC_UNIMPLEMENTED;
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
   if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
   {
@@ -11635,7 +11635,7 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 }
 #endif /* CONFIG_CPU_FREQ */
 
-static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
+static unsigned int Policy_GetFreq(unsigned int cpu)
 {
 	unsigned int CPU_Freq = PUBLIC(RO(Proc))->Features.Factory.Freq * 1000U;
 
@@ -11643,11 +11643,11 @@ static unsigned int Policy_Intel_GetFreq(unsigned int cpu)
     {
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	unsigned int Core_Freq	= Core->Delta.C0.UCC
+	unsigned int Freq_MHz	= Core->Delta.C0.UCC
 				/ PUBLIC(RO(Proc))->SleepInterval;
 
-	if (Core_Freq > 0) {	/* at least 1 interval must have been elapsed */
-		CPU_Freq = Core_Freq;
+	if (Freq_MHz > 0) {	/* at least 1 interval must have been elapsed */
+		CPU_Freq = Freq_MHz;
 	}
     }
 	return (CPU_Freq);
@@ -11761,6 +11761,54 @@ static void Policy_HWP_SetTarget(void *arg)
 #endif /* CONFIG_CPU_FREQ */
 }
 
+static void Policy_Zen_SetTarget(void *arg)
+{
+#ifdef CONFIG_CPU_FREQ
+	unsigned int *ratio = (unsigned int*) arg;
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	PSTATEDEF PstateDef;
+	unsigned int COF, pstate;
+	unsigned short WrModRd = 0;
+	/* Look-up for the first enabled P-State with the same target ratio */
+	for (pstate = 0; pstate <= 7; pstate++)
+	{
+		PstateDef.value = 0;
+		RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + pstate);
+
+	    if (PstateDef.Family_17h.PstateEn)
+	    {
+		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId );
+		if (COF == (*ratio)) {
+			WrModRd = 1;
+			break;
+		}
+	    }
+	}
+	if (WrModRd == 1)
+	{
+		PSTATECTRL PstateCtrl;
+		/*	Write-Modify-Read the new target P-state	*/
+		PstateCtrl.value = 0;
+		RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+		PstateCtrl.PstateCmd = pstate;
+		WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+
+		PstateCtrl.value = 0;
+		RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+		PstateDef.value = 0;
+		RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + pstate);
+
+		COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+					PstateDef.Family_17h.CpuDfsId );
+
+		Core->Boost[BOOST(TGT)] = COF;
+	}
+#endif /* CONFIG_CPU_FREQ */
+}
+
 static int CoreFreqK_FreqDriver_UnInit(void)
 {
 	int rc = -EINVAL;
@@ -11772,7 +11820,7 @@ static int CoreFreqK_FreqDriver_UnInit(void)
 
 static int CoreFreqK_FreqDriver_Init(void)
 {
-	int rc = -ENODEV;
+	int rc = -RC_UNIMPLEMENTED;
 #ifdef CONFIG_CPU_FREQ
  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
  {
@@ -11796,7 +11844,7 @@ static void CoreFreqK_Governor_UnInit(void)
 
 static int CoreFreqK_Governor_Init(void)
 {
-	int rc = -ENODEV;
+	int rc = -RC_UNIMPLEMENTED;
 #ifdef CONFIG_CPU_FREQ
     if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
     {

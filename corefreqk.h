@@ -3941,17 +3941,18 @@ static int CoreFreqK_SetBoost(int) ;
 static ssize_t CoreFreqK_Show_SetSpeed(struct cpufreq_policy*, char*);
 static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy*, unsigned int) ;
 #endif /* CONFIG_CPU_FREQ */
-static unsigned int Policy_Intel_GetFreq(unsigned int cpu) ;
+static unsigned int Policy_GetFreq(unsigned int cpu) ;
 static void Policy_Core2_SetTarget(void *arg) ;
 static void Policy_Nehalem_SetTarget(void *arg) ;
 static void Policy_SandyBridge_SetTarget(void *arg) ;
 static void Policy_HWP_SetTarget(void *arg) ;
 #define Policy_Broadwell_EP_SetTarget	Policy_HWP_SetTarget
 #define Policy_Skylake_SetTarget	Policy_HWP_SetTarget
+static void Policy_Zen_SetTarget(void *arg) ;
 
 static SYSTEM_DRIVER CORE2_Driver = {
 	.IdleState	= NULL,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Core2_SetTarget
 };
 
@@ -3990,7 +3991,7 @@ static IDLE_STATE NHM_IdleState[] = {
 
 static SYSTEM_DRIVER NHM_Driver = {
 	.IdleState	= NHM_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Nehalem_SetTarget
 };
 
@@ -4035,7 +4036,7 @@ static IDLE_STATE SNB_IdleState[] = {
 
 static SYSTEM_DRIVER SNB_Driver = {
 	.IdleState	= SNB_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
@@ -4080,7 +4081,7 @@ static IDLE_STATE IVB_IdleState[] = {
 
 static SYSTEM_DRIVER IVB_Driver = {
 	.IdleState	= IVB_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
@@ -4146,7 +4147,7 @@ static IDLE_STATE HSW_IdleState[] = {
 
 static SYSTEM_DRIVER HSW_Driver = {
 	.IdleState	= HSW_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
@@ -4212,13 +4213,13 @@ static IDLE_STATE BDW_IdleState[] = {
 
 static SYSTEM_DRIVER BDW_Driver = {
 	.IdleState	= BDW_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_SandyBridge_SetTarget
 };
 
 static SYSTEM_DRIVER BDW_EP_Driver = {
 	.IdleState	= BDW_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Broadwell_EP_SetTarget
 };
 
@@ -4284,7 +4285,7 @@ static IDLE_STATE SKL_IdleState[] = {
 
 static SYSTEM_DRIVER SKL_Driver = {
 	.IdleState	= SKL_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Skylake_SetTarget
 };
 
@@ -4315,8 +4316,20 @@ static IDLE_STATE SKX_IdleState[] = {
 
 static SYSTEM_DRIVER SKX_Driver = {
 	.IdleState	= SKX_IdleState,
-	.GetFreq	= Policy_Intel_GetFreq,
+	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Skylake_SetTarget
+};
+
+static SYSTEM_DRIVER Intel_Driver = {
+	.IdleState	= NULL,
+	.GetFreq	= Policy_GetFreq,
+	.SetTarget	= Policy_Skylake_SetTarget
+};
+
+static SYSTEM_DRIVER AMD_Zen_Driver = {
+	.IdleState	= NULL,
+	.GetFreq	= Policy_GetFreq,
+	.SetTarget	= Policy_Zen_SetTarget
 };
 
 static ARCH Arch[ARCHITECTURES] = {
@@ -5656,7 +5669,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Cannonlake
 	},
 
@@ -5681,7 +5694,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Geminilake
 	},
 
@@ -5706,7 +5719,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Icelake
 	},
 [Icelake_UY] = {							/* 56*/
@@ -5730,7 +5743,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Icelake_UY
 	},
 [Icelake_X] = {								/* 57*/
@@ -5754,7 +5767,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Icelake_X
 	},
 [Icelake_D] = {								/* 58*/
@@ -5778,7 +5791,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Icelake_D
 	},
 
@@ -5803,7 +5816,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Sunny_Cove
 	},
 
@@ -5828,7 +5841,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tigerlake
 	},
 [Tigerlake_U] = {							/* 61*/
@@ -5852,7 +5865,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tigerlake_U
 	},
 
@@ -5877,7 +5890,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Cometlake
 	},
 [Cometlake_UY] = {							/* 63*/
@@ -5901,7 +5914,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Cometlake_UY
 	},
 
@@ -5926,7 +5939,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Atom_C3000
 	},
 [Tremont_Jacobsville] = {						/* 65*/
@@ -5950,7 +5963,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tremont_Jacobsville
 	},
 [Tremont_Lakefield] = {							/* 66*/
@@ -5974,7 +5987,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tremont_Lakefield
 	},
 [Tremont_Elkhartlake] = {						/* 67*/
@@ -5998,7 +6011,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tremont_Elkhartlake
 	},
 [Tremont_Jasperlake] = {						/* 68*/
@@ -6022,7 +6035,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = Haswell_Uncore_Ratio
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &Intel_Driver,
 	.Architecture = Arch_Tremont_Jasperlake
 	},
 
@@ -6047,7 +6060,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen
 	},
 [AMD_Zen_APU] = {							/* 70*/
@@ -6071,7 +6084,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_APU_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen_APU
 	},
 [AMD_ZenPlus] = {							/* 71*/
@@ -6095,7 +6108,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_ZenPlus_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_ZenPlus
 	},
 [AMD_ZenPlus_APU] = {							/* 72*/
@@ -6119,7 +6132,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_ZenPlus_APU_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_ZenPlus_APU
 	},
 [AMD_Zen_APU_Rv2] = {							/* 73*/
@@ -6143,7 +6156,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen_APU_Rv2_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen_APU_Rv2
 	},
 [AMD_EPYC_Rome] = {							/* 74*/
@@ -6167,7 +6180,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_EPYC_Rome_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_EPYC_Rome
 	},
 [AMD_Zen2_CPK] = {							/* 75*/
@@ -6191,7 +6204,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_CPK_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_CPK
 	},
 [AMD_Zen2_APU] = {							/* 76*/
@@ -6215,7 +6228,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_APU_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_APU
 	},
 [AMD_Zen2_MTS] = {							/* 77*/
@@ -6239,7 +6252,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = AMD_Zen2_MTS_Specific,
-	.SystemDriver = NULL,
+	.SystemDriver = &AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MTS
 	}
 };
