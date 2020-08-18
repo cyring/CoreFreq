@@ -11583,7 +11583,11 @@ void Policy_Aggregate_Turbo(void)
     }
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 1)
+static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
+#else
 static int CoreFreqK_SetBoost(int state)
+#endif
 {
 	Controller_Stop(1);
 	TurboBoost_Enable = (state != 0);
