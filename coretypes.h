@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	6
+#define COREFREQ_REV	7
 
 #define CORE_COUNT	256
 
@@ -1192,6 +1192,7 @@ typedef struct	/* BSP CPUID features.					*/
 	CPUID_0x80000008	leaf80000008;
 
 	struct {
+	  unsigned long long	PPIN;
 		CLOCK		Clock;
 		unsigned int	Freq,
 				Ratio;

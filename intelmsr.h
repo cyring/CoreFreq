@@ -12,6 +12,14 @@
 	#define MSR_IA32_FEAT_CTL		MSR_IA32_FEATURE_CONTROL
 #endif
 
+#ifndef MSR_PPIN_CTL
+	#define MSR_PPIN_CTL			0x0000004e
+#endif
+
+#ifndef MSR_PPIN
+	#define MSR_PPIN			0x0000004f
+#endif
+
 #ifndef MSR_IA32_SPEC_CTRL
 	#define MSR_IA32_SPEC_CTRL		0x00000048
 #endif
@@ -462,6 +470,23 @@ typedef union
 	06_5Ch [Atom_Goldmont], 06_3Eh [IvyBridge_EP], 06_4Fh [Broadwell_EP],
 	06_56h [Broadwell_D], 06_55h [Skylake_X], 06_57h [Xeon_Phi], 06_85h
 */
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		LockOut 	:  1-0, /* R/WO: iff PLATFORM_INFO.PPIN_CAP */
+		Enable		:  2-1, /* R/W: iff PLATFORM_INFO.PPIN_CAP  */
+		ReservedBits	: 64-2;
+	};
+} INTEL_PPIN_CTL;
+
+typedef struct
+{
+	unsigned long long	value;
+} INTEL_PPIN_NUM;
 
 typedef union
 {

@@ -397,12 +397,9 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 		rc = RC_SUCCESS;
 
 	pr_warn("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
-		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n" \
-		"max:idle[%llu]:adj[%u]:cycles[%llu]\n",
+		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
 		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
-		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift,
-		CoreFreqK_CS.max_idle_ns, CoreFreqK_CS.maxadj,
-		CoreFreqK_CS.max_cycles);
+		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift);
 
 		break;
 	}
@@ -2930,6 +2927,32 @@ void SandyBridge_PowerInterface(void)
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
+void Intel_Processor_PIN(unsigned capable)
+{
+	if (capable) {
+		INTEL_PPIN_CTL PPinCtl = {.value = 0};
+		RDMSR(PPinCtl, MSR_PPIN_CTL);
+		if (PPinCtl.Enable) {
+			INTEL_PPIN_NUM PPinNum = {.value = 0};
+			RDMSR(PPinNum, MSR_PPIN);
+			PUBLIC(RO(Proc))->Features.Factory.PPIN = PPinNum.value;
+		}
+	}
+}
+
+void AMD_Processor_PIN(unsigned capable)
+{
+	if (capable) {
+		AMD_PPIN_CTL PPinCtl = {.value = 0};
+		RDMSR(PPinCtl, MSR_AMD_PPIN_CTL);
+		if (PPinCtl.Enable) {
+			AMD_PPIN_NUM PPinNum = {.value = 0};
+			RDMSR(PPinNum, MSR_AMD_PPIN);
+			PUBLIC(RO(Proc))->Features.Factory.PPIN = PPinNum.value;
+		}
+	}
+}
+
 void Query_Same_Platform_Features(unsigned int cpu)
 {
 	PLATFORM_INFO PfInfo;
@@ -2944,6 +2967,8 @@ void Query_Same_Platform_Features(unsigned int cpu)
 		OverrideUnlockCapability(PRIVATE(OF(Specific)));
 	}
 	Default_Unlock_Reset();
+
+	Intel_Processor_PIN(PfInfo.PPIN_CAP);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 }
@@ -5250,6 +5275,8 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
 
 	HyperThreading_Technology();
+
+	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
 }
 
 void Dump_CPUID(CORE_RO *Core)

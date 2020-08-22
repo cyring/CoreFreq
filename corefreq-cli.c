@@ -828,6 +828,13 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 2 - RSZ(PROCESSOR) - strlen(Shm->Proc.Brand),
 		hSpace, Shm->Proc.Brand);
 
+    if (Shm->Proc.Features.Factory.PPIN > 0)
+    {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s[%16llx]", "PPIN#",
+		width - 21 - __builtin_strlen("PPIN#"),
+		hSpace, Shm->Proc.Features.Factory.PPIN);
+    }
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%s]", RSC(ARCHITECTURE).CODE(),
 		width - 5 - RSZ(ARCHITECTURE) - strlen(Shm->Proc.Architecture),

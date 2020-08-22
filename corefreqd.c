@@ -3589,7 +3589,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		"bsrl	%[base], %%ecx" 	"\n\t"
 		"jz	1f"			"\n\t"
 		"incl	%%edx"			"\n\t"
-		"shll	%%ecx, %%edx"	 	"\n\t"
+		"shll	%%cl, %%edx"	 	"\n\t"
 		"negl	%%edx"			"\n\t"
 		"notl	%%edx"			"\n\t"
 		"andl	$0xfffffffe, %%edx"	"\n\t"
@@ -3697,10 +3697,10 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.CtrlSpeed = \
 		( 200 * Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK ) / 3;
 
-	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.CtrlSpeed)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	Shm->Uncore.Bus.Rate = Shm->Uncore.CtrlSpeed / 2;
 
-	Shm->Uncore.Bus.Rate=Shm->Uncore.Bus.Speed=Shm->Uncore.CtrlSpeed / 2;
+	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
 	Shm->Uncore.Unit.BusSpeed = 0b00;

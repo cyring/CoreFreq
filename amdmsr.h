@@ -4,6 +4,10 @@
  * Licenses: GPL2
  */
 
+#ifndef PCI_VENDOR_ID_HYGON
+	#define PCI_VENDOR_ID_HYGON		0x1d94
+#endif
+
 #ifndef MSR_AMD_SPEC_CTRL
 	#define MSR_AMD_SPEC_CTRL		0x00000048
 #endif
@@ -68,6 +72,14 @@
 
 #ifndef MSR_AMD_PP0_ENERGY_STATUS
 	#define MSR_AMD_PP0_ENERGY_STATUS	0xc001029a
+#endif
+
+#ifndef MSR_AMD_PPIN_CTL
+	#define MSR_AMD_PPIN_CTL		0xc00102f0
+#endif
+
+#ifndef MSR_AMD_PPIN
+	#define MSR_AMD_PPIN			0xc00102f1
 #endif
 
 /* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
@@ -585,6 +597,23 @@ typedef union
 	SvmLockKey	: 64-0; /* Write if (Core::X86::Msr::VM_CR[Lock] == 0)*/
     };
 } SVM_LOCK_KEY; /* Family: 17h, 16h, 15h, 14h, 12h, 11h, 10h		*/
+
+typedef union
+{
+	unsigned long long value; /* Pkg: MSR 0xc00102f0		*/
+    struct
+    {
+	unsigned long long
+	LockOut 	:  1-0, /* R/WO: iff CPUID_Fn80000008_EBX.PPIN	*/
+	Enable		:  2-1, /* R/W: iff CPUID_Fn80000008_EBX.PPIN  */
+	ReservedBits	: 64-2;
+    };
+} AMD_PPIN_CTL; /* Family: 17h, UNK: 16h,15h,14h,12h,11h,10h. Not: 0Fh	*/
+
+typedef struct
+{
+	unsigned long long value; /* Pkg: MSR 0xc00102f1		*/
+} AMD_PPIN_NUM;
 
 typedef struct
 {
