@@ -71,6 +71,21 @@ typedef struct {
 	} DX;
 } CPUID_TOPOLOGY_LEAF;
 
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		ReservedBits1	:  8-0,
+		BSP		:  9-8,
+		ReservedBits2	: 10-9,
+		EXTD		: 11-10,	/* Intel Nehalem [06_1A] */
+		EN		: 12-11,
+		Addr		: 64-12;
+	};
+} LOCAL_APIC;
+
 typedef struct
 {
 	LOCAL_APIC	Base;
@@ -495,11 +510,25 @@ typedef struct
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
 			struct {
+				AMD_17_UMC_CFG_ECC	ECC;	/* 32 bits   */
+				AMD_17_UMC_CFG_DIMM	DIMM;	/* 32 bits   */
+			  struct {
 			    struct {
 				unsigned int value;
 			    }				Chip,	/* 32 bits   */
 							Mask;	/* 32 bits   */
-			} AMD17h[4][2];
+			  } CHIP[4][2];
+				AMD_17_UMC_CFG_MISC	MISC;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR1	DTR1;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR2	DTR2;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR3	DTR3;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR4	DTR4;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR5	DTR5;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR6	DTR6;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR8	DTR8;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR9	DTR9;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR10 DTR10;	/* 32 bits   */
+			} AMD17h;
 		};
 		union {
 	/* 1208h */	G965_MC_DRAM_RANK_ATTRIB	DRA;	/* 32 bits    */

@@ -257,21 +257,6 @@
 
 typedef union
 {
-	unsigned long long	value;
-	struct
-	{
-		unsigned long long
-		ReservedBits1	:  8-0,
-		BSP		:  9-8,
-		ReservedBits2	: 10-9,
-		EXTD		: 11-10,
-		EN		: 12-11,
-		Addr		: 64-12;
-	};
-} LOCAL_APIC;
-
-typedef union
-{
 	unsigned long long value;
 	struct
 	{

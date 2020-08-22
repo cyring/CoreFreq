@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	5
+#define COREFREQ_REV	6
 
 #define CORE_COUNT	256
 
@@ -1222,7 +1222,7 @@ typedef struct	/* BSP CPUID features.					*/
 #define MC_MAX_CHA	8
 #define MC_MAX_DIMM	4
 
-typedef struct
+typedef union
 {
 	struct {
 		unsigned int
@@ -1253,6 +1253,35 @@ typedef struct
 		tddWrTWr,
 		ECC;
 	};
+	struct {
+		unsigned int
+		tCL,
+		tRCD_RD,
+		tRCD_WR,
+		tRP,
+		tRAS,
+		tRFC,
+		TrrdS,
+		TrrdL,
+		tFAW,
+		TwtrS,
+		TwtrL,
+		tWR,
+		tRdRdScl,
+		tWrWrScl,
+		tCWL,
+		tRTP,
+		tddRdTWr,
+		tddWrTRd,
+		tscWrTWr,
+		tsdWrTWr,
+		tddWrTWr,
+		tscRdTRd,
+		tsdRdTRd,
+		tddRdTRd,
+		ECC,
+		CMD_Rate;
+	} DDR4;
 } RAM_TIMING;
 
 typedef struct

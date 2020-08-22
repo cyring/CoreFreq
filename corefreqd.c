@@ -3580,7 +3580,8 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
     for (sec = 0; sec < 2; sec++)
     {
 	unsigned int chipSize;
-     if(BITVAL(Proc->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Chip.value,0))
+     if (BITVAL(Proc->Uncore.MC[mc].Channel[cha]\
+		.AMD17h.CHIP[chip][sec].Chip.value,0))
      {
 	__asm__ volatile
 	(
@@ -3598,7 +3599,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		"movl	%%edx, %[dest]"
 		: [dest] "=m" (chipSize)
 		: [base] "m"
-		(Proc->Uncore.MC[mc].Channel[cha].AMD17h[chip][sec].Mask.value)
+		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[chip][sec].Mask.value)
 		: "cc", "memory", "%ecx", "%edx"
 	);
 	DIMM_Size += chipSize;
@@ -3610,8 +3611,101 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = DIMM_Size >> 20;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
    }
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tCL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRCD_RD =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_RD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRCD_WR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_WR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRP =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRAS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TrrdS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.TrrdS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TrrdL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.TrrdL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tFAW =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TwtrS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.TwtrS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TwtrL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.TwtrL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR6.tWR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRdRdScl =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScl;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWrWrScl =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScl;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tCWL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tCWL;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRTP =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRTP;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddRdTWr =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddRdTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddWrTRd =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddWrTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tscWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tscWrTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tsdWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tsdWrTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddWrTWr =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tddWrTWr;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tscRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tscRdTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tsdRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tsdRdTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddRdTRd =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tddRdTRd;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.ECC =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.ECC_DIMM_Enable;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.CMD_Rate =
+		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
   }
  }
+}
+
+void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+{
+	Shm->Uncore.CtrlSpeed = \
+		( 200 * Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK ) / 3;
+
+	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.CtrlSpeed)
+				/ Shm->Proc.Features.Factory.Clock.Hz;
+
+	Shm->Uncore.Bus.Rate=Shm->Uncore.Bus.Speed=Shm->Uncore.CtrlSpeed / 2;
+
+	Shm->Uncore.Unit.Bus_Rate = 0b00;
+	Shm->Uncore.Unit.BusSpeed = 0b00;
+	Shm->Uncore.Unit.DDR_Rate = 0b11;
+	Shm->Uncore.Unit.DDRSpeed = 0b00;
 }
 
 void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC_RO *Proc)
@@ -3980,6 +4074,7 @@ void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	case PCI_DEVICE_ID_AMD_17H_ARIEL_DF_F3:
 	case PCI_DEVICE_ID_AMD_17H_FIREFLIGHT_DF_F3:
 	case PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3:
+		AMD_17h_CAP(Shm, Proc, Core);
 		AMD_17h_UMC(Shm, Proc);
 		SET_CHIPSET(IC_ZEN);
 		break;
@@ -4061,10 +4156,18 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.ThreadID   = Core[cpu]->T.ThreadID;
 	Shm->Cpu[cpu].Topology.PackageID  = Core[cpu]->T.PackageID;
 	Shm->Cpu[cpu].Topology.Cluster.ID = Core[cpu]->T.Cluster.ID;
-	Shm->Cpu[cpu].Topology.MP.x2APIC  = ((Proc->Features.Std.ECX.x2APIC
-						& Core[cpu]->T.Base.EN)
-						<< Core[cpu]->T.Base.EXTD);
-
+	Shm->Cpu[cpu].Topology.MP.x2APIC  = Proc->Features.Std.ECX.x2APIC;
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    {
+	Shm->Cpu[cpu].Topology.MP.x2APIC |= Proc->Features.ExtInfo.ECX.Ext_APIC;
+    }
+	Shm->Cpu[cpu].Topology.MP.x2APIC &= Core[cpu]->T.Base.EN;
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	Shm->Cpu[cpu].Topology.MP.x2APIC  = Shm->Cpu[cpu].Topology.MP.x2APIC
+						<< Core[cpu]->T.Base.EXTD;
+    }
 	unsigned int loop;
     for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
     {

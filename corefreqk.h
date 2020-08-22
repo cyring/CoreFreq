@@ -3937,7 +3937,7 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy*) ;
 #endif
 static int CoreFreqK_SetPolicy(struct cpufreq_policy*) ;
 static int CoreFreqK_Bios_Limit(int, unsigned int*) ;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 1)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 static int CoreFreqK_SetBoost(struct cpufreq_policy*, int) ;
 #else
 static int CoreFreqK_SetBoost(int) ;

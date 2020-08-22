@@ -131,11 +131,6 @@
 	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
 #endif
 
-/* Sources: drivers/edac/amd64_edac.h					*/
-#ifndef SMU_AMD_UMC_BASE_CHA_F17H
-	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha)	(0x00050000 + (_cha << 20))
-#endif
-
 /* Sources: PPR for AMD Family 17h					*/
 #define AMD_FCH_PM_CSTATE_EN	0x0000007e
 
@@ -821,9 +816,13 @@ typedef union
 	AMD_17_PM_CSTATE	CStateEn;
 } PM16;
 
-/* Source: drivers/edac/amd64_edac.c					*/
+/* Sources: drivers/edac/amd64_edac.h					*/
+#ifndef SMU_AMD_UMC_BASE_CHA_F17H
+	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha)	(0x00050000 + (_cha << 20))
+#endif
+
 typedef union
-{
+{	/* SMU: address = 0x50080					*/
 	unsigned int		value;
 	struct
 	{
@@ -831,11 +830,35 @@ typedef union
 		ReservedBits1	:  6-0,
 		X4_DIMMS	:  7-6,
 		X16_DIMMS	:  8-7,
-		ReservedBits2	: 12-8,
-		ECC_DIMM_Enable : 13-12,
-		ReservedBits3	: 32-13;
+		ReservedBits2	: 32-8;
 	};
-} AMD_17_UMC_CFG;
+} AMD_17_UMC_CFG_DIMM;
+
+typedef union
+{	/* SMU: address = 0x50100					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits1	: 12-0,
+		ECC_DIMM_Enable : 13-12,
+		ReservedBits2	: 32-13;
+	};
+} AMD_17_UMC_CFG_ECC;
+
+typedef union
+{	/* SMU: address = 0x50200					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		MEMCLK		:  7-0,
+		ReservedBits1	: 10-0,
+		CMD_Rate	: 11-10,  /* 00=1N, 01=2N		*/
+		GearDown_Mode	: 12-11,
+		ReservedBits2	: 32-12;
+	};
+} AMD_17_UMC_CFG_MISC;
 
 typedef union
 {
@@ -847,4 +870,155 @@ typedef union
 		INIT		: 32-31;
 	};
 } AMD_17_UMC_SDP_CTRL;
+
+typedef union
+{	/* SMU: address = 0x50204					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		tCL		:  6-0,
+		ReservedBits1	:  8-6,
+		tRAS		: 15-8,
+		ReservedBits2	: 16-15,
+		tRCD_RD 	: 22-16,
+		ReservedBits3	: 24-22,
+		tRCD_WR 	: 30-24,
+		ReservedBits4	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR1;
+
+typedef union
+{	/* SMU: address = 0x50208					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		tRC		:  8-0,
+		ReservedBits1	: 16-8,
+		tRP		: 22-16,
+		ReservedBits2	: 32-22;
+	};
+} AMD_17_UMC_TIMING_DTR2;
+
+typedef union
+{	/* SMU: address = 0x5020c					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		TrrdS		:  5-0,
+		ReservedBits1	:  8-5,
+		TrrdL		: 13-8,
+		ReservedBits2	: 24-13,
+		tRTP		: 29-24,
+		ReservedBits3	: 32-29;
+	};
+} AMD_17_UMC_TIMING_DTR3;
+
+typedef union
+{	/* SMU: address = 0x50210					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tFAW		:  8-0,
+		ReservedBits1	: 32-8;
+	};
+} AMD_17_UMC_TIMING_DTR4;
+
+typedef union
+{	/* SMU: address = 0x50214					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tCWL		:  6-0,
+		ReservedBits1	:  8-6,
+		TwtrS		: 13-8,
+		ReservedBits2	: 16-13,
+		TwtrL		: 23-16,
+		ReservedBits3	: 32-23;
+	};
+} AMD_17_UMC_TIMING_DTR5;
+
+typedef union
+{	/* SMU: address = 0x50218					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tWR		:  8-0,
+		ReservedBits1	: 32-8;
+	};
+} AMD_17_UMC_TIMING_DTR6;
+
+typedef union
+{	/* SMU: address = 0x5021c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits	: 32-0;
+	};
+} AMD_17_UMC_TIMING_DTR7;
+
+typedef union
+{	/* SMU: address = 0x50220					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tddRdTRd	:  4-0,
+		ReservedBits1	:  8-4,
+		tsdRdTRd	: 12-8,
+		ReservedBits2	: 16-12,
+		tscRdTRd	: 20-16,
+		ReservedBits3	: 24-20,
+		tRdRdScl	: 30-24,
+		ReservedBits4	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR8;
+
+typedef union
+{	/* SMU: address = 0x50224					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tddWrTWr	:  4-0,
+		ReservedBits1	:  8-4,
+		tsdWrTWr	: 12-8,
+		ReservedBits2	: 16-12,
+		tscWrTWr	: 20-16,
+		ReservedBits3	: 24-20,
+		tWrWrScl	: 30-24,
+		ReservedBits4	: 32-30;
+	};
+} AMD_17_UMC_TIMING_DTR9;
+
+typedef union
+{	/* SMU: address = 0x50228					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tddWrTRd	:  4-0,
+		ReservedBits1	:  8-4,
+		tddRdTWr	: 13-8,
+		ReservedBits2	: 32-13;
+	};
+} AMD_17_UMC_TIMING_DTR10;
+
+typedef union
+{	/* SMU: address = 0x5022c					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits	: 32-0;
+	};
+} AMD_17_UMC_TIMING_DTR11;
+
+typedef union
+{	/* SMU: address = 0x50230					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tREFI		: 16-0,
+		ReservedBits 	: 32-16;
+	};
+} AMD_17_UMC_TIMING_DTR12;
 

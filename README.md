@@ -14,7 +14,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
 * Topology map including Caches for boostrap & application CPU
 * Processor features, brand & architecture strings
 * In progress: Uncore, Memory Controller channels & geometry, DIMM timings,  
-  Stress tools, Power & Energy (RAPL, OSPM, HWP, TDP), Overclocking, cpuidle & cpufreq driver, Mitigation Mechanisms  
+  Stress tools, Power & Energy (RAPL, P-State, HWP, TDP), Overclocking, cpuidle & cpufreq driver, ClockSource, Mitigation Mechanisms  
 
 
 To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
@@ -260,7 +260,7 @@ CPU     IPS            IPC            CPI
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
-* Q: How to solely control the OSPM or the HWP Performance P-States ?  
+* Q: How to solely control the P-States or the HWP Performance States ?  
 
   A: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
