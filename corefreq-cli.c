@@ -846,8 +846,8 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		hSpace, Shm->Proc.Features.Info.Vendor.ID);
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s""%.*s[%10u]", RSC(MICROCODE).CODE(),
-		width - 15 - RSZ(MICROCODE), hSpace,
+		"%s""%.*s[%8x]", RSC(MICROCODE).CODE(),
+		width - 13 - RSZ(MICROCODE), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
 
 	PUT(SCANKEY_NULL, attrib[2], width, 2,
@@ -7048,9 +7048,11 @@ int Shortcut(SCANKEY *scan)
 				RSC(BOX_OPS_UNREGISTER_COND0).CODE(),
 				RSC(BOX_OPS_UNREGISTER_COND1).CODE()
 			}
-		}, *ops_title;
-		unsigned long long ops_key_on, ops_key_off;
-		unsigned int bix;
+		}, *ops_title = NULL;
+		unsigned long long	ops_key_on = SCANKEY_NULL,
+					ops_key_off = SCANKEY_NULL;
+		unsigned int bix = 0;
+
 	    switch (scan->key) {
 	    case OPS_INTERRUPTS:
 		ops_title = RSC(BOX_INTERRUPT_TITLE).CODE();
