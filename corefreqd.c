@@ -3580,8 +3580,8 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
     for (sec = 0; sec < 2; sec++)
     {
 	unsigned int chipSize;
-     if (BITVAL(Proc->Uncore.MC[mc].Channel[cha]\
-		.AMD17h.CHIP[chip][sec].Chip.value,0))
+     if (BITVAL(Proc->Uncore.MC[mc].Channel[cha] \
+		.AMD17h.CHIP[chip][sec].Chip.value, 0))
      {
 	__asm__ volatile
 	(
@@ -3599,7 +3599,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		"movl	%%edx, %[dest]"
 		: [dest] "=m" (chipSize)
 		: [base] "m"
-		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[chip][sec].Mask.value)
+	    (Proc->Uncore.MC[mc].Channel[cha].AMD17h.CHIP[chip][sec].Mask.value)
 		: "cc", "memory", "%ecx", "%edx"
 	);
 	DIMM_Size += chipSize;
@@ -3626,11 +3626,11 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRAS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TrrdS =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.TrrdS;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRRDS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TrrdL =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.TrrdL;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRRDL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDL;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
@@ -3638,11 +3638,11 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tFAW =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TwtrS =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.TwtrS;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWTRS =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.TwtrL =
-			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.TwtrL;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWTRL =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRL;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWR =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR6.tWR;

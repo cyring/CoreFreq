@@ -936,9 +936,9 @@ typedef union
 	struct
 	{
 		unsigned int
-		TrrdS		:  5-0,
+		tRRDS		:  5-0,
 		ReservedBits1	:  8-5,
-		TrrdL		: 13-8,
+		tRRDL		: 13-8,
 		ReservedBits2	: 24-13,
 		tRTP		: 29-24,
 		ReservedBits3	: 32-29;
@@ -962,9 +962,9 @@ typedef union
 		unsigned int
 		tCWL		:  6-0,
 		ReservedBits1	:  8-6,
-		TwtrS		: 13-8,
+		tWTRS		: 13-8,
 		ReservedBits2	: 16-13,
-		TwtrL		: 23-16,
+		tWTRL		: 23-16,
 		ReservedBits3	: 32-23;
 	};
 } AMD_17_UMC_TIMING_DTR5;
