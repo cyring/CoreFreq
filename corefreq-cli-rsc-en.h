@@ -391,7 +391,7 @@
 #define RSC_TOPOLOGY_TITLE_CODE_EN	" Topology "
 
 #define RSC_MEM_CTRL_TITLE_CODE_EN	" Memory Controller "
-#define RSC_MEM_CTRL_BLANK_CODE_EN		"     "
+#define RSC_MEM_CTRL_BLANK_CODE_EN		"%*.s"
 #define RSC_MEM_CTRL_SUBSECT1_0_CODE_EN 	"Contr"
 #define RSC_MEM_CTRL_SUBSECT1_1_CODE_EN 	"oller"
 #define RSC_MEM_CTRL_SUBSECT1_2_CODE_EN 	" #%-3u"

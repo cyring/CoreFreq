@@ -2927,7 +2927,7 @@ void SandyBridge_PowerInterface(void)
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
-void Intel_Processor_PIN(unsigned capable)
+void Intel_Processor_PIN(bool capable)
 {
 	if (capable) {
 		INTEL_PPIN_CTL PPinCtl = {.value = 0};
@@ -2940,7 +2940,7 @@ void Intel_Processor_PIN(unsigned capable)
 	}
 }
 
-void AMD_Processor_PIN(unsigned capable)
+void AMD_Processor_PIN(bool capable)
 {
 	if (capable) {
 		AMD_PPIN_CTL PPinCtl = {.value = 0};
@@ -4254,6 +4254,14 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
     amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
 		0x50228 + (cha << 20),
 	      &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.value);
+
+    amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+		0x50230 + (cha << 20),
+	      &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.value);
+
+    amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),
+		0x50260 + (cha << 20),
+	      &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.value);
 #else
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
 			0x50200 + (cha << 20),
@@ -4302,6 +4310,16 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR10,
 			0x50228 + (cha << 20),
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR12,
+			0x50230 + (cha << 20),
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR60,
+			0x50260 + (cha << 20),
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 #endif

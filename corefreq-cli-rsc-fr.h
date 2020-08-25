@@ -375,7 +375,7 @@
 #define RSC_TOPOLOGY_TITLE_CODE_FR	" Topologie "
 
 #define RSC_MEM_CTRL_TITLE_CODE_FR	" Controleur Memoire "
-#define RSC_MEM_CTRL_BLANK_CODE_FR		"     "
+#define RSC_MEM_CTRL_BLANK_CODE_FR		"%*.s"
 #define RSC_MEM_CTRL_SUBSECT1_0_CODE_FR 	"Contr"
 #define RSC_MEM_CTRL_SUBSECT1_1_CODE_FR 	"oleur"
 #define RSC_MEM_CTRL_SUBSECT1_2_CODE_FR 	" #%-3u"

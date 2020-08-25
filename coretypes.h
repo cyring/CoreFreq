@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	80
-#define COREFREQ_REV	7
+#define COREFREQ_REV	8
 
 #define CORE_COUNT	256
 
@@ -1252,7 +1252,8 @@ typedef union
 		tsrWrTWr,
 		tdrWrTWr,
 		tddWrTWr,
-		ECC;
+		ECC,
+		_VOID[4];
 	};
 	struct {
 		unsigned int
@@ -1261,7 +1262,7 @@ typedef union
 		tRCD_WR,
 		tRP,
 		tRAS,
-		tRFC,
+		tRC,
 		tRRDS,
 		tRRDL,
 		tFAW,
@@ -1281,7 +1282,11 @@ typedef union
 		tsdRdTRd,
 		tddRdTRd,
 		ECC,
-		CMD_Rate;
+		CMD_Rate,
+		tREFI,
+		tRFC1,
+		tRFC2,
+		tRFC4;
 	} DDR4;
 } RAM_TIMING;
 

@@ -3632,7 +3632,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRRDL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tFAW =
@@ -3688,6 +3688,18 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.CMD_Rate =
 		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC1 =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC1;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC2 =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC2;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC4 =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC4;
   }
  }
 }
