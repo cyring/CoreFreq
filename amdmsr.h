@@ -105,19 +105,6 @@
 #define SMU_AMD_INDEX_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x60)
 #define SMU_AMD_DATA_REGISTER_F17H	PCI_CONFIG_ADDRESS(0, 0, 0, 0x64)
 
-#define Core_AMD_SMN_Read(	SMN_Register,				\
-				SMN_Address,				\
-				SMU_IndexRegister,			\
-				SMU_DataRegister )			\
-({									\
-    if ( BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED) )	\
-    {									\
-	WRPCI(SMN_Address, SMU_IndexRegister);				\
-	RDPCI(SMN_Register.value, SMU_DataRegister);			\
-	BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);		\
-    }									\
-})
-
 /* Sources:
  * BKDG for AMD Family [15_60h - 15_70h]
 	D0F0xBC_xD820_0CA4 Reported Temperature Control
@@ -882,10 +869,11 @@ typedef union
 	{
 		unsigned int
 		MEMCLK		:  7-0,
-		ReservedBits1	: 10-0,
+		ReservedBits1	: 10-7,
 		CMD_Rate	: 11-10,  /* 00=1N, 01=2N		*/
-		GearDown_Mode	: 12-11,
-		ReservedBits2	: 32-12;
+		GearDown_Mode	: 12-11,	/*TODO: BIOS match test */
+		Preamble2T	: 13-12,	/*TODO: BIOS match test */
+		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_CFG_MISC;
 
@@ -924,8 +912,10 @@ typedef union
 	{
 		unsigned int
 		tRC		:  8-0,
-		ReservedBits1	: 16-8,
+		tRC_PB		: 16-8,		/*TODO: BIOS match test */
 		tRP		: 22-16,
+		ReservedBits1	: 24-22,
+		tRP_PB		: 30-24,	/*TODO: BIOS match test */
 		ReservedBits2	: 32-22;
 	};
 } AMD_17_UMC_TIMING_DTR2;
@@ -939,9 +929,11 @@ typedef union
 		tRRDS		:  5-0,
 		ReservedBits1	:  8-5,
 		tRRDL		: 13-8,
-		ReservedBits2	: 24-13,
+		ReservedBits2	: 16-13,
+		tRRD_DLR 	: 21-16,	/*TODO: BIOS match test */
+		ReservedBits3	: 24-21,
 		tRTP		: 29-24,
-		ReservedBits3	: 32-29;
+		ReservedBits4	: 32-29;
 	};
 } AMD_17_UMC_TIMING_DTR3;
 
@@ -951,7 +943,11 @@ typedef union
 	struct {
 		unsigned int
 		tFAW		:  8-0,
-		ReservedBits1	: 32-8;
+		ReservedBits1	: 18-8,
+		tFAW_SLR 	: 24-18,	/*TODO: BIOS match test */
+		ReservedBits2	: 25-24,
+		tFAW_DLR 	: 31-25,	/*TODO: BIOS match test */
+		ReservedBits4	: 32-31;
 	};
 } AMD_17_UMC_TIMING_DTR4;
 
@@ -974,7 +970,7 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tWR		:  8-0,
+		tWR		:  8-0,		/* TODO 7-0 */
 		ReservedBits1	: 32-8;
 	};
 } AMD_17_UMC_TIMING_DTR6;
@@ -984,7 +980,8 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		ReservedBits	: 32-0;
+		ReservedBits	: 20-0,
+		tRCpage		: 32-20;	/*TODO: BIOS match test */
 	};
 } AMD_17_UMC_TIMING_DTR7;
 
@@ -998,9 +995,9 @@ typedef union
 		tsdRdTRd	: 12-8,
 		ReservedBits2	: 16-12,
 		tscRdTRd	: 20-16,
-		ReservedBits3	: 24-20,
+		tRdRdScdlr	: 24-20,	/*TODO: BIOS match test */
 		tRdRdScl	: 30-24,
-		ReservedBits4	: 32-30;
+		tRdRdBan	: 32-30; /*TODO: 00=OFF, 01=Ban1, 1x=Ban2 */
 	};
 } AMD_17_UMC_TIMING_DTR8;
 
@@ -1014,9 +1011,9 @@ typedef union
 		tsdWrTWr	: 12-8,
 		ReservedBits2	: 16-12,
 		tscWrTWr	: 20-16,
-		ReservedBits3	: 24-20,
+		tWrWrScdlr	: 24-20,	/*TODO: BIOS match test */
 		tWrWrScl	: 30-24,
-		ReservedBits4	: 32-30;
+		tWrWrBan	: 32-30;	/*TODO: same as tRdRdBan */
 	};
 } AMD_17_UMC_TIMING_DTR9;
 
@@ -1028,6 +1025,7 @@ typedef union
 		tddWrTRd	:  4-0,
 		ReservedBits1	:  8-4,
 		tddRdTWr	: 13-8,
+		tWrRdScdlr	: 21-16,	/*TODO: BIOS match test */
 		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_TIMING_DTR10;
@@ -1050,6 +1048,17 @@ typedef union
 		ReservedBits 	: 32-16;
 	};
 } AMD_17_UMC_TIMING_DTR12;
+
+typedef union
+{	/* SMU: address = 0x50254					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 24-0,
+		tCKE		: 29-24,	/*TODO: BIOS match test */
+		ReservedBits2	: 32-29;
+	};
+} AMD_17_UMC_TIMING_DTR54;
 
 typedef union
 {	/* SMU: address = 0x50260					*/

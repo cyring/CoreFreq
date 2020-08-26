@@ -529,6 +529,7 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR9	DTR9;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR10 DTR10;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR12 DTR12;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR54 DTR54;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR60 DTR60;	/* 32 bits   */
 			} AMD17h;
 		};

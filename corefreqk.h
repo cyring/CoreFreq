@@ -524,6 +524,37 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
 
+#if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))\
+ && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+#define Core_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+    if (PRIVATE(OF(ZenIF_dev)) != NULL)					\
+    {									\
+	if (amd_smn_read(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),\
+			SMN_Address, &SMN_Register.value))		\
+	{								\
+		pr_warn("CoreFreq: Failed to read amd_smn_read()\n");	\
+	}								\
+    }									\
+})
+#else
+#define Core_AMD_SMN_Read(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+    if ( BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED) )	\
+    {									\
+	WRPCI(SMN_Address, SMU_IndexRegister);				\
+	RDPCI(SMN_Register.value, SMU_DataRegister);			\
+	BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);		\
+    }									\
+})
+#endif /* CONFIG_AMD_NB */
+
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {

@@ -1223,71 +1223,69 @@ typedef struct	/* BSP CPUID features.					*/
 #define MC_MAX_CHA	8
 #define MC_MAX_DIMM	4
 
-typedef union
+typedef struct
 {
-	struct {
-		unsigned int
-		tCL,
-		tRCD,
-		tRP,
-		tRAS,
-		tRRD,
-		tRFC,
-		tWR,
-		tRTPr,
-		tWTPr,
-		tFAW,
-		B2B,
-		tCWL,
-		CMD_Rate,
-		tsrRdTRd,
-		tdrRdTRd,
-		tddRdTRd,
-		tsrRdTWr,
-		tdrRdTWr,
-		tddRdTWr,
-		tsrWrTRd,
-		tdrWrTRd,
-		tddWrTRd,
-		tsrWrTWr,
-		tdrWrTWr,
-		tddWrTWr,
-		ECC,
-		_VOID[4];
+	unsigned int	tCL;
+	union {
+	unsigned int	tRCD;
+	unsigned int	tRCD_RD;
 	};
-	struct {
-		unsigned int
-		tCL,
-		tRCD_RD,
-		tRCD_WR,
-		tRP,
-		tRAS,
-		tRC,
-		tRRDS,
-		tRRDL,
-		tFAW,
-		tWTRS,
-		tWTRL,
-		tWR,
-		tRdRdScl,
-		tWrWrScl,
-		tCWL,
-		tRTP,
-		tddRdTWr,
-		tddWrTRd,
-		tscWrTWr,
-		tsdWrTWr,
-		tddWrTWr,
-		tscRdTRd,
-		tsdRdTRd,
-		tddRdTRd,
-		ECC,
-		CMD_Rate,
-		tREFI,
-		tRFC1,
-		tRFC2,
-		tRFC4;
-	} DDR4;
+	unsigned int	tRCD_WR,
+			tRP,
+			tRAS,
+			tRC;
+	union {
+	unsigned int	tRRD;
+	unsigned int	tRRDS;
+	};
+	unsigned int	tRRDL,
+			tFAW,
+			tWTRS,
+			tWTRL,
+			tWR;
+	union {
+	unsigned int	tRTPr;
+	unsigned int	tRTP;
+	};
+	unsigned int	tWTPr,
+			tCWL,
+			tddRdTWr,
+			tddWrTRd,
+			tddWrTWr,
+			tddRdTRd;
+	union {
+		struct {
+	unsigned int	tsrRdTRd,
+			tdrRdTRd,
+			tsrRdTWr,
+			tdrRdTWr,
+			tsrWrTRd,
+			tdrWrTRd,
+			tsrWrTWr,
+			tdrWrTWr;
+		};
+		struct {
+	unsigned int	tRdRdScl,
+			tWrWrScl,
+			tscWrTWr,
+			tsdWrTWr,
+			tscRdTRd,
+			tsdRdTRd,
+			_VOID[2];
+		};
+	};
+	unsigned int	tCKE,
+			tREFI;
+	union {
+	unsigned int	tRFC;
+	unsigned int	tRFC1;
+	};
+	unsigned int	tRFC2,
+			tRFC4;
+
+	unsigned int	CMD_Rate,
+			B2B,
+			ECC;
 } RAM_TIMING;
 
 typedef struct

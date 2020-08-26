@@ -3611,108 +3611,116 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = DIMM_Size >> 20;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
    }
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tCL =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRCD_RD =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_RD =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_RD;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRCD_WR =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_WR =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRCD_WR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRP =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRAS =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tRAS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRRDS =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRRDL =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRC =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tFAW =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAW;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWTRS =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRS;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWTRL =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWR =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR6.tWR;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRdRdScl =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScl;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWrWrScl =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScl;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tCWL =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tCWL;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRTP =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTP =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRTP;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddRdTWr =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddRdTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddWrTRd =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tddWrTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tscWrTWr =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tscWrTWr =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tscWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tsdWrTWr =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsdWrTWr =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tsdWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddWrTWr =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tddWrTWr;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tscRdTRd =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tscRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tscRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tsdRdTRd =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsdRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tsdRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tddRdTRd =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tddRdTRd;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.ECC =
-		Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.ECC_DIMM_Enable;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR54.tCKE;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.CMD_Rate =
-		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tREFI =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR12.tREFI;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC1 =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1 =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC1;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC2 =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2 =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC2;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRFC4 =
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4 =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate =
+		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.ECC_DIMM_Enable;
   }
  }
 }
 
 void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
-	Shm->Uncore.CtrlSpeed = \
-		( 200 * Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK ) / 3;
+	Shm->Uncore.Bus.Rate=(Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+				*  Shm->Proc.Features.Factory.Clock.Q) / 3;
 
-	Shm->Uncore.Bus.Rate = Shm->Uncore.CtrlSpeed / 2;
+	Shm->Uncore.Bus.Speed=(Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+				* Core->Clock.Hz * 333333333LLU)
+				/ (Shm->Proc.Features.Factory.Clock.Hz
+				* (1000LLU * PRECISION * PRECISION));
 
-	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
-				/ Shm->Proc.Features.Factory.Clock.Hz;
+	Shm->Uncore.CtrlSpeed=(Proc->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK
+				* Core->Clock.Hz * 666666666LLU)
+				/ (Shm->Proc.Features.Factory.Clock.Hz
+				* (1000LLU * PRECISION * PRECISION));
 
 	Shm->Uncore.Unit.Bus_Rate = 0b00;
 	Shm->Uncore.Unit.BusSpeed = 0b00;
