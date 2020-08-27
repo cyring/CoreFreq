@@ -3295,6 +3295,9 @@ kernel_ulong_t Query_NHM_Timing(unsigned int did,
 	pci_read_config_dword(dev ,0x8c,
 	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Refresh.value);
 
+	pci_read_config_dword(dev ,0x90,
+	    &PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.value);
+
 	pci_read_config_dword(dev, 0xb8,
 		&PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].NHM.Params.value);
 
@@ -4219,6 +4222,11 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR6,
 			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x218,
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DTR7,
+			SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x21c,
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 

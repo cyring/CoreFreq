@@ -1233,16 +1233,26 @@ typedef struct
 	unsigned int	tRCD_WR,
 			tRP,
 			tRAS,
-			tRC;
+			tRC,
+
+			tRCPB,
+			tRPPB;
 	union {
 	unsigned int	tRRD;
 	unsigned int	tRRDS;
 	};
 	unsigned int	tRRDL,
+			tRRDDLR,
+
 			tFAW,
+			tFAWSLR,
+			tFAWDLR,
+
 			tWTRS,
 			tWTRL,
 			tWR;
+
+	unsigned int	tRCPage;
 	union {
 	unsigned int	tRTPr;
 	unsigned int	tRTP;
@@ -1262,7 +1272,8 @@ typedef struct
 			tsrWrTRd,
 			tdrWrTRd,
 			tsrWrTWr,
-			tdrWrTWr;
+			tdrWrTWr,
+			_VOID[3];
 		};
 		struct {
 	unsigned int	tRdRdScl,
@@ -1271,7 +1282,11 @@ typedef struct
 			tsdWrTWr,
 			tscRdTRd,
 			tsdRdTRd,
-			_VOID[2];
+			tRdRdScDLR,
+			tWrWrScDLR,
+			tWrRdScDLR,
+			tRdRdBan,
+			tWrWrBan;
 		};
 	};
 	unsigned int	tCKE,
@@ -1283,9 +1298,12 @@ typedef struct
 	unsigned int	tRFC2,
 			tRFC4;
 
-	unsigned int	CMD_Rate,
-			B2B,
-			ECC;
+	unsigned int	CMD_Rate;
+	union {
+	unsigned int	B2B;
+	unsigned int	GDM;
+	};
+	unsigned int	ECC;
 } RAM_TIMING;
 
 typedef struct

@@ -1572,6 +1572,9 @@ void P945_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+			Proc->Uncore.MC[mc].Channel[cha].P945.DRT2.tCKE;
       }
     }
 }
@@ -1784,6 +1787,10 @@ void P965_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+		(cha == 0)	?	Proc->Uncore.MC[mc].P965.CKE0.tCKE_Low
+				: 	Proc->Uncore.MC[mc].P965.CKE1.tCKE_Low;
       }
     }
 }
@@ -2115,6 +2122,9 @@ void G965_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
 	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+			Proc->Uncore.MC[mc].Channel[cha].G965.DRT2.tCKE;
       }
     }
 }
@@ -2247,6 +2257,9 @@ void P3S_MCH(SHM_STRUCT *Shm,PROC_RO *Proc,unsigned short mc,unsigned short cha)
 		Proc->Uncore.MC[mc].Channel[cha].P35.DRTn.tRTPr;
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWL  = ?
 */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+		(cha == 0)	?	Proc->Uncore.MC[mc].P35.CKE0.tCKE_Low
+				: 	Proc->Uncore.MC[mc].P35.CKE1.tCKE_Low;
 }
 
 void P35_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
@@ -2377,6 +2390,12 @@ void NHM_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 		Proc->Uncore.MC[mc].Channel[cha].NHM.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.Refresh.tREFI_8;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+		Proc->Uncore.MC[mc].Channel[cha].NHM.CKE_Timing.tCKE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
 		Proc->Uncore.MC[mc].Channel[cha].NHM.Bank.tRTPr;
@@ -2665,6 +2684,9 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.RFTP.tRFC;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI  =
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RFTP.tREFI;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tWR;
 
@@ -2676,6 +2698,9 @@ void SNB_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].SNB.RAP.tCKE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB.DBP.tCWL;
@@ -2812,6 +2837,9 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.EP.tRFC;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI  =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RFTP.EP.tREFI;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tWR;
 
@@ -2823,6 +2851,9 @@ void SNB_EP_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RAP.EP.tCKE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd =
 			Proc->Uncore.MC[mc].Channel[cha].SNB_EP.RWP.EP.tWRDD;
@@ -3070,6 +3101,9 @@ void HSW_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tRFC;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
+			Proc->Uncore.MC[mc].Channel[cha].HSW.Refresh.tREFI;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].HSW.Timing.tsrRdTRd;
 
@@ -3210,6 +3244,9 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 */
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tREFI;
 /*
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL._.tWR;
@@ -3249,6 +3286,9 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[1].Cols =			\
 		Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.x8_device_Dimm1 ?
 			1024 : 0;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE  =
+			Proc->Uncore.MC[mc].Channel[cha].SKL.Sched.tCKE;
      }
 	Shm->Uncore.MC[mc].Channel[0].Timing.ECC =
 				Proc->Uncore.MC[mc].SKL.MADC0.ECC;
@@ -3632,11 +3672,26 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDL;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDDLR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR3.tRRDDLR;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRC;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPB =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRCPB;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRPPB =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR2.tRPPB;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAW;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAWSLR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR4.tFAWDLR;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRS =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tWTRS;
@@ -3647,11 +3702,20 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR6.tWR;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPage =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR7.tRCPage;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScl;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScl;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdBan =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdBan;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrBan =
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrBan;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR5.tCWL;
@@ -3683,6 +3747,15 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tddRdTRd;
 
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScDLR =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR8.tRdRdScDLR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScDLR =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR9.tWrWrScDLR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWrRdScDLR =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR10.tWrRdScDLR;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR54.tCKE;
 
@@ -3703,6 +3776,9 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.ECC_DIMM_Enable;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.GDM =
+		Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;
   }
  }
 }
@@ -3722,7 +3798,7 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 				/ (Shm->Proc.Features.Factory.Clock.Hz
 				* (1000LLU * PRECISION * PRECISION));
 
-	Shm->Uncore.Unit.Bus_Rate = 0b00;
+	Shm->Uncore.Unit.Bus_Rate = 0b01;
 	Shm->Uncore.Unit.BusSpeed = 0b00;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
@@ -3767,7 +3843,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_UNIONPOINT] 	= "Union Point",
 	[IC_CANNONPOINT]	= "Cannon Point",
 	[IC_K8] 		= "K8/HyperTransport",
-	[IC_ZEN]		= "Zen"
+	[IC_ZEN]		= "Zen UMC"
 };
 
 #define SET_CHIPSET(ic) (Shm->Uncore.Chipset.ArchID = ic)

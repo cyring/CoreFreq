@@ -479,6 +479,7 @@ typedef struct
 				NHM_IMC_RANK_TIMING_B	Rank_B;
 				NHM_IMC_BANK_TIMING	Bank;
 				NHM_IMC_REFRESH_TIMING	Refresh;
+				NHM_IMC_CKE_TIMING	CKE_Timing;
 				NHM_IMC_SCHEDULER_PARAMS Params;
 			} NHM;
 			struct {
@@ -525,6 +526,7 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR4	DTR4;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR5	DTR5;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR6	DTR6;	/* 32 bits   */
+				AMD_17_UMC_TIMING_DTR7	DTR7;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR8	DTR8;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR9	DTR9;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR10 DTR10;	/* 32 bits   */

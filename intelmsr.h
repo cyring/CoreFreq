@@ -1828,6 +1828,19 @@ typedef union	/* Nehalem						*/
 } NHM_IMC_REFRESH_TIMING;
 
 typedef union	/* Nehalem, Westmere					*/
+{	/* Device: 4, 5, 6 - Function: 0 - Offset: 90h			*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		tCKE		:  3-0,
+		tXS	 	: 11-3,
+		tXSDLL		: 21-11,
+		Cs4CkeTransition: 22-21,
+		ReservedBits	: 32-22;
+	};
+} NHM_IMC_CKE_TIMING;
+
+typedef union	/* Nehalem, Westmere					*/
 {	/* Device: 3 - Function: 0 - Offset: 48h			*/
 	unsigned int		value;
 	struct {

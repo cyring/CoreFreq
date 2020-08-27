@@ -3655,8 +3655,8 @@ void Topology(Window *win, CELL_FUNC OutFunc)
   }
 }
 
-#define MC_MATX 14
-#define MC_MATY 5
+#define MC_MATX 15	/*	Must be equal to or greater than 14	*/
+#define MC_MATY 5	/*	Must be strictly equal to 5		*/
 
 void iSplit(unsigned int sInt, char hInt[]) {
 	char fInt[11+1];
@@ -3668,15 +3668,15 @@ void iSplit(unsigned int sInt, char hInt[]) {
 const char *Header_DDRx[2][MC_MATX] = {
 	{
 		" Cha ",
-		"   CL", "  RCD", "   RP", "  RAS",
-		"  RRD", "  RFC", "   WR", " RTPr", " WTPr",
-		"  FAW", "  B2B", "  CWL", " Rate"
+		"   CL", "  RCD", "   RP", "  RAS", "  RRD", "  RFC",
+		"   WR", " RTPr", " WTPr", "  FAW", "  B2B", "  CWL",
+		" CMD ", " REFI"
 	},
 	{
 		"     ",
-		" ddWR", " drWR"," srWR", " ddRW"," drRW", " srRW",
-		" ddRR", " drRR"," srRR", " ddWW"," drWW", " srWW",
-		"  ECC"
+		" ddWR", " drWR", " srWR", " ddRW", " drRW", " srRW",
+		" ddRR", " drRR", " srRR", " ddWW", " drWW", " srWW",
+		" CKE ", "  ECC"
 	}
 };
 
@@ -3684,17 +3684,19 @@ const char *Header_DDR4[3][MC_MATX] = {
 	{
 		" Cha ",
 		"   CL", " RCD_", "R RCD", "_W RP", "  RAS", "  RC ",
-		"RRD_S", " RRD_", "L FAW", " WTR_", "S WTR", "_L WR", " Rate"
+		"RRD_S", " RRD_", "L FAW", " WTR_", "S WTR", "_L WR",
+		" clRR", " clWW"
 	},
 	{
 		"     ",
-		" clRR", " clWW", "  CWL", "  RTP", " RdWr", " WrRd",
-		" scWW", " sdWW", " ddWW", " scRR", " sdRR", " ddRR", "  ECC"
+		"  CWL", "  RTP", " RdWr", " WrRd", " scWW", " sdWW",
+		" ddWW", " scRR", " sdRR", " ddRR", " dlr[", "RR WW",
+		"   WR", " RRD]"
 	},
 	{
 		"     ",
-		"  RFC", " RFC2", " RFC4", "     ", "     ", "     ",
-		"     ", "     ", "     ", "     ", "     ", "     ", " REFI"
+		" REFI", "  RFC", " RFC2", " RFC4", " RCPB", " RPPB", " sFAW",
+		" dFAW", " Ban ", "RCPag", "e CKE", "  CMD", "  GDM", "  ECC"
 	}
 };
 
@@ -3706,15 +3708,15 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	unsigned int idx;
+	CUINT	nc;
 	unsigned short cha;
 
-    for (idx = 0; idx < MC_MATX; idx++) {
-	PRT(IMC, attrib[0], Header_DDRx[0][idx]);
-    }
-    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-    {
-	PRT(IMC, attrib[1], "\x20\x20#%-2u", cha);
+  for (nc = 0; nc < MC_MATX; nc++) {
+	PRT(IMC, attrib[0], Header_DDRx[0][nc]);
+  }
+  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  {
+	PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
@@ -3727,14 +3729,21 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
-    PRT(IMC, attrib[1], "%4uN",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+    for (nc = 0; nc < (MC_MATX - 15); nc++) {
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
-    for (idx = 0; idx < MC_MATX; idx++) {
-	PRT(IMC, attrib[0], Header_DDRx[1][idx]);
-    }
-    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-    {
-    PRT(IMC, attrib[1],"\x20\x20#%-2u", cha);
+	PRT(IMC, attrib[1], "%3uT\x20",
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
+  }
+  for (nc = 0; nc < MC_MATX; nc++) {
+	PRT(IMC, attrib[0], Header_DDRx[1][nc]);
+  }
+  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  {
+    PRT(IMC, attrib[0],"\x20\x20#%-2u", cha);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
@@ -3751,8 +3760,13 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
 
-    PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
+    for (nc = 0; nc < (MC_MATX - 15); nc++) {
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
+    PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
+
+    PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
+  }
 }
 
 void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
@@ -3761,37 +3775,43 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	unsigned int idx;
+	CUINT	nc;
 	unsigned short cha;
 
-  for (idx = 0; idx < MC_MATX; idx++) {
-	PRT(IMC, attrib[0], Header_DDR4[0][idx]);
+  for (nc = 0; nc < MC_MATX; nc++) {
+	PRT(IMC, attrib[0], Header_DDR4[0][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
-    PRT(IMC,attrib[1], "\x20\x20#%-2u", cha);
+    PRT(IMC,attrib[0], "\x20\x20#%-2u", cha);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_RD);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_WR);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRC);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRS);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRL);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-    PRT(IMC,attrib[1],"%4uN",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl);
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl);
+
+    for (nc = 0; nc < (MC_MATX - 15); nc++) {
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+    }
   }
-  for (idx = 0; idx < MC_MATX; idx++) {
-	PRT(IMC, attrib[0], Header_DDR4[1][idx]);
+  for (nc = 0; nc < MC_MATX; nc++) {
+	PRT(IMC, attrib[0], Header_DDR4[1][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
-    PRT(IMC,attrib[1],"\x20\x20#%-2u", cha);
-    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl);
-    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl);
+    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
 
     PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
     PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTP);
@@ -3807,21 +3827,50 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsdRdTRd);
     PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
 
-    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScDLR);
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScDLR);
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrRdScDLR);
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDDLR);
+
+    for (nc = 0; nc < (MC_MATX - 15); nc++) {
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+    }
   }
-  for (idx = 0; idx < MC_MATX; idx++) {
-	PRT(IMC, attrib[0], Header_DDR4[2][idx]);
+  for (nc = 0; nc < MC_MATX; nc++) {
+	PRT(IMC, attrib[0], Header_DDR4[2][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
-    PRT(IMC,attrib[1], "\x20\x20#%-2u", cha);
+    PRT(IMC,attrib[0], "\x20\x20#%-2u", cha);
+    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2);
     PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4);
-    for (idx = 0; idx < (MC_MATX - 5); idx++) {
+
+    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPB);
+    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRPPB);
+
+    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR);
+    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR);
+
+    for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
-    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
+
+    PRT(IMC,attrib[1], "\x20R%1uW%1u",
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdBan,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrBan);
+
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPage);
+
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
+
+    PRT(IMC,attrib[1],"%4uT",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+    PRT(IMC,attrib[1],"\x20\x20%3s",
+			ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.GDM));
+
+    PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
   }
 }
 
@@ -3831,50 +3880,46 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	char	hInt[16], item[MC_MATY + 1],
-		chipStr[1 + CODENAME_LEN + 2 * MC_MATY];
+	char *MC_Unit[4] =
+	{
+		[0b00] = " MHz ",
+		[0b01] = " MT/s",
+		[0b10] = " MB/s",
+		[0b11] = (char *) RSC(MEM_CTRL_BLANK).CODE()
+	};
+	char	item[MC_MATY + 1], *str = malloc(CODENAME_LEN + 4 + 10),
+		*chipStr = malloc((MC_MATX * MC_MATY) + 1);
+  if ((str != NULL) && (chipStr != NULL))
+  {
 	CUINT	cells_per_line = win->matrix.size.wth, *nl = &cells_per_line,
 		ni, nc, li;
 
 	unsigned short mc, cha, slot;
 
-    for (nc = 0; nc < MC_MATY; nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-	li = snprintf(chipStr, 4 + CODENAME_LEN + 4 + 1, "%s  [%4hX]",
-			Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID);
-	li = MC_MATY * (1 + (li / MC_MATY));
-    for (ni = 0; ni < li; ni += MC_MATY, nc++)
-    {
-	CUINT nr = 0;
-	while ((nr < MC_MATY) && (chipStr[ni + nr] != '\0')) {
-		item[nr] = chipStr[ni + nr];
-		nr++;
-	}
-	while (nr < MC_MATY) {
-		item[nr] = 0x20;
-		nr++;
-	}
+	li = snprintf(	str, CODENAME_LEN + 4 + 10, "%s  [%4hX]",
+			Shm->Uncore.Chipset.CodeName, Shm->Uncore.ChipID );
+
+	nc = (MC_MATX * MC_MATY) - li;
+	ni = nc >> 1;
+	nc = ni + (nc & 0x1);
+
+	li = snprintf(	chipStr, (MC_MATX * MC_MATY) + 1, "%*.s" "%s" "%*.s",
+			nc, HSPACE, str, ni, HSPACE );
+
+    for (nc = 0; nc < MC_MATX; nc++) {
+	memcpy(item, &chipStr[nc * MC_MATY], MC_MATY);
 	item[MC_MATY] = '\0';
 	PRT(IMC, attrib[1], item);
     }
-    for (; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-
-  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-  {
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT1_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT1_1).CODE());
 	PRT(IMC, attrib[1], RSC(MEM_CTRL_SUBSECT1_2).CODE(), mc);
+
+      for (nc = 0; nc < (MC_MATX - 6); nc++) {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+      }
 
 	switch (Shm->Uncore.MC[mc].ChannelCount) {
 	case 1:
@@ -3917,88 +3962,45 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Rate);
-
-	switch (Shm->Uncore.Unit.Bus_Rate) {
-	case 0b00:
-		PRT(IMC, attrib[0], " MHz ");
-		break;
-	case 0b01:
-		PRT(IMC, attrib[0], " MT/s");
-		break;
-	case 0b10:
-		PRT(IMC, attrib[0], " MB/s");
-		break;
-	case 0b11:
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		break;
-	}
+	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.Bus_Rate], MC_MATY,HSPACE);
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
 
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Speed);
+	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.BusSpeed], MC_MATY,HSPACE);
 
-	switch (Shm->Uncore.Unit.BusSpeed) {
-	case 0b00:
-		PRT(IMC, attrib[0], " MHz ");
-		break;
-	case 0b01:
-		PRT(IMC, attrib[0], " MT/s");
-		break;
-	case 0b10:
-		PRT(IMC, attrib[0], " MB/s");
-		break;
-	case 0b11:
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		break;
-	}
+      for (nc = 0; nc < (MC_MATX - 13); nc++) {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+      }
 
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.CtrlSpeed);
+	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.DDRSpeed], MC_MATY,HSPACE);
 
-	switch (Shm->Uncore.Unit.DDRSpeed) {
-	case 0b00:
-		PRT(IMC, attrib[0], " MHz ");
-		break;
-	case 0b01:
-		PRT(IMC, attrib[0], " MT/s");
-		break;
-	case 0b10:
-		PRT(IMC, attrib[0], " MB/s");
-		break;
-	case 0b11:
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		break;
-	}
 
-    for (nc = 0; nc < MC_MATX; nc++) {
+      for (nc = 0; nc < MC_MATX; nc++) {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
+      }
 
 	TimingFunc(win, OutFunc, nl, mc);
 
-    for (nc = 0; nc < MC_MATX; nc++) {
+      for (nc = 0; nc < MC_MATX; nc++) {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
+      }
 
-    for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-    {
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_1).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_2).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_3).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_4).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_5).CODE(), cha);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+	for (nc = 0; nc < (MC_MATX - 6); nc++) {
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	}
 
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SLOT).CODE());
@@ -4012,38 +4014,46 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_1).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_2).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_3).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+	for (nc = 0; nc < (MC_MATX - 12); nc++) {
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	}
 
-      for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-      {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[1], "\x20\x20#%-2u", slot);
-	if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	{
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", slot);
+	  if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
+	  {
 		PRT(IMC, attrib[1],
 		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
 		PRT(IMC, attrib[1],
 		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
-		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows, hInt);
-		PRT(IMC, attrib[1], "%5s", &hInt[0]);
-		PRT(IMC, attrib[1], "%5s", &hInt[8]);
-		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, hInt);
-		PRT(IMC, attrib[1], "%5s", &hInt[0]);
-		PRT(IMC, attrib[1], "%5s", &hInt[8]);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows, str);
+		PRT(IMC, attrib[1], "%5s", &str[0]);
+		PRT(IMC, attrib[1], "%5s", &str[8]);
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, str);
+		PRT(IMC, attrib[1], "%5s", &str[0]);
+		PRT(IMC, attrib[1], "%5s", &str[8]);
 		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, hInt);
-		PRT(IMC, attrib[1], "%5s", &hInt[0]);
-		PRT(IMC, attrib[1], "%5s", &hInt[8]);
-	}
-	else for (nc = 0; nc < 9; nc++) {
+		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, str);
+		PRT(IMC, attrib[1], "%5s", &str[0]);
+		PRT(IMC, attrib[1], "%5s", &str[8]);
+	  }
+	  else for (nc = 0; nc < 9; nc++) {
 		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	  }
+	  for (nc = 0; nc < (MC_MATX - 11); nc++) {
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	  }
 	}
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
       }
     }
+  }
+  if (str != NULL) {
+	free(str);
+  }
+  if (chipStr != NULL) {
+	free(chipStr);
   }
 }
 
@@ -5181,7 +5191,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	rows += channelHeaders * Shm->Uncore.MC[mc].ChannelCount;
 	rows += Shm->Uncore.MC[mc].SlotCount * Shm->Uncore.MC[mc].ChannelCount;
     }
-	wIMC = CreateWindow(wLayer, id, MC_MATX, rows, 1, TOP_HEADER_ROW + 2);
+	wIMC = CreateWindow(wLayer, id, MC_MATX, rows, 4, TOP_HEADER_ROW + 2);
     if (wIMC != NULL)
     {
 	MemoryController(wIMC, AddCell, pTimingFunc);

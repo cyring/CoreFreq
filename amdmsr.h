@@ -871,7 +871,7 @@ typedef union
 		MEMCLK		:  7-0,
 		ReservedBits1	: 10-7,
 		CMD_Rate	: 11-10,  /* 00=1N, 01=2N		*/
-		GearDown_Mode	: 12-11,	/*TODO: BIOS match test */
+		GearDownMode	: 12-11,
 		Preamble2T	: 13-12,	/*TODO: BIOS match test */
 		ReservedBits2	: 32-13;
 	};
@@ -912,10 +912,10 @@ typedef union
 	{
 		unsigned int
 		tRC		:  8-0,
-		tRC_PB		: 16-8,		/*TODO: BIOS match test */
+		tRCPB		: 16-8,	 /* Row Cycle Time, Per-Bank	*/
 		tRP		: 22-16,
 		ReservedBits1	: 24-22,
-		tRP_PB		: 30-24,	/*TODO: BIOS match test */
+		tRPPB		: 30-24, /* Row Precharge Time, Per-Bank */
 		ReservedBits2	: 32-22;
 	};
 } AMD_17_UMC_TIMING_DTR2;
@@ -930,7 +930,7 @@ typedef union
 		ReservedBits1	:  8-5,
 		tRRDL		: 13-8,
 		ReservedBits2	: 16-13,
-		tRRD_DLR 	: 21-16,	/*TODO: BIOS match test */
+		tRRDDLR 	: 21-16, /* tRRD(Different Logical Ranks) */
 		ReservedBits3	: 24-21,
 		tRTP		: 29-24,
 		ReservedBits4	: 32-29;
@@ -944,9 +944,9 @@ typedef union
 		unsigned int
 		tFAW		:  8-0,
 		ReservedBits1	: 18-8,
-		tFAW_SLR 	: 24-18,	/*TODO: BIOS match test */
+		tFAWSLR 	: 24-18, /* tFAW(Same Logical Rank)	*/
 		ReservedBits2	: 25-24,
-		tFAW_DLR 	: 31-25,	/*TODO: BIOS match test */
+		tFAWDLR 	: 31-25, /* FAW(Different Logical Ranks) */
 		ReservedBits4	: 32-31;
 	};
 } AMD_17_UMC_TIMING_DTR4;
@@ -970,7 +970,7 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		tWR		:  8-0,		/* TODO 7-0 */
+		tWR		:  8-0,
 		ReservedBits1	: 32-8;
 	};
 } AMD_17_UMC_TIMING_DTR6;
@@ -981,7 +981,7 @@ typedef union
 	struct {
 		unsigned int
 		ReservedBits	: 20-0,
-		tRCpage		: 32-20;	/*TODO: BIOS match test */
+		tRCPage		: 32-20; /*	Page Time Line Period	*/
 	};
 } AMD_17_UMC_TIMING_DTR7;
 
@@ -995,10 +995,10 @@ typedef union
 		tsdRdTRd	: 12-8,
 		ReservedBits2	: 16-12,
 		tscRdTRd	: 20-16,
-		tRdRdScdlr	: 24-20,	/*TODO: BIOS match test */
+		tRdRdScDLR	: 24-20, /* tRdRdSc(Different Logical Ranks) */
 		tRdRdScl	: 30-24,
-		tRdRdBan	: 32-30; /*TODO: 00=OFF, 01=Ban1, 1x=Ban2 */
-	};
+		tRdRdBan	: 32-30; /* Read to Read Timing Ban	*/
+	};				/*  Ban: 00=None, 01=One, 1x=Two */
 } AMD_17_UMC_TIMING_DTR8;
 
 typedef union
@@ -1011,9 +1011,9 @@ typedef union
 		tsdWrTWr	: 12-8,
 		ReservedBits2	: 16-12,
 		tscWrTWr	: 20-16,
-		tWrWrScdlr	: 24-20,	/*TODO: BIOS match test */
+		tWrWrScDLR	: 24-20, /* tWrWrSc(Different Logical Ranks) */
 		tWrWrScl	: 30-24,
-		tWrWrBan	: 32-30;	/*TODO: same as tRdRdBan */
+		tWrWrBan	: 32-30; /* Write to Write Timing Ban	*/
 	};
 } AMD_17_UMC_TIMING_DTR9;
 
@@ -1025,7 +1025,7 @@ typedef union
 		tddWrTRd	:  4-0,
 		ReservedBits1	:  8-4,
 		tddRdTWr	: 13-8,
-		tWrRdScdlr	: 21-16,	/*TODO: BIOS match test */
+		tWrRdScDLR	: 21-16, /* tWrRdSc(Different Logical Ranks) */
 		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_TIMING_DTR10;
@@ -1055,7 +1055,7 @@ typedef union
 	struct {
 		unsigned int
 		ReservedBits1	: 24-0,
-		tCKE		: 29-24,	/*TODO: BIOS match test */
+		tCKE		: 29-24, /*	Clock Enable Time	*/
 		ReservedBits2	: 32-29;
 	};
 } AMD_17_UMC_TIMING_DTR54;
