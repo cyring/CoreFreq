@@ -323,6 +323,11 @@ typedef struct {
 	size_t		length;
 } TCell;
 
+typedef struct {
+	ASCII		*comm;
+	size_t		length;
+} THover;
+
 typedef union {
 	void			*pvoid;
 	unsigned long long	*pullong;
@@ -347,6 +352,7 @@ typedef union {
 
 typedef struct _Grid {
 	TCell		cell;
+	THover		hover;
 	DATA_TYPE	data;
 	void		(*Update)(struct _Grid *grid, DATA_TYPE data);
 } TGrid;
@@ -505,6 +511,8 @@ extern int GetKey(SCANKEY *scan, struct timespec *tsec) ;
 
 extern SCREEN_SIZE GetScreenSize(void) ;
 
+extern TGrid *GridHover(TGrid *pGrid, const char *comment) ;
+
 extern void HookCellFunc(TCELLFUNC *with, TCELLFUNC what) ;
 
 extern void HookKeyFunc(KEYFUNC *with, KEYFUNC what) ;
@@ -543,6 +551,7 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 		pGrid->Update = updateFunc;				\
 		pGrid->data.pvoid = NULL;				\
 	}								\
+	pGrid;								\
 })
 
 #define GridCall_3xArg(gridCall, updateFunc,	arg0)			\
@@ -553,6 +562,7 @@ extern void HookPointer(REGPTR *with, REGPTR what) ;
 		pGrid->Update = updateFunc;				\
 		SET_DATA(pGrid, arg0);					\
 	}								\
+	pGrid;								\
 })
 
 #define DISPATCH_GridCall(_1,_2,_3,_CURSOR, ... ) _CURSOR
@@ -619,6 +629,8 @@ extern void FreeAllTCells(Window *win) ;
 	pGrid = &win->grid[win->dim - 1];				\
 	pGrid->cell.quick.key = shortkey;				\
 	pGrid->cell.length = strlen((char *) item);			\
+	pGrid->hover.comm = NULL;					\
+	pGrid->hover.length = 0;					\
 	pGrid->data.pvoid = NULL;					\
 	pGrid->Update = NULL;						\
 									\

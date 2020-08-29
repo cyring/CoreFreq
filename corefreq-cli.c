@@ -483,69 +483,99 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 const struct {
 	enum SYS_REG bit;
 	unsigned int len;
-	const char *flag;
+	const char *flag, *comm;
 } SR[] = {
-	{RFLAG_TF,	1,	" TF "},
-	{RFLAG_IF,	1,	" IF "},
-	{RFLAG_IOPL,	2,	"IOPL"},
-	{RFLAG_NT,	1,	" NT "},
-	{RFLAG_RF,	1,	" RF "},
-	{RFLAG_VM,	1,	" VM "},
-	{RFLAG_AC,	1,	" AC "},
-	{RFLAG_VIF,	1,	" VIF"},
-	{RFLAG_VIP,	1,	" VIP"},
-	{RFLAG_ID,	1,	" ID "},
+	{RFLAG_TF,	1, " TF ", " Trap Flag "},
+	{RFLAG_IF,	1, " IF ", " Interrupt Flag "},
+	{RFLAG_IOPL,	2, "IOPL", " I/O Privilege Level "},
+	{RFLAG_NT,	1, " NT ", " Nested Task "},
+	{RFLAG_RF,	1, " RF ", " Resume Flag "},
+	{RFLAG_VM,	1, " VM ", " Virtual-8086 Mode "},
+	{RFLAG_AC,	1, " AC ", " Alignment Check "},
+	{RFLAG_VIF,	1, " VIF", " Virtual Interrupt Flag "},
+	{RFLAG_VIP,	1, " VIP", " Virtual Interrupt Pending "},
+	{RFLAG_ID,	1, " ID ", " Identification "},
 
-	{CR0_PE,	1,	" PE "},
-	{CR0_MP,	1,	" MP "},
-	{CR0_EM,	1,	" EM "},
-	{CR0_TS,	1,	" TS "},
-	{CR0_ET,	1,	" ET "},
-	{CR0_NE,	1,	" NE "},
-	{CR0_WP,	1,	" WP "},
-	{CR0_AM,	1,	" AM "},
-	{CR0_NW,	1,	" NW "},
-	{CR0_CD,	1,	" CD "},
-	{CR0_PG,	1,	" PG "},
+	{CR0_PE,	1, " PE ", " Protection Enable "},
+	{CR0_MP,	1, " MP ", " Monitor Coprocessor "},
+	{CR0_EM,	1, " EM ", " FPU Emulation "},
+	{CR0_TS,	1, " TS ", " Task Switched "},
+	{CR0_ET,	1, " ET ", " Extension Type "},
+	{CR0_NE,	1, " NE ", " Numeric Exception "},
+	{CR0_WP,	1, " WP ", " Write Protect "},
+	{CR0_AM,	1, " AM ", " Alignment Mask "},
+	{CR0_NW,	1, " NW ", " Not Write-through "},
+	{CR0_CD,	1, " CD ", " Cache Disable "},
+	{CR0_PG,	1, " PG ", " Paging enable "},
 
-	{CR3_PWT,	1,	" PWT"},
-	{CR3_PCD,	1,	" PCD"},
+	{CR3_PWT,	1, " PWT", " Page-level Write-Through "},
+	{CR3_PCD,	1, " PCD", " Page-level Cache Disable "},
 
-	{CR4_VME,	1,	" VME"},
-	{CR4_PVI,	1,	" PVI"},
-	{CR4_TSD,	1,	" TSD"},
-	{CR4_DE,	1,	" DE "},
-	{CR4_PSE,	1,	" PSE"},
-	{CR4_PAE,	1,	" PAE"},
-	{CR4_MCE,	1,	" MCE"},
-	{CR4_PGE,	1,	" PGE"},
-	{CR4_PCE,	1,	" PCE"},
-	{CR4_OSFXSR,	1,	" FX "},
-	{CR4_OSXMMEXCPT,1,	"XMM "},
-	{CR4_UMIP,	1,	"UMIP"},
-	{CR4_VMXE,	1,	" VMX"},
-	{CR4_SMXE,	1,	" SMX"},
-	{CR4_FSGSBASE,	1,	" FS "},
-	{CR4_PCIDE,	1,	"PCID"},
-	{CR4_OSXSAVE,	1,	" SAV"},
-	{CR4_SMEP,	1,	" SME"},
-	{CR4_SMAP,	1,	" SMA"},
-	{CR4_PKE,	1,	" PKE"},
+	{CR4_VME,	1, " VME", " Virtual-8086 Mode Extensions "},
+	{CR4_PVI,	1, " PVI", " Protected-mode Virtual Interrupts "},
+	{CR4_TSD,	1, " TSD", " Time-Stamp Disable "},
+	{CR4_DE,	1, " DE ", " Debugging Extensions "},
+	{CR4_PSE,	1, " PSE", " Page Size Extension "},
+	{CR4_PAE,	1, " PAE", " Physical Address Extension "},
+	{CR4_MCE,	1, " MCE", " Machine-Check Enable "},
+	{CR4_PGE,	1, " PGE", " Page Global Enable "},
+	{CR4_PCE,	1, " PCE", " Performance Counter Enable "},
+	{CR4_OSFXSR,	1, " FX ", " OS Support for FXSAVE and FXRSTOR "},
+	{CR4_OSXMMEXCPT,1, "XMM ", " OS Support for Unmasked SSE Exceptions "},
+	{CR4_UMIP,	1, "UMIP", " User-Mode Instruction Prevention "},
+	{CR4_VMXE,	1, " VMX", " Virtual Machine eXtension Enable "},
+	{CR4_SMXE,	1, " SMX", " Safer Mode eXtension Enable "},
+	{CR4_FSGSBASE,	1, " FS ", NULL},
+	{CR4_PCIDE,	1, "PCID", " Process-Context Identifiers Enable "},
+	{CR4_OSXSAVE,	1, " SAV", " XSAVE and Processor Extended States "},
+	{CR4_SMEP,	1, " SME", " Supervisor-Mode Execution Prevention "},
+	{CR4_SMAP,	1, " SMA", " Supervisor-Mode Access Prevention "},
+	{CR4_PKE,	1, " PKE", " Protection Keys for user-mode pages "},
+/*TODO
+	{CR4.CET,	1, " CET", " Control-flow Enforcement Technology "},
+	{CR4.PKS,	1, " PKS", " Protection Keys for Supervisor-mode pages "},
+*/
 
-	{EXFCR_LOCK,	1,	"LCK "},
-	{EXFCR_VMX_IN_SMX,1,	"VMX^"},
-	{EXFCR_VMXOUT_SMX,1,	"SGX "},
-	{EXFCR_SENTER_LEN,6,	"[SEN"},
-	{EXFCR_SENTER_GEN,1,	"TER]"},
-	{EXFCR_SGX_LCE, 1,	" [ S"},
-	{EXFCR_SGX_GEN, 1,	"GX ]"},
-	{EXFCR_LMCE,	1,	" LMC"},
+	{EXFCR_LOCK,	1,	"LCK ", " Lock bit "},
+	{EXFCR_VMX_IN_SMX,1,	"VMX^", " VMX Inside SMX Operation "},
+	{EXFCR_VMXOUT_SMX,1,	"SGX ", " VMX Outside SMX Operation "},
+	{EXFCR_SENTER_LEN,6,	"[SEN", " SENTER Local Functions "},
+	{EXFCR_SENTER_GEN,1,	"TER]", " SENTER Global Functions "},
+	{EXFCR_SGX_LCE, 1,	" [ S", " SGX Launch Control "},
+	{EXFCR_SGX_GEN, 1,	"GX ]", " SGX Global Functions "},
+	{EXFCR_LMCE,	1,	" LMC", " Local Machine Check "},
 
-	{EXFER_SCE,	1,	" SCE"},
-	{EXFER_LME,	1,	" LME"},
-	{EXFER_LMA,	1,	" LMA"},
-	{EXFER_NXE,	1,	" NXE"},
-	{EXFER_SVME,	1,	" SVM"}
+	{EXFER_SCE,	1,	" SCE", " System-Call Extension "},
+	{EXFER_LME,	1,	" LME", " Long Mode Enable "},
+	{EXFER_LMA,	1,	" LMA", " Long Mode Active "},
+	{EXFER_NXE,	1,	" NXE", " Execute-Disable Bit Enable "},
+	{EXFER_SVME,	1,	" SVM", " Secure Virtual Machine Enable "}
+};
+
+enum {
+	IX_CPU,
+	IX_FLAG,
+	IX_CR0,
+	IX_CR3,
+	IX_CR4,
+	IX_EFCR,
+	IX_EFER,
+	IX_4SPC,
+	IX_NA_3
+};
+
+const struct {
+	const char *item, *comm;
+} CR[] = {
+	[IX_CPU]	= {"CPU ", NULL},
+	[IX_FLAG]	= {"FLAG", NULL},
+	[IX_CR0]	= {"CR0:", " Control Register 0 "},
+	[IX_CR3]	= {"CR3:", " Control Register 3 "},
+	[IX_CR4]	= {"CR4:", " Control Register 4 "},
+	[IX_EFCR]	= {"EFCR", " Feature Control Bits Register "},
+	[IX_EFER]	= {"EFER", " Extended-Feature-Enable Register "},
+	[IX_4SPC]	= {"    ", NULL},
+	[IX_NA_3] 	= {"  - ", NULL}
 };
 
 REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
@@ -570,56 +600,58 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
 /* Section Mark */
-	PRT(REG, attrib[0], "CPU ");
-	PRT(REG, attrib[0], "FLAG");
+	PRT(REG, attrib[0], CR[IX_CPU].item);
+	PRT(REG, attrib[0], CR[IX_FLAG].item);
     for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
-	PRT(REG, attrib[0], "    ");
-	PRT(REG, attrib[0], "CR3:");
-    for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
-    }
-	PRT(REG, attrib[0], "    ");
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-		"#%-2u ", cpu);
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+	GridHover(PRT(REG, attrib[0], CR[IX_CR3].item), CR[IX_CR3].comm);
 
-	PRT(REG, attrib[0], "    ");
+    for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
+    }
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
-	PRT(REG, attrib[0], "    ");
-	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
-	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
     }
 /* Section Mark */
-	PRT(REG, attrib[0], "CR0:");
+	GridHover(PRT(REG, attrib[0], CR[IX_CR0].item), CR[IX_CR0].comm);
+
     for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
-	PRT(REG, attrib[0], "CR4:");
+
+	GridHover(PRT(REG, attrib[0], CR[IX_CR4].item), CR[IX_CR4].comm);
+
     for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-		"#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 
 	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
@@ -627,54 +659,57 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
-	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
     }
 /* Section Mark */
-	PRT(REG, attrib[0], "CR4:");
+	GridHover(PRT(REG, attrib[0], CR[IX_CR4].item), CR[IX_CR4].comm);
+
     for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-		"#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+
 	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
     }
 /* Section Mark */
-	PRT(REG, attrib[0], "EFCR");
-	PRT(REG, attrib[0], "    ");
+	GridHover(PRT(REG, attrib[0], CR[IX_EFCR].item), CR[IX_EFCR].comm);
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+
     for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
-	PRT(REG, attrib[0], "    ");
-	PRT(REG, attrib[0], "EFER");
+
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+	GridHover(PRT(REG, attrib[0], CR[IX_EFER].item), CR[IX_EFER].comm);
+
     for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	PRT(REG, attrib[0], "%s", SR[idx].flag);
+	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)],
-		"#%-2u ", cpu);
-	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
 
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)
 	    &&  ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL))) {
@@ -682,18 +717,18 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
-	PRT(REG, attrib[0], "    ");
-	PRT(REG, attrib[0], "    ");
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
+	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
 		PRT(REG, attrib[2], "%3llx ",
 				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
 				SR[idx].bit, SR[idx].len));
 	    } else {
-		PRT(REG, attrib[1], "  - ");
+		PRT(REG, attrib[1], CR[IX_NA_3].item);
 	    }
 	}
     }
@@ -1239,29 +1274,37 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	};
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
 				|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
 				+ (Shm->Proc.Features.ExtInfo.EDX._3DNow
 				<< Shm->Proc.Features.ExtInfo.EDX._3DNowEx)],
 		" 3DNow!/Ext [%c/%c]",
 		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N'),
+	" AMD 3DNow! SIMD instructions / 3DNow! Extensions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.ADX],
 		"          ADX [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.ADX ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.ADX ? 'Y' : 'N'),
+	" Multi-Precision Add-Carry ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.AES],
 		"          AES [%c]",
-		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N'),
+	" Advanced Encryption Standard ");
 
+    GridHover(
 	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.ECX.AVX
 			|  Shm->Proc.Features.ExtFeature.EBX.AVX2)
 			+ (Shm->Proc.Features.Std.ECX.AVX
 			<< Shm->Proc.Features.ExtFeature.EBX.AVX2)],
 		"  AVX/AVX2 [%c/%c] ",
 		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N'),
+	" Advanced Vector Extensions ");
 /* Row Mark */
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
 		" AVX512-F     [%c]",
@@ -1331,160 +1374,228 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 		" AVX512-BF16  [%c]",
 		Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 ? 'Y':'N');
 
+    GridHover(
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
 				|  Shm->Proc.Features.ExtFeature.EBX.BMI2)
 				+ (Shm->Proc.Features.ExtFeature.EBX.BMI1
 				<< Shm->Proc.Features.ExtFeature.EBX.BMI2)],
 		"  BMI1/BMI2 [%c/%c]",
 		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N'),
+	" Bit Manipulation Instructions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.CLWB],
 		"         CLWB [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.CLWB ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.CLWB ? 'Y' : 'N'),
+	" Cache Line Write Back ");
 
+    GridHover(
 	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.EDX.CLFLUSH
 			|  Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)
 			+ (Shm->Proc.Features.Std.EDX.CLFLUSH
 			<< Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)],
 		" CLFLUSH/O [%c/%c] ",
 		Shm->Proc.Features.Std.EDX.CLFLUSH ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ? 'Y' : 'N'),
+	" Flush Cache Line / CLFLUSH Optimized ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC],
 		" CLAC-STAC    [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC ? 'Y' : 'N'),
+	" Clear AC - Set AC Flag in EFLAGS Register ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMOV],
 		"         CMOV [%c]",
-		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N'),
+	" Conditional Move instructions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCHG8],
 		"    CMPXCHG8B [%c]",
-		Shm->Proc.Features.Std.EDX.CMPXCHG8 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.CMPXCHG8 ? 'Y' : 'N'),
+	" Compare and Exchange 8 Bytes ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.CMPXCHG16],
 		"  CMPXCHG16B [%c] ",
-		Shm->Proc.Features.Std.ECX.CMPXCHG16 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.CMPXCHG16 ? 'Y' : 'N'),
+	" Compare and Exchange 16 Bytes ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
 		" F16C         [%c]",
-		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N'),
+	" 16-bit floating-point conversion instructions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FPU],
 		"          FPU [%c]",
-		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N'),
+	" Floating Point Unit On-Chip ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FXSR],
 		"         FXSR [%c]",
-		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N'),
+	" FXSAVE and FXRSTOR instructions ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
 		"   LAHF-SAHF [%c] ",
-		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N'),
+	" Load-Store Status Flags into AH register ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
 			|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
 			+ (Shm->Proc.Features.Std.EDX.MMX
 			<< Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)],
 		" MMX/Ext    [%c/%c]",
 		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N'),
+	" MultiMedia eXtensions / Extended MMX ");
 
+    GridHover(
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.MONITOR
 			|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt)
 			+ (Shm->Proc.Features.Std.ECX.MONITOR
 			<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt)],
 		" MON/MWAITX [%c/%c]",
 		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N'),
+	" Monitor Wait / MWAIT eXtensions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.MOVBE],
 		"        MOVBE [%c]",
-		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N'),
+	" Move Data After Swapping Bytes ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.PCLMULDQ],
 		"   PCLMULQDQ [%c] ",
-		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N'),
+	" Carryless Multiplication Quadword ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.POPCNT],
 		" POPCNT       [%c]",
-		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N'),
+	" Count of Number of Bits Set to 1 ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.RDRAND],
 		"       RDRAND [%c]",
-		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N'),
+	" Read Random Number ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDSEED],
 		"       RDSEED [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.RDSEED ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.RDSEED ? 'Y' : 'N'),
+	" Read Random SEED ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
 		"      RDTSCP [%c] ",
-		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N'),
+	" Read Time-Stamp Counter and Processor ID ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SEP],
 		" SEP          [%c]",
-		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N'),
+	" SYSENTER and SYSEXIT instructions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SHA],
 		"          SHA [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SHA ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.SHA ? 'Y' : 'N'),
+	" Secure Hash Algorithms extensions ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE],
 		"          SSE [%c]",
-		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N'),
+	" Streaming SIMD Extensions ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.Std.EDX.SSE2],
 		"        SSE2 [%c] ",
-		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N'),
+	" Streaming SIMD Extensions 2 ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSE3],
 		" SSE3         [%c]",
-		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N'),
+	" Streaming SIMD Extensions 3 ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
 		"        SSSE3 [%c]",
-		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N'),
+	" Supplemental Streaming SIMD Extensions 3 ");
 
+    GridHover(
 	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.SSE41
 			|  Shm->Proc.Features.ExtInfo.ECX.SSE4A)
 			+ (Shm->Proc.Features.Std.ECX.SSE41
 			<< Shm->Proc.Features.ExtInfo.ECX.SSE4A)],
 		"  SSE4.1/4A [%c/%c]",
 		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N'),
+	" Streaming SIMD Extensions 4.1 / AMD SSE 4A ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.SSE42],
 		"      SSE4.2 [%c] ",
-		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N');
+		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N'),
+	" Streaming SIMD Extensions 4.2 ");
 /* Row Mark */
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.SERIALIZE],
 		" SERIALIZE    [%c]",
-		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N'),
+	" Serialize instruction ");
 
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
 		"      SYSCALL [%c]",
-		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N');
+		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N'),
+	" Fast System Call and SYSRET - Return From SYSCALL ");
 
     if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDPID],
 		"        RDPID [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.RDPID ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.RDPID ? 'Y' : 'N'),
+	" Read Processor ID ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
 		"        UMIP [%c] ",
-		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N');
-    } else {	/*	Fallback to Intel CPUID				*/
+		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N'),
+	" User Mode Instruction Prevention ");
+    }
+    else
+    {	/*	Fallback to Intel CPUID				*/
+    GridHover(
 	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
 		"          SGX [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N'),
+	" Intel Software Guard eXtensions ");
 
+    GridHover(
 	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.ECX.RDPID],
 		"       RDPID [%c] ",
-		Shm->Proc.Features.ExtFeature.ECX.RDPID ? 'Y' : 'N');
+		Shm->Proc.Features.ExtFeature.ECX.RDPID ? 'Y' : 'N'),
+	" Read Processor ID ");
     }
 
 	return (reason);

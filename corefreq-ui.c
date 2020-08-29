@@ -568,6 +568,25 @@ SCREEN_SIZE GetScreenSize(void)
 	return (_screenSize);
 }
 
+TGrid *GridHover(TGrid *pGrid, const char *comment)
+{
+    if ((pGrid != NULL) && (comment != NULL))
+    {
+	size_t length = strlen(comment);
+	if (length > 0)
+	{
+		ASCII *comm = malloc(length);
+	    if (comm != NULL)
+	    {
+		strncpy((char *) comm, comment, length);
+		pGrid->hover.comm = comm;
+		pGrid->hover.length = length;
+	    }
+	}
+    }
+	return (pGrid);
+}
+
 __inline__ void Set_pVOID(TGrid *pGrid, void *pVOID)
 {
 	pGrid->data.pvoid = pVOID;
@@ -717,6 +736,10 @@ void FreeAllTCells(Window *win)
 		{
 			free(win->grid[i].cell.attr);
 			free(win->grid[i].cell.item);
+
+			if (win->grid[i].hover.comm != NULL) {
+				free(win->grid[i].hover.comm);
+			}
 		}
 		free(win->grid);
 		win->grid = NULL;
@@ -969,6 +992,26 @@ void PrintContent(Window *win, WinList *list, CUINT col, CUINT row)
     }
 }
 
+void PrintComment(Window *win)
+{	/* The cell comment is positioned at the bottom border center	*/
+	CUINT	horzCol = win->matrix.scroll.horz + win->matrix.select.col,
+		vertRow = win->matrix.scroll.vert + win->matrix.select.row;
+
+    if (TGridAt(win, horzCol, vertRow).hover.comm != NULL)
+    {
+	size_t pos;
+	pos = win->lazyComp.rowLen - TGridAt(win,horzCol,vertRow).hover.length;
+	pos = pos >> 1;
+	pos = pos + (1 & TGridAt(win, horzCol, vertRow).hover.length);
+
+	memcpy(&LayerAt(win->layer, code,
+			(win->matrix.origin.col + pos),
+			(win->matrix.origin.row + win->matrix.size.hth)),
+			TGridAt(win, horzCol, vertRow).hover.comm,
+			TGridAt(win, horzCol, vertRow).hover.length);
+    }
+}
+
 void ForEachCellPrint(Window *win, WinList *list)
 {
 	CUINT col, row;
@@ -990,7 +1033,7 @@ void ForEachCellPrint(Window *win, WinList *list)
 			(win->lazyComp.rowLen - 2), hLine, border );
     } else {
 	if (win->lazyComp.titleLen == 0) {
-		win->lazyComp.titleLen=strlen(win->hook.title);
+		win->lazyComp.titleLen = strlen(win->hook.title);
 	}
 	size_t halfLeft=(win->lazyComp.rowLen - win->lazyComp.titleLen) / 2;
 	size_t halfRight = halfLeft
@@ -1567,6 +1610,7 @@ void MotionEnd_Menu(Window *win)
 	} else {							\
 		MotionReScale(_win);					\
 		ForEachCellPrint(_win, _list);				\
+		PrintComment(_win);					\
 	}								\
 })
 
