@@ -856,9 +856,9 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	: 12-0,
-		ECC_DIMM_Enable : 13-12,
-		ReservedBits2	: 32-13;
+		ReservedBits1	: 30-0,
+		ECC_DIMM_Enable : 31-30,
+		ReservedBits2	: 32-31;
 	};
 } AMD_17_UMC_CFG_ECC;
 
