@@ -531,11 +531,10 @@ const struct {
 	{CR4_SMEP,	1, " SME", " Supervisor-Mode Execution Prevention "},
 	{CR4_SMAP,	1, " SMA", " Supervisor-Mode Access Prevention "},
 	{CR4_PKE,	1, " PKE", " Protection Keys for user-mode pages "},
-/*TODO
-	{CR4.CET,	1, " CET", " Control-flow Enforcement Technology "},
-	{CR4.PKS,	1, " PKS", " Protection Keys for Supervisor-mode pages "},
+/*TODO(add CR bits)
+	{CR4.CET,	1," CET"," Control-flow Enforcement Technology "},
+	{CR4.PKS,	1," PKS"," Protection Keys for Supervisor-mode pages "},
 */
-
 	{EXFCR_LOCK,	1,	"LCK ", " Lock bit "},
 	{EXFCR_VMX_IN_SMX,1,	"VMX^", " VMX Inside SMX Operation "},
 	{EXFCR_VMXOUT_SMX,1,	"SGX ", " VMX Outside SMX Operation "},
@@ -1272,339 +1271,494 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 			RSC(SYSINFO_ISA_COND_1_4).ATTR()
 		}
 	};
-	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtInfo.EDX._3DNow
-				|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx)
-				+ (Shm->Proc.Features.ExtInfo.EDX._3DNow
-				<< Shm->Proc.Features.ExtInfo.EDX._3DNowEx)],
-		" 3DNow!/Ext [%c/%c]",
-		Shm->Proc.Features.ExtInfo.EDX._3DNow ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.EDX._3DNowEx ? 'Y' : 'N'),
-	" AMD 3DNow! SIMD instructions / 3DNow! Extensions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.ADX],
-		"          ADX [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.ADX ? 'Y' : 'N'),
-	" Multi-Precision Add-Carry ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.AES],
-		"          AES [%c]",
-		Shm->Proc.Features.Std.ECX.AES ? 'Y' : 'N'),
-	" Advanced Encryption Standard ");
-
-    GridHover(
-	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.ECX.AVX
-			|  Shm->Proc.Features.ExtFeature.EBX.AVX2)
-			+ (Shm->Proc.Features.Std.ECX.AVX
-			<< Shm->Proc.Features.ExtFeature.EBX.AVX2)],
-		"  AVX/AVX2 [%c/%c] ",
-		Shm->Proc.Features.Std.ECX.AVX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.AVX2 ? 'Y' : 'N'),
-	" Advanced Vector Extensions ");
-/* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512F],
-		" AVX512-F     [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX_512F ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ],
-		"    AVX512-DQ [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA],
-		"  AVX512-IFMA [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA ? 'Y' : 'N');
-
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.AVX512PF],
-		"   AVX512-PF [%c] ",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512PF ? 'Y' : 'N');
-/* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512ER],
-		" AVX512-ER    [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512ER ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512CD],
-		"    AVX512-CD [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512CD ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.AVX512BW],
-		"    AVX512-BW [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512BW ? 'Y' : 'N');
-
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.AVX512VL],
-		"   AVX512-VL [%c] ",
-		Shm->Proc.Features.ExtFeature.EBX.AVX512VL ? 'Y' : 'N');
-/* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI],
-		" AVX512-VBMI  [%c]",
-		Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2],
-		" AVX512-VBMI2 [%c]",
-		Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI],
-		"  AVX512-VNMI [%c]",
-		Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI ? 'Y' : 'N');
-
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG],
-		"  AVX512-ALG [%c] ",
-		Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG ? 'Y' : 'N');
-/* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ],
-		" AVX512-VPOP  [%c]",
-		Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ ? 'Y':'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW],
-		" AVX512-VNNIW [%c]",
-		Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW ? 'Y' : 'N');
-
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS],
-		" AVX512-FMAPS [%c]",
-		Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS ? 'Y' : 'N');
-
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER],
-		" AVX512-VP2I [%c] ",
-		Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER ? 'Y' : 'N');
-/* Row Mark */
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16],
-		" AVX512-BF16  [%c]",
-		Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 ? 'Y':'N');
-
-    GridHover(
-	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.ExtFeature.EBX.BMI1
-				|  Shm->Proc.Features.ExtFeature.EBX.BMI2)
-				+ (Shm->Proc.Features.ExtFeature.EBX.BMI1
-				<< Shm->Proc.Features.ExtFeature.EBX.BMI2)],
-		"  BMI1/BMI2 [%c/%c]",
-		Shm->Proc.Features.ExtFeature.EBX.BMI1 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.BMI2 ? 'Y' : 'N'),
-	" Bit Manipulation Instructions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.CLWB],
-		"         CLWB [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.CLWB ? 'Y' : 'N'),
-	" Cache Line Write Back ");
-
-    GridHover(
-	PRT(ISA, attrib[1][2 * (Shm->Proc.Features.Std.EDX.CLFLUSH
-			|  Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)
-			+ (Shm->Proc.Features.Std.EDX.CLFLUSH
-			<< Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT)],
-		" CLFLUSH/O [%c/%c] ",
-		Shm->Proc.Features.Std.EDX.CLFLUSH ? 'Y' : 'N',
-		Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ? 'Y' : 'N'),
-	" Flush Cache Line / CLFLUSH Optimized ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC],
-		" CLAC-STAC    [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC ? 'Y' : 'N'),
-	" Clear AC - Set AC Flag in EFLAGS Register ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMOV],
-		"         CMOV [%c]",
-		Shm->Proc.Features.Std.EDX.CMOV ? 'Y' : 'N'),
-	" Conditional Move instructions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.CMPXCHG8],
-		"    CMPXCHG8B [%c]",
-		Shm->Proc.Features.Std.EDX.CMPXCHG8 ? 'Y' : 'N'),
-	" Compare and Exchange 8 Bytes ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.CMPXCHG16],
-		"  CMPXCHG16B [%c] ",
-		Shm->Proc.Features.Std.ECX.CMPXCHG16 ? 'Y' : 'N'),
-	" Compare and Exchange 16 Bytes ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.F16C],
-		" F16C         [%c]",
-		Shm->Proc.Features.Std.ECX.F16C ? 'Y' : 'N'),
-	" 16-bit floating-point conversion instructions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FPU],
-		"          FPU [%c]",
-		Shm->Proc.Features.Std.EDX.FPU ? 'Y' : 'N'),
-	" Floating Point Unit On-Chip ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.FXSR],
-		"         FXSR [%c]",
-		Shm->Proc.Features.Std.EDX.FXSR ? 'Y' : 'N'),
-	" FXSAVE and FXRSTOR instructions ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF],
-		"   LAHF-SAHF [%c] ",
-		Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF ? 'Y' : 'N'),
-	" Load-Store Status Flags into AH register ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.EDX.MMX
-			|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)
-			+ (Shm->Proc.Features.Std.EDX.MMX
-			<< Shm->Proc.Features.ExtInfo.EDX.MMX_Ext)],
-		" MMX/Ext    [%c/%c]",
-		Shm->Proc.Features.Std.EDX.MMX ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ? 'Y' : 'N'),
-	" MultiMedia eXtensions / Extended MMX ");
-
-    GridHover(
-	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.MONITOR
-			|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt)
-			+ (Shm->Proc.Features.Std.ECX.MONITOR
-			<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt)],
-		" MON/MWAITX [%c/%c]",
-		Shm->Proc.Features.Std.ECX.MONITOR ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.ECX.MWaitExt ? 'Y' : 'N'),
-	" Monitor Wait / MWAIT eXtensions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.MOVBE],
-		"        MOVBE [%c]",
-		Shm->Proc.Features.Std.ECX.MOVBE ? 'Y' : 'N'),
-	" Move Data After Swapping Bytes ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.PCLMULDQ],
-		"   PCLMULQDQ [%c] ",
-		Shm->Proc.Features.Std.ECX.PCLMULDQ ? 'Y' : 'N'),
-	" Carryless Multiplication Quadword ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.POPCNT],
-		" POPCNT       [%c]",
-		Shm->Proc.Features.Std.ECX.POPCNT ? 'Y' : 'N'),
-	" Count of Number of Bits Set to 1 ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.RDRAND],
-		"       RDRAND [%c]",
-		Shm->Proc.Features.Std.ECX.RDRAND ? 'Y' : 'N'),
-	" Read Random Number ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDSEED],
-		"       RDSEED [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.RDSEED ? 'Y' : 'N'),
-	" Read Random SEED ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtInfo.EDX.RDTSCP],
-		"      RDTSCP [%c] ",
-		Shm->Proc.Features.ExtInfo.EDX.RDTSCP ? 'Y' : 'N'),
-	" Read Time-Stamp Counter and Processor ID ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SEP],
-		" SEP          [%c]",
-		Shm->Proc.Features.Std.EDX.SEP ? 'Y' : 'N'),
-	" SYSENTER and SYSEXIT instructions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SHA],
-		"          SHA [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SHA ? 'Y' : 'N'),
-	" Secure Hash Algorithms extensions ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.EDX.SSE],
-		"          SSE [%c]",
-		Shm->Proc.Features.Std.EDX.SSE ? 'Y' : 'N'),
-	" Streaming SIMD Extensions ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.Std.EDX.SSE2],
-		"        SSE2 [%c] ",
-		Shm->Proc.Features.Std.EDX.SSE2 ? 'Y' : 'N'),
-	" Streaming SIMD Extensions 2 ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSE3],
-		" SSE3         [%c]",
-		Shm->Proc.Features.Std.ECX.SSE3 ? 'Y' : 'N'),
-	" Streaming SIMD Extensions 3 ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.Std.ECX.SSSE3],
-		"        SSSE3 [%c]",
-		Shm->Proc.Features.Std.ECX.SSSE3 ? 'Y' : 'N'),
-	" Supplemental Streaming SIMD Extensions 3 ");
-
-    GridHover(
-	PRT(ISA, attrib[0][2 * (Shm->Proc.Features.Std.ECX.SSE41
-			|  Shm->Proc.Features.ExtInfo.ECX.SSE4A)
-			+ (Shm->Proc.Features.Std.ECX.SSE41
-			<< Shm->Proc.Features.ExtInfo.ECX.SSE4A)],
-		"  SSE4.1/4A [%c/%c]",
-		Shm->Proc.Features.Std.ECX.SSE41 ? 'Y' : 'N',
-		Shm->Proc.Features.ExtInfo.ECX.SSE4A ? 'Y' : 'N'),
-	" Streaming SIMD Extensions 4.1 / AMD SSE 4A ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.Std.ECX.SSE42],
-		"      SSE4.2 [%c] ",
-		Shm->Proc.Features.Std.ECX.SSE42 ? 'Y' : 'N'),
-	" Streaming SIMD Extensions 4.2 ");
-/* Row Mark */
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EDX.SERIALIZE],
-		" SERIALIZE    [%c]",
-		Shm->Proc.Features.ExtFeature.EDX.SERIALIZE ? 'Y' : 'N'),
-	" Serialize instruction ");
-
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtInfo.EDX.SYSCALL],
-		"      SYSCALL [%c]",
-		Shm->Proc.Features.ExtInfo.EDX.SYSCALL ? 'Y' : 'N'),
-	" Fast System Call and SYSRET - Return From SYSCALL ");
-
-    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	const struct ISA_ST {
+		unsigned int	*CRC;
+		const char	*item, *comm;
+		unsigned short	thm[2];
+		unsigned short	*cond;
+	} ISA[] = \
     {
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.RDPID],
-		"        RDPID [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.RDPID ? 'Y' : 'N'),
-	" Read Processor ID ");
+/* Row Mark */
+	{
+		NULL,
+		" 3DNow!/Ext [%c/%c]",
+		" AMD 3DNow! SIMD instructions / 3DNow! Extensions ",
+		{
+		0,
+		2 * ( Shm->Proc.Features.ExtInfo.EDX._3DNow
+			|  Shm->Proc.Features.ExtInfo.EDX._3DNowEx )
+		+ ( Shm->Proc.Features.ExtInfo.EDX._3DNow
+			<< Shm->Proc.Features.ExtInfo.EDX._3DNowEx )
+		},
+		(unsigned short[])
+		{
+		Shm->Proc.Features.ExtInfo.EDX._3DNow,
+		Shm->Proc.Features.ExtInfo.EDX._3DNowEx
+		}
+	},
+	{
+		NULL,
+		"          ADX [%c]", " Multi-Precision Add-Carry ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.ADX },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.ADX }
+	},
+	{
+		NULL,
+		"          AES [%c]", " Advanced Encryption Standard ",
+		{ 0, Shm->Proc.Features.Std.ECX.AES },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.AES },
+	},
+	{
+		NULL,
+		"  AVX/AVX2 [%c/%c] ", " Advanced Vector Extensions ",
+		{
+		1,
+		2 * ( Shm->Proc.Features.Std.ECX.AVX
+			|  Shm->Proc.Features.ExtFeature.EBX.AVX2 )
+		+ ( Shm->Proc.Features.Std.ECX.AVX
+			<< Shm->Proc.Features.ExtFeature.EBX.AVX2 )
+		},
+		(unsigned short[])
+		{
+		Shm->Proc.Features.Std.ECX.AVX,
+		Shm->Proc.Features.ExtFeature.EBX.AVX2
+		}
+	},
+/* Row Mark */
+	{
+		NULL,
+		" AVX512-F     [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX_512F },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX_512F },
+	},
+	{
+		NULL,
+		"    AVX512-DQ [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ },
+	},
+	{
+		NULL,
+		"  AVX512-IFMA [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA },
+	},
+	{
+		NULL,
+		"   AVX512-PF [%c] ", NULL,
+		{ 1, Shm->Proc.Features.ExtFeature.EBX.AVX512PF },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512PF },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" AVX512-ER    [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512ER },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512ER },
+	},
+	{
+		NULL,
+		"    AVX512-CD [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512CD },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512CD },
+	},
+	{
+		NULL,
+		"    AVX512-BW [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512BW },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512BW },
+	},
+	{
+		NULL,
+		"   AVX512-VL [%c] ", NULL,
+		{ 1, Shm->Proc.Features.ExtFeature.EBX.AVX512VL },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.AVX512VL },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" AVX512-VBMI  [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI },
+	},
+	{
+		NULL,
+		" AVX512-VBMI2 [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 },
+	},
+	{
+		NULL,
+		"  AVX512-VNMI [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI },
+	},
+	{
+		NULL,
+		"  AVX512-ALG [%c] ", NULL,
+		{ 1, Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" AVX512-VPOP  [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ },
+	},
+	{
+		NULL,
+		" AVX512-VNNIW [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
+	},
+	{
+		NULL,
+		" AVX512-FMAPS [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS },
+	},
+	{
+		NULL,
+		" AVX512-VP2I [%c] ", NULL,
+		{ 1, Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" AVX512-BF16  [%c]", NULL,
+		{ 0, Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
+	},
+	{
+		NULL,
+		"  BMI1/BMI2 [%c/%c]", " Bit Manipulation Instructions ",
+		{ 0, 2 * ( Shm->Proc.Features.ExtFeature.EBX.BMI1
+				|  Shm->Proc.Features.ExtFeature.EBX.BMI2 )
+			+ ( Shm->Proc.Features.ExtFeature.EBX.BMI1
+				<< Shm->Proc.Features.ExtFeature.EBX.BMI2) },
+		(unsigned short[])
+		{
+		Shm->Proc.Features.ExtFeature.EBX.BMI1,
+		Shm->Proc.Features.ExtFeature.EBX.BMI2
+		},
+	},
+	{
+		NULL,
+		"         CLWB [%c]", " Cache Line Write Back ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.CLWB },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.CLWB },
+	},
+	{
+		NULL,
+		" CLFLUSH/O [%c/%c] ", " Flush Cache Line / CLFLUSH Optimized ",
+		{ 1, 2 * ( Shm->Proc.Features.Std.EDX.CLFLUSH
+			|  Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT )
+			+ ( Shm->Proc.Features.Std.EDX.CLFLUSH
+			<< Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT ) },
+		(unsigned short[])
+		{
+		Shm->Proc.Features.Std.EDX.CLFLUSH,
+		Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT
+		},
+	},
+/* Row Mark */
+	{
+		NULL,
+		" CLAC-STAC    [%c]",
+		" Clear AC - Set AC Flag in EFLAGS Register ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC },
+	},
+	{
+		NULL,
+		"         CMOV [%c]", " Conditional Move instructions ",
+		{ 0, Shm->Proc.Features.Std.EDX.CMOV },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.CMOV },
+	},
+	{
+		NULL,
+		"    CMPXCHG8B [%c]", " Compare and Exchange 8 Bytes ",
+		{ 0, Shm->Proc.Features.Std.EDX.CMPXCHG8 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.CMPXCHG8 },
+	},
+	{
+		NULL,
+		"  CMPXCHG16B [%c] ", " Compare and Exchange 16 Bytes ",
+		{ 1, Shm->Proc.Features.Std.ECX.CMPXCHG16 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.CMPXCHG16 },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" F16C         [%c]",
+		" 16-bit floating-point conversion instructions ",
+		{ 0, Shm->Proc.Features.Std.ECX.F16C },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.F16C },
+	},
+	{
+		NULL,
+		"          FPU [%c]", " Floating Point Unit On-Chip ",
+		{ 0, Shm->Proc.Features.Std.EDX.FPU },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.FPU },
+	},
+	{
+		NULL,
+		"         FXSR [%c]", " FXSAVE and FXRSTOR instructions ",
+		{ 0, Shm->Proc.Features.Std.EDX.FXSR },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.FXSR },
+	},
+	{
+		NULL,
+		"   LAHF-SAHF [%c] ",
+		" Load-Store Status Flags into AH register ",
+		{ 1, Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" MMX/Ext    [%c/%c]", " MultiMedia eXtensions / Extended MMX ",
+		{ 0, 2 * ( Shm->Proc.Features.Std.EDX.MMX
+				|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext )
+			+ ( Shm->Proc.Features.Std.EDX.MMX
+				<< Shm->Proc.Features.ExtInfo.EDX.MMX_Ext ) },
+		(unsigned short[])
+		{
+		Shm->Proc.Features.Std.EDX.MMX,
+		Shm->Proc.Features.ExtInfo.EDX.MMX_Ext
+		},
+	},
+	{
+		NULL,
+		" MON/MWAITX [%c/%c]", " Monitor Wait / MWAIT eXtensions ",
+		{ 0, 2 * ( Shm->Proc.Features.Std.ECX.MONITOR
+				|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt )
+			+ ( Shm->Proc.Features.Std.ECX.MONITOR
+				<< Shm->Proc.Features.ExtInfo.ECX.MWaitExt ) },
+		(unsigned short[])
+		{
+		Shm->Proc.Features.Std.ECX.MONITOR,
+		Shm->Proc.Features.ExtInfo.ECX.MWaitExt
+		},
+	},
+	{
+		NULL,
+		"        MOVBE [%c]", " Move Data After Swapping Bytes ",
+		{ 0, Shm->Proc.Features.Std.ECX.MOVBE },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.MOVBE },
+	},
+	{
+		NULL,
+		"   PCLMULQDQ [%c] ", " Carryless Multiplication Quadword ",
+		{ 1, Shm->Proc.Features.Std.ECX.PCLMULDQ },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.PCLMULDQ },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" POPCNT       [%c]", " Count of Number of Bits Set to 1 ",
+		{ 0, Shm->Proc.Features.Std.ECX.POPCNT },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.POPCNT },
+	},
+	{
+		NULL,
+		"       RDRAND [%c]", " Read Random Number ",
+		{ 0, Shm->Proc.Features.Std.ECX.RDRAND },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.RDRAND },
+	},
+	{
+		NULL,
+		"       RDSEED [%c]", " Read Random SEED ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.RDSEED },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.RDSEED },
+	},
+	{
+		NULL,
+		"      RDTSCP [%c] ",
+		" Read Time-Stamp Counter and Processor ID ",
+		{ 1, Shm->Proc.Features.ExtInfo.EDX.RDTSCP },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtInfo.EDX.RDTSCP },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" SEP          [%c]", " SYSENTER and SYSEXIT instructions ",
+		{ 0, Shm->Proc.Features.Std.EDX.SEP },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.SEP },
+	},
+	{
+		NULL,
+		"          SHA [%c]", " Secure Hash Algorithms extensions ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.SHA },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.SHA },
+	},
+	{
+		NULL,
+		"          SSE [%c]", " Streaming SIMD Extensions ",
+		{ 0, Shm->Proc.Features.Std.EDX.SSE },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.SSE },
+	},
+	{
+		NULL,
+		"        SSE2 [%c] ", " Streaming SIMD Extensions 2 ",
+		{ 1, Shm->Proc.Features.Std.EDX.SSE2 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.EDX.SSE2 },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" SSE3         [%c]", " Streaming SIMD Extensions 3 ",
+		{ 0, Shm->Proc.Features.Std.ECX.SSE3 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.SSE3 },
+	},
+	{
+		NULL,
+		"        SSSE3 [%c]",
+		" Supplemental Streaming SIMD Extensions 3 ",
+		{ 0, Shm->Proc.Features.Std.ECX.SSSE3 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.SSSE3 },
+	},
+	{
+		NULL,
+		"  SSE4.1/4A [%c/%c]",
+		" Streaming SIMD Extensions 4.1 / AMD SSE 4A ",
+		{ 0, 2 * ( Shm->Proc.Features.Std.ECX.SSE41
+				|  Shm->Proc.Features.ExtInfo.ECX.SSE4A )
+			+ ( Shm->Proc.Features.Std.ECX.SSE41
+				<< Shm->Proc.Features.ExtInfo.ECX.SSE4A ) },
+		(unsigned short[])
+		{
+		Shm->Proc.Features.Std.ECX.SSE41,
+		Shm->Proc.Features.ExtInfo.ECX.SSE4A
+		},
+	},
+	{
+		NULL,
+		"      SSE4.2 [%c] ", " Streaming SIMD Extensions 4.2 ",
+		{ 1, Shm->Proc.Features.Std.ECX.SSE42 },
+		(unsigned short[])
+		{ Shm->Proc.Features.Std.ECX.SSE42 },
+	},
+/* Row Mark */
+	{
+		NULL,
+		" SERIALIZE    [%c]", " Serialize instruction ",
+		{ 0, Shm->Proc.Features.ExtFeature.EDX.SERIALIZE },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EDX.SERIALIZE },
+	},
+	{
+		NULL,
+		"      SYSCALL [%c]",
+		" Fast System Call and SYSRET - Return From SYSCALL ",
+		{ 0, Shm->Proc.Features.ExtInfo.EDX.SYSCALL },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtInfo.EDX.SYSCALL },
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		"        RDPID [%c]", " Read Processor ID ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.RDPID },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.RDPID },
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		"        UMIP [%c] ", " User Mode Instruction Prevention ",
+		{ 1, Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		"          SGX [%c]", " Intel Software Guard eXtensions ",
+		{ 0, Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		"       RDPID [%c] ", " Read Processor ID ",
+		{ 1, Shm->Proc.Features.ExtFeature.ECX.RDPID },
+		(unsigned short[])
+		{ Shm->Proc.Features.ExtFeature.ECX.RDPID },
+	}
+    };
 
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
-		"        UMIP [%c] ",
-		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N'),
-	" User Mode Instruction Prevention ");
+	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
+
+	size_t idx;
+    for (idx = 0; idx < sizeof(ISA) / sizeof(struct ISA_ST); idx++)
+    {
+	unsigned short capable = 0;
+	if (ISA[idx].CRC == NULL) {
+		capable = 1;
+	} else {
+		unsigned int *CRC;
+	    for (CRC = ISA[idx].CRC; (*CRC) != 0 && capable == 0; CRC++)
+	    {
+		if ( (*CRC) == Shm->Proc.Features.Info.Vendor.CRC ) {
+			capable = 1;
+		}
+	    }
+	}
+	if (capable) {
+		GridHover(PRT(ISA, attrib[ ISA[idx].thm[0] ][ ISA[idx].thm[1] ],
+				ISA[idx].item,
+				ISA[idx].cond[0] ? 'Y' : 'N',
+				ISA[idx].cond[1] ? 'Y' : 'N' ),
+		ISA[idx].comm );
+	}
     }
-    else
-    {	/*	Fallback to Intel CPUID				*/
-    GridHover(
-	PRT(ISA, attrib[0][Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP],
-		"          SGX [%c]",
-		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP ? 'Y' : 'N'),
-	" Intel Software Guard eXtensions ");
-
-    GridHover(
-	PRT(ISA, attrib[1][Shm->Proc.Features.ExtFeature.ECX.RDPID],
-		"       RDPID [%c] ",
-		Shm->Proc.Features.ExtFeature.ECX.RDPID ? 'Y' : 'N'),
-	" Read Processor ID ");
-    }
-
 	return (reason);
 }
 
 REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[4] = {
+	ATTRIBUTE *attr_Feat[4] = {
 		RSC(SYSINFO_FEATURES_COND0).ATTR(),
 		RSC(SYSINFO_FEATURES_COND1).ATTR(),
 		RSC(SYSINFO_FEATURES_COND2).ATTR(),
@@ -1614,6 +1768,10 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(SYSINFO_FEATURES_COND0).ATTR(),
 		RSC(SYSINFO_FEATURES_COND1).ATTR(),
 		RSC(SYSINFO_FEATURES_COND4).ATTR()
+	};
+	const ASCII *powered[] = {
+		RSC(MISSING).CODE(),
+		RSC(PRESENT).CODE()
 	};
 	const ASCII *code_TSC[] = {
 		RSC(MISSING).CODE(),
@@ -1631,358 +1789,586 @@ REASON_CODE SysInfoFeatures(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(DISABLE).CODE(),
 		RSC(ENABLE).CODE()
 	};
-	unsigned int bix;
+	const struct FEAT_ST {
+		unsigned int		*CRC;
+		const unsigned short	cond;
+		ATTRIBUTE		**attrib;
+		const int		tab;
+		char			*item;
+		const ASCII		*code;
+		const CUINT		spaces;
+		const ASCII		**state;
+	} FEAT[] = \
+    {
 /* Section Mark */
-	bix = Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*s1GB-PAGES   [%7s]", RSC(FEATURES_1GB_PAGES).CODE(),
-		width - 24 - RSZ(FEATURES_1GB_PAGES), hSpace, POWERED(bix));
-
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-    {
-	bix = Shm->Proc.Features.AdvPower.EDX._100MHz == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
-		width - 26 - RSZ(FEATURES_100MHZ), hSpace, POWERED(bix));
-    }
-
-	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)		/* Intel */
-	   || (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1);	/* AMD   */
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
-		width - 19 - RSZ(FEATURES_ACPI), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.APIC == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sAPIC   [%7s]", RSC(FEATURES_APIC).CODE(),
-		width - 19 - RSZ(FEATURES_APIC), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sCMP Legacy   [%7s]", RSC(FEATURES_CORE_MP).CODE(),
-		width - 25 - RSZ(FEATURES_CORE_MP), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.CNXT_ID == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sCNXT-ID   [%7s]", RSC(FEATURES_CNXT_ID).CODE(),
-		width - 22 - RSZ(FEATURES_CNXT_ID), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.DCA == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDCA   [%7s]", RSC(FEATURES_DCA).CODE(),
-		width - 18 - RSZ(FEATURES_DCA), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.DE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDE   [%7s]", RSC(FEATURES_DE).CODE(),
-		width - 17 - RSZ(FEATURES_DE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.DS_PEBS == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDS, PEBS   [%7s]", RSC(FEATURES_DS_PEBS).CODE(),
-		width - 23 - RSZ(FEATURES_DS_PEBS), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.DS_CPL == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDS-CPL   [%7s]", RSC(FEATURES_DS_CPL).CODE(),
-		width - 21 - RSZ(FEATURES_DS_CPL), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.DTES64 == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDTES64   [%7s]", RSC(FEATURES_DTES_64).CODE(),
-		width - 21 - RSZ(FEATURES_DTES_64), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sFast-Strings   [%7s]", RSC(FEATURES_FAST_STR).CODE(),
-		width - 27 - RSZ(FEATURES_FAST_STR), hSpace, POWERED(bix));
-
-	bix = (Shm->Proc.Features.Std.ECX.FMA == 1)
-	   || (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1);
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sFMA | FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
-		width - 25 - RSZ(FEATURES_FMA), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.HLE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sHLE   [%7s]", RSC(FEATURES_HLE).CODE(),
-		width - 18 - RSZ(FEATURES_HLE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtInfo.ECX.IBS == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIBS   [%7s]", RSC(FEATURES_IBS).CODE(),
-		width - 18 - RSZ(FEATURES_IBS), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtInfo.EDX.IA64 == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),
-		width - 24 - RSZ(FEATURES_LM), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtInfo.ECX.LWP == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sLWP   [%7s]", RSC(FEATURES_LWP).CODE(),
-		width - 18 - RSZ(FEATURES_LWP), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.MCA == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
-		width - 18 - RSZ(FEATURES_MCA), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.MPX == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMPX   [%7s]", RSC(FEATURES_MPX).CODE(),
-		width - 18 - RSZ(FEATURES_MPX), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.MSR == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMSR   [%7s]", RSC(FEATURES_MSR).CODE(),
-		width - 18 - RSZ(FEATURES_MSR), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.MTRR == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMTRR   [%7s]", RSC(FEATURES_MTRR).CODE(),
-		width - 19 - RSZ(FEATURES_MTRR), hSpace, POWERED(bix));
-
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-    {
-	bix = Shm->Proc.Features.ExtInfo.EDX.NX == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
-		width - 17 - RSZ(FEATURES_NX), hSpace, POWERED(bix));
-    }
-
-	bix = Shm->Proc.Features.Std.ECX.OSXSAVE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sOSXSAVE   [%7s]", RSC(FEATURES_OSXSAVE).CODE(),
-		width - 22 - RSZ(FEATURES_OSXSAVE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PAE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPAE   [%7s]", RSC(FEATURES_PAE).CODE(),
-		width - 18 - RSZ(FEATURES_PAE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PAT == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPAT   [%7s]", RSC(FEATURES_PAT).CODE(),
-		width - 18 - RSZ(FEATURES_PAT), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PBE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPBE   [%7s]", RSC(FEATURES_PBE).CODE(),
-		width - 18 - RSZ(FEATURES_PBE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.PCID == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPCID   [%7s]", RSC(FEATURES_PCID).CODE(),
-		width - 19 - RSZ(FEATURES_PCID), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.PDCM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPDCM   [%7s]", RSC(FEATURES_PDCM).CODE(),
-		width - 19 - RSZ(FEATURES_PDCM), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PGE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPGE   [%7s]", RSC(FEATURES_PGE).CODE(),
-		width - 18 - RSZ(FEATURES_PGE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PSE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPSE   [%7s]", RSC(FEATURES_PSE).CODE(),
-		width - 18 - RSZ(FEATURES_PSE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PSE36 == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPSE36   [%7s]", RSC(FEATURES_PSE36).CODE(),
-		width - 20 - RSZ(FEATURES_PSE36), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.PSN == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPSN   [%7s]", RSC(FEATURES_PSN).CODE(),
-		width - 18 - RSZ(FEATURES_PSN), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.PQE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sRDT-A   [%7s]", RSC(FEATURES_RDT_PQE).CODE(),
-		width - 20 - RSZ(FEATURES_RDT_PQE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.PQM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sRDT-M   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
-		width - 20 - RSZ(FEATURES_RDT_PQM), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.RTM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sRTM   [%7s]", RSC(FEATURES_RTM).CODE(),
-		width - 18 - RSZ(FEATURES_RTM), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.SMX == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMX   [%7s]", RSC(FEATURES_SMX).CODE(),
-		width - 18 - RSZ(FEATURES_SMX), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.SS == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
-		width - 17 - RSZ(FEATURES_SELF_SNOOP), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMAP   [%7s]", RSC(FEATURES_SMAP).CODE(),
-		width - 19 - RSZ(FEATURES_SMAP), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EBX.SMEP == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMEP   [%7s]", RSC(FEATURES_SMEP).CODE(),
-		width - 19 - RSZ(FEATURES_SMEP), hSpace, POWERED(bix));
-
-	PUT(SCANKEY_NULL, attr_TSC[Shm->Proc.Features.InvariantTSC],
-		width, 2,
-		"%s%.*sTSC [%9s]", RSC(FEATURES_TSC).CODE(),
-		width - 18 - RSZ(FEATURES_TSC), hSpace,
-		code_TSC[Shm->Proc.Features.InvariantTSC]);
-
-	bix = Shm->Proc.Features.Std.ECX.TSCDEAD == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTSC-DEADLINE   [%7s]", RSC(FEATURES_TSC_DEADLN).CODE(),
-		width - 27 - RSZ(FEATURES_TSC_DEADLN), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EDX.TSX_FORCE_ABORT == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTSX-ABORT   [%7s]", RSC(FEATURES_TSXABORT).CODE(),
-		width - 24 - RSZ(FEATURES_TSXABORT), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.ExtFeature.EDX.TSXLDTRK == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTSX-LDTRK   [%7s]", RSC(FEATURES_TSXLDTRK).CODE(),
-		width - 24 - RSZ(FEATURES_TSXLDTRK), hSpace, POWERED(bix));
-
-	bix = ( (Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP == 1)
-		&& (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD
-		 || Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-	  || (	(Shm->Proc.Features.ExtFeature.ECX.UMIP == 1)
-		&& (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) );
-
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
-		width - 19 - RSZ(FEATURES_UMIP), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.EDX.VME == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sVME   [%7s]", RSC(FEATURES_VME).CODE(),
-		width - 18 - RSZ(FEATURES_VME), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.VMX == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sVMX   [%7s]", RSC(FEATURES_VMX).CODE(),
-		width - 18 - RSZ(FEATURES_VMX), hSpace, POWERED(bix));
-
-	bix = Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC > 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sx2APIC   [%7s]", RSC(FEATURES_X2APIC).CODE(),
-		width - 21 - RSZ(FEATURES_X2APIC), hSpace,
-		x2APIC[Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC]);
-
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
-	bix = Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sXD-Bit   [%7s]", RSC(FEATURES_XD_BIT).CODE(),
-		width - 21 - RSZ(FEATURES_XD_BIT), hSpace, POWERED(bix));
-    }
-
-	bix = Shm->Proc.Features.Std.ECX.XSAVE == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sXSAVE   [%7s]", RSC(FEATURES_XSAVE).CODE(),
-		width - 20 - RSZ(FEATURES_XSAVE), hSpace, POWERED(bix));
-
-	bix = Shm->Proc.Features.Std.ECX.xTPR == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
-		width - 19 - RSZ(FEATURES_XTPR), hSpace, POWERED(bix));
+	{
+		NULL,
+		Shm->Proc.Features.ExtInfo.EDX.PG_1GB == 1,
+		attr_Feat,
+		2, "%s%.*s1GB-PAGES   [%7s]", RSC(FEATURES_1GB_PAGES).CODE(),
+		width - 24 - RSZ(FEATURES_1GB_PAGES),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.AdvPower.EDX._100MHz == 1,
+		attr_Feat,
+		2, "%s%.*s100MHzSteps   [%7s]", RSC(FEATURES_100MHZ).CODE(),
+		width - 26 - RSZ(FEATURES_100MHZ),
+		NULL
+	},
+	{
+		NULL,
+		(Shm->Proc.Features.Std.EDX.ACPI == 1)
+		|| (Shm->Proc.Features.AdvPower.EDX.HwPstate == 1),
+		attr_Feat,
+		2, "%s%.*sACPI   [%7s]", RSC(FEATURES_ACPI).CODE(),
+		width - 19 - RSZ(FEATURES_ACPI),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.APIC == 1,
+		attr_Feat,
+		2, "%s%.*sAPIC   [%7s]", RSC(FEATURES_APIC).CODE(),
+		width - 19 - RSZ(FEATURES_APIC),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtInfo.ECX.MP_Mode == 1,
+		attr_Feat,
+		2, "%s%.*sCMP Legacy   [%7s]", RSC(FEATURES_CORE_MP).CODE(),
+		width - 25 - RSZ(FEATURES_CORE_MP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.CNXT_ID == 1,
+		attr_Feat,
+		2, "%s%.*sCNXT-ID   [%7s]", RSC(FEATURES_CNXT_ID).CODE(),
+		width - 22 - RSZ(FEATURES_CNXT_ID),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.DCA == 1,
+		attr_Feat,
+		2, "%s%.*sDCA   [%7s]", RSC(FEATURES_DCA).CODE(),
+		width - 18 - RSZ(FEATURES_DCA),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.DE == 1,
+		attr_Feat,
+		2, "%s%.*sDE   [%7s]", RSC(FEATURES_DE).CODE(),
+		width - 17 - RSZ(FEATURES_DE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.DS_PEBS == 1,
+		attr_Feat,
+		2, "%s%.*sDS, PEBS   [%7s]", RSC(FEATURES_DS_PEBS).CODE(),
+		width - 23 - RSZ(FEATURES_DS_PEBS),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.DS_CPL == 1,
+		attr_Feat,
+		2, "%s%.*sDS-CPL   [%7s]", RSC(FEATURES_DS_CPL).CODE(),
+		width - 21 - RSZ(FEATURES_DS_CPL),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.DTES64 == 1,
+		attr_Feat,
+		2, "%s%.*sDTES64   [%7s]", RSC(FEATURES_DTES_64).CODE(),
+		width - 21 - RSZ(FEATURES_DTES_64),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.FastStrings == 1,
+		attr_Feat,
+		2, "%s%.*sFast-Strings   [%7s]", RSC(FEATURES_FAST_STR).CODE(),
+		width - 27 - RSZ(FEATURES_FAST_STR),
+		NULL
+	},
+	{
+		NULL,
+		(Shm->Proc.Features.Std.ECX.FMA == 1)
+		|| (Shm->Proc.Features.ExtInfo.ECX.FMA4 == 1),
+		attr_Feat,
+		2, "%s%.*sFMA | FMA4   [%7s]", RSC(FEATURES_FMA).CODE(),
+		width - 25 - RSZ(FEATURES_FMA),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.HLE == 1,
+		attr_Feat,
+		2, "%s%.*sHLE   [%7s]", RSC(FEATURES_HLE).CODE(),
+		width - 18 - RSZ(FEATURES_HLE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtInfo.ECX.IBS == 1,
+		attr_Feat,
+		2, "%s%.*sIBS   [%7s]", RSC(FEATURES_IBS).CODE(),
+		width - 18 - RSZ(FEATURES_IBS),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtInfo.EDX.IA64 == 1,
+		attr_Feat,
+		2, "%s%.*sIA64 | LM   [%7s]", RSC(FEATURES_LM).CODE(),
+		width - 24 - RSZ(FEATURES_LM),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtInfo.ECX.LWP == 1,
+		attr_Feat,
+		2, "%s%.*sLWP   [%7s]", RSC(FEATURES_LWP).CODE(),
+		width - 18 - RSZ(FEATURES_LWP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.MCA == 1,
+		attr_Feat,
+		2, "%s%.*sMCA   [%7s]", RSC(FEATURES_MCA).CODE(),
+		width - 18 - RSZ(FEATURES_MCA),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.MPX == 1,
+		attr_Feat,
+		2, "%s%.*sMPX   [%7s]", RSC(FEATURES_MPX).CODE(),
+		width - 18 - RSZ(FEATURES_MPX),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.MSR == 1,
+		attr_Feat,
+		2, "%s%.*sMSR   [%7s]", RSC(FEATURES_MSR).CODE(),
+		width - 18 - RSZ(FEATURES_MSR),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.MTRR == 1,
+		attr_Feat,
+		2, "%s%.*sMTRR   [%7s]", RSC(FEATURES_MTRR).CODE(),
+		width - 19 - RSZ(FEATURES_MTRR),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.ExtInfo.EDX.NX == 1,
+		attr_Feat,
+		2, "%s%.*sNX   [%7s]", RSC(FEATURES_NX).CODE(),
+		width - 17 - RSZ(FEATURES_NX),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.OSXSAVE == 1,
+		attr_Feat,
+		2, "%s%.*sOSXSAVE   [%7s]", RSC(FEATURES_OSXSAVE).CODE(),
+		width - 22 - RSZ(FEATURES_OSXSAVE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PAE == 1,
+		attr_Feat,
+		2, "%s%.*sPAE   [%7s]", RSC(FEATURES_PAE).CODE(),
+		width - 18 - RSZ(FEATURES_PAE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PAT == 1,
+		attr_Feat,
+		2, "%s%.*sPAT   [%7s]", RSC(FEATURES_PAT).CODE(),
+		width - 18 - RSZ(FEATURES_PAT),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PBE == 1,
+		attr_Feat,
+		2, "%s%.*sPBE   [%7s]", RSC(FEATURES_PBE).CODE(),
+		width - 18 - RSZ(FEATURES_PBE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.PCID == 1,
+		attr_Feat,
+		2, "%s%.*sPCID   [%7s]", RSC(FEATURES_PCID).CODE(),
+		width - 19 - RSZ(FEATURES_PCID),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.PDCM == 1,
+		attr_Feat,
+		2, "%s%.*sPDCM   [%7s]", RSC(FEATURES_PDCM).CODE(),
+		width - 19 - RSZ(FEATURES_PDCM),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PGE == 1,
+		attr_Feat,
+		2, "%s%.*sPGE   [%7s]", RSC(FEATURES_PGE).CODE(),
+		width - 18 - RSZ(FEATURES_PGE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PSE == 1,
+		attr_Feat,
+		2, "%s%.*sPSE   [%7s]", RSC(FEATURES_PSE).CODE(),
+		width - 18 - RSZ(FEATURES_PSE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PSE36 == 1,
+		attr_Feat,
+		2, "%s%.*sPSE36   [%7s]", RSC(FEATURES_PSE36).CODE(),
+		width - 20 - RSZ(FEATURES_PSE36),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.PSN == 1,
+		attr_Feat,
+		2, "%s%.*sPSN   [%7s]", RSC(FEATURES_PSN).CODE(),
+		width - 18 - RSZ(FEATURES_PSN),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.PQE == 1,
+		attr_Feat,
+		2, "%s%.*sRDT-A   [%7s]", RSC(FEATURES_RDT_PQE).CODE(),
+		width - 20 - RSZ(FEATURES_RDT_PQE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.PQM == 1,
+		attr_Feat,
+		2, "%s%.*sRDT-M   [%7s]", RSC(FEATURES_RDT_PQM).CODE(),
+		width - 20 - RSZ(FEATURES_RDT_PQM),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.RTM == 1,
+		attr_Feat,
+		2, "%s%.*sRTM   [%7s]", RSC(FEATURES_RTM).CODE(),
+		width - 18 - RSZ(FEATURES_RTM),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.SMX == 1,
+		attr_Feat,
+		2, "%s%.*sSMX   [%7s]", RSC(FEATURES_SMX).CODE(),
+		width - 18 - RSZ(FEATURES_SMX),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.SS == 1,
+		attr_Feat,
+		2, "%s%.*sSS   [%7s]", RSC(FEATURES_SELF_SNOOP).CODE(),
+		width - 17 - RSZ(FEATURES_SELF_SNOOP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC == 1,
+		attr_Feat,
+		2, "%s%.*sSMAP   [%7s]", RSC(FEATURES_SMAP).CODE(),
+		width - 19 - RSZ(FEATURES_SMAP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EBX.SMEP == 1,
+		attr_Feat,
+		2, "%s%.*sSMEP   [%7s]", RSC(FEATURES_SMEP).CODE(),
+		width - 19 - RSZ(FEATURES_SMEP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.InvariantTSC,
+		attr_TSC,
+		2, "%s%.*sTSC [%9s]", RSC(FEATURES_TSC).CODE(),
+		width - 18 - RSZ(FEATURES_TSC),
+		code_TSC
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.TSCDEAD == 1,
+		attr_Feat,
+		2, "%s%.*sTSC-DEADLINE   [%7s]",RSC(FEATURES_TSC_DEADLN).CODE(),
+		width - 27 - RSZ(FEATURES_TSC_DEADLN),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EDX.TSX_FORCE_ABORT == 1,
+		attr_Feat,
+		2, "%s%.*sTSX-ABORT   [%7s]", RSC(FEATURES_TSXABORT).CODE(),
+		width - 24 - RSZ(FEATURES_TSXABORT),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.ExtFeature.EDX.TSXLDTRK == 1,
+		attr_Feat,
+		2, "%s%.*sTSX-LDTRK   [%7s]", RSC(FEATURES_TSXLDTRK).CODE(),
+		width - 24 - RSZ(FEATURES_TSXLDTRK),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP == 1,
+		attr_Feat,
+		2, "%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
+		width - 19 - RSZ(FEATURES_UMIP),
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.ExtFeature.ECX.UMIP == 1,
+		attr_Feat,
+		2, "%s%.*sUMIP   [%7s]", RSC(FEATURES_UMIP).CODE(),
+		width - 19 - RSZ(FEATURES_UMIP),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.EDX.VME == 1,
+		attr_Feat,
+		2, "%s%.*sVME   [%7s]", RSC(FEATURES_VME).CODE(),
+		width - 18 - RSZ(FEATURES_VME),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.VMX == 1,
+		attr_Feat,
+		2, "%s%.*sVMX   [%7s]", RSC(FEATURES_VMX).CODE(),
+		width - 18 - RSZ(FEATURES_VMX),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Cpu[Shm->Proc.Service.Core].Topology.MP.x2APIC,
+		attr_Feat,
+		2, "%s%.*sx2APIC   [%7s]", RSC(FEATURES_X2APIC).CODE(),
+		width - 21 - RSZ(FEATURES_X2APIC),
+		x2APIC
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0},
+		Shm->Proc.Features.ExtInfo.EDX.XD_Bit == 1,
+		attr_Feat,
+		2, "%s%.*sXD-Bit   [%7s]", RSC(FEATURES_XD_BIT).CODE(),
+		width - 21 - RSZ(FEATURES_XD_BIT),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.XSAVE == 1,
+		attr_Feat,
+		2, "%s%.*sXSAVE   [%7s]", RSC(FEATURES_XSAVE).CODE(),
+		width - 20 - RSZ(FEATURES_XSAVE),
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.xTPR == 1,
+		attr_Feat,
+		2, "%s%.*sxTPR   [%7s]", RSC(FEATURES_XTPR).CODE(),
+		width - 19 - RSZ(FEATURES_XTPR),
+		NULL
+	},
 /* Section Mark */
-	PUT(SCANKEY_NULL, attrib[0], width, 0,
-		"%s", RSC(FEAT_SECTION_MECH).CODE());
-
-	bix = Shm->Proc.Mechanisms.IBRS;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIBRS   [%7s]", RSC(MECH_IBRS).CODE(),
-		width - 19 - RSZ(MECH_IBRS), hSpace, MECH[bix]);
-
-	bix = (Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1)
-	   || (Shm->Proc.Features.leaf80000008.EBX.IBPB == 1);
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
-		width - 19 - RSZ(MECH_IBPB), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.STIBP;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSTIBP   [%7s]", RSC(MECH_STIBP).CODE(),
-		width - 20 - RSZ(MECH_STIBP), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.SSBD;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
-		width - 19 - RSZ(MECH_SSBD), hSpace, MECH[bix]);
-
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-    {
-	bix = Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
-		width - 24 - RSZ(MECH_L1D_FLUSH), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sL1DFL_VMENTRY_NO   [%7s]",
+	{
+		NULL,
+		0,
+		attr_Feat,
+		0, "%s", RSC(FEAT_SECTION_MECH).CODE(),
+		0,
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Mechanisms.IBRS,
+		attr_Feat,
+		2, "%s%.*sIBRS   [%7s]", RSC(MECH_IBRS).CODE(),
+		width - 19 - RSZ(MECH_IBRS),
+		MECH
+	},
+	{
+		NULL,
+		( Shm->Proc.Features.ExtFeature.EDX.IBRS_IBPB_Cap == 1 )
+		|| ( Shm->Proc.Features.leaf80000008.EBX.IBPB == 1 ),
+		attr_Feat,
+		2, "%s%.*sIBPB   [%7s]", RSC(MECH_IBPB).CODE(),
+		width - 19 - RSZ(MECH_IBPB),
+		MECH
+	},
+	{
+		NULL,
+		Shm->Proc.Mechanisms.STIBP,
+		attr_Feat,
+		2, "%s%.*sSTIBP   [%7s]", RSC(MECH_STIBP).CODE(),
+		width - 20 - RSZ(MECH_STIBP),
+		MECH
+	},
+	{
+		NULL,
+		Shm->Proc.Mechanisms.SSBD,
+		attr_Feat,
+		2, "%s%.*sSSBD   [%7s]", RSC(MECH_SSBD).CODE(),
+		width - 19 - RSZ(MECH_SSBD),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.ExtFeature.EDX.L1D_FLUSH_Cap == 1,
+		attr_Feat,
+		2, "%s%.*sL1D-FLUSH   [%7s]", RSC(MECH_L1D_FLUSH).CODE(),
+		width - 24 - RSZ(MECH_L1D_FLUSH),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.L1DFL_VMENTRY_NO,
+		attr_Feat,
+		2, "%s%.*sL1DFL_VMENTRY_NO   [%7s]",
 		RSC(MECH_L1DFL_VMENTRY_NO).CODE(),
-		width - 31 - RSZ(MECH_L1DFL_VMENTRY_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
-		width - 23 - RSZ(MECH_MD_CLEAR), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.RDCL_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sRDCL_NO   [%7s]", RSC(MECH_RDCL_NO).CODE(),
-		width - 22 - RSZ(MECH_RDCL_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.IBRS_ALL;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIBRS_ALL   [%7s]", RSC(MECH_IBRS_ALL).CODE(),
-		width - 23 - RSZ(MECH_IBRS_ALL), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.RSBA;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sRSBA   [%7s]", RSC(MECH_RSBA).CODE(),
-		width - 19 - RSZ(MECH_RSBA), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.SSB_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSSB_NO   [%7s]", RSC(MECH_SSB_NO).CODE(),
-		width - 21 - RSZ(MECH_SSB_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.MDS_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMDS_NO   [%7s]", RSC(MECH_MDS_NO).CODE(),
-		width - 21 - RSZ(MECH_MDS_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.TAA_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTAA_NO   [%7s]", RSC(MECH_TAA_NO).CODE(),
-		width - 21 - RSZ(MECH_TAA_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.PSCHANGE_MC_NO;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPSCHANGE_MC_NO   [%7s]",RSC(MECH_PSCHANGE_MC_NO).CODE(),
-		width - 29 - RSZ(MECH_PSCHANGE_MC_NO), hSpace, MECH[bix]);
-
-	bix = Shm->Proc.Mechanisms.SPLA;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
-		width - 19 - RSZ(MECH_SPLA), hSpace, MECH[bix]);
+		width - 31 - RSZ(MECH_L1DFL_VMENTRY_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.ExtFeature.EDX.MD_CLEAR_Cap == 1,
+		attr_Feat,
+		2, "%s%.*sMD-CLEAR   [%7s]", RSC(MECH_MD_CLEAR).CODE(),
+		width - 23 - RSZ(MECH_MD_CLEAR),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.RDCL_NO,
+		attr_Feat,
+		2, "%s%.*sRDCL_NO   [%7s]", RSC(MECH_RDCL_NO).CODE(),
+		width - 22 - RSZ(MECH_RDCL_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.IBRS_ALL,
+		attr_Feat,
+		2, "%s%.*sIBRS_ALL   [%7s]", RSC(MECH_IBRS_ALL).CODE(),
+		width - 23 - RSZ(MECH_IBRS_ALL),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.RSBA,
+		attr_Feat,
+		2, "%s%.*sRSBA   [%7s]", RSC(MECH_RSBA).CODE(),
+		width - 19 - RSZ(MECH_RSBA),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.SSB_NO,
+		attr_Feat,
+		2, "%s%.*sSSB_NO   [%7s]", RSC(MECH_SSB_NO).CODE(),
+		width - 21 - RSZ(MECH_SSB_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.MDS_NO,
+		attr_Feat,
+		2, "%s%.*sMDS_NO   [%7s]", RSC(MECH_MDS_NO).CODE(),
+		width - 21 - RSZ(MECH_MDS_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.TAA_NO,
+		attr_Feat,
+		2, "%s%.*sTAA_NO   [%7s]", RSC(MECH_TAA_NO).CODE(),
+		width - 21 - RSZ(MECH_TAA_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.PSCHANGE_MC_NO,
+		attr_Feat,
+		2, "%s%.*sPSCHANGE_MC_NO   [%7s]",
+		RSC(MECH_PSCHANGE_MC_NO).CODE(),
+		width - 29 - RSZ(MECH_PSCHANGE_MC_NO),
+		MECH
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Mechanisms.SPLA,
+		attr_Feat,
+		2, "%s%.*sSPLA   [%7s]", RSC(MECH_SPLA).CODE(),
+		width - 19 - RSZ(MECH_SPLA),
+		MECH
+	}
+    };
+	size_t idx;
+    for (idx = 0; idx < sizeof(FEAT) / sizeof(struct FEAT_ST); idx++)
+    {
+	unsigned short capable = 0;
+	if (FEAT[idx].CRC == NULL) {
+		capable = 1;
+	} else {
+		unsigned int *CRC;
+	    for (CRC = FEAT[idx].CRC; (*CRC) != 0 && capable == 0; CRC++)
+	    {
+		if ( (*CRC) == Shm->Proc.Features.Info.Vendor.CRC ) {
+			capable = 1;
+		}
+	    }
+	}
+	if (capable)
+	{
+		PUT(	SCANKEY_NULL,
+			FEAT[idx].attrib[ FEAT[idx].cond ],
+			width,	FEAT[idx].tab,
+			FEAT[idx].item, FEAT[idx].code,
+			FEAT[idx].spaces, hSpace,
+			(FEAT[idx].state == NULL) ? powered[ FEAT[idx].cond ]
+			: FEAT[idx].state[ FEAT[idx].cond ] );
+	}
     }
 	return (reason);
 }
