@@ -511,8 +511,7 @@ typedef struct
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
 			struct {
-				AMD_17_UMC_CFG_ECC	ECC;	/* 32 bits   */
-				AMD_17_UMC_CFG_DIMM	DIMM;	/* 32 bits   */
+				AMD_17_UMC_ECC_CAP_HI	ECC;	/* 32 bits   */
 			  struct {
 			    struct {
 				unsigned int value;

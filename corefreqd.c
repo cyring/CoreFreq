@@ -3775,7 +3775,7 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
-		Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.ECC_DIMM_Enable;
+			Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.GDM =
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;

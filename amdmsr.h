@@ -848,7 +848,7 @@ typedef union
 		X16_DIMMS	:  8-7,
 		ReservedBits2	: 32-8;
 	};
-} AMD_17_UMC_CFG_DIMM;
+} AMD_17_UMC_DIMM_CFG;
 
 typedef union
 {	/* SMU: address = 0x50100					*/
@@ -856,11 +856,54 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	: 30-0,
-		ECC_DIMM_Enable : 31-30,
-		ReservedBits2	: 32-31;
+		ReservedBits1	: 12-0,
+		ECC_Support	: 13-12,
+		ReservedBits2	: 32-13;
 	};
-} AMD_17_UMC_CFG_ECC;
+} AMD_17_UMC_CONFIG;
+
+typedef union
+{	/* SMU: address = 0x50104					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 31-0,
+		INIT		: 32-31;
+	};
+} AMD_17_UMC_SDP_CTRL;
+
+typedef union
+{	/* SMU: address = 0x5014c					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 32-0;
+	};
+} AMD_17_UMC_ECC_CTRL;
+
+typedef union
+{	/* SMU: address = 0x50df0					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 32-0;
+	};
+} AMD_17_UMC_ECC_CAP;
+
+typedef union
+{	/* SMU: address = 0x50df4					*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		ReservedBits	: 30-0,
+		Enable		: 31-30,
+		ChipKill	: 32-31;
+	};
+} AMD_17_UMC_ECC_CAP_HI;
 
 typedef union
 {	/* SMU: address = 0x50200					*/
@@ -876,17 +919,6 @@ typedef union
 		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_CFG_MISC;
-
-typedef union
-{
-	unsigned int		value;
-	struct
-	{
-		unsigned int
-		ReservedBits	: 31-0,
-		INIT		: 32-31;
-	};
-} AMD_17_UMC_SDP_CTRL;
 
 typedef union
 {	/* SMU: address = 0x50204					*/

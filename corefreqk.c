@@ -4138,12 +4138,7 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 	SDP_CTRL.value = 0;
 
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
-			(UMC_BAR[cha] + 0x80),
-			SMU_AMD_INDEX_REGISTER_F17H,
-			SMU_AMD_DATA_REGISTER_F17H );
-
-    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.DIMM,
-			(UMC_BAR[cha] + 0x100),
+			(UMC_BAR[cha] + 0xdf4),
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 
