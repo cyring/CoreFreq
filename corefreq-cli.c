@@ -4162,7 +4162,7 @@ void iSplit(unsigned int sInt, char hInt[]) {
 	memcpy((hInt + 8), (fInt + 5), 5); *(hInt + 8 + 5) = '\0';
 }
 
-const char *Header_DDRx[2][MC_MATX] = {
+const char *Header_DDR3[2][MC_MATX] = {
 	{
 		" Cha ",
 		"   CL", "  RCD", "   RP", "  RAS", "  RRD", "  RFC",
@@ -4174,6 +4174,43 @@ const char *Header_DDRx[2][MC_MATX] = {
 		" ddWR", " drWR", " srWR", " ddRW", " drRW", " srRW",
 		" ddRR", " drRR", " srRR", " ddWW", " drWW", " srWW",
 		" CKE ", "  ECC"
+	}
+};
+
+const char *Footer_DDR3[2][MC_MATX] = {
+	{
+		NULL,
+		" tCL ( CAS Latency ) ",
+		" tRCD ( Read RAS to CAS ) ",
+		" tRP ( RAS Precharge ) ",
+		" tRAS ( RAS Active Time ) ",
+		" tRRD ( RAS to RAS ) ",
+		" tRFC ( Refresh to Refresh ) ",
+		" tWR ( Write Recovery ) ",
+		NULL,
+		NULL,
+		" tFAW ( Four Activate Window ) ",
+		" B2B ( B2B CAS Delay ) ",
+		" tCWL ( CAS Write Latency ) ",
+		" CMD ( Command Rate ) ",
+		" tREFI ( Refresh Interval ) "
+	},
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		" tCKE ( ClocK Enable ) ",
+		" ECC ( Error Correcting Code ) "
 	}
 };
 
@@ -4197,6 +4234,60 @@ const char *Header_DDR4[3][MC_MATX] = {
 	}
 };
 
+const char *Footer_DDR4[3][MC_MATX] = {
+	{
+		NULL,
+		" tCL ( CAS Latency ) ",
+		" tRCD_R ( Read RAS to CAS ) ",
+		" tRCD_W ( Write RAS to CAS ) ",
+		" tRP ( RAS Precharge ) ",
+		" tRAS ( RAS Active Time ) ",
+		" tRC ( Row Cycle ) ",
+		" tRRD_S ( RAS to RAS, Different Bank Group ) ",
+		" tRRD_L ( RAS to RAS, Same Bank Group ) ",
+		" tFAW ( Four Activate Window ) ",
+		" tWTR_S ( Write to Read, Different Bank Group ) ",
+		" tWTR_L ( Write to Read, Same Bank Group ) ",
+		" tWR ( Write Recovery ) ",
+		" tRDRD[SCL] ( Read to Read, Same Bank Group ) ",
+		" tWRWR[SCL] ( Write to Write, Same Bank Group ) "
+	},
+	{
+		NULL,
+		" tCWL ( CAS Write Latency ) ",
+		" tRTP ( Read To Precharge ) ",
+		" tRDWR ( Read Write Command Spacing ) ",
+		" tWRRD ( Write Read Command Spacing ) ",
+		" tWRWR[SC] ( tWRWR, Different Bank Group ) ",
+		" tWRWR[SD] ( tWRWR, Different Rank) ",
+		" tWRWR[DD] ( tWRWR, Different DIMM ) ",
+		" tRDRD[SC] ( tRDRD, Different Bank Group ) ",
+		" tRDRD[SD] ( tRDRD, Different Rank ) ",
+		" tRDRD[DD] ( tRDRD, Different DIMM ) ",
+		" tRTR[DLR] ( tRTR, Different Logical Rank ) ",
+		" tWTW[DLR] ( tWTR, Different Logical Rank ) ",
+		" tWTR[DLR] ( tWTR, Different Logical Rank ) ",
+		" tRRD[DLR] ( tRRD, Different Logical Rank ) "
+	},
+	{
+		NULL,
+		" tREFI ( Refresh Interval ) ",
+		" tRFC ( Refresh to Refresh, 1X mode ) ",
+		" tRFC2 ( Refresh to Refresh, 2X mode ) ",
+		" tRFC4 ( Refresh to Refresh, 4X mode ) ",
+		" tRCPB ( Row Cycle Time, Per-Bank ) ",
+		" tRPPB ( Row Precharge Time, Per-Bank ) ",
+		" tFAW[SLR] ( tFAW, Same Logical Rank ) ",
+		" tFAW[DLR] ( tFAW, Different Logical Rank ) ",
+		" tBAN ( Timing Ban, RTR | WTW ) ",
+		" tRCPage ( Row Cycle Page Time ) ",
+		" tCKE ( ClocK Enable ) ",
+		" CMD ( Command Rate ) ",
+		" GDM ( Gear Down Mode ) ",
+		" ECC ( Error Correcting Code ) "
+	}
+};
+
 typedef void (*TIMING_FUNC)(Window*, CELL_FUNC, CUINT*, unsigned short);
 
 void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
@@ -4209,7 +4300,7 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	unsigned short cha;
 
   for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], Header_DDRx[0][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR3[0][nc]), Footer_DDR3[0][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4236,7 +4327,7 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], Header_DDRx[1][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR3[1][nc]), Footer_DDR3[1][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4276,7 +4367,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	unsigned short cha;
 
   for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], Header_DDR4[0][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[0][nc]), Footer_DDR4[0][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4304,7 +4395,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     }
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], Header_DDR4[1][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]),  Footer_DDR4[1][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4334,7 +4425,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     }
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], Header_DDR4[2][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[2][nc]), Footer_DDR4[2][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
