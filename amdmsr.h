@@ -843,7 +843,9 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	:  6-0,
+		ReservedBits1	:  4-0,
+		R_DDR4		:  5-4,
+		LR_DDR4 	:  6-5, /* DDR4 iff not LR_DDR4 and not R_DDR4*/
 		X4_DIMMS	:  7-6,
 		X16_DIMMS	:  8-7,
 		ReservedBits2	: 32-8;
@@ -879,7 +881,11 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits	: 32-0;
+		ReservedBits1	:  7-0,
+		X8_Syndromes	:  8-7, /* X4 iff not X8 and not X16	*/
+		ReservedBits2	:  9-8,
+		X16_Syndromes	: 10-9,
+		ReservedBits3	: 32-10;
 	};
 } AMD_17_UMC_ECC_CTRL;
 
