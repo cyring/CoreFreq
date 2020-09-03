@@ -4070,6 +4070,41 @@ void Topology_CCX(char *pStr, unsigned int cpu)
 			Shm->Cpu[cpu].Topology.ThreadID);
 }
 
+char *TopologyStrOFF[] = {
+	"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
+	"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
+	"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
+};
+
+char *TopologyFmtOFF[] = {
+	"%03u:\x20\x20-\x20\x20\x20\x20-\x20",
+	"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20"
+};
+
+char *TopologyHeader[TOPO_MATY] = {
+	"CPU Pkg  Apic",
+	"  Core/Thread",
+	"  Caches     ",
+	" (w)rite-Back",
+	" (i)nclusive ",
+	"             "
+};
+
+char *TopologySubHeader[TOPO_MATY] = {
+	" #   ID   ID ",
+	NULL,
+	" L1-Inst Way ",
+	" L1-Data Way ",
+	"     L2  Way ",
+	"     L3  Way "
+};
+
+char *TopologyAltSubHeader[] = {
+	"   ID     ID ",
+	" CMP ID    ID",
+	"CCD CCX ID/ID"
+};
+
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
 	ATTRIBUTE *attrib[3] = {
@@ -4077,12 +4112,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		RSC(TOPOLOGY_COND1).ATTR(),
 		RSC(TOPOLOGY_COND2).ATTR()
 	};
-	char	*strID = malloc(2 * ((4*11) + 1)),
-		*strOFF[] = {
-			"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
-			"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
-			"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
-		}, *pStrOFF = strOFF[0];
+	char	*strID = malloc(2 * ((4*11) + 1)), *pStrOFF = TopologyStrOFF[0];
 	unsigned int cpu = 0, level = 0;
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
@@ -4090,14 +4120,14 @@ void Topology(Window *win, CELL_FUNC OutFunc)
   {
 	void (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
 /* Row Mark */
-	PRT(MAP, attrib[2], "CPU Pkg  Apic");
-	PRT(MAP, attrib[2], "  Core/Thread");
-	PRT(MAP, attrib[2], "  Caches     ");
-	PRT(MAP, attrib[2], " (w)rite-Back");
-	PRT(MAP, attrib[2], " (i)nclusive ");
-	PRT(MAP, attrib[2], "             ");
+	PRT(MAP, attrib[2], TopologyHeader[0]);
+	PRT(MAP, attrib[2], TopologyHeader[1]);
+	PRT(MAP, attrib[2], TopologyHeader[2]);
+	PRT(MAP, attrib[2], TopologyHeader[3]);
+	PRT(MAP, attrib[2], TopologyHeader[4]);
+	PRT(MAP, attrib[2], TopologyHeader[5]);
 /* Row Mark */
-	PRT(MAP, attrib[2], " #   ID   ID ");
+	PRT(MAP, attrib[2], TopologySubHeader[0]);
     if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
@@ -4109,8 +4139,8 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Family_16h:
       TOPOLOGY_CMP:
 	TopologyFunc = Topology_CMP;
-	pStrOFF = strOFF[1];
-	PRT(MAP, attrib[2], " CMP ID    ID");
+	pStrOFF = TopologyStrOFF[1];
+	TopologySubHeader[1] = TopologyAltSubHeader[1];
 	break;
       case AMD_Family_17h:
       case AMD_Family_18h:
@@ -4124,24 +4154,25 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen2_APU:
       case AMD_Zen2_MTS:
 	TopologyFunc = Topology_CCX;
-	pStrOFF = strOFF[2];
-	PRT(MAP, attrib[2], "CCD CCX ID/ID");
+	pStrOFF = TopologyStrOFF[2];
+	TopologySubHeader[1] = TopologyAltSubHeader[2];
 	break;
       default:
        if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /* Virtualized ?	*/
 	goto TOPOLOGY_CMP;
        }  else  {	/*	AMD_Family_0Fh and AMD_Family_10h	*/
-	PRT(MAP, attrib[2], "   ID     ID ");
+	TopologySubHeader[1] = TopologyAltSubHeader[0];
        }
 	break;
       }
     } else {
-	PRT(MAP, attrib[2], "   ID     ID ");
+	TopologySubHeader[1] = TopologyAltSubHeader[0];
     }
-	PRT(MAP, attrib[2], " L1-Inst Way ");
-	PRT(MAP, attrib[2], " L1-Data Way ");
-	PRT(MAP, attrib[2], "     L2  Way ");
-	PRT(MAP, attrib[2], "     L3  Way ");
+	PRT(MAP, attrib[2], TopologySubHeader[1]);
+	PRT(MAP, attrib[2], TopologySubHeader[2]);
+	PRT(MAP, attrib[2], TopologySubHeader[3]);
+	PRT(MAP, attrib[2], TopologySubHeader[4]);
+	PRT(MAP, attrib[2], TopologySubHeader[5]);
 /* Row Mark */
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
@@ -4163,12 +4194,12 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 				'i' : 0x20);
 	    }
 	} else {
-		PRT(MAP, attrib[1], "%03u:\x20\x20-\x20\x20\x20\x20-\x20",cpu);
+		PRT(MAP, attrib[1], TopologyFmtOFF[0], cpu);
 		PRT(MAP, attrib[1], pStrOFF);
 
-	  for (level = 0; level < CACHE_MAX_LEVEL; level++) {
-	    PRT(MAP,attrib[1],"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20");
-	  }
+	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+		PRT(MAP,attrib[1], TopologyFmtOFF[1]);
+	    }
 	}
     }
 	free(strID);
