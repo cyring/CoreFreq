@@ -4257,6 +4257,10 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 			SMU_AMD_DATA_REGISTER_F17H );
     }
   }
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
+	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
+		PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].AMD17h.MISC.MEMCLK/3;
+
 	return ((PCI_CALLBACK) 0);
 }
 
