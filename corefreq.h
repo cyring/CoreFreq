@@ -85,10 +85,12 @@ typedef struct
 					PackageID;
 		union {
 			unsigned int	ID;
+		    struct {
 			unsigned int	Node	:  8-0,
 					CCX	: 16-8,
 					CCD	: 24-16,
 					CMP	: 32-24;
+		    };
 		} Cluster;
 		struct {
 			unsigned short	x2APIC	:  8-0,

@@ -546,12 +546,20 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 				SMU_IndexRegister,			\
 				SMU_DataRegister )			\
 ({									\
-    if ( BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED) )	\
-    {									\
-	WRPCI(SMN_Address, SMU_IndexRegister);				\
-	RDPCI(SMN_Register.value, SMU_DataRegister);			\
-	BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);		\
-    }									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);	\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		WRPCI(SMN_Address, SMU_IndexRegister);			\
+		RDPCI(SMN_Register.value, SMU_DataRegister);		\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);	\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
 })
 #endif /* CONFIG_AMD_NB */
 

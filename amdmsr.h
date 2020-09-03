@@ -173,7 +173,7 @@
     do {								\
 	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
 	if (ret == 0) {							\
-		mdelay(BIT_IO_TIME_INTERVAL);				\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
 	} else {							\
 		AMD_FCH_READ16(DataRegister.value, IndexRegister);	\
 									\
@@ -190,7 +190,7 @@
     do {								\
 	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
 	if (ret == 0) {							\
-		mdelay(BIT_IO_TIME_INTERVAL);				\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
 	} else {							\
 		AMD_FCH_WRITE16(DataRegister.value, IndexRegister);	\
 									\
@@ -831,6 +831,18 @@ typedef union
 	unsigned short int	value;
 	AMD_17_PM_CSTATE	CStateEn;
 } PM16;
+
+typedef union
+{	/* SMU: address = 0x59954 + ( 4 * CCD[ID] )			*/
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		CurTmp		: 11-0,
+		CurTempRangeSel : 12-11,
+		ReservedBits	: 31-12;
+	};
+} TCCD_REGISTER;
 
 /* Sources: drivers/edac/amd64_edac.h					*/
 #ifndef SMU_AMD_UMC_BASE_CHA_F17H

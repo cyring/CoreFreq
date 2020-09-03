@@ -1714,8 +1714,9 @@ static void Map_AMD_Topology(void *arg)
 		}
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
-		Core->T.Cluster.CCX =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
-		Core->T.Cluster.CCD = leaf8000001e.EBX.CoreId >> 2;
+
+		Core->T.Cluster.CCD =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
+		Core->T.Cluster.CCX = leaf8000001e.EBX.CoreId >> 2;
 
 	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
@@ -4899,7 +4900,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	}
     }
 
-/*TODO(Hardware needed: Should we only count the enabled P-States)	*/
+/*TODO(postponed: Should we only count the enabled P-States ?)	*/
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = pstate;
 
 	/*		Read the Target P-State				*/
@@ -5111,7 +5112,7 @@ long For_All_AMD_Zen_Clock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
 	return (rc);
 }
 
-long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void *))
+long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 {
 	long rc;
 	unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
@@ -5487,7 +5488,7 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
   }
 }
 
-void DynamicAcceleration(CORE_RO *Core)				/* Unique */
+void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
 {
     if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
     {
@@ -11009,25 +11010,36 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if ( ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
-		&& Core->T.Cluster.Node < 4 ) {
-		Core_AMD_Family_17h_Temp(Core,
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	TCCD:
+	    {
+		TCCD_REGISTER TccdSensor = {.value = 0};
+
+		Core_AMD_SMN_Read(	TccdSensor,
 					SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-					+ 4 * Core->T.Cluster.Node);
+					+ (Core->T.Cluster.CCD << 2),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		Core->PowerThermal.Sensor = TccdSensor.CurTmp;
+
+		if (TccdSensor.CurTempRangeSel == 1)
+		{
+			Core->PowerThermal.Param.Offset[1] = 49;
+		} else {
+			Core->PowerThermal.Param.Offset[1] = 0;
+		}
 	    }
 		break;
 	case FORMULA_SCOPE_SMT:
-	    if (Core->T.Cluster.Node < 4) {
-		Core_AMD_Family_17h_Temp(Core,
-					SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-					+ 4 * Core->T.Cluster.Node);
-	    }
+		goto TCCD;
 		break;
 	}
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    {
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 	    }
 		break;
