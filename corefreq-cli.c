@@ -4023,24 +4023,48 @@ void Instructions(void)
   }
 }
 
-void Topology_SMT(char *out, unsigned int cpu)
+#define TOPO_MATX 13
+#define TOPO_MATY 6
+
+void Topology_Std(char *pStr, unsigned int cpu)
 {
-	snprintf(out, 11+11+1, "%6d %6d",
+    if (Shm->Cpu[cpu].Topology.MP.BSP) {
+	snprintf(&pStr[ 0], 4+(2*11)+1, "%03u:BSP%5d\x20",
+			cpu,
+			Shm->Cpu[cpu].Topology.ApicID);
+    } else {
+	snprintf(&pStr[ 0], 1+(3*11)+1, "%03u:%3d%5d\x20",
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.ApicID);
+    }
+}
+
+void Topology_SMT(char *pStr, unsigned int cpu)
+{
+	Topology_Std(pStr, cpu);
+
+	snprintf(&pStr[TOPO_MATX+1], 1+(2*11)+1, "%5d\x20\x20%5d\x20",
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
 }
 
-void Topology_CMP(char *out, unsigned int cpu)
+void Topology_CMP(char *pStr, unsigned int cpu)
 {
-	snprintf(out, 3+11+11+1, "%3d%4d%6d",
+	Topology_Std(pStr, cpu);
+
+	snprintf(&pStr[TOPO_MATX+1], (3*11)+1, "%3u%4d%6d",
 			Shm->Cpu[cpu].Topology.Cluster.CMP,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
 }
 
-void Topology_CCX(char *out, unsigned int cpu)
+void Topology_CCX(char *pStr, unsigned int cpu)
 {
-	snprintf(out, 3+11+11+1, "%3d%4d%6d",
+	Topology_Std(pStr, cpu);
+
+	snprintf(&pStr[TOPO_MATX+1], (4*11)+1, "%3u%3u%4d%3d",
+			Shm->Cpu[cpu].Topology.Cluster.CCD,
 			Shm->Cpu[cpu].Topology.Cluster.CCX,
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID);
@@ -4053,17 +4077,21 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		RSC(TOPOLOGY_COND1).ATTR(),
 		RSC(TOPOLOGY_COND2).ATTR()
 	};
-	char	*ID_STR = malloc(3+11+11+1),
-		*ID_OFF[] = { "     -      -", "  -   -     -" },
-		*pID_OFF = ID_OFF[0];
+	char	*strID = malloc(2 * ((4*11) + 1)),
+		*strOFF[] = {
+			"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
+			"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
+			"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
+		}, *pStrOFF = strOFF[0];
 	unsigned int cpu = 0, level = 0;
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
-  if (ID_STR != NULL)
+
+  if (strID != NULL)
   {
 	void (*TopologyFunc)(char*, unsigned int) = Topology_SMT;
 /* Row Mark */
 	PRT(MAP, attrib[2], "CPU Pkg  Apic");
-	PRT(MAP, attrib[2], "  Core Thread");
+	PRT(MAP, attrib[2], "  Core/Thread");
 	PRT(MAP, attrib[2], "  Caches     ");
 	PRT(MAP, attrib[2], " (w)rite-Back");
 	PRT(MAP, attrib[2], " (i)nclusive ");
@@ -4081,7 +4109,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Family_16h:
       TOPOLOGY_CMP:
 	TopologyFunc = Topology_CMP;
-	pID_OFF = ID_OFF[1];
+	pStrOFF = strOFF[1];
 	PRT(MAP, attrib[2], " CMP ID    ID");
 	break;
       case AMD_Family_17h:
@@ -4096,8 +4124,8 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen2_APU:
       case AMD_Zen2_MTS:
 	TopologyFunc = Topology_CCX;
-	pID_OFF = ID_OFF[1];
-	PRT(MAP, attrib[2], " CCX ID    ID");
+	pStrOFF = strOFF[2];
+	PRT(MAP, attrib[2], "CCD CCX ID/ID");
 	break;
       default:
        if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /* Virtualized ?	*/
@@ -4115,22 +4143,17 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	PRT(MAP, attrib[2], "     L2  Way ");
 	PRT(MAP, attrib[2], "     L3  Way ");
 /* Row Mark */
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	  if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-	    if (Shm->Cpu[cpu].Topology.MP.BSP) {
-		PRT(MAP, attrib[0], "%03u:BSP%6d",
-			cpu,
-			Shm->Cpu[cpu].Topology.ApicID);
-	    } else {
-		PRT(MAP, attrib[0], "%03u:%3d%6d",
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.ApicID);
-	    }
-		TopologyFunc(ID_STR, cpu);
-		PRT(MAP, attrib[0], ID_STR);
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+    {
+	if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	{
+		TopologyFunc(strID, cpu);
 
-	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+		PRT(MAP, attrib[0], &strID[ 0]);
+		PRT(MAP, attrib[0], &strID[14]);
+
+	    for (level = 0; level < CACHE_MAX_LEVEL; level++)
+	    {
 		PRT(MAP, attrib[0], "%8u%3u%c%c",
 			Shm->Cpu[cpu].Topology.Cache[level].Size,
 			Shm->Cpu[cpu].Topology.Cache[level].Way,
@@ -4139,16 +4162,16 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 			Shm->Cpu[cpu].Topology.Cache[level].Feature.Inclusive ?
 				'i' : 0x20);
 	    }
-	  } else {
-		PRT(MAP, attrib[1], "%03u:  -     -", cpu);
-		PRT(MAP, attrib[1], pID_OFF);
+	} else {
+		PRT(MAP, attrib[1], "%03u:\x20\x20-\x20\x20\x20\x20-\x20",cpu);
+		PRT(MAP, attrib[1], pStrOFF);
 
-	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
-		PRT(MAP, attrib[1], "       -  -  ");
-	    }
+	  for (level = 0; level < CACHE_MAX_LEVEL; level++) {
+	    PRT(MAP,attrib[1],"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20");
 	  }
 	}
-	free(ID_STR);
+    }
+	free(strID);
   }
 }
 
@@ -5661,8 +5684,8 @@ TGrid *AddCell(CELL_ARGS)
 Window *CreateTopology(unsigned long long id)
 {
 	Window *wTopology = CreateWindow(wLayer, id,
-					6, 2+Shm->Proc.CPU.Count,
-					1, TOP_HEADER_ROW + 3);
+					TOPO_MATY, 2+Shm->Proc.CPU.Count,
+					1, TOP_HEADER_ROW + 1);
 
 		wTopology->matrix.select.row = 2;
 
