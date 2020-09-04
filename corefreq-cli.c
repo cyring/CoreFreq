@@ -6330,6 +6330,14 @@ Window *CreateSelectCPU(unsigned long long id)
 	StoreWindow(wUSR,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wUSR,	.key.Expand,	MotionExpand_Win);
 
+	StoreWindow(wUSR,	.key.WinLeft,	MotionOriginLeft_Win);
+	StoreWindow(wUSR,	.key.WinRight,	MotionOriginRight_Win);
+	StoreWindow(wUSR,	.key.WinDown,	MotionOriginDown_Win);
+	StoreWindow(wUSR,	.key.WinUp,	MotionOriginUp_Win);
+
+	StoreWindow(wUSR,	.key.Shrink,	MotionShrink_Win);
+	StoreWindow(wUSR,	.key.Expand,	MotionExpand_Win);
+
 	free(item);
     }
 	return (wUSR);
