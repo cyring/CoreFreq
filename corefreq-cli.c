@@ -4059,7 +4059,7 @@ void Topology_CMP(char *pStr, unsigned int cpu)
 			Shm->Cpu[cpu].Topology.ThreadID);
 }
 
-void Topology_CCX(char *pStr, unsigned int cpu)
+void Topology_CCD(char *pStr, unsigned int cpu)
 {
 	Topology_Std(pStr, cpu);
 
@@ -4153,7 +4153,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen2_CPK:
       case AMD_Zen2_APU:
       case AMD_Zen2_MTS:
-	TopologyFunc = Topology_CCX;
+	TopologyFunc = Topology_CCD;
 	pStrOFF = TopologyStrOFF[2];
 	TopologySubHeader[1] = TopologyAltSubHeader[2];
 	break;

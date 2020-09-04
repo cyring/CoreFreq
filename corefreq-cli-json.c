@@ -1541,18 +1541,6 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_start_object(&s);
 			json_key(&s, "ApicID");
 			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.ApicID);
-		    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-		    {
-			json_key(&s, "CCX");
-			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.Cluster.CCX);
-		    }
-			json_key(&s, "CoreID");
-			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.CoreID);
-			json_key(&s, "ThreadID");
-			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.ThreadID);
-			json_key(&s, "PackageID");
-			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.PackageID);
 			json_key(&s, "MP");
 			{
 				json_start_object(&s);
@@ -1562,6 +1550,20 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%d", Shm->Cpu[cpu].Topology.MP.x2APIC);
 				json_end_object(&s);
 			}
+			json_key(&s, "PackageID");
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.PackageID);
+		    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+		    {
+			json_key(&s, "CCD");
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.Cluster.CCD);
+			json_key(&s, "CCX");
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.Cluster.CCX);
+		    }
+			json_key(&s, "CoreID");
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.CoreID);
+			json_key(&s, "ThreadID");
+			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.ThreadID);
 			json_key(&s, "Cache");
 			json_start_arr(&s);
 			for (i2 = 0; i2 < CACHE_MAX_LEVEL; i2++) {

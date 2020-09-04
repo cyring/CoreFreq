@@ -1714,9 +1714,8 @@ static void Map_AMD_Topology(void *arg)
 		}
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
-
-		Core->T.Cluster.CCD =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
-		Core->T.Cluster.CCX = leaf8000001e.EBX.CoreId >> 2;
+		Core->T.Cluster.CCD = Core->T.CoreID >> 3;
+		Core->T.Cluster.CCX =(leaf8000001e.EAX.ExtApicId & 0b1000) >> 3;
 
 	    } else {	/*	Fallback algorithm.			*/
 		Core->T.ApicID    = leaf1_ebx.Init_APIC_ID;
