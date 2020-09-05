@@ -575,10 +575,10 @@ TGrid *GridHover(TGrid *pGrid, const char *comment)
 	size_t length = strlen(comment);
 	if (length > 0)
 	{
-		ASCII *comm = malloc(length);
+		ASCII *comm = malloc(1 + length);
 	    if (comm != NULL)
 	    {
-		strncpy((char *) comm, comment, length);
+		StrCopy(comm, comment, (1 + length));
 		pGrid->hover.comm = comm;
 		pGrid->hover.length = length;
 	    }
