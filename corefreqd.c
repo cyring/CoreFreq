@@ -5177,7 +5177,7 @@ REASON_CODE Core_Manager(REF *Ref)
     while (!BITVAL(Shutdown, SYNC))
     {	/* Loop while all the cpu room bits are not cleared.		*/
 	while ( !BITVAL(Shutdown, SYNC) &&
-	    #if defined(LEGACY) && LEGACY == 1
+	    #if defined(LEGACY) && LEGACY > 0
 		!BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])
 	    #else
 		!BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)

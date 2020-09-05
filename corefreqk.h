@@ -524,8 +524,19 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
 
+/*
+ * --- Core_AMD_SMN_Read ---
+ *
+ * amd_smn_read() protects the SMU access through mutex_[un]lock
+ * functions which must not be used in interrupt context.
+ *
+ * The high resolution timers are bound to CPUs with smp_call_function_*
+ * where context is in interrupt; and where mutex will freeze the kernel.
+*/
+
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))\
- && defined(HWM_CHIPSET) && (HWM_CHIPSET == COMPATIBLE)
+ && defined(LEGACY) && (LEGACY > 1)
+FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -561,7 +572,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
 })
-#endif /* CONFIG_AMD_NB */
+#endif /* CONFIG_AMD_NB and LEGACY */
 
 
 /* Driver' private and public data definitions.				*/

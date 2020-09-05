@@ -4,6 +4,9 @@
  * Licenses: GPL2
  */
 
+#define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
+#define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
+
 enum {
 	SYNC	=  0,
 	SYNC0	= 10,
@@ -632,7 +635,8 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 })
 
-#if defined(LEGACY) && LEGACY == 1
+#if defined(LEGACY) && (LEGACY > 0)
+FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 #define BITCMP_CC(_cct, _lock, _opl, _opr)				\
 ({									\
 	unsigned char ret = 1;						\
@@ -655,7 +659,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	ret;								\
 })
-#else
+#else /* LEGACY */
 #define BITCMP_CC(_cct, _lock, _opl, _opr)				\
 ({									\
 	volatile unsigned char _ret;					\
@@ -696,7 +700,7 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 									\
 	_ret;								\
 })
-#endif
+#endif /* LEGACY */
 
 /* Micro-benchmark. Prerequisites: CPU affinity, RDTSC[P] optionnaly RDPMC */
 #if defined(UBENCH) && UBENCH == 1

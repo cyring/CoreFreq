@@ -4449,7 +4449,7 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     }
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]),  Footer_DDR4[1][nc]);
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]), Footer_DDR4[1][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {

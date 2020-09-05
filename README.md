@@ -279,10 +279,19 @@ CPU     IPS            IPC            CPI
 
   A: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
   1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
-  2. Allow _CoreFreq_ to register a new TSC clock source using driver arguments:  
+  2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation  
+:heavy_dollar_sign:`make DELAY_TSC=1`  
+  3. Allow _CoreFreq_ to register a new TSC clock source using driver arguments:  
 :hash:`insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1`  
-  3. Switch the current system clock source to `corefreq`  
+  4. Switch the current system clock source to `corefreq`  
 :hash:`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
+
+  A: `[AMD][Zen]` CCD temperatures:  
+  _CoreFreq_ driver can be forced to use the Kernel function amd_smn_read()  
+  This allows _CoreFreq_ to be compatible with other SMU drivers.  
+:heavy_dollar_sign:`make LEGACY=2`  
+  However amd_smn_read() protects any SMU access through a mutex which must not be used in interrupt context  
+  _CoreFreq_ CPU loops are executed in interrupt context where mutex usage will freeze the kernel.  
 
   A: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  

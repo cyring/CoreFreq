@@ -8,14 +8,13 @@ PWD ?= $(shell pwd)
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PREFIX ?= /usr
 UBENCH = 0
-FEAT_DBG = 0
 TASK_ORDER = 5
 MAX_FREQ_HZ = 5250000000
 MSR_CORE_PERF_UCC ?= MSR_IA32_APERF
 MSR_CORE_PERF_URC ?= MSR_IA32_MPERF
 
 obj-m := corefreqk.o
-ccflags-y := -D FEAT_DBG=$(FEAT_DBG) -D TASK_ORDER=$(TASK_ORDER)
+ccflags-y := -D TASK_ORDER=$(TASK_ORDER)
 ccflags-y += $(WARNING)
 
 ifneq ($(OPTIM_LVL),)
@@ -24,11 +23,22 @@ ifneq ($(OPTIM_LVL),)
 	ccflags-y += $(OPTIM_FLG)
 endif
 
-DEFINITIONS =	-D FEAT_DBG=$(FEAT_DBG) -D UBENCH=$(UBENCH) \
-		-D TASK_ORDER=$(TASK_ORDER) -D MAX_FREQ_HZ=$(MAX_FREQ_HZ)
+DEFINITIONS =	-D MAX_FREQ_HZ=$(MAX_FREQ_HZ) -D UBENCH=$(UBENCH) \
+		-D TASK_ORDER=$(TASK_ORDER)
+
+ifneq ($(FEAT_DBG),)
+DEFINITIONS += -D FEAT_DBG=$(FEAT_DBG)
+ccflags-y += -D FEAT_DBG=$(FEAT_DBG)
+endif
 
 ifneq ($(LEGACY),)
 DEFINITIONS += -D LEGACY=$(LEGACY)
+ccflags-y += -D LEGACY=$(LEGACY)
+endif
+
+ifneq ($(DELAY_TSC),)
+DEFINITIONS += -D DELAY_TSC=$(DELAY_TSC)
+ccflags-y += -D DELAY_TSC=$(DELAY_TSC)
 endif
 
 ccflags-y += -D MSR_CORE_PERF_UCC=$(MSR_CORE_PERF_UCC)
@@ -115,6 +125,7 @@ info:
 	$(info LEGACY [$(LEGACY)])
 	$(info UBENCH [$(UBENCH)])
 	$(info FEAT_DBG [$(FEAT_DBG)])
+	$(info DELAY_TSC [$(DELAY_TSC)])
 	$(info OPTIM_LVL [$(OPTIM_LVL)])
 	$(info MSR_CORE_PERF_UCC [$(MSR_CORE_PERF_UCC)])
 	$(info MSR_CORE_PERF_URC [$(MSR_CORE_PERF_URC)])
@@ -134,8 +145,10 @@ help:
 	"|  KERNELDIR=<PATH>                                             |\n"\
 	"|    where <PATH> is the Kernel source directory                |\n"\
 	"|                                                               |\n"\
-	"|  LEGACY=<N>                                                   |\n"\
-	"|    where <N> is 1 when CMPXCHG16 is not available             |\n"\
+	"|  LEGACY=<L>                                                   |\n"\
+	"|    where level <L> is 1 or 2                                  |\n"\
+	"|    1: assembly level restriction such as CMPXCHG16            |\n"\
+	"|    2:   kernel level restriction like amd_smn_read()          |\n"\
 	"|                                                               |\n"\
 	"|  UBENCH=<N>                                                   |\n"\
 	"|    where <N> is 0 to disable or 1 to enable micro-benchmark   |\n"\
@@ -145,6 +158,9 @@ help:
 	"|                                                               |\n"\
 	"|  FEAT_DBG=<N>                                                 |\n"\
 	"|    where <N> is 0 or 1 for FEATURE DEBUG level                |\n"\
+	"|                                                               |\n"\
+	"|  DELAY_TSC=<N>                                                |\n"\
+	"|    where <N> is 1 to build a TSC implementation of udelay()   |\n"\
 	"|                                                               |\n"\
 	"|  OPTIM_LVL=<N>                                                |\n"\
 	"|    where <N> is 0,1,2, or 3 for OPTIMIZATION level            |\n"\

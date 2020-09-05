@@ -1585,7 +1585,7 @@ typedef struct {
 	( (Ring.head - Ring.tail) == RING_SIZE );			\
 })
 
-#if FEAT_DBG > 2
+#if defined(FEAT_DBG) && (FEAT_DBG > 2)
 FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_MOVE(_dst, _src)						\
 ({									\
@@ -1746,9 +1746,6 @@ typedef union {
 	};								\
 	tsec;								\
 })
-
-#define FEAT_MESSAGE(_msg)		_Pragma(#_msg)
-#define FEAT_MSG(_msg)			FEAT_MESSAGE(message(#_msg))
 
 #define COREFREQ_STRINGIFY(_number)	#_number
 
