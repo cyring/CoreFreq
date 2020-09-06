@@ -7,10 +7,11 @@ Description=CoreFreq Daemon
 
 [Service]
 Type=simple
-ExecStart=/bin/corefreqd -q
+ExecStart=corefreqd -q
 ExecStop=/bin/kill -QUIT $MAINPID
 RemainAfterExit=no
 SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
 
 [Install]
 WantedBy=multi-user.target
+
