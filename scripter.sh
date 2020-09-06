@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # CoreFreq
 # Copyright (C) 2015-2020 CYRIL INGENIERIE
@@ -32,3 +32,4 @@ else
 	echo "$0: missing arguments"
 fi
 #
+
