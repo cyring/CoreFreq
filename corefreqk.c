@@ -7613,11 +7613,13 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 
 	rcu_read_lock();
 	for_each_process_thread(process, thread) {
-#if defined(CONFIG_SCHED_MUQSS) || defined(CONFIG_SCHED_BMQ)
+#if defined(CONFIG_SCHED_MUQSS) \
+ || defined(CONFIG_SCHED_BMQ) \
+ || defined(CONFIG_SCHED_PDS)
 		SysGate->taskList[cnt].runtime  = tsk_seruntime(thread);
 #else
 		SysGate->taskList[cnt].runtime  = thread->se.sum_exec_runtime;
-#endif /* CONFIG_SCHED_MUQSS */
+#endif /* CONFIG_SCHED_*	*/
 		SysGate->taskList[cnt].usertime = thread->utime;
 		SysGate->taskList[cnt].systime  = thread->stime;
 		SysGate->taskList[cnt].pid      = thread->pid;
@@ -7628,7 +7630,7 @@ void Sys_DumpTask(SYSGATE_RO *SysGate)
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->cpu;
 #else
 		SysGate->taskList[cnt].wake_cpu = (short int) thread->wake_cpu;
-#endif /* CONFIG_SCHED_BMQ */
+#endif /* CONFIG_SCHED_BMQ	*/
 		memcpy(SysGate->taskList[cnt].comm, thread->comm,TASK_COMM_LEN);
 
 		if (cnt < TASK_LIMIT) {

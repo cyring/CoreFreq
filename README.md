@@ -62,7 +62,7 @@ The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI col
 * GNU Make tool
 * Linux Kernel Header files to build modules
   * Mandatory : `CONFIG_MODULES, CONFIG_SMP, CONFIG_X86_MSR`
-  * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_HAVE_PERF_EVENTS, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ`
+  * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_HAVE_PERF_EVENTS, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ, CONFIG_SCHED_PDS`
 
 2. Clone the source code into a working directory.  
  :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
