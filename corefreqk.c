@@ -4112,9 +4112,10 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 
 static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 {
-	AMD_17_UMC_SDP_CTRL	SDP_CTRL;
+	AMD_17_UMC_SDP_CTRL SDP_CTRL;
 
-	unsigned int UMC_BAR[MC_MAX_CHA] = {
+	const unsigned int UMC_BAR[MC_MAX_CHA] =
+	{
 		SMU_AMD_UMC_BASE_CHA_F17H(0),
 		SMU_AMD_UMC_BASE_CHA_F17H(1),
 		SMU_AMD_UMC_BASE_CHA_F17H(2),
@@ -4123,9 +4124,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 		SMU_AMD_UMC_BASE_CHA_F17H(5),
 		SMU_AMD_UMC_BASE_CHA_F17H(6),
 		SMU_AMD_UMC_BASE_CHA_F17H(7)
-	}, CHIP_BAR[2][2];
+	};
 
-	unsigned short mc, cha, chip, sec;
+	unsigned short mc, cha, chip, sec, cnt;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 	/*			Number of UMC.				*/
@@ -4133,6 +4134,9 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 
   for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
   {
+	unsigned int UMC_STK[MC_MAX_CHA] = { 0,0,0,0,0,0,0,0 };
+
+	cnt = 0;
     for (cha = 0; cha < maxCha; cha++)
     {
 	SDP_CTRL.value = 0;
@@ -4147,21 +4151,24 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev, unsigned short maxCha)
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 
-	if (SDP_CTRL.INIT) {
-		PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount++;
+	if (SDP_CTRL.INIT)
+	{
+		UMC_STK[cnt++] = UMC_BAR[cha];
 	}
     }
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = cnt;
+
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
-	CHIP_BAR[0][0] = UMC_BAR[cha] + 0x0;
+	unsigned int CHIP_BAR[2][2];
 
-	CHIP_BAR[0][1] = UMC_BAR[cha] + 0x20;
+	CHIP_BAR[0][0] = UMC_STK[cha] + 0x0;
 
-	CHIP_BAR[1][0] = UMC_BAR[cha] + 0x10;
+	CHIP_BAR[0][1] = UMC_STK[cha] + 0x20;
 
-	CHIP_BAR[1][1] = UMC_BAR[cha] + 0x28;
+	CHIP_BAR[1][0] = UMC_STK[cha] + 0x10;
 
-	PUBLIC(RO(Proc))->Uncore.MC[mc].SlotCount = 4 / 2;
+	CHIP_BAR[1][1] = UMC_STK[cha] + 0x28;
 
 	for (chip = 0; chip < 4; chip++)
 	{
@@ -8569,7 +8576,7 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 }
 */
 
-void Core_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
+void Pkg_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
@@ -8586,6 +8593,26 @@ void Core_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 		0 = Report on 0C to 225C scale range.
 		1 = Report on -49C to 206C scale range.
 	*/
+		Core->PowerThermal.Param.Offset[1] = 49;
+	} else {
+		Core->PowerThermal.Param.Offset[1] = 0;
+	}
+}
+
+void CCD_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
+{
+	TCCD_REGISTER TccdSensor = {.value = 0};
+
+	Core_AMD_SMN_Read(	TccdSensor,
+				SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
+				+ (Core->T.Cluster.CCD << 2),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	Core->PowerThermal.Sensor = TccdSensor.CurTmp;
+
+	if (TccdSensor.CurTempRangeSel == 1)
+	{
 		Core->PowerThermal.Param.Offset[1] = 49;
 	} else {
 		Core->PowerThermal.Param.Offset[1] = 0;
@@ -10970,7 +10997,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	    case FORMULA_SCOPE_PKG:
-		Core_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
+		Pkg_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
 		break;
 	    }
 
@@ -11015,39 +11042,23 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
-	TCCD:
+	    if (!((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)))
 	    {
-		TCCD_REGISTER TccdSensor = {.value = 0};
-
-		Core_AMD_SMN_Read(	TccdSensor,
-					SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-					+ (Core->T.Cluster.CCD << 2),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		Core->PowerThermal.Sensor = TccdSensor.CurTmp;
-
-		if (TccdSensor.CurTempRangeSel == 1)
-		{
-			Core->PowerThermal.Param.Offset[1] = 49;
-		} else {
-			Core->PowerThermal.Param.Offset[1] = 0;
-		}
-	    }
 		break;
+	    }
+		/* Fallthrough */
 	case FORMULA_SCOPE_SMT:
-		goto TCCD;
+		CCD_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
 		break;
 	}
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	    if (!((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)))
 	    {
-		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
-	    }
 		break;
+	    }
+		/* Fallthrough */
 	case FORMULA_SCOPE_SMT:
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;

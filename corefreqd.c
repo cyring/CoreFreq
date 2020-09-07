@@ -3605,21 +3605,20 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	unsigned short mc;
  for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
  {
-	Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
 	Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
 
 	unsigned short cha;
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
 	unsigned long long DIMM_Size = 0;
-	unsigned short chip;
+	unsigned short chip, slotCount = 0;
    for (chip = 0; chip < 4; chip++)
    {
-	const unsigned short slot = chip / Shm->Uncore.MC[mc].SlotCount;
+	const unsigned short slot = chip / 2;
 	unsigned short sec;
     for (sec = 0; sec < 2; sec++)
     {
-	unsigned int chipSize;
+	unsigned int chipSize = 0;
      if (BITVAL(Proc->Uncore.MC[mc].Channel[cha] \
 		.AMD17h.CHIP[chip][sec].Chip.value, 0))
      {
@@ -3643,7 +3642,10 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 		: "cc", "memory", "%ecx", "%edx"
 	);
 	DIMM_Size += chipSize;
+	slotCount++;
      }
+	printf("mc[%d]\tcha[%d/%d]\tchip[%d]\tsec[%d]\tsize[%d]\n",
+		mc, cha,Shm->Uncore.MC[mc].ChannelCount, chip, sec, chipSize);
     }
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
@@ -3651,6 +3653,8 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = DIMM_Size >> 20;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
    }
+	Shm->Uncore.MC[mc].SlotCount = slotCount;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR1.tCL;
 
@@ -5587,7 +5591,6 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, Proc_RO, Proc_RW);
-		Uncore(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
 		memcpy(&Shm->SMB, &Proc_RO->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notifications.				*/
