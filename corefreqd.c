@@ -3644,8 +3644,6 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	DIMM_Size += chipSize;
 	slotCount++;
      }
-	printf("mc[%d]\tcha[%d/%d]\tchip[%d]\tsec[%d]\tsize[%d]\n",
-		mc, cha,Shm->Uncore.MC[mc].ChannelCount, chip, sec, chipSize);
     }
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
@@ -3775,9 +3773,17 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4 =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.DTR60.tRFC4;
 
-	Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate =
-		1 + Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate;
-
+	switch(Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.CMD_Rate) {
+	case 0b00:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1;
+		break;
+	case 0b10:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 2;
+		break;
+	default:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 0;
+		break;
+	}
 	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
 			Proc->Uncore.MC[mc].Channel[cha].AMD17h.ECC.Enable;
 
@@ -5390,7 +5396,6 @@ REASON_CODE Core_Manager(REF *Ref)
 	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	    {
 		Package_Update(Shm, Proc, Proc_RW);
-		Uncore(Shm, Proc, Core[Ref->Proc_RO->Service.Core]);
 		Technology_Update(Shm, Proc, Proc_RW);
 
 		if (ServerFollowService(&localService,
@@ -5591,6 +5596,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, Proc_RO, Proc_RW);
+		Uncore(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
 		memcpy(&Shm->SMB, &Proc_RO->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notifications.				*/

@@ -870,9 +870,11 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits1	: 12-0,
+		ReservedBits1	:  9-0,
+		Bit09		: 12-9,  /* when DIMM populated ?	*/
 		ECC_Support	: 13-12,
-		ReservedBits2	: 32-13;
+		ReservedBits2	: 31-13,
+		Bit31		: 32-31; /* when DIMM populated ?	*/
 	};
 } AMD_17_UMC_CONFIG;
 
@@ -907,7 +909,12 @@ typedef union
 	struct
 	{
 		unsigned int
-		ReservedBits	: 32-0;
+		ReservedBits1	:  4-0,
+		Bit04		:  5-4,  /* when DIMM populated ?	*/
+		Bit05		:  6-5,  /* when DIMM populated ?	*/
+		ReservedBits2	: 16-6,
+		Bit16		: 17-16, /* when DIMM populated ?	*/
+		ReservedBits3	: 32-17;
 	};
 } AMD_17_UMC_ECC_CAP;
 
@@ -930,10 +937,11 @@ typedef union
 	{
 		unsigned int
 		MEMCLK		:  7-0,
-		ReservedBits1	: 10-7,
-		CMD_Rate	: 11-10,  /* 00=1N, 01=2N		*/
-		GearDownMode	: 12-11,
-		Preamble2T	: 13-12,	/*TODO: BIOS match test */
+		ReservedBits1	:  8-7,
+		Bit8		:  9-8,
+		CMD_Rate	: 11-9,  /* 0b10 = 2T ; 0b00 = 1T	*/
+		GearDownMode	: 12-11, /* BIOS match is OK		*/
+		Preamble2T	: 13-12, /* TODO(BIOS match test == 1)	*/
 		ReservedBits2	: 32-13;
 	};
 } AMD_17_UMC_CFG_MISC;
