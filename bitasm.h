@@ -647,12 +647,12 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 		__asm__ volatile					\
 		(							\
-			"movq	%[opr], %%rbx"		"\n\t"		\
-		_lock	"xorq	%%rbx, %[tmp]"		"\n\t"		\
+			"movq	%[opr]	,	%%rbx"	"\n\t"		\
+		_lock	"xorq	%%rbx	,	%[tmp]"	"\n\t"		\
 			"setz	%[ret]" 				\
-			: [ret] "+m" (_ret)				\
-			: [tmp] "m" (_tmp),				\
-			  [opr] "m" (_opr[cw])				\
+			: [ ret]	"+m" (_ret)			\
+			: [ tmp]	"m" (_tmp),			\
+			  [ opr]	"m" (_opr[cw])			\
 			: "cc", "memory", "%rbx"			\
 		);							\
 		ret &= _ret;						\
@@ -666,36 +666,37 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 									\
 	__asm__ volatile						\
 	(								\
-		"movq		$0x1, %%rsi"		"\n\t"		\
-		"xorq		%%rdi, %%rdi"		"\n\t"		\
-		"movl		%[cct], %%ecx"		"\n\t"		\
-		"shll		$25, %%ecx"		"\n\t"		\
-		"jc		1f"			"\n\t"		\
-		"leaq		%[opr], %%r12"		"\n\t"		\
-		"movq		16(%%r12), %%rax"	"\n\t"		\
-		"movq		24(%%r12), %%rdx"	"\n\t"		\
-		"leaq		%[opl], %%r12"		"\n\t"		\
-		"movq		16(%%r12), %%rbx"	"\n\t"		\
-		"movq		24(%%r12), %%rcx"	"\n\t"		\
-	_lock	"rex cmpxchg16b 16(%%r12)"		"\n\t"		\
-		"setz		%%sil"			"\n\t"		\
+		"movq	$0x1	,	%%rsi"		"\n\t"		\
+		"xorq	%%rdi	,	%%rdi"		"\n\t"		\
+		"movl	%[cct]	,	%%ecx"		"\n\t"		\
+		"shll	$25	,	%%ecx"		"\n\t"		\
+		"jc	1f"				"\n\t"		\
+		"leaq	%[opr]	,	%%r12"		"\n\t"		\
+		"movq	16(%%r12),	%%rax"		"\n\t"		\
+		"movq	24(%%r12),	%%rdx"		"\n\t"		\
+		"leaq	%[opl]	,	%%r12"		"\n\t"		\
+		"movq	16(%%r12),	%%rbx"		"\n\t"		\
+		"movq	24(%%r12),	%%rcx"		"\n\t"		\
+	_lock	"cmpxchg16b 16(%%r12)"			"\n\t"		\
+		"setz	%%sil"				"\n\t"		\
 	"1:"						"\n\t"		\
-		"leaq		%[opr], %%r12"		"\n\t"		\
-		"movq		0(%%r12), %%rax"	"\n\t"		\
-		"movq		8(%%r12), %%rdx"	"\n\t"		\
-		"leaq		%[opl], %%r12"		"\n\t"		\
-		"movq		0(%%r12), %%rbx"	"\n\t"		\
-		"movq		8(%%r12), %%rcx"	"\n\t"		\
-	_lock	"rex cmpxchg16b 0(%%r12)"		"\n\t"		\
-		"setz		%%dil"			"\n\t"		\
-		"andq		%%rsi, %%rdi"		"\n\t"		\
-		"mov		%%dil, %[ret]"				\
-		: [ret] "+m" (_ret),					\
-		  [opl] "=m" (_opl)					\
-		: [cct] "irm"(_cct),					\
-		  [opr]  "m" (_opr)					\
+		"leaq	%[opr]	,	%%r12"		"\n\t"		\
+		"movq	0(%%r12),	%%rax"		"\n\t"		\
+		"movq	8(%%r12),	%%rdx"		"\n\t"		\
+		"leaq	%[opl]	,	%%r12"		"\n\t"		\
+		"movq	0(%%r12),	%%rbx"		"\n\t"		\
+		"movq	8(%%r12),	%%rcx"		"\n\t"		\
+	_lock	"cmpxchg16b 0(%%r12)"			"\n\t"		\
+		"setz	%%dil"				"\n\t"		\
+		"andq	%%rsi	,	%%rdi"		"\n\t"		\
+		"mov	%%dil	,	%[ret]" 			\
+		: [ ret]	"+m"	(_ret),				\
+		  [ opl]	"=m"	(_opl)				\
+		: [ cct]	"irm"	(_cct),				\
+		  [ opr]	"m"	(_opr)				\
 		: "cc", "memory",					\
-		  "%rax", "%rbx", "%rcx", "%rdx", "%rdi", "%rsi", "%r12"\
+		  "%rax", "%rbx", "%rcx", "%rdx",			\
+		  "%rdi", "%rsi", "%r12"				\
 	);								\
 									\
 	_ret;								\
