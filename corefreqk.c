@@ -4117,11 +4117,7 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL;
-	unsigned short mc, cha, chip, sec,
-	/* Skip one SMU on two channels with x48 and x64 SMT Threadripper */
-	factor = (PUBLIC(RO(Proc))->Features.leaf80000008.ECX.NC == 0x3f)
-	      || (PUBLIC(RO(Proc))->Features.leaf80000008.ECX.NC == 0x2f),
-	maxCha = factor == 1 ? (MC_MAX_CHA / 2) : MC_MAX_CHA;
+	unsigned short mc, cha, chip, sec;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 	/*TODO(Query the number of UMC)					*/
@@ -4131,28 +4127,27 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
   {
 	unsigned int UMC_BAR[MC_MAX_CHA] = { 0,0,0,0,0,0,0,0 };
 
-	unsigned short cnt = 0;
-    for (cha = 0; cha < maxCha; cha++)
+	unsigned short count = 0;
+    for (cha = 0; cha < MC_MAX_CHA; cha++)
     {
-	const unsigned short ccd = cha << factor;
 	SDP_CTRL.value = 0;
 
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.ECC,
-			(SMU_AMD_UMC_BASE_CHA_F17H(ccd) + 0xdf4),
+			(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0xdf4),
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
 
 	Core_AMD_SMN_Read(	SDP_CTRL,
-				(SMU_AMD_UMC_BASE_CHA_F17H(ccd) + 0x104),
+				(SMU_AMD_UMC_BASE_CHA_F17H(cha) + 0x104),
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 
 	if ((SDP_CTRL.value != 0xffffffff) && (SDP_CTRL.INIT))
 	{
-		UMC_BAR[cnt++] = SMU_AMD_UMC_BASE_CHA_F17H(ccd);
+		UMC_BAR[count++] = SMU_AMD_UMC_BASE_CHA_F17H(cha);
 	}
     }
-	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = cnt;
+	PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount = count;
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[mc].ChannelCount; cha++)
     {
