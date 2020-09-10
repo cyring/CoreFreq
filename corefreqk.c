@@ -4121,7 +4121,7 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	/* Skip one SMU on two channels with x48 and x64 SMT Threadripper */
 	factor = (PUBLIC(RO(Proc))->Features.leaf80000008.ECX.NC == 0x3f)
 	      || (PUBLIC(RO(Proc))->Features.leaf80000008.ECX.NC == 0x2f),
-	maxCha = factor == 1 ? 4 : 8;
+	maxCha = factor == 1 ? (MC_MAX_CHA / 2) : MC_MAX_CHA;
 
 	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 	/*TODO(Query the number of UMC)					*/
