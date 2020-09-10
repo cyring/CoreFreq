@@ -3647,10 +3647,20 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
     }
     if (DIMM_Size > 0)
     {
+	unsigned short shiftBank;
+
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Size >> 20;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
+
+	if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size < 16384) {
+		shiftBank = 9;
+	} else {
+		shiftBank = 10;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size >> shiftBank;
+
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
 		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size
 		/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks << 9);
