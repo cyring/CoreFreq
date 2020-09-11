@@ -5205,6 +5205,15 @@ void Query_AMD_Family_17h(unsigned int cpu)
     }
 	Default_Unlock_Reset();
 
+	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_EPYC_Rome:
+	case AMD_Zen2_CPK:
+	case AMD_Zen2_APU:
+	case AMD_Zen2_MTS:
+		CCD_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
+		break;
+	}
+
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
 		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
@@ -8580,7 +8589,7 @@ void Pkg_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 	}
 }
 
-void CCD_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
+void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core, unsigned int SMN_Address)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
 

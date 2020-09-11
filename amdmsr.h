@@ -849,6 +849,32 @@ typedef union
 	#define SMU_AMD_UMC_BASE_CHA_F17H(_cha)	(0x00050000 + (_cha << 20))
 #endif
 
+/*
+TODO(BankGroupSwap)
+
+BGS[ON]
+zencli smu 0x50058
+0xcba65321 (3416675105) 	11001011101001100101001100100001
+
+BGS[OFF][AUTO]
+zencli smu 0x50058
+0x87654321 (2271560481) 	10000111011001010100001100100001
+*/
+
+/*
+TODO(BankGroupSwap Alternate)
+
+BGS_Alt[ON][AUTO]
+zencli smu 0x500D0
+0x111107f1 (286328817
+
+BGS_Alt[OFF]
+zencli smu 0x500D0
+0x11110001 (286326785)
+
+Remark: if BGS_Alt[ON][AUTO] set then BGS[OFF]
+*/
+
 typedef union
 {	/* SMU: address = 0x50080					*/
 	unsigned int		value;

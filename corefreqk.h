@@ -1031,6 +1031,12 @@ static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
 extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
+void Core_AMD_F17h_No_Sensor(CORE_RO *Core, unsigned int SMN_Address)
+{
+}
+void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core, unsigned int SMN_Address) ;
+void (*CCD_AMD_Family_17h_Temp)(CORE_RO*, unsigned int)=Core_AMD_F17h_No_Sensor;
+
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
 
