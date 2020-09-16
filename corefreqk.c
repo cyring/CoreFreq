@@ -11258,11 +11258,19 @@ static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
 	return index;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
 static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
+#else
+static int CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+#endif
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
 	mwait_idle_with_hints(MWAIT, 1UL);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	return index;
+#endif
 }
 #endif /* CONFIG_CPU_IDLE */
 
