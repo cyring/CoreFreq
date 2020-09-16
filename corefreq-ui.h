@@ -4,14 +4,37 @@
  * Licenses: GPL2
  */
 
-#define TOP_HEADER_ROW	3
-#define TOP_FOOTER_ROW	2
-#define TOP_SEPARATOR	3
+#ifdef NO_HEADER
+	#define TOP_HEADER_ROW	0
+#else
+	#define TOP_HEADER_ROW	3
+#endif
+
+#ifdef NO_FOOTER
+	#define TOP_FOOTER_ROW	0
+#else
+	#define TOP_FOOTER_ROW	2
+#endif
+
+#ifdef NO_UPPER
+	#define ADD_UPPER	0
+#else
+	#define ADD_UPPER	1
+#endif
+
+#ifdef NO_LOWER
+	#define ADD_LOWER	0
+#else
+	#define ADD_LOWER	1
+#endif
+
+#define TOP_SEPARATOR	(ADD_UPPER + (2 * ADD_LOWER))
 
 #define MAX_HEIGHT	((2 * CORE_COUNT)				\
-			+ TOP_HEADER_ROW				\
-			+ TOP_SEPARATOR					\
-			+ TOP_FOOTER_ROW)
+			+ 3	/*	HEADER_ROW	*/		\
+			+ 3	/*	SEPARATOR	*/		\
+			+ 2	/*	FOOTER_ROW	*/)
+
 #define MAX_WIDTH	320
 #define MIN_WIDTH	80
 

@@ -288,10 +288,7 @@ unsigned int Dec2Digit( const unsigned int length, unsigned int decimal,
 	return (length - j);
 }
 
-unsigned int Cels2Fahr(unsigned int cels)
-{
-	return (((cels * 117965) >> 16) + 32);
-}
+#define Cels2Fahr(cels)	(((cels * 117965) >> 16) + 32)
 
 const char *Indent[2][4] = {
 	{"",	"|",	"|- ",	"   |- "},
@@ -4764,12 +4761,12 @@ struct {
 	},
 	.View		= V_FREQ,
 	.Disposal	= D_MAINVIEW,
-	.Size		= {.width = 0, .height = 0},
-	.Area		= {.MinHeight = 0, .MaxRows = 0, .LoadWidth = 0},
+	.Size		= { .width = 0, .height = 0 },
+	.Area		= { .MinHeight = 0, .MaxRows = 0, .LoadWidth = 0 },
 	.iClock 	= 0,
 	.cpuScroll	= 0,
 	.Load		= 0,
-	.Unit		= {.Memory = 0},
+	.Unit		= { .Memory = 0 },
 	.SmbIndex	= SMB_BOARD_NAME
 };
 
@@ -5867,7 +5864,9 @@ Window *CreateSortByField(unsigned long long id)
 {
 	Window *wSortBy = CreateWindow( wLayer, id,
 					1, SORTBYCOUNT,
-				33, TOP_HEADER_ROW + draw.Area.MaxRows + 2,
+					33,
+					TOP_HEADER_ROW
+					+ draw.Area.MaxRows + 2,
 					WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
@@ -5931,10 +5930,13 @@ Window *CreateTracking(unsigned long long id)
 		const CUINT margin = 12;	/*	@ "Freq(MHz)"	*/
 		int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
 
-		Window *wTrack = CreateWindow(wLayer, id,
-				1, TOP_HEADER_ROW + draw.Area.MaxRows * 2,
-				margin, TOP_HEADER_ROW,
-				WINFLAG_NO_STOCK | WINFLAG_NO_BORDER);
+		Window *wTrack = CreateWindow( wLayer, id,
+						1,
+						TOP_HEADER_ROW
+						+ draw.Area.MaxRows * 2,
+						margin, TOP_HEADER_ROW,
+						WINFLAG_NO_STOCK
+						| WINFLAG_NO_BORDER );
 
 	    if (wTrack != NULL)
 	    {
@@ -7248,12 +7250,18 @@ Window *_CreateBox(	unsigned long long id,
 
 void TrapScreenSize(int caught)
 {
-    if (caught == SIGWINCH) {
+    if (caught == SIGWINCH)
+    {
+	const CUINT visualHeight= ((ADD_UPPER + ADD_LOWER) * CORE_COUNT)
+				+ TOP_HEADER_ROW
+				+ TOP_SEPARATOR
+				+ TOP_FOOTER_ROW;
+	CUINT computedHeight;
 	SCREEN_SIZE currentSize = GetScreenSize();
 
 	if (currentSize.height != draw.Size.height) {
-		if (currentSize.height > MAX_HEIGHT) {
-			draw.Size.height = MAX_HEIGHT;
+		if (currentSize.height > visualHeight) {
+			draw.Size.height = visualHeight;
 		} else {
 			draw.Size.height = currentSize.height;
 		}
@@ -7270,12 +7278,12 @@ void TrapScreenSize(int caught)
 		case V_VOLTAGE:
 		case V_ENERGY:
 		case V_SLICE:
-	/*10*/		draw.Area.MinHeight = 2 + TOP_HEADER_ROW
+	/*10*/		draw.Area.MinHeight = 0 + TOP_HEADER_ROW
 						+ TOP_SEPARATOR
 						+ TOP_FOOTER_ROW;
 			break;
 		case V_PACKAGE:
-	/*24*/		draw.Area.MinHeight =16 + TOP_HEADER_ROW
+	/*24*/		draw.Area.MinHeight= 16 + TOP_HEADER_ROW
 						+ TOP_SEPARATOR
 						+ TOP_FOOTER_ROW;
 			break;
@@ -7286,7 +7294,6 @@ void TrapScreenSize(int caught)
 					+ 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
 		break;
 	    }
-
 		draw.Flag.clear  = 1;
 		draw.Flag.height = !(draw.Size.height < draw.Area.MinHeight);
 	}
@@ -7299,12 +7306,16 @@ void TrapScreenSize(int caught)
 		draw.Flag.clear = 1;
 		draw.Flag.width = !(draw.Size.width < MIN_WIDTH);
 	}
-	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count,
-				(CUINT)(( draw.Size.height
-					- TOP_HEADER_ROW
-					- TOP_SEPARATOR
-					- TOP_FOOTER_ROW ) / 2));
+	computedHeight = (CUINT)( draw.Size.height
+				- TOP_HEADER_ROW
+				- TOP_SEPARATOR
+				- TOP_FOOTER_ROW );
 
+	computedHeight = computedHeight == 0 ? draw.Size.height
+			: computedHeight >> (ADD_UPPER & ADD_LOWER);
+
+	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, computedHeight);
+	draw.Area.LoadWidth = draw.Size.width - LOAD_LEAD;
 	draw.cpuScroll = 0;
 
 	if (draw.Flag.clear == 1 ) {
@@ -7332,6 +7343,18 @@ int Shortcut(SCANKEY *scan)
 	};
 
     switch (scan->key) {
+    case 0x3c:
+	if (draw.Disposal == D_MAINVIEW) {
+		draw.Size.height = 0;
+		TrapScreenSize(SIGWINCH);
+	}
+    break;
+    case 0x3e:
+	if (draw.Disposal == D_MAINVIEW) {
+		draw.Size.height = 0;
+		TrapScreenSize(SIGWINCH);
+	}
+    break;
     case SCANKEY_DOWN:
 	if (!IsDead(&winList)) {
 		return (-1);
@@ -7339,7 +7362,8 @@ int Shortcut(SCANKEY *scan)
 	/* Fallthrough */
     case SCANKEY_PLUS:
 	if ((draw.Disposal == D_MAINVIEW)
-	&&  (draw.cpuScroll < (Shm->Proc.CPU.Count - draw.Area.MaxRows))) {
+	&&  (draw.cpuScroll < (Shm->Proc.CPU.Count - draw.Area.MaxRows)))
+	{
 		draw.cpuScroll++;
 		draw.Flag.layout = 1;
 	}
@@ -10230,6 +10254,7 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &buffer[15],9);
 }
 
+#ifndef NO_HEADER
 void Layout_Header(Layer *layer, CUINT row)
 {
 	size_t len;
@@ -10365,6 +10390,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hArch2.origin.col, hArch2.origin.row,
 			hArch2.length, hArch2.attr, hArch2.code);
 }
+#endif
 
 void Layout_Ruler_Load(Layer *layer, CUINT row)
 {
@@ -10433,7 +10459,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, RSZ(LAYOUT_MONITOR_FREQUENCY),
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			(LOAD_LEAD - 1), row,
 			hMon0);
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
@@ -10450,7 +10476,7 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_INST, RSZ(LAYOUT_MONITOR_INST),
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			(LOAD_LEAD - 1), row,
 			hMon0);
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
@@ -10467,7 +10493,7 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_COMMON, RSZ(LAYOUT_MONITOR_COMMON),
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			(LOAD_LEAD - 1), row,
 			hMon0);
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
@@ -10489,7 +10515,7 @@ CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_TASKS, (MAX_WIDTH - LOAD_LEAD + 1),
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			(LOAD_LEAD - 1), row,
 			hMon0);
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
@@ -10504,7 +10530,7 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_SLICE, RSZ(LAYOUT_MONITOR_SLICE),
-			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
+			(LOAD_LEAD - 1), row,
 			hMon0);
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
@@ -11070,72 +11096,54 @@ void Layout_Footer(Layer *layer, CUINT row)
 				:	draw.Unit.Memory == 20 ? 'G' : 0x20;
 }
 
-void Layout_Load_UpperView(Layer *layer, const unsigned int cpu, CUINT row)
+void Layout_CPU_To_String(const unsigned int cpu)
 {
 	snprintf(buffer, 10+1, "%03u", cpu);
-	LayerAt(layer, code, 0, row) = buffer[0];
-	LayerAt(layer, code, 1, row) = buffer[1];
-	LayerAt(layer, code, 2, row) = buffer[2];
-
-	LayerAt(layer, attr, 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
-	LayerAt(layer, code, 3, row) = 0x20;
 }
 
-void Layout_Load_LowerView(Layer *layer, CUINT row)
+void Layout_CPU_To_View(Layer *layer, const CUINT col, const CUINT row)
 {
-	LayerAt(layer, code, 0, (1 + row + draw.Area.MaxRows)) = buffer[0];
-	LayerAt(layer, code, 1, (1 + row + draw.Area.MaxRows)) = buffer[1];
-	LayerAt(layer, code, 2, (1 + row + draw.Area.MaxRows)) = buffer[2];
+	LayerAt(layer,code, col + 0, row) = buffer[0];
+	LayerAt(layer,code, col + 1, row) = buffer[1];
+	LayerAt(layer,code, col + 2, row) = buffer[2];
+}
+
+void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
+{
+	LayerAt(layer, attr, col + 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
+	LayerAt(layer, code, col + 3, row) = 0x20;
+}
+
+CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
+				const unsigned int cpu, double ratio )
+{	/* Upper view area						*/
+	const CUINT	bar0 = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
+				* draw.Area.LoadWidth) / Ruler.Maximum,
+			bar1 = draw.Area.LoadWidth - bar0;
+
+	const ATTRIBUTE attr = MakeAttr( (ratio > Ruler.Median ? RED
+					: ratio > Ruler.Minimum ? YELLOW:GREEN),
+					0, BLACK, 1 );
+
+	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
+	/*	Pad with blank characters				*/
+	LayerFillAt(layer, (bar0 + LOAD_LEAD), row, bar1,
+			hSpace, MakeAttr(BLACK,0,BLACK,1));
+	return (0);
 }
 
 CUINT Draw_Relative_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
-	{
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-		/* Upper view area					*/
-		CUINT	bar0 =((CFlop->Relative.Ratio > Ruler.Maximum ?
-				Ruler.Maximum : CFlop->Relative.Ratio)
-				* draw.Area.LoadWidth) / Ruler.Maximum,
-			bar1 = draw.Area.LoadWidth - bar0;
-		/* Draw the relative Core frequency ratio		*/
-		LayerFillAt(layer, LOAD_LEAD, row,
-			bar0, hBar,
-			MakeAttr((CFlop->Relative.Ratio > Ruler.Median ?
-				RED : CFlop->Relative.Ratio > Ruler.Minimum ?
-					YELLOW : GREEN),
-				0, BLACK, 1));
-		/* Pad with blank characters				*/
-		LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
-				bar1, hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
-	}
-	return (0);
+	/*		Draw the relative Core frequency ratio		*/
+	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Relative.Ratio));
 }
 
 CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
-	{
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-		/* Upper view area					*/
-		CUINT	bar0 =((CFlop->Absolute.Ratio.Perf > Ruler.Maximum ?
-				Ruler.Maximum : CFlop->Absolute.Ratio.Perf)
-				* draw.Area.LoadWidth) / Ruler.Maximum,
-			bar1 = draw.Area.LoadWidth - bar0;
-		/* Draw the absolute Core frequency ratio		*/
-		LayerFillAt(layer, LOAD_LEAD, row,
-			bar0, hBar,
-			MakeAttr((CFlop->Absolute.Ratio.Perf > Ruler.Median ?
-				RED:CFlop->Absolute.Ratio.Perf > Ruler.Minimum ?
-					YELLOW : GREEN),
-				0, BLACK, 1));
-		/* Pad with blank characters				*/
-		LayerFillAt(layer, (bar0 + LOAD_LEAD), row,
-				bar1, hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
-	}
-	return (0);
+	/*		Draw the absolute Core frequency ratio		*/
+	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Absolute.Ratio.Perf));
 }
 
 size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
@@ -12508,7 +12516,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len;
 
-	row += 2 + draw.Area.MaxRows;
+	row += 1 + draw.Area.MaxRows;
 	if (!draw.Flag.avgOrPC) {
 		len = snprintf( buffer, 11+42+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
@@ -12540,7 +12548,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_AltMonitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	row += 1 + TOP_FOOTER_ROW + draw.Area.MaxRows;
+	row += 2 + draw.Area.MaxRows;
 	return (row);
 }
 
@@ -12550,7 +12558,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	CUINT bar0, bar1, margin = draw.Area.LoadWidth - 28;
 	size_t len;
 
-	row += 2;
+	row += 1;
 /* PC02 */
 	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
@@ -12633,7 +12641,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	ATTRIBUTE *stateAttr;
 
 	/* Clear the trailing garbage chars left by the previous drawing. */
-	FillLayerArea(	layer, (LOAD_LEAD + 8), (row + 2),
+	FillLayerArea(	layer, (LOAD_LEAD + 8), (row + 1),
 			(draw.Size.width - (LOAD_LEAD + 8)), draw.Area.MaxRows,
 			hSpace, MakeAttr(BLACK, 0, BLACK, 0) );
 
@@ -12723,11 +12731,11 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
       }
     }
   }
-  row += 3 + draw.Area.MaxRows;
+  row += 2 + draw.Area.MaxRows;
   return (row);
 }
 
-void Draw_AltMonitor_Energy_Joule(Layer *layer, CUINT row)
+void Draw_AltMonitor_Energy_Joule(void)
 {
 	snprintf(buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
@@ -12737,7 +12745,7 @@ void Draw_AltMonitor_Energy_Joule(Layer *layer, CUINT row)
 		Shm->Proc.State.Energy[PWR_DOMAIN(RAM)].Current);
 }
 
-void Draw_AltMonitor_Power_Watt(Layer *layer, CUINT row)
+void Draw_AltMonitor_Power_Watt(void)
 {
 	snprintf(buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
@@ -12747,7 +12755,7 @@ void Draw_AltMonitor_Power_Watt(Layer *layer, CUINT row)
 		Shm->Proc.State.Power[PWR_DOMAIN(RAM)].Current);
 }
 
-void (*Draw_AltMonitor_Power_Matrix[])(Layer*, CUINT) = {
+void (*Draw_AltMonitor_Power_Matrix[])(void) = {
 	Draw_AltMonitor_Energy_Joule,
 	Draw_AltMonitor_Power_Watt
 };
@@ -12755,9 +12763,9 @@ void (*Draw_AltMonitor_Power_Matrix[])(Layer*, CUINT) = {
 CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	const CUINT col = LOAD_LEAD;
-	row += 2 + draw.Area.MaxRows;
+	row += 1 + draw.Area.MaxRows;
 
-	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt](layer, row);
+	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt]();
 
 	memcpy(&LayerAt(layer, code, col +  1,	row), &buffer[24], 8);
 	memcpy(&LayerAt(layer, code, col + 22,	row), &buffer[16], 8);
@@ -12768,10 +12776,21 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	return (row);
 }
 
+/* >>> GLOBALS >>> */
+char *Format_Temp_Voltage[2][2] = {
+	[0]={ [0]="\x20\x20\x20\x20\x20\x20\x20", [1]="\x20\x20\x20%2$4.2f" },
+	[1]={ [0]="%1$3u\x20\x20\x20\x20"	, [1]="%1$3u%2$4.2f" }
+};
+/* <<< GLOBALS <<< */
+
 void Draw_Footer_Voltage_Fahrenheit(	struct PKG_FLIP_FLOP *PFlop,
 					struct FLIP_FLOP *SProc )
 {
-	snprintf(buffer, 10+5+1, "%3u%4.2f",
+	const enum FORMULA_SCOPE fmt[2] = {
+	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
+	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
+	};
+	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			Cels2Fahr(PFlop->Thermal.Temp),
 			SProc->Voltage.Vcore);
 }
@@ -12779,7 +12798,11 @@ void Draw_Footer_Voltage_Fahrenheit(	struct PKG_FLIP_FLOP *PFlop,
 void Draw_Footer_Voltage_Celsius(	struct PKG_FLIP_FLOP *PFlop,
 					struct FLIP_FLOP *SProc )
 {
-	snprintf(buffer, 10+5+1, "%3u%4.2f",
+	const enum FORMULA_SCOPE fmt[2] = {
+	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
+	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
+	};
+	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			PFlop->Thermal.Temp,
 			SProc->Voltage.Vcore);
 }
@@ -12861,6 +12884,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 	}
 }
 
+#ifndef NO_HEADER
 void Draw_Header(Layer *layer, CUINT row)
 {	/* Update Header view area					*/
 	struct FLIP_FLOP *CFlop;
@@ -12908,6 +12932,7 @@ void Draw_Header(Layer *layer, CUINT row)
 	LayerAt(layer, code, 26 +  9, row) = digit[7] + '0';
 	LayerAt(layer, code, 26 + 10, row) = digit[8] + '0';
 }
+#endif
 
 /* >>> GLOBALS >>> */
 VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
@@ -12972,19 +12997,36 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 };
 /* <<< GLOBALS <<< */
 
+#ifndef NO_UPPER
+	#define Illuminates_Upper_CPU_At(_layer, _col, _row)		\
+		LayerAt(_layer, attr, _col, _row) =
+#else
+	#define Illuminates_Upper_CPU_At(_layer, _col, _row)
+#endif
+
+#ifndef NO_LOWER
+#ifndef NO_UPPER
+	#define Illuminates_Lower_CPU_At(_layer, _col, _row)		\
+		LayerAt(_layer, attr, _col, (1 + _row + draw.Area.MaxRows)) =
+#else
+	#define Illuminates_Lower_CPU_At(_layer, _col, _row)		\
+		LayerAt(_layer, attr, _col, (_row)) =
+#endif
+#else
+	#define Illuminates_Lower_CPU_At(_layer, _col, _row)
+#endif
+
 #define Illuminates_CPU(_layer, _row, fg, bg, hi)			\
 ({									\
-	LayerAt(_layer, attr, 0, _row) =				\
-		LayerAt(_layer, attr, 0, (1 + _row + draw.Area.MaxRows)) =\
+	Illuminates_Upper_CPU_At(_layer, 0, _row)			\
+	Illuminates_Lower_CPU_At(_layer, 0, _row)			\
+	Illuminates_Upper_CPU_At(_layer, 1, _row)			\
+	Illuminates_Lower_CPU_At(_layer, 1, _row)			\
+	Illuminates_Upper_CPU_At(_layer, 2, _row)			\
+	Illuminates_Lower_CPU_At(_layer, 2, _row)			\
+									\
 						MakeAttr(fg, 0, bg, hi);\
 									\
-	LayerAt(_layer, attr, 1, _row) =				\
-		LayerAt(_layer, attr, 1, (1 + _row + draw.Area.MaxRows)) =\
-						MakeAttr(fg, 0, bg, hi);\
-									\
-	LayerAt(_layer, attr, 2, _row) =				\
-		LayerAt(_layer, attr, 2, (1 + _row + draw.Area.MaxRows)) =\
-						MakeAttr(fg, 0, bg, hi);\
 })
 
 void Layout_Header_DualView_Footer(Layer *layer)
@@ -12992,34 +13034,52 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	unsigned int cpu;
 	CUINT row = 0;
 
-	draw.Area.LoadWidth = draw.Size.width - LOAD_LEAD;
-
+#ifndef NO_HEADER
 	Layout_Header(layer, row);
-
+#endif
 	row += TOP_HEADER_ROW;
-
+#ifndef NO_UPPER
 	Layout_Ruler_Load(layer, row);
+#endif
+  for(cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
+  {
+	Layout_CPU_To_String(cpu);
+#ifndef NO_UPPER
+	Layout_CPU_To_View(layer, 0, row + 1);
 
-    for(cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
+	Layout_BCLK_To_View(layer, 0, row + 1);
+#endif
+	row = row + 1;
+#ifndef NO_LOWER
+#ifndef NO_UPPER
+    if (draw.View != V_PACKAGE) {
+	Layout_CPU_To_View(layer, 0, row + draw.Area.MaxRows + 1);
+    }
+#else
+    if (draw.View != V_PACKAGE) {
+	Layout_CPU_To_View(layer, 0, row);
+    }
+#endif
+#endif
+    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
     {
-	row++;
-
-	Layout_Load_UpperView(layer, cpu, row);
-
-	if (draw.View != V_PACKAGE) {
-		Layout_Load_LowerView(layer, row);
-	}
-      if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-      {
-	if (cpu == Shm->Proc.Service.Core)
+	if (cpu == Shm->Proc.Service.Core) {
 		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
-	else if ((signed int) cpu == Shm->Proc.Service.Thread)
+	} else if ((signed int) cpu == Shm->Proc.Service.Thread) {
 		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
-	else
+	} else {
 		Illuminates_CPU(layer, row, CYAN, BLACK, 0);
-
-	Matrix_Layout_Monitor[draw.View](layer, cpu, row);
-      } else {
+	}
+#ifndef NO_LOWER
+#ifndef NO_UPPER
+	Matrix_Layout_Monitor[draw.View](layer,cpu,row + draw.Area.MaxRows + 1);
+#else
+	Matrix_Layout_Monitor[draw.View](layer,cpu,row);
+#endif
+#endif
+    }
+    else
+    {
 	Illuminates_CPU(layer, row, BLUE, BLACK, 0);
 
 	ClearGarbage(	dLayer, code,
@@ -13033,13 +13093,19 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			(draw.Size.width - LOAD_LEAD + 1));
-      }
     }
+  }
 	row++;
-
+#ifndef NO_LOWER
+#ifndef NO_UPPER
 	row = Matrix_Layout_Ruler[draw.View](layer, 0, row);
-
+#else
+	row = Matrix_Layout_Ruler[draw.View](layer, 0, TOP_HEADER_ROW);
+#endif
+#endif
+#ifndef NO_FOOTER
 	Layout_Footer(layer, row);
+#endif
 }
 
 void Dynamic_Header_DualView_Footer(Layer *layer)
@@ -13049,37 +13115,52 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	processorEvents = PFlop->Thermal.Events;
-
+#ifndef NO_HEADER
 	Draw_Header(layer, row);
-
+#endif
 	row += TOP_HEADER_ROW;
 
-	for (cpu = draw.cpuScroll;
-		cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
-	{
-		struct FLIP_FLOP *CFlop;
-		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+  for (cpu = draw.cpuScroll; cpu < (draw.cpuScroll + draw.Area.MaxRows); cpu++)
+  {
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 
-		processorEvents |= CFlop->Thermal.Events;
+	processorEvents |= CFlop->Thermal.Events;
 
-		row++;
+	row++;
 
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
-	    {
-		Matrix_Draw_Load[draw.Load](layer, cpu, row);
-
-		/* Print the Per Core BCLK indicator (yellow)		*/
-		LayerAt(layer, code, (LOAD_LEAD - 1), row) =
+    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+    {
+      if (!BITVAL(Shm->Cpu[cpu].OffLine, HW))
+      {
+#ifndef NO_UPPER
+	Matrix_Draw_Load[draw.Load](layer, cpu, row);
+#endif
+      }
+#ifndef NO_UPPER
+	/*	Print the Per Core BCLK indicator (yellow)		*/
+	LayerAt(layer, code, (LOAD_LEAD - 1), row) =
 			(draw.iClock == (cpu - draw.cpuScroll)) ? '~' : 0x20;
-
-		Matrix_Draw_Monitor[draw.View](layer,
-						cpu,
-						(1 + row + draw.Area.MaxRows));
-	    }
-	}
+#endif
+#ifndef NO_LOWER
+#ifndef NO_UPPER
+	Matrix_Draw_Monitor[draw.View](layer, cpu, row + draw.Area.MaxRows + 1);
+#else
+	Matrix_Draw_Monitor[draw.View](layer, cpu, row);
+#endif
+#endif
+    }
+  }
+	row++;
+#ifndef NO_LOWER
+#ifndef NO_UPPER
 	row = Matrix_Draw_AltMon[draw.View](layer, 0, row);
-
+#else
+	row = Matrix_Draw_AltMon[draw.View](layer, 0, TOP_HEADER_ROW);
+#endif
+#endif
+#ifndef NO_FOOTER
 	Draw_Footer(layer, row);
+#endif
 }
 
 void Layout_Card_Core(Layer *layer, Card *card)
@@ -13163,24 +13244,26 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hBus);
 
-	snprintf(buffer, 10+1, "%4u", Shm->Uncore.Bus.Rate);
-	hBus.code[5] = buffer[0];
-	hBus.code[6] = buffer[1];
-	hBus.code[7] = buffer[2];
-	hBus.code[8] = buffer[3];
+	snprintf(buffer, 10+1, "%4.1f", Shm->Uncore.Bus.Rate / 1000.f);
+	hBus.code[4] = buffer[0];
+	hBus.code[5] = buffer[1];
+	hBus.code[6] = buffer[2];
+	hBus.code[7] = buffer[3];
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
 	case 0b00:
-		hBus.code[ 9] = 'M';
-		hBus.code[10] = 'H';
+		hBus.code[ 8] = 'G';
+		hBus.code[ 9] = 'H';
+		hBus.code[10] = 'z';
 		break;
 	case 0b01:
-		hBus.code[ 9] = 'M';
+		hBus.code[ 9] = 'G';
 		hBus.code[10] = 'T';
 		break;
 	case 0b10:
-		hBus.code[ 9] = 'M';
-		hBus.code[10] = 'B';
+		hBus.code[ 8] = 'G';
+		hBus.code[ 9] = 'B';
+		hBus.code[10] = 's';
 		break;
 	}
 
@@ -13191,36 +13274,27 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			(double) Shm->Uncore.Bus.Speed);
 }
 
+static char Card_MC_Timing[11+11+11+11+11+11+6+1];
+
 void Layout_Card_MC(Layer *layer, Card *card)
 {
 	LayerDeclare(	LAYOUT_CARD_MC, (4 * INTER_WIDTH),
 			card->origin.col, (card->origin.row + 3),
 			hRAM);
 
-	unsigned int timings[4] = {
-		Shm->Uncore.MC[0].Channel[0].Timing.tCL,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRP,
-		Shm->Uncore.MC[0].Channel[0].Timing.tRAS
-	}, tdx, bdx = 0, ldx, sdx;
-	char str[10+1];
-	for (tdx = 0; tdx < 4; tdx++) {
-		ldx = snprintf(str, 10+1, "%u", timings[tdx]);
-		sdx = 0;
-		while (sdx < ldx)
-			buffer[bdx++] = str[sdx++];
-		if ((9 - bdx) > ldx) {
-			if (tdx < 3)
-				buffer[bdx++] = '-';
-		} else {
-			break;
-		}
-	}
-	for (sdx = 0, ldx = 10 - bdx; sdx < bdx; sdx++, ldx++)
-		hRAM.code[ldx] = buffer[sdx];
+	card->data.dword.lo = 0;
+	card->data.dword.hi = snprintf(	Card_MC_Timing, 11+11+11+11+11+11+6+1,
+					"%2u-%2u-%2u-%2u-%2u-%1uT",
+				Shm->Uncore.MC[0].Channel[0].Timing.tCL,
+				Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
+				Shm->Uncore.MC[0].Channel[0].Timing.tRP,
+				Shm->Uncore.MC[0].Channel[0].Timing.tRAS,
+				Shm->Uncore.MC[0].Channel[0].Timing.tRC,
+				Shm->Uncore.MC[0].Channel[0].Timing.CMD_Rate );
 
 	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
 			hRAM.length, hRAM.attr, hRAM.code);
+
 	if (Shm->Uncore.CtrlCount > 0) {
 		Counter2LCD(layer, card->origin.col, card->origin.row,
 				(double) Shm->Uncore.CtrlSpeed);
@@ -13444,6 +13518,17 @@ void Draw_Card_Uncore(Layer *layer, Card *card)
 	Idle2LCD(layer, card->origin.col, card->origin.row, Uncore);
 }
 
+void Draw_Card_MC(Layer *layer, Card *card)
+{
+	memcpy( &LayerAt(layer,code, (card->origin.col+1),(card->origin.row+3)),
+		&Card_MC_Timing[card->data.dword.lo], 10);
+
+	card->data.dword.lo++;
+	if ((card->data.dword.lo + 10) > card->data.dword.hi) {
+		card->data.dword.lo = 0;
+	}
+}
+
 void Draw_Card_Load(Layer *layer, Card* card)
 {
 	double percent = 100.f * Shm->Proc.Avg.C0;
@@ -13599,7 +13684,7 @@ void AllocDashboard(void)
 
 		AppendCard(card, &cardList);
 		StoreCard(card, .Layout, Layout_Card_MC);
-		StoreCard(card, .Draw, Dont_Draw_Card);
+		StoreCard(card, .Draw, Draw_Card_MC);
 	}
 	if ((card = CreateCard()) != NULL) {
 		card->data.dword.lo = 0;
@@ -13666,24 +13751,24 @@ REASON_CODE Top(char option)
 {
 /*
            SCREEN
- __________________________
-|           MENU           |
-|                       T  |
-|  L       HEADER          |
-|                       R  |
-|--E ----------------------|
-|                       A  |
-|  A        LOAD           |
-|                       I  |
-|--D ----------------------|
-|                       L  |
-|  I       MONITOR         |
-|                       I  |
-|--N ----------------------|
-|                       N  |
-|  G       FOOTER          |
-|                       G  |
-`__________________________'
+ __________________________   __________________________
+|           MENU           | |           MENU           |
+|                       T  | |                          |
+|  L       HEADER          | |        NO_HEADER         |
+|                       R  | |                          |
+|--E ----------------------| |                          |
+|                       A  | |                          |
+|  A        LOAD           | |         NO_UPPER         |
+|                       I  | |                          |
+|--D ----------------------| |                          |
+|                       L  | |                          |
+|  I       MONITOR         | |         NO_LOWER         |
+|                       I  | |                          |
+|--N ----------------------| |                          |
+|                       N  | |                          |
+|  G       FOOTER          | |        NO_FOOTER         |
+|                       G  | |                          |
+`__________________________' `__________________________'
 */
 
 	REASON_INIT(reason);
@@ -13788,12 +13873,15 @@ REASON_CODE Top(char option)
 		DynamicView[draw.Disposal](dLayer);
 
 		/* Increment the BCLK indicator (skip offline CPU)	*/
+	#ifndef NO_UPPER
 		do {
 			draw.iClock++;
-			if (draw.iClock >= draw.Area.MaxRows)
+			if (draw.iClock >= draw.Area.MaxRows) {
 				draw.iClock = 0;
+			}
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
+	#endif
 	}
 	Draw_uBenchmark(dLayer);
 	/* Write to the standard output.				*/

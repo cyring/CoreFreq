@@ -945,8 +945,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.MP_Mode);
 						json_key(&s, "SVM");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.SVM);
-						json_key(&s, "Ext_APIC");
-						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.Ext_APIC);
+						json_key(&s, "Ext_APIC_Space");
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.xApicSpace);
 						json_key(&s, "AltMov");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.AltMov);
 						json_key(&s, "ABM");
@@ -984,7 +984,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 						json_key(&s, "TBM");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.TBM);
 						json_key(&s, "TopoExt");
-						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.TopoExt);
+						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.ExtApicId);
 						json_key(&s, "PerfCore");
 						json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtInfo.ECX.PerfCore);
 						json_key(&s, "PerfNB");

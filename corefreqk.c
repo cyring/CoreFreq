@@ -1615,7 +1615,7 @@ static void Map_AMD_Topology(void *arg)
 				  - (Core->T.PackageID
 					<< leaf80000008.ECX.ApicIdCoreIdSize);
 
-	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.TopoExt == 1)
+	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
 	    {
 		CPUID_0x8000001e leaf8000001e;
 
@@ -1653,7 +1653,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_MTS:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
-	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.TopoExt == 1)
+	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
 	    {
 		struct CACHE_INFO CacheInfo = {
 			.AX = 0, .BX = 0, .CX = 0, .DX = 0, .Size = 0

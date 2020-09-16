@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	80
-#define COREFREQ_REV	9
+#define COREFREQ_MINOR	81
+#define COREFREQ_REV	0
 
 #define CORE_COUNT	256
 
@@ -583,7 +583,7 @@ typedef struct
 		DCA	: 19-18,
 		SSE41	: 20-19,
 		SSE42	: 21-20,
-		x2APIC	: 22-21,
+		x2APIC	: 22-21, /* x2APIC capability			*/
 		MOVBE	: 23-22,
 		POPCNT	: 24-23,
 		TSCDEAD : 25-24,
@@ -936,7 +936,7 @@ typedef struct
 		LahfSahf:  1-0,
 		MP_Mode :  2-1,  /* Core multi-processing legacy mode.	*/
 		SVM	:  3-2,  /* Secure virtual machine.		*/
-		Ext_APIC:  4-3,  /* Extended APIC space.		*/
+		xApicSpace:4-3,  /* Extended APIC space.		*/
 		AltMov	:  5-4,  /* AltMovCr8				*/
 		ABM	:  6-5,  /* LZCNT instruction support.		*/
 		SSE4A	:  7-6,
@@ -956,7 +956,7 @@ typedef struct
 		NodeId	: 20-19, /* Family 10h				*/
 		NotUsed3: 21-20,
 		TBM	: 22-21, /* Trailing bit manipulation.		*/
-		TopoExt : 23-22, /* Topology extensions support.	*/
+		ExtApicId:23-22, /* Topology extensions in CPUID_0x8000001e */
 		PerfCore: 24-23, /* PerfCtrExtCore MSR.			*/
 		PerfNB	: 25-24, /* PerfCtrExtNB MSR.			*/
 		NotUsed4: 26-25,
@@ -1148,7 +1148,7 @@ typedef struct	/* AMD Extended ID Leaf.				*/
 { /* Remark: all registers valid if CPUID(0x80000001).ECX.TopoEx == 1	*/
 	struct {
 		unsigned int
-		ExtApicId	: 32-0;/* Valid if MSR(APIC_BAR[ApicEn]) != 0 */
+		ExtApicId	: 32-0;/* iff MSR(APIC_BAR[APIC_EN]) == 1 */
 	} EAX;
     union
 	{

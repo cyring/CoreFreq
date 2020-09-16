@@ -987,6 +987,7 @@ static void *Core_Cycle(void *arg)
 							Core->Clock,
 							Shm->Sleep.Interval );
 	/* Per Core, evaluate thermal properties.			*/
+	CFlip->Thermal.Temp	= 0;
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
 	CFlip->Thermal.Param	= Core->PowerThermal.Param;
@@ -4270,26 +4271,28 @@ unsigned int AMD_L2_L3_Way_Associativity(CORE_RO **Core,
 }
 
 void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
-{	/* Copy each Core topology.					*/
+{
+	unsigned int loop;
+	/* Copy each Core topology.					*/
 	Shm->Cpu[cpu].Topology.MP.BSP     = (Core[cpu]->T.Base.BSP) ? 1 : 0;
 	Shm->Cpu[cpu].Topology.ApicID     = Core[cpu]->T.ApicID;
 	Shm->Cpu[cpu].Topology.CoreID     = Core[cpu]->T.CoreID;
 	Shm->Cpu[cpu].Topology.ThreadID   = Core[cpu]->T.ThreadID;
 	Shm->Cpu[cpu].Topology.PackageID  = Core[cpu]->T.PackageID;
 	Shm->Cpu[cpu].Topology.Cluster.ID = Core[cpu]->T.Cluster.ID;
+	/* x2APIC capability.						*/
 	Shm->Cpu[cpu].Topology.MP.x2APIC  = Proc->Features.Std.ECX.x2APIC;
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-	Shm->Cpu[cpu].Topology.MP.x2APIC |= Proc->Features.ExtInfo.ECX.Ext_APIC;
+	Shm->Cpu[cpu].Topology.MP.x2APIC |=Proc->Features.ExtInfo.ECX.ExtApicId;
     }
-	Shm->Cpu[cpu].Topology.MP.x2APIC &= Core[cpu]->T.Base.EN;
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-    {
+	/* Is local APIC enabled in xAPIC mode ?			*/
+	Shm->Cpu[cpu].Topology.MP.x2APIC &= Core[cpu]->T.Base.APIC_EN;
+	/* Is xAPIC enabled in x2APIC mode ?				*/
 	Shm->Cpu[cpu].Topology.MP.x2APIC  = Shm->Cpu[cpu].Topology.MP.x2APIC
-						<< Core[cpu]->T.Base.EXTD;
-    }
-	unsigned int loop;
+						<< Core[cpu]->T.Base.x2APIC_EN;
+	/* Aggregate the Caches topology.				*/
     for (loop = 0; loop < CACHE_MAX_LEVEL; loop++)
     {
       if (Core[cpu]->T.Cache[loop].Type > 0)

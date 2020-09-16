@@ -80,8 +80,8 @@ typedef union
 		ReservedBits1	:  8-0,
 		BSP		:  9-8,
 		ReservedBits2	: 10-9,
-		EXTD		: 11-10,	/* Intel Nehalem [06_1A] */
-		EN		: 12-11,
+		x2APIC_EN	: 11-10, /* Intel Nehalem [06_1A]; AMD[F17h] */
+		APIC_EN		: 12-11, /* Intel P4, Xeon, P6; AMD	*/
 		Addr		: 64-12;
 	};
 } LOCAL_APIC;
