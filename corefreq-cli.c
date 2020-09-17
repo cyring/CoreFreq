@@ -7250,78 +7250,58 @@ Window *_CreateBox(	unsigned long long id,
 
 void TrapScreenSize(int caught)
 {
-    if (caught == SIGWINCH)
+  if (caught == SIGWINCH)
+  {
+	SCREEN_SIZE currentSize = GetScreenSize();
+	CUINT areaMaxRows = 1;
+
+    if (currentSize.height != draw.Size.height)
     {
-	const CUINT visualHeight= ((ADD_UPPER + ADD_LOWER) * CORE_COUNT)
+	if (currentSize.height > MAX_HEIGHT) {
+		draw.Size.height = MAX_HEIGHT;
+	} else {
+		draw.Size.height = currentSize.height;
+	}
+	switch (draw.Disposal) {
+	case D_MAINVIEW:
+	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 8 : 0))
 				+ TOP_HEADER_ROW
 				+ TOP_SEPARATOR
 				+ TOP_FOOTER_ROW;
-	CUINT computedHeight;
-	SCREEN_SIZE currentSize = GetScreenSize();
-
-	if (currentSize.height != draw.Size.height) {
-		if (currentSize.height > visualHeight) {
-			draw.Size.height = visualHeight;
-		} else {
-			draw.Size.height = currentSize.height;
-		}
-	    switch (draw.Disposal) {
-	    case D_MAINVIEW:
-		switch (draw.View) {
-		case V_FREQ:
-		case V_INST:
-		case V_CYCLES:
-		case V_CSTATES:
-		case V_TASKS:
-		case V_INTR:
-		case V_SENSORS:
-		case V_VOLTAGE:
-		case V_ENERGY:
-		case V_SLICE:
-	/*10*/		draw.Area.MinHeight = 0 + TOP_HEADER_ROW
-						+ TOP_SEPARATOR
-						+ TOP_FOOTER_ROW;
-			break;
-		case V_PACKAGE:
-	/*24*/		draw.Area.MinHeight= 16 + TOP_HEADER_ROW
-						+ TOP_SEPARATOR
-						+ TOP_FOOTER_ROW;
-			break;
-		}
-		break;
-	    default:
-	/*11*/	draw.Area.MinHeight = LEADING_TOP
-					+ 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
-		break;
-	    }
-		draw.Flag.clear  = 1;
-		draw.Flag.height = !(draw.Size.height < draw.Area.MinHeight);
+	break;
+	default:
+	draw.Area.MinHeight = LEADING_TOP + 2 * (MARGIN_HEIGHT + INTER_HEIGHT);
+	break;
 	}
-	if (currentSize.width != draw.Size.width) {
-		if (currentSize.width > MAX_WIDTH) {
-			draw.Size.width = MAX_WIDTH;
-		} else {
-			draw.Size.width = currentSize.width;
-		}
-		draw.Flag.clear = 1;
-		draw.Flag.width = !(draw.Size.width < MIN_WIDTH);
+	draw.Flag.clear  = 1;
+	draw.Flag.height = !(draw.Size.height < draw.Area.MinHeight);
+    }
+    if (currentSize.width != draw.Size.width) {
+	if (currentSize.width > MAX_WIDTH) {
+		draw.Size.width = MAX_WIDTH;
+	} else {
+		draw.Size.width = currentSize.width;
 	}
-	computedHeight = (CUINT)( draw.Size.height
-				- TOP_HEADER_ROW
-				- TOP_SEPARATOR
-				- TOP_FOOTER_ROW );
-
-	computedHeight = computedHeight == 0 ? draw.Size.height
-			: computedHeight >> (ADD_UPPER & ADD_LOWER);
-
-	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, computedHeight);
+	draw.Flag.clear = 1;
+	draw.Flag.width = !(draw.Size.width < MIN_WIDTH);
+    }
+    if ((ADD_UPPER | ADD_LOWER) && (draw.Size.height > draw.Area.MinHeight)) {
+	areaMaxRows = draw.Size.height - draw.Area.MinHeight;
+      if (draw.View != V_PACKAGE) {
+	areaMaxRows = areaMaxRows >> (ADD_UPPER & ADD_LOWER);
+      }
+      if (!areaMaxRows) {
+	areaMaxRows = 1;
+      }
+    }
+	draw.Area.MaxRows = CUMIN(Shm->Proc.CPU.Count, areaMaxRows);
 	draw.Area.LoadWidth = draw.Size.width - LOAD_LEAD;
 	draw.cpuScroll = 0;
 
-	if (draw.Flag.clear == 1 ) {
-		ReScaleAllWindows(&winList);
-	}
+    if (draw.Flag.clear == 1 ) {
+	ReScaleAllWindows(&winList);
     }
+  }
 }
 
 int Shortcut(SCANKEY *scan)
