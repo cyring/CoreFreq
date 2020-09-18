@@ -5874,7 +5874,12 @@ Window *CreateSortByField(unsigned long long id)
 					1, SORTBYCOUNT,
 					33,
 					TOP_HEADER_ROW
-					+ draw.Area.MaxRows + 2,
+				#ifndef NO_UPPER
+					+ draw.Area.MaxRows
+					+ 2,
+				#else
+					+ 1,
+				#endif
 					WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
@@ -10375,6 +10380,7 @@ void Layout_Header(Layer *layer, CUINT row)
 }
 #endif /* NO_HEADER */
 
+#ifndef NO_UPPER
 void Layout_Ruler_Load(Layer *layer, CUINT row)
 {
 	LayerDeclare(LAYOUT_RULER_LOAD, draw.Size.width, 0, row, hLoad0);
@@ -10438,7 +10444,9 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 	}
     }
 }
+#endif /* NO_UPPER */
 
+#ifndef NO_LOWER
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, RSZ(LAYOUT_MONITOR_FREQUENCY),
@@ -10729,7 +10737,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	};
 
 	LayerDeclare(LAYOUT_TASKS_VALUE_SWITCH, RSZ(LAYOUT_TASKS_VALUE_SWITCH),
-			(draw.Size.width - 34), (row + draw.Area.MaxRows + 1),
+			(draw.Size.width - 34),
+			(row + draw.Area.MaxRows + 1),
 			hTask3);
 
 	struct {
@@ -10861,6 +10870,7 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	row += draw.Area.MaxRows + 2;
 	return (row);
 }
+#endif /* NO_LOWER */
 
 #ifndef NO_FOOTER
 void Layout_Footer(Layer *layer, CUINT row)
@@ -11099,6 +11109,7 @@ void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
 	LayerAt(layer, code, col + 3, row) = 0x20;
 }
 
+#ifndef NO_UPPER
 CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 				const unsigned int cpu, double ratio )
 {	/* Upper view area						*/
@@ -11130,7 +11141,9 @@ CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 	/*		Draw the absolute Core frequency ratio		*/
 	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Absolute.Ratio.Perf));
 }
+#endif /* NO_UPPER */
 
+#ifndef NO_LOWER
 size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
@@ -12760,7 +12773,9 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	row += 1;
 	return (row);
 }
+#endif /* NO_LOWER */
 
+#ifndef NO_FOOTER
 /* >>> GLOBALS >>> */
 char *Format_Temp_Voltage[2][2] = {
 	[0]={ [0]="\x20\x20\x20\x20\x20\x20\x20", [1]="\x20\x20\x20%2$4.2f" },
@@ -12798,7 +12813,6 @@ void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
 	Draw_Footer_Voltage_Fahrenheit
 };
 
-#ifndef NO_FOOTER
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -12922,6 +12936,7 @@ void Draw_Header(Layer *layer, CUINT row)
 #endif /* NO_HEADER */
 
 /* >>> GLOBALS >>> */
+#ifndef NO_LOWER
 VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
 	Layout_Monitor_Frequency,
 	Layout_Monitor_Instructions,
@@ -12949,12 +12964,16 @@ VIEW_FUNC Matrix_Layout_Ruler[VIEW_SIZE] = {
 	Layout_Ruler_Energy,
 	Layout_Ruler_Slice
 };
+#endif /* NO_LOWER */
 
+#ifndef NO_UPPER
 VIEW_FUNC Matrix_Draw_Load[] = {
 	Draw_Relative_Load,
 	Draw_Absolute_Load
 };
+#endif /* NO_UPPER */
 
+#ifndef NO_LOWER
 VIEW_FUNC Matrix_Draw_Monitor[VIEW_SIZE] = {
 	Draw_Monitor_Frequency,
 	Draw_Monitor_Instructions,
@@ -12982,6 +13001,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Common
 };
+#endif /* NO_LOWER */
 /* <<< GLOBALS <<< */
 
 #ifndef NO_UPPER
@@ -13069,10 +13089,13 @@ void Layout_Header_DualView_Footer(Layer *layer)
     {
 	Illuminates_CPU(layer, row, BLUE, BLACK, 0);
 
+#ifndef NO_UPPER
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
 			(draw.Size.width - LOAD_LEAD + 1));
-
+#endif
+#ifndef NO_LOWER
+#ifndef NO_UPPER
 	ClearGarbage(	dLayer, attr,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			(draw.Size.width - LOAD_LEAD + 1));
@@ -13080,6 +13103,12 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			(draw.Size.width - LOAD_LEAD + 1));
+#else
+	ClearGarbage(	dLayer, code,
+			(LOAD_LEAD - 1), row,
+			(draw.Size.width - LOAD_LEAD + 1));
+#endif
+#endif
     }
   }
 	row++;

@@ -43,6 +43,7 @@ ASCII	Rsc_Layout_Header_Caches_Code_En[] = RSC_LAYOUT_HEADER_CACHES_CODE;
 #define Rsc_Layout_Header_Caches_Code_Fr Rsc_Layout_Header_Caches_Code_En
 #endif /* NO_HEADER */
 
+#ifndef NO_UPPER
 ATTRIBUTE Rsc_Layout_Ruler_Load_Attr[] = RSC_LAYOUT_RULER_LOAD_ATTR;
 ASCII	Rsc_Layout_Ruler_Load_Code_En[] = RSC_LAYOUT_RULER_LOAD_CODE;
 #define Rsc_Layout_Ruler_Load_Code_Fr Rsc_Layout_Ruler_Load_Code_En
@@ -54,7 +55,9 @@ ASCII	Rsc_Layout_Ruler_Rel_Load_Code_En[] = RSC_LAYOUT_RULER_REL_LOAD_CODE_EN,
 	Rsc_Layout_Ruler_Rel_Load_Code_Fr[] = RSC_LAYOUT_RULER_REL_LOAD_CODE_FR,
 	Rsc_Layout_Ruler_Abs_Load_Code_En[] = RSC_LAYOUT_RULER_ABS_LOAD_CODE_EN,
 	Rsc_Layout_Ruler_Abs_Load_Code_Fr[] = RSC_LAYOUT_RULER_ABS_LOAD_CODE_FR;
+#endif /* NO_UPPER */
 
+#ifndef NO_LOWER
 ATTRIBUTE Rsc_Layout_Monitor_Frequency_Attr[]=RSC_LAYOUT_MONITOR_FREQUENCY_ATTR;
 ASCII Rsc_Layout_Monitor_Frequency_Code_En[]=RSC_LAYOUT_MONITOR_FREQUENCY_CODE;
 #define Rsc_Layout_Monitor_Frequency_Code_Fr \
@@ -222,6 +225,7 @@ ASCII	Rsc_Layout_Ruler_Energy_Code_En[] = RSC_LAYOUT_RULER_ENERGY_CODE_EN,
 ATTRIBUTE Rsc_Layout_Ruler_Slice_Attr[] = RSC_LAYOUT_RULER_SLICE_ATTR;
 ASCII	Rsc_Layout_Ruler_Slice_Code_En[] = RSC_LAYOUT_RULER_SLICE_CODE_EN,
 	Rsc_Layout_Ruler_Slice_Code_Fr[] = RSC_LAYOUT_RULER_SLICE_CODE_FR;
+#endif /* NO_LOWER */
 
 #ifndef NO_FOOTER
 ATTRIBUTE Rsc_Layout_Footer_Tech_x86_Attr[] = RSC_LAYOUT_FOOTER_TECH_X86_ATTR;
@@ -485,6 +489,7 @@ RESOURCE_ST Resource[] = {
 					Rsc_Layout_Header_Caches_Code_En,
 					Rsc_Layout_Header_Caches_Code_Fr),
 #endif /* NO_HEADER */
+#ifndef NO_UPPER
 	[RSC_LAYOUT_RULER_LOAD] = LDA(	Rsc_Layout_Ruler_Load_Attr,
 					Rsc_Layout_Ruler_Load_Code_En,
 					Rsc_Layout_Ruler_Load_Code_Fr),
@@ -494,6 +499,8 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_ABS_LOAD]=LDA(Rsc_Layout_Ruler_Abs_Load_Attr,
 					Rsc_Layout_Ruler_Abs_Load_Code_En,
 					Rsc_Layout_Ruler_Abs_Load_Code_Fr),
+#endif /* NO_UPPER */
+#ifndef NO_LOWER
     [RSC_LAYOUT_MONITOR_FREQUENCY]=LDA( Rsc_Layout_Monitor_Frequency_Attr,
 					Rsc_Layout_Monitor_Frequency_Code_En,
 					Rsc_Layout_Monitor_Frequency_Code_Fr),
@@ -593,6 +600,7 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_SLICE] = LDA( Rsc_Layout_Ruler_Slice_Attr,
 					Rsc_Layout_Ruler_Slice_Code_En,
 					Rsc_Layout_Ruler_Slice_Code_Fr),
+#endif /* NO_LOWER */
 #ifndef NO_FOOTER
       [RSC_LAYOUT_FOOTER_TECH_X86]=LDA( Rsc_Layout_Footer_Tech_x86_Attr,
 					Rsc_Layout_Footer_Tech_x86_Code_En,
@@ -647,7 +655,9 @@ RESOURCE_ST Resource[] = {
     [RSC_SLEEP_STATE_COLOR]	= LDB(	Rsc_SymbolSleepColor_Attr),
     [RSC_WAIT_STATE_COLOR]	= LDB(	Rsc_SymbolWaitColor_Attr),
     [RSC_OTHER_STATE_COLOR]	= LDB(	Rsc_SymbolOtherColor_Attr),
+#ifndef NO_LOWER
     [RSC_TRACKER_STATE_COLOR]	= LDB(	Rsc_SymbolTrackerColor_Attr),
+#endif
     [RSC_SYSINFO_CPUID_COND0]	= LDB(	Rsc_SysInfoCPUID_Cond_Attr[0]),
     [RSC_SYSINFO_CPUID_COND1]	= LDB(	Rsc_SysInfoCPUID_Cond_Attr[1]),
     [RSC_SYSINFO_CPUID_COND2]	= LDB(	Rsc_SysInfoCPUID_Cond_Attr[2]),
