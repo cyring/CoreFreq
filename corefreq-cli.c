@@ -4705,9 +4705,13 @@ CardList cardList = {.head = NULL, .tail = NULL};
 
 struct {
     struct {
+    #ifndef NO_HEADER
 	double		TopAvg;
+    #endif
+    #ifndef NO_FOOTER
 	unsigned long	FreeRAM;
 	int		TaskCount;
+    #endif
     } Cache;
     struct {
 	unsigned int
@@ -4741,9 +4745,13 @@ struct {
 	enum SMB_STRING SmbIndex;
 } draw = {
 	.Cache = {
+	    #ifndef NO_HEADER
 		.TopAvg = 0.0,
+	    #endif
+	    #ifndef NO_FOOTER
 		.FreeRAM= 0,
 		.TaskCount = 0
+	    #endif
 	},
 	.Flag = {
 		.layout = 0,
@@ -6174,25 +6182,15 @@ Window *CreateRatioClock(unsigned long long id,
 	};
 	CLOCK_ARG clockMod = {.sllong = id};
 
-	CUINT hthMin, hthMax = 1 + lowestShift + highestShift, hthWin;
-	CUINT oRow;
-
-	if (TOP_HEADER_ROW + TOP_FOOTER_ROW + 8 < draw.Size.height) {
-		hthMin = draw.Size.height - 	( 1
-						+ TOP_HEADER_ROW
-						+ TOP_FOOTER_ROW
-						+ TOP_SEPARATOR);
-		oRow = 1 + TOP_HEADER_ROW + TOP_FOOTER_ROW;
-	} else {
-		hthMin = draw.Size.height - 2;
-		oRow = 1;
-	}
-	hthWin = CUMIN(hthMin, hthMax);
+	const CUINT hthMax = 1 + lowestShift + highestShift;
+	CUINT hthWin = CUMIN( (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)),
+				hthMax );
 
 	Window *wCK = CreateWindow(	wLayer, id,
-					1, hthWin, oCol, oRow,
+					1, hthWin,
+					oCol,
+					1 + TOP_HEADER_ROW + TOP_FOOTER_ROW,
 					WINFLAG_NO_STOCK );
-
     if (wCK != NULL)
     {
 	signed int multiplier, offset;
@@ -6871,9 +6869,12 @@ Window *CreateSelectFreq(unsigned long long id,
 			UPDATE_CALLBACK Pkg_Freq_Update,
 			UPDATE_CALLBACK CPU_Freq_Update)
 {
+	const CUINT height = 1 + CUMIN(Shm->Proc.CPU.Count,
+				(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
+
 	Window *wFreq = CreateWindow(	wLayer, id,
-					1, 1 + Shm->Proc.CPU.Count,
-					30, TOP_HEADER_ROW );
+					1, height,
+					30, (TOP_HEADER_ROW | 1) );
     if (wFreq != NULL) {
 	ASCII *item = malloc(26+10+11+11+11+8+1);
 	const unsigned long long all = id | (0xffff ^ CORE_COUNT);
@@ -10218,6 +10219,7 @@ int Shortcut(SCANKEY *scan)
 	return (0);
 }
 
+#ifndef NO_FOOTER
 void PrintTaskMemory(Layer *layer, CUINT row,
 			int taskCount,
 			unsigned long freeRAM,
@@ -10233,6 +10235,7 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &buffer[6], 9);
 	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &buffer[15],9);
 }
+#endif
 
 #ifndef NO_HEADER
 void Layout_Header(Layer *layer, CUINT row)
@@ -10370,7 +10373,7 @@ void Layout_Header(Layer *layer, CUINT row)
 	LayerCopyAt(	layer, hArch2.origin.col, hArch2.origin.row,
 			hArch2.length, hArch2.attr, hArch2.code);
 }
-#endif
+#endif /* NO_HEADER */
 
 void Layout_Ruler_Load(Layer *layer, CUINT row)
 {
@@ -10859,6 +10862,7 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	return (row);
 }
 
+#ifndef NO_FOOTER
 void Layout_Footer(Layer *layer, CUINT row)
 {
 	ssize_t len;
@@ -11075,6 +11079,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 				:	draw.Unit.Memory == 10 ? 'M'
 				:	draw.Unit.Memory == 20 ? 'G' : 0x20;
 }
+#endif /* NO_FOOTER */
 
 void Layout_CPU_To_String(const unsigned int cpu)
 {
@@ -12793,6 +12798,7 @@ void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
 	Draw_Footer_Voltage_Fahrenheit
 };
 
+#ifndef NO_FOOTER
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -12863,6 +12869,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 		}
 	}
 }
+#endif /* NO_FOOTER */
 
 #ifndef NO_HEADER
 void Draw_Header(Layer *layer, CUINT row)
@@ -12912,7 +12919,7 @@ void Draw_Header(Layer *layer, CUINT row)
 	LayerAt(layer, code, 26 +  9, row) = digit[7] + '0';
 	LayerAt(layer, code, 26 + 10, row) = digit[8] + '0';
 }
-#endif
+#endif /* NO_HEADER */
 
 /* >>> GLOBALS >>> */
 VIEW_FUNC Matrix_Layout_Monitor[VIEW_SIZE] = {
@@ -13853,7 +13860,6 @@ REASON_CODE Top(char option)
 		DynamicView[draw.Disposal](dLayer);
 
 		/* Increment the BCLK indicator (skip offline CPU)	*/
-	#ifndef NO_UPPER
 		do {
 			draw.iClock++;
 			if (draw.iClock >= draw.Area.MaxRows) {
@@ -13861,7 +13867,6 @@ REASON_CODE Top(char option)
 			}
 		} while (BITVAL(Shm->Cpu[draw.iClock].OffLine, OS)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
-	#endif
 	}
 	Draw_uBenchmark(dLayer);
 	/* Write to the standard output.				*/

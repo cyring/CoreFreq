@@ -17,6 +17,7 @@
 #include "corefreq-cli-rsc-en.h"
 #include "corefreq-cli-rsc-fr.h"
 
+#ifndef NO_HEADER
 ATTRIBUTE Rsc_Layout_Header_Proc_Attr[] = RSC_LAYOUT_HEADER_PROC_ATTR;
 ASCII	Rsc_Layout_Header_Proc_Code_En[] = RSC_LAYOUT_HEADER_PROC_CODE_EN,
 	Rsc_Layout_Header_Proc_Code_Fr[] = RSC_LAYOUT_HEADER_PROC_CODE_FR;
@@ -40,6 +41,7 @@ ASCII	Rsc_Layout_Header_BClk_Code_En[] = RSC_LAYOUT_HEADER_BCLK_CODE_EN,
 ATTRIBUTE Rsc_Layout_Header_Caches_Attr[] = RSC_LAYOUT_HEADER_CACHES_ATTR;
 ASCII	Rsc_Layout_Header_Caches_Code_En[] = RSC_LAYOUT_HEADER_CACHES_CODE;
 #define Rsc_Layout_Header_Caches_Code_Fr Rsc_Layout_Header_Caches_Code_En
+#endif /* NO_HEADER */
 
 ATTRIBUTE Rsc_Layout_Ruler_Load_Attr[] = RSC_LAYOUT_RULER_LOAD_ATTR;
 ASCII	Rsc_Layout_Ruler_Load_Code_En[] = RSC_LAYOUT_RULER_LOAD_CODE;
@@ -221,6 +223,7 @@ ATTRIBUTE Rsc_Layout_Ruler_Slice_Attr[] = RSC_LAYOUT_RULER_SLICE_ATTR;
 ASCII	Rsc_Layout_Ruler_Slice_Code_En[] = RSC_LAYOUT_RULER_SLICE_CODE_EN,
 	Rsc_Layout_Ruler_Slice_Code_Fr[] = RSC_LAYOUT_RULER_SLICE_CODE_FR;
 
+#ifndef NO_FOOTER
 ATTRIBUTE Rsc_Layout_Footer_Tech_x86_Attr[] = RSC_LAYOUT_FOOTER_TECH_X86_ATTR;
 ASCII	Rsc_Layout_Footer_Tech_x86_Code_En[] = RSC_LAYOUT_FOOTER_TECH_X86_CODE;
 #define Rsc_Layout_Footer_Tech_x86_Code_Fr Rsc_Layout_Footer_Tech_x86_Code_En
@@ -239,6 +242,7 @@ ASCII	Rsc_Layout_Footer_Tech_AMD_Code_En[] = RSC_LAYOUT_FOOTER_TECH_AMD_CODE;
 ATTRIBUTE Rsc_Layout_Footer_System_Attr[] = RSC_LAYOUT_FOOTER_SYSTEM_ATTR;
 ASCII	Rsc_Layout_Footer_System_Code_En[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_EN,
 	Rsc_Layout_Footer_System_Code_Fr[] = RSC_LAYOUT_FOOTER_SYSTEM_CODE_FR;
+#endif /* NO_FOOTER */
 
 ATTRIBUTE Rsc_Layout_Card_Core_Online_Attr[] = RSC_LAYOUT_CARD_CORE_ONLINE_ATTR;
 ASCII	Rsc_Layout_Card_Core_Online_Code_En[2][12] = {
@@ -401,6 +405,7 @@ ATTRIBUTE Rsc_CreateSelectCPU_Cond_Attr[3][36] = {
 	RSC_CREATE_SELECT_CPU_COND2_ATTR
 };
 
+#ifndef NO_FOOTER
 ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
 	RSC_HOT_EVENT_COND0_ATTR,
 	RSC_HOT_EVENT_COND1_ATTR,
@@ -408,6 +413,7 @@ ATTRIBUTE Rsc_HotEvent_Cond_Attr[5][3] = {
 	RSC_HOT_EVENT_COND3_ATTR,
 	RSC_HOT_EVENT_COND4_ATTR
 };
+#endif
 
 ATTRIBUTE Rsc_BoxEvent_Attr[] = RSC_BOX_EVENT_ATTR;
 
@@ -459,6 +465,7 @@ ATTRIBUTE Rsc_CreateSelectFreq_Cond_Attr[2][46] = {
 #define LDT(en_var, fr_var)	LDS(vColor, en_var, fr_var)
 
 RESOURCE_ST Resource[] = {
+#ifndef NO_HEADER
 	[RSC_LAYOUT_HEADER_PROC] = LDA( Rsc_Layout_Header_Proc_Attr,
 					Rsc_Layout_Header_Proc_Code_En,
 					Rsc_Layout_Header_Proc_Code_Fr),
@@ -477,6 +484,7 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_HEADER_CACHES]=LDA( Rsc_Layout_Header_Caches_Attr,
 					Rsc_Layout_Header_Caches_Code_En,
 					Rsc_Layout_Header_Caches_Code_Fr),
+#endif /* NO_HEADER */
 	[RSC_LAYOUT_RULER_LOAD] = LDA(	Rsc_Layout_Ruler_Load_Attr,
 					Rsc_Layout_Ruler_Load_Code_En,
 					Rsc_Layout_Ruler_Load_Code_Fr),
@@ -585,6 +593,7 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_SLICE] = LDA( Rsc_Layout_Ruler_Slice_Attr,
 					Rsc_Layout_Ruler_Slice_Code_En,
 					Rsc_Layout_Ruler_Slice_Code_Fr),
+#ifndef NO_FOOTER
       [RSC_LAYOUT_FOOTER_TECH_X86]=LDA( Rsc_Layout_Footer_Tech_x86_Attr,
 					Rsc_Layout_Footer_Tech_x86_Code_En,
 					Rsc_Layout_Footer_Tech_x86_Code_Fr),
@@ -597,6 +606,7 @@ RESOURCE_ST Resource[] = {
     [RSC_LAYOUT_FOOTER_SYSTEM]	= LDA(	Rsc_Layout_Footer_System_Attr,
 					Rsc_Layout_Footer_System_Code_En,
 					Rsc_Layout_Footer_System_Code_Fr),
+#endif /* NO_FOOTER */
 [RSC_LAYOUT_CARD_CORE_ONLINE_COND0]=LDA(Rsc_Layout_Card_Core_Online_Attr,
 					Rsc_Layout_Card_Core_Online_Code_En[0],
 					Rsc_Layout_Card_Core_Online_Code_Fr[0]),
@@ -716,11 +726,13 @@ RESOURCE_ST Resource[] = {
     [RSC_CREATE_SELECT_CPU_COND0] = LDB(Rsc_CreateSelectCPU_Cond_Attr[0]),
     [RSC_CREATE_SELECT_CPU_COND1] = LDB(Rsc_CreateSelectCPU_Cond_Attr[1]),
     [RSC_CREATE_SELECT_CPU_COND2] = LDB(Rsc_CreateSelectCPU_Cond_Attr[2]),
+#ifndef NO_FOOTER
     [RSC_HOT_EVENT_COND0]	= LDB(	Rsc_HotEvent_Cond_Attr[0]),
     [RSC_HOT_EVENT_COND1]	= LDB(	Rsc_HotEvent_Cond_Attr[1]),
     [RSC_HOT_EVENT_COND2]	= LDB(	Rsc_HotEvent_Cond_Attr[2]),
     [RSC_HOT_EVENT_COND3]	= LDB(	Rsc_HotEvent_Cond_Attr[3]),
     [RSC_HOT_EVENT_COND4]	= LDB(	Rsc_HotEvent_Cond_Attr[4]),
+#endif
 	[RSC_BOX_EVENT] 	= LDB(	Rsc_BoxEvent_Attr),
 	[RSC_CREATE_RECORDER]	= LDB(	Rsc_CreateRecorder_Attr),
 	[RSC_SMBIOS_ITEM]	= LDB(	Rsc_SMBIOS_Item_Attr),

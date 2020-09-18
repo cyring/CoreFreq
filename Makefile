@@ -48,6 +48,22 @@ ifneq ($(HWM_CHIPSET),)
 	ccflags-y += -D HWM_CHIPSET=$(HWM_CHIPSET)
 endif
 
+ifneq ($(NO_HEADER),)
+LAYOUT += -D NO_HEADER=$(NO_HEADER)
+endif
+
+ifneq ($(NO_FOOTER),)
+LAYOUT += -D NO_FOOTER=$(NO_FOOTER)
+endif
+
+ifneq ($(NO_UPPER),)
+LAYOUT += -D NO_UPPER=$(NO_UPPER)
+endif
+
+ifneq ($(NO_LOWER),)
+LAYOUT += -D NO_LOWER=$(NO_LOWER)
+endif
+
 .PHONY: all
 all: corefreqd corefreq-cli
 	$(MAKE) -j1 -C $(KERNELDIR) M=$(PWD) modules
@@ -90,11 +106,13 @@ corefreq-ui.o: corefreq-ui.c
 corefreq-cli.o: corefreq-cli.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli.c \
 		$(DEFINITIONS) \
+		$(LAYOUT) \
 		-o corefreq-cli.o
 
 corefreq-cli-rsc.o: corefreq-cli-rsc.c
 	$(CC) $(OPTIM_FLG) $(WARNING) -c corefreq-cli-rsc.c \
 		$(DEFINITIONS) \
+		$(LAYOUT) \
 		-o corefreq-cli-rsc.o
 
 corefreq-cli-json.o: corefreq-cli-json.c
@@ -113,6 +131,7 @@ corefreq-cli: corefreq-cli.o corefreq-ui.o corefreq-cli-rsc.o \
 		corefreq-cli.c corefreq-ui.c corefreq-cli-rsc.c \
 		corefreq-cli-json.c corefreq-cli-extra.c \
 		$(DEFINITIONS) \
+		$(LAYOUT) \
 		-o corefreq-cli -lm -lrt
 
 .PHONY: info
@@ -129,6 +148,10 @@ info:
 	$(info OPTIM_LVL [$(OPTIM_LVL)])
 	$(info MSR_CORE_PERF_UCC [$(MSR_CORE_PERF_UCC)])
 	$(info MSR_CORE_PERF_URC [$(MSR_CORE_PERF_URC)])
+	$(info NO_HEADER [$(NO_HEADER)])
+	$(info NO_FOOTER [$(NO_FOOTER)])
+	$(info NO_UPPER [$(NO_UPPER)])
+	$(info NO_LOWER [$(NO_LOWER)])
 
 .PHONY: help
 help:
@@ -181,11 +204,16 @@ help:
 	"|   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |\n"\
 	"|    -------------------------------------------------------    |\n"\
 	"|                                                               |\n"\
+	"|  User Interface Layout:                                       |\n"\
+	"|    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |\n"\
+	"|      when <F> is 1 don't build and display this area part     |\n"\
+	"|                                                               |\n"\
 	"|  Example:                                                     |\n"\
 	"|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |\n"\
 	"|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |\n"\
 	"|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |\n"\
 	"|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |\n"\
+	"|         NO_FOOTER=1 NO_UPPER=1                                |\n"\
 	"|         clean all                                             |\n"\
 	"o---------------------------------------------------------------o"
 
