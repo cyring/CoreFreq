@@ -358,3 +358,73 @@ typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
   #define Draw_uBenchmark(layer) {}
 #endif /* UBENCH */
 
+struct SETTING_ST {
+	unsigned int
+	fahrCels:  1-0, /* 0:Celsius || 1:Fahrenheit	*/
+	jouleWatt: 2-1, /* 0:Joule || 1:Watt		*/
+	secret	:  3-2, /* 0:Show || 1:Hide Secret Data */
+	_padding: 32-3;
+};
+
+struct RULER_ST {
+	double		Minimum,
+			Maximum,
+			Median;
+
+	unsigned int	Top[BOOST(SIZE)],
+			Uniq[BOOST(SIZE)],
+			Count;
+    struct TOPOF {
+	unsigned int	Top;
+	enum RATIO_BOOST Boost;
+    } TopOf;
+};
+
+struct DRAW_ST {
+    struct {
+    #ifndef NO_HEADER
+	double		TopAvg;
+    #endif
+    #ifndef NO_FOOTER
+	unsigned long	FreeRAM;
+	int		TaskCount;
+    #endif
+    } Cache;
+    struct {
+	unsigned int
+		layout	:  1-0 ,	/* Draw layout			*/
+		clear	:  2-1 ,	/* Clear screen 		*/
+		height	:  3-2 ,	/* Valid height 		*/
+		width	:  4-3 ,	/* Valid width			*/
+		daemon	:  5-4 ,	/* Draw dynamic 		*/
+		taskVal :  6-5 ,	/* Display task's value 	*/
+		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
+		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
+	    #if defined(UBENCH) && UBENCH == 1
+		uBench	:  9-8 ,	/* Display UI micro-benchmark	*/
+	    #endif
+		_padding: 32-9 ;
+    } Flag;
+	enum VIEW	View;
+	enum DISPOSAL	Disposal;
+	SCREEN_SIZE	Size;
+    struct {
+		CUINT	MinHeight;
+		CUINT	MaxRows;
+		CUINT	LoadWidth;
+    } Area;
+	unsigned int	iClock,
+			cpuScroll,
+			Load;
+    struct {
+	unsigned int	Memory;
+    } Unit;
+	enum SMB_STRING SmbIndex;
+};
+
+struct RECORDER_ST {
+	int	Reset,
+		Select,
+		Ratios[];
+};
+

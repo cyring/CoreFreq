@@ -39,13 +39,7 @@ SERVICE_PROC localService = {.Proc = -1};
 
 UBENCH_DECLARE()
 
-struct {
-	unsigned int
-	fahrCels:  1-0, /* 0:Celsius || 1:Fahrenheit	*/
-	jouleWatt: 2-1, /* 0:Joule || 1:Watt		*/
-	secret	:  3-2, /* 0:Show || 1:Hide Secret Data */
-	_padding: 32-3;
-} Setting = {
+struct SETTING_ST Setting = {
 	.fahrCels = 0,
 	.jouleWatt= 1,
 	.secret   = 1,
@@ -95,19 +89,7 @@ int ClientFollowService(SERVICE_PROC *pSlave, SERVICE_PROC *pMaster, pid_t pid)
 	return (0);
 }
 
-struct {
-	double		Minimum,
-			Maximum,
-			Median;
-
-	unsigned int	Top[BOOST(SIZE)],
-			Uniq[BOOST(SIZE)],
-			Count;
-    struct TOPOF {
-	unsigned int	Top;
-	enum RATIO_BOOST Boost;
-    } TopOf;
-} Ruler = {
+struct RULER_ST Ruler = {
 	.Count = 0
 };
 
@@ -4703,47 +4685,7 @@ Coordinate *cTask = NULL;
 
 CardList cardList = {.head = NULL, .tail = NULL};
 
-struct {
-    struct {
-    #ifndef NO_HEADER
-	double		TopAvg;
-    #endif
-    #ifndef NO_FOOTER
-	unsigned long	FreeRAM;
-	int		TaskCount;
-    #endif
-    } Cache;
-    struct {
-	unsigned int
-		layout	:  1-0 ,	/* Draw layout			*/
-		clear	:  2-1 ,	/* Clear screen 		*/
-		height	:  3-2 ,	/* Valid height 		*/
-		width	:  4-3 ,	/* Valid width			*/
-		daemon	:  5-4 ,	/* Draw dynamic 		*/
-		taskVal :  6-5 ,	/* Display task's value 	*/
-		avgOrPC :  7-6 ,	/* C-states average || % pkg states */
-		clkOrLd :  8-7 ,	/* Relative freq. || % load	*/
-	    #if defined(UBENCH) && UBENCH == 1
-		uBench	:  9-8 ,	/* Display UI micro-benchmark	*/
-	    #endif
-		_padding: 32-9 ;
-    } Flag;
-	enum VIEW	View;
-	enum DISPOSAL	Disposal;
-	SCREEN_SIZE	Size;
-    struct {
-		CUINT	MinHeight;
-		CUINT	MaxRows;
-		CUINT	LoadWidth;
-    } Area;
-	unsigned int	iClock,
-			cpuScroll,
-			Load;
-    struct {
-	unsigned int	Memory;
-    } Unit;
-	enum SMB_STRING SmbIndex;
-} draw = {
+struct DRAW_ST draw = {
 	.Cache = {
 	    #ifndef NO_HEADER
 		.TopAvg = 0.0,
@@ -4780,11 +4722,7 @@ struct {
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
 
-struct {
-	int	Reset,
-		Select,
-		Ratios[];
-} recorder = {
+struct RECORDER_ST recorder = {
 		.Reset = 0,
 		.Select = 1,
 		.Ratios = {0, 1, 2, 10, 20, 60, 90, 120, 240, 0}
