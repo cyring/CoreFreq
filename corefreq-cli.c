@@ -4867,7 +4867,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_i,	RSC(MENU_ITEM_INST_CYCLES).CODE(),
+			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_e,	RSC(MENU_ITEM_FEATURES).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4876,7 +4880,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_c,	RSC(MENU_ITEM_CORE_CYCLES).CODE(),
+			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_i, RSC(MENU_ITEM_ISA_EXT).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4887,7 +4895,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					: RSC(CREATE_MENU_DISABLE).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_l,	RSC(MENU_ITEM_IDLE_STATES).CODE(),
+			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_t,	RSC(MENU_ITEM_TECH).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4896,7 +4908,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_g,	RSC(MENU_ITEM_PKG_CYCLES).CODE(),
+			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_o,	RSC(MENU_ITEM_PERF_MON).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4905,9 +4921,13 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_x,	RSC(MENU_ITEM_TASKS_MON).CODE(),
+			#ifndef NO_LOWER
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
 					RSC(CREATE_MENU_SHORTKEY).ATTR()
 					: RSC(CREATE_MENU_DISABLE).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4916,7 +4936,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE(),
+			#ifndef NO_LOWER
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4925,7 +4949,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_c, RSC(MENU_ITEM_SENSORS).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#ifndef NO_LOWER
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
@@ -4934,7 +4962,11 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_VOLTAGE).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#ifndef NO_LOWER
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_m, RSC(MENU_ITEM_MEM_CTRL).CODE(),
 				Shm->Uncore.CtrlCount > 0 ?
@@ -4944,14 +4976,22 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#ifndef NO_LOWER
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
 /* Row 12 */
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
-					   RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#ifndef NO_LOWER
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
+			#else
+					RSC(CREATE_MENU_DISABLE).ATTR());
+			#endif
 
 	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
 /* Bottom Menu */
@@ -7267,6 +7307,7 @@ int Shortcut(SCANKEY *scan)
 	};
 
     switch (scan->key) {
+/*TODO(Resize the windows width)
     case 0x3c:
 	if (draw.Disposal == D_MAINVIEW) {
 		draw.Size.height = 0;
@@ -7279,6 +7320,7 @@ int Shortcut(SCANKEY *scan)
 		TrapScreenSize(SIGWINCH);
 	}
     break;
+*/
     case SCANKEY_DOWN:
 	if (!IsDead(&winList)) {
 		return (-1);
@@ -7900,6 +7942,7 @@ int Shortcut(SCANKEY *scan)
 		}
 	}
     break;
+#ifndef NO_LOWER
     case SCANKEY_c:
     {
 	draw.Disposal = D_MAINVIEW;
@@ -7908,6 +7951,7 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+#endif
     case SCANKEY_d:
     {
 	draw.Disposal = D_DASHBOARD;
@@ -7933,6 +7977,7 @@ int Shortcut(SCANKEY *scan)
 		}
 	}
     break;
+#ifndef NO_LOWER
     case SCANKEY_g:
     {
 	draw.Disposal = D_MAINVIEW;
@@ -7941,6 +7986,7 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+#endif
     case SCANKEY_F1:
     case SCANCON_F1:
     {
@@ -7962,6 +8008,7 @@ int Shortcut(SCANKEY *scan)
 	}
     }
     break;
+#ifndef NO_LOWER
     case SCANKEY_i:
     {
 	draw.Disposal = D_MAINVIEW;
@@ -7978,6 +8025,7 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+#endif /* NO_LOWER */
     case SCANKEY_m:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -8125,6 +8173,7 @@ int Shortcut(SCANKEY *scan)
 	}
     }
     break;
+#ifndef NO_LOWER
     case SCANKEY_q:
     {
 	draw.Disposal = D_MAINVIEW;
@@ -8165,6 +8214,7 @@ int Shortcut(SCANKEY *scan)
 	TrapScreenSize(SIGWINCH);
     }
     break;
+#endif /* NO_LOWER */
     case SCANKEY_s:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -8187,6 +8237,7 @@ int Shortcut(SCANKEY *scan)
 		draw.Flag.layout = 1;
 	}
     break;
+#ifndef NO_LOWER
     case SCANKEY_x:
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 		Shm->SysGate.trackTask = 0;
@@ -8196,6 +8247,7 @@ int Shortcut(SCANKEY *scan)
 		TrapScreenSize(SIGWINCH);
 	}
     break;
+#endif
     case SCANKEY_EXCL:
 	if (draw.Disposal == D_MAINVIEW) {
 		draw.Load = !draw.Load;
