@@ -4087,8 +4087,6 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	unsigned long long iommu_cap_base;
 	unsigned int iommu_cap_base_lo = 0, iommu_cap_base_hi = 0;
 
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-
 	pci_read_config_dword(dev, 0x44, &iommu_cap_base_lo);
 	pci_read_config_dword(dev, 0x48, &iommu_cap_base_hi);
 
