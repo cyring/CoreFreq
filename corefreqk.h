@@ -3992,10 +3992,20 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST( "AMD Ryzen 5 3600XT",	\
-			"AMD Ryzen 5 3600X",	\
-			"AMD Ryzen 5 3600"	),
+	.Brand = ZLIST("AMD Ryzen 5 3600XT"),
 	.Boost = {+6, +1},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_MATISSE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 3600X",	\
+			"AMD Ryzen 5 3600"	),
+	.Boost = {+5, +1},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
