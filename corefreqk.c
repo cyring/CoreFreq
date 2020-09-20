@@ -3026,8 +3026,6 @@ PCI_CALLBACK Router(struct pci_dev *dev, unsigned int offset,
 	unsigned long long wmask = BITCPL(wsize);
 	unsigned char mchbarEnable = 0;
 
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-
 	switch (bsize) {
 	case 32:
 		pci_read_config_dword(dev, offset    , &mchbar.low);
@@ -3643,8 +3641,6 @@ static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 	};
 	unsigned short mc;
 
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
 		rc = Query_NHM_IMC(dev, did, mc);
@@ -3656,8 +3652,6 @@ static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
 	unsigned short mc;
-
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
@@ -3682,8 +3676,6 @@ static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev)
 		}
 	};
 	unsigned short mc;
-
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	for (mc = 0; (mc < PUBLIC(RO(Proc))->Uncore.CtrlCount) && !rc; mc++) {
@@ -3766,8 +3758,6 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
 {
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-
 	return ((PCI_CALLBACK) 0);
 }
 
@@ -3997,8 +3987,6 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;
-
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
 	/*		As defined by specifications.			*/
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 	/*		DRAM Configuration low register.		*/
@@ -4116,9 +4104,7 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL;
 	unsigned short mc, cha, chip, sec;
-
-	PUBLIC(RO(Proc))->Uncore.ChipID = dev->device;
-	/*TODO(Query the number of UMC)					*/
+/*TODO( Query the number of UMC )					*/
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
   for (mc = 0; mc < PUBLIC(RO(Proc))->Uncore.CtrlCount; mc++)
@@ -4265,20 +4251,35 @@ static int CoreFreqK_ProbePCI(void)
 	struct pci_dev *dev = NULL;
 	int rc = -ENODEV;
 
+	memset( PUBLIC(RO(Proc))->Uncore.Chip, 0,
+		CHIP_MAX_PCI*sizeof(struct CHIP_ST) );
+
 	while (id->vendor || id->subvendor || id->class_mask)
 	{
 		dev = pci_get_device(id->vendor, id->device, NULL);
-		if (dev != NULL) {
-		    if (!pci_enable_device(dev))
+	  if (dev != NULL) {
+	    if (!pci_enable_device(dev))
+	    {
+		PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
+
+		if ((rc = (int) Callback(dev)) == 0)
+		{
+			unsigned int idx;
+		  for (idx = 0; idx < CHIP_MAX_PCI; idx++)
+		  {
+		    if (PUBLIC(RO(Proc))->Uncore.Chip[idx].VID == 0)
 		    {
-			PCI_CALLBACK Callback = (PCI_CALLBACK) id->driver_data;
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].VID = dev->vendor;
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].DID = dev->device;
 
-			rc =(int) Callback(dev);
-
-			pci_disable_device(dev);
+			break;
 		    }
-		    pci_dev_put(dev);
+		  }
 		}
+		pci_disable_device(dev);
+	    }
+	    pci_dev_put(dev);
+	  }
 		id++;
 	}
 	return (rc);

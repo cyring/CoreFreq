@@ -654,6 +654,8 @@ typedef struct {
 				machine[MAX_UTS_LEN];
 } SYSGATE_RO; /*		RO Pages				*/
 
+#define CHIP_MAX_PCI	24
+
 typedef struct
 {
 	struct
@@ -739,7 +741,9 @@ typedef struct
 		BUS_REGISTERS	Bus;
 		MC_REGISTERS	MC[MC_MAX_CTRL];
 		unsigned short	CtrlCount;
-		unsigned short	ChipID;
+	    struct CHIP_ST {
+		unsigned short	VID, DID;
+	    } Chip[CHIP_MAX_PCI];
 	} Uncore;
 
 	struct {
@@ -815,6 +819,14 @@ typedef struct
 	} OS;
 } PROC_RW; /*			RW Pages				*/
 
+
+#ifndef PCI_VENDOR_ID_INTEL
+	#define PCI_VENDOR_ID_INTEL			0x8086
+#endif
+
+#ifndef PCI_VENDOR_ID_AMD
+	#define PCI_VENDOR_ID_AMD			0x1022
+#endif
 
 #ifndef PCI_DEVICE_ID_INTEL_82945P_HB
 	#define PCI_DEVICE_ID_INTEL_82945P_HB		0x2770

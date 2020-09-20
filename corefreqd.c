@@ -2603,7 +2603,10 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
+}
 
+void X58_VTD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+{
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.QuickPath.X58.VT_d;
 }
 
@@ -3872,15 +3875,15 @@ static char *Chipset[CHIPSETS] = {
 	[IC_ZEN]		= "Zen UMC"
 };
 
-#define SET_CHIPSET(ic) (Shm->Uncore.Chipset.ArchID = ic)
+#define SET_CHIPSET(ic)							\
+({									\
+	Shm->Uncore.ChipID = DID;					\
+	Shm->Uncore.Chipset.ArchID = ic;				\
+})
 
-void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 {
-	/* Copy the # of controllers and the chipset ID.		*/
-	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
-	Shm->Uncore.ChipID = Proc->Uncore.ChipID;
-	/* Decode the Memory Controller per architecture.		*/
-	switch (Shm->Uncore.ChipID) {
+	switch (DID) {
 	case PCI_DEVICE_ID_INTEL_82945P_HB:
 		P945_CLK(Shm, Proc, Core);
 		P945_MCH(Shm, Proc);
@@ -3959,14 +3962,23 @@ void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		P4S_MCH(Shm, Proc);
 		SET_CHIPSET(IC_EAGLELAKE_G);
 		break;
+	case PCI_DEVICE_ID_INTEL_X58_HUB_CTRL:
+		QPI_CLK(Shm, Proc, Core);
+		break;
+	case PCI_DEVICE_ID_INTEL_X58_HUB_CORE:
+		X58_VTD(Shm, Proc, Core);
+		break;
 	case PCI_DEVICE_ID_INTEL_I7_MCR:	/* Bloomfield		*/
 	case PCI_DEVICE_ID_INTEL_NHM_EP_MCR:	/* Westmere EP		*/
-		QPI_CLK(Shm, Proc, Core);
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_TYLERSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:	/* Lynnfield		*/
+	case PCI_DEVICE_ID_INTEL_I7_MC_TEST:
+	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MC_TEST:
+	case PCI_DEVICE_ID_INTEL_NHM_EP_MC_TEST:
 		DMI_CLK(Shm, Proc, Core);
+		break;
+	case PCI_DEVICE_ID_INTEL_LYNNFIELD_MCR:	/* Lynnfield		*/
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
@@ -4183,10 +4195,26 @@ void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 		SKL_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CANNONPOINT);
 		break;
+	}
+}
+
+void PCI_AMD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core, unsigned short DID)
+{
+	switch (DID) {
 	case PCI_DEVICE_ID_AMD_K8_NB_MEMCTL:
 		AMD_0Fh_HTT(Shm, Proc);
 		AMD_0Fh_MCH(Shm, Proc);
 		SET_CHIPSET(IC_K8);
+		break;
+	case PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_ZEPPELIN_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_STARSHIP_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_RENOIR_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU:
+	case PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU:
+		AMD_17h_IOMMU(Shm, Proc);
 		break;
 	case PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3:
 	case PCI_DEVICE_ID_AMD_17H_RAVEN_DF_F3:
@@ -4198,13 +4226,33 @@ void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	case PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3:
 		AMD_17h_CAP(Shm, Proc, Core);
 		AMD_17h_UMC(Shm, Proc);
-		AMD_17h_IOMMU(Shm, Proc);
 		SET_CHIPSET(IC_ZEN);
 		break;
-	default:
-		Chipset[IC_CHIPSET] = Proc->Features.Info.Vendor.ID;
-		SET_CHIPSET(IC_CHIPSET);
-		break;
+	}
+}
+
+#undef SET_CHIPSET
+
+void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+{
+	unsigned int idx;
+	/* Copy the # of controllers.					*/
+	Shm->Uncore.CtrlCount = Proc->Uncore.CtrlCount;
+	/* Decode the Memory Controller for each found vendor:device	*/
+	Chipset[IC_CHIPSET] = Proc->Features.Info.Vendor.ID;
+	Shm->Uncore.ChipID = 0x0;
+	Shm->Uncore.Chipset.ArchID = IC_CHIPSET;
+
+	for (idx = 0; idx < CHIP_MAX_PCI; idx++)
+	{
+		switch (Proc->Uncore.Chip[idx].VID) {
+		case PCI_VENDOR_ID_INTEL:
+			PCI_Intel(Shm, Proc, Core, Proc->Uncore.Chip[idx].DID);
+			break;
+		case PCI_VENDOR_ID_AMD:
+			PCI_AMD(Shm, Proc, Core, Proc->Uncore.Chip[idx].DID);
+			break;
+		}
 	}
 	/* Copy the chipset codename.					*/
 	StrCopy(Shm->Uncore.Chipset.CodeName,
