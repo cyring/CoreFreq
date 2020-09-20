@@ -3875,7 +3875,7 @@ static char *Chipset[CHIPSETS] = {
 	[IC_ZEN]		= "Zen UMC"
 };
 
-#define SET_CHIPSET(ic)							\
+#define SET_CHIPSET(ic) 						\
 ({									\
 	Shm->Uncore.ChipID = DID;					\
 	Shm->Uncore.Chipset.ArchID = ic;				\

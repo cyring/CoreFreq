@@ -3763,6 +3763,62 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Ryzen 3 PRO 4350GE"),
+	.Boost = {+5, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 PRO 4350G"),
+	.Boost = {+2, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 4600GE"),
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 3 4300GE",	\
+			"AMD Ryzen 5 4600G"	),
+	.Boost = {+5, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 3 4300G"),
+	.Boost = {+2, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST("AMD Ryzen 5 4500U"),
 	.Boost = {+17, 0},
 	.Param.Offset = { 0, 0},
@@ -3774,7 +3830,30 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 5 4600U"),
+	.Brand = ZLIST("AMD Ryzen 5 PRO 4650GE"),
+	.Boost = {+9, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 5 PRO 4650G"),
+	.Boost = {+5, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 5 PRO 4650U", \
+			"AMD Ryzen 5 4600U"	),
 	.Boost = {+19, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RENOIR,
@@ -3796,7 +3875,8 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
-	.Brand = ZLIST("AMD Ryzen 7 4800U"),
+	.Brand = ZLIST(	"AMD Ryzen 7 PRO 4750U", \
+			"AMD Ryzen 7 4800U"	),
 	.Boost = {+24, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RENOIR,
@@ -3815,6 +3895,51 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "AMD Ryzen 3 PRO 4450U", \
+			"AMD Ryzen 7 PRO 4750GE" ),
+	.Boost = {+12, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 4700GE"),
+	.Boost = {+12, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 PRO 4750G"),
+	.Boost = {+8, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen 7 4700G"),
+	.Boost = {+8, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_RENOIR,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 1,
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
