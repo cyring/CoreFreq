@@ -2829,6 +2829,39 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
 	{
+	.Brand = ZLIST("AMD Athlon Silver PRO 3125GE"),
+	.Boost = {+0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_SUMMIT_RIDGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Gold PRO 3150GE"),
+	.Boost = {+5, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_SUMMIT_RIDGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Athlon Gold PRO 3150G"),
+	.Boost = {+4, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_SUMMIT_RIDGE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{
 	.Brand = ZLIST( "AMD Ryzen Embedded R", \
 			"AMD Athlon Silver",	\
 			"AMD Athlon Gold"	),
@@ -3099,8 +3132,10 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 /*	[Zen/Raven Ridge]	8F_11h Stepping 0			*/
 	{
-	.Brand = ZLIST("AMD Athlon 2"),
-	.Boost = {+1, +1},
+	.Brand = ZLIST( "AMD Athlon 240GE",	\
+			"AMD Athlon 220GE",	\
+			"AMD Athlon 200GE"	),
+	.Boost = {+0, 0},
 	.Param.Offset = { 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
@@ -3432,6 +3467,17 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 };
 static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 /*	[Zen+ Picasso]		8F_18h Stepping 1			*/
+	{
+	.Brand = ZLIST("AMD Athlon PRO 300GE"),
+	.Boost = {+0, 0},
+	.Param.Offset = { 0, 0},
+	.CodeNameIdx = CN_PICASSO,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 3400GE"),
 	.Boost = {+7, 0},
