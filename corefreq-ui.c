@@ -1371,7 +1371,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		else
 			RemoveWindow(win, list);
 
-		ResetLayer(thisLayer);
+		ResetLayer(thisLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
 		}
 		break;
 	case SCANKEY_TAB:
@@ -1747,6 +1747,8 @@ void FreeAll(char *buffer)
 	}
 }
 
+UBENCH_DECLARE()
+
 __typeof__ (errno) AllocAll(char **buffer)
 {	/* Alloc 10 times to include the ANSI cursor strings.		*/
 	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL) {
@@ -1777,35 +1779,46 @@ __typeof__ (errno) AllocAll(char **buffer)
 	CreateLayer(wLayer, layerSize);
 	CreateLayer(fuse, layerSize);
 
+	UBENCH_SETUP(1, 0);
 	return (0);
 }
 
-unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
+unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 {
 	register ATTRIBUTE	*fa, *sa, *da, *wa;
 	register ASCII		*fc, *sc, *dc, *wc;
-	register unsigned int	sdx = 0, _bix, _bdx, _idx;
-	register unsigned int	cursor_flag;
-	register unsigned int	cursor_col, cursor_row;
-	register signed int	_col, _row, _wth;
+	register unsigned int	sdx = 0, idx;
+	register unsigned int	cursor;
+	register signed int	_col, _row;
 	register ATTRIBUTE	attr = {.value = 0};
 
     for (_row = 0; _row < drawSize.height; _row++)
     {
-	cursor_flag = 0;
-	_wth = _row * fuse->size.wth;
+	register const signed int _wth = _row * fuse->size.wth;
 
-	for (_col = 0, _bix = 0; _col < drawSize.width; _col++)
+	stream[sdx++] = 0x1b;
+	stream[sdx++] = '[';
+
+	cursor = _row + 1;
+	sdx += cursor >= 100 ? 3 : cursor >= 10 ? 2 : 1;
+	for (idx = sdx; cursor > 0; cursor /= 10) {
+		stream[--idx] = '0' + (cursor % 10);
+	}
+	stream[sdx++] = ';';
+	stream[sdx++] = '1';
+	stream[sdx++] = 'H';
+
+	for (_col = 0; _col < drawSize.width; _col++)
 	{
-		_idx = _col + _wth;
-		fa =   &fuse->attr[_idx];
-		sa = &sLayer->attr[_idx];
-		da = &dLayer->attr[_idx];
-		wa = &wLayer->attr[_idx];
-		fc =   &fuse->code[_idx];
-		sc = &sLayer->code[_idx];
-		dc = &dLayer->code[_idx];
-		wc = &wLayer->code[_idx];
+		idx = _col + _wth;
+		fa =   &fuse->attr[idx];
+		sa = &sLayer->attr[idx];
+		da = &dLayer->attr[idx];
+		wa = &wLayer->attr[idx];
+		fc =   &fuse->code[idx];
+		sc = &sLayer->code[idx];
+		dc = &dLayer->code[idx];
+		wc = &wLayer->code[idx];
 	/* STATIC LAYER */
 		fa->value = sa->value;
 		*fc = *sc;
@@ -1818,62 +1831,41 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize, char *buffer)
 	/* FUSED LAYER */
 	    if ((fa->fg ^ attr.fg) || (fa->bg ^ attr.bg) || (fa->bf ^ attr.bf))
 	    {
-		buffer[_bix++] = 0x1b;
-		buffer[_bix++] = '[';
-		buffer[_bix++] = '0' + fa->bf;
-		buffer[_bix++] = ';';
-		buffer[_bix++] = '3';
-		buffer[_bix++] = '0' + fa->fg;
-		buffer[_bix++] = ';';
-		buffer[_bix++] = '4';
-		buffer[_bix++] = '0' + fa->bg;
-		buffer[_bix++] = 'm';
+		stream[sdx++] = 0x1b;
+		stream[sdx++] = '[';
+		stream[sdx++] = '0' + fa->bf;
+		stream[sdx++] = ';';
+		stream[sdx++] = '3';
+		stream[sdx++] = '0' + fa->fg;
+		stream[sdx++] = ';';
+		stream[sdx++] = '4';
+		stream[sdx++] = '0' + fa->bg;
+		stream[sdx++] = 'm';
 	    }
 	    if (fa->un ^ attr.un)
 	    {
-		buffer[_bix++] = 0x1b;
-		buffer[_bix++] = '[';
+		stream[sdx++] = 0x1b;
+		stream[sdx++] = '[';
 		if (fa->un) {
-			buffer[_bix++] = '4';
-			buffer[_bix++] = 'm';
+			stream[sdx++] = '4';
+			stream[sdx++] = 'm';
 		} else {
-			buffer[_bix++] = '2';
-			buffer[_bix++] = '4';
-			buffer[_bix++] = 'm';
+			stream[sdx++] = '2';
+			stream[sdx++] = '4';
+			stream[sdx++] = 'm';
 		}
 	    }
-	    attr.value = fa->value;
+		attr.value = fa->value;
 
-	    if (*fc != 0) {
-		if (cursor_flag == 0)
-		{
-			cursor_flag = 1;
-			cursor_row = _row + 1;
-			cursor_col = _col + 1;
-
-			buffer[_bix++] = 0x1b;
-			buffer[_bix++] = '[';
-
-			_bix += cursor_row >= 100 ? 3 : cursor_row >= 10 ? 2:1;
-			for (_bdx = _bix; cursor_row > 0; cursor_row /= 10)
-				buffer[--_bdx] = '0' + (cursor_row % 10);
-
-			buffer[_bix++] = ';';
-
-			_bix += cursor_col >= 100 ? 3 : cursor_col >= 10 ? 2:1;
-			for (_bdx = _bix; cursor_col > 0; cursor_col /= 10)
-				buffer[--_bdx] = '0' + (cursor_col % 10);
-
-			buffer[_bix++] = 'H';
-		}
-		buffer[_bix++] = *fc;
-	    } else {
-		if (cursor_flag != 0)
-			cursor_flag = 0;
+	    switch (*fc) {
+	    case 0x0:
+		stream[sdx++] = 0x20;
+		break;
+	    default:
+		stream[sdx++] = *fc;
+		break;
 	    }
 	}
-	memcpy(&stream[sdx], buffer, _bix);
-	sdx += _bix;
     }
 	return (sdx);
 }
@@ -1917,11 +1909,21 @@ unsigned char DumpStatus(void)
 	return (BITVAL(dump.Status, 0));
 }
 
-unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer)
+unsigned int WriteConsole(SCREEN_SIZE drawSize)
 {
-	unsigned int writeSize = FuseAll(console, drawSize, buffer), layout = 0;
+	unsigned int writeSize, layout = 0;
 
-	if (writeSize > 0) {
+	UI_Draw_uBenchmark(dLayer);
+
+	UBENCH_RDCOUNTER(1);
+
+	writeSize = FuseAll(console, drawSize);
+
+	UBENCH_RDCOUNTER(2);
+	UBENCH_COMPUTE();
+
+	if (writeSize > 0)
+	{
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 

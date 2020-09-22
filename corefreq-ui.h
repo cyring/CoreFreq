@@ -620,12 +620,12 @@ extern void DestroyLayer(Layer *layer) ;
 
 extern void CreateLayer(Layer *layer, CoordSize size) ;
 
-#define ResetLayer(layer)						\
-	memset(layer->attr, 0, layer->size.wth * layer->size.hth);	\
-	memset(layer->code, 0, layer->size.wth * layer->size.hth);
+#define ResetLayer(layer, _attr, _code)					\
+	memset(layer->attr, _attr, layer->size.wth * layer->size.hth);	\
+	memset(layer->code, _code, layer->size.wth * layer->size.hth);
 
-#define ClearGarbage(_layer, _plane, _col, _row, _len)			\
-	memset(&LayerAt(_layer, _plane, _col, _row), 0, _len)
+#define ClearGarbage(_layer, _plane, _col, _row, _len, _value)		\
+	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len)
 
 extern void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				CUINT width, CUINT height,
@@ -772,9 +772,11 @@ extern void WindowsUpdate(WinList *winList) ;
 			* TCellAt(win, shift.horz, shift.vert).length)),\
 		.row =	(win->matrix.origin.row + row)			\
 	};								\
-	memset(&LayerAt(win->layer, attr, cell.col, cell.row), 0,	\
+	memset(&LayerAt(win->layer, attr, cell.col, cell.row),		\
+		MakeAttr(BLACK,0,BLACK,0).value,			\
 		TCellAt(win, shift.horz, shift.vert).length);		\
-	memset(&LayerAt(win->layer, code, cell.col, cell.row), 0,	\
+	memset(&LayerAt(win->layer, code, cell.col, cell.row),		\
+		MakeAttr(BLACK,0,BLACK,0).value,			\
 		TCellAt(win, shift.horz, shift.vert).length);		\
 })
 
@@ -844,7 +846,7 @@ extern void FreeAll(char *buffer) ;
 
 __typeof__ (errno) AllocAll(char **buffer) ;
 
-extern unsigned int WriteConsole(SCREEN_SIZE drawSize, char *buffer) ;
+extern unsigned int WriteConsole(SCREEN_SIZE drawSize) ;
 
 extern void _TERMINAL_IN(void) ;
 extern void _TERMINAL_OUT(void) ;
@@ -880,4 +882,15 @@ extern unsigned char DumpStatus(void) ;
 
 extern __typeof__ (errno) SaveGeometries(char*) ;
 extern __typeof__ (errno) LoadGeometries(char*) ;
+
+#if defined(UBENCH) && UBENCH == 1
+  #define UI_Draw_uBenchmark(layer)					\
+  ({									\
+	char str[32];							\
+	size_t len = snprintf(str, 20+1, "%llu", UBENCH_METRIC(0));	\
+	LayerFillAt(layer, 0, 2, len, str, MakeAttr(MAGENTA, 0, BLACK, 1)); \
+  })
+#else
+  #define UI_Draw_uBenchmark(layer) {}
+#endif /* UBENCH */
 

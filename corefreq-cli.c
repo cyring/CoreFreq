@@ -10440,51 +10440,30 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_FREQUENCY, RSZ(LAYOUT_MONITOR_FREQUENCY),
-			(LOAD_LEAD - 1), row,
-			hMon0);
+			(LOAD_LEAD - 1), row, hMon0 );
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
-			hMon0.length, hMon0.attr, hMon0.code);
-
-	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
-			hMon0.origin.row,
-			abs(draw.Size.width - hMon0.length),
-			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			hMon0.length, hMon0.attr, hMon0.code );
 	return (0);
 }
 
 CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_INST, RSZ(LAYOUT_MONITOR_INST),
-			(LOAD_LEAD - 1), row,
-			hMon0);
+			(LOAD_LEAD - 1), row, hMon0 );
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
-			hMon0.length, hMon0.attr, hMon0.code);
-
-	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
-			hMon0.origin.row,
-			abs(draw.Size.width - hMon0.length),
-			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			hMon0.length, hMon0.attr, hMon0.code );
 	return (0);
 }
 
 CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_COMMON, RSZ(LAYOUT_MONITOR_COMMON),
-			(LOAD_LEAD - 1), row,
-			hMon0);
+			(LOAD_LEAD - 1), row, hMon0 );
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
-			hMon0.length, hMon0.attr, hMon0.code);
-
-	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
-			hMon0.origin.row,
-			abs(draw.Size.width - hMon0.length),
-			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			hMon0.length, hMon0.attr, hMon0.code );
 	return (0);
 }
 
@@ -10496,11 +10475,10 @@ CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_TASKS, (MAX_WIDTH - LOAD_LEAD + 1),
-			(LOAD_LEAD - 1), row,
-			hMon0);
+			(LOAD_LEAD - 1), row, hMon0 );
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
-			hMon0.length, hMon0.attr, hMon0.code);
+			hMon0.length, hMon0.attr, hMon0.code );
 
 	cTask[cpu].col = LOAD_LEAD + 8;
 	cTask[cpu].row = hMon0.origin.row;
@@ -10511,42 +10489,33 @@ CUINT Layout_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_MONITOR_SLICE, RSZ(LAYOUT_MONITOR_SLICE),
-			(LOAD_LEAD - 1), row,
-			hMon0);
+			(LOAD_LEAD - 1), row, hMon0 );
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
-			hMon0.length, hMon0.attr, hMon0.code);
-
-	LayerFillAt(	layer, (hMon0.origin.col + hMon0.length),
-			hMon0.origin.row,
-			abs(draw.Size.width - hMon0.length),
-			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			hMon0.length, hMon0.attr, hMon0.code );
 	return (0);
 }
 
 CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_RULER_FREQUENCY, draw.Size.width,
-			0, row, hFreq0);
+			0, row, hFreq0 );
 
 	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
-			hFreq0.length, hFreq0.attr, hFreq0.code);
+			hFreq0.length, hFreq0.attr, hFreq0.code );
 
 	if (!draw.Flag.avgOrPC) {
 		LayerDeclare(	LAYOUT_RULER_FREQUENCY_AVG, draw.Size.width,
-				0, (row + draw.Area.MaxRows + 1),
-				hAvg0);
+				0, (row + draw.Area.MaxRows + 1), hAvg0 );
 
 		LayerCopyAt(	layer, hAvg0.origin.col, hAvg0.origin.row,
-				hAvg0.length, hAvg0.attr, hAvg0.code);
+				hAvg0.length, hAvg0.attr, hAvg0.code );
 	} else {
 		LayerDeclare(	LAYOUT_RULER_FREQUENCY_PKG, draw.Size.width,
-				0, (row + draw.Area.MaxRows + 1),
-				hPkg0);
+				0, (row + draw.Area.MaxRows + 1), hPkg0) ;
 
 		LayerCopyAt(	layer, hPkg0.origin.col, hPkg0.origin.row,
-				hPkg0.length, hPkg0.attr, hPkg0.code);
+				hPkg0.length, hPkg0.attr, hPkg0.code );
 	}
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10556,11 +10525,11 @@ CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
 			RSC(LAYOUT_RULER_INST).CODE(),
-			RSC(LAYOUT_RULER_INST).ATTR()[0]);
+			RSC(LAYOUT_RULER_INST).ATTR()[0] );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0));
+			MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10570,10 +10539,10 @@ CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
 			RSC(LAYOUT_RULER_CYCLES).CODE(),
-			RSC(LAYOUT_RULER_CYCLES).ATTR()[0]);
+			RSC(LAYOUT_RULER_CYCLES).ATTR()[0] );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10583,10 +10552,10 @@ CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerFillAt(	layer, 0, row, draw.Size.width,
 			RSC(LAYOUT_RULER_CSTATES).CODE(),
-			RSC(LAYOUT_RULER_CSTATES).ATTR()[0]);
+			RSC(LAYOUT_RULER_CSTATES).ATTR()[0] );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10595,13 +10564,13 @@ CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_RULER_INTERRUPTS, draw.Size.width,
-			0, row, hIntr0);
+			0, row, hIntr0 );
 
 	LayerCopyAt(	layer, hIntr0.origin.col, hIntr0.origin.row,
-			hIntr0.length, hIntr0.attr, hIntr0.code);
+			hIntr0.length, hIntr0.attr, hIntr0.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10641,8 +10610,8 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
 
-	LayerFillAt	(layer, 0, (row + 9),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	LayerFillAt(	layer, 0, (row + 9),
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += 2 + 8;
 	return (row);
@@ -10751,25 +10720,26 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerDeclare(	LAYOUT_TASKS_TRACKING, RSZ(LAYOUT_TASKS_TRACKING),
 			55, row, hTrack0 );
 
-	LayerCopyAt(layer, hTask0.origin.col, hTask0.origin.row,
-			hTask0.length, hTask0.attr, hTask0.code);
+	LayerCopyAt(	layer, hTask0.origin.col, hTask0.origin.row,
+			hTask0.length, hTask0.attr, hTask0.code );
 
-	LayerCopyAt(layer, hTask1.origin.col, hTask1.origin.row,
-			hTask1.length, hTask1.attr, hTask1.code);
+	LayerCopyAt(	layer, hTask1.origin.col, hTask1.origin.row,
+			hTask1.length, hTask1.attr, hTask1.code );
 
-	LayerFillAt(layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0));
+	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
-	LayerCopyAt(layer, hTask2.origin.col, hTask2.origin.row,
-			hTask2.length, hTask2.attr, hTask2.code);
+	LayerCopyAt(	layer, hTask2.origin.col, hTask2.origin.row,
+			hTask2.length, hTask2.attr, hTask2.code );
 
-	LayerCopyAt(layer, hTask3.origin.col, hTask3.origin.row,
-			hTask3.length, hTask3.attr, hTask3.code);
+	LayerCopyAt(	layer, hTask3.origin.col, hTask3.origin.row,
+			hTask3.length, hTask3.attr, hTask3.code );
 
-	LayerCopyAt(layer, hTrack0.origin.col, hTrack0.origin.row,
-			hTrack0.length, hTrack0.attr, hTrack0.code);
+	LayerCopyAt(	layer, hTrack0.origin.col, hTrack0.origin.row,
+			hTrack0.length, hTrack0.attr, hTrack0.code );
 
-	if (Shm->SysGate.trackTask) {
+	if (Shm->SysGate.trackTask)
+	{
 		snprintf(buffer, 11+1, "%5d", Shm->SysGate.trackTask);
 		LayerFillAt(	layer,
 				(hTrack0.origin.col + 15), hTrack0.origin.row,
@@ -10789,8 +10759,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerAt(layer,code,32,hSensors.origin.row)=Setting.fahrCels ? 'F':'C';
 
 	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1),
-			hPwr0 );
+			0, (row + draw.Area.MaxRows + 1), hPwr0 );
 
 	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
 			hPwr0.length, hPwr0.attr, hPwr0.code );
@@ -10813,7 +10782,7 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0));
+			MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10827,12 +10796,10 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0));
+			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
 	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1),
-			hPwr1 );
+			0, (row + draw.Area.MaxRows + 1), hPwr1 );
 
 	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
 			hPwr1.length, hPwr1.attr, hPwr1.code );
@@ -10851,11 +10818,11 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerDeclare(LAYOUT_RULER_SLICE, draw.Size.width, 0, row, hSlice0);
 
 	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
-			hSlice0.length, hSlice0.attr, hSlice0.code);
+			hSlice0.length, hSlice0.attr, hSlice0.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0));
+			MakeAttr(WHITE, 0, BLACK, 0) );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10895,7 +10862,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech0.attr[12] = TSC[Shm->Proc.Features.InvariantTSC].attr;
 
 	LayerCopyAt(	layer, hTech0.origin.col, hTech0.origin.row,
-			hTech0.length, hTech0.attr, hTech0.code);
+			hTech0.length, hTech0.attr, hTech0.code );
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
@@ -10903,7 +10870,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech0.length, hTech0.origin.row,
 			hTech1 );
 
-	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =
+	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
 					Pwr[Shm->Proc.Features.HyperThreading];
 
 	const ATTRIBUTE TM[] = {
@@ -11056,7 +11023,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			(draw.Size.width-RSZ(LAYOUT_FOOTER_SYSTEM)),row, hSys1);
 
 	LayerCopyAt(	layer, hSys1.origin.col, hSys1.origin.row,
-			hSys1.length, hSys1.attr, hSys1.code);
+			hSys1.length, hSys1.attr, hSys1.code );
 	/* Center the DMI string					*/
 	if ((len = strlen(Shm->SMB.String[draw.SmbIndex])) > 0) {
 		CSINT	can = CUMIN(hSys1.origin.col - col - 1, len),
@@ -11102,7 +11069,7 @@ void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
 #ifndef NO_UPPER
 CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 				const unsigned int cpu, double ratio )
-{	/* Upper view area						*/
+{	/*	Upper view area						*/
 	const CUINT	bar0 = ((ratio > Ruler.Maximum ? Ruler.Maximum : ratio)
 				* draw.Area.LoadWidth) / Ruler.Maximum,
 			bar1 = draw.Area.LoadWidth - bar0;
@@ -11112,9 +11079,12 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 					0, BLACK, 1 );
 
 	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
-	/*	Pad with blank characters				*/
-	LayerFillAt(layer, (bar0 + LOAD_LEAD), row, bar1,
-			hSpace, MakeAttr(BLACK,0,BLACK,1));
+	/*TODO( Clear garbage with transparency padding )		*/
+	ClearGarbage(	layer, attr, (bar0 + LOAD_LEAD), row, bar1,
+			MakeAttr(BLACK,0,BLACK,1).value );
+
+	ClearGarbage(layer, code, (bar0 + LOAD_LEAD), row, bar1, 0x0);
+
 	return (0);
 }
 
@@ -11382,11 +11352,9 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	const enum FORMULA_SCOPE
 		thermalScope = SCOPE_OF_FORMULA(Shm->Proc.thermalFormula);
 
-	size_t len=Draw_Freq_Temp_Matrix[thermalScope]
-					[Setting.fahrCels](CFlop,
-							&Shm->Cpu[cpu],
-							cpu);
-
+	size_t len = Draw_Freq_Temp_Matrix[thermalScope][Setting.fahrCels](
+				CFlop, &Shm->Cpu[cpu], cpu
+	);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
@@ -13082,21 +13050,22 @@ void Layout_Header_DualView_Footer(Layer *layer)
 #ifndef NO_UPPER
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
-			(draw.Size.width - LOAD_LEAD + 1));
+			(draw.Size.width - LOAD_LEAD + 1), 0x0);
 #endif
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	ClearGarbage(	dLayer, attr,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
-			(draw.Size.width - LOAD_LEAD + 1));
+			(draw.Size.width - LOAD_LEAD + 1),
+			MakeAttr(BLACK,0,BLACK,0).value );
 
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
-			(draw.Size.width - LOAD_LEAD + 1));
+			(draw.Size.width - LOAD_LEAD + 1), 0x0 );
 #else
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), row,
-			(draw.Size.width - LOAD_LEAD + 1));
+			(draw.Size.width - LOAD_LEAD + 1), 0x0 );
 #endif
 #endif
     }
@@ -13859,19 +13828,14 @@ REASON_CODE Top(char option)
 
       if (draw.Flag.height & draw.Flag.width)
       {
-	UBENCH_RDCOUNTER(1);
-
 	if (draw.Flag.clear) {
 		draw.Flag.clear  = 0;
 		draw.Flag.layout = 1;
-		ResetLayer(dLayer);
+		ResetLayer(dLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
 	}
 	if (draw.Flag.layout) {
 		draw.Flag.layout = 0;
-		ResetLayer(sLayer);
-		FillLayerArea(sLayer, 0, 0, draw.Size.width, draw.Size.height,
-				(ASCII*) hSpace, MakeAttr(BLACK, 0, BLACK, 1));
-
+		ResetLayer(sLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
 		LayoutView[draw.Disposal](sLayer);
 	}
 	if (draw.Flag.daemon)
@@ -13888,8 +13852,10 @@ REASON_CODE Top(char option)
 			&& (draw.iClock != Shm->Proc.Service.Core)) ;
 	}
 	Draw_uBenchmark(dLayer);
+	UBENCH_RDCOUNTER(1);
+
 	/* Write to the standard output.				*/
-	draw.Flag.layout = WriteConsole(draw.Size, buffer);
+	draw.Flag.layout = WriteConsole(draw.Size);
 
 	UBENCH_RDCOUNTER(2);
 	UBENCH_COMPUTE();
