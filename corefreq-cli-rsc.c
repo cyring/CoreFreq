@@ -80,8 +80,8 @@ ASCII	Rsc_Layout_Monitor_Slice_Code_En[] = RSC_LAYOUT_MONITOR_SLICE_CODE;
 #define Rsc_Layout_Monitor_Slice_Code_Fr Rsc_Layout_Monitor_Slice_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruler_Frequency_Attr[] = RSC_LAYOUT_RULER_FREQUENCY_ATTR;
-ASCII Rsc_Layout_Ruler_Frequency_Code_En[] = RSC_LAYOUT_RULER_FREQUENCY_CODE;
-#define Rsc_Layout_Ruler_Frequency_Code_Fr Rsc_Layout_Ruler_Frequency_Code_En
+ASCII Rsc_Layout_Ruler_Frequency_Code_En[] = RSC_LAYOUT_RULER_FREQUENCY_CODE_EN,
+      Rsc_Layout_Ruler_Frequency_Code_Fr[] = RSC_LAYOUT_RULER_FREQUENCY_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruler_Freq_Avg_Attr[] = \
 					RSC_LAYOUT_RULER_FREQUENCY_AVG_ATTR;
@@ -215,8 +215,8 @@ ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN;
 #define Rsc_Layout_Ruler_Power_Code_Fr Rsc_Layout_Ruler_Power_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
-ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN;
-#define Rsc_Layout_Ruler_Voltage_Code_Fr Rsc_Layout_Ruler_Voltage_Code_En
+ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN,
+	Rsc_Layout_Ruler_Voltage_Code_Fr[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruler_Energy_Attr[] = RSC_LAYOUT_RULER_ENERGY_ATTR;
 ASCII	Rsc_Layout_Ruler_Energy_Code_En[] = RSC_LAYOUT_RULER_ENERGY_CODE_EN,
@@ -1688,12 +1688,12 @@ RESOURCE_ST Resource[] = {
 					RSC_LOGO_R4),
 	[RSC_LOGO_ROW_5]	= LDT(	RSC_LOGO_R5,
 					RSC_LOGO_R5),
-	[RSC_COPY_ROW_0]	= LDT(	RSC_COPY_R0,
-					RSC_COPY_R0),
-	[RSC_COPY_ROW_1]	= LDT(	RSC_COPY_R1,
-					RSC_COPY_R1),
-	[RSC_COPY_ROW_2]	= LDT(	RSC_COPY_R2,
-					RSC_COPY_R2),
+	[RSC_COPY_ROW_0]	= LDT(	RSC_COPY_R0_EN,
+					RSC_COPY_R0_FR),
+	[RSC_COPY_ROW_1]	= LDT(	RSC_COPY_R1_EN,
+					RSC_COPY_R1_FR),
+	[RSC_COPY_ROW_2]	= LDT(	RSC_COPY_R2_EN,
+					RSC_COPY_R2_FR),
     [RSC_CREATE_SELECT_AUTO_TURBO]=LDT( RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN,
 					RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR),
     [RSC_CREATE_SELECT_FREQ_TURBO]=LDT( RSC_CREATE_SELECT_FREQ_TURBO_CODE_EN,
