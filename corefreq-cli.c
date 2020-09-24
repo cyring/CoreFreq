@@ -13249,7 +13249,7 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			(double) Shm->Uncore.Bus.Speed);
 }
 
-static char Card_MC_Timing[11+11+11+11+11+11+6+1];
+static char Card_MC_Timing[11+(4*10)+5+1];
 
 void Layout_Card_MC(Layer *layer, Card *card)
 {
@@ -13258,13 +13258,12 @@ void Layout_Card_MC(Layer *layer, Card *card)
 			hRAM);
 
 	card->data.dword.lo = 0;
-	card->data.dword.hi = snprintf(	Card_MC_Timing, 11+11+11+11+11+11+6+1,
-					"%2u-%2u-%2u-%2u-%2u-%1uT",
+	card->data.dword.hi = snprintf(	Card_MC_Timing, 11+(4*10)+5+1,
+					"% d-%u-%u-%u-%uT",
 				Shm->Uncore.MC[0].Channel[0].Timing.tCL,
 				Shm->Uncore.MC[0].Channel[0].Timing.tRCD,
 				Shm->Uncore.MC[0].Channel[0].Timing.tRP,
 				Shm->Uncore.MC[0].Channel[0].Timing.tRAS,
-				Shm->Uncore.MC[0].Channel[0].Timing.tRC,
 				Shm->Uncore.MC[0].Channel[0].Timing.CMD_Rate );
 
 	LayerCopyAt(	layer, hRAM.origin.col, hRAM.origin.row,
