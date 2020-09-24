@@ -1861,8 +1861,12 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	    case 0x0:
 		stream[sdx++] = 0x20;
 		break;
+	    case 0xc0 ... 0xdf:
+		stream[sdx++] = 0xc2;	/* Control C2 Unicode UTF-8	*/
+		stream[sdx++] = *fc ^ 0x60;
+		break;
 	    case 0x80 ... 0xbf:
-		stream[sdx++] = 0xc3;		/*	Unicode UTF-8	*/
+		stream[sdx++] = 0xc3;	/* Control C3 Unicode UTF-8	*/
 		/* Fallthrough */
 	    default:
 		stream[sdx++] = *fc;

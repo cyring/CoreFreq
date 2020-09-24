@@ -7050,7 +7050,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 	switch ( GET_LOCALE() ) {
 	case LOC_FR:	/* Convert the local time in ASCII		*/
 		hdrLen = strftime(inStr, POPUP_ALLOC, "%c", brokTime);
-		ISO_8859_To_ASCII((ASCII *) inStr, (ASCII *) outStr);
+		ISO_8859_To_Unicode((ASCII *) inStr, (ASCII *) outStr);
 		break;
 	case LOC_EN:	/* Keep the dafault language. No conversion.	*/
 	default:
@@ -7063,7 +7063,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		sysMsg = strerror_r(pCtrl->drc, inStr, POPUP_ALLOC);
 		switch ( GET_LOCALE() ) {
 		case LOC_FR:	/* Convert the System message to locale */
-			ISO_8859_To_ASCII((ASCII *) sysMsg, (ASCII *) inStr);
+			ISO_8859_To_Unicode((ASCII *) sysMsg, (ASCII *) inStr);
 			sysMsg = inStr;
 			break;
 		case LOC_EN:
@@ -13694,26 +13694,7 @@ void AllocDashboard(void)
 		StoreCard(card, .Draw, Draw_Card_Task);
 	}
 }
-/*TODO: LCD test. To be removed.
-	char *mir[] = {
-		" ! \" # $ % & \' () * + , -./",
-		"  0123456789 : ; < = > ?",
-		"@ ABCDEFGHIJKLMNO",
-		"  PQRSTUVWXYZ [ \\ ] ^ _",
-		"` abcdefghijklmno",
-		"  pqrstuvwxyz { | } ~ \x7f"
-	};
 
-void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
-{
-	PrintLCD(layer, 0, 1, strlen(mir[0]), mir[0], _WHITE);
-	PrintLCD(layer, 0, 5, strlen(mir[1]), mir[1], _WHITE);
-	PrintLCD(layer, 0, 9, strlen(mir[2]), mir[2], _WHITE);
-	PrintLCD(layer, 0,13, strlen(mir[3]), mir[3], _WHITE);
-	PrintLCD(layer, 0,17, strlen(mir[4]), mir[4], _WHITE);
-	PrintLCD(layer, 0,21, strlen(mir[5]), mir[5], _WHITE);
-}
-*/
 void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
 {
 }

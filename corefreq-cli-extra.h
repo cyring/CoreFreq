@@ -27,5 +27,5 @@ extern void json_key(struct json_state *state, char * key) ;
 extern void json_string(struct json_state *state, char * value) ;
 extern void json_literal(struct json_state *state, char * format, ...) ;
 
-extern void ISO_8859_To_ASCII(unsigned char*, unsigned char*) ;
+extern void ISO_8859_To_Unicode(unsigned char*, unsigned char*) ;
 

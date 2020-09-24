@@ -16,6 +16,7 @@
 
 #include "corefreq-cli-extra.h"
 
+/*				--[ JSON toolkit ]--			*/
 struct json_state;
 
 enum JSON_STATE {
@@ -186,83 +187,21 @@ void json_literal(struct json_state *state, char * format, ...)
 	va_end(args);
 }
 
-void ISO_8859_To_ASCII(unsigned char *pIn, unsigned char *pOut)
+/*				--[ UTF toolkit ]--			*/
+
+void ISO_8859_To_Unicode(unsigned char *pIn, unsigned char *pOut)
 {
 	while ( (*pIn) != '\0' ) {
-		if ( (*pIn) > 127 ) {
+		if ( (*pIn) > 0x7f ) {
 			switch ( (*pIn) ) {
-			case 0xa1:	/* upside-down exclamation mark	*/
-				(*pOut) = '!';
+			case 0xc0 ... 0xff:	/* To UTF-8 Ctrl:C3 */
+				(*pOut) = (*pIn) ^ 0x40;
 				break;
-			case 0xab ... 0xbb:	/* chevron-quotes	*/
-				(*pOut) = '"';
-				break;
-			case 0xbf:	/* upside-down question mark	*/
-				(*pOut) = '?';
-				break;
-			case 0xc0 ... 0xc6: /* A: grave accent...diphthong */
-				(*pOut) = 'A';
-				break;
-			case 0xc7:		/* C: cedilla		*/
-				(*pOut) = 'C';
-				break;
-			case 0xc8 ... 0xcb: /* E: grave accent...umlaut mark */
-				(*pOut) = 'E';
-				break;
-			case 0xcc ... 0xcf: /* I: grave accent...umlaut mark */
-				(*pOut) = 'I';
-				break;
-			case 0xd0:		/* &ETH;		*/
-				(*pOut) = 'D';
-				break;
-			case 0xd1:		/* N: tilde		*/
-				(*pOut) = 'N';
-				break;
-			case 0xd2 ... 0xd8:	/* O: grave accent...slash */
-				(*pOut) = 'O';
-				break;
-			case 0xd9 ... 0xdc: /* U: grave accent...umlaut mark */
-				(*pOut) = 'U';
-				break;
-			case 0xdd:		/* Y: acute accent	*/
-				(*pOut) = 'Y';
-				break;
-			case 0xde ... 0xdf:	/* &THORN; ... Eszett	*/
-				(*pOut) = 'B';
-				break;
-			case 0xe0 ... 0xe6: /* a: grave accent...diphthong */
-				(*pOut) = 'a';
-				break;
-			case 0xe7:		/* c: cedilla		*/
-				(*pOut) = 'c';
-				break;
-			case 0xe8 ... 0xeb: /* e: grave accent...umlaut mark */
-				(*pOut) = 'e';
-				break;
-			case 0xec ... 0xef: /* i: grave accent...umlaut mark */
-				(*pOut) = 'i';
-				break;
-			case 0xf1:		/* n: tilde		*/
-				(*pOut) = 'n';
-				break;
-			case 0xf0:		/* &eth;		*/
-				(*pOut) = 'd';
-				break;
-			case 0xf2 ... 0xf8: /* o: grave accent...slash	*/
-				(*pOut) = 'o';
-				break;
-			case 0xf9 ... 0xfc: /* u: grave accent...umlaut mark */
-				(*pOut) = 'u';
-				break;
-			case 0xfd:		/* y: acute accent	*/
-			case 0xff:		/* y: umlaut mark	*/
-				(*pOut) = 'y';
-				break;
-			case 0xfe:		/* &thorn;		*/
-				(*pOut) = 'b';
+			case 0xa0 ... 0xbf:	/* To UTF-8 Ctrl:C2 */
+				(*pOut) = (*pIn) ^ 0x60;
 				break;
 			default:
-				(*pOut) = '_';
+				(*pOut) = 0x20;
 				break;
 			}
 		} else {
