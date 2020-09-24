@@ -4906,24 +4906,55 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (HwCfgRegister.Family_17h.CpbDis == 0)
     {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = \
+	AMD_F17H_MTS_CPK_COF XtraCOF = {.value = 0};
+
+	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen2_MTS:
+		Core_AMD_SMN_Read(XtraCOF,
+				SMU_AMD_F17H_MATISSE_COF,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H);
+		break;
+	case AMD_Zen2_CPK:
+		Core_AMD_SMN_Read(XtraCOF,
+				SMU_AMD_F17H_CASTLEPEAK_COF,
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H);
+		break;
+	}
+	if (XtraCOF.value != 0)
+	{
+		unsigned int	CPB = XtraCOF.BoostRatio >> 2,
+				XFR = XtraCOF.BoostRatio % 4;
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = CPB;
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = CPB + XFR;
+	}
+	if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] == 0)
+	{
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = \
+	    if (PRIVATE(OF(Specific)) != NULL)
+	    {
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] += \
+						PRIVATE(OF(Specific))->Boost[0];
+	    }
+	}
+	if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] == 0)
+	{
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = \
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
 
-      if (PRIVATE(OF(Specific)) != NULL)
-      {
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] += \
+	    if (PRIVATE(OF(Specific)) != NULL)
+	    {
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
 						PRIVATE(OF(Specific))->Boost[0];
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
-						PRIVATE(OF(Specific))->Boost[0];
-
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] += \
 						PRIVATE(OF(Specific))->Boost[1];
-      }
-
+	    }
+	}
 	return (true);	/* Have CPB: inform to add the Xtra Boost ratios */
     } else {
 	return (false); /* CPB is disabled				*/
@@ -7534,11 +7565,22 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	CORE_RO *Core = (CORE_RO *) arg;
 	PM16 PM = {.value = 0};
 	int ToggleFeature = 0;
+	bool CPB_State;
 
 	/*	Query the Min, Max, Target & Turbo P-States		*/
 	PerCore_Query_AMD_Zen_Features(Core);
-	Compute_AMD_Zen_Boost(Core->Bind);
+	CPB_State = Compute_AMD_Zen_Boost(Core->Bind);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		if (CPB_State == true)
+		{	/*	Count CPB and XFR ratios		*/
+			PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
+		}
+		else {
+			PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+		}
+	}
 	SystemRegisters(Core);
 
 	AMD_Microcode(Core);

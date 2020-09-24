@@ -118,6 +118,9 @@
 /* UNDOCUMENTED REGISTERS */
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F17H	0x00059954
 
+#define SMU_AMD_F17H_MATISSE_COF		0x0005d2c6
+#define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d326
+
 #ifndef MSR_AMD_PC6_F17H_STATUS
 	#define MSR_AMD_PC6_F17H_STATUS 	0xc0010292
 #endif
@@ -1154,4 +1157,15 @@ typedef union
 		tRFC4		: 32-22;
 	};
 } AMD_17_UMC_TIMING_DTR60;
+
+typedef union
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits	: 17-0,
+		BoostRatio	: 25-17,
+		MinRatio	: 32-25;
+	};
+} AMD_F17H_MTS_CPK_COF;
 
