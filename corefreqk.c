@@ -4925,7 +4925,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	if (XtraCOF.value != 0)
 	{
 		unsigned int	CPB = XtraCOF.BoostRatio >> 2,
-				XFR = XtraCOF.BoostRatio % 4;
+				XFR = !!(XtraCOF.BoostRatio & 0b11);
 
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(CPB)] = CPB;
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(XFR)] = CPB + XFR;
