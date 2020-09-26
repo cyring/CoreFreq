@@ -4566,8 +4566,26 @@ static SYSTEM_DRIVER Intel_Driver = {
 	.SetTarget	= Policy_Skylake_SetTarget
 };
 
+static IDLE_STATE Zen_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "ZEN-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 1,
+	.Residency	= 2
+	},
+	{
+	.Name		= "C2",
+	.Desc		= "ZEN-C2",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 400,
+	.Residency	= 800
+	},
+	{NULL}
+};
+
 static SYSTEM_DRIVER AMD_Zen_Driver = {
-	.IdleState	= NULL,
+	.IdleState	= Zen_IdleState,
 	.GetFreq	= Policy_GetFreq,
 	.SetTarget	= Policy_Zen_SetTarget
 };
