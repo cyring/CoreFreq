@@ -337,6 +337,13 @@ typedef struct
 					Temp;
 		enum THERM_PWR_EVENTS	Events;
 		} Thermal;
+
+		struct {
+		    struct {
+			int		CPU, SOC;
+		    } VID;
+			double		CPU, SOC;
+		} Voltage;
 	} FlipFlop[2] __attribute__ ((aligned (8)));
 
 	struct {
@@ -347,6 +354,10 @@ typedef struct
 					PC08,
 					PC09,
 					PC10;
+		struct {
+			double		Limit[SENSOR_LIMITS_DIM];
+		} Voltage;
+
 		struct {
 			double		Current,
 					Limit[SENSOR_LIMITS_DIM];

@@ -10780,9 +10780,11 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
 
-	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0) );
+	LayerDeclare(	LAYOUT_RULER_VPKG_SOC, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hVPkg );
+
+	LayerCopyAt(	layer, hVPkg.origin.col, hVPkg.origin.row,
+			hVPkg.length, hVPkg.attr, hVPkg.code );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -12731,6 +12733,33 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 	row += 1;
 	return (row);
 }
+
+CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	const CUINT col = LOAD_LEAD + 8;
+	row += 1 + draw.Area.MaxRows;
+
+	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
+
+	snprintf( buffer, 2*11+4*6+1,
+			"%7d" "%05.4f" "%05.4f" "%05.4f" "%7d" "%05.4f",
+			PFlop->Voltage.VID.CPU,
+			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
+			PFlop->Voltage.CPU,
+			Shm->Proc.State.Voltage.Limit[SENSOR_HIGHEST],
+			PFlop->Voltage.VID.SOC,
+			PFlop->Voltage.SOC );
+
+	memcpy(&LayerAt(layer, code, col,	row), &buffer [0], 7);
+	memcpy(&LayerAt(layer, code, col + 12,	row), &buffer [7], 6);
+	memcpy(&LayerAt(layer, code, col + 21,	row), &buffer[13], 6);
+	memcpy(&LayerAt(layer, code, col + 30,	row), &buffer[19], 6);
+	memcpy(&LayerAt(layer, code, col + 49,	row), &buffer[25], 7);
+	memcpy(&LayerAt(layer, code, col + 59,	row), &buffer[32], 6);
+
+	row += 1;
+	return (row);
+}
 #endif /* NO_LOWER */
 
 #ifndef NO_FOOTER
@@ -12741,8 +12770,7 @@ char *Format_Temp_Voltage[2][2] = {
 };
 /* <<< GLOBALS <<< */
 
-void Draw_Footer_Voltage_Fahrenheit(	struct PKG_FLIP_FLOP *PFlop,
-					struct FLIP_FLOP *SProc )
+void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 {
 	const enum FORMULA_SCOPE fmt[2] = {
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
@@ -12750,11 +12778,10 @@ void Draw_Footer_Voltage_Fahrenheit(	struct PKG_FLIP_FLOP *PFlop,
 	};
 	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			Cels2Fahr(PFlop->Thermal.Temp),
-			SProc->Voltage.Vcore);
+			PFlop->Voltage.CPU);
 }
 
-void Draw_Footer_Voltage_Celsius(	struct PKG_FLIP_FLOP *PFlop,
-					struct FLIP_FLOP *SProc )
+void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop)
 {
 	const enum FORMULA_SCOPE fmt[2] = {
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
@@ -12762,11 +12789,10 @@ void Draw_Footer_Voltage_Celsius(	struct PKG_FLIP_FLOP *PFlop,
 	};
 	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			PFlop->Thermal.Temp,
-			SProc->Voltage.Vcore);
+			PFlop->Voltage.CPU);
 }
 
-void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
-					struct FLIP_FLOP* ) = {
+void (*Draw_Footer_Voltage_Temp[])(struct PKG_FLIP_FLOP*) = {
 	Draw_Footer_Voltage_Celsius,
 	Draw_Footer_Voltage_Fahrenheit
 };
@@ -12774,8 +12800,6 @@ void (*Draw_Footer_Voltage_Temp[])(	struct PKG_FLIP_FLOP*,
 void Draw_Footer(Layer *layer, CUINT row)
 {	/* Update Footer view area					*/
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
-	struct FLIP_FLOP *SProc = &Shm->Cpu[Shm->Proc.Service.Core]	\
-			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 
 	ATTRIBUTE *eventAttr[] = {
 		RSC(HOT_EVENT_COND0).ATTR(),
@@ -12816,7 +12840,7 @@ void Draw_Footer(Layer *layer, CUINT row)
 	LayerAt(layer, attr, 14+62, row) = eventAttr[_tmp][1];
 	LayerAt(layer, attr, 14+63, row) = eventAttr[_tmp][2];
 
-	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop, SProc);
+	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop);
 
 	LayerAt(layer, code, 75, row) = buffer[0];
 	LayerAt(layer, code, 76, row) = buffer[1];
@@ -12955,7 +12979,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Draw_AltMonitor_Tasks,
 	Draw_AltMonitor_Common,
 	Draw_AltMonitor_Power,
-	Draw_AltMonitor_Common,
+	Draw_AltMonitor_Voltage,
 	Draw_AltMonitor_Power,
 	Draw_AltMonitor_Common
 };

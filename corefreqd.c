@@ -5043,8 +5043,7 @@ static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
 		PFlip->Thermal.Sensor);
 }
 
-static inline void Pkg_ComputeVoltage_None(	CPU_STRUCT *Cpu,
-						struct FLIP_FLOP *SProc )
+static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 {
 }
 
@@ -5052,14 +5051,11 @@ static inline void Pkg_ComputeVoltage_None(	CPU_STRUCT *Cpu,
 
 #define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
 
-static inline void Pkg_ComputeVoltage_Intel_SNB(CPU_STRUCT *Cpu,
-						struct FLIP_FLOP *SProc)
+static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 {	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
-			SProc->Voltage.Vcore,
-			SProc->Voltage.VID);
-
-	Core_ComputeVoltageLimits(Cpu, SProc);
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
 }
 
 #define Pkg_ComputeVoltage_Intel_SKL_X	Pkg_ComputeVoltage_None
@@ -5070,16 +5066,22 @@ static inline void Pkg_ComputeVoltage_Intel_SNB(CPU_STRUCT *Cpu,
 
 #define Pkg_ComputeVoltage_AMD_15h	Pkg_ComputeVoltage_None
 
-#define Pkg_ComputeVoltage_AMD_17h	Pkg_ComputeVoltage_None
+static inline void Pkg_ComputeVoltage_AMD_17h(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(AMD_17h,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
 
-static inline void Pkg_ComputeVoltage_Winbond_IO(CPU_STRUCT *Cpu,
-						struct FLIP_FLOP *SProc)
+	COMPUTE_VOLTAGE(AMD_17h,
+			PFlip->Voltage.SOC,
+			PFlip->Voltage.VID.SOC);
+}
+
+static inline void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 {	/* Winbond W83627EHF/EF, W83627EHG,EG				*/
 	COMPUTE_VOLTAGE(WINBOND_IO,
-			SProc->Voltage.Vcore,
-			SProc->Voltage.VID);
-
-	Core_ComputeVoltageLimits(Cpu, SProc);
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
 }
 
 static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
@@ -5141,10 +5143,9 @@ REASON_CODE Core_Manager(REF *Ref)
 	void (*Pkg_ComputeThermalFormula)(	struct PKG_FLIP_FLOP*,
 						struct FLIP_FLOP* );
 
-	void (*Pkg_ComputeVoltageFormula)(	CPU_STRUCT*,
-						struct FLIP_FLOP* );
+	void (*Pkg_ComputeVoltageFormula)( struct PKG_FLIP_FLOP* );
 
-	void (*Pkg_ComputePowerFormula)(PROC_RW*, struct FLIP_FLOP*);
+	void (*Pkg_ComputePowerFormula)( PROC_RW*, struct FLIP_FLOP* );
 
 	void (*Pkg_ResetPowerFormula)(PROC_RW*);
 
@@ -5427,9 +5428,17 @@ REASON_CODE Core_Manager(REF *Ref)
 
 		Pkg_ComputeThermalFormula(PFlip, SProc);
 	    }
+		/* Package Voltage formulas				*/
+		PFlip->Voltage.VID.CPU = Proc->PowerThermal.VID.CPU;
+		PFlip->Voltage.VID.SOC = Proc->PowerThermal.VID.SOC;
 
-	    Pkg_ComputeVoltageFormula(&Shm->Cpu[Shm->Proc.Service.Core], SProc);
-
+		Pkg_ComputeVoltageFormula(PFlip);
+		/* Computes the Min Processor voltage.			*/
+		TEST_AND_SET_SENSOR( VOLTAGE, LOWEST,	PFlip->Voltage.CPU,
+						Shm->Proc.State.Voltage.Limit );
+		/* Computes the Max Processor voltage.			*/
+		TEST_AND_SET_SENSOR( VOLTAGE, HIGHEST,	PFlip->Voltage.CPU,
+						Shm->Proc.State.Voltage.Limit );
 		/*
 		The Driver tick is bound to the Service Core:
 		1- Tasks collection; Tasks count; and Memory usage.

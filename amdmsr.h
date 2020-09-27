@@ -1167,5 +1167,21 @@ typedef union
 		BoostRatio	: 25-17,
 		MinRatio	: 32-25;
 	};
-} AMD_F17H_MTS_CPK_COF;
+} AMD_17_MTS_CPK_COF;
+
+#ifndef SMU_AMD_F17H_SVI
+	#define SMU_AMD_F17H_SVI(_plane)	(0x0005a00c + (_plane << 2))
+#endif
+
+typedef union
+{ /* SMU: ZEN2 addr={0x5a010 ; 0x5a00c} and ZEN(+)={0x5a00c ; 0x5a010}	*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		CID		:  8-0, 	/*	Current ID	*/
+		ReservedBits1	: 16-8,
+		VID		: 24-16,	/*	Voltage ID	*/
+		ReservedBits2	: 32-24;
+	};
+} AMD_17_SVI;
 

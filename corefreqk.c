@@ -4906,7 +4906,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	RDMSR(HwCfgRegister, MSR_K7_HWCR);
     if (HwCfgRegister.Family_17h.CpbDis == 0)
     {
-	AMD_F17H_MTS_CPK_COF XtraCOF = {.value = 0};
+	AMD_17_MTS_CPK_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
 	case AMD_Zen2_MTS:
@@ -8955,98 +8955,99 @@ static enum hrtimer_restart Cycle_Core2(struct hrtimer *pTimer)
 	cpu = smp_processor_id();
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {
-		RDTSC64(Core->Overhead.TSC);
-	} else {
-		RDTSCP64(Core->Overhead.TSC);
-	}
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (!PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC) {
+	RDTSC64(Core->Overhead.TSC);
+    } else {
+	RDTSCP64(Core->Overhead.TSC);
+    }
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	Counters_Core2(Core, 1);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.CORE.CurrFID;
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_CORE2_TARGET(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Generic(Core, 1);
 
-		Counters_Core2(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 		{
-			PKG_Counters_Generic(Core, 1);
-
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
-
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
-
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
-			break;
-		    }
-
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
-
-			Save_PTSC(PUBLIC(RO(Proc)));
-
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
-
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_CORE2_TARGET(Core);
-
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.CORE.CurrFID;
-
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
+		case FORMULA_SCOPE_PKG:
 			Core_Intel_Temp(Core);
 			break;
 		}
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PerfStatus.CORE.CurrVID;
+
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		{
+		case FORMULA_SCOPE_PKG:
 			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
 			break;
 		}
 
-		Delta_INST(Core);
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-		Delta_C0(Core);
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-		Delta_TSC_OVH(Core);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-		Delta_C1(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		Save_INST(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+		break;
+	}
 
-		Save_TSC(Core);
+	Delta_INST(Core);
 
-		Save_C0(Core);
+	Delta_C0(Core);
 
-		Save_C1(Core);
+	Delta_TSC_OVH(Core);
 
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+	Delta_C1(Core);
 
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Core2(unsigned int cpu)
@@ -9104,129 +9105,134 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_Nehalem(Core, 1);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Nehalem(Core, 1);
 
-		SMT_Counters_Nehalem(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Nehalem(Core, 1);
+	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+		RDSIO(	PUBLIC(RO(Proc))->PowerThermal.VID.CPU,
+			HWM_W83627_CPUVCORE,
+			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+	    #endif
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+		Core->PowerThermal.VID = PUBLIC(RO(Proc))->PowerThermal.VID.CPU;
+	    #endif
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-		    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-			RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
-				HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
-		    #endif
-			break;
-		    }
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+		Core->PowerThermal.VID = 0;
+	    #endif
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-		    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-			Core->PowerThermal.VID = 0;
-		    #endif
-		}
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_NEHALEM_TARGET(Core);
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_NEHALEM_TARGET(Core);
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.NHM.CurrentRatio;
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.NHM.CurrentRatio;
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
+			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+	    #endif
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
+			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+	    #endif
+		break;
+	}
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-		    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-			RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
-				HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
-		    #endif
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-		    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-			RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
-				HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
-		    #endif
-			break;
-		}
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_INST(Core);
 
-		Delta_INST(Core);
+	Delta_C0(Core);
 
-		Delta_C0(Core);
+	Delta_C3(Core);
 
-		Delta_C3(Core);
+	Delta_C6(Core);
 
-		Delta_C6(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_TSC_OVH(Core);
+	Delta_C1(Core);
 
-		Delta_C1(Core);
+	Save_INST(Core);
 
-		Save_INST(Core);
+	Save_TSC(Core);
 
-		Save_TSC(Core);
+	Save_C0(Core);
 
-		Save_C0(Core);
+	Save_C3(Core);
 
-		Save_C3(Core);
+	Save_C6(Core);
 
-		Save_C6(Core);
+	Save_C1(Core);
 
-		Save_C1(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Nehalem(unsigned int cpu)
@@ -9301,141 +9307,142 @@ static enum hrtimer_restart Cycle_SandyBridge(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_SandyBridge(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_SandyBridge(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, UNCORE);
 
-			Delta_PWR_ACCU(Proc, UNCORE);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_SandyBridge(unsigned int cpu)
@@ -9511,141 +9518,142 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_SandyBridge_EP(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_SandyBridge_EP(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, RAM);
 
-			Delta_PWR_ACCU(Proc, RAM);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_SandyBridge_EP(unsigned int cpu)
@@ -9748,153 +9756,154 @@ static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Haswell_ULT(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Haswell_ULT(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PC08(PUBLIC(RO(Proc)));
 
-			Delta_PC08(PUBLIC(RO(Proc)));
+		Delta_PC09(PUBLIC(RO(Proc)));
 
-			Delta_PC09(PUBLIC(RO(Proc)));
+		Delta_PC10(PUBLIC(RO(Proc)));
 
-			Delta_PC10(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, UNCORE);
 
-			Delta_PWR_ACCU(Proc, UNCORE);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PC08(PUBLIC(RO(Proc)));
 
-			Save_PC08(PUBLIC(RO(Proc)));
+		Save_PC09(PUBLIC(RO(Proc)));
 
-			Save_PC09(PUBLIC(RO(Proc)));
+		Save_PC10(PUBLIC(RO(Proc)));
 
-			Save_PC10(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Haswell_ULT(unsigned int cpu)
@@ -9974,141 +9983,142 @@ static enum hrtimer_restart Cycle_Haswell_EP(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Haswell_EP(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Haswell_EP(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, RAM);
 
-			Delta_PWR_ACCU(Proc, RAM);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Haswell_EP(unsigned int cpu)
@@ -10211,145 +10221,146 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Skylake(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Skylake(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, UNCORE);
 
-			Delta_PWR_ACCU(Proc, UNCORE);
+		Delta_PWR_ACCU(Proc, RAM);
 
-			Delta_PWR_ACCU(Proc, RAM);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), UNCORE);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Skylake(unsigned int cpu)
@@ -10424,141 +10435,142 @@ static enum hrtimer_restart Cycle_Skylake_X(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	SMT_Counters_SandyBridge(Core, 1);
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		hrtimer_forward(pTimer,
-				hrtimer_cb_get_time(pTimer),
-				RearmTheTimer);
+		PKG_Counters_Skylake_X(Core, 1);
 
-		SMT_Counters_SandyBridge(Core, 1);
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-		if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-		{
-			PKG_Counters_Skylake_X(Core, 1);
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
+	    }
 
-			Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = PerfStatus.SNB.CurrVID;
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		    }
+	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	    {
+	    case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	    }
 
-		    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		    {
-		    case FORMULA_SCOPE_PKG:
-			RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		    }
+		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
 
-			PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 1);
+		Delta_PC02(PUBLIC(RO(Proc)));
 
-			Delta_PC02(PUBLIC(RO(Proc)));
+		Delta_PC03(PUBLIC(RO(Proc)));
 
-			Delta_PC03(PUBLIC(RO(Proc)));
+		Delta_PC06(PUBLIC(RO(Proc)));
 
-			Delta_PC06(PUBLIC(RO(Proc)));
+		Delta_PC07(PUBLIC(RO(Proc)));
 
-			Delta_PC07(PUBLIC(RO(Proc)));
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
 
-			Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+		Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Delta_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Delta_PWR_ACCU(Proc, PKG);
 
-			Delta_PWR_ACCU(Proc, PKG);
+		Delta_PWR_ACCU(Proc, CORES);
 
-			Delta_PWR_ACCU(Proc, CORES);
+		Delta_PWR_ACCU(Proc, RAM);
 
-			Delta_PWR_ACCU(Proc, RAM);
+		Save_PC02(PUBLIC(RO(Proc)));
 
-			Save_PC02(PUBLIC(RO(Proc)));
+		Save_PC03(PUBLIC(RO(Proc)));
 
-			Save_PC03(PUBLIC(RO(Proc)));
+		Save_PC06(PUBLIC(RO(Proc)));
 
-			Save_PC06(PUBLIC(RO(Proc)));
+		Save_PC07(PUBLIC(RO(Proc)));
 
-			Save_PC07(PUBLIC(RO(Proc)));
+		Save_PTSC(PUBLIC(RO(Proc)));
 
-			Save_PTSC(PUBLIC(RO(Proc)));
+		Save_UNCORE_FC0(PUBLIC(RO(Proc)));
 
-			Save_UNCORE_FC0(PUBLIC(RO(Proc)));
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+		Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
 
-			Save_PWR_ACCU(PUBLIC(RO(Proc)), RAM);
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
 
-			Sys_Tick(PUBLIC(RO(Proc)));
-		} else {
-			Core->PowerThermal.VID = 0;
-		}
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
 
-		RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
-		Core->Boost[BOOST(TGT)] = GET_SANDYBRIDGE_TARGET(Core);
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
+		break;
+	}
 
-		RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-		Core->Ratio.Perf = PerfStatus.SNB.CurrentRatio;
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core_Intel_Temp(Core);
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core_Intel_Temp(Core);
-			break;
-		}
+	Delta_INST(Core);
 
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-		case FORMULA_SCOPE_CORE:
-		    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-		    }
-			break;
-		case FORMULA_SCOPE_SMT:
-			Core->PowerThermal.VID = PerfStatus.SNB.CurrVID;
-			break;
-		}
+	Delta_C0(Core);
 
-		RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+	Delta_C3(Core);
 
-		Delta_INST(Core);
+	Delta_C6(Core);
 
-		Delta_C0(Core);
+	Delta_C7(Core);
 
-		Delta_C3(Core);
+	Delta_TSC_OVH(Core);
 
-		Delta_C6(Core);
+	Delta_C1(Core);
 
-		Delta_C7(Core);
+	Save_INST(Core);
 
-		Delta_TSC_OVH(Core);
+	Save_TSC(Core);
 
-		Delta_C1(Core);
+	Save_C0(Core);
 
-		Save_INST(Core);
+	Save_C3(Core);
 
-		Save_TSC(Core);
+	Save_C6(Core);
 
-		Save_C0(Core);
+	Save_C7(Core);
 
-		Save_C3(Core);
+	Save_C1(Core);
 
-		Save_C6(Core);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
-		Save_C7(Core);
-
-		Save_C1(Core);
-
-		BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
-
-		return (HRTIMER_RESTART);
-	} else
-		return (HRTIMER_NORESTART);
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
 }
 
 void InitTimer_Skylake_X(unsigned int cpu)
@@ -10671,6 +10683,8 @@ static enum hrtimer_restart Cycle_AMD_Family_0Fh(struct hrtimer *pTimer)
 		Core_AMD_Family_0Fh_Temp(Core);
 		break;
 	    }
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = FidVidStatus.CurrVID;
 
 		Delta_PTSC(PUBLIC(RO(Proc)));
 
@@ -10859,12 +10873,11 @@ static void Start_AMD_Family_14h(void *arg)
 
 static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 {
-	PSTATECTRL PstateCtrl;
-	PSTATESTAT PstateStat;
-	PSTATEDEF PstateDef;
+	PSTATECTRL PstateCtrl = {.value = 0};
+	PSTATESTAT PstateStat = {.value = 0};
+	PSTATEDEF PstateDef = {.value = 0};
 	CORE_RO *Core;
-	unsigned int pstate;
-	unsigned int cpu, COF;
+	unsigned int cpu;
 
 	cpu = smp_processor_id();
 	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -10879,6 +10892,29 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 
 	Counters_Generic(Core, 1);
 
+	if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
+	{
+		unsigned int pstate, COF;
+		/*	Read the Target & Status P-State.		*/
+		RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+		RDMSR(PstateDef,MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
+
+		COF = AMD_F15h_CoreCOF( PstateDef.Family_15h.CpuFid,
+					PstateDef.Family_15h.CpuDid );
+
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
+
+		/*	Read the current P-State number.		*/
+		RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
+		/*	Offset the P-State base register.		*/
+		pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
+		/*	Read the voltage ID at the offset		*/
+		RDMSR(PstateDef, pstate);
+
+		COF = AMD_F15h_CoreCOF( PstateDef.Family_15h.CpuFid,
+					PstateDef.Family_15h.CpuDid );
+		Core->Ratio.Perf = COF;
+	}
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
 		PKG_Counters_Generic(Core, 1);
@@ -10890,19 +10926,12 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 		break;
 	    }
 
+	    PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PstateDef.Family_15h.CpuVid;
+
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
 	    {
 	    case FORMULA_SCOPE_PKG:
-		if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
-		{
-			/* Read the current P-State number. */
-			RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-			/* Offset the P-State base register. */
-			pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-			/* Read the voltage ID at the offset */
-			RDMSR(PstateDef, pstate);
-			Core->PowerThermal.VID = PstateDef.Family_15h.CpuVid;
-		}
+		Core->PowerThermal.VID = PstateDef.Family_15h.CpuVid;
 		break;
 	    }
 
@@ -10914,26 +10943,6 @@ static enum hrtimer_restart Cycle_AMD_Family_15h(struct hrtimer *pTimer)
 	} else {
 		Core->PowerThermal.VID = 0;
 	}
-
-    if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
-    {
-	/*		Read the Target & Status P-State.		*/
-	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
-	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
-
-	COF = AMD_F15h_CoreCOF( PstateDef.Family_15h.CpuFid,
-				PstateDef.Family_15h.CpuDid );
-
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
-
-	RDMSR(PstateStat, MSR_AMD_PERF_STATUS);
-	pstate = MSR_AMD_PSTATE_DEF_BASE + PstateStat.Current;
-	RDMSR(PstateDef, pstate);
-
-	COF = AMD_F15h_CoreCOF( PstateDef.Family_15h.CpuFid,
-				PstateDef.Family_15h.CpuDid );
-	Core->Ratio.Perf = COF;
-    }
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
 	    if (Core->T.CoreID == 0) {
@@ -11022,23 +11031,103 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	SMT_Counters_AMD_Family_17h(Core, 1);
 
+	/*		Read the Target P-State.			*/
+	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
+	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
+
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId );
+
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
+
+	/*	Read the Boosted Frequency and voltage VID.		*/
+	RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
+				PstateDef.Family_17h.CpuDfsId );
+	Core->Ratio.Perf = COF;
+
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
 		PKG_Counters_Generic(Core, 1);
 
-	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
-	    case FORMULA_SCOPE_PKG:
+	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	  case FORMULA_SCOPE_PKG:
 		Pkg_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
 		break;
-	    }
+	  }
 
-	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
-	    case FORMULA_SCOPE_PKG:
-		/*		Read the boosted voltage VID.		*/
-		RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
+	  switch (PUBLIC(RO(Proc))->ArchID) {
+	  case AMD_Zen:
+	  case AMD_ZenPlus:
+	  case AMD_ZenPlus_APU:
+	    {
+		AMD_17_SVI SVI = {.value = 0};
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(0),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(1),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+	    }
+		break;
+	  case AMD_Zen2_MTS:
+	    {
+		AMD_17_SVI SVI = {.value = 0};
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(1),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(0),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+	    }
+		break;
+	  case AMD_EPYC_Rome:
+	  case AMD_Zen2_CPK:
+	  case AMD_Zen2_APU:
+	    {
+		AMD_17_SVI SVI = {.value = 0};
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(2),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
+
+		Core_AMD_SMN_Read(	SVI,
+					SMU_AMD_F17H_SVI(1),
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+	    }
+		break;
+	  default:
+	    PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PstateDef.Family_17h.CpuVid;
+		break;
+	  }
+
+	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	  case FORMULA_SCOPE_PKG:
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
-	    }
+	  }
 
 	    RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS);
@@ -11055,21 +11144,6 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 	} else {
 		Core->PowerThermal.VID = 0;
 	}
-
-	/*		Read the Target P-State.			*/
-	RDMSR(PstateCtrl, MSR_AMD_PERF_CTL);
-	RDMSR(PstateDef, MSR_AMD_PSTATE_DEF_BASE + PstateCtrl.PstateCmd);
-
-	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-				PstateDef.Family_17h.CpuDfsId );
-
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
-
-	/*		Read the Boosted Frequency.			*/
-	RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
-	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
-				PstateDef.Family_17h.CpuDfsId );
-	Core->Ratio.Perf = COF;
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:

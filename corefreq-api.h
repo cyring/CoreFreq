@@ -749,6 +749,10 @@ typedef struct
 	struct {
 		THERMAL_PARAM	Param;
 		unsigned int	Sensor;
+	    struct {
+		signed int	CPU, SOC;
+	    } VID;
+
 	enum THERM_PWR_EVENTS	Events;
 		RAPL_POWER_UNIT Unit;
 		PKG_POWER_INFO	PowerInfo;

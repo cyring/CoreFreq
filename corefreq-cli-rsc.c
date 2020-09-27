@@ -218,6 +218,10 @@ ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
 ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN,
 	Rsc_Layout_Ruler_Voltage_Code_Fr[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_FR;
 
+ATTRIBUTE Rsc_Layout_Ruler_VPkg_SoC_Attr[] = RSC_LAYOUT_RULER_VPKG_SOC_ATTR;
+ASCII	Rsc_Layout_Ruler_VPkg_SoC_Code_En[]=RSC_LAYOUT_RULER_VPKG_SOC_CODE_EN,
+	Rsc_Layout_Ruler_VPkg_SoC_Code_Fr[]=RSC_LAYOUT_RULER_VPKG_SOC_CODE_FR;
+
 ATTRIBUTE Rsc_Layout_Ruler_Energy_Attr[] = RSC_LAYOUT_RULER_ENERGY_ATTR;
 ASCII	Rsc_Layout_Ruler_Energy_Code_En[] = RSC_LAYOUT_RULER_ENERGY_CODE_EN,
 	Rsc_Layout_Ruler_Energy_Code_Fr[] = RSC_LAYOUT_RULER_ENERGY_CODE_FR;
@@ -594,6 +598,9 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_VOLTAGE]=LDA( Rsc_Layout_Ruler_Voltage_Attr,
 					Rsc_Layout_Ruler_Voltage_Code_En,
 					Rsc_Layout_Ruler_Voltage_Code_Fr),
+	[RSC_LAYOUT_RULER_VPKG_SOC]=LDA(Rsc_Layout_Ruler_VPkg_SoC_Attr,
+					Rsc_Layout_Ruler_VPkg_SoC_Code_En,
+					Rsc_Layout_Ruler_VPkg_SoC_Code_Fr),
 	[RSC_LAYOUT_RULER_ENERGY]=LDA(	Rsc_Layout_Ruler_Energy_Attr,
 					Rsc_Layout_Ruler_Energy_Code_En,
 					Rsc_Layout_Ruler_Energy_Code_Fr),
