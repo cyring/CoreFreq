@@ -11011,23 +11011,13 @@ static void Start_AMD_Family_15h(void *arg)
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
-static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
+void Cycle_AMD_Family_17h(CORE_RO *Core,
+			void (*Call_SMU)(unsigned int, unsigned int),
+			unsigned int plane0, unsigned int plane1)
 {
-	CORE_RO *Core;
 	PSTATEDEF PstateDef;
 	PSTATECTRL PstateCtrl;
-	unsigned int cpu, COF;
-
-	cpu = smp_processor_id();
-	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
-
-	Mark_OVH(Core);
-
-  if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
-  {
-	hrtimer_forward(pTimer,
-			hrtimer_cb_get_time(pTimer),
-			RearmTheTimer);
+	unsigned int COF;
 
 	SMT_Counters_AMD_Family_17h(Core, 1);
 
@@ -11038,7 +11028,7 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
-	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(TGT)] = COF;
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(TGT)] = COF;
 
 	/*	Read the Boosted Frequency and voltage VID.		*/
 	RDMSR(PstateDef, MSR_AMD_PSTATE_F17H_BOOST);
@@ -11056,78 +11046,13 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 		break;
 	  }
 
-	  switch (PUBLIC(RO(Proc))->ArchID) {
-	  case AMD_Zen:
-	  case AMD_ZenPlus:
-	  case AMD_ZenPlus_APU:
-	    {
-		AMD_17_SVI SVI = {.value = 0};
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(0),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(1),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
-	    }
-		break;
-	  case AMD_Zen2_MTS:
-	    {
-		AMD_17_SVI SVI = {.value = 0};
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(1),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(0),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
-	    }
-		break;
-	  case AMD_EPYC_Rome:
-	  case AMD_Zen2_CPK:
-	  case AMD_Zen2_APU:
-	    {
-		AMD_17_SVI SVI = {.value = 0};
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(2),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
-
-		Core_AMD_SMN_Read(	SVI,
-					SMU_AMD_F17H_SVI(1),
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H );
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
-	    }
-		break;
-	  default:
-	    PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PstateDef.Family_17h.CpuVid;
-		break;
-	  }
-
 	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	  case FORMULA_SCOPE_PKG:
 		Core->PowerThermal.VID = PstateDef.Family_17h.CpuVid;
 		break;
 	  }
+
+		Call_SMU(plane0, plane1);
 
 	    RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS);
@@ -11199,16 +11124,94 @@ static enum hrtimer_restart Cycle_AMD_Family_17h(struct hrtimer *pTimer)
 
 	Save_C1(Core);
 
-	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(Core->Bind)))->Sync.V, NTFY);
+}
 
-	return (HRTIMER_RESTART);
-  } else
-	return (HRTIMER_NORESTART);
+void Call_SVI(unsigned int plane0, unsigned int plane1)
+{
+	AMD_17_SVI SVI = {.value = 0};
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_F17H_SVI(plane0),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_F17H_SVI(plane1),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+}
+
+void Call_DFLT(unsigned int plane0, unsigned int plane1)
+{
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
+	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
+}
+
+static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
+				void (*Call_SMU)(unsigned int, unsigned int),
+				unsigned int plane0, unsigned int plane1 )
+{
+	CORE_RO *Core;
+	unsigned int cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	Mark_OVH(Core);
+
+	if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+	{
+		hrtimer_forward(pTimer,
+				hrtimer_cb_get_time(pTimer),
+				RearmTheTimer);
+
+		Cycle_AMD_Family_17h(Core, Call_SMU, plane0, plane1);
+
+		return (HRTIMER_RESTART);
+	} else
+		return (HRTIMER_NORESTART);
+}
+
+static enum hrtimer_restart Cycle_AMD_F17h_Zen(struct hrtimer *pTimer)
+{
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 0, 1) );
+}
+static enum hrtimer_restart Cycle_AMD_F17h_Zen2_SP(struct hrtimer *pTimer)
+{
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 1, 0) );
+}
+static enum hrtimer_restart Cycle_AMD_F17h_Zen2_MP(struct hrtimer *pTimer)
+{
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 2, 1) );
+}
+static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
+{
+	return ( Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0) );
 }
 
 void InitTimer_AMD_Family_17h(unsigned int cpu)
 {
-	smp_call_function_single(cpu, InitTimer, Cycle_AMD_Family_17h, 1);
+    switch (PUBLIC(RO(Proc))->ArchID) {
+    case AMD_Zen:
+    case AMD_ZenPlus:
+    case AMD_ZenPlus_APU:
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen, 1);
+	break;
+    case AMD_Zen2_MTS:
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_SP, 1);
+	break;
+    case AMD_EPYC_Rome:
+    case AMD_Zen2_CPK:
+    case AMD_Zen2_APU:
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_MP, 1);
+	break;
+    default:
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h, 1);
+	break;
+    }
 }
 
 static void Start_AMD_Family_17h(void *arg)
