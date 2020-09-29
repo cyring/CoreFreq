@@ -11012,8 +11012,10 @@ static void Start_AMD_Family_15h(void *arg)
 }
 
 void Cycle_AMD_Family_17h(CORE_RO *Core,
-			void (*Call_SMU)(unsigned int, unsigned int),
-			unsigned int plane0, unsigned int plane1)
+			void (*Call_SMU)(const unsigned int, const unsigned int,
+					const unsigned long long),
+			const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor)
 {
 	PSTATEDEF PstateDef;
 	PSTATECTRL PstateCtrl;
@@ -11052,7 +11054,7 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 		break;
 	  }
 
-		Call_SMU(plane0, plane1);
+		Call_SMU(plane0, plane1, factor);
 
 	    RDCOUNTER(PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_AMD_PKG_ENERGY_STATUS);
@@ -11127,9 +11129,11 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(Core->Bind)))->Sync.V, NTFY);
 }
 
-void Call_SVI(unsigned int plane0, unsigned int plane1)
+void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
+		const unsigned long long factor )
 {
 	AMD_17_SVI SVI = {.value = 0};
+	unsigned long long VCC, ICC, PWR;
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane0),
@@ -11144,17 +11148,28 @@ void Call_SVI(unsigned int plane0, unsigned int plane1)
 				SMU_AMD_DATA_REGISTER_F17H );
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+
+	/*	UNCORE RAPL workaround to provide the SoC power	*/
+	VCC = 155000LLU - (625LLU * SVI.VID);
+	ICC = SVI.CID * factor;
+	PWR = VCC * ICC;
+	PWR = PWR << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+	PWR = PWR / (100000LLU * 1000000LLU);
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = PWR;
 }
 
-void Call_DFLT(unsigned int plane0, unsigned int plane1)
+void Call_DFLT( const unsigned int plane0, const unsigned int plane1,
+		const unsigned long long factor )
 {
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
 }
 
 static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
-				void (*Call_SMU)(unsigned int, unsigned int),
-				unsigned int plane0, unsigned int plane1 )
+		void (*Call_SMU)(const unsigned int, const unsigned int,
+				const unsigned long long),
+		const unsigned int plane0, const unsigned int plane1,
+		const unsigned long long factor)
 {
 	CORE_RO *Core;
 	unsigned int cpu = smp_processor_id();
@@ -11168,7 +11183,7 @@ static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 				hrtimer_cb_get_time(pTimer),
 				RearmTheTimer);
 
-		Cycle_AMD_Family_17h(Core, Call_SMU, plane0, plane1);
+		Cycle_AMD_Family_17h(Core, Call_SMU, plane0, plane1, factor);
 
 		return (HRTIMER_RESTART);
 	} else
@@ -11177,19 +11192,19 @@ static enum hrtimer_restart Entry_AMD_F17h(struct hrtimer *pTimer,
 
 static enum hrtimer_restart Cycle_AMD_F17h_Zen(struct hrtimer *pTimer)
 {
-	return ( Entry_AMD_F17h(pTimer, Call_SVI, 0, 1) );
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 0, 1, 360772LLU) );
 }
 static enum hrtimer_restart Cycle_AMD_F17h_Zen2_SP(struct hrtimer *pTimer)
 {
-	return ( Entry_AMD_F17h(pTimer, Call_SVI, 1, 0) );
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 1, 0, 294300LLU) );
 }
 static enum hrtimer_restart Cycle_AMD_F17h_Zen2_MP(struct hrtimer *pTimer)
 {
-	return ( Entry_AMD_F17h(pTimer, Call_SVI, 2, 1) );
+	return ( Entry_AMD_F17h(pTimer, Call_SVI, 2, 1, 294300LLU) );
 }
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
-	return ( Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0) );
+	return ( Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU) );
 }
 
 void InitTimer_AMD_Family_17h(unsigned int cpu)

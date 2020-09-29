@@ -211,8 +211,10 @@ ASCII	Rsc_Layout_Ruler_Sensors_Code_En[] = RSC_LAYOUT_RULER_SENSORS_CODE_EN,
 	Rsc_Layout_Ruler_Sensors_Code_Fr[] = RSC_LAYOUT_RULER_SENSORS_CODE_FR;
 
 ATTRIBUTE Rsc_Layout_Ruler_Power_Attr[] = RSC_LAYOUT_RULER_POWER_ATTR;
-ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN;
-#define Rsc_Layout_Ruler_Power_Code_Fr Rsc_Layout_Ruler_Power_Code_En
+ASCII Rsc_Layout_Ruler_Pwr_Uncore_Code_En[]=RSC_LAYOUT_RULER_PWR_UNCORE_CODE_EN;
+#define Rsc_Layout_Ruler_Pwr_Uncore_Code_Fr Rsc_Layout_Ruler_Pwr_Uncore_Code_En
+ASCII	Rsc_Layout_Ruler_Pwr_SoC_Code_En[]=RSC_LAYOUT_RULER_PWR_SOC_CODE_EN;
+#define Rsc_Layout_Ruler_Pwr_SoC_Code_Fr Rsc_Layout_Ruler_Pwr_SoC_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
 ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN,
@@ -592,9 +594,12 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_SENSORS]=LDA( Rsc_Layout_Ruler_Sensors_Attr,
 					Rsc_Layout_Ruler_Sensors_Code_En,
 					Rsc_Layout_Ruler_Sensors_Code_Fr),
-	[RSC_LAYOUT_RULER_POWER] = LDA( Rsc_Layout_Ruler_Power_Attr,
-					Rsc_Layout_Ruler_Power_Code_En,
-					Rsc_Layout_Ruler_Power_Code_Fr),
+      [RSC_LAYOUT_RULER_PWR_UNCORE]=LDA(Rsc_Layout_Ruler_Power_Attr,
+					Rsc_Layout_Ruler_Pwr_Uncore_Code_En,
+					Rsc_Layout_Ruler_Pwr_Uncore_Code_Fr),
+	[RSC_LAYOUT_RULER_PWR_SOC]=LDA( Rsc_Layout_Ruler_Power_Attr,
+					Rsc_Layout_Ruler_Pwr_SoC_Code_En,
+					Rsc_Layout_Ruler_Pwr_SoC_Code_Fr),
 	[RSC_LAYOUT_RULER_VOLTAGE]=LDA( Rsc_Layout_Ruler_Voltage_Attr,
 					Rsc_Layout_Ruler_Voltage_Code_En,
 					Rsc_Layout_Ruler_Voltage_Code_Fr),

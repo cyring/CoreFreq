@@ -10751,6 +10751,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	CUINT oRow;
+
 	LayerDeclare(LAYOUT_RULER_SENSORS, draw.Size.width, 0, row, hSensors);
 
 	LayerCopyAt(	layer, hSensors.origin.col, hSensors.origin.row,
@@ -10758,16 +10760,28 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerAt(layer,code,32,hSensors.origin.row)=Setting.fahrCels ? 'F':'C';
 
-	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, draw.Size.width,
 			0, (row + draw.Area.MaxRows + 1), hPwr0 );
 
 	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
 			hPwr0.length, hPwr0.attr, hPwr0.code );
 
-	LayerAt(layer,code,14,hPwr0.origin.row) = \
-	LayerAt(layer,code,35,hPwr0.origin.row) = \
-	LayerAt(layer,code,57,hPwr0.origin.row) = \
-	LayerAt(layer,code,77,hPwr0.origin.row) = Setting.jouleWatt ? 'W':'J';
+	oRow = hPwr0.origin.row;
+    } else {
+	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hPwr0 );
+
+	LayerCopyAt(	layer, hPwr0.origin.col, hPwr0.origin.row,
+			hPwr0.length, hPwr0.attr, hPwr0.code );
+
+	oRow = hPwr0.origin.row;
+    }
+	LayerAt(layer,code, 14, oRow) = \
+	LayerAt(layer,code, 35, oRow) = \
+	LayerAt(layer,code, 57, oRow) = \
+	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -10775,7 +10789,7 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerDeclare(LAYOUT_RULER_VOLTAGE, draw.Size.width, 0, row, hVolt);
+	LayerDeclare(	LAYOUT_RULER_VOLTAGE, draw.Size.width, 0, row, hVolt );
 
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
@@ -10792,6 +10806,8 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	CUINT oRow;
+
 	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
 
 	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
@@ -10800,16 +10816,28 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
-	LayerDeclare(	LAYOUT_RULER_POWER, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwr1 );
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
+	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hPwr1);
 
 	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
 			hPwr1.length, hPwr1.attr, hPwr1.code );
 
-	LayerAt(layer,code,14,hPwr1.origin.row) = \
-	LayerAt(layer,code,35,hPwr1.origin.row) = \
-	LayerAt(layer,code,57,hPwr1.origin.row) = \
-	LayerAt(layer,code,77,hPwr1.origin.row) = Setting.jouleWatt ? 'W':'J';
+	oRow = hPwr1.origin.row;
+    } else {
+	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hPwr1);
+
+	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
+			hPwr1.length, hPwr1.attr, hPwr1.code );
+
+	oRow = hPwr1.origin.row;
+    }
+	LayerAt(layer,code, 14, oRow) = \
+	LayerAt(layer,code, 35, oRow) = \
+	LayerAt(layer,code, 57, oRow) = \
+	LayerAt(layer,code, 77, oRow) = Setting.jouleWatt ? 'W':'J';
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
