@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	81
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #define CORE_COUNT	256
 
@@ -198,8 +198,8 @@ enum {
 
 typedef union
 {
-	unsigned int	Target;
-	unsigned short	Offset[2];
+	unsigned long	Target;
+	unsigned short	Offset[3];
 } THERMAL_PARAM;
 
 enum FORMULA_SCOPE {

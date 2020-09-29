@@ -2196,7 +2196,7 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 			"Intel(R) Core(TM)2 Quad CPU Q94",	\
 			"Intel(R) Core(TM)2 Quad CPU Q84"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_YORKFIELD,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2226,7 +2226,7 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 			"Pentium(R) Dual-Core CPU E5",	\
 			"Intel(R) Celeron(R) CPU E3"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_WOLFDALE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2272,7 +2272,7 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Core(TM)2 Extreme CPU Q9300"),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PENRYN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2287,7 +2287,7 @@ static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Core(TM) i7 CPU 920"),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = 0,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2303,7 +2303,7 @@ static PROCESSOR_SPECIFIC Nehalem_Lynnfield_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Core(TM) i7 CPU X",	\
 			"Intel(R) Core(TM) i7 CPU Q"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CLARKSFIELD,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2321,7 +2321,7 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 			"Intel(R) Core(TM) i7 CPU 980" ,	\
 			"Intel(R) Core(TM) i7 CPU 970"		),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2332,7 +2332,7 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Xeon(R) CPU W3690"),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_GULFTOWN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2348,7 +2348,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-4940MX",	\
 			"Intel(R) Core(TM) i7-4930MX"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_MOBILE_EX,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2364,7 +2364,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 			"Intel(R) Core(TM) i7-4710HQ",	\
 			"Intel(R) Core(TM) i7-4700HQ"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_CRYSTALWELL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2376,7 +2376,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-47",	\
 			"Intel(R) Core(TM) i5-46"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_CANYON,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2387,7 +2387,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Xeon(R) CPU E3-12"),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_DENLOW,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2398,7 +2398,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) 4th Gen Core(TM) i"),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_EMBEDDED,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2413,7 +2413,7 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 			"Intel(R) Pentium(R) CPU 3",	\
 			"Intel(R) Celeron(R) CPU 2"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_MOBILE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2439,7 +2439,7 @@ static PROCESSOR_SPECIFIC Skylake_X_Specific[] = {
 			"Intel(R) Xeon(R) W-32",	\
 			"Intel(R) Xeon(R) W-22" 	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CASCADELAKE_X,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2459,7 +2459,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-7300HQ",	\
 			"Intel(R) Core(TM) i3-7100H"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_H,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0,
@@ -2471,7 +2471,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-7740X",	\
 			"Intel(R) Core(TM) i5-7640X"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_X,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2485,7 +2485,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i7-756",	\
 			"Intel(R) Core(TM) i7-750"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2499,7 +2499,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-750",	\
 			"Intel(R) Core(TM) i5-740"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2514,7 +2514,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-726",	\
 			"Intel(R) Core(TM) i5-720"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2527,7 +2527,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-7Y5",	\
 			"Intel(R) Core(TM) m3-7Y3"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_Y,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2541,7 +2541,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i3-7100U",	\
 			"Intel(R) Core(TM) i3-7020U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2555,7 +2555,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i3-730",	\
 			"Intel(R) Core(TM) i3-710"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2570,7 +2570,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-8250U",	\
 			"Intel(R) Core(TM) i3-8130U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2585,7 +2585,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i7-8705G",	\
 			"Intel(R) Core(TM) i7-8305G"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_G,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2598,7 +2598,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Pentium(R) CPU G45",	\
 			"Intel(R) Celeron(R) CPU G39"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2610,7 +2610,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Pentium(R) Processor 44",	\
 			"Intel(R) Celeron(R) Processor 3965Y"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_Y,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2622,7 +2622,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 	.Brand = ZLIST( "Intel(R) Celeron(R) Processor 3965U",	\
 			"Intel(R) Celeron(R) Processor 3865U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_KABYLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2636,7 +2636,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Pentium(R) Gold G54", \
 			"Intel(R) Celeron(R) G49"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2656,7 +2656,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i3-8100B",	\
 			"Intel(R) Core(TM) i3-8100H"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_H,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2674,7 +2674,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i3-8300",	\
 			"Intel(R) Core(TM) i3-8100"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_S,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2692,7 +2692,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-8257U",	\
 			"Intel(R) Core(TM) i3-8109U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2708,7 +2708,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i5-9400H",	\
 			"Intel(R) Core(TM) i5-9300H"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_HR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2727,7 +2727,7 @@ static PROCESSOR_SPECIFIC Kabylake_Specific[] = {
 			"Intel(R) Core(TM) i3-930",	\
 			"Intel(R) Core(TM) i3-910"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COFFEELAKE_R,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2749,7 +2749,7 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Celeron(R) CPU 4305U",\
 			"Intel(R) Celeron(R) CPU 4205U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_WHISKEYLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2768,7 +2768,7 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Core(TM) i5-8200Y" ,	\
 			"Intel(R) Core(TM) m3-8100Y"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_AMBERLAKE_Y,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2784,7 +2784,7 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Core(TM) i5-10400H",	\
 			"Intel(R) Core(TM) i5-10300H"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COMETLAKE_H,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2800,7 +2800,7 @@ static PROCESSOR_SPECIFIC Kabylake_UY_Specific[] = {
 			"Intel(R) Pentium(R) Gold 6405U",\
 			"Intel(R) Celeron(R) CPU 5205U"	),
 	.Boost = {0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_COMETLAKE_U,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
@@ -2820,7 +2820,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Embedded V"),
 	.Boost = {+16, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2831,7 +2831,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon Silver PRO 3125GE"),
 	.Boost = {+0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2842,7 +2842,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon Gold PRO 3150GE"),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2853,7 +2853,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon Gold PRO 3150G"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2866,7 +2866,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD Athlon Silver",	\
 			"AMD Athlon Gold"	),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2877,7 +2877,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 1200"),
 	.Boost = {+3, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2889,7 +2889,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 PRO 1300", \
 			"AMD Ryzen 5 PRO 1500"	),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2900,7 +2900,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 1600"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2911,7 +2911,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 1700X"),
 	.Boost = {+4, 0},
-	.Param.Offset = {20, 0},
+	.Param.Offset = {0, 0, 20},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2922,7 +2922,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 1700"),
 	.Boost = {+7, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2934,7 +2934,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 1300X",	\
 			"AMD Ryzen 5 1500X"	),
 	.Boost = {+2, +2},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2947,7 +2947,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD Ryzen 7 1700X",	\
 			"AMD Ryzen 7 1800X"	),
 	.Boost = {+4, +1},
-	.Param.Offset = {20, 0},
+	.Param.Offset = {0, 0, 20},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2958,7 +2958,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 1200"),
 	.Boost = {+3, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2969,7 +2969,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 1400"),
 	.Boost = {+2, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2980,7 +2980,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 1600"),
 	.Boost = {+4, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -2991,7 +2991,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 1700"),
 	.Boost = {+7, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SUMMIT_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3003,7 +3003,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 1950X"),
 	.Boost = {+6, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3014,7 +3014,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 1920X"),
 	.Boost = {+5, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3025,7 +3025,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 1900X"),
 	.Boost = {+2, +2},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_WHITEHAVEN,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3037,7 +3037,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{	/* AMD EPYC Server Processors				*/
 	.Brand = ZLIST("AMD EPYC 7251"),
 	.Boost = {+8, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3048,7 +3048,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7261"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3059,7 +3059,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7281"),
 	.Boost = {+6, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3072,7 +3072,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 7351",	\
 			"AMD EPYC 7301" 	),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3084,7 +3084,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7401P",	\
 			"AMD EPYC 7401" 	),
 	.Boost = {+8, +2},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3095,7 +3095,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7451"),
 	.Boost = {+6, +3},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3108,7 +3108,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 			"AMD EPYC 7551",	\
 			"AMD EPYC 7501" 	),
 	.Boost = {+6, +4},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3119,7 +3119,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7601"),
 	.Boost = {+5, +5},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_NAPLES,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3136,7 +3136,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 			"AMD Athlon 220GE",	\
 			"AMD Athlon 200GE"	),
 	.Boost = {+0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3148,7 +3148,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 PRO 2200GE",	\
 			"AMD Ryzen 5 2600H"		),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3159,7 +3159,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 2200G"),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3170,7 +3170,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 2200GE"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3181,7 +3181,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 2200G"),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3192,7 +3192,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 2400GE"),
 	.Boost = {+6, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3203,7 +3203,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 2400G"),
 	.Boost = {+3, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3214,7 +3214,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 2400GE"),
 	.Boost = {+6, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3225,7 +3225,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 2400G"),
 	.Boost = {+3, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3236,7 +3236,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 2500U"),
 	.Boost = {+16, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3247,7 +3247,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 2800H"),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3258,7 +3258,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 2700U"),
 	.Boost = {+16, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3271,7 +3271,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 31",	\
 			"AMD EPYC 32"	),
 	.Boost = {+0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_SNOWY_OWL,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3286,7 +3286,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon 3000G"),
 	.Boost = {+5, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3297,7 +3297,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon 300U"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3308,7 +3308,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon 3"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3319,7 +3319,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon PRO"),
 	.Boost = {+5, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3331,7 +3331,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 2300X",	\
 			"AMD Ryzen 5 2500X"	),
 	.Boost = {+4, +1},
-	.Param.Offset = {10, 0},
+	.Param.Offset = {0, 0, 10},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3342,7 +3342,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 2600E"),
 	.Boost = {+8, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3353,7 +3353,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 2600"),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3364,7 +3364,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 2600"),
 	.Boost = {+3, +2},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3375,7 +3375,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 2700X"),
 	.Boost = {+5, 0},
-	.Param.Offset = {10, 0},
+	.Param.Offset = {0, 0, 10},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3386,7 +3386,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 2700"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3398,7 +3398,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 2700X",	\
 			"AMD Ryzen 5 2600X"	),
 	.Boost = {+5, +2},
-	.Param.Offset = {10, 0},
+	.Param.Offset = {0, 0, 10},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3409,7 +3409,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 2700E"),
 	.Boost = {+12, 0},
-	.Param.Offset = {0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3420,7 +3420,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 2700"),
 	.Boost = {+8, +2},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PINNACLE_RIDGE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3433,7 +3433,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen Threadripper 2990",	\
 			"AMD Ryzen Threadripper 2970"	),
 	.Boost = {+12, 0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3444,7 +3444,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 2950"),
 	.Boost = {+9, 0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3455,7 +3455,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 2920"),
 	.Boost = {+8, 0},
-	.Param.Offset = {27, 0},
+	.Param.Offset = {0, 0, 27},
 	.CodeNameIdx = CN_COLFAX,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3470,7 +3470,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Athlon PRO 300GE"),
 	.Boost = {+0, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3481,7 +3481,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 3400GE"),
 	.Boost = {+7, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3493,7 +3493,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 3400G",	\
 			"AMD Ryzen 3 PRO 3200GE"	),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3504,7 +3504,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 3200G"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3515,7 +3515,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 3400GE"),
 	.Boost = {+7, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3527,7 +3527,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 3200GE",	\
 			"AMD Ryzen 5 3400G"	),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3538,7 +3538,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 3200G"),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3551,7 +3551,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 			"AMD Ryzen 5 3550H",	\
 			"AMD Ryzen 5 3500U"	),
 	.Boost = {+16, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3564,7 +3564,7 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 			"AMD Ryzen 7 3750H",	\
 			"AMD Ryzen 7 3700U"	),
 	.Boost = {+17, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_PICASSO,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3579,7 +3579,7 @@ static PROCESSOR_SPECIFIC AMD_Zen_APU_Rv2_Specific[] = {
 	.Brand = ZLIST( "AMD Athlon",	\
 			"AMD Ryzen 3"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RAVEN2,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3595,7 +3595,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7232P",	\
 			"AMD EPYC 7252" 	),
 	.Boost = {+1, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3607,7 +3607,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7262",	\
 			"AMD EPYC 7F32" 	),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3618,7 +3618,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7272"),
 	.Boost = {+3, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3630,7 +3630,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7282",	\
 			"AMD EPYC 7F52" 	),
 	.Boost = {+4, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3642,7 +3642,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7302P",	\
 			"AMD EPYC 7302" 	),
 	.Boost = {+3, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3654,7 +3654,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7402P",	\
 			"AMD EPYC 7402" 	),
 	.Boost = {+6, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3667,7 +3667,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 			"AMD EPYC 7502P",	\
 			"AMD EPYC 7502" 	),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3679,7 +3679,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7542",	\
 			"AMD EPYC 7F72" 	),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3690,7 +3690,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7552"),
 	.Boost = {+11, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3702,7 +3702,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7452",	\
 			"AMD EPYC 7642" 	),
 	.Boost = {+10, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3713,7 +3713,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7662"),
 	.Boost = {+13, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3725,7 +3725,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	.Brand = ZLIST( "AMD EPYC 7702P",	\
 			"AMD EPYC 7702" 	),
 	.Boost = {+14, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3736,7 +3736,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7742"),
 	.Boost = {+12, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3747,7 +3747,7 @@ static PROCESSOR_SPECIFIC AMD_EPYC_Rome_Specific[] = {
 	{
 	.Brand = ZLIST("AMD EPYC 7H12"),
 	.Boost = {+7, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_ROME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3762,7 +3762,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 3990X"),
 	.Boost = {+14, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CASTLE_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3773,7 +3773,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 3970X"),
 	.Boost = {+8, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CASTLE_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3784,7 +3784,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen Threadripper 3960X"),
 	.Boost = {+7, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_CASTLE_PEAK,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3800,7 +3800,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 4300U",	\
 			"AMD Ryzen 5 4600H"	),
 	.Boost = {+10, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3811,7 +3811,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 4350GE"),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3822,7 +3822,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 PRO 4350G"),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3833,7 +3833,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 4600GE"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3845,7 +3845,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 4300GE",	\
 			"AMD Ryzen 5 4600G"	),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3856,7 +3856,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 4300G"),
 	.Boost = {+2, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3867,7 +3867,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 4500U"),
 	.Boost = {+17, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3878,7 +3878,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 4650GE"),
 	.Boost = {+9, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3889,7 +3889,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 4650G"),
 	.Boost = {+5, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3901,7 +3901,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 5 PRO 4650U", \
 			"AMD Ryzen 5 4600U"	),
 	.Boost = {+19, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3912,7 +3912,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 4700U"),
 	.Boost = {+21, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3924,7 +3924,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST(	"AMD Ryzen 7 PRO 4750U", \
 			"AMD Ryzen 7 4800U"	),
 	.Boost = {+24, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3936,7 +3936,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 4800H",	\
 			"AMD Ryzen 9 4900HS"	),
 	.Boost = {+13, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3948,7 +3948,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 3 PRO 4450U", \
 			"AMD Ryzen 7 PRO 4750GE" ),
 	.Boost = {+12, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3959,7 +3959,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 4700GE"),
 	.Boost = {+12, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3970,7 +3970,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 4750G"),
 	.Boost = {+8, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3981,7 +3981,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 4700G"),
 	.Boost = {+8, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -3992,7 +3992,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 4900U"),
 	.Boost = {+24, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4003,7 +4003,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 4900H"),
 	.Boost = {+11, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_RENOIR,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4018,7 +4018,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 3 3100"),
 	.Boost = {+3, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4029,7 +4029,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 PRO 3600"),
 	.Boost = {+6, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4040,7 +4040,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 5 3600XT"),
 	.Boost = {+6, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4052,7 +4052,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 5 3600X",	\
 			"AMD Ryzen 5 3600"	),
 	.Boost = {+5, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4063,7 +4063,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 PRO 3700"),
 	.Boost = {+8, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4074,7 +4074,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 7 3800XT"),
 	.Boost = {+7, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4087,7 +4087,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 			"AMD Ryzen 5 3500X",	\
 			"AMD Ryzen 7 3800X"	),
 	.Boost = {+5, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4098,7 +4098,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 PRO 3900"),
 	.Boost = {+12, 0},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4109,7 +4109,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3900XT"),
 	.Boost = {+8, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4121,7 +4121,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	.Brand = ZLIST( "AMD Ryzen 7 3700X",	\
 			"AMD Ryzen 9 3900X"	),
 	.Boost = {+7, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4132,7 +4132,7 @@ static PROCESSOR_SPECIFIC AMD_Zen2_MTS_Specific[] = {
 	{
 	.Brand = ZLIST("AMD Ryzen 9 3950X"),
 	.Boost = {+11, +1},
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_MATISSE,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
@@ -4147,7 +4147,7 @@ static PROCESSOR_SPECIFIC Misc_Specific_Processor[] = {
 	{
 	.Brand = ZLIST("AMD EPYC Processor"),	/* QEMU virtualized EPYC */
 	.Boost = {+1, +1},	/* Add one multiplier to each ratio 1C, 2C */
-	.Param.Offset = { 0, 0},
+	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = 1,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,

@@ -118,6 +118,7 @@
 /* UNDOCUMENTED REGISTERS */
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F17H	0x00059954
 
+#define SMU_AMD_F17H_MTS_CPK_TJMAX		0x0005d2b5
 #define SMU_AMD_F17H_MATISSE_COF		0x0005d2c6
 #define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d326
 
@@ -1159,6 +1160,17 @@ typedef union
 } AMD_17_UMC_TIMING_DTR60;
 
 typedef union
+{	/* SMU: address = 0x5d2b5					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	: 10-0,
+		Target		: 17-10,
+		ReservedBits2	: 32-17;
+	};
+} AMD_17_MTS_CPK_TJMAX;
+
+typedef union
 {
 	unsigned int		value;
 	struct {
@@ -1184,4 +1196,24 @@ typedef union
 		ReservedBits2	: 32-24;
 	};
 } AMD_17_SVI;
+
+#ifndef SMU_AMD_F17H_CORE_VID
+	#define SMU_AMD_F17H_CORE_VID(_mod)	(0x0005a04c + (_mod << 2))
+#endif
+/*
+ * where '_mod' register offset could be equaled to:
+ * 0x0		: Zen & Zen+		[UNTESTED]
+ * 0x1		: Zen2/Matisse		[VERIFIED]
+ * 0x2		: Zen2/CastlePeak	[UNTESTED]
+ * 0x5404	: Renoir		[UNTESTED]
+*/
+typedef union
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits	: 24-0, 	/*	MTS: All zeros	*/
+		VID		: 32-24;	/*	Voltage ID	*/
+	};
+} AMD_17_CORE_VID;
 

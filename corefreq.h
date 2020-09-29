@@ -553,7 +553,7 @@ typedef struct
 	(Temp = Sensor * 5 / 40)
 
 #define COMPUTE_THERMAL_AMD_17h(Temp, Param, Sensor)			\
-	(Temp = ((Sensor * 5 / 40) - Param.Offset[1]) - Param.Offset[0])
+	(Temp = ((Sensor * 5 / 40) - Param.Offset[1]) - Param.Offset[2])
 
 #define COMPUTE_THERMAL(_ARCH_, Temp, Param, Sensor)			\
 	COMPUTE_THERMAL_##_ARCH_(Temp, Param, Sensor)

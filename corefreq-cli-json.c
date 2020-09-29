@@ -1696,6 +1696,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				{
 					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[0]);
 					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[1]);
+					json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Thermal.Param.Offset[2]);
 				}
 				json_end_arr(&s);
 				json_end_object(&s);
