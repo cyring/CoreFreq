@@ -171,59 +171,6 @@ void AggregateRatio(void)
 	}
 }
 
-void Emergency(int caught)
-{
-	switch (caught) {
-	case SIGBUS:
-	case SIGFPE:
-	case SIGHUP:	/* Terminal lost */
-	case SIGILL:
-	case SIGINT:	/* [CTRL] + [C] */
-	case SIGSYS:
-	case SIGQUIT:
-	case SIGTERM:
-	case SIGSEGV:
-	case SIGTSTP:	/* [CTRL] + [Z] */
-	case SIGXCPU:
-	case SIGXFSZ:
-	case SIGSTKFLT:
-		BITSET(LOCKLESS, Shutdown, SYNC);
-		break;
-	}
-}
-
-void TrapSignal(int operation)
-{
-	if (operation == 0) {
-		Shm->App.Cli = 0;
-	} else {
-		const int ignored[] = {
-			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
-			SIGTRAP, SIGALRM, SIGPROF, SIGPIPE, SIGABRT,
-			SIGVTALRM, SIGCHLD, SIGWINCH, SIGIO, SIGSEGV
-		}, handled[] = {
-			SIGBUS, SIGFPE, SIGHUP, SIGILL, SIGINT,
-			SIGQUIT, SIGSYS, SIGTERM, SIGTSTP,
-			SIGXCPU, SIGXFSZ, SIGSTKFLT
-		};
-		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG	: Reserved	*/
-		const ssize_t	ignoredCount = sizeof(ignored) / sizeof(int),
-				handledCount = sizeof(handled) / sizeof(int);
-		int signo;
-
-		Shm->App.Cli = getpid();
-		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
-			signal(signo, SIG_IGN);
-		}
-		for (signo = 0; signo < ignoredCount; signo++) {
-			signal(ignored[signo], SIG_IGN);
-		}
-		for (signo = 0; signo < handledCount; signo++) {
-			signal(handled[signo],  Emergency);
-		}
-	}
-}
-
 ATTRIBUTE *StateToSymbol(short int state, char stateStr[])
 {
 	ATTRIBUTE *symbAttr[14] = {
@@ -3279,17 +3226,17 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
-		width - 4 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
+		width - 5 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
 		hSpace, Shm->SysGate.release);
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_VERSION).CODE(),
-		width - 4 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
+		width - 5 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
 		hSpace, Shm->SysGate.version);
 
 	PUT(SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_MACHINE).CODE(),
-		width - 4 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
+		width - 5 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
 		hSpace, Shm->SysGate.machine);
 /* Section Mark */
 	PUT(SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
@@ -3300,41 +3247,41 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Shm->SysGate.memInfo.totalram );
 	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
-		width - 5 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
+		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1, "%lu",
 			Shm->SysGate.memInfo.sharedram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
-			width - 5 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
+			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.sharedram);
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freeram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
-			width - 5 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
+			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freeram);
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.bufferram );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
-			width - 5 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
+			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.bufferram);
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.totalhigh );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
-			width - 5 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
+			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.totalhigh);
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freehigh );
 	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
-			width - 5 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
+			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
 		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
 /* Section Mark */
 	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
@@ -3344,13 +3291,13 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 1 : 2)
+		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.FreqDriver.Name);
     } else {
 	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 1 : 2)
+		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
 		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
     }
@@ -3360,13 +3307,13 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
-		width - (OutFunc == NULL ? 1 : 2) - RSZ(KERNEL_GOVERNOR)
+		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
 		- CPUFREQ_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.FreqDriver.Governor);
     } else {
 	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
-		width - (OutFunc == NULL ? 1 : 2) - RSZ(KERNEL_GOVERNOR)
+		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
 		- CPUFREQ_NAME_LEN, hSpace,
 		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
     }
@@ -3378,13 +3325,13 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     {
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 1 : 2)
+		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
 		len, Shm->SysGate.OS.IdleDriver.Name);
     } else {
 	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
-		width - (OutFunc == NULL ? 1 : 2)
+		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
 		CPUIDLE_NAME_LEN, RSC(MISSING).CODE());
     }
@@ -3401,14 +3348,14 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 			BOXKEY_LIMIT_IDLE_STATE : SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
 			item[0], RSC(KERNEL_LIMIT).CODE(),
-			width - RSZ(KERNEL_LIMIT) - CPUIDLE_NAME_LEN-4, hSpace,
+			width - RSZ(KERNEL_LIMIT) - CPUIDLE_NAME_LEN-5, hSpace,
 			Shm->SysGate.OS.IdleDriver.State[idx].Name),
 		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
 /* Row Mark */
 	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
 				10 - (int) RSZ(KERNEL_STATE), hSpace);
 
-	snprintf(item[1], 10+1, "%.*s", 9, hSpace);
+	snprintf(item[1], 10+1, "%.*s", 10, hSpace);
 
 	snprintf(item[2], 10+1, "%s%.*s" , RSC(KERNEL_POWER).CODE(),
 				10 - (int) RSZ(KERNEL_POWER), hSpace);
@@ -7232,6 +7179,125 @@ Window *_CreateBox(	unsigned long long id,
 #define CreateBox(id, origin, select, title, button, ...)		\
 	_CreateBox(id, origin, select, title, button, __VA_ARGS__,NULL)
 
+typedef struct {
+	ASCII *item;
+	CUINT length;
+	ATTRIBUTE attrib;
+	unsigned long long quick;
+} IssueList;
+
+IssueList *FindIssues(CUINT *wth, CUINT *hth)
+{
+	struct {
+		IssueList	issue;
+		unsigned short	state;
+	} problem[] = {
+	  {
+	    {
+		RSC(RECORDER).CODE(),
+		RSZ(RECORDER),
+		MakeAttr(CYAN, 0, BLACK, 1),
+		SCANKEY_ALT_p
+	    },
+		DumpStatus()
+	  },
+	  {
+	    {
+		RSC(STRESS).CODE(),
+		RSZ(STRESS),
+		MakeAttr(CYAN, 0, BLACK, 1),
+		BOXKEY_TOOLS_MACHINE
+	    },
+		BITVAL(Shm->Proc.Sync, BURN)
+	  },
+	  {
+	    {
+		RSC(KERNEL_IDLE_DRIVER).CODE(),
+		RSZ(KERNEL_IDLE_DRIVER),
+		MakeAttr(CYAN, 0, BLACK, 1),
+		OPS_CPU_IDLE
+	    },
+		(Shm->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+	  }
+	};
+	IssueList *list = NULL;
+	CUINT idx;
+	for (idx = 0, (*hth) = 0;
+		idx < (CUINT) (sizeof(problem) / sizeof(problem[0])); idx++)
+	{
+	  if (problem[idx].state)
+	  {
+	    if ((list = realloc(list, (1+(*hth)) * sizeof(IssueList))) != NULL)
+	    {
+		list[(*hth)].item	= problem[idx].issue.item;
+		list[(*hth)].length	= problem[idx].issue.length;
+		list[(*hth)].attrib	= problem[idx].issue.attrib;
+		list[(*hth)].quick	= problem[idx].issue.quick;
+
+		(*wth) = CUMAX((*wth), list[(*hth)].length);
+		(*hth) = (*hth) + 1;
+	    }
+	  }
+	}
+	return (list);
+}
+
+Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
+{
+	Window *wExit = CreateWindow(	wLayer, id,
+					1, CUMIN((hth + 6), draw.Area.MaxRows),
+					(draw.Size.width - wth) / 2,
+					(draw.Size.height - (hth + 2)) / 2,
+					WINFLAG_NO_STOCK );
+  if (wExit != NULL)
+  {
+	char *item = malloc(wth + 1);
+
+	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_HEADER).CODE(),
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	memset(item, 0x20, wth);	item[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+
+    if (item != NULL)
+    {
+	CUINT idx;
+	for (idx = 0; idx < hth; idx++)
+	{
+		const CUINT pos = (wth - issue[idx].length) / 2;
+		memset(item, 0x20, wth);
+		memcpy(&item[pos], issue[idx].item, issue[idx].length);
+		item[wth] = '\0';
+
+		StoreTCell(wExit, issue[idx].quick, item, issue[idx].attrib);
+	};
+	memset(item, 0x20, wth);	item[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+
+	StoreTCell(wExit, SCANKEY_CTRL_ALT_x, RSC(EXIT_CONFIRM).CODE(),
+			MakeAttr(WHITE, 0, BLACK, 1));
+
+	memset(item, 0x20, wth);	item[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+
+	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_FOOTER).CODE(),
+			MakeAttr(WHITE, 0, BLACK, 0));
+
+	wExit->matrix.select.row = 2;
+
+	StoreWindow(wExit,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wExit,	.key.Down,	MotionDown_Win);
+	StoreWindow(wExit,	.key.Up,	MotionUp_Win);
+	StoreWindow(wExit,	.key.Home,	MotionReset_Win);
+	StoreWindow(wExit,	.key.End,	MotionEnd_Cell);
+	StoreWindow(wExit, .title, (char*) RSC(EXIT_TITLE).CODE());
+
+	free(item);
+    }
+  }
+	return (wExit);
+}
+
 void TrapScreenSize(int caught)
 {
   if (caught == SIGWINCH)
@@ -7307,20 +7373,6 @@ int Shortcut(SCANKEY *scan)
 	};
 
     switch (scan->key) {
-/*TODO(Resize the windows width)
-    case 0x3c:
-	if (draw.Disposal == D_MAINVIEW) {
-		draw.Size.height = 0;
-		TrapScreenSize(SIGWINCH);
-	}
-    break;
-    case 0x3e:
-	if (draw.Disposal == D_MAINVIEW) {
-		draw.Size.height = 0;
-		TrapScreenSize(SIGWINCH);
-	}
-    break;
-*/
     case SCANKEY_DOWN:
 	if (!IsDead(&winList)) {
 		return (-1);
@@ -7460,9 +7512,28 @@ int Shortcut(SCANKEY *scan)
 	draw.Flag.uBench = !draw.Flag.uBench;
     #endif
 	break;
-    case SCANKEY_CTRL_x:
+    case SCANKEY_CTRL_ALT_x:
+    case SCANCON_CTRL_ALT_x:
 	BITSET(LOCKLESS, Shutdown, SYNC);
-	break;
+    break;
+    case SCANKEY_CTRL_x:
+    {
+	CUINT wth = RSZ(EXIT_HEADER), hth;
+	IssueList *issueList = FindIssues(&wth, &hth);
+	if (issueList != NULL) {
+		Window *win = SearchWinListById(SCANKEY_CTRL_x, &winList);
+	    if (win == NULL) {
+		AppendWindow(	CreateExit(SCANKEY_CTRL_x, issueList, wth, hth),
+				&winList );
+	    } else {
+		SetHead(&winList, win);
+	    }
+		free(issueList);
+	} else {
+		BITSET(LOCKLESS, Shutdown, SYNC);
+	}
+    }
+    break;
     case OPS_INTERVAL:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -13952,6 +14023,71 @@ REASON_CODE Help(REASON_CODE reason, ...)
 	}
 	va_end(ap);
 	return (reason);
+}
+
+void Emergency(int caught)
+{
+	switch (caught) {
+	case SIGINT:	/* Press [CTRL] + [C] twice to force quit.	*/
+	  if (buffer != NULL)
+	  {	/*	UI is running if buffer is allocated		*/
+		Window *win = SearchWinListById(SCANKEY_CTRL_x, &winList);
+	    if (win == NULL) {
+		    if (Shortcut(&(SCANKEY){.key = SCANKEY_CTRL_x}) == 0)
+		    {
+			PrintWindowStack(&winList);
+			break;
+		    }
+	    }
+	  }
+		/* Fallthrough */
+	case SIGBUS:
+	case SIGFPE:
+	case SIGHUP:	/* Terminal lost */
+	case SIGILL:
+	case SIGSYS:
+	case SIGQUIT:
+	case SIGTERM:
+	case SIGSEGV:
+	case SIGTSTP:	/* [CTRL] + [Z] */
+	case SIGXCPU:
+	case SIGXFSZ:
+	case SIGSTKFLT:
+		BITSET(LOCKLESS, Shutdown, SYNC);
+		break;
+	}
+}
+
+void TrapSignal(int operation)
+{
+	if (operation == 0) {
+		Shm->App.Cli = 0;
+	} else {
+		const int ignored[] = {
+			SIGUSR1, SIGUSR2, SIGTTIN, SIGTTOU, SIGPWR,
+			SIGTRAP, SIGALRM, SIGPROF, SIGPIPE, SIGABRT,
+			SIGVTALRM, SIGCHLD, SIGWINCH, SIGIO, SIGSEGV
+		}, handled[] = {
+			SIGBUS, SIGFPE, SIGHUP, SIGILL, SIGINT,
+			SIGQUIT, SIGSYS, SIGTERM, SIGTSTP,
+			SIGXCPU, SIGXFSZ, SIGSTKFLT
+		};
+		/* SIGKILL,SIGCONT,SIGSTOP,SIGURG	: Reserved	*/
+		const ssize_t	ignoredCount = sizeof(ignored) / sizeof(int),
+				handledCount = sizeof(handled) / sizeof(int);
+		int signo;
+
+		Shm->App.Cli = getpid();
+		for (signo = SIGRTMIN; signo <= SIGRTMAX; signo++) {
+			signal(signo, SIG_IGN);
+		}
+		for (signo = 0; signo < ignoredCount; signo++) {
+			signal(ignored[signo], SIG_IGN);
+		}
+		for (signo = 0; signo < handledCount; signo++) {
+			signal(handled[signo],  Emergency);
+		}
+	}
 }
 
 int main(int argc, char *argv[])

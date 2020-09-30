@@ -256,6 +256,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_EFFICIENT_CODE_FR		"Efficace"
 #define RSC_GUARANTEED_CODE_FR		"Guarantie"
 #define RSC_HIGHEST_CODE_FR		"Elev""\xa9""e"
+#define RSC_RECORDER_CODE_FR		"Enregistreur"
+#define RSC_STRESS_CODE_FR		"Charge"
 
 #define RSC_SCOPE_NONE_CODE_FR		"Sans"
 #define RSC_SCOPE_THREAD_CODE_FR	" SMT"
@@ -827,4 +829,12 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_FR	"  MIN       Processeur    "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_FR		" Message du Pilote "
+
+#define RSC_EXIT_TITLE_CODE_FR			" Sortie "
+#define RSC_EXIT_HEADER_CODE_FR  " Les services suivants sont toujours " \
+				 "en cours d'ex""\xa9""cution "
+#define RSC_EXIT_CONFIRM_CODE_FR "                       < Confirmer > " \
+				 "                     "
+#define RSC_EXIT_FOOTER_CODE_FR  "                                     " \
+				 "[""\x89""chap] pour annuler "
 

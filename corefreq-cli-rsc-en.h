@@ -261,6 +261,8 @@
 #define RSC_EFFICIENT_CODE_EN		"Efficient"
 #define RSC_GUARANTEED_CODE_EN		"Guaranteed"
 #define RSC_HIGHEST_CODE_EN		"Highest"
+#define RSC_RECORDER_CODE_EN		"Recorder"
+#define RSC_STRESS_CODE_EN		"Stress"
 
 #define RSC_SCOPE_NONE_CODE_EN		"None"
 #define RSC_SCOPE_THREAD_CODE_EN	" SMT"
@@ -785,4 +787,9 @@
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_EN		" Driver Message "
+
+#define RSC_EXIT_TITLE_CODE_EN			" Exit "
+#define RSC_EXIT_HEADER_CODE_EN  " The following services are still running "
+#define RSC_EXIT_CONFIRM_CODE_EN "              < Force-Quit >              "
+#define RSC_EXIT_FOOTER_CODE_EN  "                          [ESC] to cancel "
 
