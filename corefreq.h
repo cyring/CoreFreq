@@ -561,6 +561,26 @@ typedef struct
 #define COMPUTE_VOLTAGE_INTEL_CORE2(Vcore, VID) 			\
 		(Vcore = 0.8875 + (double) (VID) * 0.0125)
 
+#define COMPUTE_VOLTAGE_INTEL_SOC(Vcore, VID) 				\
+({									\
+	switch (VID) {							\
+	case 0x00:							\
+		Vcore = 0.0f;						\
+		break;							\
+	case 0xfc:							\
+	case 0xfe:							\
+		Vcore = 1.495f;						\
+		break;							\
+	case 0xfd:							\
+	case 0xff:							\
+		Vcore = 1.5f;						\
+		break;							\
+	default:							\
+		Vcore = 0.245 + (double) (VID) * 0.005;			\
+		break;							\
+	}								\
+})
+
 #define COMPUTE_VOLTAGE_INTEL_SNB(Vcore, VID) 				\
 		(Vcore = (double) (VID) / 8192.0)
 

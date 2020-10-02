@@ -397,6 +397,50 @@ static void (*ComputeVoltage_Intel_Core2_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_Core2_PerPkg
 };
 
+static inline void ComputeVoltage_Intel_SoC( struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
+{	/* Intel Valleyview-D/M SoC					*/
+	COMPUTE_VOLTAGE(INTEL_SOC,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+}
+
+#define ComputeVoltage_Intel_SoC_PerSMT	ComputeVoltage_Intel_SoC
+
+static inline void ComputeVoltage_Intel_SoC_PerCore( struct FLIP_FLOP *CFlip,
+							SHM_STRUCT *Shm,
+							unsigned int cpu )
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeVoltage_Intel_SoC(CFlip, Shm, cpu);
+	}
+}
+
+static inline void ComputeVoltage_Intel_SoC_PerPkg(	struct FLIP_FLOP *CFlip,
+							SHM_STRUCT *Shm,
+							unsigned int cpu )
+{
+	if (cpu == Shm->Proc.Service.Core)
+	{
+		ComputeVoltage_Intel_SoC(CFlip, Shm, cpu);
+	}
+}
+
+static void (*ComputeVoltage_Intel_SoC_Matrix[4])(	struct FLIP_FLOP*,
+							SHM_STRUCT*,
+							unsigned int ) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
+	[FORMULA_SCOPE_SMT ] = ComputeVoltage_Intel_SoC_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeVoltage_Intel_SoC_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Intel_SoC_PerPkg
+};
+
 static inline void ComputeVoltage_Intel_SNB(	struct FLIP_FLOP *CFlip,
 						SHM_STRUCT *Shm,
 						unsigned int cpu )
@@ -862,6 +906,9 @@ static void *Core_Cycle(void *arg)
 		break;
 	case VOLTAGE_KIND_INTEL_CORE2:
 		ComputeVoltageFormula = ComputeVoltage_Intel_Core2_Matrix;
+		break;
+	case VOLTAGE_KIND_INTEL_SOC:
+		ComputeVoltageFormula = ComputeVoltage_Intel_SoC_Matrix;
 		break;
 	case VOLTAGE_KIND_INTEL_SNB:
 		ComputeVoltageFormula = ComputeVoltage_Intel_SNB_Matrix;

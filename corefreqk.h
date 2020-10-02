@@ -1058,12 +1058,13 @@ void (*CCD_AMD_Family_17h_Temp)(CORE_RO*, unsigned int)=Core_AMD_F17h_No_Sensor;
 #define _Atom_Silvermont \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x6}
 #define _Atom_Lincroft	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x2, .Model=0x7}
-#define _Atom_Clovertrail \
+#define _Atom_Clover_Trail \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x5}
 #define _Atom_Saltwell	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x6}
 
-/*	[Silvermont]	06_37h						*/
-#define _Silvermont_637	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
+/*	[Silvermont/Bay_Trail]	06_37h					*/
+#define _Silvermont_Bay_Trail \
+			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x3, .Model=0x7}
 
 /*	[Avoton]	06_4Dh						*/
 #define _Atom_Avoton	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xD}
@@ -1920,9 +1921,9 @@ static MICRO_ARCH Arch_Core_Dunnington[]= {{"Xeon/Dunnington"}	, {NULL}};
 static MICRO_ARCH Arch_Atom_Bonnell[]	= {{"Atom/Bonnell"}	, {NULL}};
 static MICRO_ARCH Arch_Atom_Silvermont[]= {{"Atom/Silvermont"}	, {NULL}};
 static MICRO_ARCH Arch_Atom_Lincroft[]	= {{"Atom/Lincroft"}	, {NULL}};
-static MICRO_ARCH Arch_Atom_Clovertrail[]={{"Atom/Clovertrail"} , {NULL}};
+static MICRO_ARCH Arch_Atom_Clover_Trail[]={{"Atom/Clovertrail"}, {NULL}};
 static MICRO_ARCH Arch_Atom_Saltwell[]	= {{"Atom/Saltwell"}	, {NULL}};
-static MICRO_ARCH Arch_Silvermont_637[] = {{"Silvermont"}	, {NULL}};
+static MICRO_ARCH Arch_Silvermont_Bay_Trail[]={{"Silvermont/SoC"},{NULL}};
 static MICRO_ARCH Arch_Atom_Avoton[]	= {{"Atom/Avoton"}	, {NULL}};
 static MICRO_ARCH Arch_Atom_Airmont[]	= {{"Atom/Airmont"}	, {NULL}};
 static MICRO_ARCH Arch_Atom_Goldmont[]	= {{"Atom/Goldmont"}	, {NULL}};
@@ -5050,8 +5051,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Atom_Lincroft
 	},
-[Atom_Clovertrail] = {							/* 19*/
-	.Signature = _Atom_Clovertrail,
+[Atom_Clover_Trail] = {							/* 19*/
+	.Signature = _Atom_Clover_Trail,
 	.Query = Query_Core2,
 	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
@@ -5072,7 +5073,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &CORE2_Driver,
-	.Architecture = Arch_Atom_Clovertrail
+	.Architecture = Arch_Atom_Clover_Trail
 	},
 [Atom_Saltwell] = {							/* 20*/
 	.Signature = _Atom_Saltwell,
@@ -5099,8 +5100,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Atom_Saltwell
 	},
 
-[Silvermont_637] = {							/* 21*/
-	.Signature = _Silvermont_637,
+[Silvermont_Bay_Trail] = {							/* 21*/
+	.Signature = _Silvermont_Bay_Trail,
 	.Query = Query_Core2,
 	.Update = PerCore_Core2_Query,
 	.Start = Start_Core2,
@@ -5111,7 +5112,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
@@ -5121,7 +5122,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = &CORE2_Driver,
-	.Architecture = Arch_Silvermont_637
+	.Architecture = Arch_Silvermont_Bay_Trail
 	},
 [Atom_Avoton] = {							/* 22*/
 	.Signature = _Atom_Avoton,
