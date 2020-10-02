@@ -7244,14 +7244,19 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 
 Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 {
-	Window *wExit = CreateWindow(	wLayer, id,
-					1, CUMIN((hth + 6), draw.Area.MaxRows),
-					(draw.Size.width - wth) / 2,
-					(draw.Size.height - (hth + 2)) / 2,
-					WINFLAG_NO_STOCK );
-  if (wExit != NULL)
-  {
+	Window *wExit = NULL;
 	char *item = malloc(wth + 1);
+
+  if (item != NULL)
+  {
+	wExit = CreateWindow(	wLayer, id,
+				1, CUMIN((hth + 6), draw.Area.MaxRows),
+				(draw.Size.width - wth) / 2,
+				(draw.Size.height - (hth + 2)) / 2,
+				WINFLAG_NO_STOCK );
+    if (wExit != NULL)
+    {
+	CUINT idx;
 
 	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_HEADER).CODE(),
 			MakeAttr(WHITE, 0, BLACK, 0));
@@ -7259,9 +7264,6 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	memset(item, 0x20, wth);	item[wth] = '\0';
 	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
 
-    if (item != NULL)
-    {
-	CUINT idx;
 	for (idx = 0; idx < hth; idx++)
 	{
 		const CUINT pos = (wth - issue[idx].length) / 2;
@@ -7291,9 +7293,8 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	StoreWindow(wExit,	.key.Home,	MotionReset_Win);
 	StoreWindow(wExit,	.key.End,	MotionEnd_Cell);
 	StoreWindow(wExit, .title, (char*) RSC(EXIT_TITLE).CODE());
-
-	free(item);
     }
+	free(item);
   }
 	return (wExit);
 }
