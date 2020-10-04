@@ -2735,8 +2735,11 @@ long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 
 long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if (rc >= RC_SUCCESS) {
+	if ((rc >= RC_SUCCESS) && (NC > 8)) {
 		rc = Intel_Turbo_Config15C(pClockMod);
 	}
 	return (rc);
@@ -2744,11 +2747,14 @@ long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 
 long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if (rc >= RC_SUCCESS) {
+	if ((rc >= RC_SUCCESS) && (NC > 8)) {
 		rc = Intel_Turbo_Config16C(pClockMod);
 	}
-	if (rc >= RC_SUCCESS) {
+	if ((rc >= RC_SUCCESS) && (NC > 16)) {
 		rc = Intel_Turbo_Config18C(pClockMod);
 	}
 	return (rc);
@@ -2756,8 +2762,11 @@ long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 
 long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if (rc >= RC_SUCCESS) {
+	if ((rc >= RC_SUCCESS) && (NC > 8)) {
 		rc = Skylake_X_Turbo_Config16C(pClockMod);
 	}
 	return (rc);
@@ -2986,27 +2995,44 @@ void Nehalem_Platform_Info(unsigned int cpu)
 
 void IvyBridge_EP_Platform_Info(unsigned int cpu)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	Query_Same_Platform_Features(cpu);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+    if (NC > 8) {
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 7; /*	15C	*/
+    }
 }
 
 void Haswell_EP_Platform_Info(unsigned int cpu)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	Query_Same_Platform_Features(cpu);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+    if (NC > 8) {
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	16C	*/
+    }
+    if (NC > 16) {
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 2; /*	18C	*/
+    }
 }
 
 void Skylake_X_Platform_Info(unsigned int cpu)
 {
+	const unsigned int NC = \
+	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
+
 	Query_Same_Platform_Features(cpu);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
+    if (NC > 8) {
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	16C	*/
+    }
 }
 
 
