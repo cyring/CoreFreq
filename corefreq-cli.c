@@ -10888,24 +10888,47 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
-    {
+  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+  {
+    switch (Shm->Proc.ArchID) {
+    case Kabylake_UY:
+    case Kabylake:
+    case Cannonlake:
+    case Icelake_UY:
+    case Icelake:
+    case Cometlake_UY:
+    case Cometlake:
+	{
+	LayerDeclare(	LAYOUT_RULER_PWR_PLATFORM, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hPwrPfm);
+
+	LayerCopyAt(	layer, hPwrPfm.origin.col, hPwrPfm.origin.row,
+			hPwrPfm.length, hPwrPfm.attr, hPwrPfm.code );
+
+	oRow = hPwrPfm.origin.row;
+	}
+	break;
+    default:
+	{
 	LayerDeclare(	LAYOUT_RULER_PWR_UNCORE, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwr1);
+			0, (row + draw.Area.MaxRows + 1), hPwrUncore);
 
-	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
-			hPwr1.length, hPwr1.attr, hPwr1.code );
+	LayerCopyAt(	layer, hPwrUncore.origin.col, hPwrUncore.origin.row,
+			hPwrUncore.length, hPwrUncore.attr, hPwrUncore.code );
 
-	oRow = hPwr1.origin.row;
-    } else {
-	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
-			0, (row + draw.Area.MaxRows + 1), hPwr1);
-
-	LayerCopyAt(	layer, hPwr1.origin.col, hPwr1.origin.row,
-			hPwr1.length, hPwr1.attr, hPwr1.code );
-
-	oRow = hPwr1.origin.row;
+	oRow = hPwrUncore.origin.row;
+	}
+	break;
     }
+  } else {
+	LayerDeclare(	LAYOUT_RULER_PWR_SOC, draw.Size.width,
+			0, (row + draw.Area.MaxRows + 1), hPwrSoC);
+
+	LayerCopyAt(	layer, hPwrSoC.origin.col, hPwrSoC.origin.row,
+			hPwrSoC.length, hPwrSoC.attr, hPwrSoC.code );
+
+	oRow = hPwrSoC.origin.row;
+  }
 	LayerAt(layer,code, 14, oRow) = \
 	LayerAt(layer,code, 35, oRow) = \
 	LayerAt(layer,code, 57, oRow) = \

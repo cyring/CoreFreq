@@ -8506,6 +8506,21 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 						MSR_DRAM_ENERGY_STATUS);\
 })
 
+#define PWR_ACCU_SKL_PLATFORM(Pkg, T)					\
+({									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PKG)],		\
+						MSR_PKG_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(CORES)],	\
+						MSR_PP0_ENERGY_STATUS); \
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(PLATFORM)],	\
+					MSR_PLATFORM_ENERGY_STATUS);	\
+									\
+        RDCOUNTER(Pkg->Counter[T].Power.ACCU[PWR_DOMAIN(RAM)],		\
+						MSR_DRAM_ENERGY_STATUS);\
+})
+
 #define Delta_PWR_ACCU(Pkg, PwrDomain)					\
 ({									\
 	PUBLIC(RW(Pkg))->Delta.Power.ACCU[PWR_DOMAIN(PwrDomain)] =	\
@@ -10268,7 +10283,33 @@ static enum hrtimer_restart Cycle_Skylake(struct hrtimer *pTimer)
 		break;
 	    }
 
+	    switch (PUBLIC(RO(Proc))->ArchID) {
+	    case Kabylake_UY:
+	    case Kabylake:
+	    case Cannonlake:
+	    case Icelake_UY:
+	    case Icelake:
+	    case Cometlake_UY:
+	    case Cometlake:
+		PWR_ACCU_SKL_PLATFORM(PUBLIC(RO(Proc)), 1);
+		break;
+	    case Skylake_UY:
+	    case Skylake_S:
+	    case Skylake_X:
+	    case Icelake_X:
+	    case Icelake_D:
+	    case Sunny_Cove:
+	    case Tigerlake_U:
+	    case Tigerlake:
+	    case Atom_C3000:
+	    case Tremont_Jacobsville:
+	    case Tremont_Lakefield:
+	    case Tremont_Elkhartlake:
+	    case Tremont_Jasperlake:
+	    default:
 		PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 1);
+		break;
+	    }
 
 		Delta_PC02(PUBLIC(RO(Proc)));
 
@@ -10392,7 +10433,34 @@ static void Start_Skylake(void *arg)
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Start_Uncore_Skylake(NULL);
 		PKG_Counters_Skylake(Core, 0);
+
+	    switch (PUBLIC(RO(Proc))->ArchID) {
+	    case Kabylake_UY:
+	    case Kabylake:
+	    case Cannonlake:
+	    case Icelake_UY:
+	    case Icelake:
+	    case Cometlake_UY:
+	    case Cometlake:
+		PWR_ACCU_SKL_PLATFORM(PUBLIC(RO(Proc)), 0);
+		break;
+	    case Skylake_UY:
+	    case Skylake_S:
+	    case Skylake_X:
+	    case Icelake_X:
+	    case Icelake_D:
+	    case Sunny_Cove:
+	    case Tigerlake_U:
+	    case Tigerlake:
+	    case Atom_C3000:
+	    case Tremont_Jacobsville:
+	    case Tremont_Lakefield:
+	    case Tremont_Elkhartlake:
+	    case Tremont_Jasperlake:
+	    default:
 		PWR_ACCU_Skylake(PUBLIC(RO(Proc)), 0);
+		break;
+	    }
 	}
 
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);

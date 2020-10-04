@@ -215,6 +215,8 @@ ASCII Rsc_Layout_Ruler_Pwr_Uncore_Code_En[]=RSC_LAYOUT_RULER_PWR_UNCORE_CODE_EN;
 #define Rsc_Layout_Ruler_Pwr_Uncore_Code_Fr Rsc_Layout_Ruler_Pwr_Uncore_Code_En
 ASCII	Rsc_Layout_Ruler_Pwr_SoC_Code_En[]=RSC_LAYOUT_RULER_PWR_SOC_CODE_EN;
 #define Rsc_Layout_Ruler_Pwr_SoC_Code_Fr Rsc_Layout_Ruler_Pwr_SoC_Code_En
+ASCII	Rsc_Layout_Ruler_Pwr_Pfm_Code_En[]=RSC_LAYOUT_RULER_PWR_PFM_CODE_EN;
+#define Rsc_Layout_Ruler_Pwr_Pfm_Code_Fr Rsc_Layout_Ruler_Pwr_Pfm_Code_En
 
 ATTRIBUTE Rsc_Layout_Ruler_Voltage_Attr[] = RSC_LAYOUT_RULER_VOLTAGE_ATTR;
 ASCII	Rsc_Layout_Ruler_Voltage_Code_En[] = RSC_LAYOUT_RULER_VOLTAGE_CODE_EN,
@@ -600,6 +602,9 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_PWR_SOC]=LDA( Rsc_Layout_Ruler_Power_Attr,
 					Rsc_Layout_Ruler_Pwr_SoC_Code_En,
 					Rsc_Layout_Ruler_Pwr_SoC_Code_Fr),
+    [RSC_LAYOUT_RULER_PWR_PLATFORM]=LDA(Rsc_Layout_Ruler_Power_Attr,
+					Rsc_Layout_Ruler_Pwr_Pfm_Code_En,
+					Rsc_Layout_Ruler_Pwr_Pfm_Code_Fr),
 	[RSC_LAYOUT_RULER_VOLTAGE]=LDA( Rsc_Layout_Ruler_Voltage_Attr,
 					Rsc_Layout_Ruler_Voltage_Code_En,
 					Rsc_Layout_Ruler_Voltage_Code_Fr),
