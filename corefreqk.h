@@ -1960,9 +1960,34 @@ static MICRO_ARCH Arch_Westmere_EP[] = {
 
 static MICRO_ARCH Arch_Westmere_EX[]	= {{"Westmere/eXtreme"} , {NULL}};
 static MICRO_ARCH Arch_SandyBridge[]	= {{"SandyBridge"}	, {NULL}};
-static MICRO_ARCH Arch_SandyBridge_EP[] = {{"SandyBridge/eXtreme.EP"},{NULL}};
-static MICRO_ARCH Arch_IvyBridge[]	= {{"IvyBridge"}	, {NULL}};
-static MICRO_ARCH Arch_IvyBridge_EP[]	= {{"IvyBridge/EP"}	, {NULL}};
+
+enum {
+	CN_SANDYBRIDGE_EP,
+	CN_SNB_ROMLEY_EP,
+	CN_SNB_EXTREME
+};
+
+static MICRO_ARCH Arch_SandyBridge_EP[] = {
+	[CN_SANDYBRIDGE_EP]	= {"SandyBridge/EP"},
+	[CN_SNB_ROMLEY_EP]	= {"SandyBridge/EP/Romley"},
+	[CN_SNB_EXTREME]	= {"SandyBridge/eXtreme"},
+	{NULL}
+};
+
+static MICRO_ARCH Arch_IvyBridge[] = {{"IvyBridge"}, {NULL}};
+
+enum {
+	CN_IVYBRIDGE_EP,
+	CN_IVB_ROMLEY_EP,
+	CN_IVB_EXTREME
+};
+
+static MICRO_ARCH Arch_IvyBridge_EP[]	= {
+	[CN_IVYBRIDGE_EP]	= {"IvyBridge/EP"},
+	[CN_IVB_ROMLEY_EP]	= {"IvyBridge/EP/Romley"},
+	[CN_IVB_EXTREME]	= {"IvyBridge/eXtreme"},
+	{NULL}
+};
 
 enum {
 	CN_HASWELL_DESKTOP,
@@ -1985,13 +2010,37 @@ static MICRO_ARCH Arch_Haswell_DT[] = {
 	{NULL}
 };
 
-static MICRO_ARCH Arch_Haswell_EP[]	= {{"Haswell/EP/Mobile"}, {NULL}};
+enum {
+	CN_HASWELL_EP,
+	CN_HSW_GRANTLEY_EP,
+	CN_HSW_EXTREME
+};
+
+static MICRO_ARCH Arch_Haswell_EP[]	= {
+	[CN_HASWELL_EP] 	= {"Haswell/EP"},
+	[CN_HSW_GRANTLEY_EP]	= {"Haswell/EP/Grantley"},
+	[CN_HSW_EXTREME]	= {"Haswell/eXtreme"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Haswell_ULT[]	= {{"Haswell/Ultra Low TDP"},{NULL}};
 static MICRO_ARCH Arch_Haswell_ULX[]	={{"Haswell/Ultra Low eXtreme"},{NULL}};
 static MICRO_ARCH Arch_Broadwell[]	= {{"Broadwell/Mobile"} , {NULL}};
 static MICRO_ARCH Arch_Broadwell_D[]	= {{"Broadwell/D"}	, {NULL}};
 static MICRO_ARCH Arch_Broadwell_H[]	= {{"Broadwell/H"}	, {NULL}};
-static MICRO_ARCH Arch_Broadwell_EP[]	= {{"Broadwell/EP/EX"}	, {NULL}};
+
+enum {
+	CN_BROADWELL_EP,
+	CN_BDW_GRANTLEY_EP,
+	CN_BDW_EXTREME
+};
+static MICRO_ARCH Arch_Broadwell_EP[]	= {
+	[CN_BROADWELL_EP]	= {"Broadwell/EP"},
+	[CN_BDW_GRANTLEY_EP]	= {"Broadwell/EP/Grantley"},
+	[CN_BDW_EXTREME]	= {"Broadwell/eXtreme"},
+	{NULL}
+};
+
 static MICRO_ARCH Arch_Skylake_UY[]	= {{"Skylake/UY"}	, {NULL}};
 static MICRO_ARCH Arch_Skylake_S[]	= {{"Skylake/S"}	, {NULL}};
 
@@ -2344,6 +2393,77 @@ static PROCESSOR_SPECIFIC Westmere_EP_Specific[] = {
 	{0}
 };
 
+static PROCESSOR_SPECIFIC SandyBridge_EP_Specific[] = {
+	{
+	.Brand = ZLIST("Intel(R) Xeon(R) CPU E5-26"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNB_ROMLEY_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-3970X",	\
+			"Intel(R) Core(TM) i7-3960X",	\
+			"Intel(R) Core(TM) i7-3930K",	\
+			"Intel(R) Core(TM) i7-3820"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_SNB_EXTREME,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC IvyBridge_EP_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Xeon(R) CPU E5-1650 v2",	\
+			"Intel(R) Xeon(R) CPU E5-1660 v2",	\
+			"Intel(R) Xeon(R) CPU E5-1680 v2"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_IVYBRIDGE_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Xeon(R) CPU E5-26",	\
+			"CPU E2697V"			),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_IVB_ROMLEY_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-4960X",	\
+			"Intel(R) Core(TM) i7-4930K",	\
+			"Intel(R) Core(TM) i7-4820K"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_IVB_EXTREME,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{0}
+};
+
 static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	{
 	.Brand = ZLIST( "Intel(R) Core(TM) i7-4940MX",	\
@@ -2416,6 +2536,77 @@ static PROCESSOR_SPECIFIC Haswell_DT_Specific[] = {
 	.Boost = {0, 0},
 	.Param.Offset = {0, 0, 0},
 	.CodeNameIdx = CN_HASWELL_MOBILE,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC Haswell_EP_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Xeon(R) CPU E5-1650 v3",	\
+			"Intel(R) Xeon(R) CPU E5-1660 v3",	\
+			"Intel(R) Xeon(R) CPU E5-1680 v3"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_HASWELL_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 1,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK|LATCH_UNCORE_UNLOCK
+	},
+	{
+	.Brand = ZLIST("Intel(R) Xeon(R) CPU E5-26"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_HSW_GRANTLEY_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-5960X",	\
+			"Intel(R) Core(TM) i7-5930K",	\
+			"Intel(R) Core(TM) i7-5820K"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_HSW_EXTREME,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{0}
+};
+
+static PROCESSOR_SPECIFIC Broadwell_EP_Specific[] = {
+	{
+	.Brand = ZLIST( "Intel(R) Xeon(R) CPU E5-26",	\
+			"Intel(R) Xeon(R) CPU E5-46"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BDW_GRANTLEY_EP,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST( "Intel(R) Core(TM) i7-6950X",	\
+			"Intel(R) Core(TM) i7-6900K",	\
+			"Intel(R) Core(TM) i7-6850K",	\
+			"Intel(R) Core(TM) i7-6800K"	),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_BDW_EXTREME,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b00,
 	.TurboUnlocked = 0,
@@ -5512,7 +5703,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_SandyBridge_EP,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = SandyBridge_EP_Specific,
 	.SystemDriver = &SNB_Driver,
 	.Architecture = Arch_SandyBridge_EP
 	},
@@ -5561,7 +5752,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_SandyBridge_EP,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = IvyBridge_EP_Specific,
 	.SystemDriver = &IVB_Driver,
 	.Architecture = Arch_IvyBridge_EP
 	},
@@ -5610,7 +5801,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Haswell_EP,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Haswell_EP_Specific,
 	.SystemDriver = &HSW_Driver,
 	.Architecture = Arch_Haswell_EP
 	},
@@ -5755,7 +5946,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = Stop_Uncore_Haswell_EP,
 		.ClockMod = Haswell_Uncore_Ratio
 		},
-	.Specific = Void_Specific,
+	.Specific = Broadwell_EP_Specific,
 	.SystemDriver = &BDW_EP_Driver,
 	.Architecture = Arch_Broadwell_EP
 	},
