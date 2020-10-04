@@ -5508,6 +5508,12 @@ REASON_CODE Core_Manager(REF *Ref)
 	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	    {
 		Package_Update(Shm, Proc, Proc_RW);
+		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
+		    if (BITVAL(Ref->Core_RO[cpu]->OffLine, OS) == 0)
+		    {
+			PerCore_Update(Ref->Shm,Ref->Proc_RO,Ref->Core_RO, cpu);
+		    }
+		}
 		Technology_Update(Shm, Proc, Proc_RW);
 
 		if (ServerFollowService(&localService,
