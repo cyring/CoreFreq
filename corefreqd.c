@@ -5098,6 +5098,13 @@ static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 
 #define Pkg_ComputeVoltage_Intel_Core2	Pkg_ComputeVoltage_None
 
+static inline void Pkg_ComputeVoltage_Intel_SoC(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(INTEL_SOC,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+}
+
 static inline void Pkg_ComputeVoltage_Intel_SNB(struct PKG_FLIP_FLOP *PFlip)
 {	/* Intel 2nd Generation Datasheet Vol-1 §7.4 Table 7-1		*/
 	COMPUTE_VOLTAGE(INTEL_SNB,
@@ -5223,6 +5230,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_KIND_INTEL_CORE2:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_Core2;
+		break;
+	case VOLTAGE_KIND_INTEL_SOC:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SoC;
 		break;
 	case VOLTAGE_KIND_INTEL_SNB:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Intel_SNB;
