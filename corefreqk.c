@@ -2739,7 +2739,7 @@ long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 	if (rc >= RC_SUCCESS)
 	{
 		rc = Intel_Turbo_Config15C(pClockMod);
-		if (rc == RC_OK_COMPUTE)
+		if (rc >= RC_SUCCESS)
 		{
 			TURBO_RATIO_CONFIG1 Cfg1;
 			RDMSR(Cfg1, MSR_TURBO_RATIO_LIMIT1);
@@ -2759,7 +2759,7 @@ long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 	if (rc >= RC_SUCCESS) {
 		rc = Intel_Turbo_Config18C(pClockMod);
 
-		if (rc == RC_OK_COMPUTE)
+		if (rc >= RC_SUCCESS)
 		{
 			TURBO_RATIO_CONFIG2 Cfg2;
 			RDMSR(Cfg2, MSR_TURBO_RATIO_LIMIT2);
@@ -2779,7 +2779,7 @@ long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod)
 	if (rc >= RC_SUCCESS) {
 		rc = Intel_Turbo_Config18C(pClockMod);
 
-		if (rc == RC_OK_COMPUTE)
+		if (rc >= RC_SUCCESS)
 		{
 			TURBO_RATIO_CONFIG3 Cfg3;
 			RDMSR(Cfg3, MSR_TURBO_RATIO_LIMIT3);
