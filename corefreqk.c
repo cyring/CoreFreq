@@ -2252,6 +2252,7 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 
   if (pClockCfg8C->pClockMod != NULL)	/* Read-Only function called ?	*/
   {
+	pClockCfg8C->rc = RC_SUCCESS;
     if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
     {
 	unsigned short WrRd8C = 0;
@@ -2322,7 +2323,6 @@ static void Intel_Turbo_Cfg8C_PerCore(void *arg)
 	break;
     default:
 	WrRd8C = 0;
-	pClockCfg8C->rc = -RC_TURBO_PREREQ;
 	break;
     }
       if (WrRd8C) {
@@ -2351,6 +2351,7 @@ static void Intel_Turbo_Cfg15C_PerCore(void *arg)
 
   if (pClockCfg15C->pClockMod != NULL)
   {
+	pClockCfg15C->rc = RC_SUCCESS;
     if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
     {
 	unsigned short WrRd15C = 0;
@@ -2427,7 +2428,6 @@ static void Intel_Turbo_Cfg15C_PerCore(void *arg)
 	break;
     default:
 	WrRd15C = 0;
-	pClockCfg15C->rc = -RC_TURBO_PREREQ;
 	break;
     }
       if (WrRd15C) {
@@ -2456,6 +2456,7 @@ static void Intel_Turbo_Cfg16C_PerCore(void *arg)
 
   if (pClockCfg16C->pClockMod != NULL)
   {
+	pClockCfg16C->rc = RC_SUCCESS;
     if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
     {
 	unsigned short WrRd16C = 0;
@@ -2542,7 +2543,6 @@ static void Intel_Turbo_Cfg16C_PerCore(void *arg)
 	break;
     default:
 	WrRd16C = 0;
-	pClockCfg16C->rc = -RC_TURBO_PREREQ;
 	break;
     }
       if (WrRd16C) {
@@ -2571,6 +2571,7 @@ static void Intel_Turbo_Cfg18C_PerCore(void *arg)
 
   if (pClockCfg18C->pClockMod != NULL)
   {
+	pClockCfg18C->rc = RC_SUCCESS;
     if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
     {
 	unsigned short WrRd18C = 0;
@@ -2597,7 +2598,6 @@ static void Intel_Turbo_Cfg18C_PerCore(void *arg)
 	break;
     default:
 	WrRd18C = 0;
-	pClockCfg18C->rc = -RC_TURBO_PREREQ;
 	break;
     }
       if (WrRd18C) {
@@ -2626,6 +2626,7 @@ static void Intel_Turbo_Cfg_SKL_X_PerCore(void *arg)
 
   if (pClockCfg16C->pClockMod != NULL)
   {
+	pClockCfg16C->rc = RC_SUCCESS;
     if (PUBLIC(RO(Proc))->Features.Turbo_Unlock)
     {
 	unsigned short WrRd16C = 0;
@@ -2712,7 +2713,6 @@ static void Intel_Turbo_Cfg_SKL_X_PerCore(void *arg)
 	break;
     default:
 	WrRd16C = 0;
-	pClockCfg16C->rc = -RC_TURBO_PREREQ;
 	break;
     }
       if (WrRd16C) {
@@ -2735,38 +2735,65 @@ long Skylake_X_Turbo_Config16C(CLOCK_ARG *pClockMod)
 
 long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod)
 {
-	const unsigned int NC = \
-	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
-
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if ((rc >= RC_SUCCESS) && (NC > 8)) {
+	if (rc >= RC_SUCCESS)
+	{
 		rc = Intel_Turbo_Config15C(pClockMod);
+		if (rc == RC_OK_COMPUTE)
+		{
+			TURBO_RATIO_CONFIG1 Cfg1;
+			RDMSR(Cfg1, MSR_TURBO_RATIO_LIMIT1);
+			Cfg1.IVB_EP.Semaphore = 1;
+			WRMSR(Cfg1, MSR_TURBO_RATIO_LIMIT1);
+		}
 	}
 	return (rc);
 }
 
 long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod)
 {
-	const unsigned int NC = \
-	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
-
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if ((rc >= RC_SUCCESS) && (NC > 8)) {
+	if (rc >= RC_SUCCESS) {
 		rc = Intel_Turbo_Config16C(pClockMod);
 	}
-	if ((rc >= RC_SUCCESS) && (NC > 16)) {
+	if (rc >= RC_SUCCESS) {
 		rc = Intel_Turbo_Config18C(pClockMod);
+
+		if (rc == RC_OK_COMPUTE)
+		{
+			TURBO_RATIO_CONFIG2 Cfg2;
+			RDMSR(Cfg2, MSR_TURBO_RATIO_LIMIT2);
+			Cfg2.Semaphore = 1;
+			WRMSR(Cfg2, MSR_TURBO_RATIO_LIMIT2);
+		}
+	}
+	return (rc);
+}
+
+long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod)
+{
+	long rc = Intel_Turbo_Config8C(pClockMod);
+	if (rc >= RC_SUCCESS) {
+		rc = Intel_Turbo_Config16C(pClockMod);
+	}
+	if (rc >= RC_SUCCESS) {
+		rc = Intel_Turbo_Config18C(pClockMod);
+
+		if (rc == RC_OK_COMPUTE)
+		{
+			TURBO_RATIO_CONFIG3 Cfg3;
+			RDMSR(Cfg3, MSR_TURBO_RATIO_LIMIT3);
+			Cfg3.Semaphore = 1;
+			WRMSR(Cfg3, MSR_TURBO_RATIO_LIMIT3);
+		}
 	}
 	return (rc);
 }
 
 long TurboClock_Skylake_X(CLOCK_ARG *pClockMod)
 {
-	const unsigned int NC = \
-	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
-
 	long rc = Intel_Turbo_Config8C(pClockMod);
-	if ((rc >= RC_SUCCESS) && (NC > 8)) {
+	if (rc >= RC_SUCCESS) {
 		rc = Skylake_X_Turbo_Config16C(pClockMod);
 	}
 	return (rc);

@@ -876,6 +876,7 @@ extern CLOCK BaseClock_AMD_Family_17h(unsigned int ratio) ;
 extern long Intel_Turbo_Config8C(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_IvyBridge_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Haswell_EP(CLOCK_ARG *pClockMod) ;
+extern long TurboClock_Broadwell_EP(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_Skylake_X(CLOCK_ARG *pClockMod) ;
 extern long TurboClock_AMD_Zen(CLOCK_ARG *pClockMod) ;
 
@@ -5888,7 +5889,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
 	.ClockMod = ClockMod_Broadwell_EP_HWP,
-	.TurboClock = TurboClock_Haswell_EP,
+	.TurboClock = TurboClock_Broadwell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,
@@ -5936,7 +5937,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Haswell_EP,
 	.BaseClock = BaseClock_Haswell,
 	.ClockMod = ClockMod_Broadwell_EP_HWP,
-	.TurboClock = TurboClock_Haswell_EP,
+	.TurboClock = TurboClock_Broadwell_EP,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
 	.powerFormula   = POWER_FORMULA_INTEL,

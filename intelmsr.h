@@ -68,6 +68,10 @@
 	#define MSR_TURBO_RATIO_LIMIT2		0x000001af
 #endif
 
+#ifndef MSR_TURBO_RATIO_LIMIT3
+	#define MSR_TURBO_RATIO_LIMIT3		0x000001ac
+#endif
+
 #ifndef MSR_IA32_POWER_CTL
 	#define MSR_IA32_POWER_CTL		0x000001fc
 #endif
@@ -629,6 +633,17 @@ typedef union
 		Semaphore	: 64-63;
 	};
 } TURBO_RATIO_CONFIG2;
+
+typedef union
+{	/* MSR_TURBO_RATIO_LIMIT2(1ACh)					*/
+	unsigned long long	value;
+	struct
+	{	/* Xeon Broadwell-EP [06_4F]				*/
+		unsigned long long
+		ReservedBits	: 63-0,
+		Semaphore	: 64-63;
+	};
+} TURBO_RATIO_CONFIG3;
 
 /* Config TDP MSRs:	06_3A/06_3C/06_3F/06_45/06_46/06_4E/
 			06_55/06_57/06_5C/06_5E/06_66/06_7A/06_8E	*/
