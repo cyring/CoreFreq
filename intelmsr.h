@@ -195,6 +195,14 @@
 	#define MSR_PKG_C7_RESIDENCY		0x000003fa
 #endif
 
+#ifndef MSR_CORE_C1_RESIDENCY
+    #ifdef MSR_CORE_C1_RES
+	#define MSR_CORE_C1_RESIDENCY		MSR_CORE_C1_RES
+    #else
+	#define MSR_CORE_C1_RESIDENCY		0x00000660
+    #endif
+#endif
+
 #ifndef MSR_CORE_C3_RESIDENCY
 	#define MSR_CORE_C3_RESIDENCY		0x000003fc
 #endif

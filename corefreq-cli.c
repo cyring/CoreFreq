@@ -8770,7 +8770,7 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 		{			/* Row indexes (reverse order)
 					C0 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 */
-		const CSINT thisCST[] = {8, 7, 6, 5,-1,-1, 4, 3, 2, 1, 0};
+		const CSINT thisCST[] = {9, 8, 7, 6, 5,-1, 4, 3, 2, 1, 0};
 		const Coordinate origin = {
 		.col = (draw.Size.width - (44 - 17)) / 2,
 		.row = TOP_HEADER_ROW + 3
@@ -8787,10 +8787,11 @@ int Shortcut(SCANKEY *scan)
 /* 2 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_PKGCST_C8,
 /* 3 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
 /* 4 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
-/* 5 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
-/* 6 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
-/* 7 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
-/* 8 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+/* 5 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_PKGCST_C4,
+/* 6 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
+/* 7 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
+/* 8 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
+/* 9 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
 
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
@@ -8816,6 +8817,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PKGCST_C8:
     case BOXKEY_PKGCST_C7:
     case BOXKEY_PKGCST_C6:
+    case BOXKEY_PKGCST_C4:
     case BOXKEY_PKGCST_C3:
     case BOXKEY_PKGCST_C2:
     case BOXKEY_PKGCST_C1:

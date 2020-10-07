@@ -580,7 +580,8 @@ enum CSTATES_CLASS {
 	CSTATES_NHM	= 0x1,
 	CSTATES_SNB	= 0x2,
 	CSTATES_ULT	= 0x4,
-	CSTATES_SKL	= 0x6
+	CSTATES_SKL	= 0x6,
+	CSTATES_SOC	= 0x8
 };
 
 #define LATCH_NONE		0b0000
@@ -907,6 +908,11 @@ static void PerCore_Core2_Query(void *arg) ;
 static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
+
+static void PerCore_SoC_Query(void *arg) ;
+static void Start_SoC(void *arg) ;
+static void Stop_SoC(void *arg) ;
+extern void InitTimer_SoC(unsigned int cpu) ;
 
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
@@ -5295,11 +5301,11 @@ static ARCH Arch[ARCHITECTURES] = {
 [Silvermont_Bay_Trail] = {							/* 21*/
 	.Signature = _Silvermont_Bay_Trail,
 	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Update = PerCore_SoC_Query,
+	.Start = Start_SoC,
+	.Stop = Stop_SoC,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_SoC,
 	.BaseClock = BaseClock_Silvermont,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,

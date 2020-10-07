@@ -6188,7 +6188,7 @@ void PowerThermal(CORE_RO *Core)
 		{_Atom_Clover_Trail,	0, 1, 1, 0},	/* 06_35 */
 		{_Atom_Saltwell,	0, 1, 1, 0},	/* 06_36 */
 
-		{_Silvermont_Bay_Trail, 0, 1, 1, 0},	/* 06_37 */
+		{_Silvermont_Bay_Trail, 0, 1, 0, 0},	/* 06_37 */
 
 		{_Atom_Avoton,		0, 1, 1, 0},	/* 06_4D */
 		{_Atom_Airmont ,	0, 0, 1, 0},	/* 06_4C */
@@ -6506,6 +6506,45 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 				ToggleFeature = 1;
 				break;
 			}
+		} else if (encoding == CSTATES_SOC) {
+			switch (PkgCStateLimit) {
+			case 10: /* Goldmont */
+				CStateConfig.Pkg_CStateLimit = 0b1000;
+				ToggleFeature = 1;
+				break;
+			case 9: /* Goldmont */
+				CStateConfig.Pkg_CStateLimit = 0b0111;
+				ToggleFeature = 1;
+				break;
+			case 8: /* Goldmont */
+				CStateConfig.Pkg_CStateLimit = 0b0110;
+				ToggleFeature = 1;
+				break;
+			case 7: /* Silvermont, Airmont */
+				CStateConfig.Pkg_CStateLimit = 0b0111;
+				ToggleFeature = 1;
+				break;
+			case 6: /* Silvermont, Airmont */
+				CStateConfig.Pkg_CStateLimit = 0b0110;
+				ToggleFeature = 1;
+				break;
+			case 4: /* Silvermont */
+				CStateConfig.Pkg_CStateLimit = 0b0100;
+				ToggleFeature = 1;
+				break;
+			case 2: /* Airmont */
+				CStateConfig.Pkg_CStateLimit = 0b0010;
+				ToggleFeature = 1;
+				break;
+			case 1: /* Silvermont, Airmont, Goldmont */
+				CStateConfig.Pkg_CStateLimit = 0b0001;
+				ToggleFeature = 1;
+				break;
+			case 0: /* Silvermont, Airmont, Goldmont */
+				CStateConfig.Pkg_CStateLimit = 0b0000;
+				ToggleFeature = 1;
+				break;
+			}
 		}
 		if (ToggleFeature == 1) {
 			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
@@ -6623,6 +6662,44 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 			Core->Query.CStateLimit = 0;
 			break;
 		}
+	} else if (encoding == CSTATES_SOC) {
+		if (CStateConfig.C3undemotion)
+		{
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+		}
+		if (CStateConfig.C1undemotion)
+		{
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+		}
+		switch (CStateConfig.Pkg_CStateLimit) {
+		case 0b1000:
+			Core->Query.CStateLimit = 10;
+			break;
+		case 0b0101:
+		case 0b0111:
+			Core->Query.CStateLimit = 7;
+			break;
+		case 0b0110:
+			Core->Query.CStateLimit = 6;
+			break;
+		case 0b0100:
+			Core->Query.CStateLimit = 4;
+			break;
+		case 0b0010:
+			Core->Query.CStateLimit = 2;
+			break;
+		case 0b0001:
+			Core->Query.CStateLimit = 1;
+			break;
+		case 0b0000:
+		default:
+			Core->Query.CStateLimit = 0;
+			break;
+		}
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
@@ -6631,14 +6708,16 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 
-/*TODO: Atom (Avoton, Goldmont, Merrifield, Moorefield, SoFIA), Silvermont
+/*TODO: Atom (Avoton, Goldmont, Merrifield, Moorefield, SoFIA), Tremont
 	Not Atom Airmont [06_4Ch]
 
-	0b100: C4	[ATOM, SLM]
-	0b110: C6	[ATOM, SLM]
-	0b111: C7	[ATOM, SLM]
+	0b0111: C9	[GDM]
+	0b0110: C8	[GDM]
+	0b0101: C7S	[GDM, Tremont]
+	0b0100: C7	[GDM, Tremont]
+	0b0011: C6	[GDM, Tremont]
+	0b0010: C3	[GDM, Tremont]
 */
-
 	if (CStateConfig.IO_MWAIT_Redir) {
 		switch (CStateIORedir) {
 		case 8:
@@ -7236,6 +7315,15 @@ static void PerCore_Core2_Query(void *arg)
 	PowerThermal(Core);				/* Shared | Unique */
 
 	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_SoC_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Core2_Query(arg);
+
+	Intel_CStatesConfiguration(CSTATES_SOC, Core);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
@@ -8148,6 +8236,16 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	    : 0;							\
 })
 
+#define Counters_SoC(Core, T)						\
+({									\
+	RDTSC_COUNTERx5(Core->Counter[T].TSC,				\
+			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
+			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
+			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST, \
+			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
+			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6);	\
+})
+
 #define SMT_Counters_Nehalem(Core, T)					\
 ({									\
 	register unsigned long long Cx = 0;				\
@@ -8292,6 +8390,12 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 #define PKG_Counters_Generic(Core, T)					\
 ({									\
 	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
+})
+
+#define PKG_Counters_SoC(Core, T)					\
+({									\
+    RDTSCP_COUNTERx1(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06);\
 })
 
 #define PKG_Counters_Nehalem(Core, T)					\
@@ -9158,6 +9262,162 @@ static void Start_Core2(void *arg)
 }
 
 static void Stop_Core2(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
+
+	Intel_Core_Counters_Clear(Core);
+
+	PerCore_Reset(Core);
+
+	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+static enum hrtimer_restart Cycle_SoC(struct hrtimer *pTimer)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	CORE_RO *Core;
+	unsigned int cpu;
+
+	cpu = smp_processor_id();
+	Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	Mark_OVH(Core);
+
+    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+    {
+	hrtimer_forward(pTimer,
+			hrtimer_cb_get_time(pTimer),
+			RearmTheTimer);
+
+	Counters_SoC(Core, 1);
+
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	Core->Ratio.Perf = PerfStatus.CORE.CurrFID;
+
+	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	Core->Boost[BOOST(TGT)] = GET_CORE2_TARGET(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+	{
+		PKG_Counters_SoC(Core, 1);
+
+		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
+		{
+		case FORMULA_SCOPE_PKG:
+			Core_Intel_Temp(Core);
+			break;
+		}
+
+		PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PerfStatus.CORE.CurrVID;
+
+		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+		{
+		case FORMULA_SCOPE_PKG:
+			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+			break;
+		}
+
+		Delta_PC06(PUBLIC(RO(Proc)));
+
+		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+		Save_PC06(PUBLIC(RO(Proc)));
+
+		Save_PTSC(PUBLIC(RO(Proc)));
+
+		Sys_Tick(PUBLIC(RO(Proc)));
+	} else {
+		Core->PowerThermal.VID = 0;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core_Intel_Temp(Core);
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core_Intel_Temp(Core);
+		break;
+	}
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
+	case FORMULA_SCOPE_CORE:
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
+		Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+	    }
+		break;
+	case FORMULA_SCOPE_SMT:
+		Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+		break;
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	Delta_INST(Core);
+
+	Delta_C0(Core);
+
+	Delta_TSC_OVH(Core);
+
+	Delta_C1(Core);
+
+	Delta_C6(Core);
+
+	Save_INST(Core);
+
+	Save_TSC(Core);
+
+	Save_C0(Core);
+
+	Save_C1(Core);
+
+	Save_C6(Core);
+
+	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
+
+	return (HRTIMER_RESTART);
+    } else
+	return (HRTIMER_NORESTART);
+}
+
+void InitTimer_SoC(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_SoC, 1);
+}
+
+static void Start_SoC(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	PerCore_SoC_Query(Core);
+
+	Intel_Core_Counters_Set(Core);
+	Counters_SoC(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		PKG_Counters_SoC(Core, 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
+}
+
+static void Stop_SoC(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
