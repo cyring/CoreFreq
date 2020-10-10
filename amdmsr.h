@@ -175,13 +175,17 @@
 	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
 	unsigned char ret;						\
     do {								\
-	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED) ;				\
 	if (ret == 0) {							\
 		udelay(BIT_IO_DELAY_INTERVAL);				\
 	} else {							\
 		AMD_FCH_READ16(DataRegister.value, IndexRegister);	\
 									\
-		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
@@ -192,13 +196,17 @@
 	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
 	unsigned char ret;						\
     do {								\
-	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED );				\
 	if (ret == 0) {							\
 		udelay(BIT_IO_DELAY_INTERVAL);				\
 	} else {							\
 		AMD_FCH_WRITE16(DataRegister.value, IndexRegister);	\
 									\
-		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_FCH_LOCK, ATOMIC_SEED);	\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_FCH_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\

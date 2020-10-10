@@ -560,17 +560,25 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
 	unsigned char ret;						\
     do {								\
-	ret = BIT_ATOM_TRYLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);	\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
 	if ( ret == 0 ) {						\
 		udelay(BIT_IO_DELAY_INTERVAL);				\
 	} else {							\
 		WRPCI(SMN_Address, SMU_IndexRegister);			\
 		RDPCI(SMN_Register.value, SMU_DataRegister);		\
 									\
-		BIT_ATOM_UNLOCK(BUS_LOCK, AMD_SMN_LOCK, ATOMIC_SEED);	\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED);				\
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
+	if (tries == 0) {						\
+		pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) failed\n", \
+			SMN_Register.value, SMN_Address);		\
+	}								\
 })
 #endif /* CONFIG_AMD_NB and LEGACY */
 
@@ -658,6 +666,8 @@ typedef struct
 #ifdef CONFIG_AMD_NB
 	struct pci_dev		*ZenIF_dev;
 #endif
+	Bit64			AMD_SMN_LOCK __attribute__ ((aligned (8)));
+	Bit64			AMD_FCH_LOCK __attribute__ ((aligned (8)));
 	struct kmem_cache	*Cache;
 	JOIN			*Join[];
 } KPRIVATE;
@@ -1038,11 +1048,12 @@ static void Start_AMD_Family_17h(void *arg) ;
 static void Stop_AMD_Family_17h(void *arg) ;
 extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
-void Core_AMD_F17h_No_Sensor(CORE_RO *Core, unsigned int SMN_Address)
+void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
 }
-void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core, unsigned int SMN_Address) ;
-void (*CCD_AMD_Family_17h_Temp)(CORE_RO*, unsigned int)=Core_AMD_F17h_No_Sensor;
+void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
+void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;
+void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}

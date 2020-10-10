@@ -279,9 +279,6 @@ static KPUBLIC *KPublic = NULL;
 static KPRIVATE *KPrivate = NULL;
 static ktime_t RearmTheTimer;
 
-static Bit64 AMD_SMN_LOCK __attribute__ ((aligned (8)));
-static Bit64 AMD_FCH_LOCK __attribute__ ((aligned (8)));
-
 #define AT( _loc_ )		[ _loc_ ]
 #define OF( _ptr_ , ...)	-> _ptr_ __VA_ARGS__
 #define RO( _ptr_ , ...)	OF( _ptr_##_RO , __VA_ARGS__ )
@@ -5303,8 +5300,11 @@ void Query_AMD_Family_17h(unsigned int cpu)
 
 		PUBLIC(RO(Proc))->PowerThermal.Param.Offset[0] = TjMax.Target;
 
-		CCD_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
+		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 	    }
+		break;
+	default:
+		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 		break;
 	}
 
@@ -8790,12 +8790,12 @@ void Core_AMD_Family_15_60h_Temp(CORE_RO *Core)
 }
 */
 
-void Pkg_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
+void CTL_AMD_Family_17h_Temp(CORE_RO *Core)
 {
 	TCTL_REGISTER TctlSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(	TctlSensor,
-				SMN_Address,
+				SMU_AMD_THM_TCTL_REGISTER_F17H,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 
@@ -8813,7 +8813,7 @@ void Pkg_AMD_Family_17h_Temp(CORE_RO *Core, unsigned int SMN_Address)
 	}
 }
 
-void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core, unsigned int SMN_Address)
+void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 {
 	TCCD_REGISTER TccdSensor = {.value = 0};
 
@@ -8832,6 +8832,13 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core, unsigned int SMN_Address)
 		Core->PowerThermal.Param.Offset[1] = 0;
 	}
 }
+
+#define Pkg_AMD_Family_17h_Temp(Pkg, Core)				\
+({									\
+	Core_AMD_Family_17h_Temp(Core);					\
+									\
+	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
+})
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 {
@@ -11434,9 +11441,11 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	{
 		PKG_Counters_Generic(Core, 1);
 
+		Pkg_AMD_Family_17h_Temp(PUBLIC(RO(Proc)), Core);
+
 	  switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	  case FORMULA_SCOPE_PKG:
-		Pkg_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
+		Core_AMD_Family_17h_Temp(Core);
 		break;
 	  }
 
@@ -11466,13 +11475,14 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
-	    if (!((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)))
+	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
 	    {
+		Core_AMD_Family_17h_Temp(Core);
 		break;
 	    }
 		/* Fallthrough */
 	case FORMULA_SCOPE_SMT:
-		CCD_AMD_Family_17h_Temp(Core, SMU_AMD_THM_TCTL_REGISTER_F17H);
+		Core_AMD_Family_17h_Temp(Core);
 		break;
 	}
 
@@ -11541,13 +11551,13 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
-	/*	UNCORE RAPL workaround to provide the SoC power	*/
+	/*	PLATFORM RAPL workaround to provide the SoC power	*/
 	VCC = 155000LLU - (625LLU * SVI.VID);
 	ICC = SVI.CID * factor;
 	PWR = VCC * ICC;
 	PWR = PWR << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
 	PWR = PWR / (100000LLU * 1000000LLU);
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = PWR;
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = PWR;
 }
 
 void Call_DFLT( const unsigned int plane0, const unsigned int plane1,
@@ -14133,8 +14143,8 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
 static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 {
-	BIT_ATOM_INIT(AMD_SMN_LOCK, ATOMIC_SEED);
-	BIT_ATOM_INIT(AMD_FCH_LOCK, ATOMIC_SEED);
+	BIT_ATOM_INIT(PRIVATE(OF(AMD_SMN_LOCK)), ATOMIC_SEED);
+	BIT_ATOM_INIT(PRIVATE(OF(AMD_FCH_LOCK)), ATOMIC_SEED);
 
 	switch (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC) {
 	case CRC_INTEL: {
