@@ -979,29 +979,30 @@ typedef struct
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423
 /* Source: /include/linux/pci_ids.h					*/
-#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0
-	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0	0x3ca0
+#ifndef PCI_DEVICE_ID_INTEL_SNB_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_SNB_IMC_HA0 	0x3ca0
 #endif
 /* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
-#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA
-	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA	0x0100
+#ifndef PCI_DEVICE_ID_INTEL_SNB_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_SNB_IMC_SA	0x0100
 #endif
-#ifndef PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104
-	#define PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104	0x0104
+#ifndef PCI_DEVICE_ID_INTEL_SNB_IMC_0104
+	#define PCI_DEVICE_ID_INTEL_SNB_IMC_0104	0x0104
 #endif
 /* Source: /drivers/edac/sb_edac.c					*/
-#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0
-	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA0	0x0ea0
+/*TODO( Harware missing )*/
+#ifndef PCI_DEVICE_ID_INTEL_IVB_IMC_HA0
+	#define PCI_DEVICE_ID_INTEL_IVB_IMC_HA0 	0x0ea0
 #endif
-#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1
-	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_HA1	0x0e60
+#ifndef PCI_DEVICE_ID_INTEL_IVB_IMC_HA1
+	#define PCI_DEVICE_ID_INTEL_IVB_IMC_HA1 	0x0e60
 #endif
 /* Source: 3rd Generation Intel® Core™ Processor Family Vol2		*/
-#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA
-	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA	0x0150
+#ifndef PCI_DEVICE_ID_INTEL_IVB_IMC_SA
+	#define PCI_DEVICE_ID_INTEL_IVB_IMC_SA		0x0150
 #endif
-#ifndef PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154
-	#define PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154	0x0154
+#ifndef PCI_DEVICE_ID_INTEL_IVB_IMC_0154
+	#define PCI_DEVICE_ID_INTEL_IVB_IMC_0154	0x0154
 #endif
 /* Source: Intel Xeon Processor E5 & E7 v1 Datasheet Vol 2		*/
 /*	DMI2: Device=0 - Function=0					*/

@@ -1460,15 +1460,15 @@ static struct pci_device_id PCI_Westmere_EP_ids[] = {
 	TA0=0x3caa, TA1=0x3cab / TA2=0x3cac / TA3=0x3cad / TA4=0x3cae	*/
 static struct pci_device_id PCI_SandyBridge_ids[] = {
 	{
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SNB_IMC_HA0),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{	/* Desktop: IMC_SystemAgent=0x0100,0x0104		*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SNB_IMC_SA),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104),
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SNB_IMC_0104),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
 	{0, }
@@ -1479,11 +1479,11 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	TA0=0x0eaa / TA1=0x0eab / TA2=0x0eac / TA3=0x0ead		*/
 static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{	/* Desktop: IMC_SystemAgent=0x0150			*/
-	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA),
+	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_IMC_SA),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{	/* Mobile i5-3337U: IMC=0x0154				*/
-	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154),
+	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
 	},
 	{0, }

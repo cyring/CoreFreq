@@ -4029,17 +4029,17 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		NHM_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK);
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_HA0:   /* Sandy Bridge-E	*/
+	case PCI_DEVICE_ID_INTEL_SNB_IMC_HA0:	/* Sandy Bridge-E	*/
 		SNB_EP_CAP(Shm, Proc, Core);
 		SNB_EP_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PATSBURG);
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_SA:    /* SNB Desktop	*/
+	case PCI_DEVICE_ID_INTEL_SNB_IMC_SA:	/* SNB Desktop	*/
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_COUGARPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_SBRIDGE_IMC_0104:
+	case PCI_DEVICE_ID_INTEL_SNB_IMC_0104:
 		SNB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_IBEXPEAK_M);
@@ -4049,12 +4049,12 @@ void PCI_Intel(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core,unsigned short DID)
 		SNB_EP_IMC(Shm, Proc);
 		SET_CHIPSET(IC_CAVECREEK);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_SA:    /* IVB Desktop	*/
+	case PCI_DEVICE_ID_INTEL_IVB_IMC_SA:	/* IVB Desktop	*/
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT);
 		break;
-	case PCI_DEVICE_ID_INTEL_IBRIDGE_IMC_0154:  /* IVB Mobile i5-3337U */
+	case PCI_DEVICE_ID_INTEL_IVB_IMC_0154:	/* IVB Mobile i5-3337U */
 		IVB_CAP(Shm, Proc, Core);
 		SNB_IMC(Shm, Proc);
 		SET_CHIPSET(IC_PANTHERPOINT_M);
