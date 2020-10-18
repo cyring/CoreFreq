@@ -517,11 +517,13 @@ typedef union
 		CFG_Lock	: 16-15,
 		ReservedBits3	: 24-16,
 		Int_Filtering	: 25-24, /* Nehalem			*/
-		C3autoDemotion	: 26-25,
-		C1autoDemotion	: 27-26,
+		C3autoDemotion	: 26-25, /* Nehalem			*/
+		C1autoDemotion	: 27-26, /* Nehalem			*/
 		C3undemotion	: 28-27, /* Sandy Bridge		*/
 		C1undemotion	: 29-28, /* Sandy Bridge		*/
-		ReservedBits4	: 64-29;
+		PkgCSTdemotion	: 30-29, /* NHM,HSW-E,Core-M,BDW-E,SKL-S,Phi */
+		PkgCSTundemotion: 31-30, /* NHM,HSW-E,Core-M,BDW-E,SKL-S,Phi */
+		ReservedBits4	: 64-31;
 	};
 } CSTATE_CONFIG;
 

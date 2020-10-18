@@ -6364,192 +6364,279 @@ void PowerThermal(CORE_RO *Core)
   BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 }
 
-void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
+struct CSTATES_ENCODING_ST {
+	enum CSTATES_ENCODING	enc;
+	unsigned short int	dec;
+} Limit_CSTATES_NHM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0001 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0010 }, /*Cannot be used to limit package C-State*/
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0011 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0100 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b1111 },
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, IORedir_CSTATES_NHM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0001 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0010 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0011 },	/* TODO(Undefined!)	*/
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, Limit_CSTATES_SNB[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0000 },
+	{  _C2	, 0b0001 },
+	{  _C3	, 0b0010 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0011 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0100 },
+	{ _C7S	, 0b0101 },
+	{  _C8	, 0b0110 },
+	{  _C9	, 0b0111 },
+	{ _C10	, 0b1000 }
+}, IORedir_CSTATES_SNB[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0001 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0010 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, Limit_CSTATES_ULT[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0000 },
+	{  _C2	, 0b0001 },
+	{  _C3	, 0b0010 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0011 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0100 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0110 },
+	{  _C9	, 0b0111 },
+	{ _C10	, 0b1000 }
+}, IORedir_CSTATES_ULT[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0001 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0010 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, Limit_CSTATES_SKL[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0000 },
+	{  _C2	, 0b0001 },
+	{  _C3	, 0b0010 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0011 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0100 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0110 },
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, IORedir_CSTATES_SKL[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0001 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0010 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, Limit_CSTATES_SOC_SLM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },	/* Silvermont, Airmont	*/
+	{  _C1	, 0b0001 },	/* Silvermont, Airmont	*/
+	{  _C2	, 0b0010 },	/* Airmont		*/
+	{  _C3	, 0b1111 },
+	{  _C4	, 0b0100 },	/* Silvermont		*/
+	{  _C6	, 0b0110 },	/* Silvermont, Airmont	*/
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0111 },	/* Silvermont, Airmont	*/
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b1111 },
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, IORedir_CSTATES_SOC_SLM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },	/* Airmont		*/
+	{  _C4	, 0b0100 },
+	{  _C6	, 0b0110 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0111 },	/* Airmont: 0b0010	*/
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b1111 },
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+}, Limit_CSTATES_SOC_GDM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0001 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0010 },	/* Goldmont, Tremont	*/
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0011 },	/* Goldmont, Tremont	*/
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0100 },	/* Goldmont, Tremont	*/
+	{ _C7S	, 0b0101 },	/* Goldmont, Tremont	*/
+	{  _C8	, 0b0110 },	/* Goldmont, Tremont	*/
+	{  _C9	, 0b0111 },	/* Goldmont, Tremont	*/
+	{ _C10	, 0b1000 }
+}, IORedir_CSTATES_SOC_GDM[CSTATES_ENCODING_COUNT] = {
+	{  _C0	, 0b1111 },
+	{  _C1	, 0b1111 },
+	{  _C2	, 0b1111 },
+	{  _C3	, 0b0000 },
+	{  _C4	, 0b1111 },
+	{  _C6	, 0b0001 },
+	{ _C6R	, 0b1111 },
+	{  _C7	, 0b0010 },
+	{ _C7S	, 0b1111 },
+	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
+	{  _C9	, 0b1111 },
+	{ _C10	, 0b1111 }
+};
+
+#define MAKE_TOGGLE_CSTATE_FUNC( _type, _feature, _parameter )		\
+inline unsigned int Toggle_CState_##_feature( _type *pConfigRegister,	\
+					typeof(_parameter) _parameter)  \
+{									\
+	switch ( _parameter )						\
+	{								\
+	case COREFREQ_TOGGLE_OFF:					\
+	case COREFREQ_TOGGLE_ON:					\
+		pConfigRegister->_feature = _parameter;			\
+		return (1);						\
+	}								\
+	return (0);							\
+}
+
+MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C3autoDemotion, C3A_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C1autoDemotion, C1A_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C3undemotion, C3U_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C1undemotion, C1U_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, IO_MWAIT_Redir, IOMWAIT_Enable)
+
+#undef MAKE_TOGGLE_CSTATE
+
+#define Toggle_CState_Feature( _config, _feature, _parameter )		\
+(									\
+	Toggle_CState_##_feature( _config, _parameter ) 		\
+)
+
+#define For_All_Encodings(loopCondition, breakStatement, bodyStatement) \
+({									\
+	unsigned int idx, ret = 0;					\
+    for (idx = 0; idx < CSTATES_ENCODING_COUNT && (loopCondition); idx++)\
+    {									\
+	if (breakStatement)						\
+	{								\
+		ret = 1;						\
+		bodyStatement						\
+		break;							\
+	}								\
+    }									\
+	ret;								\
+})
+
+void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
+			CORE_RO *Core )
+{
+	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+
+    if (Core->Query.IORedir)
+    {
+	For_All_Encodings(
+			/* loopCondition: */
+			(CStateIORedir >= 0),
+			/* breakStatement: */
+			( (CStateIORedir == IORedir[idx].enc)
+			&& (IORedir[idx].dec != 0b1111) ),
+			/* bodyStatement: */
+			{
+			CState_IO_MWAIT.CStateRange = IORedir[idx].dec;
+			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			}
+	);
+    }
+	For_All_Encodings(
+		/* loopCondition: */ (1),
+		/* breakStatement: */
+		(CState_IO_MWAIT.CStateRange == IORedir[idx].dec),
+		/* bodyStatement: */
+		{
+		Core->Query.CStateInclude = IORedir[idx].enc;
+		}
+	);
+}
+
+void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
-	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-	int ToggleFeature = 0;
+	unsigned int toggleFeature = 0;
 
 	RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 
-	switch (C3A_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.C3autoDemotion = C3A_Enable;
-			ToggleFeature = 1;
-		break;
-	}
-	switch (C1A_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.C1autoDemotion = C1A_Enable;
-			ToggleFeature = 1;
-		break;
-	}
-	if ((encoding == CSTATES_SNB) || (encoding == CSTATES_SKL)) {
-		switch (C3U_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C3undemotion = C3U_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-		switch (C1U_Enable) {
-			case COREFREQ_TOGGLE_OFF:
-			case COREFREQ_TOGGLE_ON:
-				CStateConfig.C1undemotion = C1U_Enable;
-				ToggleFeature = 1;
-			break;
-		}
-	}
-	if (ToggleFeature == 1) {
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C3autoDemotion,
+						C3A_Enable );
+
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C1autoDemotion,
+						C1A_Enable );
+    if (CStateConfig.CFG_Lock == 0)
+    {
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						IO_MWAIT_Redir,
+						IOMWAIT_Enable);
+
+	toggleFeature |= For_All_Encodings(
+				/* loopCondition: */
+				(PkgCStateLimit >= 0),
+				/* breakStatement: */
+				( (PkgCStateLimit == Limit[idx].enc)
+				&& (Limit[idx].dec != 0b1111) ),
+				/* bodyStatement: */
+				{
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
+				}
+	);
+    }
+	if (toggleFeature == 1) {
 		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
 		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-	}
-	if (CStateConfig.CFG_Lock == 0)
-	{
-		ToggleFeature = 0;
-
-		switch (IOMWAIT_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-		case COREFREQ_TOGGLE_ON:
-			CStateConfig.IO_MWAIT_Redir = IOMWAIT_Enable;
-			ToggleFeature = 1;
-			break;
-		}
-
-		if (encoding == CSTATES_NHM) {	/* NHM encoding */
-			switch (PkgCStateLimit) {
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b100;
-				ToggleFeature = 1;
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b011;
-				ToggleFeature = 1;
-				break;
-			case 3:/*Cannot be used to limit package C-State to C3*/
-				CStateConfig.Pkg_CStateLimit = 0b010;
-				ToggleFeature = 1;
-				break;
-			case 1:
-				CStateConfig.Pkg_CStateLimit = 0b001;
-				ToggleFeature = 1;
-				break;
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b000;
-				ToggleFeature = 1;
-				break;
-			}
-		} else if ((encoding == CSTATES_SNB)	/* SNB encoding */
-			|| (encoding == CSTATES_SKL)) { /* SKL encoding */
-			switch (PkgCStateLimit) {
-			case 8:
-				CStateConfig.Pkg_CStateLimit = 0b110;
-				ToggleFeature = 1;
-				break;
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b100;
-				ToggleFeature = 1;
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b011;
-				ToggleFeature = 1;
-				break;
-			case 3:
-				CStateConfig.Pkg_CStateLimit = 0b010;
-				ToggleFeature = 1;
-				break;
-			case 2:
-				CStateConfig.Pkg_CStateLimit = 0b001;
-				ToggleFeature = 1;
-				break;
-			case 1:
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b000;
-				ToggleFeature = 1;
-				break;
-			}
-		} else if (encoding == CSTATES_ULT) {	/* Haswell ULT */
-			switch (PkgCStateLimit) {
-			case 10:
-				CStateConfig.Pkg_CStateLimit = 0b1000;
-				ToggleFeature = 1;
-				break;
-			case 9:
-				CStateConfig.Pkg_CStateLimit = 0b0111;
-				ToggleFeature = 1;
-				break;
-			case 8:
-				CStateConfig.Pkg_CStateLimit = 0b0110;
-				ToggleFeature = 1;
-				break;
-			case 7:
-				CStateConfig.Pkg_CStateLimit = 0b0100;
-				ToggleFeature = 1;
-				break;
-			case 6:
-				CStateConfig.Pkg_CStateLimit = 0b0011;
-				ToggleFeature = 1;
-				break;
-			case 3:
-				CStateConfig.Pkg_CStateLimit = 0b0010;
-				ToggleFeature = 1;
-				break;
-			case 2:
-				CStateConfig.Pkg_CStateLimit = 0b0001;
-				ToggleFeature = 1;
-				break;
-			case 1:
-			case 0:
-				CStateConfig.Pkg_CStateLimit = 0b0000;
-				ToggleFeature = 1;
-				break;
-			}
-		} else if (encoding == CSTATES_SOC) {
-			switch (PkgCStateLimit) {
-			case 10: /* Goldmont */
-				CStateConfig.Pkg_CStateLimit = 0b1000;
-				ToggleFeature = 1;
-				break;
-			case 9: /* Goldmont */
-				CStateConfig.Pkg_CStateLimit = 0b0111;
-				ToggleFeature = 1;
-				break;
-			case 8: /* Goldmont */
-				CStateConfig.Pkg_CStateLimit = 0b0110;
-				ToggleFeature = 1;
-				break;
-			case 7: /* Silvermont, Airmont */
-				CStateConfig.Pkg_CStateLimit = 0b0111;
-				ToggleFeature = 1;
-				break;
-			case 6: /* Silvermont, Airmont */
-				CStateConfig.Pkg_CStateLimit = 0b0110;
-				ToggleFeature = 1;
-				break;
-			case 4: /* Silvermont */
-				CStateConfig.Pkg_CStateLimit = 0b0100;
-				ToggleFeature = 1;
-				break;
-			case 2: /* Airmont */
-				CStateConfig.Pkg_CStateLimit = 0b0010;
-				ToggleFeature = 1;
-				break;
-			case 1: /* Silvermont, Airmont, Goldmont */
-				CStateConfig.Pkg_CStateLimit = 0b0001;
-				ToggleFeature = 1;
-				break;
-			case 0: /* Silvermont, Airmont, Goldmont */
-				CStateConfig.Pkg_CStateLimit = 0b0000;
-				ToggleFeature = 1;
-				break;
-			}
-		}
-		if (ToggleFeature == 1) {
-			WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-			RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
-		}
 	}
 
 	if (CStateConfig.C3autoDemotion)
@@ -6564,202 +6651,202 @@ void Intel_CStatesConfiguration(enum CSTATES_CLASS encoding, CORE_RO *Core)
 	} else {
 		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
 	}
+
 	Core->Query.CfgLock = CStateConfig.CFG_Lock;
 	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
 
-	if (encoding == CSTATES_NHM) {
-		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
-		case 0b100:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b011:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b010:
-			Core->Query.CStateLimit = 3;
-			break;
-		case 0b001:
-			Core->Query.CStateLimit = 1;
-			break;
-		case 0b000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-	} else if ((encoding == CSTATES_SNB) || (encoding == CSTATES_SKL)) {
-		if (CStateConfig.C3undemotion)
+	For_All_Encodings(
+		/* loopCondition: */ (1),
+		/* breakStatement: */
+		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		/* bodyStatement: */
 		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+			Core->Query.CStateLimit = Limit[idx].enc;
 		}
-		if (CStateConfig.C1undemotion)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		}
-		switch (CStateConfig.Pkg_CStateLimit & 0x7) {
-		case 0b110:
-			Core->Query.CStateLimit = 8;
-			break;
-		case 0b101:
-		case 0b100:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b011:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b010:
-			Core->Query.CStateLimit = 3;
-			break;
-		case 0b001:
-			Core->Query.CStateLimit = 2;
-			break;
-		case 0b000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-	} else if (encoding == CSTATES_ULT) {
-		if (CStateConfig.C3undemotion)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		}
-		if (CStateConfig.C1undemotion)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		}
-		switch (CStateConfig.Pkg_CStateLimit) {
-		case 0b1000:
-			Core->Query.CStateLimit = 10;
-			break;
-		case 0b0111:
-			Core->Query.CStateLimit = 9;
-			break;
-		case 0b0110:
-			Core->Query.CStateLimit = 8;
-			break;
-		case 0b0101:
-		case 0b0100:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b0011:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b0010:
-			Core->Query.CStateLimit = 3;
-			break;
-		case 0b0001:
-			Core->Query.CStateLimit = 2;
-			break;
-		case 0b0000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-	} else if (encoding == CSTATES_SOC) {
-		if (CStateConfig.C3undemotion)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
-		}
-		if (CStateConfig.C1undemotion)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
-		}
-		switch (CStateConfig.Pkg_CStateLimit) {
-		case 0b1000:
-			Core->Query.CStateLimit = 10;
-			break;
-		case 0b0101:
-		case 0b0111:
-			Core->Query.CStateLimit = 7;
-			break;
-		case 0b0110:
-			Core->Query.CStateLimit = 6;
-			break;
-		case 0b0100:
-			Core->Query.CStateLimit = 4;
-			break;
-		case 0b0010:
-			Core->Query.CStateLimit = 2;
-			break;
-		case 0b0001:
-			Core->Query.CStateLimit = 1;
-			break;
-		case 0b0000:
-		default:
-			Core->Query.CStateLimit = 0;
-			break;
-		}
-	}
+	);
+
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
 
-	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-
-/*TODO: Atom (Avoton, Goldmont, Merrifield, Moorefield, SoFIA), Tremont
-	Not Atom Airmont [06_4Ch]
-
-	0b0111: C9	[GDM]
-	0b0110: C8	[GDM]
-	0b0101: C7S	[GDM, Tremont]
-	0b0100: C7	[GDM, Tremont]
-	0b0011: C6	[GDM, Tremont]
-	0b0010: C3	[GDM, Tremont]
-*/
-	if (CStateConfig.IO_MWAIT_Redir) {
-		switch (CStateIORedir) {
-		case 8:
-			CState_IO_MWAIT.CStateRange = 0b011;
-			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			break;
-		case 7:
-			CState_IO_MWAIT.CStateRange = 0b010;
-			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			break;
-		case 6:
-			CState_IO_MWAIT.CStateRange = 0b001;
-			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			break;
-		case 3:
-			CState_IO_MWAIT.CStateRange = 0b000;
-			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			break;
-		}
-		if (CStateIORedir != -1) {
-			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-		}
-	}
-
-	switch (CState_IO_MWAIT.CStateRange) {
-	case 0b011:
-		Core->Query.CStateInclude = 8;
-		break;
-	case 0b010:
-		Core->Query.CStateInclude = 7;
-		break;
-	case 0b001:
-		Core->Query.CStateInclude = 6;
-		break;
-	case 0b000:
-		Core->Query.CStateInclude = 3;
-		break;
-	default:
-		Core->Query.CStateInclude = 0;
-		break;
-	}
+	Control_IO_MWAIT(IORedir, Core);
 }
+
+void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{
+	CSTATE_CONFIG CStateConfig = {.value = 0};
+	unsigned int toggleFeature = 0;
+
+	RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C3autoDemotion,
+						C3A_Enable );
+
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C1autoDemotion,
+						C1A_Enable );
+
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C3undemotion,
+						C3U_Enable );
+
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						C1undemotion,
+						C1U_Enable );
+    if (CStateConfig.CFG_Lock == 0)
+    {
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						IO_MWAIT_Redir,
+						IOMWAIT_Enable);
+
+	toggleFeature |= For_All_Encodings(
+				/* loopCondition: */
+				(PkgCStateLimit >= 0),
+				/* breakStatement: */
+				( (PkgCStateLimit == Limit[idx].enc)
+				&& (Limit[idx].dec != 0b1111) ),
+				/* bodyStatement: */
+				{
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
+				}
+	);
+    }
+	if (toggleFeature == 1) {
+		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+	}
+
+	if (CStateConfig.C3autoDemotion)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3A, Core->Bind);
+	}
+	if (CStateConfig.C1autoDemotion)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1A, Core->Bind);
+	}
+	if (CStateConfig.C3undemotion)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C3U, Core->Bind);
+	}
+	if (CStateConfig.C1undemotion)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->C1U, Core->Bind);
+	}
+
+	Core->Query.CfgLock = CStateConfig.CFG_Lock;
+	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+
+	For_All_Encodings(
+		/* loopCondition: */ (1),
+		/* breakStatement: */
+		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		/* bodyStatement: */
+		{
+			Core->Query.CStateLimit = Limit[idx].enc;
+		}
+	);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+
+	Control_IO_MWAIT(IORedir, Core);
+}
+
+void Control_CSTATES_ULT(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{
+	Control_CSTATES_SNB(Limit, IORedir, Core);
+}
+
+void Control_CSTATES_SKL(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{
+	Control_CSTATES_SNB(Limit, IORedir, Core);
+}
+
+void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{
+	CSTATE_CONFIG CStateConfig = {.value = 0};
+	unsigned int toggleFeature = 0;
+
+	RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+
+    if (CStateConfig.CFG_Lock == 0)
+    {
+	toggleFeature |= Toggle_CState_Feature(	&CStateConfig,
+						IO_MWAIT_Redir,
+						IOMWAIT_Enable);
+
+	toggleFeature |= For_All_Encodings(
+				/* loopCondition: */
+				(PkgCStateLimit >= 0),
+				/* breakStatement: */
+				( (PkgCStateLimit == Limit[idx].enc)
+				&& (Limit[idx].dec != 0b1111) ),
+				/* bodyStatement: */
+				{
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
+				}
+	);
+    }
+	if (toggleFeature == 1) {
+		WRMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+		RDMSR(CStateConfig, MSR_PKG_CST_CONFIG_CONTROL);
+	}
+
+	Core->Query.CfgLock = CStateConfig.CFG_Lock;
+	Core->Query.IORedir = CStateConfig.IO_MWAIT_Redir;
+
+	For_All_Encodings(
+		/* loopCondition: */ (1),
+		/* breakStatement: */
+		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		/* bodyStatement: */
+		{
+			Core->Query.CStateLimit = Limit[idx].enc;
+		}
+	);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+
+	Control_IO_MWAIT(IORedir, Core);
+}
+
+void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{
+	Control_CSTATES_SOC_SLM(Limit, IORedir, Core);
+}
+
+#undef For_All_Encodings
+#undef Toggle_CState_Feature
+
+#define Intel_CStatesConfiguration( _CLASS, Core )			\
+({									\
+	Control_##_CLASS(Limit_##_CLASS, IORedir_##_CLASS, Core);	\
+})
 
 void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 {
@@ -7317,13 +7404,15 @@ static void PerCore_Core2_Query(void *arg)
 	ThermalMonitor_Set(Core);
 }
 
-static void PerCore_SoC_Query(void *arg)
+static void PerCore_Silvermont_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
 	PerCore_Core2_Query(arg);
 
-	Intel_CStatesConfiguration(CSTATES_SOC, Core);
+	Query_Intel_C1E(Core);
+
+	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
@@ -7535,6 +7624,48 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_ULT, Core);
+	}
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	PowerThermal(Core);
+
+	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_Goldmont_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	Intel_Platform_Info(Core->Bind);
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
+	SystemRegisters(Core);
+
+	Intel_Mitigation_Mechanisms(Core);
+
+	Intel_VirtualMachine(Core);
+
+	Intel_Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	SpeedStep_Technology(Core);
+
+	TurboBoost_Technology(	Core,
+				Set_SandyBridge_Target,
+				Get_SandyBridge_Target,
+				Cmp_SandyBridge_Target,
+				Core->Boost[BOOST(1C)],
+				Core->Boost[BOOST(MAX)] );
+
+	Query_Intel_C1E(Core);
+
+	if (Core->T.ThreadID == 0) {				/* Per Core */
+		Intel_CStatesConfiguration(CSTATES_SOC_GDM, Core);
 	}
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
@@ -9283,7 +9414,7 @@ static void Stop_Core2(void *arg)
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
-static enum hrtimer_restart Cycle_SoC(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 {
 	PERF_STATUS PerfStatus = {.value = 0};
 	CORE_RO *Core;
@@ -9394,17 +9525,17 @@ static enum hrtimer_restart Cycle_SoC(struct hrtimer *pTimer)
 	return (HRTIMER_NORESTART);
 }
 
-void InitTimer_SoC(unsigned int cpu)
+void InitTimer_Silvermont(unsigned int cpu)
 {
-	smp_call_function_single(cpu, InitTimer, Cycle_SoC, 1);
+	smp_call_function_single(cpu, InitTimer, Cycle_Silvermont, 1);
 }
 
-static void Start_SoC(void *arg)
+static void Start_Silvermont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_SoC_Query(Core);
+	PerCore_Silvermont_Query(Core);
 
 	Intel_Core_Counters_Set(Core);
 	Counters_SoC(Core, 0);
@@ -9424,7 +9555,7 @@ static void Start_SoC(void *arg)
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
-static void Stop_SoC(void *arg)
+static void Stop_Silvermont(void *arg)
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -10315,6 +10446,33 @@ static void Stop_Uncore_Haswell_ULT(void *arg)
     if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	Uncore_Counters_Clear(SNB);
     }
+}
+
+static void Start_Goldmont(void *arg)
+{
+	unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
+	PerCore_Goldmont_Query(Core);
+
+	Intel_Core_Counters_Set(Core);
+	SMT_Counters_SandyBridge(Core, 0);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Start_Uncore_Haswell_ULT(NULL);
+		PKG_Counters_Haswell_ULT(Core, 0);
+		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 0);
+	}
+
+	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);
+
+	hrtimer_start(	&PRIVATE(OF(Join, AT(cpu)))->Timer,
+			RearmTheTimer,
+			HRTIMER_MODE_REL_PINNED);
+
+	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
 
@@ -11553,7 +11711,7 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 
 	/*	PLATFORM RAPL workaround to provide the SoC power	*/
 	VCC = 155000LLU - (625LLU * SVI.VID);
-	ICC = SVI.CID * factor;
+	ICC = SVI.IDD * factor;
 	PWR = VCC * ICC;
 	PWR = PWR << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
 	PWR = PWR / (100000LLU * 1000000LLU);

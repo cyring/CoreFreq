@@ -585,11 +585,12 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
-	CSTATES_NHM	= 0x1,
-	CSTATES_SNB	= 0x2,
-	CSTATES_ULT	= 0x4,
-	CSTATES_SKL	= 0x6,
-	CSTATES_SOC	= 0x8
+	CSTATES_NHM,
+	CSTATES_SNB,
+	CSTATES_ULT,
+	CSTATES_SKL,
+	CSTATES_SOC_SLM,
+	CSTATES_SOC_GDM
 };
 
 #define LATCH_NONE		0b0000
@@ -919,10 +920,10 @@ static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
 
-static void PerCore_SoC_Query(void *arg) ;
-static void Start_SoC(void *arg) ;
-static void Stop_SoC(void *arg) ;
-extern void InitTimer_SoC(unsigned int cpu) ;
+static void PerCore_Silvermont_Query(void *arg) ;
+static void Start_Silvermont(void *arg) ;
+static void Stop_Silvermont(void *arg) ;
+extern void InitTimer_Silvermont(unsigned int cpu) ;
 
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
@@ -971,6 +972,9 @@ static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
+
+static void PerCore_Goldmont_Query(void *arg) ;
+static void Start_Goldmont(void *arg) ;
 
 extern void Query_Haswell_ULX(unsigned int cpu) ;
 static void PerCore_Haswell_ULX(void *arg) ;
@@ -5309,14 +5313,14 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Atom_Saltwell
 	},
 
-[Silvermont_Bay_Trail] = {							/* 21*/
+[Silvermont_Bay_Trail] = {						/* 21*/
 	.Signature = _Silvermont_Bay_Trail,
 	.Query = Query_Core2,
-	.Update = PerCore_SoC_Query,
-	.Start = Start_SoC,
-	.Stop = Stop_SoC,
+	.Update = PerCore_Silvermont_Query,
+	.Start = Start_Silvermont,
+	.Stop = Stop_Silvermont,
 	.Exit = NULL,
-	.Timer = InitTimer_SoC,
+	.Timer = InitTimer_Silvermont,
 	.BaseClock = BaseClock_Silvermont,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
@@ -5361,17 +5365,17 @@ static ARCH Arch[ARCHITECTURES] = {
 [Atom_Airmont] = {							/* 23*/
 	.Signature = _Atom_Airmont,
 	.Query = Query_Core2,
-	.Update = PerCore_Core2_Query,
-	.Start = Start_Core2,
-	.Stop = Stop_Core2,
+	.Update = PerCore_Silvermont_Query,
+	.Start = Start_Silvermont,
+	.Stop = Stop_Silvermont,
 	.Exit = NULL,
-	.Timer = InitTimer_Core2,
+	.Timer = InitTimer_Silvermont,
 	.BaseClock = BaseClock_Airmont,
 	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
-	.powerFormula   = POWER_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = NULL,
@@ -5385,8 +5389,8 @@ static ARCH Arch[ARCHITECTURES] = {
 [Atom_Goldmont] = {							/* 24*/
 	.Signature = _Atom_Goldmont,
 	.Query = Query_SandyBridge,
-	.Update = PerCore_Haswell_ULT_Query,
-	.Start = Start_Haswell_ULT,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,
@@ -5827,7 +5831,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _Haswell_ULT,
 	.Query = Query_Haswell_ULT,
 	.Update = PerCore_Haswell_ULT_Query,
-	.Start = Start_Haswell_ULT,
+	.Start = Start_Goldmont,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,

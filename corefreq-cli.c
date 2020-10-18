@@ -2541,26 +2541,37 @@ void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
 }
 
+char *CST_Encoding[] = {
+	[ _C0]	= " C0",
+	[ _C1]	= " C1",
+	[ _C2]	= " C2",
+	[ _C3]	= " C3",
+	[ _C4]	= " C4",
+	[ _C6]	= " C6",
+	[_C6R]	= "C6R",
+	[ _C7]	= " C7",
+	[_C7S]	= "C7S",
+	[ _C8]	= " C8",
+	[ _C9]	= " C9",
+	[_C10]	= "C10"
+};
+
 void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
 {
-	const signed int pos = grid->cell.length - 9;
-	char item[11+1];
+	const signed int pos = grid->cell.length - 5;
 
-	snprintf(item, 11+1,
-		"%7d", Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit);
-
-	memcpy(&grid->cell.item[pos], item, 7);
+	memcpy(&grid->cell.item[pos],
+	      CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit],
+		3);
 }
 
 void CStateRange_Update(TGrid *grid, DATA_TYPE data)
 {
-	const signed int pos = grid->cell.length - 9;
-	char item[11+1];
+	const signed int pos = grid->cell.length - 5;
 
-	snprintf(item, 11+1,
-		"%7d", Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude);
-
-	memcpy(&grid->cell.item[pos], item, 7);
+	memcpy(&grid->cell.item[pos],
+	    CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude],
+		3);
 }
 
 REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -2778,10 +2789,10 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
 
 	    GridCall(PUT(BOXKEY_PKGCST, attrib[0], width, 3,
-			"%s%.*sLIMIT   <%7d>", RSC(PERF_MON_LOW_CSTATE).CODE(),
+			"%s%.*sLIMIT   <%7s>", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit),
+	      CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit]),
 		CStateLimit_Update);
 
 		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
@@ -2794,10 +2805,10 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		IOMWAIT_Update);
 
 	    GridCall(PUT(BOXKEY_IORCST, attrib[0], width, 3,
-			"%s%.*sRANGE   <%7d>", RSC(PERF_MON_MAX_CSTATE).CODE(),
+			"%s%.*sRANGE   <%7s>", RSC(PERF_MON_MAX_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
-			Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude),
+	    CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]),
 		CStateRange_Update);
     }
     else if( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -8768,16 +8779,27 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-		{			/* Row indexes (reverse order)
-					C0 C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 */
-		const CSINT thisCST[] = {9, 8, 7, 6, 5,-1, 4, 3, 2, 1, 0};
+	{
+		const CSINT CST[] = {
+			[ _C0] = 11,
+			[ _C1] = 10,
+			[ _C2] = 9,
+			[ _C3] = 8,
+			[ _C4] = 7,
+			[ _C6] = 6,
+			[_C6R] = 5,
+			[ _C7] = 4,
+			[_C7S] = 3,
+			[ _C8] = 2,
+			[ _C9] = 1,
+			[_C10] = 0
+		};
 		const Coordinate origin = {
-		.col = (draw.Size.width - (44 - 17)) / 2,
-		.row = TOP_HEADER_ROW + 3
+			.col = (draw.Size.width - (44 - 17)) / 2,
+			.row = TOP_HEADER_ROW + 3
 		}, select = {
-		.col=0,
-	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] != -1 ?
-		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit] : 0
+		.col = 0,
+		.row = CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit]
 		};
 
 		Window *wBox = CreateBox(scan->key, origin, select,
@@ -8785,13 +8807,15 @@ int Shortcut(SCANKEY *scan)
 /* 0 */ (ASCII*)"            C10            ", stateAttr[0], BOXKEY_PKGCST_C10,
 /* 1 */ (ASCII*)"             C9            ", stateAttr[0], BOXKEY_PKGCST_C9,
 /* 2 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_PKGCST_C8,
-/* 3 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
-/* 4 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
-/* 5 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_PKGCST_C4,
-/* 6 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
-/* 7 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
-/* 8 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
-/* 9 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+/* 3 */ (ASCII*)"            C7S            ", stateAttr[0], BOXKEY_PKGCST_C7S,
+/* 4 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
+/* 5 */ (ASCII*)"            C6R            ", stateAttr[0], BOXKEY_PKGCST_C6R,
+/* 6 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
+/* 7 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_PKGCST_C4,
+/* 8 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
+/* 9 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
+/*10 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
+/*11 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
 
 		if (wBox != NULL) {
 			TCellAt(wBox, 0, select.row).attr[11] = 	\
@@ -8815,15 +8839,17 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_PKGCST_C10:
     case BOXKEY_PKGCST_C9:
     case BOXKEY_PKGCST_C8:
+    case BOXKEY_PKGCST_C7S:
     case BOXKEY_PKGCST_C7:
     case BOXKEY_PKGCST_C6:
+    case BOXKEY_PKGCST_C6R:
     case BOXKEY_PKGCST_C4:
     case BOXKEY_PKGCST_C3:
     case BOXKEY_PKGCST_C2:
     case BOXKEY_PKGCST_C1:
     case BOXKEY_PKGCST_C0:
     {
-	const unsigned long newCST = (scan->key - BOXKEY_PKGCST_C0) >> 4;
+	const unsigned long newCST = (scan->key & BOXKEY_CSTATE_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
@@ -8882,16 +8908,28 @@ int Shortcut(SCANKEY *scan)
     {
 	Window *win = SearchWinListById(scan->key, &winList);
 	if (win == NULL)
-	{				/* Row indexes (reverse order)
-					 C0 C1 C2 C3 C4 C5 C6 C7 C8	*/
-		const CSINT thisCST[] = {-1,-1,-1, 4, 3,-1, 2, 1, 0};
+	{
+		const CSINT CST[] = {
+			[ _C0] = -1,
+			[ _C1] = -1,
+			[ _C2] = -1,
+			[ _C3] =  4,
+			[ _C4] =  3,
+			[ _C6] =  2,
+			[_C6R] = -1,
+			[ _C7] =  1,
+			[_C7S] = -1,
+			[ _C8] =  0,
+			[ _C9] = -1,
+			[_C10] = -1
+		};
 		const Coordinate origin = {
 			.col = (draw.Size.width - (44 - 17)) / 2,
 			.row = TOP_HEADER_ROW + 4
 		}, select = {
-			.col = 0,
-	.row=thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]!=-1 ?
-		thisCST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]:0
+		.col = 0,
+	.row = CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] != -1?
+		CST[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude] : 0
 		};
 
 		Window *wBox = CreateBox(scan->key, origin, select,
@@ -8927,7 +8965,7 @@ int Shortcut(SCANKEY *scan)
     case BOXKEY_IORCST_C7:
     case BOXKEY_IORCST_C8:
     {
-	const unsigned long newCST = (scan->key - BOXKEY_IORCST_C0) >> 4;
+	const unsigned long newCST = (scan->key & BOXKEY_CSTATE_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,

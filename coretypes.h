@@ -179,6 +179,23 @@ enum SYS_REG {
 	EXFER_FFXSE	= 14	/* AMD F17h				*/
 };
 
+enum CSTATES_ENCODING {
+	_C0	= 0x0,
+	_C1	= 0x1,
+	_C2	= 0x2,
+	_C3	= 0x3,
+	_C4	= 0x4,
+	_C6	= 0x6,
+	_C6R	= 0xb,
+	_C7	= 0x7,
+	_C7S	= 0xc,
+	_C8	= 0x8,
+	_C9	= 0x9,
+	_C10	= 0xa
+};
+
+#define CSTATES_ENCODING_COUNT	12
+
 enum THERM_PWR_EVENTS {
 	EVENT_THERM_NONE	= 0b0000000,
 	EVENT_THERM_SENSOR	= 0b0000001,

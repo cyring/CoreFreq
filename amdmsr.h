@@ -1198,9 +1198,9 @@ typedef union
 	unsigned int		value;
 	struct {
 		unsigned int
-		CID		:  8-0, 	/*	Current ID	*/
+		IDD		:  8-0,  /* Current: SVI{0,1}_PLANE0_IDDCOR */
 		ReservedBits1	: 16-8,
-		VID		: 24-16,	/*	Voltage ID	*/
+		VID		: 24-16, /* Voltage: SVI{0,1}_PLANE0_VDDCOR */
 		ReservedBits2	: 32-24;
 	};
 } AMD_17_SVI;
