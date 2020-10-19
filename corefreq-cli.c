@@ -6230,8 +6230,11 @@ void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSelectCPU(unsigned long long id)
 {
+	const CUINT height = CUMIN(Shm->Proc.CPU.Count,
+	(ADD_UPPER & ADD_LOWER)+(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
+
 	Window *wUSR = CreateWindow(	wLayer, id,
-					1, Shm->Proc.CPU.Count,
+					1, height,
 					13 + 27 + 3, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
     if (wUSR != NULL) {
