@@ -5500,6 +5500,29 @@ static int Cmp_SandyBridge_Target(CORE_RO *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
+void WritePerformanceControl(PERF_CONTROL *pPerfControl)
+{
+	struct SIGNATURE blackList[] = {
+		_Silvermont_Bay_Trail,	/* 06_37 */
+		_Atom_Merrifield,	/* 06_4A */
+		_Atom_Avoton,		/* 06_4D */
+		_Atom_Moorefield,	/* 06_5A */
+		_Atom_Sofia		/* 06_5D */
+	};
+	const int ids = sizeof(blackList) / sizeof(blackList[0]);
+	int id;
+     for (id = 0; id < ids; id++) {
+      if((blackList[id].ExtFamily==PUBLIC(RO(Proc))->Features.Std.EAX.ExtFamily)
+      && (blackList[id].Family == PUBLIC(RO(Proc))->Features.Std.EAX.Family)
+      && (blackList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
+      && (blackList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
+      {
+	return;
+      }
+     }
+	WRMSR((*pPerfControl), MSR_IA32_PERF_CTL);
+}
+
 void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 						GET_TARGET GetTarget,
 						CMP_TARGET CmpTarget,
@@ -5533,7 +5556,7 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
     }
     if (ToggleFeature == 1)
     {
-	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
     }
     if (Core->PowerThermal.PerfControl.Turbo_IDA == 0)
@@ -5621,7 +5644,7 @@ static void ClockMod_PPC_PerCore(void *arg)
 		pClockPPC->pClockMod->Ratio
 	:	pClockPPC->GetTarget(Core) + pClockPPC->pClockMod->Offset);
 
-	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	Core->Boost[BOOST(TGT)] = pClockPPC->GetTarget(Core);
@@ -12318,7 +12341,7 @@ static void Policy_Core2_SetTarget(void *arg)
     {
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Set_Core2_Target(Core, (*ratio));
-	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
@@ -12345,7 +12368,7 @@ static void Policy_Nehalem_SetTarget(void *arg)
     {
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Set_Nehalem_Target(Core, (*ratio));
-	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
@@ -12372,7 +12395,7 @@ static void Policy_SandyBridge_SetTarget(void *arg)
     {
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Set_SandyBridge_Target(Core, (*ratio));
-	WRMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
+	WritePerformanceControl(&Core->PowerThermal.PerfControl);
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA) {
