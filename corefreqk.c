@@ -5507,7 +5507,7 @@ static int Cmp_SandyBridge_Target(CORE_RO *Core, unsigned int ratio)
 	return (Core->PowerThermal.PerfControl.SNB.TargetRatio > ratio);
 }
 
-void WritePerformanceControl(PERF_CONTROL *pPerfControl)
+bool IsPerformanceControlCapable(void)
 {
 	struct SIGNATURE blackList[] = {
 		_Silvermont_Bay_Trail,	/* 06_37 */
@@ -5524,10 +5524,20 @@ void WritePerformanceControl(PERF_CONTROL *pPerfControl)
       && (blackList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
       && (blackList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
       {
-	return;
+	return (false);
       }
      }
-	WRMSR((*pPerfControl), MSR_IA32_PERF_CTL);
+	return (true);
+}
+
+bool WritePerformanceControl(PERF_CONTROL *pPerfControl)
+{
+	bool isCapable = IsPerformanceControlCapable();
+	if (isCapable == true)
+	{
+		WRMSR((*pPerfControl), MSR_IA32_PERF_CTL);
+	}
+	return (isCapable);
 }
 
 void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
@@ -5614,6 +5624,8 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 
 void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
 {
+  if (IsPerformanceControlCapable() == true)
+  {
     if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
     {
 	TurboBoost_Technology(	Core,
@@ -5626,6 +5638,38 @@ void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
     }
+  } else {
+	int ToggleFeature;
+
+	MISC_PROC_FEATURES MiscFeatures = {.value = 0};
+	RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+
+	switch (TurboBoost_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+		MiscFeatures.Turbo_IDA = 1;
+		ToggleFeature = 1;
+		break;
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatures.Turbo_IDA = 0;
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
+		break;
+	}
+	if (ToggleFeature == 1)
+	{
+		WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+	}
+	if (MiscFeatures.Turbo_IDA == 0)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+  }
 }
 
 typedef struct {
@@ -5651,12 +5695,14 @@ static void ClockMod_PPC_PerCore(void *arg)
 		pClockPPC->pClockMod->Ratio
 	:	pClockPPC->GetTarget(Core) + pClockPPC->pClockMod->Offset);
 
-	WritePerformanceControl(&Core->PowerThermal.PerfControl);
+	if (WritePerformanceControl(&Core->PowerThermal.PerfControl) == true) {
+		pClockPPC->rc = RC_OK_COMPUTE;
+	} else {
+		pClockPPC->rc = -ENXIO;
+	}
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
 	Core->Boost[BOOST(TGT)] = pClockPPC->GetTarget(Core);
-
-	pClockPPC->rc = RC_OK_COMPUTE;
 }
 
 long For_All_PPC_Clock(CLOCK_PPC_ARG *pClockPPC)
