@@ -920,6 +920,7 @@ static void Start_Core2(void *arg) ;
 static void Stop_Core2(void *arg) ;
 extern void InitTimer_Core2(unsigned int cpu) ;
 
+extern void Query_Silvermont(unsigned int cpu) ;
 static void PerCore_Silvermont_Query(void *arg) ;
 static void Start_Silvermont(void *arg) ;
 static void Stop_Silvermont(void *arg) ;
@@ -5315,7 +5316,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Silvermont_Bay_Trail] = {						/* 21*/
 	.Signature = _Silvermont_Bay_Trail,
-	.Query = Query_Core2,
+	.Query = Query_Silvermont,
 	.Update = PerCore_Silvermont_Query,
 	.Start = Start_Silvermont,
 	.Stop = Stop_Silvermont,

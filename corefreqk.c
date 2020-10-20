@@ -4366,6 +4366,13 @@ void Query_Core2(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
+void Query_Silvermont(unsigned int cpu)
+{
+	Query_Core2(cpu);
+
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
+}
+
 void Query_Nehalem(unsigned int cpu)
 {
 	Nehalem_Platform_Info(cpu);
@@ -9448,8 +9455,8 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Mark_OVH(Core);
 
-    if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
-    {
+  if (BITVAL(PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD) == 1)
+  {
 	hrtimer_forward(pTimer,
 			hrtimer_cb_get_time(pTimer),
 			RearmTheTimer);
@@ -9462,40 +9469,53 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 	Core->Boost[BOOST(TGT)] = GET_CORE2_TARGET(Core);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	PKG_Counters_SoC(Core, 1);
+
+	Pkg_Intel_Temp(PUBLIC(RO(Proc)));
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
 	{
-		PKG_Counters_SoC(Core, 1);
-
-		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
-
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
-		{
-		case FORMULA_SCOPE_PKG:
-			Core_Intel_Temp(Core);
-			break;
-		}
-
-		PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PerfStatus.CORE.CurrVID;
-
-		switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
-		{
-		case FORMULA_SCOPE_PKG:
-			Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
-			break;
-		}
-
-		Delta_PC06(PUBLIC(RO(Proc)));
-
-		Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
-
-		Save_PC06(PUBLIC(RO(Proc)));
-
-		Save_PTSC(PUBLIC(RO(Proc)));
-
-		Sys_Tick(PUBLIC(RO(Proc)));
-	} else {
-		Core->PowerThermal.VID = 0;
+	case FORMULA_SCOPE_PKG:
+		Core_Intel_Temp(Core);
+		break;
 	}
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU=PerfStatus.CORE.CurrVID;
+
+	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
+	{
+	case FORMULA_SCOPE_PKG:
+		Core->PowerThermal.VID = PerfStatus.CORE.CurrVID;
+		break;
+	}
+	RDCOUNTER( PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(PKG)],
+			MSR_PKG_ENERGY_STATUS );
+
+	RDCOUNTER( PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(CORES)],
+			MSR_PP0_ENERGY_STATUS );
+
+	Delta_PC06(PUBLIC(RO(Proc)));
+
+	Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
+
+	Delta_PWR_ACCU(Proc, PKG);
+
+	Delta_PWR_ACCU(Proc, CORES);
+
+	Save_PC06(PUBLIC(RO(Proc)));
+
+	Save_PTSC(PUBLIC(RO(Proc)));
+
+	Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
+
+	Save_PWR_ACCU(PUBLIC(RO(Proc)), CORES);
+
+	Sys_Tick(PUBLIC(RO(Proc)));
+    } else {
+	Core->PowerThermal.VID = 0;
+    }
 
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula)) {
 	case FORMULA_SCOPE_CORE:
@@ -9544,7 +9564,7 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
 	return (HRTIMER_RESTART);
-    } else
+  } else
 	return (HRTIMER_NORESTART);
 }
 
@@ -9563,10 +9583,16 @@ static void Start_Silvermont(void *arg)
 	Intel_Core_Counters_Set(Core);
 	Counters_SoC(Core, 0);
 
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		PKG_Counters_SoC(Core, 0);
-	}
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	PKG_Counters_SoC(Core, 0);
 
+	RDCOUNTER( PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
+			MSR_PKG_ENERGY_STATUS );
+
+	RDCOUNTER( PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(CORES)],
+			MSR_PP0_ENERGY_STATUS );
+    }
 	RDCOUNTER(Core->Interrupt.SMI, MSR_SMI_COUNT);
 
 	BITSET(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, MUSTFWD);

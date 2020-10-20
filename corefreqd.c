@@ -1314,7 +1314,8 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	break;
     }
 	Shm->Proc.Power.Unit.Times = Proc_RO->PowerThermal.Unit.TU > 0 ?
-			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU) : 0;
+			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU)
+			: 1.0 / (double) (1 << 10);
 
 	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
     if (PowerUnits != 0)
