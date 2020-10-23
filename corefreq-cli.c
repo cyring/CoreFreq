@@ -3534,6 +3534,7 @@ void Package(void)
 	idx+= sprintf(&out[idx],
 		"PC02" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC03" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"PC04" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC06" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC07" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC08" "\t" "%18llu" "\t" "%7.2f" "\n"	\
@@ -3543,6 +3544,7 @@ void Package(void)
 		"UNCORE" "\t" "%18llu" "\n\n",
 		PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 		PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
+		PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
 		PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 		PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 		PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
@@ -7329,7 +7331,7 @@ void TrapScreenSize(int caught)
 	}
 	switch (draw.Disposal) {
 	case D_MAINVIEW:
-	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 8 : 0))
+	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 9 : 0))
 				+ TOP_HEADER_ROW
 				+ TOP_SEPARATOR
 				+ TOP_FOOTER_ROW;
@@ -10693,9 +10695,10 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	ASCII	hCState[7][2] = {
+	ASCII	hCState[8][2] = {
 		{'0', '2'},
 		{'0', '3'},
+		{'0', '4'},
 		{'0', '6'},
 		{'0', '7'},
 		{'0', '8'},
@@ -10708,7 +10711,7 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			RSC(LAYOUT_RULER_PACKAGE).ATTR()[0]);
 
 	unsigned int idx;
-	for (idx = 0; idx < 7; idx++)
+	for (idx = 0; idx < 8; idx++)
 	{
 		LayerCopyAt(	layer, 0, (row + idx + 1),
 				draw.Size.width,
@@ -10720,15 +10723,15 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	}
 
 	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, draw.Size.width,
-			0, (row + 8), hUncore);
+			0, (row + 9), hUncore);
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
 
-	LayerFillAt(	layer, 0, (row + 9),
+	LayerFillAt(	layer, 0, (row + 10),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
-	row += 2 + 8;
+	row += 2 + 9;
 	return (row);
 }
 
@@ -12665,7 +12668,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	row += 1 + draw.Area.MaxRows;
 	if (!draw.Flag.avgOrPC) {
-		len = snprintf( buffer, 11+42+1,
+		len = snprintf( buffer, ((5*2)+1)+(6*7)+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 				100.f * Shm->Proc.Avg.Turbo,
@@ -12676,18 +12679,19 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * Shm->Proc.Avg.C7 );
 		memcpy(&LayerAt(layer, code, 20, row), buffer, len);
 	} else {
-		len = snprintf( buffer, 35+42+1,
-				"  c2:%-5.1f" "  c3:%-5.1f" "  c6:%-5.1f" \
-				"  c7:%-5.1f" "  c8:%-5.1f" "  c9:%-5.1f" \
-				" c10:%-5.1f",
+		len = snprintf( buffer, ((6*4)+3+5)+(8*6)+1,
+				"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f" \
+				" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f" \
+				" c9:%-5.1f"	" c10:%-5.1f",
 				100.f * Shm->Proc.State.PC02,
 				100.f * Shm->Proc.State.PC03,
+				100.f * Shm->Proc.State.PC04,
 				100.f * Shm->Proc.State.PC06,
 				100.f * Shm->Proc.State.PC07,
 				100.f * Shm->Proc.State.PC08,
 				100.f * Shm->Proc.State.PC09,
 				100.f * Shm->Proc.State.PC10 );
-		memcpy(&LayerAt(layer, code, 11, row), buffer, len);
+		memcpy(&LayerAt(layer, code, 7, row), buffer, len);
 	}
 	row += 1;
 	return (row);
@@ -12724,6 +12728,15 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace );
 	memcpy(&LayerAt(layer, code, 5, (row + 1)), buffer, len);
+/* PC04 */
+	bar0 = Shm->Proc.State.PC04 * margin;
+	bar1 = margin - bar0;
+
+	len = snprintf( buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
+			bar0, hBar, bar1, hSpace );
+	memcpy(&LayerAt(layer, code, 5, (row + 2)), buffer, len);
 /* PC06 */
 	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
@@ -12732,7 +12745,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 2)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 3)), buffer, len);
 /* PC07 */
 	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
@@ -12741,7 +12754,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 3)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 4)), buffer, len);
 /* PC08 */
 	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
@@ -12750,7 +12763,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 4)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 5)), buffer, len);
 /* PC09 */
 	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
@@ -12759,7 +12772,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 5)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 6)), buffer, len);
 /* PC10 */
 	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
@@ -12768,14 +12781,14 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 6)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 7)), buffer, len);
 /* TSC & UNCORE */
 	len = snprintf( buffer, draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
 			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0 );
-	memcpy(&LayerAt(layer, code, 5, (row + 7)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 8)), buffer, len);
 
-	row += 1 + 8;
+	row += 1 + 9;
 	return (row);
 }
 

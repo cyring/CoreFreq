@@ -166,7 +166,8 @@ typedef struct
 					C6,
 					C7,
 					TSC,
-					C1;
+					C1,
+					MC6;
 			struct {
 		unsigned long long	ACCU;
 			} Power;
@@ -184,6 +185,7 @@ typedef struct
 					C6,
 					C7,
 					C1,
+					MC6,
 					Energy,
 					Power;
 		} State;
@@ -320,6 +322,7 @@ typedef struct
 		unsigned long long	PTSC,
 					PC02,
 					PC03,
+					PC04,
 					PC06,
 					PC07,
 					PC08,
@@ -349,6 +352,7 @@ typedef struct
 	struct {
 		double			PC02,
 					PC03,
+					PC04,
 					PC06,
 					PC07,
 					PC08,
@@ -375,7 +379,8 @@ typedef struct
 					C3,
 					C6,
 					C7,
-					C1;
+					C1,
+					MC6;
 	} Avg;
 
 	struct {

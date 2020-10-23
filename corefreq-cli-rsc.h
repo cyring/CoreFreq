@@ -1003,11 +1003,11 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_LAYOUT_RULER_FREQUENCY_PKG_ATTR				\
 {									\
-	LWK,LWK,LWK,LWK,LWK,LWK,_HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,\
+	_HCK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,HDK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -1027,12 +1027,12 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE				\
 {									\
-	'-','-','-','-','-',' ','%',' ','P','k','g',' ',' ',' ',' ',' ',\
+	'%',' ','P','k','g',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']',\
+	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\

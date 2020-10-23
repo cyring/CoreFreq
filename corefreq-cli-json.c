@@ -1369,6 +1369,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%llu", Shm->Proc.FlipFlop[i].Delta.PC02);
 				json_key(&s, "PC03");
 				json_literal(&s, "%llu", Shm->Proc.FlipFlop[i].Delta.PC03);
+				json_key(&s, "PC04");
+				json_literal(&s, "%llu", Shm->Proc.FlipFlop[i].Delta.PC04);
 				json_key(&s, "PC06");
 				json_literal(&s, "%llu", Shm->Proc.FlipFlop[i].Delta.PC06);
 				json_key(&s, "PC07");
@@ -1408,6 +1410,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%f", Shm->Proc.State.PC02);
 			json_key(&s, "PC03");
 			json_literal(&s, "%f", Shm->Proc.State.PC03);
+			json_key(&s, "PC04");
+			json_literal(&s, "%f", Shm->Proc.State.PC04);
 			json_key(&s, "PC06");
 			json_literal(&s, "%f", Shm->Proc.State.PC06);
 			json_key(&s, "PC07");
@@ -1447,6 +1451,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%f", Shm->Proc.Avg.C7);
 			json_key(&s, "C1");
 			json_literal(&s, "%f", Shm->Proc.Avg.C1);
+			json_key(&s, "MC6");
+			json_literal(&s, "%f", Shm->Proc.Avg.MC6);
 
 			json_end_object(&s);
 		}
@@ -1648,6 +1654,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.TSC);
 				json_key(&s, "C1");
 				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.C1);
+				json_key(&s, "MC6");
+				json_literal(&s, "%llu", Shm->Cpu[cpu].FlipFlop[i2].Delta.MC6);
 				json_end_object(&s);
 			}
 			json_key(&s, "State");
@@ -1671,6 +1679,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C7);
 				json_key(&s, "C1");
 				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.C1);
+				json_key(&s, "MC6");
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].State.MC6);
 				json_end_object(&s);
 			}
 			json_key(&s, "Relative");

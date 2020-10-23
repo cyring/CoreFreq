@@ -8445,12 +8445,14 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define Counters_SoC(Core, T)						\
 ({									\
-	RDTSC_COUNTERx5(Core->Counter[T].TSC,				\
+	RDTSC_COUNTERx7(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST, \
 			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
-			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6);	\
+			MSR_CORE_C3_RESIDENCY, Core->Counter[T].C3,	\
+			MSR_CORE_C6_RESIDENCY, Core->Counter[T].C6,	\
+			MSR_ATOM_MC6_RESIDENCY,Core->Counter[T].MC6);	\
 })
 
 #define SMT_Counters_Nehalem(Core, T)					\
@@ -8583,6 +8585,12 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			- Core->Counter[0].C7;				\
 })
 
+#define Delta_MC6(Core)							\
+({									\
+	Core->Delta.MC6 = Core->Counter[1].MC6				\
+			- Core->Counter[0].MC6;				\
+})
+
 #define Delta_INST(Core)						\
 ({	/* Delta of Instructions Retired */				\
 	Core->Delta.INST = Core->Counter[1].INST			\
@@ -8601,8 +8609,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define PKG_Counters_SoC(Core, T)					\
 ({									\
-    RDTSCP_COUNTERx1(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
-		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06);\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+	MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
+	MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,	\
+	MSR_ATOM_PKG_C4_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC04,	\
+	MSR_ATOM_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06);	\
 })
 
 #define PKG_Counters_Nehalem(Core, T)					\
@@ -8709,6 +8720,12 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			- Pkg->Counter[0].PC03;				\
 })
 
+#define Delta_PC04(Pkg) 						\
+({									\
+	Pkg->Delta.PC04 = Pkg->Counter[1].PC04				\
+			- Pkg->Counter[0].PC04;				\
+})
+
 #define Delta_PC06(Pkg) 						\
 ({									\
 	Pkg->Delta.PC06 = Pkg->Counter[1].PC06				\
@@ -8781,6 +8798,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	Core->Counter[0].C7 = Core->Counter[1].C7;			\
 })
 
+#define Save_MC6(Core)							\
+({									\
+	Core->Counter[0].MC6 = Core->Counter[1].MC6;			\
+})
+
 #define Save_INST(Core) 						\
 ({	/* Save the Instructions counter. */				\
 	Core->Counter[0].INST = Core->Counter[1].INST;			\
@@ -8799,6 +8821,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 #define Save_PC03(Pkg)							\
 ({									\
 	Pkg->Counter[0].PC03 = Pkg->Counter[1].PC03;			\
+})
+
+#define Save_PC04(Pkg)							\
+({									\
+	Pkg->Counter[0].PC04 = Pkg->Counter[1].PC04;			\
 })
 
 #define Save_PC06(Pkg)							\
@@ -9542,6 +9569,12 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	RDCOUNTER( PUBLIC(RO(Proc))->Counter[1].Power.ACCU[PWR_DOMAIN(CORES)],
 			MSR_PP0_ENERGY_STATUS );
 
+	Delta_PC02(PUBLIC(RO(Proc)));
+
+	Delta_PC03(PUBLIC(RO(Proc)));
+
+	Delta_PC04(PUBLIC(RO(Proc)));
+
 	Delta_PC06(PUBLIC(RO(Proc)));
 
 	Delta_PTSC_OVH(PUBLIC(RO(Proc)), Core);
@@ -9549,6 +9582,12 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	Delta_PWR_ACCU(Proc, PKG);
 
 	Delta_PWR_ACCU(Proc, CORES);
+
+	Save_PC02(PUBLIC(RO(Proc)));
+
+	Save_PC03(PUBLIC(RO(Proc)));
+
+	Save_PC04(PUBLIC(RO(Proc)));
 
 	Save_PC06(PUBLIC(RO(Proc)));
 
@@ -9595,7 +9634,11 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Delta_C1(Core);
 
+	Delta_C3(Core);
+
 	Delta_C6(Core);
+
+	Delta_MC6(Core);
 
 	Save_INST(Core);
 
@@ -9605,7 +9648,11 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Save_C1(Core);
 
+	Save_C3(Core);
+
 	Save_C6(Core);
+
+	Save_MC6(Core);
 
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 

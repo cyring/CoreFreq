@@ -319,7 +319,8 @@ typedef struct
 					C7,
 					TSC;
 
-		unsigned long long	C1;
+		unsigned long long	C1,
+					MC6;
 
 		struct
 		{
@@ -342,7 +343,8 @@ typedef struct
 					C6,
 					C7,
 					TSC,
-					C1;
+					C1,
+					MC6;
 
 		struct
 		{
@@ -663,6 +665,7 @@ typedef struct
 	    unsigned long long	PTSC, /* Package Time Stamp Counter	*/
 				PC02, /* Goldmont, Sandy-Bridge, Phi	*/
 				PC03, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
+				PC04, /* Atom [06_27h]			*/
 				PC06, /* Goldmont, Nehalem, Sandy-Bridge, Phi */
 				PC07, /* Nehalem, Sandy-Bridge, Phi	*/
 				PC08, /* Haswell			*/
@@ -682,6 +685,7 @@ typedef struct
 	    unsigned long long	PTSC,
 				PC02,
 				PC03,
+				PC04,
 				PC06,
 				PC07,
 				PC08,

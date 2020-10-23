@@ -964,7 +964,7 @@ static void *Core_Cycle(void *arg)
 	BITSET_CC(BUS_LOCK, roomCore, cpu);
 
   do {
-	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1;
+	double dTSC, dUCC, dURC, dINST, dC3, dC6, dC7, dC1, dMC6;
 
     while (!BITCLR(LOCKLESS, Core_RW->Sync.V, NTFY)
 	&& !BITVAL(Shutdown, SYNC)
@@ -993,6 +993,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->Delta.C7 	= Core->Delta.C7;
 	CFlip->Delta.TSC	= Core->Delta.TSC;
 	CFlip->Delta.C1 	= Core->Delta.C1;
+	CFlip->Delta.MC6 	= Core->Delta.MC6;
 
 	dTSC	= (double) CFlip->Delta.TSC;
 	dUCC	= (double) CFlip->Delta.C0.UCC;
@@ -1002,6 +1003,7 @@ static void *Core_Cycle(void *arg)
 	dC6	= (double) CFlip->Delta.C6;
 	dC7	= (double) CFlip->Delta.C7;
 	dC1	= (double) CFlip->Delta.C1;
+	dMC6	= (double) CFlip->Delta.MC6;
 
 	/* Compute IPS=Instructions per TSC				*/
 	CFlip->State.IPS = dINST / dTSC;
@@ -1023,6 +1025,7 @@ static void *Core_Cycle(void *arg)
 	CFlip->State.C6 = dC6  / dTSC;
 	CFlip->State.C7 = dC7  / dTSC;
 	CFlip->State.C1 = dC1  / dTSC;
+	CFlip->State.MC6= dMC6 / dTSC;
 
 	/* Update all clock ratios.					*/
 	memcpy(Cpu->Boost, Core->Boost, (BOOST(SIZE)) * sizeof(unsigned int));
@@ -5329,6 +5332,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	Shm->Proc.Avg.C6    = 0;
 	Shm->Proc.Avg.C7    = 0;
 	Shm->Proc.Avg.C1    = 0;
+	Shm->Proc.Avg.MC6    = 0;
 
 	prevTop.RelFreq = 0.0;
 	prevTop.AbsFreq = 0.0;
@@ -5414,6 +5418,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C6    += CFlop->State.C6;
 		Shm->Proc.Avg.C7    += CFlop->State.C7;
 		Shm->Proc.Avg.C1    += CFlop->State.C1;
+		Shm->Proc.Avg.MC6    += CFlop->State.MC6;
 	    }
 	}
 
@@ -5427,10 +5432,12 @@ REASON_CODE Core_Manager(REF *Ref)
 		Shm->Proc.Avg.C6    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C7    /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C1    /= Shm->Proc.CPU.OnLine;
+		Shm->Proc.Avg.MC6   /= Shm->Proc.CPU.OnLine;
 		/* Package scope counters				*/
 		PFlip->Delta.PTSC = Proc->Delta.PTSC;
 		PFlip->Delta.PC02 = Proc->Delta.PC02;
 		PFlip->Delta.PC03 = Proc->Delta.PC03;
+		PFlip->Delta.PC04 = Proc->Delta.PC04;
 		PFlip->Delta.PC06 = Proc->Delta.PC06;
 		PFlip->Delta.PC07 = Proc->Delta.PC07;
 		PFlip->Delta.PC08 = Proc->Delta.PC08;
@@ -5441,6 +5448,7 @@ REASON_CODE Core_Manager(REF *Ref)
 
 		Shm->Proc.State.PC02	= (double) PFlip->Delta.PC02 / dPTSC;
 		Shm->Proc.State.PC03	= (double) PFlip->Delta.PC03 / dPTSC;
+		Shm->Proc.State.PC04	= (double) PFlip->Delta.PC04 / dPTSC;
 		Shm->Proc.State.PC06	= (double) PFlip->Delta.PC06 / dPTSC;
 		Shm->Proc.State.PC07	= (double) PFlip->Delta.PC07 / dPTSC;
 		Shm->Proc.State.PC08	= (double) PFlip->Delta.PC08 / dPTSC;
