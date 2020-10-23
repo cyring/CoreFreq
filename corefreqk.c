@@ -2119,6 +2119,12 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] =	KMIN(ratio0, ratio1);
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] =	KMAX(ratio0, ratio1);
+}
+
+void Compute_Intel_Core_Burst(unsigned int cpu)
+{
+	PERF_STATUS PerfStatus = {.value = 0};
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 
 	if (PRIVATE(OF(Specific)) != NULL)
 	{
@@ -2126,11 +2132,21 @@ void Intel_Core_Platform_Info(unsigned int cpu)
 				PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 				+ PRIVATE(OF(Specific))->Boost[0]
 				+ PRIVATE(OF(Specific))->Boost[1];
-	} else {	/* Is Processor half ratio capable ?		*/
+
+	    if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] > 0) {
+		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 1;
+	    }
+	} else {	/* Is Processor half ratio or burst capable ?	*/
 	    if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	    {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
-			2 + PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
+			PerfStatus.value != 0 ? PerfStatus.CORE.MaxBusRatio
+			: 2 + PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)];
+
+		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 1;
+	    } else {
+		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = 0;
+		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 0;
 	    }
 	}
 }
@@ -5661,6 +5677,27 @@ void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
 	{
 		WRMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
 		RDMSR(MiscFeatures, MSR_IA32_MISC_ENABLE);
+		/*	Refresh the Turbo capability in the leaf.	*/
+	    if (PUBLIC(RO(Proc))->Features.Info.LargestStdFunc >= 0x6) {
+		__asm__ volatile
+		(
+			"movq	$0x6,  %%rax	\n\t"
+			"xorq	%%rbx, %%rbx	\n\t"
+			"xorq	%%rcx, %%rcx	\n\t"
+			"xorq	%%rdx, %%rdx	\n\t"
+			"cpuid			\n\t"
+			"mov	%%eax, %0	\n\t"
+			"mov	%%ebx, %1	\n\t"
+			"mov	%%ecx, %2	\n\t"
+			"mov	%%edx, %3"
+			: "=r" (PUBLIC(RO(Proc))->Features.Power.EAX),
+			  "=r" (PUBLIC(RO(Proc))->Features.Power.EBX),
+			  "=r" (PUBLIC(RO(Proc))->Features.Power.ECX),
+			  "=r" (PUBLIC(RO(Proc))->Features.Power.EDX)
+			:
+			: "%rax", "%rbx", "%rcx", "%rdx"
+		);
+	    }
 	}
 	if (MiscFeatures.Turbo_IDA == 0)
 	{
@@ -7461,6 +7498,7 @@ static void PerCore_Core2_Query(void *arg)
 
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
+	Compute_Intel_Core_Burst(Core->Bind);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
