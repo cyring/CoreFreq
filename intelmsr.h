@@ -1772,6 +1772,72 @@ typedef union
 	};
 } MCH_CLKCFG;
 
+typedef union	/*	Message Bus Control Register (MCR)		*/
+{	/* Bus: 0 - Device: 0 - Function: 0 - Offset: D0h		*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		MBZ		:  4-0,  /* Must be zeroed		*/
+		Bytes		:  8-4,  /* Byte Enable			*/
+		Offset		: 16-8,  /* Target register		*/
+		Port		: 24-16, /* Target controller		*/
+		OpCode		: 32-24; /* 0x10=Read ; 0x11=Write	*/
+	};
+} PCI_MCR;
+
+/*
+ *		Message Data Register (MDR)
+ *	Bus: 0 - Device: 0 - Function: 0 - Offset: D4h
+ *
+ *	Message Control Register eXtension (MCRX) 
+ *	Bus: 0 - Device: 0 - Function: 0 - Offset: D8h
+*/
+
+typedef union	/*	MCR.Offset 1h					*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		DFREQ		:  2-0,  /* 0h=800;1h=1066;2h=1333;3h=1600 */
+		ReservedBits1	:  4-2,
+		tRP		:  8-4,  /* {5; 6 ... 15; 16; RSV}	*/
+		tRCD		: 12-8,  /* {5; 6 ... 15; 16; RSV}	*/
+		tCL		: 15-12, /* {5; 6 ... 10; 11; RSV}	*/
+		ReservedBits2	: 16-15,
+		tXS		: 17-16, /* 0h=256; 1h=384		*/
+		ReservedBits3	: 18-17,
+		tXSDLL		: 19-18, /* {tXS + 256 ; tXS + 384}	*/
+		ReservedBits4	: 20-19,
+		tZQCS		: 21-20, /* 0h=64; 1h=96		*/
+		ReservedBits5	: 22-21,
+		tZQoper		: 23-22, /* 0h=256; 1h=384		*/
+		ReservedBits6	: 24-23,
+		PMEDLY		: 26-24, /* {6; 8; 10; 12}		*/
+		ReservedBits7	: 28-26,
+		CKEDLY		: 32-28; /*  Multiple of 256 DRAM clocks */
+	};
+} SOC_MC_DTR0;
+
+typedef union	/*	MCR.Offset 2h					*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		tWCL		:  3-0,  /* {3; 4; 5; 6; 7; 8;RES} clocks*/
+		ReservedBits1	:  4-3,
+		tCMD		:  6-4,  /* 0h=1N ; 1h=2N ; 2h=3N	*/
+		ReservedBits2	:  8-6,
+		tWTP		: 12-8,  /* 4 + tWCL + tWR		*/
+		tCCD		: 14-12, /* CAS to CAS delay {4; 12; 18}*/
+		ReservedBits3	: 16-14,
+		tFAW		: 20-16, /* {RES;RES; 14; 16 ... 32; 34;RES}*/
+		tRAS		: 24-20, /* {RES; 15; 16 ... 28; 29}	*/
+		tRRD		: 26-24, /* 0b00=4; 0b01=5; 0b10=6; 0b11=7*/
+		ReservedBits4	: 28-26,
+		tRTP		: 31-28, /* 0b00=4; 0b01=5; 0b10=6; 0b11=7*/
+		ReservedBits5	: 32-24;
+	};
+} SOC_MC_DTR1;
 
 typedef union	/* Nehalem						*/
 {	/* Device: 4, 5, 6 - Function: 0 - Offset: 70h			*/

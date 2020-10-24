@@ -477,6 +477,10 @@ typedef struct
 	/* 25Dh */		P35_MC_UNKNOWN_R1	DRT5;	/* 16 bits    */
 			} P35;
 			struct {
+	/* 0F00h */		SOC_MC_DTR0		DTR0;	/* 32 bits    */
+	/* 0F00h */		SOC_MC_DTR1		DTR1;	/* 32 bits    */
+			} SLM;
+			struct {
 				NHM_IMC_MRS_VALUE_0_1	MR0_1;
 				NHM_IMC_MRS_VALUE_2_3	MR2_3;
 				NHM_IMC_RANK_TIMING_A	Rank_A;
@@ -893,6 +897,10 @@ typedef struct
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_G41_HB
 	#define PCI_DEVICE_ID_INTEL_G41_HB		0x2e30
+#endif
+/* Source: SoC / Silvermont / Processor Transaction Router		*/
+#ifndef PCI_DEVICE_ID_INTEL_SLM_PTR
+	#define PCI_DEVICE_ID_INTEL_SLM_PTR		0x0f00
 #endif
 /* Source: /include/linux/pci_ids.h					*/
 #ifndef PCI_DEVICE_ID_INTEL_I7_MCR

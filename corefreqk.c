@@ -3690,6 +3690,30 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 	return (Router(dev, 0x48, 64, 0x4000, Query_P35));
 }
 
+static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
+{
+	PCI_MCR MsgCtrlReg = {
+	.MBZ = 0, .Bytes = 0, .Offset = 0x1, .Port = 0x1, .OpCode = 0x10
+	};
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].SLM.DTR0.value);
+
+	MsgCtrlReg.Offset = 0x2;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].SLM.DTR1.value);
+
+	return ((PCI_CALLBACK) 0);
+}
+
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;

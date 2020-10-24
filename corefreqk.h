@@ -1260,6 +1260,7 @@ static PCI_CALLBACK P955(struct pci_dev *dev) ;
 static PCI_CALLBACK P965(struct pci_dev *dev) ;
 static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
+static PCI_CALLBACK SoC_SLM(struct pci_dev *dev) ;
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Westmere_EP_IMC(struct pci_dev *dev) ;
@@ -1379,6 +1380,14 @@ static struct pci_device_id PCI_Core2_ids[] = {
 	{	/* G41 - Eaglelake-G					*/
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_G41_HB),
 		.driver_data = (kernel_ulong_t) P35
+	},
+	{0, }
+};
+
+static struct pci_device_id PCI_SoC_ids[] = {
+	{	/* 82945G - Lakeport					*/
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SLM_PTR),
+		.driver_data = (kernel_ulong_t) SoC_SLM
 	},
 	{0, }
 };
@@ -5328,7 +5337,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
-	.PCI_ids = PCI_Void_ids,
+	.PCI_ids = PCI_SoC_ids,
 	.Uncore = {
 		.Start = NULL,
 		.Stop = NULL,
