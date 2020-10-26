@@ -3691,26 +3691,72 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 }
 
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
-{
+{/* DRP */
 	PCI_MCR MsgCtrlReg = {
-	.MBZ = 0, .Bytes = 0, .Offset = 0x1, .Port = 0x1, .OpCode = 0x10
+	.MBZ = 0, .Bytes = 0, .Offset = 0x0, .Port = 0x1, .OpCode = 0x10
 	};
-
-	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
-	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1;
 
 	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
 
 	pci_read_config_dword(dev, 0xd4,
-		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].SLM.DTR0.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.value);
+/* DTR0 */
+	MsgCtrlReg.Offset = 0x1;
 
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DTR0.value);
+/* DTR1 */
 	MsgCtrlReg.Offset = 0x2;
 
 	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
 
 	pci_read_config_dword(dev, 0xd4,
-		&PUBLIC(RO(Proc))->Uncore.MC[0].Channel[0].SLM.DTR1.value);
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DTR1.value);
+/* DTR2 */
+	MsgCtrlReg.Offset = 0x3;
 
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DTR2.value);
+/* DTR3 */
+	MsgCtrlReg.Offset = 0x4;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DTR3.value);
+/* DRFC */
+	MsgCtrlReg.Offset = 0x8;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRFC.value);
+/* BIOS_CFG */
+	MsgCtrlReg.Port = 0x4;
+	MsgCtrlReg.Offset = 0x6;
+
+	pci_write_config_dword(dev, 0xd0, MsgCtrlReg.value);
+
+	pci_read_config_dword(dev, 0xd4,
+		&PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.value);
+
+	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount = 1
+		+ ( PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.EFF_DUAL_CH_EN
+		| !PUBLIC(RO(Proc))->Uncore.MC[0].SLM.BIOS_CFG.DUAL_CH_DIS );
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = (
+			PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN0
+		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN1
+	) + (
+			PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKEN2
+		|	PUBLIC(RO(Proc))->Uncore.MC[0].SLM.DRP.RKNE3
+	);
 	return ((PCI_CALLBACK) 0);
 }
 

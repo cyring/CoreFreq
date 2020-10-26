@@ -2396,86 +2396,10 @@ void P4S_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 void SLM_PTR(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
     unsigned short mc, cha, slot;
-
-    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
-    {
-      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
-      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  =
-			Proc->Uncore.MC[mc].Channel[cha].SLM.DTR0.tCL + 5;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD =
-			Proc->Uncore.MC[mc].Channel[cha].SLM.DTR0.tRCD + 5;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  =
-			Proc->Uncore.MC[mc].Channel[cha].SLM.DTR0.tRP + 5;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
-			Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tRAS;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD =
-			Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tRRD + 4;
-/*
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
-		Proc->Uncore.MC[mc].Channel[cha].SLM
-*/
-	switch (Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tFAW) {
-	case 0 ... 1:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = 0;
-		break;
-	default:
-		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = 
-		10 + (Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tFAW << 1);
-		break;
-	}
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL =
-		Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tWCL + 3;
-
-	Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate =
-		Proc->Uncore.MC[mc].Channel[cha].SLM.DTR1.tCMD + 1;
-
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
-	{
-		unsigned long long DIMM_Size;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 0;
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 0;
-
-		DIMM_Size = 8LLU
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
-			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
-
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >>20;
-	}
-	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC = 0;
-      }
-    }
-	Shm->Uncore.CtrlSpeed = 800
-		+ (266.666 * Proc->Uncore.MC[0].Channel[0].SLM.DTR0.DFREQ);
-
+/* BUS & DRAM frequency */
+	Shm->Uncore.CtrlSpeed = 800LLU + (
+			((2134LLU * Proc->Uncore.MC[0].SLM.DTR0.DFREQ) >> 3)
+	);
 	Shm->Uncore.Bus.Rate = 5000;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -2485,6 +2409,183 @@ void SLM_PTR(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.BusSpeed = 0b01;
 	Shm->Uncore.Unit.DDR_Rate = 0b11;
 	Shm->Uncore.Unit.DDRSpeed = 0b00;
+
+    for (mc = 0; mc < Shm->Uncore.CtrlCount; mc++)
+    {
+      Shm->Uncore.MC[mc].SlotCount = Proc->Uncore.MC[mc].SlotCount;
+      Shm->Uncore.MC[mc].ChannelCount = Proc->Uncore.MC[mc].ChannelCount;
+
+      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+      {
+/* Standard Timings */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCL  =
+			Proc->Uncore.MC[mc].SLM.DTR0.tCL + 5;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD =
+			Proc->Uncore.MC[mc].SLM.DTR0.tRCD + 5;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRP  =
+			Proc->Uncore.MC[mc].SLM.DTR0.tRP + 5;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS =
+			Proc->Uncore.MC[mc].SLM.DTR1.tRAS;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD =
+			Proc->Uncore.MC[mc].SLM.DTR1.tRRD + 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC =
+			Proc->Uncore.MC[mc].SLM.DTR0.tXS == 0 ? 256 : 384;
+
+	switch (Proc->Uncore.MC[mc].SLM.DRFC.tREFI) {
+	case 0 ... 1:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 0;
+		break;
+	case 2:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 39;
+		break;
+	case 3:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI = 78;
+		break;
+	}
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI *= Shm->Uncore.CtrlSpeed;
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI /= 20;
+
+/*TODO( Advanced Timings )
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE =
+			Proc->Uncore.MC[mc].Channel[cha].SLM
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
+			Proc->Uncore.MC[mc].SLM.DTR1.tRTP + 4;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
+			Proc->Uncore.MC[mc].SLM.DTR1.tWTP + 14;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.B2B   =
+			Proc->Uncore.MC[mc].SLM.DTR1.tCCD;
+
+	switch (Proc->Uncore.MC[mc].SLM.DTR1.tFAW) {
+	case 0 ... 1:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = 0;
+		break;
+	default:
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW = 
+			10 + (Proc->Uncore.MC[mc].SLM.DTR1.tFAW << 1);
+		break;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL =
+			Proc->Uncore.MC[mc].SLM.DTR1.tWCL + 3;
+/* Same Rank */
+/*TODO( Read to Read )
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd =
+			Proc->Uncore.MC[mc].SLM.DTR?.;
+*/
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr = 6
+			+ Proc->Uncore.MC[mc].SLM.DTR3.tRWSR;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd = 11
+			+ Proc->Uncore.MC[mc].SLM.DTR3.tWRSR;
+/*TODO( Write to Write )
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr =
+		Proc->Uncore.MC[mc].Channel[cha].SLM.DTR?.;
+*/
+/* Different Rank */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd =
+			Proc->Uncore.MC[mc].SLM.DTR2.tRRDR;
+	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd > 0) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd += 5;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr =
+			+ Proc->Uncore.MC[mc].SLM.DTR2.tRWDR;
+	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr > 0) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr += 5;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd =
+			+ Proc->Uncore.MC[mc].SLM.DTR3.tWRDR;
+	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd > 0) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd += 3;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr = 4
+			+ Proc->Uncore.MC[mc].SLM.DTR2.tWWDR;
+/* Different DIMM */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd =
+			+ Proc->Uncore.MC[mc].SLM.DTR2.tRRDD;
+	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd > 0) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd += 5;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr =
+			+ Proc->Uncore.MC[mc].SLM.DTR2.tRWDD;
+	if (Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr > 0) {
+		Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr += 5;
+	}
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd = 4
+			+ Proc->Uncore.MC[mc].SLM.DTR3.tWRDD;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr = 4
+			+ Proc->Uncore.MC[mc].SLM.DTR2.tWWDD;
+/* Command Rate */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate = 1
+			+ Proc->Uncore.MC[mc].SLM.DTR1.tCMD;
+/* Topology */
+	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	{
+		unsigned long long DIMM_Size;
+		const struct {
+			unsigned int	Banks,
+					Rows,
+					Cols;
+		} DDR3L[4] = {
+			{ .Banks = 8,	.Rows = 1<<14,	.Cols = 1<<10	},
+			{ .Banks = 8,	.Rows = 1<<15,	.Cols = 1<<10	},
+			{ .Banks = 8,	.Rows = 1<<16,	.Cols = 1<<10	},
+			{ .Banks = 8,	.Rows = 1<<14,	.Cols = 1<<10	}
+		};
+	    if  (cha == 0) {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SLM.DRP.RKEN0
+				+	Proc->Uncore.MC[mc].SLM.DRP.RKEN1;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN0 ].Banks;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN0 ].Rows;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN0 ].Cols;
+	    } else {
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks =
+					Proc->Uncore.MC[mc].SLM.DRP.RKEN2
+				+	Proc->Uncore.MC[mc].SLM.DRP.RKNE3;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN1 ].Banks;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN1 ].Rows;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols =
+			DDR3L[ Proc->Uncore.MC[mc].SLM.DRP.DIMMDDEN1 ].Cols;
+	    }
+		DIMM_Size = 8LLU
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			* Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
+
+		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=DIMM_Size >> 20;
+	}
+/* Error Correcting Code */
+	Shm->Uncore.MC[mc].Channel[cha].Timing.ECC =
+				Proc->Uncore.MC[mc].SLM.BIOS_CFG.EFF_ECC_EN
+				| Proc->Uncore.MC[mc].SLM.BIOS_CFG.ECC_EN;
+      }
+    }
 }
 
 void NHM_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)

@@ -1793,7 +1793,36 @@ typedef union	/*	Message Bus Control Register (MCR)		*/
  *	Bus: 0 - Device: 0 - Function: 0 - Offset: D8h
 */
 
-typedef union	/*	MCR.Offset 1h					*/
+typedef union	/*	MCR: Port=0x01 & Offset=0x0			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		RKEN0		:  1-0,  /* DIMM 0, Rank 0 Enabled	*/
+		RKEN1		:  2-1,  /* DIMM 0, Rank 1 Enabled	*/
+		RKEN2		:  3-2,  /* DIMM 1, Rank 0 Enabled	*/
+		RKNE3		:  4-3,  /* DIMM 1, Rank 1 Enabled	*/
+		DIMMDWID0	:  6-4,  /* 0b00:x8 0b01:x16 0b10:x32 0b11:RSV*/
+		DIMMDDEN0	:  8-6,  /* Density {1; 2; 4; 8} Gbit	*/
+		ReservedBits1	:  9-8,
+		DIMMDWID1	: 11-9,
+		DIMMDDEN1	: 13-11,
+		ReservedBits2	: 14-13,
+		RSIEN		: 15-14, /* Rank Select Interleave Enabled */
+		ReservedBits3	: 16-15,
+		DIMMFLIP	: 17-16, /* One if DIMM1 > DIMM0 size	*/
+		RANKREMAP	: 18-17,
+		CKECOPY		: 19-18,
+		ReservedBits4	: 20-19,
+		DIMM0MIRR	: 21-20,
+		DIMM1MIRR	: 22-21,
+		DRAMTYPE	: 23-22, /* 0:DDR3 ; 1:LPDDR2		*/
+		ENLPDDR3	: 24-23,
+		ReservedBits5	: 32-24;
+	};
+} SOC_MC_DRP;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x1			*/
 {
 	unsigned int		value;
 	struct {
@@ -1818,7 +1847,7 @@ typedef union	/*	MCR.Offset 1h					*/
 	};
 } SOC_MC_DTR0;
 
-typedef union	/*	MCR.Offset 2h					*/
+typedef union	/*	MCR: Port=0x01 & Offset=0x2			*/
 {
 	unsigned int		value;
 	struct {
@@ -1827,7 +1856,7 @@ typedef union	/*	MCR.Offset 2h					*/
 		ReservedBits1	:  4-3,
 		tCMD		:  6-4,  /* 0h=1N ; 1h=2N ; 2h=3N	*/
 		ReservedBits2	:  8-6,
-		tWTP		: 12-8,  /* 4 + tWCL + tWR		*/
+		tWTP		: 12-8,  /* {14; 15 ... 24; 25; RES}	*/
 		tCCD		: 14-12, /* CAS to CAS delay {4; 12; 18}*/
 		ReservedBits3	: 16-14,
 		tFAW		: 20-16, /* {RES;RES; 14; 16 ... 32; 34;RES}*/
@@ -1838,6 +1867,89 @@ typedef union	/*	MCR.Offset 2h					*/
 		ReservedBits5	: 32-24;
 	};
 } SOC_MC_DTR1;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x3			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRRDR		:  3-0,  /* {RES; 6; 7; 8; 9; 10; 11; RES} */
+		ReservedBits1	:  4-3,
+		tRRDD		:  7-4,  /* {RES; 6; 7; 8; 9; 10; 11; RES} */
+		ReservedBits2	:  8-7,
+		tWWDR		: 11-8,  /* {4; 5; 6; 7; 8; 9; 10; RES} */
+		ReservedBits3	: 12-11,
+		tWWDD		: 15-12, /* {4; 5; 6; 7; 8; 9; 10; RES} */
+		ReservedBits4	: 16-15,
+		tRWDR		: 20-16, /* {RES; 6; 7 ... 17; 18; RES} */
+		ReservedBits5	: 21-20,
+		tRWDD		: 25-21, /* {RES; 6; 7 ... 17; 18; RES} */
+		ReservedBits6	: 32-25;
+	};
+} SOC_MC_DTR2;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x4			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		tWRDR		:  3-0,  /* {RES; 4; 5; 6; 7; 8; 9; 10; RES}*/
+		ReservedBits1	:  4-3,
+		tWRDD		:  7-4,  /* {4; 5; 6; 7; 8; 9; 10; RES} */
+		ReservedBits2	:  8-7,
+		tRWSR		: 12-8,  /* {6; 7 ... 16; 17; RES}	*/
+		ReservedBits3	: 13-12,
+		tWRSR		: 17-13, /* {11; 12 ... 19; 20; RES}	*/
+		ReservedBits4	: 22-17,
+		tXP		: 24-22, /* {2; 3; 4; 5}		*/
+		PWDDLY		: 28-24,
+		ENDRATE 	: 29-28,
+		DERATEOVR	: 30-29,
+		DERATESTAT	: 31-30,
+		ReservedBits5	: 32-31;
+	};
+} SOC_MC_DTR3;
+
+typedef union	/*	MCR: Port=0x01 & Offset=0x8			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		REFWMLO 	:  4-0,  /* Refresh Watermark (low)	*/
+		REFWMHI 	:  8-4,  /* Refresh Watermark (high)	*/
+		REFWMPNC	: 12-8,  /* Refresh Watermark (panic)	*/
+		tREFI		: 15-12, /* {DIS; RES; 3.9 us; 7.8 us} */
+		ReservedBits1	: 16-15,
+		REFCNTMAX	: 18-16, /* Maximum tREFI		*/
+		ReservedBits2	: 20-18,
+		REFSKWDIS	: 21-20, /* Refresh counters 1/4 tREFI	*/
+		REFDBTCLR	: 22-21,
+		ReservedBits3	: 24-22,
+		CUREFRATE	: 27-24, /* Current Refresh Rate	*/
+		ReservedBits4	: 32-27;
+	};
+} SOC_MC_DRFC;
+
+typedef union	/*	MCR: Port=0x04 & Offset=0x6			*/
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		USB_CACHING_EN	:  1-0,
+		PCIE_PLLOFFOK_EN:  2-1,
+		ReservedBits1	:  7-2,
+		GFX_TURBO_DIS	:  8-7,
+		DDRIO_PWRGATE	:  9-8,
+		ReservedBits2	: 16-9,
+		DFX_PDM_MODE	: 17-16,
+		DFX_PWR_GATING	: 18-17,
+		ReservedBits3	: 28-18,
+		EFF_DUAL_CH_EN	: 29-28, /* 0:Single ; 1:Dual		*/
+		EFF_ECC_EN	: 30-29, /* 0:Disabled ; 1: Enabled	*/
+		DUAL_CH_DIS	: 31-30,
+		ECC_EN		: 32-31;
+	};
+} SOC_MC_BIOS_CFG;
 
 typedef union	/* Nehalem						*/
 {	/* Device: 4, 5, 6 - Function: 0 - Offset: 70h			*/
