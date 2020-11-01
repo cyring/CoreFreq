@@ -5696,6 +5696,9 @@ void TurboBoost_Technology(CORE_RO *Core,	SET_TARGET SetTarget,
 	    }
 	}
     }
+	Core->Boost[BOOST(HWP_MIN)]=Core->PowerThermal.HWP_Request.Minimum_Perf;
+	Core->Boost[BOOST(HWP_MAX)]=Core->PowerThermal.HWP_Request.Maximum_Perf;
+	Core->Boost[BOOST(HWP_TGT)]=Core->PowerThermal.HWP_Request.Desired_Perf;
   } else {	/*			EPB mode			*/
 	if (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq
 			& (REGISTRATION_ENABLE | REGISTRATION_FULLCTRL) )
