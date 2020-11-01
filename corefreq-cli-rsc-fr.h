@@ -649,6 +649,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					" C6          "
 #define RSC_BOX_HWP_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" de la Performance"
+#define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
+					" Cycles de Service"
 #define RSC_BOX_BLANK_DESC_CODE_FR	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR	"       Fonctionnement" \

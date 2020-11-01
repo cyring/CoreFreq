@@ -632,6 +632,7 @@
 #define RSC_BOX_CC6_DESC_CODE_EN	"           Core C6 State            "
 #define RSC_BOX_PC6_DESC_CODE_EN	"          Package C6 State          "
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
+#define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_BLANK_DESC_CODE_EN	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN "       Nominal operating mode       "

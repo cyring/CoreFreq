@@ -183,6 +183,10 @@ static signed short HWP_EPP = -1;
 module_param(HWP_EPP, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
 
+static signed short HDC_Enable = -1;
+module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
+
 static unsigned int Clear_Events = 0;
 module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
@@ -2913,6 +2917,14 @@ void Intel_Hardware_Performance(void)
 	if (PUBLIC(RO(Proc))->Features.Power.EAX.HDC_Reg)
 	{
 		RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
+		switch (HDC_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			HDC_Control.HDC_Enable = HDC_Enable;
+			WRMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
+			RDMSR(HDC_Control, MSR_IA32_PKG_HDC_CTL);
+			break;
+		}
 	}
 	PUBLIC(RO(Proc))->Features.HDC_Enable = HDC_Control.HDC_Enable;
     }
@@ -13646,6 +13658,15 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		HWP_EPP = prm.dl.lo;
 		Controller_Start(1);
 		HWP_EPP = -1;
+		rc = RC_SUCCESS;
+		break;
+
+	case TECHNOLOGY_HDC:
+		Controller_Stop(1);
+		HDC_Enable = prm.dl.lo;
+		Intel_Hardware_Performance();
+		Controller_Start(1);
+		HDC_Enable = -1;
 		rc = RC_SUCCESS;
 		break;
 	}

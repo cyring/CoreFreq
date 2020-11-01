@@ -2532,6 +2532,14 @@ void Refresh_HWP_Cap_Freq(TGrid *grid, DATA_TYPE data)
 	RefreshRatioFreq(grid, data);
 }
 
+void HDC_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Features.HDC_Enable == 1;
+	const signed int pos = grid->cell.length - 5;
+
+	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 {
     const unsigned int bix=Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1;
@@ -2680,6 +2688,15 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
 		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix));
 
+	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
+	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
+		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
+	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
+		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
+
 	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 1;	/* Intel */
     if (bix)
     {
@@ -2758,24 +2775,27 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
 		ENABLED(bix));
     }
-	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
-	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
-	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
-		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
-		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
-
 /* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Features.HDC_Enable == 1;
-	PUT(SCANKEY_NULL,
-		attrib[ Shm->Proc.Features.Power.EAX.HDC_Reg ? 1:0], width, 2,
+      if (Shm->Proc.Features.Power.EAX.HDC_Reg)
+      {
+	GridCall(
+		PUT(BOXKEY_HDC,
+			attrib[bix], width, 2,
+			"%s%.*sHDC       <%3s>", RSC(PERF_MON_HDC).CODE(),
+			width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix)),
+		HDC_Update );
+      }
+      else
+      {
+	PUT(	SCANKEY_NULL,
+		attrib[0], width, 2,
 		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
-		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix));
-
+		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix) );
+      }
+/* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
 
@@ -9302,7 +9322,7 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
 		RSC(BOX_HWP_DESC).CODE(), descAttr, SCANKEY_NULL,
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Features.HWP_Enable] ,
+		stateStr[1][Shm->Proc.Features.HWP_Enable],
 			stateAttr[Shm->Proc.Features.HWP_Enable],BOXKEY_HWP_ON,
 		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
 		&winList);
@@ -9317,6 +9337,50 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_HWP );
+	}
+    break;
+    case BOXKEY_HDC:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 12
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Features.HDC_Enable ? 4 : 3
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select, " HDC ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		RSC(BOX_HDC_DESC).CODE(), descAttr, SCANKEY_NULL,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Features.HDC_Enable],
+		stateAttr[Shm->Proc.Features.HDC_Enable],BOXKEY_HDC_ON,
+		stateStr[0][!Shm->Proc.Features.HDC_Enable],
+		stateAttr[!Shm->Proc.Features.HDC_Enable],BOXKEY_HDC_OFF,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_HDC_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_HDC );
+	}
+    break;
+    case BOXKEY_HDC_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_HDC );
 	}
     break;
     case BOXKEY_LIMIT_IDLE_STATE:
