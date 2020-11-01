@@ -13016,12 +13016,16 @@ void Draw_Footer(Layer *layer, CUINT row)
 		_hot = 0;
 		_tmp = 3;
 	} else {
-	    if (processorEvents & (EVENT_POWER_LIMIT | EVENT_CURRENT_LIMIT)) {
-		_hot = 2;
-		_tmp = 3;
-	    } else {
+	    if (processorEvents &	( EVENT_THERM_SENSOR
+					| EVENT_THERM_PROCHOT
+					| EVENT_THERM_CRIT
+					| EVENT_THERM_THOLD ) )
+	    {
 		_hot = 4;
 		_tmp = 1;
+	    } else {
+		_hot = 2;
+		_tmp = 3;
 	    }
 	}
 
