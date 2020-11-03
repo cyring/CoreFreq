@@ -344,6 +344,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan\xa9"
 #define RSC_TECHNOLOGIES_CNQ_CODE_FR	"PowerNow!"
 #define RSC_TECHNOLOGIES_CPB_CODE_FR	"Core Performance Boost"
+#define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
@@ -357,6 +358,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_C1U_CODE_FR	"C1 UnDemotion"
 #define RSC_PERF_MON_C2U_CODE_FR	"C2 UnDemotion"
 #define RSC_PERF_MON_C3U_CODE_FR	"C3 UnDemotion"
+#define RSC_PERF_MON_C6D_CODE_FR	"C6 Core Demotion"
+#define RSC_PERF_MON_MC6_CODE_FR	"C6 Module Demotion"
 #define RSC_PERF_MON_CC6_CODE_FR	"Core C6 State"
 #define RSC_PERF_MON_PC6_CODE_FR	"Package C6 State"
 #define RSC_PERF_MON_FID_CODE_FR	"Legacy Frequency ID control"
@@ -643,6 +646,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					" C2       "
 #define RSC_BOX_C3U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
 					" C3       "
+#define RSC_BOX_C6D_DESC_CODE_FR	"          C6 Core Demotion          "
+#define RSC_BOX_MC6_DESC_CODE_FR	"         C6 Module Demotion         "
 #define RSC_BOX_CC6_DESC_CODE_FR	"            Core ""\x89""tat"	\
 					" C6            "
 #define RSC_BOX_PC6_DESC_CODE_FR	"           Package ""\x89""tat" \
@@ -651,6 +656,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					" de la Performance"
 #define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" Cycles de Service"
+#define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
 #define RSC_BOX_BLANK_DESC_CODE_FR	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR	"       Fonctionnement" \
@@ -688,6 +694,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Limitation de puissance "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	"  Limitation de courant  "
 #define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_FR	" Limitation interdomaine "
+
+#define RSC_BOX_STATE_UNSPECIFIED_CODE_FR	"        "		\
+						"IND""\x89""TERMIN""\x89"\
+						"        "
 
 #define RSC_BOX_PKG_STATE_TITLE_CODE_FR 	" Limite ""\x89""tats Package "
 

@@ -357,6 +357,7 @@
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"
 #define RSC_TECHNOLOGIES_CNQ_CODE_EN	"PowerNow!"
 #define RSC_TECHNOLOGIES_CPB_CODE_EN	"Core Performance Boost"
+#define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
@@ -370,6 +371,8 @@
 #define RSC_PERF_MON_C1U_CODE_EN	"C1 UnDemotion"
 #define RSC_PERF_MON_C2U_CODE_EN	"C2 UnDemotion"
 #define RSC_PERF_MON_C3U_CODE_EN	"C3 UnDemotion"
+#define RSC_PERF_MON_C6D_CODE_EN	"C6 Core Demotion"
+#define RSC_PERF_MON_MC6_CODE_EN	"C6 Module Demotion"
 #define RSC_PERF_MON_CC6_CODE_EN	"Core C6 State"
 #define RSC_PERF_MON_PC6_CODE_EN	"Package C6 State"
 #define RSC_PERF_MON_FID_CODE_EN	"Legacy Frequency ID control"
@@ -629,10 +632,13 @@
 #define RSC_BOX_C1U_DESC_CODE_EN	"            C1 UnDemotion           "
 #define RSC_BOX_C2U_DESC_CODE_EN	"            C2 UnDemotion           "
 #define RSC_BOX_C3U_DESC_CODE_EN	"            C3 UnDemotion           "
+#define RSC_BOX_C6D_DESC_CODE_EN	"          Core C6 Demotion          "
+#define RSC_BOX_MC6_DESC_CODE_EN	"         Module C6 Demotion         "
 #define RSC_BOX_CC6_DESC_CODE_EN	"           Core C6 State            "
 #define RSC_BOX_PC6_DESC_CODE_EN	"          Package C6 State          "
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
+#define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
 #define RSC_BOX_BLANK_DESC_CODE_EN	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN "       Nominal operating mode       "
@@ -660,6 +666,8 @@
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_EN	"    Power Limitation    "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_EN	"   Current Limitation   "
 #define RSC_BOX_EVENT_CROSS_DOM_LIMIT_CODE_EN	"   Cross Domain Limit.  "
+
+#define RSC_BOX_STATE_UNSPECIFIED_CODE_EN	"        UNSPECIFIED        "
 
 #define RSC_BOX_PKG_STATE_TITLE_CODE_EN 	" Package C-State Limit "
 

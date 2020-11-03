@@ -990,6 +990,7 @@ static void PerCore_Broadwell_Query(void *arg) ;
 
 extern void Query_Broadwell_EP(unsigned int cpu) ;
 
+extern void Query_Skylake(unsigned int cpu) ;
 static void PerCore_Skylake_Query(void *arg) ;
 static void Start_Skylake(void *arg) ;
 static void Stop_Skylake(void *arg) ;
@@ -5985,7 +5986,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Skylake_UY] = {							/* 47*/
 	.Signature = _Skylake_UY,
-	.Query = Query_Broadwell,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6009,7 +6010,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Skylake_S]  = {							/* 48*/
 	.Signature = _Skylake_S,
-	.Query = Query_Broadwell,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6083,7 +6084,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Kabylake] = {								/* 51*/
 	.Signature = _Kabylake,
-	.Query = Query_Broadwell,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6107,7 +6108,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Kabylake_UY] = {							/* 52*/
 	.Signature = _Kabylake_UY,
-	.Query = Query_Broadwell,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6132,7 +6133,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Cannonlake] = {							/* 53*/
 	.Signature = _Cannonlake,
-	.Query = Query_Broadwell,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,

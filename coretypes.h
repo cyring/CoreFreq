@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	81
-#define COREFREQ_REV	7
+#define COREFREQ_REV	8
 
 #define CORE_COUNT	256
 
@@ -191,7 +191,8 @@ enum CSTATES_ENCODING {
 	_C7S	= 0xc,
 	_C8	= 0x8,
 	_C9	= 0x9,
-	_C10	= 0xa
+	_C10	= 0xa,
+	_UNSPEC
 };
 
 #define CSTATES_ENCODING_COUNT	12
@@ -1220,7 +1221,7 @@ typedef struct	/* BSP CPUID features.					*/
 	} Factory;
 
 	struct {
-		Bit32	InvariantTSC	:  8-0,
+		Bit64	InvariantTSC	:  8-0,
 			HyperThreading	:  9-8,
 			HTT_Enable	: 10-9,
 			TgtRatio_Unlock : 11-10,
@@ -1234,7 +1235,10 @@ typedef struct	/* BSP CPUID features.					*/
 			Uncore_Unlock	: 22-21,
 			HWP_Enable	: 23-22,
 			HDC_Enable	: 24-23,
-			SpecTurboRatio	: 32-24;
+			SpecTurboRatio	: 32-24,
+			R2H_Capable	: 33-32,
+			R2H_Disable	: 34-33,
+			_pad64		: 64-34;
 	};
 } FEATURES;
 
@@ -1478,7 +1482,8 @@ enum {
 	TECHNOLOGY_POWER_POLICY,
 	TECHNOLOGY_HWP,
 	TECHNOLOGY_HWP_EPP,
-	TECHNOLOGY_HDC
+	TECHNOLOGY_HDC,
+	TECHNOLOGY_R2H
 };
 
 #define COREFREQ_ORDER_MAGIC 0xc6

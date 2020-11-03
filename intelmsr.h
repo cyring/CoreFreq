@@ -84,6 +84,14 @@
 	#define MSR_PMG_IO_CAPTURE_BASE 	0x000000e4
 #endif
 
+#ifndef MSR_CC6_DEMOTION_POLICY_CONFIG
+	#define MSR_CC6_DEMOTION_POLICY_CONFIG	0x00000668
+#endif
+
+#ifndef MSR_MC6_DEMOTION_POLICY_CONFIG
+	#define MSR_MC6_DEMOTION_POLICY_CONFIG  0x00000669
+#endif
+
 #define MSR_NHM_UNCORE_PERF_GLOBAL_CTRL 	0x00000391
 #define MSR_SNB_UNCORE_PERF_GLOBAL_CTRL 	0x00000391
 #define MSR_SKL_UNCORE_PERF_GLOBAL_CTRL 	0x00000e01
@@ -527,7 +535,8 @@ typedef union
 		IO_MWAIT_Redir	: 11-10,
 		ReservedBits2	: 15-11,
 		CFG_Lock	: 16-15,
-		ReservedBits3	: 24-16,
+		AutoCStateConv	: 17-16, /* BDW-D, BDW-EP, Phi		*/
+		ReservedBits3	: 24-17,
 		Int_Filtering	: 25-24, /* Nehalem			*/
 		C3autoDemotion	: 26-25, /* Nehalem			*/
 		C1autoDemotion	: 27-26, /* Nehalem			*/
@@ -572,6 +581,26 @@ typedef union
 						111b	C7
 	}
 */
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		CC6demotion	: 64-0;  /*	06_37h : R/W: 1=Enable	*/
+	};
+} CC6_CONFIG;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		MC6demotion	: 64-0;  /*	06_37h : R/W: 1=Enable	*/
+	};
+} MC6_CONFIG;
 
 typedef union
 {	/* MSR_TURBO_RATIO_LIMIT(1ADh)					*/
@@ -771,7 +800,7 @@ typedef union
 		ReservedBits1	:  1-0,
 		C1E		:  2-1,
 		ReservedBits2	: 19-2,
-		Race2Halt_Optim : 20-19, /* SKL, KBL, CFL: Disable=1	*/
+		R2H_Disable	: 20-19, /*SKL,KBL,CFL:Race To Halt Disable=1*/
 		Energy_Optim	: 21-20, /* SKL, KBL, CFL: Disable=1	*/
 		ReservedBits3	: 25-21,
 		EBP_OS_Control	: 26-25, /* SNB: 0=EBP controlled by OS */

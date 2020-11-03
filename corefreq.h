@@ -280,7 +280,8 @@ typedef struct
 				SMM		: 13-12,
 				VM		: 14-13,
 				IOMMU		: 15-14,
-				_pad64		: 64-15;
+				RaceToHalt	: 16-15,
+				_pad64		: 64-16;
 	} Technology;
 
 	struct {

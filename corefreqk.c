@@ -187,6 +187,10 @@ static signed short HDC_Enable = -1;
 module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
 
+static signed short R2H_Disable = -1;
+module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(R2H_Disable, "Disable Race to Halt");
+
 static unsigned int Clear_Events = 0;
 module_param(Clear_Events, uint, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Clear_Events, "Clear Thermal and Power Events");
@@ -2930,6 +2934,22 @@ void Intel_Hardware_Performance(void)
     }
 }
 
+void Intel_RaceToHalt(void)
+{
+	POWER_CONTROL PowerCtrl = {.value = 0};
+	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+
+	switch (R2H_Disable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerCtrl.R2H_Disable = R2H_Disable;
+			WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+			RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+		break;
+	}
+	PUBLIC(RO(Proc))->Features.R2H_Disable = PowerCtrl.R2H_Disable;
+}
+
 void SandyBridge_Uncore_Ratio(unsigned int cpu)
 {
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MIN)] = \
@@ -4546,6 +4566,14 @@ void Query_Broadwell(unsigned int cpu)
 	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
+}
+
+void Query_Skylake(unsigned int cpu)
+{
+	Query_Broadwell(cpu);
+
+	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
+	Intel_RaceToHalt();
 }
 
 void Query_Broadwell_EP(unsigned int cpu)
@@ -6562,165 +6590,167 @@ void PowerThermal(CORE_RO *Core)
   BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 }
 
+#define UNSPEC 0b11111111
+
 struct CSTATES_ENCODING_ST {
 	enum CSTATES_ENCODING	enc;
 	unsigned short int	dec;
 } Limit_CSTATES_NHM[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },
 	{  _C1	, 0b0001 },
-	{  _C2	, 0b1111 },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0010 }, /*Cannot be used to limit package C-State*/
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0011 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0100 },
-	{ _C7S	, 0b1111 },
-	{  _C8	, 0b1111 },
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{ _C7S	, UNSPEC },
+	{  _C8	, UNSPEC },
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, IORedir_CSTATES_NHM[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0001 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0010 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0011 },	/* TODO(Undefined!)	*/
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, Limit_CSTATES_SNB[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },
 	{  _C1	, 0b0000 },
 	{  _C2	, 0b0001 },
 	{  _C3	, 0b0010 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0011 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0100 },
 	{ _C7S	, 0b0101 },
 	{  _C8	, 0b0110 },
 	{  _C9	, 0b0111 },
 	{ _C10	, 0b1000 }
 }, IORedir_CSTATES_SNB[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0001 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0010 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, Limit_CSTATES_ULT[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },
 	{  _C1	, 0b0000 },
 	{  _C2	, 0b0001 },
 	{  _C3	, 0b0010 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0011 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0100 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0110 },
 	{  _C9	, 0b0111 },
 	{ _C10	, 0b1000 }
 }, IORedir_CSTATES_ULT[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0001 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0010 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, Limit_CSTATES_SKL[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },
 	{  _C1	, 0b0000 },
 	{  _C2	, 0b0001 },
 	{  _C3	, 0b0010 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0011 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0100 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0110 },
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, IORedir_CSTATES_SKL[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0001 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0010 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, Limit_CSTATES_SOC_SLM[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },	/* Silvermont, Airmont	*/
 	{  _C1	, 0b0001 },	/* Silvermont, Airmont	*/
 	{  _C2	, 0b0010 },	/* Airmont		*/
-	{  _C3	, 0b1111 },
+	{  _C3	, UNSPEC },
 	{  _C4	, 0b0100 },	/* Silvermont		*/
 	{  _C6	, 0b0110 },	/* Silvermont, Airmont	*/
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0111 },	/* Silvermont, Airmont	*/
-	{ _C7S	, 0b1111 },
-	{  _C8	, 0b1111 },
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{ _C7S	, UNSPEC },
+	{  _C8	, UNSPEC },
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, IORedir_CSTATES_SOC_SLM[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },	/* Airmont		*/
-	{  _C4	, 0b0100 },
-	{  _C6	, 0b0110 },
-	{ _C6R	, 0b1111 },
-	{  _C7	, 0b0111 },	/* Airmont: 0b0010	*/
-	{ _C7S	, 0b1111 },
-	{  _C8	, 0b1111 },
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C4	, 0b0100 },	/* Silvermont: 0b0100	*/
+	{  _C6	, 0b0001 },	/* Silvermont: 0b0110, Atom Deep Power Down */
+	{ _C6R	, UNSPEC },
+	{  _C7	, 0b0010 },	/* Silvermont: 0b0111, Airmont: 0b0010	*/
+	{ _C7S	, UNSPEC },
+	{  _C8	, UNSPEC },
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 }, Limit_CSTATES_SOC_GDM[CSTATES_ENCODING_COUNT] = {
 	{  _C0	, 0b0000 },
 	{  _C1	, 0b0001 },
-	{  _C2	, 0b1111 },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0010 },	/* Goldmont, Tremont	*/
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0011 },	/* Goldmont, Tremont	*/
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0100 },	/* Goldmont, Tremont	*/
 	{ _C7S	, 0b0101 },	/* Goldmont, Tremont	*/
 	{  _C8	, 0b0110 },	/* Goldmont, Tremont	*/
 	{  _C9	, 0b0111 },	/* Goldmont, Tremont	*/
 	{ _C10	, 0b1000 }
 }, IORedir_CSTATES_SOC_GDM[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, 0b1111 },
-	{  _C1	, 0b1111 },
-	{  _C2	, 0b1111 },
+	{  _C0	, UNSPEC },
+	{  _C1	, UNSPEC },
+	{  _C2	, UNSPEC },
 	{  _C3	, 0b0000 },
-	{  _C4	, 0b1111 },
+	{  _C4	, UNSPEC },
 	{  _C6	, 0b0001 },
-	{ _C6R	, 0b1111 },
+	{ _C6R	, UNSPEC },
 	{  _C7	, 0b0010 },
-	{ _C7S	, 0b1111 },
+	{ _C7S	, UNSPEC },
 	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
-	{  _C9	, 0b1111 },
-	{ _C10	, 0b1111 }
+	{  _C9	, UNSPEC },
+	{ _C10	, UNSPEC }
 };
 
 #define MAKE_TOGGLE_CSTATE_FUNC( _type, _feature, _parameter )		\
@@ -6742,6 +6772,8 @@ MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C1autoDemotion, C1A_Enable)
 MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C3undemotion, C3U_Enable)
 MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, C1undemotion, C1U_Enable)
 MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, IO_MWAIT_Redir, IOMWAIT_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(CC6_CONFIG, CC6demotion, CC6_Enable)
+MAKE_TOGGLE_CSTATE_FUNC(MC6_CONFIG, MC6demotion, PC6_Enable)
 
 #undef MAKE_TOGGLE_CSTATE
 
@@ -6750,7 +6782,8 @@ MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, IO_MWAIT_Redir, IOMWAIT_Enable)
 	Toggle_CState_##_feature( _config, _parameter ) 		\
 )
 
-#define For_All_Encodings(loopCondition, breakStatement, bodyStatement) \
+#define For_All_Encodings(	loopCondition, breakStatement,		\
+				bodyStatement, closure )		\
 ({									\
 	unsigned int idx, ret = 0;					\
     for (idx = 0; idx < CSTATES_ENCODING_COUNT && (loopCondition); idx++)\
@@ -6762,6 +6795,7 @@ MAKE_TOGGLE_CSTATE_FUNC(CSTATE_CONFIG, IO_MWAIT_Redir, IOMWAIT_Enable)
 		break;							\
 	}								\
     }									\
+	closure								\
 	ret;								\
 })
 
@@ -6777,23 +6811,29 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 			/* loopCondition: */
 			(CStateIORedir >= 0),
 			/* breakStatement: */
-			( (CStateIORedir == IORedir[idx].enc)
-			&& (IORedir[idx].dec != 0b1111) ),
+			( (IORedir[idx].dec != UNSPEC)
+			&& (CStateIORedir == IORedir[idx].enc) ),
 			/* bodyStatement: */
 			{
 			CState_IO_MWAIT.CStateRange = IORedir[idx].dec;
 			WRMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
 			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			}
+			},
+			/* closure: */
+			{}
 	);
     }
 	For_All_Encodings(
 		/* loopCondition: */ (1),
 		/* breakStatement: */
-		(CState_IO_MWAIT.CStateRange == IORedir[idx].dec),
+		((CState_IO_MWAIT.CStateRange & 0b111) == IORedir[idx].dec),
 		/* bodyStatement: */
 		{
 		Core->Query.CStateInclude = IORedir[idx].enc;
+		},
+		/* closure: */
+		if (!ret) {
+			Core->Query.CStateInclude = _UNSPEC;
 		}
 	);
 }
@@ -6801,7 +6841,7 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
 				CORE_RO *Core )
-{
+{	/* Family: 06_1A, 06_1E, 06_1F, 06_25, 06_2C, 06_2E		*/
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
 
@@ -6824,12 +6864,15 @@ void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
 				/* loopCondition: */
 				(PkgCStateLimit >= 0),
 				/* breakStatement: */
-				( (PkgCStateLimit == Limit[idx].enc)
-				&& (Limit[idx].dec != 0b1111) ),
+				( (Limit[idx].dec != UNSPEC)
+				&& (PkgCStateLimit == Limit[idx].enc) ),
 				/* bodyStatement: */
 				{
-				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
-				}
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec
+				| (0b1000 & CStateConfig.Pkg_CStateLimit);
+				},
+				/* closure: */
+				{}
 	);
     }
 	if (toggleFeature == 1) {
@@ -6856,10 +6899,14 @@ void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
 	For_All_Encodings(
 		/* loopCondition: */ (1),
 		/* breakStatement: */
-		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		((CStateConfig.Pkg_CStateLimit & 0b0111) == Limit[idx].dec),
 		/* bodyStatement: */
 		{
 			Core->Query.CStateLimit = Limit[idx].enc;
+		},
+		/* closure: */
+		if (!ret) {
+			Core->Query.CStateLimit = _UNSPEC;
 		}
 	);
 
@@ -6871,9 +6918,11 @@ void Control_CSTATES_NHM(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
-void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
+void Control_CSTATES_COMMON(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core,
+				const unsigned short bitMask,
+				const unsigned short unMask )
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
@@ -6905,12 +6954,15 @@ void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
 				/* loopCondition: */
 				(PkgCStateLimit >= 0),
 				/* breakStatement: */
-				( (PkgCStateLimit == Limit[idx].enc)
-				&& (Limit[idx].dec != 0b1111) ),
+				( (Limit[idx].dec != UNSPEC)
+				&& (PkgCStateLimit == Limit[idx].enc) ),
 				/* bodyStatement: */
 				{
-				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
-				}
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec
+				| (unMask & CStateConfig.Pkg_CStateLimit);
+				},
+				/* closure: */
+				{}
 	);
     }
 	if (toggleFeature == 1) {
@@ -6949,10 +7001,14 @@ void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
 	For_All_Encodings(
 		/* loopCondition: */ (1),
 		/* breakStatement: */
-		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		((CStateConfig.Pkg_CStateLimit & bitMask) == Limit[idx].dec),
 		/* bodyStatement: */
 		{
 			Core->Query.CStateLimit = Limit[idx].enc;
+		},
+		/* closure: */
+		if (!ret) {
+			Core->Query.CStateLimit = _UNSPEC;
 		}
 	);
 
@@ -6964,23 +7020,32 @@ void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
+void Control_CSTATES_SNB(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{	/* Family: 06_2A, 06_3A, 06_3E, 06_3F, 06_4F, 06_56, 06_57, 06_85 */
+	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b0111, 0b1000);
+}
+
 void Control_CSTATES_ULT(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
 				CORE_RO *Core )
-{
-	Control_CSTATES_SNB(Limit, IORedir, Core);
+{	/* Family: 06_3C, 06_3D, 06_45, 06_46, 06_47, 06_86		*/
+	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b1111, 0b0000);
 }
 
 void Control_CSTATES_SKL(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
 				CORE_RO *Core )
-{
-	Control_CSTATES_SNB(Limit, IORedir, Core);
+{	/* Family: 06_4E, 06_5E, 06_55, 06_66, 06_7D, 06_7E, 06_8E, 06_9E */
+	Control_CSTATES_COMMON(Limit, IORedir, Core, 0b0111, 0b1000);
 }
 
-void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
+void Control_CSTATES_SOC_ATOM(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
-				CORE_RO *Core )
+				CORE_RO *Core,
+				const unsigned short bitMask,
+				const unsigned short unMask )
 {
 	CSTATE_CONFIG CStateConfig = {.value = 0};
 	unsigned int toggleFeature = 0;
@@ -6997,12 +7062,15 @@ void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
 				/* loopCondition: */
 				(PkgCStateLimit >= 0),
 				/* breakStatement: */
-				( (PkgCStateLimit == Limit[idx].enc)
-				&& (Limit[idx].dec != 0b1111) ),
+				( (Limit[idx].dec != UNSPEC)
+				&& (PkgCStateLimit == Limit[idx].enc) ),
 				/* bodyStatement: */
 				{
-				CStateConfig.Pkg_CStateLimit = Limit[idx].dec;
-				}
+				CStateConfig.Pkg_CStateLimit = Limit[idx].dec
+				| (unMask & CStateConfig.Pkg_CStateLimit);
+				},
+				/* closure: */
+				{}
 	);
     }
 	if (toggleFeature == 1) {
@@ -7016,10 +7084,14 @@ void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
 	For_All_Encodings(
 		/* loopCondition: */ (1),
 		/* breakStatement: */
-		(CStateConfig.Pkg_CStateLimit == Limit[idx].dec),
+		((CStateConfig.Pkg_CStateLimit & bitMask) == Limit[idx].dec),
 		/* bodyStatement: */
 		{
 			Core->Query.CStateLimit = Limit[idx].enc;
+		},
+		/* closure: */
+		if (!ret) {
+			Core->Query.CStateLimit = _UNSPEC;
 		}
 	);
 
@@ -7031,13 +7103,53 @@ void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
 	Control_IO_MWAIT(IORedir, Core);
 }
 
+void Control_CSTATES_SOC_SLM(	struct CSTATES_ENCODING_ST Limit[],
+				struct CSTATES_ENCODING_ST IORedir[],
+				CORE_RO *Core )
+{	/* Family: 06_37, 06_4A, 06_4C, 06_4D, 06_5A			*/
+	CC6_CONFIG CC6_Config = {.value = 0};
+	MC6_CONFIG MC6_Config = {.value = 0};
+
+	Control_CSTATES_SOC_ATOM(Limit, IORedir, Core, 0b0111, 0b1000);
+
+	RDMSR(CC6_Config, MSR_CC6_DEMOTION_POLICY_CONFIG);
+    if (Toggle_CState_Feature(&CC6_Config, CC6demotion, CC6_Enable))
+    {
+	WRMSR(CC6_Config, MSR_CC6_DEMOTION_POLICY_CONFIG);
+	RDMSR(CC6_Config, MSR_CC6_DEMOTION_POLICY_CONFIG);
+    }
+
+	RDMSR(MC6_Config, MSR_MC6_DEMOTION_POLICY_CONFIG);
+    if (Toggle_CState_Feature(&MC6_Config, MC6demotion, PC6_Enable))
+    {
+	WRMSR(MC6_Config, MSR_MC6_DEMOTION_POLICY_CONFIG);
+	RDMSR(MC6_Config, MSR_MC6_DEMOTION_POLICY_CONFIG);
+    }
+
+    if (CC6_Config.CC6demotion)
+    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->CC6, Core->Bind);
+    }
+    if (MC6_Config.MC6demotion)
+    {
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+    } else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+    }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+}
+
 void Control_CSTATES_SOC_GDM(	struct CSTATES_ENCODING_ST Limit[],
 				struct CSTATES_ENCODING_ST IORedir[],
 				CORE_RO *Core )
-{
-	Control_CSTATES_SOC_SLM(Limit, IORedir, Core);
+{	/* Family: 06_5CH						*/
+	Control_CSTATES_SOC_ATOM(Limit, IORedir, Core, 0b1111, 0b0000);
 }
 
+#undef UNSPEC
 #undef For_All_Encodings
 #undef Toggle_CState_Feature
 
@@ -13668,6 +13780,18 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Start(1);
 		HDC_Enable = -1;
 		rc = RC_SUCCESS;
+		break;
+
+	case TECHNOLOGY_R2H:
+	    if (PUBLIC(RO(Proc))->Features.R2H_Capable)
+	    {
+		R2H_Disable = prm.dl.lo;
+		Intel_RaceToHalt();
+		R2H_Disable = -1;
+		rc = RC_SUCCESS;
+	    } else {
+		rc = -ENXIO;
+	    }
 		break;
 	}
 	break;
