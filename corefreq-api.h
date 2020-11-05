@@ -319,8 +319,7 @@ typedef struct
 					C7,
 					TSC;
 
-		unsigned long long	C1,
-					MC6;
+		unsigned long long	C1;
 
 		struct
 		{
@@ -343,8 +342,7 @@ typedef struct
 					C6,
 					C7,
 					TSC,
-					C1,
-					MC6;
+					C1;
 
 		struct
 		{
@@ -679,7 +677,8 @@ typedef struct
 				PC07, /* Nehalem, Sandy-Bridge, Phi	*/
 				PC08, /* Haswell			*/
 				PC09, /* Haswell			*/
-				PC10; /* Goldmont, Haswell		*/
+				PC10, /* Goldmont, Haswell		*/
+				MC6;  /* Atom, Silervmont: per Module	*/
 	  struct {
 	    unsigned long long	FC0; /* Uncore fixed counter #0		*/
 	  } Uncore;
@@ -699,7 +698,8 @@ typedef struct
 				PC07,
 				PC08,
 				PC09,
-				PC10;
+				PC10,
+				MC6;
 	  struct {
 	    unsigned long long	FC0;
 	  } Uncore;

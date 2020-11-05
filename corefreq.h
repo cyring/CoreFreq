@@ -167,8 +167,7 @@ typedef struct
 					C6,
 					C7,
 					TSC,
-					C1,
-					MC6;
+					C1;
 			struct {
 		unsigned long long	ACCU;
 			} Power;
@@ -186,7 +185,6 @@ typedef struct
 					C6,
 					C7,
 					C1,
-					MC6,
 					Energy,
 					Power;
 		} State;
@@ -330,6 +328,7 @@ typedef struct
 					PC08,
 					PC09,
 					PC10,
+					MC6,
 					ACCU[PWR_DOMAIN(SIZE)];
 		} Delta;
 
@@ -359,7 +358,8 @@ typedef struct
 					PC07,
 					PC08,
 					PC09,
-					PC10;
+					PC10,
+					MC6;
 		struct {
 			double		Limit[SENSOR_LIMITS_DIM];
 		} Voltage;

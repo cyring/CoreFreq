@@ -3587,6 +3587,7 @@ void Package(void)
 		"PC08" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC09" "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PC10" "\t" "%18llu" "\t" "%7.2f" "\n"	\
+		"MC6"  "\t" "%18llu" "\t" "%7.2f" "\n"	\
 		"PTSC" "\t" "%18llu" "\n"		\
 		"UNCORE" "\t" "%18llu" "\n\n",
 		PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
@@ -3597,6 +3598,7 @@ void Package(void)
 		PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 		PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 		PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
+		PFlop->Delta.MC6,  100.f * Shm->Proc.State.MC6,
 		PFlop->Delta.PTSC,
 		PFlop->Uncore.FC0);
 
@@ -7378,7 +7380,7 @@ void TrapScreenSize(int caught)
 	}
 	switch (draw.Disposal) {
 	case D_MAINVIEW:
-	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 9 : 0))
+	draw.Area.MinHeight = (ADD_LOWER * (draw.View == V_PACKAGE ? 10 : 0))
 				+ TOP_HEADER_ROW
 				+ TOP_SEPARATOR
 				+ TOP_FOOTER_ROW;
@@ -10864,15 +10866,16 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	ASCII	hCState[8][2] = {
-		{'0', '2'},
-		{'0', '3'},
-		{'0', '4'},
-		{'0', '6'},
-		{'0', '7'},
-		{'0', '8'},
-		{'0', '9'},
-		{'1', '0'}
+	ASCII	hCState[9][4] = {
+		{'P', 'C', '0', '2'},
+		{'P', 'C', '0', '3'},
+		{'P', 'C', '0', '4'},
+		{'P', 'C', '0', '6'},
+		{'P', 'C', '0', '7'},
+		{'P', 'C', '0', '8'},
+		{'P', 'C', '0', '9'},
+		{'P', 'C', '1', '0'},
+		{'M', 'C', '0', '6'}
 	};
 
 	LayerFillAt(	layer, 0, row, draw.Size.width,
@@ -10880,27 +10883,29 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			RSC(LAYOUT_RULER_PACKAGE).ATTR()[0]);
 
 	unsigned int idx;
-	for (idx = 0; idx < 8; idx++)
+	for (idx = 0; idx < 9; idx++)
 	{
 		LayerCopyAt(	layer, 0, (row + idx + 1),
 				draw.Size.width,
 				RSC(LAYOUT_PACKAGE_PC).ATTR(),
 				RSC(LAYOUT_PACKAGE_PC).CODE());
 
-		LayerAt(layer, code, 2, (row + idx + 1)) = hCState[idx][0];
-		LayerAt(layer, code, 3, (row + idx + 1)) = hCState[idx][1];
+		LayerAt(layer, code, 0, (row + idx + 1)) = hCState[idx][0];
+		LayerAt(layer, code, 1, (row + idx + 1)) = hCState[idx][1];
+		LayerAt(layer, code, 2, (row + idx + 1)) = hCState[idx][2];
+		LayerAt(layer, code, 3, (row + idx + 1)) = hCState[idx][3];
 	}
 
 	LayerDeclare(	LAYOUT_PACKAGE_UNCORE, draw.Size.width,
-			0, (row + 9), hUncore);
+			0, (row + 10), hUncore);
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
 
-	LayerFillAt(	layer, 0, (row + 10),
+	LayerFillAt(	layer, 0, (row + 11),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
-	row += 2 + 9;
+	row += 2 + 10;
 	return (row);
 }
 
@@ -12951,13 +12956,22 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace );
 	memcpy(&LayerAt(layer, code, 5, (row + 7)), buffer, len);
+/* MC6 */
+	bar0 = Shm->Proc.State.MC6 * margin;
+	bar1 = margin - bar0;
+
+	len = snprintf( buffer, draw.Area.LoadWidth,
+			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
+			PFlop->Delta.MC6, 100.f * Shm->Proc.State.MC6,
+			bar0, hBar, bar1, hSpace );
+	memcpy(&LayerAt(layer, code, 5, (row + 8)), buffer, len);
 /* TSC & UNCORE */
 	len = snprintf( buffer, draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
 			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0 );
-	memcpy(&LayerAt(layer, code, 5, (row + 8)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 9)), buffer, len);
 
-	row += 1 + 9;
+	row += 1 + 10;
 	return (row);
 }
 
