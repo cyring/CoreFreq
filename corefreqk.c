@@ -2144,7 +2144,7 @@ void Compute_Intel_Core_Burst(unsigned int cpu)
 	    if (PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] > 0) {
 		PUBLIC(RO(Proc))->Features.SpecTurboRatio = 1;
 	    }
-	} else {	/* Is Processor half ratio or burst capable ?	*/
+	} else {	/* Is Processor half ratio or Burst capable ?	*/
 	    if (PUBLIC(RO(Proc))->Features.Power.EAX.TurboIDA)
 	    {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(1C)] = \
@@ -4485,9 +4485,20 @@ void Query_Core2(unsigned int cpu)
 }
 
 void Query_Silvermont(unsigned int cpu)
-{
-	Query_Core2(cpu);
+{	/*	Default state of boost ratio is programmable		*/
+	PUBLIC(RO(Proc))->Features.Turbo_Unlock = 1;
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio=PUBLIC(RO(Proc))->CPU.Count;
+	/*	But can be overridden following the specifications	*/
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
+	{
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
+	}
+	Default_Unlock_Reset();
 
+	Intel_Core_Platform_Info(cpu);
+	HyperThreading_Technology();
+	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 }
 
@@ -7715,15 +7726,72 @@ static void PerCore_Core2_Query(void *arg)
 	ThermalMonitor_Set(Core);
 }
 
+void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
+{
+	enum RATIO_BOOST boost;
+	PERF_STATUS PerfStatus = {.value = 0};
+	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
+	/*	This architecture appears to be Burst capable		*/
+	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
+
+	boost = BOOST(SIZE) - PUBLIC(RO(Proc))->Features.SpecTurboRatio;
+    do
+    { /*	Build a virtual COF if the boost ratio is missing	*/
+	if (PUBLIC(RO(Core, AT(Core->Bind)))->Boost[boost] == 0)
+	{
+		PUBLIC(RO(Core, AT(Core->Bind)))->Boost[boost] = \
+			PerfStatus.value != 0 ? PerfStatus.CORE.MaxBusRatio
+			: PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)];
+	}
+    } while ( ++boost < BOOST(SIZE) );
+	/* Single Core ratio can be overridden following specifications */
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(1C)] = \
+		PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)]
+		+ PRIVATE(OF(Specific))->Boost[0]
+		+ PRIVATE(OF(Specific))->Boost[1];
+    }
+}
+
 static void PerCore_Silvermont_Query(void *arg)
 {
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	PerCore_Core2_Query(arg);
+	Intel_Core_Platform_Info(Core->Bind);
+
+	SystemRegisters(Core);
+
+	Intel_VirtualMachine(Core);
+
+	Intel_Microcode(Core);
+
+	Dump_CPUID(Core);
+
+	SpeedStep_Technology(Core);
+	DynamicAcceleration(Core);				/* Unique */
+	Compute_Intel_Silvermont_Burst(Core);
 
 	Query_Intel_C1E(Core);
-
+	/*TODO(Needs a per Module topology)*/
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
+
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	PowerThermal(Core);				/* Shared | Unique */
+
+	ThermalMonitor_Set(Core);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
