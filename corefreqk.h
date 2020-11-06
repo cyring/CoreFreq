@@ -2366,6 +2366,21 @@ static PROCESSOR_SPECIFIC Core_Penryn_Specific[] = {
 	{0}
 };
 
+static PROCESSOR_SPECIFIC Silvermont_Bay_Trail_Specific[] = {
+	{
+	.Brand = ZLIST("Intel(R) Celeron(R) CPU N29"),
+	.Boost = {0, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = 0,
+	.TgtRatioUnlocked = 0,
+	.ClkRatioUnlocked = 0b00,
+	.TurboUnlocked = 1,
+	.UncoreUnlocked = 0,
+	.Latch = LATCH_TGT_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
+	},
+	{0}
+};
+
 static PROCESSOR_SPECIFIC Nehalem_Bloomfield_Specific[] = {
 	{
 	.Brand = ZLIST("Intel(R) Core(TM) i7 CPU 920"),
@@ -5344,7 +5359,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = Void_Specific,
+	.Specific = Silvermont_Bay_Trail_Specific,
 	.SystemDriver = &CORE2_Driver,
 	.Architecture = Arch_Silvermont_Bay_Trail
 	},

@@ -4485,8 +4485,12 @@ void Query_Core2(unsigned int cpu)
 }
 
 void Query_Silvermont(unsigned int cpu)
-{	/*	Default state of boost ratio is programmable		*/
-	PUBLIC(RO(Proc))->Features.Turbo_Unlock = 1;
+{	/*	Query the Min and Max frequency ratios			*/
+	PLATFORM_INFO PfInfo = {.value = 0};
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
+	/*	Assume a count of Boost ratios equals to the CPU count	*/
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio=PUBLIC(RO(Proc))->CPU.Count;
 	/*	But can be overridden following the specifications	*/
 	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
@@ -4496,7 +4500,6 @@ void Query_Silvermont(unsigned int cpu)
 	}
 	Default_Unlock_Reset();
 
-	Intel_Core_Platform_Info(cpu);
 	HyperThreading_Technology();
 	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
@@ -7729,36 +7732,70 @@ static void PerCore_Core2_Query(void *arg)
 void Compute_Intel_Silvermont_Burst(CORE_RO *Core)
 {
 	enum RATIO_BOOST boost;
+	unsigned int burstRatio;
+	PLATFORM_ID PfID = {.value = 0};
 	PERF_STATUS PerfStatus = {.value = 0};
+	bool initialize = false;
+
+	burstRatio = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)];
+    if (Intel_MaxBusRatio(&PfID) == 0) {
+	burstRatio = KMAX(burstRatio, PfID.MaxBusRatio);
+    }
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(ACT)] = burstRatio;
+
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
-	/*	This architecture appears to be Burst capable		*/
+	burstRatio = KMAX(burstRatio, PerfStatus.CORE.MaxBusRatio);
+
+    if (PRIVATE(OF(Specific)) != NULL)
+    {
+	unsigned int XtraBoost	= PRIVATE(OF(Specific))->Boost[0]
+				+ PRIVATE(OF(Specific))->Boost[1];
+      if (XtraBoost > 0) {
+	burstRatio = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)];
+	burstRatio = burstRatio + XtraBoost;
+      }
+    }
+    if (PUBLIC(RO(Proc))->Features.Turbo_Unlock == 1)
+    {	/*	Read the Turbo Boost register from any programmed ratio */
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 
 	boost = BOOST(SIZE) - PUBLIC(RO(Proc))->Features.SpecTurboRatio;
-    do
-    { /*	Build a virtual COF if the boost ratio is missing	*/
+      do
+      {
 	if (PUBLIC(RO(Core, AT(Core->Bind)))->Boost[boost] == 0)
 	{
-		PUBLIC(RO(Core, AT(Core->Bind)))->Boost[boost] = \
-			PerfStatus.value != 0 ? PerfStatus.CORE.MaxBusRatio
-			: PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)];
+		PUBLIC(RO(Core, AT(Core->Bind)))->Boost[boost] = burstRatio;
+
+		initialize = true;
 	}
-    } while ( ++boost < BOOST(SIZE) );
-	/* Single Core ratio can be overridden following specifications */
-    if (PRIVATE(OF(Specific)) != NULL)
-    {
-	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(1C)] = \
-		PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)]
-		+ PRIVATE(OF(Specific))->Boost[0]
-		+ PRIVATE(OF(Specific))->Boost[1];
+      } while ( ++boost < BOOST(SIZE) );
+
+      if (initialize == true)
+      { /*	Re-program the register if at least one value was zero	*/
+	TURBO_RATIO_CONFIG0 Cfg0 = {
+	.MaxRatio_1C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(1C)],
+	.MaxRatio_2C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(2C)],
+	.MaxRatio_3C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(3C)],
+	.MaxRatio_4C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(4C)],
+	.MaxRatio_5C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(5C)],
+	.MaxRatio_6C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(6C)],
+	.MaxRatio_7C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(7C)],
+	.MaxRatio_8C = PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(8C)]
+	};
+	WRMSR(Cfg0, MSR_TURBO_RATIO_LIMIT);
+      }
     }
 }
 
 static void PerCore_Silvermont_Query(void *arg)
-{
+{	/*	Query the Min and Max frequency ratios per CPU		*/
 	CORE_RO *Core = (CORE_RO *) arg;
 
-	Intel_Core_Platform_Info(Core->Bind);
+	PLATFORM_INFO PfInfo = {.value = 0};
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+
+	PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MIN)]=PfInfo.MinimumRatio;
+    PUBLIC(RO(Core, AT(Core->Bind)))->Boost[BOOST(MAX)]=PfInfo.MaxNonTurboRatio;
 
 	SystemRegisters(Core);
 
