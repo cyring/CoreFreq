@@ -4315,25 +4315,41 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 
 	for (chip = 0; chip < 4; chip++)
 	{
-	    for (sec = 0; sec < 2; sec++)
-	    {
-		unsigned int addr;
-		addr = CHIP_BAR[sec][0] + 4 * chip;
+	  for (sec = 0; sec < 2; sec++)
+	  {
+		unsigned int addr[2], ranks = 0;
 
-		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
-				.AMD17h.CHIP[chip][sec].Chip,
-				addr,
-				SMU_AMD_INDEX_REGISTER_F17H,
-				SMU_AMD_DATA_REGISTER_F17H );
-
-		addr = CHIP_BAR[sec][1] + 4 * (chip >> 1);
+		addr[1] = CHIP_BAR[sec][1] + 4 * (chip >> 1);
 
 		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
 				.AMD17h.CHIP[chip][sec].Mask,
-				addr,
+				addr[1],
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
+
+	    if ( (ranks == 0)
+		&& (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+			.AMD17h.CHIP[chip][sec].Mask.value != 0) )
+	    {
+		ranks = BITVAL(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h.CHIP[chip][sec].Mask.value, 9) ? 1 : 2;
 	    }
+	    if (ranks == 2) {
+		addr[0] = CHIP_BAR[sec][0] + 4 * chip;
+	    } else {
+		addr[0] = CHIP_BAR[sec][0] + 4 * (chip - (chip > 2));
+	    }
+		Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha]\
+				.AMD17h.CHIP[chip][sec].Chip,
+				addr[0],
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	    if (PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks == 0)
+	    {
+		PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.Ranks=ranks;
+	    }
+	  }
 	}
     Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.MISC,
 			UMC_BAR[cha] + 0x200,

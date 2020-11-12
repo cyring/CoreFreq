@@ -513,6 +513,7 @@ typedef struct
 	/* 88h */		AMD_0F_DRAM_TIMING_LOW	DTRL;	/* 32 bits    */
 			} AMD0Fh;
 			struct {
+				unsigned int		Ranks;
 				AMD_17_UMC_ECC_CAP_HI	ECC;	/* 32 bits   */
 			  struct {
 			    struct {

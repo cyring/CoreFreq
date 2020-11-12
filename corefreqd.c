@@ -1277,7 +1277,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 
 void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
-	unsigned int PowerUnits;
+	unsigned int PowerUnits = 0;
 
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
@@ -1303,21 +1303,23 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
 			1.0 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU) : 0;
+      TIME_UNIT:
+	Shm->Proc.Power.Unit.Times = Proc_RO->PowerThermal.Unit.TU > 0 ?
+			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU)
+			: 1.0 / (double) (1 << 10);
+
+	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
 	break;
       case POWER_KIND_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
 			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.PU) :0;
 	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
 			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU):0;
+	goto TIME_UNIT;
 	break;
       case POWER_KIND_NONE:
 	break;
     }
-	Shm->Proc.Power.Unit.Times = Proc_RO->PowerThermal.Unit.TU > 0 ?
-			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU)
-			: 1.0 / (double) (1 << 10);
-
-	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
     if (PowerUnits != 0)
     {
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
@@ -3894,23 +3896,17 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
     }
     if (DIMM_Size > 0)
     {
-	unsigned short shiftBank;
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
+				Proc->Uncore.MC[mc].Channel[cha].AMD17h.Ranks;
 
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows = 1 << 16;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols = 1 << 10;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size = DIMM_Size >> 10;
 
-	if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size < 16384) {
-		shiftBank = 9;
-	} else {
-		shiftBank = 10;
-	}
+	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = DIMM_Size >> 19;
 	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks = \
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size >> shiftBank;
-
-	Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks = \
-		Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size
-		/ (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks << 9);
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks
+			/ Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks;
     }
    }
 	Shm->Uncore.MC[mc].SlotCount = slotCount;
