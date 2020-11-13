@@ -299,6 +299,11 @@
 	#define MSR_IA32_PKG_HDC_CTL		0x00000db0
 #endif
 
+/*	Source: Intel Atom Processor E3800 Product Family Datasheet	*/
+#define MSR_PKG_TURBO_CFG			0x00000670
+#define MSR_THERM_CFG1				0x00000673
+#define MSR_THERM_CFG2				0x00000674
+
 typedef union
 {
 	unsigned long long value;
@@ -631,7 +636,7 @@ typedef union
 } TURBO_RATIO_CONFIG0;
 
 typedef union
-{	/* MSR_TURBO_RATIO_LIMIT1(1AEh)					*/
+{	/* MSR_TURBO_RATIO_LIMIT1(1AEh) 				*/
 	unsigned long long	value;
 	struct
 	{ /* Haswell-E5v3 [06_3F], Broadwell-E [06_56] & Xeon E5v4 [06_4F] */
@@ -673,7 +678,7 @@ typedef union
 } TURBO_RATIO_CONFIG1;
 
 typedef union
-{	/* MSR_TURBO_RATIO_LIMIT2(1AFh)					*/
+{	/* MSR_TURBO_RATIO_LIMIT2(1AFh) 				*/
 	unsigned long long	value;
 	struct
 	{	/* Xeon Haswell-E5v3 [06_3F]				*/
@@ -686,7 +691,7 @@ typedef union
 } TURBO_RATIO_CONFIG2;
 
 typedef union
-{	/* MSR_TURBO_RATIO_LIMIT2(1ACh)					*/
+{	/* MSR_TURBO_RATIO_LIMIT2(1ACh) 				*/
 	unsigned long long	value;
 	struct
 	{	/* Xeon Broadwell-EP [06_4F]				*/
@@ -751,6 +756,37 @@ typedef union
 		unsigned int	: 32-0;
 	};
 } TURBO_ACTIVATION;
+
+typedef union
+{	/* MSR_PKG_TURBO_CFG(0x00000670)				*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		TjMax_Turbo	:  3-0,
+		UnknownBits1	:  8-3,
+		DynamicTurbo	:  9-8,
+		DynamicPolicy	: 12-9,
+		UnknownBits2	: 64-12;
+	};
+} PKG_TURBO_CONFIG;
+/* Source: android: kernel/x86_64/.../drivers/thermal/intel_soc_thermal.c
+	SLM[06_37] set bits[0:2] to 0x2 to enable TjMax Turbo mode
+	[UNKNOWN] set bit[8] to 0 to disable Dynamic Turbo
+	[UNKNOWN] set bits[9:11] to 0 disable Dynamic Turbo Policy
+*/
+
+typedef union
+{	/* P-Unit at Offset [Port: 0x04] + 4h				*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		OVERRIDE_EN	:  1-0,  /* RW: Turbo MSR		*/
+		SOC_TURBO_EN	:  2-1,  /* RW: PKG_TURBO_CFG1[SOC_TDP_EN] */
+		SOC_TDP_POLICY	:  5-2,  /* RW: PKG_TURBO_CFG1[SOC_TDP_POLICY]*/
+		RESERVED_4	: 32-5;  /* RO: reserved		*/
+	};
+} ATOM_TURBO_SOC_OVERRIDE;
 
 typedef union
 {

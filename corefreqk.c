@@ -5852,6 +5852,41 @@ void DynamicAcceleration(CORE_RO *Core) 			/* Unique */
   }
 }
 
+void SoC_Turbo_Override(CORE_RO *Core)
+{
+	int ToggleFeature;
+
+	PKG_TURBO_CONFIG TurboCfg = {.value = 0};
+	RDMSR(TurboCfg, MSR_PKG_TURBO_CFG);
+
+	switch (TurboBoost_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+		TurboCfg.TjMax_Turbo = 0x0;
+		ToggleFeature = 1;
+		break;
+	case COREFREQ_TOGGLE_ON:
+		TurboCfg.TjMax_Turbo = 0x2;
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
+		break;
+	}
+	if ((ToggleFeature == 1)
+	 && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))	/* Package */
+	{
+		WRMSR(TurboCfg, MSR_PKG_TURBO_CFG);
+		RDMSR(TurboCfg, MSR_PKG_TURBO_CFG);
+	}
+	if (TurboCfg.TjMax_Turbo == 0x2)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TurboBoost, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask, Core->Bind);
+}
+
 typedef struct {
 	CLOCK_ARG *pClockMod;
 	SET_TARGET SetTarget;
@@ -7823,6 +7858,7 @@ static void PerCore_Silvermont_Query(void *arg)
 
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
+	SoC_Turbo_Override(Core);
 	Compute_Intel_Silvermont_Burst(Core);
 
 	Query_Intel_C1E(Core);
