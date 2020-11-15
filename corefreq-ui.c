@@ -2000,10 +2000,16 @@ void JSON_Page(char *inStr, int outSize)
 
 	fprintf(dump.Handle, "[%f, \"o\", \"", difftime(now, dump.startedAt));
 	for (pChr = inStr; pChr < inStr + outSize; pChr++) {
-		if ((*pChr) == 0x1b) {
+		switch (*pChr) {
+		case 0x1b:
 			fprintf(dump.Handle, "\\u001b");
-		} else {
+			break;
+		case '\\':
+			fprintf(dump.Handle, "\\u005c");
+			break;
+		default:
 			fputc((*pChr), dump.Handle);
+			break;
 		}
 	}
 	fprintf(dump.Handle, "\"]\n");
