@@ -731,10 +731,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_TOOLS_STOP_CODE_FR	"          ARR""\x8a""TER          "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_FR	"       Stress Atomic       "
 #define RSC_BOX_TOOLS_CRC32_CODE_FR	"        Calcul CRC32       "
-#define RSC_BOX_TOOLS_CONIC_CODE_FR	"      Calcul Conique...    "
+#define RSC_BOX_TOOLS_CONIC_CODE_FR	"   <   Calcul Conique   >  "
 #define RSC_BOX_TOOLS_RAND_CPU_CODE_FR	"    Turbo CPU al""\xa9""atoire    "
 #define RSC_BOX_TOOLS_RR_CPU_CODE_FR	"    Turbo CPU circulaire   "
-#define RSC_BOX_TOOLS_USR_CPU_CODE_FR	"    Turbo Choisir CPU...   "
+#define RSC_BOX_TOOLS_USR_CPU_CODE_FR	"    Turbo < Choisir CPU >  "
 
 #define RSC_BOX_CONIC_TITLE_CODE_FR	" Variations Coniques "
 #define RSC_BOX_CONIC_ITEM_1_CODE_FR	"         Ellipso""\xaf""de         "

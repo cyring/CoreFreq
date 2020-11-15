@@ -698,10 +698,10 @@
 #define RSC_BOX_TOOLS_STOP_CODE_EN		"            STOP           "
 #define RSC_BOX_TOOLS_ATOMIC_CODE_EN		"        Atomic Burn        "
 #define RSC_BOX_TOOLS_CRC32_CODE_EN		"       CRC32 Compute       "
-#define RSC_BOX_TOOLS_CONIC_CODE_EN		"       Conic Compute...    "
+#define RSC_BOX_TOOLS_CONIC_CODE_EN		"   <   Conic Compute   >   "
 #define RSC_BOX_TOOLS_RAND_CPU_CODE_EN		"      Turbo Random CPU     "
 #define RSC_BOX_TOOLS_RR_CPU_CODE_EN		"      Turbo Round Robin    "
-#define RSC_BOX_TOOLS_USR_CPU_CODE_EN		"      Turbo Select CPU...  "
+#define RSC_BOX_TOOLS_USR_CPU_CODE_EN		"    Turbo < Select CPU >   "
 
 #define RSC_BOX_CONIC_TITLE_CODE_EN		" Conic variations "
 #define RSC_BOX_CONIC_ITEM_1_CODE_EN		"         Ellipsoid         "
