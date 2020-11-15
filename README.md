@@ -123,9 +123,9 @@ If module signature verification is enabled into Kernel, you will have to sign t
 
 ### Stop
 
-9. Press [CTRL]+[x] or [CTRL]+[c] to stop the client.
+9. Press <kbd>Ctrl+x</kbd> or <kbd>Ctrl+c</kbd> to stop the client.
 
-10. Press [CTRL]+[c] to stop the daemon (in foreground) or kill its background job.
+10. Press <kbd>Ctrl+c</kbd> to stop the daemon (in foreground) or kill its background job.
 
 11. Unload the kernel module  
 :hash:`rmmod corefreqk.ko`  
