@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE
 #include <sys/types.h>
+#include <stdio.h>
 #include <string.h>
 #include <locale.h>
 #include <sched.h>

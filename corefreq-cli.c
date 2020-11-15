@@ -10021,7 +10021,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		AbortDump();
 	}
-	else if (StartDump("corefreq_%llx.asc", recorder.Reset - 1) == 0)
+	else if (StartDump("corefreq_%llx.cast", recorder.Reset - 1) == 0)
 	{
 		draw.Flag.layout = 1;
 	}

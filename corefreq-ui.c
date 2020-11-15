@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <locale.h>
 #include <poll.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -535,10 +536,18 @@ struct {
 		int	Tick;
 	};
     };
+		time_t	startedAt;
 		FILE	*Handle;
+		void	(*Header)(void);
+		void	(*Write)(char*, int);
+		void	(*Break)(void);
 } dump __attribute__ ((aligned (8))) = {
-	.Reset = 0x0,
-	.Handle = NULL
+	.startedAt = 0,
+	.Reset	= 0x0,
+	.Handle = NULL,
+	.Header = JSON_Header,
+	.Write	= JSON_Page,
+	.Break	= JSON_Break
 };
 
 int GetKey(SCANKEY *scan, struct timespec *tsec)
@@ -1893,6 +1902,7 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 			if ((dump.Handle = fopen(dumpFileName, "w")) != NULL)
 			{
 				dump.Tick = tickReset;
+				dump.Header();
 				BITSET(LOCKLESS, dump.Status, 0);
 				rc = 0;
 			} else {
@@ -1936,12 +1946,12 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 
 		if (BITVAL(dump.Status, 0))
 		{
-			fwrite(console, (size_t) writeSize, 1, dump.Handle);
+			dump.Write(console, writeSize);
 
 			if (dump.Tick > 0) {
 				dump.Tick--;
 
-				fwrite( _LF _FF, 1, 1, dump.Handle);
+				dump.Break();
 			} else {
 				BITCLR(LOCKLESS, dump.Status, 0);
 
@@ -1953,6 +1963,54 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 		}
 	}
 	return (layout);
+}
+
+void ANSI_Header(void)
+{
+}
+
+void ANSI_Page(char *inStr, int outSize)
+{
+	fwrite(inStr, (size_t) outSize, 1, dump.Handle);
+}
+
+void ANSI_Break(void)
+{
+	fwrite( _LF _FF, 1, 1, dump.Handle);
+}
+
+void JSON_Header(void)
+{
+	SCREEN_SIZE terminalSize = GetScreenSize();
+
+	time(&dump.startedAt);
+	fprintf(dump.Handle,
+		"{\"version\": %d, \"width\": %d, \"height\": %d,"	\
+		" \"timestamp\": %ld, \"title\": \"%s\", "		\
+		"\"env\": {\"TERM\": \"%s\"}}\n",
+		2, terminalSize.width, terminalSize.height,
+		dump.startedAt, "CoreFreq", "xterm");
+}
+
+void JSON_Page(char *inStr, int outSize)
+{
+	char *pChr;
+	time_t now;
+	time(&now);
+
+	fprintf(dump.Handle, "[%f, \"o\", \"", difftime(now, dump.startedAt));
+	for (pChr = inStr; pChr < inStr + outSize; pChr++) {
+		if ((*pChr) == 0x1b) {
+			fprintf(dump.Handle, "\\u001b");
+		} else {
+			fputc((*pChr), dump.Handle);
+		}
+	}
+	fprintf(dump.Handle, "\"]\n");
+}
+
+void JSON_Break(void)
+{
 }
 
 struct termios oldt, newt;
