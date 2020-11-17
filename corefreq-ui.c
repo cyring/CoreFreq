@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <math.h>
 
 #include "bitasm.h"
 #include "coretypes.h"
@@ -1994,15 +1995,27 @@ void JSON_Header(void)
 
 void JSON_Page(char *inStr, int outSize)
 {
-	char *pChr;
+	double integral, fractional;
+	unsigned char	*pLast = (unsigned char *) &inStr[outSize],
+			*pFirst= (unsigned char *) &inStr[0], *pChr;
 	time_t now;
 	time(&now);
 
-	fprintf(dump.Handle, "[%f, \"o\", \"", difftime(now, dump.startedAt));
-	for (pChr = inStr; pChr < inStr + outSize; pChr++) {
+	fractional = modf(difftime(now, dump.startedAt), &integral);
+	fprintf(dump.Handle, "[%lld.%lld, \"o\", \"",
+		(unsigned long long) integral,
+		(unsigned long long) fractional);
+
+	for (pChr = pFirst; pChr < pLast; pChr++) {
 		switch (*pChr) {
 		case 0x1b:
 			fprintf(dump.Handle, "\\u001b");
+			break;
+		case 0xc2:
+			fprintf(dump.Handle, "\\u00%x", *(++pChr));
+			break;
+		case 0xc3:
+			fprintf(dump.Handle, "\\u00%x", *(++pChr) ^ 0x40);
 			break;
 		case '\\':
 			fprintf(dump.Handle, "\\u005c");
