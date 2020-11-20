@@ -881,12 +881,12 @@ extern void StopDump(void) ;
 extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
 extern void AbortDump(void) ;
 extern unsigned char DumpStatus(void) ;
-extern void ANSI_Header(void) ;
-extern void JSON_Header(void) ;
-extern void ANSI_Page(char *inStr, int outSize) ;
-extern void JSON_Page(char *inStr, int outSize) ;
-extern void ANSI_Break(void) ;
-extern void JSON_Break(void) ;
+void ANSI_Header(void) ;
+void JSON_Header(void) ;
+void ANSI_Page(char *inStr, int outSize) ;
+void JSON_Page(char *inStr, int outSize) ;
+void ANSI_Break(void) ;
+void JSON_Break(void) ;
 
 extern __typeof__ (errno) SaveGeometries(char*) ;
 extern __typeof__ (errno) LoadGeometries(char*) ;
