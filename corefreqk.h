@@ -4032,6 +4032,50 @@ static PROCESSOR_SPECIFIC AMD_Zen2_CPK_Specific[] = {
 	.UncoreUnlocked = 0,
 	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK|LATCH_TURBO_UNLOCK
 	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3995WX"),
+	.Boost = {+15, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3975WX"),
+	.Boost = {+7, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3955WX"),
+	.Boost = {+4, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
+	{
+	.Brand = ZLIST("AMD Ryzen Threadripper PRO 3945WX"),
+	.Boost = {+3, 0},
+	.Param.Offset = {0, 0, 0},
+	.CodeNameIdx = CN_CASTLE_PEAK,
+	.TgtRatioUnlocked = 1,
+	.ClkRatioUnlocked = 0b10,
+	.TurboUnlocked = 0,
+	.UncoreUnlocked = 0,
+	.Latch=LATCH_TGT_RATIO_UNLOCK|LATCH_CLK_RATIO_UNLOCK
+	},
 	{0}
 };
 static PROCESSOR_SPECIFIC AMD_Zen2_APU_Specific[] = {
