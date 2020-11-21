@@ -10113,7 +10113,8 @@ int Shortcut(SCANKEY *scan)
 	    {
 		struct FLIP_FLOP *CFlop;
 		CLOCK_ARG clockMod = {.sllong = scan->key};
-		unsigned int COF, lowestOperating;
+		unsigned int COF;
+		const unsigned int lowestOperating = 1;
 		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
 		const enum RATIO_BOOST boost = BOOST(SIZE) - NC;
 		signed int lowestShift, highestShift;
@@ -10121,17 +10122,11 @@ int Shortcut(SCANKEY *scan)
 		const signed short cpu = (scan->key & RATIO_MASK) ^ CORE_COUNT;
 	    if (cpu == -1) {
 		COF = Shm->Cpu[ Ruler.Top[boost] ].Boost[boost];
-		lowestOperating = KMIN( Shm->Cpu[
-						Ruler.Top[boost]
-					].Boost[ BOOST(MIN) ],
-					Shm->Proc.Features.Factory.Ratio);
 		CFlop = &Shm->Cpu[ Ruler.Top[boost] ].FlipFlop[
 				!Shm->Cpu[ Ruler.Top[boost] ].Toggle
 			];
 	    } else {
 		COF = Shm->Cpu[cpu].Boost[boost];
-		lowestOperating = KMIN( Shm->Cpu[cpu].Boost[BOOST(MIN)],
-					Shm->Proc.Features.Factory.Ratio );
 		CFlop = &Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	    }
 		ComputeRatioShifts(COF,
