@@ -801,7 +801,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ERROR_UNIMPLEMENTED_CODE_FR "Fonctionnalit""\xa9"		\
 					" non implement""\xa9""e"
 #define RSC_ERROR_EXPERIMENTAL_CODE_FR	"Le mode exp""\xa9""rimental est requis"
-#define RSC_ERROR_TURBO_PREREQ_CODE_FR	"D""\xa9""sactiver  le  Turbo  Boost"
+#define RSC_ERROR_TURBO_PREREQ_CODE_FR	"D""\xa9""sactiver Turbo Boost |" \
+					" Core Performance Boost"
+
 #define RSC_ERROR_UNCORE_PREREQ_CODE_FR "Pr""\xa9""requis Uncore"	\
 					" non valid""\xa9""s"
 
