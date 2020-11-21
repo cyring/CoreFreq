@@ -807,6 +807,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ERROR_UNCORE_PREREQ_CODE_FR "Pr""\xa9""requis Uncore"	\
 					" non valid""\xa9""s"
 
+#define RSC_ERROR_PSTATE_NOT_FOUND_CODE_FR "Ce P-State de Fr\xa9quence " \
+					"n'a pas \xa9t\xa9 trouv\xa9"
+
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_FR " Limite CPU-Idle "
 
 #define RSC_BOX_RECORDER_TITLE_CODE_FR	" Dur""\xa9""e "

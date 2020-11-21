@@ -769,6 +769,9 @@
 					" must be disabled"
 #define RSC_ERROR_UNCORE_PREREQ_CODE_EN "Invalid Uncore prerequisites"
 
+#define RSC_ERROR_PSTATE_NOT_FOUND_CODE_EN				\
+					"This Frequency P-State was not found"
+
 #define RSC_BOX_IDLE_LIMIT_TITLE_CODE_EN " CPU-Idle Limit "
 
 #define RSC_BOX_RECORDER_TITLE_CODE_EN	" Duration "

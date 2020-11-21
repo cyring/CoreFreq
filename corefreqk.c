@@ -5224,7 +5224,7 @@ static void TargetClock_AMD_Zen_PerCore(void *arg)
 	WRMSR(PstateCtrl, MSR_AMD_PERF_CTL);
 	pClockZen->rc = RC_OK_COMPUTE;
     } else {
-	pClockZen->rc = -EDOM;
+	pClockZen->rc = -RC_PSTATE_NOT_FOUND;
     }
 }
 

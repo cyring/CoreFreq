@@ -7104,6 +7104,10 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		{
 		RC_UNCORE_PREREQ,
 		RSC(ERROR_UNCORE_PREREQ).CODE()	, RSZ(ERROR_UNCORE_PREREQ)
+		},
+		{
+		RC_PSTATE_NOT_FOUND,
+		RSC(ERROR_PSTATE_NOT_FOUND).CODE(), RSZ(ERROR_PSTATE_NOT_FOUND)
 		}
 	    };
 		const size_t count = sizeof(drvReason) / sizeof(drvReason[0]);
