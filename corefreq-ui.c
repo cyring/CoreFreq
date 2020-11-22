@@ -537,13 +537,13 @@ struct {
 		int	Tick;
 	};
     };
-		time_t	startedAt;
+		time_t	StartedAt;
 		FILE	*Handle;
 		void	(*Header)(void);
 		void	(*Write)(char*, int);
 		void	(*Break)(void);
-} dump __attribute__ ((aligned (8))) = {
-	.startedAt = 0,
+} Dump __attribute__ ((aligned (8))) = {
+	.StartedAt = 0,
 	.Reset	= 0x0,
 	.Handle = NULL,
 	.Header = JSON_Header,
@@ -1752,8 +1752,8 @@ void FreeAll(char *buffer)
 	if (fuse != NULL) {
 		free(fuse);
 	}
-	if (dump.Handle != NULL) {
-		fclose(dump.Handle);
+	if (Dump.Handle != NULL) {
+		fclose(Dump.Handle);
 	}
 }
 
@@ -1887,11 +1887,12 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	return (sdx);
 }
 
-__typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
+__typeof__ (errno) StartDump(	char *dumpFormat, int tickReset,
+				enum DUMP_METHOD method )
 {
 	__typeof__ (errno) rc = EBUSY;
 
-	if (!BITVAL(dump.Status, 0))
+	if (!BITVAL(Dump.Status, 0))
 	{
 		char *dumpFileName = malloc(64);
 		if (dumpFileName != NULL)
@@ -1900,11 +1901,23 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 			RDTSC64(tsc);
 
 			snprintf(dumpFileName, 64, dumpFormat, tsc);
-			if ((dump.Handle = fopen(dumpFileName, "w")) != NULL)
+			if ((Dump.Handle = fopen(dumpFileName, "w")) != NULL)
 			{
-				dump.Tick = tickReset;
-				dump.Header();
-				BITSET(LOCKLESS, dump.Status, 0);
+				switch (method) {
+				case DUMP_TO_JSON:
+					Dump.Header= JSON_Header;
+					Dump.Write = JSON_Page;
+					Dump.Break = JSON_Break;
+					break;
+				case DUMP_TO_ANSI:
+					Dump.Header= ANSI_Header;
+					Dump.Write = ANSI_Page;
+					Dump.Break = ANSI_Break;
+					break;
+				};
+				Dump.Tick = tickReset;
+				Dump.Header();
+				BITSET(LOCKLESS, Dump.Status, 0);
 				rc = 0;
 			} else {
 				rc = errno;
@@ -1919,12 +1932,12 @@ __typeof__ (errno) StartDump(char *dumpFormat, int tickReset)
 
 void AbortDump(void)
 {
-	dump.Tick = 0;
+	Dump.Tick = 0;
 }
 
 unsigned char DumpStatus(void)
 {
-	return (BITVAL(dump.Status, 0));
+	return (BITVAL(Dump.Status, 0));
 }
 
 unsigned int WriteConsole(SCREEN_SIZE drawSize)
@@ -1945,19 +1958,19 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 		fwrite(console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 
-		if (BITVAL(dump.Status, 0))
+		if (BITVAL(Dump.Status, 0))
 		{
-			dump.Write(console, writeSize);
+			Dump.Write(console, writeSize);
 
-			if (dump.Tick > 0) {
-				dump.Tick--;
+			if (Dump.Tick > 0) {
+				Dump.Tick--;
 
-				dump.Break();
+				Dump.Break();
 			} else {
-				BITCLR(LOCKLESS, dump.Status, 0);
+				BITCLR(LOCKLESS, Dump.Status, 0);
 
-				if (fclose(dump.Handle) == 0) {
-					dump.Handle = NULL;
+				if (fclose(Dump.Handle) == 0) {
+					Dump.Handle = NULL;
 				}
 				layout = 1;
 			}
@@ -1972,25 +1985,25 @@ void ANSI_Header(void)
 
 void ANSI_Page(char *inStr, int outSize)
 {
-	fwrite(inStr, (size_t) outSize, 1, dump.Handle);
+	fwrite(inStr, (size_t) outSize, 1, Dump.Handle);
 }
 
 void ANSI_Break(void)
 {
-	fwrite( _LF _FF, 1, 1, dump.Handle);
+	fwrite( _LF _FF, 1, 1, Dump.Handle);
 }
 
 void JSON_Header(void)
 {
 	SCREEN_SIZE terminalSize = GetScreenSize();
 
-	time(&dump.startedAt);
-	fprintf(dump.Handle,
+	time(&Dump.StartedAt);
+	fprintf(Dump.Handle,
 		"{\"version\": %d, \"width\": %d, \"height\": %d,"	\
 		" \"timestamp\": %ld, \"title\": \"%s\", "		\
 		"\"env\": {\"TERM\": \"%s\"}}\n",
 		2, terminalSize.width, terminalSize.height,
-		dump.startedAt, "CoreFreq", "xterm");
+		Dump.StartedAt, "CoreFreq", "xterm");
 }
 
 void JSON_Page(char *inStr, int outSize)
@@ -2001,31 +2014,31 @@ void JSON_Page(char *inStr, int outSize)
 	time_t now;
 	time(&now);
 
-	fractional = modf(difftime(now, dump.startedAt), &integral);
-	fprintf(dump.Handle, "[%lld.%lld, \"o\", \"",
+	fractional = modf(difftime(now, Dump.StartedAt), &integral);
+	fprintf(Dump.Handle, "[%lld.%lld, \"o\", \"",
 		(unsigned long long) integral,
 		(unsigned long long) fractional);
 
 	for (pChr = pFirst; pChr < pLast; pChr++) {
 		switch (*pChr) {
 		case 0x1b:
-			fprintf(dump.Handle, "\\u001b");
+			fprintf(Dump.Handle, "\\u001b");
 			break;
 		case 0xc2:
-			fprintf(dump.Handle, "\\u00%x", *(++pChr));
+			fprintf(Dump.Handle, "\\u00%x", *(++pChr));
 			break;
 		case 0xc3:
-			fprintf(dump.Handle, "\\u00%x", *(++pChr) ^ 0x40);
+			fprintf(Dump.Handle, "\\u00%x", *(++pChr) ^ 0x40);
 			break;
 		case '\\':
-			fprintf(dump.Handle, "\\u005c");
+			fprintf(Dump.Handle, "\\u005c");
 			break;
 		default:
-			fputc((*pChr), dump.Handle);
+			fputc((*pChr), Dump.Handle);
 			break;
 		}
 	}
-	fprintf(dump.Handle, "\"]\n");
+	fprintf(Dump.Handle, "\"]\n");
 }
 
 void JSON_Break(void)

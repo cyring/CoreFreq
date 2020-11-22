@@ -10014,7 +10014,7 @@ int Shortcut(SCANKEY *scan)
 	{
 		AbortDump();
 	}
-	else if (StartDump("corefreq_%llx.cast", 0) == 0)
+	else if (StartDump("corefreq_%llx.asc", 0, DUMP_TO_ANSI) == 0)
 	{
 		draw.Flag.layout = 1;
 	}
@@ -10025,7 +10025,9 @@ int Shortcut(SCANKEY *scan)
 	{
 		AbortDump();
 	}
-	else if (StartDump("corefreq_%llx.cast", recorder.Reset - 1) == 0)
+	else if (StartDump(	"corefreq_%llx.cast",
+				recorder.Reset - 1,
+				DUMP_TO_JSON) == 0 )
 	{
 		draw.Flag.layout = 1;
 	}

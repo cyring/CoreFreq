@@ -877,8 +877,14 @@ extern  locale_t	SysLoc;
 	LocaleTo(LC_ALL);						\
 })
 
+enum DUMP_METHOD {
+	DUMP_TO_JSON,
+	DUMP_TO_ANSI
+};
+
 extern void StopDump(void) ;
-extern __typeof__ (errno) StartDump(char *dumpFormat, int tickReset) ;
+extern __typeof__ (errno) StartDump(	char *dumpFormat, int tickReset,
+					enum DUMP_METHOD method ) ;
 extern void AbortDump(void) ;
 extern unsigned char DumpStatus(void) ;
 void ANSI_Header(void) ;
