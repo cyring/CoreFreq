@@ -521,13 +521,13 @@ ASCII	hSpace[] = HSPACE,
 Layer	*sLayer = NULL,
 	*dLayer = NULL,
 	*wLayer = NULL,
-	*fuse   = NULL;
+	*Fuse   = NULL;
 
 StockList stockList = {.head = NULL, .tail = NULL};
 
 WinList winList = {.head = NULL};
 
-char *console = NULL;
+char *Console = NULL;
 
 struct {
     union {
@@ -1729,8 +1729,8 @@ void FreeAll(char *buffer)
 	DestroyAllWindows(&winList);
 	DestroyFullStock();
 
-	if (console != NULL) {
-		free(console);
+	if (Console != NULL) {
+		free(Console);
 	}
 	if (buffer != NULL) {
 		free(buffer);
@@ -1738,7 +1738,7 @@ void FreeAll(char *buffer)
 	DestroyLayer(sLayer);
 	DestroyLayer(dLayer);
 	DestroyLayer(wLayer);
-	DestroyLayer(fuse);
+	DestroyLayer(Fuse);
 
 	if (sLayer != NULL) {
 		free(sLayer);
@@ -1749,8 +1749,8 @@ void FreeAll(char *buffer)
 	if (wLayer != NULL) {
 		free(wLayer);
 	}
-	if (fuse != NULL) {
-		free(fuse);
+	if (Fuse != NULL) {
+		free(Fuse);
 	}
 	if (Dump.Handle != NULL) {
 		fclose(Dump.Handle);
@@ -1764,7 +1764,7 @@ __typeof__ (errno) AllocAll(char **buffer)
 	if ((*buffer = malloc(10 * MAX_WIDTH)) == NULL) {
 		return (ENOMEM);
 	}
-	if ((console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL) {
+	if ((Console = malloc((10 * MAX_WIDTH) * MAX_HEIGHT)) == NULL) {
 		return (ENOMEM);
 	}
 	const CoordSize layerSize = {
@@ -1781,13 +1781,13 @@ __typeof__ (errno) AllocAll(char **buffer)
 	if ((wLayer = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
 	}
-	if ((fuse   = calloc(1, sizeof(Layer))) == NULL) {
+	if ((Fuse   = calloc(1, sizeof(Layer))) == NULL) {
 		return (ENOMEM);
 	}
 	CreateLayer(sLayer, layerSize);
 	CreateLayer(dLayer, layerSize);
 	CreateLayer(wLayer, layerSize);
-	CreateLayer(fuse, layerSize);
+	CreateLayer(Fuse, layerSize);
 
 	UBENCH_SETUP(1, 0);
 	return (0);
@@ -1804,7 +1804,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 
     for (_row = 0; _row < drawSize.height; _row++)
     {
-	register const signed int _wth = _row * fuse->size.wth;
+	register const signed int _wth = _row * Fuse->size.wth;
 
 	stream[sdx++] = 0x1b;
 	stream[sdx++] = '[';
@@ -1821,11 +1821,11 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 	for (_col = 0; _col < drawSize.width; _col++)
 	{
 		idx = _col + _wth;
-		fa =   &fuse->attr[idx];
+		fa =   &Fuse->attr[idx];
 		sa = &sLayer->attr[idx];
 		da = &dLayer->attr[idx];
 		wa = &wLayer->attr[idx];
-		fc =   &fuse->code[idx];
+		fc =   &Fuse->code[idx];
 		sc = &sLayer->code[idx];
 		dc = &dLayer->code[idx];
 		wc = &wLayer->code[idx];
@@ -1948,19 +1948,19 @@ unsigned int WriteConsole(SCREEN_SIZE drawSize)
 
 	UBENCH_RDCOUNTER(1);
 
-	writeSize = FuseAll(console, drawSize);
+	writeSize = FuseAll(Console, drawSize);
 
 	UBENCH_RDCOUNTER(2);
 	UBENCH_COMPUTE();
 
 	if (writeSize > 0)
 	{
-		fwrite(console, (size_t) writeSize, 1, stdout);
+		fwrite(Console, (size_t) writeSize, 1, stdout);
 		fflush(stdout);
 
 		if (BITVAL(Dump.Status, 0))
 		{
-			Dump.Write(console, writeSize);
+			Dump.Write(Console, writeSize);
 
 			if (Dump.Tick > 0) {
 				Dump.Tick--;

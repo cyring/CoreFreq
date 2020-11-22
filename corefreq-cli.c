@@ -4688,7 +4688,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 }
 
 /* >>> GLOBALS >>> */
-static char *buffer = NULL;
+static char *Buffer = NULL;
 
 Coordinate *cTask = NULL;
 
@@ -4731,7 +4731,7 @@ struct DRAW_ST draw = {
 
 enum THERM_PWR_EVENTS processorEvents = EVENT_THERM_NONE;
 
-struct RECORDER_ST recorder = {
+struct RECORDER_ST Recorder = {
 		.Reset = 0,
 		.Select = 1,
 		.Ratios = {0, 1, 2, 10, 20, 60, 90, 120, 240, 0}
@@ -4773,28 +4773,28 @@ int ByteReDim(unsigned long ival, int constraint, unsigned long *oval)
 
 #define Clock2LCD(layer, col, row, value1, value2)			\
 ({									\
-	snprintf(buffer, 4+1, "%04.0f", value1);			\
-	PrintLCD(layer, col, row, 4, buffer,				\
+	snprintf(Buffer, 4+1, "%04.0f", value1);			\
+	PrintLCD(layer, col, row, 4, Buffer,				\
 	    Threshold(value2,Ruler.Minimum,Ruler.Median,_GREEN,_YELLOW,_RED));\
 })
 
 #define Counter2LCD(layer, col, row, value)				\
 ({									\
-	snprintf(buffer, 4+1, "%04.0f" , value);			\
-	PrintLCD(layer, col, row, 4, buffer,				\
+	snprintf(Buffer, 4+1, "%04.0f" , value);			\
+	PrintLCD(layer, col, row, 4, Buffer,				\
 		Threshold(value, 0.f, 1.f, _RED,_YELLOW,_WHITE));	\
 })
 
 #define Load2LCD(layer, col, row, value)				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
 		Threshold(value, 100.f/3.f, 100.f/1.5f, _WHITE,_YELLOW,_RED))
 
 #define Idle2LCD(layer, col, row, value)				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
 		Threshold(value, 100.f/3.f, 100.f/1.5f, _YELLOW,_WHITE,_GREEN))
 
 #define Sys2LCD(layer, col, row, value) 				\
-	PrintLCD(layer, col, row, 4, frtostr(value, 4, buffer),		\
+	PrintLCD(layer, col, row, 4, frtostr(value, 4, Buffer),		\
 		Threshold(value, 100.f/6.6f, 50.0, _RED,_YELLOW,_WHITE))
 
 void ForEachCellPrint_Menu(Window *win, void *plist)
@@ -5209,7 +5209,7 @@ Window *CreateSettings(unsigned long long id)
 	GridCall( StoreTCell(	wSet, OPS_RECORDER,
 				RSC(SETTINGS_RECORDER).CODE(),
 				MAKE_PRINT_UNFOCUS ),
-		RecorderUpdate, &recorder.Reset );
+		RecorderUpdate, &Recorder.Reset );
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -6995,7 +6995,7 @@ Window *CreateRecorder(unsigned long long id)
 	unsigned int idx = 1;
 	do {
 		unsigned long long key = OPS_RECORDER | (idx << 4);
-		int	duration = recorder.Ratios[idx] * RECORDER_DEFAULT,
+		int	duration = Recorder.Ratios[idx] * RECORDER_DEFAULT,
 			remainder = duration % (60 * 60),
 			hours	= duration / (60 * 60),
 			minutes = remainder / 60,
@@ -7010,10 +7010,10 @@ Window *CreateRecorder(unsigned long long id)
 				item,
 				RSC(CREATE_RECORDER).ATTR() );
 
-	} while (recorder.Ratios[++idx] != 0);
+	} while (Recorder.Ratios[++idx] != 0);
 
-	if (recorder.Select > 0) {
-		wRec->matrix.select.row  = recorder.Select - 1;
+	if (Recorder.Select > 0) {
+		wRec->matrix.select.row  = Recorder.Select - 1;
 	}
 	StoreWindow(wRec, .title, (char*) RSC(BOX_RECORDER_TITLE).CODE());
 
@@ -10026,7 +10026,7 @@ int Shortcut(SCANKEY *scan)
 		AbortDump();
 	}
 	else if (StartDump(	"corefreq_%llx.cast",
-				recorder.Reset - 1,
+				Recorder.Reset - 1,
 				DUMP_TO_JSON) == 0 )
 	{
 		draw.Flag.layout = 1;
@@ -10041,9 +10041,9 @@ int Shortcut(SCANKEY *scan)
     case OPS_RECORDER_X120:
     case OPS_RECORDER_X240:
     {
-	__typeof__(recorder.Select) select=(scan->key & OPS_RECORDER_MASK) >> 4;
-	recorder.Select = select;
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+	__typeof__(Recorder.Select) select=(scan->key & OPS_RECORDER_MASK) >> 4;
+	Recorder.Select = select;
+	RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
     }
     break;
     case OPS_RECORDER:
@@ -10509,15 +10509,15 @@ void PrintTaskMemory(Layer *layer, CUINT row,
 			unsigned long freeRAM,
 			unsigned long totalRAM)
 {
-	snprintf(buffer, 11+20+20+1,
+	snprintf(Buffer, 11+20+20+1,
 			"%6d" "%9lu" "%-9lu",
 			taskCount,
 			freeRAM >> draw.Unit.Memory,
 			totalRAM >> draw.Unit.Memory);
 
-	memcpy(&LayerAt(layer, code, (draw.Size.width-35), row), &buffer[0], 6);
-	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &buffer[6], 9);
-	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &buffer[15],9);
+	memcpy(&LayerAt(layer, code, (draw.Size.width-35), row), &Buffer[0], 6);
+	memcpy(&LayerAt(layer, code, (draw.Size.width-22), row), &Buffer[6], 9);
+	memcpy(&LayerAt(layer, code, (draw.Size.width-12), row), &Buffer[15],9);
 }
 #endif
 
@@ -10555,17 +10555,17 @@ void Layout_Header(Layer *layer, CUINT row)
 
 	row++;
 
-	snprintf(buffer, 10+10+1,
+	snprintf(Buffer, 10+10+1,
 			"%3u" "%-3u",
 			Shm->Proc.CPU.OnLine,
 			Shm->Proc.CPU.Count);
 
-	hProc1.code[2] = buffer[0];
-	hProc1.code[3] = buffer[1];
-	hProc1.code[4] = buffer[2];
-	hProc1.code[6] = buffer[3];
-	hProc1.code[7] = buffer[4];
-	hProc1.code[8] = buffer[5];
+	hProc1.code[2] = Buffer[0];
+	hProc1.code[3] = Buffer[1];
+	hProc1.code[4] = Buffer[2];
+	hProc1.code[6] = Buffer[3];
+	hProc1.code[7] = Buffer[4];
+	hProc1.code[8] = Buffer[5];
 
 	unsigned int L1I_Size = 0, L1D_Size = 0, L2U_Size = 0, L3U_Size = 0;
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -10583,26 +10583,26 @@ void Layout_Header(Layer *layer, CUINT row)
 	L2U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[2].Size;
 	L3U_Size=Shm->Cpu[Shm->Proc.Service.Core].Topology.Cache[3].Size;
     }
-	snprintf(buffer, 10+10+1, "%-3u" "%-3u", L1I_Size, L1D_Size);
+	snprintf(Buffer, 10+10+1, "%-3u" "%-3u", L1I_Size, L1D_Size);
 
-	hArch1.code[17] = buffer[0];
-	hArch1.code[18] = buffer[1];
-	hArch1.code[19] = buffer[2];
-	hArch1.code[25] = buffer[3];
-	hArch1.code[26] = buffer[4];
-	hArch1.code[27] = buffer[5];
+	hArch1.code[17] = Buffer[0];
+	hArch1.code[18] = Buffer[1];
+	hArch1.code[19] = Buffer[2];
+	hArch1.code[25] = Buffer[3];
+	hArch1.code[26] = Buffer[4];
+	hArch1.code[27] = Buffer[5];
 
-	snprintf(buffer, 10+10+1, "%-4u" "%-5u", L2U_Size, L3U_Size);
+	snprintf(Buffer, 10+10+1, "%-4u" "%-5u", L2U_Size, L3U_Size);
 
-	hArch2.code[ 3] = buffer[0];
-	hArch2.code[ 4] = buffer[1];
-	hArch2.code[ 5] = buffer[2];
-	hArch2.code[ 6] = buffer[3];
-	hArch2.code[13] = buffer[4];
-	hArch2.code[14] = buffer[5];
-	hArch2.code[15] = buffer[6];
-	hArch2.code[16] = buffer[7];
-	hArch2.code[17] = buffer[8];
+	hArch2.code[ 3] = Buffer[0];
+	hArch2.code[ 4] = Buffer[1];
+	hArch2.code[ 5] = Buffer[2];
+	hArch2.code[ 6] = Buffer[3];
+	hArch2.code[13] = Buffer[4];
+	hArch2.code[14] = Buffer[5];
+	hArch2.code[15] = Buffer[6];
+	hArch2.code[16] = Buffer[7];
+	hArch2.code[17] = Buffer[8];
 
 	len = CUMIN(xProc1 - (hProc0.origin.col + hProc0.length),
 			(CUINT) strlen(Shm->Proc.Brand));
@@ -11033,10 +11033,10 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	if (Shm->SysGate.trackTask)
 	{
-		snprintf(buffer, 11+1, "%5d", Shm->SysGate.trackTask);
+		snprintf(Buffer, 11+1, "%5d", Shm->SysGate.trackTask);
 		LayerFillAt(	layer,
 				(hTrack0.origin.col + 15), hTrack0.origin.row,
-				5, buffer, MakeAttr(CYAN, 0, BLACK, 0) );
+				5, Buffer, MakeAttr(CYAN, 0, BLACK, 0) );
 	}
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -11261,11 +11261,11 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
 						Pwr[Shm->Proc.Technology.C1E];
 
-	snprintf(buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
+	snprintf(Buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
-	hTech1.code[23] = buffer[0];
-	hTech1.code[24] = buffer[1];
-	hTech1.code[25] = buffer[2];
+	hTech1.code[23] = Buffer[0];
+	hTech1.code[24] = Buffer[1];
+	hTech1.code[25] = Buffer[2];
 
 	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
 						Pwr[(Shm->Proc.PM_version > 0)];
@@ -11348,12 +11348,12 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	row++;
 
-	len = snprintf( buffer, MAX_UTS_LEN, "%s",
+	len = snprintf( Buffer, MAX_UTS_LEN, "%s",
 			BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) ?
 			Shm->SysGate.sysname : "SysGate" );
 
 	LayerFillAt(	layer, col, row,
-			len, buffer,
+			len, Buffer,
 			MakeAttr(CYAN, 0, BLACK, 0));
 	col += len;
 
@@ -11368,13 +11368,13 @@ void Layout_Footer(Layer *layer, CUINT row)
 	col++;
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-		len = snprintf( buffer, 2+5+5+5+1, "%hu.%hu.%hu",
+		len = snprintf( Buffer, 2+5+5+5+1, "%hu.%hu.%hu",
 				Shm->SysGate.kernel.version,
 				Shm->SysGate.kernel.major,
 				Shm->SysGate.kernel.minor );
 
 		LayerFillAt(	layer, col, row,
-				len, buffer,
+				len, Buffer,
 				MakeAttr(WHITE, 0, BLACK, 1));
 		col += len;
 	} else {
@@ -11419,14 +11419,14 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 void Layout_CPU_To_String(const unsigned int cpu)
 {
-	snprintf(buffer, 10+1, "%03u", cpu);
+	snprintf(Buffer, 10+1, "%03u", cpu);
 }
 
 void Layout_CPU_To_View(Layer *layer, const CUINT col, const CUINT row)
 {
-	LayerAt(layer,code, col + 0, row) = buffer[0];
-	LayerAt(layer,code, col + 1, row) = buffer[1];
-	LayerAt(layer,code, col + 2, row) = buffer[2];
+	LayerAt(layer,code, col + 0, row) = Buffer[0];
+	LayerAt(layer,code, col + 1, row) = Buffer[1];
+	LayerAt(layer,code, col + 2, row) = Buffer[2];
 }
 
 void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
@@ -11477,7 +11477,7 @@ size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 17+8+6+7+7+7+7+7+7+11+1,
+	return (snprintf(Buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11497,7 +11497,7 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 17+8+10+7+7+7+7+7+7+11+1,
+	return (snprintf(Buffer, 17+8+10+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11532,7 +11532,7 @@ size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11554,7 +11554,7 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11591,7 +11591,7 @@ size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
+	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11613,7 +11613,7 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
-	return (snprintf(buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
+	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
@@ -11724,7 +11724,7 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	size_t len = Draw_Freq_Temp_Matrix[thermalScope][Setting.fahrCels](
 				CFlop, &Shm->Cpu[cpu], cpu
 	);
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
 
@@ -11753,7 +11753,7 @@ CUINT Draw_Monitor_Instructions(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = snprintf( buffer, 6+18+18+18+20+1,
+	len = snprintf( Buffer, 6+18+18+18+20+1,
 			"%17.6f" "/s"					\
 			"%17.6f" "/c"					\
 			"%17.6f" "/i"					\
@@ -11762,7 +11762,7 @@ CUINT Draw_Monitor_Instructions(Layer *layer, const unsigned int cpu, CUINT row)
 			CFlop->State.IPC,
 			CFlop->State.CPI,
 			CFlop->Delta.INST );
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -11772,13 +11772,13 @@ CUINT Draw_Monitor_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = snprintf( buffer, 20+20+20+20+1,
+	len = snprintf( Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C0.UCC,
 			CFlop->Delta.C0.URC,
 			CFlop->Delta.C1,
 			CFlop->Delta.TSC );
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -11788,13 +11788,13 @@ CUINT Draw_Monitor_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = snprintf( buffer, 20+20+20+20+1,
+	len = snprintf( Buffer, 20+20+20+20+1,
 			"%18llu%18llu%18llu%18llu",
 			CFlop->Delta.C1,
 			CFlop->Delta.C3,
 			CFlop->Delta.C6,
 			CFlop->Delta.C7 );
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -11806,12 +11806,12 @@ CUINT Draw_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 size_t Draw_Monitor_Tasks_Relative_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(buffer, 8+1, "%7.2f", CFlop->Relative.Freq));
+	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Relative.Freq));
 }
 
 size_t Draw_Monitor_Tasks_Absolute_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(buffer, 8+1, "%7.2f", CFlop->Absolute.Perf));
+	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Perf));
 }
 
 size_t (*Draw_Monitor_Tasks_Matrix[2])(struct FLIP_FLOP *CFlop) = \
@@ -11826,7 +11826,7 @@ CUINT Draw_Monitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	size_t len = Draw_Monitor_Tasks_Matrix[draw.Load](CFlop);
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 	cTask[cpu].col = LOAD_LEAD + 8;
 
 	return (0);
@@ -11837,30 +11837,30 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	size_t len;
 
-	len = snprintf(buffer, 10+1, "%10u", CFlop->Counter.SMI);
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	len = snprintf(Buffer, 10+1, "%10u", CFlop->Counter.SMI);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_LOCAL) == 1) {
-		len = snprintf(buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), buffer, len);
+		len = snprintf(Buffer, 10+1, "%10u", CFlop->Counter.NMI.LOCAL);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), Buffer, len);
 	} else {
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 24),row), hSpace, 10);
 	}
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_UNKNOWN) == 1) {
-		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), buffer, len);
+		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.UNKNOWN);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), Buffer, len);
 	} else {
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 34),row), hSpace, 10);
 	}
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_SERR) == 1) {
-		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), buffer, len);
+		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.PCISERR);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), Buffer, len);
 	} else {
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 44),row), hSpace, 10);
 	}
 	if (BITVAL(Shm->Registration.NMI, BIT_NMI_IO_CHECK) == 1) {
-		len = snprintf(buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
-		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), buffer, len);
+		len = snprintf(Buffer, 10+1,"%10u",CFlop->Counter.NMI.IOCHECK);
+		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), Buffer, len);
 	} else {
 		memcpy(&LayerAt(layer,code,(LOAD_LEAD + 54),row), hSpace, 10);
 	}
@@ -11870,7 +11870,7 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
 			69, hSpace) );
@@ -11879,7 +11879,7 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
@@ -11912,7 +11912,7 @@ size_t Draw_Sensors_V0_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
@@ -11925,7 +11925,7 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"		\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
@@ -12037,7 +12037,7 @@ size_t Draw_Sensors_V0_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
@@ -12048,7 +12048,7 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
@@ -12083,7 +12083,7 @@ size_t Draw_Sensors_V1_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
@@ -12097,7 +12097,7 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
@@ -12631,7 +12631,7 @@ CUINT Draw_Monitor_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 					[thermalScope]
 					[powerScope]	(layer, cpu, row);
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -12641,7 +12641,7 @@ CUINT Draw_Monitor_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20%7d"					\
 			"\x20\x20\x20\x20\x20%5.4f"			\
 			"\x20\x20\x20%5.4f"				\
@@ -12690,7 +12690,7 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	len = Draw_Voltage_Matrix[voltageScope](layer, cpu, row);
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -12700,7 +12700,7 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
-	return (snprintf(buffer, 80+1,
+	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20%018llu\x20\x20"			\
 			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20\x20"	\
 			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20",
@@ -12749,7 +12749,7 @@ CUINT Draw_Monitor_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 
 	len = Draw_Energy_Matrix[powerScope](layer, cpu, row);
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -12757,7 +12757,7 @@ CUINT Draw_Monitor_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Monitor_Slice_Error_Relative_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
-	return (snprintf(buffer, 8+20+20+20+20+20+1,
+	return (snprintf(Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Relative.Freq,
@@ -12771,7 +12771,7 @@ size_t Draw_Monitor_Slice_Error_Relative_Freq(	struct FLIP_FLOP *CFlop,
 size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice )
 {
-	return (snprintf(buffer, 8+20+20+20+20+20+1,
+	return (snprintf(Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
 			CFlop->Absolute.Perf,
@@ -12785,7 +12785,7 @@ size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 size_t Draw_Monitor_Slice_NoError_Relative_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
-	return (snprintf(buffer, 8+20+20+20+20+18+1,
+	return (snprintf(Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Relative.Freq,
@@ -12799,7 +12799,7 @@ size_t Draw_Monitor_Slice_NoError_Relative_Freq(struct FLIP_FLOP *CFlop,
 size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 						struct SLICE_STRUCT *pSlice)
 {
-	return (snprintf(buffer, 8+20+20+20+20+18+1,
+	return (snprintf(Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
 			CFlop->Absolute.Perf,
@@ -12832,7 +12832,7 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 	size_t len;
 	len = Draw_Monitor_Slice_Matrix[flagError][draw.Load](CFlop, pSlice);
 
-	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), buffer, len);
+	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
 	return (0);
 }
@@ -12843,7 +12843,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	row += 1 + draw.Area.MaxRows;
 	if (!draw.Flag.avgOrPC) {
-		len = snprintf( buffer, ((5*2)+1)+(6*7)+1,
+		len = snprintf( Buffer, ((5*2)+1)+(6*7)+1,
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% " \
 				"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%",
 				100.f * Shm->Proc.Avg.Turbo,
@@ -12852,9 +12852,9 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * Shm->Proc.Avg.C3,
 				100.f * Shm->Proc.Avg.C6,
 				100.f * Shm->Proc.Avg.C7 );
-		memcpy(&LayerAt(layer, code, 20, row), buffer, len);
+		memcpy(&LayerAt(layer, code, 20, row), Buffer, len);
 	} else {
-		len = snprintf( buffer, ((6*4)+3+5)+(8*6)+1,
+		len = snprintf( Buffer, ((6*4)+3+5)+(8*6)+1,
 				"c2:%-5.1f"	" c3:%-5.1f"	" c4:%-5.1f" \
 				" c6:%-5.1f"	" c7:%-5.1f"	" c8:%-5.1f" \
 				" c9:%-5.1f"	" c10:%-5.1f",
@@ -12866,7 +12866,7 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 				100.f * Shm->Proc.State.PC08,
 				100.f * Shm->Proc.State.PC09,
 				100.f * Shm->Proc.State.PC10 );
-		memcpy(&LayerAt(layer, code, 7, row), buffer, len);
+		memcpy(&LayerAt(layer, code, 7, row), Buffer, len);
 	}
 	row += 1;
 	return (row);
@@ -12889,88 +12889,88 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	bar0 = Shm->Proc.State.PC02 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC02, 100.f * Shm->Proc.State.PC02,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, row), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, row), Buffer, len);
 /* PC03 */
 	bar0 = Shm->Proc.State.PC03 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC03, 100.f * Shm->Proc.State.PC03,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 1)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 1)), Buffer, len);
 /* PC04 */
 	bar0 = Shm->Proc.State.PC04 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC04, 100.f * Shm->Proc.State.PC04,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 2)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 2)), Buffer, len);
 /* PC06 */
 	bar0 = Shm->Proc.State.PC06 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC06, 100.f * Shm->Proc.State.PC06,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 3)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 3)), Buffer, len);
 /* PC07 */
 	bar0 = Shm->Proc.State.PC07 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC07, 100.f * Shm->Proc.State.PC07,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 4)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 4)), Buffer, len);
 /* PC08 */
 	bar0 = Shm->Proc.State.PC08 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC08, 100.f * Shm->Proc.State.PC08,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 5)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 5)), Buffer, len);
 /* PC09 */
 	bar0 = Shm->Proc.State.PC09 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC09, 100.f * Shm->Proc.State.PC09,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 6)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 6)), Buffer, len);
 /* PC10 */
 	bar0 = Shm->Proc.State.PC10 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.PC10, 100.f * Shm->Proc.State.PC10,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 7)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 7)), Buffer, len);
 /* MC6 */
 	bar0 = Shm->Proc.State.MC6 * margin;
 	bar1 = margin - bar0;
 
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%7.2f" "%% " "%.*s" "%.*s",
 			PFlop->Delta.MC6, 100.f * Shm->Proc.State.MC6,
 			bar0, hBar, bar1, hSpace );
-	memcpy(&LayerAt(layer, code, 5, (row + 8)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 8)), Buffer, len);
 /* TSC & UNCORE */
-	len = snprintf( buffer, draw.Area.LoadWidth,
+	len = snprintf( Buffer, draw.Area.LoadWidth,
 			"%18llu" "%.*s" "UNCORE:%18llu",
 			PFlop->Delta.PTSC, 7+2+18, hSpace, PFlop->Uncore.FC0 );
-	memcpy(&LayerAt(layer, code, 5, (row + 9)), buffer, len);
+	memcpy(&LayerAt(layer, code, 5, (row + 9)), Buffer, len);
 
 	row += 1 + 10;
 	return (row);
@@ -13008,34 +13008,34 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		stateAttr = RSC(TRACKER_STATE_COLOR).ATTR();
 	    }
 	    if (!draw.Flag.taskVal) {
-		len = snprintf( buffer, TASK_COMM_LEN, "%s",
+		len = snprintf( Buffer, TASK_COMM_LEN, "%s",
 				Shm->SysGate.taskList[idx].comm );
 	    } else {
 		switch (Shm->SysGate.sortByField) {
 		case F_STATE:
-			len = snprintf( buffer, 2*TASK_COMM_LEN+2, "%s(%s)",
+			len = snprintf( Buffer, 2*TASK_COMM_LEN+2, "%s(%s)",
 					Shm->SysGate.taskList[idx].comm,
 					stateStr );
 			break;
 		case F_RTIME:
-			len = snprintf( buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].runtime );
 			break;
 		case F_UTIME:
-			len = snprintf( buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].usertime );
 			break;
 		case F_STIME:
-			len = snprintf( buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
+			len = snprintf( Buffer, TASK_COMM_LEN+20+2, "%s(%llu)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].systime );
 			break;
 		case F_PID:
 			/* fallthrough */
 		case F_COMM:
-			len = snprintf( buffer, TASK_COMM_LEN+11+2, "%s(%d)",
+			len = snprintf( Buffer, TASK_COMM_LEN+11+2, "%s(%d)",
 					Shm->SysGate.taskList[idx].comm,
 					Shm->SysGate.taskList[idx].pid );
 			break;
@@ -13045,7 +13045,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		LayerCopyAt(layer,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
-			len, stateAttr, buffer);
+			len, stateAttr, Buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += len;
 	      /* Add a blank spacing between items: up to (ldx) chars	*/
@@ -13067,7 +13067,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		LayerCopyAt(layer,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row,
-			dif, stateAttr, buffer);
+			dif, stateAttr, Buffer);
 
 		cTask[Shm->SysGate.taskList[idx].wake_cpu].col += dif;
 	    }
@@ -13081,7 +13081,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 void Draw_AltMonitor_Energy_Joule(void)
 {
-	snprintf(buffer, 9+9+9+9+1,
+	snprintf(Buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Energy[PWR_DOMAIN(PKG)].Current,
 		Shm->Proc.State.Energy[PWR_DOMAIN(CORES)].Current,
@@ -13091,7 +13091,7 @@ void Draw_AltMonitor_Energy_Joule(void)
 
 void Draw_AltMonitor_Power_Watt(void)
 {
-	snprintf(buffer, 9+9+9+9+1,
+	snprintf(Buffer, 9+9+9+9+1,
 		"%8.4f" "%8.4f" "%8.4f" "%8.4f",
 		Shm->Proc.State.Power[PWR_DOMAIN(PKG)].Current,
 		Shm->Proc.State.Power[PWR_DOMAIN(CORES)].Current,
@@ -13111,10 +13111,10 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt]();
 
-	memcpy(&LayerAt(layer, code, col +  1,	row), &buffer[24], 8);
-	memcpy(&LayerAt(layer, code, col + 22,	row), &buffer[16], 8);
-	memcpy(&LayerAt(layer, code, col + 44,	row), &buffer[ 0], 8);
-	memcpy(&LayerAt(layer, code, col + 64,	row), &buffer[ 8], 8);
+	memcpy(&LayerAt(layer, code, col +  1,	row), &Buffer[24], 8);
+	memcpy(&LayerAt(layer, code, col + 22,	row), &Buffer[16], 8);
+	memcpy(&LayerAt(layer, code, col + 44,	row), &Buffer[ 0], 8);
+	memcpy(&LayerAt(layer, code, col + 64,	row), &Buffer[ 8], 8);
 
 	row += 1;
 	return (row);
@@ -13127,7 +13127,7 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 
-	snprintf( buffer, 2*11+4*6+1,
+	snprintf( Buffer, 2*11+4*6+1,
 			"%7d" "%05.4f" "%05.4f" "%05.4f" "%7d" "%05.4f",
 			PFlop->Voltage.VID.CPU,
 			Shm->Proc.State.Voltage.Limit[SENSOR_LOWEST],
@@ -13136,12 +13136,12 @@ CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 			PFlop->Voltage.VID.SOC,
 			PFlop->Voltage.SOC );
 
-	memcpy(&LayerAt(layer, code, col,	row), &buffer [0], 7);
-	memcpy(&LayerAt(layer, code, col + 12,	row), &buffer [7], 6);
-	memcpy(&LayerAt(layer, code, col + 21,	row), &buffer[13], 6);
-	memcpy(&LayerAt(layer, code, col + 30,	row), &buffer[19], 6);
-	memcpy(&LayerAt(layer, code, col + 49,	row), &buffer[25], 7);
-	memcpy(&LayerAt(layer, code, col + 59,	row), &buffer[32], 6);
+	memcpy(&LayerAt(layer, code, col,	row), &Buffer [0], 7);
+	memcpy(&LayerAt(layer, code, col + 12,	row), &Buffer [7], 6);
+	memcpy(&LayerAt(layer, code, col + 21,	row), &Buffer[13], 6);
+	memcpy(&LayerAt(layer, code, col + 30,	row), &Buffer[19], 6);
+	memcpy(&LayerAt(layer, code, col + 49,	row), &Buffer[25], 7);
+	memcpy(&LayerAt(layer, code, col + 59,	row), &Buffer[32], 6);
 
 	row += 1;
 	return (row);
@@ -13162,7 +13162,7 @@ void Draw_Footer_Voltage_Fahrenheit(struct PKG_FLIP_FLOP *PFlop)
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
 	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
 	};
-	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
+	snprintf(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			Cels2Fahr(PFlop->Thermal.Temp),
 			PFlop->Voltage.CPU);
 }
@@ -13173,7 +13173,7 @@ void Draw_Footer_Voltage_Celsius(struct PKG_FLIP_FLOP *PFlop)
 	(SCOPE_OF_FORMULA(Shm->Proc.thermalFormula) != FORMULA_SCOPE_NONE),
 	(SCOPE_OF_FORMULA(Shm->Proc.voltageFormula) != FORMULA_SCOPE_NONE)
 	};
-	snprintf(buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
+	snprintf(Buffer, 10+5+1, Format_Temp_Voltage[ fmt[0] ] [ fmt[1] ],
 			PFlop->Thermal.Temp,
 			PFlop->Voltage.CPU);
 }
@@ -13232,14 +13232,14 @@ void Draw_Footer(Layer *layer, CUINT row)
 
 	Draw_Footer_Voltage_Temp[Setting.fahrCels](PFlop);
 
-	LayerAt(layer, code, 75, row) = buffer[0];
-	LayerAt(layer, code, 76, row) = buffer[1];
-	LayerAt(layer, code, 77, row) = buffer[2];
+	LayerAt(layer, code, 75, row) = Buffer[0];
+	LayerAt(layer, code, 76, row) = Buffer[1];
+	LayerAt(layer, code, 77, row) = Buffer[2];
 
-	LayerAt(layer, code, 67, row) = buffer[3];
-	LayerAt(layer, code, 68, row) = buffer[4];
-	LayerAt(layer, code, 69, row) = buffer[5];
-	LayerAt(layer, code, 70, row) = buffer[6];
+	LayerAt(layer, code, 67, row) = Buffer[3];
+	LayerAt(layer, code, 68, row) = Buffer[4];
+	LayerAt(layer, code, 69, row) = Buffer[5];
+	LayerAt(layer, code, 70, row) = Buffer[6];
 
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)
 	&& (Shm->SysGate.tickStep == Shm->SysGate.tickReset)) {
@@ -13618,10 +13618,10 @@ void Layout_Card_Uncore(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hUncore);
 
-	snprintf(buffer, 10+1, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
-	hUncore.code[ 8] = buffer[0];
-	hUncore.code[ 9] = buffer[1];
-	hUncore.code[10] = buffer[2];
+	snprintf(Buffer, 10+1, "x%2u", Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
+	hUncore.code[ 8] = Buffer[0];
+	hUncore.code[ 9] = Buffer[1];
+	hUncore.code[10] = Buffer[2];
 
 	LayerCopyAt(	layer, hUncore.origin.col, hUncore.origin.row,
 			hUncore.length, hUncore.attr, hUncore.code);
@@ -13633,11 +13633,11 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hBus);
 
-	snprintf(buffer, 10+1, "%4.1f", Shm->Uncore.Bus.Rate / 1000.f);
-	hBus.code[4] = buffer[0];
-	hBus.code[5] = buffer[1];
-	hBus.code[6] = buffer[2];
-	hBus.code[7] = buffer[3];
+	snprintf(Buffer, 10+1, "%4.1f", Shm->Uncore.Bus.Rate / 1000.f);
+	hBus.code[4] = Buffer[0];
+	hBus.code[5] = Buffer[1];
+	hBus.code[6] = Buffer[2];
+	hBus.code[7] = Buffer[3];
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
 	case 0b00:
@@ -13741,12 +13741,12 @@ void Layout_Card_RAM(Layer *layer, Card *card)
       }
       if (totalRAM > 99) {
 	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 1);
-	snprintf(buffer, 20+1+1, "%3lu", totalRAM);
+	snprintf(Buffer, 20+1+1, "%3lu", totalRAM);
       } else {
 	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 0);
-	snprintf(buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
+	snprintf(Buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
       }
-	memcpy(&hMem.code[8], buffer, 3);
+	memcpy(&hMem.code[8], Buffer, 3);
 
 	LayerCopyAt(	layer, hMem.origin.col, hMem.origin.row,
 			hMem.length, hMem.attr, hMem.code);
@@ -13892,10 +13892,10 @@ void Draw_Card_CLK(Layer *layer, Card *card)
 
 	Counter2LCD(layer, card->origin.col, card->origin.row, clock);
 
-	snprintf(buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
+	snprintf(Buffer, 6+1, "%5.1f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+2),(card->origin.row+3)),
-		buffer, 5);
+		Buffer, 5);
 }
 
 void Draw_Card_Uncore(Layer *layer, Card *card)
@@ -13948,9 +13948,9 @@ void Draw_Card_RAM(Layer *layer, Card *card)
 	Sys2LCD(layer, card->origin.col, card->origin.row, percent);
 
 	unit = ByteReDim(Shm->SysGate.memInfo.freeram, 6, &freeRAM);
-	snprintf(buffer, 20+1+1, "%5lu%c", freeRAM, symbol[unit]);
+	snprintf(Buffer, 20+1+1, "%5lu%c", freeRAM, symbol[unit]);
 	memcpy(&LayerAt(layer,code, (card->origin.col+1), (card->origin.row+3)),
-		buffer, 6);
+		Buffer, 6);
       }
     }
     else if (card->data.dword.hi == RENDER_KO) {
@@ -13976,7 +13976,7 @@ void Draw_Card_Task(Layer *layer, Card *card)
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
 
-	snprintf(buffer, 12+3+5+1+5+1, "%.*s%.*s%.*s%n%5u (%c)%n%5u",
+	snprintf(Buffer, 12+3+5+1+5+1, "%.*s%.*s%.*s%n%5u (%c)%n%5u",
 				hl, hSpace,
 				cl, Shm->SysGate.taskList[0].comm,
 				hr, hSpace,
@@ -13990,16 +13990,16 @@ void Draw_Card_Task(Layer *layer, Card *card)
 				(card->origin.row + 1),
 				pb,
 				stateAttr,
-				buffer);
+				Buffer);
 
 	LayerFillAt(layer,	(card->origin.col + 2),
 				(card->origin.row + 2),
 				pe - pb,
-				&buffer[pb],
+				&Buffer[pb],
 				MakeAttr(WHITE, 0, BLACK, 0));
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+6),(card->origin.row+3)),
-				&buffer[pe], 5);
+				&Buffer[pe], 5);
       }
     }
     else if (card->data.dword.hi == RENDER_KO) {
@@ -14148,7 +14148,7 @@ REASON_CODE Top(char option)
 		REASON_SET(reason);
   } else if((cTask = calloc(Shm->Proc.CPU.Count, sizeof(Coordinate))) == NULL) {
 		REASON_SET(reason, RC_MEM_ERR);
-  } else if (AllocAll(&buffer) == ENOMEM) {
+  } else if (AllocAll(&Buffer) == ENOMEM) {
 		REASON_SET(reason, RC_MEM_ERR, ENOMEM);
   } else
   {
@@ -14167,7 +14167,7 @@ REASON_CODE Top(char option)
 
 	draw.Disposal = (option == 'd') ? D_DASHBOARD : D_MAINVIEW;
 
-	RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+	RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 
 	LoadGeometries(BuildConfigFQN());
 
@@ -14212,7 +14212,7 @@ REASON_CODE Top(char option)
 	}
 	if (BITCLR(LOCKLESS, Shm->Proc.Sync, NTFY0)) {
 		ClientFollowService(&localService, &Shm->Proc.Service, 0);
-		RECORDER_COMPUTE(recorder, Shm->Sleep.Interval);
+		RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 		draw.Flag.layout = 1;	 /* Platform changed, redraw layout */
 	}
       } while ( !BITVAL(Shutdown, SYNC)
@@ -14260,7 +14260,7 @@ REASON_CODE Top(char option)
     }
     SaveGeometries(BuildConfigFQN());
   }
-  FreeAll(buffer);
+  FreeAll(Buffer);
 
   if (cTask != NULL) {
 	free(cTask);
@@ -14320,7 +14320,7 @@ void Emergency(int caught)
 {
 	switch (caught) {
 	case SIGINT:	/* Press [CTRL] + [C] twice to force quit.	*/
-	  if (buffer != NULL)
+	  if (Buffer != NULL)
 	  {	/*	UI is running if buffer is allocated		*/
 		Window *win = SearchWinListById(SCANKEY_CTRL_x, &winList);
 	    if (win == NULL) {
