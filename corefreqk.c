@@ -5073,14 +5073,18 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
     for (pstate = BOOST(MIN); pstate < BOOST(SIZE); pstate++) {
 		PUBLIC(RO(Core, AT(cpu)))->Boost[pstate] = 0;
     }
-    if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate) {
-	PSTATELIMIT PstateLimit = {.value = 0};
+    if (PUBLIC(RO(Proc))->Features.AdvPower.EDX.HwPstate)
+    {
+	RDMSR(PstateDef, MSR_AMD_PC6_F17H_STATUS);
+	if (PstateDef.Family_17h.CpuFid == 0)
+	{
+		PSTATELIMIT PstateLimit = {.value = 0};
 
-	RDMSR(PstateLimit, MSR_AMD_PSTATE_CURRENT_LIMIT);
+		RDMSR(PstateLimit, MSR_AMD_PSTATE_CURRENT_LIMIT);
 
-	RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE
-			+ PstateLimit.Family_17h.PstateMaxVal));
-
+		RDMSR(PstateDef, (MSR_AMD_PSTATE_DEF_BASE
+				+ PstateLimit.Family_17h.PstateMaxVal));
+	}
 	COF = AMD_Zen_CoreCOF(	PstateDef.Family_17h.CpuFid,
 				PstateDef.Family_17h.CpuDfsId );
 
@@ -5102,8 +5106,6 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 		PUBLIC(RO(Core, AT(cpu)))->Boost[sort[pstate]] = COF;
 	}
     }
-
-/*TODO(postponed: Should we only count the enabled P-States ?)	*/
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio = pstate;
 
 	/*		Read the Target P-State				*/
