@@ -13525,11 +13525,18 @@ void Dynamic_Header_DualView_Footer(Layer *layer)
 	Matrix_Draw_Load[draw.Load](layer, cpu, row);
 #endif
       }
-#ifndef NO_UPPER
 	/*	Print the Per Core BCLK indicator (yellow)		*/
+#ifdef NO_UPPER
+    if (draw.View != V_PACKAGE) {
+#endif
+#if !defined(NO_LOWER) || !defined(NO_UPPER)
 	LayerAt(layer, code, (LOAD_LEAD - 1), row) =
 			(draw.iClock == (cpu - draw.cpuScroll)) ? '~' : 0x20;
 #endif
+#ifdef NO_UPPER
+    }
+#endif
+
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	Matrix_Draw_Monitor[draw.View](layer, cpu, row + draw.Area.MaxRows + 1);
