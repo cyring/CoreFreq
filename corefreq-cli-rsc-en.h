@@ -724,41 +724,43 @@
 #define RSC_BOX_SCOPE_PACKAGE_CODE_EN		"      Package     "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
-			"CoreFreq."					\
-			"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n\n"\
-			"Usage:\t%s [-option <arguments>]\n"		\
-			"\t-0,1,2\tMemory unit in K,M,G Byte\n" 	\
-			"\t-F\tTemperature in Fahrenheit\n"		\
-			"\t-J <#>\tSMBIOS string index number\n"	\
-			"\t-Y\tShow Secret Data\n"			\
-			"\t-t\tShow Top (default)\n"			\
-			"\t-d\tShow Dashboard\n"			\
-			"\t-C\tMonitor Sensors\n"			\
-			"\t-V\tMonitor Voltage\n"			\
-			"\t-W\tMonitor Power\n" 			\
-			"\t-g\tMonitor Package\n"			\
-			"\t-c\tMonitor Counters\n"			\
-			"\t-i\tMonitor Instructions\n"			\
-			"\t-s\tPrint System Information\n"		\
-			"\t-j\tPrint System Information (json-encoded)\n"\
-			"\t-M\tPrint Memory Controller\n"		\
-			"\t-R\tPrint System Registers\n"		\
-			"\t-m\tPrint Topology\n"			\
-			"\t-u\tPrint CPUID\n"				\
-			"\t-B\tPrint SMBIOS\n"				\
-			"\t-k\tPrint Kernel\n"				\
-			"\t-h\tPrint out this message\n"		\
-			"\t-v\tPrint the version number\n"		\
-			"\nExit status:\n"				\
-			"\t%u\tSUCCESS\t\tSuccessful execution\n"	\
-			"\t%u\tCMD_SYNTAX\tCommand syntax error\n"	\
-			"\t%u\tSHM_FILE\tShared memory file error\n"	\
-			"\t%u\tSHM_MMAP\tShared memory mapping error\n"	\
-			"\t%u\tPERM_ERR\tExecution not permitted\n"	\
-			"\t%u\tMEM_ERR\t\tMemory operation error\n"	\
-			"\t%u\tEXEC_ERR\tGeneral execution error\n"	\
-			"\t%u\tSYS_CALL\tSystem call error\n"		\
-			"\nReport bugs to labs[at]cyring.fr\n"
+		"CoreFreq."						\
+		"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n\n"	\
+		"Usage:\t%s [-option <arguments>]\n"			\
+		"\t-0,1,2\tMemory unit in K,M,G Byte\n" 		\
+		"\t-F\tTemperature in Fahrenheit\n"			\
+		"\t-J <#>\tSMBIOS string index number\n"		\
+		"\t-Y\tShow Secret Data\n"				\
+		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
+		"\t\t{\tfrequency, instruction, core, idle, package,\n"\
+		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
+		"\t-d\tShow Dashboard\n"				\
+		"\t-C\tMonitor Sensors\n"				\
+		"\t-V\tMonitor Voltage\n"				\
+		"\t-W\tMonitor Power\n" 				\
+		"\t-g\tMonitor Package\n"				\
+		"\t-c\tMonitor Counters\n"				\
+		"\t-i\tMonitor Instructions\n"				\
+		"\t-s\tPrint System Information\n"			\
+		"\t-j\tPrint System Information (json-encoded)\n"	\
+		"\t-M\tPrint Memory Controller\n"			\
+		"\t-R\tPrint System Registers\n"			\
+		"\t-m\tPrint Topology\n"				\
+		"\t-u\tPrint CPUID\n"					\
+		"\t-B\tPrint SMBIOS\n"					\
+		"\t-k\tPrint Kernel\n"					\
+		"\t-h\tPrint out this message\n"			\
+		"\t-v\tPrint the version number\n"			\
+		"\nExit status:\n"					\
+		"\t%u\tSUCCESS\t\tSuccessful execution\n"		\
+		"\t%u\tCMD_SYNTAX\tCommand syntax error\n"		\
+		"\t%u\tSHM_FILE\tShared memory file error\n"		\
+		"\t%u\tSHM_MMAP\tShared memory mapping error\n"		\
+		"\t%u\tPERM_ERR\tExecution not permitted\n"		\
+		"\t%u\tMEM_ERR\t\tMemory operation error\n"		\
+		"\t%u\tEXEC_ERR\tGeneral execution error\n"		\
+		"\t%u\tSYS_CALL\tSystem call error\n"			\
+		"\nReport bugs to labs[at]cyring.fr\n"
 
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
 		"Daemon connection error code %d\n%s: '%s' @ line %d\n"

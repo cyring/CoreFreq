@@ -766,7 +766,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"\t-F\tTemperature en Fahrenheit\n"			\
 		"\t-J <#>\tNuméro d'index de chaîne SMBIOS\n"		\
 		"\t-Y\tAfficher les données secrètes\n" 		\
-		"\t-t\tAfficher Top (par défault)\n"			\
+		"\t-t <v>\tAfficher Top (par défault); en option la <v>ue:\n"\
+		"\t\t{\tfrequency, instruction, core, idle, package,\n"\
+		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
 		"\t-C\tMoniteur des Capteurs\n" 			\
 		"\t-V\tMoniteur de Voltage\n"				\

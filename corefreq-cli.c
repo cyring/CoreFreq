@@ -14591,7 +14591,34 @@ int main(int argc, char *argv[])
 	    case 'd':
 		/* Fallthrough */
 	    case 't':
-		{
+		if (++idx < argc) {
+			struct {
+				enum VIEW view;
+				char *fourth;
+			} opt[] = {
+				{	V_FREQ		, "frequency"	},
+				{	V_INST		, "instruction"	},
+				{	V_CYCLES	, "core"	},
+				{	V_CSTATES	, "idle"	},
+				{	V_PACKAGE	, "package"	},
+				{	V_TASKS 	, "tasks"	},
+				{	V_INTR		, "interrupts"	},
+				{	V_SENSORS	, "sensors"	},
+				{	V_VOLTAGE	, "voltage"	},
+				{	V_ENERGY	, "power"	},
+				{	V_SLICE 	, "slices"	}
+			}, *pOpt, *lOpt = &opt[sizeof(opt)/sizeof(opt[0])];
+		    for (pOpt = opt; pOpt < lOpt; pOpt++) {
+			if (strncmp(pOpt->fourth, argv[idx], 4) == 0)
+			{
+				draw.View = pOpt->view;
+				break;
+			}
+		    }
+		    if (pOpt == lOpt) {
+			goto SYNTAX_ERROR;
+		    }
+		}
 		TERMINAL(IN);
 
 		TrapSignal(1);
@@ -14599,7 +14626,6 @@ int main(int argc, char *argv[])
 		TrapSignal(0);
 
 		TERMINAL(OUT);
-		}
 		break;
 	    default:
 	    SYNTAX_ERROR:
