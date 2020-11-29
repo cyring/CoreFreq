@@ -1184,8 +1184,8 @@ typedef union
 	struct {
 		unsigned int
 		ReservedBits	: 17-0,
-		BoostRatio	: 25-17,
-		MinRatio	: 32-25;
+		BoostRatio	: 25-17, /* Frequence ID of Boosted P-State */
+		MinRatio	: 32-25; /* Computed COF of P-State P2	*/
 	};
 } AMD_17_MTS_CPK_COF;
 
