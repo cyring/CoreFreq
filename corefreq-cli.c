@@ -3254,9 +3254,19 @@ void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 {
 	char item[CPUIDLE_NAME_LEN+1];
 	unsigned int idx = (*data.psint) - 1;
-	size_t len = snprintf(	item, CPUIDLE_NAME_LEN+1,
+	size_t len;
+    if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
+    {
+	len = snprintf(	item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
 				Shm->SysGate.OS.IdleDriver.State[idx].Name );
+    }
+    else
+    {
+	len = snprintf(	item, CPUIDLE_NAME_LEN + 1,
+				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
+				RSC(NOT_AVAILABLE).CODE() );
+    }
 	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
 }
 
@@ -5927,13 +5937,13 @@ Window *CreateTracking(unsigned long long id)
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
 	ssize_t tc = Shm->SysGate.taskCount;
 	if (tc > 0) {
-		const CUINT margin = 12;	/*	@ "Freq(MHz)"	*/
+		const CUINT margin = 12;	/*	"--- Freq(MHz"	*/
+		const CUINT height = TOP_SEPARATOR
+			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
 		int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
 
 		Window *wTrack = CreateWindow( wLayer, id,
-						1,
-						TOP_HEADER_ROW
-						+ draw.Area.MaxRows * 2,
+						1, height,
 						margin, TOP_HEADER_ROW,
 						WINFLAG_NO_STOCK
 						| WINFLAG_NO_BORDER );
@@ -6864,8 +6874,8 @@ Window *CreateSelectFreq(unsigned long long id,
 			UPDATE_CALLBACK Pkg_Freq_Update,
 			UPDATE_CALLBACK CPU_Freq_Update)
 {
-	const CUINT height = 1 + CUMIN(Shm->Proc.CPU.Count,
-				(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
+	const CUINT height = CUMIN(Shm->Proc.CPU.Count,
+	(ADD_UPPER & ADD_LOWER)+(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
 
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, height,
