@@ -14594,10 +14594,10 @@ int main(int argc, char *argv[])
 		if (++idx < argc) {
 			struct {
 				enum VIEW view;
-				char *fourth;
+				char *first;
 			} opt[] = {
 				{	V_FREQ		, "frequency"	},
-				{	V_INST		, "instruction"	},
+				{	V_INST		, "instructions"},
 				{	V_CYCLES	, "core"	},
 				{	V_CSTATES	, "idle"	},
 				{	V_PACKAGE	, "package"	},
@@ -14608,8 +14608,13 @@ int main(int argc, char *argv[])
 				{	V_ENERGY	, "power"	},
 				{	V_SLICE 	, "slices"	}
 			}, *pOpt, *lOpt = &opt[sizeof(opt)/sizeof(opt[0])];
-		    for (pOpt = opt; pOpt < lOpt; pOpt++) {
-			if (strncmp(pOpt->fourth, argv[idx], 4) == 0)
+		    for (pOpt = opt; pOpt < lOpt; pOpt++)
+		    {
+			const size_t llen = strlen(pOpt->first);
+			const size_t rlen = strlen(argv[idx]);
+			const ssize_t nlen = llen - rlen;
+			if ((nlen >= 0)
+			&& (strncmp(pOpt->first, argv[idx], rlen) == 0))
 			{
 				draw.View = pOpt->view;
 				break;

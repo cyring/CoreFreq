@@ -732,7 +732,7 @@
 		"\t-J <#>\tSMBIOS string index number\n"		\
 		"\t-Y\tShow Secret Data\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
-		"\t\t{\tfrequency, instruction, core, idle, package,\n"\
+		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tShow Dashboard\n"				\
 		"\t-C\tMonitor Sensors\n"				\
