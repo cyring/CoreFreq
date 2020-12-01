@@ -12481,7 +12481,7 @@ long SysGate_OnDemand(void)
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-{/* Source: /drivers/cpuidle/cpuidle.c					*/
+{/*	Source: /drivers/cpuidle/cpuidle.c				*/
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
 	mwait_idle_with_hints(MWAIT, 1UL);
 	return index;
@@ -12493,15 +12493,36 @@ static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 #else
 static int CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-#endif
+#endif /* 5.9.0 */
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
 	mwait_idle_with_hints(MWAIT, 1UL);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
-#endif
+#endif /* 5.9.0 */
 }
-#endif /* CONFIG_CPU_IDLE */
+
+static int CoreFreqK_HaltHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{/*	Source: /drivers/acpi/processor_idle.c				*/
+	safe_halt();
+	return index;
+}
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+static void CoreFreqK_S2HaltHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+#else
+static int CoreFreqK_S2HaltHandler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+#endif /* 5.9.0 */
+{
+	safe_halt();
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	return index;
+#endif /* 5.9.0 */
+}
+#endif /* CONFIG_CPU_IDLE and 4.14.0 */
 
 static void CoreFreqK_IdleDriver_UnInit(void)
 {
@@ -12519,7 +12540,7 @@ static void CoreFreqK_IdleDriver_UnInit(void)
 	}
 	cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
 	free_percpu(CoreFreqK.IdleDevice);
-#endif /* CONFIG_CPU_IDLE */
+#endif /* CONFIG_CPU_IDLE and 4.14.0 */
 }
 
 static int CoreFreqK_IdleDriver_Init(void)
@@ -12583,11 +12604,15 @@ static int CoreFreqK_IdleDriver_Init(void)
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_IdleHandler;
+			].enter = \
+			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL?
+				CoreFreqK_IdleHandler : CoreFreqK_HaltHandler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2IdleHandler;
+			].enter_s2idle = \
+			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL?
+				CoreFreqK_S2IdleHandler:CoreFreqK_S2HaltHandler;
 
 			CoreFreqK.IdleDriver.state_count++;
 		}
@@ -12627,7 +12652,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 	}
     }
   }
-#endif /* CONFIG_CPU_IDLE */
+#endif /* CONFIG_CPU_IDLE and 4.14.0 */
 	return (rc);
 }
 
@@ -12651,9 +12676,9 @@ static void CoreFreqK_Idle_State_Withdraw(int idx, bool disable)
   }
 #else
 	CoreFreqK.IdleDriver.states[idx].disabled = disable;
-#endif
+#endif /* 5.5.0 */
 }
-#endif
+#endif /* CONFIG_CPU_IDLE */
 
 static long CoreFreqK_Limit_Idle(int target)
 {
@@ -12773,7 +12798,7 @@ void Policy_Aggregate_Turbo(void)
 static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
 #else
 static int CoreFreqK_SetBoost(int state)
-#endif
+#endif /* 5.8.0 */
 {
 	Controller_Stop(1);
 	TurboBoost_Enable = (state != 0);
