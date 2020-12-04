@@ -1362,12 +1362,20 @@ typedef struct
 #define REGISTRATION_ENABLE	0b01
 #define REGISTRATION_FULLCTRL	0b10
 
+enum IDLE_ROUTE {
+	ROUTE_DEFAULT	= 0,
+	ROUTE_IO	= 1,
+	ROUTE_HALT	= 2,
+	ROUTE_MWAIT	= 3
+};
+
 typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 	unsigned short	CPUidle :  2-0,
 			CPUfreq :  4-2,
 			Governor:  6-4,
 			CS	:  8-6,
-			unused	: 16-8;
+			Route	: 10-8,
+			unused	: 16-10;
 } KERNEL_DRIVER;
 
 typedef struct {

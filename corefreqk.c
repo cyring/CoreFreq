@@ -223,6 +223,10 @@ static signed short Register_ClockSource = -1;
 module_param(Register_ClockSource, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Register_ClockSource, "Register Clock Source driver");
 
+static signed short Idle_Route = -1;
+module_param(Idle_Route, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Idle_Route, "[0:Default; 1:I/O; 2:HALT; 3:MWAIT]");
+
 static signed short Mech_IBRS = -1;
 module_param(Mech_IBRS, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_IBRS, "Mitigation Mechanism IBRS");
@@ -12479,7 +12483,7 @@ long SysGate_OnDemand(void)
 }
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
+static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/*	Source: /drivers/cpuidle/cpuidle.c				*/
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
@@ -12488,10 +12492,10 @@ static int CoreFreqK_IdleHandler(struct cpuidle_device *pIdleDevice,
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-static void CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
+static void CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #else
-static int CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
+static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
@@ -12502,7 +12506,7 @@ static int CoreFreqK_S2IdleHandler(struct cpuidle_device *pIdleDevice,
 #endif /* 5.9.0 */
 }
 
-static int CoreFreqK_HaltHandler(struct cpuidle_device *pIdleDevice,
+static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/*	Source: /drivers/acpi/processor_idle.c				*/
 	safe_halt();
@@ -12510,10 +12514,10 @@ static int CoreFreqK_HaltHandler(struct cpuidle_device *pIdleDevice,
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-static void CoreFreqK_S2HaltHandler(struct cpuidle_device *pIdleDevice,
+static void CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #else
-static int CoreFreqK_S2HaltHandler(struct cpuidle_device *pIdleDevice,
+static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
@@ -12602,18 +12606,51 @@ static int CoreFreqK_IdleDriver_Init(void)
 				CoreFreqK.IdleDriver.state_count
 			].target_residency = pIdleState->Residency;
 
+		  switch (Idle_Route) {
+		  case ROUTE_MWAIT:
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = \
-			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL?
-				CoreFreqK_IdleHandler : CoreFreqK_HaltHandler;
+			].enter = CoreFreqK_MWAIT_Handler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = \
-			PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL?
-				CoreFreqK_S2IdleHandler:CoreFreqK_S2HaltHandler;
+			].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+			break;
+		  case ROUTE_HALT:
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_HALT_Handler;
 
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_HALT_Handler;
+			break;
+		  case ROUTE_IO:
+			/*	TODO(Unimplemented)	*/
+		  case ROUTE_DEFAULT:
+		  default:
+		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+		    {
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_MWAIT_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+		    }
+		    else
+		    {
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_HALT_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_HALT_Handler;
+		    }
+			break;
+		  }
 			CoreFreqK.IdleDriver.state_count++;
 		}
 		pIdleState++;
