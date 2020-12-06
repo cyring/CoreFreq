@@ -1374,8 +1374,7 @@ typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 			CPUfreq :  4-2,
 			Governor:  6-4,
 			CS	:  8-6,
-			Route	: 10-8,
-			unused	: 16-10;
+			unused	: 16-8;
 } KERNEL_DRIVER;
 
 typedef struct {

@@ -15107,7 +15107,7 @@ static enum RUN_LEVEL RunLevel = Alloc_Features_Level;
 
 static void CoreFreqK_ShutDown(void)
 {
-	void (*LevelFunc[])(void) = {
+	void (*LevelFunc[Running_Level])(void) = {
 		COREFREQ_RUN(Alloc_Features_Level, Down),
 		COREFREQ_RUN(Query_Features_Level, Down),
 		COREFREQ_RUN(Alloc_Device_Level, Down),
@@ -15133,7 +15133,7 @@ static void CoreFreqK_ShutDown(void)
 
 static int CoreFreqK_StartUp(void)
 {
-	int (*LevelFunc[])(INIT_ARG *pArg) = {
+	int (*LevelFunc[Running_Level])(INIT_ARG *pArg) = {
 		COREFREQ_RUN(Alloc_Features_Level, Up),
 		COREFREQ_RUN(Query_Features_Level, Up),
 		COREFREQ_RUN(Alloc_Device_Level, Up),
@@ -15172,6 +15172,8 @@ static int CoreFreqK_StartUp(void)
 	}
 	return (rc);
 }
+
+#undef COREFREQ_RUN
 
 static int __init CoreFreqK_Init(void)
 {

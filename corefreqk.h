@@ -4480,6 +4480,58 @@ static SYSTEM_DRIVER CORE2_Driver = {
 	.SetTarget	= Policy_Core2_SetTarget
 };
 
+static IDLE_STATE SLM_IdleState[] = {
+	{
+	.Name		= "C1",
+	.Desc		= "SLM-C1",
+	.flags		= 0x00 << 24,
+	.Latency	= 1,
+	.Residency	= 1
+	},
+	{
+	.Name		= "C2",
+	.Desc		= "SLM-C2",
+	.flags		= 0x01 << 24,
+	.Latency	= 10,
+	.Residency	= 20
+	},
+	{
+	.Name		= "C6N",
+	.Desc		= "SLM-C6N",
+	.flags		= (0x10 << 24) | 0x10000,
+	.Latency	= 300,
+	.Residency	= 275
+	},
+	{
+	.Name		= "C6S",
+	.Desc		= "SLM-C6S",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 500,
+	.Residency	= 560
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "SLM-C7",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 1200,
+	.Residency	= 4000
+	},
+	{
+	.Name		= "C7S",
+	.Desc		= "SLM-C7S",
+	.flags		= (0x20 << 24) | 0x10000,
+	.Latency	= 10000,
+	.Residency	= 20000
+	},
+	{NULL}
+};
+
+static SYSTEM_DRIVER SLM_Driver = {
+	.IdleState	= SLM_IdleState,
+	.GetFreq	= Policy_GetFreq,
+	.SetTarget	= Policy_Core2_SetTarget
+};
+
 /* Source: /drivers/idle/intel_idle.c					*/
 static IDLE_STATE NHM_IdleState[] = {
 	{
@@ -5404,7 +5456,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Silvermont_Bay_Trail_Specific,
-	.SystemDriver = &CORE2_Driver,
+	.SystemDriver = &SLM_Driver,
 	.Architecture = Arch_Silvermont_Bay_Trail
 	},
 [Atom_Avoton] = {							/* 22*/
