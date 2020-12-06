@@ -12551,10 +12551,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 {
 	int rc = -RC_UNIMPLEMENTED;
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
-  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
+  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState != NULL)
   {
 	IDLE_STATE *pIdleState;
-	pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->IdleState;
+	pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState;
     if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.Std.ECX.MONITOR)
     {
 	if ((CoreFreqK.IdleDevice=alloc_percpu(struct cpuidle_device)) == NULL)
@@ -12867,14 +12867,14 @@ static int CoreFreqK_Store_SetSpeed(struct cpufreq_policy *policy,
 {
     if (policy != NULL) {
 	if ((policy->cpu < PUBLIC(RO(Proc))->CPU.Count)
-	 && (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->SetTarget != NULL))
+	 && (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL))
 	{
 		CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(policy->cpu)));
 		unsigned int ratio = (freq * 1000LLU) / Core->Clock.Hz;
 
 	    if (ratio > 0) {
 		if (smp_call_function_single(policy->cpu,
-			Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->SetTarget,
+			Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget,
 						&ratio, 1) == 0)
 		{
 			BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY);
@@ -13074,11 +13074,11 @@ static int CoreFreqK_FreqDriver_Init(void)
 {
 	int rc = -RC_UNIMPLEMENTED;
 #ifdef CONFIG_CPU_FREQ
- if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
+ if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState != NULL)
  {
-  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq != NULL)
+  if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.GetFreq != NULL)
   {
-  CoreFreqK.FreqDriver.get=Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->GetFreq;
+  CoreFreqK.FreqDriver.get=Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.GetFreq;
 
 	rc = cpufreq_register_driver(&CoreFreqK.FreqDriver);
   }
@@ -13098,9 +13098,9 @@ static int CoreFreqK_Governor_Init(void)
 {
 	int rc = -RC_UNIMPLEMENTED;
 #ifdef CONFIG_CPU_FREQ
-    if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver != NULL)
+    if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState != NULL)
     {
-	if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver->SetTarget != NULL)
+	if (Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.SetTarget != NULL)
 	{
 		rc = cpufreq_register_governor(&CoreFreqK.FreqGovernor);
 	}
