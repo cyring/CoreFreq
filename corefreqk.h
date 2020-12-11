@@ -4497,35 +4497,35 @@ static IDLE_STATE SLM_IdleState[] = {
 	{
 	.Name		= "C2",
 	.Desc		= "SLM-C2",
-	.flags		= 0x01 << 24,
-	.Latency	= 10,
-	.Residency	= 20
+	.flags		= 0x10 << 24,
+	.Latency	= 20,
+	.Residency	= 80
 	},
 	{
 	.Name		= "C6N",
 	.Desc		= "SLM-C6N",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x58 << 24) | 0x10000,
 	.Latency	= 300,
 	.Residency	= 275
 	},
 	{
 	.Name		= "C6S",
 	.Desc		= "SLM-C6S",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x52 << 24) | 0x10000,
 	.Latency	= 500,
 	.Residency	= 560
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "SLM-C7",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x60 << 24) | 0x10000,
 	.Latency	= 1200,
 	.Residency	= 4000
 	},
 	{
 	.Name		= "C7S",
 	.Desc		= "SLM-C7S",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x64 << 24) | 0x10000,
 	.Latency	= 10000,
 	.Residency	= 20000
 	},

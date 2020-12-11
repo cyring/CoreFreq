@@ -103,6 +103,14 @@ static unsigned short NMI_Disable = 1;
 module_param(NMI_Disable, ushort, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(NMI_Disable, "Disable the NMI Handler");
 
+static int Override_SubCstate_Depth = 0;
+static unsigned short Override_SubCstate[CPUIDLE_STATE_MAX] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+module_param_array(	Override_SubCstate,ushort, &Override_SubCstate_Depth, \
+			S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Override_SubCstate, "Override Sub C-States");
+
 static signed short PkgCStateLimit = -1;
 module_param(PkgCStateLimit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PkgCStateLimit, "Package C-State Limit");
@@ -637,66 +645,96 @@ static void Query_Features(void *pArg)
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
 
-	if (iArg->Features->Info.LargestStdFunc >= 0x5) {
-		__asm__ volatile
-		(
-			"movq	$0x5,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (iArg->Features->MWait.EAX),
-			  "=r" (iArg->Features->MWait.EBX),
-			  "=r" (iArg->Features->MWait.ECX),
-			  "=r" (iArg->Features->MWait.EDX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	}
-	if (iArg->Features->Info.LargestStdFunc >= 0x6) {
-		__asm__ volatile
-		(
-			"movq	$0x6,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (iArg->Features->Power.EAX),
-			  "=r" (iArg->Features->Power.EBX),
-			  "=r" (iArg->Features->Power.ECX),
-			  "=r" (iArg->Features->Power.EDX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	}
-	if (iArg->Features->Info.LargestStdFunc >= 0x7) {
-		__asm__ volatile
-		(
-			"movq	$0x7,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx    \n\t"
-			"xorq	%%rcx, %%rcx    \n\t"
-			"xorq	%%rdx, %%rdx    \n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (iArg->Features->ExtFeature.EAX),
-			  "=r" (iArg->Features->ExtFeature.EBX),
-			  "=r" (iArg->Features->ExtFeature.ECX),
-			  "=r" (iArg->Features->ExtFeature.EDX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	    if (iArg->Features->ExtFeature.EAX.MaxSubLeaf >= 1) {
+    if (iArg->Features->Info.LargestStdFunc >= 0x5)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x5,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rcx, %%rcx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->MWait.EAX),
+		  "=r" (iArg->Features->MWait.EBX),
+		  "=r" (iArg->Features->MWait.ECX),
+		  "=r" (iArg->Features->MWait.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+      switch (Override_SubCstate_Depth) {
+      case 8:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT7 = Override_SubCstate[7];
+	/* Fallthrough */
+      case 7:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT6 = Override_SubCstate[6];
+	/* Fallthrough */
+      case 6:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT5 = Override_SubCstate[5];
+	/* Fallthrough */
+      case 5:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT4 = Override_SubCstate[4];
+	/* Fallthrough */
+      case 4:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT3 = Override_SubCstate[3];
+	/* Fallthrough */
+      case 3:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT2 = Override_SubCstate[2];
+	/* Fallthrough */
+      case 2:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT1 = Override_SubCstate[1];
+	/* Fallthrough */
+      case 1:
+	iArg->Features->MWait.EDX.SubCstate_MWAIT0 = Override_SubCstate[0];
+	break;
+      };
+    }
+    if (iArg->Features->Info.LargestStdFunc >= 0x6)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x6,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rcx, %%rcx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->Power.EAX),
+		  "=r" (iArg->Features->Power.EBX),
+		  "=r" (iArg->Features->Power.ECX),
+		  "=r" (iArg->Features->Power.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+    }
+    if (iArg->Features->Info.LargestStdFunc >= 0x7)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x7,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx    \n\t"
+		"xorq	%%rcx, %%rcx    \n\t"
+		"xorq	%%rdx, %%rdx    \n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->ExtFeature.EAX),
+		  "=r" (iArg->Features->ExtFeature.EBX),
+		  "=r" (iArg->Features->ExtFeature.ECX),
+		  "=r" (iArg->Features->ExtFeature.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	if (iArg->Features->ExtFeature.EAX.MaxSubLeaf >= 1)
+	{
 		__asm__ volatile
 		(
 			"movq	$0x7,  %%rax	\n\t"
@@ -715,8 +753,8 @@ static void Query_Features(void *pArg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-	    }
 	}
+    }
 	/* Must have 0x80000000,0x80000001,0x80000002,0x80000003,0x80000004 */
 	__asm__ volatile
 	(
@@ -754,46 +792,48 @@ static void Query_Features(void *pArg)
 		:
 		: "%rax", "%rbx", "%rcx", "%rdx"
 	);
-	if (iArg->Features->Info.LargestExtFunc >= 0x80000007) {
-		__asm__ volatile
-		(
-			"movq	$0x80000007, %%rax	\n\t"
-			"xorq	%%rbx, %%rbx		\n\t"
-			"xorq	%%rcx, %%rcx		\n\t"
-			"xorq	%%rdx, %%rdx		\n\t"
-			"cpuid				\n\t"
-			"mov	%%eax, %0		\n\t"
-			"mov	%%ebx, %1		\n\t"
-			"mov	%%ecx, %2		\n\t"
-			"mov	%%edx, %3"
-			: "=r" (iArg->Features->AdvPower.EAX),
-			  "=r" (iArg->Features->AdvPower.EBX),
-			  "=r" (iArg->Features->AdvPower.ECX),
-			  "=r" (iArg->Features->AdvPower.EDX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	}
-	if (iArg->Features->Info.LargestExtFunc >= 0x80000008) {
-		__asm__ volatile
-		(
-			"movq	$0x80000008, %%rax	\n\t"
-			"xorq	%%rbx, %%rbx		\n\t"
-			"xorq	%%rcx, %%rcx		\n\t"
-			"xorq	%%rdx, %%rdx		\n\t"
-			"cpuid				\n\t"
-			"mov	%%eax, %0		\n\t"
-			"mov	%%ebx, %1		\n\t"
-			"mov	%%ecx, %2		\n\t"
-			"mov	%%edx, %3"
-			: "=r" (iArg->Features->leaf80000008.EAX),
-			  "=r" (iArg->Features->leaf80000008.EBX),
-			  "=r" (iArg->Features->leaf80000008.ECX),
-			  "=r" (iArg->Features->leaf80000008.EDX)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-	}
+    if (iArg->Features->Info.LargestExtFunc >= 0x80000007)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x80000007, %%rax	\n\t"
+		"xorq	%%rbx, %%rbx		\n\t"
+		"xorq	%%rcx, %%rcx		\n\t"
+		"xorq	%%rdx, %%rdx		\n\t"
+		"cpuid				\n\t"
+		"mov	%%eax, %0		\n\t"
+		"mov	%%ebx, %1		\n\t"
+		"mov	%%ecx, %2		\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->AdvPower.EAX),
+		  "=r" (iArg->Features->AdvPower.EBX),
+		  "=r" (iArg->Features->AdvPower.ECX),
+		  "=r" (iArg->Features->AdvPower.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+    }
+    if (iArg->Features->Info.LargestExtFunc >= 0x80000008)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x80000008, %%rax	\n\t"
+		"xorq	%%rbx, %%rbx		\n\t"
+		"xorq	%%rcx, %%rcx		\n\t"
+		"xorq	%%rdx, %%rdx		\n\t"
+		"cpuid				\n\t"
+		"mov	%%eax, %0		\n\t"
+		"mov	%%ebx, %1		\n\t"
+		"mov	%%ecx, %2		\n\t"
+		"mov	%%edx, %3"
+		: "=r" (iArg->Features->leaf80000008.EAX),
+		  "=r" (iArg->Features->leaf80000008.EBX),
+		  "=r" (iArg->Features->leaf80000008.ECX),
+		  "=r" (iArg->Features->leaf80000008.EDX)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+    }
 	/* Reset the performance features bits (present is zero) */
 	iArg->Features->PerfMon.EBX.CoreCycles    = 1;
 	iArg->Features->PerfMon.EBX.InstrRetired  = 1;
@@ -804,29 +844,31 @@ static void Query_Features(void *pArg)
 	iArg->Features->PerfMon.EBX.BranchMispred = 1;
 
 	/* Per Vendor features */
-	if (iArg->Features->Info.Vendor.CRC == CRC_INTEL) {
-		__asm__ volatile
-		(
-			"movq	$0x4,  %%rax	\n\t"
-			"xorq	%%rbx, %%rbx	\n\t"
-			"xorq	%%rcx, %%rcx	\n\t"
-			"xorq	%%rdx, %%rdx	\n\t"
-			"cpuid			\n\t"
-			"mov	%%eax, %0	\n\t"
-			"mov	%%ebx, %1	\n\t"
-			"mov	%%ecx, %2	\n\t"
-			"mov	%%edx, %3"
-			: "=r" (eax),
-			  "=r" (ebx),
-			  "=r" (ecx),
-			  "=r" (edx)
-			:
-			: "%rax", "%rbx", "%rcx", "%rdx"
-		);
-		iArg->SMT_Count = (eax >> 26) & 0x3f;
-		iArg->SMT_Count++;
+    if (iArg->Features->Info.Vendor.CRC == CRC_INTEL)
+    {
+	__asm__ volatile
+	(
+		"movq	$0x4,  %%rax	\n\t"
+		"xorq	%%rbx, %%rbx	\n\t"
+		"xorq	%%rcx, %%rcx	\n\t"
+		"xorq	%%rdx, %%rdx	\n\t"
+		"cpuid			\n\t"
+		"mov	%%eax, %0	\n\t"
+		"mov	%%ebx, %1	\n\t"
+		"mov	%%ecx, %2	\n\t"
+		"mov	%%edx, %3"
+		: "=r" (eax),
+		  "=r" (ebx),
+		  "=r" (ecx),
+		  "=r" (edx)
+		:
+		: "%rax", "%rbx", "%rcx", "%rdx"
+	);
+	iArg->SMT_Count = (eax >> 26) & 0x3f;
+	iArg->SMT_Count++;
 
-	    if (iArg->Features->Info.LargestStdFunc >= 0xa) {
+	if (iArg->Features->Info.LargestStdFunc >= 0xa)
+	{
 		__asm__ volatile
 		(
 			"movq	$0xa,  %%rax	\n\t"
@@ -845,51 +887,55 @@ static void Query_Features(void *pArg)
 			:
 			: "%rax", "%rbx", "%rcx", "%rdx"
 		);
-	    }
-		iArg->Features->Factory.Freq = \
-			Intel_Brand(iArg->Features->Info.Brand, iArg->Brand);
+	}
+	/*	Extract the factory frequency from the brand string.	*/
+	iArg->Features->Factory.Freq = Intel_Brand( iArg->Features->Info.Brand,
+							iArg->Brand );
 
-	} else if ((iArg->Features->Info.Vendor.CRC == CRC_AMD)
-		|| (iArg->Features->Info.Vendor.CRC == CRC_HYGON))
-	{	/*	Core Performance 64 bits General Counters.	*/
-		iArg->Features->PerfMon.EAX.MonWidth = 64;
-	    if (iArg->Features->ExtInfo.ECX.PerfCore)
-	    {
+    } else if ( (iArg->Features->Info.Vendor.CRC == CRC_AMD)
+	||	(iArg->Features->Info.Vendor.CRC == CRC_HYGON) )
+    {	/*	Specified as Core Performance 64 bits General Counters. */
+	iArg->Features->PerfMon.EAX.MonWidth = 64;
+
+	if (iArg->Features->ExtInfo.ECX.PerfCore)
+	{
 		iArg->Features->PerfMon.EAX.MonCtrs = 6;
-	    } else {
+	} else {
 		iArg->Features->PerfMon.EAX.MonCtrs = 4;
-	    }
-		/* Fixed Performance Counters. Intel bits as AMD placeholder */
-		iArg->Features->PerfMon.EDX.FixWidth = 64;
-	    if ( iArg->Features->Power.ECX.HCF_Cap
-	       | iArg->Features->AdvPower.EDX.EffFrqRO )
-	    {
+	}
+	/* Fix the Performance Counters. Use Intel bits as AMD placeholder */
+	iArg->Features->PerfMon.EDX.FixWidth = 64;
+
+	if	( iArg->Features->Power.ECX.HCF_Cap
+		| iArg->Features->AdvPower.EDX.EffFrqRO )
+	{
 		iArg->Features->PerfMon.EBX.CoreCycles = 0;
 		iArg->Features->PerfMon.EBX.RefCycles  = 0;
 		iArg->Features->PerfMon.EDX.FixCtrs += 2;
-	    }
-	    if (iArg->Features->ExtInfo.ECX.PerfLLC)
-	    {/*PerfCtrExtLLC: Last Level Cache performance counter extensions*/
+	}
+	if (iArg->Features->ExtInfo.ECX.PerfLLC)
+	{ /* PerfCtrExtLLC: Last Level Cache performance counter extensions */
 		iArg->Features->PerfMon.EBX.LLC_Ref = 0;
-	    }
-	    if (iArg->Features->Info.LargestExtFunc >= 0x80000008)
-	    {
+	}
+	if (iArg->Features->Info.LargestExtFunc >= 0x80000008)
+	{
 		iArg->SMT_Count = iArg->Features->leaf80000008.ECX.NC + 1;
 		/* Add the Retired Instructions Perf Counter to the Fixed set */
-		if (iArg->Features->leaf80000008.EBX.IRPerf) {
+		if (iArg->Features->leaf80000008.EBX.IRPerf)
+		{
 			iArg->Features->PerfMon.EBX.InstrRetired = 0;
 			iArg->Features->PerfMon.EDX.FixCtrs++;
 		}
-	    } else if (iArg->Features->Std.EDX.HTT)
-	    {
-		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
-	    } else {
-		iArg->SMT_Count = 1;
-	    }
-
-		BrandFromCPUID(iArg->Brand);
-		BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
 	}
+	else if (iArg->Features->Std.EDX.HTT)
+	{
+		iArg->SMT_Count = iArg->Features->Std.EBX.Max_SMT_ID;
+	} else {
+		iArg->SMT_Count = 1;
+	}
+	BrandFromCPUID(iArg->Brand);
+	BrandCleanup(iArg->Features->Info.Brand, iArg->Brand);
+    }
 }
 
 void Compute_Interval(void)
