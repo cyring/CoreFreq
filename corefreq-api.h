@@ -329,6 +329,15 @@ typedef struct
 
 	struct
 	{
+	unsigned long long
+				C1,
+				C3,
+				C6,
+				C7;
+	} VPMC __attribute__ ((aligned (8)));
+
+	struct
+	{
 		unsigned long long
 					INST;
 		struct
@@ -394,7 +403,7 @@ typedef struct
 		unsigned short int	CStateLimit;
 		union {
 		unsigned short int	CStateInclude;	/* Intel	*/
-		unsigned short int	CStateBaseAddr; /* AMD Fam. 17h */
+		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 		};
 	} Query;
 

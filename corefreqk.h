@@ -832,7 +832,7 @@ static const CPUID_STRUCT CpuIDforVendor[CPUID_MAX_FUNC] = {
 
 typedef struct {
 	char			*Name,
-				*Desc;
+				Desc[CPUIDLE_NAME_LEN];
 	unsigned long		flags;
 	unsigned short		Latency,
 				Residency;
@@ -4912,16 +4912,23 @@ static IDLE_STATE Zen_IdleState[] = {
 	{
 	.Name		= "C1",
 	.Desc		= "ZEN-C1",
-	.flags		= 0x00 << 24,
+	.flags		= 0x01 << 24,
 	.Latency	= 1,
 	.Residency	= 2
 	},
 	{
 	.Name		= "C2",
 	.Desc		= "ZEN-C2",
-	.flags		= (0x20 << 24) | 0x10000,
-	.Latency	= 400,
-	.Residency	= 800
+	.flags		= 0x02 << 24,
+	.Latency	= 100,
+	.Residency	= 100 * 2
+	},
+	{
+	.Name		= "C6",
+	.Desc		= "ZEN-C6",
+	.flags		= 0x06 << 24,
+	.Latency	= 1000,
+	.Residency	= 1000 * 2
 	},
 	{NULL}
 };

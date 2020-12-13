@@ -422,6 +422,35 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 #define BITWISEOR(_lock, _opl, _opr)	_BITWISEOR(_lock, _opl, _opr)
 #define BITWISEXOR(_lock, _opl, _opr)	_BITWISEXOR(_lock, _opl, _opr)
 
+#define _BITADD_GPR(_lock, _dest, _src) 				\
+({									\
+	__asm__ volatile						\
+	(								\
+	_lock	"addq	%%rax, %[dest]" 				\
+		: [dest] "=m" (_dest)					\
+		: "a" (_src)						\
+		: "cc", "memory"					\
+	);								\
+})
+
+#define _BITADD_IMM(_lock, _dest, _imm32)				\
+({									\
+	__asm__ volatile						\
+	(								\
+	_lock	"addq	%[imm32], %[dest]"				\
+		: [dest] "=m" (_dest)					\
+		: [imm32] "i" (_imm32)					\
+		: "cc", "memory"					\
+	);								\
+})
+
+#define BITADD(_lock, _dest, _src)					\
+(									\
+	__builtin_constant_p(_src) ?					\
+		_BITADD_IMM(_lock , _dest , _src)			\
+	:	_BITADD_GPR(_lock , _dest , _src)			\
+)
+
 #define BITSTOR(_lock, _dest, _src)					\
 ({									\
 	__asm__ volatile						\

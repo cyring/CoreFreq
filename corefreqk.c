@@ -6255,7 +6255,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		}
 		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 	}
-	/*		Core C-State					*/
+	/*		Core C-State Base Address.			*/
 	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
 	/*		Package C-State: Configuration Control .	*/
@@ -6921,6 +6921,8 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 {
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*		Core C-State Base Address.			*/
+	Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 
     if (Core->Query.IORedir)
     {
@@ -8848,7 +8850,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	        * PUBLIC(RO(Proc))->Features.Factory.Ratio * 10;	\
 									\
 	Core->Counter[T].C0.UCC = Core->Counter[T].C0.URC;		\
-	/* Derive C1 */ 						\
+	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	    (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
 		Core->Counter[T].TSC - Core->Counter[T].C0.URC : 0;	\
@@ -8859,7 +8861,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	RDTSC_COUNTERx2(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC);	\
-	/* Derive C1 */							\
+	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
 	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
@@ -8880,7 +8882,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
     }									\
-	/* Derive C1 */							\
+	/* Derive C1: */						\
 	Core->Counter[T].C1 =						\
 	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
 	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
@@ -8900,7 +8902,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define SMT_Counters_Nehalem(Core, T)					\
 ({									\
-	register unsigned long long Cx = 0;				\
+	register unsigned long long Cx;					\
 									\
 	RDTSCP_COUNTERx5(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
@@ -8908,7 +8910,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_C3_RESIDENCY,Core->Counter[T].C3,	\
 			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
-	/* Derive C1 */							\
+	/* Derive C1: */						\
 	Cx =	Core->Counter[T].C6					\
 		+ Core->Counter[T].C3					\
 		+ Core->Counter[T].C0.URC;				\
@@ -8921,7 +8923,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define SMT_Counters_SandyBridge(Core, T)				\
 ({									\
-	register unsigned long long Cx = 0;				\
+	register unsigned long long Cx;					\
 									\
 	RDTSCP_COUNTERx6(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
@@ -8930,7 +8932,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_C6_RESIDENCY,Core->Counter[T].C6,	\
 			MSR_CORE_C7_RESIDENCY,Core->Counter[T].C7,	\
 			MSR_CORE_PERF_FIXED_CTR0,Core->Counter[T].INST);\
-	/* Derive C1 */							\
+	/* Derive C1: */						\
 	Cx =	Core->Counter[T].C7					\
 		+ Core->Counter[T].C6					\
 		+ Core->Counter[T].C3					\
@@ -8944,15 +8946,24 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
+	register unsigned long long Cx;					\
+									\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_AMD_F17H_IRPERF, Core->Counter[T].INST);	\
-	/* Derive C1 */							\
+	/* Read Virtual PMC and derive C1: */				\
+	BITSTOR(LOCKLESS, Core->Counter[T].C3, Core->VPMC.C3);		\
+	BITSTOR(LOCKLESS, Core->Counter[T].C6, Core->VPMC.C6);		\
+									\
+	Cx =	Core->Counter[T].C6					\
+		+ Core->Counter[T].C3					\
+		+ Core->Counter[T].C0.URC;				\
+									\
 	Core->Counter[T].C1 =						\
-	  (Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?		\
-	    Core->Counter[T].TSC - Core->Counter[T].C0.URC		\
-	    : 0;							\
+		(Core->Counter[T].TSC > Cx) ?				\
+			Core->Counter[T].TSC - Cx			\
+			: 0;						\
 })
 
 #define Mark_OVH(Core)							\
@@ -9029,7 +9040,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 })
 
 #define Delta_INST(Core)						\
-({	/* Delta of Instructions Retired */				\
+({	/* Delta of Retired Instructions */				\
 	Core->Delta.INST = Core->Counter[1].INST			\
 			 - Core->Counter[0].INST;			\
 })
@@ -12260,6 +12271,10 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 	Delta_C0(Core);
 
+	Delta_C3(Core);
+
+	Delta_C6(Core);
+
 	Delta_TSC_OVH(Core);
 
 	Delta_C1(Core);
@@ -12269,6 +12284,10 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	Save_TSC(Core);
 
 	Save_C0(Core);
+
+	Save_C3(Core);
+
+	Save_C6(Core);
 
 	Save_C1(Core);
 
@@ -12529,6 +12548,7 @@ long SysGate_OnDemand(void)
 }
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+	/*			MWAIT Idle methods			*/
 static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/*	Source: /drivers/cpuidle/cpuidle.c				*/
@@ -12551,7 +12571,7 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 	return index;
 #endif /* 5.9.0 */
 }
-
+	/*			HALT Idle methods			*/
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/*	Source: /drivers/acpi/processor_idle.c				*/
@@ -12572,6 +12592,200 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 	return index;
 #endif /* 5.9.0 */
 }
+	/*			I/O Idle methods			*/
+static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	const unsigned short lvl = \
+			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
+
+	inw(cstate_addr);
+	return index;
+}
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+static void CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+#else
+static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+#endif /* 5.9.0 */
+{
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	const unsigned short lvl = \
+			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
+
+	inw(cstate_addr);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	return index;
+#endif /* 5.9.0 */
+}
+	/*		Idle Cycles callback functions			*/
+static int Alternative_Computation_Of_Cycles(
+	int (*Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
+			struct cpuidle_device *pIdleDevice,
+			struct cpuidle_driver *pIdleDriver, int index
+)
+{
+	unsigned long long TSC[2] __attribute__ ((aligned (8)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	const unsigned short lvl = \
+			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+
+	RDTSCP64(TSC[0]);
+
+	Handler(pIdleDevice, pIdleDriver, index);
+
+	RDTSCP64(TSC[1]);
+
+	switch (lvl) {
+	case 1:
+		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
+		break;
+	case 2 ... 3:
+		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
+		break;
+	case 6:
+		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
+		break;
+	case 7:
+		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
+		break;
+	};
+	return index;
+}
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+static void Alternative_Computation_Of_Cycles_S2(
+	void (*S2_Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
+				struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index
+)
+#else
+static int Alternative_Computation_Of_Cycles_S2(
+	int (*S2_Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
+			struct cpuidle_device *pIdleDevice,
+			struct cpuidle_driver *pIdleDriver, int index
+)
+#endif /* 5.9.0 */
+{
+	unsigned long long TSC[2] __attribute__ ((aligned (8)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	const unsigned short lvl = \
+			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+
+	RDTSCP64(TSC[0]);
+
+	S2_Handler(pIdleDevice, pIdleDriver, index);
+
+	RDTSCP64(TSC[1]);
+
+	switch (lvl) {
+	case 1:
+		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
+		break;
+	case 2 ... 3:
+		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
+		break;
+	case 6:
+		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
+		break;
+	case 7:
+		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
+		break;
+	};
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+	return index;
+#endif /* 5.9.0 */
+}
+	/*		Alternative Idle methods			*/
+static int CoreFreqK_Alt_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles( CoreFreqK_MWAIT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static int CoreFreqK_Alt_HALT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles( CoreFreqK_HALT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static int CoreFreqK_Alt_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles( CoreFreqK_IO_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+static void CoreFreqK_Alt_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_MWAIT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static void CoreFreqK_Alt_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_HALT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static void CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_IO_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+#else
+static int CoreFreqK_Alt_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_MWAIT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static int CoreFreqK_Alt_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_HALT_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+
+static int CoreFreqK_Alt_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
+				struct cpuidle_driver *pIdleDriver, int index)
+{
+	return Alternative_Computation_Of_Cycles_S2( CoreFreqK_S2_IO_Handler,
+							pIdleDevice,
+							pIdleDriver,
+							index );
+}
+#endif /* 5.9.0 */
 #endif /* CONFIG_CPU_IDLE and 4.14.0 */
 
 static void CoreFreqK_IdleDriver_UnInit(void)
@@ -12656,23 +12870,66 @@ static int CoreFreqK_IdleDriver_Init(void)
 		  case ROUTE_MWAIT:
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_MWAIT_Handler;
+			].enter = CoreFreqK_Alt_MWAIT_Handler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+			].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[0] = 'M';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[1] = 'W';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[2] = 'T';
 			break;
 		  case ROUTE_HALT:
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_HALT_Handler;
+			].enter = CoreFreqK_Alt_HALT_Handler;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_HALT_Handler;
+			].enter_s2idle = CoreFreqK_Alt_S2_HALT_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[0] = 'H';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[1] = 'L';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[2] = 'T';
 			break;
 		  case ROUTE_IO:
-			/*	TODO(Unimplemented)	*/
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_Alt_IO_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_Alt_S2_IO_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[0] = 'I';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[1] = '/';
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc[2] = 'O';
+			break;
 		  case ROUTE_DEFAULT:
 		  default:
 		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)

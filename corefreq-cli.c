@@ -2858,9 +2858,6 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	    CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]),
 		CStateRange_Update);
     }
-    else if( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
-    {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_CORE_CSTATE).CODE());
 
@@ -2871,7 +2868,6 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - (OutFunc == NULL ? 21 : 19)
 		- RSZ(PERF_MON_CSTATE_BAR), hSpace,
 		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr);
-    }
 /* Section Mark */
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE());
