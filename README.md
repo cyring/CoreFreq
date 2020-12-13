@@ -50,7 +50,8 @@ VMs don't provide access to the registers that the CoreFreq driver employs :
 
 **c-** Rendering  
 
-The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI colors support 
+The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI colors support  
+Tip for the Ubuntu Terminal: In the Preferences - Colors tab, select `Show bold text in bright colors`  
 
 ### Dependencies
 * The Linux Kernel with a minimum version 3.3

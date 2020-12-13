@@ -7325,9 +7325,10 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
   if (item != NULL)
   {
 	wExit = CreateWindow(	wLayer, id,
-				1, CUMIN((hth + 6), draw.Area.MaxRows),
+				1, (hth + 6),
 				(draw.Size.width - wth) / 2,
-				(draw.Size.height - (hth + 2)) / 2,
+				(hth + 6) > draw.Size.height ?
+					1 : (draw.Size.height - (hth + 2)) / 2,
 				WINFLAG_NO_STOCK );
     if (wExit != NULL)
     {
