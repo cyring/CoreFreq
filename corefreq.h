@@ -73,9 +73,9 @@ typedef struct
 					Unused	: 16-2;
 		};
 		unsigned short int	CStateLimit;
-		union {
+		struct {
 		unsigned short int	CStateInclude;	/* Intel	*/
-		unsigned short int	CStateBaseAddr; /* AMD Fam. 17h */
+		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 		};
 	} Query;
 

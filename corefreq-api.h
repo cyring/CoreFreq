@@ -401,7 +401,7 @@ typedef struct
 					Microcode:64-32; /* Thread	*/
 		};
 		unsigned short int	CStateLimit;
-		union {
+		struct {
 		unsigned short int	CStateInclude;	/* Intel	*/
 		unsigned short int	CStateBaseAddr; /* Any I/O BAR	*/
 		};

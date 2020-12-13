@@ -12599,7 +12599,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 
 	inw(cstate_addr);
@@ -12617,7 +12617,7 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 
 	inw(cstate_addr);
@@ -12636,7 +12636,7 @@ static int Alternative_Computation_Of_Cycles(
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	RDTSCP64(TSC[0]);
 
@@ -12645,16 +12645,16 @@ static int Alternative_Computation_Of_Cycles(
 	RDTSCP64(TSC[1]);
 
 	switch (lvl) {
-	case 1:
+	case 0:
 		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
 		break;
-	case 2 ... 3:
+	case 1 ... 3:
 		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
 		break;
-	case 6:
+	case 5:
 		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
 		break;
-	case 7:
+	case 6:
 		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
 		break;
 	};
@@ -12678,7 +12678,7 @@ static int Alternative_Computation_Of_Cycles_S2(
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 24) & 0xff;
+			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	RDTSCP64(TSC[0]);
 
@@ -12687,16 +12687,16 @@ static int Alternative_Computation_Of_Cycles_S2(
 	RDTSCP64(TSC[1]);
 
 	switch (lvl) {
-	case 1:
+	case 0:
 		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
 		break;
-	case 2 ... 3:
+	case 1 ... 3:
 		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
 		break;
-	case 6:
+	case 5:
 		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
 		break;
-	case 7:
+	case 6:
 		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
 		break;
 	};
@@ -12910,6 +12910,26 @@ static int CoreFreqK_IdleDriver_Init(void)
 			].desc[2] = 'T';
 			break;
 		  case ROUTE_IO:
+		  {
+		    bool hasRegister = false;
+		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+		    {
+			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+			if (CState_IO_MWAIT.LVL2_BaseAddr != 0x0) {
+				hasRegister = true;
+			}
+		    }
+		  else if(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		    {
+			CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
+			RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+			if (CStateBaseAddr.IOaddr != 0x0) {
+				hasRegister = true;
+			}
+		    }
+		    if (hasRegister == true)
+		    {
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
 			].enter = CoreFreqK_Alt_IO_Handler;
@@ -12930,6 +12950,9 @@ static int CoreFreqK_IdleDriver_Init(void)
 				CoreFreqK.IdleDriver.state_count
 			].desc[2] = 'O';
 			break;
+		    }
+		  }
+			/* Fallthrough */
 		  case ROUTE_DEFAULT:
 		  default:
 		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)

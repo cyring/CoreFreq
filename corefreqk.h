@@ -4912,21 +4912,21 @@ static IDLE_STATE Zen_IdleState[] = {
 	{
 	.Name		= "C1",
 	.Desc		= "ZEN-C1",
-	.flags		= 0x01 << 24,
+	.flags		= 0x00 << 24,
 	.Latency	= 1,
 	.Residency	= 2
 	},
 	{
 	.Name		= "C2",
 	.Desc		= "ZEN-C2",
-	.flags		= 0x02 << 24,
+	.flags		= 0x10 << 24,
 	.Latency	= 100,
 	.Residency	= 100 * 2
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "ZEN-C6",
-	.flags		= 0x06 << 24,
+	.flags		= 0x50 << 24,
 	.Latency	= 1000,
 	.Residency	= 1000 * 2
 	},

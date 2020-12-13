@@ -4655,13 +4655,14 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 }
 
 void CStates(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
-{
+{	/* Copy the C-State Configuration Control			*/
 	Shm->Cpu[cpu].Query.CfgLock = Core[cpu]->Query.CfgLock;
 	Shm->Cpu[cpu].Query.CStateLimit = Core[cpu]->Query.CStateLimit;
-
+	/* Copy Intel Max C-State Inclusion				*/
 	Shm->Cpu[cpu].Query.IORedir = Core[cpu]->Query.IORedir;
-	/* Copy Intel Max C-State Inclusion or AMD C-State Base Addr	*/
 	Shm->Cpu[cpu].Query.CStateInclude = Core[cpu]->Query.CStateInclude;
+	/* Copy any architectural C-States I/O Base Address		*/
+	Shm->Cpu[cpu].Query.CStateBaseAddr= Core[cpu]->Query.CStateBaseAddr;
 }
 
 void PowerThermal(SHM_STRUCT *Shm,PROC_RO *Proc,CORE_RO **Core,unsigned int cpu)
