@@ -546,7 +546,7 @@ typedef union
     struct
     {
 	unsigned long long	 /* Per SMT: MSR 0xC0010073 (RW)	*/
-	IOaddr		: 16-0, /* 0:disabled, [1-0xFFF8]:enabled	*/
+	IOaddr		: 16-0,  /* 0:dis, [0x1-0xFFF8]+[0...5] Six C-States */
 	Reserved	: 64-16;
     };
 } CSTATE_BASE_ADDR;
