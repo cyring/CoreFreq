@@ -4924,9 +4924,37 @@ static IDLE_STATE Zen_IdleState[] = {
 	.Residency	= 100 * 2
 	},
 	{
+	.Name		= "C3",
+	.Desc		= "ZEN-C3",
+	.flags		= 0x20 << 24,
+	.Latency	= 200,
+	.Residency	= 200 * 2
+	},
+	{
+	.Name		= "C4",
+	.Desc		= "ZEN-C4",
+	.flags		= 0x30 << 24,
+	.Latency	= 600,
+	.Residency	= 600 * 2
+	},
+	{
+	.Name		= "C5",
+	.Desc		= "ZEN-C5",
+	.flags		= 0x40 << 24,
+	.Latency	= 700,
+	.Residency	= 700 * 2
+	},
+	{
 	.Name		= "C6",
 	.Desc		= "ZEN-C6",
 	.flags		= 0x50 << 24,
+	.Latency	= 800,
+	.Residency	= 800 * 2
+	},
+	{
+	.Name		= "C7",
+	.Desc		= "ZEN-C7",
+	.flags		= 0x60 << 24,
 	.Latency	= 1000,
 	.Residency	= 1000 * 2
 	},
