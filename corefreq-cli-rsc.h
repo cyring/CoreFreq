@@ -966,8 +966,8 @@ extern RESOURCE_ST Resource[];
 {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,\
+	LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -1110,8 +1110,8 @@ extern RESOURCE_ST Resource[];
 {									\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	' ','C','1',' ','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-',' ','C','3',' ','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-',' ','C','6',' ','-','-','-','-','-','-','-','-',\
+	' ','C','2',':','C','3',' ','-','-','-','-','-','-','-','-','-',\
+	'-','-',' ','C','4',':','C','6',' ','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-',' ','C','7',' ','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
 	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
