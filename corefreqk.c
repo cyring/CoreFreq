@@ -340,14 +340,14 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 
 unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 {
-	unsigned long long TSC;
+	unsigned long long TSC __attribute__ ((aligned (8)));
 	RDTSCP64(TSC);
 	return (TSC);
 }
 
 unsigned long long CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
 {
-	unsigned long long TSC;
+	unsigned long long TSC __attribute__ ((aligned (8)));
 	RDTSC64(TSC);
 	return (TSC);
 }
@@ -8953,16 +8953,14 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
 			MSR_AMD_F17H_IRPERF, Core->Counter[T].INST);	\
 	/* Read Virtual PMC and cumulative store: */			\
-	Core->Counter[T].C3 = Core->VPMC.C1;				\
-	Core->Counter[T].C6 = Core->VPMC.C2;				\
-	Core->Counter[T].C7 = Core->VPMC.C3;				\
-	Core->Counter[T].C7 = Core->Counter[T].C7 + Core->VPMC.C4;	\
-	Core->Counter[T].C7 = Core->Counter[T].C7 + Core->VPMC.C5;	\
-	Core->Counter[T].C7 = Core->Counter[T].C7 + Core->VPMC.C6;	\
-	Core->Counter[T].C7 = Core->Counter[T].C7 + Core->VPMC.C7;	\
+	Atomic_Read_VPMC(LOCKLESS, Core->Counter[T].C1, Core->VPMC.C1); \
+	Atomic_Read_VPMC(LOCKLESS, Core->Counter[T].C3, Core->VPMC.C2); \
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C3, Core->VPMC.C3); \
+	Atomic_Read_VPMC(LOCKLESS, Core->Counter[T].C6, Core->VPMC.C4); \
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C5); \
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C6); \
 									\
-	Cx =	Core->Counter[T].C7					\
-		+ Core->Counter[T].C6					\
+	Cx =	Core->Counter[T].C6					\
 		+ Core->Counter[T].C3					\
 		+ Core->Counter[T].C0.URC;				\
 									\
@@ -12750,6 +12748,33 @@ static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 }
 #endif /* 5.9.0 */
 	/*		Idle Cycles callback functions			*/
+#define Atomic_Write_VPMC( _Core, cycles, _lvl)				\
+{									\
+	switch (_lvl) {							\
+	case 0:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C1, cycles);	\
+		break;							\
+	case 1:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C2, cycles);	\
+		break;							\
+	case 2:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C3, cycles);	\
+		break;							\
+	case 3:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C4, cycles);	\
+		break;							\
+	case 4:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C5, cycles);	\
+		break;							\
+	case 5:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C6, cycles);	\
+		break;							\
+	case 6:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C7, cycles);	\
+		break;							\
+	};								\
+}
+
 static int Alternative_Computation_Of_Cycles(
 	int (*Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
 			struct cpuidle_device *pIdleDevice,
@@ -12762,35 +12787,27 @@ static int Alternative_Computation_Of_Cycles(
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
-	RDTSCP64(TSC[0]);
+	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	{
+		RDTSCP64(TSC[0]);
 
-	Handler(pIdleDevice, pIdleDriver, index);
+		Handler(pIdleDevice, pIdleDriver, index);
 
-	RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[1]);
+	}
+	else
+	{
+		RDTSC64(TSC[0]);
 
-	switch (lvl) {
-	case 0:
-		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
-		break;
-	case 1:
-		BITADD( LOCKLESS, Core->VPMC.C2, (TSC[1] - TSC[0]) );
-		break;
-	case 2:
-		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
-		break;
-	case 3:
-		BITADD( LOCKLESS, Core->VPMC.C4, (TSC[1] - TSC[0]) );
-		break;
-	case 4:
-		BITADD( LOCKLESS, Core->VPMC.C5, (TSC[1] - TSC[0]) );
-		break;
-	case 5:
-		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
-		break;
-	case 6:
-		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
-		break;
-	};
+		Handler(pIdleDevice, pIdleDriver, index);
+
+		RDTSC64(TSC[1]);
+	}
+	TSC[1] = TSC[1] - TSC[0];
+
+	Atomic_Write_VPMC(Core, TSC[1], lvl);
+
 	return index;
 }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
@@ -12813,35 +12830,27 @@ static int Alternative_Computation_Of_Cycles_S2(
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
-	RDTSCP64(TSC[0]);
+	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
+	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
+	{
+		RDTSCP64(TSC[0]);
 
-	S2_Handler(pIdleDevice, pIdleDriver, index);
+		S2_Handler(pIdleDevice, pIdleDriver, index);
 
-	RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[1]);
+	}
+	else
+	{
+		RDTSC64(TSC[0]);
 
-	switch (lvl) {
-	case 0:
-		BITADD( LOCKLESS, Core->VPMC.C1, (TSC[1] - TSC[0]) );
-		break;
-	case 1:
-		BITADD( LOCKLESS, Core->VPMC.C2, (TSC[1] - TSC[0]) );
-		break;
-	case 2:
-		BITADD( LOCKLESS, Core->VPMC.C3, (TSC[1] - TSC[0]) );
-		break;
-	case 3:
-		BITADD( LOCKLESS, Core->VPMC.C4, (TSC[1] - TSC[0]) );
-		break;
-	case 4:
-		BITADD( LOCKLESS, Core->VPMC.C5, (TSC[1] - TSC[0]) );
-		break;
-	case 5:
-		BITADD( LOCKLESS, Core->VPMC.C6, (TSC[1] - TSC[0]) );
-		break;
-	case 6:
-		BITADD( LOCKLESS, Core->VPMC.C7, (TSC[1] - TSC[0]) );
-		break;
-	};
+		S2_Handler(pIdleDevice, pIdleDriver, index);
+
+		RDTSC64(TSC[1]);
+	}
+	TSC[1] = TSC[1] - TSC[0];
+
+	Atomic_Write_VPMC(Core, TSC[1], lvl);
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */

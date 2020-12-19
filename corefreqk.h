@@ -81,6 +81,32 @@
 		: "%rax", "%rcx", "%rdx"				\
 	)
 
+#define Atomic_Read_VPMC(_lock, _dest, _src)				\
+{									\
+	__asm__ volatile						\
+	(								\
+		"xorq	%%rax	, %%rax"	"\n\t"			\
+	_lock	"cmpxchg %%rax	, %[src]"	"\n\t"			\
+		"movq	%%rax	, %[dest]"				\
+		: [dest] "=m" (_dest)					\
+		: [src] "m" (_src)					\
+		: "%rax", "cc", "memory"				\
+	);								\
+}
+
+#define Atomic_Add_VPMC(_lock, _dest, _src)				\
+{									\
+	__asm__ volatile						\
+	(								\
+		"xorq	%%rax	, %%rax"	"\n\t"			\
+	_lock	"cmpxchg %%rax	, %[src]"	"\n\t"			\
+		"addq	%%rax	, %[dest]"				\
+		: [dest] "=m" (_dest)					\
+		: [src] "m" (_src)					\
+		: "%rax", "cc", "memory"				\
+	);								\
+}
+
 #define ASM_CODE_RDMSR(_msr, _reg) \
 	"# Read MSR counter."		"\n\t"				\
 	"movq	$" #_msr ", %%rcx"	"\n\t"				\
@@ -4941,20 +4967,13 @@ static IDLE_STATE Zen_IdleState[] = {
 	.Name		= "C5",
 	.Desc		= "ZEN-C5",
 	.flags		= 0x40 << 24,
-	.Latency	= 700,
-	.Residency	= 700 * 2
+	.Latency	= 800,
+	.Residency	= 800 * 2
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "ZEN-C6",
 	.flags		= 0x50 << 24,
-	.Latency	= 800,
-	.Residency	= 800 * 2
-	},
-	{
-	.Name		= "C7",
-	.Desc		= "ZEN-C7",
-	.flags		= 0x60 << 24,
 	.Latency	= 1000,
 	.Residency	= 1000 * 2
 	},
