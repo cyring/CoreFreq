@@ -749,6 +749,50 @@ static void (*ComputeVoltage_Winbond_IO_Matrix[4])(	struct FLIP_FLOP*,
 	[FORMULA_SCOPE_PKG ] = ComputeVoltage_Winbond_IO_PerPkg
 };
 
+static inline void ComputeVoltage_ITE_Tech_IO(	struct FLIP_FLOP *CFlip,
+						SHM_STRUCT *Shm,
+						unsigned int cpu )
+{	/* ITE Tech IT8720F						*/
+	COMPUTE_VOLTAGE(ITETECH_IO,
+			CFlip->Voltage.Vcore,
+			CFlip->Voltage.VID);
+
+	Core_ComputeVoltageLimits(&Shm->Cpu[cpu], CFlip);
+}
+
+#define ComputeVoltage_ITE_Tech_IO_PerSMT	ComputeVoltage_ITE_Tech_IO
+
+static inline void ComputeVoltage_ITE_Tech_IO_PerCore(struct FLIP_FLOP *CFlip,
+							SHM_STRUCT *Shm,
+							unsigned int cpu )
+{
+	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
+	 || (Shm->Cpu[cpu].Topology.ThreadID == -1))
+	{
+		ComputeVoltage_ITE_Tech_IO(CFlip, Shm, cpu);
+	}
+}
+
+static inline void ComputeVoltage_ITE_Tech_IO_PerPkg(struct FLIP_FLOP *CFlip,
+							SHM_STRUCT *Shm,
+							unsigned int cpu )
+{
+	if (cpu == Shm->Proc.Service.Core)
+	{
+		ComputeVoltage_ITE_Tech_IO(CFlip, Shm, cpu);
+	}
+}
+
+static void (*ComputeVoltage_ITE_Tech_IO_Matrix[4])(	struct FLIP_FLOP*,
+							SHM_STRUCT*,
+							unsigned int ) = \
+{
+	[FORMULA_SCOPE_NONE] = ComputeVoltage_None,
+	[FORMULA_SCOPE_SMT ] = ComputeVoltage_ITE_Tech_IO_PerSMT,
+	[FORMULA_SCOPE_CORE] = ComputeVoltage_ITE_Tech_IO_PerCore,
+	[FORMULA_SCOPE_PKG ] = ComputeVoltage_ITE_Tech_IO_PerPkg
+};
+
 void Core_ComputePowerLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 {	/* Per Core, computes the Min CPU Energy consumed.		*/
 	TEST_AND_SET_SENSOR( ENERGY, LOWEST,	CFlip->State.Energy,
@@ -930,6 +974,9 @@ static void *Core_Cycle(void *arg)
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		ComputeVoltageFormula = ComputeVoltage_Winbond_IO_Matrix;
+		break;
+	case VOLTAGE_KIND_ITETECH_IO:
+		ComputeVoltageFormula = ComputeVoltage_ITE_Tech_IO_Matrix;
 		break;
 	case VOLTAGE_KIND_NONE:
 	default:
@@ -5336,6 +5383,13 @@ static inline void Pkg_ComputeVoltage_Winbond_IO(struct PKG_FLIP_FLOP *PFlip)
 			PFlip->Voltage.VID.CPU);
 }
 
+static inline void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
+{
+	COMPUTE_VOLTAGE(ITETECH_IO,
+			PFlip->Voltage.CPU,
+			PFlip->Voltage.VID.CPU);
+}
+
 static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 {
 }
@@ -5452,6 +5506,9 @@ REASON_CODE Core_Manager(REF *Ref)
 		break;
 	case VOLTAGE_KIND_WINBOND_IO:
 		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_Winbond_IO;
+		break;
+	case VOLTAGE_KIND_ITETECH_IO:
+		Pkg_ComputeVoltageFormula = Pkg_ComputeVoltage_ITE_Tech_IO;
 		break;
 	case VOLTAGE_KIND_NONE:
 	default:

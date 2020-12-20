@@ -297,6 +297,12 @@ CPU     IPS            IPC            CPI
   A: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
+* Q: No voltage is showing up with Nehalem or Westmere processors ?  
+
+  A: Build _CoreFreq_ as below if one of those chips is present:  
+`make HWM_CHIPSET=W83627`  
+  or  
+`make HWM_CHIPSET=IT8720`  
 
 * Q: What are the parameters of the _CoreFreq_ driver ?  
 

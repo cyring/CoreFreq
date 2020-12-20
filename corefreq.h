@@ -626,6 +626,9 @@ typedef struct
 #define COMPUTE_VOLTAGE_WINBOND_IO(Vcore, VID)				\
 		(Vcore = (double) (VID) * 0.008)
 
+#define COMPUTE_VOLTAGE_ITETECH_IO(Vcore, VID)				\
+		(Vcore = (double) (VID) * 0.016)
+
 #define COMPUTE_VOLTAGE(_ARCH_, Vcore, VID)	\
 		COMPUTE_VOLTAGE_##_ARCH_(Vcore, VID)
 

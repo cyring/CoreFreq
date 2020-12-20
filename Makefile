@@ -192,7 +192,7 @@ help:
 	"|    where <freq> is at least 4050000000 Hz                     |\n"\
 	"|                                                               |\n"\
 	"|  HWM_CHIPSET=<chipset>                                        |\n"\
-	"|    where <chipset> is W83627 or COMPATIBLE                    |\n"\
+	"|    where <chipset> is W83627 or IT8720 or COMPATIBLE          |\n"\
 	"|                                                               |\n"\
 	"|  Performance Counters:                                        |\n"\
 	"|    -------------------------------------------------------    |\n"\

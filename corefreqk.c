@@ -10197,7 +10197,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
-	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	    #if defined(HWM_CHIPSET) \
+	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		RDSIO(	PUBLIC(RO(Proc))->PowerThermal.VID.CPU,
 			HWM_W83627_CPUVCORE,
 			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
@@ -10213,7 +10214,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula))
 	    {
 	    case FORMULA_SCOPE_PKG:
-	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	    #if defined(HWM_CHIPSET) \
+	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		Core->PowerThermal.VID = PUBLIC(RO(Proc))->PowerThermal.VID.CPU;
 	    #endif
 		break;
@@ -10241,7 +10243,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 
 		Sys_Tick(PUBLIC(RO(Proc)));
 	} else {
-	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	    #if defined(HWM_CHIPSET) \
+	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		Core->PowerThermal.VID = 0;
 	    #endif
 	}
@@ -10266,14 +10269,16 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->voltageFormula)) {
 	case FORMULA_SCOPE_CORE:
 	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
-	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	    #if defined(HWM_CHIPSET) \
+	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
 			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
 	    #endif
 	    }
 		break;
 	case FORMULA_SCOPE_SMT:
-	    #if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
+	    #if defined(HWM_CHIPSET) \
+	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
 			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
 	    #endif

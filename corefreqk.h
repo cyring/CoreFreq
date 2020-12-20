@@ -549,6 +549,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 /* Hardware Monitoring: Super I/O chipsets				*/
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
+#define IT8720			0x8720
 
 /*
  * --- Core_AMD_SMN_Read ---
@@ -5677,10 +5678,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
@@ -5705,10 +5709,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -5733,10 +5740,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -5761,10 +5771,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = NULL,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
@@ -5790,10 +5803,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
@@ -5818,10 +5834,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Westmere_EP_ids,
@@ -5846,10 +5865,13 @@ static ARCH Arch[ARCHITECTURES] = {
 	.ClockMod = ClockMod_Nehalem_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-#if defined(HWM_CHIPSET) && (HWM_CHIPSET == W83627)
-	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
-#else
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
+#if defined(HWM_CHIPSET)
+#if (HWM_CHIPSET == W83627)
+	.voltageFormula = VOLTAGE_FORMULA_WINBOND_IO,
+#elif (HWM_CHIPSET == IT8720)
+	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
+#endif
 #endif
 	.powerFormula   = POWER_FORMULA_NONE,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
