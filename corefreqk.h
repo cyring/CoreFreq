@@ -4584,14 +4584,14 @@ static IDLE_STATE NHM_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "NHM-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 20,
 	.Residency	= 80
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "NHM-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 200,
 	.Residency	= 800
 	},
@@ -4622,21 +4622,21 @@ static IDLE_STATE SNB_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "SNB-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 80,
 	.Residency	= 211
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "SNB-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 104,
 	.Residency	= 345
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "SNB-C7",
-	.flags		= (0x30 << 24) | 0x10000,
+	.flags		= (0x30 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 109,
 	.Residency	= 345
 	},
@@ -4667,21 +4667,21 @@ static IDLE_STATE IVB_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "IVB-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 59,
 	.Residency	= 156
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "IVB-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 80,
 	.Residency	= 300
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "IVB-C7",
-	.flags		= (0x30 << 24) | 0x10000,
+	.flags		= (0x30 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 87,
 	.Residency	= 300
 	},
@@ -4712,42 +4712,42 @@ static IDLE_STATE HSW_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "HSW-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 33,
 	.Residency	= 100
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "HSW-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 133,
 	.Residency	= 400
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "HSW-C7",
-	.flags		= (0x32 << 24) | 0x10000,
+	.flags		= (0x32 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 166,
 	.Residency	= 500
 	},
 	{
 	.Name		= "C8",
 	.Desc		= "HSW-C8",
-	.flags		= (0x40 << 24) | 0x10000,
+	.flags		= (0x40 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 300,
 	.Residency	= 900
 	},
 	{
 	.Name		= "C9",
 	.Desc		= "HSW-C9",
-	.flags		= (0x50 << 24) | 0x10000,
+	.flags		= (0x50 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 600,
 	.Residency	= 1800
 	},
 	{
 	.Name		= "C10",
 	.Desc		= "HSW-C10",
-	.flags		= (0x60 << 24) | 0x10000,
+	.flags		= (0x60 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 2600,
 	.Residency	= 7700
 	},
@@ -4778,42 +4778,42 @@ static IDLE_STATE BDW_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "BDW-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 40,
 	.Residency	= 100
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "BDW-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 133,
 	.Residency	= 400
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "BDW-C7",
-	.flags		= (0x32 << 24) | 0x10000,
+	.flags		= (0x32 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 166,
 	.Residency	= 500
 	},
 	{
 	.Name		= "C8",
 	.Desc		= "BDW-C8",
-	.flags		= (0x40 << 24) | 0x10000,
+	.flags		= (0x40 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 300,
 	.Residency	= 900
 	},
 	{
 	.Name		= "C9",
 	.Desc		= "BDW-C9",
-	.flags		= (0x50 << 24) | 0x10000,
+	.flags		= (0x50 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 600,
 	.Residency	= 1800
 	},
 	{
 	.Name		= "C10",
 	.Desc		= "BDW-C10",
-	.flags		= (0x60 << 24) | 0x10000,
+	.flags		= (0x60 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 2600,
 	.Residency	= 7700
 	},
@@ -4850,42 +4850,42 @@ static IDLE_STATE SKL_IdleState[] = {
 	{
 	.Name		= "C3",
 	.Desc		= "SKL-C3",
-	.flags		= (0x10 << 24) | 0x10000,
+	.flags		= (0x10 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 70,
 	.Residency	= 100
 	},
 	{
 	.Name		= "C6",
 	.Desc		= "SKL-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 85,
 	.Residency	= 200
 	},
 	{
 	.Name		= "C7",
 	.Desc		= "SKL-C7",
-	.flags		= (0x33 << 24) | 0x10000,
+	.flags		= (0x33 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 124,
 	.Residency	= 800
 	},
 	{
 	.Name		= "C8",
 	.Desc		= "SKL-C8",
-	.flags		= (0x40 << 24) | 0x10000,
+	.flags		= (0x40 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 200,
 	.Residency	= 800
 	},
 	{
 	.Name		= "C9",
 	.Desc		= "SKL-C9",
-	.flags		= (0x50 << 24) | 0x10000,
+	.flags		= (0x50 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 480,
 	.Residency	= 5000
 	},
 	{
 	.Name		= "C10",
 	.Desc		= "SKL-C10",
-	.flags		= (0x60 << 24) | 0x10000,
+	.flags		= (0x60 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 890,
 	.Residency	= 5000
 	},
@@ -4916,7 +4916,7 @@ static IDLE_STATE SKX_IdleState[] = {
 	{
 	.Name		= "C6",
 	.Desc		= "SKX-C6",
-	.flags		= (0x20 << 24) | 0x10000,
+	.flags		= (0x20 << 24) | CPUIDLE_FLAG_TLB_FLUSHED,
 	.Latency	= 133,
 	.Residency	= 600
 	},

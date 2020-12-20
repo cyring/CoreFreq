@@ -1355,7 +1355,17 @@ typedef struct
 #ifndef _LINUX_CPUIDLE_H
 #define CPUIDLE_STATE_MAX	10
 #define CPUIDLE_NAME_LEN	16
+/* Borrow the Kernel Idle State Flags					*/
+#define CPUIDLE_FLAG_NONE		(0x00)
+#define CPUIDLE_FLAG_POLLING		(1 << (0))
+#define CPUIDLE_FLAG_COUPLED		(1 << (1))
+#define CPUIDLE_FLAG_TIMER_STOP 	(1 << (2))
+#define CPUIDLE_FLAG_UNUSABLE		(1 << (3))
+#define CPUIDLE_FLAG_OFF		(1 << (4))
+#define CPUIDLE_FLAG_TLB_FLUSHED	(1 << (5))
+#define CPUIDLE_FLAG_RCU_IDLE		(1 << (6))
 #endif
+
 #ifndef _LINUX_CPUFREQ_H
 #define CPUFREQ_NAME_LEN	16
 #endif

@@ -8898,6 +8898,11 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
 			MSR_CORE_C3_RESIDENCY, Core->Counter[T].C3,	\
 			MSR_CORE_C6_RESIDENCY, Core->Counter[T].C6);	\
+	/* Read Virtual PMC and cumulative store: */			\
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C3, Core->VPMC.C2); \
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C4); \
+	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C5); \
+	Atomic_Read_VPMC(LOCKLESS, Core->Counter[T].C7, Core->VPMC.C7); \
 })
 
 #define SMT_Counters_Nehalem(Core, T)					\
@@ -10101,6 +10106,8 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Delta_C6(Core);
 
+	Delta_C7(Core);
+
 	Save_INST(Core);
 
 	Save_TSC(Core);
@@ -10112,6 +10119,8 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	Save_C3(Core);
 
 	Save_C6(Core);
+
+	Save_C7(Core);
 
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
@@ -13061,15 +13070,15 @@ static int CoreFreqK_IdleDriver_Init(void)
 		struct cpuidle_device *device;
 		unsigned int cpu, enroll = 0;
 		unsigned int subState[] = {
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0, /*  C0 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /*  C1 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,
 		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /* C1E */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2, /*  C3 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3, /*  C6 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4, /*  C7 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5, /*  C8 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6, /*  C9 */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7  /* C10 */
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6,
+		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7
 		};
 		const unsigned int subStateCount = sizeof(subState)
 						 / sizeof(subState[0]);
@@ -13080,9 +13089,18 @@ static int CoreFreqK_IdleDriver_Init(void)
 		/*		Idle States				*/
 	    while (pIdleState->Name != NULL)
 	    {
-		if ((CoreFreqK.IdleDriver.state_count < subStateCount)
-		&& (subState[CoreFreqK.IdleDriver.state_count] > 0))
+		if (CoreFreqK.IdleDriver.state_count < subStateCount)
 		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].flags = pIdleState->flags;
+
+		    if (subState[CoreFreqK.IdleDriver.state_count] == 0)
+		    {
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].flags = pIdleState->flags |= CPUIDLE_FLAG_UNUSABLE;
+		    }
 			StrCopy(CoreFreqK.IdleDriver.states[
 					CoreFreqK.IdleDriver.state_count
 				].name, pIdleState->Name, CPUIDLE_NAME_LEN);
@@ -13090,10 +13108,6 @@ static int CoreFreqK_IdleDriver_Init(void)
 			StrCopy(CoreFreqK.IdleDriver.states[
 					CoreFreqK.IdleDriver.state_count
 				].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].flags = pIdleState->flags;
 
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
