@@ -6879,9 +6879,13 @@ Window *CreateSelectFreq(unsigned long long id,
 			UPDATE_CALLBACK Pkg_Freq_Update,
 			UPDATE_CALLBACK CPU_Freq_Update)
 {
-	const CUINT height = CUMIN(Shm->Proc.CPU.Count,
-	(ADD_UPPER & ADD_LOWER)+(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
-
+	const CUINT height = CUMIN( (Shm->Proc.CPU.Count + 1),
+				(
+				(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER))
+			#ifndef NO_FOOTER
+				+ (ADD_UPPER | ADD_LOWER)
+			#endif
+				) );
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, height,
 					30, (TOP_HEADER_ROW | 1) );
