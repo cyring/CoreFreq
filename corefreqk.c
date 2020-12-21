@@ -5732,7 +5732,7 @@ bool IsPerformanceControlCapable(void)
       && (blackList[id].ExtModel == PUBLIC(RO(Proc))->Features.Std.EAX.ExtModel)
       && (blackList[id].Model == PUBLIC(RO(Proc))->Features.Std.EAX.Model))
       {
-	return (false);
+	return (PUBLIC(RO(Proc))->Registration.Driver.CPUfreq == 1);
       }
      }
 	return (true);
@@ -5965,7 +5965,7 @@ static void ClockMod_PPC_PerCore(void *arg)
 	if (WritePerformanceControl(&Core->PowerThermal.PerfControl) == true) {
 		pClockPPC->rc = RC_OK_COMPUTE;
 	} else {
-		pClockPPC->rc = -ENXIO;
+		pClockPPC->rc = -EINTR;
 	}
 	RDMSR(Core->PowerThermal.PerfControl, MSR_IA32_PERF_CTL);
 
