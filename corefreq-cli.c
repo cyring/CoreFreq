@@ -2318,6 +2318,14 @@ void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void IDA_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
+	const signed int pos = grid->cell.length - 5;
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void TurboUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.Turbo == 1;
@@ -2373,9 +2381,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	SpeedStepUpdate);
 
 	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+    GridCall(PUT(SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, ENABLED(bix));
+		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, ENABLED(bix)),
+	IDA_Update);
 
 	bix = Shm->Proc.Technology.Turbo == 1;
     GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
