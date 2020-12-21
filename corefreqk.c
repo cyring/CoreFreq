@@ -7919,16 +7919,6 @@ static void PerCore_Silvermont_Query(void *arg)
 	/*TODO(Needs a per Module topology)*/
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1E_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1A_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C3U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->C1U_Mask, Core->Bind);
-	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
-
-	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
-				PUBLIC(RO(Proc))->Service.Core);
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
 
