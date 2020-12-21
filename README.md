@@ -255,9 +255,13 @@ CPU     IPS            IPC            CPI
 
 
 * Q: The Instructions and PMC0 counters are stuck to zero ?  
+* Q: The Daemon crashes whenever its stress tools are executing !  
 
-  A: The PCE bit of control register CR4 allows RDPMC in ring 3  
+  A: The `PCE` bit of control register `CR4` allows RDPMC in ring `3`  
 :hash:`echo "2" > /sys/devices/cpu/rdpmc`  
+  or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add line:  
+  `w /sys/devices/cpu/rdpmc - - - - 2`  
+  next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:   
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
