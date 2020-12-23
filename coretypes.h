@@ -1346,28 +1346,44 @@ typedef struct
 
 /* Source: /include/uapi/linux/utsname.h				*/
 #ifdef __NEW_UTS_LEN
-#define MAX_UTS_LEN		__NEW_UTS_LEN
+	#define MAX_UTS_LEN		__NEW_UTS_LEN
 #else
-#define MAX_UTS_LEN		64
+	#define MAX_UTS_LEN		64
 #endif
 
 /* Sources: /include/linux/cpuidle.h  &  /include/linux/cpuidle.h	*/
 #ifndef _LINUX_CPUIDLE_H
-#define CPUIDLE_STATE_MAX	10
-#define CPUIDLE_NAME_LEN	16
+	#define CPUIDLE_STATE_MAX	10
+	#define CPUIDLE_NAME_LEN	16
+#endif
 /* Borrow the Kernel Idle State Flags					*/
-#define CPUIDLE_FLAG_NONE		(0x00)
-#define CPUIDLE_FLAG_POLLING		(1 << (0))
-#define CPUIDLE_FLAG_COUPLED		(1 << (1))
-#define CPUIDLE_FLAG_TIMER_STOP 	(1 << (2))
-#define CPUIDLE_FLAG_UNUSABLE		(1 << (3))
-#define CPUIDLE_FLAG_OFF		(1 << (4))
-#define CPUIDLE_FLAG_TLB_FLUSHED	(1 << (5))
-#define CPUIDLE_FLAG_RCU_IDLE		(1 << (6))
+#ifndef CPUIDLE_FLAG_NONE
+	#define CPUIDLE_FLAG_NONE		(0x00)
+#endif
+#ifndef CPUIDLE_FLAG_POLLING
+	#define CPUIDLE_FLAG_POLLING		(1UL << (0))
+#endif
+#ifndef CPUIDLE_FLAG_COUPLED
+	#define CPUIDLE_FLAG_COUPLED		(1UL << (1))
+#endif
+#ifndef CPUIDLE_FLAG_TIMER_STOP
+	#define CPUIDLE_FLAG_TIMER_STOP 	(1UL << (2))
+#endif
+#ifndef CPUIDLE_FLAG_UNUSABLE
+	#define CPUIDLE_FLAG_UNUSABLE		(1UL << (3))
+#endif
+#ifndef CPUIDLE_FLAG_OFF
+	#define CPUIDLE_FLAG_OFF		(1UL << (4))
+#endif
+#ifndef CPUIDLE_FLAG_TLB_FLUSHED
+	#define CPUIDLE_FLAG_TLB_FLUSHED	(1UL << (5))
+#endif
+#ifndef CPUIDLE_FLAG_RCU_IDLE
+	#define CPUIDLE_FLAG_RCU_IDLE		(1UL << (6))
 #endif
 
 #ifndef _LINUX_CPUFREQ_H
-#define CPUFREQ_NAME_LEN	16
+	#define CPUFREQ_NAME_LEN	16
 #endif
 
 #define REGISTRATION_DISABLE	0b00
