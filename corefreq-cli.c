@@ -3199,6 +3199,15 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - (OutFunc == NULL ? 21 : 19)
 		 - RSZ(POWER_THERMAL_MAX), hSpace, POWERED(0));
     }
+    if (Shm->Proc.Power.PPT > 0) {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sPPT   [%7u]", RSC(POWER_THERMAL_PPT).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,Shm->Proc.Power.PPT);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sPPT   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace, POWERED(0));
+    }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
@@ -5613,7 +5622,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		matrixSize.hth = 18;
+		matrixSize.hth = 19;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;

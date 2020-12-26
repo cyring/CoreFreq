@@ -3062,6 +3062,11 @@ void SandyBridge_PowerInterface(void)
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
+void Intel_PackagePowerLimit(void)
+{
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerLimit, MSR_PKG_POWER_LIMIT);
+}
+
 void Intel_Processor_PIN(bool capable)
 {
 	if (capable) {
@@ -4571,6 +4576,7 @@ void Query_Silvermont(unsigned int cpu)
 	HyperThreading_Technology();
 	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
+	Intel_PackagePowerLimit();
 }
 
 void Query_Nehalem(unsigned int cpu)
@@ -4585,6 +4591,7 @@ void Query_SandyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
+	Intel_PackagePowerLimit();
 }
 
 void Query_IvyBridge(unsigned int cpu)
@@ -4593,6 +4600,7 @@ void Query_IvyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
+	Intel_PackagePowerLimit();
 }
 
 void Query_IvyBridge_EP(unsigned int cpu)
@@ -4601,6 +4609,7 @@ void Query_IvyBridge_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
+	Intel_PackagePowerLimit();
 }
 
 void Query_Haswell(unsigned int cpu)
@@ -4613,6 +4622,7 @@ void Query_Haswell(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
+	Intel_PackagePowerLimit();
 }
 
 void Query_Haswell_EP(unsigned int cpu)
@@ -4625,6 +4635,7 @@ void Query_Haswell_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
+	Intel_PackagePowerLimit();
 }
 
 void Query_Haswell_ULT(unsigned int cpu)
@@ -4648,6 +4659,7 @@ void Query_Broadwell(unsigned int cpu)
 	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
+	Intel_PackagePowerLimit();
 }
 
 void Query_Skylake(unsigned int cpu)
@@ -6390,7 +6402,7 @@ void ThermalMonitor_Set(CORE_RO *Core)
 	/* Silvermont + Xeon[06_57] + Nehalem + Sandy Bridge & superior arch. */
 	RDMSR(TjMax, MSR_IA32_TEMPERATURE_TARGET);
 
-	Core->PowerThermal.Param.Offset[0] = TjMax.Core.Target;
+	Core->PowerThermal.Param.Offset[0] = TjMax.Target;
 	if (Core->PowerThermal.Param.Offset[0] == 0)
 	{
 		Core->PowerThermal.Param.Offset[0] = 100;
@@ -6506,6 +6518,11 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		case Broadwell_D:
 		case Skylake_X:
 			Core->PowerThermal.Param.Offset[1] = TjMax.EP.Offset;
+			break;
+		default:
+			Core->PowerThermal.Param.Offset[1] = TjMax.Offset;
+			break;
+		case Core_Yonah ... Core_Dunnington:
 			break;
 		}
 	}
@@ -6806,16 +6823,16 @@ struct CSTATES_ENCODING_ST {
 	{  _C9	, UNSPEC },
 	{ _C10	, UNSPEC }
 }, IORedir_CSTATES_SKL[CSTATES_ENCODING_COUNT] = {
-	{  _C0	, UNSPEC },
-	{  _C1	, UNSPEC },
+	{  _C0	, 0b0000 },
+	{  _C1	, 0b0001 },
 	{  _C2	, UNSPEC },
-	{  _C3	, 0b0000 },
+	{  _C3	, 0b0010 },
 	{  _C4	, UNSPEC },
-	{  _C6	, 0b0001 },
+	{  _C6	, 0b0011 },
 	{ _C6R	, UNSPEC },
-	{  _C7	, 0b0010 },
+	{  _C7	, 0b0100 },
 	{ _C7S	, UNSPEC },
-	{  _C8	, 0b0011 },	/* TODO(Untested?)	*/
+	{  _C8	, 0b0101 },
 	{  _C9	, UNSPEC },
 	{ _C10	, UNSPEC }
 }, Limit_CSTATES_SOC_SLM[CSTATES_ENCODING_COUNT] = {
@@ -9591,11 +9608,16 @@ static void Start_VirtualMachine(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_VirtualMachine(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_VirtualMachine(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_VirtualMachine(Core, 0);
 	}
 
@@ -9617,6 +9639,11 @@ static void Stop_VirtualMachine(void *arg)
 
 	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9703,11 +9730,16 @@ static void Start_GenuineIntel(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Intel_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -9729,6 +9761,11 @@ static void Stop_GenuineIntel(void *arg)
 
 	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9795,11 +9832,16 @@ static void Start_AuthenticAMD(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AuthenticAMD_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -9821,6 +9863,11 @@ static void Stop_AuthenticAMD(void *arg)
 
 	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -9940,12 +9987,17 @@ static void Start_Core2(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Core2_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	Counters_Core2(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -9969,10 +10021,16 @@ static void Stop_Core2(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
+
 static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 {
 	PERF_STATUS PerfStatus = {.value = 0};
@@ -10131,13 +10189,18 @@ static void Start_Silvermont(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Silvermont_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	Counters_SoC(Core, 0);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+	}
 	PKG_Counters_SoC(Core, 0);
 
 	RDCOUNTER( PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
@@ -10168,6 +10231,11 @@ static void Stop_Silvermont(void *arg)
 
 	Intel_Core_Counters_Clear(Core);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -10329,13 +10397,17 @@ static void Start_Nehalem(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Nehalem_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_Nehalem(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Nehalem(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Nehalem(Core, 0);
 	}
 
@@ -10362,7 +10434,9 @@ static void Stop_Nehalem(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_Nehalem(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -10539,13 +10613,17 @@ static void Start_SandyBridge(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_SandyBridge_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_SandyBridge(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_SandyBridge(Core, 0);
 		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 0);
 	}
@@ -10573,7 +10651,9 @@ static void Stop_SandyBridge(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_SandyBridge(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -10750,13 +10830,17 @@ static void Start_SandyBridge_EP(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_SandyBridge_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_SandyBridge_EP(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_SandyBridge_EP(Core, 0);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
@@ -10784,7 +10868,9 @@ static void Stop_SandyBridge_EP(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_SandyBridge_EP(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -11000,13 +11086,17 @@ static void Start_Haswell_ULT(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Haswell_ULT_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Haswell_ULT(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Haswell_ULT(Core, 0);
 		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 0);
 	}
@@ -11034,7 +11124,9 @@ static void Stop_Haswell_ULT(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_Haswell_ULT(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -11060,13 +11152,17 @@ static void Start_Goldmont(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Goldmont_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Haswell_ULT(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Haswell_ULT(Core, 0);
 		PWR_ACCU_SandyBridge(PUBLIC(RO(Proc)), 0);
 	}
@@ -11242,13 +11338,17 @@ static void Start_Haswell_EP(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_Haswell_EP_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Haswell_EP(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Haswell_EP(Core, 0);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
@@ -11276,7 +11376,9 @@ static void Stop_Haswell_EP(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_Haswell_EP(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -11510,13 +11612,17 @@ static void Start_Skylake(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_SandyBridge_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Skylake(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Skylake(Core, 0);
 
 	    switch (PUBLIC(RO(Proc))->ArchID) {
@@ -11571,7 +11677,9 @@ static void Stop_Skylake(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_Skylake(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -11747,13 +11855,17 @@ static void Start_Skylake_X(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_SandyBridge_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Intel_Core_Counters_Set(Core);
 	SMT_Counters_SandyBridge(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Start_Uncore_Skylake_X(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Skylake_X(Core, 0);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
@@ -11781,7 +11893,9 @@ static void Stop_Skylake_X(void *arg)
 	Intel_Core_Counters_Clear(Core);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
-		Stop_Uncore_Skylake_X(NULL);
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
 	}
 	PerCore_Reset(Core);
 
@@ -11904,9 +12018,14 @@ static void Start_AMD_Family_0Fh(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_0Fh_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -11928,6 +12047,11 @@ static void Stop_AMD_Family_0Fh(void *arg)
 
 	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -11938,11 +12062,16 @@ static void Start_AMD_Family_10h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_10h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -11964,6 +12093,11 @@ static void Stop_AMD_Family_10h(void *arg)
 
 	hrtimer_cancel(&PRIVATE(OF(Join, AT(cpu)))->Timer);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
@@ -11974,11 +12108,16 @@ static void Start_AMD_Family_11h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_11h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -11996,11 +12135,16 @@ static void Start_AMD_Family_12h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_12h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -12018,11 +12162,16 @@ static void Start_AMD_Family_14h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_14h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -12158,11 +12307,16 @@ static void Start_AMD_Family_15h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_15h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	Counters_Generic(Core, 0);
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+		}
 		PKG_Counters_Generic(Core, 0);
 	}
 
@@ -12409,13 +12563,18 @@ static void Start_AMD_Family_17h(void *arg)
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	PerCore_AMD_Family_17h_Query(Core);
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Update != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Update(Core);
+	}
 
 	AMD_Core_Counters_Set(Core, Family_17h);
 	SMT_Counters_AMD_Family_17h(Core, 0);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
+	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
+		Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
+	}
 	PKG_Counters_Generic(Core, 0);
 
 	RDCOUNTER(PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
@@ -12447,6 +12606,11 @@ static void Stop_AMD_Family_17h(void *arg)
 
 	AMD_Core_Counters_Clear(Core);
 
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop != NULL) {
+			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Stop(NULL);
+		}
+	}
 	PerCore_Reset(Core);
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);

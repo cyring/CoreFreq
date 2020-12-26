@@ -1326,26 +1326,10 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
 	unsigned int PowerUnits = 0;
 
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-    { /* AMD PowerNow */
-	if (Proc_RO->Features.AdvPower.EDX.FID) {
-		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
-	} else {
-		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
-	}
-	if (Proc_RO->Features.AdvPower.EDX.VID) {
-		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
-	} else {
-		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
-	}
-    } else {
-	Shm->Proc.PowerNow = 0;
-    }
     switch (KIND_OF_FORMULA(Proc_RO->powerFormula)) {
-      case POWER_KIND_INTEL:
-      case POWER_KIND_AMD:
-      case POWER_KIND_AMD_17h:
+    case POWER_KIND_INTEL:
+    case POWER_KIND_AMD:
+    case POWER_KIND_AMD_17h:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
 			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.PU) : 0;
 	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
@@ -1357,25 +1341,50 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 
 	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
 	break;
-      case POWER_KIND_INTEL_ATOM:
+    case POWER_KIND_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
 			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.PU) :0;
 	Shm->Proc.Power.Unit.Joules= Proc_RO->PowerThermal.Unit.ESU > 0 ?
 			0.001 / (double)(1 << Proc_RO->PowerThermal.Unit.ESU):0;
 	goto TIME_UNIT;
 	break;
-      case POWER_KIND_NONE:
+    case POWER_KIND_NONE:
 	break;
     }
-    if (PowerUnits != 0)
-    {
+  if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+  ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+  { /* AMD PowerNow */
+	if (Proc_RO->Features.AdvPower.EDX.FID) {
+		BITSET(LOCKLESS, Shm->Proc.PowerNow, 0);
+	} else {
+		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 0);
+	}
+	if (Proc_RO->Features.AdvPower.EDX.VID) {
+		BITSET(LOCKLESS, Shm->Proc.PowerNow, 1);
+	} else {
+		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
+	}
+  }
+  else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+  {
+      if (PowerUnits != 0)
+      {
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
 			    / PowerUnits;
+      if (Shm->Proc.Power.TDP == 0) {
+	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerLimit.Power_Limit1
+			    / PowerUnits;
+      }
 	Shm->Proc.Power.Min = Proc_RO->PowerThermal.PowerInfo.MinimumPower
 			    / PowerUnits;
 	Shm->Proc.Power.Max = Proc_RO->PowerThermal.PowerInfo.MaximumPower
 			    / PowerUnits;
-    }
+	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.PowerLimit.Power_Limit2
+			    / PowerUnits;
+      }
+  } else {
+	Shm->Proc.PowerNow = 0;
+  }
 }
 
 void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)

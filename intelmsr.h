@@ -143,6 +143,10 @@
 	#define MSR_RAPL_POWER_UNIT		0x00000606
 #endif
 
+#ifndef MSR_PKG_POWER_LIMIT
+	#define MSR_PKG_POWER_LIMIT		0x00000610
+#endif
+
 #ifndef MSR_PKG_ENERGY_STATUS
 	#define MSR_PKG_ENERGY_STATUS		0x00000611
 #endif
@@ -1116,8 +1120,9 @@ typedef union
 		unsigned long long
 		ReservedBits1	: 16-0,
 		Target		: 24-16,	/* R/O: Thread scope	*/
-		ReservedBits2	: 64-24;
-	} Core; /* Core, NHM, SNB and superior architectures		*/
+		Offset		: 28-24,	/* Nehalem		*/
+		ReservedBits2	: 64-28;
+	};	/* Core, NHM, SNB and superior architectures		*/
 	struct
 	{
 		unsigned long long
@@ -1354,6 +1359,27 @@ typedef union
 		ReservedBits4	: 64-55;
 	};
 } PKG_POWER_INFO;
+
+typedef union
+{
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		Power_Limit1	: 15-0,
+		Enable_Limit1	: 16-15,
+		PackageClamping : 17-16,
+		PowerTimeWindow : 24-17,
+		ReservedBits1	: 32-24,
+		Power_Limit2	: 47-32,
+		Enable_Limit2	: 48-47,
+		Clamp_Enabled	: 49-48,
+		Unknown_Compute1: 54-49,
+		Unknown_Compute2: 57-54,
+		ReservedBits2	: 63-57,
+		Unknown_Lock	: 64-63;
+	};
+} PKG_POWER_LIMIT;
 
 /* TODO
 typedef struct

@@ -6035,7 +6035,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _Haswell_ULT,
 	.Query = Query_Haswell_ULT,
 	.Update = PerCore_Haswell_ULT_Query,
-	.Start = Start_Goldmont,
+	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
 	.Exit = NULL,
 	.Timer = InitTimer_Haswell_ULT,
@@ -6351,7 +6351,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Geminilake] = {							/* 54*/
 	.Signature = _Geminilake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Haswell_ULT,
 	.Update = PerCore_Haswell_ULT_Query,
 	.Start = Start_Haswell_ULT,
 	.Stop = Stop_Haswell_ULT,
@@ -6376,7 +6376,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Icelake] = {								/* 55*/
 	.Signature = _Icelake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6400,7 +6400,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_UY] = {							/* 56*/
 	.Signature = _Icelake_UY,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6424,7 +6424,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_X] = {								/* 57*/
 	.Signature = _Icelake_X,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6448,7 +6448,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_D] = {								/* 58*/
 	.Signature = _Icelake_D,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6473,7 +6473,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Sunny_Cove] = {							/* 59*/
 	.Signature = _Sunny_Cove,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6498,7 +6498,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Tigerlake] = {								/* 60*/
 	.Signature = _Tigerlake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6522,7 +6522,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tigerlake_U] = {							/* 61*/
 	.Signature = _Tigerlake_U,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6547,7 +6547,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Cometlake] = {								/* 62*/
 	.Signature = _Cometlake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6571,7 +6571,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Cometlake_UY] = {							/* 63*/
 	.Signature = _Cometlake_UY,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6596,7 +6596,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_C3000] = {							/* 64*/
 	.Signature = _Atom_C3000,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6620,7 +6620,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tremont_Jacobsville] = {						/* 65*/
 	.Signature = _Tremont_Jacobsville,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6644,7 +6644,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tremont_Lakefield] = {							/* 66*/
 	.Signature = _Tremont_Lakefield,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6668,7 +6668,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tremont_Elkhartlake] = {						/* 67*/
 	.Signature = _Tremont_Elkhartlake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6692,7 +6692,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tremont_Jasperlake] = {						/* 68*/
 	.Signature = _Tremont_Jasperlake,
-	.Query = Query_SandyBridge,
+	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
