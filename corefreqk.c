@@ -3725,8 +3725,10 @@ void Query_SKL_IMC(void __iomem *mchmap)
 		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
 	/*		Max of populated DIMMs L and DIMMs S		*/
 	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = KMAX(
-		(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC0.Dimm_L_Map),
-		(1 + PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADC1.Dimm_L_Map)
+		  ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
+		, ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0))
 	);
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
@@ -6571,7 +6573,7 @@ void PowerThermal(CORE_RO *Core)
 
 		{_Xeon_Phi,		0, 1, 1, 0},	/* 06_57 */
 
-		{_Kabylake,		1, 0, 1, 0},	/* 06_9E */
+		{_Kabylake,		1, 1, 0, 0},	/* 06_9E */
 		{_Kabylake_UY,		1, 1, 1, 0},	/* 06_8E */
 
 		{_Cannonlake,		1, 1, 1, 0},	/* 06_66 */
