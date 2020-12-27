@@ -1361,23 +1361,23 @@ typedef union
 } PKG_POWER_INFO;
 
 typedef union
-{
+{ /* MSR_PKG_POWER_LIMIT(0x610):R/W & MSR_PLATFORM_POWER_LIMIT(0x65c):R/W-L */
 	unsigned long long	value;
 	struct
 	{
 		unsigned long long
 		Power_Limit1	: 15-0,
 		Enable_Limit1	: 16-15,
-		PackageClamping : 17-16,
-		PowerTimeWindow : 24-17,
+		PowerClamping1	: 17-16,
+		PowerTimeWindow1: 24-17,
 		ReservedBits1	: 32-24,
 		Power_Limit2	: 47-32,
 		Enable_Limit2	: 48-47,
-		Clamp_Enabled	: 49-48,
+		PowerClamping2	: 49-48,
 		Unknown_Compute1: 54-49,
 		Unknown_Compute2: 57-54,
 		ReservedBits2	: 63-57,
-		Unknown_Lock	: 64-63;
+		Register_Lock	: 64-63;
 	};
 } PKG_POWER_LIMIT;
 
