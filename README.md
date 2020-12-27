@@ -308,6 +308,25 @@ CPU     IPS            IPC            CPI
   or  
 `make HWM_CHIPSET=IT8720`  
 
+* Q: `[AMD][Zen]` How to read the idle states ?  
+
+  A: As a workarround to the missing documentation of the hardware counters, _CoreFreq_ implements virtual counters based on the TSC  
+  Those VPMC are estimated each time the Kernel is entering an idle state level.  
+  The prerequisities are:  
+  1. Boot the Kernel without its idle drivers and no `TSC` default clock source set  
+  `modprobe.blacklist=acpi_cpufreq idle=halt tsc=unstable`  
+  2. Build _CoreFreq_ with its `TSC` implementation  
+  `make DELAY_TSC=1`
+  3. Load and **register** the _CoreFreq_ kernel module as the system handler  
+  `insmod corefreqk.ko Register_ClockSource=1 Register_Governor=1 Register_CPU_Freq=1 Register_CPU_Idle=1 Idle_Route=1`  
+  4. Define _CoreFreq_ as the System clock source  
+  `echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
+  5. Start the Daemon then the Client  
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Zen_VPMC.png "CoreFreq for AMD Zen")  
+  - The registration is confirmed into the `Settings` window  
+  - The idle limit can be changed at any time in the `Kernel` window  
+![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
+
 * Q: What are the parameters of the _CoreFreq_ driver ?  
 
   A: Use the `modinfo` command to list them:  
