@@ -7923,6 +7923,8 @@ static void PerCore_Silvermont_Query(void *arg)
 
 	SystemRegisters(Core);
 
+	Intel_Mitigation_Mechanisms(Core);
+
 	Intel_VirtualMachine(Core);
 
 	Intel_Microcode(Core);
@@ -8898,7 +8900,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	    : 0;							\
 })
 
-#define Counters_SoC(Core, T)						\
+#define Counters_SLM(Core, T)						\
 ({									\
 	RDTSC_COUNTERx6(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
@@ -8907,11 +8909,6 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 			MSR_CORE_C1_RESIDENCY, Core->Counter[T].C1,	\
 			MSR_CORE_C3_RESIDENCY, Core->Counter[T].C3,	\
 			MSR_CORE_C6_RESIDENCY, Core->Counter[T].C6);	\
-	/* Read Virtual PMC and cumulative store: */			\
-	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C3, Core->VPMC.C2); \
-	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C4); \
-	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C5); \
-	Atomic_Read_VPMC(LOCKLESS, Core->Counter[T].C7, Core->VPMC.C7); \
 })
 
 #define SMT_Counters_Nehalem(Core, T)					\
@@ -9073,7 +9070,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	PUBLIC(RO(Proc))->Counter[T].PTSC = Core->Counter[T].TSC;	\
 })
 
-#define PKG_Counters_SoC(Core, T)					\
+#define PKG_Counters_SLM(Core, T)					\
 ({									\
     RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 	MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,	\
@@ -10048,7 +10045,7 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 			hrtimer_cb_get_time(pTimer),
 			RearmTheTimer);
 
-	Counters_SoC(Core, 1);
+	Counters_SLM(Core, 1);
 
 	RDMSR(PerfStatus, MSR_IA32_PERF_STATUS);
 	Core->Ratio.Perf = PerfStatus.CORE.CurrFID;
@@ -10058,7 +10055,7 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
-	PKG_Counters_SoC(Core, 1);
+	PKG_Counters_SLM(Core, 1);
 
 	Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -10156,8 +10153,6 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 
 	Delta_C6(Core);
 
-	Delta_C7(Core);
-
 	Save_INST(Core);
 
 	Save_TSC(Core);
@@ -10169,8 +10164,6 @@ static enum hrtimer_restart Cycle_Silvermont(struct hrtimer *pTimer)
 	Save_C3(Core);
 
 	Save_C6(Core);
-
-	Save_C7(Core);
 
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(cpu)))->Sync.V, NTFY);
 
@@ -10194,14 +10187,14 @@ static void Start_Silvermont(void *arg)
 	}
 
 	Intel_Core_Counters_Set(Core);
-	Counters_SoC(Core, 0);
+	Counters_SLM(Core, 0);
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
 	if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 		Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 	}
-	PKG_Counters_SoC(Core, 0);
+	PKG_Counters_SLM(Core, 0);
 
 	RDCOUNTER( PUBLIC(RO(Proc))->Counter[0].Power.ACCU[PWR_DOMAIN(PKG)],
 			MSR_PKG_ENERGY_STATUS );
