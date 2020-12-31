@@ -1477,15 +1477,17 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 void ForEachCellPrint_Drop(Window *win, void *plist)
 {
 	WinList *list = (WinList *) plist;
-	CUINT row;
-	for (row = 0; row < win->matrix.size.hth; row++) {
+	CUINT col, row;
+    for (row = 0; row < win->matrix.size.hth; row++) {
+	for (col = 0; col < win->matrix.size.wth; col++) {
 	    if (TCellAt(win,
-		(win->matrix.scroll.horz + win->matrix.select.col),
+		(win->matrix.scroll.horz + col),
 		(win->matrix.scroll.vert + row)).quick.key != SCANKEY_VOID)
 	    {
-		PrintContent(win, list, win->matrix.select.col, row);
+		PrintContent(win, list, col, row);
 	    }
 	}
+    }
 }
 
 int Enter_StickyCell(SCANKEY *scan, Window *win)
