@@ -5946,6 +5946,35 @@ int SortTaskListByForest(const void *p1, const void *p2)
 	}
 }
 
+void UpdateTracker(TGrid *grid, DATA_TYPE data)
+{
+	const pid_t pid = data.sint[0];
+	signed int idx;
+  for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
+  {
+    if (Shm->SysGate.taskList[idx].pid == pid)
+    {
+	const double fulltime	= Shm->SysGate.taskList[idx].runtime
+				+ Shm->SysGate.taskList[idx].usertime
+				+ Shm->SysGate.taskList[idx].systime;
+      if (fulltime > 0.0)
+      {
+	const size_t len = snprintf(Buffer, 20+20+20+4+5+4+8+1,
+				"Run:%3.0f%%  User:%3.0f%%  Sys:%3.0f%% ",
+			(100.0 * Shm->SysGate.taskList[idx].runtime) /fulltime,
+			(100.0 * Shm->SysGate.taskList[idx].usertime)/fulltime,
+			(100.0 * Shm->SysGate.taskList[idx].systime) /fulltime);
+
+	memcpy( &grid->cell.item[grid->cell.length - len], Buffer, len);
+      }
+	break;
+    }
+  }
+  if (!(idx < Shm->SysGate.taskCount)) {
+	memcpy(grid->cell.item, hSpace, grid->cell.length);
+  }
+}
+
 Window *CreateTracking(unsigned long long id)
 {
     if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
@@ -5954,16 +5983,17 @@ Window *CreateTracking(unsigned long long id)
 		const CUINT margin = 12;	/*	"--- Freq(MHz"	*/
 		const CUINT height = TOP_SEPARATOR
 			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
-		int padding = draw.Size.width - margin - TASK_COMM_LEN - 7;
+		const CUINT width = (draw.Size.width - margin) / 2;
+		const int padding = width - TASK_COMM_LEN - (5 + 2);
 
 		Window *wTrack = CreateWindow( wLayer, id,
-						1, height,
+						2, height,
 						margin, TOP_HEADER_ROW,
 						WINFLAG_NO_STOCK
 						| WINFLAG_NO_BORDER );
 
-	    if (wTrack != NULL)
-	    {
+	  if (wTrack != NULL)
+	  {
 		char *item = malloc(MAX_WIDTH);
 		TASK_MCB *trackList = malloc(tc * sizeof(TASK_MCB));
 
@@ -5973,54 +6003,64 @@ Window *CreateTracking(unsigned long long id)
 		signed int ti, si = 0, qi = 0;
 		pid_t previd = (pid_t) -1;
 
-		for (ti = 0; ti < tc; ti++)
-		{
-			if (trackList[ti].ppid == previd) {
-				si += (si < padding - 2) ? 1 : 0;
-			} else if (trackList[ti].tgid != previd) {
-				si -= (si > 0) ? 1 : 0;
-			}
-			previd = trackList[ti].tgid;
-
-			if (trackList[ti].pid == trackList[ti].tgid) {
-				qi = si + 1;
-			} else {
-				qi = si + 2;
-			}
-			snprintf(item, MAX_WIDTH-1,
-				"%.*s" "%-16s" "%.*s" "(%5d)",
-				qi,
-				hSpace,
-				trackList[ti].comm,
-				padding - qi,
-				hSpace,
-				trackList[ti].pid);
-
-			StoreTCell(wTrack,
-				(TRACK_TASK | trackList[ti].pid),
-				item,
-				(trackList[ti].pid == trackList[ti].tgid) ?
-					  MAKE_PRINT_DROP
-					: MakeAttr(BLACK, 0, WHITE, 1));
+	    for (ti = 0; ti < tc; ti++)
+	    {
+		if (trackList[ti].ppid == previd) {
+			si += (si < padding - 2) ? 1 : 0;
+		} else if (trackList[ti].tgid != previd) {
+			si -= (si > 0) ? 1 : 0;
 		}
+		previd = trackList[ti].tgid;
+
+		if (trackList[ti].pid == trackList[ti].tgid) {
+			qi = si + 1;
+		} else {
+			qi = si + 2;
+		}
+		snprintf(item, MAX_WIDTH-1,
+			"%.*s" "%-16s" "%.*s" "(%5d)",
+			qi,
+			hSpace,
+			trackList[ti].comm,
+			padding - qi,
+			hSpace,
+			trackList[ti].pid);
+
+		StoreTCell(wTrack,
+			(TRACK_TASK | trackList[ti].pid),
+			item,
+			(trackList[ti].pid == trackList[ti].tgid) ?
+				  MAKE_PRINT_DROP
+				: MakeAttr(BLACK, 0, WHITE, 1));
+
+		snprintf(item, MAX_WIDTH-1, "%.*s", width, hSpace);
+
+		GridCall(StoreTCell(wTrack, SCANKEY_NULL, item,MAKE_PRINT_DROP),
+			UpdateTracker, (pid_t) trackList[ti].pid);
+	    }
 		StoreWindow(wTrack, .color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wTrack, .color[0].title, MAKE_PRINT_DROP);
 		StoreWindow(wTrack, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
 
 		StoreWindow(wTrack,	.Print, 	ForEachCellPrint_Drop);
 		StoreWindow(wTrack,	.key.Enter,	MotionEnter_Cell);
+
+		StoreWindow(wTrack,	.key.Left,	MotionLeft_Win);
+		StoreWindow(wTrack,	.key.Right,	MotionRight_Win);
 		StoreWindow(wTrack,	.key.Down,	MotionDown_Win);
 		StoreWindow(wTrack,	.key.Up,	MotionUp_Win);
+
 		StoreWindow(wTrack,	.key.PgUp,	MotionPgUp_Win);
 		StoreWindow(wTrack,	.key.PgDw,	MotionPgDw_Win);
 		StoreWindow(wTrack,	.key.Home,	MotionReset_Win);
 		StoreWindow(wTrack,	.key.End,	MotionEnd_Cell);
+
 		StoreWindow(wTrack,	.key.Shrink,	MotionShrink_Win);
 		StoreWindow(wTrack,	.key.Expand,	MotionExpand_Win);
 
 		free(trackList);
 		free(item);
-	    }
+	  }
 		return (wTrack);
 	}
 	else
