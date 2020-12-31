@@ -3728,13 +3728,12 @@ void Query_SKL_IMC(void __iomem *mchmap)
 		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
 		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
 		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
-	/*		Max of populated DIMMs L and DIMMs S		*/
-	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = KMAX(
+	/*		Count of populated DIMMs L and DIMMs S		*/
+	PUBLIC(RO(Proc))->Uncore.MC[0].SlotCount = \
 		  ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0))
-		, ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0)
-		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0))
-	);
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_L_Size != 0))
+		+ ((PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD0.Dimm_S_Size != 0)
+		|| (PUBLIC(RO(Proc))->Uncore.MC[0].SKL.MADD1.Dimm_S_Size != 0));
 
     for (cha = 0; cha < PUBLIC(RO(Proc))->Uncore.MC[0].ChannelCount; cha++)
     {
