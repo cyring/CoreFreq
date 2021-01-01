@@ -1,12 +1,12 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2020 CYRIL INGENIERIE
+ * Copyright (C) 2015-2021 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
 #define RSC_COPY_R0_EN "      by CyrIng                                     "
 #define RSC_COPY_R1_EN "                                                    "
-#define RSC_COPY_R2_EN "            (C)2015-2020 CYRIL INGENIERIE           "
+#define RSC_COPY_R2_EN "            (C)2015-2021 CYRIL INGENIERIE           "
 
 #define RSC_LAYOUT_HEADER_PROC_CODE_EN					\
 {									\
@@ -726,7 +726,7 @@
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
-		"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n\n"	\
+		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
 		"\t-0,1,2\tMemory unit in K,M,G Byte\n" 		\
 		"\t-F\tTemperature in Fahrenheit\n"			\

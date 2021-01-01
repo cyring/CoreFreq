@@ -1,6 +1,6 @@
 /*
  * CoreFreq
- * Copyright (C) 2015-2020 CYRIL INGENIERIE
+ * Copyright (C) 2015-2021 CYRIL INGENIERIE
  * Licenses: GPL2
  */
 
@@ -13,7 +13,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_COPY_R0_FR "     par CyrIng                                     "
 #define RSC_COPY_R1_FR "                                                    "
-#define RSC_COPY_R2_FR "            (C)2015-2020 "			\
+#define RSC_COPY_R2_FR "            (C)2015-2021 "			\
 			"CYRIL ING""\x89""NIERIE           "
 
 #define RSC_LAYOUT_HEADER_PROC_CODE_FR					\
@@ -761,7 +761,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
-		"  Copyright (C) 2015-2020 CYRIL INGENIERIE\n\n"	\
+		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
 		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\
