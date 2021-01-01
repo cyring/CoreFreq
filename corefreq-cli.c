@@ -5954,19 +5954,40 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
   {
     if (Shm->SysGate.taskList[idx].pid == pid)
     {
-	const double fulltime	= Shm->SysGate.taskList[idx].runtime
-				+ Shm->SysGate.taskList[idx].usertime
-				+ Shm->SysGate.taskList[idx].systime;
-      if (fulltime > 0.0)
-      {
-	const size_t len = snprintf(Buffer, 20+20+20+4+5+4+8+1,
-				"Run:%3.0f%%  User:%3.0f%%  Sys:%3.0f%% ",
-			(100.0 * Shm->SysGate.taskList[idx].runtime) /fulltime,
-			(100.0 * Shm->SysGate.taskList[idx].usertime)/fulltime,
-			(100.0 * Shm->SysGate.taskList[idx].systime) /fulltime);
+	double runtime, usertime, systime;
+	/*
+	 * Source: kernel/sched/cputime.c
+	 * If either stime or utime are 0, assume all runtime is userspace.
+	 */
+	runtime = Shm->SysGate.taskList[idx].runtime;
+	systime = Shm->SysGate.taskList[idx].systime;
+	usertime= Shm->SysGate.taskList[idx].usertime;
+
+	if (systime == 0.0)
+	{
+		usertime = runtime;
+	}
+	if (usertime == 0.0)
+	{
+		systime = runtime;
+	}
+	systime = (systime * runtime) / (systime + usertime);
+	usertime= runtime - systime;
+
+	const double fulltime = usertime + systime;
+	if (fulltime > 0.0)
+	{
+		usertime= (100.0 * usertime)/ fulltime;
+		systime = (100.0 * systime) / fulltime;
+	} else {
+		usertime= 0.0;
+		systime = 0.0;
+	}
+	const size_t len = snprintf(	Buffer, 20+20+5+4+6+1,
+					"User:%3.0f%%   Sys:%3.0f%% ",
+					usertime, systime );
 
 	memcpy( &grid->cell.item[grid->cell.length - len], Buffer, len);
-      }
 	break;
     }
   }
@@ -5977,29 +5998,31 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 
 Window *CreateTracking(unsigned long long id)
 {
-    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
-	ssize_t tc = Shm->SysGate.taskCount;
-	if (tc > 0) {
-		const CUINT margin = 12;	/*	"--- Freq(MHz"	*/
-		const CUINT height = TOP_SEPARATOR
-			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
-		const CUINT width = (draw.Size.width - margin) / 2;
-		const int padding = width - TASK_COMM_LEN - (5 + 2);
+	Window *wTrack = NULL;
+	const size_t tc = Shm->SysGate.taskCount;
 
-		Window *wTrack = CreateWindow( wLayer, id,
-						2, height,
-						margin, TOP_HEADER_ROW,
-						WINFLAG_NO_STOCK
-						| WINFLAG_NO_BORDER );
+  if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) && (tc > 0))
+  {
+	TASK_MCB *trackList;
+	trackList = malloc(tc * sizeof(TASK_MCB));
+    if (trackList != NULL)
+    {
+	memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
+	qsort(trackList, tc, sizeof(TASK_MCB), SortTaskListByForest);
 
-	  if (wTrack != NULL)
-	  {
-		char *item = malloc(MAX_WIDTH);
-		TASK_MCB *trackList = malloc(tc * sizeof(TASK_MCB));
+	const CUINT margin = 12;	/*	"--- Freq(MHz"		*/
+	const CUINT height = TOP_SEPARATOR
+		+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
+	const CUINT width = (draw.Size.width - margin) / 2;
+	const int padding = width - TASK_COMM_LEN - (5 + 2);
 
-		memcpy(trackList, Shm->SysGate.taskList, tc * sizeof(TASK_MCB));
-		qsort(trackList, tc, sizeof(TASK_MCB), SortTaskListByForest);
-
+	wTrack = CreateWindow( wLayer, id,
+				2, height,
+				margin, TOP_HEADER_ROW,
+				WINFLAG_NO_STOCK
+				| WINFLAG_NO_BORDER );
+	if (wTrack != NULL)
+	{
 		signed int ti, si = 0, qi = 0;
 		pid_t previd = (pid_t) -1;
 
@@ -6017,7 +6040,7 @@ Window *CreateTracking(unsigned long long id)
 		} else {
 			qi = si + 2;
 		}
-		snprintf(item, MAX_WIDTH-1,
+		snprintf(Buffer, MAX_WIDTH-1,
 			"%.*s" "%-16s" "%.*s" "(%5d)",
 			qi,
 			hSpace,
@@ -6028,14 +6051,14 @@ Window *CreateTracking(unsigned long long id)
 
 		StoreTCell(wTrack,
 			(TRACK_TASK | trackList[ti].pid),
-			item,
+			Buffer,
 			(trackList[ti].pid == trackList[ti].tgid) ?
 				  MAKE_PRINT_DROP
 				: MakeAttr(BLACK, 0, WHITE, 1));
 
-		snprintf(item, MAX_WIDTH-1, "%.*s", width, hSpace);
+		snprintf(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 
-		GridCall(StoreTCell(wTrack, SCANKEY_NULL, item,MAKE_PRINT_DROP),
+		GridCall(StoreTCell(wTrack,SCANKEY_NULL,Buffer,MAKE_PRINT_DROP),
 			UpdateTracker, (pid_t) trackList[ti].pid);
 	    }
 		StoreWindow(wTrack, .color[0].select, MAKE_PRINT_DROP);
@@ -6057,17 +6080,11 @@ Window *CreateTracking(unsigned long long id)
 
 		StoreWindow(wTrack,	.key.Shrink,	MotionShrink_Win);
 		StoreWindow(wTrack,	.key.Expand,	MotionExpand_Win);
-
-		free(trackList);
-		free(item);
-	  }
-		return (wTrack);
 	}
-	else
-	    return (NULL);
+	free(trackList);
     }
-    else
-	return (NULL);
+  }
+	return (wTrack);
 }
 
 Window *CreateHotPlugCPU(unsigned long long id)
