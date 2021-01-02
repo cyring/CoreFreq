@@ -158,7 +158,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_FR				\
 {									\
 	'S','u','i','v','i',' ','[', 'n',']',' ','P','I','D',' ','[',' ',\
-	'O','F','F',' ',']',' ' 					\
+	' ','O','F','F',' ',' ',']',' ' 					\
 }
 
 #define RSC_LAYOUT_RULER_SENSORS_CODE_FR				\

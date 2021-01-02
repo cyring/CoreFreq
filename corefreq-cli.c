@@ -6014,7 +6014,7 @@ Window *CreateTracking(unsigned long long id)
 	const CUINT height = TOP_SEPARATOR
 		+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
 	const CUINT width = (draw.Size.width - margin) / 2;
-	const int padding = width - TASK_COMM_LEN - (5 + 2);
+	const int padding = width - TASK_COMM_LEN - (7 + 2);
 
 	wTrack = CreateWindow( wLayer, id,
 				2, height,
@@ -6041,7 +6041,7 @@ Window *CreateTracking(unsigned long long id)
 			qi = si + 2;
 		}
 		snprintf(Buffer, MAX_WIDTH-1,
-			"%.*s" "%-16s" "%.*s" "(%5d)",
+			"%.*s" "%-16s" "%.*s" "(%7d)",
 			qi,
 			hSpace,
 			trackList[ti].comm,
@@ -11097,7 +11097,7 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
 
 	LayerDeclare(	LAYOUT_TASKS_TRACKING, RSZ(LAYOUT_TASKS_TRACKING),
-			55, row, hTrack0 );
+			53, row, hTrack0 );
 
 	LayerCopyAt(	layer, hTask0.origin.col, hTask0.origin.row,
 			hTask0.length, hTask0.attr, hTask0.code );
@@ -11119,10 +11119,10 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 
 	if (Shm->SysGate.trackTask)
 	{
-		snprintf(Buffer, 11+1, "%5d", Shm->SysGate.trackTask);
+		snprintf(Buffer, 11+1, "%7d", Shm->SysGate.trackTask);
 		LayerFillAt(	layer,
 				(hTrack0.origin.col + 15), hTrack0.origin.row,
-				5, Buffer, MakeAttr(CYAN, 0, BLACK, 0) );
+				7, Buffer, MakeAttr(CYAN, 0, BLACK, 0) );
 	}
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -13726,24 +13726,22 @@ void Layout_Card_Bus(Layer *layer, Card *card)
 			card->origin.col, (card->origin.row + 3),
 			hBus);
 
-	snprintf(Buffer, 10+1, "%4.1f", Shm->Uncore.Bus.Rate / 1000.f);
-	hBus.code[4] = Buffer[0];
-	hBus.code[5] = Buffer[1];
-	hBus.code[6] = Buffer[2];
-	hBus.code[7] = Buffer[3];
+	snprintf(Buffer, 10+1, "%4u", Shm->Uncore.Bus.Rate);
+	hBus.code[5] = Buffer[0];
+	hBus.code[6] = Buffer[1];
+	hBus.code[7] = Buffer[2];
+	hBus.code[8] = Buffer[3];
 
 	switch (Shm->Uncore.Unit.Bus_Rate) {
 	case 0b00:
-		hBus.code[ 8] = 'G';
 		hBus.code[ 9] = 'H';
 		hBus.code[10] = 'z';
 		break;
 	case 0b01:
-		hBus.code[ 9] = 'G';
+		hBus.code[ 9] = 'M';
 		hBus.code[10] = 'T';
 		break;
 	case 0b10:
-		hBus.code[ 8] = 'G';
 		hBus.code[ 9] = 'B';
 		hBus.code[10] = 's';
 		break;
@@ -13867,7 +13865,7 @@ unsigned int MoveDashboardCursor(Coordinate *coord)
 	const CUINT	marginWidth = MARGIN_WIDTH + (4 * INTER_WIDTH);
 	const CUINT	marginHeight = MARGIN_HEIGHT + INTER_HEIGHT;
 	const CUINT	rightEdge = draw.Size.width - marginWidth,
-			bottomEdge = draw.Size.height - LEADING_TOP;
+			bottomEdge = draw.Size.height + marginHeight;
 
 	coord->col += marginWidth;
 	if (coord->col > rightEdge) {
@@ -13889,8 +13887,9 @@ void Layout_Dashboard(Layer *layer)
 		walker->origin.col = coord.col;
 		walker->origin.row = coord.row;
 		walker->data.dword.hi = MoveDashboardCursor(&coord);
-		if (walker->data.dword.hi == RENDER_OK)
+		if (walker->data.dword.hi == RENDER_OK) {
 			walker->hook.Layout(layer, walker);
+		}
 		walker = GetNext(walker);
 	}
 }
@@ -14069,7 +14068,7 @@ void Draw_Card_Task(Layer *layer, Card *card)
 	ATTRIBUTE *stateAttr;
 	stateAttr = StateToSymbol(Shm->SysGate.taskList[0].state, stateStr);
 
-	snprintf(Buffer, 12+3+5+1+5+1, "%.*s%.*s%.*s%n%5u (%c)%n%5u",
+	snprintf(Buffer, 12+10+3+10+1, "%.*s%.*s%.*s%n%7u(%c)%n%5u",
 				hl, hSpace,
 				cl, Shm->SysGate.taskList[0].comm,
 				hr, hSpace,
@@ -14085,7 +14084,7 @@ void Draw_Card_Task(Layer *layer, Card *card)
 				stateAttr,
 				Buffer);
 
-	LayerFillAt(layer,	(card->origin.col + 2),
+	LayerFillAt(layer,	(card->origin.col + 1),
 				(card->origin.row + 2),
 				pe - pb,
 				&Buffer[pb],

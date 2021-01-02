@@ -149,7 +149,7 @@
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_EN				\
 {									\
 	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
-	'O','F','F',' ',']',' ' 					\
+	' ','O','F','F',' ',' ',']',' ' 					\
 }
 
 #define RSC_LAYOUT_RULER_SENSORS_CODE_EN				\
