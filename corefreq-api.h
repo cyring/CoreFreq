@@ -1015,7 +1015,7 @@ typedef struct
 #endif
 /* Source: 2nd Generation Intel® Core™ Processor Family Vol2		*/
 #ifndef PCI_DEVICE_ID_INTEL_SNB_IMC_SA
-	#define PCI_DEVICE_ID_INTEL_SNB_IMC_SA	0x0100
+	#define PCI_DEVICE_ID_INTEL_SNB_IMC_SA		0x0100
 #endif
 #ifndef PCI_DEVICE_ID_INTEL_SNB_IMC_0104
 	#define PCI_DEVICE_ID_INTEL_SNB_IMC_0104	0x0104
@@ -1432,6 +1432,9 @@ typedef struct
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	/* Raven2 */
 #endif
+#ifndef PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU
+	#define PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU 0x1481	/* Vermeer */
+#endif
 /* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU	0x1631	/* Renoir */
@@ -1469,5 +1472,8 @@ typedef struct
 #endif
 #ifndef PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3
 	#define PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3	0x160b	/* Arden */
+#endif
+#ifndef PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3
+	#define PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3	0x1653	/* Vermeer */
 #endif
 

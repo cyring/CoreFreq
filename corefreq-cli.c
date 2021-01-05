@@ -4156,6 +4156,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	break;
       case AMD_Family_17h:
       case AMD_Family_18h:
+      case AMD_Family_19h:
       case AMD_Zen:
       case AMD_Zen_APU:
       case AMD_ZenPlus:
@@ -4165,6 +4166,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen2_CPK:
       case AMD_Zen2_APU:
       case AMD_Zen2_MTS:
+      case AMD_Zen3_VMR:
 	TopologyFunc = Topology_CCD;
 	pStrOFF = TopologyStrOFF[2];
 	TopologySubHeader[1] = TopologyAltSubHeader[2];
@@ -5825,6 +5827,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	switch (Shm->Proc.ArchID) {
 	case AMD_Family_17h:
 	case AMD_Family_18h:
+	case AMD_Family_19h:
 	case AMD_Zen:
 	case AMD_Zen_APU:
 	case AMD_ZenPlus:
@@ -5834,6 +5837,7 @@ Window *CreateMemCtrl(unsigned long long id)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen3_VMR:
 		ctrlHeaders = 7;
 		channelHeaders = 5;
 		pTimingFunc = Timing_DDR4;
@@ -14610,6 +14614,7 @@ int main(int argc, char *argv[])
 		switch (Shm->Proc.ArchID) {
 		case AMD_Family_17h:
 		case AMD_Family_18h:
+		case AMD_Family_19h:
 		case AMD_Zen:
 		case AMD_Zen_APU:
 		case AMD_ZenPlus:
@@ -14619,6 +14624,7 @@ int main(int argc, char *argv[])
 		case AMD_Zen2_CPK:
 		case AMD_Zen2_APU:
 		case AMD_Zen2_MTS:
+		case AMD_Zen3_VMR:
 			MemoryController(&tty, NULL, Timing_DDR4);
 			break;
 		default:

@@ -4696,8 +4696,10 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen2_CPK:
     case AMD_Zen2_APU:
     case AMD_Zen2_MTS:
+    case AMD_Zen3_VMR:
     case AMD_Family_17h:
     case AMD_Family_18h:
+    case AMD_Family_19h:
     VIRTUALIZED_L3:
 	/* CPUID_Fn80000006_EDX: Value in [3FFFh - 0001h] = (<Value> *0.5) MB */
 	Shm->Cpu[cpu].Topology.Cache[3].Size *= 512;

@@ -1706,8 +1706,10 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen3_VMR:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
+	case AMD_Family_19h:
 	    if (PUBLIC(RO(Proc))->Features.ExtInfo.ECX.ExtApicId == 1)
 	    {
 		struct CACHE_INFO CacheInfo = {
@@ -5187,6 +5189,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_MTS_CPK_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_MATISSE_COF,
@@ -5518,6 +5521,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen3_VMR:
 	    {
 		AMD_17_MTS_CPK_TJMAX TjMax = {.value = 0};
 
@@ -12536,6 +12540,7 @@ void InitTimer_AMD_Family_17h(unsigned int cpu)
     case AMD_ZenPlus_APU:
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen, 1);
 	break;
+    case AMD_Zen3_VMR:
     case AMD_Zen2_MTS:
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_SP, 1);
 	break;
