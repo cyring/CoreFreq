@@ -48,25 +48,26 @@ struct SETTING_ST Setting = {
 
 char ConfigFQN[1+4095] = {[0] = 0};
 
-char *BuildConfigFQN(void)
+char *BuildConfigFQN(char *dirPath)
 {
     if (ConfigFQN[0] == 0)
     {
-	char *dirPath, *dotted;
-	if ((dirPath = secure_getenv("XDG_CONFIG_HOME")) == NULL) {
-		if ((dirPath = secure_getenv("HOME")) == NULL) {
+	char *homePath, *dotted;
+	if ((homePath = secure_getenv("XDG_CONFIG_HOME")) == NULL) {
+		if ((homePath = secure_getenv("HOME")) == NULL) {
 			struct passwd *pwd = getpwuid(getuid());
 			if (pwd != NULL) {
-				dirPath = pwd->pw_dir;
+				homePath = pwd->pw_dir;
 			} else {
-				dirPath = ".";
+				homePath = ".";
 			}
 		}
 		dotted = "/.";
 	} else {
 		dotted = "/";
 	}
-	snprintf(&ConfigFQN[1], 4095, "%s%scorefreq.cfg", dirPath, dotted);
+	snprintf(&ConfigFQN[1], 4095, "%s%s%s/corefreq.cfg",
+		homePath, dotted, dirPath);
 
 	ConfigFQN[0] = 1;
     }
@@ -14265,7 +14266,7 @@ REASON_CODE Top(char option)
 
 	RECORDER_COMPUTE(Recorder, Shm->Sleep.Interval);
 
-	LoadGeometries(BuildConfigFQN());
+	LoadGeometries(BuildConfigFQN("CoreFreq"));
 
 	/* MAIN LOOP */
     while (!BITVAL(Shutdown, SYNC))
@@ -14354,7 +14355,7 @@ REASON_CODE Top(char option)
 		draw.Size.width,draw.Size.height,MIN_WIDTH,draw.Area.MinHeight);
       }
     }
-    SaveGeometries(BuildConfigFQN());
+    SaveGeometries(BuildConfigFQN("CoreFreq"));
   }
   FreeAll(Buffer);
 

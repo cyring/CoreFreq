@@ -6,6 +6,7 @@
 
 #define _GNU_SOURCE
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <termios.h>
 #include <unistd.h>
 #include <locale.h>
@@ -15,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <libgen.h>
 #include <errno.h>
 #include <math.h>
 
@@ -2148,8 +2150,20 @@ void LocaleTo(int category)
 __typeof__ (errno) SaveGeometries(char *cfgFQN)
 {
 	__typeof__ (errno) rc = 0;
-	FILE *cfgHandle;
-    if ((cfgHandle = fopen(cfgFQN, "w")) != NULL)
+	FILE *cfgHandle = NULL;
+    if ((cfgHandle = fopen(cfgFQN, "w")) == NULL)
+    {
+	char *cfgdup = strdup(cfgFQN);
+	if (cfgdup != NULL)
+	{
+		char *dirOnly = dirname(cfgdup);
+		rc = mkdir(dirOnly, S_IRWXU);
+		free(cfgdup);
+	} else {
+		rc = errno;
+	}
+    }
+    if ((cfgHandle != NULL) || (cfgHandle = fopen(cfgFQN, "w")) != NULL)
     {
 	Stock *walker = stockList.head;
 	while (walker != NULL) {
@@ -2174,7 +2188,7 @@ __typeof__ (errno) SaveGeometries(char *cfgFQN)
 __typeof__ (errno) LoadGeometries(char *cfgFQN)
 {
 	__typeof__ (errno) rc = 0;
-	FILE *cfgHandle;
+	FILE *cfgHandle = NULL;
     if ((cfgHandle = fopen(cfgFQN, "r")) != NULL)
     {
       while (!feof(cfgHandle))
