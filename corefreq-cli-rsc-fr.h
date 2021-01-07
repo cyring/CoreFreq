@@ -212,6 +212,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_FR	"<  ACTIVER >"
 #define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_FR	"<D""\x89""SACTIVER>"
+#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_FR	" %03u   On   "
+#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_FR	" %03u  Off   "
 
 #define RSC_LAYOUT_CARD_LOAD_CODE_FR					\
 {									\
@@ -847,6 +849,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_FR	"  HWP-MIN   Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_FR	"  MAX       Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_FR	"  MIN       Processeur    "
+#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_FR				\
+				"  %03u  %4d%6d%6d       -         Off   "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_FR		" Message du Pilote "
 

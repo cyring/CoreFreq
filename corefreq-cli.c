@@ -4715,7 +4715,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 }
 
 /* >>> GLOBALS >>> */
-static char *Buffer = NULL;
+static char *Buffer = NULL; /* Memory allocation for a mono-thread context */
 
 Coordinate *cTask = NULL;
 
@@ -5051,32 +5051,28 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 
 void IntervalUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[10+1];
-	snprintf(item, 10+1, "%4u", Shm->Sleep.Interval);
-	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+	snprintf(Buffer, 10+1, "%4u", Shm->Sleep.Interval);
+	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[10+1];
-	snprintf(item, 10+1,"%4u",Shm->Sleep.Interval * Shm->SysGate.tickReset);
-	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+	snprintf(Buffer, 10+1,"%4u",Shm->Sleep.Interval*Shm->SysGate.tickReset);
+	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void SvrWaitUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[21+1];
-	snprintf(item, 21+1, "%4ld", (*data.pslong) / 1000000L);
-	memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+	snprintf(Buffer, 21+1, "%4ld", (*data.pslong) / 1000000L);
+	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void RecorderUpdate(TGrid *grid, DATA_TYPE data)
 {
-	char item[11+1];
 	int duration = RECORDER_SECONDS((*data.psint), Shm->Sleep.Interval);
 	if (duration <= 9999) {
-		snprintf(item, 11+1, "%4d", duration);
-		memcpy(&grid->cell.item[grid->cell.length - 6], item, 4);
+		snprintf(Buffer, 11+1, "%4d", duration);
+		memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 	}
 }
 
@@ -5189,7 +5185,8 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 Window *CreateSettings(unsigned long long id)
 {
 	Window *wSet = CreateWindow(wLayer, id, 1, 24, 8, TOP_HEADER_ROW+2);
-    if (wSet != NULL) {
+    if (wSet != NULL)
+    {
 	ATTRIBUTE *attrib[2] = {
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
 		RSC(CREATE_SETTINGS_COND1).ATTR()
@@ -5340,7 +5337,8 @@ Window *CreateSettings(unsigned long long id)
 Window *CreateHelp(unsigned long long id)
 {
 	Window *wHelp = CreateWindow(wLayer, id, 2, 19, 2, TOP_HEADER_ROW+1);
-    if (wHelp != NULL) {
+    if (wHelp != NULL)
+    {
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
@@ -5480,7 +5478,8 @@ Window *CreateAdvHelp(unsigned long long id)
     };
 	const size_t nmemb = sizeof(advHelp) / sizeof(struct ADV_HELP_ST);
 	Window *wHelp = CreateWindow(wLayer, id, 1,nmemb,41,TOP_HEADER_ROW+1);
-    if (wHelp != NULL) {
+    if (wHelp != NULL)
+    {
 	unsigned int idx;
 	for (idx = 0; idx < nmemb; idx++) {
 		StoreTCell(	wHelp,
@@ -5537,7 +5536,8 @@ Window *CreateAbout(unsigned long long id)
 	Window *wAbout = CreateWindow(	wLayer, id, 1, cHeight,
 					oCol, oRow,
 					WINFLAG_NO_SCALE );
-	if (wAbout != NULL) {
+	if (wAbout != NULL)
+	{
 		unsigned int i;
 
 		for (i = 0; i < c; i++)
@@ -5668,8 +5668,8 @@ Window *CreateSysInfo(unsigned long long id)
 	Window *wSysInfo = CreateWindow(wLayer, id,
 					matrixSize.wth, matrixSize.hth,
 					winOrigin.col, winOrigin.row);
-
-	if (wSysInfo != NULL) {
+	if (wSysInfo != NULL)
+	{
 		if (SysInfoFunc != NULL) {
 			SysInfoFunc(wSysInfo, winWidth, AddSysInfoCell);
 		}
@@ -5739,7 +5739,8 @@ Window *CreateTopology(unsigned long long id)
 
 		wTopology->matrix.select.row = 2;
 
-	if (wTopology != NULL) {
+	if (wTopology != NULL)
+	{
 		Topology(wTopology, AddCell);
 
 		StoreWindow(wTopology,.title,(char*)RSC(TOPOLOGY_TITLE).CODE());
@@ -5768,7 +5769,8 @@ Window *CreateISA(unsigned long long id)
 {
 	Window *wISA = CreateWindow(wLayer, id, 4, 13, 6, TOP_HEADER_ROW+2);
 
-	if (wISA != NULL) {
+	if (wISA != NULL)
+	{
 		SysInfoISA(wISA, AddCell);
 
 		StoreWindow(wISA,	.title, (char*) RSC(ISA_TITLE).CODE());
@@ -5793,8 +5795,8 @@ Window *CreateSysRegs(unsigned long long id)
 	Window *wSR = CreateWindow(	wLayer, id,
 					17, (2*(1+Shm->Proc.CPU.Count)),
 					6, TOP_HEADER_ROW + 2 );
-
-	if (wSR != NULL) {
+	if (wSR != NULL)
+	{
 		SystemRegisters(wSR, AddCell);
 
 		StoreWindow(wSR, .title, (char*) RSC(SYS_REGS_TITLE).CODE());
@@ -5899,7 +5901,8 @@ Window *CreateSortByField(unsigned long long id)
 					WINFLAG_NO_STOCK
 					| WINFLAG_NO_SCALE
 					| WINFLAG_NO_BORDER );
-	if (wSortBy != NULL) {
+	if (wSortBy != NULL)
+	{
 		StoreTCell(wSortBy,SORTBY_STATE,RSC(TASKS_SORTBY_STATE).CODE(),
 						MAKE_PRINT_DROP);
 		StoreTCell(wSortBy,SORTBY_RTIME,RSC(TASKS_SORTBY_RTIME).CODE(),
@@ -6094,30 +6097,46 @@ Window *CreateTracking(unsigned long long id)
 
 void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
 {
-	char item[9+10+1];
-	ATTRIBUTE attrib;
-	const unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 
 	if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
 	{
-		snprintf(item, 9+10+1, " %03u  Off   ", cpu);
-		attrib = MakeAttr(BLUE, 0, BLACK, 1);
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    {
+		snprintf(Buffer, 9+10+1,
+			(char*) RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
+
+		memcpy(grid->cell.item, Buffer, grid->cell.length);
+		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_OFFLINE).ATTR(),
+					grid->cell.length);
+
+		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	    }
 	}
 	else
 	{
-		snprintf(item, 9+10+1, " %03u   On   ", cpu);
-		attrib = MakeAttr(WHITE, 0, BLACK, 0);
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    {
+		snprintf(Buffer, 9+10+1,
+			(char*) RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
+
+		memcpy(grid->cell.item, Buffer, grid->cell.length);
+		memcpy(grid->cell.attr, RSC(CREATE_HOTPLUG_CPU_ONLINE).ATTR(),
+					grid->cell.length);
+
+		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	    }
 	}
-	memcpy(grid->cell.item, item, grid->cell.length);
-	memset(grid->cell.attr, attrib.value, grid->cell.length);
 }
 
 void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 
 	if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
 	{
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    {
 		memcpy(	grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
 			RSZ(CREATE_HOTPLUG_CPU_ENABLE) );
@@ -6126,10 +6145,14 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 			RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR(),
 			grid->cell.length );
 
-		grid->cell.quick.key = CPU_ONLINE | cpu;
+		grid->cell.quick.key = (unsigned long long) (CPU_ONLINE | cpu);
+		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	    }
 	}
 	else
 	{
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    {
 		memcpy( grid->cell.item,
 			RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
 			RSZ(CREATE_HOTPLUG_CPU_DISABLE) );
@@ -6138,7 +6161,9 @@ void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
 			RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR(),
 			grid->cell.length );
 
-		grid->cell.quick.key = CPU_OFFLINE | cpu;
+		grid->cell.quick.key = (unsigned long long) (CPU_OFFLINE | cpu);
+		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	    }
 	}
 }
 
@@ -6147,34 +6172,38 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	Window *wCPU = CreateWindow(	wLayer, id, 2, draw.Area.MaxRows,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
-  if (wCPU != NULL) {
-	ASCII *item = malloc(9+10+1);
+  if (wCPU != NULL)
+  {
 	unsigned int cpu;
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
     {
       if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
-	snprintf((char*) item, 9+10+1, " %03u  Off   ", cpu);
+	snprintf(Buffer, 9+10+1,
+		(char*) RSC(CREATE_HOTPLUG_CPU_OFFLINE).CODE(), cpu);
 
-	GridCall(StoreTCell(wCPU, SCANKEY_NULL, item,MakeAttr(BLUE,0,BLACK,1)),
-		UpdateHotPlugCPU, (unsigned int) cpu);
+	GridCall( StoreTCell(	wCPU, SCANKEY_NULL, Buffer,
+				RSC(CREATE_HOTPLUG_CPU_OFFLINE).ATTR() ),
+		UpdateHotPlugCPU, (unsigned long long) (CPU_OFFLINE | cpu) );
 
-	GridCall(StoreTCell(wCPU, CPU_ONLINE | cpu ,
+	GridCall( StoreTCell(	wCPU, (unsigned long long) (CPU_ONLINE | cpu),
 				RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
-				RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR()),
-		UpdateHotPlugTrigger, (unsigned int) cpu);
+				RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR() ),
+		UpdateHotPlugTrigger, (unsigned long long)(CPU_OFFLINE | cpu) );
       }
     else
       {
-	snprintf((char*) item, 9+10+1, " %03u   On   ", cpu);
+	snprintf(Buffer, 9+10+1,
+		(char*) RSC(CREATE_HOTPLUG_CPU_ONLINE).CODE(), cpu);
 
-	GridCall(StoreTCell(wCPU, SCANKEY_NULL, item,MakeAttr(WHITE,0,BLACK,0)),
-		UpdateHotPlugCPU, (unsigned int) cpu);
+	GridCall( StoreTCell(	wCPU, SCANKEY_NULL, Buffer,
+				RSC(CREATE_HOTPLUG_CPU_ONLINE).ATTR() ),
+		UpdateHotPlugCPU, (unsigned long long) (CPU_ONLINE | cpu) );
 
-	GridCall(StoreTCell(wCPU, CPU_OFFLINE | cpu,
+	GridCall( StoreTCell(	wCPU, (unsigned long long) (CPU_OFFLINE | cpu),
 				RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
-				RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR()),
-		UpdateHotPlugTrigger, (unsigned int) cpu);
+				RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR() ),
+		UpdateHotPlugTrigger, (unsigned long long)(CPU_ONLINE | cpu) );
       }
     }
 	wCPU->matrix.select.col = 1;
@@ -6197,8 +6226,6 @@ Window *CreateHotPlugCPU(unsigned long long id)
 
 	StoreWindow(wCPU,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wCPU,	.key.Expand,	MotionExpand_Win);
-
-	free(item);
   }
 	return (wCPU);
 }
@@ -6208,16 +6235,15 @@ void UpdateRatioClock(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 				.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core] \
 					.Toggle];
-	char item[8+1];
 
 	if (data.uint[0] > MAXCLOCK_TO_RATIO(unsigned int, CFlop->Clock.Hz))
 	{
-		snprintf(item, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
+		snprintf(Buffer, 1+6+1, " %-6s", RSC(NOT_AVAILABLE).CODE());
 	} else {
-		snprintf(item, 8+1, "%7.2f",
+		snprintf(Buffer, 8+1, "%7.2f",
 			ABS_FREQ_MHz(double, data.uint[0], CFlop->Clock));
 	}
-	memcpy(&grid->cell.item[1], item, 7);
+	memcpy(&grid->cell.item[1], Buffer, 7);
 }
 
 void TitleForTurboClock(unsigned int NC, ASCII *title)
@@ -6332,7 +6358,6 @@ Window *CreateRatioClock(unsigned long long id,
     if (wCK != NULL)
     {
 	signed int multiplier, offset;
-	ASCII *item = malloc(14+8+11+11+1);
 	for (offset = -lowestShift; offset <= highestShift; offset++)
 	{
 		ATTRIBUTE *attr = attrib[3];
@@ -6349,15 +6374,15 @@ Window *CreateRatioClock(unsigned long long id,
 	    }
 
 	  if (multiplier == 0) {
-		snprintf((char*) item, 17+RSZ(AUTOMATIC)+11+11+1,
+		snprintf(Buffer, 17+RSZ(AUTOMATIC)+11+11+1,
 			"    %s       <%4d >  %+4d ",
 			RSC(AUTOMATIC).CODE(), multiplier, offset);
 
-		StoreTCell(wCK, clockMod.sllong, item, attr);
+		StoreTCell(wCK, clockMod.sllong, Buffer, attr);
 	  } else {
 	    if (multiplier > MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz))
 	    {
-		snprintf((char*) item, 15+6+11+11+1,
+		snprintf(Buffer, 15+6+11+11+1,
 			"  %-6s MHz   <%4d >  %+4d ",
 			RSC(NOT_AVAILABLE).CODE(), multiplier, offset);
 	    } else {
@@ -6368,18 +6393,18 @@ Window *CreateRatioClock(unsigned long long id,
 				2 + 4 * MultiplierIsRatio(cpu, multiplier)
 				: 0 + 4 * MultiplierIsRatio(cpu, multiplier) ];
 
-		snprintf((char*) item, 14+8+11+11+1,
+		snprintf(Buffer, 14+8+11+11+1,
 			" %7.2f MHz   <%4d >  %+4d ",
 			ABS_FREQ_MHz(double, multiplier, CFlop->Clock),
 			multiplier, offset);
 	    }
-		GridCall(StoreTCell(wCK, clockMod.sllong, item, attr),
+		GridCall(StoreTCell(wCK, clockMod.sllong, Buffer, attr),
 			UpdateRatioClock, multiplier);
 	  }
 	}
 
-	TitleCallback(NC, item);
-	StoreWindow(wCK, .title, (char*) item);
+	TitleCallback(NC, (ASCII *) Buffer);
+	StoreWindow(wCK, .title, Buffer);
 
 	if (lowestShift >= hthWin) {
 		wCK->matrix.scroll.vert = hthMax
@@ -6404,25 +6429,67 @@ Window *CreateRatioClock(unsigned long long id,
 
 	StoreWindow(wCK,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wCK,	.key.Expand,	MotionExpand_Win);
-
-	free(item);
     }
 	return (wCK);
 }
 
 void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int cpu = data.uint[0];
-	const unsigned int bix = BITVAL_CC(Shm->roomSched, cpu);
-	const signed pos = grid->cell.length - 8;
+	const unsigned int cpu = data.ullong & CPU_MASK;
+	const signed int pos = grid->cell.length - 8;
 
-	memcpy( &grid->cell.item[pos],
-		ENABLED(bix), __builtin_strlen(ENABLED(0)) );
+	if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	{
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+	    {
+		memcpy( grid->cell.attr,
+			RSC(CREATE_SELECT_CPU_COND0).ATTR(),
+			grid->cell.length );
 
-	memcpy( &grid->cell.attr[pos],
-		bix ? &RSC(CREATE_SELECT_CPU_COND2).ATTR()[pos]
-		    : &RSC(CREATE_SELECT_CPU_COND1).ATTR()[pos],
-		__builtin_strlen(ENABLED(0)) );
+		grid->cell.quick.key = SCANKEY_NULL;
+		grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+	    }
+	}
+	else
+	{
+	    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+	    {
+		memcpy( grid->cell.attr,
+			RSC(CREATE_SELECT_CPU_COND1).ATTR(),
+			grid->cell.length );
+
+		grid->cell.quick.key = (unsigned long long) (CPU_SELECT | cpu);
+		grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+	    }
+	}
+
+	const unsigned int run = BITVAL_CC(Shm->roomSched, cpu);
+	unsigned int sched = BITVAL(data.ullong, 63);
+
+	if (run != sched)
+	{
+		memcpy( &grid->cell.item[pos],
+			ENABLED(run), __builtin_strlen(ENABLED(0)) );
+
+		if (run) {
+			BITSET(LOCKLESS, grid->data.ullong, 63);
+		} else {
+			BITCLR(LOCKLESS, grid->data.ullong, 63);
+		}
+	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	    {
+		sched = BITVAL(grid->data.ullong, 63);
+		if (sched) {
+			memcpy( &grid->cell.attr[pos],
+				&RSC(CREATE_SELECT_CPU_COND2).ATTR()[pos],
+				__builtin_strlen(ENABLED(0)) );
+		} else {
+			memcpy( &grid->cell.attr[pos],
+				&RSC(CREATE_SELECT_CPU_COND1).ATTR()[pos],
+				__builtin_strlen(ENABLED(0)) );
+		}
+	    }
+	}
 }
 
 Window *CreateSelectCPU(unsigned long long id)
@@ -6434,13 +6501,13 @@ Window *CreateSelectCPU(unsigned long long id)
 					1, height,
 					13 + 27 + 3, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
-    if (wUSR != NULL) {
-	ASCII *item = malloc(7+10+11+11+11+1);
+    if (wUSR != NULL)
+    {
 	unsigned int cpu, bix;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
 		bix = BITVAL_CC(Shm->roomSched, cpu);
-		snprintf((char*) item, 7+10+11+11+11+1,
+		snprintf(Buffer, 7+10+11+11+11+1,
 				"  %03u  %4d%6d%6d    <%3s>    ",
 				cpu,
 				Shm->Cpu[cpu].Topology.PackageID,
@@ -6448,14 +6515,26 @@ Window *CreateSelectCPU(unsigned long long id)
 				Shm->Cpu[cpu].Topology.ThreadID,
 				ENABLED(bix));
 
-	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		StoreTCell(wUSR, SCANKEY_NULL,
-				item, RSC(CREATE_SELECT_CPU_COND0).ATTR());
-	    } else {
-		GridCall(StoreTCell(wUSR, CPU_SELECT | cpu,
-				item, bix ? RSC(CREATE_SELECT_CPU_COND2).ATTR()
-					: RSC(CREATE_SELECT_CPU_COND1).ATTR()),
-			UpdateRoomSchedule, (unsigned int) cpu);
+	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	    {
+		unsigned long long	data = BITVAL_CC(Shm->roomSched, cpu);
+					data = data << 63;
+					data = data | (CPU_OFFLINE | cpu);
+
+		GridCall( StoreTCell(	wUSR, SCANKEY_NULL, Buffer,
+					RSC(CREATE_SELECT_CPU_COND0).ATTR() ),
+			UpdateRoomSchedule, data );
+	    }
+	  else
+	    {
+		unsigned long long	data = BITVAL_CC(Shm->roomSched, cpu);
+					data = data << 63;
+					data = data | (CPU_ONLINE | cpu);
+
+		GridCall( StoreTCell(	wUSR, CPU_SELECT | cpu, Buffer,
+				bix	? RSC(CREATE_SELECT_CPU_COND2).ATTR()
+					: RSC(CREATE_SELECT_CPU_COND1).ATTR() ),
+			UpdateRoomSchedule, data );
 	    }
 	}
 	StoreWindow(wUSR,	.title, (char*) RSC(SELECT_CPU_TITLE).CODE());
@@ -6478,8 +6557,6 @@ Window *CreateSelectCPU(unsigned long long id)
 
 	StoreWindow(wUSR,	.key.Shrink,	MotionShrink_Win);
 	StoreWindow(wUSR,	.key.Expand,	MotionExpand_Win);
-
-	free(item);
     }
 	return (wUSR);
 }
@@ -6647,10 +6724,43 @@ DECLARE_CPU_Item_Turbo(18C)
 #define DECLARE_CPU_Update_Turbo(_NC)					\
 void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
 {									\
-	unsigned int cpu = data.uint[0];				\
+	const unsigned int cpu = data.ullong & CPU_MASK;		\
 	ASCII item[ 26+10+11+11+11+8+1 ];				\
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))				\
+  {									\
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)			\
+    {									\
+	snprintf((char *) item, 27+10+11+11+11+1,			\
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),	\
+			cpu,						\
+			Shm->Cpu[cpu].Topology.PackageID,		\
+			Shm->Cpu[cpu].Topology.CoreID,			\
+			Shm->Cpu[cpu].Topology.ThreadID);		\
+									\
+	memcpy(grid->cell.item, item, grid->cell.length);		\
+									\
+	memcpy( grid->cell.attr,					\
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),			\
+		grid->cell.length );					\
+									\
+	grid->cell.quick.key = SCANKEY_NULL;				\
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);	\
+    }									\
+  }									\
+  else									\
+  {									\
 	CPU_Item_Turbo_##_NC(cpu, item);				\
 	memcpy(grid->cell.item, item, grid->cell.length);		\
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)			\
+    {									\
+	memcpy( grid->cell.attr,					\
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),			\
+		grid->cell.length );					\
+									\
+	grid->cell.quick.key = BOXKEY_TURBO_CLOCK_##_NC | (cpu ^ CORE_COUNT);\
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);	\
+    }									\
+  }									\
 }
 DECLARE_CPU_Update_Turbo( 1C)
 DECLARE_CPU_Update_Turbo( 2C)
@@ -6718,12 +6828,46 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_Target_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_TGT | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 void Pkg_Item_HWP_Target_Freq(ASCII *item)
@@ -6774,12 +6918,46 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_HWP_Target_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_TGT | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 void Pkg_Item_HWP_Max_Freq(ASCII *item)
@@ -6830,12 +7008,46 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_HWP_Max_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_MAX | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 void Pkg_Item_HWP_Min_Freq(ASCII *item)
@@ -6886,12 +7098,46 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_HWP_Min_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_HWP_MIN | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 void Pkg_Item_Max_Freq(ASCII *item)
@@ -6941,12 +7187,46 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_Max_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_MAX | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 void Pkg_Item_Min_Freq(ASCII *item)
@@ -6996,12 +7276,46 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 
 void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	unsigned int cpu = data.uint[0];
+	const unsigned int cpu = data.ullong & CPU_MASK;
 	ASCII item[26+10+11+11+11+8+1];
 
+  if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+  {
+    if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
+    {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
+
+	memcpy(grid->cell.item, item, grid->cell.length);
+
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND1).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = SCANKEY_NULL;
+	grid->data.ullong = (unsigned long long) (CPU_OFFLINE | cpu);
+    }
+  }
+  else
+  {
 	CPU_Item_Min_Freq(cpu, item);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
+
+    if ((data.ullong & CPU_STATE_MASK) == CPU_OFFLINE)
+    {
+	memcpy( grid->cell.attr,
+		RSC(CREATE_SELECT_FREQ_COND0).ATTR(),
+		grid->cell.length );
+
+	grid->cell.quick.key = BOXKEY_RATIO_CLOCK_MIN | (cpu ^ CORE_COUNT);
+	grid->data.ullong = (unsigned long long) (CPU_ONLINE | cpu);
+    }
+  }
 }
 
 Window *CreateSelectFreq(unsigned long long id,
@@ -7020,8 +7334,9 @@ Window *CreateSelectFreq(unsigned long long id,
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, height,
 					30, (TOP_HEADER_ROW | 1) );
-    if (wFreq != NULL) {
-	ASCII *item = malloc(26+10+11+11+11+8+1);
+  if (wFreq != NULL)
+  {
+	ASCII item[26+10+11+11+11+8+1];
 	const unsigned long long all = id | (0xffff ^ CORE_COUNT);
 	unsigned int cpu;
 
@@ -7031,26 +7346,30 @@ Window *CreateSelectFreq(unsigned long long id,
 					RSC(CREATE_SELECT_FREQ_PKG).ATTR()),
 		Pkg_Freq_Update);
 
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
-	{
-	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		snprintf((char *) item, 27+10+11+11+11+1,
-				"  %03u  %4d%6d%6d       -         Off   ",
-				cpu,
-				Shm->Cpu[cpu].Topology.PackageID,
-				Shm->Cpu[cpu].Topology.CoreID,
-				Shm->Cpu[cpu].Topology.ThreadID);
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+    {
+      if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+      {
+	snprintf((char *) item, 27+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
+			cpu,
+			Shm->Cpu[cpu].Topology.PackageID,
+			Shm->Cpu[cpu].Topology.CoreID,
+			Shm->Cpu[cpu].Topology.ThreadID);
 
-		StoreTCell(wFreq, SCANKEY_NULL,
-				item, RSC(CREATE_SELECT_FREQ_COND1).ATTR());
-	    } else {
-		CPU_Item_Callback(cpu, item);
+	GridCall( StoreTCell(wFreq, SCANKEY_NULL,
+			item, RSC(CREATE_SELECT_FREQ_COND1).ATTR()),
+		CPU_Freq_Update, (unsigned long long) (CPU_OFFLINE | cpu) );
+      }
+    else
+      {
+	CPU_Item_Callback(cpu, item);
 
-		GridCall( StoreTCell(wFreq, id | (cpu ^ CORE_COUNT),
-				item, RSC(CREATE_SELECT_FREQ_COND0).ATTR()),
-			CPU_Freq_Update, (unsigned int) cpu );
-	    }
-	}
+	GridCall( StoreTCell(wFreq, id | (cpu ^ CORE_COUNT),
+			item, RSC(CREATE_SELECT_FREQ_COND0).ATTR()),
+		CPU_Freq_Update, (unsigned long long) (CPU_ONLINE | cpu) );
+      }
+    }
 	StoreWindow(wFreq,	.title, (char*) RSC(SELECT_FREQ_TITLE).CODE());
 	StoreWindow(wFreq,	.color[1].title, wFreq->hook.color[1].border);
 
@@ -7066,9 +7385,7 @@ Window *CreateSelectFreq(unsigned long long id,
 	StoreWindow(wFreq,	.key.WinRight,	MotionOriginRight_Win);
 	StoreWindow(wFreq,	.key.WinDown,	MotionOriginDown_Win);
 	StoreWindow(wFreq,	.key.WinUp,	MotionOriginUp_Win);
-
-	free(item);
-    }
+  }
 	return (wFreq);
 }
 
@@ -7082,7 +7399,6 @@ Window *CreateSelectIdle(unsigned long long id)
 
     if (wIdle != NULL)
     {
-	ASCII item[12+11+10+1];
 	int idx;
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
@@ -7091,12 +7407,12 @@ Window *CreateSelectIdle(unsigned long long id)
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
-		snprintf((char*) item, 12+11+10+1,
+		snprintf(Buffer, 12+11+10+1,
 				"           %2d%10.*s ", 1 + idx,
 				10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
 
 		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
-				item, MakeAttr(WHITE, 0, BLACK, 0));
+				Buffer, MakeAttr(WHITE, 0, BLACK, 0));
 	}
 	StoreWindow(wIdle, .title, (char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE());
 
@@ -7141,7 +7457,6 @@ Window *CreateRecorder(unsigned long long id)
 					WINFLAG_NO_STOCK );
     if (wRec != NULL)
     {
-	char item[39+1];
 	unsigned int idx = 1;
 	do {
 		unsigned long long key = OPS_RECORDER | (idx << 4);
@@ -7151,13 +7466,13 @@ Window *CreateRecorder(unsigned long long id)
 			minutes = remainder / 60,
 			seconds = remainder % 60;
 
-		snprintf(item,	6+11+11+11+1,
+		snprintf(Buffer,6+11+11+11+1,
 				"\x20\x20%02d:%02d:%02d\x20\x20",
 				hours, minutes, seconds);
 
 		StoreTCell(	wRec,
 				key,
-				item,
+				Buffer,
 				RSC(CREATE_RECORDER).ATTR() );
 
 	} while (Recorder.Ratios[++idx] != 0);
@@ -7214,7 +7529,7 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 		hdrLen = strftime(inStr, POPUP_ALLOC, "%c", brokTime);
 		ISO_8859_To_Unicode((ASCII *) inStr, (ASCII *) outStr);
 		break;
-	case LOC_EN:	/* Keep the dafault language. No conversion.	*/
+	case LOC_EN:	/* Keep the default language. No conversion.	*/
 	default:
 		hdrLen = strftime(outStr, POPUP_ALLOC, "%c", brokTime);
 		break;
@@ -7463,11 +7778,8 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 
 Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 {
-	Window *wExit = NULL;
-	char *item = malloc(wth + 1);
+	Window *wExit;
 
-  if (item != NULL)
-  {
 	wExit = CreateWindow(	wLayer, id,
 				1, (hth + 6),
 				(draw.Size.width - wth) / 2,
@@ -7481,26 +7793,26 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_HEADER).CODE(),
 			MakeAttr(WHITE, 0, BLACK, 0));
 
-	memset(item, 0x20, wth);	item[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
 
 	for (idx = 0; idx < hth; idx++)
 	{
 		const CUINT pos = (wth - issue[idx].length) / 2;
-		memset(item, 0x20, wth);
-		memcpy(&item[pos], issue[idx].item, issue[idx].length);
-		item[wth] = '\0';
+		memset(Buffer, 0x20, wth);
+		memcpy(&Buffer[pos], issue[idx].item, issue[idx].length);
+		Buffer[wth] = '\0';
 
-		StoreTCell(wExit, issue[idx].quick, item, issue[idx].attrib);
+		StoreTCell(wExit, issue[idx].quick, Buffer, issue[idx].attrib);
 	};
-	memset(item, 0x20, wth);	item[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
 
 	StoreTCell(wExit, SCANKEY_CTRL_ALT_x, RSC(EXIT_CONFIRM).CODE(),
 			MakeAttr(WHITE, 0, BLACK, 1));
 
-	memset(item, 0x20, wth);	item[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, item, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
+	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
 
 	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_FOOTER).CODE(),
 			MakeAttr(WHITE, 0, BLACK, 0));
@@ -7514,8 +7826,6 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 	StoreWindow(wExit,	.key.End,	MotionEnd_Cell);
 	StoreWindow(wExit, .title, (char*) RSC(EXIT_TITLE).CODE());
     }
-	free(item);
-  }
 	return (wExit);
 }
 

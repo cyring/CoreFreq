@@ -225,6 +225,8 @@
 
 #define RSC_CREATE_HOTPLUG_CPU_ENABLE_CODE_EN	"<   ENABLE >"
 #define RSC_CREATE_HOTPLUG_CPU_DISABLE_CODE_EN	"<  DISABLE >"
+#define RSC_CREATE_HOTPLUG_CPU_ONLINE_CODE_EN	" %03u   On   "
+#define RSC_CREATE_HOTPLUG_CPU_OFFLINE_CODE_EN	" %03u  Off   "
 
 #define RSC_LAYOUT_CARD_LOAD_CODE_EN					\
 {									\
@@ -809,6 +811,8 @@
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_EN	"  HWP-MIN   Processor     "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_EN	"  MAX       Processor     "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
+#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_EN				\
+				"  %03u  %4d%6d%6d       -         Off   "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_EN		" Driver Message "
 
