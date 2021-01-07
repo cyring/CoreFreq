@@ -6092,37 +6092,97 @@ Window *CreateTracking(unsigned long long id)
 	return (wTrack);
 }
 
+void UpdateHotPlugCPU(TGrid *grid, DATA_TYPE data)
+{
+	char item[9+10+1];
+	ATTRIBUTE attrib;
+	const unsigned int cpu = data.uint[0];
+
+	if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	{
+		snprintf(item, 9+10+1, " %03u  Off   ", cpu);
+		attrib = MakeAttr(BLUE, 0, BLACK, 1);
+	}
+	else
+	{
+		snprintf(item, 9+10+1, " %03u   On   ", cpu);
+		attrib = MakeAttr(WHITE, 0, BLACK, 0);
+	}
+	memcpy(grid->cell.item, item, grid->cell.length);
+	memset(grid->cell.attr, attrib.value, grid->cell.length);
+}
+
+void UpdateHotPlugTrigger(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int cpu = data.uint[0];
+
+	if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+	{
+		memcpy(	grid->cell.item,
+			RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
+			RSZ(CREATE_HOTPLUG_CPU_ENABLE) );
+
+		memcpy( grid->cell.attr,
+			RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR(),
+			grid->cell.length );
+
+		grid->cell.quick.key = CPU_ONLINE | cpu;
+	}
+	else
+	{
+		memcpy( grid->cell.item,
+			RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
+			RSZ(CREATE_HOTPLUG_CPU_DISABLE) );
+
+		memcpy( grid->cell.attr,
+			RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR(),
+			grid->cell.length );
+
+		grid->cell.quick.key = CPU_OFFLINE | cpu;
+	}
+}
+
 Window *CreateHotPlugCPU(unsigned long long id)
 {
 	Window *wCPU = CreateWindow(	wLayer, id, 2, draw.Area.MaxRows,
 					LOAD_LEAD + 1, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
-    if (wCPU != NULL) {
+  if (wCPU != NULL) {
 	ASCII *item = malloc(9+10+1);
 	unsigned int cpu;
-	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	    if (BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		snprintf((char*) item, 9+10+1, " %03u  Off   ", cpu);
-		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(BLUE,0,BLACK,1));
+    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+    {
+      if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
+      {
+	snprintf((char*) item, 9+10+1, " %03u  Off   ", cpu);
 
-		StoreTCell(wCPU, CPU_ONLINE | cpu ,
-					RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
-					RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR());
-	    } else {
-		snprintf((char*) item, 9+10+1, " %03u   On   ", cpu);
-		StoreTCell(wCPU, SCANKEY_NULL, item, MakeAttr(WHITE,0,BLACK,0));
+	GridCall(StoreTCell(wCPU, SCANKEY_NULL, item,MakeAttr(BLUE,0,BLACK,1)),
+		UpdateHotPlugCPU, (unsigned int) cpu);
 
-		StoreTCell(wCPU, CPU_OFFLINE | cpu,
-					RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
-					RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR());
-	    }
-	}
+	GridCall(StoreTCell(wCPU, CPU_ONLINE | cpu ,
+				RSC(CREATE_HOTPLUG_CPU_ENABLE).CODE(),
+				RSC(CREATE_HOTPLUG_CPU_ENABLE).ATTR()),
+		UpdateHotPlugTrigger, (unsigned int) cpu);
+      }
+    else
+      {
+	snprintf((char*) item, 9+10+1, " %03u   On   ", cpu);
+
+	GridCall(StoreTCell(wCPU, SCANKEY_NULL, item,MakeAttr(WHITE,0,BLACK,0)),
+		UpdateHotPlugCPU, (unsigned int) cpu);
+
+	GridCall(StoreTCell(wCPU, CPU_OFFLINE | cpu,
+				RSC(CREATE_HOTPLUG_CPU_DISABLE).CODE(),
+				RSC(CREATE_HOTPLUG_CPU_DISABLE).ATTR()),
+		UpdateHotPlugTrigger, (unsigned int) cpu);
+      }
+    }
 	wCPU->matrix.select.col = 1;
 
 	StoreWindow(wCPU,	.title, 	" CPU ");
 	StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
 
-	StoreWindow(wCPU,	.key.Enter,	MotionEnter_Cell);
+	StoreWindow(wCPU,	.key.Enter,	Enter_StickyCell);
 	StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
 	StoreWindow(wCPU,	.key.Up,	MotionUp_Win);
 	StoreWindow(wCPU,	.key.PgUp,	MotionPgUp_Win);
@@ -6139,7 +6199,7 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	StoreWindow(wCPU,	.key.Expand,	MotionExpand_Win);
 
 	free(item);
-    }
+  }
 	return (wCPU);
 }
 
