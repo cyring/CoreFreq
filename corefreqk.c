@@ -12546,25 +12546,22 @@ static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 
 void InitTimer_AMD_Family_17h(unsigned int cpu)
 {
-    switch (PUBLIC(RO(Proc))->ArchID) {
-    case AMD_Zen:
-    case AMD_ZenPlus:
-    case AMD_ZenPlus_APU:
-	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen, 1);
-	break;
-    case AMD_Zen3_VMR:
-    case AMD_Zen2_MTS:
-	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_SP, 1);
-	break;
-    case AMD_EPYC_Rome:
-    case AMD_Zen2_CPK:
-    case AMD_Zen2_APU:
-	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_MP, 1);
-	break;
-    default:
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h, 1);
-	break;
-    }
+}
+
+void InitTimer_AMD_F17h_Zen(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen, 1);
+}
+
+void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_SP, 1);
+}
+
+void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_MP, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)
