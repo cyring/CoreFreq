@@ -811,8 +811,8 @@
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_EN	"  HWP-MIN   Processor     "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_EN	"  MAX       Processor     "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
-#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_EN				\
-				"  %03u  %4d%6d%6d       -         Off   "
+#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_EN	"  %03u                    " \
+						"               Off   "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_EN		" Driver Message "
 

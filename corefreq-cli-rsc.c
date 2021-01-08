@@ -316,10 +316,12 @@ ATTRIBUTE Rsc_SysInfoCPUID_Cond_Attr[4][74] = {
 	RSC_SYSINFO_CPUID_COND3_ATTR
 };
 
-ATTRIBUTE Rsc_SystemRegisters_Cond_Attr[3][4] = {
+ATTRIBUTE Rsc_SystemRegisters_Cond_Attr[5][4] = {
 	RSC_SYSTEM_REGISTERS_COND0_ATTR,
 	RSC_SYSTEM_REGISTERS_COND1_ATTR,
-	RSC_SYSTEM_REGISTERS_COND2_ATTR
+	RSC_SYSTEM_REGISTERS_COND2_ATTR,
+	RSC_SYSTEM_REGISTERS_COND3_ATTR,
+	RSC_SYSTEM_REGISTERS_COND4_ATTR
 };
 
 ATTRIBUTE Rsc_SysInfoProc_Cond_Attr[4][76] = {
@@ -370,10 +372,12 @@ ATTRIBUTE Rsc_SysInfoPwrThermal_Cond_Attr[5][50] = {
 
 ATTRIBUTE Rsc_SysInfoKernel_Attr[] = RSC_SYSINFO_KERNEL_ATTR;
 
-ATTRIBUTE Rsc_Topology_Cond_Attr[3][13] = {
+ATTRIBUTE Rsc_Topology_Cond_Attr[5][13] = {
 	RSC_TOPOLOGY_COND0_ATTR,
 	RSC_TOPOLOGY_COND1_ATTR,
-	RSC_TOPOLOGY_COND2_ATTR
+	RSC_TOPOLOGY_COND2_ATTR,
+	RSC_TOPOLOGY_COND3_ATTR,
+	RSC_TOPOLOGY_COND4_ATTR
 };
 
 ATTRIBUTE Rsc_MemoryController_Cond_Attr[2][14] = {
@@ -685,6 +689,8 @@ RESOURCE_ST Resource[] = {
     [RSC_SYSTEM_REGISTERS_COND0]= LDB(	Rsc_SystemRegisters_Cond_Attr[0]),
     [RSC_SYSTEM_REGISTERS_COND1]= LDB(	Rsc_SystemRegisters_Cond_Attr[1]),
     [RSC_SYSTEM_REGISTERS_COND2]= LDB(	Rsc_SystemRegisters_Cond_Attr[2]),
+    [RSC_SYSTEM_REGISTERS_COND3]= LDB(	Rsc_SystemRegisters_Cond_Attr[3]),
+    [RSC_SYSTEM_REGISTERS_COND4]= LDB(	Rsc_SystemRegisters_Cond_Attr[4]),
     [RSC_SYSINFO_PROC_COND0]	= LDB(	Rsc_SysInfoProc_Cond_Attr[0]),
     [RSC_SYSINFO_PROC_COND1]	= LDB(	Rsc_SysInfoProc_Cond_Attr[1]),
     [RSC_SYSINFO_PROC_COND2]	= LDB(	Rsc_SysInfoProc_Cond_Attr[2]),
@@ -722,6 +728,8 @@ RESOURCE_ST Resource[] = {
     [RSC_TOPOLOGY_COND0]	= LDB(	Rsc_Topology_Cond_Attr[0]),
     [RSC_TOPOLOGY_COND1]	= LDB(	Rsc_Topology_Cond_Attr[1]),
     [RSC_TOPOLOGY_COND2]	= LDB(	Rsc_Topology_Cond_Attr[2]),
+    [RSC_TOPOLOGY_COND3]	= LDB(	Rsc_Topology_Cond_Attr[3]),
+    [RSC_TOPOLOGY_COND4]	= LDB(	Rsc_Topology_Cond_Attr[4]),
     [RSC_MEMORY_CONTROLLER_COND0]=LDB(	Rsc_MemoryController_Cond_Attr[0]),
     [RSC_MEMORY_CONTROLLER_COND1]=LDB(	Rsc_MemoryController_Cond_Attr[1]),
     [RSC_CREATE_MENU_DISABLE]	= LDB(	Rsc_CreateMenu_Disable_Attr),

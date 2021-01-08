@@ -507,10 +507,12 @@ const struct {
 REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[3] = {
+	ATTRIBUTE *attrib[5] = {
 		RSC(SYSTEM_REGISTERS_COND0).ATTR(),
 		RSC(SYSTEM_REGISTERS_COND1).ATTR(),
-		RSC(SYSTEM_REGISTERS_COND2).ATTR()
+		RSC(SYSTEM_REGISTERS_COND2).ATTR(),
+		RSC(SYSTEM_REGISTERS_COND3).ATTR(),
+		RSC(SYSTEM_REGISTERS_COND4).ATTR()
 	};
 	const struct {
 		unsigned int Start, Stop;
@@ -539,7 +541,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
     }
 	PRT(REG, attrib[0], CR[IX_4SPC].item);
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
 
 	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
@@ -577,7 +579,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
 
 	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
@@ -606,7 +608,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
 
 	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
 	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
@@ -633,7 +635,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
     }
     for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS)], "#%-2u ", cpu);
+	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
 
 	PRT(REG, attrib[0], CR[IX_4SPC].item);
 	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
@@ -4120,10 +4122,12 @@ char *TopologyAltSubHeader[] = {
 
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
-	ATTRIBUTE *attrib[3] = {
+	ATTRIBUTE *attrib[5] = {
 		RSC(TOPOLOGY_COND0).ATTR(),
 		RSC(TOPOLOGY_COND1).ATTR(),
-		RSC(TOPOLOGY_COND2).ATTR()
+		RSC(TOPOLOGY_COND2).ATTR(),
+		RSC(TOPOLOGY_COND3).ATTR(),
+		RSC(TOPOLOGY_COND4).ATTR()
 	};
 	char	*strID = malloc(2 * ((4*11) + 1)), *pStrOFF = TopologyStrOFF[0];
 	unsigned int cpu = 0, level = 0;
@@ -4195,7 +4199,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 	{
 		TopologyFunc(strID, cpu);
 
-		PRT(MAP, attrib[0], &strID[ 0]);
+		PRT(MAP, attrib[3], &strID[ 0]);
 		PRT(MAP, attrib[0], &strID[14]);
 
 	    for (level = 0; level < CACHE_MAX_LEVEL; level++)
@@ -4209,7 +4213,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 				'i' : 0x20);
 	    }
 	} else {
-		PRT(MAP, attrib[1], TopologyFmtOFF[0], cpu);
+		PRT(MAP, attrib[4], TopologyFmtOFF[0], cpu);
 		PRT(MAP, attrib[1], pStrOFF);
 
 	    for (level = 0; level < CACHE_MAX_LEVEL; level++) {
@@ -6564,14 +6568,14 @@ Window *CreateSelectCPU(unsigned long long id)
 void Pkg_Fmt_Turbo(ASCII *item, CLOCK *clock, unsigned int ratio, char *NC)
 {
     if (ratio == 0) {
-	snprintf((char *) item, 26+12+RSZ(AUTOMATIC)+10+1,
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			(char *) RSC(CREATE_SELECT_AUTO_TURBO).CODE(),
 			NC, RSC(AUTOMATIC).CODE(),
 			Shm->Proc.Features.Turbo_Unlock ? '<' : '[',
 			ratio,
 			Shm->Proc.Features.Turbo_Unlock ? '>' : ']');
     } else {
-	snprintf((char *) item, 26+9+8+10+1,
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			(char *) RSC(CREATE_SELECT_FREQ_TURBO).CODE(),
 			NC, ABS_FREQ_MHz(double, ratio, (*clock)),
 			Shm->Proc.Features.Turbo_Unlock ? '<' : '[',
@@ -6584,12 +6588,12 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 			unsigned int ratio, unsigned char unlock )
 {
     if (ratio == 0) {
-	snprintf((char *) item, 26+12+RSZ(AUTOMATIC)+10+1,
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
 			"%s" "   %s     %c%4u %c ",
 			code, RSC(AUTOMATIC).CODE(),
 			unlock ? '<' : '[', ratio, unlock ? '>' : ']');
     } else {
-	snprintf((char *) item, 26+9+8+10+1,
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1,
 			"%s" "%7.2f MHz %c%4u %c ",
 			code, ABS_FREQ_MHz(double, ratio, (*clock)),
 			unlock ? '<' : '[', ratio, unlock ? '>' : ']');
@@ -6599,7 +6603,8 @@ void Pkg_Fmt_Freq(	ASCII *item, ASCII *code, CLOCK *clock,
 void CPU_Item_Auto_Freq(unsigned int cpu, unsigned int ratio,
 			unsigned char unlock, ASCII *item)
 {
-	snprintf((char *) item, 19+RSZ(AUTOMATIC)+10+11+11+11+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+10+1,
 			"  %03u  %4d%6d%6d   " "   %s     %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -6645,7 +6650,7 @@ DECLARE_Pkg_Item_Turbo(18C)
 #define DECLARE_Pkg_Update_Turbo(_NC)					\
 void Pkg_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
 {									\
-	ASCII item[ 26+10+11+11+11+8+1 ];				\
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];		\
 	unsigned int top = Ruler.Top[BOOST(_NC)];			\
 	Pkg_Fmt_Turbo(	item,						\
 			&Shm->Cpu[top].FlipFlop[			\
@@ -6687,7 +6692,8 @@ void CPU_Item_Turbo_##_NC(unsigned int cpu, ASCII *item)		\
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[cpu].FlipFlop[		\
 					!Shm->Cpu[cpu].Toggle		\
 				];					\
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,			\
+	snprintf((char *) item ,					\
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,\
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",	\
 			cpu,						\
 			Shm->Cpu[cpu].Topology.PackageID,		\
@@ -6725,17 +6731,13 @@ DECLARE_CPU_Item_Turbo(18C)
 void CPU_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
 {									\
 	const unsigned int cpu = data.ullong & CPU_MASK;		\
-	ASCII item[ 26+10+11+11+11+8+1 ];				\
+	ASCII item[ RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1 ];	\
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))				\
   {									\
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)			\
     {									\
-	snprintf((char *) item, 27+10+11+11+11+1,			\
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),	\
-			cpu,						\
-			Shm->Cpu[cpu].Topology.PackageID,		\
-			Shm->Cpu[cpu].Topology.CoreID,			\
-			Shm->Cpu[cpu].Topology.ThreadID);		\
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,\
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);	\
 									\
 	memcpy(grid->cell.item, item, grid->cell.length);		\
 									\
@@ -6793,7 +6795,7 @@ void Pkg_Item_Target_Freq(ASCII *item)
 
 void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(TGT)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -6812,7 +6814,8 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 	CPU_Item_Auto_Freq(	cpu, Shm->Cpu[cpu].Boost[BOOST(TGT)],
 				Shm->Proc.Features.TgtRatio_Unlock, item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d  %-3d" "[%3u ]%5.0f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -6829,18 +6832,14 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -6881,7 +6880,7 @@ void Pkg_Item_HWP_Target_Freq(ASCII *item)
 
 void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -6900,7 +6899,8 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Desired_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -6919,18 +6919,14 @@ void CPU_Item_HWP_Target_Freq(unsigned int cpu, ASCII *item)
 void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -6971,7 +6967,7 @@ void Pkg_Item_HWP_Max_Freq(ASCII *item)
 
 void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -6990,7 +6986,8 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Maximum_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -7009,18 +7006,14 @@ void CPU_Item_HWP_Max_Freq(unsigned int cpu, ASCII *item)
 void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -7061,7 +7054,7 @@ void Pkg_Item_HWP_Min_Freq(ASCII *item)
 
 void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -7080,7 +7073,8 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].PowerThermal.HWP.Request.Minimum_Perf,
 				Shm->Proc.Features.HWP_Enable, item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -7099,18 +7093,14 @@ void CPU_Item_HWP_Min_Freq(unsigned int cpu, ASCII *item)
 void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -7151,7 +7141,7 @@ void Pkg_Item_Max_Freq(ASCII *item)
 
 void Pkg_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MAX)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -7170,7 +7160,8 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10,
 				item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -7188,18 +7179,14 @@ void CPU_Item_Max_Freq(unsigned int cpu, ASCII *item)
 void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -7240,7 +7227,7 @@ void Pkg_Item_Min_Freq(ASCII *item)
 
 void Pkg_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MIN)];
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
@@ -7255,11 +7242,12 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 	CFlop = &Shm->Cpu[cpu].FlipFlop[ !Shm->Cpu[cpu].Toggle ];
 
     if (Shm->Cpu[cpu].Boost[BOOST(MIN)] == 0) {
-	CPU_Item_Auto_Freq(cpu, Shm->Cpu[cpu].Boost[BOOST(MIN)],
+	CPU_Item_Auto_Freq(	cpu, Shm->Cpu[cpu].Boost[BOOST(MIN)],
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01,
-			item );
+				item );
     } else {
-	snprintf((char *) item, 16+10+11+11+11+8+10+1,
+	snprintf((char *) item,
+			RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+10+1,
 			"  %03u  %4d%6d%6d   " "%7.2f MHz %c%4u %c ",
 			cpu,
 			Shm->Cpu[cpu].Topology.PackageID,
@@ -7277,18 +7265,14 @@ void CPU_Item_Min_Freq(unsigned int cpu, ASCII *item)
 void CPU_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int cpu = data.ullong & CPU_MASK;
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 
   if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
   {
     if ((data.ullong & CPU_STATE_MASK) == CPU_ONLINE)
     {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	memcpy(grid->cell.item, item, grid->cell.length);
 
@@ -7336,7 +7320,7 @@ Window *CreateSelectFreq(unsigned long long id,
 					30, (TOP_HEADER_ROW | 1) );
   if (wFreq != NULL)
   {
-	ASCII item[26+10+11+11+11+8+1];
+	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+11+11+11+8+1];
 	const unsigned long long all = id | (0xffff ^ CORE_COUNT);
 	unsigned int cpu;
 
@@ -7350,12 +7334,8 @@ Window *CreateSelectFreq(unsigned long long id,
     {
       if (BITVAL(Shm->Cpu[cpu].OffLine, OS))
       {
-	snprintf((char *) item, 27+10+11+11+11+1,
-		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(),
-			cpu,
-			Shm->Cpu[cpu].Topology.PackageID,
-			Shm->Cpu[cpu].Topology.CoreID,
-			Shm->Cpu[cpu].Topology.ThreadID);
+	snprintf((char *) item, RSZ(CREATE_SELECT_FREQ_OFFLINE)+10+1,
+		(char *) RSC(CREATE_SELECT_FREQ_OFFLINE).CODE(), cpu);
 
 	GridCall( StoreTCell(wFreq, SCANKEY_NULL,
 			item, RSC(CREATE_SELECT_FREQ_COND1).ATTR()),

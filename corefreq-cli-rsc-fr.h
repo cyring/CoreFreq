@@ -849,8 +849,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_FR	"  HWP-MIN   Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_FR	"  MAX       Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_FR	"  MIN       Processeur    "
-#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_FR				\
-				"  %03u  %4d%6d%6d       -         Off   "
+#define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_FR	"  %03u                    " \
+						"               Off   "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_FR		" Message du Pilote "
 
