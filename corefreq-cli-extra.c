@@ -16,6 +16,8 @@
 
 #include "corefreq-cli-extra.h"
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 /*				--[ JSON toolkit ]--			*/
 struct json_state;
 
@@ -25,6 +27,7 @@ enum JSON_STATE {
 
 int json_writer_stdout(struct json_state * state, const char *str, size_t len)
 {
+	UNUSED(state);
 	return fwrite(str, len, 1, stdout);
 }
 

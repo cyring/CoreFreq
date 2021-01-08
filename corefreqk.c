@@ -341,6 +341,7 @@ unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 {
 	unsigned long long TSC __attribute__ ((aligned (8)));
+	UNUSED(cs);
 	RDTSCP64(TSC);
 	return (TSC);
 }
@@ -348,6 +349,7 @@ unsigned long long CoreFreqK_Read_CS_From_Invariant_TSC(struct clocksource *cs)
 unsigned long long CoreFreqK_Read_CS_From_Variant_TSC(struct clocksource *cs)
 {
 	unsigned long long TSC __attribute__ ((aligned (8)));
+	UNUSED(cs);
 	RDTSC64(TSC);
 	return (TSC);
 }
@@ -1141,6 +1143,7 @@ CLOCK BaseClock_GenuineIntel(unsigned int ratio)
 CLOCK BaseClock_AuthenticAMD(unsigned int ratio)
 {	/* For AMD Families 0Fh, 10h up to 16h */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
+	UNUSED(ratio);
 	return (clock);
 };
 
@@ -1438,6 +1441,7 @@ CLOCK BaseClock_Skylake(unsigned int ratio)
 CLOCK BaseClock_AMD_Family_17h(unsigned int ratio)
 {	/* Source: AMD PPR Family 17h § 1.4/ Table 11: REFCLK = 100 MHz */
 	CLOCK clock = {.Q = 100, .R = 0, .Hz = 100000000L};
+	UNUSED(ratio);
 	return (clock);
 };
 
@@ -3984,6 +3988,8 @@ static PCI_CALLBACK IVB_IMC(struct pci_dev *dev)
 
 static PCI_CALLBACK SNB_EP_HB(struct pci_dev *dev)
 {
+	UNUSED(dev);
+/*TODO(Harware missing! for testings)					*/
 	return ((PCI_CALLBACK) 0);
 }
 
@@ -4330,6 +4336,7 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 {
 	AMD_17_UMC_SDP_CTRL SDP_CTRL;
 	unsigned short mc, cha, chip, sec;
+	UNUSED(dev);
 /*TODO( Query the number of UMC )					*/
 	PUBLIC(RO(Proc))->Uncore.CtrlCount = 1;
 
@@ -7304,6 +7311,7 @@ void PerCore_AMD_Family_0Fh_PStates(CORE_RO *Core)
 	FIDVID_STATUS FidVidStatus = {.value = 0};
 	FIDVID_CONTROL FidVidControl = {.value = 0};
 	int NewFID = -1, NewVID = -1, loop = 100;
+	UNUSED(Core);
 
 	RDMSR(FidVidStatus, MSR_K7_FID_VID_STATUS);
 
@@ -12486,6 +12494,10 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 void Call_DFLT( const unsigned int plane0, const unsigned int plane1,
 		const unsigned long long factor )
 {
+	UNUSED(plane0);
+	UNUSED(plane1);
+	UNUSED(factor);
+
 	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = \
 	PUBLIC(RO(Core,AT( PUBLIC(RO(Proc))->Service.Core )))->PowerThermal.VID;
 }
@@ -12724,7 +12736,11 @@ static int CoreFreqK_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {/*	Source: /drivers/cpuidle/cpuidle.c				*/
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
+
 	mwait_idle_with_hints(MWAIT, 1UL);
+
 	return index;
 }
 
@@ -12750,7 +12766,11 @@ static int CoreFreqK_S2_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 #endif /* 5.9.0 */
 {
 	unsigned long MWAIT=(CoreFreqK.IdleDriver.states[index].flags>>24)&0xff;
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
+
 	mwait_idle_with_hints(MWAIT, 1UL);
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
@@ -12784,7 +12804,10 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 	/*			HALT Idle methods			*/
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
-{/*	Source: /drivers/acpi/processor_idle.c				*/
+{
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
+/*	Source: /drivers/acpi/processor_idle.c				*/
 	safe_halt();
 	return index;
 }
@@ -12810,6 +12833,9 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
+
 	safe_halt();
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
@@ -12848,11 +12874,16 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 {
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
+
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
 
 	inw(cstate_addr);
+
 	return index;
 }
 
@@ -12879,9 +12910,13 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 {
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
+
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
+	UNUSED(pIdleDevice);
+	UNUSED(pIdleDriver);
 
 	inw(cstate_addr);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
@@ -13531,6 +13566,7 @@ static long CoreFreqK_Limit_Idle(int target)
 #ifdef CONFIG_CPU_FREQ
 static int CoreFreqK_Policy_Exit(struct cpufreq_policy *policy)
 {
+	UNUSED(policy);
 	return (0);
 }
 
@@ -13579,6 +13615,7 @@ static int CoreFreqK_Policy_Verify(struct cpufreq_policy *policy)
 
 static int CoreFreqK_SetPolicy(struct cpufreq_policy *policy)
 {
+	UNUSED(policy);
 	return (0);
 }
 
@@ -13606,10 +13643,12 @@ void Policy_Aggregate_Turbo(void)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
 static int CoreFreqK_SetBoost(struct cpufreq_policy *policy, int state)
+{
+	UNUSED(policy);
 #else
 static int CoreFreqK_SetBoost(int state)
-#endif /* 5.8.0 */
 {
+#endif /* 5.8.0 */
 	Controller_Stop(1);
 	TurboBoost_Enable = (state != 0);
 	Controller_Start(1);
@@ -14044,6 +14083,7 @@ void MatchPeerForDownService(SERVICE_PROC *pService, unsigned int cpu)
 static int CoreFreqK_NMI_Handler(unsigned int type, struct pt_regs *pRegs)
 {
 	unsigned int cpu = smp_processor_id();
+	UNUSED(pRegs);
 
 	switch (type) {
 	case NMI_LOCAL:
@@ -14350,6 +14390,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned long arg )
 {
 	long rc = -EPERM;
+	UNUSED(filp);
 
     switch (cmd)
     {
@@ -14909,6 +14950,7 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
 	unsigned long reqSize = vma->vm_end - vma->vm_start;
 	int rc = -EIO;
+	UNUSED(pfile);
 
   if (vma->vm_pgoff == ID_RO_VMA_PROC) {
     if (PUBLIC(RO(Proc)) != NULL)
@@ -15029,6 +15071,9 @@ static DEFINE_MUTEX(CoreFreqK_mutex);		/* Only one driver instance. */
 
 static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 {
+	UNUSED(inode);
+	UNUSED(pfile);
+
 	if (!mutex_trylock(&CoreFreqK_mutex))
 		return (-EBUSY);
 	else
@@ -15037,6 +15082,9 @@ static int CoreFreqK_open(struct inode *inode, struct file *pfile)
 
 static int CoreFreqK_release(struct inode *inode, struct file *pfile)
 {
+	UNUSED(inode);
+	UNUSED(pfile);
+
 	mutex_unlock(&CoreFreqK_mutex);
 	return (0);
 }
@@ -15052,6 +15100,8 @@ static struct file_operations CoreFreqK_fops = {
 #ifdef CONFIG_PM_SLEEP
 static int CoreFreqK_Suspend(struct device *dev)
 {
+	UNUSED(dev);
+
 	Controller_Stop(1);
 
 	printk(KERN_NOTICE "CoreFreq: Suspend\n");
@@ -15061,6 +15111,8 @@ static int CoreFreqK_Suspend(struct device *dev)
 
 static int CoreFreqK_Resume(struct device *dev)
 {	/*		Probe Processor again				*/
+	UNUSED(dev);
+
     if (Arch[PUBLIC(RO(Proc))->ArchID].Query != NULL) {
 	Arch[PUBLIC(RO(Proc))->ArchID].Query(PUBLIC(RO(Proc))->Service.Core);
     }
@@ -15289,6 +15341,8 @@ void SMBIOS_Collect(void)
 
 static char *CoreFreqK_DevNode(struct device *dev, umode_t *mode)
 {
+	UNUSED(dev);
+
 	if (mode != NULL) {
 		(*mode) = 0600 ; /*	Device access is crw------	*/
 	}
@@ -15368,6 +15422,8 @@ static void CoreFreqK_Alloc_Device_Level_Down(void)
 
 static int CoreFreqK_Alloc_Device_Level_Up(INIT_ARG *pArg)
 {
+	UNUSED(pArg);
+
 	CoreFreqK.kcdev = cdev_alloc();
 	CoreFreqK.kcdev->ops = &CoreFreqK_fops;
 	CoreFreqK.kcdev->owner = THIS_MODULE;
@@ -15387,6 +15443,8 @@ static void CoreFreqK_Make_Device_Level_Down(void)
 
 static int CoreFreqK_Make_Device_Level_Up(INIT_ARG *pArg)
 {
+	UNUSED(pArg);
+
 	CoreFreqK.Major = MAJOR(CoreFreqK.nmdev);
 	CoreFreqK.mkdev = MKDEV(CoreFreqK.Major, 0);
 
@@ -15407,6 +15465,7 @@ static void CoreFreqK_Create_Device_Level_Down(void)
 static int CoreFreqK_Create_Device_Level_Up(INIT_ARG *pArg)
 {
 	struct device *tmpDev;
+	UNUSED(pArg);
 
 	CoreFreqK.clsdev = class_create(THIS_MODULE, DRV_DEVNAME);
 	CoreFreqK.clsdev->pm = COREFREQ_PM_OPS;
@@ -15486,6 +15545,7 @@ static void CoreFreqK_Alloc_Processor_RO_Level_Down(void)
 static int CoreFreqK_Alloc_Processor_RO_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long procSize = ROUND_TO_PAGES(sizeof(PROC_RO));
+	UNUSED(pArg);
 
 	if ( (PUBLIC(RO(Proc)) = kmalloc(procSize, GFP_KERNEL)) != NULL)
 	{
@@ -15508,6 +15568,7 @@ static void CoreFreqK_Alloc_Processor_RW_Level_Down(void)
 static int CoreFreqK_Alloc_Processor_RW_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long procSize = ROUND_TO_PAGES(sizeof(PROC_RW));
+	UNUSED(pArg);
 
 	if ( (PUBLIC(RW(Proc)) = kmalloc(procSize, GFP_KERNEL)) != NULL)
 	{
@@ -15559,6 +15620,7 @@ static int CoreFreqK_Alloc_Public_Cache_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long cacheSize = KMAX( ROUND_TO_PAGES(sizeof(CORE_RO)),
 					      ROUND_TO_PAGES(sizeof(CORE_RW)) );
+	UNUSED(pArg);
 
 	if ( (PUBLIC(OF(Cache)) = kmem_cache_create(	"corefreqk-pub",
 							cacheSize, 0,
@@ -15582,6 +15644,7 @@ static void CoreFreqK_Alloc_Private_Cache_Level_Down(void)
 static int CoreFreqK_Alloc_Private_Cache_Level_Up(INIT_ARG *pArg)
 {
 	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
+	UNUSED(pArg);
 
 	if ( (PRIVATE(OF(Cache)) = kmem_cache_create(	"corefreqk-priv",
 							joinSize, 0,
@@ -15622,9 +15685,10 @@ static int CoreFreqK_Alloc_Per_CPU_Level_Up(INIT_ARG *pArg)
 	const unsigned long cacheSize = KMAX( ROUND_TO_PAGES(sizeof(CORE_RO)),
 					      ROUND_TO_PAGES(sizeof(CORE_RW)) );
 	const unsigned long joinSize = ROUND_TO_PAGES(sizeof(JOIN));
-	int rc = 0;
-
 	unsigned int cpu;
+	int rc = 0;
+	UNUSED(pArg);
+
 	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
 	{
 		void *kcache = NULL;

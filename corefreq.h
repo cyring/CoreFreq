@@ -551,12 +551,15 @@ typedef struct
 	(Temp = Param.Offset[0] - Param.Offset[1] - Sensor)
 
 #define COMPUTE_THERMAL_AMD(Temp, Param, Sensor)			\
+	UNUSED(Param);							\
+	UNUSED(Sensor);							\
 	/*( TODO )*/
 
 #define COMPUTE_THERMAL_AMD_0Fh(Temp, Param, Sensor)			\
 	(Temp = Sensor - (Param.Target * 2) - 49)
 
 #define COMPUTE_THERMAL_AMD_15h(Temp, Param, Sensor)			\
+	UNUSED(Param);							\
 	(Temp = Sensor * 5 / 40)
 
 #define COMPUTE_THERMAL_AMD_17h(Temp, Param, Sensor)			\

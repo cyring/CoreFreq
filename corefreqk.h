@@ -1084,6 +1084,7 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 
 void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
+	UNUSED(Core);
 }
 void CTL_AMD_Family_17h_Temp(CORE_RO *Core) ;
 void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core) ;

@@ -79,6 +79,9 @@ static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
+	UNUSED(CFlip);
+	UNUSED(Shm);
+	UNUSED(cpu);
 }
 
 #define ComputeThermal_None_PerSMT	ComputeThermal_None
@@ -335,6 +338,9 @@ static inline void ComputeVoltage_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
+	UNUSED(CFlip);
+	UNUSED(Shm);
+	UNUSED(cpu);
 }
 
 #define ComputeVoltage_None_PerSMT	ComputeVoltage_None
@@ -812,6 +818,9 @@ static inline void ComputePower_None(	struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
+	UNUSED(CFlip);
+	UNUSED(Shm);
+	UNUSED(cpu);
 }
 
 #define ComputePower_None_PerSMT	ComputePower_None
@@ -2908,6 +2917,7 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 void X58_VTD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
+	UNUSED(Core);
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.QuickPath.X58.VT_d;
 }
 
@@ -5299,6 +5309,8 @@ void Emergency_Command(REF *Ref, unsigned int cmd)
 static inline void Pkg_ComputeThermal_None(	struct PKG_FLIP_FLOP *PFlip,
 						struct FLIP_FLOP *SProc )
 {
+	UNUSED(PFlip);
+	UNUSED(SProc);
 }
 
 static inline void Pkg_ComputeThermal_Intel(	struct PKG_FLIP_FLOP *PFlip,
@@ -5348,6 +5360,7 @@ static inline void Pkg_ComputeThermal_AMD_17h(	struct PKG_FLIP_FLOP *PFlip,
 
 static inline void Pkg_ComputeVoltage_None(struct PKG_FLIP_FLOP *PFlip)
 {
+	UNUSED(PFlip);
 }
 
 #define Pkg_ComputeVoltage_Intel	Pkg_ComputeVoltage_None
@@ -5403,6 +5416,8 @@ static inline void Pkg_ComputeVoltage_ITE_Tech_IO(struct PKG_FLIP_FLOP *PFlip)
 
 static inline void Pkg_ComputePower_None(PROC_RW *Proc, struct FLIP_FLOP *CFlop)
 {
+	UNUSED(Proc);
+	UNUSED(CFlop);
 }
 
 #define Pkg_ComputePower_Intel		Pkg_ComputePower_None
@@ -5419,6 +5434,7 @@ static inline void Pkg_ComputePower_AMD_17h(	PROC_RW *Proc,
 
 static inline void Pkg_ResetPower_None(PROC_RW *Proc)
 {
+	UNUSED(Proc);
 }
 
 #define Pkg_ResetPower_Intel		Pkg_ResetPower_None

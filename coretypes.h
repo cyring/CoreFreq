@@ -194,7 +194,7 @@ enum CSTATES_ENCODING {
 	_C8	= 0x8,
 	_C9	= 0x9,
 	_C10	= 0xa,
-	_UNSPEC
+	_UNSPEC = 0xf
 };
 
 #define CSTATES_ENCODING_COUNT	12
@@ -1851,4 +1851,6 @@ typedef struct {
 	(_place.minor	== _minor) &&					\
 	(_place.rev	== _rev)					\
 )
+
+#define UNUSED(expr) do { (void)(expr); } while (0)
 

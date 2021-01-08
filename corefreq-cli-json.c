@@ -30,6 +30,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 	unsigned int cpu, vendor = Shm->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = {.depth = 0, .nested_state =
 		{}, .write = json_writer_stdout};
+	UNUSED(OutFunc);
+
 	json_start_object(&s);
 	json_key(&s, "Registration");
 	{

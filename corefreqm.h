@@ -69,4 +69,3 @@ void CallWith_RDTSC_No_RDPMC(	SHM_STRUCT*,
 
 #define CONIC_ERROR	1e-07
 
-#define UNUSED(expr) do { (void)(expr); } while (0)

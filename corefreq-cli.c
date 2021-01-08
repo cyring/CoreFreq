@@ -705,6 +705,8 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 	struct FLIP_FLOP *CFlop = &Shm->Cpu[Shm->Proc.Service.Core] \
 			.FlipFlop[!Shm->Cpu[Shm->Proc.Service.Core].Toggle];
 	char item[8+1];
+	UNUSED(data);
+
 	snprintf(item, 8+1, "%7.3f", CLOCK_MHz(double, CFlop->Clock.Hz));
 
 	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
@@ -713,6 +715,7 @@ void RefreshBaseClock(TGrid *grid, DATA_TYPE data)
 void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
 {
 	char item[8+1];
+	UNUSED(data);
 
 	snprintf(item, 8+1, "%7.3f",
 		CLOCK_MHz(double, Shm->Proc.Features.Factory.Clock.Hz));
@@ -723,6 +726,7 @@ void RefreshFactoryClock(TGrid *grid, DATA_TYPE data)
 void RefreshFactoryFreq(TGrid *grid, DATA_TYPE data)
 {
 	char item[11+11+1];
+	UNUSED(data);
 
 	snprintf(item, 11+11+1, "%5u" "%4d",
 		Shm->Proc.Features.Factory.Freq,
@@ -2317,6 +2321,7 @@ void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.EIST == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2325,6 +2330,7 @@ void IDA_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2333,6 +2339,7 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.Turbo == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2341,6 +2348,7 @@ void Race2HaltUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Features.R2H_Disable == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2485,6 +2493,7 @@ void C1E_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.C1E == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2493,6 +2502,7 @@ void C1A_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.C1A == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2501,6 +2511,7 @@ void C3A_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.C3A == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2509,6 +2520,7 @@ void C1U_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.C1U == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2517,6 +2529,7 @@ void C3U_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.C3U == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2525,6 +2538,7 @@ void CC6_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.CC6 == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2533,6 +2547,7 @@ void PC6_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.PC6 == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2541,6 +2556,7 @@ void HWP_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Features.HWP_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2562,6 +2578,7 @@ void HDC_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Features.HDC_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	PerfMonUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -2570,6 +2587,7 @@ void IOMWAIT_Update(TGrid *grid, DATA_TYPE data)
 {
     const unsigned int bix=Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1;
 	const signed int pos = grid->cell.length - 9;
+	UNUSED(data);
 
 	PerfMonUpdate( grid, bix ? 3 : 2, pos, 7,
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
@@ -2594,6 +2612,7 @@ char *CST_Encoding[] = {
 void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
 {
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	memcpy(&grid->cell.item[pos],
 	      CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit],
@@ -2603,6 +2622,7 @@ void CStateLimit_Update(TGrid *grid, DATA_TYPE data)
 void CStateRange_Update(TGrid *grid, DATA_TYPE data)
 {
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	memcpy(&grid->cell.item[pos],
 	    CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude],
@@ -2976,6 +2996,7 @@ void ODCM_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.ODCM == 1;
 	const signed int pos = grid->cell.length - 9;
+	UNUSED(data);
 
 	PwrThermalUpdate( grid, bix ? 3 : 1, pos, 7,
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
@@ -2987,6 +3008,7 @@ void DutyCycle_Update(TGrid *grid, DATA_TYPE data)
 	const unsigned int bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
 				&& (Shm->Proc.Technology.ODCM == 1);
 	char item[10+1];
+	UNUSED(data);
 
 	snprintf(item, 10+1, "%c%6.2f%%%c",
 		bix ? '<' : '[',
@@ -3017,6 +3039,7 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	];
 	const signed int pos = grid->cell.length - 9;
 	char item[10+1+10+1];
+	UNUSED(data);
 
 	snprintf(item, 10+1+10+1, "%3u:%3u",
 		SFlop->Thermal.Param.Offset[1],
@@ -4390,10 +4413,11 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
-
+#if MC_MATX > 15
     for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
+#endif
 	PRT(IMC, attrib[1], "%3uT\x20",
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
 
@@ -4420,10 +4444,11 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
-
+#if MC_MATX > 15
     for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
+#endif
     PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
 
     PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
@@ -4462,10 +4487,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl);
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl);
-
+#if MC_MATX > 15
     for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
+#endif
   }
   for (nc = 0; nc < MC_MATX; nc++) {
 	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]), Footer_DDR4[1][nc]);
@@ -4492,10 +4518,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScDLR);
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrRdScDLR);
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDDLR);
-
+#if MC_MATX > 15
     for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
+#endif
   }
   for (nc = 0; nc < MC_MATX; nc++) {
 	GridHover(PRT(IMC, attrib[0], Header_DDR4[2][nc]), Footer_DDR4[2][nc]);
@@ -4513,11 +4540,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR);
-
+#if MC_MATX > 15
     for (nc = 0; nc < (MC_MATX - 15); nc++) {
 	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
     }
-
+#endif
     PRT(IMC,attrib[1], "\x20R%1uW%1u",
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdBan,
 			Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrBan);
@@ -5055,12 +5082,14 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 
 void IntervalUpdate(TGrid *grid, DATA_TYPE data)
 {
+	UNUSED(data);
 	snprintf(Buffer, 10+1, "%4u", Shm->Sleep.Interval);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
 
 void SysTickUpdate(TGrid *grid, DATA_TYPE data)
 {
+	UNUSED(data);
 	snprintf(Buffer, 10+1,"%4u",Shm->Sleep.Interval*Shm->SysGate.tickReset);
 	memcpy(&grid->cell.item[grid->cell.length - 6], Buffer, 4);
 }
@@ -5095,6 +5124,7 @@ void AutoClockUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = (Shm->Registration.AutoClock & 0b10) != 0;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5103,6 +5133,7 @@ void ExperimentalUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Registration.Experimental != 0;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5111,6 +5142,7 @@ void HotPlug_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = !(Shm->Registration.HotPlug < 0);
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5119,6 +5151,7 @@ void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Registration.PCI == 1;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5129,6 +5162,7 @@ void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 						Shm->Registration.NMI,
 						BIT_NMI_MASK ) != 0;
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5139,6 +5173,7 @@ void CPU_Idle_Update(TGrid *grid, DATA_TYPE data)
 				& REGISTRATION_ENABLE;
 
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5149,6 +5184,7 @@ void CPU_Freq_Update(TGrid *grid, DATA_TYPE data)
 				& REGISTRATION_ENABLE;
 
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5159,6 +5195,7 @@ void Governor_Update(TGrid *grid, DATA_TYPE data)
 				& REGISTRATION_ENABLE;
 
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -5169,6 +5206,7 @@ void ClockSource_Update(TGrid *grid, DATA_TYPE data)
 				& REGISTRATION_ENABLE;
 
 	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
 
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
@@ -6011,7 +6049,7 @@ void UpdateTracker(TGrid *grid, DATA_TYPE data)
 Window *CreateTracking(unsigned long long id)
 {
 	Window *wTrack = NULL;
-	const size_t tc = Shm->SysGate.taskCount;
+	const ssize_t tc = Shm->SysGate.taskCount;
 
   if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1) && (tc > 0))
   {
@@ -6498,8 +6536,9 @@ void UpdateRoomSchedule(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSelectCPU(unsigned long long id)
 {
-	const CUINT height = CUMIN(Shm->Proc.CPU.Count,
-	(ADD_UPPER & ADD_LOWER)+(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER)));
+	const CUINT _height = (ADD_UPPER & ADD_LOWER)
+			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
+	const CUINT height = CUMIN(Shm->Proc.CPU.Count, _height);
 
 	Window *wUSR = CreateWindow(	wLayer, id,
 					1, height,
@@ -6620,6 +6659,7 @@ void CPU_Item_Auto_Freq(unsigned int cpu, unsigned int ratio,
 void Pkg_Item_Turbo_##_NC(ASCII *item)					\
 {									\
 	unsigned int top = Ruler.Top[BOOST(_NC)];			\
+									\
 	Pkg_Fmt_Turbo(	item,						\
 			&Shm->Cpu[top].FlipFlop[			\
 					!Shm->Cpu[top].Toggle		\
@@ -6652,6 +6692,8 @@ void Pkg_Update_Turbo_##_NC(TGrid *grid, DATA_TYPE data)		\
 {									\
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];		\
 	unsigned int top = Ruler.Top[BOOST(_NC)];			\
+	UNUSED(data);							\
+									\
 	Pkg_Fmt_Turbo(	item,						\
 			&Shm->Cpu[top].FlipFlop[			\
 					!Shm->Cpu[top].Toggle		\
@@ -6787,6 +6829,7 @@ DECLARE_CPU_Update_Turbo(18C)
 void Pkg_Item_Target_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(TGT)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(TGT)],
@@ -6797,6 +6840,8 @@ void Pkg_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(TGT)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(TGT)],
@@ -6872,6 +6917,7 @@ void CPU_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 void Pkg_Item_HWP_Target_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_TGT)],
@@ -6882,10 +6928,13 @@ void Pkg_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_TGT)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_TGT).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_TGT)],
 			Shm->Proc.Features.HWP_Enable );
+
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
@@ -6959,6 +7008,7 @@ void CPU_HWP_Target_Freq_Update(TGrid *grid, DATA_TYPE data)
 void Pkg_Item_HWP_Max_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_MAX)],
@@ -6969,10 +7019,13 @@ void Pkg_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MAX)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_MAX)],
 			Shm->Proc.Features.HWP_Enable );
+
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
@@ -7046,6 +7099,7 @@ void CPU_HWP_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 void Pkg_Item_HWP_Min_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_MIN)],
@@ -7056,10 +7110,13 @@ void Pkg_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(HWP_MIN)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_HWP_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(HWP_MIN)],
 			Shm->Proc.Features.HWP_Enable );
+
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
@@ -7133,6 +7190,7 @@ void CPU_HWP_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 void Pkg_Item_Max_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(MAX)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(MAX)],
@@ -7143,10 +7201,13 @@ void Pkg_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MAX)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MAX).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(MAX)],
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b10) == 0b10 );
+
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
@@ -7219,6 +7280,7 @@ void CPU_Max_Freq_Update(TGrid *grid, DATA_TYPE data)
 void Pkg_Item_Min_Freq(ASCII *item)
 {
 	unsigned int top = Ruler.Top[BOOST(MIN)];
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(MIN)],
@@ -7229,10 +7291,13 @@ void Pkg_Min_Freq_Update(TGrid *grid, DATA_TYPE data)
 {
 	ASCII item[RSZ(CREATE_SELECT_FREQ_OFFLINE)+9+10+1];
 	unsigned int top = Ruler.Top[BOOST(MIN)];
+	UNUSED(data);
+
 	Pkg_Fmt_Freq(	item, RSC(CREATE_SELECT_FREQ_MIN).CODE(),
 			&Shm->Cpu[top].FlipFlop[ !Shm->Cpu[top].Toggle ].Clock,
 			Shm->Cpu[top].Boost[BOOST(MIN)],
 			(Shm->Proc.Features.ClkRatio_Unlock & 0b01) == 0b01 );
+
 	memcpy(grid->cell.item, item, grid->cell.length);
 }
 
@@ -7308,13 +7373,12 @@ Window *CreateSelectFreq(unsigned long long id,
 			UPDATE_CALLBACK Pkg_Freq_Update,
 			UPDATE_CALLBACK CPU_Freq_Update)
 {
-	const CUINT height = CUMIN( (Shm->Proc.CPU.Count + 1),
-				(
-				(draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER))
+	const CUINT _height = (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER))
 			#ifndef NO_FOOTER
 				+ (ADD_UPPER | ADD_LOWER)
 			#endif
-				) );
+		, height = CUMIN( (Shm->Proc.CPU.Count + 1), _height );
+
 	Window *wFreq = CreateWindow(	wLayer, id,
 					1, height,
 					30, (TOP_HEADER_ROW | 1) );
@@ -11174,6 +11238,8 @@ CUINT Layout_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code );
+	UNUSED(cpu);
+
 	return (0);
 }
 
@@ -11184,6 +11250,8 @@ CUINT Layout_Monitor_Instructions(Layer *layer,const unsigned int cpu,CUINT row)
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code );
+	UNUSED(cpu);
+
 	return (0);
 }
 
@@ -11194,11 +11262,17 @@ CUINT Layout_Monitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code );
+	UNUSED(cpu);
+
 	return (0);
 }
 
 CUINT Layout_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	UNUSED(layer);
+	UNUSED(cpu);
+	UNUSED(row);
+
 	return (0);
 }
 
@@ -11223,6 +11297,8 @@ CUINT Layout_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hMon0.origin.col, hMon0.origin.row,
 			hMon0.length, hMon0.attr, hMon0.code );
+	UNUSED(cpu);
+
 	return (0);
 }
 
@@ -11233,6 +11309,7 @@ CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerCopyAt(	layer, hFreq0.origin.col, hFreq0.origin.row,
 			hFreq0.length, hFreq0.attr, hFreq0.code );
+	UNUSED(cpu);
 
 	if (!draw.Flag.avgOrPC) {
 		LayerDeclare(	LAYOUT_RULER_FREQUENCY_AVG, draw.Size.width,
@@ -11260,6 +11337,7 @@ CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
 			MakeAttr(WHITE, 0, BLACK, 0) );
+	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -11273,6 +11351,7 @@ CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -11286,6 +11365,7 @@ CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -11301,6 +11381,7 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -11325,6 +11406,8 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			RSC(LAYOUT_RULER_PACKAGE).ATTR()[0]);
 
 	unsigned int idx;
+	UNUSED(cpu);
+
 	for (idx = 0; idx < 9; idx++)
 	{
 		LayerCopyAt(	layer, 0, (row + idx + 1),
@@ -11447,6 +11530,7 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		.code = RSC(LAYOUT_TASKS_VALUE_ON).CODE()
 		}
 	};
+	UNUSED(cpu);
 
 	memcpy(&hTask3.attr[8], hTaskVal[draw.Flag.taskVal].attr, 3);
 	memcpy(&hTask3.code[8], hTaskVal[draw.Flag.taskVal].code, 3);
@@ -11488,6 +11572,8 @@ CUINT Layout_Ruler_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 	CUINT oRow;
 
 	LayerDeclare(LAYOUT_RULER_SENSORS, draw.Size.width, 0, row, hSensors);
+
+	UNUSED(cpu);
 
 	LayerCopyAt(	layer, hSensors.origin.col, hSensors.origin.row,
 			hSensors.length, hSensors.attr, hSensors.code );
@@ -11548,6 +11634,8 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(	LAYOUT_RULER_VOLTAGE, draw.Size.width, 0, row, hVolt );
 
+	UNUSED(cpu);
+
 	LayerCopyAt(	layer, hVolt.origin.col, hVolt.origin.row,
 			hVolt.length, hVolt.attr, hVolt.code );
 
@@ -11566,6 +11654,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 	CUINT oRow;
 
 	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
+
+	UNUSED(cpu);
 
 	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
@@ -11626,6 +11716,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	LayerDeclare(LAYOUT_RULER_SLICE, draw.Size.width, 0, row, hSlice0);
+
+	UNUSED(cpu);
 
 	LayerCopyAt(	layer, hSlice0.origin.col, hSlice0.origin.row,
 			hSlice0.length, hSlice0.attr, hSlice0.code );
@@ -11887,6 +11979,7 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 	const ATTRIBUTE attr = MakeAttr( (ratio > Ruler.Median ? RED
 					: ratio > Ruler.Minimum ? YELLOW:GREEN),
 					0, BLACK, 1 );
+	UNUSED(cpu);
 
 	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
 	/*TODO( Clear garbage with transparency padding )		*/
@@ -11918,6 +12011,9 @@ size_t Draw_Relative_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 17+8+6+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -11938,6 +12034,9 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 17+8+10+7+7+7+7+7+7+11+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -11973,6 +12072,8 @@ size_t Draw_Relative_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -11995,6 +12096,8 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -12032,6 +12135,8 @@ size_t Draw_Relative_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 19+8+6+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5.2f" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -12054,6 +12159,8 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(cpu);
+
 	return (snprintf(Buffer, 19+8+10+7+7+7+7+7+7+10+10+10+1,
 		"%7.2f" " (" "%5u" ") "			\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
@@ -12091,6 +12198,8 @@ size_t Draw_Freq_Celsius_PerCore(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
 		return (Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
@@ -12103,6 +12212,8 @@ size_t Draw_Freq_Fahrenheit_PerCore(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+
 	if ((Shm->Cpu[cpu].Topology.ThreadID == 0)
 	 || (Shm->Cpu[cpu].Topology.ThreadID == -1)) {
 		return (Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
@@ -12115,6 +12226,8 @@ size_t Draw_Freq_Celsius_PerPkg(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+
 	if (cpu == Shm->Proc.Service.Core) {
 		return (Draw_Freq_Celsius(CFlop, &Shm->Cpu[cpu], cpu));
 	} else {
@@ -12126,6 +12239,8 @@ size_t Draw_Freq_Fahrenheit_PerPkg(	struct FLIP_FLOP *CFlop,
 					CPU_STRUCT *Cpu,
 					const unsigned int cpu )
 {
+	UNUSED(Cpu);
+
 	if (cpu == Shm->Proc.Service.Core) {
 		return (Draw_Freq_Fahrenheit(CFlop, &Shm->Cpu[cpu], cpu));
 	} else {
@@ -12242,6 +12357,10 @@ CUINT Draw_Monitor_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_Monitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	UNUSED(layer);
+	UNUSED(cpu);
+	UNUSED(row);
+
 	return (0);
 }
 
@@ -12311,6 +12430,9 @@ CUINT Draw_Monitor_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
@@ -12320,6 +12442,9 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
@@ -12353,6 +12478,9 @@ size_t Draw_Sensors_V0_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
@@ -12366,6 +12494,9 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"		\
 			"%3u\x20\x20\x20\x20\x20\x20"			\
@@ -12478,6 +12609,9 @@ size_t Draw_Sensors_V0_T3_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
@@ -12489,6 +12623,9 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
@@ -12524,6 +12661,9 @@ size_t Draw_Sensors_V1_T0_P3(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
@@ -12538,6 +12678,9 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
@@ -13082,6 +13225,9 @@ CUINT Draw_Monitor_Sensors(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20%7d"					\
 			"\x20\x20\x20\x20\x20%5.4f"			\
@@ -13141,6 +13287,9 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20%018llu\x20\x20"			\
 			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20\x20"	\
@@ -13281,6 +13430,7 @@ CUINT Draw_Monitor_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	size_t len;
+	UNUSED(cpu);
 
 	row += 1 + draw.Area.MaxRows;
 	if (!draw.Flag.avgOrPC) {
@@ -13315,6 +13465,9 @@ CUINT Draw_AltMonitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_AltMonitor_Common(Layer *layer, const unsigned int cpu, CUINT row)
 {
+	UNUSED(layer);
+	UNUSED(cpu);
+
 	row += 2 + draw.Area.MaxRows;
 	return (row);
 }
@@ -13324,6 +13477,7 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
 	CUINT bar0, bar1, margin = draw.Area.LoadWidth - 28;
 	size_t len;
+	UNUSED(cpu);
 
 	row += 1;
 /* PC02 */
@@ -13419,7 +13573,10 @@ CUINT Draw_AltMonitor_Package(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 {
-  if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
+	UNUSED(cpu);
+
+  if (Shm->SysGate.tickStep == Shm->SysGate.tickReset)
+  {
 	ssize_t len = 0;
 	signed int idx;
 	char stateStr[TASK_COMM_LEN];
@@ -13548,6 +13705,8 @@ void (*Draw_AltMonitor_Power_Matrix[])(void) = {
 CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	const CUINT col = LOAD_LEAD;
+	UNUSED(cpu);
+
 	row += 1 + draw.Area.MaxRows;
 
 	Draw_AltMonitor_Power_Matrix[Setting.jouleWatt]();
@@ -13564,6 +13723,8 @@ CUINT Draw_AltMonitor_Power(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Draw_AltMonitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	const CUINT col = LOAD_LEAD + 8;
+	UNUSED(cpu);
+
 	row += 1 + draw.Area.MaxRows;
 
 	struct PKG_FLIP_FLOP *PFlop = &Shm->Proc.FlipFlop[!Shm->Proc.Toggle];
@@ -14288,14 +14449,16 @@ void Draw_Card_Core(Layer *layer, Card *card)
     case FORMULA_SCOPE_NONE:
 	break;
     case FORMULA_SCOPE_PKG:
-	if (_cpu == Shm->Proc.Service.Core) {
-		/* Fallthrough */
-	} else { break; }
+	if ( !(_cpu == Shm->Proc.Service.Core) ) {
+		break;
+	}
+	/* Fallthrough */
     case FORMULA_SCOPE_CORE:
-	if ((Shm->Cpu[_cpu].Topology.ThreadID == 0)
-	 || (Shm->Cpu[_cpu].Topology.ThreadID == -1)) {
-		/* Fallthrough */
-	} else { break; }
+	if (	!( (Shm->Cpu[_cpu].Topology.ThreadID == 0)
+		|| (Shm->Cpu[_cpu].Topology.ThreadID == -1)) ) {
+		break;
+	}
+	/* Fallthrough */
     case FORMULA_SCOPE_SMT:
 	{
 	unsigned int digit[3];
@@ -14463,6 +14626,8 @@ void Draw_Card_Task(Layer *layer, Card *card)
 
 void Dont_Draw_Card(Layer *layer, Card *card)
 {
+	UNUSED(layer);
+	UNUSED(card);
 }
 
 void Draw_Dashboard(Layer *layer)
@@ -14557,10 +14722,12 @@ void AllocDashboard(void)
 
 void Layout_NoHeader_SingleView_NoFooter(Layer *layer)
 {
+	UNUSED(layer);
 }
 
 void Dynamic_NoHeader_SingleView_NoFooter(Layer *layer)
 {
+	UNUSED(layer);
 }
 
 REASON_CODE Top(char option)

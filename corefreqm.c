@@ -112,6 +112,10 @@ void CallWith_RDTSC_No_RDPMC(SHM_STRUCT *Shm, unsigned int cpu,
 
 void Slice_NOP(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
+	UNUSED(Shm);
+	UNUSED(cpu);
+	UNUSED(arg);
+
 	__asm__ volatile
 	(
 		"nop"
@@ -189,6 +193,7 @@ void Slice_CRC32(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
 	unsigned char *data = (unsigned char *) CRC32_SRC;
 	unsigned int len = 16;
+	UNUSED(arg);
 
 	if (CRC32vASM(data, len) != CRC32_EXP)
 		Shm->Cpu[cpu].Slice.Error++ ;
@@ -236,6 +241,8 @@ void Slice_Conic(SHM_STRUCT *Shm, unsigned int cpu, unsigned long v)
 
 void Slice_Turbo(SHM_STRUCT *Shm, unsigned int cpu, unsigned long arg)
 {
+	UNUSED(arg);
+
 	Slice_Atomic(Shm, cpu, TURBO_LOOP);
 }
 
