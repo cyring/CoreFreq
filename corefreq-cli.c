@@ -3228,11 +3228,29 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     if (Shm->Proc.Power.PPT > 0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPPT   [%7u]", RSC(POWER_THERMAL_PPT).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,Shm->Proc.Power.PPT);
+		width - 18 - RSZ(POWER_THERMAL_PPT),hSpace,Shm->Proc.Power.PPT);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPPT   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace, POWERED(0));
+    }
+    if (Shm->Proc.Power.EDC > 0) {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sEDC   [%7u]", RSC(POWER_THERMAL_EDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_EDC),hSpace,Shm->Proc.Power.EDC);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sEDC   [%7s]", RSC(POWER_THERMAL_EDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_EDC), hSpace, POWERED(0));
+    }
+    if (Shm->Proc.Power.TDC > 0) {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sTDC   [%7u]", RSC(POWER_THERMAL_TDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDC),hSpace,Shm->Proc.Power.TDC);
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sTDC   [%7s]", RSC(POWER_THERMAL_TDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace, POWERED(0));
     }
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -5667,7 +5685,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		matrixSize.hth = 19;
+		matrixSize.hth = 21;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;

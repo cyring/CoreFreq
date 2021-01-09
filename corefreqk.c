@@ -5531,7 +5531,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen3_VMR:
 	    {
 		AMD_17_MTS_CPK_TJMAX TjMax = {.value = 0};
-		/*			Thermal Limit			*/
+		/*		Junction Temperature			*/
 		Core_AMD_SMN_Read(	TjMax,
 					SMU_AMD_F17H_MTS_CPK_TJMAX,
 					SMU_AMD_INDEX_REGISTER_F17H,
@@ -5540,14 +5540,24 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->PowerThermal.Param.Offset[0] = TjMax.Target;
 
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
-		/*			Power Limits			*/
+		/*		Package Power Tracking			*/
 		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PPT,
 					SMU_AMD_F17H_MTS_CPK_PPT,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
-
+		/*		Thermal Design Power			*/
 		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
 					SMU_AMD_F17H_MTS_CPK_TDP,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+		/*		Electric Design Current			*/
+		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.EDC,
+					SMU_AMD_F17H_MTS_CPK_EDC,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+		/*		Thermal Design Current			*/
+		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDC,
+					SMU_AMD_F17H_MTS_CPK_TDC,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    }

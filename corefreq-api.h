@@ -789,6 +789,8 @@ typedef struct
 	    struct {
 		AMD_17_MTS_CPK_TDP TDP;
 		AMD_17_MTS_CPK_PPT PPT;
+		AMD_17_MTS_CPK_EDC EDC;
+		AMD_17_MTS_CPK_TDC TDC;
 	    } Zen;
 	  };
 	} PowerThermal;

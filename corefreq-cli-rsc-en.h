@@ -427,6 +427,8 @@
 #define RSC_POWER_THERMAL_MIN_CODE_EN	"Minimum Power"
 #define RSC_POWER_THERMAL_MAX_CODE_EN	"Maximum Power"
 #define RSC_POWER_THERMAL_PPT_CODE_EN	"Package Power Tracking"
+#define RSC_POWER_THERMAL_EDC_CODE_EN	"Electric Design Current"
+#define RSC_POWER_THERMAL_TDC_CODE_EN	"Thermal Design Current"
 
 #define RSC_KERNEL_TITLE_CODE_EN	" Kernel "
 #define RSC_KERNEL_TOTAL_RAM_CODE_EN	"Total RAM"

@@ -1375,6 +1375,8 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	}
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.Zen.TDP.TDP;
 	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PPT.PPT;
+	Shm->Proc.Power.EDC = Proc_RO->PowerThermal.Zen.EDC.EDC << 2;
+	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.Zen.TDC.TDC;
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
