@@ -120,6 +120,7 @@
 
 #define SMU_AMD_F17H_MTS_CPK_TJMAX		0x0005d2b5
 #define SMU_AMD_F17H_MTS_CPK_PPT		0x0005d2b6
+#define SMU_AMD_F17H_MTS_CPK_TDP		0x0005d2b8
 
 #define SMU_AMD_F17H_MATISSE_COF		0x0005d2c6
 #define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d326
@@ -1190,6 +1191,17 @@ typedef union
 		ReservedBits2	: 32-26;
 	};
 } AMD_17_MTS_CPK_PPT;
+
+typedef union
+{	/* SMU: address = 0x5d2b8					*/
+	unsigned int		value;
+	struct {
+		unsigned int
+		ReservedBits1	:  3-0,
+		TDP		: 12-3,
+		ReservedBits2	: 32-12;
+	};
+} AMD_17_MTS_CPK_TDP;
 
 typedef union
 {

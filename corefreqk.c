@@ -5540,9 +5540,14 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->PowerThermal.Param.Offset[0] = TjMax.Target;
 
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
-		/*			Power Limit			*/
+		/*			Power Limits			*/
 		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PPT,
 					SMU_AMD_F17H_MTS_CPK_PPT,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+
+		Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
+					SMU_AMD_F17H_MTS_CPK_TDP,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    }
