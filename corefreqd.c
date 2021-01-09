@@ -1373,6 +1373,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
 	}
+	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PPT.PPT;
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {

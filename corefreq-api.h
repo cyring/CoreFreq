@@ -782,7 +782,12 @@ typedef struct
 	enum THERM_PWR_EVENTS	Events;
 		RAPL_POWER_UNIT Unit;
 		PKG_POWER_INFO	PowerInfo;
+	  union {
 		PKG_POWER_LIMIT PowerLimit;
+	    struct {
+		AMD_17_MTS_CPK_PPT PPT;
+	    } Zen;
+	  };
 	} PowerThermal;
 
 	struct {
