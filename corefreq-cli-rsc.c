@@ -231,6 +231,9 @@ ATTRIBUTE Rsc_Layout_Ruler_Energy_Attr[] = RSC_LAYOUT_RULER_ENERGY_ATTR;
 ASCII	Rsc_Layout_Ruler_Energy_Code_En[] = RSC_LAYOUT_RULER_ENERGY_CODE_EN,
 	Rsc_Layout_Ruler_Energy_Code_Fr[] = RSC_LAYOUT_RULER_ENERGY_CODE_FR;
 
+ASCII	Rsc_Layout_Ruler_Power_Code_En[] = RSC_LAYOUT_RULER_POWER_CODE_EN,
+	Rsc_Layout_Ruler_Power_Code_Fr[] = RSC_LAYOUT_RULER_POWER_CODE_FR;
+
 ATTRIBUTE Rsc_Layout_Ruler_Slice_Attr[] = RSC_LAYOUT_RULER_SLICE_ATTR;
 ASCII	Rsc_Layout_Ruler_Slice_Code_En[] = RSC_LAYOUT_RULER_SLICE_CODE_EN,
 	Rsc_Layout_Ruler_Slice_Code_Fr[] = RSC_LAYOUT_RULER_SLICE_CODE_FR;
@@ -622,6 +625,9 @@ RESOURCE_ST Resource[] = {
 	[RSC_LAYOUT_RULER_ENERGY] = LDA(Rsc_Layout_Ruler_Energy_Attr,
 					Rsc_Layout_Ruler_Energy_Code_En,
 					Rsc_Layout_Ruler_Energy_Code_Fr),
+	[RSC_LAYOUT_RULER_POWER] = LDA( Rsc_Layout_Ruler_Energy_Attr,
+					Rsc_Layout_Ruler_Power_Code_En,
+					Rsc_Layout_Ruler_Power_Code_Fr),
 	[RSC_LAYOUT_RULER_SLICE] = LDA( Rsc_Layout_Ruler_Slice_Attr,
 					Rsc_Layout_Ruler_Slice_Code_En,
 					Rsc_Layout_Ruler_Slice_Code_Fr),

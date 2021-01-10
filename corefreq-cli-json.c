@@ -1471,6 +1471,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", Shm->Proc.Power.Min);
 			json_key(&s, "Max");
 			json_literal(&s, "%u", Shm->Proc.Power.Max);
+			json_key(&s, "PPT");
+			json_literal(&s, "%u", Shm->Proc.Power.PPT);
 			json_key(&s, "Unit");
 			{
 				json_start_object(&s);
@@ -1485,7 +1487,15 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 			json_end_object(&s);
 		}
-
+		json_key(&s, "Current");
+		{
+			json_start_object(&s);
+			json_key(&s, "EDC");
+			json_literal(&s, "%u", Shm->Proc.Power.EDC);
+			json_key(&s, "TDC");
+			json_literal(&s, "%u", Shm->Proc.Power.TDC);
+			json_end_object(&s);
+		}
 		json_key(&s, "Brand");
 		json_string(&s, Shm->Proc.Brand);
 

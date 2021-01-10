@@ -158,7 +158,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_FR				\
 {									\
 	'S','u','i','v','i',' ','[', 'n',']',' ','P','I','D',' ','[',' ',\
-	' ','O','F','F',' ',' ',']',' ' 					\
+	' ','O','F','F',' ',' ',']',' ' 				\
 }
 
 #define RSC_LAYOUT_RULER_SENSORS_CODE_FR				\
@@ -187,13 +187,20 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 	"--------------------"
 
 #define RSC_LAYOUT_RULER_ENERGY_CODE_FR 				\
-	"--- Fr""\xa9""q(MHz) -- Accumulateur -- "			\
-	"Min   ""\x89""nergie(J)  Max -- Mi"				\
-	"n Puissance(W) Max -----------------------------------------"	\
+	"--- Fr""\xa9""q(MHz) -- Accumulateur -------- Min ------"	\
+	" ""\x89""nergie(J) -- Max ----------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
-	"--------------------"
+	"--------------------------------------"
+
+#define RSC_LAYOUT_RULER_POWER_CODE_FR					\
+	"--- Fr""\xa9""q(MHz) -- Accumulateur -------- Min ----"	\
+	" Puissance(W) -- Max ---------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"---------------------------------"
 
 #define RSC_LAYOUT_RULER_SLICE_CODE_FR					\
 	"--- Fr""\xa9""q(MHz) ------ Cycles -- Instructions ------------ TSC" \
@@ -291,7 +298,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
 #define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
-#define RSC_FEATURES_DS_PEBS_CODE_FR "Debug Store & Precise Event Based Sampling"
+#define RSC_FEATURES_DS_PEBS_CODE_FR	\
+				"Debug Store & Precise Event Based Sampling"
 #define RSC_FEATURES_DS_CPL_CODE_FR	"CPL Qualified Debug Store"
 #define RSC_FEATURES_DTES_64_CODE_FR	"64-Bit Debug Store"
 #define RSC_FEATURES_FAST_STR_CODE_FR	"Fast-String Operation"
@@ -392,7 +400,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_PERF_MON_NB_DF_CODE_FR	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_FR	"Core Performance Counter"
 
-#define RSC_POWER_THERMAL_TITLE_CODE_FR " Puissance et thermique "
+#define RSC_POWER_THERMAL_TITLE_CODE_FR " Puissance, courant et thermique "
 #define RSC_POWER_THERMAL_ODCM_CODE_FR	"Modulation d'horloge"
 #define RSC_POWER_THERMAL_DUTY_CODE_FR	"Cycle de service"
 #define RSC_POWER_THERMAL_MGMT_CODE_FR	"Gestion de la puissance"

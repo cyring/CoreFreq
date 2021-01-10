@@ -12506,7 +12506,7 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 		const unsigned long long factor )
 {
 	AMD_17_SVI SVI = {.value = 0};
-	unsigned long long VCC, ICC, PWR;
+	unsigned long long VCC, ICC, ACCU;
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane0),
@@ -12525,10 +12525,11 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 	/*	PLATFORM RAPL workaround to provide the SoC power	*/
 	VCC = 155000LLU - (625LLU * SVI.VID);
 	ICC = SVI.IDD * factor;
-	PWR = VCC * ICC;
-	PWR = PWR << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-	PWR = PWR / (100000LLU * 1000000LLU);
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = PWR;
+	ACCU = VCC * ICC;
+	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+	ACCU = ACCU / (100000LLU * 1000000LLU);
+	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = ACCU;
 }
 
 void Call_DFLT( const unsigned int plane0, const unsigned int plane1,

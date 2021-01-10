@@ -149,7 +149,7 @@
 #define RSC_LAYOUT_TASKS_TRACKING_CODE_EN				\
 {									\
 	' ','T','r','a','c','k','i', 'n','g',' ','P','I','D',' ','[',' ',\
-	' ','O','F','F',' ',' ',']',' ' 					\
+	' ','O','F','F',' ',' ',']',' ' 				\
 }
 
 #define RSC_LAYOUT_RULER_SENSORS_CODE_EN				\
@@ -201,8 +201,16 @@
 	"--------------------"
 
 #define RSC_LAYOUT_RULER_ENERGY_CODE_EN 				\
-	"--- Freq(MHz) -- Accumulator --- Min - Energy(J) - Max -- Mi"	\
-	"n - Power(W) - Max -----------------------------------------"	\
+	"--- Freq(MHz) -- Accumulator --------- Min ------ Energy(J) "	\
+	"-- Max -----------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"------------------------------------------------------------"	\
+	"--------------------"
+
+#define RSC_LAYOUT_RULER_POWER_CODE_EN					\
+	"--- Freq(MHz) -- Accumulator --------- Min ------ Power(W) -"	\
+	"-- Max -----------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
 	"------------------------------------------------------------"	\
@@ -304,7 +312,8 @@
 #define RSC_FEATURES_CNXT_ID_CODE_EN	"L1 Data Cache Context ID"
 #define RSC_FEATURES_DCA_CODE_EN	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_EN 	"Debugging Extension"
-#define RSC_FEATURES_DS_PEBS_CODE_EN "Debug Store & Precise Event Based Sampling"
+#define RSC_FEATURES_DS_PEBS_CODE_EN	\
+				"Debug Store & Precise Event Based Sampling"
 #define RSC_FEATURES_DS_CPL_CODE_EN	"CPL Qualified Debug Store"
 #define RSC_FEATURES_DTES_64_CODE_EN	"64-Bit Debug Store"
 #define RSC_FEATURES_FAST_STR_CODE_EN	"Fast-String Operation"
@@ -405,7 +414,7 @@
 #define RSC_PERF_MON_NB_DF_CODE_EN	"Data Fabric Performance Counter"
 #define RSC_PERF_MON_CORE_CODE_EN	"Core Performance Counter"
 
-#define RSC_POWER_THERMAL_TITLE_CODE_EN " Power & Thermal "
+#define RSC_POWER_THERMAL_TITLE_CODE_EN " Power, Current & Thermal "
 #define RSC_POWER_THERMAL_ODCM_CODE_EN	"Clock Modulation"
 #define RSC_POWER_THERMAL_DUTY_CODE_EN	"DutyCycle"
 #define RSC_POWER_THERMAL_MGMT_CODE_EN	"Power Management"

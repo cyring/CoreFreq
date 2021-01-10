@@ -11671,14 +11671,22 @@ CUINT Layout_Ruler_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	CUINT oRow;
-
-	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
-
 	UNUSED(cpu);
+
+    if (Setting.jouleWatt)
+    {
+	LayerDeclare(LAYOUT_RULER_POWER, draw.Size.width, 0, row,  hPwr0);
 
 	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
+    }
+   else
+    {
+	LayerDeclare(LAYOUT_RULER_ENERGY, draw.Size.width, 0, row,  hPwr0);
 
+	LayerCopyAt(	layer,  hPwr0.origin.col,  hPwr0.origin.row,
+			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
+    }
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
 
@@ -13303,24 +13311,46 @@ CUINT Draw_Monitor_Voltage(Layer *layer, const unsigned int cpu, CUINT row)
 
 #define Draw_Energy_None	Draw_Sensors_V0_T0_P0
 
-size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
+size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	UNUSED(layer);
 	UNUSED(row);
 
 	return (snprintf(Buffer, 80+1,
-			"%7.2f\x20\x20%018llu\x20\x20"			\
-			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20\x20"	\
-			"%6.2f\x20\x20%6.2f\x20\x20%6.2f\x20",
+			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
+			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
 			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
 			CFlop->State.Energy,
-			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST],
+			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_HIGHEST]) );
+}
+
+size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
+	UNUSED(layer);
+	UNUSED(row);
+
+	return (snprintf(Buffer, 80+1,
+			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
+			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
+			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_HIGHEST]) );
+}
+
+size_t (*Draw_Energy_Power_Matrix[])(Layer*, const unsigned int, CUINT) = {
+	Draw_Energy_Joule,
+	Draw_Power_Watt
+};
+
+size_t Draw_Energy_SMT(Layer *layer, const unsigned int cpu, CUINT row)
+{
+	return (Draw_Energy_Power_Matrix[Setting.jouleWatt](layer, cpu, row));
 }
 
 size_t Draw_Energy_Core(Layer *layer, const unsigned int cpu, CUINT row)
