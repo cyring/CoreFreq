@@ -3041,22 +3041,23 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	char item[10+1+10+1];
 	UNUSED(data);
 
-	snprintf(item, 10+1+10+1, "%3u:%3u",
+	snprintf(item, 10+1+10+1, "%2u:%3u",
 		SFlop->Thermal.Param.Offset[1],
 		SFlop->Thermal.Param.Offset[0]);
 
-	memcpy(&grid->cell.item[pos], item, 7);
+	memcpy(&grid->cell.item[pos], item, 6);
 }
 
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
-	ATTRIBUTE *attrib[5] = {
+	ATTRIBUTE *attrib[6] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
 	};
 	const ASCII *TM[] = {
 		RSC(MISSING).CODE(),
@@ -3146,8 +3147,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
     }
 
-      GridCall(PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sTjMax   [%3u:%3u]", RSC(POWER_THERMAL_TJMAX).CODE(),
+      GridCall(PUT(SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*sTjMax   [%2u:%3uC]", RSC(POWER_THERMAL_TJMAX).CODE(),
 		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
 		SFlop->Thermal.Param.Offset[1],
 		SFlop->Thermal.Param.Offset[0]),
@@ -3195,8 +3196,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
 
     if (Shm->Proc.Power.TDP > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sTDP   [%7u]", RSC(POWER_THERMAL_TDP).CODE(),
+	PUT(SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*sTDP   [%5u W]", RSC(POWER_THERMAL_TDP).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TDP),hSpace,Shm->Proc.Power.TDP);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -3205,7 +3206,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
     if (Shm->Proc.Power.Min > 0) {
 	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*sMin   [%7u]", RSC(POWER_THERMAL_MIN).CODE(),
+		"%s%.*sMin   [%5u W]", RSC(POWER_THERMAL_MIN).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
 		 - RSZ(POWER_THERMAL_MIN), hSpace,Shm->Proc.Power.Min);
     } else {
@@ -3215,8 +3216,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		 - RSZ(POWER_THERMAL_MIN), hSpace, POWERED(0));
     }
     if (Shm->Proc.Power.Max > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*sMax   [%7u]", RSC(POWER_THERMAL_MAX).CODE(),
+	PUT(SCANKEY_NULL, attrib[5], width, 3,
+		"%s%.*sMax   [%5u W]", RSC(POWER_THERMAL_MAX).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
 		 - RSZ(POWER_THERMAL_MAX), hSpace,Shm->Proc.Power.Max);
     } else {
@@ -3226,8 +3227,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		 - RSZ(POWER_THERMAL_MAX), hSpace, POWERED(0));
     }
     if (Shm->Proc.Power.PPT > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sPPT   [%7u]", RSC(POWER_THERMAL_PPT).CODE(),
+	PUT(SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*sPPT   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_PPT),hSpace,Shm->Proc.Power.PPT);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -3235,8 +3236,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace, POWERED(0));
     }
     if (Shm->Proc.Power.EDC > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sEDC   [%7u]", RSC(POWER_THERMAL_EDC).CODE(),
+	PUT(SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*sEDC   [%5u A]", RSC(POWER_THERMAL_EDC).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_EDC),hSpace,Shm->Proc.Power.EDC);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
@@ -3244,8 +3245,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(POWER_THERMAL_EDC), hSpace, POWERED(0));
     }
     if (Shm->Proc.Power.TDC > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sTDC   [%7u]", RSC(POWER_THERMAL_TDC).CODE(),
+	PUT(SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*sTDC   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
 		width - 18 - RSZ(POWER_THERMAL_TDC),hSpace,Shm->Proc.Power.TDC);
     } else {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
