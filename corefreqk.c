@@ -5581,7 +5581,9 @@ void Query_AMD_Family_17h(unsigned int cpu)
 */
 		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
 
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
 		Query_AMD_F17h_Power_Current_Limits();
+	    }
 		break;
 	}
 
