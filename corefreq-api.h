@@ -787,10 +787,10 @@ typedef struct
 		PKG_POWER_LIMIT PowerLimit;
 	    };
 	    struct {
-		AMD_17_MTS_CPK_TDP TDP;
-		AMD_17_MTS_CPK_PPT PPT;
-		AMD_17_MTS_CPK_EDC EDC;
-		AMD_17_MTS_CPK_TDC TDC;
+		AMD_17_MTS_CPK_PWR	PWR;
+		AMD_17_MTS_CPK_TDP	TDP;
+		AMD_17_MTS_CPK_EDC	EDC;
+		unsigned int		_pad32;
 	    } Zen;
 	  };
 	} PowerThermal;

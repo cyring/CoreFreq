@@ -3205,7 +3205,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace, POWERED(0));
     }
     if (Shm->Proc.Power.Min > 0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(SCANKEY_NULL, attrib[5], width, 3,
 		"%s%.*sMin   [%5u W]", RSC(POWER_THERMAL_MIN).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
 		 - RSZ(POWER_THERMAL_MIN), hSpace,Shm->Proc.Power.Min);

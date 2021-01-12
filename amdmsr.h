@@ -118,14 +118,12 @@
 /* UNDOCUMENTED REGISTERS */
 #define SMU_AMD_THM_TCTL_CCD_REGISTER_F17H	0x00059954
 
-#define SMU_AMD_F17H_MTS_CPK_TJMAX		0x0005d2b5
-#define SMU_AMD_F17H_MTS_CPK_PPT		0x0005d2b6
+#define SMU_AMD_F17H_MTS_CPK_PWR		0x0005d2b4
 #define SMU_AMD_F17H_MTS_CPK_TDP		0x0005d2b8
 #define SMU_AMD_F17H_MTS_CPK_EDC		0x0005d2bc
-#define SMU_AMD_F17H_MTS_CPK_TDC		0x0005d2be
 
-#define SMU_AMD_F17H_MATISSE_COF		0x0005d2c6
-#define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d326
+#define SMU_AMD_F17H_MATISSE_COF		0x0005d2c4
+#define SMU_AMD_F17H_CASTLEPEAK_COF		0x0005d324 /*old(0x0005d326)*/
 
 #ifndef MSR_AMD_PC6_F17H_STATUS
 	#define MSR_AMD_PC6_F17H_STATUS 	0xc0010292
@@ -908,7 +906,7 @@ typedef union
 } AMD_17_UMC_DIMM_CFG;
 
 typedef union
-{	/* SMU: address = 0x50100					*/
+{	/* SMU: address = { 0x50100 , 0x50101 , 0x50102 , 0x50103 }	*/
 	unsigned int		value;
 	struct
 	{
@@ -922,7 +920,7 @@ typedef union
 } AMD_17_UMC_CONFIG;
 
 typedef union
-{	/* SMU: address = 0x50104					*/
+{	/* SMU: address = { 0x50104 , 0x50105 , 0x50106 , 0x50107 }	*/
 	unsigned int		value;
 	struct
 	{
@@ -947,7 +945,7 @@ typedef union
 } AMD_17_UMC_ECC_CTRL;
 
 typedef union
-{	/* SMU: address = 0x50df0					*/
+{	/* SMU: address = { 0x50df0 , 0x50df1 , 0x50df2 , 0x50df3 }	*/
 	unsigned int		value;
 	struct
 	{
@@ -974,7 +972,7 @@ typedef union
 } AMD_17_UMC_ECC_CAP_HI;
 
 typedef union
-{	/* SMU: address = 0x50200					*/
+{	/* SMU: address = { 0x50200, 0x50201 , 0x50202 , 0x50203 }	*/
 	unsigned int		value;
 	struct
 	{
@@ -990,7 +988,7 @@ typedef union
 } AMD_17_UMC_CFG_MISC;
 
 typedef union
-{	/* SMU: address = 0x50204					*/
+{	/* SMU: address = { 0x50204 , 0x50205 , 0x50206 , 0x50207 }	*/
 	unsigned int		value;
 	struct
 	{
@@ -1007,7 +1005,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR1;
 
 typedef union
-{	/* SMU: address = 0x50208					*/
+{	/* SMU: address = { 0x50208 ,0x50209 , 0x5020a , 0x5020b }	*/
 	unsigned int		value;
 	struct
 	{
@@ -1022,7 +1020,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR2;
 
 typedef union
-{	/* SMU: address = 0x5020c					*/
+{	/* SMU: address = { 0x5020c , 0x5020d , 0x5020e , 0x5020f }	*/
 	unsigned int		value;
 	struct
 	{
@@ -1039,7 +1037,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR3;
 
 typedef union
-{	/* SMU: address = 0x50210					*/
+{	/* SMU: address = { 0x50210 , 0x50211 , 0x50212 , 0x50213 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1053,7 +1051,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR4;
 
 typedef union
-{	/* SMU: address = 0x50214					*/
+{	/* SMU: address = { 0x50214 , 0x50215 , 0x50216 , 0x50217 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1067,7 +1065,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR5;
 
 typedef union
-{	/* SMU: address = 0x50218					*/
+{	/* SMU: address = { 0x50218 , 0x50219 , 0x5021a , 0x5021b }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1077,7 +1075,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR6;
 
 typedef union
-{	/* SMU: address = 0x5021c					*/
+{	/* SMU: address = { 0x5021c , 0x5021d , 0x5021e , 0x5021f }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1087,7 +1085,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR7;
 
 typedef union
-{	/* SMU: address = 0x50220					*/
+{	/* SMU: address = { 0x50220 , 0x50221 , 0x50222 , 0x50223 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1103,7 +1101,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR8;
 
 typedef union
-{	/* SMU: address = 0x50224					*/
+{	/* SMU: address = { 0x50224 , 0x50225 , 0x50226 , 0x50227 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1119,7 +1117,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR9;
 
 typedef union
-{	/* SMU: address = 0x50228					*/
+{	/* SMU: address = { 0x50228 , 0x50229 , 0x5022a , 0x5022b }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1132,16 +1130,16 @@ typedef union
 } AMD_17_UMC_TIMING_DTR10;
 
 typedef union
-{	/* SMU: address = 0x5022c					*/
+{	/* SMU: address = { 0x5022c , 0x5022d , 0x5022e , 0x5022f }	*/
 	unsigned int		value;
 	struct {
-		unsigned int
+		unsigned int /* 0000 1110 0100 0010 0000 0000 1000 0000 */
 		ReservedBits	: 32-0;
 	};
 } AMD_17_UMC_TIMING_DTR11;
 
 typedef union
-{	/* SMU: address = 0x50230					*/
+{	/* SMU: address = { 0x50230 , 0x50231 , 0x50232 , 0x50233 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1151,7 +1149,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR12;
 
 typedef union
-{	/* SMU: address = 0x50254					*/
+{	/* SMU: address = { 0x50254 , 0x50255 , 0x50256 , 0x50257 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1162,7 +1160,7 @@ typedef union
 } AMD_17_UMC_TIMING_DTR54;
 
 typedef union
-{	/* SMU: address = 0x50260					*/
+{	/* SMU: address = { 0x50260 , 0x50261 , 0x50262 , 0x50263 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1173,61 +1171,44 @@ typedef union
 } AMD_17_UMC_TIMING_DTR60;
 
 typedef union
-{	/* SMU: address = 0x5d2b5					*/
+{	/* SMU: address = { 0x5d2b4 , 0x5d2b5 , 0x5d2b6 , 0x5d2b7 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits1	: 10-0,
-		Target		: 17-10,
-		ReservedBits2	: 32-17;
-	};
-} AMD_17_MTS_CPK_TJMAX;
-
-typedef union
-{	/* SMU: address = 0x5d2b6					*/
-	unsigned int		value;
-	struct {
-		unsigned int
-		ReservedBits1	: 17-0,
+		TjMax		: 17-10,
 		PPT		: 26-17,
 		ReservedBits2	: 32-26;
 	};
-} AMD_17_MTS_CPK_PPT;
+} AMD_17_MTS_CPK_PWR;
 
 typedef union
-{	/* SMU: address = 0x5d2b8					*/
+{	/* SMU: address = { 0x5d2b8 , 0x5d2b9 , 0x5d2ba , 0x5d2bb }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
 		ReservedBits1	:  3-0,
 		TDP		: 12-3,
-		ReservedBits2	: 32-12;
+		TDP2		: 21-12, /* Same value returned as TDP! */
+		TDP3		: 30-21, /* Same value returned as TDP! */
+		ReservedBits2	: 32-30;
 	};
 } AMD_17_MTS_CPK_TDP;
 
 typedef union
-{	/* SMU: address = 0x5d2bc					*/
+{	/* SMU: address = { 0x5d2bc , 0x5d2bd , 0x5d2be , 0x5d2bf }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
-		EDC		:  7-0,
-		ReservedBits	: 32-7;
+		EDC		:  7-0, /* Returns 35 mult by 4 = 140	*/
+		ReservedBits1	: 16-7,
+		TDC		: 25-16,
+		ReservedBits2	: 32-25;
 	};
 } AMD_17_MTS_CPK_EDC;
 
 typedef union
-{	/* SMU: address = 0x5d2be					*/
-	unsigned int		value;
-	struct {
-		unsigned int
-		ReservedBits1	: 16-0,
-		TDC		: 25-16,
-		ReservedBits2	: 32-25;
-	};
-} AMD_17_MTS_CPK_TDC;
-
-typedef union
-{
+{	/* SMU: address = { 0x5d2c4 , 0x5d2c5 , 0x5d2c6 , 0x5d2c7 }	*/
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1242,7 +1223,10 @@ typedef union
 #endif
 
 typedef union
-{ /* SMU: ZEN2 addr={0x5a010 ; 0x5a00c} and ZEN(+)={0x5a00c ; 0x5a010}	*/
+{/* SMU: ZEN2 addr	= { 0x5a010 , 0x5a011 , 0x5a012 , 0x5a013 }
+ *			: { 0x5a00c , 0x5a00d , 0x5a00e , 0x5a00f }
+ * and ZEN(+) addr	= { 0x5a00c || 0x5a010 }
+ */
 	unsigned int		value;
 	struct {
 		unsigned int
@@ -1257,7 +1241,8 @@ typedef union
 	#define SMU_AMD_F17H_CORE_VID(_mod)	(0x0005a04c + (_mod << 2))
 #endif
 /*
- * where '_mod' register offset could be equaled to:
+ * where addr = { 0x5a04c ... 0x5a04f || 0x5a050 ... 0x5a053 }
+ * and '_mod' register offset could be equaled to:
  * 0x0		: Zen & Zen+		[UNTESTED]
  * 0x1		: Zen2/Matisse		[VERIFIED]
  * 0x2		: Zen2/CastlePeak	[UNTESTED]
@@ -1272,4 +1257,8 @@ typedef union
 		VID		: 32-24;	/*	Voltage ID	*/
 	};
 } AMD_17_CORE_VID;
+
+#ifndef SMU_AMD_F17H_AT_CLUSTER
+	#define SMU_AMD_F17H_AT_CLUSTER( _reg, _ccx ) ( _reg + _ccx )
+#endif
 

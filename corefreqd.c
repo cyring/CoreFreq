@@ -1373,10 +1373,12 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
 	}
+	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PWR.PPT;
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.Zen.TDP.TDP;
-	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PPT.PPT;
+	Shm->Proc.Power.Min = Proc_RO->PowerThermal.Zen.TDP.TDP2;
+	Shm->Proc.Power.Max = Proc_RO->PowerThermal.Zen.TDP.TDP3;
 	Shm->Proc.Power.EDC = Proc_RO->PowerThermal.Zen.EDC.EDC << 2;
-	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.Zen.TDC.TDC;
+	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.Zen.EDC.TDC;
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
