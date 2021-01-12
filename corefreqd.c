@@ -66,6 +66,19 @@ typedef struct {
 	SYSGATE_RO		*SysGate;
 } REF;
 
+void Core_ResetSensorLimits(CPU_STRUCT *Cpu)
+{
+	RESET_SENSOR_LIMIT(THERMAL, LOWEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE, LOWEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY , LOWEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER  , LOWEST, Cpu->Sensors.Power.Limit);
+
+	RESET_SENSOR_LIMIT(THERMAL,HIGHEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE,HIGHEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY ,HIGHEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER  ,HIGHEST, Cpu->Sensors.Power.Limit);
+}
+
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
 {	/* Per Core, computes the Min temperature.			*/
 	TEST_AND_SET_SENSOR( THERMAL, LOWEST,	CFlip->Thermal.Temp,
@@ -79,9 +92,9 @@ static inline void ComputeThermal_None( struct FLIP_FLOP *CFlip,
 					SHM_STRUCT *Shm,
 					unsigned int cpu )
 {
-	UNUSED(CFlip);
 	UNUSED(Shm);
 	UNUSED(cpu);
+	CFlip->Thermal.Temp = 0;
 }
 
 #define ComputeThermal_None_PerSMT	ComputeThermal_None
@@ -1090,7 +1103,6 @@ static void *Core_Cycle(void *arg)
 							Core->Clock,
 							Shm->Sleep.Interval );
 	/* Per Core, evaluate thermal properties.			*/
-	CFlip->Thermal.Temp	= 0;
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
 	CFlip->Thermal.Param	= Core->PowerThermal.Param;
@@ -5454,6 +5466,20 @@ static inline void Pkg_ResetPower_AMD_17h(PROC_RW *Proc)
 	Proc->Delta.Power.ACCU[PWR_DOMAIN(CORES)] = 0;
 }
 
+void Pkg_ResetSensorLimits(PROC_STRUCT *Pkg)
+{
+	enum PWR_DOMAIN pw;
+      for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+      {
+	RESET_SENSOR_LIMIT(ENERGY, LOWEST , Pkg->State.Energy[pw].Limit);
+	RESET_SENSOR_LIMIT(ENERGY, HIGHEST, Pkg->State.Energy[pw].Limit );
+	RESET_SENSOR_LIMIT(POWER , LOWEST , Pkg->State.Power[pw].Limit );
+	RESET_SENSOR_LIMIT(POWER , HIGHEST, Pkg->State.Power[pw].Limit );
+      }
+	RESET_SENSOR_LIMIT(VOLTAGE, LOWEST, Pkg->State.Voltage.Limit );
+	RESET_SENSOR_LIMIT(VOLTAGE, HIGHEST,Pkg->State.Voltage.Limit );
+}
+
 REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
@@ -5624,7 +5650,8 @@ REASON_CODE Core_Manager(REF *Ref)
 
 	for (cpu=0; !BITVAL(Shutdown, SYNC)&&(cpu < Shm->Proc.CPU.Count);cpu++)
 	{
-	    if (BITVAL(Core[cpu]->OffLine, OS) == 1) {
+	    if (BITVAL(Core[cpu]->OffLine, OS) == 1)
+	    {
 		if (Arg[cpu].TID)
 		{	/* Remove this cpu.				*/
 			pthread_join(Arg[cpu].TID, NULL);
@@ -5707,6 +5734,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	if (!BITVAL(Shutdown, SYNC))
 	{
 		double dPTSC;
+		unsigned char fSTR = 0;
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -5741,8 +5769,8 @@ REASON_CODE Core_Manager(REF *Ref)
 		PFlip->Uncore.FC0 = Proc->Delta.Uncore.FC0;
 		/* Power & Energy counters				*/
 		enum PWR_DOMAIN pw;
-	    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
-	    {
+	  for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+	  {
 		PFlip->Delta.ACCU[pw] = Proc_RW->Delta.Power.ACCU[pw];
 
 		Shm->Proc.State.Energy[pw].Current = \
@@ -5769,14 +5797,15 @@ REASON_CODE Core_Manager(REF *Ref)
 		TEST_AND_SET_SENSOR(	POWER, HIGHEST,
 					Shm->Proc.State.Power[pw].Current,
 					Shm->Proc.State.Power[pw].Limit );
-	    }
+	  }
 		/* Package thermal formulas				*/
-	    if (Shm->Proc.Features.Power.EAX.PTM) {
+	  if (Shm->Proc.Features.Power.EAX.PTM)
+	  {
 		PFlip->Thermal.Sensor = Proc->PowerThermal.Sensor;
 		PFlip->Thermal.Events = Proc->PowerThermal.Events;
 
 		Pkg_ComputeThermalFormula(PFlip, SProc);
-	    }
+	  }
 		/* Package Voltage formulas				*/
 		PFlip->Voltage.VID.CPU = Proc->PowerThermal.VID.CPU;
 		PFlip->Voltage.VID.SOC = Proc->PowerThermal.VID.SOC;
@@ -5794,43 +5823,54 @@ REASON_CODE Core_Manager(REF *Ref)
 		2- Processor has resumed from Suspend To RAM.
 		*/
 		Shm->SysGate.tickStep = Proc->tickStep;
-	    if (Shm->SysGate.tickStep == Shm->SysGate.tickReset) {
-		if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
-		{
-		    if (SysGate_OnDemand(Ref, 1) == 0) {
+	  if (Shm->SysGate.tickStep == Shm->SysGate.tickReset)
+	  {
+	    if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1))
+	    {
+		if (SysGate_OnDemand(Ref, 1) == 0) {
 			SysGate_Update(Ref);
-		    }
 		}
+	    }
 		/* OS notifications: Resumed from Suspend.		*/
-	      if (BITCLR(BUS_LOCK, Proc_RW->OS.Signal, NTFY))
-	      {
+	    if ( (fSTR = BITCLR(BUS_LOCK, Proc_RW->OS.Signal, NTFY)) == 1)
+	    {
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY);
+	    }
+	  }
+	  if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
+	  {
+		Package_Update(Shm, Proc, Proc_RW);
+
+	    for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
+	    {
+	      if (fSTR == 1)
+	      {
+		Core_ResetSensorLimits(&Shm->Cpu[cpu]);
+	      }
+	      if (BITVAL(Ref->Core_RO[cpu]->OffLine, OS) == 0)
+	      {
+		PerCore_Update(Ref->Shm,Ref->Proc_RO,Ref->Core_RO, cpu);
 	      }
 	    }
-	    if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
+	    if (fSTR == 1)
 	    {
-		Package_Update(Shm, Proc, Proc_RW);
-		for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++) {
-		    if (BITVAL(Ref->Core_RO[cpu]->OffLine, OS) == 0)
-		    {
-			PerCore_Update(Ref->Shm,Ref->Proc_RO,Ref->Core_RO, cpu);
-		    }
-		}
+		Pkg_ResetSensorLimits(&Shm->Proc);
+	    }
 		Technology_Update(Shm, Proc, Proc_RW);
 
-		if (ServerFollowService(&localService,
-					&Shm->Proc.Service,
-					tid) == 0)
-		{
-			SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
-				!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
-		}
-		if (Quiet & 0x100) {
-			printf("\t%s || %s\n",
-				BITVAL(PendingSync, NTFY0)?"NTFY":"....",
-				BITVAL(PendingSync, COMP0)?"COMP":"....");
-		}
+	    if (ServerFollowService(&localService,
+				&Shm->Proc.Service,
+				tid) == 0)
+	    {
+		SProc = &Shm->Cpu[Shm->Proc.Service.Core].FlipFlop[ \
+			!Shm->Cpu[Shm->Proc.Service.Core].Toggle ];
 	    }
+	    if (Quiet & 0x100) {
+		printf("\t%s || %s\n",
+			BITVAL(PendingSync, NTFY0)?"NTFY":"....",
+			BITVAL(PendingSync, COMP0)?"COMP":"....");
+	    }
+	  }
 		/* All aggregations done: Notify Clients.		*/
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_SYNC);
 		BITWISESET(LOCKLESS, Shm->Proc.Sync, PendingSync);

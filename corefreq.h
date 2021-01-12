@@ -524,6 +524,22 @@ typedef struct
 #define THRESHOLD_LOWEST_TRIGGER_ENERGY 	0.0
 #define THRESHOLD_LOWEST_TRIGGER_POWER		0.0
 
+#define _RESET_SENSOR_LIMIT(THRESHOLD, Limit)				\
+({									\
+	Limit =  THRESHOLD;						\
+})
+
+#define RESET_SENSOR_LOWEST(CLASS, Limit)				\
+	_RESET_SENSOR_LIMIT(THRESHOLD_LOWEST_CAPPED_##CLASS,		\
+				Limit[SENSOR_LOWEST])
+
+#define RESET_SENSOR_HIGHEST(CLASS, Limit)				\
+	_RESET_SENSOR_LIMIT(THRESHOLD_LOWEST_TRIGGER_##CLASS,		\
+				Limit[SENSOR_HIGHEST])
+
+#define RESET_SENSOR_LIMIT(CLASS, STAT, Limit)				\
+	RESET_SENSOR_##STAT(CLASS, Limit)
+
 #define TEST_SENSOR_LOWEST(CLASS, TRIGGER, CAPPED, Sensor, Limit)	\
 	(Sensor > TRIGGER##CLASS) 					\
 	&& ((Sensor < Limit) || (Limit <= CAPPED##CLASS))
