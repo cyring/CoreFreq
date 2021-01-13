@@ -1,10 +1,10 @@
-# CoreFreq
+# _CoreFreq_
 ## Purpose
-CoreFreq, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families 0Fh ... 17h (Zen), 18h (Hygon Dhyana)  
+_CoreFreq_, a CPU monitoring software with BIOS like functionalities, is designed for the 64-bits Processors of architecture Intel Atom, Core2, Nehalem, SandyBridge and superiors; AMD Families from 0Fh ... up to 17h (Zen , Zen+ , Zen2), 18h (Hygon Dhyana), 19h (Zen3)  
 
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Top.gif "CoreFreq Top")
 
-CoreFreq provides a framework to retrieve CPU data with a high degree of precision:
+_CoreFreq_ provides a framework to retrieve CPU data with a high degree of precision:
 
 * Core frequencies & ratios; SpeedStep (EIST), Turbo Boost, Hyper-Threading (HTT) and Base Clock
 * Performance counters including Time Stamp Counter (TSC), Unhalted Core Cycles (UCC), Unhalted Reference Cycles (URC)
@@ -17,7 +17,7 @@ CoreFreq provides a framework to retrieve CPU data with a high degree of precisi
   Stress tools, Power & Energy (RAPL, P-State, HWP, TDP), Overclocking, cpuidle & cpufreq driver, ClockSource, Mitigation Mechanisms  
 
 
-To reach this goal, CoreFreq implements a Linux Kernel module which employs the followings:
+To reach this goal, _CoreFreq_ implements a Linux Kernel module which employs the followings:
 
 * asm code to keep as near as possible the readings of the performance counters;
 * per-CPU, implements slab data memory and high-resolution timer;
@@ -41,17 +41,23 @@ nmi_watchdog=0
 make MSR_CORE_PERF_UC=MSR_CORE_PERF_FIXED_CTR1 MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2
 ```
 
-**b-** _AMD and Intel_: No Virtualization  
+**b-** _AMD and Intel_: Some Virtualization  
 
-VMs don't provide access to the registers that the CoreFreq driver employs :
+VMs don't provide access to the registers that the _CoreFreq_ driver employs :  
 * Fixed Performance Counters 
 * Model Specific Registers 
 * PCI Registers 
 
+However _CoreFreq_ is making use of the virtualized performance counter :  
+* HV_X64_MSR_VP_RUNTIME(0x40000010) 
+
 **c-** Rendering  
 
-The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI colors support  
-Tip for the Ubuntu Terminal: In the Preferences - Colors tab, select `Show bold text in bright colors`  
+The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI **colors**, **bold** and **bright** support  
+#### Ubuntu Terminal
+In the Preferences - Colors tab, select `Show bold text in bright colors`  
+#### alacritty terminal
+Uncomment and set `draw_bold_text_with_bright_colors: true`  
 
 ### Dependencies
 * The Linux Kernel with a minimum version 3.3
@@ -132,7 +138,7 @@ If module signature verification is enabled into Kernel, you will have to sign t
 :hash:`rmmod corefreqk.ko`  
 
 ### Try
-Download the CoreFreq Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
+Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_LiveCD_Step1.png "CoreFreq for ArchLinux")  
 
 ## Screenshots
@@ -209,32 +215,33 @@ CPU     IPS            IPC            CPI
 * Q: The Processor does not enter the C-States ?  
 
   A: Check if at least one Idle driver is running.  
-     Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
+  Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 `intel_idle.max_cstate=value`  
-  A: CoreFreq can also register itself as a cpuidle driver.  
+
+  A: _CoreFreq_ can also register itself as a cpuidle driver.  
   This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
 `modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
-  Start the CoreFreq driver with the `Register_CPU_Idle` parameter:  
+  Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
 :hash:`insmod corefreqk.ko Register_CPU_Idle=1`  
 
 
-* Q: The CoreFreq UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
+* Q: The _CoreFreq_ UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
 
-  A: The sampling time to read the counters can be reduced or increased using a CoreFreq module argument:  
+  A: The sampling time to read the counters can be reduced or increased using a _CoreFreq_ module argument:  
 :hash:`insmod corefreqk.ko SleepInterval=value`  
   where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
 
 * Q: The base clock reports a wrong frequency value ?  
 
-  A: CoreFreq uses various algorithms to estimate the base clock.  
+  A: _CoreFreq_ uses various algorithms to estimate the base clock.  
   
   1. The delta of two TimeStamp counters during a defined interval  
   2. The value provided in the Processor brand string divided by the maximum ratio (without Turbo)  
   3. A static value advertised by the manufacturer specs.  
   4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
 
-  The CoreFreq module can be started as follow to ignore the first algorithm (frequency estimation):  
+  The _CoreFreq_ module can be started as follow to ignore the first algorithm (frequency estimation):  
 :hash:`insmod corefreqk.ko AutoClock=0`  
 
   _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
@@ -242,7 +249,7 @@ CPU     IPS            IPC            CPI
 
 * Q: The CPU temperature is wrong ?  
 
-  A: CoreFreq employs two msr to calculate the temperature.  
+  A: _CoreFreq_ employs two MSR registers to calculate the temperature.  
 `MSR_IA32_TEMPERATURE_TARGET - MSR_IA32_THERM_STATUS [DTS]`  
 
   _Remark_: if the MSR_IA32_TEMPERATURE_TARGET is not provided by the Processor, a default value of 100 degree Celsius is considered as a target.  
@@ -270,13 +277,13 @@ CPU     IPS            IPC            CPI
   A: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
 
-  A: With `cpufreq` built into Kernel, allow CoreFreq to register as a cpufreq driver.  
+  A: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
   In the Kernel boot command line, two ways:  
  1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
 `cpufreq.off=1`  
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
- next, load the CoreFreq driver with its `Register_CPU_Freq` parameter:  
+ next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 :hash:`insmod corefreqk.ko Register_CPU_Freq=1`  
 
 

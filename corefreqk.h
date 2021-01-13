@@ -1883,6 +1883,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_ZenIF
 	},
+/* AMD Family 19h							*/
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3),
+		.driver_data = (kernel_ulong_t) AMD_19h_ZenIF
+	},
 #endif /* CONFIG_AMD_NB */
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
@@ -1929,6 +1934,11 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
+/* AMD Family 19h							*/
+	{
+		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU),
+		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
+	},
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEPPELIN_DF_F3),
@@ -1966,21 +1976,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ARDEN_DF_F3),
 		.driver_data = (kernel_ulong_t) AMD_17h_UMC
 	},
-	{0, }
-};
-
 /* AMD Family 19h							*/
-static struct pci_device_id PCI_AMD_19h_ids[] = {
-#ifdef CONFIG_AMD_NB
-	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3),
-		.driver_data = (kernel_ulong_t) AMD_19h_ZenIF
-	},
-#endif /* CONFIG_AMD_NB */
-	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU),
-		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
-	},
 	/* Source: SMU > Data Fabric > UMC				*/
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3),
@@ -1988,6 +1984,8 @@ static struct pci_device_id PCI_AMD_19h_ids[] = {
 	},
 	{0, }
 };
+
+#define PCI_AMD_19h_ids PCI_AMD_17h_ids
 
 
 static MICRO_ARCH Arch_Misc_Processor[] = {
