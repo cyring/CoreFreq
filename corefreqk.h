@@ -1289,10 +1289,11 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-/*	[Family 18h]	9F_00h						*/
+/*	[Family 18h]		9F_00h					*/
 #define _AMD_Family_18h {.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-/*	[Family 19h]	9F_00h						*/
+/*	[Family 19h]		9F_00h
+	[Zen3/Vermeer]		9F_21h Stepping 0	 7 nm		*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 

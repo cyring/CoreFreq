@@ -1124,8 +1124,9 @@ typedef union
 		tddWrTRd	:  4-0,
 		ReservedBits1	:  8-4,
 		tddRdTWr	: 13-8,
+		ReservedBits2	: 16-13,
 		tWrRdScDLR	: 21-16, /* tWrRdSc(Different Logical Ranks) */
-		ReservedBits2	: 32-13;
+		ReservedBits3	: 32-21;
 	};
 } AMD_17_UMC_TIMING_DTR10;
 
@@ -1223,9 +1224,15 @@ typedef union
 #endif
 
 typedef union
-{/* SMU: ZEN2 addr	= { 0x5a010 , 0x5a011 , 0x5a012 , 0x5a013 }
- *			: { 0x5a00c , 0x5a00d , 0x5a00e , 0x5a00f }
- * and ZEN(+) addr	= { 0x5a00c || 0x5a010 }
+{/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014] ---
+ *				[ CPU addr]	[ SoC addr]
+ * ZEN	[8F_01h]		[ 0x5a00c ]	[ 0x5a010 ]
+ * ZEN(+) [8F_08h]		[ 0x5a00c ]	[ 0x5a010 ]
+ * ZEN(+) [8F_11h ; 8F_18h]	[ 0x5a00c ]	[ 0x5a010 ]
+ * ZEN2 [8F_71h]		[ 0x5a010 ]	[ 0x5a00c ]
+ * ZEN2 [8F_60h]		[ ? ]		[ ? ]
+ * ZEN2 [8F_31h]		[ 0x5a014 ]	[ 0x5a010 ]
+ * ZEN3 [9F_21h]		[ 0x5a010 ]	[ 0x5a00c ]
  */
 	unsigned int		value;
 	struct {
