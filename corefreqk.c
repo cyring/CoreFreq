@@ -12509,11 +12509,23 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 	BITSET(LOCKLESS, PUBLIC(RW(Core, AT(Core->Bind)))->Sync.V, NTFY);
 }
 
+inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
+{
+	unsigned long long VCC, ICC, ACCU;
+	/*	PLATFORM RAPL workaround to provide the SoC power	*/
+	VCC = 155000LLU - (625LLU * SVI.VID);
+	ICC = SVI.IDD * factor;
+	ACCU = VCC * ICC;
+	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
+	ACCU = ACCU / (100000LLU * 1000000LLU);
+	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = ACCU;
+}
+
 void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 		const unsigned long long factor )
 {
 	AMD_17_SVI SVI = {.value = 0};
-	unsigned long long VCC, ICC, ACCU;
 
 	Core_AMD_SMN_Read(	SVI,
 				SMU_AMD_F17H_SVI(plane0),
@@ -12529,14 +12541,29 @@ void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
 
 	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
 
-	/*	PLATFORM RAPL workaround to provide the SoC power	*/
-	VCC = 155000LLU - (625LLU * SVI.VID);
-	ICC = SVI.IDD * factor;
-	ACCU = VCC * ICC;
-	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
-	ACCU = ACCU / (100000LLU * 1000000LLU);
-	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = ACCU;
+	SoC_RAPL(SVI, factor);
+}
+
+void Call_SVI_APU(	const unsigned int plane0, const unsigned int plane1,
+			const unsigned long long factor )
+{
+	AMD_17_SVI SVI = {.value = 0};
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_F17_60H_SVI(plane0),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.CPU = SVI.VID;
+
+	Core_AMD_SMN_Read(	SVI,
+				SMU_AMD_F17_60H_SVI(plane1),
+				SMU_AMD_INDEX_REGISTER_F17H,
+				SMU_AMD_DATA_REGISTER_F17H );
+
+	PUBLIC(RO(Proc))->PowerThermal.VID.SOC = SVI.VID;
+
+	SoC_RAPL(SVI, factor);
 }
 
 void Call_DFLT( const unsigned int plane0, const unsigned int plane1,
@@ -12587,6 +12614,10 @@ static enum hrtimer_restart Cycle_AMD_F17h_Zen2_MP(struct hrtimer *pTimer)
 {
 	return ( Entry_AMD_F17h(pTimer, Call_SVI, 2, 1, 294300LLU) );
 }
+static enum hrtimer_restart Cycle_AMD_F17h_Zen2_APU(struct hrtimer *pTimer)
+{
+	return ( Entry_AMD_F17h(pTimer, Call_SVI_APU, 0, 1, 294300LLU) );
+}
 static enum hrtimer_restart Cycle_AMD_F17h(struct hrtimer *pTimer)
 {
 	return ( Entry_AMD_F17h(pTimer, Call_DFLT, 0, 0, 0LLU) );
@@ -12610,6 +12641,11 @@ void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu)
 void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_MP, 1);
+}
+
+void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_AMD_F17h_Zen2_APU, 1);
 }
 
 static void Start_AMD_Family_17h(void *arg)

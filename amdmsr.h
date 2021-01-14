@@ -1223,14 +1223,18 @@ typedef union
 	#define SMU_AMD_F17H_SVI(_plane)	(0x0005a00c + (_plane << 2))
 #endif
 
+#ifndef SMU_AMD_F17_60H_SVI
+	#define SMU_AMD_F17_60H_SVI(_plane)	(0x0006f038 + (_plane << 2))
+#endif
+
 typedef union
-{/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014] ---
+{/*		--- SMU SVI [ 0x5a00c ; 0x5a010 ; 0x5a014 ; 0x6f038] ---
  *				[ CPU addr]	[ SoC addr]
  * ZEN	[8F_01h]		[ 0x5a00c ]	[ 0x5a010 ]
  * ZEN(+) [8F_08h]		[ 0x5a00c ]	[ 0x5a010 ]
  * ZEN(+) [8F_11h ; 8F_18h]	[ 0x5a00c ]	[ 0x5a010 ]
  * ZEN2 [8F_71h]		[ 0x5a010 ]	[ 0x5a00c ]
- * ZEN2 [8F_60h]		[ ? ]		[ ? ]
+ * ZEN2 [8F_60h]		[ 0x6f038 ]	[ 0x6f03c ]
  * ZEN2 [8F_31h]		[ 0x5a014 ]	[ 0x5a010 ]
  * ZEN3 [9F_21h]		[ 0x5a010 ]	[ 0x5a00c ]
  */

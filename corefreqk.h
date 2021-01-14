@@ -1084,6 +1084,7 @@ extern void InitTimer_AMD_Family_17h(unsigned int cpu) ;
 extern void InitTimer_AMD_F17h_Zen(unsigned int cpu) ;
 extern void InitTimer_AMD_F17h_Zen2_SP(unsigned int cpu) ;
 extern void InitTimer_AMD_F17h_Zen2_MP(unsigned int cpu) ;
+extern void InitTimer_AMD_F17h_Zen2_APU(unsigned int cpu) ;
 
 void Core_AMD_F17h_No_Thermal(CORE_RO *Core)
 {
@@ -6949,7 +6950,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Start = Start_AMD_Family_17h,
 	.Stop = Stop_AMD_Family_17h,
 	.Exit = NULL,
-	.Timer = InitTimer_AMD_F17h_Zen2_MP,
+	.Timer = InitTimer_AMD_F17h_Zen2_APU,
 	.BaseClock = BaseClock_AMD_Family_17h,
 	.ClockMod = ClockMod_AMD_Zen,
 	.TurboClock = TurboClock_AMD_Zen,
