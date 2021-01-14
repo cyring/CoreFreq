@@ -5734,7 +5734,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	if (!BITVAL(Shutdown, SYNC))
 	{
 		double dPTSC;
-		unsigned char fSTR = 0;
+		unsigned char fRESET = 0;
 		/* Compute the counters averages.			*/
 		Shm->Proc.Avg.Turbo /= Shm->Proc.CPU.OnLine;
 		Shm->Proc.Avg.C0    /= Shm->Proc.CPU.OnLine;
@@ -5831,8 +5831,8 @@ REASON_CODE Core_Manager(REF *Ref)
 			SysGate_Update(Ref);
 		}
 	    }
-		/* OS notifications: Resumed from Suspend.		*/
-	    if ( (fSTR = BITCLR(BUS_LOCK, Proc_RW->OS.Signal, NTFY)) == 1)
+		/* OS notifications: such as Resumed from Suspend.	*/
+	    if ( (fRESET = BITCLR(BUS_LOCK, Proc_RW->OS.Signal, NTFY)) == 1)
 	    {
 		BITWISESET(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY);
 	    }
@@ -5843,7 +5843,7 @@ REASON_CODE Core_Manager(REF *Ref)
 
 	    for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
 	    {
-	      if (fSTR == 1)
+	      if (fRESET == 1)
 	      {
 		Core_ResetSensorLimits(&Shm->Cpu[cpu]);
 	      }
@@ -5852,7 +5852,7 @@ REASON_CODE Core_Manager(REF *Ref)
 		PerCore_Update(Ref->Shm,Ref->Proc_RO,Ref->Core_RO, cpu);
 	      }
 	    }
-	    if (fSTR == 1)
+	    if (fRESET == 1)
 	    {
 		Pkg_ResetSensorLimits(&Shm->Proc);
 	    }

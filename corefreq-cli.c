@@ -8039,18 +8039,6 @@ int Shortcut(SCANKEY *scan)
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(Shm->Ring[0], COREFREQ_IOCTL_SYSUPDT);
 	}
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
-				COREFREQ_IOCTL_MACHINE,
-				COREFREQ_TOGGLE_OFF,
-				MACHINE_CONTROLLER );
-	}
-	if (!RING_FULL(Shm->Ring[0])) {
-		RING_WRITE(	Shm->Ring[0],
-				COREFREQ_IOCTL_MACHINE,
-				COREFREQ_TOGGLE_ON,
-				MACHINE_CONTROLLER );
-	}
     break;
     case SCANKEY_OPEN_BRACE:
 	if (!RING_FULL(Shm->Ring[0])) {

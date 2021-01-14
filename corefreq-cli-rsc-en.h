@@ -607,7 +607,7 @@
 #define RSC_ADV_HELP_SECT_ANY_CODE_EN	" Any view:                            "
 #define RSC_ADV_HELP_ITEM_POWER_CODE_EN " $            Energy in Joule or Watt "
 #define RSC_ADV_HELP_ITEM_TOP_CODE_EN	" .             Top frequency or Usage "
-#define RSC_ADV_HELP_ITEM_UPD_CODE_EN	" *            Update CoreFreq Machine "
+#define RSC_ADV_HELP_ITEM_UPD_CODE_EN	" *           Refresh CoreFreq Machine "
 #define RSC_ADV_HELP_ITEM_START_CODE_EN " {             Start CoreFreq Machine "
 #define RSC_ADV_HELP_ITEM_STOP_CODE_EN	" }              Stop CoreFreq Machine "
 #define RSC_ADV_HELP_ITEM_TOOLS_CODE_EN " F10            Stop tools processing "

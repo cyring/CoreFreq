@@ -13102,6 +13102,8 @@ static int Alternative_Computation_Of_Cycles_S2(
 	return index;
 #endif /* 5.9.0 */
 }
+
+#undef Atomic_Write_VPMC
 	/*		Alternative Idle methods			*/
 static int CoreFreqK_Alt_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
@@ -14430,6 +14432,12 @@ static void For_All_CPU_Compute_Clock(void)
   } while (cpu != 0) ;
 }
 
+#define SYSGATE_UPDATE(_rc)						\
+({									\
+	_rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));			\
+	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
+})
+
 static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
 				unsigned long arg )
@@ -14440,9 +14448,10 @@ static long CoreFreqK_ioctl(	struct file *filp,
     switch (cmd)
     {
     case COREFREQ_IOCTL_SYSUPDT:
-    SYSGATE_UPDATE:
-	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
-	rc = (rc != -ENXIO) ? RC_OK_SYSGATE : rc;
+	Controller_Stop(1);
+	SYSGATE_UPDATE(rc);
+	Controller_Start(1);
+	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY);
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
@@ -14556,19 +14565,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		rc = CoreFreqK_UnRegister_CPU_Idle();
 		Register_CPU_Idle = -1;
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	    case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		Register_CPU_Idle = 1;
 		rc = CoreFreqK_Register_CPU_Idle();
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	}
 	break;
@@ -14580,19 +14589,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		rc = CoreFreqK_UnRegister_CPU_Freq();
 		Register_CPU_Freq = -1;
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	    case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		Register_CPU_Freq = 1;
 		rc = CoreFreqK_Register_CPU_Freq();
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	}
 	break;
@@ -14604,19 +14613,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Controller_Stop(1);
 		rc = CoreFreqK_UnRegister_Governor();
 		Register_Governor = -1;
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	    case COREFREQ_TOGGLE_ON:
 		Controller_Stop(1);
 		Register_Governor = 1;
 		rc = CoreFreqK_Register_Governor();
-		Controller_Start(1);
 		if (rc == RC_SUCCESS) {
-			goto SYSGATE_UPDATE;
+			SYSGATE_UPDATE(rc);
 		}
+		Controller_Start(1);
 		break;
 	}
 	break;
@@ -14990,6 +14999,8 @@ static long CoreFreqK_ioctl(	struct file *filp,
     }
 	return (rc);
 }
+
+#undef SYSGATE_UPDATE
 
 static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 {
@@ -16056,6 +16067,9 @@ static int CoreFreqK_StartUp(void)
 }
 
 #undef COREFREQ_RUN
+#undef CoreFreqK_Scale_And_Compute_Level_Down
+#undef CoreFreqK_Query_Features_Level_Down
+#undef COREFREQ_PM_OPS
 
 static int __init CoreFreqK_Init(void)
 {
