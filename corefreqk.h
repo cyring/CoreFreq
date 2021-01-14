@@ -1273,7 +1273,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen/Raven Ridge]	8F_11h Stepping 0	14 nm	APU
 	[Zen/Snowy Owl]		8F_11h Stepping 0	14 nm	SOC
 	[Zen+ Picasso]		8F_18h Stepping 1	12 nm	APU
-	[Zen2/Raven2]		8F_20h Stepping 0	14 nm	APU
+	[Zen/Dali]		8F_20h Stepping 1	14 nm	APU/Raven2
 	[EPYC/Rome]		8F_30h Stepping 0	 7 nm	SVR
 	[Zen2/Castle Peak]	8F_31h Stepping 0	 7 nm	HEDT
 	[Zen2/Renoir]		8F_60h Stepping 1	 7 nm	APU
@@ -1282,7 +1282,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
 #define _AMD_ZenPlus_APU {.ExtFamily=0x8,.Family=0xF, .ExtModel=0x1, .Model=0x8}
-#define _AMD_Zen_APU_Rv2 {.ExtFamily=0x8,.Family=0xF, .ExtModel=0x2, .Model=0x0}
+#define _AMD_Zen_APU_Dali {.ExtFamily=0x8,.Family=0xF,.ExtModel=0x2, .Model=0x0}
 #define _AMD_EPYC_Rome	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x3, .Model=0x0}
 #define _AMD_Zen2_CPK	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x3, .Model=0x1}
 #define _AMD_Zen2_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x6, .Model=0x0}
@@ -2261,7 +2261,7 @@ enum {
 	CN_PICASSO
 };
 enum {
-	CN_RAVEN2
+	CN_DALI
 };
 enum {
 	CN_ROME
@@ -2296,8 +2296,8 @@ static MICRO_ARCH Arch_AMD_ZenPlus_APU[] = {
 	[CN_PICASSO]		= {"Zen+ Picasso"},
 	{NULL}
 };
-static MICRO_ARCH Arch_AMD_Zen_APU_Rv2[] = {
-	[CN_RAVEN2]		= {"Zen/Raven 2"},
+static MICRO_ARCH Arch_AMD_Zen_APU_Dali[] = {
+	[CN_DALI]		= {"Zen/Dali"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_EPYC_Rome[] = {
@@ -3884,13 +3884,13 @@ static PROCESSOR_SPECIFIC AMD_ZenPlus_APU_Specific[] = {
 	},
 	{0}
 };
-static PROCESSOR_SPECIFIC AMD_Zen_APU_Rv2_Specific[] = {
+static PROCESSOR_SPECIFIC AMD_Zen_APU_Dali_Specific[] = {
 	{
 	.Brand = ZLIST( "AMD Athlon",	\
 			"AMD Ryzen 3"),
 	.Boost = {+9, 0},
 	.Param.Offset = {0, 0, 0},
-	.CodeNameIdx = CN_RAVEN2,
+	.CodeNameIdx = CN_DALI,
 	.TgtRatioUnlocked = 1,
 	.ClkRatioUnlocked = 0b10,
 	.TurboUnlocked = 0,
@@ -6871,8 +6871,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_ZenPlus_APU
 	},
-[AMD_Zen_APU_Rv2] = {							/* 74*/
-	.Signature = _AMD_Zen_APU_Rv2,
+[AMD_Zen_APU_Dali] = {							/* 74*/
+	.Signature = _AMD_Zen_APU_Dali,
 	.Query = Query_AMD_Family_17h,
 	.Update = PerCore_AMD_Family_17h_Query,
 	.Start = Start_AMD_Family_17h,
@@ -6891,9 +6891,9 @@ static ARCH Arch[ARCHITECTURES] = {
 		.Stop = NULL,
 		.ClockMod = NULL
 		},
-	.Specific = AMD_Zen_APU_Rv2_Specific,
+	.Specific = AMD_Zen_APU_Dali_Specific,
 	.SystemDriver = AMD_Zen_Driver,
-	.Architecture = Arch_AMD_Zen_APU_Rv2
+	.Architecture = Arch_AMD_Zen_APU_Dali
 	},
 [AMD_EPYC_Rome] = {							/* 75*/
 	.Signature = _AMD_EPYC_Rome,
