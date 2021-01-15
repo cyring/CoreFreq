@@ -1849,7 +1849,7 @@ unsigned int FuseAll(char stream[], SCREEN_SIZE drawSize)
 		stream[sdx++] = '[';
 		stream[sdx++] = '0' + fa->bf;
 		stream[sdx++] = ';';
-		stream[sdx++] = '3';
+		stream[sdx++] = fa->bf ? '9' : '3';
 		stream[sdx++] = '0' + fa->fg;
 		stream[sdx++] = ';';
 		stream[sdx++] = '4';

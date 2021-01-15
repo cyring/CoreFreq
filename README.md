@@ -53,11 +53,12 @@ However _CoreFreq_ is making use of the virtualized performance counter :
 
 **c-** Rendering  
 
-The UI renders best with an ASCII 7-Bit console or Xterm with VT100 and ANSI **colors**, **bold** and **bright** support  
+The UI renders best with an ASCII console or a Xterm with VT100 support and ANSI **colors**  
+If **bold** and **bright** colors are not rendered then use the following terminal options:  
 #### Ubuntu Terminal
 In the Preferences - Colors tab, select `Show bold text in bright colors`  
 #### alacritty terminal
-Uncomment and set `draw_bold_text_with_bright_colors: true`  
+Uncomment and set `draw_bold_text_with_bright_colors: true` in `<config-file>`  
 
 ### Dependencies
 * The Linux Kernel with a minimum version 3.3
