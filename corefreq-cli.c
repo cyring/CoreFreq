@@ -2641,10 +2641,16 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	unsigned int bix;
 /* Section Mark */
+    if (Shm->Proc.PM_version > 0)
+    {
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPM       [%3d]", RSC(VERSION).CODE(),
 		width - 17 - RSZ(VERSION), hSpace, Shm->Proc.PM_version);
-
+    } else {
+	PUT(SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*sPM       [%3s]", RSC(VERSION).CODE(),
+		width - 17 - RSZ(VERSION), hSpace, RSC(NOT_AVAILABLE).CODE());
+    }
 	PUT(SCANKEY_NULL, attrib[0], width, 2,
 		"%s:%.*s%s%.*s%s",
 		RSC(COUNTERS).CODE(),10, hSpace, RSC(GENERAL_CTRS).CODE(),
@@ -3075,10 +3081,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	];
 	unsigned int bix;
 /* Section Mark */
+  if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+  {
 	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
 	GridCall(PUT(bix ? BOXKEY_ODCM : SCANKEY_NULL,
-		attrib[ Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4
-			: bix ? 3 : 1 ],
+		attrib[ bix ? 3 : 1 ],
 			width, 2,
 			"%s%.*sODCM   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
 			width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
@@ -3092,7 +3099,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	   && (Shm->Proc.Technology.ODCM == 1);
 
       GridCall(PUT(bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		attrib[0],
 		width, 3,
 		"%s%.*s%c%6.2f%%%c", RSC(POWER_THERMAL_DUTY).CODE(),
 	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
@@ -3105,8 +3112,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	bix = Shm->Proc.Technology.PowerMgmt == 1;
 	PUT(SCANKEY_NULL,
-		attrib[ Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4
-			: bix ? 3 : 0 ],
+		attrib[ bix ? 3 : 0 ],
 		width, 2,
 		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
@@ -3115,7 +3121,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	bix = Shm->Proc.Features.Power.ECX.SETBH == 1;
     if (bix) {
       GridCall(PUT(BOXKEY_PWR_POLICY,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		attrib[0],
 		width, 3,
 		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
@@ -3124,7 +3130,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
     } else {
 	PUT(SCANKEY_NULL,
-		attrib[Shm->Proc.Features.Info.Vendor.CRC != CRC_INTEL ? 4:0],
+		attrib[0],
 		width, 3,
 		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
 	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
@@ -3146,7 +3152,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
 	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
     }
-
+  }
       GridCall(PUT(SCANKEY_NULL, attrib[5], width, 2,
 		"%s%.*sTjMax   [%2u:%3uC]", RSC(POWER_THERMAL_TJMAX).CODE(),
 		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
@@ -5686,7 +5692,10 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		matrixSize.hth = 21;
+		matrixSize.hth = 16;
+		matrixSize.hth += (
+			Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL
+		) ? 5 : 0;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;
