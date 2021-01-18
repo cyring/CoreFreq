@@ -97,15 +97,15 @@ ASCII	Rsc_Layout_Ruler_Freq_Pkg_Code_En[] = \
 					RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE;
 #define Rsc_Layout_Ruler_Freq_Pkg_Code_Fr Rsc_Layout_Ruler_Freq_Pkg_Code_En
 
-#define Rsc_Layout_Ruler_Inst_Attr vColor
+ATTRIBUTE Rsc_Layout_Ruler_Inst_Attr[]	= RSC_LAYOUT_RULER_INST_ATTR;
 ASCII	Rsc_Layout_Ruler_Inst_Code_En[] = RSC_LAYOUT_RULER_INST_CODE;
 #define Rsc_Layout_Ruler_Inst_Code_Fr Rsc_Layout_Ruler_Inst_Code_En
 
-#define Rsc_Layout_Ruler_Cycles_Attr vColor
+ATTRIBUTE Rsc_Layout_Ruler_Cycles_Attr[] = RSC_LAYOUT_RULER_CYCLES_ATTR;
 ASCII	Rsc_Layout_Ruler_Cycles_Code_En[] = RSC_LAYOUT_RULER_CYCLES_CODE;
 #define Rsc_Layout_Ruler_Cycles_Code_Fr Rsc_Layout_Ruler_Cycles_Code_En
 
-#define Rsc_Layout_Ruler_CStates_Attr vColor
+ATTRIBUTE Rsc_Layout_Ruler_CStates_Attr[] = RSC_LAYOUT_RULER_CSTATES_ATTR;
 ASCII	Rsc_Layout_Ruler_CStates_Code_En[] = RSC_LAYOUT_RULER_CSTATES_CODE;
 #define Rsc_Layout_Ruler_CStates_Code_Fr Rsc_Layout_Ruler_CStates_Code_En
 

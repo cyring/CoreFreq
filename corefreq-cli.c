@@ -11346,9 +11346,11 @@ CUINT Layout_Ruler_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 {
-	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULER_INST).CODE(),
-			RSC(LAYOUT_RULER_INST).ATTR()[0] );
+	LayerDeclare(	LAYOUT_RULER_INST, draw.Size.width,
+			0, row, hInstr );
+
+	LayerCopyAt(	layer, hInstr.origin.col, hInstr.origin.row,
+			hInstr.length, hInstr.attr, hInstr.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
@@ -11361,9 +11363,11 @@ CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 
 CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULER_CYCLES).CODE(),
-			RSC(LAYOUT_RULER_CYCLES).ATTR()[0] );
+	LayerDeclare(	LAYOUT_RULER_CYCLES, draw.Size.width,
+			0, row, hCycles );
+
+	LayerCopyAt(	layer, hCycles.origin.col, hCycles.origin.row,
+			hCycles.length, hCycles.attr, hCycles.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
@@ -11375,9 +11379,11 @@ CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	LayerFillAt(	layer, 0, row, draw.Size.width,
-			RSC(LAYOUT_RULER_CSTATES).CODE(),
-			RSC(LAYOUT_RULER_CSTATES).ATTR()[0] );
+	LayerDeclare(	LAYOUT_RULER_CSTATES, draw.Size.width,
+			0, row, hCStates );
+
+	LayerCopyAt(	layer, hCStates.origin.col, hCStates.origin.row,
+			hCStates.length, hCStates.attr, hCStates.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
