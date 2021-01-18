@@ -3746,6 +3746,9 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Timing.value = \
 					readl(mchmap + 0x4000 + 0x400 * cha);
 
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ACT.value = \
+					readl(mchmap + 0x4004 + 0x400 * cha);
+
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Sched.value = \
 					readl(mchmap + 0x401c + 0x400 * cha);
 

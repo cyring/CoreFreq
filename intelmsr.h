@@ -2699,6 +2699,21 @@ typedef union
 } SKL_IMC_CR_TC_PRE;	/* Timing constraints to PRE commands		*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4004h & Channel1: 4404h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tFAW		:  7-0,  /* Four activates window: 16-88 */
+		ReservedBits1	:  8-7,
+		tRRD_SG		: 13-8,  /* Same Bank Group: 4-15	*/
+		tRRD_DG		: 18-13, /* Diff Bank Group: 4-22	*/
+		DERATING_EXT	: 21-18,
+		tRCD_WR		: 27-21, /* if DDR4-E else same as tRP	*/
+		ReservedBits3	: 32-27;
+	};
+} SKL_IMC_CR_TC_ACT;	/* Timing constraints to ACT commands		*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 401Ch & Channel1: 441Ch */
 	unsigned int		value;
 	struct {

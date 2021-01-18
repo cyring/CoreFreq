@@ -3571,28 +3571,28 @@ void SKL_IMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRAS;
-/*
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD  =
-			Proc->Uncore.MC[mc].Channel[cha].SKL._.tRRD;
-*/
+			Proc->Uncore.MC[mc].Channel[cha].SKL.ACT.tRRD_SG;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tRFC;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Refresh.tREFI;
-/*
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWR  =
-			Proc->Uncore.MC[mc].Channel[cha].SKL._.tWR;
-*/
+			Proc->Uncore.MC[mc].Channel[cha].SKL.ACT.tRCD_WR;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tRDPRE;
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.Timing.tWRPRE;
-/*
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW  =
-			Proc->Uncore.MC[mc].Channel[cha].SKL._.tFAW;
-*/
+			Proc->Uncore.MC[mc].Channel[cha].SKL.ACT.tFAW;
+
 	Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL  =
 			Proc->Uncore.MC[mc].Channel[cha].SKL.ODT.tCWL;
 
