@@ -491,11 +491,13 @@ typedef struct
 					ChipID;
 
 	    struct {
-		unsigned char	/* 00:MHz , 01:MT/s , 10:MB/s , 11:VOID */
-					Bus_Rate: 2-0,
-					BusSpeed: 4-2,
-					DDR_Rate: 6-4,
-					DDRSpeed: 8-6;
+		unsigned short	/* 00:MHz , 01:MT/s , 10:MB/s , 11:VOID */
+					Bus_Rate:  2-0,
+					BusSpeed:  4-2,
+					DDR_Rate:  6-4,
+					DDRSpeed:  8-6,
+					_Unused : 12-8,
+					DDR_Ver : 16-12;
 	    } Unit;
 
 	    struct {

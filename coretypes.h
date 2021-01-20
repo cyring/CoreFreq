@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	83
-#define COREFREQ_REV	7
+#define COREFREQ_REV	8
 
 #define CORE_COUNT	256
 
@@ -1278,7 +1278,6 @@ typedef struct
 	unsigned int	tRRDS;
 	};
 	unsigned int	tRRDL,
-			tRRDDLR,
 
 			tFAW,
 			tFAWSLR,
@@ -1294,25 +1293,46 @@ typedef struct
 	unsigned int	tRTP;
 	};
 	unsigned int	tWTPr,
-			tCWL,
-			tddRdTWr,
-			tddWrTRd,
-			tddWrTWr,
-			tddRdTRd;
+			tCWL;
 	union {
 		struct {
-	unsigned int	tsrRdTRd,
+	unsigned int	tddRdTWr,
+			tddWrTRd,
+			tddWrTWr,
+			tddRdTRd,
+			tsrRdTRd,
 			tdrRdTRd,
 			tsrRdTWr,
 			tdrRdTWr,
 			tsrWrTRd,
 			tdrWrTRd,
 			tsrWrTWr,
-			tdrWrTWr,
-			_VOID[3];
-		};
+			tdrWrTWr;
+		}; /* DDR3 */
 		struct {
-	unsigned int	tRdRdScl,
+	unsigned int	tRDRD_SG,
+			tRDRD_DG,
+			tRDRD_DR,
+			tRDRD_DD,
+			tRDWR_SG,
+			tRDWR_DG,
+			tRDWR_DR,
+			tRDWR_DD,
+			tWRRD_SG,
+			tWRRD_DG,
+			tWRRD_DR,
+			tWRRD_DD,
+			tWRWR_SG,
+			tWRWR_DG,
+			tWRWR_DR,
+			tWRWR_DD;
+		} DDR4;
+		struct {
+	unsigned int	tddRdTWr,
+			tddWrTRd,
+			tddWrTWr,
+			tddRdTRd,
+			tRdRdScl,
 			tWrWrScl,
 			tscWrTWr,
 			tsdWrTWr,
@@ -1321,9 +1341,10 @@ typedef struct
 			tRdRdScDLR,
 			tWrWrScDLR,
 			tWrRdScDLR,
+			tRRDDLR,
 			tRdRdBan,
 			tWrWrBan;
-		};
+		} Zen;
 	};
 	unsigned int	tCKE,
 			tREFI;

@@ -2714,6 +2714,69 @@ typedef union
 } SKL_IMC_CR_TC_ACT;	/* Timing constraints to ACT commands		*/
 
 typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 400Ch & Channel1: 440Ch */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRDRD_SG	:  6-0,  /* RD to RD, same bank: 4-54	*/
+		ReservedBits1	:  8-6,
+		tRDRD_DG	: 14-8,  /* RD to RD, different bank: 4-54 */
+		ReservedBits2	: 16-14,
+		tRDRD_DR	: 22-16, /* RD to RD, different rank: 4-54 */
+		ReservedBits3	: 24-22,
+		tRDRD_DD	: 30-24, /* RD to RD, different DIMM: 4-54 */
+		ReservedBits4	: 32-30;
+	};
+} SKL_IMC_CR_TC_RDRD;	/* Timing between read and read transactions	*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4010h & Channel1: 4410h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tRDWR_SG	:  6-0,  /* RD to WR, same bank: 4-54	*/
+		ReservedBits1	:  8-6,
+		tRDWR_DG	: 14-8,  /* RD to WR, different bank: 4-54 */
+		ReservedBits2	: 16-14,
+		tRDWR_DR	: 22-16, /* RD to WR, different rank: 4-54 */
+		ReservedBits3	: 24-22,
+		tRDWR_DD	: 30-24, /* RD to WR, different DIMM: 4-54 */
+		ReservedBits4	: 32-30;
+	};
+} SKL_IMC_CR_TC_RDWR;	/* Timing between read and write transactions	*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4014h & Channel1: 4414h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tWRRD_SG	:  8-0,  /* WR to RD, same bank: 4-145	*/
+		tWRRD_DG	: 15-8,  /* WR to RD, different bank: 4-65 */
+		ReservedBits1	: 16-15,
+		tWRRD_DR	: 22-16, /* WR to RD, different rank: 4-54 */
+		ReservedBits2	: 24-22,
+		tWRRD_DD	: 30-24, /* WR to RD, different DIMM: 4-54 */
+		ReservedBits3	: 32-30;
+	};
+} SKL_IMC_CR_TC_WRRD;	/* Timing between write and read transactions	*/
+
+typedef union
+{	/* Device: 0 - Function: 0 - Offset Channel0: 4018h & Channel1: 4418h */
+	unsigned int		value;
+	struct {
+		unsigned int
+		tWRWR_SG	:  6-0,  /* WR to WR, same bank: 4-54	*/
+		ReservedBits1	:  8-6,
+		tWRWR_DG	: 14-8,  /* WR to WR, different bank: 4-54 */
+		ReservedBits2	: 16-14,
+		tWRWR_DR	: 22-16, /* WR to WR, different rank: 4-54 */
+		ReservedBits3	: 24-22,
+		tWRWR_DD	: 30-24, /* WR to WR, different DIMM: 4-54 */
+		ReservedBits4	: 32-30;
+	};
+} SKL_IMC_CR_TC_WRWR;	/* Timing between write and write transactions	*/
+
+typedef union
 {	/* Device: 0 - Function: 0 - Offset Channel0: 401Ch & Channel1: 441Ch */
 	unsigned int		value;
 	struct {

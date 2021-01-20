@@ -4338,6 +4338,81 @@ const char *Footer_DDR3[2][MC_MATX] = {
 const char *Header_DDR4[3][MC_MATX] = {
 	{
 		" Cha ",
+		"   CL", "  RCD", "   RP", "  RAS", "  RRD", "  RFC",
+		"   WR", " RTPr", " WTPr", "  FAW", "  B2B", "  CWL",
+		" CMD ", " REFI"
+	},
+	{
+		"     ",
+		" sgRR", " dgRR", " drRR", " ddRR", "     ", " sgRW",
+		" dgRW", " drRW", " ddRW", "     ", " sgWR", " dgWR",
+		" drWR", " ddWR"
+	},
+	{
+		"     ",
+		" sgWW", " dgWW", " drWW", " ddWW", "     ", "     ",
+		"     ", "     ", "     ", "     ", "     ", "     ",
+		" CKE ", "  ECC"
+	}
+};
+
+const char *Footer_DDR4[3][MC_MATX] = {
+	{
+		NULL,
+		" tCL ( CAS Latency ) ",
+		" tRCD ( Activate to CAS ) ",
+		" tRP ( RAS Precharge to Activate ) ",
+		" tRAS ( Activate to Precharge ) ",
+		" tRRD ( Activate to Activate, Same Rank ) ",
+		" tRFC ( Refresh to Refresh ) ",
+		" tWR ( Write Recovery ) ",
+		" tRTPr ( Read CAS to Precharge ) ",
+		" tWTPr ( Write CAS to Precharge ) ",
+		" tFAW ( Four Activate Window ) ",
+		" B2B ( CAS commands spacing ) ",
+		" tCWL ( CAS Write Latency ) ",
+		" CMD ( Command Rate ) ",
+		" tREFI ( Refresh Interval ) "
+	},
+	{
+		NULL,
+		" tRDRD ( Read to Read, Same Bank ) ",
+		" tRDRD ( Read to Read, Different Bank ) ",
+		" tRDRD ( Read to Read, Different Rank ) ",
+		" tRDRD ( Read to Read, Different DIMM ) ",
+		NULL,
+		" tRDWR ( Read to Write, Same Bank ) ",
+		" tRDWR ( Read to Write, Different Bank ) ",
+		" tRDWR ( Read to Write, Different Rank ) ",
+		" tRDWR ( Read to Write, Different DIMM ) ",
+		NULL,
+		" tWRRD ( Write to Read, Same Bank ) ",
+		" tWRRD ( Write to Read, Different Bank ) ",
+		" tWRRD ( Write to Read, Different Rank ) ",
+		" tWRRD ( Write to Read, Different DIMM ) "
+	},
+	{
+		NULL,
+		" tWRWR ( Write to Write, Same Bank ) ",
+		" tWRWR ( Write to Write, Different Bank ) ",
+		" tWRWR ( Write to Write, Different Rank ) ",
+		" tWRWR ( Write to Write, Different DIMM ) ",
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		" tCKE ( ClocK Enable ) ",
+		" ECC ( Error Correcting Code ) "
+	}
+};
+
+const char *Header_DDR4_Zen[3][MC_MATX] = {
+	{
+		" Cha ",
 		"  CL ", " RCDR", " RCDW", "  RP ", " RAS ", "  RC ",
 		" RRDS", " RRDL", " FAW ", " WTRS", " WTRL", "  WR ",
 		" clRR", " clWW"
@@ -4355,7 +4430,7 @@ const char *Header_DDR4[3][MC_MATX] = {
 	}
 };
 
-const char *Footer_DDR4[3][MC_MATX] = {
+const char *Footer_DDR4_Zen[3][MC_MATX] = {
 	{
 		NULL,
 		" tCL ( CAS Latency ) ",
@@ -4438,11 +4513,7 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
 	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
-#if MC_MATX > 15
-    for (nc = 0; nc < (MC_MATX - 15); nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-#endif
+
 	PRT(IMC, attrib[1], "%3uT\x20",
 		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
 
@@ -4469,11 +4540,7 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
     PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
-#if MC_MATX > 15
-    for (nc = 0; nc < (MC_MATX - 15); nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-#endif
+
     PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
 
     PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
@@ -4494,6 +4561,85 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
+	PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+
+	PRT(IMC, attrib[1], "%3uT\x20",
+		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+
+	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
+  }
+  for (nc = 0; nc < MC_MATX; nc++) {
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]), Footer_DDR4[1][nc]);
+  }
+  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  {
+    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD);
+
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD);
+
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD);
+  }
+  for (nc = 0; nc < MC_MATX; nc++) {
+	GridHover(PRT(IMC, attrib[0], Header_DDR4[2][nc]), Footer_DDR4[2][nc]);
+  }
+  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  {
+    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR);
+  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD);
+
+    for (nc = 0; nc < 8; nc++) {
+	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+    }
+
+    PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
+
+    PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
+  }
+}
+
+void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
+{
+	ATTRIBUTE *attrib[2] = {
+		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
+		RSC(MEMORY_CONTROLLER_COND1).ATTR()
+	};
+	CUINT	nc;
+	unsigned short cha;
+
+  for (nc = 0; nc < MC_MATX; nc++) {
+    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[0][nc]),Footer_DDR4_Zen[0][nc]);
+  }
+  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+  {
     PRT(IMC,attrib[0], "\x20\x20#%-2u", cha);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_RD);
@@ -4510,16 +4656,11 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRL);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScl);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScl);
-#if MC_MATX > 15
-    for (nc = 0; nc < (MC_MATX - 15); nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-#endif
+    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScl);
+    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScl);
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]), Footer_DDR4[1][nc]);
+    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[1][nc]),Footer_DDR4_Zen[1][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4528,29 +4669,24 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTP);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTWr);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTRd);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tscWrTWr);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tsdWrTWr);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscWrTWr);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdWrTWr);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTWr);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tscRdTRd);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tsdRdTRd);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscRdTRd);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdRdTRd);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTRd);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdScDLR);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrScDLR);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWrRdScDLR);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDDLR);
-#if MC_MATX > 15
-    for (nc = 0; nc < (MC_MATX - 15); nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-#endif
+PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScDLR);
+PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScDLR);
+PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrRdScDLR);
+  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRRDDLR);
   }
   for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[2][nc]), Footer_DDR4[2][nc]);
+    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[2][nc]),Footer_DDR4_Zen[2][nc]);
   }
   for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
   {
@@ -4565,14 +4701,10 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR);
-#if MC_MATX > 15
-    for (nc = 0; nc < (MC_MATX - 15); nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
-#endif
+
     PRT(IMC,attrib[1], "\x20R%1uW%1u",
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tRdRdBan,
-			Shm->Uncore.MC[mc].Channel[cha].Timing.tWrWrBan);
+			Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdBan,
+			Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrBan);
 
     PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPage);
 
@@ -5897,24 +6029,22 @@ Window *CreateMemCtrl(unsigned long long id)
 	TIMING_FUNC pTimingFunc;
 	unsigned int mc, rows = 1, ctrlHeaders, channelHeaders;
 
-	switch (Shm->Proc.ArchID) {
-	case AMD_Family_17h:
-	case AMD_Family_18h:
-	case AMD_Family_19h:
-	case AMD_Zen:
-	case AMD_Zen_APU:
-	case AMD_ZenPlus:
-	case AMD_ZenPlus_APU:
-	case AMD_Zen_APU_Dali:
-	case AMD_EPYC_Rome:
-	case AMD_Zen2_CPK:
-	case AMD_Zen2_APU:
-	case AMD_Zen2_MTS:
-	case AMD_Zen3_VMR:
+	switch (Shm->Uncore.Unit.DDR_Ver) {
+	case 4:
 		ctrlHeaders = 7;
 		channelHeaders = 5;
-		pTimingFunc = Timing_DDR4;
+		if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+		{
+			pTimingFunc = Timing_DDR4;
+		}
+		else if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+			||(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+		{
+			pTimingFunc = Timing_DDR4_Zen;
+		}
 		break;
+	case 3:
+	case 2:
 	default:
 		ctrlHeaders = 6;
 		channelHeaders = 4;
@@ -15181,22 +15311,19 @@ int main(int argc, char *argv[])
 	      {
 		Window tty = {.matrix.size.wth = MC_MATX};
 
-		switch (Shm->Proc.ArchID) {
-		case AMD_Family_17h:
-		case AMD_Family_18h:
-		case AMD_Family_19h:
-		case AMD_Zen:
-		case AMD_Zen_APU:
-		case AMD_ZenPlus:
-		case AMD_ZenPlus_APU:
-		case AMD_Zen_APU_Dali:
-		case AMD_EPYC_Rome:
-		case AMD_Zen2_CPK:
-		case AMD_Zen2_APU:
-		case AMD_Zen2_MTS:
-		case AMD_Zen3_VMR:
+		switch (Shm->Uncore.Unit.DDR_Ver) {
+		case 4:
+		    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
 			MemoryController(&tty, NULL, Timing_DDR4);
+		    }
+		  else if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+			|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+		    {
+			MemoryController(&tty, NULL, Timing_DDR4_Zen);
+		    }
 			break;
+		case 3:
+		case 2:
 		default:
 			MemoryController(&tty, NULL, Timing_DDR3);
 			break;

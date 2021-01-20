@@ -338,6 +338,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", (unsigned) Shm->Uncore.Unit.DDR_Rate);
 			json_key(&s, "DDRSpeed");
 			json_literal(&s, "%u", (unsigned) Shm->Uncore.Unit.DDRSpeed);
+			json_key(&s, "DDR_Ver");
+			json_literal(&s, "%u", (unsigned) Shm->Uncore.Unit.DDR_Ver);
 			json_end_object(&s);
 		}
 		json_end_object(&s);

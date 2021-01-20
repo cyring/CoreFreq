@@ -3749,6 +3749,18 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.ACT.value = \
 					readl(mchmap + 0x4004 + 0x400 * cha);
 
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.RDRD.value = \
+					readl(mchmap + 0x400c + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.RDWR.value = \
+					readl(mchmap + 0x4010 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.WRRD.value = \
+					readl(mchmap + 0x4014 + 0x400 * cha);
+
+	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.WRWR.value = \
+					readl(mchmap + 0x4018 + 0x400 * cha);
+
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Sched.value = \
 					readl(mchmap + 0x401c + 0x400 * cha);
 

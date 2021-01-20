@@ -518,6 +518,10 @@ typedef struct
 			struct {
 	/* 4000h */		SKL_IMC_CR_TC_PRE	Timing; /* 32 bits    */
 	/* 4004h */		SKL_IMC_CR_TC_ACT	ACT;	/* 32 bits    */
+	/* 400Ch */		SKL_IMC_CR_TC_RDRD	RDRD;	/* 32 bits    */
+	/* 4010h */		SKL_IMC_CR_TC_RDWR	RDWR;	/* 32 bits    */
+	/* 4014h */		SKL_IMC_CR_TC_WRRD	WRRD;	/* 32 bits    */
+	/* 4018h */		SKL_IMC_CR_TC_WRWR	WRWR;	/* 32 bits    */
 	/* 401Ch */		SKL_IMC_CR_SC_CFG	Sched;	/* 32 bits    */
 	/* 4070h */		SKL_IMC_CR_TC_ODT	ODT;	/* 32 bits    */
 	/* 423Ch */		SKL_IMC_REFRESH_TC	Refresh; /*32 bits    */
