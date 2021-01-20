@@ -1269,7 +1269,3 @@ typedef union
 	};
 } AMD_17_CORE_VID;
 
-#ifndef SMU_AMD_F17H_AT_CLUSTER
-	#define SMU_AMD_F17H_AT_CLUSTER( _reg, _ccx ) ( _reg + _ccx )
-#endif
-

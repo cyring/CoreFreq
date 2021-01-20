@@ -5214,19 +5214,13 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
 		Core_AMD_SMN_Read(XtraCOF,
-				SMU_AMD_F17H_AT_CLUSTER(
-					SMU_AMD_F17H_MATISSE_COF,
-					PUBLIC(RO(Core, AT(cpu)))->T.Cluster.CCX
-				),
+				SMU_AMD_F17H_MATISSE_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H);
 		break;
 	case AMD_Zen2_CPK:
 		Core_AMD_SMN_Read(XtraCOF,
-				SMU_AMD_F17H_AT_CLUSTER(
-					SMU_AMD_F17H_CASTLEPEAK_COF,
-					PUBLIC(RO(Core, AT(cpu)))->T.Cluster.CCX
-				),
+				SMU_AMD_F17H_CASTLEPEAK_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H);
 		break;
@@ -5532,10 +5526,7 @@ long ClockMod_AMD_Zen(CLOCK_ARG *pClockMod)
 void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 {	/*		Package Power Tracking				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.PWR,
-				SMU_AMD_F17H_AT_CLUSTER(
-					SMU_AMD_F17H_MTS_CPK_PWR,
-					Core->T.Cluster.CCX
-				),
+				SMU_AMD_F17H_MTS_CPK_PWR,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 	/*		Junction Temperature				*/
@@ -5543,18 +5534,12 @@ void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 				PUBLIC(RO(Proc))->PowerThermal.Zen.PWR.TjMax;
 	/*		Thermal Design Power				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.TDP,
-				SMU_AMD_F17H_AT_CLUSTER(
-					SMU_AMD_F17H_MTS_CPK_TDP,
-					Core->T.Cluster.CCX
-				),
+				SMU_AMD_F17H_MTS_CPK_TDP,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 	/*		Electric Design Current				*/
 	Core_AMD_SMN_Read( PUBLIC(RO(Proc))->PowerThermal.Zen.EDC,
-				SMU_AMD_F17H_AT_CLUSTER(
-					SMU_AMD_F17H_MTS_CPK_EDC,
-					Core->T.Cluster.CCX
-				),
+				SMU_AMD_F17H_MTS_CPK_EDC,
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 }
@@ -9592,11 +9577,8 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	TCCD_REGISTER TccdSensor = {.value = 0};
 
 	Core_AMD_SMN_Read(	TccdSensor,
-				SMU_AMD_F17H_AT_CLUSTER(
-					(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
-					+ (Core->T.Cluster.CCD << 2)),
-					Core->T.Cluster.CCX
-				),
+				(SMU_AMD_THM_TCTL_CCD_REGISTER_F17H
+				+ (Core->T.Cluster.CCD << 2)),
 				SMU_AMD_INDEX_REGISTER_F17H,
 				SMU_AMD_DATA_REGISTER_F17H );
 
