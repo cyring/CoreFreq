@@ -420,10 +420,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_SECOND_CODE_FR "seconde"
 #define RSC_POWER_THERMAL_TDP_CODE_FR	"Dissipation thermique"
 #define RSC_POWER_THERMAL_MIN_CODE_FR	"Puissance minimale"
-#define RSC_POWER_THERMAL_MAX_CODE_FR	"Puissance maximum"
+#define RSC_POWER_THERMAL_MAX_CODE_FR	"Puissance maximale"
 #define RSC_POWER_THERMAL_PPT_CODE_FR	"Consommation maximale"
-#define RSC_POWER_THERMAL_EDC_CODE_FR	"Courant de conception ""\xa9""lectr."
-#define RSC_POWER_THERMAL_TDC_CODE_FR	"Courant de conception thermique"
+#define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
+#define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant durable"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"
