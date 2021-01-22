@@ -2371,108 +2371,224 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(SYSINFO_TECH_COND0).ATTR(),
 		RSC(SYSINFO_TECH_COND1).ATTR()
 	};
-	unsigned int bix;
-/* Section Mark */
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+	const struct TECH_ST {
+		unsigned int		*CRC;
+		const unsigned short	cond;
+		const int		tab;
+		char			*item;
+		const ASCII		*code;
+		const CUINT		spaces;
+		const char		*context;
+		const unsigned long long shortkey;
+		void			(*Update)(struct _Grid*, DATA_TYPE);
+	} TECH[] = \
     {
-	bix = Shm->Proc.Technology.SMM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMM-Dual       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Features.HyperThreading == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sHTT       [%3s]", RSC(TECHNOLOGIES_HTT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_HTT), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Technology.EIST == 1;
-    GridCall(PUT(BOXKEY_EIST, attrib[bix], width, 2,
-		"%s%.*sEIST       <%3s>", RSC(TECHNOLOGIES_EIST).CODE(),
-		width - 19 - RSZ(TECHNOLOGIES_EIST), hSpace, ENABLED(bix)),
-	SpeedStepUpdate);
-
-	bix = Shm->Proc.Features.Power.EAX.TurboIDA == 1;
-    GridCall(PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sIDA       [%3s]", RSC(TECHNOLOGIES_IDA).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_IDA), hSpace, ENABLED(bix)),
-	IDA_Update);
-
-	bix = Shm->Proc.Technology.Turbo == 1;
-    GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
-		"%s%.*sTURBO       <%3s>", RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 20 - RSZ(TECHNOLOGIES_TURBO), hSpace, ENABLED(bix)),
-	TurboUpdate);
-
-	bix = Shm->Proc.Features.R2H_Disable == 1;
-    GridCall(PUT(BOXKEY_R2H, attrib[bix], width, 2,
-		"%s%.*sR2H       <%3s>", RSC(TECHNOLOGIES_R2H).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_R2H), hSpace, ENABLED(bix)),
-	Race2HaltUpdate);
-
-	bix = Shm->Proc.Technology.VM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sVMX       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Technology.IOMMU == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"%s%.*sVT-d       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.SMM == 1,
+		2, "%s%.*sSMM-Dual       [%3s]",
+		RSC(TECHNOLOGIES_SMM).CODE(),
+		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.HyperThreading == 1,
+		2, "%s%.*sHTT       [%3s]",
+		RSC(TECHNOLOGIES_HTT).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_HTT),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.EIST == 1,
+		2, "%s%.*sEIST       <%3s>",
+		RSC(TECHNOLOGIES_EIST).CODE(),
+		width - 19 - RSZ(TECHNOLOGIES_EIST),
+		NULL,
+		BOXKEY_EIST,
+		SpeedStepUpdate
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.Power.EAX.TurboIDA == 1,
+		2, "%s%.*sIDA       [%3s]",
+		RSC(TECHNOLOGIES_IDA).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_IDA),
+		NULL,
+		SCANKEY_NULL,
+		IDA_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.Turbo == 1,
+		2, "%s%.*sTURBO       <%3s>",
+		RSC(TECHNOLOGIES_TURBO).CODE(),
+		width - 20 - RSZ(TECHNOLOGIES_TURBO),
+		NULL,
+		BOXKEY_TURBO,
+		TurboUpdate
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.R2H_Disable == 1,
+		2, "%s%.*sR2H       <%3s>",
+		RSC(TECHNOLOGIES_R2H).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_R2H),
+		NULL,
+		BOXKEY_R2H,
+		Race2HaltUpdate
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.VM == 1,
+		2, "%s%.*sVMX       [%3s]",
+		RSC(TECHNOLOGIES_VM).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_VM),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.IOMMU == 1,
+		3, "%s%.*sVT-d       [%3s]",
+		RSC(TECHNOLOGIES_IOMMU).CODE(),
 		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
-		hSpace, ENABLED(bix));
-    }
-    else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
-    {
-	bix = Shm->Proc.Technology.SMM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMM-Lock       [%3s]", RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Features.HyperThreading == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSMT       [%3s]", RSC(TECHNOLOGIES_SMT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_SMT), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.PowerNow == 0b11;	/*	VID + FID	*/
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sCnQ       [%3s]", RSC(TECHNOLOGIES_CNQ).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CNQ), hSpace, ENABLED(bix));
-
-	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sCCx       [%3s]", RSC(PERF_MON_CORE_CSTATE).CODE(),
-		width - 18 - RSZ(PERF_MON_CORE_CSTATE), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Technology.Turbo == 1;
-    GridCall(PUT(BOXKEY_TURBO, attrib[bix], width, 2,
-		"%s%.*sCPB       <%3s>", RSC(TECHNOLOGIES_CPB).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CPB), hSpace, ENABLED(bix)),
-	TurboUpdate);
-
-	bix = Shm->Proc.Technology.VM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sSVM       [%3s]", RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM), hSpace, ENABLED(bix));
-
-	bix = Shm->Proc.Technology.IOMMU == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"%s%.*sAMD-V       [%3s]", RSC(TECHNOLOGIES_IOMMU).CODE(),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.SMM == 1,
+		2, "%s%.*sSMM-Lock       [%3s]",
+		RSC(TECHNOLOGIES_SMM).CODE(),
+		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Features.HyperThreading == 1,
+		2, "%s%.*sSMT       [%3s]",
+		RSC(TECHNOLOGIES_SMT).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_SMT),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.PowerNow == 0b11,	/*	VID + FID	*/
+		2, "%s%.*sCnQ       [%3s]",
+		RSC(TECHNOLOGIES_CNQ).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_CNQ),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0,
+		2, "%s%.*sCCx       [%3s]",
+		RSC(PERF_MON_CORE_CSTATE).CODE(),
+		width - 18 - RSZ(PERF_MON_CORE_CSTATE),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.Turbo == 1,
+		2, "%s%.*sCPB       <%3s>",
+		RSC(TECHNOLOGIES_CPB).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_CPB),
+		NULL,
+		BOXKEY_TURBO,
+		TurboUpdate
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.VM == 1,
+		2, "%s%.*sSVM       [%3s]",
+		RSC(TECHNOLOGIES_VM).CODE(),
+		width - 18 - RSZ(TECHNOLOGIES_VM),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.IOMMU == 1,
+		3, "%s%.*sAMD-V       [%3s]",
+		RSC(TECHNOLOGIES_IOMMU).CODE(),
 		width - (OutFunc? 21 : 23) - RSZ(TECHNOLOGIES_IOMMU),
-		hSpace, ENABLED(bix));
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		Shm->Proc.Features.Std.ECX.Hyperv == 1,
+		3, "%s%.*s""%10s       [%3s]",
+		RSC(TECHNOLOGIES_HYPERV).CODE(),
+		width - (OutFunc? 26 : 28) - RSZ(TECHNOLOGIES_HYPERV),
+		Hypervisor[Shm->Proc.HypervisorID],
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		0,
+		3, "%s%.*s""       [%12s]",
+		RSC(VENDOR_ID).CODE(),
+		width - (OutFunc? 25 : 27) - RSZ(VENDOR_ID),
+		strlen(Shm->Proc.Features.Info.Hypervisor.ID) > 0 ?
+		Shm->Proc.Features.Info.Hypervisor.ID
+		: (char*) RSC(NOT_AVAILABLE).CODE(),
+		SCANKEY_NULL,
+		NULL
+	}
+    };
+	size_t idx;
+  for (idx = 0; idx < sizeof(TECH) / sizeof(struct TECH_ST); idx++)
+  {
+	unsigned short capable = 0;
+    if (TECH[idx].CRC == NULL) {
+	capable = 1;
+    } else {
+	unsigned int *CRC;
+	for (CRC = TECH[idx].CRC; (*CRC) != 0 && capable == 0; CRC++)
+	{
+		if ( (*CRC) == Shm->Proc.Features.Info.Vendor.CRC ) {
+			capable = 1;
+		}
+	}
     }
-	bix = Shm->Proc.Features.Std.ECX.Hyperv == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 3,
-		"%s%.*s""%10s       [%3s]", RSC(TECHNOLOGIES_HYPERV).CODE(),
-		width - (OutFunc? 26 : 28) - RSZ(TECHNOLOGIES_HYPERV), hSpace,
-		Hypervisor[Shm->Proc.HypervisorID], ENABLED(bix));
+    if (capable)
+    {
+	TGrid *grid=PUT((TECH[idx].shortkey == SCANKEY_NULL) ? SCANKEY_NULL
+			: TECH[idx].shortkey,
+			attrib[ TECH[idx].cond ],
+			width,	TECH[idx].tab,
+			TECH[idx].item, TECH[idx].code,
+			TECH[idx].spaces, hSpace,
+			(TECH[idx].context == NULL) ? ENABLED(TECH[idx].cond)
+			: TECH[idx].context,
+			ENABLED(TECH[idx].cond) );
 
-      if (bix)
-      {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*s""       [%12s]", RSC(VENDOR_ID).CODE(),
-		width - (OutFunc? 25 : 27) - RSZ(VENDOR_ID), hSpace,
-		Shm->Proc.Features.Info.Hypervisor.ID);
-      }
+	if (TECH[idx].Update != NULL)
+	{
+		GridCall(grid, TECH[idx].Update);
+	}
+    }
+  }
 	return (reason);
 }
 
@@ -5806,7 +5922,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 8;
+		matrixSize.hth = 9;
 		winOrigin.row = TOP_HEADER_ROW + 10;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
