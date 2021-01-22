@@ -1722,11 +1722,10 @@ static void Map_AMD_Topology(void *arg)
 		CPUID_0x8000001e leaf8000001e = {
 			.EAX = {0}, .EBX = {{0}}, .ECX = {0}, .EDX = {0}
 		};
-		/* Fn8000_001D Cache Properties. */
+		/*	Fn8000_001D Cache Properties.			*/
 		unsigned long idx, level[CACHE_MAX_LEVEL] = {1, 0, 2, 3};
-		/* Skip one CDD on two with x48 and x64 SMT Threadripper */
-		unsigned int factor	=	(leaf80000008.ECX.NC == 0x3f)
-					||	(leaf80000008.ECX.NC == 0x2f);
+		/*	Skip one CDD on two with Threadripper.		*/
+		unsigned int factor = 0;
 
 		for (idx = 0; idx < CACHE_MAX_LEVEL; idx++ ) {
 		    __asm__ volatile
@@ -1773,10 +1772,31 @@ static void Map_AMD_Topology(void *arg)
 		Core->T.CoreID    = leaf8000001e.EBX.CoreId;
 		Core->T.PackageID = leaf8000001e.ECX.NodeId;
 
-		if (leaf8000001e.EBX.ThreadsPerCore > 0) {
+		if (leaf8000001e.EBX.ThreadsPerCore > 0)
+		{	/*		SMT is enabled .		*/
 			Core->T.ThreadID  = leaf8000001e.EAX.ExtApicId & 1;
-		} else {
+
+		/* CCD factor for [x24 ... x128] SMT Core Threadripper	*/
+			factor	=  (leaf80000008.ECX.NC == 0x7f)
+				|| (leaf80000008.ECX.NC == 0x3f)
+				|| (leaf80000008.ECX.NC == 0x2f)
+				||((leaf80000008.ECX.NC == 0x1f)
+				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK))
+				||((leaf80000008.ECX.NC == 0x17)
+				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK));
+		}
+		else
+		{	/*		SMT is disabled.		*/
 			Core->T.ThreadID  = 0;
+
+		/* CCD factor for [x12 ... x64] physical Core Threadripper */
+			factor	=  (leaf80000008.ECX.NC == 0x3f)
+				|| (leaf80000008.ECX.NC == 0x1f)
+				|| (leaf80000008.ECX.NC == 0x17)
+				||((leaf80000008.ECX.NC == 0x0f)
+				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK))
+				||((leaf80000008.ECX.NC == 0x0b)
+				&& (PUBLIC(RO(Proc))->ArchID == AMD_Zen2_CPK));
 		}
 
 		Core->T.Cluster.Node=leaf8000001e.ECX.NodeId;
