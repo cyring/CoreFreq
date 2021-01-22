@@ -5121,8 +5121,14 @@ void Master_Ring_Handler(REF *Ref, unsigned int rid)
     {
 	RING_CTRL ctrl __attribute__ ((aligned(16)));
 	RING_READ(Ref->Shm->Ring[rid], ctrl);
-	int rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg), drc = errno;
+	int rc = -EPERM, drc = -EPERM;
 
+	if (	(ctrl.cmd >= COREFREQ_IOCTL_SYSUPDT)
+	&&	(ctrl.cmd <= COREFREQ_IOCTL_CLEAR_EVENTS) )
+	{
+		rc = ioctl(Ref->fd->Drv, ctrl.cmd, ctrl.arg);
+		drc = errno;
+	}
 	if (Quiet & 0x100) {
 		printf("\tRING[%u](%x,%x)(%lx)>(%d,%d)\n",
 			rid, ctrl.cmd, ctrl.sub, ctrl.arg, rc, drc);
