@@ -68,15 +68,19 @@ typedef struct {
 
 void Core_ResetSensorLimits(CPU_STRUCT *Cpu)
 {
-	RESET_SENSOR_LIMIT(THERMAL, LOWEST, Cpu->PowerThermal.Limit);
-	RESET_SENSOR_LIMIT(VOLTAGE, LOWEST, Cpu->Sensors.Voltage.Limit);
-	RESET_SENSOR_LIMIT(ENERGY , LOWEST, Cpu->Sensors.Energy.Limit);
-	RESET_SENSOR_LIMIT(POWER  , LOWEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(THERMAL,	LOWEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE,	LOWEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY,	LOWEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER,	LOWEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(REL_FREQ,	LOWEST, Cpu->Relative.Freq);
+	RESET_SENSOR_LIMIT(ABS_FREQ,	LOWEST, Cpu->Absolute.Freq);
 
-	RESET_SENSOR_LIMIT(THERMAL,HIGHEST, Cpu->PowerThermal.Limit);
-	RESET_SENSOR_LIMIT(VOLTAGE,HIGHEST, Cpu->Sensors.Voltage.Limit);
-	RESET_SENSOR_LIMIT(ENERGY ,HIGHEST, Cpu->Sensors.Energy.Limit);
-	RESET_SENSOR_LIMIT(POWER  ,HIGHEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(THERMAL,	HIGHEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE,	HIGHEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY,	HIGHEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER,	HIGHEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(REL_FREQ,	HIGHEST, Cpu->Relative.Freq);
+	RESET_SENSOR_LIMIT(ABS_FREQ,	HIGHEST, Cpu->Absolute.Freq);
 }
 
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
@@ -1102,6 +1106,12 @@ static void *Core_Cycle(void *arg)
 	CFlip->Relative.Freq = (double) REL_FREQ_MHz(	CFlip->Relative.Ratio,
 							Core->Clock,
 							Shm->Sleep.Interval );
+	/* Per Core, compute the Relative Frequency limits.		*/
+	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
+						Cpu->Relative.Freq );
+
+	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
+						Cpu->Relative.Freq );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
@@ -1144,10 +1154,16 @@ static void *Core_Cycle(void *arg)
 
 	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
 
-	CFlip->Absolute.Perf	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Perf),
+	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Freq),
 					Core->Ratio.Perf, CFlip->Clock
 				);
+	/* Per Core, compute the Absolute Frequency limits.		*/
+	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
@@ -5772,8 +5788,8 @@ REASON_CODE Core_Manager(REF *Ref)
 			prevTop.RelFreq = CFlop->Relative.Freq;
 			Shm->Proc.Top.Rel = cpu;
 		}
-		if (CFlop->Absolute.Perf > prevTop.AbsFreq) {
-			prevTop.AbsFreq = CFlop->Absolute.Perf;
+		if (CFlop->Absolute.Freq > prevTop.AbsFreq) {
+			prevTop.AbsFreq = CFlop->Absolute.Freq;
 			Shm->Proc.Top.Abs = cpu;
 		}
 

@@ -195,7 +195,7 @@ typedef struct
 		} Relative;
 
 		struct {
-			double		Perf;
+			double		Freq;
 		    struct {
 			unsigned int	Perf;	/* STATUS or BOOST P-State */
 		    } Ratio;
@@ -223,6 +223,13 @@ typedef struct
 			} NMI;
 		} Counter;
 	} FlipFlop[2];
+
+	struct {
+		double		Freq[SENSOR_LIMITS_DIM];
+	} Relative;
+	struct {
+		double		Freq[SENSOR_LIMITS_DIM];
+	} Absolute;
 
 	struct {
 		Bit64			RFLAGS	__attribute__ ((aligned (8))),
@@ -521,10 +528,15 @@ typedef struct
 #define THRESHOLD_LOWEST_CAPPED_VOLTAGE 	0.15
 #define THRESHOLD_LOWEST_CAPPED_ENERGY		0.000001
 #define THRESHOLD_LOWEST_CAPPED_POWER		0.000001
+#define THRESHOLD_LOWEST_CAPPED_REL_FREQ	0.0
+#define THRESHOLD_LOWEST_CAPPED_ABS_FREQ	0.0
+
 #define THRESHOLD_LOWEST_TRIGGER_THERMAL	0
 #define THRESHOLD_LOWEST_TRIGGER_VOLTAGE	0.0
 #define THRESHOLD_LOWEST_TRIGGER_ENERGY 	0.0
 #define THRESHOLD_LOWEST_TRIGGER_POWER		0.0
+#define THRESHOLD_LOWEST_TRIGGER_REL_FREQ	0.0
+#define THRESHOLD_LOWEST_TRIGGER_ABS_FREQ	0.0
 
 #define _RESET_SENSOR_LIMIT(THRESHOLD, Limit)				\
 ({									\
@@ -661,25 +673,25 @@ typedef struct {
 } REASON_CODE;
 
 #define REASON_SET_2xARG(_reason, _rc, _no)				\
-({									\
+{									\
 	_reason.no = _no;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = _rc;						\
-})
+}
 
 #define REASON_SET_1xARG(_reason, _rc)					\
-({									\
+{									\
 	_reason.no = errno;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = _rc;						\
-})
+}
 
 #define REASON_SET_0xARG(_reason)					\
-({									\
+{									\
 	_reason.no = errno;						\
 	_reason.ln = __LINE__;						\
 	_reason.rc = RC_SYS_CALL;					\
-})
+}
 
 #define REASON_DISPATCH(_1,_2,_3,REASON_CURSOR, ... ) REASON_CURSOR
 

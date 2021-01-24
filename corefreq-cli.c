@@ -7141,7 +7141,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
 			CFlop->Absolute.Ratio.Perf,
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			Shm->Proc.Features.TgtRatio_Unlock ? '<' : '[',
 			Shm->Cpu[cpu].Boost[BOOST(TGT)],
 			Shm->Proc.Features.TgtRatio_Unlock ? '>' : ']');
@@ -12318,7 +12318,7 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%.*s",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12379,7 +12379,7 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12442,7 +12442,7 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12647,7 +12647,7 @@ size_t Draw_Monitor_Tasks_Relative_Freq(struct FLIP_FLOP *CFlop)
 
 size_t Draw_Monitor_Tasks_Absolute_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Perf));
+	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq));
 }
 
 size_t (*Draw_Monitor_Tasks_Matrix[2])(struct FLIP_FLOP *CFlop) = \
@@ -12711,7 +12711,7 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			69, hSpace) );
 }
 
@@ -12725,7 +12725,7 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			26, hSpace,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -12760,7 +12760,7 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12778,7 +12778,7 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12891,7 +12891,7 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			56, hSpace) );
 }
@@ -12908,7 +12908,7 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -12944,7 +12944,7 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12963,7 +12963,7 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -13510,7 +13510,7 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20%5.4f"				\
 			"\x20\x20\x20%5.4f"				\
 			"%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
@@ -13569,7 +13569,7 @@ size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
 			CFlop->State.Energy,
@@ -13585,7 +13585,7 @@ size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
@@ -13662,7 +13662,7 @@ size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 	return (snprintf(Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			pSlice->Delta.TSC,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
@@ -13690,7 +13690,7 @@ size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 	return (snprintf(Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			pSlice->Delta.TSC,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
@@ -14170,7 +14170,7 @@ void Draw_Header(Layer *layer, CUINT row)
 		const unsigned int top = Shm->Proc.Top.Abs;
 		CFlop = &Shm->Cpu[top].FlipFlop[!Shm->Cpu[top].Toggle];
 
-		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
+		Clock2LCD(layer, 0,row, CFlop->Absolute.Freq,
 					CFlop->Absolute.Ratio.Perf);
 	} else {
 		const unsigned int top = Shm->Proc.Top.Rel;

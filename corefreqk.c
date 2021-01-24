@@ -433,10 +433,10 @@ void VendorFromCPUID(	char *pVendorID, unsigned int *pLargestFunc,
 			unsigned long leaf, unsigned long subLeaf )
 {
     struct {
-		char		*vendorID;
-		size_t		vendorLen;
-		unsigned int	mfrCRC;
-		enum HYPERVISOR hypervisor;
+		char			*vendorID;
+		size_t			vendorLen;
+		enum CRC_MANUFACTURER	mfrCRC;
+		enum HYPERVISOR 	hypervisor;
     } mfrTbl[] = {
 	{VENDOR_INTEL ,__builtin_strlen(VENDOR_INTEL) ,CRC_INTEL ,  BARE_METAL},
 	{VENDOR_AMD   ,__builtin_strlen(VENDOR_AMD)   ,CRC_AMD   ,  BARE_METAL},
@@ -14498,7 +14498,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	long rc = -EPERM;
 	UNUSED(filp);
 
-    switch (cmd)
+    switch ((enum COREFREQ_MAGIC_COMMAND) cmd)
     {
     case COREFREQ_IOCTL_SYSUPDT:
 	Controller_Stop(1);
@@ -15901,6 +15901,13 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 		Arch[GenuineArch].powerFormula = POWER_FORMULA_AMD;
 		}
+		break;
+	case CRC_KVM:
+	case CRC_VBOX:
+	case CRC_KBOX:
+	case CRC_VMWARE:
+	case CRC_HYPERV:
+		/* Unexpected */
 		break;
 	}
 	/*	Is an architecture identifier requested by user ?	*/
