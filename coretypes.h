@@ -8,7 +8,9 @@
 #define COREFREQ_MINOR	84
 #define COREFREQ_REV	0
 
-#define CORE_COUNT	256
+#if !defined(CORE_COUNT)
+	#define CORE_COUNT	256
+#endif
 
 enum CRC_MANUFACTURER
 {
@@ -375,13 +377,13 @@ enum PWR_DOMAIN {
 #define CLOCK_GHz(_t, _f)	(_f / UNIT_GHz((_t) 1))
 
 #if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4850000000)
-#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
-		MAX_FREQ_HZ / BaseClock					\
-) )
+	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
+			MAX_FREQ_HZ / BaseClock				\
+	) )
 #else
-#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
-		5250000000 / BaseClock					\
-) )
+	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
+			5250000000 / BaseClock				\
+	) )
 #endif
 
 enum OFFLINE

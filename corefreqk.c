@@ -2967,8 +2967,8 @@ void Intel_Hardware_Performance(void)
 		    }
 		  } while (cpu != 0) ;
 
-	    if (BITCMP_CC(PUBLIC(RO(Proc))->CPU.Count, \
-		LOCKLESS, PUBLIC(RW(Proc))->HWP, PUBLIC(RO(Proc))->HWP_Mask) )
+	    if (BITCMP_CC(LOCKLESS, \
+			PUBLIC(RW(Proc))->HWP, PUBLIC(RO(Proc))->HWP_Mask) )
 	    {
 		/*	Enable the Hardware-controlled Performance States. */
 		PM_Enable.HWP_Enable = 1;

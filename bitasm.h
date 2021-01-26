@@ -36,9 +36,17 @@ enum {
 #define CORE_WORD_MOD(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) & 0x3f)
 #define CORE_WORD_POS(_cc_,_offset_) ((_offset_ & CORE_COUNT_MASK(_cc_)) >> 6)
 
+typedef unsigned long long int	Bit1024[16];
+typedef unsigned long long int	Bit512[8];
 typedef unsigned long long int	Bit256[4];
+typedef unsigned long long int	Bit128[2];
 typedef unsigned long long int	Bit64;
 typedef unsigned int		Bit32;
+
+#define BitT2(_cc)		Bit##_cc
+#define BitT1(_cc)		BitT2(_cc)
+#define BitCC			BitT1(CORE_COUNT)
+#define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
 
 #define ATOMIC_SEED 0x436f726546726571LLU
 
@@ -625,27 +633,42 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	);								\
 })
 
+#if (CORE_COUNT == 64)
+#define BITSET_CC(_lock, _base, _offset) BITSET(_lock, _base, _offset)
+#else
 #define BITSET_CC(_lock, _base, _offset)				\
 (									\
 	BITSET(_lock,	_base[ CORE_WORD_TOP(CORE_COUNT)		\
 				- CORE_WORD_POS(CORE_COUNT, _offset) ] ,\
 			CORE_WORD_MOD(CORE_COUNT, _offset) )		\
 )
+#endif
 
+#if (CORE_COUNT == 64)
+#define BITCLR_CC(_lock, _base, _offset) BITCLR(_lock, _base, _offset)
+#else
 #define BITCLR_CC(_lock, _base, _offset)				\
 (									\
 	BITCLR(_lock,	_base[ CORE_WORD_TOP(CORE_COUNT)		\
 				- CORE_WORD_POS(CORE_COUNT, _offset) ] ,\
 			CORE_WORD_MOD(CORE_COUNT, _offset) )		\
 )
+#endif
 
+#if (CORE_COUNT == 64)
+#define BITVAL_CC(_base, _offset) BITVAL(_base, _offset)
+#else
 #define BITVAL_CC(_base, _offset)					\
 (									\
 	BITVAL(_base[CORE_WORD_TOP(CORE_COUNT)				\
 		- CORE_WORD_POS(CORE_COUNT, _offset)],			\
 		CORE_WORD_MOD(CORE_COUNT, _offset) )			\
 )
+#endif
 
+#if (CORE_COUNT == 64)
+#define BITWISEAND_CC(_lock, _opl, _opr) BITWISEAND(_lock, _opl, _opr)
+#else
 #define BITWISEAND_CC(_lock, _opl, _opr)				\
 ({									\
 	volatile Bit64 _ret __attribute__ ((aligned (8))) = 0;		\
@@ -655,7 +678,11 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	_ret;								\
 })
+#endif
 
+#if (CORE_COUNT == 64)
+#define BITSTOR_CC(_lock, _dest, _src) BITSTOR(_lock, _dest, _src)
+#else
 #define BITSTOR_CC(_lock, _dest, _src)					\
 ({									\
 	unsigned int cw = 0;						\
@@ -663,10 +690,19 @@ ASM_RDTSC_PMCx1(r14, r15, ASM_RDTSCP, mem_tsc, __VA_ARGS__)
 		BITSTOR(_lock, _dest[cw], _src[cw]);			\
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 })
+#endif
+
+#define ASM_CMPXCHG16B(_lock, _ret, _reg0, _reg1, _off0, _off1)		\
+	"movq	" #_off0 "(%%" #_reg0 "),	%%rax"	"\n\t"		\
+	"movq	" #_off1 "(%%" #_reg0 "),	%%rdx"	"\n\t"		\
+	"movq	" #_off0 "(%%" #_reg1 "),	%%rbx"	"\n\t"		\
+	"movq	" #_off1 "(%%" #_reg1 "),	%%rcx"	"\n\t"		\
+_lock	"cmpxchg16b " #_off0 "(%%" #_reg1 ")"		"\n\t"		\
+	"setz	" #_ret
 
 #if defined(LEGACY) && (LEGACY > 0)
 FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
-#define BITCMP_CC(_cct, _lock, _opl, _opr)				\
+#define BITCMP_CC(_lock, _opl, _opr)					\
 ({									\
 	unsigned char ret = 1;						\
 	unsigned int cw = 0;						\
@@ -688,48 +724,142 @@ FEAT_MSG("LEGACY Level 1: BITCMP_CC() built without asm cmpxchg16b")
 	} while (++cw <= CORE_WORD_TOP(CORE_COUNT));			\
 	ret;								\
 })
-#else /* LEGACY */
-#define BITCMP_CC(_cct, _lock, _opl, _opr)				\
+
+#elif (CORE_COUNT == 64)
+
+#define BITCMP_CC(_lock, _opl, _opr)					\
+({									\
+	Bit64 _tmp __attribute__ ((aligned (8))) = _opl;		\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	%[opr]	,	%%rbx"	"\n\t"			\
+	_lock	"xorq	%%rbx	,	%[tmp]"	"\n\t"			\
+		"setz	%[ret]" 					\
+		: [ ret]	"+m" (_ret)				\
+		: [ tmp]	"m" (_tmp),				\
+		  [ opr]	"m" (_opr)				\
+		: "cc", "memory", "%rbx"				\
+	);								\
+	_ret;								\
+})
+
+#elif (CORE_COUNT == 128)
+
+#define BITCMP_CC(_lock, _opl, _opr)					\
 ({									\
 	volatile unsigned char _ret;					\
 									\
 	__asm__ volatile						\
 	(								\
-		"movq	$0x1	,	%%rsi"		"\n\t"		\
-		"xorq	%%rdi	,	%%rdi"		"\n\t"		\
-		"movl	%[cct]	,	%%ecx"		"\n\t"		\
-		"shll	$25	,	%%ecx"		"\n\t"		\
-		"jc	1f"				"\n\t"		\
 		"leaq	%[opr]	,	%%r12"		"\n\t"		\
-		"movq	16(%%r12),	%%rax"		"\n\t"		\
-		"movq	24(%%r12),	%%rdx"		"\n\t"		\
-		"leaq	%[opl]	,	%%r12"		"\n\t"		\
-		"movq	16(%%r12),	%%rbx"		"\n\t"		\
-		"movq	24(%%r12),	%%rcx"		"\n\t"		\
-	_lock	"cmpxchg16b 16(%%r12)"			"\n\t"		\
-		"setz	%%sil"				"\n\t"		\
-	"1:"						"\n\t"		\
-		"leaq	%[opr]	,	%%r12"		"\n\t"		\
-		"movq	0(%%r12),	%%rax"		"\n\t"		\
-		"movq	8(%%r12),	%%rdx"		"\n\t"		\
-		"leaq	%[opl]	,	%%r12"		"\n\t"		\
-		"movq	0(%%r12),	%%rbx"		"\n\t"		\
-		"movq	8(%%r12),	%%rcx"		"\n\t"		\
-	_lock	"cmpxchg16b 0(%%r12)"			"\n\t"		\
-		"setz	%%dil"				"\n\t"		\
-		"andq	%%rsi	,	%%rdi"		"\n\t"		\
+		"leaq	%[opl]	,	%%r13"		"\n\t"		\
+		ASM_CMPXCHG16B(_lock, %[ret], r12, r13, 0, 8)		\
+		: [ ret]	"+m"	(_ret),				\
+		  [ opl]	"=m"	(_opl)				\
+		: [ opr]	"m"	(_opr)				\
+		: "cc", "memory",					\
+		  "%rax", "%rbx", "%rcx", "%rdx",			\
+		  "%r12", "r13"						\
+	);								\
+	_ret;								\
+})
+
+#elif (CORE_COUNT == 256)
+
+#define BITCMP_CC(_lock, _opl, _opr)					\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	$0x1	,	%%rsi"			"\n\t"	\
+		"xorq	%%rdi	,	%%rdi"			"\n\t"	\
+		"leaq	%[opr]	,	%%r12"			"\n\t"	\
+		"leaq	%[opl]	,	%%r13"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 16, 24)	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13,  0,  8)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
 		"mov	%%dil	,	%[ret]" 			\
 		: [ ret]	"+m"	(_ret),				\
 		  [ opl]	"=m"	(_opl)				\
-		: [ cct]	"irm"	(_cct),				\
-		  [ opr]	"m"	(_opr)				\
+		: [ opr]	"m"	(_opr)				\
 		: "cc", "memory",					\
 		  "%rax", "%rbx", "%rcx", "%rdx",			\
-		  "%rdi", "%rsi", "%r12"				\
+		  "%r12", "%r13", "%rdi", "%rsi"			\
 	);								\
-									\
 	_ret;								\
 })
+
+#elif (CORE_COUNT == 512)
+
+#define BITCMP_CC(_lock, _opl, _opr)					\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	$0x1	,	%%rsi"			"\n\t"	\
+		"xorq	%%rdi	,	%%rdi"			"\n\t"	\
+		"leaq	%[opr]	,	%%r12"			"\n\t"	\
+		"leaq	%[opl]	,	%%r13"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 48, 56)	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13, 32, 40)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 16, 24)	"\n\t"	\
+		"andq	%%rdi	,	%%rsi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13,  0,  8)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		"mov	%%dil	,	%[ret]" 			\
+		: [ ret]	"+m"	(_ret),				\
+		  [ opl]	"=m"	(_opl)				\
+		: [ opr]	"m"	(_opr)				\
+		: "cc", "memory",					\
+		  "%rax", "%rbx", "%rcx", "%rdx",			\
+		  "%r12", "%r13", "%rdi", "%rsi"			\
+	);								\
+	_ret;								\
+})
+
+#elif (CORE_COUNT == 1024)
+
+#define BITCMP_CC(_lock, _opl, _opr)					\
+({									\
+	volatile unsigned char _ret;					\
+									\
+	__asm__ volatile						\
+	(								\
+		"movq	$0x1	,	%%rsi"			"\n\t"	\
+		"xorq	%%rdi	,	%%rdi"			"\n\t"	\
+		"leaq	%[opr]	,	%%r12"			"\n\t"	\
+		"leaq	%[opl]	,	%%r13"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13,112,120)	"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13, 96,104)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 80, 88)	"\n\t"	\
+		"andq	%%rdi	,	%%rsi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13, 64, 72)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 48, 56)	"\n\t"	\
+		"andq	%%rdi	,	%%rsi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13, 32, 40)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%sil, r12, r13, 16, 24)	"\n\t"	\
+		"andq	%%rdi	,	%%rsi"			"\n\t"	\
+		ASM_CMPXCHG16B(_lock, %%dil, r12, r13,  0,  8)	"\n\t"	\
+		"andq	%%rsi	,	%%rdi"			"\n\t"	\
+		"mov	%%dil	,	%[ret]" 			\
+		: [ ret]	"+m"	(_ret),				\
+		  [ opl]	"=m"	(_opl)				\
+		: [ opr]	"m"	(_opr)				\
+		: "cc", "memory",					\
+		  "%rax", "%rbx", "%rcx", "%rdx",			\
+		  "%r12", "%r13", "%rdi", "%rsi"			\
+	);								\
+	_ret;								\
+})
+
 #endif /* LEGACY */
 
 /* Micro-benchmark. Prerequisites: CPU affinity, RDTSC[P] optionnaly RDPMC */

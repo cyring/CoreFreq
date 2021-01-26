@@ -202,6 +202,8 @@ CPU     IPS            IPC            CPI
 :hash:`yum group install "Development Tools"`  
 
 ## Q&A
+* Q: How many CPUs are supported by _CoreFreq_ ?
+  A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  256 as a default.  
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 
@@ -300,11 +302,11 @@ CPU     IPS            IPC            CPI
 :hash:`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
 
   A: `[AMD][Zen]` CCD temperatures:  
-  _CoreFreq_ driver can be forced to use the Kernel function amd_smn_read()  
-  This allows _CoreFreq_ to be compatible with other SMU drivers.  
+  _CoreFreq_ driver can be forced to use the Kernel function `amd_smn_read()`  
 :heavy_dollar_sign:`make LEGACY=2`  
-  However amd_smn_read() protects any SMU access through a mutex which must not be used in interrupt context  
-  _CoreFreq_ CPU loops are executed in interrupt context where mutex usage will freeze the kernel.  
+  However `amd_smn_read()` serializes the SMU access through a mutex.  
+  _CoreFreq_ CPU monitoring loops are executed in an interrupt context where any blocking call like Mutex will freeze the kernel.  
+  As a recommendation, don't use this option and **make sure no other SMU driver is running**.  
 
   A: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  

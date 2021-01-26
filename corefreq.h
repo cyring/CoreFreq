@@ -411,7 +411,7 @@ typedef struct
 {
 	FOOTPRINT		FootPrint;
 
-	Bit256			roomSched __attribute__ ((aligned (16)));
+	BitCC			roomSched __attribute__ ((aligned (16)));
 
 	struct {	/*	NMI bits: 0 is Unregistered; 1 is Registered */
 		Bit64		NMI	__attribute__ ((aligned (8)));

@@ -6142,8 +6142,8 @@ Window *CreateSysRegs(unsigned long long id)
 Window *CreateMemCtrl(unsigned long long id)
 {
 	Window *wIMC;
-	TIMING_FUNC pTimingFunc;
-	unsigned int mc, rows = 1, ctrlHeaders, channelHeaders;
+	TIMING_FUNC pTimingFunc = Timing_DDR3;
+	unsigned int mc, rows = 1, ctrlHeaders = 6, channelHeaders = 4;
 
 	switch (Shm->Uncore.Unit.DDR_Ver) {
 	case 4:
