@@ -202,7 +202,7 @@ CPU     IPS            IPC            CPI
 :hash:`yum group install "Development Tools"`  
 
 ## Q&A
-* Q: How many CPUs are supported by _CoreFreq_ ?
+* Q: How many CPUs are supported by _CoreFreq_ ?  
   A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  256 as a default.  
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
@@ -336,6 +336,76 @@ CPU     IPS            IPC            CPI
   - The registration is confirmed into the `Settings` window  
   - The idle limit can be changed at any time in the `Kernel` window  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
+
+* Q: What are the build options for _CoreFreq_ ?  
+
+  A: Enter `make help` to display them:  
+
+```
+o---------------------------------------------------------------o
+|  make [all] [clean] [info] [help] [install] [module-install]  |
+|                                                               |
+|  CC=<COMPILER>                                                |
+|    where <COMPILER> is cc, gcc       [clang partial support]  |
+|                                                               |
+|  WARNING=<ARG>                                                |
+|    where default argument is -Wall                            |
+|                                                               |
+|  KERNELDIR=<PATH>                                             |
+|    where <PATH> is the Kernel source directory                |
+|                                                               |
+|  CORE_COUNT=<N>                                               |
+|    where <N> is 64, 128, 256, 512 or 1024 builtin CPU         |
+|                                                               |
+|  LEGACY=<L>                                                   |
+|    where level <L> is 1 or 2                                  |
+|    1: assembly level restriction such as CMPXCHG16            |
+|    2:   kernel level restriction like amd_smn_read()          |
+|                                                               |
+|  UBENCH=<N>                                                   |
+|    where <N> is 0 to disable or 1 to enable micro-benchmark   |
+|                                                               |
+|  TASK_ORDER=<N>                                               |
+|    where <N> is the memory page unit of kernel allocation     |
+|                                                               |
+|  FEAT_DBG=<N>                                                 |
+|    where <N> is 0 or 1 for FEATURE DEBUG level                |
+|                                                               |
+|  DELAY_TSC=<N>                                                |
+|    where <N> is 1 to build a TSC implementation of udelay()   |
+|                                                               |
+|  OPTIM_LVL=<N>                                                |
+|    where <N> is 0, 1, 2 or 3 of the OPTIMIZATION level        |
+|                                                               |
+|  MAX_FREQ_HZ=<freq>                                           |
+|    where <freq> is at least 4050000000 Hz                     |
+|                                                               |
+|  HWM_CHIPSET=<chipset>                                        |
+|    where <chipset> is W83627 or IT8720 or COMPATIBLE          |
+|                                                               |
+|  Performance Counters:                                        |
+|    -------------------------------------------------------    |
+|   |     MSR_CORE_PERF_UCC     |     MSR_CORE_PERF_URC     |   |
+|   |----------- REG -----------|----------- REG -----------|   |
+|   | MSR_IA32_APERF            |  MSR_IA32_MPERF           |   |
+|   | MSR_CORE_PERF_FIXED_CTR1  |  MSR_CORE_PERF_FIXED_CTR2 |   |
+|   | MSR_PPERF                 |  MSR_PPERF                |   |
+|   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |
+|    -------------------------------------------------------    |
+|                                                               |
+|  User Interface Layout:                                       |
+|    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |
+|      when <F> is 1 don't build and display this area part     |
+|                                                               |
+|  Example:                                                     |
+|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |
+|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |
+|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |
+|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |
+|         CORE_COUNT=1024 NO_FOOTER=1 NO_UPPER=1                |
+|         clean all                                             |
+o---------------------------------------------------------------o
+```
 
 * Q: What are the parameters of the _CoreFreq_ driver ?  
 
