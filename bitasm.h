@@ -46,7 +46,12 @@ typedef unsigned int		Bit32;
 #define BitT2(_cc)		Bit##_cc
 #define BitT1(_cc)		BitT2(_cc)
 #define BitCC			BitT1(CORE_COUNT)
+
+#if (CORE_COUNT == 64)
+#define InitCC(_val)		{_val}
+#else
 #define InitCC(_val)		{[0 ... CORE_WORD_TOP(CORE_COUNT) - 1] = _val}
+#endif
 
 #define ATOMIC_SEED 0x436f726546726571LLU
 
