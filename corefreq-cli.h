@@ -361,8 +361,8 @@ typedef void (*UPDATE_CALLBACK)(TGrid*, DATA_TYPE);
   #define Draw_uBenchmark(layer)					\
   ({									\
     if (draw.Flag.uBench) {						\
-	size_t len = snprintf(buffer, 20+1, "%llu", UBENCH_METRIC(0));	\
-	LayerFillAt(	layer, 0, 0, len, buffer,			\
+	size_t len = snprintf(Buffer, 20+1, "%llu", UBENCH_METRIC(0));	\
+	LayerFillAt(	layer, 0, 0, len, Buffer,			\
 			MakeAttr(MAGENTA, 0, BLACK, 1) );		\
     }									\
   })
