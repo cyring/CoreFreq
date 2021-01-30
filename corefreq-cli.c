@@ -3719,6 +3719,7 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 		{.pString = Shm->SMB.Product.Serial,	.secret = 1},
 		{.pString = Shm->SMB.Product.SKU,	.secret = 0},
 		{.pString = Shm->SMB.Product.Family,	.secret = 0},
+		{.pString = Shm->SMB.Board.Vendor,	.secret = 0},
 		{.pString = Shm->SMB.Board.Name,	.secret = 0},
 		{.pString = Shm->SMB.Board.Version,	.secret = 0},
 		{.pString = Shm->SMB.Board.Serial,	.secret = 1}
@@ -3747,6 +3748,7 @@ const char *SMB_Comment[SMB_STRING_COUNT] = {
 	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SERIAL)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SKU)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_FAMILY)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VENDOR)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)	" ",
 	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" "

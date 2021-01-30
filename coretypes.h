@@ -1792,6 +1792,7 @@ enum SMB_STRING {
 	SMB_PRODUCT_SERIAL,
 	SMB_PRODUCT_SKU,
 	SMB_PRODUCT_FAMILY,
+	SMB_BOARD_VENDOR,
 	SMB_BOARD_NAME,
 	SMB_BOARD_VERSION,
 	SMB_BOARD_SERIAL,
@@ -1817,7 +1818,8 @@ typedef union {
 				Family[MAX_UTS_LEN];
 		} Product;
 		struct {
-			char	Name[MAX_UTS_LEN],
+			char	Vendor[MAX_UTS_LEN],
+				Name[MAX_UTS_LEN],
 				Version[MAX_UTS_LEN],
 				Serial[MAX_UTS_LEN];
 		} Board;

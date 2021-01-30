@@ -15433,6 +15433,7 @@ void SMBIOS_Collect(void)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 		{ DMI_PRODUCT_FAMILY,	PUBLIC(RO(Proc))->SMB.Product.Family },
 #endif
+		{ DMI_BOARD_VENDOR,	PUBLIC(RO(Proc))->SMB.Board.Vendor   },
 		{ DMI_BOARD_NAME,	PUBLIC(RO(Proc))->SMB.Board.Name     },
 		{ DMI_BOARD_VERSION,	PUBLIC(RO(Proc))->SMB.Board.Version  },
 		{ DMI_BOARD_SERIAL,	PUBLIC(RO(Proc))->SMB.Board.Serial   }
