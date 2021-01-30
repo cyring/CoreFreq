@@ -3737,16 +3737,33 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 	}
 }
 
+const char *SMB_Comment[SMB_STRING_COUNT] = {
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VENDOR)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VERSION)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_RELEASE)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_SYSTEM_VENDOR)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_NAME)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_VERSION) " ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SERIAL)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SKU)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_FAMILY)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" "
+};
+
 REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	enum SMB_STRING idx;
 
 	REASON_INIT(reason);
 
-	for (idx = 0; idx < SMB_STRING_COUNT; idx ++) {
-		PUT(	SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
-			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-'));
-	}
+    for (idx = 0; idx < SMB_STRING_COUNT; idx ++)
+    {
+	GridHover( PUT( SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
+			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-')),
+		SMB_Comment[idx] );
+    }
 	return (reason);
 }
 
@@ -12271,14 +12288,14 @@ CUINT Draw_Relative_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the relative Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Relative.Ratio));
+	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Relative.Ratio));
 }
 
 CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the absolute Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Absolute.Ratio.Perf));
+	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Absolute.Ratio.Perf));
 }
 #endif /* NO_UPPER */
 
