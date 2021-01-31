@@ -10337,8 +10337,8 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	    #if defined(HWM_CHIPSET) \
 	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
 		RDSIO(	PUBLIC(RO(Proc))->PowerThermal.VID.CPU,
-			HWM_W83627_CPUVCORE,
-			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+			HWM_SIO_CPUVCORE,
+			HWM_SIO_INDEX_PORT, HWM_SIO_DATA_PORT );
 	    #endif
 
 	    switch (SCOPE_OF_FORMULA(PUBLIC(RO(Proc))->thermalFormula))
@@ -10408,16 +10408,16 @@ static enum hrtimer_restart Cycle_Nehalem(struct hrtimer *pTimer)
 	    if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1)) {
 	    #if defined(HWM_CHIPSET) \
 	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
-		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
-			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+		RDSIO(	Core->PowerThermal.VID, HWM_SIO_CPUVCORE,
+			HWM_SIO_INDEX_PORT, HWM_SIO_DATA_PORT );
 	    #endif
 	    }
 		break;
 	case FORMULA_SCOPE_SMT:
 	    #if defined(HWM_CHIPSET) \
 	    && ((HWM_CHIPSET == W83627) || (HWM_CHIPSET == IT8720))
-		RDSIO(	Core->PowerThermal.VID, HWM_W83627_CPUVCORE,
-			HWM_W83627_INDEX_PORT, HWM_W83627_DATA_PORT );
+		RDSIO(	Core->PowerThermal.VID, HWM_SIO_CPUVCORE,
+			HWM_SIO_INDEX_PORT, HWM_SIO_DATA_PORT );
 	    #endif
 		break;
 	}

@@ -523,10 +523,10 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define VENDOR_VMWARE	"VMwawarereVM"
 #define VENDOR_HYPERV	"Micrt Hvosof"
 
-/* Source: Winbond W83627 datasheet					*/
-#define HWM_W83627_INDEX_PORT	0x295
-#define HWM_W83627_DATA_PORT	0x296
-#define HWM_W83627_CPUVCORE	0x20
+/* Source: Winbond W83627 and ITE IT8720F datasheets			*/
+#define HWM_SIO_INDEX_PORT	0x295
+#define HWM_SIO_DATA_PORT	0x296
+#define HWM_SIO_CPUVCORE	0x20
 
 #define RDSIO(_data, _reg, _index_port, _data_port)			\
 ({									\
@@ -546,7 +546,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 	);								\
 })
 
-/* Hardware Monitoring: Super I/O chipsets				*/
+/* Hardware Monitoring: Super I/O chipset identifiers			*/
 #define COMPATIBLE		0xffff
 #define W83627			0x5ca3
 #define IT8720			0x8720
