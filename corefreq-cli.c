@@ -53,7 +53,10 @@ char *BuildConfigFQN(char *dirPath)
     if (ConfigFQN[0] == 0)
     {
 	char *homePath, *dotted;
-	if ((homePath = secure_getenv("XDG_CONFIG_HOME")) == NULL) {
+	if ((homePath = secure_getenv("XDG_CONFIG_HOME")) == NULL)
+	{
+		struct stat cfgStat;
+
 		if ((homePath = secure_getenv("HOME")) == NULL) {
 			struct passwd *pwd = getpwuid(getuid());
 			if (pwd != NULL) {
@@ -62,7 +65,15 @@ char *BuildConfigFQN(char *dirPath)
 				homePath = ".";
 			}
 		}
-		dotted = "/.";
+		snprintf(&ConfigFQN[1], 4095, "%s/.config", homePath);
+
+		if ((stat(&ConfigFQN[1], &cfgStat) == 0)
+		 && (cfgStat.st_mode & S_IFDIR))
+		{
+			dotted = "/.config/";
+		} else {
+			dotted = "/.";
+		}
 	} else {
 		dotted = "/";
 	}
