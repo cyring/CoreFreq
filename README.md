@@ -203,6 +203,7 @@ CPU     IPS            IPC            CPI
 
 ## Q&A
 * Q: How many CPUs are supported by _CoreFreq_ ?  
+
   A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  256 as a default.  
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
@@ -217,11 +218,11 @@ CPU     IPS            IPC            CPI
 
 * Q: The Processor does not enter the C-States ?  
 
-  A: Check if at least one Idle driver is running.  
+  A1: Check if at least one Idle driver is running.  
   Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 `intel_idle.max_cstate=value`  
 
-  A: _CoreFreq_ can also register itself as a cpuidle driver.  
+  A2: _CoreFreq_ can also register itself as a cpuidle driver.  
   This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
 `modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
   Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
@@ -271,28 +272,31 @@ CPU     IPS            IPC            CPI
 :hash:`echo "2" > /sys/devices/cpu/rdpmc`  
   or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add line:  
   `w /sys/devices/cpu/rdpmc - - - - 2`  
-  next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:   
+
+  Next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:  
 :hash:`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
 * Q: How to solely control the P-States or the HWP Performance States ?  
 
-  A: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
+  A1: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
 
-  A: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
+  A2: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
   In the Kernel boot command line, two ways:  
  1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
 `cpufreq.off=1`  
+
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
- next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
+
+ Next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 :hash:`insmod corefreqk.ko Register_CPU_Freq=1`  
 
 
 * Q: The CPU freezes or the System crashes.  
 
-  A: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
+  A1: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
   1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
   2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation  
 :heavy_dollar_sign:`make DELAY_TSC=1`  
@@ -301,14 +305,14 @@ CPU     IPS            IPC            CPI
   4. Switch the current system clock source to `corefreq`  
 :hash:`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
 
-  A: `[AMD][Zen]` CCD temperatures:  
+  A2: `[AMD][Zen]` CCD temperatures:  
   _CoreFreq_ driver can be forced to use the Kernel function `amd_smn_read()`  
 :heavy_dollar_sign:`make LEGACY=2`  
   However `amd_smn_read()` serializes the SMU access through a mutex.  
   _CoreFreq_ CPU monitoring loops are executed in an interrupt context where any blocking call like Mutex will freeze the kernel.  
   As a recommendation, don't use this option and **make sure no other SMU driver is running**.  
 
-  A: This Processor is not or partially implemented in _CoreFreq_.  
+  A3: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
 * Q: No voltage is showing up with Nehalem or Westmere processors ?  
