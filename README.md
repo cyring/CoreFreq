@@ -290,7 +290,7 @@ CPU     IPS            IPC            CPI
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
 
- Next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
+ 3. load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 :hash:`insmod corefreqk.ko Register_CPU_Freq=1`  
 
 
