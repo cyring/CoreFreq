@@ -190,7 +190,7 @@ help:
 	"|    where <N> is 0, 1, 2 or 3 of the OPTIMIZATION level        |\n"\
 	"|                                                               |\n"\
 	"|  MAX_FREQ_HZ=<freq>                                           |\n"\
-	"|    where <freq> is at least 4050000000 Hz                     |\n"\
+	"|    where <freq> is at least 4850000000 Hz                     |\n"\
 	"|                                                               |\n"\
 	"|  HWM_CHIPSET=<chipset>                                        |\n"\
 	"|    where <chipset> is W83627 or IT8720 or COMPATIBLE          |\n"\

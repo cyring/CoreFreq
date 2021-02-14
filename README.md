@@ -382,7 +382,7 @@ o---------------------------------------------------------------o
 |    where <N> is 0, 1, 2 or 3 of the OPTIMIZATION level        |
 |                                                               |
 |  MAX_FREQ_HZ=<freq>                                           |
-|    where <freq> is at least 4050000000 Hz                     |
+|    where <freq> is at least 4850000000 Hz                     |
 |                                                               |
 |  HWM_CHIPSET=<chipset>                                        |
 |    where <chipset> is W83627 or IT8720 or COMPATIBLE          |

@@ -415,7 +415,7 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
 		rc = RC_SUCCESS;
 
-	pr_warn("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
+	pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
 		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
 		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
 		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift);
@@ -15213,7 +15213,7 @@ static int CoreFreqK_Suspend(struct device *dev)
 
 	Controller_Stop(1);
 
-	printk(KERN_NOTICE "CoreFreq: Suspend\n");
+	pr_notice("CoreFreq: Suspend\n");
 
 	return (0);
 }
@@ -15237,7 +15237,7 @@ static int CoreFreqK_Resume(struct device *dev)
 
 	BITSET(BUS_LOCK, PUBLIC(RW(Proc))->OS.Signal, NTFY); /* Notify Daemon*/
 
-	printk(KERN_NOTICE "CoreFreq: Resume\n");
+	pr_notice("CoreFreq: Resume\n");
 
 	return (0);
 }
@@ -15465,7 +15465,7 @@ static void CoreFreqK_Empty_Func_Level_Down(void)
 
 static void CoreFreqK_Alloc_Features_Level_Down(void)
 {
-	printk(KERN_NOTICE "CoreFreq: Unload\n");
+	pr_notice("CoreFreq: Unload\n");
 }
 
 static int CoreFreqK_Alloc_Features_Level_Up(INIT_ARG *pArg)
@@ -15997,7 +15997,7 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 		CoreFreqK_Register_NMI();
 	}
 
-	printk(KERN_INFO "CoreFreq(%u:%d):"	\
+	pr_info(KERN_INFO "CoreFreq(%u:%d):"	\
 		" Processor [%2X%1X_%1X%1X]"	\
 		" Architecture [%s] %3s [%u/%u]\n",
 		PUBLIC(RO(Proc))->Service.Core,PUBLIC(RO(Proc))->Service.Thread,
@@ -16037,6 +16037,52 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 	return (0);
 }
 
+#define CoreFreqK_User_Ops_Level_Down CoreFreqK_Empty_Func_Level_Down
+
+static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
+{
+  if (PUBLIC(RO(Proc))->ArchID != AMD_Family_0Fh)
+  {
+	const unsigned int cpu = PUBLIC(RO(Proc))->Service.Core;
+
+	const signed int MinFID = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)],
+
+	MaxFID = MAXCLOCK_TO_RATIO(	signed int,
+					PUBLIC(RO(Core, AT(cpu))->Clock.Hz) );
+
+    if ((PState_FID >= MinFID) && (PState_FID <= MaxFID))
+    {
+	if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod != NULL)
+	{
+		long rc;
+		CLOCK_ARG clockMod = {
+			.NC = CLOCK_MOD_MAX,
+			.Ratio = PState_FID,
+			.cpu = -1
+		};
+
+		Controller_Stop(1);
+		rc = Arch[PUBLIC(RO(Proc))->ArchID].ClockMod(&clockMod);
+		Controller_Start(0);
+
+	  if (rc < RC_SUCCESS) {
+		pr_warn("CoreFreq: "					\
+			"'PState_FID' Execution failure code %ld\n", rc);
+	  }
+	} else {
+		pr_warn("CoreFreq: "					\
+			"Unsupported architecture for 'PState_FID'\n");
+	}
+	PState_FID = -1;
+    } else {
+	pr_warn("CoreFreq: "						\
+		"'PState_FID' is out of range [%d, %d]\n", MinFID, MaxFID);
+    }
+  } /* else handled by function PerCore_AMD_Family_0Fh_PStates()	*/
+
+	return (0);
+}
+
 enum RUN_LEVEL {
 	Alloc_Features_Level,
 	Query_Features_Level,
@@ -16052,6 +16098,7 @@ enum RUN_LEVEL {
 	Alloc_Private_Cache_Level,
 	Alloc_Per_CPU_Level,
 	Ignition_Level,
+	User_Ops_Level,
 	Running_Level
 };
 
@@ -16075,7 +16122,8 @@ static void CoreFreqK_ShutDown(void)
 		COREFREQ_RUN(Alloc_Public_Cache_Level, Down),
 		COREFREQ_RUN(Alloc_Private_Cache_Level, Down),
 		COREFREQ_RUN(Alloc_Per_CPU_Level, Down),
-		COREFREQ_RUN(Ignition_Level, Down)
+		COREFREQ_RUN(Ignition_Level, Down),
+		COREFREQ_RUN(User_Ops_Level, Down)
 	};
 
 	do
@@ -16101,7 +16149,8 @@ static int CoreFreqK_StartUp(void)
 		COREFREQ_RUN(Alloc_Public_Cache_Level, Up),
 		COREFREQ_RUN(Alloc_Private_Cache_Level, Up),
 		COREFREQ_RUN(Alloc_Per_CPU_Level, Up),
-		COREFREQ_RUN(Ignition_Level, Up)
+		COREFREQ_RUN(Ignition_Level, Up),
+		COREFREQ_RUN(User_Ops_Level, Up)
 	};
 	INIT_ARG iArg = {
 		.Features = NULL, .Brand = NULL,
