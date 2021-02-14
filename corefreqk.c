@@ -16050,8 +16050,8 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 	MaxFID = MAXCLOCK_TO_RATIO(	signed int,
 					PUBLIC(RO(Core, AT(cpu))->Clock.Hz) );
 
-    if ((PState_FID >= MinFID) && (PState_FID <= MaxFID))
-    {
+    if (PState_FID != -1) {
+      if ((PState_FID >= MinFID) && (PState_FID <= MaxFID)) {
 	if (Arch[PUBLIC(RO(Proc))->ArchID].ClockMod != NULL)
 	{
 		long rc;
@@ -16073,10 +16073,11 @@ static int CoreFreqK_User_Ops_Level_Up(INIT_ARG *pArg)
 		pr_warn("CoreFreq: "					\
 			"Unsupported architecture for 'PState_FID'\n");
 	}
-	PState_FID = -1;
-    } else {
+      } else {
 	pr_warn("CoreFreq: "						\
 		"'PState_FID' is out of range [%d, %d]\n", MinFID, MaxFID);
+      }
+	PState_FID = -1;
     }
   } /* else handled by function PerCore_AMD_Family_0Fh_PStates()	*/
 
