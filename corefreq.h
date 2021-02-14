@@ -286,7 +286,11 @@ typedef struct
 				VM		: 14-13,
 				IOMMU		: 15-14,
 				RaceToHalt	: 16-15,
-				_pad64		: 64-16;
+				L1_HW_Prefetch	: 17-16,
+				L1_HW_IP_Prefetch:18-17,
+				L2_HW_Prefetch	: 19-18,
+				L2_HW_CL_Prefetch:20-19,
+				_pad64		: 64-20;
 	} Technology;
 
 	struct {

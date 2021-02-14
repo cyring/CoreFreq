@@ -736,6 +736,7 @@ typedef struct
 
 	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
 	BitCC			ODCM_Mask	__attribute__ ((aligned (16)));
+	BitCC			DCU_Mask	__attribute__ ((aligned (16)));
 	BitCC			PowerMgmt_Mask	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep_Mask	__attribute__ ((aligned (16)));
 	BitCC			TurboBoost_Mask __attribute__ ((aligned (16)));
@@ -834,6 +835,10 @@ typedef struct
 	} Delta __attribute__ ((aligned (8)));
 
 	BitCC			ODCM		__attribute__ ((aligned (16)));
+	BitCC			L1_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L1_HW_IP_Prefetch __attribute__((aligned (16)));
+	BitCC			L2_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L2_HW_CL_Prefetch __attribute__((aligned (16)));
 	BitCC			PowerMgmt	__attribute__ ((aligned (16)));
 	BitCC			SpeedStep	__attribute__ ((aligned (16)));
 	BitCC			TurboBoost	__attribute__ ((aligned (16)));

@@ -1438,6 +1438,22 @@ void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RW->ODCM,
 						Proc_RO->ODCM_Mask );
 
+	Shm->Proc.Technology.L1_HW_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L1_HW_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L1_HW_IP_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L1_HW_IP_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
+						Proc_RW->L2_HW_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L2_HW_CL_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L2_HW_CL_Prefetch,
+						Proc_RO->DCU_Mask );
+
 	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(LOCKLESS,
 						Proc_RW->PowerMgmt,
 						Proc_RO->PowerMgmt_Mask);

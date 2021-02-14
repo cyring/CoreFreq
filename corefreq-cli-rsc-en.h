@@ -358,6 +358,11 @@
 #define RSC_FEAT_SECTION_MECH_CODE_EN	"Mitigation mechanisms"
 
 #define RSC_TECHNOLOGIES_TITLE_CODE_EN	" Technologies "
+#define RSC_TECHNOLOGIES_DCU_CODE_EN	"Data Cache Unit"
+#define RSC_TECH_L1_HW_PREFETCH_CODE_EN "L1 Prefetcher"
+#define RSC_TECH_L1_HW_IP_PREFETCH_CODE_EN "L1 IP Prefetcher"
+#define RSC_TECH_L2_HW_PREFETCH_CODE_EN "L2 Prefetcher"
+#define RSC_TECH_L2_HW_CL_PREFETCH_CODE_EN "L2 Line Prefetcher"
 #define RSC_TECHNOLOGIES_SMM_CODE_EN	"System Management Mode"
 #define RSC_TECHNOLOGIES_HTT_CODE_EN	"Hyper-Threading"
 #define RSC_TECHNOLOGIES_EIST_CODE_EN	"SpeedStep"

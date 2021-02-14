@@ -123,6 +123,22 @@ static signed short CStateIORedir = -1;
 module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
 
+static signed short L1_HW_PREFETCH_Disable = -1;
+module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
+
+static signed short L1_HW_IP_PREFETCH_Disable = -1;
+module_param(L1_HW_IP_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L1_HW_IP_PREFETCH_Disable, "Disable L1 HW IP Prefetcher");
+
+static signed short L2_HW_PREFETCH_Disable = -1;
+module_param(L2_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_HW_PREFETCH_Disable, "Disable L2 HW Prefetcher");
+
+static signed short L2_HW_CL_PREFETCH_Disable = -1;
+module_param(L2_HW_CL_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(L2_HW_CL_PREFETCH_Disable, "Disable L2 HW CL Prefetcher");
+
 static signed short SpeedStep_Enable = -1;
 module_param(SpeedStep_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(SpeedStep_Enable, "Enable SpeedStep");
@@ -5695,6 +5711,111 @@ void Dump_CPUID(CORE_RO *Core)
 	}
 }
 
+void AMD_F17h_DCU_Technology(CORE_RO *Core)			/* Per SMT[?] */
+{
+	AMD_DC_CFG DC_Cfg1 = {.value = 0};
+	AMD_CU_CFG3 CU_Cfg3 = {.value = 0};
+
+	RDMSR(DC_Cfg1, MSR_AMD_DC_CFG);
+	switch (L1_HW_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		DC_Cfg1.L1_HW_Prefetch = L1_HW_PREFETCH_Disable;
+		WRMSR(DC_Cfg1, MSR_AMD_DC_CFG);
+		RDMSR(DC_Cfg1, MSR_AMD_DC_CFG);
+		break;
+	}
+
+	RDMSR(CU_Cfg3, MSR_AMD_CU_CFG3);
+	switch (L2_HW_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		CU_Cfg3.L2_HW_Prefetch = !L2_HW_PREFETCH_Disable;
+		WRMSR(CU_Cfg3, MSR_AMD_CU_CFG3);
+		RDMSR(CU_Cfg3, MSR_AMD_CU_CFG3);
+		break;
+	}
+
+    if (DC_Cfg1.L1_HW_Prefetch)
+    {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+    }
+    if (CU_Cfg3.L2_HW_Prefetch)
+    {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+    } else {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+    }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+}
+
+void Intel_DCU_Technology(CORE_RO *Core)			/*Per Core */
+{
+  if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+  {
+	int ToggleFeature = 0;
+	MISC_FEATURE_CONTROL MiscFeatCtrl = {.value = 0};
+	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+
+	switch (L2_HW_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L2_HW_Prefetch = L2_HW_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L2_HW_CL_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L2_HW_CL_Prefetch = L2_HW_CL_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L1_HW_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L1_HW_Prefetch = L1_HW_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+	switch (L1_HW_IP_PREFETCH_Disable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		MiscFeatCtrl.L1_HW_IP_Prefetch = L1_HW_IP_PREFETCH_Disable;
+		ToggleFeature = 1;
+		break;
+	}
+    if (ToggleFeature == 1)
+    {
+	WRMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+	RDMSR(MiscFeatCtrl, MSR_MISC_FEATURE_CONTROL);
+    }
+    if (MiscFeatCtrl.L2_HW_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_Prefetch, Core->Bind);
+    }
+    if (MiscFeatCtrl.L2_HW_CL_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L2_HW_CL_Prefetch, Core->Bind);
+    }
+    if (MiscFeatCtrl.L1_HW_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_Prefetch, Core->Bind);
+    }
+    if (MiscFeatCtrl.L1_HW_IP_Prefetch == 1) {
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+    } else {
+	BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->L1_HW_IP_Prefetch, Core->Bind);
+    }
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask, Core->Bind);
+  }
+}
+
 void SpeedStep_Technology(CORE_RO *Core)			/*Per Package*/
 {
   if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
@@ -7737,6 +7858,7 @@ void AMD_Microcode(CORE_RO *Core)
 void PerCore_Reset(CORE_RO *Core)
 {
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ODCM_Mask , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->DCU_Mask  , Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->PowerMgmt_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SpeedStep_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -7840,6 +7962,8 @@ static void PerCore_Intel_Query(void *arg)
 
 	Dump_CPUID(Core);
 
+	Intel_DCU_Technology(Core);
+
 	SpeedStep_Technology(Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->TurboBoost_Mask,Core->Bind);
@@ -7905,6 +8029,8 @@ static void PerCore_Core2_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
@@ -8006,6 +8132,8 @@ static void PerCore_Silvermont_Query(void *arg)
 
 	Dump_CPUID(Core);
 
+	Intel_DCU_Technology(Core);
+
 	SpeedStep_Technology(Core);
 	DynamicAcceleration(Core);				/* Unique */
 	SoC_Turbo_Override(Core);
@@ -8036,6 +8164,8 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 
@@ -8096,6 +8226,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 
@@ -8175,6 +8307,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
     }
 	Dump_CPUID(Core);
 
+	Intel_DCU_Technology(Core);
+
 	SpeedStep_Technology(Core);
 
 	TurboBoost_Technology(	Core,
@@ -8219,6 +8353,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	Dump_CPUID(Core);
 
+	Intel_DCU_Technology(Core);
+
 	SpeedStep_Technology(Core);
 
 	TurboBoost_Technology(	Core,
@@ -8260,6 +8396,8 @@ static void PerCore_Goldmont_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 
@@ -8313,6 +8451,8 @@ static void PerCore_Skylake_Query(void *arg)
 	Intel_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	Intel_DCU_Technology(Core);
 
 	SpeedStep_Technology(Core);
 
@@ -8477,6 +8617,8 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 	AMD_Microcode(Core);
 
 	Dump_CPUID(Core);
+
+	AMD_F17h_DCU_Technology(Core);
 
 	AMD_Mitigation_Mechanisms(Core);
 
@@ -14727,6 +14869,58 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
 	switch (prm.dl.hi)
 	{
+	case TECHNOLOGY_L1_HW_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_HW_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_HW_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L1_HW_IP_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L1_HW_IP_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L1_HW_IP_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L2_HW_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_HW_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_HW_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_L2_HW_CL_PREFETCH:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			L2_HW_CL_PREFETCH_Disable = !prm.dl.lo;
+			Controller_Start(1);
+			L2_HW_CL_PREFETCH_Disable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
 	case TECHNOLOGY_EIST:
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:

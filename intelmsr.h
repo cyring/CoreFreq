@@ -48,6 +48,10 @@
 	#define MSR_PLATFORM_INFO		0x000000ce
 #endif
 
+#ifndef MSR_MISC_FEATURE_CONTROL
+	#define MSR_MISC_FEATURE_CONTROL	0x000001a4
+#endif
+
 #ifndef MSR_MISC_PWR_MGMT
 	#define MSR_MISC_PWR_MGMT		0x000001aa
 #endif
@@ -517,6 +521,27 @@ typedef union
 */
 
 typedef union
+{	/* MSR MISC_FEATURE_CONTROL(0x1a4)				*/
+	unsigned long long	value;
+	struct				/* R/W , Core scope , Disable=1 */
+	{
+		unsigned long long
+		L2_HW_Prefetch	:  1-0, /* Avoton, Goldmont, NHM, SNB	*/
+		L2_HW_CL_Prefetch: 2-1, /* NHM, SNB			*/
+		L1_HW_Prefetch	:  3-2, /* Avoton, Goldmont, NHM, SNB	*/
+		L1_HW_IP_Prefetch: 4-3, /* NHM, SNB			*/
+		ReservedBits	: 64-4;
+	};
+	struct
+	{
+		unsigned long long
+		L1_DCU_Prefetch	:  1-0,
+		L2_HW_Prefetch	:  2-1,
+		ReservedBits	: 64-2;
+	} Phi;
+} MISC_FEATURE_CONTROL;
+
+typedef union
 {
 	unsigned long long	value;
 	struct
@@ -807,7 +832,7 @@ typedef union
 		L3Cache_Disable :  7-6,  /* Pentium4, Xeon		*/
 		PerfMonitoring	:  8-7,  /* Performance Monitoring Available */
 		SupprLock_Enable:  9-8,  /* Pentium4, Xeon		*/
-		PrefetchQueueDis: 10-9,  /* Pentium4, Xeon		*/
+		HW_Prefetch_Dis : 10-9,  /* Pentium4, Xeon, Core (R/W)	*/
 		Int_FERR_Enable : 11-10, /* Pentium4, Xeon		*/
 		BTS		: 12-11, /* Branch Trace Storage Unavailable */
 		PEBS		: 13-12, /* No Precise Event Based Sampling */
@@ -824,7 +849,7 @@ typedef union
 		ReservedBits6	: 34-25,
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
-		DCU_Prefetcher	: 38-37,
+		DCU_L1_Prefetch	: 38-37, /* Core (R/W) Disable=1	*/
 		Turbo_IDA	: 39-38, /* Disable=1 -> CPUID(0x6).IDA=0 */
 		IP_Prefetcher	: 40-39,
 		ReservedBits8	: 64-40;
