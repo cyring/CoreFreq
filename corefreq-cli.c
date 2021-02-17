@@ -3821,7 +3821,7 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 		{.pString = Shm->SMB.Board.Version,	.secret = 0},
 		{.pString = Shm->SMB.Board.Serial,	.secret = 1}
 	};
-	if (smb[idx].secret & Setting.secret) {
+	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
 		ssize_t len = strlen(smb[idx].pString);
 		int i;
@@ -6171,10 +6171,10 @@ Window *CreateTopology(unsigned long long id)
 					TOPO_MATY, 2+Shm->Proc.CPU.Count,
 					1, TOP_HEADER_ROW + 1);
 
-		wTopology->matrix.select.row = 2;
-
 	if (wTopology != NULL)
 	{
+		wTopology->matrix.select.row = 2;
+
 		Topology(wTopology, AddCell);
 
 		StoreWindow(wTopology,.title,(char*)RSC(TOPOLOGY_TITLE).CODE());

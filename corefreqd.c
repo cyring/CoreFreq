@@ -2955,9 +2955,9 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.CtrlSpeed *= Core->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 00 ?
-		4800 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 10 ?
-			6400 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 01 ?
+	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL==0b00 ?
+		4800 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 0b10 ?
+			6400 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL==0b01 ?
 				5866 : 6400;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -3350,10 +3350,10 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate =						\
-	  Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 010 ? 5600
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 011 ? 6400
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 100 ? 7200
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 101 ? 8000 : 5000;
+	  Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ? 5600
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ? 6400
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ? 7200
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ? 8000 : 5000;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
@@ -3954,7 +3954,7 @@ void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 	  if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable) {
-	    index=(Proc->Uncore.MC[mc].MaxDIMMs.AMD0Fh.CS.value & mask) >> shift;
+	    index=(Proc->Uncore.MC[mc].MaxDIMMs.AMD0Fh.CS.value & mask) >>shift;
 
 	    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=module[index].size;
 	  }
