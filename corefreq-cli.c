@@ -2443,9 +2443,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.L1_HW_Prefetch,
-		3, "%s%.*sL1 HW       <%3s>",
+		3, "%s%.*sL1 HW   <%3s>",
 		RSC(TECH_L1_HW_PREFETCH).CODE(),
-		width - (OutFunc ? 21 : 23) - RSZ(TECH_L1_HW_PREFETCH),
+		width - (OutFunc ? 17 : 19) - RSZ(TECH_L1_HW_PREFETCH),
 		NULL,
 		BOXKEY_L1_HW_PREFETCH,
 		L1_HW_Prefetch_Update
@@ -2453,9 +2453,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.L1_HW_IP_Prefetch,
-		3, "%s%.*sL1 HW IP       <%3s>",
+		3, "%s%.*sL1 HW IP   <%3s>",
 		RSC(TECH_L1_HW_IP_PREFETCH).CODE(),
-		width - (OutFunc ? 24 : 26) - RSZ(TECH_L1_HW_IP_PREFETCH),
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L1_HW_IP_PREFETCH),
 		NULL,
 		BOXKEY_L1_HW_IP_PREFETCH,
 		L1_HW_IP_Prefetch_Update
@@ -2463,9 +2463,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.L2_HW_Prefetch,
-		3, "%s%.*sL2 HW       <%3s>",
+		3, "%s%.*sL2 HW   <%3s>",
 		RSC(TECH_L2_HW_PREFETCH).CODE(),
-		width - (OutFunc ? 21 : 23) - RSZ(TECH_L2_HW_PREFETCH),
+		width - (OutFunc ? 17 : 19) - RSZ(TECH_L2_HW_PREFETCH),
 		NULL,
 		BOXKEY_L2_HW_PREFETCH,
 		L2_HW_Prefetch_Update
@@ -2473,9 +2473,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.L2_HW_CL_Prefetch,
-		3, "%s%.*sL2 HW CL       <%3s>",
+		3, "%s%.*sL2 HW CL   <%3s>",
 		RSC(TECH_L2_HW_CL_PREFETCH).CODE(),
-		width - (OutFunc ? 24 : 26) - RSZ(TECH_L2_HW_CL_PREFETCH),
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L2_HW_CL_PREFETCH),
 		NULL,
 		BOXKEY_L2_HW_CL_PREFETCH,
 		L2_HW_CL_Prefetch_Update
@@ -2483,9 +2483,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.SMM == 1,
-		2, "%s%.*sSMM-Dual       [%3s]",
+		2, "%s%.*sSMM-Dual   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		width - 19 - RSZ(TECHNOLOGIES_SMM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2493,9 +2493,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.HyperThreading == 1,
-		2, "%s%.*sHTT       [%3s]",
+		2, "%s%.*sHTT   [%3s]",
 		RSC(TECHNOLOGIES_HTT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_HTT),
+		width - 14 - RSZ(TECHNOLOGIES_HTT),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2503,9 +2503,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.EIST == 1,
-		2, "%s%.*sEIST       <%3s>",
+		2, "%s%.*sEIST   <%3s>",
 		RSC(TECHNOLOGIES_EIST).CODE(),
-		width - 19 - RSZ(TECHNOLOGIES_EIST),
+		width - 15 - RSZ(TECHNOLOGIES_EIST),
 		NULL,
 		BOXKEY_EIST,
 		SpeedStepUpdate
@@ -2513,9 +2513,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.Power.EAX.TurboIDA == 1,
-		2, "%s%.*sIDA       [%3s]",
+		2, "%s%.*sIDA   [%3s]",
 		RSC(TECHNOLOGIES_IDA).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_IDA),
+		width - 14 - RSZ(TECHNOLOGIES_IDA),
 		NULL,
 		SCANKEY_NULL,
 		IDA_Update
@@ -2523,9 +2523,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.Turbo == 1,
-		2, "%s%.*sTURBO       <%3s>",
+		2, "%s%.*sTURBO   <%3s>",
 		RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 20 - RSZ(TECHNOLOGIES_TURBO),
+		width - 16 - RSZ(TECHNOLOGIES_TURBO),
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
@@ -2533,9 +2533,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.R2H_Disable == 1,
-		2, "%s%.*sR2H       <%3s>",
+		2, "%s%.*sR2H   <%3s>",
 		RSC(TECHNOLOGIES_R2H).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_R2H),
+		width - 14 - RSZ(TECHNOLOGIES_R2H),
 		NULL,
 		BOXKEY_R2H,
 		Race2HaltUpdate
@@ -2543,9 +2543,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.VM == 1,
-		2, "%s%.*sVMX       [%3s]",
+		2, "%s%.*sVMX   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM),
+		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2553,9 +2553,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.IOMMU == 1,
-		3, "%s%.*sVT-d       [%3s]",
+		3, "%s%.*sVT-d   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(),
-		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
+		width - (OutFunc ? 16 : 18) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2563,9 +2563,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.SMM == 1,
-		2, "%s%.*sSMM-Lock       [%3s]",
+		2, "%s%.*sSMM-Lock   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		width - 19 - RSZ(TECHNOLOGIES_SMM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2573,9 +2573,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Features.HyperThreading == 1,
-		2, "%s%.*sSMT       [%3s]",
+		2, "%s%.*sSMT   [%3s]",
 		RSC(TECHNOLOGIES_SMT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_SMT),
+		width - 14 - RSZ(TECHNOLOGIES_SMT),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2583,9 +2583,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.PowerNow == 0b11,	/*	VID + FID	*/
-		2, "%s%.*sCnQ       [%3s]",
+		2, "%s%.*sCnQ   [%3s]",
 		RSC(TECHNOLOGIES_CNQ).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CNQ),
+		width - 14 - RSZ(TECHNOLOGIES_CNQ),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2593,9 +2593,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0,
-		2, "%s%.*sCCx       [%3s]",
+		2, "%s%.*sCCx   [%3s]",
 		RSC(PERF_MON_CORE_CSTATE).CODE(),
-		width - 18 - RSZ(PERF_MON_CORE_CSTATE),
+		width - 14 - RSZ(PERF_MON_CORE_CSTATE),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2603,9 +2603,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.Turbo == 1,
-		2, "%s%.*sCPB       <%3s>",
+		2, "%s%.*sCPB   <%3s>",
 		RSC(TECHNOLOGIES_CPB).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CPB),
+		width - 14 - RSZ(TECHNOLOGIES_CPB),
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
@@ -2613,9 +2613,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.VM == 1,
-		2, "%s%.*sSVM       [%3s]",
+		2, "%s%.*sSVM   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM),
+		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2623,9 +2623,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.IOMMU == 1,
-		3, "%s%.*sAMD-V       [%3s]",
+		3, "%s%.*sAMD-V   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(),
-		width - (OutFunc? 21 : 23) - RSZ(TECHNOLOGIES_IOMMU),
+		width - (OutFunc? 17 : 19) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2633,9 +2633,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		NULL,
 		Shm->Proc.Features.Std.ECX.Hyperv == 1,
-		3, "%s%.*s""%10s       [%3s]",
+		3, "%s%.*s""%10s   [%3s]",
 		RSC(TECHNOLOGIES_HYPERV).CODE(),
-		width - (OutFunc? 26 : 28) - RSZ(TECHNOLOGIES_HYPERV),
+		width - (OutFunc? 22 : 24) - RSZ(TECHNOLOGIES_HYPERV),
 		Hypervisor[Shm->Proc.HypervisorID],
 		SCANKEY_NULL,
 		NULL
@@ -2643,9 +2643,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		NULL,
 		0,
-		3, "%s%.*s""       [%12s]",
+		3, "%s%.*s""   [%12s]",
 		RSC(VENDOR_ID).CODE(),
-		width - (OutFunc? 25 : 27) - RSZ(VENDOR_ID),
+		width - (OutFunc? 21 : 23) - RSZ(VENDOR_ID),
 		strlen(Shm->Proc.Features.Info.Hypervisor.ID) > 0 ?
 		Shm->Proc.Features.Info.Hypervisor.ID
 		: (char*) RSC(NOT_AVAILABLE).CODE(),
