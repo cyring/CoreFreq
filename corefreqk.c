@@ -1727,6 +1727,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
 	case AMD_Zen3_VMR:
+	case AMD_Zen3_CZN:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
 	case AMD_Family_19h:
@@ -5247,6 +5248,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	AMD_17_MTS_CPK_COF XtraCOF = {.value = 0};
 
 	switch (PUBLIC(RO(Proc))->ArchID) {
+	case AMD_Zen3_CZN:
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
 		Core_AMD_SMN_Read(XtraCOF,
@@ -5602,6 +5604,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen2_MTS:
 	case AMD_Family_19h:
 	case AMD_Zen3_VMR:
+	case AMD_Zen3_CZN:
 	    {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 
@@ -16395,4 +16398,3 @@ static void __exit CoreFreqK_Exit(void)
 
 module_init(CoreFreqK_Init);
 module_exit(CoreFreqK_Exit);
-

@@ -94,6 +94,9 @@ enum {	GenuineArch = 0,
 	Tremont_Lakefield,
 	Tremont_Elkhartlake,
 	Tremont_Jasperlake,
+	Sapphire_Rapids,
+	Rocketlake,
+	Rocketlake_U,
 	AMD_Zen,
 	AMD_Zen_APU,
 	AMD_ZenPlus,
@@ -104,6 +107,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen2_APU,
 	AMD_Zen2_MTS,
 	AMD_Zen3_VMR,
+	AMD_Zen3_CZN,
 	ARCHITECTURES
 };
 
@@ -1888,4 +1892,3 @@ typedef struct {
 )
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
-
