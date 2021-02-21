@@ -834,6 +834,86 @@ typedef union
 	struct
 	{
 		unsigned int
+		CapId		:  8-0,
+		CapPtr		: 16-8,
+		CapType 	: 19-16,
+		CapRev		: 24-19,
+		IotlbSup	: 25-24,
+		HtTunnel	: 26-25,
+		NpCache 	: 27-26,
+		EFRSup		: 28-27,
+		CapExt		: 29-28,
+		ReservedBits	: 32-29;
+	};
+} AMD_IOMMU_CAP_HEADER;
+
+typedef union
+{
+	unsigned long long	addr;
+	struct
+	{
+		unsigned int	low;
+		unsigned int	high;
+	};
+} AMD_IOMMU_CAP_BAR;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	IOMMU_En 	:  1-0,
+	HtTunEn 	:  2-1,
+	EventLogEn	:  3-2,
+	EventIntEn	:  4-3,
+	ComWaitIntEn	:  5-4,
+	InvTimeOut	:  8-5,
+	PassPW		:  9-8,
+	ResPassPW	: 10-9,
+	Coherent	: 11-10,
+	Isoc		: 12-11,
+	CmdBufEn	: 13-12,
+	PPRLogEn	: 14-13,
+	PprIntEn	: 15-14,
+	PPREn		: 16-15,
+	GTEn		: 17-16,
+	GAEn		: 18-17,
+	CRW		: 22-18,
+	SmiFEn		: 23-22,
+	SlfWBdis	: 24-23,
+	SmiFLogEn	: 25-24,
+	GAMEn		: 28-25,
+	GALogEn 	: 29-28,
+	GAIntEn 	: 30-29,
+	DualPprLogEn	: 32-30,
+	DualEventLogEn	: 34-32,
+	DevTblSegEn	: 37-34,
+	PrivAbrtEn	: 39-37,
+	PprAutoRspEn	: 40-39,
+	MarcEn		: 41-40,
+	BlkStopMrkEn	: 42-41,
+	PprAutoRspAon	: 43-42,
+	DomainIDPNE	: 44-43,
+	ReservedBits1	: 45-44,
+	EPHEn		: 46-45,
+	HADUpdate	: 48-46,
+	GDUpdateDis	: 49-48,
+	ReservedBits2	: 50-49,
+	XTEn		: 51-50,
+	IntCapXTEn	: 52-51,
+	ReservedBits3	: 54-52,
+	GAUpdateDis	: 55-54,
+	ReservedBits4	: 64-55;
+    };
+} AMD_IOMMU_CTRL_REG;
+
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
 		PerStepTimeUp	:  5-0,  /* Family: 12h, 14h, 15h	*/
 		TmpMaxDiffUp	:  7-5,  /* Family: 12h, 14h, 15h	*/
 		TmpSlewDnEn	:  8-7,  /* Family: 12h, 14h, 15h	*/

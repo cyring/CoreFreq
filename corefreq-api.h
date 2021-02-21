@@ -660,7 +660,7 @@ typedef struct
 		};
 	};
 	struct {
-		unsigned long long	IOMMU_CR;
+		AMD_IOMMU_CTRL_REG	IOMMU_CR;
 	};
 } BUS_REGISTERS;
 
@@ -1451,9 +1451,6 @@ typedef struct
 /* Source: AMD PPR for AMD Family 17h Models 18h & 20h Processors	*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	/* Raven2 */
-#endif
-#ifndef PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU 0x1481	/* Vermeer */
 #endif
 /* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU

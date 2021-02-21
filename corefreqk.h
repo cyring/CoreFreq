@@ -1300,9 +1300,9 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Family 18h]		9F_00h					*/
 #define _AMD_Family_18h {.ExtFamily=0x9, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
-/*	[Family 19h]		9F_00h
-	[Zen3/Vermeer]		9F_21h Stepping 0	 7 nm
-	[Zen3/Cezanne]		9F_51h Stepping 0	 7 nm		*/
+/*	[Family 19h]		AF_00h
+	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
+	[Zen3/Cezanne]		AF_51h Stepping 0	 7 nm		*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x1}
@@ -1912,6 +1912,7 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_RAVEN_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
+/* AMD Families 17h and 19h: IOMMU at 0x1481				*/
 	{
 		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_17H_ZEN2_MTS_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
@@ -1943,11 +1944,6 @@ static struct pci_device_id PCI_AMD_17h_ids[] = {
 	/* Source: HYGON: PCI list					*/
 	{
 		PCI_VDEVICE(HYGON, PCI_DEVICE_ID_AMD_17H_ZEN_PLUS_NB_IOMMU),
-		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
-	},
-/* AMD Family 19h							*/
-	{
-		PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU),
 		.driver_data = (kernel_ulong_t) AMD_Zen_IOMMU
 	},
 	/* Source: SMU > Data Fabric > UMC				*/

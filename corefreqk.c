@@ -4353,35 +4353,37 @@ static PCI_CALLBACK AMD_17h_ZenIF(struct pci_dev *dev)
 
 static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 {
-/*TODO(Not Used Yet)
-	void __iomem *iommu_mmio = NULL;
+/* Sources:
+*	AMD I/O Virtualization Technology (IOMMU) Specification Jan. 2020
+*	coreboot/src/soc/amd/picasso/agesa_acpi.c
 */
-	unsigned long long iommu_cap_base;
-	unsigned int iommu_cap_base_lo = 0, iommu_cap_base_hi = 0;
+	AMD_IOMMU_CAP_HEADER	IOMMU_Cap_Header;
+	AMD_IOMMU_CAP_BAR	IOMMU_Cap_Bar;
 
-	pci_read_config_dword(dev, 0x44, &iommu_cap_base_lo);
-	pci_read_config_dword(dev, 0x48, &iommu_cap_base_hi);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = 0x0;
 
-	iommu_cap_base = ((iommu_cap_base_lo & 0xfff80000) >> 19)
-			+ ((unsigned long long) iommu_cap_base_hi << 32);
+	pci_read_config_dword(dev, 0x40, &IOMMU_Cap_Header.value);
+	pci_read_config_dword(dev, 0x44, &IOMMU_Cap_Bar.low);
+	pci_read_config_dword(dev, 0x48, &IOMMU_Cap_Bar.high);
 
-    if (BITVAL(iommu_cap_base, 0))
+	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffe000;
+    if (IOMMU_Cap_Bar.addr != 0x0)
     {
-/*TODO(Not Used Yet)
-	iommu_mmio = ioremap(iommu_cap_base, 0x200);
-	if (iommu_mmio != NULL) {
-		PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR=readq(iommu_mmio + 0x18);
+	void __iomem *IOMMU_MMIO_Reg;
+	const size_t bsize = IOMMU_Cap_Header.EFRSup ? 0x80000 : 0x4000;
 
-		iounmap(iommu_mmio);
-	} else {
-		return ((PCI_CALLBACK) -ENOMEM);
-	}
-*/
-	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR = 1;
+      if ((IOMMU_MMIO_Reg = ioremap(IOMMU_Cap_Bar.addr, bsize)) != NULL)
+      {
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value=readq(IOMMU_MMIO_Reg+0x18);
 
-	return ((PCI_CALLBACK) 0);
-    }
+	iounmap(IOMMU_MMIO_Reg);
+      }
+      else
+      {
 	return ((PCI_CALLBACK) -ENOMEM);
+      }
+    }
+	return ((PCI_CALLBACK) 0);
 }
 
 static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)

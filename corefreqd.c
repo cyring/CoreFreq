@@ -4249,7 +4249,7 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
-	Shm->Proc.Technology.IOMMU = BITVAL(Proc->Uncore.Bus.IOMMU_CR, 0);
+	Shm->Proc.Technology.IOMMU = Proc->Uncore.Bus.IOMMU_CR.IOMMU_En;
 }
 
 static char *Chipset[CHIPSETS] = {
