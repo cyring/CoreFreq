@@ -73,11 +73,11 @@ Uncomment and set `draw_bold_text_with_bright_colors: true` in `<config-file>`
   * Optionally: `CONFIG_HOTPLUG_CPU, CONFIG_CPU_IDLE, CONFIG_CPU_FREQ, CONFIG_PM_SLEEP, CONFIG_DMI, CONFIG_XEN, CONFIG_AMD_NB, CONFIG_HAVE_PERF_EVENTS, CONFIG_SCHED_MUQSS, CONFIG_SCHED_BMQ, CONFIG_SCHED_PDS`
 
 2. Clone the source code into a working directory.  
- :heavy_dollar_sign:`git clone https://github.com/cyring/CoreFreq.git`  
+ `git clone https://github.com/cyring/CoreFreq.git`  
  
 3. Build the programs.  
-:heavy_dollar_sign:`cd CoreFreq`  
-:heavy_dollar_sign:`make`  
+`cd CoreFreq`  
+`make`  
 ```
 cc -Wall -pthread -c corefreqd.c -o corefreqd.o
 cc -Wall -c corefreqm.c -o corefreqm.o
@@ -103,31 +103,31 @@ If module signature verification is enabled into Kernel, you will have to sign t
 
 #### Manual
 5. Copying _CoreFreq_ into the binaries directory  
-:hash:`make install`  
+`make install`  
 
 #### Distribution package
 6. Although _CoreFreq_ is released in the ArchLinux AUR ; other sources of distribution may require to reload the systemd daemons:  
-:hash:`systemctl daemon-reload`  
+`systemctl daemon-reload`  
 
 ### Start
 
 7. When built from source code:
 
 * Load the kernel module, from current directory, as root.  
-:hash:`insmod corefreqk.ko`  
+`insmod corefreqk.ko`  
 * Start the daemon, as root.  
-:hash:`corefreqd`  
+`corefreqd`  
 * Start the client, as a user (_in another terminal or console_).  
-:heavy_dollar_sign:`corefreq-cli`  
+`corefreq-cli`  
 
 8. When manually installed or from a distribution package:  
 
 * Load the kernel module, as root.  
-:hash:`modprobe corefreqk`  
+`modprobe corefreqk`  
 * Start the daemon, as root.  
-:hash:`systemctl start corefreqd`  
+`systemctl start corefreqd`  
 * Start the client, as a user.  
-:heavy_dollar_sign:`corefreq-cli`  
+`corefreq-cli`  
 
 ### Stop
 
@@ -136,7 +136,7 @@ If module signature verification is enabled into Kernel, you will have to sign t
 10. Press <kbd>Ctrl+c</kbd> to stop the daemon (in foreground) or kill its background job.
 
 11. Unload the kernel module  
-:hash:`rmmod corefreqk.ko`  
+`rmmod corefreqk.ko`  
 
 ### Try
 Download the _CoreFreq_ Live CD from the [Wiki](http://github.com/cyring/CoreFreq/wiki/Live-CD)  
@@ -192,14 +192,14 @@ CPU     IPS            IPC            CPI
 
 ## Debian, Ubuntu
  * Installing the DKMS package will pull the Kernel development packages  
-:hash:`apt-get install dkms`  
+`apt-get install dkms`  
  * Or, install selectively the development packages prerequisites.  
-:hash:`apt-get install libpthread-stubs0-dev`  
+`apt-get install libpthread-stubs0-dev`  
 
 ## Red Hat, CentOS
  * Development packages prerequisites.  
-:hash:`yum install kernel-devel`  
-:hash:`yum group install "Development Tools"`  
+`yum install kernel-devel`  
+`yum group install "Development Tools"`  
 
 ## Q&A
 
@@ -223,13 +223,13 @@ CPU     IPS            IPC            CPI
   This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
 `modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
   Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
-:hash:`insmod corefreqk.ko Register_CPU_Idle=1`  
+`insmod corefreqk.ko Register_CPU_Idle=1`  
 
 
 * Q: The _CoreFreq_ UI refreshes itself slowly, with a delay after the actual CPUs usage ?  
 
   A: The sampling time to read the counters can be reduced or increased using a _CoreFreq_ module argument:  
-:hash:`insmod corefreqk.ko SleepInterval=value`  
+`insmod corefreqk.ko SleepInterval=value`  
   where `<value>` is supplied in milliseconds between a minimum of 100 ms and a maximum of 4500 ms. 1000 ms is the default value.  
 
 
@@ -243,7 +243,7 @@ CPU     IPS            IPC            CPI
   4. The MSR_FSB_FREQ bits provided with the Core, Core2 and Atom architectures.  
 
   The _CoreFreq_ module can be started as follow to ignore the first algorithm (frequency estimation):  
-:hash:`insmod corefreqk.ko AutoClock=0`  
+`insmod corefreqk.ko AutoClock=0`  
 
   _Remark: algorithms # 2, 3 and 4 will not return any under/over-clock frequency._  
 
@@ -259,18 +259,18 @@ CPU     IPS            IPC            CPI
 * Q: The menu option "Memory Controller" does not open any window ?  
 
   A: Although Uncore and IMC features are under development, they can be activated with the Experimental driver argument:  
-:hash:`insmod corefreqk.ko Experimental=1`  
+`insmod corefreqk.ko Experimental=1`  
 
 
 * Q: The Instructions and PMC0 counters are stuck to zero ?  
 * Q: The Daemon crashes whenever its stress tools are executing !  
 
   A: The `PCE` bit of control register `CR4` allows RDPMC in ring `3`  
-:hash:`echo "2" > /sys/devices/cpu/rdpmc`  
+`echo "2" > /sys/devices/cpu/rdpmc`  
   or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add line:  
   `w /sys/devices/cpu/rdpmc - - - - 2`  
   next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:   
-:hash:`insmod corefreqk.ko RDPMC_Enable=1`  
+`insmod corefreqk.ko RDPMC_Enable=1`  
 
 
 * Q: How to solely control the P-States or the HWP Performance States ?  
@@ -285,7 +285,7 @@ CPU     IPS            IPC            CPI
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
  next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
-:hash:`insmod corefreqk.ko Register_CPU_Freq=1`  
+`insmod corefreqk.ko Register_CPU_Freq=1`  
 
 
 * Q: The CPU freezes or the System crashes.  
@@ -293,16 +293,16 @@ CPU     IPS            IPC            CPI
   A: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
   1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
   2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation  
-:heavy_dollar_sign:`make DELAY_TSC=1`  
+`make DELAY_TSC=1`  
   3. Allow _CoreFreq_ to register a new TSC clock source using driver arguments:  
-:hash:`insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1`  
+`insmod corefreqk.ko TurboBoost_Enable=0 Register_ClockSource=1`  
   4. Switch the current system clock source to `corefreq`  
-:hash:`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
+`echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
 
   A: `[AMD][Zen]` CCD temperatures:  
   _CoreFreq_ driver can be forced to use the Kernel function amd_smn_read()  
   This allows _CoreFreq_ to be compatible with other SMU drivers.  
-:heavy_dollar_sign:`make LEGACY=2`  
+`make LEGACY=2`  
   However amd_smn_read() protects any SMU access through a mutex which must not be used in interrupt context  
   _CoreFreq_ CPU loops are executed in interrupt context where mutex usage will freeze the kernel.  
 
