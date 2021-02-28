@@ -7,6 +7,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <time.h>
 #include <errno.h>
@@ -27,7 +28,8 @@ double timespecFloat(struct timespec time)
 void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 {
 	signed int i = 0, i2 = 0, i3 = 0;
-	unsigned int cpu, vendor = Shm->Proc.Features.Info.Vendor.CRC;
+	unsigned int cpu;
+	enum CRC_MANUFACTURER vendor = Shm->Proc.Features.Info.Vendor.CRC;
 	struct json_state s = {.depth = 0, .nested_state =
 		{}, .write = json_writer_stdout};
 	UNUSED(OutFunc);
@@ -714,8 +716,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.FSGSBASE);
 					json_key(&s, "TSC_ADJUST");
 					json_literal(&s, "%u", (unsigned) Shm->Proc.Features.ExtFeature.EBX.TSC_ADJUST);
-				    if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-				      || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
+				    if ( (vendor == CRC_AMD) || (vendor == CRC_HYGON) ) {
 					json_key(&s, "UMIP");
 				    } else {
 					json_key(&s, "SGX");
@@ -1307,6 +1308,14 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.VM);
 			json_key(&s, "IOMMU");
 			json_literal(&s, "%llu", Shm->Proc.Technology.IOMMU);
+			json_key(&s, "L1_HW_Prefetch");
+			json_literal(&s, "%llu", Shm->Proc.Technology.L1_HW_Prefetch);
+			json_key(&s, "L1_HW_IP_Prefetch");
+			json_literal(&s, "%llu", Shm->Proc.Technology.L1_HW_IP_Prefetch);
+			json_key(&s, "L2_HW_Prefetch");
+			json_literal(&s, "%llu", Shm->Proc.Technology.L2_HW_Prefetch);
+			json_key(&s, "L2_HW_CL_Prefetch");
+			json_literal(&s, "%llu", Shm->Proc.Technology.L2_HW_CL_Prefetch);
 
 			json_end_object(&s);
 		}
@@ -1576,8 +1585,7 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			}
 			json_key(&s, "PackageID");
 			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.PackageID);
-		    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+		    if((vendor == CRC_AMD) || (vendor == CRC_HYGON))
 		    {
 			json_key(&s, "CCD");
 			json_literal(&s, "%d", Shm->Cpu[cpu].Topology.Cluster.CCD);
@@ -1706,6 +1714,15 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Relative.Ratio);
 				json_key(&s, "Freq");
 				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Relative.Freq);
+				json_end_object(&s);
+			}
+			json_key(&s, "Absolute");
+			{
+				json_start_object(&s);
+				json_key(&s, "Ratio");
+				json_literal(&s, "%u", Shm->Cpu[cpu].FlipFlop[i2].Absolute.Ratio.Perf);
+				json_key(&s, "Freq");
+				json_literal(&s, "%f", Shm->Cpu[cpu].FlipFlop[i2].Absolute.Freq);
 				json_end_object(&s);
 			}
 			json_key(&s, "Thermal");

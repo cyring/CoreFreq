@@ -202,6 +202,9 @@ CPU     IPS            IPC            CPI
 `yum group install "Development Tools"`  
 
 ## Q&A
+* Q: How many CPUs are supported by _CoreFreq_ ?  
+
+  A: Up to 1024 CPUs can be built using the `make` `CORE_COUNT` option.  256 as a default.  
 
 * Q: Turbo Technology is activated however CPUs don't reach those frequencies ?  
 
@@ -215,11 +218,11 @@ CPU     IPS            IPC            CPI
 
 * Q: The Processor does not enter the C-States ?  
 
-  A: Check if at least one Idle driver is running.  
+  A1: Check if at least one Idle driver is running.  
   Accordingly to the Processor specs, provide a max_cstate value in the kernel argument as below.  
 `intel_idle.max_cstate=value`  
 
-  A: _CoreFreq_ can also register itself as a cpuidle driver.  
+  A2: _CoreFreq_ can also register itself as a cpuidle driver.  
   This time, any idle driver will have to be blacklisted in the kernel command line; such as:  
 `modprobe.blacklist=intel_cstate idle=halt intel_idle.max_cstate=0`  
   Start the _CoreFreq_ driver with the `Register_CPU_Idle` parameter:  
@@ -269,28 +272,31 @@ CPU     IPS            IPC            CPI
 `echo "2" > /sys/devices/cpu/rdpmc`  
   or using systemd, create file `/etc/tmpfiles.d/boot.conf` and add line:  
   `w /sys/devices/cpu/rdpmc - - - - 2`  
-  next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:   
+
+  Next, load the driver with the `RDPMC_Enable` argument to override the `CR4` register:  
 `insmod corefreqk.ko RDPMC_Enable=1`  
 
 
 * Q: How to solely control the P-States or the HWP Performance States ?  
 
-  A: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
+  A1: Without the Kernel `cpufreq` framework (aka `CONFIG_CPU_FREQ`), _CoreFreq_ will take the full control over P-States.  
   This allow the User to select a _capped_ frequency from the UI, either per Core, either for the whole Processor.  
 
-  A: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
+  A2: With `cpufreq` built into Kernel, allow _CoreFreq_ to register as a cpufreq driver.  
   In the Kernel boot command line, two ways:  
  1. disable `cpufreq` with the Kernel [parameter](https://github.com/torvalds/linux/blob/master/Documentation/admin-guide/kernel-parameters.txt)  
 `cpufreq.off=1`  
+
  2. blacklist any P-state driver; such as:  
 `modprobe.blacklist=acpi_cpufreq,pcc_cpufreq intel_pstate=disable`  
- next, load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
+
+ 3. load the _CoreFreq_ driver with its `Register_CPU_Freq` parameter:  
 `insmod corefreqk.ko Register_CPU_Freq=1`  
 
 
 * Q: The CPU freezes or the System crashes.  
 
-  A: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
+  A1: Changing the `Max` ratio frequency (aka P0 P-State) makes the Kernel TSC clock source unstable.  
   1. Boot the Kernel with these command line parameters `notsc nowatchdog`  
   2. Optionally, build the _CoreFreq_ driver with its `udelay()` TSC implementation  
 `make DELAY_TSC=1`  
@@ -299,14 +305,14 @@ CPU     IPS            IPC            CPI
   4. Switch the current system clock source to `corefreq`  
 `echo "corefreq" > /sys/devices/system/clocksource/clocksource0/current_clocksource`  
 
-  A: `[AMD][Zen]` CCD temperatures:  
-  _CoreFreq_ driver can be forced to use the Kernel function amd_smn_read()  
-  This allows _CoreFreq_ to be compatible with other SMU drivers.  
+  A2: `[AMD][Zen]` CCD temperatures:  
+  _CoreFreq_ driver can be forced to use the Kernel function `amd_smn_read()`  
 `make LEGACY=2`  
-  However amd_smn_read() protects any SMU access through a mutex which must not be used in interrupt context  
-  _CoreFreq_ CPU loops are executed in interrupt context where mutex usage will freeze the kernel.  
+  However `amd_smn_read()` serializes the SMU access through a mutex.  
+  _CoreFreq_ CPU monitoring loops are executed in an interrupt context where any blocking call like Mutex will freeze the kernel.  
+  As a recommendation, don't use this option and **make sure no other SMU driver is running**.  
 
-  A: This Processor is not or partially implemented in _CoreFreq_.  
+  A3: This Processor is not or partially implemented in _CoreFreq_.  
   Please open an issue in the [CPU support](https://github.com/cyring/CoreFreq/wiki/CPU-support) Wiki page.  
 
 * Q: No voltage is showing up with Nehalem or Westmere processors ?  
@@ -335,6 +341,76 @@ CPU     IPS            IPC            CPI
   - The idle limit can be changed at any time in the `Kernel` window  
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_Idle_Limit.png "Idle Limit")  
 
+* Q: What are the build options for _CoreFreq_ ?  
+
+  A: Enter `make help` to display them:  
+
+```
+o---------------------------------------------------------------o
+|  make [all] [clean] [info] [help] [install] [module-install]  |
+|                                                               |
+|  CC=<COMPILER>                                                |
+|    where <COMPILER> is cc, gcc       [clang partial support]  |
+|                                                               |
+|  WARNING=<ARG>                                                |
+|    where default argument is -Wall                            |
+|                                                               |
+|  KERNELDIR=<PATH>                                             |
+|    where <PATH> is the Kernel source directory                |
+|                                                               |
+|  CORE_COUNT=<N>                                               |
+|    where <N> is 64, 128, 256, 512 or 1024 builtin CPU         |
+|                                                               |
+|  LEGACY=<L>                                                   |
+|    where level <L> is 1 or 2                                  |
+|    1: assembly level restriction such as CMPXCHG16            |
+|    2:   kernel level restriction like amd_smn_read()          |
+|                                                               |
+|  UBENCH=<N>                                                   |
+|    where <N> is 0 to disable or 1 to enable micro-benchmark   |
+|                                                               |
+|  TASK_ORDER=<N>                                               |
+|    where <N> is the memory page unit of kernel allocation     |
+|                                                               |
+|  FEAT_DBG=<N>                                                 |
+|    where <N> is 0 or 1 for FEATURE DEBUG level                |
+|                                                               |
+|  DELAY_TSC=<N>                                                |
+|    where <N> is 1 to build a TSC implementation of udelay()   |
+|                                                               |
+|  OPTIM_LVL=<N>                                                |
+|    where <N> is 0, 1, 2 or 3 of the OPTIMIZATION level        |
+|                                                               |
+|  MAX_FREQ_HZ=<freq>                                           |
+|    where <freq> is at least 4850000000 Hz                     |
+|                                                               |
+|  HWM_CHIPSET=<chipset>                                        |
+|    where <chipset> is W83627 or IT8720 or COMPATIBLE          |
+|                                                               |
+|  Performance Counters:                                        |
+|    -------------------------------------------------------    |
+|   |     MSR_CORE_PERF_UCC     |     MSR_CORE_PERF_URC     |   |
+|   |----------- REG -----------|----------- REG -----------|   |
+|   | MSR_IA32_APERF            |  MSR_IA32_MPERF           |   |
+|   | MSR_CORE_PERF_FIXED_CTR1  |  MSR_CORE_PERF_FIXED_CTR2 |   |
+|   | MSR_PPERF                 |  MSR_PPERF                |   |
+|   | MSR_AMD_F17H_APERF        |  MSR_AMD_F17H_MPERF       |   |
+|    -------------------------------------------------------    |
+|                                                               |
+|  User Interface Layout:                                       |
+|    NO_HEADER=<F>  NO_FOOTER=<F>  NO_UPPER=<F>  NO_LOWER=<F>   |
+|      when <F> is 1 don't build and display this area part     |
+|                                                               |
+|  Example:                                                     |
+|    make CC=gcc OPTIM_LVL=3 FEAT_DBG=1                         |
+|         MSR_CORE_PERF_UCC=MSR_CORE_PERF_FIXED_CTR1            |
+|         MSR_CORE_PERF_URC=MSR_CORE_PERF_FIXED_CTR2            |
+|         HWM_CHIPSET=W83627 MAX_FREQ_HZ=5350000000             |
+|         CORE_COUNT=1024 NO_FOOTER=1 NO_UPPER=1                |
+|         clean all                                             |
+o---------------------------------------------------------------o
+```
+
 * Q: What are the parameters of the _CoreFreq_ driver ?  
 
   A: Use the `modinfo` command to list them:  
@@ -357,6 +433,10 @@ parm:           Override_SubCstate:Override Sub C-States (array of ushort)
 parm:           PkgCStateLimit:Package C-State Limit (short)
 parm:           IOMWAIT_Enable:I/O MWAIT Redirection Enable (short)
 parm:           CStateIORedir:Power Mgmt IO Redirection C-State (short)
+parm:           L1_HW_PREFETCH_Disable:Disable L1 HW Prefetcher (short)
+parm:           L1_HW_IP_PREFETCH_Disable:Disable L1 HW IP Prefetcher (short)
+parm:           L2_HW_PREFETCH_Disable:Disable L2 HW Prefetcher (short)
+parm:           L2_HW_CL_PREFETCH_Disable:Disable L2 HW CL Prefetcher (short)
 parm:           SpeedStep_Enable:Enable SpeedStep (short)
 parm:           C1E_Enable:Enable SpeedStep C1E (short)
 parm:           TurboBoost_Enable:Enable Turbo Boost (short)

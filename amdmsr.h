@@ -82,6 +82,14 @@
 	#define MSR_AMD_PPIN			0xc00102f1
 #endif
 
+#ifndef MSR_AMD_DC_CFG
+	#define MSR_AMD_DC_CFG			0xc0011022
+#endif
+
+#ifndef MSR_AMD_CU_CFG3
+	#define MSR_AMD_CU_CFG3			0xc001102b
+#endif
+
 /* Sources: BKDG for AMD Family 0Fh,15_00h-15_0Fh,15_10h-15_1Fh,15_30-15_3Fh */
 #define PCI_AMD_TEMPERATURE_TCTL	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xa4)
 #define PCI_AMD_THERMTRIP_STATUS	PCI_CONFIG_ADDRESS(0, 0x18, 0x3, 0xe4)
@@ -612,6 +620,49 @@ typedef union
     };
 } AMD_PPIN_CTL; /* Family: 17h, UNK: 16h,15h,14h,12h,11h,10h. Not: 0Fh	*/
 
+typedef union
+{
+	unsigned long long value; /* Scope[?]: MSR 0xc0011022		*/
+    struct
+    {
+	unsigned long long
+	ReservedBits1	:  4-0,
+	DisSpecTlbRld	:  5-4, /* 1=Disable speculative TLB reloads	*/
+	ReservedBits2	: 13-5,
+	DisHwPf 	: 14-13,
+	ReservedBits3	: 15-14,
+	DisPfHwForSw	: 16-15,
+	L1_HW_Prefetch	: 17-16, /* F17h (BIOS) , Disable=1		*/
+	ReservedBits4	: 64-17;
+    };
+} AMD_DC_CFG; /* Family: 15h(BKDG), 17h(BIOS), Other(TODO)		*/
+
+typedef union
+{
+	unsigned long long value; /* SharedC: MSR 0xc001102b		*/
+    struct
+    {
+	unsigned long long
+	L2_HW_Prefetch	:  1-0, /* F17h (BIOS) , Enable=1		*/
+	ReservedBits1	:  3-1,
+	PfcL1TrainDis	:  4-3,
+	ReservedBits2	: 16-4,
+	PfcRegionDis	: 17-16,
+	PfcStrideDis	: 18-17,
+	PfcDis		: 19-18,
+	ReservedBits3	: 20-19,
+	PfcStrideMul	: 22-20,
+	PfcDoubleStride : 23-22,
+	ReservedBits4	: 42-23,
+	DisWalkerSharing: 43-42, /* PwcDisableWalkerSharing		*/
+	ReservedBits5	: 49-43,
+	CombineCr0Cd	: 50-49,
+	AsidIncFactor	: 51-50, /* ASID Increment Scale Factor: [16,64]TLB*/
+	AsidDecFactor	: 53-52, /* Decrement Factor [16,32,64,128]TLB	*/
+	ReservedBits6	: 64-53;
+    };
+} AMD_CU_CFG3; /* Family: 15h(BKDG), 17h(BIOS), Other(TODO)		*/
+
 typedef struct
 {
 	unsigned long long value; /* Pkg: MSR 0xc00102f1		*/
@@ -776,6 +827,86 @@ typedef union
 		LinkFreqCap	: 32-16;
 	};
 } AMD_0F_HTT_FREQUENCY;
+
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		CapId		:  8-0,
+		CapPtr		: 16-8,
+		CapType 	: 19-16,
+		CapRev		: 24-19,
+		IotlbSup	: 25-24,
+		HtTunnel	: 26-25,
+		NpCache 	: 27-26,
+		EFRSup		: 28-27,
+		CapExt		: 29-28,
+		ReservedBits	: 32-29;
+	};
+} AMD_IOMMU_CAP_HEADER;
+
+typedef union
+{
+	unsigned long long	addr;
+	struct
+	{
+		unsigned int	low;
+		unsigned int	high;
+	};
+} AMD_IOMMU_CAP_BAR;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long
+	IOMMU_En 	:  1-0,
+	HtTunEn 	:  2-1,
+	EventLogEn	:  3-2,
+	EventIntEn	:  4-3,
+	ComWaitIntEn	:  5-4,
+	InvTimeOut	:  8-5,
+	PassPW		:  9-8,
+	ResPassPW	: 10-9,
+	Coherent	: 11-10,
+	Isoc		: 12-11,
+	CmdBufEn	: 13-12,
+	PPRLogEn	: 14-13,
+	PprIntEn	: 15-14,
+	PPREn		: 16-15,
+	GTEn		: 17-16,
+	GAEn		: 18-17,
+	CRW		: 22-18,
+	SmiFEn		: 23-22,
+	SlfWBdis	: 24-23,
+	SmiFLogEn	: 25-24,
+	GAMEn		: 28-25,
+	GALogEn 	: 29-28,
+	GAIntEn 	: 30-29,
+	DualPprLogEn	: 32-30,
+	DualEventLogEn	: 34-32,
+	DevTblSegEn	: 37-34,
+	PrivAbrtEn	: 39-37,
+	PprAutoRspEn	: 40-39,
+	MarcEn		: 41-40,
+	BlkStopMrkEn	: 42-41,
+	PprAutoRspAon	: 43-42,
+	DomainIDPNE	: 44-43,
+	ReservedBits1	: 45-44,
+	EPHEn		: 46-45,
+	HADUpdate	: 48-46,
+	GDUpdateDis	: 49-48,
+	ReservedBits2	: 50-49,
+	XTEn		: 51-50,
+	IntCapXTEn	: 52-51,
+	ReservedBits3	: 54-52,
+	GAUpdateDis	: 55-54,
+	ReservedBits4	: 64-55;
+    };
+} AMD_IOMMU_CTRL_REG;
 
 typedef union
 {

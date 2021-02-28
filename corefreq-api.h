@@ -660,7 +660,7 @@ typedef struct
 		};
 	};
 	struct {
-		unsigned long long	IOMMU_CR;
+		AMD_IOMMU_CTRL_REG	IOMMU_CR;
 	};
 } BUS_REGISTERS;
 
@@ -734,21 +734,22 @@ typedef struct
 
 	FEATURES		Features;
 
-	Bit256			CR_Mask 	__attribute__ ((aligned (16)));
-	Bit256			ODCM_Mask	__attribute__ ((aligned (16)));
-	Bit256			PowerMgmt_Mask	__attribute__ ((aligned (16)));
-	Bit256			SpeedStep_Mask	__attribute__ ((aligned (16)));
-	Bit256			TurboBoost_Mask __attribute__ ((aligned (16)));
-	Bit256			HWP_Mask __attribute__ ((aligned (16)));
-	Bit256			C1E_Mask __attribute__ ((aligned (16)));
-	Bit256	/* NHM */	C3A_Mask __attribute__ ((aligned (16)));
-	Bit256	/* NHM */	C1A_Mask __attribute__ ((aligned (16)));
-	Bit256	/* SNB */	C3U_Mask __attribute__ ((aligned (16)));
-	Bit256	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
-	Bit256	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
-	Bit256	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
-	Bit256			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
-	Bit256			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
+	BitCC			CR_Mask 	__attribute__ ((aligned (16)));
+	BitCC			ODCM_Mask	__attribute__ ((aligned (16)));
+	BitCC			DCU_Mask	__attribute__ ((aligned (16)));
+	BitCC			PowerMgmt_Mask	__attribute__ ((aligned (16)));
+	BitCC			SpeedStep_Mask	__attribute__ ((aligned (16)));
+	BitCC			TurboBoost_Mask __attribute__ ((aligned (16)));
+	BitCC			HWP_Mask __attribute__ ((aligned (16)));
+	BitCC			C1E_Mask __attribute__ ((aligned (16)));
+	BitCC	/* NHM */	C3A_Mask __attribute__ ((aligned (16)));
+	BitCC	/* NHM */	C1A_Mask __attribute__ ((aligned (16)));
+	BitCC	/* SNB */	C3U_Mask __attribute__ ((aligned (16)));
+	BitCC	/* SNB */	C1U_Mask __attribute__ ((aligned (16)));
+	BitCC	/* AMD */	CC6_Mask __attribute__ ((aligned (16)));
+	BitCC	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
+	BitCC			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
+	BitCC			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -833,32 +834,36 @@ typedef struct
 	  } Power;
 	} Delta __attribute__ ((aligned (8)));
 
-	Bit256			ODCM		__attribute__ ((aligned (16)));
-	Bit256			PowerMgmt	__attribute__ ((aligned (16)));
-	Bit256			SpeedStep	__attribute__ ((aligned (16)));
-	Bit256			TurboBoost	__attribute__ ((aligned (16)));
-	Bit256			HWP		__attribute__ ((aligned (16)));
-	Bit256			C1E		__attribute__ ((aligned (16)));
-	Bit256			C3A		__attribute__ ((aligned (16)));
-	Bit256			C1A		__attribute__ ((aligned (16)));
-	Bit256			C3U		__attribute__ ((aligned (16)));
-	Bit256			C1U		__attribute__ ((aligned (16)));
-	Bit256			CC6		__attribute__ ((aligned (16)));
-	Bit256			PC6		__attribute__ ((aligned (16)));
-	Bit256			SMM		__attribute__ ((aligned (16)));
-	Bit256			VM		__attribute__ ((aligned (16)));
-	Bit256			IBRS		__attribute__ ((aligned (16)));
-	Bit256			STIBP		__attribute__ ((aligned (16)));
-	Bit256			SSBD		__attribute__ ((aligned (16)));
-	Bit256			RDCL_NO 	__attribute__ ((aligned (16)));
-	Bit256			IBRS_ALL	__attribute__ ((aligned (16)));
-	Bit256			RSBA		__attribute__ ((aligned (16)));
-	Bit256			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
-	Bit256			SSB_NO		__attribute__ ((aligned (16)));
-	Bit256			MDS_NO		__attribute__ ((aligned (16)));
-	Bit256			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
-	Bit256			TAA_NO		__attribute__ ((aligned (16)));
-	Bit256			SPLA		__attribute__ ((aligned (16)));
+	BitCC			ODCM		__attribute__ ((aligned (16)));
+	BitCC			L1_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L1_HW_IP_Prefetch __attribute__((aligned (16)));
+	BitCC			L2_HW_Prefetch __attribute__ ((aligned (16)));
+	BitCC			L2_HW_CL_Prefetch __attribute__((aligned (16)));
+	BitCC			PowerMgmt	__attribute__ ((aligned (16)));
+	BitCC			SpeedStep	__attribute__ ((aligned (16)));
+	BitCC			TurboBoost	__attribute__ ((aligned (16)));
+	BitCC			HWP		__attribute__ ((aligned (16)));
+	BitCC			C1E		__attribute__ ((aligned (16)));
+	BitCC			C3A		__attribute__ ((aligned (16)));
+	BitCC			C1A		__attribute__ ((aligned (16)));
+	BitCC			C3U		__attribute__ ((aligned (16)));
+	BitCC			C1U		__attribute__ ((aligned (16)));
+	BitCC			CC6		__attribute__ ((aligned (16)));
+	BitCC			PC6		__attribute__ ((aligned (16)));
+	BitCC			SMM		__attribute__ ((aligned (16)));
+	BitCC			VM		__attribute__ ((aligned (16)));
+	BitCC			IBRS		__attribute__ ((aligned (16)));
+	BitCC			STIBP		__attribute__ ((aligned (16)));
+	BitCC			SSBD		__attribute__ ((aligned (16)));
+	BitCC			RDCL_NO 	__attribute__ ((aligned (16)));
+	BitCC			IBRS_ALL	__attribute__ ((aligned (16)));
+	BitCC			RSBA		__attribute__ ((aligned (16)));
+	BitCC			L1DFL_VMENTRY_NO __attribute__ ((aligned (16)));
+	BitCC			SSB_NO		__attribute__ ((aligned (16)));
+	BitCC			MDS_NO		__attribute__ ((aligned (16)));
+	BitCC			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
+	BitCC			TAA_NO		__attribute__ ((aligned (16)));
+	BitCC			SPLA		__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));
@@ -1446,9 +1451,6 @@ typedef struct
 /* Source: AMD PPR for AMD Family 17h Models 18h & 20h Processors	*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU
 	#define PCI_DEVICE_ID_AMD_17H_ZEN_APU_NB_IOMMU	0x15d1	/* Raven2 */
-#endif
-#ifndef PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU
-	#define PCI_DEVICE_ID_AMD_19H_ZEN3_VMR_NB_IOMMU 0x1481	/* Vermeer */
 #endif
 /* Source: AMD PPR for AMD Family 17h Model 60h Processors		*/
 #ifndef PCI_DEVICE_ID_AMD_17H_ZEN2_APU_NB_IOMMU

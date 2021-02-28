@@ -53,7 +53,10 @@ char *BuildConfigFQN(char *dirPath)
     if (ConfigFQN[0] == 0)
     {
 	char *homePath, *dotted;
-	if ((homePath = secure_getenv("XDG_CONFIG_HOME")) == NULL) {
+	if ((homePath = secure_getenv("XDG_CONFIG_HOME")) == NULL)
+	{
+		struct stat cfgStat;
+
 		if ((homePath = secure_getenv("HOME")) == NULL) {
 			struct passwd *pwd = getpwuid(getuid());
 			if (pwd != NULL) {
@@ -62,7 +65,15 @@ char *BuildConfigFQN(char *dirPath)
 				homePath = ".";
 			}
 		}
-		dotted = "/.";
+		snprintf(&ConfigFQN[1], 4095, "%s/.config", homePath);
+
+		if ((stat(&ConfigFQN[1], &cfgStat) == 0)
+		 && (cfgStat.st_mode & S_IFDIR))
+		{
+			dotted = "/.config/";
+		} else {
+			dotted = "/.";
+		}
 	} else {
 		dotted = "/";
 	}
@@ -2317,6 +2328,42 @@ void TechUpdate(TGrid *grid,	const int unsigned bix, const signed int pos,
 	memcpy(&grid->cell.item[pos], item, len);
 }
 
+void L1_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Technology.L1_HW_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L1_HW_IP_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Technology.L1_HW_IP_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L2_HW_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Technology.L2_HW_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void L2_HW_CL_Prefetch_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Technology.L2_HW_CL_Prefetch == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
 void SpeedStepUpdate(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = Shm->Proc.Technology.EIST == 1;
@@ -2384,11 +2431,61 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	} TECH[] = \
     {
 	{
+		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+		0,
+		2, "%s%.*s",
+		RSC(TECHNOLOGIES_DCU).CODE(),
+		width - 3 - RSZ(TECHNOLOGIES_DCU),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.L1_HW_Prefetch,
+		3, "%s%.*sL1 HW   <%3s>",
+		RSC(TECH_L1_HW_PREFETCH).CODE(),
+		width - (OutFunc ? 17 : 19) - RSZ(TECH_L1_HW_PREFETCH),
+		NULL,
+		BOXKEY_L1_HW_PREFETCH,
+		L1_HW_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.L1_HW_IP_Prefetch,
+		3, "%s%.*sL1 HW IP   <%3s>",
+		RSC(TECH_L1_HW_IP_PREFETCH).CODE(),
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L1_HW_IP_PREFETCH),
+		NULL,
+		BOXKEY_L1_HW_IP_PREFETCH,
+		L1_HW_IP_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.L2_HW_Prefetch,
+		3, "%s%.*sL2 HW   <%3s>",
+		RSC(TECH_L2_HW_PREFETCH).CODE(),
+		width - (OutFunc ? 17 : 19) - RSZ(TECH_L2_HW_PREFETCH),
+		NULL,
+		BOXKEY_L2_HW_PREFETCH,
+		L2_HW_Prefetch_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.L2_HW_CL_Prefetch,
+		3, "%s%.*sL2 HW CL   <%3s>",
+		RSC(TECH_L2_HW_CL_PREFETCH).CODE(),
+		width - (OutFunc ? 20 : 22) - RSZ(TECH_L2_HW_CL_PREFETCH),
+		NULL,
+		BOXKEY_L2_HW_CL_PREFETCH,
+		L2_HW_CL_Prefetch_Update
+	},
+	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.SMM == 1,
-		2, "%s%.*sSMM-Dual       [%3s]",
+		2, "%s%.*sSMM-Dual   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		width - 19 - RSZ(TECHNOLOGIES_SMM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2396,9 +2493,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.HyperThreading == 1,
-		2, "%s%.*sHTT       [%3s]",
+		2, "%s%.*sHTT   [%3s]",
 		RSC(TECHNOLOGIES_HTT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_HTT),
+		width - 14 - RSZ(TECHNOLOGIES_HTT),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2406,9 +2503,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.EIST == 1,
-		2, "%s%.*sEIST       <%3s>",
+		2, "%s%.*sEIST   <%3s>",
 		RSC(TECHNOLOGIES_EIST).CODE(),
-		width - 19 - RSZ(TECHNOLOGIES_EIST),
+		width - 15 - RSZ(TECHNOLOGIES_EIST),
 		NULL,
 		BOXKEY_EIST,
 		SpeedStepUpdate
@@ -2416,9 +2513,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.Power.EAX.TurboIDA == 1,
-		2, "%s%.*sIDA       [%3s]",
+		2, "%s%.*sIDA   [%3s]",
 		RSC(TECHNOLOGIES_IDA).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_IDA),
+		width - 14 - RSZ(TECHNOLOGIES_IDA),
 		NULL,
 		SCANKEY_NULL,
 		IDA_Update
@@ -2426,9 +2523,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.Turbo == 1,
-		2, "%s%.*sTURBO       <%3s>",
+		2, "%s%.*sTURBO   <%3s>",
 		RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 20 - RSZ(TECHNOLOGIES_TURBO),
+		width - 16 - RSZ(TECHNOLOGIES_TURBO),
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
@@ -2436,9 +2533,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Features.R2H_Disable == 1,
-		2, "%s%.*sR2H       <%3s>",
+		2, "%s%.*sR2H   <%3s>",
 		RSC(TECHNOLOGIES_R2H).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_R2H),
+		width - 14 - RSZ(TECHNOLOGIES_R2H),
 		NULL,
 		BOXKEY_R2H,
 		Race2HaltUpdate
@@ -2446,9 +2543,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.VM == 1,
-		2, "%s%.*sVMX       [%3s]",
+		2, "%s%.*sVMX   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM),
+		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2456,9 +2553,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.IOMMU == 1,
-		3, "%s%.*sVT-d       [%3s]",
+		3, "%s%.*sVT-d   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(),
-		width - (OutFunc ? 20 : 22) - RSZ(TECHNOLOGIES_IOMMU),
+		width - (OutFunc ? 16 : 18) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2466,9 +2563,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.SMM == 1,
-		2, "%s%.*sSMM-Lock       [%3s]",
+		2, "%s%.*sSMM-Lock   [%3s]",
 		RSC(TECHNOLOGIES_SMM).CODE(),
-		width - 23 - RSZ(TECHNOLOGIES_SMM),
+		width - 19 - RSZ(TECHNOLOGIES_SMM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2476,9 +2573,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Features.HyperThreading == 1,
-		2, "%s%.*sSMT       [%3s]",
+		2, "%s%.*sSMT   [%3s]",
 		RSC(TECHNOLOGIES_SMT).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_SMT),
+		width - 14 - RSZ(TECHNOLOGIES_SMT),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2486,9 +2583,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.PowerNow == 0b11,	/*	VID + FID	*/
-		2, "%s%.*sCnQ       [%3s]",
+		2, "%s%.*sCnQ   [%3s]",
 		RSC(TECHNOLOGIES_CNQ).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CNQ),
+		width - 14 - RSZ(TECHNOLOGIES_CNQ),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2496,9 +2593,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0,
-		2, "%s%.*sCCx       [%3s]",
+		2, "%s%.*sCCx   [%3s]",
 		RSC(PERF_MON_CORE_CSTATE).CODE(),
-		width - 18 - RSZ(PERF_MON_CORE_CSTATE),
+		width - 14 - RSZ(PERF_MON_CORE_CSTATE),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2506,9 +2603,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.Turbo == 1,
-		2, "%s%.*sCPB       <%3s>",
+		2, "%s%.*sCPB   <%3s>",
 		RSC(TECHNOLOGIES_CPB).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_CPB),
+		width - 14 - RSZ(TECHNOLOGIES_CPB),
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
@@ -2516,9 +2613,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.VM == 1,
-		2, "%s%.*sSVM       [%3s]",
+		2, "%s%.*sSVM   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(),
-		width - 18 - RSZ(TECHNOLOGIES_VM),
+		width - 14 - RSZ(TECHNOLOGIES_VM),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2526,9 +2623,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
 		Shm->Proc.Technology.IOMMU == 1,
-		3, "%s%.*sAMD-V       [%3s]",
+		3, "%s%.*sAMD-V   [%3s]",
 		RSC(TECHNOLOGIES_IOMMU).CODE(),
-		width - (OutFunc? 21 : 23) - RSZ(TECHNOLOGIES_IOMMU),
+		width - (OutFunc? 17 : 19) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
 		SCANKEY_NULL,
 		NULL
@@ -2536,9 +2633,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		NULL,
 		Shm->Proc.Features.Std.ECX.Hyperv == 1,
-		3, "%s%.*s""%10s       [%3s]",
+		3, "%s%.*s""%10s   [%3s]",
 		RSC(TECHNOLOGIES_HYPERV).CODE(),
-		width - (OutFunc? 26 : 28) - RSZ(TECHNOLOGIES_HYPERV),
+		width - (OutFunc? 22 : 24) - RSZ(TECHNOLOGIES_HYPERV),
 		Hypervisor[Shm->Proc.HypervisorID],
 		SCANKEY_NULL,
 		NULL
@@ -2546,9 +2643,9 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	{
 		NULL,
 		0,
-		3, "%s%.*s""       [%12s]",
+		3, "%s%.*s""   [%12s]",
 		RSC(VENDOR_ID).CODE(),
-		width - (OutFunc? 25 : 27) - RSZ(VENDOR_ID),
+		width - (OutFunc? 21 : 23) - RSZ(VENDOR_ID),
 		strlen(Shm->Proc.Features.Info.Hypervisor.ID) > 0 ?
 		Shm->Proc.Features.Info.Hypervisor.ID
 		: (char*) RSC(NOT_AVAILABLE).CODE(),
@@ -3719,11 +3816,12 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 		{.pString = Shm->SMB.Product.Serial,	.secret = 1},
 		{.pString = Shm->SMB.Product.SKU,	.secret = 0},
 		{.pString = Shm->SMB.Product.Family,	.secret = 0},
+		{.pString = Shm->SMB.Board.Vendor,	.secret = 0},
 		{.pString = Shm->SMB.Board.Name,	.secret = 0},
 		{.pString = Shm->SMB.Board.Version,	.secret = 0},
 		{.pString = Shm->SMB.Board.Serial,	.secret = 1}
 	};
-	if (smb[idx].secret & Setting.secret) {
+	if (smb[idx].secret && Setting.secret) {
 		static char outStr[MAX_UTS_LEN];
 		ssize_t len = strlen(smb[idx].pString);
 		int i;
@@ -3737,16 +3835,34 @@ char *ScrambleSMBIOS(enum SMB_STRING idx, int mod, char thing)
 	}
 }
 
+const char *SMB_Comment[SMB_STRING_COUNT] = {
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VENDOR)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_VERSION)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BIOS_RELEASE)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_SYSTEM_VENDOR)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_NAME)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_VERSION) " ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SERIAL)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_SKU)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_PRODUCT_FAMILY)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VENDOR)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_NAME)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_VERSION)	" ",
+	" "	COREFREQ_STRINGIFY(SMB_BOARD_SERIAL)	" "
+};
+
 REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	enum SMB_STRING idx;
 
 	REASON_INIT(reason);
 
-	for (idx = 0; idx < SMB_STRING_COUNT; idx ++) {
-		PUT(	SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
-			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-'));
-	}
+    for (idx = 0; idx < SMB_STRING_COUNT; idx ++)
+    {
+	GridHover( PUT( SMBIOS_STRING_INDEX|idx, RSC(SMBIOS_ITEM).ATTR(),
+			width, 0, "[%2d] %s", idx, ScrambleSMBIOS(idx, 4, '-')),
+		SMB_Comment[idx] );
+    }
 	return (reason);
 }
 
@@ -4336,6 +4452,7 @@ void Topology(Window *win, CELL_FUNC OutFunc)
       case AMD_Zen2_APU:
       case AMD_Zen2_MTS:
       case AMD_Zen3_VMR:
+      case AMD_Zen3_CZN:
 	TopologyFunc = Topology_CCD;
 	pStrOFF = TopologyStrOFF[2];
 	TopologySubHeader[1] = TopologyAltSubHeader[2];
@@ -5922,7 +6039,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 9;
+		matrixSize.hth = 12;
 		winOrigin.row = TOP_HEADER_ROW + 10;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
@@ -6055,10 +6172,10 @@ Window *CreateTopology(unsigned long long id)
 					TOPO_MATY, 2+Shm->Proc.CPU.Count,
 					1, TOP_HEADER_ROW + 1);
 
-		wTopology->matrix.select.row = 2;
-
 	if (wTopology != NULL)
 	{
+		wTopology->matrix.select.row = 2;
+
 		Topology(wTopology, AddCell);
 
 		StoreWindow(wTopology,.title,(char*)RSC(TOPOLOGY_TITLE).CODE());
@@ -6142,8 +6259,8 @@ Window *CreateSysRegs(unsigned long long id)
 Window *CreateMemCtrl(unsigned long long id)
 {
 	Window *wIMC;
-	TIMING_FUNC pTimingFunc;
-	unsigned int mc, rows = 1, ctrlHeaders, channelHeaders;
+	TIMING_FUNC pTimingFunc = Timing_DDR3;
+	unsigned int mc, rows = 1, ctrlHeaders = 6, channelHeaders = 4;
 
 	switch (Shm->Uncore.Unit.DDR_Ver) {
 	case 4:
@@ -7141,7 +7258,7 @@ void CPU_Item_Target_Freq(unsigned int cpu, ASCII *item)
 			Shm->Cpu[cpu].Topology.CoreID,
 			Shm->Cpu[cpu].Topology.ThreadID,
 			CFlop->Absolute.Ratio.Perf,
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			Shm->Proc.Features.TgtRatio_Unlock ? '<' : '[',
 			Shm->Cpu[cpu].Boost[BOOST(TGT)],
 			Shm->Proc.Features.TgtRatio_Unlock ? '>' : ']');
@@ -9197,6 +9314,186 @@ int Shortcut(SCANKEY *scan)
 	Shm->SysGate.sortByField = F_COMM;
 	draw.Flag.layout = 1;
     }
+    break;
+    case BOXKEY_L1_HW_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 2
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.L1_HW_Prefetch ? 2 : 1
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+			" DCU L1 Prefetcher ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.L1_HW_Prefetch],
+			stateAttr[Shm->Proc.Technology.L1_HW_Prefetch],
+				BOXKEY_L1_HW_PREFETCH_ON,
+		stateStr[0][!Shm->Proc.Technology.L1_HW_Prefetch],
+			stateAttr[!Shm->Proc.Technology.L1_HW_Prefetch],
+				BOXKEY_L1_HW_PREFETCH_OFF,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_L1_HW_PREFETCH_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_HW_PREFETCH );
+	}
+    break;
+    case BOXKEY_L1_HW_PREFETCH_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_HW_PREFETCH );
+	}
+    break;
+    case BOXKEY_L1_HW_IP_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.L1_HW_IP_Prefetch ? 2 : 1
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+			" DCU L1 IP Prefetcher ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.L1_HW_IP_Prefetch],
+			stateAttr[Shm->Proc.Technology.L1_HW_IP_Prefetch],
+				BOXKEY_L1_HW_IP_PREFETCH_ON,
+		stateStr[0][!Shm->Proc.Technology.L1_HW_IP_Prefetch],
+			stateAttr[!Shm->Proc.Technology.L1_HW_IP_Prefetch],
+				BOXKEY_L1_HW_IP_PREFETCH_OFF,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_L1_HW_IP_PREFETCH_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L1_HW_IP_PREFETCH );
+	}
+    break;
+    case BOXKEY_L1_HW_IP_PREFETCH_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L1_HW_IP_PREFETCH );
+	}
+    break;
+    case BOXKEY_L2_HW_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 3
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.L2_HW_Prefetch ? 2 : 1
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+			" DCU L2 Prefetcher ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.L2_HW_Prefetch],
+			stateAttr[Shm->Proc.Technology.L2_HW_Prefetch],
+				BOXKEY_L2_HW_PREFETCH_ON,
+		stateStr[0][!Shm->Proc.Technology.L2_HW_Prefetch],
+			stateAttr[!Shm->Proc.Technology.L2_HW_Prefetch],
+				BOXKEY_L2_HW_PREFETCH_OFF,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_L2_HW_PREFETCH_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_HW_PREFETCH );
+	}
+    break;
+    case BOXKEY_L2_HW_PREFETCH_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_HW_PREFETCH );
+	}
+    break;
+    case BOXKEY_L2_HW_CL_PREFETCH:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+			.row = TOP_HEADER_ROW + 4
+		}, select = {
+			.col = 0,
+			.row = Shm->Proc.Technology.L2_HW_CL_Prefetch ? 2 : 1
+		};
+
+	AppendWindow(CreateBox(scan->key, origin, select,
+			" DCU L2 CL Prefetcher ",
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+		stateStr[1][Shm->Proc.Technology.L2_HW_CL_Prefetch],
+			stateAttr[Shm->Proc.Technology.L2_HW_CL_Prefetch],
+				BOXKEY_L2_HW_CL_PREFETCH_ON,
+		stateStr[0][!Shm->Proc.Technology.L2_HW_CL_Prefetch],
+			stateAttr[!Shm->Proc.Technology.L2_HW_CL_Prefetch],
+				BOXKEY_L2_HW_CL_PREFETCH_OFF,
+		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+		&winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_L2_HW_CL_PREFETCH_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_L2_HW_CL_PREFETCH );
+	}
+    break;
+    case BOXKEY_L2_HW_CL_PREFETCH_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_L2_HW_CL_PREFETCH );
+	}
     break;
     case BOXKEY_EIST:
     {
@@ -12271,14 +12568,14 @@ CUINT Draw_Relative_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the relative Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Relative.Ratio));
+	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Relative.Ratio));
 }
 
 CUINT Draw_Absolute_Load(Layer *layer, const unsigned int cpu, CUINT row)
 {
 	struct FLIP_FLOP *CFlop=&Shm->Cpu[cpu].FlipFlop[!Shm->Cpu[cpu].Toggle];
 	/*		Draw the absolute Core frequency ratio		*/
-	return (Draw_Frequency_Load(layer, row, cpu, CFlop->Absolute.Ratio.Perf));
+	return (Draw_Frequency_Load(layer,row, cpu,CFlop->Absolute.Ratio.Perf));
 }
 #endif /* NO_UPPER */
 
@@ -12318,7 +12615,7 @@ size_t Draw_Absolute_Freq_Spaces(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%.*s",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12379,7 +12676,7 @@ size_t Draw_Absolute_Freq_Celsius(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12442,7 +12739,7 @@ size_t Draw_Absolute_Freq_Fahrenheit(	struct FLIP_FLOP *CFlop,
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%% "	\
 		"%6.2f" "%% " "%6.2f" "%% " "%6.2f" "%%  "	\
 		"%-3u" "/" "%3u" "/" "%3u",
-		CFlop->Absolute.Perf,
+		CFlop->Absolute.Freq,
 		CFlop->Absolute.Ratio.Perf,
 		100.f * CFlop->State.Turbo,
 		100.f * CFlop->State.C0,
@@ -12647,7 +12944,7 @@ size_t Draw_Monitor_Tasks_Relative_Freq(struct FLIP_FLOP *CFlop)
 
 size_t Draw_Monitor_Tasks_Absolute_Freq(struct FLIP_FLOP *CFlop)
 {
-	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Perf));
+	return (snprintf(Buffer, 8+1, "%7.2f", CFlop->Absolute.Freq));
 }
 
 size_t (*Draw_Monitor_Tasks_Matrix[2])(struct FLIP_FLOP *CFlop) = \
@@ -12711,7 +13008,7 @@ size_t Draw_Sensors_V0_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			69, hSpace) );
 }
 
@@ -12725,7 +13022,7 @@ size_t Draw_Sensors_V0_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f%.*s"					\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			26, hSpace,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -12760,7 +13057,7 @@ size_t Draw_Sensors_V0_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f%.*s"					\
 			"%3u%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12778,7 +13075,7 @@ size_t Draw_Sensors_V0_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			17, hSpace,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12891,7 +13188,7 @@ size_t Draw_Sensors_V1_T0_P0(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			56, hSpace) );
 }
@@ -12908,7 +13205,7 @@ size_t Draw_Sensors_V1_T0_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20\x20\x20\x20\x20\x20\x20"		\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 		\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			CFlop->State.Energy,
 			CFlop->State.Power,
@@ -12944,7 +13241,7 @@ size_t Draw_Sensors_V1_T1_P0(Layer *layer, const unsigned int cpu, CUINT row)
 			"%7.2f\x20\x20\x20\x20\x20\x20\x20"		\
 			"%5.4f\x20\x20\x20\x20" 			\
 			"%3u%.*s",					\
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -12963,7 +13260,7 @@ size_t Draw_Sensors_V1_T1_P1(Layer *layer, const unsigned int cpu, CUINT row)
 			"%3u\x20\x20\x20\x20\x20\x20"			\
 			"%8.4f\x20\x20\x20\x20\x20\x20" 	 	\
 			"%8.4f%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.Vcore,
 			Setting.fahrCels ? Cels2Fahr(CFlop->Thermal.Temp)
 					 : CFlop->Thermal.Temp,
@@ -13510,7 +13807,7 @@ size_t Draw_Voltage_SMT(Layer *layer, const unsigned int cpu, CUINT row)
 			"\x20\x20\x20%5.4f"				\
 			"\x20\x20\x20%5.4f"				\
 			"%.*s",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Voltage.VID,
 			Shm->Cpu[cpu].Sensors.Voltage.Limit[SENSOR_LOWEST],
 			CFlop->Voltage.Vcore,
@@ -13569,7 +13866,7 @@ size_t Draw_Energy_Joule(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Energy.Limit[SENSOR_LOWEST],
 			CFlop->State.Energy,
@@ -13585,7 +13882,7 @@ size_t Draw_Power_Watt(Layer *layer, const unsigned int cpu, CUINT row)
 	return (snprintf(Buffer, 80+1,
 			"%7.2f\x20\x20\x20%018llu\x20\x20\x20\x20"	\
 			"%10.6f\x20\x20%10.6f\x20\x20%10.6f",
-			draw.Load ? CFlop->Absolute.Perf:CFlop->Relative.Freq,
+			draw.Load ? CFlop->Absolute.Freq:CFlop->Relative.Freq,
 			CFlop->Delta.Power.ACCU,
 			Shm->Cpu[cpu].Sensors.Power.Limit[SENSOR_LOWEST],
 			CFlop->State.Power,
@@ -13662,7 +13959,7 @@ size_t Draw_Monitor_Slice_Error_Absolute_Freq(	struct FLIP_FLOP *CFlop,
 	return (snprintf(Buffer, 8+20+20+20+20+20+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%18llu",
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			pSlice->Delta.TSC,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
@@ -13690,7 +13987,7 @@ size_t Draw_Monitor_Slice_NoError_Absolute_Freq(struct FLIP_FLOP *CFlop,
 	return (snprintf(Buffer, 8+20+20+20+20+18+1,
 			"%7.2f "					\
 			"%16llu%16llu%18llu%18llu%.*s",
-			CFlop->Absolute.Perf,
+			CFlop->Absolute.Freq,
 			pSlice->Delta.TSC,
 			pSlice->Delta.INST,
 			pSlice->Counter[1].TSC,
@@ -14170,7 +14467,7 @@ void Draw_Header(Layer *layer, CUINT row)
 		const unsigned int top = Shm->Proc.Top.Abs;
 		CFlop = &Shm->Cpu[top].FlipFlop[!Shm->Cpu[top].Toggle];
 
-		Clock2LCD(layer, 0,row, CFlop->Absolute.Perf,
+		Clock2LCD(layer, 0,row, CFlop->Absolute.Freq,
 					CFlop->Absolute.Ratio.Perf);
 	} else {
 		const unsigned int top = Shm->Proc.Top.Rel;
@@ -15580,4 +15877,3 @@ int main(int argc, char *argv[])
     }
     return (reason.rc);
 }
-

@@ -32,9 +32,9 @@
 #define PAGE_SIZE (sysconf(_SC_PAGESIZE))
 
 /* §8.10.6.7 Place Locks and Semaphores in Aligned, 128-Byte Blocks of Memory */
-static Bit256 roomSeed	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
-static Bit256 roomCore	__attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
-static Bit256 roomClear __attribute__ ((aligned (16))) = {0x0, 0x0, 0x0, 0x0};
+static BitCC roomSeed	__attribute__ ((aligned (16))) = InitCC(0x0);
+static BitCC roomCore	__attribute__ ((aligned (16))) = InitCC(0x0);
+static BitCC roomClear	__attribute__ ((aligned (16))) = InitCC(0x0);
 static Bit64 Shutdown	__attribute__ ((aligned (8))) = 0x0;
 static Bit64 PendingSync __attribute__ ((aligned (8))) = 0x0;
 unsigned int Quiet = 0x001, SysGateStartUp = 1;
@@ -68,15 +68,19 @@ typedef struct {
 
 void Core_ResetSensorLimits(CPU_STRUCT *Cpu)
 {
-	RESET_SENSOR_LIMIT(THERMAL, LOWEST, Cpu->PowerThermal.Limit);
-	RESET_SENSOR_LIMIT(VOLTAGE, LOWEST, Cpu->Sensors.Voltage.Limit);
-	RESET_SENSOR_LIMIT(ENERGY , LOWEST, Cpu->Sensors.Energy.Limit);
-	RESET_SENSOR_LIMIT(POWER  , LOWEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(THERMAL,	LOWEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE,	LOWEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY,	LOWEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER,	LOWEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(REL_FREQ,	LOWEST, Cpu->Relative.Freq);
+	RESET_SENSOR_LIMIT(ABS_FREQ,	LOWEST, Cpu->Absolute.Freq);
 
-	RESET_SENSOR_LIMIT(THERMAL,HIGHEST, Cpu->PowerThermal.Limit);
-	RESET_SENSOR_LIMIT(VOLTAGE,HIGHEST, Cpu->Sensors.Voltage.Limit);
-	RESET_SENSOR_LIMIT(ENERGY ,HIGHEST, Cpu->Sensors.Energy.Limit);
-	RESET_SENSOR_LIMIT(POWER  ,HIGHEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(THERMAL,	HIGHEST, Cpu->PowerThermal.Limit);
+	RESET_SENSOR_LIMIT(VOLTAGE,	HIGHEST, Cpu->Sensors.Voltage.Limit);
+	RESET_SENSOR_LIMIT(ENERGY,	HIGHEST, Cpu->Sensors.Energy.Limit);
+	RESET_SENSOR_LIMIT(POWER,	HIGHEST, Cpu->Sensors.Power.Limit);
+	RESET_SENSOR_LIMIT(REL_FREQ,	HIGHEST, Cpu->Relative.Freq);
+	RESET_SENSOR_LIMIT(ABS_FREQ,	HIGHEST, Cpu->Absolute.Freq);
 }
 
 void Core_ComputeThermalLimits(CPU_STRUCT *Cpu, struct FLIP_FLOP *CFlip)
@@ -1102,6 +1106,12 @@ static void *Core_Cycle(void *arg)
 	CFlip->Relative.Freq = (double) REL_FREQ_MHz(	CFlip->Relative.Ratio,
 							Core->Clock,
 							Shm->Sleep.Interval );
+	/* Per Core, compute the Relative Frequency limits.		*/
+	TEST_AND_SET_SENSOR( REL_FREQ, LOWEST,	CFlip->Relative.Freq,
+						Cpu->Relative.Freq );
+
+	TEST_AND_SET_SENSOR( REL_FREQ, HIGHEST, CFlip->Relative.Freq,
+						Cpu->Relative.Freq );
 	/* Per Core, evaluate thermal properties.			*/
 	CFlip->Thermal.Sensor	= Core->PowerThermal.Sensor;
 	CFlip->Thermal.Events	= Core->PowerThermal.Events;
@@ -1144,10 +1154,16 @@ static void *Core_Cycle(void *arg)
 
 	CFlip->Absolute.Ratio.Perf = Core->Ratio.Perf;
 
-	CFlip->Absolute.Perf	= ABS_FREQ_MHz(
-					__typeof__(CFlip->Absolute.Perf),
+	CFlip->Absolute.Freq	= ABS_FREQ_MHz(
+					__typeof__(CFlip->Absolute.Freq),
 					Core->Ratio.Perf, CFlip->Clock
 				);
+	/* Per Core, compute the Absolute Frequency limits.		*/
+	TEST_AND_SET_SENSOR( ABS_FREQ, LOWEST,	CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
+
+	TEST_AND_SET_SENSOR( ABS_FREQ, HIGHEST, CFlip->Absolute.Freq,
+						Cpu->Absolute.Freq );
     }
   } while (!BITVAL(Shutdown, SYNC) && !BITVAL(Core->OffLine, OS)) ;
 
@@ -1418,15 +1434,31 @@ void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {	/* Technologies aggregation.					*/
 	Shm->Proc.Technology.PowerNow = (Shm->Proc.PowerNow == 0b11);
 
-	Shm->Proc.Technology.ODCM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.ODCM = BITCMP_CC(	LOCKLESS,
 						Proc_RW->ODCM,
 						Proc_RO->ODCM_Mask );
 
-	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.L1_HW_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L1_HW_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L1_HW_IP_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L1_HW_IP_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L2_HW_Prefetch = BITCMP_CC(LOCKLESS,
+						Proc_RW->L2_HW_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.L2_HW_CL_Prefetch=BITCMP_CC(LOCKLESS,
+						Proc_RW->L2_HW_CL_Prefetch,
+						Proc_RO->DCU_Mask );
+
+	Shm->Proc.Technology.PowerMgmt=BITCMP_CC(LOCKLESS,
 						Proc_RW->PowerMgmt,
 						Proc_RO->PowerMgmt_Mask);
 
-	Shm->Proc.Technology.EIST = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.EIST = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SpeedStep,
 						Proc_RO->SpeedStep_Mask );
 
@@ -1434,54 +1466,54 @@ void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RW->TurboBoost,
 						Proc_RO->TurboBoost_Mask) != 0;
 
-	Shm->Proc.Technology.C1E = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C1E = BITCMP_CC(	LOCKLESS,
 						Proc_RW->C1E,
 						Proc_RO->C1E_Mask );
 
-	Shm->Proc.Technology.C3A = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C3A = BITCMP_CC(	LOCKLESS,
 						Proc_RW->C3A,
 						Proc_RO->C3A_Mask );
 
-	Shm->Proc.Technology.C1A = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C1A = BITCMP_CC(	LOCKLESS,
 						Proc_RW->C1A,
 						Proc_RO->C1A_Mask );
 
-	Shm->Proc.Technology.C3U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C3U = BITCMP_CC(	LOCKLESS,
 						Proc_RW->C3U,
 						Proc_RO->C3U_Mask );
 
-	Shm->Proc.Technology.C1U = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.C1U = BITCMP_CC(	LOCKLESS,
 						Proc_RW->C1U,
 						Proc_RO->C1U_Mask );
 
-	Shm->Proc.Technology.CC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.CC6 = BITCMP_CC(	LOCKLESS,
 						Proc_RW->CC6,
 						Proc_RO->CC6_Mask );
 
-	Shm->Proc.Technology.PC6 = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.PC6 = BITCMP_CC(	LOCKLESS,
 						Proc_RW->PC6,
 						Proc_RO->PC6_Mask );
 
-	Shm->Proc.Technology.SMM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.SMM = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SMM,
 						Proc_RO->CR_Mask );
 
-	Shm->Proc.Technology.VM = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Technology.VM = BITCMP_CC(	LOCKLESS,
 						Proc_RW->VM,
 						Proc_RO->CR_Mask );
 }
 
 void Mitigation_2nd_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {
-	unsigned short	IBRS = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	unsigned short	IBRS = BITCMP_CC(	LOCKLESS,
 						Proc_RW->IBRS,
 						Proc_RO->SPEC_CTRL_Mask ),
 
-			STIBP = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			STIBP = BITCMP_CC(	LOCKLESS,
 						Proc_RW->STIBP,
 						Proc_RO->SPEC_CTRL_Mask ),
 
-			SSBD = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			SSBD = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SSBD,
 						Proc_RO->SPEC_CTRL_Mask );
 
@@ -1494,35 +1526,35 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 {
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	unsigned short	RDCL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	unsigned short	RDCL_NO = BITCMP_CC(	LOCKLESS,
 						Proc_RW->RDCL_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			IBRS_ALL = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			IBRS_ALL = BITCMP_CC(	LOCKLESS,
 						Proc_RW->RDCL_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			RSBA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			RSBA = BITCMP_CC(	LOCKLESS,
 						Proc_RW->RSBA,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			L1DFL_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			L1DFL_NO = BITCMP_CC(	LOCKLESS,
 						Proc_RW->L1DFL_VMENTRY_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			SSB_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			SSB_NO = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SSB_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			MDS_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			MDS_NO = BITCMP_CC(	LOCKLESS,
 						Proc_RW->MDS_NO,
 						Proc_RO->ARCH_CAP_Mask ),
 
-			PSCHANGE_MC_NO=BITCMP_CC(Shm->Proc.CPU.Count, LOCKLESS,
+			PSCHANGE_MC_NO=BITCMP_CC(LOCKLESS,
 						Proc_RW->PSCHANGE_MC_NO,
 						Proc_RO->ARCH_CAP_Mask),
 
-			TAA_NO = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+			TAA_NO = BITCMP_CC(	LOCKLESS,
 						Proc_RW->TAA_NO,
 						Proc_RO->ARCH_CAP_Mask );
 
@@ -1562,7 +1594,7 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	Shm->Proc.Mechanisms.TAA_NO = (
 		Shm->Proc.Features.ExtFeature.EDX.IA32_ARCH_CAP + (2 * TAA_NO)
 	);
-	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	Shm->Proc.CPU.Count, LOCKLESS,
+	Shm->Proc.Mechanisms.SPLA = BITCMP_CC(	LOCKLESS,
 						Proc_RW->SPLA,
 						Proc_RO->ARCH_CAP_Mask );
     }
@@ -2923,9 +2955,9 @@ void QPI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.CtrlSpeed *= Core->Clock.Hz;
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
-	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 00 ?
-		4800 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 10 ?
-			6400 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 01 ?
+	Shm->Uncore.Bus.Rate = Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL==0b00 ?
+		4800 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL == 0b10 ?
+			6400 : Proc->Uncore.Bus.QuickPath.X58.QPIFREQSEL==0b01 ?
 				5866 : 6400;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
@@ -3318,10 +3350,10 @@ void SNB_EP_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.CtrlSpeed /= Shm->Proc.Features.Factory.Clock.Hz;
 
 	Shm->Uncore.Bus.Rate =						\
-	  Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 010 ? 5600
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 011 ? 6400
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 100 ? 7200
-	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 101 ? 8000 : 5000;
+	  Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b010 ? 5600
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b011 ? 6400
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b100 ? 7200
+	: Proc->Uncore.Bus.QuickPath.IVB_EP.QPIFREQSEL == 0b101 ? 8000 : 5000;
 
 	Shm->Uncore.Bus.Speed = (Core->Clock.Hz * Shm->Uncore.Bus.Rate)
 				/ Shm->Proc.Features.Factory.Clock.Hz;
@@ -3922,7 +3954,7 @@ void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++) {
 	  if (Proc->Uncore.MC[mc].Channel[cha].DIMM[slot].MBA.CSEnable) {
-	    index=(Proc->Uncore.MC[mc].MaxDIMMs.AMD0Fh.CS.value & mask) >> shift;
+	    index=(Proc->Uncore.MC[mc].MaxDIMMs.AMD0Fh.CS.value & mask) >>shift;
 
 	    Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size=module[index].size;
 	  }
@@ -4217,7 +4249,7 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 
 void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
-	Shm->Proc.Technology.IOMMU = BITVAL(Proc->Uncore.Bus.IOMMU_CR, 0);
+	Shm->Proc.Technology.IOMMU = Proc->Uncore.Bus.IOMMU_CR.IOMMU_En;
 }
 
 static char *Chipset[CHIPSETS] = {
@@ -4784,6 +4816,7 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen2_APU:
     case AMD_Zen2_MTS:
     case AMD_Zen3_VMR:
+    case AMD_Zen3_CZN:
     case AMD_Family_17h:
     case AMD_Family_18h:
     case AMD_Family_19h:
@@ -5683,7 +5716,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	    #if defined(LEGACY) && LEGACY > 0
 		!BITZERO(BUS_LOCK, roomCore[CORE_WORD_TOP(CORE_COUNT)])
 	    #else
-		!BITCMP_CC(Shm->Proc.CPU.Count, BUS_LOCK, roomCore, roomClear)
+		!BITCMP_CC(BUS_LOCK, roomCore, roomClear)
 	    #endif
 	)
 	{
@@ -5772,8 +5805,8 @@ REASON_CODE Core_Manager(REF *Ref)
 			prevTop.RelFreq = CFlop->Relative.Freq;
 			Shm->Proc.Top.Rel = cpu;
 		}
-		if (CFlop->Absolute.Perf > prevTop.AbsFreq) {
-			prevTop.AbsFreq = CFlop->Absolute.Perf;
+		if (CFlop->Absolute.Freq > prevTop.AbsFreq) {
+			prevTop.AbsFreq = CFlop->Absolute.Freq;
 			Shm->Proc.Top.Abs = cpu;
 		}
 
@@ -6513,4 +6546,3 @@ int main(int argc, char *argv[])
     }
 	return (reason.rc);
 }
-

@@ -5,19 +5,24 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	83
-#define COREFREQ_REV	8
+#define COREFREQ_MINOR	84
+#define COREFREQ_REV	1
 
-#define CORE_COUNT	256
+#if !defined(CORE_COUNT)
+	#define CORE_COUNT	256
+#endif
 
-#define CRC_INTEL	0x75a2ba39
-#define CRC_AMD 	0x3485bbd3
-#define CRC_HYGON	0x18044630
-#define CRC_KVM 	0x0e8c8561
-#define CRC_VBOX	0x5091f045
-#define CRC_KBOX	0x02b76f04
-#define CRC_VMWARE	0x2a974552
-#define CRC_HYPERV	0x543a585e
+enum CRC_MANUFACTURER
+{
+	CRC_INTEL	= 0x75a2ba39,
+	CRC_AMD 	= 0x3485bbd3,
+	CRC_HYGON	= 0x18044630,
+	CRC_KVM 	= 0x0e8c8561,
+	CRC_VBOX	= 0x5091f045,
+	CRC_KBOX	= 0x02b76f04,
+	CRC_VMWARE	= 0x2a974552,
+	CRC_HYPERV	= 0x543a585e
+};
 
 enum {	GenuineArch = 0,
 	AMD_Family_0Fh,
@@ -89,6 +94,9 @@ enum {	GenuineArch = 0,
 	Tremont_Lakefield,
 	Tremont_Elkhartlake,
 	Tremont_Jasperlake,
+	Sapphire_Rapids,
+	Rocketlake,
+	Rocketlake_U,
 	AMD_Zen,
 	AMD_Zen_APU,
 	AMD_ZenPlus,
@@ -99,6 +107,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen2_APU,
 	AMD_Zen2_MTS,
 	AMD_Zen3_VMR,
+	AMD_Zen3_CZN,
 	ARCHITECTURES
 };
 
@@ -210,7 +219,7 @@ enum THERM_PWR_EVENTS {
 	EVENT_CROSS_DOMAIN	= 0b1000000
 };
 
-enum {
+enum SENSOR_LIMITS {
 	SENSOR_LOWEST,
 	SENSOR_HIGHEST,
 	SENSOR_LIMITS_DIM
@@ -372,13 +381,13 @@ enum PWR_DOMAIN {
 #define CLOCK_GHz(_t, _f)	(_f / UNIT_GHz((_t) 1))
 
 #if defined(MAX_FREQ_HZ) && (MAX_FREQ_HZ >= 4850000000)
-#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
-		MAX_FREQ_HZ / BaseClock					\
-) )
+	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
+			MAX_FREQ_HZ / BaseClock				\
+	) )
 #else
-#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (		\
-		5250000000 / BaseClock					\
-) )
+	#define MAXCLOCK_TO_RATIO(_typeout, BaseClock) ( (_typeout) (	\
+			5250000000 / BaseClock				\
+	) )
 #endif
 
 enum OFFLINE
@@ -554,7 +563,7 @@ typedef struct
 				LargestExtFunc, /* Largest Extended CPUID */
 				LargestHypFunc; /* Largest Hypervisor CPUID */
 	struct {
-		unsigned int	CRC;
+	enum CRC_MANUFACTURER	CRC;
 		char		ID[12 + 4];
 	} Vendor, Hypervisor;
 	char			Brand[BRAND_SIZE];
@@ -1502,18 +1511,7 @@ typedef struct {
 #define COREFREQ_TOGGLE_OFF	0x0
 #define COREFREQ_TOGGLE_ON	0x1
 
-#define COREFREQ_IOCTL_MAGIC 0xc3
-
-#define COREFREQ_IOCTL_SYSUPDT		_IO(COREFREQ_IOCTL_MAGIC, 0x1)
-#define COREFREQ_IOCTL_SYSONCE		_IO(COREFREQ_IOCTL_MAGIC, 0x2)
-#define COREFREQ_IOCTL_MACHINE		_IO(COREFREQ_IOCTL_MAGIC, 0x3)
-#define COREFREQ_IOCTL_TECHNOLOGY	_IO(COREFREQ_IOCTL_MAGIC, 0x4)
-#define COREFREQ_IOCTL_CPU_OFF		_IO(COREFREQ_IOCTL_MAGIC, 0x5)
-#define COREFREQ_IOCTL_CPU_ON		_IO(COREFREQ_IOCTL_MAGIC, 0x6)
-#define COREFREQ_IOCTL_TURBO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x7)
-#define COREFREQ_IOCTL_RATIO_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x8)
-#define COREFREQ_IOCTL_UNCORE_CLOCK	_IO(COREFREQ_IOCTL_MAGIC, 0x9)
-#define COREFREQ_IOCTL_CLEAR_EVENTS	_IO(COREFREQ_IOCTL_MAGIC, 0xa)
+#define COREFREQ_IOCTL_MAGIC	0xc3
 
 enum {
 	MACHINE_CONTROLLER,
@@ -1548,16 +1546,34 @@ enum {
 	TECHNOLOGY_HWP,
 	TECHNOLOGY_HWP_EPP,
 	TECHNOLOGY_HDC,
-	TECHNOLOGY_R2H
+	TECHNOLOGY_R2H,
+	TECHNOLOGY_L1_HW_PREFETCH,
+	TECHNOLOGY_L1_HW_IP_PREFETCH,
+	TECHNOLOGY_L2_HW_PREFETCH,
+	TECHNOLOGY_L2_HW_CL_PREFETCH
 };
 
-#define COREFREQ_ORDER_MAGIC 0xc6
+#define COREFREQ_ORDER_MAGIC	0xc6
 
-#define COREFREQ_ORDER_MACHINE	_IO(COREFREQ_ORDER_MAGIC, 0x1)
-#define COREFREQ_ORDER_ATOMIC	_IO(COREFREQ_ORDER_MAGIC, 0x2)
-#define COREFREQ_ORDER_CRC32	_IO(COREFREQ_ORDER_MAGIC, 0x3)
-#define COREFREQ_ORDER_CONIC	_IO(COREFREQ_ORDER_MAGIC, 0x4)
-#define COREFREQ_ORDER_TURBO	_IO(COREFREQ_ORDER_MAGIC, 0x5)
+enum COREFREQ_MAGIC_COMMAND {
+/*			Master Ring Commands				*/
+	COREFREQ_IOCTL_SYSUPDT		= _IO(COREFREQ_IOCTL_MAGIC, 0x1),
+	COREFREQ_IOCTL_SYSONCE		= _IO(COREFREQ_IOCTL_MAGIC, 0x2),
+	COREFREQ_IOCTL_MACHINE		= _IO(COREFREQ_IOCTL_MAGIC, 0x3),
+	COREFREQ_IOCTL_TECHNOLOGY	= _IO(COREFREQ_IOCTL_MAGIC, 0x4),
+	COREFREQ_IOCTL_CPU_OFF		= _IO(COREFREQ_IOCTL_MAGIC, 0x5),
+	COREFREQ_IOCTL_CPU_ON		= _IO(COREFREQ_IOCTL_MAGIC, 0x6),
+	COREFREQ_IOCTL_TURBO_CLOCK	= _IO(COREFREQ_IOCTL_MAGIC, 0x7),
+	COREFREQ_IOCTL_RATIO_CLOCK	= _IO(COREFREQ_IOCTL_MAGIC, 0x8),
+	COREFREQ_IOCTL_UNCORE_CLOCK	= _IO(COREFREQ_IOCTL_MAGIC, 0x9),
+	COREFREQ_IOCTL_CLEAR_EVENTS	= _IO(COREFREQ_IOCTL_MAGIC, 0xa),
+/*			Child Ring Commands				*/
+	COREFREQ_ORDER_MACHINE		= _IO(COREFREQ_ORDER_MAGIC, 0x1),
+	COREFREQ_ORDER_ATOMIC		= _IO(COREFREQ_ORDER_MAGIC, 0x2),
+	COREFREQ_ORDER_CRC32		= _IO(COREFREQ_ORDER_MAGIC, 0x3),
+	COREFREQ_ORDER_CONIC		= _IO(COREFREQ_ORDER_MAGIC, 0x4),
+	COREFREQ_ORDER_TURBO		= _IO(COREFREQ_ORDER_MAGIC, 0x5)
+};
 
 enum PATTERN {
 	RESET_CSP,
@@ -1652,19 +1668,19 @@ typedef union {
 
 typedef struct {
 	union {
-		unsigned long	arg: 64;
-	    struct {
-		RING_ARG_DWORD	dl;
-		RING_ARG_DWORD	dh;
-	    };
+		unsigned long		arg: 64;
+		struct {
+			RING_ARG_DWORD	dl;
+			RING_ARG_DWORD	dh;
+		};
 	};
-	unsigned int		cmd: 32;
+	enum COREFREQ_MAGIC_COMMAND	cmd: 32;
 	union {
-		unsigned int	sub: 32;
-	    struct {
-		unsigned int	drc:  6-0, /* 64 of errno & reason codes */
-				tds: 32-6; /* Epoch time difference sec */
-	    };
+		unsigned int		sub: 32;
+		struct {
+			unsigned int	drc:  6-0,/*64 of errno & reason codes*/
+					tds: 32-6; /*Epoch time difference sec*/
+		};
 	};
 } RING_CTRL;
 
@@ -1784,6 +1800,7 @@ enum SMB_STRING {
 	SMB_PRODUCT_SERIAL,
 	SMB_PRODUCT_SKU,
 	SMB_PRODUCT_FAMILY,
+	SMB_BOARD_VENDOR,
 	SMB_BOARD_NAME,
 	SMB_BOARD_VERSION,
 	SMB_BOARD_SERIAL,
@@ -1809,7 +1826,8 @@ typedef union {
 				Family[MAX_UTS_LEN];
 		} Product;
 		struct {
-			char	Name[MAX_UTS_LEN],
+			char	Vendor[MAX_UTS_LEN],
+				Name[MAX_UTS_LEN],
 				Version[MAX_UTS_LEN],
 				Serial[MAX_UTS_LEN];
 		} Board;
@@ -1874,4 +1892,3 @@ typedef struct {
 )
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
-
