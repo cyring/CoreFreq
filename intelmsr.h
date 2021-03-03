@@ -1439,6 +1439,49 @@ typedef union
 	};
 } VMX_BASIC;
 
+typedef union
+{
+	unsigned int		value;
+	struct {
+		unsigned int
+		Minor		:  4-0,
+		Major		:  8-4,
+		ReservedBits	: 32-8;
+	};
+} Intel_IOMMU_VER_REG;
+
+typedef union
+{
+	unsigned long long	value;
+	struct {
+		unsigned long long
+		ND		:  3-0,
+		AFL		:  4-3,
+		RWBF		:  5-4,
+		PLMR		:  6-5,
+		PHMR		:  7-6,
+		CM		:  8-7,
+		SAGAW		: 13-8,
+		ReservedBits1	: 16-13,
+		MGAW		: 22-16,
+		ZLR		: 23-22,
+		DEP		: 24-23,
+		FRO		: 34-24,
+		SLLPS		: 38-34,
+		ReservedBits2	: 39-38,
+		PSI		: 40-39,
+		NFR		: 48-40,
+		MAMV		: 54-48,
+		DWD		: 55-54,
+		DRD		: 56-55,
+		FL1GP		: 57-56,
+		ReservedBits3	: 59-57,
+		PI		: 60-59,
+		FL5LP		: 61-60,
+		ReservedBits4	: 64-61;
+	};
+} Intel_IOMMU_CAP_REG;
+
 
 typedef union
 {	/* Offset Channel0: 110h & Channel1: 190h			*/

@@ -3997,25 +3997,26 @@ static PCI_CALLBACK X58_QPI(struct pci_dev *dev)
 static PCI_CALLBACK X58_VTD(struct pci_dev *dev)
 {
 	kernel_ulong_t rc = 0;
-	unsigned int base = 0;
+	unsigned int VTBAR = 0;
 
-	pci_read_config_dword(dev, 0x180, &base);
-	if (base) {
-		PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.X58.VT_d = 0;
-/* IOMMU Bug:	{
-			void __iomem *mmio;
-			unsigned int version = 0;
-			base = (base >> 13) + 1;
-			mmio = ioremap(base, 0x1000);
-			if (mmio != NULL) {
-				version = readl(mmio + 0x0);
-				iounmap(mmio);
-			} else
-				rc = -ENOMEM;
-		}	*/
-	} else {
-		PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.X58.VT_d = 1;
-	}
+	pci_read_config_dword(dev, 0x180, &VTBAR);
+  if (BITVAL(VTBAR, 0) == 1)
+  {
+	void __iomem *VT_d_MMIO;
+	const unsigned int VT_d_Bar = VTBAR & 0xffffe000;
+
+	VT_d_MMIO = ioremap(VT_d_Bar, 0x1000);
+    if (VT_d_MMIO != NULL)
+    {
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_Ver.value = readl(VT_d_MMIO + 0x0);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_Cap.value = readq(VT_d_MMIO + 0x8);
+
+	iounmap(VT_d_MMIO);
+    }
+	PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.X58.VT_d = 0;
+  } else {
+	PUBLIC(RO(Proc))->Uncore.Bus.QuickPath.X58.VT_d = 1;
+  }
 	return ((PCI_CALLBACK) rc);
 }
 
@@ -4357,26 +4358,28 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 *	AMD I/O Virtualization Technology (IOMMU) Specification Jan. 2020
 *	coreboot/src/soc/amd/picasso/agesa_acpi.c
 */
-	AMD_IOMMU_CAP_HEADER	IOMMU_Cap_Header;
 	AMD_IOMMU_CAP_BAR	IOMMU_Cap_Bar;
 
 	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = 0x0;
 
-	pci_read_config_dword(dev, 0x40, &IOMMU_Cap_Header.value);
+	pci_read_config_dword(	dev, 0x40,
+				&PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_HDR.value );
+
 	pci_read_config_dword(dev, 0x44, &IOMMU_Cap_Bar.low);
 	pci_read_config_dword(dev, 0x48, &IOMMU_Cap_Bar.high);
 
 	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffe000;
     if (IOMMU_Cap_Bar.addr != 0x0)
     {
-	void __iomem *IOMMU_MMIO_Reg;
-	const size_t bsize = IOMMU_Cap_Header.EFRSup ? 0x80000 : 0x4000;
+	void __iomem *IOMMU_MMIO;
+	const size_t bsize = PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_HDR.EFRSup ?
+				0x80000 : 0x4000;
 
-      if ((IOMMU_MMIO_Reg = ioremap(IOMMU_Cap_Bar.addr, bsize)) != NULL)
+      if ((IOMMU_MMIO = ioremap(IOMMU_Cap_Bar.addr, bsize)) != NULL)
       {
-	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value=readq(IOMMU_MMIO_Reg+0x18);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value=readq(IOMMU_MMIO + 0x18);
 
-	iounmap(IOMMU_MMIO_Reg);
+	iounmap(IOMMU_MMIO);
       }
       else
       {

@@ -2974,6 +2974,8 @@ void X58_VTD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	UNUSED(Core);
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.QuickPath.X58.VT_d;
+	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
+	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
 void DMI_CLK(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
@@ -4250,6 +4252,12 @@ void AMD_17h_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 void AMD_17h_IOMMU(SHM_STRUCT *Shm, PROC_RO *Proc)
 {
 	Shm->Proc.Technology.IOMMU = Proc->Uncore.Bus.IOMMU_CR.IOMMU_En;
+
+	Shm->Proc.Technology.IOMMU_Ver_Major = \
+			(Proc->Uncore.Bus.IOMMU_HDR.CapRev & 0b10000) >> 5;
+
+	Shm->Proc.Technology.IOMMU_Ver_Minor = \
+			Proc->Uncore.Bus.IOMMU_HDR.CapRev & 0b01111;
 }
 
 static char *Chipset[CHIPSETS] = {

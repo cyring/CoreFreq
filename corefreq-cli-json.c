@@ -1308,6 +1308,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.VM);
 			json_key(&s, "IOMMU");
 			json_literal(&s, "%llu", Shm->Proc.Technology.IOMMU);
+			json_key(&s, "IOMMU_Ver_Major");
+			json_literal(&s, "%llu", Shm->Proc.Technology.IOMMU_Ver_Major);
+			json_key(&s, "IOMMU_Ver_Minor");
+			json_literal(&s, "%llu", Shm->Proc.Technology.IOMMU_Ver_Minor);
 			json_key(&s, "L1_HW_Prefetch");
 			json_literal(&s, "%llu", Shm->Proc.Technology.L1_HW_Prefetch);
 			json_key(&s, "L1_HW_IP_Prefetch");

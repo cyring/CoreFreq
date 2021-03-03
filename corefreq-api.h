@@ -659,8 +659,15 @@ typedef struct
 			AMD_0F_HTT_FREQUENCY	LDTi_Freq[3];
 		};
 	};
-	struct {
-		AMD_IOMMU_CTRL_REG	IOMMU_CR;
+	union {
+		struct {
+			AMD_IOMMU_CTRL_REG	IOMMU_CR;	/* 64 bits    */
+			AMD_IOMMU_CAP_HEADER	IOMMU_HDR;	/* 32 bits    */
+		};
+		struct {
+			Intel_IOMMU_CAP_REG	IOMMU_Cap;	/* 64 bits    */
+			Intel_IOMMU_VER_REG	IOMMU_Ver;	/* 32 bits    */
+		};
 	};
 } BUS_REGISTERS;
 
