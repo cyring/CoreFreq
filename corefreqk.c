@@ -4235,6 +4235,24 @@ static PCI_CALLBACK HSW_IMC(struct pci_dev *dev)
 	return (Router(dev, 0x48, 64, 0x8000, Query_HSW_IMC));
 }
 
+void SoC_SKL_VTD(void)
+{
+  if (PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.VT_d == 0)
+  {
+	void __iomem *VT_d_MMIO;
+	const unsigned int VTBAR = 0xfed90000;
+
+	VT_d_MMIO = ioremap(VTBAR, 0x1000);
+    if (VT_d_MMIO != NULL)
+    {
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_Ver.value = readl(VT_d_MMIO + 0x0);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_Cap.value = readq(VT_d_MMIO + 0x8);
+
+	iounmap(VT_d_MMIO);
+    }
+  }
+}
+
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 {
 	pci_read_config_dword(dev, 0xe4,
@@ -4246,6 +4264,10 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
+	if (PUBLIC(RO(Proc))->Registration.Experimental)
+	{
+		SoC_SKL_VTD();
+	}
 	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
 }
 /* TODO(Hardware missing)

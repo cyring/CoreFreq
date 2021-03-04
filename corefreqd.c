@@ -3820,6 +3820,8 @@ void SKL_CAP(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 	Shm->Uncore.Unit.DDR_Ver  = 4;
 
 	Shm->Proc.Technology.IOMMU = !Proc->Uncore.Bus.SKL_Cap_A.VT_d;
+	Shm->Proc.Technology.IOMMU_Ver_Major = Proc->Uncore.Bus.IOMMU_Ver.Major;
+	Shm->Proc.Technology.IOMMU_Ver_Minor = Proc->Uncore.Bus.IOMMU_Ver.Minor;
 }
 
 void AMD_0Fh_MCH(SHM_STRUCT *Shm, PROC_RO *Proc)
