@@ -1250,6 +1250,11 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _Rocketlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x7}
 #define _Rocketlake_U	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x8}
 
+/*	[AlderLake/S]	06_97h
+	[AlderLake/P]	06_9Ah						*/
+#define _AlderLake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0x7}
+#define _AlderLake_P	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x9, .Model=0xA}
+
 /*	[Family 0Fh]	0F_00h						*/
 #define _AMD_Family_0Fh {.ExtFamily=0x0, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
