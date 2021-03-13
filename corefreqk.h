@@ -1202,8 +1202,9 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Skylake]	06_4Eh, 06_5Eh, 06_55h				*/
 #define _Skylake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xE}
 #define _Skylake_S	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xE}
-/*	[Skylake]	06_55h Stepping 4
-	[Cascade Lake]	06_55h Stepping 7				*/
+/*	[Skylake/X]	06_55h Stepping 4
+	[Cascade Lake]	06_55h Stepping 7
+	[Cooper Lake]	06_55h Stepping 10, 11				*/
 #define _Skylake_X	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0x5}
 
 /*	[Xeon Phi]	06_57h, 06_85h					*/
@@ -1226,7 +1227,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 /*	[Ice Lake]	06_7Dh
 	[Ice Lake/UY]	06_7Eh
-	[Ice Lake/X]	06_6Ah
+	[Ice Lake/X]	06_6Ah Stepping 5
 	[Ice Lake/D]	06_6Ch						*/
 #define _Icelake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xD}
 #define _Icelake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x7, .Model=0xE}
@@ -2153,12 +2154,14 @@ static MICRO_ARCH Arch_Skylake_S[]	= {{"Skylake/S"}	, {NULL}};
 
 enum {
 	CN_SKYLAKE_X,
-	CN_CASCADELAKE_X
+	CN_CASCADELAKE_X,
+	CN_COOPERLAKE_X
 };
 
 static MICRO_ARCH Arch_Skylake_X[] = {
 	[CN_SKYLAKE_X]		= {"Skylake/X"},
 	[CN_CASCADELAKE_X]	= {"Cascade Lake/X"},
+	[CN_COOPERLAKE_X]	= {"Cooper Lake/X"},
 	{NULL}
 };
 

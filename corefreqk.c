@@ -3197,6 +3197,25 @@ void Skylake_X_Platform_Info(unsigned int cpu)
 	const unsigned int NC = \
 	PUBLIC(RO(Proc))->CPU.Count >> PUBLIC(RO(Proc))->Features.HTT_Enable;
 
+    switch (PUBLIC(RO(Proc))->Features.Std.EAX.Stepping) {
+    case 11:
+    case 10:
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_COOPERLAKE_X].CodeName,
+		CODENAME_LEN);
+	break;
+    case 7:
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	 Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_CASCADELAKE_X].CodeName,
+		CODENAME_LEN);
+	break;
+    case 4:
+	StrCopy(PUBLIC(RO(Proc))->Architecture,
+	  Arch[PUBLIC(RO(Proc))->ArchID].Architecture[CN_SKYLAKE_X].CodeName,
+		CODENAME_LEN);
+	break;
+    }
+
 	Query_Same_Platform_Features(cpu);
 
 	PUBLIC(RO(Proc))->Features.SpecTurboRatio += 8; /*	8C	*/
