@@ -13622,7 +13622,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		    }
 		  else {
 			goto IDLE_DEFAULT;
-		  }
+		    }
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
 			].desc[0] = 'M';
@@ -13658,7 +13658,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		    }
 		  else {
 			goto IDLE_DEFAULT;
-		  }
+		    }
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
 			].desc[0] = 'H';
@@ -13709,7 +13709,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		    }
 		  else {
 			goto IDLE_DEFAULT;
-		  }
+		    }
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
 			].desc[0] = 'I';
@@ -13749,7 +13749,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		  else {
 			pr_warn("CoreFreq: "	\
 				"No Idle implementation for this architecture");
-		  }
+		    }
 			break;
 		  }
 			CoreFreqK.IdleDriver.state_count++;
