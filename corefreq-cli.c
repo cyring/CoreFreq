@@ -6930,10 +6930,11 @@ Window *CreateSelectCPU(unsigned long long id)
 	const CUINT _height = (ADD_UPPER & ADD_LOWER)
 			+ (draw.Area.MaxRows << (ADD_UPPER & ADD_LOWER));
 	const CUINT height = CUMIN(Shm->Proc.CPU.Count, _height);
+	const CUINT column = draw.Size.width <= 35 ? 1 : draw.Size.width - 35;
 
 	Window *wUSR = CreateWindow(	wLayer, id,
 					1, height,
-					13 + 27 + 3, TOP_HEADER_ROW + 1,
+					column, TOP_HEADER_ROW + 1,
 					WINFLAG_NO_STOCK );
     if (wUSR != NULL)
     {
