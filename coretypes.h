@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	84
-#define COREFREQ_REV	2
+#define COREFREQ_REV	3
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -163,14 +163,18 @@ enum SYS_REG {
 	CR4_OSFXSR	= 9,
 	CR4_OSXMMEXCPT	= 10,
 	CR4_UMIP	= 11,
+	CR4_LA57	= 12,
 	CR4_VMXE	= 13,
 	CR4_SMXE	= 14,
 	CR4_FSGSBASE	= 16,
 	CR4_PCIDE	= 17,
 	CR4_OSXSAVE	= 18,
+	CR4_KL		= 19,
 	CR4_SMEP	= 20,
 	CR4_SMAP	= 21,
-	CR4_PKE		= 22,
+	CR4_PKE 	= 22,
+	CR4_CET 	= 23,
+	CR4_PKS 	= 24,
 
 	EXFCR_LOCK	= 0,
 	EXFCR_VMX_IN_SMX= 1,
@@ -509,6 +513,7 @@ enum CPUID_ENUM {
 /* Intel */
 	CPUID_00000018_00000000_ADDRESS_TRANSLATION,
 	CPUID_00000018_00000001_DAT_SUB_LEAF_1,
+	CPUID_00000019_00000000_KEY_LOCKER,
 	CPUID_0000001A_00000000_HYBRID_INFORMATION,
 	CPUID_0000001B_00000000_PCONFIG_INFORMATION,
 	CPUID_0000001F_00000000_EXT_TOPOLOGY_V2,
@@ -634,7 +639,7 @@ typedef struct
 		AVX	: 29-28,
 		F16C	: 30-29,
 		RDRAND	: 31-30,
-		Hyperv	: 32-31;
+		Hyperv	: 32-31; /* Initially return zero -> Placeholder */
 	} ECX;
 	struct
 	{	/* Most common x86					*/
@@ -825,25 +830,27 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		OSPKE		:  5-4, /* RDPKRU/WRPKRU instructions	*/
 		WAITPKG 	:  6-5, /* TPAUSE, UMONITOR, UMWAIT	*/
 		AVX512_VBMI2	:  7-6,
-		Reserved1	:  8-7,
+		CET_SS		:  8-7, /* IA32_U_CET and IA32_S_CET	*/
 		GFNI		:  9-8, /* Galois Field SSE instructions*/
 		VAES		: 10-9,
 		VPCLMULQDQ	: 11-10,
 		AVX512_VNNI	: 12-11,
 		AVX512_BITALG	: 13-12,
-		Reserved2	: 14-13,
+		TME_EN		: 14-13, /* IA32_TME_{CAP,ACTIVATE,EXCLUDE} */
 		AVX512_VPOPCNTDQ: 15-14, /* Intel Xeon Phi		*/
-		Reserved3	: 17-15,
+		Reserved1	: 16-15,
+		LA57		: 17-16,
 		MAWAU		: 22-17, /* for BNDLDX & BNDSTX instructions*/
 		RDPID		: 23-22, /* Intel RDPID inst. & IA32_TSC_AUX */
-		Reserved4	: 25-23,
+		KL		: 24-23, /* Key Locker			*/
+		Reserved2	: 25-24,
 		CLDEMOTE	: 26-25, /* Support of cache line demote */
-		Reserved5	: 27-26,
+		Reserved3	: 27-26,
 		MOVDIRI 	: 28-27, /* Move Doubleword as Direct Store*/
 		MOVDIR64B	: 29-28, /* Move 64 Bytes as Direct Store*/
 		ENQCMD		: 30-29, /* Support of Enqueue Stores	*/
 		SGX_LC		: 31-30, /* SGX Launch Configuration support*/
-		Reserved6	: 32-31;
+		PKS		: 32-31; /* Protection Keys Supervisor-mode PG*/
 	} ECX;
 	struct
 	{	/* Intel reserved.					*/
@@ -863,7 +870,9 @@ typedef struct	/* Extended Feature Flags Enumeration Leaf.		*/
 		TSXLDTRK	: 17-16, /* TSX suspend load address tracking*/
 		Reserved5	: 18-17,
 		PCONFIG		: 19-18,
-		Reserved6	: 26-19,
+		Reserved6	: 20-19,
+		CET_IBT		: 21-20, /* CET Indirect Branch Tracking */
+		Reserved7	: 26-21,
 		IBRS_IBPB_Cap	: 27-26, /* IA32_SPEC_CTRL,IA32_PRED_CMD */
 		STIBP_Cap	: 28-27, /* IA32_SPEC_CTRL[1]		*/
 		L1D_FLUSH_Cap	: 29-28, /* IA32_FLUSH_CMD		*/
