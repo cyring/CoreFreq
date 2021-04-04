@@ -3866,7 +3866,7 @@ REASON_CODE SysInfoSMBIOS(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return (reason);
 }
 
-void Package(void)
+void Package(unsigned int iter)
 {
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 10) * MIN_WIDTH);
   if (out != NULL)
@@ -3875,7 +3875,8 @@ void Package(void)
 
 	sdx = sprintf(out, "\t\t" "Cycles" "\t\t" "State(%%)" "\n");
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -4019,7 +4020,7 @@ unsigned int Pkg_Fahrenheit(char *out, struct PKG_FLIP_FLOP *PFlop)
 		Cels2Fahr(PFlop->Thermal.Temp)));
 }
 
-void Counters(void)
+void Counters(unsigned int iter)
 {
 	unsigned int (*Core_Temp)(char *, struct FLIP_FLOP *, unsigned int) = \
 		Setting.fahrCels ? Core_Fahrenheit : Core_Celsius;
@@ -4036,7 +4037,8 @@ void Counters(void)
 			"  C0(%%)  C1(%%)  C3(%%)  C6(%%)  C7(%%)"	\
 			"  Min TMP:TS  Max\n");
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -4068,7 +4070,7 @@ void Counters(void)
   }
 }
 
-void Sensors(void)
+void Sensors(unsigned int iter)
 {
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 4) * MIN_WIDTH);
 	char *row = malloc(MIN_WIDTH + 16);
@@ -4085,7 +4087,8 @@ void Sensors(void)
 			"\n" "Energy(J):",
 			14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -4145,7 +4148,7 @@ void Sensors(void)
   }
 }
 
-void Voltage(void)
+void Voltage(unsigned int iter)
 {
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
   if (out != NULL)
@@ -4154,7 +4157,8 @@ void Voltage(void)
 
 	sdx = sprintf(out, "CPU Freq(MHz) VID  Min     Vcore   Max\n");
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -4192,7 +4196,7 @@ void Voltage(void)
   }
 }
 
-void Power(void)
+void Power(unsigned int iter)
 {
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 5) * MIN_WIDTH);
 	char *row = malloc(MIN_WIDTH + 8);
@@ -4208,7 +4212,8 @@ void Power(void)
 	ldx=sprintf(row,"\nEnergy(J)  Package%.*sCores%.*sUncore%.*sMemory\n",
 			12, hSpace, 15, hSpace, 14, hSpace);
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -4274,7 +4279,7 @@ void Power(void)
   }
 }
 
-void Instructions(void)
+void Instructions(unsigned int iter)
 {
 	char *out = malloc(8 + (Shm->Proc.CPU.Count + 1) * MIN_WIDTH);
   if (out != NULL)
@@ -4283,7 +4288,8 @@ void Instructions(void)
 
 	sdx = sprintf(out, "CPU     IPS            IPC            CPI\n");
 
-    while (!BITVAL(Shutdown, SYNC)) {
+    while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
+    {
 	while (!BITCLR(LOCKLESS, Shm->Proc.Sync, SYNC0)
 	    && !BITVAL(Shutdown, SYNC)) {
 		nanosleep(&Shm->Sleep.pollingWait, NULL);
@@ -15597,7 +15603,7 @@ int main(int argc, char *argv[])
 	int	fd = -1, idx = 0;
 	char	*program = strdup(argv[0]),
 		*appName = program != NULL ? basename(program) : argv[idx],
-		option = 't';
+		option = 't', trailing =  '\0';
 
 	REASON_INIT(reason);
 
@@ -15651,7 +15657,6 @@ int main(int argc, char *argv[])
 	    case 'J':
 		if (++idx < argc) {
 			enum SMB_STRING usrIdx = SMB_BOARD_NAME;
-			char trailing =  '\0';
 			if ((sscanf(argv[idx], "%u%c", &usrIdx, &trailing) != 1)
 			 || (usrIdx >= SMB_STRING_COUNT)) {
 				goto SYNTAX_ERROR;
@@ -15751,34 +15756,94 @@ int main(int argc, char *argv[])
 		}
 		break;
 	    case 'i':
-		TrapSignal(1);
-		Instructions();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Instructions(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'c':
-		TrapSignal(1);
-		Counters();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Counters(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'C':
-		TrapSignal(1);
-		Sensors();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Sensors(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'V':
-		TrapSignal(1);
-		Voltage();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Voltage(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'W':
-		TrapSignal(1);
-		Power();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Power(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'g':
-		TrapSignal(1);
-		Package();
-		TrapSignal(0);
+		{
+			int iter = -1U;
+		    if (++idx < argc) {
+			if ((sscanf(argv[idx], "%d%c", &iter, &trailing) != 1)
+				|| (iter <= 0))
+			{
+				goto SYNTAX_ERROR;
+			}
+		    }
+			TrapSignal(1);
+			Package(iter);
+			TrapSignal(0);
+		}
 		break;
 	    case 'd':
 		/* Fallthrough */

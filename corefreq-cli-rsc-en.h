@@ -746,20 +746,22 @@
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
+		"\n    Interface options\n"				\
 		"\t-0,1,2\tMemory unit in K,M,G Byte\n" 		\
 		"\t-F\tTemperature in Fahrenheit\n"			\
-		"\t-J <#>\tSMBIOS string index number\n"		\
+		"\t-J  #\tSMBIOS string index number\n" 		\
 		"\t-Y\tShow Secret Data\n"				\
 		"\t-t <v>\tShow Top (default) with optional <v>iew:\n"	\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tShow Dashboard\n"				\
-		"\t-C\tMonitor Sensors\n"				\
-		"\t-V\tMonitor Voltage\n"				\
-		"\t-W\tMonitor Power\n" 				\
-		"\t-g\tMonitor Package\n"				\
-		"\t-c\tMonitor Counters\n"				\
-		"\t-i\tMonitor Instructions\n"				\
+		"\n    Command options\n"				\
+		"\t-C <#>\tMonitor Sensors\n"				\
+		"\t-V <#>\tMonitor Voltage\n"				\
+		"\t-W <#>\tMonitor Power\n"				\
+		"\t-g <#>\tMonitor Package\n"				\
+		"\t-c <#>\tMonitor Counters\n"				\
+		"\t-i <#>\tMonitor Instructions\n"			\
 		"\t-s\tPrint System Information\n"			\
 		"\t-j\tPrint System Information (json-encoded)\n"	\
 		"\t-M\tPrint Memory Controller\n"			\

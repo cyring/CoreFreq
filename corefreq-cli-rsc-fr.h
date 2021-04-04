@@ -780,20 +780,22 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\
 		"Usage:\t%s [-option <arguments>]\n"			\
+		"\n    Options de l'interface\n"			\
 		"\t-0,1,2\tUnité mémoire en K,M,G octet\n"		\
 		"\t-F\tTemperature en Fahrenheit\n"			\
-		"\t-J <#>\tNuméro d'index de chaîne SMBIOS\n"		\
+		"\t-J  #\tNuméro d'index de chaîne SMBIOS\n"		\
 		"\t-Y\tAfficher les données secrètes\n" 		\
 		"\t-t <v>\tAfficher Top (par défault); en option la <v>ue:\n"\
 		"\t\t{\tfrequency, instructions, core, idle, package,\n"\
 		"\t\t\ttasks, interrupts, sensors, voltage, power, slices  }\n"\
 		"\t-d\tAfficher le tableau de bord\n"			\
-		"\t-C\tMoniteur des Capteurs\n" 			\
-		"\t-V\tMoniteur de Voltage\n"				\
-		"\t-W\tMoniteur de Puissance\n" 			\
-		"\t-g\tMoniteur du Package\n"				\
-		"\t-c\tMoniteur des Compteurs\n"			\
-		"\t-i\tMoniteur des Instructions\n"			\
+		"\n    Options de commande\n"				\
+		"\t-C <#>\tMoniteur des Capteurs\n"			\
+		"\t-V <#>\tMoniteur de Voltage\n"			\
+		"\t-W <#>\tMoniteur de Puissance\n"			\
+		"\t-g <#>\tMoniteur du Package\n"			\
+		"\t-c <#>\tMoniteur des Compteurs\n"			\
+		"\t-i <#>\tMoniteur des Instructions\n" 		\
 		"\t-s\tImprimer les Informations du système\n"		\
 		"\t-j\tImprimer les Informations (format json)\n"	\
 		"\t-M\tImprimer le Controlleur mémoire\n"		\
