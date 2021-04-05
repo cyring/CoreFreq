@@ -6439,26 +6439,26 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Geminilake] = {							/* 55*/
 	.Signature = _Geminilake,
-	.Query = Query_Haswell_ULT,
-	.Update = PerCore_Haswell_ULT_Query,
-	.Start = Start_Haswell_ULT,
-	.Stop = Stop_Haswell_ULT,
+	.Query = Query_Silvermont,
+	.Update = PerCore_Silvermont_Query,
+	.Start = Start_Silvermont,
+	.Stop = Stop_Silvermont,
 	.Exit = NULL,
-	.Timer = InitTimer_Haswell_ULT,
-	.BaseClock = BaseClock_Haswell,
-	.ClockMod = ClockMod_Skylake_HWP,
+	.Timer = InitTimer_Silvermont,
+	.BaseClock = BaseClock_Silvermont,
+	.ClockMod = ClockMod_Core2_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
-	.powerFormula   = POWER_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT,
-		.ClockMod = Haswell_Uncore_Ratio
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SLM_Driver,
 	.Architecture = Arch_Geminilake
 	},
 
