@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	84
-#define COREFREQ_REV	3
+#define COREFREQ_REV	4
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -176,6 +176,8 @@ enum SYS_REG {
 	CR4_CET 	= 23,
 	CR4_PKS 	= 24,
 
+	CR8_TPL 	= 0,	/* [3:0]				*/
+
 	EXFCR_LOCK	= 0,
 	EXFCR_VMX_IN_SMX= 1,
 	EXFCR_VMXOUT_SMX= 2,
@@ -191,7 +193,9 @@ enum SYS_REG {
 	EXFER_NXE	= 11,
 	EXFER_SVME	= 12,	/* AMD F17h				*/
 	EXFER_LMSLE	= 13,	/* AMD F17h				*/
-	EXFER_FFXSE	= 14	/* AMD F17h				*/
+	EXFER_FFXSE	= 14,	/* AMD F17h				*/
+
+	UNDEF_CR	= 64
 };
 
 enum CSTATES_ENCODING {

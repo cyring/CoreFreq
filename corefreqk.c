@@ -7602,18 +7602,20 @@ void SystemRegisters(CORE_RO *Core)
 		"movq	%%cr0, %1"	"\n\t"
 		"movq	%%cr3, %2"	"\n\t"
 		"movq	%%cr4, %3"	"\n\t"
+		"movq	%%cr8, %4"	"\n\t"
 		"# EFER"		"\n\t"
 		"xorq	%%rax, %%rax"	"\n\t"
 		"xorq	%%rdx, %%rdx"	"\n\t"
-		"movq	%5,%%rcx"	"\n\t"
+		"movq	%6,%%rcx"	"\n\t"
 		"rdmsr"			"\n\t"
 		"shlq	$32, %%rdx"	"\n\t"
 		"orq	%%rdx, %%rax"	"\n\t"
-		"movq	%%rax, %4"
+		"movq	%%rax, %5"
 		: "=r" (Core->SystemRegister.RFLAGS),
 		  "=r" (Core->SystemRegister.CR0),
 		  "=r" (Core->SystemRegister.CR3),
 		  "=r" (Core->SystemRegister.CR4),
+		  "=r" (Core->SystemRegister.CR8),
 		  "=r" (Core->SystemRegister.EFER)
 		: "i" (MSR_EFER)
 		: "%rax", "%rcx", "%rdx"

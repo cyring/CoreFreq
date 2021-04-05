@@ -236,6 +236,7 @@ typedef struct
 					CR0	__attribute__ ((aligned (8))),
 					CR3	__attribute__ ((aligned (8))),
 					CR4	__attribute__ ((aligned (8))),
+					CR8	__attribute__ ((aligned (8))),
 					EFCR	__attribute__ ((aligned (8))),
 					EFER	__attribute__ ((aligned (8)));
 	} SystemRegister;

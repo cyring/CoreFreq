@@ -418,103 +418,6 @@ REASON_CODE SysInfoCPUID(Window *win, CUINT width, CELL_FUNC OutFunc)
 	return (reason);
 }
 
-const struct {
-	enum SYS_REG bit;
-	unsigned int len;
-	const char *flag, *comm;
-} SR[] = {
-	{RFLAG_TF,	1, " TF ", " Trap Flag "},
-	{RFLAG_IF,	1, " IF ", " Interrupt Flag "},
-	{RFLAG_IOPL,	2, "IOPL", " I/O Privilege Level "},
-	{RFLAG_NT,	1, " NT ", " Nested Task "},
-	{RFLAG_RF,	1, " RF ", " Resume Flag "},
-	{RFLAG_VM,	1, " VM ", " Virtual-8086 Mode "},
-	{RFLAG_AC,	1, " AC ", " Alignment Check "},
-	{RFLAG_VIF,	1, " VIF", " Virtual Interrupt Flag "},
-	{RFLAG_VIP,	1, " VIP", " Virtual Interrupt Pending "},
-	{RFLAG_ID,	1, " ID ", " Identification "},
-
-	{CR0_PE,	1, " PE ", " Protection Enable "},
-	{CR0_MP,	1, " MP ", " Monitor Coprocessor "},
-	{CR0_EM,	1, " EM ", " FPU Emulation "},
-	{CR0_TS,	1, " TS ", " Task Switched "},
-	{CR0_ET,	1, " ET ", " Extension Type "},
-	{CR0_NE,	1, " NE ", " Numeric Exception "},
-	{CR0_WP,	1, " WP ", " Write Protect "},
-	{CR0_AM,	1, " AM ", " Alignment Mask "},
-	{CR0_NW,	1, " NW ", " Not Write-through "},
-	{CR0_CD,	1, " CD ", " Cache Disable "},
-	{CR0_PG,	1, " PG ", " Paging enable "},
-
-	{CR3_PWT,	1, " PWT", " Page-level Write-Through "},
-	{CR3_PCD,	1, " PCD", " Page-level Cache Disable "},
-
-	{CR4_VME,	1, " VME", " Virtual-8086 Mode Extensions "},
-	{CR4_PVI,	1, " PVI", " Protected-mode Virtual Interrupts "},
-	{CR4_TSD,	1, " TSD", " Time-Stamp Disable "},
-	{CR4_DE,	1, " DE ", " Debugging Extensions "},
-	{CR4_PSE,	1, " PSE", " Page Size Extension "},
-	{CR4_PAE,	1, " PAE", " Physical Address Extension "},
-	{CR4_MCE,	1, " MCE", " Machine-Check Enable "},
-	{CR4_PGE,	1, " PGE", " Page Global Enable "},
-	{CR4_PCE,	1, " PCE", " Performance Counter Enable "},
-	{CR4_OSFXSR,	1, " FX ", " OS Support for FXSAVE and FXRSTOR "},
-	{CR4_OSXMMEXCPT,1, "XMM ", " OS Support for Unmasked SSE Exceptions "},
-	{CR4_UMIP,	1, "UMIP", " User-Mode Instruction Prevention "},
-	{CR4_VMXE,	1, " VMX", " Virtual Machine eXtension Enable "},
-	{CR4_SMXE,	1, " SMX", " Safer Mode eXtension Enable "},
-	{CR4_FSGSBASE,	1, " FS ", NULL},
-	{CR4_PCIDE,	1, "PCID", " Process-Context Identifiers Enable "},
-	{CR4_OSXSAVE,	1, " SAV", " XSAVE and Processor Extended States "},
-	{CR4_SMEP,	1, " SME", " Supervisor-Mode Execution Prevention "},
-	{CR4_SMAP,	1, " SMA", " Supervisor-Mode Access Prevention "},
-	{CR4_PKE,	1, " PKE", " Protection Keys for user-mode pages "},
-/*TODO(add CR bits)
-	{CR4.CET,	1," CET"," Control-flow Enforcement Technology "},
-	{CR4.PKS,	1," PKS"," Protection Keys for Supervisor-mode pages "},
-*/
-	{EXFCR_LOCK,	1,	"LCK ", " Lock bit "},
-	{EXFCR_VMX_IN_SMX,1,	"VMX^", " VMX Inside SMX Operation "},
-	{EXFCR_VMXOUT_SMX,1,	"SGX ", " VMX Outside SMX Operation "},
-	{EXFCR_SENTER_LEN,6,	"[SEN", " SENTER Local Functions "},
-	{EXFCR_SENTER_GEN,1,	"TER]", " SENTER Global Functions "},
-	{EXFCR_SGX_LCE, 1,	" [ S", " SGX Launch Control "},
-	{EXFCR_SGX_GEN, 1,	"GX ]", " SGX Global Functions "},
-	{EXFCR_LMCE,	1,	" LMC", " Local Machine Check "},
-
-	{EXFER_SCE,	1,	" SCE", " System-Call Extension "},
-	{EXFER_LME,	1,	" LME", " Long Mode Enable "},
-	{EXFER_LMA,	1,	" LMA", " Long Mode Active "},
-	{EXFER_NXE,	1,	" NXE", " Execute-Disable Bit Enable "},
-	{EXFER_SVME,	1,	" SVM", " Secure Virtual Machine Enable "}
-};
-
-enum {
-	IX_CPU,
-	IX_FLAG,
-	IX_CR0,
-	IX_CR3,
-	IX_CR4,
-	IX_EFCR,
-	IX_EFER,
-	IX_4SPC,
-	IX_NA_3
-};
-
-const struct {
-	const char *item, *comm;
-} CR[] = {
-	[IX_CPU]	= {"CPU ", NULL},
-	[IX_FLAG]	= {"FLAG", NULL},
-	[IX_CR0]	= {"CR0:", " Control Register 0 "},
-	[IX_CR3]	= {"CR3:", " Control Register 3 "},
-	[IX_CR4]	= {"CR4:", " Control Register 4 "},
-	[IX_EFCR]	= {"EFCR", " Feature Control Bits Register "},
-	[IX_EFER]	= {"EFER", " Extended-Feature-Enable Register "},
-	[IX_4SPC]	= {"    ", NULL},
-	[IX_NA_3] 	= {"  - ", NULL}
-};
-
 REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
@@ -525,149 +428,318 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		RSC(SYSTEM_REGISTERS_COND3).ATTR(),
 		RSC(SYSTEM_REGISTERS_COND4).ATTR()
 	};
-	const struct {
-		unsigned int Start, Stop;
-	} tabRFLAGS = {0, 10},
-	tabCR0 = {tabRFLAGS.Stop, tabRFLAGS.Stop + 11},
-	tabCR3 = {tabCR0.Stop, tabCR0.Stop + 2},
-	tabCR4[2] = {	{tabCR3.Stop, tabCR3.Stop + 4},
-			{tabCR4[0].Stop, tabCR4[0].Stop + 16}
+	enum AUTOMAT {
+		DO_END, DO_SPC, DO_CPU, DO_FLAG,
+		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
+		DO_EFCR, DO_EFER
+	};
+	const char *_4SPC = "    ", *_NA_3 = "  - ";
+	const struct SR_ST {
+		struct SR_HDR {
+			const char	*flag,
+					*comm;
+		} *header;
+		struct SR_BIT {
+			enum AUTOMAT	automat;
+			unsigned int	*CRC;
+			enum SYS_REG	pos;
+			unsigned int	len;
+		} *bits;
+	} SR[] = \
+    {
+	(struct SR_HDR[]) {
+	[ 0] =	{"CPU " , NULL				},
+	[ 1] =	{"FLAG" , NULL				},
+	[ 2] =	{" TF " , " Trap Flag "			},
+	[ 3] =	{" IF " , " Interrupt Flag "		},
+	[ 4] =	{"IOPL" , " I/O Privilege Level "	},
+	[ 5] =	{" NT " , " Nested Task "		},
+	[ 6] =	{" RF " , " Resume Flag "		},
+	[ 7] =	{" VM " , " Virtual-8086 Mode " 	},
+	[ 8] =	{" AC " , " Alignment Check "		},
+	[ 9] =	{" VIF" , " Virtual Interrupt Flag "	},
+	[10] =	{" VIP" , " Virtual Interrupt Pending " },
+	[11] =	{" ID " , " Identification "		},
+	[12] =	{ _4SPC , NULL				},
+	[13] =	{ _4SPC , NULL				},
+	[14] =	{ _4SPC , NULL				},
+	[15] =	{ _4SPC , NULL				},
+	[16] =	{ _4SPC , NULL				},
+		{NULL	, NULL				}
 	},
-	tabEFCR = {tabCR4[1].Stop, tabCR4[1].Stop + 8},
-	tabEFER = {tabEFCR.Stop, tabEFCR.Stop + 5};
-	unsigned int cpu, idx = 0;
+	(struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[ 2] =	{DO_FLAG, NULL	, RFLAG_TF	, 1	},
+	[ 3] =	{DO_FLAG, NULL	, RFLAG_IF	, 1	},
+	[ 4] =	{DO_FLAG, NULL	, RFLAG_IOPL	, 2	},
+	[ 5] =	{DO_FLAG, NULL	, RFLAG_NT	, 1	},
+	[ 6] =	{DO_FLAG, NULL	, RFLAG_RF	, 1	},
+	[ 7] =	{DO_FLAG, NULL	, RFLAG_VM	, 1	},
+	[ 8] =	{DO_FLAG, NULL	, RFLAG_AC	, 1	},
+	[ 9] =	{DO_FLAG, NULL	, RFLAG_VIF	, 1	},
+	[10] =	{DO_FLAG, NULL	, RFLAG_VIP	, 1	},
+	[11] =	{DO_FLAG, NULL	, RFLAG_ID	, 1	},
+	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[16] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+		{DO_END , NULL	, UNDEF_CR	, 0	}
+	},
+	(struct SR_HDR[]) {
+	[ 0] =	{"CR0:" , " Control Register 0 "		},
+	[ 1] =	{" PE " , " Protection Enable "			},
+	[ 2] =	{" MP " , " Monitor Coprocessor "		},
+	[ 3] =	{" EM " , " FPU Emulation "			},
+	[ 4] =	{" TS " , " Task Switched "			},
+	[ 5] =	{" ET " , " Extension Type "			},
+	[ 6] =	{" NE " , " Numeric Exception " 		},
+	[ 7] =	{" WP " , " Write Protect "			},
+	[ 8] =	{" AM " , " Alignment Mask "			},
+	[ 9] =	{" NW " , " Not Write-through " 		},
+	[10] =	{" CD " , " Cache Disable "			},
+	[11] =	{" PG " , " Paging enable "			},
+	[12] =	{ _4SPC , NULL					},
+	[13] =	{ _4SPC , NULL					},
+	[14] =	{"CR3:" , " Control Register 3 "		},
+	[15] =	{" PWT" , " Page-level Write-Through "		},
+	[16] =	{" PCD" , " Page-level Cache Disable "		},
+		{NULL	, NULL					}
+	},
+	(struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
+	[ 1] =  {DO_CR0 , NULL	, CR0_PE	, 1	},
+	[ 2] =	{DO_CR0 , NULL	, CR0_MP	, 1	},
+	[ 3] =	{DO_CR0 , NULL	, CR0_EM	, 1	},
+	[ 4] =	{DO_CR0 , NULL	, CR0_TS	, 1	},
+	[ 5] =	{DO_CR0 , NULL	, CR0_ET	, 1	},
+	[ 6] =	{DO_CR0 , NULL	, CR0_NE	, 1	},
+	[ 7] =	{DO_CR0 , NULL	, CR0_WP	, 1	},
+	[ 8] =	{DO_CR0 , NULL	, CR0_AM	, 1	},
+	[ 9] =	{DO_CR0 , NULL	, CR0_NW	, 1	},
+	[10] =	{DO_CR0 , NULL	, CR0_CD	, 1	},
+	[11] =	{DO_CR0 , NULL	, CR0_PG	, 1	},
+	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 4	},
+	[15] =	{DO_CR3 , NULL	, CR3_PWT	, 1	},
+	[16] =	{DO_CR3 , NULL	, CR3_PCD	, 1	},
+		{DO_END , NULL	, UNDEF_CR	, 0	}
+	},
+	(struct SR_HDR[]) {
+	[ 0] =	{"CR4:" , " Control Register 4 "			},
+	[ 1] =	{" VME" , " Virtual-8086 Mode Extensions "		},
+	[ 2] =	{" PVI" , " Protected-mode Virtual Interrupts " 	},
+	[ 3] =	{" TSD" , " Time-Stamp Disable "			},
+	[ 4] =	{" DE " , " Debugging Extensions "			},
+	[ 5] =	{" PSE" , " Page Size Extension "			},
+	[ 6] =	{" PAE" , " Physical Address Extension "		},
+	[ 7] =	{" MCE" , " Machine-Check Enable "			},
+	[ 8] =	{" PGE" , " Page Global Enable "			},
+	[ 9] =	{" PCE" , " Performance Counter Enable "		},
+	[10] =	{" FX " , " OS Support for FXSAVE and FXRSTOR " 	},
+	[11] =	{"XMM " , " OS Support for Unmasked SSE Exceptions "	},
+	[12] =	{"UMIP" , " User-Mode Instruction Prevention "		},
+	[13] =	{" 5LP" ," 57-bit Linear Addresses - 5-level paging "	},
+	[14] =	{" VMX" , " Virtual Machine eXtension Enable "		},
+	[15] =	{" SMX" , " Safer Mode eXtension Enable "		},
+	[16] =	{" FS " , " FS and GS base read/write instructions "	},
+		{NULL	, NULL						}
+	},
+	(struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_CR4 , NULL	, CR4_VME	, 1	},
+	[ 2] =	{DO_CR4 , NULL	, CR4_PVI	, 1	},
+	[ 3] =	{DO_CR4 , NULL	, CR4_TSD	, 1	},
+	[ 4] =	{DO_CR4 , NULL	, CR4_DE	, 1	},
+	[ 5] =	{DO_CR4 , NULL	, CR4_PSE	, 1	},
+	[ 6] =	{DO_CR4 , NULL	, CR4_PAE	, 1	},
+	[ 7] =	{DO_CR4 , NULL	, CR4_MCE	, 1	},
+	[ 8] =	{DO_CR4 , NULL	, CR4_PGE	, 1	},
+	[ 9] =	{DO_CR4 , NULL	, CR4_PCE	, 1	},
+	[10] =	{DO_CR4 , NULL	, CR4_OSFXSR	, 1	},
+	[11] =	{DO_CR4 , NULL	, CR4_OSXMMEXCPT, 1	},
+	[12] =	{DO_CR4 , NULL	, CR4_UMIP	, 1	},
+	[13] =	{DO_CR4 , NULL	, CR4_LA57	, 1	},
+	[14] =	{DO_CR4 , NULL	, CR4_VMXE	, 1	},
+	[15] =	{DO_CR4 , NULL	, CR4_SMXE	, 1	},
+	[16] =	{DO_CR4 , NULL	, CR4_FSGSBASE	, 1	},
+		{DO_END , NULL	, UNDEF_CR	, 0	}
+	},
+	(struct SR_HDR[]) {
+	[ 0] =	{"CR4:" , " Control Register 4 "			},
+	[ 1] =	{"PCID" , " Process-Context Identifiers Enable "	},
+	[ 2] =	{" SAV" , " XSAVE and Processor Extended States "	},
+	[ 3] =	{"  KL" , " Key-Locker Enable " 			},
+	[ 4] =	{" SME" , " Supervisor-Mode Execution Prevention "	},
+	[ 5] =	{" SMA" , " Supervisor-Mode Access Prevention " 	},
+	[ 6] =	{" PKE" , " Protection Keys for user-mode pages "	},
+	[ 7] =	{" CET" , " Control-flow Enforcement Technology "	},
+	[ 8] =	{" PKS" , " Protection Keys for Supervisor-mode pages " },
+	[ 9] =	{ _4SPC , NULL						},
+	[10] =	{ _4SPC , NULL						},
+	[11] =	{ _4SPC , NULL						},
+	[12] =	{ _4SPC , NULL						},
+	[13] =	{ _4SPC , NULL						},
+	[14] =	{ _4SPC , NULL						},
+	[15] =	{"CR8:" , " Control Register 8 "			},
+	[16] =	{" TPL" , " Task Priority Level "			},
+		{NULL	, NULL						}
+	},
+	(struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
+	[ 1] =	{DO_CR4 , NULL	, CR4_PCIDE	, 1	},
+	[ 2] =	{DO_CR4 , NULL	, CR4_OSXSAVE	, 1	},
+	[ 3] =	{DO_CR4 , NULL	, CR4_KL	, 1	},
+	[ 4] =	{DO_CR4 , NULL	, CR4_SMEP	, 1	},
+	[ 5] =	{DO_CR4 , NULL	, CR4_SMAP	, 1	},
+	[ 6] =	{DO_CR4 , NULL	, CR4_PKE	, 1	},
+	[ 7] =	{DO_CR4 , NULL	, CR4_CET	, 1	},
+	[ 8] =	{DO_CR4 , NULL	, CR4_PKS	, 1	},
+	[ 9] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[10] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[11] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[12] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[13] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[14] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
+	[16] =	{DO_CR8 , NULL	, CR8_TPL	, 4	},
+		{DO_END , NULL	, UNDEF_CR	, 0	}
+	},
+	(struct SR_HDR[]) {
+	[ 0] =	{"EFCR" , " Feature Control Bits Register "	},
+	[ 1] =	{ _4SPC , NULL					},
+	[ 2] =	{"LCK " , " Lock bit "				},
+	[ 3] =	{"VMX^" , " VMX Inside SMX Operation "		},
+	[ 4] =	{"SGX " , " VMX Outside SMX Operation "		},
+	[ 5] =	{"[SEN" , " SENTER Local Functions "		},
+	[ 6] =	{"TER]" , " SENTER Global Functions "		},
+	[ 7] =	{" [ S" , " SGX Launch Control "		},
+	[ 8] =	{"GX ]" , " SGX Global Functions "		},
+	[ 9] =	{" LMC" , " Local Machine Check "		},
+	[10] =	{ _4SPC , NULL					},
+	[11] =	{"EFER" , " Extended-Feature-Enable Register "	},
+	[12] =	{" SCE" , " System-Call Extension "		},
+	[13] =	{" LME" , " Long Mode Enable "			},
+	[14] =	{" LMA" , " Long Mode Active "			},
+	[15] =	{" NXE" , " Execute-Disable Bit Enable "	},
+	[16] =	{" SVM" , " Secure Virtual Machine Enable "	},
+		{NULL	, NULL					}
+	},
+	(struct SR_BIT[]) {
+	[ 0] =	{DO_CPU , NULL	, UNDEF_CR		, 0		},
+	[ 1] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
+	[ 2] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_LOCK,	1},
+	[ 3] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_VMX_IN_SMX, 1},
+	[ 4] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_VMXOUT_SMX, 1},
+	[ 5] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SENTER_LEN, 6},
+	[ 6] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SENTER_GEN, 1},
+	[ 7] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SGX_LCE, 1},
+	[ 8] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_SGX_GEN, 1},
+	[ 9] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_LMCE,	1},
+	[10] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
+	[11] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
+	[12] =	{DO_EFER, NULL	, EXFER_SCE		, 1		},
+	[13] =	{DO_EFER, NULL	, EXFER_LME		, 1		},
+	[14] =	{DO_EFER, NULL	, EXFER_LMA		, 1		},
+	[15] =	{DO_EFER, NULL	, EXFER_NXE		, 1		},
+	[16] =	{DO_EFER, NULL	, EXFER_SVME		, 1		},
+		{DO_END , NULL	, UNDEF_CR		, 0		}
+	}
+    };
+
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
-/* Section Mark */
-	PRT(REG, attrib[0], CR[IX_CPU].item);
-	PRT(REG, attrib[0], CR[IX_FLAG].item);
-    for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	GridHover(PRT(REG, attrib[0], CR[IX_CR3].item), CR[IX_CR3].comm);
-
-    for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
-
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	for (idx = tabRFLAGS.Start; idx < tabRFLAGS.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
+	size_t idx;
+    for (idx = 0; idx < sizeof(SR) / sizeof(struct SR_ST); idx++)
+    {
+	struct SR_HDR *pHdr;
+	for (pHdr = SR[idx].header; pHdr->flag != NULL; pHdr++)
+	{
+		GridHover(PRT(REG, attrib[0], "%s", pHdr->flag), pHdr->comm);
 	}
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	for (idx = tabCR3.Start; idx < tabCR3.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
-	}
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-    }
-/* Section Mark */
-	GridHover(PRT(REG, attrib[0], CR[IX_CR0].item), CR[IX_CR0].comm);
-
-    for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-
-	GridHover(PRT(REG, attrib[0], CR[IX_CR4].item), CR[IX_CR4].comm);
-
-    for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
-
-	for (idx = tabCR0.Start; idx < tabCR0.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
-	}
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	for (idx = tabCR4[0].Start; idx < tabCR4[0].Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
-	}
-    }
-/* Section Mark */
-	GridHover(PRT(REG, attrib[0], CR[IX_CR4].item), CR[IX_CR4].comm);
-
-    for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
-
-	for (idx = tabCR4[1].Start; idx < tabCR4[1].Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
-	}
-    }
-/* Section Mark */
-	GridHover(PRT(REG, attrib[0], CR[IX_EFCR].item), CR[IX_EFCR].comm);
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-
-    for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	GridHover(PRT(REG, attrib[0], CR[IX_EFER].item), CR[IX_EFER].comm);
-
-    for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	GridHover(PRT(REG, attrib[0], "%s", SR[idx].flag), SR[idx].comm);
-    }
-    for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++) {
-	PRT(REG, attrib[BITVAL(Shm->Cpu[cpu].OffLine, OS) ? 4:3], "#%-2u ",cpu);
-
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	for (idx = tabEFCR.Start; idx < tabEFCR.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)
-	    &&  ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL))) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
-	    }
-	}
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	PRT(REG, attrib[0], CR[IX_4SPC].item);
-	for (idx = tabEFER.Start; idx < tabEFER.Stop; idx++) {
-	    if (!BITVAL(Shm->Cpu[cpu].OffLine, OS)) {
-		PRT(REG, attrib[2], "%3llx ",
-				BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
-				SR[idx].bit, SR[idx].len));
-	    } else {
-		PRT(REG, attrib[1], CR[IX_NA_3].item);
+	unsigned int cpu;
+	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
+	{
+		struct SR_BIT *pBits;
+	    for (pBits = SR[idx].bits; pBits->automat != DO_END; pBits++)
+	    {
+		switch (pBits->automat) {
+		case DO_END:
+		case DO_SPC:
+			PRT(REG, attrib[0], _4SPC);
+			break;
+		case DO_CPU:
+			PRT(REG,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS) ? 4:3],
+				"#%-2u ", cpu);
+			break;
+		default:
+		    {
+			unsigned short capable = 0;
+			if (pBits->CRC == NULL) {
+				capable = 1;
+			}
+			else
+			{
+				unsigned int *CRC;
+			    for (CRC = pBits->CRC;
+				(*CRC) != 0 && capable == 0; CRC++)
+			    {
+				if((*CRC) == Shm->Proc.Features.Info.Vendor.CRC)
+				{
+					capable = 1;
+				}
+			    }
+			}
+			if ((capable) && !BITVAL(Shm->Cpu[cpu].OffLine, OS))
+			{
+			    switch (pBits->automat) {
+			    case DO_FLAG:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_CR0:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_CR3:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_CR4:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_CR8:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR8,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_EFCR:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
+						pBits->pos, pBits->len));
+				break;
+			    case DO_EFER:
+				PRT(REG, attrib[2], "%3llx ",
+				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
+						pBits->pos, pBits->len));
+				break;
+			    default:
+				PRT(REG, attrib[1], _NA_3);
+				break;
+			    }
+			} else {
+				PRT(REG, attrib[1], _NA_3);
+			}
+		    }
+			break;
+		}
 	    }
 	}
     }
@@ -1693,7 +1765,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 				ISA[idx].item,
 				ISA[idx].cond[0] ? 'Y' : 'N',
 				ISA[idx].cond[1] ? 'Y' : 'N' ),
-		ISA[idx].comm );
+			ISA[idx].comm );
 	}
     }
 	return (reason);

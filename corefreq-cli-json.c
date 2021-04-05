@@ -1793,6 +1793,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR3);
 			json_key(&s, "CR4");
 			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR4);
+			json_key(&s, "CR8");
+			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.CR8);
 			json_key(&s, "EFCR");
 			json_literal(&s, "%llu", Shm->Cpu[cpu].SystemRegister.EFCR);
 			json_key(&s, "EFER");
