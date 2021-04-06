@@ -1598,8 +1598,8 @@ void Mitigation_1st_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 						Proc_RW->SPLA,
 						Proc_RO->ARCH_CAP_Mask );
     }
-    else if (  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
+    else if (	(Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
 	Shm->Proc.Mechanisms.IBRS = (
 		Shm->Proc.Features.leaf80000008.EBX.IBRS == 1
@@ -4749,8 +4749,8 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 	Shm->Cpu[cpu].Topology.Cluster.ID = Core[cpu]->T.Cluster.ID;
 	/* x2APIC capability.						*/
 	Shm->Cpu[cpu].Topology.MP.x2APIC  = Proc->Features.Std.ECX.x2APIC;
-    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    ||	(Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	Shm->Cpu[cpu].Topology.MP.x2APIC |=Proc->Features.ExtInfo.ECX.ExtApicId;
     }
@@ -4788,8 +4788,8 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
 				* Shm->Cpu[cpu].Topology.Cache[level].Part
 				* Shm->Cpu[cpu].Topology.Cache[level].Way;
 	} else {
-	    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-	    || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
+	    if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+	     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
 		Shm->Cpu[cpu].Topology.Cache[level].Way =		\
 			(loop == 2) || (loop == 3) ?

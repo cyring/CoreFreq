@@ -4865,7 +4865,7 @@ void Query_VirtualMachine(unsigned int cpu)
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 10;
     }
     else if ( (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
-	||(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
+	||  (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON) )
     {	/* Lowest frequency according to BKDG				*/
 	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = 8;
 
@@ -13557,253 +13557,260 @@ static int CoreFreqK_IdleDriver_Init(void)
   {
 	IDLE_STATE *pIdleState;
 	pIdleState = Arch[PUBLIC(RO(Proc))->ArchID].SystemDriver.IdleState;
-    if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.Std.ECX.MONITOR)
+   if ((pIdleState != NULL) && PUBLIC(RO(Proc))->Features.Std.ECX.MONITOR)
+   {
+    if ((CoreFreqK.IdleDevice=alloc_percpu(struct cpuidle_device)) == NULL)
     {
-	if ((CoreFreqK.IdleDevice=alloc_percpu(struct cpuidle_device)) == NULL)
+	rc = -ENOMEM;
+    }
+    else
+    {
+	struct cpuidle_device *device;
+	unsigned int cpu, enroll = 0;
+	unsigned int subState[] = {
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /* C1E */
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6,
+	PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7
+	};
+	const unsigned int subStateCount = sizeof(subState)
+					 / sizeof(subState[0]);
+	/*		Kernel polling loop			*/
+	cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
+
+	CoreFreqK.IdleDriver.state_count = 1;
+	/*		Idle States				*/
+     while (pIdleState->Name != NULL)
+     {
+	if (CoreFreqK.IdleDriver.state_count < subStateCount)
 	{
-		rc = -ENOMEM;
-	} else {
-		struct cpuidle_device *device;
-		unsigned int cpu, enroll = 0;
-		unsigned int subState[] = {
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT0,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT1, /* C1E */
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT2,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT3,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT4,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT5,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT6,
-		PUBLIC(RO(Proc))->Features.MWait.EDX.SubCstate_MWAIT7
-		};
-		const unsigned int subStateCount = sizeof(subState)
-						 / sizeof(subState[0]);
-		/*		Kernel polling loop			*/
-		cpuidle_poll_state_init(&CoreFreqK.IdleDriver);
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].flags = pIdleState->flags;
 
-		CoreFreqK.IdleDriver.state_count = 1;
-		/*		Idle States				*/
-	    while (pIdleState->Name != NULL)
+	    if (subState[CoreFreqK.IdleDriver.state_count] == 0)
 	    {
-		if (CoreFreqK.IdleDriver.state_count < subStateCount)
-		{
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].flags = pIdleState->flags;
-
-		    if (subState[CoreFreqK.IdleDriver.state_count] == 0)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].flags |= CPUIDLE_FLAG_UNUSABLE;
-		    }
-			StrCopy(CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].name, pIdleState->Name, CPUIDLE_NAME_LEN);
-
-			StrCopy(CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].exit_latency = pIdleState->Latency;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].target_residency = pIdleState->Residency;
-
-		  switch (Idle_Route) {
-		  case ROUTE_MWAIT:
-		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_Alt_MWAIT_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_Handler;
-		    }
-		  else if(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_Alt_MWAIT_AMD_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_AMD_Handler;
-		    }
-		  else {
-			goto IDLE_DEFAULT;
-		    }
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[0] = 'M';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[1] = 'W';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[2] = 'T';
-			break;
-		  case ROUTE_HALT:
-		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_Alt_HALT_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_Alt_S2_HALT_Handler;
-		    }
-		  else if(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_Alt_HALT_AMD_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_Alt_S2_HALT_AMD_Handler;
-		    }
-		  else {
-			goto IDLE_DEFAULT;
-		    }
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[0] = 'H';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[1] = 'L';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[2] = 'T';
-			break;
-		  case ROUTE_IO:
-		  {
-		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
-		    {
-			CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
-			RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-			if (CState_IO_MWAIT.LVL2_BaseAddr != 0x0)
-			{
-				CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].enter = CoreFreqK_Alt_IO_Handler;
-
-				CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].enter_s2idle = CoreFreqK_Alt_S2_IO_Handler;
-			} else {
-				goto IDLE_DEFAULT;
-			}
-		    }
-		  else if(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
-		    {
-			CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
-			RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
-			if (CStateBaseAddr.IOaddr != 0x0)
-			{
-				CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].enter = CoreFreqK_Alt_IO_AMD_Handler;
-
-				CoreFreqK.IdleDriver.states[
-					CoreFreqK.IdleDriver.state_count
-				].enter_s2idle=CoreFreqK_Alt_S2_IO_AMD_Handler;
-			} else {
-				goto IDLE_DEFAULT;
-			}
-		    }
-		  else {
-			goto IDLE_DEFAULT;
-		    }
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[0] = 'I';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[1] = '/';
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].desc[2] = 'O';
-		  }
-			break;
-		  case ROUTE_DEFAULT:
-		  IDLE_DEFAULT:
-		  default:
-		    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_MWAIT_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
-		    }
-		  else if(PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
-		    {
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter = CoreFreqK_HALT_AMD_Handler;
-
-			CoreFreqK.IdleDriver.states[
-				CoreFreqK.IdleDriver.state_count
-			].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
-		    }
-		  else {
-			pr_warn("CoreFreq: "	\
-				"No Idle implementation for this architecture");
-		    }
-			break;
-		  }
-			CoreFreqK.IdleDriver.state_count++;
-		}
-		pIdleState++;
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].flags |= CPUIDLE_FLAG_UNUSABLE;
 	    }
-	    if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0) {
-		for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
-		{
-		    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, HW))
-		    {
-			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-		      if (device != NULL)
-		      {
-			device->cpu = cpu;
-			if ((rc = cpuidle_register_device(device)) == 0) {
-				continue;
-			}
-		      }
-			break;
-		    }
-		}
-		enroll = cpu;
+		StrCopy(CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].name, pIdleState->Name, CPUIDLE_NAME_LEN);
+
+		StrCopy(CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].desc, pIdleState->Desc, CPUIDLE_NAME_LEN);
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].exit_latency = pIdleState->Latency;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].target_residency = pIdleState->Residency;
+
+	  switch (Idle_Route) {
+	  case ROUTE_MWAIT:
+	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_Alt_MWAIT_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_Handler;
 	    }
-	    if (rc != 0)
-	    {/* Cancel the registration if the driver and/or a device failed */
-		for (cpu = 0; cpu < enroll; cpu++)
+	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_Alt_MWAIT_AMD_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_Alt_S2_MWAIT_AMD_Handler;
+	    }
+	    else {
+		goto IDLE_DEFAULT;
+	    }
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[0] = 'M';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[1] = 'W';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[2] = 'T';
+		break;
+	  case ROUTE_HALT:
+	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_Alt_HALT_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_Alt_S2_HALT_Handler;
+	    }
+	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_Alt_HALT_AMD_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_Alt_S2_HALT_AMD_Handler;
+	    }
+	    else {
+		goto IDLE_DEFAULT;
+	    }
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[0] = 'H';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[1] = 'L';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[2] = 'T';
+		break;
+	  case ROUTE_IO:
+	  {
+	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	    {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+		if (CState_IO_MWAIT.LVL2_BaseAddr != 0x0)
 		{
-			device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
-		    if (device != NULL)
-		    {
-			cpuidle_unregister_device(device);
-		    }
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_Alt_IO_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_Alt_S2_IO_Handler;
+		} else {
+			goto IDLE_DEFAULT;
 		}
-		cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
-		free_percpu(CoreFreqK.IdleDevice);
+	    }
+	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	    {
+		CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
+		RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+		if (CStateBaseAddr.IOaddr != 0x0)
+		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_Alt_IO_AMD_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle=CoreFreqK_Alt_S2_IO_AMD_Handler;
+		} else {
+			goto IDLE_DEFAULT;
+		}
+	    }
+	    else {
+		goto IDLE_DEFAULT;
+	    }
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[0] = 'I';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[1] = '/';
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].desc[2] = 'O';
+	  }
+		break;
+	  case ROUTE_DEFAULT:
+	  IDLE_DEFAULT:
+	  default:
+	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_MWAIT_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+	    }
+	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
+		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
+	    {
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter = CoreFreqK_HALT_AMD_Handler;
+
+		CoreFreqK.IdleDriver.states[
+			CoreFreqK.IdleDriver.state_count
+		].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+	    }
+	    else {
+		pr_warn("CoreFreq: "	\
+			"No Idle implementation for this architecture");
+	    }
+		break;
+	  }
+		CoreFreqK.IdleDriver.state_count++;
+	}
+	pIdleState++;
+     }
+     if ((rc = cpuidle_register_driver(&CoreFreqK.IdleDriver)) == 0)
+     {
+	for (cpu = 0; cpu < PUBLIC(RO(Proc))->CPU.Count; cpu++)
+	{
+	    if (!BITVAL(PUBLIC(RO(Core, AT(cpu)))->OffLine, HW))
+	    {
+		device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
+	      if (device != NULL)
+	      {
+		device->cpu = cpu;
+		if ((rc = cpuidle_register_device(device)) == 0) {
+			continue;
+		}
+	      }
+		break;
 	    }
 	}
+	enroll = cpu;
+     }
+     if (rc != 0)
+     { /* Cancel the registration if the driver and/or a device failed */
+	for (cpu = 0; cpu < enroll; cpu++)
+	{
+		device = per_cpu_ptr(CoreFreqK.IdleDevice, cpu);
+	    if (device != NULL)
+	    {
+		cpuidle_unregister_device(device);
+	    }
+	}
+	cpuidle_unregister_driver(&CoreFreqK.IdleDriver);
+	free_percpu(CoreFreqK.IdleDevice);
+     }
     }
+   }
   }
 #endif /* CONFIG_CPU_IDLE and 4.14.0 */
 	return (rc);
