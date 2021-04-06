@@ -12923,8 +12923,8 @@ static void Stop_AMD_Family_17h(void *arg)
 long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 {
 	int rc = RC_SUCCESS;
-    if (SysGate != NULL)
-    {
+  if (SysGate != NULL)
+  {
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
 	struct cpufreq_policy freqPolicy;
@@ -12934,36 +12934,47 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 #endif /* CONFIG_CPU_IDLE */
 	memset(&SysGate->OS, 0, sizeof(OS_DRIVER));
 #ifdef CONFIG_CPU_IDLE
-	if ((idleDriver = cpuidle_get_driver()) != NULL) {
-		int i;
-		StrCopy(SysGate->OS.IdleDriver.Name,
-			idleDriver->name, CPUIDLE_NAME_LEN);
+    if ((idleDriver = cpuidle_get_driver()) != NULL)
+    {
+	int idx;
+	StrCopy(SysGate->OS.IdleDriver.Name, idleDriver->name,CPUIDLE_NAME_LEN);
 
-	    if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
+	if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
 		SysGate->OS.IdleDriver.stateCount = idleDriver->state_count;
-	    } else {
+	} else {
 		SysGate->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
-	    }
+	}
 		SysGate->OS.IdleDriver.stateLimit = idleDriver->state_count;
 
-	    for (i = 0; i < SysGate->OS.IdleDriver.stateCount; i++)
-	    {
-		StrCopy(SysGate->OS.IdleDriver.State[i].Name,
-			idleDriver->states[i].name, CPUIDLE_NAME_LEN);
+	for (idx = 0; idx < SysGate->OS.IdleDriver.stateCount; idx++)
+	{
+		StrCopy(SysGate->OS.IdleDriver.State[idx].Name,
+			idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
 
-		StrCopy(SysGate->OS.IdleDriver.State[i].Desc,
-			idleDriver->states[i].desc, CPUIDLE_NAME_LEN);
+		StrCopy(SysGate->OS.IdleDriver.State[idx].Desc,
+			idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
 
-		SysGate->OS.IdleDriver.State[i].exitLatency =
-				idleDriver->states[i].exit_latency;
+		SysGate->OS.IdleDriver.State[idx].exitLatency = \
+				idleDriver->states[idx].exit_latency;
 
-		SysGate->OS.IdleDriver.State[i].powerUsage =
-				idleDriver->states[i].power_usage;
+		SysGate->OS.IdleDriver.State[idx].powerUsage = \
+				idleDriver->states[idx].power_usage;
 
-		SysGate->OS.IdleDriver.State[i].targetResidency =
-				idleDriver->states[i].target_residency;
-	    }
+		SysGate->OS.IdleDriver.State[idx].targetResidency = \
+				idleDriver->states[idx].target_residency;
 	}
+	if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+	{
+	  for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
+	  {
+	    if (CoreFreqK.IdleDriver.states[idx].flags & CPUIDLE_FLAG_UNUSABLE)
+	    {
+		SysGate->OS.IdleDriver.stateLimit = idx;
+		break;
+	    }
+	  }
+	}
+    }
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	if ((pFreqDriver = cpufreq_get_current_driver()) != NULL) {
@@ -12971,8 +12982,8 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
-     if((rc=cpufreq_get_policy(&freqPolicy, PUBLIC(RO(Proc))->Service.Core))==0)
-     {
+    if((rc=cpufreq_get_policy(&freqPolicy, PUBLIC(RO(Proc))->Service.Core))==0)
+    {
 	struct cpufreq_governor *pGovernor = freqPolicy.governor;
 	if (pGovernor != NULL) {
 		StrCopy(SysGate->OS.FreqDriver.Governor,
@@ -12980,13 +12991,13 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 	} else {
 		SysGate->OS.FreqDriver.Governor[0] = '\0';
 	}
-     } else {
-	SysGate->OS.FreqDriver.Governor[0] = '\0';
-     }
-#endif /* CONFIG_CPU_FREQ */
     } else {
-	rc = -ENXIO;
+	SysGate->OS.FreqDriver.Governor[0] = '\0';
     }
+#endif /* CONFIG_CPU_FREQ */
+  } else {
+	rc = -ENXIO;
+  }
 	return (rc);
 }
 
@@ -13584,7 +13595,7 @@ static int CoreFreqK_IdleDriver_Init(void)
 		    {
 			CoreFreqK.IdleDriver.states[
 				CoreFreqK.IdleDriver.state_count
-			].flags = pIdleState->flags |= CPUIDLE_FLAG_UNUSABLE;
+			].flags |= CPUIDLE_FLAG_UNUSABLE;
 		    }
 			StrCopy(CoreFreqK.IdleDriver.states[
 					CoreFreqK.IdleDriver.state_count
