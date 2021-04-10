@@ -1096,6 +1096,27 @@ typedef union
 } CORE_FIXED_PERF_CONTROL;
 
 typedef union
+{	/* R/W: IA32_THERM_INTERRUPT(19Bh) Core or Unique scope		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		High_Temp_Int	:  1-0,
+		Low_Temp_Int	:  2-1,
+		PROCHOT_Int	:  3-2,
+		FORCEPR_Int	:  4-3,
+		Crit_Temp_Int	:  5-4,
+		ReservedBits1	:  8-5,
+		Threshold1_Value: 15-8,
+		Threshold1_Int	: 16-15,
+		Threshold2_Value: 23-16,
+		Threshold2_Int	: 24-23,
+		PLN_Enable	: 25-24,	/* Power Limit Notification */
+		ReservedBits2	: 64-25;
+	};
+} THERM_INTERRUPT;
+
+typedef union
 {
 	unsigned long long	value;
 	struct

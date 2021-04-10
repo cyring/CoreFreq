@@ -6694,9 +6694,15 @@ void ThermalMonitor_Set(CORE_RO *Core)
 		ThermStatus.XDomLimitLog = 0;
 		ClearBit = 1;
 	}
-	if (ClearBit) {
-		WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
-		RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+	if (ClearBit)
+	{
+		THERM_INTERRUPT ThermInterrupt = {.value = 0};
+		RDMSR(ThermInterrupt, MSR_IA32_THERM_INTERRUPT);
+		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
+		{
+			WRMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+			RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
+		}
 	}
 	Core->PowerThermal.Events = (	(ThermStatus.StatusBit
 					|ThermStatus.StatusLog ) << 0)
