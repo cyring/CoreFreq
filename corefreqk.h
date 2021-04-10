@@ -956,6 +956,12 @@ static void Start_Silvermont(void *arg) ;
 static void Stop_Silvermont(void *arg) ;
 extern void InitTimer_Silvermont(unsigned int cpu) ;
 
+extern void Query_Goldmont(unsigned int cpu) ;
+static void PerCore_Goldmont_Query(void *arg) ;
+static void Start_Goldmont(void *arg) ;
+static void Stop_Goldmont(void *arg) ;
+extern void InitTimer_Goldmont(unsigned int cpu) ;
+
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
@@ -1003,9 +1009,6 @@ static void Stop_Haswell_ULT(void *arg) ;
 extern void InitTimer_Haswell_ULT(unsigned int cpu) ;
 static void Start_Uncore_Haswell_ULT(void *arg) ;
 static void Stop_Uncore_Haswell_ULT(void *arg) ;
-
-static void PerCore_Goldmont_Query(void *arg) ;
-static void Start_Goldmont(void *arg) ;
 
 extern void Query_Haswell_ULX(unsigned int cpu) ;
 static void PerCore_Haswell_ULX(void *arg) ;
@@ -1148,8 +1151,8 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _Atom_Moorefield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xA}
 
-/*	[C3000] 	06_5Fh Stepping 0={A0,A1} 1={B0,B1}		*/
-#define _Atom_C3000	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xF}
+/*	[Denverton]	06_5Fh Stepping 0={A0,A1} 1={B0,B1}		*/
+#define _Atom_Denverton {.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xF}
 
 /*	[Tremont/Jacobsville]	06_86h
 	[Tremont/Lakefield]	06_8Ah
@@ -2231,7 +2234,7 @@ static MICRO_ARCH Arch_Tigerlake_U[]	= {{"Tiger Lake/U"}	, {NULL}};
 static MICRO_ARCH Arch_Cometlake[]	= {{"Comet Lake"}	, {NULL}};
 static MICRO_ARCH Arch_Cometlake_UY[]	= {{"Comet Lake/UY"}	, {NULL}};
 
-static MICRO_ARCH Arch_Atom_C3000[]	= {{"Atom/C3000"}	, {NULL}};
+static MICRO_ARCH Arch_Atom_Denverton[] = {{"Atom/Denverton"}	, {NULL}};
 
 static MICRO_ARCH Arch_Tremont_Jacobsville[]={{"Tremont/Jacobsville"} ,{NULL}};
 static MICRO_ARCH Arch_Tremont_Lakefield[]  ={{"Tremont/Lakefield"}   ,{NULL}};
@@ -5659,18 +5662,18 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Goldmont] = {							/* 25*/
 	.Signature = _Atom_Goldmont,
-	.Query = Query_SandyBridge,
+	.Query = Query_Goldmont,
 	.Update = PerCore_Goldmont_Query,
 	.Start = Start_Goldmont,
-	.Stop = Stop_Haswell_ULT,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Haswell_ULT,
+	.Timer = InitTimer_Goldmont,
 	.BaseClock = BaseClock_Haswell,
 	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_NONE,
-	.powerFormula   = POWER_FORMULA_NONE,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Haswell_ULT,
@@ -6439,14 +6442,14 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Geminilake] = {							/* 55*/
 	.Signature = _Geminilake,
-	.Query = Query_Silvermont,
-	.Update = PerCore_Silvermont_Query,
-	.Start = Start_Silvermont,
-	.Stop = Stop_Silvermont,
+	.Query = Query_Goldmont,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Silvermont,
-	.BaseClock = BaseClock_Silvermont,
-	.ClockMod = ClockMod_Core2_PPC,
+	.Timer = InitTimer_Goldmont,
+	.BaseClock = BaseClock_Skylake,
+	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
@@ -6458,7 +6461,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = SLM_Driver,
+	.SystemDriver = SNB_Driver,
 	.Architecture = Arch_Geminilake
 	},
 
@@ -6682,8 +6685,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Architecture = Arch_Cometlake_UY
 	},
 
-[Atom_C3000] = {							/* 65*/
-	.Signature = _Atom_C3000,
+[Atom_Denverton] = {							/* 65*/
+	.Signature = _Atom_Denverton,
 	.Query = Query_Skylake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
@@ -6704,7 +6707,7 @@ static ARCH Arch[ARCHITECTURES] = {
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = Intel_Driver,
-	.Architecture = Arch_Atom_C3000
+	.Architecture = Arch_Atom_Denverton
 	},
 [Tremont_Jacobsville] = {						/* 66*/
 	.Signature = _Tremont_Jacobsville,
