@@ -6704,56 +6704,60 @@ void ThermalMonitor_Set(CORE_RO *Core)
 			RDMSR(ThermStatus, MSR_IA32_THERM_STATUS);
 		}
 	}
-	Core->PowerThermal.Events = (	(ThermStatus.StatusBit
-					|ThermStatus.StatusLog ) << 0)
-				  | (ThermStatus.PROCHOTLog << 1)
-				  | (ThermStatus.CriticalTempLog << 2)
-				  | (	(ThermStatus.Threshold1Log
-					|ThermStatus.Threshold2Log ) << 3)
-				  | (ThermStatus.PwrLimitLog << 4)
-				  | (ThermStatus.CurLimitLog << 5)
-				  | (ThermStatus.XDomLimitLog << 6);
+	Core->PowerThermal.Events = \
+		( (ThermStatus.StatusBit | ThermStatus.StatusLog ) << 0 )
+		| (ThermStatus.PROCHOTLog << 1)
+		| (ThermStatus.CriticalTempLog << 2)
+		| ((ThermStatus.Threshold1Log | ThermStatus.Threshold2Log) << 3)
+		| (ThermStatus.PwrLimitLog << 4)
+		| (ThermStatus.CurLimitLog << 5)
+		| (ThermStatus.XDomLimitLog << 6);
 
-	if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
-	&& (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
+    if (PUBLIC(RO(Proc))->Features.Power.EAX.PTM
+    && (Core->Bind == PUBLIC(RO(Proc))->Service.Core))
+    {
+	ClearBit = 0;
+	ThermStatus.value = 0;
+	RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
+
+	if (Clear_Events & EVENT_THERM_SENSOR) {
+		ThermStatus.StatusLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_PROCHOT) {
+		ThermStatus.PROCHOTLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_CRIT) {
+		ThermStatus.CriticalTempLog = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_THERM_THOLD) {
+		ThermStatus.Threshold1Log = 0;
+		ThermStatus.Threshold2Log = 0;
+		ClearBit = 1;
+	}
+	if (Clear_Events & EVENT_POWER_LIMIT) {
+		ThermStatus.PwrLimitLog = 0;
+		ClearBit = 1;
+	}
+	if (ClearBit)
 	{
-		ClearBit = 0;
-		ThermStatus.value = 0;
-		RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
-
-		if (Clear_Events & EVENT_THERM_SENSOR) {
-			ThermStatus.StatusLog = 0;
-			ClearBit = 1;
-		}
-		if (Clear_Events & EVENT_THERM_PROCHOT) {
-			ThermStatus.PROCHOTLog = 0;
-			ClearBit = 1;
-		}
-		if (Clear_Events & EVENT_THERM_CRIT) {
-			ThermStatus.CriticalTempLog = 0;
-			ClearBit = 1;
-		}
-		if (Clear_Events & EVENT_THERM_THOLD) {
-			ThermStatus.Threshold1Log = 0;
-			ThermStatus.Threshold2Log = 0;
-			ClearBit = 1;
-		}
-		if (Clear_Events & EVENT_POWER_LIMIT) {
-			ThermStatus.PwrLimitLog = 0;
-			ClearBit = 1;
-		}
-		if (ClearBit) {
+		THERM_INTERRUPT ThermInterrupt = {.value = 0};
+		RDMSR(ThermInterrupt, MSR_IA32_PACKAGE_THERM_INTERRUPT);
+		if (!(ThermInterrupt.High_Temp_Int|ThermInterrupt.Low_Temp_Int))
+		{
 			WRMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 			RDMSR(ThermStatus, MSR_IA32_PACKAGE_THERM_STATUS);
 		}
-		PUBLIC(RO(Proc))->PowerThermal.Events = ((ThermStatus.StatusBit
-						|ThermStatus.StatusLog) << 0)
-					  | (ThermStatus.PROCHOTLog << 1)
-					  | (ThermStatus.CriticalTempLog << 2)
-					  | (	(ThermStatus.Threshold1Log
-						|ThermStatus.Threshold2Log)<< 3)
-					  | (ThermStatus.PwrLimitLog << 4);
 	}
+	PUBLIC(RO(Proc))->PowerThermal.Events = \
+		( (ThermStatus.StatusBit | ThermStatus.StatusLog) << 0 )
+		| (ThermStatus.PROCHOTLog << 1)
+		| (ThermStatus.CriticalTempLog << 2)
+		| ((ThermStatus.Threshold1Log | ThermStatus.Threshold2Log) << 3)
+		| (ThermStatus.PwrLimitLog << 4);
+    }
 
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
 

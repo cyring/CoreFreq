@@ -1096,7 +1096,7 @@ typedef union
 } CORE_FIXED_PERF_CONTROL;
 
 typedef union
-{	/* R/W: IA32_THERM_INTERRUPT(19Bh) Core or Unique scope		*/
+{	/* R/W: IA32_{PACKAGE_}THERM_INTERRUPT(19Bh{1B2h}) Core|Unique scope */
 	unsigned long long	value;
 	struct
 	{
@@ -1111,13 +1111,14 @@ typedef union
 		Threshold1_Int	: 16-15,
 		Threshold2_Value: 23-16,
 		Threshold2_Int	: 24-23,
-		PLN_Enable	: 25-24,	/* Power Limit Notification */
-		ReservedBits2	: 64-25;
+		PLN_Enable	: 25-24, /* Power Limit Notification	*/
+		HWP_Interrupt	: 26-25, /* IA32_PACKAGE_THERM_INTERRUPT */
+		ReservedBits2	: 64-26;
 	};
 } THERM_INTERRUPT;
 
 typedef union
-{
+{	/* R/O-R/WC0: IA32_{PACKAGE_}THERM_STATUS(19Ch{1B1h})	*/
 	unsigned long long	value;
 	struct
 	{
@@ -1139,7 +1140,8 @@ typedef union
 		XDomLimitStatus : 15-14,	/* HWP Feedback 	*/
 		XDomLimitLog	: 16-15,	/* HWP Feedback 	*/
 		DTS		: 23-16,
-		ReservedBits1	: 27-23,
+		ReservedBits1	: 26-23,
+		HWP_Status	: 27-26, /* IA32_PACKAGE_THERM_STATUS	*/
 		Resolution	: 31-27,
 		ReadingValid	: 32-31,
 		ReservedBits2	: 64-32;
