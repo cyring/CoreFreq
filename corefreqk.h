@@ -1105,6 +1105,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define     Stop_AMD_Family_19h Stop_AMD_Family_17h
 #define     InitTimer_AMD_Family_19h InitTimer_AMD_Family_17h
 #define     InitTimer_AMD_F17h_Zen3_SP InitTimer_AMD_F17h_Zen2_SP
+#define     InitTimer_AMD_F17h_Zen3_MP InitTimer_AMD_F17h_Zen2_MP
 
 /*	[Void]								*/
 #define _Void_Signature {.ExtFamily=0x0, .Family=0x0, .ExtModel=0x0, .Model=0x0}
@@ -1313,10 +1314,12 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 
 /*	[Family 19h]		AF_00h
 	[Zen3/Vermeer]		AF_21h Stepping 0	 7 nm
-	[Zen3/Cezanne]		AF_51h Stepping 0	 7 nm		*/
+	[Zen3/Cezanne]		AF_51h Stepping 0	 7 nm
+	[EPYC/Milan]		AF_01h Stepping 0	 7 nm		*/
 #define _AMD_Family_19h {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 #define _AMD_Zen3_VMR	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x2, .Model=0x1}
 #define _AMD_Zen3_CZN	{.ExtFamily=0xa, .Family=0xF, .ExtModel=0x5, .Model=0x1}
+#define _AMD_EPYC_Milan {.ExtFamily=0xa, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 
 typedef kernel_ulong_t (*PCI_CALLBACK)(struct pci_dev *);
 
@@ -2302,6 +2305,9 @@ enum {
 enum {
 	CN_CEZANNE
 };
+enum {
+	CN_MILAN
+};
 
 static MICRO_ARCH Arch_AMD_Zen[] = {
 	[CN_SUMMIT_RIDGE]	= {"Zen/Summit Ridge"},
@@ -2349,6 +2355,10 @@ static MICRO_ARCH Arch_AMD_Zen3_VMR[] = {
 };
 static MICRO_ARCH Arch_AMD_Zen3_CZN[] = {
 	[CN_CEZANNE]		= {"Zen3/Cezanne"},
+	{NULL}
+};
+static MICRO_ARCH Arch_AMD_EPYC_Milan[] = {
+	[CN_MILAN]		= {"EPYC/Milan"},
 	{NULL}
 };
 static MICRO_ARCH Arch_AMD_Family_17h[] = {{"AMD Zen"}, {NULL}};
@@ -7142,5 +7152,29 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Specific = Void_Specific,
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
+	},
+[AMD_EPYC_Milan] = {							/* 84*/
+	.Signature = _AMD_EPYC_Milan,
+	.Query = Query_AMD_Family_19h,
+	.Update = PerCore_AMD_Family_19h_Query,
+	.Start = Start_AMD_Family_19h,
+	.Stop = Stop_AMD_Family_19h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_F17h_Zen3_MP,
+	.BaseClock = BaseClock_AMD_Family_19h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN3,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_19h,
+	.powerFormula   = POWER_FORMULA_AMD_19h,
+	.PCI_ids = PCI_AMD_19h_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = Void_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_EPYC_Milan
 	}
 };

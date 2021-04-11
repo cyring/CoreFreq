@@ -108,6 +108,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen2_MTS,
 	AMD_Zen3_VMR,
 	AMD_Zen3_CZN,
+	AMD_EPYC_Milan,
 	ARCHITECTURES
 };
 

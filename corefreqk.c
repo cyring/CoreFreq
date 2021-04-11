@@ -1730,6 +1730,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_MTS:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
+	case AMD_EPYC_Milan:
 	case AMD_Family_17h:
 	case AMD_Family_18h:
 	case AMD_Family_19h:
@@ -5658,6 +5659,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Family_19h:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
+	case AMD_EPYC_Milan:
 	    {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 
