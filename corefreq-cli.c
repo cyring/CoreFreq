@@ -2596,8 +2596,10 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.Turbo == 1,
 		2, "%s%.*sTURBO   <%3s>",
-		RSC(TECHNOLOGIES_TURBO).CODE(),
-		width - 16 - RSZ(TECHNOLOGIES_TURBO),
+		Shm->Proc.Features.Power.EAX.Turbo_V3 == 1 ?
+		RSC(TECHNOLOGIES_TBMT3).CODE() : RSC(TECHNOLOGIES_TURBO).CODE(),
+		width - 16 - (Shm->Proc.Features.Power.EAX.Turbo_V3 == 1 ?
+		RSZ(TECHNOLOGIES_TBMT3) : RSZ(TECHNOLOGIES_TURBO)),
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate

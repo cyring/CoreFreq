@@ -368,6 +368,7 @@
 #define RSC_TECHNOLOGIES_EIST_CODE_EN	"SpeedStep"
 #define RSC_TECHNOLOGIES_IDA_CODE_EN	"Dynamic Acceleration"
 #define RSC_TECHNOLOGIES_TURBO_CODE_EN	"Turbo Boost"
+#define RSC_TECHNOLOGIES_TBMT3_CODE_EN	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_EN	"Virtualization"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_EN	"I/O MMU"
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"

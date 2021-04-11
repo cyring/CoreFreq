@@ -354,6 +354,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_EIST_CODE_FR	"SpeedStep"
 #define RSC_TECHNOLOGIES_IDA_CODE_FR	"Acc""\xa9""l""\xa9""ration dynamique"
 #define RSC_TECHNOLOGIES_TURBO_CODE_FR	"Turbo Boost"
+#define RSC_TECHNOLOGIES_TBMT3_CODE_FR	"Turbo Boost Max 3.0"
 #define RSC_TECHNOLOGIES_VM_CODE_FR	"Virtualisation"
 #define RSC_TECHNOLOGIES_IOMMU_CODE_FR	"MMU E/S"
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan""\xa9"
