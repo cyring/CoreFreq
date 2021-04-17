@@ -444,10 +444,11 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 			unsigned int	*CRC;
 			enum SYS_REG	pos;
 			unsigned int	len;
-		} *bits;
+		} *flag;
 	} SR[] = \
     {
-	(struct SR_HDR[]) {
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{"CPU " , NULL				},
 	[ 1] =	{"FLAG" , NULL				},
 	[ 2] =	{" TF " , " Trap Flag "			},
@@ -467,7 +468,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{ _4SPC , NULL				},
 		{NULL	, NULL				}
 	},
-	(struct SR_BIT[]) {
+	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
 	[ 1] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
 	[ 2] =	{DO_FLAG, NULL	, RFLAG_TF	, 1	},
@@ -486,8 +487,10 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
 	[16] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
 		{DO_END , NULL	, UNDEF_CR	, 0	}
-	},
-	(struct SR_HDR[]) {
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{"CR0:" , " Control Register 0 "		},
 	[ 1] =	{" PE " , " Protection Enable "			},
 	[ 2] =	{" MP " , " Monitor Coprocessor "		},
@@ -507,7 +510,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{" PCD" , " Page-level Cache Disable "		},
 		{NULL	, NULL					}
 	},
-	(struct SR_BIT[]) {
+	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
 	[ 1] =  {DO_CR0 , NULL	, CR0_PE	, 1	},
 	[ 2] =	{DO_CR0 , NULL	, CR0_MP	, 1	},
@@ -526,8 +529,10 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[15] =	{DO_CR3 , NULL	, CR3_PWT	, 1	},
 	[16] =	{DO_CR3 , NULL	, CR3_PCD	, 1	},
 		{DO_END , NULL	, UNDEF_CR	, 0	}
-	},
-	(struct SR_HDR[]) {
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{"CR4:" , " Control Register 4 "			},
 	[ 1] =	{" VME" , " Virtual-8086 Mode Extensions "		},
 	[ 2] =	{" PVI" , " Protected-mode Virtual Interrupts " 	},
@@ -547,7 +552,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{" FS " , " FS and GS base read/write instructions "	},
 		{NULL	, NULL						}
 	},
-	(struct SR_BIT[]) {
+	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
 	[ 1] =	{DO_CR4 , NULL	, CR4_VME	, 1	},
 	[ 2] =	{DO_CR4 , NULL	, CR4_PVI	, 1	},
@@ -566,8 +571,10 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[15] =	{DO_CR4 , NULL	, CR4_SMXE	, 1	},
 	[16] =	{DO_CR4 , NULL	, CR4_FSGSBASE	, 1	},
 		{DO_END , NULL	, UNDEF_CR	, 0	}
-	},
-	(struct SR_HDR[]) {
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{"CR4:" , " Control Register 4 "			},
 	[ 1] =	{"PCID" , " Process-Context Identifiers Enable "	},
 	[ 2] =	{" SAV" , " XSAVE and Processor Extended States "	},
@@ -587,7 +594,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{" TPL" , " Task Priority Level "			},
 		{NULL	, NULL						}
 	},
-	(struct SR_BIT[]) {
+	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
 	[ 1] =	{DO_CR4 , NULL	, CR4_PCIDE	, 1	},
 	[ 2] =	{DO_CR4 , NULL	, CR4_OSXSAVE	, 1	},
@@ -606,8 +613,10 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[15] =	{DO_SPC , NULL	, UNDEF_CR	, 0	},
 	[16] =	{DO_CR8 , NULL	, CR8_TPL	, 4	},
 		{DO_END , NULL	, UNDEF_CR	, 0	}
-	},
-	(struct SR_HDR[]) {
+	}
+      },
+      {
+	.header = (struct SR_HDR[]) {
 	[ 0] =	{"EFCR" , " Feature Control Bits Register "	},
 	[ 1] =	{ _4SPC , NULL					},
 	[ 2] =	{"LCK " , " Lock bit "				},
@@ -627,7 +636,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{" SVM" , " Secure Virtual Machine Enable "	},
 		{NULL	, NULL					}
 	},
-	(struct SR_BIT[]) {
+	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR		, 0		},
 	[ 1] =	{DO_SPC , NULL	, UNDEF_CR		, 0		},
 	[ 2] =	{DO_EFCR,(unsigned int[]) {CRC_INTEL, 0}, EXFCR_LOCK,	1},
@@ -647,6 +656,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	[16] =	{DO_EFER, NULL	, EXFER_SVME		, 1		},
 		{DO_END , NULL	, UNDEF_CR		, 0		}
 	}
+      }
     };
 
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
@@ -662,10 +672,10 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
 	{
-		struct SR_BIT *pBits;
-	    for (pBits = SR[idx].bits; pBits->automat != DO_END; pBits++)
+		struct SR_BIT *pFlag;
+	    for (pFlag = SR[idx].flag; pFlag->automat != DO_END; pFlag++)
 	    {
-		switch (pBits->automat) {
+		switch (pFlag->automat) {
 		case DO_END:
 		case DO_SPC:
 			PRT(REG, attrib[0], _4SPC);
@@ -677,13 +687,13 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		default:
 		    {
 			unsigned short capable = 0;
-			if (pBits->CRC == NULL) {
+			if (pFlag->CRC == NULL) {
 				capable = 1;
 			}
 			else
 			{
 				unsigned int *CRC;
-			    for (CRC = pBits->CRC;
+			    for (CRC = pFlag->CRC;
 				(*CRC) != 0 && capable == 0; CRC++)
 			    {
 				if((*CRC) == Shm->Proc.Features.Info.Vendor.CRC)
@@ -694,41 +704,41 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 			}
 			if ((capable) && !BITVAL(Shm->Cpu[cpu].OffLine, OS))
 			{
-			    switch (pBits->automat) {
+			    switch (pFlag->automat) {
 			    case DO_FLAG:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.RFLAGS,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_CR0:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR0,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_CR3:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR3,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_CR4:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR4,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_CR8:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.CR8,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_EFCR:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFCR,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    case DO_EFER:
 				PRT(REG, attrib[2], "%3llx ",
 				  BITEXTRZ(Shm->Cpu[cpu].SystemRegister.EFER,
-						pBits->pos, pBits->len));
+						pFlag->pos, pFlag->len));
 				break;
 			    default:
 				PRT(REG, attrib[1], _NA_3);
