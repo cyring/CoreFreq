@@ -1728,6 +1728,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
@@ -5305,6 +5306,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen3_CZN:
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_MATISSE_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,
@@ -5656,6 +5658,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 	case AMD_Family_19h:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:

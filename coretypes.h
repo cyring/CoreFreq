@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	84
-#define COREFREQ_REV	5
+#define COREFREQ_REV	6
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -106,6 +106,7 @@ enum {	GenuineArch = 0,
 	AMD_Zen2_CPK,
 	AMD_Zen2_APU,
 	AMD_Zen2_MTS,
+	AMD_Zen2_Xbox,
 	AMD_Zen3_VMR,
 	AMD_Zen3_CZN,
 	AMD_EPYC_Milan,

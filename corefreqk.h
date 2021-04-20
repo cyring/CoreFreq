@@ -1296,7 +1296,8 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[EPYC/Rome]		8F_30h Stepping 0	 7 nm	SVR
 	[Zen2/Castle Peak]	8F_31h Stepping 0	 7 nm	HEDT
 	[Zen2/Renoir]		8F_60h Stepping 1	 7 nm	APU
-	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm		*/
+	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
+	[Zen2/Xbox		8F_74h Stepping 0	 7 nm		*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
@@ -1306,6 +1307,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _AMD_Zen2_CPK	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x3, .Model=0x1}
 #define _AMD_Zen2_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x6, .Model=0x0}
 #define _AMD_Zen2_MTS	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x1}
+#define _AMD_Zen2_Xbox	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x4}
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
@@ -5686,8 +5688,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT,
+		.Start = NULL,
+		.Stop = NULL,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -6697,26 +6699,26 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_Denverton] = {							/* 65*/
 	.Signature = _Atom_Denverton,
-	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
-	.Start = Start_Skylake,
-	.Stop = Stop_Skylake,
+	.Query = Query_Goldmont,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Skylake,
+	.Timer = InitTimer_Goldmont,
 	.BaseClock = BaseClock_Skylake,
-	.ClockMod = ClockMod_Skylake_HWP,
+	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = Haswell_Uncore_Ratio
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SNB_Driver,
 	.Architecture = Arch_Atom_Denverton
 	},
 [Tremont_Jacobsville] = {						/* 66*/
@@ -7105,7 +7107,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MTS
 	},
-[AMD_Zen3_VMR] = {							/* 82*/
+[AMD_Zen2_Xbox] = {							/* 82*/
+	.Signature = _AMD_Zen2_Xbox,
+	.Query = Query_AMD_Family_17h,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_F17h_Zen2_SP,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen2_MTS_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen2_MTS
+	},
+[AMD_Zen3_VMR] = {							/* 83*/
 	.Signature = _AMD_Zen3_VMR,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -7129,7 +7155,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_VMR
 	},
-[AMD_Zen3_CZN] = {							/* 83*/
+[AMD_Zen3_CZN] = {							/* 84*/
 	.Signature = _AMD_Zen3_CZN,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -7153,7 +7179,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
 	},
-[AMD_EPYC_Milan] = {							/* 84*/
+[AMD_EPYC_Milan] = {							/* 85*/
 	.Signature = _AMD_EPYC_Milan,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,
