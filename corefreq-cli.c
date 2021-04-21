@@ -433,10 +433,9 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		DO_CR0, DO_CR3, DO_CR4, DO_CR8,
 		DO_EFCR, DO_EFER
 	};
-	const char *_4SPC = "    ", *_NA_3 = "  - ";
 	const struct SR_ST {
 		struct SR_HDR {
-			const char	*flag,
+			const ASCII	*flag,
 					*comm;
 		} *header;
 		struct SR_BIT {
@@ -449,24 +448,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
     {
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] =	{"CPU " , NULL				},
-	[ 1] =	{"FLAG" , NULL				},
-	[ 2] =	{" TF " , " Trap Flag "			},
-	[ 3] =	{" IF " , " Interrupt Flag "		},
-	[ 4] =	{"IOPL" , " I/O Privilege Level "	},
-	[ 5] =	{" NT " , " Nested Task "		},
-	[ 6] =	{" RF " , " Resume Flag "		},
-	[ 7] =	{" VM " , " Virtual-8086 Mode " 	},
-	[ 8] =	{" AC " , " Alignment Check "		},
-	[ 9] =	{" VIF" , " Virtual Interrupt Flag "	},
-	[10] =	{" VIP" , " Virtual Interrupt Pending " },
-	[11] =	{" ID " , " Identification "		},
-	[12] =	{ _4SPC , NULL				},
-	[13] =	{ _4SPC , NULL				},
-	[14] =	{ _4SPC , NULL				},
-	[15] =	{ _4SPC , NULL				},
-	[16] =	{ _4SPC , NULL				},
-		{NULL	, NULL				}
+	[ 0] =	{RSC(SYS_REGS_HDR_CPU).CODE(),	NULL},
+	[ 1] =	{RSC(SYS_REG_HDR_FLAGS).CODE(), NULL},
+	[ 2] =	{RSC(SYS_REG_HDR_TF).CODE(),	RSC(SYS_REG_FLAGS_TF).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_IF).CODE(),	RSC(SYS_REG_FLAGS_IF).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_IOPL).CODE(),	RSC(SYS_REG_FLAGS_IOPL).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_NT).CODE(),	RSC(SYS_REG_FLAGS_NT).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_RF).CODE(),	RSC(SYS_REG_FLAGS_RF).CODE()},
+	[ 7] =	{RSC(SYS_REG_HDR_VM).CODE(),	RSC(SYS_REG_FLAGS_VM).CODE()},
+	[ 8] =	{RSC(SYS_REG_HDR_AC).CODE(),	RSC(SYS_REG_FLAGS_AC).CODE()},
+	[ 9] =	{RSC(SYS_REG_HDR_VIF).CODE(),	RSC(SYS_REG_FLAGS_VIF).CODE()},
+	[10] =	{RSC(SYS_REG_HDR_VIP).CODE(),	RSC(SYS_REG_FLAGS_VIP).CODE()},
+	[11] =	{RSC(SYS_REG_HDR_ID).CODE(),	RSC(SYS_REG_FLAGS_ID).CODE()},
+	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[16] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
@@ -491,24 +490,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
       },
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] =	{"CR0:" , " Control Register 0 "		},
-	[ 1] =	{" PE " , " Protection Enable "			},
-	[ 2] =	{" MP " , " Monitor Coprocessor "		},
-	[ 3] =	{" EM " , " FPU Emulation "			},
-	[ 4] =	{" TS " , " Task Switched "			},
-	[ 5] =	{" ET " , " Extension Type "			},
-	[ 6] =	{" NE " , " Numeric Exception " 		},
-	[ 7] =	{" WP " , " Write Protect "			},
-	[ 8] =	{" AM " , " Alignment Mask "			},
-	[ 9] =	{" NW " , " Not Write-through " 		},
-	[10] =	{" CD " , " Cache Disable "			},
-	[11] =	{" PG " , " Paging enable "			},
-	[12] =	{ _4SPC , NULL					},
-	[13] =	{ _4SPC , NULL					},
-	[14] =	{"CR3:" , " Control Register 3 "		},
-	[15] =	{" PWT" , " Page-level Write-Through "		},
-	[16] =	{" PCD" , " Page-level Cache Disable "		},
-		{NULL	, NULL					}
+	[ 0] =	{RSC(SYS_REG_HDR_CR0).CODE(),	RSC(SYS_REGS_CR0).CODE()},
+	[ 1] =	{RSC(SYS_REG_HDR_CR0_PE).CODE(), RSC(SYS_REG_CR0_PE).CODE()},
+	[ 2] =	{RSC(SYS_REG_HDR_CR0_MP).CODE(), RSC(SYS_REG_CR0_MP).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_CR0_EM).CODE(), RSC(SYS_REG_CR0_EM).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_CR0_TS).CODE(), RSC(SYS_REG_CR0_TS).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_CR0_ET).CODE(), RSC(SYS_REG_CR0_ET).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_CR0_NE).CODE(), RSC(SYS_REG_CR0_NE).CODE()},
+	[ 7] =	{RSC(SYS_REG_HDR_CR0_WP).CODE(), RSC(SYS_REG_CR0_WP).CODE()},
+	[ 8] =	{RSC(SYS_REG_HDR_CR0_AM).CODE(), RSC(SYS_REG_CR0_AM).CODE()},
+	[ 9] =	{RSC(SYS_REG_HDR_CR0_NW).CODE(), RSC(SYS_REG_CR0_NW).CODE()},
+	[10] =	{RSC(SYS_REG_HDR_CR0_CD).CODE(), RSC(SYS_REG_CR0_CD).CODE()},
+	[11] =	{RSC(SYS_REG_HDR_CR0_PG).CODE(), RSC(SYS_REG_CR0_PG).CODE()},
+	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] =	{RSC(SYS_REG_HDR_CR3).CODE(), RSC(SYS_REGS_CR3).CODE()},
+	[15] =	{RSC(SYS_REG_HDR_CR3_PWT).CODE(), RSC(SYS_REG_CR3_PWT).CODE()},
+	[16] =	{RSC(SYS_REG_HDR_CR3_PCD).CODE(), RSC(SYS_REG_CR3_PCD).CODE()},
+		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
@@ -533,24 +532,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
       },
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] =	{"CR4:" , " Control Register 4 "			},
-	[ 1] =	{" VME" , " Virtual-8086 Mode Extensions "		},
-	[ 2] =	{" PVI" , " Protected-mode Virtual Interrupts " 	},
-	[ 3] =	{" TSD" , " Time-Stamp Disable "			},
-	[ 4] =	{" DE " , " Debugging Extensions "			},
-	[ 5] =	{" PSE" , " Page Size Extension "			},
-	[ 6] =	{" PAE" , " Physical Address Extension "		},
-	[ 7] =	{" MCE" , " Machine-Check Enable "			},
-	[ 8] =	{" PGE" , " Page Global Enable "			},
-	[ 9] =	{" PCE" , " Performance Counter Enable "		},
-	[10] =	{" FX " , " OS Support for FXSAVE and FXRSTOR " 	},
-	[11] =	{"XMM " , " OS Support for Unmasked SSE Exceptions "	},
-	[12] =	{"UMIP" , " User-Mode Instruction Prevention "		},
-	[13] =	{" 5LP" ," 57-bit Linear Addresses - 5-level paging "	},
-	[14] =	{" VMX" , " Virtual Machine eXtension Enable "		},
-	[15] =	{" SMX" , " Safer Mode eXtension Enable "		},
-	[16] =	{" FS " , " FS and GS base read/write instructions "	},
-		{NULL	, NULL						}
+	[ 0] =	{RSC(SYS_REG_HDR_CR4).CODE(),	RSC(SYS_REGS_CR4).CODE()},
+	[ 1] =	{RSC(SYS_REG_HDR_CR4_VME).CODE(),RSC(SYS_REG_CR4_VME).CODE()},
+	[ 2] =	{RSC(SYS_REG_HDR_CR4_PVI).CODE(),RSC(SYS_REG_CR4_PVI).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_CR4_TSD).CODE(),RSC(SYS_REG_CR4_TSD).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_CR4_DE).CODE(), RSC(SYS_REG_CR4_DE).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_CR4_PSE).CODE(),RSC(SYS_REG_CR4_PSE).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_CR4_PAE).CODE(),RSC(SYS_REG_CR4_PAE).CODE()},
+	[ 7] =	{RSC(SYS_REG_HDR_CR4_MCE).CODE(),RSC(SYS_REG_CR4_MCE).CODE()},
+	[ 8] =	{RSC(SYS_REG_HDR_CR4_PGE).CODE(),RSC(SYS_REG_CR4_PGE).CODE()},
+	[ 9] =	{RSC(SYS_REG_HDR_CR4_PCE).CODE(),RSC(SYS_REG_CR4_PCE).CODE()},
+	[10] =	{RSC(SYS_REG_HDR_CR4_FX).CODE(), RSC(SYS_REG_CR4_FX).CODE()},
+	[11] =	{RSC(SYS_REG_HDR_CR4_XMM).CODE(),RSC(SYS_REG_CR4_XMM).CODE()},
+	[12] =	{RSC(SYS_REG_HDR_CR4_UMIP).CODE(),RSC(SYS_REG_CR4_UMIP).CODE()},
+	[13] =	{RSC(SYS_REG_HDR_CR4_5LP).CODE(),RSC(SYS_REG_CR4_5LP).CODE()},
+	[14] =	{RSC(SYS_REG_HDR_CR4_VMX).CODE(),RSC(SYS_REG_CR4_VMX).CODE()},
+	[15] =	{RSC(SYS_REG_HDR_CR4_SMX).CODE(),RSC(SYS_REG_CR4_SMX).CODE()},
+	[16] =	{RSC(SYS_REG_HDR_CR4_FS).CODE(), RSC(SYS_REG_CR4_FS).CODE()},
+		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
@@ -575,24 +574,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
       },
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] =	{"CR4:" , " Control Register 4 "			},
-	[ 1] =	{"PCID" , " Process-Context Identifiers Enable "	},
-	[ 2] =	{" SAV" , " XSAVE and Processor Extended States "	},
-	[ 3] =	{"  KL" , " Key-Locker Enable " 			},
-	[ 4] =	{" SME" , " Supervisor-Mode Execution Prevention "	},
-	[ 5] =	{" SMA" , " Supervisor-Mode Access Prevention " 	},
-	[ 6] =	{" PKE" , " Protection Keys for user-mode pages "	},
-	[ 7] =	{" CET" , " Control-flow Enforcement Technology "	},
-	[ 8] =	{" PKS" , " Protection Keys for Supervisor-mode pages " },
-	[ 9] =	{ _4SPC , NULL						},
-	[10] =	{ _4SPC , NULL						},
-	[11] =	{ _4SPC , NULL						},
-	[12] =	{ _4SPC , NULL						},
-	[13] =	{ _4SPC , NULL						},
-	[14] =	{ _4SPC , NULL						},
-	[15] =	{"CR8:" , " Control Register 8 "			},
-	[16] =	{" TPL" , " Task Priority Level "			},
-		{NULL	, NULL						}
+	[ 0] =	{RSC(SYS_REG_HDR_CR4).CODE(),	RSC(SYS_REGS_CR4).CODE()},
+	[ 1] =	{RSC(SYS_REG_HDR_CR4_PCID).CODE(),RSC(SYS_REG_CR4_PCID).CODE()},
+	[ 2] =	{RSC(SYS_REG_HDR_CR4_SAV).CODE(),RSC(SYS_REG_CR4_SAV).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_CR4_KL).CODE(), RSC(SYS_REG_CR4_KL).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_CR4_SME).CODE(),RSC(SYS_REG_CR4_SME).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_CR4_SMA).CODE(),RSC(SYS_REG_CR4_SMA).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_CR4_PKE).CODE(),RSC(SYS_REG_CR4_PKE).CODE()},
+	[ 7] =	{RSC(SYS_REG_HDR_CR4_CET).CODE(),RSC(SYS_REG_CR4_CET).CODE()},
+	[ 8] =	{RSC(SYS_REG_HDR_CR4_PKS).CODE(),RSC(SYS_REG_CR4_PKS).CODE()},
+	[ 9] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[10] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[11] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[12] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[13] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[14] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[15] =	{RSC(SYS_REG_HDR_CR8).CODE(), RSC(SYS_REGS_CR8).CODE()	},
+	[16] =	{RSC(SYS_REG_HDR_CR8_TPL).CODE(), RSC(SYS_REG_CR8_TPL).CODE()},
+		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR	, 0	},
@@ -617,24 +616,24 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
       },
       {
 	.header = (struct SR_HDR[]) {
-	[ 0] =	{"EFCR" , " Feature Control Bits Register "	},
-	[ 1] =	{ _4SPC , NULL					},
-	[ 2] =	{"LCK " , " Lock bit "				},
-	[ 3] =	{"VMX^" , " VMX Inside SMX Operation "		},
-	[ 4] =	{"SGX " , " VMX Outside SMX Operation "		},
-	[ 5] =	{"[SEN" , " SENTER Local Functions "		},
-	[ 6] =	{"TER]" , " SENTER Global Functions "		},
-	[ 7] =	{" [ S" , " SGX Launch Control "		},
-	[ 8] =	{"GX ]" , " SGX Global Functions "		},
-	[ 9] =	{" LMC" , " Local Machine Check "		},
-	[10] =	{ _4SPC , NULL					},
-	[11] =	{"EFER" , " Extended-Feature-Enable Register "	},
-	[12] =	{" SCE" , " System-Call Extension "		},
-	[13] =	{" LME" , " Long Mode Enable "			},
-	[14] =	{" LMA" , " Long Mode Active "			},
-	[15] =	{" NXE" , " Execute-Disable Bit Enable "	},
-	[16] =	{" SVM" , " Secure Virtual Machine Enable "	},
-		{NULL	, NULL					}
+	[ 0] =	{RSC(SYS_REG_HDR_EFCR).CODE(), RSC(SYS_REGS_EFCR).CODE()},
+	[ 1] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[ 2] =	{RSC(SYS_REG_HDR_EFCR_LCK).CODE(),RSC(SYS_REG_EFCR_LCK).CODE()},
+	[ 3] =	{RSC(SYS_REG_HDR_EFCR_VMX).CODE(),RSC(SYS_REG_EFCR_VMX).CODE()},
+	[ 4] =	{RSC(SYS_REG_HDR_EFCR_SGX).CODE(),RSC(SYS_REG_EFCR_SGX).CODE()},
+	[ 5] =	{RSC(SYS_REG_HDR_EFCR_LSE).CODE(),RSC(SYS_REG_EFCR_LSE).CODE()},
+	[ 6] =	{RSC(SYS_REG_HDR_EFCR_GSE).CODE(),RSC(SYS_REG_EFCR_GSE).CODE()},
+	[ 7] ={RSC(SYS_REG_HDR_EFCR_LSGX).CODE(),RSC(SYS_REG_EFCR_LSGX).CODE()},
+	[ 8] ={RSC(SYS_REG_HDR_EFCR_GSGX).CODE(),RSC(SYS_REG_EFCR_GSGX).CODE()},
+	[ 9] =	{RSC(SYS_REG_HDR_EFCR_LMC).CODE(),RSC(SYS_REG_EFCR_LMC).CODE()},
+	[10] =	{RSC(SYS_REGS_SPACE).CODE(),	NULL},
+	[11] =	{RSC(SYS_REG_HDR_EFER).CODE(),	RSC(SYS_REGS_EFER).CODE()},
+	[12] =	{RSC(SYS_REG_HDR_EFER_SCE).CODE(),RSC(SYS_REG_EFER_SCE).CODE()},
+	[13] =	{RSC(SYS_REG_HDR_EFER_LME).CODE(),RSC(SYS_REG_EFER_LME).CODE()},
+	[14] =	{RSC(SYS_REG_HDR_EFER_LMA).CODE(),RSC(SYS_REG_EFER_LMA).CODE()},
+	[15] =	{RSC(SYS_REG_HDR_EFER_NXE).CODE(),RSC(SYS_REG_EFER_NXE).CODE()},
+	[16] =	{RSC(SYS_REG_HDR_EFER_SVM).CODE(),RSC(SYS_REG_EFER_SVM).CODE()},
+		{NULL, NULL}
 	},
 	.flag = (struct SR_BIT[]) {
 	[ 0] =	{DO_CPU , NULL	, UNDEF_CR		, 0		},
@@ -667,7 +666,8 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 	struct SR_HDR *pHdr;
 	for (pHdr = SR[idx].header; pHdr->flag != NULL; pHdr++)
 	{
-		GridHover(PRT(REG, attrib[0], "%s", pHdr->flag), pHdr->comm);
+		GridHover(	PRT(REG, attrib[0], "%s", pHdr->flag),
+				(char *) pHdr->comm );
 	}
 	unsigned int cpu;
 	for (cpu = 0; cpu < Shm->Proc.CPU.Count; cpu++)
@@ -678,7 +678,7 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 		switch (pFlag->automat) {
 		case DO_END:
 		case DO_SPC:
-			PRT(REG, attrib[0], _4SPC);
+			PRT(REG, attrib[0], RSC(SYS_REGS_SPACE).CODE());
 			break;
 		case DO_CPU:
 			PRT(REG,attrib[BITVAL(Shm->Cpu[cpu].OffLine,OS) ? 4:3],
@@ -741,11 +741,11 @@ REASON_CODE SystemRegisters(Window *win, CELL_FUNC OutFunc)
 						pFlag->pos, pFlag->len));
 				break;
 			    default:
-				PRT(REG, attrib[1], _NA_3);
+				PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
 				break;
 			    }
 			} else {
-				PRT(REG, attrib[1], _NA_3);
+				PRT(REG, attrib[1], RSC(SYS_REGS_NA).CODE());
 			}
 		    }
 			break;

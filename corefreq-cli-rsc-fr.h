@@ -879,4 +879,3 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 				 "                     "
 #define RSC_EXIT_FOOTER_CODE_FR  "                                     " \
 				 "[""\x89""chap] pour annuler "
-
