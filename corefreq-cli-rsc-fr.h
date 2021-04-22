@@ -454,7 +454,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TOPOLOGY_TITLE_CODE_FR	" Topologie "
 
 #define RSC_MEM_CTRL_TITLE_CODE_FR	" Contr""\xb4""leur M""\xa9""moire "
-#define RSC_MEM_CTRL_BLANK_CODE_FR		"%*.s"
 #define RSC_MEM_CTRL_SUBSECT1_0_CODE_FR 	"Contr"
 #define RSC_MEM_CTRL_SUBSECT1_1_CODE_FR 	"\xb4""leur"
 #define RSC_MEM_CTRL_SUBSECT1_2_CODE_FR 	" #%-3u"
@@ -676,7 +675,6 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" Cycles de Service"
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
-#define RSC_BOX_BLANK_DESC_CODE_FR	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR	"       Fonctionnement" \
 						" nominal       "

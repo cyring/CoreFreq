@@ -1299,7 +1299,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	};
 	const struct ISA_ST {
 		unsigned int	*CRC;
-		const char	*item, *comm;
+		const ASCII	*item, *comm;
 		unsigned short	thm[2];
 		unsigned short	*cond;
 	} ISA[] = \
@@ -1307,8 +1307,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" 3DNow!/Ext [%c/%c]",
-		" AMD 3DNow! SIMD instructions / 3DNow! Extensions ",
+		RSC(ISA_3DNOW).CODE(), RSC(ISA_3DNOW_COMM).CODE(),
 		{
 		0,
 		2 * ( Shm->Proc.Features.ExtInfo.EDX._3DNow
@@ -1324,21 +1323,21 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		"          ADX [%c]", " Multi-Precision Add-Carry ",
+		RSC(ISA_ADX).CODE(), RSC(ISA_ADX_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.ADX },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.ADX }
 	},
 	{
 		NULL,
-		"          AES [%c]", " Advanced Encryption Standard ",
+		RSC(ISA_AES).CODE(), RSC(ISA_AES_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.AES },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.AES },
 	},
 	{
 		NULL,
-		"  AVX/AVX2 [%c/%c] ", " Advanced Vector Extensions ",
+		RSC(ISA_AVX).CODE(), RSC(ISA_AVX_COMM).CODE(),
 		{
 		1,
 		2 * ( Shm->Proc.Features.Std.ECX.AVX
@@ -1355,28 +1354,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" AVX512-F     [%c]", NULL,
+		RSC(ISA_AVX512_F).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX_512F },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX_512F },
 	},
 	{
 		NULL,
-		"    AVX512-DQ [%c]", NULL,
+		RSC(ISA_AVX512_DQ).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX_512DQ },
 	},
 	{
 		NULL,
-		"  AVX512-IFMA [%c]", NULL,
+		RSC(ISA_AVX512_IFMA).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512_IFMA },
 	},
 	{
 		NULL,
-		"   AVX512-PF [%c] ", NULL,
+		RSC(ISA_AVX512_PF).CODE(), NULL,
 		{ 1, Shm->Proc.Features.ExtFeature.EBX.AVX512PF },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512PF },
@@ -1384,28 +1383,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" AVX512-ER    [%c]", NULL,
+		RSC(ISA_AVX512_ER).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512ER },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512ER },
 	},
 	{
 		NULL,
-		"    AVX512-CD [%c]", NULL,
+		RSC(ISA_AVX512_CD).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512CD },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512CD },
 	},
 	{
 		NULL,
-		"    AVX512-BW [%c]", NULL,
+		RSC(ISA_AVX512_BW).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.AVX512BW },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512BW },
 	},
 	{
 		NULL,
-		"   AVX512-VL [%c] ", NULL,
+		RSC(ISA_AVX512_VL).CODE(), NULL,
 		{ 1, Shm->Proc.Features.ExtFeature.EBX.AVX512VL },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.AVX512VL },
@@ -1413,28 +1412,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" AVX512-VBMI  [%c]", NULL,
+		RSC(ISA_AVX512_VBMI).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI },
 	},
 	{
 		NULL,
-		" AVX512-VBMI2 [%c]", NULL,
+		RSC(ISA_AVX512_VBMI2).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VBMI2 },
 	},
 	{
 		NULL,
-		"  AVX512-VNMI [%c]", NULL,
+		RSC(ISA_AVX512_VNMI).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VNNI },
 	},
 	{
 		NULL,
-		"  AVX512-ALG [%c] ", NULL,
+		RSC(ISA_AVX512_ALG).CODE(), NULL,
 		{ 1, Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_BITALG },
@@ -1442,28 +1441,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" AVX512-VPOP  [%c]", NULL,
+		RSC(ISA_AVX512_VPOP).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.AVX512_VPOPCNTDQ },
 	},
 	{
 		NULL,
-		" AVX512-VNNIW [%c]", NULL,
+		RSC(ISA_AVX512_VNNIW).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_4VNNIW },
 	},
 	{
 		NULL,
-		" AVX512-FMAPS [%c]", NULL,
+		RSC(ISA_AVX512_FMAPS).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_4FMAPS },
 	},
 	{
 		NULL,
-		" AVX512-VP2I [%c] ", NULL,
+		RSC(ISA_AVX512_VP2I).CODE(), NULL,
 		{ 1, Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EDX.AVX512_VP2INTER },
@@ -1471,14 +1470,14 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" AVX512-BF16  [%c]", NULL,
+		RSC(ISA_AVX512_BF16).CODE(), NULL,
 		{ 0, Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature_Leaf1.EAX.AVX512_BF16 },
 	},
 	{
 		NULL,
-		"  BMI1/BMI2 [%c/%c]", " Bit Manipulation Instructions ",
+		RSC(ISA_BMI).CODE(), RSC(ISA_BMI_COMM).CODE(),
 		{ 0, 2 * ( Shm->Proc.Features.ExtFeature.EBX.BMI1
 				|  Shm->Proc.Features.ExtFeature.EBX.BMI2 )
 			+ ( Shm->Proc.Features.ExtFeature.EBX.BMI1
@@ -1491,14 +1490,14 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		"         CLWB [%c]", " Cache Line Write Back ",
+		RSC(ISA_CLWB).CODE(), RSC(ISA_CLWB_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.CLWB },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.CLWB },
 	},
 	{
 		NULL,
-		" CLFLUSH/O [%c/%c] ", " Flush Cache Line / CLFLUSH Optimized ",
+		RSC(ISA_CLFLUSH).CODE(), RSC(ISA_CLFLUSH_COMM).CODE(),
 		{ 1, 2 * ( Shm->Proc.Features.Std.EDX.CLFLUSH
 			|  Shm->Proc.Features.ExtFeature.EBX.CLFLUSHOPT )
 			+ ( Shm->Proc.Features.Std.EDX.CLFLUSH
@@ -1512,29 +1511,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" CLAC-STAC    [%c]",
-		" Clear AC - Set AC Flag in EFLAGS Register ",
+		RSC(ISA_AC_FLAG).CODE(), RSC(ISA_AC_FLAG_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.SMAP_CLAC_STAC },
 	},
 	{
 		NULL,
-		"         CMOV [%c]", " Conditional Move instructions ",
+		RSC(ISA_CMOV).CODE(), RSC(ISA_CMOV_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.CMOV },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.CMOV },
 	},
 	{
 		NULL,
-		"    CMPXCHG8B [%c]", " Compare and Exchange 8 Bytes ",
+		RSC(ISA_XCHG8B).CODE(), RSC(ISA_XCHG8B_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.CMPXCHG8 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.CMPXCHG8 },
 	},
 	{
 		NULL,
-		"  CMPXCHG16B [%c] ", " Compare and Exchange 16 Bytes ",
+		RSC(ISA_XCHG16B).CODE(), RSC(ISA_XCHG16B_COMM).CODE(),
 		{ 1, Shm->Proc.Features.Std.ECX.CMPXCHG16 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.CMPXCHG16 },
@@ -1542,30 +1540,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" F16C         [%c]",
-		" 16-bit floating-point conversion instructions ",
+		RSC(ISA_F16C).CODE(), RSC(ISA_F16C_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.F16C },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.F16C },
 	},
 	{
 		NULL,
-		"          FPU [%c]", " Floating Point Unit On-Chip ",
+		RSC(ISA_FPU).CODE(), RSC(ISA_FPU_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.FPU },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.FPU },
 	},
 	{
 		NULL,
-		"         FXSR [%c]", " FXSAVE and FXRSTOR instructions ",
+		RSC(ISA_FXSR).CODE(), RSC(ISA_FXSR_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.FXSR },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.FXSR },
 	},
 	{
 		NULL,
-		"   LAHF-SAHF [%c] ",
-		" Load-Store Status Flags into AH register ",
+		RSC(ISA_LSHF).CODE(), RSC(ISA_LSHF_COMM).CODE(),
 		{ 1, Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtInfo.ECX.LAHFSAHF },
@@ -1573,7 +1569,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" MMX/Ext    [%c/%c]", " MultiMedia eXtensions / Extended MMX ",
+		RSC(ISA_MMX).CODE(), RSC(ISA_MMX_COMM).CODE(),
 		{ 0, 2 * ( Shm->Proc.Features.Std.EDX.MMX
 				|  Shm->Proc.Features.ExtInfo.EDX.MMX_Ext )
 			+ ( Shm->Proc.Features.Std.EDX.MMX
@@ -1586,7 +1582,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		" MON/MWAITX [%c/%c]", " Monitor Wait / MWAIT eXtensions ",
+		RSC(ISA_MWAITX).CODE(), RSC(ISA_MWAITX_COMM).CODE(),
 		{ 0, 2 * ( Shm->Proc.Features.Std.ECX.MONITOR
 				|  Shm->Proc.Features.ExtInfo.ECX.MWaitExt )
 			+ ( Shm->Proc.Features.Std.ECX.MONITOR
@@ -1599,14 +1595,14 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		"        MOVBE [%c]", " Move Data After Swapping Bytes ",
+		RSC(ISA_MOVBE).CODE(), RSC(ISA_MOVBE_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.MOVBE },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.MOVBE },
 	},
 	{
 		NULL,
-		"   PCLMULQDQ [%c] ", " Carryless Multiplication Quadword ",
+		RSC(ISA_PCLMULDQ).CODE(), RSC(ISA_PCLMULDQ_COMM).CODE(),
 		{ 1, Shm->Proc.Features.Std.ECX.PCLMULDQ },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.PCLMULDQ },
@@ -1614,29 +1610,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" POPCNT       [%c]", " Count of Number of Bits Set to 1 ",
+		RSC(ISA_POPCNT).CODE(), RSC(ISA_POPCNT_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.POPCNT },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.POPCNT },
 	},
 	{
 		NULL,
-		"       RDRAND [%c]", " Read Random Number ",
+		RSC(ISA_RDRAND).CODE(), RSC(ISA_RDRAND_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.RDRAND },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.RDRAND },
 	},
 	{
 		NULL,
-		"       RDSEED [%c]", " Read Random SEED ",
+		RSC(ISA_RDSEED).CODE(), RSC(ISA_RDSEED_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.RDSEED },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.RDSEED },
 	},
 	{
 		NULL,
-		"      RDTSCP [%c] ",
-		" Read Time-Stamp Counter and Processor ID ",
+		RSC(ISA_RDTSCP).CODE(), RSC(ISA_RDTSCP_COMM).CODE(),
 		{ 1, Shm->Proc.Features.ExtInfo.EDX.RDTSCP },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtInfo.EDX.RDTSCP },
@@ -1644,28 +1639,28 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" SEP          [%c]", " SYSENTER and SYSEXIT instructions ",
+		RSC(ISA_SEP).CODE(), RSC(ISA_SEP_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.SEP },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.SEP },
 	},
 	{
 		NULL,
-		"          SHA [%c]", " Secure Hash Algorithms extensions ",
+		RSC(ISA_SHA).CODE(), RSC(ISA_SHA_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.SHA },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.SHA },
 	},
 	{
 		NULL,
-		"          SSE [%c]", " Streaming SIMD Extensions ",
+		RSC(ISA_SSE).CODE(), RSC(ISA_SSE_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.EDX.SSE },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.SSE },
 	},
 	{
 		NULL,
-		"        SSE2 [%c] ", " Streaming SIMD Extensions 2 ",
+		RSC(ISA_SSE2).CODE(), RSC(ISA_SSE2_COMM).CODE(),
 		{ 1, Shm->Proc.Features.Std.EDX.SSE2 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.EDX.SSE2 },
@@ -1673,23 +1668,21 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" SSE3         [%c]", " Streaming SIMD Extensions 3 ",
+		RSC(ISA_SSE3).CODE(), RSC(ISA_SSE3_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.SSE3 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.SSE3 },
 	},
 	{
 		NULL,
-		"        SSSE3 [%c]",
-		" Supplemental Streaming SIMD Extensions 3 ",
+		RSC(ISA_SSSE3).CODE(), RSC(ISA_SSSE3_COMM).CODE(),
 		{ 0, Shm->Proc.Features.Std.ECX.SSSE3 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.SSSE3 },
 	},
 	{
 		NULL,
-		"  SSE4.1/4A [%c/%c]",
-		" Streaming SIMD Extensions 4.1 / AMD SSE 4A ",
+		RSC(ISA_SSE4_1).CODE(), RSC(ISA_SSE4_1_COMM).CODE(),
 		{ 0, 2 * ( Shm->Proc.Features.Std.ECX.SSE41
 				|  Shm->Proc.Features.ExtInfo.ECX.SSE4A )
 			+ ( Shm->Proc.Features.Std.ECX.SSE41
@@ -1702,7 +1695,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 	},
 	{
 		NULL,
-		"      SSE4.2 [%c] ", " Streaming SIMD Extensions 4.2 ",
+		RSC(ISA_SSE4_2).CODE(), RSC(ISA_SSE4_2_COMM).CODE(),
 		{ 1, Shm->Proc.Features.Std.ECX.SSE42 },
 		(unsigned short[])
 		{ Shm->Proc.Features.Std.ECX.SSE42 },
@@ -1710,43 +1703,42 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 /* Row Mark */
 	{
 		NULL,
-		" SERIALIZE    [%c]", " Serialize instruction ",
+		RSC(ISA_SERIALIZE).CODE(), RSC(ISA_SERIALIZE_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EDX.SERIALIZE },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EDX.SERIALIZE },
 	},
 	{
 		NULL,
-		"      SYSCALL [%c]",
-		" Fast System Call and SYSRET - Return From SYSCALL ",
+		RSC(ISA_SYSCALL).CODE(), RSC(ISA_SYSCALL_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtInfo.EDX.SYSCALL },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtInfo.EDX.SYSCALL },
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		"        RDPID [%c]", " Read Processor ID ",
+		RSC(ISA_RDPID_FMT1).CODE(), RSC(ISA_RDPID_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.RDPID },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.RDPID },
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
-		"        UMIP [%c] ", " User Mode Instruction Prevention ",
+		RSC(ISA_UMIP).CODE(), RSC(ISA_UMIP_COMM).CODE(),
 		{ 1, Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		"          SGX [%c]", " Intel Software Guard eXtensions ",
+		RSC(ISA_SGX).CODE(), RSC(ISA_SGX_COMM).CODE(),
 		{ 0, Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.EBX.SGX_UMIP },
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		"       RDPID [%c] ", " Read Processor ID ",
+		RSC(ISA_RDPID_FMT2).CODE(), RSC(ISA_RDPID_COMM).CODE(),
 		{ 1, Shm->Proc.Features.ExtFeature.ECX.RDPID },
 		(unsigned short[])
 		{ Shm->Proc.Features.ExtFeature.ECX.RDPID },
@@ -1775,7 +1767,7 @@ REASON_CODE SysInfoISA(Window *win, CELL_FUNC OutFunc)
 				ISA[idx].item,
 				ISA[idx].cond[0] ? 'Y' : 'N',
 				ISA[idx].cond[1] ? 'Y' : 'N' ),
-			ISA[idx].comm );
+			(char *)ISA[idx].comm );
 	}
     }
 	return (reason);
@@ -5050,12 +5042,12 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
 	};
-	char *MC_Unit[4] =
+	const ASCII *MC_Unit[4] =
 	{
-		[0b00] = " MHz ",
-		[0b01] = " MT/s",
-		[0b10] = " MB/s",
-		[0b11] = (char *) RSC(MEM_CTRL_BLANK).CODE()
+		[0b00] = RSC(MEM_CTRL_UNIT_MHZ).CODE(),
+		[0b01] = RSC(MEM_CTRL_UNIT_MTS).CODE(),
+		[0b10] = RSC(MEM_CTRL_UNIT_MBS).CODE(),
+		[0b11] = RSC(MEM_CTRL_BLANK).CODE()
 	};
 	char	item[MC_MATY + 1], *str = malloc(CODENAME_LEN + 4 + 10),
 		*chipStr = malloc((MC_MATX * MC_MATY) + 1);
@@ -5194,17 +5186,20 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[0], "\x20\x20#%-2u", slot);
 	  if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
 	  {
-		PRT(IMC, attrib[1],
-		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
-		PRT(IMC, attrib[1],
-		"%5u",Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+		PRT(IMC, attrib[1], "%5u",
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
+		PRT(IMC, attrib[1], "%5u",
+			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Ranks);
+
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Rows, str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
+
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
 		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);

@@ -435,6 +435,50 @@
 #define RSC_SYS_REG_EFER_SVM_CODE_EN	" Secure Virtual Machine Enable "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
+#define RSC_ISA_3DNOW_COMM_CODE_EN	\
+			" AMD 3DNow! SIMD instructions / 3DNow! Extensions "
+#define RSC_ISA_ADX_COMM_CODE_EN	" Multi-Precision Add-Carry "
+#define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
+#define RSC_ISA_AVX_COMM_CODE_EN	" Advanced Vector Extensions "
+#define RSC_ISA_BMI_COMM_CODE_EN	" Bit Manipulation Instructions "
+#define RSC_ISA_CLWB_COMM_CODE_EN	" Cache Line Write Back "
+#define RSC_ISA_CLFLUSH_COMM_CODE_EN	" Flush Cache Line / CLFLUSH Optimized "
+#define RSC_ISA_AC_FLAG_COMM_CODE_EN	\
+				" Clear AC - Set AC Flag in EFLAGS Register "
+#define RSC_ISA_CMOV_COMM_CODE_EN	" Conditional Move instructions "
+#define RSC_ISA_XCHG8B_COMM_CODE_EN	" Compare and Exchange 8 Bytes "
+#define RSC_ISA_XCHG16B_COMM_CODE_EN	" Compare and Exchange 16 Bytes "
+#define RSC_ISA_F16C_COMM_CODE_EN	\
+			" 16-bit floating-point conversion instructions "
+#define RSC_ISA_FPU_COMM_CODE_EN	" Floating Point Unit On-Chip "
+#define RSC_ISA_FXSR_COMM_CODE_EN	" FXSAVE and FXRSTOR instructions "
+#define RSC_ISA_LSHF_COMM_CODE_EN	\
+				" Load-Store Status Flags into AH register "
+#define RSC_ISA_MMX_COMM_CODE_EN	" MultiMedia eXtensions / Extended MMX "
+#define RSC_ISA_MWAITX_COMM_CODE_EN	" Monitor Wait / MWAIT eXtensions "
+#define RSC_ISA_MOVBE_COMM_CODE_EN	" Move Data After Swapping Bytes "
+#define RSC_ISA_PCLMULDQ_COMM_CODE_EN	" Carryless Multiplication Quadword "
+#define RSC_ISA_POPCNT_COMM_CODE_EN	" Count of Number of Bits Set to 1 "
+#define RSC_ISA_RDRAND_COMM_CODE_EN	" Read Random Number "
+#define RSC_ISA_RDSEED_COMM_CODE_EN	" Read Random SEED "
+#define RSC_ISA_RDTSCP_COMM_CODE_EN	\
+				" Read Time-Stamp Counter and Processor ID "
+#define RSC_ISA_SEP_COMM_CODE_EN	" SYSENTER and SYSEXIT instructions "
+#define RSC_ISA_SHA_COMM_CODE_EN	" Secure Hash Algorithms extensions "
+#define RSC_ISA_SSE_COMM_CODE_EN	" Streaming SIMD Extensions "
+#define RSC_ISA_SSE2_COMM_CODE_EN	" Streaming SIMD Extensions 2 "
+#define RSC_ISA_SSE3_COMM_CODE_EN	" Streaming SIMD Extensions 3 "
+#define RSC_ISA_SSSE3_COMM_CODE_EN	\
+				" Supplemental Streaming SIMD Extensions 3 "
+#define RSC_ISA_SSE4_1_COMM_CODE_EN	\
+				" Streaming SIMD Extensions 4.1 / AMD SSE 4A "
+#define RSC_ISA_SSE4_2_COMM_CODE_EN	" Streaming SIMD Extensions 4.2 "
+#define RSC_ISA_SERIALIZE_COMM_CODE_EN	" Serialize instruction "
+#define RSC_ISA_SYSCALL_COMM_CODE_EN	\
+			" Fast System Call and SYSRET - Return From SYSCALL "
+#define RSC_ISA_RDPID_COMM_CODE_EN	" Read Processor ID "
+#define RSC_ISA_UMIP_COMM_CODE_EN	" User Mode Instruction Prevention "
+#define RSC_ISA_SGX_COMM_CODE_EN	" Intel Software Guard eXtensions "
 
 #define RSC_FEATURES_TITLE_CODE_EN	" Features "
 #define RSC_NOT_AVAILABLE_CODE_EN	"N/A"
@@ -607,7 +651,6 @@
 #define RSC_TOPOLOGY_TITLE_CODE_EN	" Topology "
 
 #define RSC_MEM_CTRL_TITLE_CODE_EN	" Memory Controller "
-#define RSC_MEM_CTRL_BLANK_CODE_EN		"%*.s"
 #define RSC_MEM_CTRL_SUBSECT1_0_CODE_EN 	"Contr"
 #define RSC_MEM_CTRL_SUBSECT1_1_CODE_EN 	"oller"
 #define RSC_MEM_CTRL_SUBSECT1_2_CODE_EN 	" #%-3u"
@@ -798,7 +841,6 @@
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
-#define RSC_BOX_BLANK_DESC_CODE_EN	"                                    "
 
 #define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN "       Nominal operating mode       "
 #define RSC_BOX_NOMINAL_MODE_COND1_CODE_EN "     < Nominal operating mode >     "
