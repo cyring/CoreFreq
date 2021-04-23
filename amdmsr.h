@@ -996,30 +996,52 @@ typedef union
 #endif
 
 /*
-TODO(BankGroupSwap)
+SMU: address = 0x50058 (BankGroupSwap) per channel
 
 BGS[ON]
+---
+zencli smu 0x50050
+[0x00050050] READ(smu) = 0x87654321 (2271560481)
+zencli smu 0x50054
+[0x00050054] READ(smu) = 0xa9876543 (2844222787)
 zencli smu 0x50058
-0xcba65321 (3416675105) 	11001011101001100101001100100001
+[0x00050058] READ(smu) = 0xcba65321 (3416675105)
 
 BGS[OFF][AUTO]
+---
+zencli smu 0x50050
+[0x00050050] READ(smu) = 0x87654321 (2271560481)
+zencli smu 0x50054
+[0x00050054] READ(smu) = 0xa9876543 (2844222787)
 zencli smu 0x50058
-0x87654321 (2271560481) 	10000111011001010100001100100001
+[0x00050058] READ(smu) = 0x87654321 (2271560481)
 */
+#define AMD_17_UMC_BGS_MASK_OFF 	0x87654321
 
 /*
-TODO(BankGroupSwap Alternate)
+SMU: address = 0x500d0 (BankGroupSwap Alternate) per channel
 
 BGS_Alt[ON][AUTO]
-zencli smu 0x500D0
-0x111107f1 (286328817
+---
+zencli smu 0x500d0
+[0x000500d0] READ(smu) = 0x111107f1 (286328817)
+zencli smu 0x500d4
+[0x000500d4] READ(smu) = 0x22220001 (572653569)
+zencli smu 0x500d8
+[0x000500d8] READ(smu) = 0x00000000 (0)
 
 BGS_Alt[OFF]
-zencli smu 0x500D0
-0x11110001 (286326785)
+---
+zencli smu 0x500d0
+[0x000500d0] READ(smu) = 0x11110001 (286326785)
+zencli smu 0x500d4
+[0x000500d4] READ(smu) = 0x22220001 (572653569)
+zencli smu 0x500d8
+[0x000500d8] READ(smu) = 0x00000000 (0)
 
-Remark: if BGS_Alt[ON][AUTO] set then BGS[OFF]
+Remark: if BGS_Alt[ON][AUTO] is set then BGS[OFF]
 */
+#define AMD_17_UMC_BGS_ALT_MASK_ON	0x000007f0
 
 typedef union
 {	/* SMU: address = 0x50080					*/

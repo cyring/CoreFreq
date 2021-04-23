@@ -4225,6 +4225,14 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.GDM =
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS =
+		!((Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS.value
+		& AMD_17_UMC_BGS_MASK_OFF) == AMD_17_UMC_BGS_MASK_OFF);
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT =
+		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
+		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
   }
  }
 }

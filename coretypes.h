@@ -5,8 +5,8 @@
  */
 
 #define COREFREQ_MAJOR	1
-#define COREFREQ_MINOR	84
-#define COREFREQ_REV	6
+#define COREFREQ_MINOR	85
+#define COREFREQ_REV	0
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1382,7 +1382,12 @@ typedef struct
 	unsigned int	CMD_Rate;
 	union {
 	unsigned int	B2B;
-	unsigned int	GDM;
+	  struct{
+	  unsigned int	GDM	:  1-0,
+			BGS	:  2-1,
+			BGS_ALT :  3-2,
+			Unused	: 32-3;
+	  };
 	};
 	unsigned int	ECC;
 } RAM_TIMING;

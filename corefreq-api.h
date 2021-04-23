@@ -553,6 +553,10 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR12 DTR12;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR54 DTR54;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR60 DTR60;	/* 32 bits   */
+			    struct {
+				unsigned int value;		/* 32 bits   */
+			    }				BGS,
+							BGS_ALT;
 			} AMD17h;
 		};
 		union {

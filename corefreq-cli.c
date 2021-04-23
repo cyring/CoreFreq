@@ -4742,8 +4742,8 @@ const char *Header_DDR4_Zen[3][MC_MATX] = {
 	},
 	{
 		"     ",
-		" REFI", " RFC1", " RFC2", " RFC4", " RCPB", " RPPB", " sFAW",
-		" dFAW", " Ban ", " Page", "  CKE", "  CMD", "  GDM", "  ECC"
+		" REFI", " RFC1", " RFC2", " RFC4", " RCPB", " RPPB", "  BGS",
+		":Alt ", " Ban ", " Page", "  CKE", "  CMD", "  GDM", "  ECC"
 	}
 };
 
@@ -4790,8 +4790,8 @@ const char *Footer_DDR4_Zen[3][MC_MATX] = {
 		" tRFC4 ( Refresh to Refresh, 4X mode ) ",
 		" tRCPB ( Row Cycle Time, Per-Bank ) ",
 		" tRPPB ( Row Precharge Time, Per-Bank ) ",
-		" tFAW[SLR] ( tFAW, Same Logical Rank ) ",
-		" tFAW[DLR] ( tFAW, Different Logical Rank ) ",
+		" BGS ( BankGroupSwap ) ",
+		" BGS Alt ( BankGroupSwap Alternate ) ",
 		" tBAN ( Timing Ban, RTR | WTW ) ",
 		" tRCPage ( Row Cycle Page Time ) ",
 		" tCKE ( ClocK Enable ) ",
@@ -5016,8 +5016,10 @@ PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrRdScDLR);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPB);
     PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRPPB);
 
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWSLR);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAWDLR);
+    PRT(IMC,attrib[1], "\x20\x20%3s",
+		ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.BGS));
+    PRT(IMC,attrib[1], "\x20%3s\x20",
+		ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT));
 
     PRT(IMC,attrib[1], "\x20R%1uW%1u",
 			Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdBan,
