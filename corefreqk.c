@@ -3830,7 +3830,11 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
+}
 
+void Query_SKL_CSR(void __iomem *mchmap)
+{
+	Query_SKL_IMC(mchmap);
 	Query_Turbo_TDP_Config(mchmap);
 }
 
@@ -4276,7 +4280,7 @@ void SoC_SKL_VTD(void)
   }
 }
 
-static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
+static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
 {
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
@@ -4291,7 +4295,17 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 	{
 		SoC_SKL_VTD();
 	}
-	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
+	return (Router(dev, 0x48, 64, 0x8000, Query));
+}
+
+static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
+{
+	return (SKL_HOST(dev, Query_SKL_IMC));
+}
+
+static PCI_CALLBACK SKL_CSR(struct pci_dev *dev)
+{
+	return (SKL_HOST(dev, Query_SKL_CSR));
 }
 /* TODO(Hardware missing)
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
@@ -4314,6 +4328,20 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return (0);
 }
 */
+static PCI_CALLBACK KBL_IMC(struct pci_dev *dev)
+{
+	if (PRIVATE(OF(Specific)) != NULL) {
+		switch (PRIVATE(OF(Specific))->CodeNameIdx) {
+		case CN_COFFEELAKE_HR:
+			return (SKL_HOST(dev, Query_SKL_IMC));
+		default:
+			return (SKL_HOST(dev, Query_SKL_CSR));
+		}
+	} else {
+		return (SKL_HOST(dev, Query_SKL_CSR));
+	}
+}
+
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;
@@ -8560,6 +8588,19 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+}
+
+static void PerCore_Kabylake_Query(void *arg)
+{
+	PerCore_Skylake_Query(arg);
+
+	if (PRIVATE(OF(Specific)) != NULL) {
+		switch (PRIVATE(OF(Specific))->CodeNameIdx) {
+		case CN_COFFEELAKE_HR:
+			Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+			break;
+		}
+	}
 }
 
 static void PerCore_Skylake_X_Query(void *arg)

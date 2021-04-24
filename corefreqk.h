@@ -1031,6 +1031,8 @@ extern void InitTimer_Skylake(unsigned int cpu) ;
 static void Start_Uncore_Skylake(void *arg) ;
 static void Stop_Uncore_Skylake(void *arg) ;
 
+static void PerCore_Kabylake_Query(void *arg) ;
+
 extern void Query_Skylake_X(unsigned int cpu) ;
 static void PerCore_Skylake_X_Query(void *arg) ;
 static void Start_Skylake_X(void *arg) ;
@@ -1363,9 +1365,11 @@ static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA2(struct pci_dev *dev) ;
 static PCI_CALLBACK SNB_EP_TAD_CTRL1_CHA3(struct pci_dev *dev) ;
 static PCI_CALLBACK HSW_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK SKL_IMC(struct pci_dev *dev) ;
+static PCI_CALLBACK SKL_CSR(struct pci_dev *dev) ;
 /* TODO:
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev) ;
 */
+static PCI_CALLBACK KBL_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev) ;
 static PCI_CALLBACK AMD_0Fh_HTT(struct pci_dev *dev) ;
 #ifdef CONFIG_AMD_NB
@@ -1718,31 +1722,31 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 static struct pci_device_id PCI_Skylake_ids[] = {
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_U_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SKYLAKE_Y_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_H_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) SKL_CSR
 	},
 	{0, }
 };
@@ -1755,95 +1759,95 @@ static struct pci_device_id PCI_Skylake_X_ids[] = {
 static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_Y_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_H_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_DT_IMC_HA),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_U_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_KABYLAKE_X_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_S_IMC_HAS),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAD),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_U_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAS),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_H_IMC_HAO),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAS),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_W_IMC_HAO),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAQ),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAS),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
     PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COFFEELAKE_R_S_IMC_HAO),
-		.driver_data = (kernel_ulong_t) SKL_IMC
+		.driver_data = (kernel_ulong_t) KBL_IMC
 	},
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAD),
@@ -6381,7 +6385,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Kabylake] = {								/* 52*/
 	.Signature = _Kabylake,
 	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kabylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -6405,7 +6409,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Kabylake_UY] = {							/* 53*/
 	.Signature = _Kabylake_UY,
 	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kabylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
