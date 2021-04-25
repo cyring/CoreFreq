@@ -75,6 +75,10 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
+static signed short Turbo_Activation_Ratio = -1;
+module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
+
 static signed short Target_Ratio_Unlock = -1;
 module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
@@ -124,6 +128,10 @@ MODULE_PARM_DESC(IOMWAIT_Enable, "I/O MWAIT Redirection Enable");
 static signed short CStateIORedir = -1;
 module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
+
+static signed short Config_TDP_Level = -1;
+module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -3832,12 +3840,6 @@ void Query_SKL_IMC(void __iomem *mchmap)
     }
 }
 
-void Query_SKL_CSR(void __iomem *mchmap)
-{
-	Query_SKL_IMC(mchmap);
-	Query_Turbo_TDP_Config(mchmap);
-}
-
 static PCI_CALLBACK P945(struct pci_dev *dev)
 {
 	return (Router(dev, 0x44, 32, 0x4000, Query_P945));
@@ -4303,10 +4305,6 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 	return (SKL_HOST(dev, Query_SKL_IMC));
 }
 
-static PCI_CALLBACK SKL_CSR(struct pci_dev *dev)
-{
-	return (SKL_HOST(dev, Query_SKL_CSR));
-}
 /* TODO(Hardware missing)
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 {
@@ -4328,19 +4326,6 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return (0);
 }
 */
-static PCI_CALLBACK KBL_IMC(struct pci_dev *dev)
-{
-	if (PRIVATE(OF(Specific)) != NULL) {
-		switch (PRIVATE(OF(Specific))->CodeNameIdx) {
-		case CN_COFFEELAKE_HR:
-			return (SKL_HOST(dev, Query_SKL_IMC));
-		default:
-			return (SKL_HOST(dev, Query_SKL_CSR));
-		}
-	} else {
-		return (SKL_HOST(dev, Query_SKL_CSR));
-	}
-}
 
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
@@ -6580,6 +6565,20 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 	CONFIG_TDP_LEVEL ConfigTDP;
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+
+    if ((Turbo_Activation_Ratio >= 0)
+     && (Turbo_Activation_Ratio != TurboActivation.MaxRatio))
+    {
+	const short MaxRatio = \
+	MAXCLOCK_TO_RATIO(short, PUBLIC(RO(Core, AT(Core->Bind))->Clock.Hz));
+
+	if (Turbo_Activation_Ratio <=  MaxRatio)
+	{
+		TurboActivation.MaxRatio = Turbo_Activation_Ratio;
+		WRMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+		RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+	}
+    }
 	Core->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
@@ -6601,6 +6600,13 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
 	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+
+	if ((ControlTDP.Lock == 0) && (Config_TDP_Level >= 0))
+	{
+		ControlTDP.Level = Config_TDP_Level;
+		WRMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+		RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+	}
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Level = ControlTDP.Level;
     }
@@ -8588,19 +8594,7 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
-}
-
-static void PerCore_Kabylake_Query(void *arg)
-{
-	PerCore_Skylake_Query(arg);
-
-	if (PRIVATE(OF(Specific)) != NULL) {
-		switch (PRIVATE(OF(Specific))->CodeNameIdx) {
-		case CN_COFFEELAKE_HR:
-			Intel_Turbo_TDP_Config( (CORE_RO*) arg );
-			break;
-		}
-	}
+	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
 static void PerCore_Skylake_X_Query(void *arg)
@@ -8610,7 +8604,6 @@ static void PerCore_Skylake_X_Query(void *arg)
 				Assign_SKL_X_Boost );
 
 	PerCore_Skylake_Query(arg);
-	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
 static void PerCore_AMD_Family_0Fh_Query(void *arg)
@@ -15471,6 +15464,14 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = -ENXIO;
 	    }
 		break;
+
+	case TECHNOLOGY_CFG_TDP_LVL:
+		Controller_Stop(1);
+		Config_TDP_Level = prm.dl.lo;
+		Controller_Start(1);
+		Config_TDP_Level = -1;
+		rc = RC_SUCCESS;
+		break;
 	}
 	break;
     }
@@ -15550,6 +15551,20 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	#endif /* CONFIG_CPU_FREQ */
 	} else {
 		rc = -RC_UNIMPLEMENTED;
+	}
+	break;
+
+    case COREFREQ_IOCTL_CONFIG_TDP: {
+		CLOCK_ARG clockMod = {.sllong = arg};
+		switch (clockMod.NC) {
+		case CLOCK_MOD_ACT:
+			Controller_Stop(1);
+			Turbo_Activation_Ratio = clockMod.Ratio;
+			Controller_Start(1);
+			Turbo_Activation_Ratio = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
 	}
 	break;
 

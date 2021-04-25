@@ -924,6 +924,10 @@
 #define RSC_BOX_SCOPE_CORE_CODE_EN		"       Core       "
 #define RSC_BOX_SCOPE_PACKAGE_CODE_EN		"      Package     "
 
+#define RSC_BOX_TDP_LVL0_CODE_EN		"      Level 0     "
+#define RSC_BOX_TDP_LVL1_CODE_EN		"      Level 1     "
+#define RSC_BOX_TDP_LVL2_CODE_EN		"      Level 2     "
+
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\

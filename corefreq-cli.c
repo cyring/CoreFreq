@@ -867,6 +867,18 @@ void RefreshTopFreq(TGrid *grid, DATA_TYPE data)
 			ABS_FREQ_MHz(double, ratio, CFlop->Clock));
 }
 
+void RefreshConfigTDP(TGrid *grid, DATA_TYPE data)
+{
+	char item[11+11+1];
+	UNUSED(data);
+
+	snprintf(item, 11+11+1,"%3d:%-3d",
+		Shm->Proc.Features.TDP_Cfg_Level,
+		Shm->Proc.Features.TDP_Levels);
+
+	memcpy(&grid->cell.item[grid->cell.length - 9], item, 7);
+}
+
 REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
@@ -1186,10 +1198,23 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	char *pfx = malloc(len);
       if (pfx != NULL)
       {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"TDP%.*s""%s"" [%3d:%-3d]",
-		width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
-		Shm->Proc.Features.TDP_Cfg_Level,Shm->Proc.Features.TDP_Levels);
+	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
+
+	if (Shm->Proc.Features.TDP_Cfg_Lock) {
+		PUT(SCANKEY_NULL, attrib[0], width, 2,
+			"TDP%.*s""%s"" [%3d:%-3d]",
+			width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
+			Shm->Proc.Features.TDP_Cfg_Level,
+			Shm->Proc.Features.TDP_Levels);
+	} else {
+		GridCall(PUT(BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
+				"TDP%.*s""%s"" <%3d:%-3d>",
+				width - 16 - RSZ(LEVEL),
+				hSpace, RSC(LEVEL).CODE(),
+				Shm->Proc.Features.TDP_Cfg_Level,
+				Shm->Proc.Features.TDP_Levels),
+			RefreshConfigTDP);
+	}
 
 	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
 		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
@@ -1263,11 +1288,15 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(ACT) ] ].Toggle
 			];
 
+	coreClock.NC = BOXKEY_CFGTDP_CLOCK_OR | CLOCK_MOD_ACT;
+
 	GridCall(PrintRatioFreq(win, CFlop,
-				0, "Turbo", &Shm->Cpu[
+				1, "Turbo", &Shm->Cpu[
 						Ruler.Top[ BOOST(ACT) ]
 						].Boost[ BOOST(ACT) ],
-				0, SCANKEY_NULL,
+				(Shm->Proc.Features.TurboActiv_Lock == 0),
+				(Shm->Proc.Features.TurboActiv_Lock == 0) ?
+					coreClock.sllong : SCANKEY_NULL,
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(ACT) );
 
@@ -6782,7 +6811,9 @@ void TitleForRatioClock(unsigned int NC, ASCII *title)
 			(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
 		"Max" :
 			(NC == CLOCK_MOD_MIN) || (NC == CLOCK_MOD_HWP_MIN) ?
-		"Min" : "");
+		"Min" :
+			(NC == CLOCK_MOD_ACT) ?
+		"Activ" : "");
 }
 
 void TitleForUncoreClock(unsigned int NC, ASCII *title)
@@ -8593,17 +8624,27 @@ int Shortcut(SCANKEY *scan)
 
 	AppendWindow(CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_INTERVAL_TITLE).CODE(),
-	(ASCII*)"    100   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_100,
-	(ASCII*)"    150   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_150,
-	(ASCII*)"    250   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_250,
-	(ASCII*)"    500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_500,
-	(ASCII*)"    750   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_750,
-	(ASCII*)"   1000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1000,
-	(ASCII*)"   1500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1500,
-	(ASCII*)"   2000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2000,
-	(ASCII*)"   2500   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2500,
-	(ASCII*)"   3000   ", MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_3000),
-		&winList);
+			RSC(BOX_INTERVAL_STEP1).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_100,
+			RSC(BOX_INTERVAL_STEP2).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_150,
+			RSC(BOX_INTERVAL_STEP3).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_250,
+			RSC(BOX_INTERVAL_STEP4).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_500,
+			RSC(BOX_INTERVAL_STEP5).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_750,
+			RSC(BOX_INTERVAL_STEP6).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1000,
+			RSC(BOX_INTERVAL_STEP7).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1500,
+			RSC(BOX_INTERVAL_STEP8).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2000,
+			RSC(BOX_INTERVAL_STEP9).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2500,
+			RSC(BOX_INTERVAL_STEP10).CODE(),
+				MakeAttr(WHITE, 0, BLACK, 0),OPS_INTERVAL_3000),
+			&winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -8704,11 +8745,11 @@ int Shortcut(SCANKEY *scan)
 
 	AppendWindow(CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_AUTO_CLOCK_TITLE).CODE(),
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][bON], stateAttr[bON] , OPS_AUTOCLOCK_ON,
-		stateStr[0][!bON],stateAttr[!bON], OPS_AUTOCLOCK_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][bON] , stateAttr[bON] , OPS_AUTOCLOCK_ON,
+			stateStr[0][!bON], stateAttr[!bON], OPS_AUTOCLOCK_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else
 		SetHead(&winList, win);
     }
@@ -8756,18 +8797,18 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_MODE_TITLE).CODE(),
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-			RSC(BOX_MODE_DESC).CODE(), descAttr, SCANKEY_NULL,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
+				(char*) RSC(BOX_MODE_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_MODE_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			ops_Str[0][Shm->Registration.Experimental == 0],
 				stateAttr[Shm->Registration.Experimental == 0],
-					OPS_EXPERIMENTAL_OFF,
+							OPS_EXPERIMENTAL_OFF,
 			ops_Str[1][Shm->Registration.Experimental != 0] ,
 				exp_Attr[Shm->Registration.Experimental != 0],
-					OPS_EXPERIMENTAL_ON,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+							OPS_EXPERIMENTAL_ON,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9419,16 +9460,16 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			" DCU L1 Prefetcher ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.L1_HW_Prefetch],
-			stateAttr[Shm->Proc.Technology.L1_HW_Prefetch],
-				BOXKEY_L1_HW_PREFETCH_ON,
-		stateStr[0][!Shm->Proc.Technology.L1_HW_Prefetch],
-			stateAttr[!Shm->Proc.Technology.L1_HW_Prefetch],
-				BOXKEY_L1_HW_PREFETCH_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+				(char*) RSC(BOX_DCU_L1_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.L1_HW_Prefetch],
+				stateAttr[Shm->Proc.Technology.L1_HW_Prefetch],
+						BOXKEY_L1_HW_PREFETCH_ON,
+			stateStr[0][!Shm->Proc.Technology.L1_HW_Prefetch],
+				stateAttr[!Shm->Proc.Technology.L1_HW_Prefetch],
+						BOXKEY_L1_HW_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9464,16 +9505,16 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			" DCU L1 IP Prefetcher ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.L1_HW_IP_Prefetch],
+				(char*) RSC(BOX_DCU_L1_IP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.L1_HW_IP_Prefetch],
 			stateAttr[Shm->Proc.Technology.L1_HW_IP_Prefetch],
-				BOXKEY_L1_HW_IP_PREFETCH_ON,
-		stateStr[0][!Shm->Proc.Technology.L1_HW_IP_Prefetch],
+						BOXKEY_L1_HW_IP_PREFETCH_ON,
+			stateStr[0][!Shm->Proc.Technology.L1_HW_IP_Prefetch],
 			stateAttr[!Shm->Proc.Technology.L1_HW_IP_Prefetch],
-				BOXKEY_L1_HW_IP_PREFETCH_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+						BOXKEY_L1_HW_IP_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9509,16 +9550,16 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			" DCU L2 Prefetcher ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.L2_HW_Prefetch],
-			stateAttr[Shm->Proc.Technology.L2_HW_Prefetch],
-				BOXKEY_L2_HW_PREFETCH_ON,
-		stateStr[0][!Shm->Proc.Technology.L2_HW_Prefetch],
-			stateAttr[!Shm->Proc.Technology.L2_HW_Prefetch],
-				BOXKEY_L2_HW_PREFETCH_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+				(char*) RSC(BOX_DCU_L2_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.L2_HW_Prefetch],
+				stateAttr[Shm->Proc.Technology.L2_HW_Prefetch],
+						BOXKEY_L2_HW_PREFETCH_ON,
+			stateStr[0][!Shm->Proc.Technology.L2_HW_Prefetch],
+				stateAttr[!Shm->Proc.Technology.L2_HW_Prefetch],
+						BOXKEY_L2_HW_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9554,16 +9595,16 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			" DCU L2 CL Prefetcher ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.L2_HW_CL_Prefetch],
+				(char*) RSC(BOX_DCU_L2_CL_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.L2_HW_CL_Prefetch],
 			stateAttr[Shm->Proc.Technology.L2_HW_CL_Prefetch],
-				BOXKEY_L2_HW_CL_PREFETCH_ON,
-		stateStr[0][!Shm->Proc.Technology.L2_HW_CL_Prefetch],
+						BOXKEY_L2_HW_CL_PREFETCH_ON,
+			stateStr[0][!Shm->Proc.Technology.L2_HW_CL_Prefetch],
 			stateAttr[!Shm->Proc.Technology.L2_HW_CL_Prefetch],
-				BOXKEY_L2_HW_CL_PREFETCH_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+						BOXKEY_L2_HW_CL_PREFETCH_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9598,16 +9639,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.EIST ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " EIST ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_EIST_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.EIST],
-			stateAttr[Shm->Proc.Technology.EIST] , BOXKEY_EIST_ON,
-		stateStr[0][!Shm->Proc.Technology.EIST],
-			stateAttr[!Shm->Proc.Technology.EIST], BOXKEY_EIST_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_EIST_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_EIST_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.EIST],
+				stateAttr[Shm->Proc.Technology.EIST],
+								BOXKEY_EIST_ON,
+			stateStr[0][!Shm->Proc.Technology.EIST],
+				stateAttr[!Shm->Proc.Technology.EIST],
+								BOXKEY_EIST_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9642,16 +9686,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.C1E ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " C1E ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_C1E_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.C1E],
-			stateAttr[Shm->Proc.Technology.C1E] , BOXKEY_C1E_ON,
-		stateStr[0][!Shm->Proc.Technology.C1E],
-			stateAttr[!Shm->Proc.Technology.C1E], BOXKEY_C1E_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_C1E_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_C1E_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.C1E],
+				stateAttr[Shm->Proc.Technology.C1E],
+								BOXKEY_C1E_ON,
+			stateStr[0][!Shm->Proc.Technology.C1E],
+				stateAttr[!Shm->Proc.Technology.C1E],
+								BOXKEY_C1E_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9686,16 +9733,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.Turbo ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " Turbo ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_TURBO_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.Turbo],
-			stateAttr[Shm->Proc.Technology.Turbo] ,BOXKEY_TURBO_ON,
-		stateStr[0][!Shm->Proc.Technology.Turbo],
-			stateAttr[!Shm->Proc.Technology.Turbo],BOXKEY_TURBO_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_TURBO_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_TURBO_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.Turbo],
+				stateAttr[Shm->Proc.Technology.Turbo],
+								BOXKEY_TURBO_ON,
+			stateStr[0][!Shm->Proc.Technology.Turbo],
+				stateAttr[!Shm->Proc.Technology.Turbo],
+							       BOXKEY_TURBO_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9730,16 +9780,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.C1A ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " C1A ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_C1A_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.C1A],
-			stateAttr[Shm->Proc.Technology.C1A] , BOXKEY_C1A_ON,
-		stateStr[0][!Shm->Proc.Technology.C1A],
-			stateAttr[!Shm->Proc.Technology.C1A], BOXKEY_C1A_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_C1A_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_C1A_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.C1A],
+				stateAttr[Shm->Proc.Technology.C1A],
+								BOXKEY_C1A_ON,
+			stateStr[0][!Shm->Proc.Technology.C1A],
+				stateAttr[!Shm->Proc.Technology.C1A],
+								BOXKEY_C1A_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9774,16 +9827,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.C3A ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " C3A ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_C3A_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.C3A] ,
-			stateAttr[Shm->Proc.Technology.C3A] , BOXKEY_C3A_ON,
-		stateStr[0][!Shm->Proc.Technology.C3A],
-			stateAttr[!Shm->Proc.Technology.C3A], BOXKEY_C3A_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_C3A_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_C3A_DESC).CODE(), descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.C3A] ,
+				stateAttr[Shm->Proc.Technology.C3A],
+								BOXKEY_C3A_ON,
+			stateStr[0][!Shm->Proc.Technology.C3A],
+				stateAttr[!Shm->Proc.Technology.C3A],
+								BOXKEY_C3A_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9819,21 +9875,24 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-		(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
-		" C2U " : " C1U ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
-		|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
-		RSC(BOX_C2U_DESC).CODE() : RSC(BOX_C1U_DESC).CODE(),
-			descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.C1U] ,
-			stateAttr[Shm->Proc.Technology.C1U] , BOXKEY_C1U_ON,
-		stateStr[0][!Shm->Proc.Technology.C1U],
-			stateAttr[!Shm->Proc.Technology.C1U], BOXKEY_C1U_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+			(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+			|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
+				  (char*) RSC(BOX_C2U_TITLE).CODE()
+				: (char*) RSC(BOX_C1U_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			(  (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+			|| (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) ?
+			RSC(BOX_C2U_DESC).CODE() : RSC(BOX_C1U_DESC).CODE(),
+						descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.C1U],
+				stateAttr[Shm->Proc.Technology.C1U],
+								BOXKEY_C1U_ON,
+			stateStr[0][!Shm->Proc.Technology.C1U],
+				stateAttr[!Shm->Proc.Technology.C1U],
+								BOXKEY_C1U_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9868,16 +9927,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Technology.C3U ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " C3U ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_C3U_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.C3U] ,
-			stateAttr[Shm->Proc.Technology.C3U] , BOXKEY_C3U_ON,
-		stateStr[0][!Shm->Proc.Technology.C3U],
-			stateAttr[!Shm->Proc.Technology.C3U], BOXKEY_C3U_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+				(char*) RSC(BOX_C3U_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_C3U_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.C3U],
+				stateAttr[Shm->Proc.Technology.C3U],
+								BOXKEY_C3U_ON,
+			stateStr[0][!Shm->Proc.Technology.C3U],
+				stateAttr[!Shm->Proc.Technology.C3U],
+								BOXKEY_C3U_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -9904,7 +9966,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	char *title;
+	ASCII *title;
 	ASCII *descCode;
 	const Coordinate origin = {
 		.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
@@ -9915,22 +9977,24 @@ int Shortcut(SCANKEY *scan)
 	};
 	if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
-		title = " CC6 ";
+		title = RSC(BOX_CC6_TITLE).CODE();
 		descCode = RSC(BOX_CC6_DESC).CODE();
 	} else {
-		title = " C6D ";
+		title = RSC(BOX_C6D_TITLE).CODE();
 		descCode = RSC(BOX_C6D_DESC).CODE();
 	}
-	AppendWindow(CreateBox(scan->key, origin, select, title,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		descCode, descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.CC6] ,
-			stateAttr[Shm->Proc.Technology.CC6] , BOXKEY_CC6_ON,
-		stateStr[0][!Shm->Proc.Technology.CC6],
-			stateAttr[!Shm->Proc.Technology.CC6], BOXKEY_CC6_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select, (char*) title,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			descCode, descAttr, SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.CC6],
+				stateAttr[Shm->Proc.Technology.CC6],
+								BOXKEY_CC6_ON,
+			stateStr[0][!Shm->Proc.Technology.CC6],
+				stateAttr[!Shm->Proc.Technology.CC6],
+								BOXKEY_CC6_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
       } else {
 	SetHead(&winList, win);
       }
@@ -9957,7 +10021,7 @@ int Shortcut(SCANKEY *scan)
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
-	char *title;
+	ASCII *title;
 	ASCII *descCode;
 		const Coordinate origin = {
 			.col=(draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
@@ -9968,22 +10032,24 @@ int Shortcut(SCANKEY *scan)
 		};
 	if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) ) {
-		title = " PC6 ";
+		title = RSC(BOX_PC6_TITLE).CODE();
 		descCode = RSC(BOX_PC6_DESC).CODE();
 	} else {
-		title = " MC6 ";
+		title = RSC(BOX_MC6_TITLE).CODE();
 		descCode = RSC(BOX_MC6_DESC).CODE();
 	}
-	AppendWindow(CreateBox(scan->key, origin, select, title,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		descCode, descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.PC6] ,
-			stateAttr[Shm->Proc.Technology.PC6] , BOXKEY_PC6_ON,
-		stateStr[0][!Shm->Proc.Technology.PC6],
-			stateAttr[!Shm->Proc.Technology.PC6], BOXKEY_PC6_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select, (char*) title,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			descCode, descAttr, SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.PC6],
+				stateAttr[Shm->Proc.Technology.PC6],
+								BOXKEY_PC6_ON,
+			stateStr[0][!Shm->Proc.Technology.PC6],
+				stateAttr[!Shm->Proc.Technology.PC6],
+								BOXKEY_PC6_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
       } else {
 	SetHead(&winList, win);
       }
@@ -10035,19 +10101,19 @@ int Shortcut(SCANKEY *scan)
 
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_PKG_STATE_LIMIT_TITLE).CODE(),
-/* 0 */ 	RSC(BOX_STATE_UNSPECIFIED).CODE(), stateAttr[0], SCANKEY_NULL,
-/* 1 */ (ASCII*)"            C10            ", stateAttr[0], BOXKEY_PKGCST_C10,
-/* 2 */ (ASCII*)"             C9            ", stateAttr[0], BOXKEY_PKGCST_C9,
-/* 3 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_PKGCST_C8,
-/* 4 */ (ASCII*)"            C7S            ", stateAttr[0], BOXKEY_PKGCST_C7S,
-/* 5 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_PKGCST_C7,
-/* 6 */ (ASCII*)"            C6R            ", stateAttr[0], BOXKEY_PKGCST_C6R,
-/* 7 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_PKGCST_C6,
-/* 8 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_PKGCST_C4,
-/* 9 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_PKGCST_C3,
-/*10 */ (ASCII*)"             C2            ", stateAttr[0], BOXKEY_PKGCST_C2,
-/*11 */ (ASCII*)"             C1            ", stateAttr[0], BOXKEY_PKGCST_C1,
-/*12 */ (ASCII*)"             C0            ", stateAttr[0], BOXKEY_PKGCST_C0);
+/* 0 */ RSC(BOX_STATE_UNSPECIFIED).CODE() , stateAttr[0], SCANKEY_NULL,
+/* 1 */ RSC(BOX_PKG_STATE_LIMIT_C10).CODE(),stateAttr[0], BOXKEY_PKGCST_C10,
+/* 2 */ RSC(BOX_PKG_STATE_LIMIT_C9).CODE(), stateAttr[0], BOXKEY_PKGCST_C9,
+/* 3 */ RSC(BOX_PKG_STATE_LIMIT_C8).CODE(), stateAttr[0], BOXKEY_PKGCST_C8,
+/* 4 */ RSC(BOX_PKG_STATE_LIMIT_C7S).CODE(),stateAttr[0], BOXKEY_PKGCST_C7S,
+/* 5 */ RSC(BOX_PKG_STATE_LIMIT_C7).CODE(), stateAttr[0], BOXKEY_PKGCST_C7,
+/* 6 */ RSC(BOX_PKG_STATE_LIMIT_C6R).CODE(),stateAttr[0], BOXKEY_PKGCST_C6R,
+/* 7 */ RSC(BOX_PKG_STATE_LIMIT_C6).CODE(), stateAttr[0], BOXKEY_PKGCST_C6,
+/* 8 */ RSC(BOX_PKG_STATE_LIMIT_C4).CODE(), stateAttr[0], BOXKEY_PKGCST_C4,
+/* 9 */ RSC(BOX_PKG_STATE_LIMIT_C3).CODE(), stateAttr[0], BOXKEY_PKGCST_C3,
+/*10 */ RSC(BOX_PKG_STATE_LIMIT_C2).CODE(), stateAttr[0], BOXKEY_PKGCST_C2,
+/*11 */ RSC(BOX_PKG_STATE_LIMIT_C1).CODE(), stateAttr[0], BOXKEY_PKGCST_C1,
+/*12 */ RSC(BOX_PKG_STATE_LIMIT_C0).CODE(), stateAttr[0], BOXKEY_PKGCST_C0);
 
 	    if (wBox != NULL)
 	    {
@@ -10113,13 +10179,15 @@ int Shortcut(SCANKEY *scan)
 		};
 
 	AppendWindow(CreateBox(scan->key, origin, select,
-			(char*) RSC(BOX_IO_MWAIT_TITLE).CODE(),
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-			RSC(BOX_IO_MWAIT_DESC).CODE(), descAttr, SCANKEY_NULL,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-	stateStr[1][isIORedir] , stateAttr[isIORedir] , BOXKEY_IOMWAIT_ON,
-	stateStr[0][!isIORedir], stateAttr[!isIORedir], BOXKEY_IOMWAIT_OFF,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+				(char*) RSC(BOX_IO_MWAIT_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_IO_MWAIT_DESC).CODE(),descAttr, SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][isIORedir], stateAttr[isIORedir] ,
+							BOXKEY_IOMWAIT_ON,
+			stateStr[0][!isIORedir], stateAttr[!isIORedir],
+							BOXKEY_IOMWAIT_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
 			&winList);
 	} else {
 		SetHead(&winList, win);
@@ -10173,12 +10241,12 @@ int Shortcut(SCANKEY *scan)
 
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_MWAIT_MAX_STATE_TITLE).CODE(),
-/* 0 */ 	RSC(BOX_STATE_UNSPECIFIED).CODE(), stateAttr[0], SCANKEY_NULL,
-/* 1 */ (ASCII*)"             C8            ", stateAttr[0], BOXKEY_IORCST_C8,
-/* 2 */ (ASCII*)"             C7            ", stateAttr[0], BOXKEY_IORCST_C7,
-/* 3 */ (ASCII*)"             C6            ", stateAttr[0], BOXKEY_IORCST_C6,
-/* 4 */ (ASCII*)"             C4            ", stateAttr[0], BOXKEY_IORCST_C4,
-/* 5 */ (ASCII*)"             C3            ", stateAttr[0], BOXKEY_IORCST_C3);
+	/* 0 */ RSC(BOX_STATE_UNSPECIFIED).CODE(), stateAttr[0], SCANKEY_NULL,
+	/* 1 */ RSC(BOX_STATE_C8).CODE(), stateAttr[0], BOXKEY_IORCST_C8,
+	/* 2 */ RSC(BOX_STATE_C7).CODE(), stateAttr[0], BOXKEY_IORCST_C7,
+	/* 3 */ RSC(BOX_STATE_C6).CODE(), stateAttr[0], BOXKEY_IORCST_C6,
+	/* 4 */ RSC(BOX_STATE_C4).CODE(), stateAttr[0], BOXKEY_IORCST_C4,
+	/* 5 */ RSC(BOX_STATE_C3).CODE(), stateAttr[0], BOXKEY_IORCST_C3);
 
 	  if (wBox != NULL)
 	  {
@@ -10235,14 +10303,16 @@ int Shortcut(SCANKEY *scan)
 
 		AppendWindow(CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_ODCM_TITLE).CODE(),
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-			RSC(BOX_ODCM_DESC).CODE(),descAttr,SCANKEY_NULL,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Technology.ODCM] ,
-			stateAttr[Shm->Proc.Technology.ODCM] , BOXKEY_ODCM_ON,
-		stateStr[0][!Shm->Proc.Technology.ODCM],
-			stateAttr[!Shm->Proc.Technology.ODCM],BOXKEY_ODCM_OFF,
-			RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_ODCM_DESC).CODE() , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Technology.ODCM],
+				stateAttr[Shm->Proc.Technology.ODCM],
+								BOXKEY_ODCM_ON,
+			stateStr[0][!Shm->Proc.Technology.ODCM],
+				stateAttr[!Shm->Proc.Technology.ODCM],
+								BOXKEY_ODCM_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
 			&winList);
 	} else {
 		SetHead(&winList, win);
@@ -10286,32 +10356,32 @@ int Shortcut(SCANKEY *scan)
 	  {
 		wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_EXT_DUTY_CYCLE_TITLE).CODE(),
-		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr,BOXKEY_ODCM_DC00,
-	(ASCII*)"            6.25%          ", stateAttr[0], BOXKEY_ODCM_DC01,
-	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC02,
-	(ASCII*)"           18.75%          ", stateAttr[0], BOXKEY_ODCM_DC03,
-	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC04,
-	(ASCII*)"           31.25%          ", stateAttr[0], BOXKEY_ODCM_DC05,
-	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC06,
-	(ASCII*)"           43.75%          ", stateAttr[0], BOXKEY_ODCM_DC07,
-	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC08,
-	(ASCII*)"           56.25%          ", stateAttr[0], BOXKEY_ODCM_DC09,
-	(ASCII*)"           62.50%          ", stateAttr[0], BOXKEY_ODCM_DC10,
-	(ASCII*)"           68.75%          ", stateAttr[0], BOXKEY_ODCM_DC11,
-	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC12,
-	(ASCII*)"           81.25%          ", stateAttr[0], BOXKEY_ODCM_DC13,
-	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC14);
+	    RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr ,  BOXKEY_ODCM_DC00,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT1).CODE(), stateAttr[0],BOXKEY_ODCM_DC01,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT2).CODE(), stateAttr[0],BOXKEY_ODCM_DC02,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT3).CODE(), stateAttr[0],BOXKEY_ODCM_DC03,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT4).CODE(), stateAttr[0],BOXKEY_ODCM_DC04,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT5).CODE(), stateAttr[0],BOXKEY_ODCM_DC05,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT6).CODE(), stateAttr[0],BOXKEY_ODCM_DC06,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT7).CODE(), stateAttr[0],BOXKEY_ODCM_DC07,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT8).CODE(), stateAttr[0],BOXKEY_ODCM_DC08,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT9).CODE(), stateAttr[0],BOXKEY_ODCM_DC09,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT10).CODE(),stateAttr[0],BOXKEY_ODCM_DC10,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT11).CODE(),stateAttr[0],BOXKEY_ODCM_DC11,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT12).CODE(),stateAttr[0],BOXKEY_ODCM_DC12,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT13).CODE(),stateAttr[0],BOXKEY_ODCM_DC13,
+	    RSC(BOX_EXT_DUTY_CYCLE_PCT14).CODE(),stateAttr[0],BOXKEY_ODCM_DC14);
 	  } else {
 		wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_DUTY_CYCLE_TITLE).CODE(),
-		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(), blankAttr,BOXKEY_ODCM_DC00,
-	(ASCII*)"           12.50%          ", stateAttr[0], BOXKEY_ODCM_DC01,
-	(ASCII*)"           25.00%          ", stateAttr[0], BOXKEY_ODCM_DC02,
-	(ASCII*)"           37.50%          ", stateAttr[0], BOXKEY_ODCM_DC03,
-	(ASCII*)"           50.00%          ", stateAttr[0], BOXKEY_ODCM_DC04,
-	(ASCII*)"           62.50%          ", stateAttr[0], BOXKEY_ODCM_DC05,
-	(ASCII*)"           75.00%          ", stateAttr[0], BOXKEY_ODCM_DC06,
-	(ASCII*)"           87.50%          ", stateAttr[0], BOXKEY_ODCM_DC07);
+		RSC(BOX_DUTY_CYCLE_RESERVED).CODE(),blankAttr,BOXKEY_ODCM_DC00,
+		RSC(BOX_DUTY_CYCLE_PCT1).CODE(), stateAttr[0],BOXKEY_ODCM_DC01,
+		RSC(BOX_DUTY_CYCLE_PCT2).CODE(), stateAttr[0],BOXKEY_ODCM_DC02,
+		RSC(BOX_DUTY_CYCLE_PCT3).CODE(), stateAttr[0],BOXKEY_ODCM_DC03,
+		RSC(BOX_DUTY_CYCLE_PCT4).CODE(), stateAttr[0],BOXKEY_ODCM_DC04,
+		RSC(BOX_DUTY_CYCLE_PCT5).CODE(), stateAttr[0],BOXKEY_ODCM_DC05,
+		RSC(BOX_DUTY_CYCLE_PCT6).CODE(), stateAttr[0],BOXKEY_ODCM_DC06,
+		RSC(BOX_DUTY_CYCLE_PCT7).CODE(), stateAttr[0],BOXKEY_ODCM_DC07);
 	  }
 	  if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
@@ -10352,22 +10422,22 @@ int Shortcut(SCANKEY *scan)
 	    };
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
-	RSC(BOX_POWER_POLICY_LOW).CODE()  , stateAttr[0], BOXKEY_PWR_POL00,
-	(ASCII*)"            1           ", stateAttr[0], BOXKEY_PWR_POL01,
-	(ASCII*)"            2           ", stateAttr[0], BOXKEY_PWR_POL02,
-	(ASCII*)"            3           ", stateAttr[0], BOXKEY_PWR_POL03,
-	(ASCII*)"            4           ", stateAttr[0], BOXKEY_PWR_POL04,
-	(ASCII*)"            5           ", stateAttr[0], BOXKEY_PWR_POL05,
-	(ASCII*)"            6           ", stateAttr[0], BOXKEY_PWR_POL06,
-	(ASCII*)"            7           ", stateAttr[0], BOXKEY_PWR_POL07,
-	(ASCII*)"            8           ", stateAttr[0], BOXKEY_PWR_POL08,
-	(ASCII*)"            9           ", stateAttr[0], BOXKEY_PWR_POL09,
-	(ASCII*)"           10           ", stateAttr[0], BOXKEY_PWR_POL10,
-	(ASCII*)"           11           ", stateAttr[0], BOXKEY_PWR_POL11,
-	(ASCII*)"           12           ", stateAttr[0], BOXKEY_PWR_POL12,
-	(ASCII*)"           13           ", stateAttr[0], BOXKEY_PWR_POL13,
-	(ASCII*)"           14           ", stateAttr[0], BOXKEY_PWR_POL14,
-	RSC(BOX_POWER_POLICY_HIGH).CODE() , stateAttr[0], BOXKEY_PWR_POL15);
+		RSC(BOX_POWER_POLICY_LOW).CODE(),stateAttr[0],BOXKEY_PWR_POL00,
+		RSC(BOX_POWER_POLICY_1).CODE(), stateAttr[0], BOXKEY_PWR_POL01,
+		RSC(BOX_POWER_POLICY_2).CODE(), stateAttr[0], BOXKEY_PWR_POL02,
+		RSC(BOX_POWER_POLICY_3).CODE(), stateAttr[0], BOXKEY_PWR_POL03,
+		RSC(BOX_POWER_POLICY_4).CODE(), stateAttr[0], BOXKEY_PWR_POL04,
+		RSC(BOX_POWER_POLICY_5).CODE(), stateAttr[0], BOXKEY_PWR_POL05,
+		RSC(BOX_POWER_POLICY_6).CODE(), stateAttr[0], BOXKEY_PWR_POL06,
+		RSC(BOX_POWER_POLICY_7).CODE(), stateAttr[0], BOXKEY_PWR_POL07,
+		RSC(BOX_POWER_POLICY_8).CODE(), stateAttr[0], BOXKEY_PWR_POL08,
+		RSC(BOX_POWER_POLICY_9).CODE(), stateAttr[0], BOXKEY_PWR_POL09,
+		RSC(BOX_POWER_POLICY_10).CODE(),stateAttr[0], BOXKEY_PWR_POL10,
+		RSC(BOX_POWER_POLICY_11).CODE(),stateAttr[0], BOXKEY_PWR_POL11,
+		RSC(BOX_POWER_POLICY_12).CODE(),stateAttr[0], BOXKEY_PWR_POL12,
+		RSC(BOX_POWER_POLICY_13).CODE(),stateAttr[0], BOXKEY_PWR_POL13,
+		RSC(BOX_POWER_POLICY_14).CODE(),stateAttr[0], BOXKEY_PWR_POL14,
+	      RSC(BOX_POWER_POLICY_HIGH).CODE(),stateAttr[0], BOXKEY_PWR_POL15);
 
 	    if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
@@ -10463,10 +10533,14 @@ int Shortcut(SCANKEY *scan)
 	    };
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
-	RSC(BOX_HWP_POLICY_MIN).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MIN,
-	RSC(BOX_HWP_POLICY_MED).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MED,
-	RSC(BOX_HWP_POLICY_PWR).CODE(), stateAttr[0], BOXKEY_HWP_EPP_PWR,
-	RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0], BOXKEY_HWP_EPP_MAX);
+				RSC(BOX_HWP_POLICY_MIN).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_MIN,
+				RSC(BOX_HWP_POLICY_MED).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_MED,
+				RSC(BOX_HWP_POLICY_PWR).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_PWR,
+				RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_MAX);
 
 	    if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
@@ -10539,14 +10613,16 @@ int Shortcut(SCANKEY *scan)
 			.row = 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " HWP ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_HWP_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Features.HWP_Enable],
-			stateAttr[Shm->Proc.Features.HWP_Enable],BOXKEY_HWP_ON,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_HWP_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_HWP_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Features.HWP_Enable],
+				stateAttr[Shm->Proc.Features.HWP_Enable],
+								BOXKEY_HWP_ON,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -10573,16 +10649,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Features.HDC_Enable ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " HDC ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_HDC_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Features.HDC_Enable],
-		stateAttr[Shm->Proc.Features.HDC_Enable],BOXKEY_HDC_ON,
-		stateStr[0][!Shm->Proc.Features.HDC_Enable],
-		stateAttr[!Shm->Proc.Features.HDC_Enable],BOXKEY_HDC_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_HDC_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_HDC_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Features.HDC_Enable],
+				stateAttr[Shm->Proc.Features.HDC_Enable],
+								BOXKEY_HDC_ON,
+			stateStr[0][!Shm->Proc.Features.HDC_Enable],
+				stateAttr[!Shm->Proc.Features.HDC_Enable],
+								BOXKEY_HDC_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -10617,16 +10696,19 @@ int Shortcut(SCANKEY *scan)
 			.row = Shm->Proc.Features.R2H_Disable ? 4 : 3
 		};
 
-	AppendWindow(CreateBox(scan->key, origin, select, " R2H ",
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		RSC(BOX_R2H_DESC).CODE(), descAttr, SCANKEY_NULL,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL,
-		stateStr[1][Shm->Proc.Features.R2H_Disable],
-		stateAttr[Shm->Proc.Features.R2H_Disable],BOXKEY_R2H_ON,
-		stateStr[0][!Shm->Proc.Features.R2H_Disable],
-		stateAttr[!Shm->Proc.Features.R2H_Disable],BOXKEY_R2H_OFF,
-		RSC(BOX_BLANK_DESC).CODE(), blankAttr, SCANKEY_NULL),
-		&winList);
+	AppendWindow(CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_R2H_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_R2H_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Features.R2H_Disable],
+				stateAttr[Shm->Proc.Features.R2H_Disable],
+								BOXKEY_R2H_ON,
+			stateStr[0][!Shm->Proc.Features.R2H_Disable],
+				stateAttr[!Shm->Proc.Features.R2H_Disable],
+								BOXKEY_R2H_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+			&winList);
 	} else {
 		SetHead(&winList, win);
 	}
@@ -10646,6 +10728,79 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_R2H );
+	}
+    break;
+    case BOXKEY_CFG_TDP_LVL:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL)
+	{
+		const Coordinate origin = {
+			.col=(draw.Size.width - RSZ(BOX_TDP_BLANK)) / 2,
+			.row = TOP_HEADER_ROW + 11
+		}, select = {
+			.col = 0,
+			.row = 1 + Shm->Proc.Features.TDP_Cfg_Level
+		};
+
+		Window *wBox;
+		wBox = CreateBox(scan->key, origin, select,
+				(char *) RSC(BOX_TDP_TITLE).CODE(),
+				RSC(BOX_TDP_BLANK).CODE(), blankAttr,
+							SCANKEY_NULL,
+				RSC(BOX_TDP_LVL0).CODE(), stateAttr[0],
+							BOXKEY_CFG_TDP_LVL0,
+				RSC(BOX_TDP_LVL1).CODE(), stateAttr[0],
+							BOXKEY_CFG_TDP_LVL1,
+				RSC(BOX_TDP_LVL2).CODE(), stateAttr[0],
+							BOXKEY_CFG_TDP_LVL2,
+				RSC(BOX_TDP_BLANK).CODE(), blankAttr,
+							SCANKEY_NULL);
+	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 3] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 4] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 5] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 7] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 9] = 	\
+		TCellAt(wBox, 0, select.row).attr[10] = 	\
+		TCellAt(wBox, 0, select.row).attr[11] = 	\
+		TCellAt(wBox, 0, select.row).attr[12] = 	\
+		TCellAt(wBox, 0, select.row).attr[13] = 	\
+		TCellAt(wBox, 0, select.row).attr[14] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 3] = '<';
+		TCellAt(wBox, 0, select.row).item[14] = '>';
+
+		AppendWindow(wBox, &winList);
+	    }
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
+    case BOXKEY_CFG_TDP_LVL0:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0,
+				TECHNOLOGY_CFG_TDP_LVL );
+	}
+    break;
+    case BOXKEY_CFG_TDP_LVL1:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				1,
+				TECHNOLOGY_CFG_TDP_LVL );
+	}
+    break;
+    case BOXKEY_CFG_TDP_LVL2:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				2,
+				TECHNOLOGY_CFG_TDP_LVL );
 	}
     break;
     case BOXKEY_LIMIT_IDLE_STATE:
@@ -10905,6 +11060,46 @@ int Shortcut(SCANKEY *scan)
 	}
     }
     break;
+    case BOXKEY_RATIO_ACTIVATION:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+	if (win == NULL) {
+		CPU_STRUCT *SProc = &Shm->Cpu[Shm->Proc.Service.Core];
+		struct FLIP_FLOP *CFlop = &SProc->FlipFlop[
+					!Shm->Cpu[Shm->Proc.Service.Core].Toggle
+		];
+		CLOCK_ARG clockMod  = {.sllong = scan->key};
+		const unsigned int NC = clockMod.NC & CLOCKMOD_RATIO_MASK;
+
+		signed int lowestShift, highestShift;
+		ComputeRatioShifts(SProc->Boost[BOOST(ACT)],
+				0,
+				MAXCLOCK_TO_RATIO(unsigned int,CFlop->Clock.Hz),
+				&lowestShift,
+				&highestShift);
+
+		AppendWindow(CreateRatioClock(scan->key,
+				SProc->Boost[BOOST(ACT)],
+				-1,
+				NC,
+				lowestShift,
+				highestShift,
+
+				( SProc->Boost[BOOST(MIN)]
+				+ Shm->Proc.Features.Factory.Ratio ) >> 1,
+
+				Shm->Proc.Features.Factory.Ratio
+			    + ((MAXCLOCK_TO_RATIO(signed int, CFlop->Clock.Hz)
+				- Shm->Proc.Features.Factory.Ratio ) >> 1),
+
+				BOXKEY_CFGTDP_CLOCK,
+				TitleForRatioClock,
+				35), &winList);
+	} else {
+		SetHead(&winList, win);
+	}
+    }
+    break;
     case BOXKEY_UNCORE_CLOCK_MAX:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -10998,18 +11193,26 @@ int Shortcut(SCANKEY *scan)
 			.row = 0
 		};
 
-	Window *wBox = CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_TOOLS_TITLE).CODE(),
-		RSC(BOX_TOOLS_STOP_BURN).CODE(), BITVAL(Shm->Proc.Sync, BURN) ?
-					MakeAttr(RED,0,BLACK,1) : blankAttr,
+	Window *wBox;
+	wBox = CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_TOOLS_TITLE).CODE(),
+			RSC(BOX_TOOLS_STOP_BURN).CODE(),
 				BITVAL(Shm->Proc.Sync, BURN) ?
-					BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
-	RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0], BOXKEY_TOOLS_ATOMIC,
-	RSC(BOX_TOOLS_CRC32_BURN).CODE() ,stateAttr[0], BOXKEY_TOOLS_CRC32,
-	RSC(BOX_TOOLS_CONIC_BURN).CODE() ,stateAttr[0], BOXKEY_TOOLS_CONIC,
-	RSC(BOX_TOOLS_RANDOM_CPU).CODE() ,stateAttr[0], BOXKEY_TOOLS_TURBO_RND,
-    RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(),stateAttr[0], BOXKEY_TOOLS_TURBO_RR,
-	RSC(BOX_TOOLS_USER_CPU).CODE()   ,stateAttr[0], BOXKEY_TOOLS_TURBO_CPU);
+				MakeAttr(RED,0,BLACK,1) : blankAttr,
+			BITVAL(Shm->Proc.Sync, BURN) ?
+				BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
+			RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0],
+				BOXKEY_TOOLS_ATOMIC,
+			RSC(BOX_TOOLS_CRC32_BURN).CODE() ,stateAttr[0],
+				BOXKEY_TOOLS_CRC32,
+			RSC(BOX_TOOLS_CONIC_BURN).CODE() ,stateAttr[0],
+				BOXKEY_TOOLS_CONIC,
+			RSC(BOX_TOOLS_RANDOM_CPU).CODE() ,stateAttr[0],
+				BOXKEY_TOOLS_TURBO_RND,
+			RSC(BOX_TOOLS_ROUND_ROBIN_CPU).CODE(), stateAttr[0],
+				BOXKEY_TOOLS_TURBO_RR,
+			RSC(BOX_TOOLS_USER_CPU).CODE(), stateAttr[0],
+				BOXKEY_TOOLS_TURBO_CPU);
 
 		if (wBox != NULL) {
 			AppendWindow(wBox, &winList);
@@ -11050,8 +11253,9 @@ int Shortcut(SCANKEY *scan)
 			.row = 0
 		};
 
-	Window *wBox = CreateBox(scan->key, origin, select,
-				(char*) RSC(BOX_CONIC_TITLE).CODE(),
+	Window *wBox;
+	wBox = CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_CONIC_TITLE).CODE(),
 		RSC(BOX_CONIC_ITEM_1).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC0,
 		RSC(BOX_CONIC_ITEM_2).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC1,
 		RSC(BOX_CONIC_ITEM_3).CODE(), stateAttr[0],BOXKEY_TOOLS_CONIC2,
@@ -11636,6 +11840,15 @@ int Shortcut(SCANKEY *scan)
 		if (!RING_FULL(Shm->Ring[0])) {
 		    RING_WRITE( Shm->Ring[0],
 				COREFREQ_IOCTL_RATIO_CLOCK, clockMod.sllong );
+		}
+	    }
+	    else if (clockMod.NC & BOXKEY_CFGTDP_CLOCK)
+	    {
+			clockMod.NC &= CLOCKMOD_RATIO_MASK;
+
+		if (!RING_FULL(Shm->Ring[0])) {
+		    RING_WRITE( Shm->Ring[0],
+				COREFREQ_IOCTL_CONFIG_TDP, clockMod.sllong );
 		}
 	    }
 	    else if (clockMod.NC & BOXKEY_UNCORE_CLOCK)
