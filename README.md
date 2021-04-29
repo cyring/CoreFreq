@@ -188,7 +188,8 @@ CPU     IPS            IPC            CPI
 ![alt text](http://blog.cyring.free.fr/images/CoreFreq_SysInfo.png "CoreFreq System Info")
 
 ## ArchLinux
-[corefreq-git](https://aur.archlinux.org/packages/corefreq-git) can be installed from the Arch User Repository.
+* [![corefreq](https://img.shields.io/aur/version/corefreq-dkms?style=flat-square)](https://aur.archlinux.org/pkgbase/corefreq/) follows released tags
+* [![corefreq-git](https://img.shields.io/aur/version/corefreq-dkms-git?style=flat-square)](https://aur.archlinux.org/pkgbase/corefreq-git/) follows `develop` branch
 
 ## Debian, Ubuntu
  * Installing the DKMS package will pull the Kernel development packages  
