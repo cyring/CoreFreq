@@ -294,20 +294,6 @@
 #define RSC_LARGEST_EXT_FUNC_CODE_EN	"Largest Extended Function"
 
 #define RSC_SYS_REGS_TITLE_CODE_EN	" System Registers "
-#define RSC_SYS_REGS_SPACE_CODE_EN	"    "
-#define RSC_SYS_REGS_NA_CODE_EN 	"  - "
-#define RSC_SYS_REGS_HDR_CPU_CODE_EN	"CPU "
-#define RSC_SYS_REG_HDR_FLAGS_CODE_EN	"FLAG"
-#define RSC_SYS_REG_HDR_TF_CODE_EN	" TF "
-#define RSC_SYS_REG_HDR_IF_CODE_EN	" IF "
-#define RSC_SYS_REG_HDR_IOPL_CODE_EN	"IOPL"
-#define RSC_SYS_REG_HDR_NT_CODE_EN	" NT "
-#define RSC_SYS_REG_HDR_RF_CODE_EN	" RF "
-#define RSC_SYS_REG_HDR_VM_CODE_EN	" VM "
-#define RSC_SYS_REG_HDR_AC_CODE_EN	" AC "
-#define RSC_SYS_REG_HDR_VIF_CODE_EN	" VIF"
-#define RSC_SYS_REG_HDR_VIP_CODE_EN	" VIP"
-#define RSC_SYS_REG_HDR_ID_CODE_EN	" ID "
 #define RSC_SYS_REG_FLAGS_TF_CODE_EN	" Trap Flag "
 #define RSC_SYS_REG_FLAGS_IF_CODE_EN	" Interrupt Flag "
 #define RSC_SYS_REG_FLAGS_IOPL_CODE_EN	" I/O Privilege Level "
@@ -318,18 +304,6 @@
 #define RSC_SYS_REG_FLAGS_VIF_CODE_EN	" Virtual Interrupt Flag "
 #define RSC_SYS_REG_FLAGS_VIP_CODE_EN	" Virtual Interrupt Pending "
 #define RSC_SYS_REG_FLAGS_ID_CODE_EN	" Identification "
-#define RSC_SYS_REG_HDR_CR0_CODE_EN	"CR0:"
-#define RSC_SYS_REG_HDR_CR0_PE_CODE_EN	" PE "
-#define RSC_SYS_REG_HDR_CR0_MP_CODE_EN	" MP "
-#define RSC_SYS_REG_HDR_CR0_EM_CODE_EN	" EM "
-#define RSC_SYS_REG_HDR_CR0_TS_CODE_EN	" TS "
-#define RSC_SYS_REG_HDR_CR0_ET_CODE_EN	" ET "
-#define RSC_SYS_REG_HDR_CR0_NE_CODE_EN	" NE "
-#define RSC_SYS_REG_HDR_CR0_WP_CODE_EN	" WP "
-#define RSC_SYS_REG_HDR_CR0_AM_CODE_EN	" AM "
-#define RSC_SYS_REG_HDR_CR0_NW_CODE_EN	" NW "
-#define RSC_SYS_REG_HDR_CR0_CD_CODE_EN	" CD "
-#define RSC_SYS_REG_HDR_CR0_PG_CODE_EN	" PG "
 #define RSC_SYS_REGS_CR0_CODE_EN	" Control Register 0 "
 #define RSC_SYS_REG_CR0_PE_CODE_EN	" Protection Enable "
 #define RSC_SYS_REG_CR0_MP_CODE_EN	" Monitor Coprocessor "
@@ -342,37 +316,9 @@
 #define RSC_SYS_REG_CR0_NW_CODE_EN	" Not Write-through "
 #define RSC_SYS_REG_CR0_CD_CODE_EN	" Cache Disable "
 #define RSC_SYS_REG_CR0_PG_CODE_EN	" Paging enable "
-#define RSC_SYS_REG_HDR_CR3_CODE_EN	"CR3:"
-#define RSC_SYS_REG_HDR_CR3_PWT_CODE_EN " PWT"
-#define RSC_SYS_REG_HDR_CR3_PCD_CODE_EN " PCD"
 #define RSC_SYS_REGS_CR3_CODE_EN	" Control Register 3 "
 #define RSC_SYS_REG_CR3_PWT_CODE_EN	" Page-level Write-Through "
 #define RSC_SYS_REG_CR3_PCD_CODE_EN	" Page-level Cache Disable "
-#define RSC_SYS_REG_HDR_CR4_CODE_EN	"CR4:"
-#define RSC_SYS_REG_HDR_CR4_VME_CODE_EN " VME"
-#define RSC_SYS_REG_HDR_CR4_PVI_CODE_EN " PVI"
-#define RSC_SYS_REG_HDR_CR4_TSD_CODE_EN " TSD"
-#define RSC_SYS_REG_HDR_CR4_DE_CODE_EN	" DE "
-#define RSC_SYS_REG_HDR_CR4_PSE_CODE_EN " PSE"
-#define RSC_SYS_REG_HDR_CR4_PAE_CODE_EN " PAE"
-#define RSC_SYS_REG_HDR_CR4_MCE_CODE_EN " MCE"
-#define RSC_SYS_REG_HDR_CR4_PGE_CODE_EN " PGE"
-#define RSC_SYS_REG_HDR_CR4_PCE_CODE_EN " PCE"
-#define RSC_SYS_REG_HDR_CR4_FX_CODE_EN	" FX "
-#define RSC_SYS_REG_HDR_CR4_XMM_CODE_EN "XMM "
-#define RSC_SYS_REG_HDR_CR4_UMIP_CODE_EN "UMIP"
-#define RSC_SYS_REG_HDR_CR4_5LP_CODE_EN " 5LP"
-#define RSC_SYS_REG_HDR_CR4_VMX_CODE_EN " VMX"
-#define RSC_SYS_REG_HDR_CR4_SMX_CODE_EN " SMX"
-#define RSC_SYS_REG_HDR_CR4_FS_CODE_EN	" FS "
-#define RSC_SYS_REG_HDR_CR4_PCID_CODE_EN "PCID"
-#define RSC_SYS_REG_HDR_CR4_SAV_CODE_EN " SAV"
-#define RSC_SYS_REG_HDR_CR4_KL_CODE_EN	"  KL"
-#define RSC_SYS_REG_HDR_CR4_SME_CODE_EN " SME"
-#define RSC_SYS_REG_HDR_CR4_SMA_CODE_EN " SMA"
-#define RSC_SYS_REG_HDR_CR4_PKE_CODE_EN " PKE"
-#define RSC_SYS_REG_HDR_CR4_CET_CODE_EN " CET"
-#define RSC_SYS_REG_HDR_CR4_PKS_CODE_EN " PKS"
 #define RSC_SYS_REGS_CR4_CODE_EN	" Control Register 4 "
 #define RSC_SYS_REG_CR4_VME_CODE_EN	" Virtual-8086 Mode Extensions "
 #define RSC_SYS_REG_CR4_PVI_CODE_EN	" Protected-mode Virtual Interrupts "
@@ -397,21 +343,12 @@
 #define RSC_SYS_REG_CR4_SMA_CODE_EN	" Supervisor-Mode Access Prevention "
 #define RSC_SYS_REG_CR4_PKE_CODE_EN	" Protection Keys for user-mode pages "
 #define RSC_SYS_REG_CR4_CET_CODE_EN	" Control-flow Enforcement Technology "
+
 #define RSC_SYS_REG_CR4_PKS_CODE_EN	\
 				" Protection Keys for Supervisor-mode pages "
-#define RSC_SYS_REG_HDR_CR8_CODE_EN	"CR8:"
-#define RSC_SYS_REG_HDR_CR8_TPL_CODE_EN " TPL"
+
 #define RSC_SYS_REGS_CR8_CODE_EN	" Control Register 8 "
 #define RSC_SYS_REG_CR8_TPL_CODE_EN	" Task Priority Level "
-#define RSC_SYS_REG_HDR_EFCR_CODE_EN	"EFCR"
-#define RSC_SYS_REG_HDR_EFCR_LCK_CODE_EN "LCK "
-#define RSC_SYS_REG_HDR_EFCR_VMX_CODE_EN "VMX^"
-#define RSC_SYS_REG_HDR_EFCR_SGX_CODE_EN "SGX "
-#define RSC_SYS_REG_HDR_EFCR_LSE_CODE_EN "[SEN"
-#define RSC_SYS_REG_HDR_EFCR_GSE_CODE_EN "TER]"
-#define RSC_SYS_REG_HDR_EFCR_LSGX_CODE_EN " [ S"
-#define RSC_SYS_REG_HDR_EFCR_GSGX_CODE_EN "GX ]"
-#define RSC_SYS_REG_HDR_EFCR_LMC_CODE_EN " LMC"
 #define RSC_SYS_REGS_EFCR_CODE_EN	" Feature Control Bits Register "
 #define RSC_SYS_REG_EFCR_LCK_CODE_EN	" Lock bit "
 #define RSC_SYS_REG_EFCR_VMX_CODE_EN	" VMX Inside SMX Operation "
@@ -421,12 +358,6 @@
 #define RSC_SYS_REG_EFCR_LSGX_CODE_EN	" SGX Launch Control "
 #define RSC_SYS_REG_EFCR_GSGX_CODE_EN	" SGX Global Functions "
 #define RSC_SYS_REG_EFCR_LMC_CODE_EN	" Local Machine Check "
-#define RSC_SYS_REG_HDR_EFER_CODE_EN	"EFER"
-#define RSC_SYS_REG_HDR_EFER_SCE_CODE_EN " SCE"
-#define RSC_SYS_REG_HDR_EFER_LME_CODE_EN " LME"
-#define RSC_SYS_REG_HDR_EFER_LMA_CODE_EN " LMA"
-#define RSC_SYS_REG_HDR_EFER_NXE_CODE_EN " NXE"
-#define RSC_SYS_REG_HDR_EFER_SVM_CODE_EN " SVM"
 #define RSC_SYS_REGS_EFER_CODE_EN	" Extended-Feature-Enable Register "
 #define RSC_SYS_REG_EFER_SCE_CODE_EN	" System-Call Extension "
 #define RSC_SYS_REG_EFER_LME_CODE_EN	" Long Mode Enable "
@@ -435,25 +366,33 @@
 #define RSC_SYS_REG_EFER_SVM_CODE_EN	" Secure Virtual Machine Enable "
 
 #define RSC_ISA_TITLE_CODE_EN		" Instruction Set Extensions "
+
 #define RSC_ISA_3DNOW_COMM_CODE_EN	\
 			" AMD 3DNow! SIMD instructions / 3DNow! Extensions "
+
 #define RSC_ISA_ADX_COMM_CODE_EN	" Multi-Precision Add-Carry "
 #define RSC_ISA_AES_COMM_CODE_EN	" Advanced Encryption Standard "
 #define RSC_ISA_AVX_COMM_CODE_EN	" Advanced Vector Extensions "
 #define RSC_ISA_BMI_COMM_CODE_EN	" Bit Manipulation Instructions "
 #define RSC_ISA_CLWB_COMM_CODE_EN	" Cache Line Write Back "
 #define RSC_ISA_CLFLUSH_COMM_CODE_EN	" Flush Cache Line / CLFLUSH Optimized "
+
 #define RSC_ISA_AC_FLAG_COMM_CODE_EN	\
 				" Clear AC - Set AC Flag in EFLAGS Register "
+
 #define RSC_ISA_CMOV_COMM_CODE_EN	" Conditional Move instructions "
 #define RSC_ISA_XCHG8B_COMM_CODE_EN	" Compare and Exchange 8 Bytes "
 #define RSC_ISA_XCHG16B_COMM_CODE_EN	" Compare and Exchange 16 Bytes "
+
 #define RSC_ISA_F16C_COMM_CODE_EN	\
 			" 16-bit floating-point conversion instructions "
+
 #define RSC_ISA_FPU_COMM_CODE_EN	" Floating Point Unit On-Chip "
 #define RSC_ISA_FXSR_COMM_CODE_EN	" FXSAVE and FXRSTOR instructions "
+
 #define RSC_ISA_LSHF_COMM_CODE_EN	\
 				" Load-Store Status Flags into AH register "
+
 #define RSC_ISA_MMX_COMM_CODE_EN	" MultiMedia eXtensions / Extended MMX "
 #define RSC_ISA_MWAITX_COMM_CODE_EN	" Monitor Wait / MWAIT eXtensions "
 #define RSC_ISA_MOVBE_COMM_CODE_EN	" Move Data After Swapping Bytes "
@@ -468,14 +407,19 @@
 #define RSC_ISA_SSE_COMM_CODE_EN	" Streaming SIMD Extensions "
 #define RSC_ISA_SSE2_COMM_CODE_EN	" Streaming SIMD Extensions 2 "
 #define RSC_ISA_SSE3_COMM_CODE_EN	" Streaming SIMD Extensions 3 "
+
 #define RSC_ISA_SSSE3_COMM_CODE_EN	\
 				" Supplemental Streaming SIMD Extensions 3 "
+
 #define RSC_ISA_SSE4_1_COMM_CODE_EN	\
 				" Streaming SIMD Extensions 4.1 / AMD SSE 4A "
+
 #define RSC_ISA_SSE4_2_COMM_CODE_EN	" Streaming SIMD Extensions 4.2 "
 #define RSC_ISA_SERIALIZE_COMM_CODE_EN	" Serialize instruction "
+
 #define RSC_ISA_SYSCALL_COMM_CODE_EN	\
 			" Fast System Call and SYSRET - Return From SYSCALL "
+
 #define RSC_ISA_RDPID_COMM_CODE_EN	" Read Processor ID "
 #define RSC_ISA_UMIP_COMM_CODE_EN	" User Mode Instruction Prevention "
 #define RSC_ISA_SGX_COMM_CODE_EN	" Intel Software Guard eXtensions "
@@ -495,8 +439,10 @@
 #define RSC_FEATURES_CNXT_ID_CODE_EN	"L1 Data Cache Context ID"
 #define RSC_FEATURES_DCA_CODE_EN	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_EN 	"Debugging Extension"
+
 #define RSC_FEATURES_DS_PEBS_CODE_EN	\
 				"Debug Store & Precise Event Based Sampling"
+
 #define RSC_FEATURES_DS_CPL_CODE_EN	"CPL Qualified Debug Store"
 #define RSC_FEATURES_DTES_64_CODE_EN	"64-Bit Debug Store"
 #define RSC_FEATURES_FAST_STR_CODE_EN	"Fast-String Operation"
@@ -695,6 +641,164 @@
 #define RSC_MEM_CTRL_DIMM_SIZE_2_CODE_EN	"Size "
 #define RSC_MEM_CTRL_DIMM_SIZE_3_CODE_EN	"(MB) "
 
+#define RSC_DDR3_CL_COMM_CODE_EN	" tCL ( CAS Latency ) "
+#define RSC_DDR3_RCD_COMM_CODE_EN	" tRCD ( Activate to CAS ) "
+#define RSC_DDR3_RP_COMM_CODE_EN	" tRP ( RAS Precharge to Activate ) "
+#define RSC_DDR3_RAS_COMM_CODE_EN	" tRAS ( Activate to Precharge ) "
+#define RSC_DDR3_RRD_COMM_CODE_EN   " tRRD ( Activate to Activate, Same Rank ) "
+#define RSC_DDR3_RFC_COMM_CODE_EN	" tRFC ( Refresh to Refresh ) "
+#define RSC_DDR3_WR_COMM_CODE_EN	" tWR ( Write Recovery ) "
+#define RSC_DDR3_RTP_COMM_CODE_EN	" tRTPr ( Read CAS to Precharge ) "
+#define RSC_DDR3_WTP_COMM_CODE_EN	" tWTPr ( Write CAS to Precharge ) "
+#define RSC_DDR3_FAW_COMM_CODE_EN	" tFAW ( Four Activate Window ) "
+#define RSC_DDR3_B2B_COMM_CODE_EN	" B2B ( CAS commands spacing ) "
+#define RSC_DDR3_CWL_COMM_CODE_EN	" tCWL ( CAS Write Latency ) "
+#define RSC_DDR3_CMD_COMM_CODE_EN	" CMD ( Command Rate ) "
+#define RSC_DDR3_REFI_COMM_CODE_EN	" tREFI ( Refresh Interval ) "
+
+#define RSC_DDR3_DDWRTRD_COMM_CODE_EN	\
+				" tddWrTRd ( Write to Read, Different DIMM ) "
+
+#define RSC_DDR3_DRWRTRD_COMM_CODE_EN	\
+		" tdrWrTRd ( Write to Read, Different Rank, Same DIMM ) "
+
+#define RSC_DDR3_SRWRTRD_COMM_CODE_EN  " tsrWrTRd ( Write to Read, Same Rank ) "
+
+#define RSC_DDR3_DDRDTWR_COMM_CODE_EN	\
+				" tddRdTWr ( Read to Write, Different DIMM ) "
+
+#define RSC_DDR3_DRRDTWR_COMM_CODE_EN	\
+		" tdrRdTWr ( Read to Write, Different Rank, Same DIMM ) "
+
+#define RSC_DDR3_SRRDTWR_COMM_CODE_EN  " tsrRdTWr ( Read to Write, Same Rank ) "
+
+#define RSC_DDR3_DDRDTRD_COMM_CODE_EN	\
+				" tddRdTRd ( Read to Read, Different DIMM ) "
+
+#define RSC_DDR3_DRRDTRD_COMM_CODE_EN	\
+			" tdrRdTRd ( Read to Read, Different Rank, Same DIMM ) "
+
+#define RSC_DDR3_SRRDTRD_COMM_CODE_EN	" tsrRdTRd ( Read to Read, Same Rank ) "
+
+#define RSC_DDR3_DDWRTWR_COMM_CODE_EN	\
+				" tddWrTWr ( Write to Write, Different DIMM ) "
+
+#define RSC_DDR3_DRWRTWR_COMM_CODE_EN	\
+		" tdrWrTWr ( Write to Write, Different Rank, Same DIMM ) "
+
+#define RSC_DDR3_SRWRTWR_COMM_CODE_EN " tsrWrTWr ( Write to Write, Same Rank ) "
+#define RSC_DDR3_CKE_COMM_CODE_EN	" tCKE ( ClocK Enable ) "
+#define RSC_DDR3_ECC_COMM_CODE_EN	" ECC ( Error Correcting Code ) "
+#define RSC_DDR4_RDRD_SCL_COMM_CODE_EN	" tRDRD ( Read to Read, Same Bank ) "
+#define RSC_DDR4_RDRD_SC_COMM_CODE_EN " tRDRD ( Read to Read, Different Bank ) "
+#define RSC_DDR4_RDRD_SD_COMM_CODE_EN " tRDRD ( Read to Read, Different Rank ) "
+#define RSC_DDR4_RDRD_DD_COMM_CODE_EN " tRDRD ( Read to Read, Different DIMM ) "
+#define RSC_DDR4_RDWR_SCL_COMM_CODE_EN	" tRDWR ( Read to Write, Same Bank ) "
+
+#define RSC_DDR4_RDWR_SC_COMM_CODE_EN	\
+				" tRDWR ( Read to Write, Different Bank ) "
+
+#define RSC_DDR4_RDWR_SD_COMM_CODE_EN	\
+				" tRDWR ( Read to Write, Different Rank ) "
+
+#define RSC_DDR4_RDWR_DD_COMM_CODE_EN	\
+				" tRDWR ( Read to Write, Different DIMM ) "
+
+#define RSC_DDR4_WRRD_SCL_COMM_CODE_EN	" tWRRD ( Write to Read, Same Bank ) "
+
+#define RSC_DDR4_WRRD_SC_COMM_CODE_EN	\
+				" tWRRD ( Write to Read, Different Bank ) "
+
+#define RSC_DDR4_WRRD_SD_COMM_CODE_EN	\
+				" tWRRD ( Write to Read, Different Rank ) "
+
+#define RSC_DDR4_WRRD_DD_COMM_CODE_EN	\
+				" tWRRD ( Write to Read, Different DIMM ) "
+
+#define RSC_DDR4_WRWR_SCL_COMM_CODE_EN	" tWRWR ( Write to Write, Same Bank ) "
+
+#define RSC_DDR4_WRWR_SC_COMM_CODE_EN	\
+				" tWRWR ( Write to Write, Different Bank ) "
+
+#define RSC_DDR4_WRWR_SD_COMM_CODE_EN	\
+				" tWRWR ( Write to Write, Different Rank ) "
+
+#define RSC_DDR4_WRWR_DD_COMM_CODE_EN	\
+				" tWRWR ( Write to Write, Different DIMM ) "
+
+#define RSC_DDR4_ZEN_RCD_R_COMM_CODE_EN " tRCD_R ( Activate to Read CAS ) "
+#define RSC_DDR4_ZEN_RCD_W_COMM_CODE_EN " tRCD_W ( Activate to Write CAS ) "
+#define RSC_DDR4_ZEN_RC_COMM_CODE_EN	" tRC ( Activate to Activate ) "
+
+#define RSC_DDR4_ZEN_RRD_S_COMM_CODE_EN \
+		" tRRD_S ( Activate to Activate, Different Bank Group ) "
+
+#define RSC_DDR4_ZEN_RRD_L_COMM_CODE_EN \
+			" tRRD_L ( Activate to Activate, Same Bank Group ) "
+
+#define RSC_DDR4_ZEN_WTR_S_COMM_CODE_EN \
+			" tWTR_S ( Write to Read, Different Bank Group ) "
+
+#define RSC_DDR4_ZEN_WTR_L_COMM_CODE_EN \
+				" tWTR_L ( Write to Read, Same Bank Group ) "
+
+#define RSC_DDR4_ZEN_RDRD_SCL_COMM_CODE_EN \
+				" tRDRD[SCL] ( Read to Read, Same Bank Group ) "
+
+#define RSC_DDR4_ZEN_WRWR_SCL_COMM_CODE_EN \
+			" tWRWR[SCL] ( Write to Write, Same Bank Group ) "
+
+#define RSC_DDR4_ZEN_RTP_COMM_CODE_EN	" tRTP ( Read To Precharge ) "
+#define RSC_DDR4_ZEN_RDWR_COMM_CODE_EN	" tRDWR ( Read Write Command Spacing ) "
+#define RSC_DDR4_ZEN_WRRD_COMM_CODE_EN	" tWRRD ( Write Read Command Spacing ) "
+
+#define RSC_DDR4_ZEN_WRWR_SC_COMM_CODE_EN \
+				" tWRWR[SC] ( tWRWR, Different Bank Group ) "
+
+#define RSC_DDR4_ZEN_WRWR_SD_COMM_CODE_EN \
+					" tWRWR[SD] ( tWRWR, Different Rank) "
+
+#define RSC_DDR4_ZEN_WRWR_DD_COMM_CODE_EN \
+					" tWRWR[DD] ( tWRWR, Different DIMM ) "
+
+#define RSC_DDR4_ZEN_RDRD_SC_COMM_CODE_EN \
+				" tRDRD[SC] ( tRDRD, Different Bank Group ) "
+
+#define RSC_DDR4_ZEN_RDRD_SD_COMM_CODE_EN \
+					" tRDRD[SD] ( tRDRD, Different Rank ) "
+
+#define RSC_DDR4_ZEN_RDRD_DD_COMM_CODE_EN \
+					" tRDRD[DD] ( tRDRD, Different DIMM ) "
+
+#define RSC_DDR4_ZEN_RTR_DLR_COMM_CODE_EN \
+				" tRTR[DLR] ( tRTR, Different Logical Rank ) "
+
+#define RSC_DDR4_ZEN_WTW_DLR_COMM_CODE_EN \
+				" tWTW[DLR] ( tWTR, Different Logical Rank ) "
+
+#define RSC_DDR4_ZEN_WTR_DLR_COMM_CODE_EN \
+				" tWTR[DLR] ( tWTR, Different Logical Rank ) "
+
+#define RSC_DDR4_ZEN_RRD_DLR_COMM_CODE_EN \
+				" tRRD[DLR] ( tRRD, Different Logical Rank ) "
+
+#define RSC_DDR4_ZEN_RFC1_COMM_CODE_EN " tRFC1 ( Refresh to Refresh, 1X mode ) "
+#define RSC_DDR4_ZEN_RFC2_COMM_CODE_EN " tRFC2 ( Refresh to Refresh, 2X mode ) "
+#define RSC_DDR4_ZEN_RFC4_COMM_CODE_EN " tRFC4 ( Refresh to Refresh, 4X mode ) "
+#define RSC_DDR4_ZEN_RCPB_COMM_CODE_EN	" tRCPB ( Row Cycle Time, Per-Bank ) "
+
+#define RSC_DDR4_ZEN_RPPB_COMM_CODE_EN \
+				" tRPPB ( Row Precharge Time, Per-Bank ) "
+
+#define RSC_DDR4_ZEN_BGS_COMM_CODE_EN	" BGS ( BankGroupSwap ) "
+
+#define RSC_DDR4_ZEN_BGS_ALT_COMM_CODE_EN \
+					" BGS Alt ( BankGroupSwap Alternate ) "
+
+#define RSC_DDR4_ZEN_BAN_COMM_CODE_EN	" tBAN ( Timing Ban, RTR | WTW ) "
+#define RSC_DDR4_ZEN_RCPAGE_COMM_CODE_EN " tRCPage ( Row Cycle Page Time ) "
+#define RSC_DDR4_ZEN_GDM_COMM_CODE_EN	" GDM ( Gear Down Mode ) "
+
 #define RSC_TASKS_SORTBY_STATE_CODE_EN		" State    "
 #define RSC_TASKS_SORTBY_RTIME_CODE_EN		" RunTime  "
 #define RSC_TASKS_SORTBY_UTIME_CODE_EN		" UserTime "
@@ -741,6 +845,11 @@
 #define RSC_SETTINGS_TITLE_CODE_EN	      " Settings "
 #define RSC_SETTINGS_DAEMON_CODE_EN	      " Daemon gate                    "
 #define RSC_SETTINGS_INTERVAL_CODE_EN	      " Interval(ms)            <    > "
+#define RSC_SETTINGS_SYS_TICK_CODE_EN	      " Sys. Tick(ms)                  "
+#define RSC_SETTINGS_POLL_WAIT_CODE_EN	      " Poll Wait(ms)                  "
+#define RSC_SETTINGS_RING_WAIT_CODE_EN	      " Ring Wait(ms)                  "
+#define RSC_SETTINGS_CHILD_WAIT_CODE_EN       " Child Wait(ms)                 "
+#define RSC_SETTINGS_SLICE_WAIT_CODE_EN       " Slice Wait(ms)                 "
 #define RSC_SETTINGS_RECORDER_CODE_EN	      " Recorder(sec)           <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_EN       " Auto Clock               <   > "
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_EN     " Experimental             <   > "
@@ -769,11 +878,15 @@
 #define RSC_HELP_KEY_PAGE_DOWN_CODE_EN	" [Page-Dw]        "
 #define RSC_HELP_KEY_MINUS_CODE_EN	" [Minus]          "
 #define RSC_HELP_KEY_PLUS_CODE_EN	" [Plus]           "
+#define RSC_HELP_KEY_MENU_CODE_EN	" [F2]             "
 #define RSC_HELP_MENU_CODE_EN		"             Menu "
 #define RSC_HELP_CLOSE_WINDOW_CODE_EN	"     Close window "
 #define RSC_HELP_PREV_WINDOW_CODE_EN	"  Previous window "
 #define RSC_HELP_NEXT_WINDOW_CODE_EN	"      Next window "
+#define RSC_HELP_KEY_SHIFT_GR1_CODE_EN	"       [a|z]      "
+#define RSC_HELP_KEY_SHIFT_GR2_CODE_EN	" [w|q]  [s]  [d] +"
 #define RSC_HELP_MOVE_WINDOW_CODE_EN	" [Shift] Move Win "
+#define RSC_HELP_KEY_ALT_GR3_CODE_EN	"                 +"
 #define RSC_HELP_SIZE_WINDOW_CODE_EN	"  [Alt]  Size Win "
 #define RSC_HELP_MOVE_SELECT_CODE_EN	"   Move selection "
 #define RSC_HELP_LAST_CELL_CODE_EN	"        Last cell "
@@ -842,10 +955,10 @@
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
 
-#define RSC_BOX_NOMINAL_MODE_COND0_CODE_EN "       Nominal operating mode       "
-#define RSC_BOX_NOMINAL_MODE_COND1_CODE_EN "     < Nominal operating mode >     "
-#define RSC_BOX_EXPER_MODE_COND0_CODE_EN   "     Experimental operating mode    "
-#define RSC_BOX_EXPER_MODE_COND1_CODE_EN   "   < Experimental operating mode >  "
+#define RSC_BOX_NOM_MODE_COND0_CODE_EN    "       Nominal operating mode       "
+#define RSC_BOX_NOM_MODE_COND1_CODE_EN    "     < Nominal operating mode >     "
+#define RSC_BOX_EXP_MODE_COND0_CODE_EN    "     Experimental operating mode    "
+#define RSC_BOX_EXP_MODE_COND1_CODE_EN    "   < Experimental operating mode >  "
 
 #define RSC_BOX_INTERRUPT_TITLE_CODE_EN 	" NMI Interrupts "
 #define RSC_BOX_CPU_IDLE_TITLE_CODE_EN		" CPU-IDLE driver "
@@ -853,10 +966,10 @@
 #define RSC_BOX_GOVERNOR_TITLE_CODE_EN		" Governor driver "
 #define RSC_BOX_CLOCK_SOURCE_TITLE_CODE_EN	" Clock Source "
 
-#define RSC_BOX_OPS_REGISTER_ST0_CODE_EN   "              Register              "
-#define RSC_BOX_OPS_REGISTER_ST1_CODE_EN   "            < Register >            "
-#define RSC_BOX_OPS_UNREGISTER_ST0_CODE_EN "             Unregister             "
-#define RSC_BOX_OPS_UNREGISTER_ST1_CODE_EN "           < Unregister >           "
+#define RSC_BOX_OPS_REGISTER_ST0_CODE_EN "              Register              "
+#define RSC_BOX_OPS_REGISTER_ST1_CODE_EN "            < Register >            "
+#define RSC_BOX_OPS_UNREGIST_ST0_CODE_EN "             Unregister             "
+#define RSC_BOX_OPS_UNREGIST_ST1_CODE_EN "           < Unregister >           "
 
 #define RSC_BOX_EVENT_TITLE_CODE_EN		" Clear Event "
 
@@ -890,10 +1003,15 @@
 #define RSC_BOX_POWER_POLICY_LOW_CODE_EN	"            0       LOW "
 #define RSC_BOX_POWER_POLICY_HIGH_CODE_EN	"           15      HIGH "
 
-#define RSC_BOX_HWP_POLICY_MIN_CODE_EN		"         Minimum        "
-#define RSC_BOX_HWP_POLICY_MED_CODE_EN		"         Medium         "
-#define RSC_BOX_HWP_POLICY_PWR_CODE_EN		"         Power          "
-#define RSC_BOX_HWP_POLICY_MAX_CODE_EN		"         Maximum        "
+#define RSC_BOX_HWP_POLICY_MIN_CODE_EN		"         Minimum:0      "
+#define RSC_BOX_HWP_POLICY_020_CODE_EN		"                32      "
+#define RSC_BOX_HWP_POLICY_040_CODE_EN		"                64      "
+#define RSC_BOX_HWP_POLICY_060_CODE_EN		"                96      "
+#define RSC_BOX_HWP_POLICY_MED_CODE_EN		"        Medium:128      "
+#define RSC_BOX_HWP_POLICY_0A0_CODE_EN		"               160      "
+#define RSC_BOX_HWP_POLICY_PWR_CODE_EN		"         Power:192      "
+#define RSC_BOX_HWP_POLICY_0E0_CODE_EN		"               224      "
+#define RSC_BOX_HWP_POLICY_MAX_CODE_EN		"       Maximum:255      "
 
 #define RSC_BOX_TOOLS_TITLE_CODE_EN		" Tools "
 #define RSC_BOX_TOOLS_STOP_CODE_EN		"            STOP           "
@@ -971,11 +1089,14 @@
 
 #define RSC_ERROR_SHARED_MEM_CODE_EN					\
 		"Daemon connection error code %d\n%s: '%s' @ line %d\n"
+
 #define RSC_ERROR_SYS_CALL_CODE_EN	"System error code %d\n%s @ line %d\n"
 #define RSC_ERROR_UNIMPLEMENTED_CODE_EN "Feature is not implemented"
 #define RSC_ERROR_EXPERIMENTAL_CODE_EN	"Experimental mode is required"
+
 #define RSC_ERROR_TURBO_PREREQ_CODE_EN	"Turbo Boost | Core Performance Boost"\
 					" must be disabled"
+
 #define RSC_ERROR_UNCORE_PREREQ_CODE_EN "Invalid Uncore prerequisites"
 
 #define RSC_ERROR_PSTATE_NOT_FOUND_CODE_EN				\
@@ -996,25 +1117,32 @@
 #define RSC_MECH_RDCL_NO_CODE_EN   "Architectural - Rogue Data Cache Load"
 #define RSC_MECH_IBRS_ALL_CODE_EN  "Architectural - Enhanced IBRS"
 #define RSC_MECH_RSBA_CODE_EN	"Architectural - Return Stack Buffer Alternate"
+
 #define RSC_MECH_L1DFL_VMENTRY_NO_CODE_EN \
 				"Hypervisor - No flush L1D on VM entry"
+
 #define RSC_MECH_SSB_NO_CODE_EN "Architectural - Speculative Store Bypass"
+
 #define RSC_MECH_MDS_NO_CODE_EN \
 			"Architectural - Microarchitectural Data Sampling"
+
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_EN "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_EN "Architectural - TSX Asynchronous Abort"
 #define RSC_MECH_SPLA_CODE_EN	"Architectural - Split Locked Access Exception"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_EN	"  %3s       Processor     " \
 						"   %s     %c%4u %c "
+
 #define RSC_CREATE_SELECT_FREQ_TURBO_CODE_EN	"  %3s       Processor     " \
 						"%7.2f MHz %c%4u %c "
+
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_EN	"  TGT       Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_EN	"  HWP-TGT   Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_MAX_CODE_EN	"  HWP-MAX   Processor     "
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_EN	"  HWP-MIN   Processor     "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_EN	"  MAX       Processor     "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_EN	"  MIN       Processor     "
+
 #define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_EN	"  %03u                    " \
 						"               Off   "
 

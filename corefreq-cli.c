@@ -278,7 +278,7 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 		ATTRIBUTE *attrib, ...)
 {
 	TGrid *pGrid = NULL;
-	ASCII *item = malloc(32);
+	ASCII *item = malloc(MIN_WIDTH);
     if (item != NULL)
     {
 	char *fmt;
@@ -286,7 +286,7 @@ TGrid *Print_v2(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		vsnprintf((char*) item, 32, fmt, ap);
+		vsnprintf((char*) item, MIN_WIDTH, fmt, ap);
 		if (OutFunc == NULL) {
 			(*nl)--;
 			if ((*nl) == 0) {
@@ -310,7 +310,7 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 		ATTRIBUTE *attrib, ...)
 {
 	TGrid *pGrid = NULL;
-	ASCII *item = malloc(32);
+	ASCII *item = malloc(MIN_WIDTH);
     if (item != NULL)
     {
 	char *fmt;
@@ -318,7 +318,7 @@ TGrid *Print_v3(CELL_FUNC OutFunc,
 	va_start(ap, attrib);
 	if ((fmt = va_arg(ap, char*)) != NULL)
 	{
-		vsnprintf((char*) item, 32, fmt, ap);
+		vsnprintf((char*) item, MIN_WIDTH, fmt, ap);
 		if (OutFunc == NULL) {
 			(*nl)--;
 			if ((*nl) == (win->matrix.size.wth - 1)) {
@@ -892,50 +892,50 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	unsigned int activeCores;
 	enum RATIO_BOOST boost = 0;
 
-	PUT(SCANKEY_NULL, attrib[0], width, 0,
+	PUT(	SCANKEY_NULL, attrib[0], width, 0,
 		"%s""%.*s[%s]", RSC(PROCESSOR).CODE(),
 		width - 2 - RSZ(PROCESSOR) - strlen(Shm->Proc.Brand),
-		hSpace, Shm->Proc.Brand);
+		hSpace, Shm->Proc.Brand );
 
     if (Shm->Proc.Features.Factory.PPIN > 0)
     {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%16llx]", "PPIN#",
 		width - 21 - __builtin_strlen("PPIN#"),
-		hSpace, Shm->Proc.Features.Factory.PPIN);
+		hSpace, Shm->Proc.Features.Factory.PPIN );
     }
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%s]", RSC(ARCHITECTURE).CODE(),
 		width - 5 - RSZ(ARCHITECTURE) - strlen(Shm->Proc.Architecture),
-		hSpace, Shm->Proc.Architecture);
+		hSpace, Shm->Proc.Architecture );
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[%s]", RSC(VENDOR_ID).CODE(),
 	width - 5 - RSZ(VENDOR_ID) - strlen(Shm->Proc.Features.Info.Vendor.ID),
-		hSpace, Shm->Proc.Features.Info.Vendor.ID);
+		hSpace, Shm->Proc.Features.Info.Vendor.ID );
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[0x%08x]", RSC(MICROCODE).CODE(),
 		width - 15 - RSZ(MICROCODE), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode);
+		Shm->Cpu[Shm->Proc.Service.Core].Query.Microcode );
 
-	PUT(SCANKEY_NULL, attrib[2], width, 2,
+	PUT(	SCANKEY_NULL, attrib[2], width, 2,
 		"%s""%.*s[%3X%1X_%1X%1X]", RSC(SIGNATURE).CODE(),
 		width - 12 - RSZ(SIGNATURE), hSpace,
 		Shm->Proc.Features.Std.EAX.ExtFamily,
 		Shm->Proc.Features.Std.EAX.Family,
 		Shm->Proc.Features.Std.EAX.ExtModel,
-		Shm->Proc.Features.Std.EAX.Model);
+		Shm->Proc.Features.Std.EAX.Model );
 
-	PUT(SCANKEY_NULL, attrib[2], width, 2,
+	PUT(	SCANKEY_NULL, attrib[2], width, 2,
 		"%s""%.*s[%7u]", RSC(STEPPING).CODE(),
 		width - 12 - RSZ(STEPPING), hSpace,
-		Shm->Proc.Features.Std.EAX.Stepping);
+		Shm->Proc.Features.Std.EAX.Stepping );
 
-	PUT(SCANKEY_NULL, attrib[2], width, 2,
+	PUT(	SCANKEY_NULL, attrib[2], width, 2,
 		"%s""%.*s[%3u/%3u]", RSC(ONLINE_CPU).CODE(),
 		width - 12 - RSZ(ONLINE_CPU), hSpace,
-		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count);
+		Shm->Proc.CPU.OnLine, Shm->Proc.CPU.Count );
 
 	CFlop = &Shm->Cpu[
 			Shm->Proc.Service.Core
@@ -943,17 +943,17 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[Shm->Proc.Service.Core].Toggle
 			];
 
-	GridCall(PUT(SCANKEY_NULL, attrib[2], width, 2,
+	GridCall( PUT(	SCANKEY_NULL, attrib[2], width, 2,
 			"%s""%.*s[%7.3f]", RSC(BASE_CLOCK).CODE(),
 			width - 12 - RSZ(BASE_CLOCK), hSpace,
-			CLOCK_MHz(double, CFlop->Clock.Hz)),
-		RefreshBaseClock);
+			CLOCK_MHz(double, CFlop->Clock.Hz) ),
+		RefreshBaseClock );
 
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s(MHz)%.*s""%s", RSC(FREQUENCY).CODE(),
 		21 - RSZ(FREQUENCY), hSpace,
 		23 - (OutFunc == NULL), hSpace,
-		RSC(RATIO).CODE());
+		RSC(RATIO).CODE() );
 
     {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
@@ -966,7 +966,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(MIN) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Min",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(MIN) ]
@@ -986,7 +986,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(MAX) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Max",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(MAX) ]
@@ -996,17 +996,17 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshTopFreq, BOOST(MAX) );
     }
 
-	GridCall(PUT(SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
+	GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 2, "%s""%.*s[%7.3f]",
 			RSC(FACTORY).CODE(),
 			(OutFunc == NULL ? 68 : 64) - RSZ(FACTORY), hSpace,
-			CLOCK_MHz(double,Shm->Proc.Features.Factory.Clock.Hz)),
-		RefreshFactoryClock);
+			CLOCK_MHz(double,Shm->Proc.Features.Factory.Clock.Hz) ),
+		RefreshFactoryClock );
 
-	GridCall(PUT(SCANKEY_NULL, attrib[3], width, 0,
+	GridCall( PUT(	SCANKEY_NULL, attrib[3], width, 0,
 			"%.*s""%5u""%.*s""[%4d ]",
 			22, hSpace, Shm->Proc.Features.Factory.Freq,
-			23, hSpace, Shm->Proc.Features.Factory.Ratio),
-		RefreshFactoryFreq);
+			23, hSpace, Shm->Proc.Features.Factory.Ratio ),
+		RefreshFactoryFreq );
 
 	PUT(SCANKEY_NULL, attrib[0], width, 2, "%s", RSC(PERFORMANCE).CODE());
 
@@ -1022,7 +1022,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(TGT) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				1, "TGT",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(TGT) ]
@@ -1045,7 +1045,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(HWP_MIN) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				1, "Min",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_MIN) ]
@@ -1062,7 +1062,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[Ruler.Top[ BOOST(HWP_MAX) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				1, "Max",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_MAX) ]
@@ -1079,7 +1079,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(HWP_TGT) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				1, "TGT",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(HWP_TGT) ]
@@ -1089,11 +1089,11 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RefreshTopFreq, BOOST(HWP_TGT) );
     }
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.Turbo_Unlock],
 		width, 2,
 		"Turbo Boost%.*s[%7.*s]", width - 23, hSpace, 6,
 			Shm->Proc.Features.Turbo_Unlock ?
-				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
@@ -1106,7 +1106,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(XFR) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "XFR",
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(XFR) ]
@@ -1123,7 +1123,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(CPB) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "CPB",
 			&Shm->Cpu[Ruler.Top[BOOST(CPB)]].Boost[BOOST(CPB)],
 				0, SCANKEY_NULL,
@@ -1147,7 +1147,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[boost] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, pfx, &Shm->Cpu[
 						Ruler.Top[boost]
 						].Boost[boost],
@@ -1157,39 +1157,39 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       }
     }
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.Uncore_Unlock],
 		width, 2, "Uncore%.*s[%7.*s]", width - 18, hSpace, 6,
 			Shm->Proc.Features.Uncore_Unlock ?
-				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
     if (Shm->Proc.Features.Uncore_Unlock) {
 	CLOCK_ARG uncoreClock = {.NC = 0, .Offset = 0};
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MIN;
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
 				1, uncoreClock.sllong,
-				width, OutFunc, attrib[3]),
-		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
+				width, OutFunc, attrib[3] ),
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
 	uncoreClock.NC = BOXKEY_UNCORE_CLOCK_OR | CLOCK_MOD_MAX;
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
 				1, uncoreClock.sllong,
 				width, OutFunc, attrib[3]),
-		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)] );
     } else {
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Min", &Shm->Uncore.Boost[UNCORE_BOOST(MIN)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)]);
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MIN)] );
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, "Max", &Shm->Uncore.Boost[UNCORE_BOOST(MAX)],
 				0, SCANKEY_NULL,
 				width, OutFunc, attrib[3]),
-		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)]);
+		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)] );
     }
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
@@ -1201,38 +1201,38 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
 	if (Shm->Proc.Features.TDP_Cfg_Lock) {
-		PUT(SCANKEY_NULL, attrib[0], width, 2,
+		PUT(	SCANKEY_NULL, attrib[0], width, 2,
 			"TDP%.*s""%s"" [%3d:%-3d]",
 			width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
 			Shm->Proc.Features.TDP_Cfg_Level,
-			Shm->Proc.Features.TDP_Levels);
+			Shm->Proc.Features.TDP_Levels );
 	} else {
-		GridCall(PUT(BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
+		GridCall( PUT(	BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
 				"TDP%.*s""%s"" <%3d:%-3d>",
 				width - 16 - RSZ(LEVEL),
 				hSpace, RSC(LEVEL).CODE(),
 				Shm->Proc.Features.TDP_Cfg_Level,
-				Shm->Proc.Features.TDP_Levels),
-			RefreshConfigTDP);
+				Shm->Proc.Features.TDP_Levels ),
+			RefreshConfigTDP );
 	}
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
 		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(PROGRAMMABLE), hSpace,
 			6, Shm->Proc.Features.TDP_Unlock == 1 ?
-				RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Cfg_Lock == 0],
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Cfg_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(CONFIGURATION).CODE(),
 		width - (OutFunc == NULL ? 15:13) - RSZ(CONFIGURATION),hSpace,
 			6, Shm->Proc.Features.TDP_Cfg_Lock == 1 ?
-				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
+				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.TurboActiv_Lock == 0],
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TurboActiv_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(TURBO_ACTIVATION).CODE(),
 		width - (OutFunc == NULL ? 15:13)-RSZ(TURBO_ACTIVATION),hSpace,
 			6, Shm->Proc.Features.TurboActiv_Lock == 1 ?
-				RSC(LOCK).CODE() : RSC(UNLOCK).CODE());
+				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
 	CFlop = &Shm->Cpu[
 			Ruler.Top[ BOOST(TDP) ]
@@ -1241,7 +1241,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			Ruler.Top[ BOOST(TDP) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, (char*) RSC(NOMINAL).CODE(),
 				&Shm->Cpu[
 					Ruler.Top[ BOOST(TDP) ]
@@ -1258,7 +1258,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(TDP1) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, pfx, &Shm->Cpu[
 						Ruler.Top[ BOOST(TDP1) ]
 						].Boost[ BOOST(TDP1) ],
@@ -1274,7 +1274,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 			!Shm->Cpu[ Ruler.Top[ BOOST(TDP2) ] ].Toggle
 			];
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				0, pfx, &Shm->Cpu[
 						Ruler.Top[ BOOST(TDP2) ]
 						].Boost[ BOOST(TDP2) ],
@@ -1290,7 +1290,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	coreClock.NC = BOXKEY_CFGTDP_CLOCK_OR | CLOCK_MOD_ACT;
 
-	GridCall(PrintRatioFreq(win, CFlop,
+	GridCall( PrintRatioFreq(win, CFlop,
 				1, "Turbo", &Shm->Cpu[
 						Ruler.Top[ BOOST(ACT) ]
 						].Boost[ BOOST(ACT) ],
@@ -2961,53 +2961,56 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 /* Section Mark */
     if (Shm->Proc.PM_version > 0)
     {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPM       [%3d]", RSC(VERSION).CODE(),
-		width - 17 - RSZ(VERSION), hSpace, Shm->Proc.PM_version);
+		width - 17 - RSZ(VERSION), hSpace, Shm->Proc.PM_version );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*sPM       [%3s]", RSC(VERSION).CODE(),
-		width - 17 - RSZ(VERSION), hSpace, RSC(NOT_AVAILABLE).CODE());
+		width - 17 - RSZ(VERSION), hSpace, RSC(NOT_AVAILABLE).CODE() );
     }
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s:%.*s%s%.*s%s",
 		RSC(COUNTERS).CODE(),10, hSpace, RSC(GENERAL_CTRS).CODE(),
-		width - 61, hSpace, RSC(FIXED_CTRS).CODE());
+		width - 61, hSpace, RSC(FIXED_CTRS).CODE() );
 
     if (OutFunc == NULL) {
-	PUT(SCANKEY_NULL, attrib[0], width, 1,
+	PUT(	SCANKEY_NULL, attrib[0], width, 1,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
 		11, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
-				Shm->Proc.Features.PerfMon.EDX.FixWidth);
+				Shm->Proc.Features.PerfMon.EDX.FixWidth );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 0,
+	PUT(	SCANKEY_NULL, attrib[0], width, 0,
 		"%.*s%3u x%3u bits%.*s%3u x%3u bits",
 		19, hSpace,	Shm->Proc.Features.PerfMon.EAX.MonCtrs,
 				Shm->Proc.Features.PerfMon.EAX.MonWidth,
 		5, hSpace,	Shm->Proc.Features.PerfMon.EDX.FixCtrs,
-				Shm->Proc.Features.PerfMon.EDX.FixWidth);
+				Shm->Proc.Features.PerfMon.EDX.FixWidth );
     }
 	bix = Shm->Proc.Technology.C1E == 1;
-	GridCall(PUT(BOXKEY_C1E, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_C1E, attrib[bix], width, 2,
 			"%s%.*sC1E       <%3s>", RSC(PERF_MON_C1E).CODE(),
-			width - 18 - RSZ(PERF_MON_C1E), hSpace, ENABLED(bix)),
-		C1E_Update);
+			width - 18 - RSZ(PERF_MON_C1E), hSpace, ENABLED(bix) ),
+		C1E_Update );
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Technology.C1A == 1;
-	GridCall(PUT(BOXKEY_C1A, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_C1A, attrib[bix], width, 2,
 			"%s%.*sC1A       <%3s>", RSC(PERF_MON_C1A).CODE(),
-			width - 18 - RSZ(PERF_MON_C1A), hSpace, ENABLED(bix)),
-		C1A_Update);
+			width - 18 - RSZ(PERF_MON_C1A), hSpace, ENABLED(bix) ),
+		C1A_Update );
 
 	bix = Shm->Proc.Technology.C3A == 1;
-	GridCall(PUT(BOXKEY_C3A, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_C3A, attrib[bix], width, 2,
 			"%s%.*sC3A       <%3s>", RSC(PERF_MON_C3A).CODE(),
-			width - 18 - RSZ(PERF_MON_C3A), hSpace, ENABLED(bix)),
-		C3A_Update);
+			width - 18 - RSZ(PERF_MON_C3A), hSpace, ENABLED(bix) ),
+		C3A_Update );
     }
 
 	bix = Shm->Proc.Technology.C1U == 1;
@@ -3015,70 +3018,78 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
     if ( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      ||  (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
-	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
+	GridCall( PUT(	BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*sC2U       <%3s>", RSC(PERF_MON_C2U).CODE(),
 			width - 18 - RSZ(PERF_MON_C2U),
-			hSpace, ENABLED(bix)),
-		C1U_Update);
+			hSpace, ENABLED(bix) ),
+		C1U_Update );
     } else {
-	GridCall(PUT(BOXKEY_C1U, attrib[bix], width, 2,
+	GridCall( PUT(	BOXKEY_C1U, attrib[bix], width, 2,
 			"%s%.*sC1U       <%3s>", RSC(PERF_MON_C1U).CODE(),
 			width - 18 - RSZ(PERF_MON_C1U),
-			hSpace, ENABLED(bix)),
-		C1U_Update);
+			hSpace, ENABLED(bix) ),
+		C1U_Update );
     }
 
 	bix = Shm->Proc.Technology.C3U == 1;
-	GridCall(PUT(BOXKEY_C3U, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_C3U, attrib[bix], width, 2,
 			"%s%.*sC3U       <%3s>", RSC(PERF_MON_C3U).CODE(),
-			width - 18 - RSZ(PERF_MON_C3U), hSpace, ENABLED(bix)),
-		C3U_Update);
+			width - 18 - RSZ(PERF_MON_C3U), hSpace, ENABLED(bix) ),
+		C3U_Update );
 
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = Shm->Proc.Technology.CC6 == 1;
-	GridCall(PUT(BOXKEY_CC6, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_CC6, attrib[bix], width, 2,
 			"%s%.*sCC6       <%3s>", RSC(PERF_MON_CC6).CODE(),
-			width - 18 - RSZ(PERF_MON_CC6), hSpace, ENABLED(bix)),
-		CC6_Update);
+			width - 18 - RSZ(PERF_MON_CC6), hSpace, ENABLED(bix) ),
+		CC6_Update );
 
 	bix = Shm->Proc.Technology.PC6 == 1;
-	GridCall(PUT(BOXKEY_PC6, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_PC6, attrib[bix], width, 2,
 			"%s%.*sPC6       <%3s>", RSC(PERF_MON_PC6).CODE(),
-			width - 18 - RSZ(PERF_MON_PC6), hSpace, ENABLED(bix)),
-		PC6_Update);
+			width - 18 - RSZ(PERF_MON_PC6), hSpace, ENABLED(bix) ),
+		PC6_Update );
     } else {
 	bix = Shm->Proc.Technology.CC6 == 1;
-	GridCall(PUT(BOXKEY_CC6, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_CC6, attrib[bix], width, 2,
 			"%s%.*sCC6       <%3s>", RSC(PERF_MON_C6D).CODE(),
-			width - 18 - RSZ(PERF_MON_C6D), hSpace, ENABLED(bix)),
-		CC6_Update);
+			width - 18 - RSZ(PERF_MON_C6D), hSpace, ENABLED(bix) ),
+		CC6_Update );
 
 	bix = Shm->Proc.Technology.PC6 == 1;
-	GridCall(PUT(BOXKEY_PC6, attrib[bix], width, 2,
+
+	GridCall( PUT(	BOXKEY_PC6, attrib[bix], width, 2,
 			"%s%.*sMC6       <%3s>", RSC(PERF_MON_MC6).CODE(),
-			width - 18 - RSZ(PERF_MON_MC6), hSpace, ENABLED(bix)),
-		PC6_Update);
+			width - 18 - RSZ(PERF_MON_MC6), hSpace, ENABLED(bix) ),
+		PC6_Update );
     }
 	bix = Shm->Proc.Features.AdvPower.EDX.FID == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sFID       [%3s]", RSC(PERF_MON_FID).CODE(),
-		width - 18 - RSZ(PERF_MON_FID), hSpace, ENABLED(bix));
+		width - 18 - RSZ(PERF_MON_FID), hSpace, ENABLED(bix) );
 
 	bix = (Shm->Proc.Features.AdvPower.EDX.VID == 1);
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sVID       [%3s]", RSC(PERF_MON_VID).CODE(),
-		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix));
+		width - 18 - RSZ(PERF_MON_VID), hSpace, ENABLED(bix) );
 
 	bix = (Shm->Proc.Features.Power.ECX.HCF_Cap == 1)
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1))
 	   || ((Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON)
 		&& (Shm->Proc.Features.AdvPower.EDX.EffFrqRO == 1));
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*sMPERF/APERF       [%3s]", RSC(PERF_MON_HWCF).CODE(),
-		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix));
+		width - 26 - RSZ(PERF_MON_HWCF), hSpace, ENABLED(bix) );
 
 	bix = Shm->Proc.Features.Power.EAX.HWP_Reg == 1;	/* Intel */
     if (bix)
@@ -3093,16 +3104,16 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 	};
 	bix = Shm->Proc.Features.HWP_Enable == 1;
 
-	GridCall(PUT(BOXKEY_HWP, attrib[bix], width, 2,
+	GridCall( PUT(	BOXKEY_HWP, attrib[bix], width, 2,
 			"%s%.*sHWP       <%3s>", RSC(PERF_MON_HWP).CODE(),
-			width - 18 - RSZ(PERF_MON_HWP), hSpace, ENABLED(bix)),
+			width - 18 - RSZ(PERF_MON_HWP), hSpace, ENABLED(bix) ),
 		HWP_Update);
 
-	PUT(SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
+	PUT(	SCANKEY_NULL, RSC(SYSINFO_PROC_COND0).ATTR(), width, 3,
 		"%s""%.*s(MHz)%.*s""%s", RSC(CAPABILITIES).CODE(),
 		21 - 3*(OutFunc == NULL) - RSZ(CAPABILITIES), hSpace,
 		22, hSpace,
-		RSC(RATIO).CODE());
+		RSC(RATIO).CODE() );
 
 	GridCall(PrintRatioFreq(win, CFlop,
 			1, (char*) RSC(LOWEST).CODE(),
@@ -3153,86 +3164,95 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		bix = 0;
 		cix = 4;
 	}
-	PUT(SCANKEY_NULL, attrib[cix], width, 2,
+	PUT(	SCANKEY_NULL, attrib[cix], width, 2,
 		"%s%.*sHWP       [%3s]", RSC(PERF_MON_HWP).CODE(),
 		width - 18 - RSZ(PERF_MON_HWP), hSpace,
-		ENABLED(bix));
+		ENABLED(bix) );
     }
 /* Section Mark */
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Features.HDC_Enable == 1;
-      if (Shm->Proc.Features.Power.EAX.HDC_Reg)
-      {
-	GridCall(
-		PUT(BOXKEY_HDC,
-			attrib[bix], width, 2,
-			"%s%.*sHDC       <%3s>", RSC(PERF_MON_HDC).CODE(),
-			width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix)),
-		HDC_Update );
-      }
-      else
-      {
-	PUT(	SCANKEY_NULL,
-		attrib[0], width, 2,
-		"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
-		width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix) );
-      }
+
+	if (Shm->Proc.Features.Power.EAX.HDC_Reg)
+	{
+		GridCall( PUT(	BOXKEY_HDC,
+				attrib[bix], width, 2,
+				"%s%.*sHDC       <%3s>",
+				RSC(PERF_MON_HDC).CODE(),
+				width - 18 - RSZ(PERF_MON_HDC), hSpace,
+				ENABLED(bix) ),
+			HDC_Update );
+	}
+	else
+	{
+		PUT(	SCANKEY_NULL,
+			attrib[0], width, 2,
+			"%s%.*sHDC       [%3s]", RSC(PERF_MON_HDC).CODE(),
+			width - 18 - RSZ(PERF_MON_HDC), hSpace, ENABLED(bix) );
+	}
 /* Section Mark */
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s", RSC(PERF_MON_PKG_CSTATE).CODE());
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s", RSC(PERF_MON_PKG_CSTATE).CODE() );
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock == 0 ? 3 : 0;
 
-	PUT(SCANKEY_NULL, attrib[bix], width, 3,
+	PUT(	SCANKEY_NULL, attrib[bix], width, 3,
 		"%s%.*sCONFIG   [%7s]", RSC(PERF_MON_CFG_CTRL).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(PERF_MON_CFG_CTRL), hSpace,
 		!Shm->Cpu[Shm->Proc.Service.Core].Query.CfgLock ?
-			RSC(UNLOCK).CODE() : RSC(LOCK).CODE());
+			RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
 
-	    GridCall(PUT(BOXKEY_PKGCST, attrib[0], width, 3,
+	GridCall( PUT(	BOXKEY_PKGCST, attrib[0], width, 3,
 			"%s%.*sLIMIT   <%7s>", RSC(PERF_MON_LOW_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_LOW_CSTATE), hSpace,
-	      CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateLimit]),
-		CStateLimit_Update);
+			CST_Encoding[Shm->Cpu[
+					Shm->Proc.Service.Core
+					].Query.CStateLimit] ),
+		CStateLimit_Update );
 
-		bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3:2;
-	    GridCall(PUT(BOXKEY_IOMWAIT, attrib[bix], width, 3,
+	bix = Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir == 1 ? 3 : 2;
+
+	GridCall( PUT(	BOXKEY_IOMWAIT, attrib[bix], width, 3,
 			"%s%.*sIOMWAIT   <%7s>", RSC(PERF_MON_IOMWAIT).CODE(),
 			width - (OutFunc == NULL ? 25 : 23)
 			- RSZ(PERF_MON_IOMWAIT), hSpace,
 			Shm->Cpu[Shm->Proc.Service.Core].Query.IORedir ?
-				RSC(ENABLE).CODE() : RSC(DISABLE).CODE()),
-		IOMWAIT_Update);
+				RSC(ENABLE).CODE() : RSC(DISABLE).CODE() ),
+		IOMWAIT_Update );
 
-	    GridCall(PUT(BOXKEY_IORCST, attrib[0], width, 3,
+	GridCall( PUT(	BOXKEY_IORCST, attrib[0], width, 3,
 			"%s%.*sRANGE   <%7s>", RSC(PERF_MON_MAX_CSTATE).CODE(),
 			width - (OutFunc == NULL ? 23 : 21)
 			- RSZ(PERF_MON_MAX_CSTATE), hSpace,
-	    CST_Encoding[Shm->Cpu[Shm->Proc.Service.Core].Query.CStateInclude]),
-		CStateRange_Update);
+			CST_Encoding[Shm->Cpu[
+					Shm->Proc.Service.Core
+					].Query.CStateInclude] ),
+		CStateRange_Update );
     }
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s", RSC(PERF_MON_CORE_CSTATE).CODE());
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s", RSC(PERF_MON_CORE_CSTATE).CODE() );
 
-	PUT(SCANKEY_NULL,
-	attrib[!Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr ? 0 : 2],
+	PUT(	SCANKEY_NULL,
+		attrib[ !Shm->Cpu[
+				Shm->Proc.Service.Core
+			].Query.CStateBaseAddr ? 0 : 2 ],
 		width, 3,
 		"%s%.*sBAR   [ 0x%-4X]", RSC(PERF_MON_CSTATE_BAR).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
 		- RSZ(PERF_MON_CSTATE_BAR), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr);
+		Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr );
 /* Section Mark */
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE());
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s", RSC(PERF_MON_MONITOR_MWAIT).CODE() );
 
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s:%.*s#0    #1    #2    #3    #4    #5    #6    #7",
-		RSC(PERF_MON_MWAIT_IDX_CSTATE).CODE(), 04, hSpace);
+		RSC(PERF_MON_MWAIT_IDX_CSTATE).CODE(), 04, hSpace );
 
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s:%.*s%2d    %2d    %2d    %2d    %2d    %2d    %2d    %2d",
 		RSC(PERF_MON_MWAIT_SUB_CSTATE).CODE(),
 		15 - RSZ(PERF_MON_MWAIT_SUB_CSTATE), hSpace,
@@ -3243,62 +3263,72 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT4,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT5,
 		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT6,
-		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7);
+		Shm->Proc.Features.MWait.EDX.SubCstate_MWAIT7 );
 /* Section Mark */
 	bix = Shm->Proc.Features.PerfMon.EBX.CoreCycles == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_CORE_CYCLE), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.PerfMon.EBX.InstrRetired == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_INST_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_INST_RET), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.PerfMon.EBX.RefCycles == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_CYCLE).CODE(),
-		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_REF_CYCLE), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Ref == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_REF_LLC).CODE(),
-		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_REF_LLC), hSpace, POWERED(bix) );
 
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	bix = Shm->Proc.Features.PerfMon.EBX.LLC_Misses == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_MISS_LLC).CODE(),
-		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_MISS_LLC), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchRetired == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_RET).CODE(),
-		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_BRANCH_RET), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.PerfMon.EBX.BranchMispred == 0 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_BRANCH_MIS).CODE(),
-		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_BRANCH_MIS), hSpace, POWERED(bix) );
     }
     else if( (Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	  || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON) )
     {
 	bix = Shm->Proc.Features.ExtInfo.ECX.PerfTSC == 1 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_TSC).CODE(),
-		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_TSC), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.PerfNB == 1 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_NB_DF).CODE(),
-		width - 12 - RSZ(PERF_MON_NB_DF), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_NB_DF), hSpace, POWERED(bix) );
 
 	bix = Shm->Proc.Features.ExtInfo.ECX.PerfCore == 1 ? 2 : 0;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
 		"%s%.*s[%7s]", RSC(PERF_MON_CORE).CODE(),
-		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix));
+		width - 12 - RSZ(PERF_MON_CORE), hSpace, POWERED(bix) );
     }
 	return (reason);
 }
@@ -3402,225 +3432,266 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
   if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
 	bix = Shm->Proc.Features.Std.EDX.ACPI == 1;
-	GridCall(PUT(bix ? BOXKEY_ODCM : SCANKEY_NULL,
-		attrib[ bix ? 3 : 1 ],
-			width, 2,
-			"%s%.*sODCM   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
+	GridCall( PUT(	bix ? BOXKEY_ODCM : SCANKEY_NULL,
+			attrib[ bix ? 3 : 1 ], width, 2,
+			"%s%.*s%s   %c%7s%c", RSC(POWER_THERMAL_ODCM).CODE(),
 			width - 19 - RSZ(POWER_THERMAL_ODCM), hSpace,
+			RSC(POWER_LABEL_ODCM).CODE(),
 			bix ? '<' : '[',
 			(Shm->Proc.Technology.ODCM == 1) ?
 				RSC(ENABLE).CODE() : RSC(DISABLE).CODE(),
-			bix ? '>' : ']'),
-		ODCM_Update);
+			bix ? '>' : ']' ),
+		ODCM_Update );
 
 	bix = (Shm->Proc.Features.Std.EDX.ACPI == 1)
 	   && (Shm->Proc.Technology.ODCM == 1);
 
-      GridCall(PUT(bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL,
-		attrib[0],
-		width, 3,
-		"%s%.*s%c%6.2f%%%c", RSC(POWER_THERMAL_DUTY).CODE(),
-	width - (OutFunc == NULL ? 15: 13) - RSZ(POWER_THERMAL_DUTY), hSpace,
-		bix ? '<' : '[',
-	(Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.Extended ?
-		6.25f : 12.5f)
-	* Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.DutyCycle.ClockMod,
-		bix ? '>' : ']'),
-      DutyCycle_Update);
+	GridCall( PUT(	bix ? BOXKEY_DUTYCYCLE : SCANKEY_NULL,
+			attrib[0], width, 3,
+			"%s%.*s%c%6.2f%%%c", RSC(POWER_THERMAL_DUTY).CODE(),
+			width - (OutFunc == NULL ? 15: 13)
+			 - RSZ(POWER_THERMAL_DUTY), hSpace,
+			bix ? '<' : '[',
+			(Shm->Cpu[
+				Shm->Proc.Service.Core
+			].PowerThermal.DutyCycle.Extended ? 6.25f : 12.5f)
+			* Shm->Cpu[
+				Shm->Proc.Service.Core
+			].PowerThermal.DutyCycle.ClockMod,
+			bix ? '>' : ']' ),
+		DutyCycle_Update );
 
 	bix = Shm->Proc.Technology.PowerMgmt == 1;
-	PUT(SCANKEY_NULL,
-		attrib[ bix ? 3 : 0 ],
-		width, 2,
-		"%s%.*sPWR MGMT   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
+	PUT(	SCANKEY_NULL, attrib[ bix ? 3 : 0 ], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MGMT).CODE(),
 		width - 23 - RSZ(POWER_THERMAL_MGMT), hSpace,
-		Unlock[Shm->Proc.Technology.PowerMgmt]);
+		RSC(POWER_LABEL_PWM).CODE(),
+		Unlock[Shm->Proc.Technology.PowerMgmt] );
 
 	bix = Shm->Proc.Features.Power.ECX.SETBH == 1;
     if (bix) {
-      GridCall(PUT(BOXKEY_PWR_POLICY,
-		attrib[0],
-		width, 3,
-		"%s%.*sBias Hint   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
-	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy),
-	Hint_Update,
-		&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+	GridCall( PUT(	BOXKEY_PWR_POLICY, attrib[0], width, 3,
+			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
+			width - (OutFunc == NULL ? 27 : 25)
+			 - RSZ(POWER_THERMAL_BIAS), hSpace,
+			RSC(POWER_LABEL_BIAS).CODE(),
+			Shm->Cpu[
+				Shm->Proc.Service.Core
+			].PowerThermal.PowerPolicy ),
+		Hint_Update,
+		&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy );
     } else {
-	PUT(SCANKEY_NULL,
-		attrib[0],
-		width, 3,
-		"%s%.*sBias Hint   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
-	width - (OutFunc == NULL ? 27 : 25) - RSZ(POWER_THERMAL_BIAS), hSpace,
-		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy);
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
+		width - (OutFunc == NULL ? 27 : 25)
+		 - RSZ(POWER_THERMAL_BIAS), hSpace,
+		RSC(POWER_LABEL_BIAS).CODE(),
+		Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.PowerPolicy );
     }
 
 	bix = Shm->Proc.Features.HWP_Enable == 1;		/* Intel */
     if (bix) {
-      GridCall(PUT(BOXKEY_HWP_EPP, attrib[0], width, 3,
-		"%s%.*sHWP EPP   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
-	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
-	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref),
-	Hint_Update,
-	&Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
+	GridCall( PUT(	BOXKEY_HWP_EPP, attrib[0], width, 3,
+			"%s%.*s%s   <%7u>", RSC(POWER_THERMAL_BIAS).CODE(),
+			width - (OutFunc == NULL ? 25 : 23)
+			 - RSZ(POWER_THERMAL_BIAS), hSpace,
+			RSC(POWER_LABEL_EPP).CODE(),
+			Shm->Cpu[
+				Shm->Proc.Service.Core
+			].PowerThermal.HWP.Request.Energy_Pref ),
+		Hint_Update,
+		&Shm->Cpu[
+			Shm->Proc.Service.Core
+		].PowerThermal.HWP.Request.Energy_Pref );
     } else {
-	PUT(SCANKEY_NULL, attrib[Shm->Proc.Features.Power.EAX.HWP_Reg ? 0 : 4],
-		width, 3,
-		"%s%.*sHWP EPP   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
-	width - (OutFunc == NULL ? 25 : 23) - RSZ(POWER_THERMAL_BIAS), hSpace,
-	Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.HWP.Request.Energy_Pref);
+	PUT(	SCANKEY_NULL,
+		attrib[Shm->Proc.Features.Power.EAX.HWP_Reg ? 0 : 4], width, 3,
+		"%s%.*s%s   [%7u]", RSC(POWER_THERMAL_BIAS).CODE(),
+		width - (OutFunc == NULL ? 25 : 23)
+		 - RSZ(POWER_THERMAL_BIAS), hSpace,
+		RSC(POWER_LABEL_EPP).CODE(),
+		Shm->Cpu[
+			Shm->Proc.Service.Core
+		].PowerThermal.HWP.Request.Energy_Pref );
     }
   }
-      GridCall(PUT(SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*sTjMax   [%2u:%3uC]", RSC(POWER_THERMAL_TJMAX).CODE(),
-		width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
-		SFlop->Thermal.Param.Offset[1],
-		SFlop->Thermal.Param.Offset[0]),
-	TjMax_Update);
+	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
+			"%s%.*s%s   [%2u:%3uC]",
+			RSC(POWER_THERMAL_TJMAX).CODE(),
+			width - 20 - RSZ(POWER_THERMAL_TJMAX), hSpace,
+			RSC(POWER_LABEL_TJ).CODE(),
+			SFlop->Thermal.Param.Offset[1],
+			SFlop->Thermal.Param.Offset[0] ),
+		TjMax_Update );
 
 	bix = (Shm->Proc.Features.Power.EAX.DTS == 1)
 	   || (Shm->Proc.Features.AdvPower.EDX.TS == 1);
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sDTS   [%7s]", RSC(POWER_THERMAL_DTS).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_DTS), hSpace, POWERED(bix));
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_DTS).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_DTS), hSpace,
+		RSC(POWER_LABEL_DTS).CODE(), POWERED(bix) );
 
 	bix = Shm->Proc.Features.Power.EAX.PLN == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPLN   [%7s]", RSC(POWER_THERMAL_PLN).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PLN), hSpace, POWERED(bix));
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PLN).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PLN), hSpace,
+		RSC(POWER_LABEL_PLN).CODE(), POWERED(bix) );
 
 	bix = Shm->Proc.Features.Power.EAX.PTM == 1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sPTM   [%7s]", RSC(POWER_THERMAL_PTM).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace, POWERED(bix));
 
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) {
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PTM).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PTM), hSpace,
+		RSC(POWER_LABEL_PTM).CODE(), POWERED(bix) );
+
+    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+    {
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTM1   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace, TM[bix]);
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace,
+		RSC(POWER_LABEL_TM1).CODE(), TM[bix] );
 
 	bix = Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM2;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTM2   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace,
+		RSC(POWER_LABEL_TM2).CODE(), TM[bix] );
     }
     else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	bix = Shm->Proc.Features.AdvPower.EDX.TTP;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sTTP   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace, TM[bix]);
+
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM1).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM1), hSpace,
+		RSC(POWER_LABEL_TTP).CODE(), TM[bix] );
 
 	bix = Shm->Proc.Features.AdvPower.EDX.TM;
-	PUT(SCANKEY_NULL, attrib[bix], width, 2,
-		"%s%.*sHTC   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace, TM[bix]);
-    }
 
+	PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TM2).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TM2), hSpace,
+		RSC(POWER_LABEL_HTC).CODE(), TM[bix] );
+    }
     if (Shm->Proc.Power.TDP > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*sTDP   [%5u W]", RSC(POWER_THERMAL_TDP).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDP),hSpace,Shm->Proc.Power.TDP);
+	PUT(	SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TDP).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace,
+		RSC(POWER_LABEL_TDP).CODE(), Shm->Proc.Power.TDP );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sTDP   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace, POWERED(0));
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace,
+		RSC(POWER_LABEL_TDP).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.Min > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 3,
-		"%s%.*sMin   [%5u W]", RSC(POWER_THERMAL_MIN).CODE(),
+	PUT(	SCANKEY_NULL, attrib[5], width, 3,
+		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_MIN).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
-		 - RSZ(POWER_THERMAL_MIN), hSpace,Shm->Proc.Power.Min);
+		 - RSZ(POWER_THERMAL_MIN), hSpace,
+		RSC(POWER_LABEL_MIN).CODE(), Shm->Proc.Power.Min );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*sMin   [%7s]", RSC(POWER_THERMAL_MIN).CODE(),
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MIN).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
-		 - RSZ(POWER_THERMAL_MIN), hSpace, POWERED(0));
+		 - RSZ(POWER_THERMAL_MIN), hSpace,
+		RSC(POWER_LABEL_MIN).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.Max > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 3,
-		"%s%.*sMax   [%5u W]", RSC(POWER_THERMAL_MAX).CODE(),
+	PUT(	SCANKEY_NULL, attrib[5], width, 3,
+		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_MAX).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
-		 - RSZ(POWER_THERMAL_MAX), hSpace,Shm->Proc.Power.Max);
+		 - RSZ(POWER_THERMAL_MAX), hSpace,
+		RSC(POWER_LABEL_MAX).CODE(), Shm->Proc.Power.Max );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
-		"%s%.*sMax   [%7s]", RSC(POWER_THERMAL_MAX).CODE(),
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_MAX).CODE(),
 		width - (OutFunc == NULL ? 21 : 19)
-		 - RSZ(POWER_THERMAL_MAX), hSpace, POWERED(0));
+		 - RSZ(POWER_THERMAL_MAX), hSpace,
+		RSC(POWER_LABEL_MAX).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.PPT > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*sPPT   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PPT),hSpace,Shm->Proc.Power.PPT);
+	PUT(	SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
+		RSC(POWER_LABEL_PPT).CODE(), Shm->Proc.Power.PPT );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sPPT   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace, POWERED(0));
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
+		RSC(POWER_LABEL_PPT).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.EDC > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*sEDC   [%5u A]", RSC(POWER_THERMAL_EDC).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_EDC),hSpace,Shm->Proc.Power.EDC);
+	PUT(	SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*s%s   [%5u A]", RSC(POWER_THERMAL_EDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_EDC), hSpace,
+		RSC(POWER_LABEL_EDC).CODE(), Shm->Proc.Power.EDC );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sEDC   [%7s]", RSC(POWER_THERMAL_EDC).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_EDC), hSpace, POWERED(0));
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_EDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_EDC), hSpace,
+		RSC(POWER_LABEL_EDC).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.TDC > 0) {
-	PUT(SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*sTDC   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDC),hSpace,Shm->Proc.Power.TDC);
+	PUT(	SCANKEY_NULL, attrib[5], width, 2,
+		"%s%.*s%s   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
+		RSC(POWER_LABEL_TDC).CODE(), Shm->Proc.Power.TDC );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*sTDC   [%7s]", RSC(POWER_THERMAL_TDC).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace, POWERED(0));
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDC).CODE(),
+		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
+		RSC(POWER_LABEL_TDC).CODE(), POWERED(0) );
     }
-
-	PUT(SCANKEY_NULL, attrib[0], width, 2,
-		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL);
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		(char*) RSC(POWER_THERMAL_UNITS).CODE(), NULL );
 
     if (Shm->Proc.Power.Unit.Watts > 0.0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]",
 		RSC(POWER_THERMAL_POWER).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		 - RSZ(POWER_THERMAL_POWER) - RSZ(POWER_THERMAL_WATT), hSpace,
-		RSC(POWER_THERMAL_WATT).CODE(), Shm->Proc.Power.Unit.Watts);
+		RSC(POWER_THERMAL_WATT).CODE(), Shm->Proc.Power.Unit.Watts );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13s]",
 		RSC(POWER_THERMAL_POWER).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		 - RSZ(POWER_THERMAL_POWER) - RSZ(POWER_THERMAL_WATT), hSpace,
-		RSC(POWER_THERMAL_WATT).CODE(), POWERED(0));
+		RSC(POWER_THERMAL_WATT).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.Unit.Joules > 0.0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_ENERGY).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_ENERGY) - RSZ(POWER_THERMAL_JOULE), hSpace,
-		RSC(POWER_THERMAL_JOULE).CODE(), Shm->Proc.Power.Unit.Joules);
+		RSC(POWER_THERMAL_JOULE).CODE(), Shm->Proc.Power.Unit.Joules );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13s]", RSC(POWER_THERMAL_ENERGY).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_ENERGY) - RSZ(POWER_THERMAL_JOULE), hSpace,
-		RSC(POWER_THERMAL_JOULE).CODE(), POWERED(0));
+		RSC(POWER_THERMAL_JOULE).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.Unit.Times > 0.0) {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13.9f]", RSC(POWER_THERMAL_WINDOW).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
-		RSC(POWER_THERMAL_SECOND).CODE(), Shm->Proc.Power.Unit.Times);
+		RSC(POWER_THERMAL_SECOND).CODE(), Shm->Proc.Power.Unit.Times );
     } else {
-	PUT(SCANKEY_NULL, attrib[0], width, 3,
+	PUT(	SCANKEY_NULL, attrib[0], width, 3,
 		"%s%.*s%s   [%13s]", RSC(POWER_THERMAL_WINDOW).CODE(),
 		width - (OutFunc == NULL ? 24 : 22)
 		- RSZ(POWER_THERMAL_WINDOW) - RSZ(POWER_THERMAL_SECOND), hSpace,
-		RSC(POWER_THERMAL_SECOND).CODE(), POWERED(0));
+		RSC(POWER_THERMAL_SECOND).CODE(), POWERED(0) );
     }
 	return (reason);
 }
@@ -3638,18 +3709,19 @@ void IdleLimitUpdate(TGrid *grid, DATA_TYPE data)
 	char item[CPUIDLE_NAME_LEN+1];
 	unsigned int idx = (*data.psint) - 1;
 	size_t len;
-    if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
-    {
-	len = snprintf(	item, CPUIDLE_NAME_LEN + 1,
+
+	if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
+	{
+		len = snprintf( item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
 				Shm->SysGate.OS.IdleDriver.State[idx].Name );
-    }
-    else
-    {
-	len = snprintf(	item, CPUIDLE_NAME_LEN + 1,
+	}
+	else
+	{
+		len = snprintf( item, CPUIDLE_NAME_LEN + 1,
 				COREFREQ_FORMAT_STR(CPUIDLE_NAME_LEN),
 				RSC(NOT_AVAILABLE).CODE() );
-    }
+	}
 	memcpy(&grid->cell.item[grid->cell.length - len - 2], item, len);
 }
 
@@ -3672,101 +3744,107 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 		}
 	}
 /* Section Mark */
-	PUT(SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
-		"%s:", Shm->SysGate.sysname);
+	PUT(	SCANKEY_NULL, RSC(SYSINFO_KERNEL).ATTR(), width, 0,
+		"%s:", Shm->SysGate.sysname );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_RELEASE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_RELEASE).CODE(),
 		width - 5 - RSZ(KERNEL_RELEASE)- strlen(Shm->SysGate.release),
-		hSpace, Shm->SysGate.release);
+		hSpace, Shm->SysGate.release );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_VERSION).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_VERSION).CODE(),
 		width - 5 - RSZ(KERNEL_VERSION) - strlen(Shm->SysGate.version),
-		hSpace, Shm->SysGate.version);
+		hSpace, Shm->SysGate.version );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_MACHINE).ATTR(), width, 2,
 		"%s%.*s[%s]", RSC(KERNEL_MACHINE).CODE(),
 		width - 5 - RSZ(KERNEL_MACHINE) - strlen(Shm->SysGate.machine),
-		hSpace, Shm->SysGate.machine);
+		hSpace, Shm->SysGate.machine );
 /* Section Mark */
-	PUT(SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_MEMORY).ATTR(), width, 0,
 		"%s:%.*s", RSC(KERNEL_MEMORY).CODE(),
-		width - RSZ(KERNEL_MEMORY), hSpace);
+		width - RSZ(KERNEL_MEMORY), hSpace );
 
 	len = snprintf( str,CPUFREQ_NAME_LEN+4+1, "%lu",
 			Shm->SysGate.memInfo.totalram );
-	PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
+
+	PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_RAM).ATTR(), width, 2,
 		"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_RAM).CODE(),
-		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str);
+		width - 6 - RSZ(KERNEL_TOTAL_RAM) - len, hSpace, str );
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1, "%lu",
 			Shm->SysGate.memInfo.sharedram );
-	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
+
+	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_SHARED_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_SHARED_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str),
-		KernelUpdate, &Shm->SysGate.memInfo.sharedram);
+			width - 6 - RSZ(KERNEL_SHARED_RAM) - len, hSpace, str ),
+		KernelUpdate, &Shm->SysGate.memInfo.sharedram );
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freeram );
-	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
+
+	GridCall( PUT( SCANKEY_NULL, RSC(KERNEL_FREE_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str),
-		KernelUpdate, &Shm->SysGate.memInfo.freeram);
+			width - 6 - RSZ(KERNEL_FREE_RAM) - len, hSpace, str ),
+		KernelUpdate, &Shm->SysGate.memInfo.freeram );
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.bufferram );
-	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
+
+	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_BUFFER_RAM).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_BUFFER_RAM).CODE(),
-			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str),
-		KernelUpdate, &Shm->SysGate.memInfo.bufferram);
+			width - 6 - RSZ(KERNEL_BUFFER_RAM) - len, hSpace, str ),
+		KernelUpdate, &Shm->SysGate.memInfo.bufferram );
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.totalhigh );
-	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
+
+	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_TOTAL_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_TOTAL_HIGH).CODE(),
-			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str),
-		KernelUpdate, &Shm->SysGate.memInfo.totalhigh);
+			width - 6 - RSZ(KERNEL_TOTAL_HIGH) - len, hSpace, str ),
+		KernelUpdate, &Shm->SysGate.memInfo.totalhigh );
 
 	len = snprintf( str, CPUFREQ_NAME_LEN+4+1,
 			"%lu", Shm->SysGate.memInfo.freehigh );
-	GridCall(PUT(SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
+
+	GridCall( PUT(	SCANKEY_NULL, RSC(KERNEL_FREE_HIGH).ATTR(), width, 2,
 			"%s%.*s" "%s KB", RSC(KERNEL_FREE_HIGH).CODE(),
-			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str),
-		KernelUpdate, &Shm->SysGate.memInfo.freehigh);
+			width - 6 - RSZ(KERNEL_FREE_HIGH) - len, hSpace, str ),
+		KernelUpdate, &Shm->SysGate.memInfo.freehigh );
 /* Section Mark */
 	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUFREQ_NAME_LEN);
 
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Name), CPUFREQ_NAME_LEN);
     if (len > 0)
     {
-	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.FreqDriver.Name);
+		len, Shm->SysGate.OS.FreqDriver.Name );
     } else {
-	PUT(SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_FREQ_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_FREQ_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_FREQ_DRIVER) - CPUFREQ_NAME_LEN, hSpace,
-		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
+		CPUFREQ_NAME_LEN, RSC(MISSING).CODE() );
     }
 /* Row Mark */
     len = KMIN(strlen(Shm->SysGate.OS.FreqDriver.Governor), CPUFREQ_NAME_LEN);
     if (len > 0)
     {
-	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
 		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
 		- CPUFREQ_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.FreqDriver.Governor);
+		len, Shm->SysGate.OS.FreqDriver.Governor );
     } else {
-	PUT(SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_GOVERNOR).ATTR(), width, 0,
 		item[0], RSC(KERNEL_GOVERNOR).CODE(),
 		width - (OutFunc == NULL ? 2 : 3) - RSZ(KERNEL_GOVERNOR)
 		- CPUFREQ_NAME_LEN, hSpace,
-		CPUFREQ_NAME_LEN, RSC(MISSING).CODE());
+		CPUFREQ_NAME_LEN, RSC(MISSING).CODE() );
     }
 /* Row Mark */
 	snprintf(item[0], 2+4+1+6+1+1, "%%s%%.*s[%%%d.*s]", CPUIDLE_NAME_LEN);
@@ -3774,17 +3852,17 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
     len = KMIN(strlen(Shm->SysGate.OS.IdleDriver.Name), CPUIDLE_NAME_LEN);
     if (len > 0)
     {
-	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
-		len, Shm->SysGate.OS.IdleDriver.Name);
+		len, Shm->SysGate.OS.IdleDriver.Name );
     } else {
-	PUT(SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
+	PUT(	SCANKEY_NULL, RSC(KERNEL_IDLE_DRIVER).ATTR(), width, 0,
 		item[0], RSC(KERNEL_IDLE_DRIVER).CODE(),
 		width - (OutFunc == NULL ? 2 : 3)
 		- RSZ(KERNEL_IDLE_DRIVER) - CPUIDLE_NAME_LEN, hSpace,
-		CPUIDLE_NAME_LEN, RSC(MISSING).CODE());
+		CPUIDLE_NAME_LEN, RSC(MISSING).CODE() );
     }
 /* Section Mark */
   if (Shm->SysGate.OS.IdleDriver.stateCount > 0)
@@ -3795,13 +3873,13 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ? '>' : ']');
 
 	idx = Shm->SysGate.OS.IdleDriver.stateLimit - 1;
-	GridCall(PUT(Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ?
+	GridCall( PUT(	Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE ?
 			BOXKEY_LIMIT_IDLE_STATE : SCANKEY_NULL,
 			RSC(KERNEL_LIMIT).ATTR(), width, 2,
 			item[0], RSC(KERNEL_LIMIT).CODE(),
 			width - RSZ(KERNEL_LIMIT) - CPUIDLE_NAME_LEN-5, hSpace,
-			Shm->SysGate.OS.IdleDriver.State[idx].Name),
-		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit);
+			Shm->SysGate.OS.IdleDriver.State[idx].Name ),
+		IdleLimitUpdate, &Shm->SysGate.OS.IdleDriver.stateLimit );
 /* Row Mark */
 	snprintf(item[0], 10+1, "%s%.*s" , RSC(KERNEL_STATE).CODE(),
 				10 - (int) RSZ(KERNEL_STATE), hSpace);
@@ -3884,20 +3962,20 @@ REASON_CODE SysInfoKernel(Window *win, CUINT width, CELL_FUNC OutFunc)
 	}
       }
     }
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
-		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item[0]);
+	PUT(	SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		 "%.*s", width - (OutFunc == NULL ? 6 : 3), item[0] );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[1]);
+	PUT(	SCANKEY_NULL, RSC(KERNEL_STATE).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[1] );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[2]);
+	PUT(	SCANKEY_NULL, RSC(KERNEL_POWER).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[2] );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[3]);
+	PUT(	SCANKEY_NULL, RSC(KERNEL_LATENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[3] );
 
-	PUT(SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
-		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[4]);
+	PUT(	SCANKEY_NULL, RSC(KERNEL_RESIDENCY).ATTR(), width, 3,
+		"%.*s", width - (OutFunc == NULL ? 6 : 3), item[4] );
   }
 /* Section Mark */
     for (idx = 0; idx < 5; idx++) {
@@ -4476,43 +4554,40 @@ void Topology_CCD(char *pStr, unsigned int cpu)
 			Shm->Cpu[cpu].Topology.ThreadID);
 }
 
-char *TopologyStrOFF[] = {
+const char *TopologyStrOFF[] = {
 	"\x20\x20\x20\x20-\x20\x20\x20\x20\x20\x20-\x20",
 	"\x20\x20-\x20\x20\x20-\x20\x20\x20\x20\x20-",
 	"\x20\x20-\x20\x20-\x20\x20\x20-\x20\x20-"
 };
 
-char *TopologyFmtOFF[] = {
+const char *TopologyFmtOFF[] = {
 	"%03u:\x20\x20-\x20\x20\x20\x20-\x20",
 	"\x20\x20\x20\x20\x20\x20\x20-\x20\x20-\x20\x20"
 };
 
-char *TopologyHeader[TOPO_MATY] = {
-	"CPU Pkg  Apic",
-	"  Core/Thread",
-	"  Caches     ",
-	" (w)rite-Back",
-	" (i)nclusive ",
-	"             "
-};
-
-char *TopologySubHeader[TOPO_MATY] = {
-	" #   ID   ID ",
-	NULL,
-	" L1-Inst Way ",
-	" L1-Data Way ",
-	"     L2  Way ",
-	"     L3  Way "
-};
-
-char *TopologyAltSubHeader[] = {
-	"   ID     ID ",
-	" CMP ID    ID",
-	"CCD CCX ID/ID"
-};
-
 void Topology(Window *win, CELL_FUNC OutFunc)
 {
+	ASCII *TopologyHeader[TOPO_MATY] = {
+		RSC(TOPOLOGY_HDR_PKG).CODE(),
+		RSC(TOPOLOGY_HDR_SMT).CODE(),
+		RSC(TOPOLOGY_HDR_CACHE).CODE(),
+		RSC(TOPOLOGY_HDR_WRBAK).CODE(),
+		RSC(TOPOLOGY_HDR_INCL).CODE(),
+		RSC(TOPOLOGY_HDR_EMPTY).CODE()
+	};
+	ASCII *TopologySubHeader[TOPO_MATY] = {
+		RSC(TOPOLOGY_SUB_ITEM1).CODE(),
+		NULL,
+		RSC(TOPOLOGY_SUB_ITEM3).CODE(),
+		RSC(TOPOLOGY_SUB_ITEM4).CODE(),
+		RSC(TOPOLOGY_SUB_ITEM5).CODE(),
+		RSC(TOPOLOGY_SUB_ITEM6).CODE()
+	};
+	ASCII *TopologyAltSubHeader[] = {
+		RSC(TOPOLOGY_ALT_ITEM1).CODE(),
+		RSC(TOPOLOGY_ALT_ITEM2).CODE(),
+		RSC(TOPOLOGY_ALT_ITEM3).CODE()
+	};
 	ATTRIBUTE *attrib[5] = {
 		RSC(TOPOLOGY_COND0).ATTR(),
 		RSC(TOPOLOGY_COND1).ATTR(),
@@ -4520,7 +4595,8 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 		RSC(TOPOLOGY_COND3).ATTR(),
 		RSC(TOPOLOGY_COND4).ATTR()
 	};
-	char	*strID = malloc(2 * ((4*11) + 1)), *pStrOFF = TopologyStrOFF[0];
+	char *strID = malloc(2 * ((4*11) + 1));
+	char const *pStrOFF = TopologyStrOFF[0];
 	unsigned int cpu = 0, level = 0;
 	CUINT cells_per_line = win->matrix.size.wth, *nl = &cells_per_line;
 
@@ -4539,45 +4615,46 @@ void Topology(Window *win, CELL_FUNC OutFunc)
     if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
      || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-      switch (Shm->Proc.ArchID) {
-      case AMD_Family_11h:
-      case AMD_Family_12h:
-      case AMD_Family_14h:
-      case AMD_Family_15h:
-      case AMD_Family_16h:
-      TOPOLOGY_CMP:
-	TopologyFunc = Topology_CMP;
-	pStrOFF = TopologyStrOFF[1];
-	TopologySubHeader[1] = TopologyAltSubHeader[1];
-	break;
-      case AMD_Family_17h:
-      case AMD_Family_18h:
-      case AMD_Family_19h:
-      case AMD_Zen:
-      case AMD_Zen_APU:
-      case AMD_ZenPlus:
-      case AMD_ZenPlus_APU:
-      case AMD_Zen_APU_Dali:
-      case AMD_EPYC_Rome:
-      case AMD_Zen2_CPK:
-      case AMD_Zen2_APU:
-      case AMD_Zen2_MTS:
-      case AMD_Zen2_Xbox:
-      case AMD_Zen3_VMR:
-      case AMD_Zen3_CZN:
-      case AMD_EPYC_Milan:
-	TopologyFunc = Topology_CCD;
-	pStrOFF = TopologyStrOFF[2];
-	TopologySubHeader[1] = TopologyAltSubHeader[2];
-	break;
-      default:
-       if ( Shm->Proc.Features.Std.ECX.Hyperv ) { /* Virtualized ?	*/
-	goto TOPOLOGY_CMP;
-       }  else  {	/*	AMD_Family_0Fh and AMD_Family_10h	*/
-	TopologySubHeader[1] = TopologyAltSubHeader[0];
-       }
-	break;
-      }
+	switch (Shm->Proc.ArchID) {
+	case AMD_Family_11h:
+	case AMD_Family_12h:
+	case AMD_Family_14h:
+	case AMD_Family_15h:
+	case AMD_Family_16h:
+	TOPOLOGY_CMP:
+		TopologyFunc = Topology_CMP;
+		pStrOFF = TopologyStrOFF[1];
+		TopologySubHeader[1] = TopologyAltSubHeader[1];
+		break;
+	case AMD_Family_17h:
+	case AMD_Family_18h:
+	case AMD_Family_19h:
+	case AMD_Zen:
+	case AMD_Zen_APU:
+	case AMD_ZenPlus:
+	case AMD_ZenPlus_APU:
+	case AMD_Zen_APU_Dali:
+	case AMD_EPYC_Rome:
+	case AMD_Zen2_CPK:
+	case AMD_Zen2_APU:
+	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
+	case AMD_Zen3_VMR:
+	case AMD_Zen3_CZN:
+	case AMD_EPYC_Milan:
+		TopologyFunc = Topology_CCD;
+		pStrOFF = TopologyStrOFF[2];
+		TopologySubHeader[1] = TopologyAltSubHeader[2];
+		break;
+	default:
+		if ( Shm->Proc.Features.Std.ECX.Hyperv )
+		{		/*	Is capable of Virtualization	*/
+			goto TOPOLOGY_CMP;
+		}  else  {	/* AMD_Family_0Fh and AMD_Family_10h	*/
+			TopologySubHeader[1] = TopologyAltSubHeader[0];
+		}
+		break;
+	}
     } else {
 	TopologySubHeader[1] = TopologyAltSubHeader[0];
     }
@@ -4622,6 +4699,10 @@ void Topology(Window *win, CELL_FUNC OutFunc)
 #define MC_MATX 15	/*	Must be equal to or greater than 14	*/
 #define MC_MATY 5	/*	Must be strictly equal to 5		*/
 
+#define TIMING(_mc, _cha)	Shm->Uncore.MC[_mc].Channel[_cha].Timing
+
+const char *MEM_CTRL_FMT = "%*.s";
+
 void iSplit(unsigned int sInt, char hInt[]) {
 	char fInt[11+1];
 	snprintf(fInt, 11+1, "%10u", sInt);
@@ -4629,211 +4710,82 @@ void iSplit(unsigned int sInt, char hInt[]) {
 	memcpy((hInt + 8), (fInt + 5), 5); *(hInt + 8 + 5) = '\0';
 }
 
-const char *Header_DDR3[2][MC_MATX] = {
-	{
-		" Cha ",
-		"   CL", "  RCD", "   RP", "  RAS", "  RRD", "  RFC",
-		"   WR", " RTPr", " WTPr", "  FAW", "  B2B", "  CWL",
-		" CMD ", " REFI"
-	},
-	{
-		"     ",
-		" ddWR", " drWR", " srWR", " ddRW", " drRW", " srRW",
-		" ddRR", " drRR", " srRR", " ddWW", " drWW", " srWW",
-		" CKE ", "  ECC"
-	}
-};
-
-const char *Footer_DDR3[2][MC_MATX] = {
-	{
-		NULL,
-		" tCL ( CAS Latency ) ",
-		" tRCD ( Activate to CAS ) ",
-		" tRP ( RAS Precharge to Activate ) ",
-		" tRAS ( Activate to Precharge ) ",
-		" tRRD ( Activate to Activate, Same Rank ) ",
-		" tRFC ( Refresh to Refresh ) ",
-		" tWR ( Write Recovery ) ",
-		" tRTPr ( Read CAS to Precharge ) ",
-		" tWTPr ( Write CAS to Precharge ) ",
-		" tFAW ( Four Activate Window ) ",
-		" B2B ( CAS commands spacing ) ",
-		" tCWL ( CAS Write Latency ) ",
-		" CMD ( Command Rate ) ",
-		" tREFI ( Refresh Interval ) "
-	},
-	{
-		NULL,
-		" tddWrTRd ( Write to Read, Different DIMM ) ",
-		" tdrWrTRd ( Write to Read, Different Rank, Same DIMM ) ",
-		" tsrWrTRd ( Write to Read, Same Rank ) ",
-		" tddRdTWr ( Read to Write, Different DIMM ) ",
-		" tdrRdTWr ( Read to Write, Different Rank, Same DIMM ) ",
-		" tsrRdTWr ( Read to Write, Same Rank ) ",
-		" tddRdTRd ( Read to Read, Different DIMM ) ",
-		" tdrRdTRd ( Read to Read, Different Rank, Same DIMM ) ",
-		" tsrRdTRd ( Read to Read, Same Rank ) ",
-		" tddWrTWr ( Write to Write, Different DIMM ) ",
-		" tdrWrTWr ( Write to Write, Different Rank, Same DIMM ) ",
-		" tsrWrTWr ( Write to Write, Same Rank ) ",
-		" tCKE ( ClocK Enable ) ",
-		" ECC ( Error Correcting Code ) "
-	}
-};
-
-const char *Header_DDR4[3][MC_MATX] = {
-	{
-		" Cha ",
-		"   CL", "  RCD", "   RP", "  RAS", "  RRD", "  RFC",
-		"   WR", " RTPr", " WTPr", "  FAW", "  B2B", "  CWL",
-		" CMD ", " REFI"
-	},
-	{
-		"     ",
-		" sgRR", " dgRR", " drRR", " ddRR", "     ", " sgRW",
-		" dgRW", " drRW", " ddRW", "     ", " sgWR", " dgWR",
-		" drWR", " ddWR"
-	},
-	{
-		"     ",
-		" sgWW", " dgWW", " drWW", " ddWW", "     ", "     ",
-		"     ", "     ", "     ", "     ", "     ", "     ",
-		" CKE ", "  ECC"
-	}
-};
-
-const char *Footer_DDR4[3][MC_MATX] = {
-	{
-		NULL,
-		" tCL ( CAS Latency ) ",
-		" tRCD ( Activate to CAS ) ",
-		" tRP ( RAS Precharge to Activate ) ",
-		" tRAS ( Activate to Precharge ) ",
-		" tRRD ( Activate to Activate, Same Rank ) ",
-		" tRFC ( Refresh to Refresh ) ",
-		" tWR ( Write Recovery ) ",
-		" tRTPr ( Read CAS to Precharge ) ",
-		" tWTPr ( Write CAS to Precharge ) ",
-		" tFAW ( Four Activate Window ) ",
-		" B2B ( CAS commands spacing ) ",
-		" tCWL ( CAS Write Latency ) ",
-		" CMD ( Command Rate ) ",
-		" tREFI ( Refresh Interval ) "
-	},
-	{
-		NULL,
-		" tRDRD ( Read to Read, Same Bank ) ",
-		" tRDRD ( Read to Read, Different Bank ) ",
-		" tRDRD ( Read to Read, Different Rank ) ",
-		" tRDRD ( Read to Read, Different DIMM ) ",
-		NULL,
-		" tRDWR ( Read to Write, Same Bank ) ",
-		" tRDWR ( Read to Write, Different Bank ) ",
-		" tRDWR ( Read to Write, Different Rank ) ",
-		" tRDWR ( Read to Write, Different DIMM ) ",
-		NULL,
-		" tWRRD ( Write to Read, Same Bank ) ",
-		" tWRRD ( Write to Read, Different Bank ) ",
-		" tWRRD ( Write to Read, Different Rank ) ",
-		" tWRRD ( Write to Read, Different DIMM ) "
-	},
-	{
-		NULL,
-		" tWRWR ( Write to Write, Same Bank ) ",
-		" tWRWR ( Write to Write, Different Bank ) ",
-		" tWRWR ( Write to Write, Different Rank ) ",
-		" tWRWR ( Write to Write, Different DIMM ) ",
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		" tCKE ( ClocK Enable ) ",
-		" ECC ( Error Correcting Code ) "
-	}
-};
-
-const char *Header_DDR4_Zen[3][MC_MATX] = {
-	{
-		" Cha ",
-		"  CL ", " RCDR", " RCDW", "  RP ", " RAS ", "  RC ",
-		" RRDS", " RRDL", " FAW ", " WTRS", " WTRL", "  WR ",
-		" clRR", " clWW"
-	},
-	{
-		"     ",
-		" CWL ", " RTP ", "RdWr ", "WrRd ", "scWW ", "sdWW ",
-		"ddWW ", "scRR ", "sdRR ", "ddRR ", "drRR ", "drWW ",
-		"drWR ", "drRRD"
-	},
-	{
-		"     ",
-		" REFI", " RFC1", " RFC2", " RFC4", " RCPB", " RPPB", "  BGS",
-		":Alt ", " Ban ", " Page", "  CKE", "  CMD", "  GDM", "  ECC"
-	}
-};
-
-const char *Footer_DDR4_Zen[3][MC_MATX] = {
-	{
-		NULL,
-		" tCL ( CAS Latency ) ",
-		" tRCD_R ( Activate to Read CAS ) ",
-		" tRCD_W ( Activate to Write CAS ) ",
-		" tRP ( RAS Precharge to Activate ) ",
-		" tRAS ( Activate to Precharge ) ",
-		" tRC ( Activate to Activate ) ",
-		" tRRD_S ( Activate to Activate, Different Bank Group ) ",
-		" tRRD_L ( Activate to Activate, Same Bank Group ) ",
-		" tFAW ( Four Activate Window ) ",
-		" tWTR_S ( Write to Read, Different Bank Group ) ",
-		" tWTR_L ( Write to Read, Same Bank Group ) ",
-		" tWR ( Write Recovery ) ",
-		" tRDRD[SCL] ( Read to Read, Same Bank Group ) ",
-		" tWRWR[SCL] ( Write to Write, Same Bank Group ) "
-	},
-	{
-		NULL,
-		" tCWL ( CAS Write Latency ) ",
-		" tRTP ( Read To Precharge ) ",
-		" tRDWR ( Read Write Command Spacing ) ",
-		" tWRRD ( Write Read Command Spacing ) ",
-		" tWRWR[SC] ( tWRWR, Different Bank Group ) ",
-		" tWRWR[SD] ( tWRWR, Different Rank) ",
-		" tWRWR[DD] ( tWRWR, Different DIMM ) ",
-		" tRDRD[SC] ( tRDRD, Different Bank Group ) ",
-		" tRDRD[SD] ( tRDRD, Different Rank ) ",
-		" tRDRD[DD] ( tRDRD, Different DIMM ) ",
-		" tRTR[DLR] ( tRTR, Different Logical Rank ) ",
-		" tWTW[DLR] ( tWTR, Different Logical Rank ) ",
-		" tWTR[DLR] ( tWTR, Different Logical Rank ) ",
-		" tRRD[DLR] ( tRRD, Different Logical Rank ) "
-	},
-	{
-		NULL,
-		" tREFI ( Refresh Interval ) ",
-		" tRFC1 ( Refresh to Refresh, 1X mode ) ",
-		" tRFC2 ( Refresh to Refresh, 2X mode ) ",
-		" tRFC4 ( Refresh to Refresh, 4X mode ) ",
-		" tRCPB ( Row Cycle Time, Per-Bank ) ",
-		" tRPPB ( Row Precharge Time, Per-Bank ) ",
-		" BGS ( BankGroupSwap ) ",
-		" BGS Alt ( BankGroupSwap Alternate ) ",
-		" tBAN ( Timing Ban, RTR | WTW ) ",
-		" tRCPage ( Row Cycle Page Time ) ",
-		" tCKE ( ClocK Enable ) ",
-		" CMD ( Command Rate ) ",
-		" GDM ( Gear Down Mode ) ",
-		" ECC ( Error Correcting Code ) "
-	}
-};
-
 typedef void (*TIMING_FUNC)(Window*, CELL_FUNC, CUINT*, unsigned short);
 
 void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 {
+	const ASCII *Header_DDR3[2][MC_MATX] = {
+		{
+			RSC(MEM_CTRL_CHANNEL).CODE(),
+			RSC(DDR3_CL).CODE(),
+			RSC(DDR3_RCD).CODE(),
+			RSC(DDR3_RP).CODE(),
+			RSC(DDR3_RAS).CODE(),
+			RSC(DDR3_RRD).CODE(),
+			RSC(DDR3_RFC).CODE(),
+			RSC(DDR3_WR).CODE(),
+			RSC(DDR3_RTP).CODE(),
+			RSC(DDR3_WTP).CODE(),
+			RSC(DDR3_FAW).CODE(),
+			RSC(DDR3_B2B).CODE(),
+			RSC(DDR3_CWL).CODE(),
+			RSC(DDR3_CMD).CODE(),
+			RSC(DDR3_REFI).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR3_DDWRTRD).CODE(),
+			RSC(DDR3_DRWRTRD).CODE(),
+			RSC(DDR3_SRWRTRD).CODE(),
+			RSC(DDR3_DDRDTWR).CODE(),
+			RSC(DDR3_DRRDTWR).CODE(),
+			RSC(DDR3_SRRDTWR).CODE(),
+			RSC(DDR3_DDRDTRD).CODE(),
+			RSC(DDR3_DRRDTRD).CODE(),
+			RSC(DDR3_SRRDTRD).CODE(),
+			RSC(DDR3_DDWRTWR).CODE(),
+			RSC(DDR3_DRWRTWR).CODE(),
+			RSC(DDR3_SRWRTWR).CODE(),
+			RSC(DDR3_CKE).CODE(),
+			RSC(DDR3_ECC).CODE()
+		}
+	};
+	const ASCII *Footer_DDR3[2][MC_MATX] = {
+		{
+			NULL,
+			RSC(DDR3_CL_COMM).CODE(),
+			RSC(DDR3_RCD_COMM).CODE(),
+			RSC(DDR3_RP_COMM).CODE(),
+			RSC(DDR3_RAS_COMM).CODE(),
+			RSC(DDR3_RRD_COMM).CODE(),
+			RSC(DDR3_RFC_COMM).CODE(),
+			RSC(DDR3_WR_COMM).CODE(),
+			RSC(DDR3_RTP_COMM).CODE(),
+			RSC(DDR3_WTP_COMM).CODE(),
+			RSC(DDR3_FAW_COMM).CODE(),
+			RSC(DDR3_B2B_COMM).CODE(),
+			RSC(DDR3_CWL_COMM).CODE(),
+			RSC(DDR3_CMD_COMM).CODE(),
+			RSC(DDR3_REFI_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR3_DDWRTRD_COMM).CODE(),
+			RSC(DDR3_DRWRTRD_COMM).CODE(),
+			RSC(DDR3_SRWRTRD_COMM).CODE(),
+			RSC(DDR3_DDRDTWR_COMM).CODE(),
+			RSC(DDR3_DRRDTWR_COMM).CODE(),
+			RSC(DDR3_SRRDTWR_COMM).CODE(),
+			RSC(DDR3_DDRDTRD_COMM).CODE(),
+			RSC(DDR3_DRRDTRD_COMM).CODE(),
+			RSC(DDR3_SRRDTRD_COMM).CODE(),
+			RSC(DDR3_DDWRTWR_COMM).CODE(),
+			RSC(DDR3_DRWRTWR_COMM).CODE(),
+			RSC(DDR3_SRWRTWR_COMM).CODE(),
+			RSC(DDR3_CKE_COMM).CODE(),
+			RSC(DDR3_ECC_COMM).CODE()
+		}
+	};
 	ATTRIBUTE *attrib[2] = {
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
@@ -4841,60 +4793,165 @@ void Timing_DDR3(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	CUINT	nc;
 	unsigned short cha;
 
-  for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR3[0][nc]), Footer_DDR3[0][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-	PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC, attrib[0], Header_DDR3[0][nc]),
+				(char*) Footer_DDR3[0][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCL);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRCD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRP);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRAS);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRRD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRTPr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWTPr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tFAW);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).B2B);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCWL);
+		PRT(IMC, attrib[1], "%3uT\x20", TIMING(mc, cha).CMD_Rate);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC, attrib[0], Header_DDR3[1][nc]),
+				(char*) Footer_DDR3[1][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-	PRT(IMC, attrib[1], "%3uT\x20",
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tddWrTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tdrWrTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tsrWrTRd);
 
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
-  }
-  for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR3[1][nc]), Footer_DDR3[1][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC, attrib[0],"\x20\x20#%-2u", cha);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTRd);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTRd);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tddRdTWr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tdrRdTWr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tsrRdTWr);
 
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTWr);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTWr);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTWr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tddRdTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tdrRdTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tsrRdTRd);
 
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddRdTRd);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrRdTRd);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrRdTRd);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tddWrTWr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tdrWrTWr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tsrWrTWr);
 
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tddWrTWr);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tdrWrTWr);
-    PRT(IMC, attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tsrWrTWr);
-
-    PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
-
-    PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
-  }
+		PRT(IMC, attrib[1], "%4u\x20", TIMING(mc, cha).tCKE);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).ECC);
+	}
 }
 
 void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 {
+	const ASCII *Header_DDR4[3][MC_MATX] = {
+		{
+			RSC(MEM_CTRL_CHANNEL).CODE(),
+			RSC(DDR4_CL).CODE(),
+			RSC(DDR4_RCD).CODE(),
+			RSC(DDR4_RP).CODE(),
+			RSC(DDR4_RAS).CODE(),
+			RSC(DDR4_RRD).CODE(),
+			RSC(DDR4_RFC).CODE(),
+			RSC(DDR4_WR).CODE(),
+			RSC(DDR4_RTP).CODE(),
+			RSC(DDR4_WTP).CODE(),
+			RSC(DDR4_FAW).CODE(),
+			RSC(DDR4_B2B).CODE(),
+			RSC(DDR4_CWL).CODE(),
+			RSC(DDR4_CMD).CODE(),
+			RSC(DDR4_REFI).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_RDRD_SCL).CODE(),
+			RSC(DDR4_RDRD_SC).CODE(),
+			RSC(DDR4_RDRD_SD).CODE(),
+			RSC(DDR4_RDRD_DD).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_RDWR_SCL).CODE(),
+			RSC(DDR4_RDWR_SC).CODE(),
+			RSC(DDR4_RDWR_SD).CODE(),
+			RSC(DDR4_RDWR_DD).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_WRRD_SCL).CODE(),
+			RSC(DDR4_WRRD_SC).CODE(),
+			RSC(DDR4_WRRD_SD).CODE(),
+			RSC(DDR4_WRRD_DD).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_WRWR_SCL).CODE(),
+			RSC(DDR4_WRWR_SC).CODE(),
+			RSC(DDR4_WRWR_SD).CODE(),
+			RSC(DDR4_WRWR_DD).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_CKE).CODE(),
+			RSC(DDR4_ECC).CODE()
+		}
+	};
+	const ASCII *Footer_DDR4[3][MC_MATX] = {
+		{
+			NULL,
+			RSC(DDR3_CL_COMM).CODE(),
+			RSC(DDR3_RCD_COMM).CODE(),
+			RSC(DDR3_RP_COMM).CODE(),
+			RSC(DDR3_RAS_COMM).CODE(),
+			RSC(DDR3_RRD_COMM).CODE(),
+			RSC(DDR3_RFC_COMM).CODE(),
+			RSC(DDR3_WR_COMM).CODE(),
+			RSC(DDR3_RTP_COMM).CODE(),
+			RSC(DDR3_WTP_COMM).CODE(),
+			RSC(DDR3_FAW_COMM).CODE(),
+			RSC(DDR3_B2B_COMM).CODE(),
+			RSC(DDR3_CWL_COMM).CODE(),
+			RSC(DDR3_CMD_COMM).CODE(),
+			RSC(DDR3_REFI_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR4_RDRD_SCL_COMM).CODE(),
+			RSC(DDR4_RDRD_SC_COMM).CODE(),
+			RSC(DDR4_RDRD_SD_COMM).CODE(),
+			RSC(DDR4_RDRD_DD_COMM).CODE(),
+			NULL,
+			RSC(DDR4_RDWR_SCL_COMM).CODE(),
+			RSC(DDR4_RDWR_SC_COMM).CODE(),
+			RSC(DDR4_RDWR_SD_COMM).CODE(),
+			RSC(DDR4_RDWR_DD_COMM).CODE(),
+			NULL,
+			RSC(DDR4_WRRD_SCL_COMM).CODE(),
+			RSC(DDR4_WRRD_SC_COMM).CODE(),
+			RSC(DDR4_WRRD_SD_COMM).CODE(),
+			RSC(DDR4_WRRD_DD_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR4_WRWR_SCL_COMM).CODE(),
+			RSC(DDR4_WRWR_SC_COMM).CODE(),
+			RSC(DDR4_WRWR_SD_COMM).CODE(),
+			RSC(DDR4_WRWR_DD_COMM).CODE(),
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			NULL,
+			RSC(DDR3_CKE_COMM).CODE(),
+			RSC(DDR3_ECC_COMM).CODE()
+		}
+	};
 	ATTRIBUTE *attrib[2] = {
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
@@ -4902,78 +4959,185 @@ void Timing_DDR4(Window *win, CELL_FUNC OutFunc, CUINT *nl, unsigned short mc)
 	CUINT	nc;
 	unsigned short cha;
 
-  for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[0][nc]), Footer_DDR4[0][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-	PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRD);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTPr);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTPr);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.B2B);
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC, attrib[0], Header_DDR4[0][nc]),
+				(char*) Footer_DDR4[0][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-	PRT(IMC, attrib[1], "%3uT\x20",
-		Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCL);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRCD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRP);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRAS);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRRD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRTPr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tWTPr);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tFAW);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).B2B);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tCWL);
+		PRT(IMC, attrib[1], "%3uT\x20", TIMING(mc, cha).CMD_Rate);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC, attrib[0], Header_DDR4[1][nc]),
+				(char*) Footer_DDR4[1][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-	PRT(IMC, attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
-  }
-  for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[1][nc]), Footer_DDR4[1][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_SG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DR);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDRD_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDRD_DD);
 
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_SG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DR);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tRDWR_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tRDWR_DD);
 
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_SG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DR);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRRD_DD);
-  }
-  for (nc = 0; nc < MC_MATX; nc++) {
-	GridHover(PRT(IMC, attrib[0], Header_DDR4[2][nc]), Footer_DDR4[2][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_SG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DG);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DR);
-  PRT(IMC,attrib[1],"%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.DDR4.tWRWR_DD);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRRD_DD);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC, attrib[0], Header_DDR4[2][nc]),
+				(char*) Footer_DDR4[2][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-    for (nc = 0; nc < 8; nc++) {
-	PRT(IMC,attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-    }
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_SG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DG);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DR);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).DDR4.tWRWR_DD);
 
-    PRT(IMC,attrib[1],"%4u\x20",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
-
-    PRT(IMC, attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
-  }
+		for (nc = 0; nc < 8; nc++) {
+			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		}
+		PRT(IMC, attrib[1], "%4u\x20", TIMING(mc, cha).tCKE);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).ECC);
+	}
 }
 
 void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 {
+	const ASCII *Header_DDR4_Zen[3][MC_MATX] = {
+		{
+			RSC(MEM_CTRL_CHANNEL).CODE(),
+			RSC(DDR4_ZEN_CL).CODE(),
+			RSC(DDR4_ZEN_RCD_R).CODE(),
+			RSC(DDR4_ZEN_RCD_W).CODE(),
+			RSC(DDR4_ZEN_RP).CODE(),
+			RSC(DDR4_ZEN_RAS).CODE(),
+			RSC(DDR4_ZEN_RC).CODE(),
+			RSC(DDR4_ZEN_RRD_S).CODE(),
+			RSC(DDR4_ZEN_RRD_L).CODE(),
+			RSC(DDR4_ZEN_FAW).CODE(),
+			RSC(DDR4_ZEN_WTR_S).CODE(),
+			RSC(DDR4_ZEN_WTR_L).CODE(),
+			RSC(DDR4_ZEN_WR).CODE(),
+			RSC(DDR4_ZEN_RDRD_SCL).CODE(),
+			RSC(DDR4_ZEN_WRWR_SCL).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_ZEN_CWL).CODE(),
+			RSC(DDR4_ZEN_RTP).CODE(),
+			RSC(DDR4_ZEN_RDWR).CODE(),
+			RSC(DDR4_ZEN_WRRD).CODE(),
+			RSC(DDR4_ZEN_WRWR_SC).CODE(),
+			RSC(DDR4_ZEN_WRWR_SD).CODE(),
+			RSC(DDR4_ZEN_WRWR_DD).CODE(),
+			RSC(DDR4_ZEN_RDRD_SC).CODE(),
+			RSC(DDR4_ZEN_RDRD_SD).CODE(),
+			RSC(DDR4_ZEN_RDRD_DD).CODE(),
+			RSC(DDR4_ZEN_RTR_DLR).CODE(),
+			RSC(DDR4_ZEN_WTW_DLR).CODE(),
+			RSC(DDR4_ZEN_WTR_DLR).CODE(),
+			RSC(DDR4_ZEN_RRD_DLR).CODE()
+		},
+		{
+			RSC(MEM_CTRL_MTY_CELL).CODE(),
+			RSC(DDR4_ZEN_REFI).CODE(),
+			RSC(DDR4_ZEN_RFC1).CODE(),
+			RSC(DDR4_ZEN_RFC2).CODE(),
+			RSC(DDR4_ZEN_RFC4).CODE(),
+			RSC(DDR4_ZEN_RCPB).CODE(),
+			RSC(DDR4_ZEN_RPPB).CODE(),
+			RSC(DDR4_ZEN_BGS).CODE(),
+			RSC(DDR4_ZEN_BGS_ALT).CODE(),
+			RSC(DDR4_ZEN_BAN).CODE(),
+			RSC(DDR4_ZEN_RCPAGE).CODE(),
+			RSC(DDR4_ZEN_CKE).CODE(),
+			RSC(DDR4_ZEN_CMD).CODE(),
+			RSC(DDR4_ZEN_GDM).CODE(),
+			RSC(DDR4_ZEN_ECC).CODE()
+		}
+	};
+	const ASCII *Footer_DDR4_Zen[3][MC_MATX] = {
+		{
+			NULL,
+			RSC(DDR3_CL_COMM).CODE(),
+			RSC(DDR4_ZEN_RCD_R_COMM).CODE(),
+			RSC(DDR4_ZEN_RCD_W_COMM).CODE(),
+			RSC(DDR3_RP_COMM).CODE(),
+			RSC(DDR3_RAS_COMM).CODE(),
+			RSC(DDR4_ZEN_RC_COMM).CODE(),
+			RSC(DDR4_ZEN_RRD_S_COMM).CODE(),
+			RSC(DDR4_ZEN_RRD_L_COMM).CODE(),
+			RSC(DDR3_FAW_COMM).CODE(),
+			RSC(DDR4_ZEN_WTR_S_COMM).CODE(),
+			RSC(DDR4_ZEN_WTR_L_COMM).CODE(),
+			RSC(DDR3_WR_COMM).CODE(),
+			RSC(DDR4_ZEN_RDRD_SCL_COMM).CODE(),
+			RSC(DDR4_ZEN_WRWR_SCL_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR3_CWL_COMM).CODE(),
+			RSC(DDR4_ZEN_RTP_COMM).CODE(),
+			RSC(DDR4_ZEN_RDWR_COMM).CODE(),
+			RSC(DDR4_ZEN_WRRD_COMM).CODE(),
+			RSC(DDR4_ZEN_WRWR_SC_COMM).CODE(),
+			RSC(DDR4_ZEN_WRWR_SD_COMM).CODE(),
+			RSC(DDR4_ZEN_WRWR_DD_COMM).CODE(),
+			RSC(DDR4_ZEN_RDRD_SC_COMM).CODE(),
+			RSC(DDR4_ZEN_RDRD_SD_COMM).CODE(),
+			RSC(DDR4_ZEN_RDRD_DD_COMM).CODE(),
+			RSC(DDR4_ZEN_RTR_DLR_COMM).CODE(),
+			RSC(DDR4_ZEN_WTW_DLR_COMM).CODE(),
+			RSC(DDR4_ZEN_WTR_DLR_COMM).CODE(),
+			RSC(DDR4_ZEN_RRD_DLR_COMM).CODE()
+		},
+		{
+			NULL,
+			RSC(DDR3_REFI_COMM).CODE(),
+			RSC(DDR4_ZEN_RFC1_COMM).CODE(),
+			RSC(DDR4_ZEN_RFC2_COMM).CODE(),
+			RSC(DDR4_ZEN_RFC4_COMM).CODE(),
+			RSC(DDR4_ZEN_RCPB_COMM).CODE(),
+			RSC(DDR4_ZEN_RPPB_COMM).CODE(),
+			RSC(DDR4_ZEN_BGS_COMM).CODE(),
+			RSC(DDR4_ZEN_BGS_ALT_COMM).CODE(),
+			RSC(DDR4_ZEN_BAN_COMM).CODE(),
+			RSC(DDR4_ZEN_RCPAGE_COMM).CODE(),
+			RSC(DDR3_CKE_COMM).CODE(),
+			RSC(DDR3_CMD_COMM).CODE(),
+			RSC(DDR4_ZEN_GDM_COMM).CODE(),
+			RSC(DDR3_ECC_COMM).CODE(),
+		}
+	};
 	ATTRIBUTE *attrib[2] = {
 		RSC(MEMORY_CONTROLLER_COND0).ATTR(),
 		RSC(MEMORY_CONTROLLER_COND1).ATTR()
@@ -4981,91 +5145,91 @@ void Timing_DDR4_Zen(Window *win,CELL_FUNC OutFunc,CUINT *nl, unsigned short mc)
 	CUINT	nc;
 	unsigned short cha;
 
-  for (nc = 0; nc < MC_MATX; nc++) {
-    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[0][nc]),Footer_DDR4_Zen[0][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC,attrib[0], "\x20\x20#%-2u", cha);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tCL);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_RD);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCD_WR);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRP);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRAS);
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC,attrib[0], Header_DDR4_Zen[0][nc]),
+			(char*) Footer_DDR4_Zen[0][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRC);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDS);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRRDL);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tFAW);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tCL);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRCD_RD);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRCD_WR);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRP);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRAS);
 
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRS);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWTRL);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tWR);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRC);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRRDS);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRRDL);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tFAW);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScl);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScl);
-  }
-  for (nc = 0; nc < MC_MATX; nc++) {
-    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[1][nc]),Footer_DDR4_Zen[1][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC,attrib[0],"\x20\x20#%-2u", cha);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tWTRS);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tWTRL);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tWR);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tCWL);
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRTP);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tRdRdScl);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tWrWrScl);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC,attrib[0], Header_DDR4_Zen[1][nc]),
+			(char*) Footer_DDR4_Zen[1][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTWr);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTRd);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tCWL);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRTP);
 
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscWrTWr);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdWrTWr);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddWrTWr);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tddRdTWr);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tddWrTRd);
 
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tscRdTRd);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tsdRdTRd);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tddRdTRd);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tscWrTWr);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tsdWrTWr);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tddWrTWr);
 
-PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdScDLR);
-PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrScDLR);
-PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrRdScDLR);
-  PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRRDDLR);
-  }
-  for (nc = 0; nc < MC_MATX; nc++) {
-    GridHover(PRT(IMC,attrib[0],Header_DDR4_Zen[2][nc]),Footer_DDR4_Zen[2][nc]);
-  }
-  for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-  {
-    PRT(IMC,attrib[0], "\x20\x20#%-2u", cha);
-    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tREFI);
-    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC1);
-    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC2);
-    PRT(IMC,attrib[1], "%5u",Shm->Uncore.MC[mc].Channel[cha].Timing.tRFC4);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tscRdTRd);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tsdRdTRd);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tddRdTRd);
 
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPB);
-    PRT(IMC,attrib[1], "%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRPPB);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tRdRdScDLR);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tWrWrScDLR);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tWrRdScDLR);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).Zen.tRRDDLR);
+	}
+	for (nc = 0; nc < MC_MATX; nc++) {
+		GridHover(	PRT(IMC,attrib[0], Header_DDR4_Zen[2][nc]),
+				(char*) Footer_DDR4_Zen[2][nc] );
+	}
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
+	{
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", cha);
 
-    PRT(IMC,attrib[1], "\x20\x20%3s",
-		ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.BGS));
-    PRT(IMC,attrib[1], "\x20%3s\x20",
-		ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT));
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tREFI);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC1);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC2);
+		PRT(IMC, attrib[1], "%5u", TIMING(mc, cha).tRFC4);
 
-    PRT(IMC,attrib[1], "\x20R%1uW%1u",
-			Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tRdRdBan,
-			Shm->Uncore.MC[mc].Channel[cha].Timing.Zen.tWrWrBan);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRCPB);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRPPB);
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tRCPage);
+		PRT(IMC, attrib[1], "\x20\x20%3s", ENABLED(TIMING(mc,cha).BGS));
+		PRT(IMC, attrib[1], "\x20%3s\x20",
+					ENABLED(TIMING(mc, cha).BGS_ALT));
 
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.tCKE);
+		PRT(IMC, attrib[1], "\x20R%1uW%1u", TIMING(mc,cha).Zen.tRdRdBan,
+						 TIMING(mc, cha).Zen.tWrWrBan);
 
-    PRT(IMC,attrib[1],"%3uT ",Shm->Uncore.MC[mc].Channel[cha].Timing.CMD_Rate);
-
-    PRT(IMC,attrib[1],"\x20\x20%3s",
-			ENABLED(Shm->Uncore.MC[mc].Channel[cha].Timing.GDM));
-
-    PRT(IMC,attrib[1],"%4u ",Shm->Uncore.MC[mc].Channel[cha].Timing.ECC);
-  }
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tRCPage);
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).tCKE);
+		PRT(IMC, attrib[1], "%3uT ", TIMING(mc, cha).CMD_Rate);
+		PRT(IMC, attrib[1], "\x20\x20%3s", ENABLED(TIMING(mc,cha).GDM));
+		PRT(IMC, attrib[1], "%4u ", TIMING(mc, cha).ECC);
+	}
 }
+
+#undef TIMING
 
 void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 {
@@ -5078,7 +5242,7 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		[0b00] = RSC(MEM_CTRL_UNIT_MHZ).CODE(),
 		[0b01] = RSC(MEM_CTRL_UNIT_MTS).CODE(),
 		[0b10] = RSC(MEM_CTRL_UNIT_MBS).CODE(),
-		[0b11] = RSC(MEM_CTRL_BLANK).CODE()
+		[0b11] = (ASCII*) MEM_CTRL_FMT
 	};
 	char	item[MC_MATY + 1], *str = malloc(CODENAME_LEN + 4 + 10),
 		*chipStr = malloc((MC_MATX * MC_MATY) + 1);
@@ -5110,9 +5274,9 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT1_1).CODE());
 	PRT(IMC, attrib[1], RSC(MEM_CTRL_SUBSECT1_2).CODE(), mc);
 
-      for (nc = 0; nc < (MC_MATX - 6); nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-      }
+	for (nc = 0; nc < (MC_MATX - 6); nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	}
 
 	switch (Shm->Uncore.MC[mc].ChannelCount) {
 	case 1:
@@ -5146,9 +5310,9 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		PRT(IMC, attrib[1], RSC(MEM_CTRL_EIGHT_CHA_2).CODE());
 		break;
 	default:
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 		break;
 	}
 
@@ -5156,16 +5320,16 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_RATE_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Rate);
 	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.Bus_Rate], MC_MATY,HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
+	PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_BUS_SPEED_1).CODE());
 	PRT(IMC, attrib[1], "%5llu", Shm->Uncore.Bus.Speed);
 	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.BusSpeed], MC_MATY,HSPACE);
 
-      for (nc = 0; nc < (MC_MATX - 13); nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-      }
+	for (nc = 0; nc < (MC_MATX - 13); nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	}
 
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_0).CODE());
 	PRT(IMC, attrib[0], RSC(MEM_CTRL_DRAM_SPEED_1).CODE());
@@ -5173,50 +5337,51 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 	PRT(IMC, attrib[0], MC_Unit[Shm->Uncore.Unit.DDRSpeed], MC_MATY,HSPACE);
 
 
-      for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-      }
+	for (nc = 0; nc < MC_MATX; nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	}
 
 	TimingFunc(win, OutFunc, nl, mc);
 
-      for (nc = 0; nc < MC_MATX; nc++) {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-      }
-
-      for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
-      {
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_0).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_1).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_2).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_3).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_4).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_5).CODE(), cha);
-	for (nc = 0; nc < (MC_MATX - 6); nc++) {
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	for (nc = 0; nc < MC_MATX; nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 	}
 
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SLOT).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_BANK).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_RANK).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY, HSPACE);
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_ROW).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN0).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN1).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_0).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_1).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_2).CODE());
-	PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_3).CODE());
-	for (nc = 0; nc < (MC_MATX - 12); nc++) {
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-	}
-
-	for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
+	for (cha = 0; cha < Shm->Uncore.MC[mc].ChannelCount; cha++)
 	{
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-		PRT(IMC, attrib[0], "\x20\x20#%-2u", slot);
-	  if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_0).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_1).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_2).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_3).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_4).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_SUBSECT2_5).CODE(), cha);
+		for (nc = 0; nc < (MC_MATX - 6); nc++) {
+			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		}
+
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SLOT).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_BANK).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_RANK).CODE());
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_ROW).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN0).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_COLUMN1).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_0).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_1).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_2).CODE());
+		PRT(IMC, attrib[0], RSC(MEM_CTRL_DIMM_SIZE_3).CODE());
+		for (nc = 0; nc < (MC_MATX - 12); nc++) {
+			PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		}
+
+	  for (slot = 0; slot < Shm->Uncore.MC[mc].SlotCount; slot++)
 	  {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+		PRT(IMC, attrib[0], "\x20\x20#%-2u", slot);
+
+	    if (Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size > 0)
+	    {
 		PRT(IMC, attrib[1], "%5u",
 			Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Banks);
 		PRT(IMC, attrib[1], "%5u",
@@ -5229,20 +5394,20 @@ void MemoryController(Window *win, CELL_FUNC OutFunc, TIMING_FUNC TimingFunc)
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Cols, str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
 
 		iSplit(Shm->Uncore.MC[mc].Channel[cha].DIMM[slot].Size, str);
 		PRT(IMC, attrib[1], "%5s", &str[0]);
 		PRT(IMC, attrib[1], "%5s", &str[8]);
-	  }
-	  else for (nc = 0; nc < 9; nc++) {
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
-	  }
-	  for (nc = 0; nc < (MC_MATX - 11); nc++) {
-		PRT(IMC, attrib[0], RSC(MEM_CTRL_BLANK).CODE(), MC_MATY,HSPACE);
+	    }
+	    else for (nc = 0; nc < 9; nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	    }
+	    for (nc = 0; nc < (MC_MATX - 11); nc++) {
+		PRT(IMC, attrib[0], MEM_CTRL_FMT, MC_MATY, HSPACE);
+	    }
 	  }
 	}
-      }
     }
   }
   if (str != NULL) {
@@ -5756,27 +5921,27 @@ Window *CreateSettings(unsigned long long id)
 		IntervalUpdate );
 
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
-				" Sys. Tick(ms)                  ",
+				RSC(SETTINGS_SYS_TICK).CODE(),
 				MAKE_PRINT_UNFOCUS ),
 		SysTickUpdate );
 
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
-				" Poll Wait(ms)                  ",
+				RSC(SETTINGS_POLL_WAIT).CODE(),
 				MAKE_PRINT_UNFOCUS ),
 		SvrWaitUpdate, &Shm->Sleep.pollingWait.tv_nsec );
 
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
-				" Ring Wait(ms)                  ",
+				RSC(SETTINGS_RING_WAIT).CODE(),
 				MAKE_PRINT_UNFOCUS ),
 		SvrWaitUpdate, &Shm->Sleep.ringWaiting.tv_nsec );
 
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
-				" Child Wait(ms)                 ",
+				RSC(SETTINGS_CHILD_WAIT).CODE(),
 				MAKE_PRINT_UNFOCUS ),
 		SvrWaitUpdate, &Shm->Sleep.childWaiting.tv_nsec );
 
 	GridCall( StoreTCell(	wSet, SCANKEY_NULL,
-				" Slice Wait(ms)                 ",
+				RSC(SETTINGS_SLICE_WAIT).CODE(),
 				MAKE_PRINT_UNFOCUS ),
 		SvrWaitUpdate, &Shm->Sleep.sliceWaiting.tv_nsec );
 
@@ -5893,7 +6058,7 @@ Window *CreateHelp(unsigned long long id)
 					MAKE_PRINT_UNFOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [F2]             ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_MENU).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MENU).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -5909,15 +6074,15 @@ Window *CreateHelp(unsigned long long id)
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_NEXT_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "       [a|z]      ",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_SHIFT_GR1).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_BLANK).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, " [w|q]  [s]  [d] +",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_SHIFT_GR2).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_MOVE_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
-	StoreTCell(wHelp, SCANKEY_NULL, "                 +",
+	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_KEY_ALT_GR3).CODE(),
 					MAKE_PRINT_FOCUS);
 	StoreTCell(wHelp, SCANKEY_NULL, RSC(HELP_SIZE_WINDOW).CODE(),
 					MAKE_PRINT_UNFOCUS);
@@ -6806,21 +6971,21 @@ void TitleForTurboClock(unsigned int NC, ASCII *title)
 void TitleForRatioClock(unsigned int NC, ASCII *title)
 {
 	snprintf((char *) title,14+6+1,(char *) RSC(RATIO_CLOCK_TITLE).CODE(),
-			(NC == CLOCK_MOD_TGT) || (NC == CLOCK_MOD_HWP_TGT) ?
-		(char *) RSC(TARGET).CODE() :
-			(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
-		"Max" :
-			(NC == CLOCK_MOD_MIN) || (NC == CLOCK_MOD_HWP_MIN) ?
-		"Min" :
-			(NC == CLOCK_MOD_ACT) ?
-		"Activ" : "");
+		(NC == CLOCK_MOD_TGT) || (NC == CLOCK_MOD_HWP_TGT) ?
+			RSC(TARGET).CODE() :
+		(NC == CLOCK_MOD_MAX) || (NC == CLOCK_MOD_HWP_MAX) ?
+			RSC(MAX).CODE() :
+		(NC == CLOCK_MOD_MIN) || (NC == CLOCK_MOD_HWP_MIN) ?
+			RSC(MIN).CODE() :
+		(NC == CLOCK_MOD_ACT) ?
+			RSC(ACT).CODE() : (ASCII*) "");
 }
 
 void TitleForUncoreClock(unsigned int NC, ASCII *title)
 {
 	snprintf((char *) title,15+3+1,(char *) RSC(UNCORE_CLOCK_TITLE).CODE(),
-			(NC == CLOCK_MOD_MAX) ? "Max" :
-			(NC == CLOCK_MOD_MIN) ? "Min" : "");
+			(NC == CLOCK_MOD_MAX) ? RSC(MAX).CODE() :
+			(NC == CLOCK_MOD_MIN) ? RSC(MIN).CODE() : (ASCII*) "");
 }
 
 void ComputeRatioShifts(unsigned int COF,
@@ -7958,7 +8123,7 @@ Window *CreateSelectIdle(unsigned long long id)
 	int idx;
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
-			(ASCII*) "            0     RESET ",
+			RSC(BOX_IDLE_LIMIT_RESET).CODE(),
 			MakeAttr(WHITE, 0, BLACK, 0));
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
@@ -10527,22 +10692,40 @@ int Shortcut(SCANKEY *scan)
 	    }, select = {
 		.col = 0,
 		.row = SProc->PowerThermal.HWP.Request.Energy_Pref == 0xff ?
-		   3 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0xc0 ?
-		   2 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x80 ?
+		   8 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0xe0 ?
+		   7 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0xc0 ?
+		   6 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0xa0 ?
+		   5 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x80 ?
+		   4 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x60 ?
+		   3 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x40 ?
+		   2 : SProc->PowerThermal.HWP.Request.Energy_Pref >= 0x20 ?
 		   1 : 0
 	    };
 		Window *wBox = CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_POWER_POLICY_TITLE).CODE(),
-				RSC(BOX_HWP_POLICY_MIN).CODE(), stateAttr[0],
+		/* 00 */	RSC(BOX_HWP_POLICY_MIN).CODE(), stateAttr[0],
 							BOXKEY_HWP_EPP_MIN,
-				RSC(BOX_HWP_POLICY_MED).CODE(), stateAttr[0],
+		/* 20 */	RSC(BOX_HWP_POLICY_020).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_020,
+		/* 40 */	RSC(BOX_HWP_POLICY_040).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_040,
+		/* 60 */	RSC(BOX_HWP_POLICY_060).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_060,
+		/* 80 */	RSC(BOX_HWP_POLICY_MED).CODE(), stateAttr[0],
 							BOXKEY_HWP_EPP_MED,
-				RSC(BOX_HWP_POLICY_PWR).CODE(), stateAttr[0],
+		/* A0 */	RSC(BOX_HWP_POLICY_0A0).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_0A0,
+		/* C0 */	RSC(BOX_HWP_POLICY_PWR).CODE(), stateAttr[0],
 							BOXKEY_HWP_EPP_PWR,
-				RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0],
+		/* E0 */	RSC(BOX_HWP_POLICY_0E0).CODE(), stateAttr[0],
+							BOXKEY_HWP_EPP_0E0,
+		/* FF */	RSC(BOX_HWP_POLICY_MAX).CODE(), stateAttr[0],
 							BOXKEY_HWP_EPP_MAX);
 
 	    if (wBox != NULL) {
+		TCellAt(wBox, 0, select.row).attr[ 3] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 4] = 	\
+		TCellAt(wBox, 0, select.row).attr[ 5] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 6] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 7] = 	\
 		TCellAt(wBox, 0, select.row).attr[ 8] = 	\
@@ -10555,9 +10738,12 @@ int Shortcut(SCANKEY *scan)
 		TCellAt(wBox, 0, select.row).attr[15] = 	\
 		TCellAt(wBox, 0, select.row).attr[16] = 	\
 		TCellAt(wBox, 0, select.row).attr[17] = 	\
-		TCellAt(wBox, 0, select.row).attr[18] = stateAttr[1];
-		TCellAt(wBox, 0, select.row).item[ 6] = '<';
-		TCellAt(wBox, 0, select.row).item[18] = '>';
+		TCellAt(wBox, 0, select.row).attr[18] = 	\
+		TCellAt(wBox, 0, select.row).attr[19] = 	\
+		TCellAt(wBox, 0, select.row).attr[20] = 	\
+		TCellAt(wBox, 0, select.row).attr[21] = stateAttr[1];
+		TCellAt(wBox, 0, select.row).item[ 3] = '<';
+		TCellAt(wBox, 0, select.row).item[21] = '>';
 
 		AppendWindow(wBox, &winList);
 	    } else {
@@ -10576,6 +10762,30 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_HWP_EPP );
 	}
     break;
+    case BOXKEY_HWP_EPP_020:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0x20,
+				TECHNOLOGY_HWP_EPP );
+	}
+    break;
+    case BOXKEY_HWP_EPP_040:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0x40,
+				TECHNOLOGY_HWP_EPP );
+	}
+    break;
+    case BOXKEY_HWP_EPP_060:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0x60,
+				TECHNOLOGY_HWP_EPP );
+	}
+    break;
     case BOXKEY_HWP_EPP_MED:
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
@@ -10584,11 +10794,27 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_HWP_EPP );
 	}
     break;
+    case BOXKEY_HWP_EPP_0A0:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0xa0,
+				TECHNOLOGY_HWP_EPP );
+	}
+    break;
     case BOXKEY_HWP_EPP_PWR:
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				0xc0,
+				TECHNOLOGY_HWP_EPP );
+	}
+    break;
+    case BOXKEY_HWP_EPP_0E0:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				0xe0,
 				TECHNOLOGY_HWP_EPP );
 	}
     break;
@@ -12257,16 +12483,16 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 
 CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 {
-	ASCII	hCState[9][4] = {
-		{'P', 'C', '0', '2'},
-		{'P', 'C', '0', '3'},
-		{'P', 'C', '0', '4'},
-		{'P', 'C', '0', '6'},
-		{'P', 'C', '0', '7'},
-		{'P', 'C', '0', '8'},
-		{'P', 'C', '0', '9'},
-		{'P', 'C', '1', '0'},
-		{'M', 'C', '0', '6'}
+	ASCII	*hCState[9] = {
+		RSC(LAYOUT_PACKAGE_PC02).CODE(),
+		RSC(LAYOUT_PACKAGE_PC03).CODE(),
+		RSC(LAYOUT_PACKAGE_PC04).CODE(),
+		RSC(LAYOUT_PACKAGE_PC06).CODE(),
+		RSC(LAYOUT_PACKAGE_PC07).CODE(),
+		RSC(LAYOUT_PACKAGE_PC08).CODE(),
+		RSC(LAYOUT_PACKAGE_PC09).CODE(),
+		RSC(LAYOUT_PACKAGE_PC10).CODE(),
+		RSC(LAYOUT_PACKAGE_MC06).CODE()
 	};
 
 	LayerFillAt(	layer, 0, row, draw.Size.width,

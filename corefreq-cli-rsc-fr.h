@@ -298,8 +298,10 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_FEATURES_CNXT_ID_CODE_FR	"L1 Data Cache Context ID"
 #define RSC_FEATURES_DCA_CODE_FR	"Direct Cache Access"
 #define RSC_FEATURES_DE_CODE_FR 	"Debugging Extension"
+
 #define RSC_FEATURES_DS_PEBS_CODE_FR	\
 				"Debug Store & Precise Event Based Sampling"
+
 #define RSC_FEATURES_DS_CPL_CODE_FR	"CPL Qualified Debug Store"
 #define RSC_FEATURES_DTES_64_CODE_FR	"64-Bit Debug Store"
 #define RSC_FEATURES_FAST_STR_CODE_FR	"Fast-String Operation"
@@ -543,13 +545,22 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 						"M""\xa9""moire [M] "
 
 #define RSC_SETTINGS_TITLE_CODE_FR	      " R""\xa9""glages "
+
 #define RSC_SETTINGS_DAEMON_CODE_FR	      " Acc""\xa8""s d""\xa9""mon" \
 						"                    "
+
 #define RSC_SETTINGS_INTERVAL_CODE_FR	      " Intervalle(ms)          <    > "
+#define RSC_SETTINGS_SYS_TICK_CODE_FR	      " Sys. Tick(ms)                  "
+#define RSC_SETTINGS_POLL_WAIT_CODE_FR	      " Poll Wait(ms)                  "
+#define RSC_SETTINGS_RING_WAIT_CODE_FR	      " Ring Wait(ms)                  "
+#define RSC_SETTINGS_CHILD_WAIT_CODE_FR       " Child Wait(ms)                 "
+#define RSC_SETTINGS_SLICE_WAIT_CODE_FR       " Slice Wait(ms)                 "
 #define RSC_SETTINGS_RECORDER_CODE_FR	      " Enregistreur(sec)       <    > "
 #define RSC_SETTINGS_AUTO_CLOCK_CODE_FR       " Auto Clock               <   > "
+
 #define RSC_SETTINGS_EXPERIMENTAL_CODE_FR     " Exp""\xa9""rimental"	\
 						"             <   > "
+
 #define RSC_SETTINGS_CPU_HOTPLUG_CODE_FR      " Hot-Plug CPU             [   ] "
 #define RSC_SETTINGS_PCI_ENABLED_CODE_FR      " Activation PCI           [   ] "
 #define RSC_SETTINGS_NMI_REGISTERED_CODE_FR   " Activation NMI           <   > "
@@ -575,11 +586,15 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_HELP_KEY_PAGE_DOWN_CODE_FR	" [Page-Suiv]      "
 #define RSC_HELP_KEY_MINUS_CODE_FR	" [Moins]          "
 #define RSC_HELP_KEY_PLUS_CODE_FR	" [Plus]           "
+#define RSC_HELP_KEY_MENU_CODE_FR	" [F2]             "
 #define RSC_HELP_MENU_CODE_FR		"             Menu "
 #define RSC_HELP_CLOSE_WINDOW_CODE_FR	"   Fermer fen""\xaa""tre "
 #define RSC_HELP_PREV_WINDOW_CODE_FR	"  Fen""\xaa""tre arri""\xa8""re "
 #define RSC_HELP_NEXT_WINDOW_CODE_FR	" Fen""\xaa""tre suivante "
+#define RSC_HELP_KEY_SHIFT_GR1_CODE_FR	"       [a|z]      "
+#define RSC_HELP_KEY_SHIFT_GR2_CODE_FR	" [w|q]  [s]  [d] +"
 #define RSC_HELP_MOVE_WINDOW_CODE_FR	" [Maj]   D""\xa9""placer "
+#define RSC_HELP_KEY_ALT_GR3_CODE_FR	"                 +"
 #define RSC_HELP_SIZE_WINDOW_CODE_FR	" [Alt]  Retailler "
 #define RSC_HELP_MOVE_SELECT_CODE_FR	" D""\xa9""placer curseur "
 #define RSC_HELP_LAST_CELL_CODE_FR	" Derni""\xa8""re cellule "
@@ -591,34 +606,49 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_HELP_SCROLL_UP_CODE_FR	"    Accro""\xae""tre CPU "
 
 #define RSC_ADV_HELP_TITLE_CODE_FR	" Raccourcis "
+
 #define RSC_ADV_HELP_SECT_FREQ_CODE_FR	" Vue Fr""\xa9""quence:"	\
 					"                       "
+
 #define RSC_ADV_HELP_ITEM_AVG_CODE_FR	" %           Moyennes | "	\
 					"\x89""tats-Package "
+
 #define RSC_ADV_HELP_SECT_TASK_CODE_FR	" Vue Suivi des t""\xa2""ches:" \
 					"                "
+
 #define RSC_ADV_HELP_ITEM_ORDER_CODE_FR " b          Crit""\xa8""re de tri" \
 					" des t""\xa2""ches "
+
 #define RSC_ADV_HELP_ITEM_SEL_CODE_FR	" n          Choisir la t""\xa2""che " \
 					"\xa0"" suivre "
+
 #define RSC_ADV_HELP_ITEM_REV_CODE_FR	" r         Inverser le tri des " \
 					"t""\xa2""ches "
+
 #define RSC_ADV_HELP_ITEM_HIDE_CODE_FR	" v          Afficher | Cacher valeurs "
 #define RSC_ADV_HELP_SECT_ANY_CODE_FR	" Vue quelconque:                      "
+
 #define RSC_ADV_HELP_ITEM_POWER_CODE_FR " $            ""\x89""nergie " \
 					"en Joule | Watt "
+
 #define RSC_ADV_HELP_ITEM_TOP_CODE_FR	" .             Fr""\xa9""quence Top" \
 					" ou Usage "
+
 #define RSC_ADV_HELP_ITEM_UPD_CODE_FR	" *                Rafra""\xae""chir " \
 					"CoreFreq "
+
 #define RSC_ADV_HELP_ITEM_START_CODE_FR " {                  D""\xa9""marrer "\
 					"CoreFreq "
+
 #define RSC_ADV_HELP_ITEM_STOP_CODE_FR	" }                   Arr""\xaa""ter "\
 					"CoreFreq "
+
 #define RSC_ADV_HELP_ITEM_TOOLS_CODE_FR " F10               Arr""\xaa""ter " \
 					"les outils "
+
 #define RSC_ADV_HELP_ITEM_GO_UP_CODE_FR " Haut Prec                 "	\
 					"D""\xa9""filement "
+
 #define RSC_ADV_HELP_ITEM_GO_DW_CODE_FR " Bas  Suiv                       CPU  "
 #define RSC_ADV_HELP_TERMINAL_CODE_FR	" Terminal:                            "
 #define RSC_ADV_HELP_PRT_SCR_CODE_FR	" [Ctrl]+[p]                    Copier "
@@ -626,6 +656,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_ADV_HELP_FAHR_CELS_CODE_FR	" F              Fahrenheit ou Celsius "
 #define RSC_ADV_HELP_PROC_EVENT_CODE_FR " H           G""\xa9""rer Alertes" \
 					" Processeur "
+
 #define RSC_ADV_HELP_SECRET_CODE_FR	" Y          Basculer donn""\xa9""es" \
 					" secr""\xa8""tes "
 
@@ -634,13 +665,16 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_UNCORE_CLOCK_TITLE_CODE_FR	" %s Uncore Fr""\xa9""q. "
 
 #define RSC_SELECT_CPU_TITLE_CODE_FR	" CPU   Pkg  Core Thread Planifier "
+
 #define RSC_SELECT_FREQ_TITLE_CODE_FR	" CPU   Pkg  Core Thread "	\
 					"  Fr""\xa9""quence   Ratio "
 
 #define RSC_BOX_DISABLE_COND0_CODE_FR	"             D""\xa9""sactiver  " \
 					"           "
+
 #define RSC_BOX_DISABLE_COND1_CODE_FR	"           < D""\xa9""sactiver >" \
 					"           "
+
 #define RSC_BOX_ENABLE_COND0_CODE_FR	"               Activer              "
 #define RSC_BOX_ENABLE_COND1_CODE_FR	"           <   Activer  >           "
 
@@ -650,39 +684,56 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_MODE_DESC_CODE_FR	"     CoreFreq mode "	\
 					"op""\xa9""rationnel     "
+
 #define RSC_BOX_EIST_DESC_CODE_FR	"             SpeedStep              "
+
 #define RSC_BOX_C1E_DESC_CODE_FR	"        ""\x89""tat de "	\
 					"Pause ""\xa9""tendu        "
+
 #define RSC_BOX_TURBO_DESC_CODE_FR	" Turbo Boost/Core Performance Boost "
+
 #define RSC_BOX_C1A_DESC_CODE_FR	"       Auto r""\xa9""trogradation" \
 					" C1       "
+
 #define RSC_BOX_C3A_DESC_CODE_FR	"       Auto r""\xa9""trogradation" \
 					" C3       "
+
 #define RSC_BOX_C1U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
 					" C1       "
+
 #define RSC_BOX_C2U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
 					" C2       "
+
 #define RSC_BOX_C3U_DESC_CODE_FR	"        Non-r""\xa9""trogradation" \
 					" C3       "
+
 #define RSC_BOX_C6D_DESC_CODE_FR	"          C6 Core Demotion          "
 #define RSC_BOX_MC6_DESC_CODE_FR	"         C6 Module Demotion         "
+
 #define RSC_BOX_CC6_DESC_CODE_FR	"            Core ""\x89""tat"	\
 					" C6            "
+
 #define RSC_BOX_PC6_DESC_CODE_FR	"           Package ""\x89""tat" \
 					" C6          "
+
 #define RSC_BOX_HWP_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" de la Performance"
+
 #define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" Cycles de Service"
+
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
 
-#define RSC_BOX_NOMINAL_MODE_COND0_CODE_FR	"       Fonctionnement" \
+#define RSC_BOX_NOM_MODE_COND0_CODE_FR		"       Fonctionnement" \
 						" nominal       "
-#define RSC_BOX_NOMINAL_MODE_COND1_CODE_FR	"     < Fonctionnement" \
+
+#define RSC_BOX_NOM_MODE_COND1_CODE_FR		"     < Fonctionnement" \
 						" nominal >     "
-#define RSC_BOX_EXPER_MODE_COND0_CODE_FR	"     Fonctionnement "	\
+
+#define RSC_BOX_EXP_MODE_COND0_CODE_FR		"     Fonctionnement "	\
 						"exp""\xa9""rimental    "
-#define RSC_BOX_EXPER_MODE_COND1_CODE_FR	"   < Fonctionnement "	\
+
+#define RSC_BOX_EXP_MODE_COND1_CODE_FR		"   < Fonctionnement "	\
 						"exp""\xa9""rimental >  "
 
 #define RSC_BOX_INTERRUPT_TITLE_CODE_FR 	" Interruptions NMI "
@@ -693,11 +744,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_OPS_REGISTER_ST0_CODE_FR	"             " \
 						"Enregistrer            "
+
 #define RSC_BOX_OPS_REGISTER_ST1_CODE_FR	"         <   " \
 						"Enregistrer  >         "
-#define RSC_BOX_OPS_UNREGISTER_ST0_CODE_FR	"           D""\xa9""s" \
+
+#define RSC_BOX_OPS_UNREGIST_ST0_CODE_FR	"           D""\xa9""s" \
 						"enregistrer           "
-#define RSC_BOX_OPS_UNREGISTER_ST1_CODE_FR	"         < D""\xa9""s" \
+
+#define RSC_BOX_OPS_UNREGIST_ST1_CODE_FR	"         < D""\xa9""s" \
 						"enregistrer >         "
 
 #define RSC_BOX_EVENT_TITLE_CODE_FR		" Effacer "	\
@@ -707,6 +761,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_EVENT_PROCHOT_AGENT_CODE_FR	"      Agent PROCHOT#     "
 #define RSC_BOX_EVENT_CRITICAL_TEMP_CODE_FR	"   Temp""\xa9""rature" \
 						" critique  "
+
 #define RSC_BOX_EVENT_THERM_THRESHOLD_CODE_FR	"     Seuil thermique     "
 #define RSC_BOX_EVENT_POWER_LIMIT_CODE_FR	" Limitation de puissance "
 #define RSC_BOX_EVENT_CURRENT_LIMIT_CODE_FR	"  Limitation de courant  "
@@ -728,6 +783,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_EXT_DUTY_CYCLE_TITLE_CODE_FR	" Cycle de service "	\
 						"\xa9""tendu "
+
 #define RSC_BOX_DUTY_CYCLE_TITLE_CODE_FR	" Cycle de service "
 
 #define RSC_BOX_DUTY_CYCLE_RESERVED_CODE_FR	"           "		\
@@ -739,10 +795,15 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_POWER_POLICY_LOW_CODE_FR	"            0       BAS "
 #define RSC_BOX_POWER_POLICY_HIGH_CODE_FR	"           15      HAUT "
 
-#define RSC_BOX_HWP_POLICY_MIN_CODE_FR		"        Minimale        "
-#define RSC_BOX_HWP_POLICY_MED_CODE_FR		"        Moyenne         "
-#define RSC_BOX_HWP_POLICY_PWR_CODE_FR		"        Puissance       "
-#define RSC_BOX_HWP_POLICY_MAX_CODE_FR		"        Maximale        "
+#define RSC_BOX_HWP_POLICY_MIN_CODE_FR		"         Minimale:0     "
+#define RSC_BOX_HWP_POLICY_020_CODE_FR		"                 32     "
+#define RSC_BOX_HWP_POLICY_040_CODE_FR		"                 64     "
+#define RSC_BOX_HWP_POLICY_060_CODE_FR		"                 96     "
+#define RSC_BOX_HWP_POLICY_MED_CODE_FR		"        Moyenne:128     "
+#define RSC_BOX_HWP_POLICY_0A0_CODE_FR		"                160     "
+#define RSC_BOX_HWP_POLICY_PWR_CODE_FR		"      Puissance:192     "
+#define RSC_BOX_HWP_POLICY_0E0_CODE_FR		"                224     "
+#define RSC_BOX_HWP_POLICY_MAX_CODE_FR		"       Maximale:255     "
 
 #define RSC_BOX_TOOLS_TITLE_CODE_FR	" Outils "
 #define RSC_BOX_TOOLS_STOP_CODE_FR	"          ARR""\x8a""TER          "
@@ -755,10 +816,13 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_CONIC_TITLE_CODE_FR	" Variations Coniques "
 #define RSC_BOX_CONIC_ITEM_1_CODE_FR	"         Ellipso""\xaf""de         "
+
 #define RSC_BOX_CONIC_ITEM_2_CODE_FR	"  Hyperbolo""\xaf""de "\
 					"\xa0"" une nappe  "
+
 #define RSC_BOX_CONIC_ITEM_3_CODE_FR	" Hyperbolo""\xaf""de "\
 					"\xa0"" deux nappes "
+
 #define RSC_BOX_CONIC_ITEM_4_CODE_FR	"     Cylindre elliptique    "
 #define RSC_BOX_CONIC_ITEM_5_CODE_FR	"     Cylindre hyperbolique  "
 #define RSC_BOX_CONIC_ITEM_6_CODE_FR	"    Deux plans parall""\xa8""les   "
@@ -822,10 +886,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_ERROR_SHARED_MEM_CODE_FR					\
 	"Erreur code %d de connexion au démon.\n%s: '%s' @ ligne %d\n"
-#define RSC_ERROR_SYS_CALL_CODE_FR	"Erreur Système code %d\n%s @ ligne %d\n"
+
+#define RSC_ERROR_SYS_CALL_CODE_FR     "Erreur Système code %d\n%s @ ligne %d\n"
+
 #define RSC_ERROR_UNIMPLEMENTED_CODE_FR "Fonctionnalit""\xa9"		\
 					" non implement""\xa9""e"
+
 #define RSC_ERROR_EXPERIMENTAL_CODE_FR	"Le mode exp""\xa9""rimental est requis"
+
 #define RSC_ERROR_TURBO_PREREQ_CODE_FR	"D""\xa9""sactiver Turbo Boost |" \
 					" Core Performance Boost"
 
@@ -850,34 +918,44 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MECH_RDCL_NO_CODE_FR   "Architectural - Rogue Data Cache Load"
 #define RSC_MECH_IBRS_ALL_CODE_FR  "Architectural - Enhanced IBRS"
 #define RSC_MECH_RSBA_CODE_FR	"Architectural - Return Stack Buffer Alternate"
+
 #define RSC_MECH_L1DFL_VMENTRY_NO_CODE_FR \
 				"Hypervisor - No flush L1D on VM entry"
+
 #define RSC_MECH_SSB_NO_CODE_FR "Architectural - Speculative Store Bypass"
+
 #define RSC_MECH_MDS_NO_CODE_FR \
 			"Architectural - Microarchitectural Data Sampling"
+
 #define RSC_MECH_PSCHANGE_MC_NO_CODE_FR "Architectural - Page Size Change MCE"
 #define RSC_MECH_TAA_NO_CODE_FR "Architectural - TSX Asynchronous Abort"
 #define RSC_MECH_SPLA_CODE_FR	"Architectural - Split Locked Access Exception"
 
 #define RSC_CREATE_SELECT_AUTO_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"   %s     %c%4u %c "
+
 #define RSC_CREATE_SELECT_FREQ_TURBO_CODE_FR	"  %3s       Processeur    " \
 						"%7.2f MHz %c%4u %c "
+
 #define RSC_CREATE_SELECT_FREQ_TGT_CODE_FR	"  TGT       Processeur    "
 #define RSC_CREATE_SELECT_FREQ_HWP_TGT_CODE_FR	"  HWP-TGT   Processeur    "
 #define RSC_CREATE_SELECT_FREQ_HWP_MAX_CODE_FR	"  HWP-MAX   Processeur    "
 #define RSC_CREATE_SELECT_FREQ_HWP_MIN_CODE_FR	"  HWP-MIN   Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MAX_CODE_FR	"  MAX       Processeur    "
 #define RSC_CREATE_SELECT_FREQ_MIN_CODE_FR	"  MIN       Processeur    "
+
 #define RSC_CREATE_SELECT_FREQ_OFFLINE_CODE_FR	"  %03u                    " \
 						"               Off   "
 
 #define RSC_POPUP_DRIVER_TITLE_CODE_FR		" Message du Pilote "
 
 #define RSC_EXIT_TITLE_CODE_FR			" Sortie "
+
 #define RSC_EXIT_HEADER_CODE_FR  " Les services suivants sont toujours " \
 				 "en cours d'ex""\xa9""cution "
+
 #define RSC_EXIT_CONFIRM_CODE_FR "                       < Confirmer > " \
 				 "                     "
+
 #define RSC_EXIT_FOOTER_CODE_FR  "                                     " \
 				 "[""\x89""chap] pour annuler "
