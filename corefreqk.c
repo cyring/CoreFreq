@@ -6566,7 +6566,7 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
 
-    if ((!TurboActivation.Ratio_Lock) && (Turbo_Activation_Ratio >= 0)
+    if (!TurboActivation.Ratio_Lock && (Turbo_Activation_Ratio >= 0)
      && (Turbo_Activation_Ratio != TurboActivation.MaxRatio))
     {
 	const short MaxRatio = \
@@ -15556,9 +15556,12 @@ static long CoreFreqK_ioctl(	struct file *filp,
 
     case COREFREQ_IOCTL_CONFIG_TDP: {
 		CLOCK_ARG clockMod = {.sllong = arg};
+		const short MaxRatio = MAXCLOCK_TO_RATIO(short, \
+		PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core))->Clock.Hz));
+
 		switch (clockMod.NC) {
 		case CLOCK_MOD_ACT:
-			if (clockMod.Ratio >= 0)
+			if ((clockMod.Ratio >= 0)&&(clockMod.Ratio <= MaxRatio))
 			{
 				Controller_Stop(1);
 				Turbo_Activation_Ratio = clockMod.Ratio;
