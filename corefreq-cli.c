@@ -10962,25 +10962,29 @@ int Shortcut(SCANKEY *scan)
 	if (win == NULL)
 	{
 		const Coordinate origin = {
-			.col=(draw.Size.width - RSZ(BOX_TDP_BLANK)) / 2,
+			.col=(draw.Size.width - RSZ(BOX_CFG_TDP_BLANK)) / 2,
 			.row = TOP_HEADER_ROW + 11
 		}, select = {
 			.col = 0,
-			.row = 1 + Shm->Proc.Features.TDP_Cfg_Level
+			.row = 3 + Shm->Proc.Features.TDP_Cfg_Level
 		};
 
 		Window *wBox;
 		wBox = CreateBox(scan->key, origin, select,
-				(char *) RSC(BOX_TDP_TITLE).CODE(),
-				RSC(BOX_TDP_BLANK).CODE(), blankAttr,
+				(char *) RSC(BOX_CFG_TDP_TITLE).CODE(),
+				RSC(BOX_CFG_TDP_BLANK).CODE(), blankAttr,
 							SCANKEY_NULL,
-				RSC(BOX_TDP_LVL0).CODE(), stateAttr[0],
+				RSC(BOX_CFG_TDP_DESC).CODE() , descAttr,
+							SCANKEY_NULL,
+				RSC(BOX_CFG_TDP_BLANK).CODE(), blankAttr,
+							SCANKEY_NULL,
+				RSC(BOX_CFG_TDP_LVL0).CODE() , stateAttr[0],
 							BOXKEY_CFG_TDP_LVL0,
-				RSC(BOX_TDP_LVL1).CODE(), stateAttr[0],
+				RSC(BOX_CFG_TDP_LVL1).CODE() , stateAttr[0],
 							BOXKEY_CFG_TDP_LVL1,
-				RSC(BOX_TDP_LVL2).CODE(), stateAttr[0],
+				RSC(BOX_CFG_TDP_LVL2).CODE() , stateAttr[0],
 							BOXKEY_CFG_TDP_LVL2,
-				RSC(BOX_TDP_BLANK).CODE(), blankAttr,
+				RSC(BOX_CFG_TDP_BLANK).CODE(), blankAttr,
 							SCANKEY_NULL);
 	    if (wBox != NULL) {
 		TCellAt(wBox, 0, select.row).attr[ 3] = 	\

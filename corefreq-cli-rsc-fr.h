@@ -839,9 +839,11 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_SCOPE_CORE_CODE_FR		"       Coeur      "
 #define RSC_BOX_SCOPE_PACKAGE_CODE_FR		"      Package     "
 
-#define RSC_BOX_TDP_LVL0_CODE_FR		"     Niveau 0     "
-#define RSC_BOX_TDP_LVL1_CODE_FR		"     Niveau 1     "
-#define RSC_BOX_TDP_LVL2_CODE_FR		"     Niveau 2     "
+#define RSC_BOX_CFG_TDP_TITLE_CODE_FR		" Config TDP "
+#define RSC_BOX_CFG_TDP_DESC_CODE_FR		"    Limite BIOS    "
+#define RSC_BOX_CFG_TDP_LVL0_CODE_FR		"     Niveau 0      "
+#define RSC_BOX_CFG_TDP_LVL1_CODE_FR		"     Niveau 1      "
+#define RSC_BOX_CFG_TDP_LVL2_CODE_FR		"     Niveau 2      "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\

@@ -1042,9 +1042,11 @@
 #define RSC_BOX_SCOPE_CORE_CODE_EN		"       Core       "
 #define RSC_BOX_SCOPE_PACKAGE_CODE_EN		"      Package     "
 
-#define RSC_BOX_TDP_LVL0_CODE_EN		"      Level 0     "
-#define RSC_BOX_TDP_LVL1_CODE_EN		"      Level 1     "
-#define RSC_BOX_TDP_LVL2_CODE_EN		"      Level 2     "
+#define RSC_BOX_CFG_TDP_TITLE_CODE_EN		" Config TDP "
+#define RSC_BOX_CFG_TDP_DESC_CODE_EN		" System BIOS limit "
+#define RSC_BOX_CFG_TDP_LVL0_CODE_EN		"      Level 0      "
+#define RSC_BOX_CFG_TDP_LVL1_CODE_EN		"      Level 1      "
+#define RSC_BOX_CFG_TDP_LVL2_CODE_EN		"      Level 2      "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\
