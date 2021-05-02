@@ -511,6 +511,8 @@
 #define RSC_COUNTERS_CODE_EN		"Counters"
 #define RSC_GENERAL_CTRS_CODE_EN	"General"
 #define RSC_FIXED_CTRS_CODE_EN		"Fixed"
+#define RSC_PERF_MON_UNIT_BIT_CODE_EN	"bits"
+#define RSC_PERF_MON_UNIT_HWP_CODE_EN	"(MHz)"
 #define RSC_PERF_MON_C1E_CODE_EN	"Enhanced Halt State"
 #define RSC_PERF_MON_C1A_CODE_EN	"C1 Auto Demotion"
 #define RSC_PERF_MON_C3A_CODE_EN	"C3 Auto Demotion"
