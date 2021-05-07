@@ -3666,16 +3666,19 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		 - RSZ(POWER_THERMAL_MAX), hSpace,
 		RSC(POWER_LABEL_MAX).CODE(), POWERED(0) );
     }
-    if (Shm->Proc.Power.PPT > 0) {
-	PUT(	SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
-		RSC(POWER_LABEL_PPT).CODE(), Shm->Proc.Power.PPT );
-    } else {
-	PUT(	SCANKEY_NULL, attrib[0], width, 2,
-		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
-		RSC(POWER_LABEL_PPT).CODE(), POWERED(0) );
+    for (bix = 0; bix < 2; bix++)
+    {
+	if (Shm->Proc.Power.PPT[bix] > 0) {
+		PUT(	SCANKEY_NULL, attrib[5], width, 2,
+			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
+			width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
+			RSC(POWER_LABEL_PPT).CODE(), Shm->Proc.Power.PPT[bix] );
+	} else {
+		PUT(	SCANKEY_NULL, attrib[0], width, 2,
+			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),
+			width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
+			RSC(POWER_LABEL_PPT).CODE(), POWERED(0) );
+	}
     }
     if (Shm->Proc.Power.EDC > 0) {
 	PUT(	SCANKEY_NULL, attrib[5], width, 2,

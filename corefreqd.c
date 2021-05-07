@@ -1401,7 +1401,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
 	}
-	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PWR.PPT;
+	Shm->Proc.Power.PPT[0] = Proc_RO->PowerThermal.Zen.PWR.PPT;
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.Zen.TDP.TDP;
 	Shm->Proc.Power.Min = Proc_RO->PowerThermal.Zen.TDP.TDP2;
 	Shm->Proc.Power.Max = Proc_RO->PowerThermal.Zen.TDP.TDP3;
@@ -1412,20 +1412,26 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
   {
     if (PowerUnits != 0)
     {
-	const unsigned int
-	TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower / PowerUnits,
-	cTDP = Proc_RO->PowerThermal.PowerLimit.Power_Limit1 / PowerUnits,
-	mTDP = Proc_RO->PowerThermal.PowerInfo.MinimumPower / PowerUnits,
-	xTDP = Proc_RO->PowerThermal.PowerInfo.MaximumPower / PowerUnits,
-	PPT = Proc_RO->PowerThermal.PowerLimit.Power_Limit2 / PowerUnits;
+      if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit1) {
+	Shm->Proc.Power.PPT[0] = Proc_RO->PowerThermal.PowerLimit.Package_Limit1
+				/ PowerUnits;
+      }
+      if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit2) {
+	Shm->Proc.Power.PPT[1] = Proc_RO->PowerThermal.PowerLimit.Package_Limit2
+				/ PowerUnits;
+      }
+	Shm->Proc.Power.TDP	= Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
+				/ PowerUnits;
 
-	Shm->Proc.Power.TDP = TDP;
 	if (Shm->Proc.Power.TDP == 0) {
-		Shm->Proc.Power.TDP = cTDP;
+		Shm->Proc.Power.TDP = Shm->Proc.Power.PPT[0];
 	}
-	Shm->Proc.Power.Min = mTDP;
-	Shm->Proc.Power.Max = KMAX(xTDP, cTDP);
-	Shm->Proc.Power.PPT = PPT;
+
+	Shm->Proc.Power.Min	= Proc_RO->PowerThermal.PowerInfo.MinimumPower
+				/ PowerUnits;
+
+	Shm->Proc.Power.Max	= Proc_RO->PowerThermal.PowerInfo.MaximumPower
+				/ PowerUnits;
     }
   } else {
 	Shm->Proc.PowerNow = 0;

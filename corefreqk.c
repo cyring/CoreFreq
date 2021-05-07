@@ -133,8 +133,10 @@ static signed short Config_TDP_Level = -1;
 module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
-static signed short Custom_TDP_Limit = -1;
-module_param(Custom_TDP_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+static unsigned int Custom_TDP_Count;
+static signed short Custom_TDP_Limit[2] = {-1, -1};
+module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Limit, "Custom TDP Limit (watt)");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
@@ -3123,19 +3125,34 @@ void SandyBridge_PowerInterface(void)
 
 void Intel_PackagePowerLimit(void)
 {
-	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerLimit, MSR_PKG_POWER_LIMIT);
+	PKG_POWER_LIMIT PowerLimit = {.value = 0};
+	RDMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
 
-	if ((Custom_TDP_Limit > 0)
-	 && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0)
-	 && !PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Register_Lock)
+    if (!PowerLimit.Register_Lock
+    && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
+    {
+	unsigned short	WrRdMSR = 0;
+	unsigned int	PowerUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
+			PowerUnits = 2 << PowerUnits;
+
+	if ((Custom_TDP_Count > 0 ) && (Custom_TDP_Limit[0] > 0))
 	{
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1 = \
-			2 << (PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1);
-
-		PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1 = \
-			PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1
-			* Custom_TDP_Limit;
+		PowerLimit.Package_Limit1 = PowerUnits * Custom_TDP_Limit[0];
+		PowerLimit.Enable_Limit1 = 1;
+		WrRdMSR = 1;
 	}
+	if ((Custom_TDP_Count > 1) && (Custom_TDP_Limit[1] > 0))
+	{
+		PowerLimit.Package_Limit2 = PowerUnits * Custom_TDP_Limit[1];
+		PowerLimit.Enable_Limit2 = 1;
+		WrRdMSR = 1;
+	}
+	if (WrRdMSR) {
+		WRMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
+		RDMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
+	}
+    }
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit = PowerLimit;
 }
 
 void Intel_Processor_PIN(bool capable)

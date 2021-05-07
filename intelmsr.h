@@ -1414,18 +1414,28 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Power_Limit1	: 15-0,
+		Package_Limit1	: 15-0,  /* Atom: 06_37H/06_4AH/06_5AH/06_5DH */
 		Enable_Limit1	: 16-15,
-		PowerClamping1	: 17-16,
-		PowerTimeWindow1: 24-17,
+		Clamping1	: 17-16,
+		TimeWindow1	: 24-17,
 		ReservedBits1	: 32-24,
-		Power_Limit2	: 47-32,
+		Package_Limit2	: 47-32, /* 06_2AH/06_4DH/06_57H/06_5CH/06_85H*/
 		Enable_Limit2	: 48-47,
-		PowerClamping2	: 49-48,
-		Unknown_Compute1: 54-49,
-		Unknown_Compute2: 57-54,
-		ReservedBits2	: 63-57,
+		Clamping2	: 49-48,
+		TimeWindow2	: 56-49,
+		ReservedBits2	: 63-56,
 		Register_Lock	: 64-63;
+	};
+	struct
+	{
+		unsigned long long
+		MaskBits1	: 17-0,
+		TimeWindow1_Y	: 22-17,
+		TimeWindow1_Z	: 24-22,
+		MaskBits2	: 49-24,
+		TimeWindow2_Y	: 54-49,
+		TimeWindow2_Z	: 56-54,
+		MaskBits3	: 64-56;
 	};
 } PKG_POWER_LIMIT;
 
