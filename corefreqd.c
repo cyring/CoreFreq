@@ -1410,21 +1410,23 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
-      if (PowerUnits != 0)
-      {
-	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
-			    / PowerUnits;
-      if (Shm->Proc.Power.TDP == 0) {
-	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerLimit.Power_Limit1
-			    / PowerUnits;
-      }
-	Shm->Proc.Power.Min = Proc_RO->PowerThermal.PowerInfo.MinimumPower
-			    / PowerUnits;
-	Shm->Proc.Power.Max = Proc_RO->PowerThermal.PowerInfo.MaximumPower
-			    / PowerUnits;
-	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.PowerLimit.Power_Limit2
-			    / PowerUnits;
-      }
+    if (PowerUnits != 0)
+    {
+	const unsigned int
+	TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower / PowerUnits,
+	cTDP = Proc_RO->PowerThermal.PowerLimit.Power_Limit1 / PowerUnits,
+	mTDP = Proc_RO->PowerThermal.PowerInfo.MinimumPower / PowerUnits,
+	xTDP = Proc_RO->PowerThermal.PowerInfo.MaximumPower / PowerUnits,
+	PPT = Proc_RO->PowerThermal.PowerLimit.Power_Limit2 / PowerUnits;
+
+	Shm->Proc.Power.TDP = TDP;
+	if (Shm->Proc.Power.TDP == 0) {
+		Shm->Proc.Power.TDP = cTDP;
+	}
+	Shm->Proc.Power.Min = mTDP;
+	Shm->Proc.Power.Max = KMAX(xTDP, cTDP);
+	Shm->Proc.Power.PPT = PPT;
+    }
   } else {
 	Shm->Proc.PowerNow = 0;
   }

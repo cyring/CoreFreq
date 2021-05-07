@@ -133,6 +133,10 @@ static signed short Config_TDP_Level = -1;
 module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
+static signed short Custom_TDP_Limit = -1;
+module_param(Custom_TDP_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Custom_TDP_Limit, "Custom TDP Limit (watt)");
+
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
@@ -3120,6 +3124,18 @@ void SandyBridge_PowerInterface(void)
 void Intel_PackagePowerLimit(void)
 {
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerLimit, MSR_PKG_POWER_LIMIT);
+
+	if ((Custom_TDP_Limit > 0)
+	 && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0)
+	 && !PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Register_Lock)
+	{
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1 = \
+			2 << (PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1);
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1 = \
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit.Power_Limit1
+			* Custom_TDP_Limit;
+	}
 }
 
 void Intel_Processor_PIN(bool capable)
@@ -5477,7 +5493,7 @@ static void BaseClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
-	COMPUTE_ARG Compute = {	.TSC = { NULL, NULL } };
+	COMPUTE_ARG Compute = { .TSC = { NULL, NULL } };
 
 	Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
     if (Compute.TSC[0] == NULL) {
@@ -5569,7 +5585,7 @@ long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 	PUBLIC(RO(Proc))->Features.Factory.Freq = 0;
 
 	FixMissingRatioAndFrequency(PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(MAX)],
-					 &PUBLIC(RO(Core, AT(cpu)))->Clock);
+					&PUBLIC(RO(Core, AT(cpu)))->Clock);
 
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
