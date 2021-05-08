@@ -405,7 +405,14 @@ typedef struct
 					Joules,
 					Times;
 		} Unit;
-		unsigned int		TDP, Min, Max, PPT[2], EDC, TDC;
+		unsigned int		TDP, Min, Max;
+		union {
+		    struct {
+			unsigned int	PL1, PL2;
+		    };
+			unsigned int	PPT[2];
+		};
+		unsigned int		EDC, TDC;
 	} Power;
 
 	signed int			ArchID;

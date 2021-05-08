@@ -432,6 +432,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_MIN_CODE_FR	"Puissance minimale"
 #define RSC_POWER_THERMAL_MAX_CODE_FR	"Puissance maximale"
 #define RSC_POWER_THERMAL_PPT_CODE_FR	"Consommation maximale"
+#define RSC_POWER_THERMAL_TPL_CODE_FR	"Limite de puissance"
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 #define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant durable"
 

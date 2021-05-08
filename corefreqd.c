@@ -1413,18 +1413,18 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
     if (PowerUnits != 0)
     {
       if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit1) {
-	Shm->Proc.Power.PPT[0] = Proc_RO->PowerThermal.PowerLimit.Package_Limit1
+	Shm->Proc.Power.PL1 = Proc_RO->PowerThermal.PowerLimit.Package_Limit1
 				/ PowerUnits;
       }
       if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit2) {
-	Shm->Proc.Power.PPT[1] = Proc_RO->PowerThermal.PowerLimit.Package_Limit2
+	Shm->Proc.Power.PL2 = Proc_RO->PowerThermal.PowerLimit.Package_Limit2
 				/ PowerUnits;
       }
-	Shm->Proc.Power.TDP	= Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
+	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
 				/ PowerUnits;
 
 	if (Shm->Proc.Power.TDP == 0) {
-		Shm->Proc.Power.TDP = Shm->Proc.Power.PPT[0];
+		Shm->Proc.Power.TDP = Shm->Proc.Power.PL1;
 	}
 
 	Shm->Proc.Power.Min	= Proc_RO->PowerThermal.PowerInfo.MinimumPower

@@ -1486,8 +1486,19 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", Shm->Proc.Power.Min);
 			json_key(&s, "Max");
 			json_literal(&s, "%u", Shm->Proc.Power.Max);
+		    if (vendor == CRC_INTEL) {
+			json_key(&s, "PL1");
+			json_literal(&s, "%u", Shm->Proc.Power.PL1);
+			json_key(&s, "PL2");
+			json_literal(&s, "%u", Shm->Proc.Power.PL2);
+		    } else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "PPT");
-			json_literal(&s, "%u", Shm->Proc.Power.PPT);
+			json_literal(&s, "%u", Shm->Proc.Power.PPT[0]);
+		    }
+			json_key(&s, "EDC");
+			json_literal(&s, "%u", Shm->Proc.Power.EDC);
+			json_key(&s, "TDC");
+			json_literal(&s, "%u", Shm->Proc.Power.TDC);
 			json_key(&s, "Unit");
 			{
 				json_start_object(&s);
