@@ -163,6 +163,10 @@
 	#define MSR_PKG_POWER_INFO		0x00000614
 #endif
 
+#ifndef MSR_DRAM_POWER_LIMIT
+	#define MSR_DRAM_POWER_LIMIT		0x00000618
+#endif
+
 #ifndef MSR_DRAM_ENERGY_STATUS
 	#define MSR_DRAM_ENERGY_STATUS		0x00000619
 #endif
@@ -189,6 +193,10 @@
 
 #ifndef MSR_PP1_ENERGY_STATUS
 	#define MSR_PP1_ENERGY_STATUS		0x00000641
+#endif
+
+#ifndef MSR_PLATFORM_POWER_LIMIT
+	#define MSR_PLATFORM_POWER_LIMIT	0x0000065c
 #endif
 
 #ifndef MSR_PLATFORM_ENERGY_STATUS
@@ -1406,7 +1414,7 @@ typedef union
 		MaxTimeWindow	: 55-48,
 		ReservedBits4	: 64-55;
 	};
-} PKG_POWER_INFO;
+} DOMAIN_POWER_INFO;
 
 typedef union
 { /* MSR_PKG_POWER_LIMIT(0x610):R/W & MSR_PLATFORM_POWER_LIMIT(0x65c):R/W-L */
@@ -1414,12 +1422,12 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Package_Limit1	: 15-0,  /* Atom: 06_37H/06_4AH/06_5AH/06_5DH */
+		Domain_Limit1	: 15-0,  /* Atom: 06_37H/06_4AH/06_5AH/06_5DH */
 		Enable_Limit1	: 16-15,
 		Clamping1	: 17-16,
 		TimeWindow1	: 24-17,
 		ReservedBits1	: 32-24,
-		Package_Limit2	: 47-32, /* 06_2AH/06_4DH/06_57H/06_5CH/06_85H*/
+		Domain_Limit2	: 47-32, /* 06_2AH/06_4DH/06_57H/06_5CH/06_85H*/
 		Enable_Limit2	: 48-47,
 		Clamping2	: 49-48,
 		TimeWindow2	: 56-49,
@@ -1437,7 +1445,7 @@ typedef union
 		TimeWindow2_Z	: 56-54,
 		MaskBits3	: 64-56;
 	};
-} PKG_POWER_LIMIT;
+} DOMAIN_POWER_LIMIT;
 
 /* TODO
 typedef struct

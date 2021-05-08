@@ -3668,41 +3668,64 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
-	if (Shm->Proc.Power.PL1 > 0) {
+	struct {
+		const ASCII *code;
+		const size_t size;
+	} label[] = {
+		{RSC(POWER_LABEL_PKG).CODE(),	RSZ(POWER_LABEL_PKG)},
+		{RSC(POWER_LABEL_CORE).CODE(),	RSZ(POWER_LABEL_CORE)},
+		{RSC(POWER_LABEL_UNCORE).CODE(),RSZ(POWER_LABEL_UNCORE)},
+		{RSC(POWER_LABEL_RAM).CODE(),	RSZ(POWER_LABEL_RAM)},
+	};
+	enum PWR_DOMAIN pw;
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+	{
+		bix = Shm->Proc.Power.Domain[pw].Feature[0].Enable;
+		bix |= (1 << Shm->Proc.Power.Domain[pw].Feature[1].Enable);
+
+		PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
+			width - 15 - RSZ(POWER_THERMAL_TDP) - label[pw].size,
+			hSpace, label[pw].code, TM[bix] );
+
+	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
 		PUT(	SCANKEY_NULL, attrib[5], width, 3,
 			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TPL).CODE(),
 			width - (OutFunc == NULL ? 21 : 19)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
-			RSC(POWER_LABEL_PL1).CODE(), Shm->Proc.Power.PL1 );
-	} else {
+			RSC(POWER_LABEL_PL1).CODE(),
+			Shm->Proc.Power.Domain[pw].PL1 );
+	    } else {
 		PUT(	SCANKEY_NULL, attrib[0], width, 3,
 			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TPL).CODE(),
 			width - (OutFunc == NULL ? 21 : 19)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
 			RSC(POWER_LABEL_PL1).CODE(), POWERED(0) );
-	}
-	if (Shm->Proc.Power.PL2 > 0) {
+	    }
+	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
 		PUT(	SCANKEY_NULL, attrib[5], width, 3,
 			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TPL).CODE(),
 			width - (OutFunc == NULL ? 21 : 19)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
-			RSC(POWER_LABEL_PL2).CODE(), Shm->Proc.Power.PL2 );
-	} else {
+			RSC(POWER_LABEL_PL2).CODE(),
+			Shm->Proc.Power.Domain[pw].PL2 );
+	    } else {
 		PUT(	SCANKEY_NULL, attrib[0], width, 3,
 			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TPL).CODE(),
 			width - (OutFunc == NULL ? 21 : 19)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
 			RSC(POWER_LABEL_PL2).CODE(), POWERED(0) );
+	    }
 	}
     }
     else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-	if (Shm->Proc.Power.PPT[0] > 0) {
+	if (Shm->Proc.Power.PPT > 0) {
 		PUT(	SCANKEY_NULL, attrib[5], width, 2,
 			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_PPT).CODE(),
 			width - 18 - RSZ(POWER_THERMAL_PPT), hSpace,
-			RSC(POWER_LABEL_PPT).CODE(), Shm->Proc.Power.PPT[0] );
+			RSC(POWER_LABEL_PPT).CODE(), Shm->Proc.Power.PPT );
 	} else {
 		PUT(	SCANKEY_NULL, attrib[0], width, 2,
 			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_PPT).CODE(),

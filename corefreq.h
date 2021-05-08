@@ -405,14 +405,17 @@ typedef struct
 					Joules,
 					Times;
 		} Unit;
-		unsigned int		TDP, Min, Max;
-		union {
+		unsigned short		TDP, Min, Max;
+		struct {
+			unsigned short	PL1, PL2;
 		    struct {
-			unsigned int	PL1, PL2;
-		    };
-			unsigned int	PPT[2];
-		};
-		unsigned int		EDC, TDC;
+			unsigned short
+					Enable	:  1-0,
+					Clamping:  2-1,
+					_Unused : 16-2;
+		    } Feature[2];
+		} Domain[PWR_DOMAIN(SIZE)];
+		unsigned short		PPT, EDC, TDC;
 	} Power;
 
 	signed int			ArchID;

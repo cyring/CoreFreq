@@ -75,10 +75,6 @@ static signed int Experimental = 0;
 module_param(Experimental, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Experimental, "Enable features under development");
 
-static signed short Turbo_Activation_Ratio = -1;
-module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
-
 static signed short Target_Ratio_Unlock = -1;
 module_param(Target_Ratio_Unlock, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Target_Ratio_Unlock, "1:Target Ratio Unlock; 0:Lock");
@@ -134,7 +130,9 @@ module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
 static unsigned int Custom_TDP_Count;
-static signed short Custom_TDP_Limit[2] = {-1, -1};
+static signed short Custom_TDP_Limit[2 * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1
+};
 module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Limit, "Custom TDP Limit (watt)");
@@ -206,6 +204,10 @@ MODULE_PARM_DESC(PowerMGMT_Unlock, "Unlock Power Management");
 static signed short PowerPolicy = -1;
 module_param(PowerPolicy, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
+
+static signed short Turbo_Activation_Ratio = -1;
+module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
 
 static signed int PState_FID = -1;
 module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -3123,36 +3125,42 @@ void SandyBridge_PowerInterface(void)
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
-void Intel_PackagePowerLimit(void)
+void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
+				enum PWR_DOMAIN pw )
 {
-	PKG_POWER_LIMIT PowerLimit = {.value = 0};
-	RDMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
+	DOMAIN_POWER_LIMIT PowerLimit = {.value = 0};
+	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 
     if (!PowerLimit.Register_Lock
     && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
     {
 	unsigned short	WrRdMSR = 0;
-	unsigned int	PowerUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
-			PowerUnits = 2 << PowerUnits;
+	const unsigned int lt = 2 * pw, rt = 1 + lt;
+	unsigned short	pwrUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
+			pwrUnits = 2 << pwrUnits;
 
-	if ((Custom_TDP_Count > 0 ) && (Custom_TDP_Limit[0] > 0))
-	{
-		PowerLimit.Package_Limit1 = PowerUnits * Custom_TDP_Limit[0];
+	if (Custom_TDP_Count > lt) {
+	    if (Custom_TDP_Limit[lt] > 0)
+	    {
+		PowerLimit.Domain_Limit1 = pwrUnits * Custom_TDP_Limit[lt];
 		PowerLimit.Enable_Limit1 = 1;
 		WrRdMSR = 1;
+	    }
 	}
-	if ((Custom_TDP_Count > 1) && (Custom_TDP_Limit[1] > 0))
-	{
-		PowerLimit.Package_Limit2 = PowerUnits * Custom_TDP_Limit[1];
+	if (Custom_TDP_Count > rt) {
+	    if (Custom_TDP_Limit[rt] > 0)
+	    {
+		PowerLimit.Domain_Limit2 = pwrUnits * Custom_TDP_Limit[rt];
 		PowerLimit.Enable_Limit2 = 1;
 		WrRdMSR = 1;
+	    }
 	}
 	if (WrRdMSR) {
-		WRMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
-		RDMSR(PowerLimit, MSR_PKG_POWER_LIMIT);
+		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+		RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 	}
     }
-	PUBLIC(RO(Proc))->PowerThermal.PowerLimit = PowerLimit;
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[pw] = PowerLimit;
 }
 
 void Intel_Processor_PIN(bool capable)
@@ -4742,7 +4750,7 @@ void Query_Silvermont(unsigned int cpu)
 	HyperThreading_Technology();
 	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
 }
 
 void Query_Goldmont(unsigned int cpu)
@@ -4762,7 +4770,14 @@ void Query_SandyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+}
+
+void Query_SandyBridge_EP(unsigned int cpu)
+{
+	Query_SandyBridge(cpu);
+	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
 }
 
 void Query_IvyBridge(unsigned int cpu)
@@ -4771,7 +4786,7 @@ void Query_IvyBridge(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
 }
 
 void Query_IvyBridge_EP(unsigned int cpu)
@@ -4780,7 +4795,9 @@ void Query_IvyBridge_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
 }
 
 void Query_Haswell(unsigned int cpu)
@@ -4793,7 +4810,9 @@ void Query_Haswell(unsigned int cpu)
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
 	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
 }
 
 void Query_Haswell_EP(unsigned int cpu)
@@ -4806,12 +4825,15 @@ void Query_Haswell_EP(unsigned int cpu)
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
 }
 
 void Query_Haswell_ULT(unsigned int cpu)
 {
 	Query_IvyBridge(cpu);
+	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
 }
 
 void Query_Haswell_ULX(unsigned int cpu)
@@ -4830,21 +4852,30 @@ void Query_Broadwell(unsigned int cpu)
 	Haswell_Uncore_Ratio(NULL);
 	SandyBridge_PowerInterface();
 	Intel_Hardware_Performance();
-	Intel_PackagePowerLimit();
-}
-
-void Query_Skylake(unsigned int cpu)
-{
-	Query_Broadwell(cpu);
-
-	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
-	Intel_RaceToHalt();
+	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
 }
 
 void Query_Broadwell_EP(unsigned int cpu)
 {
 	Query_Haswell_EP(cpu);
 	Intel_Hardware_Performance();
+}
+
+void Query_Skylake(unsigned int cpu)
+{
+	Query_Broadwell(cpu);
+	Intel_DomainPowerLimit(MSR_PLATFORM_POWER_LIMIT, PWR_DOMAIN(PLATFORM));
+
+	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
+	Intel_RaceToHalt();
+}
+
+void Query_Kaby_Lake(unsigned int cpu)
+{
+	Query_Skylake(cpu);
+	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
 }
 
 void Query_Skylake_X(unsigned int cpu)

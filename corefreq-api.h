@@ -801,14 +801,16 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {
-		PKG_POWER_INFO	PowerInfo;
-		PKG_POWER_LIMIT PowerLimit;
+/*64-bits*/	unsigned long long	_rsv64;
+/*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
+/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
 	    };
 	    struct {
-		AMD_17_MTS_CPK_PWR	PWR;
-		AMD_17_MTS_CPK_TDP	TDP;
-		AMD_17_MTS_CPK_EDC	EDC;
-		unsigned int		_pad32;
+/*32-bits*/	AMD_17_MTS_CPK_PWR	PWR;
+/*32-bits*/	AMD_17_MTS_CPK_TDP	TDP;
+/*32-bits*/	AMD_17_MTS_CPK_EDC	EDC;
+/*32-bits*/	unsigned int		_pad32;
+/*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
 	    } Zen;
 	  };
 	} PowerThermal;

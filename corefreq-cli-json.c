@@ -1486,14 +1486,30 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", Shm->Proc.Power.Min);
 			json_key(&s, "Max");
 			json_literal(&s, "%u", Shm->Proc.Power.Max);
-		    if (vendor == CRC_INTEL) {
+		    if (vendor == CRC_INTEL)
+		    {
+			enum PWR_DOMAIN pw;
 			json_key(&s, "PL1");
-			json_literal(&s, "%u", Shm->Proc.Power.PL1);
+			{
+				json_start_arr(&s);
+				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+				{
+					json_literal(&s, "%u", Shm->Proc.Power.Domain[pw].PL1);
+				}
+				json_end_arr(&s);
+			}
 			json_key(&s, "PL2");
-			json_literal(&s, "%u", Shm->Proc.Power.PL2);
+			{
+				json_start_arr(&s);
+				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+				{
+					json_literal(&s, "%u", Shm->Proc.Power.Domain[pw].PL2);
+				}
+				json_end_arr(&s);
+			}
 		    } else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "PPT");
-			json_literal(&s, "%u", Shm->Proc.Power.PPT[0]);
+			json_literal(&s, "%u", Shm->Proc.Power.PPT);
 		    }
 			json_key(&s, "EDC");
 			json_literal(&s, "%u", Shm->Proc.Power.EDC);

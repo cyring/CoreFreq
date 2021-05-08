@@ -979,6 +979,7 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
+extern void Query_SandyBridge_EP(unsigned int cpu) ;
 static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
@@ -1038,6 +1039,8 @@ static void Stop_Skylake_X(void *arg) ;
 extern void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
+
+extern void Query_Kaby_Lake(unsigned int cpu) ;
 
 extern void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
@@ -6014,7 +6017,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [SandyBridge_EP] = {							/* 37*/
 	.Signature = _SandyBridge_EP,
-	.Query = Query_SandyBridge,
+	.Query = Query_SandyBridge_EP,
 	.Update = PerCore_SandyBridge_EP_Query,
 	.Start = Start_SandyBridge_EP,
 	.Stop = Stop_SandyBridge_EP,
@@ -6355,7 +6358,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Xeon_Phi] = {								/* 51*/
 	.Signature = _Xeon_Phi,
-	.Query = Query_SandyBridge,
+	.Query = Query_SandyBridge_EP,
 	.Update = PerCore_SandyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
@@ -6380,7 +6383,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Kabylake] = {								/* 52*/
 	.Signature = _Kabylake,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6527,7 +6530,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_X] = {								/* 58*/
 	.Signature = _Icelake_X,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6551,7 +6554,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_D] = {								/* 59*/
 	.Signature = _Icelake_D,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,

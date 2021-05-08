@@ -1361,7 +1361,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 
 void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
-	unsigned int PowerUnits = 0;
+	unsigned short pwrUnits = 0, pwrVal;
 
     switch (KIND_OF_FORMULA(Proc_RO->powerFormula)) {
     case POWER_KIND_INTEL:
@@ -1376,7 +1376,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU)
 			: 1.0 / (double) (1 << 10);
 
-	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
+	pwrUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
 	break;
     case POWER_KIND_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
@@ -1401,38 +1401,47 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	} else {
 		BITCLR(LOCKLESS, Shm->Proc.PowerNow, 1);
 	}
-	Shm->Proc.Power.PPT[0] = Proc_RO->PowerThermal.Zen.PWR.PPT;
+	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.Zen.PWR.PPT;
 	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.Zen.TDP.TDP;
 	Shm->Proc.Power.Min = Proc_RO->PowerThermal.Zen.TDP.TDP2;
 	Shm->Proc.Power.Max = Proc_RO->PowerThermal.Zen.TDP.TDP3;
 	Shm->Proc.Power.EDC = Proc_RO->PowerThermal.Zen.EDC.EDC << 2;
 	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.Zen.EDC.TDC;
   }
-  else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
+  else if ((Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL) && (pwrUnits != 0))
   {
-    if (PowerUnits != 0)
+	enum PWR_DOMAIN pw;
+    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
     {
-      if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit1) {
-	Shm->Proc.Power.PL1 = Proc_RO->PowerThermal.PowerLimit.Package_Limit1
-				/ PowerUnits;
-      }
-      if (Proc_RO->PowerThermal.PowerLimit.Enable_Limit2) {
-	Shm->Proc.Power.PL2 = Proc_RO->PowerThermal.PowerLimit.Package_Limit2
-				/ PowerUnits;
-      }
-	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
-				/ PowerUnits;
+	Shm->Proc.Power.Domain[pw].Feature[0].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit1;
 
-	if (Shm->Proc.Power.TDP == 0) {
-		Shm->Proc.Power.TDP = Shm->Proc.Power.PL1;
-	}
+	Shm->Proc.Power.Domain[pw].Feature[1].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit2;
 
-	Shm->Proc.Power.Min	= Proc_RO->PowerThermal.PowerInfo.MinimumPower
-				/ PowerUnits;
+	Shm->Proc.Power.Domain[pw].Feature[0].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping1;
 
-	Shm->Proc.Power.Max	= Proc_RO->PowerThermal.PowerInfo.MaximumPower
-				/ PowerUnits;
+	Shm->Proc.Power.Domain[pw].Feature[1].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping2;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit1 / pwrUnits;
+	Shm->Proc.Power.Domain[pw].PL1 = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit2 / pwrUnits;
+	Shm->Proc.Power.Domain[pw].PL2 = pwrVal;
     }
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
+	Shm->Proc.Power.TDP = pwrVal;
+
+    if (Shm->Proc.Power.TDP == 0) {
+	Shm->Proc.Power.TDP = Shm->Proc.Power.Domain[PWR_DOMAIN(PKG)].PL1;
+    }
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.MinimumPower / pwrUnits;
+	Shm->Proc.Power.Min = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.MaximumPower / pwrUnits;
+	Shm->Proc.Power.Max = pwrVal;
   } else {
 	Shm->Proc.PowerNow = 0;
   }
