@@ -133,9 +133,17 @@ static unsigned int Custom_TDP_Count;
 static signed short Custom_TDP_Limit[2 * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
-module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,	\
+module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,		\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Limit, "Custom TDP Limit (watt)");
+
+static unsigned int Activate_TDP_Count;
+static signed short Activate_TDP_Limit[2 * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+module_param_array(Activate_TDP_Limit, short, &Activate_TDP_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limit");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -3121,23 +3129,36 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 
 void Nehalem_PowerLimit(void)
 {
+	unsigned short WrRdMSR = 0;
+
 	NEHALEM_POWER_LIMIT PowerLimit = {.value = 0};
 	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
 
-  if (Custom_TDP_Count > 0) {
-    if (Custom_TDP_Limit[0] > 0)
-    {
-	PowerLimit.TDP_Limit = Custom_TDP_Limit[0] << 3;	/* by 8 watt */
-	PowerLimit.TDP_Override = 1;
-	WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
-	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
-    }
-  }
+	if (Custom_TDP_Count > 0) {
+		if (Custom_TDP_Limit[0] >= (1 << 3))
+		{	/*	Register is multiplied by 8 watt	*/
+			PowerLimit.TDP_Limit = Custom_TDP_Limit[0] << 3;
+			WrRdMSR = 1;
+		}
+	}
+	if (Activate_TDP_Count > 0) {
+		switch (Activate_TDP_Limit[0]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.TDP_Override = Activate_TDP_Limit[0];
+			WrRdMSR = 1;
+			break;
+		}
+	}
+	if (WrRdMSR) {
+		WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+		RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+	}
 	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Domain_Limit1
-	= PowerLimit.TDP_Limit;
+		= PowerLimit.TDP_Limit;
 
 	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Enable_Limit1
-	= PowerLimit.TDP_Override;
+		= PowerLimit.TDP_Override;
 	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
 	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
 	/*	TDC: 1/8 Amp			*/
@@ -3154,14 +3175,15 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 				unsigned long long PowerLimitLockMask,
 				enum PWR_DOMAIN pw )
 {
+	unsigned short WrRdMSR = 0;
+	const unsigned int lt = 2 * pw, rt = 1 + lt;
+
 	DOMAIN_POWER_LIMIT PowerLimit = {.value = 0};
 	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 
     if ((PowerLimit.value & PowerLimitLockMask) == 0
      && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
     {
-	unsigned short	WrRdMSR = 0;
-	const unsigned int lt = 2 * pw, rt = 1 + lt;
 	unsigned short	pwrUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
 			pwrUnits = 2 << pwrUnits;
 
@@ -3169,7 +3191,6 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    if (Custom_TDP_Limit[lt] > 0)
 	    {
 		PowerLimit.Domain_Limit1 = pwrUnits * Custom_TDP_Limit[lt];
-		PowerLimit.Enable_Limit1 = 1;
 		WrRdMSR = 1;
 	    }
 	}
@@ -3178,16 +3199,35 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    if (Custom_TDP_Limit[rt] > 0)
 	    {
 		PowerLimit.Domain_Limit2 = pwrUnits * Custom_TDP_Limit[rt];
-		PowerLimit.Enable_Limit2 = 1;
 		WrRdMSR = 1;
 	    }
 	  }
+	}
+    }
+	if (Activate_TDP_Count > lt) {
+		switch (Activate_TDP_Limit[lt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Enable_Limit1 = Activate_TDP_Limit[lt];
+			WrRdMSR = 1;
+			break;
+		}
+	}
+	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
+	    if (Activate_TDP_Count > rt) {
+		switch (Activate_TDP_Limit[rt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Enable_Limit2 = Activate_TDP_Limit[rt];
+			WrRdMSR = 1;
+			break;
+		}
+	    }
 	}
 	if (WrRdMSR) {
 		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 		RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 	}
-    }
 	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[pw] = PowerLimit;
 }
 
