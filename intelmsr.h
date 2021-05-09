@@ -191,6 +191,10 @@
 	#define MSR_PP0_PERF_STATUS		0x0000063b
 #endif
 
+#ifndef MSR_PP1_POWER_LIMIT
+	#define MSR_PP1_POWER_LIMIT		0x00000640
+#endif
+
 #ifndef MSR_PP1_ENERGY_STATUS
 	#define MSR_PP1_ENERGY_STATUS		0x00000641
 #endif
@@ -1426,13 +1430,14 @@ typedef union
 		Enable_Limit1	: 16-15,
 		Clamping1	: 17-16,
 		TimeWindow1	: 24-17,
-		ReservedBits1	: 32-24,
+		ReservedBits1	: 31-24,
+		PPn_LOCK	: 32-31, /* PP0/PP1/DRAM Domains	*/
 		Domain_Limit2	: 47-32, /* 06_2AH/06_4DH/06_57H/06_5CH/06_85H*/
 		Enable_Limit2	: 48-47,
 		Clamping2	: 49-48,
 		TimeWindow2	: 56-49,
 		ReservedBits2	: 63-56,
-		Register_Lock	: 64-63;
+		PKG_LOCK	: 64-63; /* Package/Platform Domains	*/
 	};
 	struct
 	{
@@ -1446,6 +1451,9 @@ typedef union
 		MaskBits3	: 64-56;
 	};
 } DOMAIN_POWER_LIMIT;
+
+#define PKG_POWER_LIMIT_LOCK_MASK	0x8000000000000000
+#define PPn_POWER_LIMIT_LOCK_MASK	0x0000000080000000
 
 /* TODO
 typedef struct

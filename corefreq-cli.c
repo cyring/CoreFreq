@@ -3672,21 +3672,23 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		const ASCII *code;
 		const size_t size;
 	} label[] = {
-		{RSC(POWER_LABEL_PKG).CODE(),	RSZ(POWER_LABEL_PKG)},
-		{RSC(POWER_LABEL_CORE).CODE(),	RSZ(POWER_LABEL_CORE)},
-		{RSC(POWER_LABEL_UNCORE).CODE(),RSZ(POWER_LABEL_UNCORE)},
-		{RSC(POWER_LABEL_RAM).CODE(),	RSZ(POWER_LABEL_RAM)},
+		{RSC(POWER_LABEL_PKG).CODE()	, RSZ(POWER_LABEL_PKG)},
+		{RSC(POWER_LABEL_CORE).CODE()	, RSZ(POWER_LABEL_CORE)},
+		{RSC(POWER_LABEL_UNCORE).CODE() , RSZ(POWER_LABEL_UNCORE)},
+		{RSC(POWER_LABEL_DRAM).CODE()	, RSZ(POWER_LABEL_DRAM)},
+		{RSC(POWER_LABEL_PLATFORM).CODE(),RSZ(POWER_LABEL_PLATFORM)}
 	};
 	enum PWR_DOMAIN pw;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
 	{
-		bix = Shm->Proc.Power.Domain[pw].Feature[0].Enable;
-		bix |= (1 << Shm->Proc.Power.Domain[pw].Feature[1].Enable);
+		bix	= Shm->Proc.Power.Domain[pw].Feature[0].Enable
+			| Shm->Proc.Power.Domain[pw].Feature[1].Enable;
 
-		PUT(	SCANKEY_NULL, attrib[bix], width, 2,
+		PUT(	SCANKEY_NULL, attrib[bix ? 3 : 0], width, 2,
 			"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
 			width - 15 - RSZ(POWER_THERMAL_TDP) - label[pw].size,
-			hSpace, label[pw].code, TM[bix] );
+			hSpace, label[pw].code,
+			bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE() );
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
 		PUT(	SCANKEY_NULL, attrib[5], width, 3,
@@ -3702,6 +3704,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
 			RSC(POWER_LABEL_PL1).CODE(), POWERED(0) );
 	    }
+	  if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM)
+		|| Shm->Proc.Power.Domain[pw].PL2)
+	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
 		PUT(	SCANKEY_NULL, attrib[5], width, 3,
 			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TPL).CODE(),
@@ -3716,6 +3721,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			 - RSZ(POWER_THERMAL_TPL), hSpace,
 			RSC(POWER_LABEL_PL2).CODE(), POWERED(0) );
 	    }
+	  }
 	}
     }
     else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
@@ -4373,8 +4379,8 @@ void Sensors(unsigned int iter)
 			Setting.fahrCels ? 'F' : 'C' );
 
 	ldx=sprintf(row,"\n" "%.*sPackage%.*sCores%.*sUncore%.*sMemory" \
-			"\n" "Energy(J):",
-			14, hSpace, 8, hSpace, 10, hSpace, 9, hSpace);
+			"%.*sPlatform" "\n" "Energy(J):",
+			13, hSpace, 7, hSpace, 9, hSpace, 8, hSpace, 8, hSpace);
 
     while (!BITVAL(Shutdown, SYNC) && (iter-- > 0))
     {
@@ -4415,13 +4421,13 @@ void Sensors(unsigned int iter)
 	idx += ldx;
 
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		idx += sprintf(&out[idx], "%.*s" "%13.9f", 2, hSpace,
+		idx += sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
 				Shm->Proc.State.Energy[pw].Current);
 	}
 	memcpy(&out[idx], "\n" "Power(W) :", 11);
 	idx += 11;
 	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
-		idx += sprintf(&out[idx], "%.*s" "%13.9f", 2, hSpace,
+		idx += sprintf(&out[idx], "%.*s" "%13.9f", 1, hSpace,
 				Shm->Proc.State.Power[pw].Current);
 	}
 	out[idx++] = '\n'; out[idx++] = '\n';
@@ -4539,7 +4545,7 @@ void Power(unsigned int iter)
 	memcpy(&out[idx], row, ldx);
 	idx += ldx;
 
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
 		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Energy[pw].Limit[SENSOR_LOWEST],
@@ -4548,7 +4554,7 @@ void Power(unsigned int iter)
 	}
 	memcpy(&out[idx], "\n" "Power(W)\n", 11);
 	idx += 11;
-	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++) {
+	for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(PLATFORM); pw++) {
 		idx+=sprintf(&out[idx], "%.*s" "%6.2f%6.2f%6.2f",
 			pw == PWR_DOMAIN(PKG) ? 1 : 2, hSpace,
 			Shm->Proc.State.Power[pw].Limit[SENSOR_LOWEST],
@@ -6449,7 +6455,7 @@ Window *CreateSysInfo(unsigned long long id)
 		matrixSize.hth = 16;
 		matrixSize.hth += (
 			Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL
-		) ? 6 : 0;
+		) ? 5 : 0;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;

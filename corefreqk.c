@@ -131,7 +131,7 @@ MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
 static unsigned int Custom_TDP_Count;
 static signed short Custom_TDP_Limit[2 * PWR_DOMAIN(SIZE)] = {
-			-1, -1, -1, -1, -1, -1, -1, -1
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -3119,20 +3119,21 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	return (rc);
 }
 
-void SandyBridge_PowerInterface(void)
+void Intel_PowerInterface(void)
 {
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
 void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
+				unsigned long long PowerLimitLockMask,
 				enum PWR_DOMAIN pw )
 {
 	DOMAIN_POWER_LIMIT PowerLimit = {.value = 0};
 	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
 
-    if (!PowerLimit.Register_Lock
-    && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
+    if ((PowerLimit.value & PowerLimitLockMask) == 0
+     && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
     {
 	unsigned short	WrRdMSR = 0;
 	const unsigned int lt = 2 * pw, rt = 1 + lt;
@@ -3147,13 +3148,15 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 		WrRdMSR = 1;
 	    }
 	}
-	if (Custom_TDP_Count > rt) {
+	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
+	  if (Custom_TDP_Count > rt) {
 	    if (Custom_TDP_Limit[rt] > 0)
 	    {
 		PowerLimit.Domain_Limit2 = pwrUnits * Custom_TDP_Limit[rt];
 		PowerLimit.Enable_Limit2 = 1;
 		WrRdMSR = 1;
 	    }
+	  }
 	}
 	if (WrRdMSR) {
 		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
@@ -4731,7 +4734,7 @@ void Query_Core2(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Query_Silvermont(unsigned int cpu)
+void Query_Silvermont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
 {	/*	Query the Min and Max frequency ratios			*/
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -4750,12 +4753,45 @@ void Query_Silvermont(unsigned int cpu)
 	HyperThreading_Technology();
 	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-8 */
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
 }
 
-void Query_Goldmont(unsigned int cpu)
+void Query_Goldmont(unsigned int cpu)	/* Tables 2-6, 2-12		*/
+{
+	PLATFORM_INFO PfInfo = {.value = 0};
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio=PUBLIC(RO(Proc))->CPU.Count;
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
+	{
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
+	}
+	Default_Unlock_Reset();
+
+	HyperThreading_Technology();
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-12 */
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,	/* Table 2-12 */
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(RAM) );
+}
+
+void Query_Airmont(unsigned int cpu)	/* Tables 2-6, 2-7, 2-8, 2-11	*/
 {
 	Query_Silvermont(cpu);
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,	/* Table 2-11 */
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
 }
 
 void Query_Nehalem(unsigned int cpu)
@@ -4764,20 +4800,39 @@ void Query_Nehalem(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
+void Query_Avoton(unsigned int cpu)	/* Table 2-10			*/
+{
+	Query_Nehalem(cpu);
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-10 */
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+}
+
 void Query_SandyBridge(unsigned int cpu)
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
-	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
 }
 
 void Query_SandyBridge_EP(unsigned int cpu)
 {
 	Query_SandyBridge(cpu);
-	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
+
+	Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(RAM) );
 }
 
 void Query_IvyBridge(unsigned int cpu)
@@ -4785,8 +4840,11 @@ void Query_IvyBridge(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
 }
 
 void Query_IvyBridge_EP(unsigned int cpu)
@@ -4794,10 +4852,19 @@ void Query_IvyBridge_EP(unsigned int cpu)
 	IvyBridge_EP_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
-	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
-	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
+
+	Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(RAM) );
 }
 
 void Query_Haswell(unsigned int cpu)
@@ -4809,10 +4876,19 @@ void Query_Haswell(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
-	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
-	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
+
+	Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(UNCORE) );
 }
 
 void Query_Haswell_EP(unsigned int cpu)
@@ -4824,16 +4900,28 @@ void Query_Haswell_EP(unsigned int cpu)
 	Haswell_EP_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
-	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
-	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
+	Intel_PowerInterface();
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
+
+	Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(RAM) );
 }
 
 void Query_Haswell_ULT(unsigned int cpu)
 {
 	Query_IvyBridge(cpu);
-	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
+
+	Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(UNCORE) );
 }
 
 void Query_Haswell_ULX(unsigned int cpu)
@@ -4850,11 +4938,20 @@ void Query_Broadwell(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
+	Intel_PowerInterface();
 	Intel_Hardware_Performance();
-	Intel_DomainPowerLimit(MSR_PKG_POWER_LIMIT, PWR_DOMAIN(PKG));
-	Intel_DomainPowerLimit(MSR_PP0_POWER_LIMIT, PWR_DOMAIN(CORES));
-	Intel_DomainPowerLimit(MSR_PP1_POWER_LIMIT, PWR_DOMAIN(UNCORE));
+
+	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PKG) );
+
+	Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(CORES) );
+
+	Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(UNCORE) );
 }
 
 void Query_Broadwell_EP(unsigned int cpu)
@@ -4866,7 +4963,10 @@ void Query_Broadwell_EP(unsigned int cpu)
 void Query_Skylake(unsigned int cpu)
 {
 	Query_Broadwell(cpu);
-	Intel_DomainPowerLimit(MSR_PLATFORM_POWER_LIMIT, PWR_DOMAIN(PLATFORM));
+
+	Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
+				PKG_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(PLATFORM) );
 
 	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
 	Intel_RaceToHalt();
@@ -4875,7 +4975,10 @@ void Query_Skylake(unsigned int cpu)
 void Query_Kaby_Lake(unsigned int cpu)
 {
 	Query_Skylake(cpu);
-	Intel_DomainPowerLimit(MSR_DRAM_POWER_LIMIT, PWR_DOMAIN(RAM));
+
+	Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+				PPn_POWER_LIMIT_LOCK_MASK,
+				PWR_DOMAIN(RAM) );
 }
 
 void Query_Skylake_X(unsigned int cpu)
@@ -4887,7 +4990,7 @@ void Query_Skylake_X(unsigned int cpu)
 	Skylake_X_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
+	Intel_PowerInterface();
 	Intel_Hardware_Performance();
 }
 
@@ -6621,12 +6724,9 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	Core->Query.IORedir = 0;
 }
 
-void Intel_Turbo_TDP_Config(CORE_RO *Core)
+void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
 {
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
-	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
-	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
-	CONFIG_TDP_LEVEL ConfigTDP;
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
 
@@ -6649,6 +6749,13 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
     {
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
     }
+}
+
+void Intel_Turbo_TDP_Config(CORE_RO *Core)
+{
+	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
+	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
+	CONFIG_TDP_LEVEL ConfigTDP;
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
 	Core->Boost[BOOST(TDP)] = NominalTDP.Ratio;
@@ -8374,6 +8481,8 @@ static void PerCore_Goldmont_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	Intel_Turbo_Activation_Ratio(Core);
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
@@ -8487,6 +8596,7 @@ static void PerCore_SandyBridge_EP_Query(void *arg)
 static void PerCore_IvyBridge_Query(void *arg)
 {
 	PerCore_SandyBridge_Query(arg);
+	Intel_Turbo_Activation_Ratio( (CORE_RO*) arg );
 	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
@@ -8502,6 +8612,7 @@ static void PerCore_IvyBridge_EP_Query(void *arg)
 static void PerCore_Haswell_Query(void *arg)
 {
 	PerCore_SandyBridge_Query(arg);
+	Intel_Turbo_Activation_Ratio( (CORE_RO*) arg );
 	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
@@ -8558,6 +8669,7 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	ThermalMonitor_Set(Core);
 
+	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
 }
 
@@ -8613,6 +8725,7 @@ static void PerCore_Haswell_ULX(void *arg)
 static void PerCore_Broadwell_Query(void *arg)
 {
 	PerCore_SandyBridge_Query(arg);
+	Intel_Turbo_Activation_Ratio( (CORE_RO*) arg );
 	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
@@ -8658,7 +8771,9 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
-	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+
+	Intel_Turbo_Activation_Ratio(Core);
+	Intel_Turbo_TDP_Config(Core);
 }
 
 static void PerCore_Skylake_X_Query(void *arg)
@@ -13059,7 +13174,7 @@ inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
 	ACCU = ACCU / (100000LLU * 1000000LLU);
 	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = ACCU;
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = ACCU;
 }
 
 void Call_SVI(	const unsigned int plane0, const unsigned int plane1,

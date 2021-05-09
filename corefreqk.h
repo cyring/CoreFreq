@@ -962,6 +962,8 @@ static void Start_Goldmont(void *arg) ;
 static void Stop_Goldmont(void *arg) ;
 extern void InitTimer_Goldmont(unsigned int cpu) ;
 
+extern void Query_Airmont(unsigned int cpu) ;
+
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
@@ -970,6 +972,8 @@ static void Stop_Nehalem(void *arg) ;
 extern void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
+
+extern void Query_Avoton(unsigned int cpu) ;
 
 extern void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
@@ -1116,7 +1120,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Core]		06_0Eh (32 bits)				*/
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
 
-/*	[Core2]		06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh		*/
+/*	[Core2] 	06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh		*/
 #define _Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
 #define _Core_Kentsfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
@@ -1146,7 +1150,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
 /*	[Goldmont]	06_5Ch						*/
 #define _Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
-/*	[SoFIA]		06_5Dh						*/
+/*	[SoFIA] 	06_5Dh						*/
 #define _Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
 /*	[Merrifield]	06_4Ah						*/
 #define _Atom_Merrifield \
@@ -1254,7 +1258,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Comet Lake]	06_A5
 	[Comet Lake/UL]	06_A6
 	[Rocket Lake]	06_A7
-	[Rocket Lake/U]	06_A8						*/
+	[Rocket Lake/U] 06_A8						*/
 #define _Cometlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x5}
 #define _Cometlake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x6}
 #define _Rocketlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x7}
@@ -1293,7 +1297,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2	12 nm
 	[Zen+ Colfax]		8F_08h Stepping 2	12 nm	HEDT
 	[Zen/Raven Ridge]	8F_11h Stepping 0	14 nm	APU
-	[Zen/Snowy Owl]		8F_11h Stepping 0	14 nm	SOC
+	[Zen/Snowy Owl] 		8F_11h Stepping 0	14 nm	SOC
 	[Zen+ Picasso]		8F_18h Stepping 1	12 nm	APU
 	[Zen/Dali]		8F_20h Stepping 1	14 nm	APU/Raven2
 	[EPYC/Rome]		8F_30h Stepping 0	 7 nm	SVR
@@ -5628,7 +5632,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Avoton] = {							/* 23*/
 	.Signature = _Atom_Avoton,
-	.Query = Query_Nehalem,
+	.Query = Query_Avoton,
 	.Update = PerCore_Nehalem_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -5653,7 +5657,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_Airmont] = {							/* 24*/
 	.Signature = _Atom_Airmont,
-	.Query = Query_Silvermont,
+	.Query = Query_Airmont,
 	.Update = PerCore_Silvermont_Query,
 	.Start = Start_Silvermont,
 	.Stop = Stop_Silvermont,
@@ -6726,23 +6730,23 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Tremont_Jacobsville] = {						/* 66*/
 	.Signature = _Tremont_Jacobsville,
-	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
-	.Start = Start_Skylake,
-	.Stop = Stop_Skylake,
+	.Query = Query_Goldmont,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Skylake,
+	.Timer = InitTimer_Goldmont,
 	.BaseClock = BaseClock_Skylake,
-	.ClockMod = ClockMod_Skylake_HWP,
+	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = Haswell_Uncore_Ratio
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = Intel_Driver,
