@@ -3119,6 +3119,31 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	return (rc);
 }
 
+void Nehalem_PowerLimit(void)
+{
+	NEHALEM_POWER_LIMIT PowerLimit = {.value = 0};
+	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+
+  if (Custom_TDP_Count > 0) {
+    if (Custom_TDP_Limit[0] > 0)
+    {
+	PowerLimit.TDP_Limit = Custom_TDP_Limit[0] << 3;	/* by 8 watt */
+	PowerLimit.TDP_Override = 1;
+	WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+    }
+  }
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Domain_Limit1
+	= PowerLimit.TDP_Limit;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Enable_Limit1
+	= PowerLimit.TDP_Override;
+	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
+	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
+	/*	TDC: 1/8 Amp			*/
+	PUBLIC(RO(Proc))->PowerThermal.TDC = PowerLimit.TDC_Limit >> 3;
+}
+
 void Intel_PowerInterface(void)
 {
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
@@ -4794,15 +4819,28 @@ void Query_Airmont(unsigned int cpu)	/* Tables 2-6, 2-7, 2-8, 2-11	*/
 				PWR_DOMAIN(CORES) );
 }
 
-void Query_Nehalem(unsigned int cpu)
+void Query_Nehalem(unsigned int cpu)	/* Table 2-15			*/
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
+
+	Nehalem_PowerLimit();		/* Table 2-15	*/
+}
+
+void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17		*/
+{
+	Query_Same_Genuine_Features();
+	Intel_Core_Platform_Info(cpu);
+	HyperThreading_Technology();
+
+	Nehalem_PowerLimit();		/* Table 2-15	*/
 }
 
 void Query_Avoton(unsigned int cpu)	/* Table 2-10			*/
 {
-	Query_Nehalem(cpu);
+	Nehalem_Platform_Info(cpu);
+	HyperThreading_Technology();
+
 	Intel_PowerInterface();
 
 	Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-10 */

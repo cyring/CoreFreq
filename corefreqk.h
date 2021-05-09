@@ -973,6 +973,8 @@ extern void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
 
+extern void Query_Nehalem_EX(unsigned int cpu) ;
+
 extern void Query_Avoton(unsigned int cpu) ;
 
 extern void Query_SandyBridge(unsigned int cpu) ;
@@ -5796,7 +5798,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5827,7 +5829,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5858,7 +5860,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5871,7 +5873,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Nehalem_EX] = {							/* 32*/
 	.Signature = _Nehalem_EX,
-	.Query = Query_Core2,
+	.Query = Query_Nehalem_EX,
 	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -5879,7 +5881,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
 	.ClockMod = ClockMod_Nehalem_PPC,
-	.TurboClock = NULL,
+	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
@@ -5889,7 +5891,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5921,7 +5923,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5952,7 +5954,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5965,7 +5967,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Westmere_EX] = {							/* 35*/
 	.Signature = _Westmere_EX,
-	.Query = Query_Core2, /* Xeon processor 7500 series-based platform */
+	.Query = Query_Nehalem_EX, /* Xeon 7500 series-based platform	*/
 	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -5973,7 +5975,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
 	.ClockMod = ClockMod_Nehalem_PPC,
-	.TurboClock = Intel_Turbo_Config8C,
+	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
@@ -5983,7 +5985,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,

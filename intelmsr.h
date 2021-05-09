@@ -76,6 +76,10 @@
 	#define MSR_TURBO_RATIO_LIMIT3		0x000001ac
 #endif
 
+#ifndef MSR_TURBO_POWER_CURRENT_LIMIT
+	#define MSR_TURBO_POWER_CURRENT_LIMIT	0x000001ac
+#endif
+
 #ifndef MSR_IA32_POWER_CTL
 	#define MSR_IA32_POWER_CTL		0x000001fc
 #endif
@@ -1388,6 +1392,20 @@ typedef union
 		ReservedBits2	: 64-32;
 	};	/* 06_3EH/06_3FH					*/
 } UNCORE_PMON_GLOBAL_CONTROL;
+
+typedef union
+{	/* MSR_TURBO_POWER_CURRENT_LIMIT(0x1ac):R/W, Package		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		TDP_Limit	: 15-0,  /* limit in 1/8 Watt granularity */
+		TDP_Override	: 16-15, /* 1=override is active	*/
+		TDC_Limit	: 31-16, /* limit in 1/8 Amp granularity */
+		TDC_Override	: 32-31,
+		ReservedBits	: 64-32;
+	};
+} NEHALEM_POWER_LIMIT;
 
 typedef union
 {

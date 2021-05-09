@@ -801,7 +801,9 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {
-/*64-bits*/	unsigned long long	_rsv64;
+/*32-bits*/	unsigned int		_rsv32;
+/*16-bits*/	unsigned short		EDC;
+/*16-bits*/	unsigned short		TDC;
 /*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
 /*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
 	    };
