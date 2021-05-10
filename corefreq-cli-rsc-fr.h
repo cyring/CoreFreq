@@ -848,6 +848,14 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_CFG_TDP_LVL1_CODE_FR		"     Niveau 1      "
 #define RSC_BOX_CFG_TDP_LVL2_CODE_FR		"     Niveau 2      "
 
+#define RSC_BOX_TDP_PKG_TITLE_CODE_FR		" TDP Package "
+#define RSC_BOX_TDP_CORES_TITLE_CODE_FR 	" TDP Core "
+#define RSC_BOX_TDP_UNCORE_TITLE_CODE_FR	" TDP Uncore "
+#define RSC_BOX_TDP_RAM_TITLE_CODE_FR		" TDP DRAM "
+#define RSC_BOX_TDP_PLATFORM_TITLE_CODE_FR	" TDP Plateforme "
+#define RSC_BOX_PL1_DESC_CODE_FR	"      Limite de puissance PL1       "
+#define RSC_BOX_PL2_DESC_CODE_FR	"      Limite de puissance PL2       "
+
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\
 		"  Copyright (C) 2015-2021 CYRIL INGENIERIE\n\n"	\

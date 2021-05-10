@@ -1415,16 +1415,16 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	enum PWR_DOMAIN pw;
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
-	Shm->Proc.Power.Domain[pw].Feature[0].Enable =	\
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable =	\
 			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit1;
 
-	Shm->Proc.Power.Domain[pw].Feature[1].Enable =	\
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Enable =	\
 			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit2;
 
-	Shm->Proc.Power.Domain[pw].Feature[0].Clamping =	\
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Clamping =	\
 			Proc_RO->PowerThermal.PowerLimit[pw].Clamping1;
 
-	Shm->Proc.Power.Domain[pw].Feature[1].Clamping =	\
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Clamping =	\
 			Proc_RO->PowerThermal.PowerLimit[pw].Clamping2;
 
 	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit1 / pwrUnits;

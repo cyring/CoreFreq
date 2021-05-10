@@ -963,6 +963,7 @@ static void Stop_Goldmont(void *arg) ;
 extern void InitTimer_Goldmont(unsigned int cpu) ;
 
 extern void Query_Airmont(unsigned int cpu) ;
+static void PerCore_Airmont_Query(void *arg) ;
 
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
@@ -976,6 +977,7 @@ static void Stop_Uncore_Nehalem(void *arg) ;
 extern void Query_Nehalem_EX(unsigned int cpu) ;
 
 extern void Query_Avoton(unsigned int cpu) ;
+static void PerCore_Avoton_Query(void *arg) ;
 
 extern void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
@@ -1047,6 +1049,7 @@ static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
 
 extern void Query_Kaby_Lake(unsigned int cpu) ;
+static void PerCore_Kaby_Lake_Query(void *arg) ;
 
 extern void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
@@ -5635,7 +5638,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Atom_Avoton] = {							/* 23*/
 	.Signature = _Atom_Avoton,
 	.Query = Query_Avoton,
-	.Update = PerCore_Nehalem_Query,
+	.Update = PerCore_Avoton_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -5660,7 +5663,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Atom_Airmont] = {							/* 24*/
 	.Signature = _Atom_Airmont,
 	.Query = Query_Airmont,
-	.Update = PerCore_Silvermont_Query,
+	.Update = PerCore_Airmont_Query,
 	.Start = Start_Silvermont,
 	.Stop = Stop_Silvermont,
 	.Exit = NULL,
@@ -6390,7 +6393,7 @@ static ARCH Arch[ARCHITECTURES] = {
 [Kabylake] = {								/* 52*/
 	.Signature = _Kabylake,
 	.Query = Query_Kaby_Lake,
-	.Update = PerCore_Skylake_Query,
+	.Update = PerCore_Kaby_Lake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
