@@ -4691,7 +4691,7 @@ void PCI_AMD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core, unsigned short DID)
 
 #undef SET_CHIPSET
 
-void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+void Uncore_Update(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	unsigned int idx;
 	/* Copy the # of controllers.					*/
@@ -5623,9 +5623,9 @@ void Pkg_ResetSensorLimits(PROC_STRUCT *Pkg)
 REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
-	PROC_RO			*Proc = Ref->Proc_RO;
-	PROC_RW			*Proc_RW = Ref->Proc_RW;
-	CORE_RO			**Core = Ref->Core_RO;
+	PROC_RO 		*Proc = Ref->Proc_RO;
+	PROC_RW 		*Proc_RW = Ref->Proc_RW;
+	CORE_RO 		**Core = Ref->Core_RO;
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
@@ -5980,6 +5980,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	  if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	  {
 		Package_Update(Shm, Proc, Proc_RW);
+		Uncore_Update(Shm, Proc, Core[Proc->Service.Core]);
 
 	    for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
 	    {
@@ -6196,7 +6197,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, Proc_RO, Proc_RW);
-		Uncore(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
+		Uncore_Update(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
 		memcpy(&Shm->SMB, &Proc_RO->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notifications.				*/
