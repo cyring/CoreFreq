@@ -1421,4 +1421,3 @@ typedef union
 		VID		: 32-24;	/*	Voltage ID	*/
 	};
 } AMD_17_CORE_VID;
-

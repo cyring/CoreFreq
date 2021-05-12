@@ -1878,4 +1878,3 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	json_end_object(&s);
 }
-

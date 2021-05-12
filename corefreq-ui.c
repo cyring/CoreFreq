@@ -2218,4 +2218,3 @@ __typeof__ (errno) LoadGeometries(char *cfgFQN)
     }
 	return (rc);
 }
-

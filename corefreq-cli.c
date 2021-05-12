@@ -3452,7 +3452,7 @@ void TjMax_Update(TGrid *grid, DATA_TYPE data)
 	memcpy(&grid->cell.item[pos], item, 6);
 }
 
-void TDP_Update(TGrid *grid, DATA_TYPE data)
+void TDP_State(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 	const unsigned int bix = Shm->Proc.Power.Domain[pw].Feature[PL1].Enable
@@ -3463,7 +3463,7 @@ void TDP_Update(TGrid *grid, DATA_TYPE data)
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
 }
 
-void PWR_Update(TGrid *grid, unsigned short value)
+void PCT_Update(TGrid *grid, unsigned short value)
 {
 	const signed int pos = grid->cell.length - 9;
 	char item[6+1];
@@ -3472,18 +3472,32 @@ void PWR_Update(TGrid *grid, unsigned short value)
 	memcpy(&grid->cell.item[pos], item, 5);
 }
 
+void TDP_Update(TGrid *grid, DATA_TYPE data)
+{
+	UNUSED(data);
+
+	PCT_Update(grid, Shm->Proc.Power.TDP);
+}
+
 void PL1_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 
-	PWR_Update(grid, Shm->Proc.Power.Domain[pw].PL1);
+	PCT_Update(grid, Shm->Proc.Power.Domain[pw].PL1);
 }
 
 void PL2_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 
-	PWR_Update(grid, Shm->Proc.Power.Domain[pw].PL2);
+	PCT_Update(grid, Shm->Proc.Power.Domain[pw].PL2);
+}
+
+void TDC_Update(TGrid *grid, DATA_TYPE data)
+{
+	UNUSED(data);
+
+	PCT_Update(grid, Shm->Proc.Power.TDC);
 }
 
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -3664,10 +3678,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(POWER_LABEL_HTC).CODE(), TM[bix] );
     }
     if (Shm->Proc.Power.TDP > 0) {
-	PUT(	SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TDP).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDP), hSpace,
-		RSC(POWER_LABEL_TDP).CODE(), Shm->Proc.Power.TDP );
+	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
+			"%s%.*s%s   [%5u W]", RSC(POWER_THERMAL_TDP).CODE(),
+			width - 18 - RSZ(POWER_THERMAL_TDP), hSpace,
+			RSC(POWER_LABEL_TDP).CODE(), Shm->Proc.Power.TDP ),
+		TDP_Update );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDP).CODE(),
@@ -3726,7 +3741,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 				 - label[pw].size,
 				hSpace, label[pw].code,
 				bix ? RSC(ENABLE).CODE():RSC(DISABLE).CODE() ),
-			TDP_Update, pw );
+			TDP_State, pw );
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
 		GridCall( PUT(	(BOXKEY_TDP_OR | pw), attrib[5], width, 3,
@@ -3802,10 +3817,11 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(POWER_LABEL_EDC).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.TDC > 0) {
-	PUT(	SCANKEY_NULL, attrib[5], width, 2,
-		"%s%.*s%s   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
-		width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
-		RSC(POWER_LABEL_TDC).CODE(), Shm->Proc.Power.TDC );
+	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
+			"%s%.*s%s   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
+			width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
+			RSC(POWER_LABEL_TDC).CODE(), Shm->Proc.Power.TDC ),
+		TDC_Update );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s%.*s%s   [%7s]", RSC(POWER_THERMAL_TDC).CODE(),

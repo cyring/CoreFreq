@@ -500,4 +500,3 @@ struct RECORDER_ST {
 		Select,
 		Ratios[];
 };
-

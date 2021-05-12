@@ -738,4 +738,3 @@ typedef struct {
 	time(&now);							\
 	now - ref;							\
 })
-

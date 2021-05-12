@@ -1509,4 +1509,3 @@ typedef struct
 #ifndef PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3
 	#define PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3	0x1653	/* Vermeer */
 #endif
-

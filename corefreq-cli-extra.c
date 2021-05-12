@@ -215,4 +215,3 @@ void ISO_8859_To_Unicode(unsigned char *pIn, unsigned char *pOut)
 	}
 	(*pOut) = '\0';
 }
-
