@@ -129,15 +129,15 @@ static signed short Config_TDP_Level = -1;
 module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
 
-static unsigned int Custom_TDP_Count;
-static signed short Custom_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
-			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+static unsigned int Custom_TDP_Count = 0;
+static signed short Custom_TDP_Offset[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
-module_param_array(Custom_TDP_Limit, short, &Custom_TDP_Count,		\
+module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(Custom_TDP_Limit, "Custom TDP Limit (watt)");
+MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
 
-static unsigned int Activate_TDP_Count;
+static unsigned int Activate_TDP_Count = 0;
 static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
@@ -3135,10 +3135,15 @@ void Nehalem_PowerLimit(void)
 	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
 
     if (Custom_TDP_Count > 0) {
-	if (Custom_TDP_Limit[PWR_DOMAIN(PKG)] >= (1 << 3))
-	{	/*	Register is multiplied by 8 watt	*/
-		PowerLimit.TDP_Limit = Custom_TDP_Limit[PWR_DOMAIN(PKG)] << 3;
+	if (Custom_TDP_Offset[PWR_DOMAIN(PKG)] != 0)
+	{	/*	Register is an 8 watt multiplier	*/
+		signed short	TDP_Limit = PowerLimit.TDP_Limit >> 3;
+				TDP_Limit += Custom_TDP_Offset[PWR_DOMAIN(PKG)];
+	    if (TDP_Limit > 0)
+	    {
+		PowerLimit.TDP_Limit = TDP_Limit << 3;
 		WrRdMSR = 1;
+	    }
 	}
     }
     if (Activate_TDP_Count > 0) {
@@ -3188,18 +3193,26 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			pwrUnits = 2 << pwrUnits;
 
 	if (Custom_TDP_Count > lt) {
-	    if (Custom_TDP_Limit[lt] > 0)
+	    if (Custom_TDP_Offset[lt] != 0)
 	    {
-		PowerLimit.Domain_Limit1 = pwrUnits * Custom_TDP_Limit[lt];
-		WrRdMSR = 1;
+		signed short	TDP_Limit = PowerLimit.Domain_Limit1 / pwrUnits;
+				TDP_Limit = TDP_Limit + Custom_TDP_Offset[lt];
+		if (TDP_Limit > 0) {
+			PowerLimit.Domain_Limit1 = pwrUnits * TDP_Limit;
+			WrRdMSR = 1;
+		}
 	    }
 	}
 	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
 	  if (Custom_TDP_Count > rt) {
-	    if (Custom_TDP_Limit[rt] > 0)
+	    if (Custom_TDP_Offset[rt] != 0)
 	    {
-		PowerLimit.Domain_Limit2 = pwrUnits * Custom_TDP_Limit[rt];
-		WrRdMSR = 1;
+		signed short	TDP_Limit = PowerLimit.Domain_Limit2 / pwrUnits;
+				TDP_Limit = TDP_Limit + Custom_TDP_Offset[rt];
+		if (TDP_Limit > 0) {
+			PowerLimit.Domain_Limit2 = pwrUnits * TDP_Limit;
+			WrRdMSR = 1;
+		}
 	    }
 	  }
 	}
@@ -15274,6 +15287,14 @@ static void For_All_CPU_Compute_Clock(void)
 	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
 })
 
+#define RESET_ARRAY(_array, _cnt, _val) 				\
+({									\
+	unsigned int rst;						\
+	for (rst = 0; rst < _cnt; rst++) {				\
+		_array[rst] = _val;					\
+	}								\
+})
+
 static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
 				unsigned long arg )
@@ -15779,32 +15800,51 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 		break;
 
-	case TECHNOLOGY_POWER_LIMIT:
+	case TECHNOLOGY_TDP_LIMIT:
 	    {
-		const unsigned int idx	= (PWR_LIMIT_SIZE * prm.dh.lo)
-					+ prm.dh.hi;
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
 
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
 	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
 	      {
-		unsigned int rst;
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			Controller_Stop(1);
 			Activate_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
-			for (rst = 0; rst < Activate_TDP_Count; rst++) {
-				Activate_TDP_Limit[rst] = -1;
-			}
-				Activate_TDP_Limit[idx] = prm.dl.lo;
+			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
+			Activate_TDP_Limit[idx] = prm.dl.lo;
 
 			Controller_Start(1);
-			for (rst = 0; rst < Activate_TDP_Count; rst++) {
-				Activate_TDP_Limit[rst] = -1;
-			}
+			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
 			Activate_TDP_Count = 0;
 			rc = RC_SUCCESS;
 			break;
 		}
+	      }
+	    }
+		break;
+
+	case TECHNOLOGY_TDP_OFFSET:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+		/* Offset is capped within [ -127 , +128 ] watt */
+		const signed short offset = (signed char) prm.dl.lo;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		Controller_Stop(1);
+		Custom_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+		RESET_ARRAY(Custom_TDP_Offset, Custom_TDP_Count, 0);
+		Custom_TDP_Offset[idx] = offset;
+
+		Controller_Start(1);
+		RESET_ARRAY(Custom_TDP_Offset, Custom_TDP_Count, 0);
+		Custom_TDP_Offset[idx] = 0;
+		rc = RC_SUCCESS;
 	      }
 	    }
 		break;
