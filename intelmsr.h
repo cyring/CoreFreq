@@ -881,8 +881,8 @@ typedef union
 		ReservedBits1	:  1-0,
 		C1E		:  2-1,
 		ReservedBits2	: 19-2,
-		R2H_Disable	: 20-19, /*SKL,KBL,CFL:Race To Halt Disable=1*/
-		Energy_Optim	: 21-20, /* SKL, KBL, CFL: Disable=1	*/
+		R2H_Disable	: 20-19, /* SKL,KBL,CFL:Race To Halt Disable=1*/
+		EEO_Disable	: 21-20, /* SKL,KBL,CFL: Energy opt. Disable=1*/
 		ReservedBits3	: 25-21,
 		EBP_OS_Control	: 26-25, /* SNB: 0=EBP controlled by OS */
 		ReservedBits4	: 64-26;

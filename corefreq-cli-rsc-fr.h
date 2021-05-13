@@ -362,6 +362,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_SMT_CODE_FR	"Multithreading simultan""\xa9"
 #define RSC_TECHNOLOGIES_CNQ_CODE_FR	"PowerNow!"
 #define RSC_TECHNOLOGIES_CPB_CODE_FR	"Core Performance Boost"
+#define RSC_TECHNOLOGIES_EEO_CODE_FR	"Optimisation ""\xa9""nerg""\xa9""tique"
 #define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
 
@@ -724,6 +725,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 
 #define RSC_BOX_HDC_DESC_CODE_FR	" Contr""\xb4""le Mat""\xa9""riel" \
 					" Cycles de Service"
+
+#define RSC_BOX_EEO_DESC_CODE_FR	" Optimisation efficacit" "\xa9" \
+					" " "\xa9" "nerg" "\xa9" "tique"
 
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
 

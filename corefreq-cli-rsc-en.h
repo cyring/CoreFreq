@@ -503,6 +503,7 @@
 #define RSC_TECHNOLOGIES_SMT_CODE_EN	"Simultaneous Multithreading"
 #define RSC_TECHNOLOGIES_CNQ_CODE_EN	"PowerNow!"
 #define RSC_TECHNOLOGIES_CPB_CODE_EN	"Core Performance Boost"
+#define RSC_TECHNOLOGIES_EEO_CODE_EN	"Energy Efficiency Optimization"
 #define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
 
@@ -956,6 +957,7 @@
 #define RSC_BOX_PC6_DESC_CODE_EN	"          Package C6 State          "
 #define RSC_BOX_HWP_DESC_CODE_EN	"   Hardware-Controlled Performance  "
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
+#define RSC_BOX_EEO_DESC_CODE_EN	"   Energy Efficiency Optimization   "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
 
 #define RSC_BOX_NOM_MODE_COND0_CODE_EN    "       Nominal operating mode       "

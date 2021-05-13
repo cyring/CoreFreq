@@ -237,6 +237,10 @@ static signed short HDC_Enable = -1;
 module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
 
+static signed short EEO_Disable = -1;
+module_param(EEO_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(EEO_Disable, "Disable Energy Efficiency Optimization");
+
 static signed short R2H_Disable = -1;
 module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(R2H_Disable, "Disable Race to Halt");
@@ -3055,20 +3059,33 @@ void Intel_Hardware_Performance(void)
     }
 }
 
-void Intel_RaceToHalt(void)
+void Skylake_PowerControl(void)
 {
+	unsigned short WrRdMSR = 0;
+
 	POWER_CONTROL PowerCtrl = {.value = 0};
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 
+	switch (EEO_Disable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerCtrl.EEO_Disable = EEO_Disable;
+			WrRdMSR = 1;
+		break;
+	}
 	switch (R2H_Disable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			PowerCtrl.R2H_Disable = R2H_Disable;
-			WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
-			RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+			WrRdMSR = 1;
 		break;
 	}
-	PUBLIC(RO(Proc))->Features.R2H_Disable = PowerCtrl.R2H_Disable;
+	if (WrRdMSR) {
+		WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+	}
+	PUBLIC(RO(Proc))->Features.EEO_Enable = !PowerCtrl.EEO_Disable;
+	PUBLIC(RO(Proc))->Features.R2H_Enable = !PowerCtrl.R2H_Disable;
 }
 
 void SandyBridge_Uncore_Ratio(unsigned int cpu)
@@ -4988,8 +5005,9 @@ void Query_Skylake(unsigned int cpu)
 {
 	Query_Broadwell(cpu);
 
+	PUBLIC(RO(Proc))->Features.EEO_Capable = 1;
 	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
-	Intel_RaceToHalt();
+	Skylake_PowerControl();
 }
 
 void Query_Kaby_Lake(unsigned int cpu)
@@ -15829,11 +15847,23 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 		break;
 
+	case TECHNOLOGY_EEO:
+	    if (PUBLIC(RO(Proc))->Features.EEO_Capable)
+	    {
+		EEO_Disable = prm.dl.lo;
+		Skylake_PowerControl();
+		EEO_Disable = -1;
+		rc = RC_SUCCESS;
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
 	case TECHNOLOGY_R2H:
 	    if (PUBLIC(RO(Proc))->Features.R2H_Capable)
 	    {
 		R2H_Disable = prm.dl.lo;
-		Intel_RaceToHalt();
+		Skylake_PowerControl();
 		R2H_Disable = -1;
 		rc = RC_SUCCESS;
 	    } else {

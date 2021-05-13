@@ -1286,8 +1286,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.EIST);
 			json_key(&s, "Turbo");
 			json_literal(&s, "%llu", Shm->Proc.Technology.Turbo);
+			json_key(&s, "EnergyOptimization");
+			json_literal(&s, "%llu", Shm->Proc.Features.EEO_Enable);
 			json_key(&s, "RaceToHalt");
-			json_literal(&s, "%llu", Shm->Proc.Features.R2H_Disable);
+			json_literal(&s, "%llu", Shm->Proc.Features.R2H_Enable);
 			json_key(&s, "C1E");
 			json_literal(&s, "%llu", Shm->Proc.Technology.C1E);
 			json_key(&s, "C3A");

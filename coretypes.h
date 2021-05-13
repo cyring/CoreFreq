@@ -6,7 +6,7 @@
 
 #define COREFREQ_MAJOR	1
 #define COREFREQ_MINOR	85
-#define COREFREQ_REV	3
+#define COREFREQ_REV	4
 
 #if !defined(CORE_COUNT)
 	#define CORE_COUNT	256
@@ -1278,9 +1278,11 @@ typedef struct	/* BSP CPUID features.					*/
 			HWP_Enable	: 23-22,
 			HDC_Enable	: 24-23,
 			SpecTurboRatio	: 32-24,
-			R2H_Capable	: 33-32,
-			R2H_Disable	: 34-33,
-			_pad64		: 64-34;
+			EEO_Capable	: 33-32,
+			EEO_Enable	: 34-33,
+			R2H_Capable	: 35-34,
+			R2H_Enable	: 36-35,
+			_pad64		: 64-36;
 	};
 } FEATURES;
 
@@ -1573,6 +1575,7 @@ enum {
 	TECHNOLOGY_HWP,
 	TECHNOLOGY_HWP_EPP,
 	TECHNOLOGY_HDC,
+	TECHNOLOGY_EEO,
 	TECHNOLOGY_R2H,
 	TECHNOLOGY_L1_HW_PREFETCH,
 	TECHNOLOGY_L1_HW_IP_PREFETCH,

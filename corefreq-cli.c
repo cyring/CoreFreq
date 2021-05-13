@@ -2494,9 +2494,18 @@ void TurboUpdate(TGrid *grid, DATA_TYPE data)
 	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
-void Race2HaltUpdate(TGrid *grid, DATA_TYPE data)
+void EEO_Update(TGrid *grid, DATA_TYPE data)
 {
-	const unsigned int bix = Shm->Proc.Features.R2H_Disable == 1;
+	const unsigned int bix = Shm->Proc.Features.EEO_Enable == 1;
+	const signed int pos = grid->cell.length - 5;
+	UNUSED(data);
+
+	TechUpdate(grid, bix, pos, 3, ENABLED(bix));
+}
+
+void R2H_Update(TGrid *grid, DATA_TYPE data)
+{
+	const unsigned int bix = Shm->Proc.Features.R2H_Enable == 1;
 	const signed int pos = grid->cell.length - 5;
 	UNUSED(data);
 
@@ -2637,13 +2646,23 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
-		Shm->Proc.Features.R2H_Disable == 1,
+		Shm->Proc.Features.EEO_Enable == 1,
+		2, "%s%.*sEEO   <%3s>",
+		RSC(TECHNOLOGIES_EEO).CODE(),
+		width - 14 - RSZ(TECHNOLOGIES_EEO),
+		NULL,
+		BOXKEY_EEO,
+		EEO_Update
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Features.R2H_Enable == 1,
 		2, "%s%.*sR2H   <%3s>",
 		RSC(TECHNOLOGIES_R2H).CODE(),
 		width - 14 - RSZ(TECHNOLOGIES_R2H),
 		NULL,
 		BOXKEY_R2H,
-		Race2HaltUpdate
+		R2H_Update
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
@@ -11250,6 +11269,56 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
 
+    case BOXKEY_EEO:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 11
+	}, select = {
+		.col = 0,
+		.row = Shm->Proc.Features.EEO_Enable ? 4 : 3
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_EEO_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			RSC(BOX_EEO_DESC).CODE()  , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
+			stateStr[1][Shm->Proc.Features.EEO_Enable],
+				stateAttr[Shm->Proc.Features.EEO_Enable],
+								BOXKEY_EEO_ON,
+			stateStr[0][!Shm->Proc.Features.EEO_Enable],
+				stateAttr[!Shm->Proc.Features.EEO_Enable],
+								BOXKEY_EEO_OFF,
+			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_EEO_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_EEO );
+	}
+    break;
+
+    case BOXKEY_EEO_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_EEO );
+	}
+    break;
+
     case BOXKEY_R2H:
     {
 	Window *win = SearchWinListById(scan->key, &winList);
@@ -11260,7 +11329,7 @@ int Shortcut(SCANKEY *scan)
 		.row = TOP_HEADER_ROW + 13
 	}, select = {
 		.col = 0,
-		.row = Shm->Proc.Features.R2H_Disable ? 4 : 3
+		.row = Shm->Proc.Features.R2H_Enable ? 4 : 3
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
@@ -11268,11 +11337,11 @@ int Shortcut(SCANKEY *scan)
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
 			RSC(BOX_R2H_DESC).CODE()  , descAttr,	SCANKEY_NULL,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL,
-			stateStr[1][Shm->Proc.Features.R2H_Disable],
-				stateAttr[Shm->Proc.Features.R2H_Disable],
+			stateStr[1][Shm->Proc.Features.R2H_Enable],
+				stateAttr[Shm->Proc.Features.R2H_Enable],
 								BOXKEY_R2H_ON,
-			stateStr[0][!Shm->Proc.Features.R2H_Disable],
-				stateAttr[!Shm->Proc.Features.R2H_Disable],
+			stateStr[0][!Shm->Proc.Features.R2H_Enable],
+				stateAttr[!Shm->Proc.Features.R2H_Enable],
 								BOXKEY_R2H_OFF,
 			RSC(BOX_BLANK_DESC).CODE(), blankAttr,	SCANKEY_NULL),
 		&winList);
@@ -11286,7 +11355,7 @@ int Shortcut(SCANKEY *scan)
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
-				COREFREQ_TOGGLE_OFF,
+				COREFREQ_TOGGLE_ON,
 				TECHNOLOGY_R2H );
 	}
     break;
@@ -11295,7 +11364,7 @@ int Shortcut(SCANKEY *scan)
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
-				COREFREQ_TOGGLE_ON,
+				COREFREQ_TOGGLE_OFF,
 				TECHNOLOGY_R2H );
 	}
     break;
