@@ -1436,9 +1436,6 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	pwrVal = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
 	Shm->Proc.Power.TDP = pwrVal;
 
-      if (Shm->Proc.Power.TDP == 0) {
-	Shm->Proc.Power.TDP = Shm->Proc.Power.Domain[PWR_DOMAIN(PKG)].PL1;
-      }
 	pwrVal = Proc_RO->PowerThermal.PowerInfo.MinimumPower / pwrUnits;
 	Shm->Proc.Power.Min = pwrVal;
 
