@@ -2506,6 +2506,7 @@ void Race2HaltUpdate(TGrid *grid, DATA_TYPE data)
 REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 {
 	REASON_INIT(reason);
+	char IOMMU_Version_String[10+1+10+1+1];
 	const ASCII *Hypervisor[HYPERVISORS] = {
 		[HYPERV_NONE]	= RSC(TECH_HYPERV_NONE).CODE(),
 		[BARE_METAL]	= RSC(TECH_BARE_METAL).CODE(),
@@ -2731,6 +2732,20 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(TECHNOLOGIES_IOMMU).CODE(),
 		width - (OutFunc? 17 : 19) - RSZ(TECHNOLOGIES_IOMMU),
 		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		NULL,
+		(snprintf(IOMMU_Version_String, 10+1+10+1+1, "%u.%u",
+			Shm->Proc.Technology.IOMMU_Ver_Major,
+			Shm->Proc.Technology.IOMMU_Ver_Minor) > 0) & 0x0,
+		3, "%s%.*s""   [%12s]",
+		RSC(VERSION).CODE(),
+		width - (OutFunc? 21 : 23) - RSZ(VERSION),
+		(Shm->Proc.Technology.IOMMU_Ver_Major > 0
+		|| Shm->Proc.Technology.IOMMU_Ver_Minor > 0) ?
+		IOMMU_Version_String : (char*) RSC(NOT_AVAILABLE).CODE(),
 		SCANKEY_NULL,
 		NULL
 	},
@@ -6501,8 +6516,8 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 12;
-		winOrigin.row = TOP_HEADER_ROW + 10;
+		matrixSize.hth = 13;
+		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;
 		title = RSC(TECHNOLOGIES_TITLE).CODE();
