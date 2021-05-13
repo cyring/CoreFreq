@@ -4415,10 +4415,9 @@ static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
-	if (PUBLIC(RO(Proc))->Registration.Experimental)
-	{
-		SoC_SKL_VTD();
-	}
+
+	SoC_SKL_VTD();
+
 	return (Router(dev, 0x48, 64, 0x8000, Query));
 }
 
