@@ -766,7 +766,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Power		: 15-0,
+		PkgPower	: 15-0,
 		ReservedBits1	: 16-15,
 		Ratio		: 24-16,
 		ReservedBits2	: 32-24,
@@ -780,7 +780,7 @@ typedef union
 {
 	unsigned long long	value;
 	struct
-	{
+	{	/* 0:Default; 1:TDP_LEVEL_1; 2:TDP_LEVEL_2; 3:reserved	*/
 		unsigned int
 		Level		:  2-0,
 		ReservedBits	: 31-2,

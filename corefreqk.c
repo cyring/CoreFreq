@@ -3809,17 +3809,17 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
 	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
-	CONFIG_TDP_LEVEL ConfigTDP;
+	CONFIG_TDP_LEVEL ConfigTDP[2] = {{.value = 0}, {.value = 0}};
 	unsigned int cpu, local = get_cpu();	/* TODO(preempt_disable) */
 
 	NominalTDP.value = readl(mchmap + 0x5f3c);
 	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
-	ConfigTDP.value = readq(mchmap + 0x5f40);
-	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+	ConfigTDP[0].value = readq(mchmap + 0x5f40);
+	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP1)] = ConfigTDP[0].Ratio;
 
-	ConfigTDP.value = readq(mchmap + 0x5f48);
-	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+	ConfigTDP[1].value = readq(mchmap + 0x5f48);
+	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP2)] = ConfigTDP[1].Ratio;
 
 	ControlTDP.value = readl(mchmap + 0x5f50);
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
@@ -3830,6 +3830,32 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	put_cpu();	/* TODO(preempt_enable) */
+
+    switch (PUBLIC(RO(Proc))->Features.TDP_Cfg_Level) {
+    case 2:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[1].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[1].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[1].MaxPower;
+	break;
+    case 1:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[0].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[0].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[0].MaxPower;
+	break;
+    case 0:
+	/*TODO(Unknown CSR for Nominal {Pkg, Min, Max} Power settings ?) */
+	break;
+    }
 
 	PUBLIC(RO(Proc))->Features.TDP_Levels = 3;
 
@@ -3960,6 +3986,7 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
+	Query_Turbo_TDP_Config(mchmap);
 }
 
 static PCI_CALLBACK P945(struct pci_dev *dev)
@@ -4414,7 +4441,6 @@ static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
 
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
-
 
 	SoC_SKL_VTD();
 
@@ -6745,21 +6771,19 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 {
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
 	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
-	CONFIG_TDP_LEVEL ConfigTDP;
+	CONFIG_TDP_LEVEL ConfigTDP[2] = {{.value = 0}, {.value = 0}};
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
 	Core->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
-	ConfigTDP.value = 0;
-	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_2);
-	Core->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+	RDMSR(ConfigTDP[1], MSR_CONFIG_TDP_LEVEL_2);
+	Core->Boost[BOOST(TDP2)] = ConfigTDP[1].Ratio;
 
-	ConfigTDP.value = 0;
-	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_1);
-	Core->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+	RDMSR(ConfigTDP[0], MSR_CONFIG_TDP_LEVEL_1);
+	Core->Boost[BOOST(TDP1)] = ConfigTDP[0].Ratio;
 
-    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-    {
+  if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+  {
 	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
 
 	if ((ControlTDP.Lock == 0) && (Config_TDP_Level >= 0))
@@ -6770,7 +6794,33 @@ void Intel_Turbo_TDP_Config(CORE_RO *Core)
 	}
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Level = ControlTDP.Level;
+
+    switch (PUBLIC(RO(Proc))->Features.TDP_Cfg_Level) {
+    case 2:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[1].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[1].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[1].MaxPower;
+	break;
+    case 1:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[0].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[0].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[0].MaxPower;
+	break;
+    case 0:
+	/*			MSR_PKG_POWER_INFO			*/
+	break;
     }
+  }
 }
 
 void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
