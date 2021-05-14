@@ -405,16 +405,17 @@ typedef struct
 					Joules,
 					Times;
 		} Unit;
-		unsigned short		TDP, Min, Max;
 		struct {
+			double		TW1, TW2;
 			unsigned short	PL1, PL2;
 		    struct {
 			unsigned short
 					Enable	:  1-0,
 					Clamping:  2-1,
 					_Unused : 16-2;
-		    } Feature[2];
+		    } Feature[PWR_LIMIT_SIZE];
 		} Domain[PWR_DOMAIN(SIZE)];
+		unsigned short		TDP, Min, Max;
 		unsigned short		PPT, EDC, TDC;
 	} Power;
 

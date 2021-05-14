@@ -1410,9 +1410,9 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
+	enum PWR_DOMAIN pw;
     if (pwrUnits != 0)
     {
-	enum PWR_DOMAIN pw;
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
 	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable =	\
@@ -1441,6 +1441,20 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 
 	pwrVal = Proc_RO->PowerThermal.PowerInfo.MaximumPower / pwrUnits;
 	Shm->Proc.Power.Max = pwrVal;
+    }
+    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+    {
+	unsigned long long duration;
+
+	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Y);
+	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
+	duration = duration >> 2;
+	Shm->Proc.Power.Domain[pw].TW1 = Shm->Proc.Power.Unit.Times * duration;
+
+	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Y);
+	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
+	duration = duration >> 2;
+	Shm->Proc.Power.Domain[pw].TW2 = Shm->Proc.Power.Unit.Times * duration;
     }
 	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.TDC;
   } else {

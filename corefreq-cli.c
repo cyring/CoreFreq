@@ -3779,9 +3779,10 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
 		GridCall( PUT(	(BOXKEY_TDP_OR | pw), attrib[5], width, 3,
-				"%s%.*s%s   <%5u W>",
+				"%s (%2.0f sec)%.*s%s   <%5u W>",
 				RSC(POWER_THERMAL_TPL).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
+				Shm->Proc.Power.Domain[pw].TW1,
+				width - (OutFunc == NULL ? 30 : 28)
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL1).CODE(),
 				Shm->Proc.Power.Domain[pw].PL1 ),
@@ -3797,9 +3798,10 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
 		GridCall( PUT(	(BOXKEY_TDP_OR | pw), attrib[5], width, 3,
-				"%s%.*s%s   <%5u W>",
+				"%s (%2.0f sec)%.*s%s   <%5u W>",
 				RSC(POWER_THERMAL_TPL).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
+				Shm->Proc.Power.Domain[pw].TW2,
+				width - (OutFunc == NULL ? 30 : 28)
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL2).CODE(),
 				Shm->Proc.Power.Domain[pw].PL2 ),
@@ -3814,9 +3816,10 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  } else if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
 		/*	Some register may have garbage value	*/
 		GridCall( PUT(	SCANKEY_NULL, attrib[0], width, 3,
-				"%s%.*s%s   [%5u W]",
+				"%s (%2.0f sec)%.*s%s   [%5u W]",
 				RSC(POWER_THERMAL_TPL).CODE(),
-				width - (OutFunc == NULL ? 21 : 19)
+				Shm->Proc.Power.Domain[pw].TW2,
+				width - (OutFunc == NULL ? 30 : 28)
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL2).CODE(),
 				Shm->Proc.Power.Domain[pw].PL2 ),
