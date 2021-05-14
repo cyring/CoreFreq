@@ -943,4 +943,3 @@ static void (*UBENCH_RDCOUNTER)(unsigned int) = UBENCH_RDCOUNTER_VOID;
 #define UBENCH_SETUP(withTSCP , withPMC)	/* UBENCH_SETUP()	*/
 
 #endif /* UBENCH == 1 */
-

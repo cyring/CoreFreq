@@ -1286,8 +1286,10 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.EIST);
 			json_key(&s, "Turbo");
 			json_literal(&s, "%llu", Shm->Proc.Technology.Turbo);
+			json_key(&s, "EnergyOptimization");
+			json_literal(&s, "%llu", Shm->Proc.Features.EEO_Enable);
 			json_key(&s, "RaceToHalt");
-			json_literal(&s, "%llu", Shm->Proc.Features.R2H_Disable);
+			json_literal(&s, "%llu", Shm->Proc.Features.R2H_Enable);
 			json_key(&s, "C1E");
 			json_literal(&s, "%llu", Shm->Proc.Technology.C1E);
 			json_key(&s, "C3A");
@@ -1486,8 +1488,35 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%u", Shm->Proc.Power.Min);
 			json_key(&s, "Max");
 			json_literal(&s, "%u", Shm->Proc.Power.Max);
+		    if (vendor == CRC_INTEL)
+		    {
+			enum PWR_DOMAIN pw;
+			json_key(&s, "PL1");
+			{
+				json_start_arr(&s);
+				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+				{
+					json_literal(&s, "%u", Shm->Proc.Power.Domain[pw].PL1);
+				}
+				json_end_arr(&s);
+			}
+			json_key(&s, "PL2");
+			{
+				json_start_arr(&s);
+				for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+				{
+					json_literal(&s, "%u", Shm->Proc.Power.Domain[pw].PL2);
+				}
+				json_end_arr(&s);
+			}
+		    } else if ((vendor == CRC_AMD) || (vendor == CRC_HYGON)) {
 			json_key(&s, "PPT");
 			json_literal(&s, "%u", Shm->Proc.Power.PPT);
+		    }
+			json_key(&s, "EDC");
+			json_literal(&s, "%u", Shm->Proc.Power.EDC);
+			json_key(&s, "TDC");
+			json_literal(&s, "%u", Shm->Proc.Power.TDC);
 			json_key(&s, "Unit");
 			{
 				json_start_object(&s);
@@ -1851,4 +1880,3 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 
 	json_end_object(&s);
 }
-

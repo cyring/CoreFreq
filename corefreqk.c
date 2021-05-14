@@ -125,6 +125,26 @@ static signed short CStateIORedir = -1;
 module_param(CStateIORedir, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(CStateIORedir, "Power Mgmt IO Redirection C-State");
 
+static signed short Config_TDP_Level = -1;
+module_param(Config_TDP_Level, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Config_TDP_Level, "Config TDP Control Level");
+
+static unsigned int Custom_TDP_Count = 0;
+static signed short Custom_TDP_Offset[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
+
+static unsigned int Activate_TDP_Count = 0;
+static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+module_param_array(Activate_TDP_Limit, short, &Activate_TDP_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limit");
+
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
@@ -193,6 +213,10 @@ static signed short PowerPolicy = -1;
 module_param(PowerPolicy, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PowerPolicy, "Power Policy Preference [0-15]");
 
+static signed short Turbo_Activation_Ratio = -1;
+module_param(Turbo_Activation_Ratio, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Turbo_Activation_Ratio, "Turbo Activation Ratio");
+
 static signed int PState_FID = -1;
 module_param(PState_FID, int, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(PState_FID, "P-State Frequency Id");
@@ -212,6 +236,10 @@ MODULE_PARM_DESC(HWP_EPP, "Energy Performance Preference");
 static signed short HDC_Enable = -1;
 module_param(HDC_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(HDC_Enable, "Hardware Duty Cycling");
+
+static signed short EEO_Disable = -1;
+module_param(EEO_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(EEO_Disable, "Disable Energy Efficiency Optimization");
 
 static signed short R2H_Disable = -1;
 module_param(R2H_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -1728,6 +1756,7 @@ static void Map_AMD_Topology(void *arg)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
@@ -3030,20 +3059,33 @@ void Intel_Hardware_Performance(void)
     }
 }
 
-void Intel_RaceToHalt(void)
+void Skylake_PowerControl(void)
 {
+	unsigned short WrRdMSR = 0;
+
 	POWER_CONTROL PowerCtrl = {.value = 0};
 	RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
 
+	switch (EEO_Disable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerCtrl.EEO_Disable = EEO_Disable;
+			WrRdMSR = 1;
+		break;
+	}
 	switch (R2H_Disable) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			PowerCtrl.R2H_Disable = R2H_Disable;
-			WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
-			RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+			WrRdMSR = 1;
 		break;
 	}
-	PUBLIC(RO(Proc))->Features.R2H_Disable = PowerCtrl.R2H_Disable;
+	if (WrRdMSR) {
+		WRMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+		RDMSR(PowerCtrl, MSR_IA32_POWER_CTL);
+	}
+	PUBLIC(RO(Proc))->Features.EEO_Enable = !PowerCtrl.EEO_Disable;
+	PUBLIC(RO(Proc))->Features.R2H_Enable = !PowerCtrl.R2H_Disable;
 }
 
 void SandyBridge_Uncore_Ratio(unsigned int cpu)
@@ -3102,15 +3144,121 @@ long Haswell_Uncore_Ratio(CLOCK_ARG *pClockMod)
 	return (rc);
 }
 
-void SandyBridge_PowerInterface(void)
+void Nehalem_PowerLimit(void)
+{
+	unsigned short WrRdMSR = 0;
+
+	NEHALEM_POWER_LIMIT PowerLimit = {.value = 0};
+	RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+
+    if (Custom_TDP_Count > 0) {
+	if (Custom_TDP_Offset[PWR_DOMAIN(PKG)] != 0)
+	{	/*	Register is an 8 watt multiplier	*/
+		signed short	TDP_Limit = PowerLimit.TDP_Limit >> 3;
+				TDP_Limit += Custom_TDP_Offset[PWR_DOMAIN(PKG)];
+	    if (TDP_Limit > 0)
+	    {
+		PowerLimit.TDP_Limit = TDP_Limit << 3;
+		WrRdMSR = 1;
+	    }
+	}
+    }
+    if (Activate_TDP_Count > 0) {
+	switch (Activate_TDP_Limit[PWR_DOMAIN(PKG)]) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PowerLimit.TDP_Override = Activate_TDP_Limit[PWR_DOMAIN(PKG)];
+		WrRdMSR = 1;
+		break;
+	}
+    }
+	if (WrRdMSR) {
+		WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+		RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+	}
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Domain_Limit1
+		= PowerLimit.TDP_Limit;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Enable_Limit1
+		= PowerLimit.TDP_Override;
+	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
+	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
+	/*	TDC: 1/8 Amp			*/
+	PUBLIC(RO(Proc))->PowerThermal.TDC = PowerLimit.TDC_Limit >> 3;
+}
+
+void Intel_PowerInterface(void)
 {
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerInfo, MSR_PKG_POWER_INFO);
 }
 
-void Intel_PackagePowerLimit(void)
+void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
+				unsigned long long PowerLimitLockMask,
+				enum PWR_DOMAIN pw )
 {
-	RDMSR(PUBLIC(RO(Proc))->PowerThermal.PowerLimit, MSR_PKG_POWER_LIMIT);
+	unsigned short WrRdMSR = 0;
+	const unsigned int lt = PWR_LIMIT_SIZE * pw, rt = 1 + lt;
+
+	DOMAIN_POWER_LIMIT PowerLimit = {.value = 0};
+	RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+
+    if ((PowerLimit.value & PowerLimitLockMask) == 0
+     && (PUBLIC(RO(Proc))->PowerThermal.Unit.PU > 0))
+    {
+	unsigned short	pwrUnits = PUBLIC(RO(Proc))->PowerThermal.Unit.PU - 1;
+			pwrUnits = 2 << pwrUnits;
+
+	if (Custom_TDP_Count > lt) {
+	    if (Custom_TDP_Offset[lt] != 0)
+	    {
+		signed short	TDP_Limit = PowerLimit.Domain_Limit1 / pwrUnits;
+				TDP_Limit = TDP_Limit + Custom_TDP_Offset[lt];
+		if (TDP_Limit > 0) {
+			PowerLimit.Domain_Limit1 = pwrUnits * TDP_Limit;
+			WrRdMSR = 1;
+		}
+	    }
+	}
+	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
+	  if (Custom_TDP_Count > rt) {
+	    if (Custom_TDP_Offset[rt] != 0)
+	    {
+		signed short	TDP_Limit = PowerLimit.Domain_Limit2 / pwrUnits;
+				TDP_Limit = TDP_Limit + Custom_TDP_Offset[rt];
+		if (TDP_Limit > 0) {
+			PowerLimit.Domain_Limit2 = pwrUnits * TDP_Limit;
+			WrRdMSR = 1;
+		}
+	    }
+	  }
+	}
+    }
+	if (Activate_TDP_Count > lt) {
+		switch (Activate_TDP_Limit[lt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Enable_Limit1 = Activate_TDP_Limit[lt];
+			WrRdMSR = 1;
+			break;
+		}
+	}
+	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
+	    if (Activate_TDP_Count > rt) {
+		switch (Activate_TDP_Limit[rt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Enable_Limit2 = Activate_TDP_Limit[rt];
+			WrRdMSR = 1;
+			break;
+		}
+	    }
+	}
+	if (WrRdMSR) {
+		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+		RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+	}
+	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[pw] = PowerLimit;
 }
 
 void Intel_Processor_PIN(bool capable)
@@ -3678,17 +3826,17 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
 	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
 	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
-	CONFIG_TDP_LEVEL ConfigTDP;
+	CONFIG_TDP_LEVEL ConfigTDP[2] = {{.value = 0}, {.value = 0}};
 	unsigned int cpu, local = get_cpu();	/* TODO(preempt_disable) */
 
 	NominalTDP.value = readl(mchmap + 0x5f3c);
 	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
-	ConfigTDP.value = readq(mchmap + 0x5f40);
-	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+	ConfigTDP[0].value = readq(mchmap + 0x5f40);
+	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP1)] = ConfigTDP[0].Ratio;
 
-	ConfigTDP.value = readq(mchmap + 0x5f48);
-	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+	ConfigTDP[1].value = readq(mchmap + 0x5f48);
+	PUBLIC(RO(Core, AT(local)))->Boost[BOOST(TDP2)] = ConfigTDP[1].Ratio;
 
 	ControlTDP.value = readl(mchmap + 0x5f50);
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
@@ -3699,6 +3847,32 @@ void Query_Turbo_TDP_Config(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
 
 	put_cpu();	/* TODO(preempt_enable) */
+
+    switch (PUBLIC(RO(Proc))->Features.TDP_Cfg_Level) {
+    case 2:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[1].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[1].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[1].MaxPower;
+	break;
+    case 1:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[0].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[0].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[0].MaxPower;
+	break;
+    case 0:
+	/*TODO(Unknown CSR for Nominal {Pkg, Min, Max} Power settings ?) */
+	break;
+    }
 
 	PUBLIC(RO(Proc))->Features.TDP_Levels = 3;
 
@@ -3829,7 +4003,6 @@ void Query_SKL_IMC(void __iomem *mchmap)
 	PUBLIC(RO(Proc))->Uncore.MC[0].Channel[cha].SKL.Refresh.value = \
 					readl(mchmap + 0x423c + 0x400 * cha);
     }
-
 	Query_Turbo_TDP_Config(mchmap);
 }
 
@@ -4275,7 +4448,7 @@ void SoC_SKL_VTD(void)
   }
 }
 
-static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
+static PCI_CALLBACK SKL_HOST(struct pci_dev *dev, void (*Query)(void __iomem*))
 {
 	pci_read_config_dword(dev, 0xe4,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_A.value);
@@ -4286,12 +4459,16 @@ static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0xec,
 				&PUBLIC(RO(Proc))->Uncore.Bus.SKL_Cap_C.value);
 
-	if (PUBLIC(RO(Proc))->Registration.Experimental)
-	{
-		SoC_SKL_VTD();
-	}
-	return (Router(dev, 0x48, 64, 0x8000, Query_SKL_IMC));
+	SoC_SKL_VTD();
+
+	return (Router(dev, 0x48, 64, 0x8000, Query));
 }
+
+static PCI_CALLBACK SKL_IMC(struct pci_dev *dev)
+{
+	return (SKL_HOST(dev, Query_SKL_IMC));
+}
+
 /* TODO(Hardware missing)
 static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 {
@@ -4313,6 +4490,7 @@ static PCI_CALLBACK SKL_SA(struct pci_dev *dev)
 	return (0);
 }
 */
+
 static PCI_CALLBACK AMD_0Fh_MCH(struct pci_dev *dev)
 {	/* Source: BKDG for AMD NPT Family 0Fh Processors.		*/
 	unsigned short cha, slot, chip;
@@ -4586,6 +4764,16 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 			UMC_BAR[cha] + 0x260,
 			SMU_AMD_INDEX_REGISTER_F17H,
 			SMU_AMD_DATA_REGISTER_F17H );
+
+    Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS,
+			UMC_BAR[cha] + 0x58,
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
+
+  Core_AMD_SMN_Read(PUBLIC(RO(Proc))->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT,
+			UMC_BAR[cha] + 0xd0,
+			SMU_AMD_INDEX_REGISTER_F17H,
+			SMU_AMD_DATA_REGISTER_F17H );
     }
   }
 	PUBLIC(RO(Proc))->Uncore.Boost[UNCORE_BOOST(MAX)] = \
@@ -4666,7 +4854,7 @@ void Query_Core2(unsigned int cpu)
 	HyperThreading_Technology();
 }
 
-void Query_Silvermont(unsigned int cpu)
+void Query_Silvermont(unsigned int cpu) /* Tables 2-6, 2-7, 2-8(BT), 2-9(BT) */
 {	/*	Query the Min and Max frequency ratios			*/
 	PLATFORM_INFO PfInfo = {.value = 0};
 	RDMSR(PfInfo, MSR_PLATFORM_INFO);
@@ -4685,18 +4873,50 @@ void Query_Silvermont(unsigned int cpu)
 	HyperThreading_Technology();
 	/*	The architecture is gifted of Power and Energy registers */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_RAPL_POWER_UNIT);
-	Intel_PackagePowerLimit();
 }
 
-void Query_Goldmont(unsigned int cpu)
+void Query_Goldmont(unsigned int cpu)	/* Tables 2-6, 2-12		*/
+{
+	PLATFORM_INFO PfInfo = {.value = 0};
+	RDMSR(PfInfo, MSR_PLATFORM_INFO);
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MIN)] = PfInfo.MinimumRatio;
+	PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)] = PfInfo.MaxNonTurboRatio;
+	PUBLIC(RO(Proc))->Features.SpecTurboRatio=PUBLIC(RO(Proc))->CPU.Count;
+	if ((PRIVATE(OF(Specific)) = LookupProcessor()) != NULL)
+	{
+		OverrideCodeNameString(PRIVATE(OF(Specific)));
+		OverrideUnlockCapability(PRIVATE(OF(Specific)));
+	}
+	Default_Unlock_Reset();
+
+	HyperThreading_Technology();
+	Intel_PowerInterface();
+}
+
+void Query_Airmont(unsigned int cpu)	/* Tables 2-6, 2-7, 2-8, 2-11	*/
 {
 	Query_Silvermont(cpu);
 }
 
-void Query_Nehalem(unsigned int cpu)
+void Query_Nehalem(unsigned int cpu)	/* Table 2-15			*/
 {
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
+}
+
+void Query_Nehalem_EX(unsigned int cpu) /* Tables 2-15, 2-17		*/
+{
+	Query_Same_Genuine_Features();
+	Intel_Core_Platform_Info(cpu);
+	HyperThreading_Technology();
+}
+
+void Query_Avoton(unsigned int cpu)	/* Table 2-10			*/
+{
+	Nehalem_Platform_Info(cpu);
+	HyperThreading_Technology();
+
+	Intel_PowerInterface();
 }
 
 void Query_SandyBridge(unsigned int cpu)
@@ -4704,8 +4924,12 @@ void Query_SandyBridge(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_PowerInterface();
+}
+
+void Query_SandyBridge_EP(unsigned int cpu)
+{
+	Query_SandyBridge(cpu);
 }
 
 void Query_IvyBridge(unsigned int cpu)
@@ -4713,8 +4937,7 @@ void Query_IvyBridge(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_PowerInterface();
 }
 
 void Query_IvyBridge_EP(unsigned int cpu)
@@ -4722,8 +4945,7 @@ void Query_IvyBridge_EP(unsigned int cpu)
 	IvyBridge_EP_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_PowerInterface();
 }
 
 void Query_Haswell(unsigned int cpu)
@@ -4735,8 +4957,7 @@ void Query_Haswell(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	SandyBridge_Uncore_Ratio(cpu);
-	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_PowerInterface();
 }
 
 void Query_Haswell_EP(unsigned int cpu)
@@ -4748,8 +4969,7 @@ void Query_Haswell_EP(unsigned int cpu)
 	Haswell_EP_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
-	Intel_PackagePowerLimit();
+	Intel_PowerInterface();
 }
 
 void Query_Haswell_ULT(unsigned int cpu)
@@ -4771,23 +4991,28 @@ void Query_Broadwell(unsigned int cpu)
 	Nehalem_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
+	Intel_PowerInterface();
 	Intel_Hardware_Performance();
-	Intel_PackagePowerLimit();
-}
-
-void Query_Skylake(unsigned int cpu)
-{
-	Query_Broadwell(cpu);
-
-	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
-	Intel_RaceToHalt();
 }
 
 void Query_Broadwell_EP(unsigned int cpu)
 {
 	Query_Haswell_EP(cpu);
 	Intel_Hardware_Performance();
+}
+
+void Query_Skylake(unsigned int cpu)
+{
+	Query_Broadwell(cpu);
+
+	PUBLIC(RO(Proc))->Features.EEO_Capable = 1;
+	PUBLIC(RO(Proc))->Features.R2H_Capable = 1;
+	Skylake_PowerControl();
+}
+
+void Query_Kaby_Lake(unsigned int cpu)
+{
+	Query_Skylake(cpu);
 }
 
 void Query_Skylake_X(unsigned int cpu)
@@ -4799,7 +5024,7 @@ void Query_Skylake_X(unsigned int cpu)
 	Skylake_X_Platform_Info(cpu);
 	HyperThreading_Technology();
 	Haswell_Uncore_Ratio(NULL);
-	SandyBridge_PowerInterface();
+	Intel_PowerInterface();
 	Intel_Hardware_Performance();
 }
 
@@ -5305,6 +5530,7 @@ bool Compute_AMD_Zen_Boost(unsigned int cpu)
 	case AMD_Zen3_CZN:
 	case AMD_Zen3_VMR:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 		Core_AMD_SMN_Read(XtraCOF,
 				SMU_AMD_F17H_MATISSE_COF,
 				SMU_AMD_INDEX_REGISTER_F17H,
@@ -5452,7 +5678,7 @@ static void BaseClock_AMD_Zen_PerCore(void *arg)
 {
 	CLOCK_ZEN_ARG *pClockZen = (CLOCK_ZEN_ARG *) arg;
 	PSTATEDEF PstateDef = {.value = 0};
-	COMPUTE_ARG Compute = {	.TSC = { NULL, NULL } };
+	COMPUTE_ARG Compute = { .TSC = { NULL, NULL } };
 
 	Compute.TSC[0] = kmalloc(STRUCT_SIZE, GFP_KERNEL);
     if (Compute.TSC[0] == NULL) {
@@ -5544,7 +5770,7 @@ long For_All_AMD_Zen_BaseClock(CLOCK_ZEN_ARG *pClockZen, void (*PerCore)(void*))
 	PUBLIC(RO(Proc))->Features.Factory.Freq = 0;
 
 	FixMissingRatioAndFrequency(PUBLIC(RO(Core,AT(cpu)))->Boost[BOOST(MAX)],
-					 &PUBLIC(RO(Core, AT(cpu)))->Clock);
+					&PUBLIC(RO(Core, AT(cpu)))->Clock);
 
 	loops_per_jiffy = cpu_data(cpu).loops_per_jiffy;
 
@@ -5656,6 +5882,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen2_CPK:
 	case AMD_Zen2_APU:
 	case AMD_Zen2_MTS:
+	case AMD_Zen2_Xbox:
 	case AMD_Family_19h:
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
@@ -6531,38 +6758,87 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	Core->Query.IORedir = 0;
 }
 
-void Intel_Turbo_TDP_Config(CORE_RO *Core)
+void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
 {
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
-	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
-	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
-	CONFIG_TDP_LEVEL ConfigTDP;
 
 	RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+
+    if (!TurboActivation.Ratio_Lock && (Turbo_Activation_Ratio >= 0)
+     && (Turbo_Activation_Ratio != TurboActivation.MaxRatio))
+    {
+	const short MaxRatio = \
+	MAXCLOCK_TO_RATIO(short, PUBLIC(RO(Core, AT(Core->Bind))->Clock.Hz));
+
+	if (Turbo_Activation_Ratio <=  MaxRatio)
+	{
+		TurboActivation.MaxRatio = Turbo_Activation_Ratio;
+		WRMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+		RDMSR(TurboActivation, MSR_TURBO_ACTIVATION_RATIO);
+	}
+    }
 	Core->Boost[BOOST(ACT)] = TurboActivation.MaxRatio;
 
     if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
     {
 	PUBLIC(RO(Proc))->Features.TurboActiv_Lock = TurboActivation.Ratio_Lock;
     }
+}
+
+void Intel_Turbo_TDP_Config(CORE_RO *Core)
+{
+	CONFIG_TDP_NOMINAL NominalTDP = {.value = 0};
+	CONFIG_TDP_CONTROL ControlTDP = {.value = 0};
+	CONFIG_TDP_LEVEL ConfigTDP[2] = {{.value = 0}, {.value = 0}};
 
 	RDMSR(NominalTDP, MSR_CONFIG_TDP_NOMINAL);
 	Core->Boost[BOOST(TDP)] = NominalTDP.Ratio;
 
-	ConfigTDP.value = 0;
-	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_2);
-	Core->Boost[BOOST(TDP2)] = ConfigTDP.Ratio;
+	RDMSR(ConfigTDP[1], MSR_CONFIG_TDP_LEVEL_2);
+	Core->Boost[BOOST(TDP2)] = ConfigTDP[1].Ratio;
 
-	ConfigTDP.value = 0;
-	RDMSR(ConfigTDP, MSR_CONFIG_TDP_LEVEL_1);
-	Core->Boost[BOOST(TDP1)] = ConfigTDP.Ratio;
+	RDMSR(ConfigTDP[0], MSR_CONFIG_TDP_LEVEL_1);
+	Core->Boost[BOOST(TDP1)] = ConfigTDP[0].Ratio;
 
-    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-    {
+  if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+  {
 	RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+
+	if ((ControlTDP.Lock == 0) && (Config_TDP_Level >= 0))
+	{
+		ControlTDP.Level = Config_TDP_Level;
+		WRMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+		RDMSR(ControlTDP, MSR_CONFIG_TDP_CONTROL);
+	}
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Lock  = ControlTDP.Lock;
 	PUBLIC(RO(Proc))->Features.TDP_Cfg_Level = ControlTDP.Level;
+
+    switch (PUBLIC(RO(Proc))->Features.TDP_Cfg_Level) {
+    case 2:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[1].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[1].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[1].MaxPower;
+	break;
+    case 1:
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.ThermalSpecPower = \
+							ConfigTDP[0].PkgPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MinimumPower = \
+							ConfigTDP[0].MinPower;
+
+	PUBLIC(RO(Proc))->PowerThermal.PowerInfo.MaximumPower = \
+							ConfigTDP[0].MaxPower;
+	break;
+    case 0:
+	/*			MSR_PKG_POWER_INFO			*/
+	break;
     }
+  }
 }
 
 void Query_Intel_C1E(CORE_RO *Core)				/*Per Package*/
@@ -8219,6 +8495,25 @@ static void PerCore_Silvermont_Query(void *arg)
 	PowerThermal(Core);				/* Shared | Unique */
 
 	ThermalMonitor_Set(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-8 */
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+	}
+}
+
+static void PerCore_Airmont_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Silvermont_Query(arg);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,	/* Table 2-11 */
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+	}
 }
 
 static void PerCore_Goldmont_Query(void *arg)
@@ -8263,6 +8558,18 @@ static void PerCore_Goldmont_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	Intel_Turbo_Activation_Ratio(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-12 */
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,	/* Table 2-12 */
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(RAM) );
+	}
 }
 
 static void PerCore_Nehalem_Same_Query(void *arg)
@@ -8313,6 +8620,10 @@ static void PerCore_Nehalem_Query(void *arg)
 	Intel_Platform_Info(Core->Bind);
 	Intel_Turbo_Config(Core, Intel_Turbo_Cfg8C_PerCore, Assign_8C_Boost);
 	PerCore_Nehalem_Same_Query(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Nehalem_PowerLimit();		/* Table 2-15	*/
+	}
 }
 
 static void PerCore_Nehalem_EX_Query(void *arg)
@@ -8322,6 +8633,21 @@ static void PerCore_Nehalem_EX_Query(void *arg)
 	Intel_Platform_Info(Core->Bind);
 	Intel_Core_Platform_Info(Core->Bind);
 	PerCore_Nehalem_Same_Query(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Nehalem_PowerLimit();		/* Table 2-15	*/
+	}
+}
+
+static void PerCore_Avoton_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-10 */
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+	}
 }
 
 static void PerCore_SandyBridge_Query(void *arg)
@@ -8366,16 +8692,35 @@ static void PerCore_SandyBridge_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+	}
 }
 
 static void PerCore_SandyBridge_EP_Query(void *arg)
 {
+	CORE_RO *Core = (CORE_RO *) arg;
+
 	PerCore_SandyBridge_Query(arg);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(RAM) );
+	}
 }
 
 static void PerCore_IvyBridge_Query(void *arg)
 {
 	PerCore_SandyBridge_Query(arg);
+	Intel_Turbo_Activation_Ratio( (CORE_RO*) arg );
 	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
 }
 
@@ -8390,8 +8735,17 @@ static void PerCore_IvyBridge_EP_Query(void *arg)
 
 static void PerCore_Haswell_Query(void *arg)
 {
+	CORE_RO *Core = (CORE_RO *) arg;
+
 	PerCore_SandyBridge_Query(arg);
-	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+	Intel_Turbo_Activation_Ratio(Core);
+	Intel_Turbo_TDP_Config(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(UNCORE) );
+	}
 }
 
 static void PerCore_Haswell_EP_Query(void *arg)
@@ -8447,7 +8801,22 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	ThermalMonitor_Set(Core);
 
+	Intel_Turbo_Activation_Ratio(Core);
 	Intel_Turbo_TDP_Config(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+
+		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(RAM) );
+	}
 }
 
 static void PerCore_Haswell_ULT_Query(void *arg)
@@ -8492,6 +8861,20 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+
+		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(UNCORE) );
+	}
 }
 
 static void PerCore_Haswell_ULX(void *arg)
@@ -8501,8 +8884,17 @@ static void PerCore_Haswell_ULX(void *arg)
 
 static void PerCore_Broadwell_Query(void *arg)
 {
+	CORE_RO *Core = (CORE_RO *) arg;
+
 	PerCore_SandyBridge_Query(arg);
-	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+	Intel_Turbo_Activation_Ratio(Core);
+	Intel_Turbo_TDP_Config(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(UNCORE) );
+	}
 }
 
 static void PerCore_Skylake_Query(void *arg)
@@ -8547,16 +8939,57 @@ static void PerCore_Skylake_Query(void *arg)
 	PowerThermal(Core);
 
 	ThermalMonitor_Set(Core);
+
+	Intel_Turbo_Activation_Ratio(Core);
+	Intel_Turbo_TDP_Config(Core);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PKG) );
+
+		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(CORES) );
+
+		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(UNCORE) );
+
+		Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
+					PKG_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(PLATFORM) );
+	}
 }
 
 static void PerCore_Skylake_X_Query(void *arg)
 {
-	Intel_Turbo_Config(	(CORE_RO*) arg,
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	Intel_Turbo_Config(	Core,
 				Intel_Turbo_Cfg_SKL_X_PerCore,
 				Assign_SKL_X_Boost );
 
 	PerCore_Skylake_Query(arg);
-	Intel_Turbo_TDP_Config( (CORE_RO*) arg );
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(RAM) );
+	}
+}
+
+static void PerCore_Kaby_Lake_Query(void *arg)
+{
+	CORE_RO *Core = (CORE_RO *) arg;
+
+	PerCore_Skylake_Query(arg);
+
+	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
+		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
+					PPn_POWER_LIMIT_LOCK_MASK,
+					PWR_DOMAIN(RAM) );
+	}
 }
 
 static void PerCore_AMD_Family_0Fh_Query(void *arg)
@@ -12948,7 +13381,7 @@ inline void SoC_RAPL(AMD_17_SVI SVI, const unsigned long long factor)
 	ACCU = ACCU << PUBLIC(RO(Proc))->PowerThermal.Unit.ESU;
 	ACCU = ACCU / (100000LLU * 1000000LLU);
 	ACCU = (PUBLIC(RO(Proc))->SleepInterval * ACCU) / 1000LLU;
-	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(PLATFORM)] = ACCU;
+	PUBLIC(RW(Proc))->Delta.Power.ACCU[PWR_DOMAIN(UNCORE)] = ACCU;
 }
 
 void Call_SVI(	const unsigned int plane0, const unsigned int plane1,
@@ -14921,6 +15354,14 @@ static void For_All_CPU_Compute_Clock(void)
 	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
 })
 
+#define RESET_ARRAY(_array, _cnt, _val) 				\
+({									\
+	unsigned int rst;						\
+	for (rst = 0; rst < _cnt; rst++) {				\
+		_array[rst] = _val;					\
+	}								\
+})
+
 static long CoreFreqK_ioctl(	struct file *filp,
 				unsigned int cmd,
 				unsigned long arg )
@@ -15406,15 +15847,84 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 		break;
 
+	case TECHNOLOGY_EEO:
+	    if (PUBLIC(RO(Proc))->Features.EEO_Capable)
+	    {
+		EEO_Disable = prm.dl.lo;
+		Skylake_PowerControl();
+		EEO_Disable = -1;
+		rc = RC_SUCCESS;
+	    } else {
+		rc = -ENXIO;
+	    }
+		break;
+
 	case TECHNOLOGY_R2H:
 	    if (PUBLIC(RO(Proc))->Features.R2H_Capable)
 	    {
 		R2H_Disable = prm.dl.lo;
-		Intel_RaceToHalt();
+		Skylake_PowerControl();
 		R2H_Disable = -1;
 		rc = RC_SUCCESS;
 	    } else {
 		rc = -ENXIO;
+	    }
+		break;
+
+	case TECHNOLOGY_CFG_TDP_LVL:
+		Controller_Stop(1);
+		Config_TDP_Level = prm.dl.lo;
+		Controller_Start(1);
+		Config_TDP_Level = -1;
+		rc = RC_SUCCESS;
+		break;
+
+	case TECHNOLOGY_TDP_LIMIT:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			Activate_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
+			Activate_TDP_Limit[idx] = prm.dl.lo;
+
+			Controller_Start(1);
+			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
+			Activate_TDP_Count = 0;
+			rc = RC_SUCCESS;
+			break;
+		}
+	      }
+	    }
+		break;
+
+	case TECHNOLOGY_TDP_OFFSET:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+		/* Offset is capped within [ -127 , +128 ] watt */
+		const signed short offset = (signed char) prm.dl.lo;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		Controller_Stop(1);
+		Custom_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+		RESET_ARRAY(Custom_TDP_Offset, Custom_TDP_Count, 0);
+		Custom_TDP_Offset[idx] = offset;
+
+		Controller_Start(1);
+		RESET_ARRAY(Custom_TDP_Offset, Custom_TDP_Count, 0);
+		Custom_TDP_Offset[idx] = 0;
+		rc = RC_SUCCESS;
+	      }
 	    }
 		break;
 	}
@@ -15496,6 +16006,26 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	#endif /* CONFIG_CPU_FREQ */
 	} else {
 		rc = -RC_UNIMPLEMENTED;
+	}
+	break;
+
+    case COREFREQ_IOCTL_CONFIG_TDP: {
+		CLOCK_ARG clockMod = {.sllong = arg};
+		const short MaxRatio = MAXCLOCK_TO_RATIO(short, \
+		PUBLIC(RO(Core,AT(PUBLIC(RO(Proc))->Service.Core))->Clock.Hz));
+
+		switch (clockMod.NC) {
+		case CLOCK_MOD_ACT:
+			if ((clockMod.Ratio >= 0)&&(clockMod.Ratio <= MaxRatio))
+			{
+				Controller_Stop(1);
+				Turbo_Activation_Ratio = clockMod.Ratio;
+				Controller_Start(1);
+				Turbo_Activation_Ratio = -1;
+				rc = RC_OK_COMPUTE;
+			}
+			break;
+		}
 	}
 	break;
 

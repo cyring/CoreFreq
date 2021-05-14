@@ -907,4 +907,3 @@ extern __typeof__ (errno) LoadGeometries(char*) ;
 #else
   #define UI_Draw_uBenchmark(layer) {}
 #endif /* UBENCH */
-

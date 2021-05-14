@@ -553,6 +553,10 @@ typedef struct
 				AMD_17_UMC_TIMING_DTR12 DTR12;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR54 DTR54;	/* 32 bits   */
 				AMD_17_UMC_TIMING_DTR60 DTR60;	/* 32 bits   */
+			    struct {
+				unsigned int value;		/* 32 bits   */
+			    }				BGS,
+							BGS_ALT;
 			} AMD17h;
 		};
 		union {
@@ -797,14 +801,18 @@ typedef struct
 		RAPL_POWER_UNIT Unit;
 	  union {
 	    struct {
-		PKG_POWER_INFO	PowerInfo;
-		PKG_POWER_LIMIT PowerLimit;
+/*32-bits*/	unsigned int		_rsv32;
+/*16-bits*/	unsigned short		EDC;
+/*16-bits*/	unsigned short		TDC;
+/*64-bits*/	DOMAIN_POWER_INFO	PowerInfo;
+/*64-bits*/	DOMAIN_POWER_LIMIT	PowerLimit[PWR_DOMAIN(SIZE)];
 	    };
 	    struct {
-		AMD_17_MTS_CPK_PWR	PWR;
-		AMD_17_MTS_CPK_TDP	TDP;
-		AMD_17_MTS_CPK_EDC	EDC;
-		unsigned int		_pad32;
+/*32-bits*/	AMD_17_MTS_CPK_PWR	PWR;
+/*32-bits*/	AMD_17_MTS_CPK_TDP	TDP;
+/*32-bits*/	AMD_17_MTS_CPK_EDC	EDC;
+/*32-bits*/	unsigned int		_pad32;
+/*64-bits*/	unsigned long long	_pad64[PWR_DOMAIN(SIZE)];
 	    } Zen;
 	  };
 	} PowerThermal;
@@ -1501,4 +1509,3 @@ typedef struct
 #ifndef PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3
 	#define PCI_DEVICE_ID_AMD_19H_VERMEER_DF_F3	0x1653	/* Vermeer */
 #endif
-

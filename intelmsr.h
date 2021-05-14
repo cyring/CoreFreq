@@ -76,6 +76,10 @@
 	#define MSR_TURBO_RATIO_LIMIT3		0x000001ac
 #endif
 
+#ifndef MSR_TURBO_POWER_CURRENT_LIMIT
+	#define MSR_TURBO_POWER_CURRENT_LIMIT	0x000001ac
+#endif
+
 #ifndef MSR_IA32_POWER_CTL
 	#define MSR_IA32_POWER_CTL		0x000001fc
 #endif
@@ -163,6 +167,10 @@
 	#define MSR_PKG_POWER_INFO		0x00000614
 #endif
 
+#ifndef MSR_DRAM_POWER_LIMIT
+	#define MSR_DRAM_POWER_LIMIT		0x00000618
+#endif
+
 #ifndef MSR_DRAM_ENERGY_STATUS
 	#define MSR_DRAM_ENERGY_STATUS		0x00000619
 #endif
@@ -187,8 +195,16 @@
 	#define MSR_PP0_PERF_STATUS		0x0000063b
 #endif
 
+#ifndef MSR_PP1_POWER_LIMIT
+	#define MSR_PP1_POWER_LIMIT		0x00000640
+#endif
+
 #ifndef MSR_PP1_ENERGY_STATUS
 	#define MSR_PP1_ENERGY_STATUS		0x00000641
+#endif
+
+#ifndef MSR_PLATFORM_POWER_LIMIT
+	#define MSR_PLATFORM_POWER_LIMIT	0x0000065c
 #endif
 
 #ifndef MSR_PLATFORM_ENERGY_STATUS
@@ -750,7 +766,7 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Power		: 15-0,
+		PkgPower	: 15-0,
 		ReservedBits1	: 16-15,
 		Ratio		: 24-16,
 		ReservedBits2	: 32-24,
@@ -764,7 +780,7 @@ typedef union
 {
 	unsigned long long	value;
 	struct
-	{
+	{	/* 0:Default; 1:TDP_LEVEL_1; 2:TDP_LEVEL_2; 3:reserved	*/
 		unsigned int
 		Level		:  2-0,
 		ReservedBits	: 31-2,
@@ -865,8 +881,8 @@ typedef union
 		ReservedBits1	:  1-0,
 		C1E		:  2-1,
 		ReservedBits2	: 19-2,
-		R2H_Disable	: 20-19, /*SKL,KBL,CFL:Race To Halt Disable=1*/
-		Energy_Optim	: 21-20, /* SKL, KBL, CFL: Disable=1	*/
+		R2H_Disable	: 20-19, /* SKL,KBL,CFL:Race To Halt Disable=1*/
+		EEO_Disable	: 21-20, /* SKL,KBL,CFL: Energy opt. Disable=1*/
 		ReservedBits3	: 25-21,
 		EBP_OS_Control	: 26-25, /* SNB: 0=EBP controlled by OS */
 		ReservedBits4	: 64-26;
@@ -1378,6 +1394,20 @@ typedef union
 } UNCORE_PMON_GLOBAL_CONTROL;
 
 typedef union
+{	/* MSR_TURBO_POWER_CURRENT_LIMIT(0x1ac):R/W, Package		*/
+	unsigned long long	value;
+	struct
+	{
+		unsigned long long
+		TDP_Limit	: 15-0,  /* limit in 1/8 Watt granularity */
+		TDP_Override	: 16-15, /* 1=override is active	*/
+		TDC_Limit	: 31-16, /* limit in 1/8 Amp granularity */
+		TDC_Override	: 32-31,
+		ReservedBits	: 64-32;
+	};
+} NEHALEM_POWER_LIMIT;
+
+typedef union
 {
 	unsigned long long	value;
 	struct {
@@ -1406,7 +1436,7 @@ typedef union
 		MaxTimeWindow	: 55-48,
 		ReservedBits4	: 64-55;
 	};
-} PKG_POWER_INFO;
+} DOMAIN_POWER_INFO;
 
 typedef union
 { /* MSR_PKG_POWER_LIMIT(0x610):R/W & MSR_PLATFORM_POWER_LIMIT(0x65c):R/W-L */
@@ -1414,20 +1444,34 @@ typedef union
 	struct
 	{
 		unsigned long long
-		Power_Limit1	: 15-0,
+		Domain_Limit1	: 15-0,  /* Atom: 06_37H/06_4AH/06_5AH/06_5DH */
 		Enable_Limit1	: 16-15,
-		PowerClamping1	: 17-16,
-		PowerTimeWindow1: 24-17,
-		ReservedBits1	: 32-24,
-		Power_Limit2	: 47-32,
+		Clamping1	: 17-16,
+		TimeWindow1	: 24-17,
+		ReservedBits1	: 31-24,
+		PPn_LOCK	: 32-31, /* PP0/PP1/DRAM Domains	*/
+		Domain_Limit2	: 47-32, /* 06_2AH/06_4DH/06_57H/06_5CH/06_85H*/
 		Enable_Limit2	: 48-47,
-		PowerClamping2	: 49-48,
-		Unknown_Compute1: 54-49,
-		Unknown_Compute2: 57-54,
-		ReservedBits2	: 63-57,
-		Register_Lock	: 64-63;
+		Clamping2	: 49-48,
+		TimeWindow2	: 56-49,
+		ReservedBits2	: 63-56,
+		PKG_LOCK	: 64-63; /* Package/Platform Domains	*/
 	};
-} PKG_POWER_LIMIT;
+	struct
+	{
+		unsigned long long
+		MaskBits1	: 17-0,
+		TimeWindow1_Y	: 22-17,
+		TimeWindow1_Z	: 24-22,
+		MaskBits2	: 49-24,
+		TimeWindow2_Y	: 54-49,
+		TimeWindow2_Z	: 56-54,
+		MaskBits3	: 64-56;
+	};
+} DOMAIN_POWER_LIMIT;
+
+#define PKG_POWER_LIMIT_LOCK_MASK	0x8000000000000000
+#define PPn_POWER_LIMIT_LOCK_MASK	0x0000000080000000
 
 /* TODO
 typedef struct
@@ -3044,4 +3088,3 @@ typedef union
 		ReservedBits2	: 32-20;
 	};
 } SKL_CAPID_C;	/* §3.41 CAPID0_C Capabilities C Register		*/
-

@@ -670,8 +670,8 @@ typedef struct
 	PROC_RW 		*Proc_RW;
 	SYSGATE_RO		*Gate;
 	struct kmem_cache	*Cache;
-	CORE_RO			**Core_RO;
-	CORE_RW			**Core_RW;
+	CORE_RO 		**Core_RO;
+	CORE_RW 		**Core_RW;
 } KPUBLIC;
 
 enum { CREATED, STARTED, MUSTFWD };
@@ -962,6 +962,9 @@ static void Start_Goldmont(void *arg) ;
 static void Stop_Goldmont(void *arg) ;
 extern void InitTimer_Goldmont(unsigned int cpu) ;
 
+extern void Query_Airmont(unsigned int cpu) ;
+static void PerCore_Airmont_Query(void *arg) ;
+
 extern void Query_Nehalem(unsigned int cpu) ;
 static void PerCore_Nehalem_Query(void *arg) ;
 static void PerCore_Nehalem_EX_Query(void *arg) ;
@@ -971,6 +974,11 @@ extern void InitTimer_Nehalem(unsigned int cpu) ;
 static void Start_Uncore_Nehalem(void *arg) ;
 static void Stop_Uncore_Nehalem(void *arg) ;
 
+extern void Query_Nehalem_EX(unsigned int cpu) ;
+
+extern void Query_Avoton(unsigned int cpu) ;
+static void PerCore_Avoton_Query(void *arg) ;
+
 extern void Query_SandyBridge(unsigned int cpu) ;
 static void PerCore_SandyBridge_Query(void *arg) ;
 static void Start_SandyBridge(void *arg) ;
@@ -979,6 +987,7 @@ extern void InitTimer_SandyBridge(unsigned int cpu) ;
 static void Start_Uncore_SandyBridge(void *arg) ;
 static void Stop_Uncore_SandyBridge(void *arg) ;
 
+extern void Query_SandyBridge_EP(unsigned int cpu) ;
 static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
@@ -1038,6 +1047,9 @@ static void Stop_Skylake_X(void *arg) ;
 extern void InitTimer_Skylake_X(unsigned int cpu) ;
 static void Start_Uncore_Skylake_X(void *arg) ;
 static void Stop_Uncore_Skylake_X(void *arg) ;
+
+extern void Query_Kaby_Lake(unsigned int cpu) ;
+static void PerCore_Kaby_Lake_Query(void *arg) ;
 
 extern void Query_AMD_Family_0Fh(unsigned int cpu) ;
 static void PerCore_AMD_Family_0Fh_Query(void *arg) ;
@@ -1113,7 +1125,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Core]		06_0Eh (32 bits)				*/
 #define _Core_Yonah	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xE}
 
-/*	[Core2]		06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh		*/
+/*	[Core2] 	06_0Fh, 06_15h, 06_16h, 06_17h, 06_1Dh		*/
 #define _Core_Conroe	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x0, .Model=0xF}
 #define _Core_Kentsfield \
 			{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x1, .Model=0x5}
@@ -1143,7 +1155,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _Atom_Airmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x4, .Model=0xC}
 /*	[Goldmont]	06_5Ch						*/
 #define _Atom_Goldmont	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xC}
-/*	[SoFIA]		06_5Dh						*/
+/*	[SoFIA] 	06_5Dh						*/
 #define _Atom_Sofia	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0x5, .Model=0xD}
 /*	[Merrifield]	06_4Ah						*/
 #define _Atom_Merrifield \
@@ -1251,7 +1263,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 /*	[Comet Lake]	06_A5
 	[Comet Lake/UL]	06_A6
 	[Rocket Lake]	06_A7
-	[Rocket Lake/U]	06_A8						*/
+	[Rocket Lake/U] 06_A8						*/
 #define _Cometlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x5}
 #define _Cometlake_UY	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x6}
 #define _Rocketlake	{.ExtFamily=0x0, .Family=0x6, .ExtModel=0xA, .Model=0x7}
@@ -1290,13 +1302,14 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 	[Zen+ Pinnacle Ridge] 	8F_08h Stepping 2	12 nm
 	[Zen+ Colfax]		8F_08h Stepping 2	12 nm	HEDT
 	[Zen/Raven Ridge]	8F_11h Stepping 0	14 nm	APU
-	[Zen/Snowy Owl]		8F_11h Stepping 0	14 nm	SOC
+	[Zen/Snowy Owl] 		8F_11h Stepping 0	14 nm	SOC
 	[Zen+ Picasso]		8F_18h Stepping 1	12 nm	APU
 	[Zen/Dali]		8F_20h Stepping 1	14 nm	APU/Raven2
 	[EPYC/Rome]		8F_30h Stepping 0	 7 nm	SVR
 	[Zen2/Castle Peak]	8F_31h Stepping 0	 7 nm	HEDT
 	[Zen2/Renoir]		8F_60h Stepping 1	 7 nm	APU
-	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm		*/
+	[Zen2/Matisse]		8F_71h Stepping 0	 7 nm
+	[Zen2/Xbox		8F_74h Stepping 0	 7 nm		*/
 #define _AMD_Zen	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x1}
 #define _AMD_Zen_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x1, .Model=0x1}
 #define _AMD_ZenPlus	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x8}
@@ -1306,6 +1319,7 @@ void (*Core_AMD_Family_17h_Temp)(CORE_RO*) = Core_AMD_F17h_No_Thermal;
 #define _AMD_Zen2_CPK	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x3, .Model=0x1}
 #define _AMD_Zen2_APU	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x6, .Model=0x0}
 #define _AMD_Zen2_MTS	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x1}
+#define _AMD_Zen2_Xbox	{.ExtFamily=0x8, .Family=0xF, .ExtModel=0x7, .Model=0x4}
 
 #define _AMD_Family_17h {.ExtFamily=0x8, .Family=0xF, .ExtModel=0x0, .Model=0x0}
 
@@ -5623,8 +5637,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Atom_Avoton] = {							/* 23*/
 	.Signature = _Atom_Avoton,
-	.Query = Query_Nehalem,
-	.Update = PerCore_Nehalem_Query,
+	.Query = Query_Avoton,
+	.Update = PerCore_Avoton_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
 	.Exit = NULL,
@@ -5648,8 +5662,8 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_Airmont] = {							/* 24*/
 	.Signature = _Atom_Airmont,
-	.Query = Query_Silvermont,
-	.Update = PerCore_Silvermont_Query,
+	.Query = Query_Airmont,
+	.Update = PerCore_Airmont_Query,
 	.Start = Start_Silvermont,
 	.Stop = Stop_Silvermont,
 	.Exit = NULL,
@@ -5686,8 +5700,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Haswell_ULT,
-		.Stop = Stop_Uncore_Haswell_ULT,
+		.Start = NULL,
+		.Stop = NULL,
 		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
@@ -5787,7 +5801,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5818,7 +5832,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5849,7 +5863,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5862,7 +5876,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Nehalem_EX] = {							/* 32*/
 	.Signature = _Nehalem_EX,
-	.Query = Query_Core2,
+	.Query = Query_Nehalem_EX,
 	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -5870,7 +5884,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Nehalem,
 	.ClockMod = ClockMod_Nehalem_PPC,
-	.TurboClock = NULL,
+	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
@@ -5880,7 +5894,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5912,7 +5926,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_DMI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5943,7 +5957,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Westmere_EP_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -5956,7 +5970,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Westmere_EX] = {							/* 35*/
 	.Signature = _Westmere_EX,
-	.Query = Query_Core2, /* Xeon processor 7500 series-based platform */
+	.Query = Query_Nehalem_EX, /* Xeon 7500 series-based platform	*/
 	.Update = PerCore_Nehalem_EX_Query,
 	.Start = Start_Nehalem,
 	.Stop = Stop_Nehalem,
@@ -5964,7 +5978,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Timer = InitTimer_Nehalem,
 	.BaseClock = BaseClock_Westmere,
 	.ClockMod = ClockMod_Nehalem_PPC,
-	.TurboClock = Intel_Turbo_Config8C,
+	.TurboClock = NULL, /* Attempt to read/write MSR 0x1ad will cause #UD */
 	.thermalFormula = THERMAL_FORMULA_INTEL,
 	.voltageFormula = VOLTAGE_FORMULA_NONE,
 #if defined(HWM_CHIPSET)
@@ -5974,7 +5988,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.voltageFormula = VOLTAGE_FORMULA_ITETECH_IO,
 #endif
 #endif
-	.powerFormula   = POWER_FORMULA_NONE,
+	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_Nehalem_QPI_ids,
 	.Uncore = {
 		.Start = Start_Uncore_Nehalem,
@@ -6012,7 +6026,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [SandyBridge_EP] = {							/* 37*/
 	.Signature = _SandyBridge_EP,
-	.Query = Query_SandyBridge,
+	.Query = Query_SandyBridge_EP,
 	.Update = PerCore_SandyBridge_EP_Query,
 	.Start = Start_SandyBridge_EP,
 	.Stop = Stop_SandyBridge_EP,
@@ -6353,7 +6367,7 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Xeon_Phi] = {								/* 51*/
 	.Signature = _Xeon_Phi,
-	.Query = Query_SandyBridge,
+	.Query = Query_SandyBridge_EP,
 	.Update = PerCore_SandyBridge_Query,
 	.Start = Start_SandyBridge,
 	.Stop = Stop_SandyBridge,
@@ -6378,8 +6392,8 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Kabylake] = {								/* 52*/
 	.Signature = _Kabylake,
-	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
+	.Query = Query_Kaby_Lake,
+	.Update = PerCore_Kaby_Lake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
 	.Exit = NULL,
@@ -6525,7 +6539,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_X] = {								/* 58*/
 	.Signature = _Icelake_X,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6549,7 +6563,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	},
 [Icelake_D] = {								/* 59*/
 	.Signature = _Icelake_D,
-	.Query = Query_Skylake,
+	.Query = Query_Kaby_Lake,
 	.Update = PerCore_Skylake_Query,
 	.Start = Start_Skylake,
 	.Stop = Stop_Skylake,
@@ -6697,47 +6711,47 @@ static ARCH Arch[ARCHITECTURES] = {
 
 [Atom_Denverton] = {							/* 65*/
 	.Signature = _Atom_Denverton,
-	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
-	.Start = Start_Skylake,
-	.Stop = Stop_Skylake,
+	.Query = Query_Goldmont,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Skylake,
+	.Timer = InitTimer_Goldmont,
 	.BaseClock = BaseClock_Skylake,
-	.ClockMod = ClockMod_Skylake_HWP,
+	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = Haswell_Uncore_Ratio
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
-	.SystemDriver = Intel_Driver,
+	.SystemDriver = SNB_Driver,
 	.Architecture = Arch_Atom_Denverton
 	},
 [Tremont_Jacobsville] = {						/* 66*/
 	.Signature = _Tremont_Jacobsville,
-	.Query = Query_Skylake,
-	.Update = PerCore_Skylake_Query,
-	.Start = Start_Skylake,
-	.Stop = Stop_Skylake,
+	.Query = Query_Goldmont,
+	.Update = PerCore_Goldmont_Query,
+	.Start = Start_Goldmont,
+	.Stop = Stop_Goldmont,
 	.Exit = NULL,
-	.Timer = InitTimer_Skylake,
+	.Timer = InitTimer_Goldmont,
 	.BaseClock = BaseClock_Skylake,
-	.ClockMod = ClockMod_Skylake_HWP,
+	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = Intel_Turbo_Config8C,
 	.thermalFormula = THERMAL_FORMULA_INTEL,
-	.voltageFormula = VOLTAGE_FORMULA_INTEL_SNB,
-	.powerFormula   = POWER_FORMULA_INTEL,
+	.voltageFormula = VOLTAGE_FORMULA_INTEL_SOC,
+	.powerFormula   = POWER_FORMULA_INTEL_ATOM,
 	.PCI_ids = PCI_Void_ids,
 	.Uncore = {
-		.Start = Start_Uncore_Skylake,
-		.Stop = Stop_Uncore_Skylake,
-		.ClockMod = Haswell_Uncore_Ratio
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
 		},
 	.Specific = Void_Specific,
 	.SystemDriver = Intel_Driver,
@@ -7105,7 +7119,31 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen2_MTS
 	},
-[AMD_Zen3_VMR] = {							/* 82*/
+[AMD_Zen2_Xbox] = {							/* 82*/
+	.Signature = _AMD_Zen2_Xbox,
+	.Query = Query_AMD_Family_17h,
+	.Update = PerCore_AMD_Family_17h_Query,
+	.Start = Start_AMD_Family_17h,
+	.Stop = Stop_AMD_Family_17h,
+	.Exit = NULL,
+	.Timer = InitTimer_AMD_F17h_Zen2_SP,
+	.BaseClock = BaseClock_AMD_Family_17h,
+	.ClockMod = ClockMod_AMD_Zen,
+	.TurboClock = TurboClock_AMD_Zen,
+	.thermalFormula = THERMAL_FORMULA_AMD_ZEN2,
+	.voltageFormula = VOLTAGE_FORMULA_AMD_17h,
+	.powerFormula   = POWER_FORMULA_AMD_17h,
+	.PCI_ids = PCI_Void_ids,
+	.Uncore = {
+		.Start = NULL,
+		.Stop = NULL,
+		.ClockMod = NULL
+		},
+	.Specific = AMD_Zen2_MTS_Specific,
+	.SystemDriver = AMD_Zen_Driver,
+	.Architecture = Arch_AMD_Zen2_MTS
+	},
+[AMD_Zen3_VMR] = {							/* 83*/
 	.Signature = _AMD_Zen3_VMR,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -7129,7 +7167,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_VMR
 	},
-[AMD_Zen3_CZN] = {							/* 83*/
+[AMD_Zen3_CZN] = {							/* 84*/
 	.Signature = _AMD_Zen3_CZN,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,
@@ -7153,7 +7191,7 @@ static ARCH Arch[ARCHITECTURES] = {
 	.SystemDriver = AMD_Zen_Driver,
 	.Architecture = Arch_AMD_Zen3_CZN
 	},
-[AMD_EPYC_Milan] = {							/* 84*/
+[AMD_EPYC_Milan] = {							/* 85*/
 	.Signature = _AMD_EPYC_Milan,
 	.Query = Query_AMD_Family_19h,
 	.Update = PerCore_AMD_Family_19h_Query,

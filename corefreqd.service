@@ -14,4 +14,3 @@ SuccessExitStatus=SIGQUIT SIGUSR1 SIGTERM
 
 [Install]
 WantedBy=multi-user.target
-

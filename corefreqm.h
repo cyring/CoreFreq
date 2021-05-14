@@ -68,4 +68,3 @@ void CallWith_RDTSC_No_RDPMC(	SHM_STRUCT*,
 #define CRC32_EXP	0x44f9d7bc
 
 #define CONIC_ERROR	1e-07
-

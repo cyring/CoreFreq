@@ -1361,7 +1361,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 
 void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
-	unsigned int PowerUnits = 0;
+	unsigned short pwrUnits = 0, pwrVal;
 
     switch (KIND_OF_FORMULA(Proc_RO->powerFormula)) {
     case POWER_KIND_INTEL:
@@ -1376,7 +1376,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 			1.0 / (double) (1 << Proc_RO->PowerThermal.Unit.TU)
 			: 1.0 / (double) (1 << 10);
 
-	PowerUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
+	pwrUnits = 2 << (Proc_RO->PowerThermal.Unit.PU - 1);
 	break;
     case POWER_KIND_INTEL_ATOM:
 	Shm->Proc.Power.Unit.Watts = Proc_RO->PowerThermal.Unit.PU > 0 ?
@@ -1410,21 +1410,53 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
-      if (PowerUnits != 0)
+	enum PWR_DOMAIN pw;
+    if (pwrUnits != 0)
+    {
+      for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
       {
-	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower
-			    / PowerUnits;
-      if (Shm->Proc.Power.TDP == 0) {
-	Shm->Proc.Power.TDP = Proc_RO->PowerThermal.PowerLimit.Power_Limit1
-			    / PowerUnits;
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit1;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit2;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping1;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping2;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit1 / pwrUnits;
+	Shm->Proc.Power.Domain[pw].PL1 = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit2 / pwrUnits;
+	Shm->Proc.Power.Domain[pw].PL2 = pwrVal;
       }
-	Shm->Proc.Power.Min = Proc_RO->PowerThermal.PowerInfo.MinimumPower
-			    / PowerUnits;
-	Shm->Proc.Power.Max = Proc_RO->PowerThermal.PowerInfo.MaximumPower
-			    / PowerUnits;
-	Shm->Proc.Power.PPT = Proc_RO->PowerThermal.PowerLimit.Power_Limit2
-			    / PowerUnits;
-      }
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.ThermalSpecPower / pwrUnits;
+	Shm->Proc.Power.TDP = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.MinimumPower / pwrUnits;
+	Shm->Proc.Power.Min = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerInfo.MaximumPower / pwrUnits;
+	Shm->Proc.Power.Max = pwrVal;
+    }
+    for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+    {
+	unsigned long long duration;
+
+	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Y);
+	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow1_Z);
+	duration = duration >> 2;
+	Shm->Proc.Power.Domain[pw].TW1 = Shm->Proc.Power.Unit.Times * duration;
+
+	duration = (1 << Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Y);
+	duration *= (4 + Proc_RO->PowerThermal.PowerLimit[pw].TimeWindow2_Z);
+	duration = duration >> 2;
+	Shm->Proc.Power.Domain[pw].TW2 = Shm->Proc.Power.Unit.Times * duration;
+    }
+	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.TDC;
   } else {
 	Shm->Proc.PowerNow = 0;
   }
@@ -4225,6 +4257,14 @@ void AMD_17h_UMC(SHM_STRUCT *Shm, PROC_RO *Proc)
 
 	Shm->Uncore.MC[mc].Channel[cha].Timing.GDM =
 		Proc->Uncore.MC[mc].Channel[cha].AMD17h.MISC.GearDownMode;
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS =
+		!((Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS.value
+		& AMD_17_UMC_BGS_MASK_OFF) == AMD_17_UMC_BGS_MASK_OFF);
+
+	Shm->Uncore.MC[mc].Channel[cha].Timing.BGS_ALT =
+		(Proc->Uncore.MC[mc].Channel[cha].AMD17h.BGS_ALT.value
+		& AMD_17_UMC_BGS_ALT_MASK_ON) == AMD_17_UMC_BGS_ALT_MASK_ON;
   }
  }
 }
@@ -4662,7 +4702,7 @@ void PCI_AMD(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core, unsigned short DID)
 
 #undef SET_CHIPSET
 
-void Uncore(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
+void Uncore_Update(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO *Core)
 {
 	unsigned int idx;
 	/* Copy the # of controllers.					*/
@@ -4825,6 +4865,7 @@ void Topology(SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core, unsigned int cpu)
     case AMD_Zen2_CPK:
     case AMD_Zen2_APU:
     case AMD_Zen2_MTS:
+    case AMD_Zen2_Xbox:
     case AMD_Zen3_VMR:
     case AMD_Zen3_CZN:
     case AMD_EPYC_Milan:
@@ -5593,9 +5634,9 @@ void Pkg_ResetSensorLimits(PROC_STRUCT *Pkg)
 REASON_CODE Core_Manager(REF *Ref)
 {
 	SHM_STRUCT		*Shm = Ref->Shm;
-	PROC_RO			*Proc = Ref->Proc_RO;
-	PROC_RW			*Proc_RW = Ref->Proc_RW;
-	CORE_RO			**Core = Ref->Core_RO;
+	PROC_RO 		*Proc = Ref->Proc_RO;
+	PROC_RW 		*Proc_RW = Ref->Proc_RW;
+	CORE_RO 		**Core = Ref->Core_RO;
 	struct PKG_FLIP_FLOP	*PFlip;
 	struct FLIP_FLOP	*SProc;
 	SERVICE_PROC		localService = {.Proc = -1};
@@ -5950,6 +5991,7 @@ REASON_CODE Core_Manager(REF *Ref)
 	  if (BITWISEAND(LOCKLESS, PendingSync, BIT_MASK_COMP|BIT_MASK_NTFY))
 	  {
 		Package_Update(Shm, Proc, Proc_RW);
+		Uncore_Update(Shm, Proc, Core[Proc->Service.Core]);
 
 	    for (cpu = 0; cpu < Ref->Shm->Proc.CPU.Count; cpu++)
 	    {
@@ -6166,7 +6208,7 @@ REASON_CODE Shm_Manager(FD *fd, PROC_RO *Proc_RO, PROC_RW *Proc_RW,
 		sigemptyset(&Ref.Signal);
 
 		Package_Update(Shm, Proc_RO, Proc_RW);
-		Uncore(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
+		Uncore_Update(Shm, Proc_RO, Core_RO[Proc_RO->Service.Core]);
 		memcpy(&Shm->SMB, &Proc_RO->SMB, sizeof(SMBIOS_ST));
 
 		/* Initialize notifications.				*/
