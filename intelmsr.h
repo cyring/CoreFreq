@@ -519,7 +519,7 @@ typedef union
 		PPIN_CAP	: 24-23, /* R/O:IVB-E,BDW-E,SKL-S : MSR_PPIN */
 		ReservedBits3	: 28-24,
 		ProgrammableTurbo:29-28, /* Phi,SKL,BDW,HSW,IVB,SNB,NHM,GLM */
-		ProgrammableTDP : 30-29,
+		ProgrammableTDP : 30-29, /* Nehalem: Turbo TDC-TDP Limit */
 		ProgrammableTj	: 31-30, /* R/O: 1 = TjOffset is writable */
 		ReservedBits4	: 32-31,
 		LowPowerMode	: 33-32, /* R/O: 1 = LPM is supported.	*/

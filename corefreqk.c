@@ -3173,8 +3173,10 @@ void Nehalem_PowerLimit(void)
 	}
     }
 	if (WrRdMSR) {
-		WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
-		RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+		if (PUBLIC(RO(Proc))->Features.TDP_Unlock) {
+			WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+			RDMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
+		}
 	}
 	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[PWR_DOMAIN(PKG)].Domain_Limit1
 		= PowerLimit.TDP_Limit;
@@ -3255,8 +3257,10 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	    }
 	}
 	if (WrRdMSR) {
-		WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
-		RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+		if (PUBLIC(RO(Proc))->Features.TDP_Unlock) {
+			WRMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+			RDMSR(PowerLimit, MSR_DOMAIN_POWER_LIMIT);
+		}
 	}
 	PUBLIC(RO(Proc))->PowerThermal.PowerLimit[pw] = PowerLimit;
 }

@@ -1222,6 +1222,14 @@ enum {
 	RSC_BOX_TDP_PLATFORM_TITLE,
 	RSC_BOX_PL1_DESC,
 	RSC_BOX_PL2_DESC,
+	RSC_BOX_PWR_OFFSET0,
+	RSC_BOX_PWR_OFFSET1,
+	RSC_BOX_PWR_OFFSET2,
+	RSC_BOX_PWR_OFFSET3,
+	RSC_BOX_PWR_OFFSET4,
+	RSC_BOX_PWR_OFFSET5,
+	RSC_BOX_PWR_OFFSET6,
+	RSC_BOX_PWR_OFFSET7,
 	RSC_BOX_TOOLS_TITLE,
 	RSC_BOX_TOOLS_STOP_BURN,
 	RSC_BOX_TOOLS_ATOMIC_BURN,
@@ -3099,6 +3107,15 @@ extern RESOURCE_ST Resource[];
 #define RSC_BOX_POWER_POLICY_14_CODE	"           14           "
 
 #define RSC_BOX_CFG_TDP_BLANK_CODE	"                   "
+
+#define RSC_BOX_PWR_OFFSET0_CODE	"              +50 watts             "
+#define RSC_BOX_PWR_OFFSET1_CODE	"              +10 watts             "
+#define RSC_BOX_PWR_OFFSET2_CODE	"               +5 watts             "
+#define RSC_BOX_PWR_OFFSET3_CODE	"               +1 watt              "
+#define RSC_BOX_PWR_OFFSET4_CODE	"               -1 watt              "
+#define RSC_BOX_PWR_OFFSET5_CODE	"               -5 watts             "
+#define RSC_BOX_PWR_OFFSET6_CODE	"              -10 watts             "
+#define RSC_BOX_PWR_OFFSET7_CODE	"              -50 watts             "
 
 #define RSC_BOX_IDLE_LIMIT_RESET_CODE	"            0     RESET "
 
