@@ -3767,25 +3767,32 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		bix	= Shm->Proc.Power.Domain[pw].Feature[PL1].Enable
 			| Shm->Proc.Power.Domain[pw].Feature[PL2].Enable;
 
-		GridCall( PUT( (BOXKEY_TDP_OR | pw),
+		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
+				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
 				attrib[ bix ? 3 : 1 ], width, 2,
-				"%s%.*s%s   <%7s>",
+				"%s%.*s%s   %c%7s%c",
 				RSC(POWER_THERMAL_TDP).CODE(),
 				width - 15 - RSZ(POWER_THERMAL_TDP)
 				 - label[pw].size,
 				hSpace, label[pw].code,
-				bix ? RSC(ENABLE).CODE():RSC(DISABLE).CODE() ),
+				Shm->Proc.Features.TDP_Unlock ? '<' : '[',
+				bix ? RSC(ENABLE).CODE():RSC(DISABLE).CODE(),
+				Shm->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			TDP_State, pw );
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
-		GridCall( PUT(	(BOXKEY_TDP_OR | pw), attrib[5], width, 3,
-				"%s (%2.0f sec)%.*s%s   <%5u W>",
+		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
+				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
+				attrib[5], width, 3,
+				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW1,
 				width - (OutFunc == NULL ? 30 : 28)
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL1).CODE(),
-				Shm->Proc.Power.Domain[pw].PL1 ),
+				Shm->Proc.Features.TDP_Unlock ? '<' : '[',
+				Shm->Proc.Power.Domain[pw].PL1,
+				Shm->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			PL1_Update, pw );
 	    } else {
 		PUT(	SCANKEY_NULL, attrib[0], width, 3,
@@ -3797,14 +3804,18 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  if (pw == PWR_DOMAIN(PKG) || pw == PWR_DOMAIN(PLATFORM))
 	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
-		GridCall( PUT(	(BOXKEY_TDP_OR | pw), attrib[5], width, 3,
-				"%s (%2.0f sec)%.*s%s   <%5u W>",
+		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
+				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
+				attrib[5], width, 3,
+				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW2,
 				width - (OutFunc == NULL ? 30 : 28)
 				 - RSZ(POWER_THERMAL_TPL), hSpace,
 				RSC(POWER_LABEL_PL2).CODE(),
-				Shm->Proc.Power.Domain[pw].PL2 ),
+				Shm->Proc.Features.TDP_Unlock ? '<' : '[',
+				Shm->Proc.Power.Domain[pw].PL2,
+				Shm->Proc.Features.TDP_Unlock ? '>' : ']' ),
 			PL2_Update, pw );
 	    } else {
 		PUT(	SCANKEY_NULL, attrib[0], width, 3,
@@ -3855,9 +3866,12 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
     if (Shm->Proc.Power.TDC > 0) {
 	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
-			"%s%.*s%s   [%5u A]", RSC(POWER_THERMAL_TDC).CODE(),
+			"%s%.*s%s   %c%5u A%c", RSC(POWER_THERMAL_TDC).CODE(),
 			width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
-			RSC(POWER_LABEL_TDC).CODE(), Shm->Proc.Power.TDC ),
+			RSC(POWER_LABEL_TDC).CODE(),
+			Shm->Proc.Features.TDP_Unlock ? '<' : '[',
+			Shm->Proc.Power.TDC,
+			Shm->Proc.Features.TDP_Unlock ? '>' : ']' ),
 		TDC_Update );
     } else {
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
@@ -11505,22 +11519,14 @@ int Shortcut(SCANKEY *scan)
 			BOXKEY_PL1_OR | ( pw << 4) | 2,
 
 			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			"              +50 watts             ",
-			stateAttr[0], key[PL1][0],
-			"              +10 watts             ",
-			stateAttr[0], key[PL1][1],
-			"               +5 watts             ",
-			stateAttr[0], key[PL1][2],
-			"               +1 watt              ",
-			stateAttr[0], key[PL1][3],
-			"               -1 watt              ",
-			stateAttr[0], key[PL1][4],
-			"               -5 watts             ",
-			stateAttr[0], key[PL1][5],
-			"              -10 watts             ",
-			stateAttr[0], key[PL1][6],
-			"              -50 watts             ",
-			stateAttr[0], key[PL1][7],
+			RSC(BOX_PWR_OFFSET0).CODE(), stateAttr[0], key[PL1][0],
+			RSC(BOX_PWR_OFFSET1).CODE(), stateAttr[0], key[PL1][1],
+			RSC(BOX_PWR_OFFSET2).CODE(), stateAttr[0], key[PL1][2],
+			RSC(BOX_PWR_OFFSET3).CODE(), stateAttr[0], key[PL1][3],
+			RSC(BOX_PWR_OFFSET4).CODE(), stateAttr[0], key[PL1][4],
+			RSC(BOX_PWR_OFFSET5).CODE(), stateAttr[0], key[PL1][5],
+			RSC(BOX_PWR_OFFSET6).CODE(), stateAttr[0], key[PL1][6],
+			RSC(BOX_PWR_OFFSET7).CODE(), stateAttr[0], key[PL1][7],
 			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
 			RSC(BOX_PL2_DESC).CODE()   , descAttr,	SCANKEY_NULL,
 
@@ -11533,22 +11539,14 @@ int Shortcut(SCANKEY *scan)
 			BOXKEY_PL2_OR | (pw << 4) | 2,
 
 			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			"              +50 watts             ",
-			stateAttr[0], key[PL2][0],
-			"              +10 watts             ",
-			stateAttr[0], key[PL2][1],
-			"               +5 watts             ",
-			stateAttr[0], key[PL2][2],
-			"               +1 watt              ",
-			stateAttr[0], key[PL2][3],
-			"               -1 watt              ",
-			stateAttr[0], key[PL2][4],
-			"               -5 watts             ",
-			stateAttr[0], key[PL2][5],
-			"              -10 watts             ",
-			stateAttr[0], key[PL2][6],
-			"              -50 watts             ",
-			stateAttr[0], key[PL2][7],
+			RSC(BOX_PWR_OFFSET0).CODE(), stateAttr[0], key[PL2][0],
+			RSC(BOX_PWR_OFFSET1).CODE(), stateAttr[0], key[PL2][1],
+			RSC(BOX_PWR_OFFSET2).CODE(), stateAttr[0], key[PL2][2],
+			RSC(BOX_PWR_OFFSET3).CODE(), stateAttr[0], key[PL2][3],
+			RSC(BOX_PWR_OFFSET4).CODE(), stateAttr[0], key[PL2][4],
+			RSC(BOX_PWR_OFFSET5).CODE(), stateAttr[0], key[PL2][5],
+			RSC(BOX_PWR_OFFSET6).CODE(), stateAttr[0], key[PL2][6],
+			RSC(BOX_PWR_OFFSET7).CODE(), stateAttr[0], key[PL2][7],
 			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL),
 		&winList);
       } else {
