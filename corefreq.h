@@ -417,6 +417,10 @@ typedef struct
 		} Domain[PWR_DOMAIN(SIZE)];
 		unsigned short		TDP, Min, Max;
 		unsigned short		PPT, EDC, TDC;
+		struct {
+			unsigned short	TDC	:  1-0,
+					_Unused : 16-1;
+		} Feature;
 	} Power;
 
 	signed int			ArchID;

@@ -1053,13 +1053,16 @@
 #define RSC_BOX_CFG_TDP_LVL1_CODE_EN		"      Level 1      "
 #define RSC_BOX_CFG_TDP_LVL2_CODE_EN		"      Level 2      "
 
-#define RSC_BOX_TDP_PKG_TITLE_CODE_EN		" Package TDP "
-#define RSC_BOX_TDP_CORES_TITLE_CODE_EN 	" Core TDP "
-#define RSC_BOX_TDP_UNCORE_TITLE_CODE_EN	" Uncore TDP "
-#define RSC_BOX_TDP_RAM_TITLE_CODE_EN		" DRAM TDP "
-#define RSC_BOX_TDP_PLATFORM_TITLE_CODE_EN	" Platform TDP "
+#define RSC_BOX_TDP_PKG_TITLE_CODE_EN		" TDP Package "
+#define RSC_BOX_TDP_CORES_TITLE_CODE_EN 	" TDP Core "
+#define RSC_BOX_TDP_UNCORE_TITLE_CODE_EN	" TDP Uncore "
+#define RSC_BOX_TDP_RAM_TITLE_CODE_EN		" TDP DRAM "
+#define RSC_BOX_TDP_PLATFORM_TITLE_CODE_EN	" TDP Platform "
 #define RSC_BOX_PL1_DESC_CODE_EN	"          PL1 Power Limit           "
 #define RSC_BOX_PL2_DESC_CODE_EN	"          PL2 Power Limit           "
+
+#define RSC_BOX_TDC_TITLE_CODE_EN		" TDC Current "
+#define RSC_BOX_TDC_DESC_CODE_EN	"         TDC Current Limit          "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_EN					\
 		"CoreFreq."						\

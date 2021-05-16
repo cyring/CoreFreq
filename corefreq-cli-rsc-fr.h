@@ -435,7 +435,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_POWER_THERMAL_PPT_CODE_FR	"Consommation maximale"
 #define RSC_POWER_THERMAL_TPL_CODE_FR	"Limite de puissance"
 #define RSC_POWER_THERMAL_EDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
-#define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant durable"
+#define RSC_POWER_THERMAL_TDC_CODE_FR	"Limite de courant sup""\xa9""rieure"
 
 #define RSC_KERNEL_TITLE_CODE_FR	" Noyau "
 #define RSC_KERNEL_TOTAL_RAM_CODE_FR	"RAM totale"
@@ -859,6 +859,9 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_BOX_TDP_PLATFORM_TITLE_CODE_FR	" TDP Plateforme "
 #define RSC_BOX_PL1_DESC_CODE_FR	"      Limite de puissance PL1       "
 #define RSC_BOX_PL2_DESC_CODE_FR	"      Limite de puissance PL2       "
+
+#define RSC_BOX_TDC_TITLE_CODE_FR		" TDC du courant "
+#define RSC_BOX_TDC_DESC_CODE_FR	"       Limite de courant TDC        "
 
 #define RSC_ERROR_CMD_SYNTAX_CODE_FR					\
 		"CoreFreq."						\

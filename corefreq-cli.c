@@ -3865,7 +3865,9 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		RSC(POWER_LABEL_EDC).CODE(), POWERED(0) );
     }
     if (Shm->Proc.Power.TDC > 0) {
-	GridCall( PUT(	SCANKEY_NULL, attrib[5], width, 2,
+	GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
+			BOXKEY_TDC : SCANKEY_NULL, attrib[5],
+			width, 2,
 			"%s%.*s%s   %c%5u A%c", RSC(POWER_THERMAL_TDC).CODE(),
 			width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
 			RSC(POWER_LABEL_TDC).CODE(),
@@ -11500,7 +11502,7 @@ int Shortcut(SCANKEY *scan)
 			BOXKEY_PL2_OR | (pw << 4) | (+05U << 20),
 			BOXKEY_PL2_OR | (pw << 4) | (+01U << 20),
 			BOXKEY_PL2_OR | (pw << 4) | (-01U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (-10U << 20),
+			BOXKEY_PL2_OR | (pw << 4) | (-05U << 20),
 			BOXKEY_PL2_OR | (pw << 4) | (-10U << 20),
 			BOXKEY_PL2_OR | (pw << 4) | (-50U << 20)
 		}
@@ -11625,6 +11627,77 @@ int Shortcut(SCANKEY *scan)
 				PL2 );
 	}
     }
+    break;
+
+    case BOXKEY_TDC:
+    {
+	Window *win = SearchWinListById(scan->key, &winList);
+      if (win == NULL)
+      {
+	const Coordinate origin = {
+		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 2
+	}, select = {
+		.col = 0,
+		.row = Shm->Proc.Power.Feature.TDC ? 3 : 2
+	};
+	const unsigned long long key[8] = {
+		BOXKEY_TDC_MASK | (+50U << 20),
+		BOXKEY_TDC_MASK | (+10U << 20),
+		BOXKEY_TDC_MASK | (+05U << 20),
+		BOXKEY_TDC_MASK | (+01U << 20),
+		BOXKEY_TDC_MASK | (-01U << 20),
+		BOXKEY_TDC_MASK | (-05U << 20),
+		BOXKEY_TDC_MASK | (-10U << 20),
+		BOXKEY_TDC_MASK | (-50U << 20)
+	};
+	AppendWindow(
+		CreateBox(scan->key, origin, select,
+			(char*) RSC(BOX_TDC_TITLE).CODE(),
+			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
+			RSC(BOX_TDC_DESC).CODE()   , descAttr,	SCANKEY_NULL,
+
+			stateStr[1][Shm->Proc.Power.Feature.TDC],
+			stateAttr[Shm->Proc.Power.Feature.TDC],
+			BOXKEY_TDC_OR | 1,
+
+			stateStr[0][!Shm->Proc.Power.Feature.TDC],
+			stateAttr[!Shm->Proc.Power.Feature.TDC],
+			BOXKEY_TDC_OR | 2,
+
+			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
+			RSC(BOX_AMP_OFFSET0).CODE(), stateAttr[0], key[0],
+			RSC(BOX_AMP_OFFSET1).CODE(), stateAttr[0], key[1],
+			RSC(BOX_AMP_OFFSET2).CODE(), stateAttr[0], key[2],
+			RSC(BOX_AMP_OFFSET3).CODE(), stateAttr[0], key[3],
+			RSC(BOX_AMP_OFFSET4).CODE(), stateAttr[0], key[4],
+			RSC(BOX_AMP_OFFSET5).CODE(), stateAttr[0], key[5],
+			RSC(BOX_AMP_OFFSET6).CODE(), stateAttr[0], key[6],
+			RSC(BOX_AMP_OFFSET7).CODE(), stateAttr[0], key[7],
+			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL),
+		&winList);
+      } else {
+	SetHead(&winList, win);
+      }
+    }
+    break;
+
+    case BOXKEY_TDC_ON:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_ON,
+				TECHNOLOGY_TDC_LIMIT );
+	}
+    break;
+
+    case BOXKEY_TDC_OFF:
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				COREFREQ_TOGGLE_OFF,
+				TECHNOLOGY_TDC_LIMIT );
+	}
     break;
 
     case BOXKEY_LIMIT_IDLE_STATE:
@@ -12326,6 +12399,17 @@ int Shortcut(SCANKEY *scan)
 				TECHNOLOGY_TDP_OFFSET,
 				pw,
 				pl );
+	}
+      }
+      else if ((scan->key & BOXKEY_TDC_MASK) == BOXKEY_TDC_MASK)
+      {
+	const unsigned short offset = (scan->key & BOXKEY_TDC_OFFSET) >> 20;
+
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_TECHNOLOGY,
+				offset,
+				TECHNOLOGY_TDC_OFFSET );
 	}
       }
       else

@@ -1457,6 +1457,7 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	Shm->Proc.Power.Domain[pw].TW2 = Shm->Proc.Power.Unit.Times * duration;
     }
 	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.TDC;
+	Shm->Proc.Power.Feature.TDC = Proc_RO->PowerThermal.Enable_Limit.TDC;
   } else {
 	Shm->Proc.PowerNow = 0;
   }

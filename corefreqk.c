@@ -145,6 +145,14 @@ module_param_array(Activate_TDP_Limit, short, &Activate_TDP_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limit");
 
+static unsigned short Custom_TDC_Offset = 0;
+module_param(Custom_TDC_Offset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
+
+static signed short Activate_TDC_Limit = -1;
+module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limit");
+
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(L1_HW_PREFETCH_Disable, "Disable L1 HW Prefetcher");
@@ -3172,6 +3180,22 @@ void Nehalem_PowerLimit(void)
 		break;
 	}
     }
+    if (Custom_TDC_Offset != 0) {
+	signed short	TDC_Limit = PowerLimit.TDC_Limit >> 3;
+			TDC_Limit += Custom_TDC_Offset;
+	if (TDC_Limit > 0)
+	{
+		PowerLimit.TDC_Limit = TDC_Limit << 3;
+		WrRdMSR = 1;
+	}
+    }
+	switch (Activate_TDC_Limit) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		PowerLimit.TDC_Override = Activate_TDC_Limit;
+		WrRdMSR = 1;
+		break;
+	}
 	if (WrRdMSR) {
 		if (PUBLIC(RO(Proc))->Features.TDP_Unlock) {
 			WRMSR(PowerLimit, MSR_TURBO_POWER_CURRENT_LIMIT);
@@ -3185,8 +3209,9 @@ void Nehalem_PowerLimit(void)
 		= PowerLimit.TDP_Override;
 	/*	TDP: 1/(2 << (3-1)) = 1/8 watt	*/
 	PUBLIC(RO(Proc))->PowerThermal.Unit.PU = 3;
-	/*	TDC: 1/8 Amp			*/
+	/*	TDC: 1/8 amp			*/
 	PUBLIC(RO(Proc))->PowerThermal.TDC = PowerLimit.TDC_Limit >> 3;
+	PUBLIC(RO(Proc))->PowerThermal.Enable_Limit.TDC=PowerLimit.TDC_Override;
 }
 
 void Intel_PowerInterface(void)
@@ -15929,6 +15954,30 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Custom_TDP_Offset[idx] = 0;
 		rc = RC_SUCCESS;
 	      }
+	    }
+		break;
+
+	case TECHNOLOGY_TDC_LIMIT:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			Activate_TDC_Limit = prm.dl.lo;
+			Controller_Start(1);
+			Activate_TDC_Limit = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
+		break;
+
+	case TECHNOLOGY_TDC_OFFSET:
+	    {
+		const signed short offset = (signed char) prm.dl.lo;
+		Controller_Stop(1);
+		Custom_TDC_Offset = offset;
+		Controller_Start(1);
+		Custom_TDC_Offset = 0;
+		rc = RC_SUCCESS;
 	    }
 		break;
 	}
