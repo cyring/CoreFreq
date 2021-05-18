@@ -1222,24 +1222,40 @@ enum {
 	RSC_BOX_TDP_PLATFORM_TITLE,
 	RSC_BOX_PL1_DESC,
 	RSC_BOX_PL2_DESC,
-	RSC_BOX_PWR_OFFSET0,
-	RSC_BOX_PWR_OFFSET1,
-	RSC_BOX_PWR_OFFSET2,
-	RSC_BOX_PWR_OFFSET3,
-	RSC_BOX_PWR_OFFSET4,
-	RSC_BOX_PWR_OFFSET5,
-	RSC_BOX_PWR_OFFSET6,
-	RSC_BOX_PWR_OFFSET7,
+	RSC_BOX_PWR_OFFSET_00,
+	RSC_BOX_PWR_OFFSET_01,
+	RSC_BOX_PWR_OFFSET_02,
+	RSC_BOX_PWR_OFFSET_03,
+	RSC_BOX_PWR_OFFSET_04,
+	RSC_BOX_PWR_OFFSET_05,
+	RSC_BOX_PWR_OFFSET_06,
+	RSC_BOX_PWR_OFFSET_07,
+	RSC_BOX_PWR_OFFSET_08,
+	RSC_BOX_PWR_OFFSET_09,
+	RSC_BOX_PWR_OFFSET_10,
+	RSC_BOX_PWR_OFFSET_11,
+	RSC_BOX_PWR_OFFSET_12,
+	RSC_BOX_PWR_OFFSET_13,
+	RSC_BOX_CLAMPING_OFF_COND0,
+	RSC_BOX_CLAMPING_OFF_COND1,
+	RSC_BOX_CLAMPING_ON_COND0,
+	RSC_BOX_CLAMPING_ON_COND1,
 	RSC_BOX_TDC_TITLE,
 	RSC_BOX_TDC_DESC,
-	RSC_BOX_AMP_OFFSET0,
-	RSC_BOX_AMP_OFFSET1,
-	RSC_BOX_AMP_OFFSET2,
-	RSC_BOX_AMP_OFFSET3,
-	RSC_BOX_AMP_OFFSET4,
-	RSC_BOX_AMP_OFFSET5,
-	RSC_BOX_AMP_OFFSET6,
-	RSC_BOX_AMP_OFFSET7,
+	RSC_BOX_AMP_OFFSET_00,
+	RSC_BOX_AMP_OFFSET_01,
+	RSC_BOX_AMP_OFFSET_02,
+	RSC_BOX_AMP_OFFSET_03,
+	RSC_BOX_AMP_OFFSET_04,
+	RSC_BOX_AMP_OFFSET_05,
+	RSC_BOX_AMP_OFFSET_06,
+	RSC_BOX_AMP_OFFSET_07,
+	RSC_BOX_AMP_OFFSET_08,
+	RSC_BOX_AMP_OFFSET_09,
+	RSC_BOX_AMP_OFFSET_10,
+	RSC_BOX_AMP_OFFSET_11,
+	RSC_BOX_AMP_OFFSET_12,
+	RSC_BOX_AMP_OFFSET_13,
 	RSC_BOX_TOOLS_TITLE,
 	RSC_BOX_TOOLS_STOP_BURN,
 	RSC_BOX_TOOLS_ATOMIC_BURN,
@@ -3118,23 +3134,40 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_BOX_CFG_TDP_BLANK_CODE	"                   "
 
-#define RSC_BOX_PWR_OFFSET0_CODE	"              +50 watts             "
-#define RSC_BOX_PWR_OFFSET1_CODE	"              +10 watts             "
-#define RSC_BOX_PWR_OFFSET2_CODE	"               +5 watts             "
-#define RSC_BOX_PWR_OFFSET3_CODE	"               +1 watt              "
-#define RSC_BOX_PWR_OFFSET4_CODE	"               -1 watt              "
-#define RSC_BOX_PWR_OFFSET5_CODE	"               -5 watts             "
-#define RSC_BOX_PWR_OFFSET6_CODE	"              -10 watts             "
-#define RSC_BOX_PWR_OFFSET7_CODE	"              -50 watts             "
+#define RSC_BOX_PWR_OFFSET_00_CODE	"              +50 watts             "
+#define RSC_BOX_PWR_OFFSET_01_CODE	"              +10 watts             "
+#define RSC_BOX_PWR_OFFSET_02_CODE	"               +5 watts             "
+#define RSC_BOX_PWR_OFFSET_03_CODE	"               +4 watts             "
+#define RSC_BOX_PWR_OFFSET_04_CODE	"               +3 watts             "
+#define RSC_BOX_PWR_OFFSET_05_CODE	"               +2 watts             "
+#define RSC_BOX_PWR_OFFSET_06_CODE	"               +1 watt              "
+#define RSC_BOX_PWR_OFFSET_07_CODE	"               -1 watt              "
+#define RSC_BOX_PWR_OFFSET_08_CODE	"               -2 watts             "
+#define RSC_BOX_PWR_OFFSET_09_CODE	"               -3 watts             "
+#define RSC_BOX_PWR_OFFSET_10_CODE	"               -4 watts             "
+#define RSC_BOX_PWR_OFFSET_11_CODE	"               -5 watts             "
+#define RSC_BOX_PWR_OFFSET_12_CODE	"              -10 watts             "
+#define RSC_BOX_PWR_OFFSET_13_CODE	"              -50 watts             "
 
-#define RSC_BOX_AMP_OFFSET0_CODE	"              +50 amps              "
-#define RSC_BOX_AMP_OFFSET1_CODE	"              +10 amps              "
-#define RSC_BOX_AMP_OFFSET2_CODE	"               +5 amps              "
-#define RSC_BOX_AMP_OFFSET3_CODE	"               +1 amp               "
-#define RSC_BOX_AMP_OFFSET4_CODE	"               -1 amp               "
-#define RSC_BOX_AMP_OFFSET5_CODE	"               -5 amps              "
-#define RSC_BOX_AMP_OFFSET6_CODE	"              -10 amps              "
-#define RSC_BOX_AMP_OFFSET7_CODE	"              -50 amps              "
+#define RSC_BOX_CLAMPING_OFF_COND0_CODE "            Clamping OFF            "
+#define RSC_BOX_CLAMPING_OFF_COND1_CODE "          < Clamping OFF >          "
+#define RSC_BOX_CLAMPING_ON_COND0_CODE	"            Clamping ON             "
+#define RSC_BOX_CLAMPING_ON_COND1_CODE	"          < Clamping ON  >          "
+
+#define RSC_BOX_AMP_OFFSET_00_CODE	"              +50 amps              "
+#define RSC_BOX_AMP_OFFSET_01_CODE	"              +10 amps              "
+#define RSC_BOX_AMP_OFFSET_02_CODE	"               +5 amps              "
+#define RSC_BOX_AMP_OFFSET_03_CODE	"               +4 amps              "
+#define RSC_BOX_AMP_OFFSET_04_CODE	"               +3 amps              "
+#define RSC_BOX_AMP_OFFSET_05_CODE	"               +2 amps              "
+#define RSC_BOX_AMP_OFFSET_06_CODE	"               +1 amp               "
+#define RSC_BOX_AMP_OFFSET_07_CODE	"               -1 amp               "
+#define RSC_BOX_AMP_OFFSET_08_CODE	"               -2 amp               "
+#define RSC_BOX_AMP_OFFSET_09_CODE	"               -3 amp               "
+#define RSC_BOX_AMP_OFFSET_10_CODE	"               -4 amp               "
+#define RSC_BOX_AMP_OFFSET_11_CODE	"               -5 amps              "
+#define RSC_BOX_AMP_OFFSET_12_CODE	"              -10 amps              "
+#define RSC_BOX_AMP_OFFSET_13_CODE	"              -50 amps              "
 
 #define RSC_BOX_IDLE_LIMIT_RESET_CODE	"            0     RESET "
 

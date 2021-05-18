@@ -3420,11 +3420,13 @@ REASON_CODE SysInfoPerfMon(Window *win, CUINT width, CELL_FUNC OutFunc)
 void PwrThermalUpdate(TGrid *grid, const unsigned int bix,const signed int pos,
 				const size_t len, const char *item)
 {
-	ATTRIBUTE *attrib[4] = {
+	ATTRIBUTE *attrib[6] = {
 		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
 		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
-		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR()
+		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
 	};
 	memcpy(&grid->cell.attr[pos], &attrib[bix][pos], len);
 	memcpy(&grid->cell.item[pos], item, len);
@@ -3497,11 +3499,20 @@ void TDP_State(TGrid *grid, DATA_TYPE data)
 		(char *)(bix ? RSC(ENABLE).CODE() : RSC(DISABLE).CODE()) );
 }
 
-void PCT_Update(TGrid *grid, unsigned short value)
+void PCT_Update(TGrid *grid, const unsigned int bix, unsigned short value)
 {
+	ATTRIBUTE *attrib[6] = {
+		RSC(SYSINFO_PWR_THERMAL_COND0).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND1).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND2).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND3).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND4).ATTR(),
+		RSC(SYSINFO_PWR_THERMAL_COND5).ATTR()
+	};
 	const signed int pos = grid->cell.length - 9;
 	char item[6+1];
 
+	memcpy(&grid->cell.attr[pos], &attrib[ bix ? 3 : 5 ][pos], 7);
 	snprintf(item, 6+1, "%5u", value);
 	memcpy(&grid->cell.item[pos], item, 5);
 }
@@ -3510,28 +3521,30 @@ void TDP_Update(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
 
-	PCT_Update(grid, Shm->Proc.Power.TDP);
+	PCT_Update(grid, 0, Shm->Proc.Power.TDP);
 }
 
 void PL1_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 
-	PCT_Update(grid, Shm->Proc.Power.Domain[pw].PL1);
+	PCT_Update(grid, Shm->Proc.Power.Domain[pw].Feature[PL1].Enable,
+			Shm->Proc.Power.Domain[pw].PL1);
 }
 
 void PL2_Update(TGrid *grid, DATA_TYPE data)
 {
 	const enum PWR_DOMAIN pw = (enum PWR_DOMAIN) data.sint[0];
 
-	PCT_Update(grid, Shm->Proc.Power.Domain[pw].PL2);
+	PCT_Update(grid, Shm->Proc.Power.Domain[pw].Feature[PL2].Enable,
+			Shm->Proc.Power.Domain[pw].PL2);
 }
 
 void TDC_Update(TGrid *grid, DATA_TYPE data)
 {
 	UNUSED(data);
 
-	PCT_Update(grid, Shm->Proc.Power.TDC);
+	PCT_Update(grid, Shm->Proc.Power.Feature.TDC, Shm->Proc.Power.TDC);
 }
 
 REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
@@ -3768,7 +3781,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 			| Shm->Proc.Power.Domain[pw].Feature[PL2].Enable;
 
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
+				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
 				attrib[ bix ? 3 : 1 ], width, 2,
 				"%s%.*s%s   %c%7s%c",
 				RSC(POWER_THERMAL_TDP).CODE(),
@@ -3782,8 +3795,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 
 	    if (Shm->Proc.Power.Domain[pw].PL1 > 0) {
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
-				attrib[5], width, 3,
+				(BOXKEY_TDP_OR | (pw << 5) | PL1) :SCANKEY_NULL,
+				attrib[ bix ? 3 : 5 ], width, 3,
 				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW1,
@@ -3805,8 +3818,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  {
 	    if (Shm->Proc.Power.Domain[pw].PL2 > 0) {
 		GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
-				(BOXKEY_TDP_OR | pw) : SCANKEY_NULL,
-				attrib[5], width, 3,
+				(BOXKEY_TDP_OR | (pw << 5) | PL2) :SCANKEY_NULL,
+				attrib[ bix ? 3 : 5 ], width, 3,
 				"%s (%2.0f sec)%.*s%s   %c%5u W%c",
 				RSC(POWER_THERMAL_TPL).CODE(),
 				Shm->Proc.Power.Domain[pw].TW2,
@@ -3866,7 +3879,8 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
     }
     if (Shm->Proc.Power.TDC > 0) {
 	GridCall( PUT(	Shm->Proc.Features.TDP_Unlock ?
-			BOXKEY_TDC : SCANKEY_NULL, attrib[5],
+			BOXKEY_TDC : SCANKEY_NULL,
+			attrib[ Shm->Proc.Power.Feature.TDC ? 3 : 5 ],
 			width, 2,
 			"%s%.*s%s   %c%5u A%c", RSC(POWER_THERMAL_TDC).CODE(),
 			width - 18 - RSZ(POWER_THERMAL_TDC), hSpace,
@@ -11461,15 +11475,39 @@ int Shortcut(SCANKEY *scan)
 	}
     break;
 
-    case BOXKEY_TDP_PKG:
-    case BOXKEY_TDP_CORES:
-    case BOXKEY_TDP_UNCORE:
-    case BOXKEY_TDP_RAM:
-    case BOXKEY_TDP_PLATFORM:
+    case (BOXKEY_TDP_PKG	| PL1):
+    case (BOXKEY_TDP_CORES	| PL1):
+    case (BOXKEY_TDP_UNCORE	| PL1):
+    case (BOXKEY_TDP_RAM	| PL1):
+    case (BOXKEY_TDP_PLATFORM	| PL1):
+	/* Fallthrough */
+    case (BOXKEY_TDP_PKG	| PL2):
+    case (BOXKEY_TDP_CORES	| PL2):
+    case (BOXKEY_TDP_UNCORE	| PL2):
+    case (BOXKEY_TDP_RAM	| PL2):
+    case (BOXKEY_TDP_PLATFORM	| PL2):
     {
 	Window *win = SearchWinListById(scan->key, &winList);
       if (win == NULL)
       {
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
+	const unsigned long long key[14] = {
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+50U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+10U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+05U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+04U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+03U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+02U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+01U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-01U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-02U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-03U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-04U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-05U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-10U << 20),
+		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (-50U << 20)
+	};
 	const ASCII *title[] = {
 		RSC(BOX_TDP_PKG_TITLE).CODE(),
 		RSC(BOX_TDP_CORES_TITLE).CODE(),
@@ -11477,79 +11515,69 @@ int Shortcut(SCANKEY *scan)
 		RSC(BOX_TDP_RAM_TITLE).CODE(),
 		RSC(BOX_TDP_PLATFORM_TITLE).CODE()
 	};
-	const enum PWR_DOMAIN pw = scan->key & BOXKEY_TDP_MASK;
+	const ASCII *descItem[PWR_LIMIT_SIZE] = {
+		RSC(BOX_PL1_DESC).CODE(),
+		RSC(BOX_PL2_DESC).CODE()
+	};
+	const ASCII *clampItem[2][2] = {
+		{
+			RSC(BOX_CLAMPING_OFF_COND0).CODE(),
+			RSC(BOX_CLAMPING_OFF_COND1).CODE()
+		},
+		{
+			RSC(BOX_CLAMPING_ON_COND0).CODE(),
+			RSC(BOX_CLAMPING_ON_COND1).CODE()
+		}
+	};
 	const Coordinate origin = {
 		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
 		.row = TOP_HEADER_ROW + 1
 	}, select = {
 		.col = 0,
-		.row = 13
-	};
-	const unsigned long long key[PWR_LIMIT_SIZE][8] = {
-		[PL1] = {
-			BOXKEY_PL1_OR | (pw << 4) | (+50U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (+10U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (+05U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (+01U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (-01U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (-05U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (-10U << 20),
-			BOXKEY_PL1_OR | (pw << 4) | (-50U << 20)
-		},
-		[PL2] = {
-			BOXKEY_PL2_OR | (pw << 4) | (+50U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (+10U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (+05U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (+01U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (-01U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (-05U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (-10U << 20),
-			BOXKEY_PL2_OR | (pw << 4) | (-50U << 20)
-		}
+		.row = Shm->Proc.Power.Domain[pw].Feature[pl].Enable ? 12 : 11
 	};
 	AppendWindow(
 		CreateBox(scan->key, origin, select, (char*) title[pw],
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_PL1_DESC).CODE()   , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			descItem[pl],			descAttr , SCANKEY_NULL,
 
-		stateStr[1][Shm->Proc.Power.Domain[pw].Feature[PL1].Enable],
-		stateAttr[Shm->Proc.Power.Domain[pw].Feature[PL1].Enable],
-			BOXKEY_PL1_OR | ( pw << 4) | 1,
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			RSC(BOX_PWR_OFFSET_00).CODE(),	stateAttr[0], key[ 0],
+			RSC(BOX_PWR_OFFSET_01).CODE(),	stateAttr[0], key[ 1],
+			RSC(BOX_PWR_OFFSET_02).CODE(),	stateAttr[0], key[ 2],
+			RSC(BOX_PWR_OFFSET_03).CODE(),	stateAttr[0], key[ 3],
+			RSC(BOX_PWR_OFFSET_04).CODE(),	stateAttr[0], key[ 4],
+			RSC(BOX_PWR_OFFSET_05).CODE(),	stateAttr[0], key[ 5],
+			RSC(BOX_PWR_OFFSET_06).CODE(),	stateAttr[0], key[ 6],
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
 
-		stateStr[0][!Shm->Proc.Power.Domain[pw].Feature[PL1].Enable],
-		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[PL1].Enable],
-			BOXKEY_PL1_OR | ( pw << 4) | 2,
+		stateStr[1][Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
+		stateAttr[Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
+			(BOXKEY_PLX_OP | (0x8 << pl)) | ( pw << 5) | 1,
 
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_PWR_OFFSET0).CODE(), stateAttr[0], key[PL1][0],
-			RSC(BOX_PWR_OFFSET1).CODE(), stateAttr[0], key[PL1][1],
-			RSC(BOX_PWR_OFFSET2).CODE(), stateAttr[0], key[PL1][2],
-			RSC(BOX_PWR_OFFSET3).CODE(), stateAttr[0], key[PL1][3],
-			RSC(BOX_PWR_OFFSET4).CODE(), stateAttr[0], key[PL1][4],
-			RSC(BOX_PWR_OFFSET5).CODE(), stateAttr[0], key[PL1][5],
-			RSC(BOX_PWR_OFFSET6).CODE(), stateAttr[0], key[PL1][6],
-			RSC(BOX_PWR_OFFSET7).CODE(), stateAttr[0], key[PL1][7],
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_PL2_DESC).CODE()   , descAttr,	SCANKEY_NULL,
+		stateStr[0][!Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
+		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[pl].Enable],
+			(BOXKEY_PLX_OP | (0x8 << pl)) | ( pw << 5) | 2,
 
-		stateStr[1][Shm->Proc.Power.Domain[pw].Feature[PL2].Enable],
-		stateAttr[Shm->Proc.Power.Domain[pw].Feature[PL2].Enable],
-			BOXKEY_PL2_OR | (pw << 4) | 1,
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			RSC(BOX_PWR_OFFSET_07).CODE(),	stateAttr[0], key[ 7],
+			RSC(BOX_PWR_OFFSET_08).CODE(),	stateAttr[0], key[ 8],
+			RSC(BOX_PWR_OFFSET_09).CODE(),	stateAttr[0], key[ 9],
+			RSC(BOX_PWR_OFFSET_10).CODE(),	stateAttr[0], key[10],
+			RSC(BOX_PWR_OFFSET_11).CODE(),	stateAttr[0], key[11],
+			RSC(BOX_PWR_OFFSET_12).CODE(),	stateAttr[0], key[12],
+			RSC(BOX_PWR_OFFSET_13).CODE(),	stateAttr[0], key[13],
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
 
-		stateStr[0][!Shm->Proc.Power.Domain[pw].Feature[PL2].Enable],
-		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[PL2].Enable],
-			BOXKEY_PL2_OR | (pw << 4) | 2,
+		clampItem[1][Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
+		stateAttr[Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
+			(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | 5,
 
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_PWR_OFFSET0).CODE(), stateAttr[0], key[PL2][0],
-			RSC(BOX_PWR_OFFSET1).CODE(), stateAttr[0], key[PL2][1],
-			RSC(BOX_PWR_OFFSET2).CODE(), stateAttr[0], key[PL2][2],
-			RSC(BOX_PWR_OFFSET3).CODE(), stateAttr[0], key[PL2][3],
-			RSC(BOX_PWR_OFFSET4).CODE(), stateAttr[0], key[PL2][4],
-			RSC(BOX_PWR_OFFSET5).CODE(), stateAttr[0], key[PL2][5],
-			RSC(BOX_PWR_OFFSET6).CODE(), stateAttr[0], key[PL2][6],
-			RSC(BOX_PWR_OFFSET7).CODE(), stateAttr[0], key[PL2][7],
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL),
+		clampItem[0][!Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
+		stateAttr[!Shm->Proc.Power.Domain[pw].Feature[pl].Clamping],
+			(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | 6,
+
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr,SCANKEY_NULL),
 		&winList);
       } else {
 	SetHead(&winList, win);
@@ -11557,74 +11585,102 @@ int Shortcut(SCANKEY *scan)
     }
     break;
 
-    case BOXKEY_PL1_PKG_ON:
-    case BOXKEY_PL1_CORES_ON:
-    case BOXKEY_PL1_UNCORE_ON:
-    case BOXKEY_PL1_RAM_ON:
-    case BOXKEY_PL1_PLATFORM_ON:
+    case BOXKEY_PL1_PKG_LIM_ON:
+    case BOXKEY_PL1_CORE_LIM_ON:
+    case BOXKEY_PL1_UNCORE_LIM_ON:
+    case BOXKEY_PL1_RAM_LIM_ON:
+    case BOXKEY_PL1_PLT_LIM_ON:
+	/* Fallthrough */
+    case BOXKEY_PL2_PKG_LIM_ON:
+    case BOXKEY_PL2_CORE_LIM_ON:
+    case BOXKEY_PL2_UNCORE_LIM_ON:
+    case BOXKEY_PL2_RAM_LIM_ON:
+    case BOXKEY_PL2_PLT_LIM_ON:
     {
-	const enum PWR_DOMAIN pw = (scan->key >> 4) & BOXKEY_TDP_MASK;
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
-				TECHNOLOGY_TDP_LIMIT,
+				TECHNOLOGY_TDP_LIMITING,
 				pw,
-				PL1 );
+				pl );
 	}
     }
     break;
 
-    case BOXKEY_PL1_PKG_OFF:
-    case BOXKEY_PL1_CORES_OFF:
-    case BOXKEY_PL1_UNCORE_OFF:
-    case BOXKEY_PL1_RAM_OFF:
-    case BOXKEY_PL1_PLATFORM_OFF:
+    case BOXKEY_PL1_PKG_LIM_OFF:
+    case BOXKEY_PL1_CORE_LIM_OFF:
+    case BOXKEY_PL1_UNCORE_LIM_OFF:
+    case BOXKEY_PL1_RAM_LIM_OFF:
+    case BOXKEY_PL1_PLT_LIM_OFF:
+	/* Fallthrough */
+    case BOXKEY_PL2_PKG_LIM_OFF:
+    case BOXKEY_PL2_CORE_LIM_OFF:
+    case BOXKEY_PL2_UNCORE_LIM_OFF:
+    case BOXKEY_PL2_RAM_LIM_OFF:
+    case BOXKEY_PL2_PLT_LIM_OFF:
     {
-	const enum PWR_DOMAIN pw = (scan->key >> 4) & BOXKEY_TDP_MASK;
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
-				TECHNOLOGY_TDP_LIMIT,
+				TECHNOLOGY_TDP_LIMITING,
 				pw,
-				PL1 );
+				pl );
 	}
     }
     break;
 
-    case BOXKEY_PL2_PKG_ON:
-    case BOXKEY_PL2_CORES_ON:
-    case BOXKEY_PL2_UNCORE_ON:
-    case BOXKEY_PL2_RAM_ON:
-    case BOXKEY_PL2_PLATFORM_ON:
+    case BOXKEY_PL1_PKG_CLAMP_ON:
+    case BOXKEY_PL1_CORE_CLAMP_ON:
+    case BOXKEY_PL1_UNCORE_CLAMP_ON:
+    case BOXKEY_PL1_RAM_CLAMP_ON:
+    case BOXKEY_PL1_PLT_CLAMP_ON:
+	/* Fallthrough */
+    case BOXKEY_PL2_PKG_CLAMP_ON:
+    case BOXKEY_PL2_CORE_CLAMP_ON:
+    case BOXKEY_PL2_UNCORE_CLAMP_ON:
+    case BOXKEY_PL2_RAM_CLAMP_ON:
+    case BOXKEY_PL2_PLT_CLAMP_ON:
     {
-	const enum PWR_DOMAIN pw = (scan->key >> 4) & BOXKEY_TDP_MASK;
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
-				TECHNOLOGY_TDP_LIMIT,
+				TECHNOLOGY_TDP_CLAMPING,
 				pw,
-				PL2 );
+				pl );
 	}
     }
     break;
 
-    case BOXKEY_PL2_PKG_OFF:
-    case BOXKEY_PL2_CORES_OFF:
-    case BOXKEY_PL2_UNCORE_OFF:
-    case BOXKEY_PL2_RAM_OFF:
-    case BOXKEY_PL2_PLATFORM_OFF:
+    case BOXKEY_PL1_PKG_CLAMP_OFF:
+    case BOXKEY_PL1_CORE_CLAMP_OFF:
+    case BOXKEY_PL1_UNCORE_CLAMP_OFF:
+    case BOXKEY_PL1_RAM_CLAMP_OFF:
+    case BOXKEY_PL1_PLT_CLAMP_OFF:
+	/* Fallthrough */
+    case BOXKEY_PL2_PKG_CLAMP_OFF:
+    case BOXKEY_PL2_CORE_CLAMP_OFF:
+    case BOXKEY_PL2_UNCORE_CLAMP_OFF:
+    case BOXKEY_PL2_RAM_CLAMP_OFF:
+    case BOXKEY_PL2_PLT_CLAMP_OFF:
     {
-	const enum PWR_DOMAIN pw = (scan->key >> 4) & BOXKEY_TDP_MASK;
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	if (!RING_FULL(Shm->Ring[0])) {
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
-				TECHNOLOGY_TDP_LIMIT,
+				TECHNOLOGY_TDP_CLAMPING,
 				pw,
-				PL2 );
+				pl );
 	}
     }
     break;
@@ -11639,14 +11695,20 @@ int Shortcut(SCANKEY *scan)
 		.row = TOP_HEADER_ROW + 2
 	}, select = {
 		.col = 0,
-		.row = Shm->Proc.Power.Feature.TDC ? 3 : 2
+		.row = Shm->Proc.Power.Feature.TDC ? 12 : 11
 	};
-	const unsigned long long key[8] = {
+	const unsigned long long key[14] = {
 		BOXKEY_TDC_MASK | (+50U << 20),
 		BOXKEY_TDC_MASK | (+10U << 20),
 		BOXKEY_TDC_MASK | (+05U << 20),
+		BOXKEY_TDC_MASK | (+04U << 20),
+		BOXKEY_TDC_MASK | (+03U << 20),
+		BOXKEY_TDC_MASK | (+02U << 20),
 		BOXKEY_TDC_MASK | (+01U << 20),
 		BOXKEY_TDC_MASK | (-01U << 20),
+		BOXKEY_TDC_MASK | (-02U << 20),
+		BOXKEY_TDC_MASK | (-03U << 20),
+		BOXKEY_TDC_MASK | (-04U << 20),
 		BOXKEY_TDC_MASK | (-05U << 20),
 		BOXKEY_TDC_MASK | (-10U << 20),
 		BOXKEY_TDC_MASK | (-50U << 20)
@@ -11654,8 +11716,18 @@ int Shortcut(SCANKEY *scan)
 	AppendWindow(
 		CreateBox(scan->key, origin, select,
 			(char*) RSC(BOX_TDC_TITLE).CODE(),
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_TDC_DESC).CODE()   , descAttr,	SCANKEY_NULL,
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			RSC(BOX_TDC_DESC).CODE(),	descAttr , SCANKEY_NULL,
+
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			RSC(BOX_AMP_OFFSET_00).CODE(),	stateAttr[0], key[ 0],
+			RSC(BOX_AMP_OFFSET_01).CODE(),	stateAttr[0], key[ 1],
+			RSC(BOX_AMP_OFFSET_02).CODE(),	stateAttr[0], key[ 2],
+			RSC(BOX_AMP_OFFSET_03).CODE(),	stateAttr[0], key[ 3],
+			RSC(BOX_AMP_OFFSET_04).CODE(),	stateAttr[0], key[ 4],
+			RSC(BOX_AMP_OFFSET_05).CODE(),	stateAttr[0], key[ 5],
+			RSC(BOX_AMP_OFFSET_06).CODE(),	stateAttr[0], key[ 6],
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
 
 			stateStr[1][Shm->Proc.Power.Feature.TDC],
 			stateAttr[Shm->Proc.Power.Feature.TDC],
@@ -11665,16 +11737,15 @@ int Shortcut(SCANKEY *scan)
 			stateAttr[!Shm->Proc.Power.Feature.TDC],
 			BOXKEY_TDC_OR | 2,
 
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL,
-			RSC(BOX_AMP_OFFSET0).CODE(), stateAttr[0], key[0],
-			RSC(BOX_AMP_OFFSET1).CODE(), stateAttr[0], key[1],
-			RSC(BOX_AMP_OFFSET2).CODE(), stateAttr[0], key[2],
-			RSC(BOX_AMP_OFFSET3).CODE(), stateAttr[0], key[3],
-			RSC(BOX_AMP_OFFSET4).CODE(), stateAttr[0], key[4],
-			RSC(BOX_AMP_OFFSET5).CODE(), stateAttr[0], key[5],
-			RSC(BOX_AMP_OFFSET6).CODE(), stateAttr[0], key[6],
-			RSC(BOX_AMP_OFFSET7).CODE(), stateAttr[0], key[7],
-			RSC(BOX_BLANK_DESC).CODE() , blankAttr, SCANKEY_NULL),
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr, SCANKEY_NULL,
+			RSC(BOX_AMP_OFFSET_07).CODE(),	stateAttr[0], key[ 7],
+			RSC(BOX_AMP_OFFSET_08).CODE(),	stateAttr[0], key[ 8],
+			RSC(BOX_AMP_OFFSET_09).CODE(),	stateAttr[0], key[ 9],
+			RSC(BOX_AMP_OFFSET_10).CODE(),	stateAttr[0], key[10],
+			RSC(BOX_AMP_OFFSET_11).CODE(),	stateAttr[0], key[11],
+			RSC(BOX_AMP_OFFSET_12).CODE(),	stateAttr[0], key[12],
+			RSC(BOX_AMP_OFFSET_13).CODE(),	stateAttr[0], key[13],
+			RSC(BOX_BLANK_DESC).CODE(),	blankAttr,SCANKEY_NULL),
 		&winList);
       } else {
 	SetHead(&winList, win);
@@ -11687,7 +11758,7 @@ int Shortcut(SCANKEY *scan)
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_ON,
-				TECHNOLOGY_TDC_LIMIT );
+				TECHNOLOGY_TDC_LIMITING );
 	}
     break;
 
@@ -11696,7 +11767,7 @@ int Shortcut(SCANKEY *scan)
 		RING_WRITE(	Shm->Ring[0],
 				COREFREQ_IOCTL_TECHNOLOGY,
 				COREFREQ_TOGGLE_OFF,
-				TECHNOLOGY_TDC_LIMIT );
+				TECHNOLOGY_TDC_LIMITING );
 	}
     break;
 
@@ -12386,10 +12457,10 @@ int Shortcut(SCANKEY *scan)
 					cpu );
 	}
       }
-      else if ((scan->key & BOXKEY_PLX_AND) == BOXKEY_PLX_AND)
+      else if ((scan->key & BOXKEY_PLX_OP) == BOXKEY_PLX_OP)
       {
-	const enum PWR_DOMAIN	pw = (scan->key >> 4) & BOXKEY_TDP_MASK;
-	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 3;
+	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
+	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
 	const unsigned short offset= (scan->key & BOXKEY_TDP_OFFSET) >> 20;
 
 	if (!RING_FULL(Shm->Ring[0])) {

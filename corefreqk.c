@@ -137,13 +137,21 @@ module_param_array(Custom_TDP_Offset, short, &Custom_TDP_Count ,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Custom_TDP_Offset, "TDP Limit Offset (watt)");
 
-static unsigned int Activate_TDP_Count = 0;
+static unsigned int TDP_Limiting_Count = 0;
 static signed short Activate_TDP_Limit[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
 			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
-module_param_array(Activate_TDP_Limit, short, &Activate_TDP_Count,	\
+module_param_array(Activate_TDP_Limit, short, &TDP_Limiting_Count,	\
 					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limit");
+MODULE_PARM_DESC(Activate_TDP_Limit, "Activate TDP Limiting");
+
+static unsigned int TDP_Clamping_Count = 0;
+static signed short Activate_TDP_Clamp[PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE)] = {
+			-1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+module_param_array(Activate_TDP_Clamp, short, &TDP_Clamping_Count,	\
+					S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(Activate_TDP_Clamp, "Activate TDP Clamping");
 
 static unsigned short Custom_TDC_Offset = 0;
 module_param(Custom_TDC_Offset, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -151,7 +159,7 @@ MODULE_PARM_DESC(Custom_TDC_Offset, "TDC Limit Offset (amp)");
 
 static signed short Activate_TDC_Limit = -1;
 module_param(Activate_TDC_Limit, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limit");
+MODULE_PARM_DESC(Activate_TDC_Limit, "Activate TDC Limiting");
 
 static signed short L1_HW_PREFETCH_Disable = -1;
 module_param(L1_HW_PREFETCH_Disable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
@@ -3171,7 +3179,7 @@ void Nehalem_PowerLimit(void)
 	    }
 	}
     }
-    if (Activate_TDP_Count > 0) {
+    if (TDP_Limiting_Count > 0) {
 	switch (Activate_TDP_Limit[PWR_DOMAIN(PKG)]) {
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
@@ -3261,7 +3269,7 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 	  }
 	}
     }
-	if (Activate_TDP_Count > lt) {
+	if (TDP_Limiting_Count > lt) {
 		switch (Activate_TDP_Limit[lt]) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
@@ -3270,12 +3278,30 @@ void Intel_DomainPowerLimit(	unsigned int MSR_DOMAIN_POWER_LIMIT,
 			break;
 		}
 	}
+	if (TDP_Clamping_Count > lt) {
+		switch (Activate_TDP_Clamp[lt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Clamping1 = Activate_TDP_Clamp[lt];
+			WrRdMSR = 1;
+			break;
+		}
+	}
 	if (PowerLimitLockMask == PKG_POWER_LIMIT_LOCK_MASK) {
-	    if (Activate_TDP_Count > rt) {
+	    if (TDP_Limiting_Count > rt) {
 		switch (Activate_TDP_Limit[rt]) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			PowerLimit.Enable_Limit2 = Activate_TDP_Limit[rt];
+			WrRdMSR = 1;
+			break;
+		}
+	    }
+	    if (TDP_Clamping_Count > rt) {
+		switch (Activate_TDP_Clamp[rt]) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			PowerLimit.Clamping2 = Activate_TDP_Clamp[rt];
 			WrRdMSR = 1;
 			break;
 		}
@@ -15908,7 +15934,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		rc = RC_SUCCESS;
 		break;
 
-	case TECHNOLOGY_TDP_LIMIT:
+	case TECHNOLOGY_TDP_LIMITING:
 	    {
 		const enum PWR_DOMAIN	pw = prm.dh.lo;
 		const enum PWR_LIMIT	pl = prm.dh.hi;
@@ -15920,13 +15946,39 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:
 			Controller_Stop(1);
-			Activate_TDP_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
-			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
+			TDP_Limiting_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+			RESET_ARRAY(Activate_TDP_Limit, TDP_Limiting_Count, -1);
 			Activate_TDP_Limit[idx] = prm.dl.lo;
 
 			Controller_Start(1);
-			RESET_ARRAY(Activate_TDP_Limit, Activate_TDP_Count, -1);
-			Activate_TDP_Count = 0;
+			RESET_ARRAY(Activate_TDP_Limit, TDP_Limiting_Count, -1);
+			TDP_Limiting_Count = 0;
+			rc = RC_SUCCESS;
+			break;
+		}
+	      }
+	    }
+		break;
+
+	case TECHNOLOGY_TDP_CLAMPING:
+	    {
+		const enum PWR_DOMAIN	pw = prm.dh.lo;
+		const enum PWR_LIMIT	pl = prm.dh.hi;
+
+		const unsigned int idx = (PWR_LIMIT_SIZE * pw) + pl;
+	      if (idx < PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE))
+	      {
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			TDP_Clamping_Count = PWR_LIMIT_SIZE * PWR_DOMAIN(SIZE);
+			RESET_ARRAY(Activate_TDP_Clamp, TDP_Clamping_Count, -1);
+			Activate_TDP_Clamp[idx] = prm.dl.lo;
+
+			Controller_Start(1);
+			RESET_ARRAY(Activate_TDP_Clamp, TDP_Clamping_Count, -1);
+			TDP_Clamping_Count = 0;
 			rc = RC_SUCCESS;
 			break;
 		}
@@ -15957,7 +16009,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    }
 		break;
 
-	case TECHNOLOGY_TDC_LIMIT:
+	case TECHNOLOGY_TDC_LIMITING:
 		switch (prm.dl.lo) {
 		case COREFREQ_TOGGLE_OFF:
 		case COREFREQ_TOGGLE_ON:

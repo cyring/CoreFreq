@@ -1582,9 +1582,10 @@ enum {
 	TECHNOLOGY_L2_HW_PREFETCH,
 	TECHNOLOGY_L2_HW_CL_PREFETCH,
 	TECHNOLOGY_CFG_TDP_LVL,
-	TECHNOLOGY_TDP_LIMIT,
+	TECHNOLOGY_TDP_LIMITING,
 	TECHNOLOGY_TDP_OFFSET,
-	TECHNOLOGY_TDC_LIMIT,
+	TECHNOLOGY_TDP_CLAMPING,
+	TECHNOLOGY_TDC_LIMITING,
 	TECHNOLOGY_TDC_OFFSET
 };
 
@@ -1762,7 +1763,7 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 ({									\
 	RING_CTRL ctrl = {						\
 			.arg = 0x0LU,					\
-			.cmd = _cmd, .sub = _sub			\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1771,8 +1772,8 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_1xPARAM( _sub, Ring, _cmd, _arg)			\
 ({									\
 	RING_CTRL ctrl = {						\
-			.arg = _arg,					\
-			.cmd = _cmd, .sub = _sub			\
+			.arg = (_arg),					\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1781,9 +1782,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_2xPARAM( _sub, Ring, _cmd, _dllo, _dlhi)		\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
 			.dh = {.lo = 0x0U , .hi = 0x0U },		\
-			.cmd = _cmd, .sub = _sub			\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1792,9 +1793,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_3xPARAM( _sub, Ring, _cmd, _dllo, _dlhi, _dhlo)	\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
-			.dh = {.lo = _dhlo, .hi = 0x0U },		\
-			.cmd = _cmd, .sub = _sub			\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
+			.dh = {.lo = (_dhlo), .hi = 0x0U },		\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
@@ -1803,9 +1804,9 @@ FEAT_MSG("Macroing:RING_MOVE(XMM)")
 #define RING_WRITE_4xPARAM(_sub, Ring, _cmd, _dllo, _dlhi, _dhlo, _dhhi)\
 ({									\
 	RING_CTRL ctrl = {						\
-			.dl = {.lo = _dllo, .hi = _dlhi},		\
-			.dh = {.lo = _dhlo, .hi = _dhhi},		\
-			.cmd = _cmd, .sub = _sub			\
+			.dl = {.lo = (_dllo), .hi = (_dlhi)},		\
+			.dh = {.lo = (_dhlo), .hi = (_dhhi)},		\
+			.cmd = (_cmd), .sub = (_sub)			\
 	};								\
 	unsigned int head = Ring.head++ & (RING_SIZE - 1);		\
 	RING_MOVE(Ring.buffer[head], ctrl);				\
