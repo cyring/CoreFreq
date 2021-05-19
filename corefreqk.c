@@ -9734,8 +9734,6 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 
 #define SMT_Counters_AMD_Family_17h(Core, T)				\
 ({									\
-	register unsigned long long Cx;					\
-									\
 	RDTSCP_COUNTERx3(Core->Counter[T].TSC,				\
 			MSR_CORE_PERF_UCC, Core->Counter[T].C0.UCC,	\
 			MSR_CORE_PERF_URC, Core->Counter[T].C0.URC,	\
@@ -9750,14 +9748,13 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C5); \
 	Atomic_Add_VPMC (LOCKLESS, Core->Counter[T].C6, Core->VPMC.C6); \
     }									\
-	Cx =	Core->Counter[T].C6					\
-		+ Core->Counter[T].C3					\
-		+ Core->Counter[T].C0.URC;				\
-									\
+    else								\
+    {									\
 	Core->Counter[T].C1 =						\
-		(Core->Counter[T].TSC > Cx) ?				\
-			Core->Counter[T].TSC - Cx			\
+		(Core->Counter[T].TSC > Core->Counter[T].C0.URC) ?	\
+			Core->Counter[T].TSC - Core->Counter[T].C0.URC	\
 			: 0;						\
+    }									\
 })
 
 #define Mark_OVH(Core)							\
@@ -13816,8 +13813,8 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 {
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
-/*	Source: /drivers/acpi/processor_idle.c				*/
-	safe_halt();
+/*	Source: /arch/x86/include/asm/irqflags.h			*/
+	native_safe_halt();
 	return index;
 }
 
@@ -13845,7 +13842,7 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
-	safe_halt();
+	native_safe_halt();
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
