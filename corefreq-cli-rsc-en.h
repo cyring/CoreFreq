@@ -867,6 +867,7 @@
 #define RSC_SETTINGS_THERMAL_SCOPE_CODE_EN    " Thermal scope           <    > "
 #define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_EN    " Voltage scope           <    > "
 #define RSC_SETTINGS_POWER_SCOPE_CODE_EN      " Power scope             <    > "
+#define RSC_SETTINGS_IDLE_ROUTE_CODE_EN       " CPU-IDLE route                 "
 
 #define RSC_HELP_TITLE_CODE_EN		" Help "
 #define RSC_HELP_KEY_ESCAPE_CODE_EN	" [Escape]         "

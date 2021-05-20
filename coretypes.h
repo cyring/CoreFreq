@@ -1462,10 +1462,12 @@ enum IDLE_ROUTE {
 	ROUTE_DEFAULT	= 0,
 	ROUTE_IO	= 1,
 	ROUTE_HALT	= 2,
-	ROUTE_MWAIT	= 3
+	ROUTE_MWAIT	= 3,
+	ROUTE_SIZE
 };
 
 typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
+	enum IDLE_ROUTE Route;
 	unsigned short	CPUidle :  2-0,
 			CPUfreq :  4-2,
 			Governor:  6-4,
@@ -1474,13 +1476,6 @@ typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 } KERNEL_DRIVER;
 
 typedef struct {
-
-	struct {
-		struct {
-			size_t	Size;
-			int	Order;
-		} ReqMem;
-	};
 	struct {
 		int		stateCount,
 				stateLimit;
@@ -1560,7 +1555,8 @@ enum {
 	MACHINE_CPU_FREQ,
 	MACHINE_GOVERNOR,
 	MACHINE_CLOCK_SOURCE,
-	MACHINE_FORMULA_SCOPE
+	MACHINE_FORMULA_SCOPE,
+	MACHINE_IDLE_ROUTE
 };
 
 enum {

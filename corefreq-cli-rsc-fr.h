@@ -575,6 +575,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_SETTINGS_THERMAL_SCOPE_CODE_FR    " Capteur thermique       <    > "
 #define RSC_SETTINGS_VOLTAGE_SCOPE_CODE_FR    " Capteur de tension      <    > "
 #define RSC_SETTINGS_POWER_SCOPE_CODE_FR      " Capteur de puissance    <    > "
+#define RSC_SETTINGS_IDLE_ROUTE_CODE_FR       " Route CPU-IDLE                 "
 
 #define RSC_HELP_TITLE_CODE_FR		" Aide "
 #define RSC_HELP_KEY_ESCAPE_CODE_FR	" [""\x89""chap]          "

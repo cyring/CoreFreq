@@ -6075,6 +6075,21 @@ void PCI_Probe_Update(TGrid *grid, DATA_TYPE data)
 	SettingUpdate(grid, bix, pos, 3, ENABLED(bix));
 }
 
+void IdleRoute_Update(TGrid *grid, DATA_TYPE data)
+{
+	const ASCII *instructions[ROUTE_SIZE] = {
+		RSC(SETTINGS_ROUTE_DFLT).CODE(),
+		RSC(SETTINGS_ROUTE_IO).CODE(),
+		RSC(SETTINGS_ROUTE_HALT).CODE(),
+		RSC(SETTINGS_ROUTE_MWAIT).CODE()
+	};
+	UNUSED(data);
+
+	memcpy(&grid->cell.item[grid->cell.length - RSZ(SETTINGS_ROUTE_DFLT)-2],
+		instructions[Shm->Registration.Driver.Route],
+		RSZ(SETTINGS_ROUTE_DFLT));
+}
+
 void NMI_Registration_Update(TGrid *grid, DATA_TYPE data)
 {
 	const unsigned int bix = BITWISEAND(	LOCKLESS,
@@ -6152,15 +6167,19 @@ Window *CreateSettings(unsigned long long id)
 		RSC(CREATE_SETTINGS_COND0).ATTR(),
 		RSC(CREATE_SETTINGS_COND1).ATTR()
 	};
-	size_t length = strlen(Shm->ShmName);
+	TGrid *grid;
 	unsigned int bix;
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
 
-	StoreTCell(wSet, SCANKEY_NULL,  RSC(SETTINGS_DAEMON).CODE(),
-					MAKE_PRINT_UNFOCUS);
-
+	grid = StoreTCell(wSet, SCANKEY_NULL, RSC(SETTINGS_DAEMON).CODE(),
+				MAKE_PRINT_UNFOCUS);
+	if (grid != NULL) {
+		const size_t length = strlen(Shm->ShmName);
+		memcpy(&grid->cell.item[grid->cell.length - length - 1],
+			Shm->ShmName, length);
+	}
 	GridCall( StoreTCell(	wSet, OPS_INTERVAL,
 				RSC(SETTINGS_INTERVAL).CODE(),
 				MAKE_PRINT_UNFOCUS ),
@@ -6230,6 +6249,15 @@ Window *CreateSettings(unsigned long long id)
 		NMI_Registration_Update );
 
 	bix = Shm->Registration.Driver.CPUidle & REGISTRATION_ENABLE;
+	grid = GridCall( StoreTCell(	wSet, bix ? OPS_IDLE_ROUTE:SCANKEY_NULL,
+					RSC(SETTINGS_IDLE_ROUTE).CODE(),
+					MAKE_PRINT_UNFOCUS ),
+			IdleRoute_Update );
+	if (grid != NULL) {
+		grid->cell.item[grid->cell.length -  2] = bix ? '>' : ']';
+		grid->cell.item[grid->cell.length - 10] = bix ? '<' : '[';
+	}
+
 	GridCall( StoreTCell(	wSet, OPS_CPU_IDLE,
 				RSC(SETTINGS_CPUIDLE_REGISTERED).CODE(),
 				attrib[bix] ),
@@ -6273,8 +6301,6 @@ Window *CreateSettings(unsigned long long id)
 
 	StoreTCell(wSet, SCANKEY_NULL,  RSC(CREATE_SETTINGS_COND0).CODE(),
 					MAKE_PRINT_UNFOCUS);
-
-	memcpy(&TCellAt(wSet, 0, 1).item[31 - length], Shm->ShmName, length);
 
 	StoreWindow(wSet, .title, (char*) RSC(SETTINGS_TITLE).CODE());
 
@@ -9274,6 +9300,59 @@ int Shortcut(SCANKEY *scan)
 				COREFREQ_TOGGLE_ON,
 				MACHINE_EXPERIMENTAL );
 	}
+    break;
+
+    case OPS_IDLE_ROUTE:
+    {
+	Coordinate origin = {
+		.col = (draw.Size.width - RSZ(BOX_BLANK_DESC)) / 2,
+		.row = TOP_HEADER_ROW + 3
+	};
+	const Coordinate select = {
+		.col = 0,
+		.row = Shm->Registration.Driver.Route
+	};
+	Window *wSettings = SearchWinListById(SCANKEY_s, &winList);
+	if (wSettings != NULL) {
+		origin.col = wSettings->matrix.origin.col
+			+ wSettings->lazyComp.rowLen
+			- 4 - RSZ(SETTINGS_ROUTE_DFLT);
+		origin.row = wSettings->matrix.origin.row
+			+ 16 - wSettings->matrix.scroll.vert;
+	}
+	Window *wDrop = CreateBox(scan->key, origin, select, NULL,
+				RSC(SETTINGS_ROUTE_DFLT).CODE(),
+					MAKE_PRINT_DROP, OPS_ROUTE_DFLT,
+				RSC(SETTINGS_ROUTE_IO).CODE(),
+					MAKE_PRINT_DROP, OPS_ROUTE_IO,
+				RSC(SETTINGS_ROUTE_HALT).CODE(),
+					MAKE_PRINT_DROP, OPS_ROUTE_HALT,
+				RSC(SETTINGS_ROUTE_MWAIT).CODE(),
+					MAKE_PRINT_DROP, OPS_ROUTE_MWAIT );
+	if (wDrop != NULL) {
+		StoreWindow(wDrop, .color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(wDrop, .color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(wDrop, .color[1].title,MakeAttr(BLACK,0,WHITE,1));
+		StoreWindow(wDrop, .Print, ForEachCellPrint_Drop);
+
+		AppendWindow(wDrop, &winList);
+	}
+    }
+    break;
+
+    case OPS_ROUTE_DFLT:
+    case OPS_ROUTE_IO:
+    case OPS_ROUTE_HALT:
+    case OPS_ROUTE_MWAIT:
+    {
+	enum IDLE_ROUTE idleRoute = (scan->key & BOXKEY_ROUTE_MASK) >> 4;
+	if (!RING_FULL(Shm->Ring[0])) {
+		RING_WRITE(	Shm->Ring[0],
+				COREFREQ_IOCTL_MACHINE,
+				idleRoute,
+				MACHINE_IDLE_ROUTE );
+	}
+    }
     break;
 
     case OPS_INTERRUPTS:

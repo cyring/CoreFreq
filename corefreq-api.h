@@ -818,6 +818,13 @@ typedef struct
 	  };
 	} PowerThermal;
 
+	struct {
+		struct {
+			size_t	Size;
+			int	Order;
+		} ReqMem;
+	} Gate;
+
 	OS_DRIVER		OS;
 
 	struct {

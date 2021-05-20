@@ -5006,7 +5006,7 @@ void SysGate_Kernel(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
 	SYSGATE_RO *SysGate = Ref->SysGate;
-    if (SysGate != NULL) {
+
 	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
 	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
 	Shm->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
@@ -5015,7 +5015,6 @@ void SysGate_Kernel(REF *Ref)
 	memcpy(Shm->SysGate.release, SysGate->release, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.version, SysGate->version, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
-    }
 }
 
 static const int reverseSign[2] = {+1, -1};
@@ -5102,7 +5101,6 @@ void SysGate_Update(REF *Ref)
 	SYSGATE_RO *SysGate = Ref->SysGate;
 	PROC_RO *Proc = Ref->Proc_RO;
 
-    if (SysGate != NULL) {
 	Shm->SysGate.taskCount = SysGate->taskCount;
 
 	memcpy( Shm->SysGate.taskList, SysGate->taskList,
@@ -5119,7 +5117,7 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
 	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
 	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
-    }
+
 	Shm->SysGate.OS.IdleDriver.stateLimit = Proc->OS.IdleDriver.stateLimit;
 }
 
@@ -5151,7 +5149,7 @@ void PerCore_Update(	SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core,
 int SysGate_OnDemand(REF *Ref, int operation)
 {
 	int rc = -1;
-	const size_t allocPages = PAGE_SIZE << Ref->Proc_RO->OS.ReqMem.Order;
+	const size_t allocPages = PAGE_SIZE << Ref->Proc_RO->Gate.ReqMem.Order;
 	if (operation == 0) {
 	    if (Ref->SysGate != NULL) {
 		if ((rc = munmap(Ref->SysGate, allocPages)) == 0) {

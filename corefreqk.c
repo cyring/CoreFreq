@@ -13720,14 +13720,15 @@ long SysGate_OnDemand(void)
 	long rc = -1;
     if (PUBLIC(OF(Gate)) == NULL)
     {	/*			On-demand allocation.			*/
-	PUBLIC(OF(Gate)) = alloc_pages_exact( PUBLIC(RO(Proc))->OS.ReqMem.Size,
-						GFP_KERNEL );
-      if (PUBLIC(OF(Gate)) != NULL)
-      {
-	const size_t allocPages=PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+	PUBLIC(OF(Gate)) = alloc_pages_exact(PUBLIC(RO(Proc))->Gate.ReqMem.Size,
+						GFP_KERNEL);
+	if (PUBLIC(OF(Gate)) != NULL)
+	{
+		const size_t
+		allocPages = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
 		memset(PUBLIC(OF(Gate)), 0, allocPages);
 		rc = 0;
-      }
+	}
     } else {					/* Already allocated	*/
 		rc = 1;
     }
@@ -13847,7 +13848,7 @@ static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 		"# RFLAGS"	"\n\t"
 		"pushfq"	"\n\t"
 		"popq	%0"
-		: "=r" (Core->SystemRegister.RFLAGS)
+		: "=m" (Core->SystemRegister.RFLAGS)
 		:
 		: "cc", "memory"
 	);
@@ -13886,7 +13887,7 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 		"# RFLAGS"	"\n\t"
 		"pushfq"	"\n\t"
 		"popq	%0"
-		: "=r" (Core->SystemRegister.RFLAGS)
+		: "=m" (Core->SystemRegister.RFLAGS)
 		:
 		: "cc", "memory"
 	);
@@ -13934,8 +13935,18 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 
 	UNUSED(pIdleDriver);
 
-	inw(cstate_addr);
-
+	__asm__ volatile
+	(
+		"xorw	%%ax,	%%ax"	"\n\t"
+		"movw	%1,	%%dx"	"\n\t"
+		"inw	%%dx,	%%ax"	"\n\t"
+		"# RFLAGS"		"\n\t"
+		"pushfq"		"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		: "ir" (cstate_addr)
+		: "%ax", "cc", "memory"
+	);
 	return index;
 }
 
@@ -13969,7 +13980,18 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 
 	UNUSED(pIdleDriver);
 
-	inw(cstate_addr);
+	__asm__ volatile
+	(
+		"xorw	%%ax,	%%ax"	"\n\t"
+		"movw	%1,	%%dx"	"\n\t"
+		"inw	%%dx,	%%ax"	"\n\t"
+		"# RFLAGS"		"\n\t"
+		"pushfq"		"\n\t"
+		"popq	%0"
+		: "=m" (Core->SystemRegister.RFLAGS)
+		: "ir" (cstate_addr)
+		: "%ax", "cc", "memory"
+	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
@@ -14378,7 +14400,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'T';
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_MWAIT;
 		break;
+
 	  case ROUTE_HALT:
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
@@ -14415,7 +14440,10 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'T';
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_HALT;
 		break;
+
 	  case ROUTE_IO:
 	  {
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
@@ -14468,10 +14496,15 @@ static int CoreFreqK_IdleDriver_Init(void)
 			CoreFreqK.IdleDriver.state_count
 		].desc[2] = 'O';
 	  }
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_IO;
 		break;
+
 	  case ROUTE_DEFAULT:
 	  IDLE_DEFAULT:
 	  default:
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_DEFAULT;
+
 	    if (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_INTEL)
 	    {
 		CoreFreqK.IdleDriver.states[
@@ -14481,17 +14514,38 @@ static int CoreFreqK_IdleDriver_Init(void)
 		CoreFreqK.IdleDriver.states[
 			CoreFreqK.IdleDriver.state_count
 		].enter_s2idle = CoreFreqK_S2_MWAIT_Handler;
+
+		PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_MWAIT;
 	    }
 	    else if ((PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_AMD)
 		|| (PUBLIC(RO(Proc))->Features.Info.Vendor.CRC == CRC_HYGON))
 	    {
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter = CoreFreqK_HALT_AMD_Handler;
+		CSTATE_BASE_ADDR CStateBaseAddr = {.value = 0};
+		RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
+		if (CStateBaseAddr.IOaddr != 0x0)
+		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_IO_Handler;
 
-		CoreFreqK.IdleDriver.states[
-			CoreFreqK.IdleDriver.state_count
-		].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_IO_Handler;
+
+			PUBLIC(RO(Proc))->Registration.Driver.Route = ROUTE_IO;
+		}
+		else
+		{
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter = CoreFreqK_HALT_AMD_Handler;
+
+			CoreFreqK.IdleDriver.states[
+				CoreFreqK.IdleDriver.state_count
+			].enter_s2idle = CoreFreqK_S2_HALT_AMD_Handler;
+
+			PUBLIC(RO(Proc))->Registration.Driver.Route=ROUTE_HALT;
+		}
 	    }
 	    else {
 		pr_warn("CoreFreq: "	\
@@ -15584,6 +15638,25 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	}
 	break;
 
+      case MACHINE_IDLE_ROUTE:
+	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
+	{
+		Controller_Stop(1);
+		rc = CoreFreqK_UnRegister_CPU_Idle();
+		Register_CPU_Idle = -1;
+		if (rc == RC_SUCCESS)
+		{
+			Register_CPU_Idle = 1;
+			Idle_Route = prm.dl.lo;
+			rc = CoreFreqK_Register_CPU_Idle();
+			if (rc == RC_SUCCESS) {
+				SYSGATE_UPDATE(rc);
+			}
+		}
+		Controller_Start(1);
+	}
+	break;
+
       case MACHINE_CPU_FREQ:
 	switch (prm.dl.lo)
 	{
@@ -16244,8 +16317,8 @@ static int CoreFreqK_mmap(struct file *pfile, struct vm_area_struct *vma)
 	case 1:
 		/* Fallthrough */
 	case 0: {
-		const unsigned long secSize = \
-				PAGE_SIZE << PUBLIC(RO(Proc))->OS.ReqMem.Order;
+		const unsigned long
+		secSize = PAGE_SIZE << PUBLIC(RO(Proc))->Gate.ReqMem.Order;
 		if (reqSize != secSize) {
 			return (-EAGAIN);
 		}
@@ -16841,9 +16914,10 @@ static int CoreFreqK_Scale_And_Compute_Level_Up(INIT_ARG *pArg)
 
 	PUBLIC(RO(Proc))->CPU.Count = pArg->SMT_Count;
 	/* PreCompute SysGate memory allocation. */
-	PUBLIC(RO(Proc))->OS.ReqMem.Size = sizeof(SYSGATE_RO);
-	PUBLIC(RO(Proc))->OS.ReqMem.Order = \
-				get_order(PUBLIC(RO(Proc))->OS.ReqMem.Size);
+	PUBLIC(RO(Proc))->Gate.ReqMem.Size = sizeof(SYSGATE_RO);
+
+	PUBLIC(RO(Proc))->Gate.ReqMem.Order = \
+				get_order(PUBLIC(RO(Proc))->Gate.ReqMem.Size);
 
 	PUBLIC(RO(Proc))->Registration.AutoClock = AutoClock;
 	PUBLIC(RO(Proc))->Registration.Experimental = Experimental;
@@ -17001,7 +17075,7 @@ static void CoreFreqK_Ignition_Level_Down(void)
 
     if (PUBLIC(OF(Gate)) != NULL)
     {
-	free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->OS.ReqMem.Size);
+	free_pages_exact(PUBLIC(OF(Gate)), PUBLIC(RO(Proc))->Gate.ReqMem.Size);
     }
 }
 
