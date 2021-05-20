@@ -678,12 +678,10 @@ typedef struct
 
 
 typedef struct {
-		OS_DRIVER	OS;
-
 		int		taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
-		MEM_MCB		memInfo;
+		MEM_MCB 	memInfo;
 
 		unsigned int	kernelVersionNumber;
 
@@ -820,12 +818,7 @@ typedef struct
 	  };
 	} PowerThermal;
 
-	struct {
-		struct {
-			size_t	Size;
-			int	Order;
-		} ReqMem;
-	} OS;
+	OS_DRIVER		OS;
 
 	struct {
 		Bit64		NMI;

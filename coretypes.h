@@ -1474,6 +1474,13 @@ typedef struct {	/* 0: Disable; 1: Enable; 2: Full-control	*/
 } KERNEL_DRIVER;
 
 typedef struct {
+
+	struct {
+		struct {
+			size_t	Size;
+			int	Order;
+		} ReqMem;
+	};
 	struct {
 		int		stateCount,
 				stateLimit;

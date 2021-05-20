@@ -4956,48 +4956,48 @@ void SystemRegisters(SHM_STRUCT *Shm, CORE_RO **Core, unsigned int cpu)
 
 void SysGate_OS_Driver(REF *Ref)
 {
-    SHM_STRUCT *Shm = Ref->Shm;
-    SYSGATE_RO *SysGate = Ref->SysGate;
+	SHM_STRUCT *Shm = Ref->Shm;
+	PROC_RO *Proc = Ref->Proc_RO;
 
 	memset(&Shm->SysGate.OS, 0, sizeof(OS_DRIVER));
-    if (strlen(SysGate->OS.IdleDriver.Name) > 0) {
+    if (strlen(Proc->OS.IdleDriver.Name) > 0) {
 	int idx;
 
 	StrCopy(Shm->SysGate.OS.IdleDriver.Name,
-		SysGate->OS.IdleDriver.Name,
+		Proc->OS.IdleDriver.Name,
 		CPUIDLE_NAME_LEN);
 
-	Shm->SysGate.OS.IdleDriver.stateCount=SysGate->OS.IdleDriver.stateCount;
-	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
+	Shm->SysGate.OS.IdleDriver.stateCount = Proc->OS.IdleDriver.stateCount;
+	Shm->SysGate.OS.IdleDriver.stateLimit = Proc->OS.IdleDriver.stateLimit;
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
 		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Name,
-			SysGate->OS.IdleDriver.State[idx].Name,
+			Proc->OS.IdleDriver.State[idx].Name,
 			CPUIDLE_NAME_LEN);
 
 		StrCopy(Shm->SysGate.OS.IdleDriver.State[idx].Desc,
-			SysGate->OS.IdleDriver.State[idx].Desc,
+			Proc->OS.IdleDriver.State[idx].Desc,
 			CPUIDLE_NAME_LEN);
 
 		Shm->SysGate.OS.IdleDriver.State[idx].exitLatency =
-			SysGate->OS.IdleDriver.State[idx].exitLatency;
+				Proc->OS.IdleDriver.State[idx].exitLatency;
 
 		Shm->SysGate.OS.IdleDriver.State[idx].powerUsage =
-			SysGate->OS.IdleDriver.State[idx].powerUsage;
+				Proc->OS.IdleDriver.State[idx].powerUsage;
 
 		Shm->SysGate.OS.IdleDriver.State[idx].targetResidency =
-			SysGate->OS.IdleDriver.State[idx].targetResidency;
+				Proc->OS.IdleDriver.State[idx].targetResidency;
 	}
     }
-    if (strlen(SysGate->OS.FreqDriver.Name) > 0) {
+    if (strlen(Proc->OS.FreqDriver.Name) > 0) {
 	StrCopy(Shm->SysGate.OS.FreqDriver.Name,
-		SysGate->OS.FreqDriver.Name,
+		Proc->OS.FreqDriver.Name,
 		CPUFREQ_NAME_LEN);
     }
-    if (strlen(SysGate->OS.FreqDriver.Governor) > 0) {
+    if (strlen(Proc->OS.FreqDriver.Governor) > 0) {
 	StrCopy(Shm->SysGate.OS.FreqDriver.Governor,
-		SysGate->OS.FreqDriver.Governor,
+		Proc->OS.FreqDriver.Governor,
 		CPUFREQ_NAME_LEN);
     }
 }
@@ -5006,7 +5006,7 @@ void SysGate_Kernel(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
 	SYSGATE_RO *SysGate = Ref->SysGate;
-
+    if (SysGate != NULL) {
 	Shm->SysGate.kernel.version = SysGate->kernelVersionNumber >> 16;
 	Shm->SysGate.kernel.major = (SysGate->kernelVersionNumber >> 8) & 0xff;
 	Shm->SysGate.kernel.minor = SysGate->kernelVersionNumber & 0xff;
@@ -5015,6 +5015,7 @@ void SysGate_Kernel(REF *Ref)
 	memcpy(Shm->SysGate.release, SysGate->release, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.version, SysGate->version, MAX_UTS_LEN);
 	memcpy(Shm->SysGate.machine, SysGate->machine, MAX_UTS_LEN);
+    }
 }
 
 static const int reverseSign[2] = {+1, -1};
@@ -5099,7 +5100,9 @@ void SysGate_Update(REF *Ref)
 {
 	SHM_STRUCT *Shm = Ref->Shm;
 	SYSGATE_RO *SysGate = Ref->SysGate;
+	PROC_RO *Proc = Ref->Proc_RO;
 
+    if (SysGate != NULL) {
 	Shm->SysGate.taskCount = SysGate->taskCount;
 
 	memcpy( Shm->SysGate.taskList, SysGate->taskList,
@@ -5116,8 +5119,8 @@ void SysGate_Update(REF *Ref)
 	Shm->SysGate.memInfo.bufferram = SysGate->memInfo.bufferram;
 	Shm->SysGate.memInfo.totalhigh = SysGate->memInfo.totalhigh;
 	Shm->SysGate.memInfo.freehigh  = SysGate->memInfo.freehigh;
-
-	Shm->SysGate.OS.IdleDriver.stateLimit=SysGate->OS.IdleDriver.stateLimit;
+    }
+	Shm->SysGate.OS.IdleDriver.stateLimit = Proc->OS.IdleDriver.stateLimit;
 }
 
 void PerCore_Update(	SHM_STRUCT *Shm, PROC_RO *Proc, CORE_RO **Core,

@@ -13620,11 +13620,9 @@ static void Stop_AMD_Family_17h(void *arg)
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
 
-long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
+long Sys_OS_Driver_Query(void)
 {
 	int rc = RC_SUCCESS;
-  if (SysGate != NULL)
-  {
 #ifdef CONFIG_CPU_FREQ
 	const char *pFreqDriver;
 	struct cpufreq_policy freqPolicy;
@@ -13632,53 +13630,56 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
 #ifdef CONFIG_CPU_IDLE
 	struct cpuidle_driver *idleDriver;
 #endif /* CONFIG_CPU_IDLE */
-	memset(&SysGate->OS, 0, sizeof(OS_DRIVER));
+	memset(&PUBLIC(RO(Proc))->OS, 0, sizeof(OS_DRIVER));
 #ifdef CONFIG_CPU_IDLE
     if ((idleDriver = cpuidle_get_driver()) != NULL)
     {
 	int idx;
-	StrCopy(SysGate->OS.IdleDriver.Name, idleDriver->name,CPUIDLE_NAME_LEN);
 
-	if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
-		SysGate->OS.IdleDriver.stateCount = idleDriver->state_count;
-	} else {
-		SysGate->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
-	}
-		SysGate->OS.IdleDriver.stateLimit = idleDriver->state_count;
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.Name,
+		idleDriver->name,
+		CPUIDLE_NAME_LEN);
 
-	for (idx = 0; idx < SysGate->OS.IdleDriver.stateCount; idx++)
-	{
-		StrCopy(SysGate->OS.IdleDriver.State[idx].Name,
-			idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
+      if (idleDriver->state_count < CPUIDLE_STATE_MAX) {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = idleDriver->state_count;
+      } else {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateCount = CPUIDLE_STATE_MAX;
+      }
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idleDriver->state_count;
 
-		StrCopy(SysGate->OS.IdleDriver.State[idx].Desc,
-			idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
+      for (idx = 0; idx < PUBLIC(RO(Proc))->OS.IdleDriver.stateCount; idx++)
+      {
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Name,
+		idleDriver->states[idx].name, CPUIDLE_NAME_LEN);
 
-		SysGate->OS.IdleDriver.State[idx].exitLatency = \
-				idleDriver->states[idx].exit_latency;
+	StrCopy(PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].Desc,
+		idleDriver->states[idx].desc, CPUIDLE_NAME_LEN);
 
-		SysGate->OS.IdleDriver.State[idx].powerUsage = \
-				idleDriver->states[idx].power_usage;
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].exitLatency = \
+					idleDriver->states[idx].exit_latency;
 
-		SysGate->OS.IdleDriver.State[idx].targetResidency = \
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].powerUsage = \
+					idleDriver->states[idx].power_usage;
+
+	PUBLIC(RO(Proc))->OS.IdleDriver.State[idx].targetResidency = \
 				idleDriver->states[idx].target_residency;
-	}
-	if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+      }
+      if(PUBLIC(RO(Proc))->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
+      {
+	for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
 	{
-	  for (idx = 0; idx < CoreFreqK.IdleDriver.state_count; idx++)
-	  {
 	    if (CoreFreqK.IdleDriver.states[idx].flags & CPUIDLE_FLAG_UNUSABLE)
 	    {
-		SysGate->OS.IdleDriver.stateLimit = idx;
+		PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = idx;
 		break;
 	    }
-	  }
 	}
+      }
     }
 #endif /* CONFIG_CPU_IDLE */
 #ifdef CONFIG_CPU_FREQ
 	if ((pFreqDriver = cpufreq_get_current_driver()) != NULL) {
-		StrCopy(SysGate->OS.FreqDriver.Name,
+		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Name,
 			pFreqDriver, CPUFREQ_NAME_LEN);
 	}
 	memset(&freqPolicy, 0, sizeof(freqPolicy));
@@ -13686,18 +13687,15 @@ long Sys_OS_Driver_Query(SYSGATE_RO *SysGate)
     {
 	struct cpufreq_governor *pGovernor = freqPolicy.governor;
 	if (pGovernor != NULL) {
-		StrCopy(SysGate->OS.FreqDriver.Governor,
+		StrCopy(PUBLIC(RO(Proc))->OS.FreqDriver.Governor,
 			pGovernor->name, CPUFREQ_NAME_LEN);
 	} else {
-		SysGate->OS.FreqDriver.Governor[0] = '\0';
+		PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
 	}
     } else {
-	SysGate->OS.FreqDriver.Governor[0] = '\0';
+	PUBLIC(RO(Proc))->OS.FreqDriver.Governor[0] = '\0';
     }
 #endif /* CONFIG_CPU_FREQ */
-  } else {
-	rc = -ENXIO;
-  }
 	return (rc);
 }
 
@@ -13734,6 +13732,33 @@ long SysGate_OnDemand(void)
 		rc = 1;
     }
 	return (rc);
+}
+
+#define Atomic_Write_VPMC( _Core, cycles, _lvl)				\
+{									\
+	switch (_lvl) {							\
+	case 0:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C1, cycles);	\
+		break;							\
+	case 1:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C2, cycles);	\
+		break;							\
+	case 2:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C3, cycles);	\
+		break;							\
+	case 3:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C4, cycles);	\
+		break;							\
+	case 4:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C5, cycles);	\
+		break;							\
+	case 5:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C6, cycles);	\
+		break;							\
+	case 6:								\
+		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C7, cycles);	\
+		break;							\
+	};								\
 }
 
 #if defined(CONFIG_CPU_IDLE) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
@@ -13811,10 +13836,21 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	UNUSED(pIdleDevice);
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+
 	UNUSED(pIdleDriver);
-/*	Source: /arch/x86/include/asm/irqflags.h			*/
-	native_safe_halt();
+/*	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	*/
+	__asm__ volatile
+	(
+		"sti"		"\n\t"
+		"hlt"		"\n\t"
+		"# RFLAGS"	"\n\t"
+		"pushfq"	"\n\t"
+		"popq	%0"
+		: "=r" (Core->SystemRegister.RFLAGS)
+		:
+		: "cc", "memory"
+	);
 	return index;
 }
 
@@ -13839,10 +13875,21 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
-	UNUSED(pIdleDevice);
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+
 	UNUSED(pIdleDriver);
 
-	native_safe_halt();
+	__asm__ volatile
+	(
+		"sti"		"\n\t"
+		"hlt"		"\n\t"
+		"# RFLAGS"	"\n\t"
+		"pushfq"	"\n\t"
+		"popq	%0"
+		: "=r" (Core->SystemRegister.RFLAGS)
+		:
+		: "cc", "memory"
+	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
 #endif /* 5.9.0 */
@@ -13878,14 +13925,13 @@ static int CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
 
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
-	UNUSED(pIdleDevice);
+
 	UNUSED(pIdleDriver);
 
 	inw(cstate_addr);
@@ -13914,14 +13960,13 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
 
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
-	UNUSED(pIdleDevice);
+
 	UNUSED(pIdleDriver);
 
 	inw(cstate_addr);
@@ -13956,42 +14001,14 @@ static int CoreFreqK_S2_IO_AMD_Handler(struct cpuidle_device *pIdleDevice,
 }
 #endif /* 5.9.0 */
 	/*		Idle Cycles callback functions			*/
-#define Atomic_Write_VPMC( _Core, cycles, _lvl)				\
-{									\
-	switch (_lvl) {							\
-	case 0:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C1, cycles);	\
-		break;							\
-	case 1:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C2, cycles);	\
-		break;							\
-	case 2:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C3, cycles);	\
-		break;							\
-	case 3:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C4, cycles);	\
-		break;							\
-	case 4:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C5, cycles);	\
-		break;							\
-	case 5:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C6, cycles);	\
-		break;							\
-	case 6:								\
-		Atomic_Add_VPMC(LOCKLESS, _Core->VPMC.C7, cycles);	\
-		break;							\
-	};								\
-}
-
 static int Alternative_Computation_Of_Cycles(
 	int (*Handler)(struct cpuidle_device*, struct cpuidle_driver*, int),
 			struct cpuidle_device *pIdleDevice,
 			struct cpuidle_driver *pIdleDriver, int index
 )
 {
-	unsigned long long TSC[2] __attribute__ ((aligned (8)));
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	unsigned long long TSC[3] __attribute__ ((aligned (8)));
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
@@ -14000,21 +14017,26 @@ static int Alternative_Computation_Of_Cycles(
 	{
 		RDTSCP64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
 	else
 	{
 		RDTSC64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSC64(TSC[1]);
+		RDTSC64(TSC[2]);
 	}
-	TSC[1] = TSC[1] - TSC[0];
+	TSC[2]	= TSC[2] - TSC[1]
+		- (TSC[1] > TSC[0] ? TSC[1] - TSC[0] : TSC[0] - TSC[1]);
 
-	Atomic_Write_VPMC(Core, TSC[1], lvl);
+	Atomic_Write_VPMC(Core, TSC[2], lvl);
 
 	return index;
 }
@@ -14032,9 +14054,8 @@ static int Alternative_Computation_Of_Cycles_S2(
 )
 #endif /* 5.9.0 */
 {
-	unsigned long long TSC[2] __attribute__ ((aligned (8)));
-	const unsigned int cpu = smp_processor_id();
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
+	unsigned long long TSC[3] __attribute__ ((aligned (8)));
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
@@ -14043,21 +14064,26 @@ static int Alternative_Computation_Of_Cycles_S2(
 	{
 		RDTSCP64(TSC[0]);
 
+		RDTSCP64(TSC[1]);
+
 		S2_Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSCP64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
 	else
 	{
 		RDTSC64(TSC[0]);
 
+		RDTSC64(TSC[1]);
+
 		S2_Handler(pIdleDevice, pIdleDriver, index);
 
-		RDTSC64(TSC[1]);
+		RDTSCP64(TSC[2]);
 	}
-	TSC[1] = TSC[1] - TSC[0];
+	TSC[2]	= TSC[2] - TSC[1]
+		- (TSC[1] > TSC[0] ? TSC[1] - TSC[0] : TSC[0] - TSC[1]);
 
-	Atomic_Write_VPMC(Core, TSC[1], lvl);
+	Atomic_Write_VPMC(Core, TSC[2], lvl);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
@@ -14571,8 +14597,8 @@ static long CoreFreqK_Limit_Idle(int target)
 	}
 	rc = RC_SUCCESS;
     }
-    if ((PUBLIC(OF(Gate)) != NULL) && (floor != -1)) {
-	PUBLIC(OF(Gate))->OS.IdleDriver.stateLimit = 1 + floor;
+    if (floor != -1) {
+	PUBLIC(RO(Proc))->OS.IdleDriver.stateLimit = 1 + floor;
     }
 #endif /* CONFIG_CPU_IDLE */
 	return (rc);
@@ -15402,7 +15428,7 @@ static void For_All_CPU_Compute_Clock(void)
 
 #define SYSGATE_UPDATE(_rc)						\
 ({									\
-	_rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));			\
+	_rc = Sys_OS_Driver_Query();					\
 	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
 })
 
@@ -15431,7 +15457,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
     break;
 
     case COREFREQ_IOCTL_SYSONCE:
-	rc = Sys_OS_Driver_Query(PUBLIC(OF(Gate)));
+	rc = Sys_OS_Driver_Query();
 	rc = (rc != -ENXIO) ? Sys_Kernel(PUBLIC(OF(Gate))) : rc;
     break;
 

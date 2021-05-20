@@ -458,7 +458,7 @@ typedef struct
 				taskCount;
 		TASK_MCB	taskList[TASK_LIMIT];
 
-		MEM_MCB		memInfo;
+		MEM_MCB 	memInfo;
 
 		struct {
 		unsigned short	version,
