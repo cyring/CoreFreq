@@ -13951,7 +13951,7 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 		"popq	%0"
 		: "=m" (Core->SystemRegister.RFLAGS)
 		: "ir" (cstate_addr)
-		: "%ax", "cc", "memory"
+		: "%ax", "%dx", "cc", "memory"
 	);
 	return index;
 }
@@ -13998,7 +13998,7 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 		"popq	%0"
 		: "=m" (Core->SystemRegister.RFLAGS)
 		: "ir" (cstate_addr)
-		: "%ax", "cc", "memory"
+		: "%ax", "%dx", "cc", "memory"
 	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	return index;
