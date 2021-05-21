@@ -13837,8 +13837,10 @@ static int CoreFreqK_S2_MWAIT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
+	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 /*	Source: /arch/x86/include/asm/irqflags.h: native_safe_halt();	*/
 	__asm__ volatile
@@ -13876,8 +13878,10 @@ static int CoreFreqK_S2_HALT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
+	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
 	__asm__ volatile
@@ -13926,13 +13930,15 @@ static int CoreFreqK_S2_HALT_AMD_Handler(struct cpuidle_device *pIdleDevice,
 static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 {
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 
+	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
 	__asm__ volatile
@@ -13971,13 +13977,15 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
 #endif /* 5.9.0 */
 {
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
 	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
 
+	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
 	__asm__ volatile
@@ -14030,7 +14038,8 @@ static int Alternative_Computation_Of_Cycles(
 )
 {
 	unsigned long long TSC[3] __attribute__ ((aligned (8)));
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
@@ -14077,7 +14086,8 @@ static int Alternative_Computation_Of_Cycles_S2(
 #endif /* 5.9.0 */
 {
 	unsigned long long TSC[3] __attribute__ ((aligned (8)));
-	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(pIdleDevice->cpu)));
+	const unsigned int cpu = smp_processor_id();
+	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 	const unsigned short lvl = \
 			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
 
@@ -14111,8 +14121,8 @@ static int Alternative_Computation_Of_Cycles_S2(
 	return index;
 #endif /* 5.9.0 */
 }
-
 #undef Atomic_Write_VPMC
+
 	/*		Alternative Idle methods			*/
 static int CoreFreqK_Alt_MWAIT_Handler(struct cpuidle_device *pIdleDevice,
 				struct cpuidle_driver *pIdleDriver, int index)
