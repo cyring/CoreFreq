@@ -15649,6 +15649,7 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	break;
 
       case MACHINE_IDLE_ROUTE:
+       if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
 	{
 		Controller_Stop(1);
@@ -15665,6 +15666,9 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		Controller_Start(1);
 	}
+       } else {
+		return (-RC_EXPERIMENTAL);
+       }
 	break;
 
       case MACHINE_CPU_FREQ:
