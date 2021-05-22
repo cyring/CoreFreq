@@ -9918,6 +9918,7 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
       MSR_SNB_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
 })
 
+/*TODO(Fixme)
 #define PKG_Counters_SandyBridge_EP(Core, T)				\
 ({									\
     RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
@@ -9926,6 +9927,15 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
     MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+})
+*/
+#define PKG_Counters_SandyBridge_EP(Core, T)				\
+({									\
+    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
+		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
+		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);\
 })
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
@@ -11712,7 +11722,7 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
-
+/*TODO(Fixme): Table 2-24. Uncore PMU MSR for Xeon family 06_2DH, 06_3E
 static void Start_Uncore_SandyBridge_EP(void *arg)
 {
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
@@ -11738,7 +11748,7 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
-{	/* If fixed counter was disable at entry, force freezing	*/
+{	// If fixed counter was disable at entry, force freezing
     if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
     {
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
@@ -11749,7 +11759,7 @@ static void Stop_Uncore_SandyBridge_EP(void *arg)
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
-
+*/
 
 static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 {

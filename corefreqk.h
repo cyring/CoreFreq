@@ -1109,9 +1109,10 @@ static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
 extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
+/*TODO(Fixme)
 static void Start_Uncore_SandyBridge_EP(void *arg) ;
 static void Stop_Uncore_SandyBridge_EP(void *arg) ;
-
+*/
 extern void Query_IvyBridge(unsigned int cpu) ;
 static void PerCore_IvyBridge_Query(void *arg) ;
 extern void Query_IvyBridge_EP(unsigned int cpu) ;
@@ -6157,8 +6158,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
-		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP,
+		.Start = NULL,	/*TODO(Fixme): Start_Uncore_SandyBridge_EP,*/
+		.Stop = NULL,	/*TODO(Fixme): Stop_Uncore_SandyBridge_EP,*/
 		.ClockMod = NULL
 		},
 	.Specific = SandyBridge_EP_Specific,
@@ -6206,8 +6207,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
-		.Start = Start_Uncore_SandyBridge_EP,
-		.Stop = Stop_Uncore_SandyBridge_EP,
+		.Start = NULL,	/*TODO(Fixme): Start_Uncore_SandyBridge_EP,*/
+		.Stop = NULL,	/*TODO(Fixme): Stop_Uncore_SandyBridge_EP,*/
 		.ClockMod = NULL
 		},
 	.Specific = IvyBridge_EP_Specific,
