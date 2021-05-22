@@ -145,6 +145,32 @@
 	#define MSR_AMD_CC6_F17H_STATUS 	0xc0010296
 #endif
 
+/* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
+#define SMU_HSMP_F19H	0x3b10534, 0x3b109e0, 0x3b10980
+
+enum {
+	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
+	HSMP_RD_SMU_VER	= 0x2,	/* SMU FW Version			*/
+	HSMP_RD_VERSION	= 0x3,	/* Interface Version			*/
+	HSMP_RD_PKG_PWR	= 0x4,	/* Socket power (mWatts)		*/
+	HSMP_WR_PKG_PL1 = 0x5,	/* Input within [31:0]; Limit (mWatts)	*/
+	HSMP_RD_PKG_PL1 = 0x6,	/* Returns Socket power limit (mWatts)	*/
+	HSMP_MAX_PKG_PL = 0x7,	/* Max Socket power limit (mWatts)	*/
+	HSMP_WR_SMT_BOOST=0x8,	/* ApicId[31:16], Max Freq. (MHz)[15:0] */
+	HSMP_WR_ALL_BOOST=0x9,	/* Max Freq. (MHz)[15:0] for ALL	*/
+	HSMP_RD_SMT_BOOST=0xa,	/* Input ApicId[15:0]; Dflt Fmax[15:0]	*/
+	HSMP_RD_PROCHOT = 0xb,	/* 1 = PROCHOT is asserted		*/
+	HSMP_WR_XGMI_WTH= 0xc,	/* 0 = x2, 1 = x8, 2 = x16		*/
+	HSMP_RD_APB_PST = 0xd,	/* Data Fabric P-state[7-0]={0,1,2,3}	*/
+	HSMP_ENABLE_APB = 0xe,	/* Data Fabric P-State Performance Boost*/
+	HSMP_RD_DF_MCLK = 0xf,	/* FCLK[ARG:0], MEMCLK[ARG:1] (MHz)	*/
+	HSMP_RD_CCLK	= 0x10, /* CPU core clock limit (MHz)		*/
+	HSMP_RD_PC0	= 0x11, /* Socket C0 Residency (100%)		*/
+	HSMP_WR_DPM_LCLK= 0x12, /* NBIO[24:16]; Max[15:8], Min[7:0] DPM */
+	HSMP_RESERVED	= 0x13,
+	HSMP_RD_DDR_BW	= 0x14	/* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
+};
+
 /* Sources: PPR for AMD Family 17h					*/
 #define AMD_FCH_PM_CSTATE_EN	0x0000007e
 

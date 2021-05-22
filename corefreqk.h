@@ -552,18 +552,18 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 #define IT8720			0x8720
 
 /*
- * --- Core_AMD_SMN_Read ---
+ * --- Core_AMD_SMN_Read and Core_AMD_SMN_Write ---
  *
- * amd_smn_read() protects the SMU access through mutex_[un]lock
- * functions which must not be used in interrupt context.
+ * amd_smn_read() and amd_smn_write() protect any SMU access through
+ * mutex_[un]lock functions which must not be used in interrupt context.
  *
- * The high resolution timers are bound to CPUs with smp_call_function_*
- * where context is in interrupt; and where mutex will freeze the kernel.
+ * The high resolution timers are bound to CPUs using smp_call_function_*
+ * where context is interrupt; and where mutexes will freeze the kernel.
 */
 
 #if defined(CONFIG_AMD_NB) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0))\
  && defined(LEGACY) && (LEGACY > 1)
-FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
+FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -578,7 +578,24 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 	}								\
     }									\
 })
+
+#define Core_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+    if (PRIVATE(OF(ZenIF_dev)) != NULL)					\
+    {									\
+	if (amd_smn_write(amd_pci_dev_to_node_id(PRIVATE(OF(ZenIF_dev))),\
+			SMN_Address, &SMN_Register.value))		\
+	{								\
+		pr_warn("CoreFreq: Failed to write amd_smn_write()\n"); \
+	}								\
+    }									\
+})
+
 #else
+
 #define Core_AMD_SMN_Read(	SMN_Register,				\
 				SMN_Address,				\
 				SMU_IndexRegister,			\
@@ -607,7 +624,107 @@ FEAT_MSG("LEGACY Level 2: Core_AMD_SMN_Read() built with amd_smn_read()")
 			SMN_Register.value, SMN_Address);		\
 	}								\
 })
+
+#define Core_AMD_SMN_Write(	SMN_Register,				\
+				SMN_Address,				\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+    do {								\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+	if ( ret == 0 ) {						\
+		udelay(BIT_IO_DELAY_INTERVAL);				\
+	} else {							\
+		WRPCI(SMN_Address, SMU_IndexRegister);			\
+		WRPCI(SMN_Register.value, SMU_DataRegister);		\
+									\
+		BIT_ATOM_UNLOCK(BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED);				\
+	}								\
+	tries--;							\
+    } while ( (tries != 0) && (ret != 1) );				\
+	if (tries == 0) {						\
+		pr_warn("CoreFreq: Core_AMD_SMN_Write(%x, %x) failed\n",\
+			SMN_Register.value, SMN_Address);		\
+	}								\
+})
 #endif /* CONFIG_AMD_NB and LEGACY */
+
+typedef union
+{
+	unsigned int		value;
+	struct
+	{
+		unsigned int
+		bits		: 32-0;
+	};
+} HSMP_ARG;
+
+#define AMD_HSMP_Mailbox(	MSG_FUNC,				\
+				MSG_ARG,				\
+				HSMP_CmdRegister,			\
+				HSMP_ArgRegister,			\
+				HSMP_RspRegister,			\
+				SMU_IndexRegister,			\
+				SMU_DataRegister )			\
+({									\
+	HSMP_ARG MSG_RSP = {.value = 0}; 				\
+	HSMP_ARG MSG_ID = {.value = MSG_FUNC};				\
+	unsigned int idx;						\
+									\
+	Core_AMD_SMN_Write(	MSG_RSP,				\
+				HSMP_RspRegister,			\
+				SMU_IndexRegister,			\
+				SMU_DataRegister );			\
+									\
+    for (idx = 0; idx < 8; idx++) {					\
+	Core_AMD_SMN_Write(	MSG_ARG[idx],				\
+				HSMP_ArgRegister + (idx << 2), 		\
+				SMU_IndexRegister,			\
+				SMU_DataRegister );			\
+    }									\
+	Core_AMD_SMN_Write(	MSG_ID ,				\
+				HSMP_CmdRegister,			\
+				SMU_IndexRegister,			\
+				SMU_DataRegister );			\
+									\
+	idx = BIT_IO_RETRIES_COUNT;					\
+    do {								\
+	Core_AMD_SMN_Read(	MSG_RSP,				\
+				HSMP_RspRegister,			\
+				SMU_IndexRegister,			\
+				SMU_DataRegister );			\
+	idx--;								\
+    } while ( (idx != 0) && (MSG_RSP.value == 0) );			\
+									\
+    if (idx == 0) {							\
+	pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) failed\n", MSG_FUNC);	\
+    }									\
+    else if (MSG_RSP.value == 0x1) {					\
+	for (idx = 0; idx < 8; idx++) {					\
+		Core_AMD_SMN_Read(	MSG_ARG[idx],			\
+					HSMP_ArgRegister + (idx << 2),	\
+					SMU_IndexRegister,		\
+					SMU_DataRegister );		\
+	}								\
+    }									\
+	MSG_RSP.value;							\
+})
+
+#define AMD_HSMP_Read( ... )						\
+({									\
+	AMD_HSMP_Mailbox( __VA_ARGS__ );				\
+})
+
+#define AMD_HSMP_Write( ... )						\
+({									\
+	AMD_HSMP_Mailbox( __VA_ARGS__ );				\
+})
 
 
 /* Driver' private and public data definitions.				*/

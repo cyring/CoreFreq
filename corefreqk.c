@@ -369,6 +369,14 @@ static ktime_t RearmTheTimer;
 #define PUBLIC(...)		ADDR( KPublic , __VA_ARGS__ )
 #define PRIVATE(...)		ADDR( KPrivate, __VA_ARGS__ )
 
+#define RESET_ARRAY(_array, _cnt, _val, ... )				\
+({									\
+	unsigned int rst;						\
+	for (rst = 0; rst < _cnt; rst++) {				\
+		_array[rst] __VA_ARGS__ = _val;				\
+	}								\
+})
+
 unsigned int FixMissingRatioAndFrequency(unsigned int r32, CLOCK *pClock)
 {
 	unsigned long long r64 = r32;
@@ -5942,11 +5950,46 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
-	    {
+	  {
+		HSMP_ARG arg[8];
+
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 
 		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
+
+		RESET_ARRAY(arg, 8, 0, .value);
+	    if (0x1 == AMD_HSMP_Read(HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+						SMU_AMD_INDEX_REGISTER_F17H,
+						SMU_AMD_DATA_REGISTER_F17H))
+	    {
+		RESET_ARRAY(arg, 8, 0, .value);
+		if (0x1 == AMD_HSMP_Read(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+						SMU_AMD_INDEX_REGISTER_F17H,
+						SMU_AMD_DATA_REGISTER_F17H))
+		{
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+				PWR_DOMAIN(PKG)
+			].Domain_Limit1 = arg[0].value / 1000;
+
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+				PWR_DOMAIN(PKG)
+			].Enable_Limit1 = 1;
+		}
+		RESET_ARRAY(arg, 8, 0, .value);
+		if (0x1 == AMD_HSMP_Read(HSMP_MAX_PKG_PL, arg, SMU_HSMP_F19H,
+						SMU_AMD_INDEX_REGISTER_F17H,
+						SMU_AMD_DATA_REGISTER_F17H))
+		{
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+				PWR_DOMAIN(PKG)
+			].Domain_Limit2 = arg[0].value / 1000;
+
+			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+				PWR_DOMAIN(PKG)
+			].Enable_Limit2 = 1;
+		}
 	    }
+	  }
 		break;
 
 	default:
@@ -15494,14 +15537,6 @@ static void For_All_CPU_Compute_Clock(void)
 ({									\
 	_rc = Sys_OS_Driver_Query();					\
 	_rc = (_rc != -ENXIO) ? RC_OK_SYSGATE : _rc;			\
-})
-
-#define RESET_ARRAY(_array, _cnt, _val) 				\
-({									\
-	unsigned int rst;						\
-	for (rst = 0; rst < _cnt; rst++) {				\
-		_array[rst] = _val;					\
-	}								\
 })
 
 static long CoreFreqK_ioctl(	struct file *filp,

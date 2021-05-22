@@ -3762,7 +3762,6 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 		 - RSZ(POWER_THERMAL_MAX), hSpace,
 		RSC(POWER_LABEL_MAX).CODE(), POWERED(0) );
     }
-    if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	struct {
 		const ASCII *code;
@@ -3851,7 +3850,7 @@ REASON_CODE SysInfoPwrThermal(Window *win, CUINT width, CELL_FUNC OutFunc)
 	  }
 	}
     }
-    else if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
+    if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
 	 || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
 	if (Shm->Proc.Power.PPT > 0) {
@@ -6612,10 +6611,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_w:
 		{
 		winOrigin.col = 25;
-		matrixSize.hth = 16;
-		matrixSize.hth += (
-			Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL
-		) ? 5 : 0;
+		matrixSize.hth = 21;
 		winOrigin.row = TOP_HEADER_ROW + 2;
 		winWidth = 50;
 		SysInfoFunc = SysInfoPwrThermal;

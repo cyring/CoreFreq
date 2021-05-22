@@ -1362,6 +1362,7 @@ void HyperThreading(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 {
 	unsigned short pwrUnits = 0, pwrVal;
+	enum PWR_DOMAIN pw;
 
     switch (KIND_OF_FORMULA(Proc_RO->powerFormula)) {
     case POWER_KIND_INTEL:
@@ -1407,10 +1408,30 @@ void PowerInterface(SHM_STRUCT *Shm, PROC_RO *Proc_RO)
 	Shm->Proc.Power.Max = Proc_RO->PowerThermal.Zen.TDP.TDP3;
 	Shm->Proc.Power.EDC = Proc_RO->PowerThermal.Zen.EDC.EDC << 2;
 	Shm->Proc.Power.TDC = Proc_RO->PowerThermal.Zen.EDC.TDC;
+
+      for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
+      {
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit1;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Enable =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Enable_Limit2;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL1].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping1;
+
+	Shm->Proc.Power.Domain[pw].Feature[PL2].Clamping =	\
+			Proc_RO->PowerThermal.PowerLimit[pw].Clamping2;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit1;
+	Shm->Proc.Power.Domain[pw].PL1 = pwrVal;
+
+	pwrVal = Proc_RO->PowerThermal.PowerLimit[pw].Domain_Limit2;
+	Shm->Proc.Power.Domain[pw].PL2 = pwrVal;
+      }
   }
   else if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
-	enum PWR_DOMAIN pw;
     if (pwrUnits != 0)
     {
       for (pw = PWR_DOMAIN(PKG); pw < PWR_DOMAIN(SIZE); pw++)
