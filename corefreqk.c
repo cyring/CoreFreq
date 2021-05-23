@@ -457,7 +457,6 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
     {
 	unsigned long long Freq_Hz;
 	unsigned int Freq_KHz;
-	int rx;
 
 	if ((PUBLIC(RO(Proc))->Features.AdvPower.EDX.Inv_TSC == 1)
 	||  (PUBLIC(RO(Proc))->Features.ExtInfo.EDX.RDTSCP == 1))
@@ -472,25 +471,27 @@ static long CoreFreqK_Register_ClockSource(unsigned int cpu)
 	Freq_Hz = PUBLIC(RO(Core, AT(cpu)))->Boost[BOOST(MAX)]
 		* PUBLIC(RO(Core, AT(cpu)))->Clock.Hz;
 	Freq_KHz = Freq_Hz / 1000U;
-
-	rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
-	switch ( rx ) {
-	default:
+	if (Freq_KHz != 0)
+	{
+		int rx = clocksource_register_khz(&CoreFreqK_CS, Freq_KHz);
+	    switch (rx) {
+	    default:
 		/* Fallthrough */
-	case -EBUSY:
+	    case -EBUSY:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
 		rc = (long) rx;
 		break;
-	case 0:
+	    case 0:
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_ENABLE;
 		rc = RC_SUCCESS;
 
-	pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
-		"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
+		pr_debug("%s: Freq_KHz[%u] Kernel CPU_KHZ[%u] TSC_KHZ[%u]\n" \
+			"LPJ[%lu] mask[%llx] mult[%u] shift[%u]\n",
 		CoreFreqK_CS.name, Freq_KHz, cpu_khz, tsc_khz, loops_per_jiffy,
 		CoreFreqK_CS.mask, CoreFreqK_CS.mult, CoreFreqK_CS.shift);
 
 		break;
+	    }
 	}
     } else {
 		PUBLIC(RO(Proc))->Registration.Driver.CS = REGISTRATION_DISABLE;
