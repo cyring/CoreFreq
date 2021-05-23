@@ -4643,7 +4643,8 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 *	AMD I/O Virtualization Technology (IOMMU) Specification Jan. 2020
 *	coreboot/src/soc/amd/picasso/agesa_acpi.c
 */
-	AMD_IOMMU_CAP_BAR	IOMMU_Cap_Bar;
+	AMD_IOMMU_CAP_BAR IOMMU_Cap_Bar;
+	unsigned char IOMMU_UnLock = 0;
 
 	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = 0x0;
 
@@ -4653,8 +4654,9 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 	pci_read_config_dword(dev, 0x44, &IOMMU_Cap_Bar.low);
 	pci_read_config_dword(dev, 0x48, &IOMMU_Cap_Bar.high);
 
-	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffe000;
-    if (IOMMU_Cap_Bar.addr != 0x0)
+	IOMMU_UnLock = IOMMU_Cap_Bar.addr & 0x1;
+	IOMMU_Cap_Bar.addr = IOMMU_Cap_Bar.addr & 0xffffc000;
+    if ((IOMMU_Cap_Bar.addr != 0x0) && IOMMU_UnLock)
     {
 	void __iomem *IOMMU_MMIO;
 	const size_t bsize = PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_HDR.EFRSup ?
@@ -4662,7 +4664,7 @@ static PCI_CALLBACK AMD_Zen_IOMMU(struct pci_dev *dev)
 
       if ((IOMMU_MMIO = ioremap(IOMMU_Cap_Bar.addr, bsize)) != NULL)
       {
-	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value=readq(IOMMU_MMIO + 0x18);
+	PUBLIC(RO(Proc))->Uncore.Bus.IOMMU_CR.value = readq(IOMMU_MMIO + 0x18);
 
 	iounmap(IOMMU_MMIO);
       }
