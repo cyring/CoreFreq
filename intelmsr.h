@@ -878,7 +878,7 @@ typedef union
 	struct
 	{
 		unsigned long long int
-		ReservedBits1	:  1-0,
+		BD_PROCHOT	:  1-0,  /* BiDirectional PROCHOT	*/
 		C1E		:  2-1,
 		ReservedBits2	: 19-2,
 		R2H_Disable	: 20-19, /* SKL,KBL,CFL:Race To Halt Disable=1*/

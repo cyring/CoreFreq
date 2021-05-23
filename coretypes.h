@@ -1282,7 +1282,8 @@ typedef struct	/* BSP CPUID features.					*/
 			EEO_Enable	: 34-33,
 			R2H_Capable	: 35-34,
 			R2H_Enable	: 36-35,
-			_pad64		: 64-36;
+			HSMP_Capable	: 37-36,
+			_pad64		: 64-37;
 	};
 } FEATURES;
 

@@ -5973,11 +5973,11 @@ REASON_CODE Core_Manager(REF *Ref)
 					Shm->Proc.State.Power[pw].Limit );
 	  }
 		/* Package thermal formulas				*/
+		PFlip->Thermal.Events = Proc->PowerThermal.Events;
+
 	  if (Shm->Proc.Features.Power.EAX.PTM)
 	  {
 		PFlip->Thermal.Sensor = Proc->PowerThermal.Sensor;
-		PFlip->Thermal.Events = Proc->PowerThermal.Events;
-
 		Pkg_ComputeThermalFormula(PFlip, SProc);
 	  }
 		/* Package Voltage formulas				*/

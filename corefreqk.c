@@ -5953,13 +5953,51 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	case AMD_Zen3_VMR:
 	case AMD_Zen3_CZN:
 	case AMD_EPYC_Milan:
-	  {
-		HSMP_ARG arg[8];
-
+	    {
 		Core_AMD_Family_17h_Temp = CCD_AMD_Family_17h_Zen2_Temp;
 
 		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
 
+		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
+	    }
+		break;
+	default:
+/*
+	AMD_Family_17h:
+	AMD_Family_18h:
+	AMD_Zen:
+	AMD_Zen_APU:
+	AMD_ZenPlus:
+	AMD_ZenPlus_APU:
+	AMD_Zen_APU_Dali:
+*/
+		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
+
+	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
+		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
+
+		PUBLIC(RO(Proc))->Features.HSMP_Capable = 1;
+	    }
+		break;
+	}
+
+	if (Compute_AMD_Zen_Boost(cpu) == true)
+	{	/*	Count the Xtra Boost ratios			*/
+		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
+	}
+	else {	/*	Disabled CPB: Hide ratios			*/
+		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+	}
+	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
+	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
+
+	HyperThreading_Technology();
+
+	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
+	{
+		HSMP_ARG arg[8];
 		RESET_ARRAY(arg, 8, 0, .value);
 	    if (0x1 == AMD_HSMP_Read(HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
 						SMU_AMD_INDEX_REGISTER_F17H,
@@ -5992,40 +6030,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 			].Enable_Limit2 = 1;
 		}
 	    }
-	  }
-		break;
-
-	default:
-/*
-	AMD_Family_17h:
-	AMD_Family_18h:
-	AMD_Zen:
-	AMD_Zen_APU:
-	AMD_ZenPlus:
-	AMD_ZenPlus_APU:
-	AMD_Zen_APU_Dali:
-*/
-		Core_AMD_Family_17h_Temp = CTL_AMD_Family_17h_Temp;
-
-	    if (PUBLIC(RO(Proc))->Registration.Experimental) {
-		Query_AMD_F17h_Power_Limits( PUBLIC(RO(Core, AT(cpu))) );
-	    }
-		break;
 	}
-
-	if (Compute_AMD_Zen_Boost(cpu) == true)
-	{	/*	Count the Xtra Boost ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
-	}
-	else {	/*	Disabled CPB: Hide ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
-	}
-	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
-	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
-
-	HyperThreading_Technology();
-
-	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
 }
 
 void Dump_CPUID(CORE_RO *Core)
@@ -6822,34 +6827,52 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	/*	Enable or Disable the Package C6 State . Bit[32]	*/
-	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
-	{
-		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-		switch (PC6_Enable) {
-		case COREFREQ_TOGGLE_OFF:
-			BITCLR(LOCKLESS, PC6, 32);
-			ToggleFeature = 1;
-			break;
-		case COREFREQ_TOGGLE_ON:
-			BITSET(LOCKLESS, PC6, 32);
-			ToggleFeature = 1;
-			break;
-		default:
-			ToggleFeature = 0;
-			break;
-		}
-		if (ToggleFeature == 1) {
-			WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-			RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
-		}
-		if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
-		{
-			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
-		} else {
-			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
-		}
-		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+    if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
+    {
+	RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+	switch (PC6_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+		BITCLR(LOCKLESS, PC6, 32);
+		ToggleFeature = 1;
+		break;
+	case COREFREQ_TOGGLE_ON:
+		BITSET(LOCKLESS, PC6, 32);
+		ToggleFeature = 1;
+		break;
+	default:
+		ToggleFeature = 0;
+		break;
 	}
+	if (ToggleFeature == 1) {
+		WRMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+		RDMSR64(PC6, MSR_AMD_PC6_F17H_STATUS);
+	}
+	if(BITWISEAND(LOCKLESS, PC6, 0x100000000LLU) == 0x100000000LLU)
+	{
+		BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+	} else {
+		BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PC6, Core->Bind);
+	}
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
+
+	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
+	{
+		HSMP_ARG arg[8];
+		RESET_ARRAY(arg, 8, 0, .value);
+	    if (0x1 == AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H) )
+	    {
+		RESET_ARRAY(arg, 8, 0, .value);
+		if (0x1 == AMD_HSMP_Read(HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H))
+		{
+		PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);
+		}
+	    }
+	}
+    }
 	/*		Core C-State Base Address.			*/
 	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
@@ -10398,6 +10421,24 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_Family_17h_Temp(Core);					\
 									\
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
+									\
+  if (PUBLIC(RO(Proc))->Features.HSMP_Capable)				\
+  {									\
+	HSMP_ARG arg[8];						\
+	RESET_ARRAY(arg, 8, 0, .value);					\
+    if (0x1 == AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,	\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H ))		\
+    {									\
+	RESET_ARRAY(arg, 8, 0, .value);					\
+	if (0x1 == AMD_HSMP_Read(HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
+				SMU_AMD_INDEX_REGISTER_F17H,		\
+				SMU_AMD_DATA_REGISTER_F17H))		\
+	{								\
+	PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);\
+	}								\
+    }									\
+  }									\
 })
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
