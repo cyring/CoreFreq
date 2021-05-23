@@ -619,10 +619,10 @@ FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
-	if (tries == 0) {						\
-		pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) failed\n", \
-			SMN_Register.value, SMN_Address);		\
-	}								\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Read(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
+    }									\
 })
 
 #define Core_AMD_SMN_Write(	SMN_Register,				\
@@ -648,10 +648,10 @@ FEAT_MSG("LEGACY Level 2: built with amd_smn_read(), amd_smn_write()")
 	}								\
 	tries--;							\
     } while ( (tries != 0) && (ret != 1) );				\
-	if (tries == 0) {						\
-		pr_warn("CoreFreq: Core_AMD_SMN_Write(%x, %x) failed\n",\
-			SMN_Register.value, SMN_Address);		\
-	}								\
+    if (tries == 0) {							\
+	pr_warn("CoreFreq: Core_AMD_SMN_Write(%x, %x) TryLock\n",	\
+		SMN_Register.value, SMN_Address);			\
+    }									\
 })
 #endif /* CONFIG_AMD_NB and LEGACY */
 
@@ -673,46 +673,63 @@ typedef union
 				SMU_IndexRegister,			\
 				SMU_DataRegister )			\
 ({									\
-	HSMP_ARG MSG_RSP = {.value = 0}; 				\
+	HSMP_ARG MSG_RSP = {.value = 0x0};				\
 	HSMP_ARG MSG_ID = {.value = MSG_FUNC};				\
-	unsigned int idx;						\
-									\
-	Core_AMD_SMN_Write(	MSG_RSP,				\
-				HSMP_RspRegister,			\
-				SMU_IndexRegister,			\
-				SMU_DataRegister );			\
-									\
-    for (idx = 0; idx < 8; idx++) {					\
-	Core_AMD_SMN_Write(	MSG_ARG[idx],				\
-				HSMP_ArgRegister + (idx << 2), 		\
-				SMU_IndexRegister,			\
-				SMU_DataRegister );			\
+	unsigned int tries = BIT_IO_RETRIES_COUNT;			\
+	unsigned char ret;						\
+  do {									\
+	ret = BIT_ATOM_TRYLOCK( BUS_LOCK,				\
+				PRIVATE(OF(AMD_SMN_LOCK)),		\
+				ATOMIC_SEED );				\
+    if ( ret == 0 ) {							\
+	udelay(BIT_IO_DELAY_INTERVAL);					\
     }									\
-	Core_AMD_SMN_Write(	MSG_ID ,				\
-				HSMP_CmdRegister,			\
-				SMU_IndexRegister,			\
-				SMU_DataRegister );			\
+    else								\
+    {									\
+	unsigned int idx;						\
+	unsigned char wait;						\
+									\
+	WRPCI(HSMP_RspRegister	, SMU_IndexRegister);			\
+	WRPCI(MSG_RSP.value	, SMU_DataRegister);			\
+									\
+	for (idx = 0; idx < 8; idx++) { 				\
+		WRPCI(HSMP_ArgRegister + (idx << 2), SMU_IndexRegister);\
+		WRPCI(MSG_ARG[idx].value, SMU_DataRegister);		\
+	}								\
+	WRPCI(HSMP_CmdRegister	, SMU_IndexRegister);			\
+	WRPCI(MSG_ID.value	, SMU_DataRegister);			\
 									\
 	idx = BIT_IO_RETRIES_COUNT;					\
-    do {								\
-	Core_AMD_SMN_Read(	MSG_RSP,				\
-				HSMP_RspRegister,			\
-				SMU_IndexRegister,			\
-				SMU_DataRegister );			\
-	idx--;								\
-    } while ( (idx != 0) && (MSG_RSP.value == 0) );			\
+	do {								\
+		WRPCI(HSMP_RspRegister	, SMU_IndexRegister);		\
+		RDPCI(MSG_RSP.value	, SMU_DataRegister);		\
 									\
-    if (idx == 0) {							\
-	pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) failed\n", MSG_FUNC);	\
-    }									\
-    else if (MSG_RSP.value == 0x1) {					\
-	for (idx = 0; idx < 8; idx++) {					\
-		Core_AMD_SMN_Read(	MSG_ARG[idx],			\
-					HSMP_ArgRegister + (idx << 2),	\
-					SMU_IndexRegister,		\
-					SMU_DataRegister );		\
+		idx--;							\
+		wait = (idx != 0) && (MSG_RSP.value == 0x0) ? 1 : 0;	\
+		if (wait == 1) {					\
+			udelay(BIT_IO_DELAY_INTERVAL);			\
+		}							\
+	} while (wait == 1);						\
+	if (idx == 0) { 						\
+		pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) Timeout\n",	\
+			MSG_FUNC);					\
 	}								\
+	else if (MSG_RSP.value == 0x1)					\
+	{								\
+	    for (idx = 0; idx < 8; idx++) {				\
+		WRPCI(HSMP_ArgRegister + (idx << 2), SMU_IndexRegister);\
+		RDPCI(MSG_ARG[idx].value, SMU_DataRegister);		\
+	    }								\
+	}								\
+	BIT_ATOM_UNLOCK(BUS_LOCK,					\
+			PRIVATE(OF(AMD_SMN_LOCK)),			\
+			ATOMIC_SEED);					\
     }									\
+	tries--;							\
+  } while ( (tries != 0) && (ret != 1) );				\
+  if (tries == 0) {							\
+	pr_warn("CoreFreq: AMD_HSMP_Mailbox(%x) TryLock\n", MSG_FUNC);	\
+  }									\
 	MSG_RSP.value;							\
 })
 
