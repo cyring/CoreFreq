@@ -5930,6 +5930,9 @@ void Query_AMD_F17h_Power_Limits(CORE_RO *Core)
 
 void Query_AMD_Family_17h(unsigned int cpu)
 {
+	unsigned int rx;
+	HSMP_ARG arg[8];
+
 	PRIVATE(OF(Specific)) = LookupProcessor();
     if (PRIVATE(OF(Specific)) != NULL)
     {
@@ -5996,17 +5999,29 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	AMD_Processor_PIN(PUBLIC(RO(Proc))->Features.leaf80000008.EBX.PPIN);
 
 	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
+	{ /* Mark the SMU as Enable if the reachability test is successful */
+		RESET_ARRAY(arg, 8, 0, .value);
+		rx = AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+		if (rx == HSMP_RESULT_OK)
+		{
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = 1;
+		}
+		else if (IS_HSMP_OOO(rx))
+		{
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+		}
+	} else {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
-		HSMP_ARG arg[8];
 		RESET_ARRAY(arg, 8, 0, .value);
-	    if (0x1 == AMD_HSMP_Read(HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
-						SMU_AMD_INDEX_REGISTER_F17H,
-						SMU_AMD_DATA_REGISTER_F17H))
-	    {
-		RESET_ARRAY(arg, 8, 0, .value);
-		if (0x1 == AMD_HSMP_Read(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
-						SMU_AMD_INDEX_REGISTER_F17H,
-						SMU_AMD_DATA_REGISTER_F17H))
+		rx = AMD_HSMP_Read(	HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+		if (rx == HSMP_RESULT_OK)
 		{
 			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
 				PWR_DOMAIN(PKG)
@@ -6016,10 +6031,18 @@ void Query_AMD_Family_17h(unsigned int cpu)
 				PWR_DOMAIN(PKG)
 			].Enable_Limit1 = 1;
 		}
+		else if (IS_HSMP_OOO(rx))
+		{
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+		}
+	}
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
+	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		if (0x1 == AMD_HSMP_Read(HSMP_MAX_PKG_PL, arg, SMU_HSMP_F19H,
-						SMU_AMD_INDEX_REGISTER_F17H,
-						SMU_AMD_DATA_REGISTER_F17H))
+		rx = AMD_HSMP_Read(	HSMP_MAX_PKG_PL, arg, SMU_HSMP_F19H,
+					SMU_AMD_INDEX_REGISTER_F17H,
+					SMU_AMD_DATA_REGISTER_F17H );
+		if (rx == HSMP_RESULT_OK)
 		{
 			PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
 				PWR_DOMAIN(PKG)
@@ -6029,7 +6052,10 @@ void Query_AMD_Family_17h(unsigned int cpu)
 				PWR_DOMAIN(PKG)
 			].Enable_Limit2 = 1;
 		}
-	    }
+		else if (IS_HSMP_OOO(rx))
+		{
+			PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
+		}
 	}
 }
 
@@ -6855,21 +6881,21 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	}
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->PC6_Mask, Core->Bind);
 
-	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
+	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
+		unsigned int rx;
 		HSMP_ARG arg[8];
 		RESET_ARRAY(arg, 8, 0, .value);
-	    if (0x1 == AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Read(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H) )
+					SMU_AMD_DATA_REGISTER_F17H );
+	    if (rx == HSMP_RESULT_OK)
 	    {
-		RESET_ARRAY(arg, 8, 0, .value);
-		if (0x1 == AMD_HSMP_Read(HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
-					SMU_AMD_INDEX_REGISTER_F17H,
-					SMU_AMD_DATA_REGISTER_F17H))
-		{
 		PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);
-		}
+	    }
+	    else if (IS_HSMP_OOO(rx))
+	    {
+		PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;
 	    }
 	}
     }
@@ -10438,21 +10464,21 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 									\
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
 									\
-  if (PUBLIC(RO(Proc))->Features.HSMP_Capable)				\
+  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)				\
   {									\
+	unsigned int rx;						\
 	HSMP_ARG arg[8];						\
 	RESET_ARRAY(arg, 8, 0, .value);					\
-    if (0x1 == AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,	\
+	rx = AMD_HSMP_Read(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
 				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H ))		\
+				SMU_AMD_DATA_REGISTER_F17H );		\
+    if (rx == HSMP_RESULT_OK)						\
     {									\
-	RESET_ARRAY(arg, 8, 0, .value);					\
-	if (0x1 == AMD_HSMP_Read(HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
-				SMU_AMD_INDEX_REGISTER_F17H,		\
-				SMU_AMD_DATA_REGISTER_F17H))		\
-	{								\
 	PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);\
-	}								\
+    }									\
+    else if (IS_HSMP_OOO(rx))						\
+    {									\
+	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;			\
     }									\
   }									\
 })

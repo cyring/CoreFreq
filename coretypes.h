@@ -1283,7 +1283,8 @@ typedef struct	/* BSP CPUID features.					*/
 			R2H_Capable	: 35-34,
 			R2H_Enable	: 36-35,
 			HSMP_Capable	: 37-36,
-			_pad64		: 64-37;
+			HSMP_Enable	: 38-37,
+			_pad64		: 64-38;
 	};
 } FEATURES;
 

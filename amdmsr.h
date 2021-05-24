@@ -174,6 +174,18 @@ enum {
 	HSMP_RD_DDR_BW	= 0x14	/* Max[31:20];Usage{Gbps[19:8],Pct[7:0]}*/
 };
 
+enum {
+	HSMP_UNSPECIFIED= 0x0,
+	HSMP_RESULT_OK	= 0x1,
+	HSMP_FAIL_BGN	= 0x2,
+	HSMP_FAIL_END	= 0xfd,
+	HSMP_INVAL_MSG	= 0xfe,
+	HSMP_INVAL_INPUT= 0xff
+};
+
+#define IS_HSMP_OOO(_rx) (_rx == HSMP_UNSPECIFIED			\
+			|| (_rx >= HSMP_FAIL_BGN && _rx <= HSMP_FAIL_END))
+
 /* Sources: PPR for AMD Family 17h					*/
 #define AMD_FCH_PM_CSTATE_EN	0x0000007e
 
