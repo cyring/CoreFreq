@@ -184,6 +184,7 @@ enum {
 	RSC_PROCESSOR,
 	RSC_ARCHITECTURE,
 	RSC_VENDOR_ID,
+	RSC_FIRMWARE,
 	RSC_MICROCODE,
 	RSC_SIGNATURE,
 	RSC_STEPPING,
@@ -3227,6 +3228,7 @@ extern RESOURCE_ST Resource[];
 #define RSC_ACT_CODE			"Activ"
 #define RSC_XAPIC_CODE			"  xAPIC"
 #define RSC_X2APIC_CODE 		" x2APIC"
+#define RSC_FIRMWARE_CODE		"Firmware"
 
 #define RSC_TOPOLOGY_HDR_PKG_CODE	"CPU Pkg  Apic"
 #define RSC_TOPOLOGY_HDR_SMT_CODE	"  Core/Thread"

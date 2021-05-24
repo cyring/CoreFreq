@@ -153,9 +153,9 @@
 
 enum {
 	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
-	HSMP_RD_SMU_VER	= 0x2,	/* SMU FW Version			*/
-	HSMP_RD_VERSION	= 0x3,	/* Interface Version			*/
-	HSMP_RD_PKG_PWR	= 0x4,	/* Socket power (mWatts)		*/
+	HSMP_RD_SMU_VER = 0x2,	/* SMU FW Version			*/
+	HSMP_RD_VERSION = 0x3,	/* Interface Version			*/
+	HSMP_RD_PKG_PWR = 0x4,	/* Socket power (mWatts)		*/
 	HSMP_WR_PKG_PL1 = 0x5,	/* Input within [31:0]; Limit (mWatts)	*/
 	HSMP_RD_PKG_PL1 = 0x6,	/* Returns Socket power limit (mWatts)	*/
 	HSMP_MAX_PKG_PL = 0x7,	/* Max Socket power limit (mWatts)	*/

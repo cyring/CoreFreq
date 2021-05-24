@@ -914,6 +914,19 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 	width - 5 - RSZ(VENDOR_ID) - strlen(Shm->Proc.Features.Info.Vendor.ID),
 		hSpace, Shm->Proc.Features.Info.Vendor.ID );
 
+    if (Shm->Proc.Features.Factory.SMU.Version > 0)
+    {
+	char version[15+1];
+	int len = snprintf(version, 15+1, "%u.%u.%u-%u",
+				Shm->Proc.Features.Factory.SMU.Major,
+				Shm->Proc.Features.Factory.SMU.Minor,
+				Shm->Proc.Features.Factory.SMU.Revision,
+				Shm->Proc.Features.Factory.SMU.Interface);
+
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s""%.*s[%10.*s]", RSC(FIRMWARE).CODE(),
+		width - 6 - RSZ(FIRMWARE) - len , hSpace, len, version );
+    }
 	PUT(	SCANKEY_NULL, attrib[0], width, 2,
 		"%s""%.*s[0x%08x]", RSC(MICROCODE).CODE(),
 		width - 15 - RSZ(MICROCODE), hSpace,

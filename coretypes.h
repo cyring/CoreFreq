@@ -1260,6 +1260,18 @@ typedef struct	/* BSP CPUID features.					*/
 		CLOCK		Clock;
 		unsigned int	Freq,
 				Ratio;
+	  struct {
+		unsigned int	Interface;
+	    union {
+		unsigned int	Version;
+		struct {
+		unsigned char	Revision,
+				Minor,
+				Major,
+				Other;
+		};
+	    };
+	  } SMU;
 	} Factory;
 
 	struct {
