@@ -1126,14 +1126,19 @@ static void PerCore_SandyBridge_EP_Query(void *arg) ;
 static void Start_SandyBridge_EP(void *arg) ;
 static void Stop_SandyBridge_EP(void *arg) ;
 extern void InitTimer_SandyBridge_EP(unsigned int cpu) ;
-/*TODO(Fixme)
 static void Start_Uncore_SandyBridge_EP(void *arg) ;
 static void Stop_Uncore_SandyBridge_EP(void *arg) ;
-*/
+
 extern void Query_IvyBridge(unsigned int cpu) ;
 static void PerCore_IvyBridge_Query(void *arg) ;
+
 extern void Query_IvyBridge_EP(unsigned int cpu) ;
 static void PerCore_IvyBridge_EP_Query(void *arg) ;
+static void Start_IvyBridge_EP(void *arg) ;
+#define     Stop_IvyBridge_EP Stop_SandyBridge_EP
+extern void InitTimer_IvyBridge_EP(unsigned int cpu) ;
+static void Start_Uncore_IvyBridge_EP(void *arg) ;
+static void Stop_Uncore_IvyBridge_EP(void *arg) ;
 
 extern void Query_Haswell(unsigned int cpu) ;
 static void PerCore_Haswell_Query(void *arg) ;
@@ -6175,8 +6180,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
-		.Start = NULL,	/*TODO(Fixme): Start_Uncore_SandyBridge_EP,*/
-		.Stop = NULL,	/*TODO(Fixme): Stop_Uncore_SandyBridge_EP,*/
+		.Start = Start_Uncore_SandyBridge_EP,
+		.Stop = Stop_Uncore_SandyBridge_EP,
 		.ClockMod = NULL
 		},
 	.Specific = SandyBridge_EP_Specific,
@@ -6212,10 +6217,10 @@ static ARCH Arch[ARCHITECTURES] = {
 	.Signature = _IvyBridge_EP,
 	.Query = Query_IvyBridge_EP,
 	.Update = PerCore_IvyBridge_EP_Query,
-	.Start = Start_SandyBridge_EP,
-	.Stop = Stop_SandyBridge_EP,
+	.Start = Start_IvyBridge_EP,
+	.Stop = Stop_IvyBridge_EP,
 	.Exit = NULL,
-	.Timer = InitTimer_SandyBridge_EP,
+	.Timer = InitTimer_IvyBridge_EP,
 	.BaseClock = BaseClock_IvyBridge,
 	.ClockMod = ClockMod_SandyBridge_PPC,
 	.TurboClock = TurboClock_IvyBridge_EP,
@@ -6224,8 +6229,8 @@ static ARCH Arch[ARCHITECTURES] = {
 	.powerFormula   = POWER_FORMULA_INTEL,
 	.PCI_ids = PCI_SandyBridge_EP_ids,
 	.Uncore = {
-		.Start = NULL,	/*TODO(Fixme): Start_Uncore_SandyBridge_EP,*/
-		.Stop = NULL,	/*TODO(Fixme): Stop_Uncore_SandyBridge_EP,*/
+		.Start = Start_Uncore_IvyBridge_EP,
+		.Stop = Stop_Uncore_IvyBridge_EP,
 		.ClockMod = NULL
 		},
 	.Specific = IvyBridge_EP_Specific,

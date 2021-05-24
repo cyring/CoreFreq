@@ -9931,7 +9931,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_NHM_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_NHM_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_SandyBridge(Core, T)				\
@@ -9941,28 +9942,41 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_SNB_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SNB_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
-/*TODO(Fixme)
-#define PKG_Counters_SandyBridge_EP(Core, T)				\
+#define PKG_COUNTERS_SANDYBRIDGE_EP(Core, T)				\
 ({									\
     RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-    MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
-*/
-#define PKG_Counters_SandyBridge_EP(Core, T)				\
+
+static void PKG_Counters_SandyBridge_EP(CORE_RO *Core, unsigned int T)
+{
+	PKG_COUNTERS_SANDYBRIDGE_EP(Core, T);
+}
+
+#define PKG_COUNTERS_IVYBRIDGE_EP(Core, T)				\
 ({									\
-    RDTSCP_COUNTERx4(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
+    RDTSCP_COUNTERx5(PUBLIC(RO(Proc))->Counter[T].PTSC ,		\
 		MSR_PKG_C2_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC02,\
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
-		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07);\
+		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
+
+static void PKG_Counters_IvyBridge_EP(CORE_RO *Core, unsigned int T)
+{
+	PKG_COUNTERS_IVYBRIDGE_EP(Core, T);
+}
 
 #define PKG_Counters_Haswell_EP(Core, T)				\
 ({									\
@@ -9971,7 +9985,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-    MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0,PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_HSW_EP_UNCORE_PERF_FIXED_CTR0,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_Haswell_ULT(Core, T)				\
@@ -10005,7 +10020,8 @@ void AMD_Core_Counters_Clear(CORE_RO *Core)
 		MSR_PKG_C3_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC03,\
 		MSR_PKG_C6_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC06,\
 		MSR_PKG_C7_RESIDENCY, PUBLIC(RO(Proc))->Counter[T].PC07,\
-      MSR_SKL_UNCORE_PERF_FIXED_CTR0, PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);\
+		MSR_SKL_UNCORE_PERF_FIXED_CTR0 ,			\
+			PUBLIC(RO(Proc))->Counter[T].Uncore.FC0);	\
 })
 
 #define PKG_Counters_Skylake_X(Core, T) 				\
@@ -11561,7 +11577,8 @@ static void Stop_Uncore_SandyBridge(void *arg)
 }
 
 
-static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
+static enum hrtimer_restart Cycle_Intel_Xeon_EP(struct hrtimer *pTimer,
+			void (*PKG_Counters_Intel_EP)(CORE_RO*, unsigned int))
 {
 	PERF_STATUS PerfStatus = {.value = 0};
 	CORE_RO *Core;
@@ -11588,7 +11605,7 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core)
 	{
-		PKG_Counters_SandyBridge_EP(Core, 1);
+		PKG_Counters_Intel_EP(Core, 1);
 
 		Pkg_Intel_Temp(PUBLIC(RO(Proc)));
 
@@ -11710,12 +11727,18 @@ static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
 	return (HRTIMER_NORESTART);
 }
 
+static enum hrtimer_restart Cycle_SandyBridge_EP(struct hrtimer *pTimer)
+{
+	return (Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_SandyBridge_EP));
+}
+
 void InitTimer_SandyBridge_EP(unsigned int cpu)
 {
 	smp_call_function_single(cpu, InitTimer, Cycle_SandyBridge_EP, 1);
 }
 
-static void Start_SandyBridge_EP(void *arg)
+static void Entry_Intel_Xeon_EP(void *arg,
+			void (*PKG_Counters_Intel_EP)(CORE_RO*, unsigned int))
 {
 	unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
@@ -11731,7 +11754,7 @@ static void Start_SandyBridge_EP(void *arg)
 		if (Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start != NULL) {
 			Arch[PUBLIC(RO(Proc))->ArchID].Uncore.Start(NULL);
 		}
-		PKG_Counters_SandyBridge_EP(Core, 0);
+		PKG_Counters_Intel_EP(Core, 0);
 		PWR_ACCU_SandyBridge_EP(PUBLIC(RO(Proc)), 0);
 	}
 
@@ -11766,9 +11789,15 @@ static void Stop_SandyBridge_EP(void *arg)
 
 	BITCLR(LOCKLESS, PRIVATE(OF(Join, AT(cpu)))->TSM, STARTED);
 }
-/*TODO(Fixme): Table 2-24. Uncore PMU MSR for Xeon family 06_2DH, 06_3E
-static void Start_Uncore_SandyBridge_EP(void *arg)
+
+static void Start_SandyBridge_EP(void *arg)
 {
+	Entry_Intel_Xeon_EP(arg, PKG_Counters_SandyBridge_EP);
+}
+
+/*	SandyBridge/EP Uncore PMU MSR for Xeon family 06_2Dh		*/
+static void Start_Uncore_SandyBridge_EP(void *arg)
+{	/*	Tables 2-20 , 2-23 , 2-24				*/
 	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
 	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
 
@@ -11781,29 +11810,82 @@ static void Start_Uncore_SandyBridge_EP(void *arg)
 
 	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 
-	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
+	RDMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
 						Uncore_PMonGlobalControl;
 
 	Uncore_PMonGlobalControl.Unfreeze_All = 1;
 
-	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_EP_PMON_GLOBAL_CTRL);
+	WRMSR(Uncore_PMonGlobalControl, MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 }
 
 static void Stop_Uncore_SandyBridge_EP(void *arg)
-{	// If fixed counter was disable at entry, force freezing
+{
     if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
     {
 	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
     }
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
-		MSR_SNB_EP_PMON_GLOBAL_CTRL);
+		MSR_SNB_UNCORE_PERF_GLOBAL_CTRL);
 
 	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
 		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
 }
-*/
+
+static enum hrtimer_restart Cycle_IvyBridge_EP(struct hrtimer *pTimer)
+{
+	return (Cycle_Intel_Xeon_EP(pTimer, PKG_Counters_IvyBridge_EP));
+}
+
+void InitTimer_IvyBridge_EP(unsigned int cpu)
+{
+	smp_call_function_single(cpu, InitTimer, Cycle_IvyBridge_EP, 1);
+}
+
+static void Start_IvyBridge_EP(void *arg)
+{
+	Entry_Intel_Xeon_EP(arg, PKG_Counters_IvyBridge_EP);
+}
+
+/*	IvyBridge/EP Uncore PMU MSR for Xeon family 06_3E		*/
+static void Start_Uncore_IvyBridge_EP(void *arg)
+{	/*	Tables 2-20 , 2-24 , 2-26 , 2-27 , 2-28 		*/
+	UNCORE_FIXED_PERF_CONTROL Uncore_FixedPerfControl;
+	UNCORE_PMON_GLOBAL_CONTROL Uncore_PMonGlobalControl;
+
+	RDMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl = \
+						Uncore_FixedPerfControl;
+
+	Uncore_FixedPerfControl.SNB.EN_CTR0 = 1;
+
+	WRMSR(Uncore_FixedPerfControl, MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+
+	RDMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
+
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl = \
+						Uncore_PMonGlobalControl;
+
+	Uncore_PMonGlobalControl.Unfreeze_All = 1;
+
+	WRMSR(Uncore_PMonGlobalControl, MSR_IVB_EP_PMON_GLOBAL_CTRL);
+}
+
+static void Stop_Uncore_IvyBridge_EP(void *arg)
+{	/* If fixed counter was disable at entry, force freezing	*/
+    if (PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl.SNB.EN_CTR0 == 0)
+    {
+	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl.Freeze_All = 1;
+    }
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_PMonGlobalControl,
+		MSR_IVB_EP_PMON_GLOBAL_CTRL);
+
+	WRMSR(	PUBLIC(RO(Proc))->SaveArea.Uncore_FixedPerfControl,
+		MSR_SNB_EP_UNCORE_PERF_FIXED_CTR_CTRL);
+}
+
 
 static enum hrtimer_restart Cycle_Haswell_ULT(struct hrtimer *pTimer)
 {
