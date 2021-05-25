@@ -1206,6 +1206,27 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3]),
 		RefreshRatioFreq, &Shm->Uncore.Boost[UNCORE_BOOST(MAX)] );
     }
+    if (Shm->Proc.Features.TDP_Cfg_Lock) {
+	PUT(	SCANKEY_NULL, attrib[0], width, 2,
+		"%s%.*s""%s"" [%3d:%-3d]", RSC(TDP).CODE(),
+		width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
+		Shm->Proc.Features.TDP_Cfg_Level,
+		Shm->Proc.Features.TDP_Levels );
+    } else {
+	GridCall( PUT(	BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
+			"%s%.*s""%s"" <%3d:%-3d>", RSC(TDP).CODE(),
+			width - 16 - RSZ(LEVEL),
+			hSpace, RSC(LEVEL).CODE(),
+			Shm->Proc.Features.TDP_Cfg_Level,
+			Shm->Proc.Features.TDP_Levels ),
+		RefreshConfigTDP );
+    }
+	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
+		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
+		width - (OutFunc == NULL ? 15:13) - RSZ(PROGRAMMABLE), hSpace,
+			6, Shm->Proc.Features.TDP_Unlock == 1 ?
+				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
+
     if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
     {
 	const size_t len = RSZ(LEVEL) + 1 + 1;
@@ -1214,36 +1235,15 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
       {
 	CLOCK_ARG coreClock = {.NC = 0, .Offset = 0};
 
-	if (Shm->Proc.Features.TDP_Cfg_Lock) {
-		PUT(	SCANKEY_NULL, attrib[0], width, 2,
-			"%s%.*s""%s"" [%3d:%-3d]", RSC(TDP).CODE(),
-			width - 16 - RSZ(LEVEL), hSpace, RSC(LEVEL).CODE(),
-			Shm->Proc.Features.TDP_Cfg_Level,
-			Shm->Proc.Features.TDP_Levels );
-	} else {
-		GridCall( PUT(	BOXKEY_CFG_TDP_LVL, attrib[0], width, 2,
-				"%s%.*s""%s"" <%3d:%-3d>", RSC(TDP).CODE(),
-				width - 16 - RSZ(LEVEL),
-				hSpace, RSC(LEVEL).CODE(),
-				Shm->Proc.Features.TDP_Cfg_Level,
-				Shm->Proc.Features.TDP_Levels ),
-			RefreshConfigTDP );
-	}
-	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Unlock == 1],
-		width, 3, "%s%.*s[%7.*s]", RSC(PROGRAMMABLE).CODE(),
-		width - (OutFunc == NULL ? 15:13) - RSZ(PROGRAMMABLE), hSpace,
-			6, Shm->Proc.Features.TDP_Unlock == 1 ?
-				RSC(UNLOCK).CODE() : RSC(LOCK).CODE() );
-
 	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TDP_Cfg_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(CONFIGURATION).CODE(),
-		width - (OutFunc == NULL ? 15:13) - RSZ(CONFIGURATION),hSpace,
+		width - (OutFunc == NULL ? 15:13) - RSZ(CONFIGURATION), hSpace,
 			6, Shm->Proc.Features.TDP_Cfg_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
 	PUT(	SCANKEY_NULL, attrib[Shm->Proc.Features.TurboActiv_Lock == 0],
 		width, 3, "%s%.*s[%7.*s]", RSC(TURBO_ACTIVATION).CODE(),
-		width - (OutFunc == NULL ? 15:13)-RSZ(TURBO_ACTIVATION),hSpace,
+		width - (OutFunc == NULL ? 15:13)-RSZ(TURBO_ACTIVATION), hSpace,
 			6, Shm->Proc.Features.TurboActiv_Lock == 1 ?
 				RSC(LOCK).CODE() : RSC(UNLOCK).CODE() );
 
