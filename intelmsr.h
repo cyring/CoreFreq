@@ -855,14 +855,17 @@ typedef union
 		TM2_Enable	: 14-13,
 		ReservedBits3	: 16-14,
 		EIST		: 17-16, /* Enhanced Intel SpeedStep Tech. */
-		ReservedBits4	: 18-17,
+		BR_PROCHOT	: 18-17, /* Broadwell			*/
 		FSM		: 19-18,
 		PrefetchCacheDis: 20-19, /* Pentium4, Xeon		*/
-		ReservedBits5	: 22-20,
+		ReservedBits4	: 22-20,
 		CPUID_MaxVal	: 23-22,
 		xTPR		: 24-23,
 		L1DataCacheMode : 25-24, /* Pentium4, Xeon		*/
-		ReservedBits6	: 34-25,
+		ReservedBits5	: 26-25,
+		C2E		: 27-26, /* Broadwell			*/
+		ReservedBits6	: 32-27,
+		C4E		: 34-32, /* Broadwell Mobile		*/
 		XD_Bit_Disable	: 35-34,
 		ReservedBits7	: 37-35,
 		DCU_L1_Prefetch	: 38-37, /* Core (R/W) Disable=1	*/

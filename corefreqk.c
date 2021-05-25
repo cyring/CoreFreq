@@ -5986,10 +5986,10 @@ void Query_AMD_Family_17h(unsigned int cpu)
 
 	if (Compute_AMD_Zen_Boost(cpu) == true)
 	{	/*	Count the Xtra Boost ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
 	}
 	else {	/*	Disabled CPB: Hide ratios			*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
 	}
 	/*	Apply same register bit fields as Intel RAPL_POWER_UNIT */
 	RDMSR(PUBLIC(RO(Proc))->PowerThermal.Unit, MSR_AMD_RAPL_POWER_UNIT);
@@ -6082,6 +6082,10 @@ void Query_AMD_Family_17h(unsigned int cpu)
 		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
 			PWR_DOMAIN(PKG)
 		].Enable_Limit2 = 1;
+
+		PUBLIC(RO(Proc))->PowerThermal.PowerLimit[
+			PWR_DOMAIN(PKG)
+		].Clamping2 = 1;
 	    }
 	    else if (IS_HSMP_OOO(rx))
 	    {
@@ -9293,10 +9297,10 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 
 	if (CPB_State == true)
 	{	/*	Count CPB and XFR ratios		*/
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 2;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 2;
 	}
 	else {
-		PUBLIC(RO(Proc))->Features.TDP_Levels = 0;
+		PUBLIC(RO(Proc))->Features.XtraCOF = 0;
 	}
 	#define _lt (PWR_LIMIT_SIZE * PWR_DOMAIN(PKG))
 	if (Custom_TDP_Count > _lt) {

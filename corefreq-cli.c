@@ -1108,7 +1108,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
     if((Shm->Proc.Features.Info.Vendor.CRC == CRC_AMD)
     || (Shm->Proc.Features.Info.Vendor.CRC == CRC_HYGON))
     {
-      if (Shm->Proc.Features.TDP_Levels >= 2)
+      if (Shm->Proc.Features.XtraCOF >= 2)
       {
 	CFlop = &Shm->Cpu[
 			Ruler.Top[ BOOST(XFR) ]
@@ -1125,7 +1125,7 @@ REASON_CODE SysInfoProc(Window *win, CUINT width, CELL_FUNC OutFunc)
 				width, OutFunc, attrib[3] ),
 		RefreshTopFreq, BOOST(XFR) );
       }
-      if (Shm->Proc.Features.TDP_Levels >= 1)
+      if (Shm->Proc.Features.XtraCOF >= 1)
       {
 	CFlop = &Shm->Cpu[
 			Ruler.Top[ BOOST(CPB) ]
