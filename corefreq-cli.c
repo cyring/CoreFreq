@@ -11579,7 +11579,7 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	const enum PWR_DOMAIN	pw = (scan->key >> 5) & BOXKEY_TDP_MASK;
-	const enum PWR_LIMIT	pl = (scan->key & BOXKEY_PLX_MASK) >> 4;
+	const enum PWR_LIMIT	pl = scan->key & (PL1 | PL2);
 	const unsigned long long key[14] = {
 		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+50U << 20),
 		(BOXKEY_PLX_OP | (0x8 << pl)) | (pw << 5) | (+10U << 20),
