@@ -3439,6 +3439,23 @@ void Skylake_X_Platform_Info(unsigned int cpu)
     }
 }
 
+unsigned int AMD_HSMP_Exec(	enum HSMP_FUNC MSG_FUNC,
+				HSMP_ARG MSG_ARG[],
+				unsigned int HSMP_CmdRegister,
+				unsigned int HSMP_ArgRegister,
+				unsigned int HSMP_RspRegister,
+				unsigned int SMU_IndexRegister,
+				unsigned int SMU_DataRegister )
+{
+	return(AMD_HSMP_Mailbox(MSG_FUNC,
+				MSG_ARG,
+				HSMP_CmdRegister,
+				HSMP_ArgRegister,
+				HSMP_RspRegister,
+				SMU_IndexRegister,
+				SMU_DataRegister));
+}
+
 
 typedef void (*ROUTER)(void __iomem *mchmap);
 
@@ -6001,7 +6018,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Capable)
 	{ /* Mark the SMU as Enable if the reachability test is successful */
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_TEST_MSG, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -6018,7 +6035,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_RD_SMU_VER, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_RD_SMU_VER, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -6033,7 +6050,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_RD_VERSION, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_RD_VERSION, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -6048,7 +6065,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -6070,7 +6087,7 @@ void Query_AMD_Family_17h(unsigned int cpu)
 	if (PUBLIC(RO(Proc))->Features.HSMP_Enable)
 	{
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_RD_MAX_PPT, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_RD_MAX_PPT, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -6921,7 +6938,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		unsigned int rx;
 		HSMP_ARG arg[8];
 		RESET_ARRAY(arg, 8, 0, .value);
-		rx = AMD_HSMP_Read(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
+		rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,
 					SMU_AMD_INDEX_REGISTER_F17H,
 					SMU_AMD_DATA_REGISTER_F17H );
 	    if (rx == HSMP_RESULT_OK)
@@ -9317,13 +9334,13 @@ static void PerCore_AMD_Family_17h_Query(void *arg)
 		{
 			RESET_ARRAY(arg, 8, 0, .value);
 			arg[0].value = 1000 * TDP_Limit;
-			rx = AMD_HSMP_Read(HSMP_WR_PKG_PL1, arg, SMU_HSMP_F19H,
+			rx = AMD_HSMP_Exec(HSMP_WR_PKG_PL1, arg, SMU_HSMP_F19H,
 						SMU_AMD_INDEX_REGISTER_F17H,
 						SMU_AMD_DATA_REGISTER_F17H);
 		    if (rx == HSMP_RESULT_OK)
 		    {
 			RESET_ARRAY(arg, 8, 0, .value);
-			rx = AMD_HSMP_Read(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
+			rx = AMD_HSMP_Exec(HSMP_RD_PKG_PL1, arg, SMU_HSMP_F19H,
 						SMU_AMD_INDEX_REGISTER_F17H,
 						SMU_AMD_DATA_REGISTER_F17H);
 		    }
@@ -9457,7 +9474,7 @@ void Sys_MemInfo(SYSGATE_RO *SysGate)
 	SysGate->memInfo.freehigh  = info.freehigh  << (PAGE_SHIFT - 10);
 }
 
-#define Sys_Tick(Pkg)						\
+#define Sys_Tick(Pkg, ...)					\
 ({								\
 	if (PUBLIC(OF(Gate)) != NULL)				\
 	{							\
@@ -9466,6 +9483,7 @@ void Sys_MemInfo(SYSGATE_RO *SysGate)
 			Pkg->tickStep = Pkg->tickReset ;	\
 			Sys_DumpTask( PUBLIC(OF(Gate)) );	\
 			Sys_MemInfo( PUBLIC(OF(Gate)) );	\
+			__VA_ARGS__				\
 		}						\
 	}							\
 })
@@ -10541,25 +10559,29 @@ void CCD_AMD_Family_17h_Zen2_Temp(CORE_RO *Core)
 	Core_AMD_Family_17h_Temp(Core);					\
 									\
 	Pkg->PowerThermal.Sensor = Core->PowerThermal.Sensor;		\
-									\
-  if (PUBLIC(RO(Proc))->Features.HSMP_Enable)				\
-  {									\
+})
+
+#define Pkg_AMD_Family_19h_PROCHOT(Pkg) 				\
+({									\
+    if (Pkg->Features.HSMP_Enable)					\
+    {									\
 	unsigned int rx;						\
 	HSMP_ARG arg[8];						\
 	RESET_ARRAY(arg, 8, 0, .value);					\
-	rx = AMD_HSMP_Read(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
+	rx = AMD_HSMP_Exec(	HSMP_RD_PROCHOT, arg, SMU_HSMP_F19H,	\
 				SMU_AMD_INDEX_REGISTER_F17H,		\
 				SMU_AMD_DATA_REGISTER_F17H );		\
-    if (rx == HSMP_RESULT_OK)						\
-    {									\
-	PUBLIC(RO(Proc))->PowerThermal.Events=((arg[0].value & 0x1)<<1);\
+	if (rx == HSMP_RESULT_OK)					\
+	{								\
+		Pkg->PowerThermal.Events = ((arg[0].value & 0x1) << 1); \
+	}								\
+	else if (IS_HSMP_OOO(rx))					\
+	{								\
+		Pkg->Features.HSMP_Enable = 0;				\
+	}								\
     }									\
-    else if (IS_HSMP_OOO(rx))						\
-    {									\
-	PUBLIC(RO(Proc))->Features.HSMP_Enable = 0;			\
-    }									\
-  }									\
 })
+
 
 static enum hrtimer_restart Cycle_VirtualMachine(struct hrtimer *pTimer)
 {
@@ -13635,7 +13657,10 @@ void Cycle_AMD_Family_17h(CORE_RO *Core,
 
 		Save_PWR_ACCU(PUBLIC(RO(Proc)), PKG);
 
-		Sys_Tick(PUBLIC(RO(Proc)));
+		Sys_Tick(PUBLIC(RO(Proc)),
+			{
+				Pkg_AMD_Family_19h_PROCHOT(PUBLIC(RO(Proc)));
+			});
 	} else {
 		Core->PowerThermal.VID = 0;
 	}

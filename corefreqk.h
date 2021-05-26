@@ -733,17 +733,6 @@ typedef union
 	MSG_RSP.value;							\
 })
 
-#define AMD_HSMP_Read( ... )						\
-({									\
-	AMD_HSMP_Mailbox( __VA_ARGS__ );				\
-})
-
-#define AMD_HSMP_Write( ... )						\
-({									\
-	AMD_HSMP_Mailbox( __VA_ARGS__ );				\
-})
-
-
 /* Driver' private and public data definitions.				*/
 enum CSTATES_CLASS {
 	CSTATES_NHM,

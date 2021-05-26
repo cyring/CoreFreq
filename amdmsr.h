@@ -149,9 +149,9 @@
 #endif
 
 /* Sources: PPR Vol 2 for AMD Family 19h Model 01h B1			*/
-#define SMU_HSMP_F19H	0x3b10534, 0x3b109e0, 0x3b10980
+#define SMU_HSMP_F19H	/*Cmd:*/0x3b10534, /*Arg:*/0x3b109e0, /*Rsp:*/0x3b10980
 
-enum {
+enum HSMP_FUNC {
 	HSMP_TEST_MSG	= 0x1,	/* Returns [ARG0] + 1			*/
 	HSMP_RD_SMU_VER = 0x2,	/* SMU FW Version			*/
 	HSMP_RD_VERSION = 0x3,	/* Interface Version			*/
