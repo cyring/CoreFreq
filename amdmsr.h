@@ -54,6 +54,8 @@
 	#define MSR_AMD_CSTATE_BAR		0xc0010073
 #endif
 
+#define MSR_AMD_CPU_WDT_CFG			0xc0010074
+
 #ifndef MSR_VM_CR
 	#define MSR_VM_CR			0xc0010114
 #endif
@@ -948,6 +950,20 @@ typedef union
 	ReservedBits4	: 64-55;
     };
 } AMD_IOMMU_CTRL_REG;
+
+typedef union
+{
+	unsigned long long value;
+    struct
+    {
+	unsigned long long	 /* Per Core: MSR 0xC0010074 (RW)	*/
+	TmrCfgEn	:  1-0,
+	TmrTimebaseSel	:  3-1,
+	Reserved1	:  7-3,
+	TmrCfgSeverity	: 10-7,
+	Reserved2	: 64-10;
+    };
+} AMD_CPU_WDT_CFG;
 
 typedef union
 {

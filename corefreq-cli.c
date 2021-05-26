@@ -2679,6 +2679,16 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 	},
 	{
 		(unsigned int[]) { CRC_INTEL, 0 },
+		Shm->Proc.Technology.WDT == 1,
+		2, "%s%.*sTCO   [%3s]",
+		RSC(TECHNOLOGIES_WDT).CODE(),
+		width - 14 - RSZ(TECHNOLOGIES_WDT),
+		NULL,
+		SCANKEY_NULL,
+		NULL
+	},
+	{
+		(unsigned int[]) { CRC_INTEL, 0 },
 		Shm->Proc.Technology.VM == 1,
 		2, "%s%.*sVMX   [%3s]",
 		RSC(TECHNOLOGIES_VM).CODE(),
@@ -2746,6 +2756,16 @@ REASON_CODE SysInfoTech(Window *win, CUINT width, CELL_FUNC OutFunc)
 		NULL,
 		BOXKEY_TURBO,
 		TurboUpdate
+	},
+	{
+		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
+		Shm->Proc.Technology.WDT == 1,
+		2, "%s%.*sWDT   [%3s]",
+		RSC(TECHNOLOGIES_WDT).CODE(),
+		width - 14 - RSZ(TECHNOLOGIES_WDT),
+		NULL,
+		SCANKEY_NULL,
+		NULL
 	},
 	{
 		(unsigned int[]) { CRC_AMD, CRC_HYGON, 0 },
@@ -6606,7 +6626,7 @@ Window *CreateSysInfo(unsigned long long id)
 	case SCANKEY_t:
 		{
 		winOrigin.col = 23;
-		matrixSize.hth = 13;
+		matrixSize.hth = 14;
 		winOrigin.row = TOP_HEADER_ROW + 5;
 		winWidth = 50;
 		SysInfoFunc = SysInfoTech;

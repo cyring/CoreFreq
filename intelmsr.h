@@ -1552,6 +1552,19 @@ typedef union
 	};
 } Intel_IOMMU_CAP_REG;
 
+typedef union
+{
+	unsigned short	value;
+	struct {
+		unsigned short
+		ReservedBits1	:  9-0,
+		VerbatimCopy	: 10-9,  /* Same bit read must be write back */
+		ReservedBits2	: 11-10,
+		TCO_TMR_HALT	: 12-11, /*1=WDT will halt; 0=WDT will count */
+		ReservedBits3	: 16-12;
+	};
+} Intel_TCO1_CNT;
+
 
 typedef union
 {	/* Offset Channel0: 110h & Channel1: 190h			*/

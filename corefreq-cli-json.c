@@ -1306,6 +1306,8 @@ void JsonSysInfo(SHM_STRUCT *Shm, CELL_FUNC OutFunc)
 			json_literal(&s, "%llu", Shm->Proc.Technology.PC6);
 			json_key(&s, "SMM");
 			json_literal(&s, "%llu", Shm->Proc.Technology.SMM);
+			json_key(&s, "WDT");
+			json_literal(&s, "%llu", Shm->Proc.Technology.WDT);
 			json_key(&s, "VM");
 			json_literal(&s, "%llu", Shm->Proc.Technology.VM);
 			json_key(&s, "IOMMU");

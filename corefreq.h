@@ -293,7 +293,8 @@ typedef struct
 				L2_HW_CL_Prefetch:20-19,
 				IOMMU_Ver_Major : 24-20,
 				IOMMU_Ver_Minor : 28-24,
-				_pad64		: 64-28;
+				WDT		: 29-28,
+				_pad64		: 64-29;
 	} Technology;
 
 	struct {

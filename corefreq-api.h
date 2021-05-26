@@ -760,6 +760,7 @@ typedef struct
 	BitCC	/* AMD */	PC6_Mask __attribute__ ((aligned (16)));
 	BitCC			SPEC_CTRL_Mask __attribute__ ((aligned (16)));
 	BitCC			ARCH_CAP_Mask  __attribute__ ((aligned (16)));
+	BitCC			WDT_Mask __attribute__ ((aligned (16)));
 
 	enum THERMAL_FORMULAS	thermalFormula;
 	enum VOLTAGE_FORMULAS	voltageFormula;
@@ -883,6 +884,7 @@ typedef struct
 	BitCC			PSCHANGE_MC_NO	__attribute__ ((aligned (16)));
 	BitCC			TAA_NO		__attribute__ ((aligned (16)));
 	BitCC			SPLA		__attribute__ ((aligned (16)));
+	BitCC			WDT		__attribute__ ((aligned (16)));
 
 	struct {
 		Bit64		Signal	__attribute__ ((aligned (8)));
@@ -1045,6 +1047,8 @@ typedef struct
 #ifndef PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE
 	#define PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE	0x2c70
 #endif
+/* Source: Intel Using the Intel ICH Family Watchdog Timer (WDT)	*/
+#define PCI_DEVICE_ID_INTEL_ICH10_LPC			0x3a16
 /* Source: Intel X58 Express Chipset Datasheet				*/
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CORE		0x342e
 #define PCI_DEVICE_ID_INTEL_X58_HUB_CTRL		0x3423

@@ -1555,6 +1555,10 @@ void Technology_Update(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)
 	Shm->Proc.Technology.VM = BITCMP_CC(	LOCKLESS,
 						Proc_RW->VM,
 						Proc_RO->CR_Mask );
+
+	Shm->Proc.Technology.WDT = BITCMP_CC(	LOCKLESS,
+						Proc_RW->WDT,
+						Proc_RO->WDT_Mask );
 }
 
 void Mitigation_2nd_Stage(SHM_STRUCT *Shm, PROC_RO *Proc_RO, PROC_RW *Proc_RW)

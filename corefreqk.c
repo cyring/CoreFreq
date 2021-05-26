@@ -4112,6 +4112,25 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 	return (Router(dev, 0x48, 64, 0x4000, Query_P35));
 }
 
+static PCI_CALLBACK ICH_LPC(struct pci_dev *dev)
+{
+	Intel_TCO1_CNT TCO1_CNT = {.value = 0};
+
+	pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
+
+	if (TCO1_CNT.TCO_TMR_HALT) {
+		BITCLR_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
+					PUBLIC(RO(Proc))->Service.Core );
+	} else {
+		BITSET_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
+					PUBLIC(RO(Proc))->Service.Core );
+	}
+	BITSET_CC( LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core );
+
+	return ((PCI_CALLBACK) 0);
+}
+
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev)
 {/* DRP */
 	PCI_MCR MsgCtrlReg = {
@@ -6958,6 +6977,19 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	Core->Query.CfgLock = 1;
 	/*		Package C-State: I/O MWAIT Redirection .	*/
 	Core->Query.IORedir = 0;
+	/*		CPU Watchdog Timer.				*/
+	if ((Core->T.ThreadID == 0) || (Core->T.ThreadID == -1))
+	{
+		AMD_CPU_WDT_CFG CPU_WDT_CFG = {.value = 0};
+		RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+
+		if (CPU_WDT_CFG.TmrCfgEn) {
+			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		} else {
+			BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
+		}
+		BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
+	}
 }
 
 void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
@@ -8421,6 +8453,7 @@ void PerCore_Reset(CORE_RO *Core)
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask	, Core->Bind);
 
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->ODCM	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PowerMgmt , Core->Bind);
@@ -8447,6 +8480,7 @@ void PerCore_Reset(CORE_RO *Core)
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->PSCHANGE_MC_NO, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->TAA_NO	, Core->Bind);
 	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->SPLA	, Core->Bind);
+	BITCLR_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT	, Core->Bind);
 }
 
 static void PerCore_VirtualMachine(void *arg)
