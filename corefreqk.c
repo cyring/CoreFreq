@@ -4116,7 +4116,7 @@ static PCI_CALLBACK P35(struct pci_dev *dev)
 	return (Router(dev, 0x48, 64, 0x4000, Query_P35));
 }
 
-static PCI_CALLBACK ICH_LPC(struct pci_dev *dev)
+static PCI_CALLBACK ICH_TCO(struct pci_dev *dev)
 {
 	Intel_TCO1_CNT TCO1_CNT = {.value = 0};
 
@@ -4125,7 +4125,7 @@ static PCI_CALLBACK ICH_LPC(struct pci_dev *dev)
 	switch (WDT_Enable) {
 	case COREFREQ_TOGGLE_OFF:
 	case COREFREQ_TOGGLE_ON:
-		TCO1_CNT.TCO_TMR_HALT = WDT_Enable;
+		TCO1_CNT.TCO_TMR_HALT = !WDT_Enable;
 		pci_write_config_word(dev, 0x40 + 8, TCO1_CNT.value);
 		pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
 		break;
@@ -4897,15 +4897,38 @@ static PCI_CALLBACK AMD_17h_UMC(struct pci_dev *dev)
 	return ((PCI_CALLBACK) 0);
 }
 
-static int CoreFreqK_ProbePCI(void)
+static void CoreFreqK_ResetChip(struct pci_dev *dev)
 {
-	struct pci_device_id *id = Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids;
+	memset( PUBLIC(RO(Proc))->Uncore.Chip, 0,
+		CHIP_MAX_PCI*sizeof(struct CHIP_ST) );
+}
+
+static void CoreFreqK_AppendChip(struct pci_dev *dev)
+{
+	unsigned int idx;
+	for (idx = 0; idx < CHIP_MAX_PCI; idx++)
+	{
+		if (PUBLIC(RO(Proc))->Uncore.Chip[idx].VID == 0)
+		{
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].VID = dev->vendor;
+			PUBLIC(RO(Proc))->Uncore.Chip[idx].DID = dev->device;
+
+			break;
+		}
+	}
+}
+
+static int CoreFreqK_ProbePCI(	struct pci_device_id PCI_ids[],
+				void (*PreProbe)(struct pci_dev*),
+				void (*PostProbe)(struct pci_dev*) )
+{
+	struct pci_device_id *id = PCI_ids;
 	struct pci_dev *dev = NULL;
 	int rc = -ENODEV;
 
-	memset( PUBLIC(RO(Proc))->Uncore.Chip, 0,
-		CHIP_MAX_PCI*sizeof(struct CHIP_ST) );
-
+	if (PreProbe != NULL) {
+		PreProbe(dev);
+	}
 	while (id->vendor || id->subvendor || id->class_mask)
 	{
 		dev = pci_get_device(id->vendor, id->device, NULL);
@@ -4916,17 +4939,9 @@ static int CoreFreqK_ProbePCI(void)
 
 		if ((rc = (int) Callback(dev)) == 0)
 		{
-			unsigned int idx;
-		  for (idx = 0; idx < CHIP_MAX_PCI; idx++)
-		  {
-		    if (PUBLIC(RO(Proc))->Uncore.Chip[idx].VID == 0)
-		    {
-			PUBLIC(RO(Proc))->Uncore.Chip[idx].VID = dev->vendor;
-			PUBLIC(RO(Proc))->Uncore.Chip[idx].DID = dev->device;
-
-			break;
-		    }
-		  }
+			if (PostProbe != NULL) {
+				PostProbe(dev);
+			}
 		}
 		pci_disable_device(dev);
 	    }
@@ -7012,6 +7027,18 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	}
 }
 
+void Intel_Watchdog(CORE_RO *Core)
+{
+	struct pci_device_id PCI_WDT_ids[] = {
+		{
+		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
+		.driver_data = (kernel_ulong_t) ICH_TCO
+		},
+		{0, }
+	};
+	CoreFreqK_ProbePCI(PCI_WDT_ids, NULL, NULL);
+}
+
 void Intel_Turbo_Activation_Ratio(CORE_RO *Core)
 {
 	TURBO_ACTIVATION TurboActivation = {.value = 0};
@@ -8548,6 +8575,9 @@ static void PerCore_VirtualMachine(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 }
 
 static void PerCore_Intel_Query(void *arg)
@@ -8581,6 +8611,9 @@ static void PerCore_Intel_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);
 
@@ -8616,6 +8649,7 @@ static void PerCore_AuthenticAMD_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_Core2_Query(void *arg)
@@ -8650,6 +8684,9 @@ static void PerCore_Core2_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+
+	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->WDT_Mask,
+				PUBLIC(RO(Proc))->Service.Core);
 
 	PowerThermal(Core);				/* Shared | Unique */
 
@@ -8756,6 +8793,8 @@ static void PerCore_Silvermont_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PKG_POWER_LIMIT,	/* Table 2-8 */
 					PKG_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(PKG) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8825,6 +8864,8 @@ static void PerCore_Goldmont_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,	/* Table 2-12 */
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8879,6 +8920,8 @@ static void PerCore_Nehalem_Query(void *arg)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Nehalem_PowerLimit();		/* Table 2-15	*/
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8892,6 +8935,8 @@ static void PerCore_Nehalem_EX_Query(void *arg)
 
 	if (Core->Bind == PUBLIC(RO(Proc))->Service.Core) {
 		Nehalem_PowerLimit();		/* Table 2-15	*/
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -8957,6 +9002,8 @@ static void PerCore_SandyBridge_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PP0_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(CORES) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -9072,6 +9119,8 @@ static void PerCore_Haswell_EP_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_DRAM_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(RAM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -9130,6 +9179,8 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PP1_POWER_LIMIT,
 					PPn_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(UNCORE) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -9215,6 +9266,8 @@ static void PerCore_Skylake_Query(void *arg)
 		Intel_DomainPowerLimit( MSR_PLATFORM_POWER_LIMIT,
 					PKG_POWER_LIMIT_LOCK_MASK,
 					PWR_DOMAIN(PLATFORM) );
+
+		Intel_Watchdog(Core);
 	}
 }
 
@@ -9276,6 +9329,7 @@ static void PerCore_AMD_Family_0Fh_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_Same_Query(void *arg)
@@ -9308,6 +9362,7 @@ static void PerCore_AMD_Family_Same_Query(void *arg)
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->ARCH_CAP_Mask , Core->Bind);
+	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->WDT_Mask, Core->Bind);
 }
 
 static void PerCore_AMD_Family_10h_Query(void *arg)
@@ -15941,7 +15996,11 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	    if (PUBLIC(RO(Proc))->Registration.Experimental)
 	    {
 	      if ( !PUBLIC(RO(Proc))->Registration.PCI ) {
-		PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+		PUBLIC(RO(Proc))->Registration.PCI = \
+			CoreFreqK_ProbePCI(
+				Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip
+			) == 0;
 		rc = RC_OK_COMPUTE;
 	     } else {
 		rc = RC_SUCCESS;
@@ -16821,7 +16880,9 @@ static int CoreFreqK_Resume(struct device *dev)
     }
 	/*		Probe PCI again 				*/
     if (PUBLIC(RO(Proc))->Registration.PCI) {
-	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+	PUBLIC(RO(Proc))->Registration.PCI = \
+		CoreFreqK_ProbePCI(Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip) == 0;
     }
 	Controller_Start(1);
 
@@ -17607,7 +17668,9 @@ static int CoreFreqK_Ignition_Level_Up(INIT_ARG *pArg)
 
 	Controller_Start(0);
 
-	PUBLIC(RO(Proc))->Registration.PCI = CoreFreqK_ProbePCI() == 0;
+	PUBLIC(RO(Proc))->Registration.PCI = \
+		CoreFreqK_ProbePCI(Arch[PUBLIC(RO(Proc))->ArchID].PCI_ids,
+				CoreFreqK_ResetChip, CoreFreqK_AppendChip) == 0;
 
 #ifdef CONFIG_HOTPLUG_CPU
 	#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 6, 0)

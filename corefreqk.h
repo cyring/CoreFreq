@@ -478,7 +478,7 @@ ASM_COUNTERx7(r10, r11, r12, r13, r14, r15,r9,r8,ASM_RDTSCP,mem_tsc,__VA_ARGS__)
 
 
 #define PCI_CONFIG_ADDRESS(bus, dev, fn, reg) \
-	(0x80000000 | (bus << 16) | (dev << 11) | (fn << 8) | (reg & ~3))
+	(0x80000000 | ((bus) << 16)|((dev) << 11)|((fn) << 8)|((reg) & ~3))
 
 #define RDPCI(_data, _reg)						\
 ({									\
@@ -1471,7 +1471,6 @@ static PCI_CALLBACK P955(struct pci_dev *dev) ;
 static PCI_CALLBACK P965(struct pci_dev *dev) ;
 static PCI_CALLBACK G965(struct pci_dev *dev) ;
 static PCI_CALLBACK P35(struct pci_dev *dev) ;
-static PCI_CALLBACK ICH_LPC(struct pci_dev *dev) ;
 static PCI_CALLBACK SoC_SLM(struct pci_dev *dev) ;
 static PCI_CALLBACK Bloomfield_IMC(struct pci_dev *dev) ;
 static PCI_CALLBACK Lynnfield_IMC(struct pci_dev *dev) ;
@@ -1603,10 +1602,6 @@ static struct pci_device_id PCI_SoC_ids[] = {
 		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SLM_PTR),
 		.driver_data = (kernel_ulong_t) SoC_SLM
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1636,10 +1631,6 @@ static struct pci_device_id PCI_Nehalem_QPI_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_C5500_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1663,10 +1654,6 @@ static struct pci_device_id PCI_Nehalem_DMI_ids[] = {
 	{ /* Westmere/Clarkdale QuickPath Architecture Non-core Registers */
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_CLARKDALE_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
-	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
 	},
 	{0, }
 };
@@ -1692,10 +1679,6 @@ static struct pci_device_id PCI_Westmere_EP_ids[] = {
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_NHM_EP_NON_CORE),
 		.driver_data = (kernel_ulong_t) NHM_NON_CORE
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1715,10 +1698,6 @@ static struct pci_device_id PCI_SandyBridge_ids[] = {
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_SNB_IMC_0104),
 		.driver_data = (kernel_ulong_t) SNB_IMC
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1733,10 +1712,6 @@ static struct pci_device_id PCI_IvyBridge_ids[] = {
 	{	/* Mobile i5-3337U: IMC=0x0154				*/
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_IMC_0154),
 		.driver_data = (kernel_ulong_t) IVB_IMC
-	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
 	},
 	{0, }
 };
@@ -1832,10 +1807,6 @@ static struct pci_device_id PCI_SandyBridge_EP_ids[] = {
       PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IVB_EP_TAD_CTRL1_CH3),
 		.driver_data = (kernel_ulong_t) SNB_EP_TAD_CTRL1_CHA3
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1859,10 +1830,6 @@ static struct pci_device_id PCI_Haswell_ids[] = {
 	PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_UY_IMC_HA0),
 		.driver_data = (kernel_ulong_t) HSW_IMC
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -1884,10 +1851,6 @@ static struct pci_device_id PCI_Broadwell_ids[] = {
 	{	/* Desktop: IMC_SystemAgent=0x0c00			*/
 	    PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_HASWELL_IMC_SA),
 		.driver_data = (kernel_ulong_t) HSW_IMC
-	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
 	},
 	{0, }
 };
@@ -1922,18 +1885,10 @@ static struct pci_device_id PCI_Skylake_ids[] = {
 	  PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SKYLAKE_DT_IMC_HA),
 		.driver_data = (kernel_ulong_t) SKL_IMC
 	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
 static struct pci_device_id PCI_Skylake_X_ids[] = {
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
-	},
 	{0, }
 };
 
@@ -2038,10 +1993,6 @@ static struct pci_device_id PCI_Kabylake_ids[] = {
 	{
       PCI_DEVICE(PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_WHISKEYLAKE_U_IMC_HAQ),
 		.driver_data = (kernel_ulong_t) SKL_IMC
-	},
-	{
-		PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH10_LPC),
-		.driver_data = (kernel_ulong_t) ICH_LPC
 	},
 	{0, }
 };
