@@ -478,6 +478,7 @@ parm:           Mech_STIBP:Mitigation Mechanism STIBP (short)
 parm:           Mech_SSBD:Mitigation Mechanism SSBD (short)
 parm:           Mech_IBPB:Mitigation Mechanism IBPB (short)
 parm:           Mech_L1D_FLUSH:Mitigation Mechanism Cache L1D Flush (short)
+parm:           WDT_Enable:Watchdog Hardware Timer (short)
 ```  
 
 ## Algorithm

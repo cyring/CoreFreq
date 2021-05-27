@@ -506,6 +506,7 @@
 #define RSC_TECHNOLOGIES_EEO_CODE_EN	"Energy Efficiency Optimization"
 #define RSC_TECHNOLOGIES_R2H_CODE_EN	"Race To Halt Optimization"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_EN "Hypervisor"
+#define RSC_TECHNOLOGIES_WDT_CODE_EN	"Watchdog Timer"
 
 #define RSC_PERF_MON_TITLE_CODE_EN	" Performance Monitoring "
 #define RSC_VERSION_CODE_EN		"Version"
@@ -960,6 +961,7 @@
 #define RSC_BOX_HDC_DESC_CODE_EN	"        Hardware Duty Cycling       "
 #define RSC_BOX_EEO_DESC_CODE_EN	"   Energy Efficiency Optimization   "
 #define RSC_BOX_R2H_DESC_CODE_EN	"      Race To Halt Optimization     "
+#define RSC_BOX_WDT_DESC_CODE_EN	"           Watchdog Timer           "
 
 #define RSC_BOX_NOM_MODE_COND0_CODE_EN    "       Nominal operating mode       "
 #define RSC_BOX_NOM_MODE_COND1_CODE_EN    "     < Nominal operating mode >     "

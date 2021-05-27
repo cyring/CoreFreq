@@ -1120,6 +1120,8 @@ enum {
 	RSC_BOX_EEO_DESC,
 	RSC_BOX_R2H_TITLE,
 	RSC_BOX_R2H_DESC,
+	RSC_BOX_WDT_TITLE,
+	RSC_BOX_WDT_DESC,
 	RSC_BOX_BLANK_DESC,
 	RSC_BOX_NOMINAL_MODE_COND0,
 	RSC_BOX_NOMINAL_MODE_COND1,
@@ -3129,6 +3131,8 @@ extern RESOURCE_ST Resource[];
 
 #define RSC_BOX_R2H_TITLE_CODE		" R2H "
 
+#define RSC_BOX_WDT_TITLE_CODE		" WDT "
+
 #define RSC_BOX_POWER_POLICY_1_CODE	"            1           "
 #define RSC_BOX_POWER_POLICY_2_CODE	"            2           "
 #define RSC_BOX_POWER_POLICY_3_CODE	"            3           "
@@ -3254,8 +3258,6 @@ extern RESOURCE_ST Resource[];
 #define RSC_TECH_HYPERV_KBOX_CODE	"  KVM/VBox"
 #define RSC_TECH_HYPERV_VMWARE_CODE	"    VMware"
 #define RSC_TECH_HYPERV_HYPERV_CODE	"MS Hyper-V"
-
-#define RSC_TECHNOLOGIES_WDT_CODE	"Watchdog"
 
 #define RSC_PERF_LABEL_VER_CODE 	"PM"
 #define RSC_PERF_LABEL_C1E_CODE 	"C1E"

@@ -317,6 +317,10 @@ static signed short Mech_L1D_FLUSH = -1;
 module_param(Mech_L1D_FLUSH, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
 MODULE_PARM_DESC(Mech_L1D_FLUSH, "Mitigation Mechanism Cache L1D Flush");
 
+static signed short WDT_Enable = -1;
+module_param(WDT_Enable, short, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+MODULE_PARM_DESC(WDT_Enable, "Watchdog Hardware Timer");
+
 static struct {
 	signed int		Major;
 	struct cdev		*kcdev;
@@ -4118,6 +4122,14 @@ static PCI_CALLBACK ICH_LPC(struct pci_dev *dev)
 
 	pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
 
+	switch (WDT_Enable) {
+	case COREFREQ_TOGGLE_OFF:
+	case COREFREQ_TOGGLE_ON:
+		TCO1_CNT.TCO_TMR_HALT = WDT_Enable;
+		pci_write_config_word(dev, 0x40 + 8, TCO1_CNT.value);
+		pci_read_config_word(dev, 0x40 + 8, &TCO1_CNT.value);
+		break;
+	}
 	if (TCO1_CNT.TCO_TMR_HALT) {
 		BITCLR_CC( LOCKLESS,	PUBLIC(RW(Proc))->WDT,
 					PUBLIC(RO(Proc))->Service.Core );
@@ -6983,6 +6995,14 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 		AMD_CPU_WDT_CFG CPU_WDT_CFG = {.value = 0};
 		RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
 
+		switch (WDT_Enable) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			CPU_WDT_CFG.TmrCfgEn = WDT_Enable;
+			WRMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			RDMSR(CPU_WDT_CFG, MSR_AMD_CPU_WDT_CFG);
+			break;
+		}
 		if (CPU_WDT_CFG.TmrCfgEn) {
 			BITSET_CC(LOCKLESS, PUBLIC(RW(Proc))->WDT, Core->Bind);
 		} else {
@@ -16475,6 +16495,19 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		Custom_TDC_Offset = 0;
 		rc = RC_SUCCESS;
 	    }
+		break;
+
+	case TECHNOLOGY_WDT:
+		switch (prm.dl.lo) {
+		case COREFREQ_TOGGLE_OFF:
+		case COREFREQ_TOGGLE_ON:
+			Controller_Stop(1);
+			WDT_Enable = prm.dl.lo;
+			Controller_Start(1);
+			WDT_Enable = -1;
+			rc = RC_SUCCESS;
+			break;
+		}
 		break;
 	}
 	break;

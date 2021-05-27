@@ -365,6 +365,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_TECHNOLOGIES_EEO_CODE_FR	"Optimisation ""\xa9""nerg""\xa9""tique"
 #define RSC_TECHNOLOGIES_R2H_CODE_FR	"Optimisation Race To Halt"
 #define RSC_TECHNOLOGIES_HYPERV_CODE_FR "Hyperviseur"
+#define RSC_TECHNOLOGIES_WDT_CODE_FR	"Compteur Watchdog"
 
 #define RSC_PERF_MON_TITLE_CODE_FR	" Gestion de la performance "
 #define RSC_VERSION_CODE_FR		"Version"
@@ -731,6 +732,8 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 					" " "\xa9" "nerg" "\xa9" "tique"
 
 #define RSC_BOX_R2H_DESC_CODE_FR	"      Optimisation Race To Halt     "
+
+#define RSC_BOX_WDT_DESC_CODE_FR	"         Compteur Watchdog          "
 
 #define RSC_BOX_NOM_MODE_COND0_CODE_FR		"       Fonctionnement" \
 						" nominal       "
