@@ -6997,7 +6997,7 @@ void PerCore_Query_AMD_Zen_Features(CORE_RO *Core)		/* Per SMT */
 	    }
 	}
     }
-	/*		Core C-State Base Address.			*/
+	/*		SMT C-State Base Address.			*/
 	RDMSR(CStateBaseAddr, MSR_AMD_CSTATE_BAR);
 	Core->Query.CStateBaseAddr = CStateBaseAddr.IOaddr;
 	/*		Package C-State: Configuration Control .	*/
@@ -7760,7 +7760,7 @@ void Control_IO_MWAIT(	struct CSTATES_ENCODING_ST IORedir[],
 {
 	CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
 	RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
-	/*		Core C-State Base Address.			*/
+	/*		SMT C-State Base Address.			*/
 	Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 
     if (Core->Query.IORedir)
@@ -8779,7 +8779,7 @@ static void PerCore_Silvermont_Query(void *arg)
 	Compute_Intel_Silvermont_Burst(Core);
 
 	Query_Intel_C1E(Core);
-	/*TODO(Needs a per Module topology)*/
+
 	Intel_CStatesConfiguration(CSTATES_SOC_SLM, Core);
 
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->SPEC_CTRL_Mask, Core->Bind);
@@ -8843,8 +8843,12 @@ static void PerCore_Goldmont_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SOC_GDM, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8898,8 +8902,12 @@ static void PerCore_Nehalem_Same_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_NHM, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -8983,8 +8991,12 @@ static void PerCore_SandyBridge_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SNB, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -9093,8 +9105,12 @@ static void PerCore_Haswell_EP_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SNB, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -9156,8 +9172,12 @@ static void PerCore_Haswell_ULT_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_ULT, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -9236,8 +9256,12 @@ static void PerCore_Skylake_Query(void *arg)
 
 	if (Core->T.ThreadID == 0) {				/* Per Core */
 		Intel_CStatesConfiguration(CSTATES_SKL, Core);
+	} else {
+		CSTATE_IO_MWAIT CState_IO_MWAIT = {.value = 0};
+		RDMSR(CState_IO_MWAIT, MSR_PMG_IO_CAPTURE_BASE);
+	/*	Store the C-State Base Address used by I/O-MWAIT	*/
+		Core->Query.CStateBaseAddr = CState_IO_MWAIT.LVL2_BaseAddr;
 	}
-
 	BITSET_CC(LOCKLESS, PUBLIC(RO(Proc))->CC6_Mask, Core->Bind);
 
 	BITSET_CC(LOCKLESS,	PUBLIC(RO(Proc))->PC6_Mask,
@@ -14350,11 +14374,6 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
-
-	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
-
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
@@ -14362,12 +14381,12 @@ static int CoreFreqK_IO_Handler(struct cpuidle_device *pIdleDevice,
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
 		"movw	%1,	%%dx"	"\n\t"
-		"inw	%%dx,	%%ax"	"\n\t"
+		"inb	%%dx,	%%al"	"\n\t"
 		"# RFLAGS"		"\n\t"
 		"pushfq"		"\n\t"
 		"popq	%0"
 		: "=m" (Core->SystemRegister.RFLAGS)
-		: "ir" (cstate_addr)
+		: "ir" (Core->Query.CStateBaseAddr)
 		: "%ax", "%dx", "cc", "memory"
 	);
 	return index;
@@ -14397,11 +14416,6 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	const unsigned int cpu = smp_processor_id();
 	CORE_RO *Core = (CORE_RO *) PUBLIC(RO(Core, AT(cpu)));
 
-	const unsigned short lvl = \
-			(CoreFreqK.IdleDriver.states[index].flags >> 28) & 0xf;
-
-	const unsigned short cstate_addr = Core->Query.CStateBaseAddr + lvl;
-
 	UNUSED(pIdleDevice);
 	UNUSED(pIdleDriver);
 
@@ -14409,12 +14423,12 @@ static int CoreFreqK_S2_IO_Handler(struct cpuidle_device *pIdleDevice,
 	(
 		"xorw	%%ax,	%%ax"	"\n\t"
 		"movw	%1,	%%dx"	"\n\t"
-		"inw	%%dx,	%%ax"	"\n\t"
+		"inb	%%dx,	%%al"	"\n\t"
 		"# RFLAGS"		"\n\t"
 		"pushfq"		"\n\t"
 		"popq	%0"
 		: "=m" (Core->SystemRegister.RFLAGS)
-		: "ir" (cstate_addr)
+		: "ir" (Core->Query.CStateBaseAddr)
 		: "%ax", "%dx", "cc", "memory"
 	);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
@@ -16062,7 +16076,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 	break;
 
       case MACHINE_IDLE_ROUTE:
-       if (PUBLIC(RO(Proc))->Registration.Experimental) {
 	if (PUBLIC(RO(Proc))->Registration.Driver.CPUidle & REGISTRATION_ENABLE)
 	{
 		Controller_Stop(1);
@@ -16079,9 +16092,6 @@ static long CoreFreqK_ioctl(	struct file *filp,
 		}
 		Controller_Start(1);
 	}
-       } else {
-		return (-RC_EXPERIMENTAL);
-       }
 	break;
 
       case MACHINE_CPU_FREQ:
