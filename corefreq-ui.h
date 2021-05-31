@@ -91,7 +91,7 @@ enum PALETTE {
 #define CoK	COLOR(1, CYAN, BLACK)
 #define WoK	COLOR(1, WHITE, BLACK)
 
-#define VOID_COLOR 							\
+#define RSC_VOID_COLOR_ATTR						\
 {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -520,7 +520,21 @@ typedef void (*WINFUNC)(Window*);
 typedef char REGSTR[];
 typedef char *REGPTR;
 
-extern ATTRIBUTE vColor[];
+enum THEMES {
+	THM_DFLT,
+	THM_USR1,
+	THM_CNT
+};
+
+extern enum THEMES	AppThm;
+
+#define GET_THEME()		(AppThm)
+#define SET_THEME(_app_thm)						\
+({									\
+	AppThm = _app_thm;						\
+})
+
+extern ATTRIBUTE vColor[THM_CNT][MAX_WIDTH];
 
 extern ASCII hSpace[];
 extern ASCII hBar[];

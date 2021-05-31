@@ -1317,15 +1317,15 @@ enum {
 	RSC_MECH_PSCHANGE_MC_NO,
 	RSC_MECH_TAA_NO,
 	RSC_MECH_SPLA,
-	RSC_LOGO_ROW_0,
-	RSC_LOGO_ROW_1,
-	RSC_LOGO_ROW_2,
-	RSC_LOGO_ROW_3,
-	RSC_LOGO_ROW_4,
-	RSC_LOGO_ROW_5,
-	RSC_COPY_ROW_0,
-	RSC_COPY_ROW_1,
-	RSC_COPY_ROW_2,
+	RSC_CF0,
+	RSC_CF1,
+	RSC_CF2,
+	RSC_CF3,
+	RSC_CF4,
+	RSC_CF5,
+	RSC_COPY0,
+	RSC_COPY1,
+	RSC_COPY2,
 	RSC_CREATE_SELECT_AUTO_TURBO,
 	RSC_CREATE_SELECT_FREQ_TURBO,
 	RSC_CREATE_SELECT_FREQ_TGT,
@@ -1343,14 +1343,14 @@ enum {
 };
 
 typedef struct {
-	ATTRIBUTE	*Attr;
+	ATTRIBUTE	*Attr[THM_CNT];
 	ASCII		*Code[LOC_CNT];
 	const int	Size[LOC_CNT];
 } RESOURCE_ST;
 
 extern RESOURCE_ST Resource[];
 
-#define ATTR() Attr
+#define ATTR() Attr[GET_THEME()]
 
 #define CODE() Code[GET_LOCALE()]
 
@@ -1431,19 +1431,9 @@ extern RESOURCE_ST Resource[];
 	HDK,HWK,HWK,HWK,HWK,HDK,HWK,HWK,HWK,HWK,LWK,LWK,LWK		\
 }
 
-#define RSC_LAYOUT_HEADER_CPU_CODE					\
-{									\
-	']',' ',' ',' ',' ','/',' ',' ',' ',' ','C','P','U'		\
-}
-
 #define RSC_LAYOUT_HEADER_ARCH_ATTR					\
 {									\
 	HCK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK	\
-}
-
-#define RSC_LAYOUT_HEADER_ARCH_CODE					\
-{									\
-	' ','A','r','c','h','i','t','e','c','t','u','r','e',' ','['	\
 }
 
 #define RSC_LAYOUT_HEADER_CACHE_L1_ATTR 				\
@@ -1451,13 +1441,6 @@ extern RESOURCE_ST Resource[];
 	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,				\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,			\
 	LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,LWK,LWK 			\
-}
-
-#define RSC_LAYOUT_HEADER_CACHE_L1_CODE 				\
-{									\
-	']',' ','C','a','c','h','e','s',' ',				\
-	'L','1',' ','I','n','s','t','=',' ',' ',' ',			\
-	'D','a','t','a','=',' ',' ',' ','K','B' 			\
 }
 
 #define RSC_LAYOUT_HEADER_BCLK_ATTR					\
@@ -1470,12 +1453,6 @@ extern RESOURCE_ST Resource[];
 {									\
 	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,LWK,LWK,			\
 	LWK,LWK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK			\
-}
-
-#define RSC_LAYOUT_HEADER_CACHES_CODE					\
-{									\
-	'L','2','=',' ',' ',' ',' ',' ',' ',' ',			\
-	'L','3','=',' ',' ',' ',' ',' ',' ','K','B'			\
 }
 
 #define RSC_LAYOUT_RULER_LOAD_ATTR					\
@@ -1508,29 +1485,8 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK 							\
 }
 
-#define RSC_LAYOUT_RULER_LOAD_CODE					\
-{									\
-	'-','-','-',' ', '!',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
+#define RSC_LAYOUT_RULER_REL_LOAD_ATTR	RSC_LAYOUT_RULER_VAR_LOAD_ATTR
+#define RSC_LAYOUT_RULER_ABS_LOAD_ATTR	RSC_LAYOUT_RULER_VAR_LOAD_ATTR
 
 #define RSC_LAYOUT_MONITOR_FREQUENCY_ATTR				\
 {									\
@@ -1539,15 +1495,6 @@ extern RESOURCE_ST Resource[];
 	HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,\
 	HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HWK,HWK,HWK,HWK,HWK,HWK,HDK,\
 	HDK,HDK,HBK,HBK,HBK,HDK,LWK,LWK,LWK,HDK,LYK,LYK,LYK		\
-}
-
-#define RSC_LAYOUT_MONITOR_FREQUENCY_CODE				\
-{									\
-	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',0x0,' ',' ',0x0,\
-	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
-	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
-	' ',' ',' ',' ',0x0,' ',' ',0x0,' ',' ',' ',' ',0x0,' ',' ',0x0,\
-	' ',' ',' ',' ',' ',0x0,' ',' ',' ',0x0,' ',' ',' '		\
 }
 
 #define RSC_LAYOUT_MONITOR_INST_ATTR					\
@@ -1559,15 +1506,6 @@ extern RESOURCE_ST Resource[];
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK 		\
 }
 
-#define RSC_LAYOUT_MONITOR_INST_CODE					\
-{									\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',\
-	' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',\
-	' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',0x0,' ',' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '			\
-}
-
 #define RSC_LAYOUT_MONITOR_COMMON_ATTR					\
 {									\
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
@@ -1575,15 +1513,6 @@ extern RESOURCE_ST Resource[];
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK		\
-}
-
-#define RSC_LAYOUT_MONITOR_COMMON_CODE					\
-{									\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
 }
 
 #define RSC_LAYOUT_MONITOR_TASKS_ATTR					\
@@ -1610,30 +1539,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define RSC_LAYOUT_MONITOR_TASKS_CODE					\
-{									\
-	' ',' ',' ',' ',' ',0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
-}
-
 #define RSC_LAYOUT_MONITOR_SLICE_ATTR					\
 {									\
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
@@ -1642,16 +1547,6 @@ extern RESOURCE_ST Resource[];
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,\
 	HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,HRK,HRK,HRK,\
 	HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK,HRK	\
-}
-
-#define RSC_LAYOUT_MONITOR_SLICE_CODE					\
-{									\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '	\
 }
 
 #define RSC_LAYOUT_RULER_FREQUENCY_ATTR 				\
@@ -1726,54 +1621,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define RSC_LAYOUT_RULER_FREQUENCY_PKG_CODE				\
-{									\
-	'%',' ','P','k','g',' ','[',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
-
-#define RSC_LAYOUT_RULER_INST_CODE					\
-{									\
-	'-','-','-','-','-','-','-','-','-','-','-','-',' ','I','P','S',\
-	' ','-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ',\
-	'I','P','C',' ','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-',' ','C','P','I',' ','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-',' ','I','N','S','T',' ','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
-
 #define RSC_LAYOUT_RULER_INST_ATTR					\
 {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -1798,30 +1645,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define RSC_LAYOUT_RULER_CYCLES_CODE					\
-{									\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-',' ','C',\
-	'0',':','U','C','C',' ','-','-','-','-','-','-','-','-','-','-',\
-	' ','C','0',':','U','R','C',' ','-','-','-','-','-','-','-','-',\
-	'-','-','-','-',' ','C','1',' ','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-',' ','T','S','C',' ','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
-
 #define RSC_LAYOUT_RULER_CYCLES_ATTR					\
 {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
@@ -1844,30 +1667,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
-}
-
-#define RSC_LAYOUT_RULER_CSTATES_CODE					\
-{									\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	' ','C','1',' ','-','-','-','-','-','-','-','-','-','-','-','-',\
-	' ','C','2',':','C','3',' ','-','-','-','-','-','-','-','-','-',\
-	'-','-',' ','C','4',':','C','6',' ','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-',' ','C','7',' ','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
 }
 
 #define RSC_LAYOUT_RULER_CSTATES_ATTR					\
@@ -1918,29 +1717,7 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define RSC_LAYOUT_RULER_INTERRUPTS_CODE				\
-{									\
-	'-','-','-','-','-','-','-','-','-','-',' ','S','M','I',' ','-',\
-	'-','-','-','-','-','-','-','-','-','-','-',' ','N','M','I','[',\
-	' ','L','O','C','A','L',' ',' ',' ','U','N','K','N','O','W','N',\
-	' ',' ','P','C','I','_','S','E','R','R','#',' ',' ','I','O','_',\
-	'C','H','E','C','K',']',' ','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-',\
-	'-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-' \
-}
+#define RSC_LAYOUT_RULER_PACKAGE_ATTR	RSC_VOID_COLOR_ATTR
 
 #define RSC_LAYOUT_PACKAGE_PC_ATTR					\
 {									\
@@ -1966,39 +1743,15 @@ extern RESOURCE_ST Resource[];
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK \
 }
 
-#define RSC_LAYOUT_PACKAGE_PC_CODE					\
-{									\
-	' ',' ','0','0',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
-}
-
-#define RSC_LAYOUT_PACKAGE_PC02_CODE	{'P', 'C', '0', '2'}
-#define RSC_LAYOUT_PACKAGE_PC03_CODE	{'P', 'C', '0', '3'}
-#define RSC_LAYOUT_PACKAGE_PC04_CODE	{'P', 'C', '0', '4'}
-#define RSC_LAYOUT_PACKAGE_PC06_CODE	{'P', 'C', '0', '6'}
-#define RSC_LAYOUT_PACKAGE_PC07_CODE	{'P', 'C', '0', '7'}
-#define RSC_LAYOUT_PACKAGE_PC08_CODE	{'P', 'C', '0', '8'}
-#define RSC_LAYOUT_PACKAGE_PC09_CODE	{'P', 'C', '0', '9'}
-#define RSC_LAYOUT_PACKAGE_PC10_CODE	{'P', 'C', '1', '0'}
-#define RSC_LAYOUT_PACKAGE_MC06_CODE	{'M', 'C', '0', '6'}
+#define RSC_LAYOUT_PACKAGE_PC02_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC03_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC04_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC06_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC07_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC08_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC09_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_PC10_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
+#define RSC_LAYOUT_PACKAGE_MC06_ATTR	RSC_LAYOUT_PACKAGE_PC_ATTR
 
 #define RSC_LAYOUT_PACKAGE_UNCORE_ATTR					\
 {									\
@@ -2022,30 +1775,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
-}
-
-#define RSC_LAYOUT_PACKAGE_UNCORE_CODE					\
-{									\
-	' ','T','S','C',':',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ','U','N','C','O','R','E',':',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ' \
 }
 
 #define RSC_LAYOUT_RULER_TASKS_ATTR					\
@@ -2128,19 +1857,9 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK							\
 }
 
-#define RSC_LAYOUT_TASKS_VALUE_OFF_CODE 				\
-{									\
-	'O','F','F'							\
-}
-
 #define RSC_LAYOUT_TASKS_VALUE_ON_ATTR					\
 {									\
 	LCK,LCK,LCK							\
-}
-
-#define RSC_LAYOUT_TASKS_VALUE_ON_CODE					\
-{									\
-	' ','O','N'							\
 }
 
 #define RSC_LAYOUT_TASKS_TRACKING_ATTR					\
@@ -2173,7 +1892,7 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
-#define RSC_LAYOUT_RULER_POWER_ATTR					\
+#define RSC_LAYOUT_RULER_PWR_DOMAIN_ATTR				\
 {									\
 	LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,LWK,HWK,HWK,HWK,HWK,HDK,LWK,HDK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HWK,HWK,HWK,LWK,HWK,HWK,\
@@ -2196,6 +1915,12 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
+
+#define RSC_LAYOUT_RULER_PWR_UNCORE_ATTR RSC_LAYOUT_RULER_PWR_DOMAIN_ATTR
+
+#define RSC_LAYOUT_RULER_PWR_PLATFORM_ATTR RSC_LAYOUT_RULER_PWR_DOMAIN_ATTR
+
+#define RSC_LAYOUT_RULER_PWR_SOC_ATTR	RSC_LAYOUT_RULER_PWR_DOMAIN_ATTR
 
 #define RSC_LAYOUT_RULER_VOLTAGE_ATTR					\
 {									\
@@ -2269,6 +1994,8 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
 
+#define RSC_LAYOUT_RULER_POWER_ATTR	RSC_LAYOUT_RULER_ENERGY_ATTR
+
 #define RSC_LAYOUT_RULER_SLICE_ATTR					\
 {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,HDK,LWK,LWK,LWK,\
@@ -2298,11 +2025,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,LWK 	\
 }
 
-#define RSC_LAYOUT_FOOTER_TECH_X86_CODE					\
-{									\
-	'T','e','c','h',' ','[',' ',' ','T','S','C',' ',' ',',' 	\
-}
-
 #define RSC_LAYOUT_FOOTER_TECH_INTEL_ATTR				\
 {									\
 	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
@@ -2313,16 +2035,6 @@ extern RESOURCE_ST Resource[];
 	LWK,HDK,HWK,HWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK 	\
 }
 
-#define RSC_LAYOUT_FOOTER_TECH_INTEL_CODE				\
-{									\
-	'H','T','T',',','E','I','S','T',',','I','D','A',',',		\
-	'T','U','R','B','O',',','C','1','E',',',			\
-	' ','P','M',',','C','3','A',',','C','1','A',',',		\
-	'C','3','U',',','C','1','U',',',				\
-	'T','M',',','H','O','T',']',' ',				\
-	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
-}
-
 #define RSC_LAYOUT_FOOTER_TECH_AMD_ATTR 				\
 {									\
 	HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
@@ -2330,15 +2042,6 @@ extern RESOURCE_ST Resource[];
 	LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,HDK,HDK,HDK,LWK,		\
 	HDK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,HDK,		\
 	LWK,HDK,HWK,HWK,HWK,HWK,HDK,HDK,LWK,HDK,HDK,HDK,HDK,LWK,HDK 	\
-}
-
-#define RSC_LAYOUT_FOOTER_TECH_AMD_CODE 				\
-{									\
-	'S','M','T',',','C','n','Q',',','H','W','P',',',		\
-	'B','O','O','S','T',',','C','1','E',',','C','C','6',		\
-	',','P','C','6',',','C','C','x',',','D','T','S',',',		\
-	'T','T','P',',','H','O','T',']',' ',' ',' ',' ',' ',		\
-	'V','[',' ','.',' ',' ',']',' ','T','[',' ',' ',' ',' ',']' 	\
 }
 
 #define RSC_LAYOUT_FOOTER_SYSTEM_ATTR					\
@@ -2353,24 +2056,13 @@ extern RESOURCE_ST Resource[];
 	HDK,HDK,LCK,LCK,LCK,HDK,HDK,HDK,HDK,HDK,HDK,HDK 		\
 }
 
-#define RSC_LAYOUT_CARD_CORE_ONLINE_COND0_CODE				\
-{									\
-	'[',' ',' ',' ',' ',' ',' ',' ',' ','C',' ',']' 		\
-}
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND0_ATTR RSC_LAYOUT_CARD_CORE_ONLINE_ATTR
 
-#define RSC_LAYOUT_CARD_CORE_ONLINE_COND1_CODE				\
-{									\
-	'[',' ',' ',' ',' ',' ',' ',' ',' ','F',' ',']' 		\
-}
+#define RSC_LAYOUT_CARD_CORE_ONLINE_COND1_ATTR RSC_LAYOUT_CARD_CORE_ONLINE_ATTR
 
 #define RSC_LAYOUT_CARD_CORE_OFFLINE_ATTR				\
 {									\
 	HDK,HDK,LBK,LBK,LBK,HDK,HDK,LWK,LWK,LWK,HDK,HDK 		\
-}
-
-#define RSC_LAYOUT_CARD_CORE_OFFLINE_CODE				\
-{									\
-	'[',' ',' ',' ',' ',' ',' ','O','F','F',' ',']' 		\
 }
 
 #define RSC_LAYOUT_CARD_CLK_ATTR					\
@@ -2378,19 +2070,9 @@ extern RESOURCE_ST Resource[];
 	HDK,HDK,HWK,HWK,HWK,LWK,HWK,HDK,HDK,HDK,HDK,HDK 		\
 }
 
-#define RSC_LAYOUT_CARD_CLK_CODE					\
-{									\
-	'[',' ','0','0','0','.','0',' ','M','H','z',']' 		\
-}
-
 #define RSC_LAYOUT_CARD_UNCORE_ATTR					\
 {									\
 	HDK,LWK,LWK,LWK,LWK,LWK,LWK,HDK,HDK,LCK,LCK,HDK 		\
-}
-
-#define RSC_LAYOUT_CARD_UNCORE_CODE					\
-{									\
-	'[','U','N','C','O','R','E',' ',' ',' ',' ',']' 		\
 }
 
 #define RSC_LAYOUT_CARD_BUS_ATTR					\
@@ -2398,19 +2080,9 @@ extern RESOURCE_ST Resource[];
 	HDK,LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HDK,HDK,HDK 		\
 }
 
-#define RSC_LAYOUT_CARD_BUS_CODE					\
-{									\
-	'[','B','u','s',' ',' ',' ',' ',' ',' ',' ',']' 		\
-}
-
 #define RSC_LAYOUT_CARD_MC_ATTR 					\
 {									\
 	HDK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,HDK 		\
-}
-
-#define RSC_LAYOUT_CARD_MC_CODE 					\
-{									\
-	'[',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',']' 		\
 }
 
 #define RSC_LAYOUT_CARD_LOAD_ATTR					\
@@ -2426,11 +2098,6 @@ extern RESOURCE_ST Resource[];
 #define RSC_LAYOUT_CARD_RAM_ATTR					\
 {									\
 	HDK,HWK,HWK,HWK,HWK,HWK,LWK,HDK,HWK,HWK,LDK,HDK 		\
-}
-
-#define RSC_LAYOUT_CARD_RAM_CODE					\
-{									\
-	'[',' ',' ',' ',' ',' ',' ','/',' ',' ',' ',']' 		\
 }
 
 #define RSC_LAYOUT_CARD_TASK_ATTR					\
@@ -2535,44 +2202,56 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,HWK,HWK,HWK,HWK,HWK,HWK,HWK,LWK,LWK 		\
 }
 
-#define RSC_SYSINFO_ISA_COND0_ATTR					\
-{									\
-    {	/*	[N] & [N/N]	2*(0|0)+(0<<0)			*/	\
+#define RSC_SYSINFO_ISA_COND_0_0_ATTR					\
+{	/*	[N] & [N/N]	2*(0|0)+(0<<0)			*/	\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK					\
-    },{ /*	[Y]						*/	\
+}
+#define RSC_SYSINFO_ISA_COND_0_1_ATTR					\
+{	/*	[Y]						*/	\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,LWK,HGK,LWK					\
-    },{ /*	[N/Y]	2*(0|1)+(0<<1)				*/	\
+}
+#define RSC_SYSINFO_ISA_COND_0_2_ATTR					\
+{	/*	[N/Y]	2*(0|1)+(0<<1)				*/	\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,LWK,HGK,LWK					\
-    },{ /*	[Y/N]	2*(1|0)+(1<<0)				*/	\
+}
+#define RSC_SYSINFO_ISA_COND_0_3_ATTR					\
+{	/*	[Y/N]	2*(1|0)+(1<<0)				*/	\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,HGK,LWK,LWK,LWK					\
-    },{ /*	[Y/Y]	2*(1|1)+(1<<1)				*/	\
+}
+#define RSC_SYSINFO_ISA_COND_0_4_ATTR					\
+{	/*	[Y/Y]	2*(1|1)+(1<<1)				*/	\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,HGK,LWK,HGK,LWK					\
-    }									\
 }
 
-#define RSC_SYSINFO_ISA_COND1_ATTR					\
+#define RSC_SYSINFO_ISA_COND_1_0_ATTR					\
 {									\
-    {									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK					\
-    },{ 								\
+}
+#define RSC_SYSINFO_ISA_COND_1_1_ATTR					\
+{									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,HGK,LWK,LWK					\
-    },{ 								\
+}
+#define RSC_SYSINFO_ISA_COND_1_2_ATTR					\
+{									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,LWK,LWK,HGK,LWK,LWK					\
-    },{ 								\
+}
+#define RSC_SYSINFO_ISA_COND_1_3_ATTR					\
+{									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,HGK,LWK,LWK,LWK,LWK					\
-    },{ 								\
+}
+#define RSC_SYSINFO_ISA_COND_1_4_ATTR					\
+{									\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,			\
 	LWK,LWK,HGK,LWK,HGK,LWK,LWK					\
-    }									\
 }
 
 #define RSC_SYSINFO_FEATURES_COND0_ATTR 				\
@@ -2838,19 +2517,19 @@ extern RESOURCE_ST Resource[];
 	HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW,HKW 		\
 }
 
-#define RSC_CREATE_MENU_ITEM_MENU_ATTR					\
+#define RSC_MENU_ITEM_MENU_ATTR 					\
 {									\
 	LKW,LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW,LKW,LKW,		\
 	LKW,LKW,LKW,LKW,LKW,LKW, LKW, LKW,LKW,LKW,LKW,LKW		\
 }
 
-#define RSC_CREATE_MENU_ITEM_VIEW_ATTR					\
+#define RSC_MENU_ITEM_VIEW_ATTR 					\
 {									\
 	LKW,LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW,LKW,LKW,		\
 	LKW,LKW,LKW,LKW,LKW,LKW, LKW, LKW,LKW,LKW,LKW,LKW		\
 }
 
-#define RSC_CREATE_MENU_ITEM_WINDOW_ATTR				\
+#define RSC_MENU_ITEM_WINDOW_ATTR					\
 {									\
 	LKW,LKW,LKW,LKW,HKW,_LKW,_LKW,HKW,LKW,LKW,LKW,LKW,		\
 	LKW,LKW,LKW,LKW,LKW, LKW, LKW,LKW,LKW,LKW,LKW,LKW		\
@@ -3021,8 +2700,6 @@ extern RESOURCE_ST Resource[];
 	HYK								\
 }
 
-#define RSC_BOX_BLANK_DESC_CODE 	"                                    "
-
 #define RSC_CREATE_RECORDER_ATTR					\
 {									\
 	LWK,LWK,LWK,LWK,HDK,LWK,LWK,HDK,LWK,LWK,LWK,LWK 		\
@@ -3036,163 +2713,6 @@ extern RESOURCE_ST Resource[];
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
 	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
 }
-
-#define RSC_CREATE_SETTINGS_COND_CODE	"                                "
-
-#define RSC_CREATE_HELP_BLANK_CODE	"                  "
-
-#define RSC_CREATE_ADV_HELP_BLANK_CODE	"                                      "
-
-#define RSC_BOX_INTERVAL_STEP1_CODE	"    100   "
-#define RSC_BOX_INTERVAL_STEP2_CODE	"    150   "
-#define RSC_BOX_INTERVAL_STEP3_CODE	"    250   "
-#define RSC_BOX_INTERVAL_STEP4_CODE	"    500   "
-#define RSC_BOX_INTERVAL_STEP5_CODE	"    750   "
-#define RSC_BOX_INTERVAL_STEP6_CODE	"   1000   "
-#define RSC_BOX_INTERVAL_STEP7_CODE	"   1500   "
-#define RSC_BOX_INTERVAL_STEP8_CODE	"   2000   "
-#define RSC_BOX_INTERVAL_STEP9_CODE	"   2500   "
-#define RSC_BOX_INTERVAL_STEP10_CODE	"   3000   "
-
-#define RSC_SETTINGS_ROUTE_DEFAULT_CODE "DEFAULT"
-#define RSC_SETTINGS_ROUTE_IO_CODE	"    I/O"
-#define RSC_SETTINGS_ROUTE_HALT_CODE	"   HALT"
-#define RSC_SETTINGS_ROUTE_MWAIT_CODE	"  MWAIT"
-
-#define RSC_BOX_DCU_L1_TITLE_CODE	" DCU L1 Prefetcher "
-#define RSC_BOX_DCU_L1_IP_TITLE_CODE	" DCU L1 IP Prefetcher "
-#define RSC_BOX_DCU_L2_TITLE_CODE	" DCU L2 Prefetcher "
-#define RSC_BOX_DCU_L2_CL_TITLE_CODE	" DCU L2 CL Prefetcher "
-
-#define RSC_BOX_EIST_TITLE_CODE 	" EIST "
-
-#define RSC_BOX_C1E_TITLE_CODE		" C1E "
-
-#define RSC_BOX_TURBO_TITLE_CODE	" Turbo "
-
-#define RSC_BOX_C1A_TITLE_CODE		" C1A "
-#define RSC_BOX_C3A_TITLE_CODE		" C3A "
-#define RSC_BOX_C1U_TITLE_CODE		" C1U "
-#define RSC_BOX_C2U_TITLE_CODE		" C2U "
-#define RSC_BOX_C3U_TITLE_CODE		" C3U "
-
-#define RSC_BOX_CC6_TITLE_CODE		" CC6 "
-#define RSC_BOX_C6D_TITLE_CODE		" C6D "
-
-#define RSC_BOX_MC6_TITLE_CODE		" MC6 "
-#define RSC_BOX_PC6_TITLE_CODE		" PC6 "
-
-#define RSC_BOX_STATE_C8_CODE		"             C8            "
-#define RSC_BOX_STATE_C7_CODE		"             C7            "
-#define RSC_BOX_STATE_C6_CODE		"             C6            "
-#define RSC_BOX_STATE_C4_CODE		"             C4            "
-#define RSC_BOX_STATE_C3_CODE		"             C3            "
-
-#define RSC_BOX_PKG_STATE_LIMIT_C10_CODE	"            C10            "
-#define RSC_BOX_PKG_STATE_LIMIT_C9_CODE 	"             C9            "
-#define RSC_BOX_PKG_STATE_LIMIT_C8_CODE 	"             C8            "
-#define RSC_BOX_PKG_STATE_LIMIT_C7S_CODE	"            C7S            "
-#define RSC_BOX_PKG_STATE_LIMIT_C7_CODE 	"             C7            "
-#define RSC_BOX_PKG_STATE_LIMIT_C6R_CODE	"            C6R            "
-#define RSC_BOX_PKG_STATE_LIMIT_C6_CODE 	"             C6            "
-#define RSC_BOX_PKG_STATE_LIMIT_C4_CODE 	"             C4            "
-#define RSC_BOX_PKG_STATE_LIMIT_C3_CODE 	"             C3            "
-#define RSC_BOX_PKG_STATE_LIMIT_C2_CODE 	"             C2            "
-#define RSC_BOX_PKG_STATE_LIMIT_C1_CODE 	"             C1            "
-#define RSC_BOX_PKG_STATE_LIMIT_C0_CODE 	"             C0            "
-
-#define RSC_BOX_DUTY_CYCLE_PCT1_CODE		"           12.50%          "
-#define RSC_BOX_DUTY_CYCLE_PCT2_CODE		"           25.00%          "
-#define RSC_BOX_DUTY_CYCLE_PCT3_CODE		"           37.50%          "
-#define RSC_BOX_DUTY_CYCLE_PCT4_CODE		"           50.00%          "
-#define RSC_BOX_DUTY_CYCLE_PCT5_CODE		"           62.50%          "
-#define RSC_BOX_DUTY_CYCLE_PCT6_CODE		"           75.00%          "
-#define RSC_BOX_DUTY_CYCLE_PCT7_CODE		"           87.50%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT1_CODE	"            6.25%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT2_CODE	"           12.50%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT3_CODE	"           18.75%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT4_CODE	"           25.00%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT5_CODE	"           31.25%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT6_CODE	"           37.50%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT7_CODE	"           43.75%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT8_CODE	"           50.00%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT9_CODE	"           56.25%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT10_CODE	"           62.50%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT11_CODE	"           68.75%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT12_CODE	"           75.00%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT13_CODE	"           81.25%          "
-#define RSC_BOX_EXT_DUTY_CYCLE_PCT14_CODE	"           87.50%          "
-
-#define RSC_BOX_HWP_TITLE_CODE		" HWP "
-
-#define RSC_BOX_HDC_TITLE_CODE		" HDC "
-
-#define RSC_BOX_EEO_TITLE_CODE		" EEO "
-
-#define RSC_BOX_R2H_TITLE_CODE		" R2H "
-
-#define RSC_BOX_WDT_TITLE_CODE		" WDT "
-
-#define RSC_BOX_POWER_POLICY_1_CODE	"            1           "
-#define RSC_BOX_POWER_POLICY_2_CODE	"            2           "
-#define RSC_BOX_POWER_POLICY_3_CODE	"            3           "
-#define RSC_BOX_POWER_POLICY_4_CODE	"            4           "
-#define RSC_BOX_POWER_POLICY_5_CODE	"            5           "
-#define RSC_BOX_POWER_POLICY_6_CODE	"            6           "
-#define RSC_BOX_POWER_POLICY_7_CODE	"            7           "
-#define RSC_BOX_POWER_POLICY_8_CODE	"            8           "
-#define RSC_BOX_POWER_POLICY_9_CODE	"            9           "
-#define RSC_BOX_POWER_POLICY_10_CODE	"           10           "
-#define RSC_BOX_POWER_POLICY_11_CODE	"           11           "
-#define RSC_BOX_POWER_POLICY_12_CODE	"           12           "
-#define RSC_BOX_POWER_POLICY_13_CODE	"           13           "
-#define RSC_BOX_POWER_POLICY_14_CODE	"           14           "
-
-#define RSC_BOX_CFG_TDP_BLANK_CODE	"                   "
-
-#define RSC_BOX_PWR_OFFSET_00_CODE	"              +50 watts             "
-#define RSC_BOX_PWR_OFFSET_01_CODE	"              +10 watts             "
-#define RSC_BOX_PWR_OFFSET_02_CODE	"               +5 watts             "
-#define RSC_BOX_PWR_OFFSET_03_CODE	"               +4 watts             "
-#define RSC_BOX_PWR_OFFSET_04_CODE	"               +3 watts             "
-#define RSC_BOX_PWR_OFFSET_05_CODE	"               +2 watts             "
-#define RSC_BOX_PWR_OFFSET_06_CODE	"               +1 watt              "
-#define RSC_BOX_PWR_OFFSET_07_CODE	"               -1 watt              "
-#define RSC_BOX_PWR_OFFSET_08_CODE	"               -2 watts             "
-#define RSC_BOX_PWR_OFFSET_09_CODE	"               -3 watts             "
-#define RSC_BOX_PWR_OFFSET_10_CODE	"               -4 watts             "
-#define RSC_BOX_PWR_OFFSET_11_CODE	"               -5 watts             "
-#define RSC_BOX_PWR_OFFSET_12_CODE	"              -10 watts             "
-#define RSC_BOX_PWR_OFFSET_13_CODE	"              -50 watts             "
-
-#define RSC_BOX_CLAMPING_OFF_COND0_CODE "            Clamping OFF            "
-#define RSC_BOX_CLAMPING_OFF_COND1_CODE "          < Clamping OFF >          "
-#define RSC_BOX_CLAMPING_ON_COND0_CODE	"            Clamping ON             "
-#define RSC_BOX_CLAMPING_ON_COND1_CODE	"          < Clamping ON  >          "
-
-#define RSC_BOX_AMP_OFFSET_00_CODE	"              +50 amps              "
-#define RSC_BOX_AMP_OFFSET_01_CODE	"              +10 amps              "
-#define RSC_BOX_AMP_OFFSET_02_CODE	"               +5 amps              "
-#define RSC_BOX_AMP_OFFSET_03_CODE	"               +4 amps              "
-#define RSC_BOX_AMP_OFFSET_04_CODE	"               +3 amps              "
-#define RSC_BOX_AMP_OFFSET_05_CODE	"               +2 amps              "
-#define RSC_BOX_AMP_OFFSET_06_CODE	"               +1 amp               "
-#define RSC_BOX_AMP_OFFSET_07_CODE	"               -1 amp               "
-#define RSC_BOX_AMP_OFFSET_08_CODE	"               -2 amp               "
-#define RSC_BOX_AMP_OFFSET_09_CODE	"               -3 amp               "
-#define RSC_BOX_AMP_OFFSET_10_CODE	"               -4 amp               "
-#define RSC_BOX_AMP_OFFSET_11_CODE	"               -5 amps              "
-#define RSC_BOX_AMP_OFFSET_12_CODE	"              -10 amps              "
-#define RSC_BOX_AMP_OFFSET_13_CODE	"              -50 amps              "
-
-#define RSC_BOX_IDLE_LIMIT_RESET_CODE	"            0     RESET "
-
-#define RSC_LOGO_R0 "      ______                ______                  "
-#define RSC_LOGO_R1 "     / ____/___  ________  / ____/_______  ____ _   "
-#define RSC_LOGO_R2 "    / /   / __ \\/ ___/ _ \\/ /_  / ___/ _ \\/ __ `/   "
-#define RSC_LOGO_R3 "   / /___/ /_/ / /  /  __/ __/ / /  /  __/ /_/ /    "
-#define RSC_LOGO_R4 "   \\____/\\____/_/   \\___/_/   /_/   \\___/\\__, /     "
-#define RSC_LOGO_R5 "                                           /_/      "
 
 #define RSC_CREATE_SELECT_FREQ_PKG_ATTR 				\
 {									\
@@ -3216,347 +2736,3 @@ extern RESOURCE_ST Resource[];
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,			\
 	HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK,HBK				\
 }
-
-#define RSC_FREQ_UNIT_MHZ_CODE		"(MHz)"
-#define RSC_PPIN_CODE			"PPIN#"
-#define RSC_PSTATE_CODE 		"P-State"
-#define RSC_UNCORE_CODE 		"Uncore"
-#define RSC_BOOST_CODE			"Turbo Boost"
-#define RSC_TURBO_CODE			"Turbo"
-#define RSC_MAX_CODE			"Max"
-#define RSC_MIN_CODE			"Min"
-#define RSC_TGT_CODE			"TGT"
-#define RSC_HWP_CODE			"HWP"
-#define RSC_XFR_CODE			"XFR"
-#define RSC_CPB_CODE			"CPB"
-#define RSC_TDP_CODE			"TDP"
-#define RSC_ACT_CODE			"Activ"
-#define RSC_XAPIC_CODE			"  xAPIC"
-#define RSC_X2APIC_CODE 		" x2APIC"
-#define RSC_FIRMWARE_CODE		"Firmware"
-
-#define RSC_TOPOLOGY_HDR_PKG_CODE	"CPU Pkg  Apic"
-#define RSC_TOPOLOGY_HDR_SMT_CODE	"  Core/Thread"
-#define RSC_TOPOLOGY_HDR_CACHE_CODE	"  Caches     "
-#define RSC_TOPOLOGY_HDR_WRBAK_CODE	" (w)rite-Back"
-#define RSC_TOPOLOGY_HDR_INCL_CODE	" (i)nclusive "
-#define RSC_TOPOLOGY_HDR_EMPTY_CODE	"             "
-#define RSC_TOPOLOGY_SUB_ITEM1_CODE	" #   ID   ID "
-#define RSC_TOPOLOGY_SUB_ITEM3_CODE	" L1-Inst Way "
-#define RSC_TOPOLOGY_SUB_ITEM4_CODE	" L1-Data Way "
-#define RSC_TOPOLOGY_SUB_ITEM5_CODE	"     L2  Way "
-#define RSC_TOPOLOGY_SUB_ITEM6_CODE	"     L3  Way "
-#define RSC_TOPOLOGY_ALT_ITEM1_CODE	"   ID     ID "
-#define RSC_TOPOLOGY_ALT_ITEM2_CODE	" CMP ID    ID"
-#define RSC_TOPOLOGY_ALT_ITEM3_CODE	"CCD CCX ID/ID"
-
-#define RSC_TECH_HYPERV_NONE_CODE	"          "
-#define RSC_TECH_BARE_METAL_CODE	"Bare-Metal"
-#define RSC_TECH_HYPERV_XEN_CODE	"       Xen"
-#define RSC_TECH_HYPERV_KVM_CODE	"       KVM"
-#define RSC_TECH_HYPERV_VBOX_CODE	"VirtualBox"
-#define RSC_TECH_HYPERV_KBOX_CODE	"  KVM/VBox"
-#define RSC_TECH_HYPERV_VMWARE_CODE	"    VMware"
-#define RSC_TECH_HYPERV_HYPERV_CODE	"MS Hyper-V"
-
-#define RSC_PERF_LABEL_VER_CODE 	"PM"
-#define RSC_PERF_LABEL_C1E_CODE 	"C1E"
-#define RSC_PERF_LABEL_C1A_CODE 	"C1A"
-#define RSC_PERF_LABEL_C3A_CODE 	"C3A"
-#define RSC_PERF_LABEL_C1U_CODE 	"C1U"
-#define RSC_PERF_LABEL_C2U_CODE 	"C2U"
-#define RSC_PERF_LABEL_C3U_CODE 	"C3U"
-#define RSC_PERF_LABEL_CC6_CODE 	"CC6"
-#define RSC_PERF_LABEL_PC6_CODE 	"PC6"
-#define RSC_PERF_LABEL_MC6_CODE 	"MC6"
-#define RSC_PERF_LABEL_FID_CODE 	"FID"
-#define RSC_PERF_LABEL_VID_CODE 	"VID"
-#define RSC_PERF_LABEL_HWCF_CODE	"MPERF/APERF"
-#define RSC_PERF_LABEL_HWP_CODE 	"HWP"
-#define RSC_PERF_LABEL_HDC_CODE 	"HDC"
-#define RSC_PERF_LABEL_CFG_CTRL_CODE	"CONFIG"
-#define RSC_PERF_LABEL_LOW_CST_CODE	"LIMIT"
-#define RSC_PERF_LABEL_IOMWAIT_CODE	"IOMWAIT"
-#define RSC_PERF_LABEL_MAX_CST_CODE	"RANGE"
-#define RSC_PERF_LABEL_CST_BAR_CODE	"BAR"
-#define RSC_PERF_LABEL_MWAIT_IDX_CODE	\
-				"#0    #1    #2    #3    #4    #5    #6    #7"
-
-#define RSC_PERF_ENCODING_C0_CODE	" C0"
-#define RSC_PERF_ENCODING_C1_CODE	" C1"
-#define RSC_PERF_ENCODING_C2_CODE	" C2"
-#define RSC_PERF_ENCODING_C3_CODE	" C3"
-#define RSC_PERF_ENCODING_C4_CODE	" C4"
-#define RSC_PERF_ENCODING_C6_CODE	" C6"
-#define RSC_PERF_ENCODING_C6R_CODE	"C6R"
-#define RSC_PERF_ENCODING_C7_CODE	" C7"
-#define RSC_PERF_ENCODING_C7S_CODE	"C7S"
-#define RSC_PERF_ENCODING_C8_CODE	" C8"
-#define RSC_PERF_ENCODING_C9_CODE	" C9"
-#define RSC_PERF_ENCODING_C10_CODE	"C10"
-#define RSC_PERF_ENCODING_UNS_CODE	"UNS"
-
-#define RSC_POWER_LABEL_ODCM_CODE	"ODCM"
-#define RSC_POWER_LABEL_PWM_CODE	"PWR MGMT"
-#define RSC_POWER_LABEL_BIAS_CODE	"Bias Hint"
-#define RSC_POWER_LABEL_EPP_CODE	"HWP EPP"
-#define RSC_POWER_LABEL_TJ_CODE 	"TjMax"
-#define RSC_POWER_LABEL_DTS_CODE	"DTS"
-#define RSC_POWER_LABEL_PLN_CODE	"PLN"
-#define RSC_POWER_LABEL_PTM_CODE	"PTM"
-#define RSC_POWER_LABEL_TM1_CODE	"TM1"
-#define RSC_POWER_LABEL_TM2_CODE	"TM2"
-#define RSC_POWER_LABEL_TTP_CODE	"TTP"
-#define RSC_POWER_LABEL_HTC_CODE	"HTC"
-#define RSC_POWER_LABEL_TDP_CODE	"TDP"
-#define RSC_POWER_LABEL_MIN_CODE	"Min"
-#define RSC_POWER_LABEL_MAX_CODE	"Max"
-#define RSC_POWER_LABEL_PPT_CODE	"PPT"
-#define RSC_POWER_LABEL_PL1_CODE	"PL1"
-#define RSC_POWER_LABEL_PL2_CODE	"PL2"
-#define RSC_POWER_LABEL_EDC_CODE	"EDC"
-#define RSC_POWER_LABEL_TDC_CODE	"TDC"
-#define RSC_POWER_LABEL_PKG_CODE	"Package"
-#define RSC_POWER_LABEL_CORE_CODE	"Core"
-#define RSC_POWER_LABEL_UNCORE_CODE	"Uncore"
-#define RSC_POWER_LABEL_DRAM_CODE	"DRAM"
-#define RSC_POWER_LABEL_PLATFORM_CODE	"Platform"
-
-#define RSC_MEM_CTRL_UNIT_MHZ_CODE	" MHz "
-#define RSC_MEM_CTRL_UNIT_MTS_CODE	" MT/s"
-#define RSC_MEM_CTRL_UNIT_MBS_CODE	" MB/s"
-
-#define RSC_MEM_CTRL_MTY_CELL_CODE	"     "
-#define RSC_MEM_CTRL_CHANNEL_CODE	" Cha "
-
-#define RSC_DDR3_CL_CODE		"   CL"
-#define RSC_DDR3_RCD_CODE		"  RCD"
-#define RSC_DDR3_RP_CODE		"   RP"
-#define RSC_DDR3_RAS_CODE		"  RAS"
-#define RSC_DDR3_RRD_CODE		"  RRD"
-#define RSC_DDR3_RFC_CODE		"  RFC"
-#define RSC_DDR3_WR_CODE		"   WR"
-#define RSC_DDR3_RTP_CODE		" RTPr"
-#define RSC_DDR3_WTP_CODE		" WTPr"
-#define RSC_DDR3_FAW_CODE		"  FAW"
-#define RSC_DDR3_B2B_CODE		"  B2B"
-#define RSC_DDR3_CWL_CODE		"  CWL"
-#define RSC_DDR3_CMD_CODE		" CMD "
-#define RSC_DDR3_REFI_CODE		" REFI"
-#define RSC_DDR3_DDWRTRD_CODE		" ddWR"
-#define RSC_DDR3_DRWRTRD_CODE		" drWR"
-#define RSC_DDR3_SRWRTRD_CODE		" srWR"
-#define RSC_DDR3_DDRDTWR_CODE		" ddRW"
-#define RSC_DDR3_DRRDTWR_CODE		" drRW"
-#define RSC_DDR3_SRRDTWR_CODE		" srRW"
-#define RSC_DDR3_DDRDTRD_CODE		" ddRR"
-#define RSC_DDR3_DRRDTRD_CODE		" drRR"
-#define RSC_DDR3_SRRDTRD_CODE		" srRR"
-#define RSC_DDR3_DDWRTWR_CODE		" ddWW"
-#define RSC_DDR3_DRWRTWR_CODE		" drWW"
-#define RSC_DDR3_SRWRTWR_CODE		" srWW"
-#define RSC_DDR3_CKE_CODE		" CKE "
-#define RSC_DDR3_ECC_CODE		"  ECC"
-
-#define RSC_DDR4_CL_CODE		"   CL"
-#define RSC_DDR4_RCD_CODE		"  RCD"
-#define RSC_DDR4_RP_CODE		"   RP"
-#define RSC_DDR4_RAS_CODE		"  RAS"
-#define RSC_DDR4_RRD_CODE		"  RRD"
-#define RSC_DDR4_RFC_CODE		"  RFC"
-#define RSC_DDR4_WR_CODE		"   WR"
-#define RSC_DDR4_RTP_CODE		" RTPr"
-#define RSC_DDR4_WTP_CODE		" WTPr"
-#define RSC_DDR4_FAW_CODE		"  FAW"
-#define RSC_DDR4_B2B_CODE		"  B2B"
-#define RSC_DDR4_CWL_CODE		"  CWL"
-#define RSC_DDR4_CMD_CODE		" CMD "
-#define RSC_DDR4_REFI_CODE		" REFI"
-#define RSC_DDR4_RDRD_SCL_CODE		" sgRR"
-#define RSC_DDR4_RDRD_SC_CODE		" dgRR"
-#define RSC_DDR4_RDRD_SD_CODE		" drRR"
-#define RSC_DDR4_RDRD_DD_CODE		" ddRR"
-#define RSC_DDR4_RDWR_SCL_CODE		" sgRW"
-#define RSC_DDR4_RDWR_SC_CODE		" dgRW"
-#define RSC_DDR4_RDWR_SD_CODE		" drRW"
-#define RSC_DDR4_RDWR_DD_CODE		" ddRW"
-#define RSC_DDR4_WRRD_SCL_CODE		" sgWR"
-#define RSC_DDR4_WRRD_SC_CODE		" dgWR"
-#define RSC_DDR4_WRRD_SD_CODE		" drWR"
-#define RSC_DDR4_WRRD_DD_CODE		" ddWR"
-#define RSC_DDR4_WRWR_SCL_CODE		" sgWW"
-#define RSC_DDR4_WRWR_SC_CODE		" dgWW"
-#define RSC_DDR4_WRWR_SD_CODE		" drWW"
-#define RSC_DDR4_WRWR_DD_CODE		" ddWW"
-#define RSC_DDR4_CKE_CODE		" CKE "
-#define RSC_DDR4_ECC_CODE		"  ECC"
-
-#define RSC_DDR4_ZEN_CL_CODE		"  CL "
-#define RSC_DDR4_ZEN_RCD_R_CODE 	" RCDR"
-#define RSC_DDR4_ZEN_RCD_W_CODE 	" RCDW"
-#define RSC_DDR4_ZEN_RP_CODE		"  RP "
-#define RSC_DDR4_ZEN_RAS_CODE		" RAS "
-#define RSC_DDR4_ZEN_RC_CODE		"  RC "
-#define RSC_DDR4_ZEN_RRD_S_CODE 	" RRDS"
-#define RSC_DDR4_ZEN_RRD_L_CODE 	" RRDL"
-#define RSC_DDR4_ZEN_FAW_CODE		" FAW "
-#define RSC_DDR4_ZEN_WTR_S_CODE 	" WTRS"
-#define RSC_DDR4_ZEN_WTR_L_CODE 	" WTRL"
-#define RSC_DDR4_ZEN_WR_CODE		"  WR "
-#define RSC_DDR4_ZEN_RDRD_SCL_CODE	" clRR"
-#define RSC_DDR4_ZEN_WRWR_SCL_CODE	" clWW"
-#define RSC_DDR4_ZEN_CWL_CODE		" CWL "
-#define RSC_DDR4_ZEN_RTP_CODE		" RTP "
-#define RSC_DDR4_ZEN_RDWR_CODE		"RdWr "
-#define RSC_DDR4_ZEN_WRRD_CODE		"WrRd "
-#define RSC_DDR4_ZEN_WRWR_SC_CODE	"scWW "
-#define RSC_DDR4_ZEN_WRWR_SD_CODE	"sdWW "
-#define RSC_DDR4_ZEN_WRWR_DD_CODE	"ddWW "
-#define RSC_DDR4_ZEN_RDRD_SC_CODE	"scRR "
-#define RSC_DDR4_ZEN_RDRD_SD_CODE	"sdRR "
-#define RSC_DDR4_ZEN_RDRD_DD_CODE	"ddRR "
-#define RSC_DDR4_ZEN_RTR_DLR_CODE	"drRR "
-#define RSC_DDR4_ZEN_WTW_DLR_CODE	"drWW "
-#define RSC_DDR4_ZEN_WTR_DLR_CODE	"drWR "
-#define RSC_DDR4_ZEN_RRD_DLR_CODE	"drRRD"
-#define RSC_DDR4_ZEN_REFI_CODE		" REFI"
-#define RSC_DDR4_ZEN_RFC1_CODE		" RFC1"
-#define RSC_DDR4_ZEN_RFC2_CODE		" RFC2"
-#define RSC_DDR4_ZEN_RFC4_CODE		" RFC4"
-#define RSC_DDR4_ZEN_RCPB_CODE		" RCPB"
-#define RSC_DDR4_ZEN_RPPB_CODE		" RPPB"
-#define RSC_DDR4_ZEN_BGS_CODE		"  BGS"
-#define RSC_DDR4_ZEN_BGS_ALT_CODE	":Alt "
-#define RSC_DDR4_ZEN_BAN_CODE		" Ban "
-#define RSC_DDR4_ZEN_RCPAGE_CODE	" Page"
-#define RSC_DDR4_ZEN_CKE_CODE		"  CKE"
-#define RSC_DDR4_ZEN_CMD_CODE		"  CMD"
-#define RSC_DDR4_ZEN_GDM_CODE		"  GDM"
-#define RSC_DDR4_ZEN_ECC_CODE		"  ECC"
-
-#define RSC_SYS_REGS_SPACE_CODE 	"    "
-#define RSC_SYS_REGS_NA_CODE		"  - "
-#define RSC_SYS_REGS_HDR_CPU_CODE	"CPU "
-#define RSC_SYS_REG_HDR_FLAGS_CODE	"FLAG"
-#define RSC_SYS_REG_HDR_TF_CODE 	" TF "
-#define RSC_SYS_REG_HDR_IF_CODE 	" IF "
-#define RSC_SYS_REG_HDR_IOPL_CODE	"IOPL"
-#define RSC_SYS_REG_HDR_NT_CODE 	" NT "
-#define RSC_SYS_REG_HDR_RF_CODE 	" RF "
-#define RSC_SYS_REG_HDR_VM_CODE 	" VM "
-#define RSC_SYS_REG_HDR_AC_CODE 	" AC "
-#define RSC_SYS_REG_HDR_VIF_CODE	" VIF"
-#define RSC_SYS_REG_HDR_VIP_CODE	" VIP"
-#define RSC_SYS_REG_HDR_ID_CODE 	" ID "
-#define RSC_SYS_REG_HDR_CR0_CODE	"CR0:"
-#define RSC_SYS_REG_HDR_CR0_PE_CODE	" PE "
-#define RSC_SYS_REG_HDR_CR0_MP_CODE	" MP "
-#define RSC_SYS_REG_HDR_CR0_EM_CODE	" EM "
-#define RSC_SYS_REG_HDR_CR0_TS_CODE	" TS "
-#define RSC_SYS_REG_HDR_CR0_ET_CODE	" ET "
-#define RSC_SYS_REG_HDR_CR0_NE_CODE	" NE "
-#define RSC_SYS_REG_HDR_CR0_WP_CODE	" WP "
-#define RSC_SYS_REG_HDR_CR0_AM_CODE	" AM "
-#define RSC_SYS_REG_HDR_CR0_NW_CODE	" NW "
-#define RSC_SYS_REG_HDR_CR0_CD_CODE	" CD "
-#define RSC_SYS_REG_HDR_CR0_PG_CODE	" PG "
-#define RSC_SYS_REG_HDR_CR3_CODE	"CR3:"
-#define RSC_SYS_REG_HDR_CR3_PWT_CODE	" PWT"
-#define RSC_SYS_REG_HDR_CR3_PCD_CODE	" PCD"
-#define RSC_SYS_REG_HDR_CR4_CODE	"CR4:"
-#define RSC_SYS_REG_HDR_CR4_VME_CODE	" VME"
-#define RSC_SYS_REG_HDR_CR4_PVI_CODE	" PVI"
-#define RSC_SYS_REG_HDR_CR4_TSD_CODE	" TSD"
-#define RSC_SYS_REG_HDR_CR4_DE_CODE	" DE "
-#define RSC_SYS_REG_HDR_CR4_PSE_CODE	" PSE"
-#define RSC_SYS_REG_HDR_CR4_PAE_CODE	" PAE"
-#define RSC_SYS_REG_HDR_CR4_MCE_CODE	" MCE"
-#define RSC_SYS_REG_HDR_CR4_PGE_CODE	" PGE"
-#define RSC_SYS_REG_HDR_CR4_PCE_CODE	" PCE"
-#define RSC_SYS_REG_HDR_CR4_FX_CODE	" FX "
-#define RSC_SYS_REG_HDR_CR4_XMM_CODE	"XMM "
-#define RSC_SYS_REG_HDR_CR4_UMIP_CODE	"UMIP"
-#define RSC_SYS_REG_HDR_CR4_5LP_CODE	" 5LP"
-#define RSC_SYS_REG_HDR_CR4_VMX_CODE	" VMX"
-#define RSC_SYS_REG_HDR_CR4_SMX_CODE	" SMX"
-#define RSC_SYS_REG_HDR_CR4_FS_CODE	" FS "
-#define RSC_SYS_REG_HDR_CR4_PCID_CODE	"PCID"
-#define RSC_SYS_REG_HDR_CR4_SAV_CODE	" SAV"
-#define RSC_SYS_REG_HDR_CR4_KL_CODE	"  KL"
-#define RSC_SYS_REG_HDR_CR4_SME_CODE	" SME"
-#define RSC_SYS_REG_HDR_CR4_SMA_CODE	" SMA"
-#define RSC_SYS_REG_HDR_CR4_PKE_CODE	" PKE"
-#define RSC_SYS_REG_HDR_CR4_CET_CODE	" CET"
-#define RSC_SYS_REG_HDR_CR4_PKS_CODE	" PKS"
-#define RSC_SYS_REG_HDR_CR8_CODE	"CR8:"
-#define RSC_SYS_REG_HDR_CR8_TPL_CODE	" TPL"
-#define RSC_SYS_REG_HDR_EFCR_CODE	"EFCR"
-#define RSC_SYS_REG_HDR_EFCR_LCK_CODE	"LCK "
-#define RSC_SYS_REG_HDR_EFCR_VMX_CODE	"VMX^"
-#define RSC_SYS_REG_HDR_EFCR_SGX_CODE	"SGX "
-#define RSC_SYS_REG_HDR_EFCR_LSE_CODE	"[SEN"
-#define RSC_SYS_REG_HDR_EFCR_GSE_CODE	"TER]"
-#define RSC_SYS_REG_HDR_EFCR_LSGX_CODE	" [ S"
-#define RSC_SYS_REG_HDR_EFCR_GSGX_CODE	"GX ]"
-#define RSC_SYS_REG_HDR_EFCR_LMC_CODE	" LMC"
-#define RSC_SYS_REG_HDR_EFER_CODE	"EFER"
-#define RSC_SYS_REG_HDR_EFER_SCE_CODE	" SCE"
-#define RSC_SYS_REG_HDR_EFER_LME_CODE	" LME"
-#define RSC_SYS_REG_HDR_EFER_LMA_CODE	" LMA"
-#define RSC_SYS_REG_HDR_EFER_NXE_CODE	" NXE"
-#define RSC_SYS_REG_HDR_EFER_SVM_CODE	" SVM"
-
-#define RSC_ISA_3DNOW_CODE		" 3DNow!/Ext [%c/%c]"
-#define RSC_ISA_ADX_CODE		"          ADX [%c]"
-#define RSC_ISA_AES_CODE		"          AES [%c]"
-#define RSC_ISA_AVX_CODE		"  AVX/AVX2 [%c/%c] "
-#define RSC_ISA_AVX512_F_CODE		" AVX512-F     [%c]"
-#define RSC_ISA_AVX512_DQ_CODE		"    AVX512-DQ [%c]"
-#define RSC_ISA_AVX512_IFMA_CODE	"  AVX512-IFMA [%c]"
-#define RSC_ISA_AVX512_PF_CODE		"   AVX512-PF [%c] "
-#define RSC_ISA_AVX512_ER_CODE		" AVX512-ER    [%c]"
-#define RSC_ISA_AVX512_CD_CODE		"    AVX512-CD [%c]"
-#define RSC_ISA_AVX512_BW_CODE		"    AVX512-BW [%c]"
-#define RSC_ISA_AVX512_VL_CODE		"   AVX512-VL [%c] "
-#define RSC_ISA_AVX512_VBMI_CODE	" AVX512-VBMI  [%c]"
-#define RSC_ISA_AVX512_VBMI2_CODE	" AVX512-VBMI2 [%c]"
-#define RSC_ISA_AVX512_VNMI_CODE	"  AVX512-VNMI [%c]"
-#define RSC_ISA_AVX512_ALG_CODE 	"  AVX512-ALG [%c] "
-#define RSC_ISA_AVX512_VPOP_CODE	" AVX512-VPOP  [%c]"
-#define RSC_ISA_AVX512_VNNIW_CODE	" AVX512-VNNIW [%c]"
-#define RSC_ISA_AVX512_FMAPS_CODE	" AVX512-FMAPS [%c]"
-#define RSC_ISA_AVX512_VP2I_CODE	" AVX512-VP2I [%c] "
-#define RSC_ISA_AVX512_BF16_CODE	" AVX512-BF16  [%c]"
-#define RSC_ISA_BMI_CODE		"  BMI1/BMI2 [%c/%c]"
-#define RSC_ISA_CLWB_CODE		"         CLWB [%c]"
-#define RSC_ISA_CLFLUSH_CODE		" CLFLUSH/O [%c/%c] "
-#define RSC_ISA_AC_FLAG_CODE		" CLAC-STAC    [%c]"
-#define RSC_ISA_CMOV_CODE		"         CMOV [%c]"
-#define RSC_ISA_XCHG8B_CODE		"    CMPXCHG8B [%c]"
-#define RSC_ISA_XCHG16B_CODE		"  CMPXCHG16B [%c] "
-#define RSC_ISA_F16C_CODE		" F16C         [%c]"
-#define RSC_ISA_FPU_CODE		"          FPU [%c]"
-#define RSC_ISA_FXSR_CODE		"         FXSR [%c]"
-#define RSC_ISA_LSHF_CODE		"   LAHF-SAHF [%c] "
-#define RSC_ISA_MMX_CODE		" MMX/Ext    [%c/%c]"
-#define RSC_ISA_MWAITX_CODE		" MON/MWAITX [%c/%c]"
-#define RSC_ISA_MOVBE_CODE		"        MOVBE [%c]"
-#define RSC_ISA_PCLMULDQ_CODE		"   PCLMULQDQ [%c] "
-#define RSC_ISA_POPCNT_CODE		" POPCNT       [%c]"
-#define RSC_ISA_RDRAND_CODE		"       RDRAND [%c]"
-#define RSC_ISA_RDSEED_CODE		"       RDSEED [%c]"
-#define RSC_ISA_RDTSCP_CODE		"      RDTSCP [%c] "
-#define RSC_ISA_SEP_CODE		" SEP          [%c]"
-#define RSC_ISA_SHA_CODE		"          SHA [%c]"
-#define RSC_ISA_SSE_CODE		"          SSE [%c]"
-#define RSC_ISA_SSE2_CODE		"        SSE2 [%c] "
-#define RSC_ISA_SSE3_CODE		" SSE3         [%c]"
-#define RSC_ISA_SSSE3_CODE		"        SSSE3 [%c]"
-#define RSC_ISA_SSE4_1_CODE		"  SSE4.1/4A [%c/%c]"
-#define RSC_ISA_SSE4_2_CODE		"      SSE4.2 [%c] "
-#define RSC_ISA_SERIALIZE_CODE		" SERIALIZE    [%c]"
-#define RSC_ISA_SYSCALL_CODE		"      SYSCALL [%c]"
-#define RSC_ISA_RDPID_FMT1_CODE 	"        RDPID [%c]"
-#define RSC_ISA_RDPID_FMT2_CODE 	"       RDPID [%c] "
-#define RSC_ISA_UMIP_CODE		"        UMIP [%c] "
-#define RSC_ISA_SGX_CODE		"          SGX [%c]"

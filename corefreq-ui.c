@@ -514,7 +514,12 @@ const char LCD[0x6][0x10][3][3] = {
 	}
 };
 
-ATTRIBUTE vColor[] = VOID_COLOR;
+ATTRIBUTE vColor[THM_CNT][MAX_WIDTH] = {
+	[THM_DFLT] = RSC_VOID_COLOR_ATTR,
+	[THM_USR1] = RSC_VOID_COLOR_ATTR
+};
+
+enum THEMES AppThm = THM_DFLT;
 
 ASCII	hSpace[] = HSPACE,
 	hBar[]   = HBAR,

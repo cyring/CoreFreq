@@ -6000,7 +6000,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR()
 					: RSC(CREATE_MENU_DISABLE).ATTR());
 /* Row 11 */
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
 			#ifndef NO_LOWER
@@ -6009,9 +6009,9 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 			#endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
 /* Row 12 */
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
 			#ifndef NO_LOWER
@@ -6020,7 +6020,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 			#endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor);
+	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
 /* Bottom Menu */
 	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
 	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK, 0, WHITE, 0));
@@ -6537,22 +6537,22 @@ Window *CreateAdvHelp(unsigned long long id)
 Window *CreateAbout(unsigned long long id)
 {
 	ASCII *C[] = {
-		RSC(LOGO_ROW_0).CODE(),
-		RSC(LOGO_ROW_1).CODE(),
-		RSC(LOGO_ROW_2).CODE(),
-		RSC(LOGO_ROW_3).CODE(),
-		RSC(LOGO_ROW_4).CODE(),
-		RSC(LOGO_ROW_5).CODE()
+		RSC(CF0).CODE(),
+		RSC(CF1).CODE(),
+		RSC(CF2).CODE(),
+		RSC(CF3).CODE(),
+		RSC(CF4).CODE(),
+		RSC(CF5).CODE()
 	} , *F[] = {
-		RSC(COPY_ROW_0).CODE(),
-		RSC(COPY_ROW_1).CODE(),
-		RSC(COPY_ROW_2).CODE()
+		RSC(COPY0).CODE(),
+		RSC(COPY1).CODE(),
+		RSC(COPY2).CODE()
 	};
 	size_t	c = sizeof(C) / sizeof(C[0]),
 		f = sizeof(F) / sizeof(F[0]),
 		v = strlen(COREFREQ_VERSION);
 	CUINT	cHeight = c + f,
-		oCol = (draw.Size.width - RSZ(LOGO_ROW_0)) / 2,
+		oCol = (draw.Size.width - RSZ(CF0)) / 2,
 		oRow = TOP_HEADER_ROW + 4;
 
 	if (cHeight >= (draw.Size.height - 1)) {
@@ -14067,7 +14067,7 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 	UNUSED(cpu);
 
 	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
-	/*TODO( Clear garbage with transparency padding )		*/
+
 	ClearGarbage(	layer, attr, (bar0 + LOAD_LEAD), row, bar1,
 			MakeAttr(BLACK,0,BLACK,1).value );
 
