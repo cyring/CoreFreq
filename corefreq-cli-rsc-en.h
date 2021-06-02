@@ -93,7 +93,7 @@
 	' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',0x0,' ',\
 	' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',' ',' ',' ',\
 	' ',0x0,' ',' ',' ',' ',' ',' ',0x0,0x0,' ',' ',' ',' ',' ',' ',\
-	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '			\
+	' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '		\
 }
 
 #define RSC_LAYOUT_MONITOR_COMMON_CODE_EN				\
@@ -1179,6 +1179,7 @@
 #define RSC_MENU_ITEM_KERNEL_CODE_EN		" Kernel data        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_EN		" HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_EN		" Tools              [O] "
+#define RSC_MENU_ITEM_THEME_CODE_EN		" Theme              [E] "
 #define RSC_MENU_ITEM_ABOUT_CODE_EN		" About              [a] "
 #define RSC_MENU_ITEM_HELP_CODE_EN		" Help               [h] "
 #define RSC_MENU_ITEM_KEYS_CODE_EN		" Shortcuts         [F1] "

@@ -23,6 +23,7 @@
 #include "bitasm.h"
 #include "coretypes.h"
 #include "corefreq-ui.h"
+#include "corefreq-cli-rsc.h"
 
 const char LCD[0x6][0x10][3][3] = {
 	{
@@ -514,13 +515,6 @@ const char LCD[0x6][0x10][3][3] = {
 	}
 };
 
-ATTRIBUTE vColor[THM_CNT][MAX_WIDTH] = {
-	[THM_DFLT] = RSC_VOID_COLOR_ATTR,
-	[THM_USR1] = RSC_VOID_COLOR_ATTR
-};
-
-enum THEMES AppThm = THM_DFLT;
-
 ASCII	hSpace[] = HSPACE,
 	hBar[]   = HBAR,
 	hLine[]  = HLINE;
@@ -535,6 +529,42 @@ StockList stockList = {.head = NULL, .tail = NULL};
 WinList winList = {.head = NULL};
 
 char *Console = NULL;
+
+enum LOCALES	AppLoc = LOC_EN;
+locale_t	SysLoc = (locale_t) 0;
+
+typedef char I18N[5];
+
+I18N	i18n_FR[] = {
+	"fr_FR",
+	"br_FR",
+	"fr_BE",
+	"fr_CA",
+	"fr_CH",
+	"fr_LU",
+	"ca_FR",
+	"ia_FR",
+	"oc_FR",
+	{0,0,0,0,0}
+};
+
+struct LOCALE_LOOKUP {
+	enum LOCALES	apploc;
+	I18N		*i18n;
+} LocaleLookUp[] = {
+		{
+			.apploc = LOC_FR,
+			.i18n	= i18n_FR
+		},
+		{
+			.apploc = LOC_EN,
+			.i18n	= NULL
+		}
+};
+
+enum THEMES AppThm = THM_DFLT;
+
+struct termios oldt, newt;
 
 struct {
     union {
@@ -1388,7 +1418,7 @@ int Motion_Trigger(SCANKEY *scan, Window *win, WinList *list)
 		else
 			RemoveWindow(win, list);
 
-		ResetLayer(thisLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
+		ResetLayer(thisLayer);
 		}
 		break;
 	case SCANKEY_TAB:
@@ -2054,8 +2084,6 @@ void JSON_Break(void)
 {
 }
 
-struct termios oldt, newt;
-
 void _TERMINAL_IN(void)
 {
 	printf(SCP SCR1 CUH CLS HIDE);
@@ -2074,38 +2102,6 @@ void _TERMINAL_OUT(void)
 
 	printf(SHOW SCR0 RCP COLOR(0,9,9));
 }
-
-enum LOCALES	AppLoc = LOC_EN;
-locale_t	SysLoc = (locale_t) 0;
-
-typedef char I18N[5];
-
-I18N	i18n_FR[] = {
-	"fr_FR",
-	"br_FR",
-	"fr_BE",
-	"fr_CA",
-	"fr_CH",
-	"fr_LU",
-	"ca_FR",
-	"ia_FR",
-	"oc_FR",
-	{0,0,0,0,0}
-};
-
-struct LOCALE_LOOKUP {
-	enum LOCALES	apploc;
-	I18N		*i18n;
-} LocaleLookUp[] = {
-		{
-			.apploc = LOC_FR,
-			.i18n	= i18n_FR
-		},
-		{
-			.apploc = LOC_EN,
-			.i18n	= NULL
-		}
-};
 
 void _LOCALE_IN(void)
 {

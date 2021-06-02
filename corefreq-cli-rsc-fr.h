@@ -786,6 +786,7 @@ do echo -en "$h$l\t""\xc3""\x$h$l""\t"; done; done;echo
 #define RSC_MENU_ITEM_KERNEL_CODE_FR      " Infos Noyau        [k] "
 #define RSC_MENU_ITEM_HOTPLUG_CODE_FR     " HotPlug CPU        [#] "
 #define RSC_MENU_ITEM_TOOLS_CODE_FR       " Outils             [O] "
+#define RSC_MENU_ITEM_THEME_CODE_FR       " Th""\xa8""me              [E] "
 #define RSC_MENU_ITEM_ABOUT_CODE_FR       " ""\x80""-propos           [a] "
 #define RSC_MENU_ITEM_HELP_CODE_FR        " Aide               [h] "
 #define RSC_MENU_ITEM_KEYS_CODE_FR        " Raccourcis        [F1] "

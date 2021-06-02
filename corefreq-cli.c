@@ -5959,7 +5959,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_w,	RSC(MENU_ITEM_POW_THERM).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  8 */
-	StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE(),
+	StoreTCell(wMenu, SCANKEY_SHIFT_e, RSC(MENU_ITEM_THEME).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_q,	RSC(MENU_ITEM_SYS_INTER).CODE(),
@@ -5972,7 +5972,7 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_u,	RSC(MENU_ITEM_CPUID).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row  9 */
-	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
+	StoreTCell(wMenu, SCANKEY_a,	RSC(MENU_ITEM_ABOUT).CODE(),
 					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_c, RSC(MENU_ITEM_SENSORS).CODE(),
@@ -5985,8 +5985,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 	StoreTCell(wMenu, SCANKEY_SHIFT_r, RSC(MENU_ITEM_SYS_REGS).CODE(),
 					   RSC(CREATE_MENU_SHORTKEY).ATTR());
 /* Row 10 */
-	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
-					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
+	StoreTCell(wMenu, SCANKEY_h,	RSC(MENU_ITEM_HELP).CODE(),
+					RSC(CREATE_MENU_SHORTKEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_v, RSC(MENU_ITEM_VOLTAGE).CODE(),
 			#ifndef NO_LOWER
@@ -6000,7 +6000,8 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_SHORTKEY).ATTR()
 					: RSC(CREATE_MENU_DISABLE).ATTR());
 /* Row 11 */
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
+	StoreTCell(wMenu, SCANKEY_CTRL_x, RSC(MENU_ITEM_QUIT).CODE(),
+					  RSC(CREATE_MENU_CTRL_KEY).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_w, RSC(MENU_ITEM_POWER).CODE(),
 			#ifndef NO_LOWER
@@ -6009,9 +6010,9 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 			#endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Row 12 */
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 
 	StoreTCell(wMenu, SCANKEY_SHIFT_t, RSC(MENU_ITEM_SLICE_CTRS).CODE(),
 			#ifndef NO_LOWER
@@ -6020,11 +6021,16 @@ Window *CreateMenu(unsigned long long id, CUINT matrixSelectCol)
 					RSC(CREATE_MENU_DISABLE).ATTR());
 			#endif
 
-	StoreTCell(wMenu, SCANKEY_VOID, "", vColor[GET_THEME()]);
+	StoreTCell(wMenu, SCANKEY_VOID, "", RSC(VOID).ATTR());
 /* Bottom Menu */
-	StoreWindow(wMenu, .color[0].select,	MakeAttr(BLACK, 0, WHITE, 0));
-	StoreWindow(wMenu, .color[0].title,	MakeAttr(BLACK, 0, WHITE, 0));
-	StoreWindow(wMenu, .color[1].title,	MakeAttr(BLACK, 0, WHITE, 1));
+	StoreWindow(wMenu, .color[0].select,
+				RSC(UI).ATTR()[UI_WIN_MENU_SELECT]);
+
+	StoreWindow(wMenu, .color[0].title,
+				RSC(UI).ATTR()[UI_WIN_MENU_TITLE_UNFOCUS]);
+
+	StoreWindow(wMenu, .color[1].title,
+				RSC(UI).ATTR()[UI_WIN_MENU_TITLE_FOCUS]);
 
 	wMenu->matrix.select.col = matrixSelectCol;
 
@@ -6201,7 +6207,7 @@ void ScopeUpdate(TGrid *grid, DATA_TYPE data)
 
 Window *CreateSettings(unsigned long long id)
 {
-	Window *wSet = CreateWindow(wLayer, id, 1, 24, 8, TOP_HEADER_ROW+2);
+	Window *wSet = CreateWindow(wLayer, id, 1, 25, 8, TOP_HEADER_ROW+2);
     if (wSet != NULL)
     {
 	ATTRIBUTE *attrib[2] = {
@@ -6946,7 +6952,8 @@ Window *CreateSortByField(unsigned long long id)
 
 		StoreWindow(wSortBy, .color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wSortBy, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wSortBy, .color[1].title,MakeAttr(BLACK,0,WHITE,1));
+		StoreWindow(wSortBy, .color[1].title,
+				RSC(UI).ATTR()[UI_WIN_SORT_BY_FIELD_TITLE]);
 
 		StoreWindow(wSortBy,	.Print,		ForEachCellPrint_Drop);
 
@@ -7087,8 +7094,8 @@ Window *CreateTracking(unsigned long long id)
 			(TRACK_TASK | trackList[ti].pid),
 			Buffer,
 			(trackList[ti].pid == trackList[ti].tgid) ?
-				  MAKE_PRINT_DROP
-				: MakeAttr(BLACK, 0, WHITE, 1));
+			  MAKE_PRINT_DROP
+			: RSC(UI).ATTR()[UI_WIN_TRACKING_CHILD_PROCESS]);
 
 		snprintf(Buffer, MAX_WIDTH-1, "%.*s", width, hSpace);
 
@@ -7097,7 +7104,8 @@ Window *CreateTracking(unsigned long long id)
 	    }
 		StoreWindow(wTrack, .color[0].select, MAKE_PRINT_DROP);
 		StoreWindow(wTrack, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wTrack, .color[1].title, MakeAttr(BLACK,0,WHITE,1));
+		StoreWindow(wTrack, .color[1].title,
+					RSC(UI).ATTR()[UI_WIN_TRACKING_TITLE]);
 
 		StoreWindow(wTrack,	.Print, 	ForEachCellPrint_Drop);
 		StoreWindow(wTrack,	.key.Enter,	MotionEnter_Cell);
@@ -7235,7 +7243,8 @@ Window *CreateHotPlugCPU(unsigned long long id)
 	wCPU->matrix.select.col = 1;
 
 	StoreWindow(wCPU,	.title, 	" CPU ");
-	StoreWindow(wCPU, .color[1].title, MakeAttr(WHITE, 0, BLUE, 1));
+	StoreWindow(wCPU,	.color[1].title,
+				RSC(UI).ATTR()[UI_WIN_HOT_PLUG_CPU_TITLE]);
 
 	StoreWindow(wCPU,	.key.Enter,	Enter_StickyCell);
 	StoreWindow(wCPU,	.key.Down,	MotionDown_Win);
@@ -8434,7 +8443,7 @@ Window *CreateSelectIdle(unsigned long long id)
 
 	StoreTCell(wIdle, BOXKEY_LIMIT_IDLE_ST00,
 			RSC(BOX_IDLE_LIMIT_RESET).CODE(),
-			MakeAttr(WHITE, 0, BLACK, 0));
+			RSC(UI).ATTR()[UI_WIN_SELECT_IDLE_RESET]);
 
 	for (idx = 0; idx < Shm->SysGate.OS.IdleDriver.stateCount; idx++)
 	{
@@ -8443,7 +8452,8 @@ Window *CreateSelectIdle(unsigned long long id)
 				10, Shm->SysGate.OS.IdleDriver.State[idx].Name);
 
 		StoreTCell(wIdle, (BOXKEY_LIMIT_IDLE_ST00 | ((1 + idx) << 4)),
-				Buffer, MakeAttr(WHITE, 0, BLACK, 0));
+				Buffer,
+				RSC(UI).ATTR()[UI_WIN_SELECT_IDLE_POLL]);
 	}
 	StoreWindow(wIdle, .title, (char*) RSC(BOX_IDLE_LIMIT_TITLE).CODE());
 
@@ -8457,7 +8467,7 @@ Window *CreateSelectIdle(unsigned long long id)
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[14] =		\
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[15] =		\
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).attr[16] =		\
-						MakeAttr(CYAN , 0, BLACK, 1);
+				RSC(UI).ATTR()[UI_WIN_SELECT_IDLE_CURRENT];
 	TCellAt(wIdle, 0, wIdle->matrix.select.row).item[ 8] = '<';
 	if (wIdle->matrix.select.row > 9) {
 		TCellAt(wIdle, 0, wIdle->matrix.select.row).item[15] = '>';
@@ -8629,28 +8639,46 @@ Window *PopUpMessage(ASCII *title, RING_CTRL *pCtrl)
 	if (hdrLen < POPUP_WIDTH) {
 		memcpy(item, outStr, hdrLen);
 	}
-	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(wMsg, SCANKEY_NULL, item,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_ITEM]);
 
 	memset(item, 0x20, POPUP_WIDTH);
-	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(wMsg, SCANKEY_NULL, item,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_ITEM]);
 
 	if ((sysLen > 0) && (sysLen < POPUP_WIDTH)) {
 		memcpy(&item[(POPUP_WIDTH / 2) - (sysLen / 2)], sysMsg,sysLen);
 	} else {
 		memcpy(item, sysMsg, POPUP_WIDTH);
 	}
-	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(wMsg, SCANKEY_NULL, item,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_ITEM]);
 
 	memset(item, 0x20, POPUP_WIDTH);
-	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
-	StoreTCell(wMsg, SCANKEY_NULL, item,	MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(wMsg, SCANKEY_NULL, item,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_ITEM]);
 
-	StoreWindow(wMsg, .color[0].select,	MakeAttr(WHITE, 0, BLACK, 0));
-	StoreWindow(wMsg, .color[1].select,	MakeAttr(WHITE, 0, BLACK, 1));
-	StoreWindow(wMsg, .color[0].border,	MakeAttr(WHITE, 0, RED	, 0));
-	StoreWindow(wMsg, .color[1].border,	MakeAttr(WHITE, 0, RED	, 1));
-	StoreWindow(wMsg, .color[0].title,	MakeAttr(WHITE, 0, RED	, 0));
-	StoreWindow(wMsg, .color[1].title,	MakeAttr(BLACK, 0, WHITE, 0));
+	StoreTCell(wMsg, SCANKEY_NULL, item,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_ITEM]);
+
+	StoreWindow(wMsg, .color[0].select,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_SELECT_UNFOCUS]);
+
+	StoreWindow(wMsg, .color[1].select,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_SELECT_FOCUS]);
+
+	StoreWindow(wMsg, .color[0].border,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_BORDER_UNFOCUS]);
+
+	StoreWindow(wMsg, .color[1].border,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_BORDER_FOCUS]);
+
+	StoreWindow(wMsg, .color[0].title,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_TITLE_UNFOCUS]);
+
+	StoreWindow(wMsg, .color[1].title,
+			RSC(UI).ATTR()[UI_WIN_POPUP_MSG_TITLE_FOCUS]);
+
 	StoreWindow(wMsg, .title, (char *) title);
     }
   }
@@ -8761,7 +8789,7 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 	    {
 		RSC(RECORDER).CODE(),
 		RSZ(RECORDER),
-		MakeAttr(CYAN, 0, BLACK, 1),
+		RSC(UI).ATTR()[UI_WIN_EXIT_ISSUE_RECORDER],
 		SCANKEY_ALT_p
 	    },
 		DumpStatus()
@@ -8770,7 +8798,7 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 	    {
 		RSC(STRESS).CODE(),
 		RSZ(STRESS),
-		MakeAttr(CYAN, 0, BLACK, 1),
+		RSC(UI).ATTR()[UI_WIN_EXIT_ISSUE_STRESS],
 		BOXKEY_TOOLS_MACHINE
 	    },
 		BITVAL(Shm->Proc.Sync, BURN)
@@ -8779,7 +8807,7 @@ IssueList *FindIssues(CUINT *wth, CUINT *hth)
 	    {
 		RSC(KERNEL_IDLE_DRIVER).CODE(),
 		RSZ(KERNEL_IDLE_DRIVER),
-		MakeAttr(CYAN, 0, BLACK, 1),
+		RSC(UI).ATTR()[UI_WIN_EXIT_ISSUE_OS_CPU_IDLE],
 		OPS_CPU_IDLE
 	    },
 		(Shm->Registration.Driver.CPUidle == REGISTRATION_ENABLE)
@@ -8821,11 +8849,13 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
     {
 	CUINT idx;
 
-	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_HEADER).CODE(),
-			MakeAttr(WHITE, 0, BLACK, 0));
+	StoreTCell(	wExit, SCANKEY_NULL, RSC(EXIT_HEADER).CODE(),
+			RSC(UI).ATTR()[UI_WIN_EXIT_HEADER] );
 
-	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);
+	Buffer[wth] = '\0';
+	StoreTCell(	wExit, SCANKEY_NULL, Buffer,
+			RSC(UI).ATTR()[UI_WIN_EXIT_BLANK] );
 
 	for (idx = 0; idx < hth; idx++)
 	{
@@ -8836,17 +8866,21 @@ Window *CreateExit(unsigned long long id, IssueList *issue, CUINT wth,CUINT hth)
 
 		StoreTCell(wExit, issue[idx].quick, Buffer, issue[idx].attrib);
 	};
-	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);
+	Buffer[wth] = '\0';
+	StoreTCell(	wExit, SCANKEY_NULL, Buffer,
+			RSC(UI).ATTR()[UI_WIN_EXIT_BLANK] );
 
-	StoreTCell(wExit, SCANKEY_CTRL_ALT_x, RSC(EXIT_CONFIRM).CODE(),
-			MakeAttr(WHITE, 0, BLACK, 1));
+	StoreTCell(	wExit, SCANKEY_CTRL_ALT_x, RSC(EXIT_CONFIRM).CODE(),
+			RSC(UI).ATTR()[UI_WIN_EXIT_CONFIRM] );
 
-	memset(Buffer, 0x20, wth);	Buffer[wth] = '\0';
-	StoreTCell(wExit, SCANKEY_NULL, Buffer, MakeAttr(BLACK, 0, BLACK, 1));
+	memset(Buffer, 0x20, wth);
+	Buffer[wth] = '\0';
+	StoreTCell(	wExit, SCANKEY_NULL, Buffer,
+			RSC(UI).ATTR()[UI_WIN_EXIT_BLANK] );
 
-	StoreTCell(wExit, SCANKEY_NULL, RSC(EXIT_FOOTER).CODE(),
-			MakeAttr(WHITE, 0, BLACK, 0));
+	StoreTCell(	wExit, SCANKEY_NULL, RSC(EXIT_FOOTER).CODE(),
+			RSC(UI).ATTR()[UI_WIN_EXIT_FOOTER] );
 
 	wExit->matrix.select.row = 2;
 
@@ -8919,11 +8953,11 @@ void TrapScreenSize(int caught)
 int Shortcut(SCANKEY *scan)
 {
 	const ATTRIBUTE stateAttr[2] = {
-		MakeAttr(WHITE, 0, BLACK, 0),
-		MakeAttr(CYAN , 0, BLACK, 1)
+		RSC(UI).ATTR()[UI_BOX_ENABLE_STATE],
+		RSC(UI).ATTR()[UI_BOX_DISABLE_STATE]
 	},
-	blankAttr = MakeAttr(BLACK, 0, BLACK, 1),
-	descAttr =  MakeAttr(CYAN , 0, BLACK, 0);
+	blankAttr = RSC(UI).ATTR()[UI_BOX_BLANK],
+	descAttr =  RSC(UI).ATTR()[UI_BOX_DESC];
 
 	const ASCII *stateStr[2][2] = {
 		{
@@ -9116,25 +9150,25 @@ int Shortcut(SCANKEY *scan)
 		CreateBox(scan->key, origin, select,
 				(char*) RSC(BOX_INTERVAL_TITLE).CODE(),
 			RSC(BOX_INTERVAL_STEP1).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_100,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_100,
 			RSC(BOX_INTERVAL_STEP2).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_150,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_150,
 			RSC(BOX_INTERVAL_STEP3).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_250,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_250,
 			RSC(BOX_INTERVAL_STEP4).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_500,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_500,
 			RSC(BOX_INTERVAL_STEP5).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_750,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_750,
 			RSC(BOX_INTERVAL_STEP6).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1000,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_1000,
 			RSC(BOX_INTERVAL_STEP7).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_1500,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_1500,
 			RSC(BOX_INTERVAL_STEP8).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2000,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_2000,
 			RSC(BOX_INTERVAL_STEP9).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0), OPS_INTERVAL_2500,
+			RSC(UI).ATTR()[UI_BOX_INTERVAL], OPS_INTERVAL_2500,
 			RSC(BOX_INTERVAL_STEP10).CODE(),
-				MakeAttr(WHITE, 0, BLACK, 0),OPS_INTERVAL_3000),
+			RSC(UI).ATTR()[UI_BOX_INTERVAL],OPS_INTERVAL_3000),
 		&winList);
       } else {
 	SetHead(&winList, win);
@@ -9283,8 +9317,8 @@ int Shortcut(SCANKEY *scan)
       if (win == NULL)
       {
 	ATTRIBUTE exp_Attr[2] = {
-		MakeAttr(RED , 0, BLACK, 1),
-		MakeAttr(CYAN, 0, BLACK, 1)
+		RSC(UI).ATTR()[UI_BOX_EXPERIMENTAL_WARNING],
+		RSC(UI).ATTR()[UI_BOX_EXPERIMENTAL_NOMINAL]
 	};
 	ASCII *ops_Str[2][2] = {
 		{
@@ -9368,9 +9402,10 @@ int Shortcut(SCANKEY *scan)
 				RSC(SETTINGS_ROUTE_MWAIT).CODE(),
 					MAKE_PRINT_DROP, OPS_ROUTE_MWAIT );
 	if (wDrop != NULL) {
-		StoreWindow(wDrop, .color[0].select, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[0].title, MAKE_PRINT_DROP);
-		StoreWindow(wDrop, .color[1].title,MakeAttr(BLACK,0,WHITE,1));
+		StoreWindow(	wDrop, .color[0].select, MAKE_PRINT_DROP);
+		StoreWindow(	wDrop, .color[0].title, MAKE_PRINT_DROP);
+		StoreWindow(	wDrop, .color[1].title,
+					RSC(UI).ATTR()[UI_DROP_IDLE_ROUTE]);
 		StoreWindow(wDrop, .Print, ForEachCellPrint_Drop);
 
 		AppendWindow(wDrop, &winList);
@@ -9903,6 +9938,11 @@ int Shortcut(SCANKEY *scan)
 		draw.Flag.layout = 1;
 	}
     }
+    break;
+
+    case SCANKEY_SHIFT_e:
+	SET_THEME(!GET_THEME());
+	draw.Flag.layout = 1;
     break;
 
     case SCANKEY_SHIFT_m:
@@ -12352,7 +12392,7 @@ int Shortcut(SCANKEY *scan)
 			(char*) RSC(BOX_TOOLS_TITLE).CODE(),
 			RSC(BOX_TOOLS_STOP_BURN).CODE(),
 				BITVAL(Shm->Proc.Sync, BURN) ?
-				MakeAttr(RED,0,BLACK,1) : blankAttr,
+				RSC(UI).ATTR()[UI_BOX_TOOLS_STOP] : blankAttr,
 			BITVAL(Shm->Proc.Sync, BURN) ?
 				BOXKEY_TOOLS_MACHINE : SCANKEY_NULL,
 			RSC(BOX_TOOLS_ATOMIC_BURN).CODE(),stateAttr[0],
@@ -13186,20 +13226,22 @@ void Layout_Header(Layer *layer, CUINT row)
 	hProc0.code[0] = BITVAL(Shm->Proc.Sync, BURN) ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hProc0.origin.col, hProc0.origin.row,
-			hProc0.length, hProc0.attr, hProc0.code);
+			hProc0.length, hProc0.attr, hProc0.code );
 
-	LayerFillAt(layer,(hProc0.origin.col + hProc0.length),hProc0.origin.row,
+	LayerFillAt(	layer,
+			(hProc0.origin.col + hProc0.length), hProc0.origin.row,
 			len, Shm->Proc.Brand,
-			MakeAttr(CYAN, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_HEADER_PROC_BRAND] );
 
-	if ((hProc1.origin.col - len) > 0) {
-		LayerFillAt(layer, (hProc0.origin.col + hProc0.length + len),
-				hProc0.origin.row,
-				(hProc1.origin.col - len), hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
-	}
+    if ((hProc1.origin.col - len) > 0) {
+	LayerFillAt(	layer,
+			(hProc0.origin.col + hProc0.length + len),
+			hProc0.origin.row,
+			(hProc1.origin.col - len), hSpace,
+			RSC(UI).ATTR()[UI_LAYOUT_HEADER_PROC_BRAND_FILL] );
+    }
 	LayerCopyAt(	layer, hProc1.origin.col, hProc1.origin.row,
-			hProc1.length, hProc1.attr, hProc1.code);
+			hProc1.length, hProc1.attr, hProc1.code );
 
 	len = CUMIN(xArch1 - (hArch0.origin.col + hArch0.length),
 			(CUINT) strlen(Shm->Proc.Architecture));
@@ -13207,31 +13249,34 @@ void Layout_Header(Layer *layer, CUINT row)
 	hArch0.code[0] = DumpStatus() ? '.' : 0x20;
 
 	LayerCopyAt(	layer, hArch0.origin.col, hArch0.origin.row,
-			hArch0.length, hArch0.attr, hArch0.code);
+			hArch0.length, hArch0.attr, hArch0.code );
 
-	LayerFillAt(layer,(hArch0.origin.col + hArch0.length),hArch0.origin.row,
+	LayerFillAt(	layer,
+			(hArch0.origin.col + hArch0.length), hArch0.origin.row,
 			len, Shm->Proc.Architecture,
-			MakeAttr(CYAN, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_HEADER_ARCHITECTURE] );
 
-	if ((hArch1.origin.col - len) > 0) {
-		LayerFillAt(layer, (hArch0.origin.col + hArch0.length + len),
-				hArch0.origin.row,
-				(hArch1.origin.col - len), hSpace,
-				MakeAttr(BLACK, 0, BLACK, 1));
-	}
+    if ((hArch1.origin.col - len) > 0) {
+	LayerFillAt(	layer,
+			(hArch0.origin.col + hArch0.length + len),
+			hArch0.origin.row,
+			(hArch1.origin.col - len), hSpace,
+			RSC(UI).ATTR()[UI_LAYOUT_HEADER_ARCH_FILL] );
+    }
 	LayerCopyAt(	layer, hArch1.origin.col, hArch1.origin.row,
-			hArch1.length, hArch1.attr, hArch1.code);
+			hArch1.length, hArch1.attr, hArch1.code );
 
 	LayerCopyAt(	layer, hBClk0.origin.col, hBClk0.origin.row,
-			hBClk0.length, hBClk0.attr, hBClk0.code);
+			hBClk0.length, hBClk0.attr, hBClk0.code );
 
-	LayerFillAt(layer,(hBClk0.origin.col + hBClk0.length),hBClk0.origin.row,
+	LayerFillAt(	layer,
+			(hBClk0.origin.col + hBClk0.length), hBClk0.origin.row,
 			(hArch2.origin.col - hBClk0.origin.col + hBClk0.length),
 			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_HEADER_BCLK_FILL] );
 
 	LayerCopyAt(	layer, hArch2.origin.col, hArch2.origin.row,
-			hArch2.length, hArch2.attr, hArch2.code);
+			hArch2.length, hArch2.attr, hArch2.code );
 }
 #endif /* NO_HEADER */
 
@@ -13268,10 +13313,14 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 			hLoad1.attr[draw.Load], hLoad1.code[draw.Load]);
 
 	/* Alternate the color of the frequency ratios			*/
+	const ATTRIBUTE attr[2] = {
+		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_DIM],
+		RSC(UI).ATTR()[UI_LAYOUT_RULER_LOAD_TAB_BRIGHT]
+	};
 	int idx = Ruler.Count, bright = 1;
     while (idx-- > 0)
     {
-		int hPos=Ruler.Uniq[idx] * draw.Area.LoadWidth / Ruler.Maximum;
+	int hPos = Ruler.Uniq[idx] * draw.Area.LoadWidth / Ruler.Maximum;
 	if (((hPos+6) < hLoad1.origin.col)
 	 || ((hLoad0.origin.col+hPos+3) > (hLoad1.origin.col+hLoad1.length)))
 	{
@@ -13285,7 +13334,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 
 		LayerAt(layer, attr,
 			(hLoad0.origin.col + hPos + 2),
-			hLoad0.origin.row) = MakeAttr(CYAN, 0, BLACK, bright);
+			hLoad0.origin.row) = attr[bright];
 	    }
 		LayerAt(layer, code,
 			(hLoad0.origin.col + hPos + 3),
@@ -13293,7 +13342,7 @@ void Layout_Ruler_Load(Layer *layer, CUINT row)
 
 		LayerAt(layer, attr,
 			(hLoad0.origin.col + hPos + 3),
-			hLoad0.origin.row) = MakeAttr(CYAN, 0, BLACK, bright);
+			hLoad0.origin.row) = attr[bright];
 
 		bright = !bright;
 	}
@@ -13409,7 +13458,7 @@ CUINT Layout_Ruler_Instructions(Layer *layer, const unsigned int cpu,CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0) );
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_INSTRUCTIONS] );
 	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
@@ -13425,7 +13474,8 @@ CUINT Layout_Ruler_Cycles(Layer *layer, const unsigned int cpu, CUINT row)
 			hCycles.length, hCycles.attr, hCycles.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_CYCLES] );
 	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
@@ -13441,7 +13491,8 @@ CUINT Layout_Ruler_CStates(Layer *layer, const unsigned int cpu, CUINT row)
 			hCStates.length, hCStates.attr, hCStates.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_CSTATES] );
 	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
@@ -13457,7 +13508,8 @@ CUINT Layout_Ruler_Interrupts(Layer *layer, const unsigned int cpu, CUINT row)
 			hIntr0.length, hIntr0.attr, hIntr0.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_INTERRUPTS] );
 	UNUSED(cpu);
 
 	row += draw.Area.MaxRows + 2;
@@ -13505,7 +13557,8 @@ CUINT Layout_Ruler_Package(Layer *layer, const unsigned int cpu, CUINT row)
 			hUncore.length, hUncore.attr, hUncore.code);
 
 	LayerFillAt(	layer, 0, (row + 11),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_PACKAGE] );
 
 	row += 2 + 10;
 	return (row);
@@ -13622,7 +13675,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 			hTask1.length, hTask1.attr, hTask1.code );
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_TASKS_FILL] );
 
 	LayerCopyAt(	layer, hTask2.origin.col, hTask2.origin.row,
 			hTask2.length, hTask2.attr, hTask2.code );
@@ -13638,7 +13692,8 @@ CUINT Layout_Ruler_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		snprintf(Buffer, 11+1, "%7d", Shm->SysGate.trackTask);
 		LayerFillAt(	layer,
 				(hTrack0.origin.col + 15), hTrack0.origin.row,
-				7, Buffer, MakeAttr(CYAN, 0, BLACK, 0) );
+				7, Buffer,
+				RSC(UI).ATTR()[UI_LAYOUT_RULER_TASKS_TRACKING]);
 	}
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -13746,7 +13801,8 @@ CUINT Layout_Ruler_Energy(Layer *layer, const unsigned int cpu, CUINT row)
 			 hPwr0.length,  hPwr0.attr,  hPwr0.code );
     }
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
-			draw.Size.width, hLine, MakeAttr(WHITE, 0, BLACK, 0) );
+			draw.Size.width, hLine,
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_ENERGY] );
 
   if (Shm->Proc.Features.Info.Vendor.CRC == CRC_INTEL)
   {
@@ -13809,7 +13865,7 @@ CUINT Layout_Ruler_Slice(Layer *layer, const unsigned int cpu, CUINT row)
 
 	LayerFillAt(	layer, 0, (row + draw.Area.MaxRows + 1),
 			draw.Size.width, hLine,
-			MakeAttr(WHITE, 0, BLACK, 0) );
+			RSC(UI).ATTR()[UI_LAYOUT_RULER_SLICE] );
 
 	row += draw.Area.MaxRows + 2;
 	return (row);
@@ -13825,15 +13881,15 @@ void Layout_Footer(Layer *layer, CUINT row)
 	LayerDeclare(	LAYOUT_FOOTER_TECH_X86, RSZ(LAYOUT_FOOTER_TECH_X86),
 			0, row, hTech0 );
 
-	const ATTRIBUTE Pwr[] = {
-		MakeAttr(BLACK, 0, BLACK, 1),
-		MakeAttr(GREEN, 0, BLACK, 1),
-		MakeAttr(BLUE,  0, BLACK, 1)
+	const ATTRIBUTE EN[] = {
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_0],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_1],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_ENABLE_2]
 	};
-	const struct {  ASCII *code  ; ATTRIBUTE attr; } TSC[] = {
-		{(ASCII *) "  TSC  " , MakeAttr(BLACK, 0, BLACK, 1)},
-		{(ASCII *) "TSC-VAR" , MakeAttr(BLUE,  0, BLACK, 1)},
-		{(ASCII *) "TSC-INV" , MakeAttr(GREEN, 0, BLACK, 1)}
+	const struct { ASCII *code; ATTRIBUTE attr; } TSC[] = {
+		{(ASCII *)"  TSC  ", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_NONE]},
+		{(ASCII *)"TSC-VAR", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_VAR]},
+		{(ASCII *)"TSC-INV", RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TSC_INV]}
 	};
 
 	hTech0.code[ 6] = TSC[Shm->Proc.Features.InvariantTSC].code[0];
@@ -13858,26 +13914,26 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1 );
 
 	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
-					Pwr[Shm->Proc.Features.HyperThreading];
+					EN[Shm->Proc.Features.HyperThreading];
 
 	const ATTRIBUTE TM[] = {
-		MakeAttr(BLACK, 0, BLACK, 1),
-		MakeAttr(BLUE,  0, BLACK, 1),
-		MakeAttr(WHITE, 0, BLACK, 1),
-		MakeAttr(GREEN, 0, BLACK, 1)
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_0],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_1],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_2],
+		RSC(UI).ATTR()[UI_LAYOUT_FOOTER_TM_3]
 	};
 
 	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
-	hTech1.attr[7] = Pwr[Shm->Proc.Technology.EIST];
+	hTech1.attr[7] = EN[Shm->Proc.Technology.EIST];
 
 	hTech1.attr[9] = hTech1.attr[10] = hTech1.attr[11] =		\
-				Pwr[Shm->Proc.Features.Power.EAX.TurboIDA];
+				EN[Shm->Proc.Features.Power.EAX.TurboIDA];
 
 	hTech1.attr[13] = hTech1.attr[14] = hTech1.attr[15] =		\
-	hTech1.attr[16] = hTech1.attr[17] = Pwr[Shm->Proc.Technology.Turbo];
+	hTech1.attr[16] = hTech1.attr[17] = EN[Shm->Proc.Technology.Turbo];
 
 	hTech1.attr[19] = hTech1.attr[20] = hTech1.attr[21] =		\
-						Pwr[Shm->Proc.Technology.C1E];
+						EN[Shm->Proc.Technology.C1E];
 
 	snprintf(Buffer, 2+10+1, "PM%1u", Shm->Proc.PM_version);
 
@@ -13886,19 +13942,19 @@ void Layout_Footer(Layer *layer, CUINT row)
 	hTech1.code[25] = Buffer[2];
 
 	hTech1.attr[23] = hTech1.attr[24] = hTech1.attr[25] =		\
-						Pwr[(Shm->Proc.PM_version > 0)];
+						EN[(Shm->Proc.PM_version > 0)];
 
 	hTech1.attr[27] = hTech1.attr[28] = hTech1.attr[29] =		\
-						Pwr[Shm->Proc.Technology.C3A];
+						EN[Shm->Proc.Technology.C3A];
 
 	hTech1.attr[31] = hTech1.attr[32] = hTech1.attr[33] =		\
-						Pwr[Shm->Proc.Technology.C1A];
+						EN[Shm->Proc.Technology.C1A];
 
 	hTech1.attr[35] = hTech1.attr[36] = hTech1.attr[37] =		\
-						Pwr[Shm->Proc.Technology.C3U];
+						EN[Shm->Proc.Technology.C3U];
 
 	hTech1.attr[39] = hTech1.attr[40] = hTech1.attr[41] =		\
-						Pwr[Shm->Proc.Technology.C1U];
+						EN[Shm->Proc.Technology.C1U];
 
 	hTech1.attr[43] = hTech1.attr[44] = 				\
 			TM[Shm->Cpu[Shm->Proc.Service.Core].PowerThermal.TM1
@@ -13911,7 +13967,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1.origin.row,
 			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
     }
     else
     {
@@ -13923,34 +13979,34 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1 );
 
 	hTech1.attr[0] = hTech1.attr[1] = hTech1.attr[2] =		\
-					Pwr[Shm->Proc.Features.HyperThreading];
+					EN[Shm->Proc.Features.HyperThreading];
 
 	hTech1.attr[4] = hTech1.attr[5] = hTech1.attr[6] =		\
-					Pwr[(Shm->Proc.PowerNow == 0b11)];
+					EN[(Shm->Proc.PowerNow == 0b11)];
 
 	hTech1.attr[8] = hTech1.attr[9] = hTech1.attr[10] =		\
-				Pwr[Shm->Proc.Features.AdvPower.EDX.HwPstate];
+				EN[Shm->Proc.Features.AdvPower.EDX.HwPstate];
 
 	hTech1.attr[12] = hTech1.attr[13] = hTech1.attr[14] =		\
-	hTech1.attr[15] = hTech1.attr[16] = Pwr[Shm->Proc.Technology.Turbo];
+	hTech1.attr[15] = hTech1.attr[16] = EN[Shm->Proc.Technology.Turbo];
 
 	hTech1.attr[18] = hTech1.attr[19] = hTech1.attr[20] =		\
-						Pwr[Shm->Proc.Technology.C1E];
+						EN[Shm->Proc.Technology.C1E];
 
 	hTech1.attr[22] = hTech1.attr[23] = hTech1.attr[24] =		\
-						Pwr[Shm->Proc.Technology.CC6];
+						EN[Shm->Proc.Technology.CC6];
 
 	hTech1.attr[26] = hTech1.attr[27] = hTech1.attr[28] =		\
-						Pwr[Shm->Proc.Technology.PC6];
+						EN[Shm->Proc.Technology.PC6];
 
 	hTech1.attr[30] = hTech1.attr[31] = hTech1.attr[32] =		\
-	Pwr[(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0)];
+	EN[(Shm->Cpu[Shm->Proc.Service.Core].Query.CStateBaseAddr != 0)];
 
 	hTech1.attr[34] = hTech1.attr[35] = hTech1.attr[36] =		\
-				Pwr[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
+				EN[(Shm->Proc.Features.AdvPower.EDX.TS != 0)];
 
 	hTech1.attr[38] = hTech1.attr[39] = hTech1.attr[40] =		\
-				Pwr[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
+				EN[(Shm->Proc.Features.AdvPower.EDX.TTP != 0)];
 
 	LayerCopyAt(layer, hTech1.origin.col, hTech1.origin.row,
 			hTech1.length, hTech1.attr, hTech1.code);
@@ -13959,7 +14015,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			hTech1.origin.row,
 			(draw.Size.width - hTech0.length - hTech1.length),
 			hSpace,
-			MakeAttr(BLACK, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_FILL]);
       }
     }
 	LayerAt(layer, code, 14+64, row) = Setting.fahrCels ? 'F' : 'C';
@@ -13972,15 +14028,17 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 	LayerFillAt(	layer, col, row,
 			len, Buffer,
-			MakeAttr(CYAN, 0, BLACK, 0));
+			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_GATE]);
 	col += len;
 
-	LayerAt(layer, attr, col, row) = MakeAttr(WHITE, 0, BLACK, 0);
+	LayerAt(layer, attr, col, row) = RSC(UI).ATTR()[UI_LAYOUT_FOOTER_SPACE];
 	LayerAt(layer, code, col, row) = 0x20;
 
 	col++;
 
-	LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
+	LayerAt(layer, attr, col, row) = \
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_LEFT_BRACE];
+
 	LayerAt(layer, code, col, row) = '[';
 
 	col++;
@@ -13993,15 +14051,18 @@ void Layout_Footer(Layer *layer, CUINT row)
 
 		LayerFillAt(	layer, col, row,
 				len, Buffer,
-				MakeAttr(WHITE, 0, BLACK, 1));
+			RSC(UI).ATTR()[UI_LAYOUT_FOOTER_KERNEL_VERSION] );
+
 		col += len;
 	} else {
 		LayerFillAt(	layer, col, row,
 				3, "OFF",
-				MakeAttr(RED, 0, BLACK, 0));
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_UNMAP_GATE]);
 		col += 3;
 	}
-	LayerAt(layer, attr, col, row) = MakeAttr(BLACK, 0, BLACK, 1);
+	LayerAt(layer, attr, col, row) = \
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_RIGHT_BRACE];
+
 	LayerAt(layer, code, col, row) = ']';
 
 	col++;
@@ -14017,7 +14078,7 @@ void Layout_Footer(Layer *layer, CUINT row)
 			ctr = ((hSys1.origin.col + col) - can) / 2;
 		LayerFillAt(	layer, ctr, hSys1.origin.row,
 				can, ScrambleSMBIOS(draw.SmbIndex, 4, '-'),
-				MakeAttr(BLUE, 0, BLACK, 1) );
+				RSC(UI).ATTR()[UI_LAYOUT_FOOTER_DMI_STRING] );
 	}
 	/* Reset Tasks count & Memory usage				*/
 	if (BITWISEAND(LOCKLESS, Shm->SysGate.Operation, 0x1)) {
@@ -14049,7 +14110,9 @@ void Layout_CPU_To_View(Layer *layer, const CUINT col, const CUINT row)
 
 void Layout_BCLK_To_View(Layer *layer, const CUINT col, const CUINT row)
 {
-	LayerAt(layer, attr, col + 3, row) = MakeAttr(YELLOW, 0, BLACK, 1);
+	LayerAt(layer, attr, col + 3, row) = \
+					RSC(UI).ATTR()[UI_LAYOUT_BCLK_TO_VIEW];
+
 	LayerAt(layer, code, col + 3, row) = 0x20;
 }
 
@@ -14061,15 +14124,17 @@ CUINT Draw_Frequency_Load(	Layer *layer, CUINT row,
 				* draw.Area.LoadWidth) / Ruler.Maximum,
 			bar1 = draw.Area.LoadWidth - bar0;
 
-	const ATTRIBUTE attr = MakeAttr( (ratio > Ruler.Median ? RED
-					: ratio > Ruler.Minimum ? YELLOW:GREEN),
-					0, BLACK, 1 );
+	const ATTRIBUTE attr = ratio > Ruler.Median ?
+				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_HIGH]
+				: ratio > Ruler.Minimum ?
+				RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_MEDIUM]
+				: RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_LOW];
 	UNUSED(cpu);
 
 	LayerFillAt(layer, LOAD_LEAD, row, bar0, hBar, attr);
 
 	ClearGarbage(	layer, attr, (bar0 + LOAD_LEAD), row, bar1,
-			MakeAttr(BLACK,0,BLACK,1).value );
+			RSC(UI).ATTR()[UI_DRAW_FREQUENCY_LOAD_CLEAR].value );
 
 	ClearGarbage(layer, code, (bar0 + LOAD_LEAD), row, bar1, 0x0);
 
@@ -14367,20 +14432,20 @@ CUINT Draw_Monitor_Frequency(Layer *layer, const unsigned int cpu, CUINT row)
 	);
 	memcpy(&LayerAt(layer, code, LOAD_LEAD, row), Buffer, len);
 
-	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
+	ATTRIBUTE warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_NOMINAL];
 
   if (CFlop->Thermal.Temp <= Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_LOWEST]) {
-		warning = MakeAttr(BLUE, 0, BLACK, 1);
+		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_LOW];
   } else {
     if (CFlop->Thermal.Temp >= Shm->Cpu[cpu].PowerThermal.Limit[SENSOR_HIGHEST])
-		warning = MakeAttr(YELLOW, 0, BLACK, 0);
+		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HIGH];
   }
 	if ( CFlop->Thermal.Events & (	EVENT_THERM_SENSOR
 				     |	EVENT_THERM_PROCHOT
 				     |	EVENT_THERM_CRIT
 				     |	EVENT_THERM_THOLD ) )
 	{
-		warning = MakeAttr(RED, 0, BLACK, 1);
+		warning = RSC(UI).ATTR()[UI_DRAW_MONITOR_FREQUENCY_HOT];
 	}
 	LayerAt(layer, attr, (LOAD_LEAD + 69), row) =			\
 		LayerAt(layer, attr, (LOAD_LEAD + 70), row) =		\
@@ -15692,7 +15757,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 	/* Clear the trailing garbage chars left by the previous drawing. */
 	FillLayerArea(	layer, (LOAD_LEAD + 8), (row + 1),
 			(draw.Size.width - (LOAD_LEAD + 8)), draw.Area.MaxRows,
-			hSpace, MakeAttr(BLACK, 0, BLACK, 0) );
+			hSpace, RSC(UI).ATTR()[UI_DRAW_ALTMONITOR_TASKS_CLEAR]);
 
     for (idx = 0; idx < Shm->SysGate.taskCount; idx++)
     {
@@ -15761,7 +15826,7 @@ CUINT Draw_AltMonitor_Tasks(Layer *layer, const unsigned int cpu, CUINT row)
 		LayerAt(layer, attr,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) =
-						MakeAttr(WHITE, 0, BLACK, 0);
+				RSC(UI).ATTR()[UI_DRAW_ALTMONITOR_TASKS_SPACE];
 		LayerAt(layer, code,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].col,
 			cTask[Shm->SysGate.taskList[idx].wake_cpu].row) = 0x20;
@@ -16104,7 +16169,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	#define Illuminates_Lower_CPU_At(_layer, _col, _row)
 #endif
 
-#define Illuminates_CPU(_layer, _row, fg, bg, hi)			\
+#define Illuminates_CPU(_layer, _row, _attr)				\
 ({									\
 	Illuminates_Upper_CPU_At(_layer, 0, _row)			\
 	Illuminates_Lower_CPU_At(_layer, 0, _row)			\
@@ -16113,7 +16178,7 @@ VIEW_FUNC Matrix_Draw_AltMon[VIEW_SIZE] = {
 	Illuminates_Upper_CPU_At(_layer, 2, _row)			\
 	Illuminates_Lower_CPU_At(_layer, 2, _row)			\
 									\
-						MakeAttr(fg, 0, bg, hi);\
+						_attr;			\
 									\
 })
 
@@ -16151,13 +16216,13 @@ void Layout_Header_DualView_Footer(Layer *layer)
 #endif
     if (!BITVAL(Shm->Cpu[cpu].OffLine, OS))
     {
-	if (cpu == Shm->Proc.Service.Core) {
-		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
-	} else if ((signed int) cpu == Shm->Proc.Service.Thread) {
-		Illuminates_CPU(layer, row, CYAN, BLACK, 1);
-	} else {
-		Illuminates_CPU(layer, row, CYAN, BLACK, 0);
-	}
+      if (cpu == Shm->Proc.Service.Core) {
+	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_SP]);
+      } else if ((signed int) cpu == Shm->Proc.Service.Thread) {
+	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
+      } else {
+	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_ON]);
+}
 #ifndef NO_LOWER
 #ifndef NO_UPPER
 	Matrix_Layout_Monitor[draw.View](layer,cpu,row + draw.Area.MaxRows + 1);
@@ -16168,7 +16233,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
     }
     else
     {
-	Illuminates_CPU(layer, row, BLUE, BLACK, 0);
+	Illuminates_CPU(layer, row, RSC(UI).ATTR()[UI_ILLUMINATES_CPU_OFF]);
 
 #ifndef NO_UPPER
 	ClearGarbage(	dLayer, code,
@@ -16180,7 +16245,7 @@ void Layout_Header_DualView_Footer(Layer *layer)
 	ClearGarbage(	dLayer, attr,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
 			(draw.Size.width - LOAD_LEAD + 1),
-			MakeAttr(BLACK,0,BLACK,0).value );
+			RSC(UI).ATTR()[UI_LAYOUT_ROW_CPU_OFFLINE].value );
 
 	ClearGarbage(	dLayer, code,
 			(LOAD_LEAD - 1), (row + draw.Area.MaxRows + 1),
@@ -16300,7 +16365,8 @@ void Layout_Card_Core(Layer *layer, Card *card)
 		card->data.dword.hi = RENDER_KO;
 
 		LayerFillAt(layer, card->origin.col, (card->origin.row + 1),
-		(4 * INTER_WIDTH), " _  _  _  _ ", MakeAttr(BLACK,0,BLACK,1));
+		(4 * INTER_WIDTH), " _  _  _  _ ",
+		RSC(UI).ATTR()[UI_LAYOUT_CARD_CORE_OFFLINE]);
 
 		LayerCopyAt(layer, hOffLine.origin.col, hOffLine.origin.row,
 				hOffLine.length, hOffLine.attr, hOffLine.code);
@@ -16454,10 +16520,10 @@ void Layout_Card_RAM(Layer *layer, Card *card)
 	}
       }
       if (totalRAM > 99) {
-	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 1);
+	hMem.attr[hMem.length-2] = RSC(UI).ATTR()[UI_LAYOUT_CARD_RAM_3DIGITS];
 	snprintf(Buffer, 20+1+1, "%3lu", totalRAM);
       } else {
-	hMem.attr[hMem.length-2] = MakeAttr(WHITE, 0, BLACK, 0);
+	hMem.attr[hMem.length-2] = RSC(UI).ATTR()[UI_LAYOUT_CARD_RAM_2DIGITS];
 	snprintf(Buffer, 20+1+1, "%2lu%c", totalRAM, symbol);
       }
 	memcpy(&hMem.code[8], Buffer, 3);
@@ -16529,19 +16595,19 @@ void Draw_Card_Core(Layer *layer, Card *card)
 	struct FLIP_FLOP *CFlop = \
 			&Shm->Cpu[_cpu].FlipFlop[!Shm->Cpu[_cpu].Toggle];
 
-	ATTRIBUTE warning = {.fg = WHITE, .un = 0, .bg = BLACK, .bf = 1};
+	ATTRIBUTE warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_NOMINAL];
 
 	Clock2LCD(layer, card->origin.col, card->origin.row,
 			CFlop->Relative.Freq, CFlop->Relative.Ratio);
 
    if(CFlop->Thermal.Temp <= Shm->Cpu[_cpu].PowerThermal.Limit[SENSOR_LOWEST]) {
-		warning = MakeAttr(BLUE, 0, BLACK, 1);
+		warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_LOW];
    } else {
     if(CFlop->Thermal.Temp >= Shm->Cpu[_cpu].PowerThermal.Limit[SENSOR_HIGHEST])
-		warning = MakeAttr(YELLOW, 0, BLACK, 0);
+		warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_MEDIUM];
    }
 	if (CFlop->Thermal.Events) {
-		warning = MakeAttr(RED, 0, BLACK, 1);
+		warning = RSC(UI).ATTR()[UI_DRAW_CARD_CORE_HIGH];
 	}
 
 	LayerAt(layer, attr, (card->origin.col + 6), (card->origin.row + 3)) = \
@@ -16713,7 +16779,7 @@ void Draw_Card_Task(Layer *layer, Card *card)
 				(card->origin.row + 2),
 				pe - pb,
 				&Buffer[pb],
-				MakeAttr(WHITE, 0, BLACK, 0));
+				RSC(UI).ATTR()[UI_DRAW_CARD_TASK_FILL]);
 
 	memcpy(&LayerAt(layer, code, (card->origin.col+6),(card->origin.row+3)),
 				&Buffer[pe], 5);
@@ -16946,11 +17012,11 @@ REASON_CODE Top(char option)
 	if (draw.Flag.clear) {
 		draw.Flag.clear  = 0;
 		draw.Flag.layout = 1;
-		ResetLayer(dLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
+		ResetLayer(dLayer);
 	}
 	if (draw.Flag.layout) {
 		draw.Flag.layout = 0;
-		ResetLayer(sLayer, MakeAttr(BLACK,0,BLACK,0).value, 0x0);
+		ResetLayer(sLayer);
 		LayoutView[draw.Disposal](sLayer);
 	}
 	if (draw.Flag.daemon)

@@ -17,14 +17,16 @@
 #include "corefreq-cli-rsc.h"
 #include "corefreq-cli-rsc-en.h"
 #include "corefreq-cli-rsc-fr.h"
+#include "corefreq-cli-rsc-theme-dflt.h"
+#include "corefreq-cli-rsc-theme-usr1.h"
 
 #define DEF_LDA(_rsc)							\
 ATTRIBUTE _rsc##_##ATTR_ARRAY						\
 	[THM_CNT]							\
-	[(sizeof((ATTRIBUTE[]) _rsc##_##ATTR) / sizeof(ATTRIBUTE))] =	\
+	[(sizeof((ATTRIBUTE[]) _rsc##_##THM_DFLT_ATTR) / sizeof(ATTRIBUTE))] = \
 {									\
-	_rsc##_##ATTR,							\
-	_rsc##_##ATTR							\
+	[THM_DFLT] = _rsc##_##THM_DFLT_ATTR,				\
+	[THM_USR1] = _rsc##_##THM_USR1_ATTR				\
 };									\
 ASCII	_rsc##_##CODE_EN_ARRAY[] = _rsc##_##CODE_EN,			\
 	_rsc##_##CODE_FR_ARRAY[] = _rsc##_##CODE_FR
@@ -32,13 +34,78 @@ ASCII	_rsc##_##CODE_EN_ARRAY[] = _rsc##_##CODE_EN,			\
 #define DEF_LDB(_rsc)							\
 ATTRIBUTE _rsc##_##ATTR_ARRAY						\
 	[THM_CNT]							\
-	[(sizeof((ATTRIBUTE[]) _rsc##_##ATTR) / sizeof(ATTRIBUTE))] =	\
+	[(sizeof((ATTRIBUTE[]) _rsc##_##THM_DFLT_ATTR) / sizeof(ATTRIBUTE))] = \
 {									\
-	_rsc##_##ATTR,							\
-	_rsc##_##ATTR							\
+	[THM_DFLT] = _rsc##_##THM_DFLT_ATTR,				\
+	[THM_USR1] = _rsc##_##THM_USR1_ATTR				\
 }
 
-DEF_LDB(RSC_VOID_COLOR);
+#define LDV(attr_var, en_var, fr_var)					\
+	.Attr = {							\
+		[THM_DFLT] = attr_var[THM_DFLT],			\
+		[THM_USR1] = attr_var[THM_USR1] 			\
+	},								\
+	.Code = {							\
+		[LOC_EN] = (ASCII*) en_var,				\
+		[LOC_FR] = (ASCII*) fr_var				\
+	}
+
+#define LDA(_rsc)							\
+[_rsc] = {								\
+	LDV(_rsc##_ATTR_ARRAY, _rsc##_CODE_EN_ARRAY, _rsc##_CODE_FR_ARRAY),\
+	.Size = {							\
+		[LOC_EN] = sizeof(_rsc##_CODE_EN_ARRAY),		\
+		[LOC_FR] = sizeof(_rsc##_CODE_FR_ARRAY)			\
+	}								\
+}
+
+#define LDB(_rsc)							\
+[_rsc] = {								\
+	LDV(_rsc##_ATTR_ARRAY, hSpace, hSpace) ,			\
+	.Size = {							\
+		[LOC_EN] = sizeof(HSPACE),				\
+		[LOC_FR] = sizeof(HSPACE)				\
+	}								\
+}
+
+#define LDS(_rsc)							\
+[_rsc] = {								\
+	LDV(_rsc##_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR) ,	\
+	.Size = {							\
+		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
+		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
+	}								\
+}
+
+#define LDT(_rsc)							\
+[_rsc] = {								\
+	LDV(RSC_VOID_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR),	\
+	.Size = {							\
+		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
+		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
+	}								\
+}
+
+#define LDC(_rsc, _ref) 						\
+[_rsc] = {								\
+	LDV(_ref##_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR) ,	\
+	.Size = {							\
+		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
+		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
+	}								\
+}
+
+#define LDQ(_rsc)							\
+[_rsc] = {								\
+	LDV(RSC_VOID_ATTR_ARRAY, _rsc##_CODE, _rsc##_CODE),		\
+	.Size = {							\
+		[LOC_EN] = __builtin_strlen(_rsc##_CODE),		\
+		[LOC_FR] = __builtin_strlen(_rsc##_CODE)		\
+	}								\
+}
+
+DEF_LDB(RSC_UI);
+DEF_LDB(RSC_VOID);
 
 #ifndef NO_HEADER
 DEF_LDA(RSC_LAYOUT_HEADER_PROC);
@@ -242,71 +309,9 @@ DEF_LDB(RSC_CREATE_SELECT_FREQ_PKG);
 DEF_LDB(RSC_CREATE_SELECT_FREQ_COND0);
 DEF_LDB(RSC_CREATE_SELECT_FREQ_COND1);
 
-#define LDV(attr_var, en_var, fr_var)					\
-	.Attr = {							\
-		[THM_DFLT] = attr_var[THM_DFLT],			\
-		[THM_USR1] = attr_var[THM_USR1] 			\
-	},								\
-	.Code = {							\
-		[LOC_EN] = (ASCII*) en_var,				\
-		[LOC_FR] = (ASCII*) fr_var				\
-	}
-
-#define LDA(_rsc)							\
-[_rsc] = {								\
-	LDV(_rsc##_ATTR_ARRAY, _rsc##_CODE_EN_ARRAY, _rsc##_CODE_FR_ARRAY),\
-	.Size = {							\
-		[LOC_EN] = sizeof(_rsc##_CODE_EN_ARRAY),		\
-		[LOC_FR] = sizeof(_rsc##_CODE_FR_ARRAY)			\
-	}								\
-}
-
-#define LDB(_rsc)							\
-[_rsc] = {								\
-	LDV(_rsc##_ATTR_ARRAY, hSpace, hSpace) ,			\
-	.Size = {							\
-		[LOC_EN] = sizeof(HSPACE),				\
-		[LOC_FR] = sizeof(HSPACE)				\
-	}								\
-}
-
-#define LDS(_rsc)							\
-[_rsc] = {								\
-	LDV(_rsc##_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR) ,	\
-	.Size = {							\
-		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
-		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
-	}								\
-}
-
-#define LDT(_rsc)							\
-[_rsc] = {								\
-	LDV(RSC_VOID_COLOR_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR), \
-	.Size = {							\
-		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
-		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
-	}								\
-}
-
-#define LDC(_rsc, _ref) 						\
-[_rsc] = {								\
-	LDV(_ref##_ATTR_ARRAY, _rsc##_CODE_EN, _rsc##_CODE_FR) ,	\
-	.Size = {							\
-		[LOC_EN] = __builtin_strlen(_rsc##_CODE_EN),		\
-		[LOC_FR] = __builtin_strlen(_rsc##_CODE_FR)		\
-	}								\
-}
-
-#define LDQ(_rsc)							\
-[_rsc] = {								\
-	LDV(RSC_VOID_COLOR_ATTR_ARRAY, _rsc##_CODE, _rsc##_CODE),	\
-	.Size = {							\
-		[LOC_EN] = __builtin_strlen(_rsc##_CODE),		\
-		[LOC_FR] = __builtin_strlen(_rsc##_CODE)		\
-	}								\
-}
-
 RESOURCE_ST Resource[] = {
+	LDB(RSC_UI),
+	LDB(RSC_VOID),
 #ifndef NO_HEADER
 	LDA(RSC_LAYOUT_HEADER_PROC),
 	LDA(RSC_LAYOUT_HEADER_CPU),
@@ -1254,6 +1259,7 @@ RESOURCE_ST Resource[] = {
 	LDT(RSC_MENU_ITEM_KERNEL),
 	LDT(RSC_MENU_ITEM_HOTPLUG),
 	LDT(RSC_MENU_ITEM_TOOLS),
+	LDT(RSC_MENU_ITEM_THEME),
 	LDT(RSC_MENU_ITEM_ABOUT),
 	LDT(RSC_MENU_ITEM_HELP),
 	LDT(RSC_MENU_ITEM_KEYS),

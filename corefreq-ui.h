@@ -91,30 +91,6 @@ enum PALETTE {
 #define CoK	COLOR(1, CYAN, BLACK)
 #define WoK	COLOR(1, WHITE, BLACK)
 
-#define RSC_VOID_COLOR_ATTR						\
-{									\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,\
-	LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK,LWK \
-}
-
 #define HSPACE	"        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
 		"        ""        ""        ""        ""        "	\
@@ -184,6 +160,7 @@ typedef union {
 #define SCANKEY_SHIFT_b 	0x0000000000000042
 #define SCANKEY_SHIFT_c 	0x0000000000000043
 #define SCANKEY_SHIFT_d 	0x0000000000000044
+#define SCANKEY_SHIFT_e 	0x0000000000000045
 #define SCANKEY_SHIFT_f 	0x0000000000000046
 #define SCANKEY_SHIFT_h 	0x0000000000000048
 #define SCANKEY_SHIFT_i 	0x0000000000000049
@@ -294,10 +271,15 @@ typedef union {
 #define HWB	{.fg = WHITE,	.bg = BLUE,	.bf = 1}
 #define HWC	{.fg = WHITE,	.bg = CYAN,	.bf = 1}
 #define HKW	{.fg = BLACK,	.bg = WHITE,	.bf = 1}
+#define HRW	{.fg = RED,	.bg = WHITE,	.bf = 1}
+#define HYW	{.fg = YELLOW,	.bg = WHITE,	.bf = 1}
+#define HBW	{.fg = BLUE,	.bg = WHITE,	.bf = 1}
+#define HCW	{.fg = CYAN,	.bg = WHITE,	.bf = 1}
 #define _HCK	{.fg = CYAN,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWK	{.fg = WHITE,	.bg = BLACK,	.un = 1,	.bf = 1}
 #define _HWB	{.fg = WHITE,	.bg = BLUE,	.un = 1,	.bf = 1}
 #define _HKW	{.fg = BLACK,	.bg = WHITE,	.un = 1,	.bf = 1}
+#define _HCW	{.fg = CYAN,	.bg = WHITE,	.un = 1,	.bf = 1}
 #define LDK	{.fg = BLACK,	.bg = BLACK}
 #define LRK	{.fg = RED,	.bg = BLACK}
 #define LGK	{.fg = GREEN,	.bg = BLACK}
@@ -310,7 +292,9 @@ typedef union {
 #define LKC	{.fg = BLACK,	.bg = CYAN}
 #define LKW	{.fg = BLACK,	.bg = WHITE}
 #define LRW	{.fg = RED,	.bg = WHITE}
+#define LGW	{.fg = GREEN,	.bg = WHITE}
 #define LBW	{.fg = BLUE,	.bg = WHITE}
+#define LCW	{.fg = CYAN,	.bg = WHITE}
 #define _LCK	{.fg = CYAN,	.bg = BLACK,	.un = 1}
 #define _LWK	{.fg = WHITE,	.bg = BLACK,	.un = 1}
 #define _LKW	{.fg = BLACK,	.bg = WHITE,	.un = 1}
@@ -520,22 +504,6 @@ typedef void (*WINFUNC)(Window*);
 typedef char REGSTR[];
 typedef char *REGPTR;
 
-enum THEMES {
-	THM_DFLT,
-	THM_USR1,
-	THM_CNT
-};
-
-extern enum THEMES	AppThm;
-
-#define GET_THEME()		(AppThm)
-#define SET_THEME(_app_thm)						\
-({									\
-	AppThm = _app_thm;						\
-})
-
-extern ATTRIBUTE vColor[THM_CNT][MAX_WIDTH];
-
 extern ASCII hSpace[];
 extern ASCII hBar[];
 extern ASCII hLine[];
@@ -636,12 +604,16 @@ extern void DestroyLayer(Layer *layer) ;
 
 extern void CreateLayer(Layer *layer, CoordSize size) ;
 
-#define ResetLayer(layer, _attr, _code)					\
-	memset(layer->attr, _attr, layer->size.wth * layer->size.hth);	\
-	memset(layer->code, _code, layer->size.wth * layer->size.hth);
+#define ResetLayer(layer)						\
+({									\
+	memset( layer->attr, 0x0, layer->size.wth * layer->size.hth );	\
+	memset(layer->code, 0x0, layer->size.wth * layer->size.hth);	\
+})
 
 #define ClearGarbage(_layer, _plane, _col, _row, _len, _value)		\
-	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len)
+({									\
+	memset(&LayerAt(_layer, _plane, _col, _row), _value, _len);	\
+})
 
 extern void FillLayerArea(Layer *layer,CUINT col, CUINT row,
 				CUINT width, CUINT height,
@@ -889,6 +861,14 @@ extern  locale_t	SysLoc;
 ({									\
 	AppLoc = _apploc;						\
 	LocaleTo(LC_ALL);						\
+})
+
+extern enum THEMES	AppThm;
+
+#define GET_THEME()		(AppThm)
+#define SET_THEME(_app_thm)						\
+({									\
+	AppThm = _app_thm;						\
 })
 
 enum DUMP_METHOD {
